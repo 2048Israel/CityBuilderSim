@@ -31,11 +31,13 @@ import java.util.Arrays;
  * DRAWN WITH ITS PLAN, KEPT BY ITS STAMP: CityMap's PlanJob draws it from the
  * plan it has just drawn and the ground it read for it (DistrictPlan.Input),
  * on whatever thread runs the job - the map view's worker, "city-map", or a
- * harness's own - and CityMap keeps it with the plan's identity, its link's
- * stamp (its own inputs and what was carried to it) and the stamps of the
- * plans before it that it read. A plan drawn again with the same identity
- * (its packed plan let go from CityMap.PLANS_KEPT) does not draw it again.
- * Not saved (star MM1-1): it is the plan's, which is the counts'.
+ * harness's own - and CityMap keeps it with the plan's link, under a stamp of
+ * the plots it is drawn from (stampOf()). A plan drawn again to the same
+ * plots - its packed plan let go from CityMap.PLANS_KEPT, or drawn again
+ * after a district before it moved (its link's stamp: its own inputs, its
+ * purchases and what was carried to it, and those of the plans it read) -
+ * keeps the picture it has. Not saved (star MM1-1): it is the plan's, which
+ * is the counts'.
  *
  * Pure: the same plan and stamp give the same picture.
  */
@@ -106,7 +108,7 @@ public final class DistrictPicture {
 
     /* ---------------------------------------- the picture ---------------------------------------- */
 
-    /** The plan's identity it was drawn from (CityMap's pictureStamp()): what it is kept against. */
+    /** The stamp of the plots it was drawn from (stampOf()): what it is kept against. */
     public final long stamp;
 
     /** Each pixel's code, row by row. */
@@ -180,6 +182,18 @@ public final class DistrictPicture {
         for (int y = Math.max(0, y0); y < Math.min(n, y0 + h); y++) {
             for (int x = Math.max(0, x0); x < Math.min(n, x0 + w); x++) out[y * n + x] = code;
         }
+    }
+
+    /** A picture's stamp: its plots' codes (plotCodes()) folded, with the world's seed and the district's north-west plot, which its pixels' ranks are drawn on - the same plots there, the same picture. */
+    public static long stampOf(byte[] plots, long seed, long x0, long y0) {
+        long h = World.mix(seed ^ 0x5049435354414D50L ^ x0 * 0x9E3779B97F4A7C15L);
+        h = World.mix(h ^ y0 * 0xC2B2AE3D27D4EB4FL);
+        for (int i = 0; i < plots.length; i += 8) {
+            long w = 0;
+            for (int b = 0; b < 8 && i + b < plots.length; b++) w |= (plots[i + b] & 0xffL) << (8 * b);
+            if (w != 0) h = World.mix(h ^ w ^ i);
+        }
+        return h;
     }
 
     /** The rank a pixel picks among its PLOTS_IN plots, 0 to PLOTS_IN - 1: a fixed hash of where it lies in the world, its column and row of PLOTS_A_PIXEL plots (px, py), on the world's seed. */

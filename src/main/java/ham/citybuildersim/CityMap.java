@@ -1778,6 +1778,8 @@ public final class CityMap {
         /** Its plan's road with no street to carry it (DistrictPlan.surplus), in plots: what the legend counts (star RD2-4); by kind [0, gravel, paved, highway]. */
         final double surplus;
         double[] leftover;
+        /** Its plan's picture's stamp (0.7.128, batch MM1; DistrictPicture.stampOf()): the picture kept for it is current when it bears this. */
+        long picture;
         Link(long own, int[] in, int[] out, long[] free, byte[][] margins, District[] earlier, long[] read, double surplus, long serial) {
             this.own = own; this.in = in; this.out = out; this.free = free; this.margins = margins;
             this.earlier = earlier; this.read = read; this.surplus = surplus; this.serial = serial;
@@ -2162,9 +2164,10 @@ public final class CityMap {
         long[] free, read;
         byte[][] margins;
         double ms;
-        /** Its picture's (0.7.128, batch MM1): the boxes the runs and the shore stand on its ground (extrasIn()), the stamp of the picture kept for it when it was handed out (0 for none), and what run() drew - null when the kept one is its plan's (pictureStampOf()). */
+        /** Its picture's (0.7.128, batch MM1): the boxes the runs and the shore stand on its ground (extrasIn()), the stamp of the picture kept for it when it was handed out (0 for none), its plan's plots' stamp (DistrictPicture.stampOf()), and what run() drew - null when the kept one is of the same plots. */
         final int[] extras;
         final long keptPicture;
+        long pictureStamp;
         DistrictPicture picture;
         double pictureMs;
 
@@ -2206,20 +2209,22 @@ public final class CityMap {
             margins = marginsOf(p);
             if (edge) free = freeGround(in, p);
             ms = (System.nanoTime() - t0) / 1e6;
-            // Its picture (0.7.128, batch MM1), from the plan and the ground just read - unless the one kept is this plan's.
-            long ps = pictureStampOf(stampOf(own, c), read);
-            if (ps != keptPicture) {
-                long t1 = System.nanoTime();
-                picture = DistrictPicture.of(DistrictPicture.plotCodes(in, p, map.types, extras), ps, map.seed, in.x0, in.y0);
-                pictureMs = (System.nanoTime() - t1) / 1e6;
-            }
+            // Its picture (0.7.128, batch MM1), from the plan and the ground just read - unless the one kept is of the same plots.
+            long t1 = System.nanoTime();
+            byte[] plots = DistrictPicture.plotCodes(in, p, map.types, extras);
+            pictureStamp = DistrictPicture.stampOf(plots, map.seed, in.x0, in.y0);
+            if (pictureStamp != keptPicture) picture = DistrictPicture.of(plots, pictureStamp, map.seed, in.x0, in.y0);
+            pictureMs = (System.nanoTime() - t1) / 1e6;
         }
 
         /** How long it took, in ms: a harness's figure (its plan's; its picture's apart, pictureMs()). */
         public double ms() { return ms; }
 
-        /** How long its picture took, in ms, 0 when it drew none: a harness's figure. */
+        /** How long its picture took, in ms - its plots, and its pixels when it drew them: a harness's figure. */
         public double pictureMs() { return pictureMs; }
+
+        /** Whether it drew a picture (the one kept was not of its plots): a harness's figure. */
+        public boolean drewPicture() { return picture != null; }
     }
 
     /** A band's packing at its edge (R7; the city's, in a city of one band): what its last link carried on, into its edge districts' free ground - their links', or the jobs' that make them. */
@@ -2385,6 +2390,7 @@ public final class CityMap {
             if (was != null && was.serial > p.serial) return true;
             Link l = new Link(p.own, p.carryIn, p.carryOut, p.free, p.margins, p.earlier, p.read, p.result.surplus, p.serial);
             l.leftover = p.result.leftover.clone();
+            l.picture = p.pictureStamp;
             links.put(p.d, l);
             drawn.put(p.d, p.result);
             if (p.picture != null) {
@@ -2648,9 +2654,10 @@ public final class CityMap {
        Each built district's 32 x 32 picture for the far views
        (DistrictPicture): drawn by its PlanJob from the plan it has just
        drawn - on the map view's worker, "city-map", or a harness's thread -
-       and kept here by its plan's identity (pictureStampOf()), so a plan
-       drawn again the same draws no picture and a month redraws only the
-       districts whose plan it moved. Kept PICTURES_KEPT at most, the last
+       and kept here by a stamp of the plots it is drawn from
+       (DistrictPicture.stampOf(), star MM1-6), so a plan drawn again the
+       same draws no picture and a month redraws only the districts whose
+       plots it moved. Kept PICTURES_KEPT at most, the last
        used; never saved (star MM1-1): drawn again from the plans after a
        load. The far nodes read them (MapTiles.nodePixels()) and hand out
        the jobs that draw those they lack (pictureJobs()).
@@ -2663,15 +2670,8 @@ public final class CityMap {
         @Override protected boolean removeEldestEntry(Map.Entry<District, DistrictPicture> e) { return size() > PICTURES_KEPT; }
     };
 
-    /** How many pictures have been kept since the map was drawn, each drawn for a plan the one kept before it was not: what the far view repaints a waiting node on, and a harness counts a month's redraws by. */
+    /** How many pictures have been kept since the map was drawn, each drawn for plots the one kept before it was not: what the far view repaints a waiting node on, and a harness counts a month's redraws by. */
     private long picturesKept;
-
-    /** A picture's stamp: its plan's identity - the plan's own (Link.stamp(): its own inputs, its purchases, what was carried to it) and those of the plans before it about it that it read (Link.read), whose edges its streets join. */
-    static long pictureStampOf(long planStamp, long[] read) {
-        long h = World.mix(planStamp ^ 0x50494354L);
-        if (read != null) for (int k = 0; k < read.length; k++) if (read[k] != 0) h = World.mix(h ^ ((long) k << 56) ^ read[k]);
-        return h;
-    }
 
     /** The boxes the runs and the shore stand on district d's ground, as the painter draws them over its plan (fillInput()): its yards as Rail Terminals and its terminals and tank farms, each {x, y, w, h, type id} in the district's plots, the box's first plot in it. The map's thread. */
     int[] extrasIn(District d) {
@@ -2701,7 +2701,7 @@ public final class CityMap {
         checkBand(b);
         if (d.index >= bandValidTo[b]) return null;
         Link l = links.get(d);
-        return l != null && pic.stamp == pictureStampOf(l.stamp(), l.read) ? pic : null;
+        return l != null && pic.stamp == l.picture ? pic : null;
     }
 
     /**

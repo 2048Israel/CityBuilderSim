@@ -469,40 +469,56 @@ public final class MapTiles {
         return wanted.size();
     }
 
-    /** A net's stretches over a far node's pixels in a colour: each stretch's plots, from the plot it starts from (its arm's start, or the last of the stretch before) to its last, as a line of pixels - every pixel it crosses, at least one wide (CityRuns' DX and DY, a stretch's heading). */
+    /**
+     * A net's stretches over a far node's pixels in a colour: every pixel
+     * holding a plot of a stretch - each step's, from the plot it starts from
+     * (its arm's start, or the last of the stretch before) to its last, and a
+     * 45-degree step's corner (CityRuns.onStretch()) - so a run is at least a
+     * pixel wide at every scale. Walked a pixel at a time, not a plot: from
+     * one plot to the first that leaves its pixel's column or row.
+     */
     private void stroke(CityRuns.Net net, int colour, long x0, long y0, long plots, int[] out) {
         int n = MapFrame.NODE_PX;
+        long xa = x0 - 1, xb = x0 + n * plots, ya = y0 - 1, yb = y0 + n * plots;
         for (long[] s : net.stretches()) {
             int h = (int) s[2];
-            long steps = s[3];
-            if (steps <= 0) continue;
-            long ax = s[0], ay = s[1];
-            long bx = s[0] + CityRuns.DX[h] * steps, by = s[1] + CityRuns.DY[h] * steps;
-            long pa = Math.floorDiv(ax - x0, plots), qa = Math.floorDiv(ay - y0, plots);
-            long pb = Math.floorDiv(bx - x0, plots), qb = Math.floorDiv(by - y0, plots);
-            if (Math.max(pa, pb) < 0 || Math.min(pa, pb) >= n || Math.max(qa, qb) < 0 || Math.min(qa, qb) >= n) continue;
-            long m = Math.max(Math.abs(pb - pa), Math.abs(qb - qa));
-            // The steps of the line within the node, a pixel's margin each way: where it enters and leaves.
-            double lo = 0, hi = m;
-            if (pb != pa) {
-                double s0 = (-1.0 - pa) * m / (pb - pa), s1 = (n - pa) * m / (double) (pb - pa);
-                lo = Math.max(lo, Math.min(s0, s1));
-                hi = Math.min(hi, Math.max(s0, s1));
-            }
-            if (qb != qa) {
-                double s0 = (-1.0 - qa) * m / (qb - qa), s1 = (n - qa) * m / (double) (qb - qa);
-                lo = Math.max(lo, Math.min(s0, s1));
-                hi = Math.min(hi, Math.max(s0, s1));
-            }
-            for (long t = Math.max(0, (long) Math.floor(lo) - 1); t <= Math.min(m, (long) Math.ceil(hi) + 1); t++) {
-                long p = m == 0 ? pa : pa + Math.round((double) (pb - pa) * t / m);
-                long q = m == 0 ? qa : qa + Math.round((double) (qb - qa) * t / m);
-                if (p < 0 || q < 0 || p >= n || q >= n) continue;
-                int k = (int) (q * n + p);
-                out[k] = colour;
-                lastRun[k] = true;
+            long steps = s[3], sx = s[0], sy = s[1];
+            int dx = CityRuns.DX[h], dy = CityRuns.DY[h];
+            boolean corner = dx != 0 && dy != 0;
+            // The steps whose plots lie within the node, a plot round it.
+            long lo = 0, hi = steps;
+            if (dx > 0) { lo = Math.max(lo, xa - sx); hi = Math.min(hi, xb - sx); }
+            else if (dx < 0) { lo = Math.max(lo, sx - xb); hi = Math.min(hi, sx - xa); }
+            else if (sx < xa || sx > xb) continue;
+            if (dy > 0) { lo = Math.max(lo, ya - sy); hi = Math.min(hi, yb - sy + 1); }
+            else if (dy < 0) { lo = Math.max(lo, sy - yb - 1); hi = Math.min(hi, sy - ya); }
+            else if (sy < ya || sy > yb) continue;
+            for (long k = lo; k <= hi; ) {
+                long x = sx + (long) dx * k, y = sy + (long) dy * k;
+                mark(x, y, x0, y0, plots, colour, out);
+                if (corner && k >= 1) mark(x, y - dy, x0, y0, plots, colour, out);
+                // The next step whose plot leaves this pixel's column or row.
+                long next = Long.MAX_VALUE;
+                long px = Math.floorDiv(x - x0, plots), py = Math.floorDiv(y - y0, plots);
+                if (dx > 0) next = Math.min(next, x0 + (px + 1) * plots - x);
+                else if (dx < 0) next = Math.min(next, x - (x0 + px * plots) + 1);
+                if (dy > 0) next = Math.min(next, y0 + (py + 1) * plots - y);
+                else if (dy < 0) next = Math.min(next, y - (y0 + py * plots) + 1);
+                if (next == Long.MAX_VALUE) next = hi - k + 1;
+                // A corner of a 45-degree step lies in the row before its plot's: the step that crosses a row is visited itself.
+                k += Math.max(1, next);
             }
         }
+    }
+
+    /** Plot (x, y)'s pixel on the node, when it is on it, in a run's colour. */
+    private void mark(long x, long y, long x0, long y0, long plots, int colour, int[] out) {
+        int n = MapFrame.NODE_PX;
+        long p = Math.floorDiv(x - x0, plots), q = Math.floorDiv(y - y0, plots);
+        if (p < 0 || q < 0 || p >= n || q >= n) return;
+        int k = (int) (q * n + p);
+        out[k] = colour;
+        lastRun[k] = true;
     }
 
     /**

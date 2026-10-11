@@ -167,6 +167,22 @@ import java.util.Map;
  *      world's view timed; the small lakes' discs at a stride hold their own
  *      area within EarthTerrainCheck.LAKE_AREA; and on the meridian in
  *      Chukotka, rivers and lakes drawn on both sides and the nodes agreeing.
+ *  11. the district pictures (0.7.128, batch MM1; docs/studies/spec-globe.md
+ *      8.2): each built district's picture is its plan's, pixel for pixel -
+ *      each pixel the plot its fixed hash ranks among its 64, read here from
+ *      the plan as the painter reads it - its kinds' shares within
+ *      PICTURE_SIGMAS binomial spreads of its plots', and its plan holding the
+ *      district's counts; a plan drawn again to the same plots keeps its
+ *      picture, the same object; the played city on PICTURE_MONTHS more
+ *      months, every picture asked each month, redraws the pictures whose
+ *      plots moved and only those, the rest the same objects; a far node with
+ *      districts MapTiles.PICTURE_FROM_PX pixels across asks for the pictures
+ *      it lacks and samples them pixel for pixel, smaller asks for none and
+ *      dithers by the shares, within PICTURE_SIGMAS spreads; a far node in no
+ *      more than SCREEN_MS; a view of more built districts than
+ *      CityMap.PICTURES_KEPT asks for none; at the widest view the highways,
+ *      the track and the city's edge on every pixel they hold, a city under a
+ *      pixel drawn one; and the pictures not in the sidecar.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -285,6 +301,7 @@ public class MapCheck {
         viewHalf(city, sq, root);
         atSea(sq.types, sq.seed);
         onEarth(sq.types);
+        pictures(city, sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -3562,5 +3579,461 @@ public class MapCheck {
         check("a far node's small lakes, discs at their pixels' centres, hold their own area within EarthTerrainCheck.LAKE_AREA, each drawn",
                 lakes > 0 && Math.abs(off) <= EarthTerrainCheck.LAKE_AREA && coreMissed == 0);
         seam("Chukotka", World.of(World.Key.earth(seed, CHUKOTKA_LAT, CHUKOTKA_LON, id)), CHUKOTKA_STRIDE, d, true);
+    }
+
+    /* =====================================================================
+       11. THE DISTRICT PICTURES (0.7.128, batch MM1; docs/studies/spec-globe.md 8.2)
+       ===================================================================== */
+
+    /** Months section 11 plays the played city on, every district's picture asked after each as a far view asks for it: MONTHS more. */
+    static final int PICTURE_MONTHS = MONTHS;
+
+    /** How far a picture's share of a kind may stand from its plots' share: this many of its binomial spreads (DistrictPicture.spread()), and a pixel - four, about one district in 16,000 past it by chance. */
+    static final double PICTURE_SIGMAS = 4;
+
+    /** Rounds a far node is timed over after WARM_ROUNDS, the least its time: TIMED_ROUNDS. */
+    static final int NODE_ROUNDS = TIMED_ROUNDS;
+
+    static void pictures(Game city, Squares sq) {
+        out.println("\n--- 11. the district pictures (0.7.128, batch MM1): each district from its plan, kept by its plots; the far nodes from them ---");
+        BuildingVisual.Type[] types = sq.types;
+
+        // ----- A picture is its plan's, pixel for pixel, and its shares its plots' -----
+        CityMap played = city.getCityMap(), x1 = sq.maps[0], iron = sq.ironX1, dense = sq.maps[DENSE];
+        List<CityMap.District> denseOnes = new ArrayList<>();
+        for (CityMap.District d : dense.tileDistricts(Math.floorDiv(sq.x, World.TILE), Math.floorDiv(sq.y, World.TILE))) if (denseOnes.size() < 2) denseOnes.add(d);
+        int pictured = 0, exact = 0, sharesWithin = 0, countsAgree = 0, kinds = 0;
+        double worstZ = 0;
+        String worstAt = "";
+        Object[][] fixtures = { { "the played city", played, played.districts() }, { "Jerus's city x 1", x1, x1.districts() },
+                { "x 1 on its iron", iron, iron.districts() }, { "x 10,000's screen", dense, denseOnes } };
+        for (Object[] fx : fixtures) {
+            CityMap m = (CityMap) fx[1];
+            @SuppressWarnings("unchecked") List<CityMap.District> ds = (List<CityMap.District>) fx[2];
+            int here = 0;
+            double hereZ = 0;
+            int[] px = new int[DistrictPicture.CODES], pl = new int[DistrictPicture.CODES];
+            for (CityMap.District d : ds) {
+                if (d.usedCells() <= 0) continue;
+                DistrictPicture pic = m.picture(d);
+                int[] boxPlots = new int[DistrictPicture.CODES];
+                byte[] src = pictureSource(m, d, boxPlots);
+                long x0 = (m.baseDX() + d.dx) * World.DISTRICT, y0 = (m.baseDY() + d.dy) * World.DISTRICT;
+                pictured++;
+                here++;
+                if (pic != null && pic.stamp == DistrictPicture.stampOf(src, m.seed(), x0, y0)
+                        && pic.samePixels(DistrictPicture.of(src, pic.stamp, m.seed(), x0, y0))) exact++;
+                // Its shares of each kind of building against its plots', within PICTURE_SIGMAS of a pixel's binomial spread.
+                int[] pc = pic == null ? new int[DistrictPicture.CODES] : pic.counts(), qc = new int[DistrictPicture.CODES];
+                for (byte b : src) qc[b]++;
+                boolean within = true;
+                for (int c = 0; c < DistrictPicture.CODES; c++) {
+                    px[c] += pc[c];
+                    pl[c] += qc[c];
+                    if (!DistrictPicture.isBuilding(c) || qc[c] == 0) continue;
+                    kinds++;
+                    double ps = pc[c] / (double) DistrictPicture.PIXELS, qs = qc[c] / (double) src.length, sd = DistrictPicture.spread(src, c);
+                    double z = sd > 0 ? Math.abs(ps - qs) / sd : 0;
+                    within &= Math.abs(ps - qs) <= PICTURE_SIGMAS * sd + 1.0 / DistrictPicture.PIXELS;
+                    if (z > worstZ) { worstZ = z; worstAt = fx[0] + " (" + d.dx + ", " + d.dy + ")"; }
+                    hereZ = Math.max(hereZ, z);
+                }
+                if (within) sharesWithin++;
+                // ...and its plan's buildings the district's counts as its plan takes them: its own (less those on sites, the runs'
+                // yards and the shore's works), with what is carried to it and less what it carries on - each on its whole plots.
+                long[] boxes = m.drawn(d).buildingsByType(types.length);
+                int[][] carried = m.carried(d);
+                int[] own = m.planInput(d).counts;
+                long[] want = new long[DistrictPicture.CODES];
+                boolean agree = true;
+                for (int t = 0; t < types.length; t++) {
+                    long w = (t < own.length ? own[t] : 0) + (carried[0] == null || t >= carried[0].length ? 0 : carried[0][t])
+                            - (carried[1] == null || t >= carried[1].length ? 0 : carried[1][t]);
+                    agree &= boxes[t] == w;
+                    if (types[t] != null && w > 0) want[DistrictPicture.codeOf(types[t])] += w * BuildingVisual.cells(types[t]);
+                }
+                for (int c = 0; c < DistrictPicture.CODES; c++) if (DistrictPicture.isBuilding(c)) agree &= want[c] == boxPlots[c];
+                if (agree) countsAgree++;
+            }
+            if (here == 0) continue;
+            StringBuilder sh = new StringBuilder();
+            for (int c = 0; c < DistrictPicture.CODES; c++) {
+                if (!DistrictPicture.isBuilding(c) || pl[c] == 0) continue;
+                double q = 100.0 * pl[c] / ((double) here * World.DISTRICT * World.DISTRICT), p = 100.0 * px[c] / ((double) here * DistrictPicture.PIXELS);
+                if (q >= 0.5) sh.append(String.format(" %s %.1f/%.1f", codeName(c), q, p));
+            }
+            out.printf("      %s, %d built district(s): plots/pixels %%:%s; worst %.2f spreads%n", fx[0], here, sh, hereZ);
+        }
+        out.printf("      %d pictures, %d kinds of building in them; the worst share %.2f spreads from its plots' (%s)%n", pictured, kinds, worstZ, worstAt);
+        check("each built district's picture is its plan's, pixel for pixel: each pixel the plot its fixed hash ranks among its "
+                + DistrictPicture.PLOTS_IN, pictured > 0 && exact == pictured);
+        check("...each kind of building's share of its pixels within " + (int) PICTURE_SIGMAS + " binomial spreads (and a pixel) of its plots'",
+                kinds > 0 && sharesWithin == pictured);
+        check("...and the plan it is drawn from holds the district's counts, each on its whole plots (its own, carried in and on)",
+                countsAgree == pictured);
+
+        // ----- An unchanged district keeps its picture -----
+        CityMap.District first = dense.districts().get(0);
+        DistrictPicture kept = dense.picture(first);
+        CityMap.Drawn planBefore = dense.drawn(first);
+        int drawnOthers = 0;
+        for (CityMap.District d : dense.districts()) {
+            if (drawnOthers > CityMap.PLANS_KEPT) break;
+            if (d == first) continue;
+            dense.drawn(d);
+            drawnOthers++;
+        }
+        long keptBefore = dense.picturesKept();
+        CityMap.Drawn planAfter = dense.drawn(first);
+        boolean sameObject = dense.picture(first) == kept;
+        out.printf("      x 10,000's first district: its plan let go past PLANS_KEPT (%d others drawn) and drawn again (%s); pictures kept %d -> %d%n",
+                drawnOthers, planAfter != planBefore ? "a new plan" : "the same plan", keptBefore, dense.picturesKept());
+        check("a district's plan drawn again to the same plots keeps its picture - the same object, none drawn",
+                planAfter != planBefore && sameObject && dense.picturesKept() == keptBefore);
+
+        // ----- A real run: each month redraws the districts whose plots moved, and only those (README, the checks' third rule) -----
+        CityMap map = city.getCityMap();
+        Map<CityMap.District, DistrictPicture> before = picturesOf(map);
+        int months = 0, afresh = 0, exactMonths = 0, missing = 0, districtMonths = 0, moved = 0, unchanged = 0, keptSame = 0, countsMoved = 0;
+        long plans = 0, drawn = 0;
+        double monthMs = 0, worstMonthMs = 0, picMs = 0;
+        PrintStream real = System.out, was = LongPlaytest.out;
+        try {
+            for (int mm = 0; mm < PICTURE_MONTHS; mm++) {
+                LongPlaytest.out = QUIET;
+                System.setOut(QUIET);
+                if (mm % 6 == 5) {
+                    LongPlaytest.advise(city);
+                    LongPlaytest.ensureSchools(city);
+                }
+                Map<CityMap.District, long[]> countsBefore = new java.util.HashMap<>();
+                for (CityMap.District d : map.districts()) countsBefore.put(d, countsOf(d, types.length));
+                LongPlaytest.run(city, 1);
+                System.setOut(real);
+                LongPlaytest.out = was;
+                months++;
+                CityMap now = city.getCityMap();
+                if (now != map) {
+                    afresh++;
+                    map = now;
+                    before = picturesOf(map);
+                    continue;
+                }
+                // As a far view asks for them: every district's picture jobs, run and kept here.
+                long k0 = map.picturesKept(), t0 = System.nanoTime();
+                for (CityMap.District d : map.districts()) {
+                    for (CityMap.Job j : map.pictureJobs(d)) {
+                        j.run();
+                        if (j instanceof CityMap.PlanJob pj) {
+                            plans++;
+                            if (pj.drewPicture()) picMs += pj.pictureMs();
+                        }
+                        map.adopt(j);
+                    }
+                }
+                double ms = (System.nanoTime() - t0) / 1e6;
+                monthMs += ms;
+                worstMonthMs = Math.max(worstMonthMs, ms);
+                long d0 = map.picturesKept() - k0;
+                drawn += d0;
+                int movedNow = 0;
+                Map<CityMap.District, DistrictPicture> after = new java.util.HashMap<>();
+                for (CityMap.District d : map.districts()) {
+                    DistrictPicture p = map.pictureIfCurrent(d);
+                    districtMonths++;
+                    if (p == null) { missing++; continue; }
+                    after.put(d, p);
+                    DistrictPicture b = before.get(d);
+                    if (b == null || b.stamp != p.stamp) movedNow++;
+                    else {
+                        unchanged++;
+                        if (p == b) keptSame++;
+                    }
+                    long[] cb = countsBefore.get(d);
+                    if (cb == null || !Arrays.equals(cb, countsOf(d, types.length))) countsMoved++;
+                }
+                moved += movedNow;
+                if (d0 == movedNow) exactMonths++;
+                before = after;
+            }
+        } finally {
+            System.setOut(real);
+            LongPlaytest.out = was;
+        }
+        out.printf("      the played city on %d months to month %d (%d drawn afresh): %,d district-months, %,d with counts moved; %,d plans drawn"
+                        + " again, %,d pictures redrawn - their plots moved - and %,d kept, the same object; %.1f ms a month asking every"
+                        + " picture (worst %.1f), the pictures themselves %.2f ms in all%n",
+                months, city.getMonth(), afresh, districtMonths, countsMoved, plans, drawn, keptSame, monthMs / Math.max(1, months - afresh),
+                worstMonthMs, picMs);
+        check("every month redraws the pictures of the districts whose plots moved, and only those", months > afresh && exactMonths == months - afresh
+                && moved > 0 && missing == 0);
+        check("...and every district whose plots did not move keeps its picture, the same object", unchanged > 0 && keptSame == unchanged);
+
+        // ----- The far node: a district PICTURE_FROM_PX pixels across samples its picture; smaller, it is dithered by its shares -----
+        long at = World.DISTRICT / MapTiles.PICTURE_FROM_PX;
+        x1.forgetPainted();
+        MapTiles x1Tiles = new MapTiles(x1);
+        long[] site = x1.site();
+        long span = MapFrame.NODE_PX * at, nx = Math.floorDiv(site[0], span) * span, ny = Math.floorDiv(site[1], span) * span;
+        byte[] ground = MapTiles.nodeTerrain(x1.worldKey(), nx, ny, at);
+        int n = MapFrame.NODE_PX;
+        int[] img = new int[n * n];
+        int asked = x1Tiles.nodePixels(nx, ny, at, ground, img);
+        List<CityMap.District> wantedFirst = new ArrayList<>(x1Tiles.wanted());
+        for (CityMap.District d : wantedFirst) x1.picture(d);
+        int askedAfter = x1Tiles.nodePixels(nx, ny, at, ground, img);
+        int sampled = 0, sampledRight = 0;
+        for (int k = 0; k < img.length; k++) {
+            if (x1Tiles.lastEdge()[k] || x1Tiles.lastRun()[k]) continue;
+            long x = nx + (k % n) * at + at / 2, y = ny + (k / n) * at + at / 2;
+            CityMap.District d = x1.districtOfTile(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE));
+            if (d == null || d.usedCells() <= 0) continue;
+            DistrictPicture pic = x1.pictureIfCurrent(d);
+            if (pic == null) continue;
+            int code = pic.codeAtPlot((int) (x - (x1.baseDX() + d.dx) * World.DISTRICT), (int) (y - (x1.baseDY() + d.dy) * World.DISTRICT));
+            int c = TileRaster.GROUND[ground[k]];
+            if (!x1.land().ownsPlot(x, y)) c = TileRaster.blend(c, TileRaster.VOID, TileRaster.UNOWNED_DIM);
+            if (code != DistrictPicture.GROUND) c = DistrictPicture.colour(code);
+            sampled++;
+            if (img[k] == c) sampledRight++;
+        }
+        x1.forgetPainted();
+        int askedSmall = x1Tiles.nodePixels(Math.floorDiv(site[0], 2 * span) * 2 * span, Math.floorDiv(site[1], 2 * span) * 2 * span, 2 * at,
+                MapTiles.nodeTerrain(x1.worldKey(), Math.floorDiv(site[0], 2 * span) * 2 * span, Math.floorDiv(site[1], 2 * span) * 2 * span, 2 * at), img);
+        out.printf("      Jerus's city x 1 at %d plots a pixel (a district %d pixels): %d district(s) asked for before their pictures, %d after;"
+                + " %,d pixels sampled, %,d their picture's; at %d plots a pixel %d asked%n", at, MapTiles.PICTURE_FROM_PX, asked, askedAfter,
+                sampled, sampledRight, 2 * at, askedSmall);
+        check("a far node with districts PICTURE_FROM_PX of its pixels across asks for the pictures it lacks, and once drawn samples them"
+                + " pixel for pixel", asked > 0 && askedAfter == 0 && sampled > 0 && sampledRight == sampled);
+        check("...and with districts smaller asks for none", askedSmall == 0);
+
+        // The dither: over x 10,000's owned dry ground at twice that, each kind's pixels within PICTURE_SIGMAS spreads of its shares'.
+        MapTiles denseTiles = new MapTiles(dense);
+        long far = 2 * at, fspan = MapFrame.NODE_PX * far;
+        long fx0 = Math.floorDiv(sq.x, fspan) * fspan, fy0 = Math.floorDiv(sq.y, fspan) * fspan;
+        byte[] fg = MapTiles.nodeTerrain(dense.worldKey(), fx0, fy0, far);
+        denseTiles.nodePixels(fx0, fy0, far, fg, img);
+        double[] expect = new double[DistrictPicture.CODES], var = new double[DistrictPicture.CODES];
+        int[] seen = new int[DistrictPicture.CODES];
+        Map<CityMap.District, double[]> shares = new java.util.HashMap<>();
+        int dithered = 0;
+        for (int k = 0; k < img.length; k++) {
+            if (denseTiles.lastEdge()[k] || denseTiles.lastRun()[k]) continue;
+            long x = fx0 + (k % n) * far + far / 2, y = fy0 + (k / n) * far + far / 2;
+            if (!dense.land().ownsPlot(x, y) || !World.dry(fg[k])) continue;
+            CityMap.District d = dense.districtOfTile(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE));
+            if (d == null || d.usedCells() <= 0) continue;
+            double[] s = shares.computeIfAbsent(d, dd -> DistrictPicture.shares(dd, types));
+            dithered++;
+            for (int c = 1; c < DistrictPicture.CODES; c++) { expect[c] += s[c]; var[c] += s[c] * (1 - s[c]); }
+            for (int c = 1; c < DistrictPicture.CODES; c++) if (img[k] == DistrictPicture.colour(c)) { seen[c]++; break; }
+        }
+        boolean ditherWithin = dithered > 0;
+        double ditherZ = 0;
+        for (int c = 1; c < DistrictPicture.CODES; c++) {
+            if (expect[c] <= 0) continue;
+            double sd = Math.sqrt(var[c]);
+            ditherWithin &= Math.abs(seen[c] - expect[c]) <= PICTURE_SIGMAS * sd + 1;
+            ditherZ = Math.max(ditherZ, sd > 0 ? Math.abs(seen[c] - expect[c]) / sd : 0);
+        }
+        out.printf("      x 10,000 at %d plots a pixel: %,d pixels of its owned dry ground dithered by %d districts' shares, the worst kind %.2f spreads"
+                + " from them%n", far, dithered, shares.size(), ditherZ);
+        check("a district under PICTURE_FROM_PX pixels is dithered by its shares: each kind's pixels within " + (int) PICTURE_SIGMAS
+                + " spreads of them", ditherWithin);
+
+        // ----- The cost: a picture, and a far node within SCREEN_MS -----
+        dense.forgetPainted();
+        long nspan = MapFrame.NODE_PX * 16L, n16x = Math.floorDiv(sq.x, nspan) * nspan, n16y = Math.floorDiv(sq.y, nspan) * nspan;
+        byte[] g16 = MapTiles.nodeTerrain(dense.worldKey(), n16x, n16y, 16);
+        denseTiles.nodePixels(n16x, n16y, 16, g16, img);
+        double planMs = 0, pictureMs = 0, worstPicture = 0;
+        int pictures = 0, planJobs = 0;
+        for (CityMap.District d : new ArrayList<>(denseTiles.wanted())) {
+            for (CityMap.Job j : dense.pictureJobs(d)) {
+                j.run();
+                if (j instanceof CityMap.PlanJob pj) {
+                    planJobs++;
+                    planMs += pj.ms();
+                    if (pj.drewPicture()) {
+                        pictures++;
+                        pictureMs += pj.pictureMs();
+                        worstPicture = Math.max(worstPicture, pj.pictureMs());
+                    }
+                }
+                dense.adopt(j);
+            }
+        }
+        double[] nodeMs = { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE };
+        long[] strides = { 16, at, far };
+        for (int r = 0; r < WARM_ROUNDS + NODE_ROUNDS; r++) {
+            for (int s = 0; s < strides.length; s++) {
+                long sp = MapFrame.NODE_PX * strides[s], ox = Math.floorDiv(sq.x, sp) * sp, oy = Math.floorDiv(sq.y, sp) * sp;
+                byte[] gg = s == 0 ? g16 : s == 2 ? fg : MapTiles.nodeTerrain(dense.worldKey(), ox, oy, strides[s]);
+                long t0 = System.nanoTime();
+                denseTiles.nodePixels(ox, oy, strides[s], gg, img);
+                if (r >= WARM_ROUNDS) nodeMs[s] = Math.min(nodeMs[s], (System.nanoTime() - t0) / 1e6);
+            }
+        }
+        int left16 = denseTiles.nodePixels(n16x, n16y, 16, g16, img);
+        out.printf("      a picture: %d drawn with %d plans for x 10,000's node at 16 plots a pixel - the pictures %.2f ms each (worst %.2f), their"
+                        + " plans %.1f ms each; %d left wanting%n", pictures, planJobs, pictureMs / Math.max(1, pictures), worstPicture,
+                planMs / Math.max(1, planJobs), left16);
+        out.printf("      a far node over x 10,000: %.1f ms at 16 plots a pixel (its pictures), %.1f at %d, %.1f at %d (its shares)%n",
+                nodeMs[0], nodeMs[1], at, nodeMs[2], far);
+        check("a far node over the city - its pictures sampled, or its shares dithered - drawn in no more than SCREEN_MS ("
+                + (int) SCREEN_MS + " ms)", pictures > 0 && left16 == 0 && Math.max(nodeMs[0], Math.max(nodeMs[1], nodeMs[2])) <= SCREEN_MS);
+        MapFrame whole = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H), small = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
+        LandGrid dg = dense.land().grid(), xg = x1.land().grid();
+        whole.fit(dg.minX(), dg.minY(), dg.maxX(), dg.maxY());
+        small.fit(xg.minX(), xg.minY(), xg.maxX(), xg.maxY());
+        check("a far view of more built districts than the map keeps pictures of (PICTURES_KEPT) asks for none; of fewer, it asks",
+                !denseTiles.picturesFit(whole) && x1Tiles.picturesFit(small));
+
+        // ----- The runs and the edge at least a pixel wide at the widest view -----
+        long widest = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H).nodePlots();
+        Object[][] wide = { { "x 10,000", dense, new long[] { sq.x, sq.y } }, { "the played city", map, map.site() } };
+        boolean runsExact = true, edgesExact = true, edgesBright = true, noneLost = true;
+        int runPixels = 0, edgePixels = 0, playedEdge = 0;
+        for (Object[] w : wide) {
+            CityMap m = (CityMap) w[1];
+            long[] at0 = (long[]) w[2];
+            long wspan = MapFrame.NODE_PX * widest, wx = Math.floorDiv(at0[0], wspan) * wspan, wy = Math.floorDiv(at0[1], wspan) * wspan;
+            MapTiles t = new MapTiles(m);
+            int[] wi = new int[n * n];
+            t.nodePixels(wx, wy, widest, MapTiles.nodeTerrain(m.worldKey(), wx, wy, widest), wi);
+            boolean[] run = runPixelsOf(m, wx, wy, widest), edge = new boolean[n * n];
+            LandGrid gr = m.land().grid();
+            boolean[] cityPx = new boolean[(n + 2) * (n + 2)];
+            long[] some = new long[(n + 2) * (n + 2)];
+            for (int j = -1; j <= n; j++) for (int i = -1; i <= n; i++) {
+                long ax = wx + i * widest, ay = wy + j * widest;
+                cityPx[(j + 1) * (n + 2) + i + 1] = m.land().ownsPlot(ax + widest / 2, ay + widest / 2);
+                some[(j + 1) * (n + 2) + i + 1] = gr.owned(ax, ay, ax + widest, ay + widest);
+            }
+            int ww = n + 2;
+            for (int j = 0; j < n; j++) for (int i = 0; i < n; i++) {
+                int a = (j + 1) * ww + i + 1, k = j * n + i;
+                boolean nb8 = cityPx[a - 1] || cityPx[a + 1] || cityPx[a - ww] || cityPx[a + ww] || cityPx[a - ww - 1] || cityPx[a - ww + 1] || cityPx[a + ww - 1] || cityPx[a + ww + 1];
+                edge[k] = cityPx[a] ? !cityPx[a - 1] || !cityPx[a + 1] || !cityPx[a - ww] || !cityPx[a + ww]
+                        : some[a] > 0 && some[a] < widest * widest && !nb8;
+                // No ground of the city lost: a pixel holding some of it is the city's, its edge, or beside a pixel of the city's.
+                if (some[a] > 0 && !cityPx[a] && !edge[k] && !nb8) noneLost = false;
+            }
+            for (int k = 0; k < n * n; k++) {
+                runsExact &= run[k] == t.lastRun()[k];
+                edgesExact &= edge[k] == t.lastEdge()[k];
+                if (t.lastEdge()[k]) {
+                    int c = wi[k];
+                    int least = (int) Math.floor(255 * MapTiles.EDGE_ALPHA);
+                    edgesBright &= ((c >> 16) & 255) >= least && ((c >> 8) & 255) >= least && (c & 255) >= least;
+                }
+                if (run[k]) runPixels++;
+                if (edge[k]) {
+                    edgePixels++;
+                    if (m == map) playedEdge++;
+                }
+            }
+        }
+        long playedPlots = Math.max(map.land().grid().maxX() - map.land().grid().minX(), map.land().grid().maxY() - map.land().grid().minY());
+        out.printf("      at the widest view, %d plots a pixel: x 10,000's and the played city's nodes - %d pixels of highway and track, %d of"
+                + " edge (the played city, %d plots across, %d)%n", widest, runPixels, edgePixels, playedPlots, playedEdge);
+        check("at the widest view every pixel a highway or the track crosses is drawn as it, and no other", runPixels > 0 && runsExact);
+        check("...the city's edge on every pixel of its own beside one that is not, and a pixel where it holds ground smaller than one",
+                edgePixels > 0 && edgesExact && edgesBright && noneLost);
+        check("...so a city smaller than a pixel there is still drawn a pixel", playedPlots < widest && playedEdge > 0);
+
+        // ----- Not saved: the sidecar is the same bytes with the pictures and without -----
+        byte[] withPictures = map.writeSidecar(city.getMonth());
+        int held = map.picturesHeld();
+        map.forgetPainted();
+        byte[] without = map.writeSidecar(city.getMonth());
+        out.printf("      the played city's sidecar: %,d bytes with its %d picture(s) kept and without; %d pictures kept at most, %,d bytes each%n",
+                withPictures.length, held, CityMap.PICTURES_KEPT, DistrictPicture.BYTES);
+        check("the pictures are not saved: the map's sidecar is the same bytes with them and without", held > 0 && Arrays.equals(withPictures, without));
+    }
+
+    /** A district's pictures, every one asked for: each district of the map to its picture (null where it has none). */
+    static Map<CityMap.District, DistrictPicture> picturesOf(CityMap m) {
+        Map<CityMap.District, DistrictPicture> out = new java.util.HashMap<>();
+        for (CityMap.District d : m.districts()) out.put(d, m.picture(d));
+        return out;
+    }
+
+    /** A district's counts by type id. */
+    static long[] countsOf(CityMap.District d, int types) {
+        long[] c = new long[types];
+        for (int t = 0; t < types; t++) c[t] = d.count(t);
+        return c;
+    }
+
+    /** A picture's code's name, for the prints. */
+    static String codeName(int c) {
+        if (c >= DistrictPicture.FIRST_CLASS && c < DistrictPicture.FIRST_CLASS + BuildingVisual.CLASSES) return BuildingVisual.CLASS_NAMES[c - DistrictPicture.FIRST_CLASS];
+        return c == DistrictPicture.FLATS ? "Flats" : c == DistrictPicture.CAMPUS ? "Refinery" : c == DistrictPicture.TERMINAL ? "Terminals"
+                : c == DistrictPicture.TANKS ? "Tanks" : "code " + c;
+    }
+
+    /**
+     * The plots a district's picture is drawn from, read here from its plan
+     * as the painter reads it (CityMap.Drawn: its streets, its boxes by tile)
+     * and its own plan's inputs (the runs over its frame, the mines on their
+     * sites) and the boxes the runs and the shore stand on it - not from the
+     * job's plan the picture was drawn from - each plot's code; and into
+     * boxPlots, the plots its plan's boxes take by code.
+     */
+    static byte[] pictureSource(CityMap m, CityMap.District d, int[] boxPlots) {
+        CityMap.Drawn dr = m.drawn(d);
+        DistrictPlan.Input in = m.planInput(d);
+        BuildingVisual.Type[] types = m.types();
+        int n = World.DISTRICT, f = DistrictPlan.FRAME;
+        byte[] src = new byte[n * n];
+        byte mine = (byte) (DistrictPicture.FIRST_CLASS + BuildingVisual.MINE);
+        for (int y = 0; y < n; y++) for (int x = 0; x < n; x++) {
+            byte c = DistrictPicture.streetCode(dr.codeAt(x, y) & TilePainter.S_KIND);
+            if (in.fixed[y * f + x] == DistrictPlan.FIXED_HIGHWAY) c = DistrictPicture.HIGHWAY;
+            else if (in.fixed[y * f + x] == DistrictPlan.FIXED_RAIL) c = DistrictPicture.RAIL;
+            if (in.site[y * f + x] == DistrictPlan.SITE_MINED) c = mine;
+            src[y * n + x] = c;
+        }
+        int[] ex = m.extrasIn(d);
+        for (int e = 0; e + 4 < ex.length; e += 5) fill(src, ex[e], ex[e + 1], ex[e + 2], ex[e + 3], DistrictPicture.codeOf(types[ex[e + 4]]), null);
+        for (int k = 0; k < CityMap.TILES; k++) {
+            if (dr.boxes[k] == null) continue;
+            for (int b : dr.boxes[k]) {
+                int x = (k % CityMap.TILES_A_SIDE) * World.TILE + (b & 31), y = (k / CityMap.TILES_A_SIDE) * World.TILE + ((b >> 5) & 31);
+                int w = ((b >> 10) & 31) + 1, h = ((b >> 15) & 31) + 1, t = b >>> CityMap.BOX_TYPE_SHIFT;
+                fill(src, x, y, w, h, DistrictPicture.codeOf(t < types.length ? types[t] : null), boxPlots);
+            }
+        }
+        return src;
+    }
+
+    private static void fill(byte[] src, int x0, int y0, int w, int h, byte code, int[] counted) {
+        int n = World.DISTRICT;
+        for (int y = Math.max(0, y0); y < Math.min(n, y0 + h); y++) for (int x = Math.max(0, x0); x < Math.min(n, x0 + w); x++) src[y * n + x] = code;
+        if (counted != null) counted[code] += w * h;
+    }
+
+    /** Which pixels of a far node at (x0, y0), `plots` a pixel, hold a plot of the city's highways or track: every plot of every stretch walked, each 45-degree step's corner with it (CityRuns.onStretch()). */
+    static boolean[] runPixelsOf(CityMap m, long x0, long y0, long plots) {
+        int n = MapFrame.NODE_PX;
+        boolean[] out = new boolean[n * n];
+        for (CityRuns.Net net : List.of(m.runs().highways(), m.runs().rail())) {
+            for (long[] s : net.stretches()) {
+                int h = (int) s[2], dx = CityRuns.DX[h], dy = CityRuns.DY[h];
+                for (long k = 0; k <= s[3]; k++) {
+                    long x = s[0] + dx * k, y = s[1] + dy * k;
+                    markPixel(out, x, y, x0, y0, plots);
+                    if (dx != 0 && dy != 0 && k >= 1) markPixel(out, x, y - dy, x0, y0, plots);
+                }
+            }
+        }
+        return out;
+    }
+
+    private static void markPixel(boolean[] out, long x, long y, long x0, long y0, long plots) {
+        int n = MapFrame.NODE_PX;
+        long p = Math.floorDiv(x - x0, plots), q = Math.floorDiv(y - y0, plots);
+        if (p >= 0 && q >= 0 && p < n && q < n) out[(int) (q * n + p)] = true;
     }
 }
