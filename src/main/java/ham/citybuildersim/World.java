@@ -1440,8 +1440,8 @@ public final class World {
 
     /** A cell's field land for a resource as a share of its area (0.7.117): its land share on a generated world, on Earth EarthTerrain.cellFieldLand() - EarthTerrainCheck's door. */
     double cellFieldShare(int cell, Resource r) {
-        build();
-        return fieldKm2(cell, r) / CELL_KM2;
+        if (earth != null) return earth.cellFieldLand(cell, r);
+        return cellLandShare(cell);
     }
 
     /** An Earth world's geology (0.7.117): its data's provinces, classes and multipliers; null on a generated world. */
