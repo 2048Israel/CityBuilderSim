@@ -645,7 +645,8 @@ public final class CityNeeds {
      * names it once it is listed (0.7.109, batch Z2; the zoning study's
      * NEEDS YOU line): every zone's held ground but the landlords' own
      * (Real Estate's zone is the homes'), "Agriculture's zone holds 12.4 km²"
-     * for one, "3 zones hold 20.1 km²" for more - null when none holds any.
+     * ("Restaurants' zone" for a name ending in s) for one, "3 zones hold
+     * 20.1 km²" for more - null when none holds any.
      */
     public static String zonesHoldWords(Game game) {
         LandManager land = game.getLandManager();
@@ -662,7 +663,8 @@ public final class CityNeeds {
             one = s == null ? z.sector() : s.label();
         }
         if (zones == 0) return null;
-        return (zones == 1 ? one + "'s zone holds " : zones + " zones hold ") + LandManager.areaWords(held);
+        return (zones == 1 ? one + (one.endsWith("s") ? "' zone holds " : "'s zone holds ") : zones + " zones hold ")
+                + LandManager.areaWords(held);
     }
 
     /**
