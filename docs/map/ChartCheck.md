@@ -1,6 +1,6 @@
-# ChartCheck.java - 899 lines · 27 methods · 0 constants · harnesses
+# ChartCheck.java - 914 lines · 27 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ChartCheck.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ChartCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The charts (0.7.23): the player's decisions as the model records them,
 > and the arithmetic City History's charts are drawn by - the window, the
@@ -60,7 +60,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [ChartModel](ChartModel.md) (77), [DecisionLog](DecisionLog.md) (58), [YearBook](YearBook.md) (42), [Game](Game.md) (22), [GameFiles](GameFiles.md) (5), [ConstructionControl](ConstructionControl.md) (5), [HistorySave](HistorySave.md) (5), [Sectors](Sectors.md) (4), [CityCalendar](CityCalendar.md) (4), [GameVersion](GameVersion.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Rollover](Rollover.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Founding](Founding.md) (1), [Sector](Sector.md) (1), [Debt](Debt.md) (1), [TreasuryFund](TreasuryFund.md) (1), [Health](Health.md) (1)
+**Uses:** [ChartModel](ChartModel.md) (77), [DecisionLog](DecisionLog.md) (58), [YearBook](YearBook.md) (42), [Game](Game.md) (24), [GameFiles](GameFiles.md) (5), [ConstructionControl](ConstructionControl.md) (5), [HistorySave](HistorySave.md) (5), [Sectors](Sectors.md) (4), [CityCalendar](CityCalendar.md) (4), [GameVersion](GameVersion.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Rollover](Rollover.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Founding](Founding.md) (1), [Sector](Sector.md) (1), [Debt](Debt.md) (1), [TreasuryFund](TreasuryFund.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [Health](Health.md) (1)
 
 ## Sections
 
@@ -68,12 +68,12 @@
 |---:|---|
 | 157 | 1. THE DECISION LOG |
 | 307 | 2. A SAVE AND A LOAD |
-| 345 | 3. THE SPANS ARE THE YEAR BOOK'S |
-| 501 | 4. THE TICKS |
-| 583 | 5. PAN AND ZOOM CLAMP |
-| 632 | 6. THE FLAGS |
-| 683 | 7. A YOUNG CITY'S WINDOW |
-| 733 | 8. A CHART DRAWS FROM WHAT IT WAS HANDED |
+| 360 | 3. THE SPANS ARE THE YEAR BOOK'S |
+| 516 | 4. THE TICKS |
+| 598 | 5. PAN AND ZOOM CLAMP |
+| 647 | 6. THE FLAGS |
+| 698 | 7. A YOUNG CITY'S WINDOW |
+| 748 | 8. A CHART DRAWS FROM WHAT IT WAS HANDED |
 
 ## Fields (state)
 
@@ -87,7 +87,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 825 | **type** `public class ChartCheck` | The charts (0.7.23): the player's decisions as the model records them, and the arithmetic City History's charts are drawn by - the window, the ticks, the scales, the bands, the lanes and the flags, and the years under... |
+| 75 | 840 | **type** `public class ChartCheck` | The charts (0.7.23): the player's decisions as the model records them, and the arithmetic City History's charts are drawn by - the window, the ticks, the scales, the bands, the lanes and the flags, and the years under... |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 86 | 5 | `static void same(String label, Object actual, Object expected)` |  |
 | 92 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
@@ -107,52 +107,52 @@
 | 194 | 4 | `static double newestFace(Game g)` | The face of the paper the city issued last: the newest debt on its books. |
 | 199 | 107 | `static Game theLogRecordsEachKind(Path root)` |  |
 
-### 2. A SAVE AND A LOAD (lines 307-344)
+### 2. A SAVE AND A LOAD (lines 307-359)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 309 | 35 | `static void theLogSurvivesASave(Path root, Game g) throws Exception` |  |
+| 309 | 50 | `static void theLogSurvivesASave(Path root, Game g) throws Exception` |  |
 
-### 3. THE SPANS ARE THE YEAR BOOK'S (lines 345-500)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 348 | 14 | `static HistorySave built(int months, String[] series, double[]...values)` | A history of `months` months with these series, each as long as the axis. |
-| 363 | 5 | `static double[] flat(int months, double v)` |  |
-| 369 | 87 | `static void theSpansAreTheYearBooks()` |  |
-| 465 | 35 | `static void whatIsRunning()` | What City History's RUNNING NOW reads (0.7.37): YearBook.running(). |
-
-### 4. THE TICKS (lines 501-582)
+### 3. THE SPANS ARE THE YEAR BOOK'S (lines 360-515)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 503 | 79 | `static void theTicks()` |  |
+| 363 | 14 | `static HistorySave built(int months, String[] series, double[]...values)` | A history of `months` months with these series, each as long as the axis. |
+| 378 | 5 | `static double[] flat(int months, double v)` |  |
+| 384 | 87 | `static void theSpansAreTheYearBooks()` |  |
+| 480 | 35 | `static void whatIsRunning()` | What City History's RUNNING NOW reads (0.7.37): YearBook.running(). |
 
-### 5. PAN AND ZOOM CLAMP (lines 583-631)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 585 | 46 | `static void panAndZoomClamp()` |  |
-
-### 6. THE FLAGS (lines 632-682)
+### 4. THE TICKS (lines 516-597)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 634 | 48 | `static void theFlags()` |  |
+| 518 | 79 | `static void theTicks()` |  |
 
-### 7. A YOUNG CITY'S WINDOW (lines 683-732)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 685 | 47 | `static void aYoungCitysWindow()` |  |
-
-### 8. A CHART DRAWS FROM WHAT IT WAS HANDED (lines 733-899)
+### 5. PAN AND ZOOM CLAMP (lines 598-646)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 742 | 22 | `static List<double[]> walk0749(List<Integer> months, double[][] layers, double lo, double hi)` | 0.7.49's TimeChart.drawStack(), its walk without the canvas: each layer's points {month, top, bottom} over the months it was handed, the way it read them - straight out of the arrays, by the list's index. |
-| 766 | 7 | `static List<double[]> runs0750(List<Integer> months, double[][] layers, double lo, double hi)` | The same points as ChartModel.stackRuns() gives them, every layer's runs in the order the chart fills them. |
-| 774 | 5 | `static boolean samePoints(List<double[]> a, List<double[]> b)` |  |
-| 787 | 11 | `static double[] frame(List<Integer> months, double[][] layers, double[][] lines, ChartModel w, double pointer)` | What the chart does on every frame, from what it holds: the stack's runs and reach, each line read at every month in the window, and the hover's readout at the month nearest `pointer` - every line's and layer's value ... |
-| 799 | 100 | `static void aChartDrawsFromItsSnapshot(Path root)` |  |
+| 600 | 46 | `static void panAndZoomClamp()` |  |
+
+### 6. THE FLAGS (lines 647-697)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 649 | 48 | `static void theFlags()` |  |
+
+### 7. A YOUNG CITY'S WINDOW (lines 698-747)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 700 | 47 | `static void aYoungCitysWindow()` |  |
+
+### 8. A CHART DRAWS FROM WHAT IT WAS HANDED (lines 748-914)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 757 | 22 | `static List<double[]> walk0749(List<Integer> months, double[][] layers, double lo, double hi)` | 0.7.49's TimeChart.drawStack(), its walk without the canvas: each layer's points {month, top, bottom} over the months it was handed, the way it read them - straight out of the arrays, by the list's index. |
+| 781 | 7 | `static List<double[]> runs0750(List<Integer> months, double[][] layers, double lo, double hi)` | The same points as ChartModel.stackRuns() gives them, every layer's runs in the order the chart fills them. |
+| 789 | 5 | `static boolean samePoints(List<double[]> a, List<double[]> b)` |  |
+| 802 | 11 | `static double[] frame(List<Integer> months, double[][] layers, double[][] lines, ChartModel w, double pointer)` | What the chart does on every frame, from what it holds: the stack's runs and reach, each line read at every month in the window, and the hover's readout at the month nearest `pointer` - every line's and layer's value ... |
+| 814 | 100 | `static void aChartDrawsFromItsSnapshot(Path root)` |  |
 

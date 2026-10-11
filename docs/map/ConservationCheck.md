@@ -1,6 +1,6 @@
-# ConservationCheck.java - 415 lines · 6 methods · 0 constants · harnesses
+# ConservationCheck.java - 417 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ConservationCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ConservationCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > Nothing is created and nothing is destroyed.
 > 
@@ -40,35 +40,35 @@
 > 
 > ==============================================================
 
-**Uses:** [Game](Game.md) (13), [GameFiles](GameFiles.md) (7), [Good](Good.md) (5), [Sector](Sector.md) (4), [BuildingManager](BuildingManager.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sectors](Sectors.md) (1), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
+**Uses:** [Game](Game.md) (13), [GameFiles](GameFiles.md) (7), [Good](Good.md) (5), [Sector](Sector.md) (4), [BuildingManager](BuildingManager.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sectors](Sectors.md) (1), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [Mining](Mining.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 123 | · 1. FOOD |
-| 214 | · 2. ELECTRICITY |
-| 237 | · 3. WATER |
-| 246 | · 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT |
-| 315 | · 5. WHAT A RELOAD MUST NOT FORGET |
+| 125 | · 1. FOOD |
+| 216 | · 2. ELECTRICITY |
+| 239 | · 3. WATER |
+| 248 | · 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT |
+| 317 | · 5. WHAT A RELOAD MUST NOT FORGET |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 49 | `static int fails` |  |
-| 50 | `static PrintStream out` |  |
-| 51 | `static PrintStream quiet` |  |
+| 51 | `static int fails` |  |
+| 52 | `static PrintStream out` |  |
+| 53 | `static PrintStream quiet` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 369 | **type** `public class ConservationCheck` | Nothing is created and nothing is destroyed. |
-| 56 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
-| 63 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 69 | 43 | `static Game city(Path root, String name, int months) throws Exception` | A city with something of everything in it, so every law has something to test. |
-| 113 | 281 | `public static void main(String[] args) throws Exception` |  |
-| 396 | 11 | `static double[] snapshot(Game g)` | The figures a load must not move. |
-| 408 | 7 | `static void cleanUp(Path root)` |  |
+| 49 | 369 | **type** `public class ConservationCheck` | Nothing is created and nothing is destroyed. |
+| 58 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
+| 65 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 71 | 43 | `static Game city(Path root, String name, int months) throws Exception` | A city with something of everything in it, so every law has something to test. |
+| 115 | 281 | `public static void main(String[] args) throws Exception` |  |
+| 398 | 11 | `static double[] snapshot(Game g)` | The figures a load must not move. |
+| 410 | 7 | `static void cleanUp(Path root)` |  |
 

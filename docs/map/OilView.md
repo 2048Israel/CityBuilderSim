@@ -1,6 +1,6 @@
 # OilView.java - 1,347 lines · 71 methods · 41 constants · model
 
-`ham/citybuildersim/OilView.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OilView.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The oil industry on one page (0.7.96, batch O12; runs/spec-oil.md 2.13):
 > the city's wells by kind with what they would lift over the next ten years
@@ -40,7 +40,7 @@
 
 **Uses:** [RefineryView](RefineryView.md) (100), [Good](Good.md) (23), [Oil](Oil.md) (19), [Refining](Refining.md) (16), [RefineryFlow](RefineryFlow.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (10), [SpreadPlanner](SpreadPlanner.md) (9), [LandManager](LandManager.md) (7), [Sectors](Sectors.md) (6), [Game](Game.md) (5), [GoodsMarket](GoodsMarket.md) (3), [StrategicReserve](StrategicReserve.md) (3), [CityLand](CityLand.md) (3), [ChartModel](ChartModel.md) (3), [Trade](Trade.md) (2), [World](World.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [CityCalendar](CityCalendar.md) (2), [YearBook](YearBook.md) (1), [Resource](Resource.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Formats](Formats.md) (1)
 
-**Used by (2):** [OilViewCheck](OilViewCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (4):** [EarthFoundingCheck](EarthFoundingCheck.md), [OilViewCheck](OilViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

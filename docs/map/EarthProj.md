@@ -1,4 +1,4 @@
-# EarthProj.java - 343 lines · 26 methods · 3 constants · model
+# EarthProj.java - 344 lines · 26 methods · 3 constants · model
 
 `ham/citybuildersim/EarthProj.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
@@ -48,90 +48,91 @@
 > 
 > E1 (0.7.111) built it pure; since 0.7.115 (batch E2) EarthTerrain lays
 > the Earth's ground on a world with an Earth key through it - a key only
-> harnesses make until E4. EarthCheck holds it, EarthTerrainCheck its use.
+> harnesses made until 0.7.121, when the founding screen came to found a
+> city on one (E4). EarthCheck holds it, EarthTerrainCheck its use.
 
 **Uses:** [World](World.md) (12)
 
-**Used by (3):** [EarthCheck](EarthCheck.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md)
+**Used by (10):** [EarthCheck](EarthCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [Geology](Geology.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 91 | FORWARD AND INVERSE - degrees on the sphere, metres in the plane |
-| 146 | PLOTS AND METRES - spec-earth 2: plot (x, y) is ((x - SIDE/2) x 30, (SIDE/2 - y) x 30) m |
-| 175 | AREAS - a cell's on the planet, and the same measured on the sphere |
-| 284 | THE BLEND - a tile's corners exact, the points between them blended |
+| 92 | FORWARD AND INVERSE - degrees on the sphere, metres in the plane |
+| 147 | PLOTS AND METRES - spec-earth 2: plot (x, y) is ((x - SIDE/2) x 30, (SIDE/2 - y) x 30) m |
+| 176 | AREAS - a cell's on the planet, and the same measured on the sphere |
+| 285 | THE BLEND - a tile's corners exact, the points between them blended |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 55 | `EarthProj.RADIUS_M` | `6_371_007` | The sphere's radius in metres: WGS 84's authalic radius, the sphere with the ellipsoid's own area, so an equal-area map of it keeps the Earth's real km2 (spec-earth 2). |
-| 58 | `EarthProj.REACH_M` | `2 * RADIUS_M` | How far out in the plane the planet reaches, in metres: the antipode maps to the circle of twice the radius, and past it the world's square is off the planet. |
-| 61 | `EarthProj.BLEND_MAX_LAT` | `75` | The latitude, in degrees, above which a tile projects every point exactly instead of blending its corners: a blend bends from the truth by about side^2 x tan(lat) / 8R, 6.8 cm for a 960 m tile at 75 degrees, inside Ea... |
+| 56 | `EarthProj.RADIUS_M` | `6_371_007` | The sphere's radius in metres: WGS 84's authalic radius, the sphere with the ellipsoid's own area, so an equal-area map of it keeps the Earth's real km2 (spec-earth 2). |
+| 59 | `EarthProj.REACH_M` | `2 * RADIUS_M` | How far out in the plane the planet reaches, in metres: the antipode maps to the circle of twice the radius, and past it the world's square is off the planet. |
+| 62 | `EarthProj.BLEND_MAX_LAT` | `75` | The latitude, in degrees, above which a tile projects every point exactly instead of blending its corners: a blend bends from the truth by about side^2 x tan(lat) / 8R, 6.8 cm for a 960 m tile at 75 degrees, inside Ea... |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 63 | `private final double lat0, lon0` | the spot, degrees |
-| 64 | `private final double sinLat0, cosLat0` | the spot, degrees |
-| 301 | `private final EarthProj proj` |  |
-| 302 | `private final double x0, y0, side` |  |
-| 303 | `private final double lat00, lat10, lat01, lat11, lon00, lon10, lon01, lon11` |  |
-| 304 | `private final boolean exact` |  |
+| 64 | `private final double lat0, lon0` | the spot, degrees |
+| 65 | `private final double sinLat0, cosLat0` | the spot, degrees |
+| 302 | `private final EarthProj proj` |  |
+| 303 | `private final double x0, y0, side` |  |
+| 304 | `private final double lat00, lat10, lat01, lat11, lon00, lon10, lon01, lon11` |  |
+| 305 | `private final boolean exact` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 292 | **type** `public final class EarthProj` | The real Earth flattened round a city's spot: Lambert's azimuthal equal-area projection on a sphere, forward and inverse, the world's plots in metres, a tile's four corners blended, and a cell's area on the planet. |
-| 67 | 8 | `public EarthProj(double lat, double lon)` | The projection centred on a spot, in degrees; the longitude is taken modulo 360. |
-| 77 | 1 | `public double centreLat()` | The spot's latitude, degrees. |
-| 80 | 1 | `public double centreLon()` | The spot's longitude, degrees, in [-180, 180). |
-| 83 | 7 | `public static double normaliseLon(double lon)` | A longitude in degrees brought into [-180, 180). |
+| 53 | 292 | **type** `public final class EarthProj` | The real Earth flattened round a city's spot: Lambert's azimuthal equal-area projection on a sphere, forward and inverse, the world's plots in metres, a tile's four corners blended, and a cell's area on the planet. |
+| 68 | 8 | `public EarthProj(double lat, double lon)` | The projection centred on a spot, in degrees; the longitude is taken modulo 360. |
+| 78 | 1 | `public double centreLat()` | The spot's latitude, degrees. |
+| 81 | 1 | `public double centreLon()` | The spot's longitude, degrees, in [-180, 180). |
+| 84 | 7 | `public static double normaliseLon(double lon)` | A longitude in degrees brought into [-180, 180). |
 
-### FORWARD AND INVERSE - degrees on the sphere, metres in the plane (lines 91-145)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 99 | 19 | `public boolean forward(double lat, double lon, double[] xy)` | The plane point of (lat, lon): metres east (xy[0]) and north (xy[1]) of the spot. |
-| 123 | 17 | `public boolean inverse(double x, double y, double[] latLon)` | The (lat, lon) of a plane point, degrees, the longitude in [-180, 180). |
-| 142 | 3 | `public static boolean onPlanet(double x, double y)` | Whether a plane point lies on the planet: within REACH_M of the spot. |
-
-### PLOTS AND METRES - spec-earth 2: plot (x, y) is ((x - SIDE/2) x 30, (SIDE/2 - y) x 30) m (lines 146-174)
+### FORWARD AND INVERSE - degrees on the sphere, metres in the plane (lines 92-146)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 151 | 1 | `public static double metresX(double plotX)` | Metres east of the spot of the world's plot column x (plot coordinates, so x + 0.5 is a plot's centre). |
-| 154 | 1 | `public static double metresY(double plotY)` | Metres north of the spot of the world's plot row y (rows run south, so north is minus). |
-| 157 | 1 | `public static double plotX(double metresX)` | The plot column of a point metres east of the spot. |
-| 160 | 1 | `public static double plotY(double metresY)` | The plot row of a point metres north of the spot. |
-| 163 | 3 | `public boolean latLonOfPlot(double plotX, double plotY, double[] latLon)` | The (lat, lon) of a point in plot coordinates; false off the planet. |
-| 168 | 6 | `public boolean plotOf(double lat, double lon, double[] plot)` | The plot coordinates of (lat, lon); false at the antipode. |
+| 100 | 19 | `public boolean forward(double lat, double lon, double[] xy)` | The plane point of (lat, lon): metres east (xy[0]) and north (xy[1]) of the spot. |
+| 124 | 17 | `public boolean inverse(double x, double y, double[] latLon)` | The (lat, lon) of a plane point, degrees, the longitude in [-180, 180). |
+| 143 | 3 | `public static boolean onPlanet(double x, double y)` | Whether a plane point lies on the planet: within REACH_M of the spot. |
 
-### AREAS - a cell's on the planet, and the same measured on the sphere (lines 175-283)
+### PLOTS AND METRES - spec-earth 2: plot (x, y) is ((x - SIDE/2) x 30, (SIDE/2 - y) x 30) m (lines 147-175)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 185 | 9 | `public static double areaOnPlanetM2(double x0, double y0, double x1, double y1)` | The planet's area under a plane rectangle, m2: the rectangle's part within REACH_M, which, the projection being equal-area, is exactly the area on the sphere it maps to. |
-| 196 | 12 | `private static double quadrant(double x, double y)` | The signed area of the disc of radius REACH_M between the axes and the corner (x, y). |
-| 210 | 4 | `private static double chordIntegral(double t)` | The integral of sqrt(R'^2 - t^2) from 0 to t, R' = REACH_M: the area under the circle. |
-| 216 | 5 | `public static double cellAreaKm2(int cellX, int cellY)` | The planet's area under one of the world's cells (World.CELL plots a side), km2: World.CELL_KM2 on the planet, less past the antipode's circle, 0 beyond it. |
-| 230 | 21 | `public double sphericalAreaM2(double x0, double y0, double x1, double y1, int perSide)` | The area on the sphere, m2, of what a plane rectangle maps to, measured there and not in the plane: perSide points along each edge are carried to the sphere by inverse() and joined by great circles, and the polygon is... |
-| 253 | 5 | `private static double[] unit(double lat, double lon)` | A point's unit vector. |
-| 265 | 9 | `private static double excess(double[] o, double[] a, double[] b)` | The signed spherical excess of the triangle (o, a, b), steradians: 2 atan2(o.(a x b), 1 + o.a + a.b + b.o) (Van Oosterom and Strackee, 1983), the triple product taken on a - o and b - o, which is the same number witho... |
-| 276 | 7 | `public static double distanceM(double lat1, double lon1, double lat2, double lon2)` | The great-circle distance between two points on the sphere, metres (haversine, which holds its digits for the centimetres EarthCheck measures). |
+| 152 | 1 | `public static double metresX(double plotX)` | Metres east of the spot of the world's plot column x (plot coordinates, so x + 0.5 is a plot's centre). |
+| 155 | 1 | `public static double metresY(double plotY)` | Metres north of the spot of the world's plot row y (rows run south, so north is minus). |
+| 158 | 1 | `public static double plotX(double metresX)` | The plot column of a point metres east of the spot. |
+| 161 | 1 | `public static double plotY(double metresY)` | The plot row of a point metres north of the spot. |
+| 164 | 3 | `public boolean latLonOfPlot(double plotX, double plotY, double[] latLon)` | The (lat, lon) of a point in plot coordinates; false off the planet. |
+| 169 | 6 | `public boolean plotOf(double lat, double lon, double[] plot)` | The plot coordinates of (lat, lon); false at the antipode. |
 
-### THE BLEND - a tile's corners exact, the points between them blended (lines 284-343)
+### AREAS - a cell's on the planet, and the same measured on the sphere (lines 176-284)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 295 | 3 | `public Blend blend(double plotX, double plotY, double side)` | A square of the world's plots - corner (plotX, plotY), side plots a side, World.TILE for a tile - with its four corners projected exactly and every point between blended (spec-earth 2: four inverses a tile, bilinear b... |
-| 300 | 43 | **type** `public static final class Blend` | One square's blend: see blend(). |
-| 306 | 16 | `private Blend(EarthProj proj, double x0, double y0, double side)` _(in EarthProj.Blend)_ |  |
-| 324 | 5 | `private static double unwrap(double lon, double ref)` _(in EarthProj.Blend)_ | A longitude moved by whole turns to within half a turn of a reference: the corners of a tile on the date line, made continuous. |
-| 331 | 1 | `public boolean exact()` _(in EarthProj.Blend)_ | Whether this square projects every point exactly: off the planet in part, or above BLEND_MAX_LAT. |
-| 334 | 8 | `public boolean latLon(double plotX, double plotY, double[] latLon)` _(in EarthProj.Blend)_ | The (lat, lon) of a point in plot coordinates, blended from the corners (exact if exact()); false off the planet. |
+| 186 | 9 | `public static double areaOnPlanetM2(double x0, double y0, double x1, double y1)` | The planet's area under a plane rectangle, m2: the rectangle's part within REACH_M, which, the projection being equal-area, is exactly the area on the sphere it maps to. |
+| 197 | 12 | `private static double quadrant(double x, double y)` | The signed area of the disc of radius REACH_M between the axes and the corner (x, y). |
+| 211 | 4 | `private static double chordIntegral(double t)` | The integral of sqrt(R'^2 - t^2) from 0 to t, R' = REACH_M: the area under the circle. |
+| 217 | 5 | `public static double cellAreaKm2(int cellX, int cellY)` | The planet's area under one of the world's cells (World.CELL plots a side), km2: World.CELL_KM2 on the planet, less past the antipode's circle, 0 beyond it. |
+| 231 | 21 | `public double sphericalAreaM2(double x0, double y0, double x1, double y1, int perSide)` | The area on the sphere, m2, of what a plane rectangle maps to, measured there and not in the plane: perSide points along each edge are carried to the sphere by inverse() and joined by great circles, and the polygon is... |
+| 254 | 5 | `private static double[] unit(double lat, double lon)` | A point's unit vector. |
+| 266 | 9 | `private static double excess(double[] o, double[] a, double[] b)` | The signed spherical excess of the triangle (o, a, b), steradians: 2 atan2(o.(a x b), 1 + o.a + a.b + b.o) (Van Oosterom and Strackee, 1983), the triple product taken on a - o and b - o, which is the same number witho... |
+| 277 | 7 | `public static double distanceM(double lat1, double lon1, double lat2, double lon2)` | The great-circle distance between two points on the sphere, metres (haversine, which holds its digits for the centimetres EarthCheck measures). |
+
+### THE BLEND - a tile's corners exact, the points between them blended (lines 285-344)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 296 | 3 | `public Blend blend(double plotX, double plotY, double side)` | A square of the world's plots - corner (plotX, plotY), side plots a side, World.TILE for a tile - with its four corners projected exactly and every point between blended (spec-earth 2: four inverses a tile, bilinear b... |
+| 301 | 43 | **type** `public static final class Blend` | One square's blend: see blend(). |
+| 307 | 16 | `private Blend(EarthProj proj, double x0, double y0, double side)` _(in EarthProj.Blend)_ |  |
+| 325 | 5 | `private static double unwrap(double lon, double ref)` _(in EarthProj.Blend)_ | A longitude moved by whole turns to within half a turn of a reference: the corners of a tile on the date line, made continuous. |
+| 332 | 1 | `public boolean exact()` _(in EarthProj.Blend)_ | Whether this square projects every point exactly: off the planet in part, or above BLEND_MAX_LAT. |
+| 335 | 8 | `public boolean latLon(double plotX, double plotY, double[] latLon)` _(in EarthProj.Blend)_ | The (lat, lon) of a point in plot coordinates, blended from the corners (exact if exact()); false off the planet. |
 

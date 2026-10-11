@@ -1,6 +1,6 @@
-# PortCheck.java - 871 lines · 21 methods · 7 constants · harnesses
+# PortCheck.java - 873 lines · 21 methods · 7 constants · harnesses
 
-`ham/citybuildersim/PortCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PortCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The city's ports and their boats (0.7.86, batch O9; runs/spec-oil.md 2.9,
 > 2.10 and 4's PortCheck; runs/research-freight.md 5).
@@ -56,117 +56,117 @@
 > the sea, as WaterCheck buys it), the terminals and the plants stood, and
 > the pure sections hand Ports its month's tonnes and berths.
 
-**Uses:** [Ports](Ports.md) (160), [Good](Good.md) (88), [BoatSchedule](BoatSchedule.md) (42), [Game](Game.md) (35), [Traffic](Traffic.md) (32), [BuildingsTemplate](BuildingsTemplate.md) (16), [World](World.md) (11), [Founding](Founding.md) (8), [Refining](Refining.md) (7), [SpreadPlanner](SpreadPlanner.md) (7), [GameFiles](GameFiles.md) (5), [GoodsMarket](GoodsMarket.md) (5), [InfrastructureManager](InfrastructureManager.md) (4), [BuildCard](BuildCard.md) (4), [BuildingManager](BuildingManager.md) (3), [Rail](Rail.md) (3), [MoneyAudit](MoneyAudit.md) (2), [LandManager](LandManager.md) (2), [LandParcel](LandParcel.md) (2), [MiningCheck](MiningCheck.md) (2), [JobType](JobType.md) (2), [Sector](Sector.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [CityLand](CityLand.md) (1), [LongPlaytest](LongPlaytest.md) (1), [BuildingCatalog](BuildingCatalog.md) (1), [BuildingType](BuildingType.md) (1), [Sectors](Sectors.md) (1)
+**Uses:** [Ports](Ports.md) (160), [Good](Good.md) (88), [BoatSchedule](BoatSchedule.md) (42), [Game](Game.md) (35), [Traffic](Traffic.md) (32), [BuildingsTemplate](BuildingsTemplate.md) (16), [World](World.md) (11), [Founding](Founding.md) (8), [Refining](Refining.md) (7), [SpreadPlanner](SpreadPlanner.md) (7), [GameFiles](GameFiles.md) (5), [GoodsMarket](GoodsMarket.md) (5), [InfrastructureManager](InfrastructureManager.md) (4), [BuildCard](BuildCard.md) (4), [BuildingManager](BuildingManager.md) (3), [Rail](Rail.md) (3), [HeavyIndustry](HeavyIndustry.md) (3), [MoneyAudit](MoneyAudit.md) (2), [LandManager](LandManager.md) (2), [LandParcel](LandParcel.md) (2), [MiningCheck](MiningCheck.md) (2), [JobType](JobType.md) (2), [Sector](Sector.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [CityLand](CityLand.md) (1), [LongPlaytest](LongPlaytest.md) (1), [BuildingCatalog](BuildingCatalog.md) (1), [BuildingType](BuildingType.md) (1), [Sectors](Sectors.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 109 | · the research's rule (runs/research-freight.md 5), its rows as the research writes them |
-| 213 | 1. THE RULE |
-| 237 | 2. THE CARGO, THE SHIPS AND THE TERMINALS |
-| 305 | 3. THE FACTOR |
-| 339 | 4. THE SHARES |
-| 414 | 5. NO PORT, THE SAME BAND |
-| 456 | 6. A PORT ON A TOWN |
-| 566 | 7. CRUDE NEEDS ROOM |
-| 683 | 8. THE BOATS |
-| 817 | 9. THE SAVE |
+| 111 | · the research's rule (runs/research-freight.md 5), its rows as the research writes them |
+| 215 | 1. THE RULE |
+| 239 | 2. THE CARGO, THE SHIPS AND THE TERMINALS |
+| 307 | 3. THE FACTOR |
+| 341 | 4. THE SHARES |
+| 416 | 5. NO PORT, THE SAME BAND |
+| 458 | 6. A PORT ON A TOWN |
+| 568 | 7. CRUDE NEEDS ROOM |
+| 685 | 8. THE BOATS |
+| 819 | 9. THE SAVE |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 107 | `PortCheck.FILES` | `new java.util.IdentityHashMap<>()` | Each fixture town's save folder. |
-| 112 | `PortCheck.KM` | `5000` | The distance the shares are struck at, km: the research's headline. |
-| 115 | `PortCheck.LORRY_F` | `2.0, LORRY_C =.080, ACCESS_KM = 50` | A lorry: F US$2.0 a tonne, c US$0.080 a tonne-km; and the leg to a quay at each end, 50 km. |
-| 118 | `PortCheck.LIQUID_ROWS` | `{ { 4 + 1,.0012 }, { 4 + 2,.0022 }, { 4 + 5,.0035 }, { 4 + 6,.0035 } }` | The sea rows, {F, c}: liquid VLCC, Suezmax, Aframax-LR, MR... |
-| 120 | `PortCheck.DRY_ROWS` | `{ { 6 + 1.2,.00075 }, { 6 + 5,.0022 } }` | ...dry Capesize, Panamax... |
-| 122 | `PortCheck.BOX_ROWS` | `{ { 24,.0055 } }` | ...deep-sea boxes... |
-| 124 | `PortCheck.GENERAL_ROWS` | `{ { 40,.0060 } }` | ...and general cargo. |
+| 109 | `PortCheck.FILES` | `new java.util.IdentityHashMap<>()` | Each fixture town's save folder. |
+| 114 | `PortCheck.KM` | `5000` | The distance the shares are struck at, km: the research's headline. |
+| 117 | `PortCheck.LORRY_F` | `2.0, LORRY_C =.080, ACCESS_KM = 50` | A lorry: F US$2.0 a tonne, c US$0.080 a tonne-km; and the leg to a quay at each end, 50 km. |
+| 120 | `PortCheck.LIQUID_ROWS` | `{ { 4 + 1,.0012 }, { 4 + 2,.0022 }, { 4 + 5,.0035 }, { 4 + 6,.0035 } }` | The sea rows, {F, c}: liquid VLCC, Suezmax, Aframax-LR, MR... |
+| 122 | `PortCheck.DRY_ROWS` | `{ { 6 + 1.2,.00075 }, { 6 + 5,.0022 } }` | ...dry Capesize, Panamax... |
+| 124 | `PortCheck.BOX_ROWS` | `{ { 24,.0055 } }` | ...deep-sea boxes... |
+| 126 | `PortCheck.GENERAL_ROWS` | `{ { 40,.0060 } }` | ...and general cargo. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 67 | `static int fails` |  |
-| 68 | `static PrintStream out` |  |
-| 69 | `static PrintStream quiet` |  |
+| 69 | `static int fails` |  |
+| 70 | `static PrintStream out` |  |
+| 71 | `static PrintStream quiet` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 65 | 807 | **type** `public class PortCheck` | The city's ports and their boats (0.7.86, batch O9; runs/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). |
-| 71 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 76 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 81 | 5 | `static void quietly(Runnable r)` |  |
-| 87 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
-| 94 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
-| 101 | 4 | `static double auditMiss(Game g)` | The month's audit residual as a share of the house's money tolerance at what moved (MoneyAudit.tolerance()): at most 1 closes. |
+| 67 | 807 | **type** `public class PortCheck` | The city's ports and their boats (0.7.86, batch O9; runs/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). |
+| 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 78 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 83 | 5 | `static void quietly(Runnable r)` |  |
+| 89 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
+| 96 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
+| 103 | 4 | `static double auditMiss(Game g)` | The month's audit residual as a share of the house's money tolerance at what moved (MoneyAudit.tolerance()): at most 1 closes. |
 
-### the research's rule (runs/research-freight.md 5), its rows as the research writes them (lines 109-212)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 127 | 5 | `static double ruleShare(double[][] rows)` | Sea against a lorry, door to door, at KM: each row's, averaged over the kind's rows. |
-| 138 | 19 | `static Game town(String label, int houses, double spare)` | A town that pays its people: houses, shops, bakeries to work in, power, water, roads and builders, standing, on ground a quarter more than they take and `spare` more (OilCheck's town). |
-| 159 | 29 | `static boolean buyCoast(Game g)` | Buys toward the sea nearest the site, the offer nearest it each time, until one standing runs out to it, and buys that (WaterCheck's way). |
-| 189 | 23 | `public static void main(String[] args) throws Exception` |  |
-
-### 1. THE RULE (lines 213-236)
+### the research's rule (runs/research-freight.md 5), its rows as the research writes them (lines 111-214)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 215 | 21 | `static void theRule()` |  |
+| 129 | 5 | `static double ruleShare(double[][] rows)` | Sea against a lorry, door to door, at KM: each row's, averaged over the kind's rows. |
+| 140 | 19 | `static Game town(String label, int houses, double spare)` | A town that pays its people: houses, shops, bakeries to work in, power, water, roads and builders, standing, on ground a quarter more than they take and `spare` more (OilCheck's town). |
+| 161 | 29 | `static boolean buyCoast(Game g)` | Buys toward the sea nearest the site, the offer nearest it each time, until one standing runs out to it, and buys that (WaterCheck's way). |
+| 191 | 23 | `public static void main(String[] args) throws Exception` |  |
 
-### 2. THE CARGO, THE SHIPS AND THE TERMINALS (lines 237-304)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 239 | 65 | `static void cargoShipsAndTerminals()` |  |
-
-### 3. THE FACTOR (lines 305-338)
+### 1. THE RULE (lines 215-238)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 307 | 31 | `static void theFactor()` |  |
+| 217 | 21 | `static void theRule()` |  |
 
-### 4. THE SHARES (lines 339-413)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 341 | 5 | `static double[] tonnes(Object...pairs)` |  |
-| 347 | 66 | `static void theShares()` |  |
-
-### 5. NO PORT, THE SAME BAND (lines 414-455)
+### 2. THE CARGO, THE SHIPS AND THE TERMINALS (lines 239-306)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 416 | 39 | `static void noPortTheSameBand()` |  |
+| 241 | 65 | `static void cargoShipsAndTerminals()` |  |
 
-### 6. A PORT ON A TOWN (lines 456-565)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 458 | 107 | `static Game aPortOnATown()` |  |
-
-### 7. CRUDE NEEDS ROOM (lines 566-682)
+### 3. THE FACTOR (lines 307-340)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 568 | 114 | `static void crudeNeedsRoom()` |  |
+| 309 | 31 | `static void theFactor()` |  |
 
-### 8. THE BOATS (lines 683-816)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 685 | 113 | `static void theBoats()` |  |
-| 800 | 16 | `static Ports monthAtSea()` | A month's trade by sea on every kind: Ports handed a month with each kind's berths taking its share. |
-
-### 9. THE SAVE (lines 817-871)
+### 4. THE SHARES (lines 341-415)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 819 | 52 | `static void acrossASave(Game g) throws Exception` |  |
+| 343 | 5 | `static double[] tonnes(Object...pairs)` |  |
+| 349 | 66 | `static void theShares()` |  |
+
+### 5. NO PORT, THE SAME BAND (lines 416-457)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 418 | 39 | `static void noPortTheSameBand()` |  |
+
+### 6. A PORT ON A TOWN (lines 458-567)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 460 | 107 | `static Game aPortOnATown()` |  |
+
+### 7. CRUDE NEEDS ROOM (lines 568-684)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 570 | 114 | `static void crudeNeedsRoom()` |  |
+
+### 8. THE BOATS (lines 685-818)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 687 | 113 | `static void theBoats()` |  |
+| 802 | 16 | `static Ports monthAtSea()` | A month's trade by sea on every kind: Ports handed a month with each kind's berths taking its share. |
+
+### 9. THE SAVE (lines 819-873)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 821 | 52 | `static void acrossASave(Game g) throws Exception` |  |
 

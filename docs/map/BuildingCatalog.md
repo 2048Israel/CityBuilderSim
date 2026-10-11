@@ -1,4 +1,4 @@
-# BuildingCatalog.java - 492 lines · 17 methods · 1 constants · model
+# BuildingCatalog.java - 515 lines · 18 methods · 1 constants · model
 
 `ham/citybuildersim/BuildingCatalog.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
@@ -28,7 +28,7 @@
 > definitions. A typo in a data file should cost you the data file, not the
 > game.
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (22), [Good](Good.md) (4), [BuildingType](BuildingType.md) (2), [Resource](Resource.md) (2), [Deposit](Deposit.md) (2), [JobType](JobType.md) (2), [Ports](Ports.md) (1), [CareType](CareType.md) (1), [EducationType](EducationType.md) (1), [SafetyType](SafetyType.md) (1), [RefineryFlow](RefineryFlow.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (23), [Good](Good.md) (6), [BuildingType](BuildingType.md) (2), [Resource](Resource.md) (2), [Deposit](Deposit.md) (2), [JobType](JobType.md) (2), [Ports](Ports.md) (1), [CareType](CareType.md) (1), [EducationType](EducationType.md) (1), [SafetyType](SafetyType.md) (1), [RefineryFlow](RefineryFlow.md) (1)
 
 **Used by (7):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [EarthTerrainCheck](EarthTerrainCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [WellCheck](WellCheck.md)
 
@@ -48,22 +48,23 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 446 | **type** `public class BuildingCatalog` | Reads the building definitions out of buildings.json. |
+| 47 | 469 | **type** `public class BuildingCatalog` | Reads the building definitions out of buildings.json. |
 | 54 | 3 | `public String getSource()` |  |
 | 62 | 44 | `public List<BuildingsTemplate> load()` | the caller should use its own defaults. |
 | 108 | 42 | `private List<BuildingsTemplate> parse(Reader reader)` |  |
-| 151 | 77 | `private BuildingsTemplate readBuilding(JsonObject o, Set<Integer> seenIds)` |  |
-| 238 | 29 | `private void readSite(JsonObject o, BuildingsTemplate template, String name)` | The site a mine or a well stands on (0.7.110, batch I1): "site": {"resource": "IRON", "type": "ANY", "sites": 1, "dig": 1} - the resource whose sites it takes, the type of field it needs (a Deposit.FieldType of that r... |
-| 276 | 12 | `private void readOffshore(JsonObject o, BuildingsTemplate template, String name)` | One of the oil buildings at sea (0.7.91, batch O10): "offshore": {"kind": "PLATFORM", "slots": 12}, {"kind": "WELL"} or {"kind": "PIPELINE", "onshore": 3000} - a platform's jacket and its wells' slots, a well in one, ... |
-| 295 | 12 | `private void readPort(JsonObject o, BuildingsTemplate template, String name)` | A sea terminal's berth (0.7.86, batch O9): "port": {"cargo": "LIQUID", "tonnes": 3250000} - the kind of cargo it handles (Ports.Cargo) and its tonnes a year. |
-| 321 | 31 | `private void readSector(JsonObject o, BuildingsTemplate template, String name)` | Who owns it and what it makes - see BuildingsTemplate's note. |
-| 362 | 12 | `private void readCare(JsonObject o, BuildingsTemplate template, String name)` | The care type, if there is one. |
-| 376 | 12 | `private void readTeaches(JsonObject o, BuildingsTemplate template, String name)` | What a school teaches. |
-| 390 | 12 | `private void readSafety(JsonObject o, BuildingsTemplate template, String name)` | What a safety building does - POLICE or PRISON. |
-| 404 | 12 | `private void readSource(JsonObject o, BuildingsTemplate template, String name)` | What a water works draws, FRESH or SEA (0.7.59). |
-| 426 | 12 | `private void readRefinery(JsonObject o, BuildingsTemplate template, String name)` | A refinery's conversion unit (0.7.80, batch O4): its kind and the litres a month of its feed stream it takes at nameplate, |
-| 445 | 12 | `private void readRequiresLicence(JsonObject o, BuildingsTemplate template, String name)` | The licence a building's practice is built on. |
-| 458 | 17 | `private void readJobs(JsonObject o, BuildingsTemplate template, String name)` |  |
-| 477 | 7 | `private double number(JsonObject o, String key)` | Missing or unreadable fields read as 0, so entries only list what they use. |
-| 485 | 7 | `private String string(JsonObject o, String key)` |  |
+| 151 | 80 | `private BuildingsTemplate readBuilding(JsonObject o, Set<Integer> seenIds)` |  |
+| 238 | 13 | `private void readOldMetal(JsonObject o, BuildingsTemplate template, String name)` | The city's old metal a Scrap Yard takes (0.7.123, batch I4): "oldMetal": {"STEEL": 10500}, tonnes a month at nameplate by metal. |
+| 261 | 29 | `private void readSite(JsonObject o, BuildingsTemplate template, String name)` | The site a mine or a well stands on (0.7.110, batch I1): "site": {"resource": "IRON", "type": "ANY", "sites": 1, "dig": 1} - the resource whose sites it takes, the type of field it needs (a Deposit.FieldType of that r... |
+| 299 | 12 | `private void readOffshore(JsonObject o, BuildingsTemplate template, String name)` | One of the oil buildings at sea (0.7.91, batch O10): "offshore": {"kind": "PLATFORM", "slots": 12}, {"kind": "WELL"} or {"kind": "PIPELINE", "onshore": 3000} - a platform's jacket and its wells' slots, a well in one, ... |
+| 318 | 12 | `private void readPort(JsonObject o, BuildingsTemplate template, String name)` | A sea terminal's berth (0.7.86, batch O9): "port": {"cargo": "LIQUID", "tonnes": 3250000} - the kind of cargo it handles (Ports.Cargo) and its tonnes a year. |
+| 344 | 31 | `private void readSector(JsonObject o, BuildingsTemplate template, String name)` | Who owns it and what it makes - see BuildingsTemplate's note. |
+| 385 | 12 | `private void readCare(JsonObject o, BuildingsTemplate template, String name)` | The care type, if there is one. |
+| 399 | 12 | `private void readTeaches(JsonObject o, BuildingsTemplate template, String name)` | What a school teaches. |
+| 413 | 12 | `private void readSafety(JsonObject o, BuildingsTemplate template, String name)` | What a safety building does - POLICE or PRISON. |
+| 427 | 12 | `private void readSource(JsonObject o, BuildingsTemplate template, String name)` | What a water works draws, FRESH or SEA (0.7.59). |
+| 449 | 12 | `private void readRefinery(JsonObject o, BuildingsTemplate template, String name)` | A refinery's conversion unit (0.7.80, batch O4): its kind and the litres a month of its feed stream it takes at nameplate, |
+| 468 | 12 | `private void readRequiresLicence(JsonObject o, BuildingsTemplate template, String name)` | The licence a building's practice is built on. |
+| 481 | 17 | `private void readJobs(JsonObject o, BuildingsTemplate template, String name)` |  |
+| 500 | 7 | `private double number(JsonObject o, String key)` | Missing or unreadable fields read as 0, so entries only list what they use. |
+| 508 | 7 | `private String string(JsonObject o, String key)` |  |
 

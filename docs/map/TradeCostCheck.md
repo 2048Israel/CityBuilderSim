@@ -1,6 +1,6 @@
-# TradeCostCheck.java - 563 lines · 6 methods · 1 constants · harnesses
+# TradeCostCheck.java - 586 lines · 6 methods · 1 constants · harnesses
 
-`ham/citybuildersim/TradeCostCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TradeCostCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The wedge between what the world charges and what it pays, and what it is
 > made of.
@@ -33,37 +33,37 @@
 > the traffic split, the modes, and the haulage sector's price. See
 > claude/transport-and-the-freight-band.md.
 
-**Uses:** [Good](Good.md) (54), [Traffic](Traffic.md) (46), [TaxPolicy](TaxPolicy.md) (12), [InfrastructureManager](InfrastructureManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [Formats](Formats.md) (7), [Game](Game.md) (2), [GameFiles](GameFiles.md) (1), [BuildingManager](BuildingManager.md) (1), [Motoring](Motoring.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Good](Good.md) (62), [Traffic](Traffic.md) (46), [TaxPolicy](TaxPolicy.md) (12), [InfrastructureManager](InfrastructureManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [Formats](Formats.md) (7), [Game](Game.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [GameFiles](GameFiles.md) (1), [BuildingManager](BuildingManager.md) (1), [Mining](Mining.md) (1), [Motoring](Motoring.md) (1), [PayTier](PayTier.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 188 | · the traffic split (2026-09-16) |
-| 286 | · the modes (2026-09-16) |
-| 454 | · the fare (2026-09-16) |
+| 209 | · the traffic split (2026-09-16) |
+| 309 | · the modes (2026-09-16) |
+| 477 | · the fare (2026-09-16) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 67 | `TradeCostCheck.DELIVERED` | `{ { Good.CROPS,.44,.28 }, { Good.GRAINS,.00080,.00050 }, { Good.BREAD,.00250,...` | The delivered prices, as they were on 2026-09-16 before a line of this was written, hard-coded on purpose. |
+| 70 | `TradeCostCheck.DELIVERED` | `{ { Good.CROPS,.44,.28 }, { Good.GRAINS,.00080,.00050 }, { Good.BREAD,.00250,...` | The delivered prices, as they were on 2026-09-16 before a line of this was written, hard-coded on purpose. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 37 | `static int fails` |  |
+| 40 | `static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 35 | 529 | **type** `public class TradeCostCheck` | The wedge between what the world charges and what it pays, and what it is made of. |
-| 39 | 7 | `static void quietly(Runnable r)` |  |
-| 47 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 52 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 121 | 3 | `static boolean same(double a, double b)` | Bit-for-bit, not to a tolerance. |
-| 125 | 432 | `public static void main(String[] args)` |  |
-| 558 | 5 | `static int countTraded()` |  |
+| 38 | 549 | **type** `public class TradeCostCheck` | The wedge between what the world charges and what it pays, and what it is made of. |
+| 42 | 7 | `static void quietly(Runnable r)` |  |
+| 50 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 55 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 142 | 3 | `static boolean same(double a, double b)` | Bit-for-bit, not to a tolerance. |
+| 146 | 434 | `public static void main(String[] args)` |  |
+| 581 | 5 | `static int countTraded()` |  |
 
