@@ -1282,7 +1282,7 @@ final class BuildScreen {
         return new String[] {rest, inv.showOwn() ? " · this one: " + gateWords(inv.own()) : null};
     }
 
-    /** A gate, in the words its own refusal uses: the deposit, the licence, the staffing test's why, landReason()'s land, the estimate's loss. */
+    /** A gate, in the words its own refusal uses: the deposit, the licence, the staffing test's why, landReason()'s land, the estimate's loss, and consider()'s interest on its whole cost (0.7.122). */
     String gateWords(BuildCard.Gate gate) {
         switch (gate.kind()) {
             case DEPOSIT:
@@ -1302,11 +1302,30 @@ final class BuildScreen {
                 // ...and what the other sectors' zones hold, as the investors' word says it (0.7.109, Z2).
                 return "no land - needs " + LandManager.areaWords(gate.a()) + ", "
                         + LandManager.areaWords(gate.b()) + " free" + (gate.why() == null ? "" : "; " + gate.why());
+            case INTEREST:
+                return interestWords(gate);
             default:
                 // ...a conversion unit nothing feeds (0.7.103, Jerus's B): no feed, not a loss.
                 if (gate.why() != null) return gate.why();
                 return gate.a() > 0 ? "would lose " + money(gate.a()) + " a month" : "would make nothing";
         }
+    }
+
+    /**
+     * An INTEREST gate in words (0.7.122, batch C1): what one would earn a
+     * month against PROFIT_OVER_INTEREST times its interest on its whole cost
+     * - a month's interest and the rate it is struck at, the real one the
+     * test reads (BusinessInvestment.realTestRate()), so the two figures make
+     * each other - every figure the model's test's (Game.interestTest());
+     * or, under a borrowing ban, consider()'s words for it.
+     */
+    static String interestWords(BuildCard.Gate gate) {
+        if (gate.why() != null) return gate.why();
+        Game.InterestTest test = gate.test();
+        String bar = String.format("%.2f× its interest on its whole cost (%s a month at %.2f%%)",
+                BusinessInvestment.PROFIT_OVER_INTEREST, money(test.interest()), test.real() * 100);
+        return gate.a() > 0 ? "earns " + money(gate.a()) + " a month, under " + bar
+                : "would lose " + money(-gate.a()) + " a month, so not " + bar;
     }
 
     /**
