@@ -3034,7 +3034,7 @@ public class LongPlaytest {
             double jobGain = perHead * idle * GROWTH_DISCOUNT;
             // Same test as the mine: 72 foundries went up in one run for the
             // jobs alone, into a market that could not pay for the steel.
-            // By its id since 0.7.116 (batch I3): the Steel Foundry is the
+            // By its id since 0.7.120 (batch I3): the Steel Foundry is the
             // Electric Arc Furnace now, on scrap.
             if (wouldPay(g, nameOf(g, HeavyIndustry.ARC_FURNACE), Sectors.HEAVY_INDUSTRY)) {
                 addThrottle(moves, g, nameOf(g, HeavyIndustry.ARC_FURNACE), "foundry", jobGain);
@@ -3891,7 +3891,7 @@ public class LongPlaytest {
         return g.getBuildingManager().getQuantity(id);
     }
 
-    /** A building's name by its permanent id, null with none (0.7.116, batch I3; spec-materials 4): the player finds the Iron Mine and the Electric Arc Furnace by their ids, so a rename - the Steel Foundry's at I3 - cannot lose them. */
+    /** A building's name by its permanent id, null with none (0.7.120, batch I3; spec-materials 4): the player finds the Iron Mine and the Electric Arc Furnace by their ids, so a rename - the Steel Foundry's at I3 - cannot lose them. */
     static String nameOf(Game g, int id) {
         BuildingsTemplate t = g.getBuildingManager().getTemplate(id);
         return t == null ? null : t.getName();
@@ -4050,7 +4050,7 @@ public class LongPlaytest {
     }
 
     static BuildingsTemplate template(Game g, String name) {
-        // ...or by its permanent id, "#11" (byId(): a fixture's list of orders, 0.7.116).
+        // ...or by its permanent id, "#11" (byId(): a fixture's list of orders, 0.7.120).
         if (name != null && name.startsWith("#")) return g.getBuildingManager().getTemplate(Integer.parseInt(name.substring(1)));
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (t.getName().equals(name)) return t;
@@ -4058,7 +4058,7 @@ public class LongPlaytest {
         return null;
     }
 
-    /** A building named by its permanent id in a fixture's list of orders, "#11", which template() reads (0.7.116, batch I3): the lists name the arc furnaces and the Iron Mine so, a name being a label the chains rename. */
+    /** A building named by its permanent id in a fixture's list of orders, "#11", which template() reads (0.7.120, batch I3): the lists name the arc furnaces and the Iron Mine so, a name being a label the chains rename. */
     static String byId(int id) {
         return "#" + id;
     }
@@ -5330,7 +5330,7 @@ public class LongPlaytest {
          */
         ForeignAccounts fx = g.getForeignAccounts();
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
-        // "the rest" was "scrap" while IRON was scrap and the mills its only buyer (0.7.116: SCRAP is its own good)
+        // "the rest" was "scrap" while IRON was scrap and the mills its only buyer (0.7.120: SCRAP is its own good)
         out.printf("  NX breakdown: exports %,.0f | food %,.0f  materials %,.0f  the rest %,.0f  => NX %,.0f%n",
                 na.getExports(), na.getImportsFood(), na.getImportsMaterials(),
                 na.getImportsRawMaterial(), na.getNetExports());

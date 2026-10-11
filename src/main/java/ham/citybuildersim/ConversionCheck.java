@@ -53,10 +53,10 @@ import java.util.Set;
  *      legacy iron field on its dry ground a kilometre or more from the site
  *      where the world laid no iron on it; every other resource the world's
  *      fields centred on it; the books, the rectangles and the offers as in 2;
- *   6. the game itself refusing a format-31 save at load since 0.7.116 (the
+ *   6. the game itself refusing a format-31 save at load since 0.7.120 (the
  *      floor, GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by batch I3):
  *      Jerus's live land written into a fresh city's save as 0.7.63 wrote it,
- *      turned away in P7's words, its file untouched. From 0.7.67 to 0.7.115
+ *      turned away in P7's words, its file untouched. From 0.7.67 to 0.7.119
  *      it was converted at load: to exactly the conversion's ground, books,
  *      sites and part fields, its figure its dry plots, E and its purchase
  *      history as saved, no money moving, the world's totals kept; every
@@ -492,7 +492,7 @@ public class ConversionCheck {
     }
 
     static void atLoad(Save s) throws Exception {
-        System.out.println("\n--- 6. the game refuses " + s.name() + " at load since 0.7.116 (to 0.7.115 it put it on the grid, once) ---");
+        System.out.println("\n--- 6. the game refuses " + s.name() + " at load since 0.7.120 (to 0.7.119 it put it on the grid, once) ---");
         GameFiles files = GameFiles.scratch("conversioncheck-load");
         Game fresh = new Game(files);
         quietly(() -> { fresh.newGame(); fresh.saveGame(4, "to convert"); });
@@ -515,7 +515,7 @@ public class ConversionCheck {
         Game[] back = new Game[1];
         quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(4); });
         /*
-         * REFUSED SINCE 0.7.116 (batch I3): format 31 is below the floor
+         * REFUSED SINCE 0.7.120 (batch I3): format 31 is below the floor
          * (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
          * saves need not load until the game is published), so the load turns
          * it away and the conversion at load is not reached. Until then it
@@ -526,7 +526,7 @@ public class ConversionCheck {
          * next month alike. GridConversion.fromLanes() - sections 2 to 5, pure -
          * stays, for the day old saves load again.
          */
-        check("the format-31 save is refused since 0.7.116, below the floor: in P7's words, nothing of it applied, its file as it was",
+        check("the format-31 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was",
                 SaveFileCheck.refusedAtTheFloor(files, 4, back[0], before));
     }
 

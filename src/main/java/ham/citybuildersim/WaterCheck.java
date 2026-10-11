@@ -455,7 +455,7 @@ public class WaterCheck {
 
     /* ================= 12. the rights on a load ================= */
     static void rightsOnALoad() throws Exception {
-        System.out.println("\n--- 12. the rights: kept by a save, given to an older one for what it pumps; a format-30 save refused (0.7.116) ---");
+        System.out.println("\n--- 12. the rights: kept by a save, given to an older one for what it pumps; a format-30 save refused (0.7.120) ---");
 
         GameFiles files = GameFiles.scratch("watercheck-save");
         Game city = new Game(files);
@@ -492,7 +492,7 @@ public class WaterCheck {
         quietly(() -> { dry.newGame(); dry.toggleNextMonth(); });
         check("a city with no fresh plants is given no rights", dry.derivedFreshRights(), 0);
 
-        // A format-30 save, which was converted on its load until 0.7.116: the Jerus research city's ground (LandCheck 21) with four plants.
+        // A format-30 save, which was converted on its load until 0.7.120: the Jerus research city's ground (LandCheck 21) with four plants.
         GameFiles conv = GameFiles.scratch("watercheck-convert");
         Game c30 = new Game(conv);
         quietly(() -> {
@@ -514,7 +514,7 @@ public class WaterCheck {
         quietly(() -> { back[0] = new Game(conv); back[0].loadGameSave(4); });
         Game converted = back[0];
         /*
-         * REFUSED SINCE 0.7.116 (batch I3): format 30 is below the floor,
+         * REFUSED SINCE 0.7.120 (batch I3): format 30 is below the floor,
          * raised to 37 by the rule (GameVersion.OLDEST_LOADABLE_FORMAT; old
          * saves need not load until the game is published), so the load turns
          * it away and the converted save's rights - its four plants' nameplate
@@ -523,7 +523,7 @@ public class WaterCheck {
          * the same save of this build's format without the key, above, still
          * takes its rights from it.
          */
-        assertTrue("A FORMAT-30 SAVE IS REFUSED (0.7.116): below the floor, in P7's words, nothing of it applied, its file as it was",
+        assertTrue("A FORMAT-30 SAVE IS REFUSED (0.7.120): below the floor, in P7's words, nothing of it applied, its file as it was",
                 SaveFileCheck.refusedAtTheFloor(conv, 4, converted, before));
     }
 }

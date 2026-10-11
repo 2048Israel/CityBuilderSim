@@ -1954,7 +1954,7 @@ public class HouseholdBalance {
 
     /**
      * What the Scrap Yards paid for the steel in the cars scrapped this month
-     * (0.7.121, batch I4; OldMetal): into savings, each cell its share by the
+     * (0.7.123, batch I4; OldMetal): into savings, each cell its share by the
      * cars it scrapped at the month's top (wearOutCars()) - by households
      * where none was, which no yard buys from. Not income in the month's
      * waterfall: a sale of something the household owned, as a used car's

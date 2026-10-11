@@ -214,7 +214,7 @@ public final class BuildCard {
        has nine groups and Shops two, and the bars and tags compare within a
        group: a steel mill against a steel mill, not against a bakery. The
        names are the design note's, and since 0.7.62 the wells' and the
-       refinery's ("Oil", "Refining") after the mines'; since 0.7.116 (batch
+       refinery's ("Oil", "Refining") after the mines'; since 0.7.120 (batch
        I3, Jerus's Q2) the mills' and the mines' are their sectors' new
        labels, "Iron & Steel" and "Iron Mining" ("Steel" and "Iron" until
        then).

@@ -1195,7 +1195,7 @@ public class BuildingManager {
            of scrap per tonne of steel, about 450 kWh a tonne, a couple of cubic
            metres of make-up water a tonne.
 
-           ON SCRAP SINCE 0.7.116 (batch I3; Jerus's Q4, "split";
+           ON SCRAP SINCE 0.7.120 (batch I3; Jerus's Q4, "split";
            materials-chains-research.md 2.4): id 11, the Steel Foundry until
            then, is the Electric Arc Furnace, and both furnaces take SCRAP,
            which until then was IRON's import price. Their consumables are the
@@ -1937,7 +1937,7 @@ public class BuildingManager {
          * Power and water rise with the tonnage; the workforce, the footprint and
          * the site do not. Same hole in the ground, worked properly.
          *
-         * ...AND EIGHT TIMES THE TONNAGE SINCE 0.7.116 (batch I3; Jerus's Q5,
+         * ...AND EIGHT TIMES THE TONNAGE SINCE 0.7.120 (batch I3; Jerus's Q5,
          * 2026-10-08: "20,000 t a month with the same 60 posts, at D$45M";
          * materials-chains-research.md 2.4). 2,500 t was 500 t a post a year
          * against a real 4,800 (Rana Gruber) to 72,000 (Gudai-Darri), and a
@@ -1954,11 +1954,11 @@ public class BuildingManager {
          * gate (US$0.40 a tonne in the ground, Resource.IRON).
          */
         BuildingsTemplate ironMine = new BuildingsTemplate("Iron Mine", BuildingType.MINING)
-                .setCashCost(33749)             // 7,286 x 4.632 (0.7.116): with its points and material, D$45M
+                .setCashCost(33749)             // 7,286 x 4.632 (0.7.120): with its points and material, D$45M
                 .setConstructionPoints(7411)    // 1,600 x 4.632
                 .setConstructionMaterials(625)  // 135 x 4.632
                 .setSector("Mining")
-                .makes(Good.IRON, 20000)        // tonnes of ore a month (2,500 to 0.7.115)
+                .makes(Good.IRON, 20000)        // tonnes of ore a month (2,500 to 0.7.119)
                 .uses(Good.DIESEL, 60000)       // litres: 3 a tonne, to dig and haul
                 .setElectricityConsumption(600)
                 .setWaterConsumption(20)
@@ -2486,7 +2486,7 @@ public class BuildingManager {
                 .setOffshore(BuildingsTemplate.Offshore.PIPELINE, 0, 3000)
                 .setId(100));
 
-        /* ------------------- THE INTEGRATED ROUTE (0.7.121, batch I4) -------------------
+        /* ------------------- THE INTEGRATED ROUTE (0.7.123, batch I4) -------------------
            Iron & Steel's seven other works (runs/spec-materials.md 2.2;
            materials-chains-research.md 2.4, 1.6 and 2.7), ids 101 to 107:
              - a SCRAP YARD buys the city's old steel (OldMetal: its scrapped

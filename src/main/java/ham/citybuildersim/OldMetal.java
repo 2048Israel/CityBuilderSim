@@ -9,11 +9,11 @@ import java.util.Map;
 /**
  * The city's old steel: what it throws out each month that a Scrap Yard can
  * buy and sort into scrap - its scrapped cars, its demolitions, its
- * fabricators' offcuts and its railway's worn-out wagon sets (0.7.121, batch
+ * fabricators' offcuts and its railway's worn-out wagon sets (0.7.123, batch
  * I4; runs/spec-materials.md 2.9, materials-chains-research.md 2.7).
  *
- * WHY. Until 0.7.121 the scrap the arc furnaces melt (Good.SCRAP, since
- * 0.7.116) had no source in the city: every tonne was imported, because
+ * WHY. Until 0.7.123 the scrap the arc furnaces melt (Good.SCRAP, since
+ * 0.7.120) had no source in the city: every tonne was imported, because
  * nothing here made any. A real city is one of the world's scrap mines - the
  * cars its households scrap, the buildings it pulls down, the offcuts of its
  * fabrication shops - and a mill on the city's own scrap is the one an arc
@@ -58,7 +58,7 @@ import java.util.Map;
  *
  * Saved whole (DataSave.oldMetal, state() and restore()): the steel arisen
  * since the yards last bought, by seller, and the last month's record. A
- * save from before 0.7.121 carries none, which is right: that city had
+ * save from before 0.7.123 carries none, which is right: that city had
  * thrown nothing out that a yard could have bought.
  */
 public final class OldMetal {
@@ -247,7 +247,7 @@ public final class OldMetal {
         return s;
     }
 
-    /** Puts a saved state back; null (a save from before 0.7.121) is a city that has thrown nothing out yet. */
+    /** Puts a saved state back; null (a save from before 0.7.123) is a city that has thrown nothing out yet. */
     public void restore(State s) {
         reset();
         if (s == null) return;

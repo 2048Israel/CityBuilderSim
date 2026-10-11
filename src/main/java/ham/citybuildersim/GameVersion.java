@@ -5117,7 +5117,9 @@ public final class GameVersion {
      *   - E0's pipeline is in the repository at last, tools/earth/ (the
      *     bake, earthread.py, FORMAT.txt, ATTRIBUTION.txt), with fixture.py,
      *     which cuts EarthCheck's fixture from the file. The file itself
-     *     (52.8 MB) is not in the repository; how it ships is E4's.
+     *     (52.8 MB) is not in the repository; how it ships is E4's (since
+     *     f99d62c: the GitHub release earth-1, which tools/earth/get-earth.bat
+     *     fetches into data/).
      *   - Harnesses: EarthCheck (new, nine sections) on the fixture,
      *     src/main/resources/earth/ (332 KB: the three windows the study drew
      *     and Fiji's four tiles, with what earthread.py reads from them and
@@ -5331,13 +5333,14 @@ public final class GameVersion {
      *   - The playtest is 0.7.113's byte for byte (pt07113).
      *
      * 0.7.120 (2026-10-11) - IRON'S PRICES, AND SCRAP SPLIT FROM ORE. Batch
-     * (Built as 0.7.116; it shipped after 0.7.117 and 0.7.119, so it takes
-     * the next number, and 0.7.116 and 0.7.118 are unused.)
      * I3, the first materials batch that changes the game (Jerus's Q2, Q4,
      * Q5, Q6, Q6b, A, C and D of 2026-10-08; runs/spec-materials.md 2.1-2.3,
-     * 2.6b and 4; runs/brief-batchI3.md, runs/fixI3-notes.md). SAVE FORMAT
-     * 37, AND THE FLOOR RAISED TO IT: a save from 0.7.115 or older no longer
-     * loads (below).
+     * 2.6b and 4; runs/brief-batchI3.md, runs/fixI3-notes.md). Built as
+     * 0.7.116; it shipped after 0.7.117 and 0.7.119, so it takes the next
+     * number, and 0.7.116 and 0.7.118 are unused - the harnesses' labels and
+     * the comments it wrote say 0.7.120 (the docs pass of 0.7.123). SAVE
+     * FORMAT 37, AND THE FLOOR RAISED TO IT: a save at format 36 - from
+     * 0.7.119 or older - no longer loads (below).
      *   - THE GOODS: IRON is iron ore alone, .115 / .085 (was .41 / .14, the
      *     mills' scrap over the mines' ore); SCRAP (new, .41 / .30, flow,
      *     BULK) the arc furnaces' feed; STEEL at the world's price, .650 /
@@ -5426,6 +5429,13 @@ public final class GameVersion {
      *     1-degree tiles. An Earth city's oil at sea counts, lists and takes a
      *     platform within about 58 km of a coast; it threw until now.
      *   - THE DATA: data/ is ignored by git; the game runs without the file.
+     *     How the file ships was left to Jerus (★E4-9); since f99d62c it is
+     *     the asset of the GitHub release earth-1, which
+     *     tools/earth/get-earth.bat checks against tools/earth/earth-1.sha256
+     *     and downloads when it is missing or bad - Play CityBuilderSim.bat
+     *     and Build EXE.bat call it first, and the EXE build carries the file
+     *     into the built game and its zip (no version bump: nothing in the
+     *     game changed).
      *   - Harnesses: EarthFoundingCheck (new: the data or why not, the card
      *     against the plots, refusals and warnings, search and Random spot,
      *     the depth against a brute force and the width measured again, an
@@ -5476,12 +5486,13 @@ public final class GameVersion {
      *   - The playtest is pt07116's byte for byte.
      *
      * 0.7.123 (2026-10-11) - THE INTEGRATED ROUTE, AND OLD STEEL. Batch I4,
-     * (Launched as 0.7.121, a number E4 shipped under first; it takes the
-     * next one free.)
      * the second materials batch that changes the game (Jerus's Q4, Q6, Q7,
      * Q8, Q19, Q20 and A of 2026-10-08; runs/spec-materials.md 2.2, 2.3,
-     * 2.7-2.9 and 4; runs/brief-batchI4.md, runs/fixI4-notes.md). No save
-     * format change: a save of 0.7.120 loads, its old steel none.
+     * 2.7-2.9 and 4; runs/brief-batchI4.md, runs/fixI4-notes.md). Launched
+     * as 0.7.121, a number E4 shipped under first, it takes the next one
+     * free - the harnesses' labels and the comments it wrote say 0.7.123 (the
+     * docs pass of 0.7.123). No save format change (38): a save from 0.7.120
+     * on loads, its old steel none.
      *   - THE BUILDINGS (ids 101-107, Iron & Steel's): the Scrap Yard, the
      *     Pelletising Plant, the Coke Ovens, the Mini Blast Furnace, the Blast
      *     Furnace, the Oxygen Steel Shop and the Large Mini-Mill, at the
@@ -5514,7 +5525,8 @@ public final class GameVersion {
      *     the plant, lost within months, and Iron & Steel went under whole
      *     seventeen times in the run.
      *   - The playtest moves from month 1,536, pt07116's to the byte before
-     *     it (re-baselined pt07121): Iron & Steel orders Large Mini-Mills replacing
+     *     it (re-baselined pt07123; I4's own name for it was pt07121): Iron &
+     *     Steel orders Large Mini-Mills replacing
      *     imported steel from m1,536 and Scrap Yards from m2,127, on the
      *     fabricators' offcuts mostly; three yards and two mills stand near
      *     the end. People at the end 659,072 (577,610), posts 393,556
@@ -6148,13 +6160,13 @@ public final class GameVersion {
      *     (LandMarket.remeasureStanding()). No money moves: the books are as
      *     saved, and the world's totals are the same to the tonne.
      *
-     * 37 - SCRAP SPLIT FROM ORE (0.7.116, batch I3): IRON is iron ore alone,
-     *     priced .115 / .085, and SCRAP - the arc furnaces' feed, which IRON's
-     *     import price stood in for - its own market, keyed in the sectors'
-     *     maps, the ledgers and the statements. Here because a format-36 build
-     *     handed this save would load it WRONGLY: it knows no SCRAP, so it
-     *     would drop the furnaces' feed, their month's purchases and the
-     *     market's strike, and read IRON's price against the old band.
+     * 37 - SCRAP SPLIT FROM ORE (0.7.120, batch I3, built as 0.7.116): IRON is
+     *     iron ore alone, priced .115 / .085, and SCRAP - the arc furnaces'
+     *     feed, which IRON's import price stood in for - its own market, keyed
+     *     in the sectors' maps, the ledgers and the statements. Here because a
+     *     format-36 build handed this save would load it WRONGLY: it knows no
+     *     SCRAP, so it would drop the furnaces' feed, their month's purchases
+     *     and the market's strike, and read IRON's price against the old band.
      *
      *     THE OTHER DIRECTION IS REFUSED, NOT CONVERTED (the floor below, raised
      *     to 37 in the same batch): a format-36 save's IRON holds the mills'
@@ -6163,7 +6175,7 @@ public final class GameVersion {
      *     mills' scrap read as ore at a price outside its band. The spec's
      *     IronSplit (runs/spec-materials.md 3) is not written: until the game
      *     is published old saves need not load (Jerus, 2026-10-10). The build
-     *     that saved such a city, 0.7.115 or older, still opens it.
+     *     that saved such a city, 0.7.119 or older, still opens it.
      *
      * 38 - A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6):
      *     worldKind ("EARTH"), earthLat and earthLon (the spot the projection
@@ -6192,9 +6204,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 37 since 0.7.116 (batch I3, SCRAP SPLIT FROM ORE above), and still at
-     * format 38 (0.7.121, A CITY ON THE REAL EARTH: a format-37 save is a
-     * generated city and loads rightly): a save of
+     * 37 since 0.7.120 (batch I3, built as 0.7.116: SCRAP SPLIT FROM ORE
+     * above), and still at format 38 (0.7.121, A CITY ON THE REAL EARTH: a
+     * format-37 save is a generated city and loads rightly): a save of
      * format 36 or older holds the mills' scrap and the mines' ore as one
      * IRON and would load wrongly, so it is refused - the first time the
      * floor was raised by the rule. 21 until then, the sector template's

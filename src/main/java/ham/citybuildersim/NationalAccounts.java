@@ -198,7 +198,7 @@ public class NationalAccounts {
      * which nobody held. A save from before carries one slot fewer and reads
      * crude's last units as none, which is what that city held.
      *
-     * ...AND SINCE 0.7.121 (batch I4; runs/spec-materials.md 2.3) THE
+     * ...AND SINCE 0.7.123 (batch I4; runs/spec-materials.md 2.3) THE
      * STEELWORKS' COKE AND THE TWO COALS, on the end in Good's order: coke
      * in the Coke Ovens' yard, and coal - imported until Coal Mining comes
      * (batch I6) - in its makers' yards then. A save from before carries

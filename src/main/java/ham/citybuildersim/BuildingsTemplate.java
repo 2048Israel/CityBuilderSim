@@ -458,7 +458,7 @@ public class BuildingsTemplate {
     /** Its consumables a month at nameplate, thousands of the world's money; 0 for every building today. */
     public double getConsumables() { return consumables; }
 
-    /* ----- THE OLD METAL A YARD TAKES (0.7.121, batch I4; runs/spec-materials.md 2.5, 2.9) -----
+    /* ----- THE OLD METAL A YARD TAKES (0.7.123, batch I4; runs/spec-materials.md 2.5, 2.9) -----
        The city's old steel - its scrapped cars, its demolitions, its
        fabricators' offcuts, its railway's worn-out sets - is not a good: it
        is a pool that arises each month (OldMetal), and a Scrap Yard buys
@@ -482,7 +482,7 @@ public class BuildingsTemplate {
     /** Every kind of old metal it takes, tonnes a month at nameplate; empty for every building but a yard. */
     public java.util.Map<Good, Double> oldMetalTaken() { return java.util.Collections.unmodifiableMap(oldMetal); }
 
-    /* ----- THE YEAR IT FIRST EXISTED (0.7.121, batch I4; research-design.md 2.1) -----
+    /* ----- THE YEAR IT FIRST EXISTED (0.7.123, batch I4; research-design.md 2.1) -----
        The research study (Jerus's start year 1900, 2026-10-10) asks every
        building after the start to say when it came ("since" in
        buildings.json): a building whose year is past the city's calendar

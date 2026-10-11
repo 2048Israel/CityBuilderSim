@@ -252,7 +252,7 @@ public class BuildCardCheck {
         List<String> industry = new ArrayList<>(), shops = new ArrayList<>();
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) industry.add(gr.title());
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.SHOPS, null)) shops.add(gr.title());
-        // ...the mills' and the mines' named for their sectors since 0.7.116 (batch I3, Jerus's Q2): "Steel" and "Iron" until then.
+        // ...the mills' and the mines' named for their sectors since 0.7.120 (batch I3, Jerus's Q2): "Steel" and "Iron" until then.
         assertTrue("Industry is nine groups by owning sector, and oil storage (0.7.85), the ports (0.7.86) and the oil at sea's"
                         + " platforms and pipelines (0.7.91): " + industry,
                 industry.equals(List.of("Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Oil",

@@ -182,7 +182,7 @@ public class ScaleCheck {
      * from 510 to 575, and at 615, the larger copy built no more homes than
      * it began with. 595 is the middle of 580 to 610: 4,303 people at 600.
      *
-     * ...AT 635 SINCE 0.7.116 (batch I3), BY THE SAME PREMISE. Iron and steel
+     * ...AT 635 SINCE 0.7.120 (batch I3), BY THE SAME PREMISE. Iron and steel
      * at the world's prices (the cars a household buys 6% cheaper from the
      * first, the test player's furnaces paying nothing it would build) move
      * its town: at 595, and at 560, 580, 600 and 610, its own rents priced

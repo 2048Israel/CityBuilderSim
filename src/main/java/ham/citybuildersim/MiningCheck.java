@@ -11,11 +11,11 @@ import java.nio.file.Path;
 /**
  * Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore.
  *
- * Until 0.7.115 the point of this harness was one number: what a Steel
+ * Until 0.7.119 the point of this harness was one number: what a Steel
  * Foundry earned on imported scrap against local ore - IRON was both, its
  * import price the mills' scrap and its export price the mines' ore - and
  * whether a mine next door made steel "a different business, not a better
- * month". Since 0.7.116 (batch I3; Jerus's Q4, 2026-10-08: "split") ore and
+ * month". Since 0.7.120 (batch I3; Jerus's Q4, 2026-10-08: "split") ore and
  * scrap are two goods, the foundry is the Electric Arc Furnace on SCRAP, and
  * steel is at the world's price, .650 / .470 (Q6). So the number is the
  * furnace's margin on its sales at home - steel to the city's fabricators at
@@ -88,7 +88,7 @@ public class MiningCheck {
             LandParcel target = ore ? game.getLandManager().getMarket().richest(Resource.IRON)
                     : game.getLandManager().getMarket().bestValue();
             if (ore && target == null) target = towardIron(game);
-            // The ore is priced in the ground at US$0.40 a tonne (1/212.5 of its world price since 0.7.116, 1/350 until then). The
+            // The ore is priced in the ground at US$0.40 a tonne (1/212.5 of its world price since 0.7.120, 1/350 until then). The
             // world's fields come whole - the field the default world put by
             // its founding site was 35 sites, about US$180M, and IRON_SEED's
             // is 36 (0.7.99), more than a new city's treasury (0.7.57, and
@@ -168,7 +168,7 @@ public class MiningCheck {
         // template): the same band IronMarket struck, generalised to every
         // good. The ceiling is the import price - what a tonne of ore costs
         // landed - and the floor is the export price a mine gets shipping
-        // out. Until 0.7.116 the ceiling was the mills' scrap: IRON was both.
+        // out. Until 0.7.120 the ceiling was the mills' scrap: IRON was both.
         GoodsMarket market = new GoodsMarket(Good.IRON);
 
         assertTrue("a landed tonne of ore is the ceiling", market.ceiling() > 0);
@@ -234,7 +234,7 @@ public class MiningCheck {
                 market.getLocalPrice(), (market.ceiling() + market.floor()) / 2);
 
         /*
-         * ...AND SCRAP IS ITS OWN GOOD SINCE 0.7.116 (batch I3; Jerus's Q4,
+         * ...AND SCRAP IS ITS OWN GOOD SINCE 0.7.120 (batch I3; Jerus's Q4,
          * "split"): IRON's old import price moved to it, and the arc furnaces
          * buy it. Ore and scrap are different things at different prices -
          * ore at about a quarter of scrap's - and a furnace that took one for
@@ -305,7 +305,7 @@ public class MiningCheck {
            with it; they were jobs the ore price was paying for and the ore
            price could not pay for.
 
-           (SINCE 0.7.116 the same sixty lift 20,000 t a month, 4,000 t a post a
+           (SINCE 0.7.120 the same sixty lift 20,000 t a month, 4,000 t a post a
            year - the small end of a real mine - for ore at its world price, $85
            out and $115 in: Jerus's Q5.)
 
@@ -322,7 +322,7 @@ public class MiningCheck {
                 template(city, "Small Grocery Store").getTotalJobs(),
                 template(city, "Bakery").getTotalJobs());
         /*
-         * EIGHT TIMES THE ORE ON THE SAME SIXTY POSTS (0.7.116, batch I3; the
+         * EIGHT TIMES THE ORE ON THE SAME SIXTY POSTS (0.7.120, batch I3; the
          * study's 2.4): 20,000 t a month on 60,000 L of diesel, 600 kW and 20
          * units of water, for its old cost's cash, points and material x 4.632.
          */
@@ -332,7 +332,7 @@ public class MiningCheck {
                         && mine.getJobs(JobType.COLLEGE_ENGINEERING) == 3 && mine.uses(Good.DIESEL) == 60_000
                         && mine.getElectricityConsumption() == 600 && mine.getWaterConsumption() == 20);
         double allIn = mine.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * mine.getConstructionMaterials();
-        report("...for D$45M all in: its cash, points and material each x 4.632 (7,286, 1,600 and 135 until 0.7.116)",
+        report("...for D$45M all in: its cash, points and material each x 4.632 (7,286, 1,600 and 135 until 0.7.120)",
                 mine.getCashCost() == Math.round(7286 * 4.632) && mine.getConstructionPoints() == Math.round(1600 * 4.632)
                         && mine.getConstructionMaterials() == Math.round(135 * 4.632) && Math.abs(allIn - 45_000) < 10,
                 String.format("D$%,.0fk", allIn));
@@ -379,9 +379,9 @@ public class MiningCheck {
 
         /*
          * MEASURED AS A MARGIN, NOT AS A DOLLAR FIGURE, and the design sentence
-         * moved with steel's price (0.7.116, batch I3).
+         * moved with steel's price (0.7.120, batch I3).
          *
-         * To 0.7.115 this section ran two cities for three years - a foundry on
+         * To 0.7.119 this section ran two cities for three years - a foundry on
          * imported scrap, and the same foundry with a mine next door - and
          * asserted 20-36% of its sales on scrap and 48-62% on local ore: "a
          * different business, not a better month". Both halves of that are
@@ -442,7 +442,7 @@ public class MiningCheck {
          * So the worst case is put to the books directly: every tonne exported,
          * at the floor, with no local buyer at any price.
          *
-         * (SINCE 0.7.116 nothing in the city buys ore - the furnaces melt
+         * (SINCE 0.7.120 nothing in the city buys ore - the furnaces melt
          * scrap - so this IS the mine's month until the integrated route's
          * pellet plants and blast furnaces come, at batch I4. It pays for its
          * diesel and its consumables now, at the world's prices, and its crew
@@ -486,7 +486,7 @@ public class MiningCheck {
         worstCase.produceFlow(Good.IRON);
         worstCase.offer(Good.IRON, ore.getLocalPrice());
         worstCase.shipUnsoldFlow(Good.IRON, ore);        // every tonne abroad, at the floor
-        // ...its diesel landed from the world, and its consumables bought abroad (0.7.116).
+        // ...its diesel landed from the world, and its consumables bought abroad (0.7.120).
         worstCase.bookPurchase(diesel.record(Trade.WORLD, worstCase.key(), worstCase.bid(Good.DIESEL), diesel.importPrice()));
         worstCase.buyConsumables();
         worstCase.strike();
@@ -513,11 +513,11 @@ public class MiningCheck {
                 exportOnly / allIn > .02);
 
         /*
-         * AND WHO IN THE CITY BUYS IT: since the integrated route (0.7.121,
+         * AND WHO IN THE CITY BUYS IT: since the integrated route (0.7.123,
          * batch I4) the Pelletising Plant and the two blast furnaces, Iron &
-         * Steel's. To 0.7.115 this section's last line was "a mill next door
+         * Steel's. To 0.7.119 this section's last line was "a mill next door
          * is worth more to a mine than exporting": the foundry bought IRON, ore
-         * or scrap; from 0.7.116 a furnace bought SCRAP and nothing used ore.
+         * or scrap; from 0.7.120 a furnace bought SCRAP and nothing used ore.
          * Ore's co-location reward - replacing imported ore at the landed
          * price, 4.1% a month against 2.7% (the study's case C) - is a works
          * of the route's, held in MaterialsCheck 11's cases.

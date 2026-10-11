@@ -113,7 +113,7 @@ These are Jerus's, and they do not move.
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
                                    project's splitting-game.md)
-        OldMetal.java              the city's old steel (0.7.121, batch I4): its scrapped cars (Motoring),
+        OldMetal.java              the city's old steel (0.7.123, batch I4): its scrapped cars (Motoring),
                                    demolitions, fabrication offcuts and worn wagon sets, 85% recovered,
                                    kept by seller; Iron & Steel's Scrap Yards buy it at 70% of scrap's
                                    export price, the rest to landfill - saved under one key, MaterialsCheck
@@ -131,9 +131,9 @@ These are Jerus's, and they do not move.
                                    split at the month's trade); ProcessingSector and ExtractionSector (0.7.112,
                                    batch I2: the materials chains' two bases - a works built by SpreadPlanner,
                                    with captive use and idle-then-shed, and Mining's rule for a mine, Mining
-                                   moved onto it; since 0.7.116, batch I3, Heavy Industry - labelled Iron &
+                                   moved onto it; since 0.7.120, batch I3, Heavy Industry - labelled Iron &
                                    Steel, its arc furnaces on SCRAP - a ProcessingSector, and Mining - Iron
-                                   Mining - asked the planner's money gate on the whole cost; since 0.7.121,
+                                   Mining - asked the planner's money gate on the whole cost; since 0.7.123,
                                    batch I4, Iron & Steel's integrated route - the Scrap Yard, pellets, coke
                                    ovens, blast furnaces, the oxygen shop and the large mini-mill - its coke,
                                    pig iron and scrap captive and its works' power its own); Mining.java
@@ -291,7 +291,7 @@ These are Jerus's, and they do not move.
                                    spec-earth 3's rule: a tile, line, plot or region drawn from the data's
                                    shares, rivers and small lakes with the seed's detail below them, the
                                    cells pass, the founding snap - World reaches it through an Earth key,
-                                   which only harnesses make until E4; EarthTerrainCheck holds it; and since
+                                   which only harnesses made until E4 (0.7.121); EarthTerrainCheck holds it; and since
                                    0.7.117 (batch E3) its deposits on real geology: Geology classes each
                                    USGS province (the rules' class, and a hand-checked table over them),
                                    holds spec-earth 4's weights, the Z that keeps the land's count of
@@ -310,8 +310,9 @@ These are Jerus's, and they do not move.
                                    (EarthTerrain.SHELF_WIDTH_M, measured on the data)
         EarthSite.java             founding a city on the real Earth (0.7.121, batch E4; spec-earth.md 2
                                    and 6): whether the game has the Earth's data (gameData(), the file at
-                                   EarthData.DATA_FILE, which is not in git - data/ is ignored - and the
-                                   game runs without it), the place search, Random spot and the founding
+                                   EarthData.DATA_FILE, which is not in git - data/ is ignored; since
+                                   f99d62c the release earth-1's asset, tools/earth/get-earth.bat fetching
+                                   it - and the game runs without it), the place search, Random spot and the founding
                                    card - the snap's site, the ground within 5 km on the world's plots,
                                    the province's multipliers, the nearest iron, the refusals (the sea,
                                    ice) and warnings (a desert, no fresh water near); and why an Earth
@@ -406,7 +407,10 @@ These are Jerus's, and they do not move.
                                          EarthTerrainCheck draws the Earth's ground on (0.7.115)
     tools/earth/                         E0's pipeline that bakes earth-1.bin (Python, outside the game; the file
                                          itself is not in the repository), its FORMAT.txt and ATTRIBUTION.txt, and
-                                         fixture.py, which cuts EarthCheck's fixture from it
+                                         fixture.py, which cuts EarthCheck's fixture from it; and since f99d62c
+                                         get-earth.bat, which fetches the file into data/ from the GitHub release
+                                         earth-1 and checks it against earth-1.sha256 (Play CityBuilderSim.bat
+                                         and Build EXE.bat call it first)
 
 Before the git era a class that moved left a stub at the root, a `.java` file
 holding only a comment saying MOVED, because a cloud session could not delete

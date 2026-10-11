@@ -37,7 +37,7 @@ import java.util.List;
  * car business however much it wants to be - it can only buy cars, like
  * anybody else. plan() below refuses to sink a plant the city cannot supply,
  * for exactly the reason the mills refused to sink a mill with no ore behind
- * it until 0.7.116: a sector that expands on a business case it does not have
+ * it until 0.7.120: a sector that expands on a business case it does not have
  * is the borrowing spiral the investment engine was written to end.
  *
  * MACHINERY CAN COME OFF A SHIP, and that asymmetry is deliberate and was
@@ -83,7 +83,7 @@ public final class Automotive extends Sector {
      * all, because the world will not sell it a beam at any price.
      *
      * "SPARE" WAS THE WRONG WORD AND IT COST A FIXTURE THREE HUNDRED MONTHS.
-     * The first version of this test asked the mills' question (to 0.7.115) - is there
+     * The first version of this test asked the mills' question (to 0.7.119) - is there
      * spare local supply - and that question only works for ore, because the
      * mills are the only thing that buys ore. Fabricated steel has a second
      * buyer with an infinite appetite: the world. None of it is ever spare, so
@@ -149,7 +149,7 @@ public final class Automotive extends Sector {
 
     /**
      * Manufacturing's shape - the best template by profit over cost, floored on
-     * staffing - with a supply gate in front of it, the mills' shape to 0.7.115.
+     * staffing - with a supply gate in front of it, the mills' shape to 0.7.119.
      *
      * AN ASSEMBLY PLANT IS THE LARGEST SINGLE HIRING DECISION IN THE GAME,
      * larger than a rail terminal, so the eighty-per-cent staffing wall matters

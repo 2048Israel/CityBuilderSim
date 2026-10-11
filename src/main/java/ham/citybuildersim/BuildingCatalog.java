@@ -210,7 +210,7 @@ public class BuildingCatalog {
                 // ...and a works' own power, kW, and its consumables, world thousands a month (0.7.112): absent, none.
                 .setGen(number(o, "gen"))
                 .setConsumables(number(o, "consumables"))
-                // ...and the year it first existed (0.7.121): absent, undated.
+                // ...and the year it first existed (0.7.123): absent, undated.
                 .setSince((int) number(o, "since"));
 
         readCare(o, template, name);
@@ -230,7 +230,7 @@ public class BuildingCatalog {
     }
 
     /**
-     * The city's old metal a Scrap Yard takes (0.7.121, batch I4): "oldMetal":
+     * The city's old metal a Scrap Yard takes (0.7.123, batch I4): "oldMetal":
      * {"STEEL": 10500}, tonnes a month at nameplate by metal. Absent, none; a
      * metal that is not a good is reported and its line ignored, as an
      * unknown good in "makes" costs only its line.

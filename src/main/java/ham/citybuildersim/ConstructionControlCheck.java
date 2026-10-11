@@ -691,7 +691,7 @@ public class ConstructionControlCheck {
                 && GameVersion.SAVE_FORMAT >= 28 && json.has("constructionControl"));
         /*
          * A SAVE WITHOUT THE HAND'S KEY - what a format-27 save was, which
-         * loaded with none of it until 0.7.116 (batch I3). Since then format
+         * loaded with none of it until 0.7.120 (batch I3). Since then format
          * 27 is below the floor (GameVersion.OLDEST_LOADABLE_FORMAT, raised to
          * 37 by the rule: old saves need not load until the game is
          * published) and is refused; the key missing from a save of this
@@ -714,7 +714,7 @@ public class ConstructionControlCheck {
         byte[] before = Files.readAllBytes(files.saveFile(3));
         Game older = new Game(files);
         quietly(() -> older.loadGameSave(3));
-        assertTrue("...and a format-27 save is refused since 0.7.116, below the floor: in P7's words, nothing of it applied, its file as it was",
+        assertTrue("...and a format-27 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was",
                 SaveFileCheck.refusedAtTheFloor(files, 3, older, before));
     }
 

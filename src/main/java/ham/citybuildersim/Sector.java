@@ -830,7 +830,7 @@ public abstract class Sector {
         // The fleet does not haul itself.
         for (Good g : uses) if (g != Good.VANS) t += getInputAtCapacity(g) * g.tonnesPerUnit();
         /*
-         * ...NOR WHAT A WORKS HANDS ITSELF (0.7.121, batch I4; CAPTIVE USE): the
+         * ...NOR WHAT A WORKS HANDS ITSELF (0.7.123, batch I4; CAPTIVE USE): the
          * coke from its ovens to its furnaces, the pig iron from its furnaces to
          * its oxygen shop, moved on the works' own rails and ladles, not by
          * lorry - counted neither out nor in, at nameplate, as far as what it
@@ -1365,7 +1365,7 @@ public abstract class Sector {
         public Split boughtOf(Good g) { return bought.computeIfAbsent(g, k -> new Split()); }
         /** Sold to households in particular - consumption, in the national accounts. */
         public double salesToHouseholds;
-        /** The part of otherRevenue that is its old steel sold to the Scrap Yards (0.7.121, batch I4; sellOldMetal()), named apart at the strike. */
+        /** The part of otherRevenue that is its old steel sold to the Scrap Yards (0.7.123, batch I4; sellOldMetal()), named apart at the strike. */
         public double oldMetalSold;
 
         public double purchases() {
@@ -1686,7 +1686,7 @@ public abstract class Sector {
     }
 
     /**
-     * ...and its old steel, sold to the Scrap Yards (0.7.121, batch I4;
+     * ...and its old steel, sold to the Scrap Yards (0.7.123, batch I4;
      * OldMetal): other revenue like any, the yards' input from it at the
      * same strike (they bill it to themselves - billForService() - so the
      * sales tax nets across the pair), and named apart on the income
@@ -1905,7 +1905,7 @@ public abstract class Sector {
         s.inputs = pending.purchases() + pending.paidEarlier;
         // LAST, because nameOtherRevenue() reads s.otherRevenue above it.
         if (pending.oldMetalSold != 0) {
-            // ...its old steel sold named apart (0.7.121, sellOldMetal()): the
+            // ...its old steel sold named apart (0.7.123, sellOldMetal()): the
             // sector names the rest, then the whole is put back.
             s.otherRevenue = pending.otherRevenue - pending.oldMetalSold;
             s.otherParts = nameOtherRevenue();

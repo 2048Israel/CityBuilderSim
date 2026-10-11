@@ -81,7 +81,7 @@ import java.util.Map;
  *      its counts the iron ones, its plan sinks a mine on a free site, its
  *      dig the iron's tally, and its plant spare only once the ore is out.
  *
- * ...AND EACH CHAIN'S SECTIONS, FROM BATCH I3 (0.7.116; iron's prices and
+ * ...AND EACH CHAIN'S SECTIONS, FROM BATCH I3 (0.7.120; iron's prices and
  * scrap split from ore - runs/spec-materials.md 4):
  *
  *   9. THE IRON ROWS ARE THE STUDY'S: the Iron Mine (id 14), the Electric Arc
@@ -101,7 +101,7 @@ import java.util.Map;
  *      it applied and its file as it was; a save of this build's, its
  *      furnaces' scrap in it apart from the ore, loads as it was saved.
  *
- * ...AND BATCH I4's (0.7.121; the integrated route and old steel -
+ * ...AND BATCH I4's (0.7.123; the integrated route and old steel -
  * runs/spec-materials.md 2.2, 2.3, 2.7 to 2.9 and 4):
  *
  *  11. THE INTEGRATED ROUTE'S ROWS ARE THE STUDY'S: the Scrap Yard, the
@@ -348,7 +348,7 @@ public class MaterialsCheck {
         assertTrue("...with its consumables at the exchange factor and its power at the tariff in them: ownCosts() is consumables x rate"
                 + " x factor less gen x tariff, to the bit", own == 40 * 1.0 * factor - 2500 * tariff
                 && SpreadPlanner.ownCosts(fixture, .5, factor, tariff) == 40 * .5 * factor - 2500 * tariff
-                // ...and the furnace's own, since 0.7.116: its electrodes at the factor, and no power of its own.
+                // ...and the furnace's own, since 0.7.120: its electrodes at the factor, and no power of its own.
                 && SpreadPlanner.ownCosts(foundry, 1, factor, tariff) == foundry.getConsumables() * 1.0 * factor
                 && foundry.getConsumables() > 0 && foundry.getGen() == 0);
     }
@@ -398,7 +398,7 @@ public class MaterialsCheck {
         assertTrue("a works needing more than it makes uses all it makes and asks the market for the rest: 2,400 t made, 1,600 t asked",
                 w.outputRow(Good.STEEL).captive == steelMade && w.outputRow(Good.STEEL).produced == 0
                         && w.bid(Good.STEEL) == 2 * 2000 * rate - steelMade);
-        // One sector in the game keeps captive goods since 0.7.121 (batch I4): Iron & Steel, its scrap, coke and pig iron.
+        // One sector in the game keeps captive goods since 0.7.123 (batch I4): Iron & Steel, its scrap, coke and pig iron.
         Game g = new Game(GameFiles.scratch("materialscheck-captive"));
         quietly(g::newGame);
         boolean others = true;
@@ -407,7 +407,7 @@ public class MaterialsCheck {
             if (s == g.getSectors().heavyIndustry()) { if (s.captive(x)) kept.add(x); }
             else others &= !s.captive(x) && s.captiveUnits(x) == 0;
         }
-        assertTrue("one sector in the game keeps captive goods, Iron & Steel (a ProcessingSector since 0.7.116): since 0.7.121 its"
+        assertTrue("one sector in the game keeps captive goods, Iron & Steel (a ProcessingSector since 0.7.120): since 0.7.123 its"
                         + " scrap, coke and pig iron, which its works both make and use; every other none (Sector.captive() false): " + kept,
                 others && g.getSectors().heavyIndustry() instanceof ProcessingSector
                         && kept.equals(java.util.EnumSet.of(Good.SCRAP, Good.PIG_IRON, Good.MET_COKE)));
@@ -490,7 +490,7 @@ public class MaterialsCheck {
         Markets markets = new Markets();
         markets.setExchangeRate(1.37);
         BuildingsTemplate foundry = b.getTemplate(HeavyIndustry.ARC_FURNACE);
-        // THE FIXTURE CAUSES IT: the furnace's own electrodes (0.7.116) taken away, so the works has none.
+        // THE FIXTURE CAUSES IT: the furnace's own electrodes (0.7.120) taken away, so the works has none.
         foundry.setConsumables(0);
         Works none = works(b, markets, null, new Good[] { Good.STEEL }, new Good[] { Good.SCRAP });
         b.addStack(foundry, 2, true);
@@ -553,14 +553,14 @@ public class MaterialsCheck {
         SpreadPlanner.Candidate fed = ProcessingSector.estimate(t, v, city, factor, tariff, "no feed");
         assertTrue("a refusal of its feed is the first gate it fails (a chain's own feed gate; none by default)",
                 fed.failed() == SpreadPlanner.Gate.FEED && SpreadPlanner.best(List.of(fed, c)) == c);
-        // In a game: the investors' test reads the planner's estimate (Game.consider()) - Iron & Steel's own since 0.7.116 (batch I3).
+        // In a game: the investors' test reads the planner's estimate (Game.consider()) - Iron & Steel's own since 0.7.120 (batch I3).
         Game g = town("materialscheck-plan");
         ProcessingSector w = g.getSectors().heavyIndustry();
         w.setPricePerWatt(g.getEconomyManager().getPricePerWatt());
         BusinessInvestment plans = g.getBusinessInvestment();
         BuildingsTemplate foundry = g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE);
         List<SpreadPlanner.Candidate> all = w.appraise(plans, g);
-        assertTrue("in a town Iron & Steel's candidates are its nine works (the two furnaces since 0.7.116, and since 0.7.121 the"
+        assertTrue("in a town Iron & Steel's candidates are its nine works (the two furnaces since 0.7.120, and since 0.7.123 the"
                         + " integrated route's seven), each the planner's estimate, and the investors' test reads it",
                 all.size() == 9 && w.estimatedMonthlyProfit(foundry, plans) == w.appraise(foundry, plans).earns()
                         && plans.estimatedMonthlyProfit(Sectors.HEAVY_INDUSTRY, foundry) == w.appraise(foundry, plans).earns()
@@ -674,7 +674,7 @@ public class MaterialsCheck {
 
     /* ============================ 9. the iron rows against the study ============================ */
 
-    /** The iron rows of batch I3 (0.7.116), by their permanent ids: the Iron Mine, the Electric Arc Furnace, the Steel Mini-Mill. */
+    /** The iron rows of batch I3 (0.7.120), by their permanent ids: the Iron Mine, the Electric Arc Furnace, the Steel Mini-Mill. */
     static final int[] IRON_ROWS = { Mining.IRON_MINE, HeavyIndustry.ARC_FURNACE, HeavyIndustry.MINI_MILL };
 
     /** The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). */
@@ -805,7 +805,7 @@ public class MaterialsCheck {
 
     /* ============================ 11. the integrated route's rows against the study ============================ */
 
-    /** The integrated route's rows of batch I4 (0.7.121), by their permanent ids, in the study's 2.4 order. */
+    /** The integrated route's rows of batch I4 (0.7.123), by their permanent ids, in the study's 2.4 order. */
     static final int[] ROUTE_ROWS = { HeavyIndustry.SCRAP_YARD, HeavyIndustry.PELLETISING_PLANT, HeavyIndustry.COKE_OVENS,
             HeavyIndustry.MINI_BLAST_FURNACE, HeavyIndustry.BLAST_FURNACE, HeavyIndustry.OXYGEN_STEEL_SHOP, HeavyIndustry.LARGE_MINI_MILL };
 

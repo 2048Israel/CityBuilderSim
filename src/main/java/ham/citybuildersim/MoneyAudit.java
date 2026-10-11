@@ -915,7 +915,7 @@ public final class MoneyAudit {
         out += debit.apply("- city ReserveFill", g.getReserve().getSettledImports(), Scope.TRADE);
         /*
          * ...and the steel in the households' scrapped cars, bought by the
-         * Scrap Yards (0.7.121, batch I4; OldMetal): paid into their savings
+         * Scrap Yards (0.7.123, batch I4; OldMetal): paid into their savings
          * as the yards bought, and out of the yards' cash at the strike that
          * banks it - the households' part of the yards' input line, billed by
          * Trade.HOUSEHOLDS, out of the pools like a wage. What the yards
@@ -1167,7 +1167,7 @@ public final class MoneyAudit {
         note.accept("chk + sectors PowerSold", powerSold);
         note.accept("chk - utilities PowerBought", utilities.getPowerBought());
         /*
-         * ...AND THE OLD STEEL (0.7.121, batch I4; OldMetal): what the Scrap
+         * ...AND THE OLD STEEL (0.7.123, batch I4; OldMetal): what the Scrap
          * Yards' statements booked as bought (their OldMetal.LINE inputs), what
          * the households sold them - the one part that left the pools, declared
          * above as "- sectors OldMetalToHouseholds" - and what the sectors'
@@ -1202,7 +1202,7 @@ public final class MoneyAudit {
                 poolsBefore, poolsAfter);
     }
 
-    /** What the Scrap Yards' struck statements bought of the households' old steel (0.7.121; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. */
+    /** What the Scrap Yards' struck statements bought of the households' old steel (0.7.123; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. */
     static double oldMetalBoughtOfHouseholds(Sectors sectors) {
         double t = 0;
         for (Sector s : sectors.all()) {

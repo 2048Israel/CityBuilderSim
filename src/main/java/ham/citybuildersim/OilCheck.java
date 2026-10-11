@@ -90,11 +90,11 @@ import java.nio.file.Path;
  *      from before them derives what that month struck - every litre
  *      imported.
  *
- *  10. A SAVE FROM BEFORE 0.7.76 IS REFUSED SINCE 0.7.116 (the floor,
+ *  10. A SAVE FROM BEFORE 0.7.76 IS REFUSED SINCE 0.7.120 (the floor,
  *      GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by batch I3): the
  *      format-33 save, its FUEL in the refiners' tanks, its market and both
  *      sides' books, is turned away in P7's words, its file untouched. To
- *      0.7.115 it loaded with its FUEL split (FuelSplit, spec-oil 3): every
+ *      0.7.119 it loaded with its FUEL split (FuelSplit, spec-oil 3): every
  *      FUEL figure into PETROL and DIESEL by the drivers' share of the
  *      month's litres, each pair summing to the figure to the bit, the
  *      railway's own all diesel, no money moving; the audit closing for a
@@ -297,7 +297,7 @@ public class OilCheck {
         whenARefineryIsBuilt();
         acrossASave(oilTown);
         Game back = theSplit(oilTown);
-        aRefineryCloses(back);   // the town itself since 0.7.116: its format-33 twin is refused
+        aRefineryCloses(back);   // the town itself since 0.7.120: its format-33 twin is refused
         crudeByGrade();
         phaseOneBuyers();
         theForecourts();
@@ -1692,7 +1692,7 @@ public class OilCheck {
      * A FORMAT-33 SAVE (0.7.75's shape), made from the oil town by folding the
      * nine products back into FUEL - its market (PETROL's price, the nine's
      * strike and history summed), every sector's maps, and the goods held
-     * four wide - is refused since 0.7.116, below the floor, its file
+     * four wide - is refused since 0.7.120, below the floor, its file
      * untouched; the town is handed on. Until then it loaded with each FUEL
      * figure split into petrol and diesel by the drivers' share of the
      * month's litres, the pairs summing to the bit, the railway's all diesel;
@@ -1700,7 +1700,7 @@ public class OilCheck {
      * this build's format, loading back to the cent.
      */
     static Game theSplit(Game g) throws Exception {
-        out.println("\n--- 10. a save from before 0.7.76 is refused since 0.7.116 (to 0.7.115 its FUEL was split into petrol and diesel) ---");
+        out.println("\n--- 10. a save from before 0.7.76 is refused since 0.7.120 (to 0.7.119 its FUEL was split into petrol and diesel) ---");
         quietly(() -> g.simulateMonths(1));
         GameFiles files = FILES.get(g);
         quietly(() -> g.saveGame(10, "oil"));
@@ -1774,7 +1774,7 @@ public class OilCheck {
         Game twin = new Game(files);
         quietly(() -> twin.loadGameSave(10));
         /*
-         * REFUSED SINCE 0.7.116 (batch I3): format 33 is below the floor
+         * REFUSED SINCE 0.7.120 (batch I3): format 33 is below the floor
          * (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
          * saves need not load until the game is published), so the load turns
          * it away and FuelSplit.convert() is not reached. Until then the twin
@@ -1784,7 +1784,7 @@ public class OilCheck {
          * split; the goods held as wide as HELD; no money moving; its audit
          * closing for a year; and saved again and loaded, the same to the cent.
          */
-        assertTrue("the format-33 save is refused since 0.7.116, below the floor: in P7's words, nothing of it applied, its file as it was",
+        assertTrue("the format-33 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was",
                 SaveFileCheck.refusedAtTheFloor(files, 10, twin, before));
         return g;
     }
