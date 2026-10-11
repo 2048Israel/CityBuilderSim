@@ -6,7 +6,9 @@ import ham.citybuildersim.LandManager;
 import ham.citybuildersim.Resource;
 
 /**
- * Iron mines. Its own sector because the ore has a price.
+ * Iron mines - Iron Mining since 0.7.116, under the key it was saved by,
+ * "Mining" (Jerus's Q2, 2026-10-08: rename, keeping the saved keys). Its own
+ * sector because the ore has a price.
  *
  * THE SMALLEST SECTOR CLASS THERE IS, and the shape a thousand of them
  * should have: it says what it makes, and which resource's ground it lifts -
@@ -18,19 +20,26 @@ import ham.citybuildersim.Resource;
  * moved there whole so the materials chains' mines and quarries share it.
  *
  * A mine ships what it lifts: the ore is not stockable (see Good.IRON), so
- * what the mills will not take at the local price leaves at the export
+ * what the works will not take at the local price leaves at the export
  * price the same month, which is why a mine is worth building before the
- * mills exist. LandManager decides how much of what was asked for is
- * actually there, and nothing once the deposit is out.
+ * works exist. Since 0.7.116 (batch I3) nothing in the city uses ore - the
+ * arc furnaces melt SCRAP - until the integrated route's pellet plants and
+ * blast furnaces (batch I4). LandManager decides how much of what was asked
+ * for is actually there, and nothing once the deposit is out.
  */
 public final class Mining extends ExtractionSector {
 
+    /** The Iron Mine's permanent id in buildings.json (0.7.116, batch I3; spec-materials 4): what the harnesses, the test player and the build advice find it by - a name is a label, and the chains rename buildings. */
+    public static final int IRON_MINE = 14;
+
     public Mining() {
-        super("Mining", "Mining", BuildingType.MINING, Resource.IRON);
+        super("Mining", "Iron Mining", BuildingType.MINING, Resource.IRON);
         makes(Good.IRON);
-        blurb("Lifts ore off the ground and sells it to the mills, or ships it abroad "
-                + "when the mills do not want it. The deposit is the limit, and the "
-                + "city has to buy the ground it is under.");
+        // ...on diesel, to dig and haul (0.7.116, batch I3): 3 litres a tonne.
+        uses(Good.DIESEL);
+        blurb("Lifts iron ore off the ground and ships it abroad, or to the works "
+                + "that will use it. The deposit is the limit, and the city has to "
+                + "buy the ground it is under.");
     }
 
     /** The iron the ground gives, with the month's tonnes kept for the land office (LandManager.extractIron()). */

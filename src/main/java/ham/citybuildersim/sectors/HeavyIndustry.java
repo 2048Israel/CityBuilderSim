@@ -1,119 +1,60 @@
 package ham.citybuildersim.sectors;
 
 import ham.citybuildersim.BuildingType;
-import ham.citybuildersim.BuildingsTemplate;
-import ham.citybuildersim.BusinessInvestment;
-import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
-import ham.citybuildersim.Sector;
 
 /**
- * The mills. Buy iron - local ore first, imported scrap for the rest - and
- * sell steel abroad, because nothing in the city buys steel.
+ * The mills - Iron & Steel since 0.7.116, under the key it was saved by,
+ * "Heavy Industry": the arc furnaces, which melt scrap into steel and sell it
+ * to the city's fabricators or abroad, built by what pays.
  *
- * Nothing here about the books, the ore market, the scrap fallback or the
- * export: IRON is importable so the shortfall comes from the world at the
- * scrap price, STEEL is exportable and has no local buyer so every tonne
- * leaves at the export price. The one thing a mill knows that a factory
- * does not is when to be built: only into ore that exists.
+ * WHY (0.7.116, batch I3; runs/spec-materials.md 2.1 and 2.3, and Jerus's
+ * Q2, Q4 and Q6 of 2026-10-08). Until then a mill bought IRON - "iron ore,
+ * and the scrap that stands in for it" - local ore first and imported scrap
+ * for the rest, sold steel at the US band (1.284 / .847), and was built only
+ * into spare local ore: "no spare local ore to smelt" was its plan's gate,
+ * and an order the sector could not make a case for was the borrowing
+ * spiral the investment engine was written to end. Three of Jerus's answers
+ * took that apart. Scrap splits from ore (Q4): the furnaces take SCRAP, and
+ * IRON is ore alone, which nothing here uses until the integrated route
+ * (batch I4). Steel goes to the world's price (Q6: .650 / .470), at which a
+ * mill on imported scrap loses money exporting and earns a little replacing
+ * imports. And the sector is renamed Iron & Steel (Q2), its saved key kept.
  *
- * Exists mainly so the city has somewhere to put people - see the old
- * HeavyIndustryHandler's note, which still holds: the return on a steel
- * mill is the city that grows around it.
+ * SO IT IS A ProcessingSector (I2's base), and its plan is SpreadPlanner's
+ * like every works of the materials chains (the study's 1.2): each furnace a
+ * candidate earning its steel at what the city would otherwise pay or get
+ * for it (outValue(): the import price for as much as the city imports, the
+ * export price past it) less its scrap at what the city would otherwise get
+ * or pay for that (inValue()), less its wages, power, water, repairs, tax
+ * and consumables, asked the ground, the staff and the money on its whole
+ * cost (decision A); the best on its cost ordered, one in flight; a kind
+ * whose last furnace earns below nothing six months running the one the
+ * spare-capacity rule may sell (idle, then shed). The study's four cases
+ * for the two furnaces (its 2.5, at parity): the Electric Arc Furnace -0.5,
+ * -0.1, 0.7 and 0.2% of its cost a month, the Steel Mini-Mill -0.5, 0.1, 1.0
+ * and 0.4% - thin, and left as they are (its 10.2): built where the city's
+ * fabricators import steel and its own scrap is cheap, shed where neither
+ * holds. MaterialsCheck 9 holds the rows to the study.
+ *
+ * Its other rows - the Scrap Yard, the pellet plant, coke ovens, blast
+ * furnaces, the oxygen shop and the large mini-mill - come with batch I4.
  */
-public final class HeavyIndustry extends Sector {
+public final class HeavyIndustry extends ProcessingSector {
+
+    /** The Electric Arc Furnace's permanent id in buildings.json, the Steel Foundry's until 0.7.116 (batch I3; spec-materials 4): what the harnesses and the test player find it by. */
+    public static final int ARC_FURNACE = 11;
+
+    /** The Steel Mini-Mill's permanent id in buildings.json (0.7.116). */
+    public static final int MINI_MILL = 12;
 
     public HeavyIndustry() {
-        super("Heavy Industry", "Heavy Industry", BuildingType.HEAVY_INDUSTRY);
+        super("Heavy Industry", "Iron & Steel", BuildingType.HEAVY_INDUSTRY);
         makes(Good.STEEL);
-        uses(Good.IRON);
-        blurb("Smelts iron into steel and ships every tonne abroad. Buys the city's "
-                + "ore when there is any and imports scrap when there is not; the "
-                + "gap between the two is what a mine next door is worth.");
+        uses(Good.SCRAP);
+        blurb("Melts scrap into steel in arc furnaces and sells it to the city's "
+                + "fabricators, or abroad at the world's price. Builds a furnace only "
+                + "where one pays on its whole cost: where the city imports steel, and "
+                + "where its own scrap is cheap.");
     }
-
-    /** Tonnes of iron the mills want this month, at the rate they are running. */
-    public double getOreDemand() {
-        return getInputAtCapacity(Good.IRON) * getOperatingRate();
-    }
-
-    /** What a tonne of imported scrap costs - the mills' fallback, and the ore market's ceiling. */
-    public double getScrapPricePerTonne() {
-        return markets == null ? 0 : markets.get(Good.IRON).netImportPrice();
-    }
-
-    /** What a tonne of steel fetches over what the iron in it cost. */
-    public double getConversionMargin() {
-        if (markets == null) return 0;
-        double steel = markets.get(Good.STEEL).netExportPrice();
-        // Tonnes of iron a tonne of steel takes: 1.1 on every mill in the catalogue.
-        double perTonne = getCapacity(Good.STEEL) > 0
-                ? getInputAtCapacity(Good.IRON) / getCapacity(Good.STEEL) : 1.1;
-        return steel - perTonne * markets.get(Good.IRON).getLocalPrice();
-    }
-
-    /**
-     * Whether to build another mill. The signal is the ore: a mill can
-     * always fall back on imported scrap, so nothing stops it being built,
-     * but on scrap alone it earns almost nothing, and a sector that expands
-     * on a business case it does not have is the borrowing spiral the
-     * investment engine was written to end. Requiring spare local ore also
-     * gives the two sectors an order - mines first, mills after - which is
-     * the cluster the ore market was designed to reward.
-     */
-    @Override
-    public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
-
-        String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
-
-        Mining mines = game.getSectors().mining();
-        double spareOre = mines.getPotentialOutput() - getOreDemand();
-        if (spareOre <= 0) return BusinessInvestment.Decision.no(sector, "no spare local ore to smelt");
-
-        BuildingsTemplate best = null;
-        double bestScore = 0;
-        Staffing staffingHold = null;
-        String staffingHoldName = null;
-        for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
-            if (t.makes(Good.STEEL) <= 0 || t.uses(Good.IRON) <= 0) continue;
-            // No point building a mill twice the size of the ore available.
-            if (t.uses(Good.IRON) > spareOre) continue;
-            // ...and one the city could staff (0.7.18; see Sector.staffing()).
-            Staffing staffing = staffing(t);
-            if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
-                continue;
-            }
-            double cost = plans.getCostOf(t, 1);
-            if (cost <= 0) continue;
-            double score = estimatedMonthlyProfit(t, plans) / cost;
-            if (score > bestScore) {
-                bestScore = score;
-                best = t;
-            }
-        }
-
-        if (best == null) {
-            if (staffingHold != null) {
-                return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
-            }
-            return BusinessInvestment.Decision.no(sector,
-                    String.format("%,.0f t of spare ore, nothing worth smelting it", spareOre));
-        }
-        if (plans.plotsAvailableFor(best) < 1) {
-            return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
-        }
-        return new BusinessInvestment.Decision(sector, best, 1,
-                String.format("%,.0f tonnes of local ore going begging", spareOre), true);
-    }
-
-    /** A price-taking exporter always sells what it makes: it shrinks on distress only. */
-    @Override
-    public double[] retirementDemandAndCapacity(Game game) { return null; }
 }

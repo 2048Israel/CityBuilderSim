@@ -34,10 +34,18 @@ import java.util.List;
  *     (the sites owned less those its buildings stand on, Game.committedOn())
  *     and the resource still in the ground; of the buildings that make its
  *     good and the city could staff, the best estimatedMonthlyProfit() over
- *     its cost; then ground for it. The money gate is Game.consider()'s, as
- *     it was (on the order's whole cost since 0.7.113, batch I2b) -
- *     spec-materials 2.6b brings SpreadPlanner's to extraction at batch I3,
- *     so batch I2 moved no order;
+ *     its cost; then ground for it. To 0.7.115 the money gate was
+ *     Game.consider()'s alone (on the order's whole cost since 0.7.113,
+ *     batch I2b); since 0.7.116 (batch I3; spec-materials 2.6b) the plan
+ *     asks it first, through SpreadPlanner's MONEY gate (planner(): on the
+ *     whole cost, decision A), so a mine that would not carry its interest
+ *     is not the one ordered and the sector says why - consider() asks the
+ *     same of the order after it;
+ *   - THE ESTIMATE (estimatedMonthlyProfit()): the maker's (Sector's), less
+ *     what a mine buys abroad that is not a good, its consumables at the
+ *     exchange factor (SpreadPlanner.ownCosts(), since 0.7.116: the Iron
+ *     Mine's explosives and wear parts) - what the plan, consider() and the
+ *     build card read;
  *   - THE RETIREMENT (retirementDemandAndCapacity()): a price-taking
  *     exporter shrinks on distress only, while there is ore; past it, all
  *     its plant is spare;
@@ -54,6 +62,9 @@ public abstract class ExtractionSector extends Sector {
 
     /** The resource whose ground it lifts. */
     private final Resource resource;
+
+    /** Its spread planner, for its money gate (0.7.116, batch I3; spec-materials 2.6b): ON_ITS_WHOLE_COST unless a check or a probe sets another. */
+    private final SpreadPlanner planner = new SpreadPlanner();
 
     protected ExtractionSector(String key, String label, BuildingType group, Resource resource) {
         super(key, label, group);
@@ -80,6 +91,36 @@ public abstract class ExtractionSector extends Sector {
     protected double dig(LandManager land, double asked) {
         return land.extract(resource, asked);
     }
+
+    /** Its spread planner (0.7.116): its money gate - a check or a probe sets the counterfactual on it. */
+    public SpreadPlanner planner() { return planner; }
+
+    /* ----- the estimate ----- */
+
+    /** What its mines' consumables are paid at: the exchange factor every world price is converted at; 1 with no markets. */
+    public double exchangeFactor() {
+        return markets == null ? 1 : markets.getExchangeRate();
+    }
+
+    /**
+     * What one more of its mines would clear a month (0.7.116, batch I3): the
+     * maker's estimate (Sector's - its good at home and abroad, its inputs,
+     * its wages, power, water, repairs and tax, at the rate its plant runs)
+     * less its consumables at that rate and the exchange factor, and plus
+     * any power it makes, at the tariff (SpreadPlanner.ownCosts(): the
+     * Iron Mine's explosives and wear parts, D$199.8k a month at nameplate,
+     * and no power). The figure the plan, Game.consider() and the build card
+     * read.
+     */
+    @Override
+    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+        double maker = super.estimatedMonthlyProfit(t, plans);
+        if (t == null) return maker;
+        return maker - SpreadPlanner.ownCosts(t, BusinessInvestment.operatingRateOf(getOperatingRate()),
+                exchangeFactor(), pricePerWatt);
+    }
+
+    /* ----- the dig ----- */
 
     /** What its buildings could lift this month if the ground allowed it. */
     public double getPotentialOutput() {
@@ -128,6 +169,8 @@ public abstract class ExtractionSector extends Sector {
         double bestScore = 0;
         Staffing staffingHold = null;
         String staffingHoldName = null;
+        BuildingsTemplate moneyHold = null;
+        double moneyEarns = 0, moneyCost = 0;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             if (t.makes(good) <= 0) continue;
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
@@ -141,7 +184,17 @@ public abstract class ExtractionSector extends Sector {
             }
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
-            double score = estimatedMonthlyProfit(t, plans) / cost;
+            double earns = estimatedMonthlyProfit(t, plans);
+            // ...and one that would carry the interest on its whole cost (0.7.116, batch I3; spec-materials 2.6b).
+            if (!planner.passesMoney(this, plans, game, earns, cost)) {
+                if (moneyHold == null || earns / cost > moneyEarns / moneyCost) {
+                    moneyHold = t;
+                    moneyEarns = earns;
+                    moneyCost = cost;
+                }
+                continue;
+            }
+            double score = earns / cost;
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
@@ -149,6 +202,10 @@ public abstract class ExtractionSector extends Sector {
         }
 
         if (best == null) {
+            if (moneyHold != null) {
+                return BusinessInvestment.Decision.no(sector, ProcessingSector.a(moneyHold.getName()) + " "
+                        + planner.city(this, plans, game).money(moneyEarns, moneyCost));
+            }
             return BusinessInvestment.Decision.no(sector, staffingHold != null
                     ? staffingHold.why(staffingHoldName) : "nothing worth sinking");
         }

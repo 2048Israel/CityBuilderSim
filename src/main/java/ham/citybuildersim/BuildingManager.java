@@ -1195,23 +1195,34 @@ public class BuildingManager {
            of scrap per tonne of steel, about 450 kWh a tonne, a couple of cubic
            metres of make-up water a tonne.
 
-           Scrap in at $400 a tonne, steel out at $500. That $100 conversion
-           margin is roughly half what a real mill clears, because a small
-           distant producer is a price taker at both ends - and out of it come
-           the wages, the power and the water. What is left is a few percent.
+           ON SCRAP SINCE 0.7.116 (batch I3; Jerus's Q4, "split";
+           materials-chains-research.md 2.4): id 11, the Steel Foundry until
+           then, is the Electric Arc Furnace, and both furnaces take SCRAP,
+           which until then was IRON's import price. Their consumables are the
+           study's running cost less wages, power and water - electrodes,
+           refractories and alloys, about D$20 a tonne: 187k a month for the
+           furnace, 708k for the mill, at the game's founding wages and
+           tariffs. At steel's world price (.650 / .470) they earn -0.5% of
+           their cost a month on imported scrap exporting, 0.2% and 0.4%
+           replacing imported steel, 0.7% and 1.0% on the city's own scrap
+           (the study's 2.5): thin, and left as they are (its 10.2).
 
-           They are here to employ people. The city's return is the payroll,
-           the wage tax on it, and everything those wages buy.
+           Until then: scrap in at $400 a tonne, steel out at $500 - a $100
+           conversion margin, roughly half what a real mill clears, because a
+           small distant producer is a price taker at both ends. They were
+           here to employ people. The city's return is the payroll, the wage
+           tax on it, and everything those wages buy.
            ------------------------------------------------------------------ */
-        BuildingsTemplate steelFoundry = new BuildingsTemplate("Steel Foundry", BuildingType.HEAVY_INDUSTRY)
+        BuildingsTemplate steelFoundry = new BuildingsTemplate("Electric Arc Furnace", BuildingType.HEAVY_INDUSTRY)
                 .setCashCost(22471)
                 .setConstructionPoints(1400)
                 .setConstructionMaterials(416)
                 .setSector("Heavy Industry")
                 .makes(Good.STEEL, 1200)            // tonnes of steel a month
-                .uses(Good.IRON, 1320)              // tonnes of ore or scrap that takes
+                .uses(Good.SCRAP, 1320)             // tonnes of scrap that takes
                 .setElectricityConsumption(750)
                 .setWaterConsumption(65)
+                .setConsumables(24.13)              // 187 - 152.12 wages - 7.5 power - 3.25 water
                 .setLandSqFt(90000)
                 .setRoadLoad(110)
                 .setJobs(JobType.NO_DIPLOMA, 22)
@@ -1227,11 +1238,12 @@ public class BuildingManager {
                 .setConstructionMaterials(1664)
                 .setSector("Heavy Industry")
                 .makes(Good.STEEL, 6000)
-                .uses(Good.IRON, 6600)
+                .uses(Good.SCRAP, 6600)
                 // An arc furnace is the largest single electrical load a city
                 // this size can build. That is the point of it as a mechanic.
                 .setElectricityConsumption(3700)
                 .setWaterConsumption(320)
+                .setConsumables(119.7)              // 708 - 535.3 wages - 37 power - 16 water
                 .setLandSqFt(400000)
                 .setRoadLoad(500)
                 .setJobs(JobType.NO_DIPLOMA, 70)
@@ -1924,17 +1936,35 @@ public class BuildingManager {
          *
          * Power and water rise with the tonnage; the workforce, the footprint and
          * the site do not. Same hole in the ground, worked properly.
+         *
+         * ...AND EIGHT TIMES THE TONNAGE SINCE 0.7.116 (batch I3; Jerus's Q5,
+         * 2026-10-08: "20,000 t a month with the same 60 posts, at D$45M";
+         * materials-chains-research.md 2.4). 2,500 t was 500 t a post a year
+         * against a real 4,800 (Rana Gruber) to 72,000 (Gudai-Darri), and a
+         * site of 15 Mt lasted it 500 years. 20,000 t is 4,000 t a post a year,
+         * the small end of real; it burns 3 L of diesel a tonne (2-3 real),
+         * draws 600 kW and 20 units of water, and buys explosives and wear
+         * parts abroad, about D$10 a tonne - the consumables, the study's
+         * D$469k a month of running less its wages, power, water and diesel.
+         * Its cost is the old one's cash, points and material each x 4.632,
+         * D$45M all in, 2.2 years of what it ships abroad; its road load the
+         * old one's a tonne. At ore's world price (.115 / .085) it earns 2.7%
+         * of its cost a month exporting and 4.1% replacing imported ore (the
+         * study's 2.5): a mine is always worth sinking, and the field is the
+         * gate (US$0.40 a tonne in the ground, Resource.IRON).
          */
         BuildingsTemplate ironMine = new BuildingsTemplate("Iron Mine", BuildingType.MINING)
-                .setCashCost(7286)
-                .setConstructionPoints(1600)
-                .setConstructionMaterials(135)
+                .setCashCost(33749)             // 7,286 x 4.632 (0.7.116): with its points and material, D$45M
+                .setConstructionPoints(7411)    // 1,600 x 4.632
+                .setConstructionMaterials(625)  // 135 x 4.632
                 .setSector("Mining")
-                .makes(Good.IRON, 2500)         // tonnes of ore a month
-                .setElectricityConsumption(2000)
-                .setWaterConsumption(150)
+                .makes(Good.IRON, 20000)        // tonnes of ore a month (2,500 to 0.7.115)
+                .uses(Good.DIESEL, 60000)       // litres: 3 a tonne, to dig and haul
+                .setElectricityConsumption(600)
+                .setWaterConsumption(20)
+                .setConsumables(199.8)          // 469 - 226.2 wages - 6 power - 1 water - 36 diesel
                 .setLandSqFt(400000)
-                .setRoadLoad(420)               // every tonne leaves by truck
+                .setRoadLoad(3360)              // every tonne leaves by truck: 420 for 2,500 t, x 8
                 .setJobs(JobType.NO_DIPLOMA, 45)
                 .setJobs(JobType.DIPLOMA, 12)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 3)
