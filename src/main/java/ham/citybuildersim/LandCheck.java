@@ -2731,18 +2731,18 @@ public class LandCheck {
                 g.committedOn(iron) == 23 && g.committedOn(iron, hem) == 23 && g.minesCommitted() == 23
                         && g.claimsOn(iron).equals(java.util.List.of(new LandManager.Claim(hem, 1, 3), new LandManager.Claim(hem, 20, 1))));
 
-        // The order gate packs (0.7.124): on the city's own fields, a works of n sites where a field of its type has n free.
+        // The order gate packs (0.7.124): a works of n sites where a field of its type has n free past the works standing.
         LandManager gl = g.getLandManager();
-        int free = gl.getSites(iron, hem) - 23;
+        gl.restoreSites(iron, 43, 43 * iron.amountPerSite());
         BuildingsTemplate pit = bm.getTemplate(Mining.LARGE_OPEN_PIT), mine = bm.getTemplate(Mining.IRON_MINE),
                 magnetite = bm.getTemplate(Mining.MAGNETITE_MINE);
-        boolean pitFits = gl.fits(iron, hem, g.claimsOn(iron), 20);
-        System.out.printf("   %d hematite and %d magnetite sites owned; %d hematite sites free past the works standing%n",
-                gl.getSites(iron, hem), gl.getSites(iron, mag), free);
-        assertTrue("the order gate is the packing: an Iron Mine where a hematite site is free, an open pit where twenty of one field"
-                        + " are, a magnetite works only on magnetite",
-                g.hasDepositFor(mine, 1) == gl.fits(iron, hem, g.claimsOn(iron), 1) && g.hasDepositFor(pit, 1) == pitFits
-                        && g.hasDepositFor(magnetite, 1) == (gl.getSites(iron, mag) > 0 && gl.getRemaining(iron, mag) > 0));
+        System.out.printf("   %d hematite sites by fiat, one field, %d taken by the works standing%n", gl.getSites(iron, hem), g.committedOn(iron));
+        assertTrue("fixture: a 43-site hematite field by fiat, none magnetite", gl.getSites(iron, hem) == 43 && gl.getSites(iron, mag) == 0
+                && gl.getCityLand().typedPieces(iron).size() == 1);
+        assertTrue("the order gate is the packing: past the pit's twenty and the mines' three, one more pit fits on the twenty left and"
+                        + " not two, twenty Iron Mines and not twenty-one, and no magnetite works on hematite",
+                g.hasDepositFor(pit, 1) && !g.hasDepositFor(pit, 2) && g.hasDepositFor(mine, 20) && !g.hasDepositFor(mine, 21)
+                        && !g.hasDepositFor(magnetite, 1));
     }
 
     /** Unowned + the remaining by type + E by type is the world's total, every resource, to the tonne. */
