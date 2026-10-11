@@ -3599,6 +3599,11 @@ final class BuildScreen {
                 if (ham.citybuildersim.sectors.CoalMining.digsRaw(t)) {
                     out.add("Its coal is raw: it sells as thermal coal, tonne for tonne, until a Coal Preparation Plant washes it.");
                 }
+                // ...a quarry on either stone (0.7.131): limestone on a limestone field, the rest sold as aggregate (sectors.Quarrying).
+                if (r == Resource.STONE && t.site().any()) {
+                    out.add("On a limestone field its stone is limestone, which the kilns, cement plants and blast furnaces buy;"
+                            + " what they leave sells as aggregate, tonne for tonne. On hard rock it crushes aggregate.");
+                }
             }
             return out;
         }

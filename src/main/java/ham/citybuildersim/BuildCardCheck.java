@@ -253,10 +253,12 @@ public class BuildCardCheck {
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) industry.add(gr.title());
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.SHOPS, null)) shops.add(gr.title());
         // ...the mills' and the mines' named for their sectors since 0.7.120 (batch I3, Jerus's Q2): "Steel" and "Iron" until then.
-        assertTrue("Industry is ten groups by owning sector - Coal Mining's \"Coal\" since 0.7.126 - and oil storage (0.7.85), the ports"
-                        + " (0.7.86) and the oil at sea's platforms and pipelines (0.7.91): " + industry,
+        assertTrue("Industry is twelve groups by owning sector - Coal Mining's \"Coal\" since 0.7.126, Quarrying's \"Stone\" and Cement &"
+                        + " Concrete's \"Cement\" since 0.7.131 - and oil storage (0.7.85), the ports (0.7.86) and the oil at sea's platforms"
+                        + " and pipelines (0.7.91): " + industry,
                 industry.equals(List.of("Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal",
-                        "Oil", "Oil platforms", "Oil pipelines", "Refining", "Oil storage", "Ports", "Building materials", "Builders")));
+                        "Stone", "Cement", "Oil", "Oil platforms", "Oil pipelines", "Refining", "Oil storage", "Ports", "Building materials",
+                        "Builders")));
         // ...and the Coal group (0.7.126, batch I6; spec-materials 4: "+ Coal, Copper, Stone, Wood, Cement"): Coal Mining's four.
         List<String> coal = new ArrayList<>();
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) {
@@ -264,6 +266,18 @@ public class BuildCardCheck {
         }
         assertTrue("...the Coal group is Coal Mining's four, in the catalogue's order (0.7.126): " + coal,
                 coal.equals(List.of("Surface Coal Mine", "Large Surface Mine", "Underground Coal Mine", "Coal Preparation Plant")));
+        // ...and stone's two groups (0.7.131, batch I7; spec-materials 4): Quarrying's three, then Cement & Concrete's three.
+        java.util.Map<String, List<String>> stone = new java.util.LinkedHashMap<>();
+        for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) {
+            if (!gr.title().equals("Stone") && !gr.title().equals("Cement")) continue;
+            List<String> names = new ArrayList<>();
+            for (BuildCard.Figures f : gr.cards()) names.add(f.template().getName());
+            stone.put(gr.title(), names);
+        }
+        assertTrue("...the Stone group is Quarrying's three and the Cement group Cement & Concrete's three, in the catalogue's order"
+                        + " (0.7.131): " + stone,
+                stone.equals(java.util.Map.of("Stone", List.of("Quarry", "Large Quarry", "Dimension Stone Quarry"),
+                        "Cement", List.of("Cement Plant", "Large Cement Plant", "Lime Kiln"))));
         // ...the oil at sea (0.7.91): the wells' group the Oil Well and the Platform Well, the platforms' the jacket in its wells'
         // slots, the pipelines' a kilometre of pipe - all the investors'.
         java.util.Map<String, List<String>> oilGroups = new java.util.LinkedHashMap<>();
