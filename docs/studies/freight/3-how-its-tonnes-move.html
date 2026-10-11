@@ -1,0 +1,316 @@
+<title>How Its Tonnes Move</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;--edge:#24354a;--control-edge:#33475f;--text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;--good:#3fb950;--warn:#e3b341;--bad:#f85149;--accent:#5aa9ff;--people:#2ec4b6;--money:#5aa9ff;--business:#a78bfa;--building:#f17cb0;--ore:#c9b68f;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace}
+body{background:var(--stage);color:var(--text);font-family:var(--sans)}
+
+.b-tonnes{--truck:#f2a65a;--rail:#c9ced3;--railDark:#7f878f;--sea:#4f8fd0;--lorry:#6b7d93;--van:#a78bfa;--pellet:#8a96a3;--coal:#55595f;--hatch:repeating-linear-gradient(135deg,rgba(11,17,24,.5) 0 3px,transparent 3px 7px);
+  display:block;max-width:1240px;margin:0 auto;padding-block:32px 44px;padding-inline:16px;box-sizing:border-box;font-family:var(--sans);font-size:12.5px;line-height:1.45;color:var(--text)}
+.b-tonnes *,.b-tonnes *::before,.b-tonnes *::after{box-sizing:border-box}
+.b-tonnes h2,.b-tonnes h3,.b-tonnes h4,.b-tonnes p{margin:0}
+.b-tonnes button{font:inherit;color:inherit}
+.b-tonnes :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.b-tonnes .mono{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+.b-tonnes .cap{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:500}
+
+.b-tonnes .bd-kicker{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);font-weight:600}
+.b-tonnes .bd-title{font-size:23px;font-weight:600;margin-top:4px}
+.b-tonnes .bd-lead{font-size:14.5px;color:var(--text2);margin-top:6px;max-width:74ch}
+.b-tonnes .bd-est{font-size:10.5px;color:var(--text3);margin-top:6px;letter-spacing:.06em;text-transform:uppercase}
+
+.b-tonnes .tn-scroll{overflow-x:auto;margin-top:20px;border-radius:6px}
+.b-tonnes .frame{min-width:360px;background:var(--panel);border:1px solid var(--edge);border-radius:6px;padding:16px 20px 22px}
+
+/* head */
+.b-tonnes .head{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px}
+.b-tonnes .crumb{display:inline-flex;align-items:center;gap:6px;color:var(--text3);font-size:12.5px}
+.b-tonnes .crumb .sw{width:9px;height:9px;border-radius:2px;background:var(--business)}
+.b-tonnes .ico{width:28px;height:28px;border-radius:4px;background:rgba(167,139,250,.16);border:1px solid rgba(167,139,250,.45);display:grid;place-items:center}
+.b-tonnes .ico svg{width:18px;height:18px}
+.b-tonnes .name{font-size:22px;font-weight:600}
+.b-tonnes .info{width:16px;height:16px;border-radius:50%;border:1px solid var(--control-edge);color:var(--text3);font:600 10px/14px var(--mono);text-align:center}
+.b-tonnes .pill{margin-left:auto;background:rgba(241,124,176,.14);border:1px solid var(--building);color:var(--building);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.b-tonnes .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.b-tonnes .chip{border-radius:3px;padding:3px 12px;background:var(--raised);border:1px solid var(--control-edge);color:var(--text2);font-size:12px;white-space:nowrap}
+.b-tonnes .chip.lit{background:var(--pinned);color:var(--text);box-shadow:inset 0 -2px 0 var(--text2)}
+
+.b-tonnes .stack{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.b-tonnes .card{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:12px 14px}
+.b-tonnes .card-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin-bottom:10px}
+.b-tonnes .card-h h4{font-size:14.5px;font-weight:600}
+.b-tonnes .card-h .sub{color:var(--text3);font-size:12px}
+.b-tonnes .new{display:inline-block;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(90,169,255,.5);border-radius:3px;padding:0 4px;font-weight:600}
+
+/* flow card */
+.b-tonnes .flow{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1.1fr) 30px minmax(0,1fr);align-items:center;gap:8px}
+.b-tonnes .side{display:flex;flex-direction:column;gap:6px}
+.b-tonnes .good{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:7px 10px}
+.b-tonnes .good i{width:10px;height:10px;border-radius:2px;flex:0 0 auto}
+.b-tonnes .good .g{flex:1;min-width:0}
+.b-tonnes .good .t{font:600 13px var(--mono)}
+.b-tonnes .arrow{height:2px;background:var(--control-edge);position:relative}
+.b-tonnes .arrow::after{content:"";position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left:7px solid var(--control-edge);border-right:0}
+.b-tonnes .plant{background:var(--pinned);border:1px solid var(--control-edge);border-radius:4px;padding:10px 12px;text-align:center}
+.b-tonnes .plant .n{font-size:14px;font-weight:600}
+.b-tonnes .plant .r{font:600 13px var(--mono);color:var(--good);margin-top:2px}
+.b-tonnes .plant .meter{height:5px;background:var(--stage);border-radius:2px;margin-top:6px;overflow:hidden}
+.b-tonnes .plant .meter b{display:block;height:100%;width:96%;background:var(--good)}
+
+/* how its tonnes move */
+.b-tonnes .strip{border:1px solid var(--accent);border-color:rgba(90,169,255,.45);box-shadow:0 0 0 3px rgba(90,169,255,.06)}
+.b-tonnes .tr-row{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:center;padding:10px 0;border-top:1px solid rgba(36,53,74,.7)}
+.b-tonnes .tr-row:first-of-type{border-top:0;padding-top:2px}
+.b-tonnes .what .n{font-size:13px;font-weight:600}
+.b-tonnes .what .t{font:600 12px var(--mono);color:var(--text2)}
+.b-tonnes .what .d{font-size:10.5px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
+.b-tonnes .chain{display:flex;align-items:stretch;gap:0;min-width:0}
+.b-tonnes .node{flex:0 0 auto;align-self:center;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);border:1px solid var(--control-edge);background:var(--panel);border-radius:10px;padding:2px 8px;white-space:nowrap;z-index:1}
+.b-tonnes .node.door{border-color:var(--business);color:var(--text)}
+.b-tonnes .node.world{border-style:dashed;color:var(--text3)}
+.b-tonnes .sg{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:0 6px;position:relative}
+.b-tonnes .sg .lg{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b-tonnes .sg .ln{height:9px;border-radius:2px;position:relative}
+.b-tonnes .sg .ln::after{content:"";position:absolute;right:-6px;top:-2px;border:6.5px solid transparent;border-right:0;border-left:6px solid;border-left-color:inherit}
+.b-tonnes .sg .md{font-size:11.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b-tonnes .sg .md b{font:600 11.5px var(--mono);color:var(--text)}
+.b-tonnes .sg .md .who{color:var(--text3)}
+.b-tonnes .split{display:flex;gap:2px}
+.b-tonnes .split>span{height:9px;border-radius:2px}
+.b-tonnes .split-l{display:flex;gap:2px;font-size:11px;color:var(--text2)}
+.b-tonnes .split-l>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.b-tonnes .split-l b{font:600 11px var(--mono);color:var(--text)}
+.b-tonnes .c-truck{background:var(--truck);border-left-color:var(--truck)!important;color:var(--truck)}
+.b-tonnes .c-rail{background:var(--rail);border-left-color:var(--rail)!important;color:var(--rail)}
+.b-tonnes .c-siding{background:repeating-linear-gradient(90deg,var(--rail) 0 6px,var(--railDark) 6px 8px);color:var(--rail)}
+.b-tonnes .c-sea{background:var(--hatch),var(--sea);border-left-color:var(--sea)!important;color:var(--sea)}
+.b-tonnes .c-lorry{background:var(--hatch),var(--lorry);border-left-color:var(--lorry)!important;color:var(--lorry)}
+.b-tonnes .ln.c-truck,.b-tonnes .ln.c-rail,.b-tonnes .ln.c-sea,.b-tonnes .ln.c-lorry{color:transparent}
+.b-tonnes .key{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;padding-top:10px;border-top:1px solid var(--edge);font-size:11.5px;color:var(--text2)}
+.b-tonnes .key span{display:inline-flex;align-items:center;gap:6px}
+.b-tonnes .key i{width:14px;height:9px;border-radius:2px;display:inline-block}
+
+/* bill */
+.b-tonnes .billbar{display:flex;height:22px;border-radius:3px;overflow:hidden;margin:2px 0 10px}
+.b-tonnes .billbar span{height:100%;border-right:1px solid var(--raised)}
+.b-tonnes .bill{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px;align-items:baseline}
+.b-tonnes .bill .dv{display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.b-tonnes .bill .dv i{width:8px;height:8px;border-radius:50%}
+.b-tonnes .bill .why{color:var(--text3);font-size:12px}
+.b-tonnes .bill .v{font:600 13px var(--mono);text-align:right}
+.b-tonnes .bill .tot{border-top:1px solid var(--control-edge);padding-top:6px}
+.b-tonnes .saves{margin-top:12px;display:flex;gap:10px;align-items:flex-start;background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.35);border-radius:4px;padding:8px 10px;color:var(--text2);font-size:12.5px}
+.b-tonnes .saves b{color:var(--text);font-weight:600}
+.b-tonnes .saves .mono{color:var(--good)}
+.b-tonnes .saves svg{flex:0 0 auto;margin-top:2px}
+
+/* before / after */
+.b-tonnes .pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.b-tonnes .ba{display:flex;flex-direction:column;gap:8px}
+.b-tonnes .ba .tag{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.b-tonnes .ba.before{border-color:rgba(248,81,73,.4)}
+.b-tonnes .ba.before .tag{color:var(--bad)}
+.b-tonnes .ba.after{border-color:rgba(63,185,80,.45)}
+.b-tonnes .ba.after .tag{color:var(--good)}
+.b-tonnes .ba ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.b-tonnes .ba li{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid rgba(36,53,74,.7);color:var(--text2)}
+.b-tonnes .ba li:last-child{border-bottom:0}
+.b-tonnes .ba li .mono{color:var(--text);text-align:right}
+.b-tonnes .ba .hero{font:600 20px var(--mono)}
+.b-tonnes .ba .hero small{font:400 12px var(--sans);color:var(--text3);margin-left:6px}
+
+.b-tonnes .cost{display:flex;flex-direction:column;gap:8px}
+.b-tonnes .crow{display:grid;grid-template-columns:120px minmax(0,1fr) 76px;gap:10px;align-items:center}
+.b-tonnes .crow .lab{font-size:12px;color:var(--text2)}
+.b-tonnes .crow .v{font:600 13px var(--mono);text-align:right}
+.b-tonnes .cbar{display:flex;height:20px;background:var(--stage);border-radius:2px}
+.b-tonnes .cbar .w{background:var(--business);opacity:.85;border-radius:2px 0 0 2px}
+.b-tonnes .cbar .vans{background:var(--hatch),var(--bad);opacity:.8;display:flex;align-items:center;justify-content:center;font:600 10.5px var(--mono);color:#fff;white-space:nowrap;overflow:hidden;border-radius:0 2px 2px 0}
+.b-tonnes .clegend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11.5px;color:var(--text2)}
+.b-tonnes .clegend span{display:inline-flex;align-items:center;gap:6px}
+.b-tonnes .clegend i{width:14px;height:9px;border-radius:2px;display:inline-block}
+
+/* verdict */
+.b-tonnes .verdict{display:flex;gap:12px;align-items:flex-start;background:var(--pinned);border:1px solid var(--control-edge);border-left:3px solid var(--business);border-radius:4px;padding:10px 14px}
+.b-tonnes .verdict p{font-size:13.5px;color:var(--text)}
+.b-tonnes .verdict .cap{display:block;margin-bottom:2px}
+.b-tonnes .verdict .ok{color:var(--good);font-weight:600}
+.b-tonnes .foot{margin-top:12px;font-size:10.5px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
+
+@media (max-width:640px){
+  .b-tonnes .frame{padding:12px 12px 18px}
+  .b-tonnes .flow{grid-template-columns:1fr;gap:6px}
+  .b-tonnes .flow .arrow{width:2px;height:16px;justify-self:center}
+  .b-tonnes .flow .arrow::after{right:-4px;top:auto;bottom:-2px;border:5px solid transparent;border-top:7px solid var(--control-edge);border-bottom:0}
+  .b-tonnes .tr-row{grid-template-columns:1fr;gap:8px}
+  .b-tonnes .chain{flex-wrap:wrap;row-gap:8px}
+  .b-tonnes .sg{flex:1 1 120px}
+  .b-tonnes .crow{grid-template-columns:84px minmax(0,1fr) 62px;gap:8px}
+  .b-tonnes .pill{margin-left:0}
+  .b-tonnes .sg .md{white-space:normal}
+  .b-tonnes .split-l{justify-content:space-between;flex-wrap:wrap}
+  .b-tonnes .split-l>span{flex:none!important;overflow:visible}
+  .b-tonnes .cbar .xl{display:none}
+}
+@media (prefers-reduced-motion:reduce){.b-tonnes *{transition:none!important;animation:none!important}}
+</style>
+
+<section class="board b-tonnes" id="tonnes">
+  <p class="bd-kicker">Board 3 · Freight &amp; Infrastructure study</p>
+  <h2 class="bd-title">Iron &amp; Steel › Operations: how its tonnes move</h2>
+  <p class="bd-lead">On every sector's Operations page, under the flow card, one strip shows its tonnes by leg and mode and the month's freight bill by division. Here, the Pelletising Plant before and after Freight.</p>
+
+  <div class="tn-scroll">
+  <div class="frame">
+    <div class="head">
+      <span class="crumb"><span class="sw"></span>Sectors ›</span>
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none" stroke="#c4b2fb" stroke-width="1.4" stroke-linejoin="round"><path d="M2 15V8l4 2.5V8l4 2.5V5h2v-2.5h2V15z"/><path d="M2 15h14"/></svg></span>
+      <h3 class="name">Iron &amp; Steel</h3>
+      <span class="info" title="Pelletising, smelting and the mills">i</span>
+      <button class="pill" type="button">Build · Iron &amp; Steel</button>
+    </div>
+    <div class="chips"><span class="chip lit">Operations</span><span class="chip">Income</span><span class="chip">Balance sheet</span><span class="chip">Cash &amp; debt</span><span class="chip">Investors</span></div>
+
+    <div class="stack">
+      <!-- flow card -->
+      <div class="card">
+        <div class="card-h"><h4>What it makes</h4><span class="sub">a month, at nameplate</span></div>
+        <div class="flow">
+          <div class="side">
+            <span class="cap">In</span>
+            <div class="good"><i style="background:var(--ore)"></i><span class="g">Iron ore</span><span class="t">150,000 t</span></div>
+            <div class="good"><i style="background:var(--coal)"></i><span class="g">Thermal coal</span><span class="t">4,500 t</span></div>
+          </div>
+          <div class="arrow" aria-hidden="true"></div>
+          <div class="plant">
+            <div class="n">Pelletising Plant</div>
+            <div class="r">running at 96%</div>
+            <div class="meter"><b></b></div>
+          </div>
+          <div class="arrow" aria-hidden="true"></div>
+          <div class="side">
+            <span class="cap">Out</span>
+            <div class="good"><i style="background:var(--pellet)"></i><span class="g">Pellets</span><span class="t">150,000 t</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- how its tonnes move -->
+      <div class="card strip">
+        <div class="card-h"><h4>How its tonnes move</h4><span class="new">new</span><span class="sub">each leg, its mode, its tonnes, and who is paid</span></div>
+
+        <div class="tr-row">
+          <div class="what"><div class="n">Iron ore</div><div class="t">150,000 t in</div><div class="d">bought abroad</div></div>
+          <div class="chain">
+            <span class="node world">World</span>
+            <div class="sg"><span class="lg">Long haul</span><span class="ln c-rail"></span><span class="md">Rail <b>150,000 t</b> <span class="who">· Freight</span></span></div>
+            <span class="node">Yard</span>
+            <div class="sg"><span class="lg">City leg</span>
+              <div class="split"><span class="c-siding" style="flex:3"></span><span class="c-truck" style="flex:1"></span></div>
+              <div class="split-l"><span style="flex:3">Siding <b>112,500 t</b> 75%</span><span style="flex:1">Truck <b>37,500</b></span></div>
+            </div>
+            <span class="node door">Door</span>
+          </div>
+        </div>
+
+        <div class="tr-row">
+          <div class="what"><div class="n">Pellets</div><div class="t">150,000 t out</div><div class="d">sold abroad</div></div>
+          <div class="chain">
+            <span class="node door">Door</span>
+            <div class="sg"><span class="lg">City leg</span><span class="ln c-truck"></span><span class="md">Truck <b>150,000 t</b> <span class="who">· Freight</span></span></div>
+            <span class="node">Quay</span>
+            <div class="sg"><span class="lg">Long haul</span><span class="ln c-sea"></span><span class="md">Sea <b>150,000 t</b> <span class="who">· paid abroad</span></span></div>
+            <span class="node world">World</span>
+          </div>
+        </div>
+
+        <div class="tr-row">
+          <div class="what"><div class="n">Thermal coal</div><div class="t">4,500 t in</div><div class="d">bought abroad</div></div>
+          <div class="chain">
+            <span class="node world">World</span>
+            <div class="sg"><span class="lg">Long haul</span><span class="ln c-lorry"></span><span class="md">World lorry <b>4,500 t</b> <span class="who">· paid abroad</span></span></div>
+            <span class="node">Gateway</span>
+            <div class="sg"><span class="lg">City leg</span><span class="ln c-truck"></span><span class="md">Truck <b>4,500 t</b> <span class="who">· Freight</span></span></div>
+            <span class="node door">Door</span>
+          </div>
+        </div>
+
+        <div class="key">
+          <span><i class="c-rail"></i>Rail</span>
+          <span><i class="c-siding"></i>Siding, door to door</span>
+          <span><i class="c-truck"></i>Truck (Haulage)</span>
+          <span><i class="c-sea"></i>Sea</span>
+          <span><i class="c-lorry"></i>World lorry</span>
+          <span style="color:var(--text3)">hatched: paid abroad, inside the price</span>
+        </div>
+      </div>
+
+      <!-- bill -->
+      <div class="card">
+        <div class="card-h"><h4>The month's freight bill</h4><span class="sub">paid to Freight, by division</span></div>
+        <div class="billbar" aria-hidden="true">
+          <span style="flex:0.77;background:var(--truck)"></span>
+          <span style="flex:0.91;background:var(--rail)"></span>
+          <span style="flex:0.47;background:var(--sea)"></span>
+        </div>
+        <div class="bill">
+          <span class="dv"><i style="background:var(--truck)"></i>Haulage</span><span class="why">192,000 t at D$4.00, its city legs</span><span class="v">D$0.77M</span>
+          <span class="dv"><i style="background:var(--rail)"></i>Rail</span><span class="why">150,000 t of ore at 54% of D$11.25, the long haul</span><span class="v">D$0.91M</span>
+          <span class="dv"><i style="background:var(--sea)"></i>Ports</span><span class="why">handling D$0.47M, dues included</span><span class="v">D$0.47M</span>
+          <span class="dv tot">All</span><span class="why tot"></span><span class="v tot">D$2.15M</span>
+        </div>
+        <div class="saves">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 11h10M3 11V7m4 4V4m4 7V6" stroke="#3fb950" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+          <span><b>Its siding carries 112,500 t door to door:</b> about <span class="mono">D$0.45M</span> a month less haulage.</span>
+        </div>
+      </div>
+
+      <!-- before / after -->
+      <div class="pair">
+        <div class="card ba before">
+          <span class="tag">Today (I4)</span>
+          <div class="hero">2,538 vans<small>of its own</small></div>
+          <ul>
+            <li><span>Vans in its capital</span><span class="mono">D$173M · 64% of the plant</span></li>
+            <li><span>A month for its city legs</span><span class="mono">D$1.44M wear + D$0.42M diesel</span></li>
+            <li><span>Drivers</span><span class="mono">none</span></li>
+          </ul>
+        </div>
+        <div class="card ba after">
+          <span class="tag">With Freight</span>
+          <div class="hero">no vans<small>about 64 of Haulage's trucks do its city legs</small></div>
+          <ul>
+            <li><span>Fleet in its cost</span><span class="mono">D$0</span></li>
+            <li><span>A month for its city legs</span><span class="mono">about D$0.77M of haulage</span></li>
+            <li><span>Drivers</span><span class="mono">about 64 posts in the city</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h4>The plant's whole cost</h4><span class="sub">with and without the vans</span></div>
+        <div class="cost">
+          <div class="crow"><span class="lab">Today, with vans</span><div class="cbar"><span class="w" style="width:35.93%"></span><span class="vans" style="width:64.07%"><span class="xl">vans D$173M · </span>64%</span></div><span class="v">D$270M</span></div>
+          <div class="crow"><span class="lab">With Freight</span><div class="cbar"><span class="w" style="width:35.93%"></span></div><span class="v">D$97M</span></div>
+          <div class="clegend"><span><i style="background:var(--business);opacity:.85"></i>The plant itself, D$97M</span><span><i style="background:var(--hatch),var(--bad);opacity:.8"></i>Its vans, D$173M</span></div>
+        </div>
+      </div>
+
+      <div class="verdict">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex:0 0 auto;margin-top:2px"><circle cx="8" cy="8" r="7" fill="none" stroke="#a78bfa" stroke-width="1.4"/><path d="M4.8 8.3l2.2 2.1 4.2-4.6" fill="none" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p><span class="cap">Investors</span><span class="ok">Investors would build one:</span> it earns <span class="mono">D$2.9M</span> a month, over <span class="mono">1.25×</span> its interest on its whole cost (<span class="mono">D$0.41M</span> a month at <span class="mono">5.03%</span> on <span class="mono">D$97M</span>).</p>
+      </div>
+    </div>
+  </div>
+  </div>
+  <p class="foot">Figures are illustrative (est.)</p>
+
+<script>
+(function(){
+  var root=document.getElementById('tonnes'); if(!root) return;
+  /* static board: hover a leg to light its row */
+  [].slice.call(root.querySelectorAll('.tr-row')).forEach(function(r){
+    r.addEventListener('mouseenter',function(){r.style.background='rgba(34,51,74,.35)';});
+    r.addEventListener('mouseleave',function(){r.style.background='';});
+  });
+})();
+</script>
+</section>

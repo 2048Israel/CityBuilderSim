@@ -481,14 +481,14 @@ The mockups are the four boards in `freight/` beside this note, and the artifact
 
 - **Sectors › Freight (board 2).** The sector page, as every sector's (the head, five figures, the investors' line, page chips), with a **division strip** under the chips: All · Haulage · Rail · Ports.
   - The **Operations** page for All is the **city's freight this month in legs**: tonnes by leg (long haul, city leg, distribution) and by mode (world lorry, rail, sea, truck, siding, van), each bar a door to its division.
-  - Each division's page has its fleet against what it needs (trucks 412 of 455; wagon sets; berths by kind and how full), its quote with the rule's floor and target, and its own lines (the railway's are today's).
+  - Each division's page has its fleet against what it needs (trucks 296 of 318; wagon sets; berths by kind and how full), its quote with the rule's floor and target, and its own lines (the railway's are today's).
   - The **Income** page's statement gains a division column. The rows are the shippers billed, and each figure is a door to that sector's input line.
 
 - **A works' page: "How its tonnes move" (board 3).** On every sector's Operations page, under the flow card, one strip shows the sector's tonnes by leg and mode and the month's freight bill by division.
   - It also shows what a siding would save. For example: "a siding would carry 75% of 150,000 t: about D$0.4M a month less haulage".
   - The Iron & Steel version shows the pellet plant from §3.6, before and after.
 
-- **Build › Infrastructure and Build › Freight (board 4).** The strip with Infrastructure first among the city's tabs, its five groups, and the new **Bulk Berth** card with a payback line, which ports never had. Freight's tab shows the rail rungs and the **Truck Depot** card, with its investors' line ("Freight would build one: 37 trucks over its depots' room").
+- **Build › Infrastructure and Build › Freight (board 4).** The strip with Infrastructure first among the city's tabs, its five groups, and the new **Bulk Berth** card with a payback line, which ports never had. Freight's tab shows the rail rungs and the **Truck Depot** card, with its investors' line ("Freight would build one: 18 trucks over its depots' room").
 
 - **Infrastructure › Freight and › Ports.** The twelfth tab's railway and freight pages become one **Freight** page with the division strip. The new **Ports** page lists berths by kind, tonnes against capacity, the dues collected, and the month's calls by ship class. Its door "The ships on the map" opens the map at the port.
 

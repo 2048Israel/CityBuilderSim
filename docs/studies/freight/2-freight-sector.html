@@ -1,0 +1,445 @@
+<title>Sectors › Freight</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;--edge:#24354a;--control-edge:#33475f;--text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;--good:#3fb950;--warn:#e3b341;--bad:#f85149;--accent:#5aa9ff;--people:#2ec4b6;--money:#5aa9ff;--business:#a78bfa;--building:#f17cb0;--ore:#c9b68f;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace}
+body{background:var(--stage);color:var(--text);font-family:var(--sans)}
+
+.b-freight{--truck:#f2a65a;--rail:#c9ced3;--railDark:#7f878f;--sea:#4f8fd0;--lorry:#6b7d93;--van:#a78bfa;--hatch:repeating-linear-gradient(135deg,rgba(11,17,24,.5) 0 3px,transparent 3px 7px);
+  display:block;max-width:1240px;margin:0 auto;padding-block:32px 44px;padding-inline:16px;box-sizing:border-box;font-family:var(--sans);font-size:12.5px;line-height:1.45;color:var(--text)}
+.b-freight *,.b-freight *::before,.b-freight *::after{box-sizing:border-box}
+.b-freight h2,.b-freight h3,.b-freight h4,.b-freight p{margin:0}
+.b-freight button{font:inherit;color:inherit}
+.b-freight :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* board heading (outside the game frame) */
+.b-freight .bd-kicker{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);font-weight:600}
+.b-freight .bd-title{font-size:23px;font-weight:600;margin-top:4px;letter-spacing:-.005em}
+.b-freight .bd-lead{font-size:14.5px;color:var(--text2);margin-top:6px;max-width:74ch}
+.b-freight .bd-est{font-size:10.5px;color:var(--text3);margin-top:6px;letter-spacing:.06em;text-transform:uppercase}
+
+/* the frame: the game's window */
+.b-freight .fr-scroll{overflow-x:auto;margin-top:20px;border-radius:6px}
+.b-freight .frame{min-width:360px;display:flex;background:var(--panel);border:1px solid var(--edge);border-radius:6px;overflow:hidden}
+.b-freight .rail-tabs{flex:0 0 44px;background:var(--stage);border-right:1px solid var(--edge);padding:10px 8px;display:flex;flex-direction:column;gap:8px}
+.b-freight .rail-tabs i{display:block;width:28px;height:28px;border-radius:4px;background:var(--raised);border:1px solid var(--edge);position:relative}
+.b-freight .rail-tabs i::after{content:"";position:absolute;inset:9px;border-radius:2px;background:var(--spent);opacity:.7}
+.b-freight .rail-tabs i:nth-child(3n+2)::after{border-radius:50%}
+.b-freight .rail-tabs i:nth-child(3n)::after{inset:11px 7px}
+.b-freight .rail-tabs i.on{background:var(--pinned);border-color:var(--control-edge);box-shadow:inset 2px 0 0 var(--building)}
+.b-freight .rail-tabs i.on::after{background:var(--text2)}
+.b-freight .page{flex:1;min-width:0;padding:16px 20px 22px}
+
+/* sector head */
+.b-freight .head{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px}
+.b-freight .crumb{display:inline-flex;align-items:center;gap:6px;color:var(--text3);font-size:12.5px}
+.b-freight .crumb .sw{width:9px;height:9px;border-radius:2px;background:var(--business)}
+.b-freight .ico{width:28px;height:28px;border-radius:4px;background:rgba(167,139,250,.16);border:1px solid rgba(167,139,250,.45);display:grid;place-items:center}
+.b-freight .ico svg{width:18px;height:18px}
+.b-freight .name{font-size:22px;font-weight:600;letter-spacing:-.005em}
+.b-freight .info{width:16px;height:16px;border-radius:50%;border:1px solid var(--control-edge);color:var(--text3);font:600 10px/14px var(--mono);text-align:center}
+.b-freight .pill{margin-left:auto;background:rgba(241,124,176,.14);border:1px solid var(--building);color:var(--building);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.b-freight .pill:hover{background:rgba(241,124,176,.24)}
+
+.b-freight .figs{display:flex;flex-wrap:wrap;gap:10px 30px;margin-top:14px}
+.b-freight .cap{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:500}
+.b-freight .fig .v{font:600 18px/1.25 var(--mono);margin-top:2px;font-variant-numeric:tabular-nums}
+.b-freight .fig .v.ok{color:var(--good)}
+.b-freight .inv{margin-top:10px;color:var(--text2);font-size:13px}
+.b-freight .inv b{color:var(--business);font-weight:600}
+
+.b-freight .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.b-freight .chip{border-radius:3px;padding:3px 12px;background:var(--raised);border:1px solid var(--control-edge);color:var(--text2);font-size:12px;white-space:nowrap}
+.b-freight .chip.lit{background:var(--pinned);color:var(--text);border-color:var(--control-edge);box-shadow:inset 0 -2px 0 var(--text2)}
+
+.b-freight .divs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--edge)}
+.b-freight .divs .cap{margin-right:6px}
+.b-freight .dv{display:inline-flex;align-items:center;gap:6px;border-radius:3px;padding:3px 12px;background:var(--raised);border:1px solid var(--control-edge);color:var(--text2);font-size:12px;cursor:pointer}
+.b-freight .dv:hover{background:var(--hover);color:var(--text)}
+.b-freight .dv[aria-selected="true"]{background:var(--pinned);color:var(--text);box-shadow:inset 0 -2px 0 var(--accent)}
+.b-freight .dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
+.b-freight .dot.d-all{background:conic-gradient(var(--truck) 0 33%,var(--rail) 0 66%,var(--sea) 0)}
+.b-freight .dot.d-haul{background:var(--truck)}
+.b-freight .dot.d-rail{background:var(--rail)}
+.b-freight .dot.d-port{background:var(--sea)}
+
+/* cards */
+.b-freight .panel{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.b-freight .panel[hidden]{display:none}
+.b-freight .card{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:12px 14px}
+.b-freight .card-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin-bottom:10px}
+.b-freight .card-h h4{font-size:14.5px;font-weight:600}
+.b-freight .card-h .sub{color:var(--text3);font-size:12px}
+.b-freight .card-h .go{margin-left:auto}
+.b-freight .door{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font-size:12px;font-weight:500}
+.b-freight .door:hover{text-decoration:underline}
+.b-freight .mono{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* legs chart */
+.b-freight .legs{display:flex;flex-direction:column;gap:10px}
+.b-freight .leg-row{display:grid;grid-template-columns:118px minmax(0,1fr);gap:12px;align-items:center}
+.b-freight .leg-name{font-size:12.5px;font-weight:500}
+.b-freight .leg-name small{display:block;font:600 11px var(--mono);color:var(--text3)}
+.b-freight .track{display:flex;height:26px;background:linear-gradient(90deg,var(--edge) 1px,transparent 1px) 0 0/25% 100%;border-right:1px solid var(--edge)}
+.b-freight .seg{display:flex;align-items:center;height:100%;min-width:0;padding:0 6px;border:0;border-right:1px solid var(--panel);overflow:hidden;font:600 11px/1 var(--mono);white-space:nowrap;text-align:left;position:relative}
+.b-freight .seg .l{overflow:hidden;text-overflow:ellipsis}
+.b-freight button.seg{cursor:pointer}
+.b-freight button.seg:hover{filter:brightness(1.12)}
+.b-freight button.seg:hover .l,.b-freight button.seg:focus-visible .l{text-decoration:underline;text-underline-offset:2px}
+.b-freight button.seg:focus-visible{outline-offset:-2px;outline-color:var(--text)}
+.b-freight .m-lorry{background:var(--lorry);color:#e6edf3}
+.b-freight .m-rail{background:var(--rail);color:#1a2230}
+.b-freight .m-sea{background:var(--sea);color:#f3f7fb}
+.b-freight .m-truck{background:var(--truck);color:#2a1806}
+.b-freight .m-siding{background:repeating-linear-gradient(90deg,var(--rail) 0 7px,var(--railDark) 7px 9px);color:#1a2230}
+.b-freight .m-van{background:var(--van);color:#1d1433;padding:0}
+.b-freight .abroad{background-image:var(--hatch)}
+.b-freight .m-sea.abroad{background:var(--hatch),var(--sea)}
+.b-freight .m-lorry.abroad{background:var(--hatch),var(--lorry)}
+.b-freight .seg .l{text-shadow:none}
+.b-freight .m-sea .l,.b-freight .m-lorry .l{background:rgba(11,17,24,.55);padding:1px 3px;border-radius:2px}
+.b-freight .axis{display:grid;grid-template-columns:118px minmax(0,1fr);gap:12px}
+.b-freight .ticks{position:relative;height:16px;font:400 10px var(--mono);color:var(--text3)}
+.b-freight .ticks span{position:absolute;top:2px;transform:translateX(-50%);white-space:nowrap}
+.b-freight .ticks span:first-child{transform:none}
+.b-freight .ticks span:last-child{transform:translateX(-100%)}
+.b-freight .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--edge);font-size:11.5px;color:var(--text2)}
+.b-freight .legend span{display:inline-flex;align-items:center;gap:6px}
+.b-freight .legend i{width:14px;height:10px;border-radius:2px;display:inline-block}
+.b-freight .legend b{font:600 11px var(--mono);color:var(--text)}
+.b-freight .legend .abroad-key{color:var(--text3)}
+
+/* division summary cards */
+.b-freight .trio{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.b-freight .dcard{display:flex;flex-direction:column;gap:8px}
+.b-freight .dcard .card-h{margin-bottom:0}
+.b-freight .gauge{position:relative;height:8px;border-radius:2px;background:var(--stage);border:1px solid var(--edge);overflow:visible}
+.b-freight .gauge>b{position:absolute;left:0;top:0;bottom:0;border-radius:1px}
+.b-freight .gauge>em{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--text);border-radius:1px}
+.b-freight .gl{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--text2)}
+.b-freight .gl .mono{color:var(--text)}
+.b-freight .kv{display:grid;grid-template-columns:1fr auto;gap:3px 10px;font-size:12px;color:var(--text2)}
+.b-freight .kv>span:nth-child(2n){font:600 12px var(--mono);color:var(--text);text-align:right}
+.b-freight .berth{display:grid;grid-template-columns:minmax(0,1fr) 22px 70px 34px;gap:8px;align-items:center;font-size:12px;color:var(--text2)}
+.b-freight .berth .n,.b-freight .berth .p{font:600 11.5px var(--mono);color:var(--text);text-align:right}
+.b-freight .bar{height:6px;border-radius:2px;background:var(--stage);border:1px solid var(--edge);position:relative;overflow:hidden}
+.b-freight .bar>b{position:absolute;inset:0 auto 0 0;background:var(--sea)}
+.b-freight .bar>b.hi{background:var(--warn)}
+
+/* haulage */
+.b-freight .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.b-freight .chart-wrap{overflow-x:auto}
+.b-freight .chart-wrap svg{display:block;width:100%;min-width:420px;height:auto}
+.b-freight svg .gridl{stroke:var(--edge);stroke-width:1}
+.b-freight svg .axl{fill:var(--text3);font:400 10px var(--mono)}
+.b-freight svg .endl{font:600 11px var(--mono)}
+.b-freight .ptrack{position:relative;margin:50px 6px 40px;height:10px;border-radius:2px;background:var(--stage);border:1px solid var(--edge)}
+.b-freight .ptrack .ret{position:absolute;top:0;bottom:0;background:rgba(90,169,255,.28)}
+.b-freight .ptrack .short{position:absolute;top:0;bottom:0;right:0;background:var(--hatch),rgba(227,179,65,.35)}
+.b-freight .pm{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--text2)}
+.b-freight .pm.q{background:var(--accent);width:3px;top:-8px;bottom:-8px}
+.b-freight .plab{position:absolute;white-space:nowrap;font-size:10.5px;color:var(--text3);transform:translateX(-50%);text-align:center;line-height:1.25}
+.b-freight .plab .mono{display:block;color:var(--text);font-size:12px}
+.b-freight .plab.up{bottom:16px}
+.b-freight .plab.dn{top:16px}
+.b-freight .plab.dn .mono{color:var(--accent);font-size:15px}
+.b-freight .plab.r{transform:translateX(-85%)}
+.b-freight .plab.l{transform:translateX(-15%)}
+.b-freight .rule{color:var(--text2);font-size:12.5px}
+.b-freight .rule b{color:var(--text);font-weight:500}
+.b-freight table{width:100%;border-collapse:collapse;font-size:12px}
+.b-freight th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:500;text-align:left;padding:0 0 6px;border-bottom:1px solid var(--edge)}
+.b-freight td{padding:6px 0;border-bottom:1px solid rgba(36,53,74,.6);color:var(--text2)}
+.b-freight th.r,.b-freight td.r{text-align:right;padding-left:12px}
+.b-freight td.r{font:600 12px var(--mono);color:var(--text);font-variant-numeric:tabular-nums}
+.b-freight tfoot td{border-bottom:0;border-top:1px solid var(--control-edge);color:var(--text)}
+.b-freight td .gt{color:var(--text3)}
+.b-freight .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.b-freight .tile{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:8px 10px}
+.b-freight .tile .v{font:600 16px/1.3 var(--mono);margin-top:2px}
+.b-freight .tile .s{font-size:11px;color:var(--text3)}
+
+/* rail lines (the statement) */
+.b-freight .lines{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0 28px}
+.b-freight .line{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(36,53,74,.6);color:var(--text2);font-size:12.5px}
+.b-freight .line .mono{color:var(--text);text-align:right}
+.b-freight .line.new{background:linear-gradient(90deg,rgba(90,169,255,.12),transparent);padding-left:8px;margin-left:-8px;border-left:2px solid var(--accent)}
+.b-freight .tag{display:inline-block;margin-left:6px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(90,169,255,.5);border-radius:3px;padding:0 4px;vertical-align:1px}
+
+/* ports */
+.b-freight .ptable td{vertical-align:middle}
+.b-freight .ptable .bar{width:100%;min-width:90px}
+.b-freight .ptable .cap-t{font:400 10.5px var(--mono);color:var(--text3);margin-top:3px;white-space:nowrap}
+.b-freight .dues{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-top:12px}
+.b-freight .dues .v{font:600 20px var(--mono);color:var(--money)}
+
+@media (max-width:640px){
+  .b-freight .rail-tabs{display:none}
+  .b-freight .page{padding:12px 12px 18px}
+  .b-freight .leg-row,.b-freight .axis{grid-template-columns:78px minmax(0,1fr);gap:8px}
+  .b-freight .figs{gap:8px 20px}
+  .b-freight .fig .v{font-size:16px}
+  .b-freight .pill{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){.b-freight *{transition:none!important;animation:none!important}}
+</style>
+
+<section class="board b-freight" id="freight">
+  <p class="bd-kicker">Board 2 · Freight &amp; Infrastructure study</p>
+  <h2 class="bd-title">Sectors › Freight</h2>
+  <p class="bd-lead">The sector page as every sector's, with a division strip under the page chips. The All page is the city's freight this month in legs; each bar is a door to its division.</p>
+  <p class="bd-est">Figures are illustrative (est.)</p>
+
+  <div class="fr-scroll">
+  <div class="frame">
+    <nav class="rail-tabs" aria-hidden="true"><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></nav>
+    <div class="page">
+      <div class="head">
+        <span class="crumb"><span class="sw"></span>Sectors ›</span>
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none" stroke="#c4b2fb" stroke-width="1.4" stroke-linejoin="round"><rect x="1.5" y="5" width="9" height="7" rx="1"/><path d="M10.5 7.5h3.2l2.3 2.6V12h-5.5z"/><circle cx="4.5" cy="13.4" r="1.5" fill="#152130"/><circle cx="13" cy="13.4" r="1.5" fill="#152130"/></svg></span>
+        <h3 class="name">Freight</h3>
+        <span class="info" title="One business, three divisions: Haulage, Rail, Ports">i</span>
+        <button class="pill" type="button">Build · Freight</button>
+      </div>
+
+      <div class="figs">
+        <div class="fig"><div class="cap">Kept</div><div class="v">D$18.4M</div></div>
+        <div class="fig"><div class="cap">Margin</div><div class="v">21%</div></div>
+        <div class="fig"><div class="cap">Cash</div><div class="v">D$212M</div></div>
+        <div class="fig"><div class="cap">Owes</div><div class="v">D$1.94B</div></div>
+        <div class="fig"><div class="cap">Running at</div><div class="v">93%</div></div>
+      </div>
+      <p class="inv">Investors would add trucks: <b>22 short</b> of what the city ships, and a depot.</p>
+
+      <div class="chips" aria-label="Pages">
+        <span class="chip lit">Operations</span><span class="chip">Income</span><span class="chip">Balance sheet</span><span class="chip">Cash &amp; debt</span><span class="chip">Investors</span>
+      </div>
+      <div class="divs" role="tablist" aria-label="Division">
+        <span class="cap">Division</span>
+        <button class="dv" type="button" role="tab" id="fr-tab-all" data-fr-tab="all" aria-controls="fr-p-all" aria-selected="true"><span class="dot d-all"></span>All</button>
+        <button class="dv" type="button" role="tab" id="fr-tab-haulage" data-fr-tab="haulage" aria-controls="fr-p-haulage" aria-selected="false" tabindex="-1"><span class="dot d-haul"></span>Haulage</button>
+        <button class="dv" type="button" role="tab" id="fr-tab-rail" data-fr-tab="rail" aria-controls="fr-p-rail" aria-selected="false" tabindex="-1"><span class="dot d-rail"></span>Rail</button>
+        <button class="dv" type="button" role="tab" id="fr-tab-ports" data-fr-tab="ports" aria-controls="fr-p-ports" aria-selected="false" tabindex="-1"><span class="dot d-port"></span>Ports</button>
+      </div>
+
+      <!-- ALL -->
+      <div class="panel" role="tabpanel" id="fr-p-all" data-fr-panel="all" aria-labelledby="fr-tab-all">
+        <div class="card">
+          <div class="card-h"><h4>The city's freight this month, in legs</h4><span class="sub">tonnes a month, by leg and mode</span></div>
+          <div class="legs">
+            <div class="leg-row">
+              <div class="leg-name">Long haul<small>990k t</small></div>
+              <div class="track">
+                <span class="seg m-lorry abroad" style="width:34.33%" title="World lorry: 412k t, paid abroad"><span class="l">World lorry 412k</span></span>
+                <button class="seg m-rail" type="button" data-div="rail" style="width:26.5%" title="Rail: 318k t. Open Rail"><span class="l">Rail 318k</span></button>
+                <button class="seg m-sea abroad" type="button" data-div="ports" style="width:21.67%" title="Sea: 260k t, the ships paid abroad. Open Ports"><span class="l">Sea 260k</span></button>
+              </div>
+            </div>
+            <div class="leg-row">
+              <div class="leg-name">City leg<small>1,128k t</small></div>
+              <div class="track">
+                <button class="seg m-truck" type="button" data-div="haulage" style="width:74.17%" title="Truck: 890k t. Open Haulage"><span class="l">Truck 890k</span></button>
+                <button class="seg m-siding" type="button" data-div="rail" style="width:19.83%" title="Siding: 238k t door to door. Open Rail"><span class="l">Siding 238k</span></button>
+              </div>
+            </div>
+            <div class="leg-row">
+              <div class="leg-name">Distribution<small>18k t</small></div>
+              <div class="track">
+                <span class="seg m-van" style="width:1.5%" title="Vans: 18k t, the sectors' own"></span>
+                <span class="seg" style="width:auto;padding-left:8px;font-weight:400;color:var(--text3);border:0">Vans 18k, the sectors' own</span>
+              </div>
+            </div>
+            <div class="axis" aria-hidden="true">
+              <div></div>
+              <div class="ticks"><span style="left:0">0</span><span style="left:25%">300k</span><span style="left:50%">600k</span><span style="left:75%">900k</span><span style="left:100%">1.2M t</span></div>
+            </div>
+          </div>
+          <div class="legend">
+            <span><i class="m-lorry abroad"></i>World lorry <b>412k t</b></span>
+            <span><i class="m-rail"></i>Rail <b>318k t</b></span>
+            <span><i class="m-sea abroad"></i>Sea <b>260k t</b></span>
+            <span><i class="m-truck"></i>Truck <b>890k t</b></span>
+            <span><i class="m-siding"></i>Siding <b>238k t</b></span>
+            <span><i class="m-van"></i>Vans <b>18k t</b></span>
+            <span class="abroad-key"><i style="background:var(--hatch),var(--spent)"></i>hatched: paid abroad</span>
+          </div>
+        </div>
+
+        <div class="trio">
+          <div class="card dcard">
+            <div class="card-h"><span class="dot d-haul"></span><h4>Haulage</h4><button class="door go" type="button" data-div="haulage">Haulage ›</button></div>
+            <div class="gl"><span>Trucks</span><span><span class="mono">296</span> of <span class="mono">318</span> needed</span></div>
+            <div class="gauge" title="296 of 318 trucks"><b style="width:93.1%;background:var(--truck)"></b><em style="left:calc(100% - 2px)"></em></div>
+            <div class="kv">
+              <span>Depots</span><span>3 · 300 places</span>
+              <span>Quote</span><span>D$4.00 a tonne</span>
+              <span>Drivers</span><span>about 300</span>
+            </div>
+          </div>
+          <div class="card dcard">
+            <div class="card-h"><span class="dot d-rail"></span><h4>Rail</h4><button class="door go" type="button" data-div="rail">Rail ›</button></div>
+            <div class="gl"><span>Wagon sets</span><span><span class="mono">132</span> of <span class="mono">140</span></span></div>
+            <div class="gauge" title="132 of 140 wagon sets"><b style="width:94.3%;background:var(--rail)"></b><em style="left:calc(100% - 2px)"></em></div>
+            <div class="kv">
+              <span>Track</span><span>750k t a month</span>
+              <span>Carried</span><span>318k t + 238k siding</span>
+              <span>Quote</span><span>54% of the lorry rate</span>
+            </div>
+          </div>
+          <div class="card dcard">
+            <div class="card-h"><span class="dot d-port"></span><h4>Ports</h4><button class="door go" type="button" data-div="ports">Ports ›</button></div>
+            <div class="berth"><span>Tanker</span><span class="n">1</span><span class="bar"><b style="width:20%"></b></span><span class="p">20%</span></div>
+            <div class="berth"><span>Bulk berth</span><span class="n">1</span><span class="bar"><b style="width:40%"></b></span><span class="p">40%</span></div>
+            <div class="berth"><span>Container</span><span class="n">1</span><span class="bar"><b style="width:15%"></b></span><span class="p">15%</span></div>
+            <div class="berth"><span>General cargo</span><span class="n">2</span><span class="bar"><b style="width:52%"></b></span><span class="p">52%</span></div>
+            <div class="kv"><span>Dues to the city</span><span>D$0.8M a month</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HAULAGE -->
+      <div class="panel" role="tabpanel" id="fr-p-haulage" data-fr-panel="haulage" aria-labelledby="fr-tab-haulage" hidden>
+        <div class="two">
+          <div class="card">
+            <div class="card-h"><h4>Trucks against what the city ships</h4><span class="sub">24 months</span></div>
+            <div class="chart-wrap"><svg id="fr-chart" viewBox="0 0 520 210" role="img" aria-label="Fleet rises from 258 to 296 trucks while the trucks needed rise from 262 to 318 over 24 months"></svg></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h4>Its price</h4><span class="sub">a tonne, on the city leg</span></div>
+            <div class="ptrack" aria-hidden="true">
+              <span class="ret" style="left:14.29%;width:64.28%"></span>
+              <span class="short" style="left:78.57%"></span>
+              <span class="pm" style="left:14.29%"></span>
+              <span class="pm" style="left:78.57%"></span>
+              <span class="pm q" style="left:71.43%"></span>
+              <span class="plab up l" style="left:14.29%">FLOOR <span class="mono">D$3.20</span>running cost</span>
+              <span class="plab up r" style="left:78.57%">TARGET <span class="mono">D$4.10</span>cost + return</span>
+              <span class="plab dn" style="left:71.43%">QUOTE <span class="mono">D$4.00</span></span>
+            </div>
+            <p class="rule"><b>The rule:</b> running cost plus 1.2% a month on its trucks, depots and ground; up to 1.6× when short. It moves a quarter of the way a month.</p>
+          </div>
+        </div>
+        <div class="two">
+          <div class="card">
+            <div class="card-h"><h4>Shippers billed</h4><span class="sub">this month, at D$4.00 a tonne</span></div>
+            <table>
+              <thead><tr><th>Sector</th><th class="r">Tonnes</th><th class="r">Bill</th></tr></thead>
+              <tbody>
+                <tr><td>Manufacturing <span class="gt">›</span></td><td class="r">410,000 t</td><td class="r">D$1.64M</td></tr>
+                <tr><td>Iron &amp; Steel <span class="gt">›</span></td><td class="r">192,000 t</td><td class="r">D$0.77M</td></tr>
+                <tr><td>Iron Mining <span class="gt">›</span></td><td class="r">140,000 t</td><td class="r">D$0.56M</td></tr>
+                <tr><td>Materials <span class="gt">›</span></td><td class="r">96,000 t</td><td class="r">D$0.38M</td></tr>
+                <tr><td>Agriculture <span class="gt">›</span></td><td class="r">48,000 t</td><td class="r">D$0.19M</td></tr>
+              </tbody>
+              <tfoot><tr><td>These five</td><td class="r">886,000 t</td><td class="r">D$3.54M</td></tr></tfoot>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-h"><h4>Its own figures</h4></div>
+            <div class="tiles">
+              <div class="tile"><div class="cap">Trucks</div><div class="v">296</div><div class="s">22 short of 318</div></div>
+              <div class="tile"><div class="cap">Drivers</div><div class="v">300</div><div class="s">one a truck, and spares</div></div>
+              <div class="tile"><div class="cap">Depot places</div><div class="v">300</div><div class="s">3 depots, 4 to spare</div></div>
+              <div class="tile"><div class="cap">Loads a month</div><div class="v">35,600</div><div class="s">25 t a load</div></div>
+              <div class="tile"><div class="cap">Diesel</div><div class="v">D$0.41M</div><div class="s">33 L a 100 km</div></div>
+              <div class="tile"><div class="cap">Wear</div><div class="v">D$0.53M</div><div class="s">D$215k over 10 years</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RAIL -->
+      <div class="panel" role="tabpanel" id="fr-p-rail" data-fr-panel="rail" aria-labelledby="fr-tab-rail" hidden>
+        <div class="card">
+          <div class="card-h"><h4>The railway</h4><span class="sub">its lines as today, and one new</span></div>
+          <div class="gl" style="margin-bottom:6px"><span>Wagon sets against what the track needs</span><span><span class="mono">132</span> of <span class="mono">140</span></span></div>
+          <div class="gauge" style="margin-bottom:14px"><b style="width:94.3%;background:var(--rail)"></b><em style="left:calc(100% - 2px)"></em></div>
+          <div class="lines">
+            <div>
+              <div class="line"><span>Staffed</span><span class="mono">96%</span></div>
+              <div class="line"><span>Track laid</span><span class="mono">750k t a month</span></div>
+              <div class="line"><span>Wagon sets</span><span class="mono">132 of the 140 the track needs</span></div>
+              <div class="line"><span>Could carry</span><span class="mono">707k t</span></div>
+              <div class="line"><span>The city traded</span><span class="mono">990k t</span></div>
+              <div class="line"><span>Went by sea</span><span class="mono">260k t</span></div>
+              <div class="line"><span>Carried</span><span class="mono">318k t</span></div>
+            </div>
+            <div>
+              <div class="line"><span>Charged</span><span class="mono">54% of the lorry rate</span></div>
+              <div class="line"><span>A lorry charges</span><span class="mono">D$11.60 a tonne</span></div>
+              <div class="line"><span>Haulage billed</span><span class="mono">D$2.0M</span></div>
+              <div class="line"><span>Diesel</span><span class="mono">D$0.21M</span></div>
+              <div class="line new"><span>Sidings carried door to door<span class="tag">new</span></span><span class="mono">238k t</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PORTS -->
+      <div class="panel" role="tabpanel" id="fr-p-ports" data-fr-panel="ports" aria-labelledby="fr-tab-ports" hidden>
+        <div class="card">
+          <div class="card-h"><h4>Berths by kind</h4><span class="sub">the city's quays, worked by Freight</span><button class="door go" type="button">the ships on the map ›</button></div>
+          <table class="ptable">
+            <thead><tr><th>Kind</th><th class="r">Berths</th><th style="padding-left:16px">Tonnes against capacity</th><th class="r">Handling</th></tr></thead>
+            <tbody>
+              <tr><td>Tanker</td><td class="r">1</td><td style="padding-left:16px"><div class="bar"><b style="width:20%"></b></div><div class="cap-t">54k of 271k t · 20%</div></td><td class="r">D$3.10 a t</td></tr>
+              <tr><td>Bulk berth</td><td class="r">1</td><td style="padding-left:16px"><div class="bar"><b style="width:40%"></b></div><div class="cap-t">83k of 208k t · 40%</div></td><td class="r">D$3.10 a t</td></tr>
+              <tr><td>Container</td><td class="r">1</td><td style="padding-left:16px"><div class="bar"><b style="width:15%"></b></div><div class="cap-t">84k of 562k t · 15%</div></td><td class="r">D$180 a box</td></tr>
+              <tr><td>General cargo</td><td class="r">2</td><td style="padding-left:16px"><div class="bar"><b style="width:52%"></b></div><div class="cap-t">39k of 75k t · 52%</div></td><td class="r">D$14 a t</td></tr>
+            </tbody>
+          </table>
+          <div class="dues"><span class="cap">Dues paid to the city</span><span class="v">D$0.8M</span><span style="color:var(--text2)">a month, a tonne at a time across its berths</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+<script>
+(function(){
+  var root=document.getElementById('freight'); if(!root) return;
+  var tabs=[].slice.call(root.querySelectorAll('[data-fr-tab]'));
+  var panels=[].slice.call(root.querySelectorAll('[data-fr-panel]'));
+  function show(k,focus){
+    tabs.forEach(function(t){var on=t.getAttribute('data-fr-tab')===k;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;if(on&&focus)t.focus();});
+    panels.forEach(function(p){p.hidden=p.getAttribute('data-fr-panel')!==k;});
+  }
+  tabs.forEach(function(t,i){
+    t.addEventListener('click',function(){show(t.getAttribute('data-fr-tab'));});
+    t.addEventListener('keydown',function(e){
+      var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0; if(!d) return;
+      e.preventDefault(); show(tabs[(i+d+tabs.length)%tabs.length].getAttribute('data-fr-tab'),true);
+    });
+  });
+  [].slice.call(root.querySelectorAll('[data-div]')).forEach(function(b){
+    b.addEventListener('click',function(){show(b.getAttribute('data-div'),true);});
+  });
+
+  /* trucks against need, 24 months */
+  var need=[262,265,268,270,274,277,279,282,286,288,291,293,296,299,301,303,305,307,309,311,313,315,316,318];
+  var fleet=[258,259,261,263,265,267,269,271,273,275,277,279,281,283,285,287,288,290,291,292,293,294,295,296];
+  var svg=root.querySelector('#fr-chart'); if(!svg) return;
+  var L=40,R=440,T=14,B=180,y0=240,y1=330;
+  function X(i){return L+(R-L)*i/23;}
+  function Y(v){return B-(B-T)*(v-y0)/(y1-y0);}
+  var s='';
+  [250,275,300,325].forEach(function(v){s+='<line class="gridl" x1="'+L+'" x2="'+R+'" y1="'+Y(v)+'" y2="'+Y(v)+'"/><text class="axl" x="'+(L-6)+'" y="'+(Y(v)+3.5)+'" text-anchor="end">'+v+'</text>';});
+  s+='<line x1="'+L+'" x2="'+R+'" y1="'+B+'" y2="'+B+'" stroke="#33475f"/>';
+  [[0,'24 mo ago'],[6,'18'],[12,'12'],[18,'6'],[23,'now']].forEach(function(p){s+='<line x1="'+X(p[0])+'" x2="'+X(p[0])+'" y1="'+B+'" y2="'+(B+4)+'" stroke="#33475f"/><text class="axl" x="'+X(p[0])+'" y="'+(B+16)+'" text-anchor="'+(p[0]===0?'start':p[0]===23?'end':'middle')+'">'+p[1]+'</text>';});
+  var a='',b='',gap='';
+  need.forEach(function(v,i){a+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);});
+  fleet.forEach(function(v,i){b+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);});
+  gap=a+fleet.slice().reverse().map(function(v,j){return 'L'+X(23-j).toFixed(1)+' '+Y(v).toFixed(1);}).join('')+'Z';
+  s+='<path d="'+gap+'" fill="rgba(227,179,65,.13)"/>';
+  s+='<path d="'+a+'" fill="none" stroke="#a9b8c9" stroke-width="1.6" stroke-dasharray="5 4"/>';
+  s+='<path d="'+b+'" fill="none" stroke="#f2a65a" stroke-width="2.2"/>';
+  s+='<circle cx="'+X(23)+'" cy="'+Y(318)+'" r="3" fill="#a9b8c9"/><circle cx="'+X(23)+'" cy="'+Y(296)+'" r="3.5" fill="#f2a65a"/>';
+  s+='<text class="endl" x="'+(X(23)+8)+'" y="'+(Y(318)+4)+'" fill="#a9b8c9">318 needed</text>';
+  s+='<text class="endl" x="'+(X(23)+8)+'" y="'+(Y(296)+4)+'" fill="#f2a65a">296 trucks</text>';
+  s+='<text class="axl" x="'+(X(23)+8)+'" y="'+(Y(307)+4)+'" fill="#e3b341" style="fill:#e3b341">22 short</text>';
+  svg.innerHTML=s;
+  /* on a narrow screen the chart scrolls: open it at 'now' */
+  var cw=svg.parentNode; if(cw.scrollWidth>cw.clientWidth) cw.scrollLeft=cw.scrollWidth;
+  root.querySelector('[data-fr-tab="haulage"]').addEventListener('click',function(){cw.scrollLeft=cw.scrollWidth;});
+})();
+</script>
+</section>
