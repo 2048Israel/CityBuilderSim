@@ -58,6 +58,22 @@ public class DataSave {
      */
     private Long worldSeed;
 
+    /*
+     * ...AND WHETHER IT IS THE REAL EARTH (0.7.121, batch E4; spec-earth 6),
+     * kept together: worldKind "EARTH" on a city founded on the Earth, absent
+     * on a generated world's - every save before 0.7.121 is one; the spot,
+     * earthLat and earthLon (degrees, the projection's centre the site is
+     * snapped from); and the data it was drawn from by identity, earthData
+     * ("earth-1:<hash>"), which a load needs here and the same (Game's load,
+     * EarthSite.loadProblem()). The seed above decides the detail below the
+     * data and the fields on both. SAVE_FORMAT 38: a format-37 build handed
+     * an Earth city would found it on its seed's generated world.
+     */
+    private String worldKind;
+    private Double earthLat;
+    private Double earthLon;
+    private String earthData;
+
     //save variables
     private double cash;
     private int[] buildings;
@@ -477,6 +493,12 @@ public class DataSave {
         foundingCash = f.getCash();
         foundingReserveUsd = f.getReserveUsd();
         worldSeed = f.getWorldSeed();
+        // ...and on the real Earth (0.7.121) its kind, spot and data; nothing at all on a generated world.
+        boolean earth = f.isOnEarth();
+        worldKind = earth ? World.Kind.EARTH.name() : null;
+        earthLat = earth ? f.getEarthLat() : null;
+        earthLon = earth ? f.getEarthLon() : null;
+        earthData = earth ? f.getEarthData() : null;
     }
 
     /**
@@ -500,14 +522,48 @@ public class DataSave {
                 currencyQualified != null ? currencyQualified : was.qualifiedSymbol());
         String name = cityName != null ? cityName : old.getCityName();
         double cash = foundingCash != null ? foundingCash : old.getCash();
-        return new Founding(name, money, cash,
+        Founding f = new Founding(name, money, cash,
                 foundingReserveUsd != null ? foundingReserveUsd : old.getReserveUsd(),
                 meanInflation,
                 worldSeed != null ? worldSeed : Founding.derivedWorldSeed(name, cash, landOwned, month));
+        // On the real Earth (0.7.121): its spot and data, on the seed above. A save that does not say where, or names
+        // data that is not here, the load refuses before it reads this (earthProblem()).
+        if (World.Kind.EARTH.name().equals(worldKind) && earthLat != null && earthLon != null && earthLat >= -90 && earthLat <= 90
+                && Double.isFinite(earthLon) && earthData != null && !earthData.isBlank()) {
+            f = f.withWorldKey(World.Key.earth(f.getWorldSeed(), earthLat, earthLon, earthData));
+        }
+        return f;
     }
 
     /** The world seed as saved, or null on a save from before 0.7.56 - which getFounding() derives one for. */
     public Long getWorldSeed() { return worldSeed; }
+
+    /** The world's kind as saved (0.7.121): "EARTH" on a city founded on the real Earth, null on a generated world's and on every save before 0.7.121. */
+    public String getWorldKind() { return worldKind; }
+
+    /** Whether the save names a world other than the generated one (0.7.121): any worldKind at all - EARTH, or a kind this build does not know, which the load refuses. */
+    public boolean isOnEarth() { return worldKind != null; }
+
+    /** The Earth's spot as saved, latitude in degrees (0.7.121); null on a generated world. */
+    public Double getEarthLat() { return earthLat; }
+
+    /** ...its longitude. */
+    public Double getEarthLon() { return earthLon; }
+
+    /** The Earth's data the city was drawn from, by identity ("earth-1:<hash>", 0.7.121); null on a generated world. */
+    public String getEarthData() { return earthData; }
+
+    /**
+     * Why this save's world cannot be read here, or null (0.7.121): a kind
+     * this build does not know, or an Earth city whose spot is missing or
+     * whose data is not this build's or not here (EarthSite.loadProblem()).
+     * Null on a generated world. Game's load refuses it with these words.
+     */
+    public String earthProblem() {
+        if (worldKind == null) return null;
+        if (!World.Kind.EARTH.name().equals(worldKind)) return "This city stands on a world this build does not know (" + worldKind + ").";
+        return EarthSite.loadProblem(earthData, earthLat, earthLon);
+    }
 
     /** The city's name as saved, or null on a save from before 0.7.10. */
     public String getCityName() { return cityName; }

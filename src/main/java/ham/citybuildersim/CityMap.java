@@ -77,7 +77,8 @@ import java.util.zip.InflaterInputStream;
  * changes: what the far view draws (batch J4).
  *
  * THE SIDECAR (slot-NN-map.bin, writeSidecar()/readSidecar()): one record a
- * district, deflated, its header the magic, the format, the world's seed, the
+ * district, deflated, its header the magic, the format, the world's seed (on
+ * the real Earth since 0.7.121 its whole key folded, worldId()), the
  * month, a stamp of the content (also the save's mapStamp), the land it was
  * drawn on and the type count. A map saved and read back writes the same
  * bytes.
@@ -3805,7 +3806,8 @@ public final class CityMap {
 
     /**
      * The map as its sidecar's bytes, deflated: the header (magic, format,
-     * seed, month, stamp, the founding site, the stamp of the land's rectangles
+     * the world - its seed, or since 0.7.121 an Earth world's key folded,
+     * worldId() - month, stamp, the founding site, the stamp of the land's rectangles
      * it was drawn on (CityLand.stamp(), 0.7.67) and its purchases, the type count, the district count), then a
      * record a district in its order - dx and dy (int16), its free plots and
      * those inside its tiles' edge rings (int32), plots used (double), owned
@@ -3832,7 +3834,7 @@ public final class CityMap {
             DataOutputStream out = new DataOutputStream(raw);
             out.writeInt(MAGIC);
             out.writeInt(format);
-            out.writeLong(seed);
+            out.writeLong(worldId(worldKey));
             out.writeInt(month);
             out.writeLong(0);                       // the stamp, below
             out.writeLong(siteX);
@@ -3877,6 +3879,22 @@ public final class CityMap {
     }
 
     private long lastStamp;
+
+    /**
+     * The world a sidecar names in its header (0.7.121, batch E4): a generated
+     * world's seed, as every sidecar has carried it, so theirs are the bytes
+     * they were; an Earth world's whole key - its seed, spot and data -
+     * folded into one long (SplitMix64, as the stamp is), so a map drawn on
+     * one Earth is never read back onto another, nor onto the generated world
+     * of the same seed (E2's section 7: the key was not kept).
+     */
+    static long worldId(World.Key key) {
+        if (!key.earth()) return key.seed();
+        long h = World.mix(key.seed() ^ 0xEA27L);
+        h = World.mix(h ^ Double.doubleToLongBits(key.lat()));
+        h = World.mix(h ^ Double.doubleToLongBits(key.lon()));
+        return World.mix(h ^ key.data().hashCode());
+    }
 
     /** The stamp of the sidecar last written: what the save carries as mapStamp. */
     public long lastStamp() { return lastStamp; }
@@ -3929,10 +3947,10 @@ public final class CityMap {
             if (in.readInt() != MAGIC) return null;
             int format = in.readInt();
             if (format < OLDEST_READ || format > FORMAT) return null;
-            long seed = in.readLong();
+            long world = in.readLong();
             int savedMonth = in.readInt();
             long savedStamp = in.readLong();
-            if (seed != land.seed() || savedMonth != month || savedStamp != stamp || stampOf(raw) != stamp) return null;
+            if (world != worldId(land.key()) || savedMonth != month || savedStamp != stamp || stampOf(raw) != stamp) return null;
             long sx = in.readLong(), sy = in.readLong();
             long landStamp = in.readLong();
             int bought = in.readInt();

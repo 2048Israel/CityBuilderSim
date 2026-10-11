@@ -5387,7 +5387,7 @@ public final class GameVersion {
      *     321,670 (345,198), unemployment 15.6% (9.3%), the price level 906
      *     (1,456).
      */
-    public static final String VERSION = "0.7.120";
+    public static final String VERSION = "0.7.121";
 
     /**
      * The save shape.
@@ -6023,8 +6023,25 @@ public final class GameVersion {
      *     IronSplit (runs/spec-materials.md 3) is not written: until the game
      *     is published old saves need not load (Jerus, 2026-10-10). The build
      *     that saved such a city, 0.7.115 or older, still opens it.
+     *
+     * 38 - A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6):
+     *     worldKind ("EARTH"), earthLat and earthLon (the spot the projection
+     *     is centred on) and earthData (the data's identity, "earth-1:<hash>")
+     *     on a city founded on the Earth, and on no other - a generated city
+     *     writes none of them, so its save is format 37's but for this number.
+     *     Here because a format-37 build handed an Earth city would load it
+     *     WRONGLY: it knows only the generated world, so it would put the city
+     *     on its seed's generated ground - another coast, other fields under
+     *     its holdings - where the newer-build refusal stops it instead.
+     *
+     *     THE OTHER DIRECTION LOADS RIGHTLY, SO THE FLOOR STAYS AT 37 (★E4-3):
+     *     a format-37 save has no worldKind, and no worldKind is the
+     *     generated world, which every city before 0.7.121 stands on - read
+     *     byte for byte as 0.7.120 read it (SaveFileCheck). An Earth save
+     *     whose data is not this build's, or not here, is refused with words
+     *     saying which (DataSave.earthProblem(), EarthSite.loadProblem()).
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 37;
+    public static final int SAVE_FORMAT = 38;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -6034,7 +6051,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 37 since 0.7.116 (batch I3, SCRAP SPLIT FROM ORE above): a save of
+     * 37 since 0.7.116 (batch I3, SCRAP SPLIT FROM ORE above), and still at
+     * format 38 (0.7.121, A CITY ON THE REAL EARTH: a format-37 save is a
+     * generated city and loads rightly): a save of
      * format 36 or older holds the mills' scrap and the mines' ore as one
      * IRON and would load wrongly, so it is refused - the first time the
      * floor was raised by the rule. 21 until then, the sector template's
