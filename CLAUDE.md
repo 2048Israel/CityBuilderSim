@@ -113,6 +113,11 @@ These are Jerus's, and they do not move.
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
                                    project's splitting-game.md)
+        OldMetal.java              the city's old steel (0.7.121, batch I4): its scrapped cars (Motoring),
+                                   demolitions, fabrication offcuts and worn wagon sets, 85% recovered,
+                                   kept by seller; Iron & Steel's Scrap Yards buy it at 70% of scrap's
+                                   export price, the rest to landfill - saved under one key, MaterialsCheck
+                                   12 and MoneyCheck hold it (runs/spec-materials.md 2.9)
         SimulationEngine.java      the order the month runs in (200 lines - read it whole)
         Sector.java / Sectors.java the template every business extends, and the registry
         sectors/                   seventeen sector classes, RefineryFlow (0.7.80: the refinery's units, the
@@ -128,7 +133,10 @@ These are Jerus's, and they do not move.
                                    with captive use and idle-then-shed, and Mining's rule for a mine, Mining
                                    moved onto it; since 0.7.116, batch I3, Heavy Industry - labelled Iron &
                                    Steel, its arc furnaces on SCRAP - a ProcessingSector, and Mining - Iron
-                                   Mining - asked the planner's money gate on the whole cost); Mining.java
+                                   Mining - asked the planner's money gate on the whole cost; since 0.7.121,
+                                   batch I4, Iron & Steel's integrated route - the Scrap Yard, pellets, coke
+                                   ovens, blast furnaces, the oxygen shop and the large mini-mill - its coke,
+                                   pig iron and scrap captive and its works' power its own); Mining.java
                                    is the shape to copy (on ExtractionSector since 0.7.112; Materials.java
                                    is the shortest on Sector itself)
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
@@ -215,7 +223,7 @@ These are Jerus's, and they do not move.
                                    ranking where the money, the ground or the payback will not run to the
                                    first - borrowing on the funding page's bond; its log, its inbox
                                    notices - AutoBuildCheck holds it
-        BuildCard.java             one build card's figures for all 101 buildings (0.7.25): what it gives the
+        BuildCard.java             one build card's figures for all 108 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
                                    fails for them (since 0.7.75 every gate, with what it would earn, cost and

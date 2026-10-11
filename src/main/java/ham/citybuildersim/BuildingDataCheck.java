@@ -24,6 +24,12 @@ public class BuildingDataCheck {
         }
     }
 
+    /** The building with this id in a list of templates, or null. */
+    static BuildingsTemplate byId(List<BuildingsTemplate> data, int id) {
+        for (BuildingsTemplate t : data) if (t.getId() == id) return t;
+        return null;
+    }
+
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-56s %s%n", label, ok ? "OK" : "FAIL");
@@ -167,6 +173,13 @@ public class BuildingDataCheck {
             // power and nothing abroad, one that gained a line would make power or pay the world unasked.
             check(who + " gen", actual.getGen(), expected.getGen());
             check(who + " consumables", actual.getConsumables(), expected.getConsumables());
+            // ...and the old metal a yard takes and the year it first existed (0.7.121, batch I4): a yard that lost
+            // its line would take no old steel and make no scrap; a row that lost its year would read as undated.
+            if (!actual.oldMetalTaken().equals(expected.oldMetalTaken())) {
+                fails++;
+                System.out.println("  FAIL " + who + ": old metal " + actual.oldMetalTaken() + " != " + expected.oldMetalTaken());
+            }
+            check(who + " since", actual.getSince(), expected.getSince());
 
             // Every job tier, not just the ones the building uses - a tier that
             // silently failed to load would otherwise pass unnoticed.
@@ -391,9 +404,9 @@ public class BuildingDataCheck {
         assertTrue("the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated"
                         + " Highway 1.25% - and no other building has: " + repairs,
                 repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125)));
-        assertTrue("...and 101 buildings in all (0.7.91; 98 from 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76"
-                        + " until then)",
-                data.size() == 101);
+        assertTrue("...and 108 buildings in all (0.7.121: the integrated route's seven; 101 from 0.7.91, 98 from 0.7.86, 94 from"
+                        + " 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76 until then)",
+                data.size() == 108);
 
         /* ---------- the oil storage (0.7.85, batch O8; spec-oil 2.8) ----------
 
@@ -527,26 +540,72 @@ public class BuildingDataCheck {
            spec-materials 2.5 and 2.8: "gen" (kW a building makes itself) and
            "consumables" (world thousands a month it buys abroad) are read
            from the file like every field, and the shared machinery uses them.
-           No building makes power until the integrated route (batch I4), so
-           every building buys its whole draw and sells none, to the bit; since
-           0.7.116 (batch I3) three buy consumables - the Iron Mine and the two
-           arc furnaces, the study's running cost less their wages, power,
-           water and diesel (MaterialsCheck 9) - and every other pays the world
-           nothing past its goods. */
-        System.out.println("\n--- a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.116) ---");
-        boolean noGen = true, wholeDraw = true;
+           Since 0.7.121 (batch I4; the study's 1.6, Jerus's Q20) three works
+           make power from their gas - the Coke Ovens 8,000 kW, the Blast
+           Furnace 60,000 and the Oxygen Steel Shop 25,000 - and every other
+           building buys its whole draw and sells none, to the bit. Since
+           0.7.116 (batch I3) the iron rows buy consumables - the Iron Mine and
+           the two arc furnaces, and since 0.7.121 Iron & Steel's seven new
+           works, the study's running cost less their wages, the power they
+           buy, water and diesel (MaterialsCheck 9 and 11) - and every other
+           pays the world nothing past its goods. */
+        System.out.println("\n--- a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.116; the gen, 0.7.121) ---");
+        boolean wholeDraw = true;
+        java.util.Map<Integer, Double> making = new java.util.TreeMap<>();
         java.util.Set<Integer> buying = new java.util.TreeSet<>();
         for (BuildingsTemplate t : data) {
-            noGen &= t.getGen() == 0;
+            if (t.getGen() != 0) making.put(t.getId(), t.getGen());
+            else wholeDraw &= t.powerBought() == t.getElectricityConsumption() && t.powerSold() == 0;
             if (t.getConsumables() != 0) buying.add(t.getId());
-            wholeDraw &= t.powerBought() == t.getElectricityConsumption() && t.powerSold() == 0;
         }
-        assertTrue("no building makes power yet", noGen);
-        assertTrue("...so every building buys its whole draw and sells the grid none, to the bit", wholeDraw);
-        assertTrue("three buy consumables, the iron rows of batch I3: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and the Iron"
-                + " Mine (14); every other none: " + buying, buying.equals(new java.util.TreeSet<>(List.of(
+        int ovens = ham.citybuildersim.sectors.HeavyIndustry.COKE_OVENS, furnace = ham.citybuildersim.sectors.HeavyIndustry.BLAST_FURNACE,
+                shop = ham.citybuildersim.sectors.HeavyIndustry.OXYGEN_STEEL_SHOP;
+        assertTrue("three works make power, the study's 1.6: the Coke Ovens 8,000 kW, the Blast Furnace 60,000, the Oxygen Steel Shop"
+                + " 25,000: " + making, making.equals(java.util.Map.of(ovens, 8000.0, furnace, 60000.0, shop, 25000.0)));
+        BuildingsTemplate ovensT = byId(data, ovens), furnaceT = byId(data, furnace), shopT = byId(data, shop);
+        assertTrue("...so the ovens sell the grid 5,800 kW and the furnace 8,600, buying none, and the shop buys 26,600 and sells none"
+                        + " (the study's 1.6)",
+                ovensT.powerSold() == 5800 && ovensT.powerBought() == 0 && furnaceT.powerSold() == 8600 && furnaceT.powerBought() == 0
+                        && shopT.powerBought() == 26600 && shopT.powerSold() == 0);
+        assertTrue("...and every other building buys its whole draw and sells the grid none, to the bit", wholeDraw);
+        java.util.Set<Integer> iron = new java.util.TreeSet<>(List.of(
                 ham.citybuildersim.sectors.HeavyIndustry.ARC_FURNACE, ham.citybuildersim.sectors.HeavyIndustry.MINI_MILL,
-                ham.citybuildersim.sectors.Mining.IRON_MINE))));
+                ham.citybuildersim.sectors.Mining.IRON_MINE));
+        for (int id = ham.citybuildersim.sectors.HeavyIndustry.SCRAP_YARD; id <= ham.citybuildersim.sectors.HeavyIndustry.LARGE_MINI_MILL; id++) iron.add(id);
+        assertTrue("ten buy consumables, the iron rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and the Iron Mine (14) of"
+                + " batch I3, and Iron & Steel's seven of batch I4 (101-107); every other none: " + buying, buying.equals(iron));
+
+        /* ---------- the old steel a yard takes, and the year each row first existed (0.7.121, batch I4) ----------
+
+           spec-materials 2.5 and 2.9: "oldMetal" is the city's old steel a
+           Scrap Yard takes a month at nameplate (OldMetal), the one feed no
+           market sells; research-design.md 2.1 (Jerus's start year 1900, the
+           orchestrator's recommendation on its Q3): "since" is the year a row
+           first existed, written on every row the materials chains add - the
+           start year for one that stood before it - and on none before them,
+           which read as undated (0). Read by nothing yet. */
+        System.out.println("\n--- the old steel a yard takes, and the year each new row first existed (0.7.121) ---");
+        java.util.Map<Integer, Double> takers = new java.util.TreeMap<>();
+        java.util.Map<Integer, Integer> dated = new java.util.TreeMap<>();
+        for (BuildingsTemplate t : data) {
+            if (!t.oldMetalTaken().isEmpty()) takers.put(t.getId(), t.oldMetal(Good.STEEL));
+            if (t.getSince() != 0) dated.put(t.getId(), t.getSince());
+        }
+        BuildingsTemplate yard = byId(data, ham.citybuildersim.sectors.HeavyIndustry.SCRAP_YARD);
+        assertTrue("one building takes the city's old steel, the Scrap Yard: 10,500 t a month into 10,000 t of scrap (the study's 2.4): "
+                + takers, takers.equals(java.util.Map.of(ham.citybuildersim.sectors.HeavyIndustry.SCRAP_YARD, 10500.0))
+                && yard.makes(Good.SCRAP) == 10000 && yard.goodsUsed().isEmpty());
+        java.util.Map<Integer, Integer> years = new java.util.TreeMap<>();
+        years.put(ham.citybuildersim.sectors.HeavyIndustry.SCRAP_YARD, 1900);
+        years.put(ham.citybuildersim.sectors.HeavyIndustry.PELLETISING_PLANT, 1955);
+        years.put(ham.citybuildersim.sectors.HeavyIndustry.COKE_OVENS, 1900);
+        years.put(ham.citybuildersim.sectors.HeavyIndustry.MINI_BLAST_FURNACE, 1900);
+        years.put(ham.citybuildersim.sectors.HeavyIndustry.BLAST_FURNACE, 1900);
+        years.put(ham.citybuildersim.sectors.HeavyIndustry.OXYGEN_STEEL_SHOP, 1952);
+        years.put(ham.citybuildersim.sectors.HeavyIndustry.LARGE_MINI_MILL, 1969);
+        assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
+                        + " Oxygen Steel Shop 1952 (E1, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
+                        + " as standing before it - and no row before them: " + dated, dated.equals(years));
 
         /* ---------- and every profession has exactly one school ----------
 

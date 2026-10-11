@@ -99,6 +99,13 @@ public final class Manufacturing extends Sector {
                 + "is alone. It needs no deposit of its own, only people.");
     }
 
+    /** What it makes of a flow good, and since 0.7.121 (batch I4) the offcuts of its fabricated steel to the city's old steel, its own to sell (OldMetal). */
+    @Override
+    public void produceFlow(Good g) {
+        super.produceFlow(g);
+        if (g == Good.FABRICATED_STEEL && game != null) game.getOldMetal().fabricated(key(), output(g).produced);
+    }
+
     /* ---------------------------------------------------------------- reading */
 
     /** Every post the sector holds, staffed or not - the sector in one number. */

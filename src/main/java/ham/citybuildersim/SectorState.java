@@ -135,6 +135,8 @@ public final class SectorState {
         public double paidEarlier;
         /** Sector.Ledger.capitalBySupplier (0.7.19): the builders' work on its premises this month, which the tax credit is struck on at the next strike. An older save reads none. */
         public Map<String, Double> capitalBySupplier = new LinkedHashMap<>();
+        /** Sector.Ledger.oldMetalSold (0.7.121, batch I4): its old steel sold to the yards this month, named apart at the strike. An older save reads none, which is what it sold. */
+        public double oldMetalSold;
 
         static LedgerState of(Sector.Ledger l) {
             LedgerState s = new LedgerState();
@@ -151,6 +153,7 @@ public final class SectorState {
             s.otherInputs = new LinkedHashMap<>(l.otherInputs);
             s.paidEarlier = l.paidEarlier;
             s.capitalBySupplier = new LinkedHashMap<>(l.capitalBySupplier);
+            s.oldMetalSold = l.oldMetalSold;
             return s;
         }
 
@@ -175,6 +178,7 @@ public final class SectorState {
             if (otherInputs != null) l.otherInputs.putAll(otherInputs);
             l.paidEarlier = paidEarlier;
             if (capitalBySupplier != null) l.capitalBySupplier.putAll(capitalBySupplier);
+            l.oldMetalSold = oldMetalSold;
             return l;
         }
     }

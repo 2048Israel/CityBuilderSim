@@ -829,6 +829,19 @@ public abstract class Sector {
         for (Good g : makes) t += getCapacity(g) * g.tonnesPerUnit();
         // The fleet does not haul itself.
         for (Good g : uses) if (g != Good.VANS) t += getInputAtCapacity(g) * g.tonnesPerUnit();
+        /*
+         * ...NOR WHAT A WORKS HANDS ITSELF (0.7.121, batch I4; CAPTIVE USE): the
+         * coke from its ovens to its furnaces, the pig iron from its furnaces to
+         * its oxygen shop, moved on the works' own rails and ladles, not by
+         * lorry - counted neither out nor in, at nameplate, as far as what it
+         * makes covers what it uses. Nothing for a sector with no captive good,
+         * which is every sector but Iron & Steel.
+         */
+        for (Good g : makes) {
+            if (!captive(g)) continue;
+            double inside = Math.min(getCapacity(g), getInputAtCapacity(g));
+            if (inside > 0) t -= 2 * inside * g.tonnesPerUnit();
+        }
         return t;
     }
 
@@ -1352,6 +1365,8 @@ public abstract class Sector {
         public Split boughtOf(Good g) { return bought.computeIfAbsent(g, k -> new Split()); }
         /** Sold to households in particular - consumption, in the national accounts. */
         public double salesToHouseholds;
+        /** The part of otherRevenue that is its old steel sold to the Scrap Yards (0.7.121, batch I4; sellOldMetal()), named apart at the strike. */
+        public double oldMetalSold;
 
         public double purchases() {
             double total = imports;
@@ -1363,6 +1378,7 @@ public abstract class Sector {
 
         void clear() {
             localSales = exports = otherRevenue = imports = salesToHouseholds = paidEarlier = 0;
+            oldMetalSold = 0;
             purchasesBySupplier.clear();
             capitalBySupplier.clear();
             unitsSold.clear();
@@ -1381,6 +1397,7 @@ public abstract class Sector {
         void scale(double s) {
             localSales *= s; exports *= s; otherRevenue *= s; imports *= s; salesToHouseholds *= s;
             paidEarlier *= s;
+            oldMetalSold *= s;
             purchasesBySupplier.replaceAll((k, v) -> v * s);
             capitalBySupplier.replaceAll((k, v) -> v * s);
             for (Split x : sold.values())   { x.atHome *= s; x.abroad *= s; }
@@ -1669,6 +1686,20 @@ public abstract class Sector {
     }
 
     /**
+     * ...and its old steel, sold to the Scrap Yards (0.7.121, batch I4;
+     * OldMetal): other revenue like any, the yards' input from it at the
+     * same strike (they bill it to themselves - billForService() - so the
+     * sales tax nets across the pair), and named apart on the income
+     * statement as OldMetal.SOLD whatever the sector calls the rest of its
+     * other revenue (strike()).
+     */
+    public final void sellOldMetal(double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        pending.otherRevenue += amount;
+        pending.oldMetalSold += amount;
+    }
+
+    /**
      * ...and a price given back (0.7.19): the builders' refund of material
      * escalation to an owner whose material cost less when it was drawn than
      * its quote allowed. Less revenue in the month it is given, as a price
@@ -1873,7 +1904,16 @@ public abstract class Sector {
         s.paidEarlier = pending.paidEarlier;
         s.inputs = pending.purchases() + pending.paidEarlier;
         // LAST, because nameOtherRevenue() reads s.otherRevenue above it.
-        s.otherParts = nameOtherRevenue();
+        if (pending.oldMetalSold != 0) {
+            // ...its old steel sold named apart (0.7.121, sellOldMetal()): the
+            // sector names the rest, then the whole is put back.
+            s.otherRevenue = pending.otherRevenue - pending.oldMetalSold;
+            s.otherParts = nameOtherRevenue();
+            s.otherRevenue = pending.otherRevenue;
+            s.otherParts.merge(OldMetal.SOLD, pending.oldMetalSold, Double::sum);
+        } else {
+            s.otherParts = nameOtherRevenue();
+        }
         s.payroll = getPayroll();
         s.electricity = getElectricityCost();
         s.water = getWaterCost();

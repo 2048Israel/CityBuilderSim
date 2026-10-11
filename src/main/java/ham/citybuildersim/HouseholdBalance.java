@@ -1953,6 +1953,35 @@ public class HouseholdBalance {
     }
 
     /**
+     * What the Scrap Yards paid for the steel in the cars scrapped this month
+     * (0.7.121, batch I4; OldMetal): into savings, each cell its share by the
+     * cars it scrapped at the month's top (wearOutCars()) - by households
+     * where none was, which no yard buys from. Not income in the month's
+     * waterfall: a sale of something the household owned, as a used car's
+     * is (clearUsedCars()).
+     *
+     * @return what was credited: all of it, or nothing in a city with no households
+     */
+    public double creditScrappedCars(double total) {
+        if (!(total > 0) || !Double.isFinite(total)) return 0;
+        double cars = 0, homes = 0;
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            if (c.isEmpty()) continue;
+            cars += carsToReplace[i] * c.households;
+            homes += c.households;
+        }
+        if (!(cars > 0) && !(homes > 0)) return 0;
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            if (c.isEmpty()) continue;
+            double share = cars > 0 ? carsToReplace[i] * c.households / cars : c.households / homes;
+            if (share > 0) c.savings += total * share / c.households;
+        }
+        return total;
+    }
+
+    /**
      * What the households would buy this month at this price, before the
      * market says how many there are.
      *

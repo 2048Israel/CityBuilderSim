@@ -382,7 +382,7 @@ public class OilCheck {
                 String.format("%,.4f t on hand, %,.4f t bought", held1, fill1));
         report("...counted among the goods the national accounts hold (NationalAccounts.HELD)",
                 java.util.Arrays.asList(NationalAccounts.HELD).contains(Good.CRUDE)
-                        && g.getEconomyManager().getNationalAccounts().getLastHeldUnits()[NationalAccounts.HELD.length - 1] >= 0,
+                        && g.getEconomyManager().getNationalAccounts().getLastHeldUnits()[java.util.Arrays.asList(NationalAccounts.HELD).indexOf(Good.CRUDE)] >= 0,
                 "");
 
         // ...across a save, before the till is emptied.
@@ -541,8 +541,8 @@ public class OilCheck {
                         <= 1e-9 * Math.max(1, g.getForeignAccounts().tradeImports()),
                 String.format("$%,.2fk", crudeTrade == null ? 0 : crudeTrade.bought()));
         report("...and its crude among the goods held, the national accounts' fifth term",
-                g.getEconomyManager().getNationalAccounts().getLastHeldUnits()[NationalAccounts.HELD.length - 1] == tonnes1
-                        && NationalAccounts.HELD[NationalAccounts.HELD.length - 1] == Good.CRUDE,
+                g.getEconomyManager().getNationalAccounts().getLastHeldUnits()[java.util.Arrays.asList(NationalAccounts.HELD).indexOf(Good.CRUDE)] == tonnes1
+                        && java.util.Arrays.asList(NationalAccounts.HELD).contains(Good.CRUDE),
                 String.format("%,.0f t", tonnes1));
 
         // A fill past the room is cut to it, or to what the treasury could pay; a release cancels it.

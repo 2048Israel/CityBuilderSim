@@ -1341,6 +1341,18 @@ public class SaveFileCheck {
         reserveState.boughtHome = 11.5; reserveState.boughtAbroad = 22.25; reserveState.soldHome = 33.75;
         reserveState.soldAbroad = 44.5; reserveState.settledImports = 55.25; reserveState.settledExports = 66.75;
         full.getReserve().restore(reserveState);
+        // ...and the city's old steel (0.7.121, batch I4), which no city founds with: steel standing from three sellers, and the
+        // yards' last month - what arose by source, bought, to landfill, the price and who was paid.
+        OldMetal.State oldState = new OldMetal.State();
+        oldState.pending.put(Trade.HOUSEHOLDS, 1_234.5);
+        oldState.pending.put(Sectors.MANUFACTURING, 678.25);
+        oldState.pending.put(Sectors.RAIL, 255.0);
+        oldState.pendingBySource = new double[] { 1_234.5, 0, 678.25, 255.0 };
+        oldState.lastBySource = new double[] { 900.5, 30.25, 400.125, 0 };
+        oldState.lastArisen = 1_330.875; oldState.lastBought = 1_000; oldState.lastLandfill = 330.875; oldState.lastPrice = .2105;
+        oldState.lastPaid.put(Trade.HOUSEHOLDS, 140.5);
+        oldState.lastPaid.put(Sectors.MANUFACTURING, 70.0);
+        full.getOldMetal().restore(oldState);
         // ...and the ports' month (0.7.86), which no city founds with: shares in force, a kind after the railway,
         // crude in a VLCC, the road's two shares, and the month's tonnes by kind and direction.
         Ports.State portState = new Ports.State();
@@ -1444,6 +1456,18 @@ public class SaveFileCheck {
                 resThen.getSoldHome() + resThen.getSoldAbroad());
         same("...and what the last strike settled abroad", resNow.getSettledImports() + resNow.getSettledExports(),
                 resThen.getSettledImports() + resThen.getSettledExports());
+        // ...and the city's old steel (0.7.121): what stands to be bought and the yards' last month (DataSave.oldMetal).
+        OldMetal oldThen = full.getOldMetal(), oldNow = back.getOldMetal();
+        assertTrue("fixture: the city held old steel from three sellers, and a month of the yards' record",
+                oldThen.available() > 0 && oldThen.lastBought() > 0 && oldThen.lastPaid().size() == 2);
+        same("the old steel standing to be bought (0.7.121)", oldNow.available(), oldThen.available());
+        same("...the households' of it", oldNow.availableFrom(Trade.HOUSEHOLDS), oldThen.availableFrom(Trade.HOUSEHOLDS));
+        same("...the offcuts' of it, by source", oldNow.available(OldMetal.Source.OFFCUTS), oldThen.available(OldMetal.Source.OFFCUTS));
+        same("...what arose in the yards' last month, and from cars", oldNow.lastArisen() + oldNow.lastArisen(OldMetal.Source.CARS),
+                oldThen.lastArisen() + oldThen.lastArisen(OldMetal.Source.CARS));
+        same("...what they bought and sent to landfill", oldNow.lastBought() + oldNow.lastLandfill(), oldThen.lastBought() + oldThen.lastLandfill());
+        same("...the price they paid a tonne", oldNow.lastPrice(), oldThen.lastPrice());
+        assertTrue("...and who was paid what", oldNow.lastPaid().equals(oldThen.lastPaid()));
         // ...and the ports' month (0.7.86): the band and the road are struck from it on the load, the boats from its tonnes.
         Ports portThen = full.getPorts(), portNow = back.getPorts();
         boolean portSame = portThen.anyAtSea() && portNow.crudeShip() == Ports.Ship.VLCC

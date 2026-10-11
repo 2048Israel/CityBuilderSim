@@ -853,8 +853,67 @@ public enum Good {
      * With steel at .650 / .470 an Electric Arc Furnace on imported scrap
      * earns -0.5% of its cost a month exporting and 0.2% replacing imported
      * steel; on the city's own scrap, valued at .30, 0.7% (the study's 2.5).
+     *
+     * Since 0.7.121 (batch I4) the city makes it: a Scrap Yard turns the old
+     * steel the city throws out (OldMetal) into it, and pays the sellers 70%
+     * of this row's export price for that steel (Jerus's Q8).
      */
-    SCRAP("Scrap", "tonne", .41, .30, .04125, false, Pricing.BAND, false);
+    SCRAP("Scrap", "tonne", .41, .30, .04125, false, Pricing.BAND, false),
+
+    /* =======================================================================
+       THE INTEGRATED ROUTE'S GOODS (0.7.121, batch I4; runs/spec-materials.md
+       2.3, materials-chains-research.md 2.3, 3.2 and 6.3). Iron & Steel's
+       works make and use them: the pelletising plant's pellets, the coke
+       ovens' coke, the blast furnaces' pig iron, and what those take - coal
+       of two kinds, limestone for flux and lime for the oxygen shop. Coal
+       and stone are imported until their own sectors come (Coal Mining at
+       batch I6, Quarrying and Cement & Concrete at I7); then the same rows
+       are what those sectors sell.
+
+       THE PRICES are the study's, D$ a tonne at the founding parity, import
+       over export; the freight in each band three eighths of the wedge, this
+       file's rule (THE SPLIT IS THREE QUARTERS FREIGHT): pellets 160 / 125
+       (IOC's pellets US$125.7, the premium over fines about US$42), pig iron
+       460 / 400 (Brazil FOB US$408-440), coke 420 / 320, thermal coal 75 / 50
+       (Newcastle's 6,000 kcal US$104 in 2025 against Indonesia's 4,200 kcal
+       45-66, a distant mine's netback), coking coal 225 / 180 (premium hard
+       coking coal US$187-245), limestone 40 / 10 - a gap that is nearly all
+       freight - and lime 280 / 110, the export end one of the study's eight
+       widened bands (its 1.2: quicklime slakes in transit and rarely travels
+       far). With these bands no works earns more than 0.4% of its cost a
+       month on imported feed for export, the study's case A (its 1.2 and
+       2.5), under every hurdle the game strikes: freight, not a gate, holds
+       a city from importing ore to export steel (Q7).
+
+       STOCKABLE: the coke and both coals, which keep in a yard; the rest are
+       flow goods, as ore is - a works ships what it makes. Each stockable
+       one joins NationalAccounts.HELD on its end. All of them go by the BULK
+       stream and, by sea, as DRY_BULK.
+
+       MET_COKE, not COKE: COKE is the coker's petroleum coke (0.7.80), and
+       names are saved, so the steelworks' coke is a row of its own.
+       ======================================================================= */
+
+    /** Iron ore pellets, by the tonne: a Pelletising Plant's, of the city's own ore or another's; nothing here uses them until a DRI plant exists (the study's 2.8), so they ship. */
+    PELLETS("Iron ore pellets", "tonne", .160, .125, .013125, false, Pricing.BAND, false),
+
+    /** Pig iron - hot metal - by the tonne: a blast furnace's, the oxygen shop's feed. */
+    PIG_IRON("Pig iron", "tonne", .460, .400, .0225, false, Pricing.BAND, false),
+
+    /** Metallurgical coke, by the tonne: the Coke Ovens' out of coking coal, the blast furnaces' fuel and reductant. Stockable. */
+    MET_COKE("Coke", "tonne", .420, .320, .0375, true, Pricing.BAND, false),
+
+    /** Thermal coal, by the tonne, 20 GJ: the pelletising plant's fuel and the blast furnace's injection coal. Stockable. */
+    THERMAL_COAL("Thermal coal", "tonne", .075, .050, .009375, true, Pricing.BAND, false),
+
+    /** Coking coal, by the tonne, washed: what the Coke Ovens bake. Stockable. */
+    COKING_COAL("Coking coal", "tonne", .225, .180, .016875, true, Pricing.BAND, false),
+
+    /** Limestone, by the tonne: the blast furnaces' flux (and the kilns' feed, from batch I7). */
+    LIMESTONE("Limestone", "tonne", .040, .010, .01125, false, Pricing.BAND, false),
+
+    /** Quicklime, by the tonne: the Oxygen Steel Shop's flux, about 60 kg a tonne of steel. */
+    LIME("Lime", "tonne", .280, .110, .06375, false, Pricing.BAND, false);
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -1044,6 +1103,10 @@ public enum Good {
             case MATERIALS: case FABRICATED_STEEL: case MACHINERY:
             // ...and scrap, in the same hoppers as ore (0.7.116).
             case SCRAP:
+            // ...and the integrated route's seven (0.7.121): pellets, pig iron,
+            // coke, coal, limestone and lime, by hopper and gondola.
+            case PELLETS: case PIG_IRON: case MET_COKE: case THERMAL_COAL: case COKING_COAL:
+            case LIMESTONE: case LIME:
             // A locomotive on a low-loader is not a crate of bread.
             case ROLLING_STOCK:
             // ...and crude, in tank wagons, as ore goes in hoppers. Petrol and
@@ -1074,7 +1137,8 @@ public enum Good {
      *
      * LIQUID is crude, the seven litre goods and bitumen - tankers, the
      * bitumen in a heated one. DRY_BULK is what a grab lifts out of a hold:
-     * iron ore, crops, grains, building materials, coke and (0.7.116) scrap. GENERAL is what
+     * iron ore, crops, grains, building materials, coke, (0.7.116) scrap and
+     * (0.7.121) the integrated route's seven, pig iron among them. GENERAL is what
      * is lifted piece by piece - steel, fabricated steel, machinery, wagon
      * sets, cars and vans. CONTAINER is the rest of what the GOODS stream
      * carries: the shelf, the drinks and the watches, in boxes.
@@ -1085,6 +1149,8 @@ public enum Good {
             case LUBRICANTS: case FUEL_OIL: case BITUMEN:
                 return Ports.Cargo.LIQUID;
             case IRON: case CROPS: case GRAINS: case MATERIALS: case COKE: case SCRAP:
+            case PELLETS: case PIG_IRON: case MET_COKE: case THERMAL_COAL: case COKING_COAL:
+            case LIMESTONE: case LIME:
                 return Ports.Cargo.DRY_BULK;
             case STEEL: case FABRICATED_STEEL: case MACHINERY: case ROLLING_STOCK: case CARS: case VANS:
                 return Ports.Cargo.GENERAL;

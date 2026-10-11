@@ -126,6 +126,16 @@ public class TradeCostCheck {
         // Scrap, split from ore (0.7.116, batch I3; Q4): IRON's old import price, and what the
         // city's scrap nets shipped out.
         { Good.SCRAP,                    .41,        .30   },
+        // The integrated route's seven (0.7.121, batch I4; spec-materials 2.3, the study's 2.3, 3.2
+        // and 6.3): pellets, pig iron, the steelworks' coke, the two coals, limestone and lime - LIME's
+        // export one of the study's eight widened bands (its 1.2), 150 in its first table.
+        { Good.PELLETS,                  .160,       .125  },
+        { Good.PIG_IRON,                 .460,       .400  },
+        { Good.MET_COKE,                 .420,       .320  },
+        { Good.THERMAL_COAL,             .075,       .050  },
+        { Good.COKING_COAL,              .225,       .180  },
+        { Good.LIMESTONE,                .040,       .010  },
+        { Good.LIME,                     .280,       .110  },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */

@@ -39,6 +39,11 @@ import java.util.Map;
  *       (repairs and property tax, at its zone's price - Z4)
  *   - its consumables at the exchange factor, + its own power at the tariff
  *       (SpreadPlanner.ownCosts())
+ *   - since 0.7.121 (batch I4) a feed no market sells (offMarketFeed(): the
+ *       Scrap Yard's old steel) and its lorries' wear and diesel
+ *       (fleetRunning()), on its cost with the vans it must buy
+ *       (fleetCapital()) - and at the share of nameplate its feed fills
+ *       (feedShare())
  *
  * and is asked the gates in SpreadPlanner's order - its feed (feedRefusal():
  * none by default, a works' feed being the market's), the ground
@@ -105,6 +110,32 @@ public abstract class ProcessingSector extends Sector {
         return null;
     }
 
+    /*
+     * ...AND A FEED NO MARKET SELLS (0.7.121, batch I4): Iron & Steel's Scrap
+     * Yard takes the city's old steel (OldMetal), which is not a good - it is
+     * bought from the pool at 70% of scrap's export price, as much as arises.
+     * So a works may say what one of its buildings pays a month for such
+     * feed (offMarketFeed()), and the share of its nameplate it would run at
+     * for want of it (feedShare(); the last one standing's, feedShareStanding()).
+     * Nothing and all of it by default, which leave every other works'
+     * estimate as it was, to the bit.
+     */
+
+    /** The share of its nameplate one more of `t` would run at for want of a feed no market sells: all of it by default (HeavyIndustry's Scrap Yard, on the city's old steel). */
+    protected double feedShare(BuildingsTemplate t) {
+        return 1;
+    }
+
+    /** ...and the last one of `t` standing (IDLE, THEN SHED): all of it by default. */
+    protected double feedShareStanding(BuildingsTemplate t) {
+        return 1;
+    }
+
+    /** What one of `t` pays a month at `rate` (the share of nameplate it runs at) for a feed no market sells: nothing by default (HeavyIndustry's Scrap Yard: its old steel). */
+    protected double offMarketFeed(BuildingsTemplate t, double rate) {
+        return 0;
+    }
+
     /** What its works' consumables are paid at: the exchange factor every world price is converted at; 1 with no markets. */
     public double exchangeFactor() {
         return markets == null ? 1 : markets.getExchangeRate();
@@ -144,11 +175,92 @@ public abstract class ProcessingSector extends Sector {
         return SpreadPlanner.judge(t, earns, city.cost(t), feed, city, null);
     }
 
+    /**
+     * ...run at `share` of the sector's rate for want of a feed no market
+     * sells, paying `other` a month past its running, standing and own costs
+     * - that feed (offMarketFeed()) and its lorries (fleetRunning()) - and
+     * costing `extraCost` past what the city prices its order at, the lorries
+     * it must buy (fleetCapital()) (0.7.121, batch I4): the same estimate, at
+     * the rate times the share, less the other costs, on the whole cost. At a
+     * share of 1 and none of either, the estimate above.
+     */
+    public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
+                                                   double factor, double tariff, String feed, double share, double other,
+                                                   double extraCost) {
+        if (share == 1 && other == 0 && extraCost == 0) return estimate(t, v, city, factor, tariff, feed);
+        double rate = city.rate() * share;
+        double earns = gross(t, v, rate) - city.running(t) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff)
+                - other;
+        return SpreadPlanner.judge(t, earns, city.cost(t) + extraCost, feed, city, null);
+    }
+
     /** What the last one of `t` standing earns a month (pure): grossStanding() less the same costs a candidate's earnings lose. */
     public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
                                    double factor, double tariff) {
         double rate = city.rate();
         return grossStanding(t, v, rate) - city.running(t) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff);
+    }
+
+    /** ...run at `share` of the sector's rate and paying `other` a month past its running, standing and own costs (0.7.121): lastEarns() above at a share of 1 and none. */
+    public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
+                                   double factor, double tariff, double share, double other) {
+        if (share == 1 && other == 0) return lastEarns(t, v, city, factor, tariff);
+        double rate = city.rate() * share;
+        return grossStanding(t, v, rate) - city.running(t) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff)
+                - other;
+    }
+
+    /*
+     * ...AND THE LORRIES A WORKS NEEDS (0.7.121, batch I4; ★ Jerus's A, "every
+     * order on its whole cost"). A sector keeps a fleet for the tonnes its
+     * plant moves (Sector, THE FLEET: one van to Sector.TONNES_PER_VAN a
+     * month), buys it as it builds and replaces it as it wears, and its vans
+     * burn diesel; the study's running costs and the spec's estimate left it
+     * out. For a works moving bulk it is not small: a Pelletising Plant's
+     * 304,500 t a month keep 2,538 vans, D$173M at parity - 64% of the plant -
+     * wearing D$1.4M a month and burning D$0.4M of diesel past its own D$1.0M
+     * running cost; on imported ore at a weak currency the first order of
+     * one in the probe (I4 notes 0) was built and lost within months. So one
+     * more of a works is weighed with its lorries: their wear and diesel a
+     * month at the rate in what it earns (fleetRunning()), and the vans
+     * bought in what it costs (fleetCapital()), each at what a van and a
+     * litre cost here (Values.in()). Its tonnes are its own, in and out at
+     * nameplate - a works its sector's other works feed hands itself some of
+     * them (captive, Sector.tonnesMoved()), which one more of it cannot count
+     * on. Not in SpreadPlanner.caseEarns(): the study's four cases are the
+     * study's arithmetic.
+     */
+
+    /** Vans one of `t` keeps: the tonnes it moves in and out at nameplate over Sector.TONNES_PER_VAN (pure). */
+    public static double vansFor(BuildingsTemplate t) {
+        if (t == null) return 0;
+        double tonnes = 0;
+        for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) tonnes += e.getValue() * e.getKey().tonnesPerUnit();
+        for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+            if (e.getKey() != Good.VANS) tonnes += e.getValue() * e.getKey().tonnesPerUnit();
+        }
+        return tonnes / Sector.TONNES_PER_VAN;
+    }
+
+    /** What one of `t`'s lorries cost a month at `rate` (pure): a Sector.VAN_LIFE_MONTHS-th of its vans worn out, and the diesel its vans burn at the rate, each at what it costs here. */
+    public static double fleetRunning(BuildingsTemplate t, SpreadPlanner.Values v, double rate) {
+        double vans = vansFor(t);
+        if (!(vans > 0)) return 0;
+        return v.in(Good.VANS, vans / Sector.VAN_LIFE_MONTHS) + v.in(Good.DIESEL, vans * rate * Sector.DIESEL_LITRES_A_VAN_MONTH);
+    }
+
+    /** ...and buying them (pure): its vans at what a van costs here. */
+    public static double fleetCapital(BuildingsTemplate t, SpreadPlanner.Values v) {
+        double vans = vansFor(t);
+        return vans > 0 ? v.in(Good.VANS, vans) : 0;
+    }
+
+    /** One of `t` weighed by this sector at the city's values: its feed's share and price, and its lorries, with it. */
+    private SpreadPlanner.Candidate weigh(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city) {
+        double share = feedShare(t);
+        double rate = share == 1 ? city.rate() : city.rate() * share;
+        return estimate(t, v, city, exchangeFactor(), tariff(), feedRefusal(t), share,
+                offMarketFeed(t, rate) + fleetRunning(t, v, rate), fleetCapital(t, v));
     }
 
     /** Every building of its the planner weighs, weighed now at the city's values and the game's gates, in the catalogue's order. */
@@ -159,15 +271,14 @@ public abstract class ProcessingSector extends Sector {
         SpreadPlanner.City city = planner.city(this, plans, game);
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
             if (!weighs(t)) continue;
-            all.add(estimate(t, v, city, exchangeFactor(), tariff(), feedRefusal(t)));
+            all.add(weigh(t, v, city));
         }
         return all;
     }
 
     /** One building of its weighed now. */
     public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
-        return estimate(t, SpreadPlanner.values(markets), planner.city(this, plans, game), exchangeFactor(), tariff(),
-                feedRefusal(t));
+        return weigh(t, SpreadPlanner.values(markets), planner.city(this, plans, game));
     }
 
     /* ----- the plan ----- */
@@ -237,7 +348,10 @@ public abstract class ProcessingSector extends Sector {
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
             if (!weighs(t)) continue;
             boolean standing = buildings.getQuantity(t.getId()) > 0;
-            planner.noteMonth(kindOf(t), standing, standing && lastEarns(t, v, city, exchangeFactor(), tariff()) < 0);
+            double share = standing ? feedShareStanding(t) : 1;
+            double rate = share == 1 ? city.rate() : city.rate() * share;
+            planner.noteMonth(kindOf(t), standing, standing && lastEarns(t, v, city, exchangeFactor(), tariff(), share,
+                    offMarketFeed(t, rate) + fleetRunning(t, v, rate)) < 0);
         }
     }
 
