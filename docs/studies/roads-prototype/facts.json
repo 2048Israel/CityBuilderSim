@@ -1,0 +1,191 @@
+{
+ "district_jerus": {
+  "components": 1,
+  "plus": 280,
+  "closest_plus": 8,
+  "out_of_reach": 0,
+  "touching": 2995,
+  "placed": 3617,
+  "unplaced": 0,
+  "cells": 49,
+  "homes_cells": 15,
+  "building_plots": 32217,
+  "street_plots": 9802,
+  "budget": 9388,
+  "surplus": 0,
+  "tracks": 0,
+  "narrow": 828,
+  "full": 8974,
+  "street_share": 0.233,
+  "joins": 0,
+  "square_cells": 13,
+  "boulevard_cells": 26,
+  "budget_detail": {
+   "gravel": 8408,
+   "paved": 981
+  }
+ },
+ "district_paved": {
+  "components": 1,
+  "plus": 119,
+  "closest_plus": 8,
+  "out_of_reach": 0,
+  "touching": 2516,
+  "placed": 3617,
+  "unplaced": 0,
+  "cells": 48,
+  "homes_cells": 13,
+  "building_plots": 32217,
+  "street_plots": 6052,
+  "budget": 4484,
+  "surplus": 0,
+  "tracks": 0,
+  "narrow": 3137,
+  "full": 2915,
+  "street_share": 0.158,
+  "joins": 0,
+  "square_cells": 0,
+  "boulevard_cells": 0,
+  "budget_detail": {
+   "paved": 4484
+  }
+ },
+ "district_thin": {
+  "components": 1,
+  "plus": 119,
+  "closest_plus": 8,
+  "out_of_reach": 0,
+  "touching": 2516,
+  "placed": 3617,
+  "unplaced": 0,
+  "cells": 48,
+  "homes_cells": 13,
+  "building_plots": 32217,
+  "street_plots": 6052,
+  "budget": 2242,
+  "surplus": 0,
+  "tracks": 1569,
+  "narrow": 4483,
+  "full": 0,
+  "street_share": 0.158,
+  "joins": 0,
+  "square_cells": 0,
+  "boulevard_cells": 0,
+  "budget_detail": {
+   "paved": 2242
+  }
+ },
+ "district": {
+  "dry_plots": 60568,
+  "dry_km2": 54.51,
+  "buildings": 3617,
+  "jerus_scale": 0.4699,
+  "hub": [
+   70,
+   90
+  ]
+ },
+ "tilepair": [
+  [
+   0,
+   4
+  ],
+  [
+   1,
+   4
+  ]
+ ],
+ "tilepair_paved": [
+  [
+   0,
+   3
+  ],
+  [
+   1,
+   3
+  ]
+ ],
+ "cells_drawn": {
+  "square": [
+   2,
+   2
+  ],
+  "long": [
+   1,
+   2
+  ],
+  "estate": [
+   0,
+   4
+  ],
+  "estate_dir": "V",
+  "long_dir": "V"
+ },
+ "budget_crop": [
+  "15",
+  "70",
+  "87",
+  "118"
+ ],
+ "highways": [
+  {
+   "stage": "jerus",
+   "highways": 6,
+   "plots": 40,
+   "km": 1.2,
+   "corridors": 2,
+   "interchanges": 1,
+   "radius_km": 4
+  },
+  {
+   "stage": "b",
+   "highways": 92,
+   "plots": 601,
+   "km": 18.0,
+   "corridors": 2,
+   "interchanges": 1,
+   "radius_km": 12
+  },
+  {
+   "stage": "c",
+   "highways": 400,
+   "plots": 2601,
+   "km": 78.0,
+   "corridors": 2,
+   "interchanges": 1,
+   "radius_km": 22
+  },
+  {
+   "stage": "d",
+   "highways": 1385,
+   "plots": 9001,
+   "km": 270.0,
+   "corridors": 7,
+   "interchanges": 11,
+   "radius_km": 34
+  }
+ ],
+ "islands": {
+  "landmasses": {
+   "Home": {
+    "owned_dry_km2": 263.2,
+    "whole_km2": 609.0
+   },
+   "Isle A": {
+    "owned_dry_km2": 49.5,
+    "whole_km2": 49.5
+   },
+   "Isle B": {
+    "owned_dry_km2": 14.0,
+    "whole_km2": 18.6
+   }
+  },
+  "ferry_km": 4.8,
+  "cargo_km": 16.4,
+  "world_to_offing_km": 19.4,
+  "offing_bearing": 40,
+  "ferry_legs": 1,
+  "cargo_legs": 3,
+  "world_legs": 1
+ }
+}

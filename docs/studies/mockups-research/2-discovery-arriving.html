@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mockup 2 · A discovery arriving</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stage:#0b1118; --panel:#101924; --raised:#152130; --edge:#24354a;
+  --t1:#e6edf3; --t2:#a9b8c9; --t3:#8496ab;
+  --accent:#5aa9ff; --good:#3fb950; --warn:#e3b341; --bad:#f85149;
+  --people:#2ec4b6; --biz:#a78bfa; --bld:#f17cb0; --ore:#c9b68f;
+  --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'IBM Plex Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#06090d;color:var(--t1);font-family:var(--sans);padding:28px 32px 60px}
+.doc{max-width:1389px;margin:0 0 18px}
+.doc h1{font-size:22px;font-weight:600;margin:0 0 6px}
+.doc p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:4px 0;max-width:1120px}
+.state{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin:26px 0 8px}
+.notes{max-width:1389px;color:var(--t3);font-size:12.5px;line-height:1.55;margin:10px 0 0;padding-left:18px}
+.notes b{color:var(--t2)}
+.win{width:1389px;height:868px;background:var(--stage);border:1px solid var(--edge);overflow:hidden;
+  display:grid;grid-template-columns:46px 72px 1fr;grid-template-rows:44px 1fr 30px;position:relative}
+.rail{grid-row:1/4;grid-column:1;background:var(--panel);border-right:1px solid var(--edge);display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:4px}
+.ri{width:34px;height:34px;display:grid;place-items:center;border-radius:4px;color:var(--t3)}
+.ri svg{width:19px;height:19px}
+.ri.on{background:var(--raised);color:var(--accent);box-shadow:inset 2px 0 0 var(--accent)}
+.ri.gear{margin-top:auto;margin-bottom:8px}
+.top{grid-row:1;grid-column:2/4;background:var(--panel);border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:22px;padding:0 16px}
+.top .date{font-family:var(--mono);font-size:19px;font-weight:600;color:#fff}
+.top .tf{font-family:var(--mono);font-size:13px;color:var(--t2)}
+.top .tf b{color:var(--t1);font-weight:600}
+.top .inbox{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--t2);font-family:var(--mono);font-size:12px;padding:4px 8px;border-radius:4px}
+.top .inbox.open{background:var(--raised);color:var(--accent)}
+.top .inbox svg{width:18px;height:18px}
+.top .inbox .ct{background:var(--accent);color:#06090d;border-radius:9px;padding:0 6px;font-weight:600}
+.strip{grid-row:2;grid-column:2;background:var(--panel);border-right:1px solid var(--edge);padding:12px 8px;display:flex;flex-direction:column;gap:14px}
+.strip .v{font-size:9px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.strip .v b{display:block;font-family:var(--mono);font-size:12px;letter-spacing:0;color:var(--t1);font-weight:500;margin-top:2px;text-transform:none}
+.debt{grid-row:3;grid-column:2/4;background:var(--panel);border-top:1px solid var(--edge);display:flex;align-items:center;gap:20px;padding:0 16px;font-size:11px;color:var(--t3)}
+.debt b{font-family:var(--mono);color:var(--t2);font-weight:500}
+.content{grid-row:2;grid-column:3;padding:10px 16px 0;overflow:hidden;display:flex;flex-direction:column;gap:10px;position:relative}
+/* ---------- policy frame ---------- */
+.phead{display:flex;align-items:center;gap:10px;height:30px}
+.phead .swatch{width:12px;height:12px;border-radius:3px;background:#2f6fa8}
+.phead .title{font-size:20px;font-weight:600}
+.phead .crumb{color:var(--t2);font-weight:500}
+.i{width:17px;height:17px;border-radius:50%;border:1px solid var(--t3);color:var(--t3);font-size:10px;display:inline-grid;place-items:center;font-family:var(--mono);flex:none}
+.chips{margin-left:auto;display:flex;gap:5px}
+.chip{font-size:11.5px;color:var(--t2);padding:4px 10px;border-radius:4px;border:1px solid var(--edge);background:var(--panel)}
+.chip.on{color:var(--t1);background:var(--raised);border-color:var(--accent)}
+.chip.new{border-style:dashed}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--edge)}
+.tab{font-size:12px;color:var(--t3);padding:6px 14px 7px;border-bottom:2px solid transparent}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.figs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.fig{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:8px 12px}
+.fig .k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.fig .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:2px}
+.fig .s{font-size:11px;color:var(--t2);margin-top:1px}
+.gh{display:flex;align-items:baseline;gap:8px;font-size:11px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;border-bottom:1px solid var(--edge);padding-bottom:5px;margin-bottom:8px}
+.gh span{letter-spacing:0;text-transform:none}
+.gh .rt{margin-left:auto;font-family:var(--mono);color:var(--t2);letter-spacing:0;text-transform:none}
+.mono{font-family:var(--mono)}
+.muted{color:var(--t3)}
+.good{color:var(--good)} .warn{color:var(--warn)} .bad{color:#ff9e9e}
+/* dial cards */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dcard{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:8px 12px;display:flex;flex-direction:column;gap:5px;position:relative}
+.dcard.staged{border-color:var(--accent)}
+.dcard.dim{opacity:.62}
+.dh{display:flex;align-items:center;gap:8px}
+.dh .ico{width:26px;height:26px;border-radius:4px;display:grid;place-items:center;background:#16314d;color:var(--accent)}
+.dh .ico svg{width:16px;height:16px}
+.dh .nm{font-size:14px;font-weight:600}
+.dh .at{font-size:11px;color:var(--t3)}
+.reach{margin-left:auto;text-align:right;font-size:11px;color:var(--t2)}
+.reach b{font-family:var(--mono);color:var(--t1)}
+.reach .sec{display:block;color:var(--t3);font-size:10.5px}
+.dial{display:grid;grid-template-columns:56px 1fr 176px;align-items:center;gap:10px}
+.dial .l{font-size:11px;color:var(--t3)}
+.dial .val{font-family:var(--mono);font-size:12.5px;text-align:right}
+.dial .val small{display:block;font-size:10px;color:var(--t3);font-family:var(--sans)}
+.track{position:relative;height:18px}
+.track .rail{position:absolute;left:0;right:0;top:8px;height:3px;background:#0e1620;border-radius:2px}
+.track .fill{position:absolute;left:0;top:8px;height:3px;background:var(--accent);border-radius:2px}
+.track .ghost{position:absolute;top:3px;width:2px;height:13px;background:var(--t3);opacity:.7}
+.track .thumb{position:absolute;top:2px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--t1);border:2px solid var(--accent)}
+.track .tick{position:absolute;top:13px;width:1px;height:6px;background:var(--edge)}
+.track .room{position:absolute;top:0;height:18px;border-right:2px dashed var(--warn);opacity:.8}
+.ba{display:grid;grid-template-columns:150px 1fr 1fr;gap:3px 10px;font-size:11px;align-items:center}
+.ba .hd{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.ba .lab{color:var(--t3)}
+.pair{display:flex;align-items:center;gap:6px}
+.pair .b{height:6px;border-radius:3px;background:#4a6283}
+.pair .b.a{background:var(--accent)}
+.pair .n{font-family:var(--mono);font-size:11.5px;color:var(--t1);white-space:nowrap}
+.pair .n.dimn{color:var(--t2)}
+.say{font-size:11px;color:var(--t2);line-height:1.4;background:var(--panel);border:1px solid var(--edge);border-radius:3px;padding:4px 8px}
+.btns{display:flex;gap:6px;justify-content:flex-end}
+.go{font-size:11.5px;padding:4px 12px;border-radius:4px;background:#2f6fa8;color:#fff;font-weight:600}
+.leave{font-size:11.5px;padding:4px 12px;border-radius:4px;border:1px solid #4a5c68;color:var(--t2)}
+.tray{position:absolute;left:16px;right:16px;bottom:0;height:40px;background:var(--panel);border:1px solid var(--edge);border-bottom:none;border-radius:4px 4px 0 0;display:flex;align-items:center;gap:10px;padding:0 12px;font-size:11.5px}
+.tray .tk{font-size:10px;letter-spacing:.08em;color:var(--t3)}
+.stchip{background:var(--raised);border:1px solid var(--accent);border-radius:12px;padding:2px 9px;color:var(--t1);font-size:11px}
+.stchip b{font-family:var(--mono);font-weight:500}
+.tray .bud{margin-left:auto;color:var(--t3)}
+.tray .bud b{font-family:var(--mono);color:var(--t1);font-weight:500}
+.tag{font-size:10px;padding:1px 7px;border-radius:3px;background:#1d3a2a;color:#7ee0a0;border:1px solid #2b5a3e}
+.tag.blue{background:#16314d;color:#9cc9ff;border-color:#24507c}
+.tag.grey{background:#1b2836;color:var(--t2);border-color:#2c3e52}
+.tag.new{background:#2a2246;color:#cbbcff;border-color:#4a3d7a}
+
+.under{opacity:.28;filter:saturate(.6);display:flex;flex-direction:column;gap:10px}
+.ibox{position:absolute;top:44px;right:14px;width:470px;background:#0e1520;border:1px solid var(--edge);border-top:none;border-radius:0 0 6px 6px;box-shadow:0 12px 40px #0009;display:flex;flex-direction:column;max-height:790px;z-index:5}
+.ibh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--edge);font-size:11px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.ibh b{color:var(--t1);font-family:var(--mono);letter-spacing:0}
+.ibh .flt{margin-left:auto;display:flex;gap:4px;text-transform:none;letter-spacing:0}
+.ibh .flt span{padding:2px 8px;border:1px solid var(--edge);border-radius:10px;font-size:10.5px}
+.ibh .flt span.on{border-color:var(--accent);color:var(--t1)}
+.note{border-bottom:1px solid var(--edge);padding:10px 14px 12px;position:relative}
+.note.open{background:#121c29;border-left:3px solid var(--accent);padding-left:11px}
+.note.open.abroad{border-left-color:#8496ab}
+.note .meta{display:flex;gap:6px;align-items:center;font-size:10.5px;color:var(--t3)}
+.note .meta .when{margin-left:auto;font-family:var(--mono)}
+.note .tt{font-size:14px;font-weight:600;margin:5px 0 2px;line-height:1.3}
+.note .lede{font-size:11.5px;color:var(--t2);line-height:1.45}
+.note .lede b{font-family:var(--mono);color:var(--t1);font-weight:500}
+.sect{margin-top:9px}
+.sect .k{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-bottom:3px}
+.sect .t{font-size:11.5px;color:var(--t2);line-height:1.5}
+.sect .t b{font-family:var(--mono);color:var(--t1);font-weight:500}
+.ahead{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11px;color:var(--t2)}
+.ahead svg{flex:none}
+.deal{display:flex;justify-content:flex-end;margin-top:10px}
+.deal span{background:#2f6fa8;color:#fff;font-weight:600;font-size:12px;padding:5px 14px;border-radius:4px}
+.note.shut .tt{font-size:12.5px;font-weight:500;margin:3px 0 0}
+.note.unread .tt{font-weight:600;color:var(--t1)}
+.note.unread::before{content:'';position:absolute;left:5px;top:16px;width:6px;height:6px;border-radius:50%;background:var(--warn)}
+.note.spent{opacity:.55}
+.note.spent .tt{color:#6b7a84}
+.hub{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.hcard{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:10px 12px;height:150px}
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>Mockup 2 — A discovery arriving, in the inbox</h1>
+  <p>Discoveries arrive as inbox notices (0.7.0's inbox: an envelope with a count; a notice unfolds in place with one button that goes where it is dealt with; resolved ones grey out and drop after 24 months). Two kinds: <b>found here</b> (a blue edge: "Researchers at … came up with …") and <b>from abroad</b> (a grey edge). Each says what it unlocks, who it affects with real figures, what it costs or whether a licence fee applies, and what the city's researchers do next. The screen behind is Policy › Research › Overview, dimmed.</p>
+</div>
+<div class="state">A young city, June 1955 · the polio vaccine, from abroad (raised April 1955)</div>
+<div class="win" id="W1"></div>
+<div class="state">A big city, June 1979 · the wind farm, found by the Institute of technology this month</div>
+<div class="win" id="W2"></div>
+<ul class="notes">
+  <li><b>The text is written when the notice is raised</b> and refreshed while it is live, as every notice's is (`Notice`); a discovery notice resolves once the player has opened its button's screen, or after 12 months (est.).</li>
+  <li><b>Polio figures:</b> Canada's 1953 wave about 9,000 cases and 494 deaths; US paralytic cases fell about 90% within five years of the 1955 vaccine and 99.7% within ten (study §4, M3). The young city's four clinics and the outbreak share are illustrative.</li>
+  <li><b>The wind farm's output</b> is first-generation (est.: today's 8,100 kW × 9% ÷ 40% capacity factor, study §4, E16); bigger turbines are a reserve discovery. Its D$ 31.0M is `buildings.json`'s sticker plus materials; the coal plant's D$ 5.1k a kW is the same arithmetic on its own figures. "94% of demand" is illustrative.</li>
+  <li><b>"About 1.5 years ahead"</b> is history's date (December 1980) less the month found here; the model's big city found it in June 1979 (study §5.4).</li>
+</ul>
+<script>
+const ICON = {
+  building:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M11 21v-3h2v3"/>',
+  land:'<path d="M3 20h18M6 20l5-11 5 11M11 9V5M17 20v-6M15 16l2-5 2 5"/>',
+  people:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4 2 4 5"/>',
+  health:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M6 12h3l1.5-2.5 3 5 1.5-2.5h3"/>',
+  factory:'<path d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17z"/>',
+  landmark:'<path d="M3 21h18M4 10h16M12 3l8 5H4zM6 10v8M10 10v8M14 10v8M18 10v8"/>',
+  dollar:'<circle cx="12" cy="12" r="9"/><path d="M15 9c-.5-1-1.6-1.5-3-1.5-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.6M12 6v1.5M12 16.5V18"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z"/>',
+  scale:'<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7h6zM19 7l-3 7h6z"/>',
+  chart:'<path d="M3 3v18h18M7 15l4-5 3 3 5-7"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  flask:'<path d="M9 3h6M10 3v6L4.5 18.5A1.6 1.6 0 0 0 6 21h12a1.6 1.6 0 0 0 1.5-2.5L14 9V3"/><path d="M7.5 15h9"/>',
+  cog:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+  heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',
+  brief:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M3 12h18"/>',
+  gavel:'<path d="M14 4l6 6M11 7l6 6M12.5 5.5l-4 4M17.5 10.5l-4 4M10 12l-7 7M3 21h9"/>',
+  wind:'<path d="M12 12V21M12 12l-1-8M12 12l7 3.5M12 12l-7 3"/><circle cx="12" cy="12" r="1.3"/>',
+  pellet:'<circle cx="7" cy="15" r="3"/><circle cx="14" cy="16" r="3"/><circle cx="11" cy="9" r="3"/><circle cx="18" cy="9.5" r="2.5"/>',
+  cart:'<path d="M3 4h2l2.5 11h11L21 7H6.2"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>',
+  ladle:'<path d="M4 9h16l-2 9H6zM8 9V5M16 9V6M9 13h6"/>',
+};
+const ic = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
+const RAIL = [['building','Build'],['land','Land'],['people','People'],['health','Services'],['factory','Sectors'],['landmark','Government'],['dollar','Finances'],['globe','Trade'],['scale','Policy'],['chart','History']];
+const CITY = {
+  young: {date:'June 1955', cash:'D$ 41.2M', people:'38,400', net:'+D$ 0.90M', inbox:2, cashShort:'41.2M', peopleShort:'38.4k', netShort:'+0.90M', jobs:'15.9k', debt:'D$ 12.0M', pay:'D$ 0.31M', rate:'2.75%'},
+  big:   {date:'June 1979', cash:'D$ 1.26B', people:'421,800', net:'+D$ 38.0M', inbox:3, cashShort:'1.26B', peopleShort:'422k', netShort:'+38.0M', jobs:'211k', debt:'D$ 640M', pay:'D$ 9.8M', rate:'7.10%'},
+};
+function frame(win, key, active, inboxOpen){
+  const o = CITY[key];
+  win.innerHTML = `
+  <nav class="rail">${RAIL.map(([k,n])=>`<span class="ri ${k===active?'on':''}" title="${n}">${ic(k)}</span>`).join('')}<span class="ri gear">${ic('settings')}</span></nav>
+  <div class="top"><span class="date">${o.date}</span><span class="tf">cash <b>${o.cash}</b></span><span class="tf">people <b>${o.people}</b></span><span class="tf">net <b style="color:var(--good)">${o.net}</b>/mo</span><span class="inbox ${inboxOpen?'open':''}">${ic('mail')}<span class="ct">${o.inbox}</span></span></div>
+  <aside class="strip"><div class="v">Cash<b>${o.cashShort}</b></div><div class="v">People<b>${o.peopleShort}</b></div><div class="v">Net<b>${o.netShort}</b></div><div class="v">Jobs<b>${o.jobs}</b></div></aside>
+  <main class="content"></main>
+  <div class="debt">debt <b>${o.debt}</b><span>next payment <b>${o.pay}</b></span><span>rate <b>${o.rate}</b></span></div>`;
+  return win.querySelector('.content');
+}
+const fmt = (n, d=0) => n.toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
+const FIELD = {
+  eng: {name:'Engineering', icon:'cog',   col:'#5aa9ff'},
+  med: {name:'Medicine',    icon:'heart', col:'#2ec4b6'},
+  bus: {name:'Business',    icon:'brief', col:'#a78bfa'},
+  law: {name:'Law',         icon:'gavel', col:'#c9b68f'},
+};
+function policyHead(c, page){
+  return `<div class="phead"><span class="swatch"></span><span class="title">Policy <span class="crumb">› Research</span></span><span class="i">i</span>
+    <div class="chips">${['Taxes','Wages','Money','Promises','Zoning','Research'].map(n=>`<span class="chip ${n==='Research'?'on':''} ${n==='Research'?'new':''}">${n}</span>`).join('')}</div></div>
+  <div class="tabs">${['Overview','Funding','Found'].map(n=>`<span class="tab ${n===page?'on':''}">${n}</span>`).join('')}</div>`;
+}
+
+function hub(c, figs){
+  c.innerHTML = policyHead(c, 'Overview') + `<div class="figs">${figs.map(([k,v,s])=>`<div class="fig"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('')}</div>
+   <div class="hub">${['Engineering','Medicine','Business','Law'].map(n=>`<div class="hcard"><div class="gh">${n}</div></div>`).join('')}</div>`;
+  c.classList.add('under');
+}
+const clock = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+function inbox(win, n, notes){
+  const box = document.createElement('div'); box.className = 'ibox';
+  box.innerHTML = `<div class="ibh">Inbox <b>${n}</b><span class="flt"><span class="on">All</span><span>Discoveries</span><span>Warnings</span></span></div>` + notes.join('');
+  win.appendChild(box);
+}
+// ---------------------------------------------------------------- young
+const w1 = document.getElementById('W1');
+hub(frame(w1, 'young', 'scale', true), [['Researchers at work','22','the University’s staff'],['A month','D$ 0',''],['Found here','0','8 from abroad'],['In reach','8 problems','']]);
+inbox(w1, 2, [
+ `<div class="note open abroad"><div class="meta"><span class="tag grey">FROM ABROAD</span><span>Medicine</span><span class="when">April 1955</span></div>
+   <div class="tt">From abroad: the polio vaccine</div>
+   <div class="lede">Licensed in the US and Canada on <b>12 April 1955</b>. Your clinics can give it from next month.</div>
+   <div class="sect"><div class="k">What it unlocks</div><div class="t">A recipe for the city's clinics: a vaccination round for children. Your <b>4</b> clinics give it from <b>May 1955</b>, on the health bill.</div></div>
+   <div class="sect"><div class="k">Who it affects</div><div class="t">Children and young adults. Summer outbreaks lose their polio share, and fewer survivors join the long-sick for good. Canada's 1953 wave was about <b>9,000</b> cases and <b>494</b> deaths; in the US, paralytic cases fell about <b>90%</b> within five years of the vaccine and <b>99.7%</b> within ten.</div></div>
+   <div class="sect"><div class="k">Licence</div><div class="t">None. Doses are bought abroad.</div></div>
+   <div class="ahead">${clock}<span>Found abroad, like all <b class="mono">8</b> discoveries since 1950. Your medicine has <b class="mono">9</b> researchers, the University's staff.</span></div>
+   <div class="deal"><span>Deal with this › Services › Health › General care</span></div></div>`,
+ `<div class="note shut unread"><div class="meta"><span class="tag grey">FROM ABROAD</span><span>Engineering</span><span class="when">June 1955</span></div><div class="tt">From abroad: taconite pellets</div></div>`,
+ `<div class="note shut spent"><div class="meta"><span>Resolved</span><span class="when">March 1955</span></div><div class="tt">Builders were laid off for want of work</div></div>`]);
+
+// ---------------------------------------------------------------- big
+const w2 = document.getElementById('W2');
+hub(frame(w2, 'big', 'scale', true), [['Researchers at work','747',''],['A month','D$ 11.9M',''],['Found here','4','27 from abroad'],['In reach','5 problems','']]);
+inbox(w2, 3, [
+ `<div class="note open"><div class="meta"><span class="tag blue">FOUND HERE</span><span>Engineering</span><span class="when">June 1979</span></div>
+   <div class="tt">Researchers at the Institute of technology came up with the wind farm</div>
+   <div class="lede">Nobody else has one: the world gets it about <b>December 1980</b>.</div>
+   <div class="sect"><div class="k">What it unlocks</div><div class="t"><b>Wind Farm</b>, on the build list under Utilities: about <b>1,820 kW</b> on average from <b>16.2 ha</b>, <b>7</b> posts, <b>D$ 31.0M</b> all in. These are first-generation turbines.</div></div>
+   <div class="sect"><div class="k">Who it affects</div><div class="t">The grid, now at <b>94%</b> of what the city asks. Over its life a Wind Farm costs <b>D$ 17.0k</b> a kW against a coal plant's <b>D$ 5.1k</b>, so automatic building won't choose it yet.</div></div>
+   <div class="sect"><div class="k">Licence</div><div class="t">None: it's yours. Your builders pay no fee, ever.</div></div>
+   <div class="sect"><div class="k">What happens next</div><div class="t">Engineering's <b>412</b> researchers move to the one problem left in reach (rail).</div></div>
+   <div class="ahead">${clock}<span>About <b class="mono">1.5 years</b> ahead of the world. Your fourth discovery here; <b class="mono">27</b> came from abroad.</span></div>
+   <div class="deal"><span>Deal with this › Build › Utilities › Wind Farm</span></div></div>`,
+ `<div class="note shut unread"><div class="meta"><span class="tag grey">FROM ABROAD</span><span>Law</span><span class="when">October 1978</span></div><div class="tt">From abroad: reorganisation. A business that can't pay keeps its plant under a stay</div></div>`,
+ `<div class="note shut"><div class="meta"><span class="tag blue">FOUND HERE</span><span>Medicine</span><span class="when">April 1977</span></div><div class="tt">Researchers at the Medical school came up with assisted living</div></div>`,
+ `<div class="note shut spent"><div class="meta"><span>Resolved</span><span class="when">February 1979</span></div><div class="tt">Power ran short of demand</div></div>`]);
+
+</script>
+</body>
+</html>

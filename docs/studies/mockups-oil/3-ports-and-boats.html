@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mockup 3 · Ports and boats on the map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stage:#0b1118; --panel:#101924; --raised:#152130; --edge:#24354a;
+  --t1:#e6edf3; --t2:#a9b8c9; --t3:#8496ab;
+  --accent:#5aa9ff; --good:#3fb950; --warn:#e3b341; --bad:#f85149;
+  --people:#2ec4b6; --biz:#a78bfa; --bld:#f17cb0; --ore:#c9b68f;
+  --imp:#5aa9ff; --exp:#f2a65a; --both:#d6dde4; --empty:#8496ab;
+  --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'IBM Plex Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#06090d;color:var(--t1);font-family:var(--sans);padding:28px 32px 60px}
+.doc{max-width:1389px;margin:0 0 18px}
+.doc h1{font-size:22px;font-weight:600;margin:0 0 6px}
+.doc p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:4px 0;max-width:1120px}
+.state-cap{font-size:13px;color:var(--t2);margin:26px 0 8px}
+.state-cap b{color:var(--t1);font-weight:600}
+.notes{max-width:1389px;color:var(--t3);font-size:12.5px;line-height:1.55;margin:10px 0 0;padding-left:18px}
+.win{width:1389px;height:868px;background:var(--stage);border:1px solid var(--edge);overflow:hidden;
+  display:grid;grid-template-columns:46px 72px 1fr;grid-template-rows:44px 1fr 30px;position:relative}
+.rail{grid-row:1/4;grid-column:1;background:var(--panel);border-right:1px solid var(--edge);display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:4px}
+.ri{width:34px;height:34px;display:grid;place-items:center;border-radius:4px;color:var(--t3)}
+.ri svg{width:19px;height:19px}
+.ri.on{background:var(--raised);color:var(--accent);box-shadow:inset 2px 0 0 var(--accent)}
+.ri.gear{margin-top:auto;margin-bottom:8px}
+.top{grid-row:1;grid-column:2/4;background:var(--panel);border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:22px;padding:0 16px}
+.top .date{font-family:var(--mono);font-size:19px;font-weight:600;color:#fff}
+.top .tf{font-family:var(--mono);font-size:13px;color:var(--t2)}
+.top .tf b{color:var(--t1);font-weight:600}
+.top .inbox{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--t2);font-family:var(--mono);font-size:12px}
+.top .inbox svg{width:18px;height:18px}
+.strip{grid-row:2;grid-column:2;background:var(--panel);border-right:1px solid var(--edge);padding:12px 8px;display:flex;flex-direction:column;gap:14px}
+.strip .v{font-size:9px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.strip .v b{display:block;font-family:var(--mono);font-size:12px;letter-spacing:0;color:var(--t1);font-weight:500;margin-top:2px;text-transform:none}
+.debt{grid-row:3;grid-column:2/4;background:var(--panel);border-top:1px solid var(--edge);display:flex;align-items:center;gap:20px;padding:0 16px;font-size:11px;color:var(--t3)}
+.debt b{font-family:var(--mono);color:var(--t2);font-weight:500}
+.content{grid-row:2;grid-column:3;padding:8px 16px 0;overflow:hidden;display:flex;flex-direction:column;gap:7px}
+.mapbar{display:flex;align-items:center;gap:10px;height:28px;font-size:12px;color:var(--t2)}
+.mapbar .t{font-size:15px;font-weight:600;color:var(--t1)}
+.mapbar .mono{font-family:var(--mono);color:var(--t3)}
+.lchip{font-size:11px;color:var(--t2);padding:3px 9px;border-radius:4px;border:1px solid var(--edge);background:var(--panel)}
+.lchip.on{border-color:#2f6fa8;color:var(--t1)}
+.zoom{margin-left:auto;display:flex;gap:4px}
+.zoom span{width:26px;height:24px;display:grid;place-items:center;border:1px solid var(--edge);border-radius:4px;background:var(--panel);font-family:var(--mono);color:var(--t2)}
+.zoom span.on{border-color:var(--accent);color:var(--accent)}
+.map{position:relative;width:1239px;height:732px;border:1px solid var(--edge);border-radius:4px;overflow:hidden}
+.card{position:absolute;background:rgba(16,25,36,.94);border:1px solid var(--edge);border-radius:4px;padding:9px 11px;font-size:11px;color:var(--t2)}
+.card .h{font-size:10px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:6px}
+.card table{border-collapse:collapse;width:100%}
+.card td{padding:2px 4px;font-size:11px;color:var(--t2);white-space:nowrap}
+.card td.m{font-family:var(--mono);text-align:right;color:var(--t1)}
+.card td.s{color:var(--t3);font-size:10.5px}
+.lg{display:flex;align-items:center;gap:8px;line-height:1.85}
+.sw{display:inline-block;width:22px;height:7px;border-radius:4px 1px 1px 4px}
+svg text{font-family:var(--sans)}
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>Mockup 3 — ports and boats on the map</h1>
+  <p>The port is drawn on the coast the city owns, one terminal per kind. Boats sail in from the map's edge full (imports, blue) and out full (exports, orange). Bulk carriers and tankers carry one way, so they make the other leg empty (grey, riding high). Container ships carry both ways (white). The big city of mockups 1 and 2, same month.</p>
+  <p><b>Only what the city has:</b> the number of boats is the number of calls the city's own trade makes, by report §4.3: calls a month = tonnes a month ÷ the cargo of one ship of the class that carries it. <b>Only if you're looking:</b> a call is a schedule entry, not an object. The map draws the boats whose route is on screen at this moment and nothing else (see the inset).</p>
+</div>
+
+<div class="state-cap"><b>Zoom 1 — district level.</b> About 7.6 km across, so 1 px ≈ 6 m. An Aframax (245 m) is 40 px long.</div>
+<div class="win" id="Z1"></div>
+
+<div class="state-cap"><b>Zoom 2 — close.</b> About 1.3 km across, so 1 px ≈ 1 m. The tanker terminal: one Aframax unloading crude at T1, an MR coming in with two tugs for T2.</div>
+<div class="win" id="Z2"></div>
+<ul class="notes">
+  <li><b>Boat count follows trade.</b> 15.8 calls a month in this city: 1.9 Aframax (crude in), 0.9 MR (petrol and diesel in), 0.8 LR1 (fuel oil out), 0.4 MR (jet out), 0.8 gas carriers (LPG out), 0.8 small bitumen tankers, 5.9 Capesize (iron ore out) and 4.3 feeders (containers). A fraction is a rate: 0.4 calls a month is one call every 2½ months.</li>
+  <li><b>Time on the map.</b> If one game month plays as about 60 s of map time (★ decision Q8), a month's 15.8 calls means about one boat every 4 s across the screen at district zoom. The berth times from report §4.2 decide how long each one stays alongside.</li>
+  <li><b>Positions are a pure function of time:</b> position = route(call, t). Arrival times are spread through the month by a hash of (good, month, call number), so panning away and back shows the same boat in the same place, and no boat is ever simulated off screen.</li>
+  <li><b>Close zoom</b> is the same schedule drawn bigger. Tugs, mooring lines and loading arms are decoration that appears only at this zoom.</li>
+</ul>
+
+<script>
+const ICON = {
+  building:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M11 21v-3h2v3"/>',
+  land:'<path d="M3 20h18M6 20l5-11 5 11M11 9V5M17 20v-6M15 16l2-5 2 5"/>',
+  people:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4 2 4 5"/>',
+  health:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M6 12h3l1.5-2.5 3 5 1.5-2.5h3"/>',
+  factory:'<path d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17z"/>',
+  landmark:'<path d="M3 21h18M4 10h16M12 3l8 5H4zM6 10v8M10 10v8M14 10v8M18 10v8"/>',
+  dollar:'<circle cx="12" cy="12" r="9"/><path d="M15 9c-.5-1-1.6-1.5-3-1.5-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.6M12 6v1.5M12 16.5V18"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z"/>',
+  scale:'<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7h6zM19 7l-3 7h6z"/>',
+  chart:'<path d="M3 3v18h18M7 15l4-5 3 3 5-7"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+};
+const ic = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
+const RAIL = [['building','Build'],['land','Land'],['people','People'],['health','Services'],['factory','Sectors'],['landmark','Government'],['dollar','Finances'],['globe','Trade'],['scale','Policy'],['chart','History']];
+function frame(win, o){
+  win.innerHTML = `
+  <nav class="rail">${RAIL.map(([k,n])=>`<span class="ri ${k===o.active?'on':''}" title="${n}">${ic(k)}</span>`).join('')}<span class="ri gear">${ic('settings')}</span></nav>
+  <div class="top"><span class="date">${o.date}</span><span class="tf">cash <b>${o.cash}</b></span><span class="tf">people <b>${o.people}</b></span><span class="tf">net <b style="color:var(--good)">${o.net}</b>/mo</span><span class="inbox">${ic('mail')}${o.inbox}</span></div>
+  <aside class="strip"><div class="v">Cash<b>${o.cashShort}</b></div><div class="v">People<b>${o.peopleShort}</b></div><div class="v">Net<b>${o.netShort}</b></div><div class="v">Jobs<b>${o.jobs}</b></div></aside>
+  <main class="content"></main>
+  <div class="debt">debt <b>${o.debt}</b><span>next payment <b>${o.pay}</b></span><span>rate <b>${o.rate}</b></span></div>`;
+  return win.querySelector('.content');
+}
+const FR={active:'land',date:'June 2183',cash:'D$ 18.42B',people:'2.61M',net:'+D$ 212M',inbox:'5',cashShort:'18.4B',peopleShort:'2.61M',netShort:'+212M',jobs:'1.27M',debt:'D$ 4.10B',pay:'D$ 31.6M',rate:'3.35%'};
+
+/* ---------- helpers ---------- */
+function rng(seed){ return ()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const COL={imp:'#5aa9ff',exp:'#f2a65a',both:'#d6dde4',empty:'#8496ab'};
+// a ship drawn along +x, centred at 0,0, length Lp px, beam Bp px
+function ship(kind,dir,x,y,ang,Lp,o={}){
+  const B=o.B||Math.max(4,Lp*0.17), L=Lp, c=COL[dir], laden=dir!=='empty';
+  const hull=`M${-L/2},${-B/2} L${L/2-B*.9},${-B/2} Q${L/2},0 ${L/2-B*.9},${B/2} L${-L/2},${B/2} Q${-L/2-B*.12},0 ${-L/2},${-B/2}Z`;
+  let s=`<path d="${hull}" fill="${laden?'#1a2836':'#22303e'}" stroke="${c}" stroke-width="${o.sw||1.4}"/>`;
+  const br=-L/2+L*.06;  // bridge at the stern
+  if(kind==='tanker'||kind==='gas'||kind==='bitumen'){
+    s+=`<line x1="${-L/2+L*.18}" x2="${L/2-B*1.1}" y1="0" y2="0" stroke="${c}" stroke-opacity=".55" stroke-width="${Math.max(.6,B*.08)}"/>`;
+    if(kind==='gas'){ for(let i=0;i<4;i++){ const cx=-L/2+L*(.3+i*.15); s+=`<circle cx="${cx}" cy="0" r="${B*.36}" fill="#2a3b4d" stroke="${c}" stroke-width=".8"/>`; } }
+  } else if(kind==='bulk'){
+    const n=Math.max(5,Math.round(L/(B*.95))); for(let i=0;i<n-1;i++){ const cx=-L/2+L*.2+i*(L*.68/(n-1)); s+=`<rect x="${cx-B*.22}" y="${-B*.3}" width="${B*.44}" height="${B*.6}" fill="${laden?'#3a3428':'#2a3644'}" stroke="${c}" stroke-opacity=".6" stroke-width=".6"/>`; }
+  } else if(kind==='box'){
+    const r=rng(Math.round(x*7+y)); const pal=['#4f7aa8','#a8574f','#4f9a7a','#a8904f','#7a5fa8','#5f8fa8'];
+    const n=Math.max(4,Math.round(L*.68/(B*.5)));
+    for(let i=0;i<n;i++){ for(let j=-1;j<=1;j++){ const cx=-L/2+L*.2+i*(L*.66/n); s+=`<rect x="${cx}" y="${j*B*.27-B*.13}" width="${L*.66/n-0.6}" height="${B*.26}" fill="${pal[Math.floor(r()*pal.length)]}"/>`; } }
+  }
+  s+=`<rect x="${br}" y="${-B*.38}" width="${Math.max(2,L*.07)}" height="${B*.76}" fill="#c3ccd3" fill-opacity=".85"/>`;
+  if(o.wake){ s=`<path d="M${-L/2},${-B*.3} L${-L/2-L*.9},${-B*1.5} M${-L/2},${B*.3} L${-L/2-L*.9},${B*1.5}" stroke="#cfe3f5" stroke-opacity=".28" stroke-width="1" fill="none"/>`+s; }
+  return `<g transform="translate(${x},${y}) rotate(${ang})">${s}</g>`;
+}
+function along(pts,f){ // point and angle at fraction f of a polyline
+  let tot=0, seg=[]; for(let i=1;i<pts.length;i++){ const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); seg.push(d); tot+=d; }
+  let t=f*tot; for(let i=0;i<seg.length;i++){ if(t<=seg[i]){ const a=pts[i],b=pts[i+1],u=t/seg[i]; return [a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI]; } t-=seg[i]; }
+  const a=pts[pts.length-2],b=pts[pts.length-1]; return [b[0],b[1],Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI];
+}
+const poly = pts => pts.map(p=>p.join(',')).join(' ');
+const T=(x,y,t,o={})=>`<text x="${x}" y="${y}" font-size="${o.fs||10.5}" fill="${o.c||'#c3ccd3'}" ${o.a?`text-anchor="${o.a}"`:''} ${o.w?`font-weight="${o.w}"`:''} ${o.mono?'font-family="IBM Plex Mono"':''} stroke="#0b1118" stroke-width="3" stroke-linejoin="round" paint-order="stroke">${t}</text>`;
+
+/* =================== ZOOM 1: district =================== */
+(function(){
+  const c=frame(document.getElementById('Z1'),FR);
+  const W=1239,H=732;
+  const LAND=[[0,0],[905,0],[880,60],[840,140],[800,215],[770,250],[745,300],[720,345],[690,385],[650,420],[600,452],[540,478],[470,500],[380,520],[260,540],[130,560],[0,575]];
+  let s=`<defs><clipPath id="land1"><polygon points="${poly(LAND)}"/></clipPath>
+    <radialGradient id="sea1" cx="70%" cy="80%" r="90%"><stop offset="0" stop-color="#0a1b2a"/><stop offset="1" stop-color="#0f2638"/></radialGradient></defs>`;
+  s+=`<rect width="${W}" height="${H}" fill="url(#sea1)"/>`;
+  // shallow band along the coast
+  s+=`<polygon points="${poly(LAND)}" fill="none" stroke="#173a52" stroke-width="34" stroke-linejoin="round" stroke-opacity=".7"/>`;
+  s+=`<polygon points="${poly(LAND)}" fill="#18231f"/>`;
+  // blocks, roads and buildings, clipped to land
+  const r=rng(42); let g='';
+  for(let gx=0;gx<W;gx+=20) g+=`<line x1="${gx}" x2="${gx}" y1="0" y2="${H}" stroke="#1d2a26" stroke-width="1"/>`;
+  for(let gy=0;gy<H;gy+=20) g+=`<line y1="${gy}" y2="${gy}" x1="0" x2="${W}" stroke="#1d2a26" stroke-width="1"/>`;
+  for(let bx=0;bx<W;bx+=20) for(let by=0;by<H;by+=20){
+    const ind = (bx>440 && by>300) || (bx>700 && by>180);
+    if(bx>470 && bx<700 && by>320 && by<440) continue; // refinery and tank farm drawn below
+    const n=ind?1+Math.floor(r()*2):2+Math.floor(r()*4);
+    for(let i=0;i<n;i++){ const w=ind?7+r()*9:3+r()*5, h=ind?6+r()*8:3+r()*5; const x=bx+2+r()*(17-w), y=by+2+r()*(17-h);
+      g+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${ind?'#3a3550':(r()<.18?'#3b2f45':'#26413d')}"/>`; }
+  }
+  for(let gx=0;gx<W;gx+=80) g+=`<line x1="${gx}" x2="${gx}" y1="0" y2="${H}" stroke="#3a4655" stroke-width="2"/>`;
+  for(let gy=0;gy<H;gy+=80) g+=`<line y1="${gy}" y2="${gy}" x1="0" x2="${W}" stroke="#3a4655" stroke-width="2"/>`;
+  g+=`<path d="M0,120 L420,95 L905,60" stroke="#5a6676" stroke-width="4" fill="none"/>`; // a highway
+  g+=`<path d="M60,575 L120,300 L240,140 L300,0" stroke="#4a3f2a" stroke-width="2.5" fill="none" stroke-dasharray="6 3"/>`; // rail
+  s+=`<g clip-path="url(#land1)">${g}</g>`;
+  // the refinery and tank farm
+  s+=`<rect x="478" y="326" width="128" height="104" fill="#1e2a26" stroke="#3a4655"/>`;
+  [[490,338,10,30],[506,338,10,22],[524,342,14,14],[544,340,26,12],[546,358,20,20],[496,376,40,10],[574,362,24,26],[492,396,22,18],[522,396,30,14]].forEach(([x,y,w,h])=>{ s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#4a3f5c" stroke="#7a6a90" stroke-width=".7"/>`; });
+  [[500,346],[515,346],[560,368]].forEach(([x,y])=>{ s+=`<circle cx="${x}" cy="${y}" r="3.5" fill="#a78bfa" fill-opacity=".8"/>`; });
+  for(let i=0;i<4;i++) for(let j=0;j<3;j++){ s+=`<circle cx="${622+i*16}" cy="${346+j*16}" r="6.5" fill="#2a3540" stroke="#7f8ca6"/>`; }
+  s+=T(478,320,'Refinery',{fs:10.5,c:'#e6edf3',w:600})+T(616,330,'Tank farm',{fs:10.5,c:'#e6edf3',w:600});
+  // container terminal (reclaimed apron)
+  const CT=[[800,212],[862,240],[812,332],[748,300]];
+  s+=`<polygon points="${poly(CT)}" fill="#26303a" stroke="#4a5866"/>`;
+  { const r2=rng(7); const pal=['#4f7aa8','#a8574f','#4f9a7a','#a8904f','#7a5fa8'];
+    for(let i=0;i<9;i++) for(let j=0;j<4;j++){ const u=.12+i*.085, v=.15+j*.17; const px=CT[0][0]+(CT[3][0]-CT[0][0])*v+(CT[1][0]-CT[0][0])*u, py=CT[0][1]+(CT[3][1]-CT[0][1])*v+(CT[1][1]-CT[0][1])*u;
+      s+=`<rect x="${px.toFixed(1)}" y="${py.toFixed(1)}" width="5" height="3" fill="${pal[Math.floor(r2()*5)]}" transform="rotate(27 ${px} ${py})"/>`; } }
+  [[851,262],[842,280],[833,297],[824,314]].forEach(([x,y])=>{ s+=`<line x1="${x}" y1="${y}" x2="${x+9}" y2="${y+4}" stroke="#e6edf3" stroke-width="1.5"/>`; });
+  s+=T(752,206,'Container terminal',{fs:10.5,c:'#e6edf3',w:600});
+  // tanker jetty: trestle and head
+  s+=`<line x1="682" y1="392" x2="782" y2="455" stroke="#7f8ca6" stroke-width="3"/>`;
+  s+=`<g transform="translate(786,458) rotate(122)"><rect x="-38" y="-3" width="76" height="6" fill="#5a6676"/></g>`;
+  s+=T(724,520,'Tanker terminal · T1 T2',{fs:10.5,c:'#e6edf3',w:600});
+  // bulk terminal: quay and stockpiles
+  s+=`<polygon points="${poly([[470,500],[560,474],[566,494],[476,520]])}" fill="#2e3640" stroke="#4a5866"/>`;
+  [[478,470,34],[520,458,34],[470,486,22]].forEach(([x,y,w],i)=>{ s+=`<ellipse cx="${x+w/2}" cy="${y}" rx="${w/2}" ry="5" fill="#c9b68f" fill-opacity="${.75-i*.12}" transform="rotate(-16 ${x+w/2} ${y})"/>`; });
+  s+=T(396,474,'Bulk terminal',{fs:10.5,c:'#e6edf3',w:600});
+  // general cargo finger pier
+  s+=`<rect x="378" y="519" width="10" height="26" fill="#2e3640" stroke="#4a5866"/>`;
+  s+=T(304,566,'General cargo',{fs:10,c:'#c3ccd3'});
+  // lanes: two-way, out to the map's edge
+  const L1=[[872,478],[930,585],[992,732]], L2=[[858,492],[800,600],[728,732]];
+  [L1,L2].forEach(p=>{ s+=`<polyline points="${poly(p)}" fill="none" stroke="#5aa9ff" stroke-opacity=".22" stroke-width="16" stroke-linecap="round"/><polyline points="${poly(p)}" fill="none" stroke="#5aa9ff" stroke-opacity=".5" stroke-dasharray="5 6"/>`; });
+  s+=T(866,726,'to the world ›',{fs:10,c:'#8496ab',a:'middle'});
+  // offshore platform and its pipeline ashore
+  s+=`<path d="M1180,585 Q930,560 690,410" fill="none" stroke="#c9b68f" stroke-opacity=".5" stroke-dasharray="2 4" stroke-width="1.5"/>`;
+  s+=`<g transform="translate(1180,585)"><rect x="-6" y="-6" width="12" height="12" fill="#2a3540" stroke="#c9b68f"/><circle r="40" fill="none" stroke="#c9b68f" stroke-opacity=".25" stroke-dasharray="3 3"/></g>`;
+  s+=T(1112,546,'Platform A · 18,000 b/d',{fs:10,c:'#c9b68f'});
+  const SC=1.6; // boats drawn at 1.6x true size at this zoom
+  // ships at berth
+  s+=ship('tanker','imp',794,463,122,40*SC,{B:7*SC});      // Aframax unloading crude at T1
+  s+=ship('tanker','exp',767,472,122,38*SC,{B:6.5*SC});    // LR1 loading fuel oil at T2
+  s+=ship('bulk','exp',523,516,-16,48*SC,{B:8*SC});        // Capesize loading ore
+  s+=ship('box','both',842,289,118.5,23*SC,{B:4.5*SC});    // feeder at the container quay
+  [[808,440],[815,488]].forEach(([x,y])=>{ s+=`<circle cx="${x}" cy="${y}" r="2.4" fill="#e6edf3"/>`; }); // tugs
+  // ships under way
+  { let [x,y,a]=along(L1,.2);  s+=ship('gas','exp',x,y,a,33*SC,{B:6*SC,wake:1}); s+=T(x+26,y+2,'gas carrier · LPG out',{fs:10,c:'#f2a65a'}); }
+  { let [x,y,a]=along(L1,.52); s+=ship('tanker','imp',x,y,a+180,30*SC,{B:5.5*SC,wake:1}); s+=T(x+26,y+4,'MR · petrol and diesel in',{fs:10,c:'#5aa9ff'}); }
+  { let [x,y,a]=along(L1,.96); s+=ship('tanker','imp',x,y,a+180,40*SC,{B:7*SC}); }
+  { let [x,y,a]=along(L2,.42); s+=ship('bulk','empty',x,y,a+180,48*SC,{B:8*SC,wake:1}); s+=T(x-46,y+2,'Capesize · empty, coming for ore',{fs:10,c:'#8496ab',a:'end'}); }
+  { let [x,y,a]=along(L2,.84); s+=ship('bulk','exp',x,y,a,48*SC,{B:8*SC,wake:1}); s+=T(x-46,y+2,'Capesize · 170,000 t of ore out',{fs:10,c:'#f2a65a',a:'end'}); }
+  // hover card on the Aframax entering at the edge
+  s+=`<g transform="translate(1012,646)"><path d="M0,0 L190,0 L190,48 L0,48 Z" fill="#101924" fill-opacity=".95" stroke="#2f6fa8"/>
+    <text x="8" y="15" font-size="10.5" fill="#e6edf3" font-weight="600">Aframax · 75,000 t of crude</text>
+    <text x="8" y="30" font-size="10" fill="#a9b8c9">from abroad · to T1 in about 9 h</text>
+    <text x="8" y="42" font-size="10" fill="#8496ab">1 of 1.9 calls this month</text></g>`;
+  s+=`<line x1="1000" y1="712" x2="1012" y2="690" stroke="#2f6fa8"/>`;
+  s+=`<g transform="translate(16,708)"><line x1="0" x2="83" y1="0" y2="0" stroke="#c3ccd3" stroke-width="2"/><line x1="0" x2="0" y1="-4" y2="4" stroke="#c3ccd3"/><line x1="83" x2="83" y1="-4" y2="4" stroke="#c3ccd3"/><text x="90" y="4" font-size="10" fill="#a9b8c9" font-family="IBM Plex Mono">500 m</text></g>`;
+
+  c.innerHTML = `
+  <div class="mapbar"><span class="t">Map</span><span>Port district · Land office › the map</span><span class="mono">7.68 km district · 1 px ≈ 6 m</span>
+    <span class="lchip on">Ships</span><span class="lchip on">Trade lanes</span><span class="lchip on">Pipelines</span><span class="lchip">Land offers</span>
+    <span class="zoom"><span>−</span><span class="on">2</span><span>+</span><span>⤢</span></span></div>
+  <div class="map"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${s}</svg>
+    <div class="card" style="right:12px;top:12px;width:236px">
+      <div class="h">The port this month</div>
+      <table>
+        <tr><td>Crude in</td><td class="s">Aframax</td><td class="m">1.9</td></tr>
+        <tr><td>Petrol, diesel in</td><td class="s">MR</td><td class="m">0.9</td></tr>
+        <tr><td>Fuel oil out</td><td class="s">LR1</td><td class="m">0.8</td></tr>
+        <tr><td>Jet fuel out</td><td class="s">MR</td><td class="m">0.4</td></tr>
+        <tr><td>LPG out</td><td class="s">gas carrier</td><td class="m">0.8</td></tr>
+        <tr><td>Bitumen out</td><td class="s">5,000 t tanker</td><td class="m">0.8</td></tr>
+        <tr><td>Iron ore out</td><td class="s">Capesize</td><td class="m">5.9</td></tr>
+        <tr><td>Containers</td><td class="s">feeder</td><td class="m">4.3</td></tr>
+        <tr><td style="color:#e6edf3;border-top:1px solid #24354a">Calls a month</td><td style="border-top:1px solid #24354a"></td><td class="m" style="border-top:1px solid #24354a">15.8</td></tr>
+      </table>
+      <div style="margin-top:6px;font-size:10.5px;color:var(--t3);line-height:1.45">calls = tonnes a month ÷ one ship's cargo<br>berths busy: tankers 9% of 2 · bulk 41% · boxes 11%</div>
+    </div>
+    <div class="card" style="right:12px;top:300px;width:236px">
+      <div class="h">Drawn only where you look</div>
+      <svg width="214" height="112" viewBox="0 0 214 112">
+        <rect width="214" height="112" fill="#0c1f2f"/>
+        <path d="M0,0 L70,0 L64,20 L52,34 L30,42 L0,46Z" fill="#18231f" stroke="#2c3a33"/>
+        <polyline points="60,30 76,52 110,112" fill="none" stroke="#5aa9ff" stroke-opacity=".5" stroke-dasharray="3 3"/>
+        <polyline points="56,32 50,60 42,112" fill="none" stroke="#5aa9ff" stroke-opacity=".5" stroke-dasharray="3 3"/>
+        <rect x="26" y="10" width="54" height="36" fill="none" stroke="#e6edf3" stroke-width="1.2"/>
+        ${[[60,31],[57,34],[64,36],[70,42],[53,42]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.6" fill="#5aa9ff"/>`).join('')}
+        ${[[84,66],[96,88],[106,104],[49,66],[45,92]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.6" fill="none" stroke="#8496ab"/>`).join('')}
+        <text x="84" y="22" font-size="9" fill="#e6edf3">the screen</text><text x="120" y="104" font-size="9" fill="#8496ab">to the world</text>
+      </svg>
+      <div style="margin-top:5px;font-size:10.5px;line-height:1.5"><span style="color:#5aa9ff">●</span> drawn: route on screen now<br><span style="color:#8496ab">○</span> scheduled only: nothing computed</div>
+    </div>
+    <div class="card" style="left:12px;bottom:40px;width:206px">
+      <div class="h">Boats</div>
+      <div class="lg"><span class="sw" style="background:#5aa9ff"></span>import, arriving full</div>
+      <div class="lg"><span class="sw" style="background:#f2a65a"></span>export, leaving full</div>
+      <div class="lg"><span class="sw" style="background:#8496ab"></span>empty leg, riding high</div>
+      <div class="lg"><span class="sw" style="background:#d6dde4"></span>containers, both ways</div>
+      <div class="lg" style="color:var(--t3)">shape = kind: tanker · bulk · boxes · gas</div><div class="lg" style="color:var(--t3)">drawn 1.6× true size at this zoom</div>
+    </div>
+  </div>`;
+})();
+
+/* =================== ZOOM 2: close =================== */
+(function(){
+  const c=frame(document.getElementById('Z2'),FR);
+  const W=1239,H=732;
+  let s=`<defs><linearGradient id="sea2" x1="0" x2="1"><stop offset="0" stop-color="#143349"/><stop offset=".45" stop-color="#0f2638"/><stop offset="1" stop-color="#0a1b2a"/></linearGradient></defs>`;
+  s+=`<rect width="${W}" height="${H}" fill="url(#sea2)"/>`;
+  // land on the left
+  s+=`<path d="M0,0 L300,0 Q330,180 310,360 Q296,520 330,732 L0,732Z" fill="#18231f" stroke="#2d3b33"/>`;
+  // tank farm: 8 tanks, about 70 m across
+  for(let i=0;i<2;i++) for(let j=0;j<4;j++){ const cx=70+i*96, cy=120+j*98;
+    s+=`<circle cx="${cx}" cy="${cy}" r="34" fill="#25313c" stroke="#7f8ca6" stroke-width="1.5"/><circle cx="${cx}" cy="${cy}" r="26" fill="none" stroke="#3a4a5c"/>`;
+    s+=`<rect x="${cx-26}" y="${cy-26}" width="52" height="52" fill="none" stroke="#3a4655" stroke-dasharray="2 3" transform="rotate(0)"/>`; }
+  s+=T(40,58,'Tank farm · 8 tanks · 0.5M m³',{fs:11.5,c:'#e6edf3',w:600});
+  s+=T(40,74,'crude and products, about 2 months of the terminal\'s flow',{fs:10.5,c:'#a9b8c9'});
+  // pipe rack to the trestle
+  s+=`<path d="M190,380 L330,380" stroke="#7f8ca6" stroke-width="5"/><path d="M190,377 L330,377 M190,383 L330,383" stroke="#a9b8c9" stroke-width=".8"/>`;
+  for(let j=0;j<4;j++){ s+=`<path d="M${70+96},${120+j*98} L190,${120+j*98} L190,380" stroke="#5a6676" stroke-width="2" fill="none"/>`; }
+  s+=T(194,612,'to the refinery ‹',{fs:10.5,c:'#a9b8c9'});
+  s+=`<path d="M190,380 L190,600" stroke="#5a6676" stroke-width="3"/>`;
+  // trestle out to the head (about 450 m)
+  s+=`<rect x="330" y="372" width="440" height="16" fill="#3a4655" stroke="#5a6676"/>`;
+  s+=`<path d="M330,377 L770,377 M330,383 L770,383" stroke="#a9b8c9" stroke-width=".8"/>`;
+  s+=T(470,364,'Trestle · 450 m · pipelines',{fs:10.5,c:'#a9b8c9'});
+  // jetty head: about 520 m long, two berths on its east face
+  s+=`<rect x="770" y="110" width="34" height="540" fill="#3a4655" stroke="#6a7888"/>`;
+  [[804,170],[804,330],[804,450],[804,600]].forEach(([x,y])=>{ s+=`<rect x="${x}" y="${y-4}" width="6" height="8" fill="#c3ccd3"/>`; }); // fenders
+  [[824,92],[824,668]].forEach(([x,y])=>{ s+=`<rect x="${x-7}" y="${y-7}" width="14" height="14" fill="#3a4655" stroke="#6a7888"/>`; }); // mooring dolphins
+  s+=T(728,104,'T1',{fs:12,c:'#e6edf3',w:600,mono:1})+T(728,416,'T2',{fs:12,c:'#e6edf3',w:600,mono:1});
+  // loading arms
+  [[798,240],[798,262],[798,284]].forEach(([x,y])=>{ s+=`<path d="M${x},${y} l14,-6 l6,6" stroke="#ffb454" stroke-width="2" fill="none"/>`; });
+  // Aframax at T1: 245 m x 42 m
+  s+=ship('tanker','imp',832,265,-90,245,{B:42,sw:2});
+  // mooring lines
+  [[812,148],[812,382],[852,148],[852,382]].forEach(([x,y],i)=>{ s+=`<line x1="${x}" y1="${y}" x2="${i<2?804:824}" y2="${i%2?y+24:y-24}" stroke="#c3ccd3" stroke-opacity=".6"/>`; });
+  s+=`<g transform="translate(480,150)"><path d="M0,0 L262,0 L262,62 L0,62Z" fill="#101924" fill-opacity=".95" stroke="#2f6fa8"/>
+    <text x="10" y="18" font-size="11.5" fill="#e6edf3" font-weight="600">Aframax at T1 · unloading crude</text>
+    <text x="10" y="34" font-size="10.5" fill="#a9b8c9">75,000 t from abroad · 22 h at the berth</text>
+    <text x="10" y="50" font-size="10.5" fill="#8496ab">pumps about 7,500 t an hour · 10 h left</text></g>`;
+  // MR coming in for T2 with two tugs: 183 m x 32 m
+  s+=`<path d="M1239,700 Q1060,640 960,560" fill="none" stroke="#cfe3f5" stroke-opacity=".08" stroke-width="10"/>`;
+  s+=ship('tanker','imp',960,540,-128,183,{B:32,sw:2});
+  s+=`<g transform="translate(905,468) rotate(-128)"><rect x="-12" y="-5" width="24" height="10" rx="5" fill="#2a3a4c" stroke="#e6edf3"/></g><line x1="905" y1="468" x2="917" y2="476" stroke="#e6edf3" stroke-opacity=".7"/>`;
+  s+=`<g transform="translate(1018,616) rotate(-128)"><rect x="-12" y="-5" width="24" height="10" rx="5" fill="#2a3a4c" stroke="#e6edf3"/></g><line x1="1018" y1="616" x2="1009" y2="607" stroke="#e6edf3" stroke-opacity=".7"/>`;
+  s+=`<g transform="translate(1000,440)"><path d="M0,0 L224,0 L224,62 L0,62Z" fill="#101924" fill-opacity=".95" stroke="#2f6fa8"/>
+    <text x="10" y="18" font-size="11.5" fill="#e6edf3" font-weight="600">MR coming in for T2</text>
+    <text x="10" y="34" font-size="10.5" fill="#a9b8c9">37,000 t of petrol and diesel</text>
+    <text x="10" y="50" font-size="10.5" fill="#8496ab">2 tugs · alongside in about 40 min</text></g>`;
+  s+=`<g transform="translate(24,708)"><line x1="0" x2="100" y1="0" y2="0" stroke="#c3ccd3" stroke-width="2"/><line x1="0" x2="0" y1="-4" y2="4" stroke="#c3ccd3"/><line x1="100" x2="100" y1="-4" y2="4" stroke="#c3ccd3"/><text x="108" y="4" font-size="10" fill="#a9b8c9" font-family="IBM Plex Mono">100 m</text></g>`;
+  c.innerHTML = `
+  <div class="mapbar"><span class="t">Map</span><span>Tanker terminal</span><span class="mono">close · 1 px ≈ 1 m</span>
+    <span class="lchip on">Ships</span><span class="lchip on">Trade lanes</span><span class="lchip on">Pipelines</span><span class="lchip">Land offers</span>
+    <span class="zoom"><span>−</span><span class="on">4</span><span>+</span><span>⤢</span></span></div>
+  <div class="map"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${s}</svg>
+    <div class="card" style="right:12px;top:12px;width:248px">
+      <div class="h">Tanker terminal · 2 berths</div>
+      <table>
+        <tr><td>Crude in</td><td class="m">144,200 t</td><td class="s">1.9 calls</td></tr>
+        <tr><td>Petrol, diesel in</td><td class="m">32,200 t</td><td class="s">0.9</td></tr>
+        <tr><td>Fuel oil out</td><td class="m">47,000 t</td><td class="s">0.8</td></tr>
+        <tr><td>Jet fuel out</td><td class="m">14,600 t</td><td class="s">0.4</td></tr>
+        <tr><td>LPG out</td><td class="m">15,700 t</td><td class="s">0.8</td></tr>
+        <tr><td>Bitumen out</td><td class="m">4,100 t</td><td class="s">0.8</td></tr>
+      </table>
+      <div style="margin-top:6px;font-size:10.5px;color:var(--t3);line-height:1.5">5.6 calls × 24 h = 134 berth-hours<br>busy 9% of 2 berths · one berth would be 18% busy (limit 40%)</div>
+    </div>
+  </div>`;
+})();
+</script>
+</body>
+</html>

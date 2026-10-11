@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mockup 1 · Iron: the mines and the steelworks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stage:#0b1118; --panel:#101924; --raised:#152130; --edge:#24354a;
+  --t1:#e6edf3; --t2:#a9b8c9; --t3:#8496ab;
+  --accent:#5aa9ff; --good:#3fb950; --warn:#e3b341; --bad:#f85149;
+  --people:#2ec4b6; --biz:#a78bfa; --bld:#f17cb0; --ore:#c9b68f;
+  --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'IBM Plex Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#06090d;color:var(--t1);font-family:var(--sans);padding:28px 32px 60px}
+.doc{max-width:1389px;margin:0 0 22px}
+.doc h1{font-size:22px;font-weight:600;margin:0 0 6px}
+.doc p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:4px 0;max-width:1120px}
+.doc p b{color:var(--t1);font-weight:600}
+.state-cap{font-size:13px;color:var(--t2);margin:26px 0 8px;max-width:1389px}
+.state-cap b{color:var(--t1);font-weight:600}
+.notes{max-width:1389px;color:var(--t3);font-size:12.5px;line-height:1.55;margin:10px 0 0;padding-left:18px}
+.notes b{color:var(--t2);font-weight:600}
+/* ---------- the game window ---------- */
+.win{width:1389px;height:868px;background:var(--stage);border:1px solid var(--edge);overflow:hidden;
+  display:grid;grid-template-columns:46px 72px 1fr;grid-template-rows:44px 1fr 30px;position:relative}
+.rail{grid-row:1/4;grid-column:1;background:var(--panel);border-right:1px solid var(--edge);display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:4px}
+.ri{width:34px;height:34px;display:grid;place-items:center;border-radius:4px;color:var(--t3)}
+.ri svg{width:19px;height:19px}
+.ri.on{background:var(--raised);color:var(--accent);box-shadow:inset 2px 0 0 var(--accent)}
+.ri.gear{margin-top:auto;margin-bottom:8px}
+.top{grid-row:1;grid-column:2/4;background:var(--panel);border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:22px;padding:0 16px}
+.top .date{font-family:var(--mono);font-size:19px;font-weight:600;color:#fff}
+.top .tf{font-family:var(--mono);font-size:13px;color:var(--t2)}
+.top .tf b{color:var(--t1);font-weight:600}
+.top .inbox{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--t2);font-family:var(--mono);font-size:12px}
+.top .inbox svg{width:18px;height:18px}
+.strip{grid-row:2;grid-column:2;background:var(--panel);border-right:1px solid var(--edge);padding:12px 8px;display:flex;flex-direction:column;gap:14px}
+.strip .v{font-size:9px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.strip .v b{display:block;font-family:var(--mono);font-size:12px;letter-spacing:0;color:var(--t1);font-weight:500;margin-top:2px;text-transform:none}
+.debt{grid-row:3;grid-column:2/4;background:var(--panel);border-top:1px solid var(--edge);display:flex;align-items:center;gap:20px;padding:0 16px;font-size:11px;color:var(--t3)}
+.debt b{font-family:var(--mono);color:var(--t2);font-weight:500}
+.content{grid-row:2;grid-column:3;padding:12px 16px 0;overflow:hidden;display:flex;flex-direction:column;gap:9px}
+/* ---------- page pieces ---------- */
+.head{display:flex;align-items:center;gap:10px;height:30px}
+.crumb{font-size:12px;color:var(--accent)}
+.sq{width:26px;height:26px;border-radius:4px;display:grid;place-items:center;background:#2a2246;color:var(--biz)}
+.sq svg{width:16px;height:16px}
+.title{font-size:20px;font-weight:600}
+.info{width:16px;height:16px;border-radius:50%;border:1px solid var(--t3);color:var(--t3);font-size:10px;display:grid;place-items:center;font-family:var(--mono)}
+.buildlink{margin-left:auto;font-size:12px;color:var(--bld)}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.fig{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:8px 12px}
+.fig .l{font-size:10px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.fig .n{font-family:var(--mono);font-size:21px;font-weight:600;margin:2px 0 1px}
+.fig .s{font-size:11px;color:var(--t2)}
+.inv{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--edge);border-left:3px solid var(--warn);border-radius:4px;padding:6px 12px;font-size:12px;color:var(--t2)}
+.inv .k{font-weight:600}
+.inv a{margin-left:auto;color:var(--accent);text-decoration:none;white-space:nowrap}
+.chips{display:flex;gap:6px}
+.chip{font-size:12px;color:var(--t2);padding:5px 11px;border-radius:4px;border:1px solid var(--edge);background:var(--panel)}
+.chip.on{color:var(--t1);background:var(--raised);border-color:var(--accent)}
+.sec{display:flex;align-items:baseline;gap:12px;font-size:11px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-top:2px}
+.sec span{letter-spacing:0;text-transform:none;font-size:11px}
+.sec .scale{margin-left:auto;font-family:var(--mono)}
+.pic{display:block}
+.pstrip{display:grid;gap:6px}
+.pc{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:6px 8px 7px;min-width:0}
+.pc .nm{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden}
+.pc .nm .lt{margin-left:auto;font-size:9px;color:var(--t3);border:1px dashed var(--t3);border-radius:3px;padding:0 4px}
+.pc .sw{width:10px;height:10px;border-radius:2px;flex:none}
+.pc .bar{height:7px;margin:6px 0 5px;display:flex;border-radius:2px;overflow:hidden;background:#0e1620}
+.pc .r{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;color:var(--t3);line-height:1.45;white-space:nowrap}
+.pc .r b{font-family:var(--mono);font-weight:500;color:var(--t2)}
+.pc .r b.hot{color:var(--warn)} .pc .r b.bad{color:#ff9e9e} .pc .r b.ok{color:var(--good)}
+svg text{font-family:var(--sans)}
+svg .mono{font-family:var(--mono)}
+
+</style>
+</head>
+<body>
+<div class="doc"><h1>Mockup 1 — iron: Iron Mining and Iron &amp; Steel</h1><p>The iron industry redone as two sectors. <b>Iron Mining</b> lifts ore from the city's fields; a field is either <b>hematite</b> (shipped as it is dug, 62% iron) or <b>magnetite</b> (30% iron, concentrated three tonnes to one at the mine). <b>Iron &amp; Steel</b> (today's Heavy Industry) owns every building that turns ore, coal, limestone and scrap into iron and steel, and builds whichever earns the most on its cost at the city's own prices (report §1.2).</p><p>Both windows are the same big city in the same month as the oil mockups (June 2183, 2.61M people). Ribbons are to scale in <b>tonnes of what flows</b>, so a unit's box is as tall as the larger of what goes in and what comes out; the difference is what the process takes away (water and rock at the mine, oxygen and slag at the furnace). Every flow balances; figures are worked in the report's model (§2, §8).</p></div><div class="state-cap"><b>Iron Mining — the mines.</b> Four fields: two worked hard, one nearly empty, one just bought. Each field is drawn as a vessel filled to what is left; the ribbon beside it is what it gave up this month.</div><div class="win" id="A"></div><ul class="notes"><li><b>The grade is the mechanism, not a modifier.</b> A hematite field is dug and shipped; a magnetite field needs a concentrator, which is why its mine costs more, uses 52 MW and 7,900 units of water, and why its box is three times as tall as what comes out of it.</li><li><b>The mine types fit the free sites.</b> A Large Open-Pit Mine stands on 20 sites of one field; West 9 has 4, so the investors put Iron Mines there. North 2 runs out in 22 years and its one mine then retires by the existing worked-out rule.</li><li><b>Ore that nobody here wants still sells</b>, at the export price, so a mine is worth building before any furnace exists (the rule from <i>steel-and-heavy-industry.md</i>, kept).</li></ul><div class="state-cap"><b>Iron &amp; Steel — the steelworks.</b> Two routes side by side: the blast furnace and oxygen steel shop on the city's own ore, coal and limestone; the electric arc furnaces on scrap. The products pictogram is filled by what the works made this month.</div><div class="win" id="B"></div><ul class="notes"><li><b>One sector, many buildings, one rule: whatever earns most.</b> Coke ovens, blast furnaces, the oxygen shop, arc furnaces, scrap yards and the pelletising plant are all Iron &amp; Steel's. Each month it values every good at the city's own price and builds the one that earns the most on its cost, if that clears the interest test (report §1.2). Nothing else holds it back: with freight in the price bands, ore bought abroad to make steel for abroad does not pay on its own.</li><li><b>The investors' line is the rule speaking.</b> Concentrate goes abroad at D$ 85 while pellets fetch D$ 125, so a second pelletising plant earns 1.8% a month. A third coke oven would replace the 11,750 t of imported coke and sell the rest abroad: 1.2%. The city is short of 18,900 t of steel, but an arc furnace on imported scrap earns only 0.2%.</li><li><b>Steel is priced as the world prices it</b>: D$ 650 landed, D$ 470 if exported (report Q6). At those prices the works sells its steel at home, Manufacturing's fabricators grew to use it, and the last 18,900 t comes in by sea. Fabricated steel and machinery moved down with it, so their margins over steel are what they were.</li><li><b>Scrap is a city product now.</b> Old cars, vans and demolished buildings arise as old steel; a Scrap Yard buys it and sells scrap. Iron ore no longer stands in for scrap (report Q4).</li></ul>
+<script>
+/* ============ shared: icons, frame (the oil mockups' frame, unchanged) ============ */
+const ICON = {
+  building:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M11 21v-3h2v3"/>',
+  land:'<path d="M3 20h18M6 20l5-11 5 11M11 9V5M17 20v-6M15 16l2-5 2 5"/>',
+  people:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4 2 4 5"/>',
+  health:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M6 12h3l1.5-2.5 3 5 1.5-2.5h3"/>',
+  factory:'<path d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17z"/>',
+  landmark:'<path d="M3 21h18M4 10h16M12 3l8 5H4zM6 10v8M10 10v8M14 10v8M18 10v8"/>',
+  dollar:'<circle cx="12" cy="12" r="9"/><path d="M15 9c-.5-1-1.6-1.5-3-1.5-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.6M12 6v1.5M12 16.5V18"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z"/>',
+  scale:'<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7h6zM19 7l-3 7h6z"/>',
+  chart:'<path d="M3 3v18h18M7 15l4-5 3 3 5-7"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  car:'<path d="M3 16v-3.5L5.5 7h13l2.5 5.5V16z"/><path d="M3 12.5h18"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
+  truck:'<path d="M2 6h11v10H2zM13 10h4l3 3v3h-7z"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/>',
+  train:'<rect x="6" y="3" width="12" height="14" rx="2"/><path d="M6 10h12M8 21l2-3M16 21l-2-3M9 13.5h.5M14.5 13.5h.5"/>',
+  ship:'<path d="M3 15l2 5h14l2-5zM6 15V9h12v6M10 9V5h4v4"/>',
+  road:'<path d="M8 3L4 21M16 3l4 18M12 4v3M12 10v3M12 16v3"/>',
+  pick:'<path d="M14 4c3 0 6 2 7 5-3-1.5-6-2-9-1.5M14 4C11 4 8 6 7 9c3-1.5 6-2 9-1.5M12.5 7.5L4 20"/>',
+  pit:'<path d="M2 7h20M4 7l3 5h10l3-5M7 12l2 4h6l2-4M9 16l1 3h4l1-3"/>',
+  tree:'<path d="M12 3l6 8h-3l4 6H5l4-6H6zM12 17v4"/>',
+  saw:'<circle cx="9" cy="14" r="6"/><circle cx="9" cy="14" r="1.5"/><path d="M14 9l7-6M3 14H1M9 8V6M9 22v-2"/>',
+  furnace:'<path d="M8 21l1-11h6l1 11zM9 10V6l3-3 3 3v4M5 21h14"/><path d="M11 16h2"/>',
+  ladle:'<path d="M5 8h14l-2 10H7zM3 8h18M8 18l-1 3M16 18l1 3"/><path d="M15 4c-2 1-4 1-6 0"/>',
+  kiln:'<rect x="2" y="9" width="16" height="6" rx="3" transform="rotate(-8 10 12)"/><path d="M19 9l3-1M4 17v4M15 15v6"/>',
+  silo:'<path d="M7 21V8l5-5 5 5v13M7 8h10M7 13h10M4 21h16"/>',
+  coil:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="2"/>',
+  wire:'<path d="M3 17c3 0 3-10 6-10s3 10 6 10 3-10 6-10"/>',
+  cathode:'<rect x="6" y="5" width="12" height="15" rx="1"/><path d="M4 5h16M10 2v3M14 2v3"/>',
+  hopper:'<path d="M4 4h16l-5 8v5h-6v-5zM9 21h6"/>',
+  bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+  home:'<path d="M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-5h4v5"/>',
+  flask:'<path d="M9 3h6M10 3v6l-5 10h14l-5-10V3"/>',
+  drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  well:'<path d="M3 21h18M8 21l3-9 3 9M2 9l14-4 3 3-14 4zM16 5v3M5 12v4"/>',
+  recycle:'<path d="M7 19H4l3-5M17 19h3l-3-5M9 5l3-3 3 3M8 14l4-7 4 7M5 19h14"/>',
+  stack:'<rect x="3" y="14" width="18" height="5" rx="1"/><rect x="5" y="9" width="14" height="5" rx="1"/><rect x="7" y="4" width="10" height="5" rx="1"/>',
+  block:'<rect x="3" y="6" width="18" height="12" rx="1"/><path d="M3 12h18M9 6v6M15 12v6"/>',
+  leaf:'<path d="M5 19c0-8 5-14 15-15-1 10-7 15-15 15zM5 19l8-8"/>',
+};
+const ic = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
+const RAIL = [['building','Build'],['land','Land'],['people','People'],['health','Services'],['factory','Sectors'],['landmark','Government'],['dollar','Finances'],['globe','Trade'],['scale','Policy'],['chart','History']];
+function frame(win, o){
+  win.innerHTML = `
+  <nav class="rail">${RAIL.map(([k,n])=>`<span class="ri ${k===o.active?'on':''}" title="${n}">${ic(k)}</span>`).join('')}<span class="ri gear" title="Game menu">${ic('settings')}</span></nav>
+  <div class="top"><span class="date">${o.date}</span><span class="tf">cash <b>${o.cash}</b></span><span class="tf">people <b>${o.people}</b></span><span class="tf">net <b style="color:${o.netColor||'var(--good)'}">${o.net}</b>/mo</span><span class="inbox">${ic('mail')}${o.inbox}</span></div>
+  <aside class="strip"><div class="v">Cash<b>${o.cashShort}</b></div><div class="v">People<b>${o.peopleShort}</b></div><div class="v">Net<b>${o.netShort}</b></div><div class="v">Jobs<b>${o.jobs}</b></div></aside>
+  <main class="content"></main>
+  <div class="debt">debt <b>${o.debt}</b><span>next payment <b>${o.pay}</b></span><span>rate <b>${o.rate}</b></span></div>`;
+  return win.querySelector('.content');
+}
+
+/* ============ number formats ============ */
+function fq(v, unit){           // a quantity, short
+  const a = Math.abs(v);
+  let s;
+  if (a >= 1e6) s = (v/1e6).toLocaleString('en-US',{maximumFractionDigits:2}) + 'M';
+  else if (a >= 1e5) s = (v/1e3).toLocaleString('en-US',{maximumFractionDigits:0}) + 'k';
+  else if (a >= 1e4) s = (v/1e3).toLocaleString('en-US',{maximumFractionDigits:1}) + 'k';
+  else s = Math.round(v).toLocaleString('en-US');
+  return unit ? s + ' ' + unit : s;
+}
+
+/* ============ the pictogram: a layered flow, ribbons to scale ============ */
+function pictogram(d){
+  const p = d.pic, W = p.W || 1235, H = p.H, TOP = p.top || 56, PAD = 4;
+  const N = {}; p.nodes.forEach((n,i)=>{ N[n.id] = Object.assign({i, inV:0, outV:0, ins:[], outs:[]}, n); });
+  p.links.forEach(l=>{ const s=N[l.s], t=N[l.t]; if(!s||!t){ console.warn('bad link', l); return; } s.outV+=l.v; t.inV+=l.v; s.outs.push(l); t.ins.push(l); });
+  const size = n => n.size != null ? n.size : Math.max(n.inV, n.outV);
+  const cols = p.cols.map((c,ci)=>({...c, ci, nodes: p.nodes.filter(n=>n.col===ci).map(n=>N[n.id])}));
+  const gapAfter = (a,b) => {
+    if (!b) return 0;
+    if (a.kind==='prod' && b.kind==='prod') return 0;
+    if (a.kind==='imp' && b.kind==='imp') return 0;
+    if (b.kind==='imp') return 20;
+    return ({field:30, src:22, unit:20, buy:12, prod:0})[a.kind] ?? 14;
+  };
+  const avail = H - TOP - 2*PAD;
+  const minOf = n => n.kind==='field' ? 42 : (n.kind==='prod' ? 13 : 2.2);
+  let k = Infinity;
+  for (let pass=0; pass<3; pass++){
+    let kk = Infinity;
+    cols.forEach(c=>{ if(!c.nodes.length) return;
+      const g = c.nodes.reduce((acc,n,i)=>acc+gapAfter(n,c.nodes[i+1]),0);
+      let fixed = 0, tot = 0;
+      c.nodes.forEach(n=>{ if (k!==Infinity && size(n)*k < minOf(n)) fixed += minOf(n); else tot += size(n); });
+      if (tot>0) kk = Math.min(kk, (avail - g - fixed)/tot);
+    });
+    k = kk;
+  }
+  if (p.kMax) k = Math.min(k, p.kMax);
+  d.k = k;
+  const minH = 2.2;
+  cols.forEach(c=>{
+    const hs = c.nodes.map(n=>Math.max(size(n)*k, minOf(n)));
+    const g = c.nodes.reduce((acc,n,i)=>acc+gapAfter(n,c.nodes[i+1]),0);
+    const tot = hs.reduce((a,b)=>a+b,0) + g;
+    let y = TOP + (H-TOP)/2 - tot/2 + (c.shift||0);
+    c.nodes.forEach((n,i)=>{ n.x=c.x; n.w=c.w; n.y=y; n.h=hs[i]; n.oc=y; n.icur=y; y += hs[i] + gapAfter(n,c.nodes[i+1]); });
+    c.top = TOP + (H-TOP)/2 - tot/2 + (c.shift||0); c.bot = c.top + tot;
+  });
+  // order links on each node by the far end's position
+  Object.values(N).forEach(n=>{
+    n.outs.sort((a,b)=> (N[a.t].y - N[b.t].y) || (N[a.t].x - N[b.t].x));
+    n.ins.sort((a,b)=> (N[a.s].y - N[b.s].y) || (N[a.s].x - N[b.s].x));
+  });
+  let s='', defs=[];
+  const pats = new Set();
+  const hatch = c => { const id='h'+d.id+c.replace('#',''); if(!pats.has(id)){ pats.add(id);
+    defs.push(`<pattern id="${id}" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><rect width="6" height="6" fill="${c}" fill-opacity=".12"/><rect width="2.2" height="6" fill="${c}" fill-opacity=".85"/></pattern>`);} return `url(#${id})`; };
+  const txt=(x,y,t,o={})=>`<text ${o.halo?'stroke="#0b1118" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke"':''} x="${x}" y="${y}" font-size="${o.fs||11}" fill="${o.c||'#a9b8c9'}" ${o.a?`text-anchor="${o.a}"`:''} ${o.w?`font-weight="${o.w}"`:''} ${o.mono?'class="mono"':''} ${o.ls?`letter-spacing="${o.ls}"`:''}>${t}</text>`;
+  const icon=(k,x,y,sz,col)=>`<g color="${col}"><svg x="${x}" y="${y}" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg></g>`;
+  // ---- ribbons (drawn first) ----
+  const ribbons = [];
+  p.links.forEach(l=>{
+    const a=N[l.s], b=N[l.t]; if(!a||!b) return;
+    const h = l.v*k;
+    const x1 = a.x + a.w, x2 = b.x;
+    const y0 = a.oc; a.oc += h; const y1 = b.icur; b.icur += h;
+    const xm = x1 + (x2-x1)*.5;
+    const fill = l.hatch ? hatch(l.c) : l.c;
+    const op = l.hatch ? .95 : (l.later ? .28 : .5);
+    ribbons.push(`<path d="M${x1},${y0}C${xm},${y0} ${xm},${y1} ${x2},${y1}L${x2},${y1+h}C${xm},${y1+h} ${xm},${y0+h} ${x1},${y0+h}Z" fill="${fill}" fill-opacity="${op}" ${l.later?'stroke="'+l.c+'" stroke-opacity=".6" stroke-dasharray="3 3" stroke-width=".8"':''}/>`);
+    if (b.kind==='buy' || b.kind==='abroad') b.segs = (b.segs||[]).concat([{y:y1,h,c:fill,later:l.later}]);
+    if (b.kind==='prod' || b.kind==='imp') {}
+  });
+  s += ribbons.join('');
+  // ---- column heads ----
+  cols.forEach(c=>{ if(!c.head) return;
+    const ax = c.headX ?? (c.x + (c.headAnchor==='middle'? c.w/2 : 0));
+    const hy = p.headY ?? 14;
+    s += txt(ax, hy, c.head, {fs:9.5,c:'#8496ab',ls:'.08em',a:c.headAnchor||null});
+    if (c.sub) s += txt(ax, hy + 13, c.sub, {fs:10,c:'#a9b8c9',a:c.headAnchor||null});
+  });
+  // ---- nodes ----
+  const tanks = {}; const srcs = [];
+  Object.values(N).forEach(n=>{
+    if (n.kind==='field'){
+      // the lift bar
+      const hr = Math.max(size(n)*k, 1.5);
+      if (size(n) > 0) s += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${hr}" rx="1.5" fill="${n.color}"/>`;
+      // the field vessel: fill = what is left
+      const vh = 40, vw = 22, vx = n.x - vw - 12, vy = n.y + Math.min(n.h, 42)/2 - vh/2;
+      const left = Math.max(0, Math.min(1, n.fill ?? 1));
+      s += `<rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" rx="3" fill="${hatch('#5a6d84')}" fill-opacity=".5" stroke="#3a4f6a"/>`;
+      s += `<rect x="${vx+1}" y="${vy+vh*(1-left)}" width="${vw-2}" height="${vh*left-1}" rx="2" fill="${n.fillColor||n.color}" fill-opacity=".9"/>`;
+      if (n.icon) s += icon(n.icon, vx-26, vy+vh/2-10, 18, '#c9b68f');
+      const tx = vx - 32, cy0 = vy + vh/2;
+      s += txt(tx, cy0-8, n.label, {fs:11.5,c:'#e6edf3',w:500,a:'end'});
+      s += txt(tx, cy0+6, n.sub, {fs:10,c:'#8496ab',a:'end'});
+      if (n.sub2) s += txt(tx, cy0+19, n.sub2, {fs:10,c: n.sub2c||'#a9b8c9',a:'end',mono:1});
+    } else if (n.kind==='src'){
+      s += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="1.5" fill="${n.hatch?hatch(n.color):n.color}" ${n.hatch?'stroke="'+n.color+'" stroke-dasharray="3 2"':''}/>`;
+      srcs.push(n);
+    } else if (n.kind==='unit'){
+      s += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${Math.max(n.h,3)}" rx="3" fill="#1b2a3d" stroke="${n.later?'#5a6d84':'#4a6283'}" ${n.later?'stroke-dasharray="3 2"':''}/>`;
+      if (n.h >= 22 && n.icon) s += icon(n.icon, n.x+n.w/2-8, n.y+n.h/2-8, 16, '#8fb3e0');
+      const lx = n.labelSide==='left' ? n.x - 4 : n.x;
+      s += txt(lx, n.y-5, n.label, {fs:10.5,c:'#e6edf3',w:500,halo:1,a:n.labelSide==='left'?'end':null});
+      const lw = n.label.replace(/&amp;/g,'&').length*6.1;
+      if (n.sub && n.h >= 40) s += txt(n.x + n.w/2, n.y + 14, n.sub, {fs:9,c:'#a9b8c9',a:'middle'});
+      else if (n.sub) s += txt(n.labelSide==='left'? n.x-4 : n.x + lw + 8, n.labelSide==='left'? n.y+9 : n.y-5, n.sub, {fs:9.5,c:'#a9b8c9',halo:1,a:n.labelSide==='left'?'end':null});
+    } else if (n.kind==='prod' || n.kind==='imp'){
+      const t = tanks[n.col] = tanks[n.col] || {x:n.x,w:n.w,prod:[],imp:[]};
+      t[n.kind==='prod'?'prod':'imp'].push(n);
+      s += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" fill="${n.kind==='imp'?hatch(n.color):n.color}" fill-opacity="${n.kind==='imp'?1:.95}"/>`;
+      if (n.kind==='prod' && n.h >= 12){
+        const tc = n.dark ? '#e6edf3' : '#0b1118';
+        s += txt(n.x+7, n.y+n.h/2+3.5, n.label, {fs:10,c:tc,w:600});
+        s += txt(n.x+n.w-6, n.y+n.h/2+3.5, n.fig || fq(size(n)), {fs:10,c:tc,a:'end',mono:1,w:600});
+      } else if (n.kind==='prod' && n.h >= 4){
+        s += txt(n.x-6, n.y+n.h/2+3.5, n.label + ' ' + (n.fig||fq(size(n))), {fs:9.5,c:'#a9b8c9',a:'end',halo:1});
+      }
+    } else if (n.kind==='buy' || n.kind==='abroad'){
+      (n.segs||[]).forEach(g=>{ s += `<rect x="${n.x}" y="${g.y}" width="${n.w}" height="${Math.max(g.h,.8)}" fill="${g.c}" ${g.later?'fill-opacity=".45"':''}/>`; });
+      if (n.later) s += `<rect x="${n.x-1}" y="${n.y-1}" width="${n.w+2}" height="${n.h+2}" fill="none" stroke="#8496ab" stroke-dasharray="2 2"/>`;
+    }
+  });
+  // ---- the products pictogram: outline, roof, imports ----
+  Object.values(tanks).forEach(t=>{
+    if (!t.prod.length) return;
+    const y0 = t.prod[0].y, y1 = t.prod[t.prod.length-1].y + t.prod[t.prod.length-1].h, x=t.x, w=t.w;
+    s += `<rect x="${x}" y="${y0}" width="${w}" height="${y1-y0}" fill="none" stroke="#3a4f6a" stroke-width="1.2"/>`;
+    t.prod.slice(1).forEach(n=>{ s += `<line x1="${x}" x2="${x+w}" y1="${n.y}" y2="${n.y}" stroke="#0b1118"/>`; });
+    s += roof(p.roof, x, y0, w);
+    s += `<rect x="${x+8}" y="${y1}" width="${w-16}" height="7" fill="#152130" stroke="#3a4f6a"/>`;
+    if (t.imp.length){
+      const iy0 = t.imp[0].y, iy1 = t.imp[t.imp.length-1].y + t.imp[t.imp.length-1].h;
+      s += `<rect x="${x}" y="${iy0}" width="${w}" height="${Math.max(iy1-iy0,1.5)}" fill="none" stroke="#5a6d84" stroke-dasharray="3 2"/>`;
+      const tot = t.imp.reduce((a,n)=>a+size(n),0);
+      s += txt(x, iy1+13, 'IMPORTED', {fs:9.5,c:'#8496ab',ls:'.08em'});
+      s += txt(x+w, iy1+13, fq(tot, p.unit), {fs:10,c:'#e3b341',a:'end',mono:1});
+    }
+  });
+  // ---- source labels, relaxed ----
+  { const S = srcs.sort((a,b)=>a.y-b.y).map(n=>({n,t:n.y+n.h/2})); const MN = p.srcMin || 30;
+    for(let it=0;it<80;it++){ for(let i=1;i<S.length;i++){ const dy=S[i].t-S[i-1].t; if(dy<MN){ const m=(MN-dy)/2; S[i].t+=m; S[i-1].t-=m; } } S.forEach(l=>{ l.t=Math.max(TOP-4,Math.min(H-14,l.t)); }); }
+    S.forEach(({n,t})=>{ const cy=n.y+n.h/2, tx=n.x-14;
+      if(Math.abs(cy-t)>3) s+=`<path d="M${n.x-1},${cy} L${tx+3},${t}" stroke="#3a4f6a" fill="none"/>`;
+      if (n.icon) s += icon(n.icon, n.x - (p.srcLabelW||180), t-17, 18, n.hatch?'#8496ab':'#c9b68f');
+      s += txt(tx, t-4, n.label, {fs:11.5,c:'#e6edf3',w:500,a:'end'});
+      s += txt(tx, t+9, n.sub||'', {fs:10,c:'#8496ab',a:'end'});
+    }); }
+  // ---- buyer labels, relaxed ----
+  const B = Object.values(N).filter(n=>n.kind==='buy'||n.kind==='abroad').sort((a,b)=>a.y-b.y);
+  const L = B.map(b=>({b,t:b.y+b.h/2}));
+  const MIN = p.buyMin || 31;
+  for(let it=0;it<80;it++){ for(let i=1;i<L.length;i++){ const dy=L[i].t-L[i-1].t; if(dy<MIN){ const m=(MIN-dy)/2; L[i].t+=m; L[i-1].t-=m; } } L.forEach(l=>{ l.t=Math.max(TOP-10,Math.min(H-16,l.t)); }); }
+  L.forEach(({b,t})=>{
+    const cy=b.y+b.h/2, lx=b.x+b.w+10;
+    if(Math.abs(cy-t)>3) s+=`<path d="M${b.x+b.w+1},${cy} L${lx-4},${t}" stroke="#3a4f6a" fill="none"/>`;
+    s += icon(b.icon||'factory', lx, t-15, 18, b.kind==='abroad'?'#8496ab':(b.later?'#8496ab':'#c3ccd3'));
+    s += txt(lx+24, t-3, b.label, {fs:11.5,c:b.later?'#a9b8c9':'#e6edf3',w:500});
+    s += txt(lx+(p.buyValX||206), t-3, b.fig || fq(b.inV, p.unit), {fs:11,c:'#a9b8c9',a:'end',mono:1});
+    let wx = lx+24;
+    if (b.later){ s += `<rect x="${wx}" y="${t+2}" width="30" height="12" rx="3" fill="none" stroke="#8496ab" stroke-dasharray="2 2"/>` + txt(wx+15, t+11, 'later', {fs:8.5,c:'#a9b8c9',a:'middle'}); wx += 36; }
+    s += txt(wx, t+11, b.what||'', {fs:9.5,c:b.hot?'#e3b341':'#8496ab'});
+  });
+  // ---- free text (notes on the picture) ----
+  (p.notes||[]).forEach(t=>{ s += txt(t.x, t.y, t.t, {fs:t.fs||10,c:t.c||'#8496ab',a:t.a||null,mono:t.mono,w:t.w}); });
+  return `<svg class="pic" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${defs.join('')}</defs>${s}</svg>`;
+}
+
+/* the top of the products pictogram, drawn per chain */
+function roof(kind, x, y, w){
+  const st = 'fill="#152130" stroke="#3a4f6a"';
+  if (kind==='furnace') return `<path d="M${x},${y} L${x+14},${y-10} L${x+w-14},${y-10} L${x+w},${y}" ${st}/><rect x="${x+w/2-10}" y="${y-30}" width="20" height="20" ${st}/><rect x="${x+w/2-4}" y="${y-44}" width="8" height="14" ${st}/><path d="M${x+w/2},${y-45} q-4,-6 0,-11 q4,5 0,11z" fill="#ff8a4c" fill-opacity=".85"/>`;
+  if (kind==='hopper') return `<path d="M${x},${y} L${x-8},${y-16} L${x+w+8},${y-16} L${x+w},${y}" ${st}/><path d="M${x+w*.2},${y-16} l${w*.12},-10 l${w*.12},10 M${x+w*.5},${y-16} l${w*.1},-7 l${w*.1},7" stroke="#57534e" fill="#2a2a30"/>`;
+  if (kind==='cathode') return `<rect x="${x-10}" y="${y-8}" width="${w+20}" height="5" rx="1" ${st}/><rect x="${x+w*.3}" y="${y-18}" width="5" height="10" ${st}/><rect x="${x+w*.65}" y="${y-18}" width="5" height="10" ${st}/>`;
+  if (kind==='logs') { let r=''; for(let i=0;i<5;i++){ r+=`<circle cx="${x+12+i*(w-24)/4}" cy="${y-8}" r="8" ${st}/><circle cx="${x+12+i*(w-24)/4}" cy="${y-8}" r="3" fill="none" stroke="#3a4f6a"/>`; } return r; }
+  if (kind==='silo') return `<path d="M${x},${y} L${x+w/2},${y-22} L${x+w},${y}" ${st}/><rect x="${x+w/2-3}" y="${y-30}" width="6" height="8" ${st}/>`;
+  if (kind==='pit') return `<path d="M${x-6},${y} L${x+6},${y-12} L${x+w-6},${y-12} L${x+w+6},${y}" ${st}/><path d="M${x+w*.35},${y-12} l6,-9 h14 l6,9" ${st}/>`;
+  return `<path d="M${x},${y} L${x+10},${y-12} L${x+w-10},${y-12} L${x+w},${y}" ${st}/>`;
+}
+
+/* ============ the strip under the picture ============ */
+function pstrip(d){
+  const st = d.strip; if(!st) return '';
+  const cells = st.cells.map(c=>{
+    const bar = c.bar ? `<div class="bar">${c.bar.map(b=>`<span style="width:${b.w}%;background:${b.hatch?`repeating-linear-gradient(45deg,${b.c} 0 2px,transparent 2px 5px)`:b.c};${b.o?`opacity:${b.o}`:''}"></span>`).join('')}</div>` : '';
+    return `<div class="pc"><div class="nm"><span class="sw" style="background:${c.c}"></span>${c.n}${c.later?'<span class="lt">later</span>':''}</div>${bar}
+      ${c.rows.map(r=>`<div class="r">${r[0]} <b class="${r[2]||''}">${r[1]}</b></div>`).join('')}</div>`;
+  }).join('');
+  return `<div class="sec">${st.title} <span>${st.sub||''}</span></div><div class="pstrip" style="grid-template-columns:repeat(${st.cells.length},minmax(0,1fr))">${cells}</div>`;
+}
+
+/* ============ a page ============ */
+function page(el, d){
+  const c = frame(el, d.frame);
+  const pic = pictogram(d);
+  const scale = d.pic.scaleNote || ('10 px of ribbon = ' + fq(10/d.k, d.pic.unit));
+  c.innerHTML = `
+  <div class="head"><span class="crumb">Sectors ›</span><span class="sq" style="${d.head.sqStyle||''}">${ic(d.head.icon)}</span><span class="title">${d.head.title}</span><span class="info">i</span>
+    <span style="font-size:12px;color:var(--t3)">· ${d.head.cat}</span><span class="buildlink">${d.head.build}</span></div>
+  <div class="figs">${d.figs.map(f=>`<div class="fig"><div class="l">${f[0]}</div><div class="n" style="${f[3]?`color:${f[3]}`:''}">${f[1]}</div><div class="s">${f[2]}</div></div>`).join('')}</div>
+  <div class="inv" style="border-left-color:${d.inv.c}"><span class="k" style="color:${d.inv.c}">${d.inv.k}</span><span>${d.inv.t}</span><a href="#">${d.inv.a}</a></div>
+  <div class="chips">${d.chips.map((n,i)=>`<span class="chip ${i===0?'on':''}">${n}</span>`).join('')}</div>
+  <div class="sec">${d.pic.title} <span>${d.pic.sub}</span><span class="scale">${scale}</span></div>
+  ${pic}
+  ${pstrip(d)}`;
+}
+
+
+page(document.getElementById("A"), {"head": {"icon": "pit", "title": "Iron Mining", "cat": "Industry \u00b7 mines on the city's iron fields", "build": "Build \u203a Industry \u203a Iron Mining \u203a", "sqStyle": "background:#3a2a22;color:#c9b68f"}, "figs": [["Ore lifted", "1.06M t", "660k lump &amp; fines \u00b7 400k concentrate"], ["Worth", "D$ 90.1M", "at D$ 85 a tonne \u00b7 47% of it sold abroad"], ["Fields", "4 \u00b7 49 of 66 sites", "17 sites free \u00b7 2 mines on site"], ["Adds", "D$ 70.9M", "after wages, power and diesel \u00b7 D$ 67 a tonne"]], "inv": {"c": "#5aa9ff", "k": "building", "t": "2 Iron Mines on site at West 9 \u2014 its 4 sites are too few for a Large Open-Pit Mine (20 sites)", "a": "Investors \u203a"}, "chips": ["Operations", "Fields", "Income", "Balance sheet", "Cash &amp; debt", "Investors"], "pic": {"title": "THE MINES THIS MONTH", "sub": "from the fields to the buyers \u00b7 ribbons to scale in tonnes", "unit": "t", "H": 420, "top": 60, "cols": [{"x": 232, "w": 12, "head": "THE FIELDS", "sub": "how full \u00b7 what it lifted", "headX": 8, "headGap": 34}, {"x": 420, "w": 64, "head": "THE MINES"}, {"x": 650, "w": 156, "head": "WHAT IT LIFTED", "sub": "1.06M t of ore", "headAnchor": "middle"}, {"x": 930, "w": 12, "head": "WHO TOOK IT"}], "roof": "pit", "nodes": [{"id": "F1", "col": 0, "kind": "field", "label": "South 3", "sub": "hematite \u00b7 35 sites \u00b7 7 free", "sub2": "66% left \u00b7 294.8 Mt", "fill": 0.657, "color": "#b26242", "icon": "pit"}, {"id": "F3", "col": 0, "kind": "field", "label": "North 2", "sub": "hematite \u00b7 1 site", "sub2": "36% left \u00b7 5.4 Mt", "sub2c": "#e3b341", "fill": 0.36, "color": "#b26242", "icon": "pit"}, {"id": "F2", "col": 0, "kind": "field", "label": "East 7", "sub": "magnetite \u00b7 26 sites \u00b7 6 free", "sub2": "84% left \u00b7 329 Mt crude", "fill": 0.84, "color": "#7d6a5e", "fillColor": "#d39a72", "icon": "pit"}, {"id": "F4", "col": 0, "kind": "field", "label": "West 9", "sub": "hematite \u00b7 4 sites \u00b7 bought 2181", "sub2": "full \u00b7 58.0 Mt \u00b7 2 mines on site", "sub2c": "#5aa9ff", "fill": 1, "color": "#3a4f6a", "fillColor": "#b26242", "icon": "pit"}, {"id": "LOP", "col": 1, "kind": "unit", "label": "Large Open-Pit Mine \u00d71", "sub": "96% \u00b7 20 sites", "icon": "pit"}, {"id": "IM", "col": 1, "kind": "unit", "label": "Iron Mine \u00d79", "sub": "100%", "icon": "pick"}, {"id": "MAG", "col": 1, "kind": "unit", "label": "Large Magnetite Complex \u00d71", "sub": "3 : 1", "icon": "factory"}, {"id": "LUMP", "col": 2, "kind": "prod", "label": "Lump &amp; fines", "color": "#b26242", "dark": true}, {"id": "CONC", "col": 2, "kind": "prod", "label": "Concentrate", "color": "#d39a72"}, {"id": "BF", "col": 3, "kind": "buy", "label": "Blast Furnace", "icon": "furnace", "what": "Iron &amp; Steel \u00b7 sintered with coke breeze"}, {"id": "MBF", "col": 3, "kind": "buy", "label": "Mini Blast Furnace", "icon": "furnace", "what": "Iron &amp; Steel"}, {"id": "PEL", "col": 3, "kind": "buy", "label": "Pelletising Plant", "icon": "factory", "what": "Iron &amp; Steel \u00b7 concentrate only"}, {"id": "AB", "col": 3, "kind": "abroad", "label": "Abroad", "icon": "globe", "what": "at D$ 85 a tonne \u00b7 2.9 Capesize calls a month"}], "links": [{"s": "F1", "t": "LOP", "v": 480000, "c": "#b26242"}, {"s": "F1", "t": "IM", "v": 160000, "c": "#b26242"}, {"s": "F3", "t": "IM", "v": 20000, "c": "#b26242"}, {"s": "F2", "t": "MAG", "v": 1200000, "c": "#7d6a5e"}, {"s": "LOP", "t": "LUMP", "v": 480000, "c": "#b26242"}, {"s": "IM", "t": "LUMP", "v": 180000, "c": "#b26242"}, {"s": "MAG", "t": "CONC", "v": 400000, "c": "#d39a72"}, {"s": "LUMP", "t": "BF", "v": 387500, "c": "#b26242"}, {"s": "LUMP", "t": "MBF", "v": 24000, "c": "#b26242"}, {"s": "LUMP", "t": "AB", "v": 248500, "c": "#b26242"}, {"s": "CONC", "t": "PEL", "v": 150000, "c": "#d39a72"}, {"s": "CONC", "t": "AB", "v": 250000, "c": "#d39a72"}], "notes": [{"x": 420, "y": 46, "t": "the complex lifts 1.2M t of rock and keeps 400k t; 800k t goes to its tailings dam", "fs": 9.5}]}, "strip": {"title": "THE FIELDS", "sub": "what is left, and how long it lasts at this month's rate", "cells": [{"n": "South 3 \u00b7 hematite", "c": "#b26242", "bar": [{"w": 65.7, "c": "#b26242"}, {"w": 34.3, "c": "#3a4f6a"}], "rows": [["sites worked", "28 of 35"], ["left", "294.8 Mt"], ["lifted", "640k t a month"], ["lasts", "38 years", "ok"]]}, {"n": "East 7 \u00b7 magnetite", "c": "#d39a72", "bar": [{"w": 84, "c": "#d39a72"}, {"w": 16, "c": "#3a4f6a"}], "rows": [["sites worked", "20 of 26"], ["left", "329 Mt crude"], ["lifted", "1.2M t crude"], ["lasts", "23 years", "ok"]]}, {"n": "North 2 \u00b7 hematite", "c": "#b26242", "bar": [{"w": 36, "c": "#b26242"}, {"w": 64, "c": "#3a4f6a"}], "rows": [["sites worked", "1 of 1"], ["left", "5.4 Mt"], ["lifted", "20k t a month"], ["lasts", "22 years", "hot"]]}, {"n": "West 9 \u00b7 hematite", "c": "#b26242", "bar": [{"w": 100, "c": "#b26242", "o": 0.45}], "rows": [["sites worked", "0 of 4"], ["left", "58.0 Mt"], ["on site", "2 Iron Mines"], ["lasts", "121 years", "ok"]]}, {"n": "Iron ore here", "c": "#b26242", "rows": [["price here", "D$ 85"], ["world pays", "D$ 85"], ["world asks", "D$ 115"], ["exported", "498.5k t"]]}]}, "frame": {"active": "factory", "date": "June 2183", "cash": "D$ 18.42B", "people": "2.61M", "net": "+D$ 212M", "inbox": "5", "cashShort": "18.4B", "peopleShort": "2.61M", "netShort": "+212M", "jobs": "1.27M", "debt": "D$ 4.10B", "pay": "D$ 31.6M", "rate": "3.35%"}, "id": "A"});
+page(document.getElementById("B"), {"head": {"icon": "furnace", "title": "Iron &amp; Steel", "cat": "Industry \u00b7 was Heavy Industry", "build": "Build \u203a Industry \u203a Iron &amp; Steel \u203a"}, "figs": [["Steel made", "312.8k t", "290k oxygen \u00b7 22.8k electric arc"], ["Iron made", "265k t", "250k blast furnace \u00b7 15k mini"], ["Worth", "D$ 229.5M", "steel 203.3M \u00b7 pellets 18.8M \u00b7 pig iron 7.4M"], ["Adds", "D$ 70.3M", "after feed, wages and power \u00b7 D$ 225 a tonne of steel"]], "inv": {"c": "#5aa9ff", "k": "building", "t": "a second Pelletising Plant, 9 months on site \u2014 1.8% a month on its cost, against 1.2% for a third coke oven", "a": "Investors \u203a"}, "chips": ["Operations", "Products", "Income", "Balance sheet", "Cash &amp; debt", "Investors"], "pic": {"title": "THE STEELWORKS THIS MONTH", "sub": "ore, coal, limestone and scrap in \u00b7 ribbons to scale in tonnes", "unit": "t", "H": 420, "top": 60, "srcLabelW": 176, "cols": [{"x": 196, "w": 10, "head": "IN", "headX": 20}, {"x": 300, "w": 54, "head": "", "shift": 110}, {"x": 468, "w": 60, "head": "IRONMAKING"}, {"x": 640, "w": 60, "head": "STEELMAKING", "shift": 30}, {"x": 796, "w": 136, "head": "WHAT IT MADE", "sub": "481.3k t \u00b7 and 18.9k t of steel imported", "headAnchor": "middle"}, {"x": 984, "w": 12, "head": "WHO BOUGHT IT"}], "roof": "furnace", "nodes": [{"id": "ORE", "col": 0, "kind": "src", "label": "Iron ore", "sub": "the city's mines \u00b7 D$ 85", "color": "#b26242", "icon": "pit"}, {"id": "LST", "col": 0, "kind": "src", "label": "Limestone", "sub": "the city's quarries \u00b7 flux", "color": "#ded8c6", "icon": "pit"}, {"id": "THM", "col": 0, "kind": "src", "label": "Thermal coal", "sub": "blown in, and pellet fuel", "color": "#7d808c", "icon": "hopper"}, {"id": "COK", "col": 0, "kind": "src", "label": "Coking coal", "sub": "the city's mines \u00b7 D$ 180", "color": "#9a8fb5", "icon": "hopper"}, {"id": "IMC", "col": 0, "kind": "src", "label": "Imported coke", "sub": "D$ 420 landed", "color": "#a3a9b3", "hatch": true, "icon": "ship"}, {"id": "LIM", "col": 0, "kind": "src", "label": "Lime", "sub": "the city's lime kiln", "color": "#f4f1e8", "icon": "kiln"}, {"id": "OLD", "col": 0, "kind": "src", "label": "Old steel", "sub": "cars, vans, demolitions", "color": "#5f6b7d", "icon": "recycle"}, {"id": "IMS", "col": 0, "kind": "src", "label": "Imported scrap", "sub": "D$ 410 landed", "color": "#7f8ca6", "hatch": true, "icon": "ship"}, {"id": "CO", "col": 1, "kind": "unit", "label": "Coke Ovens \u00d72", "icon": "kiln"}, {"id": "SY", "col": 1, "kind": "unit", "label": "Scrap Yards \u00d73", "icon": "recycle"}, {"id": "PEL", "col": 2, "kind": "unit", "label": "Pelletising Plant \u00d71", "sub": "+1 on site", "icon": "factory"}, {"id": "BF", "col": 2, "kind": "unit", "label": "Blast Furnace \u00d71", "sub": "3 Mt a year", "icon": "furnace"}, {"id": "MBF", "col": 2, "kind": "unit", "label": "Mini Blast Furnace \u00d71", "icon": "furnace"}, {"id": "BOF", "col": 3, "kind": "unit", "label": "Oxygen Steel Shop \u00d71", "icon": "ladle"}, {"id": "EAF", "col": 3, "kind": "unit", "label": "Arc furnaces \u00d77", "icon": "bolt"}, {"id": "T_PEL", "col": 4, "kind": "prod", "label": "Pellets", "color": "#e6bc8f", "fig": "150.0k"}, {"id": "T_STEEL", "col": 4, "kind": "prod", "label": "Steel", "color": "#8fbde8", "fig": "312.8k"}, {"id": "T_PIG", "col": 4, "kind": "prod", "label": "Pig iron", "color": "#ff9a5c", "fig": "18.5k"}, {"id": "I_ST", "col": 4, "kind": "imp", "label": "Steel", "color": "#8fbde8"}, {"id": "FAB", "col": 5, "kind": "buy", "label": "Fabrication \u00d7126", "icon": "factory", "what": "Manufacturing \u00b7 86 works, 40 shops"}, {"id": "MW", "col": 5, "kind": "buy", "label": "Machine Works \u00d740", "icon": "settings", "what": "Manufacturing"}, {"id": "AB", "col": 5, "kind": "abroad", "label": "Abroad", "icon": "globe", "what": "pellets at D$ 125 \u00b7 pig iron at D$ 400"}], "links": [{"s": "ORE", "t": "BF", "v": 387500, "c": "#b26242"}, {"s": "ORE", "t": "MBF", "v": 24000, "c": "#b26242"}, {"s": "ORE", "t": "PEL", "v": 150000, "c": "#d39a72"}, {"s": "LST", "t": "BF", "v": 62500, "c": "#ded8c6"}, {"s": "LST", "t": "MBF", "v": 3750, "c": "#ded8c6"}, {"s": "THM", "t": "BF", "v": 37500, "c": "#7d808c"}, {"s": "THM", "t": "PEL", "v": 4500, "c": "#7d808c"}, {"s": "COK", "t": "CO", "v": 108000, "c": "#9a8fb5"}, {"s": "CO", "t": "BF", "v": 80000, "c": "#a3a9b3"}, {"s": "IMC", "t": "BF", "v": 5000, "c": "#a3a9b3", "hatch": true}, {"s": "IMC", "t": "MBF", "v": 6750, "c": "#a3a9b3", "hatch": true}, {"s": "OLD", "t": "SY", "v": 31500, "c": "#5f6b7d"}, {"s": "SY", "t": "BOF", "v": 30000, "c": "#7f8ca6"}, {"s": "IMS", "t": "BOF", "v": 42500, "c": "#7f8ca6", "hatch": true}, {"s": "IMS", "t": "EAF", "v": 25080, "c": "#7f8ca6", "hatch": true}, {"s": "LIM", "t": "BOF", "v": 17400, "c": "#f4f1e8"}, {"s": "BF", "t": "BOF", "v": 246500, "c": "#ff9a5c"}, {"s": "BF", "t": "T_PIG", "v": 3500, "c": "#ff9a5c"}, {"s": "MBF", "t": "T_PIG", "v": 15000, "c": "#ff9a5c"}, {"s": "BOF", "t": "T_STEEL", "v": 290000, "c": "#8fbde8"}, {"s": "EAF", "t": "T_STEEL", "v": 22800, "c": "#8fbde8"}, {"s": "PEL", "t": "T_PEL", "v": 150000, "c": "#e6bc8f"}, {"s": "T_STEEL", "t": "FAB", "v": 302360, "c": "#8fbde8"}, {"s": "I_ST", "t": "FAB", "v": 18940, "c": "#8fbde8", "hatch": true}, {"s": "T_STEEL", "t": "MW", "v": 10440, "c": "#8fbde8"}, {"s": "T_PIG", "t": "AB", "v": 18500, "c": "#ff9a5c"}, {"s": "T_PEL", "t": "AB", "v": 150000, "c": "#e6bc8f"}], "notes": [{"x": 468, "y": 46, "t": "the blast furnace, oxygen shop and coke ovens burn their own gas: 101 MW, three quarters of the 131 MW the works draws", "fs": 9.5}]}, "strip": {"title": "THIS MONTH, BY PRODUCT", "sub": "tonnes \u00b7 bar: used here, exported (pale), imported (hatched)", "cells": [{"n": "Steel", "c": "#8fbde8", "bar": [{"w": 94.3, "c": "#8fbde8"}, {"w": 5.7, "c": "#8fbde8", "hatch": true}], "rows": [["made here", "312.8k"], ["imported", "18.9k", "hot"], ["exported", "\u2014"], ["price here", "D$ 650"]]}, {"n": "Pig iron", "c": "#ff9a5c", "bar": [{"w": 93.0, "c": "#ff9a5c"}, {"w": 7.0, "c": "#ff9a5c", "o": 0.35}], "rows": [["made here", "265.0k"], ["into steel", "246.5k"], ["exported", "18.5k"], ["price here", "D$ 400"]]}, {"n": "Pellets", "c": "#e6bc8f", "bar": [{"w": 100, "c": "#e6bc8f", "o": 0.35}], "rows": [["made here", "150.0k"], ["imported", "\u2014"], ["exported", "150.0k"], ["price here", "D$ 125"]]}, {"n": "Coke", "c": "#a3a9b3", "bar": [{"w": 87.2, "c": "#a3a9b3"}, {"w": 12.8, "c": "#a3a9b3", "hatch": true}], "rows": [["made here", "80.0k"], ["imported", "11.8k", "hot"], ["exported", "\u2014"], ["price here", "D$ 420"]]}, {"n": "Scrap", "c": "#7f8ca6", "bar": [{"w": 30.7, "c": "#7f8ca6"}, {"w": 69.3, "c": "#7f8ca6", "hatch": true}], "rows": [["made here", "30.0k"], ["imported", "67.6k", "hot"], ["exported", "\u2014"], ["price here", "D$ 410"]]}]}, "frame": {"active": "factory", "date": "June 2183", "cash": "D$ 18.42B", "people": "2.61M", "net": "+D$ 212M", "inbox": "5", "cashShort": "18.4B", "peopleShort": "2.61M", "netShort": "+212M", "jobs": "1.27M", "debt": "D$ 4.10B", "pay": "D$ 31.6M", "rate": "3.35%"}, "id": "B"});
+</script>
+</body>
+</html>

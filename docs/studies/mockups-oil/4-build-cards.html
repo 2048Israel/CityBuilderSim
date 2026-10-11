@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mockup 4 · Build cards for oil and ports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stage:#0b1118; --panel:#101924; --raised:#152130; --edge:#24354a;
+  --t1:#e6edf3; --t2:#a9b8c9; --t3:#8496ab;
+  --accent:#5aa9ff; --good:#3fb950; --warn:#e3b341; --bad:#f85149;
+  --people:#2ec4b6; --biz:#a78bfa; --bld:#f17cb0; --ore:#c9b68f;
+  --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'IBM Plex Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#06090d;color:var(--t1);font-family:var(--sans);padding:28px 32px 60px}
+.doc{max-width:1389px;margin:0 0 18px}
+.doc h1{font-size:22px;font-weight:600;margin:0 0 6px}
+.doc p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:4px 0;max-width:1120px}
+.notes{max-width:1389px;color:var(--t3);font-size:12.5px;line-height:1.55;margin:10px 0 0;padding-left:18px}
+.win{width:1389px;height:868px;background:var(--stage);border:1px solid var(--edge);overflow:hidden;
+  display:grid;grid-template-columns:46px 72px 1fr;grid-template-rows:44px 1fr 30px;position:relative}
+.rail{grid-row:1/4;grid-column:1;background:var(--panel);border-right:1px solid var(--edge);display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:4px}
+.ri{width:34px;height:34px;display:grid;place-items:center;border-radius:4px;color:var(--t3)}
+.ri svg{width:19px;height:19px}
+.ri.on{background:var(--raised);color:var(--accent);box-shadow:inset 2px 0 0 var(--accent)}
+.ri.gear{margin-top:auto;margin-bottom:8px}
+.top{grid-row:1;grid-column:2/4;background:var(--panel);border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:22px;padding:0 16px}
+.top .date{font-family:var(--mono);font-size:19px;font-weight:600;color:#fff}
+.top .tf{font-family:var(--mono);font-size:13px;color:var(--t2)}
+.top .tf b{color:var(--t1);font-weight:600}
+.top .inbox{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--t2);font-family:var(--mono);font-size:12px}
+.top .inbox svg{width:18px;height:18px}
+.strip{grid-row:2;grid-column:2;background:var(--panel);border-right:1px solid var(--edge);padding:12px 8px;display:flex;flex-direction:column;gap:14px}
+.strip .v{font-size:9px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.strip .v b{display:block;font-family:var(--mono);font-size:12px;letter-spacing:0;color:var(--t1);font-weight:500;margin-top:2px;text-transform:none}
+.debt{grid-row:3;grid-column:2/4;background:var(--panel);border-top:1px solid var(--edge);display:flex;align-items:center;gap:20px;padding:0 16px;font-size:11px;color:var(--t3)}
+.debt b{font-family:var(--mono);color:var(--t2);font-weight:500}
+.content{grid-row:2;grid-column:3;padding:10px 16px 0;overflow:hidden;display:flex;flex-direction:column;gap:9px}
+.head{display:flex;align-items:center;gap:10px;height:30px}
+.title{font-size:20px;font-weight:600}
+.cats{display:flex;gap:5px;flex-wrap:wrap}
+.cat{font-size:11.5px;color:var(--t2);padding:4px 10px;border-radius:4px;border:1px solid var(--edge);background:var(--panel)}
+.cat.on{color:var(--t1);background:var(--raised);border-color:var(--accent)}
+.cat.new{border-style:dashed}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;align-items:start}
+.gh{display:flex;align-items:baseline;gap:8px;font-size:11px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;border-bottom:1px solid var(--edge);padding-bottom:5px;margin-bottom:8px}
+.gh span{letter-spacing:0;text-transform:none}
+.gh .rt{margin-left:auto;font-family:var(--mono);color:var(--t2)}
+.card{width:300px;background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:7px;position:relative}
+.card.pending{border-color:var(--bld)}
+.ch{display:flex;align-items:flex-start;gap:9px}
+.isq{width:30px;height:30px;border-radius:4px;display:grid;place-items:center;flex:none}
+.isq svg{width:18px;height:18px}
+.isq.m{background:#2a2246;color:var(--biz)} .isq.c{background:#16314d;color:var(--accent)}
+.ch .nm{font-size:14px;font-weight:600;line-height:1.2}
+.ch .yh{font-size:11px;color:var(--t3);margin-top:1px}
+.ch .yh .site{color:var(--bld)}
+.ch .info{margin-left:auto;width:17px;height:17px;border-radius:50%;border:1px solid var(--t3);color:var(--t3);font-size:10px;display:grid;place-items:center;font-family:var(--mono);flex:none}
+.tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-size:10px;padding:1px 7px;border-radius:3px;background:#1d3a2a;color:#7ee0a0;border:1px solid #2b5a3e}
+.hero .v{font-size:15px;font-weight:600;color:var(--t1)}
+.hero .v b{font-family:var(--mono);font-weight:600}
+.hero .d{font-size:11px;color:var(--t2);line-height:1.45;margin-top:2px}
+.price{font-family:var(--mono);font-size:13px}
+.price .g{color:var(--good);font-weight:600}
+.price .s{color:var(--t3);font-size:11.5px}
+.bar{display:flex;flex-direction:column;gap:3px}
+.bar .l{display:flex;justify-content:space-between;font-size:10.5px;color:var(--t3)}
+.bar .l b{font-family:var(--mono);color:var(--t1);font-weight:500}
+.bar .tr{height:5px;background:#0e1620;border-radius:3px;overflow:hidden;position:relative}
+.bar .tr i{position:absolute;left:0;top:0;bottom:0;background:#4a6283;border-radius:3px}
+.bar .tr i.hi{background:var(--accent)}
+.inv{font-size:11px;color:var(--t2);line-height:1.45;background:var(--panel);border:1px solid var(--edge);border-radius:3px;padding:5px 7px}
+.inv .w{color:var(--warn)} .inv .bl{color:var(--accent)} .inv .r{color:#ff9e9e}
+.needs{font-size:11px;color:var(--t3);line-height:1.6}
+.needs b{font-family:var(--mono);color:var(--t2);font-weight:500}
+.order{display:flex;align-items:center;gap:4px}
+.order span{min-width:26px;height:26px;padding:0 6px;display:grid;place-items:center;border:1px solid #4a5c68;border-radius:4px;background:#1b2836;font-size:11.5px;color:var(--t2);font-family:var(--mono)}
+.order .n{background:#0e1620;color:var(--t1);min-width:34px}
+.order .bt{margin-left:auto;background:#2f7d52;border-color:#2f7d52;color:#fff;font-family:var(--sans);font-weight:600;padding:0 14px}
+.order .bt.off{background:#1b2836;border-color:#4a5c68;color:var(--t3)}
+.quote{font-size:11px;font-family:var(--mono);color:var(--t2)}
+.quote .g{color:var(--good)} .quote .r{color:#ff9e9e} .quote .w{color:var(--warn)}
+.sib{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--t2);padding:5px 8px;border:1px solid var(--edge);border-radius:4px;background:var(--panel);margin-top:6px;width:300px}
+.sib b{font-family:var(--mono);font-weight:500;color:var(--t3);font-size:10.5px}
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>Mockup 4 — build cards: Offshore Platform, Alkylation Unit, Tanker Terminal</h1>
+  <p>The game's one card for every building (0.7.25), row by row: head, tags, hero, price, bar 1 (money), bar 2 (the scarce resource), the investors' line, needs, the order bar, the quote, and the (i). Three groups are shown side by side, two from Industry and one from the new Ports page, in three states: the platform blocked by a gate, the alkylation unit with an investor's order on site, and the tanker terminal with the player's own order pending (pink border).</p>
+  <p>The big city of mockups 1–3, same month. Building figures are the research report's (§2.4, §3.2, §4.1), scaled to these sizes and marked (est.) there. "Ports" is a new Build category, drawn here as a city building (a blue square); question Q9 in the report asks Jerus whether ports should be the city's or a sector's.</p>
+</div>
+<div class="win" id="W"></div>
+<ul class="notes">
+  <li><b>Bar 2 is the scarce resource</b> for each kind: sea for a platform (owned sea with an oil field, at most 150 m deep), land for a refinery unit, coast for a port. A platform's sea is about 1 km² with its 500 m safety zone.</li>
+  <li><b>The conversion unit's hero</b> states its whole reason to exist in one line: what it turns into what, and the two prices that make the spread. That spread is the same figure as in mockup 2's units table and the investors' rule.</li>
+  <li><b>The port's bar 1</b> is "months of freight it saves", not "months of what it adds", because a port makes nothing. It earns by lowering the freight wedge on the city's seaborne trade (report §4.3 and Q9).</li>
+</ul>
+<script>
+const ICON = {
+  building:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M11 21v-3h2v3"/>',
+  land:'<path d="M3 20h18M6 20l5-11 5 11M11 9V5M17 20v-6M15 16l2-5 2 5"/>',
+  people:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4 2 4 5"/>',
+  health:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M6 12h3l1.5-2.5 3 5 1.5-2.5h3"/>',
+  factory:'<path d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17z"/>',
+  landmark:'<path d="M3 21h18M4 10h16M12 3l8 5H4zM6 10v8M10 10v8M14 10v8M18 10v8"/>',
+  dollar:'<circle cx="12" cy="12" r="9"/><path d="M15 9c-.5-1-1.6-1.5-3-1.5-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.6M12 6v1.5M12 16.5V18"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z"/>',
+  scale:'<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7h6zM19 7l-3 7h6z"/>',
+  chart:'<path d="M3 3v18h18M7 15l4-5 3 3 5-7"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  platform:'<path d="M2 20c2 0 2-1.5 4-1.5S8 20 10 20s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M6 18V10h12v8M5 10h14M8 10V6h5v4M15 10V3"/>',
+  vessel:'<rect x="8" y="3" width="8" height="18" rx="4"/><path d="M8 9h8M8 15h8M4 21h16"/>',
+  anchor:'<circle cx="12" cy="5" r="2"/><path d="M12 7v14M7 11h10M4 14c0 4 4 7 8 7s8-3 8-7"/>',
+};
+const ic = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
+const RAIL = [['building','Build'],['land','Land'],['people','People'],['health','Services'],['factory','Sectors'],['landmark','Government'],['dollar','Finances'],['globe','Trade'],['scale','Policy'],['chart','History']];
+function frame(win, o){
+  win.innerHTML = `
+  <nav class="rail">${RAIL.map(([k,n])=>`<span class="ri ${k===o.active?'on':''}" title="${n}">${ic(k)}</span>`).join('')}<span class="ri gear">${ic('settings')}</span></nav>
+  <div class="top"><span class="date">${o.date}</span><span class="tf">cash <b>${o.cash}</b></span><span class="tf">people <b>${o.people}</b></span><span class="tf">net <b style="color:var(--good)">${o.net}</b>/mo</span><span class="inbox">${ic('mail')}${o.inbox}</span></div>
+  <aside class="strip"><div class="v">Cash<b>${o.cashShort}</b></div><div class="v">People<b>${o.peopleShort}</b></div><div class="v">Net<b>${o.netShort}</b></div><div class="v">Jobs<b>${o.jobs}</b></div></aside>
+  <main class="content"></main>
+  <div class="debt">debt <b>${o.debt}</b><span>next payment <b>${o.pay}</b></span><span>rate <b>${o.rate}</b></span></div>`;
+  return win.querySelector('.content');
+}
+const bar=(label,fig,pct,hi)=>`<div class="bar"><div class="l"><span>${label}</span><b>${fig}</b></div><div class="tr"><i class="${hi?'hi':''}" style="width:${pct}%"></i></div></div>`;
+const order=(n,btn,on=true)=>`<div class="order"><span>−</span><span class="n">${n}</span><span>+</span><span>+10</span><span>+100</span><span>↺</span><span class="bt ${on?'':'off'}">${btn}</span></div>`;
+
+const c = frame(document.getElementById('W'), {active:'building',date:'June 2183',cash:'D$ 18.42B',people:'2.61M',net:'+D$ 212M',inbox:'5',cashShort:'18.4B',peopleShort:'2.61M',netShort:'+212M',jobs:'1.27M',debt:'D$ 4.10B',pay:'D$ 31.6M',rate:'3.35%'});
+c.innerHTML = `
+<div class="head"><span class="title">Build</span>
+  <div class="cats" style="margin-left:14px">${['Homes','Shops','Industry','Offices','Farms','Rail','Ports','Vehicles','Luxury shops','Restaurants'].map(n=>`<span class="cat ${n==='Industry'?'on':''} ${n==='Ports'?'new':''}">${n}</span>`).join('')}</div>
+  <span style="margin-left:auto;font-size:11.5px;color:var(--t3)">land free <b style="font-family:var(--mono);color:var(--t2)">412 ha</b> · sea owned <b style="font-family:var(--mono);color:var(--t2)">18.2 km²</b></span></div>
+
+<div class="cols">
+<!-- ============ OIL: Offshore Platform ============ -->
+<div>
+  <div class="gh">OIL <span>· from the city's fields</span><span class="rt">lifted 45,300 b/d</span></div>
+  <div class="card">
+    <div class="ch"><span class="isq m">${ic('platform')}</span><div><div class="nm">Offshore Platform</div><div class="yh">you have 2</div></div><span class="info">i</span></div>
+    <div class="tags"><span class="tag">most crude per $</span><span class="tag">least ground per barrel</span></div>
+    <div class="hero"><div class="v">lifts <b>18,000</b> barrels a day</div>
+      <div class="d">74,750 t of crude a month from 12 wells · 3 years at plateau, then 8.5% less a year · about 25 years</div></div>
+    <div class="price"><span class="g">D$ 540.0M</span> all in <span class="s">· sticker D$ 500.0M</span></div>
+    ${bar('its price, in months of what it adds','14.4 mo',36,true)}
+    ${bar('sea per 1,000 b/d','0.056 km²',28,true)}
+    <div class="inv">Investors holding: crude below plan · <span class="w">this one:</span> <span class="w">no free sea field — both of the city's offshore fields are worked</span></div>
+    <div class="needs">posts <b>100</b> · 40 no diploma · 30 diploma · 20 engineering · 10 science<br>
+      sea <b>1.0 km²</b> owned, ≤150 m deep, on an oil field · ashore by shuttle tanker, or a Pipeline at <b>D$ 4.5M a km</b><br>
+      runs <b>D$ 8.2M/mo</b> · power 4,200 kW from its own turbines</div>
+    ${order(1,'Build')}
+    <div class="quote"><span class="r">no offshore field free</span> · <span style="color:var(--accent)">Land office › sea with oil ›</span></div>
+  </div>
+  <div class="sib"><span>Land Well</span><b>you have 160 · 100 b/d · D$ 2.2M</b></div>
+  <div class="sib"><span>Pipeline <span style="color:var(--t3)">· new</span></span><b>99 km · D$ 3–4.5M a km</b></div>
+  <div class="sib"><span>Tank Farm <span style="color:var(--t3)">· new</span></span><b>you have 1 · 0.5M m³</b></div>
+</div>
+
+<!-- ============ REFINING: Alkylation Unit ============ -->
+<div>
+  <div class="gh">REFINING <span>· crude into products</span><span class="rt">80,000 b/d of crude</span></div>
+  <div class="card">
+    <div class="ch"><span class="isq m">${ic('vessel')}</span><div><div class="nm">Alkylation Unit</div><div class="yh">none built <span class="site">· 1 on site · 11 months at today's queue</span></div></div><span class="info">i</span></div>
+    <div class="tags"><span class="tag">widest spread in refining</span></div>
+    <div class="hero"><div class="v">turns <b>24.2M L</b> of gas into <b>19.4M L</b> of petrol</div>
+      <div class="d">a month, at 5,000 b/d of feed · adds D$ 6.45M a month at today's prices: gas fetches D$ 0.184 abroad, petrol costs D$ 0.562 landed</div></div>
+    <div class="price"><span class="g">D$ 124.2M</span> all in <span class="s">· sticker D$ 115.0M</span></div>
+    ${bar('its price, in months of what it adds','19.3 mo',48,false)}
+    ${bar('land per 1,000 b/d','0.6 ha',22,false)}
+    <div class="inv"><span class="bl">Investors are building · 1 on site · 11 months</span> — petrol is imported (36.8M L) while 29.0M L of gas goes abroad</div>
+    <div class="needs">posts <b>30</b> · 6 no diploma · 12 diploma · 10 engineering · 2 science<br>
+      land <b>3.0 ha</b> · 0.7% of what is free · feed: gas, from the cracking unit and the column<br>
+      runs <b>D$ 1.4M/mo</b> · power 2,540 kW · acid 1,300 t a month</div>
+    ${order(0,'Build',false)}
+    <div class="quote" style="color:var(--t3)">set a number to see the price and the wait</div>
+  </div>
+  <div class="sib"><span>Crude Unit, Reformer, Cracking Unit</span><b>1 each</b></div>
+  <div class="sib"><span>Lube Plant, Asphalt Unit</span><b>1 each</b></div>
+  <div class="sib"><span>Hydrocracker, Coker</span><b>none built</b></div>
+</div>
+
+<!-- ============ PORTS: Tanker Terminal ============ -->
+<div>
+  <div class="gh">PORTS <span>· the new Ports page</span><span class="rt">15.8 calls a month</span></div>
+  <div class="card pending">
+    <div class="ch"><span class="isq c">${ic('anchor')}</span><div><div class="nm">Tanker Terminal</div><div class="yh">you have 1 <span class="site">· yours: 1 on site · 14 months</span></div></div><span class="info">i</span></div>
+    <div class="tags"><span class="tag">deepest berths</span></div>
+    <div class="hero"><div class="v">handles <b>750,000 t</b> of oil a month</div>
+      <div class="d">2 berths for tankers up to Aframax (120,000 dwt, 15 m deep) · lands into a Tank Farm · the city's tankers now fill 9% of its berth time</div></div>
+    <div class="price"><span class="g">D$ 205.0M</span> all in <span class="s">· sticker D$ 190.0M</span></div>
+    ${bar('its price, in months of the freight it saves','34 mo',48,false)}
+    ${bar('coast per berth','350 m',40,false)}
+    <div class="needs">posts <b>45</b> · 20 no diploma · 15 diploma · 8 engineering · 2 science<br>
+      coast <b>700 m</b> owned, water ≥15 m deep · land <b>4 ha</b> behind it, and a Tank Farm<br>
+      runs <b>D$ 0.9M/mo</b> · power 1,100 kW</div>
+    ${order(1,'Build')}
+    <div class="quote">D$ 205.0M with sales tax · <span class="g">14 months</span><br><span class="w">the one you have is 9% busy: a second waits for trade</span></div>
+  </div>
+  <div class="sib"><span>Bulk Terminal, Container Terminal</span><b>1 each</b></div>
+  <div class="sib"><span>General Cargo Berth</span><b>you have 2</b></div>
+  <div class="sib"><span>Shipyard <span style="color:var(--t3)">· new, Industry</span></span><b>none built</b></div>
+</div>
+</div>`;
+</script>
+</body>
+</html>

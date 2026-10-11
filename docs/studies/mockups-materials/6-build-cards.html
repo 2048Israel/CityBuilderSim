@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Mockup 6 · Build cards for the five chains</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>:root{
+  --stage:#0b1118; --panel:#101924; --raised:#152130; --edge:#24354a;
+  --t1:#e6edf3; --t2:#a9b8c9; --t3:#8496ab;
+  --accent:#5aa9ff; --good:#3fb950; --warn:#e3b341; --bad:#f85149;
+  --people:#2ec4b6; --biz:#a78bfa; --bld:#f17cb0; --ore:#c9b68f;
+  --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'IBM Plex Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#06090d;color:var(--t1);font-family:var(--sans);padding:28px 32px 60px}
+.doc{max-width:1389px;margin:0 0 22px}
+.doc h1{font-size:22px;font-weight:600;margin:0 0 6px}
+.doc p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:4px 0;max-width:1120px}
+.doc p b{color:var(--t1);font-weight:600}
+.state-cap{font-size:13px;color:var(--t2);margin:26px 0 8px;max-width:1389px}
+.state-cap b{color:var(--t1);font-weight:600}
+.notes{max-width:1389px;color:var(--t3);font-size:12.5px;line-height:1.55;margin:10px 0 0;padding-left:18px}
+.notes b{color:var(--t2);font-weight:600}
+/* ---------- the game window ---------- */
+.win{width:1389px;height:868px;background:var(--stage);border:1px solid var(--edge);overflow:hidden;
+  display:grid;grid-template-columns:46px 72px 1fr;grid-template-rows:44px 1fr 30px;position:relative}
+.rail{grid-row:1/4;grid-column:1;background:var(--panel);border-right:1px solid var(--edge);display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:4px}
+.ri{width:34px;height:34px;display:grid;place-items:center;border-radius:4px;color:var(--t3)}
+.ri svg{width:19px;height:19px}
+.ri.on{background:var(--raised);color:var(--accent);box-shadow:inset 2px 0 0 var(--accent)}
+.ri.gear{margin-top:auto;margin-bottom:8px}
+.top{grid-row:1;grid-column:2/4;background:var(--panel);border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:22px;padding:0 16px}
+.top .date{font-family:var(--mono);font-size:19px;font-weight:600;color:#fff}
+.top .tf{font-family:var(--mono);font-size:13px;color:var(--t2)}
+.top .tf b{color:var(--t1);font-weight:600}
+.top .inbox{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--t2);font-family:var(--mono);font-size:12px}
+.top .inbox svg{width:18px;height:18px}
+.strip{grid-row:2;grid-column:2;background:var(--panel);border-right:1px solid var(--edge);padding:12px 8px;display:flex;flex-direction:column;gap:14px}
+.strip .v{font-size:9px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.strip .v b{display:block;font-family:var(--mono);font-size:12px;letter-spacing:0;color:var(--t1);font-weight:500;margin-top:2px;text-transform:none}
+.debt{grid-row:3;grid-column:2/4;background:var(--panel);border-top:1px solid var(--edge);display:flex;align-items:center;gap:20px;padding:0 16px;font-size:11px;color:var(--t3)}
+.debt b{font-family:var(--mono);color:var(--t2);font-weight:500}
+.content{grid-row:2;grid-column:3;padding:12px 16px 0;overflow:hidden;display:flex;flex-direction:column;gap:9px}
+/* ---------- page pieces ---------- */
+.head{display:flex;align-items:center;gap:10px;height:30px}
+.crumb{font-size:12px;color:var(--accent)}
+.sq{width:26px;height:26px;border-radius:4px;display:grid;place-items:center;background:#2a2246;color:var(--biz)}
+.sq svg{width:16px;height:16px}
+.title{font-size:20px;font-weight:600}
+.info{width:16px;height:16px;border-radius:50%;border:1px solid var(--t3);color:var(--t3);font-size:10px;display:grid;place-items:center;font-family:var(--mono)}
+.buildlink{margin-left:auto;font-size:12px;color:var(--bld)}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.fig{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:8px 12px}
+.fig .l{font-size:10px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.fig .n{font-family:var(--mono);font-size:21px;font-weight:600;margin:2px 0 1px}
+.fig .s{font-size:11px;color:var(--t2)}
+.inv{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--edge);border-left:3px solid var(--warn);border-radius:4px;padding:6px 12px;font-size:12px;color:var(--t2)}
+.inv .k{font-weight:600}
+.inv a{margin-left:auto;color:var(--accent);text-decoration:none;white-space:nowrap}
+.chips{display:flex;gap:6px}
+.chip{font-size:12px;color:var(--t2);padding:5px 11px;border-radius:4px;border:1px solid var(--edge);background:var(--panel)}
+.chip.on{color:var(--t1);background:var(--raised);border-color:var(--accent)}
+.sec{display:flex;align-items:baseline;gap:12px;font-size:11px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-top:2px}
+.sec span{letter-spacing:0;text-transform:none;font-size:11px}
+.sec .scale{margin-left:auto;font-family:var(--mono)}
+.pic{display:block}
+.pstrip{display:grid;gap:6px}
+.pc{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:6px 8px 7px;min-width:0}
+.pc .nm{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden}
+.pc .nm .lt{margin-left:auto;font-size:9px;color:var(--t3);border:1px dashed var(--t3);border-radius:3px;padding:0 4px}
+.pc .sw{width:10px;height:10px;border-radius:2px;flex:none}
+.pc .bar{height:7px;margin:6px 0 5px;display:flex;border-radius:2px;overflow:hidden;background:#0e1620}
+.pc .r{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;color:var(--t3);line-height:1.45;white-space:nowrap}
+.pc .r b{font-family:var(--mono);font-weight:500;color:var(--t2)}
+.pc .r b.hot{color:var(--warn)} .pc .r b.bad{color:#ff9e9e} .pc .r b.ok{color:var(--good)}
+svg text{font-family:var(--sans)}
+svg .mono{font-family:var(--mono)}
+
+.cats{display:flex;gap:5px;flex-wrap:wrap}
+.cat{font-size:11.5px;color:var(--t2);padding:4px 10px;border-radius:4px;border:1px solid var(--edge);background:var(--panel)}
+.cat.on{color:var(--t1);background:var(--raised);border-color:var(--accent)}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;align-items:start}
+.gh{display:flex;align-items:baseline;gap:8px;font-size:11px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;border-bottom:1px solid var(--edge);padding-bottom:5px;margin-bottom:8px}
+.gh span{letter-spacing:0;text-transform:none}
+.gh .rt{margin-left:auto;font-family:var(--mono);color:var(--t2)}
+.card{width:316px;background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:7px;position:relative}
+.card.pending{border-color:var(--bld)}
+.ch{display:flex;align-items:flex-start;gap:9px}
+.isq{width:30px;height:30px;border-radius:4px;display:grid;place-items:center;flex:none;background:#2a2246;color:var(--biz)}
+.isq svg{width:18px;height:18px}
+.ch .nm{font-size:14px;font-weight:600;line-height:1.2}
+.ch .yh{font-size:11px;color:var(--t3);margin-top:1px}
+.ch .yh .site{color:var(--bld)} .ch .yh .inv{color:var(--accent)}
+.ch .info{margin-left:auto;width:17px;height:17px;border-radius:50%;border:1px solid var(--t3);color:var(--t3);font-size:10px;display:grid;place-items:center;font-family:var(--mono);flex:none}
+.tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-size:10px;padding:1px 7px;border-radius:3px;background:#1d3a2a;color:#7ee0a0;border:1px solid #2b5a3e}
+.hero .v{font-size:15px;font-weight:600;color:var(--t1)}
+.hero .v b{font-family:var(--mono);font-weight:600}
+.hero .d{font-size:11px;color:var(--t2);line-height:1.45;margin-top:2px}
+.price{font-family:var(--mono);font-size:13px}
+.price .g{color:var(--good);font-weight:600}
+.price .s{color:var(--t3);font-size:11.5px}
+.bar{display:flex;flex-direction:column;gap:3px}
+.bar .l{display:flex;justify-content:space-between;font-size:10.5px;color:var(--t3)}
+.bar .l b{font-family:var(--mono);color:var(--t1);font-weight:500}
+.bar .tr{height:5px;background:#0e1620;border-radius:3px;overflow:hidden;position:relative}
+.bar .tr i{position:absolute;left:0;top:0;bottom:0;background:#4a6283;border-radius:3px}
+.bar .tr i.hi{background:var(--accent)}
+.cinv{font-size:11px;color:var(--t2);line-height:1.45;background:var(--panel);border:1px solid var(--edge);border-radius:3px;padding:5px 7px}
+.cinv .w{color:var(--warn)} .cinv .bl{color:var(--accent)} .cinv .r{color:#ff9e9e} .cinv .g{color:var(--good)}
+.needs{font-size:11px;color:var(--t3);line-height:1.6}
+.needs b{font-family:var(--mono);color:var(--t2);font-weight:500}
+.order{display:flex;align-items:center;gap:4px}
+.order span{min-width:26px;height:26px;padding:0 6px;display:grid;place-items:center;border:1px solid #4a5c68;border-radius:4px;background:#1b2836;font-size:11.5px;color:var(--t2);font-family:var(--mono)}
+.order .n{background:#0e1620;color:var(--t1);min-width:34px}
+.order .bt{margin-left:auto;background:#2f7d52;border-color:#2f7d52;color:#fff;font-family:var(--sans);font-weight:600;padding:0 14px}
+.order .bt.off{background:#1b2836;border-color:#4a5c68;color:var(--t3)}
+.quote{font-size:11px;font-family:var(--mono);color:var(--t2);line-height:1.5}
+.quote .g{color:var(--good)} .quote .r{color:#ff9e9e} .quote .w{color:var(--warn)}
+.sib{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--t2);padding:5px 8px;border:1px solid var(--edge);border-radius:4px;background:var(--panel);margin-top:6px;width:316px}
+.sib b{font-family:var(--mono);font-weight:500;color:var(--t3);font-size:10.5px}
+</style></head><body>
+<div class="doc"><h1>Mockup 6 — build cards: six of the new buildings</h1>
+<p>The game's one card for every building (0.7.25), row by row, as in the oil mockups: head, tags, hero, price, bar 1 (money), bar 2 (the scarce thing), the investors' line, needs, the order bar, the quote. The big city of mockups 1–5, same month; every figure is that city's.</p>
+<p>Six states: a processing building the investors rank second (Blast Furnace), one that would lose money on imported feed (Copper Smelter), the player's own order against the investors' advice (Large Sawmill, pink border), and three investors' orders on site (Underground Coal Mine, Large Quarry, and a Harvesting Operation whose card says what it costs the forest).</p></div>
+<div class="state-cap"><b>Build › Industry — the processing sectors.</b> Bar 2 is the feed the building needs: the city's own feed is what makes a processing building pay, because imported feed carries its freight.</div>
+<div class="win" id="W1"></div>
+<ul class="notes"><li><b>The player can always overrule the investors.</b> The Large Sawmill card says what the rule thinks (no spare logs) and what that means in money (26 years on imported logs), then builds it anyway if asked. That is today's behaviour for player orders.</li>
+<li><b>The investors' line names the rival.</b> When a building would be built but something else ranks first, the line says what and why, in the same terms as the sector page: what each would earn a month on its cost.</li></ul>
+<div class="state-cap"><b>Build › Industry — the extraction sectors.</b> Bar 2 is the ground: free sites in the right kind of field, or years of forest.</div>
+<div class="win" id="W2"></div>
+<ul class="notes"><li><b>Bar 1 for a quarry is short because aggregate is imported.</b> At the city's own price (D$ 40, the import price) a Large Quarry pays for itself in 10 months; at the world's D$ 10 it would take 5 years. The price rule does this on its own.</li>
+<li><b>Forest has no sites, so bar 2 is where the forest settles.</b> There is no limit on the cut (report Q14): a seventh crew pays, so the investors build it, and the card says what that costs, 17% of the natural woods left standing in the long run instead of 29%. Forestry plants to make up for it when the city has bare land (report Q15).</li></ul>
+<script>
+/* ============ shared: icons, frame (the oil mockups' frame, unchanged) ============ */
+const ICON = {
+  building:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M11 21v-3h2v3"/>',
+  land:'<path d="M3 20h18M6 20l5-11 5 11M11 9V5M17 20v-6M15 16l2-5 2 5"/>',
+  people:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4 2 4 5"/>',
+  health:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M6 12h3l1.5-2.5 3 5 1.5-2.5h3"/>',
+  factory:'<path d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17z"/>',
+  landmark:'<path d="M3 21h18M4 10h16M12 3l8 5H4zM6 10v8M10 10v8M14 10v8M18 10v8"/>',
+  dollar:'<circle cx="12" cy="12" r="9"/><path d="M15 9c-.5-1-1.6-1.5-3-1.5-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.6M12 6v1.5M12 16.5V18"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z"/>',
+  scale:'<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7h6zM19 7l-3 7h6z"/>',
+  chart:'<path d="M3 3v18h18M7 15l4-5 3 3 5-7"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  car:'<path d="M3 16v-3.5L5.5 7h13l2.5 5.5V16z"/><path d="M3 12.5h18"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
+  truck:'<path d="M2 6h11v10H2zM13 10h4l3 3v3h-7z"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/>',
+  train:'<rect x="6" y="3" width="12" height="14" rx="2"/><path d="M6 10h12M8 21l2-3M16 21l-2-3M9 13.5h.5M14.5 13.5h.5"/>',
+  ship:'<path d="M3 15l2 5h14l2-5zM6 15V9h12v6M10 9V5h4v4"/>',
+  road:'<path d="M8 3L4 21M16 3l4 18M12 4v3M12 10v3M12 16v3"/>',
+  pick:'<path d="M14 4c3 0 6 2 7 5-3-1.5-6-2-9-1.5M14 4C11 4 8 6 7 9c3-1.5 6-2 9-1.5M12.5 7.5L4 20"/>',
+  pit:'<path d="M2 7h20M4 7l3 5h10l3-5M7 12l2 4h6l2-4M9 16l1 3h4l1-3"/>',
+  tree:'<path d="M12 3l6 8h-3l4 6H5l4-6H6zM12 17v4"/>',
+  saw:'<circle cx="9" cy="14" r="6"/><circle cx="9" cy="14" r="1.5"/><path d="M14 9l7-6M3 14H1M9 8V6M9 22v-2"/>',
+  furnace:'<path d="M8 21l1-11h6l1 11zM9 10V6l3-3 3 3v4M5 21h14"/><path d="M11 16h2"/>',
+  ladle:'<path d="M5 8h14l-2 10H7zM3 8h18M8 18l-1 3M16 18l1 3"/><path d="M15 4c-2 1-4 1-6 0"/>',
+  kiln:'<rect x="2" y="9" width="16" height="6" rx="3" transform="rotate(-8 10 12)"/><path d="M19 9l3-1M4 17v4M15 15v6"/>',
+  silo:'<path d="M7 21V8l5-5 5 5v13M7 8h10M7 13h10M4 21h16"/>',
+  coil:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="2"/>',
+  wire:'<path d="M3 17c3 0 3-10 6-10s3 10 6 10 3-10 6-10"/>',
+  cathode:'<rect x="6" y="5" width="12" height="15" rx="1"/><path d="M4 5h16M10 2v3M14 2v3"/>',
+  hopper:'<path d="M4 4h16l-5 8v5h-6v-5zM9 21h6"/>',
+  bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+  home:'<path d="M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-5h4v5"/>',
+  flask:'<path d="M9 3h6M10 3v6l-5 10h14l-5-10V3"/>',
+  drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  well:'<path d="M3 21h18M8 21l3-9 3 9M2 9l14-4 3 3-14 4zM16 5v3M5 12v4"/>',
+  recycle:'<path d="M7 19H4l3-5M17 19h3l-3-5M9 5l3-3 3 3M8 14l4-7 4 7M5 19h14"/>',
+  stack:'<rect x="3" y="14" width="18" height="5" rx="1"/><rect x="5" y="9" width="14" height="5" rx="1"/><rect x="7" y="4" width="10" height="5" rx="1"/>',
+  block:'<rect x="3" y="6" width="18" height="12" rx="1"/><path d="M3 12h18M9 6v6M15 12v6"/>',
+  leaf:'<path d="M5 19c0-8 5-14 15-15-1 10-7 15-15 15zM5 19l8-8"/>',
+};
+const ic = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
+const RAIL = [['building','Build'],['land','Land'],['people','People'],['health','Services'],['factory','Sectors'],['landmark','Government'],['dollar','Finances'],['globe','Trade'],['scale','Policy'],['chart','History']];
+function frame(win, o){
+  win.innerHTML = `
+  <nav class="rail">${RAIL.map(([k,n])=>`<span class="ri ${k===o.active?'on':''}" title="${n}">${ic(k)}</span>`).join('')}<span class="ri gear" title="Game menu">${ic('settings')}</span></nav>
+  <div class="top"><span class="date">${o.date}</span><span class="tf">cash <b>${o.cash}</b></span><span class="tf">people <b>${o.people}</b></span><span class="tf">net <b style="color:${o.netColor||'var(--good)'}">${o.net}</b>/mo</span><span class="inbox">${ic('mail')}${o.inbox}</span></div>
+  <aside class="strip"><div class="v">Cash<b>${o.cashShort}</b></div><div class="v">People<b>${o.peopleShort}</b></div><div class="v">Net<b>${o.netShort}</b></div><div class="v">Jobs<b>${o.jobs}</b></div></aside>
+  <main class="content"></main>
+  <div class="debt">debt <b>${o.debt}</b><span>next payment <b>${o.pay}</b></span><span>rate <b>${o.rate}</b></span></div>`;
+  return win.querySelector('.content');
+}
+
+/* ============ number formats ============ */
+function fq(v, unit){           // a quantity, short
+  const a = Math.abs(v);
+  let s;
+  if (a >= 1e6) s = (v/1e6).toLocaleString('en-US',{maximumFractionDigits:2}) + 'M';
+  else if (a >= 1e5) s = (v/1e3).toLocaleString('en-US',{maximumFractionDigits:0}) + 'k';
+  else if (a >= 1e4) s = (v/1e3).toLocaleString('en-US',{maximumFractionDigits:1}) + 'k';
+  else s = Math.round(v).toLocaleString('en-US');
+  return unit ? s + ' ' + unit : s;
+}
+
+/* ============ the pictogram: a layered flow, ribbons to scale ============ */
+function pictogram(d){
+  const p = d.pic, W = p.W || 1235, H = p.H, TOP = p.top || 56, PAD = 4;
+  const N = {}; p.nodes.forEach((n,i)=>{ N[n.id] = Object.assign({i, inV:0, outV:0, ins:[], outs:[]}, n); });
+  p.links.forEach(l=>{ const s=N[l.s], t=N[l.t]; if(!s||!t){ console.warn('bad link', l); return; } s.outV+=l.v; t.inV+=l.v; s.outs.push(l); t.ins.push(l); });
+  const size = n => n.size != null ? n.size : Math.max(n.inV, n.outV);
+  const cols = p.cols.map((c,ci)=>({...c, ci, nodes: p.nodes.filter(n=>n.col===ci).map(n=>N[n.id])}));
+  const gapAfter = (a,b) => {
+    if (!b) return 0;
+    if (a.kind==='prod' && b.kind==='prod') return 0;
+    if (a.kind==='imp' && b.kind==='imp') return 0;
+    if (b.kind==='imp') return 20;
+    return ({field:30, src:22, unit:20, buy:12, prod:0})[a.kind] ?? 14;
+  };
+  const avail = H - TOP - 2*PAD;
+  const minOf = n => n.kind==='field' ? 42 : (n.kind==='prod' ? 13 : 2.2);
+  let k = Infinity;
+  for (let pass=0; pass<3; pass++){
+    let kk = Infinity;
+    cols.forEach(c=>{ if(!c.nodes.length) return;
+      const g = c.nodes.reduce((acc,n,i)=>acc+gapAfter(n,c.nodes[i+1]),0);
+      let fixed = 0, tot = 0;
+      c.nodes.forEach(n=>{ if (k!==Infinity && size(n)*k < minOf(n)) fixed += minOf(n); else tot += size(n); });
+      if (tot>0) kk = Math.min(kk, (avail - g - fixed)/tot);
+    });
+    k = kk;
+  }
+  if (p.kMax) k = Math.min(k, p.kMax);
+  d.k = k;
+  const minH = 2.2;
+  cols.forEach(c=>{
+    const hs = c.nodes.map(n=>Math.max(size(n)*k, minOf(n)));
+    const g = c.nodes.reduce((acc,n,i)=>acc+gapAfter(n,c.nodes[i+1]),0);
+    const tot = hs.reduce((a,b)=>a+b,0) + g;
+    let y = TOP + (H-TOP)/2 - tot/2 + (c.shift||0);
+    c.nodes.forEach((n,i)=>{ n.x=c.x; n.w=c.w; n.y=y; n.h=hs[i]; n.oc=y; n.icur=y; y += hs[i] + gapAfter(n,c.nodes[i+1]); });
+    c.top = TOP + (H-TOP)/2 - tot/2 + (c.shift||0); c.bot = c.top + tot;
+  });
+  // order links on each node by the far end's position
+  Object.values(N).forEach(n=>{
+    n.outs.sort((a,b)=> (N[a.t].y - N[b.t].y) || (N[a.t].x - N[b.t].x));
+    n.ins.sort((a,b)=> (N[a.s].y - N[b.s].y) || (N[a.s].x - N[b.s].x));
+  });
+  let s='', defs=[];
+  const pats = new Set();
+  const hatch = c => { const id='h'+d.id+c.replace('#',''); if(!pats.has(id)){ pats.add(id);
+    defs.push(`<pattern id="${id}" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><rect width="6" height="6" fill="${c}" fill-opacity=".12"/><rect width="2.2" height="6" fill="${c}" fill-opacity=".85"/></pattern>`);} return `url(#${id})`; };
+  const txt=(x,y,t,o={})=>`<text ${o.halo?'stroke="#0b1118" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke"':''} x="${x}" y="${y}" font-size="${o.fs||11}" fill="${o.c||'#a9b8c9'}" ${o.a?`text-anchor="${o.a}"`:''} ${o.w?`font-weight="${o.w}"`:''} ${o.mono?'class="mono"':''} ${o.ls?`letter-spacing="${o.ls}"`:''}>${t}</text>`;
+  const icon=(k,x,y,sz,col)=>`<g color="${col}"><svg x="${x}" y="${y}" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg></g>`;
+  // ---- ribbons (drawn first) ----
+  const ribbons = [];
+  p.links.forEach(l=>{
+    const a=N[l.s], b=N[l.t]; if(!a||!b) return;
+    const h = l.v*k;
+    const x1 = a.x + a.w, x2 = b.x;
+    const y0 = a.oc; a.oc += h; const y1 = b.icur; b.icur += h;
+    const xm = x1 + (x2-x1)*.5;
+    const fill = l.hatch ? hatch(l.c) : l.c;
+    const op = l.hatch ? .95 : (l.later ? .28 : .5);
+    ribbons.push(`<path d="M${x1},${y0}C${xm},${y0} ${xm},${y1} ${x2},${y1}L${x2},${y1+h}C${xm},${y1+h} ${xm},${y0+h} ${x1},${y0+h}Z" fill="${fill}" fill-opacity="${op}" ${l.later?'stroke="'+l.c+'" stroke-opacity=".6" stroke-dasharray="3 3" stroke-width=".8"':''}/>`);
+    if (b.kind==='buy' || b.kind==='abroad') b.segs = (b.segs||[]).concat([{y:y1,h,c:fill,later:l.later}]);
+    if (b.kind==='prod' || b.kind==='imp') {}
+  });
+  s += ribbons.join('');
+  // ---- column heads ----
+  cols.forEach(c=>{ if(!c.head) return;
+    const ax = c.headX ?? (c.x + (c.headAnchor==='middle'? c.w/2 : 0));
+    const hy = p.headY ?? 14;
+    s += txt(ax, hy, c.head, {fs:9.5,c:'#8496ab',ls:'.08em',a:c.headAnchor||null});
+    if (c.sub) s += txt(ax, hy + 13, c.sub, {fs:10,c:'#a9b8c9',a:c.headAnchor||null});
+  });
+  // ---- nodes ----
+  const tanks = {}; const srcs = [];
+  Object.values(N).forEach(n=>{
+    if (n.kind==='field'){
+      // the lift bar
+      const hr = Math.max(size(n)*k, 1.5);
+      if (size(n) > 0) s += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${hr}" rx="1.5" fill="${n.color}"/>`;
+      // the field vessel: fill = what is left
+      const vh = 40, vw = 22, vx = n.x - vw - 12, vy = n.y + Math.min(n.h, 42)/2 - vh/2;
+      const left = Math.max(0, Math.min(1, n.fill ?? 1));
+      s += `<rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" rx="3" fill="${hatch('#5a6d84')}" fill-opacity=".5" stroke="#3a4f6a"/>`;
+      s += `<rect x="${vx+1}" y="${vy+vh*(1-left)}" width="${vw-2}" height="${vh*left-1}" rx="2" fill="${n.fillColor||n.color}" fill-opacity=".9"/>`;
+      if (n.icon) s += icon(n.icon, vx-26, vy+vh/2-10, 18, '#c9b68f');
+      const tx = vx - 32, cy0 = vy + vh/2;
+      s += txt(tx, cy0-8, n.label, {fs:11.5,c:'#e6edf3',w:500,a:'end'});
+      s += txt(tx, cy0+6, n.sub, {fs:10,c:'#8496ab',a:'end'});
+      if (n.sub2) s += txt(tx, cy0+19, n.sub2, {fs:10,c: n.sub2c||'#a9b8c9',a:'end',mono:1});
+    } else if (n.kind==='src'){
+      s += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="1.5" fill="${n.hatch?hatch(n.color):n.color}" ${n.hatch?'stroke="'+n.color+'" stroke-dasharray="3 2"':''}/>`;
+      srcs.push(n);
+    } else if (n.kind==='unit'){
+      s += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${Math.max(n.h,3)}" rx="3" fill="#1b2a3d" stroke="${n.later?'#5a6d84':'#4a6283'}" ${n.later?'stroke-dasharray="3 2"':''}/>`;
+      if (n.h >= 22 && n.icon) s += icon(n.icon, n.x+n.w/2-8, n.y+n.h/2-8, 16, '#8fb3e0');
+      const lx = n.labelSide==='left' ? n.x - 4 : n.x;
+      s += txt(lx, n.y-5, n.label, {fs:10.5,c:'#e6edf3',w:500,halo:1,a:n.labelSide==='left'?'end':null});
+      const lw = n.label.replace(/&amp;/g,'&').length*6.1;
+      if (n.sub && n.h >= 40) s += txt(n.x + n.w/2, n.y + 14, n.sub, {fs:9,c:'#a9b8c9',a:'middle'});
+      else if (n.sub) s += txt(n.labelSide==='left'? n.x-4 : n.x + lw + 8, n.labelSide==='left'? n.y+9 : n.y-5, n.sub, {fs:9.5,c:'#a9b8c9',halo:1,a:n.labelSide==='left'?'end':null});
+    } else if (n.kind==='prod' || n.kind==='imp'){
+      const t = tanks[n.col] = tanks[n.col] || {x:n.x,w:n.w,prod:[],imp:[]};
+      t[n.kind==='prod'?'prod':'imp'].push(n);
+      s += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" fill="${n.kind==='imp'?hatch(n.color):n.color}" fill-opacity="${n.kind==='imp'?1:.95}"/>`;
+      if (n.kind==='prod' && n.h >= 12){
+        const tc = n.dark ? '#e6edf3' : '#0b1118';
+        s += txt(n.x+7, n.y+n.h/2+3.5, n.label, {fs:10,c:tc,w:600});
+        s += txt(n.x+n.w-6, n.y+n.h/2+3.5, n.fig || fq(size(n)), {fs:10,c:tc,a:'end',mono:1,w:600});
+      } else if (n.kind==='prod' && n.h >= 4){
+        s += txt(n.x-6, n.y+n.h/2+3.5, n.label + ' ' + (n.fig||fq(size(n))), {fs:9.5,c:'#a9b8c9',a:'end',halo:1});
+      }
+    } else if (n.kind==='buy' || n.kind==='abroad'){
+      (n.segs||[]).forEach(g=>{ s += `<rect x="${n.x}" y="${g.y}" width="${n.w}" height="${Math.max(g.h,.8)}" fill="${g.c}" ${g.later?'fill-opacity=".45"':''}/>`; });
+      if (n.later) s += `<rect x="${n.x-1}" y="${n.y-1}" width="${n.w+2}" height="${n.h+2}" fill="none" stroke="#8496ab" stroke-dasharray="2 2"/>`;
+    }
+  });
+  // ---- the products pictogram: outline, roof, imports ----
+  Object.values(tanks).forEach(t=>{
+    if (!t.prod.length) return;
+    const y0 = t.prod[0].y, y1 = t.prod[t.prod.length-1].y + t.prod[t.prod.length-1].h, x=t.x, w=t.w;
+    s += `<rect x="${x}" y="${y0}" width="${w}" height="${y1-y0}" fill="none" stroke="#3a4f6a" stroke-width="1.2"/>`;
+    t.prod.slice(1).forEach(n=>{ s += `<line x1="${x}" x2="${x+w}" y1="${n.y}" y2="${n.y}" stroke="#0b1118"/>`; });
+    s += roof(p.roof, x, y0, w);
+    s += `<rect x="${x+8}" y="${y1}" width="${w-16}" height="7" fill="#152130" stroke="#3a4f6a"/>`;
+    if (t.imp.length){
+      const iy0 = t.imp[0].y, iy1 = t.imp[t.imp.length-1].y + t.imp[t.imp.length-1].h;
+      s += `<rect x="${x}" y="${iy0}" width="${w}" height="${Math.max(iy1-iy0,1.5)}" fill="none" stroke="#5a6d84" stroke-dasharray="3 2"/>`;
+      const tot = t.imp.reduce((a,n)=>a+size(n),0);
+      s += txt(x, iy1+13, 'IMPORTED', {fs:9.5,c:'#8496ab',ls:'.08em'});
+      s += txt(x+w, iy1+13, fq(tot, p.unit), {fs:10,c:'#e3b341',a:'end',mono:1});
+    }
+  });
+  // ---- source labels, relaxed ----
+  { const S = srcs.sort((a,b)=>a.y-b.y).map(n=>({n,t:n.y+n.h/2})); const MN = p.srcMin || 30;
+    for(let it=0;it<80;it++){ for(let i=1;i<S.length;i++){ const dy=S[i].t-S[i-1].t; if(dy<MN){ const m=(MN-dy)/2; S[i].t+=m; S[i-1].t-=m; } } S.forEach(l=>{ l.t=Math.max(TOP-4,Math.min(H-14,l.t)); }); }
+    S.forEach(({n,t})=>{ const cy=n.y+n.h/2, tx=n.x-14;
+      if(Math.abs(cy-t)>3) s+=`<path d="M${n.x-1},${cy} L${tx+3},${t}" stroke="#3a4f6a" fill="none"/>`;
+      if (n.icon) s += icon(n.icon, n.x - (p.srcLabelW||180), t-17, 18, n.hatch?'#8496ab':'#c9b68f');
+      s += txt(tx, t-4, n.label, {fs:11.5,c:'#e6edf3',w:500,a:'end'});
+      s += txt(tx, t+9, n.sub||'', {fs:10,c:'#8496ab',a:'end'});
+    }); }
+  // ---- buyer labels, relaxed ----
+  const B = Object.values(N).filter(n=>n.kind==='buy'||n.kind==='abroad').sort((a,b)=>a.y-b.y);
+  const L = B.map(b=>({b,t:b.y+b.h/2}));
+  const MIN = p.buyMin || 31;
+  for(let it=0;it<80;it++){ for(let i=1;i<L.length;i++){ const dy=L[i].t-L[i-1].t; if(dy<MIN){ const m=(MIN-dy)/2; L[i].t+=m; L[i-1].t-=m; } } L.forEach(l=>{ l.t=Math.max(TOP-10,Math.min(H-16,l.t)); }); }
+  L.forEach(({b,t})=>{
+    const cy=b.y+b.h/2, lx=b.x+b.w+10;
+    if(Math.abs(cy-t)>3) s+=`<path d="M${b.x+b.w+1},${cy} L${lx-4},${t}" stroke="#3a4f6a" fill="none"/>`;
+    s += icon(b.icon||'factory', lx, t-15, 18, b.kind==='abroad'?'#8496ab':(b.later?'#8496ab':'#c3ccd3'));
+    s += txt(lx+24, t-3, b.label, {fs:11.5,c:b.later?'#a9b8c9':'#e6edf3',w:500});
+    s += txt(lx+(p.buyValX||206), t-3, b.fig || fq(b.inV, p.unit), {fs:11,c:'#a9b8c9',a:'end',mono:1});
+    let wx = lx+24;
+    if (b.later){ s += `<rect x="${wx}" y="${t+2}" width="30" height="12" rx="3" fill="none" stroke="#8496ab" stroke-dasharray="2 2"/>` + txt(wx+15, t+11, 'later', {fs:8.5,c:'#a9b8c9',a:'middle'}); wx += 36; }
+    s += txt(wx, t+11, b.what||'', {fs:9.5,c:b.hot?'#e3b341':'#8496ab'});
+  });
+  // ---- free text (notes on the picture) ----
+  (p.notes||[]).forEach(t=>{ s += txt(t.x, t.y, t.t, {fs:t.fs||10,c:t.c||'#8496ab',a:t.a||null,mono:t.mono,w:t.w}); });
+  return `<svg class="pic" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${defs.join('')}</defs>${s}</svg>`;
+}
+
+/* the top of the products pictogram, drawn per chain */
+function roof(kind, x, y, w){
+  const st = 'fill="#152130" stroke="#3a4f6a"';
+  if (kind==='furnace') return `<path d="M${x},${y} L${x+14},${y-10} L${x+w-14},${y-10} L${x+w},${y}" ${st}/><rect x="${x+w/2-10}" y="${y-30}" width="20" height="20" ${st}/><rect x="${x+w/2-4}" y="${y-44}" width="8" height="14" ${st}/><path d="M${x+w/2},${y-45} q-4,-6 0,-11 q4,5 0,11z" fill="#ff8a4c" fill-opacity=".85"/>`;
+  if (kind==='hopper') return `<path d="M${x},${y} L${x-8},${y-16} L${x+w+8},${y-16} L${x+w},${y}" ${st}/><path d="M${x+w*.2},${y-16} l${w*.12},-10 l${w*.12},10 M${x+w*.5},${y-16} l${w*.1},-7 l${w*.1},7" stroke="#57534e" fill="#2a2a30"/>`;
+  if (kind==='cathode') return `<rect x="${x-10}" y="${y-8}" width="${w+20}" height="5" rx="1" ${st}/><rect x="${x+w*.3}" y="${y-18}" width="5" height="10" ${st}/><rect x="${x+w*.65}" y="${y-18}" width="5" height="10" ${st}/>`;
+  if (kind==='logs') { let r=''; for(let i=0;i<5;i++){ r+=`<circle cx="${x+12+i*(w-24)/4}" cy="${y-8}" r="8" ${st}/><circle cx="${x+12+i*(w-24)/4}" cy="${y-8}" r="3" fill="none" stroke="#3a4f6a"/>`; } return r; }
+  if (kind==='silo') return `<path d="M${x},${y} L${x+w/2},${y-22} L${x+w},${y}" ${st}/><rect x="${x+w/2-3}" y="${y-30}" width="6" height="8" ${st}/>`;
+  if (kind==='pit') return `<path d="M${x-6},${y} L${x+6},${y-12} L${x+w-6},${y-12} L${x+w+6},${y}" ${st}/><path d="M${x+w*.35},${y-12} l6,-9 h14 l6,9" ${st}/>`;
+  return `<path d="M${x},${y} L${x+10},${y-12} L${x+w-10},${y-12} L${x+w},${y}" ${st}/>`;
+}
+
+/* ============ the strip under the picture ============ */
+function pstrip(d){
+  const st = d.strip; if(!st) return '';
+  const cells = st.cells.map(c=>{
+    const bar = c.bar ? `<div class="bar">${c.bar.map(b=>`<span style="width:${b.w}%;background:${b.hatch?`repeating-linear-gradient(45deg,${b.c} 0 2px,transparent 2px 5px)`:b.c};${b.o?`opacity:${b.o}`:''}"></span>`).join('')}</div>` : '';
+    return `<div class="pc"><div class="nm"><span class="sw" style="background:${c.c}"></span>${c.n}${c.later?'<span class="lt">later</span>':''}</div>${bar}
+      ${c.rows.map(r=>`<div class="r">${r[0]} <b class="${r[2]||''}">${r[1]}</b></div>`).join('')}</div>`;
+  }).join('');
+  return `<div class="sec">${st.title} <span>${st.sub||''}</span></div><div class="pstrip" style="grid-template-columns:repeat(${st.cells.length},minmax(0,1fr))">${cells}</div>`;
+}
+
+/* ============ a page ============ */
+function page(el, d){
+  const c = frame(el, d.frame);
+  const pic = pictogram(d);
+  const scale = d.pic.scaleNote || ('10 px of ribbon = ' + fq(10/d.k, d.pic.unit));
+  c.innerHTML = `
+  <div class="head"><span class="crumb">Sectors ›</span><span class="sq" style="${d.head.sqStyle||''}">${ic(d.head.icon)}</span><span class="title">${d.head.title}</span><span class="info">i</span>
+    <span style="font-size:12px;color:var(--t3)">· ${d.head.cat}</span><span class="buildlink">${d.head.build}</span></div>
+  <div class="figs">${d.figs.map(f=>`<div class="fig"><div class="l">${f[0]}</div><div class="n" style="${f[3]?`color:${f[3]}`:''}">${f[1]}</div><div class="s">${f[2]}</div></div>`).join('')}</div>
+  <div class="inv" style="border-left-color:${d.inv.c}"><span class="k" style="color:${d.inv.c}">${d.inv.k}</span><span>${d.inv.t}</span><a href="#">${d.inv.a}</a></div>
+  <div class="chips">${d.chips.map((n,i)=>`<span class="chip ${i===0?'on':''}">${n}</span>`).join('')}</div>
+  <div class="sec">${d.pic.title} <span>${d.pic.sub}</span><span class="scale">${scale}</span></div>
+  ${pic}
+  ${pstrip(d)}`;
+}
+
+
+const bar=(label,fig,pct,hi)=>`<div class="bar"><div class="l"><span>${label}</span><b>${fig}</b></div><div class="tr"><i class="${hi?'hi':''}" style="width:${pct}%"></i></div></div>`;
+const order=(n,btn,on=true)=>`<div class="order"><span>−</span><span class="n">${n}</span><span>+</span><span>+10</span><span>↺</span><span class="bt ${on?'':'off'}">${btn}</span></div>`;
+function card(c){
+  return `<div class="card ${c.pending?'pending':''}">
+    <div class="ch"><span class="isq" style="${c.sq||''}">${ic(c.icon)}</span><div><div class="nm">${c.name}</div><div class="yh">${c.have}</div></div><span class="info">i</span></div>
+    ${c.tags?`<div class="tags">${c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`:''}
+    <div class="hero"><div class="v">${c.hero}</div><div class="d">${c.heroD}</div></div>
+    <div class="price"><span class="g">${c.allIn}</span> all in <span class="s">· sticker ${c.sticker}</span></div>
+    ${bar(c.b1[0],c.b1[1],c.b1[2],c.b1[3])}
+    ${bar(c.b2[0],c.b2[1],c.b2[2],c.b2[3])}
+    <div class="cinv">${c.inv}</div>
+    <div class="needs">${c.needs}</div>
+    ${order(c.n, 'Build', c.n>0)}
+    <div class="quote">${c.quote}</div>
+  </div>`;
+}
+function buildPage(el, d){
+  const c = frame(el, d.frame);
+  c.innerHTML = `<div class="head"><span class="title">Build</span>
+    <div class="cats" style="margin-left:14px">${['Homes','Shops','Industry','Offices','Farms','Rail','Ports','Vehicles','Luxury shops','Restaurants'].map(n=>`<span class="cat ${n==='Industry'?'on':''}">${n}</span>`).join('')}</div>
+    <span style="margin-left:auto;font-size:11.5px;color:var(--t3)">${d.free}</span></div>
+  <div class="cols">${d.groups.map(g=>`<div><div class="gh">${g.h} <span>· ${g.s}</span><span class="rt">${g.rt}</span></div>${card(g.card)}${g.sibs.map(s=>`<div class="sib"><span>${s[0]}</span><b>${s[1]}</b></div>`).join('')}</div>`).join('')}</div>`;
+}
+
+buildPage(document.getElementById('W1'), Object.assign({frame:{"active": "building", "date": "June 2183", "cash": "D$ 18.42B", "people": "2.61M", "net": "+D$ 212M", "inbox": "5", "cashShort": "18.4B", "peopleShort": "2.61M", "netShort": "+212M", "jobs": "1.27M", "debt": "D$ 4.10B", "pay": "D$ 31.6M", "rate": "3.35%"}}, {"free": "land free <b style=\"font-family:var(--mono);color:var(--t2)\">412 ha</b>", "groups": [{"h": "IRON &amp; STEEL", "s": "into steel", "rt": "312.8k t steel", "card": {"icon": "furnace", "name": "Blast Furnace", "have": "you have 1", "tags": ["most iron per $"], "hero": "makes <b>250,000 t</b> of iron a month", "heroD": "from 387,500 t of ore, 85,000 t of coke, 37,500 t of coal and 62,500 t of limestone \u00b7 3 Mt a year \u00b7 with its sinter plant", "allIn": "D$ 1.458B", "sticker": "D$ 1.350B", "b1": ["its price, in months of what it adds", "95 mo", 79, false], "b2": ["land per Mt a year", "20 ha", 30, false], "inv": "<span class=\"w\">Investors would rather:</span> a Pelletising Plant first (1.8% a month against this one's 1.1%, which needs its coke imported)", "needs": "posts <b>1,200</b> \u00b7 600 no diploma \u00b7 400 diploma \u00b7 160 engineering \u00b7 40 science<br>land <b>60 ha</b> \u00b7 15% of what is free \u00b7 feed: the city's ore and coal, coke from the ovens<br>runs <b>D$ 11.7M/mo</b> \u00b7 power 51,400 kW, 60,000 made from its own gas \u00b7 water 6,600", "n": 0, "quote": "set a number to see the price and the wait"}, "sibs": [["Coke Ovens", "you have 2"], ["Oxygen Steel Shop", "you have 1"], ["Pelletising Plant", "1 \u00b7 +1 on site"], ["Arc furnaces, 3 sizes", "you have 7"]]}, {"h": "COPPER REFINING", "s": "into copper", "rt": "13.4k t cathode", "card": {"icon": "kiln", "name": "Copper Smelter", "have": "you have 1", "sq": "background:#3a2416;color:#f0a060", "tags": ["also makes sulphuric acid"], "hero": "smelts <b>33,000 t</b> of concentrate a month", "heroD": "into 9,750 t of anode copper and 29,700 t of sulphuric acid \u00b7 adds about D$ 440 a tonne of copper, the 2024 treatment charge", "allIn": "D$ 540.0M", "sticker": "D$ 500.0M", "b1": ["its price, in months of what it adds", "98 mo", 82, false], "b2": ["concentrate to feed it", "none spare", 0, false], "inv": "Investors holding: <span class=\"r\">the one smelter takes all 28,600 t the mines make; on imported concentrate a second would lose 0.3% a month</span>", "needs": "posts <b>700</b> \u00b7 300 no diploma \u00b7 230 diploma \u00b7 120 engineering \u00b7 50 science<br>land <b>56 ha</b> \u00b7 feed: copper concentrate, the city's or imported<br>runs <b>D$ 5.4M/mo</b> \u00b7 power 13,400 kW \u00b7 fuel 1.0M L", "n": 0, "quote": "<span class=\"r\">on imported concentrate it loses D$ 1.6M a month, selling its anode abroad</span>"}, "sibs": [["Electrolytic Refinery", "you have 1"], ["Scrap Copper Refinery", "you have 1"], ["Rod Mill", "1 \u00b7 +1 on site"]]}, {"h": "WOOD PRODUCTS", "s": "logs into lumber", "rt": "87.0k m\u00b3", "card": {"icon": "saw", "name": "Large Sawmill", "have": "you have 1 <span class=\"site\">\u00b7 yours: 1 on site \u00b7 14 months</span>", "pending": true, "sq": "background:#3a2a16;color:#e8c88f", "tags": ["most lumber per $"], "hero": "saws <b>38,500 m\u00b3</b> of logs a month", "heroD": "into 20,020 m\u00b3 of lumber and 15,785 m\u00b3 of chips and sawdust, which the pulp mill takes \u00b7 240,000 m\u00b3 of lumber a year", "allIn": "D$ 162.0M", "sticker": "D$ 150.0M", "b1": ["its price, in months of what it adds", "341 mo", 100, true], "b2": ["sawlogs to feed it", "1,000 m\u00b3 spare", 3, true], "inv": "<span class=\"w\">Investors would not build it:</span> on 37,500 m\u00b3 of logs imported at D$ 110 it earns 0.3% a month, and the interest test asks about 0.6%", "needs": "posts <b>130</b> \u00b7 60 no diploma \u00b7 50 diploma \u00b7 15 engineering \u00b7 5 science<br>land <b>45 ha</b> \u00b7 11% of what is free \u00b7 feed: sawlogs<br>runs <b>D$ 0.84M/mo</b> \u00b7 power 2,740 kW", "n": 1, "quote": "D$ 162.0M with sales tax \u00b7 <span class=\"g\">14 months</span><br><span class=\"w\">it would import 37,500 m\u00b3 of logs at D$ 110: 28 years to pay back</span>"}, "sibs": [["Sawmill", "you have 1"], ["Panel Mill, Pulp Mill", "1 each"], ["Wood Pellet Mill", "none built"]]}]}));
+buildPage(document.getElementById('W2'), Object.assign({frame:{"active": "building", "date": "June 2183", "cash": "D$ 18.42B", "people": "2.61M", "net": "+D$ 212M", "inbox": "5", "cashShort": "18.4B", "peopleShort": "2.61M", "netShort": "+212M", "jobs": "1.27M", "debt": "D$ 4.10B", "pay": "D$ 31.6M", "rate": "3.35%"}}, {"free": "sites free <b style=\"font-family:var(--mono);color:var(--t2)\">coal 112 \u00b7 stone 18 \u00b7 forest 1,850 km\u00b2</b>", "groups": [{"h": "COAL MINING", "s": "from the city's fields", "rt": "1.50M t a month", "card": {"icon": "pick", "name": "Underground Coal Mine", "have": "you have 2 <span class=\"inv\">\u00b7 investors: 1 on site \u00b7 20 months</span>", "sq": "background:#26262c;color:#c9b68f", "tags": ["most coking coal per $"], "hero": "lifts <b>250,000 t</b> of coal a month", "heroD": "by longwall, on a coking field \u00b7 washed, 55% becomes coking coal and 20% thermal \u00b7 80% of the seam recovered", "allIn": "D$ 864.0M", "sticker": "D$ 800.0M", "b1": ["its price, in months of what it adds", "38 mo", 32, true], "b2": ["coking sites free", "38 of 40", 95, true], "inv": "<span class=\"bl\">Investors are building \u00b7 1 on site</span> \u2014 with a second Coal Preparation Plant, since the one standing is full", "needs": "posts <b>400</b> \u00b7 200 no diploma \u00b7 140 diploma \u00b7 50 engineering \u00b7 10 science<br>site <b>1 km\u00b2</b> on a coking field \u00b7 West 4 has 38 free<br>runs <b>D$ 5.8M/mo</b> \u00b7 power 29,000 kW", "n": 0, "quote": "set a number to see the price and the wait"}, "sibs": [["Surface Coal Mine", "you have 2"], ["Large Surface Mine", "you have 1"], ["Coal Preparation Plant", "1 \u00b7 +1 on site"]]}, {"h": "QUARRYING", "s": "from the city's fields", "rt": "581k t a month", "card": {"icon": "pit", "name": "Large Quarry", "have": "you have 2 <span class=\"inv\">\u00b7 investors: 1 on site \u00b7 5 months</span>", "sq": "background:#2e2c28;color:#ded8c6", "tags": ["cheapest stone per tonne"], "hero": "quarries <b>250,000 t</b> a month", "heroD": "on a limestone field: kiln feed first, aggregate for the rest \u00b7 3 sites, 0.3 km\u00b2 \u00b7 D$ 3.92 a tonne to run", "allIn": "D$ 97.2M", "sticker": "D$ 90.0M", "b1": ["its price, in months of what it adds", "10 mo", 8, true], "b2": ["stone sites free", "18 of 27", 67, true], "inv": "<span class=\"bl\">Investors are building \u00b7 1 on site</span> \u2014 37,500 t of aggregate is imported at D$ 40", "needs": "posts <b>125</b> \u00b7 60 no diploma \u00b7 45 diploma \u00b7 15 engineering \u00b7 5 science<br>sites <b>3</b> in one stone field \u00b7 North 4 has 18 free<br>runs <b>D$ 0.98M/mo</b> \u00b7 power 1,000 kW \u00b7 diesel 100,000 L", "n": 0, "quote": "set a number to see the price and the wait"}, "sibs": [["Quarry", "you have 2"], ["Dimension Stone Quarry", "you have 1"]]}, {"h": "FORESTRY", "s": "from the city's forest", "rt": "87.0k m\u00b3 a month", "card": {"icon": "saw", "name": "Harvesting Operation", "have": "you have 6 <span class=\"inv\">\u00b7 investors: 1 on site \u00b7 2 months</span>", "sq": "background:#1f3020;color:#8fc77a", "tags": ["most wood per worker"], "hero": "cuts <b>12,500 m\u00b3</b> a month", "heroD": "three harvesters and three forwarders on two shifts \u00b7 half sawlogs, half pulpwood \u00b7 about 90 ha of forest a month", "allIn": "D$ 16.2M", "sticker": "D$ 15.0M", "b1": ["its price, in months of what it adds", "34 mo", 28, true], "b2": ["natural woods left in the long run", "17%", 17, false], "inv": "<span class=\"bl\">Investors are building \u00b7 1 on site</span> \u2014 it earns 2.7% a month. <span class=\"w\">The cut has no limit: at 87,500 m\u00b3 the natural woods settle at 17% standing, not 29%</span>", "needs": "posts <b>18</b> \u00b7 6 no diploma \u00b7 10 diploma \u00b7 2 engineering<br>forest <b>owned</b> \u00b7 23.5M m\u00b3 standing \u00b7 regrows 34,600 m\u00b3 a month<br>runs <b>D$ 0.22M/mo</b> \u00b7 diesel 25,000 L", "n": 0, "quote": "<span class=\"w\">Forestry plants to make up the gap when it has 1,000 ha of bare land \u00b7 Land office \u203a</span>"}, "sibs": [["Logging Camp", "you have 6"], ["Tree Plantation", "you have 12 \u00b7 120 km\u00b2"]]}]}));
+</script></body></html>
