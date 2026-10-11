@@ -137,8 +137,9 @@ public class BuildingsTemplate {
        paying maintenance and property tax on nothing.
 
        This is the second instance of the rule. The first is the mine's deposit,
-       which is hard-coded on BuildingType.MINING in Game rather than declared
-       here; when somebody next touches it, it belongs in this field's shape.
+       which was hard-coded on BuildingType.MINING in Game rather than declared
+       here; since 0.7.110 it is declared in this field's shape (site(), THE
+       SITE IT STANDS ON).
        ======================================================================= */
     private JobType requiresLicence = null;
 
@@ -367,6 +368,41 @@ public class BuildingsTemplate {
 
     /** A pipeline's kilometre on land, in thousands (its own cash is a kilometre at sea); 0 for every other building. */
     public double onshoreCashPerKm() { return onshoreCashPerKm; }
+
+    /* ----- THE SITE IT STANDS ON (0.7.110, batch I1; runs/spec-materials.md 2.4, 2.5) -----
+       A mine or a well stands on its resource's sites ("site": {"resource":
+       "IRON", "type": "ANY", "sites": 1, "dig": 1} in buildings.json): the
+       resource, the type of field it needs (Deposit.FieldType, or ANY), how
+       many of the field's sites it takes, and dig, the tonnes of field a
+       unit it makes takes out (1 for the ore a mine lifts as it lies; the
+       materials chains' works more: magnetite rock 3, coal 1/.95 at the
+       surface). What Game.siteOf() reads - until 0.7.110 the rule was the
+       good it makes - and LandManager.fits() packs. The Iron Mine stands on
+       ANY until batch I5; an Offshore Platform's jacket stands on an oil
+       field and takes none of its sites (its wells do). Every other building
+       stands on none. */
+
+    /** The site a building stands on: its resource, the type of field it needs (null for ANY), the sites it takes and the tonnes of field a unit it makes takes out. */
+    public record Site(Resource resource, Deposit.FieldType type, int sites, double dig) {
+        /** Whether it stands on a field of any type. */
+        public boolean any() { return type == null; }
+    }
+
+    private Site site;
+
+    /** Makes this stand on `sites` of a resource's sites of a type (null for ANY), taking `dig` of the field a unit it makes; a type not the resource's reads as ANY. */
+    public BuildingsTemplate setSite(Resource resource, Deposit.FieldType type, int sites, double dig) {
+        if (resource == null || !resource.inFields()) {
+            this.site = null;
+            return this;
+        }
+        Deposit.FieldType t = type != null && resource.typesOf().contains(type) && resource.hasTypes() ? type : null;
+        this.site = new Site(resource, t, Math.max(0, sites), Double.isFinite(dig) ? Math.max(0, dig) : 0);
+        return this;
+    }
+
+    /** The site it stands on, or null for a building that stands on no resource's sites. */
+    public Site site() { return site; }
 
 
 

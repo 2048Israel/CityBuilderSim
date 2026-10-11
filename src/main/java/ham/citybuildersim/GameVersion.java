@@ -5049,8 +5049,49 @@ public final class GameVersion {
      *     (BusinessInvestment.zonedForOthersWords(), landReason()'s words).
      *   - Harnesses: ZoningViewCheck (new, eight sections).
      *   - The playtest sets no zone and is 0.7.107's byte for byte.
+     *
+     * 0.7.110 (2026-10-10) - FIELDS BY TYPE. Batch I1, the first of the
+     * materials chains (runs/spec-materials.md 2.4, 2.5; runs/brief-batchI1.md,
+     * runs/fixI1-notes.md). Plumbing: no sector, good or building behaves
+     * differently, and nothing in the month reads a type yet. No save format
+     * change (36), and every save that loaded at 0.7.108 loads.
+     *   - EACH FIELD IS OF A TYPE (Deposit.FieldType, Deposit.type()): iron
+     *     hematite or magnetite, coal thermal or coking, copper sulphide or
+     *     oxide, stone limestone or hard rock (Resource.typesOf()); oil,
+     *     uranium and forest NONE. Drawn as an oil field's grade is, from its
+     *     cell, index and kind, against Deposit.TYPE_SHARES (the study's
+     *     hematite .75, thermal .85, sulphide .80, limestone .70): nothing
+     *     stored, no tonne moved, on the old world's fields and the new.
+     *     Resource.goodOf(type) is each type's good: the resource's own until
+     *     coal's, copper's and stone's goods come (I6 to I8).
+     *   - THE GROUND BY TYPE (LandManager; CityLand.typedPieces(),
+     *     sitesByType()): sites and tonnes by type, per holding, its fields as
+     *     far as it listed, what it listed past them the first type - adding
+     *     up to the whole exactly. E by type is the walk's reading of E (the
+     *     first E tonnes in the order the ground was bought, typeRuns()), as
+     *     every dig until now took them; a dig by type (extract(r, type, t),
+     *     from I5) keeps its resource's E by type from then on, saved as
+     *     DataSave.depletionByType, and a dig on ANY then takes the walk's next
+     *     unworked tonne. W = unowned + remaining + E holds by type to the
+     *     tonne. A save without the key reads as the walk, which is what its
+     *     E was: no conversion, no bump.
+     *   - THE SITE A BUILDING STANDS ON (BuildingsTemplate.site(); "site" in
+     *     buildings.json and the built-in twin): the resource, the type of
+     *     field or ANY, its sites and dig. Game.siteOf() reads it - the four
+     *     buildings on sites declare the resource the good rule gave them; the
+     *     Iron Mine is on ANY until I5 - and committedOn(r) counts the sites
+     *     they take (one each), committedOn(r, type) a type's.
+     *     LandManager.fits(): whether a works fits beside the standing ones,
+     *     a packing of the counts, first fit decreasing in acquisition order,
+     *     typed before ANY; pure, read by nothing until I5.
+     *   - Harnesses: WorldCheck 9 (shares within two points, pure, every
+     *     pool's types summing to its total exactly); LandCheck 26 (the ground
+     *     by type, E by type, W by type, fits); BuildingDataCheck (the site,
+     *     json against the twin, and the good rule's answer for every
+     *     building); SaveFileCheck and ReadPathCheck (depletionByType).
+     *   - The playtest is 0.7.106's byte for byte.
      */
-    public static final String VERSION = "0.7.109";
+    public static final String VERSION = "0.7.110";
 
     /**
      * The save shape.

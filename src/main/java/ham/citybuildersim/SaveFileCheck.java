@@ -314,6 +314,22 @@ public class SaveFileCheck {
         assertTrue("fixture: the offshore pool's E wrote itself", landSave.saveGame(trip, 2).ok);
         Double atSeaRead = gson.fromJson(Files.readString(trip.saveFile(2)), DataSave.class).getOilDepletionAtSea();
         assertTrue("the offshore pool's E survived, to the bit (0.7.93)", atSeaRead != null && atSeaRead == 1_234.5);
+        // ...and what was taken out by type (0.7.110): nothing while every dig was on ANY, a row a resource once one dug by type.
+        assertTrue("...E by type absent on a city that dug nothing by type, as on a save from before 0.7.110 (the walk's reading)",
+                office.getDepletionByTypeState() == null && landRead.getDepletionByType() == null);
+        office.extract(Resource.IRON, Deposit.FieldType.HEMATITE, 2_000.75);
+        double[][] byType = office.getDepletionByTypeState();
+        landSave.setDepletionByType(byType);
+        assertTrue("fixture: E by type wrote itself", byType != null && landSave.saveGame(trip, 2).ok);
+        double[][] byTypeRead = gson.fromJson(Files.readString(trip.saveFile(2)), DataSave.class).getDepletionByType();
+        assertTrue("E by type survived, to the bit, its rows of the resources nothing dug by type still null (0.7.110)",
+                byTypeRead != null && java.util.Arrays.deepEquals(byTypeRead, byType) && byTypeRead[Resource.OIL.ordinal()] == null
+                        && byTypeRead[Resource.IRON.ordinal()][0] == 1_000.25 + 2_000.75);
+        LandManager reread = new LandManager();
+        reread.install(ground, office.getDepletionState(), landRead.getWorldTotals(), landRead.getWorldSeaTheta());
+        reread.restoreDepletionByType(byTypeRead);
+        assertTrue("...and back in a land office, the same E by type", java.util.Arrays.equals(reread.getExtractedByType(Resource.IRON),
+                office.getExtractedByType(Resource.IRON)));
         // ...and the city's water rights (0.7.59), boxed: absent on an older save.
         landSave.setFreshRights(12_345.5);
         assertTrue("fixture: the rights wrote themselves", landSave.saveGame(trip, 2).ok);

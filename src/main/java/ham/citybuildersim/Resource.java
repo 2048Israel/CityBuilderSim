@@ -25,7 +25,9 @@ package ham.citybuildersim;
  * WHAT USES IT. Iron, since J1b put the city's land on the world; oil, lifted
  * as CRUDE by the wells since 0.7.62 (batch K). The other five wait for their
  * industries, and until then their ground is free (an in-ground share of zero
- * and no good).
+ * and no good). Since 0.7.110 (batch I1) iron's, coal's, copper's and stone's
+ * fields are each of two types (typesOf(), Deposit.type()), which nothing
+ * reads yet.
  */
 public enum Resource {
 
@@ -118,4 +120,46 @@ public enum Resource {
 
     /** Whether it lies in fields (everything but forest, which is terrain). */
     public boolean inFields()      { return fieldsPerKm2 > 0; }
+
+    /* =====================================================================
+       ITS FIELDS' TYPES (0.7.110, batch I1; runs/spec-materials.md 2.4)
+
+       Each of the four the materials chains dig lies in fields of two types
+       (Deposit.type()), the commoner first: iron hematite or magnetite, coal
+       thermal or coking, copper sulphide or oxide, stone limestone or hard
+       rock. Oil, uranium and forest have one, NONE: an oil field's crude has
+       a grade instead (Deposit.grade()), and uranium has no study figure.
+       ===================================================================== */
+
+    private static final java.util.List<Deposit.FieldType> NO_TYPES = java.util.List.of(Deposit.FieldType.NONE),
+            IRON_TYPES = java.util.List.of(Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE),
+            COAL_TYPES = java.util.List.of(Deposit.FieldType.THERMAL, Deposit.FieldType.COKING),
+            COPPER_TYPES = java.util.List.of(Deposit.FieldType.SULPHIDE, Deposit.FieldType.OXIDE),
+            STONE_TYPES = java.util.List.of(Deposit.FieldType.LIMESTONE, Deposit.FieldType.HARD_ROCK);
+
+    /** The types of its fields, the commoner first: two for iron, coal, copper and stone; NONE alone for the rest. */
+    public java.util.List<Deposit.FieldType> typesOf() {
+        switch (this) {
+            case IRON:   return IRON_TYPES;
+            case COAL:   return COAL_TYPES;
+            case COPPER: return COPPER_TYPES;
+            case STONE:  return STONE_TYPES;
+            default:     return NO_TYPES;
+        }
+    }
+
+    /** Whether its fields come in more than one type: iron, coal, copper and stone. */
+    public boolean hasTypes()      { return typesOf().size() > 1; }
+
+    /**
+     * The good a field of a type becomes when it is dug (0.7.110): null for a
+     * type that is not one of its own; for ANY (null) or one of its own, its
+     * good() for now - IRON for both iron types, nothing for coal, copper and
+     * stone, whose goods come with their industries (spec-materials 2.4:
+     * THERMAL_COAL for both coals, COPPER_CONC or COPPER, LIMESTONE or
+     * AGGREGATE, at I6 to I8). good() stays the one pricing good.
+     */
+    public Good goodOf(Deposit.FieldType type) {
+        return type == null || typesOf().contains(type) ? good : null;
+    }
 }

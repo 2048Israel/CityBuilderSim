@@ -481,6 +481,7 @@ public class LandManager {
         this.land = land;
         java.util.Arrays.fill(this.extracted, 0);
         this.extractedAtSea = 0;
+        java.util.Arrays.fill(this.extractedByType, null);
         if (extracted != null) {
             for (int k = 0; k < Math.min(extracted.length, CityLand.KINDS); k++) this.extracted[k] = Math.max(0, extracted[k]);
         }
@@ -984,6 +985,8 @@ public class LandManager {
         // forest's from what may be cut since 0.7.107, the protected wood never (cuttableForest()).
         double lifted = Math.max(0, Math.min(amount, r == Resource.OIL ? getOilLeftOnGround()
                 : r == Resource.FOREST ? cuttableForest() : getRemaining(r)));
+        // ...a resource kept by type (0.7.110) from each type's next unworked tonne, in the walk's order.
+        if (lifted > 0 && extractedByType[r.ordinal()] != null) takeInWalkOrder(r, lifted);
         extracted[r.ordinal()] += lifted;
         return lifted;
     }
@@ -1028,6 +1031,8 @@ public class LandManager {
     public double[] remainingByHolding(Resource r) {
         double[] held = land().amountsInOrder(r);
         if (r == Resource.OIL) return oilRemainingByHolding(held);
+        // ...a resource kept by type (0.7.110): each type's E out of its own pieces.
+        if (extractedByType[r.ordinal()] != null) return typedRemainingByHolding(r, held);
         // ...forest's with the wood cleared for building taken out first too (0.7.107).
         double left = r == Resource.FOREST && clearedM3 > 0 ? extracted[r.ordinal()] + clearedM3 : extracted[r.ordinal()];
         for (int i = 0; i < held.length; i++) {
@@ -1084,6 +1089,385 @@ public class LandManager {
                 extractedAtSea = Math.min(taken - extracted[r.ordinal()], getOilOwnedAtSea());
             }
         }
+        // ...and what it took out by type is the walk's reading of it again (THE GROUND BY TYPE).
+        extractedByType[r.ordinal()] = null;
+    }
+
+    /* =====================================================================
+       THE GROUND BY TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4)
+
+       A field is of one type (Deposit.type()): iron hematite or magnetite,
+       coal thermal or coking, copper sulphide or oxide, stone limestone or
+       hard rock (Resource.typesOf()). The ground counts its sites and tonnes
+       by type as it counts its sea sites (getSites(r, dry)), per holding:
+       its fields in the order CityLand.heldFields() lists them, each as far
+       as what the holding listed goes, and what it listed past them - ground
+       by fiat, a fixture's or a converted centre's legacy field - the first
+       type (CityLand.typedPieces()). So a resource's types add up to its
+       sites and its tonnes exactly. Laid out again only when the ground or
+       what it lists changes (typed()).
+
+       WHAT HAS BEEN TAKEN OUT, BY TYPE. Every tonne dug so far has come out
+       in acquisition order (extract(r, amount)), so E by type is a reading
+       of E, as the oil's grades are (oilRuns()): the first E tonnes of the
+       walk over the city's pieces, each type's part of them (typeRuns(),
+       getExtractedByType()). Nothing is stored for it and nothing moves. A
+       works that stands on a type (from batch I5) takes its own type's
+       tonnes (extract(r, type, amount)); from then on the resource keeps its
+       E by type (extractedByType), the save carries it
+       (DataSave.depletionByType) and a dig on ANY takes the walk's next
+       unworked tonne, whatever its type. A save without it is one whose E
+       came out in acquisition order, and reads as the walk (★I1-1: not a
+       conversion, no format bump). W = unowned + the remaining by type + E
+       by type holds to the tonne. In I1 nothing digs by type: the Iron Mine
+       stands on ANY until I5.
+
+       WHERE A WORKS FITS (fits()): a works takes a number of sites of one
+       field (BuildingsTemplate.site()). No mine is recorded on a field, so
+       which field each stands on is a packing of the counts, pure and
+       saved nowhere: the standing works first fit decreasing onto the
+       pieces in acquisition order, typed works before ANY and ANY onto the
+       first type first; a standing works the packing cannot place (an
+       older save's) keeps standing and its sites count against the free
+       sites first; a new one fits if it then packs with them.
+       ===================================================================== */
+
+    /** What has been taken out of each typed resource by type, in Resource.typesOf()'s order, once a works has dug it by type; null while E by type is the walk's reading of E. */
+    private final double[][] extractedByType = new double[CityLand.KINDS][];
+
+    /** A resource's ground as laid out by type: what it was laid out on (the land's stamp and every holding's listing), its pieces, its sites and tonnes by type, and its runs of one type in the order it is worked out. */
+    private static final class TypedGround {
+        final long key;
+        final java.util.List<CityLand.Piece> pieces;
+        final long[] sites;
+        final double[] amounts;
+        /** Where each run of one type ends, tonnes from the first of the resource's, and its type's index in Resource.typesOf(). */
+        final double[] ends;
+        final int[] types;
+
+        TypedGround(long key, java.util.List<CityLand.Piece> pieces, Resource r) {
+            this.key = key;
+            this.pieces = java.util.Collections.unmodifiableList(pieces);
+            java.util.List<Deposit.FieldType> kinds = r.typesOf();
+            sites = new long[kinds.size()];
+            amounts = new double[kinds.size()];
+            double[] e = new double[pieces.size()];
+            int[] t = new int[pieces.size()];
+            int n = 0;
+            double upTo = 0;
+            for (CityLand.Piece p : pieces) {
+                int i = kinds.indexOf(p.type());
+                sites[i] += p.sites();
+                amounts[i] += p.amount();
+                if (!(p.amount() > 0)) continue;
+                upTo += p.amount();
+                if (n > 0 && t[n - 1] == i) {
+                    e[n - 1] = upTo;
+                } else {
+                    e[n] = upTo;
+                    t[n++] = i;
+                }
+            }
+            ends = java.util.Arrays.copyOf(e, n);
+            types = java.util.Arrays.copyOf(t, n);
+        }
+    }
+
+    /** The ground by type, kept by resource with the land it was laid out on. */
+    private final TypedGround[] typedKept = new TypedGround[CityLand.KINDS];
+    private CityLand typedLand;
+
+    /** A resource's ground by type, laid out again when the land, or what a holding lists of the resource's sites or tonnes, has changed. */
+    private TypedGround typed(Resource r) {
+        CityLand l = land();
+        long[] listedSites = l.sitesInOrder(r);
+        double[] listed = l.amountsInOrder(r);
+        double[] asKey = java.util.Arrays.copyOf(listed, listed.length + listedSites.length);
+        for (int i = 0; i < listedSites.length; i++) asKey[listed.length + i] = listedSites[i];
+        long key = groundKey(l, asKey);
+        if (typedLand != l) {
+            java.util.Arrays.fill(typedKept, null);
+            typedLand = l;
+        }
+        TypedGround g = typedKept[r.ordinal()];
+        if (g != null && g.key == key) return g;
+        g = new TypedGround(key, l.typedPieces(r), r);
+        typedKept[r.ordinal()] = g;
+        return g;
+    }
+
+    /** The index of a type among a resource's (Resource.typesOf()), or -1 when it is not one of them. */
+    private static int typeIndex(Resource r, Deposit.FieldType type) {
+        return type == null ? -1 : r.typesOf().indexOf(type);
+    }
+
+    /** The sites of a resource the city owns of one type (0.7.110): every type's for ANY (null) and for a resource of one type; none for a type not its own. They add up to getSites(r). */
+    public int getSites(Resource r, Deposit.FieldType type) {
+        if (type == null) return getSites(r);
+        int i = typeIndex(r, type);
+        if (i < 0) return 0;
+        if (!r.hasTypes()) return getSites(r);
+        return (int) Math.min(Integer.MAX_VALUE, typed(r).sites[i]);
+    }
+
+    /** What the city owns of a resource of one type, as listed (0.7.110): O of the type, the types adding up to getOwnedAmount(r). */
+    public double getOwnedAmount(Resource r, Deposit.FieldType type) {
+        if (type == null) return getOwnedAmount(r);
+        int i = typeIndex(r, type);
+        if (i < 0) return 0;
+        if (!r.hasTypes()) return getOwnedAmount(r);
+        return typed(r).amounts[i];
+    }
+
+    /**
+     * What has been taken out of a resource by type, in Resource.typesOf()'s
+     * order (0.7.110): as kept once a works has dug it by type, else the
+     * walk's reading of E (typeRuns()): of the first E tonnes in the order
+     * the ground is worked out, each type's - so they add up to E, and to the
+     * tonne while the ground is whole tonnes. One figure, E, for a resource
+     * of one type.
+     */
+    public double[] getExtractedByType(Resource r) {
+        double e = extracted[r.ordinal()];
+        if (!r.hasTypes()) return new double[] { getExtracted(r) };
+        double[] kept = extractedByType[r.ordinal()];
+        if (kept != null) return kept.clone();
+        double[] out = new double[r.typesOf().size()];
+        if (!(e > 0)) return out;
+        TypedGround g = typed(r);
+        double start = 0;
+        for (int k = 0; k < g.ends.length && start < e; k++) {
+            out[g.types[k]] += Math.min(g.ends[k], e) - start;
+            start = g.ends[k];
+        }
+        // ...past the last run (more taken out than listed - a rounding): the first type.
+        if (e > start) out[0] += e - start;
+        return out;
+    }
+
+    /** What has been taken out of a resource of one type (0.7.110): its part of E (getExtractedByType()); E itself for ANY (null) and for a resource of one type. */
+    public double getExtracted(Resource r, Deposit.FieldType type) {
+        if (type == null) return getExtracted(r);
+        int i = typeIndex(r, type);
+        if (i < 0) return 0;
+        if (!r.hasTypes()) return getExtracted(r);
+        return getExtractedByType(r)[i];
+    }
+
+    /** What remains of a resource of one type, never below nothing (0.7.110): its owned tonnes less what has been taken out of it; getRemaining(r) for ANY (null) and a resource of one type. */
+    public double getRemaining(Resource r, Deposit.FieldType type) {
+        if (type == null) return getRemaining(r);
+        int i = typeIndex(r, type);
+        if (i < 0) return 0;
+        if (!r.hasTypes()) return getRemaining(r);
+        return Math.max(0, typed(r).amounts[i] - getExtractedByType(r)[i]);
+    }
+
+    /**
+     * The runs of a resource's ground of one type, each {end, type's index
+     * in Resource.typesOf()} in tonnes from its first, in the order it is
+     * worked out (0.7.110): what E by type is read from while every tonne
+     * has come out in that order (spec-materials 2.4's typeRuns(), O3's
+     * oilRuns() made general).
+     */
+    public double[][] typeRuns(Resource r) {
+        TypedGround g = typed(r);
+        double[][] out = new double[g.ends.length][];
+        for (int i = 0; i < out.length; i++) out[i] = new double[] { g.ends[i], g.types[i] };
+        return out;
+    }
+
+    /**
+     * Takes up to `amount` of a resource of one type out of the city's
+     * ground (0.7.110): what was there of the type, its E and the resource's
+     * rising by exactly that, so W holds. From the first such dig the
+     * resource keeps its E by type (extractedByType). ANY (null) is
+     * extract(r, amount); a type not the resource's takes nothing.
+     */
+    public double extract(Resource r, Deposit.FieldType type, double amount) {
+        if (type == null) return extract(r, amount);
+        int i = typeIndex(r, type);
+        if (i < 0) return 0;
+        if (!r.hasTypes()) return extract(r, amount);
+        double[] by = byTypeKept(r);
+        double lifted = Math.max(0, Math.min(amount, Math.min(typed(r).amounts[i] - by[i], getRemaining(r))));
+        by[i] += lifted;
+        extracted[r.ordinal()] += lifted;
+        return lifted;
+    }
+
+    /** A typed resource's E by type, kept from now on: the walk's reading of E the first time. */
+    private double[] byTypeKept(Resource r) {
+        double[] by = extractedByType[r.ordinal()];
+        if (by == null) {
+            by = getExtractedByType(r);
+            extractedByType[r.ordinal()] = by;
+        }
+        return by;
+    }
+
+    /**
+     * A dig on ANY once the resource keeps its E by type: `lifted` tonnes
+     * taken in the order the ground is worked out from each type's next
+     * unworked tonne, the earliest first, a run at a time - so a city that
+     * only ever dug on ANY reads as the walk. Past every run (a rounding),
+     * the first type.
+     */
+    private void takeInWalkOrder(Resource r, double lifted) {
+        TypedGround g = typed(r);
+        double[] by = extractedByType[r.ordinal()];
+        double left = lifted;
+        for (int guard = 0; left > 0 && guard <= g.ends.length + by.length; guard++) {
+            int best = -1;
+            double at = Double.MAX_VALUE, room = 0;
+            for (int t = 0; t < by.length; t++) {
+                double[] next = nextUnworked(g, t, by[t]);
+                if (next != null && next[0] < at) {
+                    at = next[0];
+                    room = next[1];
+                    best = t;
+                }
+            }
+            if (best < 0 || !(room > 0)) break;
+            double take = Math.min(left, room);
+            by[best] += take;
+            left -= take;
+        }
+        if (left > 0) by[0] += left;
+    }
+
+    /** Type t's next unworked tonne as {its place in the walk, the tonnes to the end of its run}, `taken` of the type gone; null when the type is worked out. */
+    private static double[] nextUnworked(TypedGround g, int t, double taken) {
+        double start = 0, ofType = 0;
+        for (int k = 0; k < g.ends.length; k++) {
+            double length = g.ends[k] - start;
+            if (g.types[k] == t) {
+                if (taken < ofType + length) {
+                    double place = start + (taken - ofType);
+                    return new double[] { place, g.ends[k] - place };
+                }
+                ofType += length;
+            }
+            start = g.ends[k];
+        }
+        return null;
+    }
+
+    /** ...remainingByHolding() once the resource keeps its E by type: each type's E taken out of its own pieces in turn, holding by holding. */
+    private double[] typedRemainingByHolding(Resource r, double[] held) {
+        double[] left = extractedByType[r.ordinal()].clone();
+        java.util.List<Deposit.FieldType> kinds = r.typesOf();
+        for (CityLand.Piece p : typed(r).pieces) {
+            int i = kinds.indexOf(p.type());
+            double taken = Math.min(p.amount(), left[i]);
+            left[i] -= taken;
+            if (p.holding() < held.length) held[p.holding()] -= taken;
+        }
+        return held;
+    }
+
+    /** E by type, every typed resource's as kept, in Resource's order (DataSave's depletionByType): null while every one is the walk's reading of E, so a save carries it only once a works has dug by type. */
+    public double[][] getDepletionByTypeState() {
+        double[][] out = null;
+        for (Resource r : Resource.values()) {
+            double[] by = extractedByType[r.ordinal()];
+            if (by == null) continue;
+            if (out == null) out = new double[CityLand.KINDS][];
+            out[r.ordinal()] = by.clone();
+        }
+        return out;
+    }
+
+    /**
+     * Puts E by type back from a save (Game's load path, after the land and
+     * E are in place): each typed resource's as saved; a resource the save
+     * carries none for - every resource of a save from before 0.7.110 - is
+     * the walk's reading of its E, which is what every dig until then took.
+     */
+    public void restoreDepletionByType(double[][] saved) {
+        for (Resource r : Resource.values()) {
+            double[] by = saved != null && r.ordinal() < saved.length ? saved[r.ordinal()] : null;
+            if (by == null || !r.hasTypes() || by.length != r.typesOf().size()) {
+                extractedByType[r.ordinal()] = null;
+                continue;
+            }
+            double[] kept = new double[by.length];
+            for (int i = 0; i < by.length; i++) kept[i] = Double.isFinite(by[i]) ? Math.max(0, by[i]) : 0;
+            extractedByType[r.ordinal()] = kept;
+        }
+    }
+
+    /** Standing works on a resource's sites, for fits(): the type they stand on (null for ANY), the sites each takes, and how many stand. */
+    public record Claim(Deposit.FieldType type, int sites, int count) { }
+
+    /**
+     * Whether a works of `extra` sites on `type` (null for ANY) fits on the
+     * city's ground of a resource beside the standing works (0.7.110; THE
+     * GROUND BY TYPE): the standing packed first fit decreasing onto the
+     * pieces (CityLand.typedPieces()) in acquisition order - typed works
+     * before ANY, ANY onto the first type first - those it cannot place
+     * counted against the free sites first, then the rest packed again with
+     * the new one. Pure: nothing is saved and nothing moves. A works taking
+     * no site always fits; one on a type not the resource's never does.
+     */
+    public boolean fits(Resource r, Deposit.FieldType type, java.util.List<Claim> standing, int extra) {
+        if (extra <= 0) return true;
+        if (type != null && typeIndex(r, type) < 0) return false;
+        java.util.List<CityLand.Piece> pieces = typed(r).pieces;
+        java.util.List<int[]> works = new java.util.ArrayList<>();
+        if (standing != null) {
+            for (Claim c : standing) {
+                if (c == null || c.sites() <= 0 || c.count() <= 0) continue;
+                int t = c.type() == null ? -1 : typeIndex(r, c.type());
+                if (c.type() != null && t < 0) continue;
+                for (int k = 0; k < c.count(); k++) works.add(new int[] { t, c.sites() });
+            }
+        }
+        works.sort(LandManager::packingOrder);
+        int[] free = new int[pieces.size()];
+        for (int i = 0; i < free.length; i++) free[i] = pieces.get(i).sites();
+        int[] probe = free.clone();
+        java.util.List<int[]> placed = new java.util.ArrayList<>(), unplaced = new java.util.ArrayList<>();
+        for (int[] w : works) (place(r, pieces, probe, w, false) ? placed : unplaced).add(w);
+        for (int[] w : unplaced) place(r, pieces, free, w, true);
+        placed.add(new int[] { type == null ? -1 : typeIndex(r, type), extra });
+        placed.sort(LandManager::packingOrder);
+        for (int[] w : placed) if (!place(r, pieces, free, w, false)) return false;
+        return true;
+    }
+
+    /** The packing's order: works on a type before works on ANY, the larger first within each. */
+    private static int packingOrder(int[] a, int[] b) {
+        if ((a[0] < 0) != (b[0] < 0)) return a[0] < 0 ? 1 : -1;
+        return Integer.compare(b[1], a[1]);
+    }
+
+    /**
+     * Places a works {type's index or -1, sites} on the first piece of its
+     * type with room, in acquisition order - ANY on the first type's pieces,
+     * then the next type's - taking its sites; or, `spread`, takes its sites
+     * from as many pieces as it needs in that order (a standing works the
+     * packing could not place). Whether it was placed whole.
+     */
+    private static boolean place(Resource r, java.util.List<CityLand.Piece> pieces, int[] free, int[] w, boolean spread) {
+        java.util.List<Deposit.FieldType> kinds = r.typesOf();
+        int left = w[1];
+        for (int t = 0; t < kinds.size(); t++) {
+            if (w[0] >= 0 && w[0] != t) continue;
+            for (int i = 0; i < free.length; i++) {
+                if (pieces.get(i).type() != kinds.get(t) || free[i] <= 0) continue;
+                if (spread) {
+                    int take = Math.min(left, free[i]);
+                    free[i] -= take;
+                    left -= take;
+                    if (left == 0) return true;
+                } else if (free[i] >= left) {
+                    free[i] -= left;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** Margin per square foot at the current sale price. Negative sells at a loss. */
@@ -1633,6 +2017,7 @@ public class LandManager {
         land = null;
         java.util.Arrays.fill(extracted, 0);
         extractedAtSea = 0;
+        java.util.Arrays.fill(extractedByType, null);
         zoning.clear();
         clearedSqFt = 0;
         clearedM3 = 0;

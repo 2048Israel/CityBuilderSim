@@ -158,6 +158,11 @@ public class BuildingDataCheck {
             }
             check(who + " platform slots", actual.platformSlots(), expected.platformSlots());
             check(who + " onshore cash a km", actual.onshoreCashPerKm(), expected.onshoreCashPerKm());
+            // ...and the site it stands on (0.7.110): a mine that lost its line would stand on no deposit and be no mine.
+            if (!java.util.Objects.equals(actual.site(), expected.site())) {
+                fails++;
+                System.out.println("  FAIL " + who + ": site " + actual.site() + " != " + expected.site());
+            }
 
             // Every job tier, not just the ones the building uses - a tier that
             // silently failed to load would otherwise pass unnoticed.
@@ -484,6 +489,34 @@ public class BuildingDataCheck {
                 pipe != null && "Crude Pipeline".equals(pipe.getName()) && pipe.isPipeline() && pipe.getCashCost() == 4_500
                         && pipe.onshoreCashPerKm() == 3_000 && pipe.getTotalJobs() == 0 && Game.siteOf(pipe) == null);
         assertTrue("...and the only buildings at sea", atSea == 3);
+
+        /* ---------- the site each stands on (0.7.110, batch I1) ----------
+
+           Until 0.7.110 Game.siteOf() was a rule on the good a MINING
+           building makes (oil for a platform's jacket); now every building
+           that stands on sites declares it (spec-materials 2.5), and the
+           declaration must give the rule's answer for every building, so
+           nothing reads a site differently. The four on sites take one
+           each, on ANY, a tonne of field a unit - but the jacket, which
+           takes none of its field's (its wells do). */
+        System.out.println("\n--- the site each building stands on (0.7.110) ---");
+        boolean rule = true, shape = true;
+        int onSites = 0;
+        for (BuildingsTemplate t : data) {
+            Resource was = null;
+            if (t.getCategory() == BuildingType.MINING) {
+                for (Resource r : Resource.values()) if (r.good() != null && t.makes(r.good()) > 0 && was == null) was = r;
+                if (was == null && t.isPlatform()) was = Resource.OIL;
+            }
+            rule &= Game.siteOf(t) == was;
+            BuildingsTemplate.Site site = t.site();
+            if (site == null) continue;
+            onSites++;
+            shape &= site.any() && (t.isPlatform() ? site.sites() == 0 && site.dig() == 0 : site.sites() == 1 && site.dig() == 1);
+        }
+        assertTrue("every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109)", rule);
+        assertTrue("...four stand on sites - the Iron Mine, the Oil Well, the Offshore Platform and the Platform Well", onSites == 4);
+        assertTrue("...each on ANY, one site and a tonne of field a unit, but the jacket, which takes none", shape);
 
         /* ---------- and every profession has exactly one school ----------
 
