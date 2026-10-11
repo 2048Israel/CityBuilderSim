@@ -1,6 +1,7 @@
 package ham.citybuildersim.sectors;
 
 import ham.citybuildersim.BuildingType;
+import ham.citybuildersim.Deposit;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.LandManager;
 import ham.citybuildersim.Resource;
@@ -27,11 +28,28 @@ import ham.citybuildersim.Resource;
  * Iron & Steel's Pelletising Plant and blast furnaces buy it now. LandManager
  * decides how much of what was asked for is actually there, and nothing once
  * the deposit is out.
+ *
+ * FOUR MINES, BY TYPE AND SIZE, SINCE 0.7.124 (batch I5; Jerus's Q3 and Q19,
+ * 2026-10-08; runs/spec-materials.md 2.4): on hematite, shipped as dug, the
+ * Iron Mine (one site) and the Large Open-Pit Mine (twenty of one field); on
+ * magnetite, ground and concentrated three tonnes of rock to one, the
+ * Magnetite Mine & Concentrator (one) and the Large Magnetite Complex
+ * (twenty). Which the sector sinks is ExtractionSector's rule: the best
+ * earnings on the whole cost among those that fit the fields it owns.
  */
 public final class Mining extends ExtractionSector {
 
     /** The Iron Mine's permanent id in buildings.json (0.7.120, batch I3; spec-materials 4): what the harnesses, the test player and the build advice find it by - a name is a label, and the chains rename buildings. */
     public static final int IRON_MINE = 14;
+
+    /** The Large Open-Pit Mine's permanent id (0.7.124, batch I5): 500,000 t of hematite ore a month on twenty sites of one field. */
+    public static final int LARGE_OPEN_PIT = 108;
+
+    /** The Magnetite Mine & Concentrator's (0.7.124): 20,000 t of concentrate a month from 60,000 t of rock, on one magnetite site. */
+    public static final int MAGNETITE_MINE = 109;
+
+    /** The Large Magnetite Complex's (0.7.124): 400,000 t of concentrate a month from 1.2 Mt of rock, on twenty sites of one magnetite field. */
+    public static final int LARGE_MAGNETITE = 110;
 
     public Mining() {
         super("Mining", "Iron Mining", BuildingType.MINING, Resource.IRON);
@@ -47,5 +65,11 @@ public final class Mining extends ExtractionSector {
     @Override
     protected double dig(LandManager land, double asked) {
         return land.extractIron(asked);
+    }
+
+    /** ...of one type (0.7.124): its ground's, the month's tonnes of ground kept for the land office, added up across the types. */
+    @Override
+    protected double dig(LandManager land, Deposit.FieldType type, double fieldTonnes, boolean more) {
+        return land.extractIron(type, fieldTonnes, more);
     }
 }

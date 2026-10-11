@@ -5539,8 +5539,48 @@ public final class GameVersion {
      *     works' power sold), 3 and 6 moved by the decisions; GdpCheck HELD;
      *     BuildingDataCheck (108 buildings, gen, since, oldMetal); MoneyCheck's
      *     old steel; SaveFileCheck and ReadPathCheck; TradeCostCheck's table.
+     *
+     * 0.7.124 (2026-10-11) - IRON MINING BY TYPE AND SIZE. Batch I5, the third
+     * materials batch that changes the game (Jerus's Q3, Q19 and A of
+     * 2026-10-08; runs/spec-materials.md 2.2, 2.4, 2.6b and 5;
+     * runs/brief-batchI5.md, runs/fixI5-notes.md). No save format change
+     * (38): a save from 0.7.120 on loads, its Iron Mines on hematite from then
+     * on, and its first month of ore makes it carry E by type.
+     *   - THE MINES (ids 108-110, Iron Mining's): the Large Open-Pit Mine,
+     *     500,000 t of ore a month on twenty sites of one hematite field; the
+     *     Magnetite Mine & Concentrator, 20,000 t of concentrate from 60,000
+     *     t of rock on one magnetite site; the Large Magnetite Complex,
+     *     400,000 t from 1.2 Mt on twenty - the study's 2.4 at the spec's 2.2
+     *     conventions, "since" 1900, 1955 and 1955. The Iron Mine (14) stands
+     *     on one hematite site (ANY from 0.7.110).
+     *   - WHERE A MINE STANDS (Game.claimsOn(), hasDepositFor(), the run's
+     *     claims ahead): a works on a typed resource is packed onto the
+     *     city's fields of its type beside the works standing, on site or
+     *     ordered (LandManager.fits()) - a large mine needs twenty free sites
+     *     of ONE field, a magnetite works never stands on hematite - and its
+     *     type's ore left; the sites a run's orders take are counted, not
+     *     the orders.
+     *   - THE PLAN (ExtractionSector): among the mines that fit, the best
+     *     earnings on the whole cost wins, the money gate decision A's; a
+     *     mine is weighed with its lorries (★, as I4 weighs every works),
+     *     their wear and diesel in what it earns - here, in Game.consider()
+     *     and on the card - and the vans in what it costs.
+     *   - THE DIG BY TYPE: the month's ore asked split by each type's share of
+     *     the sector's nameplate, each part out of its own type's ground, the
+     *     magnetite works three tonnes of rock a tonne; and THE RETIREMENT BY
+     *     TYPE: a mine over its type worked out is spare while the other
+     *     type still has ore, and only it may be sold.
+     *   - buildings.json's readme: the deposit paragraph by type, and the
+     *     version lines I3 and I4 shipped under (0.7.120, 0.7.123).
+     *   - Harnesses: MaterialsCheck 15-17 (the three rows' four cases at
+     *     parity; the fit on a field of nineteen and of twenty, a run's
+     *     sites, magnetite never on hematite, the plan; on real fields of
+     *     both types the plan's choice, the dig by type with W exact and the
+     *     retirement by type), BuildingDataCheck (111 buildings, iron's sites
+     *     by type, consumables, since), LandCheck 26 (the Iron Mine on
+     *     hematite, the claims, the packing gate).
      */
-    public static final String VERSION = "0.7.123";
+    public static final String VERSION = "0.7.124";
 
     /**
      * The save shape.

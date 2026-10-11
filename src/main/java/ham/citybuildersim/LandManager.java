@@ -375,7 +375,7 @@ public class LandManager {
      * (CityMap, since 0.7.60).
      * ---------------------------------------------------------------- */
 
-    /** Lifted this month, for the mining report. */
+    /** Lifted this month, for the mining report: since 0.7.124 the tonnes of ground taken out, a magnetite works' rock as dug. */
     private double ironMinedThisMonth;
 
     /** The crude the wells lifted this month, in tonnes (0.7.62) - both pools' since 0.7.93. */
@@ -993,6 +993,20 @@ public class LandManager {
     }
 
     /**
+     * ...of one type (0.7.124, batch I5; THE GROUND BY TYPE): up to `tonnes`
+     * of the type's ground taken out (extract(r, type, amount)) - rock, for
+     * a magnetite works, three tonnes of it to a tonne of concentrate - and
+     * kept for the month's report, added to what the month's digs of the
+     * other type took when `more` (Mining digs each type its works stand on
+     * in turn, ExtractionSector.groundLimit()). ANY (null) is the walk.
+     */
+    public double extractIron(Deposit.FieldType type, double tonnes, boolean more) {
+        double lifted = extract(Resource.IRON, type, tonnes);
+        ironMinedThisMonth = more ? ironMinedThisMonth + lifted : lifted;
+        return lifted;
+    }
+
+    /**
      * Takes up to `amount` of a resource out of the city's ground (0.7.57):
      * what was there, and E rises by exactly that. Not whole tonnes - a
      * mine's month is what its throttles leave of its nameplate.
@@ -1136,8 +1150,10 @@ public class LandManager {
        unworked tonne, whatever its type. A save without it is one whose E
        came out in acquisition order, and reads as the walk (★I1-1: not a
        conversion, no format bump). W = unowned + the remaining by type + E
-       by type holds to the tonne. In I1 nothing digs by type: the Iron Mine
-       stands on ANY until I5.
+       by type holds to the tonne. In I1 nothing dug by type; since batch I5
+       (0.7.124) every iron mine stands on a type, the Iron Mine on hematite,
+       and digs its own (extractIron(type, ...)), so a city's first month of
+       ore makes its save carry E by type.
 
        WHERE A WORKS FITS (fits()): a works takes a number of sites of one
        field (BuildingsTemplate.site()). No mine is recorded on a field, so

@@ -134,6 +134,31 @@ import java.util.Map;
  *      furnace make past their draws (5,800 and 8,600 kW) and buys the shop's
  *      26,600, its statement's powerSold the surplus at the tariff, the
  *      utility paying it, and the audit closes.
+ *
+ * ...AND BATCH I5's (0.7.124; Iron Mining by type and size -
+ * runs/spec-materials.md 2.2, 2.4, 2.6b and 5's I5 row):
+ *
+ *  15. IRON MINING'S ROWS ARE THE STUDY'S: the Large Open-Pit Mine, the
+ *      Magnetite Mine & Concentrator and the Large Magnetite Complex (ids 108
+ *      to 110) at parity - all-in cost, posts, draw, water, the type, sites
+ *      and dig they stand on - their four cases the study's 2.5 to its
+ *      rounding and their cost a year abroad its last column; the Iron Mine
+ *      (14) on one hematite site.
+ *
+ *  16. A MINE FITS ITS FIELD: on a town's hematite by fiat, a works of twenty
+ *      sites is refused on a field of nineteen and ordered on one of twenty,
+ *      its twenty then taken from the next order and from a run's next order;
+ *      a magnetite works is refused on hematite whatever its free sites; and
+ *      the plan orders only a mine that fits.
+ *
+ *  17. THE DIG AND THE RETIREMENT BY TYPE: on real fields of both types,
+ *      as many twenty-site works fit as the fields of their type hold twenty
+ *      sites, and the plan's order is the best earnings on the whole cost -
+ *      the lorries in it - of the mines that fit; with hematite and magnetite
+ *      mines standing, a month's dig takes each type's share of the ask from
+ *      its own ground, the magnetite works three tonnes of rock a tonne, and
+ *      W holds by type to the tonne; once the hematite is out its mines alone
+ *      are spare and may be sold, while the magnetite digs on.
  */
 public class MaterialsCheck {
 
@@ -234,6 +259,9 @@ public class MaterialsCheck {
         oldSteel();
         captiveRoute();
         routePower();
+        mineRows();
+        mineFits();
+        mineTypes();
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -1174,5 +1202,301 @@ public class MaterialsCheck {
                 u.getPowerBought() == g.getEconomyManager().getSectorPowerSold() && u.getWorksPower() >= sold);
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         report("the month's money audit closes", audit.relative() < 1e-4, String.format("residual %.3g of what moved", audit.relative()));
+    }
+
+    /* ============================ 15. Iron Mining's rows against the study ============================ */
+
+    /** Iron Mining's rows of batch I5 (0.7.124), by their permanent ids, in the study's 2.4 order: the Large Open-Pit Mine, the Magnetite Mine & Concentrator, the Large Magnetite Complex. */
+    static final int[] MINE_ROWS = { Mining.LARGE_OPEN_PIT, Mining.MAGNETITE_MINE, Mining.LARGE_MAGNETITE };
+
+    /** The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). */
+    static final double[][] MINE_CASES = { { 3.7, 3.7, 5.2, 5.2 }, { 1.2, 1.2, 2.2, 2.2 }, { 2.2, 2.2, 3.3, 3.3 } };
+
+    /** ...their cost over a year of what each would sell abroad, its last column. */
+    static final double[] MINE_YEARS = { 2.0, 2.9, 2.7 };
+
+    /** ...their running cost a month, D$ thousands, the study's 2.4 "Runs". */
+    static final double[] MINE_RUNS = { 5_420, 951, 9_580 };
+
+    /** ...their all-in cost, D$ thousands (the study's 2.4). */
+    static final double[] MINE_COSTS = { 1_000_000, 60_000, 1_100_000 };
+
+    /** ...their posts (the study's 2.4). */
+    static final int[] MINE_POSTS = { 400, 120, 500 };
+
+    /** ...their draw, kW, and water, units a month (the study's 2.4). */
+    static final int[] MINE_KW = { 3_000, 3_000, 52_000 }, MINE_WATER = { 300, 400, 7_900 };
+
+    /** ...what each makes a month, t of ore or concentrate, and the t of rock it digs for it (the study's 2.4: 60,000 t for the small magnetite works' 20,000, 1.2 Mt for the large one's 400,000; the hematite pit ships its ore as dug). */
+    static final double[] MINE_MAKES = { 500_000, 20_000, 400_000 }, MINE_ROCK = { 500_000, 60_000, 1_200_000 };
+
+    /** ...the type of field each stands on, and the sites it takes (the study's 1.3, 2.4: twenty sites for a large mine, one for a small). */
+    static final Deposit.FieldType[] MINE_TYPES = { Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE, Deposit.FieldType.MAGNETITE };
+    static final int[] MINE_SITES = { 20, 1, 20 };
+
+    static void mineRows() {
+        out.println("\n--- 15. Iron Mining's rows of batch I5 at parity: by type and size, the study's four cases and its years abroad, to its rounding ---");
+        BuildingManager b = new BuildingManager();
+        b.initializeTemplates();
+        UtilitiesHandler founding = new UtilitiesHandler();
+        double tariff = founding.getPricerPerWatt(), water = founding.getPricePerWaterUnit();
+        java.util.function.ToDoubleFunction<Good> imp = Good::worldImportPrice, exp = Good::worldExportPrice;
+        String[] cases = { "A", "B", "C", "D" };
+        BuildingsTemplate.Site iron = b.getTemplate(Mining.IRON_MINE).site();
+        assertTrue("the Iron Mine (14) stands on one site of a hematite field, ore as dug (ANY until batch I5)",
+                iron != null && iron.resource() == Resource.IRON && iron.type() == Deposit.FieldType.HEMATITE && iron.sites() == 1
+                        && iron.dig() == 1);
+        for (int r = 0; r < MINE_ROWS.length; r++) {
+            BuildingsTemplate t = b.getTemplate(MINE_ROWS[r]);
+            String name = t.getName();
+            double cost = t.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * t.getConstructionMaterials();
+            BuildingsTemplate.Site site = t.site();
+            report("the " + name + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", MINE_COSTS[r]) + "k all in, "
+                            + MINE_POSTS[r] + " posts, " + String.format("%,d", MINE_KW[r]) + " kW, " + String.format("%,d", MINE_WATER[r])
+                            + " water, " + String.format("%,.0f", MINE_MAKES[r]) + " t a month from " + String.format("%,.0f", MINE_ROCK[r])
+                            + " t dug, on " + MINE_SITES[r] + " " + MINE_TYPES[r] + " site(s); Iron Mining's, dated " + t.getSince(),
+                    cost == MINE_COSTS[r] && t.getTotalJobs() == MINE_POSTS[r] && t.getElectricityConsumption() == MINE_KW[r]
+                            && t.getWaterConsumption() == MINE_WATER[r] && t.makes(Good.IRON) == MINE_MAKES[r] && site != null
+                            && site.resource() == Resource.IRON && site.type() == MINE_TYPES[r] && site.sites() == MINE_SITES[r]
+                            && site.dig() * MINE_MAKES[r] == MINE_ROCK[r] && Sectors.MINING.equals(t.getSector()) && t.getSince() >= 1900
+                            && t.getCategory() == BuildingType.MINING,
+                    String.format("cash %,.0f + 18 x %,d material; dig %.0f", t.getCashCost(), t.getConstructionMaterials(),
+                            site == null ? 0 : site.dig()));
+            report("...its ground the iron sites it takes, an iron site's ground each (Resource.IRON.siteKm2())",
+                    Math.abs(t.getLandSqFt() - MINE_SITES[r] * Resource.IRON.siteKm2() * LandManager.SQ_FT_PER_KM2) < 1e-6,
+                    String.format("%,.0f sq ft", t.getLandSqFt()));
+            double wages = 0;
+            for (JobType j : JobType.values()) wages += t.getJobs(j) * PayTier.wageOf(j);
+            double running = wages + t.getElectricityConsumption() * tariff + t.getWaterConsumption() * water;
+            double diesel = t.uses(Good.DIESEL) * STUDY_DIESEL;
+            report("its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)",
+                    Math.abs(t.getConsumables() - (MINE_RUNS[r] - running - diesel)) < 1e-9,
+                    String.format("%,.2f = %,.0f - %,.2f - %,.1f", t.getConsumables(), MINE_RUNS[r], running, diesel));
+            boolean all = true;
+            StringBuilder got = new StringBuilder(), study = new StringBuilder();
+            for (SpreadPlanner.Case c : SpreadPlanner.Case.values()) {
+                double pct = 100 * SpreadPlanner.caseEarns(t, c, imp, exp, running, 0, 1, tariff) / cost;
+                all &= Math.abs(pct - MINE_CASES[r][c.ordinal()]) <= STUDY_ROUNDING + 1e-9;
+                got.append(String.format("%s %.2f%%  ", cases[c.ordinal()], pct));
+                study.append(c.ordinal() == 0 ? "" : "/").append(MINE_CASES[r][c.ordinal()]);
+            }
+            report("...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding: " + study + "%",
+                    all, got.toString().trim());
+            double years = cost / (12 * t.makes(Good.IRON) * Good.IRON.worldExportPrice());
+            report("...and its cost over a year of what it would sell abroad is the study's " + MINE_YEARS[r],
+                    Math.abs(years - MINE_YEARS[r]) <= STUDY_ROUNDING + 1e-9, String.format("%.3f", years));
+        }
+        /*
+         * WHERE THE DIESEL IS (the spec's 2.2: "DIESEL where the study names
+         * it, scaled by tonnes to the large sibling"): the study names it for
+         * the Iron Mine, 3 L a tonne, so the Large Open-Pit Mine burns the
+         * same a tonne; it names none for the magnetite works, whose running
+         * cost is their grinding power and consumables. With the magnetite
+         * mine's 60,000 t of rock at the Iron Mine's 3 L, priced as caseEarns()
+         * prices a feed, its case B would read 1.25%, past the study's 1.2.
+         */
+        BuildingsTemplate pit = b.getTemplate(Mining.LARGE_OPEN_PIT), mine = b.getTemplate(Mining.IRON_MINE);
+        assertTrue("the open pit burns the Iron Mine's diesel a tonne; the magnetite works burn none",
+                pit.uses(Good.DIESEL) / pit.makes(Good.IRON) == mine.uses(Good.DIESEL) / mine.makes(Good.IRON)
+                        && b.getTemplate(Mining.MAGNETITE_MINE).uses(Good.DIESEL) == 0 && b.getTemplate(Mining.LARGE_MAGNETITE).uses(Good.DIESEL) == 0);
+    }
+
+    /* ============================ 16. a mine fits its field ============================ */
+
+    static void mineFits() {
+        out.println("\n--- 16. a mine fits its field: twenty sites of one field of its type for a large mine, never magnetite works on hematite ---");
+        Game g = town("materialscheck-fits");
+        Mining mining = g.getSectors().mining();
+        LandManager land = g.getLandManager();
+        BuildingManager b = g.getBuildingManager();
+        BuildingsTemplate mine = b.getTemplate(Mining.IRON_MINE), pit = b.getTemplate(Mining.LARGE_OPEN_PIT),
+                magnetite = b.getTemplate(Mining.MAGNETITE_MINE), complex = b.getTemplate(Mining.LARGE_MAGNETITE);
+        final Deposit.FieldType hem = Deposit.FieldType.HEMATITE, mag = Deposit.FieldType.MAGNETITE;
+        double tonnes = 19 * Resource.IRON.amountPerSite();
+        quietly(() -> land.restoreSites(Resource.IRON, 19, tonnes));
+        report("fixture: a town's iron by fiat, one field of 19 hematite sites (ground by fiat is the first type), none magnetite",
+                land.getSites(Resource.IRON, hem) == 19 && land.getSites(Resource.IRON, mag) == 0
+                        && land.getCityLand().typedPieces(Resource.IRON).size() == 1,
+                String.format("%,.0f t", land.getRemaining(Resource.IRON, hem)));
+        g.setCashForTest(g.getCash() + 4 * BuildingManager.MATERIALS_WORLD_PRICE * pit.getConstructionMaterials() + 4 * pit.getCashCost());
+        Game.BuildResult refused = quietlyBuild(g, pit);
+        assertTrue("a works of twenty sites is refused on a field of nineteen: no deposit for it, before the money",
+                !g.hasDepositFor(pit, 1) && !mining.fits(pit) && refused == Game.BuildResult.NO_DEPOSIT && b.getQuantity(pit.getId()) == 0);
+        assertTrue("...where one-site Iron Mines fit, nineteen and not twenty", g.hasDepositFor(mine, 19) && !g.hasDepositFor(mine, 20)
+                && mining.fits(mine));
+        assertTrue("a magnetite works is refused on hematite, nineteen sites free: the small one and the large",
+                !g.hasDepositFor(magnetite, 1) && !g.hasDepositFor(complex, 1) && !mining.fits(magnetite) && !mining.fits(complex));
+        // Workers handed to the town, as InvestCheck hands a shop's, so the staff is not what stands in the plan's way.
+        handWorkers(g);
+        BusinessInvestment.Decision d = mining.plan(g.getBusinessInvestment(), g);
+        report("...and the plan orders the mine that fits, the Iron Mine - never the pit or a magnetite works",
+                d.build && d.template == mine && d.reason.contains("of hematite"), d.reason);
+
+        quietly(() -> land.restoreSites(Resource.IRON, 20, 20 * Resource.IRON.amountPerSite()));
+        assertTrue("on a field of twenty the works of twenty fits, one and not two",
+                g.hasDepositFor(pit, 1) && !g.hasDepositFor(pit, 2) && mining.fits(pit));
+        BusinessInvestment plans = g.getBusinessInvestment();
+        double pitScore = mining.estimatedMonthlyProfit(pit, plans) / (plans.getCostOf(pit, 1) + mining.fleetCapital(pit));
+        double mineScore = mining.estimatedMonthlyProfit(mine, plans) / (plans.getCostOf(mine, 1) + mining.fleetCapital(mine));
+        BusinessInvestment.Decision both = mining.plan(plans, g);
+        report("...and the plan orders the one of the two that earns more on its whole cost, its lorries in it",
+                both.build && both.template == (pitScore > mineScore ? pit : mine),
+                String.format("%s; the pit %.3f%%, the Iron Mine %.3f%% a month", both.reason, 100 * pitScore, 100 * mineScore));
+        Map<BuildingsTemplate, Integer> run = new LinkedHashMap<>();
+        run.put(mine, 1);
+        run.put(pit, 1);
+        Map<BuildingsTemplate, Integer> pitFirst = new LinkedHashMap<>();
+        pitFirst.put(pit, 1);
+        pitFirst.put(mine, 1);
+        assertTrue("a run counts the sites its orders take, not the orders: an Iron Mine ahead leaves the pit nineteen, the pit ahead"
+                        + " leaves the mine none", g.buildRunAhead(run) == 1 && g.buildRunStop(run) == Game.BuildResult.NO_DEPOSIT
+                        && g.buildRunAhead(pitFirst) == 1 && g.buildRunStop(pitFirst) == Game.BuildResult.NO_DEPOSIT);
+        quietly(() -> b.addStack(pit, 1, true));
+        assertTrue("with the pit standing its twenty sites are taken: not one Iron Mine more fits, and the sites committed are twenty",
+                !g.hasDepositFor(mine, 1) && g.minesCommitted() == 20 && g.committedOn(Resource.IRON, hem) == 20
+                        && g.claimsOn(Resource.IRON).equals(List.of(new LandManager.Claim(hem, 20, 1))));
+        quietly(() -> land.restoreSites(Resource.IRON, 21, 21 * Resource.IRON.amountPerSite()));
+        assertTrue("...a twenty-first site takes one more Iron Mine, and still no magnetite works",
+                g.hasDepositFor(mine, 1) && !g.hasDepositFor(mine, 2) && !g.hasDepositFor(magnetite, 1));
+    }
+
+    /**
+     * A fixture city made ready to plan before its next month is played:
+     * workers handed to it as InvestCheck hands a shop's - twenty thousand,
+     * with diplomas, college and university among them - and the investors
+     * told the ground it now has free, as the month's Game.refreshLand()
+     * tells them, so neither the staff nor a stale figure for the ground is
+     * a mine's refusal.
+     */
+    static void handWorkers(Game g) {
+        PopulationManager hands = g.getPopulationManager();
+        hands.restoreWorkforce(20_000);
+        hands.restoreSkilledHeads(new double[] { 0, 5_000, 2_000, 1_000 });
+        g.getBusinessInvestment().setLandAvailable(g.getLandManager().getAvailableSqFt(), g.getLandManager().getPricePerSqFt());
+    }
+
+    /** buildStack() quietly, as the Build tab places one. */
+    static Game.BuildResult quietlyBuild(Game g, BuildingsTemplate t) {
+        Game.BuildResult[] r = new Game.BuildResult[1];
+        quietly(() -> r[0] = g.buildStack(t, 1, false));
+        return r[0];
+    }
+
+    /* ============================ 17. the dig and the retirement by type ============================ */
+
+    static void mineTypes() {
+        out.println("\n--- 17. on real fields of both types: what fits, the plan's choice, the dig by type with W exact, and retirement by type ---");
+        Game g = new Game(GameFiles.scratch("materialscheck-types"), Founding.defaults().withWorldSeed(MiningCheck.IRON_SEED));
+        quietly(g::run);
+        final Resource iron = Resource.IRON;
+        final Deposit.FieldType hem = Deposit.FieldType.HEMATITE, mag = Deposit.FieldType.MAGNETITE;
+        LandManager land = g.getLandManager();
+        CityLand city = g.getCityLand();
+        quietly(() -> {
+            for (int i = 0; i < 300 && (land.getSites(iron, hem) == 0 || land.getSites(iron, mag) == 0); i++) {
+                LandParcel offer = land.getMarket().richest(iron);
+                if (offer == null) {
+                    Deposit f = LandCheck.nearestUnowned(city, iron);
+                    if (f == null) break;
+                    offer = MiningCheck.nearestOffer(land.getMarket(), f.x(), f.y());
+                }
+                if (offer == null) break;
+                land.buyParcel(offer.getId(), 1e12, 0);
+            }
+        });
+        int fitsHem = 0, fitsMag = 0, bigHem = 0, bigMag = 0;
+        for (CityLand.Piece piece : city.typedPieces(iron)) {
+            if (piece.type() == hem) { fitsHem += piece.sites() / 20; bigHem = Math.max(bigHem, piece.sites()); }
+            if (piece.type() == mag) { fitsMag += piece.sites() / 20; bigMag = Math.max(bigMag, piece.sites()); }
+        }
+        int hemSites = land.getSites(iron, hem), magSites = land.getSites(iron, mag);
+        report("fixture: a city on world " + MiningCheck.IRON_SEED + " that bought iron until it held both types",
+                hemSites > 0 && magSites > 0, String.format("%d hematite sites (largest field %d), %d magnetite (largest %d)",
+                        hemSites, bigHem, magSites, bigMag));
+        BuildingManager b = g.getBuildingManager();
+        Mining mining = g.getSectors().mining();
+        BuildingsTemplate mine = b.getTemplate(Mining.IRON_MINE), pit = b.getTemplate(Mining.LARGE_OPEN_PIT),
+                magnetite = b.getTemplate(Mining.MAGNETITE_MINE), complex = b.getTemplate(Mining.LARGE_MAGNETITE);
+        report("as many twenty-site works fit as the fields of their type hold twenty sites, each on one field: the open pits on"
+                        + " hematite, the complexes on magnetite",
+                (fitsHem == 0 || g.hasDepositFor(pit, fitsHem)) && !g.hasDepositFor(pit, fitsHem + 1)
+                        && (fitsMag == 0 || g.hasDepositFor(complex, fitsMag)) && !g.hasDepositFor(complex, fitsMag + 1)
+                        && mining.fits(pit) == (bigHem >= 20) && mining.fits(complex) == (bigMag >= 20),
+                String.format("%d open pit(s), %d complex(es)", fitsHem, fitsMag));
+        assertTrue("...one-site works on every site of their type and not one more; magnetite works never on the hematite's",
+                g.hasDepositFor(mine, hemSites) && !g.hasDepositFor(mine, hemSites + 1)
+                        && g.hasDepositFor(magnetite, magSites) && !g.hasDepositFor(magnetite, magSites + 1));
+
+        // The plan: the best earnings on the whole cost, its lorries in both, among the mines that fit, staff and pay.
+        handWorkers(g);
+        BusinessInvestment plans = g.getBusinessInvestment();
+        BuildingsTemplate expected = null;
+        double best = 0;
+        StringBuilder seen = new StringBuilder();
+        for (BuildingsTemplate t : b.getTemplatesBySector(Sectors.MINING)) {
+            double earns = mining.estimatedMonthlyProfit(t, plans), cost = plans.getCostOf(t, 1) + mining.fleetCapital(t);
+            boolean fits = mining.fits(t), staffs = mining.staffing(t).passes(),
+                    pays = mining.planner().passesMoney(mining, plans, g, earns, cost);
+            seen.append(String.format("%n      %-30s fits %-5s staffs %-5s pays %-5s %,.1fk on %,.0fk, %.3f%%", t.getName(), fits, staffs,
+                    pays, earns, cost, 100 * earns / cost));
+            if (fits && staffs && pays && earns / cost > best) {
+                best = earns / cost;
+                expected = t;
+            }
+        }
+        BusinessInvestment.Decision d = mining.plan(plans, g);
+        report("the plan's order is the best earnings on the whole cost, lorries in, of the mines that fit, staff and pay",
+                expected != null && d.build && d.template == expected, d.reason + seen);
+        double vans = ProcessingSector.vansFor(pit);
+        assertTrue("...its lorries in what it earns and costs: the open pit's vans, its tonnes over a van's",
+                Math.abs(vans * Sector.TONNES_PER_VAN - (pit.makes(Good.IRON) * Good.IRON.tonnesPerUnit()
+                        + pit.uses(Good.DIESEL) * Good.DIESEL.tonnesPerUnit())) < 1e-6
+                        && mining.fleetCapital(pit) > 0 && mining.fleetRunning(pit, 1) > 0);
+
+        // The dig by type: two Iron Mines and two magnetite works standing.
+        quietly(() -> {
+            b.addStack(mine, 2, true);
+            b.addStack(magnetite, 2, true);
+        });
+        double[] before = land.getExtractedByType(iron);
+        double eBefore = land.getExtracted(iron);
+        mining.produceFlow(Good.IRON);
+        Sector.Output ore = mining.outputRow(Good.IRON);
+        double asked = ore.planned, hemPart = asked * (2 * mine.makes(Good.IRON)) / mining.getCapacity(Good.IRON);
+        double magPart = asked * (2 * magnetite.makes(Good.IRON)) / mining.getCapacity(Good.IRON), rock = magPart * magnetite.site().dig();
+        double[] after = land.getExtractedByType(iron);
+        int h = iron.typesOf().indexOf(hem), m = iron.typesOf().indexOf(mag);
+        report("fixture: two Iron Mines and two magnetite works standing, a month's ore asked of them at the sector's rate",
+                asked > 0 && magnetite.site().dig() == 3, String.format("%,.0f t asked", asked));
+        report("each type's share of the ask comes out of its own ground: the hematite as dug, the magnetite three tonnes of rock a tonne",
+                Math.abs(after[h] - before[h] - hemPart) < 1e-6 && Math.abs(after[m] - before[m] - rock) < 1e-6
+                        && Math.abs(ore.produced - (hemPart + magPart)) < 1e-6,
+                String.format("hematite %,.0f t, magnetite %,.0f t of rock for %,.0f t; %,.0f t made", after[h] - before[h],
+                        after[m] - before[m], magPart, ore.produced));
+        assertTrue("...E rising by the ground taken out, the land office's month the same tonnes, and W by type to the tonne",
+                Math.abs(land.getExtracted(iron) - eBefore - (hemPart + rock)) < 1e-6
+                        && Math.abs(land.getIronMinedThisMonth() - (hemPart + rock)) < 1e-6 && LandCheck.wByType(land));
+        assertTrue("...and from the first dig by type the save carries E by type", land.getDepletionByTypeState() != null
+                && java.util.Arrays.equals(land.getDepletionByTypeState()[iron.ordinal()], land.getExtractedByType(iron)));
+
+        // The retirement by type.
+        assertTrue("while both types have ore no mine is spare, and any may be sold",
+                mining.retirementDemandAndCapacity(g) == null && mining.mayRetire(mine) && mining.mayRetire(magnetite));
+        double hemLeft = land.getRemaining(iron, hem);
+        land.extract(iron, hem, hemLeft);
+        double[] spare = mining.retirementDemandAndCapacity(g);
+        report("once the hematite is out the Iron Mines are spare - nothing used against their nameplate - while the magnetite has ore",
+                land.getRemaining(iron, hem) == 0 && land.getRemaining(iron, mag) > 0 && spare != null && spare[0] == 0
+                        && spare[1] == 2 * mine.makes(Good.IRON), String.format("%,.0f t taken to the end", hemLeft));
+        assertTrue("...and only they may be sold, by the spare-capacity rule and the distress rule alike",
+                mining.mayRetire(mine) && !mining.mayRetire(magnetite));
+        assertTrue("...no hematite works is ordered on hematite sites with no ore under them, a magnetite one still may be",
+                !g.hasDepositFor(mine, 1) && !mining.fits(mine) && !mining.fits(pit) && g.hasDepositFor(magnetite, 1) == (magSites > 2)
+                        && LandCheck.wByType(land));
+        mining.produceFlow(Good.IRON);
+        Sector.Output dug = mining.outputRow(Good.IRON);
+        assertTrue("...and the next month's dig gives the hematite mines nothing and the magnetite works their share",
+                Math.abs(dug.produced - dug.planned * (2 * magnetite.makes(Good.IRON)) / mining.getCapacity(Good.IRON)) < 1e-6
+                        && land.getRemaining(iron, hem) == 0 && LandCheck.wByType(land));
     }
 }

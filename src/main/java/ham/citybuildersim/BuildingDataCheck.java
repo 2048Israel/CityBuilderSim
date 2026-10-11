@@ -404,9 +404,9 @@ public class BuildingDataCheck {
         assertTrue("the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated"
                         + " Highway 1.25% - and no other building has: " + repairs,
                 repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125)));
-        assertTrue("...and 108 buildings in all (0.7.123: the integrated route's seven; 101 from 0.7.91, 98 from 0.7.86, 94 from"
-                        + " 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76 until then)",
-                data.size() == 108);
+        assertTrue("...and 111 buildings in all (0.7.124: Iron Mining's three; 108 from 0.7.123, the integrated route's seven; 101"
+                        + " from 0.7.91, 98 from 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76 until then)",
+                data.size() == 111);
 
         /* ---------- the oil storage (0.7.85, batch O8; spec-oil 2.8) ----------
 
@@ -513,11 +513,17 @@ public class BuildingDataCheck {
            building makes (oil for a platform's jacket); now every building
            that stands on sites declares it (spec-materials 2.5), and the
            declaration must give the rule's answer for every building, so
-           nothing reads a site differently. The four on sites take one
-           each, on ANY, a tonne of field a unit - but the jacket, which
-           takes none of its field's (its wells do). */
-        System.out.println("\n--- the site each building stands on (0.7.110) ---");
+           nothing reads a site differently. The oil's take one each, on
+           ANY, a tonne of field a unit - but the jacket, which takes none of
+           its field's (its wells do). Since 0.7.124 (batch I5; spec-materials
+           2.4, the study's 2.4) iron's four stand on a type: the Iron Mine on
+           one hematite site and the Large Open-Pit Mine on twenty, ore as
+           dug; the Magnetite Mine & Concentrator on one magnetite site and
+           the Large Magnetite Complex on twenty, three tonnes of rock a tonne
+           of concentrate. */
+        System.out.println("\n--- the site each building stands on (0.7.110; iron's by type and size, 0.7.124) ---");
         boolean rule = true, shape = true;
+        java.util.Map<Integer, String> ironSites = new java.util.TreeMap<>();
         int onSites = 0;
         for (BuildingsTemplate t : data) {
             Resource was = null;
@@ -529,11 +535,22 @@ public class BuildingDataCheck {
             BuildingsTemplate.Site site = t.site();
             if (site == null) continue;
             onSites++;
+            if (site.resource() == Resource.IRON) {
+                ironSites.put(t.getId(), site.type() + " " + site.sites() + " " + site.dig());
+                continue;
+            }
             shape &= site.any() && (t.isPlatform() ? site.sites() == 0 && site.dig() == 0 : site.sites() == 1 && site.dig() == 1);
         }
         assertTrue("every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109)", rule);
-        assertTrue("...four stand on sites - the Iron Mine, the Oil Well, the Offshore Platform and the Platform Well", onSites == 4);
-        assertTrue("...each on ANY, one site and a tonne of field a unit, but the jacket, which takes none", shape);
+        assertTrue("...seven stand on sites - iron's four mines, the Oil Well, the Offshore Platform and the Platform Well", onSites == 7);
+        assertTrue("...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none", shape);
+        java.util.Map<Integer, String> byType = new java.util.TreeMap<>();
+        byType.put(ham.citybuildersim.sectors.Mining.IRON_MINE, "HEMATITE 1 1.0");
+        byType.put(ham.citybuildersim.sectors.Mining.LARGE_OPEN_PIT, "HEMATITE 20 1.0");
+        byType.put(ham.citybuildersim.sectors.Mining.MAGNETITE_MINE, "MAGNETITE 1 3.0");
+        byType.put(ham.citybuildersim.sectors.Mining.LARGE_MAGNETITE, "MAGNETITE 20 3.0");
+        assertTrue("...iron's on a type, its sites and its dig (0.7.124): the Iron Mine one hematite site and the open pit twenty, ore as"
+                + " dug; the magnetite works one and twenty, three tonnes of rock a tonne: " + ironSites, ironSites.equals(byType));
 
         /* ---------- a works' own power and its consumables (0.7.112, batch I2) ----------
 
@@ -572,8 +589,10 @@ public class BuildingDataCheck {
                 ham.citybuildersim.sectors.HeavyIndustry.ARC_FURNACE, ham.citybuildersim.sectors.HeavyIndustry.MINI_MILL,
                 ham.citybuildersim.sectors.Mining.IRON_MINE));
         for (int id = ham.citybuildersim.sectors.HeavyIndustry.SCRAP_YARD; id <= ham.citybuildersim.sectors.HeavyIndustry.LARGE_MINI_MILL; id++) iron.add(id);
-        assertTrue("ten buy consumables, the iron rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and the Iron Mine (14) of"
-                + " batch I3, and Iron & Steel's seven of batch I4 (101-107); every other none: " + buying, buying.equals(iron));
+        for (int id = ham.citybuildersim.sectors.Mining.LARGE_OPEN_PIT; id <= ham.citybuildersim.sectors.Mining.LARGE_MAGNETITE; id++) iron.add(id);
+        assertTrue("thirteen buy consumables, the iron rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and the Iron Mine (14)"
+                + " of batch I3, Iron & Steel's seven of batch I4 (101-107) and Iron Mining's three of batch I5 (108-110); every other none: "
+                + buying, buying.equals(iron));
 
         /* ---------- the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) ----------
 
@@ -603,9 +622,13 @@ public class BuildingDataCheck {
         years.put(ham.citybuildersim.sectors.HeavyIndustry.BLAST_FURNACE, 1900);
         years.put(ham.citybuildersim.sectors.HeavyIndustry.OXYGEN_STEEL_SHOP, 1952);
         years.put(ham.citybuildersim.sectors.HeavyIndustry.LARGE_MINI_MILL, 1969);
+        years.put(ham.citybuildersim.sectors.Mining.LARGE_OPEN_PIT, 1900);
+        years.put(ham.citybuildersim.sectors.Mining.MAGNETITE_MINE, 1955);
+        years.put(ham.citybuildersim.sectors.Mining.LARGE_MAGNETITE, 1955);
         assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1952 (E1, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
-                        + " as standing before it - and no row before them: " + dated, dated.equals(years));
+                        + " as standing before it - and batch I5's three: the Large Open-Pit Mine 1900, the two magnetite works 1955 (E4,"
+                        + " taconite concentrated at Silver Bay); no row before them: " + dated, dated.equals(years));
 
         /* ---------- and every profession has exactly one school ----------
 

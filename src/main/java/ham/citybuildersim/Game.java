@@ -7288,7 +7288,9 @@ public class Game {
      * them open onto nothing.
      *
      * IRON MINES ONLY since 0.7.62 (spec-land 2.4): an Oil Well is MINING too,
-     * and stands on an oil site, not an iron one - see committedOn().
+     * and stands on an oil site, not an iron one - see committedOn(). Since
+     * 0.7.124 (batch I5) the iron SITES they take, a large mine's twenty: the
+     * figure the sites owned are counted against.
      */
     public int minesCommitted() { return committedOn(Resource.IRON); }
 
@@ -7331,11 +7333,44 @@ public class Game {
     /**
      * ...and the sites taken by the buildings that stand on one type of the
      * resource's fields (0.7.110, batch I1; spec-materials 2.4): `type` null
-     * counts those on ANY - the Iron Mine's until batch I5 - and not the
-     * typed ones; committedOn(r) counts all.
+     * counts those on ANY - the Iron Mine's until batch I5, none of iron's
+     * since (0.7.124) - and not the typed ones; committedOn(r) counts all.
      */
     public int committedOn(Resource r, Deposit.FieldType type) {
         return committedOn(r, type, false);
+    }
+
+    /**
+     * The works standing on a resource's sites, by template (0.7.124, batch
+     * I5; spec-materials 2.4): each one's type (null for ANY), the sites it
+     * takes and how many stand, are on site or ordered - the standing claims
+     * LandManager.fits() packs onto the city's fields before it asks whether
+     * one more fits. A platform's jacket takes none of its field's sites and
+     * is left out, as committedOn() leaves it.
+     */
+    public java.util.List<LandManager.Claim> claimsOn(Resource r) {
+        java.util.List<LandManager.Claim> claims = new java.util.ArrayList<>();
+        int[] underConstruction = buildingManager.getUnderConstructionById();
+        for (BuildingsTemplate t : buildingManager.getTemplates()) {
+            BuildingsTemplate.Site site = t.site();
+            if (site == null || site.resource() != r || t.isPlatform()) continue;
+            int n = buildingManager.getQuantity(t.getId());
+            if (t.getId() < underConstruction.length) n += underConstruction[t.getId()];
+            if (n > 0) claims.add(new LandManager.Claim(site.type(), site.sites(), n));
+        }
+        return claims;
+    }
+
+    /**
+     * Whether an order for this building is placed on the city's fields by
+     * packing (0.7.124, batch I5): a works on the sites of a resource whose
+     * fields have types (Resource.hasTypes() - iron, and coal, copper and
+     * stone as their chains come), which needs room for its sites on one
+     * field of its type (LandManager.fits()), not a free site anywhere. Oil's
+     * wells and platforms are counted as they were.
+     */
+    static boolean packs(BuildingsTemplate t) {
+        return t != null && t.site() != null && t.site().resource().hasTypes() && !t.isPlatform();
     }
 
     private int committedOn(Resource r, Deposit.FieldType type, boolean everyType) {
@@ -7368,6 +7403,8 @@ public class Game {
         if (t.isPlatformWell()) return platformWellsCommitted();
         if (ham.citybuildersim.sectors.Oil.isLandWell(t)) return landWellsCommitted();
         Resource r = siteOf(t);
+        // ...a works on a typed resource (0.7.124): the sites taken on its own type, against its type's sites (sitesFor()).
+        if (packs(t)) return committedOn(r, t.site().type());
         return r == null ? 0 : committedOn(r);
     }
 
@@ -7395,15 +7432,36 @@ public class Game {
      *
      * BY ITS GOOD since 0.7.62: an Oil Well needs an unworked oil site and
      * oil left in the ground, as a mine needs iron (siteOf()).
+     *
+     * BY ITS FIELD since 0.7.124 (batch I5; spec-materials 2.4): a works on a
+     * typed resource (packs()) needs room for its sites on ONE field of its
+     * type the city owns, beside the works standing, on site or ordered
+     * (claimsOn(), LandManager.fits()) - a Large Open-Pit Mine twenty free
+     * sites of one hematite field, a magnetite works never hematite - and
+     * its type's ore left in the ground (remainingFor()). Until then a free
+     * site anywhere and the resource's ore, a mine a site.
      */
     public boolean hasDepositFor(BuildingsTemplate template, int quantity) {
-        return hasDepositFor(template, quantity, 0);
+        return hasDepositFor(template, quantity, 0, null);
     }
 
-    /** ...with `before` more on the same sites already put on site by the orders ahead of it in a run (0.7.40, buildRunAhead()). */
-    private boolean hasDepositFor(BuildingsTemplate template, int quantity, int before) {
+    /**
+     * ...with `before` more on the same sites already put on site by the
+     * orders ahead of it in a run (0.7.40, buildRunAhead()) - and since
+     * 0.7.124 a packed works with `ahead`, the claims those orders make on
+     * its resource's fields, packed with the standing.
+     */
+    private boolean hasDepositFor(BuildingsTemplate template, int quantity, int before, java.util.List<LandManager.Claim> ahead) {
         Resource r = siteOf(template);
         if (r == null) return true;
+        if (packs(template)) {
+            BuildingsTemplate.Site site = template.site();
+            java.util.List<LandManager.Claim> claims = claimsOn(r);
+            if (ahead != null) claims.addAll(ahead);
+            if (quantity > 1) claims.add(new LandManager.Claim(site.type(), site.sites(), quantity - 1));
+            return landManager.fits(r, site.type(), claims, quantity > 0 ? site.sites() : 0)
+                    && remainingFor(template) > 0;
+        }
         return sitesFor(template) >= committedFor(template) + before + quantity
                 && remainingFor(template) > 0;
     }
@@ -7421,6 +7479,8 @@ public class Game {
         if (r == null) return 0;
         if (r == Resource.OIL && (template.isPlatform() || template.isPlatformWell())) return landManager.getOilLeftAtSea();
         if (r == Resource.OIL && ham.citybuildersim.sectors.Oil.isLandWell(template)) return landManager.getOilLeftOnGround();
+        // ...and a works on a typed resource (0.7.124) its own type's (LandManager.getRemaining(r, type)).
+        if (packs(template)) return landManager.getRemaining(r, template.site().type());
         return landManager.getRemaining(r);
     }
 
@@ -7447,6 +7507,8 @@ public class Game {
             int seaFree = landManager.getSites(r, false) - Math.max(0, landWellsCommitted() - landManager.getSites(r, true));
             return Math.max(0, Math.min(getSectors().oil().slotsStanding(), seaFree));
         }
+        // ...a works on a typed resource (0.7.124): its own type's sites (LandManager.getSites(r, type)).
+        if (packs(template)) return landManager.getSites(r, template.site().type());
         return r == Resource.OIL && ham.citybuildersim.sectors.Oil.isLandWell(template)
                 ? landManager.getSites(r, true) : landManager.getSites(r);
     }
@@ -7743,15 +7805,18 @@ public class Game {
     private int runAhead(java.util.Map<BuildingsTemplate, Integer> run, BuildResult[] stop) {
         int ahead = 0;
         // ...the run's own orders on each resource's sites so far (0.7.62: iron and oil apart; since 0.7.91 a platform's
-        // wells and its jackets each apart from the land's, sitePool()).
+        // wells and its jackets each apart from the land's, sitePool()) - and since 0.7.124 a packed works' claims on its
+        // resource's fields, by resource, packed with the standing (hasDepositFor()): a large mine's twenty sites, not one.
         int[] onSites = new int[Resource.values().length + 2];
+        java.util.Map<Resource, java.util.List<LandManager.Claim>> claimsAhead = new java.util.EnumMap<>(Resource.class);
         double ground = 0;
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             BuildingsTemplate t = e.getKey();
             int n = e.getValue() == null ? 0 : e.getValue();
             int pool = sitePool(t);
             if (t != null && n > 0) {
-                BuildResult refused = !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool]) ? BuildResult.NO_DEPOSIT
+                java.util.List<LandManager.Claim> packedAhead = packs(t) ? claimsAhead.get(t.site().resource()) : null;
+                BuildResult refused = !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
                         : !landManager.canAllocate(ground + t.getLandSqFt() * (double) n, t.getSector()) ? BuildResult.NO_LAND
@@ -7760,7 +7825,12 @@ public class Game {
                     if (stop != null) stop[0] = refused;
                     return ahead;
                 }
-                if (pool >= 0) onSites[pool] += n;
+                if (packs(t)) {
+                    claimsAhead.computeIfAbsent(t.site().resource(), k -> new java.util.ArrayList<>())
+                            .add(new LandManager.Claim(t.site().type(), t.site().sites(), n));
+                } else if (pool >= 0) {
+                    onSites[pool] += n;
+                }
                 ground += t.getLandSqFt() * (double) n;
             }
             ahead++;

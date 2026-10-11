@@ -2718,13 +2718,31 @@ public class LandCheck {
                 && java.util.Arrays.equals(city.sitesByType(iron), sitesBefore) && fresh.getDepletionByTypeState() == null
                 && fresh.getExtracted(iron) == 0);
 
-        // Game: the sites the buildings on a resource take, by type.
+        // Game: the sites the buildings on a resource take, by type - the Iron Mine on hematite since 0.7.124 (batch I5).
         Game g = dollarCity("landcheck-bytype");
         BuildingManager bm = g.getBuildingManager();
-        bm.addStack(bm.getTemplate(14), 3, true);
+        bm.addStack(bm.getTemplate(Mining.IRON_MINE), 3, true);
         bm.addStack(bm.getTemplate(74), 2, true);
-        assertTrue("the Iron Mines take one site each, on ANY: committedOn counts their sites, none on a type",
-                g.committedOn(iron) == 3 && g.committedOn(iron, null) == 3 && g.committedOn(iron, hem) == 0 && g.committedOn(Resource.OIL) == 2);
+        assertTrue("the Iron Mines take one site each, on hematite (on ANY to 0.7.123): committedOn counts their sites, none on ANY",
+                g.committedOn(iron) == 3 && g.committedOn(iron, null) == 0 && g.committedOn(iron, hem) == 3 && g.committedOn(iron, mag) == 0
+                        && g.committedOn(Resource.OIL) == 2);
+        bm.addStack(bm.getTemplate(Mining.LARGE_OPEN_PIT), 1, true);
+        assertTrue("...a Large Open-Pit Mine twenty (0.7.124), and the claims fits() packs are each template's type, sites and count",
+                g.committedOn(iron) == 23 && g.committedOn(iron, hem) == 23 && g.minesCommitted() == 23
+                        && g.claimsOn(iron).equals(java.util.List.of(new LandManager.Claim(hem, 1, 3), new LandManager.Claim(hem, 20, 1))));
+
+        // The order gate packs (0.7.124): on the city's own fields, a works of n sites where a field of its type has n free.
+        LandManager gl = g.getLandManager();
+        int free = gl.getSites(iron, hem) - 23;
+        BuildingsTemplate pit = bm.getTemplate(Mining.LARGE_OPEN_PIT), mine = bm.getTemplate(Mining.IRON_MINE),
+                magnetite = bm.getTemplate(Mining.MAGNETITE_MINE);
+        boolean pitFits = gl.fits(iron, hem, g.claimsOn(iron), 20);
+        System.out.printf("   %d hematite and %d magnetite sites owned; %d hematite sites free past the works standing%n",
+                gl.getSites(iron, hem), gl.getSites(iron, mag), free);
+        assertTrue("the order gate is the packing: an Iron Mine where a hematite site is free, an open pit where twenty of one field"
+                        + " are, a magnetite works only on magnetite",
+                g.hasDepositFor(mine, 1) == gl.fits(iron, hem, g.claimsOn(iron), 1) && g.hasDepositFor(pit, 1) == pitFits
+                        && g.hasDepositFor(magnetite, 1) == (gl.getSites(iron, mag) > 0 && gl.getRemaining(iron, mag) > 0));
     }
 
     /** Unowned + the remaining by type + E by type is the world's total, every resource, to the tonne. */

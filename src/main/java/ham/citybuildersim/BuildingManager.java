@@ -1968,7 +1968,7 @@ public class BuildingManager {
                 .setJobs(JobType.NO_DIPLOMA, 45)
                 .setJobs(JobType.DIPLOMA, 12)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 3)
-                .setSite(Resource.IRON, null, 1, 1)   // one iron site, any type, until batch I5 (0.7.110)
+                .setSite(Resource.IRON, Deposit.FieldType.HEMATITE, 1, 1)   // one site of a hematite field (0.7.124; ANY from 0.7.110)
                 .setId(14);
 
         templates.add(ironMine);
@@ -2654,6 +2654,91 @@ public class BuildingManager {
                 .setJobs(JobType.UNIV_SCIENCE, 8)
                 .setSince(1969)
                 .setId(107));
+
+        /* ------------------- IRON MINING BY TYPE AND SIZE (0.7.124, batch I5) -------------------
+           runs/spec-materials.md 2.2 and 2.4; the study's (materials-chains-
+           research.md) 1.3, 1.4 and 2.4. Iron's fields are of two types, at
+           real shares (Deposit.type(): three in four hematite, shipped as
+           dug; one in four magnetite, about 30% iron, concentrated about 3:1),
+           and real mines come in two sizes (Jerus's Q19). Each mine stands on
+           its type (LandManager.fits(): a works of 20 sites on 20 free sites of
+           one field of its type), and the sector builds the one that earns
+           most on its cost among those that fit:
+             - the LARGE OPEN-PIT MINE, a typical modern hematite pit: 500,000 t
+               of ore a month on 20 sites, its diesel the Iron Mine's 3 L a
+               tonne;
+             - the MAGNETITE MINE & CONCENTRATOR, the smallest real magnetite
+               operation: 20,000 t of concentrate from 60,000 t of rock on one
+               site (dig 3), its grinding 3,000 kW;
+             - the LARGE MAGNETITE COMPLEX: 400,000 t of concentrate from 1.2 Mt
+               of rock on 20 sites, 52,000 kW and 7,900 units of water.
+           The house conventions (spec 2.2) make the rest, as they did I4's:
+           cash the all-in cost over 1.3, material a sixtieth of the cash,
+           points a half; the study's posts; ground the iron site's 400,000 sq
+           ft a site (the study's 74 ha for 20 is that, rounded); road load the
+           Iron Mine's 420 for 2,500 t out; DIESEL only where the study names it,
+           the Iron Mine, and its large sibling scaled by tonnes - the magnetite
+           works none, their running cost all power and consumables, so their
+           four cases hold (MaterialsCheck 15); consumables the study's running
+           cost less wages, power, water and diesel at D$0.60. "since": 1900 for
+           the open pit (the Mesabi's stood before it), 1955 for the two
+           magnetite works (taconite concentrated at Silver Bay: research E4).
+           ------------------------------------------------------------------------------ */
+        templates.add(new BuildingsTemplate("Large Open-Pit Mine", BuildingType.MINING)   // a modern hematite pit, 20 sites of one field
+                .setCashCost(769222)
+                .setConstructionPoints(384611)
+                .setConstructionMaterials(12821)
+                .setSector("Mining")
+                .makes(Good.IRON, 500000)
+                .uses(Good.DIESEL, 1500000)     // the Iron Mine's 3 L a tonne
+                .setElectricityConsumption(3000)
+                .setWaterConsumption(300)
+                .setConsumables(2847.6)         // 5,420 - 1,627.4 wages - 30 power - 15 water - 900 diesel
+                .setLandSqFt(8000000)
+                .setRoadLoad(84000)
+                .setJobs(JobType.NO_DIPLOMA, 240)
+                .setJobs(JobType.DIPLOMA, 110)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 40)
+                .setJobs(JobType.UNIV_SCIENCE, 10)
+                .setSite(Resource.IRON, Deposit.FieldType.HEMATITE, 20, 1)
+                .setSince(1900)
+                .setId(108));
+        templates.add(new BuildingsTemplate("Magnetite Mine & Concentrator", BuildingType.MINING)   // rock ground and concentrated 3:1
+                .setCashCost(46158)
+                .setConstructionPoints(23079)
+                .setConstructionMaterials(769)
+                .setSector("Mining")
+                .makes(Good.IRON, 20000)        // tonnes of concentrate, from 60,000 t of rock
+                .setElectricityConsumption(3000)
+                .setWaterConsumption(400)
+                .setConsumables(389.9)          // 951 - 511.1 wages - 30 power - 20 water
+                .setLandSqFt(400000)
+                .setRoadLoad(3360)
+                .setJobs(JobType.NO_DIPLOMA, 60)
+                .setJobs(JobType.DIPLOMA, 40)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 15)
+                .setJobs(JobType.UNIV_SCIENCE, 5)
+                .setSite(Resource.IRON, Deposit.FieldType.MAGNETITE, 1, 3)
+                .setSince(1955)
+                .setId(109));
+        templates.add(new BuildingsTemplate("Large Magnetite Complex", BuildingType.MINING)   // 1.2 Mt of rock a month on 20 sites of one field
+                .setCashCost(846146)
+                .setConstructionPoints(423073)
+                .setConstructionMaterials(14103)
+                .setSector("Mining")
+                .makes(Good.IRON, 400000)
+                .setElectricityConsumption(52000)
+                .setWaterConsumption(7900)
+                .setConsumables(6595.7)         // 9,580 - 2,069.3 wages - 520 power - 395 water
+                .setLandSqFt(8000000)
+                .setRoadLoad(67200)
+                .setJobs(JobType.NO_DIPLOMA, 280)
+                .setJobs(JobType.DIPLOMA, 150)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 55)
+                .setJobs(JobType.UNIV_SCIENCE, 15)
+                .setSite(Resource.IRON, Deposit.FieldType.MAGNETITE, 20, 3)
+                .setSince(1955)
+                .setId(110));
 
         /* ---------------------------- EDUCATION ----------------------------
            The other half of the labour market.
