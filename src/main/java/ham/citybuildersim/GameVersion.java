@@ -5572,6 +5572,19 @@ public final class GameVersion {
      *     type still has ore, and only it may be sold.
      *   - buildings.json's readme: the deposit paragraph by type, and the
      *     version lines I3 and I4 shipped under (0.7.120, 0.7.123).
+     *   - The playtest is pt07123's to the byte through month 3,958 and moves
+     *     from 3,959 by the lorries alone (re-baselined pt07124; without
+     *     them it is pt07123's to the byte): its city's one iron field from
+     *     month 3,931 has 19 hematite sites and 37 of magnetite in fields
+     *     under twenty, so the pit and the complex never fit and the sector
+     *     sinks one Iron Mine as before. Weighed with its vans, a second
+     *     (D$174k a month on D$90.4M at month 3,959) does not clear 1.25 times
+     *     its interest (D$287k) and the plan holds it in months 3,959-3,961;
+     *     to 0.7.123, without them (D$263k on D$81.0M), it went on to
+     *     consider(), where the owners' ask put D$7.5M into the sector's
+     *     till before the bank's credit rule held the order. At the end people 658,883
+     *     (659,072), posts 393,839 (393,556), unemployment 9.6% (9.7%); every
+     *     month audited, every reload matched.
      *   - Harnesses: MaterialsCheck 15-17 (the three rows' four cases at
      *     parity; the fit on a field of nineteen and of twenty, a run's
      *     sites, magnetite never on hematite, the plan; on real fields of
