@@ -97,6 +97,51 @@ public class CarCheck {
         return n;
     }
 
+    /* =====================================================================
+       THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.116, batch I3; Jerus's
+       C, 2026-10-08: "car, van and train prices move with the steel in
+       them"). Steel went to the world's price, fabricated steel and
+       machinery fell by the steel in them (Q6b: -.665 and -.9 a tonne, at
+       both ends), and each vehicle by its fabricated steel and machinery at
+       those: a car -2.6875, a van -3.865, a wagon set -97.8. So what an
+       assembly plant makes of a vehicle over the parts in it is what it
+       was, to the cent - the vehicle at either end, its fabricated steel at
+       its floor (the world will not sell a beam) and its machinery at the
+       same end. The prices before, written down: the past is only
+       checkable if somebody writes it down (TradeCostCheck's DELIVERED).
+       ===================================================================== */
+
+    /** The prices to 0.7.115, written down: cars in and out, vans and wagon sets in; fabricated steel out; machinery in and out. */
+    static final double CARS_WAS_IN = 44, CARS_WAS_OUT = 36, VANS_WAS_IN = 72, ROLLING_WAS_IN = 2400,
+            FABRICATED_WAS = 2.21, MACHINERY_WAS_IN = 14.3, MACHINERY_WAS_OUT = 9.0;
+
+    /** What a plant makes of one vehicle over the parts in it (pure): the vehicle at `price`, its fabricated steel at `fab` and its machinery at `mach`, a vehicle's worth of each off its template. */
+    static double marginOf(BuildingsTemplate t, Good vehicle, double price, double fab, double mach) {
+        double n = t.makes(vehicle);
+        return price - t.uses(Good.FABRICATED_STEEL) / n * fab - t.uses(Good.MACHINERY) / n * mach;
+    }
+
+    /** The section's assertions for one vehicle and its plants, at the ends the world quotes (CarCheck, VanCheck and RailCheck call it). */
+    static boolean marginsHeld(BuildingManager bm, Good vehicle, double wasIn, double wasOut, java.util.List<String> lines) {
+        boolean held = true;
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            if (t.makes(vehicle) <= 0) continue;
+            double now = marginOf(t, vehicle, vehicle.worldImportPrice(), Good.FABRICATED_STEEL.worldExportPrice(),
+                    Good.MACHINERY.worldImportPrice());
+            double was = marginOf(t, vehicle, wasIn, FABRICATED_WAS, MACHINERY_WAS_IN);
+            held &= Math.abs(now - was) < 1e-5;
+            lines.add(String.format("%s %.4f (was %.4f) landed", t.getName(), now, was));
+            if (vehicle.exportable()) {
+                double nowOut = marginOf(t, vehicle, vehicle.worldExportPrice(), Good.FABRICATED_STEEL.worldExportPrice(),
+                        Good.MACHINERY.worldExportPrice());
+                double wasOutM = marginOf(t, vehicle, wasOut, FABRICATED_WAS, MACHINERY_WAS_OUT);
+                held &= Math.abs(nowOut - wasOutM) < 1e-5;
+                lines.add(String.format("%.4f (was %.4f) shipped", nowOut, wasOutM));
+            }
+        }
+        return held && !lines.isEmpty();
+    }
+
     public static void main(String[] args) {
 
         /* ================================================================
@@ -973,6 +1018,18 @@ public class CarCheck {
         report("the bus move orders no more Bus Networks than the riders would fill",
                 busMove != null && acted[0] && ordered >= 1 && ordered <= fill,
                 String.format("%d ordered, %d at most", ordered, fill));
+
+        System.out.println("\n--- and a car moved with the steel in it, its plants' margin a car to the cent (0.7.116) ---");
+        report("a car is the world's at 41.3125 in and 33.3125 out: 44 and 36 less 3.5 t of fabricated steel at .665 and 0.4 t of"
+                        + " machinery at .9", Good.CARS.worldImportPrice() == 41.3125 && Good.CARS.worldExportPrice() == 33.3125
+                        && Math.abs(CARS_WAS_IN - Good.CARS.worldImportPrice() - (3.5 * (FABRICATED_WAS - Good.FABRICATED_STEEL.worldExportPrice())
+                        + .4 * (MACHINERY_WAS_IN - Good.MACHINERY.worldImportPrice()))) < 1e-9,
+                String.format("%.4f / %.4f", Good.CARS.worldImportPrice(), Good.CARS.worldExportPrice()));
+        BuildingManager catalogue = new BuildingManager();
+        catalogue.initializeTemplates();
+        java.util.List<String> carLines = new java.util.ArrayList<>();
+        report("...so each car plant makes of a car over the parts in it what it did, landed and shipped, to the cent",
+                marginsHeld(catalogue, Good.CARS, CARS_WAS_IN, CARS_WAS_OUT, carLines), String.join("; ", carLines));
 
         System.out.println();
         if (fails == 0) {

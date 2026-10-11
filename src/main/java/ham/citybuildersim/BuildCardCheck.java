@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Mining;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -237,9 +239,10 @@ public class BuildCardCheck {
         List<String> industry = new ArrayList<>(), shops = new ArrayList<>();
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) industry.add(gr.title());
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.SHOPS, null)) shops.add(gr.title());
+        // ...the mills' and the mines' named for their sectors since 0.7.116 (batch I3, Jerus's Q2): "Steel" and "Iron" until then.
         assertTrue("Industry is nine groups by owning sector, and oil storage (0.7.85), the ports (0.7.86) and the oil at sea's"
                         + " platforms and pipelines (0.7.91): " + industry,
-                industry.equals(List.of("Food mills", "Food processing", "Steel", "Fabrication & machinery", "Iron", "Oil",
+                industry.equals(List.of("Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Oil",
                         "Oil platforms", "Oil pipelines", "Refining", "Oil storage", "Ports", "Building materials", "Builders")));
         // ...the oil at sea (0.7.91): the wells' group the Oil Well and the Platform Well, the platforms' the jacket in its wells'
         // slots, the pipelines' a kilometre of pipe - all the investors'.
@@ -619,7 +622,7 @@ public class BuildCardCheck {
         LandManager land = g.getLandManager();
 
         // No deposit: the ground's deposits taken away.
-        BuildingsTemplate mine = template(g, "Iron Mine");
+        BuildingsTemplate mine = g.getBuildingManager().getTemplate(Mining.IRON_MINE);
         int deposits = land.getIronDeposits();
         double reserve = land.getIronReserveTonnes();
         land.restoreIron(0, reserve);
@@ -716,7 +719,7 @@ public class BuildCardCheck {
         out.println("\n--- 7. the verdict: in buildStack()'s order, and buildStack()'s own answer ---");
         LandManager land = g.getLandManager();
 
-        BuildingsTemplate mine = template(g, "Iron Mine");
+        BuildingsTemplate mine = g.getBuildingManager().getTemplate(Mining.IRON_MINE);
         int deposits = land.getIronDeposits();
         double reserve = land.getIronReserveTonnes();
         land.restoreIron(0, reserve);
@@ -920,7 +923,7 @@ public class BuildCardCheck {
         BuildingManager bm = g.getBuildingManager();
         LandManager land = g.getLandManager();
         BuildingsTemplate house = template(g, "House"), road = template(g, "Paved Road"), water = template(g, "Water Treatment Plant");
-        BuildingsTemplate mine = template(g, "Iron Mine"), eso = template(g, "Engineering Services Office");
+        BuildingsTemplate mine = g.getBuildingManager().getTemplate(Mining.IRON_MINE), eso = template(g, "Engineering Services Office");
         Map<BuildingsTemplate, Integer> three = run(house, 3, road, 2, water, 1);
         double cash = g.getCash();
 

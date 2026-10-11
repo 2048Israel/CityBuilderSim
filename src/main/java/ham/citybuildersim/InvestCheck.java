@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Mining;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -856,7 +858,7 @@ public class InvestCheck {
         dbm.initializeTemplates();
         EconomyManager dem = new EconomyManager(dbm);
         BusinessInvestment distressed = new BusinessInvestment(dbm, dem);
-        BuildingsTemplate mine = dbm.getTemplateByName("Iron Mine");
+        BuildingsTemplate mine = dbm.getTemplate(Mining.IRON_MINE);
         BuildingsTemplate bankBranch = dbm.getTemplateByName("Commercial Bank");
         BuildingsTemplate shop = dbm.getTemplateByName("Convenience Store");
         dbm.addStack(mine, 8, true);

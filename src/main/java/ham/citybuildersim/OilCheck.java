@@ -1,5 +1,6 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Mining;
 import ham.citybuildersim.sectors.Oil;
 import ham.citybuildersim.sectors.Rail;
 import ham.citybuildersim.sectors.RefineryFlow;
@@ -89,12 +90,16 @@ import java.nio.file.Path;
  *      from before them derives what that month struck - every litre
  *      imported.
  *
- *  10. A SAVE FROM BEFORE 0.7.76 HAS ITS FUEL SPLIT (FuelSplit, spec-oil 3):
- *      every FUEL figure into PETROL and DIESEL by the drivers' share of the
+ *  10. A SAVE FROM BEFORE 0.7.76 IS REFUSED SINCE 0.7.116 (the floor,
+ *      GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by batch I3): the
+ *      format-33 save, its FUEL in the refiners' tanks, its market and both
+ *      sides' books, is turned away in P7's words, its file untouched. To
+ *      0.7.115 it loaded with its FUEL split (FuelSplit, spec-oil 3): every
+ *      FUEL figure into PETROL and DIESEL by the drivers' share of the
  *      month's litres, each pair summing to the figure to the bit, the
- *      railway's own all diesel, no money moving; the audit closes for a
- *      year after; and saved again, in this build's format, it loads back to
- *      the cent.
+ *      railway's own all diesel, no money moving; the audit closing for a
+ *      year after; and saved again, in this build's format, loading back to
+ *      the cent. FuelSplit stays for the day old saves load again.
  *
  *  11. A REFINERY THAT CLOSES SHIPS WHAT ITS TANKS HELD (Refining.
  *      produceStock(), star O1): nothing written off.
@@ -292,7 +297,7 @@ public class OilCheck {
         whenARefineryIsBuilt();
         acrossASave(oilTown);
         Game back = theSplit(oilTown);
-        aRefineryCloses(back);
+        aRefineryCloses(back);   // the town itself since 0.7.116: its format-33 twin is refused
         crudeByGrade();
         phaseOneBuyers();
         theForecourts();
@@ -1062,7 +1067,7 @@ public class OilCheck {
                 well != null && well.getId() == 74 && well.getCategory() == BuildingType.MINING
                         && Sectors.OIL.equals(well.getSector()) && well.makes(crude) == 415);
         assertTrue("...and stands on an oil site: Game.siteOf() is oil, an Iron Mine's iron",
-                Game.siteOf(well) == Resource.OIL && Game.siteOf(bm.getTemplateByName("Iron Mine")) == Resource.IRON
+                Game.siteOf(well) == Resource.OIL && Game.siteOf(bm.getTemplate(Mining.IRON_MINE)) == Resource.IRON
                         && Game.siteOf(refinery) == null);
         assertTrue("the Oil Refinery: id 75, HEAVY_INDUSTRY, Refining's, a crude unit of 8,300 t, its products the slate of"
                         + " them (its template makes nothing)",
@@ -1086,7 +1091,7 @@ public class OilCheck {
     static void onlyOwnedOil() {
         out.println("\n--- 2. a well lifts only the oil the city owns ---");
         Game g = town("oilcheck-owned", 300, 0);
-        BuildingsTemplate well = template(g, "Oil Well"), mine = template(g, "Iron Mine");
+        BuildingsTemplate well = template(g, "Oil Well"), mine = g.getBuildingManager().getTemplate(Mining.IRON_MINE);
         LandManager land = g.getLandManager();
         assertTrue("fixture: a new city owns no oil", land.getOilSites() == 0);
         Game.BuildResult refused = quietlyGet(() -> g.buildStack(well, 1, false));
@@ -1687,14 +1692,15 @@ public class OilCheck {
      * A FORMAT-33 SAVE (0.7.75's shape), made from the oil town by folding the
      * nine products back into FUEL - its market (PETROL's price, the nine's
      * strike and history summed), every sector's maps, and the goods held
-     * four wide - loads with each FUEL figure split into petrol and diesel
-     * by the drivers' share of the month's litres, the pairs summing to the
-     * bit, the railway's all diesel; nothing a money figure; the audit closes
-     * for a year; saved again, in this build's format, it loads back to the
-     * cent.
+     * four wide - is refused since 0.7.116, below the floor, its file
+     * untouched; the town is handed on. Until then it loaded with each FUEL
+     * figure split into petrol and diesel by the drivers' share of the
+     * month's litres, the pairs summing to the bit, the railway's all diesel;
+     * nothing a money figure; the audit closing for a year; saved again, in
+     * this build's format, loading back to the cent.
      */
     static Game theSplit(Game g) throws Exception {
-        out.println("\n--- 10. a save from before 0.7.76 has its FUEL split into petrol and diesel, no money moving ---");
+        out.println("\n--- 10. a save from before 0.7.76 is refused since 0.7.116 (to 0.7.115 its FUEL was split into petrol and diesel) ---");
         quietly(() -> g.simulateMonths(1));
         GameFiles files = FILES.get(g);
         quietly(() -> g.saveGame(10, "oil"));
@@ -1764,90 +1770,23 @@ public class OilCheck {
                 String.format("%,.0f L in the tanks; the drivers %,.0f L, the railway %,.0f: petrol %.4f", fuelStock, drivers,
                         railway, p));
 
+        byte[] before = Files.readAllBytes(file);
         Game twin = new Game(files);
         quietly(() -> twin.loadGameSave(10));
-        // ...its refinery held, as the town's was (section 4): a hold is the fixture's, not the save's.
-        twin.getBusinessInvestment().holdSector(Sectors.REFINING);
-        Refining refiners = twin.getSectors().refining();
-        double petrolStock = refiners.getStock(Good.PETROL), dieselStock = refiners.getStock(Good.DIESEL);
-        assertTrue("the refiners' FUEL is petrol at the drivers' share of the month's litres (to its ulp) and diesel the rest:"
-                        + " the two sum to it to the bit",
-                Math.abs(petrolStock - fuelStock * p) <= Math.ulp(fuelStock * p) && petrolStock + dieselStock == fuelStock);
-        Sector.Split sold = refiners.statement().sold.get(Good.PETROL), soldD = refiners.statement().sold.get(Good.DIESEL);
-        Sector.Split bought = twin.getSectors().rail().statement().bought.get(Good.DIESEL);
-        assertTrue("...the month's sales, home and abroad, split the same way and summing to the bit",
-                sold != null && soldD != null
-                        && sold.atHome + soldD.atHome == money(refJson, "statement", "sold", "atHome")
-                        && sold.abroad + soldD.abroad == money(refJson, "statement", "sold", "abroad")
-                        && Math.abs(sold.atHome - money(refJson, "statement", "sold", "atHome") * p) <= Math.ulp(sold.atHome));
-        assertTrue("...and the railway's purchases all diesel: it burns nothing else",
-                bought != null && bought.atHome == money(railJson, "statement", "bought", "atHome")
-                        && bought.abroad == money(railJson, "statement", "bought", "abroad")
-                        && !twin.getSectors().rail().statement().bought.containsKey(Good.PETROL));
-        GoodsMarket mp = twin.getMarkets().get(Good.PETROL), md = twin.getMarkets().get(Good.DIESEL);
-        double[] tp = mp.getTakenHistory(), td = md.getTakenHistory();
-        boolean history = tp.length == taken.length && td.length == taken.length;
-        for (int i = 0; history && i < taken.length; i++) {
-            history = tp[i] + td[i] == taken[i] && Math.abs(tp[i] - taken[i] * p) <= Math.ulp(taken[i] * p);
-        }
-        boolean prices = mp.getLocalPrice() == fuel.get("price").getAsDouble() && md.getLocalPrice() == mp.getLocalPrice();
-        boolean strike = mp.getDemand() + md.getDemand() == demand && mp.getSupplyStock() + md.getSupplyStock() == stock
-                && mp.getSupplyFlow() + md.getSupplyFlow() == flow;
-        report("...the market's price kept for both, its strike and every month of its history split, summing to the bit",
-                prices && strike && history, String.format("price %s, strike %s, history %s (%d months)", prices, strike, history,
-                        taken.length));
-        double[] last = twin.getEconomyManager().getNationalAccounts().getLastHeldUnits();
-        boolean zeros = true;
-        for (int i = 5; i < last.length; i++) zeros &= last[i] == 0;
-        assertTrue("...and the goods held as wide as HELD: FUEL's slot petrol's and diesel's, summing to the bit, the rest"
-                        + " (the other seven, and since 0.7.85 crude) at a known zero",
-                last.length == NationalAccounts.HELD.length && last[3] + last[4] == held
-                        && Math.abs(last[3] - held * p) <= Math.ulp(held * p) && zeros);
-        double price = fuel.get("price").getAsDouble();
-        close("no money moved: the twin's cash is the save's, to the cent", twin.getCash(), o.get("cash").getAsDouble(), .01);
-        close("...and its refiners' petrol and diesel are worth what their FUEL was, at its price, to the cent",
-                (petrolStock + dieselStock) * price, fuelStock * price, .01);
-
-        // A year on: the audit closes every month.
-        double past = 0;
-        for (Good p2 : Refining.BOUGHT_HERE) past += Math.max(0, refiners.getStock(p2) - refiners.getStockCapacity(p2));
-        double worst = 0, shipped = 0, wrote = 0;
-        boolean fits = true;
-        for (int m = 0; m < 12; m++) {
-            quietly(() -> twin.simulateMonths(1));
-            worst = Math.max(worst, twin.getLastMoneyAudit().relative());
-            for (Good p2 : refiners.goodsMade()) {
-                Sector.Output row = refiners.outputRow(p2);
-                if (row == null) continue;
-                wrote += row.writtenOff;
-                if (m == 0 && (p2 == Good.PETROL || p2 == Good.DIESEL)) shipped += row.exported;
-                fits &= refiners.getStock(p2) <= refiners.getStockCapacity(p2);
-            }
-        }
-        report("the converted city's audit closes for a year (relative to what moved)", worst < 1e-10,
-                String.format("worst %.2e", worst));
-        report("...its tanks shared as its run is (2.3): what the split put past petrol's and diesel's shares leaves the"
-                        + " first month - sold at home, the rest shipped - and nothing is written off",
-                past > 0 && fits && wrote == 0,
-                String.format("%,.0f L past the shares, %,.0f shipped, %,.0f written off", past, shipped, wrote));
-
-        // Saved again, in this build's format (34 at 0.7.76), and loaded back.
-        quietly(() -> twin.saveGame(10, "oil"));
-        String json = Files.readString(file);
-        com.google.gson.JsonObject again = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
-        Game back = new Game(files);
-        quietly(() -> back.loadGameSave(10));
-        back.getBusinessInvestment().holdSector(Sectors.REFINING);
-        boolean same = back.getCash() == twin.getCash()
-                && back.getSectors().refining().getStock(Good.PETROL) == refiners.getStock(Good.PETROL)
-                && back.getSectors().refining().getStock(Good.DIESEL) == refiners.getStock(Good.DIESEL)
-                && back.getMarkets().get(Good.DIESEL).getDemand() == twin.getMarkets().get(Good.DIESEL).getDemand();
-        report("saved as format " + GameVersion.SAVE_FORMAT + " (no FUEL in it), it loads back the same, cash and tanks to the bit",
-                again.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && !json.contains("\"" + FuelSplit.FUEL + "\"") && same,
-                String.format("cash %,.2f / %,.2f", back.getCash(), twin.getCash()));
-        quietly(() -> { twin.simulateMonths(1); back.simulateMonths(1); });
-        close("...and a month on, the same to the cent", back.getCash(), twin.getCash(), .01);
-        return back;
+        /*
+         * REFUSED SINCE 0.7.116 (batch I3): format 33 is below the floor
+         * (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
+         * saves need not load until the game is published), so the load turns
+         * it away and FuelSplit.convert() is not reached. Until then the twin
+         * loaded with its refiners' FUEL petrol at the drivers' share and
+         * diesel the rest, to the bit; its month's sales and the railway's
+         * purchases split the same way; the market's price, strike and history
+         * split; the goods held as wide as HELD; no money moving; its audit
+         * closing for a year; and saved again and loaded, the same to the cent.
+         */
+        assertTrue("the format-33 save is refused since 0.7.116, below the floor: in P7's words, nothing of it applied, its file as it was",
+                SaveFileCheck.refusedAtTheFloor(files, 10, twin, before));
+        return g;
     }
 
     /* ============================ 11. A REFINERY THAT CLOSES ============================ */

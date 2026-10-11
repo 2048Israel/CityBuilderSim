@@ -214,13 +214,16 @@ public final class BuildCard {
        has nine groups and Shops two, and the bars and tags compare within a
        group: a steel mill against a steel mill, not against a bakery. The
        names are the design note's, and since 0.7.62 the wells' and the
-       refinery's ("Oil", "Refining") after the mines'.
+       refinery's ("Oil", "Refining") after the mines'; since 0.7.116 (batch
+       I3, Jerus's Q2) the mills' and the mines' are their sectors' new
+       labels, "Iron & Steel" and "Iron Mining" ("Steel" and "Iron" until
+       then).
        ===================================================================== */
 
     /** The market groups, in the order a page lays them out. */
     static final String[] GROUP_ORDER = {
             "Homes", "Groceries", "Filling stations", "The bank's branches",
-            "Food mills", "Food processing", "Steel", "Fabrication & machinery", "Iron", "Oil", "Oil platforms",
+            "Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Oil", "Oil platforms",
             "Oil pipelines", "Refining",
             "Oil storage", "Ports", "Building materials", "Builders",
             "Offices", "Farms", "Rail", "Vehicles", "Luxury shops", "Restaurants" };
@@ -253,9 +256,9 @@ public final class BuildCard {
                 switch (t.getSector()) {
                     case Sectors.INDUSTRY:        return "Food mills";
                     case Sectors.FOOD_PROCESSING: return "Food processing";
-                    case Sectors.HEAVY_INDUSTRY:  return "Steel";
+                    case Sectors.HEAVY_INDUSTRY:  return "Iron & Steel";
                     case Sectors.MANUFACTURING:   return "Fabrication & machinery";
-                    case Sectors.MINING:          return "Iron";
+                    case Sectors.MINING:          return "Iron Mining";
                     case Sectors.OIL:             return "Oil";
                     case Sectors.REFINING:        return "Refining";
                     case Sectors.MATERIALS:       return "Building materials";

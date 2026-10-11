@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -223,7 +225,7 @@ public class LabourCheck {
             city.buildStack(t(city, "Low-Rise Apartments"), 60, true);
             city.buildStack(t(city, "General Hospital"), 2, true);
             city.buildStack(t(city, "Regional Medical Centre"), 1, true);
-            city.buildStack(t(city, "Steel Mini-Mill"), 4, true);
+            city.buildStack(city.getBuildingManager().getTemplate(HeavyIndustry.MINI_MILL), 4, true);
             city.buildStack(t(city, "Small Grocery Store"), 8, true);
             city.buildStack(t(city, "Coal Power Plant"), 2, true);
             city.buildStack(t(city, "Water Treatment Plant"), 2, true);
@@ -988,7 +990,7 @@ public class LabourCheck {
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000);
             g.buildStack(t(g, "Low-Rise Apartments"), 60, true);
             g.buildStack(t(g, "General Hospital"), 2, true);
-            g.buildStack(t(g, "Steel Mini-Mill"), 4, true);
+            g.buildStack(g.getBuildingManager().getTemplate(HeavyIndustry.MINI_MILL), 4, true);
             g.buildStack(t(g, "Small Grocery Store"), 8, true);
             g.buildStack(t(g, "Construction Depot"), 6, true);
             g.buildStack(t(g, "Coal Power Plant"), 2, true);

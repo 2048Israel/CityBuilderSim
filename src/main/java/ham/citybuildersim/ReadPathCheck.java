@@ -1,5 +1,8 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+import ham.citybuildersim.sectors.Mining;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -1358,8 +1361,8 @@ public class ReadPathCheck {
             b.addStack(template(g, "Coal Power Plant"), 1, true);
             b.addStack(template(g, "Water Treatment Plant"), 1, true);
             b.addStack(template(g, "Paved Road"), 3, true);
-            b.addStack(template(g, "Steel Foundry"), 1, true);
-            b.addStack(template(g, "Iron Mine"), 1, true);
+            b.addStack(b.getTemplate(HeavyIndustry.ARC_FURNACE), 1, true);
+            b.addStack(b.getTemplate(Mining.IRON_MINE), 1, true);
 
             // ...and a landlord's insured mortgage on the books (0.7.11), by the
             // fixture's hand - a claim, no money moved - so the reads below take
@@ -1396,6 +1399,27 @@ public class ReadPathCheck {
              * it is month 74, past the year, so the bound is five years.
              */
             for (int more = 0; more < 60 && !(g.fundBondsValue() > 0); more++) g.simulateMonths(1);
+            /*
+             * ...AND IF NO HOLDER HAS SOLD IT ONE BY THEN, ONE ABROAD DOES, AT
+             * THE BOND'S VALUE (0.7.116, batch I3). In 0.7.116's city - its
+             * furnace on scrap at steel's world price, its mine bigger and
+             * dearer - none had by the five years' end (month 87), nor by
+             * month 147. So the fixture causes it as FundLedgerCheck 3 does,
+             * between months: the world sells half its holding of the bond it
+             * holds most of on its book, and the fund's hand buys it.
+             */
+            if (!(g.fundBondsValue() > 0)) {
+                BondMarket bonds = g.getBondMarket();
+                CorporateBond most = null;
+                for (CorporateBond bond : bonds.getBonds()) if (most == null || bond.world() > most.world()) most = bond;
+                if (most != null && most.world() > 0) {
+                    double p = bonds.modelPrice(most, g.getMonth()), q = most.world() / 2;
+                    // ...its book cleared of the month's resting orders first, as SaveFileCheck clears a share's, so the two meet.
+                    if (bonds.bookOf(most) != null) bonds.bookOf(most).withdrawAll();
+                    bonds.tradeForCheck(most, BondMarket.WORLD, OrderBook.Side.SELL, p, q);
+                    bonds.tradeForCheck(most, BondMarket.FUND_HAND, OrderBook.Side.BUY, p, q);
+                }
+            }
         } finally {
             System.setOut(out);
         }
@@ -1403,6 +1427,7 @@ public class ReadPathCheck {
                 !g.getBondMarket().getBonds().isEmpty() && restingOrders(g.getBondMarket()) > 0);
         assertTrue("fixture: the city's fund holds shares and bonds",
                 g.fundMarketSharesValue() > 0 && g.fundBondsValue() > 0);
+        out.printf("   the fund: shares %,.2fk, bonds %,.2fk at month %d%n", g.fundMarketSharesValue(), g.fundBondsValue(), g.getMonth());
 
         out.printf("   month %d, %d people, $%,.0fk cash, %d stacks%n",
                 g.getMonth(), g.getPopulationManager().getPopulation(),

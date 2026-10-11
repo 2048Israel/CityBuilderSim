@@ -1,21 +1,29 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+import ham.citybuildersim.sectors.Mining;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Ore, from the band it clears in to whether it makes steel worth building.
+ * Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore.
  *
- * The point of this feature is one number: a Steel Foundry earns about $9,650 a
- * month on a $3.6M asset, which is a quarter of a percent and the reason nobody
- * builds one. If local ore does not move that number substantially, everything
- * else here is decoration.
- *
- * So the last section measures it directly - the same foundry, the same city,
- * with and without a mine - rather than asserting that the parts are wired
- * together and hoping.
+ * Until 0.7.115 the point of this harness was one number: what a Steel
+ * Foundry earned on imported scrap against local ore - IRON was both, its
+ * import price the mills' scrap and its export price the mines' ore - and
+ * whether a mine next door made steel "a different business, not a better
+ * month". Since 0.7.116 (batch I3; Jerus's Q4, 2026-10-08: "split") ore and
+ * scrap are two goods, the foundry is the Electric Arc Furnace on SCRAP, and
+ * steel is at the world's price, .650 / .470 (Q6). So the number is the
+ * furnace's margin on its sales at home - steel to the city's fabricators at
+ * what imported steel would cost - on imported scrap against the city's own
+ * (the study's 2.5: about 7% and 25% for the furnace, 13% and 31% for the
+ * Mini-Mill; the spec's 4: 5-15% and 20-35% of its sales). Section 3
+ * measures both furnaces directly, on a month walked by hand; section 4 asks
+ * whether a mine pays with every tonne shipped at the floor.
  */
 public class MiningCheck {
 
@@ -80,7 +88,7 @@ public class MiningCheck {
             LandParcel target = ore ? game.getLandManager().getMarket().richest(Resource.IRON)
                     : game.getLandManager().getMarket().bestValue();
             if (ore && target == null) target = towardIron(game);
-            // The ore is priced in the ground at 1/350 of its world price. The
+            // The ore is priced in the ground at US$0.40 a tonne (1/212.5 of its world price since 0.7.116, 1/350 until then). The
             // world's fields come whole - the field the default world put by
             // its founding site was 35 sites, about US$180M, and IRON_SEED's
             // is 36 (0.7.99), more than a new city's treasury (0.7.57, and
@@ -142,6 +150,12 @@ public class MiningCheck {
         return best;
     }
 
+    /** The share of its sales an arc furnace keeps on imported scrap, selling its steel at home, at least and at most (runs/spec-materials.md 4, from the study's 2.5: the furnace about 7%, the Mini-Mill 13%). */
+    static final double IMPORTED_SCRAP_LOW = .05, IMPORTED_SCRAP_HIGH = .15;
+
+    /** ...and on the city's own scrap, at its export price (the study's 25% and 31%). */
+    static final double LOCAL_SCRAP_LOW = .20, LOCAL_SCRAP_HIGH = .35;
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -152,11 +166,12 @@ public class MiningCheck {
 
         // The ore market is one GoodsMarket now (2026-09-11, the sector
         // template): the same band IronMarket struck, generalised to every
-        // good. The ceiling is the import price - what a mill pays for
-        // scrap - and the floor is the export price a mine gets shipping out.
+        // good. The ceiling is the import price - what a tonne of ore costs
+        // landed - and the floor is the export price a mine gets shipping
+        // out. Until 0.7.116 the ceiling was the mills' scrap: IRON was both.
         GoodsMarket market = new GoodsMarket(Good.IRON);
 
-        assertTrue("the mills' scrap price is the ceiling", market.ceiling() > 0);
+        assertTrue("a landed tonne of ore is the ceiling", market.ceiling() > 0);
         assertTrue("the mines' export price is the floor",
                 market.floor() > 0 && market.floor() < market.ceiling());
         close("...and they are the world's two prices for ore",
@@ -165,14 +180,14 @@ public class MiningCheck {
         out.printf("   the band runs $%.0f to $%.0f%n",
                 market.floor() * 1000, market.ceiling() * 1000);
 
-        // Nobody mining: the mills are where they always were, buying scrap.
+        // Nobody mining: whoever wants ore lands it.
         market.strike(0, 0, 5000);
-        close("no mines - price sits at the scrap ceiling",
+        close("no mines - price sits at the import ceiling",
                 market.getLocalPrice(), market.ceiling());
 
         // Mining hard, nobody buying: the mines export, and will not go below it.
         market.strike(5000, 0, 0);
-        close("no mills - price sits at the export floor",
+        close("no buyers - price sits at the export floor",
                 market.getLocalPrice(), market.floor());
 
         // The one that caught a real design error: demand/supply clamped to 1
@@ -218,6 +233,24 @@ public class MiningCheck {
         close("a warehouse counts as a sixth of itself a month",
                 market.getLocalPrice(), (market.ceiling() + market.floor()) / 2);
 
+        /*
+         * ...AND SCRAP IS ITS OWN GOOD SINCE 0.7.116 (batch I3; Jerus's Q4,
+         * "split"): IRON's old import price moved to it, and the arc furnaces
+         * buy it. Ore and scrap are different things at different prices -
+         * ore at about a quarter of scrap's - and a furnace that took one for
+         * the other was the old row's whole confusion.
+         */
+        assertTrue("scrap is a good of its own: what IRON's import price was (.41), a flow good the world sells and buys",
+                Good.SCRAP.worldImportPrice() == .41 && Good.SCRAP.importable() && Good.SCRAP.exportable()
+                        && !Good.SCRAP.stockable() && Good.SCRAP.traded());
+        BuildingManager catalogue = new BuildingManager();
+        catalogue.initializeTemplates();
+        assertTrue("...dearer than ore at both ends, and the furnaces' feed, not the mines' output",
+                Good.SCRAP.worldExportPrice() > Good.IRON.worldImportPrice()
+                        && catalogue.getTemplate(HeavyIndustry.ARC_FURNACE).uses(Good.SCRAP) > 0
+                        && catalogue.getTemplate(HeavyIndustry.MINI_MILL).uses(Good.SCRAP) > 0
+                        && catalogue.getTemplate(Mining.IRON_MINE).makes(Good.SCRAP) == 0);
+
         /* ================= 2. a mine needs ground with ore in it ================= */
         out.println("\n--- a mine needs a deposit ---");
 
@@ -230,7 +263,7 @@ public class MiningCheck {
         city.run();
         System.setOut(out);
 
-        BuildingsTemplate mine = template(city, "Iron Mine");
+        BuildingsTemplate mine = city.getBuildingManager().getTemplate(Mining.IRON_MINE);
 
         /*
          * The band's two ends are WORLD PRICES, in the city's money, and
@@ -245,7 +278,7 @@ public class MiningCheck {
         GoodsMarket live = city.getMarkets().get(Good.IRON);
         close("the floor IS the world's price for the city's ore",
                 live.floor(), Good.IRON.worldExportPrice() * live.getExchangeRate());
-        close("the ceiling IS what the mills pay for scrap",
+        close("the ceiling IS what a landed tonne of ore costs",
                 live.ceiling(), Good.IRON.worldImportPrice() * live.getExchangeRate());
         assertTrue("...and the mine's own template no longer carries a price of its own",
                 mine.makes(Good.IRON) > 0);
@@ -272,6 +305,10 @@ public class MiningCheck {
            with it; they were jobs the ore price was paying for and the ore
            price could not pay for.
 
+           (SINCE 0.7.116 the same sixty lift 20,000 t a month, 4,000 t a post a
+           year - the small end of a real mine - for ore at its world price, $85
+           out and $115 in: Jerus's Q5.)
+
            So the assertion is now that a mine is a SERIOUS employer, not the
            largest one. What it is measured against is deliberately the smallest
            thing that makes the claim mean anything - a Small Grocery Store -
@@ -284,6 +321,23 @@ public class MiningCheck {
                 mine.getTotalJobs(),
                 template(city, "Small Grocery Store").getTotalJobs(),
                 template(city, "Bakery").getTotalJobs());
+        /*
+         * EIGHT TIMES THE ORE ON THE SAME SIXTY POSTS (0.7.116, batch I3; the
+         * study's 2.4): 20,000 t a month on 60,000 L of diesel, 600 kW and 20
+         * units of water, for its old cost's cash, points and material x 4.632.
+         */
+        assertTrue("the Iron Mine lifts 20,000 t a month with the same 60 posts (45/12/3), on 60,000 L of diesel, 600 kW and 20 units"
+                        + " of water", mine.makes(Good.IRON) == 20_000 && mine.getTotalJobs() == 60
+                        && mine.getJobs(JobType.NO_DIPLOMA) == 45 && mine.getJobs(JobType.DIPLOMA) == 12
+                        && mine.getJobs(JobType.COLLEGE_ENGINEERING) == 3 && mine.uses(Good.DIESEL) == 60_000
+                        && mine.getElectricityConsumption() == 600 && mine.getWaterConsumption() == 20);
+        double allIn = mine.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * mine.getConstructionMaterials();
+        report("...for D$45M all in: its cash, points and material each x 4.632 (7,286, 1,600 and 135 until 0.7.116)",
+                mine.getCashCost() == Math.round(7286 * 4.632) && mine.getConstructionPoints() == Math.round(1600 * 4.632)
+                        && mine.getConstructionMaterials() == Math.round(135 * 4.632) && Math.abs(allIn - 45_000) < 10,
+                String.format("D$%,.0fk", allIn));
+        assertTrue("...carrying the old one's road load a tonne: 420 for 2,500 t, 3,360 for 20,000",
+                mine.getRoadLoad() * 2_500 == 420 * mine.makes(Good.IRON));
 
         System.setOut(quiet);
         Game.BuildResult refused = city.buildStack(mine, 1, false);
@@ -301,6 +355,8 @@ public class MiningCheck {
         assertTrue("buying a parcel with iron gives the city a deposit",
                 city.getLandManager().getIronDeposits() > 0);
 
+        // A D$45M mine is more than a young city's treasury once it has bought its field: the fixture is given the price, so it is the deposit that is tested.
+        city.setCashForTest(city.getCash() + 2 * allIn);
         System.setOut(quiet);
         Game.BuildResult allowed = city.buildStack(mine, 1, false);
         System.setOut(out);
@@ -318,73 +374,58 @@ public class MiningCheck {
         assertTrue("but each site supports only one mine: as many more as the sites left, and not one more",
                 city.minesCommitted() == 1 && city.hasDepositFor(mine, sites - 1) && !city.hasDepositFor(mine, sites));
 
-        /* ================= 3. does it actually pay? ================= */
-        out.println("\n--- and now the only question that matters ---");
+        /* ================= 3. what an arc furnace makes of scrap ================= */
+        out.println("\n--- and now the only question that matters: an arc furnace's margin, on imported scrap and on the city's own ---");
 
         /*
-         * MEASURED AS A MARGIN, NOT AS A DOLLAR FIGURE
+         * MEASURED AS A MARGIN, NOT AS A DOLLAR FIGURE, and the design sentence
+         * moved with steel's price (0.7.116, batch I3).
          *
-         * This section used to assert "withMine > 35" and "withMine < 200",
-         * which are not statements about the design, they are yesterday's
-         * numbers written down. The design says: steel is barely worth building
-         * on imported scrap, and properly worth building on local ore. That is a
-         * margin, and a margin survives rebalancing.
+         * To 0.7.115 this section ran two cities for three years - a foundry on
+         * imported scrap, and the same foundry with a mine next door - and
+         * asserted 20-36% of its sales on scrap and 48-62% on local ore: "a
+         * different business, not a better month". Both halves of that are
+         * gone. A furnace melts scrap, not ore; and at steel's world price
+         * (.650 landed, .470 shipped) a furnace on imported scrap barely pays
+         * selling at home and loses money exporting, which is what a real arc
+         * furnace in a scrap-poor town does. What still makes it a business is
+         * the city's own scrap at its export price: about 7% of its sales on
+         * imported scrap and 25% on the city's own for the furnace, 13% and
+         * 31% for the Mini-Mill (the study's 2.5).
+         *
+         * WALKED BY HAND, as section 4 walks a mine: one furnace standing, a
+         * market at parity, the game's founding wages and tariffs; its steel
+         * sold to the city's fabricators at the landed price (the STEEL
+         * market struck with buyers and no mill, at its ceiling), its scrap
+         * bought from the world at the SCRAP ceiling or from the city at its
+         * floor (the market struck with sellers and no furnace: the export
+         * price, the study's "valued at its export price"). Nothing else in a
+         * city moves the number; there is no city.
          */
-        double[] without = foundryIncome(files, root, false);
-        double[] with = foundryIncome(files, root, true);
-
-        double marginWithout = without[1] > 0 ? without[0] / without[1] * 100 : 0;
-        double marginWith = with[1] > 0 ? with[0] / with[1] * 100 : 0;
-
-        out.printf("   importing scrap at $%3.0f/t:  $%,9.2fk on $%,.0fk  =  %5.1f%%%n",
-                without[2] * 1000, without[0], without[1], marginWithout);
-        out.printf("   buying local ore at $%3.0f/t: $%,9.2fk on $%,.0fk  =  %5.1f%%%n",
-                with[2] * 1000, with[0], with[1], marginWith);
-        out.printf("   steel  $%.0f/t vs $%.0f/t   fabricators %.0f / %.0f   mills %.0f / %.0f%n",
-                without[3] * 1000, with[3] * 1000, without[4], with[4], without[5], with[5]);
-
-        /* ===================================================================
-           "BARELY BREAKS EVEN" WAS A CONSEQUENCE OF A FAKE STEEL PRICE.
-
-           This asserted a margin between -2% and 4% on imported scrap, and the
-           design sentence behind it was that steel is only just worth making
-           without a mine next door. That sentence was true, but it was true
-           because the game sold steel at $500 a tonne and bought scrap at $400
-           - a $100 conversion margin against a real one of $874 (US hot-rolled
-           band $1,284, shredded scrap $410, SteelBenchmarker 26 Aug 2026).
-
-           Stage two priced both ends for real. Steel is now scrap plus HALF the
-           real conversion margin, which is the discount IronMarket's own note
-           always asked for - "a small distant producer is a price taker at both
-           ends" - and at that price a mill with a real crew makes about 28% on
-           imported scrap. That is what an electric-arc mill does. A mill that
-           only just breaks even on its main input was never realistic; it was
-           the price being wrong in the mill's favour twice over.
-
-           WHAT THE SECTION IS REALLY FOR SURVIVES INTACT, and it is the next
-           assertion rather than this one: local ore has to be a DIFFERENT
-           BUSINESS, not a better month. That gap is now 28% against 55%, which
-           is wider than it has ever been, so the mine is worth sinking for
-           exactly the reason it always was.
-           =================================================================== */
-        assertTrue("a foundry makes an electric-arc mill's margin on scrap",
-                marginWithout > 20 && marginWithout < 36);
-        assertTrue("...and it is paying the scrap ceiling to do it",
-                Math.abs(without[2] - Good.IRON.worldImportPrice()) < 1e-6);
-
-        /*
-         * REBANDED 2026-09-09, from 25-36%, and the reason is a model change
-         * rather than drift: steel is an export and exports are zero-rated, so
-         * the mills stopped remitting 15% VAT on every tonne they ship. That
-         * was $8.2M a month on Jerus's slot 7 and it was the single biggest
-         * thing making heavy industry look like a bad business. The margin the
-         * ore buys is what it always was; what changed is that the mill now
-         * keeps it. See EconomyManager.settleSalesTax().
-         */
-        assertTrue("local ore takes steel past half its revenue",
-                marginWith > 48 && marginWith < 62);
-        assertTrue("...which is a different business, not a better month",
-                marginWith - marginWithout > 20);
+        for (int id : new int[] { HeavyIndustry.ARC_FURNACE, HeavyIndustry.MINI_MILL }) {
+            double[] imported = furnaceMonth(city, id, false);
+            double[] own = furnaceMonth(city, id, true);
+            String name = city.getBuildingManager().getTemplate(id).getName();
+            BuildingsTemplate t = city.getBuildingManager().getTemplate(id);
+            double onImported = imported[0] / imported[1], onOwn = own[0] / own[1];
+            out.printf("   %-21s importing scrap at $%3.0f/t: $%,9.2fk on $%,.0fk = %5.1f%%   own scrap at $%3.0f/t: $%,9.2fk = %5.1f%%%n",
+                    name, imported[2] * 1000, imported[0], imported[1], onImported * 100,
+                    own[2] * 1000, own[0], onOwn * 100);
+            assertTrue("fixture: " + name + "'s steel sold at home at the landed price, its scrap at the world's two prices",
+                    imported[3] == Good.STEEL.worldImportPrice() && own[3] == imported[3]
+                            && imported[2] == Good.SCRAP.worldImportPrice() && own[2] == Good.SCRAP.worldExportPrice()
+                            && imported[1] == t.makes(Good.STEEL) * Good.STEEL.worldImportPrice());
+            report("on imported scrap the " + name + " keeps an arc furnace's thin margin: "
+                            + Math.round(IMPORTED_SCRAP_LOW * 100) + "-" + Math.round(IMPORTED_SCRAP_HIGH * 100) + "% of its sales",
+                    onImported > IMPORTED_SCRAP_LOW && onImported < IMPORTED_SCRAP_HIGH,
+                    String.format("%.1f%%", onImported * 100));
+            report("...and on the city's own scrap a living one: " + Math.round(LOCAL_SCRAP_LOW * 100) + "-"
+                            + Math.round(LOCAL_SCRAP_HIGH * 100) + "%",
+                    onOwn > LOCAL_SCRAP_LOW && onOwn < LOCAL_SCRAP_HIGH, String.format("%.1f%%", onOwn * 100));
+            assertTrue("...the difference is the scrap's band and nothing else: its tonnes at the import less the export price",
+                    Math.abs((own[0] - imported[0]) - t.uses(Good.SCRAP)
+                            * (Good.SCRAP.worldImportPrice() - Good.SCRAP.worldExportPrice())) < 1e-6);
+        }
 
         /* ============ 4. and is the mine worth sinking? ============ */
         out.println("\n--- a mine has to pay even with nobody to sell to ---");
@@ -400,27 +441,35 @@ public class MiningCheck {
          *
          * So the worst case is put to the books directly: every tonne exported,
          * at the floor, with no local buyer at any price.
+         *
+         * (SINCE 0.7.116 nothing in the city buys ore - the furnaces melt
+         * scrap - so this IS the mine's month until the integrated route's
+         * pellet plants and blast furnaces come, at batch I4. It pays for its
+         * diesel and its consumables now, at the world's prices, and its crew
+         * at the game's founding wages, PayTier's - .8, 1.5 and 4.0 until
+         * then, the wages of 2026-09-09.)
          */
         // A bare mining sector off the template, with one mine standing and
         // a market to ship into. The month is walked by hand the way
         // Markets.clearMonth walks it: lift, offer, nobody buys, ship the
         // rest abroad, strike.
-        double[] rates = new double[11];
-        rates[0] = .800; rates[1] = 1.500; rates[4] = 4.000;
-        long[] crew = new long[11];
-        crew[0] = mine.getJobs(JobType.NO_DIPLOMA);
-        crew[1] = mine.getJobs(JobType.DIPLOMA);
-        crew[4] = mine.getJobs(JobType.COLLEGE_ENGINEERING);
+        double[] rates = new double[JobType.values().length];
+        long[] crew = new long[JobType.values().length];
+        for (JobType j : JobType.values()) {
+            rates[j.ordinal()] = PayTier.wageOf(j);
+            crew[j.ordinal()] = mine.getJobs(j);
+        }
 
-        double[] fullFill = new double[11];
+        double[] fullFill = new double[JobType.values().length];
         java.util.Arrays.fill(fullFill, 1.0);
 
         BuildingManager oneMine = new BuildingManager();
         oneMine.initializeTemplates();
-        oneMine.addStack(oneMine.getTemplateByName("Iron Mine"), 1, true);
+        oneMine.addStack(oneMine.getTemplate(Mining.IRON_MINE), 1, true);
         Markets bareMarkets = new Markets();
         bareMarkets.setExchangeRate(1);
         GoodsMarket ore = bareMarkets.get(Good.IRON);
+        GoodsMarket diesel = bareMarkets.get(Good.DIESEL);
         Sector worstCase = new ham.citybuildersim.sectors.Mining();
         worstCase.attach(oneMine, bareMarkets);
 
@@ -428,8 +477,8 @@ public class MiningCheck {
         double tonnes = mine.makes(Good.IRON);
         worstCase.setElectricityConsumption(mine.getElectricityConsumption());
         worstCase.setWaterConsumption(mine.getWaterConsumption());
-        worstCase.setPricePerWatt(.01);
-        worstCase.setPricePerWaterUnit(.05);
+        worstCase.setPricePerWatt(city.getEconomyManager().getPricePerWatt());
+        worstCase.setPricePerWaterUnit(city.getEconomyManager().getPricePerWaterUnit());
         worstCase.updateJobFillRate(fullFill);
         worstCase.updateWages(rates, crew);
 
@@ -437,40 +486,45 @@ public class MiningCheck {
         worstCase.produceFlow(Good.IRON);
         worstCase.offer(Good.IRON, ore.getLocalPrice());
         worstCase.shipUnsoldFlow(Good.IRON, ore);        // every tonne abroad, at the floor
+        // ...its diesel landed from the world, and its consumables bought abroad (0.7.116).
+        worstCase.bookPurchase(diesel.record(Trade.WORLD, worstCase.key(), worstCase.bid(Good.DIESEL), diesel.importPrice()));
+        worstCase.buyConsumables();
         worstCase.strike();
 
         Sector.Statement w = worstCase.statement();
         double exportOnly = w.preTaxIncome;
         double perTonne = (w.payroll + w.electricity + w.water + w.maintenance + w.inputs) / tonnes;
         close("fixture: every tonne left at the floor", w.exports, tonnes * floor);
+        close("fixture: ...its 60,000 L of diesel landed, and its consumables bought abroad at parity",
+                w.inputs, mine.uses(Good.DIESEL) * diesel.importPrice() + mine.getConsumables());
 
         out.printf("   %,.0f t/month at the $%.0f floor%n",
                 tonnes, floor * 1000);
-        out.printf("   costs $%.0f a tonne to lift, sells for $%.0f%n",
+        out.printf("   costs $%.2f a tonne to lift, sells for $%.0f%n",
                 perTonne * 1000, floor * 1000);
-        out.printf("   net $%,.2fk a month on a $%,.0fk building%n",
-                exportOnly, mine.getCashCost());
+        out.printf("   net $%,.2fk a month on a $%,.0fk building, all in%n",
+                exportOnly, allIn);
 
         assertTrue("a mine lifts ore for less than the export floor",
                 perTonne < floor);
         assertTrue("...so exporting alone is profitable, with no mill anywhere",
                 exportOnly > 0);
-        assertTrue("...comfortably, not marginally",
-                exportOnly / mine.getCashCost() > .02);
+        assertTrue("...comfortably, not marginally: over 2% of its cost all in a month (the study's 2.7%)",
+                exportOnly / allIn > .02);
 
-        // And the co-location reward: the same mine, with a buyer next door
-        // taking a foundry's month at the price the mining city traded at.
-        worstCase.bank(0);
-        worstCase.produceFlow(Good.IRON);
-        worstCase.offer(Good.IRON, with[2]);
-        worstCase.bookSale(ore.record(worstCase.key(), Sectors.HEAVY_INDUSTRY, 1320, with[2]));
-        worstCase.shipUnsoldFlow(Good.IRON, ore);
-        worstCase.strike();
-        double withBuyer = worstCase.statement().preTaxIncome;
-
-        out.printf("   with one mill next door: $%,.2fk a month%n", withBuyer);
-        assertTrue("a mill next door is worth more to a mine than exporting",
-                withBuyer > exportOnly);
+        /*
+         * AND NOTHING IN THE CITY BUYS IT, until the integrated route (batch
+         * I4). To 0.7.115 this section's last line was "a mill next door is
+         * worth more to a mine than exporting": the foundry bought IRON, ore
+         * or scrap. A furnace buys SCRAP now, so ore's co-location reward -
+         * replacing imported ore at the landed price, 4.1% a month against
+         * 2.7% (the study's case C) - waits for a works that uses ore; it is
+         * MaterialsCheck 9's case arithmetic until then.
+         */
+        boolean noOreBuyer = true;
+        for (BuildingsTemplate t : oneMine.getTemplates()) noOreBuyer &= t.uses(Good.IRON) == 0;
+        assertTrue("nothing in the catalogue uses ore until batch I4: a mine ships every tonne it lifts",
+                noOreBuyer);
 
         cleanUp(root);
 
@@ -478,212 +532,58 @@ public class MiningCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
+    static void report(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        out.printf("%-58s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
+    }
+
     /**
-     * The measurement: the same foundry, in the same city, with and without a
-     * mine feeding it.
+     * One arc furnace's month, walked by hand (section 3): one standing, a
+     * market at parity, the game's founding wages (PayTier) and the city's
+     * tariffs; its steel sold at home at the landed price, its scrap bought
+     * from the world at the SCRAP ceiling or, `ownScrap`, from the city at
+     * its floor; its consumables bought abroad.
      *
-     * BUILT INSTANTLY, ON PURPOSE
-     *
-     * Everything here goes up through addStack(..., true) rather than through
-     * the construction queue. That is not a shortcut - it is the only way to
-     * measure the thing being measured. Ordered normally, a city of 400 houses
-     * at construction capacity 100 is still building them a decade later, so
-     * both foundries would run at a fraction of capacity for want of a
-     * workforce and the figure would be about the build queue rather than about
-     * the price of ore.
-     *
-     * The two cities are otherwise identical and run the same months, so the
-     * only difference between the two numbers is where the raw material came
-     * from.
-     *
-     * @return {net income, revenue, the ore price it traded at}
+     * @return {its income before tax, its sales, what its scrap cost a tonne, what its steel fetched a tonne}
      */
-    static double[] foundryIncome(GameFiles files, Path root, boolean withMine) throws Exception {
-
-        Path dir = root.resolve(withMine ? "with-mine" : "without-mine");
-        GameFiles own = new GameFiles(dir, root.resolve("no-legacy"));
-
-        Game game = new Game(own);
-        System.setOut(quiet);
-        try {
-            game.run();
-
-            /*
-             * THE CURRENCY IS HELD STILL. This section measures what a foundry
-             * earns on imported scrap against local ore, and every world price
-             * in the game now moves with the exchange rate - so a drifting rate
-             * would have it measuring the currency instead. Caught the day the
-             * rate started moving: scrap had gone from $400 a tonne to $420 and
-             * the ceiling assertion below failed on a fixture that was right.
-             */
-            game.getForeignAccounts().pinRate(1.0);
-            /*
-             * ...AND THE WORLD'S OWN PRICES TOO, since 2026-09-07. The rate was
-             * pinned when scrap moving $400 -> $420 turned this fixture red;
-             * world inflation is a second way for the same tonne of scrap to
-             * cost something else while the harness is measuring a foundry's
-             * margin. Both pins, or neither means anything.
-             */
-            game.getWorldEconomy().pin();
-            /*
-             * ...AND THE NINTH SECTOR SITS THIS ONE OUT, since 2026-09-13, for
-             * the third time the same sentence has had to be written. Steel has
-             * a domestic buyer now, and a fabricator bidding for it takes the
-             * price off the mills' export floor - which is the whole point of
-             * that sector and is measured in its own harness. Here it is a
-             * third way for the same tonne to be worth something else while
-             * this fixture is asking what a MINE is worth to a mill. Left in,
-             * it built nine thousand tonnes of capacity in thirty-six months in
-             * both cities, took steel from $847 to $1,240, and moved the gap
-             * this section asserts on by seven points.
-             */
-            game.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
-
-            BuildingManager buildings = game.getBuildingManager();
-            LandManager land = game.getLandManager();
-
-            // Land and ore by fiat - this section is about prices, not planning.
-            /*
-             * Enough for what goes up and not much more.
-             *
-             * The first version handed the city 500 million square feet, which
-             * quietly broke the measurement: land price rises with how much the
-             * city owns, so a city 5,000 blocks wide was being quoted a hundred
-             * times the going rate, and the property tax on a mine's 400,000
-             * sq ft site swamped its whole margin. The fixture was measuring
-             * its own land grab.
-             */
-            land.setOwnedSqFt(12_000_000);
-            /*
-             * Exactly one deposit in the mining city and none in the control,
-             * so the private sector cannot quietly change the experiment.
-             *
-             * The investment engine builds mines now. Handing both cities four
-             * deposits meant the "without a mine" city grew one on its own
-             * within a few years, and the control stopped being a control. One
-             * deposit, used by the fixture's own mine, leaves nothing for
-             * anybody else to sink.
-             */
-            land.restoreIron(withMine ? 1 : 0, 20_000_000);
-
-            /*
-             * ...and enough of them to staff a bank as well.
-             *
-             * A Commercial Bank is 278 jobs, and it goes up in this city for the
-             * credit-pricing reason below. At 500 houses those jobs came out of
-             * the foundry's shift: a mill short of workers pays its whole
-             * payroll and sells a fraction of its output, which moved the margin
-             * being measured by more than a point - the same class of distortion
-             * as the roads and the power below, and fixed the same way.
-             */
-            buildings.addStack(template(game, "House"), 700, true);
-            buildings.addStack(template(game, "Convenience Store"), 8, true);
-            buildings.addStack(template(game, "Small Grocery Store"), 2, true);
-            buildings.addStack(template(game, "Construction Depot"), 4, true);
-
-            /*
-             * Powered, watered and un-jammed, and that is not padding.
-             *
-             * The first version of this fixture had none of the three, and both
-             * foundries came back losing $55k a month - because the city was at
-             * 35% road throughput and the measurement was really about traffic.
-             * A mill throttled to a third of its output still pays its full
-             * payroll, so congestion swamps anything the ore price does.
-             *
-             * Two Paved Roads against a load of about 1,960 trips, one coal
-             * plant and one water plant. All three ratios sit at 1, and what is
-             * left in the number is the price of ore.
-             *
-             * FIVE ROADS SINCE 2026-09-16, AND ONE OF THE TWO WAS ALREADY
-             * SHORT. Cars are the occasion: this city motorises to about 18%
-             * over its thirty-six months and a commuter who drives asks more of
-             * the road than one who does not, which took the effective load
-             * from 3,610 to 4,814 against a capacity of 4,000 and the ratio
-             * from 1 to 0.75. The paragraph above then stopped being true and
-             * this fixture went back to measuring traffic - exactly the failure
-             * it was written to prevent, arriving from a direction it could not
-             * have known about.
-             *
-             * THE USEFUL PART IS WHAT THE FIX REVEALED. At five roads the
-             * control city reproduces the pre-car measurement to the cent -
-             * $245.23k on $983k, the same two figures as the build before cars
-             * existed - which is how we know the premise is restored rather
-             * than bent. The MINING city does not: it comes back at $981k where
-             * it used to read $873k. A mine is several thousand tonnes of bulk
-             * a month, so the city that had one was over its free-flow point
-             * BEFORE any of this, and the harness has been quietly measuring a
-             * congested mill against an uncongested one in the very comparison
-             * it exists to make. The gap it asserts on was right anyway; it was
-             * right for one reason less than it claimed.
-             */
-            buildings.addStack(template(game, "Coal Power Plant"), 1, true);
-            buildings.addStack(template(game, "Water Treatment Plant"), 1, true);
-            buildings.addStack(template(game, "Paved Road"), 5, true);
-
-            /*
-             * ...and healthy, and with somewhere to bury its dead, for exactly
-             * the reason above.
-             *
-             * Sickness is the fourth utilisation ratio and it behaves like the
-             * other three: a mill at 82% health pays its whole payroll and sells
-             * four fifths of its output, which was worth four and a half points
-             * of margin - more than the entire question this fixture is asking.
-             * The cemetery is not decoration either: thirty-six months with
-             * nowhere to put anybody leaves enough unburied to add fifteen
-             * points to the sick rate on its own.
-             *
-             * A residual 3% remains and cannot be removed - WELL_SERVED_RATE is
-             * a floor, because people fall ill in the best-served city on earth.
-             */
-            buildings.addStack(template(game, "Walk-in Clinic"), 2, true);
-            buildings.addStack(template(game, "Memorial Cemetery"), 1, true);
-
-            /*
-             * A bank, for the same reason as the roads and the clinic.
-             *
-             * Business credit was priced off the bank's strain until 0.7.7, and
-             * a city with no branches had no lending capacity and paid the full
-             * eighteen-point premium on every dollar it borrowed - which was the
-             * intended answer to "no bank" and had nothing whatever to do with
-             * the price of ore. Left out, this fixture measured the cost of
-             * having no banking system and reported it as the foundry's margin.
-             */
-            buildings.addStack(template(game, "Commercial Bank"), 1, true);
-
-            buildings.addStack(template(game, "Steel Foundry"), 1, true);
-
-            if (withMine) {
-                buildings.addStack(template(game, "Iron Mine"), 1, true);
-            }
-
-            game.simulateMonths(36);
-
-            Sector mills = game.getSectors().heavyIndustry();
-
-            /*
-             * Per foundry, counted off what is STANDING.
-             *
-             * The investment engine builds foundries of its own now that steel
-             * pays, so a fixture that puts up one mill can finish with four -
-             * and dividing by the one it asked for reported a single foundry
-             * earning more than its entire revenue.
-             */
-            int standing = Math.max(1, game.getBuildingManager()
-                    .getQuantity(template(game, "Steel Foundry").getId()));
-
-            return new double[]{
-                mills.statement().preTaxIncome / standing,
-                mills.statement().revenue / standing,
-                game.getMarkets().get(Good.IRON).getLocalPrice(),
-                game.getMarkets().get(Good.STEEL).getLocalPrice(),
-                game.getSectors().manufacturing().getCapacity(Good.FABRICATED_STEEL)
-                        + game.getSectors().manufacturing().getCapacity(Good.MACHINERY),
-                standing
-            };
-
-        } finally {
-            System.setOut(out);
+    static double[] furnaceMonth(Game city, int id, boolean ownScrap) {
+        BuildingManager b = new BuildingManager();
+        b.initializeTemplates();
+        BuildingsTemplate t = b.getTemplate(id);
+        b.addStack(t, 1, true);
+        Markets markets = new Markets();
+        markets.setExchangeRate(1);
+        Sector mills = new HeavyIndustry();
+        mills.attach(b, markets);
+        double[] rates = new double[JobType.values().length], fill = new double[JobType.values().length];
+        long[] crew = new long[JobType.values().length];
+        for (JobType j : JobType.values()) {
+            rates[j.ordinal()] = PayTier.wageOf(j);
+            crew[j.ordinal()] = t.getJobs(j);
+            fill[j.ordinal()] = 1;
         }
+        mills.setElectricityConsumption(t.getElectricityConsumption());
+        mills.setWaterConsumption(t.getWaterConsumption());
+        mills.setPricePerWatt(city.getEconomyManager().getPricePerWatt());
+        mills.setPricePerWaterUnit(city.getEconomyManager().getPricePerWaterUnit());
+        mills.updateJobFillRate(fill);
+        mills.updateWages(rates, crew);
+
+        GoodsMarket scrap = markets.get(Good.SCRAP), steel = markets.get(Good.STEEL);
+        // THE FIXTURE CAUSES IT: steel wanted and no mill (the ceiling); scrap offered and no furnace (the floor), or wanted (the ceiling).
+        steel.strike(0, 0, t.makes(Good.STEEL));
+        if (ownScrap) scrap.strike(t.uses(Good.SCRAP), 0, 0); else scrap.strike(0, 0, t.uses(Good.SCRAP));
+        mills.produceFlow(Good.STEEL);
+        double made = mills.outputRow(Good.STEEL).produced;
+        mills.bookPurchase(scrap.record(ownScrap ? Trade.HOUSEHOLDS : Trade.WORLD, mills.key(), mills.bid(Good.SCRAP),
+                scrap.getLocalPrice()));
+        mills.offer(Good.STEEL, steel.getLocalPrice());
+        mills.bookSale(steel.record(mills.key(), Sectors.MANUFACTURING, made, steel.getLocalPrice()));
+        mills.shipUnsoldFlow(Good.STEEL, steel);
+        mills.buyConsumables();
+        mills.strike();
+        Sector.Statement s = mills.statement();
+        return new double[] { s.preTaxIncome, s.revenue, scrap.getLocalPrice(), steel.getLocalPrice() };
     }
 
     static void cleanUp(Path root) {

@@ -5329,8 +5329,65 @@ public final class GameVersion {
      *     ui/MapView's far nodes and OilView's fields by pool.
      *   - Harnesses: MapCheck 10, the map on Earth.
      *   - The playtest is 0.7.113's byte for byte (pt07113).
+     *
+     * 0.7.120 (2026-10-11) - IRON'S PRICES, AND SCRAP SPLIT FROM ORE. Batch
+     * (Built as 0.7.116; it shipped after 0.7.117 and 0.7.119, so it takes
+     * the next number, and 0.7.116 and 0.7.118 are unused.)
+     * I3, the first materials batch that changes the game (Jerus's Q2, Q4,
+     * Q5, Q6, Q6b, A, C and D of 2026-10-08; runs/spec-materials.md 2.1-2.3,
+     * 2.6b and 4; runs/brief-batchI3.md, runs/fixI3-notes.md). SAVE FORMAT
+     * 37, AND THE FLOOR RAISED TO IT: a save from 0.7.115 or older no longer
+     * loads (below).
+     *   - THE GOODS: IRON is iron ore alone, .115 / .085 (was .41 / .14, the
+     *     mills' scrap over the mines' ore); SCRAP (new, .41 / .30, flow,
+     *     BULK) the arc furnaces' feed; STEEL at the world's price, .650 /
+     *     .470 (was the US band, 1.284 / .847); and what is made of steel moved
+     *     by the steel in it (Q6b, C): FABRICATED_STEEL 1.545 (2.21),
+     *     MACHINERY 13.4 / 8.1 (14.3 / 9.0), CARS 41.3125 / 33.3125 (44 /
+     *     36), VANS 68.135 (72), ROLLING_STOCK 2,302.2 (2,400).
+     *   - THE BUILDINGS: id 11, the Steel Foundry, is the Electric Arc
+     *     Furnace, and it and the Steel Mini-Mill (id 12) melt SCRAP; the Iron
+     *     Mine (id 14) lifts 20,000 t a month (2,500) with the same 60 posts on
+     *     60,000 L of diesel, 600 kW and 20 units of water, for D$45M (its
+     *     cash, points and material x 4.632). The three buy consumables abroad
+     *     (I2's field): the study's running cost less wages, power, water and
+     *     diesel - 24.13, 119.7 and 199.8 world thousands a month.
+     *   - THE SECTORS: labelled Iron Mining and Iron & Steel, their keys kept
+     *     ("Mining", "Heavy Industry"). Heavy Industry is a ProcessingSector:
+     *     SpreadPlanner builds its furnaces by what pays on the whole cost,
+     *     and sheds a kind idle six months - its spare-ore gate is gone.
+     *     Mining's plan asks SpreadPlanner's money gate on the whole cost
+     *     before it orders (ExtractionSector.planner()), and its estimate
+     *     takes its consumables off.
+     *   - THE GROUND: iron in the ground stays US$0.40 a tonne (D):
+     *     Resource.IRON's in-ground share 1/212.5 of the new .085 (1/350 of
+     *     .14).
+     *   - BY ID: the harnesses, the test player and the build advice find the
+     *     Iron Mine and the arc furnaces by their ids (Mining.IRON_MINE,
+     *     HeavyIndustry.ARC_FURNACE, MINI_MILL), not their names.
+     *   - Harnesses: MaterialsCheck 9 (the three rows' four cases at parity,
+     *     the study's 2.5 to its rounding, through SpreadPlanner.caseEarns())
+     *     and 10 (a format-36 save refused in P7's words, its file
+     *     untouched); MiningCheck (the bands; an arc furnace's margin 5-15% of
+     *     its sales on imported scrap and 20-35% on the city's own, walked by
+     *     hand; the mine at the floor with its diesel and consumables);
+     *     ManufacturingCheck (the margins over steel held but for the rows'
+     *     rounding); CarCheck, VanCheck and RailCheck (each vehicle's price, its
+     *     plant's margin to the cent); TradeCostCheck's table; BuildingDataCheck
+     *     and BuildCardCheck. Every harness that loaded an older format
+     *     through the load path - ConversionCheck 6, LandCheck, WaterCheck 12,
+     *     ConstructionControlCheck, ChartCheck, SectorStatementCheck 6b,
+     *     OilCheck 10, WellCheck - now sees it refused at the floor
+     *     (SaveFileCheck.refusedAtTheFloor()); the conversions' own pure
+     *     checks stand.
+     *   - The playtest moves from month 4 (the first car, 6% cheaper; re-
+     *     baselined pt07116): its player never finds an arc furnace that pays
+     *     (pt07113's built Steel Foundries 19 times for the jobs), nor does
+     *     Iron & Steel's planner; people at the end 577,610 (566,444), posts
+     *     321,670 (345,198), unemployment 15.6% (9.3%), the price level 906
+     *     (1,456).
      */
-    public static final String VERSION = "0.7.119";
+    public static final String VERSION = "0.7.120";
 
     /**
      * The save shape.
@@ -5949,8 +6006,25 @@ public final class GameVersion {
      *     world's fields, are measured again on the new
      *     (LandMarket.remeasureStanding()). No money moves: the books are as
      *     saved, and the world's totals are the same to the tonne.
+     *
+     * 37 - SCRAP SPLIT FROM ORE (0.7.116, batch I3): IRON is iron ore alone,
+     *     priced .115 / .085, and SCRAP - the arc furnaces' feed, which IRON's
+     *     import price stood in for - its own market, keyed in the sectors'
+     *     maps, the ledgers and the statements. Here because a format-36 build
+     *     handed this save would load it WRONGLY: it knows no SCRAP, so it
+     *     would drop the furnaces' feed, their month's purchases and the
+     *     market's strike, and read IRON's price against the old band.
+     *
+     *     THE OTHER DIRECTION IS REFUSED, NOT CONVERTED (the floor below, raised
+     *     to 37 in the same batch): a format-36 save's IRON holds the mills'
+     *     scrap and the mines' ore as one good - one market's price and demand,
+     *     one line in Heavy Industry's books - and would load wrongly here, the
+     *     mills' scrap read as ore at a price outside its band. The spec's
+     *     IronSplit (runs/spec-materials.md 3) is not written: until the game
+     *     is published old saves need not load (Jerus, 2026-10-10). The build
+     *     that saved such a city, 0.7.115 or older, still opens it.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 36;
+    public static final int SAVE_FORMAT = 37;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -5960,13 +6034,20 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 21 since the sector template's clean break (format 21 above): nothing
-     * older carries a sector to read. Until 0.7.108 that was the one older
-     * format refused, under a constant of its own (FIRST_SECTOR_FORMAT); one
-     * floor holds both now, so a bump that raises it refuses an older save the
-     * way a newer build's is refused, where a bump alone refused nothing.
+     * 37 since 0.7.116 (batch I3, SCRAP SPLIT FROM ORE above): a save of
+     * format 36 or older holds the mills' scrap and the mines' ore as one
+     * IRON and would load wrongly, so it is refused - the first time the
+     * floor was raised by the rule. 21 until then, the sector template's
+     * clean break (format 21 above): nothing older carries a sector to read.
+     * Until 0.7.108 that was the one older format refused, under a constant of
+     * its own (FIRST_SECTOR_FORMAT); one floor holds both now, so a bump that
+     * raises it refuses an older save the way a newer build's is refused,
+     * where a bump alone refused nothing. Every conversion an older format
+     * was read through on load (FuelSplit, the two oil pools, the grid's
+     * land, the old world's ground, the derived paid-in) is past the floor
+     * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 21;
+    public static final int OLDEST_LOADABLE_FORMAT = 37;
 
     public static final String NAME = "CityBuilderSim";
 

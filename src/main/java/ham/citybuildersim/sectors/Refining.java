@@ -1906,7 +1906,7 @@ public final class Refining extends Sector {
      * is spare, which the rule sells while Refining loses money - a quarter
      * of the most-held crude unit a month at most, never into what the run
      * used. Neither, none: a price-taking exporter shrinks on distress only
-     * (HeavyIndustry's rule).
+     * (the mills' rule to 0.7.115).
      */
     @Override
     public double[] retirementDemandAndCapacity(Game game) {

@@ -1,12 +1,14 @@
 package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.ExtractionSector;
+import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.Mining;
 import ham.citybuildersim.sectors.ProcessingSector;
 import ham.citybuildersim.sectors.SpreadPlanner;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -19,10 +21,11 @@ import java.util.Map;
  *
  * WHY. Five chains - iron redone, coal, stone, copper and wood - share one
  * planner, two sector bases, a captive good, a works' own power and the
- * consumables it buys abroad, and none of them builds a works until batch I3
- * brings the first rows. So the machinery is held here on fixtures that cause
- * each condition, before any chain leans on it, and the playtest - which has
- * none of it - stays the same to the byte.
+ * consumables it buys abroad, and none of them built a works until batch I3
+ * brought the first rows. So the machinery is held here on fixtures that cause
+ * each condition, before any chain leans on it (the playtest, which had none
+ * of it, stayed the same to the byte at I2); and from I3 each chain's rows are
+ * held to the study's arithmetic, at parity, before they move a city.
  *
  * WHAT THIS HAS TO PROVE (the spec's 4, MaterialsCheck's I2 bullets):
  *
@@ -78,10 +81,25 @@ import java.util.Map;
  *      its counts the iron ones, its plan sinks a mine on a free site, its
  *      dig the iron's tally, and its plant spare only once the ore is out.
  *
- * The four cases at parity against the study's table (the spec's first
- * bullet) come with the building rows, at batch I3: the study's prototypes
- * did not survive, so the rows are rebuilt from its tables then, and
- * SpreadPlanner.caseEarns() is the reading they are held to.
+ * ...AND EACH CHAIN'S SECTIONS, FROM BATCH I3 (0.7.116; iron's prices and
+ * scrap split from ore - runs/spec-materials.md 4):
+ *
+ *   9. THE IRON ROWS ARE THE STUDY'S: the Iron Mine (id 14), the Electric Arc
+ *      Furnace (11) and the Steel Mini-Mill (12), each at parity, its four
+ *      cases (SpreadPlanner.caseEarns()) the study's 2.5 to its rounding and
+ *      its cost a year abroad its last column; their consumables the study's
+ *      running cost less wages, power, water and diesel. The study's
+ *      prototypes did not survive (the workspace restarted on 2026-10-09),
+ *      so the rows are rebuilt from its tables, and where caseEarns() reads
+ *      them otherwise than the study's arithmetic did it says how: the
+ *      mine's diesel is a feed at the case's price, not D$0.60 in its
+ *      running cost; and the study's cases carry no repairs or tax.
+ *
+ *  10. A SAVE FROM BEFORE THE SPLIT IS REFUSED (the rule, not the spec's
+ *      IronSplit): a format-36 save, whose IRON is scrap and ore as one good,
+ *      is refused in P7's words naming the build that saved it, nothing of
+ *      it applied and its file as it was; a save of this build's, its
+ *      furnaces' scrap in it apart from the ore, loads as it was saved.
  */
 public class MaterialsCheck {
 
@@ -176,6 +194,8 @@ public class MaterialsCheck {
         plan();
         idleThenShed();
         mining();
+        ironRows();
+        olderSave();
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -243,21 +263,21 @@ public class MaterialsCheck {
         BusinessInvestment plans = g.getBusinessInvestment();
         Sector heavy = g.getSectors().heavyIndustry();
         Markets markets = g.getMarkets();
-        BuildingsTemplate foundry = g.getBuildingManager().getTemplateByName("Steel Foundry");
+        BuildingsTemplate foundry = g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE);
         double cost = plans.getCostOf(foundry, 1);
         heavy.setCash(cost);
         SpreadPlanner p = new SpreadPlanner();
         double hurdle = p.hurdle(heavy, plans, g, cost);
         double running = plans.runningCostOf(foundry), standing = plans.standingCostOf(heavy, foundry);
         double factor = markets.getExchangeRate(), tariff = g.getEconomyManager().getPricePerWatt();
-        // THE FIXTURE CAUSES IT: steel's export price set so that case A - iron imported, steel exported - earns half the hurdle.
-        double ironIn = foundry.uses(Good.IRON) * markets.get(Good.IRON).importPrice();
-        double steelOut = (hurdle / 2 + ironIn + running + standing + SpreadPlanner.ownCosts(foundry, 1, factor, tariff))
+        // THE FIXTURE CAUSES IT: steel's export price set so that case A - scrap imported, steel exported - earns half the hurdle.
+        double scrapIn = foundry.uses(Good.SCRAP) * markets.get(Good.SCRAP).importPrice();
+        double steelOut = (hurdle / 2 + scrapIn + running + standing + SpreadPlanner.ownCosts(foundry, 1, factor, tariff))
                 / foundry.makes(Good.STEEL);
         java.util.function.ToDoubleFunction<Good> imp = x -> markets.get(x).importPrice();
         java.util.function.ToDoubleFunction<Good> exp = x -> x == Good.STEEL ? steelOut : markets.get(x).exportPrice();
         double a = SpreadPlanner.caseEarns(foundry, SpreadPlanner.Case.A, imp, exp, running, standing, factor, tariff);
-        report("fixture: a Steel Foundry whose case A earns half the hurdle on its whole cost, Heavy Industry holding that cost in its"
+        report("fixture: an Electric Arc Furnace whose case A earns half the hurdle on its whole cost, Heavy Industry holding that cost in its"
                         + " till", a > 0 && a < hurdle && near(a, hurdle / 2) && heavy.getCash() >= cost,
                 String.format("earns %,.2fk a month on %,.0fk; the hurdle %,.2fk", a, cost, hurdle));
         p.setMoneyGate(SpreadPlanner.ON_ITS_BORROWING);
@@ -273,13 +293,13 @@ public class MaterialsCheck {
                 newC.refusal(SpreadPlanner.Gate.MONEY));
         // The four cases, by hand, on a works with consumables and power of its own (a fixture's row).
         BuildingsTemplate fixture = new BuildingsTemplate("Fixture works", BuildingType.HEAVY_INDUSTRY)
-                .makes(Good.STEEL, 1000).uses(Good.IRON, 1100).setConsumables(40).setGen(2500);
+                .makes(Good.STEEL, 1000).uses(Good.SCRAP, 1100).setConsumables(40).setGen(2500);
         double own = SpreadPlanner.ownCosts(fixture, 1, factor, tariff);
         boolean cases = true;
         for (SpreadPlanner.Case c : SpreadPlanner.Case.values()) {
             double steel = c.outputAtImport() ? imp.applyAsDouble(Good.STEEL) : exp.applyAsDouble(Good.STEEL);
-            double iron = c.feedAtImport() ? imp.applyAsDouble(Good.IRON) : exp.applyAsDouble(Good.IRON);
-            double byHand = 1000 * steel - 1100 * iron - running - standing - own;
+            double scrap = c.feedAtImport() ? imp.applyAsDouble(Good.SCRAP) : exp.applyAsDouble(Good.SCRAP);
+            double byHand = 1000 * steel - 1100 * scrap - running - standing - own;
             cases &= SpreadPlanner.caseEarns(fixture, c, imp, exp, running, standing, factor, tariff) == byHand;
         }
         assertTrue("the four cases are the study's (its 2.5): A feed imported, output exported; B feed and output at the export price;"
@@ -291,7 +311,9 @@ public class MaterialsCheck {
         assertTrue("...with its consumables at the exchange factor and its power at the tariff in them: ownCosts() is consumables x rate"
                 + " x factor less gen x tariff, to the bit", own == 40 * 1.0 * factor - 2500 * tariff
                 && SpreadPlanner.ownCosts(fixture, .5, factor, tariff) == 40 * .5 * factor - 2500 * tariff
-                && SpreadPlanner.ownCosts(foundry, 1, factor, tariff) == 0);
+                // ...and the furnace's own, since 0.7.116: its electrodes at the factor, and no power of its own.
+                && SpreadPlanner.ownCosts(foundry, 1, factor, tariff) == foundry.getConsumables() * 1.0 * factor
+                && foundry.getConsumables() > 0 && foundry.getGen() == 0);
     }
 
     /* ============================ 3. captive use ============================ */
@@ -302,15 +324,15 @@ public class MaterialsCheck {
         b.initializeBuiltInTemplates();
         Markets markets = new Markets();
         markets.setExchangeRate(1);
-        BuildingsTemplate foundry = b.getTemplateByName("Steel Foundry");
+        BuildingsTemplate foundry = b.getTemplate(HeavyIndustry.ARC_FURNACE);
         // THE FIXTURE CAUSES IT: the foundry uses a third of the steel it makes, and makes building material and uses some of it.
         foundry.uses(Good.STEEL, 400).makes(Good.MATERIALS, 500).uses(Good.MATERIALS, 200);
         b.addStack(foundry, 2, true);
-        Works w = works(b, markets, null, new Good[] { Good.STEEL, Good.MATERIALS }, new Good[] { Good.IRON, Good.STEEL, Good.MATERIALS });
+        Works w = works(b, markets, null, new Good[] { Good.STEEL, Good.MATERIALS }, new Good[] { Good.SCRAP, Good.STEEL, Good.MATERIALS });
         double rate = w.getOperatingRate();
         double steelMade = 2 * foundry.makes(Good.STEEL) * rate, steelNeed = 2 * 400 * rate;
-        report("fixture: two Steel Foundries of a works sector, each using 400 t of the 1,200 t of steel it makes, and 200 of the 500"
-                        + " units of material it makes", w.captive(Good.STEEL) && w.captive(Good.MATERIALS) && !w.captive(Good.IRON)
+        report("fixture: two Electric Arc Furnaces of a works sector, each using 400 t of the 1,200 t of steel it makes, and 200 of the 500"
+                        + " units of material it makes", w.captive(Good.STEEL) && w.captive(Good.MATERIALS) && !w.captive(Good.SCRAP)
                         && !Good.STEEL.stockable() && Good.MATERIALS.stockable(),
                 String.format("rate %.3f", rate));
         w.produceFlow(Good.STEEL);
@@ -318,8 +340,8 @@ public class MaterialsCheck {
         assertTrue("a flow good: its own need is made first - min(made, needed), 800 t - and the market is brought the rest, 1,600 t",
                 steel.captive == Math.min(steelMade, steelNeed) && steel.produced == steelMade - steel.captive
                         && w.captiveUnits(Good.STEEL) == steel.captive);
-        assertTrue("...and it asks the market for none of it, while its iron it asks for whole",
-                w.bid(Good.STEEL) == 0 && w.bid(Good.IRON) == 2 * foundry.uses(Good.IRON) * rate);
+        assertTrue("...and it asks the market for none of it, while its scrap it asks for whole",
+                w.bid(Good.STEEL) == 0 && w.bid(Good.SCRAP) == 2 * foundry.uses(Good.SCRAP) * rate && w.bid(Good.SCRAP) > 0);
         w.shipUnsoldFlow(Good.STEEL, markets.get(Good.STEEL));
         Sector.Ledger l = w.pending();
         assertTrue("the ledger books the 1,600 t it shipped as a sale, and nothing for the 800 t it used: no sale and no purchase of it",
@@ -344,8 +366,8 @@ public class MaterialsCheck {
         quietly(g::newGame);
         boolean none = true;
         for (Sector s : g.getSectors().all()) for (Good x : s.goodsMade()) none &= !s.captive(x) && s.captiveUnits(x) == 0;
-        assertTrue("no sector in the game keeps a captive good (Sector.captive() is false but on a ProcessingSector, and none stands yet)",
-                none);
+        assertTrue("no sector in the game keeps a captive good (Sector.captive() is false but on a ProcessingSector, and Iron & Steel,"
+                + " the one since 0.7.116, makes nothing it uses)", none && g.getSectors().heavyIndustry() instanceof ProcessingSector);
     }
 
     /* ============================ 4. the works' own power ============================ */
@@ -424,16 +446,18 @@ public class MaterialsCheck {
         b.initializeBuiltInTemplates();
         Markets markets = new Markets();
         markets.setExchangeRate(1.37);
-        BuildingsTemplate foundry = b.getTemplateByName("Steel Foundry");
-        Works none = works(b, markets, null, new Good[] { Good.STEEL }, new Good[] { Good.IRON });
+        BuildingsTemplate foundry = b.getTemplate(HeavyIndustry.ARC_FURNACE);
+        // THE FIXTURE CAUSES IT: the furnace's own electrodes (0.7.116) taken away, so the works has none.
+        foundry.setConsumables(0);
+        Works none = works(b, markets, null, new Good[] { Good.STEEL }, new Good[] { Good.SCRAP });
         b.addStack(foundry, 2, true);
         none.buyConsumables();
         assertTrue("a works with none buys none, and books nothing", none.consumablesBill() == 0
                 && !none.pending().otherInputs.containsKey(Sector.CONSUMABLES) && none.pending().imports == 0);
         foundry.setConsumables(35);
-        Works w = works(b, markets, null, new Good[] { Good.STEEL }, new Good[] { Good.IRON });
+        Works w = works(b, markets, null, new Good[] { Good.STEEL }, new Good[] { Good.SCRAP });
         double bill = 2 * 35 * w.getOperatingRate() * 1.37;
-        report("fixture: two Steel Foundries with 35 (world thousands) of consumables a month each, the world's money at 1.37",
+        report("fixture: two Electric Arc Furnaces with 35 (world thousands) of consumables a month each, the world's money at 1.37",
                 w.getConsumablesAtNameplate() == 70 && w.consumablesBill() == bill, String.format("%,.2fk a month", bill));
         w.buyConsumables();
         assertTrue("bought: their nameplate at the operating rate and the exchange factor, an import named Consumables on the input line",
@@ -457,7 +481,7 @@ public class MaterialsCheck {
     static void plan() {
         out.println("\n--- 6. a processing sector's plan: what a works would make less what it would use, at the margin, less its costs ---");
         BuildingsTemplate t = new BuildingsTemplate("Fixture works", BuildingType.HEAVY_INDUSTRY)
-                .makes(Good.STEEL, 1000).uses(Good.IRON, 1100).setConsumables(20).setGen(900).setElectricityConsumption(600);
+                .makes(Good.STEEL, 1000).uses(Good.SCRAP, 1100).setConsumables(20).setGen(900).setElectricityConsumption(600);
         // A frame of the fixture's: each unit made worth 2 + its count / 1e6, each used 1 - its count / 1e6, so the split shows.
         SpreadPlanner.Values v = new SpreadPlanner.Values() {
             @Override public double out(Good g, double u) { return u * (2 + u / 1e6); }
@@ -474,27 +498,28 @@ public class MaterialsCheck {
             @Override public String money(double earns, double cost) { return earns > 0 ? null : "loses"; }
         };
         SpreadPlanner.Candidate c = ProcessingSector.estimate(t, v, city, factor, tariff, null);
-        double byHand = v.out(Good.STEEL, 1000 * rate) - v.in(Good.IRON, 1100 * rate) - running - standing
+        double byHand = v.out(Good.STEEL, 1000 * rate) - v.in(Good.SCRAP, 1100 * rate) - running - standing
                 - (20 * rate * factor - 900 * tariff);
         report("a candidate earns what it makes at outValue() less what it uses at inValue(), at the rate, less its running and"
                         + " standing costs, its consumables and its power - to the bit", c.earns() == byHand && c.cost() == 50_000
                         && c.passes(), String.format("%,.4fk a month", c.earns()));
         double last = ProcessingSector.lastEarns(t, v, city, factor, tariff);
         assertTrue("...and the last one standing the mirror: what it makes at inValue(), what losing it would cost the city, and what it"
-                + " uses at outValue(), what losing it would free", last == v.in(Good.STEEL, 1000 * rate) - v.out(Good.IRON, 1100 * rate)
+                + " uses at outValue(), what losing it would free", last == v.in(Good.STEEL, 1000 * rate) - v.out(Good.SCRAP, 1100 * rate)
                 - running - standing - (20 * rate * factor - 900 * tariff));
         SpreadPlanner.Candidate fed = ProcessingSector.estimate(t, v, city, factor, tariff, "no feed");
         assertTrue("a refusal of its feed is the first gate it fails (a chain's own feed gate; none by default)",
                 fed.failed() == SpreadPlanner.Gate.FEED && SpreadPlanner.best(List.of(fed, c)) == c);
-        // In a game: the investors' test reads the planner's estimate (Game.consider()).
+        // In a game: the investors' test reads the planner's estimate (Game.consider()) - Iron & Steel's own since 0.7.116 (batch I3).
         Game g = town("materialscheck-plan");
-        Works w = works(g.getBuildingManager(), g.getMarkets(), g, new Good[] { Good.STEEL }, new Good[] { Good.IRON });
+        ProcessingSector w = g.getSectors().heavyIndustry();
         w.setPricePerWatt(g.getEconomyManager().getPricePerWatt());
         BusinessInvestment plans = g.getBusinessInvestment();
-        BuildingsTemplate foundry = g.getBuildingManager().getTemplateByName("Steel Foundry");
+        BuildingsTemplate foundry = g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE);
         List<SpreadPlanner.Candidate> all = w.appraise(plans, g);
-        assertTrue("in a town its candidates are its two works, each the planner's estimate, and the investors' test reads it",
-                all.size() == 2 && w.estimatedMonthlyProfit(foundry, plans) == w.appraise(foundry, plans).earns()
+        assertTrue("in a town Iron & Steel's candidates are its two furnaces, each the planner's estimate, and the investors' test"
+                        + " reads it", all.size() == 2 && w.estimatedMonthlyProfit(foundry, plans) == w.appraise(foundry, plans).earns()
+                        && plans.estimatedMonthlyProfit(Sectors.HEAVY_INDUSTRY, foundry) == w.appraise(foundry, plans).earns()
                         && w.planner().moneyGate() == SpreadPlanner.ON_ITS_WHOLE_COST);
         BusinessInvestment.Decision d = w.plan(plans, g);
         SpreadPlanner.Candidate best = SpreadPlanner.best(all);
@@ -510,12 +535,12 @@ public class MaterialsCheck {
         Game g = town("materialscheck-idle");
         BuildingManager b = g.getBuildingManager();
         BusinessInvestment plans = g.getBusinessInvestment();
-        BuildingsTemplate foundry = b.getTemplateByName("Steel Foundry"), mill = b.getTemplateByName("Steel Mini-Mill");
+        BuildingsTemplate foundry = b.getTemplate(HeavyIndustry.ARC_FURNACE), mill = b.getTemplate(HeavyIndustry.MINI_MILL);
         quietly(() -> {
             g.buildStack(foundry, 4, true);
             g.buildStack(mill, 1, true);
         });
-        Works w = works(b, g.getMarkets(), g, new Good[] { Good.STEEL }, new Good[] { Good.IRON });
+        Works w = works(b, g.getMarkets(), g, new Good[] { Good.STEEL }, new Good[] { Good.SCRAP });
         w.setPricePerWatt(g.getEconomyManager().getPricePerWatt());
         SpreadPlanner.Values v = SpreadPlanner.values(g.getMarkets());
         SpreadPlanner.City city = w.planner().city(w, plans, g);
@@ -525,7 +550,7 @@ public class MaterialsCheck {
         foundry.setConsumables(Math.max(0, fLast + 1000) / (city.rate() * factor));
         double mLast = ProcessingSector.lastEarns(mill, v, city, factor, tariff);
         mill.setGen(Math.max(0, -mLast + 1000) / tariff + mill.getElectricityConsumption());
-        report("fixture: four Steel Foundries whose last one loses money, one Steel Mini-Mill that earns",
+        report("fixture: four Electric Arc Furnaces whose last one loses money, one Steel Mini-Mill that earns",
                 ProcessingSector.lastEarns(foundry, v, city, factor, tariff) < 0 && ProcessingSector.lastEarns(mill, v, city, factor, tariff) > 0,
                 String.format("%,.1fk and %,.1fk a month", ProcessingSector.lastEarns(foundry, v, city, factor, tariff),
                         ProcessingSector.lastEarns(mill, v, city, factor, tariff)));
@@ -550,7 +575,7 @@ public class MaterialsCheck {
         report("...so, losing money six months, the rule sells a quarter of the foundries and nothing else",
                 d.build && d.template == foundry && d.quantity == 1, d.reason);
         Map<String, Double> extras = w.extras();
-        Works twin = works(b, g.getMarkets(), g, new Good[] { Good.STEEL }, new Good[] { Good.IRON });
+        Works twin = works(b, g.getMarkets(), g, new Good[] { Good.STEEL }, new Good[] { Good.SCRAP });
         twin.load(extras);
         assertTrue("the idle months cross a save, by the template's id (extras idleMonths.<id>), the working kind's none",
                 extras.get(SpreadPlanner.IDLE_KEY + foundry.getId()) == SpreadPlanner.IDLE_MONTHS && twin.idleMonths(foundry)
@@ -573,7 +598,7 @@ public class MaterialsCheck {
         Mining mining = g.getSectors().mining();
         LandManager land = g.getLandManager();
         BusinessInvestment plans = g.getBusinessInvestment();
-        BuildingsTemplate mine = g.getBuildingManager().getTemplateByName("Iron Mine");
+        BuildingsTemplate mine = g.getBuildingManager().getTemplate(Mining.IRON_MINE);
         quietly(() -> land.restoreSites(Resource.IRON, 3, 5_000_000));
         assertTrue("Mining is an ExtractionSector on iron's ground, its good iron ore", mining instanceof ExtractionSector
                 && mining.resource() == Resource.IRON && mining.groundGood() == Good.IRON);
@@ -601,5 +626,135 @@ public class MaterialsCheck {
         double[] spare = mining.retirementDemandAndCapacity(g);
         assertTrue("once the ore is out all its plant is spare: nothing used against its nameplate", spare != null && spare[0] == 0
                 && spare[1] == mining.getCapacity(Good.IRON) && spare[1] == sites * mine.makes(Good.IRON));
+    }
+
+    /* ============================ 9. the iron rows against the study ============================ */
+
+    /** The iron rows of batch I3 (0.7.116), by their permanent ids: the Iron Mine, the Electric Arc Furnace, the Steel Mini-Mill. */
+    static final int[] IRON_ROWS = { Mining.IRON_MINE, HeavyIndustry.ARC_FURNACE, HeavyIndustry.MINI_MILL };
+
+    /** The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). */
+    static final double[][] STUDY_CASES = { { 2.7, 2.7, 4.1, 4.1 }, { -0.5, -0.1, 0.7, 0.2 }, { -0.5, 0.1, 1.0, 0.4 } };
+
+    /** ...their cost over a year of what each would sell abroad, its last column. */
+    static final double[] STUDY_YEARS = { 2.2, 4.4, 3.5 };
+
+    /** ...and their running cost a month, D$ thousands, the study's 2.4 "Runs" (the mine's with its diesel in it). */
+    static final double[] STUDY_RUNS = { 469, 187, 708 };
+
+    /** The study's price of a litre of diesel in its runs, D$ thousands: the oil mockups' D$0.60 (its 1.5). */
+    static final double STUDY_DIESEL = .0006;
+
+    /** The study's rounding: its cases to a tenth of a point, its years to a tenth. */
+    static final double STUDY_ROUNDING = .05;
+
+    static void ironRows() {
+        out.println("\n--- 9. the iron rows of batch I3 at parity: the study's four cases and its years abroad, to its rounding ---");
+        BuildingManager b = new BuildingManager();
+        b.initializeTemplates();
+        // The game's founding tariffs, the utility's own (the study's 1.5: D$10 a kW a month, D$50 a unit of water).
+        UtilitiesHandler founding = new UtilitiesHandler();
+        double tariff = founding.getPricerPerWatt(), water = founding.getPricePerWaterUnit();
+        report("fixture: the game's founding tariffs are the study's: D$10 a kW a month, D$50 a unit of water",
+                tariff == .01 && water == .05, String.format("%.3f, %.3f", tariff, water));
+        java.util.function.ToDoubleFunction<Good> imp = Good::worldImportPrice, exp = Good::worldExportPrice;
+        String[] cases = { "A", "B", "C", "D" };
+        for (int r = 0; r < IRON_ROWS.length; r++) {
+            BuildingsTemplate t = b.getTemplate(IRON_ROWS[r]);
+            String name = t.getName();
+            double wages = 0;
+            for (JobType j : JobType.values()) wages += t.getJobs(j) * PayTier.wageOf(j);
+            // Its running cost at founding, as BusinessInvestment.runningCostOf() strikes it: its posts at PayTier's wages, its power and water.
+            double running = wages + t.getElectricityConsumption() * tariff + t.getWaterConsumption() * water;
+            double cost = t.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * t.getConstructionMaterials();
+            double diesel = t.uses(Good.DIESEL) * STUDY_DIESEL;
+            report("its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)",
+                    Math.abs(t.getConsumables() - (STUDY_RUNS[r] - running - diesel)) < 1e-9,
+                    String.format("%,.2f = %,.0f - %,.2f - %,.1f", t.getConsumables(), STUDY_RUNS[r], running, diesel));
+            boolean all = true;
+            StringBuilder got = new StringBuilder(), study = new StringBuilder();
+            for (SpreadPlanner.Case c : SpreadPlanner.Case.values()) {
+                double pct = 100 * SpreadPlanner.caseEarns(t, c, imp, exp, running, 0, 1, tariff) / cost;
+                all &= Math.abs(pct - STUDY_CASES[r][c.ordinal()]) <= STUDY_ROUNDING + 1e-9;
+                got.append(String.format("%s %.2f%%  ", cases[c.ordinal()], pct));
+                study.append(c.ordinal() == 0 ? "" : "/").append(STUDY_CASES[r][c.ordinal()]);
+            }
+            report("the " + name + "'s four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding: " + study + "%",
+                    all, got.toString().trim());
+            double abroad = 0;
+            for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) abroad += e.getValue() * e.getKey().worldExportPrice();
+            double years = cost / (12 * abroad);
+            report("...and its cost over a year of what it would sell abroad is the study's " + STUDY_YEARS[r],
+                    Math.abs(years - STUDY_YEARS[r]) <= STUDY_ROUNDING + 1e-9, String.format("%.3f; D$%,.0fk all in", years, cost));
+        }
+        /*
+         * WHERE caseEarns() READS THE ROWS OTHERWISE THAN THE STUDY DID (its
+         * balance.py did not survive; its 1.2 and 2.5 are the arithmetic):
+         *   - the Iron Mine's diesel is a feed, priced as the case prices
+         *     feed - landed at DIESEL's import price in A and D, at its export
+         *     price in B and C - where the study fixed it at D$0.60 a litre in
+         *     its running cost. 60,000 L at .6883 is D$41.3k, at .5864 D$35.2k,
+         *     against the study's D$36k: no case moves past its rounding;
+         *   - the study's cases carry no repairs and no property tax, so
+         *     standing is 0 here; the planner's estimate in a city adds them
+         *     (BusinessInvestment.standingCostOf()), as it does every works'.
+         */
+        BuildingsTemplate mine = b.getTemplate(Mining.IRON_MINE);
+        double atImport = mine.uses(Good.DIESEL) * Good.DIESEL.worldImportPrice(), atExport = mine.uses(Good.DIESEL) * Good.DIESEL.worldExportPrice();
+        report("where caseEarns() and the study differ: the mine's diesel is a feed at the case's price, not D$0.60 a litre in its"
+                        + " running cost - within D$6k a month of the study's either way, and no case past its rounding",
+                Math.abs(atImport - mine.uses(Good.DIESEL) * STUDY_DIESEL) < 6 && Math.abs(atExport - mine.uses(Good.DIESEL) * STUDY_DIESEL) < 6,
+                String.format("D$%,.1fk landed, D$%,.1fk at export, the study's D$%,.1fk", atImport, atExport, mine.uses(Good.DIESEL) * STUDY_DIESEL));
+    }
+
+    /* ============================ 10. a save from before the split ============================ */
+
+    static void olderSave() throws Exception {
+        out.println("\n--- 10. a save from before the split is refused, in P7's words and its file untouched; this build's loads ---");
+        report("the floor is this build's own format (GameVersion): a save one format older - IRON holding scrap and ore as one - is"
+                        + " no longer readable", GameVersion.OLDEST_LOADABLE_FORMAT == GameVersion.SAVE_FORMAT
+                        && GameVersion.isNoLongerReadable(GameVersion.SAVE_FORMAT - 1) && !GameVersion.isNoLongerReadable(GameVersion.SAVE_FORMAT),
+                String.format("formats %d to %d", GameVersion.OLDEST_LOADABLE_FORMAT, GameVersion.SAVE_FORMAT));
+        GameFiles files = GameFiles.scratch("materialscheck-split");
+        Game g = town(files);
+        quietly(() -> {
+            g.buildStack(g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE), 2, true);
+            g.simulateMonths(3);
+            g.saveGame(10, "split");
+        });
+        String saved = Files.readString(files.saveFile(10));
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(saved).getAsJsonObject();
+        Sector heavy = g.getSectors().heavyIndustry();
+        double scrapBought = heavy.statement().bought == null || heavy.statement().bought.get(Good.SCRAP) == null ? 0
+                : heavy.statement().bought.get(Good.SCRAP).total();
+        report("fixture: a town whose two furnaces bought scrap three months, saved by this build in its own format, SCRAP in it by name",
+                json.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && saved.contains("\"SCRAP\"") && scrapBought > 0,
+                String.format("D$%,.1fk of scrap last month", scrapBought));
+
+        GameFiles older = GameFiles.scratch("materialscheck-split-36");
+        Files.createDirectories(older.saveFile(10).getParent());
+        json.addProperty("saveFormat", GameVersion.SAVE_FORMAT - 1);
+        json.addProperty("gameVersion", "0.7.115");
+        Files.writeString(older.saveFile(10), new com.google.gson.Gson().toJson(json));
+        byte[] before = Files.readAllBytes(older.saveFile(10));
+        Game turned = new Game(older);
+        quietly(() -> turned.loadGameSave(10));
+        report("its twin written down to format 36 and stamped 0.7.115 is refused in P7's words: the build that saved it, which still"
+                        + " opens it", GameVersion.noLongerReadable("0.7.115").equals(turned.getLoadFailure())
+                        && turned.getLoadFailure().contains("Build 0.7.115 still opens it"),
+                turned.getLoadFailure());
+        assertTrue("...nothing of it applied, and its file byte for byte as it was",
+                turned.getMonth() == 1 && java.util.Arrays.equals(before, Files.readAllBytes(older.saveFile(10))));
+
+        Game back = new Game(files);
+        quietly(() -> back.loadGameSave(10));
+        Sector heavyBack = back.getSectors().heavyIndustry();
+        double scrapBack = heavyBack.statement().bought == null || heavyBack.statement().bought.get(Good.SCRAP) == null ? 0
+                : heavyBack.statement().bought.get(Good.SCRAP).total();
+        report("this build's own save loads, its month, the scrap market's price and the furnaces' scrap as saved",
+                back.getLoadFailure() == null && back.getMonth() == g.getMonth() && scrapBack == scrapBought
+                        && back.getMarkets().get(Good.SCRAP).getLocalPrice() == g.getMarkets().get(Good.SCRAP).getLocalPrice()
+                        && back.getMarkets().get(Good.IRON).getLocalPrice() == g.getMarkets().get(Good.IRON).getLocalPrice(),
+                String.format("m%d, scrap at %.4f", back.getMonth(), back.getMarkets().get(Good.SCRAP).getLocalPrice()));
     }
 }

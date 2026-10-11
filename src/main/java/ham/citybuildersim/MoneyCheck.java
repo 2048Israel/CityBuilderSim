@@ -1,5 +1,8 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+import ham.citybuildersim.sectors.Mining;
+
 import java.util.Locale;
 
 /**
@@ -106,8 +109,8 @@ public class MoneyCheck {
             }
         }
         g.getGovernmentInvestor().spend(-50_000_000);
-        g.buildStack(t(g, "Iron Mine"), 2, false);
-        g.buildStack(t(g, "Steel Foundry"), 1, false);
+        g.buildStack(g.getBuildingManager().getTemplate(Mining.IRON_MINE), 2, false);
+        g.buildStack(g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE), 1, false);
         g.buildStack(t(g, "Memorial Cemetery"), 1, false);
         g.buildStack(t(g, "Community College"), 1, false);
         /* =================================================================

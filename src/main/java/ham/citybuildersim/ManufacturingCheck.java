@@ -1,5 +1,6 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.Manufacturing;
 
 import java.io.OutputStream;
@@ -44,6 +45,11 @@ public class ManufacturingCheck {
         out.printf("%-64s %s%n", label, ok ? "OK" : "FAIL");
     }
 
+    static void report(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        out.printf("%-64s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
+    }
+
     static void check(String label, double actual, double expected, double tol) {
         boolean ok = Math.abs(actual - expected) <= tol;
         if (!ok) {
@@ -63,6 +69,18 @@ public class ManufacturingCheck {
     static final String SHOP  = "Fabrication Shop";
     static final String WORKS = "Fabrication Works";
     static final String MACH  = "Machine Works";
+
+    /**
+     * The prices the three plants were costed on, written down (2026-09-13 to
+     * 0.7.115): steel landed at the US band, and the two goods made of it.
+     * Since 0.7.116 (batch I3; Jerus's Q6 and Q6b) steel is at the world's
+     * price and each good fell by the steel in it; the sheds did not move, so
+     * a shed is a year of what its plant billed at these.
+     */
+    static final double STEEL_WAS = 1.284, FABRICATED_WAS = 2.21, MACHINERY_WAS = 9.0;
+
+    /** Steel's fall a tonne at the import price on 0.7.116, the figure Q6b moved each good by: 1.284 to .650. */
+    static final double STEEL_FALL = STEEL_WAS - .650;
 
     /* =====================================================================
        WHOSE COST IS IT - Sector.costShareOf(), guarded here because this is
@@ -169,7 +187,8 @@ public class ManufacturingCheck {
         out.println("\n--- steel finally has somebody to sell to ---");
 
         assertTrue("steel is importable - something here buys it", Good.STEEL.importable());
-        check("...at the US hot-rolled band", Good.STEEL.worldImportPrice(), 1.284, 1e-12);
+        // ...at the world's price landed since 0.7.116 (batch I3, Q6): the US hot-rolled band, STEEL_WAS, until then.
+        check("...at the world's hot-rolled price, landed", Good.STEEL.worldImportPrice(), STEEL_WAS - STEEL_FALL, 1e-12);
         assertTrue("...which is above what a mill gets shipping it out",
                 Good.STEEL.worldImportPrice() > Good.STEEL.worldExportPrice());
 
@@ -221,8 +240,29 @@ public class ManufacturingCheck {
             // strong end of the game's own convention (the Steel Foundry is
             // 2.5 years, the Contact Centre 1.4) and it is deliberate: the
             // brake on this sector is the land, not the price of the shed.
-            check(names[i] + ": a year of its own billings, which is the whole shed",
-                    want[i][3] / (t.makes(makes[i]) * makes[i].worldExportPrice() * 12), 1.0, .01);
+            // ...at the prices it was costed on (0.7.116): its goods fell with
+            // steel by the steel in them, its margin held, its shed did not move.
+            double was = makes[i] == Good.MACHINERY ? MACHINERY_WAS : FABRICATED_WAS;
+            check(names[i] + ": a year of its own billings at the prices it was costed on, which is the whole shed",
+                    want[i][3] / (t.makes(makes[i]) * was * 12), 1.0, .01);
+            /*
+             * ITS MARGIN OVER ITS STEEL HELD (0.7.116; Jerus's Q6b: "move them
+             * with steel", so Manufacturing's returns hold). Steel fell
+             * STEEL_FALL a tonne landed and each good by the steel in it - the
+             * decided rows, rounded: fabricated steel .665 for 1.05 t (.6657),
+             * machinery .9 for 1.45 t (.9193). So what a plant bills less the
+             * steel it buys, both at the world's prices, is what it was but for
+             * the rows' rounding: D$0.70 a tonne of fabricated steel and D$19.30
+             * a tonne of machinery, under a third of a percent of its margin -
+             * not the cent, which the rounded rows cannot give (★I3).
+             */
+            double steelIn = t.uses(Good.STEEL) / t.makes(makes[i]);
+            double marginNow = makes[i].worldExportPrice() - steelIn * Good.STEEL.worldImportPrice();
+            double marginWas = was - steelIn * STEEL_WAS;
+            double rounding = steelIn * STEEL_FALL - (was - makes[i].worldExportPrice());
+            report(names[i] + ": its margin over its steel a tonne, at the world's prices, is what it was but for the rows' rounding",
+                    Math.abs((marginNow - marginWas) - rounding) < 1e-9 && Math.abs(rounding) < .003 * marginWas,
+                    String.format("$%,.2f a tonne, was $%,.2f; the rounding $%.2f", marginNow * 1000, marginWas * 1000, rounding * 1000));
             assertTrue(names[i] + " is owned by the sector, not the city",
                     Sectors.MANUFACTURING.equals(t.getSector()));
             assertTrue(names[i] + " pays no upkeep - it pays maintenance like everyone",
@@ -294,14 +334,18 @@ public class ManufacturingCheck {
         double shopSteel = shop.uses(Good.STEEL) * Good.STEEL.worldImportPrice() / shopRev;
         double machSteel = mach.uses(Good.STEEL) * Good.STEEL.worldImportPrice() / machRev;
         double shopPay = payrollOf(shop) / shopRev, machPay = payrollOf(mach) / machRev;
-        assertTrue("fabrication lives and dies on the steel price", shopSteel > 2 * shopPay);
+        // ...its steel half again its wages at the world's price since 0.7.116 (44% of its sales to 29%), where at the US band it
+        // was three times them (61% to 20%): Q6 moved what steel costs it, Q6b what it sells for, and the margin held.
+        report("fabrication lives and dies on the steel price: its steel its biggest bill, past its wages",
+                shopSteel > shopPay && shopSteel > machSteel * 3,
+                String.format("steel %.0f%% of its sales, wages %.0f%%", shopSteel * 100, shopPay * 100));
         assertTrue("...and the machine works on the wage bill", machPay > 2 * machSteel);
         assertTrue("neither is a business at all if both bite",
                 shopSteel + shopPay < 1 && machSteel + machPay < 1);
 
         /* ---- and the ground is the brake, which is the other half of it ---- */
         BuildingsTemplate works = bm.getTemplateByName(WORKS);
-        BuildingsTemplate foundry = bm.getTemplateByName("Steel Foundry");
+        BuildingsTemplate foundry = bm.getTemplate(HeavyIndustry.ARC_FURNACE);
         double perJob = foundry.getLandSqFt() / jobsOf(foundry);
         out.printf("   ground a post: shop %,.0f, works %,.0f, machine works %,.0f, steel foundry %,.0f sq ft%n",
                 shop.getLandSqFt() / jobsOf(shop), works.getLandSqFt() / jobsOf(works),
@@ -415,7 +459,11 @@ public class ManufacturingCheck {
         out.printf("   steel at $%.0f: a shop clears $%,.0fk and a machine works $%,.0fk%n",
                 wasSteel * 1500, dearShop, dearMach);
         assertTrue("dear steel makes another shop worth less", dearShop < baseShop);
-        assertTrue("...far less: it is most of what a shop spends", dearShop < 0);
+        // ...nearly all it clears since 0.7.116 - at the world's steel price half again is $331 a tonne, not the $640 it was at
+        // the US band, and the shop clears what it did at the landed price (Q6b) - where until then it put the shop under water.
+        report("...far less: it is most of what a shop spends, and half again on it takes nine tenths of what a shop clears",
+                dearShop < .1 * baseShop,
+                String.format("%,.1fk from %,.1fk; the machine works %,.1fk from %,.1fk", dearShop, baseShop, dearMach, baseMach));
         assertTrue("...while the machine works is still worth building", dearMach > 0);
         assertTrue("...which is the whole point of having both",
                 (baseShop - dearShop) > 3 * (baseMach - dearMach));
@@ -453,9 +501,20 @@ public class ManufacturingCheck {
             b.addStack(b.getTemplateByName("Coal Power Plant"), 2, true);
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 2, true);
             b.addStack(b.getTemplateByName("Paved Road"), 40, true);
-            b.addStack(b.getTemplateByName("Steel Foundry"), 2, true);
+            b.addStack(b.getTemplate(HeavyIndustry.ARC_FURNACE), 2, true);
             b.addStack(b.getTemplateByName(SHOP), 2, true);
             b.addStack(b.getTemplateByName(MACH), 1, true);
+            /*
+             * ...AND THE MILLS ARE HELD (0.7.116, batch I3): at steel's world
+             * price a furnace on imported scrap selling its steel at home barely
+             * pays (the study's case D, 0.2% of its cost a month, before its
+             * repairs and tax), and Iron &
+             * Steel's planner sheds it inside two years - the furnaces stood
+             * here for their tonnage would be gone before they are read. An
+             * assertion whose subject is decided by a planner is an assertion
+             * about the planner.
+             */
+            booked.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
             for (int i = 0; i < 24; i++) booked.simulateMonths(1);
         });
 

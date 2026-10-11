@@ -24,9 +24,9 @@
   "Retail, Real Estate, Industry, Construction, Heavy Industry, Mining, Materials - and",
   "a building with no sector is the city's (roads, plants, schools, clinics) or the",
   "bank's. 'makes' and 'uses' are units of a GOOD a month per building at nameplate:",
-  "  \"makes\": { \"STEEL\": 1200 }, \"uses\": { \"IRON\": 1320 }",
-  "Goods are FOOD (a person-month of food), IRON (tonnes; imported scrap stands in),",
-  "STEEL (tonnes, all exported), MATERIALS (a unit of building material), GROCERIES",
+  "  \"makes\": { \"STEEL\": 1200 }, \"uses\": { \"SCRAP\": 1320 }",
+  "Goods are FOOD (a person-month of food), IRON (tonnes of ore), SCRAP (tonnes, 0.7.116),",
+  "STEEL (tonnes), MATERIALS (a unit of building material), GROCERIES",
   "(food on a shelf, sold to households), HOUSING (homes), BUILDING_WORK (points).",
   "Prices are on the goods, not here: the world charges and pays a fixed price for",
   "each, and the city's markets clear between the two. 'stock' is the room a",
@@ -91,7 +91,9 @@
   "grid only what it draws past that, and sells the grid what it makes past its draw, at",
   "the tariff. \"consumables\" is what a works buys abroad that is not a good - refractories,",
   "reagents, spares - in thousands of the WORLD's money a month at nameplate, paid at the",
-  "exchange factor at the share of nameplate it runs. No building has either yet.",
+  "exchange factor at the share of nameplate it runs. No building makes power yet; since",
+  "0.7.116 the Iron Mine (explosives and wear parts) and the two arc furnaces (electrodes)",
+  "buy consumables: the study's running cost less wages, power, water and diesel.",
   "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
@@ -376,7 +378,7 @@
   },
   {
    "id": 11,
-   "name": "Steel Foundry",
+   "name": "Electric Arc Furnace",
    "category": "HEAVY_INDUSTRY",
    "sector": "Heavy Industry",
    "cashCost": 22471,
@@ -384,6 +386,7 @@
    "constructionMaterials": 416,
    "electricity": 750,
    "water": 65,
+   "consumables": 24.13,
    "jobs": {
     "NO_DIPLOMA": 22,
     "DIPLOMA": 12,
@@ -395,7 +398,7 @@
     "STEEL": 1200
    },
    "uses": {
-    "IRON": 1320
+    "SCRAP": 1320
    }
   },
   {
@@ -408,6 +411,7 @@
    "constructionMaterials": 1664,
    "electricity": 3700,
    "water": 320,
+   "consumables": 119.7,
    "jobs": {
     "NO_DIPLOMA": 70,
     "DIPLOMA": 45,
@@ -420,7 +424,7 @@
     "STEEL": 6000
    },
    "uses": {
-    "IRON": 6600
+    "SCRAP": 6600
    }
   },
   {
@@ -491,20 +495,24 @@
    "name": "Iron Mine",
    "category": "MINING",
    "sector": "Mining",
-   "cashCost": 7286,
-   "constructionPoints": 1600,
-   "constructionMaterials": 135,
-   "electricity": 2000,
-   "water": 150,
+   "cashCost": 33749,
+   "constructionPoints": 7411,
+   "constructionMaterials": 625,
+   "electricity": 600,
+   "water": 20,
+   "consumables": 199.8,
    "jobs": {
     "NO_DIPLOMA": 45,
     "DIPLOMA": 12,
     "COLLEGE_ENGINEERING": 3
    },
    "land": 400000,
-   "roadLoad": 420,
+   "roadLoad": 3360,
    "makes": {
-    "IRON": 2500
+    "IRON": 20000
+   },
+   "uses": {
+    "DIESEL": 60000
    },
    "site": {
     "resource": "IRON",

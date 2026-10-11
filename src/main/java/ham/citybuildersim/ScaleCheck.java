@@ -181,8 +181,20 @@ public class ScaleCheck {
      * 587, 590, 593, 595, 597, 600, 605, 610 and 620; at every month scanned
      * from 510 to 575, and at 615, the larger copy built no more homes than
      * it began with. 595 is the middle of 580 to 610: 4,303 people at 600.
+     *
+     * ...AT 635 SINCE 0.7.116 (batch I3), BY THE SAME PREMISE. Iron and steel
+     * at the world's prices (the cars a household buys 6% cheaper from the
+     * first, the test player's furnaces paying nothing it would build) move
+     * its town: at 595, and at 560, 580, 600 and 610, its own rents priced
+     * migrants out in the six months read. Scanned (scratch-i3/probe, ScaleCheck
+     * with the month changed, every assertion read): every assertion holds at
+     * 495, 500, 625, 628, 630, 633, 635, 637, 640, 643 and 645; at 490, 505,
+     * 510, 520, 540, 620, 650, 660, 680 and 700 a copy's rents pulled
+     * migrants otherwise than the city's, or the copies built no more homes
+     * than they began with. 635 is the middle of 625 to 645: 5,213 people at
+     * 640.
      */
-    static final int FREE_FIXTURE_MONTHS = 595;
+    static final int FREE_FIXTURE_MONTHS = 635;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;

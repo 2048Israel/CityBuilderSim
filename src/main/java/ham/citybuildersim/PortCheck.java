@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -419,7 +421,7 @@ public class PortCheck {
         Game.BuildResult[] stood = new Game.BuildResult[2];
         quietly(() -> {
             g.setCashForTest(Founding.WEALTHY_CASH * 100);
-            stood[0] = g.buildStack(template(g, "Steel Foundry"), 2, true);
+            stood[0] = g.buildStack(g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE), 2, true);
             stood[1] = g.buildStack(template(g, "Rail Spur"), 1, true);
             g.simulateMonths(4);
         });
@@ -462,7 +464,7 @@ public class PortCheck {
         Game.BuildResult[] stood = new Game.BuildResult[2];
         quietly(() -> {
             g.setCashForTest(Founding.WEALTHY_CASH * 100);
-            stood[0] = g.buildStack(template(g, "Steel Foundry"), 2, true);
+            stood[0] = g.buildStack(g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE), 2, true);
             g.simulateMonths(3);
         });
         Ports ports = g.getPorts();
@@ -492,7 +494,7 @@ public class PortCheck {
         Game twin = town("portcheck-port-twin", 300, 2_000_000);
         quietly(() -> {
             twin.setCashForTest(Founding.WEALTHY_CASH * 100);
-            twin.buildStack(template(twin, "Steel Foundry"), 2, true);
+            twin.buildStack(twin.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE), 2, true);
             twin.simulateMonths(3);
         });
 

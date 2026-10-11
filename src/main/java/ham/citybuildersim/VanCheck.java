@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+
 /**
  * The vans: what a sector needs, what it costs it, and what happens while it
  * waits for them.
@@ -96,7 +98,17 @@ public class VanCheck {
              * tonnes and ships steel by the thousand, which is where lorries
              * actually go.
              */
-            game.buildStack(b.getTemplateByName("Steel Foundry"), 6, true);
+            game.buildStack(b.getTemplate(HeavyIndustry.ARC_FURNACE), 6, true);
+            /*
+             * ...AND THE MILLS ARE HELD (0.7.116, batch I3): at steel's world
+             * price a furnace on imported scrap shipping its steel loses money
+             * (the study's case A, -0.5% of its cost a month), and Iron &
+             * Steel's planner sheds it inside two years - the furnaces stood
+             * here for their tonnage would be gone before they are read. An
+             * assertion whose subject is decided by a planner is an assertion
+             * about the planner.
+             */
+            game.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
             for (int i = 0; i < 24; i++) game.toggleNextMonth();
         });
 
@@ -352,6 +364,16 @@ public class VanCheck {
                 String.format("%,.0f L, $%,.1fk on the statements", burned[0], burned[1]));
         report("...and the money audit closes with it", game.getLastMoneyAudit().relative() < 1e-10,
                 String.format("%.2e", game.getLastMoneyAudit().relative()));
+
+        // ...and a van moved with the steel in it (0.7.116, batch I3; Jerus's C): CarCheck's THE VEHICLES MOVED WITH THE STEEL IN THEM.
+        System.out.println("\n--- and a van moved with the steel in it, its plant's margin a van to the cent (0.7.116) ---");
+        report("a van is the world's at 68.135: 72 less 5 t of fabricated steel at .665 and 0.6 t of machinery at .9",
+                Good.VANS.worldImportPrice() == 68.135 && !Good.VANS.exportable(), String.format("%.4f", Good.VANS.worldImportPrice()));
+        BuildingManager catalogue = new BuildingManager();
+        catalogue.initializeTemplates();
+        java.util.List<String> vanLines = new java.util.ArrayList<>();
+        report("...so the van plant makes of a van over the parts in it what it did, to the cent",
+                CarCheck.marginsHeld(catalogue, Good.VANS, CarCheck.VANS_WAS_IN, Double.NaN, vanLines), String.join("; ", vanLines));
 
         System.out.println();
         if (fails == 0) {

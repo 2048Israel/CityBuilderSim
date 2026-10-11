@@ -14,8 +14,8 @@ package ham.citybuildersim;
  *
  * PRICES ARE IN THE WORLD'S MONEY, per unit, in THOUSANDS like every money
  * field in the game (see BuildingsTemplate's header). A unit of food is what
- * one person eats in a month, so .20 is $200 of food; ore is .14 a tonne,
- * $140; steel .847, $847; a unit of building material is 18, $18,000, and a
+ * one person eats in a month, so .20 is $200 of food; ore is .085 a tonne,
+ * $85; steel .470, $470; a unit of building material is 18, $18,000, and a
  * House is ten of them. The city faces these multiplied by the exchange rate
  * (city money per dollar, times the world's own price level - see
  * Game.startOfMonthUpdate), which is why they are stored unconverted: a
@@ -30,8 +30,9 @@ package ham.citybuildersim;
  * margin, and it is the whole of what makes a local market worth having:
  * inside the band a local buyer and a local seller both do better than
  * trading with the world. Food's .12 against .20 is the 0.6 wedge
- * IndustrialHandler measured; ore's .14 against .41 is the mine's export
- * price against the mill's scrap, which IronMarket carried as its two ends.
+ * IndustrialHandler measured; ore's .085 against .115 is what a mine nets
+ * shipping out against what a tonne costs landed (until 0.7.116 .14 against
+ * .41, the mine's ore against the mill's scrap, IronMarket's two ends).
  * A good with no import price (NaN) cannot be imported and has no ceiling
  * from the world; a good with no export price cannot be exported and its
  * makers idle or stock what they cannot sell.
@@ -84,7 +85,9 @@ package ham.citybuildersim;
  * shelf and steel - ore and aggregate are the cheapest things here per tonne,
  * and freight really is half of what delivered ore costs. Nobody designed the
  * table that way; it came out that way, which is the best evidence there is
- * that a freight reading of the wedge is the right one.
+ * that a freight reading of the wedge is the right one. (That was the table
+ * to 0.7.115, when IRON's band was the mills' scrap over the mines' ore;
+ * since 0.7.116 ore and scrap are two rows, each at its world price.)
  *
  * WHAT CARRIES NO FREIGHT. The three seat-months, because a month of
  * somebody's work is delivered down a wire and there is nothing to ship. The
@@ -254,16 +257,45 @@ public enum Good {
     DRINKS("Drinks", "kg", .00150, .00090, .000225, true, Pricing.BAND, false),
 
     /**
-     * Iron ore, and the scrap that stands in for it. Made by the mines, used
-     * by the mills. The import price is imported scrap, the export price is
-     * what a mine gets shipping ore out - IronMarket's two ends, unchanged.
+     * Iron ore - fines, lump and concentrate at 62-66% Fe - and nothing else
+     * since 0.7.116. Made by the mines; nothing in the city uses it until the
+     * integrated route's pellet plants and blast furnaces (batch I4), so a
+     * mine ships what it lifts at the export price.
+     *
+     * .115 IN AND .085 OUT (0.7.116, batch I3; Jerus's Q4, 2026-10-08:
+     * "split"; materials-chains-research.md 2.3): ore at 62% Fe CFR China
+     * averaged US$99 a tonne in January to September 2025 and US$91 on 7
+     * October 2026, so a distant mine nets about US$85 and a city with no
+     * mine lands it for about US$115. Freight .01125, three eighths of the
+     * wedge (the header's rule). Until 0.7.115 this row was "iron ore, and
+     * the scrap that stands in for it", .41 in and .14 out: the import price
+     * was the mills' scrap and the export price the mines' ore, IronMarket's
+     * two ends, and a mill on imported "ore" was really on scrap. Scrap is
+     * its own good now (SCRAP), the arc furnaces' feed.
      */
-    IRON("Iron ore", "tonne", .41, .14, .101, false, Pricing.BAND, false),
+    IRON("Iron ore", "tonne", .115, .085, .01125, false, Pricing.BAND, false),
 
     /**
-     * Smelted by the mills. .847 is scrap plus half the real conversion
-     * margin - a small distant producer is a price taker at both ends, see
-     * IronMarket's note on why the numbers are these numbers.
+     * Made by the mills: the arc furnaces out of scrap (and from batch I4 the
+     * oxygen shop out of pig iron).
+     *
+     * .650 IN AND .470 OUT SINCE 0.7.116 (batch I3; Jerus's Q6, 2026-10-08:
+     * "move to world prices"; materials-chains-research.md 2.6): hot-rolled
+     * coil trades at about US$510 a tonne FOB on the world market and China
+     * at 424 (28 Sep 2026), so a distant mill nets about US$470 and a city
+     * lands a tonne for about US$650. Freight .0675, three eighths of the
+     * wedge. The band below was the US price, which sits behind tariffs
+     * (US$1,293 in September 2026) - the 1.284 / .847 this row carried from
+     * 2026-09-13 to 0.7.115, the history that follows. At it an integrated
+     * works on imported ore and coke cleared 1.8% a month exporting, and
+     * only a gate could have stopped it; at .470 it loses money doing that.
+     * What was made of steel moved with it (FABRICATED_STEEL, MACHINERY and
+     * the vehicles: Q6b and C), by the steel in each, so the plants that
+     * buy it kept their margins.
+     *
+     * Until then: .847 was scrap plus half the real conversion margin - a
+     * small distant producer is a price taker at both ends, see IronMarket's
+     * note on why the numbers were those numbers.
      *
      * IT HAS A CEILING NOW (2026-09-13), AND IT HAS ONE BECAUSE SOMETHING
      * FINALLY BUYS IT. For two builds the comment here read "not importable:
@@ -285,7 +317,7 @@ public enum Good {
      * ship every tonne abroad at .847 exactly as before. The ceiling is a
      * ceiling; it binds only when somebody bids.
      */
-    STEEL("Steel", "tonne", 1.284, .847, .1639, false, Pricing.BAND, false),
+    STEEL("Steel", "tonne", .650, .470, .0675, false, Pricing.BAND, false),
 
     /**
      * One unit of building material - a House is ten of them. Made by the
@@ -478,11 +510,24 @@ public enum Good {
        already take and the one with no hog cycle in it.
 
        See claude/manufacturing.md.
+
+       MOVED WITH STEEL ON 0.7.116 (batch I3; Jerus's Q6b, 2026-10-08: "move
+       them with steel", so Manufacturing's returns hold;
+       materials-chains-research.md 2.6). Steel's import price fell D$634 a
+       tonne (1.284 to .650), and each good falls by the steel in it at that:
+         FABRICATED_STEEL  2.21 -> 1.545   1.05 t of steel a tonne, -.665;
+                           freight .486 -> .3398, its share of the price kept
+         MACHINERY  14.3 / 9.0 -> 13.4 / 8.1   1.45 t a tonne, -.9 (the
+                           study's rounding of .919); freight 1.98, the same
+                           wedge
+       So a Fabrication Shop or Works still adds about D$862 a tonne over the
+       steel it uses. The 2.21 and 14.3 / 9.0 in the paragraphs above are the
+       prices as they were set on 2026-09-13 and -16, when steel was 1.284.
        ======================================================================= */
 
-    FABRICATED_STEEL("Fabricated steel", "tonne", Double.NaN, 2.21, .486, false, Pricing.BAND, false),
+    FABRICATED_STEEL("Fabricated steel", "tonne", Double.NaN, 1.545, .3398, false, Pricing.BAND, false),
 
-    MACHINERY("Machinery", "tonne", 14.3, 9.0, 1.98, false, Pricing.BAND, false),
+    MACHINERY("Machinery", "tonne", 13.4, 8.1, 1.98, false, Pricing.BAND, false),
 
     /* =======================================================================
        THE VEHICLES (2026-09-16)
@@ -580,13 +625,26 @@ public enum Good {
        opposite reason: a beam is cut to one client's drawings and a car is
        not. A finished vehicle sits on a lot until somebody buys it, which is
        what a stockable good is for.
+
+       AND ALL THREE MOVED WITH THE STEEL IN THEM ON 0.7.116 (batch I3;
+       Jerus's C, 2026-10-08: "car, van and train prices move with the steel
+       in them"), so an assembly plant's inputs getting cheaper did not hand it
+       a margin it did not have: each falls by its fabricated steel at -.665 a
+       tonne and its machinery at -.9, the two rows above, at both ends -
+         CARS  44 / 36 -> 41.3125 / 33.3125   3.5 t + 0.4 t a car, -2.6875;
+                                              freight 3.0, the same wedge
+         VANS  72 -> 68.135                   5 t + 0.6 t a van, -3.865
+         ROLLING_STOCK  2,400 -> 2,302.2      120 t + 20 t a set, -97.8
+       so Automotive's margins in D$ are what they were, to the cent, with its
+       fabricated steel at its floor. The figures in the table above are the
+       prices as they were set on 2026-09-16.
        ======================================================================= */
 
-    CARS("Cars", "car", 44.0, 36.0, 3.0, true, Pricing.BAND, false),
+    CARS("Cars", "car", 41.3125, 33.3125, 3.0, true, Pricing.BAND, false),
 
-    VANS("Vans and trucks", "van", 72.0, Double.NaN, 4.5, true, Pricing.BAND, false),
+    VANS("Vans and trucks", "van", 68.135, Double.NaN, 4.5, true, Pricing.BAND, false),
 
-    ROLLING_STOCK("Rolling stock", "wagon set", 2400.0, Double.NaN, 150.0, true, Pricing.BAND, false),
+    ROLLING_STOCK("Rolling stock", "wagon set", 2302.2, Double.NaN, 150.0, true, Pricing.BAND, false),
 
     /* =======================================================================
        THE FIRST THING A HOUSEHOLD BUYS THAT IT DOES NOT NEED (2026-09-17)
@@ -780,7 +838,23 @@ public enum Good {
     BITUMEN("Bitumen", "tonne", .6415, .5465, .03564, true, Pricing.BAND, false),
 
     /** Petroleum coke, by the tonne: a coker's solid residue. */
-    COKE("Petroleum coke", "tonne", .09207, .07843, .005115, true, Pricing.BAND, false);
+    COKE("Petroleum coke", "tonne", .09207, .07843, .005115, true, Pricing.BAND, false),
+
+    /**
+     * Steel scrap, the arc furnaces' feed (0.7.116, batch I3; Jerus's Q4,
+     * 2026-10-08: "split"; materials-chains-research.md 2.3). .41 in is the
+     * old IRON row's import price, which was always scrap (shredded scrap
+     * US$410, SteelBenchmarker 26 Aug 2026; CFR Turkey about US$394), and
+     * .30 out is what a city's scrap nets shipped to a distant mill; freight
+     * .04125, three eighths of the wedge. A flow good, as ore is: what a mill
+     * does not take leaves, and nothing in the city makes it until the Scrap
+     * Yard (batch I4), so the furnaces import it.
+     *
+     * With steel at .650 / .470 an Electric Arc Furnace on imported scrap
+     * earns -0.5% of its cost a month exporting and 0.2% replacing imported
+     * steel; on the city's own scrap, valued at .30, 0.7% (the study's 2.5).
+     */
+    SCRAP("Scrap", "tonne", .41, .30, .04125, false, Pricing.BAND, false);
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -968,6 +1042,8 @@ public enum Good {
         switch (this) {
             case CROPS: case GRAINS: case IRON: case STEEL:
             case MATERIALS: case FABRICATED_STEEL: case MACHINERY:
+            // ...and scrap, in the same hoppers as ore (0.7.116).
+            case SCRAP:
             // A locomotive on a low-loader is not a crate of bread.
             case ROLLING_STOCK:
             // ...and crude, in tank wagons, as ore goes in hoppers. Petrol and
@@ -998,7 +1074,7 @@ public enum Good {
      *
      * LIQUID is crude, the seven litre goods and bitumen - tankers, the
      * bitumen in a heated one. DRY_BULK is what a grab lifts out of a hold:
-     * iron ore, crops, grains, building materials and coke. GENERAL is what
+     * iron ore, crops, grains, building materials, coke and (0.7.116) scrap. GENERAL is what
      * is lifted piece by piece - steel, fabricated steel, machinery, wagon
      * sets, cars and vans. CONTAINER is the rest of what the GOODS stream
      * carries: the shelf, the drinks and the watches, in boxes.
@@ -1008,7 +1084,7 @@ public enum Good {
             case CRUDE: case LPG: case NAPHTHA: case PETROL: case JET: case DIESEL:
             case LUBRICANTS: case FUEL_OIL: case BITUMEN:
                 return Ports.Cargo.LIQUID;
-            case IRON: case CROPS: case GRAINS: case MATERIALS: case COKE:
+            case IRON: case CROPS: case GRAINS: case MATERIALS: case COKE: case SCRAP:
                 return Ports.Cargo.DRY_BULK;
             case STEEL: case FABRICATED_STEEL: case MACHINERY: case ROLLING_STOCK: case CARS: case VANS:
                 return Ports.Cargo.GENERAL;

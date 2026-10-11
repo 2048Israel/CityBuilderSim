@@ -1938,7 +1938,7 @@ final class TradeScreen {
             double pays = m.exportPrice(), charges = m.importPrice();
             Sectors.GoodTrade crossed = t.goods().get(g);
             boolean sold = crossed != null && crossed.sold() > 0, bought = crossed != null && crossed.bought() > 0;
-            grid.add(gridCell(g.label() + (g == Good.IRON ? " (scrap in)" : "") + " · a " + g.unit(),
+            grid.add(gridCell(g.label() + " · a " + g.unit(),
                     Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
             grid.add(gridCell(Double.isFinite(pays) ? unitD(pays) : "—", Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
             grid.add(gridCell(Double.isFinite(pays) ? marked(Currency.FOREIGN_SYMBOL, unitPrice(fx.toUsd(pays))) : "",

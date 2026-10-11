@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -121,7 +123,7 @@ public class PolicyPreviewCheck {
     static final String[][] ORDERS = {
             { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction Depot", "6" },
             { "Coal Power Plant", "2" }, { "Water Treatment Plant", "2" }, { "Industrial Bakery", "3" },
-            { "Steel Foundry", "2" }, { "Fabrication Shop", "2" }, { "Commercial Bank", "1" },
+            { LongPlaytest.byId(HeavyIndustry.ARC_FURNACE), "2" }, { "Fabrication Shop", "2" }, { "Commercial Bank", "1" },
             { "Elementary School", "3" }, { "Walk-in Clinic", "3" }, { "Paved Road", "20" } };
 
     public static void main(String[] args) throws Exception {
@@ -436,9 +438,12 @@ public class PolicyPreviewCheck {
         duty.setFuelDuty(.000215);
         assertTrue("at the city's own dial the duty previewed is the month's, to the bit (none at the default)",
                 PolicyPreview.fuelDutyAt(g, live) == em.getFuelDuty());
+        double moved = PolicyPreview.change(g, live, duty, share, share), byHand = litres * duty.chargedFuelDuty() - PolicyPreview.fuelDutyAt(g, live);
+        System.out.printf("   moved %.6f, by hand %.6f; at the duty %.9f against %.9f%n", moved, byHand, PolicyPreview.fuelDutyAt(g, duty),
+                litres * .000215 * live.getExpectedLevel());
         assertTrue("a duty of 21.5 cents a litre moves the budget by the litres at it as charged, the expected price level in it",
-                near(PolicyPreview.change(g, live, duty, share, share), litres * duty.chargedFuelDuty() - PolicyPreview.fuelDutyAt(g, live))
-                        && PolicyPreview.fuelDutyAt(g, duty) == litres * .000215 * live.getExpectedLevel());
+                near(moved, byHand) && PolicyPreview.fuelDutyAt(g, duty) == litres * duty.chargedFuelDuty()
+                        && duty.chargedFuelDuty() == .000215 * live.getExpectedLevel());
         assertTrue("...and a litre at the pump by exactly the duty",
                 near(PolicyPreview.pumpPriceAt(g, duty) - PolicyPreview.pumpPriceAt(g, live),
                         duty.chargedFuelDuty() - live.chargedFuelDuty()));

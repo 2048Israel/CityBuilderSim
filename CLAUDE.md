@@ -126,8 +126,11 @@ These are Jerus's, and they do not move.
                                    split at the month's trade); ProcessingSector and ExtractionSector (0.7.112,
                                    batch I2: the materials chains' two bases - a works built by SpreadPlanner,
                                    with captive use and idle-then-shed, and Mining's rule for a mine, Mining
-                                   moved onto it); Mining.java is the shape to copy (on ExtractionSector
-                                   since 0.7.112; Materials.java is the shortest on Sector itself)
+                                   moved onto it; since 0.7.116, batch I3, Heavy Industry - labelled Iron &
+                                   Steel, its arc furnaces on SCRAP - a ProcessingSector, and Mining - Iron
+                                   Mining - asked the planner's money gate on the whole cost); Mining.java
+                                   is the shape to copy (on ExtractionSector since 0.7.112; Materials.java
+                                   is the shortest on Sector itself)
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
                                    the businesses' bonds (0.7.12): the market and each participant's rule, the
                                    bond, the limit-order book the bonds and (since round 2) the shares trade on

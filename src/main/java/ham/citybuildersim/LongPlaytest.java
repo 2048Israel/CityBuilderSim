@@ -1,5 +1,8 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+import ham.citybuildersim.sectors.Mining;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -2960,8 +2963,8 @@ public class LongPlaytest {
          * player would read: what one of these would clear, at the price
          * and the staffing the mines actually get.
          */
-        if (land.hasUnminedDeposit(g.minesCommitted()) && wouldPay(g, "Iron Mine", Sectors.MINING)) {
-            addThrottle(moves, g, "Iron Mine", "mine", gdp * .05);
+        if (land.hasUnminedDeposit(g.minesCommitted()) && wouldPay(g, nameOf(g, Mining.IRON_MINE), Sectors.MINING)) {
+            addThrottle(moves, g, nameOf(g, Mining.IRON_MINE), "mine", gdp * .05);
         }
 
         /*
@@ -2992,8 +2995,10 @@ public class LongPlaytest {
             double jobGain = perHead * idle * GROWTH_DISCOUNT;
             // Same test as the mine: 72 foundries went up in one run for the
             // jobs alone, into a market that could not pay for the steel.
-            if (wouldPay(g, "Steel Foundry", Sectors.HEAVY_INDUSTRY)) {
-                addThrottle(moves, g, "Steel Foundry", "foundry", jobGain);
+            // By its id since 0.7.116 (batch I3): the Steel Foundry is the
+            // Electric Arc Furnace now, on scrap.
+            if (wouldPay(g, nameOf(g, HeavyIndustry.ARC_FURNACE), Sectors.HEAVY_INDUSTRY)) {
+                addThrottle(moves, g, nameOf(g, HeavyIndustry.ARC_FURNACE), "foundry", jobGain);
             }
             addThrottle(moves, g, "Industrial Bakery", "mill", jobGain);
         }
@@ -3070,7 +3075,7 @@ public class LongPlaytest {
     static void ironWhenNeeded(Game g) {
         LandManager land = g.getLandManager();
         if (land.getIronDeposits() > g.minesCommitted()) return;
-        if (!wouldPay(g, "Iron Mine", Sectors.MINING)) return;
+        if (!wouldPay(g, nameOf(g, Mining.IRON_MINE), Sectors.MINING)) return;
         if (firstIronNeedMonth == 0) firstIronNeedMonth = g.getMonth();
         LandParcel field = land.getMarket().cheapestWith(Resource.IRON);
         if (field == null) {
@@ -3847,6 +3852,12 @@ public class LongPlaytest {
         return g.getBuildingManager().getQuantity(id);
     }
 
+    /** A building's name by its permanent id, null with none (0.7.116, batch I3; spec-materials 4): the player finds the Iron Mine and the Electric Arc Furnace by their ids, so a rename - the Steel Foundry's at I3 - cannot lose them. */
+    static String nameOf(Game g, int id) {
+        BuildingsTemplate t = g.getBuildingManager().getTemplate(id);
+        return t == null ? null : t.getName();
+    }
+
     /** The city's home buildings standing, every RESIDENTIAL type (0.7.71: what childcare is counted against). */
     static int homeBuildings(Game g) {
         int n = 0;
@@ -4000,10 +4011,17 @@ public class LongPlaytest {
     }
 
     static BuildingsTemplate template(Game g, String name) {
+        // ...or by its permanent id, "#11" (byId(): a fixture's list of orders, 0.7.116).
+        if (name != null && name.startsWith("#")) return g.getBuildingManager().getTemplate(Integer.parseInt(name.substring(1)));
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (t.getName().equals(name)) return t;
         }
         return null;
+    }
+
+    /** A building named by its permanent id in a fixture's list of orders, "#11", which template() reads (0.7.116, batch I3): the lists name the arc furnaces and the Iron Mine so, a name being a label the chains rename. */
+    static String byId(int id) {
+        return "#" + id;
     }
 
     /* ===================================================================
@@ -5265,7 +5283,8 @@ public class LongPlaytest {
          */
         ForeignAccounts fx = g.getForeignAccounts();
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
-        out.printf("  NX breakdown: exports %,.0f | food %,.0f  materials %,.0f  scrap %,.0f  => NX %,.0f%n",
+        // "the rest" was "scrap" while IRON was scrap and the mills its only buyer (0.7.116: SCRAP is its own good)
+        out.printf("  NX breakdown: exports %,.0f | food %,.0f  materials %,.0f  the rest %,.0f  => NX %,.0f%n",
                 na.getExports(), na.getImportsFood(), na.getImportsMaterials(),
                 na.getImportsRawMaterial(), na.getNetExports());
         /*
@@ -6058,14 +6077,14 @@ public class LongPlaytest {
                 + " and whose cheapest field would not pay itself back (0.7.67) %,d; %,d iron site(s) and %d mine(s) at the"
                 + " end%n", ironFieldsBought, ironFieldsOnBond,
                 firstIronNeedMonth > 0 ? "m" + firstIronNeedMonth : "never", firstIron,
-                ironCouldNotPay, ironNoneListed, ironDoesNotPay, g.getLandManager().getIronDeposits(), qty(g, "Iron Mine"));
+                ironCouldNotPay, ironNoneListed, ironDoesNotPay, g.getLandManager().getIronDeposits(), qtyOf(g, Mining.IRON_MINE));
         UtilitiesHandler water = g.getServicesManager().getUtilitiesHandler();
         if (g.hasCityMap()) {
             CityMap map = g.getCityMap();
             out.printf("  the city map (0.7.60): kept up %,d month(s), its districts off the buildings in %,d; %,d of %,d"
                     + " reload(s) read it back the same; %d district(s) at the end, %,d of its %,d owned iron sites"
                     + " under mines; dropped %d time(s)%n", mapMonths, mapMismatches, mapReloadsSame, mapReloads,
-                    map.districts().size(), qty(g, "Iron Mine"), map.ownedSites(Resource.IRON),
+                    map.districts().size(), qtyOf(g, Mining.IRON_MINE), map.ownedSites(Resource.IRON),
                     g.getMapFailures());
         }
         // A map dropped mid-run is gone from the city, so this is asked whether or not one stands now.

@@ -35,12 +35,17 @@ public enum Resource {
      * Iron ore: 0.2 fields a square kilometre of land, a site the Iron Mine's
      * own ground (400,000 sq ft, 0.03716 km2), 15 Mt a site - 7.59 Mt a km2 of
      * land, today's listing's ore on a quarter of its sites, 1.88% of the map.
-     * The ground sells at 1/350 of the ore's world export price: the $0.40
-     * a tonne in the ground the land office charged until 0.7.57 (LandMarket,
-     * THE ORE UNDER AN OFFER) against the world's floor of $140 (Good.IRON).
+     * The ground sells at US$0.40 a tonne in the ground, the land office's
+     * charge until 0.7.57 (LandMarket, THE ORE UNDER AN OFFER): 1/212.5 of the
+     * ore's world export price since 0.7.116 (batch I3; Jerus's D,
+     * 2026-10-08: "keep US$0.40 a tonne"), when ore fell to .085
+     * (Good.IRON); 1/350 of the old floor of .14 until then. Kept, the field
+     * is the gate on the mines: LandCheck 19's fixture field (world 35's
+     * nearest dry field, 27 sites, 463 Mt) is about US$185M of ore, where at
+     * 1/350 of .085 it would have been about US$112M.
      */
     IRON("Iron ore", "tonne", 0.2, 400_000 * LandManager.SQ_M_PER_SQ_FT / LandManager.SQ_M_PER_KM2,
-            15_000_000, 0xB26242, Good.IRON, 1.0 / 350),
+            15_000_000, 0xB26242, Good.IRON, 1.0 / 212.5),
 
     /**
      * Oil: 0.02 fields a km2 of land, a site a well's 10-acre spacing (435,600

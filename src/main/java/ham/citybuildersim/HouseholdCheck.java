@@ -177,7 +177,7 @@ public class HouseholdCheck {
         check("never negative", entry.monthsAgo(5), 0);
 
         // Abandoned plots read differently from ones the city bought back.
-        log.record("Steel Foundry", 1, "Heavy Industry", 11, 0);
+        log.record("Electric Arc Furnace", 1, "Heavy Industry", 11, 0);
         assertTrue("abandoned plot", !log.recent(11).get(0).wasPaidFor());
 
         /* ==================== 7. it fades out ==================== */
@@ -191,7 +191,7 @@ public class HouseholdCheck {
         assertTrue("...but not forgotten by all()", log.all().size() == 2);
 
         // Newest first, so the eye lands on what just happened.
-        assertTrue("newest first", "Steel Foundry".equals(log.recent(11).get(0).building));
+        assertTrue("newest first", "Electric Arc Furnace".equals(log.recent(11).get(0).building));
 
         // Nonsense is refused rather than stored.
         DemolitionLog strict = new DemolitionLog();

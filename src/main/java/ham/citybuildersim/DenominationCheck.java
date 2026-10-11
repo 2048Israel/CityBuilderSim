@@ -1,5 +1,8 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+import ham.citybuildersim.sectors.Mining;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -145,8 +148,8 @@ public class DenominationCheck {
             LongPlaytest.build(g, "Coal Power Plant", 2);
             LongPlaytest.build(g, "Water Treatment Plant", 2);
             LongPlaytest.build(g, "Industrial Bakery", 4);
-            LongPlaytest.build(g, "Iron Mine", 2);
-            LongPlaytest.build(g, "Steel Foundry", 2);
+            LongPlaytest.build(g, LongPlaytest.nameOf(g, Mining.IRON_MINE), 2);
+            LongPlaytest.build(g, LongPlaytest.nameOf(g, HeavyIndustry.ARC_FURNACE), 2);
             LongPlaytest.build(g, "Commercial Bank", 1);
             LongPlaytest.build(g, "Elementary School", 3);
             LongPlaytest.build(g, "Walk-in Clinic", 3);

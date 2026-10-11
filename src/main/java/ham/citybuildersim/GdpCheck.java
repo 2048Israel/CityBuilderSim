@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+
 /** Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them). */
 public class GdpCheck {
 
@@ -554,7 +556,7 @@ public class GdpCheck {
             railTown.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
             railTown.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             railTown.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
-            railTown.buildStack(b.getTemplateByName("Steel Foundry"), 30, true);
+            railTown.buildStack(b.getTemplate(HeavyIndustry.ARC_FURNACE), 30, true);
             railTown.simulateMonths(36);
             RailCheck.lay(railTown, "Rail Spur", 2);
             railTown.simulateMonths(1);
