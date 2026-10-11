@@ -217,13 +217,15 @@ public final class BuildCard {
        refinery's ("Oil", "Refining") after the mines'; since 0.7.120 (batch
        I3, Jerus's Q2) the mills' and the mines' are their sectors' new
        labels, "Iron & Steel" and "Iron Mining" ("Steel" and "Iron" until
-       then).
+       then); since 0.7.126 (batch I6) Coal Mining's "Coal" after the iron
+       mines', the materials chains' groups by the spec's 4 ("Coal, Copper,
+       Stone, Wood, Cement").
        ===================================================================== */
 
     /** The market groups, in the order a page lays them out. */
     static final String[] GROUP_ORDER = {
             "Homes", "Groceries", "Filling stations", "The bank's branches",
-            "Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Oil", "Oil platforms",
+            "Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal", "Oil", "Oil platforms",
             "Oil pipelines", "Refining",
             "Oil storage", "Ports", "Building materials", "Builders",
             "Offices", "Farms", "Rail", "Vehicles", "Luxury shops", "Restaurants" };
@@ -259,6 +261,7 @@ public final class BuildCard {
                     case Sectors.HEAVY_INDUSTRY:  return "Iron & Steel";
                     case Sectors.MANUFACTURING:   return "Fabrication & machinery";
                     case Sectors.MINING:          return "Iron Mining";
+                    case Sectors.COAL_MINING:     return "Coal";
                     case Sectors.OIL:             return "Oil";
                     case Sectors.REFINING:        return "Refining";
                     case Sectors.MATERIALS:       return "Building materials";
@@ -355,7 +358,9 @@ public final class BuildCard {
      * makes being a crude unit's slate since 0.7.76 (sectors.Refining.madeBy()),
      * its template naming only the crude. A conversion unit (0.7.80) uses no
      * good: what it makes of its feed is less what the feed would have made
-     * with no unit (Refining.feedValueOf()), its spread on the whole feed.
+     * with no unit (Refining.feedValueOf()), its spread on the whole feed. A
+     * coal preparation plant (0.7.126) neither: what it adds to Coal Mining's
+     * flow (sectors.CoalMining.madeBy()).
      */
     public static double valueAdded(Game game, BuildingsTemplate t) {
         double v = 0;
@@ -370,6 +375,14 @@ public final class BuildCard {
         if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) {
             v -= ham.citybuildersim.sectors.Refining.feedValueOf(t,
                     ham.citybuildersim.sectors.RefineryFlow.values(g -> priceOf(game, g)));
+        }
+        // ...and a coal preparation plant (0.7.126) uses no good either: what it adds to Coal Mining's flow, the coking coal
+        // it makes less the thermal its raw coal no longer sells as (sectors.CoalMining.madeBy()) - nothing with no raw coal.
+        if (t.getWash() > 0 && game.getSectors() != null) {
+            for (Map.Entry<Good, Double> e : game.getSectors().coalMining().madeBy(t).entrySet()) {
+                double p = priceOf(game, e.getKey());
+                if (Double.isFinite(p)) v += e.getValue() * p;
+            }
         }
         return v;
     }
@@ -623,6 +636,11 @@ public final class BuildCard {
                 if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) {
                     verb = "upgrades "; words = feedWords(t);
                     figure = t.feedPerMonth();
+                }
+                // ...and a coal preparation plant (0.7.126) by the raw coal it washes: a stream of the coking mines', no good.
+                if (t.getWash() > 0) {
+                    verb = "washes "; words = " t of raw coal a month";
+                    figure = t.getWash();
                 }
                 va = valueAdded(game, t); unit = va;
                 Resource site = Game.siteOf(t);

@@ -23,11 +23,12 @@ package ham.citybuildersim;
  * (World.FOREST_M3_PER_KM2); its density, site and amount a site are zero.
  *
  * WHAT USES IT. Iron, since J1b put the city's land on the world; oil, lifted
- * as CRUDE by the wells since 0.7.62 (batch K). The other five wait for their
- * industries, and until then their ground is free (an in-ground share of zero
- * and no good). Since 0.7.110 (batch I1) iron's, coal's, copper's and stone's
- * fields are each of two types (typesOf(), Deposit.type()), which nothing
- * reads yet.
+ * as CRUDE by the wells since 0.7.62 (batch K); coal, dug by Coal Mining
+ * since 0.7.126 (batch I6). The other four wait for their industries, and
+ * until then their ground is free (an in-ground share of zero and no good).
+ * Since 0.7.110 (batch I1) iron's, coal's, copper's and stone's fields are
+ * each of two types (typesOf(), Deposit.type()): iron's mines stand on theirs
+ * since 0.7.124 (batch I5), coal's since 0.7.126.
  */
 public enum Resource {
 
@@ -62,8 +63,17 @@ public enum Resource {
     /** Stone: 0.01 fields a km2, a site 0.1 km2, 13.5 Mt a site - a quarry 50 m deep at 2.7 t a cubic metre. */
     STONE("Stone", "tonne", 0.01, 0.1, 13_500_000, 0xDED8C6, null, 0),
 
-    /** Coal: 0.002 fields a km2, a site 1 km2, 6.5 Mt a site - a seam 5 m thick at 1.3 t a cubic metre. */
-    COAL("Coal", "tonne", 0.002, 1.0, 6_500_000, 0x2E2E34, null, 0),
+    /**
+     * Coal: 0.002 fields a km2, a site 1 km2, 6.5 Mt a site - a seam 5 m
+     * thick at 1.3 t a cubic metre. Dug by Coal Mining since 0.7.126 (batch
+     * I6; runs/spec-materials.md 2.4): sold as THERMAL_COAL, the pricing good
+     * of both its types - a coking field's raw coal is thermal until a
+     * preparation plant washes it, which is the sector's flow
+     * (sectors.CoalMining.flow()), not the ground's. The ground sells at
+     * 1/200 of thermal coal's world export price (the study's 8, est.):
+     * US$0.25 a tonne in the ground, about US$1.6M a site.
+     */
+    COAL("Coal", "tonne", 0.002, 1.0, 6_500_000, 0x2E2E34, Good.THERMAL_COAL, 1.0 / 200),
 
     /** Copper: 0.0005 fields a km2, a site 0.5 km2, 300,000 t of metal a site - 120 Mt of ore a km2 at 0.5%. */
     COPPER("Copper", "tonne", 0.0005, 0.5, 300_000, 0x40AA8C, null, 0),
@@ -160,10 +170,11 @@ public enum Resource {
     /**
      * The good a field of a type becomes when it is dug (0.7.110): null for a
      * type that is not one of its own; for ANY (null) or one of its own, its
-     * good() for now - IRON for both iron types, nothing for coal, copper and
-     * stone, whose goods come with their industries (spec-materials 2.4:
-     * THERMAL_COAL for both coals, COPPER_CONC or COPPER, LIMESTONE or
-     * AGGREGATE, at I6 to I8). good() stays the one pricing good.
+     * good() for now - IRON for both iron types, THERMAL_COAL for both coals
+     * since 0.7.126 (washing a coking field's raw coal is Coal Mining's flow),
+     * nothing for copper and stone, whose goods come with their industries
+     * (spec-materials 2.4: COPPER_CONC or COPPER, LIMESTONE or AGGREGATE, at I7
+     * and I8). good() stays the one pricing good.
      */
     public Good goodOf(Deposit.FieldType type) {
         return type == null || typesOf().contains(type) ? good : null;

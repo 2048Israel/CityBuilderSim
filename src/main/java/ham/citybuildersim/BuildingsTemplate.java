@@ -506,6 +506,28 @@ public class BuildingsTemplate {
     /** The year it first existed, or 0 for a row not yet dated. */
     public int getSince() { return since; }
 
+    /* ----- THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; runs/spec-materials.md 2.5, 2.10) -----
+       A coking field's coal comes out of the ground raw - run-of-mine, ash
+       and rock in it - and sells as thermal coal, tonne for tonne, until a
+       Coal Preparation Plant washes it ("wash": 500000 in buildings.json,
+       tonnes of raw coal a month at nameplate) into coking coal and thermal
+       coal, the rest to spoil (sectors.CoalMining.flow(): the study's 3.3,
+       275,000 t of coking and 100,000 t of thermal out of 500,000 t raw).
+       Raw coal is not a good: it is a stream inside Coal Mining, as the
+       refinery's cuts are, so the plant buys and makes nothing of its own
+       and its owner's flow says what comes of it (Jerus's Q9, 2026-10-08: a
+       separate building). Every other building washes none. */
+    private double wash;
+
+    /** Makes this a preparation plant washing `tonnesAMonth` of raw coal a month at nameplate; 0 or less is none. */
+    public BuildingsTemplate setWash(double tonnesAMonth) {
+        this.wash = Double.isFinite(tonnesAMonth) ? Math.max(0, tonnesAMonth) : 0;
+        return this;
+    }
+
+    /** Tonnes of raw coal it washes a month at nameplate; 0 for every building but the Coal Preparation Plant (0.7.126). */
+    public double getWash() { return wash; }
+
 
 
     //enums

@@ -211,7 +211,9 @@ public class BuildingCatalog {
                 .setGen(number(o, "gen"))
                 .setConsumables(number(o, "consumables"))
                 // ...and the year it first existed (0.7.123): absent, undated.
-                .setSince((int) number(o, "since"));
+                .setSince((int) number(o, "since"))
+                // ...and the raw coal a preparation plant washes, t a month (0.7.126): absent, none.
+                .setWash(number(o, "wash"));
 
         readCare(o, template, name);
         readJobs(o, template, name);

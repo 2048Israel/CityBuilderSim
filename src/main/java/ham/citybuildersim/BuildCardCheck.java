@@ -253,10 +253,17 @@ public class BuildCardCheck {
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) industry.add(gr.title());
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.SHOPS, null)) shops.add(gr.title());
         // ...the mills' and the mines' named for their sectors since 0.7.120 (batch I3, Jerus's Q2): "Steel" and "Iron" until then.
-        assertTrue("Industry is nine groups by owning sector, and oil storage (0.7.85), the ports (0.7.86) and the oil at sea's"
-                        + " platforms and pipelines (0.7.91): " + industry,
-                industry.equals(List.of("Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Oil",
-                        "Oil platforms", "Oil pipelines", "Refining", "Oil storage", "Ports", "Building materials", "Builders")));
+        assertTrue("Industry is ten groups by owning sector - Coal Mining's \"Coal\" since 0.7.126 - and oil storage (0.7.85), the ports"
+                        + " (0.7.86) and the oil at sea's platforms and pipelines (0.7.91): " + industry,
+                industry.equals(List.of("Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal",
+                        "Oil", "Oil platforms", "Oil pipelines", "Refining", "Oil storage", "Ports", "Building materials", "Builders")));
+        // ...and the Coal group (0.7.126, batch I6; spec-materials 4: "+ Coal, Copper, Stone, Wood, Cement"): Coal Mining's four.
+        List<String> coal = new ArrayList<>();
+        for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) {
+            if (gr.title().equals("Coal")) for (BuildCard.Figures f : gr.cards()) coal.add(f.template().getName());
+        }
+        assertTrue("...the Coal group is Coal Mining's four, in the catalogue's order (0.7.126): " + coal,
+                coal.equals(List.of("Surface Coal Mine", "Large Surface Mine", "Underground Coal Mine", "Coal Preparation Plant")));
         // ...the oil at sea (0.7.91): the wells' group the Oil Well and the Platform Well, the platforms' the jacket in its wells'
         // slots, the pipelines' a kilometre of pipe - all the investors'.
         java.util.Map<String, List<String>> oilGroups = new java.util.LinkedHashMap<>();
@@ -314,7 +321,7 @@ public class BuildCardCheck {
         out.println("\n--- 2. the hero and the bars are the model's: the quote, the land, the staffing, the markets ---");
         double[] fill = g.getPopulationManager().getJobFillRate();
         double[] wages = g.getPopulationManager().getWagesPerType();
-        int cards = 0, makers = 0, offices = 0, cityCards = 0, landBars = 0, roadCards = 0, conversion = 0;
+        int cards = 0, makers = 0, offices = 0, cityCards = 0, landBars = 0, roadCards = 0, conversion = 0, washers = 0;
         boolean hero = true, bar1 = true, bar2 = true, va = true, run = true, sticker = true, head = true;
         for (BuildCard.Group gr : allGroups(g)) {
             for (BuildCard.Figures f : gr.cards()) {
@@ -349,9 +356,10 @@ public class BuildCardCheck {
                     case POINTS:    expectFigure = t.makes(Good.BUILDING_WORK); break;
                     // ...a crude unit's the crude it refines (0.7.76): its products are the slate of it; a conversion
                     // unit's the feed it upgrades (0.7.80), a stream of the crude units' run.
+                    // ...and a coal preparation plant's the raw coal it washes (0.7.126), a stream of the coking mines'.
                     case MAKER: case OFFICE: expectFigure = ham.citybuildersim.sectors.Refining.isCrudeUnit(t)
                             ? t.uses(Good.CRUDE) : ham.citybuildersim.sectors.Refining.isConversionUnit(t)
-                            ? t.feedPerMonth() : t.makes(f.good()); break;
+                            ? t.feedPerMonth() : t.getWash() > 0 ? t.getWash() : t.makes(f.good()); break;
                     default: {
                         BuildAdvice.Measure m = measureOf(gr);
                         expectFigure = m.kind() == BuildAdvice.Kind.ROADS ? t.getCapacity() : BuildAdvice.unit(g, m, t);
@@ -382,6 +390,13 @@ public class BuildCardCheck {
                                 : g.getMarkets().get(feed.leftover()).getLocalPrice();
                         v -= t.feedPerMonth() * each;
                         conversion++;
+                    }
+                    // ...and a coal preparation plant's (0.7.126): what it adds to Coal Mining's flow at the markets' prices.
+                    if (t.getWash() > 0) {
+                        for (Map.Entry<Good, Double> e : g.getSectors().coalMining().madeBy(t).entrySet()) {
+                            v += e.getValue() * g.getMarkets().get(e.getKey()).getLocalPrice();
+                        }
+                        washers++;
                     }
                     if (f.valueAdded() != v || f.unit() != v) { va = false; out.println("      value added: " + t.getName()); }
                     if (f.kind() == BuildCard.Kind.OFFICE) offices++; else makers++;
@@ -446,11 +461,12 @@ public class BuildCardCheck {
         assertTrue("every card's price and sticker are Game.quoteBuild(t, 1)'s", sticker);
         assertTrue("...its head the count standing, what is on site and its wait, and the land free the city's own", head);
         assertTrue("the hero's figure is the template's own (capacity, coverage, rail, points, its first good, a crude unit's crude,"
-                + " a conversion unit's feed, oil storage's tank room, a terminal's berth)"
+                + " a conversion unit's feed, a preparation plant's raw coal, oil storage's tank room, a terminal's berth)"
                 + " or a city building's served at today's staffing", hero);
         assertTrue("value added is what one makes less what it uses at the markets' prices, an office's at"
-                + " the price of a seat, a conversion unit's less its feed at what that makes unworked (" + makers + " makers, "
-                + offices + " offices, " + conversion + " conversion units)", va && makers > 0 && offices == 3 && conversion == 14);
+                + " the price of a seat, a conversion unit's less its feed at what that makes unworked, a preparation plant's what it"
+                + " adds to coal's flow (" + makers + " makers, " + offices + " offices, " + conversion + " conversion units, " + washers
+                + " plant)", va && makers > 0 && offices == 3 && conversion == 14 && washers == 1);
         assertTrue("bar 1 is the quote at one over the unit, to the bit, on every card but a road's, whose is its life"
                 + " over the trips it takes off the road (0.7.70; " + roadCards + " road cards)", bar1 && roadCards > 0);
         assertTrue("bar 2 is land per unit on the market's cards and per trip off on a road's, unstaffable posts of 100"
