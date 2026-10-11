@@ -144,6 +144,27 @@ import java.util.Map;
  *      fading; a boat pure in (call, t), a frame touching only the routes on
  *      screen; and at 10B (the oil spec's prototype's trade and lanes) a
  *      frame's boats in no more than BOAT_FRAME_MS.
+ *  10. the map on Earth (0.7.119, batch E5; the project's spec-earth.md 3's
+ *      "Far views" and 8's E5 row), on EarthCheck's fixture: a generated
+ *      world's far node is its region at every stride, as before; an Earth
+ *      world's far node over each of the study's windows strokes every river
+ *      at least FAR_RIVER_HALF_PX a side - every pixel whose centre lies that
+ *      near a segment is fresh (or sea) - draws every small lake over the
+ *      pixels its blob always holds, keeps the data's sea and, dithered, its
+ *      forest (the undithered region's printed beside it), is the same twice
+ *      and from a world made afresh, and is drawn in no more than SCREEN_MS;
+ *      across the 180th meridian (Fiji's window) nodes overlapping by half
+ *      agree pixel for pixel and each side's land is the data's; past the
+ *      planet's rim the node's pixels are the void and nowhere else; the
+ *      hover card names the nearest of the data's places - the window's own
+ *      city - by distance and direction, the province under the spot with
+ *      its class (EarthTerrainCheck 11's), and past the rim says so; a
+ *      generated city's card has no such lines. On the full file, when it is
+ *      named: earth-1's longest river segment is EarthTerrain.LONGEST_SEGMENT_M;
+ *      every stride's node over Rotterdam within SCREEN_MS, and the whole
+ *      world's view timed; the small lakes' discs at a stride hold their own
+ *      area within EarthTerrainCheck.LAKE_AREA; and on the meridian in
+ *      Chukotka, rivers and lakes drawn on both sides and the nodes agreeing.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -261,6 +282,7 @@ public class MapCheck {
         cost(sq);
         viewHalf(city, sq, root);
         atSea(sq.types, sq.seed);
+        onEarth(sq.types);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -3120,5 +3142,420 @@ public class MapCheck {
         check("...on the tiles the jacket drawn once, each well once on its site, the 500 m ring and the pipe through every plot they cross once",
                 jacketPlots == (long) TilePainter.JACKET_PLOTS * TilePainter.JACKET_PLOTS && wellPlots == wellsOff && ringPlots == wantRing
                         && pipePlots == wantPipe && wantRing > 0 && wantPipe > 0);
+    }
+
+    /* =====================================================================
+       10. THE MAP ON EARTH (0.7.119, batch E5)
+       ===================================================================== */
+
+    /** The stride the study's windows are drawn at: EarthTerrainCheck.WINDOW / NODE_PX, 16 plots a pixel - one node is the window, a world cell, and from it the far node strokes its own water and dithers its forest (EarthTerrain.WATER_STRIDE, DITHER_STRIDE). */
+    static final int WINDOW_STRIDE = EarthTerrainCheck.WINDOW / MapFrame.NODE_PX;
+
+    /** The strides under WINDOW_STRIDE the windows are drawn at too, where the far node is E2's region but for its rivers: 2, 4 and 8 plots a pixel. */
+    static final int[] CLOSE_STRIDES = { 2, 4, 8 };
+
+    /** How far a node is moved to hold the 180th meridian with its neighbour, in pixels: half a node, 64 - whole blocks of EarthTerrain.FAR_BLEND_PX, so two nodes read every pixel they share alike. */
+    static final int SEAM_SHIFT_PX = MapFrame.NODE_PX / 2;
+
+    /** The full file's seam: the 180th meridian in Chukotka, 66 N, rivers and lakes either side of it. */
+    static final double CHUKOTKA_LAT = 66, CHUKOTKA_LON = 180;
+
+    /** ...drawn at 64 plots a pixel (1.9 km; a node 246 km across), EarthTerrain.FAR_TILE_BLEND_STRIDE: every river stroked (FAR_RIVER_SHARE's 23 m), each tile's points blended. */
+    static final int CHUKOTKA_STRIDE = EarthTerrain.FAR_TILE_BLEND_STRIDE;
+
+    /** The full file's small lakes: Finland's lake district, 62 N 26 E. */
+    static final double LAKES_LAT = 62, LAKES_LON = 26;
+
+    /** ...over this many nodes a side about the spot at WINDOW_STRIDE: 3, 184 km, a few thousand lakes. */
+    static final int LAKES_NODES = 3;
+
+    /** Section 10. */
+    static void onEarth(BuildingVisual.Type[] types) throws Exception {
+        out.println("\n--- 10. the map on Earth: the far nodes from the data's vectors, the seam, the void past the rim, the hover's place and geology ---");
+        byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE), expect = EarthCheck.resource(EarthCheck.EXPECT);
+        check("EarthCheck's fixture is beside the classes (" + EarthCheck.FIXTURE + ")", fixture != null && expect != null);
+        if (fixture == null || expect == null) return;
+        EarthData data = EarthData.of(fixture);
+        String id = EarthTerrain.use(data);
+        Map<String, EarthTerrainCheck.Spot> spots = new java.util.LinkedHashMap<>();
+        for (String line : new String(expect, java.nio.charset.StandardCharsets.UTF_8).split("\n")) {
+            String[] f = line.split("\t", -1);
+            if (f.length > 4 && f[1].equals("window")) spots.put(f[2], new EarthTerrainCheck.Spot(f[2], Double.parseDouble(f[3]), Double.parseDouble(f[4])));
+        }
+        long seed = EarthTerrainCheck.SEED;
+        int n = MapFrame.NODE_PX;
+        // A generated world's far node is its region, at every stride a view draws.
+        int widest = (int) new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H).nodePlots();
+        boolean same = true;
+        World gen = World.of(seed);
+        for (int s = 1; s <= widest; s *= 2) {
+            long span = (long) n * s, x0 = Math.floorDiv(gen.foundingX(), span) * span, y0 = Math.floorDiv(gen.foundingY(), span) * span;
+            byte[] want = new byte[n * n];
+            gen.regionTerrain(x0, y0, s, n, want);
+            same &= Arrays.equals(want, MapTiles.nodeTerrain(World.Key.generated(seed), x0, y0, s));
+        }
+        check("a generated world's far node is its region, at every stride from 1 to " + widest + " plots a pixel, as before", same);
+
+        // The study's three windows, each one node at WINDOW_STRIDE, and closer.
+        for (String name : List.of("Rotterdam", "Perth", "Paris")) {
+            EarthTerrainCheck.Spot s = spots.get(name);
+            World w = World.of(World.Key.earth(seed, s.lat(), s.lon(), id));
+            farWindow(name, w, data);
+        }
+
+        // Twice, and from a world made afresh.
+        EarthTerrainCheck.Spot rot = spots.get("Rotterdam");
+        World.Key rk = World.Key.earth(seed, rot.lat(), rot.lon(), id);
+        long wx0 = EarthTerrain.spotPlot() - EarthTerrainCheck.WINDOW / 2;
+        byte[] a = MapTiles.nodeTerrain(rk, wx0, wx0, WINDOW_STRIDE), b = MapTiles.nodeTerrain(rk, wx0, wx0, WINDOW_STRIDE), c = new byte[n * n];
+        new World(rk).earthTerrain().farTerrain(wx0, wx0, WINDOW_STRIDE, n, c);
+        check("Rotterdam's far node is the same twice, and from a world made afresh from its key", Arrays.equals(a, b) && Arrays.equals(a, c));
+
+        // Its cost: the window's node, its data read, against SCREEN_MS.
+        double best = Double.MAX_VALUE;
+        for (int r = 0; r < WARM_ROUNDS + TIMED_ROUNDS; r++) {
+            long t0 = System.nanoTime();
+            MapTiles.nodeTerrain(rk, wx0, wx0, WINDOW_STRIDE);
+            double ms = (System.nanoTime() - t0) / 1e6;
+            if (r >= WARM_ROUNDS) best = Math.min(best, ms);
+        }
+        out.printf("      Rotterdam's window as a far node (%d plots a pixel): %.1f ms (the study measured 1.4 to 3.7 ms for a 128-pixel node)%n", WINDOW_STRIDE, best);
+        check("...drawn in no more than SCREEN_MS (" + (int) SCREEN_MS + " ms), on the worker away from the screen", best <= SCREEN_MS);
+
+        // The 180th meridian: Fiji's window, nodes overlapping by half.
+        EarthTerrainCheck.Spot fiji = spots.get("Fiji");
+        seam("Fiji's window", World.of(World.Key.earth(seed, fiji.lat(), fiji.lon(), id)), WINDOW_STRIDE, data, false);
+
+        // The void past the rim: the far node at the world's corner, painted.
+        World rw = World.of(rk);
+        CityMap map = CityMap.square(rk, rw.foundingX(), rw.foundingY(), types, 1, (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT),
+                new long[types.length]);
+        MapTiles tiles = new MapTiles(map);
+        byte[] corner = MapTiles.nodeTerrain(rk, 0, 0, widest);
+        int[] px = new int[n * n];
+        tiles.nodePixels(0, 0, widest, corner, px);
+        int voids = 0, offPlanet = 0, wrong = 0;
+        for (int k = 0; k < px.length; k++) {
+            double x = (k % n + 0.5) * widest, y = (k / n + 0.5) * widest;
+            boolean off = !EarthProj.onPlanet(EarthProj.metresX(x), EarthProj.metresY(y));
+            if (off) offPlanet++;
+            if (px[k] == TileRaster.VOID) voids++;
+            if (off != (px[k] == TileRaster.VOID)) wrong++;
+        }
+        out.printf("      the world's corner node (%d plots a pixel): %,d of its %,d pixels past the rim, %,d drawn as the void%n", widest, offPlanet, px.length, voids);
+        check("past the planet's rim the far node's pixels are the void, and nowhere else", offPlanet > 0 && wrong == 0);
+
+        // The hover card on Earth: the place, the province, and past the rim.
+        List<EarthTerrainCheck.GeoSpot> geo = EarthTerrainCheck.geoSpots(new java.util.LinkedHashMap<>(spots), id);
+        boolean places = true, provinces = true;
+        for (EarthTerrainCheck.GeoSpot g : geo.subList(0, 3)) {
+            World.Key key = World.Key.earth(seed, g.lat(), g.lon(), id);
+            CityLand land = LandManager.foundingLand(key);
+            long x = EarthTerrain.spotPlot(), y = EarthTerrain.spotPlot();
+            List<String> words = LandMap.earthWords(land, x, y);
+            double[] ll = new double[2];
+            World.of(key).earthTerrain().projection().latLonOfPlot(x + 0.5, y + 0.5, ll);
+            EarthData.Place near = null;
+            double least = Double.MAX_VALUE;
+            for (EarthData.Place p : data.places()) {
+                double m = EarthProj.distanceM(p.lat(), p.lon(), ll[0], ll[1]);
+                if (m < least) { least = m; near = p; }
+            }
+            List<String> card = LandMap.hoverWords(land, null, x, y);
+            out.printf("      %s's spot: %s%n", g.name(), String.join(" | ", card));
+            places &= near != null && words.size() == 2 && words.get(0).equals(LandMap.placeWords(near, ll[0], ll[1])) && near.name().trim().equals(g.name())
+                    && card.size() >= 4 && card.get(2).equals(words.get(0)) && card.get(3).equals(words.get(1));
+            provinces &= words.size() == 2 && words.get(1).equals("Geology: " + g.province() + ", " + LandMap.KIND_WORDS[g.kind().ordinal()]);
+        }
+        check("the hover names the nearest of the data's places by distance and direction - the window's own city - after whose the ground is", places);
+        check("...and the province under the spot with its class (EarthTerrainCheck 11's), after it", provinces);
+        CityLand rland = LandManager.foundingLand(rk);
+        check("...past the rim it says the map runs off the planet; and a generated city's card has no such lines",
+                LandMap.earthWords(rland, 0, 0).equals(List.of(LandMap.OFF_PLANET_WORDS))
+                        && LandMap.earthWords(LandManager.foundingLand(World.Key.generated(seed)), gen.foundingX(), gen.foundingY()).isEmpty());
+
+        fullFile(widest, rot);
+    }
+
+    /**
+     * One window drawn as a far node at WINDOW_STRIDE and at CLOSE_STRIDES:
+     * closer, the region but for its rivers stroked wider; at the window's
+     * stride every river stroked at least FAR_RIVER_HALF_PX a side, every
+     * small lake's blob's sure part fresh, the sea the data's and the
+     * forest, dithered, the data's.
+     */
+    static void farWindow(String name, World w, EarthData data) {
+        EarthTerrain e = w.earthTerrain();
+        int n = MapFrame.NODE_PX;
+        boolean close = true;
+        StringBuilder closeWords = new StringBuilder();
+        for (int s : CLOSE_STRIDES) {
+            long x0 = EarthTerrain.spotPlot() - (long) n * s / 2;
+            byte[] far = new byte[n * n], reg = new byte[n * n];
+            e.farTerrain(x0, x0, s, n, far);
+            e.regionTerrain(x0, x0, s, n, reg);
+            Water water = new Water(e, data, x0, x0, s);
+            int wider = 0;
+            for (int k = 0; k < far.length; k++) {
+                if (far[k] == reg[k]) continue;
+                boolean ok = far[k] == World.FRESH && water.inStroke(k % n, k / n, false);
+                close &= ok;
+                if (ok) wider++;
+            }
+            closeWords.append(String.format("%s%d: %,d", closeWords.length() == 0 ? "" : ", ", s, wider));
+        }
+        out.printf("      %s closer: the region's pixels but those its rivers' strokes widen - %s plots a pixel%n", name, closeWords);
+        check(name + ": under WATER_STRIDE the far node is E2's region but for its rivers, stroked wider", close);
+        int s = WINDOW_STRIDE;
+        long x0 = EarthTerrain.spotPlot() - EarthTerrainCheck.WINDOW / 2;
+        byte[] far = new byte[n * n], reg = new byte[n * n];
+        e.farTerrain(x0, x0, s, n, far);
+        e.regionTerrain(x0, x0, s, n, reg);
+        long[] counts = EarthTerrain.FAR_COUNTS.get().clone();
+        Water water = new Water(e, data, x0, x0, s);
+        int banded = 0, bandMissed = 0, cores = 0, coreMissed = 0;
+        for (int k = 0; k < far.length; k++) {
+            if (far[k] == World.SALT) continue;
+            if (water.inStroke(k % n, k / n, true)) {
+                banded++;
+                if (far[k] != World.FRESH) bandMissed++;
+            }
+            if (water.inCore(k % n, k / n)) {
+                cores++;
+                if (far[k] != World.FRESH) coreMissed++;
+            }
+        }
+        // The sea and the forest against the data's shares at the pixels' centres.
+        double[] ll = new double[2];
+        double seaData = 0, forestData = 0;
+        int dry = 0, forest = 0, sea = 0, regForest = 0, regDry = 0;
+        EarthProj proj = e.projection();
+        for (int k = 0; k < far.length; k++) {
+            proj.latLonOfPlot(x0 + (k % n + 0.5) * s, x0 + (k / n + 0.5) * s, ll);
+            seaData += data.at("sea", ll[0], ll[1]) / (double) EarthData.SHARE_LEVELS;
+            if (far[k] == World.SALT) sea++;
+            if (far[k] == World.GRASS || far[k] == World.FOREST || far[k] == World.SAND) {
+                dry++;
+                if (far[k] == World.FOREST) forest++;
+                forestData += (data.at("landcover", ll[0], ll[1]) & EarthData.LC_FOREST) / (double) EarthData.SHARE_LEVELS;
+            }
+            if (reg[k] == World.GRASS || reg[k] == World.FOREST || reg[k] == World.SAND) {
+                regDry++;
+                if (reg[k] == World.FOREST) regForest++;
+            }
+        }
+        double seaPts = 100.0 * Math.abs(sea / (double) far.length - seaData / far.length);
+        double forestPts = dry > 0 ? 100.0 * Math.abs(forest / (double) dry - forestData / dry) : 0;
+        out.printf("      %s's window at %d plots a pixel: %,d segments and %,d small lakes drawn from %,d tiles; %,d pixels within a river's least"
+                        + " half-width, %,d in a small lake's sure part; sea %.2f%% against the data's %.2f%%; forest %.1f%% of the dry against the"
+                        + " data's %.1f%% (the region, undithered, %.1f%%)%n", name, s, counts[0], counts[1], counts[2], banded, cores,
+                100.0 * sea / far.length, 100 * seaData / far.length, 100.0 * forest / Math.max(1, dry), 100 * forestData / Math.max(1, dry),
+                100.0 * regForest / Math.max(1, regDry));
+        check(name + ": every pixel within FAR_RIVER_HALF_PX of a river's line is fresh (or sea) - stroked unbroken, at least a pixel wide",
+                banded > 0 && bandMissed == 0);
+        check(name + ": every pixel in a small lake's sure part (BLOB_FRAY) is fresh (or sea)", (cores > 0 || counts[1] == 0) && coreMissed == 0);
+        check(name + ": the far node's sea, and its forest of the dry ground, are the data's within EarthTerrainCheck.SHARE_POINTS",
+                seaPts <= EarthTerrainCheck.SHARE_POINTS && forestPts <= EarthTerrainCheck.SHARE_POINTS);
+    }
+
+    /**
+     * The rivers and small lakes under a far node, as the check reads them
+     * from the data itself: each run the node would stroke (its median width
+     * at least FAR_RIVER_SHARE of a pixel), its segments projected exactly,
+     * and each small lake's point and radius.
+     */
+    static final class Water {
+        final List<double[]> segs = new ArrayList<>();
+        final List<double[]> lakes = new ArrayList<>();
+        final long x0, y0;
+        final int stride;
+
+        Water(EarthTerrain e, EarthData data, long x0, long y0, int stride) {
+            this.x0 = x0;
+            this.y0 = y0;
+            this.stride = stride;
+            EarthProj proj = e.projection();
+            double side = (double) stride * MapFrame.NODE_PX, narrowest = EarthTerrain.FAR_RIVER_SHARE * stride * World.PLOT_M;
+            double least = EarthTerrain.FAR_RIVER_HALF_PX * stride;
+            double[] p = new double[2], q = new double[2];
+            for (int t : e.nodeTiles(x0, y0, side)) {
+                for (EarthData.Run run : data.rivers(t)) {
+                    int m = run.size();
+                    if (m < 2) continue;
+                    int[] w = new int[m];
+                    for (int k = 0; k < m; k++) w[k] = run.width(k);
+                    Arrays.sort(w);
+                    if (w[m / 2] < narrowest) continue;
+                    for (int k = 0; k + 1 < m; k++) {
+                        if (!proj.plotOf(run.lat(k), run.lon(k), p) || !proj.plotOf(run.lat(k + 1), run.lon(k + 1), q)) continue;
+                        segs.add(new double[] { p[0], p[1], q[0], q[1], Math.max(least, run.width(k) / 2.0 / World.PLOT_M),
+                                Math.max(least, run.width(k + 1) / 2.0 / World.PLOT_M) });
+                    }
+                }
+                EarthData.SmallLakes sl = data.smallLakes(t);
+                for (int k = 0; k < sl.size(); k++) {
+                    if (!proj.plotOf(sl.lat(k), sl.lon(k), p)) continue;
+                    lakes.add(new double[] { p[0], p[1], Math.sqrt(sl.areaKm2(k) * 1e6 / Math.PI) / World.PLOT_M });
+                }
+            }
+        }
+
+        /** Whether pixel (i, j)'s centre lies within a river's stroke: its least half-width alone (`least`), or its own. */
+        boolean inStroke(int i, int j, boolean least) {
+            double x = x0 + (i + 0.5) * stride, y = y0 + (j + 0.5) * stride, floor = EarthTerrain.FAR_RIVER_HALF_PX * stride;
+            for (double[] g : segs) {
+                double h = least ? floor : Math.max(g[4], g[5]);
+                if (x < Math.min(g[0], g[2]) - h || x > Math.max(g[0], g[2]) + h || y < Math.min(g[1], g[3]) - h || y > Math.max(g[1], g[3]) + h) continue;
+                double vx = g[2] - g[0], vy = g[3] - g[1], l2 = vx * vx + vy * vy;
+                double t = l2 > 0 ? Math.max(0, Math.min(1, ((x - g[0]) * vx + (y - g[1]) * vy) / l2)) : 0;
+                double dx = x - g[0] - t * vx, dy = y - g[1] - t * vy, w = least ? floor : g[4] + (g[5] - g[4]) * t;
+                if (dx * dx + dy * dy < w * w) return true;
+            }
+            return false;
+        }
+
+        /** Whether pixel (i, j)'s centre lies in a small lake's sure part: within its radius x the root of 1 - BLOB_FRAY / 2, which its blob holds whatever its noise. */
+        boolean inCore(int i, int j) {
+            double x = x0 + (i + 0.5) * stride, y = y0 + (j + 0.5) * stride;
+            for (double[] l : lakes) {
+                double dx = x - l[0], dy = y - l[1];
+                if ((dx * dx + dy * dy) / (l[2] * l[2]) <= 1 - EarthTerrain.BLOB_FRAY / 2) return true;
+            }
+            return false;
+        }
+    }
+
+    /**
+     * A node holding the 180th meridian (its middle on the spot, which is on
+     * it) and its neighbours moved SEAM_SHIFT_PX east and west: on the half
+     * each shares with it, pixel for pixel the same; each side of the line's
+     * land the data's within EarthTerrainCheck.SHARE_POINTS; and (`water`)
+     * fresh water drawn from the data's vectors on both sides.
+     */
+    static void seam(String where, World w, int stride, EarthData data, boolean water) {
+        EarthTerrain e = w.earthTerrain();
+        int n = MapFrame.NODE_PX, h = SEAM_SHIFT_PX;
+        long x0 = EarthTerrain.spotPlot() - (long) n * stride / 2, y0 = x0;
+        byte[] mid = new byte[n * n], west = new byte[n * n], east = new byte[n * n];
+        e.farTerrain(x0, y0, stride, n, mid);
+        e.farTerrain(x0 - (long) h * stride, y0, stride, n, west);
+        e.farTerrain(x0 + (long) h * stride, y0, stride, n, east);
+        boolean agree = true;
+        for (int j = 0; j < n; j++) {
+            for (int i = 0; i < n - h; i++) {
+                agree &= mid[j * n + i] == west[j * n + i + h];
+                agree &= mid[j * n + i + h] == east[j * n + i];
+            }
+        }
+        double[] ll = new double[2], land = new double[2], landData = new double[2], cells = new double[2], fresh = new double[2], region = new double[2];
+        byte[] reg = new byte[n * n];
+        e.regionTerrain(x0, y0, stride, n, reg);
+        for (int k = 0; k < mid.length; k++) {
+            if (!e.projection().latLonOfPlot(x0 + (k % n + 0.5) * stride, y0 + (k / n + 0.5) * stride, ll)) continue;
+            int side = ll[1] < 0 ? 1 : 0;
+            cells[side]++;
+            if (mid[k] != World.SALT) land[side]++;
+            if (mid[k] == World.FRESH && reg[k] != World.FRESH) fresh[side]++;
+            landData[side] += 1 - data.at("sea", ll[0], ll[1]) / (double) EarthData.SHARE_LEVELS;
+        }
+        double wPts = 100 * Math.abs(land[0] - landData[0]) / Math.max(1, cells[0]), ePts = 100 * Math.abs(land[1] - landData[1]) / Math.max(1, cells[1]);
+        out.printf("      %s at %d plots a pixel: %,.0f pixels west of the 180th meridian, %,.0f east; land %.2f%% and %.2f%% against the data's"
+                        + " %.2f%% and %.2f%%; fresh water from the data's vectors on %,.0f and %,.0f%n", where, stride, cells[0], cells[1],
+                100 * land[0] / Math.max(1, cells[0]), 100 * land[1] / Math.max(1, cells[1]), 100 * landData[0] / Math.max(1, cells[0]),
+                100 * landData[1] / Math.max(1, cells[1]), fresh[0], fresh[1]);
+        check(where + ": no seam at 180 degrees - nodes overlapping by half agree pixel for pixel, each side's land the data's"
+                + (water ? ", rivers and lakes drawn on both" : ""),
+                agree && cells[0] > 0 && cells[1] > 0 && wPts <= EarthTerrainCheck.SHARE_POINTS && ePts <= EarthTerrainCheck.SHARE_POINTS
+                        && (!water || (fresh[0] > 0 && fresh[1] > 0)));
+    }
+
+    /** Section 10 on the full file, when it is named (-Dcbs.earth): the longest segment, every stride's cost, the whole world, the small lakes' area and Chukotka's seam. */
+    static void fullFile(int widest, EarthTerrainCheck.Spot rot) throws Exception {
+        Path file = EarthData.locate();
+        if (file == null || !Files.isRegularFile(file)) {
+            out.println("      earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the full file's far views were not drawn");
+            return;
+        }
+        EarthData d = EarthData.open(file);
+        String id = EarthTerrain.use(d);
+        long t0 = System.nanoTime();
+        double longest = 0;
+        for (int t = 0; t < EarthData.TILES; t++) {
+            if (d.entry("rivers", t) <= 0) continue;
+            for (EarthData.Run r : d.rivers(t)) {
+                for (int k = 0; k + 1 < r.size(); k++) longest = Math.max(longest, EarthProj.distanceM(r.lat(k), r.lon(k), r.lat(k + 1), r.lon(k + 1)));
+            }
+        }
+        out.printf("      the full file: its longest river segment %,.0f m (%.0f ms); RIM_M %.1f m%n", longest, (System.nanoTime() - t0) / 1e6, EarthTerrain.RIM_M);
+        check("the full file's longest river segment is EarthTerrain.LONGEST_SEGMENT_M, which RIM_M is drawn from", Math.round(longest) == EarthTerrain.LONGEST_SEGMENT_M);
+        // Every stride over Rotterdam, cold and warm.
+        long seed = EarthTerrainCheck.SEED;
+        World.Key rk = World.Key.earth(seed, rot.lat(), rot.lon(), id);
+        EarthTerrain e = World.of(rk).earthTerrain();
+        int n = MapFrame.NODE_PX;
+        StringBuilder times = new StringBuilder();
+        boolean within = true;
+        double worst = 0;
+        for (int s = 2; s <= widest; s *= 2) {
+            long span = (long) n * s, x0 = Math.floorDiv(EarthTerrain.spotPlot(), span) * span;
+            byte[] g = new byte[n * n];
+            long t1 = System.nanoTime();
+            e.farTerrain(x0, x0, s, n, g);
+            double cold = (System.nanoTime() - t1) / 1e6, best = Double.MAX_VALUE;
+            for (int r = 0; r < WARM_ROUNDS + TIMED_ROUNDS; r++) {
+                t1 = System.nanoTime();
+                e.farTerrain(x0, x0, s, n, g);
+                if (r >= WARM_ROUNDS) best = Math.min(best, (System.nanoTime() - t1) / 1e6);
+            }
+            within &= best <= SCREEN_MS;
+            worst = Math.max(worst, best);
+            times.append(String.format("%s%d: %.1f (%.0f)", times.length() == 0 ? "" : ", ", s, best, cold));
+        }
+        out.printf("      Rotterdam's far node, ms at each stride (the first time): %s%n", times);
+        // The whole world's view at the widest stride.
+        long span = (long) n * widest;
+        int across = (int) ((World.SIDE + span - 1) / span);
+        t0 = System.nanoTime();
+        byte[] g = new byte[n * n];
+        long fresh = 0, land = 0;
+        for (int j = 0; j < across; j++) for (int i = 0; i < across; i++) {
+            e.farTerrain(i * span, j * span, widest, n, g);
+            for (byte b : g) {
+                if (b != World.SALT) land++;
+                if (b == World.FRESH) fresh++;
+            }
+        }
+        out.printf("      the whole world at %d plots a pixel: %d nodes in %.0f ms, fresh water %.1f%% of what is not sea%n", widest, across * across,
+                (System.nanoTime() - t0) / 1e6, 100.0 * fresh / Math.max(1, land));
+        check("on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS", within && worst > 0);
+        // Finland's small lakes: their discs' pixels against their area.
+        EarthTerrain f = World.of(World.Key.earth(seed, LAKES_LAT, LAKES_LON, id)).earthTerrain();
+        int s = WINDOW_STRIDE;
+        double area = 0, centres = 0;
+        int lakes = 0, coreMissed = 0;
+        long c0 = EarthTerrain.spotPlot() - (long) LAKES_NODES * n * s / 2;
+        for (int j = 0; j < LAKES_NODES; j++) for (int i = 0; i < LAKES_NODES; i++) {
+            long x0 = c0 + (long) i * n * s, y0 = c0 + (long) j * n * s;
+            f.farTerrain(x0, y0, s, n, g);
+            Water w = new Water(f, d, x0, y0, s);
+            for (double[] l : w.lakes) {
+                if (l[0] < x0 || l[1] < y0 || l[0] >= x0 + (double) n * s || l[1] >= y0 + (double) n * s) continue;
+                lakes++;
+                area += Math.PI * l[2] * l[2] / ((double) s * s);
+                int i0 = (int) Math.max(0, Math.floor((l[0] - l[2] - x0) / s - 1)), i1 = (int) Math.min(n - 1, Math.ceil((l[0] + l[2] - x0) / s));
+                int j0 = (int) Math.max(0, Math.floor((l[1] - l[2] - y0) / s - 1)), j1 = (int) Math.min(n - 1, Math.ceil((l[1] + l[2] - y0) / s));
+                for (int jj = j0; jj <= j1; jj++) for (int ii = i0; ii <= i1; ii++) {
+                    double dx = x0 + (ii + 0.5) * s - l[0], dy = y0 + (jj + 0.5) * s - l[1], t = (dx * dx + dy * dy) / (l[2] * l[2]);
+                    if (t < 1) centres++;
+                    if (t <= 1 - EarthTerrain.BLOB_FRAY / 2 && g[jj * n + ii] != World.FRESH && g[jj * n + ii] != World.SALT) coreMissed++;
+                }
+            }
+        }
+        double off = area > 0 ? centres / area - 1 : Double.NaN;
+        out.printf("      Finland's lake district, %d x %d nodes at %d plots a pixel: %,d small lakes, their discs on %,.0f pixel centres for %,.0f"
+                + " pixels of area (%+.1f%%)%n", LAKES_NODES, LAKES_NODES, s, lakes, centres, area, 100 * off);
+        check("a far node's small lakes, discs at their pixels' centres, hold their own area within EarthTerrainCheck.LAKE_AREA, each drawn",
+                lakes > 0 && Math.abs(off) <= EarthTerrainCheck.LAKE_AREA && coreMissed == 0);
+        seam("Chukotka", World.of(World.Key.earth(seed, CHUKOTKA_LAT, CHUKOTKA_LON, id)), CHUKOTKA_STRIDE, d, true);
     }
 }

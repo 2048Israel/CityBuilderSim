@@ -287,7 +287,13 @@ These are Jerus's, and they do not move.
                                    fields today's and the types' odds; an Earth cell's fields are drawn on
                                    its land times its provinces' weights, oil's with its petroleum and its
                                    offshore sea, and a field's type leans on the class under it
-                                   (EarthTerrainCheck 10 to 14)
+                                   (EarthTerrainCheck 10 to 14); and since 0.7.119 (batch E5) the map
+                                   on Earth: a far node drawn from the data (EarthTerrain.farTerrain():
+                                   the rivers stroked from their vectors at least a pixel wide, thinned
+                                   by width as the view widens, the small lakes from their points, the
+                                   forest dithered, the void past the planet's rim; MapTiles.nodeTerrain()
+                                   by key) and the hover card's nearest place and geologic province
+                                   (LandMap.earthWords()) - MapCheck 10
         LandManager.java, LandMarket.java
                                    the city's land: what it owns, what is built on and what it sells - the
                                    ore and oil its ground holds less what is taken out, since 0.7.93 the

@@ -58,6 +58,14 @@ import java.util.Map;
  * centre from the shares there and the octaves wider than a pixel, the
  * narrower at their mean - World's rule for its far view.
  *
+ * THE FAR VIEW (0.7.119, batch E5; spec-earth 3, "Far views"). The map's far
+ * nodes (MapTiles.nodeTerrain()) are farTerrain(): the region's pixels, but
+ * the rivers stroked from their vectors at least a pixel wide and thinned
+ * by width as the view widens (FAR_RIVER_SHARE), the small lakes drawn from
+ * their points and areas, and from DITHER_STRIDE the forest dithered by a
+ * hash - its vectors read from the 1-degree tiles under the node, either
+ * side of the date line alike (nodeTiles()). MapCheck 10 holds it.
+ *
  * THE WORLD'S OTHER HALF. The cells pass (cellsPass()) replaces the
  * generated world's sea pass: each world cell's land and forest from
  * CELL_SAMPLES x CELL_SAMPLES points of the 4' layers, which the fields of
@@ -687,22 +695,37 @@ public final class EarthTerrain {
 
     /** A point's class at a stride: see regionTerrain(). */
     private byte pointClass(Scratch s, double[] q, double x, double y, int stride) {
+        return pointClass(s, q, x, y, stride, true, Double.NaN);
+    }
+
+    /**
+     * ...with the rivers and small lakes drawn (`water`) or left to the
+     * caller, and the forest ranked through its noise or, where `dither` is a
+     * number (0 to 1), drawn where it is under the forest's share - the far
+     * node's (farTerrain(), 0.7.119).
+     */
+    private byte pointClass(Scratch s, double[] q, double x, double y, int stride, boolean water, double dither) {
         if (x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE) return World.SALT;
         double[] ll = s.ll;
         if (!proj.latLonOfPlot(x, y, ll)) return World.SALT;
+        return classAt(s, q, x, y, ll[0], ll[1], stride, water, dither);
+    }
+
+    /** ...at a point on the planet whose latitude and longitude are known. */
+    private byte classAt(Scratch s, double[] q, double x, double y, double lat, double lon, int stride, boolean water, double dither) {
         double sea, lake, forest;
         if (stride >= FAR_STRIDE) {
-            double dry = s.farLandR.at(ll[0], ll[1]) / (double) EarthData.FAR_LEVELS;
-            lake = s.farLakeR.at(ll[0], ll[1]) / (double) EarthData.FAR_LEVELS;
+            double dry = s.farLandR.at(lat, lon) / (double) EarthData.FAR_LEVELS;
+            lake = s.farLakeR.at(lat, lon) / (double) EarthData.FAR_LEVELS;
             sea = Math.max(0, 1 - dry - lake);
-            forest = (s.coverR.at(ll[0], ll[1]) & EarthData.LC_FOREST) / (double) EarthData.SHARE_LEVELS;
+            forest = (s.coverR.at(lat, lon) & EarthData.LC_FOREST) / (double) EarthData.SHARE_LEVELS;
         } else {
-            sea = s.seaR.bilinear(ll[0], ll[1]) / EarthData.SHARE_LEVELS;
-            lake = s.lakeR.bilinear(ll[0], ll[1]) / EarthData.SHARE_LEVELS;
-            forest = s.coverR.bilinearLow(ll[0], ll[1]) / EarthData.SHARE_LEVELS;
+            sea = s.seaR.bilinear(lat, lon) / EarthData.SHARE_LEVELS;
+            lake = s.lakeR.bilinear(lat, lon) / EarthData.SHARE_LEVELS;
+            forest = s.coverR.bilinearLow(lat, lon) / EarthData.SHARE_LEVELS;
         }
         if (sea > 0 && sea(sea, noiseAt(os[COAST], x, y, stride))) return World.SALT;
-        if (stride < WATER_STRIDE) {
+        if (water && stride < WATER_STRIDE) {
             Water w = water(Math.floorDiv((long) Math.floor(x), World.DISTRICT), Math.floorDiv((long) Math.floor(y), World.DISTRICT));
             for (int k = 0; k < w.segs; k++) {
                 if (x < w.minX[k] || x > w.maxX[k] || y < w.minY[k] || y > w.maxY[k]) continue;
@@ -717,7 +740,7 @@ public final class EarthTerrain {
             }
         }
         if (lake > 0 && noiseAt(os[FRESH], x, y, stride) < below(q, lake / (1 - sea))) return World.FRESH;
-        if (forest >= 1 || (forest > 0 && noiseAt(os[FOREST], x, y, stride) < below(q, forest))) return World.FOREST;
+        if (forest >= 1 || (forest > 0 && (Double.isNaN(dither) ? noiseAt(os[FOREST], x, y, stride) < below(q, forest) : dither < forest))) return World.FOREST;
         return World.GRASS;
     }
 
@@ -880,6 +903,361 @@ public final class EarthTerrain {
             }
         }
         return out;
+    }
+
+    /* =====================================================================
+       THE FAR VIEW'S NODES (0.7.119, batch E5; spec-earth 3, "Far views")
+       ===================================================================== */
+
+    /** A far node's forest is dithered by a hash from this stride, in plots: 2^NOISE_HI, 16 (480 m) - where no octave of the forest's noise is wider than a pixel, so the ranked noise stands at its mean and would draw forest wherever its share passes a half and nowhere else (spec-earth 3, "dither forest by a hash"; ★E5). */
+    public static final int DITHER_STRIDE = 1 << NOISE_HI;
+
+    /** A river's least half-width on a far node, in pixels: RIVER_MIN_HALF, 0.75 - a far pixel is to the node what a plot is to a tile, so a river is stroked at least 1.5 px wide, past the 0.71 px (half a pixel's diagonal) under which a line at 45 degrees breaks into corners (spec-earth 3, "at least 1 px wide"; ★E5). */
+    public static final double FAR_RIVER_HALF_PX = RIVER_MIN_HALF;
+
+    /**
+     * The least width, as a share of a far pixel, at which a river is
+     * stroked: 30 / 2,500, 0.012 (★E5) - the narrowest river in the data,
+     * GRWL's 30 m (spec-earth 1), at the study's far render of 2.5 km a pixel
+     * (spec-earth 3, "At 2.5 km a pixel, the North Sea coasts are
+     * [recognisable]"). So every river is stroked at 2.5 km a pixel and
+     * closer, and wider out only those as wide for the pixel as the
+     * narrowest was there: stroked every one at least a pixel wide, the
+     * whole world's view at 30.7 km a pixel drew Siberia 45% fresh water
+     * against the data's half a percent (measured). A run of a river is
+     * stroked whole or not at all, by its vertices' median width, so a river
+     * near the line is not broken into dashes.
+     */
+    public static final double FAR_RIVER_SHARE = 30.0 / 2500;
+
+    /** From WATER_STRIDE a far node's pixels take their latitude and longitude from blocks of this many a side, each blended from its four corners (EarthProj.blend(), the tile's way): 8 - measured, at worst 0.15 of a pixel off the exact at 1,024 plots a pixel and under 0.014 at 256 and closer, for a fifth of the exact inverses' time (closer, each pixel is projected exactly, as the region is). */
+    public static final int FAR_BLEND_PX = 8;
+
+    /**
+     * From this stride, in plots, a far node places a 1-degree tile's river
+     * vertices and small lakes bilinear between the tile's four corners,
+     * projected exactly, rather than projecting each: 64 (★E5) - measured at
+     * worst 0.07 of a pixel off at 64 plots a pixel (Rotterdam, Perth,
+     * Chukotka), and 0.017 from 256; at 1,024 the 147,000 small lakes of
+     * Chukotka's node each cost a projection's trigonometry otherwise. A tile
+     * past EarthProj.BLEND_MAX_LAT or with a corner past the rim projects
+     * each point.
+     */
+    public static final int FAR_TILE_BLEND_STRIDE = 64;
+
+    /** Points along each edge of a far node its box of 1-degree tiles is found from: 32 - at the widest node (1,024 plots a pixel, 3,932 km a side) one every 123 km, where a straight edge strays from its chord by a fraction of the WATER_PAD_DEG (27.8 km) the box is widened by. */
+    static final int NODE_EDGE_POINTS = 32;
+
+    /** The longest river segment in earth-1, in metres on the sphere: 17,915, measured over all its tiles (MapCheck 10 holds it when the file is named). */
+    public static final int LONGEST_SEGMENT_M = 17_915;
+
+    /**
+     * A river segment with an end this close to the planet's rim is not
+     * stroked, in metres: LONGEST_SEGMENT_M^2 / 4R, 12.6 (★E5). The rim is
+     * the antipode, drawn as a circle EarthProj.REACH_M from the spot; a
+     * segment passing the antipode would join two points on opposite sides
+     * of it straight across the world, and one L long can pass it only with
+     * both ends within L^2/4R of the rim (an end an angle d from the
+     * antipode lies 2R(1 - cos d/2) inside it). What is lost is the ground
+     * within about 18 km of the antipode, stretched round the rim.
+     */
+    public static final double RIM_M = (double) LONGEST_SEGMENT_M * LONGEST_SEGMENT_M / (4 * EarthProj.RADIUS_M);
+
+    /** The far view's dither's stream. */
+    private static final long F_DITHER = 0xD17E4L;
+
+    /** Each 1-degree tile's widest river run, by its median width in metres, once a far node has read it: -1 until then. A node too wide for any of a tile's runs skips the tile (FAR_RIVER_SHARE). */
+    private volatile int[] widestRun;
+
+    /**
+     * A far node's ground (spec-earth 3, "Far views"; MapTiles.nodeTerrain()):
+     * n x n pixels from plot (x0, y0), `stride` plots each. At a stride of
+     * one, the tiles' plots (regionTerrain()). Wider, each pixel classed at
+     * its centre as regionTerrain() classes it - the 15" shares, or the 4'
+     * far layers from FAR_STRIDE - but for its water: under WATER_STRIDE the
+     * region's pixels exactly, from it each pixel's latitude and longitude
+     * blended over FAR_BLEND_PX blocks and (DITHER_STRIDE) its forest drawn
+     * where a hash of the pixel falls under the forest's share of the dry
+     * ground. Then the rivers stroked from their vectors, each run
+     * at least FAR_RIVER_SHARE of a pixel wide at its width and at least
+     * FAR_RIVER_HALF_PX a side, and the small lakes drawn from their points
+     * and areas (frayed by their own noise where a pixel is narrower than its
+     * widest octave), on every pixel that is not sea. The vectors are read
+     * from the 1-degree tiles under the node (nodeTiles()), either side of
+     * the date line alike. A pure function of the key and the node.
+     */
+    public void farTerrain(long x0, long y0, int stride, int n, byte[] out) {
+        if (stride <= 1) {
+            regionTerrain(x0, y0, stride, n, out);
+            return;
+        }
+        Scratch s = scratch();
+        double[] q = quantile(), ll = s.ll;
+        boolean dither = stride >= DITHER_STRIDE;
+        long ds = World.mix(seed ^ F_DITHER ^ (stride * 0x632BE59BD9B4E019L));
+        int b = FAR_BLEND_PX;
+        for (int by = 0; by < n; by += b) {
+            for (int bx = 0; bx < n; bx += b) {
+                EarthProj.Blend blend = stride >= WATER_STRIDE ? proj.blend(x0 + (double) bx * stride, y0 + (double) by * stride, (double) b * stride) : null;
+                for (int py = by; py < Math.min(n, by + b); py++) {
+                    double y = y0 + (double) py * stride + stride * 0.5;
+                    long gy = y0 + (long) py * stride;
+                    for (int px = bx; px < Math.min(n, bx + b); px++) {
+                        double x = x0 + (double) px * stride + stride * 0.5;
+                        int at = py * n + px;
+                        if (x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE || !(blend != null ? blend.latLon(x, y, ll) : proj.latLonOfPlot(x, y, ll))) {
+                            out[at] = World.SALT;
+                            continue;
+                        }
+                        double d = dither ? World.unit(World.mix(ds ^ World.mix((x0 + (long) px * stride) * 0x9E3779B97F4A7C15L ^ gy))) : Double.NaN;
+                        out[at] = classAt(s, q, x, y, ll[0], ll[1], stride, false, d);
+                    }
+                }
+            }
+        }
+        strokeWater(x0, y0, stride, n, out, q);
+    }
+
+    /** How many river segments and small lakes the last far node on this thread drew from, and how many 1-degree tiles it read: what a harness prints. */
+    static final ThreadLocal<long[]> FAR_COUNTS = ThreadLocal.withInitial(() -> new long[3]);
+
+    /** The rivers and small lakes over a far node's pixels (farTerrain()): fresh water on every pixel that is not sea whose centre a river's stroke or a small lake's blob covers. */
+    private void strokeWater(long x0, long y0, int stride, int n, byte[] out, double[] q) {
+        double side = (double) stride * n, least = FAR_RIVER_HALF_PX * stride;
+        double nx0 = x0 - least, ny0 = y0 - least, nx1 = x0 + side + least, ny1 = y0 + side + least;
+        double rim = EarthProj.REACH_M - RIM_M, narrowest = FAR_RIVER_SHARE * stride * World.PLOT_M;
+        double grow = Math.sqrt(1 + BLOB_FRAY / 2);
+        double[] a = new double[2], b = new double[2];
+        int[] widths = new int[64];
+        int[] widest = widestRun;
+        if (widest == null) {
+            widest = new int[EarthData.TILES];
+            Arrays.fill(widest, -1);
+            widestRun = widest;
+        }
+        long segs = 0, lakes = 0;
+        int[] tiles = nodeTiles(x0, y0, side);
+        double[] corners = new double[8];
+        for (int t : tiles) {
+            boolean blended = stride >= FAR_TILE_BLEND_STRIDE && tileCorners(t, corners, rim);
+            if (widest[t] < 0 || widest[t] >= narrowest) {
+                int most = 0;
+                for (EarthData.Run run : data.rivers(t)) {
+                    int m = run.size();
+                    if (m < 2) continue;
+                    if (widths.length < m) widths = new int[Math.max(m, 2 * widths.length)];
+                    for (int k = 0; k < m; k++) widths[k] = run.width(k);
+                    Arrays.sort(widths, 0, m);
+                    most = Math.max(most, widths[m / 2]);
+                    if (widths[m / 2] < narrowest) continue;
+                    boolean have = place(run.lat(0), run.lon(0), blended, corners, t, a) && !nearRim(a, rim);
+                    for (int k = 0; k + 1 < m; k++) {
+                        boolean next = place(run.lat(k + 1), run.lon(k + 1), blended, corners, t, b) && !nearRim(b, rim);
+                        if (have && next) {
+                            double ha = Math.max(least, run.width(k) / 2.0 / World.PLOT_M), hb = Math.max(least, run.width(k + 1) / 2.0 / World.PLOT_M);
+                            double h = Math.max(ha, hb);
+                            if (Math.max(a[0], b[0]) + h >= nx0 && Math.min(a[0], b[0]) - h <= nx1 && Math.max(a[1], b[1]) + h >= ny0 && Math.min(a[1], b[1]) - h <= ny1) {
+                                stroke(a[0], a[1], b[0], b[1], ha, hb, x0, y0, stride, n, out);
+                                segs++;
+                            }
+                        }
+                        a[0] = b[0];
+                        a[1] = b[1];
+                        have = next;
+                    }
+                }
+                widest[t] = most;
+            }
+            EarthData.SmallLakes sl = data.smallLakes(t);
+            for (int k = 0; k < sl.size(); k++) {
+                if (!place(sl.lat(k), sl.lon(k), blended, corners, t, a)) continue;
+                double r = Math.sqrt(sl.areaKm2(k) * 1e6 / Math.PI) / World.PLOT_M, reach = r * grow;
+                if (a[0] + reach < x0 || a[0] - reach > x0 + side || a[1] + reach < y0 || a[1] - reach > y0 + side) continue;
+                blob(a[0], a[1], r, x0, y0, stride, n, out, q);
+                lakes++;
+            }
+        }
+        long[] c = FAR_COUNTS.get();
+        c[0] = segs;
+        c[1] = lakes;
+        c[2] = tiles.length;
+    }
+
+    /** Tile t's four corners in plots into c (south-west, south-east, north-west, north-east, x then y), projected exactly: false - the tile's points then each projected - where the tile reaches past EarthProj.BLEND_MAX_LAT or a corner is off the planet or within RIM_M of its rim. */
+    private boolean tileCorners(int t, double[] c, double rim) {
+        int la = EarthData.tileLat0(t), lo = EarthData.tileLon0(t);
+        if (Math.max(Math.abs(la), Math.abs(la + 1)) > EarthProj.BLEND_MAX_LAT) return false;
+        double[] p = new double[2];
+        for (int k = 0; k < 4; k++) {
+            if (!proj.plotOf(la + (k >> 1), lo + (k & 1), p) || nearRim(p, rim)) return false;
+            c[2 * k] = p[0];
+            c[2 * k + 1] = p[1];
+        }
+        return true;
+    }
+
+    /** A point's plot in tile t: bilinear between the tile's corners where `blended` (tileCorners()), else projected; false off the planet. */
+    private boolean place(double lat, double lon, boolean blended, double[] c, int t, double[] out) {
+        if (!blended) return proj.plotOf(lat, lon, out);
+        double v = lat - EarthData.tileLat0(t), u = EarthProj.normaliseLon(lon - EarthData.tileLon0(t));
+        double iu = 1 - u, iv = 1 - v;
+        out[0] = (c[0] * iu + c[2] * u) * iv + (c[4] * iu + c[6] * u) * v;
+        out[1] = (c[1] * iu + c[3] * u) * iv + (c[5] * iu + c[7] * u) * v;
+        return true;
+    }
+
+    /** Whether a point in plots lies within RIM_M of the rim: `rim` metres or more from the spot. */
+    private static boolean nearRim(double[] p, double rim) {
+        double mx = EarthProj.metresX(p[0]), my = EarthProj.metresY(p[1]);
+        return mx * mx + my * my >= rim * rim;
+    }
+
+    /** One river segment stroked onto a far node: every pixel not sea whose centre lies within the segment's half-width there, interpolated along it (onRiver()'s rule). */
+    private static void stroke(double ax, double ay, double bx, double by, double ha, double hb, long x0, long y0, int stride, int n, byte[] out) {
+        double h = Math.max(ha, hb);
+        int i0 = first(Math.min(ax, bx) - h, x0, stride, n), i1 = last(Math.max(ax, bx) + h, x0, stride, n);
+        int j0 = first(Math.min(ay, by) - h, y0, stride, n), j1 = last(Math.max(ay, by) + h, y0, stride, n);
+        if (i0 > i1 || j0 > j1) return;
+        double vx = bx - ax, vy = by - ay, l2 = vx * vx + vy * vy;
+        for (int j = j0; j <= j1; j++) {
+            double y = y0 + (j + 0.5) * stride;
+            for (int i = i0; i <= i1; i++) {
+                int at = j * n + i;
+                if (out[at] == World.SALT || out[at] == World.FRESH) continue;
+                double x = x0 + (i + 0.5) * stride;
+                double t = l2 > 0 ? ((x - ax) * vx + (y - ay) * vy) / l2 : 0;
+                t = t < 0 ? 0 : t > 1 ? 1 : t;
+                double dx = x - ax - t * vx, dy = y - ay - t * vy, w = ha + (hb - ha) * t;
+                if (dx * dx + dy * dy < w * w) out[at] = World.FRESH;
+            }
+        }
+    }
+
+    /** One small lake drawn onto a far node: every pixel not sea whose centre its blob holds - inLake()'s rule, its noise at the node's stride (at DITHER_STRIDE and up, at its mean: the lake's disc). */
+    private void blob(double lx, double ly, double r, long x0, long y0, int stride, int n, byte[] out, double[] q) {
+        double reach = r * Math.sqrt(1 + BLOB_FRAY / 2);
+        int i0 = first(lx - reach, x0, stride, n), i1 = last(lx + reach, x0, stride, n);
+        int j0 = first(ly - reach, y0, stride, n), j1 = last(ly + reach, y0, stride, n);
+        for (int j = j0; j <= j1; j++) {
+            double y = y0 + (j + 0.5) * stride;
+            for (int i = i0; i <= i1; i++) {
+                int at = j * n + i;
+                if (out[at] == World.SALT || out[at] == World.FRESH) continue;
+                double x = x0 + (i + 0.5) * stride, dx = x - lx, dy = y - ly;
+                double t = (dx * dx + dy * dy) / (r * r);
+                if (t >= 1 + BLOB_FRAY / 2) continue;
+                if (t <= 1 - BLOB_FRAY / 2 || noiseAt(os[BLOB], x, y, stride) < below(q, 0.5 + (1 - t) / BLOB_FRAY)) out[at] = World.FRESH;
+            }
+        }
+    }
+
+    /** The first pixel of a node (from plot `o`, `stride` plots each, n of them) whose centre is at `v` or past it, clamped to the node: n when none is. */
+    private static int first(double v, long o, int stride, int n) {
+        double i = Math.ceil((v - o) / stride - 0.5);
+        return i <= 0 ? 0 : i >= n ? n : (int) i;
+    }
+
+    /** ...and the last whose centre is at `v` or before it: -1 when none is. */
+    private static int last(double v, long o, int stride, int n) {
+        double i = Math.floor((v - o) / stride - 0.5);
+        return i < 0 ? -1 : i >= n - 1 ? n - 1 : (int) i;
+    }
+
+    /**
+     * The 1-degree tiles whose rivers and small lakes may reach a box of
+     * plots [x0, x0 + side)^2. First a box of latitude and longitude: the
+     * box's edges read at NODE_EDGE_POINTS points each, their longitudes
+     * unwrapped point to point round it (so the date line is crossed like
+     * any meridian), widened by WATER_PAD_DEG - every longitude where the box
+     * holds a pole, or reaches past the planet's rim, where its ground runs
+     * to the antipode, its latitudes then out to the antipode's. Then each
+     * tile there that holds rivers or small lakes kept only where its own
+     * footprint, widened by WATER_PAD_DEG, reaches the box (footprint()).
+     */
+    int[] nodeTiles(double x0, double y0, double side) {
+        double minLat = 90, maxLat = -90, minLon = Double.POSITIVE_INFINITY, maxLon = Double.NEGATIVE_INFINITY;
+        double prev = Double.NaN, first = Double.NaN;
+        boolean off = false;
+        double[] ll = new double[2];
+        int m = NODE_EDGE_POINTS;
+        for (int e = 0; e < 4; e++) {
+            for (int k = 0; k < m; k++) {
+                double f = k * side / m;
+                double x = e == 0 ? x0 + f : e == 1 ? x0 + side : e == 2 ? x0 + side - f : x0;
+                double y = e == 0 ? y0 : e == 1 ? y0 + f : e == 2 ? y0 + side : y0 + side - f;
+                if (!proj.latLonOfPlot(x, y, ll)) {
+                    off = true;
+                    continue;
+                }
+                double lon = ll[1];
+                if (Double.isNaN(prev)) first = lon;
+                else lon = prev + (((lon - prev) % 360 + 540) % 360 - 180);
+                prev = lon;
+                minLat = Math.min(minLat, ll[0]);
+                maxLat = Math.max(maxLat, ll[0]);
+                minLon = Math.min(minLon, lon);
+                maxLon = Math.max(maxLon, lon);
+            }
+        }
+        if (Double.isNaN(prev)) return new int[0];
+        double[] pole = new double[2];
+        boolean north = proj.plotOf(90, 0, pole) && pole[0] >= x0 && pole[0] < x0 + side && pole[1] >= y0 && pole[1] < y0 + side;
+        boolean south = proj.plotOf(-90, 0, pole) && pole[0] >= x0 && pole[0] < x0 + side && pole[1] >= y0 && pole[1] < y0 + side;
+        // Round the box and back: a longitude that has wound a whole turn went round a pole.
+        double round = prev + (((first - prev) % 360 + 540) % 360 - 180);
+        boolean wound = Math.abs(round - first) > 180;
+        if (north) maxLat = 90;
+        if (south) minLat = -90;
+        if (off) {
+            double antipode = -proj.centreLat();
+            minLat = Math.min(minLat, antipode);
+            maxLat = Math.max(maxLat, antipode);
+        }
+        double lat0 = minLat - WATER_PAD_DEG, lat1 = maxLat + WATER_PAD_DEG;
+        double cos = StrictMath.cos(StrictMath.toRadians(Math.min(89.9, Math.max(Math.abs(lat0), Math.abs(lat1)))));
+        double padLon = WATER_PAD_DEG / cos;
+        boolean allLon = north || south || wound || off || lat1 >= 90 || lat0 <= -90 || maxLon - minLon + 2 * padLon >= 360;
+        int r0 = (int) Math.max(-90, Math.floor(lat0)), r1 = (int) Math.min(89, Math.floor(lat1));
+        long c0 = allLon ? -180 : (long) Math.floor(minLon - padLon), c1 = allLon ? 179 : (long) Math.floor(maxLon + padLon);
+        int[] out = new int[(r1 - r0 + 1) * (int) (c1 - c0 + 1)];
+        int k = 0;
+        for (int lat = r0; lat <= r1; lat++) {
+            for (long lon = c0; lon <= c1; lon++) {
+                int t = EarthData.tile(lat, (int) (Math.floorMod(lon + 180, 360L) - 180));
+                if (data.entry("rivers", t) <= 0 && data.entry("lakes.small", t) <= 0) continue;
+                if (footprint(t, x0, y0, side)) out[k++] = t;
+            }
+        }
+        return Arrays.copyOf(out, k);
+    }
+
+    /** Points a side of a 1-degree tile its footprint is read at: 3, its corners, the middles of its edges and its centre. */
+    private static final int FOOTPRINT_POINTS = 3;
+
+    /**
+     * Whether 1-degree tile t, widened by WATER_PAD_DEG (the reach of its
+     * widest river past its edge), may reach a box of plots: its FOOTPRINT_POINTS
+     * x FOOTPRINT_POINTS points projected, their box widened by an eighth of
+     * its longer side (the most an edge between two of them can bow out),
+     * against the box; true where any point is off the planet.
+     */
+    private boolean footprint(int t, double x0, double y0, double side) {
+        double lat0 = EarthData.tileLat0(t) - WATER_PAD_DEG, lat1 = EarthData.tileLat0(t) + 1 + WATER_PAD_DEG;
+        double cos = StrictMath.cos(StrictMath.toRadians(Math.min(89.9, Math.max(Math.abs(lat0), Math.abs(lat1)))));
+        double pad = Math.min(180, WATER_PAD_DEG / cos);
+        double lon0 = EarthData.tileLon0(t) - pad, lon1 = EarthData.tileLon0(t) + 1 + pad;
+        double bx0 = Double.POSITIVE_INFINITY, by0 = Double.POSITIVE_INFINITY, bx1 = Double.NEGATIVE_INFINITY, by1 = Double.NEGATIVE_INFINITY;
+        double[] p = new double[2];
+        int m = FOOTPRINT_POINTS - 1;
+        for (int j = 0; j <= m; j++) {
+            for (int i = 0; i <= m; i++) {
+                if (!proj.plotOf(Math.max(-90, Math.min(90, lat0 + (lat1 - lat0) * j / m)), lon0 + (lon1 - lon0) * i / m, p)) return true;
+                bx0 = Math.min(bx0, p[0]); bx1 = Math.max(bx1, p[0]);
+                by0 = Math.min(by0, p[1]); by1 = Math.max(by1, p[1]);
+            }
+        }
+        double bow = Math.max(bx1 - bx0, by1 - by0) / 8;
+        return bx1 + bow >= x0 && bx0 - bow <= x0 + side && by1 + bow >= y0 && by0 - bow <= y0 + side;
     }
 
     /* =====================================================================
