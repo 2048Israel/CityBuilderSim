@@ -1,4 +1,4 @@
-# NewGameCheck.java - 1,135 lines · 14 methods · 3 constants · harnesses
+# NewGameCheck.java - 1,225 lines · 15 methods · 3 constants · harnesses
 
 `ham/citybuildersim/NewGameCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
@@ -36,8 +36,14 @@
 > world, a chosen one carried into the city and its World, kept by a save,
 > derived the same way every time for a save from before it, and left behind
 > by Start New Game; the founding screen's dice and typed seed.
+> 
+> AND THE REAL EARTH (0.7.121), section 14: a founding's world may be the
+> Earth round a spot - its kind, latitude, longitude and data on the record,
+> carried into the city's World and land, kept by a save; a spot the founding
+> card refuses is a problem the game will not found; Start New Game after an
+> Earth city founds on the default generated world.
 
-**Uses:** [Game](Game.md) (137), [Founding](Founding.md) (119), [Currency](Currency.md) (40), [WorldEconomy](WorldEconomy.md) (25), [Rollover](Rollover.md) (6), [ForeignAccounts](ForeignAccounts.md) (5), [GameFiles](GameFiles.md) (5), [World](World.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LongTermBond](LongTermBond.md) (3), [DebtQuote](DebtQuote.md) (3), [Sector](Sector.md) (2), [Good](Good.md) (2), [EconomyManager](EconomyManager.md) (1), [PopulationManager](PopulationManager.md) (1), [Retail](Retail.md) (1), [RealEstate](RealEstate.md) (1), [ServicesManager](ServicesManager.md) (1), [Construction](Construction.md) (1), [BuildingManager](BuildingManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Statement](Statement.md) (1), [GoodsMarket](GoodsMarket.md) (1), [CityLand](CityLand.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Debt](Debt.md) (1), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [Game](Game.md) (143), [Founding](Founding.md) (134), [Currency](Currency.md) (40), [WorldEconomy](WorldEconomy.md) (27), [World](World.md) (13), [GameFiles](GameFiles.md) (6), [Rollover](Rollover.md) (6), [ForeignAccounts](ForeignAccounts.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (3), [LongTermBond](LongTermBond.md) (3), [DebtQuote](DebtQuote.md) (3), [Sector](Sector.md) (2), [Good](Good.md) (2), [EarthData](EarthData.md) (2), [EarthCheck](EarthCheck.md) (2), [EconomyManager](EconomyManager.md) (1), [PopulationManager](PopulationManager.md) (1), [Retail](Retail.md) (1), [RealEstate](RealEstate.md) (1), [ServicesManager](ServicesManager.md) (1), [Construction](Construction.md) (1), [BuildingManager](BuildingManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Statement](Statement.md) (1), [GoodsMarket](GoodsMarket.md) (1), [CityLand](CityLand.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Debt](Debt.md) (1), [MoneyAudit](MoneyAudit.md) (1), [EarthTerrain](EarthTerrain.md) (1)... and 1 more
 
 **Used by (1):** [ReadPathCheck](ReadPathCheck.md)
 
@@ -45,70 +51,78 @@
 
 | line | section |
 |---:|---|
-| 250 | · 1. what a city that never existed looks like |
-| 267 | · 2. live in one, hard |
-| 351 | · 3. start a new one |
-| 372 | · 4. and it is actually playable |
-| 398 | · 5. a new game after a LOAD, too |
-| 443 | · 6-11. FOUNDING A CITY (0.7.10) |
-| 446 | · 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
-| 449 | · 13. THE GROUND IT STANDS ON (0.7.56) |
-| 458 | 6-11. FOUNDING A CITY (0.7.10) |
-| 493 | · · 6 |
-| 636 | · · 7 |
-| 689 | · · 8 |
-| 744 | · · 9 |
-| 761 | · · 10 |
-| 787 | · · 11 |
-| 939 | 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
-| 1007 | 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) |
+| 258 | · 1. what a city that never existed looks like |
+| 275 | · 2. live in one, hard |
+| 359 | · 3. start a new one |
+| 380 | · 4. and it is actually playable |
+| 406 | · 5. a new game after a LOAD, too |
+| 451 | · 6-11. FOUNDING A CITY (0.7.10) |
+| 454 | · 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
+| 457 | · 13. THE GROUND IT STANDS ON (0.7.56) |
+| 460 | · 14. THE REAL EARTH (0.7.121) |
+| 469 | 6-11. FOUNDING A CITY (0.7.10) |
+| 504 | · · 6 |
+| 647 | · · 7 |
+| 700 | · · 8 |
+| 755 | · · 9 |
+| 772 | · · 10 |
+| 798 | · · 11 |
+| 950 | 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
+| 1018 | 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) |
+| 1118 | 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 243 | `NewGameCheck.USED_HOUSES` | `120` | The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. |
-| 1114 | `NewGameCheck.REAL_OUT` | `System.out` |  |
-| 1115 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 251 | `NewGameCheck.USED_HOUSES` | `120` | The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. |
+| 1204 | `NewGameCheck.REAL_OUT` | `System.out` |  |
+| 1205 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 46 | `static int fails` |  |
+| 52 | `static int fails` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 44 | 1092 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
-| 48 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 53 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 61 | 180 | `static Map<String, Double> snapshot(Game g)` | Everything a previous city could possibly leave behind. |
-| 245 | 212 | `public static void main(String[] args) throws Exception` |  |
+| 50 | 1176 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
+| 54 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 59 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 67 | 182 | `static Map<String, Double> snapshot(Game g)` | Everything a previous city could possibly leave behind. |
+| 253 | 215 | `public static void main(String[] args) throws Exception` |  |
 
-### 6-11. FOUNDING A CITY (0.7.10) (lines 458-938)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 491 | 424 | `static void founding(GameFiles files) throws Exception` |  |
-| 917 | 4 | `static double cost(Founding.Buys buys, String name)` | A first work's invoice, by name. |
-| 923 | 8 | `static boolean isDefault(Game g)` | Everything a founding on the defaults is, and nothing a previous city was. |
-| 933 | 5 | `static boolean audited(Game g)` | The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. |
-
-### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 939-1006)
+### 6-11. FOUNDING A CITY (0.7.10) (lines 469-949)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 956 | 50 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
+| 502 | 424 | `static void founding(GameFiles files) throws Exception` |  |
+| 928 | 4 | `static double cost(Founding.Buys buys, String name)` | A first work's invoice, by name. |
+| 934 | 8 | `static boolean isDefault(Game g)` | Everything a founding on the defaults is, and nothing a previous city was. |
+| 944 | 5 | `static boolean audited(Game g)` | The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. |
 
-### 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) (lines 1007-1135)
+### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 950-1017)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1024 | 82 | `static void theWorldsSeed(GameFiles files) throws Exception` |  |
-| 1107 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 1118 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
-| 1123 | 4 | `static void quietly(Runnable work)` |  |
-| 1128 | 7 | `static void cleanUp(Path root)` |  |
+| 967 | 50 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
+
+### 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) (lines 1018-1117)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1035 | 82 | `static void theWorldsSeed(GameFiles files) throws Exception` |  |
+
+### 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 (lines 1118-1225)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1137 | 59 | `static void theRealEarth(GameFiles files) throws Exception` |  |
+| 1197 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 1208 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
+| 1213 | 4 | `static void quietly(Runnable work)` |  |
+| 1218 | 7 | `static void cleanUp(Path root)` |  |
 

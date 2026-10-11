@@ -67,7 +67,8 @@ public class ServicesManager {
 
         // ...every building's draw past the power it makes itself, and what the works make past their
         // own draws, sold to the grid (0.7.112, batch I2; UtilitiesHandler, THE POWER THE WORKS MAKE):
-        // every building's whole draw, and none sold, while no building makes power.
+        // every building's whole draw, and none sold, while no works that makes power stands (since 0.7.123
+        // the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop make some).
         updateHandlerDouble(
                 utilitiesHandler::setWattsConsumption,
                 BuildingsTemplate::powerBought);

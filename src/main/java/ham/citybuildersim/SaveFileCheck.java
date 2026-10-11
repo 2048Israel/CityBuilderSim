@@ -1341,7 +1341,7 @@ public class SaveFileCheck {
         reserveState.boughtHome = 11.5; reserveState.boughtAbroad = 22.25; reserveState.soldHome = 33.75;
         reserveState.soldAbroad = 44.5; reserveState.settledImports = 55.25; reserveState.settledExports = 66.75;
         full.getReserve().restore(reserveState);
-        // ...and the city's old steel (0.7.121, batch I4), which no city founds with: steel standing from three sellers, and the
+        // ...and the city's old steel (0.7.123, batch I4), which no city founds with: steel standing from three sellers, and the
         // yards' last month - what arose by source, bought, to landfill, the price and who was paid.
         OldMetal.State oldState = new OldMetal.State();
         oldState.pending.put(Trade.HOUSEHOLDS, 1_234.5);
@@ -1456,11 +1456,11 @@ public class SaveFileCheck {
                 resThen.getSoldHome() + resThen.getSoldAbroad());
         same("...and what the last strike settled abroad", resNow.getSettledImports() + resNow.getSettledExports(),
                 resThen.getSettledImports() + resThen.getSettledExports());
-        // ...and the city's old steel (0.7.121): what stands to be bought and the yards' last month (DataSave.oldMetal).
+        // ...and the city's old steel (0.7.123): what stands to be bought and the yards' last month (DataSave.oldMetal).
         OldMetal oldThen = full.getOldMetal(), oldNow = back.getOldMetal();
         assertTrue("fixture: the city held old steel from three sellers, and a month of the yards' record",
                 oldThen.available() > 0 && oldThen.lastBought() > 0 && oldThen.lastPaid().size() == 2);
-        same("the old steel standing to be bought (0.7.121)", oldNow.available(), oldThen.available());
+        same("the old steel standing to be bought (0.7.123)", oldNow.available(), oldThen.available());
         same("...the households' of it", oldNow.availableFrom(Trade.HOUSEHOLDS), oldThen.availableFrom(Trade.HOUSEHOLDS));
         same("...the offcuts' of it, by source", oldNow.available(OldMetal.Source.OFFCUTS), oldThen.available(OldMetal.Source.OFFCUTS));
         same("...what arose in the yards' last month, and from cars", oldNow.lastArisen() + oldNow.lastArisen(OldMetal.Source.CARS),
@@ -2096,7 +2096,7 @@ public class SaveFileCheck {
             hauls.buildStack(template(hauls, order[0]), Integer.parseInt(order[1]), true);
         }
         /*
-         * ...AND THE MILLS HELD WITH THE RAILWAY (0.7.116, batch I3): at
+         * ...AND THE MILLS HELD WITH THE RAILWAY (0.7.120, batch I3): at
          * steel's world price a furnace shipping its steel loses money and
          * Iron & Steel's planner sheds it, so the town's freight would go
          * with its furnaces. A hold is the fixture's lever, not the city's:
@@ -2216,7 +2216,7 @@ public class SaveFileCheck {
                 {LongPlaytest.nameOf(college, HeavyIndustry.ARC_FURNACE), "12"} }) {
             college.buildStack(template(college, order[0]), Integer.parseInt(order[1]), true);
         }
-        // ...its furnaces held for their draw (0.7.116): at steel's world price Iron & Steel would shed them, and the town its shortage.
+        // ...its furnaces held for their draw (0.7.120): at steel's world price Iron & Steel would shed them, and the town its shortage.
         college.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         Sector grocers = college.getSectors().retail();
         for (int m = 0; m < 120 && !(college.getHouseholdBalance().getGraduating() > 0
@@ -2347,7 +2347,7 @@ public class SaveFileCheck {
 
         assertTrue("fixture: the city bought the preferred", fundCity.acceptPreferredOffer());
         // ...and a share on the book from the world, so a lot has a value at the step to keep (0.7.39, FundLedger) - of the first
-        // company in the register's order whose share the world sells and the fund's rule buys (since 0.7.116: Iron & Steel,
+        // company in the register's order whose share the world sells and the fund's rule buys (since 0.7.120: Iron & Steel,
         // the first the world holds, can have no share abroad to sell - its holders' emigrants' - nor room under the rule's cap).
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             if (c == Equity.BANK || !(fundCity.getEquity().getForeignShares(c) > 1) || !(fundCity.getExchange().fair(c) > 0)) continue;
@@ -2844,6 +2844,7 @@ public class SaveFileCheck {
         return out;
     }
 
+    /** The console, as the harness found it: where quietly() puts the narration back. */
     static final java.io.PrintStream REAL_OUT = System.out;
 
     /** Runs a piece of the city with the game's narration off. */
@@ -2861,7 +2862,7 @@ public class SaveFileCheck {
 
     /**
      * Whether a load of `slot` from `files` into `loaded` was refused at the
-     * floor (0.7.116, batch I3): the save's format below
+     * floor (0.7.120, batch I3): the save's format below
      * GameVersion.OLDEST_LOADABLE_FORMAT, the game told in P7's words naming
      * the build that saved it (noLongerReadable()), nothing of it applied -
      * the game's month its fresh first - and the file byte for byte `before`.

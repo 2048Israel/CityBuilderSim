@@ -37,7 +37,7 @@ public enum Resource {
      * land, today's listing's ore on a quarter of its sites, 1.88% of the map.
      * The ground sells at US$0.40 a tonne in the ground, the land office's
      * charge until 0.7.57 (LandMarket, THE ORE UNDER AN OFFER): 1/212.5 of the
-     * ore's world export price since 0.7.116 (batch I3; Jerus's D,
+     * ore's world export price since 0.7.120 (batch I3; Jerus's D,
      * 2026-10-08: "keep US$0.40 a tonne"), when ore fell to .085
      * (Good.IRON); 1/350 of the old floor of .14 until then. Kept, the field
      * is the gate on the mines: LandCheck 19's fixture field (world 35's
@@ -105,7 +105,7 @@ public enum Resource {
     /** What its amount is counted in: "tonne", or forest's "cubic metre". */
     public String unit()           { return unit; }
 
-    /** Fields a square kilometre of land: the mean of each world cell's Poisson count, over its land. Zero for forest. */
+    /** Fields a square kilometre of land: the mean of each world cell's Poisson count, over its land - on the real Earth, since 0.7.117, over its field land (World.fieldKm2(): its land x its provinces' weight and Z, oil's with its petroleum and its offshore sea). Zero for forest. */
     public double fieldsPerKm2()   { return fieldsPerKm2; }
 
     /** The ground one site takes, in square kilometres: what one mine or well stands on. Zero for forest. */

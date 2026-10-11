@@ -93,14 +93,18 @@ public class NationalAccounts {
     private double importsMaterials;
 
     /**
-     * Raw material heavy industry buys abroad, and what it ships back out.
+     * Raw material the businesses buy abroad - every sector's imports but
+     * Retail's food and Construction's materials, and the strategic reserve's
+     * crude (EconomyManager.updateNationalAccounts()) - and what the city
+     * ships back out.
      *
-     * The city's first exports. Until now getNetExports() could only ever be
+     * The city's first exports. Until then getNetExports() could only ever be
      * negative and the government screen said as much - a city that imported
-     * food and building materials and sold nothing. A steel mill is the first
-     * thing that earns foreign money, and it does so by importing scrap: only
-     * the DIFFERENCE between the two is output the city actually produced,
-     * which is exactly what net exports is for.
+     * food and building materials and sold nothing. A steel mill was the first
+     * thing that earned foreign money, and it did so by importing scrap (IRON
+     * then; SCRAP, its own good, since 0.7.120): only the DIFFERENCE between
+     * the two is output the city actually produced, which is exactly what net
+     * exports is for.
      */
     private double importsRawMaterial;
     private double exports;
@@ -198,7 +202,7 @@ public class NationalAccounts {
      * which nobody held. A save from before carries one slot fewer and reads
      * crude's last units as none, which is what that city held.
      *
-     * ...AND SINCE 0.7.121 (batch I4; runs/spec-materials.md 2.3) THE
+     * ...AND SINCE 0.7.123 (batch I4; runs/spec-materials.md 2.3) THE
      * STEELWORKS' COKE AND THE TWO COALS, on the end in Good's order: coke
      * in the Coke Ovens' yard, and coal - imported until Coal Mining comes
      * (batch I6) - in its makers' yards then. A save from before carries

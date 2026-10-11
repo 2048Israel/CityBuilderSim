@@ -99,7 +99,7 @@ public final class Manufacturing extends Sector {
                 + "is alone. It needs no deposit of its own, only people.");
     }
 
-    /** What it makes of a flow good, and since 0.7.121 (batch I4) the offcuts of its fabricated steel to the city's old steel, its own to sell (OldMetal). */
+    /** What it makes of a flow good, and since 0.7.123 (batch I4) the offcuts of its fabricated steel to the city's old steel, its own to sell (OldMetal). */
     @Override
     public void produceFlow(Good g) {
         super.produceFlow(g);
@@ -175,11 +175,11 @@ public final class Manufacturing extends Sector {
      * what happened without it.
      *
      * NO ORE TEST, DELIBERATELY, and this is the one place this sector departed
-     * from the mills it stands next to. To 0.7.115 the mills' plan refused to
+     * from the mills it stands next to. To 0.7.119 the mills' plan refused to
      * build without spare local ore and was right to: a mill on imported scrap
      * earned almost nothing, and a sector that expands on a business case it
      * does not have is the borrowing spiral the investment engine was written
-     * to end. (Since 0.7.116, batch I3, Iron & Steel builds its furnaces by
+     * to end. (Since 0.7.120, batch I3, Iron & Steel builds its furnaces by
      * SpreadPlanner on their whole cost, and they melt scrap, not ore.) A
      * fabricator on imported steel is a different case - thin, but real, about
      * eighteen percent against an ordinary plant's thirty - so the profit test

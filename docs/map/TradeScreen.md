@@ -1,6 +1,6 @@
 # TradeScreen.java - 2,749 lines · 119 methods · 44 constants · interface
 
-`ham/citybuildersim/ui/TradeScreen.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/TradeScreen.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The Trade & the world tab: how the city stands against the world this
 > month - what it sells and buys abroad, the month's balance of payments,
@@ -48,7 +48,7 @@
 > the folds, the river's toggle, the goods' toggle and the exchange's ask
 > all survive a redraw.
 
-**Uses:** [Palette](Palette.md) (309), [ForeignAccounts](ForeignAccounts.md) (86), [Icons](Icons.md) (44), [Sectors](Sectors.md) (18), [TimeChart](TimeChart.md) (12), [CapitalFlows](CapitalFlows.md) (11), [Currency](Currency.md) (10), [Good](Good.md) (8), [ChartModel](ChartModel.md) (8), [HistorySave](HistorySave.md) (6), [HistoryScreen](HistoryScreen.md) (6), [Sector](Sector.md) (5), [UserInterface](UserInterface.md) (2), [SectorScreen](SectorScreen.md) (2), [BuildScreen](BuildScreen.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Retail](Retail.md) (2), [YearBook](YearBook.md) (2), [BondMarket](BondMarket.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [PolicyScreen](PolicyScreen.md) (2), [Statement](Statement.md) (1), [DecisionLog](DecisionLog.md) (1), [WorldEconomy](WorldEconomy.md) (1), [DebtManager](DebtManager.md) (1), [Bank](Bank.md) (1), [Game](Game.md) (1)
+**Uses:** [Palette](Palette.md) (309), [ForeignAccounts](ForeignAccounts.md) (86), [Icons](Icons.md) (44), [Sectors](Sectors.md) (18), [TimeChart](TimeChart.md) (12), [CapitalFlows](CapitalFlows.md) (11), [Currency](Currency.md) (10), [ChartModel](ChartModel.md) (8), [Good](Good.md) (7), [HistorySave](HistorySave.md) (6), [HistoryScreen](HistoryScreen.md) (6), [Sector](Sector.md) (5), [UserInterface](UserInterface.md) (2), [SectorScreen](SectorScreen.md) (2), [BuildScreen](BuildScreen.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Retail](Retail.md) (2), [YearBook](YearBook.md) (2), [BondMarket](BondMarket.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [PolicyScreen](PolicyScreen.md) (2), [Statement](Statement.md) (1), [DecisionLog](DecisionLog.md) (1), [WorldEconomy](WorldEconomy.md) (1), [DebtManager](DebtManager.md) (1), [Bank](Bank.md) (1), [Game](Game.md) (1)
 
 **Used by (4):** [FinancesScreen](FinancesScreen.md), [PolicyScreen](PolicyScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 

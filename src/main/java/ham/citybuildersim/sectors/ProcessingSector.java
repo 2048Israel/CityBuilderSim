@@ -39,7 +39,7 @@ import java.util.Map;
  *       (repairs and property tax, at its zone's price - Z4)
  *   - its consumables at the exchange factor, + its own power at the tariff
  *       (SpreadPlanner.ownCosts())
- *   - since 0.7.121 (batch I4) a feed no market sells (offMarketFeed(): the
+ *   - since 0.7.123 (batch I4) a feed no market sells (offMarketFeed(): the
  *       Scrap Yard's old steel) and its lorries' wear and diesel
  *       (fleetRunning()), on its cost with the vans it must buy
  *       (fleetCapital()) - and at the share of nameplate its feed fills
@@ -71,8 +71,9 @@ import java.util.Map;
  * every maker's plant is. Its kinds are its templates' ids, which are
  * permanent: a rename (the chains rename buildings) keeps the count.
  *
- * HEAVY INDUSTRY - IRON & STEEL - EXTENDS IT SINCE 0.7.116 (batch I3), its
- * arc furnaces on scrap; the chains' new sectors follow at I7, I8 and I10.
+ * HEAVY INDUSTRY - IRON & STEEL - EXTENDS IT SINCE 0.7.120 (batch I3), its
+ * arc furnaces on scrap, and since 0.7.123 (batch I4) the integrated route
+ * and the Scrap Yard; the chains' new sectors follow at I7, I8 and I10.
  * Refining stays its own (★ it
  * overrides every part of the plan - the flow, the package, the run, the
  * Tank Farm - and its idle months are its kinds of unit, not its
@@ -111,7 +112,7 @@ public abstract class ProcessingSector extends Sector {
     }
 
     /*
-     * ...AND A FEED NO MARKET SELLS (0.7.121, batch I4): Iron & Steel's Scrap
+     * ...AND A FEED NO MARKET SELLS (0.7.123, batch I4): Iron & Steel's Scrap
      * Yard takes the city's old steel (OldMetal), which is not a good - it is
      * bought from the pool at 70% of scrap's export price, as much as arises.
      * So a works may say what one of its buildings pays a month for such
@@ -180,7 +181,7 @@ public abstract class ProcessingSector extends Sector {
      * sells, paying `other` a month past its running, standing and own costs
      * - that feed (offMarketFeed()) and its lorries (fleetRunning()) - and
      * costing `extraCost` past what the city prices its order at, the lorries
-     * it must buy (fleetCapital()) (0.7.121, batch I4): the same estimate, at
+     * it must buy (fleetCapital()) (0.7.123, batch I4): the same estimate, at
      * the rate times the share, less the other costs, on the whole cost. At a
      * share of 1 and none of either, the estimate above.
      */
@@ -201,7 +202,7 @@ public abstract class ProcessingSector extends Sector {
         return grossStanding(t, v, rate) - city.running(t) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff);
     }
 
-    /** ...run at `share` of the sector's rate and paying `other` a month past its running, standing and own costs (0.7.121): lastEarns() above at a share of 1 and none. */
+    /** ...run at `share` of the sector's rate and paying `other` a month past its running, standing and own costs (0.7.123): lastEarns() above at a share of 1 and none. */
     public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
                                    double factor, double tariff, double share, double other) {
         if (share == 1 && other == 0) return lastEarns(t, v, city, factor, tariff);
@@ -211,7 +212,7 @@ public abstract class ProcessingSector extends Sector {
     }
 
     /*
-     * ...AND THE LORRIES A WORKS NEEDS (0.7.121, batch I4; ★ Jerus's A, "every
+     * ...AND THE LORRIES A WORKS NEEDS (0.7.123, batch I4; ★ Jerus's A, "every
      * order on its whole cost"). A sector keeps a fleet for the tonnes its
      * plant moves (Sector, THE FLEET: one van to Sector.TONNES_PER_VAN a
      * month), buys it as it builds and replaces it as it wears, and its vans
@@ -377,7 +378,7 @@ public abstract class ProcessingSector extends Sector {
         return weighs(t) && planner.mayShed(kindOf(t));
     }
 
-    /** The spare-capacity rule's measure: {0, the idle kinds' buildings} while a kind stands idle long enough to shed; otherwise none - a works shrinks on distress (the mills' rule to 0.7.115). */
+    /** The spare-capacity rule's measure: {0, the idle kinds' buildings} while a kind stands idle long enough to shed; otherwise none - a works shrinks on distress (the mills' rule to 0.7.119). */
     @Override
     public double[] retirementDemandAndCapacity(Game game) {
         double idle = idleBuildings();

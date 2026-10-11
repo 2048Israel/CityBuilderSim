@@ -71,7 +71,7 @@ import java.util.Set;
  *      add to its figure; the sheet's land is its square feet at its price;
  *   6. a save keeps the columns and the register's paid-in, R7 counts again
  *      two months on, and a FORMAT-32 SAVE is refused, below the floor, its
- *      file untouched and nothing derived (since 0.7.116; until then it
+ *      file untouched and nothing derived (since 0.7.120; until then it
  *      loaded with its paid-in derived and said so, closed, and saved again
  *      in this build's format loaded back to the cent);
  *   8. THE DEBT SCHEDULE (R7): each kind's start, borrowed, repaid, written
@@ -712,7 +712,7 @@ public class SectorStatementCheck {
     /**
      * A FORMAT-32 SAVE (0.7.74's shape), made from the test player's city by
      * taking out what 0.7.75 added - the register's three slots a company and
-     * the books' new fields - is refused since 0.7.116 (batch I3: the floor,
+     * the books' new fields - is refused since 0.7.120 (batch I3: the floor,
      * GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37), its file untouched
      * and nothing derived. Until then it loaded with every listed sector's
      * share capital derived (what it raised since founding) and said so; its
@@ -720,7 +720,7 @@ public class SectorStatementCheck {
      * in this build's format, and loaded, it was the same to the cent.
      */
     static void anOlderSave(Game g) throws Exception {
-        out.println("\n--- 6b. a format-32 save is refused since 0.7.116 (to 0.7.115 it loaded, its paid-in derived) ---");
+        out.println("\n--- 6b. a format-32 save is refused since 0.7.120 (to 0.7.119 it loaded, its paid-in derived) ---");
         quietly(() -> g.saveGame(10));
         Path file = g.getGameFiles().saveFile(10);
         JsonObject json = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8)).getAsJsonObject();
@@ -744,7 +744,7 @@ public class SectorStatementCheck {
         Game old = new Game(g.getGameFiles());
         quietly(() -> old.loadGame(10));
         /*
-         * REFUSED SINCE 0.7.116 (batch I3). Until then this section loaded the
+         * REFUSED SINCE 0.7.120 (batch I3). Until then this section loaded the
          * format-32 save with every listed sector's paid-in derived - what it
          * raised since founding, at home and abroad - its equity statement
          * closing, a month on still closing, and saved again and loaded the
@@ -754,7 +754,7 @@ public class SectorStatementCheck {
          * turns it away and nothing is derived; SectorBooks.derivePaidIn()
          * and Equity's derived flag stay for the day old saves load again.
          */
-        assertTrue("a format-32 save is refused since 0.7.116, below the floor: in P7's words, nothing of it applied, its file as it was",
+        assertTrue("a format-32 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was",
                 SaveFileCheck.refusedAtTheFloor(g.getGameFiles(), 10, old, before));
         boolean derivedNone = true;
         for (int c = 0; c < Equity.COMPANIES.length; c++) derivedNone &= !old.getEquity().isPaidInDerived(c);

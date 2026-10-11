@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * One build card's figures, for every one of the 101 buildings (0.7.25): what
+ * One build card's figures, for every one of the 108 buildings (0.7.25): what
  * it gives the city and in what unit, its price per unit of that, the scarce
  * resource it takes, the group it is compared within and where in that group
  * it stands, what one costs to run, the verdict on an order of it - and, for
@@ -214,7 +214,7 @@ public final class BuildCard {
        has nine groups and Shops two, and the bars and tags compare within a
        group: a steel mill against a steel mill, not against a bakery. The
        names are the design note's, and since 0.7.62 the wells' and the
-       refinery's ("Oil", "Refining") after the mines'; since 0.7.116 (batch
+       refinery's ("Oil", "Refining") after the mines'; since 0.7.120 (batch
        I3, Jerus's Q2) the mills' and the mines' are their sectors' new
        labels, "Iron & Steel" and "Iron Mining" ("Steel" and "Iron" until
        then).

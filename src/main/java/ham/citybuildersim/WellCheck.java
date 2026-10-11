@@ -1075,7 +1075,7 @@ public class WellCheck {
         Game old = new Game(files);
         quietly(() -> old.loadGameSave(10));
         /*
-         * REFUSED SINCE 0.7.116 (batch I3): format 34 is below the floor
+         * REFUSED SINCE 0.7.120 (batch I3): format 34 is below the floor
          * (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
          * saves need not load until the game is published). Until then it
          * loaded with its one pool's E charged to the ground, floored at the
@@ -1085,7 +1085,7 @@ public class WellCheck {
          * conversion, LandManager.restoreOilPools(), is the load's setter and
          * is still asked directly below.
          */
-        report("a save from before the pools (format 34) is refused since 0.7.116, below the floor: in P7's words, nothing of it"
+        report("a save from before the pools (format 34) is refused since 0.7.120, below the floor: in P7's words, nothing of it"
                         + " applied, its file as it was", SaveFileCheck.refusedAtTheFloor(files, 10, old, before),
                 String.format("%,.0f t lifted as one pool, not read", onePool));
 

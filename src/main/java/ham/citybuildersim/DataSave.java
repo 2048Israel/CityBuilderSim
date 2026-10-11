@@ -226,7 +226,7 @@ public class DataSave {
     public java.util.List<Markets.State> getMarkets()       { return markets; }
 
     /**
-     * The city's old steel (0.7.121, batch I4; OldMetal): what it has thrown
+     * The city's old steel (0.7.123, batch I4; OldMetal): what it has thrown
      * out since its Scrap Yards last bought, by seller and by source, and the
      * yards' last month. No format bump: a save from before carries none, and
      * reads none - a city that has thrown nothing out yet, which is right.
@@ -234,7 +234,7 @@ public class DataSave {
     private OldMetal.State oldMetal;
 
     public void setOldMetal(OldMetal.State s) { this.oldMetal = s; }
-    /** The old steel as saved (0.7.121), or null on a save from before. */
+    /** The old steel as saved (0.7.123), or null on a save from before. */
     public OldMetal.State getOldMetal()       { return oldMetal; }
 
     /**

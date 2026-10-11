@@ -1,6 +1,6 @@
-# Motoring.java - 364 lines · 21 methods · 2 constants · model
+# Motoring.java - 365 lines · 21 methods · 2 constants · model
 
-`ham/citybuildersim/Motoring.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Motoring.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The households' car market: the second-hand pass, then the showroom, with
 > the road told what is parked on it - and since 0.7.49 the drivers' fuel and
@@ -90,11 +90,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 56 | 309 | **type** `public final class Motoring` | The households' car market: the second-hand pass, then the showroom, with the road told what is parked on it - and since 0.7.49 the drivers' fuel and a buyer who weighs a car's full cost against the fare. |
+| 56 | 310 | **type** `public final class Motoring` | The households' car market: the second-hand pass, then the showroom, with the road told what is parked on it - and since 0.7.49 the drivers' fuel and a buyer who weighs a car's full cost against the fare. |
 
 ### THE FUEL, AND THE BUYER WEIGHS THE FARE (0.7.49) (lines 66-115)
 
-### THE FUEL IS DRAWN (0.7.62, batch K) (lines 116-364)
+### THE FUEL IS DRAWN (0.7.62, batch K) (lines 116-365)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -118,5 +118,5 @@
 | 237 | 1 | `public double getUsedCarPrice()` | What one went for. |
 | 240 | 1 | `public double getUsedCarSpend()` | What the buyers paid for them, all in. |
 | 243 | 1 | `public double getUsedCarCredit()` | ...and what of that a lender advanced. |
-| 246 | 118 | `void month(Game game)` | The car market's month. |
+| 246 | 119 | `void month(Game game)` | The car market's month. |
 

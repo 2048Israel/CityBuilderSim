@@ -1,6 +1,6 @@
-# BuildAdvice.java - 1,752 lines · 93 methods · 9 constants · model
+# BuildAdvice.java - 1,750 lines · 93 methods · 9 constants · model
 
-`ham/citybuildersim/BuildAdvice.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildAdvice.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > What the city should build next, and why: the Build tab's categories and
 > the measures its five city categories open on, each measure's figure
@@ -46,7 +46,7 @@
 > goes (Jerus's school at 0% that one would take to 20,000%): the overshoot
 > ranks the candidates, it never stops one (0.7.101).
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (116), [Game](Game.md) (63), [CityNeeds](CityNeeds.md) (57), [BuildingType](BuildingType.md) (36), [CareType](CareType.md) (32), [JobType](JobType.md) (15), [EducationType](EducationType.md) (12), [ConstructionControl](ConstructionControl.md) (11), [InfrastructureManager](InfrastructureManager.md) (10), [Healthcare](Healthcare.md) (7), [SafetyType](SafetyType.md) (6), [Crime](Crime.md) (6), [Traffic](Traffic.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [Good](Good.md) (5), [BuildingManager](BuildingManager.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (3), [AgeBand](AgeBand.md) (2), [Education](Education.md) (2), [LandParcel](LandParcel.md) (2), [Sectors](Sectors.md) (2), [BuildingsStacks](BuildingsStacks.md) (1), [Health](Health.md) (1), [PopulationCohorts](PopulationCohorts.md) (1), [LandManager](LandManager.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildCard](BuildCard.md) (1), [HistorySave](HistorySave.md) (1), [Sector](Sector.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (115), [Game](Game.md) (63), [CityNeeds](CityNeeds.md) (57), [BuildingType](BuildingType.md) (36), [CareType](CareType.md) (32), [JobType](JobType.md) (15), [EducationType](EducationType.md) (12), [ConstructionControl](ConstructionControl.md) (11), [InfrastructureManager](InfrastructureManager.md) (10), [Healthcare](Healthcare.md) (7), [SafetyType](SafetyType.md) (6), [Crime](Crime.md) (6), [Traffic](Traffic.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [Good](Good.md) (5), [BuildingManager](BuildingManager.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (3), [AgeBand](AgeBand.md) (2), [Education](Education.md) (2), [LandParcel](LandParcel.md) (2), [Sectors](Sectors.md) (2), [BuildingsStacks](BuildingsStacks.md) (1), [Health](Health.md) (1), [PopulationCohorts](PopulationCohorts.md) (1), [LandManager](LandManager.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildCard](BuildCard.md) (1), [HistorySave](HistorySave.md) (1), [Mining](Mining.md) (1), [Sector](Sector.md) (1)... and 1 more
 
 **Used by (23):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [WaterCheck](WaterCheck.md)
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 1699 | **type** `public final class BuildAdvice` | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure before and after an order by the model's own arithmetic, and the rule behin... |
+| 54 | 1697 | **type** `public final class BuildAdvice` | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure before and after an order by the model's own arithmetic, and the rule behin... |
 | 56 | 1 | `private BuildAdvice()` |  |
 
 ### THE CATEGORIES (0.7.24) (lines 58-140)
@@ -240,14 +240,14 @@
 | 1632 | 3 | `public static double perServed(double life, double served, int count, double unit)` | The figure from an order's life and what it serves (0.7.101): the life over what it will serve; with that not measured, or nothing, over what its count adds (count x unit). |
 | 1642 | 5 | `public static double lifePerServed(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t, int count, ...` | A candidate's figure, the one the advice ranks by (0.7.101): an order of `count` of t over its life (orderLife()) for each unit it will serve over that life (servedOverLife() at `p`, the demand it is sized to; what it... |
 
-### AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) (lines 1648-1752)
+### AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) (lines 1648-1750)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1677 | 4 | **type** `public record Payback(int mines, double earns, double payment)` | An iron field weighed (0.7.101): the mines the city could staff and work on it, their profit a month, and the month's payment that repays its price - it pays back when the profit is at least the payment. |
 | 1679 | 1 | `public boolean pays()` _(in BuildAdvice.Payback)_ | Whether the mines pay the field back. |
 | 1683 | 4 | `public static Payback ironPayback(Game game, LandParcel field)` | Whether an offer holding iron would pay itself back in this city (fieldEarnings() against fieldPayment()). |
-| 1701 | 27 | `public static double[] fieldEarnings(Game game, int sites)` | What a field of `sites` iron sites would earn the city's mines a month (0.7.67, M3b; moved from LongPlaytest in 0.7.101): {mines, their monthly profit}. |
-| 1737 | 6 | `public static double fieldPayment(Game game, LandParcel field)` | The month's payment that repays a field's price here over Game.BUILD_BOND_YEARS (0.7.67, M3b; moved from LongPlaytest in 0.7.101): the level payment at the rate the market quotes for that much money at that term (Debt... |
-| 1745 | 7 | `public static boolean higherWorse(Measure m)` | Which way is worse for a measure's figure. |
+| 1701 | 25 | `public static double[] fieldEarnings(Game game, int sites)` | What a field of `sites` iron sites would earn the city's mines a month (0.7.67, M3b; moved from LongPlaytest in 0.7.101): {mines, their monthly profit}. |
+| 1735 | 6 | `public static double fieldPayment(Game game, LandParcel field)` | The month's payment that repays a field's price here over Game.BUILD_BOND_YEARS (0.7.67, M3b; moved from LongPlaytest in 0.7.101): the level payment at the rate the market quotes for that much money at that term (Debt... |
+| 1743 | 7 | `public static boolean higherWorse(Measure m)` | Which way is worse for a measure's figure. |
 

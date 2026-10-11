@@ -83,7 +83,7 @@ public class TradeCostCheck {
         { Good.BAKERY,                   .00600,     .00370 },
         { Good.SNACKS,                   .01000,     .00620 },
         { Good.DRINKS,                   .00150,     .00090 },
-        // Iron ore and steel at the world's prices since 0.7.116 (batch I3; Jerus's Q4 and Q6, the
+        // Iron ore and steel at the world's prices since 0.7.120 (batch I3; Jerus's Q4 and Q6, the
         // study's 2.3): IRON .41 / .14 until then - the mills' scrap over the mines' ore - and STEEL
         // the US band, 1.284 / .847.
         { Good.IRON,                     .115,       .085  },
@@ -92,13 +92,13 @@ public class TradeCostCheck {
         { Good.SUPPORT_WORK,            Double.NaN, 5.5    },
         { Good.BACK_OFFICE_WORK,        Double.NaN, 8.6    },
         { Good.ENGINEERING_WORK,        Double.NaN, 14.6   },
-        // ...and moved with steel by the steel in them (0.7.116; Q6b): 2.21, and 14.3 / 9.0, until then.
+        // ...and moved with steel by the steel in them (0.7.120; Q6b): 2.21, and 14.3 / 9.0, until then.
         { Good.FABRICATED_STEEL,        Double.NaN, 1.545  },
         { Good.MACHINERY,              13.4,        8.1    },
         // The vehicles, 2026-09-16. Written down the day they were priced, for
         // the same reason as everything above them: a claim about the past is
         // only checkable if somebody writes the past down.
-        // ...moved with the steel in them on 0.7.116 (Jerus's C): 44 / 36, 72 and 2,400 until then.
+        // ...moved with the steel in them on 0.7.120 (Jerus's C): 44 / 36, 72 and 2,400 until then.
         { Good.CARS,                   41.3125,    33.3125 },
         { Good.VANS,                   68.135, Double.NaN  },
         { Good.ROLLING_STOCK,        2302.2, Double.NaN    },
@@ -123,10 +123,10 @@ public class TradeCostCheck {
         { Good.FUEL_OIL,            .0004997,   .0004256   },
         { Good.BITUMEN,                .6415,      .5465   },
         { Good.COKE,                  .09207,     .07843   },
-        // Scrap, split from ore (0.7.116, batch I3; Q4): IRON's old import price, and what the
+        // Scrap, split from ore (0.7.120, batch I3; Q4): IRON's old import price, and what the
         // city's scrap nets shipped out.
         { Good.SCRAP,                    .41,        .30   },
-        // The integrated route's seven (0.7.121, batch I4; spec-materials 2.3, the study's 2.3, 3.2
+        // The integrated route's seven (0.7.123, batch I4; spec-materials 2.3, the study's 2.3, 3.2
         // and 6.3): pellets, pig iron, the steelworks' coke, the two coals, limestone and lime - LIME's
         // export one of the study's eight widened bands (its 1.2), 150 in its first table.
         { Good.PELLETS,                  .160,       .125  },
@@ -243,7 +243,7 @@ public class TradeCostCheck {
          * ever reads as commuters or a school as ore, something upstream has
          * broken in a way no total would show.
          */
-        // ...the mills and the mine by their permanent ids (0.7.116, batch I3).
+        // ...the mills and the mine by their permanent ids (0.7.120, batch I3).
         for (String name : new String[]{ bm.getTemplate(HeavyIndustry.MINI_MILL).getName(),
                 bm.getTemplate(HeavyIndustry.ARC_FURNACE).getName(), bm.getTemplate(Mining.IRON_MINE).getName(), "Grain Farm" }) {
             BuildingsTemplate t = bm.getTemplateByName(name);

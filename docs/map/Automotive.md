@@ -1,6 +1,6 @@
 # Automotive.java - 294 lines · 7 methods · 2 constants · sectors
 
-`ham/citybuildersim/sectors/Automotive.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Automotive.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The automobile industry. THE THIRTEENTH SECTOR (2026-09-16, Jerus's call).
 > 
@@ -26,9 +26,9 @@
 > importable, so a city with money and no fabrication shop cannot be in the
 > car business however much it wants to be - it can only buy cars, like
 > anybody else. plan() below refuses to sink a plant the city cannot supply,
-> for exactly the reason HeavyIndustry refuses to sink a mill with no ore
-> behind it: a sector that expands on a business case it does not have is the
-> borrowing spiral the investment engine was written to end.
+> for exactly the reason the mills refused to sink a mill with no ore behind
+> it until 0.7.120: a sector that expands on a business case it does not have
+> is the borrowing spiral the investment engine was written to end.
 > 
 > MACHINERY CAN COME OFF A SHIP, and that asymmetry is deliberate and was
 > forced by a measurement. A car is three and a half tonnes of fabricated
@@ -91,7 +91,7 @@
 |---:|---:|---|---|
 | 141 | 3 | `public double localSupplyOf(Good g, Game game)` | What the city can fabricate a month, whoever is currently buying it. |
 | 146 | 3 | `public double biggestDrawAllowed(Good g, Game game)` | The largest draw a new plant may have on that supply. |
-| 159 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with HeavyIndustry's supply gate in front of it. |
+| 159 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with a supply gate in front of it, the mills' shape to 0.7.119. |
 | 245 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
 
 ### the screen (lines 247-294)

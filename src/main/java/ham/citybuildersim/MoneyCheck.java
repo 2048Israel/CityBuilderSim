@@ -348,7 +348,7 @@ public class MoneyCheck {
                 && last.detail.contains("- Industry Imports") && consumables != null && last.tradeOut >= consumables);
 
         /* ==================================================================
-           OLD STEEL (0.7.121, batch I4; OldMetal): a Scrap Yard buys the
+           OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the
            city's old steel at 70% of scrap's export price from whoever threw
            it out - the households for their cars, paid into their savings as
            the yard buys and out of the yard's cash at its strike, which

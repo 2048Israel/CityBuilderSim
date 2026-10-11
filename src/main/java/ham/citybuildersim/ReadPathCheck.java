@@ -222,7 +222,7 @@ public class ReadPathCheck {
         into.put("bank.bondWeighted", b.getBondWeighted());
         into.put("bank.concentration", b.getConcentrationAddOn());
         into.put("bank.herfindahl", b.getConcentrationHerfindahl());
-        // ...and the city's old steel (0.7.121, batch I4): what stands to be bought, and the yards' last month.
+        // ...and the city's old steel (0.7.123, batch I4): what stands to be bought, and the yards' last month.
         OldMetal old = g.getOldMetal();
         into.put("oldMetal.available", old.available());
         into.put("oldMetal.lastArisen", old.lastArisen());
@@ -267,7 +267,7 @@ public class ReadPathCheck {
         // the treasury's own read - the one that was mutating
         e.getTaxIncome();
         e.getTotalIncome();
-        // ...and the city's old steel and what Iron & Steel's yards would make of it (0.7.121, batch I4; OldMetal), as a
+        // ...and the city's old steel and what Iron & Steel's yards would make of it (0.7.123, batch I4; OldMetal), as a
         // sector page and the build card read them: the pool, the yards' feed and price, and every works weighed.
         OldMetal old = g.getOldMetal();
         old.available();
@@ -1429,7 +1429,7 @@ public class ReadPathCheck {
             for (int more = 0; more < 60 && !(g.fundBondsValue() > 0); more++) g.simulateMonths(1);
             /*
              * ...AND IF NO HOLDER HAS SOLD IT ONE BY THEN, ONE ABROAD DOES, AT
-             * THE BOND'S VALUE (0.7.116, batch I3). In 0.7.116's city - its
+             * THE BOND'S VALUE (0.7.120, batch I3). In 0.7.120's city - its
              * furnace on scrap at steel's world price, its mine bigger and
              * dearer - none had by the five years' end (month 87), nor by
              * month 147. So the fixture causes it as FundLedgerCheck 3 does,

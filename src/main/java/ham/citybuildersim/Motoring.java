@@ -270,7 +270,7 @@ public final class Motoring {
 
         // Fifteen years on, cars are scrapped - whether or not anything can be
         // bought to replace them. See HouseholdBalance.wearOutCars(). Their
-        // steel goes to the city's old steel, the households' to sell (0.7.121; OldMetal).
+        // steel goes to the city's old steel, the households' to sell (0.7.123; OldMetal).
         game.getOldMetal().carsScrapped(householdBalance.wearOutCars());
 
         GoodsMarket m = game.getMarkets().get(Good.CARS);

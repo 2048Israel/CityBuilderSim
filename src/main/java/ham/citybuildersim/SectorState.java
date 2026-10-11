@@ -135,7 +135,7 @@ public final class SectorState {
         public double paidEarlier;
         /** Sector.Ledger.capitalBySupplier (0.7.19): the builders' work on its premises this month, which the tax credit is struck on at the next strike. An older save reads none. */
         public Map<String, Double> capitalBySupplier = new LinkedHashMap<>();
-        /** Sector.Ledger.oldMetalSold (0.7.121, batch I4): its old steel sold to the yards this month, named apart at the strike. An older save reads none, which is what it sold. */
+        /** Sector.Ledger.oldMetalSold (0.7.123, batch I4): its old steel sold to the yards this month, named apart at the strike. An older save reads none, which is what it sold. */
         public double oldMetalSold;
 
         static LedgerState of(Sector.Ledger l) {

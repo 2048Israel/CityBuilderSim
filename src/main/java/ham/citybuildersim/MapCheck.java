@@ -350,7 +350,7 @@ public class MapCheck {
                      */
                     MiningCheck.makeRoom(g, 0, true);
                     ironSites = g.getLandManager().getIronDeposits();
-                    // ...handed the mine's price as it is handed the field's: a D$45M mine since 0.7.116 (batch I3) is more than a young city carries.
+                    // ...handed the mine's price as it is handed the field's: a D$45M mine since 0.7.120 (batch I3) is more than a young city carries.
                     BuildingsTemplate mine = g.getBuildingManager().getTemplate(Mining.IRON_MINE);
                     g.setCashForTest(g.getCash() + g.getBusinessInvestment().getCostOf(mine, 1));
                     LongPlaytest.build(g, mine.getName(), 1);

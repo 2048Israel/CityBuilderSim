@@ -300,8 +300,10 @@ public class UtilitiesHandler {
        the tariff, out of its takings: the electricity income is the bills
        less the payroll less the power bought (getPowerBought()), which the
        works' statements booked (Sector.Statement.powerSold), handed in with
-       the bills (setBilledRevenue()). No building makes power yet, so the
-       grid and the utility's books are what they were, to the bit.
+       the bills (setBilledRevenue()). No building made power until 0.7.123
+       (batch I4: the Coke Ovens, the Blast Furnace and the Oxygen Steel
+       Shop); while none of them stands, the grid and the utility's books are
+       what they were, to the bit.
        ===================================================================== */
 
     /** kW the works make past their own draws, standing: added to the grid's generation. Set by ServicesManager. */

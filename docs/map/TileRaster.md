@@ -57,7 +57,7 @@
 
 **Uses:** [TilePainter](TilePainter.md) (127), [BuildingVisual](BuildingVisual.md) (42), [World](World.md) (6), [DistrictPlan](DistrictPlan.md) (4), [CityRuns](CityRuns.md) (4), [Resource](Resource.md) (3)
 
-**Used by (7):** [EarthTerrainCheck](EarthTerrainCheck.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapFrame](MapFrame.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [ReadPathCheck](ReadPathCheck.md)
+**Used by (8):** [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapFrame](MapFrame.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [ReadPathCheck](ReadPathCheck.md)
 
 ## Sections
 

@@ -113,7 +113,7 @@ These are Jerus's, and they do not move.
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
                                    project's splitting-game.md)
-        OldMetal.java              the city's old steel (0.7.121, batch I4): its scrapped cars (Motoring),
+        OldMetal.java              the city's old steel (0.7.123, batch I4): its scrapped cars (Motoring),
                                    demolitions, fabrication offcuts and worn wagon sets, 85% recovered,
                                    kept by seller; Iron & Steel's Scrap Yards buy it at 70% of scrap's
                                    export price, the rest to landfill - saved under one key, MaterialsCheck
@@ -131,9 +131,9 @@ These are Jerus's, and they do not move.
                                    split at the month's trade); ProcessingSector and ExtractionSector (0.7.112,
                                    batch I2: the materials chains' two bases - a works built by SpreadPlanner,
                                    with captive use and idle-then-shed, and Mining's rule for a mine, Mining
-                                   moved onto it; since 0.7.116, batch I3, Heavy Industry - labelled Iron &
+                                   moved onto it; since 0.7.120, batch I3, Heavy Industry - labelled Iron &
                                    Steel, its arc furnaces on SCRAP - a ProcessingSector, and Mining - Iron
-                                   Mining - asked the planner's money gate on the whole cost; since 0.7.121,
+                                   Mining - asked the planner's money gate on the whole cost; since 0.7.123,
                                    batch I4, Iron & Steel's integrated route - the Scrap Yard, pellets, coke
                                    ovens, blast furnaces, the oxygen shop and the large mini-mill - its coke,
                                    pig iron and scrap captive and its works' power its own); Mining.java
@@ -227,8 +227,10 @@ These are Jerus's, and they do not move.
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
                                    fails for them (since 0.7.75 every gate, with what it would earn, cost and
-                                   take to pay back: appraise()), the verdict on an order; pure -
-                                   BuildCardCheck holds it
+                                   take to pay back: appraise(); since 0.7.122 the last of them consider()'s
+                                   brake, the interest on its whole cost - INTEREST, through
+                                   Game.interestTest() - a landlord's home not asked it), the verdict on an
+                                   order; pure - BuildCardCheck holds it
         SectorFlow.java            one business's month as a flow (0.7.30): each good in and out, its units off
                                    the production rows and its money off the statement, the plant's six
                                    throttles and the rate they multiply to; what the Sectors screen's
@@ -291,33 +293,34 @@ These are Jerus's, and they do not move.
                                    spec-earth 3's rule: a tile, line, plot or region drawn from the data's
                                    shares, rivers and small lakes with the seed's detail below them, the
                                    cells pass, the founding snap - World reaches it through an Earth key,
-                                   which only harnesses make until E4; EarthTerrainCheck holds it; and since
-                                   0.7.117 (batch E3) its deposits on real geology: Geology classes each
-                                   USGS province (the rules' class, and a hand-checked table over them),
-                                   holds spec-earth 4's weights, the Z that keeps the land's count of
-                                   fields today's and the types' odds; an Earth cell's fields are drawn on
-                                   its land times its provinces' weights, oil's with its petroleum and its
-                                   offshore sea, and a field's type leans on the class under it
-                                   (EarthTerrainCheck 10 to 14); and since 0.7.119 (batch E5) the map
-                                   on Earth: a far node drawn from the data (EarthTerrain.farTerrain():
-                                   the rivers stroked from their vectors at least a pixel wide, thinned
-                                   by width as the view widens, the small lakes from their points, the
-                                   forest dithered, the void past the planet's rim; MapTiles.nodeTerrain()
-                                   by key) and the hover card's nearest place and geologic province
-                                   (LandMap.earthWords()) - MapCheck 10; and since 0.7.121 (batch E4)
-                                   the sea's depth there, the generated world's rule with the distance
-                                   from the coast for the elevation earth-1 does not have
-                                   (EarthTerrain.SHELF_WIDTH_M, measured on the data)
+                                   which only harnesses made until E4 (0.7.121); EarthTerrainCheck holds
+                                   it; and since 0.7.117 (batch E3) its deposits on real geology: Geology
+                                   classes each USGS province (the rules' class, and a hand-checked table
+                                   over them), holds spec-earth 4's weights, the Z that keeps the land's
+                                   count of fields today's and the types' odds; an Earth cell's fields are
+                                   drawn on its land times its provinces' weights, oil's with its
+                                   petroleum and its offshore sea, and a field's type leans on the class
+                                   under it (EarthTerrainCheck 10 to 14); and since 0.7.119 (batch E5) the
+                                   map on Earth: a far node drawn from the data
+                                   (EarthTerrain.farTerrain(): the rivers stroked from their vectors at
+                                   least a pixel wide, thinned by width as the view widens, the small
+                                   lakes from their points, the forest dithered, the void past the
+                                   planet's rim; MapTiles.nodeTerrain() by key) and the hover card's
+                                   nearest place and geologic province (LandMap.earthWords()) - MapCheck
+                                   10; and since 0.7.121 (batch E4) the sea's depth there, the generated
+                                   world's rule with the distance from the coast for the elevation earth-1
+                                   does not have (EarthTerrain.SHELF_WIDTH_M, measured on the data)
         EarthSite.java             founding a city on the real Earth (0.7.121, batch E4; spec-earth.md 2
                                    and 6): whether the game has the Earth's data (gameData(), the file at
-                                   EarthData.DATA_FILE, which is not in git - data/ is ignored - and the
-                                   game runs without it), the place search, Random spot and the founding
-                                   card - the snap's site, the ground within 5 km on the world's plots,
-                                   the province's multipliers, the nearest iron, the refusals (the sea,
-                                   ice) and warnings (a desert, no fresh water near); and why an Earth
-                                   save cannot be loaded here. ui/FoundingScreen draws it (Earth |
-                                   Generated, the globe, the card), Founding carries the spot, DataSave
-                                   its four fields (SAVE_FORMAT 38) - EarthFoundingCheck holds it
+                                   EarthData.DATA_FILE, which is not in git - data/ is ignored; since
+                                   f99d62c the release earth-1's asset, tools/earth/get-earth.bat fetching
+                                   it - and the game runs without it), the place search, Random spot and
+                                   the founding card - the snap's site, the ground within 5 km on the
+                                   world's plots, the province's multipliers, the nearest iron, the
+                                   refusals (the sea, ice) and warnings (a desert, no fresh water near);
+                                   and why an Earth save cannot be loaded here. ui/FoundingScreen draws it
+                                   (Earth | Generated, the globe, the card), Founding carries the spot,
+                                   DataSave its four fields (SAVE_FORMAT 38) - EarthFoundingCheck holds it
         LandManager.java, LandMarket.java
                                    the city's land: what it owns, what is built on and what it sells - the
                                    ore and oil its ground holds less what is taken out, since 0.7.93 the
@@ -406,7 +409,10 @@ These are Jerus's, and they do not move.
                                          EarthTerrainCheck draws the Earth's ground on (0.7.115)
     tools/earth/                         E0's pipeline that bakes earth-1.bin (Python, outside the game; the file
                                          itself is not in the repository), its FORMAT.txt and ATTRIBUTION.txt, and
-                                         fixture.py, which cuts EarthCheck's fixture from it
+                                         fixture.py, which cuts EarthCheck's fixture from it; and since f99d62c
+                                         get-earth.bat, which fetches the file into data/ from the GitHub release
+                                         earth-1 and checks it against earth-1.sha256 (Play CityBuilderSim.bat
+                                         and Build EXE.bat call it first)
 
 Before the git era a class that moved left a stub at the root, a `.java` file
 holding only a comment saying MOVED, because a cloud session could not delete

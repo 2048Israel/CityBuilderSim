@@ -1194,7 +1194,7 @@ public class LandCheck {
         quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(4); });
         Game old = back[0];
         /*
-         * REFUSED SINCE 0.7.116 (batch I3): format 30 is below the floor
+         * REFUSED SINCE 0.7.120 (batch I3): format 30 is below the floor
          * (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
          * saves need not load until the game is published). Until then it
          * loaded at the rate it was saved at, converted: the office's local
@@ -1202,7 +1202,7 @@ public class LandCheck {
          * and every place listed or waiting in their place, each priced at
          * that quote (localQuote, the save's).
          */
-        assertTrue("an older save (format 30) is refused since 0.7.116, below the floor: in P7's words, nothing of it applied, its"
+        assertTrue("an older save (format 30) is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its"
                 + " file as it was (its local quote " + localQuote + " never read)", SaveFileCheck.refusedAtTheFloor(files, 4, old, before));
     }
 
@@ -1705,7 +1705,7 @@ public class LandCheck {
        bought, the centre first. A restated city keeps its iron and what it
        has taken out. Forest grows back. And the best offer for each need.
        ================================================================== */
-    /** Iron ore in the ground, a tonne in thousands: US$0.40, the land office's charge since 0.7.57, kept when ore fell to its world price (Jerus's D, 2026-10-08; 0.7.116). */
+    /** Iron ore in the ground, a tonne in thousands: US$0.40, the land office's charge since 0.7.57, kept when ore fell to its world price (Jerus's D, 2026-10-08; 0.7.120). */
     static final double IRON_IN_THE_GROUND = .0004;
 
     static void onTheWorld() {
@@ -1857,7 +1857,7 @@ public class LandCheck {
                     founding.sites(), founding.amount() / 1e6, LegacyLand.radius(founding.x() - t0.siteX(), founding.y() - t0.siteY()),
                     first.where(), first.getX0(), first.getX1(), first.getY0(), first.getY1());
             /*
-             * IRON IN THE GROUND STAYS US$0.40 A TONNE (0.7.116, batch I3;
+             * IRON IN THE GROUND STAYS US$0.40 A TONNE (0.7.120, batch I3;
              * Jerus's D, 2026-10-08): ore fell to .085 abroad (Good.IRON), and
              * Resource.IRON's in-ground share was re-struck to 1/212.5 of it
              * (1/350 of the old .14), so the field a city buys costs what it
@@ -2134,7 +2134,7 @@ public class LandCheck {
        tonnes exact, twenty-four places listed. And a city with more mines
        than sites, which are raised to them.
 
-       REFUSED SINCE 0.7.116 (batch I3): format 30 is below the floor
+       REFUSED SINCE 0.7.120 (batch I3): format 30 is below the floor
        (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
        saves need not load until the game is published), so each of the four
        is turned away in P7's words, its file untouched, and the conversion
@@ -2154,7 +2154,7 @@ public class LandCheck {
     };
 
     static void converted() throws Exception {
-        System.out.println("\n--- an older save's land: refused since 0.7.116 (to 0.7.115 put on the world, once) ---");
+        System.out.println("\n--- an older save's land: refused since 0.7.120 (to 0.7.119 put on the world, once) ---");
 
         for (Research r : RESEARCH) {
             GameFiles files = GameFiles.scratch("landcheck-convert-" + r.seed());
@@ -2184,7 +2184,7 @@ public class LandCheck {
 
             Game[] back = new Game[1];
             quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(4); });
-            assertTrue("(" + r.name() + ") the format-30 save is refused since 0.7.116, below the floor: in P7's words, nothing of it"
+            assertTrue("(" + r.name() + ") the format-30 save is refused since 0.7.120, below the floor: in P7's words, nothing of it"
                     + " applied, its file as it was", SaveFileCheck.refusedAtTheFloor(files, 4, back[0], before));
         }
     }

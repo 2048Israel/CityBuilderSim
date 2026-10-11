@@ -61,9 +61,10 @@ import java.util.zip.Inflater;
  * whose box touches its tile's edge can be one of those, so only those are
  * looked up.
  *
- * THE IDENTITY (identity()) is "earth-1:" and the file's SHA-256, the name a
- * save will carry (spec-earth 6: the data is frozen per version, and E4
- * refuses a city on another); EARTH_1 is the file this build is made for.
+ * THE IDENTITY (identity()) is "earth-1:" and the file's SHA-256, the name an
+ * Earth city's save carries (DataSave's earthData, since 0.7.121; spec-earth
+ * 6: the data is frozen per version, and a load refuses a city on another);
+ * EARTH_1 is the file this build is made for.
  *
  * E1 (0.7.111) built it pure; since 0.7.115 (batch E2) EarthTerrain lays
  * the Earth's ground on a world with an Earth key from it (World.Key's data
@@ -76,10 +77,14 @@ public final class EarthData implements AutoCloseable {
     /** The file this build reads, as a save will name it: earth-1 as E0 baked it on 2026-10-08 (tools/earth/earth-1.sha256). */
     public static final String EARTH_1 = "earth-1:b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a";
 
-    /** Where the game looks for the file, from the folder it runs in: beside the game, not in the repository (data/ is git-ignored); the game runs without it and offers the generated world (EarthSite.gameData(), 0.7.121), and EarthCheck, EarthTerrainCheck, EarthFoundingCheck and EarthTerrain.source() (for a key whose data nothing registered) look here. */
+    /**
+     * Where the game looks for the file, from the folder it runs in: beside the game, not in the repository (data/ is git-ignored); the game runs without it and offers the generated world (EarthSite.gameData(), 0.7.121), and EarthCheck, EarthTerrainCheck, EarthFoundingCheck and EarthTerrain.source() (for a key whose data nothing registered) look here.
+     * How it gets here (since f99d62c, 2026-10-11): it is the asset of the GitHub release earth-1, and tools/earth/get-earth.bat checks data/earth-1.bin against tools/earth/earth-1.sha256 and downloads it when it is missing or bad; Play CityBuilderSim.bat and Build EXE.bat call that script first, and the EXE build carries the file into the built game and its zip.
+     * A new Earth (earth-2) is a new file, hash file and release: change the three names at the top of get-earth.bat together with this (and EARTH_1, the identity the new file has).
+     */
     public static final String DATA_FILE = "data/earth-1.bin";
 
-    /** The system property that names the file instead (-Dcbs.earth=<path>), as EarthCheck's and EarthTerrainCheck's runs on the full file take it. */
+    /** The system property that names the file instead (-Dcbs.earth=<path>), as the harnesses' runs on the full file and LongPlaytest --earth take it. */
     public static final String PROPERTY = "cbs.earth";
 
     /** The bytes the first eight of the file are. */
@@ -250,7 +255,7 @@ public final class EarthData implements AutoCloseable {
         return new EarthData(s, cacheBytes);
     }
 
-    /** Where EarthCheck, EarthTerrainCheck and EarthTerrain find the file: the PROPERTY if it is set, else DATA_FILE if it is there; null if neither. */
+    /** Where the game (EarthSite.gameData()), EarthTerrain and the harnesses find the file: the PROPERTY if it is set, else DATA_FILE if it is there; null if neither. */
     public static Path locate() {
         String named = System.getProperty(PROPERTY);
         if (named != null && !named.isBlank()) return Path.of(named);
@@ -688,7 +693,7 @@ public final class EarthData implements AutoCloseable {
        GEOLOGY, PROVINCES, PLACES AND THE META
        ===================================================================== */
 
-    /** One USGS geologic province (WEP_PRVG): its row in the table, its code, name and class by the name rules (ocean, shield, fold belt, rift, shelf, basin, other), and its known petroleum, million barrels of oil equivalent. */
+    /** One USGS geologic province (WEP_PRVG): its row in the table, its code, name and class by the name rules (ocean, shield, fold belt, rift, shelf, basin, other - the game reads Geology's class, its hand-checked table over these, since 0.7.117), and its known petroleum, million barrels of oil equivalent. */
     public record Province(int row, String code, String name, String kind, double knownMmboe) { }
 
     /** One of Natural Earth's places, for search: its name, its ASCII name (the name when they are the same), country, position and population (Natural Earth's pop_max). */

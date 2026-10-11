@@ -262,7 +262,7 @@ public final class SpreadPlanner {
      * price for its feed, less `running` (its wages, power and water),
      * `standing` (repairs and property tax) and ownCosts() at nameplate.
      * The four-case reading the building rows of batch I3 onwards are held
-     * to; no works has rows yet.
+     * to (MaterialsCheck 9, the iron rows; 11, the integrated route's).
      */
     public static double caseEarns(BuildingsTemplate t, Case c, ToDoubleFunction<Good> importPrice,
                                    ToDoubleFunction<Good> exportPrice, double running, double standing,
@@ -275,7 +275,7 @@ public final class SpreadPlanner {
         for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
             used += e.getValue() * (c.feedAtImport() ? importPrice : exportPrice).applyAsDouble(e.getKey());
         }
-        // ...and a Scrap Yard's old steel (0.7.121, batch I4; OldMetal): not a
+        // ...and a Scrap Yard's old steel (0.7.123, batch I4; OldMetal): not a
         // good, so the same in every case - OldMetal.PAY_SHARE of scrap's export
         // price (Jerus's Q8), D$210 a tonne at parity.
         double old = t.oldMetal(Good.STEEL);

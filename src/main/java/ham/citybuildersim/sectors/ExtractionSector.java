@@ -34,16 +34,16 @@ import java.util.List;
  *     (the sites owned less those its buildings stand on, Game.committedOn())
  *     and the resource still in the ground; of the buildings that make its
  *     good and the city could staff, the best estimatedMonthlyProfit() over
- *     its cost; then ground for it. To 0.7.115 the money gate was
+ *     its cost; then ground for it. To 0.7.119 the money gate was
  *     Game.consider()'s alone (on the order's whole cost since 0.7.113,
- *     batch I2b); since 0.7.116 (batch I3; spec-materials 2.6b) the plan
+ *     batch I2b); since 0.7.120 (batch I3; spec-materials 2.6b) the plan
  *     asks it first, through SpreadPlanner's MONEY gate (planner(): on the
  *     whole cost, decision A), so a mine that would not carry its interest
  *     is not the one ordered and the sector says why - consider() asks the
  *     same of the order after it;
  *   - THE ESTIMATE (estimatedMonthlyProfit()): the maker's (Sector's), less
  *     what a mine buys abroad that is not a good, its consumables at the
- *     exchange factor (SpreadPlanner.ownCosts(), since 0.7.116: the Iron
+ *     exchange factor (SpreadPlanner.ownCosts(), since 0.7.120: the Iron
  *     Mine's explosives and wear parts) - what the plan, consider() and the
  *     build card read;
  *   - THE RETIREMENT (retirementDemandAndCapacity()): a price-taking
@@ -63,7 +63,7 @@ public abstract class ExtractionSector extends Sector {
     /** The resource whose ground it lifts. */
     private final Resource resource;
 
-    /** Its spread planner, for its money gate (0.7.116, batch I3; spec-materials 2.6b): ON_ITS_WHOLE_COST unless a check or a probe sets another. */
+    /** Its spread planner, for its money gate (0.7.120, batch I3; spec-materials 2.6b): ON_ITS_WHOLE_COST unless a check or a probe sets another. */
     private final SpreadPlanner planner = new SpreadPlanner();
 
     protected ExtractionSector(String key, String label, BuildingType group, Resource resource) {
@@ -92,7 +92,7 @@ public abstract class ExtractionSector extends Sector {
         return land.extract(resource, asked);
     }
 
-    /** Its spread planner (0.7.116): its money gate - a check or a probe sets the counterfactual on it. */
+    /** Its spread planner (0.7.120): its money gate - a check or a probe sets the counterfactual on it. */
     public SpreadPlanner planner() { return planner; }
 
     /* ----- the estimate ----- */
@@ -103,7 +103,7 @@ public abstract class ExtractionSector extends Sector {
     }
 
     /**
-     * What one more of its mines would clear a month (0.7.116, batch I3): the
+     * What one more of its mines would clear a month (0.7.120, batch I3): the
      * maker's estimate (Sector's - its good at home and abroad, its inputs,
      * its wages, power, water, repairs and tax, at the rate its plant runs)
      * less its consumables at that rate and the exchange factor, and plus
@@ -185,7 +185,7 @@ public abstract class ExtractionSector extends Sector {
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             double earns = estimatedMonthlyProfit(t, plans);
-            // ...and one that would carry the interest on its whole cost (0.7.116, batch I3; spec-materials 2.6b).
+            // ...and one that would carry the interest on its whole cost (0.7.120, batch I3; spec-materials 2.6b).
             if (!planner.passesMoney(this, plans, game, earns, cost)) {
                 if (moneyHold == null || earns / cost > moneyEarns / moneyCost) {
                     moneyHold = t;

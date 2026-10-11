@@ -27,8 +27,10 @@ import java.util.Map;
  * against its own formulas; the reader against the Python that wrote the file
  * and reads it independently.
  *
- * THE DATA. The full earth-1.bin (52.8 MB) is not in the repository; its
- * shipping is E4's. This runs on a fixture cut from it by
+ * THE DATA. The full earth-1.bin (52.8 MB) is not in the repository; since
+ * f99d62c it is the asset of the GitHub release earth-1, which
+ * tools/earth/get-earth.bat fetches into data/ (EarthData.DATA_FILE). This
+ * runs on a fixture cut from it by
  * tools/earth/fixture.py - the same layout holding only the tiles read here,
  * the three windows the study drew (Rotterdam, Perth, Paris) and Fiji's four
  * on the 180th meridian - a resource beside the classes

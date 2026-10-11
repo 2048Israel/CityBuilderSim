@@ -551,7 +551,7 @@ final class BuildScreen {
      * LAND FREE: the ground free in km2, the share used, a door to the land
      * office, and the shortcut to buy the best land - and with a zone
      * standing (0.7.109, batch Z2), "free for anyone" in its note and a door
-     * under it to what the zones hold: "zoned for Mining 1.6 km² ›".
+     * under it to what the zones hold: "zoned for Iron Mining 1.6 km² ›".
      */
     VBox landFreeCell(double free, double used) {
         String zoned = zonedWords();
@@ -594,7 +594,7 @@ final class BuildScreen {
         return cell;
     }
 
-    /** LAND FREE's zoned line (0.7.109): "zoned for Mining 1.6 km² ›" for one zone, "zoned for 3 industries 4.0 km² ›" for more - what they hold, free for them alone; null with no zone. */
+    /** LAND FREE's zoned line (0.7.109): "zoned for Iron Mining 1.6 km² ›" for one zone, "zoned for 3 industries 4.0 km² ›" for more - what they hold, free for them alone; null with no zone. */
     String zonedWords() {
         List<Zoning.Zone> zones = ui.game.getZoning().zones();
         if (zones.isEmpty()) return null;
@@ -1573,7 +1573,7 @@ final class BuildScreen {
 
     /**
      * The stat cover, as tall as the card it covers: what the building does
-     * in sentences (whatItDoes(), which BuildMenuCheck holds for all 101), the
+     * in sentences (whatItDoes(), which BuildMenuCheck holds for all 108), the
      * figures the face does not say - materials, build points, road load,
      * electricity, water, the wage bill and the job mix - and on a market
      * card the investors' estimate of what one would make its owner.

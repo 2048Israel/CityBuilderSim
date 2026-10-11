@@ -1699,7 +1699,7 @@ public final class BuildAdvice {
      * count.
      */
     public static double[] fieldEarnings(Game game, int sites) {
-        // The Iron Mine by its permanent id (0.7.116, batch I3): a name is a label.
+        // The Iron Mine by its permanent id (0.7.120, batch I3): a name is a label.
         BuildingsTemplate mine = game.getBuildingManager().getTemplate(ham.citybuildersim.sectors.Mining.IRON_MINE);
         Sector mining = game.getSectors().byKey(Sectors.MINING);
         if (mine == null || mining == null || sites <= 0) return new double[] { 0, 0 };

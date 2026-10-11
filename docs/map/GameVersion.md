@@ -1,4 +1,4 @@
-# GameVersion.java - 5,943 lines · 5 methods · 4 constants · model
+# GameVersion.java - 6,264 lines · 5 methods · 4 constants · model
 
 `ham/citybuildersim/GameVersion.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
@@ -40,25 +40,25 @@
 > earlier wording of this very comment was a second match, and survived only
 > because it happened to carry no equals sign.
 
-**Used by (14):** [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConversionCheck](ConversionCheck.md), [Game](Game.md), [GameLog](GameLog.md), [OilCheck](OilCheck.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
+**Used by (13):** [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Game](Game.md), [GameLog](GameLog.md), [MaterialsCheck](MaterialsCheck.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 5265 | `GameVersion.VERSION` | `"0.7.115"` | Bump on release. |
-| 5885 | `GameVersion.SAVE_FORMAT` | `36` | The save shape. |
-| 5901 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `21` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
-| 5903 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 5543 | `GameVersion.VERSION` | `"0.7.123"` | Bump on release. |
+| 6197 | `GameVersion.SAVE_FORMAT` | `38` | The save shape. |
+| 6222 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `37` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
+| 6224 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 5902 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
-| 5905 | 1 | `private GameVersion()` |  |
-| 5908 | 3 | `public static String title()` | For the window title. |
-| 5918 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
-| 5927 | 3 | `public static boolean isNoLongerReadable(int saveFormat)` | True when a save is older than this build loads, below OLDEST_LOADABLE_FORMAT: refused as a newer build's is, its file left as it was, the player told in noLongerReadable()'s words. |
-| 5937 | 6 | `public static String noLongerReadable(String savedBy)` | What the load screen's slot list, a refused load and the log tell the player when a save is older than this build loads: the build that saved the city, which still opens it, and this one, which cannot. |
+| 42 | 6223 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
+| 6226 | 1 | `private GameVersion()` |  |
+| 6229 | 3 | `public static String title()` | For the window title. |
+| 6239 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
+| 6248 | 3 | `public static boolean isNoLongerReadable(int saveFormat)` | True when a save is older than this build loads, below OLDEST_LOADABLE_FORMAT: refused as a newer build's is, its file left as it was, the player told in noLongerReadable()'s words. |
+| 6258 | 6 | `public static String noLongerReadable(String savedBy)` | What the load screen's slot list, a refused load and the log tell the player when a save is older than this build loads: the build that saved the city, which still opens it, and this one, which cannot. |
 

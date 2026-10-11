@@ -1,6 +1,6 @@
-# Manufacturing.java - 298 lines · 11 methods · 2 constants · sectors
+# Manufacturing.java - 307 lines · 12 methods · 2 constants · sectors
 
-`ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > What the city makes out of its own steel, and ships.
 > 
@@ -60,7 +60,7 @@
 > 
 > See claude/manufacturing.md.
 
-**Uses:** [Good](Good.md) (8), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (3), [Formats](Formats.md) (3), [Sector](Sector.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (10), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (3), [Formats](Formats.md) (3), [Sector](Sector.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1)
 
 **Used by (4):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [ManufacturingCheck](ManufacturingCheck.md), [Sectors](Sectors.md)
 
@@ -68,9 +68,9 @@
 
 | line | section |
 |---:|---|
-| 102 | · reading |
-| 153 | · plan |
-| 246 | · the screen |
+| 109 | · reading |
+| 160 | · plan |
+| 255 | · the screen |
 
 ## Constants
 
@@ -83,31 +83,32 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 227 | **type** `public final class Manufacturing extends Sector` | What the city makes out of its own steel, and ships. |
+| 72 | 236 | **type** `public final class Manufacturing extends Sector` | What the city makes out of its own steel, and ships. |
 | 89 | 12 | `public Manufacturing()` |  |
+| 104 | 4 | `public void produceFlow(Good g)` | What it makes of a flow good, and since 0.7.123 (batch I4) the offcuts of its fabricated steel to the city's old steel, its own to sell (OldMetal). |
 
-### reading (lines 102-152)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 105 | 6 | `public double getPosts()` | Every post the sector holds, staffed or not - the sector in one number. |
-| 113 | 3 | `public double getSteelDemand()` | Tonnes of steel the plants want this month, at the rate they are running. |
-| 118 | 3 | `public double getSteelPrice()` | What a tonne of steel is costing the plants here - the number the shops live or die on. |
-| 127 | 3 | `public double getSteelPosition()` | Where the steel price sits between the mills' export floor and the world's delivered ceiling: 0 is a mill with nobody else to sell to, 1 is a city with no mill at all. |
-| 139 | 4 | `public double steelShare()` | The steel bill as a share of what the sector sold. |
-| 145 | 4 | `public double payrollShare()` | ...and the wage bill, the same way. |
-| 151 | 1 | `public double costShare()` | Both together, which is what has to stay under one. |
-
-### plan (lines 153-245)
+### reading (lines 109-159)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 183 | 51 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
-| 244 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+| 112 | 6 | `public double getPosts()` | Every post the sector holds, staffed or not - the sector in one number. |
+| 120 | 3 | `public double getSteelDemand()` | Tonnes of steel the plants want this month, at the rate they are running. |
+| 125 | 3 | `public double getSteelPrice()` | What a tonne of steel is costing the plants here - the number the shops live or die on. |
+| 134 | 3 | `public double getSteelPosition()` | Where the steel price sits between the mills' export floor and the world's delivered ceiling: 0 is a mill with nobody else to sell to, 1 is a city with no mill at all. |
+| 146 | 4 | `public double steelShare()` | The steel bill as a share of what the sector sold. |
+| 152 | 4 | `public double payrollShare()` | ...and the wage bill, the same way. |
+| 158 | 1 | `public double costShare()` | Both together, which is what has to stay under one. |
 
-### the screen (lines 246-298)
+### plan (lines 160-254)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 249 | 49 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 192 | 51 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
+| 253 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+
+### the screen (lines 255-307)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 258 | 49 | `public List<Sector.Line> ownLines(Game game)` |  |
 

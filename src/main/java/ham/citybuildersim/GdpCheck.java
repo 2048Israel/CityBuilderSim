@@ -526,10 +526,10 @@ public class GdpCheck {
         System.out.printf("   %d warehouses and pantries declared across the sectors%s%n", declared,
                 missed.length() == 0 ? ", every one counted" : "; not counted:" + missed);
         assertTrue("every good a sector holds is in an inventory term, or named as left out", missed.length() == 0);
-        // ...and the integrated route's three stockable goods (0.7.121, batch I4; spec-materials 2.3) on HELD's end, in Good's
+        // ...and the integrated route's three stockable goods (0.7.123, batch I4; spec-materials 2.3) on HELD's end, in Good's
         // order - the steelworks' coke in the Coke Ovens' yard and the two coals - after crude, so a save's held slots keep their places.
         int n = NationalAccounts.HELD.length;
-        assertTrue("HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.121), each stockable",
+        assertTrue("HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), each stockable",
                 n >= 4 && NationalAccounts.HELD[n - 4] == Good.CRUDE && NationalAccounts.HELD[n - 3] == Good.MET_COKE
                         && NationalAccounts.HELD[n - 2] == Good.THERMAL_COAL && NationalAccounts.HELD[n - 1] == Good.COKING_COAL
                         && Good.MET_COKE.stockable() && Good.THERMAL_COAL.stockable() && Good.COKING_COAL.stockable());

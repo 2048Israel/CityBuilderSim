@@ -4,11 +4,13 @@ import ham.citybuildersim.BuildingType;
 import ham.citybuildersim.Good;
 
 /**
- * The mills - Iron & Steel since 0.7.116, under the key it was saved by,
- * "Heavy Industry": the arc furnaces, which melt scrap into steel and sell it
- * to the city's fabricators or abroad, built by what pays.
+ * The mills - Iron & Steel since 0.7.120, under the key it was saved by,
+ * "Heavy Industry": the arc furnaces, which melt scrap into steel, and since
+ * 0.7.123 the integrated route from ore and coke to steel and the yards that
+ * sort the city's old steel into scrap - steel sold to the city's fabricators
+ * or abroad, every works built by what pays.
  *
- * WHY (0.7.116, batch I3; runs/spec-materials.md 2.1 and 2.3, and Jerus's
+ * WHY (0.7.120, batch I3; runs/spec-materials.md 2.1 and 2.3, and Jerus's
  * Q2, Q4 and Q6 of 2026-10-08). Until then a mill bought IRON - "iron ore,
  * and the scrap that stands in for it" - local ore first and imported scrap
  * for the rest, sold steel at the US band (1.284 / .847), and was built only
@@ -37,7 +39,7 @@ import ham.citybuildersim.Good;
  * fabricators import steel and its own scrap is cheap, shed where neither
  * holds. MaterialsCheck 9 holds the rows to the study.
  *
- * THE INTEGRATED ROUTE AND OLD STEEL (0.7.121, batch I4; runs/spec-materials.md
+ * THE INTEGRATED ROUTE AND OLD STEEL (0.7.123, batch I4; runs/spec-materials.md
  * 2.2, 2.7, 2.8 and 2.9, the study's 2.4 to 2.7; Jerus's Q4, Q6, Q7, Q8, Q19
  * and Q20 of 2026-10-08). Seven more rows, each a candidate the same way:
  *   - the SCRAP YARD sorts the city's old steel (OldMetal) into scrap;
@@ -78,38 +80,38 @@ import ham.citybuildersim.Good;
  */
 public final class HeavyIndustry extends ProcessingSector {
 
-    /** The Electric Arc Furnace's permanent id in buildings.json, the Steel Foundry's until 0.7.116 (batch I3; spec-materials 4): what the harnesses and the test player find it by. */
+    /** The Electric Arc Furnace's permanent id in buildings.json, the Steel Foundry's until 0.7.120 (batch I3; spec-materials 4): what the harnesses and the test player find it by. */
     public static final int ARC_FURNACE = 11;
 
-    /** The Steel Mini-Mill's permanent id in buildings.json (0.7.116). */
+    /** The Steel Mini-Mill's permanent id in buildings.json (0.7.120). */
     public static final int MINI_MILL = 12;
 
-    /** The Scrap Yard's permanent id in buildings.json (0.7.121, batch I4): the city's old steel into scrap. */
+    /** The Scrap Yard's permanent id in buildings.json (0.7.123, batch I4): the city's old steel into scrap. */
     public static final int SCRAP_YARD = 101;
 
-    /** The Pelletising Plant's permanent id (0.7.121): ore into pellets. */
+    /** The Pelletising Plant's permanent id (0.7.123): ore into pellets. */
     public static final int PELLETISING_PLANT = 102;
 
-    /** The Coke Ovens' permanent id (0.7.121): coking coal into coke, and power. */
+    /** The Coke Ovens' permanent id (0.7.123): coking coal into coke, and power. */
     public static final int COKE_OVENS = 103;
 
-    /** The Mini Blast Furnace's permanent id (0.7.121): ore, coke and limestone into pig iron. */
+    /** The Mini Blast Furnace's permanent id (0.7.123): ore, coke and limestone into pig iron. */
     public static final int MINI_BLAST_FURNACE = 104;
 
-    /** The Blast Furnace's permanent id (0.7.121): the big furnace, its sinter plant and its top-gas turbine. */
+    /** The Blast Furnace's permanent id (0.7.123): the big furnace, its sinter plant and its top-gas turbine. */
     public static final int BLAST_FURNACE = 105;
 
-    /** The Oxygen Steel Shop's permanent id (0.7.121): pig iron, scrap and lime into steel. */
+    /** The Oxygen Steel Shop's permanent id (0.7.123): pig iron, scrap and lime into steel. */
     public static final int OXYGEN_STEEL_SHOP = 106;
 
-    /** The Large Mini-Mill's permanent id (0.7.121): the big arc-furnace plant. */
+    /** The Large Mini-Mill's permanent id (0.7.123): the big arc-furnace plant. */
     public static final int LARGE_MINI_MILL = 107;
 
     public HeavyIndustry() {
         super("Heavy Industry", "Iron & Steel", BuildingType.HEAVY_INDUSTRY);
         makes(Good.STEEL);
         uses(Good.SCRAP);
-        // ...and the integrated route's (0.7.121, batch I4): what its seven new works make and take.
+        // ...and the integrated route's (0.7.123, batch I4): what its seven new works make and take.
         makes(Good.SCRAP);
         makes(Good.PELLETS);
         makes(Good.PIG_IRON);
@@ -130,7 +132,7 @@ public final class HeavyIndustry extends ProcessingSector {
     }
 
     /* =====================================================================
-       THE OLD STEEL (0.7.121, batch I4; OldMetal, the spec's 2.9)
+       THE OLD STEEL (0.7.123, batch I4; OldMetal, the spec's 2.9)
        ===================================================================== */
 
     /** The city's old steel, or null with no city (a fixture's bare sector). */

@@ -1,4 +1,4 @@
-# MoneyCheck.java - 350 lines · 5 methods · 0 constants · harnesses
+# MoneyCheck.java - 406 lines · 5 methods · 0 constants · harnesses
 
 `ham/citybuildersim/MoneyCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
@@ -16,35 +16,36 @@
 > only opens under stress: one is left to prosper, the other is bankrupted
 > and restructured, taxed hard, and made to import everything.
 
-**Uses:** [Game](Game.md) (11), [Sectors](Sectors.md) (8), [MoneyAudit](MoneyAudit.md) (7), [GameFiles](GameFiles.md) (4), [Founding](Founding.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [Sector](Sector.md) (3), [LandParcel](LandParcel.md) (2), [LandMarket](LandMarket.md) (1), [Good](Good.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [DebtManager](DebtManager.md) (1), [CapitalFlows](CapitalFlows.md) (1)
+**Uses:** [Game](Game.md) (13), [MoneyAudit](MoneyAudit.md) (12), [Sectors](Sectors.md) (9), [OldMetal](OldMetal.md) (6), [GameFiles](GameFiles.md) (5), [Founding](Founding.md) (5), [Sector](Sector.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LandParcel](LandParcel.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [LandMarket](LandMarket.md) (1), [Mining](Mining.md) (1), [Good](Good.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [DebtManager](DebtManager.md) (1), [CapitalFlows](CapitalFlows.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 72 | · 1. a city that prospers |
-| 113 | · AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16). |
-| 162 | · AND LAND PAID FOR OUT OF THE VAULT (0.7.6). |
-| 191 | · 2. a city under stress |
-| 247 | · AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK. |
-| 296 | · 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES |
+| 75 | · 1. a city that prospers |
+| 116 | · AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16). |
+| 165 | · AND LAND PAID FOR OUT OF THE VAULT (0.7.6). |
+| 194 | · 2. a city under stress |
+| 250 | · AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK. |
+| 299 | · 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES |
+| 350 | · OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 22 | `static int fails` |  |
-| 43 | `static double worstDrift` | The worst post-audit drift any month of the last play() saw. |
-| 44 | `static String worstDriftPool` |  |
+| 25 | `static int fails` |  |
+| 46 | `static double worstDrift` | The worst post-audit drift any month of the last play() saw. |
+| 47 | `static String worstDriftPool` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 331 | **type** `public class MoneyCheck` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
-| 24 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 29 | 5 | `static void quietly(Runnable work)` |  |
-| 35 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
-| 47 | 20 | `static MoneyAudit.Result play(String label, Game g, int months, boolean verbose)` | Runs `months` and returns the worst relative residual seen, printing the worst month. |
-| 68 | 282 | `public static void main(String[] args)` |  |
+| 23 | 384 | **type** `public class MoneyCheck` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
+| 27 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 32 | 5 | `static void quietly(Runnable work)` |  |
+| 38 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
+| 50 | 20 | `static MoneyAudit.Result play(String label, Game g, int months, boolean verbose)` | Runs `months` and returns the worst relative residual seen, printing the worst month. |
+| 71 | 335 | `public static void main(String[] args)` |  |
 

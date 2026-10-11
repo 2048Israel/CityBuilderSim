@@ -1,4 +1,4 @@
-# PolicyPreviewCheck.java - 597 lines · 16 methods · 2 constants · harnesses
+# PolicyPreviewCheck.java - 602 lines · 16 methods · 2 constants · harnesses
 
 `ham/citybuildersim/PolicyPreviewCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
@@ -58,101 +58,101 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [PolicyPreview](PolicyPreview.md) (53), [Sectors](Sectors.md) (27), [TaxPolicy](TaxPolicy.md) (17), [Game](Game.md) (16), [Formats](Formats.md) (11), [TreasuryFund](TreasuryFund.md) (9), [CentralBank](CentralBank.md) (7), [EconomyManager](EconomyManager.md) (6), [HouseholdAccounts](HouseholdAccounts.md) (5), [Zoning](Zoning.md) (5), [WageBand](WageBand.md) (4), [GameFiles](GameFiles.md) (3), [Sector](Sector.md) (3), [DebtManager](DebtManager.md) (3), [LongPlaytest](LongPlaytest.md) (2), [Unemployment](Unemployment.md) (2), [LabourMarket](LabourMarket.md) (2), [JobType](JobType.md) (2), [LandManager](LandManager.md) (2), [Founding](Founding.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [CityNeeds](CityNeeds.md) (1), [SectorBooks](SectorBooks.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [SocialSecurity](SocialSecurity.md) (1), [Bank](Bank.md) (1)
+**Uses:** [PolicyPreview](PolicyPreview.md) (54), [Sectors](Sectors.md) (27), [TaxPolicy](TaxPolicy.md) (17), [Game](Game.md) (16), [Formats](Formats.md) (11), [TreasuryFund](TreasuryFund.md) (9), [CentralBank](CentralBank.md) (7), [EconomyManager](EconomyManager.md) (6), [HouseholdAccounts](HouseholdAccounts.md) (5), [Zoning](Zoning.md) (5), [WageBand](WageBand.md) (4), [GameFiles](GameFiles.md) (3), [LongPlaytest](LongPlaytest.md) (3), [Sector](Sector.md) (3), [DebtManager](DebtManager.md) (3), [Unemployment](Unemployment.md) (2), [LabourMarket](LabourMarket.md) (2), [JobType](JobType.md) (2), [LandManager](LandManager.md) (2), [Founding](Founding.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [CityNeeds](CityNeeds.md) (1), [SectorBooks](SectorBooks.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [SocialSecurity](SocialSecurity.md) (1), [Bank](Bank.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 160 | 1. THE COPY |
-| 213 | 2. AT THE CITY'S OWN POLICY |
-| 291 | 7. A DIAL AT ZERO |
-| 333 | 6. APPLIED, THE PREVIEW IS THE MODEL |
-| 391 | 3. THE BUDGET |
-| 447 | 4. THE OTHER READS |
-| 491 | 8. THE FUND'S WITHDRAWAL (0.7.48) |
-| 522 | 5. AFTER A LOAD |
-| 542 | 9. ZONING'S BEFORE AND AFTER (0.7.107) |
+| 162 | 1. THE COPY |
+| 215 | 2. AT THE CITY'S OWN POLICY |
+| 293 | 7. A DIAL AT ZERO |
+| 335 | 6. APPLIED, THE PREVIEW IS THE MODEL |
+| 393 | 3. THE BUDGET |
+| 452 | 4. THE OTHER READS |
+| 496 | 8. THE FUND'S WITHDRAWAL (0.7.48) |
+| 527 | 5. AFTER A LOAD |
+| 547 | 9. ZONING'S BEFORE AND AFTER (0.7.107) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 79 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 121 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Con...` | The fixture's orders. |
+| 81 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
+| 123 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Con...` | The fixture's orders. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 69 | `static int fails` |  |
-| 70 | `static PrintStream out` |  |
-| 71 | `static PrintStream quiet` |  |
+| 71 | `static int fails` |  |
+| 72 | `static PrintStream out` |  |
+| 73 | `static PrintStream quiet` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 531 | **type** `public class PolicyPreviewCheck` | The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made of, held to the month's own books in a played city. |
-| 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 81 | 1 | `static boolean near(double a, double b)` |  |
-| 83 | 5 | `static void quietly(Runnable r)` |  |
-| 103 | 16 | `static Game city(Path root)` | A played city with every line of the Policy tab in it: homes, shops, a diner and builders; a mine, a foundry and a fabrication shop; power, water and roads; a commercial bank (its profit tax), clinics (their fees) and... |
-| 127 | 21 | `public static void main(String[] args) throws Exception` |  |
-| 150 | 9 | `static void printCity(Game g)` | The city as the previews read it, for the record. |
+| 69 | 534 | **type** `public class PolicyPreviewCheck` | The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made of, held to the month's own books in a played city. |
+| 75 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 83 | 1 | `static boolean near(double a, double b)` |  |
+| 85 | 5 | `static void quietly(Runnable r)` |  |
+| 105 | 16 | `static Game city(Path root)` | A played city with every line of the Policy tab in it: homes, shops, a diner and builders; a mine, a foundry and a fabrication shop; power, water and roads; a commercial bank (its profit tax), clinics (their fees) and... |
+| 129 | 21 | `public static void main(String[] args) throws Exception` |  |
+| 152 | 9 | `static void printCity(Game g)` | The city as the previews read it, for the record. |
 
-### 1. THE COPY (lines 160-212)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 162 | 50 | `static void theCopy(Game g)` |  |
-
-### 2. AT THE CITY'S OWN POLICY (lines 213-290)
+### 1. THE COPY (lines 162-214)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 215 | 69 | `static void atTheCitysOwn(Game g, String section)` |  |
-| 285 | 5 | `static double sum(java.util.Map<String, Double> m)` |  |
+| 164 | 50 | `static void theCopy(Game g)` |  |
 
-### 7. A DIAL AT ZERO (lines 291-332)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 293 | 39 | `static void aDialAtZero(Game g)` |  |
-
-### 6. APPLIED, THE PREVIEW IS THE MODEL (lines 333-390)
+### 2. AT THE CITY'S OWN POLICY (lines 215-292)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 335 | 55 | `static void appliedIsTheModel(Game g)` |  |
+| 217 | 69 | `static void atTheCitysOwn(Game g, String section)` |  |
+| 287 | 5 | `static double sum(java.util.Map<String, Double> m)` |  |
 
-### 3. THE BUDGET (lines 391-446)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 393 | 53 | `static void theBudget(Game g)` |  |
-
-### 4. THE OTHER READS (lines 447-490)
+### 7. A DIAL AT ZERO (lines 293-334)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 449 | 41 | `static void theOtherReads(Game g)` |  |
+| 295 | 39 | `static void aDialAtZero(Game g)` |  |
 
-### 8. THE FUND'S WITHDRAWAL (0.7.48) (lines 491-521)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 493 | 28 | `static void theWithdrawal(Game g)` |  |
-
-### 5. AFTER A LOAD (lines 522-541)
+### 6. APPLIED, THE PREVIEW IS THE MODEL (lines 335-392)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 524 | 18 | `static void afterALoad(Path root, Game g)` |  |
+| 337 | 55 | `static void appliedIsTheModel(Game g)` |  |
 
-### 9. ZONING'S BEFORE AND AFTER (0.7.107) (lines 542-597)
+### 3. THE BUDGET (lines 393-451)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 544 | 53 | `static void zoning(Game g)` |  |
+| 395 | 56 | `static void theBudget(Game g)` |  |
+
+### 4. THE OTHER READS (lines 452-495)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 454 | 41 | `static void theOtherReads(Game g)` |  |
+
+### 8. THE FUND'S WITHDRAWAL (0.7.48) (lines 496-526)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 498 | 28 | `static void theWithdrawal(Game g)` |  |
+
+### 5. AFTER A LOAD (lines 527-546)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 529 | 18 | `static void afterALoad(Path root, Game g)` |  |
+
+### 9. ZONING'S BEFORE AND AFTER (0.7.107) (lines 547-602)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 549 | 53 | `static void zoning(Game g)` |  |
 

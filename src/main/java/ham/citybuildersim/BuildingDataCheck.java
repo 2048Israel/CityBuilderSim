@@ -173,7 +173,7 @@ public class BuildingDataCheck {
             // power and nothing abroad, one that gained a line would make power or pay the world unasked.
             check(who + " gen", actual.getGen(), expected.getGen());
             check(who + " consumables", actual.getConsumables(), expected.getConsumables());
-            // ...and the old metal a yard takes and the year it first existed (0.7.121, batch I4): a yard that lost
+            // ...and the old metal a yard takes and the year it first existed (0.7.123, batch I4): a yard that lost
             // its line would take no old steel and make no scrap; a row that lost its year would read as undated.
             if (!actual.oldMetalTaken().equals(expected.oldMetalTaken())) {
                 fails++;
@@ -404,7 +404,7 @@ public class BuildingDataCheck {
         assertTrue("the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated"
                         + " Highway 1.25% - and no other building has: " + repairs,
                 repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125)));
-        assertTrue("...and 108 buildings in all (0.7.121: the integrated route's seven; 101 from 0.7.91, 98 from 0.7.86, 94 from"
+        assertTrue("...and 108 buildings in all (0.7.123: the integrated route's seven; 101 from 0.7.91, 98 from 0.7.86, 94 from"
                         + " 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76 until then)",
                 data.size() == 108);
 
@@ -540,16 +540,16 @@ public class BuildingDataCheck {
            spec-materials 2.5 and 2.8: "gen" (kW a building makes itself) and
            "consumables" (world thousands a month it buys abroad) are read
            from the file like every field, and the shared machinery uses them.
-           Since 0.7.121 (batch I4; the study's 1.6, Jerus's Q20) three works
+           Since 0.7.123 (batch I4; the study's 1.6, Jerus's Q20) three works
            make power from their gas - the Coke Ovens 8,000 kW, the Blast
            Furnace 60,000 and the Oxygen Steel Shop 25,000 - and every other
            building buys its whole draw and sells none, to the bit. Since
-           0.7.116 (batch I3) the iron rows buy consumables - the Iron Mine and
-           the two arc furnaces, and since 0.7.121 Iron & Steel's seven new
+           0.7.120 (batch I3) the iron rows buy consumables - the Iron Mine and
+           the two arc furnaces, and since 0.7.123 Iron & Steel's seven new
            works, the study's running cost less their wages, the power they
            buy, water and diesel (MaterialsCheck 9 and 11) - and every other
            pays the world nothing past its goods. */
-        System.out.println("\n--- a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.116; the gen, 0.7.121) ---");
+        System.out.println("\n--- a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.120; the gen, 0.7.123) ---");
         boolean wholeDraw = true;
         java.util.Map<Integer, Double> making = new java.util.TreeMap<>();
         java.util.Set<Integer> buying = new java.util.TreeSet<>();
@@ -575,7 +575,7 @@ public class BuildingDataCheck {
         assertTrue("ten buy consumables, the iron rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and the Iron Mine (14) of"
                 + " batch I3, and Iron & Steel's seven of batch I4 (101-107); every other none: " + buying, buying.equals(iron));
 
-        /* ---------- the old steel a yard takes, and the year each row first existed (0.7.121, batch I4) ----------
+        /* ---------- the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) ----------
 
            spec-materials 2.5 and 2.9: "oldMetal" is the city's old steel a
            Scrap Yard takes a month at nameplate (OldMetal), the one feed no
@@ -584,7 +584,7 @@ public class BuildingDataCheck {
            first existed, written on every row the materials chains add - the
            start year for one that stood before it - and on none before them,
            which read as undated (0). Read by nothing yet. */
-        System.out.println("\n--- the old steel a yard takes, and the year each new row first existed (0.7.121) ---");
+        System.out.println("\n--- the old steel a yard takes, and the year each new row first existed (0.7.123) ---");
         java.util.Map<Integer, Double> takers = new java.util.TreeMap<>();
         java.util.Map<Integer, Integer> dated = new java.util.TreeMap<>();
         for (BuildingsTemplate t : data) {

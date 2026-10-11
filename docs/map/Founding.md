@@ -1,4 +1,4 @@
-# Founding.java - 531 lines · 43 methods · 16 constants · model
+# Founding.java - 560 lines · 49 methods · 16 constants · model
 
 `ham/citybuildersim/Founding.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
@@ -43,146 +43,162 @@
 > (derivedWorldSeed()), the same every time it is loaded until a save keeps
 > it. The city's land stands on it since 0.7.57 (CityLand; the project's
 > spec-land.md).
+> 
+> ...OR THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 and
+> 6): a founding's world is its key (World.Key, since 0.7.115) - generated
+> from its seed, or the real Earth round a spot, its latitude and longitude,
+> drawn from the data the key names (EarthData.EARTH_1 for the game's), the
+> seed deciding the detail below the data and the fields. The founding
+> screen offers Earth when the data is here (EarthSite.gameData()); saved as
+> DataSave's worldKind, earthLat, earthLon and earthData (SAVE_FORMAT 38). A
+> spot the founding card refuses - no dry ground within 5 km, or ice - is a
+> problem() like a bad name.
 
-**Uses:** [Currency](Currency.md) (11), [World](World.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [CityLand](CityLand.md) (3), [LandManager](LandManager.md) (3), [WorldEconomy](WorldEconomy.md) (3), [LandMarket](LandMarket.md) (2), [Game](Game.md) (2), [Good](Good.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BuildingManager](BuildingManager.md) (1)
+**Uses:** [Currency](Currency.md) (11), [World](World.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (7), [CityLand](CityLand.md) (3), [LandManager](LandManager.md) (3), [WorldEconomy](WorldEconomy.md) (3), [LandMarket](LandMarket.md) (2), [Game](Game.md) (2), [EarthData](EarthData.md) (1), [EarthSite](EarthSite.md) (1), [Good](Good.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BuildingManager](BuildingManager.md) (1)
 
-**Used by (69):** [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [ChildcareCheck](ChildcareCheck.md), [ConservationCheck](ConservationCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConversionCheck](ConversionCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [CurrencyCheck](CurrencyCheck.md), [DataSave](DataSave.md), [DenominationCheck](DenominationCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FoundingScreen](FoundingScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GridCheck](GridCheck.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [HoldersCheck](HoldersCheck.md), [HouseholdCheck](HouseholdCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MonetaryCheck](MonetaryCheck.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OilViewCheck](OilViewCheck.md), [OutsideCheck](OutsideCheck.md), [PlanCheck](PlanCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SicknessCheck](SicknessCheck.md), [SkipReportCheck](SkipReportCheck.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md), [VanCheck](VanCheck.md), [WellCheck](WellCheck.md), [WorldCheck](WorldCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (70):** [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [ChildcareCheck](ChildcareCheck.md), [ConservationCheck](ConservationCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConversionCheck](ConversionCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [CurrencyCheck](CurrencyCheck.md), [DataSave](DataSave.md), [DenominationCheck](DenominationCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FoundingScreen](FoundingScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GridCheck](GridCheck.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [HoldersCheck](HoldersCheck.md), [HouseholdCheck](HouseholdCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MonetaryCheck](MonetaryCheck.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OilViewCheck](OilViewCheck.md), [OutsideCheck](OutsideCheck.md), [PlanCheck](PlanCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SicknessCheck](SicknessCheck.md), [SkipReportCheck](SkipReportCheck.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md), [VanCheck](VanCheck.md), [WellCheck](WellCheck.md), [WorldCheck](WorldCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 53 | THE PRESETS (0.7.10) |
-| 153 | THE BOUNDS ON A CUSTOM FOUNDING |
-| 203 | · the name |
-| 211 | · the world |
-| 248 | · the record |
-| 356 | · is it a city |
-| 408 | WHAT IT BUYS (0.7.10) |
+| 63 | THE PRESETS (0.7.10) |
+| 163 | THE BOUNDS ON A CUSTOM FOUNDING |
+| 213 | · the name |
+| 221 | · the world |
+| 258 | · the record |
+| 381 | · is it a city |
+| 437 | WHAT IT BUYS (0.7.10) |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 123 | `Founding.Preset.INSANE` | Nothing in the treasury or the vault, and the founding ground owed abroad (0.7.14): the one preset under MIN_CASH, on purpose. |
-| 124 | `Founding.Preset.LEAN` |  |
-| 125 | `Founding.Preset.STANDARD` |  |
-| 126 | `Founding.Preset.WEALTHY` |  |
-| 127 | `Founding.Preset.CUSTOM` |  |
+| 133 | `Founding.Preset.INSANE` | Nothing in the treasury or the vault, and the founding ground owed abroad (0.7.14): the one preset under MIN_CASH, on purpose. |
+| 134 | `Founding.Preset.LEAN` |  |
+| 135 | `Founding.Preset.STANDARD` |  |
+| 136 | `Founding.Preset.WEALTHY` |  |
+| 137 | `Founding.Preset.CUSTOM` |  |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 86 | `Founding.INSANE_LAND_COUPON` | `.03` | Insane's coupon on the land it owes for, a year: 3%, Jerus's number. |
-| 89 | `Founding.INSANE_LAND_YEARS` | `20` | Insane's land bond's term, in years: twenty, Jerus's "20y" - one of the five term loans (LongTermBond.MATURITIES). |
-| 109 | `Founding.LEAN_CASH` | `25_000` | Lean's treasury, in thousands: D$25M - two-thirds of the founding village at a new city's invoices (three-quarters until the builders' sales tax went into them, 0.7.19), so the city borrows from its first months, for ... |
-| 112 | `Founding.LEAN_RESERVE_USD` | `10_000` | Lean's vault, in thousands of US dollars: US$10M - a few months to two years of a young city's imports. |
-| 115 | `Founding.WEALTHY_CASH` | `2_500_000` | Wealthy's treasury, in thousands: D$2.5B - the start every city had from 0.6.10 to 0.7.9, which the playtest never drew below D$2.46B in thirty years. |
-| 118 | `Founding.WEALTHY_RESERVE_USD` | `1_000_000` | Wealthy's vault, in thousands of US dollars: US$1B - the old start's, which the playtest's defence took sixty-odd years to spend half of (month 739, the median of eight seeds). |
-| 192 | `Founding.MIN_CASH` | `6_000` | The least a city may be founded with in its treasury, in thousands: D$6M, ten houses and a shop at a new city's invoices - D$5.37M since the builders' sales tax went into them (0.7.19; it was D$5M, over D$4.56M). |
-| 195 | `Founding.MAX_CASH` | `10_000_000` | The most, in thousands: D$10B, four times the Wealthy start. |
-| 198 | `Founding.MIN_RESERVE_USD` | `0` | The least in the vault, in thousands of US dollars: none, as every city had before 0.6.10. |
-| 201 | `Founding.MAX_RESERVE_USD` | `4_000_000` | The most, in thousands of US dollars: US$4B, four times the Wealthy start. |
-| 206 | `Founding.DEFAULT_CITY_NAME` | `"Danzik"` | The city a founding is named when nobody names it - Jerus's first city, and every save's before 0.7.10. |
-| 209 | `Founding.MAX_CITY_NAME_LENGTH` | `24` | The longest city name: room for the window's title and the slot list's line, not a policy. |
-| 214 | `Founding.DEFAULT_WORLD_SEED` | `4127` | The world a founding stands on when nobody rolls another: 4127, the map mockup's default seed (city-map.html), so every harness and the playtest found on the same ground. |
-| 217 | `Founding.ROLLED_SEED_MAX` | `999_999_999` | The largest seed the founding screen's dice rolls: 999,999,999, nine digits a player can read back and type. |
-| 438 | `Founding.VILLAGE` | `{ { "House", "60" }, { "Convenience Store", "5" }, { "Mixed Farm", "2" }, { "...` | The founding village: the playtest's hand-built settlement, name and count. |
-| 442 | `Founding.FIRST_WORKS` | `{ "Wind Farm", "Water Treatment Plant", "Elementary School", "Police Station" }` | The first big works, in the order a young city tends to need them. |
+| 96 | `Founding.INSANE_LAND_COUPON` | `.03` | Insane's coupon on the land it owes for, a year: 3%, Jerus's number. |
+| 99 | `Founding.INSANE_LAND_YEARS` | `20` | Insane's land bond's term, in years: twenty, Jerus's "20y" - one of the five term loans (LongTermBond.MATURITIES). |
+| 119 | `Founding.LEAN_CASH` | `25_000` | Lean's treasury, in thousands: D$25M - two-thirds of the founding village at a new city's invoices (three-quarters until the builders' sales tax went into them, 0.7.19), so the city borrows from its first months, for ... |
+| 122 | `Founding.LEAN_RESERVE_USD` | `10_000` | Lean's vault, in thousands of US dollars: US$10M - a few months to two years of a young city's imports. |
+| 125 | `Founding.WEALTHY_CASH` | `2_500_000` | Wealthy's treasury, in thousands: D$2.5B - the start every city had from 0.6.10 to 0.7.9, which the playtest never drew below D$2.46B in thirty years. |
+| 128 | `Founding.WEALTHY_RESERVE_USD` | `1_000_000` | Wealthy's vault, in thousands of US dollars: US$1B - the old start's, which the playtest's defence took sixty-odd years to spend half of (month 739, the median of eight seeds). |
+| 202 | `Founding.MIN_CASH` | `6_000` | The least a city may be founded with in its treasury, in thousands: D$6M, ten houses and a shop at a new city's invoices - D$5.37M since the builders' sales tax went into them (0.7.19; it was D$5M, over D$4.56M). |
+| 205 | `Founding.MAX_CASH` | `10_000_000` | The most, in thousands: D$10B, four times the Wealthy start. |
+| 208 | `Founding.MIN_RESERVE_USD` | `0` | The least in the vault, in thousands of US dollars: none, as every city had before 0.6.10. |
+| 211 | `Founding.MAX_RESERVE_USD` | `4_000_000` | The most, in thousands of US dollars: US$4B, four times the Wealthy start. |
+| 216 | `Founding.DEFAULT_CITY_NAME` | `"Danzik"` | The city a founding is named when nobody names it - Jerus's first city, and every save's before 0.7.10. |
+| 219 | `Founding.MAX_CITY_NAME_LENGTH` | `24` | The longest city name: room for the window's title and the slot list's line, not a policy. |
+| 224 | `Founding.DEFAULT_WORLD_SEED` | `4127` | The world a founding stands on when nobody rolls another: 4127, the map mockup's default seed (city-map.html), so every harness and the playtest found on the same ground. |
+| 227 | `Founding.ROLLED_SEED_MAX` | `999_999_999` | The largest seed the founding screen's dice rolls: 999,999,999, nine digits a player can read back and type. |
+| 467 | `Founding.VILLAGE` | `{ { "House", "60" }, { "Convenience Store", "5" }, { "Mixed Farm", "2" }, { "...` | The founding village: the playtest's hand-built settlement, name and count. |
+| 471 | `Founding.FIRST_WORKS` | `{ "Wind Farm", "Water Treatment Plant", "Elementary School", "Police Station" }` | The first big works, in the order a young city tends to need them. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 129 | `private final String label` |  |
-| 130 | `private final double cash, reserveUsd` |  |
-| 250 | `private final String cityName` |  |
-| 251 | `private final Currency currency` |  |
-| 252 | `private final double cash` |  |
-| 253 | `private final double reserveUsd` |  |
-| 254 | `private final double meanInflation` |  |
-| 255 | `private final long worldSeed` |  |
-| 257 | `private final World.Key worldKey` | The world it stands on (0.7.115, batch E2): Key.generated(worldSeed), or a harness's Earth world until E4 lets the screen found on Earth (and a save keep it). |
+| 139 | `private final String label` |  |
+| 140 | `private final double cash, reserveUsd` |  |
+| 260 | `private final String cityName` |  |
+| 261 | `private final Currency currency` |  |
+| 262 | `private final double cash` |  |
+| 263 | `private final double reserveUsd` |  |
+| 264 | `private final double meanInflation` |  |
+| 265 | `private final long worldSeed` |  |
+| 267 | `private final World.Key worldKey` | The world it stands on (0.7.115, batch E2): Key.generated(worldSeed), or the real Earth round a spot (onEarth(), since 0.7.121 the founding screen's, and kept by a save). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 481 | **type** `public final class Founding` | How a city was founded: its name, its money's name, and the treasury and the vault the founders left it. |
+| 61 | 500 | **type** `public final class Founding` | How a city was founded: its name, its money's name, and the treasury and the vault the founders left it. |
 
-### THE PRESETS (0.7.10) (lines 53-152)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 92 | 5 | `public static double landBondUsd(CityLand land)` | What an Insane city owes for its founding ground, in thousands of US dollars: the plots its centre holds, as the land office charges ground (LandMarket.groundKm2()), at the land market's opening dollar price a square ... |
-| 99 | 3 | `public static double landBondUsd(long worldSeed)` | ...for a city founded on the world of this seed (LandManager.foundingLand()): what the founding screen quotes, and what Game.foundTheLandBond() books. |
-| 104 | 3 | `public static double landBondUsd(World.Key worldKey)` | ...on the world a key names (0.7.115): Game.foundTheLandBond()'s, its founding's key. |
-| 121 | 31 | **type** `public enum Preset` | The five choices of money, hardest first; CUSTOM carries no figures of its own. |
-| 132 | 5 | `Preset(String label, double cash, double reserveUsd)` _(in Founding.Preset)_ |  |
-| 138 | 1 | `public String label()` _(in Founding.Preset)_ |  |
-| 140 | 1 | `public double cash()` _(in Founding.Preset)_ | The treasury, in thousands; NaN for CUSTOM. |
-| 142 | 1 | `public double reserveUsd()` _(in Founding.Preset)_ | The vault, in thousands of US dollars; NaN for CUSTOM. |
-| 145 | 6 | `public static Preset of(double cash, double reserveUsd)` _(in Founding.Preset)_ | The preset these two figures are, or CUSTOM. |
-
-### THE BOUNDS ON A CUSTOM FOUNDING (lines 153-202)
-
-### the name (lines 203-210)
-
-### the world (lines 211-247)
+### THE PRESETS (0.7.10) (lines 63-162)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 220 | 3 | `public static long rollWorldSeed()` | A seed for the founding screen's dice, 1 to ROLLED_SEED_MAX. |
-| 225 | 9 | `public static Long parseWorldSeed(String typed)` | A typed seed as a whole number - digits, a leading minus, commas ignored - or null when it is not one. |
-| 242 | 5 | `public static long derivedWorldSeed(String cityName, double foundingCash, double landOwnedSqFt, int month)` | The seed a save from before 0.7.56 is read with (spec-land 2.9): SplitMix64 of its city's name's hash, the bits of the treasury it was founded with, the bits of the ground it owns and the month, XORed - what the save ... |
+| 102 | 5 | `public static double landBondUsd(CityLand land)` | What an Insane city owes for its founding ground, in thousands of US dollars: the plots its centre holds, as the land office charges ground (LandMarket.groundKm2()), at the land market's opening dollar price a square ... |
+| 109 | 3 | `public static double landBondUsd(long worldSeed)` | ...for a city founded on the world of this seed (LandManager.foundingLand()): what the founding screen quotes, and what Game.foundTheLandBond() books. |
+| 114 | 3 | `public static double landBondUsd(World.Key worldKey)` | ...on the world a key names (0.7.115): Game.foundTheLandBond()'s, its founding's key. |
+| 131 | 31 | **type** `public enum Preset` | The five choices of money, hardest first; CUSTOM carries no figures of its own. |
+| 142 | 5 | `Preset(String label, double cash, double reserveUsd)` _(in Founding.Preset)_ |  |
+| 148 | 1 | `public String label()` _(in Founding.Preset)_ |  |
+| 150 | 1 | `public double cash()` _(in Founding.Preset)_ | The treasury, in thousands; NaN for CUSTOM. |
+| 152 | 1 | `public double reserveUsd()` _(in Founding.Preset)_ | The vault, in thousands of US dollars; NaN for CUSTOM. |
+| 155 | 6 | `public static Preset of(double cash, double reserveUsd)` _(in Founding.Preset)_ | The preset these two figures are, or CUSTOM. |
 
-### the record (lines 248-355)
+### THE BOUNDS ON A CUSTOM FOUNDING (lines 163-212)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 269 | 10 | `public Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation, long worldSeed)` | A founding exactly as given. |
-| 281 | 10 | `private Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation, World.Key worldKey)` | A founding as given on the world a key names (0.7.115): its seed the key's. |
-| 293 | 3 | `public Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation)` | ...on the default world, DEFAULT_WORLD_SEED. |
-| 298 | 3 | `public static Founding defaults()` | The defaults: Danzik, its money named after it, the Standard preset, the default world - what "Found with defaults" founded until 0.7.21. |
-| 303 | 5 | `public static Founding named(String cityName, Preset preset, double meanInflation)` | A city with its money named after it, on one of the four presets with figures. |
-| 310 | 3 | `public static Founding custom(String cityName, double cash, double reserveUsd, double meanInflation)` | A city with its money named after it, on figures of the player's own. |
-| 315 | 3 | `public Founding withCurrency(Currency typed)` | The same founding with money the player named by hand - Currency.typed(), which is null when the typed pair does not pass, and problem() then says so. |
-| 320 | 3 | `public Founding withWorldSeed(long seed)` | The same founding on another world: the founding screen's World field and its dice (0.7.56). |
-| 325 | 3 | `public Founding withWorldKey(World.Key key)` | The same founding on the world a key names (0.7.115): a harness's Earth world; a generated key is withWorldSeed(). |
-| 330 | 3 | `public Founding withMeanInflation(double meanInflation)` | The same founding with the world's mean inflation it is handed (Game.getFounding()), on the same world. |
-| 335 | 3 | `public static Founding legacy(double meanInflation)` | What a save from before 0.7.10 was founded with. |
-| 339 | 1 | `private static String clean(String name)` |  |
-| 341 | 1 | `public String getCityName()` |  |
-| 342 | 1 | `public Currency getCurrency()` |  |
-| 344 | 1 | `public double getCash()` | The treasury it was founded with, in thousands. |
-| 346 | 1 | `public double getReserveUsd()` | The vault it was founded with, in thousands of US dollars - bought on day one at the opening rate. |
-| 348 | 1 | `public double getMeanInflation()` | The world's average inflation it was founded into. |
-| 350 | 1 | `public Preset getPreset()` | Which of the five this is. |
-| 352 | 1 | `public long getWorldSeed()` | The seed of the world it stands on (0.7.56): World.of(getWorldSeed()) is its ground. |
-| 354 | 1 | `public World.Key getWorldKey()` | The world it stands on (0.7.115): World.of(getWorldKey()) is its ground - the generated world of getWorldSeed() but on Earth. |
+### the name (lines 213-220)
 
-### is it a city (lines 356-407)
+### the world (lines 221-257)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 359 | 8 | `public static String cityNameProblem(String name)` | Why a city name will not do, in the player's words, or null when it will. |
-| 369 | 6 | `public static String cashProblem(double cash)` | Why a treasury will not do, or null. |
-| 377 | 7 | `public static String reserveProblem(double reserveUsd)` | Why a vault will not do, or null. |
-| 390 | 17 | `public String problem()` | Why this founding cannot found a city, or null when it can: the first of the city's name, its money (a typed pair that did not pass leaves no currency - the screen says which half), the two amounts and the world. |
+| 230 | 3 | `public static long rollWorldSeed()` | A seed for the founding screen's dice, 1 to ROLLED_SEED_MAX. |
+| 235 | 9 | `public static Long parseWorldSeed(String typed)` | A typed seed as a whole number - digits, a leading minus, commas ignored - or null when it is not one. |
+| 252 | 5 | `public static long derivedWorldSeed(String cityName, double foundingCash, double landOwnedSqFt, int month)` | The seed a save from before 0.7.56 is read with (spec-land 2.9): SplitMix64 of its city's name's hash, the bits of the treasury it was founded with, the bits of the ground it owns and the month, XORed - what the save ... |
 
-### WHAT IT BUYS (0.7.10) (lines 408-531)
+### the record (lines 258-380)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 446 | 1 | **type** `public record Work(String name, double cost, boolean fitsInCash, double bondNeeded)` | One of the first works: what it is invoiced at on a new city, and whether the treasury pays it in cash after the village or needs a bond for the rest. |
-| 452 | 17 | **type** `public record Buys(double village, double leftAfterVillage, List<Work> works, double reserveUsd, String vau...` | What a founding buys: the village, what is left, each first work taken on its own after the village, and the vault in words. |
-| 456 | 5 | `public List<Work> inCash()` _(in Founding.Buys)_ | The works the treasury pays for in cash after the village, each on its own. |
-| 463 | 5 | `public List<Work> onABond()` _(in Founding.Buys)_ | The ones it needs a bond for. |
-| 471 | 3 | `public static double foundingMaterialPrice()` | What one unit of building material costs a new city abroad: the world's price at the opening rate, the world's level at one. |
-| 476 | 3 | `public static double foundingBuildersRate()` | The builders' sales tax on a new city: what a fresh policy charges them (0.7.19; Game, THE BUILDERS' PRICE). |
-| 487 | 5 | `public static double orderCost(BuildingsTemplate t, int quantity, double yard)` | An order's invoice on a new city with `yard` units of material in the yard: its cash cost - no wage has been paid yet, so its labour is at the founding ladder - and whatever material the yard does not hold at founding... |
-| 494 | 20 | `public static Buys whatItBuys(List<BuildingsTemplate> catalogue, double cash, double reserveUsd)` | What these two figures buy, over this catalogue. |
-| 516 | 10 | `public static String vaultSays(double reserveUsd)` | The vault, in words: what it is for. |
-| 527 | 4 | `private static BuildingsTemplate find(List<BuildingsTemplate> catalogue, String name)` |  |
+| 279 | 10 | `public Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation, long worldSeed)` | A founding exactly as given. |
+| 291 | 10 | `private Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation, World.Key worldKey)` | A founding as given on the world a key names (0.7.115): its seed the key's. |
+| 303 | 3 | `public Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation)` | ...on the default world, DEFAULT_WORLD_SEED. |
+| 308 | 3 | `public static Founding defaults()` | The defaults: Danzik, its money named after it, the Standard preset, the default world - what "Found with defaults" founded until 0.7.21. |
+| 313 | 5 | `public static Founding named(String cityName, Preset preset, double meanInflation)` | A city with its money named after it, on one of the four presets with figures. |
+| 320 | 3 | `public static Founding custom(String cityName, double cash, double reserveUsd, double meanInflation)` | A city with its money named after it, on figures of the player's own. |
+| 325 | 3 | `public Founding withCurrency(Currency typed)` | The same founding with money the player named by hand - Currency.typed(), which is null when the typed pair does not pass, and problem() then says so. |
+| 330 | 3 | `public Founding withWorldSeed(long seed)` | The same founding on another world: the founding screen's World field and its dice (0.7.56). |
+| 335 | 3 | `public Founding withWorldKey(World.Key key)` | The same founding on the world a key names (0.7.115): an Earth world (onEarth()) or a harness's; a generated key is withWorldSeed(). |
+| 340 | 3 | `public Founding onEarth(double lat, double lon)` | The same founding on the real Earth round a spot (0.7.121, batch E4): its seed this founding's, its data the game's, EarthData.EARTH_1 - the founding screen's Earth. |
+| 345 | 3 | `public Founding withMeanInflation(double meanInflation)` | The same founding with the world's mean inflation it is handed (Game.getFounding()), on the same world. |
+| 350 | 3 | `public static Founding legacy(double meanInflation)` | What a save from before 0.7.10 was founded with. |
+| 354 | 1 | `private static String clean(String name)` |  |
+| 356 | 1 | `public String getCityName()` |  |
+| 357 | 1 | `public Currency getCurrency()` |  |
+| 359 | 1 | `public double getCash()` | The treasury it was founded with, in thousands. |
+| 361 | 1 | `public double getReserveUsd()` | The vault it was founded with, in thousands of US dollars - bought on day one at the opening rate. |
+| 363 | 1 | `public double getMeanInflation()` | The world's average inflation it was founded into. |
+| 365 | 1 | `public Preset getPreset()` | Which of the five this is. |
+| 367 | 1 | `public long getWorldSeed()` | The seed of the world it stands on (0.7.56): World.of(getWorldSeed()) is its ground. |
+| 369 | 1 | `public World.Key getWorldKey()` | The world it stands on (0.7.115): World.of(getWorldKey()) is its ground - the generated world of getWorldSeed() but on Earth. |
+| 371 | 1 | `public World.Kind getWorldKind()` | Which world it stands on (0.7.121): GENERATED, or EARTH. |
+| 373 | 1 | `public boolean isOnEarth()` | Whether it stands on the real Earth (0.7.121). |
+| 375 | 1 | `public double getEarthLat()` | On Earth, the spot's latitude in degrees - the projection's centre, which the site is snapped from; NaN on a generated world (0.7.121). |
+| 377 | 1 | `public double getEarthLon()` | ...and its longitude. |
+| 379 | 1 | `public String getEarthData()` | On Earth, the data it is drawn from, by identity ("earth-1:<hash>"); null on a generated world (0.7.121). |
+
+### is it a city (lines 381-436)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 384 | 8 | `public static String cityNameProblem(String name)` | Why a city name will not do, in the player's words, or null when it will. |
+| 394 | 6 | `public static String cashProblem(double cash)` | Why a treasury will not do, or null. |
+| 402 | 7 | `public static String reserveProblem(double reserveUsd)` | Why a vault will not do, or null. |
+| 418 | 18 | `public String problem()` | Why this founding cannot found a city, or null when it can: the first of the city's name, its money (a typed pair that did not pass leaves no currency - the screen says which half), the two amounts and the world - and... |
+
+### WHAT IT BUYS (0.7.10) (lines 437-560)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 475 | 1 | **type** `public record Work(String name, double cost, boolean fitsInCash, double bondNeeded)` | One of the first works: what it is invoiced at on a new city, and whether the treasury pays it in cash after the village or needs a bond for the rest. |
+| 481 | 17 | **type** `public record Buys(double village, double leftAfterVillage, List<Work> works, double reserveUsd, String vau...` | What a founding buys: the village, what is left, each first work taken on its own after the village, and the vault in words. |
+| 485 | 5 | `public List<Work> inCash()` _(in Founding.Buys)_ | The works the treasury pays for in cash after the village, each on its own. |
+| 492 | 5 | `public List<Work> onABond()` _(in Founding.Buys)_ | The ones it needs a bond for. |
+| 500 | 3 | `public static double foundingMaterialPrice()` | What one unit of building material costs a new city abroad: the world's price at the opening rate, the world's level at one. |
+| 505 | 3 | `public static double foundingBuildersRate()` | The builders' sales tax on a new city: what a fresh policy charges them (0.7.19; Game, THE BUILDERS' PRICE). |
+| 516 | 5 | `public static double orderCost(BuildingsTemplate t, int quantity, double yard)` | An order's invoice on a new city with `yard` units of material in the yard: its cash cost - no wage has been paid yet, so its labour is at the founding ladder - and whatever material the yard does not hold at founding... |
+| 523 | 20 | `public static Buys whatItBuys(List<BuildingsTemplate> catalogue, double cash, double reserveUsd)` | What these two figures buy, over this catalogue. |
+| 545 | 10 | `public static String vaultSays(double reserveUsd)` | The vault, in words: what it is for. |
+| 556 | 4 | `private static BuildingsTemplate find(List<BuildingsTemplate> catalogue, String name)` |  |
 

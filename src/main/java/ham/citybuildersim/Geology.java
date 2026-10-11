@@ -637,7 +637,7 @@ public final class Geology {
      * Every 4' cell of the far layers, its area on the sphere: the land
      * (dry and lake) and the sea in each province, km2, north of
      * ANTARCTIC_LAT and in all; by row. What Z, the odds and the class
-     * shares are worked out from (zOf(), oddsOf()) - about half a second
+     * shares are worked out from (zOf(), oddsFor()) - about half a second
      * on the full file.
      */
     public record Measure(double[] land, double[] sea, double[] landAll) {

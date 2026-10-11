@@ -274,7 +274,7 @@ public class RailCheck {
             game.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
             game.buildStack(b.getTemplate(HeavyIndustry.ARC_FURNACE), 30, true);
             /*
-             * ...AND THE MILLS ARE HELD (0.7.116, batch I3): at steel's world
+             * ...AND THE MILLS ARE HELD (0.7.120, batch I3): at steel's world
              * price a furnace on imported scrap shipping its steel loses money
              * (the study's case A, -0.5% of its cost a month), and Iron &
              * Steel's planner sheds it inside two years - the furnaces stood
@@ -284,7 +284,7 @@ public class RailCheck {
              */
             game.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
             /*
-             * ...AND FABRICATION WORKS TO SHIP WHAT ITS STEEL BECOMES (0.7.116,
+             * ...AND FABRICATION WORKS TO SHIP WHAT ITS STEEL BECOMES (0.7.120,
              * batch I3). At steel's world price a tonne of steel or scrap
              * carries about two fifths of the lorry freight it did (STEEL
              * .0675 a tonne and SCRAP .04125, against .1639 and IRON's .101),
@@ -461,7 +461,7 @@ public class RailCheck {
          * played city, whose exports are fabricated steel at three times the
          * freight, settles at 38-43%. Both are the same rule; nothing below
          * asserts a level, only what the rule says about itself. (Since
-         * 0.7.116 the town ships fabricated steel too: at the world's steel
+         * 0.7.120 the town ships fabricated steel too: at the world's steel
          * price its steel alone could not pay for the two spurs.)
          */
         System.out.println("\n--- and the quote prices the track ---");
@@ -610,8 +610,8 @@ public class RailCheck {
                         onward.getTradeTonnes(), onward.getHaulageBilled(), onward.getQuote(), onward.getTightness(),
                         rail.getTradeTonnes(), rail.getHaulageBilled(), rail.getQuote(), rail.getTightness()));
 
-        // ...and a wagon set moved with the steel in it (0.7.116, batch I3; Jerus's C): CarCheck's THE VEHICLES MOVED WITH THE STEEL IN THEM.
-        System.out.println("\n--- and a wagon set moved with the steel in it, the Locomotive Works' margin a set to the cent (0.7.116) ---");
+        // ...and a wagon set moved with the steel in it (0.7.120, batch I3; Jerus's C): CarCheck's THE VEHICLES MOVED WITH THE STEEL IN THEM.
+        System.out.println("\n--- and a wagon set moved with the steel in it, the Locomotive Works' margin a set to the cent (0.7.120) ---");
         report("a wagon set is the world's at 2,302.2: 2,400 less 120 t of fabricated steel at .665 and 20 t of machinery at .9",
                 Good.ROLLING_STOCK.worldImportPrice() == 2302.2 && !Good.ROLLING_STOCK.exportable(),
                 String.format("%.2f", Good.ROLLING_STOCK.worldImportPrice()));

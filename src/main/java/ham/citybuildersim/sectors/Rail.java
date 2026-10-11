@@ -485,7 +485,7 @@ public final class Rail extends Sector {
         }
         double worn = fleet() / SET_LIFE_MONTHS;
         usePantry(Good.ROLLING_STOCK, worn);
-        // ...the worn sets' steel to the city's old steel, the railway's to sell (0.7.121; OldMetal).
+        // ...the worn sets' steel to the city's old steel, the railway's to sell (0.7.123; OldMetal).
         if (game != null) game.getOldMetal().setsRetired(key(), worn);
 
         /*

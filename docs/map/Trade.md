@@ -19,7 +19,7 @@
 
 **Uses:** [Good](Good.md) (1)
 
-**Used by (21):** [BooksCheck](BooksCheck.md), [CreditCheck](CreditCheck.md), [GoodsMarket](GoodsMarket.md), [LuxuryRetail](LuxuryRetail.md), [Markets](Markets.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [RealEstate](RealEstate.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [StrategicReserve](StrategicReserve.md), [SupplierCreditCheck](SupplierCreditCheck.md)
+**Used by (25):** [BooksCheck](BooksCheck.md), [CreditCheck](CreditCheck.md), [GoodsMarket](GoodsMarket.md), [HeavyIndustry](HeavyIndustry.md), [LuxuryRetail](LuxuryRetail.md), [Markets](Markets.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyAudit](MoneyAudit.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OldMetal](OldMetal.md), [RealEstate](RealEstate.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [StrategicReserve](StrategicReserve.md), [SupplierCreditCheck](SupplierCreditCheck.md)
 
 ## Constants
 

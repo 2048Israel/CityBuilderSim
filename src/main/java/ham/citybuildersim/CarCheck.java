@@ -98,7 +98,7 @@ public class CarCheck {
     }
 
     /* =====================================================================
-       THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.116, batch I3; Jerus's
+       THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.120, batch I3; Jerus's
        C, 2026-10-08: "car, van and train prices move with the steel in
        them"). Steel went to the world's price, fabricated steel and
        machinery fell by the steel in them (Q6b: -.665 and -.9 a tonne, at
@@ -111,7 +111,7 @@ public class CarCheck {
        checkable if somebody writes it down (TradeCostCheck's DELIVERED).
        ===================================================================== */
 
-    /** The prices to 0.7.115, written down: cars in and out, vans and wagon sets in; fabricated steel out; machinery in and out. */
+    /** The prices to 0.7.119, written down: cars in and out, vans and wagon sets in; fabricated steel out; machinery in and out. */
     static final double CARS_WAS_IN = 44, CARS_WAS_OUT = 36, VANS_WAS_IN = 72, ROLLING_WAS_IN = 2400,
             FABRICATED_WAS = 2.21, MACHINERY_WAS_IN = 14.3, MACHINERY_WAS_OUT = 9.0;
 
@@ -1019,7 +1019,7 @@ public class CarCheck {
                 busMove != null && acted[0] && ordered >= 1 && ordered <= fill,
                 String.format("%d ordered, %d at most", ordered, fill));
 
-        System.out.println("\n--- and a car moved with the steel in it, its plants' margin a car to the cent (0.7.116) ---");
+        System.out.println("\n--- and a car moved with the steel in it, its plants' margin a car to the cent (0.7.120) ---");
         report("a car is the world's at 41.3125 in and 33.3125 out: 44 and 36 less 3.5 t of fabricated steel at .665 and 0.4 t of"
                         + " machinery at .9", Good.CARS.worldImportPrice() == 41.3125 && Good.CARS.worldExportPrice() == 33.3125
                         && Math.abs(CARS_WAS_IN - Good.CARS.worldImportPrice() - (3.5 * (FABRICATED_WAS - Good.FABRICATED_STEEL.worldExportPrice())
