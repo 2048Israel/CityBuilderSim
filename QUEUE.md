@@ -20,10 +20,17 @@ stuff".
 ## Queued
 
 _The batches already queued in the project's todo go above PT1: the
-orchestrator's to add, one row each. This line goes when they are in._
+orchestrator's to add, one row each. This line goes when they are in. The
+globe study's five are in, in the todo's order for them; E7 and MM1 can each
+run beside another batch._
 
 | batch | what | brief |
 |---|---|---|
+| E7 | Ice and desert as kinds of ground on the real Earth | [E7](docs/studies/spec-globe.md#4-the-batches) |
+| MM1 | District pictures, so a big city's far view is not a few flat squares | [MM1](docs/studies/spec-globe.md#4-the-batches) |
+| E8 | The globe's model half: the frame, the projection, the planet's picture | [E8](docs/studies/spec-globe.md#4-the-batches) |
+| MM2 | The minimap at the rail's foot | [MM2](docs/studies/spec-globe.md#4-the-batches) |
+| E9 | The globe on screen, and W, A, S and D pan the map | [E9](docs/studies/spec-globe.md#4-the-batches) |
 | PT1 | Eleven small fixes to screens, words and the log, from a played city | [PT1](docs/queue/PT1.md#pt1) |
 
 ## Pending
