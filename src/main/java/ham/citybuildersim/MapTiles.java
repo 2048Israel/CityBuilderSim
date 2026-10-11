@@ -81,7 +81,7 @@ public final class MapTiles {
         byte[] t = terrain.get(k);
         if (t == null) {
             t = new byte[TilePainter.PLOTS];
-            World.of(map.seed()).tileTerrain(tx, ty, t);
+            World.of(map.worldKey()).tileTerrain(tx, ty, t);
             terrain.put(k, t);
         }
         return t;
@@ -296,8 +296,13 @@ public final class MapTiles {
 
     /** A far node's ground: MapFrame.NODE_PX squared samples a `plots` apart from (x0, y0), a World class each. Thread-safe: the worker's. */
     public static byte[] nodeTerrain(long seed, long x0, long y0, long plots) {
+        return nodeTerrain(World.Key.generated(seed), x0, y0, plots);
+    }
+
+    /** ...on the world a key names (0.7.115; the map's: CityMap.worldKey()). */
+    public static byte[] nodeTerrain(World.Key world, long x0, long y0, long plots) {
         byte[] out = new byte[MapFrame.NODE_PX * MapFrame.NODE_PX];
-        World.of(seed).regionTerrain(x0, y0, (int) Math.min(Integer.MAX_VALUE, plots), MapFrame.NODE_PX, out);
+        World.of(world).regionTerrain(x0, y0, (int) Math.min(Integer.MAX_VALUE, plots), MapFrame.NODE_PX, out);
         return out;
     }
 

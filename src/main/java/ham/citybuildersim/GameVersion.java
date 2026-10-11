@@ -5180,8 +5180,43 @@ public final class GameVersion {
      *     MoneyCheck 4 (power and consumables, the audit closing);
      *     BuildingDataCheck (gen and consumables, json against the twin).
      *   - The playtest is 0.7.106's byte for byte.
+     *
+     * 0.7.115 (2026-10-11) - THE EARTH'S GROUND. Batch E2 (the project's
+     * spec-earth.md 3 and 8; Jerus's answers of 2026-10-10, "all rec";
+     * runs/brief-batchE2.md, runs/fixE2-notes.md). No save format change
+     * (36): an Earth world is built by harnesses alone until E4, whose
+     * format keeps its key; a generated world reaches the code it reached.
+     *   - World.Key (kind, seed, lat, lon, data): what makes one world
+     *     another; World.of(key) - a generated key's is World.of(seed), the
+     *     same object, an Earth key's kept apart (WORLDS_KEPT of them).
+     *   - EarthTerrain (new): spec-earth 3's rule a tile at a time - the tile
+     *     and its ring read their shares at a 10 x 10 lattice through the
+     *     tile's blended corners; the sea the interpolated share's
+     *     half-contour frayed by the coast noise (COAST_FRAY 1.0, unranked:
+     *     a plot or two); rivers on their GRWL lines, at least 0.75 plot
+     *     either side; small lakes blobs of their own area round their
+     *     points; lakes of 10 km2 and more and forest by their noise ranked
+     *     through one table of its distribution (2^18 samples); beaches where
+     *     the sea meets a 2' cell with bare ground. A plot and a line are
+     *     their tile's byte for byte (a line drawn alone), a region at a
+     *     stride is read from the shares at each pixel. The cells pass (each
+     *     cell's land and forest from 16 points of the 4' layers) replaces
+     *     the sea pass; the founding is the snap, ring by ring of one plot, to
+     *     the nearest site passing test 1, with no founding river; a point's
+     *     sea draws the fields off it. No heights on Earth: depthAt() and
+     *     shelfTheta() refuse there.
+     *   - The callers take the key: CityLand (key(), its caches by key),
+     *     CityMap (worldKey(): its plans, runs and routes), MapTiles
+     *     (nodeTerrain() by key), LandMap, LandConversion.restate(),
+     *     LandManager (a Supplier of the key; foundingLand(key)), Founding
+     *     (getWorldKey(), withWorldKey()), Game (getWorld(), its land office,
+     *     the land bond and the land's load); GridConversion reads an older
+     *     save's generated world and needs none.
+     *   - Harnesses: EarthTerrainCheck (new, nine sections) on EarthCheck's
+     *     fixture, and on the full file when it is named.
+     *   - The playtest is 0.7.106's byte for byte.
      */
-    public static final String VERSION = "0.7.112";
+    public static final String VERSION = "0.7.115";
 
     /**
      * The save shape.

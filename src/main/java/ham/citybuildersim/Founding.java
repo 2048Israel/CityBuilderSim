@@ -100,6 +100,11 @@ public final class Founding {
         return landBondUsd(LandManager.foundingLand(worldSeed));
     }
 
+    /** ...on the world a key names (0.7.115): Game.foundTheLandBond()'s, its founding's key. */
+    public static double landBondUsd(World.Key worldKey) {
+        return landBondUsd(LandManager.foundingLand(worldKey));
+    }
+
     /** Lean's treasury, in thousands: D$25M - two-thirds of the founding village at a new city's invoices (three-quarters until the builders' sales tax went into them, 0.7.19), so the city borrows from its first months, for the rest of it and for every big work. */
     public static final double LEAN_CASH = 25_000;
 
@@ -248,6 +253,8 @@ public final class Founding {
     private final double reserveUsd;
     private final double meanInflation;
     private final long worldSeed;
+    /** The world it stands on (0.7.115, batch E2): Key.generated(worldSeed), or a harness's Earth world until E4 lets the screen found on Earth (and a save keep it). */
+    private final World.Key worldKey;
 
     /**
      * A founding exactly as given. The load path's door, and the one the
@@ -267,6 +274,19 @@ public final class Founding {
         this.reserveUsd = reserveUsd;
         this.meanInflation = meanInflation;
         this.worldSeed = worldSeed;
+        this.worldKey = World.Key.generated(worldSeed);
+    }
+
+    /** A founding as given on the world a key names (0.7.115): its seed the key's. */
+    private Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation,
+                     World.Key worldKey) {
+        this.cityName = cityName;
+        this.currency = currency;
+        this.cash = cash;
+        this.reserveUsd = reserveUsd;
+        this.meanInflation = meanInflation;
+        this.worldSeed = worldKey.seed();
+        this.worldKey = worldKey;
     }
 
     /** ...on the default world, DEFAULT_WORLD_SEED. */
@@ -293,12 +313,22 @@ public final class Founding {
 
     /** The same founding with money the player named by hand - Currency.typed(), which is null when the typed pair does not pass, and problem() then says so. */
     public Founding withCurrency(Currency typed) {
-        return new Founding(cityName, typed, cash, reserveUsd, meanInflation, worldSeed);
+        return new Founding(cityName, typed, cash, reserveUsd, meanInflation, worldKey);
     }
 
     /** The same founding on another world: the founding screen's World field and its dice (0.7.56). */
     public Founding withWorldSeed(long seed) {
         return new Founding(cityName, currency, cash, reserveUsd, meanInflation, seed);
+    }
+
+    /** The same founding on the world a key names (0.7.115): a harness's Earth world; a generated key is withWorldSeed(). */
+    public Founding withWorldKey(World.Key key) {
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, key);
+    }
+
+    /** The same founding with the world's mean inflation it is handed (Game.getFounding()), on the same world. */
+    public Founding withMeanInflation(double meanInflation) {
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey);
     }
 
     /** What a save from before 0.7.10 was founded with. See the class header. */
@@ -320,6 +350,8 @@ public final class Founding {
     public Preset getPreset()          { return Preset.of(cash, reserveUsd); }
     /** The seed of the world it stands on (0.7.56): World.of(getWorldSeed()) is its ground. */
     public long getWorldSeed()         { return worldSeed; }
+    /** The world it stands on (0.7.115): World.of(getWorldKey()) is its ground - the generated world of getWorldSeed() but on Earth. */
+    public World.Key getWorldKey()     { return worldKey; }
 
     /* ------------------------------------------------------------ is it a city */
 

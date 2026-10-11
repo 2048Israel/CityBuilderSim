@@ -203,7 +203,7 @@ public final class LandConversion {
      */
     public static void restate(LandManager lm, double drySqFt) {
         CityLand land = lm.land();
-        World world = World.of(land.seed());
+        World world = World.of(land.key());
         int ironSites = (int) Math.min(Integer.MAX_VALUE, land.totalSites(Resource.IRON));
         double ironTonnes = land.totalAmount(Resource.IRON);
         // On the old world's fields when the city's centre holds them (0.7.99, CityLand.oldWorldHoldings()), else the world's.

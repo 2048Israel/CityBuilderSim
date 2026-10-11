@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and river, and the fields of the seven resources - every one of them a pure function of one seed.
+ * The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and river, and the fields of the seven resources - every one of them a pure function of one seed, or since 0.7.115 of a key naming the real Earth round a spot (EarthTerrain).
  *
  * WHY THIS EXISTS (0.7.56, batch J1a; the project's spec-land.md 2.1). The
  * land office sold parcels drawn by a generator seeded with the parcel's id:
@@ -48,6 +48,18 @@ import java.util.Map;
  * time (tileTerrain(), each octave's lattice once a tile) or a region at a
  * stride (regionTerrain(), the octaves narrower than a pixel replaced by
  * their mean), and a cell's fields are drawn only when asked for.
+ *
+ * A WORLD'S KEY (0.7.115, batch E2; the project's spec-earth.md 2 and 8):
+ * since "the world as planet Earth" a world is either the generated one its
+ * seed makes, or the real Earth round a spot - Key holds which, its seed, and
+ * on Earth the spot and the data. World.of(seed) is the generated world as
+ * ever, and World.of(key) the one a key names; a generated key reaches the
+ * same world and the same code. An Earth world's ground is EarthTerrain's
+ * (spec-earth 3): the cells pass replaces the sea pass, the founding is the
+ * snap to dry ground near the spot, and it has no founding river and no
+ * heights (depthAt(), shelfTheta() refuse); its fields are drawn on its
+ * cells' land by the same densities, off its sea (geology is E3's). Only
+ * harnesses build one until E4 lets a city be founded on it.
  */
 public final class World {
 
@@ -446,7 +458,44 @@ public final class World {
         }
     };
 
+    /** Which world a key names: the generated one its seed makes, or the real Earth round a spot (0.7.115). */
+    public enum Kind { GENERATED, EARTH }
+
+    /**
+     * What makes one world another (0.7.115, batch E2; spec-earth 6): its
+     * kind and seed, and on Earth the spot the projection is centred on
+     * (degrees) and the data it is drawn from, by its identity
+     * (EarthData.identity(), "earth-1:<hash>"). The seed decides an Earth
+     * world's detail below the data, its fields and its painting; the spot
+     * and the data its coasts, lakes and rivers.
+     */
+    public record Key(Kind kind, long seed, double lat, double lon, String data) {
+
+        /** The generated world a seed makes. */
+        public static Key generated(long seed) { return new Key(Kind.GENERATED, seed, 0, 0, null); }
+
+        /** The real Earth round (lat, lon), its detail from the seed, read from the data of that identity. */
+        public static Key earth(long seed, double lat, double lon, String data) {
+            if (!(lat >= -90 && lat <= 90) || !Double.isFinite(lon)) throw new IllegalArgumentException("the spot (" + lat + ", " + lon + ")");
+            if (data == null || data.isBlank()) throw new IllegalArgumentException("an Earth world names its data");
+            return new Key(Kind.EARTH, seed, lat, lon, data);
+        }
+
+        /** Whether it is an Earth world's. */
+        public boolean earth() { return kind == Kind.EARTH; }
+    }
+
+    /** Earth worlds kept as World.of(key) is asked for them: WORLDS_KEPT, apart from the generated, so those are kept as they were. */
+    private static final Map<Key, World> KEPT_EARTH = new LinkedHashMap<>(8, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<Key, World> eldest) {
+            return size() > WORLDS_KEPT;
+        }
+    };
+
     private final long seed;
+    private final Key key;
+    /** An Earth world's ground (0.7.115); null on a generated world. */
+    private final EarthTerrain earth;
     private volatile boolean built;
 
     private double seaTheta;
@@ -463,6 +512,15 @@ public final class World {
     /** A world from its seed. Costs nothing: it is built the first time it is asked anything. */
     public World(long seed) {
         this.seed = seed;
+        this.key = Key.generated(seed);
+        this.earth = null;
+    }
+
+    /** The world a key names (0.7.115): a generated key's is new World(seed); an Earth key's finds its data now (EarthTerrain.source()) and is built, like any, when first asked. */
+    public World(Key key) {
+        this.seed = key.seed();
+        this.key = key.earth() ? key : Key.generated(key.seed());
+        this.earth = key.earth() ? new EarthTerrain(key) : null;
     }
 
     /** The world a seed makes, shared: the same object for the same seed while it is among the last WORLDS_KEPT asked for. */
@@ -472,19 +530,58 @@ public final class World {
         }
     }
 
+    /** The world a key names, shared (0.7.115): a generated key's is World.of(its seed), the same object; an Earth key's is kept apart, the last WORLDS_KEPT asked for. */
+    public static World of(Key key) {
+        if (!key.earth()) return of(key.seed());
+        synchronized (KEPT_EARTH) {
+            return KEPT_EARTH.computeIfAbsent(key, World::new);
+        }
+    }
+
     /** The seed it was made from. */
     public long seed() { return seed; }
 
-    /** The sea pass, the site and the river, once. */
+    /** Its key (0.7.115): Key.generated(seed()) for a generated world. */
+    public Key key() { return key; }
+
+    /** Whether it is the real Earth (0.7.115). */
+    public boolean isEarth() { return earth != null; }
+
+    /** An Earth world's ground, null on a generated world (0.7.115): EarthTerrainCheck's door. */
+    EarthTerrain earthTerrain() { return earth; }
+
+    /** The sea pass, the site and the river, once - on Earth (0.7.115) the cells pass and the snap, and no river. */
     private void build() {
         if (built) return;
         synchronized (this) {
             if (built) return;
-            seaPass();
-            found();
-            walkRiver();
+            if (earth != null) {
+                earth.build();
+                seaTheta = EarthTerrain.SEA_LEVEL;
+                fx = earth.siteX();
+                fy = earth.siteY();
+                siteChecks = earth.siteTests();
+                siteCells = 1;
+                riverX = new double[0];
+                riverY = new double[0];
+                riverW = new double[0];
+                lakeX = fx + 0.5;
+                lakeY = fy + 0.5;
+                lakeR = 0;
+                riverBox0x = riverBox0y = Double.MAX_VALUE;
+                riverBox1x = riverBox1y = -Double.MAX_VALUE;
+            } else {
+                seaPass();
+                found();
+                walkRiver();
+            }
             built = true;
         }
+    }
+
+    /** What a generated world's heights answer and an Earth world has none of (earth-1 holds no heights, Jerus's Q8): refused there. */
+    private void noHeightsOnEarth(String what) {
+        if (earth != null) throw new UnsupportedOperationException(what + " needs heights, and an Earth world has none (earth-1 ships no elevation; spec-earth Q8)");
     }
 
     /* =====================================================================
@@ -601,11 +698,11 @@ public final class World {
         }
     }
 
-    /** The sea's level: the elevation SEA_SHARE of the world's samples lie under. */
+    /** The sea's level: the elevation SEA_SHARE of the world's samples lie under; on Earth (0.7.115), with no heights, EarthTerrain.SEA_LEVEL, the share the coast is drawn at. */
     public double seaTheta() { build(); return seaTheta; }
 
-    /** The continental shelf's edge in the elevation field (0.7.79): the level the shallowest SHELF_SHARE of the sea's samples lie at and above, so under seaTheta(). */
-    public double shelfTheta() { build(); return shelfTheta; }
+    /** The continental shelf's edge in the elevation field (0.7.79): the level the shallowest SHELF_SHARE of the sea's samples lie at and above, so under seaTheta(). None on Earth. */
+    public double shelfTheta() { noHeightsOnEarth("the shelf's edge"); build(); return shelfTheta; }
 
     /**
      * The sea's depth at a plot's centre, in metres below its level (0.7.79,
@@ -614,26 +711,51 @@ public final class World {
      * is over 0), SHELF_BREAK_M at shelfTheta(), and linear in the
      * elevation from the sea's level to the shelf's edge and on at the same
      * slope below it. Off the world, what the elevation there says. Pure; an
-     * elevation's cost, about half a microsecond.
+     * elevation's cost, about half a microsecond. Refused on Earth (0.7.115),
+     * which has no heights: its sea's depth is E4's to settle.
      */
     public double depthAt(long x, long y) {
+        noHeightsOnEarth("the sea's depth");
         build();
         double e = elevation(x + 0.5, y + 0.5);
         return e < seaTheta ? SHELF_BREAK_M * (seaTheta - e) / (seaTheta - shelfTheta) : 0;
     }
 
-    /** A cell's land, as a share of its samples: 0, 0.25, 0.5, 0.75 or 1. */
-    public double cellLandShare(int cell) { build(); return landQuarters[cell] / (double) SEA_SAMPLES; }
+    /** A cell's land, as a share of its samples: 0, 0.25, 0.5, 0.75 or 1 - on Earth (0.7.115) its cells pass's share, of 16 points. */
+    public double cellLandShare(int cell) {
+        if (earth != null) return earth.cellLand(cell);
+        build();
+        return landQuarters[cell] / (double) SEA_SAMPLES;
+    }
 
-    /** A cell's forest, as a share of its samples. */
-    public double cellForestShare(int cell) { build(); return forestQuarters[cell] / (double) SEA_SAMPLES; }
+    /** A cell's forest, as a share of its samples (on Earth, its cells pass's). */
+    public double cellForestShare(int cell) {
+        if (earth != null) return earth.cellForest(cell);
+        build();
+        return forestQuarters[cell] / (double) SEA_SAMPLES;
+    }
 
-    /** The world's land, as a share of every cell's samples: 29%, by the sea's level's definition. */
+    /** The world's land, as a share of every cell's samples: 29%, by the sea's level's definition - on Earth, its cells' shares averaged. */
     public double landShare() {
         build();
+        if (earth != null) {
+            double land = 0;
+            for (int c = 0; c < CELLS * CELLS; c++) land += earth.cellLand(c);
+            return land / (CELLS * CELLS);
+        }
         long land = 0;
         for (byte b : landQuarters) land += b;
         return land / (double) (landQuarters.length * SEA_SAMPLES);
+    }
+
+    /** Whether a cell holds land, which its fields are drawn on: on Earth (0.7.115) its cells pass's share over nothing. */
+    private boolean hasLand(int c) {
+        return earth != null ? earth.cellLand(c) > 0 : landQuarters[c] > 0;
+    }
+
+    /** Whether a point is sea, for a field drawn off it: the elevation under the sea's level - on Earth (0.7.115) the coast's rule at the point (EarthTerrain.seaAt()). */
+    private boolean seaAt(double x, double y) {
+        return earth != null ? earth.seaAt(x, y) : elevation(x, y) < seaTheta;
     }
 
     /** The world cell a plot is in, as row x CELLS + column; -1 off the world. */
@@ -739,6 +861,7 @@ public final class World {
      * founding site is no longer always the first offered.
      */
     public long[] searchSites(int cells, java.util.function.Predicate<long[]> accept) {
+        if (earth != null) throw new UnsupportedOperationException("the conversion's search is an older save's, on the generated world it was founded on");
         build();
         int mid = CELLS / 2, n = CELLS * CELLS, count = 0;
         long[] order = new long[n];
@@ -775,16 +898,16 @@ public final class World {
     /** Test 2's least count of land samples: SITE_LAND_SHARE of SITE_LAND_SAMPLES, rounded up - 29 of 48. */
     static int siteLandMin() { return (int) Math.ceil(SITE_LAND_SHARE * SITE_LAND_SAMPLES); }
 
-    /** The founding site, as a plot: east from the world's west edge. */
+    /** The founding site, as a plot: east from the world's west edge. On Earth (0.7.115) the snap's (EarthTerrain). */
     public long foundingX() { build(); return fx; }
 
     /** ...and south from its north edge. */
     public long foundingY() { build(); return fy; }
 
-    /** How many plots the founding search tested - the cost of finding the site. */
+    /** How many plots the founding search tested - the cost of finding the site (on Earth, the snap's). */
     public int siteChecks() { build(); return siteChecks; }
 
-    /** ...and in how many cells: one, unless the nearest coastal cell had no site. */
+    /** ...and in how many cells: one, unless the nearest coastal cell had no site (on Earth, one). */
     public int siteCells()  { build(); return siteCells; }
 
     /* =====================================================================
@@ -871,7 +994,7 @@ public final class World {
         }
     }
 
-    /** The founding river and lake (copies: nothing a caller does moves them). */
+    /** The founding river and lake (copies: nothing a caller does moves them). On Earth (0.7.115) none: no walk, and the lake a point at the site, so a founding's fresh water is the nearest real water (CityLand.found()). */
     public River river() {
         build();
         return new River(riverX.clone(), riverY.clone(), riverW.clone(), lakeX, lakeY, lakeR);
@@ -913,8 +1036,9 @@ public final class World {
         return forest >= FOREST_THETA ? FOREST : GRASS;
     }
 
-    /** One plot's ground, at its centre: GRASS, FOREST, FRESH, SALT or SAND; SALT off the world. 650 to 930 ns. */
+    /** One plot's ground, at its centre: GRASS, FOREST, FRESH, SALT or SAND; SALT off the world. 650 to 930 ns. On Earth (0.7.115) its tile's, kept (EarthTerrain.terrainAt()). */
     public byte terrainAt(long x, long y) {
+        if (earth != null) return earth.terrainAt(x, y);
         build();
         if (x < 0 || y < 0 || x >= SIDE || y >= SIDE) return SALT;
         double px = x + 0.5, py = y + 0.5;
@@ -952,13 +1076,18 @@ public final class World {
      * terrainAt() gives each of its plots, on 99.9 to 100% of them, five times
      * faster - each fine octave's lattice is hashed once a tile, and the coarse
      * octaves (2^9 plots and over) are interpolated between the tile's
-     * corners. A tile off the world is sea. 65 to 70 us a tile.
+     * corners. A tile off the world is sea. 65 to 70 us a tile. On Earth
+     * (0.7.115) spec-earth 3's rule (EarthTerrain.tileTerrain()).
      *
      * @param tx the tile's column, plots / TILE
      * @param ty the tile's row
      * @param out TILE x TILE bytes
      */
     public void tileTerrain(long tx, long ty, byte[] out) {
+        if (earth != null) {
+            earth.tileTerrain(tx, ty, out);
+            return;
+        }
         build();
         if (tx < 0 || ty < 0 || tx >= SIDE / TILE || ty >= SIDE / TILE) {
             Arrays.fill(out, 0, TILE * TILE, SALT);
@@ -1014,9 +1143,14 @@ public final class World {
      * plots alone (0.7.89, batch RD3: the city map's highway and railway runs
      * read the ground along their corridors a line at a time, about a tenth of
      * a tile's cost). out[i] is the line's i-th plot, west to east (north to
-     * south). A tile off the world is sea.
+     * south). A tile off the world is sea. On Earth (0.7.115) read from its
+     * tile, kept (EarthTerrain.lineTerrain()).
      */
     public void lineTerrain(long tx, long ty, boolean column, int at, byte[] out) {
+        if (earth != null) {
+            earth.lineTerrain(tx, ty, column, at, out);
+            return;
+        }
         build();
         if (tx < 0 || ty < 0 || tx >= SIDE / TILE || ty >= SIDE / TILE) {
             Arrays.fill(out, 0, TILE, SALT);
@@ -1176,9 +1310,14 @@ public final class World {
      * evaluated, a lattice once a region; an octave narrower than a pixel
      * would only alias, and stands at its mean, 0.5, so the far view's sea
      * is the near view's (the prototype dropped them, and its far views ran
-     * low). At a stride of one it is terrainAt() for every plot.
+     * low). At a stride of one it is terrainAt() for every plot. On Earth
+     * (0.7.115) the same contract from the data's shares (EarthTerrain.regionTerrain()).
      */
     public void regionTerrain(long x0, long y0, int stride, int n, byte[] out) {
+        if (earth != null) {
+            earth.regionTerrain(x0, y0, stride, n, out);
+            return;
+        }
         build();
         double[] e = new double[n * n], lake = new double[n * n], forest = new double[n * n];
         for (int k = ELEV_COARSE_HI; k >= ELEV_COARSE_LO; k--) {
@@ -1270,7 +1409,7 @@ public final class World {
     }
 
     /** A cell's land, in square kilometres: its land share times its area. */
-    private double landKm2(int cell) { return landQuarters[cell] / (double) SEA_SAMPLES * CELL_KM2; }
+    private double landKm2(int cell) { return earth != null ? earth.cellLand(cell) * CELL_KM2 : landQuarters[cell] / (double) SEA_SAMPLES * CELL_KM2; }
 
     /** How many fields of a resource a cell lists (fieldsInCell(); since 0.7.99 the fewer and bigger ones). None of forest. */
     public long cellFieldCount(int cell, Resource r) {
@@ -1304,6 +1443,7 @@ public final class World {
 
     private double totalOf(int cell, Resource r) {
         if (!r.inFields()) {
+            if (earth != null) return Math.rint(earth.cellForest(cell) * CELL_KM2 * FOREST_M3_PER_KM2);
             return Math.rint(forestQuarters[cell] / (double) SEA_SAMPLES * CELL_KM2 * FOREST_M3_PER_KM2);
         }
         long h = cellHash(cell, r);
@@ -1344,7 +1484,7 @@ public final class World {
             h = mix(h); xs[i] = cx + (long) (unit(h) * CELL);
             h = mix(h); ys[i] = cy + (long) (unit(h) * CELL);
             if (r != Resource.OIL) {
-                for (int again = 0; again < SEA_REDRAWS && elevation(xs[i] + 0.5, ys[i] + 0.5) < seaTheta; again++) {
+                for (int again = 0; again < SEA_REDRAWS && seaAt(xs[i] + 0.5, ys[i] + 0.5); again++) {
                     h = mix(h); xs[i] = cx + (long) (unit(h) * CELL);
                     h = mix(h); ys[i] = cy + (long) (unit(h) * CELL);
                 }
@@ -1482,7 +1622,7 @@ public final class World {
             for (int cx = cx0; cx < cx1; cx++, k++) {
                 int c = cy * CELLS + cx;
                 cellAt[k] = c;
-                if (landQuarters[c] > 0) {
+                if (hasLand(c)) {
                     old += countOf(c, r);
                     total += totalOf(c, r);
                 }
@@ -1511,7 +1651,7 @@ public final class World {
             h = mix(h); ccx[c] = ox + (long) (unit(h) * CELL);
             h = mix(h); ccy[c] = oy + (long) (unit(h) * CELL);
             if (r != Resource.OIL) {
-                for (int again = 0; again < SEA_REDRAWS && elevation(ccx[c] + 0.5, ccy[c] + 0.5) < seaTheta; again++) {
+                for (int again = 0; again < SEA_REDRAWS && seaAt(ccx[c] + 0.5, ccy[c] + 0.5); again++) {
                     h = mix(h); ccx[c] = ox + (long) (unit(h) * CELL);
                     h = mix(h); ccy[c] = oy + (long) (unit(h) * CELL);
                 }
@@ -1534,7 +1674,7 @@ public final class World {
                 double a = 2 * Math.PI * unit(h);
                 xs[i] = Math.max(0, Math.min(SIDE - 1, ccx[c] + Math.round(rr * StrictMath.cos(a))));
                 ys[i] = Math.max(0, Math.min(SIDE - 1, ccy[c] + Math.round(rr * StrictMath.sin(a))));
-                if (r == Resource.OIL || tries >= SEA_REDRAWS || elevation(xs[i] + 0.5, ys[i] + 0.5) >= seaTheta) break;
+                if (r == Resource.OIL || tries >= SEA_REDRAWS || !seaAt(xs[i] + 0.5, ys[i] + 0.5)) break;
             }
             int sum = 0;
             for (int j = 0; j < FIELD_SCALE; j++) {
@@ -1572,7 +1712,7 @@ public final class World {
         for (int cy = py * b; cy < Math.min(CELLS, py * b + b); cy++) {
             for (int cx = px * b; cx < Math.min(CELLS, px * b + b); cx++) {
                 int c = cy * CELLS + cx;
-                if (landQuarters[c] > 0) total += totalOf(c, r);
+                if (hasLand(c)) total += totalOf(c, r);
             }
         }
         return total;
@@ -1597,7 +1737,7 @@ public final class World {
         for (int cy = py * b; cy < Math.min(CELLS, py * b + b); cy++) {
             for (int cx = px * b; cx < Math.min(CELLS, px * b + b); cx++) {
                 int c = cy * CELLS + cx;
-                if (landQuarters[c] > 0) old += countOf(c, r);
+                if (hasLand(c)) old += countOf(c, r);
             }
         }
         return old;
@@ -1614,7 +1754,7 @@ public final class World {
     public long legacyFieldCount(Resource r) {
         build();
         long n = 0;
-        for (int c = 0; c < CELLS * CELLS; c++) if (landQuarters[c] > 0) n += countOf(c, r);
+        for (int c = 0; c < CELLS * CELLS; c++) if (hasLand(c)) n += countOf(c, r);
         return n;
     }
 
@@ -1694,7 +1834,7 @@ public final class World {
         Resource[] kinds = Resource.values();
         double[] totals = new double[kinds.length];
         for (int c = 0; c < CELLS * CELLS; c++) {
-            if (landQuarters[c] == 0) continue;
+            if (!hasLand(c)) continue;
             for (Resource r : kinds) totals[r.ordinal()] += totalOf(c, r);
         }
         return totals;
