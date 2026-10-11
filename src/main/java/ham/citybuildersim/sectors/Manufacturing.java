@@ -167,11 +167,13 @@ public final class Manufacturing extends Sector {
      * Sector.MIN_STAFFABLE_TO_ORDER for what eighty percent is doing there and
      * what happened without it.
      *
-     * NO ORE TEST, DELIBERATELY, and this is the one place this sector departs
-     * from the mills it stands next to. HeavyIndustry.plan() refuses to build
-     * without spare local ore and is right to: a mill on imported scrap earns
-     * almost nothing, and a sector that expands on a business case it does not
-     * have is the borrowing spiral the investment engine was written to end. A
+     * NO ORE TEST, DELIBERATELY, and this is the one place this sector departed
+     * from the mills it stands next to. To 0.7.115 the mills' plan refused to
+     * build without spare local ore and was right to: a mill on imported scrap
+     * earned almost nothing, and a sector that expands on a business case it
+     * does not have is the borrowing spiral the investment engine was written
+     * to end. (Since 0.7.116, batch I3, Iron & Steel builds its furnaces by
+     * SpreadPlanner on their whole cost, and they melt scrap, not ore.) A
      * fabricator on imported steel is a different case - thin, but real, about
      * eighteen percent against an ordinary plant's thirty - so the profit test
      * is allowed to be the whole of the answer. If the steel price makes it a

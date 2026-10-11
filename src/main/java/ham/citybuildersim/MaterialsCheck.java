@@ -21,10 +21,11 @@ import java.util.Map;
  *
  * WHY. Five chains - iron redone, coal, stone, copper and wood - share one
  * planner, two sector bases, a captive good, a works' own power and the
- * consumables it buys abroad, and none of them builds a works until batch I3
- * brings the first rows. So the machinery is held here on fixtures that cause
- * each condition, before any chain leans on it, and the playtest - which has
- * none of it - stays the same to the byte.
+ * consumables it buys abroad, and none of them built a works until batch I3
+ * brought the first rows. So the machinery is held here on fixtures that cause
+ * each condition, before any chain leans on it (the playtest, which had none
+ * of it, stayed the same to the byte at I2); and from I3 each chain's rows are
+ * held to the study's arithmetic, at parity, before they move a city.
  *
  * WHAT THIS HAS TO PROVE (the spec's 4, MaterialsCheck's I2 bullets):
  *

@@ -5295,6 +5295,27 @@ public final class GameVersion {
      *   - BY ID: the harnesses, the test player and the build advice find the
      *     Iron Mine and the arc furnaces by their ids (Mining.IRON_MINE,
      *     HeavyIndustry.ARC_FURNACE, MINI_MILL), not their names.
+     *   - Harnesses: MaterialsCheck 9 (the three rows' four cases at parity,
+     *     the study's 2.5 to its rounding, through SpreadPlanner.caseEarns())
+     *     and 10 (a format-36 save refused in P7's words, its file
+     *     untouched); MiningCheck (the bands; an arc furnace's margin 5-15% of
+     *     its sales on imported scrap and 20-35% on the city's own, walked by
+     *     hand; the mine at the floor with its diesel and consumables);
+     *     ManufacturingCheck (the margins over steel held but for the rows'
+     *     rounding); CarCheck, VanCheck and RailCheck (each vehicle's price, its
+     *     plant's margin to the cent); TradeCostCheck's table; BuildingDataCheck
+     *     and BuildCardCheck. Every harness that loaded an older format
+     *     through the load path - ConversionCheck 6, LandCheck, WaterCheck 12,
+     *     ConstructionControlCheck, ChartCheck, SectorStatementCheck 6b,
+     *     OilCheck 10, WellCheck - now sees it refused at the floor
+     *     (SaveFileCheck.refusedAtTheFloor()); the conversions' own pure
+     *     checks stand.
+     *   - The playtest moves from month 4 (the first car, 6% cheaper; re-
+     *     baselined pt07116): its player never finds an arc furnace that pays
+     *     (pt07113's built Steel Foundries 19 times for the jobs), nor does
+     *     Iron & Steel's planner; people at the end 577,610 (566,444), posts
+     *     321,670 (345,198), unemployment 15.6% (9.3%), the price level 906
+     *     (1,456).
      */
     public static final String VERSION = "0.7.116";
 

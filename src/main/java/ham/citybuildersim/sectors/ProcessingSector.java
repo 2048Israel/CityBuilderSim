@@ -66,8 +66,9 @@ import java.util.Map;
  * every maker's plant is. Its kinds are its templates' ids, which are
  * permanent: a rename (the chains rename buildings) keeps the count.
  *
- * NO SECTOR EXTENDS IT YET: Heavy Industry moves onto it at batch I3, the
- * chains' new sectors at I7, I8 and I10. Refining stays its own (★ it
+ * HEAVY INDUSTRY - IRON & STEEL - EXTENDS IT SINCE 0.7.116 (batch I3), its
+ * arc furnaces on scrap; the chains' new sectors follow at I7, I8 and I10.
+ * Refining stays its own (★ it
  * overrides every part of the plan - the flow, the package, the run, the
  * Tank Farm - and its idle months are its kinds of unit, not its
  * templates; moving it here would be the same code under one more name).
@@ -262,7 +263,7 @@ public abstract class ProcessingSector extends Sector {
         return weighs(t) && planner.mayShed(kindOf(t));
     }
 
-    /** The spare-capacity rule's measure: {0, the idle kinds' buildings} while a kind stands idle long enough to shed; otherwise none - a works shrinks on distress (HeavyIndustry's rule). */
+    /** The spare-capacity rule's measure: {0, the idle kinds' buildings} while a kind stands idle long enough to shed; otherwise none - a works shrinks on distress (the mills' rule to 0.7.115). */
     @Override
     public double[] retirementDemandAndCapacity(Game game) {
         double idle = idleBuildings();
