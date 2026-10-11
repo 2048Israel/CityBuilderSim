@@ -515,11 +515,13 @@ final class LandScreen {
         return new BigDecimal(km2).round(new MathContext(3)).stripTrailingZeros().toPlainString();
     }
 
-    /** THE CITY's size, the land's five areas but forest: "107.8 km² · 89.6 dry · 0 fresh · 18.2 sea" (spec-land 2.8). */
+    /** THE CITY's size, the land's five areas but forest: "107.8 km² · 89.6 dry · 0 fresh · 18.2 sea" (spec-land 2.8) - and since 0.7.109 (Z2), with a zone standing, the zones' sizes: "· 3.2 zoned" (ZoningView's ZONED). */
     String cityLine() {
         CityLand land = ui.game.getCityLand();
-        return km2Figure(land.totalKm2(CityLand.TOTAL)) + " km² · " + km2Figure(land.totalKm2(CityLand.DRY)) + " dry · "
+        String line = km2Figure(land.totalKm2(CityLand.TOTAL)) + " km² · " + km2Figure(land.totalKm2(CityLand.DRY)) + " dry · "
                 + km2Figure(land.totalKm2(CityLand.FRESH)) + " fresh · " + km2Figure(land.totalKm2(CityLand.SEA)) + " sea";
+        if (!ui.game.getZoning().hasZones()) return line;
+        return line + " · " + km2Figure(LandManager.km2(ZoningView.figures(ui.game).zonedSqFt())) + " zoned";
     }
 
     /** The world's line: "of the world's 1.12 Pt of iron, the city owns 0.0000452%" - its share of the world's tonnes, to three figures. */
