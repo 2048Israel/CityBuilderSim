@@ -2,7 +2,7 @@
 
 Generated 2026-10-10 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**92 harness files, 8,897 labelled assertions.** AllChecks runs 92 of them.
+**93 harness files, 8,945 labelled assertions.** AllChecks runs 93 of them.
 
 ## Which harnesses read which class
 
@@ -59,6 +59,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Denomination](map/Denomination.md) | DenominationCheck |
 | [Deposit](map/Deposit.md) | ConversionCheck, LandCheck, MapCheck, MiningCheck, OilCheck, RefineryCheck, RefineryViewCheck, WellCheck, WorldCheck |
 | [DistrictPlan](map/DistrictPlan.md) | MapCheck, PlanCheck |
+| [EarthData](map/EarthData.md) | EarthCheck |
+| [EarthProj](map/EarthProj.md) | EarthCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RoadCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck |
@@ -179,7 +181,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [UtilitiesHandler](map/UtilitiesHandler.md) | BuildAdviceCheck, BuildCardCheck, ConservationCheck, LongPlaytest, ReadPathCheck, WaterCheck |
 | [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
-| [World](map/World.md) | ConversionCheck, GridCheck, LandCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, ReadPathCheck, WaterCheck, WellCheck, WorldCheck |
+| [World](map/World.md) | ConversionCheck, EarthCheck, GridCheck, LandCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, ReadPathCheck, WaterCheck, WellCheck, WorldCheck |
 | [WorldEconomy](map/WorldEconomy.md) | FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SkipReportCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, HistoryCheck, ReadPathCheck, ScaleCheck, YearBookCheck |
 
@@ -3478,6 +3480,82 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L569 ...and the fare dial's cap is the founding cap in the new unit
   - L577 after a reform the riders are what the same real fare drew
   - L590 no working row's income after fixed bills goes negative across a reform
+
+## EarthCheck.java - 48 labelled assertions
+
+> The Earth's reader (0.7.111, batch E1; the project's spec-earth.md 2 and
+> 8): EarthProj's projection, blend and areas held to the spec's measures,
+> and EarthData's reading of earth-1.bin held to tools/earth/earthread.py
+> figure for figure.
+> 
+> WHY. E2 lays the real Earth's ground on the world through these two, and a
+> wrong figure there is a coast in the wrong place under a city that cannot
+> be moved off it. The projection is checked against the sphere itself, not
+> against its own formulas; the reader against the Python that wrote the file
+> and reads it independently.
+> 
+> THE DATA. The full earth-1.bin (52.8 MB) is not in the repository; its
+> ...
+
+- **L151 4. the fixture is beside the classes**
+  - L153 the fixture and its expected figures are beside the classes (
+- **L163 9. the full file, when it is named**
+  - L167 the file -Dcbs.earth names is there
+  - L173 the named file is the one this build reads: its SHA-256 is EarthData.EARTH_1
+- **L211 1. inverse then forward comes back, within 1,050 km of a spot**
+  - L250 every point within 1,050 km of every spot is on the planet
+  - L251 inverse then forward comes back within ROUND_TRIP_M at every point (Rotterdam, Perth, Paris, Fiji, both poles)
+  - L253 the spot is the plane's origin
+  - L254 a point c along the meridian lands 2R sin(c/2) out on the axis (1,000, 5,000 and 10,000 km)
+- **L262 2. a 61.44 km cell's area, measured on the sphere**
+  - L285 a cell's area on the sphere is World.CELL_KM2 (3,774.8736 km2) within AREA_TOLERANCE, to 10,000 km out
+  - L289 and the closed form the game uses gives it exactly for those cells
+- **L291 2. the square on the planet: the antipode's circle**
+  - L313 where the circle cuts a cell, its area on the planet is the same area integrated along its columns
+  - L316 the cells whose sixteen samples are all off the planet are the spec's OFF_PLANET_CELLS
+- **L339 3. a tile's corners blended, at the spot and 10,000 km out**
+  - L381 blended at the spot, a tile's points (and its ring) lie within BLEND_M of the exact ones
+  - L383 and out to BLEND_REACH_M, 10,000 km, in eight directions from every spot
+  - L385 two blended tiles that share an edge agree along it
+  - L394 a tile astride the 180th meridian blends without a seam
+  - L403 the tile on the North Pole projects every point exactly
+  - L410 a tile half a degree under BLEND_MAX_LAT blends, within BLEND_M
+  - L566 an expected figure of a kind this harness knows
+- **L570 4. the fixture's file, as earthread.py read it**
+  - L572 the file is the one earthread.py read: its length and its SHA-256
+  - L573 its meta names the full file it was cut from, EarthData.EARTH_1
+  - L574 the layer table is the file's own: every layer's kind, cells a degree, offsets and lengths
+  - L575 every layer's index is earthread.py's, entry by entry
+  - L576 the meta, the geology, the provinces and the places inflate to earthread.py's bytes
+- **L577 5. the reader is earthread.py's, on the fixture's tiles**
+  - L579 every tile's and band's bytes (the share layers' every cell, the lists as stored)
+  - L580 a cell of every value in every tile, by its number and by a point at its centre
+  - L581 the windows' spots' cells, found by position
+  - L582 every tile's river runs decoded: the runs, the vertices and every stored integer
+  - L583 river vertices read in degrees and metres, as earthread.py gives them
+  - L584 every tile's small lakes decoded: their number and every stored integer
+  - L585 small lakes read in degrees and km2
+  - L586 a small lake's area for each of the 256 codes
+  - L587 the geology at the spots, the windows' corners and the Yilgarn
+  - L588 the provinces it names: code, name, class and known petroleum
+  - L589 the provinces and the places, counted
+  - L590 the places read: the first three and Rotterdam, Perth and Paris
+- **L591 6. a river stored twice is read once**
+  - L593 across a window's tiles each segment comes back once, as many as earthread.py counts
+  - L609 Rotterdam's window is in the expected figures
+  - L630 Rotterdam's window has a segment stored in two tiles, and the read across them has it once
+  - L632 a tile read alone keeps it, both ends (rivers(), as stored)
+- **L640 7. the LRU**
+  - L646 the fixture has four sea tiles with blobs to read
+  - L662 three tiles read are three inflated, and their bytes kept
+  - L663 a tile read again comes from the LRU, the same bytes, nothing inflated
+  - L664 a fourth tile over the budget keeps the bytes within it
+  - L665 the tile read most recently stays
+  - L666 the least recently read went first, and is inflated again
+  - L667 the default budget holds the spec's 64 1-degree tiles of sea and lake
+- **L676 8. a 15\" tile inflates in under a millisecond**
+  - L681 the fixture has a sea tile to inflate
+  - L696 the fullest sea tile of the fixture inflates in under INFLATE_MS, the median of 31 rounds of 50
 
 ## EducationCheck.java - 164 labelled assertions
 
