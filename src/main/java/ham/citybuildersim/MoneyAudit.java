@@ -913,6 +913,15 @@ public final class MoneyAudit {
         // ...and the strategic reserve's crude bought from the world (0.7.85), settled at the strike
         // beside the sectors' month; what it bought of the wells is a pool paying a pool, not listed.
         out += debit.apply("- city ReserveFill", g.getReserve().getSettledImports(), Scope.TRADE);
+        /*
+         * ...and the steel in the households' scrapped cars, bought by the
+         * Scrap Yards (0.7.121, batch I4; OldMetal): paid into their savings
+         * as the yards bought, and out of the yards' cash at the strike that
+         * banks it - the households' part of the yards' input line, billed by
+         * Trade.HOUSEHOLDS, out of the pools like a wage. What the yards
+         * bought of a sector's old steel is a pool paying a pool (below).
+         */
+        out += debit.apply("- sectors OldMetalToHouseholds", oldMetalBoughtOfHouseholds(sectors), Scope.DOMESTIC);
         // Lending to a family crosses the city's edge; lending to a sector or
         // to the treasury no longer does - see the pools above.
         out += debit.apply("- bank LentToHouseholds", g.getBank().getLentToHouseholds(), Scope.DOMESTIC);
@@ -1157,6 +1166,26 @@ public final class MoneyAudit {
         for (Sector s : sectors.all()) powerSold += s.statement().powerSold;
         note.accept("chk + sectors PowerSold", powerSold);
         note.accept("chk - utilities PowerBought", utilities.getPowerBought());
+        /*
+         * ...AND THE OLD STEEL (0.7.121, batch I4; OldMetal): what the Scrap
+         * Yards' statements booked as bought (their OldMetal.LINE inputs), what
+         * the households sold them - the one part that left the pools, declared
+         * above as "- sectors OldMetalToHouseholds" - and what the sectors'
+         * statements booked as sold (OldMetal.SOLD in their other revenue): a
+         * pool paying a pool in the strike's window, noted, not declared, as the
+         * power is. Bought = the households' + the sectors' to the cent; a
+         * mismatch is the residual's.
+         */
+        double oldMetalBought = 0, oldMetalSold = 0;
+        for (Sector s : sectors.all()) {
+            Double b = s.statement().otherInputs.get(OldMetal.LINE);
+            if (b != null) oldMetalBought += b;
+            Double v = s.statement().otherParts.get(OldMetal.SOLD);
+            if (v != null) oldMetalSold += v;
+        }
+        note.accept("chk + households OldMetalSold", oldMetalBoughtOfHouseholds(sectors));
+        note.accept("chk + sectors OldMetalSold", oldMetalSold);
+        note.accept("chk - sectors OldMetalBought", oldMetalBought);
         note.accept("chk construction revenue banked", sectors.construction().statement().revenue);
         note.accept("chk land sold to sectors", g.getLandManager().getLandSalesThisMonth());
 
@@ -1171,5 +1200,15 @@ public final class MoneyAudit {
         double residual = (after - before) - (in - out);
         return new Result(g.getMonth(), before, after, in, out, residual, detail.toString(), foreign,
                 poolsBefore, poolsAfter);
+    }
+
+    /** What the Scrap Yards' struck statements bought of the households' old steel (0.7.121; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. */
+    static double oldMetalBoughtOfHouseholds(Sectors sectors) {
+        double t = 0;
+        for (Sector s : sectors.all()) {
+            Double v = s.statement().purchasesBySupplier.get(Trade.HOUSEHOLDS);
+            if (v != null) t += v;
+        }
+        return t;
     }
 }

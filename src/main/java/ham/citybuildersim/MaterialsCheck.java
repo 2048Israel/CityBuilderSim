@@ -100,6 +100,39 @@ import java.util.Map;
  *      is refused in P7's words naming the build that saved it, nothing of
  *      it applied and its file as it was; a save of this build's, its
  *      furnaces' scrap in it apart from the ore, loads as it was saved.
+ *
+ * ...AND BATCH I4's (0.7.121; the integrated route and old steel -
+ * runs/spec-materials.md 2.2, 2.3, 2.7 to 2.9 and 4):
+ *
+ *  11. THE INTEGRATED ROUTE'S ROWS ARE THE STUDY'S: the Scrap Yard, the
+ *      Pelletising Plant, the Coke Ovens, the Mini Blast Furnace, the Blast
+ *      Furnace, the Oxygen Steel Shop and the Large Mini-Mill (ids 101 to
+ *      107), each at parity: its all-in cost, posts, draw and ground the
+ *      study's 2.4, its four cases (SpreadPlanner.caseEarns(), the yard's old
+ *      steel at 70% of scrap's export price in every case) the study's 2.5 to
+ *      its rounding, its cost a year abroad its last column, its consumables
+ *      the study's running cost less wages, the power it buys and water.
+ *
+ *  12. OLD STEEL, AND THE 70% RULE (OldMetal): the four sources arise at
+ *      RECOVERY of the steel in each, kept by seller; a yard buys as much as
+ *      its scrap at the rate takes, no more than arose, pro rata from every
+ *      seller at 70% of scrap's export price, the rest to landfill; the
+ *      households are paid into their savings by the cars each scrapped, a
+ *      sector by its other revenue, named apart, the yard's input billed by
+ *      each; the yard is weighed against the pool (its feed gate and share);
+ *      in a played town the audit closes with the households' part declared,
+ *      and the pool and a seller's sale cross a save.
+ *
+ *  13. CAPTIVE COKE AND PIG IRON: in a works of the route's real rows, the
+ *      ovens' coke goes to the furnaces first and the furnaces' pig iron to
+ *      the shop, no sale or purchase booked for either, the market bid only
+ *      the rest; and the lorries do not count what the works hands itself.
+ *
+ *  14. THE WORKS' OWN POWER SOLD: in a town with the ovens, the furnace and
+ *      the shop standing, Iron & Steel sells the grid what the ovens and the
+ *      furnace make past their draws (5,800 and 8,600 kW) and buys the shop's
+ *      26,600, its statement's powerSold the surplus at the tariff, the
+ *      utility paying it, and the audit closes.
  */
 public class MaterialsCheck {
 
@@ -196,6 +229,10 @@ public class MaterialsCheck {
         mining();
         ironRows();
         olderSave();
+        routeRows();
+        oldSteel();
+        captiveRoute();
+        routePower();
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -361,13 +398,19 @@ public class MaterialsCheck {
         assertTrue("a works needing more than it makes uses all it makes and asks the market for the rest: 2,400 t made, 1,600 t asked",
                 w.outputRow(Good.STEEL).captive == steelMade && w.outputRow(Good.STEEL).produced == 0
                         && w.bid(Good.STEEL) == 2 * 2000 * rate - steelMade);
-        // No sector in the game keeps a captive good: each month is what it was, to the bit.
+        // One sector in the game keeps captive goods since 0.7.121 (batch I4): Iron & Steel, its scrap, coke and pig iron.
         Game g = new Game(GameFiles.scratch("materialscheck-captive"));
         quietly(g::newGame);
-        boolean none = true;
-        for (Sector s : g.getSectors().all()) for (Good x : s.goodsMade()) none &= !s.captive(x) && s.captiveUnits(x) == 0;
-        assertTrue("no sector in the game keeps a captive good (Sector.captive() is false but on a ProcessingSector, and Iron & Steel,"
-                + " the one since 0.7.116, makes nothing it uses)", none && g.getSectors().heavyIndustry() instanceof ProcessingSector);
+        boolean others = true;
+        java.util.Set<Good> kept = java.util.EnumSet.noneOf(Good.class);
+        for (Sector s : g.getSectors().all()) for (Good x : s.goodsMade()) {
+            if (s == g.getSectors().heavyIndustry()) { if (s.captive(x)) kept.add(x); }
+            else others &= !s.captive(x) && s.captiveUnits(x) == 0;
+        }
+        assertTrue("one sector in the game keeps captive goods, Iron & Steel (a ProcessingSector since 0.7.116): since 0.7.121 its"
+                        + " scrap, coke and pig iron, which its works both make and use; every other none (Sector.captive() false): " + kept,
+                others && g.getSectors().heavyIndustry() instanceof ProcessingSector
+                        && kept.equals(java.util.EnumSet.of(Good.SCRAP, Good.PIG_IRON, Good.MET_COKE)));
     }
 
     /* ============================ 4. the works' own power ============================ */
@@ -517,8 +560,9 @@ public class MaterialsCheck {
         BusinessInvestment plans = g.getBusinessInvestment();
         BuildingsTemplate foundry = g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE);
         List<SpreadPlanner.Candidate> all = w.appraise(plans, g);
-        assertTrue("in a town Iron & Steel's candidates are its two furnaces, each the planner's estimate, and the investors' test"
-                        + " reads it", all.size() == 2 && w.estimatedMonthlyProfit(foundry, plans) == w.appraise(foundry, plans).earns()
+        assertTrue("in a town Iron & Steel's candidates are its nine works (the two furnaces since 0.7.116, and since 0.7.121 the"
+                        + " integrated route's seven), each the planner's estimate, and the investors' test reads it",
+                all.size() == 9 && w.estimatedMonthlyProfit(foundry, plans) == w.appraise(foundry, plans).earns()
                         && plans.estimatedMonthlyProfit(Sectors.HEAVY_INDUSTRY, foundry) == w.appraise(foundry, plans).earns()
                         && w.planner().moneyGate() == SpreadPlanner.ON_ITS_WHOLE_COST);
         BusinessInvestment.Decision d = w.plan(plans, g);
@@ -756,5 +800,366 @@ public class MaterialsCheck {
                         && back.getMarkets().get(Good.SCRAP).getLocalPrice() == g.getMarkets().get(Good.SCRAP).getLocalPrice()
                         && back.getMarkets().get(Good.IRON).getLocalPrice() == g.getMarkets().get(Good.IRON).getLocalPrice(),
                 String.format("m%d, scrap at %.4f", back.getMonth(), back.getMarkets().get(Good.SCRAP).getLocalPrice()));
+    }
+
+    /* ============================ 11. the integrated route's rows against the study ============================ */
+
+    /** The integrated route's rows of batch I4 (0.7.121), by their permanent ids, in the study's 2.4 order. */
+    static final int[] ROUTE_ROWS = { HeavyIndustry.SCRAP_YARD, HeavyIndustry.PELLETISING_PLANT, HeavyIndustry.COKE_OVENS,
+            HeavyIndustry.MINI_BLAST_FURNACE, HeavyIndustry.BLAST_FURNACE, HeavyIndustry.OXYGEN_STEEL_SHOP, HeavyIndustry.LARGE_MINI_MILL };
+
+    /** The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). */
+    static final double[][] ROUTE_CASES = { { 1.5, 1.5, 4.7, 4.7 }, { 0.1, 1.8, 3.7, 2.0 }, { -0.2, 0.7, 2.2, 1.3 },
+            { -1.1, 1.7, 3.3, 0.5 }, { 0.2, 1.9, 3.0, 1.3 }, { -2.1, -0.6, 2.3, 0.8 }, { -0.2, 1.0, 2.9, 1.6 } };
+
+    /** ...their cost over a year of what each would sell abroad, its last column. */
+    static final double[] ROUTE_YEARS = { 1.0, 1.2, 1.7, 0.8, 1.1, 1.1, 1.7 };
+
+    /** ...their running cost a month, D$ thousands, the study's 2.4 "Runs" (only the power each buys from the grid in it, the study's 1.6). */
+    static final double[] ROUTE_RUNS = { 255, 1000, 1250, 868, 11700, 25600, 5100 };
+
+    /** ...their all-in cost, D$ thousands (the study's 2.4). */
+    static final double[] ROUTE_COSTS = { 35_000, 270_000, 264_000, 54_000, 1_350_000, 1_800_000, 1_200_000 };
+
+    /** ...their posts (the study's 2.4). */
+    static final int[] ROUTE_POSTS = { 40, 150, 200, 150, 1200, 1800, 400 };
+
+    /** ...their draw and what they make, kW (the study's 2.4 and 1.6). */
+    static final int[] ROUTE_KW = { 550, 5750, 2200, 2050, 51400, 51600, 77000 };
+    static final double[] ROUTE_GEN = { 0, 0, 8000, 0, 60000, 25000, 0 };
+
+    /** ...and their ground, hectares (the study's 2.4). */
+    static final double[] ROUTE_HECTARES = { 1.9, 15, 9, 3.7, 60, 84, 46 };
+
+    static void routeRows() {
+        out.println("\n--- 11. the integrated route's rows of batch I4 at parity: the study's four cases and its years abroad, to its rounding ---");
+        BuildingManager b = new BuildingManager();
+        b.initializeTemplates();
+        UtilitiesHandler founding = new UtilitiesHandler();
+        double tariff = founding.getPricerPerWatt(), water = founding.getPricePerWaterUnit();
+        java.util.function.ToDoubleFunction<Good> imp = Good::worldImportPrice, exp = Good::worldExportPrice;
+        String[] cases = { "A", "B", "C", "D" };
+        for (int r = 0; r < ROUTE_ROWS.length; r++) {
+            BuildingsTemplate t = b.getTemplate(ROUTE_ROWS[r]);
+            String name = t.getName();
+            double cost = t.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * t.getConstructionMaterials();
+            report("the " + name + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", ROUTE_COSTS[r]) + "k all in, "
+                            + ROUTE_POSTS[r] + " posts, " + String.format("%,d", ROUTE_KW[r]) + " kW drawn and "
+                            + String.format("%,.0f", ROUTE_GEN[r]) + " made, " + ROUTE_HECTARES[r] + " ha; Iron & Steel's, dated "
+                            + t.getSince(),
+                    cost == ROUTE_COSTS[r] && t.getTotalJobs() == ROUTE_POSTS[r] && t.getElectricityConsumption() == ROUTE_KW[r]
+                            && t.getGen() == ROUTE_GEN[r] && Math.round(t.getLandSqFt() / 107_639.104 * 100) == Math.round(ROUTE_HECTARES[r] * 100)
+                            && Sectors.HEAVY_INDUSTRY.equals(t.getSector()) && t.getSince() >= 1900,
+                    String.format("cash %,.0f + 18 x %,d material", t.getCashCost(), t.getConstructionMaterials()));
+            double wages = 0;
+            for (JobType j : JobType.values()) wages += t.getJobs(j) * PayTier.wageOf(j);
+            // Its running cost as BusinessInvestment.runningCostOf() strikes it at founding: posts, its whole draw and water.
+            double running = wages + t.getElectricityConsumption() * tariff + t.getWaterConsumption() * water;
+            double bought = t.powerBought() * tariff;
+            report("its consumables are the study's running cost less its wages, the power it buys from the grid and its water",
+                    Math.abs(t.getConsumables() - (ROUTE_RUNS[r] - wages - bought - t.getWaterConsumption() * water)) < 1e-9,
+                    String.format("%,.2f = %,.0f - %,.2f - %,.1f - %,.2f", t.getConsumables(), ROUTE_RUNS[r], wages, bought,
+                            t.getWaterConsumption() * water));
+            boolean all = true;
+            StringBuilder got = new StringBuilder(), study = new StringBuilder();
+            for (SpreadPlanner.Case c : SpreadPlanner.Case.values()) {
+                double pct = 100 * SpreadPlanner.caseEarns(t, c, imp, exp, running, 0, 1, tariff) / cost;
+                all &= Math.abs(pct - ROUTE_CASES[r][c.ordinal()]) <= STUDY_ROUNDING + 1e-9;
+                got.append(String.format("%s %.2f%%  ", cases[c.ordinal()], pct));
+                study.append(c.ordinal() == 0 ? "" : "/").append(ROUTE_CASES[r][c.ordinal()]);
+            }
+            report("...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding: " + study + "%",
+                    all, got.toString().trim());
+            double abroad = 0;
+            for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) abroad += e.getValue() * e.getKey().worldExportPrice();
+            double years = cost / (12 * abroad);
+            report("...and its cost over a year of what it would sell abroad is the study's " + ROUTE_YEARS[r],
+                    Math.abs(years - ROUTE_YEARS[r]) <= STUDY_ROUNDING + 1e-9, String.format("%.3f", years));
+        }
+        /*
+         * WHAT THE CASES READ (the study's 1.2 and 2.5): the yard's old steel
+         * is not a good, so caseEarns() takes it at 70% of scrap's export
+         * price in every case (OldMetal.PAY_SHARE, Jerus's Q8), D$210 a
+         * tonne; its power the study's 1.6 rule - running charges the whole
+         * draw, and ownCosts() gives back what the works makes, so a works
+         * making more than it draws sells the rest at the tariff. And on
+         * imported feed for export (case A) none earns past 0.2%: under every
+         * hurdle the game strikes, freight in the bands holding it (Q7).
+         */
+        BuildingsTemplate yard = b.getTemplate(HeavyIndustry.SCRAP_YARD);
+        double withOld = SpreadPlanner.caseEarns(yard, SpreadPlanner.Case.A, imp, exp, 0, 0, 1, tariff);
+        double without = yard.makes(Good.SCRAP) * Good.SCRAP.worldExportPrice() - (yard.getConsumables() - yard.getGen() * tariff);
+        assertTrue("the yard's old steel is in every case at 70% of scrap's export price, D$210 a tonne at parity: 10,500 t, D$2,205k",
+                Math.abs((without - withOld) - yard.oldMetal(Good.STEEL) * OldMetal.PAY_SHARE * Good.SCRAP.worldExportPrice()) < 1e-9
+                        && Math.abs(yard.oldMetal(Good.STEEL) * OldMetal.PAY_SHARE * Good.SCRAP.worldExportPrice() - 2205) < 1e-9);
+        double worstA = Double.NEGATIVE_INFINITY;
+        for (int r = 1; r < ROUTE_ROWS.length; r++) {
+            BuildingsTemplate t = b.getTemplate(ROUTE_ROWS[r]);
+            double wages = 0;
+            for (JobType j : JobType.values()) wages += t.getJobs(j) * PayTier.wageOf(j);
+            double running = wages + t.getElectricityConsumption() * tariff + t.getWaterConsumption() * water;
+            double cost = t.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * t.getConstructionMaterials();
+            worstA = Math.max(worstA, 100 * SpreadPlanner.caseEarns(t, SpreadPlanner.Case.A, imp, exp, running, 0, 1, tariff) / cost);
+        }
+        report("on imported feed for export (case A) no works of the route earns past 0.25% of its cost a month at parity (the study's"
+                + " 1.2: at most 0.2%)", worstA <= .25, String.format("the best %.3f%%", worstA));
+    }
+
+    /* ============================ 12. old steel, and the 70% rule ============================ */
+
+    static void oldSteel() throws Exception {
+        out.println("\n--- 12. old steel: the four sources at 85%, a yard buying it pro rata at 70% of scrap's export price, the rest to landfill ---");
+        OldMetal pool = new OldMetal();
+        BuildingManager bm = new BuildingManager();
+        bm.initializeTemplates();
+        BuildingsTemplate house = bm.getTemplateByName("House");
+        pool.carsScrapped(100);
+        pool.demolished(house, 2, Sectors.REAL_ESTATE);
+        pool.fabricated(Sectors.MANUFACTURING, 1000);
+        pool.setsRetired(Sectors.RAIL, 2);
+        double cars = 100 * OldMetal.STEEL_A_CAR * OldMetal.RECOVERY, demol = 2 * house.getConstructionMaterials() * OldMetal.STEEL_A_MATERIALS_UNIT
+                * OldMetal.RECOVERY, offcuts = 1000 * OldMetal.OFFCUTS_A_TONNE_FABRICATED * OldMetal.RECOVERY,
+                sets = 2 * OldMetal.STEEL_A_SET * OldMetal.RECOVERY;
+        report("each source arises at RECOVERY (85%) of the steel in it, kept by its seller: 100 cars at 0.9 t the households', two Houses"
+                        + " at 0.3 t a unit of material the landlords', 1,000 t of fabricated steel's 5% offcuts its maker's, two worn sets at"
+                        + " 300 t the railway's",
+                near(pool.availableFrom(Trade.HOUSEHOLDS), cars) && near(pool.availableFrom(Sectors.REAL_ESTATE), demol)
+                        && near(pool.availableFrom(Sectors.MANUFACTURING), offcuts) && near(pool.availableFrom(Sectors.RAIL), sets)
+                        && near(pool.available(OldMetal.Source.CARS), cars) && near(pool.available(OldMetal.Source.DEMOLITIONS), demol)
+                        && near(pool.available(OldMetal.Source.OFFCUTS), offcuts) && near(pool.available(OldMetal.Source.ROLLING_STOCK), sets)
+                        && near(pool.available(), cars + demol + offcuts + sets),
+                String.format("%,.2f t: cars %,.2f, demolitions %,.2f, offcuts %,.2f, sets %,.2f", pool.available(), cars, demol, offcuts, sets));
+        double stood = pool.available(), take = stood / 4, price = OldMetal.PAY_SHARE * .30;
+        java.util.List<OldMetal.Sale> sales = pool.settle(take, price);
+        boolean pro = sales.size() == 4;
+        double paid = 0, tonnes = 0;
+        for (OldMetal.Sale x : sales) {
+            tonnes += x.tonnes();
+            paid += x.paid();
+            double had = x.seller().equals(Trade.HOUSEHOLDS) ? cars : x.seller().equals(Sectors.REAL_ESTATE) ? demol
+                    : x.seller().equals(Sectors.MANUFACTURING) ? offcuts : sets;
+            pro &= near(x.tonnes(), had / 4) && near(x.paid(), had / 4 * price);
+        }
+        report("the yards take a quarter of what stands: from every seller a quarter of theirs, each paid its tonnes at the price; the"
+                        + " rest to landfill, the pool empty after",
+                pro && near(tonnes, take) && near(paid, take * price) && pool.available() == 0 && near(pool.lastBought(), take)
+                        && near(pool.lastLandfill(), stood - take) && near(pool.lastArisen(), stood) && pool.lastPrice() == price
+                        && near(pool.lastPaidTotal(), paid) && near(pool.lastArisen(OldMetal.Source.CARS), cars),
+                String.format("%,.2f t bought of %,.2f, %,.2f to landfill", pool.lastBought(), pool.lastArisen(), pool.lastLandfill()));
+        pool.carsScrapped(10);
+        pool.settle(1e9, price);
+        assertTrue("...and asked for more than arose they take what arose, no more, and nothing goes to landfill",
+                near(pool.lastBought(), 10 * OldMetal.STEEL_A_CAR * OldMetal.RECOVERY) && pool.lastLandfill() == 0);
+        pool.settle(0, price);
+        assertTrue("...a month nothing arose records nothing, and pays nobody", pool.lastArisen() == 0 && pool.lastBought() == 0
+                && pool.lastPaid().isEmpty());
+
+        // THE FIXTURE CAUSES IT: a town with a Scrap Yard standing, and old steel handed to its pool from the households and the fabricators.
+        GameFiles files = GameFiles.scratch("materialscheck-oldsteel");
+        Game g = town(files);
+        HeavyIndustry heavy = g.getSectors().heavyIndustry();
+        Sector maker = g.getSectors().byKey(Sectors.MANUFACTURING);
+        BuildingsTemplate yardT = g.getBuildingManager().getTemplate(HeavyIndustry.SCRAP_YARD);
+        // ...three months on, so the town has its households and a yard standing.
+        quietly(() -> {
+            g.buildStack(yardT, 1, true);
+            g.simulateMonths(3);
+        });
+        OldMetal city = g.getOldMetal();
+        HouseholdBalance hh = g.getHouseholdBalance();
+        double before = hh.totalSavings();
+        double credited = hh.creditScrappedCars(1000);
+        assertTrue("the households are paid for their cars into their savings, all of it, by the cars each scrapped",
+                credited == 1000 && near(hh.totalSavings() - before, 1000));
+        double handedHh = 4_000 / OldMetal.STEEL_A_CAR / OldMetal.RECOVERY, handedMfg = 3_000 / OldMetal.OFFCUTS_A_TONNE_FABRICATED / OldMetal.RECOVERY;
+        city.carsScrapped(handedHh);
+        city.fabricated(Sectors.MANUFACTURING, handedMfg);
+        double arisen = city.available();
+        heavy.setPricePerWatt(g.getEconomyManager().getPricePerWatt());
+        double rate = heavy.getOperatingRate();
+        double scrapAsked = yardT.makes(Good.SCRAP) * rate;
+        double per = yardT.oldMetal(Good.STEEL) / yardT.makes(Good.SCRAP);
+        report("fixture: a town's Scrap Yard standing, its pool handed 4,000 t of old steel from the households' cars and 3,000 t from"
+                        + " the fabricators' offcuts",
+                heavy.oldSteelIntake() == 10_500 && near(heavy.oldSteelPerTonneOfScrap(), 1.05) && near(arisen, 7000) && rate > 0,
+                String.format("rate %.3f; %,.0f t of scrap asked for %,.0f t of old steel", rate, scrapAsked, scrapAsked * per));
+        double hhSavings = hh.totalSavings();
+        heavy.produceFlow(Good.SCRAP);
+        Sector.Output scrap = heavy.outputRow(Good.SCRAP);
+        double made = scrap.produced + scrap.captive, bought = Math.min(arisen, scrapAsked * per);
+        double p70 = OldMetal.PAY_SHARE * g.getMarkets().get(Good.SCRAP).exportPrice();
+        report("the yard makes its scrap from what arose, at 1.05 t of old steel a tonne, no more than arose, and buys it at 70% of scrap's"
+                        + " export price (Jerus's Q8)",
+                bought > 0 && near(made, bought / per) && near(city.lastBought(), bought) && near(city.lastLandfill(), arisen - bought)
+                        && heavy.oldSteelPrice() == p70 && city.lastPrice() == p70,
+                String.format("%,.1f t of scrap from %,.1f t at D$%.4fk a tonne; %,.1f t to landfill", made, bought, p70, city.lastLandfill()));
+        double hhPaid = city.lastPaid().getOrDefault(Trade.HOUSEHOLDS, 0.0), mfgPaid = city.lastPaid().getOrDefault(Sectors.MANUFACTURING, 0.0);
+        Sector.Ledger yl = heavy.pending(), ml = maker.pending();
+        report("each seller paid pro rata: the households into their savings and on the yard's input billed by them, the fabricators by"
+                        + " their other revenue, named apart, and billed by them",
+                near(hhPaid, 4000 * (bought / arisen) * p70) && near(mfgPaid, 3000 * (bought / arisen) * p70)
+                        && near(hh.totalSavings() - hhSavings, hhPaid)
+                        && near(yl.purchasesBySupplier.getOrDefault(Trade.HOUSEHOLDS, 0.0), hhPaid)
+                        && near(yl.purchasesBySupplier.getOrDefault(Sectors.MANUFACTURING, 0.0), mfgPaid)
+                        && near(yl.otherInputs.getOrDefault(OldMetal.LINE, 0.0), hhPaid + mfgPaid)
+                        && near(ml.oldMetalSold, mfgPaid) && near(ml.otherRevenue, mfgPaid),
+                String.format("households D$%,.1fk, Manufacturing D$%,.1fk", hhPaid, mfgPaid));
+        // ...struck: the seller's sale named apart, the buyer's input named, in the strike's window.
+        maker.strike();
+        heavy.strike();
+        assertTrue("struck: the fabricators' sale is \"" + OldMetal.SOLD + "\" in their other revenue, and the yard's \"" + OldMetal.LINE
+                        + "\" an input, the households' part at no supplier's sales tax",
+                near(maker.statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0), mfgPaid)
+                        && near(heavy.statement().otherInputs.getOrDefault(OldMetal.LINE, 0.0), hhPaid + mfgPaid)
+                        && g.getSectors().byKey(Trade.HOUSEHOLDS) == null);
+
+        // The planner weighs a yard against the pool: its feed gate and the share of nameplate it would run at.
+        BusinessInvestment plans = g.getBusinessInvestment();
+        double spare = Math.max(0, city.lastArisen() - heavy.oldSteelIntake());
+        SpreadPlanner.Candidate another = heavy.appraise(yardT, plans);
+        report("a second yard is refused its feed while the old steel past what the yard standing takes is under FEED_GATE of one",
+                spare < SpreadPlanner.FEED_GATE * yardT.oldMetal(Good.STEEL) ? another.failed() == SpreadPlanner.Gate.FEED
+                        && another.why().contains("too little old steel") : another.refusal(SpreadPlanner.Gate.FEED) == null,
+                another.why());
+        city.carsScrapped(30_000 / OldMetal.STEEL_A_CAR / OldMetal.RECOVERY);
+        city.settle(0, p70);
+        double spareNow = Math.max(0, city.lastArisen() - heavy.oldSteelIntake());
+        SpreadPlanner.Candidate fed = heavy.appraise(yardT, plans);
+        SpreadPlanner.City frame = heavy.planner().city(heavy, plans, g);
+        double share = Math.min(1, spareNow / yardT.oldMetal(Good.STEEL)), at = frame.rate() * share;
+        double byHand = ProcessingSector.gross(yardT, SpreadPlanner.values(g.getMarkets()), at) - frame.running(yardT) - frame.standing(yardT)
+                - SpreadPlanner.ownCosts(yardT, at, heavy.exchangeFactor(), heavy.tariff()) - yardT.oldMetal(Good.STEEL) * at * p70;
+        report("...with 30,000 t arising it is fed, weighed on the share of nameplate the pool fills and paying 70% for its old steel"
+                        + " (ProcessingSector.feedShare(), offMarketFeed())",
+                fed.refusal(SpreadPlanner.Gate.FEED) == null && share == 1 && Math.abs(fed.earns() - byHand) <= 1e-9 * Math.max(1, Math.abs(byHand)),
+                String.format("%,.1fk a month, %.2f%% of its cost", fed.earns(), 100 * fed.score()));
+
+        // In a played town: old steel handed in each month, the yard buying it, and the audit closing with the households' part declared.
+        GameFiles playFiles = GameFiles.scratch("materialscheck-oldsteel-play");
+        Game play = town(playFiles);
+        quietly(() -> {
+            play.buildStack(play.getBuildingManager().getTemplate(HeavyIndustry.SCRAP_YARD), 1, true);
+            play.simulateMonths(3);
+        });
+        double worst = 0, paidHh = 0;
+        boolean declared = true;
+        double capturedHh = 0;
+        for (int m = 0; m < 4; m++) {
+            // ...more than the yard takes, so it runs at its rate and the rest goes to landfill.
+            play.getOldMetal().carsScrapped(6_000 / OldMetal.STEEL_A_CAR / OldMetal.RECOVERY);
+            play.getOldMetal().fabricated(Sectors.MANUFACTURING, 6_000 / OldMetal.OFFCUTS_A_TONNE_FABRICATED / OldMetal.RECOVERY);
+            quietly(() -> play.simulateMonths(1));
+            MoneyAudit.Result r = play.getLastMoneyAudit();
+            worst = Math.max(worst, r.relative());
+            if (m > 0) declared &= near(MoneyAudit.oldMetalBoughtOfHouseholds(play.getSectors()), capturedHh)
+                    && r.detail.contains("- sectors OldMetalToHouseholds") && r.detail.contains("chk + households OldMetalSold")
+                    && r.detail.contains("chk + sectors OldMetalSold") && r.detail.contains("chk - sectors OldMetalBought");
+            capturedHh = play.getOldMetal().lastPaid().getOrDefault(Trade.HOUSEHOLDS, 0.0);
+            paidHh += capturedHh;
+        }
+        Sector.Statement yst = play.getSectors().heavyIndustry().statement();
+        double soldBySectors = 0;
+        for (Sector x : play.getSectors().all()) soldBySectors += x.statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0);
+        report("in a town played four months, the yard buying each month's old steel: every month's audit closes, the households' part"
+                        + " declared as it leaves the pools (\"- sectors OldMetalToHouseholds\") and the yard's purchase the households' and"
+                        + " the sectors' together",
+                worst < 1e-4 && declared && paidHh > 0 && near(yst.otherInputs.getOrDefault(OldMetal.LINE, 0.0),
+                        MoneyAudit.oldMetalBoughtOfHouseholds(play.getSectors()) + soldBySectors) && soldBySectors > 0,
+                String.format("worst residual %.3g of what moved; the yard bought D$%,.1fk", worst, yst.otherInputs.getOrDefault(OldMetal.LINE, 0.0)));
+        // ...and across a save: the pool, its record, and a seller's sale still to strike.
+        play.getOldMetal().carsScrapped(500);
+        play.getSectors().byKey(Sectors.RAIL).sellOldMetal(12.5);
+        quietly(() -> play.saveGame(10, "oldsteel"));
+        Game back = new Game(playFiles);
+        quietly(() -> back.loadGameSave(10));
+        OldMetal then = play.getOldMetal(), now = back.getOldMetal();
+        assertTrue("the pool crosses a save (DataSave.oldMetal) to the bit - what stands by seller and source, the last month's record and"
+                        + " who was paid - and a seller's sale still to strike (SectorState), named apart at its strike",
+                back.getLoadFailure() == null && now.available() == then.available() && now.availableFrom(Trade.HOUSEHOLDS) == then.availableFrom(Trade.HOUSEHOLDS)
+                        && now.available(OldMetal.Source.CARS) == then.available(OldMetal.Source.CARS)
+                        && now.lastArisen() == then.lastArisen() && now.lastBought() == then.lastBought()
+                        && now.lastLandfill() == then.lastLandfill() && now.lastPrice() == then.lastPrice()
+                        && now.lastPaid().equals(then.lastPaid())
+                        && back.getSectors().byKey(Sectors.RAIL).pending().oldMetalSold == play.getSectors().byKey(Sectors.RAIL).pending().oldMetalSold);
+    }
+
+    /* ============================ 13. captive coke and pig iron ============================ */
+
+    static void captiveRoute() {
+        out.println("\n--- 13. captive coke and pig iron: the ovens' coke to the furnaces first, their pig iron to the shop, nothing booked for either ---");
+        BuildingManager b = new BuildingManager();
+        b.initializeTemplates();
+        Markets markets = new Markets();
+        markets.setExchangeRate(1);
+        BuildingsTemplate ovens = b.getTemplate(HeavyIndustry.COKE_OVENS), mini = b.getTemplate(HeavyIndustry.MINI_BLAST_FURNACE),
+                shop = b.getTemplate(HeavyIndustry.OXYGEN_STEEL_SHOP);
+        b.addStack(ovens, 1, true);
+        b.addStack(mini, 2, true);
+        b.addStack(shop, 1, true);
+        HeavyIndustry w = new HeavyIndustry();
+        Sector s = w;
+        s.attach(b, markets);
+        double rate = w.getOperatingRate();
+        double cokeMade = ovens.makes(Good.MET_COKE) * rate, cokeNeed = 2 * mini.uses(Good.MET_COKE) * rate;
+        double pigMade = 2 * mini.makes(Good.PIG_IRON) * rate, pigNeed = shop.uses(Good.PIG_IRON) * rate;
+        report("fixture: Iron & Steel's real rows, one Coke Ovens, two Mini Blast Furnaces and one Oxygen Steel Shop, the coke and pig iron"
+                        + " captive", w.captive(Good.MET_COKE) && w.captive(Good.PIG_IRON) && w.captive(Good.SCRAP) && !w.captive(Good.STEEL)
+                        && Good.MET_COKE.stockable() && !Good.PIG_IRON.stockable(),
+                String.format("rate %.3f; coke %,.0f made for %,.0f needed, pig iron %,.0f for %,.0f", rate, cokeMade, cokeNeed, pigMade, pigNeed));
+        assertTrue("the coke: the furnaces' 13,500 t met first out of the ovens' 40,000, the market bid none of it",
+                w.captiveUnits(Good.MET_COKE) == Math.min(cokeMade, cokeNeed) && w.bid(Good.MET_COKE) == 0);
+        w.produceStock(Good.MET_COKE, markets.get(Good.MET_COKE));
+        Sector.Output coke = w.outputRow(Good.MET_COKE);
+        assertTrue("...and what the ovens make for the market - for home, for the ship and idled - is the 26,500 t past it",
+                coke.captive == cokeNeed && Math.abs(coke.planned + coke.exportBound + coke.idled - (cokeMade - cokeNeed)) < 1e-6);
+        w.produceFlow(Good.PIG_IRON);
+        Sector.Output pig = w.outputRow(Good.PIG_IRON);
+        assertTrue("the pig iron: all the furnaces' 30,000 t to the shop, none to the market, and the shop bids for the 216,500 t past it",
+                pig.captive == pigMade && pig.produced == 0 && w.bid(Good.PIG_IRON) == pigNeed - pigMade);
+        w.shipUnsoldFlow(Good.PIG_IRON, markets.get(Good.PIG_IRON));
+        Sector.Ledger l = w.pending();
+        assertTrue("...no sale and no purchase booked for what it handed itself: no pig iron sold or bought, no coke bought",
+                !l.unitsSold.containsKey(Good.PIG_IRON) && !l.unitsBought.containsKey(Good.PIG_IRON) && !l.unitsBought.containsKey(Good.MET_COKE));
+        double gross = 0;
+        for (Good g : w.goodsMade()) gross += w.getCapacity(g) * g.tonnesPerUnit();
+        for (Good g : w.goodsUsed()) if (g != Good.VANS) gross += w.getInputAtCapacity(g) * g.tonnesPerUnit();
+        double inside = 2 * Math.min(w.getCapacity(Good.MET_COKE), w.getInputAtCapacity(Good.MET_COKE))
+                + 2 * Math.min(w.getCapacity(Good.PIG_IRON), w.getInputAtCapacity(Good.PIG_IRON));
+        report("its lorries move its plant's tonnes less what the works hands itself, out and in (Sector.tonnesMoved()): its own rails,"
+                        + " not the fleet", Math.abs(w.tonnesMoved() - (gross - inside)) < 1e-6 && inside == 2 * (13_500 + 30_000),
+                String.format("%,.0f t a month, %,.0f t less", w.tonnesMoved(), inside));
+    }
+
+    /* ============================ 14. the works' own power sold ============================ */
+
+    static void routePower() {
+        out.println("\n--- 14. the works' own power: the ovens and the furnace sell what they make past their draws, the shop buys the rest ---");
+        GameFiles files = GameFiles.scratch("materialscheck-routepower");
+        Game g = town(files);
+        BuildingManager b = g.getBuildingManager();
+        quietly(() -> {
+            b.addStack(b.getTemplate(HeavyIndustry.COKE_OVENS), 1, true);
+            b.addStack(b.getTemplate(HeavyIndustry.BLAST_FURNACE), 1, true);
+            b.addStack(b.getTemplate(HeavyIndustry.OXYGEN_STEEL_SHOP), 1, true);
+            g.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            g.simulateMonths(2);
+        });
+        Sector heavy = g.getSectors().heavyIndustry();
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        double price = g.getEconomyManager().getPricePerWatt();
+        double sold = 5_800 + 8_600, bought = b.getTemplate(HeavyIndustry.COKE_OVENS).powerBought()
+                + b.getTemplate(HeavyIndustry.BLAST_FURNACE).powerBought() + b.getTemplate(HeavyIndustry.OXYGEN_STEEL_SHOP).powerBought();
+        report("fixture: a town with the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop standing, two months on",
+                b.getQuantity(HeavyIndustry.BLAST_FURNACE) == 1 && heavy.getPowerSurplus() == sold && bought == 26_600,
+                String.format("Iron & Steel sells %,.0f kW, buys %,.0f", heavy.getPowerSurplus(), bought));
+        Sector.Statement st = heavy.statement();
+        assertTrue("its statement's powerSold is the ovens' 5,800 kW and the furnace's 8,600 at the tariff, in its revenue past its sales;"
+                        + " its bill the shop's 26,600 at the ratio and the tariff",
+                st.powerSold == sold * price && st.powerSold > 0 && st.revenue == st.localSales + st.exports + st.otherRevenue + st.powerSold
+                        && heavy.getElectricityCost() == bought * heavy.getEnergyRatio() * price);
+        assertTrue("the utility pays the works what their statement booked, and the grid counts their surplus as generation",
+                u.getPowerBought() == g.getEconomyManager().getSectorPowerSold() && u.getWorksPower() >= sold);
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        report("the month's money audit closes", audit.relative() < 1e-4, String.format("residual %.3g of what moved", audit.relative()));
     }
 }

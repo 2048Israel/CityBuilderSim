@@ -275,6 +275,11 @@ public final class SpreadPlanner {
         for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
             used += e.getValue() * (c.feedAtImport() ? importPrice : exportPrice).applyAsDouble(e.getKey());
         }
+        // ...and a Scrap Yard's old steel (0.7.121, batch I4; OldMetal): not a
+        // good, so the same in every case - OldMetal.PAY_SHARE of scrap's export
+        // price (Jerus's Q8), D$210 a tonne at parity.
+        double old = t.oldMetal(Good.STEEL);
+        if (old > 0) used += old * ham.citybuildersim.OldMetal.PAY_SHARE * exportPrice.applyAsDouble(Good.SCRAP);
         return made - used - running - standing - ownCosts(t, 1, factor, tariff);
     }
 

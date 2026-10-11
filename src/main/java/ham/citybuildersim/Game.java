@@ -92,6 +92,18 @@ public class Game {
     public StrategicReserve getReserve() { return reserve; }
 
     /**
+     * The city's old steel (0.7.121, batch I4; OldMetal): what its scrapped
+     * cars, its demolitions, its fabricators' offcuts and its worn-out wagon
+     * sets throw out each month, which Iron & Steel's Scrap Yards buy at 70%
+     * of scrap's export price and the rest goes to landfill. Built fresh by
+     * buildWorld(); saved under one key (DataSave.oldMetal).
+     */
+    private OldMetal oldMetal = new OldMetal();
+
+    /** The city's old steel (0.7.121). */
+    public OldMetal getOldMetal() { return oldMetal; }
+
+    /**
      * The city's ports (0.7.86, batch O9; Ports): the berths' shares of each
      * kind of cargo in force, and the month's tonnes by sea, struck with the
      * railway's month (chargeFreight()). Built fresh by buildWorld(); saved
@@ -264,6 +276,8 @@ public class Game {
         // ...and the city's strategic reserve, its trader in crude's market (0.7.85).
         reserve = new StrategicReserve();
         economyManager.getMarkets().setCity(reserve);
+        // ...and its old steel, nothing thrown out yet (0.7.121).
+        oldMetal = new OldMetal();
         // ...and its ports, nothing at sea (0.7.86).
         ports = new Ports();
         populationManager = new PopulationManager();
@@ -4250,6 +4264,8 @@ public class Game {
         if (scrapped <= 0) {
             return 0;
         }
+        // ...its steel to the city's old steel, its owner's to sell (0.7.121; OldMetal).
+        oldMetal.demolished(decision.template, scrapped, decision.sector);
 
         // ...its zone's part bought back at the zone's price and handed back
         // to the zone (0.7.107): priced before the release takes it out.
@@ -6711,6 +6727,8 @@ public class Game {
             BuildingsTemplate t = buildingManager.getTemplate(d.templateId);
             int closed = t == null ? 0 : buildingManager.retire(t, d.buildings);
             d.closing = false;
+            // ...its steel to the city's old steel, the builders' who pull it down (0.7.121; OldMetal).
+            oldMetal.demolished(t, closed, getSectors().construction().key());
             // In the log as the city's own order, and whose it was if it was bought.
             if (t != null) demolitionLog.record(t.getName(), closed,
                     "City".equals(d.from) ? "City" : "City, bought from " + d.from, month, d.groundPaid);
@@ -12248,6 +12266,8 @@ public class Game {
         dataSave.setAutoBuild(autoBuilder.toState());
         // ...and the strategic reserve (0.7.85): its crude, its book, its levers and the month the next strike settles.
         dataSave.setReserve(reserve.toState());
+        // ...and the old steel (0.7.121): arisen since the yards last bought, and their last month.
+        dataSave.setOldMetal(oldMetal.state());
         // ...and the ports (0.7.86): the berths' shares in force and the month's sea tonnes.
         dataSave.setPortMonth(ports.toState());
 
@@ -15267,6 +15287,8 @@ public class Game {
             autoBuilder.restore(loaded.getAutoBuild());
             // The strategic reserve (0.7.85): a save from before it has none, and loads empty.
             reserve.restore(loaded.getReserve());
+            // The old steel (0.7.121): a save from before it has none, and loads with nothing thrown out.
+            oldMetal.restore(loaded.getOldMetal());
             // The ports (0.7.86): a save from before them has none, and loads with nothing at sea.
             ports.restore(loaded.getPortMonth());
 
@@ -16168,6 +16190,7 @@ public class Game {
         fund.redenominate(scale);
         // ...and the strategic reserve's book and its month's trades (0.7.85).
         reserve.redenominate(scale);
+        oldMetal.scale(scale);
         ownersWipedAbroadThisMonth *= scale;
         // The last closed month is what the next dividend is paid on.
         sectorBooks.redenominate(scale);

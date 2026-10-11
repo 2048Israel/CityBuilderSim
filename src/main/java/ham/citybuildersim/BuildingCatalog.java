@@ -209,7 +209,9 @@ public class BuildingCatalog {
                 .setRepairsPerYear(number(o, "repairs"))
                 // ...and a works' own power, kW, and its consumables, world thousands a month (0.7.112): absent, none.
                 .setGen(number(o, "gen"))
-                .setConsumables(number(o, "consumables"));
+                .setConsumables(number(o, "consumables"))
+                // ...and the year it first existed (0.7.121): absent, undated.
+                .setSince((int) number(o, "since"));
 
         readCare(o, template, name);
         readJobs(o, template, name);
@@ -222,8 +224,29 @@ public class BuildingCatalog {
         readPort(o, template, name);
         readOffshore(o, template, name);
         readSite(o, template, name);
+        readOldMetal(o, template, name);
 
         return template;
+    }
+
+    /**
+     * The city's old metal a Scrap Yard takes (0.7.121, batch I4): "oldMetal":
+     * {"STEEL": 10500}, tonnes a month at nameplate by metal. Absent, none; a
+     * metal that is not a good is reported and its line ignored, as an
+     * unknown good in "makes" costs only its line.
+     */
+    private void readOldMetal(JsonObject o, BuildingsTemplate template, String name) {
+
+        if (!o.has("oldMetal") || !o.get("oldMetal").isJsonObject()) return;
+        for (java.util.Map.Entry<String, JsonElement> e : o.getAsJsonObject("oldMetal").entrySet()) {
+            Good metal = Good.byName(e.getKey());
+            if (metal == null) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" takes unknown old metal \""
+                        + e.getKey() + "\"; that line ignored.");
+                continue;
+            }
+            template.setOldMetal(metal, e.getValue().getAsDouble());
+        }
     }
 
     /**

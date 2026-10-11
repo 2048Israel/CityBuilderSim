@@ -91,9 +91,18 @@
   "grid only what it draws past that, and sells the grid what it makes past its draw, at",
   "the tariff. \"consumables\" is what a works buys abroad that is not a good - refractories,",
   "reagents, spares - in thousands of the WORLD's money a month at nameplate, paid at the",
-  "exchange factor at the share of nameplate it runs. No building makes power yet; since",
-  "0.7.116 the Iron Mine (explosives and wear parts) and the two arc furnaces (electrodes)",
-  "buy consumables: the study's running cost less wages, power, water and diesel.",
+  "exchange factor at the share of nameplate it runs. Since 0.7.121 the Coke Ovens (8,000),",
+  "the Blast Furnace (60,000) and the Oxygen Steel Shop (25,000) make power; since 0.7.116",
+  "the Iron Mine (explosives and wear parts) and the arc furnaces (electrodes), and since",
+  "0.7.121 every works of Iron & Steel, buy consumables: the study's running cost less",
+  "wages, the power it buys, water and diesel.",
+  "A SCRAP YARD takes the city's OLD STEEL - its scrapped cars, its demolitions, its",
+  "fabricators' offcuts, its worn-out wagon sets, which arise each month and are not a",
+  "good: \"oldMetal\": {\"STEEL\": 10500} is the tonnes a month it takes at nameplate,",
+  "paying the sellers 70% of scrap's export price (0.7.121; see OldMetal). What no yard",
+  "takes goes to landfill.",
+  "\"since\" is the year a building first existed (0.7.121), 1900 - the start year - for one",
+  "that stood before it; read by nothing yet, for research (absent: not yet dated).",
   "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
@@ -115,7 +124,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 101,
+ "nextId": 108,
  "buildings": [
   {
    "id": 0,
@@ -2358,6 +2367,207 @@
     "kind": "PIPELINE",
     "onshore": 3000
    }
+  },
+  {
+   "id": 101,
+   "name": "Scrap Yard",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Heavy Industry",
+   "cashCost": 26918,
+   "constructionPoints": 13459,
+   "constructionMaterials": 449,
+   "electricity": 550,
+   "water": 48,
+   "consumables": 83.28,
+   "jobs": {
+    "NO_DIPLOMA": 22,
+    "DIPLOMA": 14,
+    "COLLEGE_ENGINEERING": 3,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 204514,
+   "roadLoad": 895,
+   "makes": {
+    "SCRAP": 10000
+   },
+   "oldMetal": {
+    "STEEL": 10500
+   },
+   "since": 1900
+  },
+  {
+   "id": 102,
+   "name": "Pelletising Plant",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Heavy Industry",
+   "cashCost": 207684,
+   "constructionPoints": 103842,
+   "constructionMaterials": 3462,
+   "electricity": 5750,
+   "water": 497,
+   "consumables": 302.79,
+   "jobs": {
+    "NO_DIPLOMA": 81,
+    "DIPLOMA": 53,
+    "COLLEGE_ENGINEERING": 13,
+    "UNIV_SCIENCE": 3
+   },
+   "land": 1614587,
+   "roadLoad": 13292,
+   "makes": {
+    "PELLETS": 150000
+   },
+   "uses": {
+    "IRON": 150000,
+    "THERMAL_COAL": 4500
+   },
+   "since": 1955
+  },
+  {
+   "id": 103,
+   "name": "Coke Ovens",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Heavy Industry",
+   "cashCost": 203070,
+   "constructionPoints": 101535,
+   "constructionMaterials": 3385,
+   "electricity": 2200,
+   "water": 190,
+   "gen": 8000,
+   "consumables": 420.02,
+   "jobs": {
+    "NO_DIPLOMA": 108,
+    "DIPLOMA": 70,
+    "COLLEGE_ENGINEERING": 18,
+    "UNIV_SCIENCE": 4
+   },
+   "land": 968752,
+   "roadLoad": 4103,
+   "stock": 120000,
+   "makes": {
+    "MET_COKE": 40000
+   },
+   "uses": {
+    "COKING_COAL": 54000
+   },
+   "since": 1900
+  },
+  {
+   "id": 104,
+   "name": "Mini Blast Furnace",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Heavy Industry",
+   "cashCost": 41544,
+   "constructionPoints": 20772,
+   "constructionMaterials": 692,
+   "electricity": 2050,
+   "water": 177,
+   "consumables": 223.79,
+   "jobs": {
+    "NO_DIPLOMA": 81,
+    "DIPLOMA": 53,
+    "COLLEGE_ENGINEERING": 13,
+    "UNIV_SCIENCE": 3
+   },
+   "land": 398265,
+   "roadLoad": 2161,
+   "makes": {
+    "PIG_IRON": 15000
+   },
+   "uses": {
+    "IRON": 24000,
+    "MET_COKE": 6750,
+    "LIMESTONE": 3750
+   },
+   "since": 1900
+  },
+  {
+   "id": 105,
+   "name": "Blast Furnace",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Heavy Industry",
+   "cashCost": 1038456,
+   "constructionPoints": 519228,
+   "constructionMaterials": 17308,
+   "electricity": 51400,
+   "water": 4445,
+   "gen": 60000,
+   "consumables": 6554.87,
+   "jobs": {
+    "NO_DIPLOMA": 648,
+    "DIPLOMA": 420,
+    "COLLEGE_ENGINEERING": 108,
+    "UNIV_SCIENCE": 24
+   },
+   "land": 6458346,
+   "roadLoad": 35903,
+   "makes": {
+    "PIG_IRON": 250000
+   },
+   "uses": {
+    "IRON": 387500,
+    "MET_COKE": 85000,
+    "THERMAL_COAL": 37500,
+    "LIMESTONE": 62500
+   },
+   "since": 1900
+  },
+  {
+   "id": 106,
+   "name": "Oxygen Steel Shop",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Heavy Industry",
+   "cashCost": 1384614,
+   "constructionPoints": 692307,
+   "constructionMaterials": 23077,
+   "electricity": 51600,
+   "water": 4463,
+   "gen": 25000,
+   "consumables": 17726.53,
+   "jobs": {
+    "NO_DIPLOMA": 972,
+    "DIPLOMA": 630,
+    "COLLEGE_ENGINEERING": 162,
+    "UNIV_SCIENCE": 36
+   },
+   "land": 9041685,
+   "roadLoad": 27343,
+   "makes": {
+    "STEEL": 290000
+   },
+   "uses": {
+    "PIG_IRON": 246500,
+    "SCRAP": 72500,
+    "LIME": 17400
+   },
+   "since": 1952
+  },
+  {
+   "id": 107,
+   "name": "Large Mini-Mill",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Heavy Industry",
+   "cashCost": 923070,
+   "constructionPoints": 461535,
+   "constructionMaterials": 15385,
+   "electricity": 77000,
+   "water": 6659,
+   "consumables": 2356.09,
+   "jobs": {
+    "NO_DIPLOMA": 216,
+    "DIPLOMA": 140,
+    "COLLEGE_ENGINEERING": 36,
+    "UNIV_SCIENCE": 8
+   },
+   "land": 4951399,
+   "roadLoad": 11458,
+   "makes": {
+    "STEEL": 125000
+   },
+   "uses": {
+    "SCRAP": 137500
+   },
+   "since": 1969
   }
  ]
 }

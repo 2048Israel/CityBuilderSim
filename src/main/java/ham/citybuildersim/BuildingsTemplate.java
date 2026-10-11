@@ -458,6 +458,52 @@ public class BuildingsTemplate {
     /** Its consumables a month at nameplate, thousands of the world's money; 0 for every building today. */
     public double getConsumables() { return consumables; }
 
+    /* ----- THE OLD METAL A YARD TAKES (0.7.121, batch I4; runs/spec-materials.md 2.5, 2.9) -----
+       The city's old steel - its scrapped cars, its demolitions, its
+       fabricators' offcuts, its railway's worn-out sets - is not a good: it
+       is a pool that arises each month (OldMetal), and a Scrap Yard buys
+       from it ("oldMetal": {"STEEL": 10500} in buildings.json, tonnes a
+       month at nameplate) to make SCRAP. Keyed by the metal - STEEL now,
+       COPPER with the copper chain (batch I8). Every other building takes
+       none. */
+    private final java.util.Map<Good, Double> oldMetal = new java.util.EnumMap<>(Good.class);
+
+    /** Makes this building take `tonnesAMonth` of the city's old metal of a kind at nameplate; 0 or less is none. */
+    public BuildingsTemplate setOldMetal(Good metal, double tonnesAMonth) {
+        if (metal == null) return this;
+        if (Double.isFinite(tonnesAMonth) && tonnesAMonth > 0) oldMetal.put(metal, tonnesAMonth);
+        else oldMetal.remove(metal);
+        return this;
+    }
+
+    /** Tonnes of the city's old metal of this kind it takes a month at nameplate; 0 for every building but a yard. */
+    public double oldMetal(Good metal) { return oldMetal.getOrDefault(metal, 0.0); }
+
+    /** Every kind of old metal it takes, tonnes a month at nameplate; empty for every building but a yard. */
+    public java.util.Map<Good, Double> oldMetalTaken() { return java.util.Collections.unmodifiableMap(oldMetal); }
+
+    /* ----- THE YEAR IT FIRST EXISTED (0.7.121, batch I4; research-design.md 2.1) -----
+       The research study (Jerus's start year 1900, 2026-10-10) asks every
+       building after the start to say when it came ("since" in
+       buildings.json): a building whose year is past the city's calendar
+       will be one research or the world brings, later. Read by nothing yet:
+       written now, on the rows the materials chains add, so the catalogue
+       carries its dates before research needs them (the orchestrator's
+       recommendation on the study's Q3, unanswered: today's row shape, and
+       "since" on each new row - not the study's recipes list). A row that
+       stood before 1900 carries the start year itself; 0 is a row not yet
+       dated - every row before batch I4. */
+    private int since;
+
+    /** Dates this building: the year it first existed, the start year (1900) for one that stood before it; 0 or less is undated. */
+    public BuildingsTemplate setSince(int year) {
+        this.since = Math.max(0, year);
+        return this;
+    }
+
+    /** The year it first existed, or 0 for a row not yet dated. */
+    public int getSince() { return since; }
+
 
 
     //enums

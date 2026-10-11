@@ -2486,6 +2486,175 @@ public class BuildingManager {
                 .setOffshore(BuildingsTemplate.Offshore.PIPELINE, 0, 3000)
                 .setId(100));
 
+        /* ------------------- THE INTEGRATED ROUTE (0.7.121, batch I4) -------------------
+           Iron & Steel's seven other works (runs/spec-materials.md 2.2;
+           materials-chains-research.md 2.4, 1.6 and 2.7), ids 101 to 107:
+             - a SCRAP YARD buys the city's old steel (OldMetal: its scrapped
+               cars, its demolitions, its fabricators' offcuts and its worn-out
+               wagon sets) at 70% of scrap's export price and sorts and shears
+               it into SCRAP, 10,500 t into 10,000;
+             - a PELLETISING PLANT fires ore into pellets with a little thermal
+               coal (since 1955, Silver Bay: research-design.md's E4);
+             - the COKE OVENS bake coking coal into coke, 1.35 t a tonne, and
+               burn their own gas for 8,000 kW against a 2,200 kW draw;
+             - a MINI BLAST FURNACE and a BLAST FURNACE (its sinter plant in it)
+               smelt ore with coke and limestone into pig iron, the big one's
+               top-gas turbine making 60,000 kW against its 51,400;
+             - the OXYGEN STEEL SHOP (its caster and hot strip mill in it) blows
+               pig iron and a quarter as much scrap into steel with lime, making
+               25,000 kW of its 51,600 (since 1952, Linz: E1);
+             - the LARGE MINI-MILL melts 137,500 t of scrap a month (since 1969,
+               the scrap mini-mill: E13).
+           Their figures are the study's; the house conventions (spec 2.2) make
+           the rest: cash the all-in cost over 1.3, material a sixtieth of the
+           cash, points a half; posts at the heavy plants' split (54/35/9/2, the
+           Steel Mini-Mill's), largest remainder, ties to the less skilled;
+           water the Mini-Mill's 320 for 3,700 kW; ground the study's hectares;
+           road load the Steel Foundry's 110 for 2,520 t in and out; stock three
+           months of a stockable output (the coke); consumables the study's
+           running cost less wages, the power bought, and water - so its four
+           cases hold at parity (MaterialsCheck 11). "since" the year each first
+           existed, 1900 - the start year - for one that stood before it.
+           ------------------------------------------------------------------------------ */
+        templates.add(new BuildingsTemplate("Scrap Yard", BuildingType.HEAVY_INDUSTRY)   // turns the city's old steel into scrap (OldMetal)
+                .setCashCost(26918)
+                .setConstructionPoints(13459)
+                .setConstructionMaterials(449)
+                .setSector("Heavy Industry")
+                .makes(Good.SCRAP, 10000)
+                .setOldMetal(Good.STEEL, 10500)
+                .setElectricityConsumption(550)
+                .setWaterConsumption(48)
+                .setConsumables(83.28)
+                .setLandSqFt(204514)
+                .setRoadLoad(895)
+                .setJobs(JobType.NO_DIPLOMA, 22)
+                .setJobs(JobType.DIPLOMA, 14)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 3)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setSince(1900)
+                .setId(101));
+        templates.add(new BuildingsTemplate("Pelletising Plant", BuildingType.HEAVY_INDUSTRY)   // ore into pellets, burning thermal coal
+                .setCashCost(207684)
+                .setConstructionPoints(103842)
+                .setConstructionMaterials(3462)
+                .setSector("Heavy Industry")
+                .makes(Good.PELLETS, 150000)
+                .uses(Good.IRON, 150000)
+                .uses(Good.THERMAL_COAL, 4500)
+                .setElectricityConsumption(5750)
+                .setWaterConsumption(497)
+                .setConsumables(302.79)
+                .setLandSqFt(1614587)
+                .setRoadLoad(13292)
+                .setJobs(JobType.NO_DIPLOMA, 81)
+                .setJobs(JobType.DIPLOMA, 53)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 13)
+                .setJobs(JobType.UNIV_SCIENCE, 3)
+                .setSince(1955)
+                .setId(102));
+        templates.add(new BuildingsTemplate("Coke Ovens", BuildingType.HEAVY_INDUSTRY)   // coking coal into coke, its gas its own power
+                .setCashCost(203070)
+                .setConstructionPoints(101535)
+                .setConstructionMaterials(3385)
+                .setSector("Heavy Industry")
+                .makes(Good.MET_COKE, 40000)
+                .uses(Good.COKING_COAL, 54000)
+                .setElectricityConsumption(2200)
+                .setGen(8000)
+                .setWaterConsumption(190)
+                .setConsumables(420.02)
+                .setStock(120000)
+                .setLandSqFt(968752)
+                .setRoadLoad(4103)
+                .setJobs(JobType.NO_DIPLOMA, 108)
+                .setJobs(JobType.DIPLOMA, 70)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 18)
+                .setJobs(JobType.UNIV_SCIENCE, 4)
+                .setSince(1900)
+                .setId(103));
+        templates.add(new BuildingsTemplate("Mini Blast Furnace", BuildingType.HEAVY_INDUSTRY)   // ore, coke and limestone into pig iron
+                .setCashCost(41544)
+                .setConstructionPoints(20772)
+                .setConstructionMaterials(692)
+                .setSector("Heavy Industry")
+                .makes(Good.PIG_IRON, 15000)
+                .uses(Good.IRON, 24000)
+                .uses(Good.MET_COKE, 6750)
+                .uses(Good.LIMESTONE, 3750)
+                .setElectricityConsumption(2050)
+                .setWaterConsumption(177)
+                .setConsumables(223.79)
+                .setLandSqFt(398265)
+                .setRoadLoad(2161)
+                .setJobs(JobType.NO_DIPLOMA, 81)
+                .setJobs(JobType.DIPLOMA, 53)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 13)
+                .setJobs(JobType.UNIV_SCIENCE, 3)
+                .setSince(1900)
+                .setId(104));
+        templates.add(new BuildingsTemplate("Blast Furnace", BuildingType.HEAVY_INDUSTRY)   // with its sinter plant, its top-gas turbine its power
+                .setCashCost(1038456)
+                .setConstructionPoints(519228)
+                .setConstructionMaterials(17308)
+                .setSector("Heavy Industry")
+                .makes(Good.PIG_IRON, 250000)
+                .uses(Good.IRON, 387500)
+                .uses(Good.MET_COKE, 85000)
+                .uses(Good.THERMAL_COAL, 37500)
+                .uses(Good.LIMESTONE, 62500)
+                .setElectricityConsumption(51400)
+                .setGen(60000)
+                .setWaterConsumption(4445)
+                .setConsumables(6554.87)
+                .setLandSqFt(6458346)
+                .setRoadLoad(35903)
+                .setJobs(JobType.NO_DIPLOMA, 648)
+                .setJobs(JobType.DIPLOMA, 420)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 108)
+                .setJobs(JobType.UNIV_SCIENCE, 24)
+                .setSince(1900)
+                .setId(105));
+        templates.add(new BuildingsTemplate("Oxygen Steel Shop", BuildingType.HEAVY_INDUSTRY)   // with its caster and hot strip mill
+                .setCashCost(1384614)
+                .setConstructionPoints(692307)
+                .setConstructionMaterials(23077)
+                .setSector("Heavy Industry")
+                .makes(Good.STEEL, 290000)
+                .uses(Good.PIG_IRON, 246500)
+                .uses(Good.SCRAP, 72500)
+                .uses(Good.LIME, 17400)
+                .setElectricityConsumption(51600)
+                .setGen(25000)
+                .setWaterConsumption(4463)
+                .setConsumables(17726.53)
+                .setLandSqFt(9041685)
+                .setRoadLoad(27343)
+                .setJobs(JobType.NO_DIPLOMA, 972)
+                .setJobs(JobType.DIPLOMA, 630)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 162)
+                .setJobs(JobType.UNIV_SCIENCE, 36)
+                .setSince(1952)
+                .setId(106));
+        templates.add(new BuildingsTemplate("Large Mini-Mill", BuildingType.HEAVY_INDUSTRY)   // scrap into steel, a modern arc-furnace plant
+                .setCashCost(923070)
+                .setConstructionPoints(461535)
+                .setConstructionMaterials(15385)
+                .setSector("Heavy Industry")
+                .makes(Good.STEEL, 125000)
+                .uses(Good.SCRAP, 137500)
+                .setElectricityConsumption(77000)
+                .setWaterConsumption(6659)
+                .setConsumables(2356.09)
+                .setLandSqFt(4951399)
+                .setRoadLoad(11458)
+                .setJobs(JobType.NO_DIPLOMA, 216)
+                .setJobs(JobType.DIPLOMA, 140)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 36)
+                .setJobs(JobType.UNIV_SCIENCE, 8)
+                .setSince(1969)
+                .setId(107));
+
         /* ---------------------------- EDUCATION ----------------------------
            The other half of the labour market.
 

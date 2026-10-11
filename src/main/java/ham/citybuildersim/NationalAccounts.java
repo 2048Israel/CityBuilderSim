@@ -197,9 +197,16 @@ public class NationalAccounts {
      * EconomyManager.updateNationalAccounts()) - crude a flow until then,
      * which nobody held. A save from before carries one slot fewer and reads
      * crude's last units as none, which is what that city held.
+     *
+     * ...AND SINCE 0.7.121 (batch I4; runs/spec-materials.md 2.3) THE
+     * STEELWORKS' COKE AND THE TWO COALS, on the end in Good's order: coke
+     * in the Coke Ovens' yard, and coal - imported until Coal Mining comes
+     * (batch I6) - in its makers' yards then. A save from before carries
+     * three slots fewer and reads them as none, which is what that city held.
      */
     public static final Good[] HELD = { Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL,
-            Good.LPG, Good.NAPHTHA, Good.JET, Good.LUBRICANTS, Good.FUEL_OIL, Good.BITUMEN, Good.COKE, Good.CRUDE };
+            Good.LPG, Good.NAPHTHA, Good.JET, Good.LUBRICANTS, Good.FUEL_OIL, Good.BITUMEN, Good.COKE, Good.CRUDE,
+            Good.MET_COKE, Good.THERMAL_COAL, Good.COKING_COAL };
 
     /** ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. */
     public static final int HELD_BEFORE_FUEL = 3;

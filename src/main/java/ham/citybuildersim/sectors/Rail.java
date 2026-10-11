@@ -483,7 +483,10 @@ public final class Rail extends Sector {
             pantry.put(Good.ROLLING_STOCK, setsNeeded());   // see fleetKnown
             fleetKnown = true;
         }
-        usePantry(Good.ROLLING_STOCK, fleet() / SET_LIFE_MONTHS);
+        double worn = fleet() / SET_LIFE_MONTHS;
+        usePantry(Good.ROLLING_STOCK, worn);
+        // ...the worn sets' steel to the city's old steel, the railway's to sell (0.7.121; OldMetal).
+        if (game != null) game.getOldMetal().setsRetired(key(), worn);
 
         /*
          * ...AFTER THE BERTHS THAT GO FIRST (0.7.86, batch O9). A kind whose
