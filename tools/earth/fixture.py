@@ -7,7 +7,7 @@
 #     fixture and from the full file - for EarthCheck to hold the game's reader (EarthData) to, figure for figure.
 #     A line is tab-separated: scope (both = true of the fixture and the full file alike, fixture, full), kind,
 #     fields. EarthCheck reads every line; the full file's lines run when the file is named (-Dcbs.earth=<path>).
-#   python3 -I tools/earth/fixture.py <earth-1.bin> <out dir>
+#   python3 -I -B tools/earth/fixture.py <earth-1.bin> src/main/resources/earth     (-B: no __pycache__ in the tree)
 import sys, os, io, struct, zlib, json, hashlib, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np

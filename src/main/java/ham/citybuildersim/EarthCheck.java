@@ -18,8 +18,8 @@ import java.util.Map;
 /**
  * The Earth's reader (0.7.111, batch E1; the project's spec-earth.md 2 and
  * 8): EarthProj's projection, blend and areas held to the spec's measures,
- * and EarthData's reading of earth-1.bin held to tools/earth/earthread.py,
- * the reference reader, figure for figure.
+ * and EarthData's reading of earth-1.bin held to tools/earth/earthread.py
+ * figure for figure.
  *
  * WHY. E2 lays the real Earth's ground on the world through these two, and a
  * wrong figure there is a coast in the wrong place under a city that cannot
@@ -162,7 +162,10 @@ public class EarthCheck {
 
         out.println("--- 9. the full file, when it is named ---");
         Path full = EarthData.locate();
-        if (full == null || !Files.isRegularFile(full)) {
+        String named = System.getProperty(EarthData.PROPERTY);
+        if (named != null && !named.isBlank() && !Files.isRegularFile(full)) {
+            report("the file -Dcbs.earth names is there", false, named);
+        } else if (full == null) {
             out.println("earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": its sections did not run");
         } else {
             out.println("reading " + full.toAbsolutePath());

@@ -24,11 +24,9 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 /**
- * The reader of earth-1.bin, the real Earth's ground as data: its layers and
- * their 1-degree tiles, inflated when asked and kept in an LRU; the sea, lake,
- * land-cover and far-view shares; the rivers and the small lakes as lists;
- * the geology and its provinces; the places; the meta; and the file's
- * identity.
+ * The reader of earth-1.bin, the real Earth's ground as data: its layers'
+ * 1-degree tiles inflated into an LRU, the sea, lake, land-cover and far-view
+ * shares, rivers and small lakes, geology, places and the file's identity.
  *
  * WHY. "The world as planet Earth" (the project's spec-earth.md) needs the
  * Earth's coasts, lakes, rivers, forest and geology in the game, and E0 baked
