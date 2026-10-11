@@ -5,6 +5,7 @@ import ham.citybuildersim.sectors.Automotive;
 import ham.citybuildersim.sectors.LuxuryRetail;
 import ham.citybuildersim.sectors.Restaurants;
 import ham.citybuildersim.sectors.BusinessServices;
+import ham.citybuildersim.sectors.CementConcrete;
 import ham.citybuildersim.sectors.CoalMining;
 import ham.citybuildersim.sectors.Construction;
 import ham.citybuildersim.sectors.FoodIndustry;
@@ -14,6 +15,7 @@ import ham.citybuildersim.sectors.Manufacturing;
 import ham.citybuildersim.sectors.Materials;
 import ham.citybuildersim.sectors.Mining;
 import ham.citybuildersim.sectors.Oil;
+import ham.citybuildersim.sectors.Quarrying;
 import ham.citybuildersim.sectors.Rail;
 import ham.citybuildersim.sectors.RealEstate;
 import ham.citybuildersim.sectors.Refining;
@@ -66,7 +68,9 @@ public final class Sectors {
             AUTOMOTIVE = "Automotive", LUXURY_RETAIL = "Luxury Retail",
             RESTAURANTS = "Restaurants", OIL = "Oil", REFINING = "Refining",
             // ...and the materials chains' new industries (0.7.126, batch I6; Jerus's Q21, 2026-10-08: iron, coal, stone, copper, wood).
-            COAL_MINING = "Coal Mining";
+            COAL_MINING = "Coal Mining",
+            // ...stone's two (0.7.131, batch I7): the quarries, and the kilns and cement plants.
+            QUARRYING = "Quarrying", CEMENT_CONCRETE = "Cement & Concrete";
 
     /*
      * ON THE END, AND IT HAS TO STAY THAT WAY - but for a softer reason than
@@ -85,7 +89,9 @@ public final class Sectors {
         // ...and fuel (0.7.62, batch K; spec-land 2.7): the wells, then the refinery.
         OIL, REFINING,
         // ...and the materials chains' new industries, in Q21's order (0.7.126, batch I6; spec-materials 2.1): coal first.
-        COAL_MINING
+        COAL_MINING,
+        // ...then stone's (0.7.131, batch I7): the quarries, then the kilns and cement plants that burn their limestone.
+        QUARRYING, CEMENT_CONCRETE
     };
 
     private final List<Sector> all = new ArrayList<>();
@@ -109,6 +115,8 @@ public final class Sectors {
     private final Oil oil;
     private final Refining refining;
     private final CoalMining coalMining;
+    private final Quarrying quarrying;
+    private final CementConcrete cementConcrete;
 
     public Sectors(BuildingManager buildings, Markets markets) {
         retail = add(new Retail(), buildings, markets);
@@ -129,6 +137,8 @@ public final class Sectors {
         oil = add(new Oil(), buildings, markets);
         refining = add(new Refining(), buildings, markets);
         coalMining = add(new CoalMining(), buildings, markets);
+        quarrying = add(new Quarrying(), buildings, markets);
+        cementConcrete = add(new CementConcrete(), buildings, markets);
 
         if (all.size() != KEYS.length) throw new IllegalStateException("Sectors.KEYS is out of step");
         for (int i = 0; i < KEYS.length; i++) {
@@ -240,6 +250,12 @@ public final class Sectors {
 
     /** ...and the coal mines (0.7.126, batch I6), whose two coals come off one flow - the surface mines', and the underground mines' raw coal through the preparation plants. See sectors.CoalMining. */
     public CoalMining coalMining() { return coalMining; }
+
+    /** ...and the quarries (0.7.131, batch I7), whose limestone the kilns and furnaces buy and the rest sells as aggregate. See sectors.Quarrying. */
+    public Quarrying quarrying() { return quarrying; }
+
+    /** ...and the kilns and cement plants (0.7.131, batch I7), which burn limestone into lime and cement. See sectors.CementConcrete. */
+    public CementConcrete cementConcrete() { return cementConcrete; }
 
     /** The city, handed to every sector once it exists. */
     public void attachGame(Game game) {

@@ -48,6 +48,10 @@
   "tonnes of its type still in the ground. Since 0.7.126 coal's do: the Surface Coal",
   "Mine and the Large Surface Mine (four sites of one field) on THERMAL, digging 1/.95 t",
   "of seam a tonne; the Underground Coal Mine on COKING at 1/.80, its coal RAW.",
+  "Since 0.7.131 stone's do: the Quarry (one site) and the Large Quarry (three of one",
+  "field) on ANY, packed onto LIMESTONE first - a quarry's stone is limestone on a",
+  "limestone field and aggregate on hard rock - and the Dimension Stone Quarry on",
+  "HARD_ROCK, digging 3 t of rock for a tonne of blocks.",
   "A well stands only on a dry site (a field whose centre is on land), lifts 10%",
   "less each year and is retired under ten barrels a day, after 263 months.",
   "CRUDE is tonnes of crude oil, lifted by the wells and refined. A refinery 'uses'",
@@ -115,6 +119,9 @@
   "thermal coal (20%), the rest to spoil; raw coal no plant washes sells as thermal coal,",
   "tonne for tonne. Raw coal is not a good: the plant buys and makes none of its own, and",
   "the sector's flow says what comes of it (sectors.CoalMining).",
+  "A QUARRY's limestone (0.7.131) goes to the kilns, cement plants and blast furnaces;",
+  "what they do not take sells as AGGREGATE, tonne for tonne, its ground still limestone's",
+  "(sectors.Quarrying, THE CARRY). Its rows say they make AGGREGATE, stone's pricing good.",
   "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
@@ -136,7 +143,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 115,
+ "nextId": 121,
  "buildings": [
   {
    "id": 0,
@@ -2794,6 +2801,182 @@
    "roadLoad": 38194,
    "stock": 1125000,
    "wash": 500000,
+   "since": 1900
+  },
+  {
+   "id": 115,
+   "name": "Quarry",
+   "category": "MINING",
+   "sector": "Quarrying",
+   "cashCost": 11544,
+   "constructionPoints": 5772,
+   "constructionMaterials": 192,
+   "electricity": 93,
+   "water": 8,
+   "consumables": 79.35,
+   "jobs": {
+    "NO_DIPLOMA": 17,
+    "DIPLOMA": 4,
+    "COLLEGE_ENGINEERING": 1
+   },
+   "land": 1076391,
+   "roadLoad": 6720,
+   "makes": {
+    "AGGREGATE": 40000
+   },
+   "site": {
+    "resource": "STONE",
+    "type": "ANY",
+    "sites": 1,
+    "dig": 1
+   },
+   "since": 1900
+  },
+  {
+   "id": 116,
+   "name": "Large Quarry",
+   "category": "MINING",
+   "sector": "Quarrying",
+   "cashCost": 69228,
+   "constructionPoints": 34614,
+   "constructionMaterials": 1154,
+   "electricity": 582,
+   "water": 50,
+   "consumables": 464.08,
+   "jobs": {
+    "NO_DIPLOMA": 75,
+    "DIPLOMA": 34,
+    "COLLEGE_ENGINEERING": 13,
+    "UNIV_SCIENCE": 3
+   },
+   "land": 3229173,
+   "roadLoad": 42000,
+   "makes": {
+    "AGGREGATE": 250000
+   },
+   "site": {
+    "resource": "STONE",
+    "type": "ANY",
+    "sites": 3,
+    "dig": 1
+   },
+   "since": 1900
+  },
+  {
+   "id": 117,
+   "name": "Dimension Stone Quarry",
+   "category": "MINING",
+   "sector": "Quarrying",
+   "cashCost": 4614,
+   "constructionPoints": 2307,
+   "constructionMaterials": 77,
+   "electricity": 7,
+   "water": 1,
+   "consumables": 39.9,
+   "jobs": {
+    "NO_DIPLOMA": 13,
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 1
+   },
+   "land": 1076391,
+   "roadLoad": 168,
+   "makes": {
+    "DIMENSION_STONE": 1000
+   },
+   "site": {
+    "resource": "STONE",
+    "type": "HARD_ROCK",
+    "sites": 1,
+    "dig": 3
+   },
+   "since": 1900
+  },
+  {
+   "id": 118,
+   "name": "Cement Plant",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Cement & Concrete",
+   "cashCost": 92316,
+   "constructionPoints": 46158,
+   "constructionMaterials": 1538,
+   "electricity": 3116,
+   "water": 269,
+   "consumables": 212.01,
+   "jobs": {
+    "NO_DIPLOMA": 33,
+    "DIPLOMA": 21,
+    "COLLEGE_ENGINEERING": 5,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 360493,
+   "roadLoad": 2711,
+   "stock": 75000,
+   "makes": {
+    "CEMENT": 25000
+   },
+   "uses": {
+    "LIMESTONE": 30000,
+    "AGGREGATE": 3750,
+    "THERMAL_COAL": 3350
+   },
+   "since": 1900
+  },
+  {
+   "id": 119,
+   "name": "Large Cement Plant",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Cement & Concrete",
+   "cashCost": 384620,
+   "constructionPoints": 192310,
+   "constructionMaterials": 6410,
+   "electricity": 15582,
+   "water": 1348,
+   "consumables": 891.92,
+   "jobs": {
+    "NO_DIPLOMA": 81,
+    "DIPLOMA": 53,
+    "COLLEGE_ENGINEERING": 13,
+    "UNIV_SCIENCE": 3
+   },
+   "land": 1502053,
+   "roadLoad": 13554,
+   "stock": 375000,
+   "makes": {
+    "CEMENT": 125000
+   },
+   "uses": {
+    "LIMESTONE": 150000,
+    "AGGREGATE": 18750,
+    "THERMAL_COAL": 16750
+   },
+   "since": 1902
+  },
+  {
+   "id": 120,
+   "name": "Lime Kiln",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Cement & Concrete",
+   "cashCost": 57684,
+   "constructionPoints": 28842,
+   "constructionMaterials": 962,
+   "electricity": 690,
+   "water": 60,
+   "consumables": 102.86,
+   "jobs": {
+    "NO_DIPLOMA": 24,
+    "DIPLOMA": 16,
+    "COLLEGE_ENGINEERING": 4,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 225308,
+   "roadLoad": 2357,
+   "makes": {
+    "LIME": 18000
+   },
+   "uses": {
+    "LIMESTONE": 32400,
+    "THERMAL_COAL": 3600
+   },
    "since": 1900
   }
  ]

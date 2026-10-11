@@ -2856,6 +2856,161 @@ public class BuildingManager {
                 .setSince(1900)
                 .setId(114));
 
+        /* --------------------- QUARRYING AND CEMENT & CONCRETE (0.7.131, batch I7) ---------------------
+           runs/spec-materials.md 2.1, 2.2, 2.4, 2.10 and 5's I7 row; the study's
+           (materials-chains-research.md) 1.4 and 6. Quarrying, on the end of
+           Sectors.KEYS after Coal Mining, digs stone's two types of field -
+           limestone, the kilns' and furnaces' feed, and hard rock - and Cement &
+           Concrete, after it, burns limestone into lime and cement. Their six,
+           the study's 6.4:
+             - the QUARRY: 40,000 t a month on one stone site of either type,
+               packed onto limestone first - its stone limestone on a limestone
+               field, aggregate on hard rock (sectors.Quarrying); its row makes
+               AGGREGATE, stone's pricing good;
+             - the LARGE QUARRY: 250,000 t on three sites of one field, the same;
+             - the DIMENSION STONE QUARRY: 1,000 t of blocks on one hard-rock
+               site, 3 t of rock a tonne;
+             - the CEMENT PLANT: 25,000 t of cement from 30,000 t of limestone,
+               3,750 t of aggregate and 3,350 t of thermal coal;
+             - the LARGE CEMENT PLANT: five times that;
+             - the LIME KILN: 18,000 t of quicklime from 32,400 t of limestone and
+               3,600 t of thermal coal.
+           The house conventions (spec 2.2), as I4's to I6's rows: cash the all-in
+           cost over 1.3, material a sixtieth of the cash, points a half, cash
+           taking the material's rounding; the study's posts split by its
+           families by largest remainder, ties to the less skilled (the Quarry and
+           the Dimension Stone Quarry the mines' 75/20/5/0, the Large Quarry the
+           large mines' 60/27.5/10/2.5, the three plants the heavy plants'
+           54/35/9/2); power the research's kWh a unit over the 730 hours of a
+           month the study reads its own kW at (its 2.2: 3,700 kW for 6,000 t is
+           450 kWh a tonne) - crushing 1.7 kWh a tonne of stone dug, the middle
+           of its 1.6-1.8 [S18], the Dimension Stone Quarry on its 3,000 t of
+           rock; cement 91 kWh a tonne [S31]; the Lime Kiln, which the study
+           gives none, at the Pelletising Plant's 5,750 kW for 150,000 t, the
+           study's other kiln; water the Steel Mini-Mill's 320 for 3,700 kW;
+           ground a stone site's 0.1 km2 a site, the plants the Steel Foundry's
+           ground per D$ of cost; road load the tonnes in and out at the Iron
+           Mine's 420 for 2,500 t (quarries: what leaves) or the Steel Foundry's
+           110 for 2,520 t (plants); stock three months of cement, the one
+           stockable output; no diesel - the study names none; consumables the
+           study's running cost less wages, power and water. "since": 1900 for
+           all but the Large Cement Plant, 1902 (Edison's long kilns at New
+           Village, research-1900.md 1.2).
+           ------------------------------------------------------------------------------ */
+        templates.add(new BuildingsTemplate("Quarry", BuildingType.MINING)   // one stone site of either type, limestone first
+                .setCashCost(11544)
+                .setConstructionPoints(5772)
+                .setConstructionMaterials(192)
+                .setSector("Quarrying")
+                .makes(Good.AGGREGATE, 40000)
+                .setElectricityConsumption(93)
+                .setWaterConsumption(8)
+                .setConsumables(79.35)          // the study's 6.4 runs, 163 - 82.32 wages - 0.93 power - 0.40 water
+                .setLandSqFt(1076391)           // one stone site, 0.1 km2
+                .setRoadLoad(6720)              // 40,000 t out, at the Iron Mine's 420 for 2,500 t
+                .setJobs(JobType.NO_DIPLOMA, 17)
+                .setJobs(JobType.DIPLOMA, 4)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                .setSite(Resource.STONE, null, 1, 1)
+                .setSince(1900)
+                .setId(115));
+        templates.add(new BuildingsTemplate("Large Quarry", BuildingType.MINING)   // three sites of one stone field
+                .setCashCost(69228)
+                .setConstructionPoints(34614)
+                .setConstructionMaterials(1154)
+                .setSector("Quarrying")
+                .makes(Good.AGGREGATE, 250000)
+                .setElectricityConsumption(582)
+                .setWaterConsumption(50)
+                .setConsumables(464.08)         // 981 - 508.60 wages - 5.82 power - 2.50 water
+                .setLandSqFt(3229173)           // three stone sites
+                .setRoadLoad(42000)             // 250,000 t out
+                .setJobs(JobType.NO_DIPLOMA, 75)
+                .setJobs(JobType.DIPLOMA, 34)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 13)
+                .setJobs(JobType.UNIV_SCIENCE, 3)
+                .setSite(Resource.STONE, null, 3, 1)
+                .setSince(1900)
+                .setId(116));
+        templates.add(new BuildingsTemplate("Dimension Stone Quarry", BuildingType.MINING)   // one hard-rock site, 3 t of rock a tonne of blocks
+                .setCashCost(4614)
+                .setConstructionPoints(2307)
+                .setConstructionMaterials(77)
+                .setSector("Quarrying")
+                .makes(Good.DIMENSION_STONE, 1000)
+                .setElectricityConsumption(7)
+                .setWaterConsumption(1)
+                .setConsumables(39.9)           // 104 - 63.98 wages - 0.07 power - 0.05 water
+                .setLandSqFt(1076391)           // one stone site
+                .setRoadLoad(168)               // 1,000 t of blocks out
+                .setJobs(JobType.NO_DIPLOMA, 13)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                .setSite(Resource.STONE, Deposit.FieldType.HARD_ROCK, 1, 3)
+                .setSince(1900)
+                .setId(117));
+        templates.add(new BuildingsTemplate("Cement Plant", BuildingType.HEAVY_INDUSTRY)   // limestone, aggregate and coal into cement
+                .setCashCost(92316)
+                .setConstructionPoints(46158)
+                .setConstructionMaterials(1538)
+                .setSector("Cement & Concrete")
+                .makes(Good.CEMENT, 25000)
+                .uses(Good.LIMESTONE, 30000)
+                .uses(Good.AGGREGATE, 3750)
+                .uses(Good.THERMAL_COAL, 3350)
+                .setElectricityConsumption(3116)
+                .setWaterConsumption(269)
+                .setConsumables(212.01)         // 501 - 244.38 wages - 31.16 power - 13.45 water
+                .setLandSqFt(360493)            // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(2711)              // 37,100 t in and 25,000 t out, at the Steel Foundry's 110 for 2,520 t
+                .setStock(75000)
+                .setJobs(JobType.NO_DIPLOMA, 33)
+                .setJobs(JobType.DIPLOMA, 21)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 5)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setSince(1900)
+                .setId(118));
+        templates.add(new BuildingsTemplate("Large Cement Plant", BuildingType.HEAVY_INDUSTRY)   // five Cement Plants' cement - Edison's long kilns, 1902
+                .setCashCost(384620)
+                .setConstructionPoints(192310)
+                .setConstructionMaterials(6410)
+                .setSector("Cement & Concrete")
+                .makes(Good.CEMENT, 125000)
+                .uses(Good.LIMESTONE, 150000)
+                .uses(Good.AGGREGATE, 18750)
+                .uses(Good.THERMAL_COAL, 16750)
+                .setElectricityConsumption(15582)
+                .setWaterConsumption(1348)
+                .setConsumables(891.92)         // 1,730 - 614.86 wages - 155.82 power - 67.40 water
+                .setLandSqFt(1502053)           // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(13554)             // 185,500 t in and 125,000 t out
+                .setStock(375000)
+                .setJobs(JobType.NO_DIPLOMA, 81)
+                .setJobs(JobType.DIPLOMA, 53)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 13)
+                .setJobs(JobType.UNIV_SCIENCE, 3)
+                .setSince(1902)
+                .setId(119));
+        templates.add(new BuildingsTemplate("Lime Kiln", BuildingType.HEAVY_INDUSTRY)   // limestone and coal into quicklime
+                .setCashCost(57684)
+                .setConstructionPoints(28842)
+                .setConstructionMaterials(962)
+                .setSector("Cement & Concrete")
+                .makes(Good.LIME, 18000)
+                .uses(Good.LIMESTONE, 32400)
+                .uses(Good.THERMAL_COAL, 3600)
+                .setElectricityConsumption(690)
+                .setWaterConsumption(60)
+                .setConsumables(102.86)         // 298 - 185.24 wages - 6.90 power - 3.00 water
+                .setLandSqFt(225308)            // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(2357)              // 36,000 t in and 18,000 t out
+                .setJobs(JobType.NO_DIPLOMA, 24)
+                .setJobs(JobType.DIPLOMA, 16)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 4)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setSince(1900)
+                .setId(120));
+
         /* ---------------------------- EDUCATION ----------------------------
            The other half of the labour market.
 
