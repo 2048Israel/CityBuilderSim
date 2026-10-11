@@ -5436,8 +5436,46 @@ public final class GameVersion {
      *   - LongPlaytest --earth <place or lat,lon> founds the run's city on the
      *     Earth; its trace is its own baseline (pte07121, --earth rotterdam).
      *     The default playtest is pt07116's byte for byte.
+     *
+     * 0.7.122 (2026-10-11) - THE BUILD CARD ASKS THE INVESTORS' INTEREST
+     * TEST. Batch C1 (the docs pass for 0.7.115's flag 1; runs/brief-
+     * batchC1.md, runs/fixC1-notes.md). No save format change (38): nothing
+     * new is saved, and the model is as it was - the card is advice.
+     *   - THE GAP: the card's gates ended at the loss ("pays": the investors'
+     *     estimate above nothing), and the Sectors screen's every-gate (i)
+     *     said so; Game.consider() asks every order more, since 0.7.113 on
+     *     its whole cost whoever pays - PROFIT_OVER_INTEREST times a month's
+     *     interest at the rate it would be judged at. So a card could pass
+     *     every gate while the investors declined it: in BuildCardCheck's
+     *     town an Industrial Bakery earning $97.6k a month against a bar of
+     *     $154.7k, and a Meat Works.
+     *   - Game.interestTest() and InterestTest (new): carriesItsWholeCost()'s
+     *     question with its figures - what it earns, the cost the interest
+     *     is struck on (orderGate()), the rate it is judged at and the real
+     *     rate the test reads, a month's interest, a ban, the answer;
+     *     carriesItsWholeCost() answers from it, as it did.
+     *   - BuildCard: GateKind.INTEREST, the last gate (interestGate()), asked
+     *     of every market building but a landlord's home, which the mortgage
+     *     lender's test decides (a dash on the report); gate() returns it
+     *     after the loss, appraise() marks it - a loss fails it too, behind
+     *     the loss; Gate carries the test; under a borrowing ban its words
+     *     are consider()'s ("borrowing ban, N more months - it would need
+     *     credit").
+     *   - The words (ui/BuildScreen.interestWords()): "earns $97.6k a month,
+     *     under 1.25x its interest on its whole cost ($123.8k a month at
+     *     5.03%)" - the card's "this one:", the Investors page's first gate,
+     *     the every-gate report's cross and its "So:". The Sectors screen's
+     *     EVERY BUILDING AT EVERY GATE gains an "interest" column and its (i)
+     *     the test; ITS BUILDINGS' (i) the same; a building passing them all
+     *     "passes every gate" (was "all five").
+     *   - Harnesses: BuildCardCheck 11 (every market building's gate is
+     *     consider()'s answer to an order of one, Game.sliceFor(); a Bakery
+     *     from its till at a raised prime fails it with the test's figures
+     *     and consider() refuses it, at today's prime passes and is built; a
+     *     ban; a loss) and 6's last assertion with the new gate.
+     *   - The playtest is pt07116's byte for byte.
      */
-    public static final String VERSION = "0.7.121";
+    public static final String VERSION = "0.7.122";
 
     /**
      * The save shape.
