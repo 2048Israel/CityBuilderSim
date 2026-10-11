@@ -1033,6 +1033,8 @@ final class FoundingScreen {
                 }
             });
             canvas.setOnScroll(e -> {
+                // The wheel zooms the globe, and the page under it does not scroll.
+                e.consume();
                 if (e.getDeltaY() == 0) return;
                 zoom(e.getDeltaY() > 0 ? 1 / STEP : STEP);
             });
