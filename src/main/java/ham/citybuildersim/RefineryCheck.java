@@ -971,6 +971,8 @@ public class RefineryCheck {
     static void theInvestorsOrderAUnit() throws Exception {
         out.println("\n--- 14. the investors order a unit, and Game.consider() tests the planner's estimate ---");
         Game g = plannerTown("refinerycheck-plan", false);
+        // ...its orders asked on the rule to 0.7.112 (0.7.113, I2b): on the whole cost no unit here pays (11b), and the section is the order's path.
+        g.setOrderGate(SpreadPlanner.ON_ITS_BORROWING);
         Refining r = g.getSectors().refining();
         BusinessInvestment plans = g.getBusinessInvestment();
         BuildingManager b = g.getBuildingManager();

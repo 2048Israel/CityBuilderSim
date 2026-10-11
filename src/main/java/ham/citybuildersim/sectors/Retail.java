@@ -777,8 +777,9 @@ public final class Retail extends Sector {
      * recommended: the shelf's floor is still the stock's cost and
      * RETAIL_MARKUP (wages in the floor were measured to bankrupt the shops,
      * spec-inflation star 13), and plan() still ranks a shop by its margin
-     * over its cost. A shop the till pays for outright is not asked the test
-     * (servicesItsOwnDebt() passes what borrows nothing), as before.
+     * over its cost. A shop the till pays for outright was not asked the test
+     * until 0.7.113; since then it is, on its whole cost (Game.consider(), ON
+     * ITS WHOLE COST).
      */
 
     /** What a store would clear a month: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then), less its staff at today's wages (0.7.106) - and a Filling Station's margin on the litres it can sell (0.7.83; stationEarns()) less its staff. The investment test's figure. */

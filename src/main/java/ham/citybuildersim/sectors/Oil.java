@@ -474,6 +474,16 @@ public final class Oil extends Sector {
      * When nothing at sea is ordered the land's decision stands, its words
      * and its "no land" with it (★: the sea's refusal is the Oil page's,
      * atSeaWord()).
+     *
+     * EACH KIND ON ITS WHOLE COST (0.7.113, batch I2b; Jerus's decisions A
+     * and A13). Game.consider() asks every order to carry the interest on
+     * its whole cost, whoever pays; the planner asks it first
+     * (Game.carriesItsWholeCost()), so a land well that would not carry it
+     * lets the sea be weighed - and a platform well that would not, the
+     * pipe and the jacket - where until then a kind that earned anything
+     * was ordered and stopped the walk. With nothing at sea to order the
+     * land well goes to consider() as it did, which declines it in its own
+     * words.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
@@ -483,10 +493,16 @@ public final class Oil extends Sector {
             return BusinessInvestment.Decision.no(sector, "already building");
         }
         BusinessInvestment.Decision onLand = planOnLand(plans, game);
-        if (onLand.build) return onLand;
+        if (onLand.build && carriesItsWholeCost(onLand, plans, game)) return onLand;
         BusinessInvestment.Decision atSea = planAtSea(plans, game);
         atSeaWord = atSea == null || atSea.build ? null : atSea.reason;
         return atSea != null && atSea.build ? atSea : onLand;
+    }
+
+    /** Whether an order carries the interest on its whole cost, as Game.consider() will ask it (0.7.113): its estimate times its count against the cost of them all. */
+    private boolean carriesItsWholeCost(BusinessInvestment.Decision d, BusinessInvestment plans, Game game) {
+        return game.carriesItsWholeCost(key(), estimatedMonthlyProfit(d.template, plans) * d.quantity,
+                plans.getCostOf(d.template, d.quantity));
     }
 
     /** Why nothing at sea was ordered the last month the planner looked (null when it ordered, or had nothing at sea to weigh): the Oil page's line. Not saved: a screen's. */
@@ -658,7 +674,11 @@ public final class Oil extends Sector {
        then a field's pipe that pays, then a jacket on the field with the most
        sea sites free, judged as a package with min(12, those sites) wells by
        the investors' interest test (estimatedMonthlyProfit(): the jacket's
-       share of the package's earnings by cost, as a crude unit's is).
+       share of the package's earnings by cost, as a crude unit's is). Since
+       0.7.113 each kind is asked that test on its whole cost before the
+       planner settles on it (Game.carriesItsWholeCost(); plan()'s EACH KIND
+       ON ITS WHOLE COST) - the well and the jacket earned anything until
+       then, and the pipe's own rule was on its whole cost already.
 
        DECOMMISSIONED: a jacket holding no well and the pipelines are not the
        lift's plant (mayRetire()); once the city's oil is worked out they are
@@ -1235,18 +1255,20 @@ public final class Oil extends Sector {
         double reserve = land.getOilLeftAtSea();
         if (!(reserve > 0) || (land.getSites(Resource.OIL, false) <= 0 && jacketsStanding() <= 0)) return null;
 
-        // 1. A platform well into a free slot.
+        // 1. A platform well into a free slot - one that carries the interest on its whole cost (0.7.113; it earned anything until then).
         BuildingsTemplate well = platformWell();
         int free = well == null ? 0 : game.sitesFor(well) - platformWellsCommitted();
         BusinessInvestment.Decision held = null;
         if (free > 0) {
             Staffing staffing = staffing(well);
-            double cost = plans.getCostOf(well, 1);
+            double cost = plans.getCostOf(well, 1), earns = estimatedMonthlyProfit(well, plans);
             if (!staffing.passes()) {
                 held = BusinessInvestment.Decision.no(sector, staffing.why(well.getName()));
-            } else if (cost > 0 && estimatedMonthlyProfit(well, plans) / cost > 0) {
+            } else if (cost > 0 && game.carriesItsWholeCost(sector, earns, cost)) {
                 return new BusinessInvestment.Decision(sector, well, 1,
                         String.format("%d platform slot(s) free at sea, %,.0fk tonnes under the sea", free, reserve / 1000), true);
+            } else if (cost > 0 && earns > 0) {
+                held = BusinessInvestment.Decision.no(sector, "a " + well.getName() + " would not carry the interest on its whole cost");
             }
         }
 
@@ -1259,18 +1281,20 @@ public final class Oil extends Sector {
                     String.format("a %d km pipe ashore saves the shuttle tankers' freight on %,.0f t a month", pipe.km(), pipe.tonnes()), true);
         }
 
-        // 3. A jacket on the shallow field with the most sea sites free, judged with its wells.
+        // 3. A jacket on the shallow field with the most sea sites free, judged with its wells - on the package's whole cost (0.7.113).
         BuildingsTemplate jacket = platformTemplate();
         JacketCase c = jacketCase(plans);
         if (jacket != null && c != null && game.hasDepositFor(jacket, 1)) {
             Staffing staffing = staffing(jacket);
             if (!staffing.passes()) return BusinessInvestment.Decision.no(sector, staffing.why(jacket.getName()));
-            if (c.earns() > 0) {
+            if (game.carriesItsWholeCost(sector, c.earns(), c.cost())) {
                 return new BusinessInvestment.Decision(sector, jacket, 1,
                         String.format("a shallow sea field with %d site(s) free, %.0f m deep: a platform and %d well(s)",
                                 c.field().sites(), c.field().depth(), c.wells()), true);
             }
-            return BusinessInvestment.Decision.no(sector, "a platform and its wells would not pay");
+            return BusinessInvestment.Decision.no(sector, c.earns() > 0
+                    ? "a platform and its wells would not carry the interest on their whole cost"
+                    : "a platform and its wells would not pay");
         }
         return held;
     }

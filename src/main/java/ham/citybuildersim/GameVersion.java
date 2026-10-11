@@ -5181,6 +5181,46 @@ public final class GameVersion {
      *     BuildingDataCheck (gen and consumables, json against the twin).
      *   - The playtest is 0.7.106's byte for byte.
      *
+     * 0.7.113 (2026-10-11) - EVERY ORDER ON ITS WHOLE COST. Batch I2b
+     * (Jerus's decision A, "test every order on its whole cost, whoever
+     * pays", and A13 of 2026-10-10, "all rec": the Game.Slices orders and
+     * the sea's; runs/brief-batchI2b.md, runs/fixI2b-notes.md). No save
+     * format change (36): nothing new is saved.
+     *   - Game.consider() asks every slice of an order to earn
+     *     PROFIT_OVER_INTEREST times a month's interest at the real rate on
+     *     its WHOLE cost, at the one rate the slice is judged at - the loan's
+     *     at the leverage it leaves, or a bond's blended with the bank's
+     *     where one is cheaper and raises it all (judged()) - where until
+     *     then it asked it of what the slice borrowed, so an order the till
+     *     paid for was asked nothing (a Diner losing $7k a month built from
+     *     the restaurants' till at the playtest's month 9; Filling Stations
+     *     losing $14-43k a month from month 127). The financing is as it
+     *     was. "At prime" reads the same cost (past PRIME_SCAN_SLICES under
+     *     a ban the last slice the till pays for is asked beside the four),
+     *     and the refusals say "on its whole cost" (THE LARGEST SLICE's ON
+     *     ITS WHOLE COST).
+     *   - The rule is one replaceable piece, Game.orderGate() (SpreadPlanner's
+     *     MoneyGate: ON_ITS_WHOLE_COST, or the rule to 0.7.112,
+     *     ON_ITS_BORROWING, a check's counterfactual - setOrderGate()), and
+     *     Game.carriesItsWholeCost() asks it of an order for a planner.
+     *   - THE SEA'S ORDERS (sectors.Oil): the planner asks it before it
+     *     walks on - a land well that would not carry it lets the sea be
+     *     weighed, a platform well that would not the pipe and the jacket,
+     *     and a jacket is weighed on its package's whole cost - where each
+     *     kind earned anything until then. The pipe's rule was on its whole
+     *     cost already; the ports' terminals are the city's; a landlord's
+     *     home keeps the mortgage lender's test (not A13's).
+     *   - Harnesses: InvestCheck 6b (new: a cash-rich sector's thin order
+     *     refused, and the same on a loan; the bar to the bit each way; "at
+     *     prime" on the whole cost; an order of three, the till paying one);
+     *     OrderSearchCheck's countdown asks the game's rule, and a twin of
+     *     its copy on the rule to 0.7.112 causes the deep trims; WellCheck
+     *     12 (ordered while the package carries its whole cost); fixtures
+     *     re-caused: NewGameCheck (USED_HOUSES), ZoningCheck 8 (FARM_HANDS),
+     *     RefineryCheck 14 (its town on the rule to 0.7.112).
+     *   - The playtest moves from month 9 (re-baselined pt07113): people at
+     *     the end 566,444 (492,823), the businesses' debt $53.2B ($1.0T).
+     *
      * 0.7.115 (2026-10-11) - THE EARTH'S GROUND. Batch E2 (the project's
      * spec-earth.md 3 and 8; Jerus's answers of 2026-10-10, "all rec";
      * runs/brief-batchE2.md, runs/fixE2-notes.md). No save format change

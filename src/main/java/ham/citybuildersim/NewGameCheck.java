@@ -239,6 +239,9 @@ public class NewGameCheck {
         return m;
     }
 
+    /** The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. */
+    static final int USED_HOUSES = 120;
+
     public static void main(String[] args) throws Exception {
 
         Path root = Files.createTempDirectory("newgamecheck");
@@ -284,7 +287,18 @@ public class NewGameCheck {
          * game must sweep too), so the landlords borrow as they did.
          */
         used.getEconomyManager().getTaxPolicy().setSalesOffset(used.getSectors().construction(), -TaxPolicy.DEFAULT_INCOME_TAX);
-        used.buildStack(template(used, "House"), 200, false);
+        /*
+         * ...AND FEWER HOUSES THAN ITS PEOPLE, RE-CAUSED (0.7.113). Two hundred
+         * housed this city ahead of its jobs, and its landlords still built
+         * and borrowed while its restaurants and luxury shops put up Diners
+         * and Boutiques losing $2-37k a month out of their tills - 1,072
+         * people at month 123. Since the investors are asked the interest on
+         * an order's whole cost (Game, ON ITS WHOLE COST) those are not built,
+         * the city stood at 756 inside its two hundred, and the landlords
+         * never borrowed. USED_HOUSES leaves its people short of homes, so
+         * they build on mortgages again.
+         */
+        used.buildStack(template(used, "House"), USED_HOUSES, false);
         used.buildStack(template(used, "Convenience Store"), 5, false);
         used.buildStack(template(used, "Industrial Bakery"), 2, false);
         used.buildStack(template(used, "Bakery"), 1, false);

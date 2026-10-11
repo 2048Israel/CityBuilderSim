@@ -390,8 +390,9 @@ public class InvestCheck {
         /* ==================== 6. THE BRAKE ==================== */
         System.out.println("\n--- a project must service its own debt ---");
 
-        // Paid from cash: nothing to service, always allowed.
-        assertTrue("cash purchase always passes",
+        // Nothing to service: a test struck on nothing passes. Until 0.7.113 that was every cash purchase
+        // (Game.consider() asked it of what an order borrowed); since then it is asked of the whole cost - 6b.
+        assertTrue("a test struck on nothing passes (a cash purchase's, until 0.7.113)",
                 bi.servicesItsOwnDebt(0, 0, .09));
 
         // $100,000 at 9% is $750/month of interest.
@@ -411,6 +412,9 @@ public class InvestCheck {
                 bi.servicesItsOwnDebt(300, 100000, .02));
         assertTrue("...but not at 9%",
                 !bi.servicesItsOwnDebt(300, 100000, .09));
+
+        /* ==================== 6b. ON ITS WHOLE COST (0.7.113) ==================== */
+        wholeCost(root);
 
         /* ==================== 7. costing matches the build path ==================== */
         System.out.println("\n--- quoted cost matches what the build charges ---");
@@ -1484,5 +1488,117 @@ public class InvestCheck {
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /*
+     * ON ITS WHOLE COST (0.7.113, batch I2b; Jerus's decisions A and A13,
+     * "test every order on its whole cost, whoever pays"). Game.consider()
+     * asked PROFIT_OVER_INTEREST times the interest on what an order would
+     * borrow, so one its till paid for was asked nothing: on the playtest's
+     * city a Diner losing $7k a month was built from the till at month 9.
+     * The fixture is one Diner for the restaurants, its earnings set by the
+     * check against the bar the model draws - PROFIT_OVER_INTEREST times a
+     * month's interest at the real rate on its whole cost, at the rate the
+     * order is judged at: the restaurants' own where the till pays
+     * (BusinessDebtManager.projectRate() of nothing), the loan's on all of it
+     * or a bond's blended with the bank's where one is cheaper and raises it
+     * all (BondMarket.plan(), as Game.financeProject() asks it) - and asked
+     * of consider()'s own search (Game.sliceFor()).
+     */
+    static void wholeCost(Path root) {
+        System.out.println("\n--- an order is tested on its whole cost, whoever pays (0.7.113) ---");
+        Game g = city(root, "wholecost");
+        BusinessInvestment plans = g.getBusinessInvestment();
+        BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
+        String eat = Sectors.RESTAURANTS;
+        BuildingsTemplate diner = template(g, "Diner");
+        // A month played, the restaurants held out of it with two Diners' worth in their till: prime struck, and their
+        // books read by the lender, so the till's rate is a sector's that owns something (a sector with nothing is
+        // priced on the whole curve - BusinessDebtManager.pricingLeverage()).
+        plans.holdSector(eat);
+        g.getEconomyManager().setSectorCash(eat, 2 * plans.getCostOf(diner, 1));
+        month(g);
+        double cost = plans.getCostOf(diner, 1);
+        BusinessInvestment.Decision one = new BusinessInvestment.Decision(eat, diner, 1, "the fixture's", true);
+
+        // The rate each way it could be paid for, as Slices.passes() reads it.
+        double tillRate = credit.projectRate(eat, 0);
+        double loanRate = credit.projectRate(eat, cost);
+        BusinessDebtManager.Plan plan = g.getBondMarket().plan(eat, cost, loanRate, credit.projectLoanRoom(eat, cost),
+                credit.projectBondRoom(eat, cost), cost, g.getMonth());
+        double loanTested = plan != null && plan.hasBond() && plan.covers() ? plan.blendedRate() : loanRate;
+        double tillBar = cost * plans.realTestRate(tillRate) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
+        double loanBar = cost * plans.realTestRate(loanTested) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
+        System.out.printf("   a Diner: $%,.1fk; the till's rate %.4f%%, the loan's %.4f%% (tested %.4f%%); the bar $%,.4fk"
+                + " a month from the till, $%,.4fk on a loan%n", cost, tillRate * 100, loanRate * 100, loanTested * 100, tillBar, loanBar);
+        assertTrue("fixture: prime is struck, the restaurants own their till, a Diner costs something, and both bars are above nothing",
+                credit.getPrimeRate() > 0 && credit.quarterAssets(eat) > 0 && cost > 0 && tillBar > 0 && loanBar > 0);
+        assertTrue("fixture: the city is not under a borrowing ban for the restaurants", !credit.isBorrowingBlocked(eat));
+
+        // Earning half the lower bar: something, but less than its interest on its whole cost either way.
+        double thin = Math.min(tillBar, loanBar) / 2;
+        double rich = 2 * cost;
+        assertTrue("fixture: the rule until 0.7.112 asked nothing of it from a till holding twice its cost",
+                plans.servicesItsOwnDebt(thin, Math.max(0, cost - rich), tillRate));
+        Game.Afford fromTill = g.sliceFor(one, rich, thin);
+        assertTrue("A CASH-RICH SECTOR'S ORDER THAT EARNS LESS THAN ITS INTEREST ON ITS WHOLE COST IS REFUSED",
+                fromTill.quantity() == 0);
+        Game.Afford onLoan = g.sliceFor(one, 0, thin);
+        assertTrue("...and the same order on a loan is refused alike", onLoan.quantity() == 0);
+        Game.Afford halfTill = g.sliceFor(one, cost / 2, thin);
+        assertTrue("...and half from the till and half borrowed, alike", halfTill.quantity() == 0);
+
+        // The bar itself, to the bit: at it the order is built, a hair under it not - the till's rate from the till...
+        assertTrue("from the till, earning PROFIT_OVER_INTEREST times a month's interest at the real rate on its whole cost"
+                + " builds it", g.sliceFor(one, rich, tillBar).quantity() == 1);
+        assertTrue("...and a hair under that is refused", g.sliceFor(one, rich, Math.nextDown(tillBar)).quantity() == 0);
+        // ...and the loan's - or the bond's - on a loan.
+        assertTrue("on a loan, the same bar at the rate the loan is judged at builds it",
+                g.sliceFor(one, 0, loanBar).quantity() == 1);
+        assertTrue("...and a hair under that is refused", g.sliceFor(one, 0, Math.nextDown(loanBar)).quantity() == 0);
+        // The rate at the whole order is what the refusal quotes.
+        assertTrue("the refusal's rate is the one the whole order is judged at: the till's, then the loan's",
+                fromTill.firstRate() == tillRate && onLoan.firstRate() == loanRate);
+
+        // "At prime" reads the same whole cost: an order whose earnings would carry the interest at prime on half its
+        // cost - what it would borrow - but not on all of it, would not have carried it at prime.
+        double prime = credit.getPrimeRate() + credit.getRecordSurcharge(eat);
+        double primeOnAll = cost * plans.realTestRate(prime) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
+        double primeOnHalf = (cost / 2) * plans.realTestRate(prime) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
+        double between = (primeOnHalf + primeOnAll) / 2;
+        Game.Afford half = g.sliceFor(one, cost / 2, between);
+        assertTrue("fixture: those earnings fail the order's own bar (half from the till)", half.quantity() == 0
+                && between < Math.min(tillBar, loanBar));
+        assertTrue("\"AT PRIME\" FOLLOWS THE WHOLE COST: earnings that would carry prime's interest on what it borrows,"
+                + " but not on all it costs, are not refused at prime", !half.atPrime());
+        // ...and refused at prime where they would carry it on the whole cost at prime but not at the sector's own rate:
+        // a sector that owns nothing yet, whose loan of a Boutique's cost is priced past prime (leverage one).
+        String lux = Sectors.LUXURY_RETAIL;
+        BuildingsTemplate boutique = template(g, "Boutique");
+        double bCost = plans.getCostOf(boutique, 1), bRate = credit.projectRate(lux, bCost);
+        double bPrime = credit.getPrimeRate() + credit.getRecordSurcharge(lux);
+        double bOverPrime = (bCost * plans.realTestRate(bPrime) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST
+                + bCost * plans.realTestRate(bRate) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST) / 2;
+        Game.Afford priced = g.sliceFor(new BusinessInvestment.Decision(lux, boutique, 1, "the fixture's", true), 0, bOverPrime);
+        System.out.printf("   a Boutique: $%,.1fk on a loan at %.4f%%, prime and the record %.4f%%%n", bCost, bRate * 100, bPrime * 100);
+        assertTrue("fixture: the luxury shops own nothing, so their loan is priced past prime", credit.quarterAssets(lux) <= 0
+                && bRate > bPrime);
+        assertTrue("...and earnings over prime's bar on the whole cost, under the order's, are refused at prime",
+                priced.quantity() == 0 && priced.atPrime());
+
+        // An order of three with the till paying for one: each slice on its whole cost, the largest that carries it kept.
+        BusinessInvestment.Decision three = new BusinessInvestment.Decision(eat, diner, 3, "the fixture's", true);
+        double cost3 = plans.getCostOf(diner, 3);
+        double rate3 = credit.projectRate(eat, cost3 - cost);
+        BusinessDebtManager.Plan plan3 = g.getBondMarket().plan(eat, cost3 - cost, rate3, credit.projectLoanRoom(eat, cost3 - cost),
+                credit.projectBondRoom(eat, cost3 - cost), cost3 - cost, g.getMonth());
+        double tested3 = plan3 != null && plan3.hasBond() && plan3.covers() ? plan3.blendedRate() : rate3;
+        // ...a part in a billion over, so three of them are not a hair under it in a double.
+        double bar3 = cost3 * plans.realTestRate(tested3) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST / 3 * (1 + 1e-9);
+        assertTrue("an order of three, the till paying for one, earning each its share of the bar on all three's cost is"
+                + " built whole", g.sliceFor(three, cost, bar3).quantity() == 3);
+        Game.Afford thinThree = g.sliceFor(three, cost, thin);
+        assertTrue("...and earning half the lower bar, none of it - the slice the till pays for included",
+                thinThree.quantity() == 0);
     }
 }
