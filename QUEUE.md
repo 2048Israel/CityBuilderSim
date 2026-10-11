@@ -22,7 +22,6 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | I7 | Stone: Quarrying, Cement & Concrete (running) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
-| EC1 | EarthTerrainCheck's cells pass timed on the thread's CPU, as MapCheck's month | [EC1](docs/queue/EC1.md) |
 | T1-C | The builders' own depots first, at one priority with death care | project: `claude/why-the-builders-stall.md` §9 C, `claude/decisions-2026-10-10.md`; [AR1 item 4](docs/queue/AR1.md#his-answers-2026-10-11-0929) |
 | E8 | The globe's model half, pure | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |
 | I8 | Copper: Copper Mining, Copper Refining, the Wire & Cable Works | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
