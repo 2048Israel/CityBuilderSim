@@ -61,7 +61,9 @@ import java.util.Map;
  * THE WORLD'S OTHER HALF. The cells pass (cellsPass()) replaces the
  * generated world's sea pass: each world cell's land and forest from
  * CELL_SAMPLES x CELL_SAMPLES points of the 4' layers, which the fields of
- * ore and oil are drawn on as the generated world's are on its cells. The
+ * ore and oil are drawn on as the generated world's are on its cells - since
+ * 0.7.117 (batch E3) each point's land weighted by its province's geology
+ * (Geology, cellFieldLand()), oil's with a basin's, shelf's or rift's sea. The
  * founding is the snap (spec-earth 2): from the spot, the projection's
  * centre, the nearest plot, ring by ring of one plot, that passes the
  * founding's test 1 (World.SITE_DRY_PLOTS); there is no founding river.
