@@ -33,7 +33,8 @@ import java.util.Locale;
  *   3. THE GROUND BAR adds up to the dry ground: each zone's used and held
  *      ground its own, the bare ground and open forest free for anyone
  *      LandManager.freeForAnyone(), the built ground the allocated less the
- *      zones' used, the working and protected forest the law's.
+ *      zones' used, the working and protected forest the law's - and built
+ *      past what the law keeps, still the dry ground, no part below nothing.
  *   4. A ZONE'S ROW is its zone: size, share, used, held, its price a
  *      square foot, its three rates and offsets (one dial, two doors: a
  *      move through the zone's door reads on its row and on Policy › Taxes),
@@ -223,7 +224,7 @@ public class ZoningViewCheck {
                         land.freeForAnyone(), dry));
         assertTrue("...and the zones' held ground HELD FOR THEM", same(ZoningView.total(bar, ZoningView.Kind.HELD), land.heldByZones(), dry));
         assertTrue("the working and protected forest are the law's",
-                ZoningView.total(bar, ZoningView.Kind.WORKING) == land.getWorkingForestSqFt()
+                same(ZoningView.total(bar, ZoningView.Kind.WORKING), land.getWorkingForestSqFt(), dry)
                 && ZoningView.total(bar, ZoningView.Kind.PROTECTED) == land.getProtectedForestSqFt());
         List<ZoningView.Part> closer = ZoningView.closer(g);
         assertTrue("the closer bar: the zones' used and held ground and the bare ground free for anyone, no more",
@@ -231,6 +232,25 @@ public class ZoningViewCheck {
                         + ZoningView.total(bar, ZoningView.Kind.HELD) + ZoningView.total(bar, ZoningView.Kind.BARE), dry));
         for (ZoningView.Part p : bar) {
             out.printf("      %-10s %-12s %s%n", p.kind(), p.sector() == null ? "" : p.sector(), LandManager.areaWords(p.sqFt()));
+        }
+        // Built past what the law keeps, by hand: a city that built over its forest before the law was set.
+        double allocated = land.getAllocatedSqFt(), kept = land.getProtectedForestSqFt() + land.getWorkingForestSqFt();
+        land.setAllocatedSqFt(dry - .1 * kept);
+        try {
+            List<ZoningView.Part> over = ZoningView.ground(g);
+            boolean none = true;
+            for (ZoningView.Part p : over) none &= p.sqFt() >= 0;
+            assertTrue("fixture: the city built over all but a tenth of the forest the law keeps", land.freeForAnyone() == 0
+                    && land.heldByZones() == 0);
+            assertTrue("built past what the law keeps, the bar still adds up to the dry ground, no part below nothing",
+                    same(ZoningView.total(over), dry) && none);
+            assertTrue("...the built ground the allocated, the law's forest only the tenth the built ground left, nothing free",
+                    same(ZoningView.total(over, ZoningView.Kind.BUILT) + ZoningView.total(over, ZoningView.Kind.USED), dry - .1 * kept, dry)
+                    && same(ZoningView.total(over, ZoningView.Kind.WORKING) + ZoningView.total(over, ZoningView.Kind.PROTECTED), .1 * kept, dry)
+                    && ZoningView.total(over, ZoningView.Kind.BARE) + ZoningView.total(over, ZoningView.Kind.OPEN)
+                            + ZoningView.total(over, ZoningView.Kind.HELD) == 0);
+        } finally {
+            land.setAllocatedSqFt(allocated);
         }
     }
 

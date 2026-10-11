@@ -93,11 +93,23 @@ public final class ZoningView {
        ground (solid) and held ground (hatched), the bare ground free for
        anyone, the open forest free for anyone, and the forest the law keeps:
        working, then protected. The cut is LandManager's own (ZONES AND THE
-       FOREST LAW there): built ground lies on bare ground first and past it
-       on cleared forest, the zones hold bare ground first and past it open
-       forest (Z9) - so the bare and open forest free for anyone are, between
-       them, freeForAnyone() (ZoningViewCheck 3), and the parts add up to the
-       dry ground.
+       FOREST LAW there): the built ground first, then what the law keeps of
+       what is left, then the free ground - the zones' held, the rest free
+       for anyone, freeForAnyone() (ZoningViewCheck 3) - so the parts add up
+       to the dry ground. Built ground lies on bare ground first and past it
+       on cleared forest, and the zones hold bare ground first and past it
+       open forest (Z9): so the free for anyone is bare ground as far as it
+       goes, open forest past it.
+
+       GROUND BUILT PAST WHAT THE LAW KEEPS. A law set after the city built
+       over its forest keeps more than stands unbuilt (the model keeps the
+       law's share of the forest ground whatever stands on it, and frees
+       nothing), and an older save built past its bare ground has not cleared
+       it until its first month's end (LandManager.settleClearing()): the bar
+       shows what is built as built and the law's forest only as far as the
+       dry ground goes past it (the probe's city600: 2.98 of its 3.03 km²
+       built, 1.04 of forest) - every part never below nothing, the whole
+       the dry ground.
        ===================================================================== */
 
     /** What a stretch of the bar is. */
@@ -125,29 +137,35 @@ public final class ZoningView {
     public static List<Part> ground(Game g) {
         LandManager land = g.getLandManager();
         Zoning z = g.getZoning();
-        double built = land.getAllocatedSqFt();
-        double forest = land.getForestSqFt(), cleared = land.getForestClearedSqFt();
+        double dry = Math.max(0, land.getOwnedSqFt());
+        double built = Math.min(Math.max(0, land.getAllocatedSqFt()), dry);
+        double protect = land.getProtectedForestSqFt(), work = land.getWorkingForestSqFt();
+        // The law's forest, as far as the dry ground goes past the built; the free ground the rest.
+        double kept = Math.min(protect + work, dry - built);
+        double free = dry - built - kept;
         List<Part> zoneParts = new ArrayList<>();
         double used = 0, held = 0;
         for (Zoning.Zone zone : z.zones()) {
-            double u = Math.min(land.usedBy(zone.sector()), Math.max(0, built - used));
-            double h = land.heldBy(zone.sector());
+            double u = Math.min(land.usedBy(zone.sector()), built - used);
+            double h = Math.min(land.heldBy(zone.sector()), free - held);
             zoneParts.add(new Part(Kind.USED, zone.sector(), u));
             zoneParts.add(new Part(Kind.HELD, zone.sector(), h));
             used += u;
             held += h;
         }
-        // Bare and cleared ground not built on - the bare ground the zones hold first, the rest anyone's.
-        double bareFree = Math.max(0, land.getOwnedSqFt() - forest + cleared - built);
-        double heldBare = Math.min(held, bareFree);
-        double openStanding = Math.max(0, land.getOpenForestSqFt() - cleared);
+        // Free for anyone: bare and cleared ground not built on - less what the zones hold of it, bare first - then open forest.
+        double anyone = free - held;
+        double bareFree = Math.max(0, land.getOwnedSqFt() - land.getForestSqFt() + land.getForestClearedSqFt()
+                - land.getAllocatedSqFt());
+        double bare = Math.min(anyone, Math.max(0, bareFree - Math.min(held, bareFree)));
+        double prot = Math.min(protect, kept);
         List<Part> out = new ArrayList<>();
-        out.add(new Part(Kind.BUILT, null, Math.max(0, built - used)));
+        out.add(new Part(Kind.BUILT, null, built - used));
         out.addAll(zoneParts);
-        out.add(new Part(Kind.BARE, null, bareFree - heldBare));
-        out.add(new Part(Kind.OPEN, null, Math.max(0, openStanding - (held - heldBare))));
-        out.add(new Part(Kind.WORKING, null, land.getWorkingForestSqFt()));
-        out.add(new Part(Kind.PROTECTED, null, land.getProtectedForestSqFt()));
+        out.add(new Part(Kind.BARE, null, bare));
+        out.add(new Part(Kind.OPEN, null, anyone - bare));
+        out.add(new Part(Kind.WORKING, null, kept - prot));
+        out.add(new Part(Kind.PROTECTED, null, prot));
         return out;
     }
 
@@ -316,7 +334,9 @@ public final class ZoningView {
      * @param at          PolicyPreview.forestAt(): the three kinds, the ground free for anyone, the wood kept standing
      *                    for ever, the wood that may be cut, and the share of the full stock kept standing
      * @param forestSqFt  the city's forest ground
-     * @param clearedSqFt ...of it cleared for building (C, Z7): open forest that is built on, or was
+     * @param clearedSqFt ...of it cleared for building (C, Z7): open forest that is built on, or was - or,
+     *                    on an older save whose first month has not yet settled it, the built ground past the
+     *                    bare ground, if more (LandManager.settleClearing()'s floor)
      * @param standingM3  the wood standing (LandManager.getRemaining(FOREST))
      * @param fullM3      ...of the forest's full stock (getOwnedAmount(FOREST))
      */
@@ -328,7 +348,9 @@ public final class ZoningView {
 
     public static Forest forest(Game g, Zoning z) {
         LandManager land = g.getLandManager();
-        return new Forest(PolicyPreview.forestAt(g, z), land.getForestSqFt(), land.getForestClearedSqFt(),
+        double onForest = Math.min(land.getForestSqFt(), Math.max(0, land.getAllocatedSqFt() - land.getBareSqFt()));
+        return new Forest(PolicyPreview.forestAt(g, z), land.getForestSqFt(),
+                Math.max(land.getForestClearedSqFt(), onForest),
                 land.getRemaining(Resource.FOREST), land.getOwnedAmount(Resource.FOREST));
     }
 }
