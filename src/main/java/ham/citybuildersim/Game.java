@@ -14577,18 +14577,21 @@ public class Game {
              * and the player finds out later, having played on top of it.
              */
             /*
-             * ...AND FROM BEFORE THE SECTOR TEMPLATE. Jerus: "clean break".
-             * A save older than format 21 carries five handlers' arrays and
-             * nothing this build can read a sector out of, so it is refused
-             * with a message that says why rather than loaded as a city with
-             * seven empty businesses.
+             * ...AND FROM A FORMAT OLDER THAN THIS BUILD LOADS (0.7.108, batch
+             * P7), the same way. Until the game is published a change that
+             * would make an older save load wrongly bumps SAVE_FORMAT and
+             * raises GameVersion.OLDEST_LOADABLE_FORMAT to it, so that save
+             * stops here: nothing of it applied, its file untouched, and
+             * the player told which build saved it and still opens it. At 21
+             * the floor is the sector template's clean break (Jerus: "clean
+             * break"), whose own check this replaces: a save older than that
+             * carries nothing a sector can be read out of.
              */
-            if (GameVersion.isFromBeforeSectors(loaded.getSaveFormat())) {
-                System.out.println(GameFiles.slotLabel(slot)
-                        + " was written before the sector template (save format "
-                        + loaded.getSaveFormat() + "; this build reads from "
-                        + GameVersion.FIRST_SECTOR_FORMAT + "). Not loaded.");
-                loadFailure = "This save is from before the sector redesign and cannot be loaded.";
+            if (GameVersion.isNoLongerReadable(loaded.getSaveFormat())) {
+                loadFailure = GameVersion.noLongerReadable(loaded.getGameVersion());
+                System.out.println(GameFiles.slotLabel(slot) + " not loaded (save format "
+                        + loaded.getSaveFormat() + "; this build reads formats " + GameVersion.OLDEST_LOADABLE_FORMAT
+                        + " to " + GameVersion.SAVE_FORMAT + "), its file left as it was. " + loadFailure);
                 return;
             }
             if (GameVersion.isFromNewerBuild(loaded.getSaveFormat())) {

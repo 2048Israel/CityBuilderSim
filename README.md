@@ -156,11 +156,13 @@ autosave old.
 **Until the game is published, old saves need not load** (Jerus, 2026-10-10).
 Adding a field does not need a format bump — Gson leaves a missing key alone,
 and a city saved before the field loads with it empty, which is correct for that
-city. Bump `GameVersion.SAVE_FORMAT` when an old save would be read *wrongly*
-rather than incompletely, so it is refused cleanly; no conversion code is written
-for it. (Today the loader refuses only a save from a newer format, or one from
-before the sector template, `GameVersion.FIRST_SECTOR_FORMAT`: a bump alone does
-not refuse an older save.) Once the game is published, older saves must load again.
+city. When an old save would be read *wrongly* rather than incompletely, bump
+`GameVersion.SAVE_FORMAT` and raise `GameVersion.OLDEST_LOADABLE_FORMAT` to the
+new format in the same change, so the old save is refused cleanly; no conversion
+code is written for it. A save below that floor is refused the way one from a
+newer build is: it is not loaded and its file is left exactly as it was, the slot
+list marks it, and the load screen and the log say which build saved the city and
+still opens it. Once the game is published, older saves must load again.
 
 ## Making the Windows build
 

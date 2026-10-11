@@ -2508,6 +2508,109 @@ public class SaveFileCheck {
         same("...and its register otherwise the save's: the bank's shares in issue",
                 fundCity.getEquity().getShares(Equity.BANK), full.getEquity().getShares(Equity.BANK));
 
+        /* ============ the oldest format this build loads (0.7.108) ============ */
+        System.out.println("\n--- and a save older than this build loads, refused cleanly ---");
+
+        /*
+         * AN OLD SAVE REFUSED CLEANLY (0.7.108, batch P7). Until the game is
+         * published, a change that would make an older save load wrongly bumps
+         * SAVE_FORMAT and raises GameVersion.OLDEST_LOADABLE_FORMAT to it, and
+         * writes no conversion: the older save is refused the way a newer
+         * build's is - nothing of it applied, its file as it was, the
+         * player told which build saved it and still opens it. Until 0.7.108
+         * the loader refused no older format but the sectors' break, so a bump
+         * alone refused nothing. The fixtures are the city saved above with
+         * its format written down to one below the floor, to the floor, and up
+         * past this build; its build a stamp no build wrote, so words naming
+         * it can only have come from the save.
+         */
+        GameFiles oldest = new GameFiles(root.resolve("oldest"), root.resolve("no-legacy"));
+        Files.createDirectories(oldest.saveFile(1).getParent());
+        String citySaved = Files.readString(full.getGameFiles().saveFile(1));
+        int savedMonth = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject().get("month").getAsInt();
+        String olderBuild = "P7-fixture";
+        com.google.gson.JsonObject below = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject();
+        below.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT - 1);
+        below.addProperty("gameVersion", olderBuild);
+        Files.writeString(oldest.saveFile(2), new com.google.gson.Gson().toJson(below));
+        com.google.gson.JsonObject unstamped = below.deepCopy();
+        unstamped.remove("gameVersion");
+        Files.writeString(oldest.saveFile(3), new com.google.gson.Gson().toJson(unstamped));
+        com.google.gson.JsonObject newer = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject();
+        newer.addProperty("saveFormat", GameVersion.SAVE_FORMAT + 1);
+        Files.writeString(oldest.saveFile(4), new com.google.gson.Gson().toJson(newer));
+        for (int slot = 2; slot <= 4; slot++) {
+            if (Files.isRegularFile(full.getGameFiles().historyFile(1))) {
+                Files.copy(full.getGameFiles().historyFile(1), oldest.historyFile(slot));
+            }
+        }
+        java.util.Map<String, byte[]> folderBefore = folderBytes(root.resolve("oldest"));
+        assertTrue("fixture: three saves and their histories in the folder",
+                folderBefore.size() >= 3 && Files.isRegularFile(oldest.saveFile(2)));
+
+        SaveHeader old = oldest.readHeader(2);
+        assertTrue("fixture: its header reads, a format one below the floor",
+                old != null && old.getSaveFormat() == GameVersion.OLDEST_LOADABLE_FORMAT - 1);
+        assertTrue("the header says this build can no longer read it, not that it is newer",
+                old.isNoLongerReadable() && !old.isFromNewerBuild() && !old.isReadableHere());
+        assertTrue("...so the slot list marks it and offers no load: there, not damaged, not loadable",
+                !oldest.slotIsEmpty(2) && !oldest.slotIsUnreadable(2) && !oldest.slotIsLoadable(2));
+
+        java.io.PrintStream out = System.out;
+        java.io.ByteArrayOutputStream said = new java.io.ByteArrayOutputStream();
+        Game turnedAway = new Game(oldest);
+        System.setOut(new java.io.PrintStream(said, true, java.nio.charset.StandardCharsets.UTF_8));
+        try { turnedAway.loadGameSave(2); } finally { System.setOut(out); }
+        String log = said.toString(java.nio.charset.StandardCharsets.UTF_8);
+        assertEquals("the load refuses it, in the words naming the build that saved it",
+                turnedAway.getLoadFailure(), GameVersion.noLongerReadable(olderBuild));
+        assertTrue("...which name that build twice, this one, and that this one cannot read it",
+                turnedAway.getLoadFailure() != null
+                        && turnedAway.getLoadFailure().indexOf(olderBuild) != turnedAway.getLoadFailure().lastIndexOf(olderBuild)
+                        && turnedAway.getLoadFailure().contains(GameVersion.VERSION)
+                        && turnedAway.getLoadFailure().contains("can no longer read"));
+        assertTrue("...and the log says the same, with the save's format and this build's",
+                log.contains(GameFiles.slotLabel(2)) && log.contains(GameVersion.noLongerReadable(olderBuild))
+                        && log.contains("save format " + (GameVersion.OLDEST_LOADABLE_FORMAT - 1))
+                        && log.contains("reads formats " + GameVersion.OLDEST_LOADABLE_FORMAT + " to " + GameVersion.SAVE_FORMAT));
+        assertEquals("...and nothing of it is applied", turnedAway.getMonth(), 1);
+
+        Game noStamp = new Game(oldest);
+        System.setOut(new java.io.PrintStream(said, true, java.nio.charset.StandardCharsets.UTF_8));
+        try { noStamp.loadGameSave(3); } finally { System.setOut(out); }
+        assertEquals("a save stamped by no build is refused too, naming none",
+                noStamp.getLoadFailure(), GameVersion.noLongerReadable(null));
+        assertTrue("...\"an older build\"", noStamp.getLoadFailure() != null
+                && noStamp.getLoadFailure().contains("an older build") && !noStamp.getLoadFailure().contains("null"));
+
+        SaveHeader ahead = oldest.readHeader(4);
+        assertTrue("a newer build's save is still marked newer, not older, and not loadable",
+                ahead != null && ahead.isFromNewerBuild() && !ahead.isNoLongerReadable() && !oldest.slotIsLoadable(4));
+        Game future = new Game(oldest);
+        System.setOut(new java.io.PrintStream(said, true, java.nio.charset.StandardCharsets.UTF_8));
+        try { future.loadGameSave(4); } finally { System.setOut(out); }
+        assertTrue("...and still refused as before, as from a newer version",
+                future.getLoadFailure() != null && future.getLoadFailure().contains("newer version")
+                        && future.getMonth() == 1);
+
+        java.util.Map<String, byte[]> folderAfter = folderBytes(root.resolve("oldest"));
+        boolean untouched = folderAfter.keySet().equals(folderBefore.keySet());
+        for (String name : folderBefore.keySet()) {
+            untouched &= java.util.Arrays.equals(folderBefore.get(name), folderAfter.get(name));
+        }
+        assertTrue("every refused save byte for byte as it was, and nothing written beside it",
+                untouched);
+
+        com.google.gson.JsonObject floor = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject();
+        floor.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT);
+        Files.writeString(oldest.saveFile(1), new com.google.gson.Gson().toJson(floor));
+        assertTrue("a save at the floor is loadable", oldest.slotIsLoadable(1) && !oldest.readHeader(1).isNoLongerReadable());
+        Game atFloor = new Game(oldest);
+        System.setOut(new java.io.PrintStream(said, true, java.nio.charset.StandardCharsets.UTF_8));
+        try { atFloor.loadGameSave(1); } finally { System.setOut(out); }
+        assertTrue("...and loads, at the month it was saved",
+                atFloor.getLoadFailure() == null && atFloor.getMonth() == savedMonth && savedMonth > 1);
+
         cleanUp(root);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -2519,6 +2622,17 @@ public class SaveFileCheck {
             if (t.getName().equals(name)) return t;
         }
         throw new IllegalStateException("no template named " + name);
+    }
+
+    /** Every file under a folder and its bytes, by its path within it - to say nothing in it moved. */
+    static java.util.Map<String, byte[]> folderBytes(Path dir) throws IOException {
+        java.util.Map<String, byte[]> files = new java.util.TreeMap<>();
+        try (var walk = Files.walk(dir)) {
+            for (Path p : (Iterable<Path>) walk::iterator) {
+                if (Files.isRegularFile(p)) files.put(flat(dir.relativize(p)), Files.readAllBytes(p));
+            }
+        }
+        return files;
     }
 
     /** Temp directory only - nothing here ever points at a real save folder. */

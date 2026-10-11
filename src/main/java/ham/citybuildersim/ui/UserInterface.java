@@ -3345,8 +3345,12 @@ public class UserInterface extends Application {
         if (header.isFromNewerBuild()) {
             return "From a newer version (" + header.getGameVersion() + ")";
         }
-        if (header.isFromBeforeSectors()) {
-            return "From before the sector redesign (" + header.getGameVersion() + ") - cannot be loaded";
+        // ...and one older than this build loads (0.7.108; GameVersion.OLDEST_LOADABLE_FORMAT),
+        // the build that saved it named, which still opens it; the load says so in full.
+        if (header.isNoLongerReadable()) {
+            String by = header.getGameVersion();
+            return "From an older version" + (by == null || by.isBlank() ? "" : " (" + by + ")")
+                    + " - this build can no longer read it";
         }
 
         String when = java.time.Instant.ofEpochMilli(header.getSavedAt())

@@ -17,9 +17,11 @@ package ham.citybuildersim;
  * build added - which looks like a working load right up until something is
  * quietly gone.
  *
- * Older saves are still read. That direction is safe: every field added since
- * has a sensible default, and the load path already handles the pre-slot,
- * pre-flow and pre-land formats.
+ * Older saves are read down to OLDEST_LOADABLE_FORMAT, and refused below it
+ * the same way (0.7.108). Until the game is published a change that would
+ * make an older save load wrongly bumps SAVE_FORMAT and raises that floor to
+ * it, rather than writing a conversion; a field added with a sensible default
+ * needs neither, since an older save reads it absent.
  *
  * KEEPING IT IN SYNC
  *
@@ -4983,8 +4985,35 @@ public final class GameVersion {
      *   - The playtest sets no zone and is 0.7.106's byte for byte: with
      *     nothing set only the forest's C rises as a city builds past its
      *     bare ground, and nothing priced and no trace reads it.
+     *
+     * 0.7.108 (2026-10-10) - AN OLD SAVE REFUSED CLEANLY. Batch P7 (Jerus,
+     * 2026-10-10: "old saves do not matter, only once we publish to old
+     * saves matter"; runs/brief-batchP7.md, runs/fixP7-notes.md). No save
+     * format change (36), and nothing that loaded at 0.7.107 is refused.
+     *   - THE OLDEST FORMAT THIS BUILD LOADS (OLDEST_LOADABLE_FORMAT, 21): the
+     *     rule for an older save until the game is published - a change that
+     *     would make one load wrongly bumps SAVE_FORMAT and raises this to it
+     *     in the same batch, and no conversion is written. Until now the
+     *     loader refused only a newer format (isFromNewerBuild()) and one from
+     *     before the sector template (FIRST_SECTOR_FORMAT, 21, which this
+     *     replaces: one floor for both), so a bump alone refused no older save.
+     *   - THE REFUSAL (Game's load, isNoLongerReadable()), as a newer build's
+     *     is: nothing of it applied, the save, its history and the
+     *     folder left as they were, and the player told which build saved the
+     *     city and still opens it (noLongerReadable(): "This city was saved by
+     *     build <its build>, and build 0.7.108 can no longer read it. Build
+     *     <its build> still opens it."), on the load screen and in the log with the
+     *     formats; the slot list marks the slot "From an older version" and
+     *     offers no load, and Continue and YOUR CITIES pass it by
+     *     (SaveHeader.isReadableHere()), as they pass a newer build's.
+     *   - Harnesses: SaveFileCheck (new section: a save at the floor loads,
+     *     one below it is refused in those words with every file in its
+     *     folder byte for byte as it was, a newer build's is still refused as
+     *     before); RobustnessCheck 5b reads the floor where it read the
+     *     sectors' format, and the refusal's words.
+     *   - The playtest loads nothing older and is 0.7.107's byte for byte.
      */
-    public static final String VERSION = "0.7.107";
+    public static final String VERSION = "0.7.108";
 
     /**
      * The save shape.
@@ -5339,7 +5368,8 @@ public final class GameVersion {
      *     field read as the blank that city already had. A format-20 city
      *     read here would load with seven empty businesses and a yard, which
      *     is not that city and not a blank either. So Game refuses it with a
-     *     sentence that says why (isFromBeforeSectors), the same way it
+     *     sentence that says why (since 0.7.108 isNoLongerReadable(), the
+     *     floor OLDEST_LOADABLE_FORMAT at 21), the same way it
      *     refuses a save from a newer build. Upward is as before: a
      *     format-20 build refuses a 21.
      *
@@ -5604,8 +5634,21 @@ public final class GameVersion {
      * --------------------------------------------------------------------- */
     public static final int SAVE_FORMAT = 36;
 
-    /** The first format a sector can be read out of. Nothing older loads. */
-    public static final int FIRST_SECTOR_FORMAT = 21;
+    /**
+     * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
+     * because an older save would load wrongly raises this to the new format
+     * in the same batch, so that save is refused cleanly (isNoLongerReadable())
+     * and no conversion is written - the rule until the game is published
+     * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
+     * old saves matter"), when old saves must load again.
+     *
+     * 21 since the sector template's clean break (format 21 above): nothing
+     * older carries a sector to read. Until 0.7.108 that was the one older
+     * format refused, under a constant of its own (FIRST_SECTOR_FORMAT); one
+     * floor holds both now, so a bump that raises it refuses an older save the
+     * way a newer build's is refused, where a bump alone refused nothing.
+     */
+    public static final int OLDEST_LOADABLE_FORMAT = 21;
 
     public static final String NAME = "CityBuilderSim";
 
@@ -5627,11 +5670,24 @@ public final class GameVersion {
     }
 
     /**
-     * True when a save predates the sector template and so carries nothing
-     * this build can read a sector out of. The one older direction that is
-     * refused - see format 21 above.
+     * True when a save is older than this build loads, below
+     * OLDEST_LOADABLE_FORMAT: refused as a newer build's is, its file left as
+     * it was, the player told in noLongerReadable()'s words.
      */
-    public static boolean isFromBeforeSectors(int saveFormat) {
-        return saveFormat < FIRST_SECTOR_FORMAT;
+    public static boolean isNoLongerReadable(int saveFormat) {
+        return saveFormat < OLDEST_LOADABLE_FORMAT;
+    }
+
+    /**
+     * What the load screen and the log tell the player when a save is older
+     * than this build loads: the build that saved the city, which still opens
+     * it, and this one, which cannot. A save stamped by no build (the stamp
+     * came with format 4) says "an older build" and names none.
+     */
+    public static String noLongerReadable(String savedBy) {
+        boolean named = savedBy != null && !savedBy.isBlank();
+        return "This city was saved by " + (named ? "build " + savedBy : "an older build")
+                + ", and build " + VERSION + " can no longer read it."
+                + (named ? " Build " + savedBy + " still opens it." : "");
     }
 }
