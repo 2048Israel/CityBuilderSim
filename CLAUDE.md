@@ -62,6 +62,18 @@ project the same day, with their prototypes and mockups: a comment that cites
 now. The batches a study plans still go in the project's todo, and the batch
 write-ups stay in the project.
 
+The queue is in the tree too, since 2026-10-11: `QUEUE.md`, at the root, is
+the batches waiting to be done, in order - one line each and a link to its
+brief, and nothing else (Jerus: "a proper md file with just the batches
+queued, just indexed and as soon as a batch is done its gone from that md
+fully"). The top row is next. A batch's row is deleted in the merge that
+ships it; what was not done - it failed, it waits on Jerus's decision, a
+caveat, a bug - goes under Pending at the bottom, and only Jerus's review
+moves a row out of there. The file's first lines are its rules. A brief with
+no home in `docs/studies/` or the project goes in `docs/queue/`. The todo
+keeps its detail and its CHECK and CONFIRM lists; the order of the batches is
+`QUEUE.md`'s.
+
 ## The standing rules
 
 These are Jerus's, and they do not move.
@@ -512,7 +524,8 @@ batch of its own, on its own branch, by an agent with a fresh context.
 
 **Either way, before saying a change works:** the suite is green except for
 what was already red (say which), the map is regenerated, the write-up
-exists, and the docs pass has run. `docs/notes/` carries copies of the
+exists, the docs pass has run, and the batch's row is out of `QUEUE.md` (what
+it left undone under Pending there). `docs/notes/` carries copies of the
 project's `todo.md`, `changelog.md` and `index.md`, last copied in on
 2026-10-07 (the changelog's top block is 0.7.53 to 0.7.54), so a session on
 the PC can read the list and the record as they stood then; the project is
