@@ -1,6 +1,6 @@
-# RobustnessCheck.java - 425 lines · 5 methods · 0 constants · harnesses
+# RobustnessCheck.java - 432 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/RobustnessCheck.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RobustnessCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > What the game does when something is already broken.
 > 
@@ -33,9 +33,9 @@
 | 120 | · 4. the good save still loads |
 | 137 | · 5. a save from a newer build |
 | 153 | · 5b. a save from an OLDER build |
-| 232 | · 5c. a city whose numbers have overflowed |
-| 284 | · 5d. a parameter that used to do nothing |
-| 336 | · 6. the log |
+| 239 | · 5c. a city whose numbers have overflowed |
+| 291 | · 5d. a parameter that used to do nothing |
+| 343 | · 6. the log |
 
 ## Fields (state)
 
@@ -47,10 +47,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 400 | **type** `public class RobustnessCheck` | What the game does when something is already broken. |
+| 26 | 407 | **type** `public class RobustnessCheck` | What the game does when something is already broken. |
 | 30 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 35 | 10 | `static void assertEquals(String label, Object actual, Object expected)` |  |
 | 46 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 53 | 364 | `public static void main(String[] args) throws Exception` |  |
-| 418 | 7 | `static void cleanUp(Path root)` |  |
+| 53 | 371 | `public static void main(String[] args) throws Exception` |  |
+| 425 | 7 | `static void cleanUp(Path root)` |  |
 

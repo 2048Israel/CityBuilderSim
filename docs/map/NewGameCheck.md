@@ -1,6 +1,6 @@
-# NewGameCheck.java - 1,121 lines · 14 methods · 2 constants · harnesses
+# NewGameCheck.java - 1,135 lines · 14 methods · 3 constants · harnesses
 
-`ham/citybuildersim/NewGameCheck.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NewGameCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > Does "Start New Game" actually start a new game?
 > 
@@ -45,30 +45,31 @@
 
 | line | section |
 |---:|---|
-| 247 | · 1. what a city that never existed looks like |
-| 264 | · 2. live in one, hard |
-| 337 | · 3. start a new one |
-| 358 | · 4. and it is actually playable |
-| 384 | · 5. a new game after a LOAD, too |
-| 429 | · 6-11. FOUNDING A CITY (0.7.10) |
-| 432 | · 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
-| 435 | · 13. THE GROUND IT STANDS ON (0.7.56) |
-| 444 | 6-11. FOUNDING A CITY (0.7.10) |
-| 479 | · · 6 |
-| 622 | · · 7 |
-| 675 | · · 8 |
-| 730 | · · 9 |
-| 747 | · · 10 |
-| 773 | · · 11 |
-| 925 | 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
-| 993 | 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) |
+| 250 | · 1. what a city that never existed looks like |
+| 267 | · 2. live in one, hard |
+| 351 | · 3. start a new one |
+| 372 | · 4. and it is actually playable |
+| 398 | · 5. a new game after a LOAD, too |
+| 443 | · 6-11. FOUNDING A CITY (0.7.10) |
+| 446 | · 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
+| 449 | · 13. THE GROUND IT STANDS ON (0.7.56) |
+| 458 | 6-11. FOUNDING A CITY (0.7.10) |
+| 493 | · · 6 |
+| 636 | · · 7 |
+| 689 | · · 8 |
+| 744 | · · 9 |
+| 761 | · · 10 |
+| 787 | · · 11 |
+| 939 | 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
+| 1007 | 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1100 | `NewGameCheck.REAL_OUT` | `System.out` |  |
-| 1101 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 243 | `NewGameCheck.USED_HOUSES` | `120` | The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. |
+| 1114 | `NewGameCheck.REAL_OUT` | `System.out` |  |
+| 1115 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
 
 ## Fields (state)
 
@@ -80,34 +81,34 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 44 | 1078 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
+| 44 | 1092 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
 | 48 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 53 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 61 | 180 | `static Map<String, Double> snapshot(Game g)` | Everything a previous city could possibly leave behind. |
-| 242 | 201 | `public static void main(String[] args) throws Exception` |  |
+| 245 | 212 | `public static void main(String[] args) throws Exception` |  |
 
-### 6-11. FOUNDING A CITY (0.7.10) (lines 444-924)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 477 | 424 | `static void founding(GameFiles files) throws Exception` |  |
-| 903 | 4 | `static double cost(Founding.Buys buys, String name)` | A first work's invoice, by name. |
-| 909 | 8 | `static boolean isDefault(Game g)` | Everything a founding on the defaults is, and nothing a previous city was. |
-| 919 | 5 | `static boolean audited(Game g)` | The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. |
-
-### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 925-992)
+### 6-11. FOUNDING A CITY (0.7.10) (lines 458-938)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 942 | 50 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
+| 491 | 424 | `static void founding(GameFiles files) throws Exception` |  |
+| 917 | 4 | `static double cost(Founding.Buys buys, String name)` | A first work's invoice, by name. |
+| 923 | 8 | `static boolean isDefault(Game g)` | Everything a founding on the defaults is, and nothing a previous city was. |
+| 933 | 5 | `static boolean audited(Game g)` | The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. |
 
-### 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) (lines 993-1121)
+### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 939-1006)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1010 | 82 | `static void theWorldsSeed(GameFiles files) throws Exception` |  |
-| 1093 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 1104 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
-| 1109 | 4 | `static void quietly(Runnable work)` |  |
-| 1114 | 7 | `static void cleanUp(Path root)` |  |
+| 956 | 50 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
+
+### 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) (lines 1007-1135)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1024 | 82 | `static void theWorldsSeed(GameFiles files) throws Exception` |  |
+| 1107 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 1118 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
+| 1123 | 4 | `static void quietly(Runnable work)` |  |
+| 1128 | 7 | `static void cleanUp(Path root)` |  |
 

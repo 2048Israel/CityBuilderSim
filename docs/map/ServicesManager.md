@@ -1,10 +1,10 @@
-# ServicesManager.java - 355 lines · 26 methods · 0 constants · model
+# ServicesManager.java - 361 lines · 26 methods · 0 constants · model
 
-`ham/citybuildersim/ServicesManager.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ServicesManager.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (11), [BuildingType](BuildingType.md) (10), [Traffic](Traffic.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [BuildingManager](BuildingManager.md) (2)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (12), [BuildingType](BuildingType.md) (10), [Traffic](Traffic.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [BuildingManager](BuildingManager.md) (2)
 
 **Used by (7):** [BuildAdviceCheck](BuildAdviceCheck.md), [Game](Game.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ServicesScreen](ServicesScreen.md), [SimulationEngine](SimulationEngine.md), [WaterCheck](WaterCheck.md)
 
@@ -25,31 +25,31 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 8 | 348 | **type** `public class ServicesManager` |  |
+| 8 | 354 | **type** `public class ServicesManager` |  |
 | 24 | 5 | `public ServicesManager(BuildingManager buildingManager)` |  |
 | 40 | 3 | `public void setFreshCapSource(DoubleSupplier source)` |  |
 | 48 | 7 | `public void updateServices()` | =============================== MAIN UPDATE =============================== |
-| 60 | 68 | `private void updateProduction()` | =============================== UPDATE PHASES =============================== |
-| 157 | 38 | `public void updateInfrastructure()` | Recomputes the road network from what is standing right now. |
-| 197 | 3 | `public void updateTransitFare(double fare)` | The fare the player set, which decides how many of them ride. |
-| 201 | 5 | `private void updateLabor()` |  |
-| 207 | 3 | `private void updateHandlers()` |  |
-| 220 | 17 | `public void updateServiceWages(double[] wages)` | NOTE: this used to be named updateIndustrialWages() - a copy-paste of EconomyManager's method name that had nothing to do with what this does. |
-| 238 | 3 | `public void updateJobFillRate(double[] fillRate)` |  |
-| 246 | 3 | `public UtilitiesHandler getUtilitiesHandler()` | =============================== GETTERS =============================== |
-| 250 | 3 | `public InfrastructureManager getInfrastructureManager()` |  |
-| 254 | 3 | `public double getEnergyRatio()` |  |
-| 258 | 3 | `public double getWaterRatio()` |  |
-| 269 | 3 | `public double getRoadRatio()` | What congestion lets the city actually get done, 0.35 to 1. |
-| 282 | 3 | `public double getServiceNetIncome()` | What the CITY earns from the services it owns - now utilities only. |
-| 286 | 3 | `public double getPricePerWatt()` |  |
-| 290 | 3 | `public double getPricePerWaterUnit()` |  |
-| 295 | 3 | `public void setPopulation(long population)` | The people's water draw. |
-| 304 | 3 | `public void printUtilityInfo()` | =============================== PRINTERS =============================== |
-| 312 | 9 | `public void updateByCategoryHandlerDouble(BuildingType category, DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> get...` | =============================== GENERIC BUILDING AGGREGATION =============================== |
-| 322 | 8 | `public void updateHandlerDouble(DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> getter)` |  |
-| 335 | 3 | `public void updateFromGame(DoubleConsumer setter, double value)` | =============================== GAME → HANDLER HELPERS =============================== |
-| 339 | 3 | `public void updateFromGameInt(IntConsumer setter, int value)` |  |
-| 347 | 3 | `private void copyArray(double[] source, double[] target)` | =============================== ARRAY HELPERS =============================== |
-| 351 | 3 | `private void copyArray(long[] source, long[] target)` |  |
+| 60 | 74 | `private void updateProduction()` | =============================== UPDATE PHASES =============================== |
+| 163 | 38 | `public void updateInfrastructure()` | Recomputes the road network from what is standing right now. |
+| 203 | 3 | `public void updateTransitFare(double fare)` | The fare the player set, which decides how many of them ride. |
+| 207 | 5 | `private void updateLabor()` |  |
+| 213 | 3 | `private void updateHandlers()` |  |
+| 226 | 17 | `public void updateServiceWages(double[] wages)` | NOTE: this used to be named updateIndustrialWages() - a copy-paste of EconomyManager's method name that had nothing to do with what this does. |
+| 244 | 3 | `public void updateJobFillRate(double[] fillRate)` |  |
+| 252 | 3 | `public UtilitiesHandler getUtilitiesHandler()` | =============================== GETTERS =============================== |
+| 256 | 3 | `public InfrastructureManager getInfrastructureManager()` |  |
+| 260 | 3 | `public double getEnergyRatio()` |  |
+| 264 | 3 | `public double getWaterRatio()` |  |
+| 275 | 3 | `public double getRoadRatio()` | What congestion lets the city actually get done, 0.35 to 1. |
+| 288 | 3 | `public double getServiceNetIncome()` | What the CITY earns from the services it owns - now utilities only. |
+| 292 | 3 | `public double getPricePerWatt()` |  |
+| 296 | 3 | `public double getPricePerWaterUnit()` |  |
+| 301 | 3 | `public void setPopulation(long population)` | The people's water draw. |
+| 310 | 3 | `public void printUtilityInfo()` | =============================== PRINTERS =============================== |
+| 318 | 9 | `public void updateByCategoryHandlerDouble(BuildingType category, DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> get...` | =============================== GENERIC BUILDING AGGREGATION =============================== |
+| 328 | 8 | `public void updateHandlerDouble(DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> getter)` |  |
+| 341 | 3 | `public void updateFromGame(DoubleConsumer setter, double value)` | =============================== GAME → HANDLER HELPERS =============================== |
+| 345 | 3 | `public void updateFromGameInt(IntConsumer setter, int value)` |  |
+| 353 | 3 | `private void copyArray(double[] source, double[] target)` | =============================== ARRAY HELPERS =============================== |
+| 357 | 3 | `private void copyArray(long[] source, long[] target)` |  |
 

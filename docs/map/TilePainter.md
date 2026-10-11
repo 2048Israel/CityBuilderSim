@@ -1,6 +1,6 @@
 # TilePainter.java - 565 lines · 20 methods · 36 constants · model
 
-`ham/citybuildersim/TilePainter.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TilePainter.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, width and role, and every building's box - the city's highways and railway through it and the resource sites under it, what each plot is - the same picture from the same inputs, on any machine.
 > 
@@ -55,7 +55,7 @@
 
 **Uses:** [BuildingVisual](BuildingVisual.md) (8), [DistrictPlan](DistrictPlan.md) (8), [World](World.md) (4), [CityRuns](CityRuns.md) (1), [CityMap](CityMap.md) (1)
 
-**Used by (11):** [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [DistrictPlan](DistrictPlan.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PlanCheck](PlanCheck.md), [ReadPathCheck](ReadPathCheck.md), [TileRaster](TileRaster.md)
+**Used by (12):** [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PlanCheck](PlanCheck.md), [ReadPathCheck](ReadPathCheck.md), [TileRaster](TileRaster.md)
 
 ## Sections
 

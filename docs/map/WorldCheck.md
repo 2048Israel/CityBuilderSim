@@ -1,6 +1,6 @@
-# WorldCheck.java - 647 lines · 7 methods · 13 constants · harnesses
+# WorldCheck.java - 782 lines · 8 methods · 18 constants · harnesses
 
-`ham/citybuildersim/WorldCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The world a city is founded on: the same seed makes the same world, and the world is the one the design describes - its sea, lakes and forest, its founding site, its fields and its totals, and the terrain a tile and a region at a time.
 > 
@@ -62,64 +62,78 @@
 >      lie; a founding asks no iron of its site (seed NO_IRON_SEED: its site
 >      has none of the old world's within SITE_IRON_KM, where the
 >      conversion's search, which still asks it, goes on); and the site
-> ... (2 more lines in the source)
+> ... (12 more lines in the source)
 
-**Uses:** [World](World.md) (144), [Resource](Resource.md) (30), [Deposit](Deposit.md) (26), [Founding](Founding.md) (2), [CityLand](CityLand.md) (1)
+**Uses:** [World](World.md) (162), [Resource](Resource.md) (56), [Deposit](Deposit.md) (40), [Founding](Founding.md) (2), [CityLand](CityLand.md) (2)
+
+**Used by (1):** [EarthTerrainCheck](EarthTerrainCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 129 | · · 1 |
-| 176 | · · 2 |
-| 200 | · · 3 |
-| 258 | · · 4 |
-| 330 | · · 5 |
-| 361 | · · 6 |
-| 408 | · · 7 |
-| 479 | · 8 |
-| 576 | · · 8b |
-| 589 | · · 8c |
+| 140 | · · 1 |
+| 187 | · · 2 |
+| 211 | · · 3 |
+| 269 | · · 4 |
+| 341 | · · 5 |
+| 372 | · · 6 |
+| 419 | · · 7 |
+| 490 | · 8 |
+| 587 | · · 8b |
+| 600 | · · 8c |
+| 659 | · 9 |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 80 | `WorldCheck.SEEDS` | `{ Founding.DEFAULT_WORLD_SEED, 77, 2026 }` | The default world, and two more: 77, and 2026, whose search hands on to a second cell. |
-| 83 | `WorldCheck.SAMPLE` | `200_000` | Points in each world's independent sample: 200,000 (a lake share's error about 0.1 point). |
-| 86 | `WorldCheck.TOTALS_MS` | `200` | The spec's bound on the totals pass, in ms (measured 30). |
-| 89 | `WorldCheck.TILE_MS` | `0.5` | The spec's bound on a tile, in ms (measured 0.07). |
-| 92 | `WorldCheck.TILE_AGREES` | `0.995` | The share of a tile's plots its terrain must agree with the point function on. |
-| 95 | `WorldCheck.COASTAL_CELLS` | `300` | Cells, neither all sea nor all land, whose fields are drawn to see where ore and oil lie: 300 (about 100,000 iron fields). |
-| 98 | `WorldCheck.GRADE_CELLS` | `95` | The square of cells round the site whose oil fields are graded (section 7): 95 a side, 9,025 cells - some 20,000 fields, a grade's share then within a third of a point (one standard error); 30 a side to 0.7.98, when a... |
-| 101 | `WorldCheck.NO_IRON_SEED` | `14` | A world whose first plot passing a founding's three tests has none of the old world's iron within World.SITE_IRON_KM (section 8): 14, the first such seed from 1 (fixW1-notes.md; 4127, 77 and 2026 found where they did). |
-| 104 | `WorldCheck.CLUSTER_CELLS` | `6` | The square of cells round the site whose iron fields' nearest neighbours are measured (section 8): 6 a side, 36 cells. |
-| 107 | `WorldCheck.SHELF_WITHIN` | `.005` | How far the shelf's share of an independent sample of the sea may sit from SHELF_SHARE (spec-oil 4: half a point). |
-| 110 | `WorldCheck.GRADE_WITHIN` | `.02` | How far each grade's share of the fields may sit from GRADE_SHARES (spec-oil 4: two points). |
-| 609 | `WorldCheck.FIELD_COUNT_WITHIN` | `.01` | How far the world's count of fields over its new count may sit from FIELD_SCALE: 1% (each pool's fraction is drawn; the sparse resources' at-least-one adds a few, measured 0.3%). |
-| 612 | `WorldCheck.CLUSTER_NN_OF_OLD` | `1.25` | How much farther than the old world's a field's nearest neighbour may lie on the mean, clustered: 1.25 times (est.: inside a cluster the fields lie at the old world's density, and a disc of ten loses a few neighbours ... |
+| 90 | `WorldCheck.SEEDS` | `{ Founding.DEFAULT_WORLD_SEED, 77, 2026 }` | The default world, and two more: 77, and 2026, whose search hands on to a second cell. |
+| 93 | `WorldCheck.SAMPLE` | `200_000` | Points in each world's independent sample: 200,000 (a lake share's error about 0.1 point). |
+| 96 | `WorldCheck.TOTALS_MS` | `200` | The spec's bound on the totals pass, in ms (measured 30). |
+| 99 | `WorldCheck.TILE_MS` | `0.5` | The spec's bound on a tile, in ms (measured 0.07). |
+| 102 | `WorldCheck.TILE_AGREES` | `0.995` | The share of a tile's plots its terrain must agree with the point function on. |
+| 105 | `WorldCheck.COASTAL_CELLS` | `300` | Cells, neither all sea nor all land, whose fields are drawn to see where ore and oil lie: 300 (about 100,000 iron fields). |
+| 108 | `WorldCheck.GRADE_CELLS` | `95` | The square of cells round the site whose oil fields are graded (section 7): 95 a side, 9,025 cells - some 20,000 fields, a grade's share then within a third of a point (one standard error); 30 a side to 0.7.98, when a... |
+| 111 | `WorldCheck.NO_IRON_SEED` | `14` | A world whose first plot passing a founding's three tests has none of the old world's iron within World.SITE_IRON_KM (section 8): 14, the first such seed from 1 (fixW1-notes.md; 4127, 77 and 2026 found where they did). |
+| 114 | `WorldCheck.CLUSTER_CELLS` | `6` | The square of cells round the site whose iron fields' nearest neighbours are measured (section 8): 6 a side, 36 cells. |
+| 117 | `WorldCheck.SHELF_WITHIN` | `.005` | How far the shelf's share of an independent sample of the sea may sit from SHELF_SHARE (spec-oil 4: half a point). |
+| 120 | `WorldCheck.GRADE_WITHIN` | `.02` | How far each grade's share of the fields may sit from GRADE_SHARES (spec-oil 4: two points). |
+| 620 | `WorldCheck.FIELD_COUNT_WITHIN` | `.01` | How far the world's count of fields over its new count may sit from FIELD_SCALE: 1% (each pool's fraction is drawn; the sparse resources' at-least-one adds a few, measured 0.3%). |
+| 623 | `WorldCheck.CLUSTER_NN_OF_OLD` | `1.25` | How much farther than the old world's a field's nearest neighbour may lie on the mean, clustered: 1.25 times (est.: inside a cluster the fields lie at the old world's density, and a disc of ten loses a few neighbours ... |
+| 662 | `WorldCheck.TYPE_WITHIN` | `.02` | How far each type's share of the fields may sit from Deposit.TYPE_SHARES (spec-materials 4: two points). |
+| 665 | `WorldCheck.TYPE_IRON_CELLS` | `15` | The cells round the site whose iron pools are typed (section 9): 15 each way, 256 pools of two cells - some 25,000 fields on the default world. |
+| 668 | `WorldCheck.TYPE_STONE_CELLS` | `45` | ...and stone's: 45 each way, 256 pools of six cells - some 10,000 fields; coal's and copper's are the whole world's, some 30,000 and 7,400. |
+| 671 | `WorldCheck.TYPE_OLD_IRON_CELLS` | `10, TYPE_OLD_CELLS = 30` | The cells round the site whose old world's fields are typed cell by cell: 10 each way for iron, 30 for the rest (the old world's ten times the fields). |
+| 674 | `WorldCheck.NEAR_SITE_KM` | `50` | How far round the founding site the fields of each type are counted for the notes, in km: 50, the spec's (spec-materials 2.4). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 72 | `static int fails` |  |
+| 82 | `static int fails` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 70 | 578 | **type** `public class WorldCheck` | The world a city is founded on: the same seed makes the same world, and the world is the one the design describes - its sea, lakes and forest, its founding site, its fields and its totals, and the terrain a tile and a... |
-| 74 | 4 | `static void check(String label, boolean ok)` |  |
-| 112 | 6 | `public static void main(String[] args)` |  |
-| 119 | 359 | `static void world(long seed)` |  |
+| 80 | 703 | **type** `public class WorldCheck` | The world a city is founded on: the same seed makes the same world, and the world is the one the design describes - its sea, lakes and forest, its founding site, its fields and its totals, and the terrain a tile and a... |
+| 84 | 4 | `static void check(String label, boolean ok)` |  |
+| 122 | 7 | `public static void main(String[] args)` |  |
+| 130 | 359 | `static void world(long seed)` |  |
 
-### 8 (lines 479-647)
+### 8 (lines 490-658)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 487 | 120 | `static void fewerAndBigger()` | Section 8 (0.7.99, batch W1): FEWER AND BIGGER DEPOSITS on the default world - a tenth as many fields, each FIELD_SCALE of the old draws, in clusters, the world's totals to the tonne; a founding asks no iron; the site... |
-| 615 | 15 | `static double meanNearestKm(List<Deposit> fields)` | The mean distance from each field's centre to its nearest other's, in km. |
-| 632 | 10 | `static double nearestOldIronKm(World w, long x, long y)` | The old world's nearest iron field's centre to a plot's, in km, over the cells within SITE_IRON_KM and one more. |
-| 644 | 3 | `static boolean dryAt(World w, double x, double y)` | Test 1's dry ground: land, and not a lake. |
+| 498 | 120 | `static void fewerAndBigger()` | Section 8 (0.7.99, batch W1): FEWER AND BIGGER DEPOSITS on the default world - a tenth as many fields, each FIELD_SCALE of the old draws, in clusters, the world's totals to the tonne; a founding asks no iron; the site... |
+| 626 | 15 | `static double meanNearestKm(List<Deposit> fields)` | The mean distance from each field's centre to its nearest other's, in km. |
+| 643 | 10 | `static double nearestOldIronKm(World w, long x, long y)` | The old world's nearest iron field's centre to a plot's, in km, over the cells within SITE_IRON_KM and one more. |
+| 655 | 3 | `static boolean dryAt(World w, double x, double y)` | Test 1's dry ground: land, and not a lake. |
+
+### 9 (lines 659-782)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 680 | 102 | `static void fieldTypes(long seed)` | Section 9 (0.7.110, batch I1): each field's type - its shares, pure, and a pool's (the old world's, a cell's) types adding up to its total. |
 

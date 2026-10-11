@@ -1,6 +1,6 @@
-# MapTiles.java - 367 lines · 26 methods · 4 constants · model
+# MapTiles.java - 372 lines · 27 methods · 4 constants · model
 
-`ham/citybuildersim/MapTiles.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MapTiles.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kept for the hover and a change of level, the per-tile path from inputs to pixels, and the far view's node pixels from the world's ground and the districts' counts.
 > 
@@ -23,7 +23,7 @@
 > only once ready() says its plans are drawn, and jobs() hands out what
 > draws them.
 
-**Uses:** [MapFrame](MapFrame.md) (31), [TilePainter](TilePainter.md) (30), [World](World.md) (29), [TileRaster](TileRaster.md) (11), [BuildingVisual](BuildingVisual.md) (10), [CityMap](CityMap.md) (9), [CityLand](CityLand.md) (2)
+**Uses:** [World](World.md) (31), [MapFrame](MapFrame.md) (31), [TilePainter](TilePainter.md) (30), [TileRaster](TileRaster.md) (11), [BuildingVisual](BuildingVisual.md) (10), [CityMap](CityMap.md) (9), [CityLand](CityLand.md) (2)
 
 **Used by (2):** [MapCheck](MapCheck.md), [MapView](MapView.md)
 
@@ -59,7 +59,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 340 | **type** `public final class MapTiles` | The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kep... |
+| 28 | 345 | **type** `public final class MapTiles` | The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kep... |
 | 43 | 5 | **type** `private static final class Kept` | A tile's painted bytes, kept: its inputs, the picture and the stamp it was painted at. |
 | 60 | 1 | `public MapTiles(CityMap map)` |  |
 | 63 | 1 | `public CityMap map()` | The map these tiles are painted from. |
@@ -90,11 +90,12 @@
 | 276 | 3 | `public static double budgetBytes(MapFrame f, double paintedBytes, double planBytes)` | Every cache of the view together, in bytes, for a view this size: each level's images at four bytes a pixel (L0 at both widths, L1, L2), the far nodes (MapFrame.nodesAtMost()), the tiles' ground and PAINTED_KEPT paint... |
 | 281 | 11 | `public static double budgetBytes(MapFrame f, double paintedBytes)` | ...without the plans: what the view's own caches hold. |
 
-### THE FAR NODES (lines 293-367)
+### THE FAR NODES (lines 293-372)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 298 | 5 | `public static byte[] nodeTerrain(long seed, long x0, long y0, long plots)` | A far node's ground: MapFrame.NODE_PX squared samples a `plots` apart from (x0, y0), a World class each. |
-| 313 | 30 | `public void nodePixels(long x0, long y0, long plots, byte[] ground, int[] out)` | A far node's pixels from its ground: each sample's terrain colour, dimmed where the city does not own it (TileRaster's UNOWNED_DIM), and where it owns dry ground its district's tint over it - the class its buildings t... |
-| 345 | 22 | `int tintOf(CityMap.District d)` | A district's tint for the far nodes: its colour with its opacity in the top byte, 0 for none built. |
+| 298 | 3 | `public static byte[] nodeTerrain(long seed, long x0, long y0, long plots)` | A far node's ground: MapFrame.NODE_PX squared samples a `plots` apart from (x0, y0), a World class each. |
+| 303 | 5 | `public static byte[] nodeTerrain(World.Key world, long x0, long y0, long plots)` | ...on the world a key names (0.7.115; the map's: CityMap.worldKey()). |
+| 318 | 30 | `public void nodePixels(long x0, long y0, long plots, byte[] ground, int[] out)` | A far node's pixels from its ground: each sample's terrain colour, dimmed where the city does not own it (TileRaster's UNOWNED_DIM), and where it owns dry ground its district's tint over it - the class its buildings t... |
+| 350 | 22 | `int tintOf(CityMap.District d)` | A district's tint for the far nodes: its colour with its opacity in the top byte, 0 for none built. |
 

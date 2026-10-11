@@ -1,12 +1,12 @@
-# UtilitiesHandler.java - 654 lines · 62 methods · 4 constants · model
+# UtilitiesHandler.java - 703 lines · 66 methods · 4 constants · model
 
-`ham/citybuildersim/UtilitiesHandler.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/UtilitiesHandler.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
 **Uses:** [CityNeeds](CityNeeds.md) (2)
 
-**Used by (15):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [ConservationCheck](ConservationCheck.md), [Game](Game.md), [LandManager](LandManager.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [ReadPathCheck](ReadPathCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [WaterCheck](WaterCheck.md)
+**Used by (16):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [ConservationCheck](ConservationCheck.md), [Game](Game.md), [LandManager](LandManager.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [ReadPathCheck](ReadPathCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [WaterCheck](WaterCheck.md)
 
 ## Sections
 
@@ -16,9 +16,10 @@
 | 59 | THE FRESH WATER LIMIT (0.7.59, batch J2; spec-land 2.3 and star 7) |
 | 151 | · READ-ONLY ACCESSORS for the utilities screen. printUtilitiesInfo() is |
 | 230 | · Split books. The two utilities share one workforce and one fill rate, but |
-| 537 | · · ELECTRIC POWER |
-| 568 | · · WATER |
-| 608 | · · CONSOLIDATED |
+| 290 | THE POWER THE WORKS MAKE (0.7.112, batch I2; runs/spec-materials.md |
+| 585 | · · ELECTRIC POWER |
+| 616 | · · WATER |
+| 656 | · · CONSOLIDATED |
 
 ## Constants
 
@@ -27,7 +28,7 @@
 | 39 | `UtilitiesHandler.BASE_WATER_SUPPLY` | `8000` | What the city can draw before it builds anything: the legacy wells and the old municipal intake. |
 | 49 | `UtilitiesHandler.WATER_PER_PERSON` | `.3` | Per-resident draw, in units of 10,000 gallons/month. |
 | 92 | `UtilitiesHandler.FRESH_UNITS_PER_KM2` | `121_600` | Units of fresh water a month one square kilometre of owned lake or river yields: the world's renewable river runoff (about 42,700 km3 a year, Shiklomanov) over the world's river and stream area (773,000 km2, Allen & P... |
-| 635 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
+| 683 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
 
 ## Fields (state)
 
@@ -58,14 +59,16 @@
 | 274 | `private boolean billedByStatement` | WHAT THE CUSTOMERS WERE ACTUALLY CHARGED, since 2026-09-06. |
 | 275 | `private double billedElectricityRevenue` |  |
 | 276 | `private double billedWaterRevenue` |  |
-| 285 | `public double billedElectricityDraw` | What the four charged categories draw. |
-| 304 | `private double homesElectricityDraw, homesWaterDraw` | What the homes draw, power and water (0.7.28): the residential buildings' own draw, set beside the billed draws by ServicesManager, so the Services screen can say who the unbilled draw is - the homes, or the city's ow... |
+| 308 | `private double worksPower` | kW the works make past their own draws, standing: added to the grid's generation. |
+| 311 | `private double billedPowerBought` | What the works' statements booked as power sold to the grid this month: what the utility pays them. |
+| 328 | `public double billedElectricityDraw` | What the four charged categories draw. |
+| 347 | `private double homesElectricityDraw, homesWaterDraw` | What the homes draw, power and water (0.7.28): the residential buildings' own draw, set beside the billed draws by ServicesManager, so the Services screen can say who the unbilled draw is - the homes, or the city's ow... |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 640 | **type** `public class UtilitiesHandler` |  |
+| 15 | 689 | **type** `public class UtilitiesHandler` |  |
 
 ### WATER SUPPLY (lines 22-58)
 
@@ -108,42 +111,51 @@
 | 226 | 1 | `public double getPowerServed()` | SERVED (0.7.41): what the grid generates over what the city asks of it, unclamped - energyRatio's own fraction without its cap at 1, so past 100% it keeps counting the headroom - CityNeeds.servedShare(): +∞ with nothi... |
 | 228 | 1 | `public double getWaterServed()` | ...and what the water works treat over what the city asks of them, waterRatio's fraction unclamped. |
 
-### Split books. The two utilities share one workforce and one fill rate, but (lines 230-654)
+### Split books. The two utilities share one workforce and one fill rate, but (lines 230-289)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 256 | 4 | `public double getElectricityRevenue()` | The month's electricity bill - only the draw somebody is actually invoiced for, and only the fraction delivered. |
 | 278 | 5 | `public void setBilledRevenue(double electricity, double water)` |  |
-| 287 | 3 | `public void setBilledElectricityDraw(double draw)` |  |
-| 290 | 1 | `public double getBilledElectricityDraw()` |  |
-| 291 | 3 | `public double getUnbilledElectricityDraw()` |  |
-| 306 | 4 | `public void setHomesDraw(double electricity, double water)` |  |
-| 310 | 1 | `public double getHomesElectricityDraw()` |  |
-| 311 | 1 | `public double getHomesWaterDraw()` |  |
-| 319 | 4 | `public double getWaterRevenue()` | Only the billed slice, and only the fraction actually delivered - during rationing customers receive waterRatio of what they asked for and are charged for that, which is also exactly what the commercial and industrial... |
-| 332 | 3 | `public double getElectricityPayroll()` | PER JOB TYPE since 0.7.17, as every employer's payroll is: each type's wage for the posts of that type filled, which is what the households in them are paid. |
-| 336 | 3 | `public double getWaterPayroll()` |  |
-| 341 | 6 | `private double staffed(double[] bill)` | A wage bill by job type, at each type's own fill. |
-| 348 | 3 | `public double getElectricityIncome()` |  |
-| 352 | 3 | `public double getWaterIncome()` |  |
-| 356 | 5 | `private static double sum(double[] a)` |  |
-| 362 | 3 | `public double getUtilityPayroll()` |  |
-| 366 | 3 | `public double getUtilityRevenue()` |  |
-| 371 | 3 | `public void setWattsProduction(double watts)` | setters |
-| 375 | 4 | `public void setWattsConsumption(double watts)` |  |
-| 380 | 3 | `public void setWaterProduction(double water)` |  |
-| 385 | 4 | `public void setWaterSources(double fresh, double desal)` | The two parts of that nameplate (0.7.59): the fresh plants' and the desalination plants'. |
-| 391 | 3 | `public void setFreshCap(double cap)` | The fresh water limit, from the city's land and rights (Game.getFreshCap()); infinite for none. |
-| 396 | 3 | `public void setBuildingWaterDraw(double water)` | Summed draw of every building standing, from the templates. |
-| 401 | 3 | `public void setBilledWaterDraw(double water)` | The commercial + industrial slice, i.e. the part with a paying customer. |
-| 410 | 3 | `public void setPopulation(long population)` | The people. |
-| 414 | 3 | `public void setPricePerWaterUnit(double price)` |  |
-| 420 | 6 | `public void updateEnergyRatio()` | passers calculators |
-| 427 | 31 | `public void updateWaterRatio()` |  |
-| 463 | 3 | `public double getUtilityIncome()` | Both utilities consolidated. |
-| 474 | 52 | `public void updateUtilitiyWages(double[] wages, long[] electricityJobs, long[] waterJobs)` | NOTE: this now takes the electricity and water job arrays separately rather than one combined array. |
-| 527 | 4 | `public void updateJobFillRate(double[] fillRate)` |  |
-| 533 | 100 | `public void printUtilitiesInfo()` | printers |
-| 637 | 4 | `static { ... }` |  |
-| 644 | 9 | `public void redenominate(double scale)` | The utilities' prices and this month's bills, in the new unit. |
+| 285 | 4 | `public void setBilledRevenue(double electricity, double water, double powerBought)` | ...and what the works sold it of their own power, as their statements booked it (0.7.112; THE POWER THE WORKS MAKE, below). |
+
+### THE POWER THE WORKS MAKE (0.7.112, batch I2; runs/spec-materials.md (lines 290-703)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 314 | 3 | `public void setWorksPower(double kw)` | The surplus the works make past their own draws, kW (ServicesManager, from the buildings standing). |
+| 319 | 1 | `public double getWorksPower()` | kW the works sell the grid: added to what it generates. |
+| 322 | 4 | `public double getPowerBought()` | What the utility pays the works for their power this month: the statements' figure, or with none handed in the surplus at the tariff. |
+| 330 | 3 | `public void setBilledElectricityDraw(double draw)` |  |
+| 333 | 1 | `public double getBilledElectricityDraw()` |  |
+| 334 | 3 | `public double getUnbilledElectricityDraw()` |  |
+| 349 | 4 | `public void setHomesDraw(double electricity, double water)` |  |
+| 353 | 1 | `public double getHomesElectricityDraw()` |  |
+| 354 | 1 | `public double getHomesWaterDraw()` |  |
+| 362 | 4 | `public double getWaterRevenue()` | Only the billed slice, and only the fraction actually delivered - during rationing customers receive waterRatio of what they asked for and are charged for that, which is also exactly what the commercial and industrial... |
+| 375 | 3 | `public double getElectricityPayroll()` | PER JOB TYPE since 0.7.17, as every employer's payroll is: each type's wage for the posts of that type filled, which is what the households in them are paid. |
+| 379 | 3 | `public double getWaterPayroll()` |  |
+| 384 | 6 | `private double staffed(double[] bill)` | A wage bill by job type, at each type's own fill. |
+| 391 | 6 | `public double getElectricityIncome()` |  |
+| 398 | 3 | `public double getWaterIncome()` |  |
+| 402 | 5 | `private static double sum(double[] a)` |  |
+| 408 | 3 | `public double getUtilityPayroll()` |  |
+| 412 | 3 | `public double getUtilityRevenue()` |  |
+| 417 | 3 | `public void setWattsProduction(double watts)` | setters |
+| 421 | 4 | `public void setWattsConsumption(double watts)` |  |
+| 426 | 3 | `public void setWaterProduction(double water)` |  |
+| 431 | 4 | `public void setWaterSources(double fresh, double desal)` | The two parts of that nameplate (0.7.59): the fresh plants' and the desalination plants'. |
+| 437 | 3 | `public void setFreshCap(double cap)` | The fresh water limit, from the city's land and rights (Game.getFreshCap()); infinite for none. |
+| 442 | 3 | `public void setBuildingWaterDraw(double water)` | Summed draw of every building standing, from the templates. |
+| 447 | 3 | `public void setBilledWaterDraw(double water)` | The commercial + industrial slice, i.e. the part with a paying customer. |
+| 456 | 3 | `public void setPopulation(long population)` | The people. |
+| 460 | 3 | `public void setPricePerWaterUnit(double price)` |  |
+| 466 | 8 | `public void updateEnergyRatio()` | passers calculators |
+| 475 | 31 | `public void updateWaterRatio()` |  |
+| 511 | 3 | `public double getUtilityIncome()` | Both utilities consolidated. |
+| 522 | 52 | `public void updateUtilitiyWages(double[] wages, long[] electricityJobs, long[] waterJobs)` | NOTE: this now takes the electricity and water job arrays separately rather than one combined array. |
+| 575 | 4 | `public void updateJobFillRate(double[] fillRate)` |  |
+| 581 | 100 | `public void printUtilitiesInfo()` | printers |
+| 685 | 4 | `static { ... }` |  |
+| 692 | 10 | `public void redenominate(double scale)` | The utilities' prices and this month's bills, in the new unit. |
 

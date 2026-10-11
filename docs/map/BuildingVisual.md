@@ -1,6 +1,6 @@
 # BuildingVisual.java - 343 lines · 16 methods · 30 constants · model
 
-`ham/citybuildersim/BuildingVisual.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingVisual.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which kind, whether it stands on a resource's sites, and whether the map places it from the outside of the city in.
 > 
@@ -38,7 +38,7 @@
 
 **Uses:** [BuildingType](BuildingType.md) (14), [Resource](Resource.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Refining](Refining.md) (3), [TilePainter](TilePainter.md) (2), [World](World.md) (1), [LandManager](LandManager.md) (1), [StrategicReserve](StrategicReserve.md) (1)
 
-**Used by (14):** [ChildcareCheck](ChildcareCheck.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CityShore](CityShore.md), [DistrictPlan](DistrictPlan.md), [Game](Game.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PlanCheck](PlanCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md)
+**Used by (15):** [ChildcareCheck](ChildcareCheck.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CityShore](CityShore.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Game](Game.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PlanCheck](PlanCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md)
 
 ## Sections
 

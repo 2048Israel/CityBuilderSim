@@ -1,6 +1,6 @@
 # Palette.java - 726 lines · 27 methods · 74 constants · interface
 
-`ham/citybuildersim/ui/Palette.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Palette.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > Every colour, size and spacing this game is allowed to use, in one place.
 > 
@@ -44,7 +44,7 @@
 > their names, so every screen that read them took the new values without
 > an edit; the window's own literals moved here the same day.
 
-**Used by (24):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FoundingScreen](FoundingScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [MapView](MapView.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [StatementView](StatementView.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
+**Used by (25):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FoundingScreen](FoundingScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [MapView](MapView.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [StatementView](StatementView.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [ZoningScreen](ZoningScreen.md)
 
 ## Sections
 

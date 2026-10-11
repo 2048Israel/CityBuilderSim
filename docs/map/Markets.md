@@ -1,6 +1,6 @@
-# Markets.java - 511 lines · 26 methods · 0 constants · model
+# Markets.java - 513 lines · 26 methods · 0 constants · model
 
-`ham/citybuildersim/Markets.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Markets.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > Every goods market in the city, and the month they clear in.
 > 
@@ -48,18 +48,18 @@
 > NOTHING HERE MOVES MONEY. Trades land in the sectors' ledgers and are
 > banked at the strike; see Sector.
 
-**Uses:** [Good](Good.md) (24), [Sector](Sector.md) (23), [GoodsMarket](GoodsMarket.md) (16), [Trade](Trade.md) (14), [Sectors](Sectors.md) (5), [Game](Game.md) (1), [SupplierCredit](SupplierCredit.md) (1)
+**Uses:** [Good](Good.md) (24), [Sector](Sector.md) (24), [GoodsMarket](GoodsMarket.md) (16), [Trade](Trade.md) (14), [Sectors](Sectors.md) (5), [Game](Game.md) (1), [SupplierCredit](SupplierCredit.md) (1)
 
-**Used by (23):** [BooksCheck](BooksCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessInvestment](BusinessInvestment.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FoodProcessingCheck](FoodProcessingCheck.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LuxuryRetail](LuxuryRetail.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [Sectors](Sectors.md), [StrategicReserve](StrategicReserve.md)
+**Used by (25):** [BooksCheck](BooksCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessInvestment](BusinessInvestment.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FoodProcessingCheck](FoodProcessingCheck.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LuxuryRetail](LuxuryRetail.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [Sectors](Sectors.md), [SpreadPlanner](SpreadPlanner.md), [StrategicReserve](StrategicReserve.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 113 | THE MONTH |
-| 371 | DRAWS - taken on demand, at the price of the month |
-| 457 | READERS |
-| 465 | SAVE, RESET, THE REFORM |
+| 373 | DRAWS - taken on demand, at the price of the month |
+| 459 | READERS |
+| 467 | SAVE, RESET, THE REFORM |
 
 ## Fields (state)
 
@@ -67,15 +67,15 @@
 |---:|---|---|
 | 57 | `private final Map<Good, GoodsMarket> markets` |  |
 | 81 | `private CityTrader city` | The city's trader, or null - a harness's bare market (0.7.85). |
-| 471 | `public String good` |  |
-| 472 | `public double price, flow, stock, demand` |  |
-| 473 | `public double[] taken` |  |
+| 473 | `public String good` |  |
+| 474 | `public double price, flow, stock, demand` |  |
+| 475 | `public double[] taken` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 457 | **type** `public final class Markets` | Every goods market in the city, and the month they clear in. |
+| 55 | 459 | **type** `public final class Markets` | Every goods market in the city, and the month they clear in. |
 | 67 | 12 | **type** `public interface CityTrader` | The city as a trader in a market (0.7.85): what it bids for and offers in the month's clearing of a good, and what it bought and sold there - its strategic reserve's crude (StrategicReserve). |
 | 69 | 1 | `double cityBid(Good g)` _(in Markets.CityTrader)_ | Units of a good the city bids for in this month's clearing. |
 | 71 | 1 | `double cityOffer(Good g)` _(in Markets.CityTrader)_ | ...and offers in it. |
@@ -89,40 +89,40 @@
 | 95 | 3 | `public void setExchangeRate(double rate)` | City money per dollar, times the world's price level. |
 | 108 | 4 | `public double getExchangeRate()` | The one rate every market here was told, read off one of them. |
 
-### THE MONTH (lines 113-370)
+### THE MONTH (lines 113-372)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 117 | 56 | `public void clearMonth(Sectors sectors, Game game)` |  |
-| 175 | 12 | `private double orderValue(Sector s, boolean stock)` | What a sector's orders this month would come to, each at what a unit costs to bring in (GoodsMarket.landedPrice()): its orders for stock, or its inputs. |
-| 189 | 14 | `private double coveredOrderValue(Sector s)` | ...and what its orders for the stock its suppliers' credit covers would come to (0.7.44; SupplierCredit): nothing without one. |
-| 205 | 156 | `private void clear(Good g, Sectors sectors)` | Prices one good, then everybody trades it. |
-| 363 | 7 | `private void trade(GoodsMarket m, Sector seller, Sector buyer, double units, double price)` | One local fill between two sectors, booked both sides. |
+| 117 | 58 | `public void clearMonth(Sectors sectors, Game game)` |  |
+| 177 | 12 | `private double orderValue(Sector s, boolean stock)` | What a sector's orders this month would come to, each at what a unit costs to bring in (GoodsMarket.landedPrice()): its orders for stock, or its inputs. |
+| 191 | 14 | `private double coveredOrderValue(Sector s)` | ...and what its orders for the stock its suppliers' credit covers would come to (0.7.44; SupplierCredit): nothing without one. |
+| 207 | 156 | `private void clear(Good g, Sectors sectors)` | Prices one good, then everybody trades it. |
+| 365 | 7 | `private void trade(GoodsMarket m, Sector seller, Sector buyer, double units, double price)` | One local fill between two sectors, booked both sides. |
 
-### DRAWS - taken on demand, at the price of the month (lines 371-456)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 376 | 3 | **type** `public record Draw(double units, double local, double imported, double localCost, double importCost)` | What a draw came to. |
-| 377 | 1 | `public double cost()` _(in Markets.Draw)_ |  |
-| 385 | 3 | `public Draw quote(Good g, double units, Sectors sectors)` | What a draw WOULD come to, at today's prices, without taking anything - the quote the build screen shows and the affordability check uses. |
-| 395 | 12 | `public Draw quote(Good g, double units, Sectors sectors, double takenAhead)` | ...with `takenAhead` units of the makers' stock drawn first by orders placed before this one (0.7.83: the refiners' bitumen a run's earlier roads take as they are placed - Game.buildRunInvoice()). |
-| 415 | 41 | `public Draw draw(Good g, Sector buyer, String buyerKey, double units, Sectors sectors)` | Takes units of a good now, from whoever makes and holds it, and imports the rest. |
-
-### READERS (lines 457-464)
+### DRAWS - taken on demand, at the price of the month (lines 373-458)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 462 | 1 | `public double importedUnits(Good g)` | Units the world sold the city this month, of one good, from the markets' own record. |
-| 463 | 1 | `public double exportedUnits(Good g)` |  |
+| 378 | 3 | **type** `public record Draw(double units, double local, double imported, double localCost, double importCost)` | What a draw came to. |
+| 379 | 1 | `public double cost()` _(in Markets.Draw)_ |  |
+| 387 | 3 | `public Draw quote(Good g, double units, Sectors sectors)` | What a draw WOULD come to, at today's prices, without taking anything - the quote the build screen shows and the affordability check uses. |
+| 397 | 12 | `public Draw quote(Good g, double units, Sectors sectors, double takenAhead)` | ...with `takenAhead` units of the makers' stock drawn first by orders placed before this one (0.7.83: the refiners' bitumen a run's earlier roads take as they are placed - Game.buildRunInvoice()). |
+| 417 | 41 | `public Draw draw(Good g, Sector buyer, String buyerKey, double units, Sectors sectors)` | Takes units of a good now, from whoever makes and holds it, and imports the rest. |
 
-### SAVE, RESET, THE REFORM (lines 465-511)
+### READERS (lines 459-466)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 470 | 5 | **type** `public static final class State` | One market as a save carries it: the price it traded at and the strike behind it. |
-| 476 | 14 | `public List<State> toState()` |  |
-| 491 | 12 | `public void restore(List<State> saved)` |  |
-| 504 | 3 | `public void reset()` |  |
-| 508 | 3 | `public void redenominate(double scale)` |  |
+| 464 | 1 | `public double importedUnits(Good g)` | Units the world sold the city this month, of one good, from the markets' own record. |
+| 465 | 1 | `public double exportedUnits(Good g)` |  |
+
+### SAVE, RESET, THE REFORM (lines 467-513)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 472 | 5 | **type** `public static final class State` | One market as a save carries it: the price it traded at and the strike behind it. |
+| 478 | 14 | `public List<State> toState()` |  |
+| 493 | 12 | `public void restore(List<State> saved)` |  |
+| 506 | 3 | `public void reset()` |  |
+| 510 | 3 | `public void redenominate(double scale)` |  |
 

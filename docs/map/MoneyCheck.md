@@ -1,6 +1,6 @@
-# MoneyCheck.java - 299 lines · 5 methods · 0 constants · harnesses
+# MoneyCheck.java - 350 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/MoneyCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MoneyCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > Money is conserved: every dollar that leaves a pool arrives in another, or
 > crosses the city's boundary in a way the audit can name.
@@ -16,7 +16,7 @@
 > only opens under stress: one is left to prosper, the other is bankrupted
 > and restructured, taxed hard, and made to import everything.
 
-**Uses:** [Game](Game.md) (9), [Sectors](Sectors.md) (7), [MoneyAudit](MoneyAudit.md) (6), [GameFiles](GameFiles.md) (3), [Founding](Founding.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [LandParcel](LandParcel.md) (2), [LandMarket](LandMarket.md) (1), [Good](Good.md) (1), [Sector](Sector.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [DebtManager](DebtManager.md) (1), [CapitalFlows](CapitalFlows.md) (1)
+**Uses:** [Game](Game.md) (11), [Sectors](Sectors.md) (8), [MoneyAudit](MoneyAudit.md) (7), [GameFiles](GameFiles.md) (4), [Founding](Founding.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [Sector](Sector.md) (3), [LandParcel](LandParcel.md) (2), [LandMarket](LandMarket.md) (1), [Good](Good.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [DebtManager](DebtManager.md) (1), [CapitalFlows](CapitalFlows.md) (1)
 
 ## Sections
 
@@ -27,6 +27,7 @@
 | 162 | · AND LAND PAID FOR OUT OF THE VAULT (0.7.6). |
 | 191 | · 2. a city under stress |
 | 247 | · AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK. |
+| 296 | · 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES |
 
 ## Fields (state)
 
@@ -40,10 +41,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 280 | **type** `public class MoneyCheck` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
+| 20 | 331 | **type** `public class MoneyCheck` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
 | 24 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 29 | 5 | `static void quietly(Runnable work)` |  |
 | 35 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
 | 47 | 20 | `static MoneyAudit.Result play(String label, Game g, int months, boolean verbose)` | Runs `months` and returns the worst relative residual seen, printing the worst month. |
-| 68 | 231 | `public static void main(String[] args)` |  |
+| 68 | 282 | `public static void main(String[] args)` |  |
 

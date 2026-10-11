@@ -1,6 +1,6 @@
-# SaveHeader.java - 71 lines · 12 methods · 0 constants · model
+# SaveHeader.java - 75 lines · 12 methods · 0 constants · model
 
-`ham/citybuildersim/SaveHeader.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SaveHeader.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > Just enough of a save to label it on the slot list.
 > 
@@ -40,7 +40,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 21 | 51 | **type** `public class SaveHeader` | Just enough of a save to label it on the slot list. |
+| 21 | 55 | **type** `public class SaveHeader` | Just enough of a save to label it on the slot list. |
 | 36 | 1 | `public int getMonth()` |  |
 | 37 | 1 | `public long getPopulation()` |  |
 | 38 | 1 | `public double getCash()` |  |
@@ -51,6 +51,6 @@
 | 44 | 3 | `public boolean hasName()` |  |
 | 53 | 3 | `public String getCityName()` | The city in the slot, by name - for the slot list. |
 | 58 | 3 | `public boolean isFromNewerBuild()` | True when this file was written by a build that knows more than this one. |
-| 63 | 3 | `public boolean isFromBeforeSectors()` | True when this file predates the sector template - the one older shape that is refused. |
-| 68 | 3 | `public boolean isReadableHere()` | Loadable by this build: neither from a newer one nor from before the sectors. |
+| 67 | 3 | `public boolean isNoLongerReadable()` | True when this file is older than this build loads, below GameVersion.OLDEST_LOADABLE_FORMAT (0.7.108; until then, before the sector template only) - refused as a newer build's file is. |
+| 72 | 3 | `public boolean isReadableHere()` | Loadable by this build: neither from a newer one nor older than it reads. |
 
