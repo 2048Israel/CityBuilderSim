@@ -78,7 +78,12 @@ import static ham.citybuildersim.ui.Pieces.*;
  * (MapTiles.ready()) hands out their jobs (MapTiles.jobs(): the inputs read
  * here, the ground read and the plan drawn on WORKER, in order) and shows
  * another level's picture until they come back and are kept here
- * (CityMap.adopt()). Nothing on WORKER touches a node of the scene.
+ * (CityMap.adopt()); and since 0.7.128 (batch MM1) the far nodes' district
+ * pictures, drawn with those plans: a node drawn without a picture it would
+ * sample (MapTiles.nodePixels()) hands out its district's plan jobs
+ * (CityMap.pictureJobs()) while the view's districts fit what the map keeps
+ * (MapTiles.picturesFit()), the frame's in one task on WORKER, and is drawn
+ * again once they are kept. Nothing on WORKER touches a node of the scene.
  *
  * THE OVERLAY ON THE BLOCK GRID (0.7.69, batch M5; the project's
  * spec-grid.md 2.4): the offers are rectangles of whole blocks, hatched on
@@ -137,7 +142,7 @@ final class MapView {
     /** Who hears a click: a side, and an offer's place on it or -1. */
     interface Picker { void picked(int side, int place); }
 
-    /** The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground. Low priority; it dies with the window. */
+    /** The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128). Low priority; it dies with the window. */
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r, "city-map");
         t.setDaemon(true);
@@ -171,11 +176,13 @@ final class MapView {
     private final TilePainter.Input in = new TilePainter.Input();
     private int[] buffer = new int[0];
 
-    /** A picture: its image, the stamp it was painted at, the map's version it is current against, and a far node's ground. */
+    /** A picture: its image, the stamp it was painted at, the map's version it is current against, and a far node's ground - and (0.7.128) whether it was drawn without a district picture it would sample, and the map's count of pictures kept then (CityMap.picturesKept()): drawn again when that moves. */
     private static final class Img {
         WritableImage image;
         long stamp, version = Long.MIN_VALUE;
         byte[] ground;
+        boolean partial;
+        long pictures;
     }
 
     /** A level's pictures, the most recently drawn kept: `most` of them. */
@@ -188,6 +195,8 @@ final class MapView {
     private final Pictures l0small = new Pictures(), l0big = new Pictures(), l1 = new Pictures(), l2 = new Pictures(),
             nodes = new Pictures();
     private final Set<Long> nodesAsked = new HashSet<>();
+    /** The districts whose pictures' jobs are on WORKER (0.7.128), and those the far nodes drawn this frame lacked. */
+    private final Set<CityMap.District> picturesAsked = new HashSet<>(), picturesWanted = new java.util.LinkedHashSet<>();
 
     /** The deposits the far views mark, and the land they were found for. */
     private List<Deposit> fields = List.of();
@@ -293,6 +302,8 @@ final class MapView {
         version = Long.MIN_VALUE;
         for (Pictures p : List.of(l0small, l0big, l1, l2, nodes)) p.clear();
         nodesAsked.clear();
+        picturesAsked.clear();
+        picturesWanted.clear();
         fields = List.of();
         fieldsFor = Long.MIN_VALUE;
         edge = new double[4][0];
@@ -532,6 +543,52 @@ final class MapView {
     }
 
     private boolean paintNodes(MapFrame f, long deadline) {
+        picturesWanted.clear();
+        try {
+            return paintNodes(f, deadline, shownMap.picturesKept());
+        } finally {
+            askPictures(f);
+        }
+    }
+
+    /**
+     * The district pictures the far nodes drawn this frame lacked (0.7.128,
+     * batch MM1; MapTiles.wanted()): their plans' jobs (CityMap.pictureJobs())
+     * handed to WORKER as one task, in order, while the view's districts fit
+     * what the map keeps (MapTiles.picturesFit()) - each district once until
+     * they come back, kept here (CityMap.adopt()), and the nodes that waited
+     * drawn again (their count of pictures kept moved).
+     */
+    private void askPictures(MapFrame f) {
+        if (picturesWanted.isEmpty() || !tiles.picturesFit(f)) return;
+        final MapTiles askedFor = tiles;
+        final CityMap map = shownMap;
+        final List<CityMap.District> asked = new ArrayList<>();
+        final List<CityMap.Job> jobs = new ArrayList<>();
+        for (CityMap.District d : picturesWanted) {
+            if (!picturesAsked.add(d)) continue;
+            asked.add(d);
+            jobs.addAll(map.pictureJobs(d));
+        }
+        if (asked.isEmpty()) return;
+        WORKER.submit(() -> {
+            for (CityMap.Job j : jobs) {
+                try {
+                    j.run();
+                } catch (RuntimeException e) {
+                    System.out.println("A district's picture could not be drawn: " + e);
+                }
+            }
+            Platform.runLater(() -> {
+                if (tiles != askedFor) return;
+                for (CityMap.Job j : jobs) map.adopt(j);
+                picturesAsked.removeAll(asked);
+                requestDraw();
+            });
+        });
+    }
+
+    private boolean paintNodes(MapFrame f, long deadline, long picturesKept) {
         long plots = f.nodePlots(), span = f.nodeSpan();
         World.Key world = shownMap.worldKey();
         int n = MapFrame.NODE_PX;
@@ -559,9 +616,11 @@ final class MapView {
                     }
                     continue;
                 }
-                if (img.version == version) continue;
+                if (img.version == version && !(img.partial && img.pictures != picturesKept)) continue;
                 if (System.nanoTime() > deadline) return true;
-                tiles.nodePixels(nx * span, ny * span, plots, img.ground, buffer);
+                img.partial = tiles.nodePixels(nx * span, ny * span, plots, img.ground, buffer) > 0;
+                img.pictures = picturesKept;
+                picturesWanted.addAll(tiles.wanted());
                 if (img.image == null) img.image = new WritableImage(n, n);
                 img.image.getPixelWriter().setPixels(0, 0, n, n, PixelFormat.getIntArgbInstance(), buffer, 0, n);
                 img.version = version;
@@ -773,8 +832,8 @@ final class MapView {
     /** The block lines' white, its alpha: 0.08 (0.7.69, star) - faint, so the ground under them reads first; at 0.08 a line shows on the dimmed world and on the city's own ground alike (the M5 renders). */
     static final double BLOCK_LINE_ALPHA = 0.08;
 
-    /** The city's edge's white, its alpha: 0.55, as since 0.7.61. */
-    static final double EDGE_ALPHA = 0.55;
+    /** The city's edge's white, its alpha: 0.55, as since 0.7.61 - the far nodes' too (MapTiles.EDGE_ALPHA, 0.7.128). */
+    static final double EDGE_ALPHA = MapTiles.EDGE_ALPHA;
 
     /**
      * Over the ground (spec-grid 2.4, since 0.7.69): the city's block lines,
@@ -840,14 +899,18 @@ final class MapView {
         }
         gc.setLineDashes((double[]) null);
         gc.setFillRule(FillRule.NON_ZERO);
-        // The city's edge: its runs as one shape, so no pixel is drawn twice where they meet (0.7.69; LandMap.outline()).
-        gc.beginPath();
-        for (int i = 0; i < edge[0].length; i++) {
-            double[] r = f.runOnScreen(edge[0][i], edge[1][i], edge[2][i], edge[3][i]);
-            if (r != null) gc.rect(r[0], r[1], r[2], r[3]);
+        // The city's edge: its runs as one shape, so no pixel is drawn twice where they meet (0.7.69; LandMap.outline()). At the
+        // far nodes they draw it themselves since 0.7.128, a pixel wide at every scale (MapTiles.nodePixels()), where a run under
+        // a pixel long would drop here.
+        if (f.level() != MapFrame.FAR) {
+            gc.beginPath();
+            for (int i = 0; i < edge[0].length; i++) {
+                double[] r = f.runOnScreen(edge[0][i], edge[1][i], edge[2][i], edge[3][i]);
+                if (r != null) gc.rect(r[0], r[1], r[2], r[3]);
+            }
+            gc.setFill(Color.rgb(255, 255, 255, EDGE_ALPHA));
+            gc.fill();
         }
-        gc.setFill(Color.rgb(255, 255, 255, EDGE_ALPHA));
-        gc.fill();
         double[] c = LandMap.centre(land);
         double[] cb = f.onScreen(c[0], c[1], c[2], c[3]);
         if (cb != null) {

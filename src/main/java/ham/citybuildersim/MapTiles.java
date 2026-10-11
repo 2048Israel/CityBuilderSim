@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kept for the hover and a change of level, the per-tile path from inputs to pixels, and the far view's node pixels from the world's ground and the districts' counts.
+ * The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kept for the hover and a change of level, the per-tile path from inputs to pixels, and the far view's node pixels from the world's ground, the districts' pictures and shares, and the city's runs and edge.
  *
  * WHY THIS EXISTS (0.7.61, batch J4; the project's spec-land.md 2.6). The
  * view holds its images (ui/MapView: JavaFX's WritableImage, one cache a
@@ -23,7 +23,10 @@ import java.util.Map;
  * district plans' jobs (CityMap.Job: their inputs gathered on the FX thread,
  * kept there by CityMap.adopt()) run on the view's worker: a tile is painted
  * only once ready() says its plans are drawn, and jobs() hands out what
- * draws them.
+ * draws them. Since 0.7.128 (batch MM1) a plan's job draws its district's
+ * picture with it (DistrictPicture), which the far nodes read; a node drawn
+ * without one it wanted says so (nodePixels()'s count, wanted()), and the
+ * view asks CityMap.pictureJobs() for them while picturesFit().
  */
 public final class MapTiles {
 
@@ -271,10 +274,11 @@ public final class MapTiles {
      * far nodes (MapFrame.nodesAtMost()), the tiles' ground and PAINTED_KEPT
      * painted tiles of `paintedBytes` each - and since 0.7.88 the district
      * plans the tiles are painted from, CityMap.PLANS_KEPT of `planBytes`
-     * each.
+     * each, and since 0.7.128 the far nodes' district pictures,
+     * CityMap.PICTURES_KEPT of DistrictPicture.BYTES.
      */
     public static double budgetBytes(MapFrame f, double paintedBytes, double planBytes) {
-        return budgetBytes(f, paintedBytes) + CityMap.PLANS_KEPT * planBytes;
+        return budgetBytes(f, paintedBytes) + CityMap.PLANS_KEPT * planBytes + (double) CityMap.PICTURES_KEPT * DistrictPicture.BYTES;
     }
 
     /** ...without the plans: what the view's own caches hold. */
@@ -318,74 +322,209 @@ public final class MapTiles {
         return out;
     }
 
+    /* ----- the far nodes from the district pictures (0.7.128, batch MM1; docs/studies/spec-globe.md 8.2) ----- */
+
+    /** A district is drawn from its picture (DistrictPicture) on a far node where it is at least this many of the node's pixels across: 4 (the study's 8.2) - a node's pixel is shown 1 to 2 screen pixels wide (MapFrame.nodePlots()), so 4 to 8 on screen (star MM1-4); under it its pixels are dithered by its shares (DistrictPicture.shares()). */
+    public static final int PICTURE_FROM_PX = 4;
+
+    /** The city's edge over a far node's pixels: white at 0.55, the view's edge's (MapView's EDGE_ALPHA, since 0.7.61), on the inner ring of the pixels drawn as the city's and on any holding ground of it smaller than a pixel - at least a pixel wide at every scale, where the view's own edge, runs along the block lines, drops a run under a pixel long. */
+    public static final int EDGE = 0xffffffff;
+    public static final double EDGE_ALPHA = 0.55;
+
+    /** The districts the last nodePixels() drew at PICTURE_FROM_PX or more with no current picture: what the view asks the pictures of (CityMap.pictureJobs()). */
+    private final java.util.Set<CityMap.District> wanted = new java.util.LinkedHashSet<>();
+
+    /** Which of the last nodePixels()'s pixels it drew as the city's edge, and as a highway's or the railway's: a harness's. */
+    private boolean[] lastEdge = new boolean[0], lastRun = new boolean[0];
+
+    public java.util.Set<CityMap.District> wanted() { return wanted; }
+    public boolean[] lastEdge() { return lastEdge; }
+    public boolean[] lastRun() { return lastRun; }
+
     /**
-     * A far node's pixels from its ground: each sample's terrain colour,
-     * dimmed where the city does not own it (TileRaster's UNOWNED_DIM), and
-     * where it owns dry ground its district's tint over it - the class its
-     * buildings take the most ground of, at TileRaster's BLOCK_ALPHA by the
-     * share of the district's dry ground they use (BLOCK_FILLS), homes as
-     * flats where the district is densest - the mockup's far blocks, a
-     * district a block. On Earth (0.7.119) past the planet's rim - the
-     * antipode, EarthProj.REACH_M from the spot - the void (spec-earth 2:
-     * "beyond it is drawn as the void"), which the ground there reads as sea.
+     * A far node's pixels from its ground (0.7.128, batch MM1; spec-globe
+     * 8.2): each sample's terrain colour, dimmed where the city does not own
+     * it (TileRaster's UNOWNED_DIM); over the city's districts what stands
+     * there - where a district is PICTURE_FROM_PX of the node's pixels across
+     * or more, its picture's pixel under the sample (a GROUND pixel the
+     * node's own ground), and where it is smaller, or its picture is not
+     * drawn yet, its owned dry ground dithered by its shares of each kind
+     * (DistrictPicture.shares(), a fixed hash a pixel); then the city's
+     * highways and railway (CityRuns' stretches) on every pixel they cross,
+     * and its edge - the inner ring of the pixels drawn as its (their samples
+     * owned), and a pixel wherever it holds ground smaller than one - so the
+     * city keeps its shape however small. On Earth (0.7.119) past the planet's
+     * rim - the antipode, EarthProj.REACH_M from the spot - the void
+     * (spec-earth 2: "beyond it is drawn as the void"), which the ground
+     * there reads as sea. Returns how many districts it drew without the
+     * picture it would sample (wanted()); MapTiles' tintOf(), a district one
+     * tint, until 0.7.127.
      */
-    public void nodePixels(long x0, long y0, long plots, byte[] ground, int[] out) {
+    public int nodePixels(long x0, long y0, long plots, byte[] ground, int[] out) {
         CityLand land = map.land();
-        int n = MapFrame.NODE_PX;
+        LandGrid grid = land == null ? null : land.grid();
+        int n = MapFrame.NODE_PX, w = n + 2;
         boolean earth = map.worldKey().earth();
-        Map<CityMap.District, Integer> tints = new java.util.HashMap<>();
+        boolean pictures = World.DISTRICT / plots >= PICTURE_FROM_PX;
+        int level = Long.numberOfTrailingZeros(plots);
+        boolean aligned = Long.bitCount(plots) == 1 && Math.floorMod(x0, plots) == 0 && Math.floorMod(y0, plots) == 0;
+        wanted.clear();
+        // The city's ground a pixel at a time, a ring of pixels round the node among them: how much of the pixel it owns (NONE,
+        // SOME or ALL), and whether it owns the pixel's sample - the pixel drawn as its.
+        byte[] cover = new byte[w * w];
+        boolean[] city = new boolean[w * w];
+        for (int j = -1; j <= n; j++) {
+            for (int i = -1; i <= n; i++) {
+                int cv = LandGrid.NONE, at = (j + 1) * w + i + 1;
+                if (grid != null) {
+                    long ax = x0 + i * plots, ay = y0 + j * plots;
+                    if (aligned) cv = grid.cover(level, Math.floorDiv(ax, plots), Math.floorDiv(ay, plots));
+                    else {
+                        long o = grid.owned(ax, ay, ax + plots, ay + plots);
+                        cv = o == 0 ? LandGrid.NONE : o == plots * plots ? LandGrid.ALL : LandGrid.SOME;
+                    }
+                }
+                cover[at] = (byte) cv;
+                city[at] = cv == LandGrid.ALL || (cv == LandGrid.SOME && land.ownsPlot(x0 + i * plots + plots / 2, y0 + j * plots + plots / 2));
+            }
+        }
+        Map<CityMap.District, DistrictPicture> pics = new java.util.HashMap<>();
+        Map<CityMap.District, double[]> shares = new java.util.HashMap<>();
+        BuildingVisual.Type[] types = map.types();
+        long lastKey = Long.MIN_VALUE;
+        CityMap.District d = null;
+        long dx0 = 0, dy0 = 0;
         for (int j = 0; j < n; j++) {
             long y = y0 + j * plots + plots / 2;
             for (int i = 0; i < n; i++) {
                 long x = x0 + i * plots + plots / 2;
+                int k = j * n + i;
                 if (earth && !EarthProj.onPlanet(EarthProj.metresX(x0 + (i + 0.5) * plots), EarthProj.metresY(y0 + (j + 0.5) * plots))) {
-                    out[j * n + i] = TileRaster.VOID;
+                    out[k] = TileRaster.VOID;
                     continue;
                 }
-                byte g = ground[j * n + i];
+                byte g = ground[k];
                 int c = TileRaster.GROUND[g];
-                boolean owned = land != null && land.ownsPlot(x, y);
-                if (!owned) {
-                    out[j * n + i] = TileRaster.blend(c, TileRaster.VOID, TileRaster.UNOWNED_DIM);
-                    continue;
-                }
-                if (World.dry(g)) {
-                    CityMap.District d = map.districtOfTile(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE));
-                    if (d != null) {
-                        Integer tint = tints.get(d);
-                        if (tint == null) {
-                            tint = tintOf(d);
-                            tints.put(d, tint);
+                int cv = cover[(j + 1) * w + i + 1];
+                boolean owned = city[(j + 1) * w + i + 1];
+                if (!owned) c = TileRaster.blend(c, TileRaster.VOID, TileRaster.UNOWNED_DIM);
+                if (cv != LandGrid.NONE) {
+                    long ddx = Math.floorDiv(x, World.DISTRICT), ddy = Math.floorDiv(y, World.DISTRICT), key = (ddx << 32) ^ (ddy & 0xffffffffL);
+                    if (key != lastKey) {
+                        lastKey = key;
+                        d = map.districtOfTile(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE));
+                        dx0 = ddx * World.DISTRICT;
+                        dy0 = ddy * World.DISTRICT;
+                    }
+                    if (d != null && d.usedCells() > 0) {
+                        int code = DistrictPicture.GROUND;
+                        DistrictPicture pic = null;
+                        if (pictures) {
+                            pic = pics.get(d);
+                            if (pic == null && !pics.containsKey(d)) {
+                                pic = map.pictureIfCurrent(d);
+                                pics.put(d, pic);
+                                if (pic == null) wanted.add(d);
+                            }
                         }
-                        if (tint != 0) c = TileRaster.blend(c, tint | 0xff000000, ((tint >>> 24) & 255) / 255.0);
+                        if (pic != null) code = pic.codeAtPlot((int) (x - dx0), (int) (y - dy0));
+                        else if (owned && World.dry(g)) {
+                            double[] s = shares.get(d);
+                            if (s == null) {
+                                s = DistrictPicture.shares(d, types);
+                                shares.put(d, s);
+                            }
+                            code = DistrictPicture.pick(s, World.unit(World.mix(World.mix(map.seed() ^ 0x444954484552L ^ level
+                                    ^ Math.floorDiv(x, plots) * 0x9E3779B97F4A7C15L) ^ Math.floorDiv(y, plots) * 0xC2B2AE3D27D4EB4FL)));
+                        }
+                        if (code != DistrictPicture.GROUND) c = DistrictPicture.colour(code);
                     }
                 }
-                out[j * n + i] = c;
+                out[k] = c;
+            }
+        }
+        // The city's highways and railway, a pixel wide at least wherever they run.
+        if (lastRun.length != n * n) { lastRun = new boolean[n * n]; lastEdge = new boolean[n * n]; }
+        java.util.Arrays.fill(lastRun, false);
+        java.util.Arrays.fill(lastEdge, false);
+        CityRuns runs = map.runs();
+        if (runs != null) {
+            stroke(runs.highways(), DistrictPicture.colour(DistrictPicture.HIGHWAY), x0, y0, plots, out);
+            stroke(runs.rail(), DistrictPicture.colour(DistrictPicture.RAIL), x0, y0, plots, out);
+        }
+        // The city's edge: each of its pixels beside one that is not - the inner ring of its shape as drawn - and each pixel
+        // holding some of its ground with none of the eight about it its own: ground smaller than a pixel, drawn a pixel.
+        for (int j = 0; j < n; j++) {
+            for (int i = 0; i < n; i++) {
+                int at = (j + 1) * w + i + 1;
+                boolean edge = city[at] ? !city[at - 1] || !city[at + 1] || !city[at - w] || !city[at + w]
+                        : cover[at] == LandGrid.SOME && !city[at - 1] && !city[at + 1] && !city[at - w] && !city[at + w]
+                                && !city[at - w - 1] && !city[at - w + 1] && !city[at + w - 1] && !city[at + w + 1];
+                if (edge) {
+                    out[j * n + i] = TileRaster.blend(out[j * n + i], EDGE, EDGE_ALPHA);
+                    lastEdge[j * n + i] = true;
+                }
+            }
+        }
+        return wanted.size();
+    }
+
+    /** A net's stretches over a far node's pixels in a colour: each stretch's plots, from the plot it starts from (its arm's start, or the last of the stretch before) to its last, as a line of pixels - every pixel it crosses, at least one wide (CityRuns' DX and DY, a stretch's heading). */
+    private void stroke(CityRuns.Net net, int colour, long x0, long y0, long plots, int[] out) {
+        int n = MapFrame.NODE_PX;
+        for (long[] s : net.stretches()) {
+            int h = (int) s[2];
+            long steps = s[3];
+            if (steps <= 0) continue;
+            long ax = s[0], ay = s[1];
+            long bx = s[0] + CityRuns.DX[h] * steps, by = s[1] + CityRuns.DY[h] * steps;
+            long pa = Math.floorDiv(ax - x0, plots), qa = Math.floorDiv(ay - y0, plots);
+            long pb = Math.floorDiv(bx - x0, plots), qb = Math.floorDiv(by - y0, plots);
+            if (Math.max(pa, pb) < 0 || Math.min(pa, pb) >= n || Math.max(qa, qb) < 0 || Math.min(qa, qb) >= n) continue;
+            long m = Math.max(Math.abs(pb - pa), Math.abs(qb - qa));
+            // The steps of the line within the node, a pixel's margin each way: where it enters and leaves.
+            double lo = 0, hi = m;
+            if (pb != pa) {
+                double s0 = (-1.0 - pa) * m / (pb - pa), s1 = (n - pa) * m / (double) (pb - pa);
+                lo = Math.max(lo, Math.min(s0, s1));
+                hi = Math.min(hi, Math.max(s0, s1));
+            }
+            if (qb != qa) {
+                double s0 = (-1.0 - qa) * m / (qb - qa), s1 = (n - qa) * m / (double) (qb - qa);
+                lo = Math.max(lo, Math.min(s0, s1));
+                hi = Math.min(hi, Math.max(s0, s1));
+            }
+            for (long t = Math.max(0, (long) Math.floor(lo) - 1); t <= Math.min(m, (long) Math.ceil(hi) + 1); t++) {
+                long p = m == 0 ? pa : pa + Math.round((double) (pb - pa) * t / m);
+                long q = m == 0 ? qa : qa + Math.round((double) (qb - qa) * t / m);
+                if (p < 0 || q < 0 || p >= n || q >= n) continue;
+                int k = (int) (q * n + p);
+                out[k] = colour;
+                lastRun[k] = true;
             }
         }
     }
 
-    /** A district's tint for the far nodes: its colour with its opacity in the top byte, 0 for none built. */
-    int tintOf(CityMap.District d) {
-        if (d.owned() <= 0) return 0;
-        BuildingVisual.Type[] types = map.types();
-        double[] ground = new double[BuildingVisual.CLASSES];
-        double flats = 0;
-        for (int t = 0; t < types.length; t++) {
-            int c = d.count(t);
-            if (c <= 0 || types[t] == null || !types[t].drawn()) continue;
-            double sq = (double) c * types[t].sqFt();
-            ground[types[t].cls()] += sq;
-            if (types[t].flats()) flats += sq;
+    /**
+     * Whether a far view asks for the pictures of the built districts it
+     * shows (0.7.128): while they are no more than CityMap.PICTURES_KEPT and
+     * lie in no more of the map's bands than it keeps the links of
+     * (CityMap.BANDS_KEPT), so what it asks for is kept while it is shown;
+     * past either - a city of thousands of districts seen wide - every
+     * district it shows is dithered by its shares (star MM1-2).
+     */
+    public boolean picturesFit(MapFrame f) {
+        double vx0 = f.plotX(0), vy0 = f.plotY(0), vx1 = f.plotX(f.width()), vy1 = f.plotY(f.height());
+        int built = 0;
+        java.util.Set<Integer> bands = new java.util.HashSet<>();
+        for (CityMap.District d : map.districts()) {
+            if (d.usedCells() <= 0) continue;
+            double ax = (map.baseDX() + d.dx) * (double) World.DISTRICT, ay = (map.baseDY() + d.dy) * (double) World.DISTRICT;
+            if (ax + World.DISTRICT <= vx0 || ay + World.DISTRICT <= vy0 || ax >= vx1 || ay >= vy1) continue;
+            built++;
+            bands.add(CityMap.bandOf(d));
+            if (built > CityMap.PICTURES_KEPT || bands.size() > CityMap.BANDS_KEPT) return false;
         }
-        int best = BuildingVisual.HOME;
-        for (int k = 1; k < BuildingVisual.CLASSES; k++) if (ground[k] > ground[best]) best = k;
-        if (!(ground[best] > 0)) return 0;
-        double f = Math.min(1, d.used() / d.owned());
-        int lvl = f < TileRaster.BLOCK_FILLS[0] ? 0 : f < TileRaster.BLOCK_FILLS[1] ? 1 : f < TileRaster.BLOCK_FILLS[2] ? 2 : 3;
-        int colour = best == BuildingVisual.HOME
-                ? (lvl == 3 || flats * 2 >= ground[BuildingVisual.HOME] ? BuildingVisual.FLATS_FILL : BuildingVisual.FILL[BuildingVisual.HOME])
-                : BuildingVisual.FILL[best];
-        return (colour & 0xffffff) | ((int) Math.round(TileRaster.BLOCK_ALPHA[lvl] * 255) << 24);
+        return true;
     }
 }
