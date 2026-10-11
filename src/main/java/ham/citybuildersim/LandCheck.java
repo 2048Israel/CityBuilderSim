@@ -41,7 +41,10 @@ package ham.citybuildersim;
  * mines it would carry pay it back (23); and, since 0.7.68 (batch M4), the
  * units the player reads land in - square metres under a hundredth of a
  * square kilometre, square kilometres from it, ground prices a square
- * metre (24).
+ * metre (24); and, since 0.7.107 (batch Z1), the ledger with zones and the
+ * forest law - a sector's allocation on its zone's ground first, the three
+ * numbers still closing, forest dry ground a building can take until a law
+ * keeps it (25; ZoningCheck plays the rest).
  */
 public class LandCheck {
 
@@ -809,6 +812,7 @@ public class LandCheck {
         groundKeptAhead();
         ironAWholeFieldAtATime();
         inThePlayersUnits();
+        zonesOnTheLedger();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -2496,4 +2500,49 @@ public class LandCheck {
         return new double[] { sites, amount };
     }
 
+    /* ==================================================================
+       25. THE LEDGER WITH ZONES AND THE FOREST LAW (0.7.107, batch Z1)
+
+       The three numbers still close with zones and a law: what is owned is
+       what is built, what the law keeps from building, what the zones hold
+       and what is free for anyone. A sector with no zone allocates and
+       releases exactly as anyone does; a zoned sector's allocation comes off
+       its zone's held ground first and raises allocated by exactly what was
+       built; a refusal takes nothing. And forest is dry ground a building
+       can take - it always was - until a law keeps it.
+       ================================================================== */
+    static void zonesOnTheLedger() {
+        System.out.println("\n--- 25. the ledger with zones and the forest law (0.7.107) ---");
+        LandManager lm = new LandManager();
+        quietly(() -> lm.setOwnedSqFt(LandManager.sqFt(40)));
+        double owned = lm.getOwnedSqFt(), forest = lm.getForestSqFt();
+        assertTrue("forest is dry ground: part of what the city owns", forest > 0 && forest < owned);
+        check("...and with no law, every foot of it free to build on", lm.getAvailableSqFt(), owned);
+
+        assertTrue("a sector with no zone allocates as anyone does", lm.allocate(600000, Sectors.MINING));
+        check("...allocated by exactly what was built", lm.getAllocatedSqFt(), 600000);
+        check("...and the zone it has not got records nothing", lm.usedBy(Sectors.MINING), 0);
+        lm.release(100000, Sectors.MINING);
+        check("...and releases as anyone does", lm.getAllocatedSqFt(), 500000);
+
+        lm.getZoning().set(Sectors.MINING, Zoning.Size.KM2, 2, .5);
+        lm.getZoning().setForestLaw(.1, .3);
+        double kept = .3 * forest;
+        near("the ledger closes: owned = built + kept from building + held by zones + free for anyone",
+                lm.getAllocatedSqFt() + kept + lm.heldByZones() + lm.getAvailableSqFt(), owned, 1e-12);
+        double before = lm.getAllocatedSqFt(), held = lm.heldBy(Sectors.MINING);
+        assertTrue("a zoned sector's plot comes off its zone's held ground", lm.allocate(3 * 400000, Sectors.MINING));
+        check("...allocated up by exactly what was built", lm.getAllocatedSqFt(), before + 1200000);
+        check("...recorded as the zone's used ground", lm.usedBy(Sectors.MINING), 1200000);
+        near("...and the zone holds that much less", lm.heldBy(Sectors.MINING), held - 1200000, 1e-12);
+        double anyone = lm.getAvailableSqFt();
+        assertTrue("another sector's plot past the ground free for anyone is refused", !lm.allocate(anyone + 1, Sectors.RETAIL));
+        check("...and took nothing when it refused", lm.getAllocatedSqFt(), before + 1200000);
+        near("the ledger still closes",
+                lm.getAllocatedSqFt() + kept + lm.heldByZones() + lm.getAvailableSqFt(), owned, 1e-12);
+        lm.getZoning().remove(Sectors.MINING);
+        lm.getZoning().setForestLaw(0, 0);
+        check("un-zoned and the law lifted, the free ground is owned less allocated again",
+                lm.getAvailableSqFt(), owned - lm.getAllocatedSqFt());
+    }
 }

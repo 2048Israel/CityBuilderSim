@@ -55,6 +55,12 @@ import java.util.Locale;
  *      preview's due is next month's, struck when it comes; and a year on,
  *      earning nothing, the fund is its value times (1 - the rate) to the
  *      twelfth, which is what twelve of the model's own withdrawals leave.
+ *   9. ZONING'S BEFORE AND AFTER (0.7.107, batch Z1): a zone and a forest
+ *      law staged on a copy move nothing in the city, and applied read as
+ *      the copy did - what the zone holds, what that ground would fetch, the
+ *      price given up, the forest's three kinds and the ground free for
+ *      anyone; and a zone's tax relief is the property tax un-zoning it
+ *      would raise.
  *
  * Every fixture causes its condition.
  */
@@ -134,6 +140,7 @@ public class PolicyPreviewCheck {
         appliedIsTheModel(g);
         aDialAtZero(g);
         theWithdrawal(g);
+        zoning(g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -531,5 +538,60 @@ public class PolicyPreviewCheck {
         assertTrue("...the bank's next bill", near(take.bank(), was.bank()));
         assertTrue("...the contribution off the wage bill", near(em.contributionsAt(live.getContributionRate()), contributions));
         assertTrue("...and the EI bill on the pool", near(twin.getUnemployment().benefitsAt(live.getEiBenefitRate()), pool));
+    }
+    /* ============================ 9. ZONING'S BEFORE AND AFTER (0.7.107) ============================ */
+
+    static void zoning(Game g) {
+        out.println("\n--- 9. zoning's before and after: staged on a copy, applied, the preview is the model ---");
+        LandManager land = g.getLandManager();
+        // Ground with forest in it, so the law has something to keep: the city's ground drawn to 80 km2.
+        quietly(() -> land.setOwnedSqFt(LandManager.sqFt(80)));
+        Zoning live = g.getZoning();
+        assertTrue("fixture: the city's ground holds forest, and it has no zone and no law",
+                land.getForestSqFt() > 0 && live.isEmpty());
+        PolicyPreview.ZoneAt none = PolicyPreview.zoneAt(g, live, Sectors.RESTAURANTS);
+        assertTrue("at the city's own zoning a sector's zone is nothing, and the tax moves by nothing",
+                none.heldSqFt() == 0 && none.taxRelief() == 0 && PolicyPreview.zoningTaxChange(g, live.copy()) == 0);
+        Zoning staged = live.copy();
+        staged.set(Sectors.RESTAURANTS, Zoning.Size.KM2, 1, .25);
+        staged.setForestLaw(.2, .5);
+        PolicyPreview.ZoneAt then = PolicyPreview.zoneAt(g, staged, Sectors.RESTAURANTS);
+        PolicyPreview.ForestAt forestThen = PolicyPreview.forestAt(g, staged);
+        PolicyPreview.ForestAt forestNow = PolicyPreview.forestAt(g, live);
+        assertTrue("the copy is detached: the city holds no zone and keeps no forest, and its decisions are untouched",
+                g.getZoning().isEmpty() && land.heldByZones() == 0 && forestNow.protectedSqFt() == 0
+                && forestNow.freeForAnyone() == land.getAvailableSqFt());
+        int decided = g.getDecisions().entries().size();
+        g.setZone(Sectors.RESTAURANTS, Zoning.Size.KM2, 1, .25);
+        g.setForestLaw(.2, .5);
+        double going = land.getPricePerSqFt(), held = land.heldBy(Sectors.RESTAURANTS);
+        assertTrue("applied, the zone holds what the preview said, at the size it said",
+                then.heldSqFt() == held && then.sizeSqFt() == land.zoneSizeOf(Sectors.RESTAURANTS) && held > 0
+                && g.getDecisions().entries().size() == decided + 2);
+        assertTrue("...what that ground would fetch at the going price, and the price given up selling it at the zone's",
+                near(then.heldAtGoingPrice(), held * going)
+                && near(then.priceGivenUp(), land.priceFor(held) - land.priceFor(held, Sectors.RESTAURANTS)));
+        assertTrue("...the forest's three kinds, the wood kept and the wood that may be cut, and the ground free for anyone",
+                forestThen.protectedSqFt() == land.getProtectedForestSqFt() && forestThen.workingSqFt() == land.getWorkingForestSqFt()
+                && forestThen.openSqFt() == land.getOpenForestSqFt() && forestThen.freeForAnyone() == land.getAvailableSqFt()
+                && forestThen.protectedWood() == land.getProtectedWood() && forestThen.cuttableWood() == land.cuttableForest()
+                && Math.abs(forestThen.standsForEver() - .2) <= 1e-12);
+
+        // A zone with ground built in it: its relief is the tax un-zoning would raise.
+        Sector restaurants = g.getSectors().byKey(Sectors.RESTAURANTS);
+        restaurants.addCash(1_000_000);
+        g.buildFor(g.getSectorInvestor(Sectors.RESTAURANTS), LongPlaytest.template(g, "Diner"), 3);
+        PolicyPreview.ZoneAt built = PolicyPreview.zoneAt(g, g.getZoning(), Sectors.RESTAURANTS);
+        Zoning off = g.getZoning().copy();
+        off.remove(Sectors.RESTAURANTS);
+        double withZone = g.getEconomyManager().getPropertyTaxFor(restaurants);
+        double moved = PolicyPreview.zoningTaxChange(g, off);
+        g.removeZone(Sectors.RESTAURANTS);
+        double without = g.getEconomyManager().getPropertyTaxFor(restaurants);
+        out.printf("      the zone's relief a month %s; the preview's move %s, the move applied %s%n",
+                Formats.INSTANCE.amount(built.taxRelief()), Formats.INSTANCE.amount(moved), Formats.INSTANCE.amount(without - withZone));
+        assertTrue("fixture: three diners stand in the zone, so the zone gives relief", built.usedSqFt() > 0 && built.taxRelief() > 0);
+        assertTrue("un-zoning previews the property tax rising by the relief, and applied it does",
+                near(moved, built.taxRelief()) && near(without - withZone, built.taxRelief()));
     }
 }

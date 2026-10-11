@@ -129,6 +129,38 @@ public class BusinessInvestment {
         this.landPricePerSqFt = pricePerSqFt;
     }
 
+    /*
+     * THE INVESTORS' GROUND BY ZONE (0.7.107, batch Z1; Jerus's Z3 and Z4).
+     * landAvailable is the ground free for anyone; a zoned sector sees that
+     * and what its zone holds (plotsAvailableFor()), builds there first, and
+     * where it does its ground costs the zone's price (getCostOf()) and is
+     * assessed at it (standingCostOf(), through
+     * EconomyManager.groundPriceFor()). Handed in with the land each time a
+     * sector plans (Game.refreshLand(), LandManager.zoneLand()); empty, every
+     * read is what it always was.
+     */
+    private java.util.Map<String, double[]> zoneLand = java.util.Map.of();
+
+    /** Each zoned sector's {held square feet, price share} (LandManager.zoneLand()); empty or null for none. */
+    public void setZoneLand(java.util.Map<String, double[]> zones) {
+        this.zoneLand = zones == null ? java.util.Map.of() : zones;
+    }
+
+    /** What a sector's zone holds for it, square feet; 0 with none. */
+    public double zoneHeldFor(String sector) {
+        double[] z = sector == null ? null : zoneLand.get(sector);
+        return z == null ? 0 : z[0];
+    }
+
+    /** ...and what the other sectors' zones hold: ground this one cannot have. */
+    private double zonedForOthers(String sector) {
+        double others = 0;
+        for (java.util.Map.Entry<String, double[]> e : zoneLand.entrySet()) {
+            if (!e.getKey().equals(sector)) others += e.getValue()[0];
+        }
+        return others;
+    }
+
     /** What the engine decided, and why - surfaced on the sector screens. */
     public static class Decision {
 
@@ -378,13 +410,17 @@ public class BusinessInvestment {
     public int plotsAvailableFor(BuildingsTemplate template) {
         double land = template.getLandSqFt();
         if (land <= 0) return Integer.MAX_VALUE;
-        return (int) Math.floor(landAvailable / land);
+        // ...on the ground free for anyone and, since 0.7.107, what its zone holds for it.
+        if (zoneLand.isEmpty()) return (int) Math.floor(landAvailable / land);
+        return (int) Math.floor((landAvailable + zoneHeldFor(template.getSector())) / land);
     }
 
-    /** Why a sector could not build, when land is what stopped it - with the numbers, because the player can fix this one: "no land - needs 743 m\u00b2, 301 m\u00b2 free" (in square feet until 0.7.68; LandManager.areaWords()). */
+    /** Why a sector could not build, when land is what stopped it - with the numbers, because the player can fix this one: "no land - needs 743 m\u00b2, 301 m\u00b2 free" (in square feet until 0.7.68; LandManager.areaWords()); since 0.7.107 with what the other sectors' zones hold ("...; 55.9 km\u00b2 is zoned for others"). */
     public String landReason(BuildingsTemplate template) {
-        return "no land - needs " + LandManager.areaWords(template.getLandSqFt()) + ", "
-                + LandManager.areaWords(landAvailable) + " free";
+        String why = "no land - needs " + LandManager.areaWords(template.getLandSqFt()) + ", "
+                + LandManager.areaWords(landAvailable + zoneHeldFor(template.getSector())) + " free";
+        double others = zoneLand.isEmpty() ? 0 : zonedForOthers(template.getSector());
+        return others > 0 ? why + "; " + LandManager.areaWords(others) + " is zoned for others" : why;
     }
 
     /* =====================================================================
@@ -930,9 +966,10 @@ public class BusinessInvestment {
         // sector - one for everybody but the fields. A planner that ignored the
         // farmland relief would refuse to sink a farm the city had just voted
         // not to tax. See TaxPolicy.assessedLandShare.
+        // ...and since 0.7.107 at its zone's price while its zone holds the plot (EconomyManager.groundPriceFor(), Z4).
         double onRoll = economyManager.getTaxPolicy().assessedLandShare(sector.key());
         double assessed = structure
-                + t.getLandSqFt() * Math.max(0, economyManager.getLandPricePerSqFt()) * onRoll;
+                + t.getLandSqFt() * economyManager.groundPriceFor(t) * onRoll;
         double tax = assessed * economyManager.getTaxPolicy().effectiveMonthlyPropertyRate(sector);
         return repairs + tax;
     }
@@ -1137,7 +1174,21 @@ public class BusinessInvestment {
         double shortfall = Math.max(required - stock, 0);
         return economyManager.withBuildersTax(buildingManager.nonMaterialCost(t) * quantity
                         + shortfall * buildingManager.getConstructionMaterialPrice())
-                + t.getLandSqFt() * quantity * landPricePerSqFt;
+                + groundCostOf(t, quantity);
+    }
+
+    /**
+     * The ground under an order, as Game.buildFor() charges it: the part its
+     * sector's zone holds at the zone's price, the rest at the going price
+     * (0.7.107, LandManager.priceFor(sqFt, sector)); with no zone, the going
+     * price.
+     */
+    private double groundCostOf(BuildingsTemplate t, int quantity) {
+        double[] z = zoneLand.isEmpty() ? null : zoneLand.get(t.getSector());
+        if (z == null) return t.getLandSqFt() * quantity * landPricePerSqFt;
+        double sqFt = t.getLandSqFt() * quantity;
+        double inZone = Math.min(sqFt, Math.max(0, z[0]));
+        return (sqFt - inZone) * landPricePerSqFt + inZone * (z[1] * landPricePerSqFt);
     }
 
     public double getCostOf(BuildingsTemplate t, int quantity) {

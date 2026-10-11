@@ -4931,8 +4931,60 @@ public final class GameVersion {
      *     A24 from month 484 (its first water shortage, met on the lake) and
      *     A20 not at all. It ends at 492,823 people at month 4,003 (617,942 at
      *     month 4,005 at 0.7.103/0.7.104); runs/fixP5-notes.md, section 4.
+     *
+     * 0.7.107 (2026-10-10) - ZONING, THE MODEL. Batch Z1 (Jerus's decisions
+     * of 2026-10-08 on the project's spec-zoning.md, every recommendation
+     * taken; runs/brief-batchZ1.md, runs/fixZ1-notes.md). No save format
+     * change (36): an older save reads no zones, the law at 0 and 0 and no
+     * forest cleared, and loads as it did. Batch Z2 draws it.
+     *   - ZONES (Zoning; LandManager, ZONES AND THE FOREST LAW): a sector's
+     *     zone is an amount, not a place (Z1) - a share of the dry ground,
+     *     re-read as land is bought (Z2), or square kilometres - holding
+     *     free ground for that sector alone, bare ground first, then open
+     *     forest (Z9); when the zones want more than is free each holds the
+     *     same share of its want, and fills as land is bought (Z10). Free for
+     *     anyone is the free ground less what the zones hold
+     *     (getAvailableSqFt(): the city's own works and every other sector);
+     *     a zoned sector sees its zone's too and builds there first
+     *     (freeFor(), allocate(sqFt, sector)). Given back, a plot goes to its
+     *     zone again; un-zoned, the held ground goes back to everyone and the
+     *     ground sold stays with its owner at what it paid.
+     *   - THE ZONE'S PRICE (Z3, Z4): the city sells a zone's ground at its
+     *     price share of the going business price, buys it back at it, and
+     *     assesses it at it (EconomyManager.assessedLandValueOf(), as the
+     *     farmland relief assesses the fields; the books keep the going
+     *     price). The investors price an order's ground, its standing cost
+     *     and a landlord's carry at the zone's price while the zone holds the
+     *     plot (BusinessInvestment.getCostOf(), standingCostOf(),
+     *     EconomyManager.groundPriceFor()).
+     *   - THE ZONE'S TAXES ARE THE SECTOR'S OWN OFFSETS (Z5, "one dial, two
+     *     doors"; Game.setZoneTax()).
+     *   - THE FOREST LAW (Z6, Z8): of the city's forest ground, a protected
+     *     share never cut nor built on and a kept share (at least that) never
+     *     built on; default 0 and 0. cuttableForest() - what stands less the
+     *     protected wood, the fullest forest first - is what a cut may take,
+     *     and Forestry's crew rule's input (materials I9).
+     *   - BUILDING ON OPEN FOREST CLEARS IT (Z7): forest was dry ground a
+     *     building could take and nothing cleared it; now the built ground
+     *     past the bare ground (and past what the zones hold of it) lies on
+     *     open forest and clears it, cut-over ground first, then standing
+     *     forest, whose wood is counted as taken out (C) - Forestry's salvage
+     *     cut from I9, lost until then. Cleared ground never regrows; W =
+     *     unowned + remaining + C + E holds to the cubic metre.
+     *   - ZONED FIELDS DO NOT YIELD TO HOMES (Z11; sectors.Agriculture): while
+     *     somebody sleeps outside the fields build in their zone, as far as
+     *     it holds, and nowhere else.
+     *   - PolicyPreview: a zone's held ground, what it would fetch, the price
+     *     given up and its tax relief (zoneAt(), zoningTaxChange()), and the
+     *     law's three kinds and its wood (forestAt()), on a staged copy.
+     *   - Harnesses: ZoningCheck (new, nine sections); LandCheck 25 (the
+     *     ledger with zones and the law); PolicyPreviewCheck 9 (zoning's
+     *     before and after).
+     *   - The playtest sets no zone and is 0.7.106's byte for byte: with
+     *     nothing set only the forest's C rises as a city builds past its
+     *     bare ground, and nothing priced and no trace reads it.
      */
-    public static final String VERSION = "0.7.106";
+    public static final String VERSION = "0.7.107";
 
     /**
      * The save shape.

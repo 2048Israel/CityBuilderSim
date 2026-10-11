@@ -145,6 +145,17 @@ public class DataSave {
      */
     private Ports.State portMonth;
 
+    /**
+     * The city's zones, its forest law and the forest cleared for building
+     * (0.7.107, batch Z1; Zoning, LandManager's ZONES AND THE FOREST LAW):
+     * each zone's sector, size and its kind, price share and the ground used
+     * in it; the law's two shares; C's ground and wood. Absent on an older
+     * save - and on any save with nothing set and nothing cleared - which
+     * loads with no zones, the law at 0 and 0 and nothing cleared: the ground
+     * free for anyone, as it always was. No format bump.
+     */
+    private Zoning.State zoning;
+
     /*
      * The property tax the city CHARGED this month, rather than a figure
      * derived from its state.
@@ -793,6 +804,10 @@ public class DataSave {
     public void setReserve(StrategicReserve.State state) { this.reserve = state; }
     /** Null on a save from before 0.7.85. */
     public StrategicReserve.State getReserve() { return reserve; }
+
+    public void setZoning(Zoning.State state) { this.zoning = state; }
+    /** Null on a save from before 0.7.107, or with nothing zoned, no law and no forest cleared. */
+    public Zoning.State getZoning() { return zoning; }
 
     public void setPortMonth(Ports.State state) { this.portMonth = state; }
     /** Null on a save from before 0.7.86. */
