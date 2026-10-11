@@ -7,7 +7,7 @@ import java.util.Arrays;
  *
  * WHY THIS EXISTS (0.7.128, batch MM1; docs/studies/spec-globe.md 8.1 and
  * 8.2). Past the painted tiles the far view drew each district one tint
- * (MapTiles' tintOf() until 0.7.127): the class whose buildings took the
+ * (MapTiles' tint, until 0.7.127): the class whose buildings took the
  * most ground in it, at TileRaster.BLOCK_ALPHA by how much of its ground they
  * used. A district is 256 plots, 7.68 km, so a city of a million on a dozen
  * districts was a dozen flat squares at every size - Jerus, 2026-10-11:

@@ -557,7 +557,9 @@ final class MapView {
      * handed to WORKER as one task, in order, while the view's districts fit
      * what the map keeps (MapTiles.picturesFit()) - each district once until
      * they come back, kept here (CityMap.adopt()), and the nodes that waited
-     * drawn again (their count of pictures kept moved).
+     * drawn again (their count of pictures kept moved), which ask for the
+     * rest: a frame hands out jobs for FRAME_MS at most, their inputs read
+     * here.
      */
     private void askPictures(MapFrame f) {
         if (picturesWanted.isEmpty() || !tiles.picturesFit(f)) return;
@@ -565,7 +567,9 @@ final class MapView {
         final CityMap map = shownMap;
         final List<CityMap.District> asked = new ArrayList<>();
         final List<CityMap.Job> jobs = new ArrayList<>();
+        long until = System.nanoTime() + (long) (FRAME_MS * 1e6);
         for (CityMap.District d : picturesWanted) {
+            if (System.nanoTime() > until) break;
             if (!picturesAsked.add(d)) continue;
             asked.add(d);
             jobs.addAll(map.pictureJobs(d));

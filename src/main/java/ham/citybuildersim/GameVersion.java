@@ -5639,7 +5639,7 @@ public final class GameVersion {
      *     its picture. CityMap.PICTURES_KEPT (256), counted in the view's 48
      *     MB. Not saved: drawn again from the plans after a load.
      *   - THE FAR NODES DRAW FROM THEM (MapTiles.nodePixels(); a district one
-     *     tint, tintOf(), until now): a district PICTURE_FROM_PX (4) of a
+     *     tint until now): a district PICTURE_FROM_PX (4) of a
      *     node's pixels across or more samples its picture; smaller, or while
      *     its picture is drawn, its owned dry ground is dithered by its kinds'
      *     shares of its counts. The city's highways and railway are drawn on

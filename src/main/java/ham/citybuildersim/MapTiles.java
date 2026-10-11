@@ -357,7 +357,7 @@ public final class MapTiles {
      * rim - the antipode, EarthProj.REACH_M from the spot - the void
      * (spec-earth 2: "beyond it is drawn as the void"), which the ground
      * there reads as sea. Returns how many districts it drew without the
-     * picture it would sample (wanted()); MapTiles' tintOf(), a district one
+     * picture it would sample (wanted()); a district one
      * tint, until 0.7.127.
      */
     public int nodePixels(long x0, long y0, long plots, byte[] ground, int[] out) {
