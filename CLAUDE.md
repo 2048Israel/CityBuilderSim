@@ -53,6 +53,12 @@ publish, pull it, and run the tool's two lines (`--wrap` first, then the
 Markdown from what it wrote). A session that has been away reads the
 changelog's top and the todo's section 0 before anything else.
 
+Design studies are the exception: since 2026-10-11 they live in the tree,
+under `docs/studies/`, each a note with its prototypes and boards in a folder
+beside it (Jerus: "just put them on github no? thats where studies will be").
+`docs/studies/README.md` lists them; the earlier ones stay in the project as
+`claude/spec-*.md`. The batches a study plans still go in the project's todo.
+
 ## The standing rules
 
 These are Jerus's, and they do not move.
