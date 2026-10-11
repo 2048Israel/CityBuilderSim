@@ -7170,13 +7170,13 @@ public class Game {
     }
 
     /**
-     * The MINING buildings that stand on a resource's sites - standing, on
-     * site or ordered (0.7.62): every MINING template whose good is the
-     * resource's (siteOf()) - and since 0.7.91 not an offshore platform's
-     * jacket, which stands on its field and takes none of its sites (its
-     * wells do). Since 0.7.110 the sites they take (each its template's
-     * site's sites, one for every building until the materials chains'),
-     * every type's.
+     * The buildings that stand on a resource's sites - standing, on site or
+     * ordered (0.7.62): every template whose site is the resource's
+     * (siteOf()) - and since 0.7.91 not an offshore platform's jacket, which
+     * stands on its field and takes none of its sites (its wells do). Since
+     * 0.7.110 the sites they take, every type's: each building its
+     * template's site's sites, one for every building until the materials
+     * chains', so the count is the buildings' as it was.
      */
     public int committedOn(Resource r) {
         return committedOn(r, null, true);
