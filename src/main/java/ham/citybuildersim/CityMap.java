@@ -1778,6 +1778,8 @@ public final class CityMap {
         /** Its plan's road with no street to carry it (DistrictPlan.surplus), in plots: what the legend counts (star RD2-4); by kind [0, gravel, paved, highway]. */
         final double surplus;
         double[] leftover;
+        /** Its plan's picture's stamp (0.7.128, batch MM1; DistrictPicture.stampOf()): the picture kept for it is current when it bears this. */
+        long picture;
         Link(long own, int[] in, int[] out, long[] free, byte[][] margins, District[] earlier, long[] read, double surplus, long serial) {
             this.own = own; this.in = in; this.out = out; this.free = free; this.margins = margins;
             this.earlier = earlier; this.read = read; this.surplus = surplus; this.serial = serial;
@@ -2162,12 +2164,21 @@ public final class CityMap {
         long[] free, read;
         byte[][] margins;
         double ms;
+        /** Its picture's (0.7.128, batch MM1): the boxes the runs and the shore stand on its ground (extrasIn()), the stamp of the picture kept for it when it was handed out (0 for none), its plan's plots' stamp (DistrictPicture.stampOf()), and what run() drew - null when the kept one is of the same plots. */
+        final int[] extras;
+        final long keptPicture;
+        long pictureStamp;
+        DistrictPicture picture;
+        double pictureMs;
 
         PlanJob(CityMap map, District d, DistrictPlan.Input in, long own, PlanJob after, int[] given, boolean edge,
                 District[] earlier, Object[] sources, long epoch) {
             super(map, epoch);
             this.d = d; this.in = in; this.own = own; this.after = after; this.given = given; this.edge = edge;
             this.earlier = earlier; this.sources = sources;
+            this.extras = map.extrasIn(d);
+            DistrictPicture kept = map.pictures.get(d);
+            this.keptPicture = kept == null ? 0 : kept.stamp;
         }
 
         @Override void work() {
@@ -2198,10 +2209,22 @@ public final class CityMap {
             margins = marginsOf(p);
             if (edge) free = freeGround(in, p);
             ms = (System.nanoTime() - t0) / 1e6;
+            // Its picture (0.7.128, batch MM1), from the plan and the ground just read - unless the one kept is of the same plots.
+            long t1 = System.nanoTime();
+            byte[] plots = DistrictPicture.plotCodes(in, p, map.types, extras);
+            pictureStamp = DistrictPicture.stampOf(plots, map.seed, in.x0, in.y0);
+            if (pictureStamp != keptPicture) picture = DistrictPicture.of(plots, pictureStamp, map.seed, in.x0, in.y0);
+            pictureMs = (System.nanoTime() - t1) / 1e6;
         }
 
-        /** How long it took, in ms: a harness's figure. */
+        /** How long it took, in ms: a harness's figure (its plan's; its picture's apart, pictureMs()). */
         public double ms() { return ms; }
+
+        /** How long its picture took, in ms - its plots, and its pixels when it drew them: a harness's figure. */
+        public double pictureMs() { return pictureMs; }
+
+        /** Whether it drew a picture (the one kept was not of its plots): a harness's figure. */
+        public boolean drewPicture() { return picture != null; }
     }
 
     /** A band's packing at its edge (R7; the city's, in a city of one band): what its last link carried on, into its edge districts' free ground - their links', or the jobs' that make them. */
@@ -2367,8 +2390,13 @@ public final class CityMap {
             if (was != null && was.serial > p.serial) return true;
             Link l = new Link(p.own, p.carryIn, p.carryOut, p.free, p.margins, p.earlier, p.read, p.result.surplus, p.serial);
             l.leftover = p.result.leftover.clone();
+            l.picture = p.pictureStamp;
             links.put(p.d, l);
             drawn.put(p.d, p.result);
+            if (p.picture != null) {
+                pictures.put(p.d, p.picture);
+                picturesKept++;
+            }
             bandsStale();
             return true;
         }
@@ -2618,6 +2646,110 @@ public final class CityMap {
         fails[ti]++;
         return null;
     }
+
+    /* =====================================================================
+       THE DISTRICT PICTURES (0.7.128, batch MM1; docs/studies/spec-globe.md
+       8.2)
+
+       Each built district's 32 x 32 picture for the far views
+       (DistrictPicture): drawn by its PlanJob from the plan it has just
+       drawn - on the map view's worker, "city-map", or a harness's thread -
+       and kept here by a stamp of the plots it is drawn from
+       (DistrictPicture.stampOf(), star MM1-6), so a plan drawn again the
+       same draws no picture and a month redraws only the districts whose
+       plots it moved. Kept PICTURES_KEPT at most, the last
+       used; never saved (star MM1-1): drawn again from the plans after a
+       load. The far nodes read them (MapTiles.nodePixels()) and hand out
+       the jobs that draw those they lack (pictureJobs()).
+       ===================================================================== */
+
+    /** How many districts' pictures are kept, the last used: 128 (star MM1-2) - a far view of up to 128 built districts (Jerus's city has 93) in DistrictPicture.BYTES each, 0.14 MB, within the view's 48 MB with the rest (MapTiles.budgetBytes(), 0.34 MB under it before them); a view of more asks for none (MapTiles.picturesFit()). */
+    public static final int PICTURES_KEPT = 128;
+
+    private final Map<District, DistrictPicture> pictures = new LinkedHashMap<>(PICTURES_KEPT * 2, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<District, DistrictPicture> e) { return size() > PICTURES_KEPT; }
+    };
+
+    /** How many pictures have been kept since the map was drawn, each drawn for plots the one kept before it was not: what the far view repaints a waiting node on, and a harness counts a month's redraws by. */
+    private long picturesKept;
+
+    /** The boxes the runs and the shore stand on district d's ground, as the painter draws them over its plan (fillInput()): its yards as Rail Terminals and its terminals and tank farms, each {x, y, w, h, type id} in the district's plots, the box's first plot in it. The map's thread. */
+    int[] extrasIn(District d) {
+        long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
+        int terminal = -1;
+        for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].terminal()) { terminal = t; break; }
+        List<int[]> boxes = new ArrayList<>();
+        for (long[] yd : runs.yards()) {
+            if (terminal < 0 || yd[0] < x0 || yd[1] < y0 || yd[0] >= x0 + DISTRICT || yd[1] >= y0 + DISTRICT) continue;
+            boxes.add(new int[] { (int) (yd[0] - x0), (int) (yd[1] - y0), (int) yd[2], (int) yd[3], terminal });
+        }
+        for (CityShore.Work wk : shore.works()) {
+            if (wk.x0() < x0 || wk.y0() < y0 || wk.x0() >= x0 + DISTRICT || wk.y0() >= y0 + DISTRICT) continue;
+            boxes.add(new int[] { (int) (wk.x0() - x0), (int) (wk.y0() - y0), wk.w(), wk.h(), wk.type() });
+        }
+        int[] out = new int[5 * boxes.size()];
+        for (int i = 0; i < boxes.size(); i++) System.arraycopy(boxes.get(i), 0, out, 5 * i, 5);
+        return out;
+    }
+
+    /** District d's picture when it is its plan's, the plan current - every link before it in its band holding - else null: the screen's thread, which never plans. */
+    public DistrictPicture pictureIfCurrent(District d) {
+        if (d == null) return null;
+        DistrictPicture pic = pictures.get(d);
+        if (pic == null) return null;
+        int b = band(d.index);
+        checkBand(b);
+        if (d.index >= bandValidTo[b]) return null;
+        Link l = links.get(d);
+        return l != null && pic.stamp == l.picture ? pic : null;
+    }
+
+    /**
+     * The jobs that draw district d's picture: its plan's chain, as
+     * planJobs() hands it out but for its band's packing at the edge, which
+     * a picture does not draw (star MM1-3); or, where its plan is current
+     * and its picture is not kept (let go past PICTURES_KEPT), its plan
+     * drawn again for it. To run in order on one thread, then adopt(). Empty
+     * when its picture is current. The screen's thread.
+     */
+    public List<Job> pictureJobs(District d) {
+        List<Job> out = new ArrayList<>();
+        if (d == null || pictureIfCurrent(d) != null) return out;
+        useBand(band(d.index));
+        if (chainTo(d.index, out) != null) return out;
+        PlanJob p = pending.get(d);
+        long e = planEpoch();
+        if (p != null && p.epoch == e) return out;
+        Link l = links.get(d);
+        if (l == null) return out;
+        District[] near = earlierOf(d);
+        PlanJob j = new PlanJob(this, d, planInputHere(d), l.own, null, l.in, isEdge(d), near, sources(near), e);
+        pending.put(d, j);
+        out.add(j);
+        return out;
+    }
+
+    /** District d's picture, drawn here when it is not current (pictureJobs() run and kept on this thread): a harness's and a probe's. */
+    public DistrictPicture picture(District d) {
+        for (int round = 0; round < 2; round++) {
+            DistrictPicture p = pictureIfCurrent(d);
+            if (p != null) return p;
+            for (Job j : pictureJobs(d)) {
+                j.run();
+                adopt(j);
+            }
+        }
+        return pictureIfCurrent(d);
+    }
+
+    /** How many pictures have been kept since the map was drawn (picturesKept). */
+    public long picturesKept() { return picturesKept; }
+
+    /** The pictures kept now: what MapTiles' budget counts PICTURES_KEPT of, DistrictPicture.BYTES each. */
+    public int picturesHeld() { return pictures.size(); }
+
+    /** The band district d's links are kept in (CHAIN_BAND districts of the map's order a band): what a far view counts the bands it would plan by (MapTiles.picturesFit()). */
+    public static int bandOf(District d) { return band(d.index); }
 
     /* =====================================================================
        THE RUNS: THE CITY'S HIGHWAYS AND RAILWAY ON CORRIDORS (0.7.89, batch
@@ -3530,6 +3662,7 @@ public final class CityMap {
         bandsStale();
         siteLists.clear();
         siteListVersion.clear();
+        pictures.clear();
     }
 
     /* =====================================================================
