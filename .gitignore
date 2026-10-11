@@ -44,3 +44,11 @@ Claude outputs/
 # Running tools/earth/*.py (E0's bake, earthread.py, fixture.py) writes a
 # bytecode cache beside the scripts.
 __pycache__/
+
+# --- The Earth's data ---
+# earth-1.bin (about 53 MB), the real Earth a city can be founded on since
+# 0.7.121 (EarthData.DATA_FILE, data/earth-1.bin beside the game, or named
+# with -Dcbs.earth=<path>). Not in the repository: it ships beside the game,
+# and the game runs without it - the founding screen offers the generated
+# world then, and says where the file goes. tools/earth/ bakes it.
+data/

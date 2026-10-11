@@ -58,6 +58,9 @@ public final class EarthSite {
     /** How far the nearest iron is looked for, in world cells round the site's: 16 (983 km); past it the card says there is none that near. */
     public static final int IRON_RINGS = 16;
 
+    /** The save format a city on the real Earth is first written in: 38 (GameVersion's A CITY ON THE REAL EARTH) - a build before it would put the city on its seed's generated ground, so it refuses the save as a newer build's; a save before it is a generated city's, and loads as one. */
+    public static final int EARTH_FORMAT = 38;
+
     /** The stream Random spot draws its order from. */
     private static final long RANDOM_SALT = 0x5B07A11DL;
 
