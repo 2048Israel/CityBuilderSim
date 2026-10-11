@@ -407,6 +407,8 @@ final class FoundingScreen {
         page.minHeightProperty().bind(scroller.heightProperty().subtract(2));
         ui.titleContent().getChildren().add(scroller);
         refresh();
+        // A spot's card is the founding's as chosen now: measured again if the seed moved while the page showed the generated world.
+        if (earth && !Double.isNaN(spotLat)) measure();
     }
 
     /** A section's caption over its controls, as the mockups set it. */

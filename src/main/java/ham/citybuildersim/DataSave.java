@@ -541,8 +541,8 @@ public class DataSave {
     /** The world's kind as saved (0.7.121): "EARTH" on a city founded on the real Earth, null on a generated world's and on every save before 0.7.121. */
     public String getWorldKind() { return worldKind; }
 
-    /** Whether the save names a world other than the generated one (0.7.121): any worldKind at all - EARTH, or a kind this build does not know, which the load refuses. */
-    public boolean isOnEarth() { return worldKind != null; }
+    /** Whether the save is a city on the real Earth (0.7.121): worldKind EARTH. A kind this build does not know is neither, and the load refuses it (earthProblem()). */
+    public boolean isOnEarth() { return World.Kind.EARTH.name().equals(worldKind); }
 
     /** The Earth's spot as saved, latitude in degrees (0.7.121); null on a generated world. */
     public Double getEarthLat() { return earthLat; }
