@@ -44,7 +44,11 @@ package ham.citybuildersim;
  * metre (24); and, since 0.7.107 (batch Z1), the ledger with zones and the
  * forest law - a sector's allocation on its zone's ground first, the three
  * numbers still closing, forest dry ground a building can take until a law
- * keeps it (25; ZoningCheck plays the rest).
+ * keeps it (25; ZoningCheck plays the rest); and, since 0.7.110 (batch I1),
+ * the ground by type - sites and tonnes by type adding up to the whole, E
+ * by type the walk's reading of E until a works digs by type, a typed dig
+ * moving its own type's E and nothing else, W by type to the tonne, the
+ * state through a save, and where a works fits (fits()), pure (26).
  */
 public class LandCheck {
 
@@ -813,6 +817,7 @@ public class LandCheck {
         ironAWholeFieldAtATime();
         inThePlayersUnits();
         zonesOnTheLedger();
+        byType();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -2545,4 +2550,216 @@ public class LandCheck {
         check("un-zoned and the law lifted, the free ground is owned less allocated again",
                 lm.getAvailableSqFt(), owned - lm.getAllocatedSqFt());
     }
+
+    /* ==================================================================
+       26. THE GROUND BY TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4)
+
+       Each field is of one type (Deposit.type()), and the city's ground is
+       counted by type per holding, its fields as far as each holding listed
+       and what it listed past them the first type. A city on world
+       MiningCheck.IRON_SEED buys iron until it holds both of iron's types.
+       Its sites and tonnes by type add up to the whole, each type's to the
+       fields of that type it holds; a dig on ANY takes the ground in the
+       order it was bought, so E by type is the walk's first E tonnes and
+       nothing is kept for it; a dig by type moves that type's E and the
+       resource's by exactly what it lifted, and no other; a dig on ANY after
+       it takes the walk's next unworked tonne; W = unowned + the remaining
+       by type + E by type to the tonne throughout. E by type survives the
+       state a save carries, and a save without it reads as the walk. And a
+       works of n sites fits only where a piece of its type has n sites free
+       - 1-site works fill every site and not one more, a standing works the
+       packing cannot place counts against the free sites first - with
+       nothing moved.
+       ================================================================== */
+    static void byType() {
+        System.out.println("\n--- 26. the ground by type (0.7.110) ---");
+        final Resource iron = Resource.IRON;
+        final Deposit.FieldType hem = Deposit.FieldType.HEMATITE, mag = Deposit.FieldType.MAGNETITE;
+        LandManager land = new LandManager(null, null, () -> MiningCheck.IRON_SEED, null);
+        land.updateMarket(0);
+        CityLand city = land.getCityLand();
+        for (int i = 0; i < 300 && (land.getSites(iron, hem) == 0 || land.getSites(iron, mag) == 0); i++) {
+            LandParcel offer = land.getMarket().richest(iron);
+            if (offer == null) {
+                Deposit f = nearestUnowned(city, iron);
+                if (f == null) break;
+                offer = MiningCheck.nearestOffer(land.getMarket(), f.x(), f.y());
+            }
+            land.buyParcel(offer.getId(), 1e12, 0);
+        }
+        assertTrue("fixture: the city holds iron fields of both types", land.getSites(iron, hem) > 0 && land.getSites(iron, mag) > 0);
+
+        // Sites and tonnes by type: the whole, and the fields of each type it holds.
+        boolean adds = true, perType = true;
+        for (Resource r : Resource.values()) {
+            java.util.List<Deposit.FieldType> types = r.typesOf();
+            long sites = 0;
+            double tonnes = 0;
+            long[] held = new long[types.size()];
+            double[] heldT = new double[types.size()];
+            for (java.util.List<CityLand.Held> h : city.heldFields(r)) {
+                for (CityLand.Held f : h) {
+                    held[types.indexOf(f.field().type())] += f.sites();
+                    heldT[types.indexOf(f.field().type())] += f.amount();
+                }
+            }
+            long[] byCity = city.sitesByType(r);
+            for (int t = 0; t < types.size(); t++) {
+                sites += land.getSites(r, types.get(t));
+                tonnes += land.getOwnedAmount(r, types.get(t));
+                perType &= !r.inFields() || (land.getSites(r, types.get(t)) == held[t] && land.getOwnedAmount(r, types.get(t)) == heldT[t]);
+                adds &= byCity[t] == land.getSites(r, types.get(t));
+            }
+            adds &= sites == land.getSites(r) && tonnes == land.getOwnedAmount(r) && land.getSites(r, null) == land.getSites(r);
+        }
+        System.out.printf("   iron: %d sites, %d hematite and %d magnetite; %,.0f t, %,.0f and %,.0f; %d holdings%n", land.getSites(iron),
+                land.getSites(iron, hem), land.getSites(iron, mag), land.getOwnedAmount(iron), land.getOwnedAmount(iron, hem),
+                land.getOwnedAmount(iron, mag), 1 + city.purchases().size());
+        assertTrue("every resource's sites and tonnes by type add up to its sites and tonnes, exactly", adds);
+        assertTrue("...each type's the sites and tonnes of the fields of that type the city holds", perType);
+        assertTrue("a type not the resource's holds nothing; a resource of one type is all NONE",
+                land.getSites(iron, Deposit.FieldType.LIMESTONE) == 0 && land.getOwnedAmount(iron, Deposit.FieldType.COKING) == 0
+                        && land.getSites(Resource.OIL, Deposit.FieldType.NONE) == land.getSites(Resource.OIL)
+                        && land.getOwnedAmount(Resource.OIL, Deposit.FieldType.NONE) == land.getOwnedAmount(Resource.OIL));
+        assertTrue("W by type: unowned + remaining by type + taken out by type is the world's, to the tonne", wByType(land));
+
+        // A dig on ANY takes the ground in the order it was bought: E by type is the walk's first E tonnes.
+        double[][] runs = land.typeRuns(iron);
+        int first = (int) runs[0][1], other = 1 - first;
+        Deposit.FieldType firstType = iron.typesOf().get(first), otherType = iron.typesOf().get(other);
+        double half = Math.floor(runs[0][0] / 2);
+        double lifted = land.extract(iron, half);
+        double[] e = land.getExtractedByType(iron);
+        System.out.printf("   %d runs of one type, the first %s's %,.0f t; half of it dug on ANY%n", runs.length, firstType, runs[0][0]);
+        assertTrue("fixture: the ground has a run of each type", runs.length >= 2 && (int) runs[1][1] == other);
+        assertTrue("a dig on ANY takes the first run's type and nothing else", lifted == half && e[first] == half && e[other] == 0);
+        assertTrue("...and nothing is kept for it: the save carries no E by type", land.getDepletionByTypeState() == null);
+        LandManager walker = new LandManager(null, null, () -> MiningCheck.IRON_SEED, null);
+        walker.install(city, new double[CityLand.KINDS], land.getWorldTotalsState(), land.getWorldSeaTheta());
+        double into = Math.floor((runs[1][0] - runs[0][0]) / 2);
+        walker.extract(iron, runs[0][0] + into);
+        double[] w2 = walker.getExtractedByType(iron);
+        assertTrue("...one past the first run takes the next run's type: the walk", w2[first] == runs[0][0] && w2[other] == into);
+        assertTrue("...W by type to the tonne", wByType(land) && wByType(walker));
+
+        // A dig by type moves that type's E and the resource's by what it lifted, and no other.
+        double[] before = land.getExtractedByType(iron);
+        double eBefore = land.getExtracted(iron), leftOther = land.getRemaining(iron, otherType), leftFirst = land.getRemaining(iron, firstType);
+        double dug = land.extract(iron, otherType, 1_000_000);
+        double[] after = land.getExtractedByType(iron);
+        assertTrue("a dig by type lifts what it asked while its type has it", dug == 1_000_000);
+        assertTrue("...its type's E and the resource's rise by exactly that, the other type's not at all", after[other] == before[other] + dug
+                && after[first] == before[first] && land.getExtracted(iron) == eBefore + dug);
+        assertTrue("...its type's remainder falls by that, the other's not at all",
+                land.getRemaining(iron, otherType) == leftOther - dug && land.getRemaining(iron, firstType) == leftFirst);
+        assertTrue("...and from then on the resource keeps its E by type", land.getDepletionByTypeState() != null
+                && java.util.Arrays.equals(land.getDepletionByTypeState()[iron.ordinal()], after));
+        assertTrue("...W by type to the tonne", wByType(land));
+
+        // A dig on ANY after it takes the walk's next unworked tonne: the first run's, before the other type's dug ahead.
+        double any = land.extract(iron, 1_000);
+        double[] then = land.getExtractedByType(iron);
+        assertTrue("a dig on ANY then takes the walk's next unworked tonne, the first run's, not the type dug ahead",
+                any == 1_000 && then[first] == after[first] + 1_000 && then[other] == after[other]);
+        double toEnd = runs[0][0] - then[first];
+        land.extract(iron, toEnd + 500);
+        double[] across = land.getExtractedByType(iron);
+        assertTrue("...and past the first run's end, the other type's next unworked tonne, after what was dug of it by type",
+                across[first] == runs[0][0] && across[other] == then[other] + 500);
+        assertTrue("...W by type to the tonne", wByType(land));
+
+        double[] byHolding = land.remainingByHolding(iron);
+        double sum = 0;
+        for (double h : byHolding) sum += h;
+        assertTrue("fixture: some remains", land.getRemaining(iron) > 0);
+        near("what remains holding by holding adds up to what remains, each type's E out of its own fields", sum,
+                land.getRemaining(iron), 1e-12);
+
+        // Capped at the type's remainder.
+        double rest = land.getRemaining(iron, otherType);
+        double all = land.extract(iron, otherType, 1e18);
+        assertTrue("a dig by type takes at most what remains of its type, then nothing",
+                all == rest && land.getRemaining(iron, otherType) == 0 && land.extract(iron, otherType, 1_000) == 0);
+        assertTrue("...a type not the resource's gives nothing", land.extract(iron, Deposit.FieldType.LIMESTONE, 1_000) == 0);
+        assertTrue("...W by type to the tonne", wByType(land));
+
+        // The state a save carries; one without it reads as the walk.
+        LandManager loaded = new LandManager(null, null, () -> MiningCheck.IRON_SEED, null);
+        loaded.install(city, land.getDepletionState(), land.getWorldTotalsState(), land.getWorldSeaTheta());
+        loaded.restoreDepletionByType(land.getDepletionByTypeState());
+        assertTrue("E by type comes back from the save's state to the bit",
+                java.util.Arrays.equals(loaded.getExtractedByType(iron), land.getExtractedByType(iron)));
+        loaded.restoreDepletionByType(null);
+        LandManager walked = new LandManager(null, null, () -> MiningCheck.IRON_SEED, null);
+        walked.install(city, new double[CityLand.KINDS], land.getWorldTotalsState(), land.getWorldSeaTheta());
+        walked.extract(iron, land.getExtracted(iron));
+        assertTrue("...and a save without it reads as a city that dug all of E on ANY", loaded.getDepletionByTypeState() == null
+                && java.util.Arrays.equals(loaded.getExtractedByType(iron), walked.getExtractedByType(iron)));
+
+        // Ground by fiat is the first type: a fixture's ore on the default world, whose centre holds no iron field.
+        LandManager fiat = new LandManager();
+        fiat.restoreIron(7, 12_345_678);
+        boolean byFiat = true;
+        for (CityLand.Piece piece : fiat.getCityLand().typedPieces(iron)) byFiat &= piece.field() == null;
+        assertTrue("ore by fiat is all the first type, its sites and its tonnes", byFiat && fiat.getSites(iron, hem) == 7
+                && fiat.getSites(iron, mag) == 0 && fiat.getOwnedAmount(iron, hem) == 12_345_678 && fiat.getDepletionByTypeState() == null);
+
+        // Where a works fits.
+        LandManager fresh = new LandManager(null, null, () -> MiningCheck.IRON_SEED, null);
+        fresh.install(city, new double[CityLand.KINDS], land.getWorldTotalsState(), land.getWorldSeaTheta());
+        int bigHem = 0, bigMag = 0, sitesMag = fresh.getSites(iron, mag);
+        for (CityLand.Piece piece : city.typedPieces(iron)) {
+            if (piece.type() == hem) bigHem = Math.max(bigHem, piece.sites());
+            if (piece.type() == mag) bigMag = Math.max(bigMag, piece.sites());
+        }
+        java.util.List<LandManager.Claim> none = java.util.List.of();
+        System.out.printf("   the largest piece: hematite %d sites, magnetite %d%n", bigHem, bigMag);
+        assertTrue("a works fits on its type's largest piece and not on a site more",
+                fresh.fits(iron, hem, none, bigHem) && !fresh.fits(iron, hem, none, bigHem + 1)
+                        && fresh.fits(iron, mag, none, bigMag) && !fresh.fits(iron, mag, none, bigMag + 1));
+        assertTrue("...a 20-site works only where a field of its type has 20 sites", fresh.fits(iron, hem, none, 20) == (bigHem >= 20)
+                && fresh.fits(iron, mag, none, 20) == (bigMag >= 20));
+        int hemSites = fresh.getSites(iron, hem);
+        assertTrue("1-site works on a type fill every site of it, and not one more",
+                fresh.fits(iron, hem, java.util.List.of(new LandManager.Claim(hem, 1, hemSites - 1)), 1)
+                        && !fresh.fits(iron, hem, java.util.List.of(new LandManager.Claim(hem, 1, hemSites)), 1));
+        assertTrue("...ANY works fill both types' sites, the first type's first",
+                fresh.fits(iron, null, java.util.List.of(new LandManager.Claim(null, 1, fresh.getSites(iron) - 1)), 1)
+                        && !fresh.fits(iron, null, java.util.List.of(new LandManager.Claim(null, 1, fresh.getSites(iron))), 1)
+                        && !fresh.fits(iron, mag, java.util.List.of(new LandManager.Claim(null, 1, hemSites)), sitesMag + 1)
+                        && fresh.fits(iron, mag, java.util.List.of(new LandManager.Claim(null, 1, hemSites)), bigMag));
+        assertTrue("a standing works the packing cannot place counts against its type's free sites first",
+                fresh.fits(iron, mag, java.util.List.of(new LandManager.Claim(mag, bigMag + 1, 1)), 1) == (sitesMag > bigMag + 1)
+                        && !fresh.fits(iron, mag, java.util.List.of(new LandManager.Claim(mag, sitesMag + 1, 1)), 1));
+        assertTrue("a works taking no site always fits; one on a type not the resource's never",
+                fresh.fits(iron, mag, java.util.List.of(new LandManager.Claim(null, 1, fresh.getSites(iron))), 0)
+                        && !fresh.fits(iron, Deposit.FieldType.LIMESTONE, none, 1));
+        long[] sitesBefore = city.sitesByType(iron);
+        boolean same = true;
+        for (int k = 0; k < 3; k++) same &= fresh.fits(iron, hem, java.util.List.of(new LandManager.Claim(null, 2, 3)), bigHem);
+        assertTrue("...and packing is pure: the same answer every time, nothing moved", same
+                && java.util.Arrays.equals(city.sitesByType(iron), sitesBefore) && fresh.getDepletionByTypeState() == null
+                && fresh.getExtracted(iron) == 0);
+
+        // Game: the sites the buildings on a resource take, by type.
+        Game g = dollarCity("landcheck-bytype");
+        BuildingManager bm = g.getBuildingManager();
+        bm.addStack(bm.getTemplate(14), 3, true);
+        bm.addStack(bm.getTemplate(74), 2, true);
+        assertTrue("the Iron Mines take one site each, on ANY: committedOn counts their sites, none on a type",
+                g.committedOn(iron) == 3 && g.committedOn(iron, null) == 3 && g.committedOn(iron, hem) == 0 && g.committedOn(Resource.OIL) == 2);
+    }
+
+    /** Unowned + the remaining by type + E by type is the world's total, every resource, to the tonne. */
+    static boolean wByType(LandManager land) {
+        boolean ok = true;
+        for (Resource r : Resource.values()) {
+            double sum = land.getUnowned(r);
+            double[] e = land.getExtractedByType(r);
+            for (int t = 0; t < r.typesOf().size(); t++) sum += land.getRemaining(r, r.typesOf().get(t)) + e[t];
+            ok &= sum == land.getWorldTotal(r);
+        }
+        return ok;
+    }
+
 }

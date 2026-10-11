@@ -1131,7 +1131,14 @@ public class ReadPathCheck {
             lm.getOwnedAmount(r); lm.getRemaining(r); lm.getExtracted(r); lm.getUnowned(r); lm.remainingByHolding(r);
             lmk.richest(r);
             g.bestOffer(Game.LandNeed.deposit(r));
+            // ...and the ground by type (0.7.110): its sites, tonnes and E by type, its runs and where a works fits
+            for (Deposit.FieldType t : r.typesOf()) {
+                lm.getSites(r, t); lm.getOwnedAmount(r, t); lm.getRemaining(r, t); lm.getExtracted(r, t); g.committedOn(r, t);
+                lm.fits(r, t, java.util.List.of(new LandManager.Claim(null, 1, g.committedOn(r))), 1);
+            }
+            lm.getExtractedByType(r); g.getCityLand().sitesByType(r); lm.typeRuns(r); g.committedOn(r, null);
         }
+        lm.getDepletionByTypeState();
         for (int side = 0; side < CityLand.SIDES; side++) lmk.offersOn(side);
         lmk.bestValue(); lmk.cheapest(); lmk.cheapestWithSea(); lmk.getLevel(); lmk.getOffersState();
         lmk.goingUsdPerSqFt(); lmk.getBlockPlots(); for (int side = 0; side < CityLand.SIDES; side++) lmk.emptyOn(side);
@@ -1692,6 +1699,8 @@ public class ReadPathCheck {
         // The fixture's buildings were stood up by fiat and took no ground; a load allocates the city's
         // footprint (Game's load path), so the city is given it first, as a load would.
         g.getLandManager().setAllocatedSqFt(g.getBuildingManager().getTotalLandFootprint());
+        // ...and a dig by type (0.7.110), so the save carries E by type: the fixture's ore is by fiat, the first type's.
+        double dug = g.getLandManager().extract(Resource.IRON, Deposit.FieldType.HEMATITE, 1_000.5);
         System.setOut(quiet);
         g.saveGame(10, "readpath");
         Game loaded = new Game(files);
@@ -1719,6 +1728,10 @@ public class ReadPathCheck {
                 loaded.getLandManager().getDepletionState(), g.getLandManager().getDepletionState()));
         assertTrue("...and out of its offshore pool (0.7.93)",
                 loaded.getLandManager().getOilExtractedAtSea() == g.getLandManager().getOilExtractedAtSea());
+        assertTrue("...and by type, once a works dug by type (0.7.110): the save's state and E by type, to the bit", dug == 1_000.5
+                && java.util.Arrays.deepEquals(loaded.getLandManager().getDepletionByTypeState(), g.getLandManager().getDepletionByTypeState())
+                && java.util.Arrays.equals(loaded.getLandManager().getExtractedByType(Resource.IRON),
+                        g.getLandManager().getExtractedByType(Resource.IRON)));
     }
 
     static void cleanUp(Path root) {

@@ -65,7 +65,17 @@ import java.util.List;
  *      has none of the old world's within SITE_IRON_KM, where the
  *      conversion's search, which still asks it, goes on); and the site
  *      table's first LEGACY_MAX_SITES places are the old one's, so an older
- *      save's sites stand where they stood.
+ *      save's sites stand where they stood;
+ *   9. (0.7.110, batch I1; runs/spec-materials.md 2.4) EACH FIELD'S TYPE, on
+ *      the three worlds: each resource's types' TYPE_SHARES add up to one,
+ *      oil's and uranium's fields are NONE; a field's type is the same every
+ *      time it is drawn, on a world built twice and from its record; each
+ *      type is its TYPE_SHARES of the fields within two points - iron's in
+ *      the pools round the site, stone's in a wider square, coal's and
+ *      copper's the whole world's; every pool's fields of each type add up
+ *      to its total exactly, and the old world's of each cell to the
+ *      cell's - nothing stored, no tonne moved. The fields of each type
+ *      within 50 km of the founding site are printed (fixI1-notes.md).
  */
 public class WorldCheck {
 
@@ -112,6 +122,7 @@ public class WorldCheck {
     public static void main(String[] args) {
         for (long seed : SEEDS) world(seed);
         fewerAndBigger();
+        for (long seed : SEEDS) fieldTypes(seed);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -643,5 +654,129 @@ public class WorldCheck {
     /** Test 1's dry ground: land, and not a lake. */
     static boolean dryAt(World w, double x, double y) {
         return w.elevation(x, y) >= w.seaTheta() && w.lakeField(x, y) < World.LAKE_THETA;
+    }
+
+    /* -------------------------------------------------------------------- 9 */
+
+    /** How far each type's share of the fields may sit from Deposit.TYPE_SHARES (spec-materials 4: two points). */
+    static final double TYPE_WITHIN = .02;
+
+    /** The cells round the site whose iron pools are typed (section 9): 15 each way, 256 pools of two cells - some 25,000 fields on the default world. */
+    static final int TYPE_IRON_CELLS = 15;
+
+    /** ...and stone's: 45 each way, 256 pools of six cells - some 10,000 fields; coal's and copper's are the whole world's, some 30,000 and 7,400. */
+    static final int TYPE_STONE_CELLS = 45;
+
+    /** The cells round the site whose old world's fields are typed cell by cell: 10 each way for iron, 30 for the rest (the old world's ten times the fields). */
+    static final int TYPE_OLD_IRON_CELLS = 10, TYPE_OLD_CELLS = 30;
+
+    /** How far round the founding site the fields of each type are counted for the notes, in km: 50, the spec's (spec-materials 2.4). */
+    static final double NEAR_SITE_KM = 50;
+
+    /**
+     * Section 9 (0.7.110, batch I1): each field's type - its shares, pure,
+     * and a pool's (the old world's, a cell's) types adding up to its total.
+     */
+    static void fieldTypes(long seed) {
+        System.out.println("\n=== the fields' types (0.7.110), on the world of seed " + seed + " ===");
+        System.out.println("--- 9. each field's type: its share, pure, and a pool's types summing to its total ---");
+        World w = World.of(seed), again = new World(seed);
+        int fc = World.cellOf(w.foundingX(), w.foundingY());
+        int fcx = fc % World.CELLS, fcy = fc / World.CELLS;
+
+        boolean one = true;
+        for (Resource r : Resource.values()) {
+            double sum = 0;
+            for (Deposit.FieldType t : r.typesOf()) sum += Deposit.TYPE_SHARES[t.ordinal()];
+            one &= Math.abs(sum - 1) < 1e-12 && (r.hasTypes() == (r == Resource.IRON || r == Resource.COAL || r == Resource.COPPER || r == Resource.STONE));
+        }
+        check("each resource's types' TYPE_SHARES add up to one; iron, coal, copper and stone have two", one);
+
+        boolean pure = true, sums = true, shares = true;
+        for (Resource r : new Resource[] { Resource.IRON, Resource.STONE, Resource.COAL, Resource.COPPER }) {
+            java.util.List<Deposit.FieldType> types = r.typesOf();
+            int reach = r == Resource.IRON ? TYPE_IRON_CELLS : r == Resource.STONE ? TYPE_STONE_CELLS : World.CELLS;
+            int b = World.poolCells(r), last = World.poolsOnSide(r) - 1;
+            int px0 = reach == World.CELLS ? 0 : Math.max(0, (fcx - reach) / b), px1 = reach == World.CELLS ? last : Math.min(last, (fcx + reach) / b);
+            int py0 = reach == World.CELLS ? 0 : Math.max(0, (fcy - reach) / b), py1 = reach == World.CELLS ? last : Math.min(last, (fcy + reach) / b);
+            long[] n = new long[types.size()];
+            double[] tonnes = new double[types.size()];
+            int pools = 0;
+            for (int py = py0; py <= py1; py++) {
+                for (int px = px0; px <= px1; px++) {
+                    List<Deposit> fields = w.poolFields(r, px, py), twice = again.poolFields(r, px, py);
+                    double[] by = new double[types.size()];
+                    pure &= fields.size() == twice.size();
+                    for (int k = 0; k < fields.size(); k++) {
+                        Deposit d = fields.get(k);
+                        Deposit.FieldType t = d.type();
+                        int i = types.indexOf(t);
+                        pure &= i >= 0 && k < twice.size() && twice.get(k).type() == t
+                                && new Deposit(d.kind(), d.cell(), d.index(), d.x(), d.y(), d.sites(), d.amount()).type() == t;
+                        if (i < 0) continue;
+                        n[i]++;
+                        tonnes[i] += d.amount();
+                        by[i] += d.amount();
+                    }
+                    double total = 0;
+                    for (double v : by) total += v;
+                    sums &= total == w.poolTotal(r, px, py);
+                    pools++;
+                }
+            }
+            long all = 0;
+            double allT = 0;
+            for (int i = 0; i < n.length; i++) { all += n[i]; allT += tonnes[i]; }
+            double share = (double) n[0] / all;
+            shares &= all > 0 && Math.abs(share - Deposit.TYPE_SHARES[types.get(0).ordinal()]) <= TYPE_WITHIN;
+            System.out.printf("   %-7s %d pools: %,d fields, %s %.2f%% of them (%.2f%% of the tonnes), %s %.2f%%; TYPE_SHARES %.0f%%%n", r,
+                    pools, all, types.get(0), 100 * share, 100 * tonnes[0] / allT, types.get(1), 100.0 * n[1] / all,
+                    100 * Deposit.TYPE_SHARES[types.get(0).ordinal()]);
+
+            // The old world's fields, cell by cell.
+            int oldReach = r == Resource.IRON ? TYPE_OLD_IRON_CELLS : TYPE_OLD_CELLS;
+            for (int cy = Math.max(0, fcy - oldReach); cy <= Math.min(World.CELLS - 1, fcy + oldReach); cy++) {
+                for (int cx = Math.max(0, fcx - oldReach); cx <= Math.min(World.CELLS - 1, fcx + oldReach); cx++) {
+                    int cell = cy * World.CELLS + cx;
+                    List<Deposit> fields = w.legacyFieldsInCell(cell, r), twice = again.legacyFieldsInCell(cell, r);
+                    double[] by = new double[types.size()];
+                    for (int k = 0; k < fields.size(); k++) {
+                        Deposit d = fields.get(k);
+                        pure &= twice.get(k).type() == d.type();
+                        by[types.indexOf(d.type())] += d.amount();
+                    }
+                    double total = 0;
+                    for (double v : by) total += v;
+                    sums &= total == w.cellTotal(cell, r);
+                }
+            }
+        }
+        boolean none = true;
+        for (Resource r : new Resource[] { Resource.OIL, Resource.URANIUM }) {
+            for (int dy = -2; dy <= 2; dy++) for (int dx = -2; dx <= 2; dx++) {
+                for (Deposit d : w.fieldsInCell(fc + dy * World.CELLS + dx, r)) none &= d.type() == Deposit.FieldType.NONE;
+            }
+        }
+        check("oil's and uranium's fields are NONE", none);
+        check("a field's type is the same every time it is drawn: a world built twice, a record made again, both worlds' fields", pure);
+        check("...each resource's first type TYPE_SHARES of its fields, within two points", shares);
+        check("...and every pool's fields of each type add up to its total exactly, the old world's a cell's", sums);
+
+        // Near the founding site, for the notes: the fields of each type within NEAR_SITE_KM.
+        double reachPlots = NEAR_SITE_KM * 1000 / World.PLOT_M;
+        long fx = w.foundingX(), fy = w.foundingY();
+        StringBuilder near = new StringBuilder();
+        for (Resource r : new Resource[] { Resource.IRON, Resource.OIL, Resource.STONE, Resource.COAL, Resource.COPPER }) {
+            int[] n = new int[r.typesOf().size()];
+            for (int cell : CityLand.cellsUnder(fx - reachPlots, fy - reachPlots, fx + reachPlots, fy + reachPlots)) {
+                for (Deposit d : w.fieldsInCell(cell, r)) {
+                    if (Math.hypot(d.x() - fx, d.y() - fy) <= reachPlots) n[r.typesOf().indexOf(d.type())]++;
+                }
+            }
+            near.append(String.format(" %s", r.label().toLowerCase()));
+            for (int i = 0; i < n.length; i++) near.append(String.format(" %d%s", n[i], r.hasTypes() ? " " + r.typesOf().get(i).name().toLowerCase() : ""));
+            near.append(";");
+        }
+        System.out.printf("   within %.0f km of the founding site:%s%n", NEAR_SITE_KM, near);
     }
 }
