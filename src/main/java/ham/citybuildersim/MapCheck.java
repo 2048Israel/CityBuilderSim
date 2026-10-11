@@ -3339,12 +3339,12 @@ public class MapCheck {
             proj.latLonOfPlot(x0 + (k % n + 0.5) * s, x0 + (k / n + 0.5) * s, ll);
             seaData += data.at("sea", ll[0], ll[1]) / (double) EarthData.SHARE_LEVELS;
             if (far[k] == World.SALT) sea++;
-            if (far[k] == World.GRASS || far[k] == World.FOREST || far[k] == World.SAND) {
+            if (World.dry(far[k])) {
                 dry++;
                 if (far[k] == World.FOREST) forest++;
                 forestData += (data.at("landcover", ll[0], ll[1]) & EarthData.LC_FOREST) / (double) EarthData.SHARE_LEVELS;
             }
-            if (reg[k] == World.GRASS || reg[k] == World.FOREST || reg[k] == World.SAND) {
+            if (World.dry(reg[k])) {
                 regDry++;
                 if (reg[k] == World.FOREST) regForest++;
             }

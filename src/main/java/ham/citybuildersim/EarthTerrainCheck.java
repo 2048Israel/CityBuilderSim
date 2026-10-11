@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key holding the generated world as it was, and the game's founding, land and screen standing on an Earth world - and since 0.7.117 (batch E3) its deposits on the Earth's geology (Geology).
+ * The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key holding the generated world as it was, and the game's founding, land and screen standing on an Earth world - and since 0.7.117 (batch E3) its deposits on the Earth's geology (Geology), and since 0.7.127 (batch E7) its ice and desert.
  *
  * WHY. E2 lays the real Earth's ground on the world's plots, finer than the
  * data by 15 times, and the finer detail is made from the seed: a rule that
@@ -103,11 +103,31 @@ import java.util.Map;
  *      no geology and draws its types flat (WorldCheck holds its fields byte
  *      for byte).
  *
+ * ...and since 0.7.127 (batch E7; docs/studies/spec-globe.md 3.9 and 4's
+ * E7 row), ice and desert as kinds of ground:
+ *  15. World.dry() names the dry classes, the desert among them and ice not;
+ *      the books count a desert's plots as a grass's and ice's in the whole
+ *      area only, and a count of the five alone as before; the runs, and a
+ *      district's plan - PlanCheck's test district with its grass made
+ *      desert is the same plan, with half its grass ice no building stands
+ *      on the ice; an Earth save from before ICE_FORMAT is refused, a
+ *      generated one loads. On the full file, each kind's share of two
+ *      1-degree cells' ground (ICE_CELLS, DESERT_CELLS) is the data's within
+ *      COVER_POINTS, and its edge frayed both ways about the bit's
+ *      half-contour and never past the cells that agree; the founding card's
+ *      ice is the site's plot's - Greenland's sheet refused on its own plot,
+ *      a margin site on grass in an ice-bit cell foundable, a spot on the ice
+ *      snapped off it; a holding's tile of ice its whole area only, the
+ *      Sahara's site desert and dry; and the far nodes draw both.
+ *
  * Every fixture causes its condition: the windows hold coasts (Rotterdam,
  * Perth), rivers (the Maas and the Seine), small lakes, lakes of 10 km2 and
  * more (Rotterdam's delta), beaches (Perth) and the date line (Fiji); the
  * fixture's bands cross the Yilgarn shield and basins on three continents,
- * and Rotterdam's the North Sea's basins.
+ * and Rotterdam's the North Sea's basins; ice and desert's cells and spots
+ * (section 15) were each picked on the full file for holding the condition
+ * - an edge in the cell, a site the bit's rule and the plot's split - and
+ * the section says so where one no longer does.
  */
 public class EarthTerrainCheck {
 
@@ -214,6 +234,7 @@ public class EarthTerrainCheck {
         byClass(World.of(World.Key.earth(SEED, spots.get("Perth").lat(), spots.get("Perth").lon(), id)), "the fixture, Perth's world");
         planet(file, spots.get("Rotterdam"));
         types(id, spots);
+        iceAndDesert(file, windows, id);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -233,7 +254,7 @@ public class EarthTerrainCheck {
         final World world;
         final long x0, y0;
         final byte[] plots = new byte[WINDOW * WINDOW];
-        final long[] classes = new long[5];
+        final long[] classes = new long[World.CLASSES];
         /** Cells counted: the window's 15" cells, rows from rMin and columns (unwrapped about the spot) from cMin. */
         final long rMin, cMin;
         final int rows, cols;
@@ -283,7 +304,7 @@ public class EarthTerrainCheck {
                         count[at]++;
                         if (t[p] == World.SALT) salt[at]++;
                         if (px == 0 || py == 0 || px == WINDOW - 1 || py == WINDOW - 1) edge[at] = true;
-                        if (t[p] == World.GRASS || t[p] == World.FOREST || t[p] == World.SAND) {
+                        if (World.dry(t[p])) {
                             dry++;
                             forestData += (data.at("landcover", ll[0], ll[1]) & EarthData.LC_FOREST) / (double) EarthData.SHARE_LEVELS;
                         }
@@ -319,7 +340,8 @@ public class EarthTerrainCheck {
 
         /** Forest's share of the dry ground drawn. */
         double forestOfDry() {
-            long dry = classes[World.GRASS] + classes[World.FOREST] + classes[World.SAND];
+            long dry = 0;
+            for (int c = 0; c < World.CLASSES; c++) if (World.dry(c)) dry += classes[c];
             return dry > 0 ? classes[World.FOREST] / (double) dry : 0;
         }
 
@@ -646,8 +668,7 @@ public class EarthTerrainCheck {
     }
 
     static boolean dryPlot(World w, long x, long y) {
-        byte t = w.terrainAt(x, y);
-        return t != World.SALT && t != World.FRESH;
+        return World.dry(w.terrainAt(x, y));
     }
 
     /** MapCheck 5's screen on Earth: SCREEN_ACROSS x SCREEN_DOWN tiles about the site of a square city at the 5B copy's density, each tile's ground read from the world, painted and rastered. */
@@ -670,7 +691,7 @@ public class EarthTerrainCheck {
         long tx0 = Math.floorDiv(w.foundingX(), World.TILE) - MapCheck.SCREEN_ACROSS / 2, ty0 = Math.floorDiv(w.foundingY(), World.TILE) - MapCheck.SCREEN_DOWN / 2;
         double best = Double.MAX_VALUE, cold = 0;
         long drawn = 0;
-        long[] classes = new long[5];
+        long[] classes = new long[World.CLASSES];
         for (int round = 0; round < MapCheck.WARM_ROUNDS + MapCheck.TIMED_ROUNDS; round++) {
             long n = 0;
             long t1 = System.nanoTime();
@@ -1182,5 +1203,311 @@ public class EarthTerrainCheck {
             }
         }
         check("a generated world has no geology: its fields carry none, draw their types flat, and its field land is its land", none);
+    }
+
+    /* =====================================================================
+       15. ICE AND DESERT AS KINDS OF GROUND (0.7.127, batch E7; the
+       project's spec-globe.md 3.9, and 4's E7 row)
+       ===================================================================== */
+
+    /** Each kind's share of a 1-degree cell's ground drawn is the data's within this, in points: SHARE_POINTS, the bound the sea's share of a 15" cell is held to (spec-earth 8); E7 measured 0.02 to 0.26. */
+    static final double COVER_POINTS = SHARE_POINTS;
+
+    /** The 1-degree cells each kind is held on, {lat0, lon0}, on the full file: ice at Vatnajokull and on south Greenland's margin, the desert at the Sahel's edge and on the Ustyurt by the Aral Sea - each a cell with its kind's bit on a fifth to four fifths of its land, so it has an edge to draw (★E7). */
+    static final int[][] ICE_CELLS = { { 64, -17 }, { 61, -46 } }, DESERT_CELLS = { { 16, 0 }, { 44, 56 } };
+
+    /** Greenland's sheet's middle, EarthFoundingCheck 3's spot on ice. */
+    static final double[] SHEET = { 72, -40 };
+
+    /** A spot on south Greenland's ice margin whose snapped site lies on grass in a 2' cell with the ice bit - the bit's rule (E4's) refused it, the plot's does not (found by E7's probe, the default seed). */
+    static final double[] MARGIN = { 61.41, -45.53 };
+
+    /** A spot on the ice there whose site the snap finds off it, on dry ground over a kilometre away (E7's probe). */
+    static final double[] OFF_THE_ICE = { 61.42, -45.62 };
+
+    /** The Sahara's spot, EarthFoundingCheck 3's desert. */
+    static final double[] SAHARA = { 23, 10 };
+
+    static void iceAndDesert(EarthData file, Map<String, Window> windows, String id) {
+        out.println("\n--- 15. ice and desert as kinds of ground: ice never dry, the desert dry as grass is, each kind's share the data's, its edge frayed, the card's ice the plot's ---");
+        boolean rule = World.dry(World.GRASS) && World.dry(World.FOREST) && World.dry(World.SAND) && World.dry(World.DESERT)
+                && !World.dry(World.FRESH) && !World.dry(World.SALT) && !World.dry(World.ICE) && !World.dry(-1) && !World.dry(World.CLASSES);
+        check("World.dry(): grass, forest, the beach and the desert are dry ground; fresh water, the sea and ice are not, nor what is not a class", rule);
+        check("...ICE and DESERT take the two bytes after the five, World.CLASSES in all, each with its colour and its own name on the hover",
+                World.ICE == 5 && World.DESERT == 6 && World.CLASSES == 7 && TileRaster.GROUND.length == World.CLASSES
+                        && LandMap.groundWords(World.ICE).equals("Ice") && LandMap.groundWords(World.DESERT).equals("Desert"));
+        // The books (GridConversion.km2Of(), what CityLand counts every holding with).
+        long n = 1000;
+        double[] grass = GridConversion.km2Of(only(World.GRASS, n)), desert = GridConversion.km2Of(only(World.DESERT, n)), ice = GridConversion.km2Of(only(World.ICE, n));
+        check("the books: a desert's plots count as a grass's in all five areas, dry ground", Arrays.equals(grass, desert) && desert[CityLand.DRY] == n * World.KM2_PER_PLOT);
+        check("...and ice's in the whole area only - never dry, fresh, sea or forest", ice[CityLand.TOTAL] == n * World.KM2_PER_PLOT
+                && ice[CityLand.DRY] == 0 && ice[CityLand.FRESH] == 0 && ice[CityLand.SEA] == 0 && ice[CityLand.FOREST] == 0);
+        long[] five = { 11, 22, 33, 44, 55 }, seven = Arrays.copyOf(five, World.CLASSES);
+        check("...and a count of the five classes alone, as the generated world's are made, reads as it did", Arrays.equals(GridConversion.km2Of(five), GridConversion.km2Of(seven))
+                && GridConversion.km2Of(five)[CityLand.DRY] == (11 + 22 + 55) * World.KM2_PER_PLOT);
+        check("the runs (CityRuns): the desert is dry ground where grass is, ice is not, and off the ground is not", CityRuns.dry(World.DESERT) == CityRuns.dry(World.GRASS)
+                && CityRuns.dry(World.DESERT) && !CityRuns.dry(World.ICE) && !CityRuns.dry(-1));
+        // A district's plan (DistrictPlan): PlanCheck's test district, its grass made desert, then half of it ice.
+        BuildingVisual.Type[] types = BuildingVisual.table(new BuildingCatalog().load());
+        DistrictPlan.Input g = PlanCheck.testDistrict(types, 0, false), d = PlanCheck.testDistrict(types, 0, false), ic = PlanCheck.testDistrict(types, 0, false);
+        int swapped = 0, iced = 0;
+        for (int p = 0; p < DistrictPlan.AREA; p++) {
+            if (d.terrain[p] == World.GRASS) { d.terrain[p] = World.DESERT; swapped++; }
+            if (ic.terrain[p] == World.GRASS && p % DistrictPlan.FRAME < DistrictPlan.FRAME / 2) { ic.terrain[p] = World.ICE; iced++; }
+        }
+        DistrictPlan pg = DistrictPlan.make(g), pd = DistrictPlan.make(d), pi = DistrictPlan.make(ic);
+        boolean same = pg.buildings == pd.buildings && Arrays.equals(pg.bx, pd.bx) && Arrays.equals(pg.by, pd.by) && Arrays.equals(pg.bw, pd.bw)
+                && Arrays.equals(pg.bh, pd.bh) && Arrays.equals(pg.btype, pd.btype) && Arrays.equals(pg.street, pd.street) && Arrays.equals(pg.overflow, pd.overflow);
+        report("a district's plan: PlanCheck's test district with its grass made desert is the same plan, every building and street", same && swapped > 0 && pg.buildings > 0,
+                String.format("%,d plots of grass made desert; %d buildings", swapped, pg.buildings));
+        int onIce = 0, iceHalf = 0;
+        for (int b = 0; b < pi.buildings; b++) {
+            for (int y = pi.by[b]; y < pi.by[b] + pi.bh[b]; y++) for (int x = pi.bx[b]; x < pi.bx[b] + pi.bw[b]; x++) if (ic.terrain[y * DistrictPlan.FRAME + x] == World.ICE) onIce++;
+            if (pi.bx[b] < DistrictPlan.FRAME / 2) iceHalf++;
+        }
+        report("...and with the grass of its west half ice, no building stands on a plot of ice", onIce == 0 && iced > 0 && pi.buildings > 0,
+                String.format("%,d plots of grass made ice; %d buildings, %d of them west of the middle on what ground is left there (%d before)", iced, pi.buildings, iceHalf, westOf(pg)));
+        // The save (GameVersion's format 39): an Earth city saved before ice is refused, a generated one loads.
+        Spot r = new Spot("Rotterdam", 51.90625, 4.48125);
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        String earthSave = "{\"worldKind\":\"EARTH\",\"earthLat\":" + r.lat() + ",\"earthLon\":" + r.lon() + ",\"earthData\":\"" + id + "\",\"saveFormat\":";
+        DataSave before = gson.fromJson(earthSave + (EarthSite.ICE_FORMAT - 1) + "}", DataSave.class), after = gson.fromJson(earthSave + EarthSite.ICE_FORMAT + "}", DataSave.class);
+        DataSave generated = gson.fromJson("{\"saveFormat\":" + GameVersion.OLDEST_LOADABLE_FORMAT + "}", DataSave.class);
+        check("the save: an Earth city saved before ice was a kind of ground (EarthSite.ICE_FORMAT) is refused in words saying so, one saved at it is not",
+                EarthSite.BEFORE_ICE_WORDS.equals(before.earthProblem()) && after.earthProblem() == null && GameVersion.SAVE_FORMAT >= EarthSite.ICE_FORMAT
+                        && EarthSite.ICE_FORMAT > EarthSite.EARTH_FORMAT);
+        check("...and a generated city's save, its ground as it was, still loads: no Earth problem, and the floor below it",
+                generated.earthProblem() == null && !GameVersion.isNoLongerReadable(GameVersion.OLDEST_LOADABLE_FORMAT) && GameVersion.OLDEST_LOADABLE_FORMAT < EarthSite.ICE_FORMAT);
+        long fixtureIce = 0, fixtureDesert = 0;
+        for (Window w : windows.values()) { fixtureIce += w.classes[World.ICE]; fixtureDesert += w.classes[World.DESERT]; }
+        out.printf("      the fixture's three windows: %,d plots of ice and %,d of desert%n", fixtureIce, fixtureDesert);
+        if (file == null) {
+            out.println("earth-1.bin not named: the shares, edges and cards of ice and desert, which the fixture's windows hold none of, were not tried");
+            return;
+        }
+        // Each kind's share of a 1-degree cell, and its edge.
+        for (int[] c : ICE_CELLS) cover(file, true, c[0], c[1]);
+        for (int[] c : DESERT_CELLS) cover(file, false, c[0], c[1]);
+        // The founding card's ice is the plot's.
+        World.Key sheetKey = World.Key.earth(SEED, SHEET[0], SHEET[1], EarthData.EARTH_1);
+        EarthSite.Card sheet = EarthSite.measure(sheetKey);
+        World sw = World.of(sheetKey);
+        byte sp = sw.terrainAt(EarthTerrain.spotPlot(), EarthTerrain.spotPlot());
+        report("the card: Greenland's sheet has no dry ground within 5 km, so no site; the card is the spot's own plot's, ice, refused on ice - its ice the plot's",
+                sw.earthTerrain().siteNear()[0] < 0 && sp == World.ICE && sheet.hasSite() && sheet.ice() && sw.terrainAt(sheet.siteX(), sheet.siteY()) == World.ICE
+                        && EarthSite.ICE_WORDS.equals(sheet.refusal()) && EarthSite.ICE_WORDS.equals(EarthSite.foundingProblem(sheetKey)) && adds(sheet),
+                String.format("%.0f%% ice, %.0f%% dry within 5 km", 100 * sheet.iceShare(), 100 * sheet.dryShare()));
+        World.Key marginKey = World.Key.earth(SEED, MARGIN[0], MARGIN[1], EarthData.EARTH_1);
+        EarthSite.Card margin = EarthSite.measure(marginKey);
+        World mw = World.of(marginKey);
+        double[] ll = new double[2];
+        mw.earthTerrain().projection().latLonOfPlot(margin.siteX() + 0.5, margin.siteY() + 0.5, ll);
+        boolean bit = (file.at("landcover", ll[0], ll[1]) & EarthData.LC_ICE) != 0;
+        byte mp = mw.terrainAt(margin.siteX(), margin.siteY());
+        report("...on south Greenland's margin, a site on grass in a 2' cell with the ice bit (the bit's rule refused it): not on ice, as its plot is not, and foundable",
+                margin.hasSite() && bit && mp != World.ICE && World.dry(mp) && !margin.ice() && margin.foundable() && EarthSite.foundingProblem(marginKey) == null && adds(margin),
+                String.format("the site %s, its cell's ice bit %s; %.1f%% ice, %.1f%% dry within 5 km", LandMap.groundWords(mp), bit, 100 * margin.iceShare(), 100 * margin.dryShare()));
+        World.Key offKey = World.Key.earth(SEED, OFF_THE_ICE[0], OFF_THE_ICE[1], EarthData.EARTH_1);
+        EarthSite.Card off = EarthSite.measure(offKey);
+        World ow = World.of(offKey);
+        byte op = ow.terrainAt(EarthTerrain.spotPlot(), EarthTerrain.spotPlot());
+        report("...and a spot on the ice there: the snap finds its site on dry ground off the ice, never on it, and the card agrees",
+                op == World.ICE && off.hasSite() && World.dry(ow.terrainAt(off.siteX(), off.siteY())) && !off.ice() && off.foundable()
+                        && ow.foundingX() == off.siteX() && ow.foundingY() == off.siteY() && off.snappedM() >= 1000 && adds(off),
+                String.format("the site %.0f m off, on %s; %.1f%% ice within 5 km", off.snappedM(), LandMap.groundWords(ow.terrainAt(off.siteX(), off.siteY())), 100 * off.iceShare()));
+        // The books on a real holding: a city founded at the margin, an unowned tile of ice and one of grass beside it.
+        CityLand land = CityLand.found(mw, mw.foundingX(), mw.foundingY(), 1.0);
+        long[] iceTile = tileOf(mw, land, World.ICE), grassTile = tileOf(mw, land, World.GRASS);
+        double[] iceKm2 = iceTile == null ? null : land.groundOf(iceTile[0], iceTile[1], iceTile[0] + World.TILE, iceTile[1] + World.TILE);
+        double tileKm2 = World.TILE * World.TILE * World.KM2_PER_PLOT;
+        report("...and a holding's books there: a tile of ice offered is its whole area and no dry ground, fresh, sea or forest", iceKm2 != null && grassTile != null
+                        && iceKm2[CityLand.TOTAL] == tileKm2 && iceKm2[CityLand.DRY] == 0 && iceKm2[CityLand.FOREST] == 0 && iceKm2[CityLand.FRESH] == 0 && iceKm2[CityLand.SEA] == 0
+                        && land.centreKm2(CityLand.DRY) >= 1.0 - World.KM2_PER_PLOT,
+                iceTile == null ? "no tile all ice within reach" : String.format("the tile %.4f km2; the city's centre %.3f km2 dry, %.3f in all", iceKm2[CityLand.TOTAL], land.centreKm2(CityLand.DRY), land.centreKm2(CityLand.TOTAL)));
+        // The desert: the card's warning, the site's plot dry ground, the far view's pixels.
+        World.Key saharaKey = World.Key.earth(SEED, SAHARA[0], SAHARA[1], EarthData.EARTH_1);
+        EarthSite.Card sahara = EarthSite.measure(saharaKey);
+        World hw = World.of(saharaKey);
+        byte hp = hw.terrainAt(sahara.siteX(), sahara.siteY());
+        CityLand dune = CityLand.found(hw, hw.foundingX(), hw.foundingY(), 1.0);
+        long[] desertTile = tileOf(hw, dune, World.DESERT);
+        double[] desertKm2 = desertTile == null ? null : dune.groundOf(desertTile[0], desertTile[1], desertTile[0] + World.TILE, desertTile[1] + World.TILE);
+        report("the Sahara: the site a plot of desert, dry ground the snap founds on, the card warns of a desert, and a tile of it is all dry ground on the books",
+                hp == World.DESERT && sahara.foundable() && sahara.desert() && adds(sahara) && desertKm2 != null && desertKm2[CityLand.DRY] == tileKm2 && desertKm2[CityLand.TOTAL] == tileKm2,
+                String.format("the site %s; %.1f%% dry within 5 km", LandMap.groundWords(hp), 100 * sahara.dryShare()));
+        String[] sheetFar = new String[1], saharaFar = new String[1];
+        boolean farOk = far(sheetKey, World.ICE, sheetFar) & far(saharaKey, World.DESERT, saharaFar);
+        report("the far view draws them: far nodes on Greenland's sheet ice, on the Sahara desert - all of it at WATER_STRIDE and FAR_STRIDE / 4, the most of it from the 4' layers at FAR_STRIDE",
+                farOk, "the sheet " + sheetFar[0] + "; the Sahara " + saharaFar[0]);
+    }
+
+    /** A count of n plots of one class, World.CLASSES long. */
+    static long[] only(byte cls, long n) {
+        long[] c = new long[World.CLASSES];
+        c[cls] = n;
+        return c;
+    }
+
+    /** A card's plots add up: dry, fresh, sea and ice. */
+    static boolean adds(EarthSite.Card c) {
+        return c.dry() + c.fresh() + c.sea() + c.icePlots() == c.plots() && c.plots() > 0;
+    }
+
+    /** How many of a plan's buildings stand west of its district's middle. */
+    static int westOf(DistrictPlan p) {
+        int k = 0;
+        for (int b = 0; b < p.buildings; b++) if (p.bx[b] < DistrictPlan.FRAME / 2) k++;
+        return k;
+    }
+
+    /** The nearest whole tile to a city's founding site, ring by ring of tiles out to 48 (46 km), that the city owns no plot of and whose every plot is of one class: its north-west plot, or null. */
+    static long[] tileOf(World w, CityLand land, byte cls) {
+        long tx0 = Math.floorDiv(land.siteX(), World.TILE), ty0 = Math.floorDiv(land.siteY(), World.TILE);
+        byte[] t = new byte[World.TILE * World.TILE];
+        for (int r = 1; r <= 48; r++) {
+            for (long ty = ty0 - r; ty <= ty0 + r; ty++) {
+                for (long tx = tx0 - r; tx <= tx0 + r; tx++) {
+                    if (Math.max(Math.abs(tx - tx0), Math.abs(ty - ty0)) != r) continue;
+                    w.tileTerrain(tx, ty, t);
+                    boolean all = true;
+                    for (int i = 0; i < t.length && all; i++) all = t[i] == cls && !land.ownsPlot(tx * World.TILE + i % World.TILE, ty * World.TILE + i / World.TILE);
+                    if (all) return new long[] { tx * World.TILE, ty * World.TILE };
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Whether the far nodes about a world's spot draw a class: every pixel of it at WATER_STRIDE and FAR_STRIDE / 4 (61 and 246 km a node), and at FAR_STRIDE (983 km, which reaches past the sheet's coast) more of it than of any other; each node's share of it in words. */
+    static boolean far(World.Key key, byte cls, String[] words) {
+        boolean ok = true;
+        StringBuilder w = new StringBuilder();
+        for (long plots : new long[] { EarthTerrain.WATER_STRIDE, EarthTerrain.FAR_STRIDE / 4, EarthTerrain.FAR_STRIDE }) {
+            long half = plots * MapFrame.NODE_PX / 2;
+            byte[] node = MapTiles.nodeTerrain(key, EarthTerrain.spotPlot() - half, EarthTerrain.spotPlot() - half, plots);
+            long[] c = new long[World.CLASSES];
+            for (byte b : node) c[b]++;
+            boolean most = true;
+            for (int k = 0; k < World.CLASSES; k++) if (k != cls && c[k] >= c[cls]) most = false;
+            ok &= plots < EarthTerrain.FAR_STRIDE ? c[cls] == node.length : most;
+            w.append(String.format("%s%.1f%% at %d", w.length() == 0 ? "" : ", ", 100.0 * c[cls] / node.length, plots));
+        }
+        words[0] = w.toString();
+        return ok;
+    }
+
+    /**
+     * One kind's 1-degree cell on the full file, on a world centred there:
+     * every plot whose centre lies in the cell drawn, and among those the
+     * kind could take (ice any ground not water; the desert grass or desert,
+     * which forest and the beach come before), its share drawn against the
+     * share whose 2' cell carries its bit; then its edge - the plots where
+     * the bit's share interpolated between the cells' centres lies strictly
+     * between 0 and 1, where the noise may fray it - drawn against the
+     * share's half-contour unfrayed: frayed both ways, and never past it.
+     */
+    static void cover(EarthData d, boolean ice, int lat0, int lon0) {
+        long t0 = System.nanoTime();
+        World w = World.of(World.Key.earth(SEED, lat0 + 0.5, lon0 + 0.5, EarthData.EARTH_1));
+        EarthProj proj = w.earthTerrain().projection();
+        double[] p = new double[2];
+        long x0 = Long.MAX_VALUE, x1 = Long.MIN_VALUE, y0 = Long.MAX_VALUE, y1 = Long.MIN_VALUE;
+        for (int k = 0; k <= 16; k++) {
+            for (int e = 0; e < 4; e++) {
+                double la = e < 2 ? lat0 + k / 16.0 : lat0 + (e - 2), lo = e < 2 ? lon0 + e : lon0 + k / 16.0;
+                proj.plotOf(la, lo, p);
+                x0 = Math.min(x0, (long) Math.floor(p[0])); x1 = Math.max(x1, (long) Math.ceil(p[0]));
+                y0 = Math.min(y0, (long) Math.floor(p[1])); y1 = Math.max(y1, (long) Math.ceil(p[1]));
+            }
+        }
+        int bit = ice ? EarthData.LC_ICE : EarthData.LC_DESERT;
+        byte kind = ice ? World.ICE : World.DESERT;
+        Cover c = new Cover(d);
+        long ground = 0, drawn = 0, data = 0, band = 0, inward = 0, outward = 0, flipped = 0;
+        double[] dist = new double[1 << 16];
+        int nd = 0;
+        byte[] t = new byte[World.TILE * World.TILE];
+        double[] ll = new double[2], q = new double[2];
+        for (long ty = Math.floorDiv(y0, World.TILE); ty <= Math.floorDiv(y1, World.TILE); ty++) {
+            for (long tx = Math.floorDiv(x0, World.TILE); tx <= Math.floorDiv(x1, World.TILE); tx++) {
+                w.tileTerrain(tx, ty, t);
+                EarthProj.Blend b = proj.blend(tx * World.TILE, ty * World.TILE, World.TILE);
+                for (int i = 0; i < t.length; i++) {
+                    double px = tx * World.TILE + i % World.TILE + 0.5, py = ty * World.TILE + i / World.TILE + 0.5;
+                    if (!b.latLon(px, py, ll) || ll[0] < lat0 || ll[0] >= lat0 + 1 || ll[1] < lon0 || ll[1] >= lon0 + 1) continue;
+                    byte g = t[i];
+                    if (ice ? !(g != World.SALT && g != World.FRESH) : !(g == World.GRASS || g == World.DESERT)) continue;
+                    ground++;
+                    boolean is = g == kind;
+                    if (is) drawn++;
+                    if ((c.at(ll[0], ll[1]) & bit) != 0) data++;
+                    double s = c.share(ll[0], ll[1], bit);
+                    if (s <= 0 || s >= 1) {
+                        if (is == (s <= 0)) flipped++;
+                        continue;
+                    }
+                    band++;
+                    if ((s >= EarthTerrain.COVER_LEVEL) == is) continue;
+                    if (is) outward++; else inward++;
+                    b.latLon(px + 1, py, q); double sx1 = c.share(q[0], q[1], bit);
+                    b.latLon(px - 1, py, q); double sx0 = c.share(q[0], q[1], bit);
+                    b.latLon(px, py + 1, q); double sy1 = c.share(q[0], q[1], bit);
+                    b.latLon(px, py - 1, q); double sy0 = c.share(q[0], q[1], bit);
+                    double gr = Math.hypot((sx1 - sx0) / 2, (sy1 - sy0) / 2);
+                    if (gr > 0) {
+                        if (nd == dist.length) dist = Arrays.copyOf(dist, 2 * nd);
+                        dist[nd++] = Math.abs(s - EarthTerrain.COVER_LEVEL) / gr;
+                    }
+                }
+            }
+        }
+        Arrays.sort(dist, 0, nd);
+        double mean = 0;
+        for (int k = 0; k < nd; k++) mean += dist[k];
+        mean /= Math.max(1, nd);
+        String what = (ice ? "ice" : "the desert") + String.format(" at %d,%d", lat0, lon0);
+        double points = 100.0 * Math.abs(drawn - data) / Math.max(1, ground);
+        report(what + ": its share of the 1-degree cell's ground drawn is the data's within COVER_POINTS", ground > 0 && points <= COVER_POINTS && data > 0 && data < ground,
+                String.format("%.2f%% drawn against %.2f%% (%.2f points), of %,d plots%s", 100.0 * drawn / ground, 100.0 * data / ground, points, ground, ice ? "" : " of grass or desert"));
+        report("...its edge frayed both ways about the bit's half-contour, and never past the cells that agree", inward > 0 && outward > 0 && flipped == 0,
+                String.format("%,d plots within a cell of the edge (%.1f%%), %,d drawn its way past the contour and %,d short of it (%.1f%%); a frayed plot %.1f plots from it in the mean,"
+                                + " %.1f the median, %.1f at 95%%, %.1f at most; %,d past the cells; %.1f s", band, 100.0 * band / ground, outward, inward, 100.0 * (inward + outward) / Math.max(1, band),
+                        mean, nd > 0 ? dist[nd / 2] : 0, nd > 0 ? dist[(int) (nd * 0.95)] : 0, nd > 0 ? dist[nd - 1] : 0, flipped, (System.nanoTime() - t0) / 1e9));
+    }
+
+    /** Land cover's 2' cells read from the file's grids, kept by tile: a cell's value, and a bit's share between the cells' centres as EarthTerrain reads it. */
+    static final class Cover {
+        final EarthData d;
+        final int cpd;
+        final Map<Integer, byte[]> grids = new java.util.HashMap<>();
+
+        Cover(EarthData d) {
+            this.d = d;
+            this.cpd = d.layer("landcover").cellsPerDegree;
+        }
+
+        /** The value of the cell in global row r (from 90 N) and column c (from 180 W). */
+        int cell(long r, long c) {
+            r = Math.max(0, Math.min(180L * cpd - 1, r));
+            c = Math.floorMod(c, 360L * cpd);
+            int tile = (int) ((179 - r / cpd) * 360 + c / cpd);
+            byte[] g = grids.computeIfAbsent(tile, k -> d.grid("landcover", k));
+            return g[(int) ((r % cpd) * cpd + c % cpd)] & 0xFF;
+        }
+
+        /** The value of the cell a point lies in. */
+        int at(double lat, double lon) {
+            return cell((long) Math.floor((90 - lat) * cpd), (long) Math.floor((lon + 180) * cpd));
+        }
+
+        /** A bit read 0 or 1 at each cell and interpolated between the four cells' centres about a point. */
+        double share(double lat, double lon, int bit) {
+            double g = (90 - lat) * cpd - 0.5, c = (lon + 180) * cpd - 0.5;
+            long r0 = (long) Math.floor(g), c0 = (long) Math.floor(c);
+            double fr = g - r0, fc = c - c0;
+            double a = (cell(r0, c0) & bit) != 0 ? 1 : 0, b = (cell(r0, c0 + 1) & bit) != 0 ? 1 : 0;
+            double e = (cell(r0 + 1, c0) & bit) != 0 ? 1 : 0, f = (cell(r0 + 1, c0 + 1) & bit) != 0 ? 1 : 0;
+            return (a * (1 - fc) + b * fc) * (1 - fr) + (e * (1 - fc) + f * fc) * fr;
+        }
     }
 }

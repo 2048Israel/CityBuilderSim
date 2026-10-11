@@ -65,6 +65,15 @@ public final class EarthSite {
     /** The save format a city on the real Earth is first written in: 38 (GameVersion's A CITY ON THE REAL EARTH) - a build before it would put the city on its seed's generated ground, so it refuses the save as a newer build's; a save before it is a generated city's, and loads as one. */
     public static final int EARTH_FORMAT = 38;
 
+    /**
+     * The save format the real Earth is first drawn in with ice and desert:
+     * 39 (0.7.127, batch E7; GameVersion's ICE AND DESERT ON THE REAL EARTH).
+     * An Earth city saved before it kept books that counted any ground now
+     * drawn as ice as dry, so its save is refused (loadProblem()); a
+     * generated city's ground is as it was, and its save loads.
+     */
+    public static final int ICE_FORMAT = 39;
+
     /** The stream Random spot draws its order from. */
     private static final long RANDOM_SALT = 0x5B07A11DL;
 
@@ -182,13 +191,21 @@ public final class EarthSite {
      * Why a city saved on the real Earth cannot be loaded here, or null when
      * it can (spec-earth 6: the data is frozen per version, and a save names
      * its own): its data is not this build's, or this build's is not here -
-     * and then, since 0.7.125, how the file gets there (missingWords()).
-     * Game's load refuses it with these words, nothing of it applied.
+     * and then, since 0.7.125, how the file gets there (missingWords()) - or,
+     * since 0.7.127, it was saved before ice was a kind of ground
+     * (ICE_FORMAT). Game's load refuses it with these words, nothing of it
+     * applied. This one asks of a save in this build's format.
      */
     public static String loadProblem(String identity, Double lat, Double lon) {
+        return loadProblem(identity, lat, lon, GameVersion.SAVE_FORMAT);
+    }
+
+    /** ...and of a save in a given format: one before ICE_FORMAT is refused first (0.7.127), whatever its data (DataSave.earthProblem() passes the save's). */
+    public static String loadProblem(String identity, Double lat, Double lon, int format) {
         if (identity == null || identity.isBlank() || lat == null || lon == null || !(lat >= -90 && lat <= 90) || !Double.isFinite(lon)) {
             return "This city stands on the real Earth, and its save does not say where.";
         }
+        if (format < ICE_FORMAT) return BEFORE_ICE_WORDS;
         if (available(identity)) return null;
         if (identity.equals(EarthData.EARTH_1)) return missingWords(EarthData.locate(), fromRepository());
         return otherDataWords(identity);
@@ -203,6 +220,10 @@ public final class EarthSite {
         return "This city stands on the real Earth, and the file at " + found + " is not the Earth's data this build reads ("
                 + shortId(EarthData.EARTH_1) + "). " + replaceWords(repository, "load the city again");
     }
+
+    /** The load's words for a city on the real Earth saved before ice was a kind of ground (ICE_FORMAT). */
+    public static final String BEFORE_ICE_WORDS = "This city was founded on the real Earth before ice was a kind of ground (0.7.127): its books may count"
+            + " ice it holds as dry ground, so this build does not load it. The build that saved it still opens it.";
 
     /** The load's words for a city on other data than this build's. */
     private static String otherDataWords(String identity) {

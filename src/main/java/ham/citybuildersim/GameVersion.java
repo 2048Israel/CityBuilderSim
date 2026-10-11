@@ -5566,8 +5566,56 @@ public final class GameVersion {
      *   - Harnesses: EarthFoundingCheck 1 (both ways for a missing file, for
      *     a bad copy, and the load's).
      *   - The playtest is pt07123's byte for byte.
+     *
+     * 0.7.127 (2026-10-11) - ICE AND DESERT ON THE REAL EARTH. Batch E7, the
+     * globe study's first (docs/studies/spec-globe.md 3.9, 3.10 and 4;
+     * Samuel's answers of 10:26, "yes"; spec-earth's E14; runs/brief-
+     * batchE7.md, runs/fixE7-notes.md). SAVE FORMAT 39, THE FLOOR STAYS AT
+     * 37: an Earth city saved before it is refused, a generated one loads
+     * (below).
+     *   - TWO KINDS OF GROUND: World.ICE (5) and World.DESERT (6), the next
+     *     two bytes after the five, never renumbering them (World.CLASSES 7).
+     *     Ice is land, never dry, never built on, never a founding site, and
+     *     counts in a holding's whole area only (E14). The desert is dry
+     *     ground every rule treats as grass; only its colour and its name
+     *     are its own, and a mechanism for it, if any, comes later and is
+     *     never a multiplier (Q1). A generated world draws neither.
+     *   - ONE RULE FOR DRY GROUND: World.dry(), which every test of it asks -
+     *     the snap (EarthTerrain), a holding's books (CityLand, GridConversion
+     *     .km2Of(): the desert's plots with the grass's, ice's in the whole
+     *     area only, a count of the five alone read as before), the map's
+     *     free ground (CityMap), the street plans (DistrictPlan), the runs
+     *     (CityRuns), a far node's district tint (MapTiles) and the card.
+     *   - THE RULE ON EARTH (EarthTerrain): SALT, FRESH, ICE, SAND, FOREST,
+     *     DESERT, GRASS. Land cover's ice and bare-ground bits are read 0 or
+     *     1 at their 2' cells and interpolated between the cells' centres as
+     *     the shares are, each tested against COVER_LEVEL (a half) with its
+     *     own noise at COVER_FRAY (the coast's 1.0): the bit's half-contour,
+     *     frayed. Measured on four 1-degree cells, each kind's share of the
+     *     ground within 0.34 points of the data's; the edge frayed both ways,
+     *     a frayed plot a median 5 to 8 plots from the half-contour, never
+     *     past the cells that agree. A region and a far node draw them too.
+     *     The cells pass and E3's fields are untouched: a field under ice
+     *     stays where it was, and nothing is built on it (Q2).
+     *   - THE SCREENS: TileRaster.GROUND's two colours (ice the founding
+     *     globe's, 0xdfe7ee; the desert CSS's tan, #d2b48c, warmer than the
+     *     beach), the hover's two names (LandMap.groundWords()), the map's
+     *     legend's two entries (35 in its three columns of 12), and the
+     *     founding globe's ice and desert in those colours.
+     *   - THE FOUNDING CARD (EarthSite): its ice is the site's plot's class,
+     *     so the card and the map agree; the snap never lands on ice, and a
+     *     spot on an ice sheet with no dry ground within 5 km gets its own
+     *     plot's card, refused on ice; the ground within 5 km counts ice on
+     *     its own (Card.icePlots(), the founding screen's ground line). The
+     *     desert's warning is still its cell's bare-ground bit.
+     *   - Harnesses: EarthTerrainCheck 15 (the rule, the books, a district
+     *     plan with its grass made desert and ice, each kind's share and edge
+     *     on the full file, the card at Greenland's sheet, its margin and the
+     *     Sahara, a far node, and the refusal of an Earth save before 39).
+     *   - The default playtest is pt07123's byte for byte, and the Earth one
+     *     (--earth rotterdam) pte07121's: Rotterdam's city holds no ice.
      */
-    public static final String VERSION = "0.7.125";
+    public static final String VERSION = "0.7.127";
 
     /**
      * The save shape.
@@ -6220,8 +6268,24 @@ public final class GameVersion {
      *     byte for byte as 0.7.120 read it (SaveFileCheck). An Earth save
      *     whose data is not this build's, or not here, is refused with words
      *     saying which (DataSave.earthProblem(), EarthSite.loadProblem()).
+     *
+     * 39 - ICE AND DESERT ON THE REAL EARTH (0.7.127, batch E7; spec-globe
+     *     3.10): no field moves. An Earth city's books are its plots drawn,
+     *     and saved as drawn - a holding's dry area counted plot by plot -
+     *     and since 0.7.127 ground that was grass under land cover's ice bit
+     *     is ice, never dry, so an Earth city saved before that holds such
+     *     ground would load WRONGLY, its dry area counting its ice. Here so
+     *     that save can be told apart and refused, in words saying why
+     *     (EarthSite.ICE_FORMAT, BEFORE_ICE_WORDS, DataSave.earthProblem()),
+     *     and a build before it refuses this build's saves as a newer
+     *     build's.
+     *
+     *     A GENERATED CITY LOADS RIGHTLY, SO THE FLOOR STAYS AT 37 (★E7): a
+     *     generated world draws neither kind, its ground and books byte for
+     *     byte as before (the playtest's traces), so its save from format 37
+     *     or 38 reads as it did. Only an Earth save below 39 is refused.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 38;
+    public static final int SAVE_FORMAT = 39;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -6233,7 +6297,10 @@ public final class GameVersion {
      *
      * 37 since 0.7.120 (batch I3, built as 0.7.116: SCRAP SPLIT FROM ORE
      * above), and still at format 38 (0.7.121, A CITY ON THE REAL EARTH: a
-     * format-37 save is a generated city and loads rightly): a save of
+     * format-37 save is a generated city and loads rightly) and at format 39
+     * (0.7.127, ICE AND DESERT ON THE REAL EARTH: a generated city loads
+     * rightly, and an Earth city before 39 is refused on its own,
+     * EarthSite.ICE_FORMAT): a save of
      * format 36 or older holds the mills' scrap and the mines' ore as one
      * IRON and would load wrongly, so it is refused - the first time the
      * floor was raised by the rule. 21 until then, the sector template's
