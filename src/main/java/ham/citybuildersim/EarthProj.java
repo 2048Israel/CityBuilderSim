@@ -47,7 +47,8 @@ package ham.citybuildersim;
  *
  * E1 (0.7.111) built it pure; since 0.7.115 (batch E2) EarthTerrain lays
  * the Earth's ground on a world with an Earth key through it - a key only
- * harnesses make until E4. EarthCheck holds it, EarthTerrainCheck its use.
+ * harnesses made until 0.7.121, when the founding screen came to found a
+ * city on one (E4). EarthCheck holds it, EarthTerrainCheck its use.
  */
 public final class EarthProj {
 

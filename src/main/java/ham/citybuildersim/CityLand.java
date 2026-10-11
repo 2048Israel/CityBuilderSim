@@ -1005,7 +1005,7 @@ public final class CityLand {
         return restore(World.Key.generated(seed), centre, rects, holdings, partRows, history);
     }
 
-    /** ...on the world a key names (0.7.115): a harness's Earth land; a save names a generated world until E4. */
+    /** ...on the world a key names (0.7.115): since 0.7.121 an Earth city's, its save's kind, spot and data (Founding.getWorldKey()). */
     public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows,
                                    double[][] history) {
         if (centre == null || centre.length != CENTRE_FIELDS) return null;

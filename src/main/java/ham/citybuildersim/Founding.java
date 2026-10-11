@@ -46,6 +46,16 @@ import java.util.List;
  * it. The city's land stands on it since 0.7.57 (CityLand; the project's
  * spec-land.md).
  *
+ * ...OR THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 and
+ * 6): a founding's world is its key (World.Key, since 0.7.115) - generated
+ * from its seed, or the real Earth round a spot, its latitude and longitude,
+ * drawn from the data the key names (EarthData.EARTH_1 for the game's), the
+ * seed deciding the detail below the data and the fields. The founding
+ * screen offers Earth when the data is here (EarthSite.gameData()); saved as
+ * DataSave's worldKind, earthLat, earthLon and earthData (SAVE_FORMAT 38). A
+ * spot the founding card refuses - no dry ground within 5 km, or ice - is a
+ * problem() like a bad name.
+ *
  * @author Jerus
  */
 public final class Founding {
@@ -253,7 +263,7 @@ public final class Founding {
     private final double reserveUsd;
     private final double meanInflation;
     private final long worldSeed;
-    /** The world it stands on (0.7.115, batch E2): Key.generated(worldSeed), or a harness's Earth world until E4 lets the screen found on Earth (and a save keep it). */
+    /** The world it stands on (0.7.115, batch E2): Key.generated(worldSeed), or the real Earth round a spot (onEarth(), since 0.7.121 the founding screen's, and kept by a save). */
     private final World.Key worldKey;
 
     /**
@@ -321,9 +331,14 @@ public final class Founding {
         return new Founding(cityName, currency, cash, reserveUsd, meanInflation, seed);
     }
 
-    /** The same founding on the world a key names (0.7.115): a harness's Earth world; a generated key is withWorldSeed(). */
+    /** The same founding on the world a key names (0.7.115): an Earth world (onEarth()) or a harness's; a generated key is withWorldSeed(). */
     public Founding withWorldKey(World.Key key) {
         return new Founding(cityName, currency, cash, reserveUsd, meanInflation, key);
+    }
+
+    /** The same founding on the real Earth round a spot (0.7.121, batch E4): its seed this founding's, its data the game's, EarthData.EARTH_1 - the founding screen's Earth. */
+    public Founding onEarth(double lat, double lon) {
+        return withWorldKey(World.Key.earth(worldSeed, lat, lon, EarthData.EARTH_1));
     }
 
     /** The same founding with the world's mean inflation it is handed (Game.getFounding()), on the same world. */
@@ -352,6 +367,16 @@ public final class Founding {
     public long getWorldSeed()         { return worldSeed; }
     /** The world it stands on (0.7.115): World.of(getWorldKey()) is its ground - the generated world of getWorldSeed() but on Earth. */
     public World.Key getWorldKey()     { return worldKey; }
+    /** Which world it stands on (0.7.121): GENERATED, or EARTH. */
+    public World.Kind getWorldKind()   { return worldKey.kind(); }
+    /** Whether it stands on the real Earth (0.7.121). */
+    public boolean isOnEarth()         { return worldKey.earth(); }
+    /** On Earth, the spot's latitude in degrees - the projection's centre, which the site is snapped from; NaN on a generated world (0.7.121). */
+    public double getEarthLat()        { return worldKey.earth() ? worldKey.lat() : Double.NaN; }
+    /** ...and its longitude. */
+    public double getEarthLon()        { return worldKey.earth() ? worldKey.lon() : Double.NaN; }
+    /** On Earth, the data it is drawn from, by identity ("earth-1:<hash>"); null on a generated world (0.7.121). */
+    public String getEarthData()       { return worldKey.earth() ? worldKey.data() : null; }
 
     /* ------------------------------------------------------------ is it a city */
 
@@ -385,7 +410,10 @@ public final class Founding {
     /**
      * Why this founding cannot found a city, or null when it can: the first
      * of the city's name, its money (a typed pair that did not pass leaves no
-     * currency - the screen says which half), the two amounts and the world.
+     * currency - the screen says which half), the two amounts and the world -
+     * and on Earth (0.7.121) its spot: the data not here, or the founding
+     * card's refusal (EarthSite: no dry ground within 5 km, or ice), the
+     * snap's answer kept with the world once it is asked.
      */
     public String problem() {
         String p = cityNameProblem(cityName);
@@ -402,6 +430,7 @@ public final class Founding {
         if (!(meanInflation >= WorldEconomy.MIN_MEAN_INFLATION && meanInflation <= WorldEconomy.MAX_MEAN_INFLATION)) {
             return "The world's inflation is outside what a city can be founded into.";
         }
+        if (worldKey.earth()) return EarthSite.foundingProblem(worldKey);
         return null;
     }
 

@@ -70,8 +70,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **ninety-six harnesses plus the
-4,000-odd-month playtest**, which it counts as ninety-seven run (ninety-six where
+`AllChecks` runs the lot, one JVM each — **ninety-seven harnesses plus the
+4,000-odd-month playtest**, which it counts as ninety-eight run (ninety-seven where
 JavaFX is not on the classpath, which skips `BuildMenuCheck`), in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
@@ -207,6 +207,8 @@ src/main/java/ham/citybuildersim/     over 300 files
 src/main/resources/buildings.json     the balance file
 docs/                                 generated indexes of all of the above
 tools/earth/                          the pipeline that bakes the real Earth's data (Python, outside the game)
+data/earth-1.bin                      the real Earth's data itself, about 53 MB, beside the game and not in git;
+                                      the game runs without it, and New city offers the generated world then
 ```
 
 `docs/map/README.md` is the current, exact list: one row per file with its

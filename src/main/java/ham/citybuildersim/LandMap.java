@@ -476,7 +476,7 @@ public final class LandMap {
      * (placeWords()) - and the geologic province under it with its class
      * (provinceWords()); past the planet's rim OFF_PLANET_WORDS; none on a
      * generated world, and no province line where the data has none. The
-     * province's deposit multipliers wait for E4's founding card (★E5).
+     * province's deposit multipliers are the founding card's (EarthSite, 0.7.121; ★E5).
      */
     public static List<String> earthWords(CityLand land, long x, long y) {
         List<String> out = new ArrayList<>();

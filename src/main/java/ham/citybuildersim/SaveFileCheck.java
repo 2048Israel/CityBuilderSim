@@ -2651,6 +2651,8 @@ public class SaveFileCheck {
         assertTrue("...and loads, at the month it was saved",
                 atFloor.getLoadFailure() == null && atFloor.getMonth() == savedMonth && savedMonth > 1);
 
+        onEarth(root);
+
         cleanUp(root);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -2662,6 +2664,175 @@ public class SaveFileCheck {
             if (t.getName().equals(name)) return t;
         }
         throw new IllegalStateException("no template named " + name);
+    }
+
+    /*
+     * A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6). The save
+     * gains four fields on a city founded on the Earth - worldKind, earthLat,
+     * earthLon and earthData - and SAVE_FORMAT 38, so a build before it, which
+     * would put such a city on its seed's generated ground, refuses it as a
+     * newer build's. What has to hold:
+     *   - the format before it loads as it did: a save of format 37 has no
+     *     worldKind, stands on its seed's generated world, and saved again
+     *     writes its own bytes back but for the stamp of this build;
+     *   - a generated city writes none of the four;
+     *   - an Earth city - Rotterdam's window of EarthCheck's fixture - saved
+     *     carries its kind, spot and data, and reloaded is the city it was:
+     *     the same Earth world, the same land, its map read back from the
+     *     sidecar, saved again the same bytes, and two months on the same
+     *     treasury, savings and tills;
+     *   - a save naming other data than any here, a world kind this build does
+     *     not know, or an Earth with no spot, is refused in words that say so,
+     *     nothing of it applied and its file as it was.
+     */
+    static void onEarth(Path root) throws IOException {
+        System.out.println("\n--- and a city on the real Earth, saved and read back; a format-37 save on its generated world ---");
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        String[] earthKeys = { "worldKind", "earthLat", "earthLon", "earthData" };
+
+        // The format before: a generated city, its save written down to format 37 as 0.7.120 wrote it.
+        GameFiles plainFiles = new GameFiles(root.resolve("format37"), root.resolve("no-legacy"));
+        Game plain = new Game(plainFiles);
+        quietly(() -> {
+            plain.newGame(Founding.defaults().withWorldSeed(2_026_101_1L));
+            plain.setCashForTest(Founding.WEALTHY_CASH);
+            plain.buildStack(template(plain, "House"), 120, true);
+            plain.buildStack(template(plain, "Convenience Store"), 2, true);
+            plain.buildStack(template(plain, "Water Treatment Plant"), 1, true);
+            plain.simulateMonths(3);
+            plain.getCityMap();
+        });
+        assertTrue("fixture: a generated city saved", quietlyGet(() -> plain.saveGame(1, "plain")).ok);
+        com.google.gson.JsonObject plainJson = com.google.gson.JsonParser.parseString(Files.readString(plainFiles.saveFile(1))).getAsJsonObject();
+        boolean none = true;
+        for (String k : earthKeys) none &= !plainJson.has(k);
+        assertTrue("a generated city writes none of the four Earth fields", none);
+        com.google.gson.JsonObject format37 = plainJson.deepCopy();
+        format37.addProperty("saveFormat", 37);
+        format37.addProperty("gameVersion", "0.7.120");
+        Files.writeString(plainFiles.saveFile(2), gson.toJson(format37));
+        Files.copy(plainFiles.historyFile(1), plainFiles.historyFile(2), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        if (Files.isRegularFile(plainFiles.mapFile(1))) {
+            Files.copy(plainFiles.mapFile(1), plainFiles.mapFile(2), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+        Game older = new Game(plainFiles);
+        quietly(() -> older.loadGameSave(2));
+        long seed = plainJson.get("worldSeed").getAsLong();
+        assertTrue("a format-37 save loads, on its seed's generated world",
+                older.getLoadFailure() == null && !older.getFounding().isOnEarth()
+                        && older.getFounding().getWorldKey().equals(World.Key.generated(seed)) && older.getWorld() == World.of(seed)
+                        && older.getCityLand().key().equals(World.Key.generated(seed)) && older.getMonth() == plain.getMonth());
+        assertTrue("...its land and map the city's that wrote it", older.getCityLand().same(plain.getCityLand())
+                && older.hasCityMap() && older.getCityMap().same(plain.getCityMap()));
+        assertTrue("saved again", quietlyGet(() -> older.saveGame(3, "plain")).ok);
+        com.google.gson.JsonObject again = com.google.gson.JsonParser.parseString(Files.readString(plainFiles.saveFile(3))).getAsJsonObject();
+        java.util.List<String> moved = jsonDiff(format37, again, java.util.Set.of("saveFormat", "gameVersion", "savedAt"));
+        assertTrue("...and writes its own bytes back, but for this build's stamp: its format, version and time", moved.isEmpty()
+                && again.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && again.get("gameVersion").getAsString().equals(GameVersion.VERSION));
+        if (!moved.isEmpty()) System.out.println("     moved: " + moved);
+        assertTrue("a format-37 save is not refused: the floor stays below the format an Earth city is first written in",
+                !GameVersion.isNoLongerReadable(EarthSite.EARTH_FORMAT - 1) && GameVersion.SAVE_FORMAT >= EarthSite.EARTH_FORMAT);
+
+        // An Earth city: Rotterdam's window of EarthCheck's fixture.
+        byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE);
+        assertTrue("fixture: EarthCheck's fixture is beside the classes", fixture != null);
+        if (fixture == null) return;
+        String id = EarthTerrain.use(EarthData.of(fixture));
+        double lat = 51.90625, lon = 4.48125;
+        World.Key key = World.Key.earth(4127, lat, lon, id);
+        GameFiles earthFiles = new GameFiles(root.resolve("earth"), root.resolve("no-legacy"));
+        Game city = new Game(earthFiles);
+        quietly(() -> {
+            city.newGame(Founding.custom("Rotterdam", Founding.WEALTHY_CASH, Founding.WEALTHY_RESERVE_USD, .02).withWorldKey(key));
+            city.buildStack(template(city, "House"), 150, true);
+            city.buildStack(template(city, "Convenience Store"), 3, true);
+            city.buildStack(template(city, "Water Treatment Plant"), 1, true);
+            city.buildStack(template(city, "Construction Depot"), 1, true);
+            city.simulateMonths(4);
+            city.getCityMap();
+        });
+        assertTrue("fixture: a city founded on the real Earth, played four months", city.getWorld().isEarth()
+                && city.getFounding().getWorldKey().equals(key) && city.getMonth() == 5);
+        assertTrue("saved", quietlyGet(() -> city.saveGame(1, "on Earth")).ok);
+        com.google.gson.JsonObject earthJson = com.google.gson.JsonParser.parseString(Files.readString(earthFiles.saveFile(1))).getAsJsonObject();
+        assertTrue("the save carries its kind, its spot and its data, and its seed (0.7.121)",
+                earthJson.get("worldKind").getAsString().equals("EARTH") && earthJson.get("earthLat").getAsDouble() == lat
+                        && earthJson.get("earthLon").getAsDouble() == lon && earthJson.get("earthData").getAsString().equals(id)
+                        && earthJson.get("worldSeed").getAsLong() == 4127 && earthJson.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT);
+        DataSave read = gson.fromJson(Files.readString(earthFiles.saveFile(1)), DataSave.class);
+        assertTrue("...read back as the same key", read.isOnEarth() && read.getFounding(.02).getWorldKey().equals(key)
+                && read.getEarthLat() == lat && read.getEarthLon() == lon && id.equals(read.getEarthData()) && read.earthProblem() == null);
+        Game back = new Game(earthFiles);
+        quietly(() -> back.loadGameSave(1));
+        assertTrue("an Earth city reloaded stands on the same Earth world, its land the same, its map read back",
+                back.getLoadFailure() == null && back.getFounding().getWorldKey().equals(key) && back.getWorld() == World.of(key)
+                        && back.getCityLand().same(city.getCityLand()) && back.hasCityMap() && back.getCityMap().same(city.getCityMap()));
+        assertTrue("saved again", quietlyGet(() -> back.saveGame(2, "on Earth")).ok);
+        com.google.gson.JsonObject earthAgain = com.google.gson.JsonParser.parseString(Files.readString(earthFiles.saveFile(2))).getAsJsonObject();
+        java.util.List<String> earthMoved = jsonDiff(earthJson, earthAgain, java.util.Set.of("savedAt"));
+        assertTrue("...and writes the same bytes but its time", earthMoved.isEmpty());
+        if (!earthMoved.isEmpty()) System.out.println("     moved: " + earthMoved);
+        quietly(() -> { city.simulateMonths(2); back.simulateMonths(2); });
+        same("two months on: the treasury", back.getCash(), city.getCash());
+        same("...the households' savings", back.getHouseholdBalance().totalSavings(), city.getHouseholdBalance().totalSavings());
+        boolean tills = true;
+        for (String k : Sectors.KEYS) tills &= back.getEconomyManager().getSectorCash(k) == city.getEconomyManager().getSectorCash(k);
+        assertTrue("...and every sector's till", tills);
+        assertTrue("a map sidecar names its world's whole key: an Earth map is not this seed's generated world's",
+                CityMap.worldId(key) != CityMap.worldId(World.Key.generated(4127)) && CityMap.worldId(World.Key.generated(4127)) == 4127);
+
+        // Refused: other data, an unknown kind, no spot.
+        String nobody = "earth-1:" + "0".repeat(64);
+        Object[][] bad = {
+                { "earthData", nobody, EarthSite.loadProblem(nobody, lat, lon) },
+                { "worldKind", "MARS", "This city stands on a world this build does not know (MARS)." },
+                { "earthLat", null, EarthSite.loadProblem(id, null, lon) } };
+        int slot = 3;
+        java.util.Map<String, byte[]> before = null;
+        for (Object[] b : bad) {
+            com.google.gson.JsonObject o = earthJson.deepCopy();
+            if (b[1] == null) o.remove((String) b[0]); else o.addProperty((String) b[0], (String) b[1]);
+            Files.writeString(earthFiles.saveFile(slot), gson.toJson(o));
+            Files.copy(earthFiles.historyFile(1), earthFiles.historyFile(slot), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            before = folderBytes(root.resolve("earth"));
+            Game turned = new Game(earthFiles);
+            int at = slot;
+            quietly(() -> turned.loadGameSave(at));
+            java.util.Map<String, byte[]> after = folderBytes(root.resolve("earth"));
+            boolean untouched = after.keySet().equals(before.keySet());
+            for (String n : before.keySet()) untouched &= java.util.Arrays.equals(before.get(n), after.get(n));
+            assertEquals("a save with " + b[0] + " " + (b[1] == null ? "missing" : b[1].toString().length() > 12 ? "of other data" : b[1])
+                    + " is refused in words saying so", turned.getLoadFailure(), b[2]);
+            assertTrue("...nothing of it applied, and every file as it was", turned.getMonth() == 1 && untouched);
+            slot++;
+        }
+    }
+
+    /** The keys two saves differ on, by name and value, but those left out. */
+    static java.util.List<String> jsonDiff(com.google.gson.JsonObject a, com.google.gson.JsonObject b, java.util.Set<String> except) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        java.util.Set<String> keys = new java.util.TreeSet<>(a.keySet());
+        keys.addAll(b.keySet());
+        for (String k : keys) {
+            if (except.contains(k)) continue;
+            if (!java.util.Objects.equals(a.get(k), b.get(k))) out.add(k);
+        }
+        return out;
+    }
+
+    static final java.io.PrintStream REAL_OUT = System.out;
+
+    /** Runs a piece of the city with the game's narration off. */
+    static void quietly(Runnable r) {
+        System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+        try { r.run(); } finally { System.setOut(REAL_OUT); }
+    }
+
+    static <T> T quietlyGet(java.util.function.Supplier<T> s) {
+        Object[] r = new Object[1];
+        quietly(() -> r[0] = s.get());
+        @SuppressWarnings("unchecked") T t = (T) r[0];
+        return t;
     }
 
     /**

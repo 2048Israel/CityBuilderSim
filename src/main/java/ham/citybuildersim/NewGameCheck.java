@@ -40,6 +40,12 @@ import java.util.Map;
  * world, a chosen one carried into the city and its World, kept by a save,
  * derived the same way every time for a save from before it, and left behind
  * by Start New Game; the founding screen's dice and typed seed.
+ *
+ * AND THE REAL EARTH (0.7.121), section 14: a founding's world may be the
+ * Earth round a spot - its kind, latitude, longitude and data on the record,
+ * carried into the city's World and land, kept by a save; a spot the founding
+ * card refuses is a problem the game will not found; Start New Game after an
+ * Earth city founds on the default generated world.
  */
 public class NewGameCheck {
 
@@ -86,6 +92,8 @@ public class NewGameCheck {
         m.put("world.mean", g.getWorldEconomy().getMeanInflation());
         // ...and the ground it stands on (0.7.56): section 13 founds a city on another world.
         m.put("founding.worldSeed", (double) g.getWorldSeed());
+        // ...and whether it is the real Earth, and where (0.7.121): section 14 founds one; 0 for none, so NaN never reads as moved.
+        m.put("founding.earth", g.getFounding().isOnEarth() ? (double) g.getFounding().getWorldKey().hashCode() : 0);
         /*
          * THE OTHER HALF OF THE ENDOWMENT (2026-09-21): the founders' dollars
          * in the vault. Founded in buildWorld() beside the cash, so every door
@@ -448,6 +456,9 @@ public class NewGameCheck {
 
         /* ============ 13. THE GROUND IT STANDS ON (0.7.56) ============ */
         theWorldsSeed(files);
+
+        /* ============ 14. THE REAL EARTH (0.7.121) ============ */
+        theRealEarth(files);
 
         cleanUp(root);
 
@@ -1102,6 +1113,85 @@ public class NewGameCheck {
                 Founding.parseWorldSeed("Arden") == null && Founding.parseWorldSeed("1.5") == null
                         && Founding.parseWorldSeed("") == null && Founding.parseWorldSeed(null) == null
                         && Founding.parseWorldSeed("99999999999999999999") == null);
+    }
+
+    /* =====================================================================
+       14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2
+       and 6)
+
+       A founding's world is its key, and the founding screen offers the real
+       Earth round a spot. What has to hold:
+         - the defaults and every preset stand on a generated world: no kind
+           but GENERATED, no spot (NaN), no data;
+         - onEarth() puts a founding on the Earth round a spot, its data the
+           game's (EarthData.EARTH_1), its seed and every other choice kept;
+         - a city founded on the Earth - Rotterdam's window of EarthCheck's
+           fixture - stands on that world: its World the key's, its land the
+           snap's site, its record the spot; a save keeps the four fields and
+           a load reads the same key;
+         - a spot in the sea is a problem() in the founding card's words, and
+           the game will not found it, the city on screen left as it was;
+         - Start New Game after an Earth city founds on the default generated
+           world, the snapshot sweeping the kind with the rest.
+       ===================================================================== */
+    static void theRealEarth(GameFiles files) throws Exception {
+        System.out.println("\n--- 14. the real Earth ---");
+        boolean generated = true;
+        for (Founding.Preset p : Founding.Preset.values()) {
+            if (p == Founding.Preset.CUSTOM) continue;
+            Founding f = Founding.named("Arden", p, WorldEconomy.DEFAULT_MEAN_INFLATION);
+            generated &= !f.isOnEarth() && f.getWorldKind() == World.Kind.GENERATED && Double.isNaN(f.getEarthLat())
+                    && Double.isNaN(f.getEarthLon()) && f.getEarthData() == null;
+        }
+        assertTrue("the defaults and every preset stand on a generated world: no spot, no data", generated
+                && !Founding.defaults().isOnEarth());
+        Founding there = Founding.custom("Arden", 62_500, 12_500, .02).withWorldSeed(77).onEarth(51.9, 4.5);
+        assertTrue("onEarth() puts a founding on the Earth round a spot, the game's data, its seed and choices kept",
+                there.isOnEarth() && there.getWorldKind() == World.Kind.EARTH && there.getEarthLat() == 51.9 && there.getEarthLon() == 4.5
+                        && EarthData.EARTH_1.equals(there.getEarthData()) && there.getWorldSeed() == 77
+                        && there.getCityName().equals("Arden") && there.getCash() == 62_500);
+
+        byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE);
+        assertTrue("fixture: EarthCheck's fixture is beside the classes", fixture != null);
+        if (fixture == null) return;
+        String id = EarthTerrain.use(EarthData.of(fixture));
+        double lat = 51.90625, lon = 4.48125;
+        World.Key key = World.Key.earth(Founding.DEFAULT_WORLD_SEED, lat, lon, id);
+        Founding rotterdam = Founding.named("Rotterdam", Founding.Preset.STANDARD, WorldEconomy.DEFAULT_MEAN_INFLATION).withWorldKey(key);
+        assertTrue("fixture: Rotterdam's spot on the fixture has no problem", rotterdam.problem() == null);
+        Game g = quietly(() -> { Game x = new Game(files, rotterdam); x.run(); return x; });
+        World w = World.of(key);
+        assertTrue("a city founded on the Earth stands on it: its World the key's, its land the snap's site",
+                g.getWorld() == w && w.isEarth() && g.getCityLand().key().equals(key)
+                        && g.getCityLand().siteX() == w.foundingX() && g.getCityLand().siteY() == w.foundingY());
+        assertTrue("...its record the spot and the data", g.getFounding().isOnEarth() && g.getFounding().getEarthLat() == lat
+                && g.getFounding().getEarthLon() == lon && id.equals(g.getFounding().getEarthData()));
+        quietly(() -> g.simulateMonths(2));
+        assertTrue("saved", quietly(() -> g.saveGame(9, "on Earth")).ok);
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(9))).getAsJsonObject();
+        assertTrue("the save carries the kind, the spot and the data", json.get("worldKind").getAsString().equals(World.Kind.EARTH.name())
+                && json.get("earthLat").getAsDouble() == lat && json.get("earthLon").getAsDouble() == lon
+                && json.get("earthData").getAsString().equals(id));
+        Game back = quietly(() -> { Game x = new Game(files); x.loadGameSave(9); return x; });
+        assertTrue("...and the city it loads stands on the same Earth", back.getLoadFailure() == null
+                && back.getFounding().getWorldKey().equals(key) && back.getWorld() == w);
+
+        World.Key sea = World.Key.earth(Founding.DEFAULT_WORLD_SEED, lat + 0.25, lon - 1.2, id);
+        Founding wet = rotterdam.withWorldKey(sea);
+        assertTrue("a spot in the sea is a problem, in the founding card's words", EarthSite.NO_SITE_WORDS.equals(wet.problem()));
+        int month = back.getMonth();
+        boolean refused = false;
+        try {
+            quietly(() -> back.newGame(wet));
+        } catch (IllegalArgumentException e) {
+            refused = true;
+        }
+        assertTrue("...which the game will not found, the city on screen left as it was", refused && back.getMonth() == month
+                && back.getWorld() == w);
+
+        quietly(() -> back.newGame());
+        assertTrue("Start New Game after an Earth city founds on the default generated world", !back.getFounding().isOnEarth()
+                && back.getWorldSeed() == Founding.DEFAULT_WORLD_SEED && !back.getWorld().isEarth() && isDefault(back));
     }
 
     static void close(String label, double actual, double expected, double tol) {

@@ -1829,6 +1829,45 @@ public class LongPlaytest {
     }
 
     /* =====================================================================
+       ON THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 8)
+
+       --earth <spot> (or -Dplaytest.earth=<spot>) founds the run's city on
+       the real Earth: the spot a place's name, found as the founding
+       screen's search finds it (EarthSite.search(), its first hit), or
+       "lat,lon" in degrees - on the game's data (EarthSite.gameData(), the
+       file at EarthData.DATA_FILE or -Dcbs.earth), the default world's seed
+       and everything else as the default run. Its trace is its own baseline
+       (pte07121, `--earth rotterdam`); unset, nothing here runs and the run
+       is the one it always was. Without the data the run stops, saying so.
+       ===================================================================== */
+
+    /** The spot under --earth or -Dplaytest.earth: a place's name or "lat,lon"; null for the default world. */
+    static String EARTH = System.getProperty("playtest.earth");
+
+    /** The founding on the real Earth round a spot (see the banner); throws, saying why, when the data or the spot is not to be had. */
+    static Founding earthFounding(String spot) {
+        EarthSite.Data data = EarthSite.gameData();
+        if (!data.here()) throw new IllegalStateException(data.words());
+        String t = spot.trim();
+        double lat, lon;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(-?[0-9.]+)\\s*,\\s*(-?[0-9.]+)").matcher(t);
+        if (m.matches()) {
+            lat = Double.parseDouble(m.group(1));
+            lon = Double.parseDouble(m.group(2));
+        } else {
+            List<EarthData.Place> hits = EarthSite.search(data.reader(), t, 1);
+            if (hits.isEmpty()) throw new IllegalStateException("no place called " + t + " in the Earth's data");
+            lat = hits.get(0).lat();
+            lon = hits.get(0).lon();
+            earthPlace = hits.get(0).name();
+        }
+        return founding().onEarth(lat, lon);
+    }
+
+    /** The place --earth named, for the report; null for a spot given as figures. */
+    static String earthPlace;
+
+    /* =====================================================================
        THE TRACE, BESIDE THE REPORT (0.7.10)
 
        -Dplaytest.trace=<prefix> writes eight files (two at 0.7.10, the rest
@@ -4722,6 +4761,7 @@ public class LongPlaytest {
     public static void main(String[] args) throws Exception {
 
         out = System.out;
+        for (int i = 0; i + 1 < args.length; i++) if (args[i].equals("--earth")) EARTH = args[i + 1];
 
         Path root = Files.createTempDirectory("playtest");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
@@ -4734,7 +4774,8 @@ public class LongPlaytest {
         });
 
         // On the flag's preset (0.7.10): Standard when unset. See THE FOUNDING, AS A CHOICE.
-        Game g = new Game(files, founding());
+        // ...and on the real Earth under --earth (0.7.121): ON THE REAL EARTH.
+        Game g = new Game(files, EARTH == null ? founding() : earthFounding(EARTH));
         List<String> log = new ArrayList<>();
         long started = System.currentTimeMillis();
         traceOpen();
@@ -5018,6 +5059,12 @@ public class LongPlaytest {
                 : "somebody who checks in every few decades - the default"));
         out.println("  LONG PLAYTEST - " + g.getMonth() + " months ("
                 + (g.getMonth() / 12) + " years) in " + seconds + "s");
+        if (g.getFounding().isOnEarth()) {
+            out.println("  ON THE REAL EARTH: " + (earthPlace == null ? "" : earthPlace + ", ")
+                    + EarthSite.latLonWords(g.getFounding().getEarthLat(), g.getFounding().getEarthLon()) + ", the site "
+                    + String.format("%.0f m", Math.hypot(g.getCityLand().siteX() + 0.5 - World.SIDE / 2.0, g.getCityLand().siteY() + 0.5 - World.SIDE / 2.0) * World.PLOT_M)
+                    + " from it; data " + EarthSite.shortId(g.getFounding().getEarthData()));
+        }
         out.println("=================================================================\n");
 
         for (String line : log) {

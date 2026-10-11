@@ -961,6 +961,10 @@ public class ReadPathCheck {
         // the founding screen asked what each preset would buy (until 0.7.20;
         // the read stays) - of the live city's catalogue, which it must not touch
         g.getFounding();
+        // ...and the world it stands on, the real Earth or not (0.7.121): the founding record's and the save's reads.
+        Founding founded = g.getFounding();
+        founded.getWorldKind(); founded.isOnEarth(); founded.getEarthLat(); founded.getEarthLon(); founded.getEarthData();
+        CityMap.worldId(founded.getWorldKey());
         g.getCityName();
         g.getFoundingCash();
         g.getFoundingReserveUsd();
@@ -1180,7 +1184,9 @@ public class ReadPathCheck {
         g.remainingFor(g.getBuildingManager().getTemplateByName("Platform Well"));
         g.getSectors().oil().getLiftedOnGround(); g.getSectors().oil().getLiftedAtSea();
         for (Resource r : Resource.values()) { lm.getSites(r, true); lm.getSites(r, false); }
-        g.getWorld().shelfTheta(); g.getWorld().depthAt(g.getCityLand().siteX(), g.getCityLand().siteY());
+        // (the elevation field's shelf a generated world's alone: an Earth world has none, and refuses it - 0.7.121)
+        if (!g.getWorld().isEarth()) g.getWorld().shelfTheta();
+        g.getWorld().depthAt(g.getCityLand().siteX(), g.getCityLand().siteY());
         g.getSectors().refining().estimatedMonthlyProfit(refineryT, g.getBusinessInvestment());
         // ...and the refinery's units and flow (0.7.80): the flow and what it is solved on, a unit's products, feed and estimate.
         g.getSectors().refining().flow(); g.getSectors().refining().flowValues();
@@ -1668,6 +1674,8 @@ public class ReadPathCheck {
         out.println("\n--- the build advice reads saved state: the same after a load ---");
         afterALoad(g, files);
 
+        onEarth(files);
+
         cleanUp(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -1757,6 +1765,68 @@ public class ReadPathCheck {
                 && java.util.Arrays.deepEquals(loaded.getLandManager().getDepletionByTypeState(), g.getLandManager().getDepletionByTypeState())
                 && java.util.Arrays.equals(loaded.getLandManager().getExtractedByType(Resource.IRON),
                         g.getLandManager().getExtractedByType(Resource.IRON)));
+    }
+
+    /**
+     * A CITY ON THE REAL EARTH (0.7.121, batch E4): reading its world - the
+     * founding card of its own spot, the hover's place and province, the
+     * sea's depth (the coast's distance, kept by plot), the founding's
+     * problem and record, the oil at sea, the map's world - changes nothing
+     * the snapshot sweeps, fifty times over. Rotterdam's window of
+     * EarthCheck's fixture, a town played a year.
+     */
+    static void onEarth(GameFiles files) throws Exception {
+        out.println("\n--- and a city on the real Earth: reading its world fifty times ---");
+        byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE);
+        assertTrue("fixture: EarthCheck's fixture is beside the classes", fixture != null);
+        if (fixture == null) return;
+        String id = EarthTerrain.use(EarthData.of(fixture));
+        World.Key key = World.Key.earth(Founding.DEFAULT_WORLD_SEED, 51.90625, 4.48125, id);
+        Game g = new Game(files);
+        System.setOut(quiet);
+        try {
+            g.newGame(Founding.defaults().withWorldKey(key));
+            g.setCashForTest(Founding.WEALTHY_CASH);
+            g.buildStack(template(g, "House"), 150, true);
+            g.buildStack(template(g, "Convenience Store"), 3, true);
+            g.buildStack(template(g, "Water Treatment Plant"), 1, true);
+            g.simulateMonths(12);
+            g.getCityMap();
+        } finally {
+            System.setOut(out);
+        }
+        assertTrue("fixture: a town on the Earth, played a year", g.getWorld().isEarth() && g.getMonth() == 13);
+        World w = g.getWorld();
+        long sx = g.getCityLand().siteX(), sy = g.getCityLand().siteY();
+        long seaX = sx - 2_000;
+        assertTrue("fixture: a plot of the North Sea west of it", w.terrainAt(seaX, sy) == World.SALT);
+        System.setOut(quiet);
+        Map<String, Double> before = NewGameCheck.snapshot(g);
+        bankPrint(g, before);
+        for (int i = 0; i < 50; i++) {
+            EarthSite.measure(key);
+            EarthSite.foundingProblem(key);
+            LandMap.earthWords(g.getCityLand(), sx, sy);
+            w.depthAt(sx, sy); w.depthAt(seaX, sy);
+            g.getFounding().problem();
+            g.getFounding().getEarthLat(); g.getFounding().getEarthData();
+            for (Resource r : Resource.values()) { g.getLandManager().getSites(r, true); g.getLandManager().getSites(r, false); }
+            g.getLandManager().seaFields(Resource.OIL);
+            OilView.of(g);
+            CityMap.worldId(key);
+            readEverything(g);
+        }
+        Map<String, Double> after = NewGameCheck.snapshot(g);
+        bankPrint(g, after);
+        System.setOut(out);
+        int movedCount = 0;
+        for (String k : before.keySet()) {
+            if (Math.abs(before.get(k) - after.get(k)) > 1e-9) {
+                movedCount++;
+                out.printf("   MOVED  %-34s %,.4f -> %,.4f%n", k, before.get(k), after.get(k));
+            }
+        }
+        assertTrue("reading an Earth city's world fifty times changed nothing (" + before.size() + " fields)", movedCount == 0);
     }
 
     static void cleanUp(Path root) {

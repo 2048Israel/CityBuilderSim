@@ -373,11 +373,13 @@ public class EarthTerrainCheck {
                 && e != World.of(SEED) && World.of(earth) == e && e.seed() == SEED);
         boolean refused = false;
         try {
-            e.depthAt(0, 0);
+            e.shelfTheta();
         } catch (UnsupportedOperationException x) {
             refused = true;
         }
-        check("...and with no heights, an Earth world refuses the sea's depth rather than make one up", refused);
+        // (Until 0.7.121 it refused the sea's depth too; E4 gives one by the coast's distance - EarthFoundingCheck 5 holds it.)
+        check("...and with no heights, an Earth world refuses the elevation field's shelf rather than make one up, and gives the"
+                + " sea's depth by the coast's distance instead (0.7.121)", refused && e.depthAt(0, 0) > 0);
     }
 
     /* =====================================================================

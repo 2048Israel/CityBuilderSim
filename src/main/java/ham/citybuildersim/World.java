@@ -57,12 +57,13 @@ import java.util.Map;
  * same world and the same code. An Earth world's ground is EarthTerrain's
  * (spec-earth 3): the cells pass replaces the sea pass, the founding is the
  * snap to dry ground near the spot, and it has no founding river and no
- * heights (depthAt(), shelfTheta() refuse); its fields are drawn on its
+ * heights (shelfTheta() refuses; since 0.7.121 its sea's depth is the
+ * distance from the coast's, depthAt()); its fields are drawn on its
  * cells' land, off its sea, and since 0.7.117 (batch E3) on its geology:
  * today's densities times each province's weight and Z (Geology; oil's
  * petroleum, and its offshore sea), each field's type leaning on the
- * class under it (Deposit.type()). Only harnesses build one until E4 lets
- * a city be founded on it.
+ * class under it (Deposit.type()). Since 0.7.121 (batch E4) the founding
+ * screen founds a city on it (EarthSite, Founding.onEarth()).
  */
 public final class World {
 
@@ -712,7 +713,7 @@ public final class World {
     /** The sea's level: the elevation SEA_SHARE of the world's samples lie under; on Earth (0.7.115), with no heights, EarthTerrain.SEA_LEVEL, the share the coast is drawn at. */
     public double seaTheta() { build(); return seaTheta; }
 
-    /** The continental shelf's edge in the elevation field (0.7.79): the level the shallowest SHELF_SHARE of the sea's samples lie at and above, so under seaTheta(). None on Earth. */
+    /** The continental shelf's edge in the elevation field (0.7.79): the level the shallowest SHELF_SHARE of the sea's samples lie at and above, so under seaTheta(). None on Earth, which has no elevation field: its shelf is a distance from the coast (EarthTerrain.SHELF_WIDTH_M, 0.7.121). */
     public double shelfTheta() { noHeightsOnEarth("the shelf's edge"); build(); return shelfTheta; }
 
     /**
@@ -722,11 +723,14 @@ public final class World {
      * is over 0), SHELF_BREAK_M at shelfTheta(), and linear in the
      * elevation from the sea's level to the shelf's edge and on at the same
      * slope below it. Off the world, what the elevation there says. Pure; an
-     * elevation's cost, about half a microsecond. Refused on Earth (0.7.115),
-     * which has no heights: its sea's depth is E4's to settle.
+     * elevation's cost, about half a microsecond. On Earth (0.7.121, batch
+     * E4), which has no heights, the same rule with the distance from the
+     * coast standing in for the elevation (EarthTerrain.depthAt(), ★E4-1):
+     * SHELF_BREAK_M at EarthTerrain.SHELF_WIDTH_M from the coast, the width
+     * within which SHELF_SHARE of the Earth's sea lies.
      */
     public double depthAt(long x, long y) {
-        noHeightsOnEarth("the sea's depth");
+        if (earth != null) return earth.depthAt(x, y);
         build();
         double e = elevation(x + 0.5, y + 0.5);
         return e < seaTheta ? SHELF_BREAK_M * (seaTheta - e) / (seaTheta - shelfTheta) : 0;

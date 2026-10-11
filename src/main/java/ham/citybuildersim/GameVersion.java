@@ -5386,8 +5386,58 @@ public final class GameVersion {
      *     Iron & Steel's planner; people at the end 577,610 (566,444), posts
      *     321,670 (345,198), unemployment 15.6% (9.3%), the price level 906
      *     (1,456).
+     *
+     * 0.7.121 (2026-10-11) - FOUNDING A CITY ON THE REAL EARTH. Batch E4 (the
+     * project's spec-earth.md 2, 6 and 8; Jerus's answers of 2026-10-10, "all
+     * rec"; runs/brief-batchE4.md, runs/fixE4-notes.md). SAVE FORMAT 38, THE
+     * FLOOR STAYS AT 37: a save from 0.7.120 loads as it did (below).
+     *   - THE FOUNDING SCREEN: THE WORLD is Earth | Generated, Earth chosen
+     *     when the Earth's data is here (EarthSite.gameData(): EarthData.
+     *     DATA_FILE, data/earth-1.bin beside the game, or -Dcbs.earth, its
+     *     identity EARTH_1), and where it is not, greyed, with a line saying
+     *     where the file goes; the generated world as it was. On Earth the
+     *     panel is two columns, the city's choices and the world's: a search
+     *     over the data's place names (names for finding a spot, no borders),
+     *     Random spot (the seed picks among the places that pass the site
+     *     test), the globe - orthographic from the 4' layers when wide, the
+     *     city's own far view from 4 km a pixel down to 150 m - and the card.
+     *   - THE CARD (EarthSite, new): the site the snap finds and how far from
+     *     the spot, where it is from the nearest place, the ground within 5 km
+     *     counted on the world's plots (dry, rivers and lakes, sea) and the
+     *     nearest fresh water and sea, the province and its deposit
+     *     multipliers (E3's), the nearest iron field (no field promised);
+     *     refused in the sea (no dry ground within the snap) or on ice (land
+     *     cover's ice bit), warned of a desert and of no fresh water within
+     *     5 km. Founding.problem() asks the same of an Earth founding.
+     *   - FOUNDING: onEarth(lat, lon) and the kind, spot and data on the
+     *     record (getWorldKind(), isOnEarth(), getEarthLat/Lon/Data()).
+     *   - THE SAVE: worldKind, earthLat, earthLon and earthData on an Earth
+     *     city and on no other; a load refuses one whose data is not this
+     *     build's or not here, or whose spot is missing, in words saying which
+     *     (DataSave.earthProblem(), EarthSite.loadProblem()); the map's
+     *     sidecar names an Earth world's whole key (CityMap.worldId()), a
+     *     generated world's seed as before.
+     *   - THE SEA'S DEPTH ON EARTH (★E4-1): the generated world's rule with
+     *     the distance from the coast for the elevation earth-1 does not have
+     *     - World.SHELF_BREAK_M at EarthTerrain.SHELF_WIDTH_M (54,167 m, the
+     *     distance within which SHELF_SHARE of the Earth's sea lies, measured
+     *     on earth-1's 15" coast), linear and on at the same slope; the coast
+     *     the nearest 15" cell under the coast's level, by a search of the
+     *     1-degree tiles. An Earth city's oil at sea counts, lists and takes a
+     *     platform within about 58 km of a coast; it threw until now.
+     *   - THE DATA: data/ is ignored by git; the game runs without the file.
+     *   - Harnesses: EarthFoundingCheck (new: the data or why not, the card
+     *     against the plots, refusals and warnings, search and Random spot,
+     *     the depth against a brute force and the width measured again, an
+     *     Earth city founded, played and drilling at sea); SaveFileCheck (an
+     *     Earth city saved and reloaded the same bytes, a format-37 save on
+     *     its generated world byte for byte, the refusals); NewGameCheck 14;
+     *     ReadPathCheck (an Earth city's world read fifty times).
+     *   - LongPlaytest --earth <place or lat,lon> founds the run's city on the
+     *     Earth; its trace is its own baseline (pte07121, --earth rotterdam).
+     *     The default playtest is pt07116's byte for byte.
      */
-    public static final String VERSION = "0.7.120";
+    public static final String VERSION = "0.7.121";
 
     /**
      * The save shape.
@@ -6023,8 +6073,25 @@ public final class GameVersion {
      *     IronSplit (runs/spec-materials.md 3) is not written: until the game
      *     is published old saves need not load (Jerus, 2026-10-10). The build
      *     that saved such a city, 0.7.115 or older, still opens it.
+     *
+     * 38 - A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6):
+     *     worldKind ("EARTH"), earthLat and earthLon (the spot the projection
+     *     is centred on) and earthData (the data's identity, "earth-1:<hash>")
+     *     on a city founded on the Earth, and on no other - a generated city
+     *     writes none of them, so its save is format 37's but for this number.
+     *     Here because a format-37 build handed an Earth city would load it
+     *     WRONGLY: it knows only the generated world, so it would put the city
+     *     on its seed's generated ground - another coast, other fields under
+     *     its holdings - where the newer-build refusal stops it instead.
+     *
+     *     THE OTHER DIRECTION LOADS RIGHTLY, SO THE FLOOR STAYS AT 37 (★E4-3):
+     *     a format-37 save has no worldKind, and no worldKind is the
+     *     generated world, which every city before 0.7.121 stands on - read
+     *     byte for byte as 0.7.120 read it (SaveFileCheck). An Earth save
+     *     whose data is not this build's, or not here, is refused with words
+     *     saying which (DataSave.earthProblem(), EarthSite.loadProblem()).
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 37;
+    public static final int SAVE_FORMAT = 38;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -6034,7 +6101,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 37 since 0.7.116 (batch I3, SCRAP SPLIT FROM ORE above): a save of
+     * 37 since 0.7.116 (batch I3, SCRAP SPLIT FROM ORE above), and still at
+     * format 38 (0.7.121, A CITY ON THE REAL EARTH: a format-37 save is a
+     * generated city and loads rightly): a save of
      * format 36 or older holds the mills' scrap and the mines' ore as one
      * IRON and would load wrongly, so it is refused - the first time the
      * floor was raised by the rule. 21 until then, the sector template's

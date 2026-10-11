@@ -711,9 +711,10 @@ public class MaterialsCheck {
 
     static void olderSave() throws Exception {
         out.println("\n--- 10. a save from before the split is refused, in P7's words and its file untouched; this build's loads ---");
-        report("the floor is this build's own format (GameVersion): a save one format older - IRON holding scrap and ore as one - is"
-                        + " no longer readable", GameVersion.OLDEST_LOADABLE_FORMAT == GameVersion.SAVE_FORMAT
-                        && GameVersion.isNoLongerReadable(GameVersion.SAVE_FORMAT - 1) && !GameVersion.isNoLongerReadable(GameVersion.SAVE_FORMAT),
+        // (Since 0.7.121 the floor is the split's format, no longer this build's: E4's format 38 left it, a format-37 save loading rightly.)
+        report("the floor is the split's format (GameVersion): a save one format older - IRON holding scrap and ore as one - is"
+                        + " no longer readable", GameVersion.OLDEST_LOADABLE_FORMAT <= GameVersion.SAVE_FORMAT
+                        && GameVersion.isNoLongerReadable(GameVersion.OLDEST_LOADABLE_FORMAT - 1) && !GameVersion.isNoLongerReadable(GameVersion.OLDEST_LOADABLE_FORMAT),
                 String.format("formats %d to %d", GameVersion.OLDEST_LOADABLE_FORMAT, GameVersion.SAVE_FORMAT));
         GameFiles files = GameFiles.scratch("materialscheck-split");
         Game g = town(files);
@@ -733,7 +734,7 @@ public class MaterialsCheck {
 
         GameFiles older = GameFiles.scratch("materialscheck-split-36");
         Files.createDirectories(older.saveFile(10).getParent());
-        json.addProperty("saveFormat", GameVersion.SAVE_FORMAT - 1);
+        json.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT - 1);
         json.addProperty("gameVersion", "0.7.115");
         Files.writeString(older.saveFile(10), new com.google.gson.Gson().toJson(json));
         byte[] before = Files.readAllBytes(older.saveFile(10));

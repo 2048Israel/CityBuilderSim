@@ -82,9 +82,12 @@ import java.util.Map;
  * asked for. Every value is a pure function of the key: the same key draws
  * the same ground on every machine (StrictMath, World's hashes).
  *
- * E2 builds it unreachable from the founding screen (E4 offers Earth): a
- * generated world never reaches it. EarthTerrainCheck holds it on the three
- * windows of EarthCheck's fixture and, when it is named, on the full file.
+ * E2 built it unreachable from the founding screen; since 0.7.121 (batch E4)
+ * the screen offers Earth, the snap is the founding card's first question
+ * (siteNear()), and the sea has a depth (THE SEA'S DEPTH): a generated world
+ * never reaches it. EarthTerrainCheck holds it on the three windows of
+ * EarthCheck's fixture and, when it is named, on the full file;
+ * EarthFoundingCheck the depth and the card.
  */
 public final class EarthTerrain {
 
@@ -1275,6 +1278,225 @@ public final class EarthTerrain {
         }
     }
 
+    /* =====================================================================
+       THE SEA'S DEPTH (0.7.121, batch E4; spec-earth 6's E4, E2's star 7)
+
+       The generated world's sea has a depth from its elevation field
+       (World.depthAt(), 0.7.79): its shallowest SHELF_SHARE is the shelf,
+       SHELF_BREAK_M deep at its edge, the depth linear in the elevation from
+       the sea's level and on at the same slope. earth-1 ships no heights
+       (Jerus's eighth answer: no elevation), and E3 lists oil fields on the
+       Earth's shelf, basin and rift seas, so an Earth city's first platform -
+       and before it the land wells' count of the dry sites, which asks every
+       field's depth - threw.
+
+       THE SAME RULE, WITH THE COAST'S DISTANCE FOR THE ELEVATION IT LACKS
+       (★E4-1): the sea nearest the coast is the shallowest. A sea plot's
+       depth is SHELF_BREAK_M x its distance from the coast over SHELF_WIDTH_M,
+       the distance within which SHELF_SHARE of the Earth's sea lies - the
+       generated world's shelf, measured the generated world's way (a share
+       of the sea's samples, here SHELF_SAMPLES points even over the sphere)
+       on earth-1's own coast; linear from the coast and on at the same slope.
+       No figure is added that the generated world does not already use: the
+       shelf's share of the sea and its edge's depth (Harris et al. 2014, the
+       mean shelf break), and the rest is measured on the data.
+
+       THE COAST is the data's: the centre of the nearest 15" cell whose sea
+       share is under SEA_LEVEL - the half-contour the plots' coast is drawn
+       on, a plot or two off it (THE RULE above); measured on the plots
+       instead, a depth would move by under a metre at this slope. The
+       distance is the great circle's, the world's own within 0.3% at
+       1,000 km from the spot (EarthProj). A sea plot is at least a plot from
+       the coast, so its depth is over nothing, as World.depthAt() promises
+       of every SALT plot; past the planet's rim, the farthest anything lies.
+       ===================================================================== */
+
+    /**
+     * The distance within which SHELF_SHARE of the Earth's sea lies from the
+     * coast, metres: 54,167, measured on earth-1 (measureShelfWidthM(): 46,434
+     * of SHELF_SAMPLES points the sea's, 54,167.3 m; EarthFoundingCheck holds
+     * it to the file) - where a sea plot is World.SHELF_BREAK_M deep, so a
+     * platform (sectors.Oil.PLATFORM_MAX_DEPTH_M) stands within 58 km of a
+     * coast (★E4-1).
+     */
+    public static final double SHELF_WIDTH_M = 54_167;
+
+    /** Points the shelf's width is measured over: 2^16, evenly on the sphere by a fixed hash (SHELF_SALT), of which the sea's (about 71%) are measured - the generated world's measure is a share of its sea's samples too (World.SEA_SAMPLES a cell). */
+    public static final int SHELF_SAMPLES = 1 << 16;
+
+    /** How far a sample's coast is looked for while the width is measured, metres: 250 km, past which a sample is beyond the shelf by far - over four times its width (the measure is a low quantile; depthAt() itself looks as far as it must). */
+    public static final double SHELF_MEASURE_REACH_M = 250_000;
+
+    /** The stream the shelf's sample points are drawn from. */
+    private static final long SHELF_SALT = 0x5E1F5A3DL;
+
+    /** The sea layer's levels under which a 15" cell is the coast's land side: the share under SEA_LEVEL, 0 to 7 of 15. */
+    static final int COAST_BELOW = (int) Math.ceil(SEA_LEVEL * EarthData.SHARE_LEVELS);
+
+    /** Depths kept, by plot: 4,096 (a field's depth is asked again every time the city's ground changes). */
+    static final int DEPTHS_KEPT = 4096;
+
+    private final Map<Long, Double> depths = new LinkedHashMap<>(256, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<Long, Double> eldest) {
+            return size() > DEPTHS_KEPT;
+        }
+    };
+
+    /**
+     * The sea's depth at a plot's centre, metres below its level (★E4-1): 0
+     * where the plot is not SALT, else World.SHELF_BREAK_M x its distance
+     * from the coast (coastDistanceM(), at least a plot) over SHELF_WIDTH_M.
+     * World.depthAt() on Earth. Kept by plot (DEPTHS_KEPT).
+     */
+    public double depthAt(long x, long y) {
+        if (terrainAt(x, y) != World.SALT) return 0;
+        long k = (x << 32) ^ (y & 0xffffffffL);
+        synchronized (depths) {
+            Double d = depths.get(k);
+            if (d != null) return d;
+        }
+        double[] ll = new double[2];
+        double m = proj.latLonOfPlot(x + 0.5, y + 0.5, ll)
+                ? Math.max(World.PLOT_M, coastDistanceM(data, ll[0], ll[1], Double.POSITIVE_INFINITY))
+                : StrictMath.PI * EarthProj.RADIUS_M;
+        double depth = World.SHELF_BREAK_M * m / SHELF_WIDTH_M;
+        synchronized (depths) { depths.put(k, depth); }
+        return depth;
+    }
+
+    /** ...a point's distance from the coast, metres (see the banner): the great circle to the centre of the nearest 15" cell whose sea share is under SEA_LEVEL. */
+    public double coastDistanceM(double lat, double lon) {
+        return coastDistanceM(data, lat, lon, Double.POSITIVE_INFINITY);
+    }
+
+    /**
+     * The great-circle distance from (lat, lon) to the centre of the nearest
+     * 15" cell of the data whose sea share is under SEA_LEVEL (COAST_BELOW),
+     * metres; infinity when there is none within reachM. Best first over the
+     * 1-degree tiles, nearest the point by a bound that never overstates
+     * (the angle to the tile's centre less its corners' farthest), a tile of
+     * one value read without inflating it, until no tile left can hold a
+     * nearer cell.
+     */
+    static double coastDistanceM(EarthData data, double lat, double lon, double reachM) {
+        EarthData.Layer sea = data.layer("sea");
+        int cpd = sea.cellsPerDegree;
+        double[] p = new double[3];
+        unitVector(lat, lon, p);
+        double best = Math.min(StrictMath.PI, reachM / EarthProj.RADIUS_M);   // the angle to beat, radians: at most half a turn
+        boolean[] seen = new boolean[EarthData.TILES];
+        java.util.PriorityQueue<double[]> queue = new java.util.PriorityQueue<>((a, b) -> Double.compare(a[0], b[0]));
+        int first = EarthData.tileAt(lat, lon);
+        seen[first] = true;
+        queue.add(new double[] { 0, first });
+        double[] c = new double[3], cosLon = new double[cpd], sinLon = new double[cpd];
+        while (!queue.isEmpty()) {
+            double[] q = queue.poll();
+            if (q[0] >= best) break;
+            int t = (int) q[1];
+            int lat0 = EarthData.tileLat0(t), lon0 = EarthData.tileLon0(t);
+            int e = sea.entries[t];
+            if (e > 0 || -e < COAST_BELOW) {
+                byte[] g = e > 0 ? data.raw("sea", t) : null;
+                for (int j = 0; j < cpd; j++) {
+                    double l = StrictMath.toRadians(lon0 + (j + 0.5) / cpd);
+                    cosLon[j] = StrictMath.cos(l);
+                    sinLon[j] = StrictMath.sin(l);
+                }
+                double most = StrictMath.cos(best);
+                for (int r = 0; r < cpd; r++) {
+                    double f = StrictMath.toRadians(lat0 + 1 - (r + 0.5) / cpd);
+                    double cf = StrictMath.cos(f), sf = StrictMath.sin(f);
+                    for (int j = 0; j < cpd; j++) {
+                        if (g != null && (g[r * cpd + j] & 0xFF) >= COAST_BELOW) continue;
+                        double dot = cf * (cosLon[j] * p[0] + sinLon[j] * p[1]) + sf * p[2];
+                        if (dot > most) most = dot;
+                    }
+                }
+                best = Math.min(best, StrictMath.acos(Math.min(1, most)));
+            }
+            // The tiles beside it - every one along a polar row, which all meet at the pole.
+            int row = (lat0 + 90), col = lon0 + 180;
+            for (int dr = -1; dr <= 1; dr++) {
+                int rr = row + dr;
+                if (rr < 0 || rr >= 180) continue;
+                if ((rr == 0 || rr == 179) && dr != 0) {
+                    for (int cc = 0; cc < 360; cc++) offer(queue, seen, rr * 360 + cc, p, c, best);
+                    continue;
+                }
+                for (int dc = -1; dc <= 1; dc++) {
+                    if (dr == 0 && dc == 0) continue;
+                    offer(queue, seen, rr * 360 + Math.floorMod(col + dc, 360), p, c, best);
+                }
+            }
+        }
+        return Double.isInfinite(reachM) || best < reachM / EarthProj.RADIUS_M ? best * EarthProj.RADIUS_M : Double.POSITIVE_INFINITY;
+    }
+
+    /** A tile into the queue once, by the least angle any point of it can lie from p: the angle to its centre less the farthest of its corners from that centre. */
+    private static void offer(java.util.PriorityQueue<double[]> queue, boolean[] seen, int t, double[] p, double[] c, double best) {
+        if (seen[t]) return;
+        seen[t] = true;
+        int lat0 = EarthData.tileLat0(t), lon0 = EarthData.tileLon0(t);
+        unitVector(lat0 + 0.5, lon0 + 0.5, c);
+        double far = 0;
+        double[] k = new double[3];
+        for (int i = 0; i < 4; i++) {
+            unitVector(lat0 + (i >> 1), lon0 + (i & 1), k);
+            far = Math.max(far, angle(c, k));
+        }
+        double bound = Math.max(0, angle(p, c) - far - 1e-12);
+        if (bound < best) queue.add(new double[] { bound, t });
+    }
+
+    /** A point's unit vector on the sphere. */
+    private static void unitVector(double lat, double lon, double[] v) {
+        double f = StrictMath.toRadians(lat), l = StrictMath.toRadians(lon), cf = StrictMath.cos(f);
+        v[0] = cf * StrictMath.cos(l);
+        v[1] = cf * StrictMath.sin(l);
+        v[2] = StrictMath.sin(f);
+    }
+
+    /** The angle between two unit vectors, radians. */
+    private static double angle(double[] a, double[] b) {
+        return StrictMath.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])));
+    }
+
+    /**
+     * The shelf's width on a reader's data (★E4-1), metres: SHELF_SAMPLES
+     * points evenly on the sphere (a fixed hash: latitude by the arcsine of
+     * an even draw, longitude even), the sea's among them - its 15" cell's
+     * share at SEA_LEVEL or over - each its coastDistanceM() (out to
+     * SHELF_MEASURE_REACH_M), sorted; the distance SHELF_SHARE of them lie
+     * within. What SHELF_WIDTH_M is, to the metre it is rounded to.
+     */
+    public static double measureShelfWidthM(EarthData data) {
+        double[] d = new double[SHELF_SAMPLES];
+        int n = 0;
+        for (int i = 0; i < SHELF_SAMPLES; i++) {
+            long h = World.mix(SHELF_SALT + i * 0x9E3779B97F4A7C15L);
+            double lat = StrictMath.toDegrees(StrictMath.asin(2 * World.unit(h) - 1));
+            double lon = 360 * World.unit(World.mix(h)) - 180;
+            if (data.at("sea", lat, lon) < COAST_BELOW) continue;
+            d[n++] = coastDistanceM(data, lat, lon, SHELF_MEASURE_REACH_M);
+        }
+        double[] sea = Arrays.copyOf(d, n);
+        Arrays.sort(sea);
+        return sea[(int) (World.SHELF_SHARE * n)];
+    }
+
+    /** How many of the shelf's samples are the sea's, on a reader's data. */
+    public static int shelfSeaSamples(EarthData data) {
+        int n = 0;
+        for (int i = 0; i < SHELF_SAMPLES; i++) {
+            long h = World.mix(SHELF_SALT + i * 0x9E3779B97F4A7C15L);
+            double lat = StrictMath.toDegrees(StrictMath.asin(2 * World.unit(h) - 1));
+            double lon = 360 * World.unit(World.mix(h)) - 180;
+            if (data.at("sea", lat, lon) >= COAST_BELOW) n++;
+        }
+        return n;
+    }
+
     /**
      * Each world cell's land and forest, as shares of its area (spec-earth
      * 4): CELL_SAMPLES x CELL_SAMPLES points a cell, each read from the 4'
@@ -1410,7 +1632,26 @@ public final class EarthTerrain {
      * ground as drawn: not sea and not fresh water, rivers included.
      */
     private void snap() {
+        long[] s = siteNear();
+        siteTests = (int) s[2];
+        if (s[0] < 0) throw new IllegalStateException("no dry ground within " + SNAP_PLOTS + " plots of (" + key.lat() + ", " + key.lon() + ") to found a city on");
+        siteX = s[0];
+        siteY = s[1];
+    }
+
+    private volatile long[] site;
+
+    /**
+     * The snap's answer without the cells pass (0.7.121, batch E4: the
+     * founding card's first question, and Random spot's test): {x, y, plots
+     * tested}, x and y -1 when no plot within SNAP_PLOTS passes - a spot in
+     * the sea, or on an island too small to found on. Worked out once.
+     */
+    public long[] siteNear() {
+        long[] s = site;
+        if (s != null) return s.clone();
         long cx = World.SIDE / 2, cy = World.SIDE / 2;
+        int tests = 0;
         List<long[]> ring = new ArrayList<>();
         for (int k = 0; k <= SNAP_PLOTS; k++) {
             ring.clear();
@@ -1423,15 +1664,15 @@ public final class EarthTerrain {
             }
             ring.sort((p, o) -> p[0] != o[0] ? Long.compare(p[0], o[0]) : p[1] != o[1] ? Long.compare(p[1], o[1]) : Long.compare(p[2], o[2]));
             for (long[] p : ring) {
-                siteTests++;
+                tests++;
                 if (siteDry(cx + p[2], cy + p[1])) {
-                    siteX = cx + p[2];
-                    siteY = cy + p[1];
-                    return;
+                    site = new long[] { cx + p[2], cy + p[1], tests };
+                    return site.clone();
                 }
             }
         }
-        throw new IllegalStateException("no dry ground within " + SNAP_PLOTS + " plots of (" + key.lat() + ", " + key.lon() + ") to found a city on");
+        site = new long[] { -1, -1, tests };
+        return site.clone();
     }
 
     /** The founding's test 1 at plot (px, py): it and eight points World.SITE_DRY_PLOTS round its centre are dry ground. */

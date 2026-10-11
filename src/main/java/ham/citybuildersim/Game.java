@@ -14726,6 +14726,22 @@ public class Game {
                 loadFailure = "This save is from a newer version of the game.";
                 return;
             }
+            /*
+             * ...AND A CITY ON THE REAL EARTH WHOSE EARTH IS NOT HERE (0.7.121,
+             * batch E4; spec-earth 6: the data is frozen per version, and a
+             * save names its own). Drawn on other data, its coasts and rivers
+             * would move under it; with the file missing, there is no ground
+             * to draw. Refused the same way, its file untouched, in words that
+             * say which (EarthSite.loadProblem()).
+             */
+            String earth = loaded.earthProblem();
+            if (earth != null) {
+                loadFailure = earth;
+                System.out.println(GameFiles.slotLabel(slot) + " not loaded (" + loaded.getWorldKind() + ", data "
+                        + EarthSite.shortId(loaded.getEarthData()) + "; this build reads " + EarthSite.shortId(EarthData.EARTH_1)
+                        + "), its file left as it was. " + loadFailure);
+                return;
+            }
             loadFailure = null;
 
             /*
