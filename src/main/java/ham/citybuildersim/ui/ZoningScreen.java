@@ -573,6 +573,9 @@ final class ZoningScreen {
     double sizeNow(String s)      { Zoning.Zone z = ui.game.getZoning().zone(s); return z == null ? 0 : z.size(); }
     double priceNow(String s)     { Zoning.Zone z = ui.game.getZoning().zone(s); return z == null ? Zoning.MAX_PRICE_SHARE : z.priceShare(); }
 
+    /** A zone's size as the city has it, said in a unit: what its size dial reads as current in the unit staged - and what an unstaged size is, the unit staged. */
+    double sizeAs(String s, Zoning.Size kind) { return convert(sizeNow(s), kindNow(s), kind); }
+
     /** A key's value as staged, or a value of the caller's for one key (a thumb while it is dragged). */
     double value(String k, double current, String key, double v) {
         return k.equals(key) ? v : policy.staged(k, current);
@@ -620,7 +623,7 @@ final class ZoningScreen {
                 continue;
             }
             Zoning.Size kind = kindOf(value(unitKey(s), unitOf(kindNow(s)), key, v));
-            double size = value(sizeKey(s), sizeNow(s), key, v);
+            double size = value(sizeKey(s), sizeAs(s, kind), key, v);
             double price = value(priceKey(s), priceNow(s), key, v);
             if (z.zone(s) == null && !(size > 0)) continue;   // nothing to zone yet
             z = ZoningView.with(z, s, kind, size, price);
@@ -638,9 +641,10 @@ final class ZoningScreen {
     /** A zone as staged, through its door: Game.setZone() with its three as staged - nothing for a new zone of no size, nothing when it is to come off. */
     void applyZone(String s) {
         if (policy.isStaged(offKey(s))) return;
-        double size = policy.staged(sizeKey(s), sizeNow(s));
+        Zoning.Size kind = kindOf(policy.staged(unitKey(s), unitOf(kindNow(s))));
+        double size = policy.staged(sizeKey(s), sizeAs(s, kind));
         if (ui.game.getZoning().zone(s) == null && !(size > 0)) return;
-        ui.game.setZone(s, kindOf(policy.staged(unitKey(s), unitOf(kindNow(s)))), size, policy.staged(priceKey(s), priceNow(s)));
+        ui.game.setZone(s, kind, size, policy.staged(priceKey(s), priceNow(s)));
     }
 
     /** The law as staged, through its door. */
@@ -761,7 +765,7 @@ final class ZoningScreen {
     /** HOW MUCH GROUND: the unit's two chips over the dial, staged before → after. */
     VBox sizeCard(String s, String name, Sector sector) {
         Zoning.Size kind = kindOf(policy.staged(unitKey(s), unitOf(kindNow(s))));
-        double current = convert(sizeNow(s), kindNow(s), kind);
+        double current = sizeAs(s, kind);
         boolean share = kind == Zoning.Size.SHARE;
         double step = share ? SHARE_STEP : km2Step();
         double top = share ? Zoning.MAX_SIZE_SHARE : km2Top();
@@ -783,16 +787,21 @@ final class ZoningScreen {
                 520, false);
     }
 
-    /** One unit's chip: lit when it is the unit; a click stages the other, with the size said in it. */
+    /**
+     * One unit's chip: lit when it is the unit; a click stages the other -
+     * the zone's own ground said in it, or a staged size carried over,
+     * snapped to the new unit's step (an unstaged size is the city's, in
+     * whichever unit is staged: sizeAs()).
+     */
     Label unitChip(String s, String words, Zoning.Size to, Zoning.Size kind) {
         Label c = stepChip(words, () -> {
             if (to == kind) return;
-            double size = convert(policy.staged(sizeKey(s), convert(sizeNow(s), kindNow(s), kind)), kind, to);
-            double step = to == Zoning.Size.SHARE ? SHARE_STEP : km2Step();
-            double snapped = Math.max(0, snapped(size, 0, step));
             if (to == kindNow(s)) policy.unstage(unitKey(s)); else policy.stage(unitKey(s), unitOf(to));
-            if (to == kindNow(s) && !moved(snapped, sizeNow(s), step)) policy.unstage(sizeKey(s));
-            else policy.stage(sizeKey(s), snapped);
+            if (policy.isStaged(sizeKey(s))) {
+                double step = to == Zoning.Size.SHARE ? SHARE_STEP : km2Step();
+                double size = Math.max(0, snapped(convert(policy.staged(sizeKey(s), 0), kind, to), 0, step));
+                if (moved(size, sizeAs(s, to), step)) policy.stage(sizeKey(s), size); else policy.unstage(sizeKey(s));
+            }
             policy.showPolicyMenu();
         }, to != kind);
         if (to == kind) c.setStyle(c.getStyle() + " -fx-border-color: " + Palette.ACCENT + "; -fx-border-width: 0 0 2 0;");
