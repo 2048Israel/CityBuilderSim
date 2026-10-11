@@ -446,14 +446,7 @@ public final class EarthTerrain {
      * sums at each plot - evaluated on these plots and the ring about them
      * alone, so a line costs a part of its tile (lineTerrain()).
      */
-    static final java.util.concurrent.atomic.AtomicLong PROBE_TILES = new java.util.concurrent.atomic.AtomicLong(), PROBE_TILE_NS = new java.util.concurrent.atomic.AtomicLong(), PROBE_DISTRICTS = new java.util.concurrent.atomic.AtomicLong(), PROBE_DISTRICT_NS = new java.util.concurrent.atomic.AtomicLong(), PROBE_KEPT_MISS = new java.util.concurrent.atomic.AtomicLong();
-
     private void draw(long tx, long ty, int ox, int oy, int w, int h, byte[] out) {
-        long probe0 = System.nanoTime();
-        try { draw0(tx, ty, ox, oy, w, h, out); } finally { PROBE_TILES.incrementAndGet(); PROBE_TILE_NS.addAndGet(System.nanoTime() - probe0); }
-    }
-
-    private void draw0(long tx, long ty, int ox, int oy, int w, int h, byte[] out) {
         int n = World.TILE;
         if (tx < 0 || ty < 0 || tx >= World.SIDE / n || ty >= World.SIDE / n) {
             Arrays.fill(out, 0, w * h, World.SALT);
@@ -630,7 +623,6 @@ public final class EarthTerrain {
             if (t != null) return t;
         }
         byte[] t = new byte[World.TILE * World.TILE];
-        PROBE_KEPT_MISS.incrementAndGet();
         tileTerrain(tx, ty, t);
         synchronized (tiles) { tiles.put(k, t); }
         return t;
@@ -825,9 +817,7 @@ public final class EarthTerrain {
             Water w = districts.get(key);
             if (w != null) return w;
         }
-        long probe0 = System.nanoTime();
         Water w = districtWater(dx, dy);
-        PROBE_DISTRICTS.incrementAndGet(); PROBE_DISTRICT_NS.addAndGet(System.nanoTime() - probe0);
         synchronized (districts) { districts.put(key, w); }
         return w;
     }
@@ -906,7 +896,7 @@ public final class EarthTerrain {
      * share times land cover's forest level; a point off the planet holds
      * neither. Each cell's points from its four corners, blended
      * (EarthProj.blend()). What the fields are drawn on (World's deposits)
-     * and the far views ask; 0.37 to 0.45 s (spec-earth 5).
+     * and the far views ask; 0.39 to 0.42 s (EarthTerrainCheck 9; the study 0.37 to 0.45).
      */
     public void cellsPass() {
         long t0 = System.nanoTime();
