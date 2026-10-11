@@ -5706,7 +5706,12 @@ public final class GameVersion {
      *     months the dead waited and the months the rule fired.
      *   - The playtests move (re-baselined; fixT1B-notes.md 4): the rule
      *     fires in 8 months of the default run (m828-3,645) and 7 of the
-     *     Earth one (m715-3,779), and the runs part at m830 and m717.
+     *     Earth one (m715-3,779), and the runs part at m830 and m717 - at
+     *     m830 a crematorium's share went to the cemetery beside it, which
+     *     opened a month sooner. Every month audited, every reload matched.
+     *     The ensemble (07129 against 07124) scores as before, 21 of 25 and
+     *     the same four red; the AUTO2 cities it moves part at m713-838, when
+     *     the founding churchyard fills, and end 7 higher and 5 lower.
      */
     public static final String VERSION = "0.7.129";
 
