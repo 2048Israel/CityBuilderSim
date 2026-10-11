@@ -13,6 +13,7 @@ where it has been built.
 
 | study | date | what | batches |
 |---|---|---|---|
+| [spec-freight-and-infrastructure.md](spec-freight-and-infrastructure.md) | 2026-10-11 | Freight as one sector with three divisions (trucks for the city leg, the railway, ports run as a landlord port), the Bulk Berth, Build › Infrastructure, and the map's network: gateways, the main line and yards, rail drawn as rail, trains, access roads, junctions by rule; "today" renders, their harness and the mockups in `freight/` | FR0 to FR6 (queued, FR5 and FR6 his call) |
 | [spec-globe.md](spec-globe.md) | 2026-10-11 | The Earth's map as a globe, ice and desert on the ground, panning with W, A, S and D, and a minimap with district pictures; prototypes in `globe/` and `minimap/` | E7 to E9, MM1 and MM2 (planned) |
 | [research-1900.md](research-1900.md) | 2026-10-11 | Research from a 1900 start: what a 1900 city was and how it worked, the 1900 economy, the world to 1950, the Policy levers on Canada's dates, and a 1900-1950 catalogue of 48; the model's 1900 files in `research-model/` | R0, R0b, R0c, then R1 to R5 (planned, after every other batch) |
 | [research-design.md](research-design.md) | 2026-10-10 | Research: grants buy posts, prizes draw labs, recipes and equipment, the world on history's dates, a 1951-1995 catalogue of 40; the model in `research-model/`, five mockups in `mockups-research/` | R1 to R5 (planned; its order replaced by research-1900's) |
