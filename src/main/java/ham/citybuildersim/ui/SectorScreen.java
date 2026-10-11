@@ -3065,9 +3065,12 @@ final class SectorScreen {
         page.getChildren().add(everyGate(sector));
     }
 
-    /** EVERY BUILDING AT EVERY GATE's (i). */
+    /** EVERY BUILDING AT EVERY GATE's (i): since 0.7.122 the last gate the interest on its whole cost, consider()'s brake (batch C1). */
     static final String EVERY_GATE_INFO = "Each building it can put up at every gate investors ask - ore, a licence, "
-            + "staff, land, and whether it pays - ticked, crossed, or a dash where it is not one this building has; "
+            + "staff, land, whether it pays, and whether it earns "
+            + String.format("%.2f×", BusinessInvestment.PROFIT_OVER_INTEREST) + " the interest on its whole cost, "
+            + "whoever pays - ticked, crossed, or a dash where it is not one this building has (a landlord's home is "
+            + "asked the mortgage lender's test instead); "
             + "what one would make its owner a month on the investors' estimate, what it would cost to build with its "
             + "ground, the months that would take to pay back, and how it would pay: what its register would ask its "
             + "owners for, what its till and its money abroad would put in, and what it would borrow. Under each, what "
@@ -3076,8 +3079,8 @@ final class SectorScreen {
     /** The grid's columns: the building, a gate's mark, a figure, the payback, how it would pay. */
     static final double GATE_NAME = 200, GATE_MARK = 44, GATE_FIGURE = 96, GATE_PAYBACK = 84, GATE_PAYS = 210;
 
-    /** The gates' heads, in BuildCard.GateKind's order. */
-    static final String[] GATE_HEADS = { "ore", "licence", "staff", "land", "pays" };
+    /** The gates' heads, in BuildCard.GateKind's order: the last, since 0.7.122, the interest on its whole cost. */
+    static final String[] GATE_HEADS = { "ore", "licence", "staff", "land", "pays", "interest" };
 
     /** Every building it owns at every gate (R4): one row each, and what it means under it. */
     VBox everyGate(Sector sector) {
@@ -3086,8 +3089,8 @@ final class SectorScreen {
         GridPane grid = new GridPane();
         grid.setHgap(12);
         grid.setVgap(0);
-        double[] widths = { GATE_NAME, GATE_MARK, GATE_MARK, GATE_MARK, GATE_MARK, GATE_MARK, GATE_FIGURE, GATE_FIGURE,
-                GATE_PAYBACK, GATE_PAYS };
+        double[] widths = { GATE_NAME, GATE_MARK, GATE_MARK, GATE_MARK, GATE_MARK, GATE_MARK, GATE_MARK, GATE_FIGURE,
+                GATE_FIGURE, GATE_PAYBACK, GATE_PAYS };
         for (double w : widths) {
             javafx.scene.layout.ColumnConstraints cc = new javafx.scene.layout.ColumnConstraints();
             cc.setPrefWidth(w);
@@ -3095,13 +3098,13 @@ final class SectorScreen {
             grid.getColumnConstraints().add(cc);
         }
         String[] heads = { "building", GATE_HEADS[0], GATE_HEADS[1], GATE_HEADS[2], GATE_HEADS[3], GATE_HEADS[4],
-                "a month", "to build", "pays back", "how it would pay" };
+                GATE_HEADS[5], "a month", "to build", "pays back", "how it would pay" };
         for (int i = 0; i < heads.length; i++) {
             Label h = new Label(heads[i]);
             h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
             grid.add(h, i, 0);
             GridPane.setHalignment(h, i == 0 || i == heads.length - 1 ? javafx.geometry.HPos.LEFT
-                    : i <= 5 ? javafx.geometry.HPos.CENTER : javafx.geometry.HPos.RIGHT);
+                    : i <= GATE_HEADS.length ? javafx.geometry.HPos.CENTER : javafx.geometry.HPos.RIGHT);
         }
         int row = 1;
         for (BuildCard.Appraisal a : all) {
@@ -3123,7 +3126,7 @@ final class SectorScreen {
             for (int i = 0; i < cells.size(); i++) {
                 javafx.scene.layout.StackPane cell = new javafx.scene.layout.StackPane(cells.get(i));
                 javafx.scene.layout.StackPane.setAlignment(cells.get(i), i == 0 || i == cells.size() - 1 ? Pos.CENTER_LEFT
-                        : i <= 5 ? Pos.CENTER : Pos.CENTER_RIGHT);
+                        : i <= GATE_HEADS.length ? Pos.CENTER : Pos.CENTER_RIGHT);
                 cell.setMinHeight(34);
                 cell.setStyle("-fx-padding: 4 0 0 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;"
                         + " -fx-cursor: hand;");
@@ -3175,26 +3178,32 @@ final class SectorScreen {
         return parts.isEmpty() ? "—" : String.join(" · ", parts);
     }
 
-    /** A failed gate in two or three words, for the "so" line's second refusal. */
-    static String gateShort(BuildCard.GateKind k) {
-        return switch (k) {
+    /** A failed gate in two or three words, for the "so" line's second refusal: an INTEREST gate's a borrowing ban where that is why (0.7.122). */
+    static String gateShort(BuildCard.GateMark g) {
+        return switch (g.kind()) {
             case DEPOSIT -> "no deposit";
             case LICENCE -> "too few licensed";
             case STAFFING -> "too few to staff it";
             case LAND -> "no ground";
+            case INTEREST -> g.failure() != null && g.failure().why() != null ? "a borrowing ban"
+                    : "it would not carry its interest";
             default -> "it would not pay";
         };
     }
 
     /**
      * What a building's gates mean (R4's "so"): it passes every one; ground is
-     * all that stops it, which the player can buy; it would not pay, which no
-     * gate opening would change; or its first refusal, and the others behind
-     * it - ground the player bought would not build one that would also lose
-     * money (F11).
+     * all that stops it, which the player can buy; it would not pay, or not
+     * carry its interest on its whole cost (0.7.122), which no gate opening
+     * would change; or its first refusal, and the others behind it - ground
+     * the player bought would not build one that would also lose money
+     * (F11), or not carry its interest. A loss fails the interest too, which
+     * the cross shows and the words leave unsaid.
      */
     String soWords(BuildCard.Appraisal a) {
-        List<BuildCard.GateMark> fails = a.failures();
+        boolean loses = a.at(BuildCard.GateKind.LOSS) == BuildCard.Mark.FAIL;
+        List<BuildCard.GateMark> fails = new ArrayList<>();
+        for (BuildCard.GateMark g : a.failures()) if (!(loses && g.kind() == BuildCard.GateKind.INTEREST)) fails.add(g);
         if (fails.isEmpty()) return "So: it passes every gate. It builds this when its demand asks for more.";
         BuildCard.GateMark first = fails.get(0);
         String words = ui.buildScreen.gateWords(first.failure());
@@ -3204,15 +3213,18 @@ final class SectorScreen {
                 case LOSS -> first.failure().why() != null
                         ? "So: " + words + ", so it would not build however the other gates stood."
                         : "So: it " + words + " at today's prices, so it would not build however the other gates stood.";
+                case INTEREST -> first.failure().why() != null
+                        ? "So: " + words + "."
+                        : "So: it " + words + " - at today's rates it would not build however the other gates stood.";
                 default -> "So: " + words + ".";
             };
         }
         List<String> rest = new ArrayList<>();
-        for (int i = 1; i < fails.size(); i++) rest.add(gateShort(fails.get(i).kind()));
+        for (int i = 1; i < fails.size(); i++) rest.add(gateShort(fails.get(i)));
         boolean landToo = a.at(BuildCard.GateKind.LAND) == BuildCard.Mark.FAIL;
-        boolean loses = a.at(BuildCard.GateKind.LOSS) == BuildCard.Mark.FAIL;
+        boolean short_ = a.at(BuildCard.GateKind.INTEREST) == BuildCard.Mark.FAIL;
         return "So: " + words + "; past that, " + String.join(", ", rest)
-                + (landToo && loses ? " - ground alone would not build it" : "") + ".";
+                + (landToo && (loses || short_) ? " - ground alone would not build it" : "") + ".";
     }
 
     /** A share's figures, this month or last, as the report's rows: {shares, EPS, DPS, payout, book, price, fair, P/E, P/B, yield, market value}; NaN where it means nothing. */
@@ -3412,7 +3424,8 @@ final class SectorScreen {
 
         /* --------------------------- its buildings --------------------------- */
         page.getChildren().add(sectionHead("ITS BUILDINGS", "Each building it can put up, with the first gate "
-                        + "investors would stop it at now - ore, a licence, staff, land, then money - the same answer its "
+                        + "investors would stop it at now - ore, a licence, staff, land, whether it pays, then whether it "
+                        + "carries the interest on its whole cost - the same answer its "
                         + "build card gives. Value added is what one makes less what it uses at today's prices; the "
                         + "investors' estimate is what one would make its owner a month, after wages, at the sector's "
                         + "operating rate.",
@@ -3628,7 +3641,7 @@ final class SectorScreen {
                     inv.estimate() < 0 ? Palette.BAD : Palette.TEXT_HEAD);
             Node gate;
             if (inv.own() == null) {
-                HBox ok = new HBox(6, icon(Icons.TICK, Palette.GOOD, 13), caption("passes all five", Palette.TEXT_LABEL));
+                HBox ok = new HBox(6, icon(Icons.TICK, Palette.GOOD, 13), caption("passes every gate", Palette.TEXT_LABEL));
                 ok.setAlignment(Pos.CENTER_LEFT);
                 gate = ok;
             } else {
@@ -3666,13 +3679,14 @@ final class SectorScreen {
         return box;
     }
 
-    /** A gate's icon: the deposit's pick, the licence's cap, the staffing test's person, the land, the money. */
+    /** A gate's icon: the deposit's pick, the licence's cap, the staffing test's person, the land, the money - and the bank for the interest on its whole cost (0.7.122). */
     static String gateIcon(BuildCard.GateKind k) {
         switch (k) {
             case DEPOSIT:  return Icons.PICK;
             case LICENCE:  return Icons.EDUCATION;
             case STAFFING: return Icons.STAFF;
             case LAND:     return Icons.LAND;
+            case INTEREST: return Icons.BANK;
             default:       return Icons.COIN;
         }
     }

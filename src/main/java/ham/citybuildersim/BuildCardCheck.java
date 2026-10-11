@@ -73,6 +73,18 @@ import java.util.Set;
  *       tick only at 100% or more, and Jerus's case - general care at 90%,
  *       off the list - amber and "short", shown on Build's tile before its
  *       tick.
+ *   11. THE INTEREST ON ITS WHOLE COST (0.7.122): the gate after the loss
+ *       is consider()'s brake - PROFIT_OVER_INTEREST times a month's
+ *       interest on the whole cost at the rate the order would be judged at
+ *       (Game.interestTest()). Every market building the town's investors
+ *       would ask it gets the answer consider()'s own search gives an order
+ *       of one (Game.sliceFor()), and a landlord's home, which the mortgage
+ *       lender decides, has no such gate; a Bakery paid for from its till,
+ *       earning over nothing but under its interest at a raised prime, fails
+ *       it with the test's own figures and consider() refuses it, and at
+ *       today's prime passes it and consider() builds it; a loss fails it
+ *       behind the loss; and under a borrowing ban it fails in the ban's
+ *       words.
  *
  * Every fixture causes its condition.
  */
@@ -165,6 +177,7 @@ public class BuildCardCheck {
         theKinds(g);
         theRun(g);
         theServed(g);
+        theInterest(g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -698,19 +711,23 @@ public class BuildCardCheck {
         assertTrue("...and every gate's report the same",
                 BuildCard.NO_FEED.equals(BuildCard.appraise(g, lube).first().why()));
 
-        // ...and a building that passes them all has none.
+        // ...and a building that passes them all has none - since 0.7.122 the last of them consider()'s, the interest on
+        // its whole cost, which a landlord's home is not asked (the mortgage lender decides it).
         int clear = 0;
         boolean none = true;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (BuildCard.kindOf(t) == BuildCard.Kind.CITY) continue;
             BuildCard.Investors inv = BuildCard.investors(g, t);
+            String owner = inv.owner().key();
             boolean passes = g.hasDepositFor(t, 1) && g.hasLicencesFor(t, 1) && inv.owner().staffing(t).passes()
-                    && t.getLandSqFt() <= land.getAvailableSqFt() && inv.estimate() > 0;
+                    && t.getLandSqFt() <= land.getAvailableSqFt() && inv.estimate() > 0
+                    && (g.buysOnMortgage(owner, t)
+                        || g.carriesItsWholeCost(owner, inv.estimate(), g.getBusinessInvestment().getCostOf(t, 1)));
             if (passes) clear++;
             none &= passes == (inv.own() == null);
         }
-        assertTrue("a market building that passes every gate has no \"this one:\", and one that fails one has it ("
-                + clear + " pass)", none && clear > 0);
+        assertTrue("a market building that passes every gate - the interest on its whole cost the last - has no \"this"
+                + " one:\", and one that fails one has it (" + clear + " pass)", none && clear > 0);
     }
 
     /* ============================ 7. THE VERDICT ============================ */
@@ -1140,5 +1157,143 @@ public class BuildCardCheck {
                 && CityNeeds.worstUnlisted(List.of(short90, enough), CityNeeds.Go.HEALTHCARE) == short90
                 && short90.verdictLevel() == 1 && enough.verdictLevel() == 0
                 && CityNeeds.worstUnlisted(List.of(enough), CityNeeds.Go.HEALTHCARE) == null);
+    }
+
+    /* ============================ 11. THE INTEREST ON ITS WHOLE COST ============================ */
+
+    /**
+     * consider()'s brake on the card (0.7.122, batch C1). Since 0.7.113 every
+     * order is asked to earn PROFIT_OVER_INTEREST times a month's interest on
+     * its whole cost, whoever pays, at the rate it would be judged at; the
+     * card's gates ended at the loss, so a card could pass every one while
+     * the investors declined it. The card asks it through Game.interestTest(),
+     * and consider()'s own answer for an order of one is Game.sliceFor() -
+     * its search, with the till the card's test counts (the sector's cash and
+     * what it holds abroad) and the investors' estimate.
+     */
+    static void theInterest(Game g) {
+        out.println("\n--- 11. the interest on its whole cost: consider()'s brake, the card's last gate ---");
+        BusinessInvestment plans = g.getBusinessInvestment();
+        BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
+
+        // The town as it stands: every market building's card against consider()'s answer to an order of one.
+        int asked = 0, agree = 0, homes = 0, homesNone = 0, short_ = 0;
+        List<String> shortOnes = new ArrayList<>();
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (BuildCard.citys(t)) continue;
+            BuildCard.Appraisal a = BuildCard.appraise(g, t);
+            String owner = a.owner().key();
+            if (g.buysOnMortgage(owner, t)) {
+                homes++;
+                if (a.at(BuildCard.GateKind.INTEREST) == BuildCard.Mark.NONE) homesNone++;
+                continue;
+            }
+            asked++;
+            boolean card = a.at(BuildCard.GateKind.INTEREST) == BuildCard.Mark.PASS;
+            boolean built = g.sliceFor(new BusinessInvestment.Decision(owner, t, 1, "the check's", true), tillOf(g, owner),
+                    a.estimate()).quantity() == 1;
+            if (card == built) agree++;
+            if (a.estimate() > 0 && !card) {
+                short_++;
+                shortOnes.add(t.getName());
+            }
+        }
+        out.printf("      %d market buildings asked; %d earn over nothing and under their interest: %s%n", asked, short_,
+                shortOnes.isEmpty() ? "none" : String.join(", ", shortOnes));
+        assertTrue(String.format("every market building's interest gate is consider()'s answer to an order of one (%d of %d)",
+                agree, asked), asked > 0 && agree == asked);
+        assertTrue(String.format("...and a landlord's home has no interest gate: the mortgage lender's test decides it (%d of %d)",
+                homesNone, homes), homes > 0 && homesNone == homes);
+
+        // Caused: a Bakery the bakers' till pays for, at a prime raised so it earns over nothing but under its interest.
+        String bakers = Sectors.INDUSTRY;
+        BuildingsTemplate bakery = template(g, "Bakery");
+        double cost = plans.getCostOf(bakery, 1);
+        double cash = g.getEconomyManager().getSectorCash(bakers), prime = credit.getPrimeRate();
+        g.getEconomyManager().setSectorCash(bakers, 2 * cost);
+        BusinessInvestment.Decision one = new BusinessInvestment.Decision(bakers, bakery, 1, "the check's", true);
+        try {
+            double earns = plans.estimatedMonthlyProfit(bakers, bakery);
+            BuildCard.Investors before = BuildCard.investors(g, bakery);
+            assertTrue(String.format("fixture: at today's prime a Bakery from the bakers' till earns %s a month and passes"
+                    + " every gate", Formats.INSTANCE.amount(earns)), earns > 0 && before.own() == null
+                    && BuildCard.appraise(g, bakery).at(BuildCard.GateKind.INTEREST) == BuildCard.Mark.PASS);
+            assertTrue("...and consider() would build it", g.sliceFor(one, tillOf(g, bakers), earns).quantity() == 1);
+
+            // The rate its earnings would just carry, a year, on its whole cost: prime raised by twice that and by the
+            // inflation people expect, so the real rate the test reads is over it whatever the sector's spread.
+            double carried = 12 * earns / (BusinessInvestment.PROFIT_OVER_INTEREST * cost);
+            credit.setPrimeRate(prime + 2 * carried + plans.getExpectedInflation());
+            Game.InterestTest test = g.interestTest(bakers, earns, cost);
+            BuildCard.Investors inv = BuildCard.investors(g, bakery);
+            BuildCard.Gate gate = inv.own();
+            out.printf("      a Bakery: %s from the till; prime %.4f%% -> %.4f%%; earns %s a month, its interest %s a month"
+                    + " at %.4f%% (real %.4f%%), the bar %s%n", Formats.INSTANCE.amount(cost), prime * 100,
+                    credit.getPrimeRate() * 100, Formats.INSTANCE.amount(earns), Formats.INSTANCE.amount(test.interest()),
+                    test.rate() * 100, test.real() * 100, Formats.INSTANCE.amount(test.needs()));
+            assertTrue("fixture: it still earns over nothing, the same estimate, and its interest bar is over that",
+                    plans.estimatedMonthlyProfit(bakers, bakery) == earns && earns > 0 && test.needs() > earns
+                    && !test.banned() && !test.carries());
+            assertTrue("A BAKERY THAT PAYS BUT NOT ITS INTEREST ON ITS WHOLE COST FAILS THE CARD'S INTEREST GATE, the last",
+                    gate != null && gate.kind() == BuildCard.GateKind.INTEREST);
+            assertTrue("...with what one would earn and what it must: PROFIT_OVER_INTEREST times a month's interest",
+                    gate != null && gate.a() == earns && gate.b() == test.needs()
+                    && gate.b() == test.interest() * BusinessInvestment.PROFIT_OVER_INTEREST && gate.why() == null);
+            bits("...its interest struck on its whole cost though the till pays it all, at the real rate the test reads",
+                    gate == null || gate.test() == null ? Double.NaN : gate.test().interest(),
+                    cost * plans.realTestRate(credit.projectRate(bakers, 0)) / 12);
+            bits("...the rate it is judged at the bakers' own, the till paying (projectRate() of nothing)",
+                    gate == null || gate.test() == null ? Double.NaN : gate.test().rate(), credit.projectRate(bakers, 0));
+            BuildCard.Appraisal a = BuildCard.appraise(g, bakery);
+            assertTrue("...and every gate's report the same: it pays, it fails the interest, and that is its first failure",
+                    a.at(BuildCard.GateKind.LOSS) == BuildCard.Mark.PASS && a.at(BuildCard.GateKind.INTEREST) == BuildCard.Mark.FAIL
+                    && a.failures().size() == 1 && a.first() != null && a.first().kind() == BuildCard.GateKind.INTEREST
+                    && a.first().a() == gate.a() && a.first().b() == gate.b());
+            Game.Afford refused = g.sliceFor(one, tillOf(g, bakers), earns);
+            assertTrue("THE CARD AGREES WITH consider(): the same order of one is refused", refused.quantity() == 0);
+
+            // ...and at today's prime again: the card passes it, and consider() builds it.
+            credit.setPrimeRate(prime);
+            assertTrue("at today's prime again the card passes it and consider() builds the same order",
+                    BuildCard.investors(g, bakery).own() == null && g.sliceFor(one, tillOf(g, bakers), earns).quantity() == 1
+                    && BuildCard.appraise(g, bakery).at(BuildCard.GateKind.INTEREST) == BuildCard.Mark.PASS);
+
+            // A borrowing ban: the till cut below its cost, the bakers banned - consider() refuses it, and the card says why.
+            g.getEconomyManager().setSectorCash(bakers, cost / 2);
+            Map<String, Integer> record = credit.getBlockedMonthsAll();
+            Map<String, Integer> banned = new LinkedHashMap<>(record);
+            banned.put(bakers, 12);   // a default's ban (BusinessDebtManager.BORROWING_BLOCKED_MONTHS, private)
+            credit.restoreCreditRecord(credit.getRestructureCounts(), banned);
+            try {
+                BuildCard.Gate ban = BuildCard.investors(g, bakery).own();
+                assertTrue("fixture: the bakers are under a borrowing ban, and their till holds half a Bakery",
+                        credit.isBorrowingBlocked(bakers) && tillOf(g, bakers) < cost);
+                assertTrue("under a ban the gate is the interest's, in consider()'s words: \"" + (ban == null ? null : ban.why())
+                        + "\"", ban != null && ban.kind() == BuildCard.GateKind.INTEREST && ban.test() != null
+                        && ban.test().banned() && ban.why() != null && ban.why().startsWith("borrowing ban, "
+                                + credit.getBlockedMonths(bakers) + " more months")
+                        && BuildCard.wordKind(ban.why()) == BuildCard.WordKind.CREDIT);
+                assertTrue("...and consider() refuses the same order", g.sliceFor(one, tillOf(g, bakers), earns).quantity() == 0);
+            } finally {
+                credit.restoreCreditRecord(credit.getRestructureCounts(), record);
+            }
+        } finally {
+            credit.setPrimeRate(prime);
+            g.getEconomyManager().setSectorCash(bakers, cash);
+        }
+        assertTrue("...and the bakers' till, prime and record put back", g.getEconomyManager().getSectorCash(bakers) == cash
+                && credit.getPrimeRate() == prime && !credit.isBorrowingBlocked(bakers));
+
+        // A loss fails it too, behind the loss: another spur where the rail carries every tonne already.
+        BuildCard.Appraisal spur = BuildCard.appraise(g, template(g, "Rail Spur"));
+        assertTrue("a spur that would lose money fails the interest too, behind the loss, which stays its first",
+                spur.estimate() <= 0 && spur.at(BuildCard.GateKind.LOSS) == BuildCard.Mark.FAIL
+                && spur.at(BuildCard.GateKind.INTEREST) == BuildCard.Mark.FAIL
+                && spur.first() != null && spur.first().kind() == BuildCard.GateKind.LOSS);
+    }
+
+    /** What the card's test counts as the sector's till: its cash and what it holds abroad (Game.interestTest()). */
+    static double tillOf(Game g, String sector) {
+        return g.getEconomyManager().getSectorCash(sector) + Math.max(0, g.getEconomyManager().getForeignAssets(sector));
     }
 }

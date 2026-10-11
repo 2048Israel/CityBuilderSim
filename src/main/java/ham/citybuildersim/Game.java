@@ -4779,7 +4779,7 @@ public class Game {
      */
     public record Afford(int quantity, boolean atPrime, double firstRate, int deskCalls) { }
 
-    /** Harnesses only (InvestCheck, 0.7.113): consider()'s answer to an order with `cash` in the till and `perUnitProfit` a building - the largest slice that carries the interest on its whole cost. Books nothing. */
+    /** Harnesses only (InvestCheck, 0.7.113; BuildCardCheck 11, 0.7.122): consider()'s answer to an order with `cash` in the till and `perUnitProfit` a building - the largest slice that carries the interest on its whole cost. Books nothing. */
     Afford sliceFor(BusinessInvestment.Decision decision, double cash, double perUnitProfit) {
         return largestSliceThatCarries(decision, cash, perUnitProfit);
     }
@@ -4922,14 +4922,43 @@ public class Game {
      * rate it would be judged at, its till and what it holds abroad paying
      * first; false where it would borrow under a ban. The question a planner
      * asks before it walks on from one kind to the next (sectors.Oil, THE
-     * OIL AT SEA). Books nothing.
+     * OIL AT SEA), and since 0.7.122 the build card's (interestTest(), its
+     * answer with its figures). Books nothing.
      */
     public boolean carriesItsWholeCost(String sector, double earns, double cost) {
         if (!(earns > 0)) return false;
+        return interestTest(sector, earns, cost).carries();
+    }
+
+    /**
+     * carriesItsWholeCost()'s question with its figures (0.7.122, batch C1),
+     * for the build card's interest gate (BuildCard, INTEREST), so the card
+     * says what consider() would and works none of it out itself: what the
+     * order earns a month; its cost; what the interest is struck on
+     * (orderGate(), its whole cost); the rate it is judged at (the loan's at
+     * the leverage it leaves, or a bond's blended with the bank's where one is
+     * cheaper and raises it all) and the real rate the test reads it at
+     * (BusinessInvestment.realTestRate()); a month's interest at that, as
+     * servicesItsOwnDebt() strikes it; whether it would borrow under a ban;
+     * and the answer. Books nothing.
+     */
+    public record InterestTest(double earns, double cost, double on, double rate, double real, double interest,
+                               boolean banned, boolean carries) {
+
+        /** What it must earn a month to carry it: PROFIT_OVER_INTEREST times a month's interest, the bar servicesItsOwnDebt() holds it to. */
+        public double needs() { return interest * BusinessInvestment.PROFIT_OVER_INTEREST; }
+    }
+
+    /** ...for an order by `sector` costing `cost` and earning `earns` a month, its till and what it holds abroad paying first. */
+    public InterestTest interestTest(String sector, double earns, double cost) {
         double till = economyManager.getSectorCash(sector) + Math.max(0, economyManager.getForeignAssets(sector));
         double borrowed = Math.max(cost - till, 0);
-        if (borrowed > 0 && economyManager.getBusinessDebtManager().isBorrowingBlocked(sector)) return false;
-        return businessInvestment.servicesItsOwnDebt(earns, orderGate.testedOn(cost, till), judged(sector, borrowed).tested());
+        boolean banned = borrowed > 0 && economyManager.getBusinessDebtManager().isBorrowingBlocked(sector);
+        double on = orderGate.testedOn(cost, till);
+        double rate = judged(sector, borrowed).tested();
+        double real = businessInvestment.realTestRate(rate);
+        boolean carries = earns > 0 && !banned && businessInvestment.servicesItsOwnDebt(earns, on, rate);
+        return new InterestTest(earns, cost, on, rate, real, on > 0 ? on * real / 12 : 0, banned, carries);
     }
 
     /**
