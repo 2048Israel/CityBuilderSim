@@ -58,8 +58,11 @@ import java.util.Map;
  * (spec-earth 3): the cells pass replaces the sea pass, the founding is the
  * snap to dry ground near the spot, and it has no founding river and no
  * heights (depthAt(), shelfTheta() refuse); its fields are drawn on its
- * cells' land by the same densities, off its sea (geology is E3's). Only
- * harnesses build one until E4 lets a city be founded on it.
+ * cells' land, off its sea, and since 0.7.117 (batch E3) on its geology:
+ * today's densities times each province's weight and Z (Geology; oil's
+ * petroleum, and its offshore sea), each field's type leaning on the
+ * class under it (Deposit.type()). Only harnesses build one until E4 lets
+ * a city be founded on it.
  */
 public final class World {
 
@@ -353,6 +356,14 @@ public final class World {
        are still drawn so, and still make the world's totals to the tonne;
        since 0.7.99 the fields a city sees are drawn from them as FEWER AND
        BIGGER DEPOSITS, below.
+
+       ON EARTH (0.7.117, batch E3; spec-earth 4) the mean is the density
+       times the cell's FIELD LAND (fieldKm2()): its land at each of the
+       cells pass's points times the province's weight and Z, oil's times
+       its known petroleum and with the sea of shelves, basins and rifts
+       (Geology). Everything else - the total drawn without a field, the
+       pools, the shares to the tonne - is as here; a generated world's
+       field land is its land, to the bit.
        ===================================================================== */
 
     /** How heavy the tail of a field's size is: 1.5, so P(sites >= k) = k^-1.5 - most small, a few huge. */
@@ -751,6 +762,12 @@ public final class World {
     /** Whether a cell holds land, which its fields are drawn on: on Earth (0.7.115) its cells pass's share over nothing. */
     private boolean hasLand(int c) {
         return earth != null ? earth.cellLand(c) > 0 : landQuarters[c] > 0;
+    }
+
+    /** Whether a cell holds ground a resource's fields are drawn on: its land (hasLand()); on Earth (0.7.117) its field land, oil's with a shelf's, basin's or rift's sea, and forest's its land. */
+    private boolean holds(int c, Resource r) {
+        if (earth == null) return landQuarters[c] > 0;
+        return r.inFields() ? earth.cellFieldLand(c, r) > 0 : earth.cellLand(c) > 0;
     }
 
     /** Whether a point is sea, for a field drawn off it: the elevation under the sea's level - on Earth (0.7.115) the coast's rule at the point (EarthTerrain.seaAt()). */
@@ -1411,6 +1428,31 @@ public final class World {
     /** A cell's land, in square kilometres: its land share times its area. */
     private double landKm2(int cell) { return earth != null ? earth.cellLand(cell) * CELL_KM2 : landQuarters[cell] / (double) SEA_SAMPLES * CELL_KM2; }
 
+    /**
+     * The ground a resource's fields are drawn on in a cell, km2: its land
+     * (landKm2()) on a generated world; on Earth (0.7.117, batch E3;
+     * spec-earth 4) its field land, the land at each of the cells pass's
+     * points times its province's Geology.multiplier() - w x Z, oil's
+     * petroleum factor - and oil's with a shelf's, basin's or rift's sea
+     * (EarthTerrain.cellFieldLand()).
+     */
+    private double fieldKm2(int cell, Resource r) { return earth != null ? earth.cellFieldLand(cell, r) * CELL_KM2 : landKm2(cell); }
+
+    /** A cell's field land for a resource as a share of its area (0.7.117): its land share on a generated world, on Earth EarthTerrain.cellFieldLand() - EarthTerrainCheck's door. */
+    double cellFieldShare(int cell, Resource r) {
+        if (earth != null) return earth.cellFieldLand(cell, r);
+        return cellLandShare(cell);
+    }
+
+    /** An Earth world's geology (0.7.117): its data's provinces, classes and multipliers; null on a generated world. */
+    public Geology geology() { return earth != null ? earth.geology() : null; }
+
+    /** The province under a plot's centre on Earth, its row in the data (0 for none); 0 on a generated world (0.7.117). */
+    public int provinceAt(long x, long y) { return earth != null ? earth.provinceAt(x + 0.5, y + 0.5) : 0; }
+
+    /** The class of the ground under a plot's centre on Earth (0.7.117; Geology.Kind.OTHER where no province is); null on a generated world - what a field's type leans on (Deposit.type()). */
+    public Geology.Kind geologyAt(long x, long y) { return earth != null ? earth.geology().kindOf(provinceAt(x, y)) : null; }
+
     /** How many fields of a resource a cell lists (fieldsInCell(); since 0.7.99 the fewer and bigger ones). None of forest. */
     public long cellFieldCount(int cell, Resource r) {
         build();
@@ -1425,7 +1467,7 @@ public final class World {
 
     private long countOf(int cell, Resource r) {
         if (!r.inFields()) return 0;
-        return poisson(cellHash(cell, r), r.fieldsPerKm2() * landKm2(cell));
+        return poisson(cellHash(cell, r), r.fieldsPerKm2() * fieldKm2(cell, r));
     }
 
     /**
@@ -1447,7 +1489,7 @@ public final class World {
             return Math.rint(forestQuarters[cell] / (double) SEA_SAMPLES * CELL_KM2 * FOREST_M3_PER_KM2);
         }
         long h = cellHash(cell, r);
-        long n = poisson(h, r.fieldsPerKm2() * landKm2(cell));
+        long n = poisson(h, r.fieldsPerKm2() * fieldKm2(cell, r));
         double rich = RICHNESS_MIN + RICHNESS_SPAN * unit(mix(h ^ 0x77));
         return Math.rint(n * MEAN_SITES * r.amountPerSite() * rich);
     }
@@ -1498,7 +1540,7 @@ public final class World {
         for (int i = 0; i < n; i++) {
             cum += s[i];
             double upTo = i == n - 1 ? total : Math.rint(total * cum / raw);
-            out.add(new Deposit(r, cell, i, xs[i], ys[i], s[i], upTo - before));
+            out.add(new Deposit(r, cell, i, xs[i], ys[i], s[i], upTo - before, geologyAt(xs[i], ys[i])));
             before = upTo;
         }
         return out;
@@ -1622,7 +1664,7 @@ public final class World {
             for (int cx = cx0; cx < cx1; cx++, k++) {
                 int c = cy * CELLS + cx;
                 cellAt[k] = c;
-                if (hasLand(c)) {
+                if (holds(c, r)) {
                     old += countOf(c, r);
                     total += totalOf(c, r);
                 }
@@ -1712,7 +1754,7 @@ public final class World {
         for (int cy = py * b; cy < Math.min(CELLS, py * b + b); cy++) {
             for (int cx = px * b; cx < Math.min(CELLS, px * b + b); cx++) {
                 int c = cy * CELLS + cx;
-                if (hasLand(c)) total += totalOf(c, r);
+                if (holds(c, r)) total += totalOf(c, r);
             }
         }
         return total;
@@ -1737,7 +1779,7 @@ public final class World {
         for (int cy = py * b; cy < Math.min(CELLS, py * b + b); cy++) {
             for (int cx = px * b; cx < Math.min(CELLS, px * b + b); cx++) {
                 int c = cy * CELLS + cx;
-                if (hasLand(c)) old += countOf(c, r);
+                if (holds(c, r)) old += countOf(c, r);
             }
         }
         return old;
@@ -1754,7 +1796,7 @@ public final class World {
     public long legacyFieldCount(Resource r) {
         build();
         long n = 0;
-        for (int c = 0; c < CELLS * CELLS; c++) if (hasLand(c)) n += countOf(c, r);
+        for (int c = 0; c < CELLS * CELLS; c++) if (holds(c, r)) n += countOf(c, r);
         return n;
     }
 
@@ -1802,7 +1844,7 @@ public final class World {
                 Pool p = pool(r, px, py);
                 for (int i = 0; i < p.xs.length; i++) {
                     if (cellOf(p.xs[i], p.ys[i]) != cell) continue;
-                    out.add(new Deposit(r, cell, FIELD_INDEX_FROM + out.size(), p.xs[i], p.ys[i], p.sites[i], p.amounts[i]));
+                    out.add(new Deposit(r, cell, FIELD_INDEX_FROM + out.size(), p.xs[i], p.ys[i], p.sites[i], p.amounts[i], geologyAt(p.xs[i], p.ys[i])));
                 }
             }
         }
@@ -1827,13 +1869,19 @@ public final class World {
     /**
      * The world's totals, a resource at a time in Resource's order: every
      * cell's cellTotal(), summed in cell order - one pass over 135,424 cells,
-     * about 30 ms, the same every time. Whole tonnes, so exact.
+     * about 30 ms, the same every time. Whole tonnes, so exact. On Earth
+     * (0.7.117) a cell counts for a resource where it holds that resource's
+     * ground (holds()): oil's at sea too.
      */
     public double[] computeTotals() {
         build();
         Resource[] kinds = Resource.values();
         double[] totals = new double[kinds.length];
         for (int c = 0; c < CELLS * CELLS; c++) {
+            if (earth != null) {
+                for (Resource r : kinds) if (holds(c, r)) totals[r.ordinal()] += totalOf(c, r);
+                continue;
+            }
             if (!hasLand(c)) continue;
             for (Resource r : kinds) totals[r.ordinal()] += totalOf(c, r);
         }

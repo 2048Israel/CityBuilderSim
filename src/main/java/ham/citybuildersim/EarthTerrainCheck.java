@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key holding the generated world as it was, and the game's founding, land and screen standing on an Earth world.
+ * The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key holding the generated world as it was, and the game's founding, land and screen standing on an Earth world - and since 0.7.117 (batch E3) its deposits on the Earth's geology (Geology).
  *
  * WHY. E2 lays the real Earth's ground on the world's plots, finer than the
  * data by 15 times, and the finer detail is made from the seed: a rule that
@@ -71,9 +71,43 @@ import java.util.Map;
  *      left out; and the widest river EarthTerrain.WIDEST_RIVER_M, its half
  *      within EarthTerrain.WATER_PAD_DEG.
  *
+ * ...and since 0.7.117 (batch E3; spec-earth 4 and 8, runs/spec-materials.md
+ * 2.4), the deposits on the Earth's geology:
+ *  10. THE CLASSES: the data's provinces are the study's 1,023, the rules'
+ *      count STUDY_CLASSES; Geology's hand table holds every one the rules
+ *      leave other, once, each row naming the data's province and the rules'
+ *      class, and moving it or saying why no class fits; Geology reads it.
+ *  11. THE SPOTS: Rotterdam, Perth, Paris and the Yilgarn 150 km east of
+ *      Perth lie in the study's provinces and classes; at the study's Z the
+ *      table's weights and the petroleum factor give the study's multipliers
+ *      to its rounding; the model's are the weight x Z (x the factor); each
+ *      world reads its spot's province at its founding site.
+ *  12. FIELDS BY CLASS: on a world's pure cells, iron's old-world fields a
+ *      land km2 on shields against basins are W_IRON's ratio within SIGMAS,
+ *      each class's density the resource's x w x Z, and the fields a city
+ *      sees, on pools of pure cells, the same ratio - Perth's world on the
+ *      fixture, Rotterdam's on the full file.
+ *  13. THE FULL FILE, when named: each Z, measured as Geology defines it, is
+ *      Geology's to its rounding, and the types' odds; at them the Earth-wide
+ *      type shares are the generated world's; on the rules' classes the land
+ *      in each class is the study's within SHARE_WITHIN and limestone in
+ *      basins and on shields the study's within LIMESTONE_WITHIN (its Z is
+ *      printed against the study's: three of six do not follow from its own
+ *      table); then 12 on the whole planet.
+ *  14. TOTALS AND TYPES: each Earth world's totals are its cells', to the
+ *      tonne; every pool's fields add up to its total, and by type; every
+ *      field carries the class under it; cells with no land hold oil where a
+ *      basin's, shelf's or rift's sea is, and nothing else; the type draw
+ *      gives each class Geology.firstShare() within SIGMAS (iron and copper
+ *      flat), on synthetic fields and on those drawn; a generated world has
+ *      no geology and draws its types flat (WorldCheck holds its fields byte
+ *      for byte).
+ *
  * Every fixture causes its condition: the windows hold coasts (Rotterdam,
  * Perth), rivers (the Maas and the Seine), small lakes, lakes of 10 km2 and
- * more (Rotterdam's delta), beaches (Perth) and the date line (Fiji).
+ * more (Rotterdam's delta), beaches (Perth) and the date line (Fiji); the
+ * fixture's bands cross the Yilgarn shield and basins on three continents,
+ * and Rotterdam's the North Sea's basins.
  */
 public class EarthTerrainCheck {
 
@@ -174,7 +208,12 @@ public class EarthTerrainCheck {
         seam(spots.get("Fiji"), id, data);
         pieces(windows, data);
         stands(three, id);
-        full(spots.get("Rotterdam"));
+        EarthData file = full(spots.get("Rotterdam"));
+        classes(data);
+        spots(data, id, spots);
+        byClass(World.of(World.Key.earth(SEED, spots.get("Perth").lat(), spots.get("Perth").lon(), id)), "the fixture, Perth's world");
+        planet(file, spots.get("Rotterdam"));
+        types(id, spots);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -659,17 +698,18 @@ public class EarthTerrainCheck {
        9. THE FULL FILE
        ===================================================================== */
 
-    static void full(Spot s) throws Exception {
+    /** Section 9; returns the full file's reader when it is named, else null (section 13 reads it). */
+    static EarthData full(Spot s) throws Exception {
         out.println("\n--- 9. the full file, when it is named: the cells pass and the planet's land ---");
         Path file = EarthData.locate();
         String named = System.getProperty(EarthData.PROPERTY);
         if (named != null && !named.isBlank() && !Files.isRegularFile(file)) {
             report("the file -Dcbs.earth names is there", false, named);
-            return;
+            return null;
         }
         if (file == null) {
             out.println("earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the cells pass was not timed");
-            return;
+            return null;
         }
         EarthData d = EarthData.open(file);
         String id = EarthTerrain.use(d);
@@ -718,5 +758,427 @@ public class EarthTerrainCheck {
                         && widest / 2.0 <= EarthTerrain.WATER_PAD_DEG * Math.PI / 180 * EarthProj.RADIUS_M,
                 String.format("%,d m; the pad %.1f km; %.0f ms", widest, EarthTerrain.WATER_PAD_DEG * Math.PI / 180 * EarthProj.RADIUS_M / 1000,
                         (System.nanoTime() - t0) / 1e6));
+        return d;
+    }
+
+    /* =====================================================================
+       10 TO 14. THE DEPOSITS ON THE EARTH'S GEOLOGY (0.7.117, batch E3;
+       spec-earth 4 and 8, runs/spec-materials.md 2.4)
+       ===================================================================== */
+
+    /** The study's count of the provinces by geology.py's rules (spec-earth 4): 474 basin, 151 fold belt, 66 shelf, 55 ocean, 38 shield, 20 rift and 219 other, in Geology.Kind's order. */
+    static final int[] STUDY_CLASSES = { 55, 38, 151, 20, 66, 474, 219 };
+
+    /** The study's land in each class by the rules, Antarctica left out, in points (spec-earth 4), in Geology.Kind's order: 0.7 ocean, 17.8 shield, 18.9 fold belt, 2.2 rift, 2.8 shelf, 35.1 basin, 22.5 other. */
+    static final double[] STUDY_SHARES = { 0.7, 17.8, 18.9, 2.2, 2.8, 35.1, 22.5 };
+
+    /** ...reproduced within this, in points: half a point (★E3: the study's are rounded to a tenth, and its land was its prototype's cells). */
+    static final double SHARE_WITHIN = 0.5;
+
+    /** The study's Z on the rules' classes (spec-earth 4), in Resource's order for the six in fields: iron 0.888, oil 0.701, stone 0.751, coal 0.959, copper 0.846, uranium 1.049. */
+    static final double[] STUDY_Z = { 0.888, 0.701, 0.751, 0.959, 0.846, 1.049 };
+
+    /** The study's limestone in basins and on shields on the rules' classes (spec-materials 2.4, out/earth-types.txt): .886 and .493. */
+    static final double STUDY_LIMESTONE_BASIN = 0.886, STUDY_LIMESTONE_SHIELD = 0.493;
+
+    /** ...reproduced within this: half a point (★E3: the study's are rounded to three places). */
+    static final double LIMESTONE_WITHIN = 0.005;
+
+    /** A sampled figure is held to its expectation within this many standard deviations: 3 (★E3). */
+    static final double SIGMAS = 3;
+
+    /** A Z on the full file is Geology's constant to its rounding, four decimals: half the last place. */
+    static final double Z_ROUNDING = 0.00005;
+
+    /** An odds on the full file is Geology's constant to its rounding, six figures: half the last place, relative. */
+    static final double ODDS_ROUNDING = 0.000005;
+
+    /** How far east of Perth the study's shield spot lies, in km: 150 (spec-earth 4, "150 km east of Perth (Yilgarn Block)"). */
+    static final double YILGARN_KM = 150;
+
+    /** Synthetic fields drawn for each class to hold the types' odds: 200,000 (one standard deviation about 0.1 point). */
+    static final int TYPE_DRAWS = 200_000;
+
+    /** How far about Rotterdam's site the North Sea's cells are looked at for oil at sea, in cells: 8 (490 km), within the fixture's bands. */
+    static final int SEA_OIL_CELLS = 8;
+
+    /** One of the study's spots: its place, its province and class, and the multipliers it measured (spec-earth 4). */
+    record GeoSpot(String name, double lat, double lon, String province, Geology.Kind kind, double knownMmboe, Map<Resource, Double> study) { }
+
+    /** Section 10: the provinces' classes, the rules' and the hand-checked table over them - on the fixture, which holds the whole geology. */
+    static void classes(EarthData data) {
+        out.println("\n--- 10. the provinces' classes: geology.py's rules, and the hand-checked table over them ---");
+        Geology g = Geology.of(data);
+        int[] byRules = new int[Geology.Kind.values().length];
+        for (EarthData.Province p : data.provinces()) byRules[g.rulesKindOf(p.row()).ordinal()]++;
+        report("the data's provinces are the study's, classed by the rules as the study counts them (STUDY_CLASSES)",
+                data.provinces().size() == 1023 && Arrays.equals(byRules, STUDY_CLASSES), String.format("%,d provinces: %s", data.provinces().size(), kinds(byRules)));
+        Map<Integer, Geology.Hand> hand = new LinkedHashMap<>();
+        boolean once = true;
+        for (Geology.Hand h : Geology.TABLE) once &= hand.put(h.row(), h) == null;
+        boolean covers = true, names = true, applied = true, reasoned = true;
+        int others = 0, stay = 0;
+        int[] placed = new int[Geology.Kind.values().length];
+        Map<String, Integer> misfires = new java.util.TreeMap<>();
+        for (EarthData.Province p : data.provinces()) {
+            Geology.Kind rules = g.rulesKindOf(p.row());
+            Geology.Hand h = hand.get(p.row());
+            if (rules == Geology.Kind.OTHER) {
+                others++;
+                covers &= h != null;
+            }
+            if (h == null) {
+                applied &= g.kindOf(p.row()) == rules;
+                continue;
+            }
+            names &= h.name().equals(p.name().trim()) && h.code().equals(p.code()) && h.rules() == rules;
+            applied &= g.kindOf(p.row()) == h.kind();
+            reasoned &= !h.why().isBlank() && (h.kind() != h.rules() || h.why().contains("no class fits"));
+            if (rules == Geology.Kind.OTHER) {
+                placed[h.kind().ordinal()]++;
+                if (h.kind() == Geology.Kind.OTHER) stay++;
+            } else {
+                misfires.merge(rules.label() + " to " + h.kind().label(), 1, Integer::sum);
+            }
+        }
+        report("every province the rules leave other is in the hand table, once", covers && once && others == STUDY_CLASSES[Geology.Kind.OTHER.ordinal()],
+                String.format("%d of %d; the table %d rows", Geology.TABLE.size() - misfires.values().stream().mapToInt(Integer::intValue).sum(), others, Geology.TABLE.size()));
+        check("every row of it names the data's province - its row, USGS code and name - and the class the rules gave it", names);
+        check("every row moves its province, or keeps an other no class fits, and says why; Geology reads the table's class over the rules'", reasoned && applied);
+        out.printf("      the %d the rules leave other: %s, of which %d stay other%n", others, kinds(placed), stay);
+        out.printf("      the rules' misfires corrected, %d: %s%n", misfires.values().stream().mapToInt(Integer::intValue).sum(), misfires);
+    }
+
+    /** A count by class, in Geology.Kind's order, as words. */
+    static String kinds(int[] by) {
+        StringBuilder s = new StringBuilder();
+        for (Geology.Kind k : Geology.Kind.values()) {
+            if (by[k.ordinal()] == 0) continue;
+            if (s.length() > 0) s.append(", ");
+            s.append(by[k.ordinal()]).append(' ').append(k.label());
+        }
+        return s.toString();
+    }
+
+    /** The study's spots: the three windows' and the shield's, 150 km east of Perth on the Perth world's plots. */
+    static List<GeoSpot> geoSpots(Map<String, Spot> spots, String id) {
+        Spot r = spots.get("Rotterdam"), p = spots.get("Perth"), f = spots.get("Paris");
+        World perth = World.of(World.Key.earth(SEED, p.lat(), p.lon(), id));
+        double[] ll = new double[2];
+        perth.earthTerrain().projection().latLonOfPlot(EarthTerrain.spotPlot() + YILGARN_KM * 1000 / World.PLOT_M, EarthTerrain.spotPlot(), ll);
+        return List.of(
+                new GeoSpot("Rotterdam", r.lat(), r.lon(), "Anglo-Dutch Basin", Geology.Kind.BASIN, 12_640, Map.of(Resource.OIL, 2.99, Resource.COAL, 1.92, Resource.IRON, 0.44)),
+                new GeoSpot("Perth", p.lat(), p.lon(), "Perth Basin", Geology.Kind.BASIN, 0, Map.of(Resource.OIL, 1.40, Resource.IRON, 0.44)),
+                new GeoSpot("Paris", f.lat(), f.lon(), "Anglo-Paris Basin", Geology.Kind.BASIN, 0, Map.of(Resource.OIL, 1.40, Resource.IRON, 0.44)),
+                new GeoSpot("150 km east of Perth", ll[0], ll[1], "Yilgarn Block", Geology.Kind.SHIELD, 0, Map.of(Resource.IRON, 3.55, Resource.OIL, 0.04)));
+    }
+
+    /** Section 11: the study's spots - their provinces and classes, the study's multipliers at its Z, and the model's at its own. */
+    static void spots(EarthData data, String id, Map<String, Spot> spots) {
+        out.println("\n--- 11. the study's spots: Rotterdam, Perth, Paris and the Yilgarn shield 150 km east of Perth ---");
+        Geology g = Geology.of(data);
+        Resource[] six = { Resource.IRON, Resource.OIL, Resource.STONE, Resource.COAL, Resource.COPPER, Resource.URANIUM };
+        for (GeoSpot s : geoSpots(spots, id)) {
+            int row = g.provinceAt(s.lat(), s.lon());
+            EarthData.Province p = data.province(row);
+            report(s.name() + ": the province is the study's, of its class" + (s.knownMmboe() > 0 ? ", with its known petroleum" : ""),
+                    p != null && p.name().trim().equals(s.province()) && g.kindOf(row) == s.kind() && (s.knownMmboe() == 0 || p.knownMmboe() == s.knownMmboe()),
+                    String.format("(%.4f, %.4f): row %d, %s, %s, %,.0f MMBOE", s.lat(), s.lon(), row, p == null ? "none" : p.name(), g.kindOf(row).label(), p == null ? 0 : p.knownMmboe()));
+            boolean study = true, model = true;
+            StringBuilder ours = new StringBuilder(), theirs = new StringBuilder();
+            for (Resource r : six) {
+                double pf = r == Resource.OIL ? g.petroleumOf(row) : 1;
+                double m = g.multiplier(r, row);
+                model &= Math.abs(m - Geology.weight(r, g.kindOf(row)) * Geology.z(r) * pf) <= 1e-12 * Math.max(1, m);
+                ours.append(String.format(" %s x%.2f", r.label().toLowerCase(), m));
+                Double fig = s.study().get(r);
+                if (fig == null) continue;
+                double atStudyZ = Geology.weight(r, g.kindOf(row)) * STUDY_Z[r.ordinal()] * pf;
+                study &= Math.round(atStudyZ * 100) == Math.round(fig * 100);
+                theirs.append(String.format(" %s x%.2f (x%.3f at its Z)", r.label().toLowerCase(), fig, atStudyZ));
+            }
+            report(s.name() + ": at the study's Z the table's weights and the petroleum factor give the study's multipliers to its rounding", study, theirs.toString().trim());
+            report(s.name() + ": the model's multipliers are the weight x Z (x the petroleum factor), Geology's constants", model, "here:" + ours);
+        }
+        boolean same = true;
+        StringBuilder where = new StringBuilder();
+        for (String name : List.of("Rotterdam", "Perth", "Paris")) {
+            Spot s = spots.get(name);
+            World w = World.of(World.Key.earth(SEED, s.lat(), s.lon(), id));
+            int row = w.provinceAt(w.foundingX(), w.foundingY());
+            same &= row == g.provinceAt(s.lat(), s.lon()) && w.geologyAt(w.foundingX(), w.foundingY()) == g.kindOf(row);
+            where.append(String.format(" %s row %d;", name, row));
+        }
+        report("each world reads its spot's province and class at its founding site (World.provinceAt(), geologyAt())", same, where.toString().trim());
+    }
+
+    /**
+     * Section 12: iron's fields per land km2 by class, on a world's PURE cells
+     * - those whose field land is their land x the weight x Z of the class at
+     * their centre for iron and copper both, so all their land is of that class
+     * - the old world's counts (what a cell's total is drawn from) and the
+     * fields of pools whose cells are all pure of one class.
+     */
+    static void byClass(World w, String where) {
+        out.println("\n--- 12. iron's fields per land km2, shields against basins, by the weight ratio within " + (int) SIGMAS + " standard deviations: " + where + " ---");
+        int nk = Geology.Kind.values().length, cells = World.CELLS * World.CELLS;
+        Geology.Kind[] pure = new Geology.Kind[cells];
+        long[] count = new long[nk];
+        double[] km2 = new double[nk];
+        int[] pureCells = new int[nk];
+        for (int c = 0; c < cells; c++) {
+            double land = w.cellLandShare(c);
+            if (!(land > 0)) continue;
+            long cx = (long) (c % World.CELLS) * World.CELL + World.CELL / 2, cy = (long) (c / World.CELLS) * World.CELL + World.CELL / 2;
+            Geology.Kind k = w.geologyAt(cx, cy);
+            if (!pureIn(w, c, land, k)) continue;
+            pure[c] = k;
+            count[k.ordinal()] += w.legacyCellFieldCount(c, Resource.IRON);
+            km2[k.ordinal()] += land * World.CELL_KM2;
+            pureCells[k.ordinal()]++;
+        }
+        int s = Geology.Kind.SHIELD.ordinal(), b = Geology.Kind.BASIN.ordinal();
+        double ratio = (count[s] / km2[s]) / (count[b] / km2[b]), want = Geology.W_IRON[s] / Geology.W_IRON[b];
+        double sigma = Math.sqrt(1.0 / count[s] + 1.0 / count[b]);
+        report("the old world's iron fields a land km2 on pure shield cells against pure basin cells: W_IRON's ratio within SIGMAS",
+                count[s] > 0 && count[b] > 0 && Math.abs(ratio / want - 1) <= SIGMAS * sigma,
+                String.format("%.3f for %.1f (%+.2f%%, sigma %.2f%%): shields %,d fields on %,.0f km2 in %d cells, basins %,d on %,.0f km2 in %d", ratio, want,
+                        100 * (ratio / want - 1), 100 * sigma, count[s], km2[s], pureCells[s], count[b], km2[b], pureCells[b]));
+        boolean each = true;
+        StringBuilder dens = new StringBuilder();
+        for (Geology.Kind k : Geology.Kind.values()) {
+            int i = k.ordinal();
+            if (count[i] == 0 && km2[i] == 0) continue;
+            double expect = Resource.IRON.fieldsPerKm2() * Geology.W_IRON[i] * Geology.Z_IRON, got = count[i] / km2[i];
+            boolean ok = expect == 0 ? count[i] == 0 : Math.abs(got / expect - 1) <= SIGMAS / Math.sqrt(Math.max(1, expect * km2[i]));
+            each &= ok;
+            dens.append(String.format(" %s %.4f for %.4f;", k.label(), got, expect));
+        }
+        report("...and each class's density the resource's own times W_IRON times Z_IRON within SIGMAS", each, dens.toString().trim());
+        // The fields a city sees: pools whose cells are all pure of one class.
+        long[] fields = new long[nk];
+        double[] poolKm2 = new double[nk];
+        int side = World.poolsOnSide(Resource.IRON), bc = World.poolCells(Resource.IRON);
+        for (int py = 0; py < side; py++) {
+            for (int px = 0; px < side; px++) {
+                Geology.Kind k = null;
+                double land = 0;
+                boolean one = true;
+                for (int cy = py * bc; cy < Math.min(World.CELLS, py * bc + bc) && one; cy++) {
+                    for (int cx = px * bc; cx < Math.min(World.CELLS, px * bc + bc); cx++) {
+                        int c = cy * World.CELLS + cx;
+                        if (!(w.cellLandShare(c) > 0)) continue;
+                        if (pure[c] == null || (k != null && pure[c] != k)) { one = false; break; }
+                        k = pure[c];
+                        land += w.cellLandShare(c) * World.CELL_KM2;
+                    }
+                }
+                if (!one || k == null) continue;
+                fields[k.ordinal()] += w.poolFieldCount(Resource.IRON, px, py);
+                poolKm2[k.ordinal()] += land;
+            }
+        }
+        double fr = (fields[s] / poolKm2[s]) / (fields[b] / poolKm2[b]), fsig = Math.sqrt(1.0 / fields[s] + 1.0 / fields[b]);
+        report("the fields a city sees, a tenth as many, on pools all of pure shield or pure basin cells: the same ratio within SIGMAS",
+                fields[s] > 0 && fields[b] > 0 && Math.abs(fr / want - 1) <= SIGMAS * fsig,
+                String.format("%.3f for %.1f (%+.1f%%, sigma %.1f%%): shields %,d fields on %,.0f km2, basins %,d on %,.0f km2", fr, want, 100 * (fr / want - 1), 100 * fsig,
+                        fields[s], poolKm2[s], fields[b], poolKm2[b]));
+    }
+
+    /** Whether a cell's land is all of class k: its field land for iron and for copper each its land x the weight x Z there (Geology's constants; the field land is kept as a float). */
+    static boolean pureIn(World w, int c, double land, Geology.Kind k) {
+        for (Resource r : new Resource[] { Resource.IRON, Resource.COPPER }) {
+            double want = land * Geology.weight(r, k) * Geology.z(r), got = w.cellFieldShare(c, r);
+            if (Math.abs(got - want) > 1e-6 * Math.max(want, 1e-3)) return false;
+        }
+        return true;
+    }
+
+    /** Section 13, on the full file: Z and the odds are its own to their rounding, and the study's figures on the rules' classes; section 12 on the whole planet. */
+    static void planet(EarthData file, Spot rotterdam) {
+        out.println("\n--- 13. the full file, when it is named: Z and the types' odds are its own, and the study's figures on the rules' classes ---");
+        if (file == null) {
+            out.println("earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Z and the odds were not measured");
+            return;
+        }
+        Geology g = Geology.of(file);
+        long t0 = System.nanoTime();
+        Geology.Measure m = g.measure();
+        double ms = (System.nanoTime() - t0) / 1e6;
+        Geology.Kind[] hand = g.kinds(), rules = g.rulesKinds();
+        double[] pf = g.petroleum();
+        Resource[] six = { Resource.IRON, Resource.OIL, Resource.STONE, Resource.COAL, Resource.COPPER, Resource.URANIUM };
+        boolean zs = true;
+        StringBuilder z = new StringBuilder(), zr = new StringBuilder();
+        for (Resource r : six) {
+            double here = m.zOf(r, hand, pf), byRules = m.zOf(r, rules, pf);
+            zs &= Math.abs(here - Geology.z(r)) <= Z_ROUNDING;
+            z.append(String.format(" %s %.5f (%.4f);", r.label().toLowerCase(), here, Geology.z(r)));
+            zr.append(String.format(" %s %.4f (the study %.3f);", r.label().toLowerCase(), byRules, STUDY_Z[r.ordinal()]));
+        }
+        report("each resource's Z, the land over the land x w north of ANTARCTIC_LAT with the hand table, is Geology's to its rounding", zs,
+                z.toString().trim() + String.format(" measured in %.0f ms", ms));
+        out.println("      on the rules' classes alone:" + zr + " - iron, copper and uranium's do not follow from the study's own table (fixE3-notes 6)");
+        out.printf("      oil's offshore sea - shelves', basins' and rifts' - adds %.1f%% to its land's count (on the rules' classes %.1f%%)%n",
+                100 * m.offshoreOil(hand, pf), 100 * m.offshoreOil(rules, pf));
+        double[] coalShares = m.fieldShares(Resource.COAL, hand), stoneShares = m.fieldShares(Resource.STONE, hand);
+        double coking = Geology.Measure.oddsFor(coalShares, Geology.COKING_RATIO, Deposit.TYPE_SHARES[Deposit.FieldType.COKING.ordinal()]);
+        double lime = Geology.Measure.oddsFor(stoneShares, Geology.LIMESTONE_RATIO, Deposit.TYPE_SHARES[Deposit.FieldType.LIMESTONE.ordinal()]);
+        report("the types' odds, each the one whose Earth-wide share is the generated world's, are Geology's to their rounding",
+                Math.abs(coking / Geology.COKING_ODDS - 1) <= ODDS_ROUNDING && Math.abs(lime / Geology.LIMESTONE_ODDS - 1) <= ODDS_ROUNDING,
+                String.format("coking %.7f (%.6f), limestone %.6f (%.5f)", coking, Geology.COKING_ODDS, lime, Geology.LIMESTONE_ODDS));
+        double ck = Geology.Measure.shareAt(coalShares, Geology.COKING_RATIO, Geology.COKING_ODDS), ls = Geology.Measure.shareAt(stoneShares, Geology.LIMESTONE_RATIO, Geology.LIMESTONE_ODDS);
+        report("...so at Geology's odds the Earth-wide shares are TYPE_SHARES': coking 15%, limestone 70%",
+                Math.abs(ck - Deposit.TYPE_SHARES[Deposit.FieldType.COKING.ordinal()]) < 1e-6 && Math.abs(ls - Deposit.TYPE_SHARES[Deposit.FieldType.LIMESTONE.ordinal()]) < 1e-6,
+                String.format("coking %.5f%%, limestone %.5f%%; limestone %.3f in basins and on shelves, %.3f in fold belts, %.3f on shields; coking %.3f in fold belts, %.3f on shields",
+                        100 * ck, 100 * ls, Geology.lean(Geology.LIMESTONE_ODDS, 2), Geology.lean(Geology.LIMESTONE_ODDS, 0.5), Geology.lean(Geology.LIMESTONE_ODDS, 0.25),
+                        Geology.lean(Geology.COKING_ODDS, 3), Geology.lean(Geology.COKING_ODDS, 0.5)));
+        double[] by = m.landByKind(rules);
+        double all = m.totalLand();
+        boolean shares = true;
+        StringBuilder sh = new StringBuilder();
+        for (Geology.Kind k : Geology.Kind.values()) {
+            double pts = 100 * by[k.ordinal()] / all;
+            shares &= Math.abs(pts - STUDY_SHARES[k.ordinal()]) <= SHARE_WITHIN;
+            sh.append(String.format(" %s %.2f (%.1f);", k.label(), pts, STUDY_SHARES[k.ordinal()]));
+        }
+        report("on the rules' classes, the land in each class, Antarctica left out, is the study's within SHARE_WITHIN", shares, sh.toString().trim());
+        double ruleLime = Geology.Measure.oddsFor(m.fieldShares(Resource.STONE, rules), Geology.LIMESTONE_RATIO, Deposit.TYPE_SHARES[Deposit.FieldType.LIMESTONE.ordinal()]);
+        double lb = Geology.lean(ruleLime, Geology.LIMESTONE_RATIO[Geology.Kind.BASIN.ordinal()]), lsh = Geology.lean(ruleLime, Geology.LIMESTONE_RATIO[Geology.Kind.SHIELD.ordinal()]);
+        report("...and its odds put limestone in basins and on shields where the study did, within LIMESTONE_WITHIN",
+                Math.abs(lb - STUDY_LIMESTONE_BASIN) <= LIMESTONE_WITHIN && Math.abs(lsh - STUDY_LIMESTONE_SHIELD) <= LIMESTONE_WITHIN,
+                String.format("%.4f in basins (the study %.3f), %.4f on shields (%.3f)", lb, STUDY_LIMESTONE_BASIN, lsh, STUDY_LIMESTONE_SHIELD));
+        double[] withHand = m.landByKind(hand), allIn = m.landAllByKind(hand);
+        double allLand = 0;
+        for (double v : allIn) allLand += v;
+        StringBuilder hs = new StringBuilder();
+        for (Geology.Kind k : Geology.Kind.values()) hs.append(String.format(" %s %.1f;", k.label(), 100 * withHand[k.ordinal()] / all));
+        out.printf("      with the hand table, Antarctica left out:%s Antarctica in, shield %.1f%% of %,.0f km2%n", hs, 100 * allIn[Geology.Kind.SHIELD.ordinal()] / allLand, allLand);
+        byClass(World.of(World.Key.earth(SEED, rotterdam.lat(), rotterdam.lon(), EarthTerrain.use(file))), "the full file, Rotterdam's world");
+    }
+
+    /** Section 14: the totals exact on Earth and every field typed by the class under it. */
+    static void types(String id, Map<String, Spot> spots) {
+        out.println("\n--- 14. on Earth the totals are exact, oil lies at sea in basins, and a field's type leans on the class under it ---");
+        Resource[] five = { Resource.IRON, Resource.OIL, Resource.STONE, Resource.COAL, Resource.COPPER };
+        boolean sums = true, typed = true, wired = true, totals = true;
+        int pools = 0, fieldsSeen = 0;
+        int nk = Geology.Kind.values().length;
+        long[][] lean = new long[nk][2], coking = new long[nk][2];
+        for (String name : List.of("Rotterdam", "Perth")) {
+            Spot s = spots.get(name);
+            World w = World.of(World.Key.earth(SEED, s.lat(), s.lon(), id));
+            double[] t = w.totals();
+            for (Resource r : Resource.values()) {
+                double sum = 0;
+                for (int c = 0; c < World.CELLS * World.CELLS; c++) sum += w.cellTotal(c, r);
+                totals &= sum == t[r.ordinal()] && (r == Resource.FOREST || t[r.ordinal()] > 0);
+            }
+            int fc = World.cellOf(w.foundingX(), w.foundingY());
+            for (Resource r : five) {
+                int[] home = World.poolOf(fc, r);
+                int last = World.poolsOnSide(r) - 1, reach = r == Resource.IRON ? 2 : 1;
+                for (int py = Math.max(0, home[1] - reach); py <= Math.min(last, home[1] + reach); py++) {
+                    for (int px = Math.max(0, home[0] - reach); px <= Math.min(last, home[0] + reach); px++) {
+                        List<Deposit> fields = w.poolFields(r, px, py);
+                        double total = 0;
+                        double[] byType = new double[r.typesOf().size()];
+                        for (Deposit d : fields) {
+                            total += d.amount();
+                            byType[r.typesOf().indexOf(d.type())] += d.amount();
+                            wired &= d.geology() != null && d.geology() == w.geologyAt(d.x(), d.y());
+                            if (r == Resource.STONE) lean[d.geology().ordinal()][d.type() == Deposit.FieldType.LIMESTONE ? 0 : 1]++;
+                            if (r == Resource.COAL) coking[d.geology().ordinal()][d.type() == Deposit.FieldType.COKING ? 0 : 1]++;
+                        }
+                        double typeSum = 0;
+                        for (double v : byType) typeSum += v;
+                        sums &= fields.size() == w.poolFieldCount(r, px, py) && total == w.poolTotal(r, px, py) && typeSum == total;
+                        typed &= r.hasTypes() || fields.stream().allMatch(d -> d.type() == Deposit.FieldType.NONE);
+                        pools++;
+                        fieldsSeen += fields.size();
+                    }
+                }
+            }
+        }
+        check("each world's totals are its cells' totals added, to the tonne, and every resource has some", totals);
+        report("every pool's fields add up to its total exactly, and its fields of each type to it as well; oil's are NONE", sums && typed,
+                String.format("%,d pools about Rotterdam's and Perth's sites, %,d fields", pools, fieldsSeen));
+        check("every field carries the class of the ground under its centre (World.geologyAt())", wired);
+        // Oil at sea: a cell with no land holds oil where its sea is a basin's, shelf's or rift's, and nothing else - the North Sea about
+        // Rotterdam, within SEA_OIL_CELLS of its site and with its centre in the fixture's bands there (51 to 53 N; beyond them the fixture reads all sea).
+        Spot r = spots.get("Rotterdam");
+        World w = World.of(World.Key.earth(SEED, r.lat(), r.lon(), id));
+        int seaOil = 0, seaCells = 0, rc = World.cellOf(w.foundingX(), w.foundingY());
+        double seaTonnes = 0;
+        boolean onlyOil = true, held = true;
+        double[] ll = new double[2];
+        for (int dy = -SEA_OIL_CELLS; dy <= SEA_OIL_CELLS; dy++) {
+            for (int dx = -SEA_OIL_CELLS; dx <= SEA_OIL_CELLS; dx++) {
+                int c = rc + dy * World.CELLS + dx;
+                long cx = (long) (c % World.CELLS) * World.CELL + World.CELL / 2, cy = (long) (c / World.CELLS) * World.CELL + World.CELL / 2;
+                w.earthTerrain().projection().latLonOfPlot(cx, cy, ll);
+                if (w.cellLandShare(c) > 0 || ll[0] < 51.2 || ll[0] > 52.8) continue;
+                seaCells++;
+                for (Resource x : Resource.values()) if (x != Resource.OIL && x.inFields()) onlyOil &= w.cellFieldShare(c, x) == 0 && w.cellTotal(c, x) == 0;
+                boolean basinSea = w.geology().seaHoldsOil(w.provinceAt(cx, cy));
+                held &= !basinSea || w.cellFieldShare(c, Resource.OIL) > 0;
+                if (w.cellFieldShare(c, Resource.OIL) > 0) {
+                    seaOil++;
+                    seaTonnes += w.cellTotal(c, Resource.OIL);
+                }
+            }
+        }
+        report("Rotterdam's North Sea: cells with no land hold oil where they are a basin's, shelf's or rift's sea, and nothing else", seaOil > 0 && seaTonnes > 0 && onlyOil && held,
+                String.format("%d of %d cells of sea about the site hold oil, %,.0f Mt", seaOil, seaCells, seaTonnes / 1e6));
+        // The odds, on synthetic fields of each class: the draw's share against Geology.firstShare().
+        boolean odds = true, flat = true;
+        StringBuilder o = new StringBuilder();
+        for (Resource x : new Resource[] { Resource.IRON, Resource.COAL, Resource.COPPER, Resource.STONE }) {
+            for (Geology.Kind k : Geology.Kind.values()) {
+                long first = 0;
+                for (int i = 0; i < TYPE_DRAWS; i++) {
+                    Deposit d = new Deposit(x, i % (World.CELLS * World.CELLS), World.FIELD_INDEX_FROM + i / (World.CELLS * World.CELLS), 0, 0, World.FIELD_SCALE, 1, k);
+                    if (d.type() == x.typesOf().get(0)) first++;
+                }
+                double p = Geology.firstShare(x, k), got = first / (double) TYPE_DRAWS;
+                odds &= Math.abs(got - p) <= SIGMAS * Math.sqrt(p * (1 - p) / TYPE_DRAWS);
+                if (x == Resource.IRON || x == Resource.COPPER) flat &= p == Deposit.TYPE_SHARES[x.typesOf().get(0).ordinal()];
+                if (x == Resource.STONE || x == Resource.COAL) o.append(String.format(" %s %s %.3f (%.3f);", x == Resource.STONE ? "limestone" : "thermal", k.label(), got, p));
+            }
+        }
+        report("the draw on Earth gives each class its first type's share, Geology.firstShare(), within SIGMAS; iron and copper flat at TYPE_SHARES'", odds && flat,
+                String.format("%,d synthetic fields a class:%s", TYPE_DRAWS, o));
+        StringBuilder seen = new StringBuilder();
+        boolean drawn = true;
+        for (Geology.Kind k : Geology.Kind.values()) {
+            long[] v = lean[k.ordinal()];
+            long n = v[0] + v[1];
+            if (n == 0) continue;
+            double p = Geology.firstShare(Resource.STONE, k);
+            drawn &= Math.abs(v[0] / (double) n - p) <= SIGMAS * Math.sqrt(p * (1 - p) / n) + 1.0 / n;
+            seen.append(String.format(" %s %d of %d (%.3f);", k.label(), v[0], n, p));
+        }
+        for (Geology.Kind k : Geology.Kind.values()) {
+            long[] v = coking[k.ordinal()];
+            long n = v[0] + v[1];
+            if (n == 0) continue;
+            double p = 1 - Geology.firstShare(Resource.COAL, k);
+            drawn &= Math.abs(v[0] / (double) n - p) <= SIGMAS * Math.sqrt(p * (1 - p) / n) + 1.0 / n;
+        }
+        report("the stone and coal fields drawn about the two sites: limestone and coking each class's share within SIGMAS", drawn, "limestone:" + seen);
+        // A generated world: no geology, its types its 0.7.110 draw.
+        World gen = World.of(SEED);
+        int gc = World.cellOf(gen.foundingX(), gen.foundingY());
+        boolean none = gen.geology() == null && gen.geologyAt(gen.foundingX(), gen.foundingY()) == null && gen.provinceAt(gen.foundingX(), gen.foundingY()) == 0;
+        for (Resource x : new Resource[] { Resource.IRON, Resource.STONE, Resource.COAL, Resource.COPPER }) {
+            for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) {
+                for (Deposit d : gen.fieldsInCell(gc + dy * World.CELLS + dx, x)) {
+                    double u = World.unit(World.mix(((long) d.cell() << 24) ^ ((long) d.index() << 4) ^ x.ordinal() ^ Deposit.TYPE_SALT));
+                    none &= d.geology() == null && d.type() == (u < Deposit.TYPE_SHARES[x.typesOf().get(0).ordinal()] ? x.typesOf().get(0) : x.typesOf().get(1))
+                            && gen.cellFieldShare(d.cell(), x) == gen.cellLandShare(d.cell());
+                }
+            }
+        }
+        check("a generated world has no geology: its fields carry none, draw their types flat, and its field land is its land", none);
     }
 }

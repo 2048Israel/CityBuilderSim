@@ -5261,8 +5261,41 @@ public final class GameVersion {
      *     and before 0.7.113 (0.7.114 is unused), and as a generated world
      *     reaches the code it reached, the playtest since is 0.7.113's
      *     (pt07113).
+     *
+     * 0.7.117 (2026-10-11) - DEPOSITS ON THE EARTH'S GEOLOGY. Batch E3 (the
+     * project's spec-earth.md 4 and 8, runs/spec-materials.md 2.4; Jerus's
+     * answers of 2026-10-10, "all rec"; runs/brief-batchE3.md,
+     * runs/fixE3-notes.md). No save format change (36): nothing new is
+     * saved, and a generated world draws what it drew.
+     *   - Geology (new): each USGS province's class (ocean, shield, fold belt,
+     *     rift, shelf, basin, other) by geology.py's rules with the
+     *     hand-checked table over them - the 219 the rules leave other placed
+     *     (104 fold belt, 47 basin, 24 ocean, 23 shield, 11 rift, 2 shelf, 8
+     *     stay other) and 68 misfires corrected ("OCS" ocean, "Foredeep"
+     *     deep, "Uplift" a fold belt, "platform" a shelf), every row with its
+     *     reason; spec-earth 4's weights, ocean's land taking other's; Z, the
+     *     land over the land x w north of 60 S on earth-1 (iron 0.7219, oil
+     *     0.6033 with its petroleum, stone 0.6915, coal 0.7884, copper 0.7322,
+     *     uranium 0.7518); oil's petroleum factor, 1 + log10(1 + known / 1,000
+     *     MMBOE); the types' odds (coking 0.135295, limestone 4.10888).
+     *   - World: an Earth cell's fields are drawn at today's density on its
+     *     FIELD LAND (the cells pass's 16 points, each its land x its
+     *     province's w x Z, oil's x its petroleum and with a shelf's, basin's
+     *     or rift's sea); the pools, totals and shares as they were;
+     *     geology(), provinceAt(), geologyAt(). EarthTerrain's cells pass reads
+     *     each point's province (cellFieldLand()).
+     *   - Deposit: a geology component, the class under its centre (null on a
+     *     generated world); type() leans on it on Earth - coking x3 in fold
+     *     belts and x0.5 on shields, limestone x2 in basins and on shelves,
+     *     x0.5 in fold belts and x0.25 on shields, iron and copper flat - the
+     *     Earth-wide shares held at TYPE_SHARES'.
+     *   - Harnesses: EarthTerrainCheck 10 to 14 (the classes, the study's
+     *     spots, iron's fields by class, Z and the odds on the full file, the
+     *     totals and the types).
+     *   - The playtest is 0.7.113's byte for byte (pt07113): a generated
+     *     world's field land is its land and its fields carry no geology.
      */
-    public static final String VERSION = "0.7.115";
+    public static final String VERSION = "0.7.117";
 
     /**
      * The save shape.

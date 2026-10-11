@@ -268,7 +268,7 @@ These are Jerus's, and they do not move.
                                    generated world a seed makes, or the real Earth round a spot) -
                                    LandManager and LandMarket sell it, WorldCheck and LandCheck hold it
                                    (the project's spec-land.md and spec-grid.md)
-        EarthProj.java, EarthData.java, EarthTerrain.java
+        EarthProj.java, EarthData.java, EarthTerrain.java, Geology.java
                                    the real Earth for "the world as planet Earth" (0.7.111, batch E1; the
                                    project's spec-earth.md): Lambert's azimuthal equal-area projection
                                    centred on a city's spot (forward, inverse, plots in metres, a cell's
@@ -280,7 +280,14 @@ These are Jerus's, and they do not move.
                                    spec-earth 3's rule: a tile, line, plot or region drawn from the data's
                                    shares, rivers and small lakes with the seed's detail below them, the
                                    cells pass, the founding snap - World reaches it through an Earth key,
-                                   which only harnesses make until E4; EarthTerrainCheck holds it
+                                   which only harnesses make until E4; EarthTerrainCheck holds it; and since
+                                   0.7.117 (batch E3) its deposits on real geology: Geology classes each
+                                   USGS province (the rules' class, and a hand-checked table over them),
+                                   holds spec-earth 4's weights, the Z that keeps the land's count of
+                                   fields today's and the types' odds; an Earth cell's fields are drawn on
+                                   its land times its provinces' weights, oil's with its petroleum and its
+                                   offshore sea, and a field's type leans on the class under it
+                                   (EarthTerrainCheck 10 to 14)
         LandManager.java, LandMarket.java
                                    the city's land: what it owns, what is built on and what it sells - the
                                    ore and oil its ground holds less what is taken out, since 0.7.93 the

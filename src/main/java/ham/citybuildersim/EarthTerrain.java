@@ -61,7 +61,9 @@ import java.util.Map;
  * THE WORLD'S OTHER HALF. The cells pass (cellsPass()) replaces the
  * generated world's sea pass: each world cell's land and forest from
  * CELL_SAMPLES x CELL_SAMPLES points of the 4' layers, which the fields of
- * ore and oil are drawn on as the generated world's are on its cells. The
+ * ore and oil are drawn on as the generated world's are on its cells - since
+ * 0.7.117 (batch E3) each point's land weighted by its province's geology
+ * (Geology, cellFieldLand()), oil's with a basin's, shelf's or rift's sea. The
  * founding is the snap (spec-earth 2): from the spot, the projection's
  * centre, the nearest plot, ring by ring of one plot, that passes the
  * founding's test 1 (World.SITE_DRY_PLOTS); there is no founding river.
@@ -234,6 +236,8 @@ public final class EarthTerrain {
 
     private volatile boolean built;
     private double[] cellLand, cellForest;
+    /** Each resource's field land a cell, by Resource's ordinal (null for forest): cellFieldLand(). */
+    private float[][] cellFields;
     private long siteX, siteY;
     private int siteTests;
     private double cellsMs;
@@ -902,11 +906,32 @@ public final class EarthTerrain {
      * neither. Each cell's points from its four corners, blended
      * (EarthProj.blend()). What the fields are drawn on (World's deposits)
      * and the far views ask; 0.39 to 0.42 s (EarthTerrainCheck 9; the study 0.37 to 0.45).
+     *
+     * Since 0.7.117 (batch E3) each point also reads its province
+     * (Geology): a resource's FIELD LAND is the points' land times the
+     * province's multiplier (Geology.multiplier(): w x Z, and oil's
+     * petroleum factor), oil's with the sea of a shelf, basin or rift
+     * province too - what World.countOf() draws an Earth cell's fields on,
+     * so a cell across two provinces takes each its share (spec-earth 4).
      */
     public void cellsPass() {
         long t0 = System.nanoTime();
         int cells = World.CELLS, n = cells * cells, m = CELL_SAMPLES;
         double[] land = new double[n], forest = new double[n];
+        Geology geo = geology();
+        Resource[] kinds = Resource.values();
+        float[][] fields = new float[kinds.length][];
+        double[][] mult = new double[kinds.length][];
+        for (Resource r : kinds) {
+            if (!r.inFields()) continue;
+            fields[r.ordinal()] = new float[n];
+            mult[r.ordinal()] = new double[geo.rows()];
+            for (int row = 0; row < geo.rows(); row++) mult[r.ordinal()][row] = geo.multiplier(r, row);
+        }
+        boolean[] seaOil = new boolean[geo.rows()];
+        for (int row = 0; row < geo.rows(); row++) seaOil[row] = geo.seaHoldsOil(row);
+        double[] sum = new double[kinds.length];
+        int oil = Resource.OIL.ordinal();
         EarthData.Layer farLand = data.layer("far.land"), farLake = data.layer("far.lake"), cover = data.layer("landcover");
         int fcpd = farLand.cellsPerDegree, ccpd = cover.cellsPerDegree, fcols = 360 * fcpd;
         byte[][] landBands = new byte[180][], lakeBands = new byte[180][];
@@ -919,6 +944,7 @@ public final class EarthTerrain {
             long x0 = (long) (c % cells) * World.CELL, y0 = (long) (c / cells) * World.CELL;
             EarthProj.Blend b = proj.blend(x0, y0, World.CELL);
             double l = 0, f = 0;
+            Arrays.fill(sum, 0);
             for (int j = 0; j < m; j++) {
                 for (int i = 0; i < m; i++) {
                     if (!b.latLon(x0 + (i + 0.5) * World.CELL / m, y0 + (j + 0.5) * World.CELL / m, ll)) continue;
@@ -935,7 +961,14 @@ public final class EarthTerrain {
                     int at = (int) ((r % fcpd) * fcols + col);
                     int dry = landBands[band] == null ? landUniform[band] : landBands[band][at] & 0xFF;
                     int wet = lakeBands[band] == null ? lakeUniform[band] : lakeBands[band][at] & 0xFF;
-                    l += (dry + wet) / (double) EarthData.FAR_LEVELS;
+                    double pl = (dry + wet) / (double) EarthData.FAR_LEVELS;
+                    l += pl;
+                    int row = geo.provinceAt(ll[0], ll[1]);
+                    for (int k = 0; k < kinds.length; k++) {
+                        if (mult[k] == null) continue;
+                        double a = k == oil && seaOil[row] ? pl + Math.max(0, EarthData.FAR_LEVELS - dry - wet) / (double) EarthData.FAR_LEVELS : pl;
+                        sum[k] += a * mult[k][row];
+                    }
                     if (dry == 0) continue;
                     long cr = Math.min(180L * ccpd - 1, Math.max(0, (long) Math.floor((90 - ll[0]) * ccpd)));
                     long cc = Math.floorMod((long) Math.floor((ll[1] + 180) * ccpd), 360L * ccpd);
@@ -950,10 +983,34 @@ public final class EarthTerrain {
             }
             land[c] = Math.min(1, l / (m * m));
             forest[c] = Math.min(1, f / (m * m));
+            for (int k = 0; k < kinds.length; k++) if (fields[k] != null) fields[k][c] = (float) (sum[k] / (m * m));
         }
         cellLand = land;
         cellForest = forest;
+        cellFields = fields;
         cellsMs = (System.nanoTime() - t0) / 1e6;
+    }
+
+    /** The geology of its data (Geology.of()): the provinces, their classes and multipliers. */
+    public Geology geology() { return Geology.of(data); }
+
+    /**
+     * A cell's FIELD LAND for a resource, as a share of its area (0.7.117):
+     * its 16 points' land each times its province's Geology.multiplier(),
+     * oil's with a shelf's, basin's or rift's sea - what today's density is
+     * taken over (World.countOf()). Its land, cellLand(), for forest.
+     */
+    double cellFieldLand(int cell, Resource r) {
+        build();
+        float[] f = cellFields[r.ordinal()];
+        return f == null ? cellLand[cell] : f[cell];
+    }
+
+    /** The province under a point in plot coordinates, its row in the data; 0 off the planet or in none. */
+    public int provinceAt(double x, double y) {
+        double[] ll = new double[2];
+        if (!proj.latLonOfPlot(x, y, ll)) return 0;
+        return geology().provinceAt(ll[0], ll[1]);
     }
 
     /** How long the cells pass took, in ms (the last time it ran). */
