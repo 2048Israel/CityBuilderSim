@@ -2490,13 +2490,16 @@ final class BuildScreen {
     /** The debt limit's card's two lines, and the mark under its slider: where the city stands now (0.7.81: its debt over a year of GDP; since 0.7.101 all it owes over the output of its last twelve months). */
     static String[] autoLimitWords(AutoBuilder ab, Game g) {
         double now = AutoBuilder.ratio(g);
-        String stands = Double.isFinite(now) ? "Now " + AutoBuilder.gdpShare(now) + (ab.within(g) ? "." : ", over it.")
+        // Each debt-to-GDP figure named for what it counts (0.7.129, Jerus's call 6):
+        // this one all the city owes; the left panel's Debt/GDP its bonds and bills.
+        String stands = Double.isFinite(now) ? "All it owes is now " + AutoBuilder.gdpShare(now) + " of GDP"
+                + (ab.within(g) ? "" : ", over it") + "; the left panel's Debt/GDP counts its bonds and bills alone."
                 : "No GDP recorded yet to set its debt against.";
         return new String[] { "Debt limit",
                 "All the city owes - bonds and bills, its overdraft, its central bank's advances - at most "
                         + AutoBuilder.gdpShare(ab.getDebtLimit()) + " of what it produced in the last year; over it, it builds"
                         + " nothing. " + stands,
-                Double.isFinite(now) ? "now " + AutoBuilder.gdpShare(now) : null };
+                Double.isFinite(now) ? "all it owes, now " + AutoBuilder.gdpShare(now) : null };
     }
 
     /** "Build from cash anyway" (0.7.81): the lead, the two chips, and each chip's tooltip. */

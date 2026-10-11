@@ -4292,9 +4292,12 @@ public class BuildingManager {
             // Every building gets the crew it can use, and no stack more than
             // it owes - see EVERY BUILDING GETS THE CREW IT CAN USE above -
             // and, once the player has a hand on it, the city's share in the
-            // city's order and its rushed sites on overtime (plan()).
-            if (engaged) plan = lastPlan = plan(constructionOutput);
-            double[] share = engaged ? plan.work : siteShares(constructionOutput);
+            // city's order and its rushed sites on overtime (plan()); and
+            // while the dead wait, the city's death care first in that share
+            // (0.7.129, DEATH CARE FIRST WHILE THE DEAD WAIT).
+            boolean planned = engaged || !deathCareFirst().isEmpty();
+            if (planned) plan = lastPlan = plan(constructionOutput);
+            double[] share = planned ? plan.work : siteShares(constructionOutput);
             for (int k = 0; k < stacks.size(); k++) {
                 BuildingsStacks stack = stacks.get(k);
                 stack.advanceConstruction(share[k]);
@@ -4371,7 +4374,10 @@ public class BuildingManager {
        HAND ON THE QUEUE there), settled off the events the advance leaves
        (takeControlEvents()). Nothing here runs in a city where the player
        has done none of it: advanceConstruction() asks control.engaged()
-       first, and siteShares() appends no demolition it has not got.
+       first, and siteShares() appends no demolition it has not got - except
+       the city's death care served first while the dead wait (0.7.129,
+       DEATH CARE FIRST WHILE THE DEAD WAIT, below), which is the model's
+       rule, not the player's hand, and plans the month the same way.
        ===================================================================== */
 
     /** The player's hand on the queue: the order, the rushes, the shells, the demolitions and the buy-outs. */
@@ -4396,6 +4402,8 @@ public class BuildingManager {
      * share, the city's in the city's order, and a rushed site's month on
      * overtime. One slot per stack in the stacks' order, one empty slot (the
      * rule's slot for an order being weighed), then one per demolition.
+     * Since 0.7.129 it also says whether the city's death care was served
+     * first because the dead wait (deathCareFirst, line()).
      */
     public static final class Plan {
         public final java.util.List<String> keys;
@@ -4405,10 +4413,26 @@ public class BuildingManager {
         public final double[] owed, rule, share, work;
         public final java.util.List<ConstructionControl.Overtime> overtime;
         public final double overtimePoints;
+        /** The city's death-care sites served first because the dead wait, in the order served (0.7.129); empty when the rule is off. */
+        public final java.util.List<String> deathCareFirst;
+        /** ...and the dead lying unburied that put them there, as Healthcare counted them last month; 0 when the rule is off. */
+        public final double unburied;
         Plan(java.util.List<String> keys, double output, double[] owed, double[] rule, double[] share, double[] work,
-             java.util.List<ConstructionControl.Overtime> overtime, double overtimePoints) {
+             java.util.List<ConstructionControl.Overtime> overtime, double overtimePoints,
+             java.util.List<String> deathCareFirst, double unburied) {
             this.keys = keys; this.output = output; this.owed = owed; this.rule = rule; this.share = share;
             this.work = work; this.overtime = overtime; this.overtimePoints = overtimePoints;
+            this.deathCareFirst = java.util.Collections.unmodifiableList(deathCareFirst);
+            this.unburied = deathCareFirst.isEmpty() ? 0 : unburied;
+        }
+        /**
+         * The construction page's line where the order shows: DEATH_CARE_FIRST and
+         * how many lie unburied, or null when the rule is off (0.7.129).
+         */
+        public String line() {
+            if (deathCareFirst.isEmpty()) return null;
+            return String.format(java.util.Locale.CANADA, "%s: %,.0f lie unburied, so the city's cemeteries and"
+                    + " crematoria take its crews before its other sites.", DEATH_CARE_FIRST, Math.ceil(unburied));
         }
         /** This month's share of the crews, before any overtime. */
         public double shareOf(String key) { int i = keys.indexOf(key); return i < 0 ? 0 : share[i]; }
@@ -4454,7 +4478,21 @@ public class BuildingManager {
         double[] rule = siteShares(siteOutput, null, 0);
         double[] share = rule.clone();
         java.util.List<String> city = citySiteKeys();
-        if (control.isPrioritySet()) applyPriority(share, owed, keys, control.effectiveOrder(city));
+        // While the dead wait, the city's death care first in its share (0.7.129):
+        // with the player's order, at its top; without one, top down before the
+        // rest of the city's sites share what is left by the crews' rule.
+        java.util.List<String> dead = deathCareAmong(city);
+        java.util.List<String> order = firstTheDead(control.effectiveOrder(city), dead);
+        if (control.isPrioritySet()) applyPriority(share, owed, keys, order);
+        else if (!dead.isEmpty()) {
+            double[] weight = new double[keys.size()];
+            for (int k = 0; k < n; k++) {
+                BuildingsStacks s = stacks.get(k);
+                if (s.getUnderConstruction() > 0) weight[k] = weightOf(s.getBuilding(), s.getUnderConstruction());
+            }
+            for (int j = 0; j < d; j++) weight[n + 1 + j] = demolitionWeight(demolitions.get(j));
+            applyDeathCareFirst(share, owed, weight, keys, order.subList(0, dead.size()), city);
+        }
 
         double[] work = share.clone();
         java.util.List<ConstructionControl.Overtime> overtime = new java.util.ArrayList<>();
@@ -4472,10 +4510,11 @@ public class BuildingManager {
                     perPoint, ConstructionControl.premiumShare() * share[i] * perPoint));
             extra += work[i] - share[i];
         }
-        return new Plan(keys, siteOutput, owed, rule, share, work, overtime, extra);
+        return new Plan(keys, siteOutput, owed, rule, share, work, overtime, extra,
+                new java.util.ArrayList<>(order.subList(0, dead.size())), unburiedNow());
     }
 
-    /** The plan the last month's advance applied, or null when the player's hand was not on the queue: a month's reading, not saved. */
+    /** The plan the last month's advance applied, or null when the player's hand was not on the queue and no death care was served first (0.7.129): a month's reading, not saved. */
     private Plan lastPlan;
 
     public Plan getLastPlan() { return lastPlan; }
@@ -4509,9 +4548,151 @@ public class BuildingManager {
         return out;
     }
 
-    /** ...in the order the city's crews serve them: the player's, or the stacks' order with none set. */
+    /**
+     * ...in the order the city's crews serve them: the player's, or the
+     * stacks' order with none set - and while the dead wait, the city's
+     * death care at its top (0.7.129, DEATH CARE FIRST WHILE THE DEAD WAIT).
+     */
     public java.util.List<String> cityOrder() {
-        return control.effectiveOrder(citySiteKeys());
+        java.util.List<String> city = citySiteKeys();
+        return firstTheDead(control.effectiveOrder(city), deathCareAmong(city));
+    }
+
+    /* ---------------------------------------------------------------------
+       DEATH CARE FIRST WHILE THE DEAD WAIT (0.7.129, batch T1-B)
+
+       While anybody lies unburied (Healthcare.getUnburied() above 0, as last
+       month settled it), the city's own death-care sites - every stack of
+       the city's whose template serves the dead, by its care type, BURIAL or
+       CREMATION (servesTheDead()) - are served first out of the city's share
+       of the crews: each takes what it still owes, or what is left of the
+       share if less, before the rest of the city's order. With the player's
+       order set, they head it and the rest follow in the player's order
+       (applyPriority() over firstTheDead()); with none, the rest share what
+       is left by the crews' rule (applyDeathCareFirst()). Only the city's
+       sites move: the rule's share every other owner's site gets is the
+       crews' rule's, to the bit, as under the player's order. Once nobody
+       lies unburied, or no death care of the city's is on site, the order is
+       what it was, to the bit - the advance takes the path it took before.
+
+       WHY. Batch T1 traced Jerus's construction-bound city (the project's
+       why-the-builders-stall.md): its cemeteries full and no crematorium,
+       97,200 dead at Healthcare's cap added Health's capped 15 points to the
+       sick rate, which cut the builders to 0.812 of their nameplate; the
+       repairs took 81% of it, so about 420 points a month reached 26 sites,
+       and the Municipal Cemetery that would have buried the dead got 0.31%
+       of them - 1.4 points a month, a thousand months. Dead, sick, no site
+       output, no cemetery: nothing in the model broke the circle. Moving the
+       cemetery to the top of the city's order by hand opened it in about
+       twelve months on a copy of his city (option A). Jerus chose this rule,
+       A done by the model (2026-10-10, "1 both yes"): the loop is the bug.
+
+       THE PLAYER'S ORDER does not hold the death care down while the dead
+       wait. An order set months before the cemeteries filled says nothing
+       about the dead, and the page's line says the rule is on; the death care
+       owes little beside a city's other sites (the trace's cemetery 1,393
+       points of 2.79 million), so what the rest of the order gives up is
+       bounded, and only while the dead wait.
+
+       ONE WAIT. Every wait reads it (handWait()): a death-care site is timed
+       as the top of the city's order, and with no order set, every other
+       city site waits for the death care ahead of it at the city's pace and
+       then by the rule - so the page, the panel, a card and a city order's
+       quote, which automatic building sizes its orders by, agree.
+       DeathCareFirstCheck holds it, on a fixture that causes the trap.
+       --------------------------------------------------------------------- */
+
+    /** The page's words for the rule, which Plan.line() opens with: what it does and when. */
+    public static final String DEATH_CARE_FIRST = "Death care first while the dead wait";
+
+    /** The dead lying unburied, as Game hands them (Healthcare.getUnburied()); null - a harness's bare manager - reads none. */
+    private java.util.function.DoubleSupplier unburied;
+
+    /** Told by Game: where the dead lying unburied are read from (0.7.129). */
+    public void setUnburied(java.util.function.DoubleSupplier unburied) { this.unburied = unburied; }
+
+    /** The dead lying unburied, as last month settled them; 0 without the hook. */
+    public double unburiedNow() {
+        if (unburied == null) return 0;
+        double u = unburied.getAsDouble();
+        return u > 0 ? u : 0;
+    }
+
+    /** Whether a template serves the dead: its care type is burial or cremation. */
+    public static boolean servesTheDead(BuildingsTemplate t) {
+        return t != null && (t.getCare() == CareType.BURIAL || t.getCare() == CareType.CREMATION);
+    }
+
+    /** ...and a site's key: a stack of such a template. A demolition never does. */
+    public boolean servesTheDead(String key) {
+        int id = ConstructionControl.templateIdOf(key);
+        return id >= 0 && servesTheDead(getTemplate(id));
+    }
+
+    /**
+     * Of these sites, the ones served first while the dead wait - those that
+     * serve the dead, in the order given - or none when nobody lies unburied.
+     */
+    java.util.List<String> deathCareAmong(java.util.List<String> sites) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        if (!(unburiedNow() > 0)) return out;
+        for (String k : sites) if (servesTheDead(k)) out.add(k);
+        return out;
+    }
+
+    /**
+     * The city's death-care sites served first this month, in the order
+     * served: empty when nobody lies unburied or none is on site - the rule
+     * is then off, and nothing it touches moves.
+     */
+    public java.util.List<String> deathCareFirst() {
+        if (!(unburiedNow() > 0)) return new java.util.ArrayList<>();
+        java.util.List<String> city = citySiteKeys();
+        java.util.List<String> dead = deathCareAmong(city);
+        if (dead.isEmpty()) return dead;
+        return new java.util.ArrayList<>(firstTheDead(control.effectiveOrder(city), dead).subList(0, dead.size()));
+    }
+
+    /** An order with `dead` taken to its top, each group in the order it had; the order itself with none. */
+    static java.util.List<String> firstTheDead(java.util.List<String> order, java.util.List<String> dead) {
+        if (dead.isEmpty()) return order;
+        java.util.List<String> out = new java.util.ArrayList<>(order.size());
+        for (String k : order) if (dead.contains(k)) out.add(k);
+        for (String k : order) if (!dead.contains(k)) out.add(k);
+        return out;
+    }
+
+    /**
+     * The city's share with no order of the player's, while the dead wait:
+     * what the rule gave the city's sites, together, handed first to the
+     * death care top down - each what it still owes, at most, of what is
+     * left - and what remains shared among the city's other sites by the
+     * crews' rule (waterFill(), each by its crew's weight and no more than
+     * it owes). Every slot not the city's is left as the rule set it.
+     */
+    static void applyDeathCareFirst(double[] share, double[] owed, double[] weight, java.util.List<String> keys,
+                                    java.util.List<String> dead, java.util.List<String> city) {
+        double pool = 0;
+        for (String key : city) {
+            int i = keys.indexOf(key);
+            if (i >= 0) pool += share[i];
+        }
+        for (String key : dead) {
+            int i = keys.indexOf(key);
+            if (i < 0) continue;
+            double give = Math.max(0, Math.min(owed[i], pool));
+            share[i] = give;
+            pool -= give;
+        }
+        java.util.List<Integer> rest = new java.util.ArrayList<>();
+        for (String key : city) {
+            int i = keys.indexOf(key);
+            if (i >= 0 && !dead.contains(key)) rest.add(i);
+        }
+        double[] w = new double[rest.size()], o = new double[rest.size()];
+        for (int j = 0; j < rest.size(); j++) { w[j] = weight[rest.get(j)]; o[j] = owed[rest.get(j)]; }
+        double[] fill = waterFill(Math.max(0, pool), w, o);
+        for (int j = 0; j < rest.size(); j++) share[rest.get(j)] = fill[j];
     }
 
     /** Every site with work on it: the stacks with buildings on site, and the demolitions. */
@@ -4639,7 +4820,10 @@ public class BuildingManager {
        the card, the Needs-you line and the quote kept the crews' rule.
 
        WITH NO ORDER SET AND NO RUSH ON IT, a site's wait is the rule's own,
-       and for a stack it is waitWith(), to the bit what it always was. Only
+       and for a stack it is waitWith(), to the bit what it always was - and
+       since 0.7.129 with no death care of the city's served first while the
+       dead wait, which times the city's sites as an order would (DEATH CARE
+       FIRST WHILE THE DEAD WAIT; handWait()). Only
        the player's hand times it otherwise (handWait()): a city site while
        an order is set, by everything ahead of it in the order and itself
        over the city's share of the crews; a rushed one at each coming
@@ -4648,9 +4832,14 @@ public class BuildingManager {
        it on site - a new city site at the bottom of the order.
        --------------------------------------------------------------------- */
 
-    /** Whether the player's hand times this site: a city site while an order is set, or a rushed one. */
+    /**
+     * Whether the player's hand times this site: a city site while an order
+     * is set, or a rushed one - or, since 0.7.129, any city site while the
+     * city's death care is served first (DEATH CARE FIRST WHILE THE DEAD WAIT).
+     */
     private boolean handOn(String key) {
-        return (control.isRushed(key) || control.isPrioritySet()) && citySiteKeys().contains(key);
+        return (control.isRushed(key) || control.isPrioritySet() || !deathCareFirst().isEmpty())
+                && citySiteKeys().contains(key);
     }
 
     /**
@@ -4707,14 +4896,18 @@ public class BuildingManager {
      * What t's site would be with n more of it owing `owed` more points on it
      * - {its crew's weight, its points owed} - when the player's hand times
      * it: a city site (or none, which the city's order would make one) while
-     * an order is set, or a rushed one. Null when the rule times it.
+     * an order is set, or a rushed one, or while the dead wait one that
+     * serves them or waits behind the death care on site (0.7.129). Null
+     * when the rule times it.
      */
     private double[] joined(BuildingsTemplate t, int n, double owed) {
         BuildingsStacks s = getStack(t);
         boolean onSite = s != null && s.getUnderConstruction() > 0;
         if (onSite && !s.isCitysOwn()) return null;
         String key = ConstructionControl.keyOf(t);
-        if (!control.isPrioritySet() && !(onSite && control.isRushed(key))) return null;
+        // ...or the dead wait, and it serves them or waits behind the death care on site (0.7.129).
+        boolean deadFirst = unburiedNow() > 0 && (servesTheDead(t) || !deathCareFirst().isEmpty());
+        if (!control.isPrioritySet() && !(onSite && control.isRushed(key)) && !deadFirst) return null;
         int on = onSite ? s.getUnderConstruction() : 0;
         double aheadOwed = onSite
                 ? Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress()) : 0;
@@ -4773,6 +4966,10 @@ public class BuildingManager {
      * then the key's months by the rule held steady, or, a city site while an
      * order is set, everything ahead of it in the order and itself over the
      * city's share; a rushed site at each coming month's overtime factor.
+     * While the dead wait (0.7.129) the city's death care heads the order -
+     * a death-care site is timed as the order times its top, with or
+     * without the player's - and with no order set, any other city site
+     * waits for the death care's points at the city's pace, then by the rule.
      * NaN when its pace is nothing; MAX_VALUE past a hundred years.
      */
     private double handWait(String key, double[] mine, boolean isNew, double siteOutput) {
@@ -4793,11 +4990,13 @@ public class BuildingManager {
         for (double[] v : by.values()) total += v[0];
         java.util.List<String> city = citySiteKeys();
         if (isNew && !city.contains(key)) city.add(key);
+        // While the dead wait, the city's death care heads its order (0.7.129).
+        java.util.List<String> dead = deathCareAmong(city);
         double months;
-        if (control.isPrioritySet() && city.contains(key)) {
+        if (city.contains(key) && (control.isPrioritySet() || dead.contains(key))) {
             double cityWeight = 0, ahead = 0;
             for (String k : city) { double[] v = by.get(k); if (v != null) cityWeight += v[0]; }
-            for (String k : control.effectiveOrder(city)) {
+            for (String k : firstTheDead(control.effectiveOrder(city), dead)) {
                 double[] v = by.get(k);
                 if (v != null) ahead += v[1];
                 if (k.equals(key)) break;
@@ -4805,6 +5004,16 @@ public class BuildingManager {
             double pace = siteOutput * cityWeight / total;
             if (!(pace > 0)) return Double.NaN;
             months = ahead / pace;
+        } else if (city.contains(key) && !dead.isEmpty()) {
+            // With no order set, a city site behind the death care: the death
+            // care's points at the city's pace, which it takes whole until it
+            // is done, and then its own by the rule held steady.
+            double cityWeight = 0, deadOwed = 0;
+            for (String k : city) { double[] v = by.get(k); if (v != null) cityWeight += v[0]; }
+            for (String k : dead) { double[] v = by.get(k); if (v != null) deadOwed += v[1]; }
+            double pace = siteOutput * cityWeight / total;
+            if (!(pace > 0) || !(me[0] > 0)) return Double.NaN;
+            months = deadOwed / pace + me[1] * total / (siteOutput * me[0]);
         } else {
             if (!(me[0] > 0)) return Double.NaN;
             months = me[1] * total / (siteOutput * me[0]);
