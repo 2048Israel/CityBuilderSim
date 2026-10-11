@@ -626,12 +626,43 @@ public final class CityNeeds {
      * player reads (LandManager.areaWords()).
      */
     public static Need ground(Game game, Words w) {
-        double free = game.getLandManager().getAvailableSqFt();
+        LandManager land = game.getLandManager();
+        double free = land.getAvailableSqFt();
+        String reading = free > 0 ? LandManager.areaWords(free) + " free" : "none - nobody can break ground";
+        // ...and, listed, what the zones hold that the homes may not build on (0.7.109, Z2): held is not free.
+        if (free <= GROUND_YELLOW) {
+            String held = zonesHoldWords(game);
+            if (held != null) reading += " · " + held;
+        }
         List<Need> one = new ArrayList<>();
-        under(one, "GROUND TO BUILD ON",
-                free > 0 ? LandManager.areaWords(free) + " free" : "none - nobody can break ground",
+        under(one, "GROUND TO BUILD ON", reading,
                 free, GROUND_YELLOW, 0, Kind.GROUND, Go.LAND, CareType.NONE, EducationType.NONE, 0, 0);
         return one.get(0);
+    }
+
+    /**
+     * What the zones hold that the homes may not build on, as the GROUND row
+     * names it once it is listed (0.7.109, batch Z2; the zoning study's
+     * NEEDS YOU line): every zone's held ground but the landlords' own
+     * (Real Estate's zone is the homes'), "Agriculture's zone holds 12.4 km²"
+     * for one, "3 zones hold 20.1 km²" for more - null when none holds any.
+     */
+    public static String zonesHoldWords(Game game) {
+        LandManager land = game.getLandManager();
+        double held = 0;
+        int zones = 0;
+        String one = null;
+        for (Zoning.Zone z : game.getZoning().zones()) {
+            if (Sectors.REAL_ESTATE.equals(z.sector())) continue;
+            double h = land.heldBy(z.sector());
+            if (!(h > 0)) continue;
+            held += h;
+            zones++;
+            Sector s = game.getSectors().byKey(z.sector());
+            one = s == null ? z.sector() : s.label();
+        }
+        if (zones == 0) return null;
+        return (zones == 1 ? one + "'s zone holds " : zones + " zones hold ") + LandManager.areaWords(held);
     }
 
     /**

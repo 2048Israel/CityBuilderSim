@@ -1267,8 +1267,9 @@ final class BuildScreen {
             case STAFFING:
                 return gate.why();
             case LAND:
+                // ...and what the other sectors' zones hold, as the investors' word says it (0.7.109, Z2).
                 return "no land - needs " + LandManager.areaWords(gate.a()) + ", "
-                        + LandManager.areaWords(gate.b()) + " free";
+                        + LandManager.areaWords(gate.b()) + " free" + (gate.why() == null ? "" : "; " + gate.why());
             default:
                 // ...a conversion unit nothing feeds (0.7.103, Jerus's B): no feed, not a loss.
                 if (gate.why() != null) return gate.why();

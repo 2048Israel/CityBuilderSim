@@ -3961,7 +3961,8 @@ public class Game {
        spec-zoning.md)
 
        The player's hand on the zones and the forest law - the doors Policy's
-       ZONING area opens (batch Z2), each change a line in the decision log:
+       ZONING area opens (batch Z2), each change a line in the decision log
+       (DecisionLog.ZONING since 0.7.109, Z2; TAX in Z1):
        LandManager holds the ground and works out what each zone holds
        (ZONES AND THE FOREST LAW there), Zoning the settings. THE ZONE'S
        TAXES ARE THE SECTOR'S OWN (Z5, "one dial, two doors"): setZoneTax()
@@ -3986,7 +3987,7 @@ public class Game {
         if (now == null) return;
         if (was == null || was.kind() != now.kind() || DecisionLog.moved(was.size(), now.size())
                 || DecisionLog.moved(was.priceShare(), now.priceShare())) {
-            decisions.record(DecisionLog.TAX, "Zoned " + zoneSizeWords(now) + " for " + sector + " at "
+            decisions.record(DecisionLog.ZONING, "Zoned " + zoneSizeWords(now) + " for " + sector + " at "
                     + DecisionLog.pct(now.priceShare()) + " of the going price");
         }
     }
@@ -3999,7 +4000,7 @@ public class Game {
 
     /** Un-zones a sector: what its zone held goes back to everyone; what was sold in it stays with its owner at what it paid. */
     public void removeZone(String sector) {
-        if (landManager.getZoning().remove(sector) != null) decisions.record(DecisionLog.TAX, "Un-zoned " + sector);
+        if (landManager.getZoning().remove(sector) != null) decisions.record(DecisionLog.ZONING, "Un-zoned " + sector);
     }
 
     /** The forest law (Z6): `protectedShare` of the city's forest ground never cut nor built on, `keptShare` - at least that - never built on. */
@@ -4008,7 +4009,7 @@ public class Game {
         double wasP = z.protectedShare(), wasK = z.keptShare();
         z.setForestLaw(protectedShare, keptShare);
         if (DecisionLog.moved(wasP, z.protectedShare()) || DecisionLog.moved(wasK, z.keptShare())) {
-            decisions.record(DecisionLog.TAX, "Forest law: " + DecisionLog.pct(z.protectedShare()) + " protected, "
+            decisions.record(DecisionLog.ZONING, "Forest law: " + DecisionLog.pct(z.protectedShare()) + " protected, "
                     + DecisionLog.pct(z.keptShare()) + " kept from building");
         }
     }
@@ -4645,11 +4646,15 @@ public class Game {
             // which now has exactly one cause: the land went between planning
             // and buying. Saying so beats the silence this used to leave.
             landBlockedSectors.add(decision.sector);
+            // ...the ground its sector may build on, and since 0.7.109 (Z2) what the others' zones hold, as landReason() says it.
+            String sector = decision.template.getSector();
+            double others = landManager.heldByZones() - landManager.heldBy(sector);
             lastInvestment.put(slot,
-                    String.format("Could not build %s - needs %s, %s free",
+                    String.format("Could not build %s - needs %s, %s free%s",
                             decision.template.getName(),
                             LandManager.areaWords(decision.template.getLandSqFt() * (double) quantity),
-                            LandManager.areaWords(landManager.getAvailableSqFt())));
+                            LandManager.areaWords(landManager.freeFor(sector)),
+                            others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : ""));
         }
     }
 
@@ -5017,10 +5022,13 @@ public class Game {
             });
         } else {
             landBlockedSectors.add(decision.sector);
+            // ...the ground its sector may build on, and since 0.7.109 (Z2) what the others' zones hold, as landReason() says it.
+            double others = landManager.heldByZones() - landManager.heldBy(t.getSector());
             lastInvestment.put(slot,
-                    String.format("Could not build %s - needs %s, %s free",
+                    String.format("Could not build %s - needs %s, %s free%s",
                             t.getName(), LandManager.areaWords(t.getLandSqFt() * (double) quantity),
-                            LandManager.areaWords(landManager.getAvailableSqFt())));
+                            LandManager.areaWords(landManager.freeFor(t.getSector())),
+                            others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : ""));
         }
     }
 
@@ -6061,7 +6069,8 @@ public class Game {
                 getMarkets().get(Good.MATERIALS).getLocalPrice(),
                 buildingManager.getConstructionMaterialPrice(),
                 selected.getLandSqFt() * (double) quantity,
-                landManager.getAvailableSqFt(),
+                // ...on the ground its sector may build on (0.7.109, Z2): what buildFor()'s canAllocate() asks.
+                landManager.freeFor(selected.getSector()),
                 // The city's own order's wait (0.7.22, after the docs pass):
                 // quoteMonths() exactly with no order set and no rush, and with
                 // one, where the order would land in it (quoteCityMonths()).

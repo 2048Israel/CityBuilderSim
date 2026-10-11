@@ -79,6 +79,9 @@ public final class DecisionLog {
     /** The city's strategic reserve (0.7.85): a fill ordered, a release set or stopped. */
     public static final String RESERVE = "reserve";
 
+    /** Zoning (0.7.109, batch Z2): a zone set, re-sized, re-priced or taken off, and the forest law - its own kind, where Z1 filed it under TAX; a zone's tax rows stay TAX, being the sector's own offsets. */
+    public static final String ZONING = "zoning";
+
     /** One decision: when, what kind, and what it was, in a few words. Public fields, for the save. */
     public static final class Entry {
         public int month;
