@@ -5002,10 +5002,10 @@ public final class GameVersion {
      *     folder left as they were, and the player told which build saved the
      *     city and still opens it (noLongerReadable(): "This city was saved by
      *     build <its build>, and build 0.7.108 can no longer read it. Build
-     *     <its build> still opens it."), on the load screen and in the log with the
-     *     formats; the slot list marks the slot "From an older version" and
-     *     offers no load, and Continue and YOUR CITIES pass it by
-     *     (SaveHeader.isReadableHere()), as they pass a newer build's.
+     *     <its build> still opens it."), on the load screen's slot list, whose
+     *     Load button for it is off, and in the log with the formats; Continue
+     *     and YOUR CITIES pass it by (SaveHeader.isReadableHere()), as they
+     *     pass a newer build's.
      *   - Harnesses: SaveFileCheck (new section: a save at the floor loads,
      *     one below it is refused in those words with every file in its
      *     folder byte for byte as it was, a newer build's is still refused as
@@ -5679,9 +5679,9 @@ public final class GameVersion {
     }
 
     /**
-     * What the load screen and the log tell the player when a save is older
-     * than this build loads: the build that saved the city, which still opens
-     * it, and this one, which cannot. A save stamped by no build (the stamp
+     * What the load screen's slot list, a refused load and the log tell the
+     * player when a save is older than this build loads: the build that saved
+     * the city, which still opens it, and this one, which cannot. A save stamped by no build (the stamp
      * came with format 4) says "an older build" and names none.
      */
     public static String noLongerReadable(String savedBy) {
