@@ -33,9 +33,12 @@ import java.util.Map;
  * What this has to prove (spec-earth 8, E4):
  *   1. THE DATA, OR WHY NOT: a reader made available is available and an
  *      identity nothing holds is not; the words for a missing file name where
- *      it goes, for another identity both identities, for a save that does
- *      not say where that it does not; the game's Earth is here when the full
- *      file is named, its identity EARTH_1.
+ *      it goes and (0.7.125) how it gets there - EarthSite.GET_EARTH and Play
+ *      CityBuilderSim.bat in a copy of the repository, the zip in the built
+ *      game - for a file that is not this build's what replaces it, the
+ *      load's the same; for another identity both identities, for a save that
+ *      does not say where that it does not; the game's Earth is here when the
+ *      full file is named, its identity EARTH_1.
  *   2. THE CARD IS THE PLOTS': on each window, the card's site is the world's
  *      founding site, the snap's; its disc of CARD_PLOTS counted again plot
  *      by plot adds up and agrees, and so do the nearest fresh water and sea;
@@ -131,6 +134,21 @@ public class EarthFoundingCheck {
                 EarthSite.available(id) && !EarthSite.available(nobody) && !EarthSite.available(null) && !EarthSite.available(""));
         String missing = EarthSite.dataWords(null);
         report("the words for a missing file say it is not here and where it goes", missing.contains("not here") && missing.contains(EarthData.DATA_FILE), missing);
+        // How it gets there (0.7.125, batch C2): the fetch where the script is, a copy of the repository; the zip in the built game.
+        String fetch = EarthSite.dataWords(null, true), zip = EarthSite.dataWords(null, false);
+        report("...and how it gets there: in a copy of the repository the script, which Play CityBuilderSim.bat runs; in the built game its zip",
+                fetch.contains(EarthData.DATA_FILE) && fetch.contains(EarthSite.GET_EARTH) && fetch.contains("Play CityBuilderSim.bat")
+                && zip.contains(EarthData.DATA_FILE) && zip.contains("zip") && !zip.contains(".bat"), fetch + " | " + zip);
+        Path bad = Files.createTempDirectory("earthfounding-words").resolve("earth-1.bin");
+        Files.write(bad, new byte[] { 1, 2, 3 });
+        String replace = EarthSite.dataWords(bad, true), unzip = EarthSite.dataWords(bad, false);
+        report("...for a file that is not this build's, the file, this build's identity and what replaces it: the script, or the zip",
+                replace.contains(bad.toString()) && replace.contains(EarthSite.shortId(EarthData.EARTH_1)) && replace.contains(EarthSite.GET_EARTH)
+                && unzip.contains(bad.toString()) && unzip.contains("zip") && !unzip.contains(".bat"), replace + " | " + unzip);
+        String[] load = { EarthSite.missingWords(null, true), EarthSite.missingWords(null, false), EarthSite.missingWords(bad, true), EarthSite.missingWords(bad, false) };
+        boolean loadSays = load[0].contains(EarthSite.GET_EARTH) && load[1].contains("zip") && load[2].contains(EarthSite.GET_EARTH) && load[3].contains("zip");
+        for (int i = 0; i < load.length; i++) loadSays &= load[i].contains("load the city again") && load[i].contains(i < 2 ? EarthData.DATA_FILE : bad.toString());
+        report("...and a save on this build's Earth without it, the same ways to it, then load the city again", loadSays, load[0] + " | " + load[1]);
         String other = EarthSite.loadProblem(nobody, 51.9, 4.5);
         report("...for a save on other data, both identities and the build that opens it", other != null && other.contains(EarthSite.shortId(nobody))
                 && other.contains(EarthSite.shortId(EarthData.EARTH_1)) && other.contains("still opens it"), other);
