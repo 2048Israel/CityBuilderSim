@@ -75,10 +75,10 @@ public class ZoningCheck {
         try { r.run(); } finally { System.setOut(real); }
     }
 
-    /** The fixture's orders: homes, shops, a diner, builders, a bakery buying crops, power, water and roads. */
     /** Spare unskilled hands section 8 hands the city past what its posts are short of, so the fields' planner gets past the staff to the zone (0.7.113): more than any farm's posts. */
     static final int FARM_HANDS = 100;
 
+    /** The fixture's orders: homes, shops, a diner, builders, a bakery buying crops, power, water and roads. */
     static final String[][] ORDERS = {
             { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction Depot", "6" },
             { "Coal Power Plant", "2" }, { "Water Treatment Plant", "2" }, { "Industrial Bakery", "3" },
