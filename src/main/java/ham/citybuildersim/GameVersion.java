@@ -5636,7 +5636,7 @@ public final class GameVersion {
      *     plans are, and the map keeps it with the plan's link under a stamp
      *     of its plots, so a plan drawn again to the same plots - let go past
      *     PLANS_KEPT, or drawn again after a district before it moved - keeps
-     *     its picture. CityMap.PICTURES_KEPT (256), counted in the view's 48
+     *     its picture. CityMap.PICTURES_KEPT (128), counted in the view's 48
      *     MB. Not saved: drawn again from the plans after a load.
      *   - THE FAR NODES DRAW FROM THEM (MapTiles.nodePixels(); a district one
      *     tint until now): a district PICTURE_FROM_PX (4) of a

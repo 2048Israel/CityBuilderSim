@@ -2663,8 +2663,8 @@ public final class CityMap {
        the jobs that draw those they lack (pictureJobs()).
        ===================================================================== */
 
-    /** How many districts' pictures are kept, the last used: 256 (star MM1-2) - a far view of up to 256 built districts (Jerus's city has 93) in DistrictPicture.BYTES each, 0.27 MB, within the view's 48 MB with the rest (MapTiles.budgetBytes()); a view of more asks for none (MapTiles.picturesFit()). */
-    public static final int PICTURES_KEPT = 256;
+    /** How many districts' pictures are kept, the last used: 128 (star MM1-2) - a far view of up to 128 built districts (Jerus's city has 93) in DistrictPicture.BYTES each, 0.14 MB, within the view's 48 MB with the rest (MapTiles.budgetBytes(), 0.34 MB under it before them); a view of more asks for none (MapTiles.picturesFit()). */
+    public static final int PICTURES_KEPT = 128;
 
     private final Map<District, DistrictPicture> pictures = new LinkedHashMap<>(PICTURES_KEPT * 2, 0.75f, true) {
         @Override protected boolean removeEldestEntry(Map.Entry<District, DistrictPicture> e) { return size() > PICTURES_KEPT; }
