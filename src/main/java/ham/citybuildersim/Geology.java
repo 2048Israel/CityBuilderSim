@@ -540,6 +540,7 @@ public final class Geology {
        ONE DATA FILE'S GEOLOGY: its provinces' classes and the grid
        ===================================================================== */
 
+    /** Each reader's geology, made once (of()). */
     private static final Map<EarthData, Geology> OF = new IdentityHashMap<>();
 
     private final EarthData data;
