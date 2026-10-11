@@ -5417,6 +5417,21 @@ public final class GameVersion {
      *     its own works first; its planner weighs a yard against the old
      *     steel that arose (its feed gate, its share of nameplate) and pays
      *     for it; a works' captive tonnes are not van loads.
+     *   - A WORKS IS WEIGHED WITH ITS LORRIES (ProcessingSector, Jerus's A):
+     *     the vans its tonnes need, their wear and diesel in what it earns and
+     *     the vans in what it costs. Without them the first build of the probe
+     *     was a Pelletising Plant on imported ore whose 2,538 vans cost 64% of
+     *     the plant, lost within months, and Iron & Steel went under whole
+     *     seventeen times in the run.
+     *   - The playtest moves from month 1,536, pt07116's to the byte before
+     *     it (re-baselined pt07121): Iron & Steel orders Large Mini-Mills replacing
+     *     imported steel from m1,536 and Scrap Yards from m2,127, on the
+     *     fabricators' offcuts mostly; three yards and two mills stand near
+     *     the end. People at the end 659,072 (577,610), posts 393,556
+     *     (321,670), unemployment 9.7% (15.6%), the price level 1,265 (906),
+     *     exports $4.94T a month ($2.61T); police coverage at the end 38%
+     *     (84%), crime 1.68x Canada's (0.44x). Every month audited, every
+     *     reload matched.
      *   - Harnesses: MaterialsCheck 11-14 (the seven rows' four cases at
      *     parity; old steel and the 70% rule; captive coke and pig iron; the
      *     works' power sold), 3 and 6 moved by the decisions; GdpCheck HELD;
