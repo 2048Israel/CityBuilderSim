@@ -43,6 +43,15 @@ if not "%JAVA%"=="java" if not exist "%JAVA%" (
     exit /b 1
 )
 
+rem The real Earth, data\earth-1.bin, is not in git (about 53 MB). This
+rem fetches it the first time and after that only checks it. The game runs
+rem without it, on the generated world, so a failure here does not stop it.
+call "tools\earth\get-earth.bat" nopause
+if errorlevel 1 (
+    echo   Starting without the real Earth: New city offers the generated world.
+)
+echo.
+
 echo Starting CityBuilderSim...
 echo.
 

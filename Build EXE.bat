@@ -88,6 +88,21 @@ echo  jar:       %JARPATH%
 echo  modules:   %MODULES%
 echo.
 
+rem ------------------------------ the Earth ------------------------------
+rem  The real Earth, data\earth-1.bin (about 53 MB), is not in git. A build
+rem  must carry it, so this fetches it when this PC lacks it or holds a bad
+rem  copy, and stops before jpackage when it cannot be had.
+call "tools\earth\get-earth.bat" nopause
+if errorlevel 1 (
+    echo.
+    echo   No good data\earth-1.bin, so no build: without it the game would
+    echo   offer only the generated world. The reason is above.
+    echo.
+    pause
+    exit /b 1
+)
+echo.
+
 rem ------------------------- stage a clean input dir -------------------------
 rem  jpackage copies EVERYTHING in --input into the app folder, so it gets a
 rem  directory of its own containing nothing but the one jar. Pointing it at
@@ -146,14 +161,47 @@ if exist "src\main\resources\buildings.json" (
     echo  Copied buildings.json next to the exe - editable without rebuilding.
 )
 
+rem --------------------------- the Earth beside the exe ---------------------------
+rem  The game looks for data\earth-1.bin in the folder it runs in, which for
+rem  the exe is its own folder (the start line at the bottom says why). Its
+rem  sources' credits go with it, as their licences ask.
+mkdir "dist\%APPNAME%\data"
+copy /y "data\earth-1.bin" "dist\%APPNAME%\data\" >nul
+copy /y "tools\earth\ATTRIBUTION.txt" "dist\%APPNAME%\data\earth-1-ATTRIBUTION.txt" >nul
+if not exist "dist\%APPNAME%\data\earth-1.bin" (
+    echo.
+    echo   Could not copy data\earth-1.bin into dist\%APPNAME%\data - stopping
+    echo   rather than leave a build without the Earth.
+    echo.
+    pause
+    exit /b 1
+)
+echo  Copied data\earth-1.bin next to the exe, with its credits.
+
+rem ------------------------------- the zip -------------------------------
+rem  What goes up as the release: the whole folder under its own name, as
+rem  dist\CityBuilderSim-<version>.zip, the Earth inside it. Made before the
+rem  test launch below, so nothing the game writes as it runs gets into it.
+set "ZIP=dist\%APPNAME%-%APPVER%.zip"
+if exist "%ZIP%" del /q "%ZIP%"
+echo  Zipping it as %ZIP% ...
+tar -a -c -f "%ZIP%" -C dist "%APPNAME%" 2>nul
+if errorlevel 1 if exist "%ZIP%" del /q "%ZIP%"
+if not exist "%ZIP%" powershell -NoProfile -Command "Compress-Archive -Path 'dist\%APPNAME%' -DestinationPath '%ZIP%'"
+
 echo.
 echo  ===  Done  ===
 echo.
 echo  dist\%APPNAME%\%APPNAME%.exe
+if exist "%ZIP%" (
+    echo  %ZIP%   - upload this one as the release
+) else (
+    echo  No zip: zipping failed. Zip dist\%APPNAME% by hand.
+)
 echo.
 echo  That whole dist\%APPNAME% folder is the game. It carries its own Java
-echo  runtime, so it will run on a machine with no Java on it. Zip the folder
-echo  to hand it to someone, or point Steam at the exe inside it.
+echo  runtime and the real Earth, so it will run on a machine with no Java on
+echo  it. The zip is that folder; point Steam at the exe inside it.
 echo.
 echo  Starting it now so you can see whether it works...
 echo.

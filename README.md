@@ -48,6 +48,14 @@ rather than relying on a `.jar` file association, and it deliberately leaves a
 console window open — the game prints its month-by-month reports there, and if
 it fails to start the reason is in that window instead of vanishing with it.
 
+**The real Earth** (0.7.121) is one file, `data\earth-1.bin`, about 53 MB, which
+the game reads from the folder it runs in. It is not in git: it is the asset of
+the GitHub release `earth-1`. `tools\earth\get-earth.bat` downloads it when it is
+missing and checks it against `tools/earth/earth-1.sha256`. `Play
+CityBuilderSim.bat` and `Build EXE.bat` call it first, and it can be
+double-clicked. A run from NetBeans finds the file once it is there. Without the
+file the game runs on the generated world.
+
 **From the command line:**
 
 ```
@@ -169,8 +177,12 @@ still opens it. Once the game is published, older saves must load again.
 
 `Build EXE.bat`, after a Clean and Build. It runs `jpackage` over the shaded jar
 plus a trimmed Java runtime and writes `dist\CityBuilderSim\`, containing
-`CityBuilderSim.exe`. That whole folder is the game — about 110 MB, carrying its
-own Java runtime, so it runs on a machine with no Java installed at all.
+`CityBuilderSim.exe`. That whole folder is the game — about 175 MB, carrying its
+own Java runtime, so it runs on a machine with no Java installed at all, and the
+real Earth in `data\` beside the exe. The build stops if it cannot get the Earth
+(`tools\earth\get-earth.bat`). The script then zips the folder as
+`dist\CityBuilderSim-<version>.zip`, which is the file to upload as a release,
+before it starts the exe to try it.
 
 The type is `app-image`, not an installer, deliberately: Steam does not want an
 `.msi`, it wants the game's files and it does the installing. It also avoids
@@ -206,7 +218,8 @@ src/main/java/ham/citybuildersim/     over 300 files
     LongPlaytest.java                 4,000-odd months, audited every one
 src/main/resources/buildings.json     the balance file
 docs/                                 generated indexes of all of the above
-tools/earth/                          the pipeline that bakes the real Earth's data (Python, outside the game)
+tools/earth/                          the pipeline that bakes the real Earth's data (Python, outside the game),
+                                      and get-earth.bat, which fetches the baked file from the release earth-1
 data/earth-1.bin                      the real Earth's data itself, about 53 MB, beside the game and not in git;
                                       the game runs without it, and New city offers the generated world then
 ```
