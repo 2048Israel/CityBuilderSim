@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mockup 2 · The oil industry screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stage:#0b1118; --panel:#101924; --raised:#152130; --edge:#24354a;
+  --t1:#e6edf3; --t2:#a9b8c9; --t3:#8496ab;
+  --accent:#5aa9ff; --good:#3fb950; --warn:#e3b341; --bad:#f85149;
+  --people:#2ec4b6; --biz:#a78bfa; --bld:#f17cb0; --ore:#c9b68f;
+  --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'IBM Plex Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#06090d;color:var(--t1);font-family:var(--sans);padding:28px 32px 60px}
+.doc{max-width:1389px;margin:0 0 18px}
+.doc h1{font-size:22px;font-weight:600;margin:0 0 6px}
+.doc p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:4px 0;max-width:1100px}
+.notes{max-width:1389px;color:var(--t3);font-size:12.5px;line-height:1.55;margin:10px 0 0;padding-left:18px}
+.win{width:1389px;height:868px;background:var(--stage);border:1px solid var(--edge);overflow:hidden;
+  display:grid;grid-template-columns:46px 72px 1fr;grid-template-rows:44px 1fr 30px;position:relative}
+.rail{grid-row:1/4;grid-column:1;background:var(--panel);border-right:1px solid var(--edge);display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:4px}
+.ri{width:34px;height:34px;display:grid;place-items:center;border-radius:4px;color:var(--t3)}
+.ri svg{width:19px;height:19px}
+.ri.on{background:var(--raised);color:var(--accent);box-shadow:inset 2px 0 0 var(--accent)}
+.ri.gear{margin-top:auto;margin-bottom:8px}
+.top{grid-row:1;grid-column:2/4;background:var(--panel);border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:22px;padding:0 16px}
+.top .date{font-family:var(--mono);font-size:19px;font-weight:600;color:#fff}
+.top .tf{font-family:var(--mono);font-size:13px;color:var(--t2)}
+.top .tf b{color:var(--t1);font-weight:600}
+.top .inbox{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--t2);font-family:var(--mono);font-size:12px}
+.top .inbox svg{width:18px;height:18px}
+.strip{grid-row:2;grid-column:2;background:var(--panel);border-right:1px solid var(--edge);padding:12px 8px;display:flex;flex-direction:column;gap:14px}
+.strip .v{font-size:9px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.strip .v b{display:block;font-family:var(--mono);font-size:12px;letter-spacing:0;color:var(--t1);font-weight:500;margin-top:2px;text-transform:none}
+.debt{grid-row:3;grid-column:2/4;background:var(--panel);border-top:1px solid var(--edge);display:flex;align-items:center;gap:20px;padding:0 16px;font-size:11px;color:var(--t3)}
+.debt b{font-family:var(--mono);color:var(--t2);font-weight:500}
+.content{grid-row:2;grid-column:3;padding:12px 16px 0;overflow:hidden;display:flex;flex-direction:column;gap:9px}
+.head{display:flex;align-items:center;gap:10px;height:30px}
+.crumb{font-size:12px;color:var(--accent)}
+.sq{width:26px;height:26px;border-radius:4px;display:grid;place-items:center;background:#2a2246;color:var(--biz)}
+.sq svg{width:16px;height:16px}
+.title{font-size:20px;font-weight:600}
+.info{width:16px;height:16px;border-radius:50%;border:1px solid var(--t3);color:var(--t3);font-size:10px;display:grid;place-items:center;font-family:var(--mono)}
+.buildlink{margin-left:auto;font-size:12px;color:var(--bld)}
+.chips{display:flex;gap:6px;margin-left:18px}
+.chip{font-size:12px;color:var(--t2);padding:4px 10px;border-radius:4px;border:1px solid var(--edge);background:var(--panel)}
+.chip.on{color:var(--t1);background:var(--raised);border-color:var(--accent)}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.fig{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:8px 12px}
+.fig .l{font-size:10px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.fig .n{font-family:var(--mono);font-size:21px;font-weight:600;margin:2px 0 1px}
+.fig .s{font-size:11px;color:var(--t2)}
+.two{display:grid;grid-template-columns:548px minmax(0,1fr);gap:10px;align-items:start}
+.box{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:10px 12px}
+.sec{font-size:11px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
+.sec span{letter-spacing:0;text-transform:none}
+.sec .rt{margin-left:auto}
+.wt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px}
+.wc{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:8px 10px}
+.wc .h{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600}
+.wc .h svg{width:17px;height:17px;color:var(--ore)}
+.wc .h .cnt{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--t2);font-weight:500}
+.kv{display:flex;justify-content:space-between;font-size:11px;color:var(--t3);line-height:1.7}
+.kv b{font-family:var(--mono);font-weight:500;color:var(--t2)}
+.kv b.w{color:var(--warn)} .kv b.g{color:var(--good)}
+.plat{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:6px;align-items:center;font-size:11px;color:var(--t2);padding:3px 0;border-top:1px solid #1d2b3c}
+.plat .pf{font-family:var(--mono);color:var(--t1);text-align:right}
+.plat .ph{font-size:10px;color:var(--t3)}
+.dot{width:10px;height:10px;border-radius:2px}
+table{border-collapse:collapse;width:100%}
+th{font-size:10px;letter-spacing:.06em;color:var(--t3);text-transform:uppercase;font-weight:500;text-align:right;padding:4px 6px;border-bottom:1px solid var(--edge);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{font-size:11.5px;color:var(--t2);padding:3px 6px;border-bottom:1px solid #18263a;text-align:right;white-space:nowrap}
+td.m{font-family:var(--mono)}
+td .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;vertical-align:-1px}
+td.nm{color:var(--t1)}
+td.l{text-align:left;color:var(--t3);font-size:10.5px;white-space:normal;line-height:1.35}
+.up{color:var(--good)} .dn{color:var(--bad)} .wa{color:var(--warn)} .bl{color:var(--accent)}
+.pill{display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;border:1px solid var(--edge);color:var(--t2)}
+.pill.b{border-color:#2f6fa8;color:var(--accent)} .pill.w{border-color:#6b5420;color:var(--warn)} .pill.r{border-color:#6b2a2a;color:#ff9e9e}
+.prog{display:inline-block;width:46px;height:5px;background:#0e1620;border-radius:2px;vertical-align:middle;margin-left:6px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent)}
+svg text{font-family:var(--sans)}
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>Mockup 2 — the oil industry screen</h1>
+  <p>One page for the whole chain: the city's wells by type, the refinery's units, and every product's price and balance. It is the big city of mockup 1 (State B), same month, same figures. It reaches from Sectors, from Oil or Refining, and from the Land office's oil deposits.</p>
+  <p>The wells chart answers "how long does our own crude last?". Past years are solid; the next ten are pale and show the decline if nothing new is built. The units table answers "why does the refinery build what it builds?". Each unit shows its spread now (report §2.3), and each one not built shows the gate that stops it.</p>
+</div>
+<div class="win" id="W"></div>
+<ul class="notes">
+  <li><b>Decline:</b> land wells fall about 10% a year as a group once drilling stops (est.). Platforms ramp for a year, hold a 3-year plateau, then fall 8.5% a year (IEA's shallow-offshore rate). Reserves left = what these wells would lift to the end of their fields.</li>
+  <li><b>The units' spread</b> is the value of what a unit makes minus the value of its feed, per litre of feed, at the city's own prices: the import price for a product the city is short of, the export price for one it has spare. That one rule makes demand pull the refinery.</li>
+  <li><b>Where it went</b> in the product table lists the same buyers as mockup 1's ribbons, so the two pages can't disagree.</li>
+</ul>
+<script>
+const ICON = {
+  building:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M11 21v-3h2v3"/>',
+  land:'<path d="M3 20h18M6 20l5-11 5 11M11 9V5M17 20v-6M15 16l2-5 2 5"/>',
+  people:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4 2 4 5"/>',
+  health:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M6 12h3l1.5-2.5 3 5 1.5-2.5h3"/>',
+  factory:'<path d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17z"/>',
+  landmark:'<path d="M3 21h18M4 10h16M12 3l8 5H4zM6 10v8M10 10v8M14 10v8M18 10v8"/>',
+  dollar:'<circle cx="12" cy="12" r="9"/><path d="M15 9c-.5-1-1.6-1.5-3-1.5-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.6M12 6v1.5M12 16.5V18"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z"/>',
+  scale:'<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7h6zM19 7l-3 7h6z"/>',
+  chart:'<path d="M3 3v18h18M7 15l4-5 3 3 5-7"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  well:'<path d="M3 21h18M8 21l3-9 3 9M2 9l14-4 3 3-14 4zM16 5v3M5 12v4"/>',
+  platform:'<path d="M2 20c2 0 2-1.5 4-1.5S8 20 10 20s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M6 18V10h12v8M5 10h14M8 10V6h5v4M15 10V3"/>',
+  drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+};
+const ic = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
+const RAIL = [['building','Build'],['land','Land'],['people','People'],['health','Services'],['factory','Sectors'],['landmark','Government'],['dollar','Finances'],['globe','Trade'],['scale','Policy'],['chart','History']];
+function frame(win, o){
+  win.innerHTML = `
+  <nav class="rail">${RAIL.map(([k,n])=>`<span class="ri ${k===o.active?'on':''}" title="${n}">${ic(k)}</span>`).join('')}<span class="ri gear">${ic('settings')}</span></nav>
+  <div class="top"><span class="date">${o.date}</span><span class="tf">cash <b>${o.cash}</b></span><span class="tf">people <b>${o.people}</b></span><span class="tf">net <b style="color:var(--good)">${o.net}</b>/mo</span><span class="inbox">${ic('mail')}${o.inbox}</span></div>
+  <aside class="strip"><div class="v">Cash<b>${o.cashShort}</b></div><div class="v">People<b>${o.peopleShort}</b></div><div class="v">Net<b>${o.netShort}</b></div><div class="v">Jobs<b>${o.jobs}</b></div></aside>
+  <main class="content"></main>
+  <div class="debt">debt <b>${o.debt}</b><span>next payment <b>${o.pay}</b></span><span>rate <b>${o.rate}</b></span></div>`;
+  return win.querySelector('.content');
+}
+const PROD = {
+  crude:{n:'Crude oil',c:'#a07d4a'},
+  lpg:{n:'Gas (LPG)',c:'#9fd8ef'}, naphtha:{n:'Naphtha',c:'#b7e4a8'}, petrol:{n:'Petrol',c:'#ffcf5c'},
+  jet:{n:'Jet fuel',c:'#f2a65a'}, diesel:{n:'Diesel',c:'#d9805f'}, lube:{n:'Lubricants',c:'#c792ea'},
+  fueloil:{n:'Fuel oil',c:'#9a7a6c'}, bitumen:{n:'Bitumen',c:'#6e665f'} };
+
+/* ---------- wells chart: local crude by year, b/d ---------- */
+const YEARS=[[2173,6200,0,0],[2174,6890,0,0],[2175,7580,0,0],[2176,8270,0,0],[2177,8960,0,9250],[2178,9650,0,18500],[2179,10340,0,18500],[2180,11030,0,18500],[2181,11720,9000,16928],[2182,12410,18000,15489],[2183,13100,18000,14172],[2184,11790,18000,12967],[2185,10611,16470,11865],[2186,9550,15070,10857],[2187,8595,13789,9934],[2188,7735,12617,9090],[2189,6962,11545,8317],[2190,6266,10563,7610],[2191,5639,9665,6963],[2192,5075,8844,6371],[2193,4568,8092,5830]];
+const SER=[['Land wells','#c9b68f'],['Platform A','#4fa3c7'],['Platform B','#2c6f8f']];
+function wellsChart(){
+  const W=522,H=146,L=40,B=20,T=10, n=YEARS.length, bw=(W-L-8)/n;
+  const max=50000, y=v=>T+(H-T-B)*(1-v/max);
+  let s='';
+  [0,10000,20000,30000,40000,50000].forEach(v=>{ s+=`<line x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="#1d2b3c"/><text x="${L-6}" y="${y(v)+3.5}" font-size="9.5" fill="#8496ab" text-anchor="end" font-family="IBM Plex Mono">${v/1000}k</text>`; });
+  YEARS.forEach((r,i)=>{
+    const x=L+4+i*bw, fut=r[0]>2183; let acc=0;
+    [1,2,3].forEach(j=>{ const v=r[j]; if(!v) return; const y0=y(acc+v), h=y(acc)-y0;
+      s+=`<rect x="${x}" y="${y0}" width="${bw-3}" height="${h}" fill="${SER[j-1][1]}" fill-opacity="${fut?.32:.95}"/>`; acc+=v; });
+    if(r[0]%5===3) s+=`<text x="${x+(bw-3)/2}" y="${H-5}" font-size="9.5" fill="#8496ab" text-anchor="middle" font-family="IBM Plex Mono">${r[0]}</text>`;
+    if(r[0]===2183) s+=`<line x1="${x+bw-1}" x2="${x+bw-1}" y1="${T-4}" y2="${H-B}" stroke="#5aa9ff" stroke-dasharray="3 2"/><text x="${x+bw+3}" y="${T+5}" font-size="9.5" fill="#5aa9ff">now · 45,300 b/d</text><text x="${x+bw+3}" y="${T+17}" font-size="9.5" fill="#8496ab">if nothing new is built ›</text>`;
+  });
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${s}</svg>`;
+}
+
+/* ---------- page ---------- */
+const c = frame(document.getElementById('W'), {active:'factory',date:'June 2183',cash:'D$ 18.42B',people:'2.61M',net:'+D$ 212M',inbox:'5',cashShort:'18.4B',peopleShort:'2.61M',netShort:'+212M',jobs:'1.27M',debt:'D$ 4.10B',pay:'D$ 31.6M',rate:'3.35%'});
+const units = [
+  ['Crude unit','×1','100,000','80%','crude → its 7 cuts','—','','standing','a second past 90% load'],
+  ['Reformer','×1','12,000','94%','heavy naphtha → petrol 82 · gas 8','<span class="up">+0.080</span>','','standing','no naphtha spare'],
+  ['Cracking unit','×1','15,000','100%','gas oil → petrol 55 · gas 25 · diesel 18 · fuel oil 7','<span class="up">+0.105</span>','','standing','no gas oil spare'],
+  ['Lube plant','×1','2,000','100%','gas oil → lubricants 40 · fuel oil 60','<span class="up">+0.145</span>','','standing','no gas oil spare'],
+  ['Asphalt unit','×1','3,000','98%','residue → bitumen 95','<span class="up">+0.063</span>','','standing','roads take 71% of it'],
+  ['Alkylation unit','×1','5,000','<span class="bl">on site</span><span class="prog"><i style="width:39%"></i></span>','gas → petrol 80','<span class="up">+0.266</span>','b','building','7 of 18 months'],
+  ['Hydrocracker','—','10,000','—','gas oil → diesel 50 · jet 40 · naphtha 15 · gas 5','<span class="up">+0.199</span>','w','no feed','4.5M L spare, needs 48.4M L'],
+  ['Coker','—','10,000','—','residue → diesel 35 · naphtha 15 · fuel oil 12 · gas 8 + coke','<span class="dn">−0.031</span>','r','would lose','its products fetch too little'],
+];
+const prod = [
+  // id, price here, world, ratio, made, used, imported, exported, where
+  ['crude', .469, .434, '1.00', '219.2', '387.2', '167.9', '—', 'the crude unit · imports 2 Aframax a month'],
+  ['petrol', .562, .520, '1.20', '113.3', '150.0', '<span class="wa">36.8</span>', '—', 'cars 150.0'],
+  ['diesel', .633, .586, '1.35', '105.8', '111.0', '<span class="wa">5.2</span>', '—', 'trucks 55.0 · rail 40.0 · industry 10.0 · ships 6.0'],
+  ['jet', .512, .556, '1.28', '50.4', '32.0', '—', '18.4', 'airport 32.0'],
+  ['lpg', .184, .200, '0.46', '34.0', '5.0', '—', '29.0', 'industry 5.0'],
+  ['fueloil', .391, .425, '0.98', '63.5', '16.0', '—', '47.5', 'ships at the port 16.0 (bunkers)'],
+  ['bitumen', .478, .520, '1.20', '13.8', '9.8', '—', '4.0', 'roads 9.8 (paving)'],
+  ['lube', .754, .820, '1.89', '3.87', '3.60', '—', '0.27', 'industry 2.4 · cars 0.9 · rail 0.3'],
+];
+c.innerHTML = `
+<div class="head"><span class="crumb">Sectors ›</span><span class="sq">${ic('drop')}</span><span class="title">Oil industry</span><span class="info">i</span>
+  <div class="chips"><span class="chip on">Overview</span><span class="chip">Oil (the wells)</span><span class="chip">Refining</span><span class="chip">Products</span></div>
+  <span class="buildlink">Build › Industry › Oil & refining ›</span></div>
+<div class="figs">
+  <div class="fig"><div class="l">Lifted here</div><div class="n">45,300 b/d</div><div class="s">219.2M L · 188,122 t a month · 162 wells, 2 platforms</div></div>
+  <div class="fig"><div class="l">Reserves left</div><div class="n">26.2 Mt</div><div class="s">192M barrels · <span class="wa">11.6 years</span> at today's rate</div></div>
+  <div class="fig"><div class="l">Crude imported</div><div class="n">34,700 b/d</div><div class="s">43% of the refinery's crude · D$ 78.8M a month</div></div>
+  <div class="fig"><div class="l">Products across the edge</div><div class="n" style="color:var(--good)">+D$ 11.5M</div><div class="s">D$ 35.4M sold abroad · D$ 23.9M bought</div></div>
+</div>
+<div class="two">
+  <div class="box">
+    <div class="sec">THE WELLS <span>by type</span><span class="rt" style="color:var(--accent)">Land office › oil deposits</span></div>
+    <div class="wt">
+      <div class="wc"><div class="h">${ic('well')}Land wells<span class="cnt">160</span></div>
+        <div class="kv">lifting <b>13,100 b/d</b></div><div class="kv">a well, on average <b>82 b/d</b></div>
+        <div class="kv">decline, as a group <b class="w">−10% a year</b></div><div class="kv">reserves left <b>6.5 Mt · 4 fields</b></div>
+        <div class="kv">this year <b>+12 drilled · −9 dry</b></div></div>
+      <div class="wc"><div class="h">${ic('platform')}Offshore platforms<span class="cnt">2</span></div>
+        <div class="plat"><span class="dot" style="background:#4fa3c7"></span><span>Platform A <span class="ph">· 74 m deep · 38 km out · plateau, year 2 of 3</span></span><span class="pf">18,000 b/d</span></div>
+        <div class="plat"><span class="dot" style="background:#2c6f8f"></span><span>Platform B <span class="ph">· 112 m deep · 61 km out · <span class="wa">−8.5% a year</span></span></span><span class="pf">14,200 b/d</span></div>
+        <div class="kv" style="margin-top:2px">reserves left <b>19.7 Mt · 2 fields</b></div>
+        <div class="kv">ashore by <b>2 pipelines · 99 km</b></div></div>
+    </div>
+    <div class="sec" style="margin:2px 0 2px">LOCAL CRUDE · B/D
+      <span class="rt" style="display:flex;gap:10px">${SER.map(s=>`<span style="display:flex;align-items:center;gap:4px;letter-spacing:0;text-transform:none"><span class="dot" style="background:${s[1]}"></span>${s[0]}</span>`).join('')}</span></div>
+    ${wellsChart()}
+  </div>
+  <div class="box">
+    <div class="sec">THE REFINERY <span>its units · spread now = what a unit makes less its feed, D$ per litre of feed</span></div>
+    <table><thead><tr><th>Unit · what it turns into what</th><th>b/d</th><th>running</th><th>spread</th><th style="text-align:left;padding-left:12px">state</th></tr></thead>
+    <tbody>${units.map(u=>`<tr><td style="white-space:normal"><span class="nm" style="color:var(--t1)">${u[0]}</span> <span class="m" style="color:var(--t3)">${u[1]}</span><div style="font-size:10px;color:var(--t3);margin-top:1px">${u[4]}</div></td><td class="m">${u[2]}</td><td class="m">${u[3]}</td><td class="m">${u[5]}</td><td class="l" style="padding-left:12px;white-space:nowrap"><span class="pill ${u[6]}">${u[7]}</span> ${u[8]}</td></tr>`).join('')}</tbody></table>
+  </div>
+</div>
+<div class="box" style="padding-bottom:4px">
+  <div class="sec">PRODUCTS <span>this month · million litres · prices in D$ a litre</span><span class="rt">world prices: report §1.5 · import = world + 8% · export = world − 8%</span></div>
+  <table><thead><tr><th>Product</th><th>price here</th><th>world</th><th>× crude</th><th>made here</th><th>used here</th><th>imported</th><th>exported</th><th style="text-align:left;padding-left:18px">where it went</th></tr></thead>
+  <tbody>${prod.map(r=>`<tr><td class="nm"><span class="sw" style="background:${PROD[r[0]].c}"></span>${PROD[r[0]].n}${r[0]==='crude'?' <span style="color:var(--t3);font-size:10.5px">(lifted here)</span>':''}</td><td class="m">${r[1].toFixed(3)}</td><td class="m">${r[2].toFixed(3)}</td><td class="m">${r[3]}</td><td class="m">${r[4]}</td><td class="m">${r[5]}</td><td class="m">${r[6]}</td><td class="m">${r[7]}</td><td class="l" style="padding-left:18px">${r[8]}</td></tr>`).join('')}</tbody></table>
+</div>`;
+</script>
+</body>
+</html>

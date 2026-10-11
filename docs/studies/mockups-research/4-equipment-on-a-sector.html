@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mockup 4 · Equipment on a sector's page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stage:#0b1118; --panel:#101924; --raised:#152130; --edge:#24354a;
+  --t1:#e6edf3; --t2:#a9b8c9; --t3:#8496ab;
+  --accent:#5aa9ff; --good:#3fb950; --warn:#e3b341; --bad:#f85149;
+  --people:#2ec4b6; --biz:#a78bfa; --bld:#f17cb0; --ore:#c9b68f;
+  --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'IBM Plex Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#06090d;color:var(--t1);font-family:var(--sans);padding:28px 32px 60px}
+.doc{max-width:1389px;margin:0 0 18px}
+.doc h1{font-size:22px;font-weight:600;margin:0 0 6px}
+.doc p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:4px 0;max-width:1120px}
+.state{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin:26px 0 8px}
+.notes{max-width:1389px;color:var(--t3);font-size:12.5px;line-height:1.55;margin:10px 0 0;padding-left:18px}
+.notes b{color:var(--t2)}
+.win{width:1389px;height:868px;background:var(--stage);border:1px solid var(--edge);overflow:hidden;
+  display:grid;grid-template-columns:46px 72px 1fr;grid-template-rows:44px 1fr 30px;position:relative}
+.rail{grid-row:1/4;grid-column:1;background:var(--panel);border-right:1px solid var(--edge);display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:4px}
+.ri{width:34px;height:34px;display:grid;place-items:center;border-radius:4px;color:var(--t3)}
+.ri svg{width:19px;height:19px}
+.ri.on{background:var(--raised);color:var(--accent);box-shadow:inset 2px 0 0 var(--accent)}
+.ri.gear{margin-top:auto;margin-bottom:8px}
+.top{grid-row:1;grid-column:2/4;background:var(--panel);border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:22px;padding:0 16px}
+.top .date{font-family:var(--mono);font-size:19px;font-weight:600;color:#fff}
+.top .tf{font-family:var(--mono);font-size:13px;color:var(--t2)}
+.top .tf b{color:var(--t1);font-weight:600}
+.top .inbox{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--t2);font-family:var(--mono);font-size:12px;padding:4px 8px;border-radius:4px}
+.top .inbox.open{background:var(--raised);color:var(--accent)}
+.top .inbox svg{width:18px;height:18px}
+.top .inbox .ct{background:var(--accent);color:#06090d;border-radius:9px;padding:0 6px;font-weight:600}
+.strip{grid-row:2;grid-column:2;background:var(--panel);border-right:1px solid var(--edge);padding:12px 8px;display:flex;flex-direction:column;gap:14px}
+.strip .v{font-size:9px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.strip .v b{display:block;font-family:var(--mono);font-size:12px;letter-spacing:0;color:var(--t1);font-weight:500;margin-top:2px;text-transform:none}
+.debt{grid-row:3;grid-column:2/4;background:var(--panel);border-top:1px solid var(--edge);display:flex;align-items:center;gap:20px;padding:0 16px;font-size:11px;color:var(--t3)}
+.debt b{font-family:var(--mono);color:var(--t2);font-weight:500}
+.content{grid-row:2;grid-column:3;padding:10px 16px 0;overflow:hidden;display:flex;flex-direction:column;gap:10px;position:relative}
+/* ---------- policy frame ---------- */
+.phead{display:flex;align-items:center;gap:10px;height:30px}
+.phead .swatch{width:12px;height:12px;border-radius:3px;background:#2f6fa8}
+.phead .title{font-size:20px;font-weight:600}
+.phead .crumb{color:var(--t2);font-weight:500}
+.i{width:17px;height:17px;border-radius:50%;border:1px solid var(--t3);color:var(--t3);font-size:10px;display:inline-grid;place-items:center;font-family:var(--mono);flex:none}
+.chips{margin-left:auto;display:flex;gap:5px}
+.chip{font-size:11.5px;color:var(--t2);padding:4px 10px;border-radius:4px;border:1px solid var(--edge);background:var(--panel)}
+.chip.on{color:var(--t1);background:var(--raised);border-color:var(--accent)}
+.chip.new{border-style:dashed}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--edge)}
+.tab{font-size:12px;color:var(--t3);padding:6px 14px 7px;border-bottom:2px solid transparent}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.figs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.fig{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:8px 12px}
+.fig .k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.fig .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:2px}
+.fig .s{font-size:11px;color:var(--t2);margin-top:1px}
+.gh{display:flex;align-items:baseline;gap:8px;font-size:11px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;border-bottom:1px solid var(--edge);padding-bottom:5px;margin-bottom:8px}
+.gh span{letter-spacing:0;text-transform:none}
+.gh .rt{margin-left:auto;font-family:var(--mono);color:var(--t2);letter-spacing:0;text-transform:none}
+.mono{font-family:var(--mono)}
+.muted{color:var(--t3)}
+.good{color:var(--good)} .warn{color:var(--warn)} .bad{color:#ff9e9e}
+/* dial cards */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dcard{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:8px 12px;display:flex;flex-direction:column;gap:5px;position:relative}
+.dcard.staged{border-color:var(--accent)}
+.dcard.dim{opacity:.62}
+.dh{display:flex;align-items:center;gap:8px}
+.dh .ico{width:26px;height:26px;border-radius:4px;display:grid;place-items:center;background:#16314d;color:var(--accent)}
+.dh .ico svg{width:16px;height:16px}
+.dh .nm{font-size:14px;font-weight:600}
+.dh .at{font-size:11px;color:var(--t3)}
+.reach{margin-left:auto;text-align:right;font-size:11px;color:var(--t2)}
+.reach b{font-family:var(--mono);color:var(--t1)}
+.reach .sec{display:block;color:var(--t3);font-size:10.5px}
+.dial{display:grid;grid-template-columns:56px 1fr 176px;align-items:center;gap:10px}
+.dial .l{font-size:11px;color:var(--t3)}
+.dial .val{font-family:var(--mono);font-size:12.5px;text-align:right}
+.dial .val small{display:block;font-size:10px;color:var(--t3);font-family:var(--sans)}
+.track{position:relative;height:18px}
+.track .rail{position:absolute;left:0;right:0;top:8px;height:3px;background:#0e1620;border-radius:2px}
+.track .fill{position:absolute;left:0;top:8px;height:3px;background:var(--accent);border-radius:2px}
+.track .ghost{position:absolute;top:3px;width:2px;height:13px;background:var(--t3);opacity:.7}
+.track .thumb{position:absolute;top:2px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--t1);border:2px solid var(--accent)}
+.track .tick{position:absolute;top:13px;width:1px;height:6px;background:var(--edge)}
+.track .room{position:absolute;top:0;height:18px;border-right:2px dashed var(--warn);opacity:.8}
+.ba{display:grid;grid-template-columns:150px 1fr 1fr;gap:3px 10px;font-size:11px;align-items:center}
+.ba .hd{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.ba .lab{color:var(--t3)}
+.pair{display:flex;align-items:center;gap:6px}
+.pair .b{height:6px;border-radius:3px;background:#4a6283}
+.pair .b.a{background:var(--accent)}
+.pair .n{font-family:var(--mono);font-size:11.5px;color:var(--t1);white-space:nowrap}
+.pair .n.dimn{color:var(--t2)}
+.say{font-size:11px;color:var(--t2);line-height:1.4;background:var(--panel);border:1px solid var(--edge);border-radius:3px;padding:4px 8px}
+.btns{display:flex;gap:6px;justify-content:flex-end}
+.go{font-size:11.5px;padding:4px 12px;border-radius:4px;background:#2f6fa8;color:#fff;font-weight:600}
+.leave{font-size:11.5px;padding:4px 12px;border-radius:4px;border:1px solid #4a5c68;color:var(--t2)}
+.tray{position:absolute;left:16px;right:16px;bottom:0;height:40px;background:var(--panel);border:1px solid var(--edge);border-bottom:none;border-radius:4px 4px 0 0;display:flex;align-items:center;gap:10px;padding:0 12px;font-size:11.5px}
+.tray .tk{font-size:10px;letter-spacing:.08em;color:var(--t3)}
+.stchip{background:var(--raised);border:1px solid var(--accent);border-radius:12px;padding:2px 9px;color:var(--t1);font-size:11px}
+.stchip b{font-family:var(--mono);font-weight:500}
+.tray .bud{margin-left:auto;color:var(--t3)}
+.tray .bud b{font-family:var(--mono);color:var(--t1);font-weight:500}
+.tag{font-size:10px;padding:1px 7px;border-radius:3px;background:#1d3a2a;color:#7ee0a0;border:1px solid #2b5a3e}
+.tag.blue{background:#16314d;color:#9cc9ff;border-color:#24507c}
+.tag.grey{background:#1b2836;color:var(--t2);border-color:#2c3e52}
+.tag.new{background:#2a2246;color:#cbbcff;border-color:#4a3d7a}
+
+.shead{display:flex;align-items:center;gap:10px;height:30px}
+.shead .ico{width:26px;height:26px;border-radius:4px;display:grid;place-items:center;background:#2a2246;color:var(--biz)}
+.shead .ico svg{width:16px;height:16px}
+.shead .title{font-size:20px;font-weight:600}
+.shead .grp{font-size:12px;color:var(--t3)}
+.shead .sw{margin-left:auto;display:flex;border:1px solid var(--edge);border-radius:4px;overflow:hidden;font-size:11px}
+.shead .sw span{padding:3px 10px;color:var(--t3)} .shead .sw span.on{background:var(--raised);color:var(--t1)}
+.invline{display:flex;align-items:center;gap:8px;background:#13283c;border:1px solid #24507c;border-radius:4px;padding:7px 12px;font-size:12px;color:var(--t1)}
+.invline b{font-family:var(--mono);font-weight:500}
+.invline .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.two{display:grid;grid-template-columns:560px 1fr;gap:10px;flex:1;min-height:0;margin-bottom:8px}
+.box{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:8px 12px;display:flex;flex-direction:column;gap:6px;min-height:0;overflow:hidden}
+table.r{width:100%;border-collapse:collapse;font-size:11px}
+table.r th{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);font-weight:400;text-align:left;padding:2px 4px;border-bottom:1px solid var(--edge)}
+table.r td{padding:5px 4px;border-bottom:1px solid #1d2b3c;color:var(--t2);vertical-align:top}
+table.r td.m{font-family:var(--mono);color:var(--t1);white-space:nowrap;text-align:right}
+table.r td.k{font-family:var(--mono);color:var(--t3);width:16px}
+table.r tr.first td{background:#13283c}
+table.r .kind{font-size:9.5px;padding:0 5px;border-radius:3px;border:1px solid #2c3e52;color:var(--t3);margin-left:4px}
+table.r .kind.fit{border-color:#24507c;color:#9cc9ff}
+.vd{font-size:10.5px;color:var(--t3);display:block;margin-top:1px}
+.eqh{display:flex;align-items:center;gap:8px}
+.eqh .nm{font-size:14px;font-weight:600}
+.eqh .src{font-size:11px;color:var(--t3)}
+.does{font-size:11.5px;color:var(--t2);line-height:1.45}
+.does b{font-family:var(--mono);color:var(--t1);font-weight:500}
+.wf{display:flex;align-items:stretch;gap:10px;height:110px;padding:4px 4px 0;border-bottom:1px solid var(--edge)}
+.wf .c{height:100%;width:74px;position:relative;display:flex;justify-content:center}
+.wf .bar{width:38px;border-radius:2px}
+.wf .v{font-family:var(--mono);font-size:11px;color:var(--t1);margin-bottom:2px}
+.wf .lb{font-size:10px;color:var(--t3);text-align:center;line-height:1.25;margin-top:4px;height:26px}
+.btrow{display:grid;grid-template-columns:150px 150px 1fr;gap:8px;align-items:center;font-size:11px;padding:5px 0;border-bottom:1px solid #1d2b3c}
+.btrow .nm{color:var(--t1)}
+.btrow .sh{display:flex;align-items:center;gap:6px;font-family:var(--mono);color:var(--t1)}
+.btrow .sh .tr{width:70px;height:6px;background:#0e1620;border-radius:3px;position:relative}
+.btrow .sh .tr i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:3px}
+.btrow .why{color:var(--t2);line-height:1.4}
+.minor{font-size:10.5px;color:var(--t3);line-height:1.4}
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>Mockup 4 — Equipment on a sector's page</h1>
+  <p>Equipment is an investment, so it lives on the Investors page (0.7.30's sector frame: Operations, Income, Balance sheet, Cash &amp; debt, Investors). A refit is ranked against new buildings by what it earns on its cost (study §2.2); each piece of equipment gets a card saying what it does, where it comes from, what the next one adds in the spread's own terms, and, per kind of building, how many are fitted and why the rest are not: <b>fitted</b>, <b>next</b>, <b>not worth it yet</b> (it fails over its life) or <b>won't fit</b> (the building has too few years left, or needs something first).</p>
+</div>
+<div class="state">A big city, June 1979 · Sectors › Retail › Investors · the barcode scanner (from abroad, 1974)</div>
+<div class="win" id="W1"></div>
+<div class="state">The same city · Sectors › Iron &amp; Steel › Investors · the continuous caster (from abroad, 1962, under licence)</div>
+<div class="win" id="W2"></div>
+<ul class="notes">
+  <li><b>The scanner</b> (study §4, B5): a store's payroll falls 5.35% for the same sales [Basker 2012]. A lane cost US$13,750 in 1978 (US$110k for 8 lanes) and D$ 68k here (est.: × 4.92, the US CPI to 2025). A Small Grocery Store's 27 posts cost D$ 107.9k a month (`buildings.json`, `PayTier`), so it saves D$ 5.77k on four lanes and pays back in 3.9 years; a Convenience Store D$ 1.09k on one lane, 5.2 years; a Filling Station D$ 0.61k, and over a scanner's 10-year life (est.) at the investors' 7.1% that is D$ 52k of the D$ 68k.</li>
+  <li><b>The caster</b> (E9): +10% steel from the same melt, 10–15% less labour, about 1 MBtu a ton less fuel, US$40–80 per tonne of yearly capacity in 1978 [OTA 1979]. An Electric Arc Furnace (1,200 t a month) gets D$ 78.0k of steel (120 t at D$ 650, the materials study's landed price; the city imports steel), D$ 19.4k of posts (3 no diploma, 2 diploma), D$ 19.5k of fuel (32,500 L at D$ 0.60), less a quarter of it as the licence fee until 1982: D$ 87.7k a month for D$ 4.25M (14,400 t a year × US$60 × 4.92). Furnaces 1 and 2 have four years left; over four years it earns back D$ 3.7M.</li>
+  <li><b>The money gate</b> is the game's own (1.25 × the interest at 7.1%: 0.74% of the cost a month). The Filling Station's scanner passes it (0.90%) and still fails over its life, which is Jerus's long-run rule.</li>
+  <li><b>Illustrative:</b> store and furnace counts, the new buildings' earnings, the imports total and the adoption curves.</li>
+</ul>
+<script>
+const ICON = {
+  building:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M11 21v-3h2v3"/>',
+  land:'<path d="M3 20h18M6 20l5-11 5 11M11 9V5M17 20v-6M15 16l2-5 2 5"/>',
+  people:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4 2 4 5"/>',
+  health:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M6 12h3l1.5-2.5 3 5 1.5-2.5h3"/>',
+  factory:'<path d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17z"/>',
+  landmark:'<path d="M3 21h18M4 10h16M12 3l8 5H4zM6 10v8M10 10v8M14 10v8M18 10v8"/>',
+  dollar:'<circle cx="12" cy="12" r="9"/><path d="M15 9c-.5-1-1.6-1.5-3-1.5-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.6M12 6v1.5M12 16.5V18"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z"/>',
+  scale:'<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7h6zM19 7l-3 7h6z"/>',
+  chart:'<path d="M3 3v18h18M7 15l4-5 3 3 5-7"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  flask:'<path d="M9 3h6M10 3v6L4.5 18.5A1.6 1.6 0 0 0 6 21h12a1.6 1.6 0 0 0 1.5-2.5L14 9V3"/><path d="M7.5 15h9"/>',
+  cog:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+  heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',
+  brief:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M3 12h18"/>',
+  gavel:'<path d="M14 4l6 6M11 7l6 6M12.5 5.5l-4 4M17.5 10.5l-4 4M10 12l-7 7M3 21h9"/>',
+  wind:'<path d="M12 12V21M12 12l-1-8M12 12l7 3.5M12 12l-7 3"/><circle cx="12" cy="12" r="1.3"/>',
+  pellet:'<circle cx="7" cy="15" r="3"/><circle cx="14" cy="16" r="3"/><circle cx="11" cy="9" r="3"/><circle cx="18" cy="9.5" r="2.5"/>',
+  cart:'<path d="M3 4h2l2.5 11h11L21 7H6.2"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>',
+  ladle:'<path d="M4 9h16l-2 9H6zM8 9V5M16 9V6M9 13h6"/>',
+};
+const ic = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
+const RAIL = [['building','Build'],['land','Land'],['people','People'],['health','Services'],['factory','Sectors'],['landmark','Government'],['dollar','Finances'],['globe','Trade'],['scale','Policy'],['chart','History']];
+const CITY = {
+  young: {date:'June 1955', cash:'D$ 41.2M', people:'38,400', net:'+D$ 0.90M', inbox:2, cashShort:'41.2M', peopleShort:'38.4k', netShort:'+0.90M', jobs:'15.9k', debt:'D$ 12.0M', pay:'D$ 0.31M', rate:'2.75%'},
+  big:   {date:'June 1979', cash:'D$ 1.26B', people:'421,800', net:'+D$ 38.0M', inbox:3, cashShort:'1.26B', peopleShort:'422k', netShort:'+38.0M', jobs:'211k', debt:'D$ 640M', pay:'D$ 9.8M', rate:'7.10%'},
+};
+function frame(win, key, active, inboxOpen){
+  const o = CITY[key];
+  win.innerHTML = `
+  <nav class="rail">${RAIL.map(([k,n])=>`<span class="ri ${k===active?'on':''}" title="${n}">${ic(k)}</span>`).join('')}<span class="ri gear">${ic('settings')}</span></nav>
+  <div class="top"><span class="date">${o.date}</span><span class="tf">cash <b>${o.cash}</b></span><span class="tf">people <b>${o.people}</b></span><span class="tf">net <b style="color:var(--good)">${o.net}</b>/mo</span><span class="inbox ${inboxOpen?'open':''}">${ic('mail')}<span class="ct">${o.inbox}</span></span></div>
+  <aside class="strip"><div class="v">Cash<b>${o.cashShort}</b></div><div class="v">People<b>${o.peopleShort}</b></div><div class="v">Net<b>${o.netShort}</b></div><div class="v">Jobs<b>${o.jobs}</b></div></aside>
+  <main class="content"></main>
+  <div class="debt">debt <b>${o.debt}</b><span>next payment <b>${o.pay}</b></span><span>rate <b>${o.rate}</b></span></div>`;
+  return win.querySelector('.content');
+}
+const fmt = (n, d=0) => n.toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
+const FIELD = {
+  eng: {name:'Engineering', icon:'cog',   col:'#5aa9ff'},
+  med: {name:'Medicine',    icon:'heart', col:'#2ec4b6'},
+  bus: {name:'Business',    icon:'brief', col:'#a78bfa'},
+  law: {name:'Law',         icon:'gavel', col:'#c9b68f'},
+};
+function policyHead(c, page){
+  return `<div class="phead"><span class="swatch"></span><span class="title">Policy <span class="crumb">› Research</span></span><span class="i">i</span>
+    <div class="chips">${['Taxes','Wages','Money','Promises','Zoning','Research'].map(n=>`<span class="chip ${n==='Research'?'on':''} ${n==='Research'?'new':''}">${n}</span>`).join('')}</div></div>
+  <div class="tabs">${['Overview','Funding','Found'].map(n=>`<span class="tab ${n===page?'on':''}">${n}</span>`).join('')}</div>`;
+}
+
+function sectorHead(c, ico, name, grp){
+  return `<div class="shead"><span class="ico">${ic(ico)}</span><span class="title">${name}</span><span class="grp">${grp}</span><span class="i">i</span>
+   <span class="sw"><span class="on">Summary</span><span>Statement</span></span></div>
+   <div class="tabs">${['Operations','Income','Balance sheet','Cash & debt','Investors'].map(n=>`<span class="tab ${n==='Investors'?'on':''}">${n}</span>`).join('')}</div>`;
+}
+function ranked(rows){
+  return `<table class="r"><tr><th></th><th>What they're weighing</th><th style="text-align:right">costs</th><th style="text-align:right">adds a month</th><th style="text-align:right">on its cost</th></tr>
+   ${rows.map((r,i)=>`<tr class="${i===0?'first':''}"><td class="k">${r[0]}</td><td><span style="color:var(--t1)">${r[1]}</span><span class="kind ${r[2]==='refit'?'fit':''}">${r[2]}</span><span class="vd">${r[6]}</span></td><td class="m">${r[3]}</td><td class="m">${r[4]}</td><td class="m ${r[7]||''}">${r[5]}</td></tr>`).join('')}</table>`;
+}
+function waterfall(items, total, scale){
+  const H = 84; let acc = 0, cols = '';
+  items.forEach(([lb, v, col]) => {
+    const a = acc, b = acc + v; acc = b;
+    const lo = Math.min(a, b) / scale * H, h = Math.max(2, Math.abs(v) / scale * H);
+    cols += `<div class="c"><div style="position:absolute;bottom:${lo + h + 2}px;font-family:var(--mono);font-size:11px;color:${v<0?'#ff9e9e':'var(--t1)'}">${v>0?'+':'−'}${Math.abs(v).toFixed(v<1&&v>-1?2:1)}k</div><div class="bar" style="position:absolute;bottom:${lo}px;height:${h}px;background:${col}"></div></div>`;
+  });
+  const th = acc / scale * H;
+  cols += `<div class="c"><div style="position:absolute;bottom:${th + 2}px;font-family:var(--mono);font-size:11px;color:var(--good);font-weight:600">${total}</div><div class="bar" style="position:absolute;bottom:0;height:${th}px;background:var(--good)"></div></div>`;
+  return `<div class="wf">${cols}</div><div style="display:flex;gap:10px;padding:0 4px">${items.map(([lb])=>`<div style="width:74px;font-size:10px;color:var(--t3);text-align:center;line-height:1.25">${lb}</div>`).join('')}<div style="width:74px;font-size:10px;color:var(--t3);text-align:center">a month</div></div>`;
+}
+function btrows(rows){
+  return rows.map(r=>`<div class="btrow"><span class="nm">${r[0]}</span><span class="sh"><span class="tr"><i style="width:${Math.round(r[1]*100)}%"></i></span>${r[2]}</span><span class="why">${r[3]}</span></div>`).join('');
+}
+function spark(years, series, w, h){
+  const X = i => 30 + i/(years.length-1)*(w-40), Y = v => 6 + (h-22) - v/100*(h-22);
+  let s = `<svg width="${w}" height="${h}">` + [0,50,100].map(v=>`<line x1="30" x2="${w-10}" y1="${Y(v)}" y2="${Y(v)}" stroke="#1d2b3c"/><text x="26" y="${Y(v)+3}" font-size="9" fill="#8496ab" text-anchor="end" font-family="IBM Plex Mono">${v}%</text>`).join('');
+  years.forEach((y,i)=>{ s += `<text x="${X(i)}" y="${h-2}" font-size="9" fill="#8496ab" text-anchor="middle" font-family="IBM Plex Mono">${y}</text>`; });
+  series.forEach(([v,c,n])=>{ s += `<polyline fill="none" stroke="${c}" stroke-width="2" points="${v.map((x,i)=>`${X(i)},${Y(x)}`).join(' ')}"/><text x="${X(v.length-1)+3}" y="${Y(v[v.length-1])-4}" font-size="9.5" fill="${c}" text-anchor="end" font-family="IBM Plex Sans">${n}</text>`; });
+  return s + '</svg>';
+}
+// ---------------------------------------------------------------- Retail
+const c1 = frame(document.getElementById('W1'), 'big', 'factory');
+c1.innerHTML = sectorHead(c1, 'cart', 'Retail', 'grocers, corner stores and filling stations · 380 standing') +
+ `<div class="invline"><span class="dot"></span>Investors are fitting a scanner in <b>Small Grocery Store 119</b> (2 months), then ordering a new Small Grocery Store.</div>
+  <div class="two">
+   <div class="box">${ranked([
+     ['1','Scanner · Small Grocery Store','refit','D$ 272k','D$ 5.75k','2.11%','4 lanes · pays back in 3.9 years · next order'],
+     ['2','Small Grocery Store','new','D$ 5.78M','D$ 98.0k','1.69%','serves 1,600 · 9 districts short of groceries'],
+     ['3','Scanner · Convenience Store','refit','D$ 68k','D$ 1.09k','1.61%','1 lane · pays back in 5.2 years'],
+     ['4','Convenience Store','new','D$ 0.75M','D$ 9.6k','1.28%','serves 480'],
+     ['5','Scanner · Filling Station','refit','D$ 68k','D$ 0.61k','0.90%','not worth it yet: over its 10-year life it earns back D$ 52k of its D$ 68k','warn']])}
+     <div class="minor">The money gate is 0.74% of the cost a month (1.25 × the interest at 7.1%). Each must also pay back over its life: the lesser of its own and its building's years left.</div>
+     <div class="gh" style="margin-top:4px">Scanners fitted since 1974</div>${spark([1974,1975,1976,1977,1978,1979], [[[0,9,23,38,52,66],'#5aa9ff','grocery'],[[0,1,3,7,11,16],'#2ec4b6','corner'],[[0,0,0,0,0,0],'#8496ab','filling']], 520, 150)}
+   </div>
+   <div class="box">
+     <div class="eqh"><span class="nm">Barcode scanner</span><span class="tag grey">FROM ABROAD · JUNE 1974</span><span class="src">no licence fee</span></div>
+     <div class="does">A store's payroll falls <b>5.35%</b> for the same sales. Made abroad: <b>D$ 68k</b> a lane, all imported (the city has no electronics maker); this year's scanners are <b>D$ 2.4M</b> of imports.</div>
+     <div class="gh" style="margin-top:2px">What the next one adds · Small Grocery Store 119<span class="rt">D$ thousand a month</span></div>
+     ${waterfall([['posts saved: 1.4 of 27', 5.77, '#5aa9ff'],['power for 4 lanes', -0.02, '#f85149']], '+5.75k', 7)}
+     <div class="gh" style="margin-top:2px">By kind of store</div>
+     ${btrows([['Small Grocery Store', 118/180, '118 of 180', 'next: one a month · pays back in 3.9 years'],
+              ['Convenience Store', 22/140, '22 of 140', 'pays back in 5.2 years · ranks 3rd, behind a new grocery'],
+              ['Filling Station', 0, '0 of 60', '<span class="warn">not worth it yet</span>: earns back D$ 52k of D$ 68k over 10 years; it would pay at wages 30% higher']])}
+   </div>
+  </div>`;
+
+// ---------------------------------------------------------------- Iron & Steel
+const c2 = frame(document.getElementById('W2'), 'big', 'factory');
+c2.innerHTML = sectorHead(c2, 'ladle', 'Iron & Steel', 'scrap into steel · 7 arc furnaces, 2 mini-mills') +
+ `<div class="invline"><span class="dot"></span>Investors are fitting a continuous caster to <b>Electric Arc Furnace 4</b> (5 months).</div>
+  <div class="two">
+   <div class="box">${ranked([
+     ['1','Caster · Electric Arc Furnace 4 (1961)','refit','D$ 4.25M','D$ 87.7k','2.06%','pays back in 4.0 years · on order'],
+     ['2','Large Mini-Mill','new','D$ 1.20B','D$ 16.8M','1.40%','125,000 t a month · waits for the caster order'],
+     ['3','Electric Arc Furnace','new','D$ 30.0M','D$ 0.21M','0.70%','under the money gate (0.74%)','bad'],
+     ['—','Caster · Electric Arc Furnaces 1 and 2 (1953)','refit','D$ 4.25M','D$ 87.7k','2.06%','won’t fit: 4 years left; over 4 years it earns back D$ 3.7M of D$ 4.25M','warn']])}
+     <div class="minor">A refit stops the furnace for its fitting months; the output lost is part of its cost.</div>
+     <div class="gh" style="margin-top:4px">Casters fitted since 1962 · share of the city's steel cast</div>${spark([1962,1965,1968,1971,1974,1977,1979], [[[0,0,8,22,38,51,62],'#5aa9ff','steel cast'],[[0,0,0,14,29,43,43],'#a78bfa','arc furnaces']], 520, 150)}
+   </div>
+   <div class="box">
+     <div class="eqh"><span class="nm">Continuous caster</span><span class="tag grey">FROM ABROAD · 1962</span><span class="src">licence: a quarter of what it adds, until 1982</span></div>
+     <div class="does"><b>+10%</b> steel from the same scrap, <b>5</b> fewer posts, about <b>1 MBtu</b> a ton less fuel. Its machinery comes from the city's Machine Works; its moulds and controls are imported.</div>
+     <div class="gh" style="margin-top:2px">What the next one adds · Electric Arc Furnace 4<span class="rt">D$ thousand a month</span></div>
+     ${waterfall([['+120 t steel at D$ 650', 78.0, '#5aa9ff'],['5 posts saved', 19.4, '#5aa9ff'],['fuel saved', 19.5, '#5aa9ff'],['licence fee', -29.2, '#f85149']], '+87.7k', 120)}
+     <div class="gh" style="margin-top:2px">By kind of building</div>
+     ${btrows([['Electric Arc Furnace', 3/7, '3 of 7', 'next: furnace 4 (on order) · furnaces 1 and 2 <span class="warn">won’t fit</span>: 4 years left'],
+              ['Steel Mini-Mill', 1, '2 of 2', 'built with it (1972, 1976)'],
+              ['Oxygen converter', 0, '—', 'no use: a converter needs hot iron from a blast furnace for 70–75% of its charge']])}
+   </div>
+  </div>`;
+
+</script>
+</body>
+</html>

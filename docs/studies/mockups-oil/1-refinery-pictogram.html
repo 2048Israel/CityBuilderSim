@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mockup 1 · The refinery pictogram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stage:#0b1118; --panel:#101924; --raised:#152130; --edge:#24354a;
+  --t1:#e6edf3; --t2:#a9b8c9; --t3:#8496ab;
+  --accent:#5aa9ff; --good:#3fb950; --warn:#e3b341; --bad:#f85149;
+  --people:#2ec4b6; --biz:#a78bfa; --bld:#f17cb0; --ore:#c9b68f;
+  --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'IBM Plex Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#06090d;color:var(--t1);font-family:var(--sans);padding:28px 32px 60px}
+.doc{max-width:1389px;margin:0 0 22px}
+.doc h1{font-size:22px;font-weight:600;margin:0 0 6px}
+.doc p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:4px 0;max-width:1100px}
+.state-cap{font-size:13px;color:var(--t2);margin:26px 0 8px}
+.state-cap b{color:var(--t1);font-weight:600}
+.notes{max-width:1389px;color:var(--t3);font-size:12.5px;line-height:1.55;margin:10px 0 0;padding-left:18px}
+/* ---------- the game window ---------- */
+.win{width:1389px;height:868px;background:var(--stage);border:1px solid var(--edge);overflow:hidden;
+  display:grid;grid-template-columns:46px 72px 1fr;grid-template-rows:44px 1fr 30px;position:relative}
+.rail{grid-row:1/4;grid-column:1;background:var(--panel);border-right:1px solid var(--edge);display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:4px}
+.ri{width:34px;height:34px;display:grid;place-items:center;border-radius:4px;color:var(--t3)}
+.ri svg{width:19px;height:19px}
+.ri.on{background:var(--raised);color:var(--accent);box-shadow:inset 2px 0 0 var(--accent)}
+.ri.gear{margin-top:auto;margin-bottom:8px}
+.top{grid-row:1;grid-column:2/4;background:var(--panel);border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:22px;padding:0 16px}
+.top .date{font-family:var(--mono);font-size:19px;font-weight:600;color:#fff}
+.top .tf{font-family:var(--mono);font-size:13px;color:var(--t2)}
+.top .tf b{color:var(--t1);font-weight:600}
+.top .inbox{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--t2);font-family:var(--mono);font-size:12px}
+.top .inbox svg{width:18px;height:18px}
+.strip{grid-row:2;grid-column:2;background:var(--panel);border-right:1px solid var(--edge);padding:12px 8px;display:flex;flex-direction:column;gap:14px}
+.strip .v{font-size:9px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.strip .v b{display:block;font-family:var(--mono);font-size:12px;letter-spacing:0;color:var(--t1);font-weight:500;margin-top:2px;text-transform:none}
+.debt{grid-row:3;grid-column:2/4;background:var(--panel);border-top:1px solid var(--edge);display:flex;align-items:center;gap:20px;padding:0 16px;font-size:11px;color:var(--t3)}
+.debt b{font-family:var(--mono);color:var(--t2);font-weight:500}
+.content{grid-row:2;grid-column:3;padding:12px 16px 0;overflow:hidden;display:flex;flex-direction:column;gap:9px}
+/* ---------- page pieces ---------- */
+.head{display:flex;align-items:center;gap:10px;height:30px}
+.crumb{font-size:12px;color:var(--accent)}
+.sq{width:26px;height:26px;border-radius:4px;display:grid;place-items:center;background:#2a2246;color:var(--biz)}
+.sq svg{width:16px;height:16px}
+.title{font-size:20px;font-weight:600}
+.info{width:16px;height:16px;border-radius:50%;border:1px solid var(--t3);color:var(--t3);font-size:10px;display:grid;place-items:center;font-family:var(--mono)}
+.buildlink{margin-left:auto;font-size:12px;color:var(--bld)}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.fig{background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:8px 12px}
+.fig .l{font-size:10px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
+.fig .n{font-family:var(--mono);font-size:21px;font-weight:600;margin:2px 0 1px}
+.fig .s{font-size:11px;color:var(--t2)}
+.inv{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--edge);border-left:3px solid var(--warn);border-radius:4px;padding:6px 12px;font-size:12px;color:var(--t2)}
+.inv .k{font-weight:600}
+.inv a{margin-left:auto;color:var(--accent);text-decoration:none}
+.chips{display:flex;gap:6px}
+.chip{font-size:12px;color:var(--t2);padding:5px 11px;border-radius:4px;border:1px solid var(--edge);background:var(--panel)}
+.chip.on{color:var(--t1);background:var(--raised);border-color:var(--accent)}
+.sec{display:flex;align-items:baseline;gap:12px;font-size:11px;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-top:2px}
+.sec span{letter-spacing:0;text-transform:none;font-size:11px}
+.sec .scale{margin-left:auto;font-family:var(--mono)}
+.pic{display:block}
+.pstrip{display:grid;gap:6px}
+.pc{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:6px 8px 7px}
+.pc .nm{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500}
+.pc .sw{width:10px;height:10px;border-radius:2px}
+.pc .bar{height:7px;margin:6px 0 5px;display:flex;border-radius:2px;overflow:hidden;background:#0e1620}
+.pc .r{display:flex;justify-content:space-between;font-size:10.5px;color:var(--t3);line-height:1.45}
+.pc .r b{font-family:var(--mono);font-weight:500;color:var(--t2)}
+.pc .r b.hot{color:var(--warn)}
+svg text{font-family:var(--sans)}
+svg .mono{font-family:var(--mono)}
+</style>
+</head>
+<body>
+
+<div class="doc">
+  <h1>Mockup 1 — the refinery pictogram (Jerus's idea)</h1>
+  <p>Refining's <b>Operations</b> page. Crude comes in on the left. The <b>column</b> is filled with what the crude gives (its cuts, in boiling order: gas at the top, residue at the bottom). Each cut either goes straight to a product or through a conversion unit. The <b>refinery pictogram</b> in the middle is filled in coloured bands by how much of each product it made this month. The buyers are on the right; imported product joins them hatched, and what nobody here buys goes abroad. Every ribbon is to scale.</p>
+  <p>Figures are worked from the research report (§1–§2): real straight-run yields, the game unit yields marked (est.) there, and prices as ratios to crude. The two cities are illustrative; within each, every flow balances (crude in = products + refinery fuel; made + imported = used here + exported).</p>
+</div>
+
+<div class="state-cap"><b>State A — a small town with one simple refinery.</b> 41,300 people, 22 land wells, one 2,000 b/d crude unit with a small reformer (a "hydroskimming" plant). It refines only its own crude.</div>
+<div class="win" id="A"></div>
+<ul class="notes">
+  <li>A simple plant sends 33% of what it makes abroad as fuel oil, at a discount. Its petrol covers 95% of the town's cars; the last 0.10M L is imported.</li>
+  <li>It pays only because the crude is the town's own (crude at its export price, D$0.399/L). On imported crude (D$0.469/L) the same plant loses D$0.05M a month before wages. That is the real economics of small simple refineries, and it is what pushes the investors toward conversion units.</li>
+</ul>
+
+<div class="state-cap"><b>State B — a big city with several conversion units.</b> 2.61M people, two offshore platforms, 160 land wells and imported crude; a 100,000 b/d crude unit at 80%, a reformer, a cracking unit, a lube plant and an asphalt unit, with an alkylation unit on site.</div>
+<div class="win" id="B"></div>
+<ul class="notes">
+  <li>The city is short of petrol (36.8M L imported) and long of gas (29.0M L sold abroad at D$0.18/L). Alkylation turns gas into petrol, so it has the widest spread (+D$0.27 per litre of feed): the investors' line says it is being built.</li>
+  <li>Fuel oil is the big surplus (47.5M L abroad). A coker would turn residue into diesel, but at today's prices it loses D$0.03 a litre, so none is built. The rule in report §2.3 decides this; nothing is scripted.</li>
+  <li>Buyers that don't exist in the game yet (Airport, Ships, Roads for bitumen, Industry for lubricants and gas) are drawn as they would be. Until they exist, their share goes abroad. See the report's phasing (§2.2).</li>
+</ul>
+
+<script>
+/* ===================== shared frame ===================== */
+const ICON = {
+  building:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M11 21v-3h2v3"/>',
+  land:'<path d="M3 20h18M6 20l5-11 5 11M11 9V5M17 20v-6M15 16l2-5 2 5"/>',
+  people:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4 2 4 5"/>',
+  health:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M6 12h3l1.5-2.5 3 5 1.5-2.5h3"/>',
+  factory:'<path d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17z"/>',
+  landmark:'<path d="M3 21h18M4 10h16M12 3l8 5H4zM6 10v8M10 10v8M14 10v8M18 10v8"/>',
+  dollar:'<circle cx="12" cy="12" r="9"/><path d="M15 9c-.5-1-1.6-1.5-3-1.5-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.6M12 6v1.5M12 16.5V18"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z"/>',
+  scale:'<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7h6zM19 7l-3 7h6z"/>',
+  chart:'<path d="M3 3v18h18M7 15l4-5 3 3 5-7"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  car:'<path d="M3 16v-3.5L5.5 7h13l2.5 5.5V16z"/><path d="M3 12.5h18"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
+  truck:'<path d="M2 6h11v10H2zM13 10h4l3 3v3h-7z"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/>',
+  train:'<rect x="6" y="3" width="12" height="14" rx="2"/><path d="M6 10h12M8 21l2-3M16 21l-2-3M9 13.5h.5M14.5 13.5h.5"/>',
+  plane:'<path d="M21 12L3 5.5l3.5 6.5L3 18.5z"/><path d="M6.5 12H14"/>',
+  ship:'<path d="M3 15l2 5h14l2-5zM6 15V9h12v6M10 9V5h4v4"/>',
+  road:'<path d="M8 3L4 21M16 3l4 18M12 4v3M12 10v3M12 16v3"/>',
+  well:'<path d="M3 21h18M8 21l3-9 3 9M2 9l14-4 3 3-14 4zM16 5v3M5 12v4"/>',
+  platform:'<path d="M2 20c2 0 2-1.5 4-1.5S8 20 10 20s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M6 18V10h12v8M5 10h14M8 10V6h5v4M15 10V3"/>',
+  tanker:'<path d="M2 15l2 4h16l2-4zM5 15v-3h9v3M16 15V8h3v7"/>',
+  vessel:'<rect x="8" y="3" width="8" height="18" rx="4"/><path d="M8 9h8M8 15h8"/>',
+  drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+};
+const ic = (k, extra='') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" ${extra}>${ICON[k]}</svg>`;
+const RAIL = [['building','Build'],['land','Land'],['people','People'],['health','Services'],['factory','Sectors'],['landmark','Government'],['dollar','Finances'],['globe','Trade'],['scale','Policy'],['chart','History']];
+function frame(win, o){
+  win.innerHTML = `
+  <nav class="rail">${RAIL.map(([k,n])=>`<span class="ri ${k===o.active?'on':''}" title="${n}">${ic(k)}</span>`).join('')}<span class="ri gear" title="Game menu">${ic('settings')}</span></nav>
+  <div class="top"><span class="date">${o.date}</span><span class="tf">cash <b>${o.cash}</b></span><span class="tf">people <b>${o.people}</b></span><span class="tf">net <b style="color:${o.netColor||'var(--good)'}">${o.net}</b>/mo</span><span class="inbox">${ic('mail')}${o.inbox}</span></div>
+  <aside class="strip"><div class="v">Cash<b>${o.cashShort}</b></div><div class="v">People<b>${o.peopleShort}</b></div><div class="v">Net<b>${o.netShort}</b></div><div class="v">Jobs<b>${o.jobs}</b></div></aside>
+  <main class="content"></main>
+  <div class="debt">debt <b>${o.debt}</b><span>next payment <b>${o.pay}</b></span><span>rate <b>${o.rate}</b></span></div>`;
+  return win.querySelector('.content');
+}
+/* ===================== colours ===================== */
+const PROD = {
+  lpg:{n:'Gas (LPG)',c:'#9fd8ef'}, naphtha:{n:'Naphtha',c:'#b7e4a8'}, petrol:{n:'Petrol',c:'#ffcf5c'},
+  jet:{n:'Jet fuel',c:'#f2a65a'}, diesel:{n:'Diesel',c:'#d9805f'}, lube:{n:'Lubricants',c:'#c792ea'},
+  fueloil:{n:'Fuel oil',c:'#9a7a6c'}, bitumen:{n:'Bitumen',c:'#6e665f'} };
+const CUT = {
+  gas:{n:'Gas',c:'#9fd8ef'}, ln:{n:'Light naphtha',c:'#ffe29a'}, hn:{n:'Heavy naphtha',c:'#b7e4a8'},
+  kero:{n:'Kerosene',c:'#f2a65a'}, dsl:{n:'Diesel',c:'#d9805f'}, vgo:{n:'Gas oil',c:'#7f8ca6'}, vr:{n:'Residue',c:'#57504b'} };
+const CRUDE = '#a07d4a';
+const PORDER = ['lpg','naphtha','petrol','jet','diesel','lube','fueloil','bitumen'];
+const CORDER = ['gas','ln','hn','kero','dsl','vgo','vr'];
+const f1 = v => v.toLocaleString('en-US',{minimumFractionDigits:v<10?2:1,maximumFractionDigits:v<10?2:1});
+const ML = v => f1(v)+'M L';
+
+/* ===================== the pictogram ===================== */
+function refinery(d){
+  const W=1235, H=d.H, PAD=4;
+  const X={src:190,srcW:10,col:292,colW:82,unit:500,unitW:66,tank:748,tankW:122,buy:990,buyW:12}; const TOP=60;
+  const V = d.sources.reduce((a,s)=>a+s.v,0);
+  // stage 2 items in cut order: units first, pass-through after
+  const items=[];
+  CORDER.forEach(c=>{
+    d.units.filter(u=>u.feed===c).forEach(u=>items.push({kind:'unit',feed:c,u,inV:u.v,out:u.out,outV:Object.values(u.out).reduce((a,b)=>a+b,0)}));
+    d.pass.filter(p=>p.cut===c).forEach(p=>items.push({kind:'pass',feed:c,inV:p.v,out:{[p.to]:p.v},outV:p.v}));
+  });
+  const gapOf = it => it.kind==='unit' ? 18 : 3;
+  const prods = PORDER.filter(p=>d.products[p]>0);
+  const impTot = Object.values(d.imports).reduce((a,b)=>a+b,0);
+  const buyTot = d.buyers.reduce((a,b)=>a+Object.values(b.take).reduce((x,y)=>x+y,0),0);
+  const prodTot = prods.reduce((a,p)=>a+d.products[p],0);
+  const g2 = items.reduce((a,it)=>a+gapOf(it),0), g3 = impTot>0?20:0, g4=(d.buyers.length-1)*12;
+  const U=H-TOP-2*PAD;
+  const k = Math.min((U-12)/V, (U-g2)/items.reduce((a,it)=>a+Math.max(it.inV,it.outV),0),
+                     (U-g3-10)/(prodTot+impTot), (U-g4)/buyTot);
+  d.k=k;
+  const mid = TOP+(H-TOP)/2;
+  let s='';
+  const defs=[];
+  const grad=(id,a,b,x1,x2)=>defs.push(`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x1}" x2="${x2}" y1="0" y2="0"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`);
+  PORDER.forEach(p=>defs.push(`<pattern id="h_${d.id}_${p}" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><rect width="6" height="6" fill="${PROD[p].c}" fill-opacity=".14"/><rect width="2.2" height="6" fill="${PROD[p].c}" fill-opacity=".85"/></pattern>`));
+  let gid=0;
+  const band=(x1,a0,a1,x2,b0,b1,fill,op=.5)=>{
+    const xm=(x1+x2)/2;
+    s+=`<path d="M${x1},${a0}C${xm},${a0} ${xm},${b0} ${x2},${b0}L${x2},${b1}C${xm},${b1} ${xm},${a1} ${x1},${a1}Z" fill="${fill}" fill-opacity="${op}"/>`;
+  };
+  const gband=(x1,a0,a1,x2,b0,b1,ca,cb,op=.5)=>{
+    if(ca===cb) return band(x1,a0,a1,x2,b0,b1,ca,op);
+    const id=`g_${d.id}_${gid++}`; grad(id,ca,cb,x1,x2); band(x1,a0,a1,x2,b0,b1,`url(#${id})`,op);
+  };
+  const txt=(x,y,t,o={})=>`<text ${o.halo?'stroke="#0b1118" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke"':''} x="${x}" y="${y}" font-size="${o.fs||11}" fill="${o.c||'#a9b8c9'}" ${o.a?`text-anchor="${o.a}"`:''} ${o.w?`font-weight="${o.w}"`:''} ${o.mono?'class="mono"':''} ${o.ls?`letter-spacing="${o.ls}"`:''}>${t}</text>`;
+
+  // ---------- stage 0: sources ----------
+  const srcH = d.sources.reduce((a,x)=>a+x.v*k,0)+(d.sources.length-1)*26;
+  let y=mid-srcH/2; const src=[];
+  d.sources.forEach(x=>{ src.push({...x,y,h:x.v*k}); y+=x.v*k+26; });
+  // ---------- stage 1: column ----------
+  const colH=V*k, colY=mid-colH/2;
+  const cut={}; y=colY; CORDER.forEach(c=>{ cut[c]={y,h:d.cuts[c]*k,out:y}; y+=d.cuts[c]*k; });
+  // crude ribbons into the column
+  let cin=colY;
+  src.forEach(x=>{ band(X.src+X.srcW,x.y,x.y+x.h,X.col,cin,cin+x.h,CRUDE,.55); cin+=x.h; });
+  // ---------- stage 2: units and pass-through ----------
+  const s2H = items.reduce((a,it)=>a+Math.max(it.inV,it.outV)*k+gapOf(it),0)-3;
+  y=mid-s2H/2;
+  items.forEach(it=>{ y+=gapOf(it)-(it.kind==='pass'?3:3); it.y=y; it.h=Math.max(it.inV,it.outV)*k; y+=it.h; });
+  // ---------- stage 3: products + imports ----------
+  const s3H=(prodTot+impTot)*k+g3; y=mid-s3H/2; const tankY=y;
+  const pr={}; prods.forEach(p=>{ pr[p]={y,h:d.products[p]*k,inC:y,outC:y}; y+=d.products[p]*k; });
+  const tankH=y-tankY;
+  y+=g3; const impY=y; const imp={}; PORDER.filter(p=>d.imports[p]).forEach(p=>{ imp[p]={y,h:d.imports[p]*k,outC:y}; y+=d.imports[p]*k; });
+  // ---------- stage 4: buyers ----------
+  const s4H=buyTot*k+g4; y=mid-s4H/2;
+  const by=d.buyers.map(b=>{ const v=Object.values(b.take).reduce((x,z)=>x+z,0); const o={...b,y,h:v*k,v,inC:y,segs:[]}; y+=v*k+12; return o; });
+
+  // cut -> stage 2
+  items.forEach(it=>{
+    const c=cut[it.feed]; const h=it.inV*k;
+    const col=CUT[it.feed].c;
+    band(X.col+X.colW,c.out,c.out+h,X.unit,it.y,it.y+h,col,.5); c.out+=h;
+    if(it.kind==='pass'){ s+=`<rect x="${X.unit}" y="${it.y}" width="${X.unitW}" height="${h}" fill="${col}" fill-opacity=".5"/>`; }
+  });
+  // stage 2 -> products
+  items.forEach(it=>{
+    let o=it.y;
+    PORDER.forEach(p=>{ const v=it.out[p]; if(!v) return; const h=v*k;
+      gband(X.unit+X.unitW,o,o+h,X.tank,pr[p].inC,pr[p].inC+h,CUT[it.feed].c,PROD[p].c,.5); pr[p].inC+=h; o+=h; });
+  });
+  // products/imports -> buyers (home-made first share; imports pro rata over home buyers)
+  prods.concat(PORDER.filter(p=>d.imports[p]&&!prods.includes(p))).forEach(p=>{
+    const home=d.buyers.filter(b=>!b.abroad && b.take[p]); const D=home.reduce((a,b)=>a+b.take[p],0);
+    const I=d.imports[p]||0; const share = D>0 ? (D-I)/D : 0;
+    by.forEach(b=>{ const t=b.take[p]; if(!t) return;
+      const hv = b.abroad ? t : t*share; if(hv>1e-9){ const h=hv*k;
+        band(X.tank+X.tankW,pr[p].outC,pr[p].outC+h,X.buy,b.inC,b.inC+h,PROD[p].c,.55); b.segs.push({y:b.inC,h,c:PROD[p].c}); pr[p].outC+=h; b.inC+=h; }
+    });
+  });
+  PORDER.filter(p=>d.imports[p]).forEach(p=>{
+    const home=d.buyers.filter(b=>!b.abroad && b.take[p]); const D=home.reduce((a,b)=>a+b.take[p],0); const I=d.imports[p];
+    home.forEach(b0=>{ const b=by.find(z=>z.id===b0.id); const iv=b0.take[p]*I/D; const h=iv*k; if(h<0.05) return;
+      band(X.tank+X.tankW,imp[p].outC,imp[p].outC+h,X.buy,b.inC,b.inC+h,`url(#h_${d.id}_${p})`,.9); b.segs.push({y:b.inC,h,c:`url(#h_${d.id}_${p})`}); imp[p].outC+=h; b.inC+=h; });
+  });
+
+  // ---------- draw nodes ----------
+  // sources
+  src.forEach(x=>{
+    s+=`<rect x="${X.src}" y="${x.y}" width="${X.srcW}" height="${Math.max(x.h,1.5)}" rx="1.5" fill="${CRUDE}"/>`;
+    const cy=x.y+x.h/2;
+    s+=`<g transform="translate(${X.src-190},${cy-17})" color="#c9b68f"><svg width="20" height="20" x="0" y="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[x.icon]}</svg></g>`;
+    s+=txt(X.src-164,cy-9,x.label,{fs:11.5,c:'#e6edf3',w:500});
+    s+=txt(X.src-164,cy+5,x.sub,{fs:10,c:'#8496ab'});
+    s+=txt(X.src-164,cy+19,ML(x.v),{fs:10.5,c:'#a9b8c9',mono:1});
+  });
+  // the column (tower): dome, trays, stack
+  const cx=X.col, cw=X.colW;
+  s+=txt(cx+cw/2,colY-34,'THE COLUMN',{fs:9.5,c:'#8496ab',a:'middle',ls:'.08em'});
+  s+=txt(cx+cw/2,colY-21,d.colSub,{fs:10,c:'#a9b8c9',a:'middle'});
+  s+=`<path d="M${cx},${colY} L${cx},${colY-4} Q${cx+cw/2},${colY-14} ${cx+cw},${colY-4} L${cx+cw},${colY}" fill="#152130" stroke="#3a4f6a"/>`;
+  s+=`<rect x="${cx+cw/2-3}" y="${colY-12}" width="6" height="6" fill="#152130" stroke="#3a4f6a"/>`;
+  CORDER.forEach(c=>{ const b=cut[c];
+    s+=`<rect x="${cx}" y="${b.y}" width="${cw}" height="${b.h}" fill="${CUT[c].c}" fill-opacity=".92"/>`;
+    if(b.h>=11){ s+=txt(cx+6,b.y+b.h/2+3.5,CUT[c].n,{fs:9.5,c:(c==='vr'?'#e6edf3':'#0b1118'),w:600}); }
+  });
+  CORDER.slice(1).forEach(c=>{ s+=`<line x1="${cx}" x2="${cx+cw}" y1="${cut[c].y}" y2="${cut[c].y}" stroke="#0b1118" stroke-width="1"/>`; });
+  s+=`<rect x="${cx}" y="${colY}" width="${cw}" height="${colH}" fill="none" stroke="#3a4f6a" stroke-width="1.2"/>`;
+  s+=`<rect x="${cx+10}" y="${colY+colH}" width="${cw-20}" height="8" fill="#152130" stroke="#3a4f6a"/>`;
+  // units
+  items.filter(it=>it.kind==='unit').forEach(it=>{
+    const u=it.u;
+    s+=`<rect x="${X.unit}" y="${it.y}" width="${X.unitW}" height="${Math.max(it.h,3)}" rx="3" fill="#1b2a3d" stroke="#4a6283"/>`;
+    s+=txt(X.unit,it.y-5,`${u.label}`,{fs:10.5,c:'#e6edf3',w:500,halo:1});
+    s+=txt(X.unit+X.unitW+4,it.y-5,u.sub,{fs:9.5,c:'#a9b8c9',halo:1});
+    if(it.h>=22){ s+=`<g color="#8fb3e0"><svg x="${X.unit+X.unitW/2-8}" y="${it.y+it.h/2-8}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">${ICON.vessel}</svg></g>`; }
+  });
+  s+=txt(X.unit,mid-s2H/2-24,'CONVERSION UNITS',{fs:9.5,c:'#8496ab',ls:'.08em'});
+  // the refinery pictogram: product tank with stack and flare
+  const tx=X.tank, tw=X.tankW;
+  s+=txt(tx+tw/2,tankY-48,'WHAT IT MADE',{fs:9.5,c:'#8496ab',a:'middle',ls:'.08em'});
+  s+=txt(tx+tw/2,tankY-35,ML(prodTot)+' · '+prods.length+' products',{fs:10,c:'#a9b8c9',a:'middle'});
+  s+=`<rect x="${tx+tw-22}" y="${tankY-28}" width="7" height="28" fill="#152130" stroke="#3a4f6a"/>`;
+  s+=`<path d="M${tx+tw-18.5},${tankY-29} q-4,-6 0,-11 q4,5 0,11z" fill="#ffb454" fill-opacity=".85"/>`;
+  s+=`<path d="M${tx},${tankY} L${tx+10},${tankY-12} L${tx+tw-30},${tankY-12} L${tx+tw-24},${tankY}" fill="#152130" stroke="#3a4f6a"/>`;
+  prods.forEach(p=>{ const b=pr[p];
+    s+=`<rect x="${tx}" y="${b.y}" width="${tw}" height="${b.h}" fill="${PROD[p].c}" fill-opacity=".95"/>`;
+    const tc=(p==='bitumen'?'#e6edf3':'#0b1118');
+    if(b.h>=12){ s+=txt(tx+7,b.y+b.h/2+3.5,PROD[p].n,{fs:10,c:tc,w:600}); s+=txt(tx+tw-6,b.y+b.h/2+3.5,f1(d.products[p]),{fs:10,c:tc,a:'end',mono:1,w:600}); }
+  });
+  prods.slice(1).forEach(p=>{ s+=`<line x1="${tx}" x2="${tx+tw}" y1="${pr[p].y}" y2="${pr[p].y}" stroke="#0b1118"/>`; });
+  s+=`<rect x="${tx}" y="${tankY}" width="${tw}" height="${tankH}" fill="none" stroke="#3a4f6a" stroke-width="1.2"/>`;
+  s+=`<rect x="${tx+8}" y="${tankY+tankH}" width="${tw-16}" height="7" fill="#152130" stroke="#3a4f6a"/>`;
+  if(impTot>0){
+    PORDER.filter(p=>d.imports[p]).forEach(p=>{ s+=`<rect x="${tx}" y="${imp[p].y}" width="${tw}" height="${Math.max(imp[p].h,1.5)}" fill="url(#h_${d.id}_${p})"/>`; });
+    s+=`<rect x="${tx}" y="${impY}" width="${tw}" height="${Math.max(impTot*k,1.5)}" fill="none" stroke="#5a6d84" stroke-dasharray="3 2"/>`;
+    s+=txt(tx,impY+impTot*k+13,'IMPORTED',{fs:9.5,c:'#8496ab',ls:'.08em'});
+    s+=txt(tx+tw,impY+impTot*k+13,ML(impTot),{fs:10,c:'#e3b341',a:'end',mono:1});
+  }
+  // buyers, with label relaxation
+  by.forEach(b=>{
+    if(b.segs.length){ b.segs.forEach(g=>{ s+=`<rect x="${X.buy}" y="${g.y}" width="${X.buyW}" height="${Math.max(g.h,0.8)}" fill="${g.c}"/>`; }); }
+  });
+  const L=by.map(b=>({b,t:b.y+b.h/2}));
+  const MIN=33; for(let it=0;it<60;it++){ for(let i=1;i<L.length;i++){ const dy=L[i].t-L[i-1].t; if(dy<MIN){ const m=(MIN-dy)/2; L[i].t+=m; L[i-1].t-=m; } } L.forEach(l=>{ l.t=Math.max(18,Math.min(H-24,l.t)); }); }
+  L.forEach(({b,t})=>{
+    const cy=b.y+b.h/2, lx=X.buy+X.buyW+10;
+    if(Math.abs(cy-t)>3) s+=`<path d="M${X.buy+X.buyW+1},${cy} L${lx-4},${t}" stroke="#3a4f6a" fill="none"/>`;
+    s+=`<g color="${b.abroad?'#8496ab':'#c3ccd3'}"><svg x="${lx}" y="${t-15}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[b.icon]}</svg></g>`;
+    s+=txt(lx+24,t-3,b.label,{fs:11.5,c:'#e6edf3',w:500});
+    s+=txt(lx+210,t-3,ML(b.v),{fs:11,c:'#a9b8c9',a:'end',mono:1});
+    s+=txt(lx+24,t+11,b.what,{fs:9.5,c:b.hot?'#e3b341':'#8496ab'});
+  });
+  s+=txt(X.buy,mid-s4H/2-16,'WHO BOUGHT IT',{fs:9.5,c:'#8496ab',ls:'.08em'});
+  s+=txt(X.src-190,mid-srcH/2-24,'CRUDE IN',{fs:9.5,c:'#8496ab',ls:'.08em'});
+  return `<svg class="pic" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${defs.join('')}</defs>${s}</svg>`;
+}
+
+/* ===================== the product strip ===================== */
+function pstrip(d){
+  const ps = PORDER.filter(p=>d.products[p]>0 || d.imports[p]);
+  const cells = ps.map(p=>{
+    const made=d.products[p]||0, im=d.imports[p]||0;
+    const ex=(d.buyers.find(b=>b.abroad)?.take[p])||0, used=made+im-ex;
+    const tot=made+im, sp=d.price[p];
+    const w=v=>(100*v/tot).toFixed(2)+'%';
+    return `<div class="pc"><div class="nm"><span class="sw" style="background:${PROD[p].c}"></span>${PROD[p].n}</div>
+      <div class="bar"><span style="width:${w(made-ex)};background:${PROD[p].c}"></span><span style="width:${w(ex)};background:${PROD[p].c};opacity:.35"></span><span style="width:${w(im)};background:repeating-linear-gradient(45deg,${PROD[p].c} 0 2px,transparent 2px 5px)"></span></div>
+      <div class="r">made here <b>${f1(made)}</b></div>
+      <div class="r">imported <b class="${im>0?'hot':''}">${im>0?f1(im):'—'}</b></div>
+      <div class="r">exported <b>${ex>0?f1(ex):'—'}</b></div>
+      <div class="r">price here <b>D$${sp.toFixed(3)}</b></div></div>`;
+  }).join('');
+  return `<div class="sec">THIS MONTH, BY PRODUCT <span>million litres · bar: used here, exported (pale), imported (hatched)</span></div><div class="pstrip" style="grid-template-columns:repeat(${ps.length},minmax(0,1fr))">${cells}</div>`;
+}
+
+/* ===================== page ===================== */
+function page(el, d){
+  const c = frame(el, d.frame);
+  const pic = refinery(d);
+  d.scaleNote = '10 px of ribbon = '+f1(10/d.k)+'M L';
+  c.innerHTML = `
+  <div class="head"><span class="crumb">Sectors ›</span><span class="sq">${ic('drop')}</span><span class="title">Refining</span><span class="info">i</span>
+    <span style="font-size:12px;color:var(--t3)">· Industry · oil & refining</span><span class="buildlink">Build › Industry › Refining ›</span></div>
+  <div class="figs">${d.figs.map(f=>`<div class="fig"><div class="l">${f[0]}</div><div class="n" style="${f[3]?`color:${f[3]}`:''}">${f[1]}</div><div class="s">${f[2]}</div></div>`).join('')}</div>
+  <div class="inv" style="border-left-color:${d.inv.c}"><span class="k" style="color:${d.inv.c}">${d.inv.k}</span><span>${d.inv.t}</span><a href="#">${d.inv.a}</a></div>
+  <div class="chips">${['Operations','Products','Income','Balance sheet','Cash & debt','Investors'].map((n,i)=>`<span class="chip ${i===0?'on':''}">${n}</span>`).join('')}</div>
+  <div class="sec">THE REFINERY THIS MONTH <span>where the crude went · ribbons to scale</span><span class="scale">${d.scaleNote}</span></div>
+  ${pic}
+  ${pstrip(d)}`;
+}
+
+/* ===================== data: state A, small town ===================== */
+const A = {
+  id:'A', H:404,
+  frame:{active:'factory',date:'April 2061',cash:'D$ 92.4M',people:'41,300',net:'+D$ 0.41M',inbox:'2',cashShort:'92.4M',peopleShort:'41.3k',netShort:'+0.41M',jobs:'19.8k',debt:'D$ 18.0M',pay:'D$ 0.21M',rate:'4.10%'},
+  figs:[['Crude in','9.68M L','8,306 t · all from the town\'s 22 wells'],['Made','9.54M L','6 products · 1 conversion unit'],['Worth','D$ 4.49M','D$ 1.72M sold here · D$ 2.77M abroad'],['Adds','D$ 0.63M','before wages and power · D$ 10.35 a barrel']],
+  inv:{c:'#e3b341',k:'land',t:'a small Cracking Unit would earn D$ 0.09 per litre of gas oil — needs 2.0 ha, the town has 1.2 ha free',a:'Land office ›'},
+  scaleNote:'1 mm of ribbon ≈ 0.03M L',
+  colSub:'2,000 b/d · runs 100%',
+  sources:[{label:'Land wells ×22',sub:'9,130 t lifted · 831 t exported',v:9.68,icon:'well'}],
+  cuts:{gas:.39,ln:.81,hn:1.53,kero:1.34,dsl:2.46,vgo:2.05,vr:1.10},
+  units:[{label:'Reformer',sub:'300 b/d · 100%',feed:'hn',v:1.45,out:{lpg:.12,petrol:1.19}}],
+  pass:[{cut:'gas',to:'lpg',v:.39},{cut:'ln',to:'petrol',v:.81},{cut:'hn',to:'naphtha',v:.08},{cut:'kero',to:'jet',v:1.34},{cut:'dsl',to:'diesel',v:2.46},{cut:'vgo',to:'fueloil',v:2.05},{cut:'vr',to:'fueloil',v:1.10}],
+  products:{lpg:.51,naphtha:.08,petrol:2.00,jet:1.34,diesel:2.46,fueloil:3.15},
+  imports:{petrol:.10},
+  price:{lpg:.184,naphtha:.396,petrol:.562,jet:.512,diesel:.539,fueloil:.391},
+  buyers:[
+    {id:'cars',label:'Cars',icon:'car',what:'petrol · 0.10M L of it imported',hot:1,take:{petrol:2.10}},
+    {id:'trucks',label:'Vans & trucks',icon:'truck',what:'diesel',take:{diesel:.60}},
+    {id:'rail',label:'Rail',icon:'train',what:'diesel · 18 L a tonne hauled',take:{diesel:.50}},
+    {id:'abroad',label:'Abroad',icon:'globe',abroad:1,what:'fuel oil, diesel, jet fuel, gas, naphtha',take:{lpg:.51,naphtha:.08,jet:1.34,diesel:1.36,fueloil:3.15}},
+  ],
+};
+/* ===================== data: state B, big city ===================== */
+const B = {
+  id:'B', H:404,
+  frame:{active:'factory',date:'June 2183',cash:'D$ 18.42B',people:'2.61M',net:'+D$ 212M',inbox:'5',cashShort:'18.4B',peopleShort:'2.61M',netShort:'+212M',jobs:'1.27M',debt:'D$ 4.10B',pay:'D$ 31.6M',rate:'3.35%'},
+  figs:[['Crude in','387.2M L','332,224 t · 57% the city\'s own'],['Made','384.6M L','7 products · 4 conversion units'],['Worth','D$ 197.0M','D$ 161.6M sold here · D$ 35.4M abroad'],['Adds','D$ 15.4M','before wages and power · D$ 6.32 a barrel']],
+  inv:{c:'#5aa9ff',k:'building',t:'an Alkylation Unit, 7 months on site — petrol is imported (36.8M L) while gas goes abroad at D$ 0.18 a litre',a:'Investors ›'},
+  scaleNote:'1 mm of ribbon ≈ 1.3M L',
+  colSub:'100,000 b/d · runs 80%',
+  sources:[
+    {label:'Offshore platforms ×2',sub:'32,200 b/d · B declining 8.5%/yr',v:155.83,icon:'platform'},
+    {label:'Land wells ×160',sub:'13,100 b/d · 82 b/d a well',v:63.40,icon:'well'},
+    {label:'Imported crude',sub:'34,700 b/d · 2 Aframax a month',v:167.94,icon:'tanker'},
+  ],
+  cuts:{gas:11.45,ln:28.38,hn:54.80,kero:50.44,dsl:92.74,vgo:86.72,vr:62.63},
+  units:[
+    {label:'Reformer',sub:'12,000 b/d · 94%',feed:'hn',v:54.80,out:{lpg:4.38,petrol:44.94}},
+    {label:'Cracking unit',sub:'15,000 b/d · 100%',feed:'vgo',v:72.59,out:{lpg:18.15,petrol:39.92,diesel:13.07,fueloil:5.08}},
+    {label:'Lube plant',sub:'2,000 b/d · 100%',feed:'vgo',v:9.68,out:{lube:3.87,fueloil:5.81}},
+    {label:'Asphalt unit',sub:'3,000 b/d · 98%',feed:'vr',v:14.52,out:{bitumen:13.79}},
+  ],
+  pass:[{cut:'gas',to:'lpg',v:11.45},{cut:'ln',to:'petrol',v:28.38},{cut:'kero',to:'jet',v:50.44},{cut:'dsl',to:'diesel',v:92.74},{cut:'vgo',to:'fueloil',v:4.45},{cut:'vr',to:'fueloil',v:48.11}],
+  products:{lpg:33.98,petrol:113.25,jet:50.44,diesel:105.81,lube:3.87,fueloil:63.45,bitumen:13.79},
+  imports:{petrol:36.75,diesel:5.19},
+  price:{lpg:.184,petrol:.562,jet:.512,diesel:.633,lube:.754,fueloil:.391,bitumen:.478},
+  buyers:[
+    {id:'cars',label:'Cars',icon:'car',what:'petrol, motor oil · 36.8M L imported',hot:1,take:{petrol:150,lube:.9}},
+    {id:'airport',label:'Airport',icon:'plane',what:'jet fuel',take:{jet:32}},
+    {id:'trucks',label:'Vans & trucks',icon:'truck',what:'diesel',take:{diesel:55}},
+    {id:'rail',label:'Rail',icon:'train',what:'diesel, lubricants',take:{diesel:40,lube:.3}},
+    {id:'industry',label:'Industry',icon:'factory',what:'gas, diesel, lubricants',take:{lpg:5,diesel:10,lube:2.4}},
+    {id:'ships',label:'Ships at the port',icon:'ship',what:'fuel oil and marine diesel (bunkers)',take:{diesel:6,fueloil:16}},
+    {id:'roads',label:'Roads',icon:'road',what:'bitumen for paving',take:{bitumen:9.8}},
+    {id:'abroad',label:'Abroad',icon:'globe',abroad:1,what:'fuel oil, gas, jet fuel, bitumen',take:{lpg:28.98,jet:18.44,fueloil:47.45,lube:.27,bitumen:3.99}},
+  ],
+};
+page(document.getElementById('A'), A);
+page(document.getElementById('B'), B);
+</script>
+</body>
+</html>

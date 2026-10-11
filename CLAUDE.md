@@ -56,8 +56,11 @@ changelog's top and the todo's section 0 before anything else.
 Design studies are the exception: since 2026-10-11 they live in the tree,
 under `docs/studies/`, each a note with its prototypes and boards in a folder
 beside it (Jerus: "just put them on github no? thats where studies will be").
-`docs/studies/README.md` lists them; the earlier ones stay in the project as
-`claude/spec-*.md`. The batches a study plans still go in the project's todo.
+`docs/studies/README.md` lists them. The earlier studies moved there from the
+project the same day, with their prototypes and mockups: a comment that cites
+"the project's spec-earth.md" (or any study) means `docs/studies/spec-earth.md`
+now. The batches a study plans still go in the project's todo, and the batch
+write-ups stay in the project.
 
 ## The standing rules
 
@@ -269,7 +272,7 @@ These are Jerus's, and they do not move.
         Expectations.java          the anchor (0.7.42): expected inflation, the central bank's credibility and
                                    the expected price level every money constant that prices something is
                                    struck at, at the top of every month (Game.restrikeMoneyConstants());
-                                   ExpectationsCheck holds it (the project's spec-inflation.md)
+                                   ExpectationsCheck holds it (docs/studies/spec-inflation.md)
         SupplierCredit.java        the grocers' trade credit (0.7.44): what the shops owe their suppliers for
                                    stock bought on credit when the till could not pay, struck at the clearing
                                    and repaid at the next strike out of the sale it stocked, on both sides'
@@ -286,10 +289,10 @@ These are Jerus's, and they do not move.
                                    Resource.typesOf(); since 0.7.115 a world's key, World.Key: the
                                    generated world a seed makes, or the real Earth round a spot) -
                                    LandManager and LandMarket sell it, WorldCheck and LandCheck hold it
-                                   (the project's spec-land.md and spec-grid.md)
+                                   (docs/studies/spec-land.md and spec-grid.md)
         EarthProj.java, EarthData.java, EarthTerrain.java, Geology.java
-                                   the real Earth for "the world as planet Earth" (0.7.111, batch E1; the
-                                   project's spec-earth.md): Lambert's azimuthal equal-area projection
+                                   the real Earth for "the world as planet Earth" (0.7.111, batch E1;
+                                   docs/studies/spec-earth.md): Lambert's azimuthal equal-area projection
                                    centred on a city's spot (forward, inverse, plots in metres, a cell's
                                    area on the planet, a tile's corners blended), and the reader of
                                    earth-1.bin (its layers, 1-degree tiles inflated into an LRU, shares,
@@ -341,7 +344,7 @@ These are Jerus's, and they do not move.
                                    works out what each zone holds, clears the forest built on and sells,
                                    assesses and buys back zoned ground at the zone's price; the zone's
                                    taxes are the sector's own offsets (Game.setZoneTax()); ZoningCheck
-                                   holds it (the project's spec-zoning.md; runs/spec-materials.md 2.15)
+                                   holds it (docs/studies/spec-zoning.md; runs/spec-materials.md 2.15)
         ZoningView.java            Policy › Zoning as figures (0.7.109, batch Z2): the hub's four (zoned,
                                    held, the price given up, the forest kept), the dry ground as one bar
                                    cut so its parts add up to it, a zone's row, a sector's page and the
@@ -369,7 +372,7 @@ These are Jerus's, and they do not move.
         DistrictPlan.java          a district's street plan (0.7.87): the cells it opens and their
                                    layouts, every street with its kind and width - the model's road
                                    drawn as the streets' surface - and every building's box; pure, a
-                                   port of the project's roads prototype (spec-roads-and-ports.md 2);
+                                   port of the study's roads prototype (docs/studies/spec-roads-and-ports.md 2);
                                    the painter draws from it since 0.7.88; since 0.7.90 an estate
                                    cell's streets sized to what opens it, since 0.7.92 the outer
                                    kinds on industry's leftover ground when no cell is left, since
