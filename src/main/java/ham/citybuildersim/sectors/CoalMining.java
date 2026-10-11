@@ -332,7 +332,7 @@ public final class CoalMining extends ExtractionSector {
      * forecast of the city's demand), and off its sales at home past that,
      * at the local price.
      */
-    double lostValue(Good g, double units, BusinessInvestment plans) {
+    public double lostValue(Good g, double units, BusinessInvestment plans) {
         if (!(units > 0) || markets == null) return 0;
         GoodsMarket m = markets.get(g);
         if (m == null) return 0;
