@@ -79,6 +79,18 @@ These are Jerus's, and they do not move.
 - **Per-batch write-up** goes to the project as `claude/<title>.md`, in prose,
   with what was found and what was decided; the todo and the changelog get
   their lines. The README's counts are not the record - the changelog is.
+- **A batch that is decided goes in `QUEUE.md` the same turn** (Jerus,
+  2026-10-11). `QUEUE.md` is the queue as an index (from
+  `batch/pt1-playtest-1011`): one row for each batch queued, in the order they
+  run, kept by the file's own rules. Whoever queues a batch adds its row
+  straight away. That means the orchestrator when Jerus decides or asks for
+  one, a study when he takes the batches it proposes, and any other session
+  that takes a request of his. When a batch ships or is dropped, its row says
+  so. A decision written only in a project note, a todo line or a chat is not
+  queued. T1-B, T1-C, M6 and childcare at real demand, all decided on
+  2026-10-10, sat in `decisions-2026-10-10.md` for a day and reached no list.
+  A batch's name is never reused: C1 was childcare's before the build card
+  took it, and childcare is CC1 now.
 - **A harness is the finding.** The four rules in `README.md` under *The
   checks*: a fixture must cause the condition; assert against the model's own
   constants; count how often a mechanic fires in a real run; never move a
