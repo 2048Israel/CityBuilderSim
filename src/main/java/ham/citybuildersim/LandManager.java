@@ -181,7 +181,12 @@ public class LandManager {
 
     /** The land a new city is founded with on the world of this seed (0.7.106): the centre land() founds - STARTING_SQ_FT's rings and FOUNDING_FRESH_KM2 of the founding lake - drawn apart from any city, for what is priced on it before one stands (Founding.landBondUsd()). */
     public static CityLand foundingLand(long worldSeed) {
-        World world = World.of(worldSeed);
+        return foundingLand(World.Key.generated(worldSeed));
+    }
+
+    /** ...on the world a key names (0.7.115). */
+    public static CityLand foundingLand(World.Key worldKey) {
+        World world = World.of(worldKey);
         return CityLand.found(world, world.foundingX(), world.foundingY(), km2(STARTING_SQ_FT), FOUNDING_FRESH_KM2);
     }
 
@@ -263,8 +268,8 @@ public class LandManager {
 
     private CityLand land;
 
-    /** The seed of the world the city stands on - Founding.getWorldSeed(), read when the land is founded. Bare, the default world. */
-    private final java.util.function.LongSupplier seed;
+    /** The world the city stands on - Founding.getWorldKey() (its seed's, Founding.getWorldSeed(), until 0.7.115), read when the land is founded. Bare, the default world. */
+    private final java.util.function.Supplier<World.Key> worldKey;
 
     /** The month, for each offer listed and each purchase made. Bare, 0. */
     private final java.util.function.IntSupplier month;
@@ -326,9 +331,15 @@ public class LandManager {
     /** ...on the world this seed reads, in the month this reads (0.7.57): the city's. */
     public LandManager(java.util.function.DoubleSupplier rate, java.util.function.DoubleSupplier usPrices,
                        java.util.function.LongSupplier seed, java.util.function.IntSupplier month) {
+        this(rate, usPrices, seed == null ? null : (java.util.function.Supplier<World.Key>) () -> World.Key.generated(seed.getAsLong()), month);
+    }
+
+    /** ...on the world this key reads (0.7.115, batch E2): the city's, Founding.getWorldKey(). */
+    public LandManager(java.util.function.DoubleSupplier rate, java.util.function.DoubleSupplier usPrices,
+                       java.util.function.Supplier<World.Key> worldKey, java.util.function.IntSupplier month) {
         this.rate = rate == null ? () -> ForeignAccounts.OPENING_RATE : rate;
         this.usPrices = usPrices == null ? () -> 1.0 : usPrices;
-        this.seed = seed == null ? () -> Founding.DEFAULT_WORLD_SEED : seed;
+        this.worldKey = worldKey == null ? () -> World.Key.generated(Founding.DEFAULT_WORLD_SEED) : worldKey;
         this.month = month == null ? () -> 0 : month;
     }
 
@@ -468,7 +479,7 @@ public class LandManager {
      */
     CityLand land() {
         if (land == null) {
-            World world = World.of(seed.getAsLong());
+            World world = World.of(worldKey.get());
             install(CityLand.found(world, world.foundingX(), world.foundingY(), km2(ownedSqFt), FOUNDING_FRESH_KM2),
                     new double[CityLand.KINDS], world.totals(), world.seaTheta());
             ownedSqFt = getLandDrySqFt();
@@ -485,7 +496,7 @@ public class LandManager {
         if (extracted != null) {
             for (int k = 0; k < Math.min(extracted.length, CityLand.KINDS); k++) this.extracted[k] = Math.max(0, extracted[k]);
         }
-        this.worldTotals = totals != null && totals.length == CityLand.KINDS ? totals.clone() : World.of(land.seed()).totals();
+        this.worldTotals = totals != null && totals.length == CityLand.KINDS ? totals.clone() : World.of(land.key()).totals();
         this.worldSeaTheta = seaTheta;
         market.attach(land);
     }
@@ -708,7 +719,7 @@ public class LandManager {
         long key = groundKey(l, listed);
         if (l == oilRunsLand && key == oilRunsKey) return;
         java.util.List<java.util.List<CityLand.Held>> held = l.heldFields(Resource.OIL);
-        World world = World.of(l.seed());
+        World world = World.of(l.key());
         // Each holding's part of the offshore pool (0.7.93): the lesser of what it listed and its sea fields' tonnes,
         // as a holding's sea sites are the lesser of its listed sites and its sea fields' (seaSites()).
         double[] sea = new double[listed.length];
@@ -883,7 +894,7 @@ public class LandManager {
         }
         long[] kept = seaSitesKept.get(r);
         if (kept != null && kept[0] == key) return kept[1];
-        World world = World.of(l.seed());
+        World world = World.of(l.key());
         java.util.List<java.util.List<CityLand.Held>> held = l.heldFields(r);
         long sea = 0;
         for (int h = 0; h < listed.length && h < held.size(); h++) {
@@ -928,7 +939,7 @@ public class LandManager {
         java.util.List<SeaField> kept = seaFieldsKept.get(r);
         Long at = seaFieldsKey.get(r);
         if (kept != null && at != null && at == key) return kept;
-        World world = World.of(l.seed());
+        World world = World.of(l.key());
         java.util.Map<Long, Integer> where = new java.util.HashMap<>();
         java.util.List<Deposit> fields = new java.util.ArrayList<>();
         java.util.List<Integer> sites = new java.util.ArrayList<>();

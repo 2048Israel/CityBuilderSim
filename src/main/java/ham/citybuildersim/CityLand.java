@@ -92,6 +92,8 @@ public final class CityLand {
        ===================================================================== */
 
     private final long seed;
+    /** The world it lies on (0.7.115, batch E2): its key - Key.generated(seed) but on an Earth world. */
+    private final World.Key key;
     private final long siteX, siteY;
     private LandGrid grid = new LandGrid();
     private final List<LandGrid.Fill> centreRects = new ArrayList<>();
@@ -121,8 +123,9 @@ public final class CityLand {
     /** A field by its kind, the world cell it was drawn in and its index there. */
     record FieldKey(int kind, int cell, int index) { }
 
-    private CityLand(long seed, long siteX, long siteY) {
-        this.seed = seed;
+    private CityLand(World.Key key, long siteX, long siteY) {
+        this.seed = key.seed();
+        this.key = key;
         this.siteX = siteX;
         this.siteY = siteY;
     }
@@ -178,7 +181,7 @@ public final class CityLand {
 
     /** A city's land at founding with at least freshKm2 of lake and river in its centre as well (0.7.106): the rings, then the lake - see above. freshKm2 0 is the rings alone. */
     public static CityLand found(World world, long x, long y, double dryKm2, double freshKm2) {
-        CityLand land = new CityLand(world.seed(), x, y);
+        CityLand land = new CityLand(world.key(), x, y);
         int level = LandGrid.levelFor(dryKm2 / World.KM2_PER_PLOT);
         long b = 1L << level;
         long target = (long) Math.ceil(dryKm2 / World.KM2_PER_PLOT - GridConversion.WHOLE_PLOT);
@@ -355,7 +358,7 @@ public final class CityLand {
 
     /** A city's land whose centre is a converted holding (spec-grid 2.6): its blocks, books, sites, amounts, legacy field and part fields; nothing bought since; `history` the save's purchase records, kept as they were. */
     static CityLand converted(long seed, GridConversion.Result r, double[][] history) {
-        CityLand land = new CityLand(seed, r.siteX(), r.siteY());
+        CityLand land = new CityLand(World.Key.generated(seed), r.siteX(), r.siteY());
         land.take(r);
         land.converted = history == null ? new double[0][] : deepCopy(history);
         // An older save's centre, drawn on the old world's fields (GridConversion.fromLanes(), fromFigure()): the old world's ground (0.7.99).
@@ -438,6 +441,8 @@ public final class CityLand {
 
     /** The seed of the world it lies on. */
     public long seed()                  { return seed; }
+    /** The key of the world it lies on (0.7.115): World.of(key()) is its ground. */
+    public World.Key key()              { return key; }
 
     /** The founding site, as a plot: east from the world's west edge... */
     public long siteX()                 { return siteX; }
@@ -609,7 +614,7 @@ public final class CityLand {
      * Forest's timber is the caller's, from the ground's area.
      */
     void fieldsOn(long x0, long y0, long x1, long y1, int[] sites, double[] amounts) {
-        World world = World.of(seed);
+        World world = World.of(key);
         for (Resource r : Resource.values()) {
             if (!r.inFields()) continue;
             for (int cell : cellsUnder(x0, y0, x1 - 1, y1 - 1)) {
@@ -655,7 +660,7 @@ public final class CityLand {
         List<List<Held>> out = new ArrayList<>(n);
         for (int i = 0; i < n; i++) out.add(new ArrayList<>());
         if (!r.inFields() || grid.ownedPlots() == 0) return out;
-        World world = World.of(seed);
+        World world = World.of(key);
         // The cells under the holdings' rectangles, each once, in the world's order.
         java.util.TreeSet<Integer> cells = new java.util.TreeSet<>();
         for (LandGrid.Fill f : centreRects) for (int c : cellsUnder(f.x0(), f.y0(), f.x1() - 1, f.y1() - 1)) cells.add(c);
@@ -758,7 +763,7 @@ public final class CityLand {
         return out;
     }
 
-    private record CellKey(long seed, int cell, Resource kind, boolean legacy) { }
+    private record CellKey(World.Key world, int cell, Resource kind, boolean legacy) { }
 
     /** How many cells' fields are kept: 256 - the nine round a site for every resource, and the cells a large holding reaches. */
     static final int CELLS_KEPT = 256;
@@ -780,7 +785,7 @@ public final class CityLand {
     }
 
     private static List<Deposit> kept(World world, int cell, Resource r, boolean legacy) {
-        CellKey key = new CellKey(world.seed(), cell, r, legacy);
+        CellKey key = new CellKey(world.key(), cell, r, legacy);
         List<Deposit> got;
         synchronized (CELLS) { got = CELLS.get(key); }
         if (got == null) {
@@ -801,7 +806,7 @@ public final class CityLand {
      * world's alone.
      */
     public List<Deposit> fieldsIn(int cell, Resource r) {
-        World world = World.of(seed);
+        World world = World.of(key);
         List<Deposit> now = fields(world, cell, r);
         if (oldWorldHoldings <= 0 || !r.inFields()) return now;
         List<Deposit> out = new ArrayList<>();
@@ -833,7 +838,7 @@ public final class CityLand {
     /** A rectangle of this many tiles or more is counted over the machine's cores: 2,048 (about an eighth of a second's reading on one core). */
     static final int PARALLEL_TILES = 2_048;
 
-    private record TileKey(long seed, long tx, long ty) { }
+    private record TileKey(World.Key world, long tx, long ty) { }
 
     private static final Map<TileKey, long[]> TILE_COUNTS = new LinkedHashMap<>(1024, 0.75f, true) {
         @Override protected boolean removeEldestEntry(Map.Entry<TileKey, long[]> eldest) {
@@ -843,7 +848,7 @@ public final class CityLand {
 
     /** A whole tile's plots by World's classes, kept. */
     static long[] tileCounts(World world, long tx, long ty) {
-        TileKey key = new TileKey(world.seed(), tx, ty);
+        TileKey key = new TileKey(world.key(), tx, ty);
         long[] got;
         synchronized (TILE_COUNTS) { got = TILE_COUNTS.get(key); }
         if (got != null) return got;
@@ -868,7 +873,7 @@ public final class CityLand {
         x1 = Math.min(World.SIDE, x1);
         y1 = Math.min(World.SIDE, y1);
         if (x0 >= x1 || y0 >= y1) return cls;
-        World world = World.of(seed);
+        World world = World.of(key);
         world.seaTheta();                          // built on this thread before any other reads it
         long tx0 = Math.floorDiv(x0, World.TILE), tx1 = Math.floorDiv(x1 - 1, World.TILE);
         long ty0 = Math.floorDiv(y0, World.TILE), ty1 = Math.floorDiv(y1 - 1, World.TILE);
@@ -997,8 +1002,14 @@ public final class CityLand {
      */
     public static CityLand restore(long seed, double[] centre, double[][] rects, double[][] holdings, double[][] partRows,
                                    double[][] history) {
+        return restore(World.Key.generated(seed), centre, rects, holdings, partRows, history);
+    }
+
+    /** ...on the world a key names (0.7.115): a harness's Earth land; a save names a generated world until E4. */
+    public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows,
+                                   double[][] history) {
         if (centre == null || centre.length != CENTRE_FIELDS) return null;
-        CityLand land = new CityLand(seed, (long) centre[CENTRE_FIELDS - 2], (long) centre[CENTRE_FIELDS - 1]);
+        CityLand land = new CityLand(key, (long) centre[CENTRE_FIELDS - 2], (long) centre[CENTRE_FIELDS - 1]);
         int i = 0;
         for (int a = 0; a < AREAS; a++) land.centreKm2[a] = centre[i++];
         for (int k = 0; k < KINDS; k++) land.centreSites[k] = (int) centre[i++];
@@ -1037,14 +1048,14 @@ public final class CityLand {
 
     /** A copy, field for field: restore() of its own records and its old world's holdings - what the map's draft is drawn on (Game.MapDraft). */
     public CityLand copy() {
-        CityLand c = restore(seed, centreState(), centreRectsState(), holdingsState(), partFieldsState(), convertedState());
+        CityLand c = restore(key, centreState(), centreRectsState(), holdingsState(), partFieldsState(), convertedState());
         if (c != null) c.setOldWorldHoldings(oldWorldHoldings);
         return c;
     }
 
     /** Whether two cities' land is the same, field for field. */
     public boolean same(CityLand o) {
-        return o != null && seed == o.seed && siteX == o.siteX && siteY == o.siteY && oldWorldHoldings == o.oldWorldHoldings
+        return o != null && key.equals(o.key) && siteX == o.siteX && siteY == o.siteY && oldWorldHoldings == o.oldWorldHoldings
                 && Arrays.equals(centreState(), o.centreState()) && Arrays.deepEquals(centreRectsState(), o.centreRectsState())
                 && Arrays.deepEquals(holdingsState(), o.holdingsState()) && Arrays.deepEquals(partFieldsState(), o.partFieldsState())
                 && Arrays.deepEquals(convertedState(), o.convertedState()) && grid.sameAs(o.grid);

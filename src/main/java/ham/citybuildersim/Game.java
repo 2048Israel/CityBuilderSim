@@ -354,7 +354,7 @@ public class Game {
         // ...and on the world the city was founded on, in the month (0.7.57):
         // read when the land is founded and each offer listed.
         landManager = new LandManager(() -> foreign.getRate(), () -> world.getPriceLevel(),
-                () -> this.founding.getWorldSeed(), () -> month);
+                () -> this.founding.getWorldKey(), () -> month);
         // ...and its zones, which the roll and a new building's ground read (0.7.107, batch Z1).
         economyManager.setZoning(landManager.getZoning(), landManager::heldBy);
         // ...and the fresh water limit is the land's and the rights' (0.7.59,
@@ -972,8 +972,7 @@ public class Game {
 
     /** How this city was founded. Its mean inflation is the world's (WorldEconomy keeps it; see Founding). */
     public Founding getFounding() {
-        return new Founding(founding.getCityName(), founding.getCurrency(), founding.getCash(),
-                founding.getReserveUsd(), world.getMeanInflation(), founding.getWorldSeed());
+        return founding.withMeanInflation(world.getMeanInflation());
     }
 
     /** The seed of the world this city stands on (0.7.56): chosen at founding, or derived from an older save. */
@@ -985,7 +984,7 @@ public class Game {
      * built the first time it is asked anything - about half a second, paid
      * once, the first time the city's land, its office or its map asks.
      */
-    public World getWorld() { return World.of(founding.getWorldSeed()); }
+    public World getWorld() { return World.of(founding.getWorldKey()); }
 
     /** The city's land on the world (0.7.57): its centre and every purchase since, whole blocks of a grid since 0.7.67 (CityLand). */
     public CityLand getCityLand() { return landManager.getCityLand(); }
@@ -3768,7 +3767,7 @@ public class Game {
      * converted from cash otherwise.
      */
     private void foundTheLandBond() {
-        double usd = Founding.landBondUsd(founding.getWorldSeed());
+        double usd = Founding.landBondUsd(founding.getWorldKey());
         if (!(usd > 0)) return;
         debtManager.addLongTermBond(usd, Founding.INSANE_LAND_YEARS * 12, month, Founding.INSANE_LAND_COUPON, true);
         foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
@@ -10460,7 +10459,7 @@ public class Game {
     // economy state through this.
     private BusinessInvestment businessInvestment;
     private LandManager landManager = new LandManager(() -> this.foreign.getRate(), () -> this.world.getPriceLevel(),
-            () -> this.founding.getWorldSeed(), () -> this.month);
+            () -> this.founding.getWorldKey(), () -> this.month);
 
     /** True while loadGameSave() runs initialize(), which then founds no land: the save brings its own (0.7.57). */
     private boolean loadingSave;
@@ -14508,10 +14507,10 @@ public class Game {
 
     private boolean restoreLandOnTheWorld(DataSave loaded, double owned) {
         long seed = founding.getWorldSeed();
-        double sea = loaded.getWorldSeaTheta() != null ? loaded.getWorldSeaTheta() : World.of(seed).seaTheta();
+        double sea = loaded.getWorldSeaTheta() != null ? loaded.getWorldSeaTheta() : World.of(founding.getWorldKey()).seaTheta();
         int format = loaded.getSaveFormat();
         CityLand land = format > LandConversion.LAST_LANES_FORMAT
-                ? CityLand.restore(seed, loaded.getLandCentre(), loaded.getLandCentreRects(), loaded.getLandHoldings(),
+                ? CityLand.restore(founding.getWorldKey(), loaded.getLandCentre(), loaded.getLandCentreRects(), loaded.getLandHoldings(),
                         loaded.getLandPartFields(), loaded.getLandConverted())
                 : null;
         if (land == null) {

@@ -40,7 +40,7 @@ public final class LandMap {
 
     /** The plot (x, y) on this land, against these offers: its holding on the grid, else the offer whose rectangle holds it. */
     public static Pick pick(CityLand land, LandMarket market, long x, long y) {
-        byte ground = World.of(land.seed()).terrainAt(x, y);
+        byte ground = World.of(land.key()).terrainAt(x, y);
         int sp = sidePlaceOf(land, x, y), side = sp / GridOffers.PLACES, place = sp % GridOffers.PLACES;
         int h = land.holdingOf(x, y);
         if (h == CityLand.CENTRE) return new Pick(x, y, ground, CENTRE, side, place, -1, null);

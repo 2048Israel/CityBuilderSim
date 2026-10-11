@@ -262,17 +262,23 @@ These are Jerus's, and they do not move.
                                    offers a side; an older save converted once, and since 0.7.99 the ground
                                    it brings holding the old world's fields; since 0.7.106 a new city's
                                    centre its rings and its founding lake's blocks, one water plant's fresh
-                                   water) - LandManager and LandMarket sell it, WorldCheck and LandCheck
-                                   hold it (the project's spec-land.md and spec-grid.md)
-        EarthProj.java, EarthData.java
+                                   water; since 0.7.115 a world's key, World.Key: the generated world a
+                                   seed makes, or the real Earth round a spot) - LandManager and LandMarket
+                                   sell it, WorldCheck and LandCheck hold it (the project's spec-land.md
+                                   and spec-grid.md)
+        EarthProj.java, EarthData.java, EarthTerrain.java
                                    the real Earth for "the world as planet Earth" (0.7.111, batch E1; the
-                                   project's spec-earth.md), pure, nothing in the game reads them yet (E2
-                                   will): Lambert's azimuthal equal-area projection centred on a city's
-                                   spot (forward, inverse, plots in metres, a cell's area on the planet, a
-                                   tile's corners blended), and the reader of earth-1.bin (its layers,
-                                   1-degree tiles inflated into an LRU, shares, rivers, small lakes,
-                                   geology, places, the file's identity), ported from tools/earth's
-                                   earthread.py - EarthCheck holds both, on a fixture and on the full file
+                                   project's spec-earth.md): Lambert's azimuthal equal-area projection
+                                   centred on a city's spot (forward, inverse, plots in metres, a cell's
+                                   area on the planet, a tile's corners blended), and the reader of
+                                   earth-1.bin (its layers, 1-degree tiles inflated into an LRU, shares,
+                                   rivers, small lakes, geology, places, the file's identity), ported from
+                                   tools/earth's earthread.py - EarthCheck holds both, on a fixture and on
+                                   the full file; and since 0.7.115 (batch E2) an Earth world's ground,
+                                   spec-earth 3's rule: a tile, line, plot or region drawn from the data's
+                                   shares, rivers and small lakes with the seed's detail below them, the
+                                   cells pass, the founding snap - World reaches it through an Earth key,
+                                   which only harnesses make until E4; EarthTerrainCheck holds it
         LandManager.java, LandMarket.java
                                    the city's land: what it owns, what is built on and what it sells - the
                                    ore and oil its ground holds less what is taken out, since 0.7.93 the
@@ -346,7 +352,7 @@ These are Jerus's, and they do not move.
                                    MapTiles, which MapCheck holds), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray). The model never imports it.
-        *Check.java                ninety-five harnesses, each a main() with static helpers
+        *Check.java                ninety-six harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103)
@@ -354,7 +360,8 @@ These are Jerus's, and they do not move.
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
                                          conversion-saves.json the five saves' land ConversionCheck converts (0.7.66)
-                                         earth/ EarthCheck's fixture, cut from earth-1.bin (0.7.111)
+                                         earth/ EarthCheck's fixture, cut from earth-1.bin (0.7.111), which
+                                         EarthTerrainCheck draws the Earth's ground on (0.7.115)
     tools/earth/                         E0's pipeline that bakes earth-1.bin (Python, outside the game; the file
                                          itself is not in the repository), its FORMAT.txt and ATTRIBUTION.txt, and
                                          fixture.py, which cuts EarthCheck's fixture from it

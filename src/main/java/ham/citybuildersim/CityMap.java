@@ -219,6 +219,8 @@ public final class CityMap {
        ===================================================================== */
 
     private final long seed;
+    /** The world it is drawn on (0.7.115, batch E2): its land's key, whose ground every tile and plan reads. */
+    private final World.Key worldKey;
     private final long siteX, siteY;
     private final long baseDX, baseDY;
     private final BuildingVisual.Type[] types;
@@ -237,8 +239,9 @@ public final class CityMap {
     private SiteIndex siteIndex;
     private boolean sitedPlaced;
 
-    private CityMap(long seed, long siteX, long siteY, BuildingVisual.Type[] types) {
-        this.seed = seed;
+    private CityMap(World.Key worldKey, long siteX, long siteY, BuildingVisual.Type[] types) {
+        this.seed = worldKey.seed();
+        this.worldKey = worldKey;
         this.siteX = siteX;
         this.siteY = siteY;
         this.baseDX = Math.floorDiv(siteX, DISTRICT);
@@ -251,6 +254,9 @@ public final class CityMap {
 
     /** The world's seed. */
     public long seed()                     { return seed; }
+
+    /** The world's key (0.7.115): World.of(worldKey()) is the ground it is drawn on. */
+    public World.Key worldKey()            { return worldKey; }
 
     /** The types it counts, by id. */
     public BuildingVisual.Type[] types()   { return types; }
@@ -299,7 +305,7 @@ public final class CityMap {
      */
     public static CityMap canonical(CityLand land, Function<Resource, double[]> remaining,
                                     BuildingVisual.Type[] types, long[] counts) {
-        CityMap m = new CityMap(land.seed(), land.siteX(), land.siteY(), types);
+        CityMap m = new CityMap(land.key(), land.siteX(), land.siteY(), types);
         m.land = land;
         m.remaining = remaining;
         m.measureAll();
@@ -321,7 +327,13 @@ public final class CityMap {
      */
     static CityMap square(long seed, long siteX, long siteY, BuildingVisual.Type[] types, int side, int capacity,
                           long[] counts) {
-        CityMap m = new CityMap(seed, siteX, siteY, types);
+        return square(World.Key.generated(seed), siteX, siteY, types, side, capacity, counts);
+    }
+
+    /** ...on the world a key names (0.7.115): EarthTerrainCheck's screen on Earth. */
+    static CityMap square(World.Key world, long siteX, long siteY, BuildingVisual.Type[] types, int side, int capacity,
+                          long[] counts) {
+        CityMap m = new CityMap(world, siteX, siteY, types);
         int h = side / 2;
         double[] centre = new double[CityLand.CENTRE_FIELDS];
         long x0 = (m.baseDX - h) * DISTRICT, x1 = (m.baseDX - h + side) * DISTRICT;
@@ -330,7 +342,7 @@ public final class CityMap {
         centre[CityLand.CENTRE_FIELDS - 4] = -1;
         centre[CityLand.CENTRE_FIELDS - 2] = siteX;
         centre[CityLand.CENTRE_FIELDS - 1] = siteY;
-        m.land = CityLand.restore(seed, centre, new double[][] { { x0, y0, x1, y1 } }, null, null, null);
+        m.land = CityLand.restore(world, centre, new double[][] { { x0, y0, x1, y1 } }, null, null, null);
         m.remaining = r -> m.land.amountsInOrder(r);
         m.measured = false;
         for (int dy = -h; dy < side - h; dy++) {
@@ -427,7 +439,7 @@ public final class CityMap {
         int per = DISTRICT / COARSE_STRIDE, block = 16;
         boolean[] land = new boolean[nx * ny];
         byte[] buf = new byte[block * per * block * per];
-        World world = World.of(seed);
+        World world = World.of(worldKey);
         for (int bj = 0; bj < ny; bj += block) {
             for (int bi = 0; bi < nx; bi += block) {
                 int n = block * per;
@@ -493,7 +505,7 @@ public final class CityMap {
         List<long[]> squares = siteSquares(x0, y0, x0 + DISTRICT - 1, y0 + DISTRICT - 1);
         byte[] ground = new byte[TilePainter.PLOTS];
         boolean[] owns = new boolean[TilePainter.PLOTS], field = new boolean[TilePainter.PLOTS];
-        World world = World.of(seed);
+        World world = World.of(worldKey);
         int total = 0;
         for (int k = 0; k < TILES; k++) {
             long tx = (baseDX + d.dx) * TILES_A_SIDE + k % TILES_A_SIDE, ty = (baseDY + d.dy) * TILES_A_SIDE + k / TILES_A_SIDE;
@@ -2163,7 +2175,7 @@ public final class CityMap {
             long t0 = System.nanoTime();
             if (after != null) after.run();
             int[] c = after != null ? after.carryOut : given;
-            readGround(in);
+            readGround(in, map.worldKey);
             if (c != null) for (int t = 0; t < c.length && t < in.counts.length; t++) in.counts[t] += c[t];
             // What it reads of the districts before it about it (readNeighbours()), and the stamps of the plans it read.
             byte[][][] m = new byte[AROUND.length][][];
@@ -2680,7 +2692,7 @@ public final class CityMap {
                 byte[] t = tiles.get(tk);
                 if (t == null) {
                     t = new byte[TilePainter.PLOTS];
-                    World.of(seed).tileTerrain(tx, ty, t);
+                    World.of(worldKey).tileTerrain(tx, ty, t);
                     tiles.put(tk, t);
                 }
                 return t[iy * World.TILE + ix];
@@ -2695,7 +2707,7 @@ public final class CityMap {
                     line = new byte[World.TILE];
                     if (t != null) {
                         for (int i = 0; i < World.TILE; i++) line[i] = t[col ? i * World.TILE + at : at * World.TILE + i];
-                    } else World.of(seed).lineTerrain(tx, ty, col, at, line);
+                    } else World.of(worldKey).lineTerrain(tx, ty, col, at, line);
                     lines.put(key, line);
                 }
                 lastLineKey = key;
@@ -2958,7 +2970,7 @@ public final class CityMap {
         Integer[] order = new Integer[TILES];
         // A terminal's water must open to the sea (SeaRoutes.opensToSea(), star O13-5): the routes' own grid, and the water found
         // shut, kept for the search.
-        SeaRoutes.Grid sea = quay > 0 ? new SeaRoutes.Grid(World.of(seed)) : null;
+        SeaRoutes.Grid sea = quay > 0 ? new SeaRoutes.Grid(World.of(worldKey)) : null;
         java.util.Set<Long> shut = new java.util.HashSet<>();
         for (District d : districts) {
             long tx0 = (baseDX + d.dx) * TILES_A_SIDE, ty0 = (baseDY + d.dy) * TILES_A_SIDE;
@@ -3169,7 +3181,7 @@ public final class CityMap {
     public List<BoatSchedule.Route> seaRoutes() {
         long k = routesKeyNow();
         if (routes == null || routesKey != k) {
-            routes = SeaRoutes.of(World.of(seed), shore.berths(types), siteX, siteY, cityRadius());
+            routes = SeaRoutes.of(World.of(worldKey), shore.berths(types), siteX, siteY, cityRadius());
             routesKey = k;
         }
         return routes;
@@ -3183,13 +3195,16 @@ public final class CityMap {
     /** The berths' routes found away from the screen's thread: what they are found from, copied here. */
     public static final class RoutesJob implements Runnable {
         final long key, seed, siteX, siteY;
+        /** The world the routes are found on (0.7.115). */
+        final World.Key world;
         final List<BoatSchedule.Berth> berths;
         final double radius;
         private volatile List<BoatSchedule.Route> found;
 
-        RoutesJob(long key, long seed, List<BoatSchedule.Berth> berths, long siteX, long siteY, double radius) {
+        RoutesJob(long key, World.Key world, List<BoatSchedule.Berth> berths, long siteX, long siteY, double radius) {
             this.key = key;
-            this.seed = seed;
+            this.seed = world.seed();
+            this.world = world;
             this.berths = List.copyOf(berths);
             this.siteX = siteX;
             this.siteY = siteY;
@@ -3197,7 +3212,7 @@ public final class CityMap {
         }
 
         @Override public void run() {
-            if (found == null) found = SeaRoutes.of(World.of(seed), berths, siteX, siteY, radius);
+            if (found == null) found = SeaRoutes.of(World.of(world), berths, siteX, siteY, radius);
         }
 
         /** Whether it has run. */
@@ -3208,7 +3223,7 @@ public final class CityMap {
     public RoutesJob routesJob() {
         long k = routesKeyNow();
         if (routes != null && routesKey == k) return null;
-        return new RoutesJob(k, seed, shore.berths(types), siteX, siteY, cityRadius());
+        return new RoutesJob(k, worldKey, shore.berths(types), siteX, siteY, cityRadius());
     }
 
     /** A job run: its routes kept when they are still the city's. True when kept. */
@@ -3266,7 +3281,7 @@ public final class CityMap {
      * drawn that the model does not have.
      */
     public void tileInput(long tx, long ty, TilePainter.Input in) {
-        World.of(seed).tileTerrain(tx, ty, in.terrain);
+        World.of(worldKey).tileTerrain(tx, ty, in.terrain);
         fillInput(tx, ty, in);
     }
 
@@ -3545,16 +3560,16 @@ public final class CityMap {
     /** The inputs of district d's plan (DistrictPlan.Input), its ground read from the world. */
     DistrictPlan.Input planInput(District d) {
         DistrictPlan.Input in = planInputHere(d);
-        readGround(in);
+        readGround(in, worldKey);
         return in;
     }
 
-    /** The ground over a plan's frame, a World class a plot, read from the world: any thread (World is safe), so a plan's job reads it away from the screen's (0.7.88). */
-    static void readGround(DistrictPlan.Input in) {
+    /** The ground over a plan's frame, a World class a plot, read from the world the key names (0.7.115; the input's seed's until then): any thread (World is safe), so a plan's job reads it away from the screen's (0.7.88). */
+    static void readGround(DistrictPlan.Input in, World.Key world) {
         int f = DistrictPlan.FRAME;
         byte[] ter = new byte[TilePainter.PLOTS];
         int tiles = (f + World.TILE - 1) / World.TILE;
-        World w = World.of(in.seed);
+        World w = World.of(world);
         for (int j = 0; j < tiles; j++) {
             for (int i = 0; i < tiles; i++) {
                 long tx = Math.floorDiv(in.x0, World.TILE) + i, ty = Math.floorDiv(in.y0, World.TILE) + j;
@@ -3924,7 +3939,7 @@ public final class CityMap {
             if (sx != land.siteX() || sy != land.siteY() || bought != land.purchases().size() || landStamp != land.stamp(bought)) return null;
             int nTypes = in.readInt(), n = in.readInt();
             if (nTypes > types.length || n < 0) return null;
-            CityMap m = new CityMap(seed, sx, sy, types);
+            CityMap m = new CityMap(land.key(), sx, sy, types);
             m.land = land;
             m.remaining = remaining;
             for (int i = 0; i < n; i++) {
