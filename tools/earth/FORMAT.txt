@@ -1,0 +1,51 @@
+earth-1.bin: layout (big-endian throughout, as java.io.DataInputStream reads it; blobs are zlib streams,
+as java.util.zip.Inflater reads by default). tools/earth/earthread.py is the reference reader.
+
+HEADER
+  8 bytes   "EARTH-1\n"
+  int       format version (1)
+  int       number of layers
+  per layer:
+    short + UTF-8 bytes  name (DataInputStream.readUTF reads it)
+    byte      kind: 0 = 64,800 1-degree tiles; 1 = 180 1-degree latitude bands; 2 = one blob
+    int       cells a degree (240 = 15", 30 = 2', 15 = 4', 4 = 0.25 degree; 0 for lists and text)
+    long      index offset; int index length   (kinds 0 and 1: a zlib stream of int[64,800] or int[180])
+    long      data offset; long data length     (the blobs, back to back in tile order)
+
+INDEX (kinds 0 and 1). Entry e for tile (or band) i: e > 0 is the length of i's blob, the blobs stored in order
+  of i (a blob's offset = data offset + the sum of the positive entries before it); e <= 0 means no blob:
+  for a share layer the tile is uniform, every cell -e; for a list layer the tile is empty.
+TILES. Tile i = (lat0 + 90) * 360 + (lon0 + 180) for the tile whose south-west corner is (lat0, lon0); bands
+  b = lat0 + 90. Cells: rows from the north, columns from the west, centred (cell (r, c) of a 15" tile is
+  centred at lat0 + 1 - (r + 0.5)/240, lon0 + (c + 0.5)/240).
+
+LAYERS
+  sea         kind 0, 240/deg, a byte a cell: the sea share in 16 levels, 0..15 (share = v/15). Sea is
+              WorldCover water (or no data) in a cell of GEBCO's ocean grown by one cell, the cell's share at
+              10 m on the coast (bake.py's rule), less any lake of 10 km2 or more there. GEBCO's mask where
+              WorldCover has no tile; GEBCO elevation < 0 south of 60 S.
+  lake        kind 0, 240/deg, a byte a cell: the share of HydroLAKES lakes of 10 km2 or more, 0..15.
+              sea + lake <= 15 in every cell; dry ground is the rest.
+  landcover   kind 0, 30/deg (2'), a byte a cell, shares of the cell's land (its WorldCover pixels that are
+              not water; 0 where it has none):
+                bits 0-3  forest level 0..15 = round(forest share x 15) (WorldCover tree cover and mangroves)
+                bit 4     bare ground >= 2% (the beach rule)        bit 5  bare ground >= 50% (desert warning)
+                bit 6     snow and ice >= 50% (refused)              bit 7  no WorldCover data (fallback land)
+  lakes.small kind 0, a list: uvarint count; per lake, sorted by latitude then longitude: zigzag varint
+              deltas of latitude and longitude in 1e-4 degree (the first from the tile's south-west corner),
+              then a byte c, the area = 0.1 km2 x 2^(c/8). The point is the polygon's area centroid.
+  rivers      kind 0, a list: uvarint runs; per run: uvarint n, then n vertices, each: zigzag varint deltas of
+              latitude and longitude in 1e-5 degree (the first from the tile's south-west corner), zigzag
+              varint delta of the width in whole metres (the first from 0), uvarint GRWL flag (0 river,
+              2 tidal, 3 canal). A segment crossing a tile edge is stored in every tile its box touches.
+  far.land    kind 1, 15/deg (4'), a band = 15 rows x 5,400 bytes: dry share x 255 (not sea, not lake).
+  far.lake    kind 1, 15/deg: lake share x 255 (lakes of 10 km2 or more).
+  geology     kind 2: 720 x 1,440 unsigned shorts, 0.25 degree, rows from 90 N, columns from 180 W:
+              0 = no province, else the province's row in `provinces`.
+  provinces   kind 2: UTF-8 text, a line a province: row, USGS code, name, class (by the name rules: ocean,
+              shield, fold belt, rift, shelf, basin, other), known petroleum (MMBOE), tab-separated.
+  places      kind 2: UTF-8 text, a line a place, by population: name, ASCII name (empty when the same),
+              country, lat, lon (degrees, 4 decimals), population (Natural Earth's pop_max).
+  meta        kind 2: UTF-8 JSON: the build's date, sources, credits, fallbacks and counts.
+
+The file's identity is its SHA-256 (earth-1.sha256); a save names it as "earth-1:<hash>".
