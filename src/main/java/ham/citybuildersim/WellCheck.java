@@ -872,11 +872,17 @@ public class WellCheck {
         BusinessInvestment.Decision onLand = wells.planOnLand(plans, g);
         BusinessInvestment.Decision d = quietlyGet(() -> wells.plan(plans, g));
         boolean staffs = wells.staffing(jacket).passes();
+        // ...on the package's whole cost since 0.7.113 (Game.carriesItsWholeCost(); while it earned anything until then).
+        boolean carries = c != null && g.carriesItsWholeCost(Sectors.OIL, c.earns(), c.cost());
         report("with no dry site and the sea field free, the land says no and the planner weighs a jacket on it: ordered while"
-                        + " the package earns and the town can staff it",
-                !onLand.build && jacketsBefore == 0 && (d.build ? d.template == jacket && c != null && c.earns() > 0 && staffs
-                        : !(c != null && c.earns() > 0 && staffs) && wells.atSeaWord() != null),
+                        + " the package carries the interest on its whole cost and the town can staff it",
+                !onLand.build && jacketsBefore == 0 && (d.build ? d.template == jacket && carries && staffs
+                        : !(carries && staffs) && wells.atSeaWord() != null),
                 (d.build ? "ordered " + d.template.getName() + ": " : "held: " + wells.atSeaWord() + "; land: ") + d.reason);
+        if (!d.build && c != null && c.earns() > 0 && staffs) {
+            report("...held, a package that earns but would not carry it is held in the whole cost's words",
+                    wells.atSeaWord() != null && wells.atSeaWord().contains("whole cost"), wells.atSeaWord());
+        }
         // A jacket standing: its slots free, a platform well next.
         quietly(() -> {
             plans.holdSector(Sectors.OIL);
@@ -885,8 +891,11 @@ public class WellCheck {
         });
         BusinessInvestment.Decision next = quietlyGet(() -> wells.plan(plans, g));
         double each = wells.estimatedMonthlyProfit(seaWell, plans);
-        report("...with a jacket standing and its slots free, a platform well into one, while one earns",
-                wells.slotsStanding() > 0 && (next.build ? next.template == seaWell && each > 0 : !(each > 0) || !wells.staffing(seaWell).passes()),
+        boolean eachCarries = g.carriesItsWholeCost(Sectors.OIL, each, plans.getCostOf(seaWell, 1));
+        report("...with a jacket standing and its slots free, a platform well into one, while one carries the interest on its"
+                        + " whole cost",
+                wells.slotsStanding() > 0 && (next.build ? next.template == seaWell && eachCarries
+                        : !eachCarries || !wells.staffing(seaWell).passes()),
                 (next.build ? next.template.getName() + ": " : "held: ") + next.reason);
         // Once the oil is worked out, the empty jacket is decommissioned at the top of the month - and then the pipe.
         quietly(() -> {

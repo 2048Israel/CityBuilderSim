@@ -4743,7 +4743,9 @@ public class Game {
        nothing, and loss-making or thin plants were built: on the playtest's
        city a Diner losing $7k a month at month 9, and from month 127 Filling
        Stations losing $14k to $43k a month, out of the shops' till. Now each
-       slice is asked it of its whole cost (Slices.passes()), at the one rate
+       slice is asked it of its whole cost (Slices.passes(); orderGate(),
+       ON_ITS_WHOLE_COST - one replaceable piece, as SpreadPlanner's money
+       gate is, so a check can ask the rule to 0.7.112), at the one rate
        the slice is judged at - the loan's at the leverage it leaves
        (BusinessDebtManager.projectRate()), or a bond's blended with the
        bank's where one is cheaper and raises it all (financeProject()) - the
@@ -4777,6 +4779,11 @@ public class Game {
      * order; and how many times the bond desk was asked (financeProject()).
      */
     public record Afford(int quantity, boolean atPrime, double firstRate, int deskCalls) { }
+
+    /** Harnesses only (InvestCheck, 0.7.113): consider()'s answer to an order with `cash` in the till and `perUnitProfit` a building - the largest slice that carries the interest on its whole cost. Books nothing. */
+    Afford sliceFor(BusinessInvestment.Decision decision, double cash, double perUnitProfit) {
+        return largestSliceThatCarries(decision, cash, perUnitProfit);
+    }
 
     /** The largest slice of the order that carries its interest - see THE LARGEST SLICE, WITHOUT COUNTING TO IT. */
     private Afford largestSliceThatCarries(BusinessInvestment.Decision decision, double cash, double perUnitProfit) {
@@ -4842,14 +4849,15 @@ public class Game {
             if (n == decision.quantity) firstRate = at.rate();
             if (at.askedDesk()) deskCalls++;
             // ON ITS WHOLE COST (0.7.113): the interest on all the slice costs, whoever pays - until then on what it borrowed alone.
-            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, cost, at.tested())) return true;
-            if (carriesAtPrime(n, cost)) atPrime = true;
+            double on = orderGate.testedOn(cost, cash);
+            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, on, at.tested())) return true;
+            if (carriesAtPrime(n, on)) atPrime = true;
             return false;
         }
 
-        /** Whether n of them, costing `cost`, would carry the interest on it at prime and the sector's record - on their whole cost since 0.7.113. */
-        boolean carriesAtPrime(int n, double cost) {
-            return businessInvestment.servicesItsOwnDebt(perUnitProfit * n, cost,
+        /** Whether n of them would carry the interest on `on` at prime and the sector's record - their whole cost since 0.7.113 (orderGate()). */
+        boolean carriesAtPrime(int n, double on) {
+            return businessInvestment.servicesItsOwnDebt(perUnitProfit * n, on,
                     credit.getPrimeRate() + credit.getRecordSurcharge(decision.sector));
         }
 
@@ -4871,7 +4879,7 @@ public class Game {
         void askPrime(int n) {
             double cost = businessInvestment.getCostOf(decision.template, n);
             if (banned && cost > cash) return;
-            if (carriesAtPrime(n, cost)) atPrime = true;
+            if (carriesAtPrime(n, orderGate.testedOn(cost, cash))) atPrime = true;
         }
 
         Afford result(int quantity) { return new Afford(quantity, atPrime, firstRate, deskCalls); }
@@ -4922,7 +4930,25 @@ public class Game {
         double till = economyManager.getSectorCash(sector) + Math.max(0, economyManager.getForeignAssets(sector));
         double borrowed = Math.max(cost - till, 0);
         if (borrowed > 0 && economyManager.getBusinessDebtManager().isBorrowingBlocked(sector)) return false;
-        return businessInvestment.servicesItsOwnDebt(earns, cost, judged(sector, borrowed).tested());
+        return businessInvestment.servicesItsOwnDebt(earns, orderGate.testedOn(cost, till), judged(sector, borrowed).tested());
+    }
+
+    /**
+     * What consider() tests an order on (0.7.113): the amount the interest
+     * is struck on, as sectors.SpreadPlanner's money gate is one replaceable
+     * piece - ON_ITS_WHOLE_COST, Jerus's decision A, unless a check or a
+     * probe set the rule to 0.7.112, ON_ITS_BORROWING (its cost less the
+     * till; 0.7.112 counted an overdraft on top). Not saved: nothing in the
+     * game sets it.
+     */
+    private ham.citybuildersim.sectors.SpreadPlanner.MoneyGate orderGate = ham.citybuildersim.sectors.SpreadPlanner.ON_ITS_WHOLE_COST;
+
+    /** The rule consider() tests orders by: ON_ITS_WHOLE_COST unless a check or a probe set another. */
+    public ham.citybuildersim.sectors.SpreadPlanner.MoneyGate orderGate() { return orderGate; }
+
+    /** A check's or a probe's: tests every order consider() weighs by another rule (the counterfactual); null puts the whole cost back. Nothing in the game calls it. */
+    public void setOrderGate(ham.citybuildersim.sectors.SpreadPlanner.MoneyGate gate) {
+        this.orderGate = gate == null ? ham.citybuildersim.sectors.SpreadPlanner.ON_ITS_WHOLE_COST : gate;
     }
 
     /* =======================================================================

@@ -24,7 +24,8 @@ import java.util.function.IntToDoubleFunction;
  * THE COUNTDOWNS ARE KEPT HERE, as they stood in 0.7.53 (sizedByCount(),
  * decidedByCount(), investedByCount()), and asked the same question at the
  * same moment through BusinessInvestment.OrderWatch: every order the game
- * decides, before anything is built.
+ * decides, before anything is built. The trim's question is the game's: on
+ * its whole cost since 0.7.113 (investedByCount()).
  *
  * What this has to prove:
  *   1. over a long run of the playtest's city, and a stretch of it at a dear
@@ -33,8 +34,10 @@ import java.util.function.IntToDoubleFunction;
  *      "at prime" and the same facts for one building; and no order asks the
  *      bond desk more than Game.deskCallsMost() times;
  *   2. the same in that city a thousand times over, copied at COPY_MONTH:
- *      its orders run past a hundred thousand, and trims deeper than the
- *      counted slices are found by the search;
+ *      its orders run past a hundred thousand, and decisions below the
+ *      counted slices are found by the search - and in a twin of it asked the
+ *      rule to 0.7.112 (0.7.113: on its whole cost an order is all but never
+ *      trimmed), trims deeper than the counted slices;
  *   3. the trim's search on its own (Game.largestSlice()): the countdown's
  *      answer at every boundary of a test that holds on a run from one, at
  *      every order to 300 and at the int limit, within deskCallsMost() asks;
@@ -63,7 +66,10 @@ public class OrderSearchCheck {
      * and how many months it plays. At month 400 the city is growing and its
      * copy orders: 26 orders judged on their interest in 24 months at
      * 0.7.106, 16 of them trimmed by more than Game.COUNTDOWN_SLICES (28 and
-     * 22 when the month was chosen, 23 and 5 at 0.7.103).
+     * 22 when the month was chosen, 23 and 5 at 0.7.103). On the whole cost
+     * (0.7.113) 52, 47 decided below the counted slices, none trimmed - each
+     * refused or built whole; its twin on the rule to 0.7.112 24, 17 trimmed
+     * past them, the deepest by 71,823.
      */
     static final int COPY_MONTH = 400;
     /** ...how many times over it is copied... */
@@ -143,6 +149,11 @@ public class OrderSearchCheck {
         GameFiles big = new GameFiles(root.resolve("big"), root.resolve("big-no-legacy"));
         ScaleCheck.scale(files.saveFile(10), big.saveFile(10), COPY_TIMES);
         Files.copy(files.historyFile(10), big.historyFile(10));
+        // ...and its twin's, before the copy plays (0.7.113; below).
+        GameFiles twinFiles = new GameFiles(root.resolve("twin"), root.resolve("twin-no-legacy"));
+        Files.createDirectories(twinFiles.saveFile(10).getParent());
+        Files.copy(big.saveFile(10), twinFiles.saveFile(10));
+        Files.copy(big.historyFile(10), twinFiles.historyFile(10));
         Game copy = new Game(big);
         quietly(() -> copy.loadGameSave(10));
         assertTrue("the copy loads", copy.getLoadFailure() == null && copy.getMonth() == COPY_MONTH);
@@ -151,10 +162,33 @@ public class OrderSearchCheck {
         quietly(() -> copy.simulateMonths(COPY_MONTHS));
         out.printf("      month %d, %,d people%n", copy.getMonth(), copy.getPopulationManager().getPopulation());
         wc.report("the copy");
-        assertTrue("fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and trimmed some",
-                wc.largestInvested > Game.COUNTDOWN_SLICES && wc.trimmed > 0);
-        assertTrue("fixture: ...some by more than the counted slices, so the search found them", wc.searched > 0);
+        assertTrue("fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some"
+                + " below the counted slices, so the search found them", wc.largestInvested > Game.COUNTDOWN_SLICES && wc.searched > 0);
         wc.verdicts("the copy");
+
+        /*
+         * ...AND ITS TWIN ON THE RULE TO 0.7.112 (0.7.113). On its whole cost
+         * an order is all but never trimmed: at a fixed rate the test is the
+         * earnings against a fixed share of the cost, so an order passes
+         * whole or fails at one - the long run above trims none, and the copy
+         * refuses what it does not build. The search is the same search
+         * whatever it is asked, so the deep trims it must find are caused in
+         * a twin of the copy asked the rule to 0.7.112 (Game.setOrderGate(),
+         * ON_ITS_BORROWING), whose till is the line a trim stops at.
+         */
+        Game twin = new Game(twinFiles);
+        quietly(() -> twin.loadGameSave(10));
+        assertTrue("the twin loads, at the copy's month", twin.getLoadFailure() == null && twin.getMonth() == COPY_MONTH);
+        twin.setOrderGate(ham.citybuildersim.sectors.SpreadPlanner.ON_ITS_BORROWING);
+        Watch wt = new Watch(twin);
+        twin.watchOrders(wt);
+        quietly(() -> twin.simulateMonths(COPY_MONTHS));
+        out.printf("      the twin on the rule to 0.7.112: month %d, %,d people%n", twin.getMonth(), twin.getPopulationManager().getPopulation());
+        wt.report("the twin");
+        assertTrue("fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest",
+                wt.largestInvested > Game.COUNTDOWN_SLICES && wt.trimmed > 0);
+        assertTrue("fixture: ...some by more than the counted slices, so the search found them", wt.searched > 0 && wt.deepest >= Game.COUNTDOWN_SLICES);
+        wt.verdicts("the twin");
     }
 
     /**
@@ -463,7 +497,14 @@ public class OrderSearchCheck {
         return new Mortgage.Decision(0, trimmedBy, shortForOne, ownForOne, coverageOfOne);
     }
 
-    /** Game.consider()'s countdown: down from the whole order, the bond desk asked for every slice that borrows. */
+    /**
+     * Game.consider()'s countdown: down from the whole order, the bond desk
+     * asked for every slice that borrows - and since 0.7.113 each slice asked
+     * the test on what the game's rule tests (Game.orderGate()): its whole
+     * cost, at prime too (Jerus's decisions A and A13; Game, ON ITS WHOLE
+     * COST), where 0.7.53's asked it of what the slice borrowed. The
+     * countdown asks the game's question; only the way down is 0.7.53's.
+     */
     static Game.Afford investedByCount(Game g, BusinessInvestment.Decision decision, double cash, double perUnitProfit) {
         BusinessInvestment plans = g.getBusinessInvestment();
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
@@ -484,11 +525,12 @@ public class OrderSearchCheck {
                 deskCalls++;
             }
             double tested = plan != null && plan.hasBond() && plan.covers() ? plan.blendedRate() : rate;
-            if (plans.servicesItsOwnDebt(perUnitProfit * n, borrowed, tested)) {
+            double on = g.orderGate().testedOn(cost, cash);
+            if (plans.servicesItsOwnDebt(perUnitProfit * n, on, tested)) {
                 affordable = n;
                 break;
             }
-            if (plans.servicesItsOwnDebt(perUnitProfit * n, borrowed,
+            if (plans.servicesItsOwnDebt(perUnitProfit * n, on,
                     credit.getPrimeRate() + credit.getRecordSurcharge(decision.sector))) {
                 atPrime = true;
             }

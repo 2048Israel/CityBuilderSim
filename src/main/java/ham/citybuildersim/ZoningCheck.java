@@ -76,6 +76,9 @@ public class ZoningCheck {
     }
 
     /** The fixture's orders: homes, shops, a diner, builders, a bakery buying crops, power, water and roads. */
+    /** Spare unskilled hands section 8 hands the city past what its posts are short of, so the fields' planner gets past the staff to the zone (0.7.113): more than any farm's posts. */
+    static final int FARM_HANDS = 100;
+
     static final String[][] ORDERS = {
             { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction Depot", "6" },
             { "Coal Power Plant", "2" }, { "Water Treatment Plant", "2" }, { "Industrial Bakery", "3" },
@@ -450,8 +453,29 @@ public class ZoningCheck {
         BusinessInvestment plans = g.getBusinessInvestment();
         BusinessInvestment.Decision none = fields.plan(plans, g);
         assertTrue("with no zone the fields yield, as they always have", !none.build && none.reason.contains("short of homes"));
+        /*
+         * ...AND HANDS FOR A FARM (0.7.113, re-caused). The fields' planner
+         * asks the city for a farm's workers before it reads the zone
+         * (Sector.staffing(), in planMaker()). This city's two years left it
+         * spare hands until the investors were asked the interest on an
+         * order's whole cost (Game, ON ITS WHOLE COST, 0.7.113): it builds
+         * otherwise since, and its unskilled posts outnumber its unskilled
+         * hands - "the city could staff 33% of a Mixed Farm". The question
+         * here is the zone, so the city is handed the hands its unskilled
+         * posts are short of and FARM_HANDS more for the asks, its workforce
+         * put back after.
+         */
+        PopulationManager people = g.getPopulationManager();
+        long workforce = people.getWorkforceForSave();
+        double[] posts = people.staffablePostsByBand(), supply = people.supplyByBand(posts);
+        int unskilled = WageBand.NONE.ordinal();
+        long hands = (long) Math.ceil(Math.max(0, posts[unskilled] - supply[unskilled])) + FARM_HANDS;
+        people.restoreWorkforce(workforce + hands);
         quietly(() -> g.setZone(Sectors.AGRICULTURE, Zoning.Size.KM2, 2, 0));
         BusinessInvestment.Decision zoned = fields.plan(plans, g);
+        assertTrue("fixture: handed the unskilled hands its posts are short of and FARM_HANDS more, the fields order a farm"
+                + " in their zone", zoned.build);
+        out.printf("      %,d hands handed%n", hands);
         double held = g.getLandManager().heldBy(Sectors.AGRICULTURE);
         assertTrue("fixture: the fields' zone holds 2 km² at no price", same(held, LandManager.sqFt(2)));
         assertTrue("zoned, they do not: the homes rule stops nothing, and any order fits in the zone",
@@ -463,6 +487,7 @@ public class ZoningCheck {
         BusinessInvestment.Decision tiny = fields.plan(plans, g);
         assertTrue("a zone too small for any farm's plot refuses it, homes still short",
                 !tiny.build && tiny.reason.contains("zone holds too little"));
+        people.restoreWorkforce(workforce);
         quietly(() -> g.removeZone(Sectors.AGRICULTURE));
     }
 
