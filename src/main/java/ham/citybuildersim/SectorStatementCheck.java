@@ -70,9 +70,10 @@ import java.util.Set;
  *      money moves exactly as the month's books say; every row's columns
  *      add to its figure; the sheet's land is its square feet at its price;
  *   6. a save keeps the columns and the register's paid-in, R7 counts again
- *      two months on, and a FORMAT-32 SAVE loads with its paid-in derived and
- *      said so, closes, and saved again in this build's format loads back to
- *      the cent;
+ *      two months on, and a FORMAT-32 SAVE is refused, below the floor, its
+ *      file untouched and nothing derived (since 0.7.116; until then it
+ *      loaded with its paid-in derived and said so, closed, and saved again
+ *      in this build's format loaded back to the cent);
  *   8. THE DEBT SCHEDULE (R7): each kind's start, borrowed, repaid, written
  *      off and end close, and from close to close the running totals are
  *      the month's own loans, bonds, repayments and write-offs - and since
@@ -711,14 +712,15 @@ public class SectorStatementCheck {
     /**
      * A FORMAT-32 SAVE (0.7.74's shape), made from the test player's city by
      * taking out what 0.7.75 added - the register's three slots a company and
-     * the books' new fields - loads with every listed sector's share capital
-     * derived (what it raised since founding) and said so; its equity
-     * statement closes; a month on it still closes; and saved again, in this
-     * build's format (SAVE_FORMAT), and loaded, it is the same to the cent,
-     * derived still.
+     * the books' new fields - is refused since 0.7.116 (batch I3: the floor,
+     * GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37), its file untouched
+     * and nothing derived. Until then it loaded with every listed sector's
+     * share capital derived (what it raised since founding) and said so; its
+     * equity statement closed; a month on it still closed; and saved again,
+     * in this build's format, and loaded, it was the same to the cent.
      */
     static void anOlderSave(Game g) throws Exception {
-        out.println("\n--- 6b. a format-32 save loads, its paid-in derived; saved again it loads back to the cent ---");
+        out.println("\n--- 6b. a format-32 save is refused since 0.7.116 (to 0.7.115 it loaded, its paid-in derived) ---");
         quietly(() -> g.saveGame(10));
         Path file = g.getGameFiles().saveFile(10);
         JsonObject json = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8)).getAsJsonObject();
@@ -738,61 +740,25 @@ public class SectorStatementCheck {
             for (JsonElement m : json.getAsJsonArray(books)) for (String f : NEW_FIELDS) m.getAsJsonObject().remove(f);
         }
         Files.writeString(file, new GsonBuilder().setPrettyPrinting().create().toJson(json), StandardCharsets.UTF_8);
+        byte[] before = Files.readAllBytes(file);
         Game old = new Game(g.getGameFiles());
         quietly(() -> old.loadGame(10));
-        assertTrue("a format-32 save loads", old.getLoadFailure() == null || old.getLoadFailure().isEmpty());
-        Equity register = old.getEquity();
-        boolean derived = true, raised = true, closes = true, said = true;
-        int listed = 0;
-        for (Sector s : old.getSectors().all()) {
-            int c = Equity.indexOf(s.key());
-            if (!(register.getShares(c) > 0)) continue;
-            listed++;
-            derived &= register.isPaidInDerived(c);
-            raised &= Math.abs(register.getPaidIn(c) - register.getLifetimeRaisedHome(c) - register.getLifetimeRaisedAbroad(c)) <= CENT;
-            SectorBooks.SectorMonth n = old.getSectorBooks().get(s), p = old.getSectorBooks().previous(s);
-            said &= n.paidInDerived() && Math.abs(n.paidIn() - register.getPaidIn(c)) <= CENT
-                    && SectorStatements.sheet(n, p, null, null).row(SectorStatements.SHARE_CAPITAL).label().contains("derived");
-            SectorStatements.Table eq = SectorStatements.equity(n, p);
-            closes &= eq == null || Math.abs(eq.now(SectorStatements.EQ_CAPITAL_REST)) <= CENT;
-        }
-        assertTrue(String.format("...every listed sector's paid-in derived (%d): what it raised since founding, at home and"
-                + " abroad", listed), listed > 0 && derived && raised);
-        assertTrue("...its books' share capital the register's, marked derived, the sheet's line saying so", said);
-        assertTrue("...and the loaded month's equity statement closes its share capital", closes);
-        quietly(() -> old.toggleNextMonth());
-        boolean closesOn = true, stillDerived = true;
-        for (Sector s : old.getSectors().all()) {
-            SectorBooks.SectorMonth n = old.getSectorBooks().get(s), p = old.getSectorBooks().previous(s);
-            if (!(register.getShares(Equity.indexOf(s.key())) > 0)) continue;
-            SectorStatements.Table eq = SectorStatements.equity(n, p);
-            closesOn &= eq != null && Math.abs(eq.now(SectorStatements.EQ_CAPITAL_REST)) <= CENT;
-            stillDerived &= n.paidInDerived();
-        }
-        assertTrue("a month on, its equity statement still closes, still derived", closesOn && stillDerived);
-        quietly(() -> old.saveGame(10));
-        JsonObject again = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8)).getAsJsonObject();
-        Game back = new Game(g.getGameFiles());
-        quietly(() -> back.loadGame(10));
-        double worst = 0, worstEquity = 0;
-        boolean flags = true;
-        for (int c = 0; c < Equity.COMPANIES.length; c++) {
-            if (c != Equity.BANK) worst = Math.max(worst, Math.abs(old.getEquity().getPaidIn(c) - back.getEquity().getPaidIn(c)));
-            flags &= old.getEquity().isPaidInDerived(c) == back.getEquity().isPaidInDerived(c);
-        }
-        for (Sector s : old.getSectors().all()) {
-            Sector t = back.getSectors().byKey(s.key());
-            SectorBooks.SectorMonth n1 = old.getSectorBooks().get(s), p1 = old.getSectorBooks().previous(s);
-            SectorBooks.SectorMonth n2 = back.getSectorBooks().get(t), p2 = back.getSectorBooks().previous(t);
-            worst = Math.max(worst, Math.max(Math.abs(n1.paidIn() - n2.paidIn()), Math.abs(p1.paidIn() - p2.paidIn())));
-            flags &= n1.paidInDerived() == n2.paidInDerived();
-            worstEquity = Math.max(worstEquity, compare(rows(SectorStatements.equity(n1, p1)), rows(SectorStatements.equity(n2, p2)),
-                    Set.of()));
-        }
-        assertTrue(String.format("saved again as format %d and loaded: every paid-in the same to the cent (worst %.2g), derived"
-                        + " still, the equity statements the same (worst %.2g)", again.get("saveFormat").getAsInt(), worst,
-                worstEquity), again.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && worst <= CENT && flags
-                && worstEquity <= CENT);
+        /*
+         * REFUSED SINCE 0.7.116 (batch I3). Until then this section loaded the
+         * format-32 save with every listed sector's paid-in derived - what it
+         * raised since founding, at home and abroad - its equity statement
+         * closing, a month on still closing, and saved again and loaded the
+         * same to the cent, derived still. Format 32 is below the floor now
+         * (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
+         * saves need not load until the game is published), so the load
+         * turns it away and nothing is derived; SectorBooks.derivePaidIn()
+         * and Equity's derived flag stay for the day old saves load again.
+         */
+        assertTrue("a format-32 save is refused since 0.7.116, below the floor: in P7's words, nothing of it applied, its file as it was",
+                SaveFileCheck.refusedAtTheFloor(g.getGameFiles(), 10, old, before));
+        boolean derivedNone = true;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) derivedNone &= !old.getEquity().isPaidInDerived(c);
+        assertTrue("...so no sector's paid-in is derived", derivedNone);
     }
 
     /* ---------------------------------------------------------------- 8 */

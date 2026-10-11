@@ -330,16 +330,31 @@ public class ChartCheck {
         assertTrue("the save says this build's format, " + GameVersion.SAVE_FORMAT + ", and carries the log",
                 json.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && json.has("decisionLog"));
         assertTrue("...the format the log came in, 29, or later", GameVersion.SAVE_FORMAT >= 29);
+        /*
+         * A SAVE WITHOUT THE LOG - what a format-28 save was, which loaded
+         * with an empty log until 0.7.116 (batch I3). Since then format 28 is
+         * below the floor (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by
+         * the rule: old saves need not load until the game is published) and
+         * is refused; the key missing from a save of this build's format still
+         * reads as an empty log, which is what the old save would have read.
+         */
         json.remove("decisionLog");
-        json.addProperty("saveFormat", 28);
         Files.writeString(files.saveFile(2), new GsonBuilder().setPrettyPrinting().create().toJson(json),
                 StandardCharsets.UTF_8);
         Game old = new Game(files);
         quietly(() -> old.loadGameSave(2));
-        assertTrue("a format-28 save loads", old.getLoadFailure() == null || old.getLoadFailure().isEmpty());
+        assertTrue("a save without the log loads", old.getLoadFailure() == null || old.getLoadFailure().isEmpty());
         same("...with an empty log", old.getDecisions().size(), 0);
         quietly(() -> old.setFundDial(1));
         assertTrue("...which records from then on", old.getDecisions().size() == 1);
+        json.addProperty("saveFormat", 28);
+        Files.writeString(files.saveFile(3), new GsonBuilder().setPrettyPrinting().create().toJson(json),
+                StandardCharsets.UTF_8);
+        byte[] asSaved = Files.readAllBytes(files.saveFile(3));
+        Game older = new Game(files);
+        quietly(() -> older.loadGameSave(3));
+        assertTrue("...and a format-28 save is refused since 0.7.116, below the floor: in P7's words, nothing of it applied, its file as it was",
+                SaveFileCheck.refusedAtTheFloor(files, 3, older, asSaved));
     }
 
     /* ============================ 3. THE SPANS ARE THE YEAR BOOK'S ============================ */

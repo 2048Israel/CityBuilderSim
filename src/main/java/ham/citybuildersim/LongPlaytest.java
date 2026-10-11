@@ -4011,10 +4011,17 @@ public class LongPlaytest {
     }
 
     static BuildingsTemplate template(Game g, String name) {
+        // ...or by its permanent id, "#11" (byId(): a fixture's list of orders, 0.7.116).
+        if (name != null && name.startsWith("#")) return g.getBuildingManager().getTemplate(Integer.parseInt(name.substring(1)));
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (t.getName().equals(name)) return t;
         }
         return null;
+    }
+
+    /** A building named by its permanent id in a fixture's list of orders, "#11", which template() reads (0.7.116, batch I3): the lists name the arc furnaces and the Iron Mine so, a name being a label the chains rename. */
+    static String byId(int id) {
+        return "#" + id;
     }
 
     /* ===================================================================

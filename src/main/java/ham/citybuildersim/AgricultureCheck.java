@@ -1,6 +1,7 @@
 package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.Agriculture;
+import ham.citybuildersim.sectors.HeavyIndustry;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -221,7 +222,7 @@ public class AgricultureCheck {
         BuildingsTemplate mixed = bm.getTemplateByName(MIXED);
         BuildingsTemplate grain = bm.getTemplateByName(GRAIN);
         BuildingsTemplate glass = bm.getTemplateByName(GLASS);
-        BuildingsTemplate foundry = bm.getTemplateByName("Steel Foundry");
+        BuildingsTemplate foundry = bm.getTemplate(HeavyIndustry.ARC_FURNACE);
 
         /*
          * LABOUR AND ENERGY CHEAP, GROUND EXPENSIVE - Jerus's brief, asserted

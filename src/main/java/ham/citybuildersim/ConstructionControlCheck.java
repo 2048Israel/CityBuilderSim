@@ -689,17 +689,33 @@ public class ConstructionControlCheck {
         // for the decision log): pinned at 28 it went red over a number this harness does not own.
         assertTrue("the save says format " + GameVersion.SAVE_FORMAT, json.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT
                 && GameVersion.SAVE_FORMAT >= 28 && json.has("constructionControl"));
+        /*
+         * A SAVE WITHOUT THE HAND'S KEY - what a format-27 save was, which
+         * loaded with none of it until 0.7.116 (batch I3). Since then format
+         * 27 is below the floor (GameVersion.OLDEST_LOADABLE_FORMAT, raised to
+         * 37 by the rule: old saves need not load until the game is
+         * published) and is refused; the key missing from a save of this
+         * build's format still reads as none, which is what the old save
+         * would have read.
+         */
         json.remove("constructionControl");
-        json.addProperty("saveFormat", 27);
         Files.writeString(files.saveFile(2), new GsonBuilder().setPrettyPrinting().create().toJson(json),
                 StandardCharsets.UTF_8);
         Game old = new Game(files);
         quietly(() -> old.loadGameSave(2));
         ConstructionControl oc = old.getBuildingManager().getControl();
-        assertTrue("a format-27 save loads", old.getLoadFailure() == null || old.getLoadFailure().isEmpty());
+        assertTrue("a save without the hand's key loads", old.getLoadFailure() == null || old.getLoadFailure().isEmpty());
         assertTrue("...with none of it: no order, no rush, no cancel, no shell, no demolition, no buy-out",
                 !oc.engaged() && !oc.isPrioritySet() && oc.rushes().isEmpty() && oc.shells().isEmpty()
                         && oc.demolitions().isEmpty() && oc.expropriations().isEmpty());
+        json.addProperty("saveFormat", 27);
+        Files.writeString(files.saveFile(3), new GsonBuilder().setPrettyPrinting().create().toJson(json),
+                StandardCharsets.UTF_8);
+        byte[] before = Files.readAllBytes(files.saveFile(3));
+        Game older = new Game(files);
+        quietly(() -> older.loadGameSave(3));
+        assertTrue("...and a format-27 save is refused since 0.7.116, below the floor: in P7's words, nothing of it applied, its file as it was",
+                SaveFileCheck.refusedAtTheFloor(files, 3, older, before));
     }
 
     /* ====================== 10. ONE WAIT, AND THE ORDER'S LIFE ====================== */

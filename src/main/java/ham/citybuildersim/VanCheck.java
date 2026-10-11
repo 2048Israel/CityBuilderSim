@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+
 /**
  * The vans: what a sector needs, what it costs it, and what happens while it
  * waits for them.
@@ -96,7 +98,17 @@ public class VanCheck {
              * tonnes and ships steel by the thousand, which is where lorries
              * actually go.
              */
-            game.buildStack(b.getTemplateByName("Steel Foundry"), 6, true);
+            game.buildStack(b.getTemplate(HeavyIndustry.ARC_FURNACE), 6, true);
+            /*
+             * ...AND THE MILLS ARE HELD (0.7.116, batch I3): at steel's world
+             * price a furnace on imported scrap shipping its steel loses money
+             * (the study's case A, -0.5% of its cost a month), and Iron &
+             * Steel's planner sheds it inside two years - the furnaces stood
+             * here for their tonnage would be gone before they are read. An
+             * assertion whose subject is decided by a planner is an assertion
+             * about the planner.
+             */
+            game.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
             for (int i = 0; i < 24; i++) game.toggleNextMonth();
         });
 

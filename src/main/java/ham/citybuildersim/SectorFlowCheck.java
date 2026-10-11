@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -99,7 +101,7 @@ public class SectorFlowCheck {
     static final String[][] ORDERS = {
             { "House", "400" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction Depot", "6" },
             { "Coal Power Plant", "2" }, { "Water Treatment Plant", "2" }, { "Industrial Bakery", "3" },
-            { "Steel Foundry", "2" }, { "Fabrication Shop", "2" }, { "Commercial Bank", "1" },
+            { LongPlaytest.byId(HeavyIndustry.ARC_FURNACE), "2" }, { "Fabrication Shop", "2" }, { "Commercial Bank", "1" },
             { "Elementary School", "3" }, { "Walk-in Clinic", "3" }, { "Paved Road", "20" }, { "Rail Spur", "1" } };
     /** ...whether each went on site, as city() found it. */
     static final java.util.Map<String, Boolean> built = new java.util.LinkedHashMap<>();

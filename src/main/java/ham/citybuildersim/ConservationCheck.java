@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Mining;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -337,7 +339,7 @@ public class ConservationCheck {
             // a sold mine has no payroll to survive a load. The fixture wants
             // a WORKING mine, so it gets a deposit to work.
             mined.getLandManager().restoreIron(3, 50_000_000);
-            b.addStack(b.getTemplateByName("Iron Mine"), 3, true);
+            b.addStack(b.getTemplate(Mining.IRON_MINE), 3, true);
             mined.simulateMonths(30);
             mined.saveGame(1, "mined");
         } finally { System.setOut(out); }

@@ -53,14 +53,16 @@ import java.util.Set;
  *      legacy iron field on its dry ground a kilometre or more from the site
  *      where the world laid no iron on it; every other resource the world's
  *      fields centred on it; the books, the rectangles and the offers as in 2;
- *   6. the game itself converting a format-31 save at load (0.7.67): Jerus's
- *      live land written into a fresh city's save as 0.7.63 wrote it, loaded
- *      to exactly the conversion's ground, books, sites and part fields, its
- *      figure its dry plots, E and its purchase history as saved, no money
- *      moving, the world's totals kept; every field near it held once, whole
- *      or by sites, the offers' contents exactly the fields on their free
- *      plots; saved again as format 32 and loaded, the same, and both play
- *      their next month alike.
+ *   6. the game itself refusing a format-31 save at load since 0.7.116 (the
+ *      floor, GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by batch I3):
+ *      Jerus's live land written into a fresh city's save as 0.7.63 wrote it,
+ *      turned away in P7's words, its file untouched. From 0.7.67 to 0.7.115
+ *      it was converted at load: to exactly the conversion's ground, books,
+ *      sites and part fields, its figure its dry plots, E and its purchase
+ *      history as saved, no money moving, the world's totals kept; every
+ *      field near it held once, whole or by sites, the offers' contents
+ *      exactly the fields on their free plots; saved again as format 32 and
+ *      loaded, the same, and both playing their next month alike.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits) "the world's fields" in
  * 2 to 5 are the old world's (World.legacyFieldsInCell()), which every one
@@ -490,7 +492,7 @@ public class ConversionCheck {
     }
 
     static void atLoad(Save s) throws Exception {
-        System.out.println("\n--- 6. the game puts " + s.name() + " on the grid at load, once ---");
+        System.out.println("\n--- 6. the game refuses " + s.name() + " at load since 0.7.116 (to 0.7.115 it put it on the grid, once) ---");
         GameFiles files = GameFiles.scratch("conversioncheck-load");
         Game fresh = new Game(files);
         quietly(() -> { fresh.newGame(); fresh.saveGame(4, "to convert"); });
@@ -508,55 +510,24 @@ public class ConversionCheck {
         json.add("landPurchases", gson.toJsonTree(s.purchases()));
         json.add("depletion", gson.toJsonTree(s.depletion()));
         java.nio.file.Files.writeString(files.saveFile(4), json.toString());
-        double cash = fresh.getCash();
+        byte[] before = java.nio.file.Files.readAllBytes(files.saveFile(4));
 
         Game[] back = new Game[1];
-        long t0 = System.nanoTime();
         quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(4); });
-        double ms = (System.nanoTime() - t0) / 1e6;
-        Game g = back[0];
-        check("the format-31 save loads", g.getLoadFailure() == null);
-        if (g.getLoadFailure() != null) return;
-        LandManager lm = g.getLandManager();
-        CityLand land = g.getCityLand();
-        LegacyLand old = LegacyLand.restore(s.seed(), s.centre(), s.lanes(), s.purchases());
-        GridConversion.Result r = GridConversion.fromLanes(old, s.version(), s.depletion());
-        System.out.printf(Locale.ROOT, "   loaded and converted in %.0f ms: %.4f km2 (%.4f dry) at level %d, %d blocks, %d fields held in part;"
-                        + " %d offers, %d places waiting%n", ms, land.totalKm2(CityLand.TOTAL), land.totalKm2(CityLand.DRY), land.level(),
-                land.centreRects().size(), land.partFields().size(), lm.getListing().size(), LandMarket.OFFERS - lm.getListing().size());
-        boolean same = land.grid().sameAs(r.grid()) && land.purchases().isEmpty();
-        for (int a = 0; same && a < LegacyLand.AREAS; a++) same = bits(land.totalKm2(a)) == bits(r.km2(a));
-        for (Resource res : Resource.values()) same &= land.totalSites(res) == r.sites(res) && bits(land.totalAmount(res)) == bits(r.amount(res));
-        check("its land is the conversion's: the ground node for node, the books and every site and tonne to the bit", same);
-        check("...its fields held in part the save's", partsOf(r).equals(partsOfLand(land)));
-        check("...its figure its dry plots, the books following the map", lm.getOwnedSqFt() == lm.getLandDrySqFt()
-                && lm.getOwnedSqFt() == LandManager.sqFt(r.km2(CityLand.DRY)));
-        check("...what it took out (E) as saved", java.util.Arrays.equals(lm.getDepletionState(), java.util.Arrays.copyOf(s.depletion(), LegacyLand.KINDS)));
-        check("...its purchases kept as history, record for record, and its count", java.util.Arrays.deepEquals(land.convertedHistory(), s.purchases())
-                && lm.getBlocksPurchased() == s.purchases().length);
-        check("no money moves: the treasury's cash as saved", g.getCash() == cash);
-        double[] world = World.of(s.seed()).totals();
-        boolean kept = java.util.Arrays.equals(lm.getWorldTotalsState(), world);
-        for (Resource res : Resource.values()) {
-            double sum = lm.getUnowned(res) + lm.getRemaining(res) + lm.getExtracted(res);
-            kept &= Math.abs(sum - world[res.ordinal()]) <= 1e-15 * Math.abs(world[res.ordinal()]) || lm.getRemaining(res) == 0 && lm.getOwnedAmount(res) < lm.getExtracted(res);
-        }
-        check("the world's totals (W) kept: unowned, remaining and extracted add up to them, every resource", kept);
-        heldOnce(g);
-        quietly(() -> g.saveGame(5, "converted"));
-        Game[] again = new Game[1];
-        quietly(() -> { again[0] = new Game(files); again[0].loadGameSave(5); });
-        Game h = again[0];
-        boolean reloaded = h.getLoadFailure() == null && h.getCityLand().same(land)
-                && java.util.Arrays.deepEquals(h.getLandManager().getMarket().getOffersState(), lm.getMarket().getOffersState())
-                && h.getLandManager().getOwnedSqFt() == lm.getOwnedSqFt()
-                && java.util.Arrays.equals(h.getLandManager().getDepletionState(), lm.getDepletionState());
-        check("saved again (format " + GameVersion.SAVE_FORMAT + ") and loaded: the same land, offers, figure and E, converted once", reloaded);
-        quietly(g::toggleNextMonth);
-        quietly(h::toggleNextMonth);
-        check("...and both play their next month alike: land, offers and cash", h.getCityLand().same(g.getCityLand())
-                && java.util.Arrays.deepEquals(h.getLandManager().getMarket().getOffersState(), g.getLandManager().getMarket().getOffersState())
-                && h.getCash() == g.getCash());
+        /*
+         * REFUSED SINCE 0.7.116 (batch I3): format 31 is below the floor
+         * (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
+         * saves need not load until the game is published), so the load turns
+         * it away and the conversion at load is not reached. Until then it
+         * loaded to exactly the conversion's ground, books, sites and part
+         * fields, its figure its dry plots, E and its purchase history as
+         * saved, no money moving, the world's totals kept, every field near it
+         * held once; saved again and loaded, the same; and both played their
+         * next month alike. GridConversion.fromLanes() - sections 2 to 5, pure -
+         * stays, for the day old saves load again.
+         */
+        check("the format-31 save is refused since 0.7.116, below the floor: in P7's words, nothing of it applied, its file as it was",
+                SaveFileCheck.refusedAtTheFloor(files, 4, back[0], before));
     }
 
     static Set<String> partsOfLand(CityLand land) {

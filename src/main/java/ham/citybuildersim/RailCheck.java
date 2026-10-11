@@ -1,5 +1,6 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.Rail;
 
 /**
@@ -271,7 +272,33 @@ public class RailCheck {
             game.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
             game.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             game.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
-            game.buildStack(b.getTemplateByName("Steel Foundry"), 30, true);
+            game.buildStack(b.getTemplate(HeavyIndustry.ARC_FURNACE), 30, true);
+            /*
+             * ...AND THE MILLS ARE HELD (0.7.116, batch I3): at steel's world
+             * price a furnace on imported scrap shipping its steel loses money
+             * (the study's case A, -0.5% of its cost a month), and Iron &
+             * Steel's planner sheds it inside two years - the furnaces stood
+             * here for their tonnage would be gone before they are read. An
+             * assertion whose subject is decided by a planner is an assertion
+             * about the planner.
+             */
+            game.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
+            /*
+             * ...AND FABRICATION WORKS TO SHIP WHAT ITS STEEL BECOMES (0.7.116,
+             * batch I3). At steel's world price a tonne of steel or scrap
+             * carries about two fifths of the lorry freight it did (STEEL
+             * .0675 a tonne and SCRAP .04125, against .1639 and IRON's .101),
+             * and a steel town's freight alone no longer pays for two spurs:
+             * measured, its quote pinned at the lorries' price, billing 63% of
+             * what the rule allowed - section 4's railway "sized to its city"
+             * an over-built one. Eight works export fabricated steel at .3398
+             * a tonne, the played city's freight (section 4's note), and are
+             * held as the mills are.
+             */
+            BuildingsTemplate works = b.getTemplateByName("Fabrication Works");
+            game.setCashForTest(game.getCash() + 8 * game.getBusinessInvestment().getCostOf(works, 1));
+            game.buildStack(works, 8, true);
+            game.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
             for (int i = 0; i < 36; i++) game.toggleNextMonth();
         });
 
@@ -433,7 +460,9 @@ public class RailCheck {
          * lorry rate is half a played city's and the quote sits high. The
          * played city, whose exports are fabricated steel at three times the
          * freight, settles at 38-43%. Both are the same rule; nothing below
-         * asserts a level, only what the rule says about itself.
+         * asserts a level, only what the rule says about itself. (Since
+         * 0.7.116 the town ships fabricated steel too: at the world's steel
+         * price its steel alone could not pay for the two spurs.)
          */
         System.out.println("\n--- and the quote prices the track ---");
 

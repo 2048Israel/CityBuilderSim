@@ -526,18 +526,27 @@ public class BuildingDataCheck {
 
            spec-materials 2.5 and 2.8: "gen" (kW a building makes itself) and
            "consumables" (world thousands a month it buys abroad) are read
-           from the file like every field, and the shared machinery uses them
-           - but no building has either until the materials chains' rows
-           come (I3 onwards), so every building buys its whole draw and sells
-           none, to the bit, and pays the world nothing past its goods. */
-        System.out.println("\n--- a works' own power and its consumables (0.7.112) ---");
-        boolean noneYet = true, wholeDraw = true;
+           from the file like every field, and the shared machinery uses them.
+           No building makes power until the integrated route (batch I4), so
+           every building buys its whole draw and sells none, to the bit; since
+           0.7.116 (batch I3) three buy consumables - the Iron Mine and the two
+           arc furnaces, the study's running cost less their wages, power,
+           water and diesel (MaterialsCheck 9) - and every other pays the world
+           nothing past its goods. */
+        System.out.println("\n--- a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.116) ---");
+        boolean noGen = true, wholeDraw = true;
+        java.util.Set<Integer> buying = new java.util.TreeSet<>();
         for (BuildingsTemplate t : data) {
-            noneYet &= t.getGen() == 0 && t.getConsumables() == 0;
+            noGen &= t.getGen() == 0;
+            if (t.getConsumables() != 0) buying.add(t.getId());
             wholeDraw &= t.powerBought() == t.getElectricityConsumption() && t.powerSold() == 0;
         }
-        assertTrue("no building makes power or buys consumables yet", noneYet);
+        assertTrue("no building makes power yet", noGen);
         assertTrue("...so every building buys its whole draw and sells the grid none, to the bit", wholeDraw);
+        assertTrue("three buy consumables, the iron rows of batch I3: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and the Iron"
+                + " Mine (14); every other none: " + buying, buying.equals(new java.util.TreeSet<>(List.of(
+                ham.citybuildersim.sectors.HeavyIndustry.ARC_FURNACE, ham.citybuildersim.sectors.HeavyIndustry.MINI_MILL,
+                ham.citybuildersim.sectors.Mining.IRON_MINE))));
 
         /* ---------- and every profession has exactly one school ----------
 

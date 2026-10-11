@@ -1,5 +1,8 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+import ham.citybuildersim.sectors.Mining;
+
 /**
  * The wedge between what the world charges and what it pays, and what it is
  * made of.
@@ -80,20 +83,25 @@ public class TradeCostCheck {
         { Good.BAKERY,                   .00600,     .00370 },
         { Good.SNACKS,                   .01000,     .00620 },
         { Good.DRINKS,                   .00150,     .00090 },
-        { Good.IRON,                     .41,        .14   },
-        { Good.STEEL,                   1.284,       .847  },
+        // Iron ore and steel at the world's prices since 0.7.116 (batch I3; Jerus's Q4 and Q6, the
+        // study's 2.3): IRON .41 / .14 until then - the mills' scrap over the mines' ore - and STEEL
+        // the US band, 1.284 / .847.
+        { Good.IRON,                     .115,       .085  },
+        { Good.STEEL,                    .650,       .470  },
         { Good.MATERIALS,              18.0,        7.2    },
         { Good.SUPPORT_WORK,            Double.NaN, 5.5    },
         { Good.BACK_OFFICE_WORK,        Double.NaN, 8.6    },
         { Good.ENGINEERING_WORK,        Double.NaN, 14.6   },
-        { Good.FABRICATED_STEEL,        Double.NaN, 2.21   },
-        { Good.MACHINERY,              14.3,        9.0    },
+        // ...and moved with steel by the steel in them (0.7.116; Q6b): 2.21, and 14.3 / 9.0, until then.
+        { Good.FABRICATED_STEEL,        Double.NaN, 1.545  },
+        { Good.MACHINERY,              13.4,        8.1    },
         // The vehicles, 2026-09-16. Written down the day they were priced, for
         // the same reason as everything above them: a claim about the past is
         // only checkable if somebody writes the past down.
-        { Good.CARS,                   44.0,       36.0    },
-        { Good.VANS,                   72.0,   Double.NaN  },
-        { Good.ROLLING_STOCK,        2400.0, Double.NaN    },
+        // ...moved with the steel in them on 0.7.116 (Jerus's C): 44 / 36, 72 and 2,400 until then.
+        { Good.CARS,                   41.3125,    33.3125 },
+        { Good.VANS,                   68.135, Double.NaN  },
+        { Good.ROLLING_STOCK,        2302.2, Double.NaN    },
         // The first thing a household buys that it does not need (2026-09-17).
         // The world sells them and will not buy them back, for the reason the
         // vans block in Good.java gives. See LuxuryRetail.
@@ -115,6 +123,9 @@ public class TradeCostCheck {
         { Good.FUEL_OIL,            .0004997,   .0004256   },
         { Good.BITUMEN,                .6415,      .5465   },
         { Good.COKE,                  .09207,     .07843   },
+        // Scrap, split from ore (0.7.116, batch I3; Q4): IRON's old import price, and what the
+        // city's scrap nets shipped out.
+        { Good.SCRAP,                    .41,        .30   },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */
@@ -222,7 +233,9 @@ public class TradeCostCheck {
          * ever reads as commuters or a school as ore, something upstream has
          * broken in a way no total would show.
          */
-        for (String name : new String[]{ "Steel Mini-Mill", "Steel Foundry", "Iron Mine", "Grain Farm" }) {
+        // ...the mills and the mine by their permanent ids (0.7.116, batch I3).
+        for (String name : new String[]{ bm.getTemplate(HeavyIndustry.MINI_MILL).getName(),
+                bm.getTemplate(HeavyIndustry.ARC_FURNACE).getName(), bm.getTemplate(Mining.IRON_MINE).getName(), "Grain Farm" }) {
             BuildingsTemplate t = bm.getTemplateByName(name);
             report(name + " is mostly ore on the road",
                     t.loadOf(Traffic.BULK) > t.getRoadLoad() / 2,

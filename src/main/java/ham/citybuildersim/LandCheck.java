@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Mining;
+
 /**
  * Verifies the land ledger: what the city owns, what it can allocate, what it
  * charges, and that the three numbers never drift apart.
@@ -507,7 +509,7 @@ public class LandCheck {
                     + LandMarket.SEA_PRICE_SHARE * deposit.getKm2(CityLand.SEA));
             double orePart = counted[1] * Good.IRON.worldExportPrice() * Resource.IRON.inGroundShare();
             assertTrue("a deposit costs more than the ground it sits on", deposit.getPriceUsd() > groundPart);
-            assertTrue("...by its fields' tonnes at the in-ground price, 1/350 of the world's iron, to the US$5k it is rounded to",
+            assertTrue("...by its fields' tonnes at the in-ground price, US$0.40 a tonne (Jerus's D), to the US$5k it is rounded to",
                     Math.abs(deposit.getPriceUsd() - groundPart - orePart) <= 2.5);
             System.out.printf("   %s: %d sites, %,.0fk tonnes: US$%,.0fk against US$%,.0fk for its ground%n",
                     deposit.where(), deposit.getDeposits(), deposit.getIronTonnes() / 1000, deposit.getPriceUsd(), groundPart);
@@ -1187,28 +1189,21 @@ public class LandCheck {
         double localQuote = prices.get(0).getAsDouble();
         while (prices.size() > 3) prices.remove(prices.size() - 1);
         java.nio.file.Files.writeString(files.saveFile(4), json.toString());
+        byte[] before = java.nio.file.Files.readAllBytes(files.saveFile(4));
 
         quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(4); });
         Game old = back[0];
-        assertTrue("fixture: the older save loads", old.getLoadFailure() == null);
-        double loadRate = old.getForeignAccounts().getRate();
-        check("fixture: at the rate it was saved at", loadRate, 1.6);
-        assertTrue("an older save converts", !old.isLandPaidFromVault());
-        check("the office's local quote reads as dollars at the loading rate",
-                old.getLandManager().getGroundUsdPerSqFt(), localQuote / loadRate);
-        int waiting = 0;
-        for (int side = 0; side < CityLand.SIDES; side++) waiting += old.getLandManager().getMarket().emptyOn(side);
-        check("its nine parcels are not read: every place listed or waiting for room in their place",
-                old.getLandListing().size() + waiting, LandMarket.OFFERS);
-        boolean atTheQuote = true;
-        for (LandParcel p : old.getLandListing()) {
-            double[] km2 = new double[CityLand.AREAS], amounts = new double[CityLand.KINDS];
-            for (int a = 0; a < CityLand.AREAS; a++) km2[a] = p.getKm2(a);
-            for (Resource r : Resource.values()) amounts[r.ordinal()] = p.getAmount(r);
-            atTheQuote &= p.getPriceUsd() == LandMarket.price(km2, amounts, old.getLandManager().getGroundUsdPerSqFt(),
-                    old.getLandManager().getUsPriceLevel());
-        }
-        assertTrue("...each priced at that quote", atTheQuote);
+        /*
+         * REFUSED SINCE 0.7.116 (batch I3): format 30 is below the floor
+         * (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
+         * saves need not load until the game is published). Until then it
+         * loaded at the rate it was saved at, converted: the office's local
+         * quote read as dollars at the loading rate, its nine parcels not read
+         * and every place listed or waiting in their place, each priced at
+         * that quote (localQuote, the save's).
+         */
+        assertTrue("an older save (format 30) is refused since 0.7.116, below the floor: in P7's words, nothing of it applied, its"
+                + " file as it was (its local quote " + localQuote + " never read)", SaveFileCheck.refusedAtTheFloor(files, 4, old, before));
     }
 
     /* ==================================================================
@@ -1710,6 +1705,9 @@ public class LandCheck {
        bought, the centre first. A restated city keeps its iron and what it
        has taken out. Forest grows back. And the best offer for each need.
        ================================================================== */
+    /** Iron ore in the ground, a tonne in thousands: US$0.40, the land office's charge since 0.7.57, kept when ore fell to its world price (Jerus's D, 2026-10-08; 0.7.116). */
+    static final double IRON_IN_THE_GROUND = .0004;
+
     static void onTheWorld() {
         System.out.println("\n--- the world's totals are kept to the tonne ---");
 
@@ -1858,6 +1856,19 @@ public class LandCheck {
             System.out.printf("   the founding field: %d sites, %,.0f Mt, its centre %.0f plots out; the offer nearest it, %s, runs [%d, %d) x [%d, %d)%n",
                     founding.sites(), founding.amount() / 1e6, LegacyLand.radius(founding.x() - t0.siteX(), founding.y() - t0.siteY()),
                     first.where(), first.getX0(), first.getX1(), first.getY0(), first.getY1());
+            /*
+             * IRON IN THE GROUND STAYS US$0.40 A TONNE (0.7.116, batch I3;
+             * Jerus's D, 2026-10-08): ore fell to .085 abroad (Good.IRON), and
+             * Resource.IRON's in-ground share was re-struck to 1/212.5 of it
+             * (1/350 of the old .14), so the field a city buys costs what it
+             * did - this one about US$185M of ore, where the old share of the
+             * new price would have made it about US$112M. The study's own
+             * reference, "the founding field's US$180M", went with W1's world.
+             */
+            double perTonne = Resource.IRON.inGroundShare() * Good.IRON.worldExportPrice();
+            assertTrue(String.format("iron in the ground is US$0.40 a tonne (Jerus's D): the in-ground share 1/212.5 of ore's .085 - this"
+                            + " field's %,.0f Mt US$%,.1fM of ore", founding.amount() / 1e6, founding.amount() * perTonne / 1000),
+                    Math.abs(perTonne - IRON_IN_THE_GROUND) < 1e-15 && Resource.IRON.inGroundShare() == 1.0 / 212.5);
         }
 
         System.out.println("\n--- a new city's iron is a significant investment, and the funding page sizes to it ---");
@@ -2122,6 +2133,13 @@ public class LandCheck {
        save's figure, until 0.7.66); at least as many iron sites as mines, its
        tonnes exact, twenty-four places listed. And a city with more mines
        than sites, which are raised to them.
+
+       REFUSED SINCE 0.7.116 (batch I3): format 30 is below the floor
+       (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
+       saves need not load until the game is published), so each of the four
+       is turned away in P7's words, its file untouched, and the conversion
+       above is not reached; LandConversion stays, for the day old saves load
+       again.
        ================================================================== */
 
     /** One research city's land as its save carries it: its name, its world's seed, its square feet, iron sites and tonnes, and its Iron Mines. */
@@ -2136,14 +2154,14 @@ public class LandCheck {
     };
 
     static void converted() throws Exception {
-        System.out.println("\n--- an older save's land is put on the world, once ---");
+        System.out.println("\n--- an older save's land: refused since 0.7.116 (to 0.7.115 put on the world, once) ---");
 
         for (Research r : RESEARCH) {
             GameFiles files = GameFiles.scratch("landcheck-convert-" + r.seed());
             Game city = new Game(files);
             quietly(() -> {
                 city.newGame();
-                BuildingsTemplate mine = city.getBuildingManager().getTemplateByName("Iron Mine");
+                BuildingsTemplate mine = city.getBuildingManager().getTemplate(Mining.IRON_MINE);
                 if (r.mines() > 0) city.getBuildingManager().addStack(mine, r.mines(), true);
                 city.saveGame(4, "older land");
             });
@@ -2162,53 +2180,12 @@ public class LandCheck {
             for (int i = 0; i < 9; i++) for (double v : new double[] { i + 1, 250_000, 175, 0, 0 }) parcels.add(v);
             json.add("landListing", parcels);
             java.nio.file.Files.writeString(files.saveFile(4), json.toString());
+            byte[] before = java.nio.file.Files.readAllBytes(files.saveFile(4));
 
             Game[] back = new Game[1];
-            long t0 = System.nanoTime();
             quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(4); });
-            double ms = (System.nanoTime() - t0) / 1e6;
-            Game old = back[0];
-            assertTrue("fixture (" + r.name() + "): the format-30 save loads", old.getLoadFailure() == null);
-            LandManager land = old.getLandManager();
-            CityLand put = old.getCityLand();
-            double share = put.centreKm2(CityLand.DRY) / put.centreKm2(CityLand.TOTAL);
-            System.out.printf("   %s: %.2f km2 dry in a centre of %.2f km2 (%.0f%% dry) at (%d, %d), %d sites on %d mines,"
-                            + " %,.0f t; loaded in %,.0f ms%n", r.name(), put.centreKm2(CityLand.DRY), put.centreKm2(CityLand.TOTAL),
-                    share * 100, put.siteX(), put.siteY(), land.getIronDeposits(), old.minesCommitted(),
-                    land.getIronReserveTonnes(), ms);
-            check("its world is its save's seed", old.getWorldSeed(), r.seed());
-            double plotSqFt = LandManager.sqFt(World.KM2_PER_PLOT);
-            assertTrue("...its dry ground the save's square feet to within a plot, and never less",
-                    land.getLandDrySqFt() >= r.landOwned() - 1e-6 && land.getLandDrySqFt() < r.landOwned() + plotSqFt);
-            check("...owned: its dry plots, the books following the map", land.getOwnedSqFt(), land.getLandDrySqFt());
-            assertTrue("...at least as many iron sites as mines standing and on order",
-                    land.getIronDeposits() >= old.minesCommitted());
-            check("...its sites the save's, or its mines where they are more", land.getIronDeposits(),
-                    Math.max(r.ironSites(), r.mines()));
-            check("...its tonnes the save's, exactly", land.getIronReserveTonnes(), r.ironTonnes());
-            check("...nothing taken out yet", land.getExtracted(Resource.IRON), 0);
-            int waiting = 0;
-            for (int side = 0; side < CityLand.SIDES; side++) waiting += land.getMarket().emptyOn(side);
-            check("...the nine parcels gone and every place listed or waiting for room in their place",
-                    land.getListing().size() + waiting, LandMarket.OFFERS);
-            assertTrue("...all of them against its ground, nothing bought", put.purchases().isEmpty() && !land.getListing().isEmpty()
-                    && land.getListing().stream().allMatch(p -> touchesOwned(put.grid(), p)));
-            double lx = put.legacyX() - put.siteX(), ly = put.legacyY() - put.siteY();
-            boolean legacy = put.legacySites() == 0
-                    || Math.sqrt(lx * lx + ly * ly) >= LandConversion.LEGACY_FIELD_KM * 1000 / World.PLOT_M - 1;
-            assertTrue("...and a legacy iron field, if the map needs one, a kilometre or more from the site", legacy);
-            if (share >= LandConversion.CENTRE_DRY_MIN) {
-                assertTrue("...its centre at least 80% dry (the fifth test)", share >= LandConversion.CENTRE_DRY_MIN);
-            } else {
-                System.out.printf("   (no site in %d cells passed the fifth test: the driest found, %.0f%%)%n",
-                        LandConversion.SITE_CELLS, share * 100);
-            }
-            quietly(() -> old.saveGame(5, "converted"));
-            Game[] again = new Game[1];
-            quietly(() -> { again[0] = new Game(files); again[0].loadGameSave(5); });
-            assertTrue("...converted once: saved again, it loads as it is", again[0].getCityLand().same(put)
-                    && java.util.Arrays.deepEquals(again[0].getLandManager().getMarket().getOffersState(),
-                            land.getMarket().getOffersState()));
+            assertTrue("(" + r.name() + ") the format-30 save is refused since 0.7.116, below the floor: in P7's words, nothing of it"
+                    + " applied, its file as it was", SaveFileCheck.refusedAtTheFloor(files, 4, back[0], before));
         }
     }
 
@@ -2398,14 +2375,14 @@ public class LandCheck {
         }
         assertTrue("the cheapest whole field: the offer holding iron at the least price, whatever its size", isCheapest);
         assertTrue("fixture: an Iron Mine would pay, and the city owns no unworked iron site",
-                LongPlaytest.wouldPay(rich, "Iron Mine", Sectors.MINING) && rl.getIronDeposits() <= rich.minesCommitted());
+                LongPlaytest.wouldPay(rich, LongPlaytest.nameOf(rich, Mining.IRON_MINE), Sectors.MINING) && rl.getIronDeposits() <= rich.minesCommitted());
         double rate = rich.getForeignAccounts().getRate();
         rich.setCashForTest(cheapest.localPrice(rate) * 1.25);
         double cash = rich.getCash(), owed = rich.getDebtManager().getAllPrincipal();
         int sites = rl.getIronDeposits(), bought = LongPlaytest.ironFieldsBought;
 
         /* --- the payback (0.7.67, M3b) --- */
-        BuildingsTemplate mine = rich.getBuildingManager().getTemplateByName("Iron Mine");
+        BuildingsTemplate mine = rich.getBuildingManager().getTemplate(Mining.IRON_MINE);
         double[] earns = LongPlaytest.fieldEarnings(rich, cheapest.getDeposits());
         double payment = LongPlaytest.fieldPayment(rich, cheapest);
         int months = Game.BUILD_BOND_YEARS * 12;

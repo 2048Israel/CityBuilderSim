@@ -1,5 +1,6 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Mining;
 import ham.citybuildersim.sectors.Oil;
 import ham.citybuildersim.sectors.Oil.Vintage;
 import ham.citybuildersim.sectors.Oil.WellKind;
@@ -387,7 +388,7 @@ public class WellCheck {
                 sea == null ? "none" : String.format("%d sites, %,.0f t, %.0f m deep", sea.sites(), sea.amount(), w.depthAt(sea.x(), sea.y())));
         if (sea == null) return;
         Game g = town("wellcheck-sea", 300, 4 * 87_120, OilCheck.SEA_OIL_SEED);
-        BuildingsTemplate well = template(g, "Oil Well"), mine = template(g, "Iron Mine");
+        BuildingsTemplate well = template(g, "Oil Well"), mine = g.getBuildingManager().getTemplate(Mining.IRON_MINE);
         LandManager land = g.getLandManager();
         Oil wells = g.getSectors().oil();
         int pushes = 0;
@@ -1070,26 +1071,23 @@ public class WellCheck {
         o.remove("oilDepletionAtSea");
         o.getAsJsonArray("depletion").set(oil, new com.google.gson.JsonPrimitive(onePool));
         Files.writeString(file, new com.google.gson.GsonBuilder().serializeSpecialFloatingPointValues().create().toJson(o));
+        byte[] before = Files.readAllBytes(file);
         Game old = new Game(files);
         quietly(() -> old.loadGameSave(10));
-        LandManager ol = old.getLandManager();
-        report("a save from before the pools: its one pool's E charged to the ground, floored at the ground's tonnes, none to the"
-                        + " sea - the sea's oil whole",
-                old.getLoadFailure() == null && ol.getOilExtractedOnGround() == ol.getOilOwnedOnGround() && ol.getOilExtractedAtSea() == 0
-                        && ol.getOilLeftAtSea() == ol.getOilOwnedAtSea() && ol.getOilLeftOnGround() == 0 && conserved(ol, world),
-                String.format("%,.0f t lifted as one pool: %,.0f on the ground, %,.0f at sea", onePool, ol.getOilExtractedOnGround(),
-                        ol.getOilExtractedAtSea()));
-        quietly(() -> old.simulateMonths(1));
-        assertTrue("...a month on, the world's oil conserved and the audit closing", conserved(ol, world)
-                && old.getLastMoneyAudit().relative() < 1e-10);
-        o.getAsJsonArray("depletion").set(oil, new com.google.gson.JsonPrimitive(ground / 2));
-        Files.writeString(file, new com.google.gson.GsonBuilder().serializeSpecialFloatingPointValues().create().toJson(o));
-        Game half = new Game(files);
-        quietly(() -> half.loadGameSave(10));
-        report("...and one that lifted less than the dry fields hold charges it all to the ground",
-                half.getLoadFailure() == null && half.getLandManager().getOilExtractedOnGround() == ground / 2
-                        && half.getLandManager().getOilExtractedAtSea() == 0,
-                String.format("%,.3f t on the ground", half.getLandManager().getOilExtractedOnGround()));
+        /*
+         * REFUSED SINCE 0.7.116 (batch I3): format 34 is below the floor
+         * (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
+         * saves need not load until the game is published). Until then it
+         * loaded with its one pool's E charged to the ground, floored at the
+         * ground's tonnes, none to the sea - the sea's oil whole - the world's
+         * oil conserved and the audit closing a month on; and one that lifted
+         * less than the dry fields hold charged it all to the ground. The
+         * conversion, LandManager.restoreOilPools(), is the load's setter and
+         * is still asked directly below.
+         */
+        report("a save from before the pools (format 34) is refused since 0.7.116, below the floor: in P7's words, nothing of it"
+                        + " applied, its file as it was", SaveFileCheck.refusedAtTheFloor(files, 10, old, before),
+                String.format("%,.0f t lifted as one pool, not read", onePool));
 
         // The other way: the ground refilled, and the offshore pool left LAST_AT_SEA (the load's setter).
         quietly(() -> {

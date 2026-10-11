@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Mining;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
@@ -975,7 +977,7 @@ public class PlanCheck {
                 }
                 if (m == MapCheck.IRON_AT && g.getLandManager().getIronDeposits() == 0) {
                     MiningCheck.makeRoom(g, 0, true);
-                    LongPlaytest.build(g, "Iron Mine", 1);
+                    LongPlaytest.build(g, LongPlaytest.nameOf(g, Mining.IRON_MINE), 1);
                 }
                 LongPlaytest.run(g, 1);
                 if ((m + 1) % MapCheck.DRAWN_EVERY == 0) {

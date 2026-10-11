@@ -1,5 +1,8 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+import ham.citybuildersim.sectors.Mining;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -1138,8 +1141,8 @@ public class SaveFileCheck {
         for (String[] order : new String[][] {
                 {"House", "400"}, {"Convenience Store", "2"}, {"Construction Depot", "6"},
                 {"Coal Power Plant", "2"}, {"Water Treatment Plant", "2"},
-                {"Industrial Bakery", "4"}, {"Mixed Farm", "4"}, {"Iron Mine", "2"},
-                {"Steel Foundry", "2"},
+                {"Industrial Bakery", "4"}, {"Mixed Farm", "4"}, {LongPlaytest.nameOf(full, Mining.IRON_MINE), "2"},
+                {LongPlaytest.nameOf(full, HeavyIndustry.ARC_FURNACE), "2"},
                 {"Commercial Bank", "1"}, {"Elementary School", "3"},
                 {"Walk-in Clinic", "3"}, {"Paved Road", "20"} }) {
             /*
@@ -1156,6 +1159,7 @@ public class SaveFileCheck {
             full.buildStack(template(full, order[0]), Integer.parseInt(order[1]), true);
         }
         for (String sector : Sectors.KEYS) full.setAutoSubsidised(sector, true);
+
 
         /*
          * AND SOMEBODY HAS TO BE HUNGRY, WHICH NOW TAKES DOING.
@@ -2064,9 +2068,19 @@ public class SaveFileCheck {
         for (String[] order : new String[][] {
                 {"House", "900"}, {"Convenience Store", "20"}, {"Small Grocery Store", "6"},
                 {"Paved Road", "60"}, {"Coal Power Plant", "1"}, {"Water Treatment Plant", "1"},
-                {"Construction Depot", "4"}, {"Steel Foundry", "30"} }) {
+                {"Construction Depot", "4"}, {LongPlaytest.nameOf(hauls, HeavyIndustry.ARC_FURNACE), "30"} }) {
             hauls.buildStack(template(hauls, order[0]), Integer.parseInt(order[1]), true);
         }
+        /*
+         * ...AND THE MILLS HELD WITH THE RAILWAY (0.7.116, batch I3): at
+         * steel's world price a furnace shipping its steel loses money and
+         * Iron & Steel's planner sheds it, so the town's freight would go
+         * with its furnaces. A hold is the fixture's lever, not the city's:
+         * a save does not carry it, and each twin loaded below is held the
+         * same, or the twin's planners would decide what the original's were
+         * kept from deciding.
+         */
+        hauls.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         // ...and two spurs, paid for: the town above leaves the treasury short of
         // them, and an order refused for funding would leave a city with no track.
         // Two carry its steel and its groceries both, so a first haul that read
@@ -2088,6 +2102,8 @@ public class SaveFileCheck {
         assertTrue("saved a city whose railway hauls", hauls.saveGame(1, "railway").ok);
         Game twin = new Game(hauls.getGameFiles());
         twin.loadGameSave(1);
+        twin.getBusinessInvestment().holdSector(Sectors.RAIL);
+        twin.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         /*
          * ...AND THE SAME SAVE AS A BUILD FROM BEFORE THE UNITS WROTE IT
          * (0.7.63, batch L): no sector carries them, only the ledger's money
@@ -2112,6 +2128,8 @@ public class SaveFileCheck {
         Files.copy(hauls.getGameFiles().historyFile(1), hauls.getGameFiles().historyFile(4));
         Game unitlessTwin = new Game(hauls.getGameFiles());
         unitlessTwin.loadGameSave(4);
+        unitlessTwin.getBusinessInvestment().holdSector(Sectors.RAIL);
+        unitlessTwin.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         hauls.simulateMonths(1);
         twin.simulateMonths(1);
         unitlessTwin.simulateMonths(1);
@@ -2170,9 +2188,12 @@ public class SaveFileCheck {
         college.getLandManager().setOwnedSqFt(college.getLandManager().getOwnedSqFt() + 100_000_000L);
         for (String[] order : new String[][] {
                 {"House", "600"}, {"Convenience Store", "8"}, {"Bakery", "3"}, {"Construction Depot", "3"},
-                {"Water Treatment Plant", "1"}, {"Community College", "1"}, {"Steel Foundry", "12"} }) {
+                {"Water Treatment Plant", "1"}, {"Community College", "1"},
+                {LongPlaytest.nameOf(college, HeavyIndustry.ARC_FURNACE), "12"} }) {
             college.buildStack(template(college, order[0]), Integer.parseInt(order[1]), true);
         }
+        // ...its furnaces held for their draw (0.7.116): at steel's world price Iron & Steel would shed them, and the town its shortage.
+        college.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         Sector grocers = college.getSectors().retail();
         for (int m = 0; m < 120 && !(college.getHouseholdBalance().getGraduating() > 0
                 && grocers.getEnergyRatio() < 1 && grocers.getEnergyRatio() != college.getEnergyRatio()); m++) {
@@ -2185,6 +2206,7 @@ public class SaveFileCheck {
         assertTrue("saved the college town", college.saveGame(3, "college").ok);
         Game collegeTwin = new Game(college.getGameFiles());
         collegeTwin.loadGameSave(3);
+        collegeTwin.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // the fixture's hold, which a save does not carry
         assertTrue("the reload holds the month's power ratio and the graduates waiting",
                 Double.compare(collegeTwin.getSectors().retail().getEnergyRatio(), grocers.getEnergyRatio()) == 0
                         && Double.compare(collegeTwin.getHouseholdBalance().getGraduating(),
@@ -2300,15 +2322,17 @@ public class SaveFileCheck {
         same("...asking for the same", waiting.preferredOfferSize(), fundCity.preferredOfferSize());
 
         assertTrue("fixture: the city bought the preferred", fundCity.acceptPreferredOffer());
-        // ...and a share on the book from the world, so a lot has a value at the step to keep (0.7.39, FundLedger).
+        // ...and a share on the book from the world, so a lot has a value at the step to keep (0.7.39, FundLedger) - of the first
+        // company in the register's order whose share the world sells and the fund's rule buys (since 0.7.116: Iron & Steel,
+        // the first the world holds, can have no share abroad to sell - its holders' emigrants' - nor room under the rule's cap).
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
-            if (c == Equity.BANK || !(fundCity.getEquity().getForeignShares(c) > 1)) continue;
+            if (c == Equity.BANK || !(fundCity.getEquity().getForeignShares(c) > 1) || !(fundCity.getExchange().fair(c) > 0)) continue;
             Exchange ex = fundCity.getExchange();
             double p = ex.price(c), q = Math.min(1, fundCity.getFund().getCash() / Math.max(1e-9, 2 * p));
             ex.bookOf(c).withdrawAll();
             ex.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.SELL, p, q);
-            ex.tradeForCheck(c, Exchange.FUND, OrderBook.Side.BUY, p, q);
-            break;
+            if (!ex.tradeForCheck(c, Exchange.FUND, OrderBook.Side.BUY, p, q).isEmpty()) break;
+            ex.bookOf(c).withdrawAll();
         }
         fundCity.fundBuyShares(0, 1_000);
         assertTrue("saved it with the preferred bought and an order waiting", fundCity.saveGame(4, "preferred").ok);
@@ -2638,6 +2662,30 @@ public class SaveFileCheck {
             if (t.getName().equals(name)) return t;
         }
         throw new IllegalStateException("no template named " + name);
+    }
+
+    /**
+     * Whether a load of `slot` from `files` into `loaded` was refused at the
+     * floor (0.7.116, batch I3): the save's format below
+     * GameVersion.OLDEST_LOADABLE_FORMAT, the game told in P7's words naming
+     * the build that saved it (noLongerReadable()), nothing of it applied -
+     * the game's month its fresh first - and the file byte for byte `before`.
+     * What a harness that loaded an older save through the load path asserts
+     * since the floor was raised to 37 (Jerus, 2026-10-10: "old saves do not
+     * matter, only once we publish to old saves matter"): the conversion it
+     * exercised (FuelSplit, the two pools, the grid's land, the old world's
+     * ground, the derived paid-in) is past the floor until old saves must
+     * load again, and its pure half stays in its own harness.
+     */
+    static boolean refusedAtTheFloor(GameFiles files, int slot, Game loaded, byte[] before) {
+        try {
+            SaveHeader h = files.readHeader(slot);
+            return h != null && h.isNoLongerReadable() && !GameVersion.isNoLongerReadable(GameVersion.SAVE_FORMAT)
+                    && GameVersion.noLongerReadable(h.getGameVersion()).equals(loaded.getLoadFailure())
+                    && loaded.getMonth() == 1 && java.util.Arrays.equals(before, Files.readAllBytes(files.saveFile(slot)));
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     /** Every file under a folder and its bytes, by its path within it - to say nothing in it moved. */
