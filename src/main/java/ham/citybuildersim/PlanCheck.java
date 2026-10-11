@@ -887,7 +887,7 @@ public class PlanCheck {
         long[] c = new long[types.length];
         for (int t = 0; t < MapCheck.JERUS_COUNTS.length && t < c.length; t++) c[t] = Math.round(MapCheck.JERUS_COUNTS[t] * k);
         int mine = -1;
-        for (BuildingVisual.Type t : types) if (t != null && t.site() == Resource.IRON) mine = t.id();
+        for (BuildingVisual.Type t : types) if (t != null && t.id() == Mining.IRON_MINE) mine = t.id();
         long wantMines = mine >= 0 ? c[mine] : 0;
         if (mine >= 0) c[mine] = 0;
         int side = (int) Math.ceil(Math.sqrt(MapCheck.groundKm2(types) * k / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));

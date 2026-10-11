@@ -639,7 +639,7 @@ public class MapCheck {
             y = place[1];
             out.printf("      the dry place: plot (%d, %d), %d cells from the founding site's%n", x, y, place[2]);
             int mine = -1;
-            for (BuildingVisual.Type t : types) if (t != null && t.site() == Resource.IRON) mine = t.id();
+            for (BuildingVisual.Type t : types) if (t != null && t.id() == Mining.IRON_MINE) mine = t.id();
             for (int i = 0; i < TIMES.length; i++) {
                 double k = TIMES[i];
                 long[] c = new long[types.length];
@@ -1358,7 +1358,7 @@ public class MapCheck {
             if (t.road() == BuildingVisual.GRAVEL) gravel = t.id();
             else if (t.road() == BuildingVisual.PAVED) paved = t.id();
             else if (t.road() == BuildingVisual.HIGHWAY) highway = t.id();
-            if (t.site() == Resource.IRON) mine = t.id();
+            if (t.id() == Mining.IRON_MINE) mine = t.id();
         }
         if (kind == BuildingVisual.GRAVEL) { c[gravel] += c[paved]; c[paved] = 0; } else { c[paved] += c[gravel]; c[gravel] = 0; }
         c[highway] = 0;
@@ -1695,7 +1695,7 @@ public class MapCheck {
             if (t == null) continue;
             if (t.terminal()) yard = t.id();
             else if (t.track() && t.plots() > 100) freight = t.id();
-            if (t.site() == Resource.IRON) mine = t.id();
+            if (t.id() == Mining.IRON_MINE) mine = t.id();
         }
         long[] rail = new long[c.length];
         for (int t = 0; t < c.length; t++) if (sq.types[t] != null && (sq.types[t].track() || sq.types[t].terminal())) { rail[t] = c[t]; c[t] = 0; }
@@ -1956,7 +1956,7 @@ public class MapCheck {
             CityMap m = sq.maps[i];
             long[] c = sq.counts[i].clone();
             int mine = -1;
-            for (BuildingVisual.Type t : m.types()) if (t != null && t.site() == Resource.IRON) mine = t.id();
+            for (BuildingVisual.Type t : m.types()) if (t != null && t.id() == Mining.IRON_MINE) mine = t.id();
             long sites = m.ownedSites(Resource.IRON);
             // Each month on the bound's clock (monthClock(): the main thread's CPU) and on the wall clock; the
             // bound reads the year of +0.01% and the -0.05%, the worst of them.

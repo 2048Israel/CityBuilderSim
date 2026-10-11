@@ -25,7 +25,7 @@
   "a building with no sector is the city's (roads, plants, schools, clinics) or the",
   "bank's. 'makes' and 'uses' are units of a GOOD a month per building at nameplate:",
   "  \"makes\": { \"STEEL\": 1200 }, \"uses\": { \"SCRAP\": 1320 }",
-  "Goods are FOOD (a person-month of food), IRON (tonnes of ore), SCRAP (tonnes, 0.7.116),",
+  "Goods are FOOD (a person-month of food), IRON (tonnes of ore), SCRAP (tonnes, 0.7.120),",
   "STEEL (tonnes), MATERIALS (a unit of building material), GROCERIES",
   "(food on a shelf, sold to households), HOUSING (homes), BUILDING_WORK (points).",
   "Prices are on the goods, not here: the world charges and pays a fixed price for",
@@ -33,14 +33,19 @@
   "building has for what it holds - a plant's warehouse, a shop's shelf - in units.",
   "For a store, 'coverage' is people it can serve a month and it makes that many",
   "GROCERIES out of that much FOOD. For a home, 'makes' HOUSING is its dwellings.",
-  "A mine also needs a DEPOSIT: buy a land parcel with iron under it, and one",
-  "deposit supports one mine. An Oil Well needs an oil site the same way, one a",
-  "well: a MINING building stands on the sites of the resource whose good it makes.",
-  "Since 0.7.110 it says so: \"site\": {\"resource\": \"IRON\", \"type\": \"ANY\", \"sites\": 1,",
-  "\"dig\": 1} is the resource, the type of field it needs (HEMATITE or MAGNETITE for",
+  "A mine also needs a DEPOSIT: buy a land parcel with iron under it. An Oil Well",
+  "needs an oil site the same way, one a well: a MINING building stands on the sites",
+  "of the resource whose good it makes.",
+  "Since 0.7.110 it says so: \"site\": {\"resource\": \"IRON\", \"type\": \"HEMATITE\", \"sites\":",
+  "1, \"dig\": 1} is the resource, the type of field it needs (HEMATITE or MAGNETITE for",
   "iron, THERMAL or COKING for coal, SULPHIDE or OXIDE for copper, LIMESTONE or HARD_ROCK",
   "for stone, or ANY), the sites it takes and the tonnes of field a unit it makes takes",
   "out. An Offshore Platform's jacket takes none: its wells do. No site, no deposit asked.",
+  "Since 0.7.124 every iron mine stands on a type: the Iron Mine and the Large Open-Pit",
+  "Mine on HEMATITE, the Magnetite Mine & Concentrator and the Large Magnetite Complex on",
+  "MAGNETITE, digging 3 t of rock for a tonne of concentrate; and a works of 20 sites",
+  "needs 20 free sites of ONE field of its type (LandManager.fits()), its iron the",
+  "tonnes of its type still in the ground.",
   "A well stands only on a dry site (a field whose centre is on land), lifts 10%",
   "less each year and is retired under ten barrels a day, after 263 months.",
   "CRUDE is tonnes of crude oil, lifted by the wells and refined. A refinery 'uses'",
@@ -91,17 +96,17 @@
   "grid only what it draws past that, and sells the grid what it makes past its draw, at",
   "the tariff. \"consumables\" is what a works buys abroad that is not a good - refractories,",
   "reagents, spares - in thousands of the WORLD's money a month at nameplate, paid at the",
-  "exchange factor at the share of nameplate it runs. Since 0.7.121 the Coke Ovens (8,000),",
-  "the Blast Furnace (60,000) and the Oxygen Steel Shop (25,000) make power; since 0.7.116",
+  "exchange factor at the share of nameplate it runs. Since 0.7.123 the Coke Ovens (8,000),",
+  "the Blast Furnace (60,000) and the Oxygen Steel Shop (25,000) make power; since 0.7.120",
   "the Iron Mine (explosives and wear parts) and the arc furnaces (electrodes), and since",
-  "0.7.121 every works of Iron & Steel, buy consumables: the study's running cost less",
-  "wages, the power it buys, water and diesel.",
+  "0.7.123 every works of Iron & Steel, and since 0.7.124 every mine, buy consumables: the",
+  "study's running cost less wages, the power it buys, water and diesel.",
   "A SCRAP YARD takes the city's OLD STEEL - its scrapped cars, its demolitions, its",
   "fabricators' offcuts, its worn-out wagon sets, which arise each month and are not a",
   "good: \"oldMetal\": {\"STEEL\": 10500} is the tonnes a month it takes at nameplate,",
-  "paying the sellers 70% of scrap's export price (0.7.121; see OldMetal). What no yard",
+  "paying the sellers 70% of scrap's export price (0.7.123; see OldMetal). What no yard",
   "takes goes to landfill.",
-  "\"since\" is the year a building first existed (0.7.121), 1900 - the start year - for one",
+  "\"since\" is the year a building first existed (0.7.123), 1900 - the start year - for one",
   "that stood before it; read by nothing yet, for research (absent: not yet dated).",
   "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
@@ -124,7 +129,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 108,
+ "nextId": 111,
  "buildings": [
   {
    "id": 0,
@@ -525,7 +530,7 @@
    },
    "site": {
     "resource": "IRON",
-    "type": "ANY",
+    "type": "HEMATITE",
     "sites": 1,
     "dig": 1
    }
@@ -2568,6 +2573,99 @@
     "SCRAP": 137500
    },
    "since": 1969
+  },
+  {
+   "id": 108,
+   "name": "Large Open-Pit Mine",
+   "category": "MINING",
+   "sector": "Mining",
+   "cashCost": 769222,
+   "constructionPoints": 384611,
+   "constructionMaterials": 12821,
+   "electricity": 3000,
+   "water": 300,
+   "consumables": 2847.6,
+   "jobs": {
+    "NO_DIPLOMA": 240,
+    "DIPLOMA": 110,
+    "COLLEGE_ENGINEERING": 40,
+    "UNIV_SCIENCE": 10
+   },
+   "land": 8000000,
+   "roadLoad": 84214,
+   "makes": {
+    "IRON": 500000
+   },
+   "uses": {
+    "DIESEL": 1500000
+   },
+   "site": {
+    "resource": "IRON",
+    "type": "HEMATITE",
+    "sites": 20,
+    "dig": 1
+   },
+   "since": 1900
+  },
+  {
+   "id": 109,
+   "name": "Magnetite Mine & Concentrator",
+   "category": "MINING",
+   "sector": "Mining",
+   "cashCost": 46158,
+   "constructionPoints": 23079,
+   "constructionMaterials": 769,
+   "electricity": 3000,
+   "water": 400,
+   "consumables": 389.9,
+   "jobs": {
+    "NO_DIPLOMA": 60,
+    "DIPLOMA": 40,
+    "COLLEGE_ENGINEERING": 15,
+    "UNIV_SCIENCE": 5
+   },
+   "land": 400000,
+   "roadLoad": 3360,
+   "makes": {
+    "IRON": 20000
+   },
+   "site": {
+    "resource": "IRON",
+    "type": "MAGNETITE",
+    "sites": 1,
+    "dig": 3
+   },
+   "since": 1955
+  },
+  {
+   "id": 110,
+   "name": "Large Magnetite Complex",
+   "category": "MINING",
+   "sector": "Mining",
+   "cashCost": 846146,
+   "constructionPoints": 423073,
+   "constructionMaterials": 14103,
+   "electricity": 52000,
+   "water": 7900,
+   "consumables": 6595.7,
+   "jobs": {
+    "NO_DIPLOMA": 280,
+    "DIPLOMA": 150,
+    "COLLEGE_ENGINEERING": 55,
+    "UNIV_SCIENCE": 15
+   },
+   "land": 8000000,
+   "roadLoad": 67200,
+   "makes": {
+    "IRON": 400000
+   },
+   "site": {
+    "resource": "IRON",
+    "type": "MAGNETITE",
+    "sites": 20,
+    "dig": 3
+   },
+   "since": 1955
   }
  ]
 }

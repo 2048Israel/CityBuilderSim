@@ -169,7 +169,10 @@ These are Jerus's, and they do not move.
                                    Mining - asked the planner's money gate on the whole cost; since 0.7.123,
                                    batch I4, Iron & Steel's integrated route - the Scrap Yard, pellets, coke
                                    ovens, blast furnaces, the oxygen shop and the large mini-mill - its coke,
-                                   pig iron and scrap captive and its works' power its own); Mining.java
+                                   pig iron and scrap captive and its works' power its own; since 0.7.124,
+                                   batch I5, Iron Mining's four mines by type and size - hematite and
+                                   magnetite, one site or twenty of one field - the plan among those that
+                                   fit, LandManager.fits(), the dig and the retirement by type); Mining.java
                                    is the shape to copy (on ExtractionSector since 0.7.112; Materials.java
                                    is the shortest on Sector itself)
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
@@ -256,7 +259,7 @@ These are Jerus's, and they do not move.
                                    ranking where the money, the ground or the payback will not run to the
                                    first - borrowing on the funding page's bond; its log, its inbox
                                    notices - AutoBuildCheck holds it
-        BuildCard.java             one build card's figures for all 108 buildings (0.7.25): what it gives the
+        BuildCard.java             one build card's figures for all 111 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
                                    fails for them (since 0.7.75 every gate, with what it would earn, cost and
