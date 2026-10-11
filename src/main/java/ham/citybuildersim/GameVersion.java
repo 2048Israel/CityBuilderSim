@@ -5614,8 +5614,54 @@ public final class GameVersion {
      *     Sahara, a far node, and the refusal of an Earth save before 39).
      *   - The default playtest is pt07123's byte for byte, and the Earth one
      *     (--earth rotterdam) pte07121's: Rotterdam's city holds no ice.
+     *
+     * 0.7.128 (2026-10-11) - DISTRICT PICTURES. Batch MM1, the minimap's
+     * first (docs/studies/spec-globe.md 8.1 and 8.2, its 4's MM1 row and 5's
+     * Q10 to Q12 as the defaults; Jerus, 10:31: "at a certain city size you
+     * might just see a blob of blue and a blob of purple and thats it";
+     * runs/brief-batchMM1.md, runs/fixMM1-notes.md). No save format change
+     * (39): nothing is saved, and the model is as it was - nothing in it
+     * reads the map.
+     *   - A PICTURE OF EACH DISTRICT (DistrictPicture): 32 x 32 pixels, a
+     *     pixel for 8 x 8 plots (240 m, TileRaster.BLOCK_FAR, on the blocks L2
+     *     draws), each pixel one of its 64 plots' codes - the ground, a paved
+     *     street, a highway, the track, a building by its fill - the plot at
+     *     a fixed hash's rank among them counted by code, so a pixel is a kind
+     *     with the chance its plots give it and stands still from month to
+     *     month. Gravel streets and tracks are the ground's, as L2 hides them.
+     *     The colours are the painter's. 1,024 bytes a district.
+     *   - DRAWN WITH ITS PLAN, KEPT BY ITS PLOTS: CityMap's PlanJob draws it
+     *     from the plan it has just drawn and the ground it read (0.5 to 1 ms;
+     *     its plan 10 to 35), on the map view's worker ("city-map") as the
+     *     plans are, and the map keeps it with the plan's link under a stamp
+     *     of its plots, so a plan drawn again to the same plots - let go past
+     *     PLANS_KEPT, or drawn again after a district before it moved - keeps
+     *     its picture. CityMap.PICTURES_KEPT (256), counted in the view's 48
+     *     MB. Not saved: drawn again from the plans after a load.
+     *   - THE FAR NODES DRAW FROM THEM (MapTiles.nodePixels(); a district one
+     *     tint, tintOf(), until now): a district PICTURE_FROM_PX (4) of a
+     *     node's pixels across or more samples its picture; smaller, or while
+     *     its picture is drawn, its owned dry ground is dithered by its kinds'
+     *     shares of its counts. The city's highways and railway are drawn on
+     *     every pixel they cross, and its edge - the inner ring of the pixels
+     *     drawn as its, and a pixel where it holds ground smaller than one -
+     *     at every scale (the view's own edge stays for the closer levels).
+     *     The expanded map's far view and the small one alike (Q11). A node
+     *     drawn without a picture it would sample asks for its plans' jobs
+     *     (CityMap.pictureJobs()) while the view's built districts fit what
+     *     the map keeps (MapTiles.picturesFit()), and is drawn again when they
+     *     are kept. The minimap itself is MM2's.
+     *   - Harnesses: MapCheck 11 (each picture its plan's pixel for pixel, its
+     *     shares within four spreads, its plan the district's counts; kept
+     *     when its plots did not move, the same object; 120 months of the
+     *     played city: 120 pictures redrawn of 240 district-months, 240 plans
+     *     drawn again, each month exactly the districts whose plots moved; the
+     *     4-pixel switch and the dither; a far node in SCREEN_MS; the cap;
+     *     the runs and the edge at the widest view; not in the sidecar).
+     *   - The default playtest is pt07123's byte for byte, and the Earth one
+     *     pte07127's.
      */
-    public static final String VERSION = "0.7.127";
+    public static final String VERSION = "0.7.128";
 
     /**
      * The save shape.

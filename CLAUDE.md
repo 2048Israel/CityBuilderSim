@@ -387,14 +387,19 @@ These are Jerus's, and they do not move.
                                    blocks lined up with the world, the six places a side and their
                                    rectangles, spec-land's lanes kept read-only, and a saved city's ground
                                    put on the grid once at load - GridCheck and ConversionCheck hold them
-        CityMap.java, TilePainter.java, TileRaster.java, BuildingVisual.java
+        CityMap.java, TilePainter.java, TileRaster.java, BuildingVisual.java, DistrictPicture.java
                                    the city map (0.7.60): the buildings by type in 7.68 km districts,
                                    each drawn once on its own land; since 0.7.88 a tile painted from
                                    its district's street plan, what a plan cannot hold carried to the
                                    next district and the rest packed at the city's edge (since 0.7.89
                                    within bands of CHAIN_BAND districts), and rastered when a screen
-                                   asks; the sidecar beside the save; nothing in the model reads it -
-                                   MapCheck holds it
+                                   asks; since 0.7.128 (batch MM1) each district's 32 x 32 picture,
+                                   a pixel for 8 x 8 plots picked by a fixed hash, drawn with its plan
+                                   and kept by its plots - what the far nodes draw from (MapTiles), a
+                                   district under 4 of their pixels dithered by its shares, the runs
+                                   and the city's edge a pixel wide at every scale; the sidecar
+                                   beside the save (no picture in it); nothing in the model reads
+                                   it - MapCheck holds it
         CityRuns.java              the city's highways and railway (0.7.89): laid city-wide, month by
                                    month, on corridors from the founding site's lines - straight by
                                    preference, never moved, the newest end taken first - with the
