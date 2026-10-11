@@ -287,7 +287,9 @@ These are Jerus's, and they do not move.
                                    centre its rings and its founding lake's blocks, one water plant's fresh
                                    water; since 0.7.110 each field of a type, Deposit.type() and
                                    Resource.typesOf(); since 0.7.115 a world's key, World.Key: the
-                                   generated world a seed makes, or the real Earth round a spot) -
+                                   generated world a seed makes, or the real Earth round a spot; since
+                                   0.7.127 seven kinds of ground, ICE and DESERT after the five, and one
+                                   rule for dry ground, World.dry(), that every test of it asks) -
                                    LandManager and LandMarket sell it, WorldCheck and LandCheck hold it
                                    (docs/studies/spec-land.md and spec-grid.md)
         EarthProj.java, EarthData.java, EarthTerrain.java, Geology.java
@@ -318,7 +320,11 @@ These are Jerus's, and they do not move.
                                    nearest place and geologic province (LandMap.earthWords()) - MapCheck
                                    10; and since 0.7.121 (batch E4) the sea's depth there, the generated
                                    world's rule with the distance from the coast for the elevation earth-1
-                                   does not have (EarthTerrain.SHELF_WIDTH_M, measured on the data)
+                                   does not have (EarthTerrain.SHELF_WIDTH_M, measured on the data);
+                                   and since 0.7.127 (batch E7, docs/studies/spec-globe.md 3.9) ice and
+                                   desert drawn from land cover's two bits, each its half-contour frayed
+                                   by its own noise - ice never dry, the desert dry as grass is, each
+                                   with its colour, name and legend entry (EarthTerrainCheck 15)
         EarthSite.java             founding a city on the real Earth (0.7.121, batch E4; spec-earth.md 2
                                    and 6): whether the game has the Earth's data (gameData(), the file at
                                    EarthData.DATA_FILE, which is not in git - data/ is ignored; since
@@ -329,7 +335,9 @@ These are Jerus's, and they do not move.
                                    refusals (the sea, ice) and warnings (a desert, no fresh water near);
                                    and why an Earth save cannot be loaded here. ui/FoundingScreen draws it
                                    (Earth | Generated, the globe, the card), Founding carries the spot,
-                                   DataSave its four fields (SAVE_FORMAT 38) - EarthFoundingCheck holds it
+                                   DataSave its four fields (SAVE_FORMAT 38) - EarthFoundingCheck holds it;
+                                   since 0.7.127 the card's ice is the site's plot's class, and an Earth
+                                   save from before ice (format 39, ICE_FORMAT) is refused
         LandManager.java, LandMarket.java
                                    the city's land: what it owns, what is built on and what it sells - the
                                    ore and oil its ground holds less what is taken out, since 0.7.93 the

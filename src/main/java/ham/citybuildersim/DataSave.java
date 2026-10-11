@@ -568,13 +568,14 @@ public class DataSave {
     /**
      * Why this save's world cannot be read here, or null (0.7.121): a kind
      * this build does not know, or an Earth city whose spot is missing or
-     * whose data is not this build's or not here (EarthSite.loadProblem()).
+     * whose data is not this build's or not here, or (0.7.127) that was saved
+     * before ice was a kind of ground (EarthSite.loadProblem(), ICE_FORMAT).
      * Null on a generated world. Game's load refuses it with these words.
      */
     public String earthProblem() {
         if (worldKind == null) return null;
         if (!World.Kind.EARTH.name().equals(worldKind)) return "This city stands on a world this build does not know (" + worldKind + ").";
-        return EarthSite.loadProblem(earthData, earthLat, earthLon);
+        return EarthSite.loadProblem(earthData, earthLat, earthLon, saveFormat);
     }
 
     /** The city's name as saved, or null on a save from before 0.7.10. */

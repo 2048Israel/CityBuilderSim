@@ -423,8 +423,7 @@ public final class GridConversion {
         long n = 0;
         for (long y = y0; y < y0 + b; y++) {
             for (long x = x0; x < x0 + b; x++) {
-                byte c = terrain(world, tiles, x, y);
-                if (c != World.SALT && c != World.FRESH) n++;
+                if (World.dry(terrain(world, tiles, x, y))) n++;
             }
         }
         return n;
@@ -450,12 +449,13 @@ public final class GridConversion {
 
     /**
      * The plots a grid's holdings own, by World's classes (GRASS, FOREST,
-     * FRESH, SALT, SAND, indexed by the class), counted one by one from
+     * FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT, indexed
+     * by the class, World.CLASSES of them), counted one by one from
      * World.tileTerrain(), as the map counts them: a leaf of a tile or more a
      * whole tile at a time, a smaller one plot by plot.
      */
     public static long[] drawnClasses(World world, LandGrid grid) {
-        long[] cls = new long[5];
+        long[] cls = new long[World.CLASSES];
         Map<Long, byte[]> tiles = new HashMap<>();
         grid.leaves((level, x, y, h) -> {
             long side = 1L << level;
@@ -477,10 +477,19 @@ public final class GridConversion {
         return cls;
     }
 
-    /** Five areas in square kilometres - CityLand.TOTAL, DRY, FRESH, SEA and FOREST - of plots counted by World's classes. */
+    /**
+     * Five areas in square kilometres - CityLand.TOTAL, DRY, FRESH, SEA and
+     * FOREST - of plots counted by World's classes: the dry ground the
+     * classes World.dry() names, the desert's with the grass, and (0.7.127)
+     * ice in the whole area only. The classes a shorter count leaves off
+     * are none.
+     */
     public static double[] km2Of(long[] cls) {
-        long dry = cls[World.GRASS] + cls[World.FOREST] + cls[World.SAND];
-        long all = dry + cls[World.FRESH] + cls[World.SALT];
+        long dry = 0, all = 0;
+        for (int c = 0; c < cls.length; c++) {
+            all += cls[c];
+            if (World.dry(c)) dry += cls[c];
+        }
         double[] km2 = new double[LegacyLand.AREAS];
         km2[CityLand.TOTAL] = all * World.KM2_PER_PLOT;
         km2[CityLand.DRY] = dry * World.KM2_PER_PLOT;

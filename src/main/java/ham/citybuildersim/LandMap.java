@@ -356,13 +356,15 @@ public final class LandMap {
 
     /* ----------------------------- the words ----------------------------- */
 
-    /** A World class as the hover card names it. */
+    /** A World class as the hover card names it; since 0.7.127 ice and the desert by their own names (spec-globe 3.9). */
     public static String groundWords(byte ground) {
         switch (ground) {
             case World.FOREST: return "Forest";
             case World.FRESH:  return "Lake or river";
             case World.SALT:   return "Sea";
             case World.SAND:   return "Beach";
+            case World.ICE:    return "Ice";
+            case World.DESERT: return "Desert";
             default:           return "Grass";
         }
     }

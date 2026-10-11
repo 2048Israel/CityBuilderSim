@@ -527,8 +527,7 @@ public final class CityMap {
                         int i = (int) ((y - py0) * World.TILE + (x - px0));
                         if (field[i]) continue;
                         field[i] = true;
-                        byte g = ground[i];
-                        if (!owns[i] || g == World.SALT || g == World.FRESH) continue;
+                        if (!owns[i] || !World.dry(ground[i])) continue;
                         all++;
                         if (x - px0 >= 1 && y - py0 >= 1 && x - px0 < World.TILE - 1 && y - py0 < World.TILE - 1) in++;
                     }
@@ -537,8 +536,7 @@ public final class CityMap {
             }
             int n = 0, inner = 0;
             for (int i = 0; i < TilePainter.PLOTS; i++) {
-                byte g = ground[i];
-                if (!owns[i] || g == World.SALT || g == World.FRESH) continue;
+                if (!owns[i] || !World.dry(ground[i])) continue;
                 n++;
                 int x = i % World.TILE, y = i / World.TILE;
                 if (x >= 1 && y >= 1 && x < World.TILE - 1 && y < World.TILE - 1) inner++;
@@ -2495,8 +2493,7 @@ public final class CityMap {
         for (int y = 0; y < DISTRICT; y++) {
             for (int x = 0; x < DISTRICT; x++) {
                 int q = y * f + x;
-                byte t = in.terrain[q];
-                if (!in.owned[q] || !(t == World.GRASS || t == World.FOREST || t == World.SAND)) continue;
+                if (!in.owned[q] || !World.dry(in.terrain[q])) continue;
                 if (taken[q] || p.street[q] != 0 || in.fixed[q] != 0 || in.site[q] == DistrictPlan.SITE_MINED) continue;
                 boolean verge = false;
                 for (int dy = -1; dy <= 1 && !verge; dy++) {

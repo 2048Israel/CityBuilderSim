@@ -60,8 +60,13 @@ public final class TileRaster {
 
     private TileRaster() { }
 
-    /** Each ground class's colour, by World's class (GRASS, FOREST, FRESH, SALT, SAND): the mockup's legend. */
-    public static final int[] GROUND = { 0xffa8c47e, 0xff527c45, 0xff78b4dc, 0xff2f5d88, 0xffe6daaa };
+    /**
+     * Each ground class's colour, by World's class (GRASS, FOREST, FRESH,
+     * SALT, SAND): the mockup's legend; and since 0.7.127 (batch E7;
+     * spec-globe 3.9) ICE, the founding globe's ice, 0xdfe7ee, and DESERT,
+     * CSS's tan (#d2b48c), warmer and darker than the beach's sand.
+     */
+    public static final int[] GROUND = { 0xffa8c47e, 0xff527c45, 0xff78b4dc, 0xff2f5d88, 0xffe6daaa, 0xffdfe7ee, 0xffd2b48c };
 
     /** Each road kind's colour (gravel, paved, highway): the mockup's MAP. */
     public static final int[] ROAD = { 0, 0xffcdb07c, 0xffa4aab0, 0xff3b4048 };

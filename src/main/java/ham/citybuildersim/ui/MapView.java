@@ -1241,7 +1241,7 @@ final class MapView {
         requestDraw();
     }
 
-    /** The legend's entries: the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, (0.7.97) the nine of the shore and the sea, the land, the six resources in fields. */
+    /** The legend's entries: the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, (0.7.97) the nine of the shore and the sea, (0.7.127) ice and the desert, the land, the six resources in fields. */
     static List<String[]> legendEntries() {
         List<String[]> out = new ArrayList<>();
         for (int c = 0; c < BuildingVisual.CLASSES; c++) {
@@ -1263,13 +1263,16 @@ final class MapView {
         out.add(new String[] { css(ShipShapes.EXPORT), "Ship out, full" });
         out.add(new String[] { css(ShipShapes.EMPTY), "Ship, empty leg" });
         out.add(new String[] { css(ShipShapes.BOXES), "Box ship, both ways" });
+        // The two kinds of ground the real Earth has and the map's colours alone would not name (0.7.127; spec-globe 3.9).
+        out.add(new String[] { css(TileRaster.GROUND[World.ICE]), LandMap.groundWords(World.ICE) });
+        out.add(new String[] { css(TileRaster.GROUND[World.DESERT]), LandMap.groundWords(World.DESERT) });
         out.add(new String[] { "#ffffff", "The city's edge" });
         out.add(new String[] { OFFER_EDGE, "On offer" });
         for (Resource r : Resource.values()) if (r.inFields()) out.add(new String[] { css(0xff000000 | r.colour()), r.label() });
         return out;
     }
 
-    /** Rows a column of the legend holds: 12, its 33 entries in three columns (since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
+    /** Rows a column of the legend holds: 12, its 35 entries in three columns (since 0.7.127 ice and the desert, 33 before; since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
     static final int LEGEND_ROWS = 12;
 
     /** The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). */

@@ -35,7 +35,10 @@ import java.util.Map;
  * plots counted one by one with World.tileTerrain(), as the map counts them:
  * the centre's when it is drawn, an offer's when it is listed (groundOf(),
  * every plot of its rectangle no holding owns). Nothing is sampled. Its
- * forest's timber is its forest's area x World.FOREST_M3_PER_KM2.
+ * forest's timber is its forest's area x World.FOREST_M3_PER_KM2. Since
+ * 0.7.127 (batch E7) the Earth's ground has two classes more, and the five
+ * areas stay five: the desert is dry ground and counts with the grass, and
+ * ice, never dry, counts in the whole area only (GridConversion.km2Of()).
  *
  * A FIELD GOES WHOLE WITH ITS CENTRE (spec-land star 12). Jerus, 2026-10-07:
  * "Yes whole iron fields as one offer, yes that means significant
@@ -63,10 +66,10 @@ public final class CityLand {
     /** The sides' names, in their order: LegacyLand's. */
     static final String[] SIDE_NAMES = LegacyLand.SIDE_NAMES;
 
-    /** Where a record keeps its whole area, in square kilometres. */
+    /** Where a record keeps its whole area, in square kilometres - its ice (0.7.127) counted here and nowhere else. */
     public static final int TOTAL = 0;
 
-    /** ...its dry ground: what buildings stand on, and what the city's square feet count. */
+    /** ...its dry ground: what buildings stand on, and what the city's square feet count (World.dry(): the desert's too, since 0.7.127). */
     public static final int DRY = 1;
 
     /** ...its fresh water: lakes and the founding river. */
@@ -323,8 +326,7 @@ public final class CityLand {
                 long px0 = tx * World.TILE, py0 = ty * World.TILE;
                 for (long y = Math.max(y0, py0); y < Math.min(y0 + b, py0 + World.TILE); y++) {
                     for (long x = Math.max(x0, px0); x < Math.min(x0 + b, px0 + World.TILE); x++) {
-                        byte c = t[(int) ((y - py0) * World.TILE + (x - px0))];
-                        if (c != World.SALT && c != World.FRESH) n++;
+                        if (World.dry(t[(int) ((y - py0) * World.TILE + (x - px0))])) n++;
                     }
                 }
             }
@@ -854,7 +856,7 @@ public final class CityLand {
         if (got != null) return got;
         byte[] t = new byte[World.TILE * World.TILE];
         world.tileTerrain(tx, ty, t);
-        long[] c = new long[5];
+        long[] c = new long[World.CLASSES];
         for (byte b : t) c[b]++;
         synchronized (TILE_COUNTS) { TILE_COUNTS.put(key, c); }
         return c;
@@ -865,9 +867,9 @@ public final class CityLand {
         return GridConversion.km2Of(unownedClasses(x0, y0, x1, y1));
     }
 
-    /** ...as plots by World's classes (GRASS, FOREST, FRESH, SALT, SAND). */
+    /** ...as plots by World's classes (GRASS, FOREST, FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT), World.CLASSES of them. */
     long[] unownedClasses(long x0, long y0, long x1, long y1) {
-        long[] cls = new long[5];
+        long[] cls = new long[World.CLASSES];
         x0 = Math.max(0, x0);
         y0 = Math.max(0, y0);
         x1 = Math.min(World.SIDE, x1);
@@ -883,11 +885,11 @@ public final class CityLand {
             long[][] byRow = new long[(int) rows][];
             java.util.stream.IntStream.range(0, (int) rows).parallel()
                     .forEach(j -> byRow[j] = rowClasses(world, ty0 + j, tx0, tx1, fx0, fy0, fx1, fy1));
-            for (long[] r : byRow) for (int c = 0; c < 5; c++) cls[c] += r[c];
+            for (long[] r : byRow) for (int c = 0; c < World.CLASSES; c++) cls[c] += r[c];
         } else {
             for (long ty = ty0; ty <= ty1; ty++) {
                 long[] r = rowClasses(world, ty, tx0, tx1, x0, y0, x1, y1);
-                for (int c = 0; c < 5; c++) cls[c] += r[c];
+                for (int c = 0; c < World.CLASSES; c++) cls[c] += r[c];
             }
         }
         return cls;
@@ -895,7 +897,7 @@ public final class CityLand {
 
     /** One row of tiles' unowned plots of the rectangle, by class. */
     private long[] rowClasses(World world, long ty, long tx0, long tx1, long x0, long y0, long x1, long y1) {
-        long[] cls = new long[5];
+        long[] cls = new long[World.CLASSES];
         byte[] t = null;
         boolean[] owned = null;
         int n = World.TILE;
@@ -906,7 +908,7 @@ public final class CityLand {
             boolean whole = px0 >= x0 && py0 >= y0 && px0 + n <= x1 && py0 + n <= y1;
             if (whole && cov == LandGrid.NONE) {
                 long[] c = tileCounts(world, tx, ty);
-                for (int k = 0; k < 5; k++) cls[k] += c[k];
+                for (int k = 0; k < World.CLASSES; k++) cls[k] += c[k];
                 continue;
             }
             if (t == null) {
