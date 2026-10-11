@@ -126,7 +126,8 @@ These are Jerus's, and they do not move.
                                    split at the month's trade); ProcessingSector and ExtractionSector (0.7.112,
                                    batch I2: the materials chains' two bases - a works built by SpreadPlanner,
                                    with captive use and idle-then-shed, and Mining's rule for a mine, Mining
-                                   moved onto it); Mining.java is the shape to copy
+                                   moved onto it); Mining.java is the shape to copy (on ExtractionSector
+                                   since 0.7.112; Materials.java is the shortest on Sector itself)
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
                                    the businesses' bonds (0.7.12): the market and each participant's rule, the
                                    bond, the limit-order book the bonds and (since round 2) the shares trade on
@@ -262,10 +263,11 @@ These are Jerus's, and they do not move.
                                    offers a side; an older save converted once, and since 0.7.99 the ground
                                    it brings holding the old world's fields; since 0.7.106 a new city's
                                    centre its rings and its founding lake's blocks, one water plant's fresh
-                                   water; since 0.7.115 a world's key, World.Key: the generated world a
-                                   seed makes, or the real Earth round a spot) - LandManager and LandMarket
-                                   sell it, WorldCheck and LandCheck hold it (the project's spec-land.md
-                                   and spec-grid.md)
+                                   water; since 0.7.110 each field of a type, Deposit.type() and
+                                   Resource.typesOf(); since 0.7.115 a world's key, World.Key: the
+                                   generated world a seed makes, or the real Earth round a spot) -
+                                   LandManager and LandMarket sell it, WorldCheck and LandCheck hold it
+                                   (the project's spec-land.md and spec-grid.md)
         EarthProj.java, EarthData.java, EarthTerrain.java
                                    the real Earth for "the world as planet Earth" (0.7.111, batch E1; the
                                    project's spec-earth.md): Lambert's azimuthal equal-area projection
@@ -283,8 +285,10 @@ These are Jerus's, and they do not move.
                                    the city's land: what it owns, what is built on and what it sells - the
                                    ore and oil its ground holds less what is taken out, since 0.7.93 the
                                    oil in two pools, the ground's and the sea's (THE TWO OIL POOLS), and
-                                   since 0.7.106 the land a new city is founded with (foundingLand()) - and
-                                   the land office's window, six offers a side; LandCheck holds them
+                                   since 0.7.106 the land a new city is founded with (foundingLand()),
+                                   since 0.7.107 the zones and the forest law (ZONES AND THE FOREST LAW)
+                                   and since 0.7.110 the ground by type (THE GROUND BY TYPE) - and the land
+                                   office's window, six offers a side; LandCheck holds them
         Zoning.java                zoning and the forest law (0.7.107, batch Z1): zones by sector, each a
                                    share of the dry ground or km2 at a share of the going price, and the
                                    law's two shares of the forest; LandManager's ZONES AND THE FOREST LAW
@@ -395,7 +399,10 @@ Conventions the code is written to, which the indexes rely on:
    the mechanic before the screen, because the screen is checked by eye.
 3. Build: NetBeans *Clean and Build*, or `mvn -q compile`. Run the suite:
    `java -cp "target/classes;%USERPROFILE%\.m2\repository\com\google\code\gson\gson\2.10.1\gson-2.10.1.jar" ham.citybuildersim.AllChecks -q`
-   (about nine minutes). `AllChecks money bank` runs two.
+   (about nine minutes). `AllChecks money bank` runs two. EarthCheck and
+   EarthTerrainCheck run their full-file sections only where earth-1.bin is
+   named (`-Dcbs.earth=<path>`, through `JDK_JAVA_OPTIONS` for the suite) or
+   lies at `data/earth-1.bin`, and say so in one line where it does not.
 4. `Regenerate maps.bat`. Commit the sources, `buildings.json` and `docs/`
    together; bump `GameVersion.VERSION` when the batch is player-visible.
 5. Write the batch up in the project - the why, while you still know it.
@@ -440,7 +447,9 @@ the original.
 
 - **A sector:** one class extending `Sector` in `sectors/`, one key constant
   and one line at the end of `Sectors.KEYS`; `sectors/Mining.java` is the
-  shortest. Add its buildings to `buildings.json` (`BuildingDataCheck`), a
+  shortest (a mine, on `ExtractionSector` since 0.7.112; a materials chain's
+  processing sector extends `ProcessingSector`, and `Materials.java` is the
+  shortest on `Sector` itself). Add its buildings to `buildings.json` (`BuildingDataCheck`), a
   `<Name>Check` modelled on `RestaurantsCheck` (sections numbered from the
   header's "what this has to prove" list), and its line in `AllChecks`.
 - **A saved field:** the field, `DataSave` out and in, `HistorySave` if it is

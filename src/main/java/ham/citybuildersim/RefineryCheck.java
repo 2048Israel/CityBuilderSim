@@ -98,10 +98,11 @@ import java.io.PrintStream;
  *      held - since 0.7.103 the cost of any unit in the refiners' till, the
  *      lube plant it ordered until then capped out (15), and since 0.7.112
  *      their planner on the rule to 0.7.111, under which that cash orders
- *      (11b) - orders the planner's best, a conversion unit; Game.consider()
- *      tests it on the planner's earnings; with no ground free it is refused
- *      at the ground and the land office hears of it; a crude unit's
- *      estimate is its share of its package's by cost.
+ *      (11b), and since 0.7.113 Game.consider() on the rule to 0.7.112 too
+ *      (Game.setOrderGate()) - orders the planner's best, a conversion unit;
+ *      Game.consider() tests it on the planner's earnings; with no ground
+ *      free it is refused at the ground and the land office hears of it; a
+ *      crude unit's estimate is its share of its package's by cost.
  *
  *  15. THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103, batch P4; Jerus's A9):
  *      the world takes a city's lubricants up to LUBRICANTS_WORLD_SHARE of

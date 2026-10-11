@@ -98,11 +98,13 @@ final class PolicyScreen {
        POLICY (0.7.36): THE FRAME
 
        The head ("Policy", or the breadcrumb "Policy › Taxes", "Policy" a
-       way back to the hub) with the four areas as chips at its right; the
-       area's pages as tabs under it; the four figures across every page -
-       TAX A MONTH, THE FLOOR, THE POLICY RATE, PROMISES - each a door; the
-       page, which alone scrolls (BankScreen's frame, 0.7.33); and on the
-       pages whose dials batch, the staged tray at the foot of the stage.
+       way back to the hub) with the areas as chips at its right (five since
+       0.7.109, Zoning's); the area's pages as tabs under it; the four
+       figures across every page - TAX A MONTH, THE FLOOR, THE POLICY RATE,
+       PROMISES, and on Zoning's pages zoning's own four (ZoningScreen) -
+       each a door; the page, which alone scrolls (BankScreen's frame,
+       0.7.33); and on the pages whose dials batch, the staged tray at the
+       foot of the stage.
        ===================================================================== */
 
     /** The four areas, by what kind of lever each is - Jerus picked the grouping - and since 0.7.109 (batch Z2) the fifth, the city's ground: Zoning (ZoningScreen draws it). */
@@ -331,8 +333,8 @@ final class PolicyScreen {
 
     /**
      * The head: "Policy" with the money blue's swatch, or the breadcrumb
-     * "Policy › Taxes" with "Policy" a way back to the hub; the four areas
-     * as chips at its right, the open one lit (the spec's D14: the
+     * "Policy › Taxes" with "Policy" a way back to the hub; the areas (five
+     * since 0.7.109) as chips at its right, the open one lit (the spec's D14: the
      * breadcrumb and the chips replace "All of policy").
      */
     HBox head() {
@@ -1002,7 +1004,7 @@ final class PolicyScreen {
        THE HUB (0.7.36; the landing's four rows until then)
 
        What has the city set, what does each part raise or cost, and is any
-       of it biting? Four AREA CARDS - Taxes, Wages, Money, Promises, and
+       of it biting? The AREA CARDS - Taxes, Wages, Money, Promises, and
        since 0.7.109 a fifth, Zoning (ZoningScreen.areaCard()) - each a
        door with its figure, a small picture, a line and a foot (on Taxes,
        the last tax decision); then WHAT IS BITING, a card a lever forcing

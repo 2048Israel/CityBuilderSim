@@ -186,6 +186,7 @@ public final class EarthTerrain {
        THE DATA A KEY NAMES
        ===================================================================== */
 
+    /** The readers use() has made available, by their identity: where source() looks for a key's data first. */
     private static final Map<String, EarthData> SOURCES = new HashMap<>();
 
     /** Makes a reader of Earth's data available to the worlds whose keys name it: returns its identity, the key's `data`. A harness's fixture, or the game's file. */
@@ -228,6 +229,7 @@ public final class EarthTerrain {
     private final EarthProj proj;
     /** Each field's octave streams: COAST, FRESH, FOREST, BLOB, octave k at [f][k]. */
     private final long[][] os = new long[4][NOISE_HI + 1];
+    /** Each noise field's row in os: the coast's, fresh water's, the forest's and the small lakes' blobs'. */
     private static final int COAST = 0, FRESH = 1, FOREST = 2, BLOB = 3;
 
     private volatile boolean built;
@@ -397,6 +399,7 @@ public final class EarthTerrain {
 
     /** One thread's working arrays and readers. */
     private static final class Scratch {
+        /** A tile with its ring of one plot each side, RING plots a side (RING_AREA in all); a tile alone, AREA plots. */
         static final int RING = World.TILE + 2, RING_AREA = RING * RING, AREA = World.TILE * World.TILE;
         final double[] coast = new double[RING_AREA], fresh = new double[AREA], forest = new double[AREA], blob = new double[AREA];
         final double[] lat = new double[19 * 19];
@@ -418,6 +421,7 @@ public final class EarthTerrain {
         }
     }
 
+    /** Each thread's own working arrays and readers, so tiles drawn on several threads at once share none. */
     private static final ThreadLocal<Scratch> SCRATCH = ThreadLocal.withInitial(Scratch::new);
 
     private Scratch scratch() {
@@ -764,6 +768,7 @@ public final class EarthTerrain {
         }
     }
 
+    /** A district's water where it lies off the world or off the planet: no river and no small lake. */
     private static final Water NO_WATER = new Water();
 
     private final Map<Integer, Water> dataTiles = new LinkedHashMap<>(64, 0.75f, true) {

@@ -1,6 +1,6 @@
 # MapCheck.java - 3,124 lines · 85 methods · 34 constants · harnesses
 
-`ham/citybuildersim/MapCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MapCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's street plan and paints the same pixels from the same inputs, the drawn raster itself is one street network with + junctions apart and every building within reach, the sidecar comes back byte for byte, and a screen costs what the screen holds, never what the city does - at Jerus's size and at five and ten billion people.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [CityMap](CityMap.md) (172), [World](World.md) (113), [TilePainter](TilePainter.md) (90), [MapFrame](MapFrame.md) (75), [BuildingVisual](BuildingVisual.md) (62), [Game](Game.md) (37), [MapTiles](MapTiles.md) (30), [LandMap](LandMap.md) (30), [LongPlaytest](LongPlaytest.md) (29), [CityRuns](CityRuns.md) (27), [BoatSchedule](BoatSchedule.md) (25), [DistrictPlan](DistrictPlan.md) (22), [Resource](Resource.md) (20), [CityShore](CityShore.md) (18), [SeaRoutes](SeaRoutes.md) (17), [TileRaster](TileRaster.md) (16), [LandParcel](LandParcel.md) (16), [Ports](Ports.md) (13), [GameFiles](GameFiles.md) (12), [CityLand](CityLand.md) (12), [WellCheck](WellCheck.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (5), [Deposit](Deposit.md) (3), [Good](Good.md) (3), [MiningCheck](MiningCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [LandMarket](LandMarket.md) (2), [GridOffers](GridOffers.md) (2), [LandGrid](LandGrid.md) (2), [LandManager](LandManager.md) (1)... and 5 more
 
-**Used by (1):** [PlanCheck](PlanCheck.md)
+**Used by (2):** [EarthTerrainCheck](EarthTerrainCheck.md), [PlanCheck](PlanCheck.md)
 
 ## Sections
 

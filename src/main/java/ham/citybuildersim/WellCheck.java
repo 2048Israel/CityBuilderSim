@@ -69,7 +69,9 @@ import java.util.List;
  *
  *  12. THE PLANNER WEIGHS THE THREE KINDS AT SEA after the land well: a
  *      platform's jacket as a package with its wells, by the interest test; a
- *      platform well into a free slot; and once the oil is worked out the
+ *      platform well into a free slot - since 0.7.113 each, and the land well
+ *      before them, asked the interest on its whole cost
+ *      (Game.carriesItsWholeCost()); and once the oil is worked out the
  *      empty jackets and the pipes are decommissioned.
  *
  *  13. THE CITY'S CRUDE IS TWO POOLS (0.7.93; Jerus: "two pools, offshore

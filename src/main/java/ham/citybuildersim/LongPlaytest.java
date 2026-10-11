@@ -2362,7 +2362,8 @@ public class LongPlaytest {
      * Jerus's decision A), and -Dplaytest.moneyGate=borrowing has it test
      * what the order borrows, the rule to 0.7.111 (ON_ITS_BORROWING);
      * "whole", the counterfactual until then, is the rule in force. Unset, a
-     * no-op.
+     * no-op. The refiners' planner alone: Game.consider()'s rule since
+     * 0.7.113 (Game.orderGate()) is not switched by it.
      */
     static final String MONEY_GATE = System.getProperty("playtest.moneyGate", "").trim();
 

@@ -65,19 +65,20 @@ import java.util.zip.Inflater;
  * save will carry (spec-earth 6: the data is frozen per version, and E4
  * refuses a city on another); EARTH_1 is the file this build is made for.
  *
- * E1 (0.7.111) builds it pure: nothing in the game reads it yet; E2 lays the
- * Earth's ground on the world from it. EarthCheck holds it, on a fixture of
- * the file and, when it is named, on the file itself.
+ * E1 (0.7.111) built it pure; since 0.7.115 (batch E2) EarthTerrain lays
+ * the Earth's ground on a world with an Earth key from it (World.Key's data
+ * is its identity) - a key only harnesses make until E4. EarthCheck holds it,
+ * on a fixture of the file and, when it is named, on the file itself.
  */
 public final class EarthData implements AutoCloseable {
 
     /** The file this build reads, as a save will name it: earth-1 as E0 baked it on 2026-10-08 (tools/earth/earth-1.sha256). */
     public static final String EARTH_1 = "earth-1:b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a";
 
-    /** Where the game will look for the file, from the folder it runs in; E2 and E4 settle how it ships (it is not in the repository), and until then only EarthCheck looks. */
+    /** Where the game will look for the file, from the folder it runs in; E4 settles how it ships (it is not in the repository), and until then EarthCheck, EarthTerrainCheck and EarthTerrain.source() (for a key whose data nothing registered) look here. */
     public static final String DATA_FILE = "data/earth-1.bin";
 
-    /** The system property that names the file instead (-Dcbs.earth=<path>), as EarthCheck's runs on the full file take it. */
+    /** The system property that names the file instead (-Dcbs.earth=<path>), as EarthCheck's and EarthTerrainCheck's runs on the full file take it. */
     public static final String PROPERTY = "cbs.earth";
 
     /** The bytes the first eight of the file are. */
@@ -108,9 +109,9 @@ public final class EarthData implements AutoCloseable {
     public static final int LC_FOREST = 0x0F;
     /** Land cover's bit for bare ground at 2% of the land or more (the beach rule). */
     public static final int LC_BEACH = 0x10;
-    /** Land cover's bit for bare ground at half the land or more (the desert warning). */
+    /** Land cover's bit for bare ground at half the land or more (the desert warning, E4's founding's; nothing reads it yet). */
     public static final int LC_DESERT = 0x20;
-    /** Land cover's bit for snow and ice at half the land or more (the founding refuses it). */
+    /** Land cover's bit for snow and ice at half the land or more (what E4's founding is to refuse; nothing reads it yet). */
     public static final int LC_ICE = 0x40;
     /** Land cover's bit for land WorldCover has no data on (south of 60 S, and GEBCO-only land). */
     public static final int LC_NO_DATA = 0x80;
@@ -248,7 +249,7 @@ public final class EarthData implements AutoCloseable {
         return new EarthData(s, cacheBytes);
     }
 
-    /** Where EarthCheck and, later, the game find the file: the PROPERTY if it is set, else DATA_FILE if it is there; null if neither. */
+    /** Where EarthCheck, EarthTerrainCheck and EarthTerrain find the file: the PROPERTY if it is set, else DATA_FILE if it is there; null if neither. */
     public static Path locate() {
         String named = System.getProperty(PROPERTY);
         if (named != null && !named.isBlank()) return Path.of(named);

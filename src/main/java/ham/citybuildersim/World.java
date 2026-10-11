@@ -96,7 +96,7 @@ public final class World {
     /** Open ground: dry and buildable. */
     public static final byte GRASS = 0;
 
-    /** Forest: dry and buildable, and standing timber (Resource.FOREST). */
+    /** Forest: dry and buildable - a building on it clears it, and the forest law may keep it from building (LandManager, ZONES AND THE FOREST LAW, 0.7.107) - and standing timber (Resource.FOREST). */
     public static final byte FOREST = 1;
 
     /** Fresh water: a lake, or the founding river. */

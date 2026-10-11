@@ -60,7 +60,9 @@ import java.util.function.ToDoubleFunction;
  *      with it - whatever the sector holds (ON_ITS_WHOLE_COST). To 0.7.111
  *      the rule was the game's own test on what the order would borrow
  *      (ON_ITS_BORROWING), which asked nothing of an order the sector's
- *      cash paid; it stays, named, for the counterfactual.
+ *      cash paid; it stays, named, for the counterfactual. Since 0.7.113
+ *      (batch I2b) Game.consider() asks every order the same, through the
+ *      same piece (Game.orderGate()).
  *   5. THE ORDER (best()): the best earnings on cost of those that pass; the
  *      client holds to one order in flight (MAX_CONCURRENT_ORDERS) first.
  *   6. IDLE, THEN SHED (noteMonth(), idleMonths(), mayShed()): the months
@@ -410,7 +412,7 @@ public final class SpreadPlanner {
         String words();
     }
 
-    /** THE RULE TO 0.7.111, KEPT AS A NAMED HISTORY: on what the order would borrow, its cost less the sector's cash - Game.consider()'s own test, which asks nothing of an order the till pays; for the counterfactual (LongPlaytest's -Dplaytest.moneyGate, the probes). */
+    /** THE RULE TO 0.7.111, KEPT AS A NAMED HISTORY: on what the order would borrow, its cost less the sector's cash - Game.consider()'s own test until 0.7.113, which asked nothing of an order the till paid; for the counterfactual (LongPlaytest's -Dplaytest.moneyGate=borrowing, Game.setOrderGate(), the probes). */
     public static final MoneyGate ON_ITS_BORROWING = new MoneyGate() {
         @Override public double testedOn(double cost, double cash) { return Math.max(0, cost - Math.max(0, cash)); }
         @Override public String words() { return "1.25 times the interest on what it would borrow"; }

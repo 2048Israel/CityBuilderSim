@@ -3492,7 +3492,7 @@ final class SectorScreen {
         } else {
             out.add(new String[] {String.format("earns %.2f× its interest", BusinessInvestment.PROFIT_OVER_INTEREST),
                     String.format("At %.2f%%: this sector's own rate of %.2f%% less the inflation people expect, never "
-                            + "under %.0f%% of it, on whatever it has to borrow after its cash is spent. A plan that fails "
+                            + "under %.0f%% of it, on its whole cost, whether its cash or a loan pays. A plan that fails "
                             + "this is trimmed down until it passes, and dropped if even one unit cannot carry it.",
                             plans.realTestRate(now.rate()) * 100, now.rate() * 100,
                             BusinessInvestment.REAL_HURDLE_FLOOR * 100)});

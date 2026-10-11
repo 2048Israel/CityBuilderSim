@@ -1,6 +1,6 @@
-# TimeChart.java - 1,554 lines · 85 methods · 20 constants · interface
+# TimeChart.java - 1,560 lines · 85 methods · 20 constants · interface
 
-`ham/citybuildersim/ui/TimeChart.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/TimeChart.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > A chart of months (0.7.23): lines over a window the player drags, wheels
 > and ranges through, years on its axis, recessions named on their bands,
@@ -27,7 +27,7 @@
 > DecisionLog's; each line's values the screen's, in its stored units, with
 > the screen's own formatter to read them. This draws and listens.
 
-**Uses:** [Palette](Palette.md) (93), [ChartModel](ChartModel.md) (72), [YearBook](YearBook.md) (35), [CityCalendar](CityCalendar.md) (18), [DecisionLog](DecisionLog.md) (4), [HistoryScreen](HistoryScreen.md) (2), [UserInterface](UserInterface.md) (1), [GameLog](GameLog.md) (1)
+**Uses:** [Palette](Palette.md) (94), [ChartModel](ChartModel.md) (72), [YearBook](YearBook.md) (35), [CityCalendar](CityCalendar.md) (18), [DecisionLog](DecisionLog.md) (5), [HistoryScreen](HistoryScreen.md) (2), [UserInterface](UserInterface.md) (1), [GameLog](GameLog.md) (1)
 
 **Used by (9):** [BankScreen](BankScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
@@ -45,10 +45,10 @@
 | 495 | THE GEOMETRY |
 | 545 | THE SCALES, FIT TO WHAT IS SHOWN |
 | 614 | DRAWING |
-| 1075 | · the overview |
-| 1174 | WHAT IS UNDER THE POINTER, AND THE CARD |
-| 1395 | LISTENING: THE DRAG, THE WHEEL, THE CLICK, THE OVERVIEW |
-| 1527 | · small helpers |
+| 1081 | · the overview |
+| 1180 | WHAT IS UNDER THE POINTER, AND THE CARD |
+| 1401 | LISTENING: THE DRAG, THE WHEEL, THE CLICK, THE OVERVIEW |
+| 1533 | · small helpers |
 
 ## Constants
 
@@ -72,8 +72,8 @@
 | 110 | `TimeChart.WHEEL_OWNER` | `"TimeChart.wheel"` | Which node owns the wheel: the window's page-scroll filter leaves a wheel over this alone (UserInterface). |
 | 113 | `TimeChart.OVERHANG` | `2000` | How far above and below its own box the chart's clip reaches (0.7.40): it cuts the sides only. |
 | 782 | `TimeChart.MARK_REACH` | `5` | How near a mark the pointer must be, in pixels, for the card to say it (0.7.45). |
-| 1358 | `TimeChart.CARD_DECISIONS` | `10` | At most this many decisions are listed on a flag's card; the rest are counted. |
-| 1530 | `TimeChart.MEASURE` | `new javafx.scene.text.Text()` | One Text node, reused to measure a string's width in a font (textWidth()). |
+| 1364 | `TimeChart.CARD_DECISIONS` | `10` | At most this many decisions are listed on a flag's card; the rest are counted. |
+| 1536 | `TimeChart.MEASURE` | `new javafx.scene.text.Text()` | One Text node, reused to measure a string's width in a font (textWidth()). |
 
 ## Fields (state)
 
@@ -124,7 +124,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1495 | **type** `final class TimeChart extends VBox` | A chart of months (0.7.23): lines over a window the player drags, wheels and ranges through, years on its axis, recessions named on their bands, the episodes on a lane under it, the player's decisions as flags, a cros... |
+| 60 | 1501 | **type** `final class TimeChart extends VBox` | A chart of months (0.7.23): lines over a window the player drags, wheels and ranges through, years on its axis, recessions named on their bands, the episodes on a lane under it, the player's decisions as flags, a cros... |
 
 ### the dials (lines 62-114)
 
@@ -206,7 +206,7 @@
 | 572 | 36 | `private ChartModel.Scale[] scales(double[][] own)` | The two axes' scales for the window: {left, right}; null for a side with nothing on it. |
 | 610 | 3 | `private double[] stackReach()` | What the stack's first three layers reach in the window, summed from zero (ChartModel.stackReach()). |
 
-### DRAWING (lines 614-1074)
+### DRAWING (lines 614-1080)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -226,52 +226,52 @@
 | 925 | 20 | `private void drawTime(GraphicsContext g, List<ChartModel.Tick> ticks, double bottom)` |  |
 | 952 | 3 | `public static String episodeColour(String kind)` | An episode's colour: a crisis or a depression is bad news, the rest are a watch - verdicts, which is what these are. |
 | 956 | 33 | `private void drawEpisodes(GraphicsContext g)` |  |
-| 991 | 7 | `static String flagColour(String kind)` | A flag's colour: the area its decision is about - money blue, people teal, building pink. |
-| 999 | 3 | `private List<ChartModel.Cluster> clusters()` |  |
-| 1003 | 47 | `private void drawFlags(GraphicsContext g)` |  |
-| 1051 | 23 | `private void drawCrosshair(GraphicsContext g, ChartModel.Scale[] scale, double[][] own, double bottom)` |  |
+| 996 | 8 | `static String flagColour(String kind)` | A flag's colour: the area its decision is about - money blue, people teal, building pink - and since 0.7.109 (batch Z2) zoning's in the ground's sand (Palette.ORE, the land office's colour for what the ground holds), ... |
+| 1005 | 3 | `private List<ChartModel.Cluster> clusters()` |  |
+| 1009 | 47 | `private void drawFlags(GraphicsContext g)` |  |
+| 1057 | 23 | `private void drawCrosshair(GraphicsContext g, ChartModel.Scale[] scale, double[][] own, double bottom)` |  |
 
-### the overview (lines 1075-1173)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1077 | 3 | `private double stripX(double month)` |  |
-| 1081 | 3 | `private double stripMonth(double x)` |  |
-| 1085 | 88 | `private void drawStrip()` |  |
-
-### WHAT IS UNDER THE POINTER, AND THE CARD (lines 1174-1394)
+### the overview (lines 1081-1179)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1178 | 3 | `private boolean inPlot(double x, double y)` |  |
-| 1183 | 1 | `private Object hovered()` | The band, the episode or the flag under the pointer, or null. |
-| 1185 | 33 | `private Object itemAt(double x, double y)` |  |
-| 1220 | 34 | `private void fillCard(ChartModel.Scale[] scale, double[][] own)` | Fills the card for what is pinned, or else what is under the pointer; hides it when there is nothing. |
-| 1255 | 7 | `private static Label caption(String text, String colour)` |  |
-| 1263 | 7 | `private static Label head(String text)` |  |
-| 1271 | 19 | `private static HBox row(String colour, String name, String value)` |  |
-| 1292 | 1 | `void setYearly(int years)` | The folded years at the front of the months this chart is handed (0.7.55; HistorySave.yearlyPoints()). |
-| 1294 | 33 | `private void crosshairCard(YearBook.Band in)` |  |
-| 1328 | 17 | `private void bandCard(YearBook.Band b)` |  |
-| 1346 | 10 | `private void episodeCard(YearBook.Episode e)` |  |
-| 1360 | 32 | `private void flagCard(ChartModel.Cluster c)` |  |
-| 1393 | 1 | `private static String months(int n)` |  |
+| 1083 | 3 | `private double stripX(double month)` |  |
+| 1087 | 3 | `private double stripMonth(double x)` |  |
+| 1091 | 88 | `private void drawStrip()` |  |
 
-### LISTENING: THE DRAG, THE WHEEL, THE CLICK, THE OVERVIEW (lines 1395-1526)
+### WHAT IS UNDER THE POINTER, AND THE CARD (lines 1180-1400)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1399 | 56 | `private void listen()` |  |
-| 1456 | 13 | `private void wheel(ScrollEvent e)` |  |
-| 1470 | 43 | `private void listenToStrip()` |  |
-| 1515 | 5 | `private void moved(boolean settled)` | The window moved: this chart, the charts that follow it, and - once it rests - the page. |
-| 1522 | 4 | `void unpin()` | Drops a pinned card: going into full screen and coming out of it, Esc's way out included (HistoryScreen.setChartFull()). |
+| 1184 | 3 | `private boolean inPlot(double x, double y)` |  |
+| 1189 | 1 | `private Object hovered()` | The band, the episode or the flag under the pointer, or null. |
+| 1191 | 33 | `private Object itemAt(double x, double y)` |  |
+| 1226 | 34 | `private void fillCard(ChartModel.Scale[] scale, double[][] own)` | Fills the card for what is pinned, or else what is under the pointer; hides it when there is nothing. |
+| 1261 | 7 | `private static Label caption(String text, String colour)` |  |
+| 1269 | 7 | `private static Label head(String text)` |  |
+| 1277 | 19 | `private static HBox row(String colour, String name, String value)` |  |
+| 1298 | 1 | `void setYearly(int years)` | The folded years at the front of the months this chart is handed (0.7.55; HistorySave.yearlyPoints()). |
+| 1300 | 33 | `private void crosshairCard(YearBook.Band in)` |  |
+| 1334 | 17 | `private void bandCard(YearBook.Band b)` |  |
+| 1352 | 10 | `private void episodeCard(YearBook.Episode e)` |  |
+| 1366 | 32 | `private void flagCard(ChartModel.Cluster c)` |  |
+| 1399 | 1 | `private static String months(int n)` |  |
 
-### small helpers (lines 1527-1554)
+### LISTENING: THE DRAG, THE WHEEL, THE CLICK, THE OVERVIEW (lines 1401-1532)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1532 | 5 | `static double textWidth(String s, Font f)` |  |
-| 1539 | 9 | `static String fit(String text, double room, Font f)` | The text, cut with an ellipsis to fit `room` pixels; empty when not even a few letters fit. |
-| 1549 | 5 | `private static String trim(double v)` |  |
+| 1405 | 56 | `private void listen()` |  |
+| 1462 | 13 | `private void wheel(ScrollEvent e)` |  |
+| 1476 | 43 | `private void listenToStrip()` |  |
+| 1521 | 5 | `private void moved(boolean settled)` | The window moved: this chart, the charts that follow it, and - once it rests - the page. |
+| 1528 | 4 | `void unpin()` | Drops a pinned card: going into full screen and coming out of it, Esc's way out included (HistoryScreen.setChartFull()). |
+
+### small helpers (lines 1533-1560)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1538 | 5 | `static double textWidth(String s, Font f)` |  |
+| 1545 | 9 | `static String fit(String text, double room, Font f)` | The text, cut with an ellipsis to fit `room` pixels; empty when not even a few letters fit. |
+| 1555 | 5 | `private static String trim(double v)` |  |
 

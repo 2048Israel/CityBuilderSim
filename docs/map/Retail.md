@@ -1,6 +1,6 @@
-# Retail.java - 1,351 lines · 102 methods · 16 constants · sectors
+# Retail.java - 1,352 lines · 102 methods · 16 constants · sectors
 
-`ham/citybuildersim/sectors/Retail.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Retail.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The shops. Buy food on the food market, keep it on a shelf, sell it to the
 > households as groceries at a price they strike themselves.
@@ -56,9 +56,9 @@
 | 280 | · the sale, read for the screens (0.7.45) |
 | 447 | THE SALE, at the bottom of the month |
 | 675 | PLANNING - baskets wanted against baskets the shops can hand over |
-| 819 | THE FORECOURTS (0.7.83, batch O6; runs/research-pump.md; the brief's |
-| 1109 | THE SCREEN |
-| 1225 | SAVE, RESET, THE REFORM |
+| 820 | THE FORECOURTS (0.7.83, batch O6; runs/research-pump.md; the brief's |
+| 1110 | THE SCREEN |
+| 1226 | SAVE, RESET, THE REFORM |
 
 ## Constants
 
@@ -76,10 +76,10 @@
 | 105 | `Retail.CLEARING_STEPS` | `50` | Halvings (in logs) of that band the search takes: fifty, far finer than a cent's grain. |
 | 121 | `Retail.SUPPLIER_CREDIT_MONTHS` | `1` | How much the shops' suppliers will wait for, in months of the stock for the sale the shops expect, at what it costs to bring in: one - a month's terms, repaid at the next strike out of the sale the stock went to. |
 | 179 | `Retail.SHELF` | `{ Good.GRAINS, Good.BREAD, Good.DAIRY_EGGS, Good.VEGETABLES, Good.FRUIT, Good...` |  |
-| 878 | `Retail.PUMP_MARGIN` | `.12` | What a station adds to the wholesale price it paid a litre, before the sales tax: twelve per cent (runs/research-pump.md 7: Canada's 10.4 c/L in 2025, about 10% of the wholesale ex tax [6]; the US 35-43 c/gal, 16-19% ... |
-| 886 | `Retail.QUEUE_MARGIN` | `.18` | ...and on the litres past what the stations can sell: eighteen per cent, the top of the research's range - a rural or post-spike forecourt's (runs/research-pump.md 2, 7). |
-| 969 | `Retail.FuelSale.NONE` | `new FuelSale(0, 0, 0, 0, 0, 0)` | No sale: no litres asked, or no market or city to sell through. |
-| 1276 | `Retail.SUPPLIER_CREDIT_KEY` | `"supplierCredit."` | The prefix the suppliers' credit is saved under among the extras. |
+| 879 | `Retail.PUMP_MARGIN` | `.12` | What a station adds to the wholesale price it paid a litre, before the sales tax: twelve per cent (runs/research-pump.md 7: Canada's 10.4 c/L in 2025, about 10% of the wholesale ex tax [6]; the US 35-43 c/gal, 16-19% ... |
+| 887 | `Retail.QUEUE_MARGIN` | `.18` | ...and on the litres past what the stations can sell: eighteen per cent, the top of the research's range - a rural or post-spike forecourt's (runs/research-pump.md 2, 7). |
+| 970 | `Retail.FuelSale.NONE` | `new FuelSale(0, 0, 0, 0, 0, 0)` | No sale: no litres asked, or no market or city to sell through. |
+| 1277 | `Retail.SUPPLIER_CREDIT_KEY` | `"supplierCredit."` | The prefix the suppliers' credit is saved under among the extras. |
 
 ## Fields (state)
 
@@ -102,13 +102,13 @@
 | 160 | `private long rProductsSold` |  |
 | 192 | `private final Map<Good, Double> basket` | Kilograms of each good in one person-month, set by Game from Consumption. |
 | 383 | `private double rHouseholdWant` |  |
-| 889 | `private double rPumpLitres, rQueueLitres, rPumpCapacity, rPumpPrice` | The month's forecourts, struck at the sale (sellFuel()) and saved for the screens and the planner: the litres sold at the pump and past the stations, what the stations could sell, the prices (the sign's, the fuel duty... |
+| 890 | `private double rPumpLitres, rQueueLitres, rPumpCapacity, rPumpPrice` | The month's forecourts, struck at the sale (sellFuel()) and saved for the screens and the planner: the litres sold at the pump and past the stations, what the stations could sell, the prices (the sign's, the fuel duty... |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 1294 | **type** `public final class Retail extends Sector` | The shops. |
+| 58 | 1295 | **type** `public final class Retail extends Sector` | The shops. |
 
 ### the price that clears (0.7.43) (lines 69-106)
 
@@ -195,65 +195,65 @@
 | 646 | 14 | `public void repriceShelf(double blendedCost, double clearing)` | ...told the clearing price, rather than reading the last sale's: the rule alone, for a harness that causes a clearing price without a city. |
 | 669 | 5 | `public static double stickyPrice(double price, double target, double expectedMonthly, double speed)` | ONE FORM FOR EVERY SELLER (0.7.43, spec-inflation.md 2.7): a price that keeps last month's level grown at expected inflation, and moves a share `speed` of the way to its target in logs. |
 
-### PLANNING - baskets wanted against baskets the shops can hand over (lines 675-818)
+### PLANNING - baskets wanted against baskets the shops can hand over (lines 675-819)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 696 | 63 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | THE SUPPLY ANSWER TO A SHORTAGE (0.7.43; spec-inflation.md 4.3). |
 | 761 | 4 | `private double handOverRate()` | The operating rate a new shop is planned at: the sector's own, or full with none yet (see the note above plan()). |
-| 786 | 5 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What a store would clear a month: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then), less its staff at today's wages (0.7.106) - and a Fil... |
-| 794 | 3 | `public boolean mayRetire(BuildingsTemplate t)` | A Filling Station is not sold by the shops' rules (0.7.83, star O6): it serves the drivers' litres, not the baskets they measure. |
-| 808 | 4 | `public double[] retirementDemandAndCapacity(Game game)` | ...AND SELLS SHOPS BY THE SAME MEASURE (0.7.43): the baskets wanted at the floor against the baskets the shops can hand over, each shop its coverage times the operating rate - the planner's own. |
-| 815 | 3 | `public double unitsOf(BuildingsTemplate t)` | A shop's worth of what retirement counts: the baskets it can hand over (0.7.43; its coverage until then). |
+| 787 | 5 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What a store would clear a month: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then), less its staff at today's wages (0.7.106) - and a Fil... |
+| 795 | 3 | `public boolean mayRetire(BuildingsTemplate t)` | A Filling Station is not sold by the shops' rules (0.7.83, star O6): it serves the drivers' litres, not the baskets they measure. |
+| 809 | 4 | `public double[] retirementDemandAndCapacity(Game game)` | ...AND SELLS SHOPS BY THE SAME MEASURE (0.7.43): the baskets wanted at the floor against the baskets the shops can hand over, each shop its coverage times the operating rate - the planner's own. |
+| 816 | 3 | `public double unitsOf(BuildingsTemplate t)` | A shop's worth of what retirement counts: the baskets it can hand over (0.7.43; its coverage until then). |
 
-### THE FORECOURTS (0.7.83, batch O6; runs/research-pump.md; the brief's (lines 819-1108)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 893 | 3 | `public static boolean isStation(BuildingsTemplate t)` | Whether a building is a Filling Station: it sells litres at the pump. |
-| 898 | 3 | `public int stationsStanding()` | Filling Stations standing. |
-| 903 | 3 | `public int stationsOnSite()` | ...and on site. |
-| 908 | 3 | `public double stationLitres()` | Litres a month the standing stations sell at their typical throughput, at nameplate. |
-| 913 | 4 | `public double stationCapacity()` | ...and at the operating rate: what the forecourts can sell this month. |
-| 919 | 3 | `public static double pumpPrice(double wholesale, double salesRate)` | The pump price of a litre bought at `wholesale`, with the sales tax at `salesRate` passed on: wholesale x (1 + PUMP_MARGIN) / (1 - rate). |
-| 924 | 3 | `public static double queuePrice(double wholesale, double salesRate)` | ...and past the stations' capacity: QUEUE_MARGIN in place of PUMP_MARGIN. |
-| 929 | 3 | `public static double pumpPrice(double wholesale, double salesRate, double duty)` | The price on the sign with the city's fuel duty a litre on top (0.7.103): pumpPrice() + the duty, the price rising by exactly it. |
-| 934 | 3 | `public static double queuePrice(double wholesale, double salesRate, double duty)` | ...and past the stations' capacity. |
-| 939 | 4 | `private static double dutyIn(Game game)` | The fuel duty a litre the city charges today (TaxPolicy.chargedFuelDuty()); nothing without a city. |
-| 944 | 3 | `private static double clampRate(double r)` |  |
-| 949 | 3 | `private double salesRate(Game game)` | Retail's own sales tax rate in a city, nothing without one. |
-| 960 | 5 | `public double pumpPriceToday(Game game)` | What a litre costs the drivers at the pump today, before any is drawn (Motoring.journeyFuel(): what the owners weigh a ride against): what a litre of petrol costs to bring in (GoodsMarket.landedPrice() - the refiners'... |
-| 967 | 4 | **type** `public record FuelSale(double litres, double queued, double wholesale, double imported, double bill, double...` | A month's sale at the pump (sellFuel()): the litres, those sold past the stations, the wholesale bill and its imported part, what the households paid, and of that the fuel duty, the treasury's (0.7.103). |
-| 983 | 32 | `public FuelSale sellFuel(double litres, Game game)` | The drivers' month at the pump (0.7.83): `litres` drawn at wholesale on Retail's books, the refiners' tanks first (Markets.draw()), and sold to the households - what the stations can sell at the pump price, the rest a... |
-| 1017 | 1 | `public double getPumpLitres()` | The month's litres sold at the pump price, and past the stations at the queue's. |
-| 1018 | 1 | `public double getQueueLitres()` |  |
-| 1021 | 1 | `public double getPumpCapacity()` | ...what the stations could sell this month, at the operating rate. |
-| 1024 | 1 | `public double getPumpPrice()` | ...the two prices a litre on the sign (the fuel duty in them since 0.7.103), and the wholesale Retail paid a litre: NaN before a month's sale. |
-| 1025 | 1 | `public double getQueuePrice()` |  |
-| 1026 | 1 | `public double getWholesaleLitre()` |  |
-| 1029 | 1 | `public double getFuelBill()` | ...what the households paid for their petrol, the duty in it, and what of the wholesale bill Retail paid the world. |
-| 1030 | 1 | `public double getFuelImported()` |  |
-| 1033 | 1 | `public double getFuelDuty()` | ...and the fuel duty the drivers paid on their litres this month, the treasury's (0.7.103; EconomyManager.getFuelDuty()). |
-| 1045 | 8 | `public double stationEarns(BuildingsTemplate t, BusinessInvestment plans)` | A station's earnings a month, for the interest test (0.7.83): the litres it would sell - its typical throughput at the operating rate (handOverRate(), full with no rate yet), or the forecast's litres the stations stan... |
-| 1060 | 8 | `public double litresForecast(BuildingsTemplate station, BusinessInvestment plans)` | The drivers' litres a month the planner sees ahead (0.7.83): last month's at the pump and past it, grown as the shops' baskets are - as the people are, over a station's lead time and the planning horizon, to what the ... |
-| 1079 | 29 | `public BusinessInvestment.Decision planStations(BusinessInvestment plans, Game game)` | Retail's other question each month (0.7.83): a Filling Station when the drivers' litres outrun what its stations can sell. |
-
-### THE SCREEN (lines 1109-1224)
+### THE FORECOURTS (0.7.83, batch O6; runs/research-pump.md; the brief's (lines 820-1109)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1115 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin on the stock it sells. |
-| 1118 | 1 | `public String inputLabel()` |  |
-| 1121 | 1 | `public boolean hasPlantBlock()` |  |
-| 1124 | 100 | `public List<Line> ownLines(Game game)` |  |
+| 894 | 3 | `public static boolean isStation(BuildingsTemplate t)` | Whether a building is a Filling Station: it sells litres at the pump. |
+| 899 | 3 | `public int stationsStanding()` | Filling Stations standing. |
+| 904 | 3 | `public int stationsOnSite()` | ...and on site. |
+| 909 | 3 | `public double stationLitres()` | Litres a month the standing stations sell at their typical throughput, at nameplate. |
+| 914 | 4 | `public double stationCapacity()` | ...and at the operating rate: what the forecourts can sell this month. |
+| 920 | 3 | `public static double pumpPrice(double wholesale, double salesRate)` | The pump price of a litre bought at `wholesale`, with the sales tax at `salesRate` passed on: wholesale x (1 + PUMP_MARGIN) / (1 - rate). |
+| 925 | 3 | `public static double queuePrice(double wholesale, double salesRate)` | ...and past the stations' capacity: QUEUE_MARGIN in place of PUMP_MARGIN. |
+| 930 | 3 | `public static double pumpPrice(double wholesale, double salesRate, double duty)` | The price on the sign with the city's fuel duty a litre on top (0.7.103): pumpPrice() + the duty, the price rising by exactly it. |
+| 935 | 3 | `public static double queuePrice(double wholesale, double salesRate, double duty)` | ...and past the stations' capacity. |
+| 940 | 4 | `private static double dutyIn(Game game)` | The fuel duty a litre the city charges today (TaxPolicy.chargedFuelDuty()); nothing without a city. |
+| 945 | 3 | `private static double clampRate(double r)` |  |
+| 950 | 3 | `private double salesRate(Game game)` | Retail's own sales tax rate in a city, nothing without one. |
+| 961 | 5 | `public double pumpPriceToday(Game game)` | What a litre costs the drivers at the pump today, before any is drawn (Motoring.journeyFuel(): what the owners weigh a ride against): what a litre of petrol costs to bring in (GoodsMarket.landedPrice() - the refiners'... |
+| 968 | 4 | **type** `public record FuelSale(double litres, double queued, double wholesale, double imported, double bill, double...` | A month's sale at the pump (sellFuel()): the litres, those sold past the stations, the wholesale bill and its imported part, what the households paid, and of that the fuel duty, the treasury's (0.7.103). |
+| 984 | 32 | `public FuelSale sellFuel(double litres, Game game)` | The drivers' month at the pump (0.7.83): `litres` drawn at wholesale on Retail's books, the refiners' tanks first (Markets.draw()), and sold to the households - what the stations can sell at the pump price, the rest a... |
+| 1018 | 1 | `public double getPumpLitres()` | The month's litres sold at the pump price, and past the stations at the queue's. |
+| 1019 | 1 | `public double getQueueLitres()` |  |
+| 1022 | 1 | `public double getPumpCapacity()` | ...what the stations could sell this month, at the operating rate. |
+| 1025 | 1 | `public double getPumpPrice()` | ...the two prices a litre on the sign (the fuel duty in them since 0.7.103), and the wholesale Retail paid a litre: NaN before a month's sale. |
+| 1026 | 1 | `public double getQueuePrice()` |  |
+| 1027 | 1 | `public double getWholesaleLitre()` |  |
+| 1030 | 1 | `public double getFuelBill()` | ...what the households paid for their petrol, the duty in it, and what of the wholesale bill Retail paid the world. |
+| 1031 | 1 | `public double getFuelImported()` |  |
+| 1034 | 1 | `public double getFuelDuty()` | ...and the fuel duty the drivers paid on their litres this month, the treasury's (0.7.103; EconomyManager.getFuelDuty()). |
+| 1046 | 8 | `public double stationEarns(BuildingsTemplate t, BusinessInvestment plans)` | A station's earnings a month, for the interest test (0.7.83): the litres it would sell - its typical throughput at the operating rate (handOverRate(), full with no rate yet), or the forecast's litres the stations stan... |
+| 1061 | 8 | `public double litresForecast(BuildingsTemplate station, BusinessInvestment plans)` | The drivers' litres a month the planner sees ahead (0.7.83): last month's at the pump and past it, grown as the shops' baskets are - as the people are, over a station's lead time and the planning horizon, to what the ... |
+| 1080 | 29 | `public BusinessInvestment.Decision planStations(BusinessInvestment plans, Game game)` | Retail's other question each month (0.7.83): a Filling Station when the drivers' litres outrun what its stations can sell. |
 
-### SAVE, RESET, THE REFORM (lines 1225-1351)
+### THE SCREEN (lines 1110-1225)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1230 | 44 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 1279 | 31 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 1312 | 16 | `protected void resetExtras()` |  |
-| 1330 | 16 | `protected void redenominateExtras(double scale)` |  |
-| 1348 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
+| 1116 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin on the stock it sells. |
+| 1119 | 1 | `public String inputLabel()` |  |
+| 1122 | 1 | `public boolean hasPlantBlock()` |  |
+| 1125 | 100 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE, RESET, THE REFORM (lines 1226-1352)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1231 | 44 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 1280 | 31 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 1313 | 16 | `protected void resetExtras()` |  |
+| 1331 | 16 | `protected void redenominateExtras(double scale)` |  |
+| 1349 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
 

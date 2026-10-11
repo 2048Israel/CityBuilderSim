@@ -1,6 +1,6 @@
 # BusinessDebtManager.java - 3,590 lines · 233 methods · 28 constants · model
 
-`ham/citybuildersim/BusinessDebtManager.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessDebtManager.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > Private-sector credit. The counterpart to DebtManager, which handles the
 > city's own borrowing.
@@ -51,7 +51,7 @@
 
 **Uses:** [Mortgage](Mortgage.md) (35), [BusinessDebt](BusinessDebt.md) (27), [InterimLoan](InterimLoan.md) (12), [Bank](Bank.md) (8), [BusinessLoan](BusinessLoan.md) (5), [Sectors](Sectors.md) (1)
 
-**Used by (27):** [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BooksCheck](BooksCheck.md), [CreditCheck](CreditCheck.md), [EconomyManager](EconomyManager.md), [FinancesScreen](FinancesScreen.md), [FundLedgerCheck](FundLedgerCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [OutwardInvestment](OutwardInvestment.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [SectorStatements](SectorStatements.md), [SpreadPlanner](SpreadPlanner.md), [SupplierCreditCheck](SupplierCreditCheck.md)
+**Used by (28):** [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BooksCheck](BooksCheck.md), [CreditCheck](CreditCheck.md), [EconomyManager](EconomyManager.md), [FinancesScreen](FinancesScreen.md), [FundLedgerCheck](FundLedgerCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [Inbox](Inbox.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [OutwardInvestment](OutwardInvestment.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [SectorStatements](SectorStatements.md), [SpreadPlanner](SpreadPlanner.md), [SupplierCreditCheck](SupplierCreditCheck.md)
 
 ## Sections
 

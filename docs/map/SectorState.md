@@ -1,6 +1,6 @@
-# SectorState.java - 244 lines · 6 methods · 0 constants · model
+# SectorState.java - 248 lines · 6 methods · 0 constants · model
 
-`ham/citybuildersim/SectorState.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorState.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > One sector, as a save carries it.
 > 
@@ -60,19 +60,20 @@
 | 196 | `public Map<String, Double> capitalBySupplier` | Sector.Statement.capitalBySupplier and capitalTaxCredit (0.7.19); an older save reads none. |
 | 197 | `public double capitalTaxCredit` |  |
 | 199 | `public double borrowingCosts` | Sector.Statement.borrowingCosts (0.7.102, A16); an older save reads none, which is what it expensed. |
+| 201 | `public double powerSold` | Sector.Statement.powerSold (0.7.112, batch I2); an older save reads none, which is what it sold. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 223 | **type** `public final class SectorState` | One sector, as a save carries it. |
+| 22 | 227 | **type** `public final class SectorState` | One sector, as a save carries it. |
 | 93 | 3 | **type** `public static final class SplitState` | A good's money in a save: what it sold or bought at home and abroad. |
 | 97 | 10 | `static Map<String, SplitState> splitsOf(Map<Good, Sector.Split> from)` |  |
 | 108 | 12 | `static Map<Good, Sector.Split> splitsTo(Map<String, SplitState> from)` |  |
 | 125 | 56 | **type** `public static final class LedgerState` | The month in progress, unstruck. |
 | 139 | 17 | `static LedgerState of(Sector.Ledger l)` _(in SectorState.LedgerState)_ |  |
 | 157 | 23 | `Sector.Ledger toLedger()` _(in SectorState.LedgerState)_ |  |
-| 183 | 61 | **type** `public static final class StatementState` | The month last struck. |
-| 201 | 20 | `static StatementState of(Sector.Statement t)` _(in SectorState.StatementState)_ |  |
-| 222 | 21 | `Sector.Statement toStatement()` _(in SectorState.StatementState)_ |  |
+| 183 | 65 | **type** `public static final class StatementState` | The month last struck. |
+| 203 | 21 | `static StatementState of(Sector.Statement t)` _(in SectorState.StatementState)_ |  |
+| 225 | 22 | `Sector.Statement toStatement()` _(in SectorState.StatementState)_ |  |
 

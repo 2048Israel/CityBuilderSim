@@ -20,7 +20,8 @@ import java.util.Locale;
  * roll that read the going price for zoned ground, or a cut that reached the
  * protected wood would each be a lever that says one thing and does another.
  * Nothing in the default playtest sets a zone (it stays byte-identical), so
- * this is the only place zoning is played.
+ * this is where zoning is played (and, since 0.7.109, ZoningViewCheck holds
+ * the screens' figures to it).
  *
  * What this has to prove (spec-materials 4, ZoningCheck):
  *   1. NOTHING SET, NOTHING MOVES: with no zones and the law at 0 and 0 the

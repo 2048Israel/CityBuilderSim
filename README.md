@@ -71,7 +71,8 @@ did not work.
 ## The checks
 
 `AllChecks` runs the lot, one JVM each — **ninety-six harnesses plus the
-4,000-odd-month playtest**, which it reports as ninety-seven, in about nine minutes.
+4,000-odd-month playtest**, which it counts as ninety-seven run (ninety-six where
+JavaFX is not on the classpath, which skips `BuildMenuCheck`), in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:
@@ -185,7 +186,7 @@ unsigned exe: *More info → Run anyway*.
 ## The source tree
 
 ```
-src/main/java/ham/citybuildersim/     about 300 files
+src/main/java/ham/citybuildersim/     over 300 files
     CityBuilderSim.java               the launcher
     Game.java                         the month, and the seam every system meets at
     Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
@@ -195,7 +196,8 @@ src/main/java/ham/citybuildersim/     about 300 files
     CityCalendar.java                 the date, and the days the clock runs through
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
-    sectors/                          the seventeen sector classes, and the refinery's flow and spread planner
+    sectors/                          the seventeen sector classes, the refinery's flow and spread planner, and
+                                      the materials chains' two bases (ProcessingSector, ExtractionSector)
     BondMarket.java, CorporateBond.java, OrderBook.java
                                       the businesses' bonds, and the order book they and the shares trade on
     tools/                            the index generators (see below); not part of the game
@@ -204,6 +206,7 @@ src/main/java/ham/citybuildersim/     about 300 files
     LongPlaytest.java                 4,000-odd months, audited every one
 src/main/resources/buildings.json     the balance file
 docs/                                 generated indexes of all of the above
+tools/earth/                          the pipeline that bakes the real Earth's data (Python, outside the game)
 ```
 
 `docs/map/README.md` is the current, exact list: one row per file with its
@@ -212,7 +215,8 @@ size, what it is and how many files use it.
 **Adding a sector** is one class extending `Sector`, one key constant, and one
 line in `Sectors.KEYS`. A sector class is a declaration of about twenty lines —
 what it makes, what it uses, what it stocks, and any hook it overrides.
-`sectors/Mining.java` is the shortest one and the shape to copy. Before the
+`sectors/Mining.java` is the shortest one and the shape to copy (a mine, on
+`ExtractionSector`; `Materials.java` is the shortest on `Sector` itself). Before the
 template the sectors were five handlers in five shapes named by hand in about a
 hundred places; the whole point of it is that the eighth costs an afternoon.
 Ten have been added since, and each did.

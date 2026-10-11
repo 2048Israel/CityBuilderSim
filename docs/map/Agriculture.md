@@ -1,6 +1,6 @@
-# Agriculture.java - 394 lines · 12 methods · 3 constants · sectors
+# Agriculture.java - 415 lines · 12 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Agriculture.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Agriculture.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > The fields, and what they cost the city in ground.
 > 
@@ -52,9 +52,9 @@
 > 
 > See claude/farms.md.
 
-**Uses:** [Good](Good.md) (11), [BusinessInvestment](BusinessInvestment.md) (6), [Game](Game.md) (4), [Formats](Formats.md) (4), [Sector](Sector.md) (2), [BuildingType](BuildingType.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1)
+**Uses:** [Good](Good.md) (11), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (4), [Formats](Formats.md) (4), [Sector](Sector.md) (2), [BuildingType](BuildingType.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1)
 
-**Used by (4):** [AgricultureCheck](AgricultureCheck.md), [FoodIndustry](FoodIndustry.md), [LongPlaytest](LongPlaytest.md), [Sectors](Sectors.md)
+**Used by (5):** [AgricultureCheck](AgricultureCheck.md), [FoodIndustry](FoodIndustry.md), [LongPlaytest](LongPlaytest.md), [Sectors](Sectors.md), [ZoningCheck](ZoningCheck.md)
 
 ## Sections
 
@@ -63,7 +63,7 @@
 | 93 | · reading |
 | 159 | · plan |
 | 199 | · NOBODY BREAKS GROUND ON A FIELD WHILE SOMEBODY IS SLEEPING OUTSIDE |
-| 306 | · the screen |
+| 327 | · the screen |
 
 ## Constants
 
@@ -71,13 +71,13 @@
 |---:|---|---|---|
 | 128 | `Agriculture.BAKED_KG_PER_TONNE` | `525` | Kilograms of bread and bakery goods a tonne of crops becomes. |
 | 131 | `Agriculture.BAKED_KG_A_HEAD` | `5.0` | What one person eats of the city's own baking a month: 3.5kg of bread, 1.5kg of the rest. |
-| 301 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
+| 322 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 65 | 330 | **type** `public final class Agriculture extends Sector` | The fields, and what they cost the city in ground. |
+| 65 | 351 | **type** `public final class Agriculture extends Sector` | The fields, and what they cost the city in ground. |
 | 67 | 25 | `public Agriculture()` |  |
 
 ### reading (lines 93-158)
@@ -91,18 +91,18 @@
 | 148 | 4 | `public double groundShare()` | The ground bill as a share of what the fields sell - the clock, in one number. |
 | 154 | 4 | `public double payrollShare()` | Wages as a share of the same, which is the number that should stay small. |
 
-### plan (lines 159-305)
+### plan (lines 159-326)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 197 | 50 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | THE GENERIC MAKER'S RULE DECIDES WHAT, AND THE GROUND DECIDES WHETHER. |
-| 270 | 20 | `private double worthAtTheFloor(ham.citybuildersim.BuildingsTemplate t, BusinessInvestment plans)` | What a farm would clear in a month at the EXPORT FLOOR - the worst price the world will ever hand it - rather than at whatever crops happen to fetch the month somebody is deciding. |
-| 304 | 1 | `public double firstPlantUtilisation()` |  |
+| 197 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | THE GENERIC MAKER'S RULE DECIDES WHAT, AND THE GROUND DECIDES WHETHER. |
+| 291 | 20 | `private double worthAtTheFloor(ham.citybuildersim.BuildingsTemplate t, BusinessInvestment plans)` | What a farm would clear in a month at the EXPORT FLOOR - the worst price the world will ever hand it - rather than at whatever crops happen to fetch the month somebody is deciding. |
+| 325 | 1 | `public double firstPlantUtilisation()` |  |
 
-### the screen (lines 306-394)
+### the screen (lines 327-415)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 309 | 58 | `public List<Sector.Line> ownLines(Game game)` |  |
-| 376 | 18 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with a silo: it holds a harvest, sells what the mills want and ships the rest, and shrinks only on distress. |
+| 330 | 58 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 397 | 18 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with a silo: it holds a harvest, sells what the mills want and ships the rest, and shrinks only on distress. |
 

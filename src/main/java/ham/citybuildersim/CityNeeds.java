@@ -618,7 +618,9 @@ public final class CityNeeds {
      * reads the ground used, which sits at 95-100% for centuries with
      * nothing wrong.
      *
-     * GROUND THE CITY OWNS AND HAS NOT BUILT ON - not
+     * GROUND THE CITY OWNS AND HAS NOT BUILT ON - since 0.7.107 less what the
+     * forest law keeps and the zones hold, the ground free for anyone
+     * (LandManager.getAvailableSqFt()) - not
      * isPrivateInvestmentLandLocked(), which probed true at month 12 with
      * 1,974,000 sq ft free and never cleared. Listed at a block free or less,
      * red at none. The ground free in square kilometres since 0.7.64, in

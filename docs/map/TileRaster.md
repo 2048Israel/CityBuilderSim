@@ -1,6 +1,6 @@
 # TileRaster.java - 823 lines · 28 methods · 40 constants · model
 
-`ham/citybuildersim/TileRaster.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TileRaster.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
 > A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixels() for a tile's image.
 > 
@@ -57,7 +57,7 @@
 
 **Uses:** [TilePainter](TilePainter.md) (127), [BuildingVisual](BuildingVisual.md) (42), [World](World.md) (6), [DistrictPlan](DistrictPlan.md) (4), [CityRuns](CityRuns.md) (4), [Resource](Resource.md) (3)
 
-**Used by (6):** [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapFrame](MapFrame.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [ReadPathCheck](ReadPathCheck.md)
+**Used by (7):** [EarthTerrainCheck](EarthTerrainCheck.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapFrame](MapFrame.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [ReadPathCheck](ReadPathCheck.md)
 
 ## Sections
 

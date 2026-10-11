@@ -16,7 +16,10 @@ import java.util.Locale;
  *
  *   owned       every square foot the city has annexed
  *   allocated   what is standing on, or being built on
- *   available   the difference - what can still be built on
+ *   available   the difference - what can still be built on; since 0.7.107
+ *               less what the forest law keeps from building and what the
+ *               zones hold, the ground free for anyone (ZONES AND THE FOREST
+ *               LAW; a zoned sector also builds on its zone's, freeFor())
  *
  * Land is freed when what stood on it goes - a scrapped business's plot, a
  * finished demolition (release()).
@@ -45,7 +48,10 @@ import java.util.Locale;
  * what it has taken out (E) is one figure a resource here, so what remains
  * is O - E, worked out in the order the ground was bought (the centre
  * first) - and the world's totals are kept to the tonne: what no city owns
- * is the world's total less O.
+ * is the world's total less O. (Since 0.7.93 oil's E is two pools' - THE TWO
+ * OIL POOLS; since 0.7.107 forest's carries the wood cleared for building,
+ * C; since 0.7.110 a typed resource's is kept by type once a works digs by
+ * type - THE GROUND BY TYPE.)
  *
  * IN SQUARE METRES ON THE SCREENS (0.7.68, the project's spec-grid.md 2.5
  * and star 10). The model keeps square feet and prices a square foot; the
@@ -328,7 +334,7 @@ public class LandManager {
         this(rate, usPrices, () -> Founding.DEFAULT_WORLD_SEED, () -> 0);
     }
 
-    /** ...on the world this seed reads, in the month this reads (0.7.57): the city's. */
+    /** ...on the world this seed reads, in the month this reads (0.7.57): the city's until 0.7.115, a harness's since (the city's reads its key, below). */
     public LandManager(java.util.function.DoubleSupplier rate, java.util.function.DoubleSupplier usPrices,
                        java.util.function.LongSupplier seed, java.util.function.IntSupplier month) {
         this(rate, usPrices, seed == null ? null : (java.util.function.Supplier<World.Key>) () -> World.Key.generated(seed.getAsLong()), month);

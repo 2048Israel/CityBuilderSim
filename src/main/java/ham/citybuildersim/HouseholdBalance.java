@@ -4371,7 +4371,9 @@ public class HouseholdBalance {
            eight holdings plus its dollars abroad as nine holdings, and its
            student debt as its dollars abroad. Silent corruption of every
            household's portfolio, with no refusal - and bumping SAVE_FORMAT
-           would not have caught it, because older saves always load.
+           would not have caught it, because older saves always loaded (until
+           0.7.108, whose floor, OLDEST_LOADABLE_FORMAT, refuses one a bump
+           raises it past).
 
            So the widths are computed from the company list THE SAVE WAS WRITTEN
            WITH, which the save already carries (DataSave.getEquityKeys), and

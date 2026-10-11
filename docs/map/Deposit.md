@@ -1,8 +1,8 @@
-# Deposit.java - 193 lines · 11 methods · 5 constants · model
+# Deposit.java - 235 lines · 12 methods · 7 constants · model
 
-`ham/citybuildersim/Deposit.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Deposit.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
 
-> One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, and (0.7.79) an oil field's grade.
+> One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, (0.7.79) an oil field's grade and (0.7.110) its type.
 > 
 > WHY THIS EXISTS (0.7.56, batch J1a; the project's spec-land.md 2.1). A
 > field is the unit the land office sells and the map draws: it belongs
@@ -40,9 +40,9 @@
 >               pool sum exactly to its cells' World.cellTotal() since 0.7.99,
 >               the old world's of a cell to the cell's
 
-**Uses:** [World](World.md) (10), [Resource](Resource.md) (3)
+**Uses:** [World](World.md) (12), [Resource](Resource.md) (3)
 
-**Used by (22):** [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [Game](Game.md), [GridConversion](GridConversion.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LegacyLand](LegacyLand.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryFlow](RefineryFlow.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [WellCheck](WellCheck.md), [World](World.md), [WorldCheck](WorldCheck.md)
+**Used by (27):** [BuildingCatalog](BuildingCatalog.md), [BuildingsTemplate](BuildingsTemplate.md), [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [Game](Game.md), [GridConversion](GridConversion.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LegacyLand](LegacyLand.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryFlow](RefineryFlow.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [Resource](Resource.md), [SaveFileCheck](SaveFileCheck.md), [WellCheck](WellCheck.md), [World](World.md), [WorldCheck](WorldCheck.md)
 
 ## Sections
 
@@ -50,6 +50,7 @@
 |---:|---|
 | 54 | WHERE THE SITES LIE (0.7.58) |
 | 155 | THE CRUDE'S GRADE (0.7.79, batch O3; runs/spec-oil.md 2.2) |
+| 194 | THE FIELD'S TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4) |
 
 ## Enum constants
 
@@ -58,6 +59,15 @@
 | 170 | `Deposit.Grade.LIGHT` |  |
 | 170 | `Deposit.Grade.MEDIUM` |  |
 | 170 | `Deposit.Grade.HEAVY` |  |
+| 213 | `Deposit.FieldType.HEMATITE` |  |
+| 213 | `Deposit.FieldType.MAGNETITE` |  |
+| 213 | `Deposit.FieldType.THERMAL` |  |
+| 213 | `Deposit.FieldType.COKING` |  |
+| 213 | `Deposit.FieldType.SULPHIDE` |  |
+| 213 | `Deposit.FieldType.OXIDE` |  |
+| 213 | `Deposit.FieldType.LIMESTONE` |  |
+| 213 | `Deposit.FieldType.HARD_ROCK` |  |
+| 213 | `Deposit.FieldType.NONE` |  |
 
 ## Constants
 
@@ -68,12 +78,14 @@
 | 82 | `Deposit.PLACES_REACH` | `reaches()` | How far, in site widths each way (L-infinity), the first k + 1 sites reach from the centre. |
 | 173 | `Deposit.GRADE_SHARES` | `{ 1.0 / 3, 1.0 / 3, 1.0 / 3 }` | The share of fields of each grade, in Grade's order: a third each (est., spec-oil 2.2 and 6 - to confirm; the research gives a grade a field, not the world's mix). |
 | 176 | `Deposit.GRADE_SALT` | `0x6A7DE5L` | What makes a field's grade a draw of its own, apart from its turn()'s. |
+| 218 | `Deposit.TYPE_SHARES` | `{.75,.25,.85,.15,.80,.20,.70,.30, 1 }` | The share of its resource's fields of each type, in FieldType's order: the first of each resource's two the study's (runs/spec-materials.md 2.4, the study's 1.4: hematite .75, thermal .85, sulphide .80, limestone .70)... |
+| 221 | `Deposit.TYPE_SALT` | `0x7E1DA5L` | What makes a field's type a draw of its own, apart from its turn()'s and its grade()'s. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 145 | **type** `public record Deposit(Resource kind, int cell, int index, long x, long y, int sites, double amount)` | One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, and (0... |
+| 49 | 187 | **type** `public record Deposit(Resource kind, int cell, int index, long x, long y, int sites, double amount)` | One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, (0.7.7... |
 | 52 | 1 | `public double km2()` | The ground it covers, in square kilometres: its sites times its resource's site. |
 
 ### WHERE THE SITES LIE (0.7.58) (lines 54-154)
@@ -96,4 +108,11 @@
 |---:|---:|---|---|
 | 170 | 1 | **type** `public enum Grade` | A crude's grade: LIGHT (Brent's cuts), MEDIUM (the research's blend) or HEAVY (Maya's), in that order. |
 | 183 | 10 | `public Grade grade()` | Its crude's grade (0.7.79): a uniform draw from World.mix() of its cell, index, kind and GRADE_SALT, against GRADE_SHARES in Grade's order - the same field always the same grade, on any machine. |
+
+### THE FIELD'S TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4) (lines 194-235)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 213 | 1 | **type** `public enum FieldType` | A field's type: two for each of iron, coal, copper and stone, in Resource's order, the commoner first; NONE for oil, uranium and forest. |
+| 229 | 6 | `public FieldType type()` | Its type (0.7.110): NONE for a resource of one type; else a uniform draw from World.mix() of its cell, index, kind and TYPE_SALT - its resource's first type under that type's TYPE_SHARES, the second from it - the same... |
 
