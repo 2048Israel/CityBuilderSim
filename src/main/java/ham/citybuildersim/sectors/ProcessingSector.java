@@ -264,11 +264,38 @@ public abstract class ProcessingSector extends Sector {
                 offMarketFeed(t, rate) + fleetRunning(t, v, rate), fleetCapital(t, v));
     }
 
+    /*
+     * ...AND LIMESTONE THE QUARRIES SHIPPED AS AGGREGATE (0.7.131, batch I7;
+     * sectors.Quarrying, THE CARRY). A works' feed is worth its export price
+     * for as much as the city exported of it (SpreadPlanner.inValue()), and
+     * the limestone no buyer here takes never ships as limestone: Quarrying
+     * carries it into aggregate at the same band, so its market records no
+     * export. So the city's values a works is weighed at count the limestone
+     * carried at the last clearing as exported - the tonnes one more kiln or
+     * furnace would take are tonnes the city shipped - and every other good,
+     * and every month with nothing carried, as SpreadPlanner.values() has
+     * them, to the bit.
+     */
+
+    /** The city's values a works of its is weighed at this month: SpreadPlanner.values(), limestone carried into aggregate counted as exported (above). */
+    protected SpreadPlanner.Values values() {
+        SpreadPlanner.Values v = SpreadPlanner.values(markets);
+        double carried = game == null || game.getSectors() == null ? 0 : game.getSectors().quarrying().carried();
+        if (!(carried > 0) || markets == null) return v;
+        ham.citybuildersim.GoodsMarket lime = markets.get(Good.LIMESTONE);
+        return new SpreadPlanner.Values() {
+            @Override public double out(Good g, double u) { return v.out(g, u); }
+            @Override public double in(Good g, double u) {
+                return g == Good.LIMESTONE ? SpreadPlanner.inValue(lime, lime.getExported() + carried, u) : v.in(g, u);
+            }
+        };
+    }
+
     /** Every building of its the planner weighs, weighed now at the city's values and the game's gates, in the catalogue's order. */
     public List<SpreadPlanner.Candidate> appraise(BusinessInvestment plans, Game game) {
         List<SpreadPlanner.Candidate> all = new ArrayList<>();
         if (buildings == null) return all;
-        SpreadPlanner.Values v = SpreadPlanner.values(markets);
+        SpreadPlanner.Values v = values();
         SpreadPlanner.City city = planner.city(this, plans, game);
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
             if (!weighs(t)) continue;
@@ -279,7 +306,7 @@ public abstract class ProcessingSector extends Sector {
 
     /** One building of its weighed now. */
     public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
-        return weigh(t, SpreadPlanner.values(markets), planner.city(this, plans, game));
+        return weigh(t, values(), planner.city(this, plans, game));
     }
 
     /* ----- the plan ----- */
@@ -344,7 +371,7 @@ public abstract class ProcessingSector extends Sector {
     /** Each kind of its works standing counted idle (the last one earns below nothing at the month's values) or working; a kind with none standing clears its count. */
     protected void noteIdleWorks(Game game) {
         if (game == null || buildings == null || markets == null || game.getBusinessInvestment() == null) return;
-        SpreadPlanner.Values v = SpreadPlanner.values(markets);
+        SpreadPlanner.Values v = values();
         SpreadPlanner.City city = planner.city(this, game.getBusinessInvestment(), game);
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
             if (!weighs(t)) continue;

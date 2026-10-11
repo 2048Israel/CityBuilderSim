@@ -136,6 +136,11 @@ public class TradeCostCheck {
         { Good.COKING_COAL,              .225,       .180  },
         { Good.LIMESTONE,                .040,       .010  },
         { Good.LIME,                     .280,       .110  },
+        // Stone's three (0.7.131, batch I7; spec-materials 2.3, the study's 6.3): aggregate on
+        // limestone's band - the gap is freight - dimension stone's blocks, and cement.
+        { Good.AGGREGATE,                .040,       .010  },
+        { Good.DIMENSION_STONE,          .260,       .170  },
+        { Good.CEMENT,                   .110,       .045  },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */

@@ -407,10 +407,10 @@ public class BuildingDataCheck {
         assertTrue("the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated"
                         + " Highway 1.25% - and no other building has: " + repairs,
                 repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125)));
-        assertTrue("...and 115 buildings in all (0.7.126: Coal Mining's four; 111 from 0.7.124, Iron Mining's three; 108 from 0.7.123,"
-                        + " the integrated route's seven; 101 from 0.7.91, 98 from 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from"
-                        + " 0.7.80, 76 until then)",
-                data.size() == 115);
+        assertTrue("...and 121 buildings in all (0.7.131: Quarrying's three and Cement & Concrete's three; 115 from 0.7.126, Coal"
+                        + " Mining's four; 111 from 0.7.124, Iron Mining's three; 108 from 0.7.123, the integrated route's seven; 101 from"
+                        + " 0.7.91, 98 from 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76 until then)",
+                data.size() == 121);
 
         /* ---------- the oil storage (0.7.85, batch O8; spec-oil 2.8) ----------
 
@@ -528,10 +528,17 @@ public class BuildingDataCheck {
            coal's three mines do: the Surface Coal Mine on one thermal site and
            the Large Surface Mine on four, 1/.95 t of seam a tonne; the
            Underground Coal Mine on one coking site, 1/.80 - and the Coal
-           Preparation Plant on none. */
-        System.out.println("\n--- the site each building stands on (0.7.110; iron's by type and size, 0.7.124; coal's, 0.7.126) ---");
+           Preparation Plant on none. Since 0.7.131 (batch I7; the study's 6.4,
+           spec 2.4) stone's three: the Quarry on one site and the Large Quarry
+           on three of one field, on ANY (packed onto limestone first), a
+           tonne of stone a tonne; the Dimension Stone Quarry on one hard-rock
+           site, three tonnes of rock a tonne of blocks - the one building on
+           a site whose good is not its resource's (stone is priced as
+           AGGREGATE, Resource.STONE), so the good rule gave it none. */
+        System.out.println("\n--- the site each building stands on (0.7.110; iron's by type and size, 0.7.124; coal's, 0.7.126; stone's, 0.7.131) ---");
         boolean rule = true, shape = true;
-        java.util.Map<Integer, String> ironSites = new java.util.TreeMap<>(), coalSites = new java.util.TreeMap<>();
+        java.util.Map<Integer, String> ironSites = new java.util.TreeMap<>(), coalSites = new java.util.TreeMap<>(),
+                stoneSites = new java.util.TreeMap<>();
         int onSites = 0;
         for (BuildingsTemplate t : data) {
             Resource was = null;
@@ -539,7 +546,9 @@ public class BuildingDataCheck {
                 for (Resource r : Resource.values()) if (r.good() != null && t.makes(r.good()) > 0 && was == null) was = r;
                 if (was == null && t.isPlatform()) was = Resource.OIL;
             }
-            rule &= Game.siteOf(t) == was;
+            // ...but the Dimension Stone Quarry (0.7.131), whose blocks are not stone's pricing good: the rule gave it no site.
+            boolean blocks = t.getId() == ham.citybuildersim.sectors.Quarrying.DIMENSION_STONE_QUARRY;
+            rule &= blocks ? was == null && Game.siteOf(t) == Resource.STONE : Game.siteOf(t) == was;
             BuildingsTemplate.Site site = t.site();
             if (site == null) continue;
             onSites++;
@@ -551,11 +560,16 @@ public class BuildingDataCheck {
                 coalSites.put(t.getId(), site.type() + " " + site.sites() + " " + site.dig());
                 continue;
             }
+            if (site.resource() == Resource.STONE) {
+                stoneSites.put(t.getId(), (site.any() ? "ANY" : site.type().name()) + " " + site.sites() + " " + site.dig());
+                continue;
+            }
             shape &= site.any() && (t.isPlatform() ? site.sites() == 0 && site.dig() == 0 : site.sites() == 1 && site.dig() == 1);
         }
-        assertTrue("every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109)", rule);
-        assertTrue("...ten stand on sites - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well and coal's three"
-                + " mines (seven until 0.7.126)", onSites == 10);
+        assertTrue("every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109) - but the Dimension Stone"
+                + " Quarry's, which the rule gave none (0.7.131)", rule);
+        assertTrue("...thirteen stand on sites - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three"
+                + " mines and stone's three quarries (ten until 0.7.131, seven until 0.7.126)", onSites == 13);
         assertTrue("...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none", shape);
         java.util.Map<Integer, String> byType = new java.util.TreeMap<>();
         byType.put(ham.citybuildersim.sectors.Mining.IRON_MINE, "HEMATITE 1 1.0");
@@ -571,6 +585,16 @@ public class BuildingDataCheck {
         assertTrue("...coal's on a type, its sites and its dig (0.7.126): the surface mines one and four thermal sites at 1/.95 t of"
                 + " seam a tonne, the underground mine one coking site at 1/.80; the preparation plant on none: " + coalSites,
                 coalSites.equals(coalByType) && byId(data, ham.citybuildersim.sectors.CoalMining.PREPARATION_PLANT).site() == null);
+        java.util.Map<Integer, String> stoneByType = new java.util.TreeMap<>();
+        stoneByType.put(ham.citybuildersim.sectors.Quarrying.QUARRY, "ANY 1 1.0");
+        stoneByType.put(ham.citybuildersim.sectors.Quarrying.LARGE_QUARRY, "ANY 3 1.0");
+        stoneByType.put(ham.citybuildersim.sectors.Quarrying.DIMENSION_STONE_QUARRY, "HARD_ROCK 1 3.0");
+        assertTrue("...stone's, its sites and its dig (0.7.131): the Quarry one site and the Large Quarry three, on ANY, a tonne a tonne;"
+                + " the Dimension Stone Quarry one hard-rock site, three tonnes of rock a tonne of blocks; the cement plants and the kiln"
+                + " on none: " + stoneSites,
+                stoneSites.equals(stoneByType) && byId(data, ham.citybuildersim.sectors.CementConcrete.CEMENT_PLANT).site() == null
+                        && byId(data, ham.citybuildersim.sectors.CementConcrete.LARGE_CEMENT_PLANT).site() == null
+                        && byId(data, ham.citybuildersim.sectors.CementConcrete.LIME_KILN).site() == null);
 
         /* ---------- a works' own power and its consumables (0.7.112, batch I2) ----------
 
@@ -611,9 +635,11 @@ public class BuildingDataCheck {
         for (int id = ham.citybuildersim.sectors.HeavyIndustry.SCRAP_YARD; id <= ham.citybuildersim.sectors.HeavyIndustry.LARGE_MINI_MILL; id++) iron.add(id);
         for (int id = ham.citybuildersim.sectors.Mining.LARGE_OPEN_PIT; id <= ham.citybuildersim.sectors.Mining.LARGE_MAGNETITE; id++) iron.add(id);
         for (int id = ham.citybuildersim.sectors.CoalMining.SURFACE_MINE; id <= ham.citybuildersim.sectors.CoalMining.PREPARATION_PLANT; id++) iron.add(id);
-        assertTrue("seventeen buy consumables, the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and the"
-                + " Iron Mine (14) of batch I3, Iron & Steel's seven of batch I4 (101-107), Iron Mining's three of batch I5 (108-110) and"
-                + " Coal Mining's four of batch I6 (111-114); every other none: " + buying, buying.equals(iron));
+        for (int id = ham.citybuildersim.sectors.Quarrying.QUARRY; id <= ham.citybuildersim.sectors.CementConcrete.LIME_KILN; id++) iron.add(id);
+        assertTrue("twenty-three buy consumables, the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and"
+                + " the Iron Mine (14) of batch I3, Iron & Steel's seven of batch I4 (101-107), Iron Mining's three of batch I5 (108-110),"
+                + " Coal Mining's four of batch I6 (111-114) and stone's six of batch I7 (115-120); every other none: " + buying,
+                buying.equals(iron));
 
         /* ---------- the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) ----------
 
@@ -649,11 +675,16 @@ public class BuildingDataCheck {
         for (int id = ham.citybuildersim.sectors.CoalMining.SURFACE_MINE; id <= ham.citybuildersim.sectors.CoalMining.PREPARATION_PLANT; id++) {
             years.put(id, 1900);
         }
+        for (int id = ham.citybuildersim.sectors.Quarrying.QUARRY; id <= ham.citybuildersim.sectors.CementConcrete.LIME_KILN; id++) {
+            years.put(id, 1900);
+        }
+        years.put(ham.citybuildersim.sectors.CementConcrete.LARGE_CEMENT_PLANT, 1902);
         assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1952 (E1, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
                         + " as standing before it - and batch I5's three: the Large Open-Pit Mine 1900, the two magnetite works 1955 (E4,"
                         + " taconite concentrated at Silver Bay); and batch I6's four 1900, coal's mines and washeries standing before"
-                        + " the start (the longwall's shields, E15 1975, equipment on the mine); no row before them: " + dated,
+                        + " the start (the longwall's shields, E15 1975, equipment on the mine); and batch I7's six 1900 but the Large"
+                        + " Cement Plant, 1902 (Edison's long kilns, research-1900.md 1.2); no row before them: " + dated,
                 dated.equals(years));
 
         /* ---------- the raw coal a preparation plant washes (0.7.126, batch I6) ----------

@@ -1469,6 +1469,71 @@ public class LandManager {
         return true;
     }
 
+    /**
+     * Where fits()'s packing puts the standing works (0.7.131, batch I7):
+     * for each claim of `standing`, in its order, the sites its works take of
+     * each of the resource's types, in Resource.typesOf()'s order, summed
+     * over its count - the standing packed first fit decreasing onto the
+     * pieces as fits() packs them (typed works before ANY, ANY onto the first
+     * type first, the larger first and, among works of one size, in the
+     * claims' order), those it cannot place spread over the sites left. A
+     * works the ground has no room for at all keeps the sites it lacks
+     * unplaced, on no type. Pure: what Quarrying reads to say which of its
+     * quarries on ANY stand on limestone and which on hard rock.
+     */
+    public int[][] packed(Resource r, java.util.List<Claim> standing) {
+        int n = standing == null ? 0 : standing.size();
+        int kinds = r.typesOf().size();
+        int[][] out = new int[n][kinds];
+        if (n == 0) return out;
+        java.util.List<CityLand.Piece> pieces = typed(r).pieces;
+        // {type's index or -1, sites, the claim it is one of}
+        java.util.List<int[]> works = new java.util.ArrayList<>();
+        for (int c = 0; c < n; c++) {
+            Claim claim = standing.get(c);
+            if (claim == null || claim.sites() <= 0 || claim.count() <= 0) continue;
+            int t = claim.type() == null ? -1 : typeIndex(r, claim.type());
+            if (claim.type() != null && t < 0) continue;
+            for (int k = 0; k < claim.count(); k++) works.add(new int[] { t, claim.sites(), c });
+        }
+        works.sort(LandManager::packingOrder);
+        int[] free = new int[pieces.size()];
+        for (int i = 0; i < free.length; i++) free[i] = pieces.get(i).sites();
+        int[] probe = free.clone();
+        java.util.List<int[]> placed = new java.util.ArrayList<>(), unplaced = new java.util.ArrayList<>();
+        for (int[] w : works) (place(r, pieces, probe, w, false) ? placed : unplaced).add(w);
+        for (int[] w : unplaced) placeInto(r, pieces, free, w, true, out[w[2]]);
+        for (int[] w : placed) {
+            if (!placeInto(r, pieces, free, w, false, out[w[2]])) placeInto(r, pieces, free, w, true, out[w[2]]);
+        }
+        return out;
+    }
+
+    /** place(), noting the sites it takes of each type in `byType`; a placement that fails whole takes nothing, a spread what there was. */
+    private static boolean placeInto(Resource r, java.util.List<CityLand.Piece> pieces, int[] free, int[] w, boolean spread,
+                                     int[] byType) {
+        java.util.List<Deposit.FieldType> kinds = r.typesOf();
+        int left = w[1];
+        for (int t = 0; t < kinds.size(); t++) {
+            if (w[0] >= 0 && w[0] != t) continue;
+            for (int i = 0; i < free.length; i++) {
+                if (pieces.get(i).type() != kinds.get(t) || free[i] <= 0) continue;
+                if (spread) {
+                    int take = Math.min(left, free[i]);
+                    free[i] -= take;
+                    byType[t] += take;
+                    left -= take;
+                    if (left == 0) return true;
+                } else if (free[i] >= left) {
+                    free[i] -= left;
+                    byType[t] += left;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /** The packing's order: works on a type before works on ANY, the larger first within each. */
     private static int packingOrder(int[] a, int[] b) {
         if ((a[0] < 0) != (b[0] < 0)) return a[0] < 0 ? 1 : -1;

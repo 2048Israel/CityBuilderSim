@@ -909,11 +909,51 @@ public enum Good {
     /** Coking coal, by the tonne, washed: what the Coke Ovens bake. Stockable. */
     COKING_COAL("Coking coal", "tonne", .225, .180, .016875, true, Pricing.BAND, false),
 
-    /** Limestone, by the tonne: the blast furnaces' flux (and the kilns' feed, from batch I7). */
+    /**
+     * Limestone, by the tonne: the blast furnaces' flux and, since 0.7.131
+     * (batch I7), the kilns' and cement plants' feed - made by Quarrying's
+     * quarries on limestone fields, and what of it no buyer here takes sold
+     * as AGGREGATE, tonne for tonne (sectors.Quarrying, THE CARRY; Jerus's
+     * Q17), so it never ships as limestone.
+     */
     LIMESTONE("Limestone", "tonne", .040, .010, .01125, false, Pricing.BAND, false),
 
-    /** Quicklime, by the tonne: the Oxygen Steel Shop's flux, about 60 kg a tonne of steel. */
-    LIME("Lime", "tonne", .280, .110, .06375, false, Pricing.BAND, false);
+    /** Quicklime, by the tonne: the Oxygen Steel Shop's flux, about 60 kg a tonne of steel - burnt from limestone by Cement & Concrete's Lime Kiln since 0.7.131 (batch I7). */
+    LIME("Lime", "tonne", .280, .110, .06375, false, Pricing.BAND, false),
+
+    /* =======================================================================
+       STONE'S GOODS (0.7.131, batch I7; runs/spec-materials.md 2.3,
+       materials-chains-research.md 6.3). Quarrying digs stone's two types of
+       field - limestone, which sells as LIMESTONE to the kilns and furnaces
+       and as aggregate past them (the study's 6.1, Q17), and hard rock,
+       crushed to AGGREGATE or cut to DIMENSION_STONE - and Cement & Concrete
+       burns limestone into CEMENT and LIME (LIME and LIMESTONE came with
+       batch I4). The study's prices, D$ a tonne at the founding parity,
+       import over export, freight three eighths of the wedge (this file's
+       rule): aggregate 40 / 10, limestone's own band - "the gap is freight",
+       stone travelling worse than anything the city ships; dimension stone
+       260 / 170; cement 110 / 45, a wide band for a good that is "really
+       regional" (the study's 6.5, [S9]), so a cement plant pays only where
+       the city buys cement. Nobody in the city buys aggregate, cement or
+       dimension stone until the construction upgrade (Jerus's Q18; spec 2.12
+       and 2.14), so until then they ship.
+
+       STOCKABLE: cement, which keeps in a silo; it joins
+       NationalAccounts.HELD on its end. Aggregate and dimension stone are
+       flow goods, as limestone is - a quarry ships what it digs. Aggregate
+       and cement go by the BULK stream and, by sea, as DRY_BULK; dimension
+       stone by the GOODS stream (spec 2.3) and so, by sea, in containers, as
+       the rest of that stream goes (Ports.Cargo.CONTAINER).
+       ======================================================================= */
+
+    /** Aggregate - crushed stone, sand and gravel - by the tonne: a hard-rock quarry's, and a limestone quarry's limestone no buyer takes (Q17). A flow good. */
+    AGGREGATE("Aggregate", "tonne", .040, .010, .01125, false, Pricing.BAND, false),
+
+    /** Dimension stone - cut blocks of granite and the like - by the tonne: the Dimension Stone Quarry's, on hard rock. A flow good. */
+    DIMENSION_STONE("Dimension stone", "tonne", .260, .170, .03375, false, Pricing.BAND, false),
+
+    /** Portland cement, by the tonne: Cement & Concrete's cement plants', of limestone, aggregate and thermal coal. Stockable. */
+    CEMENT("Cement", "tonne", .110, .045, .024375, true, Pricing.BAND, false);
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -1107,6 +1147,8 @@ public enum Good {
             // coke, coal, limestone and lime, by hopper and gondola.
             case PELLETS: case PIG_IRON: case MET_COKE: case THERMAL_COAL: case COKING_COAL:
             case LIMESTONE: case LIME:
+            // ...and stone's aggregate and cement (0.7.131), by hopper and tanker; dimension stone is GOODS.
+            case AGGREGATE: case CEMENT:
             // A locomotive on a low-loader is not a crate of bread.
             case ROLLING_STOCK:
             // ...and crude, in tank wagons, as ore goes in hoppers. Petrol and
@@ -1138,10 +1180,11 @@ public enum Good {
      * LIQUID is crude, the seven litre goods and bitumen - tankers, the
      * bitumen in a heated one. DRY_BULK is what a grab lifts out of a hold:
      * iron ore, crops, grains, building materials, coke, (0.7.120) scrap and
-     * (0.7.123) the integrated route's seven, pig iron among them. GENERAL is what
-     * is lifted piece by piece - steel, fabricated steel, machinery, wagon
-     * sets, cars and vans. CONTAINER is the rest of what the GOODS stream
-     * carries: the shelf, the drinks and the watches, in boxes.
+     * (0.7.123) the integrated route's seven, pig iron among them, and (0.7.131)
+     * aggregate and cement. GENERAL is what is lifted piece by piece - steel,
+     * fabricated steel, machinery, wagon sets, cars and vans. CONTAINER is the
+     * rest of what the GOODS stream carries: the shelf, the drinks and the
+     * watches, in boxes, and since 0.7.131 dimension stone's cut slabs.
      */
     public Ports.Cargo cargo() {
         switch (this) {
@@ -1151,6 +1194,8 @@ public enum Good {
             case IRON: case CROPS: case GRAINS: case MATERIALS: case COKE: case SCRAP:
             case PELLETS: case PIG_IRON: case MET_COKE: case THERMAL_COAL: case COKING_COAL:
             case LIMESTONE: case LIME:
+            // ...and stone's aggregate and cement (0.7.131).
+            case AGGREGATE: case CEMENT:
                 return Ports.Cargo.DRY_BULK;
             case STEEL: case FABRICATED_STEEL: case MACHINERY: case ROLLING_STOCK: case CARS: case VANS:
                 return Ports.Cargo.GENERAL;

@@ -24,11 +24,12 @@ package ham.citybuildersim;
  *
  * WHAT USES IT. Iron, since J1b put the city's land on the world; oil, lifted
  * as CRUDE by the wells since 0.7.62 (batch K); coal, dug by Coal Mining
- * since 0.7.126 (batch I6). The other four wait for their industries, and
- * until then their ground is free (an in-ground share of zero and no good).
- * Since 0.7.110 (batch I1) iron's, coal's, copper's and stone's fields are
- * each of two types (typesOf(), Deposit.type()): iron's mines stand on theirs
- * since 0.7.124 (batch I5), coal's since 0.7.126.
+ * since 0.7.126 (batch I6); stone, quarried by Quarrying since 0.7.131
+ * (batch I7). The other three wait for their industries, and until then
+ * their ground is free (an in-ground share of zero and no good). Since
+ * 0.7.110 (batch I1) iron's, coal's, copper's and stone's fields are each of
+ * two types (typesOf(), Deposit.type()): iron's mines stand on theirs since
+ * 0.7.124 (batch I5), coal's since 0.7.126, stone's quarries since 0.7.131.
  */
 public enum Resource {
 
@@ -60,8 +61,17 @@ public enum Resource {
     OIL("Oil", "tonne", 0.02, 10 * 43_560 * LandManager.SQ_M_PER_SQ_FT / LandManager.SQ_M_PER_KM2,
             150_000, 0x3A302C, Good.CRUDE, 0.05),
 
-    /** Stone: 0.01 fields a km2, a site 0.1 km2, 13.5 Mt a site - a quarry 50 m deep at 2.7 t a cubic metre. */
-    STONE("Stone", "tonne", 0.01, 0.1, 13_500_000, 0xDED8C6, null, 0),
+    /**
+     * Stone: 0.01 fields a km2, a site 0.1 km2, 13.5 Mt a site - a quarry 50
+     * m deep at 2.7 t a cubic metre. Dug by Quarrying since 0.7.131 (batch I7;
+     * runs/spec-materials.md 2.4, 2.10): a limestone field's stone is
+     * LIMESTONE and a hard-rock field's AGGREGATE (goodOf()), and what
+     * limestone no buyer here takes sells as aggregate (Jerus's Q17) - so
+     * stone is priced as AGGREGATE, its one pricing good. The ground sells at
+     * 1/400 of aggregate's world export price (the study's 8, est.): US$0.025
+     * a tonne in the ground, about US$340k a site.
+     */
+    STONE("Stone", "tonne", 0.01, 0.1, 13_500_000, 0xDED8C6, Good.AGGREGATE, 1.0 / 400),
 
     /**
      * Coal: 0.002 fields a km2, a site 1 km2, 6.5 Mt a site - a seam 5 m
@@ -172,11 +182,13 @@ public enum Resource {
      * type that is not one of its own; for ANY (null) or one of its own, its
      * good() for now - IRON for both iron types, THERMAL_COAL for both coals
      * since 0.7.126 (washing a coking field's raw coal is Coal Mining's flow),
-     * nothing for copper and stone, whose goods come with their industries
-     * (spec-materials 2.4: COPPER_CONC or COPPER, LIMESTONE or AGGREGATE, at I7
-     * and I8). good() stays the one pricing good.
+     * nothing for copper, whose goods come with its industries (spec-materials
+     * 2.4: COPPER_CONC or COPPER, at I8). Stone's since 0.7.131 (batch I7) by
+     * type: LIMESTONE for a limestone field, AGGREGATE for hard rock (and for
+     * ANY, its good()). good() stays the one pricing good.
      */
     public Good goodOf(Deposit.FieldType type) {
+        if (this == STONE && type == Deposit.FieldType.LIMESTONE) return Good.LIMESTONE;
         return type == null || typesOf().contains(type) ? good : null;
     }
 }

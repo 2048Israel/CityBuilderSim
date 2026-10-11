@@ -268,7 +268,6 @@ public abstract class ExtractionSector extends Sector {
         if (unminedDeposits <= 0) return BusinessInvestment.Decision.no(sector, "no deposit to dig");
         if (reserveTonnes <= 0)   return BusinessInvestment.Decision.no(sector, "the ore is worked out");
 
-        Good good = groundGood();
         List<LandManager.Claim> standing = game.claimsOn(resource);
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
         BuildingsTemplate best = null;
@@ -279,7 +278,7 @@ public abstract class ExtractionSector extends Sector {
         double moneyEarns = 0, moneyCost = 0;
         BuildingsTemplate fieldHold = null;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
-            if (t.makes(good) <= 0) continue;
+            if (!lifts(t)) continue;
             // ...on a field it fits (0.7.124): its type's ore left, and its sites on one field of its type beside the standing.
             if (!fits(land, t, standing)) {
                 if (fieldHold == null) fieldHold = t;
@@ -332,6 +331,16 @@ public abstract class ExtractionSector extends Sector {
                 String.format("%d deposit(s) unworked, %,.0fk tonnes %sin the ground",
                         unminedDeposits, land.getRemaining(resource, type) / 1000,
                         type == null ? "" : "of " + typeWord(type) + " "), true);
+    }
+
+    /**
+     * Whether a building of its lifts its ground - a mine the plan weighs and
+     * the retirement measures: one that makes its ground's good (Resource
+     * .good()). Quarrying's Dimension Stone Quarry, whose blocks are not
+     * stone's pricing good, says so too (0.7.131, batch I7).
+     */
+    protected boolean lifts(BuildingsTemplate t) {
+        return t != null && t.makes(groundGood()) > 0;
     }
 
     /** Whether one more of `t` fits the city's ground now (0.7.124): fits() below against the works standing, on site or ordered (Game.claimsOn()) - what the plan asks of each candidate, and the build card may. */
@@ -412,7 +421,7 @@ public abstract class ExtractionSector extends Sector {
 
     /** Whether a building of its stands on ground with nothing left: its type's ore (ANY or no site: its resource's) worked out. */
     boolean workedOut(LandManager land, BuildingsTemplate t) {
-        if (t == null || !(t.makes(groundGood()) > 0)) return false;
+        if (!lifts(t)) return false;
         BuildingsTemplate.Site site = t.site();
         Deposit.FieldType type = site == null || site.resource() != resource ? null : site.type();
         return !(land.getRemaining(resource, type) > 0);

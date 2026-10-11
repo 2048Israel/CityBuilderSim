@@ -151,9 +151,12 @@ public class CoalMiningCheck {
     static void sector() {
         out.println("\n--- 2. the sector on the end of the registry, and what grew with it ---");
         String[] keys = Sectors.KEYS;
-        assertTrue("Sectors.KEYS ends with Coal Mining, after the refinery (Jerus's Q21: coal the materials chains' first new sector)",
-                keys[keys.length - 1].equals(Sectors.COAL_MINING) && keys[keys.length - 2].equals(Sectors.REFINING)
-                        && keys.length == 18);
+        // ...on the end when it came (0.7.126), and stone's two after it since 0.7.131 (batch I7; Q21's order).
+        int coalAt = java.util.Arrays.asList(keys).indexOf(Sectors.COAL_MINING);
+        assertTrue("Sectors.KEYS has Coal Mining after the refinery, eighteenth (Jerus's Q21: coal the materials chains' first new"
+                        + " sector), and stone's Quarrying and Cement & Concrete after it (0.7.131)",
+                coalAt == 17 && keys[coalAt - 1].equals(Sectors.REFINING) && keys.length >= 20
+                        && keys[coalAt + 1].equals(Sectors.QUARRYING) && keys[coalAt + 2].equals(Sectors.CEMENT_CONCRETE));
         Sectors s = new Sectors(new BuildingManager(), new Markets());
         CoalMining coal = s.coalMining();
         assertTrue("...an extraction sector on coal, found by its saved name, making both coals and using diesel; Mining's group",
@@ -161,12 +164,13 @@ public class CoalMiningCheck {
                         && coal.isMaker(Good.THERMAL_COAL) && coal.isMaker(Good.COKING_COAL) && coal.isUser(Good.DIESEL)
                         && coal.goodsMade().size() == 2 && coal.group() == BuildingType.MINING);
         assertTrue("Equity's companies are the keys and then the bank, the bank's index the keys' count",
-                Equity.COMPANIES.length == keys.length + 1 && Equity.COMPANIES[keys.length - 1].equals(Sectors.COAL_MINING)
+                Equity.COMPANIES.length == keys.length + 1 && Equity.COMPANIES[coalAt].equals(Sectors.COAL_MINING)
                         && Equity.BANK == keys.length && Equity.COMPANIES[Equity.BANK].equals("Bank"));
         assertTrue("...the households' share block a slot a company",
                 HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD - HouseholdBalance.CELL_SLOTS_BEFORE_SHARES == Equity.COMPANIES.length);
-        assertTrue("...the audit's pools the city, a pool a sector in the keys' order - coal mining's the last - and the three after",
-                MoneyAudit.POOL_NAMES.length == keys.length + 4 && MoneyAudit.POOL_NAMES[keys.length].equals("coal mining")
+        assertTrue("...the audit's pools the city, a pool a sector in the keys' order - coal mining's after the refinery's - and the"
+                        + " three after",
+                MoneyAudit.POOL_NAMES.length == keys.length + 4 && MoneyAudit.POOL_NAMES[coalAt + 1].equals("coal mining")
                         && MoneyAudit.POOL_NAMES[keys.length + 1].equals("order book"));
         double[] sheets = new Bank().sheetYearToSave();
         assertTrue("...and the bank's year of sheets files a column of loans and of interim financing a sector",
