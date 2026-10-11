@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 /**
- * One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, (0.7.79) an oil field's grade and (0.7.110) its type.
+ * One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, (0.7.79) an oil field's grade and (0.7.110) its type, which on Earth (0.7.117) leans on the geology under it.
  *
  * WHY THIS EXISTS (0.7.56, batch J1a; the project's spec-land.md 2.1). A
  * field is the unit the land office sells and the map draws: it belongs
@@ -45,8 +45,16 @@ package ham.citybuildersim;
  * @param amount what it holds, in its resource's unit, whole: the fields of a
  *               pool sum exactly to its cells' World.cellTotal() since 0.7.99,
  *               the old world's of a cell to the cell's
+ * @param geology the class of the ground under its centre on an Earth world
+ *               (0.7.117, World.geologyAt()), which its type() leans on;
+ *               null on a generated world, whose types are drawn flat
  */
-public record Deposit(Resource kind, int cell, int index, long x, long y, int sites, double amount) {
+public record Deposit(Resource kind, int cell, int index, long x, long y, int sites, double amount, Geology.Kind geology) {
+
+    /** A field of a generated world, or any whose type is drawn flat: no geology under it. */
+    public Deposit(Resource kind, int cell, int index, long x, long y, int sites, double amount) {
+        this(kind, cell, index, x, y, sites, amount, null);
+    }
 
     /** The ground it covers, in square kilometres: its sites times its resource's site. */
     public double km2() { return sites * kind.siteKm2(); }
@@ -204,9 +212,16 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
        its own, against TYPE_SHARES - so nothing is stored, no tonne moves,
        and a pool's fields of each type add up to its total exactly, on the
        old world's fields as on the new (WorldCheck 9). A generated world
-       draws flat; on Earth (spec-earth, E3) a type is to lean on its cell's
-       geology. Since 0.7.99 a field is ten of the old draws' sites, so a
+       draws flat. Since 0.7.99 a field is ten of the old draws' sites, so a
        city's ore is more often one type than it was (fixI1-notes.md).
+
+       ON EARTH (0.7.117, batch E3; runs/spec-materials.md 2.4) the same draw
+       is held against the share of its first type in the class of the ground
+       under its centre (its geology, Geology.firstShare()): coking coal
+       three times the odds in a fold belt and half on a shield, limestone
+       twice in a basin or on a shelf, half in a fold belt and a quarter on a
+       shield, iron and copper flat - one constant a resource holding the
+       Earth-wide share at TYPE_SHARES' (EarthTerrainCheck 14).
        ===================================================================== */
 
     /** A field's type: two for each of iron, coal, copper and stone, in Resource's order, the commoner first; NONE for oil, uranium and forest. */
@@ -224,12 +239,14 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
      * Its type (0.7.110): NONE for a resource of one type; else a uniform
      * draw from World.mix() of its cell, index, kind and TYPE_SALT - its
      * resource's first type under that type's TYPE_SHARES, the second
-     * from it - the same field always the same type, on any machine.
+     * from it - the same field always the same type, on any machine. On
+     * Earth (0.7.117) under Geology.firstShare() of its geology instead.
      */
     public FieldType type() {
         java.util.List<FieldType> types = kind.typesOf();
         if (types.size() < 2) return types.get(0);
         double u = World.unit(World.mix(((long) cell << 24) ^ ((long) index << 4) ^ kind.ordinal() ^ TYPE_SALT));
+        if (geology != null) return u < Geology.firstShare(kind, geology) ? types.get(0) : types.get(1);
         return u < TYPE_SHARES[types.get(0).ordinal()] ? types.get(0) : types.get(1);
     }
 }
