@@ -5386,8 +5386,44 @@ public final class GameVersion {
      *     Iron & Steel's planner; people at the end 577,610 (566,444), posts
      *     321,670 (345,198), unemployment 15.6% (9.3%), the price level 906
      *     (1,456).
+     *
+     * 0.7.121 (2026-10-11) - THE INTEGRATED ROUTE, AND OLD STEEL. Batch I4,
+     * the second materials batch that changes the game (Jerus's Q4, Q6, Q7,
+     * Q8, Q19, Q20 and A of 2026-10-08; runs/spec-materials.md 2.2, 2.3,
+     * 2.7-2.9 and 4; runs/brief-batchI4.md, runs/fixI4-notes.md). No save
+     * format change: a save of 0.7.120 loads, its old steel none.
+     *   - THE BUILDINGS (ids 101-107, Iron & Steel's): the Scrap Yard, the
+     *     Pelletising Plant, the Coke Ovens, the Mini Blast Furnace, the Blast
+     *     Furnace, the Oxygen Steel Shop and the Large Mini-Mill, at the
+     *     study's 2.4 figures and the spec's 2.2 conventions; the ovens, the
+     *     furnace and the shop make 8,000, 60,000 and 25,000 kW from their gas
+     *     (I2's gen); every one buys consumables. Each row carries "since",
+     *     the year it first existed (research-design.md 2.1; 1900, the start
+     *     year, for the four that stood before it), read by nothing yet.
+     *   - THE GOODS: PELLETS, PIG_IRON, MET_COKE (the steelworks' coke; COKE
+     *     is the coker's), THERMAL_COAL, COKING_COAL, LIMESTONE and LIME, at
+     *     the study's prices, imported until Coal Mining and Quarrying come;
+     *     the coke and both coals stockable, on NationalAccounts.HELD's end.
+     *   - OLD STEEL (OldMetal, new): the city's scrapped cars (Motoring
+     *     keeps them now), demolitions, fabrication offcuts and worn wagon
+     *     sets throw out steel each month, 85% recovered; Iron & Steel's
+     *     Scrap Yards buy it at 70% of scrap's export price (Q8), from each
+     *     seller pro rata - the households into their savings, a sector by
+     *     its other revenue ("Old metal sold") - and the rest goes to
+     *     landfill. Saved (DataSave.oldMetal); the audit declares the
+     *     households' part ("- sectors OldMetalToHouseholds") and notes the
+     *     rest.
+     *   - Iron & Steel makes and uses scrap, coke and pig iron, captive to
+     *     its own works first; its planner weighs a yard against the old
+     *     steel that arose (its feed gate, its share of nameplate) and pays
+     *     for it; a works' captive tonnes are not van loads.
+     *   - Harnesses: MaterialsCheck 11-14 (the seven rows' four cases at
+     *     parity; old steel and the 70% rule; captive coke and pig iron; the
+     *     works' power sold), 3 and 6 moved by the decisions; GdpCheck HELD;
+     *     BuildingDataCheck (108 buildings, gen, since, oldMetal); MoneyCheck's
+     *     old steel; SaveFileCheck and ReadPathCheck; TradeCostCheck's table.
      */
-    public static final String VERSION = "0.7.120";
+    public static final String VERSION = "0.7.121";
 
     /**
      * The save shape.

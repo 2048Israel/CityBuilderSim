@@ -513,18 +513,21 @@ public class MiningCheck {
                 exportOnly / allIn > .02);
 
         /*
-         * AND NOTHING IN THE CITY BUYS IT, until the integrated route (batch
-         * I4). To 0.7.115 this section's last line was "a mill next door is
-         * worth more to a mine than exporting": the foundry bought IRON, ore
-         * or scrap. A furnace buys SCRAP now, so ore's co-location reward -
-         * replacing imported ore at the landed price, 4.1% a month against
-         * 2.7% (the study's case C) - waits for a works that uses ore; it is
-         * MaterialsCheck 9's case arithmetic until then.
+         * AND WHO IN THE CITY BUYS IT: since the integrated route (0.7.121,
+         * batch I4) the Pelletising Plant and the two blast furnaces, Iron &
+         * Steel's. To 0.7.115 this section's last line was "a mill next door
+         * is worth more to a mine than exporting": the foundry bought IRON, ore
+         * or scrap; from 0.7.116 a furnace bought SCRAP and nothing used ore.
+         * Ore's co-location reward - replacing imported ore at the landed
+         * price, 4.1% a month against 2.7% (the study's case C) - is a works
+         * of the route's, held in MaterialsCheck 11's cases.
          */
-        boolean noOreBuyer = true;
-        for (BuildingsTemplate t : oneMine.getTemplates()) noOreBuyer &= t.uses(Good.IRON) == 0;
-        assertTrue("nothing in the catalogue uses ore until batch I4: a mine ships every tonne it lifts",
-                noOreBuyer);
+        java.util.Set<Integer> oreBuyers = new java.util.TreeSet<>();
+        for (BuildingsTemplate t : oneMine.getTemplates()) if (t.uses(Good.IRON) > 0) oreBuyers.add(t.getId());
+        assertTrue("since batch I4 the catalogue's ore buyers are Iron & Steel's Pelletising Plant and its two blast furnaces: "
+                        + oreBuyers, oreBuyers.equals(new java.util.TreeSet<>(java.util.List.of(
+                        ham.citybuildersim.sectors.HeavyIndustry.PELLETISING_PLANT, ham.citybuildersim.sectors.HeavyIndustry.MINI_BLAST_FURNACE,
+                        ham.citybuildersim.sectors.HeavyIndustry.BLAST_FURNACE))));
 
         cleanUp(root);
 

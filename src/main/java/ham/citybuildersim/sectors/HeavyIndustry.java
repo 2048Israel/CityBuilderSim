@@ -246,46 +246,4 @@ public final class HeavyIndustry extends ProcessingSector {
         double intake = t == null ? 0 : t.oldMetal(Good.STEEL);
         return intake > 0 ? intake * rate * oldSteelPrice() : 0;
     }
-
-    /* PROBE-ONLY (removed before commit) */
-    @Override
-    public ham.citybuildersim.BusinessInvestment.Decision plan(ham.citybuildersim.BusinessInvestment plans, ham.citybuildersim.Game game) {
-        ham.citybuildersim.BusinessInvestment.Decision d = super.plan(plans, game);
-        if (System.getProperty("i4.probe") != null && (d.build || game.getMonth() % 120 == 0)) {
-            StringBuilder sb = new StringBuilder("I4PLAN m" + game.getMonth() + " " + (d.build ? "BUILD " + d.template.getName() : "no") + " | " + d.reason + " | standing:");
-            for (ham.citybuildersim.BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-                int q = buildings.getQuantity(t.getId());
-                if (q > 0) sb.append(" ").append(t.getName()).append("=").append(q);
-            }
-            sb.append(" | rate ").append(String.format("%.3f", getOperatingRate()));
-            sb.append(String.format(" | steel imp %,.0f exp %,.0f scrap imp %,.0f pig imp %,.0f coke imp %,.0f",
-                    markets.get(Good.STEEL).getImported(), markets.get(Good.STEEL).getExported(), markets.get(Good.SCRAP).getImported(),
-                    markets.get(Good.PIG_IRON).getImported(), markets.get(Good.MET_COKE).getImported()));
-            for (ham.citybuildersim.sectors.SpreadPlanner.Candidate c : appraise(plans, game)) {
-                sb.append(String.format(" | %s %.2f%% %s", c.template().getName(), 100 * c.score(), c.why() == null ? "" : c.why()));
-            }
-            System.err.println(sb);
-        }
-        return d;
-    }
-
-    @Override
-    public void endOfMonth(ham.citybuildersim.Game game) {
-        super.endOfMonth(game);
-        if (System.getProperty("i4.probe") != null && game != null && game.getMonth() % 60 == 0) {
-            ham.citybuildersim.OldMetal p = game.getOldMetal();
-            System.err.printf("I4POOL m%d arisen %,.1f (cars %,.1f demol %,.1f offcuts %,.1f sets %,.1f) bought %,.1f landfill %,.1f price %.5f paid %,.1f yards %.0f%n",
-                    game.getMonth(), p.lastArisen(), p.lastArisen(ham.citybuildersim.OldMetal.Source.CARS),
-                    p.lastArisen(ham.citybuildersim.OldMetal.Source.DEMOLITIONS), p.lastArisen(ham.citybuildersim.OldMetal.Source.OFFCUTS),
-                    p.lastArisen(ham.citybuildersim.OldMetal.Source.ROLLING_STOCK), p.lastBought(), p.lastLandfill(), p.lastPrice(),
-                    p.lastPaidTotal(), oldSteelIntake() / 10500);
-        }
-        if (System.getProperty("i4.probe") != null && game != null && buildingsStanding() > 0 && game.getMonth() % 6 == 0) {
-            System.err.printf("I4RATE m%d rate %.3f fill %.3f energy %.3f water %.3f road %.3f health %.3f vans %.3f (%,.0f of %,.0f) cash %,.0f pre %,.0f rev %,.0f inp %,.0f pay %,.0f int %,.0f elec %,.0f | ptax %,.0f maint %,.0f%n",
-                    game.getMonth(), getOperatingRate(), getAverageFill(), energyRatio, waterRatio, roadRatio, healthRatio, getVanRatio(),
-                    vanFleet(), vansNeeded(), getCash(), statement().preTaxIncome, statement().revenue, statement().inputs, statement().payroll,
-                    statement().interest, statement().electricity, statement().propertyTax, statement().maintenance);
-        }
-    }
-
 }

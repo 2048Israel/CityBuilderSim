@@ -222,6 +222,14 @@ public class ReadPathCheck {
         into.put("bank.bondWeighted", b.getBondWeighted());
         into.put("bank.concentration", b.getConcentrationAddOn());
         into.put("bank.herfindahl", b.getConcentrationHerfindahl());
+        // ...and the city's old steel (0.7.121, batch I4): what stands to be bought, and the yards' last month.
+        OldMetal old = g.getOldMetal();
+        into.put("oldMetal.available", old.available());
+        into.put("oldMetal.lastArisen", old.lastArisen());
+        into.put("oldMetal.lastBought", old.lastBought());
+        into.put("oldMetal.lastLandfill", old.lastLandfill());
+        into.put("oldMetal.lastPrice", old.lastPrice());
+        into.put("oldMetal.lastPaid", old.lastPaidTotal());
         for (String s : cr.sectors()) {
             into.put("credit.bonds." + s, cr.getBondPrincipal(s));
             into.put("credit.bondsLost." + s, cr.getBondWrittenOffTotal(s));
@@ -259,6 +267,20 @@ public class ReadPathCheck {
         // the treasury's own read - the one that was mutating
         e.getTaxIncome();
         e.getTotalIncome();
+        // ...and the city's old steel and what Iron & Steel's yards would make of it (0.7.121, batch I4; OldMetal), as a
+        // sector page and the build card read them: the pool, the yards' feed and price, and every works weighed.
+        OldMetal old = g.getOldMetal();
+        old.available();
+        old.lastArisen();
+        old.lastPaid();
+        old.lastPaidTotal();
+        for (OldMetal.Source src : OldMetal.Source.values()) { old.available(src); old.lastArisen(src); }
+        ham.citybuildersim.sectors.HeavyIndustry heavy = g.getSectors().heavyIndustry();
+        heavy.oldSteelIntake();
+        heavy.oldSteelPerTonneOfScrap();
+        heavy.oldSteelPrice();
+        heavy.tonnesMoved();
+        heavy.appraise(g.getBusinessInvestment(), g);
         // ...and the health service's price and premium, as the Health page
         // and the Services tab read them (2026-09-19)
         e.getHealthPremiums();

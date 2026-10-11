@@ -347,6 +347,59 @@ public class MoneyCheck {
                 + " imports, in TRADE", last.detail.contains("chk + sectors PowerSold") && last.detail.contains("chk - utilities PowerBought")
                 && last.detail.contains("- Industry Imports") && consumables != null && last.tradeOut >= consumables);
 
+        /* ==================================================================
+           OLD STEEL (0.7.121, batch I4; OldMetal): a Scrap Yard buys the
+           city's old steel at 70% of scrap's export price from whoever threw
+           it out - the households for their cars, paid into their savings as
+           the yard buys and out of the yard's cash at its strike, which
+           leaves the pools ("- sectors OldMetalToHouseholds"); and a sector
+           for its offcuts or its demolitions, a pool paying a pool in the
+           strike's window, noted beside it. THE FIXTURE CAUSES IT: the town's
+           own cars and offcuts are too few to run a yard, so its pool is
+           handed old steel from the households and the fabricators each
+           month, more than the yard takes, and the rest goes to landfill.
+           ================================================================== */
+        System.out.println("\n--- a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks ---");
+        Game yards = new Game(GameFiles.scratch("moneycheck-oldsteel"));
+        quietly(yards::run);
+        yards.setCashForTest(Founding.WEALTHY_CASH);
+        yards.getLandManager().setOwnedSqFt(yards.getLandManager().getOwnedSqFt() + 400_000_000L);
+        quietly(() -> {
+            yards.buildStack(t(yards, "House"), 400, true);
+            yards.buildStack(t(yards, "Small Grocery Store"), 4, true);
+            yards.buildStack(t(yards, "Coal Power Plant"), 1, true);
+            yards.buildStack(t(yards, "Water Treatment Plant"), 1, true);
+            yards.buildStack(t(yards, "Paved Road"), 10, true);
+            yards.buildStack(yards.getBuildingManager().getTemplate(ham.citybuildersim.sectors.HeavyIndustry.SCRAP_YARD), 1, true);
+        });
+        MoneyAudit.Result worstYard = MoneyAudit.Result.NONE;
+        double householdsDeclared = 0, sectorsSold = 0, yardBought = 0;
+        for (int m = 0; m < 24; m++) {
+            yards.getOldMetal().carsScrapped(6_000 / OldMetal.STEEL_A_CAR / OldMetal.RECOVERY);
+            yards.getOldMetal().fabricated(Sectors.MANUFACTURING, 6_000 / OldMetal.OFFCUTS_A_TONNE_FABRICATED / OldMetal.RECOVERY);
+            quietly(() -> yards.simulateMonths(1));
+            MoneyAudit.Result r = yards.getLastMoneyAudit();
+            if (r.relative() > worstYard.relative()) worstYard = r;
+            householdsDeclared += MoneyAudit.oldMetalBoughtOfHouseholds(yards.getSectors());
+            for (Sector x : yards.getSectors().all()) {
+                sectorsSold += x.statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0);
+                yardBought += x.statement().otherInputs.getOrDefault(OldMetal.LINE, 0.0);
+            }
+        }
+        System.out.printf("   over 24 months the yard bought $%,.1fk of old steel: $%,.1fk of the households', $%,.1fk of the sectors'%n",
+                yardBought, householdsDeclared, sectorsSold);
+        assertTrue("fixture: the yard bought old steel from the households and from a sector",
+                householdsDeclared > 0 && sectorsSold > 0);
+        assertTrue("a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month",
+                worstYard.relative() < 1e-4);
+        assertTrue("...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it"
+                        + " leaves the pools, the sectors' a pool paying a pool",
+                Math.abs(yardBought - householdsDeclared - sectorsSold) < .01);
+        MoneyAudit.Result lastYard = yards.getLastMoneyAudit();
+        assertTrue("...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it",
+                lastYard.detail.contains("- sectors OldMetalToHouseholds") && lastYard.detail.contains("chk + households OldMetalSold")
+                        && lastYard.detail.contains("chk + sectors OldMetalSold") && lastYard.detail.contains("chk - sectors OldMetalBought"));
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }

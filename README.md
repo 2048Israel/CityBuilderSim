@@ -111,7 +111,7 @@ suite into a record of what the code does rather than what it should do.
 ## `buildings.json` — the balance file
 
 Every building in the game is a row in `src/main/resources/buildings.json` —
-a hundred and one of them: cash cost, construction points, materials,
+a hundred and eight of them: cash cost, construction points, materials,
 maintenance, capacity, footprint in square feet, power and water draw, road load,
 its job mix across the eleven job types, which sector owns it, and what it makes
 and uses.

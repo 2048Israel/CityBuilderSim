@@ -1027,12 +1027,21 @@ public class MaterialsCheck {
         SpreadPlanner.Candidate fed = heavy.appraise(yardT, plans);
         SpreadPlanner.City frame = heavy.planner().city(heavy, plans, g);
         double share = Math.min(1, spareNow / yardT.oldMetal(Good.STEEL)), at = frame.rate() * share;
-        double byHand = ProcessingSector.gross(yardT, SpreadPlanner.values(g.getMarkets()), at) - frame.running(yardT) - frame.standing(yardT)
-                - SpreadPlanner.ownCosts(yardT, at, heavy.exchangeFactor(), heavy.tariff()) - yardT.oldMetal(Good.STEEL) * at * p70;
-        report("...with 30,000 t arising it is fed, weighed on the share of nameplate the pool fills and paying 70% for its old steel"
-                        + " (ProcessingSector.feedShare(), offMarketFeed())",
-                fed.refusal(SpreadPlanner.Gate.FEED) == null && share == 1 && Math.abs(fed.earns() - byHand) <= 1e-9 * Math.max(1, Math.abs(byHand)),
+        SpreadPlanner.Values here = SpreadPlanner.values(g.getMarkets());
+        double byHand = ProcessingSector.gross(yardT, here, at) - frame.running(yardT) - frame.standing(yardT)
+                - SpreadPlanner.ownCosts(yardT, at, heavy.exchangeFactor(), heavy.tariff())
+                - (yardT.oldMetal(Good.STEEL) * at * p70 + ProcessingSector.fleetRunning(yardT, here, at));
+        report("...with 30,000 t arising it is fed, weighed on the share of nameplate the pool fills, paying 70% for its old steel and"
+                        + " running its lorries, on its whole cost with them (ProcessingSector.feedShare(), offMarketFeed(), fleetRunning(),"
+                        + " fleetCapital())",
+                fed.refusal(SpreadPlanner.Gate.FEED) == null && share == 1 && Math.abs(fed.earns() - byHand) <= 1e-9 * Math.max(1, Math.abs(byHand))
+                        && fed.cost() == frame.cost(yardT) + ProcessingSector.fleetCapital(yardT, here),
                 String.format("%,.1fk a month, %.2f%% of its cost", fed.earns(), 100 * fed.score()));
+        double vans = ProcessingSector.vansFor(yardT);
+        assertTrue("a yard keeps a van for each 120 t a month it moves (Sector.TONNES_PER_VAN), its 10,000 t of scrap: 83.3 vans,"
+                        + " their wear a 120th of them a month and their diesel 240 L a van-month at the rate",
+                Math.abs(vans - 10_000 / Sector.TONNES_PER_VAN) < 1e-9 && Math.abs(ProcessingSector.fleetRunning(yardT, here, at)
+                        - (here.in(Good.VANS, vans / Sector.VAN_LIFE_MONTHS) + here.in(Good.DIESEL, vans * at * Sector.DIESEL_LITRES_A_VAN_MONTH))) < 1e-9);
 
         // In a played town: old steel handed in each month, the yard buying it, and the audit closing with the households' part declared.
         GameFiles playFiles = GameFiles.scratch("materialscheck-oldsteel-play");
