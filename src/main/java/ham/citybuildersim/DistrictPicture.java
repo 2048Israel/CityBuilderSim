@@ -17,9 +17,10 @@ import java.util.Arrays;
  * and the core, the rings of homes and the industry on the port came out.
  *
  * WHAT A PIXEL IS. Its 64 plots are counted by code (plotCodes(): the ground,
- * a street by kind, the city's highways and track, a building by its
- * colour's class), the codes taken in their rank (GROUND first, the roads,
- * then the buildings in BuildingVisual's order), and the plot at rank k is
+ * a building by its fill, a paved street, the city's highways and track),
+ * the codes taken in their rank (GROUND first, the buildings in
+ * BuildingVisual's order and the fills of their own, then the paved
+ * streets, the highways and the track), and the plot at rank k is
  * the pixel's, k a fixed hash of the pixel's place in the world over 0 to
  * 63. Over a uniform hash a pixel is a code with the chance its plots give
  * it, so a picture's shares are the district's in expectation, within a
@@ -142,7 +143,8 @@ public final class DistrictPicture {
      * Each plot of a district's plan by code, row by row over its
      * World.DISTRICT x World.DISTRICT (its frame less the east column and
      * south row, the next districts'), as the painter would draw them: the
-     * plan's streets by kind; the city's runs over its frame - an Elevated
+     * plan's paved streets and those of highway plots (its gravel and tracks
+     * the ground's, streetCode()); the city's runs over its frame - an Elevated
      * Highway's plots, the railway's track; a mine or well on its site;
      * `extras`, the boxes the runs and the shore stand on its ground ({x, y,
      * w, h, type id} five ints each, in the district's plots: its yards as
@@ -204,8 +206,8 @@ public final class DistrictPicture {
     }
 
     /**
-     * A district's picture from its plots' codes (plotCodes()), its plan's
-     * identity `stamp`, the world's seed and the district's north-west plot in
+     * A district's picture from its plots' codes (plotCodes()), their
+     * `stamp` (stampOf()), the world's seed and the district's north-west plot in
      * the world (x0, y0): each pixel the code at its rank (rankAt()) among its
      * plots counted by code, in code order.
      */
@@ -259,9 +261,9 @@ public final class DistrictPicture {
      * pixels across): each drawn type's buildings on their whole plots
      * (BuildingVisual.cells()), its Paved Roads' plots as streets (its gravel
      * the ground's, as a picture's); the highways and the track are the far
-     * node's lines, not shares. Scaled
-     * down to the whole when they take more than its ground (a district the
-     * plans carry from). Empty for a district with none.
+     * node's lines, not shares. Scaled down to the whole when they take more
+     * than its ground (a district the plans carry from). Empty for a district
+     * with none.
      */
     public static double[] shares(CityMap.District d, BuildingVisual.Type[] types) {
         double[] s = new double[CODES];
