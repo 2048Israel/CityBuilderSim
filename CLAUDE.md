@@ -540,11 +540,13 @@ batch of its own, on its own branch, by an agent with a fresh context.
 **Either way, before saying a change works:** the suite is green except for
 what was already red (say which), the map is regenerated, the write-up
 exists, the docs pass has run, and the batch's row is out of `QUEUE.md` (what
-it left undone under Pending there). `docs/notes/` carries copies of the
-project's `todo.md`, `changelog.md` and `index.md`, last copied in on
-2026-10-07 (the changelog's top block is 0.7.53 to 0.7.54), so a session on
-the PC can read the list and the record as they stood then; the project is
-the original.
+it left undone under Pending there). `docs/notes/` holds the part of the
+record that left the project on 2026-10-11 (Jerus: "yes move them to github
+the changelong blcoks and all"): `changelog-archive.md`, the changelog's
+blocks dated before 2026-09-11, and `todo-archive.md`, the todo's
+struck-through items and its fully answered CONFIRM lists, each verbatim;
+its README says the rules. The live list and the record from 2026-09-11 on
+are the project's `claude/todo.md` and `claude/changelog.md`.
 
 ## Adding things - where the shape already is
 

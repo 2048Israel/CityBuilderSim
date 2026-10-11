@@ -1,9 +1,9 @@
-# docs/notes
+# docs/notes — the archive of what left the project
 
-Copies of the project's record, as of the last deploy from the cloud loop:
-`todo.md` (the list of what is open), `changelog.md` (what shipped, newest
-first) and `index.md` (the two hundred design notes by subsystem). The
-originals live in the claude.ai project "Civic Ledger: Java Game"; edit
-them there, not here. `pending.md` is the one file written here first: the
-docs pass leaves its changelog and todo lines in it when it runs where the
-project cannot be reached, and the next cloud session moves them over.
+This folder holds the part of the design record that left the claude.ai project "Civic Ledger: Java Game" on 2026-10-11, when the project reached its knowledge limit and Jerus said "yes move them to github the changelong blcoks and all". The copies of `todo.md`, `changelog.md` and `index.md` that were here, last copied in on 2026-10-07, are gone (the git history keeps them).
+
+- **`changelog-archive.md`** — the project's changelog blocks older than a month: every `### ` block whose title's first date is before 2026-09-11, verbatim, newest first (16 blocks, the newest dated 2026-09-10, the oldest 2026-09-06). The project's `claude/changelog.md` holds 2026-09-11 onward.
+- **`todo-archive.md`** — the todo's finished part, verbatim, under the headings it sat under: every struck-through list item (a title wrapped in `~~`, with the lines under it) and the one struck `###` heading with its section, whatever their date, and the CONFIRM lists whose every item is answered (those from 0.7.107 to 0.7.120 that Jerus closed on 2026-10-11 at 09:29). The newest date in it is 2026-10-11. A done parent with unstruck bullets under it stayed in the project, with them, and only its struck children moved; a list with any item still open stayed whole.
+- **`pending.md`** — stays as it was: the docs pass's place for lines it cannot write to the project.
+
+The live record is in the project, not here: `claude/todo.md` (the list, the CHECK and CONFIRM lists still open), `claude/changelog.md` (2026-09-11 onward) and `claude/index.md` (the map of the design notes). Each of the project's two files carries one line saying that its older part is in this folder.
