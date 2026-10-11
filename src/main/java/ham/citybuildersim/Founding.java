@@ -263,7 +263,7 @@ public final class Founding {
     private final double reserveUsd;
     private final double meanInflation;
     private final long worldSeed;
-    /** The world it stands on (0.7.115, batch E2): Key.generated(worldSeed), or a harness's Earth world until E4 lets the screen found on Earth (and a save keep it). */
+    /** The world it stands on (0.7.115, batch E2): Key.generated(worldSeed), or the real Earth round a spot (onEarth(), since 0.7.121 the founding screen's, and kept by a save). */
     private final World.Key worldKey;
 
     /**

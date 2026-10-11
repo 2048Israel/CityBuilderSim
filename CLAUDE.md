@@ -296,7 +296,20 @@ These are Jerus's, and they do not move.
                                    by width as the view widens, the small lakes from their points, the
                                    forest dithered, the void past the planet's rim; MapTiles.nodeTerrain()
                                    by key) and the hover card's nearest place and geologic province
-                                   (LandMap.earthWords()) - MapCheck 10
+                                   (LandMap.earthWords()) - MapCheck 10; and since 0.7.121 (batch E4)
+                                   the sea's depth there, the generated world's rule with the distance
+                                   from the coast for the elevation earth-1 does not have
+                                   (EarthTerrain.SHELF_WIDTH_M, measured on the data)
+        EarthSite.java             founding a city on the real Earth (0.7.121, batch E4; spec-earth.md 2
+                                   and 6): whether the game has the Earth's data (gameData(), the file at
+                                   EarthData.DATA_FILE, which is not in git - data/ is ignored - and the
+                                   game runs without it), the place search, Random spot and the founding
+                                   card - the snap's site, the ground within 5 km on the world's plots,
+                                   the province's multipliers, the nearest iron, the refusals (the sea,
+                                   ice) and warnings (a desert, no fresh water near); and why an Earth
+                                   save cannot be loaded here. ui/FoundingScreen draws it (Earth |
+                                   Generated, the globe, the card), Founding carries the spot, DataSave
+                                   its four fields (SAVE_FORMAT 38) - EarthFoundingCheck holds it
         LandManager.java, LandMarket.java
                                    the city's land: what it owns, what is built on and what it sells - the
                                    ore and oil its ground holds less what is taken out, since 0.7.93 the
@@ -361,8 +374,9 @@ These are Jerus's, and they do not move.
                                    accountant sets them, and the Summary | Statement switch the sector pages
                                    and the bank's share), Ladder.java (every dial, since 0.7.6), Palette.java (the colours, and
                                    its nested Fonts, which loads IBM Plex since 0.7.21), Icons.java, and
-                                   FoundingScreen.java (New city's page, 0.7.10, one panel since 0.7.21; the
-                                   record it fills is Founding.java), and ConstructionScreen.java (the Build
+                                   FoundingScreen.java (New city's page, 0.7.10, one panel since 0.7.21, two
+                                   columns on the real Earth since 0.7.121 - its globe and the founding card,
+                                   EarthSite's; the record it fills is Founding.java), and ConstructionScreen.java (the Build
                                    tab's construction page, 0.7.22), and TimeChart.java (City History's
                                    charts, 0.7.23: pan, zoom, ranges, an overview, named crises, the
                                    decision flags, full screen), and FundScreen.java (the city's fund as a
@@ -372,7 +386,7 @@ These are Jerus's, and they do not move.
                                    MapTiles, which MapCheck holds), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray). The model never imports it.
-        *Check.java                ninety-six harnesses, each a main() with static helpers
+        *Check.java                ninety-seven harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103)
@@ -415,10 +429,12 @@ Conventions the code is written to, which the indexes rely on:
    the mechanic before the screen, because the screen is checked by eye.
 3. Build: NetBeans *Clean and Build*, or `mvn -q compile`. Run the suite:
    `java -cp "target/classes;%USERPROFILE%\.m2\repository\com\google\code\gson\gson\2.10.1\gson-2.10.1.jar" ham.citybuildersim.AllChecks -q`
-   (about nine minutes). `AllChecks money bank` runs two. EarthCheck and
-   EarthTerrainCheck run their full-file sections only where earth-1.bin is
-   named (`-Dcbs.earth=<path>`, through `JDK_JAVA_OPTIONS` for the suite) or
-   lies at `data/earth-1.bin`, and say so in one line where it does not.
+   (about nine minutes). `AllChecks money bank` runs two. EarthCheck,
+   EarthTerrainCheck and EarthFoundingCheck run their full-file sections only
+   where earth-1.bin is named (`-Dcbs.earth=<path>`, through `JDK_JAVA_OPTIONS`
+   for the suite) or lies at `data/earth-1.bin`, and say so in one line where
+   it does not. `LongPlaytest --earth rotterdam` plays the run on the real
+   Earth (the file needed); its trace is a baseline of its own.
 4. `Regenerate maps.bat`. Commit the sources, `buildings.json` and `docs/`
    together; bump `GameVersion.VERSION` when the batch is player-visible.
 5. Write the batch up in the project - the why, while you still know it.

@@ -57,12 +57,13 @@ import java.util.Map;
  * same world and the same code. An Earth world's ground is EarthTerrain's
  * (spec-earth 3): the cells pass replaces the sea pass, the founding is the
  * snap to dry ground near the spot, and it has no founding river and no
- * heights (depthAt(), shelfTheta() refuse); its fields are drawn on its
+ * heights (shelfTheta() refuses; since 0.7.121 its sea's depth is the
+ * distance from the coast's, depthAt()); its fields are drawn on its
  * cells' land, off its sea, and since 0.7.117 (batch E3) on its geology:
  * today's densities times each province's weight and Z (Geology; oil's
  * petroleum, and its offshore sea), each field's type leaning on the
- * class under it (Deposit.type()). Only harnesses build one until E4 lets
- * a city be founded on it.
+ * class under it (Deposit.type()). Since 0.7.121 (batch E4) the founding
+ * screen founds a city on it (EarthSite, Founding.onEarth()).
  */
 public final class World {
 

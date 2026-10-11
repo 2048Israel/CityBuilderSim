@@ -82,9 +82,12 @@ import java.util.Map;
  * asked for. Every value is a pure function of the key: the same key draws
  * the same ground on every machine (StrictMath, World's hashes).
  *
- * E2 builds it unreachable from the founding screen (E4 offers Earth): a
- * generated world never reaches it. EarthTerrainCheck holds it on the three
- * windows of EarthCheck's fixture and, when it is named, on the full file.
+ * E2 built it unreachable from the founding screen; since 0.7.121 (batch E4)
+ * the screen offers Earth, the snap is the founding card's first question
+ * (siteNear()), and the sea has a depth (THE SEA'S DEPTH): a generated world
+ * never reaches it. EarthTerrainCheck holds it on the three windows of
+ * EarthCheck's fixture and, when it is named, on the full file;
+ * EarthFoundingCheck the depth and the card.
  */
 public final class EarthTerrain {
 

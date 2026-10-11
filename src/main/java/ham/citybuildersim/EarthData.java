@@ -67,7 +67,8 @@ import java.util.zip.Inflater;
  *
  * E1 (0.7.111) built it pure; since 0.7.115 (batch E2) EarthTerrain lays
  * the Earth's ground on a world with an Earth key from it (World.Key's data
- * is its identity) - a key only harnesses make until E4. EarthCheck holds it,
+ * is its identity) - and since 0.7.121 (batch E4) the founding screen
+ * founds a city on one, the game's file found by locate(). EarthCheck holds it,
  * on a fixture of the file and, when it is named, on the file itself.
  */
 public final class EarthData implements AutoCloseable {
@@ -75,7 +76,7 @@ public final class EarthData implements AutoCloseable {
     /** The file this build reads, as a save will name it: earth-1 as E0 baked it on 2026-10-08 (tools/earth/earth-1.sha256). */
     public static final String EARTH_1 = "earth-1:b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a";
 
-    /** Where the game will look for the file, from the folder it runs in; E4 settles how it ships (it is not in the repository), and until then EarthCheck, EarthTerrainCheck and EarthTerrain.source() (for a key whose data nothing registered) look here. */
+    /** Where the game looks for the file, from the folder it runs in: beside the game, not in the repository (data/ is git-ignored); the game runs without it and offers the generated world (EarthSite.gameData(), 0.7.121), and EarthCheck, EarthTerrainCheck, EarthFoundingCheck and EarthTerrain.source() (for a key whose data nothing registered) look here. */
     public static final String DATA_FILE = "data/earth-1.bin";
 
     /** The system property that names the file instead (-Dcbs.earth=<path>), as EarthCheck's and EarthTerrainCheck's runs on the full file take it. */
@@ -109,9 +110,9 @@ public final class EarthData implements AutoCloseable {
     public static final int LC_FOREST = 0x0F;
     /** Land cover's bit for bare ground at 2% of the land or more (the beach rule). */
     public static final int LC_BEACH = 0x10;
-    /** Land cover's bit for bare ground at half the land or more (the desert warning, E4's founding's; nothing reads it yet). */
+    /** Land cover's bit for bare ground at half the land or more: the founding card's desert warning (EarthSite, 0.7.121). */
     public static final int LC_DESERT = 0x20;
-    /** Land cover's bit for snow and ice at half the land or more (what E4's founding is to refuse; nothing reads it yet). */
+    /** Land cover's bit for snow and ice at half the land or more: what the founding card refuses (EarthSite, 0.7.121). */
     public static final int LC_ICE = 0x40;
     /** Land cover's bit for land WorldCover has no data on (south of 60 S, and GEBCO-only land). */
     public static final int LC_NO_DATA = 0x80;
