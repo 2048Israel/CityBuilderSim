@@ -180,17 +180,24 @@ public class RobustnessCheck {
          */
         com.google.gson.JsonObject before =
                 com.google.gson.JsonParser.parseString(good).getAsJsonObject();
-        before.addProperty("saveFormat", GameVersion.FIRST_SECTOR_FORMAT - 1);
+        /*
+         * ...SINCE 0.7.108 THE FLOOR, GameVersion.OLDEST_LOADABLE_FORMAT, 21
+         * today: one check for the sectors' break and for any format a later
+         * bump retires, its reason the build that saved the city
+         * (GameVersion.noLongerReadable()). SaveFileCheck's last section holds
+         * the refusal itself: the words, and the folder byte for byte.
+         */
+        before.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT - 1);
         Files.writeString(files.saveFile(9), before.toString());
 
-        assertTrue("a save from before the sectors reads as a file", !files.slotIsEmpty(9));
+        assertTrue("a save older than this build loads reads as a file", !files.slotIsEmpty(9));
         assertTrue("...its header parses fine", files.readHeader(9) != null);
-        assertTrue("...and it says so", files.readHeader(9).isFromBeforeSectors());
+        assertTrue("...and it says so", files.readHeader(9).isNoLongerReadable());
         assertTrue("...but it is not loadable", !files.slotIsLoadable(9));
         Game fossil = new Game(files);
         fossil.loadGameSave(9);
         assertTrue("and the loader refuses it with a reason", fossil.getLoadFailure() != null
-                && fossil.getLoadFailure().contains("sector"));
+                && fossil.getLoadFailure().contains("can no longer read"));
         assertEquals("nothing applied", fossil.getMonth(), 1);
 
         com.google.gson.JsonObject old4 =
@@ -201,7 +208,7 @@ public class RobustnessCheck {
                 "blockedMonths", "landMarketPrices", "notices", "outwardInvestment" }) {
             old4.remove(field);
         }
-        old4.addProperty("saveFormat", GameVersion.FIRST_SECTOR_FORMAT);
+        old4.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT);
 
         Files.writeString(files.saveFile(7), old4.toString());
 

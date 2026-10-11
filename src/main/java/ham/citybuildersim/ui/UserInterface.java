@@ -3345,8 +3345,11 @@ public class UserInterface extends Application {
         if (header.isFromNewerBuild()) {
             return "From a newer version (" + header.getGameVersion() + ")";
         }
-        if (header.isFromBeforeSectors()) {
-            return "From before the sector redesign (" + header.getGameVersion() + ") - cannot be loaded";
+        // ...and one older than this build loads (0.7.108; GameVersion.OLDEST_LOADABLE_FORMAT):
+        // the load's own words, the build that saved it and still opens it, here - its button
+        // is off, so this line is all the load screen says (slotRow() wraps it).
+        if (header.isNoLongerReadable()) {
+            return GameVersion.noLongerReadable(header.getGameVersion());
         }
 
         String when = java.time.Instant.ofEpochMilli(header.getSavedAt())
@@ -3398,6 +3401,11 @@ public class UserInterface extends Application {
         Label detail = new Label(slotSummary(slot));
         detail.setStyle("-fx-font-size: 10px; -fx-text-fill: "
                 + (broken ? Palette.BAD : empty ? Palette.TEXT_FAINT : Palette.TEXT_MUTED) + ";");
+        // A refused save's line is a sentence or two (0.7.108): wrapped to the column.
+        if (!empty && !broken && !files.slotIsLoadable(slot)) {
+            detail.setWrapText(true);
+            detail.setMaxWidth(320);
+        }
 
         row.getChildren().addAll(pick, detail);
         return row;
@@ -3445,6 +3453,8 @@ public class UserInterface extends Application {
 
         Label current = new Label(slotSummary(slot));
         current.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+        current.setWrapText(true);
+        current.setMaxWidth(320);
 
         TextField name = new TextField(
                 (header != null && header.hasName()) ? header.getSlotName() : "");
