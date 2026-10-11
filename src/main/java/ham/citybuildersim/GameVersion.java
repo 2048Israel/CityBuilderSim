@@ -5674,7 +5674,14 @@ public final class GameVersion {
      *     buildings, ten on sites, coal's by type, wash, consumables, since),
      *     BuildCardCheck (the Coal group, the plant's card), OilCheck (the
      *     wells and the refinery after Restaurants, no longer the end).
-     *   - The playtests: PLAYTEST_LINE.
+     *   - The playtests: the default one is pt07124's and the Earth one
+     *     (--earth rotterdam) pte07127's, month for month, but for the bonds
+     *     trace's ten new columns (LongPlaytest writes a block a sector, and
+     *     Coal Mining's is the eighteenth): read on the old columns, every row
+     *     the same. Neither city ever owns coal, so Coal Mining builds nothing
+     *     and no offer either is shown holds any. The ensemble (sixteen
+     *     seeds, five policies, on the default world's founding site) is
+     *     07124's, all 80 runs byte for byte: 21 of 25, the same four red.
      *
      * 0.7.127 (2026-10-11) - ICE AND DESERT ON THE REAL EARTH. Batch E7, the
      * globe study's first (docs/studies/spec-globe.md 3.9, 3.10 and 4;
