@@ -5048,7 +5048,8 @@ public final class GameVersion {
      *     and name what is zoned for others
      *     (BusinessInvestment.zonedForOthersWords(), landReason()'s words).
      *   - Harnesses: ZoningViewCheck (new, eight sections).
-     *   - The playtest sets no zone and is 0.7.107's byte for byte.
+     *   - The playtest sets no zone and is 0.7.108's byte for byte (Z2 was
+     *     built beside P7 on 0.7.107 and shipped after it).
      *
      * 0.7.110 (2026-10-10) - FIELDS BY TYPE. Batch I1, the first of the
      * materials chains (runs/spec-materials.md 2.4, 2.5; runs/brief-batchI1.md,
@@ -5089,7 +5090,7 @@ public final class GameVersion {
      *     by type, E by type, W by type, fits); BuildingDataCheck (the site,
      *     json against the twin, and the good rule's answer for every
      *     building); SaveFileCheck and ReadPathCheck (depletionByType).
-     *   - The playtest is 0.7.106's byte for byte.
+     *   - The playtest is 0.7.109's byte for byte.
      *
      * 0.7.111 (2026-10-10) - THE EARTH'S READER, PURE. Batch E1 (the
      * project's spec-earth.md, Jerus's answers of 2026-10-10 "all rec";
@@ -5122,7 +5123,7 @@ public final class GameVersion {
      *     and Fiji's four tiles, with what earthread.py reads from them and
      *     from the full file), and on the full file when it is named
      *     (-Dcbs.earth=<path>).
-     *   - The playtest is 0.7.109's byte for byte.
+     *   - The playtest is 0.7.110's byte for byte.
      *
      * 0.7.112 (2026-10-10) - THE SHARED MACHINERY. Batch I2, the second of
      * the materials chains (runs/spec-materials.md 2.1, 2.5-2.8;
@@ -5179,7 +5180,7 @@ public final class GameVersion {
      *     and 14 (its fixture's lever, the refiners' cash, is the old rule's);
      *     MoneyCheck 4 (power and consumables, the audit closing);
      *     BuildingDataCheck (gen and consumables, json against the twin).
-     *   - The playtest is 0.7.106's byte for byte.
+     *   - The playtest is 0.7.111's byte for byte.
      *
      * 0.7.113 (2026-10-11) - EVERY ORDER ON ITS WHOLE COST. Batch I2b
      * (Jerus's decision A, "test every order on its whole cost, whoever
@@ -5220,6 +5221,8 @@ public final class GameVersion {
      *     RefineryCheck 14 (its town on the rule to 0.7.112).
      *   - The playtest moves from month 9 (re-baselined pt07113): people at
      *     the end 566,444 (492,823), the businesses' debt $53.2B ($1.0T).
+     *     Against 0.7.115's traces, which shipped before it and were
+     *     0.7.112's (and 0.7.106's) byte for byte.
      *
      * 0.7.115 (2026-10-11) - THE EARTH'S GROUND. Batch E2 (the project's
      * spec-earth.md 3 and 8; Jerus's answers of 2026-10-10, "all rec";
@@ -5254,7 +5257,10 @@ public final class GameVersion {
      *     save's generated world and needs none.
      *   - Harnesses: EarthTerrainCheck (new, nine sections) on EarthCheck's
      *     fixture, and on the full file when it is named.
-     *   - The playtest is 0.7.106's byte for byte.
+     *   - The playtest is 0.7.112's byte for byte: E2 shipped after 0.7.112
+     *     and before 0.7.113 (0.7.114 is unused), and as a generated world
+     *     reaches the code it reached, the playtest since is 0.7.113's
+     *     (pt07113).
      */
     public static final String VERSION = "0.7.115";
 
@@ -5630,8 +5636,9 @@ public final class GameVersion {
      *     after it moves: eighteen a cell meant "the whole array" at seven
      *     sectors and means "the array before student debt" at eight.
      *
-     *     A bump does NOT fix that on its own - older saves always load, so
-     *     nothing would have been refused. HouseholdBalance.restoreCells()
+     *     A bump does NOT fix that on its own - older saves always loaded
+     *     then (until 0.7.108's OLDEST_LOADABLE_FORMAT), so nothing would
+     *     have been refused. HouseholdBalance.restoreCells()
      *     computes its widths from the company list the save was WRITTEN with
      *     (DataSave.getEquityKeys) and maps holdings BY NAME. This number is
      *     the record of why, not the mechanism.

@@ -24,11 +24,12 @@ import java.util.function.IntSupplier;
  * RECORDED WHERE IT IS APPLIED, NEVER IN THE INTERFACE. Each policy has one
  * place that applies it - TaxPolicy's setters, LabourMarket's floor, the
  * central bank's dials, Education's share of tuition, and Game's methods
- * for the standing subsidies, the bank, the fund, the paper, the currency
- * and the queue - and that is where the line is written, so a decision made
- * from any screen, from the playtest's advisor or from a harness is
- * recorded the same way, and one that changes nothing (a value set to what
- * it already was) is not recorded at all. Ordinary build orders, and the
+ * for the standing subsidies, the bank, the fund, the paper, the currency,
+ * the queue and, since 0.7.107, the zones and the forest law - and that is
+ * where the line is written, so a decision made from any screen, from the
+ * playtest's advisor or from a harness is recorded the same way, and one
+ * that changes nothing (a value set to what it already was) is not
+ * recorded at all. Ordinary build orders, and the
  * plots the land office buys, are not decisions: a city places them every
  * month, and the big ones the treasury cannot pay for arrive here as the
  * borrowing that paid for them.
