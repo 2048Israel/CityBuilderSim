@@ -610,6 +610,18 @@ public class RailCheck {
                         onward.getTradeTonnes(), onward.getHaulageBilled(), onward.getQuote(), onward.getTightness(),
                         rail.getTradeTonnes(), rail.getHaulageBilled(), rail.getQuote(), rail.getTightness()));
 
+        // ...and a wagon set moved with the steel in it (0.7.116, batch I3; Jerus's C): CarCheck's THE VEHICLES MOVED WITH THE STEEL IN THEM.
+        System.out.println("\n--- and a wagon set moved with the steel in it, the Locomotive Works' margin a set to the cent (0.7.116) ---");
+        report("a wagon set is the world's at 2,302.2: 2,400 less 120 t of fabricated steel at .665 and 20 t of machinery at .9",
+                Good.ROLLING_STOCK.worldImportPrice() == 2302.2 && !Good.ROLLING_STOCK.exportable(),
+                String.format("%.2f", Good.ROLLING_STOCK.worldImportPrice()));
+        BuildingManager catalogue = new BuildingManager();
+        catalogue.initializeTemplates();
+        java.util.List<String> setLines = new java.util.ArrayList<>();
+        report("...so the Locomotive Works makes of a set over the parts in it what it did, to the cent",
+                CarCheck.marginsHeld(catalogue, Good.ROLLING_STOCK, CarCheck.ROLLING_WAS_IN, Double.NaN, setLines),
+                String.join("; ", setLines));
+
         if (fails > 0) {
             System.out.printf("%n%d check(s) failed%n", fails);
             System.exit(1);

@@ -365,6 +365,16 @@ public class VanCheck {
         report("...and the money audit closes with it", game.getLastMoneyAudit().relative() < 1e-10,
                 String.format("%.2e", game.getLastMoneyAudit().relative()));
 
+        // ...and a van moved with the steel in it (0.7.116, batch I3; Jerus's C): CarCheck's THE VEHICLES MOVED WITH THE STEEL IN THEM.
+        System.out.println("\n--- and a van moved with the steel in it, its plant's margin a van to the cent (0.7.116) ---");
+        report("a van is the world's at 68.135: 72 less 5 t of fabricated steel at .665 and 0.6 t of machinery at .9",
+                Good.VANS.worldImportPrice() == 68.135 && !Good.VANS.exportable(), String.format("%.4f", Good.VANS.worldImportPrice()));
+        BuildingManager catalogue = new BuildingManager();
+        catalogue.initializeTemplates();
+        java.util.List<String> vanLines = new java.util.ArrayList<>();
+        report("...so the van plant makes of a van over the parts in it what it did, to the cent",
+                CarCheck.marginsHeld(catalogue, Good.VANS, CarCheck.VANS_WAS_IN, Double.NaN, vanLines), String.join("; ", vanLines));
+
         System.out.println();
         if (fails == 0) {
             System.out.println("The vans work: a fleet is sized by the tonnage, built up rather than"
