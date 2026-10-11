@@ -21,7 +21,8 @@ import java.util.Locale;
  * WHAT JERUS DECIDED, and what this holds to:
  *   - Earth for new cities, the default where the data is here; the
  *     generated world stays as an option (gameData(): the game runs without
- *     the file, and says where it goes - dataWords()).
+ *     the file, and says where it goes and, since 0.7.125, how it gets there -
+ *     dataWords()).
  *   - A spot in the sea or on ice is refused; a desert, or no fresh water
  *     within 5 km, is warned of (Card.refusal(), Card.warnings()).
  *   - No iron field is promised: the card names the nearest (Card.ironKm()).
@@ -103,15 +104,55 @@ public final class EarthSite {
         return looked;
     }
 
-    /** Why the game's Earth is not here, in the player's words: where the file goes, or that the one there is not this build's. */
+    /* ----- how the file gets there (0.7.125, batch C2) -----
+       Since f99d62c the file is the GitHub release earth-1's asset:
+       GET_EARTH checks DATA_FILE against tools/earth/earth-1.sha256 and
+       downloads it when it is missing or bad, Play CityBuilderSim.bat calls
+       it before it starts the game, and Build EXE.bat carries the file into
+       the built game and its zip. So the words say the fetch where the
+       script is - a copy of the repository - and the zip where it is not:
+       the built game's folder has no tools/, and came with the file. */
+
+    /** The script that fetches the file, from the folder the game runs in (the folder DATA_FILE is looked for from): there in a copy of the repository, not in the built game, which carries the file in its zip. */
+    public static final String GET_EARTH = "tools/earth/get-earth.bat";
+
+    /** Whether the game runs from a copy of the repository - GET_EARTH is there - rather than as the built game: which of the two ways to the file the words say. */
+    static boolean fromRepository() {
+        return Files.isRegularFile(Path.of(GET_EARTH));
+    }
+
+    /** Why the game's Earth is not here, in the player's words: where the file goes and how it gets there, or that the one there is not this build's and what replaces it. */
     static String dataWords(Path found) {
-        String where = EarthData.DATA_FILE;
-        if (found == null || !Files.isRegularFile(found)) {
-            return "The real Earth needs its data, earth-1.bin (about 53 MB), which is not here. Put it in a folder named data"
-                    + " beside the game, as " + where + ", and open this page again.";
+        return dataWords(found, fromRepository());
+    }
+
+    /** ...for a copy of the repository or the built game, said: the founding screen's words. */
+    static String dataWords(Path found, boolean repository) {
+        if (missing(found)) {
+            return "The real Earth needs its data, earth-1.bin (about 53 MB), as " + EarthData.DATA_FILE + " beside the game,"
+                    + " and it is not here. " + fetchWords(repository, "open this page again");
         }
-        return "The file at " + found + " is not the Earth's data this build reads (" + shortId(EarthData.EARTH_1)
-                + "). Put the right earth-1.bin there and open this page again.";
+        return "The file at " + found + " is not the Earth's data this build reads (" + shortId(EarthData.EARTH_1) + "). "
+                + replaceWords(repository, "open this page again");
+    }
+
+    /** Whether no file is at the path found. */
+    private static boolean missing(Path found) {
+        return found == null || !Files.isRegularFile(found);
+    }
+
+    /** How a missing file gets there, then what to do: GET_EARTH and Play CityBuilderSim.bat, or the built game's zip. */
+    private static String fetchWords(boolean repository, String then) {
+        return repository
+                ? "Play CityBuilderSim.bat fetches it before it starts the game, or run " + GET_EARTH + " now and " + then + "."
+                : "The game's zip carries it, so this copy of the game is incomplete: unzip the whole zip once more and " + then + ".";
+    }
+
+    /** What replaces a file that is not this build's, then what to do: GET_EARTH, which fetches it again, or the built game's zip. */
+    private static String replaceWords(boolean repository, String then) {
+        return repository
+                ? "Run " + GET_EARTH + ", which replaces a bad copy, and " + then + "; Play CityBuilderSim.bat runs it before it starts the game."
+                : "The game's zip carries the right one: unzip the whole zip once more and " + then + ".";
     }
 
     /** An identity as a person reads it: "earth-1, b754a28f". */
@@ -137,7 +178,8 @@ public final class EarthSite {
     /**
      * Why a city saved on the real Earth cannot be loaded here, or null when
      * it can (spec-earth 6: the data is frozen per version, and a save names
-     * its own): its data is not this build's, or this build's is not here.
+     * its own): its data is not this build's, or this build's is not here -
+     * and then, since 0.7.125, how the file gets there (missingWords()).
      * Game's load refuses it with these words, nothing of it applied.
      */
     public static String loadProblem(String identity, Double lat, Double lon) {
@@ -145,10 +187,22 @@ public final class EarthSite {
             return "This city stands on the real Earth, and its save does not say where.";
         }
         if (available(identity)) return null;
-        if (identity.equals(EarthData.EARTH_1)) {
-            return "This city stands on the real Earth, and the Earth's data is not here: put earth-1.bin in a folder named data"
-                    + " beside the game, as " + EarthData.DATA_FILE + ".";
+        if (identity.equals(EarthData.EARTH_1)) return missingWords(EarthData.locate(), fromRepository());
+        return otherDataWords(identity);
+    }
+
+    /** The load's words for a city on this build's Earth whose file is not here or not this build's (0.7.125): how it gets there, then load the city again. */
+    static String missingWords(Path found, boolean repository) {
+        if (missing(found)) {
+            return "This city stands on the real Earth, and its data is not here: earth-1.bin (about 53 MB), as " + EarthData.DATA_FILE
+                    + " beside the game. " + fetchWords(repository, "load the city again");
         }
+        return "This city stands on the real Earth, and the file at " + found + " is not the Earth's data this build reads ("
+                + shortId(EarthData.EARTH_1) + "). " + replaceWords(repository, "load the city again");
+    }
+
+    /** The load's words for a city on other data than this build's. */
+    private static String otherDataWords(String identity) {
         return "This city stands on the real Earth as other data drew it (" + shortId(identity) + "), and this build reads "
                 + shortId(EarthData.EARTH_1) + ": its coasts and rivers would not be the ones it was built on. The build that"
                 + " saved it still opens it.";

@@ -5539,8 +5539,35 @@ public final class GameVersion {
      *     works' power sold), 3 and 6 moved by the decisions; GdpCheck HELD;
      *     BuildingDataCheck (108 buildings, gen, since, oldMetal); MoneyCheck's
      *     old steel; SaveFileCheck and ReadPathCheck; TradeCostCheck's table.
+     *
+     * 0.7.125 (2026-10-11) - THE EARTH'S MISSING-FILE WORDS NAME THE FETCH.
+     * Batch C2 (the docs pass of 0.7.123's flag, docs-07123 3; runs/brief-
+     * batchC2.md, runs/fixC2-notes.md). No save format change (38), and the
+     * model is as it was: words only.
+     *   - THE GAP: since f99d62c the Earth's file reaches data/ by itself -
+     *     the GitHub release earth-1's asset, tools/earth/get-earth.bat
+     *     checking it against its hash and fetching it when it is missing or
+     *     bad, Play CityBuilderSim.bat calling that first, Build EXE.bat
+     *     carrying it into the built game and its zip - but EarthSite's words
+     *     still told the player to put earth-1.bin in data/ by hand: the
+     *     founding screen's (dataWords(): the line under THE WORLD's chips
+     *     and the Earth chip's tooltip) and the load's (loadProblem(), under
+     *     "Could not load.").
+     *   - THE WORDS say how the file gets there, by where the game runs: with
+     *     EarthSite.GET_EARTH beside it, a copy of the repository, "Play
+     *     CityBuilderSim.bat fetches it before it starts the game, or run
+     *     tools/earth/get-earth.bat now and open this page again"; without
+     *     it, the built game, which came with the file, "The game's zip
+     *     carries it, so this copy of the game is incomplete: unzip the whole
+     *     zip once more and open this page again". A file that is not this
+     *     build's: the script "replaces a bad copy", or "the game's zip
+     *     carries the right one". The load's say the same, ending "load the
+     *     city again" (missingWords()). "About 53 MB" and DATA_FILE kept.
+     *   - Harnesses: EarthFoundingCheck 1 (both ways for a missing file, for
+     *     a bad copy, and the load's).
+     *   - The playtest is pt07123's byte for byte.
      */
-    public static final String VERSION = "0.7.123";
+    public static final String VERSION = "0.7.125";
 
     /**
      * The save shape.
