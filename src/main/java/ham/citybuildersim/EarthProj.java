@@ -45,8 +45,9 @@ package ham.citybuildersim;
  * curl too tightly there to blend, and at a pole the longitudes mean
  * nothing).
  *
- * E1 (0.7.111) builds it pure: nothing in the game calls it yet; E2 lays the
- * Earth's ground on the world through it. EarthCheck holds it.
+ * E1 (0.7.111) built it pure; since 0.7.115 (batch E2) EarthTerrain lays
+ * the Earth's ground on a world with an Earth key through it - a key only
+ * harnesses make until E4. EarthCheck holds it, EarthTerrainCheck its use.
  */
 public final class EarthProj {
 

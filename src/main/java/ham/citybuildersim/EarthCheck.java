@@ -99,6 +99,7 @@ public class EarthCheck {
     static final String FIXTURE = "earth/earth-1-fixture.bin", EXPECT = "earth/earth-1-fixture.expect";
 
     static int fails = 0;
+    /** Where the harness prints: the console. */
     static final PrintStream out = System.out;
 
     static void assertTrue(String label, boolean ok) {

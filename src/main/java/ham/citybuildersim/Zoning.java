@@ -31,9 +31,10 @@ import java.util.Map;
  * nothing measured: LandManager holds the ground and works out what each
  * zone holds of it (ZONES AND THE FOREST LAW there), EconomyManager assesses
  * zoned ground at its zone's price, BusinessInvestment prices and plots an
- * order on it, PolicyPreview shows a dial's before and after. Zones are
- * AMOUNTS, NOT PLACES (Z1): the model has no positions; the map tints
- * districts later (Z2's screens).
+ * order on it, PolicyPreview shows a dial's before and after, and since
+ * 0.7.109 (batch Z2) ZoningView and ui/ZoningScreen draw it all on Policy ›
+ * Zoning. Zones are AMOUNTS, NOT PLACES (Z1): the model has no positions; a
+ * tint of the map's districts is still to come (Z2's screens left it).
  *
  * THE ZONE'S TAXES ARE THE SECTOR'S OWN OFFSETS (Z5: "one dial, two doors"):
  * TaxPolicy's profit, sales and property offsets of the sector, moved through

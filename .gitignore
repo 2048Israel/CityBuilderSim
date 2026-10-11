@@ -39,3 +39,8 @@ Desktop.ini
 # PC for Jerus to look at. The code is in src/, the record in the claude.ai
 # project; nothing here is either.
 Claude outputs/
+
+# --- Python ---
+# Running tools/earth/*.py (E0's bake, earthread.py, fixture.py) writes a
+# bytecode cache beside the scripts.
+__pycache__/

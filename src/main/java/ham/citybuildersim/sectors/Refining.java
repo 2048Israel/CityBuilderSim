@@ -1306,10 +1306,11 @@ public final class Refining extends Sector {
        THE MONEY GATE is the planner's, one replaceable piece (SpreadPlanner.
        MoneyGate): in force since 0.7.112 (Jerus's decision A), 1.25 times
        the interest at the real rate on the order's whole cost, whatever the
-       refiners hold (SpreadPlanner.ON_ITS_WHOLE_COST) - on what it would
-       borrow, Game.consider()'s own test, until then; the refiners never
-       held cash when they weighed (O5's ptW), so nothing they ordered moved.
-       A package is tested on its whole margin against its whole cost.
+       refiners hold (SpreadPlanner.ON_ITS_WHOLE_COST) - Game.consider()'s
+       own test too since 0.7.113. Until then it was on what the order would
+       borrow, consider()'s test then; the refiners never held cash when
+       they weighed (O5's ptW), so nothing they ordered moved. A package is
+       tested on its whole margin against its whole cost.
 
        WHAT THE INVESTORS' TEST READS (estimatedMonthlyProfit()): a unit's
        earnings, and a crude unit's share of its package's by cost, so

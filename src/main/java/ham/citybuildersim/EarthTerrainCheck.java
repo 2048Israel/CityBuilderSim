@@ -114,6 +114,7 @@ public class EarthTerrainCheck {
     static final double LAND_WITHIN = 0.005;
 
     static int fails = 0;
+    /** Where the harness prints: the console. */
     static final PrintStream out = System.out;
 
     static void check(String label, boolean ok) {

@@ -537,6 +537,7 @@ final class ZoningScreen {
     static String unitKey(String s)  { return "zone:" + s + ":unit"; }
     static String priceKey(String s) { return "zone:" + s + ":price"; }
     static String offKey(String s)   { return "zone:" + s + ":off"; }
+    /** The forest law's two staged keys: its protected share and its kept share. */
     static final String PROTECTED_KEY = "forest:protected", KEPT_KEY = "forest:kept";
 
     /** A share of the dry ground's step: half a point. */

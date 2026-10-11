@@ -35,8 +35,9 @@ import java.util.List;
  *     and the resource still in the ground; of the buildings that make its
  *     good and the city could staff, the best estimatedMonthlyProfit() over
  *     its cost; then ground for it. The money gate is Game.consider()'s, as
- *     it was - spec-materials 2.6b brings SpreadPlanner's to extraction at
- *     batch I3, so this batch moves no order;
+ *     it was (on the order's whole cost since 0.7.113, batch I2b) -
+ *     spec-materials 2.6b brings SpreadPlanner's to extraction at batch I3,
+ *     so batch I2 moved no order;
  *   - THE RETIREMENT (retirementDemandAndCapacity()): a price-taking
  *     exporter shrinks on distress only, while there is ore; past it, all
  *     its plant is spare;

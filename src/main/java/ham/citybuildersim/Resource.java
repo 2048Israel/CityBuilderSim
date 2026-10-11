@@ -131,6 +131,7 @@ public enum Resource {
        a grade instead (Deposit.grade()), and uranium has no study figure.
        ===================================================================== */
 
+    /** Each resource's field types as typesOf() hands them out: NONE alone, or the two of iron, coal, copper and stone, the commoner first. */
     private static final java.util.List<Deposit.FieldType> NO_TYPES = java.util.List.of(Deposit.FieldType.NONE),
             IRON_TYPES = java.util.List.of(Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE),
             COAL_TYPES = java.util.List.of(Deposit.FieldType.THERMAL, Deposit.FieldType.COKING),
