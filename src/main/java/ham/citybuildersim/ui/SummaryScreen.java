@@ -168,6 +168,9 @@ final class SummaryScreen {
         return statLine(label, value, null);
     }
 
+    /** ECONOMY's debt to GDP, named for what it counts (0.7.129): the city's bonds and bills, DebtManager.getAllPrincipal(). */
+    static final String DEBT_GDP_LABEL = "Debt/GDP, bonds and bills";
+
     /**
      * One row: what it is on the left, what it reads on the right.
      *
@@ -806,7 +809,10 @@ final class SummaryScreen {
                             statLine("Trust in the bank", trust(ui.game.getCredibility())),
                             statLine("Rating", ui.game.getCreditRating()));
                     if (annualGdp != 0) {
-                        b.getChildren().add(statLine("Debt/GDP",
+                        // ...labelled with what it counts (0.7.129, Jerus's call 6): the
+                        // bonds and bills alone - automatic building's limit, on Build,
+                        // counts all the city owes (AutoBuilder.debt()).
+                        b.getChildren().add(statLine(DEBT_GDP_LABEL,
                                 formatter.format((debt / annualGdp) * 100) + "%"));
                     }
                     return b;

@@ -205,7 +205,11 @@ These are Jerus's, and they do not move.
                                    SALVAGE_SHARE, a quarter, of its material), and since 0.7.70 its gravel
                                    roads paved - the state, saved under one key, and each rule's
                                    arithmetic with its source; BuildingManager applies the crews and Game's
-                                   THE PLAYER'S HAND ON THE QUEUE moves the money
+                                   THE PLAYER'S HAND ON THE QUEUE moves the money. Since 0.7.129 (batch
+                                   T1-B) the model's own rule beside the hand: while anybody lies unburied,
+                                   the city's death-care sites head its order and take its share of the
+                                   crews first (BuildingManager, DEATH CARE FIRST WHILE THE DEAD WAIT;
+                                   DeathCareFirstCheck holds it on a fixture that causes the trap)
         StrategicReserve.java      the city's strategic reserve of crude (0.7.85): what its tanks hold and cost,
                                    the fill ordered and the release standing, the city's side of crude's
                                    clearing (Markets.CityTrader) and the month the next strike settles;
@@ -449,7 +453,7 @@ These are Jerus's, and they do not move.
                                    MapTiles, which MapCheck holds), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray). The model never imports it.
-        *Check.java                ninety-eight harnesses, each a main() with static helpers
+        *Check.java                ninety-nine harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103)

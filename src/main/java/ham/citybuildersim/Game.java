@@ -318,6 +318,10 @@ public class Game {
         // the labour in every price follows (0.7.19; BuildingManager, THE
         // LABOUR IN A PRICE KEEPS UP WITH WAGES).
         buildingManager.setBuildersWages(buildersWages);
+        // ...and the dead lying unburied, while which the city's death care is
+        // served first (0.7.129; BuildingManager, DEATH CARE FIRST WHILE THE
+        // DEAD WAIT) - read off the healthcare a load or a new city puts here.
+        buildingManager.setUnburied(() -> healthcare.getUnburied());
         // ...and the overtime on the city's rushed sites is wages the
         // households are paid (0.7.22; PopulationManager, THE OVERTIME ON A
         // RUSHED SITE IS WAGES), read off the builders who pay it.

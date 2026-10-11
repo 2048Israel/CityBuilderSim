@@ -50,7 +50,10 @@ public final class ConstructionControl {
        down: the first takes what it still owes, at most, then the next, and
        so on (BuildingManager.applyPriority()). No other owner's site gains or
        loses a point by it. With no order set the split is the rule's own,
-       untouched.
+       untouched - but for the model's own rule since 0.7.129: while anybody
+       lies unburied the city's death care heads the city's order, with or
+       without the player's (BuildingManager, DEATH CARE FIRST WHILE THE DEAD
+       WAIT), and it is no state of this class.
 
        FREE. An owner deciding which of its own contracts its crews serve
        first is not a change to the contract; nobody is paid for it.

@@ -37,7 +37,11 @@ import static ham.citybuildersim.ui.Pieces.*;
  * the month will apply (BuildingManager.plan()), each site's time at
  * today's queue (siteMonths()), and the quotes (Game.quoteDemolition(),
  * quoteBuyOut(), quoteRestart()). The rules and their sources are
- * ConstructionControl's; the page says them in a line and an (i).
+ * ConstructionControl's; the page says them in a line and an (i). Since
+ * 0.7.129, while the dead wait and the city's death care is served first
+ * (BuildingManager, DEATH CARE FIRST WHILE THE DEAD WAIT), the plan's own
+ * line says so under the caption, and the arrows move a site within its
+ * group - the death care at the top, the rest below - never across.
  *
  * Reached from the right panel's "Open" and from Build's head; a build
  * card's "N on site", or a site's name on the right panel, opens it at that
@@ -244,6 +248,10 @@ final class ConstructionScreen {
                 + "handed out top down: the first takes what it still owes, then the next. Nobody else's site "
                 + "gains or loses a point by it, and it costs nothing. A city site you order while it is set "
                 + "joins it at the bottom; once none of its sites is left, it clears itself.\n\n"
+                + "DEATH CARE FIRST. While anybody lies unburied, the city's own cemeteries and crematoria take "
+                + "its share of the crews first - each what it still owes - ahead of your order, and the rest "
+                + "of the city's sites follow in your order or, with none set, by the rule. The unburied make "
+                + "people sick, and the sick do not build. Once they are buried, the order is yours again.\n\n"
                 + "RUSH. A city's site on a 50-hour week: about 1.14 times a month's work the first month, 1.02 "
                 + "the second and 0.94 from the third (The Business Roundtable, Report C-2, 1980), for 1.375 "
                 + "times its crews' wages - hours past 40 at time and a half (Canada Labour Code, s. 174). The "
@@ -261,6 +269,15 @@ final class ConstructionScreen {
         }
         top.setStyle("-fx-padding: 10 12 6 12;");
         table.getChildren().add(top);
+        // ...and while the dead wait, the line that says their care goes first (0.7.129).
+        String deathCare = plan.line();
+        if (deathCare != null) {
+            Label first = new Label(deathCare);
+            first.setWrapText(true);
+            first.setMinWidth(0);
+            first.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.WARN) + " -fx-padding: 0 12 6 12;");
+            table.getChildren().add(first);
+        }
         table.getChildren().add(headerRow());
 
         List<String> cityOrder = bm.cityOrder();
@@ -308,10 +325,14 @@ final class ConstructionScreen {
         VBox order = new VBox(0);
         order.setAlignment(Pos.CENTER);
         if (mine) {
+            // While the dead wait their care heads the order (0.7.129): an arrow
+            // moves a site within its group, never across the line between them.
+            int dead = plan.deathCareFirst.size();
+            int top = rank > dead ? dead + 1 : 1, bottom = rank > dead ? ranks : dead;
             order.getChildren().addAll(
-                    arrow("▲", rank > 1, () -> { g.moveSite(key, -1); draw(); }),
+                    arrow("▲", rank > top, () -> { g.moveSite(key, -1); draw(); }),
                     figureLabel(String.valueOf(rank), Palette.TEXT_LABEL),
-                    arrow("▼", rank < ranks, () -> { g.moveSite(key, 1); draw(); }));
+                    arrow("▼", rank < bottom, () -> { g.moveSite(key, 1); draw(); }));
         }
 
         // ---- what it is, and who ordered it ----

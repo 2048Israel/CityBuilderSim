@@ -21,7 +21,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| T1-B | Death care served first while the dead wait; the two Debt/GDP figures labelled (running) | project: `claude/why-the-builders-stall.md` §9 B, `claude/decisions-2026-10-10.md` |
 | I7 | Stone: Quarrying, Cement & Concrete (running) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | EC1 | EarthTerrainCheck's cells pass timed on the thread's CPU, as MapCheck's month | [EC1](docs/queue/EC1.md) |
 | T1-C | The builders' own depots first | project: `claude/why-the-builders-stall.md` §9 C, `claude/decisions-2026-10-10.md` |

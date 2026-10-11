@@ -5776,8 +5776,53 @@ public final class GameVersion {
      *     the runs and the edge at the widest view; not in the sidecar).
      *   - The default playtest is pt07123's byte for byte, and the Earth one
      *     pte07127's.
+     *
+     * 0.7.129 (2026-10-11) - DEATH CARE FIRST WHILE THE DEAD WAIT. Batch T1-B
+     * (Jerus's decision of 2026-10-10, "1 both yes": the project's why-the-
+     * builders-stall.md, option B; runs/brief-batchT1B.md, runs/fixT1B-
+     * notes.md). No save format change (39): the rule keeps no state.
+     *   - THE TRAP (batch T1's trace of his city): cemeteries full and no
+     *     crematorium, the dead at Healthcare's cap made Health's capped 15
+     *     points of the city sick; the sick builders' month went almost all on
+     *     repairs, and the cemetery that would bury the dead got its crew-rule
+     *     share of what was left - 1.4 points a month. Nothing broke the loop.
+     *   - THE RULE (BuildingManager, DEATH CARE FIRST WHILE THE DEAD WAIT):
+     *     while Healthcare.getUnburied() is above 0 (last month's), the city's
+     *     own sites whose template serves the dead - BURIAL or CREMATION, by
+     *     care type - head the city's order and take its share of the crews
+     *     first, each what it owes or what is left, top down. With the
+     *     player's order set the rest follow it (applyPriority()); with none,
+     *     they share what is left by the crews' rule (applyDeathCareFirst(),
+     *     waterFill()). Every other owner's share is the rule's to the bit.
+     *     The player's order does not hold the death care down (★). Game
+     *     hands the unburied in (setUnburied()); a bare manager reads none.
+     *   - ONE WAIT: handOn(), joined() and handWait() time it - a death-care
+     *     site as the order's top, every other city site behind the death
+     *     care at the city's pace and then by the rule - so the page, the
+     *     panel, the cards and a city order's quote, which automatic building
+     *     sizes its orders by, agree.
+     *   - THE PAGE: Plan carries the death care served first and the unburied
+     *     (Plan.deathCareFirst, line()); the construction page shows the line
+     *     under SITES - "Death care first while the dead wait: N lie unburied,
+     *     ..." - and its (i) a paragraph; the arrows move a site within its
+     *     group, never across.
+     *   - THE TWO DEBT/GDP FIGURES, labelled (Jerus's call 6): the left
+     *     panel's "Debt/GDP, bonds and bills"; automatic building's limit card
+     *     "All it owes is now X of GDP; the left panel's Debt/GDP counts its
+     *     bonds and bills alone", its mark "all it owes, now X". Words only.
+     *   - Harnesses: DeathCareFirstCheck (new; ninety-eight harnesses), on a
+     *     fixture that causes the trap; LongPlaytest's report counts the
+     *     months the dead waited and the months the rule fired.
+     *   - The playtests move (re-baselined; fixT1B-notes.md 4): the rule
+     *     fires in 8 months of the default run (m828-3,645) and 7 of the
+     *     Earth one (m715-3,779), and the runs part at m830 and m717 - at
+     *     m830 a crematorium's share went to the cemetery beside it, which
+     *     opened a month sooner. Every month audited, every reload matched.
+     *     The ensemble (07129 against 07124) scores as before, 21 of 25 and
+     *     the same four red; the AUTO2 cities it moves part at m713-838, when
+     *     the founding churchyard fills, and end 7 higher and 5 lower.
      */
-    public static final String VERSION = "0.7.128";
+    public static final String VERSION = "0.7.129";
 
     /**
      * The save shape.

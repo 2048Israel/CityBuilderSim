@@ -1038,6 +1038,12 @@ public class LongPlaytest {
     }
     static int worstCrimeMonth = 0;
     static double lastSickRate = 0;
+    /**
+     * DEATH CARE FIRST WHILE THE DEAD WAIT (0.7.129; BuildingManager): the
+     * months a month ended with anybody unburied, and the months the advance
+     * served the city's death care first - the first and the last of them.
+     */
+    static int monthsUnburied = 0, monthsDeathCareFirst = 0, firstDeathCareFirst = 0, lastDeathCareFirst = 0;
     static double workLostToIllness = 0;
     static int monthsObserved = 0;
     static double totalDepartures = 0;
@@ -1431,6 +1437,14 @@ public class LongPlaytest {
             }
         }
         Health health = g.getHealth();
+        // The months the dead waited, and the months their care went first (0.7.129).
+        if (g.getHealthcare().getUnburied() > 0) monthsUnburied++;
+        BuildingManager.Plan applied = g.getBuildingManager().getLastPlan();
+        if (applied != null && !applied.deathCareFirst.isEmpty()) {
+            monthsDeathCareFirst++;
+            if (firstDeathCareFirst == 0) firstDeathCareFirst = g.getMonth();
+            lastDeathCareFirst = g.getMonth();
+        }
         lastSickRate = health.getSickRate();
         if (lastSickRate > worstSickRate) worstSickRate = lastSickRate;
         workLostToIllness += lastSickRate;
@@ -5277,6 +5291,8 @@ public class LongPlaytest {
         out.printf("  funerals: %,.0f buried and %,.0f cremated last month,"
                 + " %,.0f plots used, %,.0f lying unburied%n",
                 hc.getBurials(), hc.getCremations(), hc.getPlotsUsed(), hc.getUnburied());
+        out.printf("  the dead waited: anybody unburied at the end of %,d months; death care served first in %,d"
+                + " (months %,d to %,d)%n", monthsUnburied, monthsDeathCareFirst, firstDeathCareFirst, lastDeathCareFirst);
         /*
          * THE PRICE OF A PLACE (2026-09-21): the four dials, who is studying,
          * who has graduated, what is owed and what the loans brought in -
