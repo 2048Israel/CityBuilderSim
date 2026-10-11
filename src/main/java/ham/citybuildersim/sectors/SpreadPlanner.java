@@ -4,7 +4,9 @@ import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.BusinessDebtManager;
 import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Game;
+import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
+import ham.citybuildersim.Markets;
 import ham.citybuildersim.Sector;
 
 import java.util.Collections;
@@ -12,6 +14,7 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.ToDoubleFunction;
 
 /**
  * The spread planner (0.7.82, batch O5; runs/spec-oil.md 2.4, and
@@ -35,7 +38,11 @@ import java.util.Map;
  * THE PIECES, each one a client's to use:
  *   1. THE CITY'S OWN PRICE (cityValue()): what one more unit of a good is
  *      worth here - the landed import price while the city imports it, the
- *      export price it nets otherwise (at the margin since 0.7.105).
+ *      export price it nets otherwise (at the margin since 0.7.105) - and
+ *      since 0.7.112 (batch I2; spec-materials 2.6) what `u` units are
+ *      worth, split at the month's trade (outValue(), inValue()): made
+ *      here, the import price for as much as the city imports and the
+ *      export price past it; used here, the mirror.
  *   2. A CANDIDATE (Candidate): a building, what one would earn a month once
  *      running - its spread on its feed at the rate the sector runs, less
  *      its wages, power and water and its repairs and property tax - and
@@ -46,12 +53,14 @@ import java.util.Map;
  *      is there spare stream for 60% of one?), the ground, the staff, and the
  *      money - every gate asked, so a refusal names the first and the land
  *      office hears when ground was all that stood in the way.
- *   4. THE MONEY GATE IS ONE REPLACEABLE PIECE (MoneyGate). In force: the
- *      game's own test, 1.25 times the interest at the real rate on what the
- *      order would borrow (ON_ITS_BORROWING) - which asks nothing of an
- *      order the sector's cash pays. The stricter rule spec-materials.md
- *      puts to Jerus (its item A) tests the whole cost whoever pays
- *      (ON_ITS_WHOLE_COST); it is here to be measured, not in force.
+ *   4. THE MONEY GATE IS ONE REPLACEABLE PIECE (MoneyGate). In force since
+ *      0.7.112 (batch I2; Jerus's decision A, 2026-10-08: "test every order
+ *      on its whole cost, whoever pays"): 1.25 times the interest at the
+ *      real rate on the order's whole cost - its ground at its zone's price
+ *      with it - whatever the sector holds (ON_ITS_WHOLE_COST). To 0.7.111
+ *      the rule was the game's own test on what the order would borrow
+ *      (ON_ITS_BORROWING), which asked nothing of an order the sector's
+ *      cash paid; it stays, named, for the counterfactual.
  *   5. THE ORDER (best()): the best earnings on cost of those that pass; the
  *      client holds to one order in flight (MAX_CONCURRENT_ORDERS) first.
  *   6. IDLE, THEN SHED (noteMonth(), idleMonths(), mayShed()): the months
@@ -59,8 +68,14 @@ import java.util.Map;
  *      client's extras ("idleMonths.<KIND>"); a kind idle IDLE_MONTHS
  *      running is the one its sector may sell back.
  *
- * One planner a client sector, held by it (Refining.planner()): its money
- * gate and its idle months are that sector's.
+ * One planner a client sector, held by it (Refining.planner(), and since
+ * 0.7.112 every ProcessingSector's): its money gate and its idle months are
+ * that sector's.
+ *
+ * AND THE STUDY'S FOUR CASES (caseEarns(), 0.7.112): what a works earns at
+ * nameplate with its feed and its output each at the import or the export
+ * price - materials-chains-research.md's A to D, pure, for the building rows
+ * that come with batch I3 to be held to the study's table.
  */
 public final class SpreadPlanner {
 
@@ -98,6 +113,167 @@ public final class SpreadPlanner {
         double v = m.getImported() > 0 ? m.netImportPrice() : m.netExportPrice();
         if (!Double.isFinite(v)) v = m.getLocalPrice();
         return Double.isFinite(v) ? v : 0;
+    }
+
+    /*
+     * ...AND WHAT `u` UNITS ARE WORTH, SPLIT AT THE MONTH'S TRADE (0.7.112,
+     * batch I2; spec-materials 2.6, the study's 1.2 rule 1). cityValue() is
+     * the first unit's worth; a works makes thousands of tonnes, and the
+     * city may import some of them and not all. A new building's output is
+     * worth the import price for as much as the city imported - what it
+     * would replace - and the export price past it, where the rest goes (a
+     * third coke oven in the study's mockup 1 replaces 11,750 t of imported
+     * coke at D$420 and ships its other 28,250 t at D$320). Its feed is the
+     * mirror: the export price for as much as the city exported - what it
+     * would no longer ship - and the import price for the rest, what it
+     * would bring in. Built on cityValue() as 0.7.105 left it (P6's R1): a
+     * good nobody here trades is worth its net export price made here, and
+     * its net import price used here; and a price that is not a number (the
+     * world will not sell it, or will not buy it) reads the local price, as
+     * cityValue() does - so the first unit's worth is cityValue()'s, to the
+     * bit.
+     *
+     * THE MONTH'S TRADE IS THE MARKET'S TALLY (GoodsMarket.getImported(),
+     * getExported()), as cityValue() reads it: the last clearing's fills and
+     * the draws since. ★ Not the sectors' rows (Sector.unitsImported(),
+     * what the spec names): a planner weighs at the top of the month, after
+     * every statement has been struck and banked, and bank() has cleared
+     * those rows by then; the market's tally stands until the good next
+     * clears. Not saved, as cityValue()'s is not: a city just loaded reads
+     * none until its first month.
+     */
+
+    /** A price for one part of a split: itself, or the local price where it is not a number, or nothing where neither is (cityValue()'s fallback). */
+    private static double priceOr(GoodsMarket m, double price) {
+        if (Double.isFinite(price)) return price;
+        double local = m.getLocalPrice();
+        return Double.isFinite(local) ? local : 0;
+    }
+
+    /**
+     * What `u` units of a good made here are worth to the city (pure;
+     * spec-materials 2.6, outValue): the net import price for as many as the
+     * city imported this month (`imported`, units), the net export price for
+     * the rest. Nothing with no market or no units.
+     */
+    public static double outValue(GoodsMarket m, double imported, double u) {
+        if (m == null || !(u > 0)) return 0;
+        double atImport = Math.min(u, Math.max(0, imported)), rest = u - atImport;
+        double v = 0;
+        if (atImport > 0) v += atImport * priceOr(m, m.netImportPrice());
+        if (rest > 0) v += rest * priceOr(m, m.netExportPrice());
+        return v;
+    }
+
+    /**
+     * ...and what `u` units of a good used here cost the city (pure; inValue,
+     * the mirror): the net export price for as many as the city exported
+     * this month (`exported`, units) - what it would no longer ship - and the
+     * net import price for the rest. Nothing with no market or no units.
+     */
+    public static double inValue(GoodsMarket m, double exported, double u) {
+        if (m == null || !(u > 0)) return 0;
+        double atExport = Math.min(u, Math.max(0, exported)), rest = u - atExport;
+        double v = 0;
+        if (atExport > 0) v += atExport * priceOr(m, m.netExportPrice());
+        if (rest > 0) v += rest * priceOr(m, m.netImportPrice());
+        return v;
+    }
+
+    /** ...at the market's own tally of the month: what it imported. */
+    public static double outValue(GoodsMarket m, double u) {
+        return m == null ? 0 : outValue(m, m.getImported(), u);
+    }
+
+    /** ...at the market's own tally of the month: what it exported. */
+    public static double inValue(GoodsMarket m, double u) {
+        return m == null ? 0 : inValue(m, m.getExported(), u);
+    }
+
+    /** What units of each good are worth to the city at the margin, made here (out) and used here (in): the city's this month (values()) or a check's own frame. */
+    public interface Values {
+        /** What `u` units of `g` made here are worth. */
+        double out(Good g, double u);
+        /** What `u` units of `g` used here cost. */
+        double in(Good g, double u);
+    }
+
+    /** The city's values this month: outValue() and inValue() at each good's market and its month's tally; nothing for a good with no market. */
+    public static Values values(Markets markets) {
+        return new Values() {
+            @Override public double out(Good g, double u) { return outValue(markets == null ? null : markets.get(g), u); }
+            @Override public double in(Good g, double u)  { return inValue(markets == null ? null : markets.get(g), u); }
+        };
+    }
+
+    /*
+     * WHAT A WORKS COSTS PAST ITS WAGES, POWER AND WATER (0.7.112, batch I2;
+     * spec-materials 2.5 and 2.8): its consumables, world money a month at
+     * nameplate (BuildingsTemplate.getConsumables()) paid abroad at the
+     * exchange factor, at the share of nameplate it runs; less the power it
+     * makes (BuildingsTemplate.getGen()) at the tariff - its own draw it no
+     * longer buys, which running charged in full (BusinessInvestment
+     * .runningCostOf()), and its surplus sold to the grid (the study's 1.2
+     * rule 2: "+ any power it makes beyond its own draw, sold to the grid at
+     * the tariff"). Nothing for a building with neither, as every building
+     * has today.
+     */
+
+    /** A works' consumables at `factor` and `rate`, less its power at `tariff` (pure; above): what its earnings lose past running and standing. */
+    public static double ownCosts(BuildingsTemplate t, double rate, double factor, double tariff) {
+        if (t == null) return 0;
+        double c = t.getConsumables() > 0 ? t.getConsumables() * rate * factor : 0;
+        double p = t.getGen() > 0 ? t.getGen() * tariff : 0;
+        return c - p;
+    }
+
+    /* ----- the study's four cases (materials-chains-research.md 2.5) ----- */
+
+    /** The study's four cases: a works' feed and its output each at the import or the export price. */
+    public enum Case {
+        /** Feed imported, output exported: what freight has to hold under the hurdle (the study's 1.2). */
+        A(true, false),
+        /** Feed local, valued at its export price; output exported. */
+        B(false, false),
+        /** Feed local; output replacing imports. */
+        C(false, true),
+        /** Both at import prices. */
+        D(true, true);
+
+        private final boolean feedAtImport, outputAtImport;
+
+        Case(boolean feedAtImport, boolean outputAtImport) {
+            this.feedAtImport = feedAtImport;
+            this.outputAtImport = outputAtImport;
+        }
+
+        /** Whether its feed is priced at the import price (else the export price). */
+        public boolean feedAtImport() { return feedAtImport; }
+        /** Whether its output is priced at the import price (else the export price). */
+        public boolean outputAtImport() { return outputAtImport; }
+    }
+
+    /**
+     * What a works earns a month at nameplate in one of the study's cases
+     * (pure; the study's 2.5, at parity with `factor` 1): each good it makes
+     * at the case's price for its output, less each it uses at the case's
+     * price for its feed, less `running` (its wages, power and water),
+     * `standing` (repairs and property tax) and ownCosts() at nameplate.
+     * The four-case reading the building rows of batch I3 onwards are held
+     * to; no works has rows yet.
+     */
+    public static double caseEarns(BuildingsTemplate t, Case c, ToDoubleFunction<Good> importPrice,
+                                   ToDoubleFunction<Good> exportPrice, double running, double standing,
+                                   double factor, double tariff) {
+        if (t == null || c == null) return 0;
+        double made = 0, used = 0;
+        for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+            made += e.getValue() * (c.outputAtImport() ? importPrice : exportPrice).applyAsDouble(e.getKey());
+        }
+        for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+            used += e.getValue() * (c.feedAtImport() ? importPrice : exportPrice).applyAsDouble(e.getKey());
+        }
+        return made - used - running - standing - ownCosts(t, 1, factor, tariff);
     }
 
     /* ----- 2. and 3. a candidate, and the gates ----- */
@@ -234,27 +410,38 @@ public final class SpreadPlanner {
         String words();
     }
 
-    /** THE RULE IN FORCE: on what the order would borrow, its cost less the sector's cash - Game.consider()'s own test, which asks nothing of an order the till pays. */
+    /** THE RULE TO 0.7.111, KEPT AS A NAMED HISTORY: on what the order would borrow, its cost less the sector's cash - Game.consider()'s own test, which asks nothing of an order the till pays; for the counterfactual (LongPlaytest's -Dplaytest.moneyGate, the probes). */
     public static final MoneyGate ON_ITS_BORROWING = new MoneyGate() {
         @Override public double testedOn(double cost, double cash) { return Math.max(0, cost - Math.max(0, cash)); }
         @Override public String words() { return "1.25 times the interest on what it would borrow"; }
         @Override public String toString() { return "ON_ITS_BORROWING"; }
     };
 
-    /** THE STRICTER RULE, NOT IN FORCE (spec-materials.md, Jerus's item A): on the whole cost, whoever pays - for the counterfactual (LongPlaytest's -Dplaytest.moneyGate=whole, the probes). */
+    /**
+     * THE RULE IN FORCE SINCE 0.7.112 (batch I2; Jerus's decision A,
+     * 2026-10-08: "test every order on its whole cost, whoever pays"): on
+     * the whole cost - its ground at its zone's price with it
+     * (BusinessInvestment.getCostOf()) - whatever the sector holds, so an
+     * order its till pays is asked what one on a loan is. Measured before it
+     * was put in force (O5's ptW, and the playtest at 0.7.112): the refiners
+     * never held cash when they weighed, so nothing they ordered moved.
+     */
     public static final MoneyGate ON_ITS_WHOLE_COST = new MoneyGate() {
         @Override public double testedOn(double cost, double cash) { return Math.max(0, cost); }
         @Override public String words() { return "1.25 times the interest on its whole cost"; }
         @Override public String toString() { return "ON_ITS_WHOLE_COST"; }
     };
 
-    private MoneyGate moneyGate = ON_ITS_BORROWING;
+    /** The money gate every SpreadPlanner tests its sector's orders by unless a check or a probe sets another: ON_ITS_WHOLE_COST since 0.7.112 (decision A). */
+    public static final MoneyGate DEFAULT_MONEY_GATE = ON_ITS_WHOLE_COST;
 
-    /** The money gate this sector's orders are tested by: ON_ITS_BORROWING unless a check or a probe set another. */
+    private MoneyGate moneyGate = DEFAULT_MONEY_GATE;
+
+    /** The money gate this sector's orders are tested by: DEFAULT_MONEY_GATE unless a check or a probe set another. */
     public MoneyGate moneyGate() { return moneyGate; }
 
-    /** A check's or a probe's: tests this sector's orders by another rule (the counterfactual). Nothing in the game calls it. */
-    public void setMoneyGate(MoneyGate gate) { this.moneyGate = gate == null ? ON_ITS_BORROWING : gate; }
+    /** A check's or a probe's: tests this sector's orders by another rule (the counterfactual); null puts the default back. Nothing in the game calls it. */
+    public void setMoneyGate(MoneyGate gate) { this.moneyGate = gate == null ? DEFAULT_MONEY_GATE : gate; }
 
     /**
      * What a month's earnings must reach for an order of `cost` by `sector`
@@ -343,6 +530,16 @@ public final class SpreadPlanner {
             Double v = extras.get(IDLE_KEY + k);
             if (v != null && Double.isFinite(v) && v >= 1) idle.put(k, (int) Math.min(Integer.MAX_VALUE, Math.floor(v)));
         }
+    }
+
+    /** The kinds counting idle months now (0.7.112): what a client whose kinds are its templates' ids saves (ProcessingSector). */
+    public java.util.Set<String> idleKinds() { return Collections.unmodifiableSet(idle.keySet()); }
+
+    /** ...and back, every kind the extras name (0.7.112): for a client whose kinds are not known until its buildings are (ProcessingSector). */
+    public void restoreIdle(Map<String, Double> extras) {
+        List<String> kinds = new java.util.ArrayList<>();
+        if (extras != null) for (String k : extras.keySet()) if (k.startsWith(IDLE_KEY)) kinds.add(k.substring(IDLE_KEY.length()));
+        restoreIdle(extras == null ? Map.of() : extras, kinds);
     }
 
     /** A founding sector: no kind idle. The money gate is left as it was set (a probe sets it before it founds or loads). */

@@ -404,6 +404,60 @@ public class BuildingsTemplate {
     /** The site it stands on, or null for a building that stands on no resource's sites. */
     public Site site() { return site; }
 
+    /* ----- THE POWER A WORKS MAKES ITSELF (0.7.112, batch I2; runs/spec-materials.md 2.5, 2.8) -----
+       A real integrated steelworks makes most of its own electricity from its
+       furnace and oven gas, and a kraft pulp mill burns its black liquor and
+       sells about 0.9 MWh a tonne of pulp (the study's 1.6, Q20). So a
+       building may make power ("gen" in buildings.json, kW - the study's
+       Coke Ovens 8,000, its Blast Furnace 60,000): it buys
+       from the grid only what it draws past that (powerBought()) and sells
+       the grid what it makes past its draw (powerSold()), at the tariff -
+       the sector's bill and Sector.Statement.powerSold, the grid's
+       consumption and UtilitiesHandler.setWorksPower(). No building makes
+       any yet: the Coke Ovens, the Blast Furnace and the Pulp Mill will (I4,
+       I10). Every other building's draw is its whole draw, to the bit. */
+    private double gen;
+
+    /** Makes this building make `kw` of power a month itself; 0 or less is none. */
+    public BuildingsTemplate setGen(double kw) {
+        this.gen = Double.isFinite(kw) ? Math.max(0, kw) : 0;
+        return this;
+    }
+
+    /** kW of power it makes itself; 0 for every building today. */
+    public double getGen() { return gen; }
+
+    /** kW it buys from the grid: its draw past what it makes - its whole draw, exactly, when it makes none. */
+    public double powerBought() {
+        return gen > 0 ? Math.max(0, electricityConsumption - gen) : electricityConsumption;
+    }
+
+    /** kW it sells the grid: what it makes past its draw; nothing when it makes none. */
+    public double powerSold() {
+        return gen > 0 ? Math.max(0, gen - electricityConsumption) : 0;
+    }
+
+    /* ----- WHAT A WORKS BUYS ABROAD THAT IS NOT A GOOD (0.7.112, batch I2; runs/spec-materials.md 2.5) -----
+       A works burns through refractories, reagents, explosives, rolls and
+       spares the model keeps no market for. The study costs them as the rest
+       of its running costs at parity ("consumables" in buildings.json, in
+       thousands of the WORLD's money a month at nameplate), so a works pays
+       them abroad at the exchange factor, at the share of nameplate it runs:
+       a service bought from the world (Sector.bookImportedService(),
+       "Consumables"), an import in the money audit's TRADE scope, as the
+       shuttle tankers' freight has been since 0.7.91. No building has any
+       yet: the materials chains' rows bring them (I3 onwards). */
+    private double consumables;
+
+    /** Gives this building `worldThousands` a month of consumables at nameplate, in the world's money; 0 or less is none. */
+    public BuildingsTemplate setConsumables(double worldThousands) {
+        this.consumables = Double.isFinite(worldThousands) ? Math.max(0, worldThousands) : 0;
+        return this;
+    }
+
+    /** Its consumables a month at nameplate, thousands of the world's money; 0 for every building today. */
+    public double getConsumables() { return consumables; }
+
 
 
     //enums
