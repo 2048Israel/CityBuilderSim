@@ -65,7 +65,8 @@ import java.util.Map;
  *      SCREEN_TILES on Rotterdam, of a square city at the 5B copy's density,
  *      paints and rasters in no more than MapCheck.SCREEN_MS.
  *   9. THE FULL FILE, when named: the cells pass in no more than
- *      CELLS_PASS_MS (the study 0.37 to 0.45 s); the world's land, its cells'
+ *      CELLS_PASS_MS of the main thread's CPU, the wall clock printed beside
+ *      it (batch EC1; the study 0.37 to 0.45 s); the world's land, its cells'
  *      shares added, the land inside its square within LAND_WITHIN - every
  *      4' cell of the globe projected, the antipode's cap past the square
  *      left out; and the widest river EarthTerrain.WIDEST_RIVER_M, its half
@@ -143,7 +144,7 @@ public class EarthTerrainCheck {
     /** A tile's ground in no more than this, ms (spec-earth 8: 0.3; the study measured 0.09 to 0.20). */
     static final double TILE_MS = 0.3;
 
-    /** The cells pass in no more than this, ms (spec-earth 8: 1 s; the study measured 0.37 to 0.45 s). */
+    /** The cells pass in no more than this, ms of the main thread's CPU since batch EC1 (spec-earth 8: 1 s; the study measured 0.37 to 0.45 s on the wall clock). */
     static final double CELLS_PASS_MS = 1000;
 
     /** The window about each spot, in plots a side: a world cell, 61.44 km (spec-earth 3, "61 x 61 km about each spot"). */
@@ -721,6 +722,30 @@ public class EarthTerrainCheck {
        9. THE FULL FILE
        ===================================================================== */
 
+    /*
+     * THE CELLS PASS IS TIMED ON THE MAIN THREAD'S CPU (batch EC1, 2026-10-11;
+     * Jerus's A28 of 2026-10-10: "time it as thread CPU (not a loosening)",
+     * MapCheck's month bound since 0.7.100). On the wall clock the pass's
+     * first time failed often in a full suite on the two-core cloud machine
+     * (1,085 ms in the gate of 0.7.126, 1,125 and 1,212 in I6's suites) and
+     * passed alone (491 to 652 ms), before and after I6 alike: the harnesses
+     * before it push earth-1.bin's pages out of the cache, and its first
+     * reads wait on the disk (docs/queue/EC1.md). The design's bound is on
+     * the pass's own work, which is its thread's CPU - a blocked read is
+     * none, the kernel's copy of the bytes is - and the pass is all on the
+     * calling thread: EarthTerrain.cellsPass() is a plain loop, and
+     * EarthData reads and inflates its tiles where it is asked, with no
+     * stream, executor or thread of its own in EarthTerrain, EarthData,
+     * EarthProj or Geology. CELLS_PASS_MS stays 1 s, and the wall clock is
+     * printed beside it, so a slow disk still shows. Where the JVM cannot
+     * measure a thread's CPU it is timed on the wall clock, and the output
+     * and the label say so (MapCheck.CPU_TIMED, which turns it on).
+     */
+    /** The clock the cells pass's bound reads, in ns: the main thread's CPU, or the wall clock where MapCheck.CPU_TIMED is false. */
+    static long passClock() {
+        return MapCheck.CPU_TIMED ? MapCheck.THREADS.getCurrentThreadCpuTime() : System.nanoTime();
+    }
+
     /** Section 9; returns the full file's reader when it is named, else null (section 13 reads it). */
     static EarthData full(Spot s) throws Exception {
         out.println("\n--- 9. the full file, when it is named: the cells pass and the planet's land ---");
@@ -739,12 +764,18 @@ public class EarthTerrainCheck {
         report("the named file is the one this build reads: EarthData.EARTH_1", id.equals(EarthData.EARTH_1), id);
         World w = World.of(World.Key.earth(SEED, s.lat(), s.lon(), id));
         EarthTerrain e = w.earthTerrain();
+        long w0 = System.nanoTime(), c0 = passClock();
         e.cellsPass();
-        double cold = e.cellsPassMs();
+        double cold = (passClock() - c0) / 1e6, coldWall = (System.nanoTime() - w0) / 1e6;
+        w0 = System.nanoTime();
+        c0 = passClock();
         e.cellsPass();
-        double warm = e.cellsPassMs();
-        report("the cells pass in no more than CELLS_PASS_MS, its tiles read from the file the first time", cold <= CELLS_PASS_MS,
-                String.format("%.0f ms the first time, %.0f ms again (the study 370-450)", cold, warm));
+        double warm = (passClock() - c0) / 1e6, warmWall = (System.nanoTime() - w0) / 1e6;
+        String clock = MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock (this JVM measures no thread's CPU)";
+        report("the cells pass in no more than CELLS_PASS_MS of " + (MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock")
+                        + ", its tiles read from the file the first time", cold <= CELLS_PASS_MS,
+                String.format("%.0f ms of %s the first time (%.0f on the wall clock), %.0f again (%.0f on the wall clock); the study 370-450 on the wall clock",
+                        cold, clock, coldWall, warm, warmWall));
         double land = 0;
         for (int c = 0; c < World.CELLS * World.CELLS; c++) land += w.cellLandShare(c) * World.CELL_KM2;
         // The land inside the square, independently: every 4' cell of the globe, its area on the sphere, where its centre projects.
