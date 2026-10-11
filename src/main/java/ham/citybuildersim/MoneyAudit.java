@@ -1160,7 +1160,9 @@ public final class MoneyAudit {
          * would cancel in the identity whatever each side booked, and a works
          * paid more than the utility gave would be money from nowhere that the
          * residual no longer saw. Noted, each read off its own book, a
-         * mismatch is the residual's. Nothing while no building makes power.
+         * mismatch is the residual's. Nothing while no works that makes power
+         * stands (since 0.7.123 three can: the Coke Ovens, the Blast Furnace
+         * and the Oxygen Steel Shop).
          */
         double powerSold = 0;
         for (Sector s : sectors.all()) powerSold += s.statement().powerSold;

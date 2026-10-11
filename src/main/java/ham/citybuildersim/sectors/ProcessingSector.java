@@ -72,7 +72,8 @@ import java.util.Map;
  * permanent: a rename (the chains rename buildings) keeps the count.
  *
  * HEAVY INDUSTRY - IRON & STEEL - EXTENDS IT SINCE 0.7.120 (batch I3), its
- * arc furnaces on scrap; the chains' new sectors follow at I7, I8 and I10.
+ * arc furnaces on scrap, and since 0.7.123 (batch I4) the integrated route
+ * and the Scrap Yard; the chains' new sectors follow at I7, I8 and I10.
  * Refining stays its own (★ it
  * overrides every part of the plan - the flow, the package, the run, the
  * Tank Farm - and its idle months are its kinds of unit, not its

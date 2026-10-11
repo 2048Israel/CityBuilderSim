@@ -227,8 +227,10 @@ These are Jerus's, and they do not move.
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
                                    fails for them (since 0.7.75 every gate, with what it would earn, cost and
-                                   take to pay back: appraise()), the verdict on an order; pure -
-                                   BuildCardCheck holds it
+                                   take to pay back: appraise(); since 0.7.122 the last of them consider()'s
+                                   brake, the interest on its whole cost - INTEREST, through
+                                   Game.interestTest() - a landlord's home not asked it), the verdict on an
+                                   order; pure - BuildCardCheck holds it
         SectorFlow.java            one business's month as a flow (0.7.30): each good in and out, its units off
                                    the production rows and its money off the statement, the plant's six
                                    throttles and the rate they multiply to; what the Sectors screen's

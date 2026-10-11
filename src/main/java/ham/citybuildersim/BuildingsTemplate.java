@@ -413,9 +413,10 @@ public class BuildingsTemplate {
        from the grid only what it draws past that (powerBought()) and sells
        the grid what it makes past its draw (powerSold()), at the tariff -
        the sector's bill and Sector.Statement.powerSold, the grid's
-       consumption and UtilitiesHandler.setWorksPower(). No building makes
-       any yet: the Coke Ovens, the Blast Furnace and the Pulp Mill will (I4,
-       I10). Every other building's draw is its whole draw, to the bit. */
+       consumption and UtilitiesHandler.setWorksPower(). Since 0.7.123 (batch
+       I4) three do - the Coke Ovens 8,000, the Blast Furnace 60,000 and the
+       Oxygen Steel Shop 25,000 - and the Pulp Mill will (I10). Every other
+       building's draw is its whole draw, to the bit. */
     private double gen;
 
     /** Makes this building make `kw` of power a month itself; 0 or less is none. */
@@ -424,7 +425,7 @@ public class BuildingsTemplate {
         return this;
     }
 
-    /** kW of power it makes itself; 0 for every building today. */
+    /** kW of power it makes itself; 0 for every building but the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop (0.7.123). */
     public double getGen() { return gen; }
 
     /** kW it buys from the grid: its draw past what it makes - its whole draw, exactly, when it makes none. */
@@ -445,8 +446,9 @@ public class BuildingsTemplate {
        them abroad at the exchange factor, at the share of nameplate it runs:
        a service bought from the world (Sector.bookImportedService(),
        "Consumables"), an import in the money audit's TRADE scope, as the
-       shuttle tankers' freight has been since 0.7.91. No building has any
-       yet: the materials chains' rows bring them (I3 onwards). */
+       shuttle tankers' freight has been since 0.7.91. The materials chains'
+       rows bring them: the Iron Mine and the two arc furnaces since 0.7.120
+       (batch I3), the integrated route's seven since 0.7.123 (I4). */
     private double consumables;
 
     /** Gives this building `worldThousands` a month of consumables at nameplate, in the world's money; 0 or less is none. */
@@ -455,7 +457,7 @@ public class BuildingsTemplate {
         return this;
     }
 
-    /** Its consumables a month at nameplate, thousands of the world's money; 0 for every building today. */
+    /** Its consumables a month at nameplate, thousands of the world's money; 0 for every building but the materials chains' rows (the iron rows since 0.7.120, the integrated route's since 0.7.123). */
     public double getConsumables() { return consumables; }
 
     /* ----- THE OLD METAL A YARD TAKES (0.7.123, batch I4; runs/spec-materials.md 2.5, 2.9) -----

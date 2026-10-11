@@ -258,9 +258,9 @@ public enum Good {
 
     /**
      * Iron ore - fines, lump and concentrate at 62-66% Fe - and nothing else
-     * since 0.7.120. Made by the mines; nothing in the city uses it until the
-     * integrated route's pellet plants and blast furnaces (batch I4), so a
-     * mine ships what it lifts at the export price.
+     * since 0.7.120. Made by the mines; nothing in the city used it until the
+     * integrated route's Pelletising Plant and blast furnaces (0.7.123, batch
+     * I4), so a mine ships what they do not take at the export price.
      *
      * .115 IN AND .085 OUT (0.7.120, batch I3; Jerus's Q4, 2026-10-08:
      * "split"; materials-chains-research.md 2.3): ore at 62% Fe CFR China
@@ -276,8 +276,8 @@ public enum Good {
     IRON("Iron ore", "tonne", .115, .085, .01125, false, Pricing.BAND, false),
 
     /**
-     * Made by the mills: the arc furnaces out of scrap (and from batch I4 the
-     * oxygen shop out of pig iron).
+     * Made by the mills: the arc furnaces out of scrap (and since 0.7.123,
+     * batch I4, the oxygen shop out of pig iron and scrap).
      *
      * .650 IN AND .470 OUT SINCE 0.7.120 (batch I3; Jerus's Q6, 2026-10-08:
      * "move to world prices"; materials-chains-research.md 2.6): hot-rolled
@@ -847,8 +847,8 @@ public enum Good {
      * US$410, SteelBenchmarker 26 Aug 2026; CFR Turkey about US$394), and
      * .30 out is what a city's scrap nets shipped to a distant mill; freight
      * .04125, three eighths of the wedge. A flow good, as ore is: what a mill
-     * does not take leaves, and nothing in the city makes it until the Scrap
-     * Yard (batch I4), so the furnaces import it.
+     * does not take leaves, and nothing in the city made it until the Scrap
+     * Yard (batch I4, below), so the furnaces imported it.
      *
      * With steel at .650 / .470 an Electric Arc Furnace on imported scrap
      * earns -0.5% of its cost a month exporting and 0.2% replacing imported

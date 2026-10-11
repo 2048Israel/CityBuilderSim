@@ -105,7 +105,7 @@ public enum Resource {
     /** What its amount is counted in: "tonne", or forest's "cubic metre". */
     public String unit()           { return unit; }
 
-    /** Fields a square kilometre of land: the mean of each world cell's Poisson count, over its land. Zero for forest. */
+    /** Fields a square kilometre of land: the mean of each world cell's Poisson count, over its land - on the real Earth, since 0.7.117, over its field land (World.fieldKm2(): its land x its provinces' weight and Z, oil's with its petroleum and its offshore sea). Zero for forest. */
     public double fieldsPerKm2()   { return fieldsPerKm2; }
 
     /** The ground one site takes, in square kilometres: what one mine or well stands on. Zero for forest. */

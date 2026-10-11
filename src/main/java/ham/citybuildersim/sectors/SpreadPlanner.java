@@ -262,7 +262,7 @@ public final class SpreadPlanner {
      * price for its feed, less `running` (its wages, power and water),
      * `standing` (repairs and property tax) and ownCosts() at nameplate.
      * The four-case reading the building rows of batch I3 onwards are held
-     * to; no works has rows yet.
+     * to (MaterialsCheck 9, the iron rows; 11, the integrated route's).
      */
     public static double caseEarns(BuildingsTemplate t, Case c, ToDoubleFunction<Good> importPrice,
                                    ToDoubleFunction<Good> exportPrice, double running, double standing,

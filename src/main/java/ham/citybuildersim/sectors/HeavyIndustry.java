@@ -5,8 +5,10 @@ import ham.citybuildersim.Good;
 
 /**
  * The mills - Iron & Steel since 0.7.120, under the key it was saved by,
- * "Heavy Industry": the arc furnaces, which melt scrap into steel and sell it
- * to the city's fabricators or abroad, built by what pays.
+ * "Heavy Industry": the arc furnaces, which melt scrap into steel, and since
+ * 0.7.123 the integrated route from ore and coke to steel and the yards that
+ * sort the city's old steel into scrap - steel sold to the city's fabricators
+ * or abroad, every works built by what pays.
  *
  * WHY (0.7.120, batch I3; runs/spec-materials.md 2.1 and 2.3, and Jerus's
  * Q2, Q4 and Q6 of 2026-10-08). Until then a mill bought IRON - "iron ore,

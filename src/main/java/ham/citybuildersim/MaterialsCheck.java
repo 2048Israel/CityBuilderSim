@@ -49,7 +49,8 @@ import java.util.Map;
  *      uses goes to its own need first, min(made, needed); the market sees
  *      the net - bid() and what is made for the market - and the ledger
  *      books sales of the rest and no purchase of it, a flow good and a
- *      stockable one; no sector in the game has a captive good.
+ *      stockable one; one sector in the game has captive goods, Iron & Steel
+ *      (its scrap, coke and pig iron, since 0.7.123 - none until then).
  *
  *   4. A WORKS' OWN POWER IS BILLED NET AND THE CITY PAYS THE SURPLUS: in a
  *      town whose bakeries are handed power of their own, each building buys
@@ -825,8 +826,10 @@ public class MaterialsCheck {
     /** ...their posts (the study's 2.4). */
     static final int[] ROUTE_POSTS = { 40, 150, 200, 150, 1200, 1800, 400 };
 
-    /** ...their draw and what they make, kW (the study's 2.4 and 1.6). */
+    /** ...their draw, kW (the study's 2.4 and 1.6). */
     static final int[] ROUTE_KW = { 550, 5750, 2200, 2050, 51400, 51600, 77000 };
+
+    /** ...and what they make, kW: the Coke Ovens', the Blast Furnace's and the Oxygen Steel Shop's power from their gas (the study's 2.4 and 1.6). */
     static final double[] ROUTE_GEN = { 0, 0, 8000, 0, 60000, 25000, 0 };
 
     /** ...and their ground, hectares (the study's 2.4). */

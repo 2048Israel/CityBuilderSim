@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * One build card's figures, for every one of the 101 buildings (0.7.25): what
+ * One build card's figures, for every one of the 108 buildings (0.7.25): what
  * it gives the city and in what unit, its price per unit of that, the scarce
  * resource it takes, the group it is compared within and where in that group
  * it stands, what one costs to run, the verdict on an order of it - and, for

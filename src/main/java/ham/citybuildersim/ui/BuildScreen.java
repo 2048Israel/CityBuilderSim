@@ -1573,7 +1573,7 @@ final class BuildScreen {
 
     /**
      * The stat cover, as tall as the card it covers: what the building does
-     * in sentences (whatItDoes(), which BuildMenuCheck holds for all 101), the
+     * in sentences (whatItDoes(), which BuildMenuCheck holds for all 108), the
      * figures the face does not say - materials, build points, road load,
      * electricity, water, the wage bill and the job mix - and on a market
      * card the investors' estimate of what one would make its owner.

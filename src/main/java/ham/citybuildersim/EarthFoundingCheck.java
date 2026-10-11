@@ -68,6 +68,7 @@ public class EarthFoundingCheck {
     static int fails = 0;
     /** Where the harness prints: the console. */
     static final PrintStream out = System.out;
+    /** Where the game's own narration goes while a city is founded or played here (quietly()): nowhere. */
     static final PrintStream quiet = new PrintStream(java.io.OutputStream.nullOutputStream());
 
     static void check(String label, boolean ok) {

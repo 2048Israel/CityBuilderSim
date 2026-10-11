@@ -442,9 +442,10 @@ public class MiningCheck {
          * So the worst case is put to the books directly: every tonne exported,
          * at the floor, with no local buyer at any price.
          *
-         * (SINCE 0.7.120 nothing in the city buys ore - the furnaces melt
-         * scrap - so this IS the mine's month until the integrated route's
-         * pellet plants and blast furnaces come, at batch I4. It pays for its
+         * (FROM 0.7.120 nothing in the city bought ore - the furnaces melt
+         * scrap - so this was the mine's month until the integrated route's
+         * Pelletising Plant and blast furnaces came, at 0.7.123 (batch I4), and
+         * it still is wherever none of them stands. It pays for its
          * diesel and its consumables now, at the world's prices, and its crew
          * at the game's founding wages, PayTier's - .8, 1.5 and 4.0 until
          * then, the wages of 2026-09-09.)

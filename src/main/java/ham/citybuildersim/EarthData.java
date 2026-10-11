@@ -693,7 +693,7 @@ public final class EarthData implements AutoCloseable {
        GEOLOGY, PROVINCES, PLACES AND THE META
        ===================================================================== */
 
-    /** One USGS geologic province (WEP_PRVG): its row in the table, its code, name and class by the name rules (ocean, shield, fold belt, rift, shelf, basin, other), and its known petroleum, million barrels of oil equivalent. */
+    /** One USGS geologic province (WEP_PRVG): its row in the table, its code, name and class by the name rules (ocean, shield, fold belt, rift, shelf, basin, other - the game reads Geology's class, its hand-checked table over these, since 0.7.117), and its known petroleum, million barrels of oil equivalent. */
     public record Province(int row, String code, String name, String kind, double knownMmboe) { }
 
     /** One of Natural Earth's places, for search: its name, its ASCII name (the name when they are the same), country, position and population (Natural Earth's pop_max). */

@@ -2844,6 +2844,7 @@ public class SaveFileCheck {
         return out;
     }
 
+    /** The console, as the harness found it: where quietly() puts the narration back. */
     static final java.io.PrintStream REAL_OUT = System.out;
 
     /** Runs a piece of the city with the game's narration off. */

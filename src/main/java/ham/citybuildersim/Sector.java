@@ -2285,10 +2285,11 @@ public abstract class Sector {
        (inputCostAtRate()). Output.captive records it, for SectorFlow and
        the pictograms.
 
-       A sector says which goods are captive (captive()); none does here,
-       and none does today, so every sector's month is what it was, to the
-       bit. sectors.ProcessingSector makes every good it both makes and uses
-       captive.
+       A sector says which goods are captive (captive()); none does here.
+       sectors.ProcessingSector makes every good it both makes and uses
+       captive, and since 0.7.123 (batch I4) one sector keeps any - Iron &
+       Steel, its scrap, coke and pig iron - so every other sector's month is
+       what it was, to the bit.
        =================================================================== */
 
     /** Whether it uses what it makes of a good first, itself (CAPTIVE USE): false here; sectors.ProcessingSector says yes for every good it both makes and uses. */
