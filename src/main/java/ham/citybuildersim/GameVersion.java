@@ -5776,8 +5776,79 @@ public final class GameVersion {
      *     the runs and the edge at the widest view; not in the sidecar).
      *   - The default playtest is pt07123's byte for byte, and the Earth one
      *     pte07127's.
+     *
+     * 0.7.131 (2026-10-11) - STONE. Batch I7, the fifth materials batch that
+     * changes the game: the third chain's two sectors (Jerus's Q17, Q18, Q21
+     * and A of 2026-10-08; docs/studies/spec-materials.md 2.1-2.4, 2.10,
+     * 2.12 and 5; the study's 6; runs/brief-batchI7.md, runs/fixI7-notes.md).
+     * No save format change (39): a save from before it restores Quarrying
+     * and Cement & Concrete empty and cement held as none - missing, not
+     * misread - and its stone is untouched ground until a quarry digs it.
+     *   - THE SECTORS: "Quarrying" and "Cement & Concrete" on the end of
+     *     Sectors.KEYS after Coal Mining, the nineteenth and twentieth (Q21:
+     *     iron, coal, stone, copper, wood). sectors.Quarrying, an
+     *     ExtractionSector on stone making AGGREGATE, LIMESTONE and
+     *     DIMENSION_STONE; sectors.CementConcrete, a ProcessingSector making
+     *     CEMENT and LIME of LIMESTONE, AGGREGATE and THERMAL_COAL. Equity's
+     *     companies, the households' share block, the audit's pools and the
+     *     bank's year of sheets grow with the keys.
+     *   - THE GOODS (Good, appended; the study's 6.3): AGGREGATE 40 / 10 -
+     *     limestone's own band - DIMENSION_STONE 260 / 170 and CEMENT 110 /
+     *     45, freight three eighths of each wedge; cement stockable, on
+     *     NationalAccounts.HELD's end; aggregate and cement by the BULK
+     *     stream and dry bulk, dimension stone GOODS and, ★, general cargo by
+     *     sea. LIMESTONE and LIME (batch I4's) are made here from now on.
+     *   - THE ROWS (ids 115-120; the study's 6.4 at spec 2.2's conventions):
+     *     the Quarry, 40,000 t a month on one stone site of either type; the
+     *     Large Quarry, 250,000 t on three of one field; the Dimension Stone
+     *     Quarry, 1,000 t of blocks on one hard-rock site, 3 t of rock a
+     *     tonne; the Cement Plant, 25,000 t of cement; the Large Cement Plant,
+     *     125,000 t, "since" 1902 (Edison's long kilns); the Lime Kiln, 18,000
+     *     t of quicklime. Power the research's kWh a tonne over the study's
+     *     730-hour month (crushing 1.7, cement 91; the kiln at the Pelletising
+     *     Plant's ratio, the study giving none); no diesel (it names none).
+     *   - WHICH FIELD A QUARRY IS ON: LandManager.packed(), fits()'s packing
+     *     made readable - quarries on ANY onto limestone first, a works on a
+     *     type before them - and a quarry's sites on limestone make LIMESTONE,
+     *     on hard rock AGGREGATE (Quarrying.nameplate(): getCapacity(),
+     *     getPipeline(), madeBy()); with a type worked out a quarry on ANY
+     *     digs the other. The dig by type: each good out of its type's ground
+     *     at its dig, W exact. ExtractionSector.lifts(), the plan's and the
+     *     retirement's test of a building, so the blocks are weighed too.
+     *   - THE CARRY (spec 2.10, Q17): limestone clears before aggregate, and
+     *     what of it no buyer takes is carried into the month's aggregate,
+     *     tonne for tonne, booking nothing (Quarrying.shipUnsoldFlow()); its
+     *     ground stays limestone's. A quarry's estimate values its limestone
+     *     past the city's room for it as aggregate; ProcessingSector.values()
+     *     counts the limestone carried as exported, so a kiln or furnace
+     *     weighs it at its export price - every month with none carried as
+     *     before, to the bit.
+     *   - Resource.STONE: priced as AGGREGATE, LIMESTONE or AGGREGATE by type
+     *     (goodOf()), 1/400 of aggregate's export price in the ground (the
+     *     study's 8): an offer's stone is in its price, and an offer holding
+     *     stone is no longer bare ground.
+     *   - THE SCREENS: Build's "Stone" and "Cement" groups after Coal; a
+     *     quarry's sentence (limestone, the rest as aggregate).
+     *   - Harnesses: QuarryingCheck and CementConcreteCheck (new, the
+     *     ninety-ninth and hundredth: the carry, the registry, the six rows'
+     *     cases against the study's arithmetic and its stated returns, hard
+     *     rock, the packing, the dig by type, the plan, the buyers, the
+     *     carried limestone weighed as exported, played months);
+     *     BuildingDataCheck (121 buildings, thirteen on sites, stone's,
+     *     consumables, since), BuildCardCheck (the two groups), GdpCheck
+     *     (HELD's end), TradeCostCheck (the three prices), CoalMiningCheck
+     *     (coal no longer the last key).
+     *   - THE PLAYTESTS MOVE, not from the first offer holding stone as the
+     *     spec expected but from Cement & Concrete's planner: at m1086 of the
+     *     default (m858 on the Earth) a Lime Kiln on imported limestone
+     *     exporting lime weighs 0.55% on its whole cost, its lorries in, on
+     *     the bands the city's port and railway have narrowed; once built its
+     *     own tonnes take the cheap freight back, its vans are bought over
+     *     eight months and it is shed by IDLE, THEN SHED at six (batch I4's
+     *     "lumpy works" again; fixI7-notes 4 and 6). Every month passes the
+     *     audit and every reload matches; re-baselined (pt07131, pte07131).
      */
-    public static final String VERSION = "0.7.128";
+    public static final String VERSION = "0.7.131";
 
     /**
      * The save shape.
