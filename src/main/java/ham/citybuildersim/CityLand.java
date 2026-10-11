@@ -687,6 +687,60 @@ public final class CityLand {
         return out;
     }
 
+    /* ----- the ground by type (0.7.110, batch I1; runs/spec-materials.md 2.4) ----- */
+
+    /**
+     * A piece of a resource's ground as a holding listed it, of one type: a
+     * field it holds (`field`), or with `field` null what it listed past its
+     * fields - ground by fiat (setCentre()), or a converted centre's legacy
+     * field - which is the resource's first type.
+     */
+    public record Piece(int holding, Deposit field, Deposit.FieldType type, int sites, double amount) { }
+
+    /**
+     * The city's ground of a resource piece by piece, in the order it is
+     * worked out (0.7.110): each holding in acquisition order, its fields as
+     * heldFields() lists them, each as far as what the holding listed goes
+     * (sites and amount each), then what it listed past them as one piece of
+     * the first type - so each holding's pieces add up to what it listed,
+     * sites to the site and whole tonnes to the tonne, as its sea sites are
+     * counted (LandManager.getSites(r, dry)). What the ground by type, its
+     * runs and the packing of the works on it read (LandManager, THE GROUND
+     * BY TYPE). A resource of one type: its NONE pieces the same way.
+     */
+    public List<Piece> typedPieces(Resource r) {
+        Deposit.FieldType first = r.typesOf().get(0);
+        long[] listedSites = sitesInOrder(r);
+        double[] listed = amountsInOrder(r);
+        List<List<Held>> held = heldFields(r);
+        List<Piece> out = new ArrayList<>();
+        for (int h = 0; h < listed.length; h++) {
+            long sitesLeft = listedSites[h];
+            double left = listed[h];
+            if (h < held.size()) {
+                for (Held f : held.get(h)) {
+                    if (sitesLeft <= 0 && !(left > 0)) break;
+                    int s = (int) Math.min(sitesLeft, f.sites());
+                    double a = Math.min(left, f.amount());
+                    if (s <= 0 && !(a > 0)) continue;
+                    sitesLeft -= s;
+                    left -= a;
+                    out.add(new Piece(h, f.field(), f.field().type(), s, a));
+                }
+            }
+            if (sitesLeft > 0 || left > 0) out.add(new Piece(h, null, first, (int) Math.min(Integer.MAX_VALUE, sitesLeft), Math.max(0, left)));
+        }
+        return out;
+    }
+
+    /** The city's sites of a resource by type, in Resource.typesOf()'s order (0.7.110): its pieces' (typedPieces()), so they add up to totalSites(r) exactly. */
+    public long[] sitesByType(Resource r) {
+        List<Deposit.FieldType> types = r.typesOf();
+        long[] out = new long[types.size()];
+        for (Piece p : typedPieces(r)) out[types.indexOf(p.type())] += p.sites();
+        return out;
+    }
+
     /** The world's field a part field record names, or null: the old world's (a part field is a 0.7.58-0.7.63 save's, converted). */
     static Deposit fieldOf(World world, GridConversion.PartField p) {
         for (Deposit d : legacyFields(world, p.cell(), p.kind())) if (d.index() == p.index()) return d;

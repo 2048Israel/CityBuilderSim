@@ -267,6 +267,16 @@ public class DataSave {
      */
     private Double oilDepletionAtSea;
     /**
+     * What has been taken out of each typed resource by type (0.7.110,
+     * batch I1; LandManager's THE GROUND BY TYPE): a row per resource in
+     * Resource's order, its types in Resource.typesOf()'s order, null for a
+     * resource whose E by type is the walk's reading of its E - every
+     * resource until a works digs by type, so a save carries it only then.
+     * No format bump: a save without it is one whose every tonne came out in
+     * acquisition order, which is what the walk reads (★I1-1).
+     */
+    private double[][] depletionByType;
+    /**
      * How many of the city's holdings - the centre, then its purchases in the
      * order made - hold the old world's fields (0.7.99, SAVE_FORMAT 36;
      * CityLand.oldWorldHoldings()): 0 for a city founded on 0.7.99. Boxed: a
@@ -902,6 +912,9 @@ public class DataSave {
     public double[] getDepletion()          { return depletion; }
 
     public void setOilDepletionAtSea(double tonnes) { this.oilDepletionAtSea = tonnes; }
+    public void setDepletionByType(double[][] byType) { this.depletionByType = byType; }
+    /** E by type as saved (0.7.110), a row per resource or null for the walk's reading; null on a save that carries none. */
+    public double[][] getDepletionByType()  { return depletionByType; }
     /** The offshore pool's E as saved (0.7.93), or null on a save from before the two pools. */
     public Double getOilDepletionAtSea()    { return oilDepletionAtSea; }
 

@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 /**
- * One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, and (0.7.79) an oil field's grade.
+ * One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, (0.7.79) an oil field's grade and (0.7.110) its type.
  *
  * WHY THIS EXISTS (0.7.56, batch J1a; the project's spec-land.md 2.1). A
  * field is the unit the land office sells and the map draws: it belongs
@@ -189,5 +189,47 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
             if (u < upTo) return all[g];
         }
         return all[all.length - 1];
+    }
+
+    /* =====================================================================
+       THE FIELD'S TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4)
+
+       A field of iron is hematite or magnetite, of coal thermal or coking,
+       of copper sulphide or oxide, of stone limestone or hard rock
+       (Resource.typesOf()): what a works on it digs and what its ore becomes
+       (Resource.goodOf()). The materials chains' works stand on a type
+       (BuildingsTemplate.site(); LandManager's THE GROUND BY TYPE). Oil,
+       uranium and forest have one type, NONE. A pure function of the
+       field's cell, index and kind, drawn as its grade() is with a salt of
+       its own, against TYPE_SHARES - so nothing is stored, no tonne moves,
+       and a pool's fields of each type add up to its total exactly, on the
+       old world's fields as on the new (WorldCheck 9). A generated world
+       draws flat; on Earth (spec-earth, E3) a type is to lean on its cell's
+       geology. Since 0.7.99 a field is ten of the old draws' sites, so a
+       city's ore is more often one type than it was (fixI1-notes.md).
+       ===================================================================== */
+
+    /** A field's type: two for each of iron, coal, copper and stone, in Resource's order, the commoner first; NONE for oil, uranium and forest. */
+    public enum FieldType { HEMATITE, MAGNETITE, THERMAL, COKING, SULPHIDE, OXIDE, LIMESTONE, HARD_ROCK, NONE }
+
+    /**
+     * The share of its resource's fields of each type, in FieldType's order: the first of each resource's two the study's (runs/spec-materials.md 2.4, the study's 1.4: hematite .75, thermal .85, sulphide .80, limestone .70), the second the rest; NONE, the one type of oil, uranium and forest, all of them.
+     */
+    public static final double[] TYPE_SHARES = { .75, .25, .85, .15, .80, .20, .70, .30, 1 };
+
+    /** What makes a field's type a draw of its own, apart from its turn()'s and its grade()'s. */
+    static final long TYPE_SALT = 0x7E1DA5L;
+
+    /**
+     * Its type (0.7.110): NONE for a resource of one type; else a uniform
+     * draw from World.mix() of its cell, index, kind and TYPE_SALT - its
+     * resource's first type under that type's TYPE_SHARES, the second
+     * from it - the same field always the same type, on any machine.
+     */
+    public FieldType type() {
+        java.util.List<FieldType> types = kind.typesOf();
+        if (types.size() < 2) return types.get(0);
+        double u = World.unit(World.mix(((long) cell << 24) ^ ((long) index << 4) ^ kind.ordinal() ^ TYPE_SALT));
+        return u < TYPE_SHARES[types.get(0).ordinal()] ? types.get(0) : types.get(1);
     }
 }

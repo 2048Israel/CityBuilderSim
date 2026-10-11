@@ -1938,6 +1938,7 @@ public class BuildingManager {
                 .setJobs(JobType.NO_DIPLOMA, 45)
                 .setJobs(JobType.DIPLOMA, 12)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 3)
+                .setSite(Resource.IRON, null, 1, 1)   // one iron site, any type, until batch I5 (0.7.110)
                 .setId(14);
 
         templates.add(ironMine);
@@ -1974,6 +1975,7 @@ public class BuildingManager {
                 .setLandSqFt(87120)
                 .setRoadLoad(70)
                 .setJobs(JobType.DIPLOMA, 1)      // one post since 0.7.84 (two NO_DIPLOMA and one DIPLOMA until then)
+                .setSite(Resource.OIL, null, 1, 1)    // one dry oil site (0.7.110)
                 .setId(74);
 
         templates.add(oilWell);
@@ -2430,6 +2432,7 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 4)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 2)
                 .setOffshore(BuildingsTemplate.Offshore.PLATFORM, 12, 0)
+                .setSite(Resource.OIL, null, 0, 0)    // on an oil field, taking none of its sites (0.7.110)
                 .setId(98));
         templates.add(new BuildingsTemplate("Platform Well", BuildingType.MINING)
                 .setSector("Oil")
@@ -2441,6 +2444,7 @@ public class BuildingManager {
                 .setWaterConsumption(0)
                 .setJobs(JobType.DIPLOMA, 1)
                 .setOffshore(BuildingsTemplate.Offshore.WELL, 0, 0)
+                .setSite(Resource.OIL, null, 1, 1)
                 .setId(99));
         templates.add(new BuildingsTemplate("Crude Pipeline", BuildingType.MINING)
                 .setSector("Oil")

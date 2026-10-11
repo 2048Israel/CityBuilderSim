@@ -7174,17 +7174,36 @@ public class Game {
      * site or ordered (0.7.62): every MINING template whose good is the
      * resource's (siteOf()) - and since 0.7.91 not an offshore platform's
      * jacket, which stands on its field and takes none of its sites (its
-     * wells do).
+     * wells do). Since 0.7.110 the sites they take (each its template's
+     * site's sites, one for every building until the materials chains'),
+     * every type's.
      */
     public int committedOn(Resource r) {
+        return committedOn(r, null, true);
+    }
+
+    /**
+     * ...and the sites taken by the buildings that stand on one type of the
+     * resource's fields (0.7.110, batch I1; spec-materials 2.4): `type` null
+     * counts those on ANY - the Iron Mine's until batch I5 - and not the
+     * typed ones; committedOn(r) counts all.
+     */
+    public int committedOn(Resource r, Deposit.FieldType type) {
+        return committedOn(r, type, false);
+    }
+
+    private int committedOn(Resource r, Deposit.FieldType type, boolean everyType) {
         int committed = 0;
         int[] underConstruction = buildingManager.getUnderConstructionById();
         for (BuildingsTemplate t : buildingManager.getTemplates()) {
-            if (siteOf(t) != r || t.isPlatform()) continue;
-            committed += buildingManager.getQuantity(t.getId());
+            BuildingsTemplate.Site site = t.site();
+            if (site == null || site.resource() != r || t.isPlatform()) continue;
+            if (!everyType && site.type() != type) continue;
+            int n = buildingManager.getQuantity(t.getId());
             if (t.getId() < underConstruction.length) {
-                committed += underConstruction[t.getId()];
+                n += underConstruction[t.getId()];
             }
+            committed += n * site.sites();
         }
         return committed;
     }
@@ -7207,18 +7226,18 @@ public class Game {
     }
 
     /**
-     * The resource whose sites a building stands on (0.7.62): a MINING
-     * template's, the resource whose good it makes - iron for an Iron Mine,
-     * oil for an Oil Well; null for anything else. The map's rule
+     * The resource whose sites a building stands on (0.7.62): iron for an
+     * Iron Mine, oil for an Oil Well; null for anything else. The map's rule
      * (BuildingVisual.of()). Since 0.7.91 an offshore platform's jacket, too,
-     * stands on oil: a shallow sea field's.
+     * stands on oil: a shallow sea field's. Since 0.7.110 (batch I1) read off
+     * the template's site (BuildingsTemplate.site()), which buildings.json
+     * declares for the four that stand on sites: a template without one is
+     * not a mine. To 0.7.109 it was a MINING template's, the resource whose
+     * good it makes, or oil for a jacket - the same four answers
+     * (BuildingDataCheck).
      */
     public static Resource siteOf(BuildingsTemplate t) {
-        if (t == null || t.getCategory() != BuildingType.MINING) return null;
-        for (Resource r : Resource.values()) {
-            if (r.good() != null && t.makes(r.good()) > 0) return r;
-        }
-        return t.isPlatform() ? Resource.OIL : null;
+        return t == null || t.site() == null ? null : t.site().resource();
     }
 
     /**
@@ -12274,6 +12293,8 @@ public class Game {
                 landManager.getWorldSeaTheta());
         // ...and the offshore pool's E (0.7.93, SAVE_FORMAT 35): the depletion's oil is the ground pool's.
         dataSave.setOilDepletionAtSea(landManager.getOilExtractedAtSea());
+        // ...and what has been taken out by type, once a works has dug by type (0.7.110; null until then).
+        dataSave.setDepletionByType(landManager.getDepletionByTypeState());
         // ...and how many holdings hold the old world's fields (0.7.99, SAVE_FORMAT 36; CityLand.oldWorldHoldings()).
         dataSave.setLandOldWorldHoldings(land.oldWorldHoldings());
         dataSave.setLandMarketPrices(landManager.getMarket().getPriceState());
@@ -15172,6 +15193,8 @@ public class Game {
 
             boolean landConverted = restoreLandOnTheWorld(loaded, owned);
             restoreOilPools(loaded);
+            // ...and E by type as saved; a save without it reads as the walk (0.7.110, LandManager's THE GROUND BY TYPE).
+            landManager.restoreDepletionByType(loaded.getDepletionByType());
             landManager.setAllocatedSqFt(built);
             // ...and its zones, the forest law and the forest cleared (0.7.107): a save from before
             // them has none, and loads with the ground free for anyone, as it always was.

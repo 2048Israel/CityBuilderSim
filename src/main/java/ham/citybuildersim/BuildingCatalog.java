@@ -218,8 +218,48 @@ public class BuildingCatalog {
         readRefinery(o, template, name);
         readPort(o, template, name);
         readOffshore(o, template, name);
+        readSite(o, template, name);
 
         return template;
+    }
+
+    /**
+     * The site a mine or a well stands on (0.7.110, batch I1): "site":
+     * {"resource": "IRON", "type": "ANY", "sites": 1, "dig": 1} - the
+     * resource whose sites it takes, the type of field it needs (a
+     * Deposit.FieldType of that resource, or ANY), how many and the tonnes
+     * of field a unit it makes takes out. Absent, it stands on no site; an
+     * unknown resource is reported and the line ignored, and an unknown type
+     * reported and read as ANY, as an unknown good costs only its line.
+     */
+    private void readSite(JsonObject o, BuildingsTemplate template, String name) {
+
+        if (!o.has("site") || !o.get("site").isJsonObject()) return;
+        JsonObject p = o.getAsJsonObject("site");
+        String resource = string(p, "resource");
+        Resource r;
+        try {
+            r = Resource.valueOf(resource);
+        } catch (Exception e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" stands on unknown resource \""
+                    + resource + "\"; that line ignored.");
+            return;
+        }
+        String typeName = string(p, "type");
+        Deposit.FieldType type = null;
+        if (!typeName.isEmpty() && !"ANY".equals(typeName)) {
+            try {
+                type = Deposit.FieldType.valueOf(typeName);
+            } catch (Exception e) {
+                type = null;
+            }
+            if (type == null || !r.typesOf().contains(type)) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" stands on unknown type \""
+                        + typeName + "\" of " + r + "; read as ANY.");
+                type = null;
+            }
+        }
+        template.setSite(r, type, (int) number(p, "sites"), number(p, "dig"));
     }
 
     /**
