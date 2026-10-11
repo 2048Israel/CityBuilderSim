@@ -1960,7 +1960,7 @@ public final class DistrictPlan {
             boolean anchors = false;
             for (int x = 0, p = y * FRAME; x < FRAME; x++, p++) {
                 byte t = terrain[p];
-                boolean d = owned[p] & (t == World.GRASS | t == World.FOREST | t == World.SAND);
+                boolean d = owned[p] & World.dry(t);
                 dry[p] = d;
                 byte f = fixed[p];
                 blocked[p] = !d | f != 0 | site[p] != 0;

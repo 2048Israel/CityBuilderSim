@@ -153,9 +153,9 @@ public final class CityRuns {
         long[] box();
     }
 
-    /** Whether a ground class is the city's dry ground: owned, not water. */
+    /** Whether a ground class is the city's dry ground: owned (a class at all, not -1), and dry by World.dry() - not water, and since 0.7.127 not ice. */
     static boolean dry(int g) {
-        return g >= 0 && g != World.SALT && g != World.FRESH;
+        return World.dry(g);
     }
 
     /* =====================================================================

@@ -349,7 +349,7 @@ public final class MapTiles {
                     out[j * n + i] = TileRaster.blend(c, TileRaster.VOID, TileRaster.UNOWNED_DIM);
                     continue;
                 }
-                if (g != World.SALT && g != World.FRESH) {
+                if (World.dry(g)) {
                     CityMap.District d = map.districtOfTile(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE));
                     if (d != null) {
                         Integer tint = tints.get(d);

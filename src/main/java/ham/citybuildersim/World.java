@@ -112,6 +112,29 @@ public final class World {
     /** Beach: dry land within BEACH_BAND of the sea's level. */
     public static final byte SAND = 4;
 
+    /** Ice (0.7.127, batch E7; spec-earth's E14, the project's spec-globe.md 3.9): land under snow and ice - never dry, never built on, never a founding site - counted in a holding's whole area only. The real Earth's sheets and glaciers (EarthTerrain); a generated world has none. */
+    public static final byte ICE = 5;
+
+    /** Desert (0.7.127, batch E7; spec-globe Q1): dry ground every rule treats as grass - only its colour and its name differ. The real Earth's bare ground (EarthTerrain); a generated world has none. */
+    public static final byte DESERT = 6;
+
+    /** How many classes the ground has: 7, GRASS to DESERT - the length of an array a class indexes (0.7.127; five until then, and a generated world draws only those). */
+    public static final int CLASSES = 7;
+
+    /** The dry classes, a bit each: grass, forest, the beach and the desert. */
+    private static final int DRY_CLASSES = 1 << GRASS | 1 << FOREST | 1 << SAND | 1 << DESERT;
+
+    /**
+     * Whether a class is dry ground - grass, forest, the beach or the desert:
+     * what buildings stand on, the founding's test 1 asks for and a holding's
+     * dry area counts. Not water, and not ice (0.7.127, batch E7: the one
+     * rule every test of dry ground asks; spec-globe 3.9). False for anything
+     * that is not a class, -1 included.
+     */
+    public static boolean dry(int cls) {
+        return (DRY_CLASSES & 1 << cls) != 0;
+    }
+
     /* =====================================================================
        THE TERRAIN: VALUE NOISE IN OCTAVES (spec-land 2.1)
 
@@ -1057,7 +1080,7 @@ public final class World {
         return forest >= FOREST_THETA ? FOREST : GRASS;
     }
 
-    /** One plot's ground, at its centre: GRASS, FOREST, FRESH, SALT or SAND; SALT off the world. 650 to 930 ns. On Earth (0.7.115) its tile's, kept (EarthTerrain.terrainAt()). */
+    /** One plot's ground, at its centre: GRASS, FOREST, FRESH, SALT or SAND; SALT off the world. 650 to 930 ns. On Earth (0.7.115) its tile's, kept (EarthTerrain.terrainAt()), which may be ICE or DESERT too (0.7.127). */
     public byte terrainAt(long x, long y) {
         if (earth != null) return earth.terrainAt(x, y);
         build();
@@ -1098,7 +1121,8 @@ public final class World {
      * faster - each fine octave's lattice is hashed once a tile, and the coarse
      * octaves (2^9 plots and over) are interpolated between the tile's
      * corners. A tile off the world is sea. 65 to 70 us a tile. On Earth
-     * (0.7.115) spec-earth 3's rule (EarthTerrain.tileTerrain()).
+     * (0.7.115) spec-earth 3's rule (EarthTerrain.tileTerrain()), with ice
+     * and desert since 0.7.127.
      *
      * @param tx the tile's column, plots / TILE
      * @param ty the tile's row

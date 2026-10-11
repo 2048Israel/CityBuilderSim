@@ -35,7 +35,10 @@ import java.util.Locale;
  * as the land office will sell it, the province the geology under the site
  * (E3's multipliers, w x Z, oil's with its petroleum), and the nearest iron
  * field's centre among the world's own fields. Nothing here is a model
- * change: the city founded is the one the card describes.
+ * change: the city founded is the one the card describes. Since 0.7.127
+ * (batch E7) ice is a kind of ground, never dry: the card's ice is the
+ * plot's class (onIce()), so the snap never finds a site on it, and a spot
+ * on an ice sheet is refused on its own plot.
  *
  * RANDOM SPOT (randomPlace()): the seed picks among the data's places that
  * pass the site test - a site within the snap and not on ice - trying them in
@@ -284,8 +287,9 @@ public final class EarthSite {
     /**
      * Why a city cannot be founded on the world an Earth key names, or null
      * when it can (Founding.problem()): its data not here, no site within the
-     * snap (NO_SITE_WORDS), or ice under it (ICE_WORDS) - the card's
-     * refusals, without the rest of the card.
+     * snap (NO_SITE_WORDS), or ice under it (ICE_WORDS: since 0.7.127 a spot
+     * with no site whose own plot is ice) - the card's refusals, without the
+     * rest of the card.
      */
     public static String foundingProblem(World.Key key) {
         if (!available(key.data())) {
@@ -294,13 +298,22 @@ public final class EarthSite {
         }
         EarthTerrain e = World.of(key).earthTerrain();
         long[] s = e.siteNear();
-        if (s[0] < 0) return NO_SITE_WORDS;
+        long spot = EarthTerrain.spotPlot();
+        if (s[0] < 0) return onIce(e, spot, spot) ? ICE_WORDS : NO_SITE_WORDS;
         return onIce(e, s[0], s[1]) ? ICE_WORDS : null;
     }
 
-    /** Whether a plot's 2' land-cover cell is ice: snow and ice on half its land or more (EarthData.LC_ICE) - Greenland's and Antarctica's sheets, and a glacier's heart. */
+    /**
+     * Whether a plot is ice: its class as drawn, World.ICE (0.7.127, batch
+     * E7; spec-globe 3.9) - Greenland's and Antarctica's sheets and a
+     * glacier's heart, the founding card reading the map's own rule, so the
+     * card and the plot agree at the site. Until then its 2' land-cover
+     * cell's bit (EarthData.LC_ICE), whose edge the plots fray. Ice is not
+     * dry, so the snap never lands on it: a spot is on ice when it has no
+     * site and its own plot is ice (measure(), foundingProblem()).
+     */
     static boolean onIce(EarthTerrain e, long x, long y) {
-        return (cover(e, x, y) & EarthData.LC_ICE) != 0;
+        return e.terrainAt(x, y) == World.ICE;
     }
 
     /** ...and a desert: bare ground on half its land or more (EarthData.LC_DESERT). */
@@ -327,12 +340,13 @@ public final class EarthSite {
      * @param snappedM    how far the site lies from the spot, metres
      * @param near        where the site is, from the nearest of the data's places ("0.4 km north of Rotterdam")
      * @param provinceRow the geologic province under the site, its row in the data (0 for none)
+     * @param icePlots    the disc's plots of ice (0.7.127), neither dry nor water: dry, fresh, sea and icePlots add up to plots
      * @param ironWay     which way the nearest iron lies from the site, of the eight
      * @param refusal     why the city cannot be founded here, or null
      * @param warnings    what to know before founding here; empty for nothing
      */
     public record Card(World.Key key, boolean hasSite, long siteX, long siteY, double siteLat, double siteLon,
-                       double snappedM, String near, long plots, long dry, long fresh, long sea, double freshKm,
+                       double snappedM, String near, long plots, long dry, long fresh, long sea, long icePlots, double freshKm,
                        double seaKm, int provinceRow, String provinceName, Geology.Kind kind, double[] multipliers,
                        double ironKm, String ironWay, boolean ice, boolean desert, String refusal,
                        List<String> warnings) {
@@ -348,6 +362,9 @@ public final class EarthSite {
 
         /** The sea's share of the disc. */
         public double seaShare()   { return plots == 0 ? 0 : sea / (double) plots; }
+
+        /** Ice's share of the disc (0.7.127). */
+        public double iceShare()   { return plots == 0 ? 0 : icePlots / (double) plots; }
 
         /** A resource's deposit multiplier under the site (Geology.multiplier()), NaN for one not in fields. */
         public double multiplier(Resource r) { return multipliers[r.ordinal()]; }
@@ -371,11 +388,14 @@ public final class EarthSite {
     /**
      * The founding card for the world a key names (spec-earth 2): the snap's
      * site, the ground within CARD_PLOTS of it plot by plot - dry, rivers and
-     * lakes, sea - and the nearest fresh water and sea to its centre, where it
-     * is from the nearest place, its province's multipliers, the nearest iron
-     * field, and the refusals (no site, ice) and warnings (a desert, no fresh
-     * water within reach). Builds the world when there is a site (the cells
-     * pass, about half a second, for the iron); off the screen's thread.
+     * lakes, sea and (0.7.127) ice - and the nearest fresh water and sea to its
+     * centre, where it is from the nearest place, its province's multipliers,
+     * the nearest iron field, and the refusals (no site, ice) and warnings (a
+     * desert, no fresh water within reach). A spot on an ice sheet has no
+     * site, ice not being dry; where its own plot is ice the card is that
+     * plot's, refused on ice (0.7.127). Builds the world when there is a site
+     * (the cells pass, about half a second, for the iron); off the screen's
+     * thread.
      */
     public static Card measure(World.Key key) {
         if (!key.earth()) throw new IllegalArgumentException("not an Earth world: " + key);
@@ -386,8 +406,13 @@ public final class EarthSite {
         double[] multipliers = new double[Resource.values().length];
         java.util.Arrays.fill(multipliers, Double.NaN);
         if (s[0] < 0) {
-            return new Card(key, false, -1, -1, Double.NaN, Double.NaN, Double.NaN, null, 0, 0, 0, 0, Double.NaN,
-                    Double.NaN, 0, null, null, multipliers, Double.NaN, null, false, false, NO_SITE_WORDS, List.of());
+            long spot = EarthTerrain.spotPlot();
+            if (!onIce(e, spot, spot)) {
+                return new Card(key, false, -1, -1, Double.NaN, Double.NaN, Double.NaN, null, 0, 0, 0, 0, 0, Double.NaN,
+                        Double.NaN, 0, null, null, multipliers, Double.NaN, null, false, false, NO_SITE_WORDS, List.of());
+            }
+            // On an ice sheet with no dry ground within reach (0.7.127): the card is the spot's own plot's, refused on ice.
+            s = new long[] { spot, spot };
         }
         long sx = s[0], sy = s[1];
         double[] ll = new double[2];
@@ -397,7 +422,7 @@ public final class EarthSite {
         String near = place == null ? null : LandMap.placeWords(place, ll[0], ll[1]);
 
         // The ground within the reach, plot by plot from the tiles it is drawn in.
-        long r = CARD_PLOTS, r2 = r * r, plots = 0, dry = 0, fresh = 0, sea = 0;
+        long r = CARD_PLOTS, r2 = r * r, plots = 0, dry = 0, fresh = 0, sea = 0, icePlots = 0;
         long fresh2 = Long.MAX_VALUE, sea2 = Long.MAX_VALUE;
         int n = World.TILE;
         for (long ty = Math.floorDiv(sy - r, n); ty <= Math.floorDiv(sy + r, n); ty++) {
@@ -418,8 +443,10 @@ public final class EarthSite {
                         } else if (g == World.FRESH) {
                             fresh++;
                             fresh2 = Math.min(fresh2, d2);
-                        } else {
+                        } else if (World.dry(g)) {
                             dry++;
+                        } else {
+                            icePlots++;
                         }
                     }
                 }
@@ -449,7 +476,7 @@ public final class EarthSite {
                 ironWay = LandMap.COMPASS[(int) Math.floorMod(Math.round(StrictMath.toDegrees(StrictMath.atan2(iron[1], -iron[2])) / 45), 8L)];
             }
         }
-        return new Card(key, true, sx, sy, ll[0], ll[1], snapped, near, plots, dry, fresh, sea, freshKm, seaKm, row,
+        return new Card(key, true, sx, sy, ll[0], ll[1], snapped, near, plots, dry, fresh, sea, icePlots, freshKm, seaKm, row,
                 prov == null ? null : prov.name().trim(), geo.kindOf(row), multipliers, ironKm, ironWay, ice, desert,
                 ice ? ICE_WORDS : null, List.copyOf(warnings));
     }

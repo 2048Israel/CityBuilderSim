@@ -47,10 +47,19 @@ import java.util.Map;
  *     an area in the data) lies, drawn as a blob of its own area in
  *     expectation, its edge frayed by BLOB_FRAY of its own noise; or where the
  *     fresh noise ranks under the lake share of the ground that is not sea;
+ *   - ICE (0.7.127, batch E7; spec-globe 3.9) where its 2' cell's snow and
+ *     ice bit (EarthData.LC_ICE), read 0 or 1 at each cell and interpolated
+ *     between the cells' centres as the shares are, plus COVER_FRAY x its
+ *     own noise about its mean, unranked, reaches COVER_LEVEL: the bit's
+ *     half-contour, frayed as the coast is - land, never dry (World.dry());
  *   - SAND where a dry plot has the sea on one of its eight sides and its 2'
  *     cell's bare ground is 2% of its land or more (EarthData.LC_BEACH);
  *   - FOREST where the forest noise ranks under the forest share of the dry
- *     ground; GRASS the rest. Real land use is ignored: the city starts on
+ *     ground;
+ *   - DESERT (0.7.127) where the bare-ground bit (EarthData.LC_DESERT) passes
+ *     the same test as ice's, with its own noise: dry ground every rule
+ *     treats as grass, only its colour and name its own (spec-globe Q1);
+ *   - GRASS the rest. Real land use is ignored: the city starts on
  *     unsettled ground.
  * A plot (terrainAt()) is its tile's, from a kept tile, and a line
  * (lineTerrain()) its tile's byte for byte, drawn alone where the tile is not
@@ -125,6 +134,18 @@ public final class EarthTerrain {
      */
     public static final double BLOB_FRAY = 1.0;
 
+    /** The bit's share from which a plot is ice, or desert (0.7.127, batch E7; spec-globe 3.9): 0.5, its half-contour - each kind's land-cover bit read 0 or 1 at its 2' cell and interpolated between the cells' centres, as the sea's share is between its cells'. */
+    public static final double COVER_LEVEL = 0.5;
+
+    /**
+     * How far each kind's own noise frays the edge of ice and of the desert
+     * (0.7.127, batch E7; spec-globe 3.9: "tested against 1/2 plus its own
+     * noise, as the coast is"): COAST_FRAY, 1.0 - ice where the bit's share
+     * + 1.0 x (noise - 0.5) reaches COVER_LEVEL, the noise unranked, so the
+     * edge is the share's half-contour moved by the noise's spread.
+     */
+    public static final double COVER_FRAY = COAST_FRAY;
+
     /** The noise's samples the ranking table holds: 2^18 (spec-earth 3's QUANTILE), at fixed places, one table for every class and every world. */
     public static final int QUANTILE_SAMPLES = 1 << 18;
 
@@ -171,7 +192,7 @@ public final class EarthTerrain {
     static final int DATA_TILES_KEPT = 64;
 
     /* The fields' keys: what makes one class's noise another's. */
-    private static final long F_COAST = 0xC0A57L, F_FRESH = 0xF4E54L, F_FOREST = 0xF0E57L, F_BLOB = 0xB10BL;
+    private static final long F_COAST = 0xC0A57L, F_FRESH = 0xF4E54L, F_FOREST = 0xF0E57L, F_BLOB = 0xB10BL, F_ICE = 0x1CE5L, F_DESERT = 0xDE5E7L;
 
     /** The stream the ranking table's samples are drawn from. */
     private static final long QUANTILE_SALT = 0x0A1E5A3DL;
@@ -240,10 +261,10 @@ public final class EarthTerrain {
     private final long seed;
     private final EarthData data;
     private final EarthProj proj;
-    /** Each field's octave streams: COAST, FRESH, FOREST, BLOB, octave k at [f][k]. */
-    private final long[][] os = new long[4][NOISE_HI + 1];
-    /** Each noise field's row in os: the coast's, fresh water's, the forest's and the small lakes' blobs'. */
-    private static final int COAST = 0, FRESH = 1, FOREST = 2, BLOB = 3;
+    /** Each field's octave streams: COAST, FRESH, FOREST, BLOB, ICE, DESERT, octave k at [f][k]. */
+    private final long[][] os = new long[6][NOISE_HI + 1];
+    /** Each noise field's row in os: the coast's, fresh water's, the forest's, the small lakes' blobs', and (0.7.127) the ice's and the desert's edges'. */
+    private static final int COAST = 0, FRESH = 1, FOREST = 2, BLOB = 3, ICE = 4, DESERT = 5;
 
     private volatile boolean built;
     private double[] cellLand, cellForest;
@@ -260,7 +281,7 @@ public final class EarthTerrain {
         this.seed = key.seed();
         this.data = source(key.data());
         this.proj = new EarthProj(key.lat(), key.lon());
-        long[] fields = { F_COAST, F_FRESH, F_FOREST, F_BLOB };
+        long[] fields = { F_COAST, F_FRESH, F_FOREST, F_BLOB, F_ICE, F_DESERT };
         for (int f = 0; f < fields.length; f++) {
             for (int k = NOISE_LO; k <= NOISE_HI; k++) os[f][k] = World.mix(seed ^ fields[f] ^ (k * 0x632BE59BD9B4E019L));
         }
@@ -319,6 +340,11 @@ public final class EarthTerrain {
     /** Whether a plot is sea (spec-earth 3): its sea share plus COAST_FRAY x its coast noise about the noise's mean, 0.5, reaches SEA_LEVEL - the share's half-contour, frayed. */
     static boolean sea(double share, double coastNoise) {
         return share > 0 && share + COAST_FRAY * (coastNoise - 0.5) >= SEA_LEVEL;
+    }
+
+    /** Whether a plot is ice, or desert (0.7.127, batch E7; spec-globe 3.9): its kind's bit interpolated there plus COVER_FRAY x its own noise about the noise's mean reaches COVER_LEVEL - the bit's half-contour, frayed as the coast is. */
+    static boolean covered(double share, double noise) {
+        return share > 0 && share + COVER_FRAY * (noise - 0.5) >= COVER_LEVEL;
     }
 
     /** One field's noise at a point in plots, its octaves no wider than `stride` at their mean (World.regionTerrain()'s rule): at a stride of one, every octave. */
@@ -395,14 +421,33 @@ public final class EarthTerrain {
             return top * (1 - fr) + bottom * fr;
         }
 
-        /** ...the forest level of land cover, 0 to 15, interpolated the same way. */
-        double bilinearLow(double lat, double lon) {
+        /**
+         * ...land cover's: the forest level, 0 to 15, interpolated the same
+         * way, and (0.7.127, batch E7) its ice and desert bits each read 0 or
+         * 1 at its cell and interpolated from the same four cells: out[0] the
+         * level, out[1] ice's share, out[2] the desert's. The level is the
+         * arithmetic the forest was read with before (bilinearLow(), which
+         * this replaced), so the forest drawn is the same to the bit.
+         */
+        void cover(double lat, double lon, double[] out) {
             double g = (90 - lat) * cpd - 0.5, c = (lon + 180) * cpd - 0.5;
             long r0 = (long) Math.floor(g), c0 = (long) Math.floor(c);
             double fr = g - r0, fc = c - c0;
             int m = EarthData.LC_FOREST;
-            double top = (value(r0, c0) & m) * (1 - fc) + (value(r0, c0 + 1) & m) * fc;
-            double bottom = (value(r0 + 1, c0) & m) * (1 - fc) + (value(r0 + 1, c0 + 1) & m) * fc;
+            int a = value(r0, c0), b = value(r0, c0 + 1), d = value(r0 + 1, c0), e = value(r0 + 1, c0 + 1);
+            double top = (a & m) * (1 - fc) + (b & m) * fc;
+            double bottom = (d & m) * (1 - fc) + (e & m) * fc;
+            out[0] = top * (1 - fr) + bottom * fr;
+            int any = a | b | d | e;
+            out[1] = (any & EarthData.LC_ICE) == 0 ? 0 : bit(a, b, d, e, EarthData.LC_ICE, fr, fc);
+            out[2] = (any & EarthData.LC_DESERT) == 0 ? 0 : bit(a, b, d, e, EarthData.LC_DESERT, fr, fc);
+        }
+
+        /** A bit of four cells' values, each 0 or 1, interpolated between their centres. */
+        private static double bit(int a, int b, int d, int e, int bit, double fr, double fc) {
+            if ((a & b & d & e & bit) != 0) return 1;
+            double top = ((a & bit) != 0 ? 1 - fc : 0) + ((b & bit) != 0 ? fc : 0);
+            double bottom = ((d & bit) != 0 ? 1 - fc : 0) + ((e & bit) != 0 ? fc : 0);
             return top * (1 - fr) + bottom * fr;
         }
 
@@ -417,10 +462,12 @@ public final class EarthTerrain {
         /** A tile with its ring of one plot each side, RING plots a side (RING_AREA in all); a tile alone, AREA plots. */
         static final int RING = World.TILE + 2, RING_AREA = RING * RING, AREA = World.TILE * World.TILE;
         final double[] coast = new double[RING_AREA], fresh = new double[AREA], forest = new double[AREA], blob = new double[AREA];
+        final double[] ice = new double[AREA], desert = new double[AREA];
         final double[] lat = new double[19 * 19];
         final double[] seaL = new double[LATTICE * LATTICE], lakeL = new double[LATTICE * LATTICE], forestL = new double[LATTICE * LATTICE];
+        final double[] iceL = new double[LATTICE * LATTICE], desertL = new double[LATTICE * LATTICE];
         final boolean[] sea = new boolean[RING_AREA];
-        final double[] ll = new double[2];
+        final double[] ll = new double[2], cv = new double[3];
         int[] segs = new int[64], lakes = new int[16];
         final Reader seaR = new Reader(), lakeR = new Reader(), coverR = new Reader(), farLandR = new Reader(), farLakeR = new Reader();
         EarthData bound;
@@ -478,7 +525,8 @@ public final class EarthTerrain {
         int i0 = (ox - 1 + LATTICE_STEP) / LATTICE_STEP, i1 = Math.min(LATTICE - 1, (ox + w + LATTICE_STEP) / LATTICE_STEP + 1);
         int j0 = (oy - 1 + LATTICE_STEP) / LATTICE_STEP, j1 = Math.min(LATTICE - 1, (oy + h + LATTICE_STEP) / LATTICE_STEP + 1);
         boolean anySea = false, allSea = true, anyLake = false, anyForest = false, allForest = true;
-        double[] ll = s.ll;
+        boolean anyIce = false, allIce = true, anyDesert = false, allDesert = true;
+        double[] ll = s.ll, cv = s.cv;
         for (int j = j0; j <= j1; j++) {
             for (int i = i0; i <= i1; i++) {
                 int at = j * LATTICE + i;
@@ -487,16 +535,25 @@ public final class EarthTerrain {
                     s.seaL[at] = 1;
                     s.lakeL[at] = 0;
                     s.forestL[at] = 0;
+                    s.iceL[at] = 0;
+                    s.desertL[at] = 0;
                 } else {
                     s.seaL[at] = s.seaR.bilinear(ll[0], ll[1]) / EarthData.SHARE_LEVELS;
                     s.lakeL[at] = s.lakeR.bilinear(ll[0], ll[1]) / EarthData.SHARE_LEVELS;
-                    s.forestL[at] = s.coverR.bilinearLow(ll[0], ll[1]) / EarthData.SHARE_LEVELS;
+                    s.coverR.cover(ll[0], ll[1], cv);
+                    s.forestL[at] = cv[0] / EarthData.SHARE_LEVELS;
+                    s.iceL[at] = cv[1];
+                    s.desertL[at] = cv[2];
                 }
                 anySea |= s.seaL[at] > 0;
                 allSea &= s.seaL[at] >= 1;
                 anyLake |= s.lakeL[at] > 0;
                 anyForest |= s.forestL[at] > 0;
                 allForest &= s.forestL[at] >= 1;
+                anyIce |= s.iceL[at] > 0;
+                allIce &= s.iceL[at] >= 1;
+                anyDesert |= s.desertL[at] > 0;
+                allDesert &= s.desertL[at] >= 1;
             }
         }
         if (allSea) {
@@ -544,6 +601,16 @@ public final class EarthTerrain {
             Arrays.fill(s.forest, 0, w * h, 0);
             for (int k = NOISE_HI; k >= NOISE_LO; k--) octave(s.lat, os[FOREST][k], k, rx0, ry0, w, h, AMP_N[k], s.forest);
         }
+        // Ice's and the desert's edges (0.7.127): each kind's own noise, where its bit's share is neither nought nor whole.
+        boolean iceNoise = anyIce && !allIce, desertNoise = anyDesert && !allDesert;
+        if (iceNoise) {
+            Arrays.fill(s.ice, 0, w * h, 0);
+            for (int k = NOISE_HI; k >= NOISE_LO; k--) octave(s.lat, os[ICE][k], k, rx0, ry0, w, h, AMP_N[k], s.ice);
+        }
+        if (desertNoise) {
+            Arrays.fill(s.desert, 0, w * h, 0);
+            for (int k = NOISE_HI; k >= NOISE_LO; k--) octave(s.lat, os[DESERT][k], k, rx0, ry0, w, h, AMP_N[k], s.desert);
+        }
         for (int py = 0; py < h; py++) {
             for (int px = 0; px < w; px++) {
                 int i = py * w + px, r = (py + 1) * rw + px + 1;
@@ -557,13 +624,15 @@ public final class EarthTerrain {
                     if (lake > 0) wet = s.fresh[i] < below(q, lake / (1 - lattice(s.seaL, ox + px, oy + py)));
                 }
                 if (wet) { out[i] = World.FRESH; continue; }
+                if (allIce || (iceNoise && covered(lattice(s.iceL, ox + px, oy + py), s.ice[i]))) { out[i] = World.ICE; continue; }
                 if (anySea && (s.sea[r - rw - 1] || s.sea[r - rw] || s.sea[r - rw + 1] || s.sea[r - 1] || s.sea[r + 1]
                         || s.sea[r + rw - 1] || s.sea[r + rw] || s.sea[r + rw + 1]) && beach(s, b, x, y)) {
                     out[i] = World.SAND;
                     continue;
                 }
                 boolean forest = allForest || (forestNoise && s.forest[i] < below(q, lattice(s.forestL, ox + px, oy + py)));
-                out[i] = forest ? World.FOREST : World.GRASS;
+                boolean desert = !forest && (allDesert || (desertNoise && covered(lattice(s.desertL, ox + px, oy + py), s.desert[i])));
+                out[i] = forest ? World.FOREST : desert ? World.DESERT : World.GRASS;
             }
         }
     }
@@ -716,16 +785,23 @@ public final class EarthTerrain {
 
     /** ...at a point on the planet whose latitude and longitude are known. */
     private byte classAt(Scratch s, double[] q, double x, double y, double lat, double lon, int stride, boolean water, double dither) {
-        double sea, lake, forest;
+        double sea, lake, forest, ice, desert;
         if (stride >= FAR_STRIDE) {
             double dry = s.farLandR.at(lat, lon) / (double) EarthData.FAR_LEVELS;
             lake = s.farLakeR.at(lat, lon) / (double) EarthData.FAR_LEVELS;
             sea = Math.max(0, 1 - dry - lake);
-            forest = (s.coverR.at(lat, lon) & EarthData.LC_FOREST) / (double) EarthData.SHARE_LEVELS;
+            int v = s.coverR.at(lat, lon);
+            forest = (v & EarthData.LC_FOREST) / (double) EarthData.SHARE_LEVELS;
+            ice = (v & EarthData.LC_ICE) != 0 ? 1 : 0;
+            desert = (v & EarthData.LC_DESERT) != 0 ? 1 : 0;
         } else {
             sea = s.seaR.bilinear(lat, lon) / EarthData.SHARE_LEVELS;
             lake = s.lakeR.bilinear(lat, lon) / EarthData.SHARE_LEVELS;
-            forest = s.coverR.bilinearLow(lat, lon) / EarthData.SHARE_LEVELS;
+            double[] cv = s.cv;
+            s.coverR.cover(lat, lon, cv);
+            forest = cv[0] / EarthData.SHARE_LEVELS;
+            ice = cv[1];
+            desert = cv[2];
         }
         if (sea > 0 && sea(sea, noiseAt(os[COAST], x, y, stride))) return World.SALT;
         if (water && stride < WATER_STRIDE) {
@@ -743,7 +819,9 @@ public final class EarthTerrain {
             }
         }
         if (lake > 0 && noiseAt(os[FRESH], x, y, stride) < below(q, lake / (1 - sea))) return World.FRESH;
+        if (ice >= 1 || (ice > 0 && covered(ice, noiseAt(os[ICE], x, y, stride)))) return World.ICE;
         if (forest >= 1 || (forest > 0 && (Double.isNaN(dither) ? noiseAt(os[FOREST], x, y, stride) < below(q, forest) : dither < forest))) return World.FOREST;
+        if (desert >= 1 || (desert > 0 && covered(desert, noiseAt(os[DESERT], x, y, stride)))) return World.DESERT;
         return World.GRASS;
     }
 
@@ -1629,7 +1707,8 @@ public final class EarthTerrain {
      * dry ground with eight dry points World.SITE_DRY_PLOTS round it, ring by
      * ring of one plot (a ring the plots k to k + 1 plots off, nearest first,
      * then north to south and west to east), out to SNAP_PLOTS. Dry is the
-     * ground as drawn: not sea and not fresh water, rivers included.
+     * ground as drawn (World.dry()): not sea, not fresh water, rivers
+     * included, and since 0.7.127 not ice, which is never a founding site.
      */
     private void snap() {
         long[] s = siteNear();
@@ -1687,8 +1766,7 @@ public final class EarthTerrain {
     }
 
     private boolean dry(long x, long y) {
-        byte t = terrainAt(x, y);
-        return t != World.SALT && t != World.FRESH;
+        return World.dry(terrainAt(x, y));
     }
 
     /** The founding site, as a plot: the snap's. */

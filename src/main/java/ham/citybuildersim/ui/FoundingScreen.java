@@ -682,9 +682,10 @@ final class FoundingScreen {
                 + (c.snappedM() >= 50 ? String.format(" · the site %s from the spot", distance(c.snappedM() / 1000)) : "");
     }
 
-    /** The card's ground line. */
+    /** The card's ground line; ice's share after the sea's where there is any (0.7.127). */
     static String groundWords(EarthSite.Card c) {
-        return String.format("Within 5 km: %s dry · %s rivers and lakes · %s sea", share(c.dryShare()), share(c.freshShare()), share(c.seaShare()));
+        return String.format("Within 5 km: %s dry · %s rivers and lakes · %s sea", share(c.dryShare()), share(c.freshShare()), share(c.seaShare()))
+                + (c.icePlots() > 0 ? " · " + share(c.iceShare()) + " ice" : "");
     }
 
     /** The card's water line. */
@@ -952,7 +953,8 @@ final class FoundingScreen {
            a globe looks, from a picture of it at TEXEL_ARCMIN made once from
            the 4' layers - sea, lakes, and the land coloured as the map
            colours ground, its forest by land cover, and its ice and deserts
-           marked (the founding's refusal and warning);
+           marked (the founding's refusal and warning) - since 0.7.127 in
+           the map's own ICE and DESERT (spec-globe 3.9);
          - CLOSE, from GROUND_KM_PX down to LEAST_KM_PX (150 m): the city's own
            far view of the ground (MapTiles.nodeTerrain(), E5's, rivers and
            small lakes from their vectors) on an Earth world centred where the
@@ -983,9 +985,6 @@ final class FoundingScreen {
 
         /** The globe picture's cell, in minutes of arc: 12, three of the 4' layers' cells a side (1,800 x 900 for the planet). */
         static final int TEXEL_ARCMIN = 12;
-
-        /** Ice on the globe: what the map has no class for (spec-earth's E6), light so a refused sheet reads as one. */
-        static final int ICE = 0xffdfe7ee;
 
         /** Space round the globe: the page's stage. */
         static final int SPACE = 0xff0b1118;
@@ -1226,7 +1225,7 @@ final class FoundingScreen {
     private static int[] texture;
     private static EarthData textured;
 
-    /** The planet's picture: a texel every TEXEL_ARCMIN, its colour the sea's, the lakes' and the land's by their shares in the 4' layers - the land the map's grass, its forest by land cover, ice and desert marked. */
+    /** The planet's picture: a texel every TEXEL_ARCMIN, its colour the sea's, the lakes' and the land's by their shares in the 4' layers - the land the map's grass, its forest by land cover, ice and desert in the map's ICE and DESERT (0.7.127). */
     static synchronized int[] texture(EarthData d) {
         if (texture != null && textured == d) return texture;
         int per = Globe.TEXEL_ARCMIN / 4, cols = 360 * 60 / Globe.TEXEL_ARCMIN, rows = 180 * 60 / Globe.TEXEL_ARCMIN;
@@ -1256,8 +1255,8 @@ final class FoundingScreen {
                     if (dry > 0) {
                         double lat = 90 - (row + 0.5) * Globe.TEXEL_ARCMIN / 60.0, lon = (col + 0.5) * Globe.TEXEL_ARCMIN / 60.0 - 180;
                         int lc = d.at("landcover", lat, lon);
-                        if ((lc & EarthData.LC_ICE) != 0) ground = Globe.ICE;
-                        else if ((lc & EarthData.LC_DESERT) != 0) ground = g[World.SAND];
+                        if ((lc & EarthData.LC_ICE) != 0) ground = g[World.ICE];
+                        else if ((lc & EarthData.LC_DESERT) != 0) ground = g[World.DESERT];
                         else {
                             double f = (lc & EarthData.LC_FOREST) / (double) EarthData.SHARE_LEVELS;
                             ground = mix(new int[] { g[World.GRASS], g[World.FOREST] }, new double[] { 1 - f, f });
