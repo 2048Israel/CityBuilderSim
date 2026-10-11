@@ -267,12 +267,12 @@ public class QuarryingCheck {
                         && Math.abs(Good.DIMENSION_STONE.baseFreight() - .375 * .090) < 1e-12
                         && Math.abs(Good.CEMENT.baseFreight() - .375 * .065) < 1e-12);
         assertTrue("...cement stockable, on HELD's end; aggregate and blocks flow goods; aggregate and cement BULK and dry bulk by sea,"
-                        + " the blocks GOODS by road and general cargo by sea",
+                        + " the blocks GOODS by road and in containers by sea, as the rest of that stream",
                 Good.CEMENT.stockable() && !Good.AGGREGATE.stockable() && !Good.DIMENSION_STONE.stockable()
                         && NationalAccounts.HELD[NationalAccounts.HELD.length - 1] == Good.CEMENT
                         && Good.AGGREGATE.traffic() == Traffic.BULK && Good.CEMENT.traffic() == Traffic.BULK
                         && Good.DIMENSION_STONE.traffic() == Traffic.GOODS && Good.AGGREGATE.cargo() == Ports.Cargo.DRY_BULK
-                        && Good.CEMENT.cargo() == Ports.Cargo.DRY_BULK && Good.DIMENSION_STONE.cargo() == Ports.Cargo.GENERAL);
+                        && Good.CEMENT.cargo() == Ports.Cargo.DRY_BULK && Good.DIMENSION_STONE.cargo() == Ports.Cargo.CONTAINER);
         assertTrue("LIMESTONE's makers are the quarries and its buyers the blast furnaces and the kilns and cement plants",
                 s.heavyIndustry().isUser(Good.LIMESTONE) && s.cementConcrete().isUser(Good.LIMESTONE) && q.isMaker(Good.LIMESTONE)
                         && !s.coalMining().isMaker(Good.LIMESTONE));

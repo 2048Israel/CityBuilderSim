@@ -5796,8 +5796,8 @@ public final class GameVersion {
      *     limestone's own band - DIMENSION_STONE 260 / 170 and CEMENT 110 /
      *     45, freight three eighths of each wedge; cement stockable, on
      *     NationalAccounts.HELD's end; aggregate and cement by the BULK
-     *     stream and dry bulk, dimension stone GOODS and, ★, general cargo by
-     *     sea. LIMESTONE and LIME (batch I4's) are made here from now on.
+     *     stream and dry bulk, dimension stone GOODS and so containers by sea.
+     *     LIMESTONE and LIME (batch I4's) are made here from now on.
      *   - THE ROWS (ids 115-120; the study's 6.4 at spec 2.2's conventions):
      *     the Quarry, 40,000 t a month on one stone site of either type; the
      *     Large Quarry, 250,000 t on three of one field; the Dimension Stone

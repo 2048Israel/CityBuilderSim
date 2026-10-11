@@ -942,8 +942,8 @@ public enum Good {
        NationalAccounts.HELD on its end. Aggregate and dimension stone are
        flow goods, as limestone is - a quarry ships what it digs. Aggregate
        and cement go by the BULK stream and, by sea, as DRY_BULK; dimension
-       stone by the GOODS stream (spec 2.3) and, ★ by sea, as GENERAL cargo:
-       a block is lifted piece by piece, as steel is.
+       stone by the GOODS stream (spec 2.3) and so, by sea, in containers, as
+       the rest of that stream goes (Ports.Cargo.CONTAINER).
        ======================================================================= */
 
     /** Aggregate - crushed stone, sand and gravel - by the tonne: a hard-rock quarry's, and a limestone quarry's limestone no buyer takes (Q17). A flow good. */
@@ -1182,9 +1182,9 @@ public enum Good {
      * iron ore, crops, grains, building materials, coke, (0.7.120) scrap and
      * (0.7.123) the integrated route's seven, pig iron among them, and (0.7.131)
      * aggregate and cement. GENERAL is what is lifted piece by piece - steel,
-     * fabricated steel, machinery, wagon sets, cars and vans, and (0.7.131)
-     * dimension stone's blocks. CONTAINER is the rest of what the GOODS stream
-     * carries: the shelf, the drinks and the watches, in boxes.
+     * fabricated steel, machinery, wagon sets, cars and vans. CONTAINER is the
+     * rest of what the GOODS stream carries: the shelf, the drinks and the
+     * watches, in boxes, and since 0.7.131 dimension stone's cut slabs.
      */
     public Ports.Cargo cargo() {
         switch (this) {
@@ -1198,8 +1198,6 @@ public enum Good {
             case AGGREGATE: case CEMENT:
                 return Ports.Cargo.DRY_BULK;
             case STEEL: case FABRICATED_STEEL: case MACHINERY: case ROLLING_STOCK: case CARS: case VANS:
-            // ...and dimension stone's blocks (0.7.131), lifted one by one.
-            case DIMENSION_STONE:
                 return Ports.Cargo.GENERAL;
             default:
                 Traffic stream = traffic();
