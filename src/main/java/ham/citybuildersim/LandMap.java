@@ -455,14 +455,117 @@ public final class LandMap {
                 + amountWords(d.kind(), d.amount()) + " · this site " + amountWords(d.kind(), d.siteAmount(f.site()));
     }
 
-    /** The hover card's lines for a plot: its ground, whose it is, and each field with a site on it. */
+    /** The hover card's lines for a plot: its ground, whose it is, on Earth where it is and its geology (earthWords(), 0.7.119), and each field with a site on it. */
     public static List<String> hoverWords(CityLand land, LandMarket market, long x, long y) {
         Pick p = pick(land, market, x, y);
         List<String> lines = new ArrayList<>();
         lines.add(groundWords(p.ground()));
         lines.add(ownerWords(land, p));
+        lines.addAll(earthWords(land, x, y));
         for (FieldAt f : fieldsAt(land, x, y)) lines.add(fieldWords(f, land, market));
         return lines;
+    }
+
+    /* ----------------------------- on Earth (0.7.119, batch E5) ----------------------------- */
+
+    /**
+     * The hover card's lines for a plot on the real Earth (spec-earth 2 and
+     * 4; Jerus's answer to the study's sixth question, 2026-10-10: names for
+     * finding a place, and no borders): where it is - its distance and
+     * direction from the nearest of the data's places, by name alone
+     * (placeWords()) - and the geologic province under it with its class
+     * (provinceWords()); past the planet's rim OFF_PLANET_WORDS; none on a
+     * generated world, and no province line where the data has none. The
+     * province's deposit multipliers wait for E4's founding card (★E5).
+     */
+    public static List<String> earthWords(CityLand land, long x, long y) {
+        List<String> out = new ArrayList<>();
+        World w = World.of(land.key());
+        if (!w.isEarth()) return out;
+        EarthTerrain e = w.earthTerrain();
+        double[] ll = new double[2];
+        if (!e.projection().latLonOfPlot(x + 0.5, y + 0.5, ll)) {
+            out.add(OFF_PLANET_WORDS);
+            return out;
+        }
+        EarthData.Place near = nearestPlace(e.data(), ll[0], ll[1]);
+        if (near != null) out.add(placeWords(near, ll[0], ll[1]));
+        int row = w.provinceAt(x, y);
+        if (row > 0) out.add(provinceWords(e.data().province(row), w.geology().kindOf(row)));
+        return out;
+    }
+
+    /** The hover past the planet's rim, where the map's square runs on beyond the antipode (spec-earth 2: the far node draws it as the void). */
+    public static final String OFF_PLANET_WORDS = "Off the planet: the map runs on past the antipode, the point opposite the city";
+
+    /** The eight directions a place is named from, clockwise from north. */
+    static final String[] COMPASS = { "north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west" };
+
+    /** A geologic class in the hover's words, in Geology.Kind's order: ocean, shield, fold belt, rift, shelf, basin, other. */
+    static final String[] KIND_WORDS = { "oceanic", "a shield", "a fold belt", "a rift", "a shelf", "a basin", "unclassed" };
+
+    /**
+     * Where a point lies from a place: "4.1 km south-west of Rotterdam" - the
+     * great-circle distance (EarthProj.distanceM()), to a tenth of a km under
+     * ten and to the km from there, and the direction from the place, of the
+     * eight; the place's name alone at under a twentieth of a km, where the
+     * tenth would read 0.0.
+     */
+    public static String placeWords(EarthData.Place p, double lat, double lon) {
+        double km = EarthProj.distanceM(p.lat(), p.lon(), lat, lon) / 1000;
+        if (km < 0.05) return p.name();
+        double f1 = StrictMath.toRadians(p.lat()), f2 = StrictMath.toRadians(lat), dl = StrictMath.toRadians(EarthProj.normaliseLon(lon - p.lon()));
+        double bearing = StrictMath.toDegrees(StrictMath.atan2(StrictMath.sin(dl) * StrictMath.cos(f2),
+                StrictMath.cos(f1) * StrictMath.sin(f2) - StrictMath.sin(f1) * StrictMath.cos(f2) * StrictMath.cos(dl)));
+        String toward = COMPASS[(int) Math.floorMod(Math.round(bearing / 45), 8L)];
+        return (km < 10 ? String.format("%.1f km", km) : String.format("%,.0f km", km)) + " " + toward + " of " + p.name();
+    }
+
+    /** The province under a point and its class: "Geology: Anglo-Dutch Basin, a basin" (Geology's class, the hand table's over the rules'). */
+    public static String provinceWords(EarthData.Province p, Geology.Kind kind) {
+        return "Geology: " + p.name() + ", " + KIND_WORDS[kind.ordinal()];
+    }
+
+    /** A reader's places as unit vectors, for the nearest (nearestPlace()): built once a reader. */
+    private record Places(EarthData data, List<EarthData.Place> list, double[] xyz) {
+        static Places of(EarthData d) {
+            List<EarthData.Place> list = d.places();
+            double[] xyz = new double[3 * list.size()];
+            for (int i = 0; i < list.size(); i++) unit(list.get(i).lat(), list.get(i).lon(), xyz, 3 * i);
+            return new Places(d, list, xyz);
+        }
+    }
+
+    private static volatile Places places;
+
+    /** A point's unit vector on the sphere into v at k. */
+    private static void unit(double lat, double lon, double[] v, int k) {
+        double f = StrictMath.toRadians(lat), l = StrictMath.toRadians(lon), c = StrictMath.cos(f);
+        v[k] = c * StrictMath.cos(l);
+        v[k + 1] = c * StrictMath.sin(l);
+        v[k + 2] = StrictMath.sin(f);
+    }
+
+    /** The nearest of a reader's places to a point - the least angle between them, the first in the data's order (by population) on a tie; null when it has none. For naming only: the place a point is nearest, never whose ground it is. */
+    public static EarthData.Place nearestPlace(EarthData d, double lat, double lon) {
+        Places p = places;
+        if (p == null || p.data() != d) {
+            p = Places.of(d);
+            places = p;
+        }
+        double[] v = new double[3];
+        unit(lat, lon, v, 0);
+        int best = -1;
+        double most = Double.NEGATIVE_INFINITY;
+        double[] xyz = p.xyz();
+        for (int i = 0, k = 0; i < p.list().size(); i++, k += 3) {
+            double c = xyz[k] * v[0] + xyz[k + 1] * v[1] + xyz[k + 2] * v[2];
+            if (c > most) {
+                most = c;
+                best = i;
+            }
+        }
+        return best < 0 ? null : p.list().get(best);
     }
 
     /** One building of each class, as the hover card names a type it has no name for. */

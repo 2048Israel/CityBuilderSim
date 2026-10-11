@@ -299,10 +299,22 @@ public final class MapTiles {
         return nodeTerrain(World.Key.generated(seed), x0, y0, plots);
     }
 
-    /** ...on the world a key names (0.7.115; the map's: CityMap.worldKey()). */
+    /**
+     * ...on the world a key names (0.7.115; the map's: CityMap.worldKey()).
+     * A generated world's is its region at the node's stride
+     * (World.regionTerrain()); since 0.7.119 (batch E5) an Earth world's is
+     * its far node (EarthTerrain.farTerrain(), spec-earth 3's "Far views"):
+     * its rivers stroked from their vectors at least a pixel wide, its small
+     * lakes drawn from their points and areas, the shares - the 4' far layers
+     * from EarthTerrain.FAR_STRIDE - read at each pixel's centre, and its
+     * forest dithered by a hash.
+     */
     public static byte[] nodeTerrain(World.Key world, long x0, long y0, long plots) {
         byte[] out = new byte[MapFrame.NODE_PX * MapFrame.NODE_PX];
-        World.of(world).regionTerrain(x0, y0, (int) Math.min(Integer.MAX_VALUE, plots), MapFrame.NODE_PX, out);
+        World w = World.of(world);
+        int stride = (int) Math.min(Integer.MAX_VALUE, plots);
+        if (w.isEarth()) w.earthTerrain().farTerrain(x0, y0, stride, MapFrame.NODE_PX, out);
+        else w.regionTerrain(x0, y0, stride, MapFrame.NODE_PX, out);
         return out;
     }
 
@@ -313,16 +325,23 @@ public final class MapTiles {
      * buildings take the most ground of, at TileRaster's BLOCK_ALPHA by the
      * share of the district's dry ground they use (BLOCK_FILLS), homes as
      * flats where the district is densest - the mockup's far blocks, a
-     * district a block.
+     * district a block. On Earth (0.7.119) past the planet's rim - the
+     * antipode, EarthProj.REACH_M from the spot - the void (spec-earth 2:
+     * "beyond it is drawn as the void"), which the ground there reads as sea.
      */
     public void nodePixels(long x0, long y0, long plots, byte[] ground, int[] out) {
         CityLand land = map.land();
         int n = MapFrame.NODE_PX;
+        boolean earth = map.worldKey().earth();
         Map<CityMap.District, Integer> tints = new java.util.HashMap<>();
         for (int j = 0; j < n; j++) {
             long y = y0 + j * plots + plots / 2;
             for (int i = 0; i < n; i++) {
                 long x = x0 + i * plots + plots / 2;
+                if (earth && !EarthProj.onPlanet(EarthProj.metresX(x0 + (i + 0.5) * plots), EarthProj.metresY(y0 + (j + 0.5) * plots))) {
+                    out[j * n + i] = TileRaster.VOID;
+                    continue;
+                }
                 byte g = ground[j * n + i];
                 int c = TileRaster.GROUND[g];
                 boolean owned = land != null && land.ownsPlot(x, y);

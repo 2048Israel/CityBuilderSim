@@ -415,7 +415,7 @@ public final class OilView {
     /** The oil fields the city owns, {on dry ground, in the sea}: each field once, by where its centre lies (World.depthAt()). */
     static int[] fieldsByPool(Game game) {
         CityLand l = game.getCityLand();
-        World world = World.of(l.seed());
+        World world = World.of(l.key());
         java.util.Set<Long> dry = new java.util.HashSet<>(), wet = new java.util.HashSet<>();
         for (List<CityLand.Held> holding : l.heldFields(Resource.OIL)) {
             for (CityLand.Held h : holding) {

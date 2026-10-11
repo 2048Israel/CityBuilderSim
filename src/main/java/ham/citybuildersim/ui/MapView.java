@@ -57,7 +57,9 @@ import static ham.citybuildersim.ui.Pieces.*;
  * + and - zoom, 0 fits, Esc closes (the arrows stay the clock's speed, as
  * on City History's full screen); a legend and a hover
  * card (the ground, whose it is - the centre, a purchase, an offer and its
- * price - the fields and their tonnes, and at L0 the building or road).
+ * price - the fields and their tonnes, and at L0 the building or road; on
+ * Earth, since 0.7.119, how far and which way from the nearest place, and
+ * the geologic province: LandMap.earthWords()).
  *
  * PAINTING IN THE BACKGROUND ON THE FX THREAD (spec-land 2.6): each frame
  * paints the tiles in view that have no picture, or whose stamp moved, from
@@ -530,7 +532,8 @@ final class MapView {
     }
 
     private boolean paintNodes(MapFrame f, long deadline) {
-        long plots = f.nodePlots(), span = f.nodeSpan(), seed = shownMap.seed();
+        long plots = f.nodePlots(), span = f.nodeSpan();
+        World.Key world = shownMap.worldKey();
         int n = MapFrame.NODE_PX;
         if (buffer.length < n * n) buffer = new int[n * n];
         for (long ny = f.nodeY0(); ny <= f.nodeY1(); ny++) {
@@ -543,7 +546,7 @@ final class MapView {
                         final long x0 = nx * span, y0 = ny * span;
                         final MapTiles askedFor = tiles;
                         WORKER.submit(() -> {
-                            byte[] ground = MapTiles.nodeTerrain(seed, x0, y0, plots);
+                            byte[] ground = MapTiles.nodeTerrain(world, x0, y0, plots);
                             Platform.runLater(() -> {
                                 nodesAsked.remove(key);
                                 if (tiles != askedFor) return;
@@ -1101,6 +1104,8 @@ final class MapView {
         lines.add(what != null ? what : LandMap.groundWords(p.ground()));
         if (what != null) lines.add(LandMap.groundWords(p.ground()));
         lines.add(LandMap.ownerWords(land, p));
+        // On Earth (0.7.119): where it is, by the nearest place, and its geology.
+        lines.addAll(LandMap.earthWords(land, x, y));
         List<LandMap.FieldAt> under = LandMap.fieldsAt(land, x, y);
         for (int i = 0; i < under.size() && i < CARD_FIELDS; i++) lines.add(LandMap.fieldWords(under.get(i), land, market));
         card.getChildren().clear();
