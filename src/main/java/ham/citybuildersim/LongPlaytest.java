@@ -2356,13 +2356,15 @@ public class LongPlaytest {
        ===================================================================== */
 
     /**
-     * THE STRICTER MONEY GATE, FOR THE COUNTERFACTUAL (0.7.82, batch O5):
-     * -Dplaytest.moneyGate=whole has the refiners' spread planner test every
+     * THE MONEY GATE, FOR THE COUNTERFACTUAL (0.7.82, batch O5; turned round
+     * at 0.7.112): since 0.7.112 the refiners' spread planner tests every
      * order on its whole cost, whoever pays (SpreadPlanner.ON_ITS_WHOLE_COST,
-     * runs/spec-materials.md's item A, which Jerus has not answered), where
-     * the rule in force tests what the order borrows. Unset, a no-op.
+     * Jerus's decision A), and -Dplaytest.moneyGate=borrowing has it test
+     * what the order borrows, the rule to 0.7.111 (ON_ITS_BORROWING);
+     * "whole", the counterfactual until then, is the rule in force. Unset, a
+     * no-op.
      */
-    static final boolean MONEY_GATE_WHOLE = "whole".equalsIgnoreCase(System.getProperty("playtest.moneyGate", "").trim());
+    static final String MONEY_GATE = System.getProperty("playtest.moneyGate", "").trim();
 
     /** -Dplaytest.refinery=true (0.7.82): the refiners' planner yearly - its outlook and its best candidates under both money gates (refineryLine()). */
     static final boolean REFINERY_TRACE = Boolean.getBoolean("playtest.refinery");
@@ -4740,8 +4742,10 @@ public class LongPlaytest {
             g.setFundDial(FUND_DIAL);
             if (ADVANCES_MONTHS != null) g.getCentralBank().setAdvancesCeilingMonths(ADVANCES_MONTHS);
             if (INFLATION_TARGET != null) g.getDebtManager().setInflationTarget(INFLATION_TARGET);
-            // ...and the refiners' money gate (0.7.82): MONEY_GATE_WHOLE, the counterfactual; unset, the rule in force.
-            if (MONEY_GATE_WHOLE) g.getSectors().refining().planner()
+            // ...and the refiners' money gate (0.7.82; 0.7.112): MONEY_GATE, the counterfactual; unset, the rule in force.
+            if ("borrowing".equalsIgnoreCase(MONEY_GATE)) g.getSectors().refining().planner()
+                    .setMoneyGate(ham.citybuildersim.sectors.SpreadPlanner.ON_ITS_BORROWING);
+            else if ("whole".equalsIgnoreCase(MONEY_GATE)) g.getSectors().refining().planner()
                     .setMoneyGate(ham.citybuildersim.sectors.SpreadPlanner.ON_ITS_WHOLE_COST);
 
             /* ---------- founding: a few months at a time, by hand ---------- */

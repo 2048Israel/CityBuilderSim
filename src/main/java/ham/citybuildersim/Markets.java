@@ -129,6 +129,8 @@ public final class Markets {
          * refiners' tanks and the world as the railway draws its own.
          */
         for (Sector s : sectors.all()) s.runFleet(sectors);
+        // ...and the works' consumables, bought abroad at the rate the month's inputs are (0.7.112; Sector.buyConsumables()).
+        for (Sector s : sectors.all()) s.buyConsumables();
 
         // 1. the flow goods are made
         for (Sector s : sectors.all()) {

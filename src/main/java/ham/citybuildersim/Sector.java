@@ -599,6 +599,72 @@ public abstract class Sector {
     public double getElectricityCost() { return electricity * energyRatio * pricePerWatt; }
     public double getWaterCost()       { return water * waterRatio * pricePerWaterUnit; }
 
+    /* -------------------------------------------------------------------
+       THE POWER ITS WORKS MAKE THEMSELVES (0.7.112, batch I2; runs/spec-
+       materials.md 2.8, the study's 1.6)
+
+       A building may make power (BuildingsTemplate.getGen()). Each buys from
+       the grid only what it draws past what it makes, and sells the grid
+       what it makes past its draw. So the draw EconomyManager sets each month
+       (setElectricityConsumption()) is the buildings' net draws since 0.7.112
+       - every building's whole draw, to the bit, while none makes power -
+       and beside it the surplus (setPowerSurplus()), which the strike sells
+       the city's utility at the tariff, undimmed by a brownout: the works
+       made it (Statement.powerSold). The utility pays it out of its own
+       takings (UtilitiesHandler, the power it buys from the works), so the
+       money goes pool to pool, the treasury's to the sector's, in the
+       month's window.
+       ------------------------------------------------------------------- */
+
+    /** kW its buildings make past their own draws, at nameplate - what it sells the grid. Set by EconomyManager with the draw. */
+    protected double powerSurplus;
+
+    public void setPowerSurplus(double kw) { powerSurplus = Double.isFinite(kw) ? Math.max(0, kw) : 0; }
+
+    /** kW its buildings make past their own draws (0 for every sector until a works makes power). */
+    public double getPowerSurplus() { return powerSurplus; }
+
+    /** What the surplus sells for a month, at the tariff: nothing with none. */
+    public double getPowerSoldValue() { return powerSurplus > 0 ? powerSurplus * pricePerWatt : 0; }
+
+    /* -------------------------------------------------------------------
+       WHAT ITS WORKS BUY ABROAD THAT IS NOT A GOOD (0.7.112, batch I2;
+       runs/spec-materials.md 2.5)
+
+       A works' consumables (BuildingsTemplate.getConsumables(): refractories,
+       reagents, explosives, rolls and spares, in the world's money a month at
+       nameplate) are bought from the world each month at the share of
+       nameplate it runs, at the exchange factor every world price is
+       converted at: a service with no good behind it, booked as the shuttle
+       tankers' freight is (bookImportedService()) - an import, named on the
+       input line, in the money audit's TRADE scope. Markets calls it once a
+       month for every sector, beside the fleet at the top of the market pass,
+       so it is at the rate the month's inputs are bought at. Nothing for a
+       sector whose buildings have none, as every building has today.
+       ------------------------------------------------------------------- */
+
+    /** The consumables' name on a sector's input line. */
+    public static final String CONSUMABLES = "Consumables";
+
+    /** Its buildings' consumables a month at nameplate, thousands of the world's money: nothing with none standing. */
+    public double getConsumablesAtNameplate() {
+        return buildings == null ? 0 : buildings.totalBySector(key, BuildingsTemplate::getConsumables);
+    }
+
+    /** What the month's consumables cost it, in the city's money: their nameplate at the operating rate and the exchange factor; nothing with none, or no markets to read the factor off. */
+    public double consumablesBill() {
+        double world = getConsumablesAtNameplate();
+        if (!(world > 0) || markets == null) return 0;
+        double bill = world * getOperatingRate() * markets.getExchangeRate();
+        return Double.isFinite(bill) ? Math.max(0, bill) : 0;
+    }
+
+    /** The month's consumables, bought from the world (above): an import named CONSUMABLES on the input line. Called by Markets each month, once. */
+    public void buyConsumables() {
+        double bill = consumablesBill();
+        if (bill > 0) bookImportedService(CONSUMABLES, bill);
+    }
+
 
     /* ===================================================================
        THE FLEET (2026-09-17)
@@ -1061,6 +1127,7 @@ public abstract class Sector {
         public double exported;      // units shipped, from the line or the shed
         public double writtenOff;    // stock lost to a demolished warehouse
         public double costPerUnit;   // the month's break-even, for the screen
+        public double captive;       // made and used by the sector itself, never on the market (0.7.112; captive())
     }
 
     /** What the month did with each good it uses. */
@@ -1741,11 +1808,22 @@ public abstract class Sector {
          * the month's building spending is net of it (Game, after the strike).
          */
         public double capitalTaxCredit;
+        /**
+         * What it sold the grid of the power its works make past their own
+         * draws (0.7.112, batch I2; spec-materials 2.8): the surplus at the
+         * tariff, IN REVENUE - so every line the books strike from revenue
+         * adds up with it - and outside the sales (localSales, exports,
+         * otherRevenue), so the sales tax and the sales by good never see it:
+         * the utility buys it as the sectors buy their power from it, untaxed.
+         * Nothing for every sector until a works makes power.
+         */
+        public double powerSold;
 
         void scale(double s) {
             revenue *= s; inputs *= s; payroll *= s; electricity *= s; water *= s; maintenance *= s;
             paidEarlier *= s;
             borrowingCosts *= s;
+            powerSold *= s;
             operatingIncome *= s; interest *= s; propertyTax *= s; salesTax *= s;
             preTaxIncome *= s; profitTax *= s; netIncome *= s;
             localSales *= s; exports *= s; otherRevenue *= s; salesToHouseholds *= s;
@@ -1781,6 +1859,9 @@ public abstract class Sector {
         s.otherRevenue = pending.otherRevenue;
         s.salesToHouseholds = pending.salesToHouseholds;
         s.revenue = pending.revenue();
+        // ...and the power its works sold the grid (0.7.112): added only when there is some, as a zero added is not always nothing (bank()).
+        s.powerSold = getPowerSoldValue();
+        if (s.powerSold != 0) s.revenue += s.powerSold;
         s.imports = pending.imports;
         s.localPurchases = pending.purchases() - pending.imports;
         s.purchasesBySupplier = new LinkedHashMap<>(pending.purchasesBySupplier);
@@ -1895,6 +1976,7 @@ public abstract class Sector {
         s.capitalBySupplier = saved.capitalBySupplier == null
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.capitalBySupplier);
         s.capitalTaxCredit = saved.capitalTaxCredit;
+        s.powerSold = saved.powerSold;
     }
 
     /* ===================================================================
@@ -1937,6 +2019,8 @@ public abstract class Sector {
      */
     public double getPlannedOutput(Good g) {
         double nameplate = getCapacity(g) * getOperatingRate();
+        // ...less what it uses of it itself (0.7.112, CAPTIVE USE): the market sees the rest.
+        if (captive(g)) nameplate = Math.max(0, nameplate - captiveUnits(g));
         if (!g.stockable()) return nameplate;
         double demand = plannedDemand(g);
         double target = demand > 0
@@ -1952,7 +2036,9 @@ public abstract class Sector {
      */
     public double getExportBoundOutput(Good g) {
         if (!g.exportable() || markets == null) return 0;
-        double spare = Math.max(0, getCapacity(g) * getOperatingRate() - getPlannedOutput(g));
+        double nameplate = getCapacity(g) * getOperatingRate();
+        if (captive(g)) nameplate = Math.max(0, nameplate - captiveUnits(g));
+        double spare = Math.max(0, nameplate - getPlannedOutput(g));
         if (spare <= 0) return 0;
         return markets.get(g).netExportPrice() >= getMarginalCostPerUnit(g) ? spare : 0;
     }
@@ -2040,6 +2126,11 @@ public abstract class Sector {
         double total = 0;
         for (Good g : uses) {
             if (!g.traded()) continue;
+            // ...what it makes of it itself costs it nothing past its own inputs (0.7.112, CAPTIVE USE).
+            if (captive(g)) {
+                total += Math.max(0, getInputAtCapacity(g) * getOperatingRate() - captiveUnits(g)) * priceOf(g);
+                continue;
+            }
             total += getInputAtCapacity(g) * getOperatingRate() * priceOf(g);
         }
         return total;
@@ -2069,6 +2160,8 @@ public abstract class Sector {
             double target = pantryTarget(g);
             return Math.max(0, target - getPantry(g));
         }
+        // ...and what it makes of it itself it does not ask the market for (0.7.112, CAPTIVE USE).
+        if (captive(g)) return Math.max(0, getInputAtCapacity(g) * getOperatingRate() - captiveUnits(g));
         return getInputAtCapacity(g) * getOperatingRate();
     }
 
@@ -2126,10 +2219,56 @@ public abstract class Sector {
         o.produced = groundLimit(g, asked);
         o.idled = 0;
         o.exportBound = 0;
+        // ...its own need of it first, the rest to the market (0.7.112, CAPTIVE USE).
+        if (captive(g)) {
+            o.captive = Math.max(0, Math.min(o.produced, getInputAtCapacity(g) * getOperatingRate()));
+            o.produced -= o.captive;
+        }
     }
 
     /** A sector whose output is limited by what is in the ground says so here. */
     protected double groundLimit(Good g, double asked) { return asked; }
+
+    /* ===================================================================
+       CAPTIVE USE (0.7.112, batch I2; runs/spec-materials.md 2.7)
+
+       A good a sector both makes and uses - coke, pig iron and scrap in
+       Iron & Steel, anode and cathode in Copper Refining, residues and pulp
+       in Wood Products - goes first to its own need at the rate:
+       min(made, needed) a month, captiveUnits(). The market sees the net:
+       bid() asks for the need past it, and produceFlow() and produceStock()
+       bring the market what is made past it (getPlannedOutput(),
+       getExportBoundOutput()). No sale or purchase is booked for it - its
+       cost is already in the inputs it was made of - so neither revenue nor
+       inputs are swollen by a sector trading with itself, and the input
+       cost the line is judged on counts only what it buys
+       (inputCostAtRate()). Output.captive records it, for SectorFlow and
+       the pictograms.
+
+       A sector says which goods are captive (captive()); none does here,
+       and none does today, so every sector's month is what it was, to the
+       bit. sectors.ProcessingSector makes every good it both makes and uses
+       captive.
+       =================================================================== */
+
+    /** Whether it uses what it makes of a good first, itself (CAPTIVE USE): false here; sectors.ProcessingSector says yes for every good it both makes and uses. */
+    public boolean captive(Good g) { return false; }
+
+    /**
+     * The units of a captive good it makes and uses itself this month: its
+     * need at the operating rate, as far as what it makes at the rate covers
+     * it - for a flow good what it lifted, after the ground (produceFlow()
+     * strikes it first in the month); nothing for a good that is not captive.
+     */
+    public double captiveUnits(Good g) {
+        if (!captive(g)) return 0;
+        double need = getInputAtCapacity(g) * getOperatingRate();
+        if (!g.stockable()) {
+            Output o = outputs.get(g);
+            return o == null ? 0 : Math.max(0, Math.min(o.captive, need));
+        }
+        return Math.max(0, Math.min(getCapacity(g) * getOperatingRate(), need));
+    }
 
     /**
      * A flow good's unsold units, once the market has taken what it wants:
@@ -2167,6 +2306,11 @@ public abstract class Sector {
         Output o = output(g);
         o.capacity = getCapacity(g);
         double nameplate = o.capacity * getOperatingRate();
+        // ...its own need of it first, the rest to the market (0.7.112, CAPTIVE USE).
+        if (captive(g)) {
+            o.captive = captiveUnits(g);
+            nameplate = Math.max(0, nameplate - o.captive);
+        }
         double planned = getPlannedOutput(g);
         double direct = getExportBoundOutput(g);
         o.planned = planned;

@@ -281,6 +281,49 @@ public class UtilitiesHandler {
         this.billedWaterRevenue = water;
     }
 
+    /** ...and what the works sold it of their own power, as their statements booked it (0.7.112; THE POWER THE WORKS MAKE, below). */
+    public void setBilledRevenue(double electricity, double water, double powerBought) {
+        setBilledRevenue(electricity, water);
+        this.billedPowerBought = Double.isFinite(powerBought) ? Math.max(0, powerBought) : 0;
+    }
+
+    /* =====================================================================
+       THE POWER THE WORKS MAKE (0.7.112, batch I2; runs/spec-materials.md
+       2.8, the study's 1.6)
+
+       A works may make its own power (BuildingsTemplate.getGen()): it draws
+       from the grid only what it needs past that, so the grid's consumption
+       is every building's net draw (ServicesManager), and what it makes past
+       its own draw it sells the grid (setWorksPower()). That surplus is added
+       to what the grid generates - unscaled by the utility's staffing, since
+       the works' own crews made it - and the utility pays the works for it at
+       the tariff, out of its takings: the electricity income is the bills
+       less the payroll less the power bought (getPowerBought()), which the
+       works' statements booked (Sector.Statement.powerSold), handed in with
+       the bills (setBilledRevenue()). No building makes power yet, so the
+       grid and the utility's books are what they were, to the bit.
+       ===================================================================== */
+
+    /** kW the works make past their own draws, standing: added to the grid's generation. Set by ServicesManager. */
+    private double worksPower;
+
+    /** What the works' statements booked as power sold to the grid this month: what the utility pays them. */
+    private double billedPowerBought;
+
+    /** The surplus the works make past their own draws, kW (ServicesManager, from the buildings standing). */
+    public void setWorksPower(double kw) {
+        this.worksPower = Double.isFinite(kw) ? Math.max(0, kw) : 0;
+    }
+
+    /** kW the works sell the grid: added to what it generates. */
+    public double getWorksPower() { return worksPower; }
+
+    /** What the utility pays the works for their power this month: the statements' figure, or with none handed in the surplus at the tariff. */
+    public double getPowerBought() {
+        if (billedByStatement) return billedPowerBought;
+        return worksPower > 0 ? worksPower * pricePerWatt : 0;
+    }
+
     /** What the four charged categories draw. Set by ServicesManager. */
     public double billedElectricityDraw;
 
@@ -346,7 +389,10 @@ public class UtilitiesHandler {
     }
 
     public double getElectricityIncome() {
-        return getElectricityRevenue() - getElectricityPayroll();
+        double income = getElectricityRevenue() - getElectricityPayroll();
+        // ...less the power it bought from the works (0.7.112): taken only when there is some, so a month without is struck as it was.
+        double bought = getPowerBought();
+        return bought != 0 ? income - bought : income;
     }
 
     public double getWaterIncome() {
@@ -420,8 +466,10 @@ public class UtilitiesHandler {
     public void updateEnergyRatio() {
         production = baseProduction * averageUtilityFill;
         if(averageUtilityFill == 0) production = 10000;
+        // ...and what the works sell the grid, whatever the utility's staffing (0.7.112, THE POWER THE WORKS MAKE).
+        if (worksPower > 0) production += worksPower;
         energyRatio = Math.min(production / consumption, 1);
-        
+
     }
 
     public void updateWaterRatio() {
@@ -646,6 +694,7 @@ public class UtilitiesHandler {
         pricePerWaterUnit *= scale;
         billedElectricityRevenue *= scale;
         billedWaterRevenue       *= scale;
+        billedPowerBought        *= scale;
         for (int i = 0; i < utilityWages.length; i++)     utilityWages[i]     *= scale;
         for (int i = 0; i < electricityWages.length; i++) electricityWages[i] *= scale;
         for (int i = 0; i < waterWages.length; i++)       waterWages[i]       *= scale;

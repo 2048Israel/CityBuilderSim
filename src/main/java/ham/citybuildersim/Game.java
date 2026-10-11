@@ -10344,10 +10344,12 @@ public class Game {
         double tempCash = cash + taxIn - (interestOut + pensionsOut
                 + careOut + schoolsOut + safetyOut + transitOut);
         // The utility books what its customers were charged - see
-        // UtilitiesHandler.setBilledRevenue().
+        // UtilitiesHandler.setBilledRevenue() - and since 0.7.112 what the
+        // works sold it of their own power, which it pays them.
         servicesManager.getUtilitiesHandler().setBilledRevenue(
                 economyManager.getSectorElectricityCharges(),
-                economyManager.getSectorWaterCharges());
+                economyManager.getSectorWaterCharges(),
+                economyManager.getSectorPowerSold());
         economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
         double servicesNet = servicesManager.getServiceNetIncome();
         tempCash += servicesNet;
@@ -14345,7 +14347,8 @@ public class Game {
     // Utilities read $0 on the finances screen after every load.
     servicesManager.getUtilitiesHandler().setBilledRevenue(
             economyManager.getSectorElectricityCharges(),
-            economyManager.getSectorWaterCharges());
+            economyManager.getSectorWaterCharges(),
+            economyManager.getSectorPowerSold());
     economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
 
     // The residents' statement, without booking the month onto the running
@@ -15699,7 +15702,8 @@ public class Game {
             // five months of four thousand - the months a ratio moved.
             servicesManager.getUtilitiesHandler().setBilledRevenue(
                     economyManager.getSectorElectricityCharges(),
-                    economyManager.getSectorWaterCharges());
+                    economyManager.getSectorWaterCharges(),
+                    economyManager.getSectorPowerSold());
             economyManager.setUtilityIncome(servicesManager.getServiceNetIncome());
 
             /*

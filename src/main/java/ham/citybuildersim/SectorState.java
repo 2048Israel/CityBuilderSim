@@ -197,6 +197,8 @@ public final class SectorState {
         public double capitalTaxCredit;
         /** Sector.Statement.borrowingCosts (0.7.102, A16); an older save reads none, which is what it expensed. */
         public double borrowingCosts;
+        /** Sector.Statement.powerSold (0.7.112, batch I2); an older save reads none, which is what it sold. */
+        public double powerSold;
 
         static StatementState of(Sector.Statement t) {
             StatementState s = new StatementState();
@@ -216,6 +218,7 @@ public final class SectorState {
             s.capitalBySupplier = new LinkedHashMap<>(t.capitalBySupplier);
             s.capitalTaxCredit = t.capitalTaxCredit;
             s.borrowingCosts = t.borrowingCosts;
+            s.powerSold = t.powerSold;
             return s;
         }
 
@@ -238,6 +241,7 @@ public final class SectorState {
             t.capitalBySupplier = capitalBySupplier == null ? new LinkedHashMap<>() : new LinkedHashMap<>(capitalBySupplier);
             t.capitalTaxCredit = capitalTaxCredit;
             t.borrowingCosts = borrowingCosts;
+            t.powerSold = powerSold;
             return t;
         }
     }

@@ -73,11 +73,12 @@ import java.io.PrintStream;
  *      and the staff (a frame that refuses them; ground the only refusal is
  *      the land office's case), the money (on imported crude the playtest's
  *      Oil Refinery loses money; a hair under the hurdle). The game's money
- *      gate in force tests what an order borrows - with nothing in the till
- *      the whole cost, PROFIT_OVER_INTEREST times the interest at the real
- *      rate, as servicesItsOwnDebt() strikes it, to the bit; with the cost in
- *      the till nothing but that it earn something - and the stricter rule
- *      (spec-materials A) the whole cost whoever pays.
+ *      gate in force since 0.7.112 (11b; Jerus's decision A) tests the whole
+ *      cost whoever pays - PROFIT_OVER_INTEREST times the interest at the
+ *      real rate, as servicesItsOwnDebt() strikes it, to the bit, the same
+ *      with the cost in the till as with nothing in it; the rule to 0.7.111,
+ *      kept as a named history, tested what an order borrows, and with the
+ *      cost in the till asked nothing but that it earn something.
  *
  *  12. THE PACKAGE REPRODUCES spec-oil 2.4's FOUR ROWS in the prototype's
  *      frame (spread.py: fixed demand, the world's prices, wages at 4.84 a
@@ -95,8 +96,9 @@ import java.io.PrintStream;
  *      wells' crude (since 0.7.105: on imported crude by lorry its barrel
  *      loses, the run stops, and no unit is ordered behind it) and nothing
  *      held - since 0.7.103 the cost of any unit in the refiners' till, the
- *      lube plant it ordered until then capped out (15) - orders the
- *      planner's best, a conversion unit; Game.consider()
+ *      lube plant it ordered until then capped out (15), and since 0.7.112
+ *      their planner on the rule to 0.7.111, under which that cash orders
+ *      (11b) - orders the planner's best, a conversion unit; Game.consider()
  *      tests it on the planner's earnings; with no ground free it is refused
  *      at the ground and the land office hears of it; a crude unit's
  *      estimate is its share of its package's by cost.
@@ -811,7 +813,17 @@ public class RefineryCheck {
     }
 
     static void theGameMoneyGates() throws Exception {
-        out.println("\n--- 11b. the game's money gates: on what the order borrows (in force), or on its whole cost ---");
+        /*
+         * THE PREMISE DECISION A MOVED (0.7.112, batch I2; Jerus, 2026-10-08:
+         * "test every order on its whole cost, whoever pays"). To 0.7.111 the
+         * rule in force was ON_ITS_BORROWING, and this section asserted that
+         * cash in the till asks only that the order earn something. Since then
+         * the whole cost is tested whoever pays: the same hurdle with the
+         * order's cost in the till as with nothing in it. The old rule stays,
+         * named, for the counterfactual, and is asserted as such.
+         */
+        out.println("\n--- 11b. the game's money gate: on the order's whole cost, whoever pays (in force since 0.7.112, decision A);"
+                + " on what it borrows, the rule to 0.7.111 ---");
         GameFiles files = GameFiles.scratch("refinerycheck-money");
         Game g = new Game(files);
         quietly(() -> {
@@ -827,22 +839,26 @@ public class RefineryCheck {
         double rate = credit.projectRate(r.key(), cost);
         r.setCash(0);
         double h = p.hurdle(r, plans, g, cost);
-        report("the rule in force (ON_ITS_BORROWING): with nothing in the till, the hurdle is PROFIT_OVER_INTEREST times a month's"
-                        + " interest at the real rate on the whole cost, as servicesItsOwnDebt() strikes it, to the bit",
-                p.moneyGate() == SpreadPlanner.ON_ITS_BORROWING && h == cost * plans.realTestRate(rate) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST
+        report("the rule in force (ON_ITS_WHOLE_COST, SpreadPlanner.DEFAULT_MONEY_GATE): with nothing in the till, the hurdle is"
+                        + " PROFIT_OVER_INTEREST times a month's interest at the real rate on the whole cost, as servicesItsOwnDebt()"
+                        + " strikes it, to the bit",
+                p.moneyGate() == SpreadPlanner.ON_ITS_WHOLE_COST && SpreadPlanner.DEFAULT_MONEY_GATE == SpreadPlanner.ON_ITS_WHOLE_COST
+                        && h == cost * plans.realTestRate(rate) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST
                         && h > 0 && p.passesMoney(r, plans, g, h, cost) && !p.passesMoney(r, plans, g, Math.nextDown(h), cost)
                         && plans.servicesItsOwnDebt(h, cost, rate) && !plans.servicesItsOwnDebt(Math.nextDown(h), cost, rate),
                 String.format("%,.2fk a month on %,.0fk, %.4f%% (rate %.4f, real %.4f)", h, cost, 100 * h / cost, rate, plans.realTestRate(rate)));
         r.setCash(cost);
+        double withCash = p.hurdle(r, plans, g, cost);
+        boolean wholeWhoeverPays = withCash == h && !p.passesMoney(r, plans, g, Math.nextDown(h), cost) && p.passesMoney(r, plans, g, h, cost);
+        p.setMoneyGate(SpreadPlanner.ON_ITS_BORROWING);
         boolean cashPays = p.hurdle(r, plans, g, cost) == 0 && p.passesMoney(r, plans, g, 1e-9, cost) && !p.passesMoney(r, plans, g, 0, cost);
-        p.setMoneyGate(SpreadPlanner.ON_ITS_WHOLE_COST);
-        double whole = p.hurdle(r, plans, g, cost);
-        boolean wholeRefuses = whole == h && !p.passesMoney(r, plans, g, Math.nextDown(whole), cost) && p.passesMoney(r, plans, g, whole, cost);
         p.setMoneyGate(null);
-        assertTrue("...with the order's cost in the till it asks nothing but that the order earn something (Game.consider()'s own test)",
-                cashPays);
-        assertTrue("the stricter rule (ON_ITS_WHOLE_COST, spec-materials A) tests the whole cost whoever pays: it refuses a cash-rich"
-                + " sector's order the rule in force passes", wholeRefuses && p.moneyGate() == SpreadPlanner.ON_ITS_BORROWING);
+        report("...and with the order's cost in the till the same hurdle, to the bit: the whole cost is tested whoever pays, so a"
+                        + " cash-rich sector's order earning a hair under it is refused", wholeWhoeverPays,
+                String.format("%,.2fk with %,.0fk in the till", withCash, r.getCash()));
+        assertTrue("the rule to 0.7.111, kept as a named history (ON_ITS_BORROWING): with the order's cost in the till it asked nothing"
+                + " but that the order earn something (Game.consider()'s own test) - and null puts the default back", cashPays
+                && p.moneyGate() == SpreadPlanner.DEFAULT_MONEY_GATE);
     }
 
     static void fourRows(BuildingManager catalogue) {
@@ -1015,9 +1031,21 @@ public class RefineryCheck {
          * shipped; the world's demand for them capped (Jerus's A9; section
          * 15), none is wanted on this crude, and the best unit left earns
          * too little to pay the interest on what it would borrow. With what
-         * one costs in hand the money gate asks only that it earn something
-         * (11b), so the order is still the planner's to place.
+         * one costs in hand the money gate asked only that it earn something
+         * (11b), so the order was still the planner's to place.
+         *
+         * ...AND THE RULE TO 0.7.111 ITS GATE (0.7.112, batch I2): since
+         * Jerus's decision A the gate in force tests the whole cost whoever
+         * pays (11b), and in this town no unit earns that - its best, a Small
+         * Cracking Unit, $0.4k a month on $30.2M against $161k, measured at
+         * 0.7.112 - so the cash
+         * in the till no longer orders one. This section is the order's path
+         * (the planner's values, its best, Game.consider()'s estimate, the
+         * ground), not the gate, so its fixture keeps the lever it was built
+         * on: the refiners' planner on ON_ITS_BORROWING, the named history,
+         * with a unit's cost in their till; put back after.
          */
+        r.planner().setMoneyGate(SpreadPlanner.ON_ITS_BORROWING);
         double most = 0;
         for (BuildingsTemplate t : b.getTemplatesBySector(r.key())) {
             if (Refining.isConversionUnit(t)) most = Math.max(most, plans.getCostOf(t, 1));
@@ -1030,11 +1058,14 @@ public class RefineryCheck {
             months[0]++;
         }
         g.watchOrders(null);
+        boolean onTheOldRule = r.planner().moneyGate() == SpreadPlanner.ON_ITS_BORROWING;
+        r.planner().setMoneyGate(null);
         BusinessInvestment.Decision d = (BusinessInvestment.Decision) seen[0];
         SpreadPlanner.Candidate best = (SpreadPlanner.Candidate) seen[2];
         report("fixture: an Oil Refinery standing on its wells' crude in a town of 600 houses (0.7.105; on imported crude until"
-                        + " then), the refiners not held and the cost of any unit in their till (0.7.103), orders within two years",
-                d != null && r.runShare() == 1 && r.inputRow(Good.CRUDE) != null && r.inputRow(Good.CRUDE).imported == 0,
+                        + " then), the refiners not held, the cost of any unit in their till (0.7.103) and their planner on the"
+                        + " rule to 0.7.111 (ON_ITS_BORROWING; on the whole cost no unit here pays, 11b), orders within two years",
+                onTheOldRule && d != null && r.runShare() == 1 && r.inputRow(Good.CRUDE) != null && r.inputRow(Good.CRUDE).imported == 0,
                 d == null ? "no order" : String.format("m%d: %s", g.getMonth(), d.reason));
         assertTrue("the planner's values are each product at the city's own price at the margin, petrol and diesel at the net import"
                 + " price only while the city imports them (0.7.105, R1), and the run's prices with them, to the bit",

@@ -5123,8 +5123,65 @@ public final class GameVersion {
      *     from the full file), and on the full file when it is named
      *     (-Dcbs.earth=<path>).
      *   - The playtest is 0.7.109's byte for byte.
+     *
+     * 0.7.112 (2026-10-10) - THE SHARED MACHINERY. Batch I2, the second of
+     * the materials chains (runs/spec-materials.md 2.1, 2.5-2.8;
+     * runs/brief-batchI2.md, runs/fixI2-notes.md): what every chain after it
+     * stands on, and no chain yet - no new sector, good or building. No save
+     * format change (36): Statement.powerSold is a new key, an older save
+     * reads none, which is what it sold.
+     *   - EVERY WORKS ON ITS WHOLE COST (Jerus's decision A, 2026-10-08: "test
+     *     every order on its whole cost, whoever pays"): SpreadPlanner's money
+     *     gate in force is ON_ITS_WHOLE_COST (DEFAULT_MONEY_GATE) - the
+     *     interest at projectRate(cost) x PROFIT_OVER_INTEREST on the whole
+     *     cost, its ground at its zone's price, whatever the sector holds.
+     *     ON_ITS_BORROWING, the rule to 0.7.111, stays as a named history
+     *     (LongPlaytest's -Dplaytest.moneyGate=borrowing). The refiners never
+     *     hold cash when they weigh, so nothing they order moves. Game.consider()
+     *     and the sea's orders are I2b's.
+     *   - outValue() and inValue() (SpreadPlanner): what u units of a good are
+     *     worth made here - the net import price for as much as the city
+     *     imports, the net export price past it - and cost used here, the
+     *     mirror; on cityValue() as 0.7.105 left it, at the market's tally.
+     *     caseEarns() and Case: the study's four cases at nameplate, pure, for
+     *     the rows of I3 onwards.
+     *   - sectors.ProcessingSector (abstract): plan() is SpreadPlanner's - every
+     *     works earning its output at outValue() less its feed at inValue(),
+     *     its running and standing costs, its consumables and its power, past
+     *     the feed, ground, staff and money gates, the best on its cost
+     *     ordered, one in flight; captive use; idle, then shed (O5's rule, the
+     *     last one standing earning below nothing IDLE_MONTHS running; extras
+     *     idleMonths.<id>). No sector extends it yet (Heavy Industry at I3).
+     *   - sectors.ExtractionSector (abstract): Mining's rule - the ground the
+     *     limit, a mine on a free site of its resource, the best return on its
+     *     cost, spare once the ore is out - written once; Mining moved onto it
+     *     whole, to the bit.
+     *   - CAPTIVE USE (Sector.captive(), captiveUnits(), Output.captive): a good
+     *     a sector both makes and uses goes to its own need first; the market
+     *     sees the net, and no sale or purchase is booked for it. No sector
+     *     keeps one yet.
+     *   - THE WORKS' OWN POWER (BuildingsTemplate.gen, "gen" in buildings.json):
+     *     a building buys its draw past what it makes and sells the grid the
+     *     rest at the tariff - the sector's bill on its net draw, its
+     *     Statement.powerSold in its revenue, the grid's consumption the net
+     *     draws and its generation the works' surplus with it
+     *     (UtilitiesHandler.setWorksPower()), the utility paying the
+     *     statements' figure out of its income. The money audit notes the pair
+     *     ("chk + sectors PowerSold", "chk - utilities PowerBought"). No
+     *     building makes power yet.
+     *   - CONSUMABLES (BuildingsTemplate.consumables): world thousands a month
+     *     at nameplate, bought each month at the operating rate and the
+     *     exchange factor as a service from the world (Sector.buyConsumables(),
+     *     "Consumables" on the input line), an import in TRADE. No building has
+     *     any yet.
+     *   - Harnesses: MaterialsCheck (new, eight sections); RefineryCheck 11b
+     *     (the premise decision A moves: the whole cost tested whoever pays)
+     *     and 14 (its fixture's lever, the refiners' cash, is the old rule's);
+     *     MoneyCheck 4 (power and consumables, the audit closing);
+     *     BuildingDataCheck (gen and consumables, json against the twin).
+     *   - The playtest is 0.7.106's byte for byte.
      */
-    public static final String VERSION = "0.7.111";
+    public static final String VERSION = "0.7.112";
 
     /**
      * The save shape.

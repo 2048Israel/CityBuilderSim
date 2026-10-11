@@ -904,7 +904,9 @@ public final class MoneyAudit {
          * reached the households and left no pool.
          */
         out += debit.apply("- transit Bill", e.getTransitBill(), Scope.DOMESTIC);
-        // Imports: every sector's purchases from the world, as its statement booked them.
+        // Imports: every sector's purchases from the world, as its statement booked them - with the services
+        // bought from the world that have no good behind them: the shuttle tankers' freight (0.7.91) and the
+        // works' consumables (0.7.112, Sector.buyConsumables()), each in TRADE with the goods.
         for (Sector s : sectors.all()) {
             out += debit.apply("- " + s.key() + " Imports", s.statement().imports, Scope.TRADE);
         }
@@ -1140,6 +1142,21 @@ public final class MoneyAudit {
         note.accept("chk sectors bought from sectors", localPurchases);
         note.accept("chk utility revenue", utilities.getUtilityRevenue());
         note.accept("chk sector utility bills", bills);
+        /*
+         * ...AND THE POWER THE WORKS SELL THE GRID (0.7.112, batch I2; spec-
+         * materials 2.8): what the sectors' statements booked as sold, and what
+         * the city's utility paid for it - the treasury's pool to the sectors',
+         * in the month's window, as their power bills go the other way. ★ A
+         * pair noted here, not declared: listed as a flow in and a flow out it
+         * would cancel in the identity whatever each side booked, and a works
+         * paid more than the utility gave would be money from nowhere that the
+         * residual no longer saw. Noted, each read off its own book, a
+         * mismatch is the residual's. Nothing while no building makes power.
+         */
+        double powerSold = 0;
+        for (Sector s : sectors.all()) powerSold += s.statement().powerSold;
+        note.accept("chk + sectors PowerSold", powerSold);
+        note.accept("chk - utilities PowerBought", utilities.getPowerBought());
         note.accept("chk construction revenue banked", sectors.construction().statement().revenue);
         note.accept("chk land sold to sectors", g.getLandManager().getLandSalesThisMonth());
 

@@ -65,9 +65,15 @@ public class ServicesManager {
                 utilitiesHandler::setWattsProduction,
                 BuildingsTemplate::getProduction1);
 
+        // ...every building's draw past the power it makes itself, and what the works make past their
+        // own draws, sold to the grid (0.7.112, batch I2; UtilitiesHandler, THE POWER THE WORKS MAKE):
+        // every building's whole draw, and none sold, while no building makes power.
         updateHandlerDouble(
                 utilitiesHandler::setWattsConsumption,
-                BuildingsTemplate::getElectricityConsumption);
+                BuildingsTemplate::powerBought);
+        updateHandlerDouble(
+                utilitiesHandler::setWorksPower,
+                BuildingsTemplate::powerSold);
 
         // water
         updateByCategoryHandlerDouble(
@@ -109,7 +115,7 @@ public class ServicesManager {
         // utilities screen shows as "invoiced to somebody".
         utilitiesHandler.setBilledElectricityDraw(
                 buildingManager.getTotalDouble(
-                        t -> BuildingsTemplate.isBilledForUtilities(t) ? t.getElectricityConsumption() : 0));
+                        t -> BuildingsTemplate.isBilledForUtilities(t) ? t.powerBought() : 0));
 
         utilitiesHandler.setBilledWaterDraw(
                 buildingManager.getTotalDouble(

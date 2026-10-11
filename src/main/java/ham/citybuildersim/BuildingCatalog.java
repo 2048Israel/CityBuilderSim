@@ -206,7 +206,10 @@ public class BuildingCatalog {
                 // A filling station's litres a month at the pump (0.7.83): absent, none.
                 .setPumpLitres(number(o, "pump"))
                 // A road kind's own repairs a year, a share of its price (0.7.103): absent, the house rate.
-                .setRepairsPerYear(number(o, "repairs"));
+                .setRepairsPerYear(number(o, "repairs"))
+                // ...and a works' own power, kW, and its consumables, world thousands a month (0.7.112): absent, none.
+                .setGen(number(o, "gen"))
+                .setConsumables(number(o, "consumables"));
 
         readCare(o, template, name);
         readJobs(o, template, name);

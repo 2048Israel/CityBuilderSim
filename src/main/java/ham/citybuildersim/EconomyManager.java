@@ -211,11 +211,22 @@ public class EconomyManager {
      */
     public void setElectricityConsumption() {
         for (Sector s : sectors.all()) {
+            // ...each building's draw past the power it makes itself, and beside it what it makes past its
+            // draw, sold to the grid (0.7.112, batch I2; Sector, THE POWER ITS WORKS MAKE THEMSELVES).
             s.setElectricityConsumption(buildingManager.totalBySector(s.key(),
-                    t -> BuildingsTemplate.isBilledForUtilities(t) ? t.getElectricityConsumption() : 0));
+                    t -> BuildingsTemplate.isBilledForUtilities(t) ? t.powerBought() : 0));
+            s.setPowerSurplus(buildingManager.totalBySector(s.key(),
+                    t -> BuildingsTemplate.isBilledForUtilities(t) ? t.powerSold() : 0));
             s.setWaterConsumption(buildingManager.totalBySector(s.key(),
                     t -> BuildingsTemplate.isBilledForUtilities(t) ? t.getWaterConsumption() : 0));
         }
+    }
+
+    /** The month's power the works sold the grid, as the sectors' statements booked it (0.7.112): what the city's utility pays them. */
+    public double getSectorPowerSold() {
+        double total = 0;
+        for (Sector s : sectors.all()) total += s.statement().powerSold;
+        return total;
     }
 
     /** The month's power bills, as the sectors' statements booked them. */
