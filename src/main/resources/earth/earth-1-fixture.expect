@@ -1,0 +1,2392 @@
+# What tools/earth/earthread.py reads from earth-1.bin and from EarthCheck's fixture cut from it;
+# written by tools/earth/fixture.py, read by EarthCheck. Tab-separated: scope, kind, fields.
+fixture	file	f3a71aaf64125065fe2ac5233bc831f68f33286c6f55d84bb7588a12a7e0fd2d	332111
+full	file	b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a	52757374
+fixture	of	earth-1:b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a
+fixture	table	sea	0	240	476	345	821	21133
+fixture	index	sea	46599923268db5ff703a65e2ce5435818a75e0c0a6cf84049fb6c347ddfa1fdd
+fixture	table	lake	0	240	21954	299	22253	4234
+fixture	index	lake	4d892d5f14e535c89fd462d478d36d55015407e549337196eb37b53a67596136
+fixture	table	lakes.small	0	0	26487	342	26829	3386
+fixture	index	lakes.small	24707b6d0e657f5f418f4d6c2d8c6a3772d45fb0f51783b77ef0557ebc34ffc1
+fixture	table	rivers	0	0	30215	343	30558	29212
+fixture	index	rivers	f19cbda7cea366cbb19d13cb63d16f230896a71f1249206922001b4929bf01c9
+fixture	table	landcover	0	30	59770	349	60119	5741
+fixture	index	landcover	bd7b1237e0650d641d4bd0709dae0c711edd0e41e132851af82a141e44be3599
+fixture	table	far.land	1	15	65860	45	65905	37499
+fixture	index	far.land	c1c1a0153ab4b815b42068f21d4e93f7d3d2e53c005d62ba6e3a6b16ed89418d
+fixture	table	far.lake	1	15	103404	43	103447	24299
+fixture	index	far.lake	75e2f38cc81e7faef8b8a028434f11dd7660526d1e89f26cb4089a752559224e
+fixture	table	geology	2	4	127746	0	127746	47318
+fixture	table	provinces	2	0	175064	0	175064	13273
+fixture	table	places	2	0	188337	0	188337	141188
+fixture	table	meta	2	0	329525	0	329525	2586
+fixture	whole	meta	7c80ccb00318d7a63e2d67bef0ff7b8d115e109d074814e31a23eb19b9cf93da
+full	table	sea	0	240	476	21834	22310	6357537
+full	index	sea	e8ecfb4495772654d7edb3768d4ca8a21f6e9d6042dcf19d7afe75f9f07f7e15
+full	table	lake	0	240	6379847	18485	6398332	6023071
+full	index	lake	4604c8e40df6277223c6a6ecbd06decc5ce9f21bb5f04afd8a482bc2748281d6
+full	table	lakes.small	0	0	12421403	28880	12450283	5720138
+full	index	lakes.small	d227be34e207630f5314bc74285a3cf9e9db87bc52a1b227c97e1a9a636d1819
+full	table	rivers	0	0	18170421	30492	18200913	28771430
+full	index	rivers	d7a6cccaf844ebebdfe1a07bcbcc5217872a4bd9739a65f817e2f70d020f6476
+full	table	landcover	0	30	46972343	33877	47006220	4726496
+full	index	landcover	e179750bf059ee288b958e5378593ac68d18c801436a569b15dbaace3da3e409
+full	table	far.land	1	15	51732716	460	51733176	573843
+full	index	far.land	0c7a5ccb1874f879edcd02ba1c7e50082dfc0be238a37c95e174182e1be3af56
+full	table	far.lake	1	15	52307019	367	52307386	245912
+full	index	far.lake	58bc689c1dd54c0a6c1cd132c27a7fad821a3df3ddf801dff70d8b357667bd2f
+full	table	geology	2	4	52553298	0	52553298	47318
+full	table	provinces	2	0	52600616	0	52600616	13273
+full	table	places	2	0	52613889	0	52613889	141188
+full	table	meta	2	0	52755077	0	52755077	2297
+full	whole	meta	7ad9d1516b8eb4e10533f9b0a0d1220a90341b67e7710e4ec79ee03cb2286086
+both	whole	geology	4dbc92bceb58d4eb42fde13a597c8bfefb0c4ab99e8365ea51b60ccbe94b3b1a
+both	whole	provinces	c933761266945ebccdf79049c9d805f9ad99a7a3d16063eb323554cd694fdd1e
+both	whole	places	73f8bea3f8badad402a9e648c23703d8fd2e3234a1866b839922d32a0bcddab8
+both	window	Rotterdam	51.90625	4.48125	50943	50944	50945	51303	51304	51305
+both	tile	sea	50943	1920	6fd37edefe6efb95d9e37028d3aa6523ad9a04f7b1cfd97d1128ef89fe84c2cf
+both	tile	lake	50943	707	54e71de9f30b6bfa17e5c5d9ca84448252bc4eae8b4e239dcd2a22f322e95874
+both	tile	landcover	50943	292	25f5578f3242ffe78f91806a74d02c15ee3af1c75e782767e3435630bba9cb05
+both	tile	lakes.small	50943	140	0fa1f12ef57e254c08f934d5d7e26e0798069dd0ccced9dfa3591b9fa5e16ddb
+both	tile	rivers	50943	2417	6ad5679ce465d8ea5b82958c8b6dff684169c31b643f77a3d20e4590000d30a2
+both	rivers	50943	16	457	68253d53951d559ba1dda168dd945bef89ff072fe3c6ca1cabf0635c985abbe5
+both	lakes	50943	27	2ac511bcb582a41be0c3559234a43beb7c135d2e54c514a0a7c243c4a8526eeb
+both	cell	sea	50943	6	233	0
+both	cell	sea	50943	3	239	1
+both	cell	sea	50943	4	235	2
+both	cell	sea	50943	8	231	3
+both	cell	sea	50943	3	238	4
+both	cell	sea	50943	11	231	5
+both	cell	sea	50943	8	238	6
+both	cell	sea	50943	3	237	7
+both	cell	sea	50943	4	236	8
+both	cell	sea	50943	20	239	9
+both	cell	sea	50943	5	233	10
+both	cell	sea	50943	3	236	11
+both	cell	sea	50943	4	234	12
+both	cell	sea	50943	6	235	13
+both	cell	sea	50943	4	237	14
+both	cell	sea	50943	0	0	15
+both	cell	lake	50943	0	0	0
+both	cell	lake	50943	51	209	1
+both	cell	lake	50943	46	230	2
+both	cell	lake	50943	47	227	3
+both	cell	lake	50943	57	202	4
+both	cell	lake	50943	62	198	5
+both	cell	lake	50943	47	235	6
+both	cell	lake	50943	47	228	7
+both	cell	lake	50943	47	233	8
+both	cell	lake	50943	49	218	9
+both	cell	lake	50943	48	224	10
+both	cell	lake	50943	51	214	11
+both	cell	lake	50943	47	229	12
+both	cell	lake	50943	52	213	13
+both	cell	lake	50943	48	226	14
+both	cell	lake	50943	47	230	15
+both	cell	landcover	50943	0	0	0
+both	cell	landcover	50943	5	29	1
+both	cell	landcover	50943	5	28	2
+both	cell	landcover	50943	6	29	3
+both	cell	landcover	50943	7	26	4
+both	cell	landcover	50943	6	27	5
+both	cell	landcover	50943	9	21	6
+both	cell	landcover	50943	6	26	7
+both	cell	landcover	50943	7	28	8
+both	cell	landcover	50943	24	4	9
+both	cell	landcover	50943	7	29	10
+both	cell	landcover	50943	0	29	16
+both	cell	landcover	50943	5	26	17
+both	cell	landcover	50943	7	24	18
+both	cell	landcover	50943	4	28	19
+both	cell	landcover	50943	4	29	20
+both	vertex	50943	0	0	51.00486	4.00454	67.0	2.0
+both	vertex	50943	0	18	51.00679	3.9507	63.0	2.0
+both	vertex	50943	0	35	50.99572	3.84702	63.0	2.0
+both	vertex	50943	1	0	50.99943	3.81801	42.0	2.0
+both	vertex	50943	1	6	51.00475	3.76936	48.0	3.0
+both	vertex	50943	1	11	51.00723	3.74033	226.0	0.0
+both	vertex	50943	2	0	51.21972	2.95933	89.0	3.0
+both	vertex	50943	2	50	51.19036	3.23239	42.0	3.0
+both	vertex	50943	2	100	51.09414	3.56392	1.0	3.0
+both	lake	50943	0	51.0342	3.9754	0.30844216508158817
+both	lake	50943	13	51.2611	3.1793	0.2
+both	lake	50943	26	51.6997	3.8004	0.15422108254079409
+both	tile	sea	50944	2773	dc02a1cce8259637158b9c82a5e4d0d5dfacc85c5e9205e21afe29e915064177
+both	tile	lake	50944	944	c3f18699f54c1813dd2538b8de1490929c64a2894d3b8154afbdfd22f6423ea5
+both	tile	landcover	50944	441	91159946d395cc3cad4255468301e24c75f08bc5efec889a7950f5dbd51d5f11
+both	tile	lakes.small	50944	293	c7b9ce0ffdb39e2e809d78df0b0e1d85137944baf9f2d1322b37e0995ae90d86
+both	tile	rivers	50944	6199	7e2d0fc281688518f00bb2e172f8a24dd3a095e583b469f8cd8eef42e88ab7ad
+both	rivers	50944	33	1229	eebe81b4e4f3ff22c802c84e8519c542ae77897a49c26a37e25574c8b64c1ec8
+both	lakes	50944	62	66368fb7cfb0e7bfc15d09811615668bb452fc5000028bb6c8b42ddbc22ed7fd
+both	cell	sea	50944	0	29	0
+both	cell	sea	50944	0	101	1
+both	cell	sea	50944	0	111	2
+both	cell	sea	50944	0	112	3
+both	cell	sea	50944	0	131	4
+both	cell	sea	50944	0	165	5
+both	cell	sea	50944	3	4	6
+both	cell	sea	50944	0	28	7
+both	cell	sea	50944	1	131	8
+both	cell	sea	50944	1	137	9
+both	cell	sea	50944	0	135	10
+both	cell	sea	50944	1	132	11
+both	cell	sea	50944	0	133	12
+both	cell	sea	50944	2	0	13
+both	cell	sea	50944	0	27	14
+both	cell	sea	50944	0	0	15
+both	spot	sea	51.90625	4.48125	50944	22	115	0
+both	cell	lake	50944	0	0	0
+both	cell	lake	50944	38	13	1
+both	cell	lake	50944	40	22	2
+both	cell	lake	50944	37	17	3
+both	cell	lake	50944	41	25	4
+both	cell	lake	50944	37	16	5
+both	cell	lake	50944	38	14	6
+both	cell	lake	50944	40	11	7
+both	cell	lake	50944	38	18	8
+both	cell	lake	50944	41	24	9
+both	cell	lake	50944	40	21	10
+both	cell	lake	50944	41	10	11
+both	cell	lake	50944	42	12	12
+both	cell	lake	50944	38	15	13
+both	cell	lake	50944	39	19	14
+both	cell	lake	50944	38	16	15
+both	spot	lake	51.90625	4.48125	50944	22	115	0
+both	cell	landcover	50944	0	25	0
+both	cell	landcover	50944	0	1	1
+both	cell	landcover	50944	0	7	2
+both	cell	landcover	50944	0	4	3
+both	cell	landcover	50944	0	15	4
+both	cell	landcover	50944	0	10	5
+both	cell	landcover	50944	1	14	6
+both	cell	landcover	50944	7	22	7
+both	cell	landcover	50944	1	15	8
+both	cell	landcover	50944	7	20	9
+both	cell	landcover	50944	2	2	10
+both	cell	landcover	50944	14	27	11
+both	cell	landcover	50944	18	11	12
+both	cell	landcover	50944	19	14	13
+both	cell	landcover	50944	19	13	14
+both	cell	landcover	50944	0	0	16
+both	spot	landcover	51.90625	4.48125	50944	2	14	3
+both	vertex	50944	0	0	51.97758	5.00068	184.0	2.0
+both	vertex	50944	0	63	51.89678	4.71977	313.0	2.0
+both	vertex	50944	0	126	51.89343	4.32114	1058.0	2.0
+both	vertex	50944	1	0	51.82096	5.00984	393.0	2.0
+both	vertex	50944	1	9	51.82783	4.9296	491.0	2.0
+both	vertex	50944	1	18	51.81049	4.85923	755.0	0.0
+both	vertex	50944	2	0	51.05155	4.3621	165.0	3.0
+both	vertex	50944	2	7	51.01267	4.36502	67.0	3.0
+both	vertex	50944	2	13	50.99799	4.37421	150.0	3.0
+both	lake	50944	0	51.005	4.3682	0.12968395546510098
+both	lake	50944	31	51.4066	4.4284	0.16817928305074292
+both	lake	50944	61	51.9777	4.5645	0.8724061861322062
+both	tile	sea	50945	96	952efde8e86fb4f0ab1da2d250519c8aacc8cff04aef0f27d842860e6938a435
+both	tile	lake	50945	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	50945	442	6d03a24a1bf7d28666dc7e5d334a084f7c5cba0d9d3636e3a68991d30940e469
+both	tile	lakes.small	50945	727	3d0d233d01904ee3243b438a6d65c5e2ec00fe2c359d9036d34ee51bccbf8569
+both	tile	rivers	50945	4759	5368137bcb2b80ee2dddde71119441aacd0a5a72f5993cb695dfd6f6cd00a7a1
+both	rivers	50945	19	1001	3333d64fe4ba6ffa1335d09f374de8986c77142ef17cb69fc628434ca9c5f7a2
+both	lakes	50945	169	4e8dbd30df21437069b99373c911e4972fe34f553b37fdb1b63d5443dd9da606
+both	cell	sea	50945	0	0	0
+both	cell	sea	50945	15	8	1
+both	cell	sea	50945	54	5	2
+both	cell	sea	50945	55	4	4
+both	cell	lake	50945	0	0	0
+both	cell	landcover	50945	0	18	0
+both	cell	landcover	50945	0	0	1
+both	cell	landcover	50945	0	3	2
+both	cell	landcover	50945	0	2	3
+both	cell	landcover	50945	0	10	4
+both	cell	landcover	50945	0	9	5
+both	cell	landcover	50945	0	22	6
+both	cell	landcover	50945	0	15	7
+both	cell	landcover	50945	0	20	8
+both	cell	landcover	50945	7	17	9
+both	cell	landcover	50945	0	23	10
+both	cell	landcover	50945	0	16	11
+both	cell	landcover	50945	0	21	12
+both	cell	landcover	50945	6	26	13
+both	cell	landcover	50945	28	23	18
+both	cell	landcover	50945	10	3	24
+both	vertex	50945	0	0	51.74782	5.14872	313.0	0.0
+both	vertex	50945	0	111	51.83003	5.48748	159.0	0.0
+both	vertex	50945	0	221	51.63441	5.99994	127.0	0.0
+both	vertex	50945	1	0	51.23217	5.99992	84.0	0.0
+both	vertex	50945	1	35	51.13074	5.84037	84.0	0.0
+both	vertex	50945	1	70	51.07518	5.80013	63.0	0.0
+both	vertex	50945	2	0	51.96391	5.27783	175.0	0.0
+both	vertex	50945	2	22	51.95985	5.20077	251.0	0.0
+both	vertex	50945	2	43	51.9999	5.11887	150.0	0.0
+both	lake	50945	0	51.0003	5.6771	0.733603234563737
+both	lake	50945	84	51.6084	5.1841	0.4
+both	lake	50945	168	51.9927	5.0724	0.18340080864093425
+both	tile	sea	51303	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+both	tile	lake	51303	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	51303	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+both	tile	lakes.small	51303	0	-
+both	tile	rivers	51303	0	-
+both	rivers	51303	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+both	lakes	51303	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+both	cell	sea	51303	0	0	15
+both	cell	lake	51303	0	0	0
+both	cell	landcover	51303	0	0	0
+both	tile	sea	51304	3832	31f7aa9e6e69f09cd05bc51a48949028db14472a55c2221bb4c1ebcd28666ff9
+both	tile	lake	51304	120	17b8a0c15f6f8dffaa524ad6575a32ad5580a00475be47f34e65b016599246af
+both	tile	landcover	51304	278	703d9931582bf3dcce0436984a8c6a59321bef4384c66573b1fab66264541104
+both	tile	lakes.small	51304	289	8c23b5a1cd5afc1e691700d2d4ccac77fdba2da99c5b49e46d9ed486f08e6810
+both	tile	rivers	51304	3806	5e9cb864c7f40cb6d42f44066fe7553fb83adf08acfd6e35d8daac36f70dd155
+both	rivers	51304	15	792	ded88f95b0215e4b94901e4ffc5f30a1ac06853e390a480849aa21cd2d1c211f
+both	lakes	51304	60	b7e1ab37cba1bb5905844265605bb256f43fc6688a6f4da4529de05256a3c1a3
+both	cell	sea	51304	0	171	0
+both	cell	sea	51304	0	182	1
+both	cell	sea	51304	0	183	2
+both	cell	sea	51304	2	174	3
+both	cell	sea	51304	1	180	4
+both	cell	sea	51304	6	167	5
+both	cell	sea	51304	2	177	6
+both	cell	sea	51304	7	165	7
+both	cell	sea	51304	2	178	8
+both	cell	sea	51304	0	185	9
+both	cell	sea	51304	2	163	10
+both	cell	sea	51304	4	166	11
+both	cell	sea	51304	0	170	12
+both	cell	sea	51304	2	179	13
+both	cell	sea	51304	1	183	14
+both	cell	sea	51304	0	0	15
+both	cell	lake	51304	0	0	0
+both	cell	lake	51304	152	233	1
+both	cell	lake	51304	148	234	2
+both	cell	lake	51304	148	235	3
+both	cell	lake	51304	148	236	4
+both	cell	lake	51304	152	234	5
+both	cell	lake	51304	152	235	9
+both	cell	lake	51304	149	234	12
+both	cell	lake	51304	152	236	14
+both	cell	lake	51304	149	235	15
+both	cell	landcover	51304	0	0	0
+both	cell	landcover	51304	2	23	1
+both	cell	landcover	51304	1	23	2
+both	cell	landcover	51304	10	21	3
+both	cell	landcover	51304	1	22	4
+both	cell	landcover	51304	10	22	5
+both	cell	landcover	51304	8	20	6
+both	cell	landcover	51304	10	19	7
+both	cell	landcover	51304	14	18	8
+both	cell	landcover	51304	16	18	9
+both	cell	landcover	51304	13	19	10
+both	cell	landcover	51304	17	18	11
+both	cell	landcover	51304	19	17	12
+both	cell	landcover	51304	9	20	13
+both	cell	landcover	51304	0	23	16
+both	cell	landcover	51304	2	21	17
+both	vertex	51304	0	0	52.12537	4.46187	63.0	3.0
+both	vertex	51304	0	16	52.05977	4.35273	42.0	3.0
+both	vertex	51304	0	32	52.00008	4.3647	42.0	3.0
+both	vertex	51304	1	0	52.00007	4.69816	228.0	0.0
+both	vertex	51304	1	15	52.03564	4.65839	63.0	3.0
+both	vertex	51304	1	30	52.11849	4.67483	67.0	3.0
+both	vertex	51304	2	0	52.35617	4.96972	155.0	3.0
+both	vertex	51304	2	6	52.34724	4.98738	150.0	3.0
+both	vertex	51304	2	12	52.33944	5.00201	150.0	3.0
+both	lake	51304	0	52.0013	4.5535	0.6727171322029717
+both	lake	51304	30	52.2818	4.5079	0.3668016172818685
+both	lake	51304	59	52.8787	4.911	6.4
+both	tile	sea	51305	3661	9d5978397e59b47854e97ddf7681f8188622fb7f5a6de4e6e10670fb1aee7f39
+both	tile	lake	51305	2127	4684c83a4d91360fe2750473b53d4055d4c94700d0764931ef9939f0f47aba5a
+both	tile	landcover	51305	438	efb109aba37b229bb91dab4223cd11d895406273fec538ea83a7cc5791f39588
+both	tile	lakes.small	51305	424	05e9d59b3ac4e2c931d8ec7ab76a065ed3782d84478d8489102a44515bfc1ba7
+both	tile	rivers	51305	2979	5a18287cc4da197190eaaf5c2fc5be0ec34984a8e318522bdbedb50f5da26a03
+both	rivers	51305	17	597	d0395eefccdbb74e670172e19db8e73deaf4f210d3b6ba0907878d63c30de784
+both	lakes	51305	93	c20ac7d769823ee854f63f4f19205e45f0eb4f2fedba2ac9b799c7be569fb43a
+both	cell	sea	51305	0	0	0
+both	cell	sea	51305	0	147	1
+both	cell	sea	51305	0	49	2
+both	cell	sea	51305	0	124	3
+both	cell	sea	51305	1	167	4
+both	cell	sea	51305	1	162	5
+both	cell	sea	51305	0	177	6
+both	cell	sea	51305	0	123	7
+both	cell	sea	51305	0	122	8
+both	cell	sea	51305	0	48	9
+both	cell	sea	51305	2	163	10
+both	cell	sea	51305	0	39	11
+both	cell	sea	51305	0	38	12
+both	cell	sea	51305	1	36	13
+both	cell	sea	51305	1	38	14
+both	cell	sea	51305	0	14	15
+both	cell	lake	51305	0	0	0
+both	cell	lake	51305	7	33	1
+both	cell	lake	51305	3	42	2
+both	cell	lake	51305	2	44	3
+both	cell	lake	51305	1	46	4
+both	cell	lake	51305	4	99	5
+both	cell	lake	51305	0	48	6
+both	cell	lake	51305	9	131	7
+both	cell	lake	51305	0	98	8
+both	cell	lake	51305	3	43	9
+both	cell	lake	51305	5	39	10
+both	cell	lake	51305	2	45	11
+both	cell	lake	51305	1	47	12
+both	cell	lake	51305	0	49	13
+both	cell	lake	51305	8	33	14
+both	cell	lake	51305	0	50	15
+both	cell	landcover	51305	0	0	0
+both	cell	landcover	51305	0	13	1
+both	cell	landcover	51305	0	24	2
+both	cell	landcover	51305	0	26	3
+both	cell	landcover	51305	1	27	4
+both	cell	landcover	51305	9	26	5
+both	cell	landcover	51305	4	14	6
+both	cell	landcover	51305	1	28	7
+both	cell	landcover	51305	3	16	8
+both	cell	landcover	51305	15	12	9
+both	cell	landcover	51305	8	9	10
+both	cell	landcover	51305	2	1	11
+both	cell	landcover	51305	18	27	12
+both	cell	landcover	51305	18	29	13
+both	cell	landcover	51305	18	28	14
+both	cell	landcover	51305	21	24	15
+both	vertex	51305	0	0	52.3411	4.99988	183.0	3.0
+both	vertex	51305	0	10	52.30893	5.01978	108.0	3.0
+both	vertex	51305	0	19	52.18955	4.99636	94.0	3.0
+both	vertex	51305	1	0	52.15987	4.99679	108.0	3.0
+both	vertex	51305	1	14	52.06008	5.10437	211.0	0.0
+both	vertex	51305	1	28	52.00004	5.20651	105.0	3.0
+both	vertex	51305	2	0	52.00004	5.11779	171.0	0.0
+both	vertex	51305	2	6	52.00229	5.10013	195.0	0.0
+both	vertex	51305	2	12	52.00005	5.08706	192.0	0.0
+both	lake	51305	0	52.0327	5.0569	0.3668016172818685
+both	lake	51305	46	52.4416	5.0334	0.16817928305074292
+both	lake	51305	92	52.9978	5.6797	3.2
+both	segments	Rotterdam	3976	3962
+both	tile	far.land	141	7258	35195da8319f2fad7537ee0f006abad3c9d72ef7e58ab77f8837b6ab43e044d7
+both	cell	far.land	141	0	2745	0
+both	cell	far.land	141	3	2759	2
+both	cell	far.land	141	3	2755	7
+both	cell	far.land	141	2	2757	11
+both	cell	far.land	141	5	2755	15
+both	cell	far.land	141	8	2752	16
+both	cell	far.land	141	7	2761	21
+both	cell	far.land	141	6	2751	24
+both	cell	far.land	141	9	2747	30
+both	cell	far.land	141	7	2751	32
+both	cell	far.land	141	3	2756	37
+both	cell	far.land	141	3	2757	40
+both	cell	far.land	141	1	2759	46
+both	cell	far.land	141	0	2759	51
+both	cell	far.land	141	3	2758	52
+both	cell	far.land	141	10	2745	56
+both	spot	far.land	51.90625	4.48125	141	1	2767	255
+both	tile	far.lake	141	5158	b999053cdf42826b815997ba99354170255c9e2a7003fba12783d460770856a3
+both	cell	far.lake	141	0	2745	0
+both	cell	far.lake	141	2	2763	1
+both	cell	far.lake	141	4	2763	2
+both	cell	far.lake	141	4	2758	3
+both	cell	far.lake	141	7	2764	4
+both	cell	far.lake	141	2	2759	7
+both	cell	far.lake	141	3	2761	8
+both	cell	far.lake	141	3	2765	14
+both	cell	far.lake	141	8	2764	19
+both	cell	far.lake	141	2	2760	21
+both	cell	far.lake	141	4	2759	22
+both	cell	far.lake	141	6	2757	24
+both	cell	far.lake	141	7	2759	25
+both	cell	far.lake	141	3	2764	33
+both	cell	far.lake	141	7	2755	34
+both	cell	far.lake	141	6	2754	37
+both	spot	far.lake	51.90625	4.48125	141	1	2767	0
+both	tile	far.land	142	8142	7413abf4e7a5b126ef58a9a0313cfc06dabb10c92e8115c6982a3c8b43172007
+both	cell	far.land	142	0	2745	0
+both	cell	far.land	142	0	2769	2
+both	cell	far.land	142	2	2780	4
+both	cell	far.land	142	3	2783	5
+both	cell	far.land	142	11	2765	7
+both	cell	far.land	142	9	2776	10
+both	cell	far.land	142	3	2779	11
+both	cell	far.land	142	0	2776	12
+both	cell	far.land	142	12	2764	13
+both	cell	far.land	142	10	2766	15
+both	cell	far.land	142	7	2776	22
+both	cell	far.land	142	7	2780	23
+both	cell	far.land	142	1	2776	31
+both	cell	far.land	142	5	2778	38
+both	cell	far.land	142	3	2777	42
+both	cell	far.land	142	7	2768	50
+both	tile	far.lake	142	5752	e811379c93c2a3ace68489011da688e1c96ce7c695b36ae37fec3b59824b9f91
+both	cell	far.lake	142	0	2745	0
+both	cell	far.lake	142	7	2775	1
+both	cell	far.lake	142	6	2788	2
+both	cell	far.lake	142	10	2776	3
+both	cell	far.lake	142	10	2781	4
+both	cell	far.lake	142	1	2783	6
+both	cell	far.lake	142	11	2780	7
+both	cell	far.lake	142	9	2786	8
+both	cell	far.lake	142	1	2775	9
+both	cell	far.lake	142	0	2784	10
+both	cell	far.lake	142	1	2781	14
+both	cell	far.lake	142	7	2788	15
+both	cell	far.lake	142	11	2782	16
+both	cell	far.lake	142	0	2782	17
+both	cell	far.lake	142	4	2778	21
+both	cell	far.lake	142	3	2776	22
+both	window	Perth	-31.95625	115.76041666666666	20815	20816	21175	21176
+both	tile	sea	20815	1936	48347df203fff20689873bd40df662662266b48cf02c9191443f51765178c07e
+both	tile	lake	20815	336	acb78c8061fa53846857630c164d36d98e4a73b48a225c171941d35d80217f8e
+both	tile	landcover	20815	271	040d05cc2627f31a7851fc3285317af3bc3ff2db49d8460232bedf80d78469a7
+both	tile	lakes.small	20815	196	bc75657c28f58851e273c251650b491b5513e921ee5c91f46ad9c386a4767f6d
+both	tile	rivers	20815	656	4486bb0b4322bf39bd4b1a553b3781cf979eff965025df2e7dcddba3eeb27ba9
+both	rivers	20815	2	136	34a45166c6673c1252a994cd676456cd20ad2a5363176c91222b04c9382268c0
+both	lakes	20815	40	36a1f0b47210d4d6f260e7f7f10ece16912286221cb43aa19e8fd18f71f61ea9
+both	cell	sea	20815	0	118	0
+both	cell	sea	20815	0	125	1
+both	cell	sea	20815	0	117	2
+both	cell	sea	20815	0	130	3
+both	cell	sea	20815	0	122	4
+both	cell	sea	20815	0	180	5
+both	cell	sea	20815	0	193	6
+both	cell	sea	20815	0	185	7
+both	cell	sea	20815	0	202	8
+both	cell	sea	20815	0	126	9
+both	cell	sea	20815	0	203	10
+both	cell	sea	20815	0	133	11
+both	cell	sea	20815	1	185	12
+both	cell	sea	20815	0	189	13
+both	cell	sea	20815	0	128	14
+both	cell	sea	20815	0	0	15
+both	cell	lake	20815	0	0	0
+both	cell	lake	20815	174	151	1
+both	cell	lake	20815	176	151	2
+both	cell	lake	20815	176	152	3
+both	cell	lake	20815	171	153	4
+both	cell	lake	20815	179	157	5
+both	cell	lake	20815	173	155	6
+both	cell	lake	20815	177	156	7
+both	cell	lake	20815	184	156	8
+both	cell	lake	20815	176	153	9
+both	cell	lake	20815	172	154	10
+both	cell	lake	20815	174	155	11
+both	cell	lake	20815	183	156	12
+both	cell	lake	20815	174	152	13
+both	cell	lake	20815	175	155	14
+both	cell	lake	20815	172	152	15
+both	cell	landcover	20815	0	0	0
+both	cell	landcover	20815	1	24	1
+both	cell	landcover	20815	0	25	2
+both	cell	landcover	20815	0	23	3
+both	cell	landcover	20815	3	29	4
+both	cell	landcover	20815	2	24	5
+both	cell	landcover	20815	5	29	6
+both	cell	landcover	20815	0	15	7
+both	cell	landcover	20815	5	27	8
+both	cell	landcover	20815	5	26	9
+both	cell	landcover	20815	19	19	10
+both	cell	landcover	20815	17	29	11
+both	cell	landcover	20815	22	20	12
+both	cell	landcover	20815	18	29	13
+both	cell	landcover	20815	20	19	14
+both	cell	landcover	20815	19	29	15
+both	vertex	20815	0	0	-32.00002	115.82324	2752.0	2.0
+both	vertex	20815	0	17	-32.02496	115.76907	327.0	2.0
+both	vertex	20815	0	34	-32.05375	115.73818	194.0	2.0
+both	vertex	20815	1	0	-32.57876	115.767	105.0	2.0
+both	vertex	20815	1	50	-32.59584	115.85675	48.0	2.0
+both	vertex	20815	1	100	-32.63296	115.87722	42.0	2.0
+both	lake	20815	0	-32.9979	115.9748	1.467206469127474
+both	lake	20815	20	-32.5192	115.7818	2.2627416997969525
+both	lake	20815	39	-32.0003	115.5343	0.8724061861322062
+both	tile	sea	20816	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	lake	20816	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	20816	429	4c2dd7c17dd62fbfaf2bc379c0b81baaf6f434222b1ed469d7130594fbbcf154
+both	tile	lakes.small	20816	78	531aaa44db879c6fbcd03d27944b9031549ef8e98fd091c43e1a28bc2286cf4a
+both	tile	rivers	20816	0	-
+both	rivers	20816	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+both	lakes	20816	13	adb9e08d16358bac6ea5176f05fcd07f2e330af63ca0f950f29616cd83cb2368
+both	cell	sea	20816	0	0	0
+both	cell	lake	20816	0	0	0
+both	cell	landcover	20816	0	25	0
+both	cell	landcover	20816	0	23	1
+both	cell	landcover	20816	0	22	2
+both	cell	landcover	20816	0	20	3
+both	cell	landcover	20816	0	21	4
+both	cell	landcover	20816	0	18	5
+both	cell	landcover	20816	3	0	6
+both	cell	landcover	20816	2	18	7
+both	cell	landcover	20816	1	15	8
+both	cell	landcover	20816	2	15	9
+both	cell	landcover	20816	0	0	10
+both	cell	landcover	20816	3	18	11
+both	cell	landcover	20816	0	1	12
+both	cell	landcover	20816	0	16	13
+both	cell	landcover	20816	0	4	14
+both	cell	landcover	20816	0	5	15
+both	lake	20816	0	-32.8815	116.0299	0.6168843301631763
+both	lake	20816	6	-32.6653	116.0823	6.4
+both	lake	20816	12	-32.0448	116.0716	0.4
+both	tile	sea	21175	1070	c8bd5042d858742c87b8a1ef6d7103c06b3a1a270a7e0a43b3ae81774e2d3f72
+both	tile	lake	21175	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	21175	330	78136410ebc7f30a4dcb09669e813a954e47d0b9928120e4b734dde7da7a775f
+both	tile	lakes.small	21175	88	838b9ee0cd1c7cb96aa3ca07ace7824f9ae9a1785246a3cd31caaa7d656c1211
+both	tile	rivers	21175	537	8162cf18ac1be9b933f05fca93da16565792a34ffcf68f3412ef1271b3d6be33
+both	rivers	21175	2	102	32cb532284570be78fc8a38ea69b3902edfe6f5fc9bb5dd327b702e9d03c9228
+both	lakes	21175	16	ec33522604dbdd8cf6e3094b38a32ecae9e0930d355870acd171078d022c79b7
+both	cell	sea	21175	0	82	0
+both	cell	sea	21175	0	78	1
+both	cell	sea	21175	1	78	2
+both	cell	sea	21175	0	79	3
+both	cell	sea	21175	11	82	4
+both	cell	sea	21175	21	87	5
+both	cell	sea	21175	0	80	6
+both	cell	sea	21175	27	90	7
+both	cell	sea	21175	14	83	8
+both	cell	sea	21175	31	92	9
+both	cell	sea	21175	2	78	10
+both	cell	sea	21175	3	78	11
+both	cell	sea	21175	1	75	12
+both	cell	sea	21175	1	76	13
+both	cell	sea	21175	0	77	14
+both	cell	sea	21175	0	0	15
+both	spot	sea	-31.95625	115.76041666666666	21175	229	182	0
+both	cell	lake	21175	0	0	0
+both	spot	lake	-31.95625	115.76041666666666	21175	229	182	0
+both	cell	landcover	21175	0	0	0
+both	cell	landcover	21175	0	14	1
+both	cell	landcover	21175	0	26	2
+both	cell	landcover	21175	0	24	3
+both	cell	landcover	21175	0	17	4
+both	cell	landcover	21175	0	15	5
+both	cell	landcover	21175	0	16	6
+both	cell	landcover	21175	0	18	7
+both	cell	landcover	21175	0	19	8
+both	cell	landcover	21175	0	13	9
+both	cell	landcover	21175	3	14	10
+both	cell	landcover	21175	0	12	11
+both	cell	landcover	21175	5	14	12
+both	cell	landcover	21175	7	13	13
+both	cell	landcover	21175	0	11	14
+both	cell	landcover	21175	0	9	17
+both	spot	landcover	-31.95625	115.76041666666666	21175	28	22	24
+both	vertex	21175	0	0	-31.86868	116.00108	30.0	2.0
+both	vertex	21175	0	48	-31.94309	115.91648	211.0	0.0
+both	vertex	21175	0	96	-31.99988	115.82324	2549.0	2.0
+both	vertex	21175	1	0	-31.99224	115.84287	3169.0	2.0
+both	vertex	21175	1	2	-31.99635	115.84885	2546.0	2.0
+both	vertex	21175	1	4	-31.99987	115.8507	551.0	2.0
+both	lake	21175	0	-31.9953	115.5178	0.4362030930661031
+both	lake	21175	8	-31.4	115.8184	0.25936791093020195
+both	lake	21175	15	-31.0479	115.5485	0.2
+both	tile	sea	21176	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	lake	21176	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	21176	460	4f0bf45be2c5b76f99a7221342f51a00ea80203da0ca0b873d5a9c0bc35b4163
+both	tile	lakes.small	21176	121	b12f65c9d0241e6007fb7ca8a82df9eb8a0f02b1a3990b15df70ff64e267ee1c
+both	tile	rivers	21176	28	edee40c9796934196ce9ae472949aa6d00db32aa11b2b698fefb8c63dfd56e54
+both	rivers	21176	1	3	1eb1c5f5db6a285fffbd38d422e9e68b8098810da480078b95a38919fff2f4b4
+both	lakes	21176	22	c0a0735661c3507025d916516988774834e18d70ce2b212570f1b491feee2b16
+both	cell	sea	21176	0	0	0
+both	cell	lake	21176	0	0	0
+both	cell	landcover	21176	0	14	0
+both	cell	landcover	21176	0	0	1
+both	cell	landcover	21176	0	1	2
+both	cell	landcover	21176	0	3	3
+both	cell	landcover	21176	0	7	4
+both	cell	landcover	21176	2	8	5
+both	cell	landcover	21176	2	6	6
+both	cell	landcover	21176	0	8	7
+both	cell	landcover	21176	3	7	8
+both	cell	landcover	21176	6	9	9
+both	cell	landcover	21176	7	10	10
+both	cell	landcover	21176	4	8	11
+both	cell	landcover	21176	7	7	12
+both	cell	landcover	21176	9	6	13
+both	cell	landcover	21176	12	5	14
+both	cell	landcover	21176	5	8	15
+both	vertex	21176	0	0	-31.87061	116.00613	36.0	2.0
+both	vertex	21176	0	1	-31.86868	116.00108	30.0	2.0
+both	vertex	21176	0	2	-31.86867	115.99917	36.0	2.0
+both	lake	21176	0	-31.9815	116.2043	4.149886574883231
+both	lake	21176	11	-31.2812	116.5589	0.23784142300054423
+both	lake	21176	21	-31.0851	116.9893	1.1313708498984762
+both	segments	Perth	236	235
+both	tile	far.land	57	1764	efa123288e27ccac33b9d314d83be51776f5a668c3818aab51d2423c97e6d4c2
+both	cell	far.land	57	0	4425	0
+both	cell	far.land	57	0	4435	1
+both	cell	far.land	57	0	4431	7
+both	cell	far.land	57	2	4434	8
+both	cell	far.land	57	14	4434	9
+both	cell	far.land	57	0	4433	12
+both	cell	far.land	57	5	4435	13
+both	cell	far.land	57	2	4435	22
+both	cell	far.land	57	7	4435	27
+both	cell	far.land	57	8	4434	34
+both	cell	far.land	57	3	4435	36
+both	cell	far.land	57	0	4432	51
+both	cell	far.land	57	4	4435	59
+both	cell	far.land	57	8	4435	90
+both	cell	far.land	57	9	4434	104
+both	cell	far.land	57	9	4435	105
+both	tile	far.lake	57	962	a85f8c87ba86b3d2fdfa4d6fb8198ddbf26d1b2e81d5dbb523afb4569911de21
+both	cell	far.lake	57	0	4425	0
+both	cell	far.lake	57	13	4434	1
+both	cell	far.lake	57	11	4435	3
+both	cell	far.lake	57	10	4434	14
+both	cell	far.lake	57	12	4435	23
+both	cell	far.lake	57	13	4435	25
+both	cell	far.lake	57	14	4435	34
+both	cell	far.lake	57	11	4434	36
+both	tile	far.land	58	1671	9597f79033cd7e6de8c5f71130af3dbe01a7d055bcc8f802cca47161d155b02e
+both	cell	far.land	58	0	4425	0
+both	cell	far.land	58	12	4435	3
+both	cell	far.land	58	14	4433	5
+both	cell	far.land	58	9	4434	9
+both	cell	far.land	58	0	4429	10
+both	cell	far.land	58	14	4432	16
+both	cell	far.land	58	2	4430	18
+both	cell	far.land	58	4	4431	41
+both	cell	far.land	58	7	4433	50
+both	cell	far.land	58	5	4432	93
+both	cell	far.land	58	10	4435	113
+both	cell	far.land	58	1	4430	117
+both	cell	far.land	58	8	4434	125
+both	cell	far.land	58	3	4431	162
+both	cell	far.land	58	14	4436	169
+both	cell	far.land	58	13	4436	175
+both	spot	far.land	-31.95625	115.76041666666666	58	14	4436	169
+both	tile	far.lake	58	976	1a38bd22c6d82a1b7193da6a3bb6abc0c66dccab85dffbea3b6636c2de077498
+both	cell	far.lake	58	0	4425	0
+both	spot	far.lake	-31.95625	115.76041666666666	58	14	4436	0
+both	window	Paris	48.856249999999996	2.3395833333333336	49861	49862	50221	50222
+both	tile	sea	49861	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	lake	49861	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	49861	422	17d87a0bd8be15bd08a42ac5ac7fb0f55525bd82f6b0ab90c9daeb3e9bf9949f
+both	tile	lakes.small	49861	206	142a79274b5b2e0dc59f2aa496b9ce7430d701325ad0c506877f424457a6264a
+both	tile	rivers	49861	218	2ed4c37951b485e1565f0340e0b1d8e21835fe7857fee55d27b97e90e096b270
+both	rivers	49861	2	33	79491530ae2bcdc28c182d5a5f739dc8a6ff51fbb214e3594bc4443c68626792
+both	lakes	49861	42	86d6bbf254372f9d802a5c740bdb25a5baba9f7fb20769670e26b89088ab48ba
+both	cell	sea	49861	0	0	0
+both	cell	lake	49861	0	0	0
+both	cell	landcover	49861	3	4	0
+both	cell	landcover	49861	1	6	1
+both	cell	landcover	49861	0	5	2
+both	cell	landcover	49861	0	6	3
+both	cell	landcover	49861	0	8	4
+both	cell	landcover	49861	0	7	5
+both	cell	landcover	49861	0	10	6
+both	cell	landcover	49861	1	23	7
+both	cell	landcover	49861	0	0	8
+both	cell	landcover	49861	0	17	9
+both	cell	landcover	49861	0	3	10
+both	cell	landcover	49861	0	2	11
+both	cell	landcover	49861	0	1	12
+both	cell	landcover	49861	6	21	13
+both	cell	landcover	49861	5	12	14
+both	cell	landcover	49861	7	21	15
+both	vertex	49861	0	0	49.00197	1.71546	212.0	0.0
+both	vertex	49861	0	13	48.9733	1.81007	237.0	0.0
+both	vertex	49861	0	25	49.00108	1.90375	215.0	0.0
+both	vertex	49861	1	0	49.00338	1.96236	217.0	0.0
+both	vertex	49861	1	3	48.98558	1.99389	159.0	0.0
+both	vertex	49861	1	6	48.97889	2.0012	161.0	0.0
+both	lake	49861	0	48.0055	1.7566	0.16817928305074292
+both	lake	49861	21	48.6358	1.5512	0.14142135623730953
+both	lake	49861	41	48.995	1.9682	0.3668016172818685
+both	tile	sea	49862	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	lake	49862	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	49862	487	d2f60c5014319906f5e45a2d27d92952b2b9d2ac6a541e81a58a51dfce218ba4
+both	tile	lakes.small	49862	295	a3567a1199fda5cd3ec5ef39b8adac323c4efb10e76c7ec06863e8226e798fd3
+both	tile	rivers	49862	3336	1cadb6db439bbda60f50cdd84eddf5ef97715441e11f77cd8028e937e9e78be9
+both	rivers	49862	9	736	1622b7f30df6af957dcdffa6592bc2ba959bdcdfafa4187b38eb24aba5632bdf
+both	lakes	49862	63	954eef3994beef942ac20f2bdda2ae6e76a53d603ed1fd211ff5d5b9c11f536c
+both	cell	sea	49862	0	0	0
+both	spot	sea	48.856249999999996	2.3395833333333336	49862	34	81	0
+both	cell	lake	49862	0	0	0
+both	spot	lake	48.856249999999996	2.3395833333333336	49862	34	81	0
+both	cell	landcover	49862	0	21	0
+both	cell	landcover	49862	0	16	1
+both	cell	landcover	49862	0	14	2
+both	cell	landcover	49862	0	12	3
+both	cell	landcover	49862	0	11	4
+both	cell	landcover	49862	0	7	5
+both	cell	landcover	49862	1	15	6
+both	cell	landcover	49862	0	1	7
+both	cell	landcover	49862	0	3	8
+both	cell	landcover	49862	0	9	9
+both	cell	landcover	49862	0	0	10
+both	cell	landcover	49862	0	29	11
+both	cell	landcover	49862	1	2	12
+both	cell	landcover	49862	1	3	13
+both	cell	landcover	49862	6	21	14
+both	cell	landcover	49862	14	27	15
+both	spot	landcover	48.856249999999996	2.3395833333333336	49862	4	10	1
+both	vertex	49862	0	0	48.81627	2.41003	60.0	0.0
+both	vertex	49862	0	114	48.88689	2.76033	63.0	0.0
+both	vertex	49862	0	227	49.00236	2.94579	63.0	0.0
+both	vertex	49862	1	0	49.00237	2.96137	67.0	0.0
+both	vertex	49862	1	5	48.99212	2.98414	80.0	0.0
+both	vertex	49862	1	9	49.00103	3.00137	63.0	0.0
+both	vertex	49862	2	0	48.97539	3.00178	63.0	0.0
+both	vertex	49862	2	3	48.96621	2.9987	42.0	0.0
+both	vertex	49862	2	5	48.96244	3.00301	63.0	0.0
+both	lake	49862	0	48.0266	2.7274	0.25936791093020195
+both	lake	49862	31	48.5734	2.1214	0.12968395546510098
+both	lake	49862	62	48.9959	2.9825	0.8724061861322062
+both	tile	sea	50221	212	f41bd47c7b5a3fa0a3fdcade47dfe2811562634b5bd2f039461596af2a439ff1
+both	tile	lake	50221	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	50221	461	1b53ab698f4fa160e654c1a6dd470c77e590d4ff0cfd13ac646b049590d88dde
+both	tile	lakes.small	50221	172	6835813a0bfe766ea57d7c50e3401b137bfebe556f72a0f824508b95610e069c
+both	tile	rivers	50221	1636	18760fd9abc38dca934a95e68c6d9b84500c3bcb369b1597756a5426c07e4f94
+both	rivers	50221	3	326	f9720051f8d81b1aa633e31eb92094809766341bc2718dea95cba41311d87dc5
+both	lakes	50221	36	9d013a636a4036ecf8237f5c7841675292699790d3ae6e4a5c1d2ea3629b106a
+both	cell	sea	50221	0	61	0
+both	cell	sea	50221	1	59	1
+both	cell	sea	50221	6	49	2
+both	cell	sea	50221	5	50	3
+both	cell	sea	50221	9	41	4
+both	cell	sea	50221	4	51	5
+both	cell	sea	50221	0	60	6
+both	cell	sea	50221	19	8	7
+both	cell	sea	50221	1	58	8
+both	cell	sea	50221	5	49	9
+both	cell	sea	50221	3	52	10
+both	cell	sea	50221	16	18	11
+both	cell	sea	50221	7	46	12
+both	cell	sea	50221	0	59	13
+both	cell	sea	50221	1	57	14
+both	cell	sea	50221	0	0	15
+both	cell	lake	50221	0	0	0
+both	cell	landcover	50221	0	0	0
+both	cell	landcover	50221	0	7	1
+both	cell	landcover	50221	0	23	2
+both	cell	landcover	50221	0	12	3
+both	cell	landcover	50221	0	6	4
+both	cell	landcover	50221	1	3	5
+both	cell	landcover	50221	0	5	6
+both	cell	landcover	50221	0	17	7
+both	cell	landcover	50221	0	15	8
+both	cell	landcover	50221	0	14	9
+both	cell	landcover	50221	2	0	10
+both	cell	landcover	50221	2	17	11
+both	cell	landcover	50221	2	16	12
+both	cell	landcover	50221	7	6	13
+both	cell	landcover	50221	18	25	14
+both	cell	landcover	50221	8	8	15
+both	vertex	50221	0	0	49.36413	0.99451	214.0	0.0
+both	vertex	50221	0	38	49.41475	1.11571	218.0	0.0
+both	vertex	50221	0	76	49.30885	0.99717	234.0	0.0
+both	vertex	50221	1	0	49.29513	0.99937	127.0	0.0
+both	vertex	50221	1	119	49.16372	1.39893	404.0	0.0
+both	vertex	50221	1	237	48.98057	1.73241	193.0	0.0
+both	vertex	50221	2	0	48.99491	1.87969	224.0	0.0
+both	vertex	50221	2	5	49.00397	1.92338	256.0	0.0
+both	vertex	50221	2	10	48.99674	1.97398	233.0	0.0
+both	lake	50221	0	49.0025	1.9475	0.23784142300054423
+both	lake	50221	18	49.2679	1.7275	0.11892071150027211
+both	lake	50221	35	49.9978	1.5318	0.5656854249492381
+both	tile	sea	50222	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	lake	50222	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	50222	450	9786d63ca9fc1c7d9494de57454d781189b78c5280cba23a92f7622effe6def0
+both	tile	lakes.small	50222	328	3505402e12aa061ae0736c15a88a67195f83954cb7b019463bb8dec3191ad243
+both	tile	rivers	50222	2023	a6e578877d2f8fd8675368703fcf7098c07b6960627b30c2b4c8d91adcaad889
+both	rivers	50222	5	439	30bf718447a855a9416664ceb9ecd3d1fabc85455919271e0532cc70de5cdfe8
+both	lakes	50222	73	60b743c2665f21c556770fa8f45fc76068d55a0427b9ab21c5216d7523cad9cb
+both	cell	sea	50222	0	0	0
+both	cell	lake	50222	0	0	0
+both	cell	landcover	50222	0	17	0
+both	cell	landcover	50222	0	10	1
+both	cell	landcover	50222	0	5	2
+both	cell	landcover	50222	0	0	3
+both	cell	landcover	50222	0	2	4
+both	cell	landcover	50222	0	1	5
+both	cell	landcover	50222	1	24	6
+both	cell	landcover	50222	6	2	7
+both	cell	landcover	50222	1	3	8
+both	cell	landcover	50222	6	3	9
+both	cell	landcover	50222	15	28	10
+both	cell	landcover	50222	13	24	11
+both	cell	landcover	50222	13	25	12
+both	cell	landcover	50222	16	29	13
+both	cell	landcover	50222	16	27	14
+both	cell	landcover	50222	18	9	15
+both	vertex	50222	0	0	48.99724	2.94559	77.0	0.0
+both	vertex	50222	0	6	49.01181	2.95337	63.0	0.0
+both	vertex	50222	0	11	48.99401	2.96364	48.0	0.0
+both	vertex	50222	1	0	48.99644	2.99727	48.0	0.0
+both	vertex	50222	1	1	49.00103	3.00137	63.0	0.0
+both	vertex	50222	2	0	49.40649	3.00427	54.0	0.0
+both	vertex	50222	2	21	49.42791	2.91388	45.0	0.0
+both	vertex	50222	2	42	49.43513	2.84828	1.0	0.0
+both	lake	50222	0	49.0288	2.0449	0.15422108254079409
+both	lake	50222	36	49.407	2.9775	0.12968395546510098
+both	lake	50222	72	49.9942	2.0539	0.15422108254079409
+both	segments	Paris	1515	1507
+both	tile	far.land	138	6597	176d9193eb975cca07a96ea2d67a33648cc9dc81085b4534b8234a6ea405f026
+both	cell	far.land	138	0	2715	255
+both	spot	far.land	48.856249999999996	2.3395833333333336	138	2	2735	255
+both	tile	far.lake	138	4776	65ea25b7d53dde9c53ea30117cab5824b35e198dce69e15d0942ff9af81ad70f
+both	cell	far.lake	138	0	2715	0
+both	spot	far.lake	48.856249999999996	2.3395833333333336	138	2	2735	0
+both	tile	far.land	139	6970	a9778179a8f3d4e2336fbe209507476bb48b963c83187609b7ee3d8570925cbe
+both	cell	far.land	139	0	2715	0
+both	cell	far.land	139	0	2716	16
+both	cell	far.land	139	0	2717	96
+both	cell	far.land	139	1	2715	202
+both	cell	far.land	139	0	2718	212
+both	cell	far.land	139	1	2716	251
+both	cell	far.land	139	0	2719	255
+both	tile	far.lake	139	5029	e2ddf480559546f452db228044a965eb8d336e07496ce08cc5acd012caf024dd
+both	cell	far.lake	139	0	2715	0
+both	window	Fiji	-17.0	180.0	26639	26280	26279	25920
+both	tile	sea	26639	3048	616bef3e0a22f0427c58d93279a5c754adf5be3250cceb4c26c055ec393e6c10
+both	tile	lake	26639	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	26639	267	3236a8ab8e2c041588fafc5c07c0ce49d3f96026cc5e99d745521f3aa44871a9
+both	tile	lakes.small	26639	14	b26bb373ae5dca7247ada8aeec63b3fb558c62b30c8b17587c0d1f6b1fd9d9a1
+both	tile	rivers	26639	618	3ee938071e5081e41369660e41ef362f21ec75dacb0f05e7a2d6fd8a9262cced
+both	rivers	26639	1	133	e48a48e26b8b0b775ee68e2f4b4aae0fad820a10eb41cbbe9533d33c5583cac7
+both	lakes	26639	1	f884c9bba4ec8acecdfae740c7316641216da98880534c01e960b8e5ed08381d
+both	cell	sea	26639	27	130	0
+both	cell	sea	26639	45	186	1
+both	cell	sea	26639	47	145	2
+both	cell	sea	26639	44	138	3
+both	cell	sea	26639	45	137	4
+both	cell	sea	26639	44	186	5
+both	cell	sea	26639	44	212	6
+both	cell	sea	26639	44	137	7
+both	cell	sea	26639	44	213	8
+both	cell	sea	26639	44	145	9
+both	cell	sea	26639	44	147	10
+both	cell	sea	26639	45	139	11
+both	cell	sea	26639	44	185	12
+both	cell	sea	26639	44	211	13
+both	cell	sea	26639	43	146	14
+both	cell	sea	26639	0	0	15
+both	cell	lake	26639	0	0	0
+both	cell	landcover	26639	0	0	0
+both	cell	landcover	26639	26	28	1
+both	cell	landcover	26639	27	28	2
+both	cell	landcover	26639	16	2	3
+both	cell	landcover	26639	9	17	4
+both	cell	landcover	26639	9	16	5
+both	cell	landcover	26639	7	3	6
+both	cell	landcover	26639	8	13	7
+both	cell	landcover	26639	6	2	8
+both	cell	landcover	26639	8	14	9
+both	cell	landcover	26639	8	15	10
+both	cell	landcover	26639	5	18	11
+both	cell	landcover	26639	5	26	12
+both	cell	landcover	26639	5	17	13
+both	cell	landcover	26639	5	19	14
+both	cell	landcover	26639	5	23	15
+both	vertex	26639	0	0	-16.58713	178.99959	63.0	0.0
+both	vertex	26639	0	66	-16.59533	179.06194	97.0	0.0
+both	vertex	26639	0	132	-16.5602	179.13196	48.0	0.0
+both	lake	26639	0	-16.7728	179.5212	0.6168843301631763
+both	tile	sea	26280	1136	75c95bcc4bc83a8fc45462a225e960f1f7861f00278c18d1282e0d04362f6702
+both	tile	lake	26280	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	26280	105	f2b09e8f61200807a0e39797b7a313c3cd2e3d61ded600b0f0f4453a5a202613
+both	tile	lakes.small	26280	0	-
+both	tile	rivers	26280	0	-
+both	rivers	26280	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+both	lakes	26280	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+both	cell	sea	26280	19	30	0
+both	cell	sea	26280	22	201	1
+both	cell	sea	26280	20	200	2
+both	cell	sea	26280	31	8	3
+both	cell	sea	26280	21	202	4
+both	cell	sea	26280	72	179	5
+both	cell	sea	26280	105	17	6
+both	cell	sea	26280	109	18	7
+both	cell	sea	26280	30	11	8
+both	cell	sea	26280	20	201	9
+both	cell	sea	26280	22	200	10
+both	cell	sea	26280	19	196	11
+both	cell	sea	26280	31	6	12
+both	cell	sea	26280	19	197	13
+both	cell	sea	26280	23	201	14
+both	cell	sea	26280	0	0	15
+both	cell	lake	26280	0	0	0
+both	cell	landcover	26280	0	0	0
+both	cell	landcover	26280	3	1	1
+both	cell	landcover	26280	13	0	2
+both	cell	landcover	26280	23	3	3
+both	cell	landcover	26280	3	0	4
+both	cell	landcover	26280	27	1	6
+both	cell	landcover	26280	13	10	8
+both	cell	landcover	26280	9	22	10
+both	cell	landcover	26280	2	24	12
+both	cell	landcover	26280	14	9	13
+both	cell	landcover	26280	15	9	14
+both	cell	landcover	26280	2	25	15
+both	cell	landcover	26280	10	17	16
+both	cell	landcover	26280	21	16	18
+both	cell	landcover	26280	9	21	52
+both	tile	sea	26279	682	5bcbae3b1377af02ce44b3e08514680a5b9691914b864ff46fb9ab916252771b
+both	tile	lake	26279	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	26279	81	ab27eca9a9b0d085353cd3958a5784aaeb4f45b977777d47a64c3d7881cb33be
+both	tile	lakes.small	26279	0	-
+both	tile	rivers	26279	0	-
+both	rivers	26279	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+both	lakes	26279	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+both	cell	sea	26279	0	218	0
+both	cell	sea	26279	71	87	1
+both	cell	sea	26279	0	223	2
+both	cell	sea	26279	2	221	3
+both	cell	sea	26279	2	220	4
+both	cell	sea	26279	1	218	5
+both	cell	sea	26279	0	224	6
+both	cell	sea	26279	59	94	7
+both	cell	sea	26279	58	100	8
+both	cell	sea	26279	26	24	9
+both	cell	sea	26279	2	219	10
+both	cell	sea	26279	58	97	11
+both	cell	sea	26279	0	217	12
+both	cell	sea	26279	2	222	13
+both	cell	sea	26279	0	225	14
+both	cell	sea	26279	0	0	15
+both	cell	lake	26279	0	0	0
+both	cell	landcover	26279	0	0	0
+both	cell	landcover	26279	0	27	2
+both	cell	landcover	26279	25	12	10
+both	cell	landcover	26279	23	5	11
+both	cell	landcover	26279	9	10	12
+both	cell	landcover	26279	8	13	13
+both	cell	landcover	26279	7	11	14
+both	cell	landcover	26279	7	10	15
+both	cell	landcover	26279	3	3	27
+both	cell	landcover	26279	3	2	30
+both	tile	sea	25920	767	a6ab39000d0b8a92a78fa8cc3b3c4395e78e3fd0c4c10880eb8ba50b28aad966
+both	tile	lake	25920	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	landcover	25920	87	1b1c3fc96bce98cd6a8b2f035324aa61ba283a6c82972422d72bb6323813126d
+both	tile	lakes.small	25920	15	b5f24465f6e795e8cbdb55be8207464ea3476d6c60a914a7de1f19bd76b8fdcd
+both	tile	rivers	25920	0	-
+both	rivers	25920	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+both	lakes	25920	1	c355d5a3abeefdc18ca8cf15bae3b84516f69a9cc16fa7a104a6d4fd348abee4
+both	cell	sea	25920	0	181	0
+both	cell	sea	25920	2	172	1
+both	cell	sea	25920	2	176	2
+both	cell	sea	25920	1	170	3
+both	cell	sea	25920	1	171	4
+both	cell	sea	25920	39	230	5
+both	cell	sea	25920	0	169	6
+both	cell	sea	25920	2	175	7
+both	cell	sea	25920	4	176	8
+both	cell	sea	25920	2	173	9
+both	cell	sea	25920	1	169	10
+both	cell	sea	25920	2	177	11
+both	cell	sea	25920	0	170	12
+both	cell	sea	25920	38	229	13
+both	cell	sea	25920	13	234	14
+both	cell	sea	25920	0	0	15
+both	spot	sea	-17.0	180.0	25920	0	0	15
+both	cell	lake	25920	0	0	0
+both	spot	lake	-17.0	180.0	25920	0	0	0
+both	cell	landcover	25920	0	0	0
+both	cell	landcover	25920	22	20	7
+both	cell	landcover	25920	23	20	8
+both	cell	landcover	25920	21	20	9
+both	cell	landcover	25920	22	21	10
+both	cell	landcover	25920	23	21	11
+both	cell	landcover	25920	9	29	12
+both	cell	landcover	25920	7	15	13
+both	cell	landcover	25920	1	29	14
+both	cell	landcover	25920	0	21	15
+both	cell	landcover	25920	8	10	16
+both	cell	landcover	25920	8	11	20
+both	cell	landcover	25920	13	26	23
+both	cell	landcover	25920	29	29	26
+both	cell	landcover	25920	8	14	30
+both	cell	landcover	25920	7	13	31
+both	spot	landcover	-17.0	180.0	25920	0	0	0
+both	lake	25920	0	-17.4357	-179.1443	0.18340080864093425
+both	segments	Fiji	132	132
+both	tile	far.land	72	2225	2b7ceb12a3cd60e2a2351f66b5196d39cce4ec6fbba249b30d576a1f5cfad3d8
+both	cell	far.land	72	0	0	0
+both	cell	far.land	72	0	553	1
+both	cell	far.land	72	0	550	2
+both	cell	far.land	72	0	4789	3
+both	cell	far.land	72	0	533	4
+both	cell	far.land	72	0	5362	5
+both	cell	far.land	72	0	11	6
+both	cell	far.land	72	1	3361	7
+both	cell	far.land	72	0	3286	8
+both	cell	far.land	72	1	3117	9
+both	cell	far.land	72	0	534	10
+both	cell	far.land	72	0	456	11
+both	cell	far.land	72	0	3362	12
+both	cell	far.land	72	0	535	13
+both	cell	far.land	72	2	5226	14
+both	cell	far.land	72	0	14	15
+both	spot	far.land	-17.0	180.0	72	0	0	0
+both	tile	far.lake	72	811	a82080e9264d4769dc98afcc49b77e66f1356f1a485ee8499e5e0d79d823f776
+both	cell	far.lake	72	0	0	0
+both	cell	far.lake	72	0	4558	1
+both	cell	far.lake	72	2	1838	2
+both	cell	far.lake	72	2	3121	3
+both	cell	far.lake	72	1	1825	4
+both	cell	far.lake	72	1	4560	5
+both	cell	far.lake	72	0	1837	6
+both	cell	far.lake	72	1	4785	7
+both	cell	far.lake	72	1	3119	8
+both	cell	far.lake	72	13	4884	9
+both	cell	far.lake	72	4	2914	10
+both	cell	far.lake	72	2	4884	11
+both	cell	far.lake	72	6	4815	12
+both	cell	far.lake	72	2	4533	13
+both	cell	far.lake	72	7	4793	14
+both	cell	far.lake	72	4	4788	15
+both	spot	far.lake	-17.0	180.0	72	0	0	0
+both	tile	far.land	73	2872	bfdaa78ad480708dec17a31350ed30a38caa989ae8978fda35edcfca27fe51b9
+both	cell	far.land	73	0	0	0
+both	cell	far.land	73	0	511	1
+both	cell	far.land	73	0	2876	2
+both	cell	far.land	73	0	514	3
+both	cell	far.land	73	1	5	4
+both	cell	far.land	73	0	5222	5
+both	cell	far.land	73	0	3596	6
+both	cell	far.land	73	0	1666	7
+both	cell	far.land	73	0	5211	8
+both	cell	far.land	73	0	4566	9
+both	cell	far.land	73	0	515	10
+both	cell	far.land	73	1	0	11
+both	cell	far.land	73	2	4764	12
+both	cell	far.land	73	0	562	13
+both	cell	far.land	73	0	597	14
+both	cell	far.land	73	0	4549	15
+both	tile	far.lake	73	835	a960aeb2745957d03a5a1168ae2943476019a72491772d3e0d286521eaeb6351
+both	cell	far.lake	73	0	0	0
+both	cell	far.lake	73	0	1721	1
+both	cell	far.lake	73	2	1741	2
+both	cell	far.lake	73	0	1734	3
+both	cell	far.lake	73	0	4751	4
+both	cell	far.lake	73	1	1742	5
+both	cell	far.lake	73	0	1736	6
+both	cell	far.lake	73	0	2100	7
+both	cell	far.lake	73	4	4765	8
+both	cell	far.lake	73	0	1668	9
+both	cell	far.lake	73	6	3366	10
+both	cell	far.lake	73	0	2101	11
+both	cell	far.lake	73	10	1664	12
+both	cell	far.lake	73	4	1862	13
+both	cell	far.lake	73	4	1661	14
+both	cell	far.lake	73	4	1660	15
+both	area	0	0.1
+both	area	1	0.10905077326652578
+both	area	2	0.11892071150027211
+both	area	3	0.12968395546510098
+both	area	4	0.14142135623730953
+both	area	5	0.15422108254079409
+both	area	6	0.16817928305074292
+both	area	7	0.18340080864093425
+both	area	8	0.2
+both	area	9	0.21810154653305155
+both	area	10	0.23784142300054423
+both	area	11	0.25936791093020195
+both	area	12	0.28284271247461906
+both	area	13	0.30844216508158817
+both	area	14	0.33635856610148585
+both	area	15	0.3668016172818685
+both	area	16	0.4
+both	area	17	0.4362030930661031
+both	area	18	0.47568284600108846
+both	area	19	0.5187358218604039
+both	area	20	0.5656854249492381
+both	area	21	0.6168843301631763
+both	area	22	0.6727171322029717
+both	area	23	0.733603234563737
+both	area	24	0.8
+both	area	25	0.8724061861322062
+both	area	26	0.9513656920021769
+both	area	27	1.0374716437208078
+both	area	28	1.1313708498984762
+both	area	29	1.2337686603263527
+both	area	30	1.3454342644059434
+both	area	31	1.467206469127474
+both	area	32	1.6
+both	area	33	1.7448123722644124
+both	area	34	1.9027313840043538
+both	area	35	2.0749432874416156
+both	area	36	2.2627416997969525
+both	area	37	2.4675373206527054
+both	area	38	2.6908685288118868
+both	area	39	2.934412938254948
+both	area	40	3.2
+both	area	41	3.489624744528825
+both	area	42	3.8054627680087076
+both	area	43	4.149886574883231
+both	area	44	4.525483399593905
+both	area	45	4.935074641305411
+both	area	46	5.3817370576237735
+both	area	47	5.868825876509896
+both	area	48	6.4
+both	area	49	6.97924948905765
+both	area	50	7.610925536017415
+both	area	51	8.299773149766462
+both	area	52	9.05096679918781
+both	area	53	9.870149282610821
+both	area	54	10.763474115247547
+both	area	55	11.737651753019792
+both	area	56	12.8
+both	area	57	13.9584989781153
+both	area	58	15.22185107203483
+both	area	59	16.599546299532925
+both	area	60	18.10193359837562
+both	area	61	19.740298565221643
+both	area	62	21.526948230495094
+both	area	63	23.475303506039584
+both	area	64	25.6
+both	area	65	27.9169979562306
+both	area	66	30.44370214406966
+both	area	67	33.19909259906585
+both	area	68	36.20386719675124
+both	area	69	39.480597130443286
+both	area	70	43.05389646099019
+both	area	71	46.95060701207917
+both	area	72	51.2
+both	area	73	55.8339959124612
+both	area	74	60.88740428813932
+both	area	75	66.3981851981317
+both	area	76	72.40773439350248
+both	area	77	78.96119426088657
+both	area	78	86.10779292198038
+both	area	79	93.90121402415834
+both	area	80	102.4
+both	area	81	111.6679918249224
+both	area	82	121.77480857627864
+both	area	83	132.7963703962634
+both	area	84	144.81546878700496
+both	area	85	157.92238852177314
+both	area	86	172.21558584396075
+both	area	87	187.80242804831667
+both	area	88	204.8
+both	area	89	223.3359836498448
+both	area	90	243.5496171525573
+both	area	91	265.5927407925268
+both	area	92	289.6309375740099
+both	area	93	315.8447770435463
+both	area	94	344.4311716879215
+both	area	95	375.60485609663334
+both	area	96	409.6
+both	area	97	446.6719672996896
+both	area	98	487.0992343051146
+both	area	99	531.1854815850536
+both	area	100	579.2618751480198
+both	area	101	631.6895540870926
+both	area	102	688.862343375843
+both	area	103	751.2097121932667
+both	area	104	819.2
+both	area	105	893.3439345993792
+both	area	106	974.1984686102292
+both	area	107	1062.3709631701072
+both	area	108	1158.5237502960397
+both	area	109	1263.3791081741851
+both	area	110	1377.724686751686
+both	area	111	1502.4194243865334
+both	area	112	1638.4
+both	area	113	1786.6878691987583
+both	area	114	1948.3969372204583
+both	area	115	2124.7419263402144
+both	area	116	2317.0475005920794
+both	area	117	2526.7582163483703
+both	area	118	2755.449373503372
+both	area	119	3004.8388487730667
+both	area	120	3276.8
+both	area	121	3573.3757383975167
+both	area	122	3896.7938744409166
+both	area	123	4249.483852680429
+both	area	124	4634.095001184159
+both	area	125	5053.516432696741
+both	area	126	5510.898747006744
+both	area	127	6009.6776975461335
+both	area	128	6553.6
+both	area	129	7146.751476795033
+both	area	130	7793.587748881833
+both	area	131	8498.967705360858
+both	area	132	9268.190002368317
+both	area	133	10107.032865393481
+both	area	134	11021.797494013488
+both	area	135	12019.355395092267
+both	area	136	13107.2
+both	area	137	14293.502953590067
+both	area	138	15587.175497763666
+both	area	139	16997.935410721715
+both	area	140	18536.380004736635
+both	area	141	20214.065730786962
+both	area	142	22043.594988026976
+both	area	143	24038.710790184534
+both	area	144	26214.4
+both	area	145	28587.005907180133
+both	area	146	31174.350995527333
+both	area	147	33995.87082144343
+both	area	148	37072.76000947327
+both	area	149	40428.131461573925
+both	area	150	44087.18997605395
+both	area	151	48077.42158036907
+both	area	152	52428.8
+both	area	153	57174.01181436027
+both	area	154	62348.701991054666
+both	area	155	67991.74164288686
+both	area	156	74145.52001894654
+both	area	157	80856.26292314785
+both	area	158	88174.3799521079
+both	area	159	96154.84316073814
+both	area	160	104857.6
+both	area	161	114348.02362872053
+both	area	162	124697.40398210933
+both	area	163	135983.48328577372
+both	area	164	148291.04003789308
+both	area	165	161712.5258462957
+both	area	166	176348.7599042158
+both	area	167	192309.68632147627
+both	area	168	209715.2
+both	area	169	228696.04725744107
+both	area	170	249394.80796421866
+both	area	171	271966.96657154744
+both	area	172	296582.08007578616
+both	area	173	323425.0516925914
+both	area	174	352697.5198084316
+both	area	175	384619.37264295254
+both	area	176	419430.4
+both	area	177	457392.09451488213
+both	area	178	498789.6159284373
+both	area	179	543933.9331430949
+both	area	180	593164.1601515723
+both	area	181	646850.1033851828
+both	area	182	705395.0396168632
+both	area	183	769238.7452859051
+both	area	184	838860.8
+both	area	185	914784.1890297643
+both	area	186	997579.2318568747
+both	area	187	1087867.8662861898
+both	area	188	1186328.3203031446
+both	area	189	1293700.2067703656
+both	area	190	1410790.0792337265
+both	area	191	1538477.4905718102
+both	area	192	1677721.6
+both	area	193	1829568.3780595285
+both	area	194	1995158.4637137493
+both	area	195	2175735.7325723795
+both	area	196	2372656.6406062893
+both	area	197	2587400.413540731
+both	area	198	2821580.158467453
+both	area	199	3076954.9811436203
+both	area	200	3355443.2
+both	area	201	3659136.756119057
+both	area	202	3990316.9274274986
+both	area	203	4351471.465144759
+both	area	204	4745313.2812125785
+both	area	205	5174800.827081462
+both	area	206	5643160.316934906
+both	area	207	6153909.962287241
+both	area	208	6710886.4
+both	area	209	7318273.512238114
+both	area	210	7980633.854854997
+both	area	211	8702942.930289518
+both	area	212	9490626.562425157
+both	area	213	10349601.654162925
+both	area	214	11286320.633869812
+both	area	215	12307819.924574481
+both	area	216	13421772.8
+both	area	217	14636547.024476228
+both	area	218	15961267.709709994
+both	area	219	17405885.860579036
+both	area	220	18981253.124850314
+both	area	221	20699203.30832585
+both	area	222	22572641.267739624
+both	area	223	24615639.849148963
+both	area	224	26843545.6
+both	area	225	29273094.048952457
+both	area	226	31922535.41941999
+both	area	227	34811771.72115807
+both	area	228	37962506.24970063
+both	area	229	41398406.6166517
+both	area	230	45145282.53547925
+both	area	231	49231279.698297925
+both	area	232	53687091.2
+both	area	233	58546188.09790491
+both	area	234	63845070.83883998
+both	area	235	69623543.44231614
+both	area	236	75925012.49940126
+both	area	237	82796813.2333034
+both	area	238	90290565.0709585
+both	area	239	98462559.39659585
+both	area	240	107374182.4
+both	area	241	117092376.19580983
+both	area	242	127690141.67767996
+both	area	243	139247086.8846323
+both	area	244	151850024.9988025
+both	area	245	165593626.4666068
+both	area	246	180581130.141917
+both	area	247	196925118.7931917
+both	area	248	214748364.8
+both	area	249	234184752.39161965
+both	area	250	255380283.3553599
+both	area	251	278494173.7692646
+both	area	252	303700049.997605
+both	area	253	331187252.9332136
+both	area	254	361162260.283834
+both	area	255	393850237.5863834
+both	geology	Rotterdam	51.90625	4.48125	126
+both	geology	Perth	-31.95625	115.76041666666666	854
+both	geology	Paris	48.856249999999996	2.3395833333333336	164
+both	geology	Fiji	-17.0	180.0	993
+both	geology	Rotterdam NW	52.358333333333334	3.779166666666667	126
+both	geology	Rotterdam SE	51.454166666666666	5.183333333333334	126
+both	geology	Perth NW	-31.504166666666666	115.20833333333333	854
+both	geology	Perth SE	-32.40833333333333	116.3125	851
+both	geology	Paris NW	49.30833333333333	1.7166666666666668	164
+both	geology	Paris SE	48.40416666666666	2.9625000000000004	164
+both	geology	Yilgarn	-31.95	117.35	851
+both	province	126	4036	Anglo-Dutch Basin	basin	12640.0
+both	province	164	4040	Anglo-Paris Basin	basin	0.0
+both	province	851	3974	Yilgarn Block	shield	0.0
+both	province	854	3952	Perth Basin	basin	0.0
+both	province	993	1	Ocean	other	0.0
+both	provinces	1023
+both	places	7342
+both	place	0	Tokyo		Japan	35.6870	139.7495	35676000
+both	place	1	New York		United States of America	40.7519	-73.9820	19040000
+both	place	2	Mexico City		Mexico	19.4444	-99.1329	19028000
+both	place	19	Paris		France	48.8686	2.3314	9904000
+both	place	292	Perth		Australia	-31.9531	115.8381	1532000
+both	place	496	Rotterdam		Netherlands	51.9219	4.4780	1005000
+full	tile	sea	180	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	180	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	180	-192	368129347071d51c7f88762739d4da85007c258626031d18732c82cc95051a94
+full	tile	lakes.small	180	0	-
+full	tile	rivers	180	0	-
+full	rivers	180	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	180	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	3780	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	3780	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	3780	-192	368129347071d51c7f88762739d4da85007c258626031d18732c82cc95051a94
+full	tile	lakes.small	3780	0	-
+full	tile	rivers	3780	0	-
+full	rivers	3780	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	3780	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	20093	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	20093	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	20093	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	20093	0	-
+full	tile	rivers	20093	0	-
+full	rivers	20093	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20093	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	20094	122	fb219b2718323faf0c229ae16182a631187473ba7f7d0fd75baea1426e252549
+full	tile	lake	20094	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	20094	30	0347a9ccfe641fbbf79daef9d9a2f176aede781d095e429d61e7c0aa2830d664
+full	tile	lakes.small	20094	0	-
+full	tile	rivers	20094	0	-
+full	rivers	20094	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20094	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	20095	1081	4f304ed9962d991e7c6ef76c0136e6af1d47eea5a1e2bd5294873856eb768b8d
+full	tile	lake	20095	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	20095	263	f098ad9ec1d406679929178868cc31a458ceb111960b8e868fba793ed2315f52
+full	tile	lakes.small	20095	41	f4618b6bc61db08886914af2d1eb704b22fc03c97f41d789dc0568a66241a686
+full	tile	rivers	20095	933	2b08d0641cd095390bc310fb834bbdc0183519ecfa4d11b5d3d3975a42449a42
+full	rivers	20095	1	198	3c9464881120f1818d112019b56fbc0e02b3d7825bf4f20d1a781aed626e8283
+full	lakes	20095	6	bb2a1a83effc967238b6dd680a2a50a77f2fb4f073985ba1617cd3b015596c19
+full	tile	sea	20096	409	fc3481bf577e2c0b6696cbccf00e55dfc34928fc55d06282b972314bc1ed46a6
+full	tile	lake	20096	388	2d294794cfe2ce477eb4397a3267945a43ac4c6c0c5db9d4ffc04c220283fb8f
+full	tile	landcover	20096	424	895a43bdd4ae067962f11f7d4f0b5ac8ee509f9a0028840eaaed866a3e6b0603
+full	tile	lakes.small	20096	122	0d81acc66812ddb37330a7d7d06414b385dd859236ec96e0d0bc77c20725314d
+full	tile	rivers	20096	0	-
+full	rivers	20096	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20096	24	13452317458b73d49d14894a27a161f6b56d009fe54113fba72cba46829053d8
+full	tile	sea	20097	259	adee183c89c60deab35509daa3a22a8696878642888cddcdfd536620880f394d
+full	tile	lake	20097	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	20097	456	b4b1f6f96dea16d8699ebfbc204b0727fb8f20bcd4bb9d6259c8b2f8f857b686
+full	tile	lakes.small	20097	280	5a8fff918b495277140a8095f19da0be3b16b4fd22b21db4d327ed393b4a7585
+full	tile	rivers	20097	0	-
+full	rivers	20097	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20097	62	226805efc747578d57608c2f6b5023888675c7f921d0a41bde3cd5e4a18b2f8b
+full	tile	sea	20098	873	aa51441319246066a53f00ef34dec8e9b60607439416a8c7684290632b80aabb
+full	tile	lake	20098	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	20098	437	c3f4deb1e23a2ee554b08ec57181fddd88a5e095026dead27a2a37064f3ab796
+full	tile	lakes.small	20098	116	49cc7b05b1aa54cdc595684505b83af83d20552712b24cd5527dd51b4d64f459
+full	tile	rivers	20098	268	fd766eec7ad0a6ba2526fcb0ea71aed9bd0c32812b28c1fcb6dd132cb9770d80
+full	rivers	20098	1	46	ddc5d9ec0807d51f5ed126cefa4b4d90965106cf43e470f67b39e23262234a09
+full	lakes	20098	22	1eed22f032f1c4467d83663154a15a3e02b8132f4f85dd9046a316f68a1e6b5b
+full	tile	sea	20453	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	20453	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	20453	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	20453	0	-
+full	tile	rivers	20453	0	-
+full	rivers	20453	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20453	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	20454	301	b6a2e469a0a84e0a41e0811fdd04aa76e813ee39f459a75ed2229e84f23b5293
+full	tile	lake	20454	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	20454	37	43376877fe285137eb784cf61d0e7da49449d5d5f039c96d37c77878271b21f8
+full	tile	lakes.small	20454	0	-
+full	tile	rivers	20454	0	-
+full	rivers	20454	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20454	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	20455	1057	175af6ea3fbb115b32f72e6ae4a8639ca391b396b8aa1f4b5918a95c66e0faf4
+full	tile	lake	20455	257	cb5e925f1104db27c098de1118667b812b1fa80c55219e8c6704a51c24e39090
+full	tile	landcover	20455	363	fa03d28704bcc19465131934acb19973251c06f742ab88e3597922f83e8ffb3d
+full	tile	lakes.small	20455	46	b757a85bea883024762a6a6fbce2a94863dac6844aee107c74d329b9518db6a1
+full	tile	rivers	20455	0	-
+full	rivers	20455	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20455	7	da398e9b0c344d50446f8ef4283017d0fab8e2ff9959c3b260c63979805e8b67
+full	tile	sea	20456	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	20456	201	0c0a7b3225ab97a2c73d6a825de26219886feafe9c9a0e2c13a5cabf0b7c327e
+full	tile	landcover	20456	469	87df17d5c4919cd7fa5bd79e897d2749e7ffdfb3f6f5000a293891fd54cbd87d
+full	tile	lakes.small	20456	87	bc5df9a02f0336d1d98daffacddc7462e81071efcf9fec6e821b162667f25b2a
+full	tile	rivers	20456	0	-
+full	rivers	20456	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20456	15	4803341faa03656821b3d704a8b04fc880a39294d59adca5f89dcab8bfbebed0
+full	tile	sea	20457	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	20457	231	12650db87203e2d91cf4c39e2ebb18ec6c5f01e02047b8688b89b8ac3860578f
+full	tile	landcover	20457	372	4bbc35a5b7a07a9fa2f93dfe4f5e0c77a02d17669bfaa3e6db456968c07c263d
+full	tile	lakes.small	20457	107	bbc91ea26c5afbcb1377bd855b66681ab804f8596e2d8591f7c8095f15588cad
+full	tile	rivers	20457	0	-
+full	rivers	20457	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20457	20	25312ca16a5fffb9b520099a0a9e8ddc8155b5685e8785829a29e8872dba4c47
+full	tile	sea	20458	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	20458	830	9706aebb8d82ec603c7c1110858fb802afd3d717400453f21153a3d6bca72e29
+full	tile	landcover	20458	324	266099a45b337c33b95e007d4cb32896334723ca3f3afe4453553476087f81b9
+full	tile	lakes.small	20458	496	5302213743022f2aef528114651984f4c6b7427324f5d5d946f95d7148c7ca0d
+full	tile	rivers	20458	0	-
+full	rivers	20458	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20458	113	d19627cede045821e67048ade6a6de56f92d4cc71125cabe3c2e2743c249dc48
+full	tile	sea	20813	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	20813	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	20813	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	20813	0	-
+full	tile	rivers	20813	0	-
+full	rivers	20813	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20813	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	20814	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	20814	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	20814	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	20814	0	-
+full	tile	rivers	20814	0	-
+full	rivers	20814	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20814	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	20817	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	20817	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	20817	307	9116a5aedcb5880c325a3781d32b859ff88765f4ccbaf8dccf04c948024281bd
+full	tile	lakes.small	20817	140	82488ca40d97104cf5bd64dad892c4165325a826625e976f10969944f7278456
+full	tile	rivers	20817	0	-
+full	rivers	20817	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20817	30	1a5e2cba5483422f48da77bbc3e33c37fd9c6d05df1209bfa1cb9aa37bf3ba53
+full	tile	sea	20818	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	20818	294	eb0e136a8803e2d8d3010bb11cff3ab7de8984812beb9e2930c0567e320b88a2
+full	tile	landcover	20818	300	66779d2d9f026ad7db3be28e30d6f695a408a868eabd50bbfcc2bb05c88c044b
+full	tile	lakes.small	20818	586	479cdb37b3ef4aadc50fb18464b00442173a02040e127b365148f27021f1d386
+full	tile	rivers	20818	0	-
+full	rivers	20818	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	20818	140	f87f6d5359345aa28918986be52fed4b507082e612d6369e75e8ee7191da7642
+full	tile	sea	21173	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	21173	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	21173	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	21173	0	-
+full	tile	rivers	21173	0	-
+full	rivers	21173	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21173	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	21174	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	21174	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	21174	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	21174	0	-
+full	tile	rivers	21174	0	-
+full	rivers	21174	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21174	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	21177	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	21177	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	21177	214	f4b63731b480a9f7e57c82df2709642c8049eb2e1a042b2f8d220551bc3e7a17
+full	tile	lakes.small	21177	405	a294ac811c227422ccae98a6adf0842badb047122f2a90460c4310f09690b31f
+full	tile	rivers	21177	0	-
+full	rivers	21177	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21177	92	40b741d04228d04f94cbec00a6767e563631614cba52f82221517ebb18703e1d
+full	tile	sea	21178	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	21178	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	21178	287	f7f5d33b607520e7629130e0d0d98cb3bf1729d6d07ce3f9b2e55438d8c048bd
+full	tile	lakes.small	21178	191	d9a90c361316a6431a18f9a9c93b94d3c9ab4b652f3d2d841eef2868b1d0137c
+full	tile	rivers	21178	0	-
+full	rivers	21178	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21178	40	25d4a504273f330c6da27190f85fbf78f8aacbc38bbc2ae87bacb6559f19d7b3
+full	tile	sea	21533	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	21533	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	21533	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	21533	0	-
+full	tile	rivers	21533	0	-
+full	rivers	21533	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21533	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	21534	242	73fc5d71d322d395e1c884e5105e547ee0b926193d910ffb8e9248f570bf73b5
+full	tile	lake	21534	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	21534	44	34ef588472e74a5735cf9368ffa9bab65816a99842b38226a32d3690ba1d3178
+full	tile	lakes.small	21534	0	-
+full	tile	rivers	21534	0	-
+full	rivers	21534	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21534	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	21535	916	18e8bc138db8febe5a7bd0a2403a789b0facfcfc6944199ff20ae5ce9d29918c
+full	tile	lake	21535	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	21535	463	3ead193458c85326d3a334188a977dc199336c98d3347ce11abb5cb10a7a655f
+full	tile	lakes.small	21535	112	feef6a162b90fe2696ae539ffacc67b9a71dda4f408e8cc993d057a5dbd31d0e
+full	tile	rivers	21535	0	-
+full	rivers	21535	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21535	21	9a0a3371bede990a45aa1d6f9477891049f286a516167647a2ef18daa09d8c2a
+full	tile	sea	21536	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	21536	161	a0ff6e4746982d3bd99e54914333a22174a98c8cd69bfef5c5f30b4375368bfe
+full	tile	landcover	21536	302	cab85821f4188529155a564c03b3431ea8349802f5ff941ba28f00f14a614013
+full	tile	lakes.small	21536	186	94f3d787251876826925510a4b0e1b4322227dcd3c7b98950658ba94d3d480fd
+full	tile	rivers	21536	0	-
+full	rivers	21536	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21536	38	345b058de4b33131686e23697e0bf93cc80a01374cb43b55599e54e819521951
+full	tile	sea	21537	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	21537	190	b436560cff7d5848ddd03ba183397323d67e14e147f25c1cae672c56daf0bd4f
+full	tile	landcover	21537	271	0dab8eb9d4b3f1fd39da1ee70c2819bcf807de92de58cdf01cbb7aad84e5a754
+full	tile	lakes.small	21537	281	2c0ac894848b4368ad94aa22a037d31a4e2b8caa45b35fa84d80db9ee53a78dd
+full	tile	rivers	21537	0	-
+full	rivers	21537	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21537	60	b48c74e27570c4f732224cfe18a3dd455b728281ffc66afdd12bf0dd22efbb0c
+full	tile	sea	21538	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	21538	377	b09f1052696174462d4aa55ac11473abed238bab7e8cdb7d73acbaaf94d03b0d
+full	tile	landcover	21538	449	20a6d165800289df18c29474c8ae12e0112d312e123878df9f07c7921bafa3d0
+full	tile	lakes.small	21538	50	0f23c8e6aa02789da0940ec5117dd5238cfbf7ba32cb58cc5ecdf1cdcd85b390
+full	tile	rivers	21538	0	-
+full	rivers	21538	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21538	8	861ab2f0fee748b45796e489f542f951b1363d9af487324572453fe9232bffdd
+full	tile	sea	21893	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	21893	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	21893	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	21893	0	-
+full	tile	rivers	21893	0	-
+full	rivers	21893	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21893	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	21894	797	d070b1ceba9b0a5a2c6c2378d3de034e1f4f921ded2d0dc23d13a1c70dbdfee2
+full	tile	lake	21894	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	21894	115	fdc8b80f97ede28866623240f86921ed4ab487ddd83020c3f2c2a5e7bf785ba9
+full	tile	lakes.small	21894	15	6ed59db7fab40e37e273bb4c22273a75385ccce2d93b933ecc8b0afc681b2eed
+full	tile	rivers	21894	0	-
+full	rivers	21894	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21894	1	479c2c4c64bbeb02f7d7c5a81ed5dc2dac1b65a7b25e627309ce612d4eb38763
+full	tile	sea	21895	152	6c2bfe3e6ab3aa542b577910ec240bf2c25e4d0abd1b7f437484c801fb97feb5
+full	tile	lake	21895	363	b82702b26f348df76225f5204e7295b318398560317f43e4da1947f91cabdecc
+full	tile	landcover	21895	359	0119c9179e8308a8e1deee77c3f7edc5ca4295ba0b11b6841c76d3be47ebf095
+full	tile	lakes.small	21895	138	78d3564a2e62b80549acca2a34708c80ab0788bb5c567837c07420f5b7e677dd
+full	tile	rivers	21895	701	75ac03fd299db0ea8b00e80b4ee4b90abe4e8787a773c6c82fc55a71f1fcbc34
+full	rivers	21895	5	149	a2637073d2aea170f972a74624080a474e0c520fba76fc9ecd3f025a0c064af8
+full	lakes	21895	27	31ecdabf7a2c530d47fa7fce359238cdf34ef15b4c9adef4eb007704ec1660f4
+full	tile	sea	21896	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	21896	159	5eb206aa827866ddb9f9eee0c9f69a4f0749fa8f1d58245cee5935a9373ed3e2
+full	tile	landcover	21896	291	212618fd8ecbe5e658d7d20c8a947b15a904dcd43888cd05194560a0cb2214f7
+full	tile	lakes.small	21896	211	095a66fdade48b3fb1a119620bb8d653542dfd43da4b71397cbdb6ad6561d503
+full	tile	rivers	21896	1337	4bfd0a41fcde89e677dcd219454d506c8342960cec010af8a60d14c60d5bd87e
+full	rivers	21896	2	306	fe6d032f450abb54dc4707f1dd4f3ca0172024c4ca76aa9812e11d097ae10e29
+full	lakes	21896	42	da2617ba71ae8ddb07d5ef9a2299d002a7d0b9772cf01afe781ab740cdbe5bbc
+full	tile	sea	21897	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	21897	354	ca173d0a6cb900d07aadef0de8b9e271f58d0d9d411c1823325d36029e5175c6
+full	tile	landcover	21897	369	4b082dd725629dec4155cd8f0508ffb00ea6f97ed5a9af4a552cbfd498d47730
+full	tile	lakes.small	21897	197	6ddea5467b2bc437e63a49abf0e8b0d7e091e65d4dd85b1ab11303e1d30529e6
+full	tile	rivers	21897	0	-
+full	rivers	21897	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21897	41	c59f0de6d6b7a5f7a5feb3b803be7b4290240f43956b692aae632c56c793f4e2
+full	tile	sea	21898	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	21898	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	21898	382	57ec6316638226868e675accc973e85b74a8e99e010b79975cfb0c2e2f3ce963
+full	tile	lakes.small	21898	24	d128afe9fbfe0f56d0e0ec79d88b309b221e3ffd5695a1d368df2abdce4087aa
+full	tile	rivers	21898	0	-
+full	rivers	21898	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	21898	3	3d56d5aba34cd282740bb9d6df726fc50dfa8dc68ff2973b46c745a158000ee1
+full	tile	sea	32170	1174	5dbe21abcfc665f723faefcb4a048f1d2fd1d9765ad8eb8731cfc31a1378e209
+full	tile	lake	32170	475	ee5de1dc0671e3e2cb82cffeeba961276f95831f167bec942892dba2bae4ae10
+full	tile	landcover	32170	389	552bec116e47b6f0b7fa161023043f5603282644f136f94e6b7f2857db88f1b3
+full	tile	lakes.small	32170	190	34ea3b946f5ce8a018f8b12c3725ed8d39e92ad554ee210539d0696a108603f3
+full	tile	rivers	32170	3230	bf39aa8e3cf795f634f65e676f95e9918917196f47507b1cadb965341ea4155e
+full	rivers	32170	10	784	170bbf1561cddf6bf8b3a02acf00433a01b247cbf4d10f60ea55ef2f59eb7bf9
+full	lakes	32170	39	cffd52ad870fa0776b64d9e47320e933847ee9a5ba4dbb7b4cc7b49d841e9e0f
+full	tile	sea	32430	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	32430	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	32430	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	32430	0	-
+full	tile	rivers	32430	0	-
+full	rivers	32430	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	32430	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	43411	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	43411	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	43411	344	48fff5818673bb4275c05e7b48ec5e05fc9e899082ed35ee3fbc235ea0fed763
+full	tile	lakes.small	43411	25	1b77d56ff9810f2eb01d55dd3afbf05b40bb7ed53d1e1b2b720e3eabd879dae5
+full	tile	rivers	43411	4504	f26eb97c69b29e1aa42c27bbcfa6d84bf22808de7216195574ea133cbfa3016b
+full	rivers	43411	8	1010	7e6338147424e6dcbed65422c8c9b51e3cafe257dc535a3c8ef411b1f0506f90
+full	lakes	43411	3	01fcb495c6aa8174b457fbc0e3e72fa8506fe308dfbd203281d8726ad803c237
+full	tile	sea	47390	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	47390	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	landcover	47390	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	47390	0	-
+full	tile	rivers	47390	0	-
+full	rivers	47390	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	47390	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	48696	1254	5a475c9ffa5d1fe665b3df089fcd8975e1ee425df98752d7b03af75efb4f991d
+full	tile	lake	48696	2213	7e237c09ba8c45c8dd85c5fa96474c93aef7940cd510ecca77be72ec8b279cd6
+full	tile	landcover	48696	262	062c0c45d9665749b635889a37bcd32de7e28ff03c1482b43c726d21e000d3af
+full	tile	lakes.small	48696	337	3fcd3b42ee034e48b86d43127ab9e2f4204b5480db10736dcee4e5c011cce3c3
+full	tile	rivers	48696	0	-
+full	rivers	48696	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	48696	75	c6ae12ed3f59fea7d0e5649871cb46a5a01172584ede88181ab6af82a9f4bf17
+full	tile	sea	49139	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49139	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49139	396	3bc485c93fce13121334b08a6307e5ba784c058218da89cc0095952413e46809
+full	tile	lakes.small	49139	88	9c673c92954b94ca7ace4ef983e4ebadb486ab6a6a2105f0cef9620739dbe8ca
+full	tile	rivers	49139	267	f09f6db4adcb0b537de4853d95c4e8837498df0fc1de65897346dee3630ff81d
+full	rivers	49139	1	48	d9445097abe4ed87164f24ee338b8fd340bba0dda8310dc1afcec7cd6ea1d905
+full	lakes	49139	16	f515a3eb2cd44650406751a9182cc4c49e9367eeb44e4dd5d018f5fa97133cc3
+full	tile	sea	49140	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49140	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49140	436	70f6b05bb054992007b5f67ffb05c5ec98e0cedf448ab623278c9c7b833a8269
+full	tile	lakes.small	49140	118	93acf7328050ebb9b5dabd5c5ad42f3ec6cb9050a8202ab675bbb36de139d174
+full	tile	rivers	49140	2712	2253d6562ba13a01bfc28da588402ed1d6f6db9ab839764252744488e2a83cd5
+full	rivers	49140	4	602	2199b04c4d7e5a61941ada1faac28abc786e9f1bb25eb030446a5d6d1947280d
+full	lakes	49140	22	c5c402324a9cc2d23d4595a2ce7cf01a95c1f2a37ffa45af0252a39df39a3775
+full	tile	sea	49141	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49141	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49141	430	77edfb412e9e0bbdd4fa10be527c2c6f7cbbdd79837e7168fd1050717c526230
+full	tile	lakes.small	49141	551	be8e1d5b148db7144784c4d92c1eb4ad28e801845c30f4b5fbff7f64974db8cd
+full	tile	rivers	49141	1126	9b50ef15c57dda4a8dbf11828ee82cc0cb5f389b7f505823c111171757ac226d
+full	rivers	49141	1	235	a359bccf0e1ed6549d883d9e6f42ce08b1b23f37e82e724a0e8b4a30b731e714
+full	lakes	49141	132	12f2de4289594a363e35b3ba409edda76e3c94d729a8a89db2cbcefed2ec88a6
+full	tile	sea	49142	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49142	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49142	435	1fabc552b1534dee2f685072737488db1852d8ccd1357d52ef758121b6759a4e
+full	tile	lakes.small	49142	179	4842471c9a0dd41b4585e2bc4cd9d52f1c7e8322f71a31761422c4f4ede3d8aa
+full	tile	rivers	49142	2063	eca37e6d6a1a69e235d3126f2e0f9edb7bb1c7a20bc884567012283506c4eb98
+full	rivers	49142	1	479	57e05b0e1f5e970b89177eb67ac213d45d75b4598afcc52b448b57bf44182e1b
+full	lakes	49142	35	21e406fcc1e17711047d2704d6489e3dc489bba122c356826738401d979fb193
+full	tile	sea	49143	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49143	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49143	453	18fff3f2963dba46d3354e56fa87dcff1eab58b6d5df6266543e6882090033d1
+full	tile	lakes.small	49143	111	3d91bc3302d31d10a3841c8cb27ad72dc13719d231b712da9417ce0f1e8c262e
+full	tile	rivers	49143	4863	38375d55ab3ea26f44af5e28c5705b2e9d3d8392e29c043119b5c59c01cbe84e
+full	rivers	49143	11	1117	f5c2e6e7aa6642797a59c7cdd23e06b5c938ade9e6b47b577ba948fc51f0ce5c
+full	lakes	49143	20	26fe31d82da421410e210cd1b2bc3aa2f759eea453f800dfb54a724b0dd37701
+full	tile	sea	49144	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49144	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49144	457	f43985c4b192c86ea53414c457615ce231505e630c26b62a8b5b800c171a71d3
+full	tile	lakes.small	49144	277	4c71697e4f37118180f97d45f9b340e7964692431ed19a4d1b50e2aaa8813d39
+full	tile	rivers	49144	3315	8afaeaaaef3529c7bd7db4499debb458d54ad2643a95049b1289f803a583683d
+full	rivers	49144	7	750	fc9b870994729849d0259bcf503558c286d8537c7431c6a55473f7080c722cfe
+full	lakes	49144	57	e929021da5db559cec72ab11d93a760f09069831539700a7c953aa0526be9bbf
+full	tile	sea	49499	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49499	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49499	399	b489a834381b09e6a5312956c11fb4166f5089b683825e02a16d4d2713657307
+full	tile	lakes.small	49499	118	f7cf874c61e2b08f6a523141c2272ccc876501902a19aab2df3608ad8053c06c
+full	tile	rivers	49499	4640	da70c405b3a8f250cf6ce159fe97127427949c9677feb2025302b402d07257db
+full	rivers	49499	10	996	f6ff88f9d8f8d6297d6e3dad88755cdf287615e8ee5a5d7d1070ba4229b3f917
+full	lakes	49499	23	0403562921eb3c8642c54d2e55e84f085ca118dedf2da96dd42312b6e36614f4
+full	tile	sea	49500	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49500	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49500	464	b3e5ac537ca41b53ae3e217e8bae54440d9f470912bf8065e6fea3eb620c2760
+full	tile	lakes.small	49500	185	446625d4e29cd8b198f81af5642cd148e06615df2ed12c6a7ced8e42b2ede67d
+full	tile	rivers	49500	3339	dd932bd70f3d9d462d264caa177b167ca49b29bde3592c012aaf9c573dc9e89b
+full	rivers	49500	9	702	d37d3215ad729972506aec2fc4091d298962ffbb627cefd4b68b2ba060b1ad2a
+full	lakes	49500	36	13bf38437e123b92c2ae8a3d743b856efcf97574ff2d99727aeb77f410dc668f
+full	tile	sea	49501	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49501	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49501	463	0e658161c6e763af4fd9f90c8b3c9e7dae51b4eac02a39891a725349a9926c3a
+full	tile	lakes.small	49501	274	ee2c4d5bfb2900b368ba046dccbc8f43e769d42ed937fbac1c9d4b3894ff64bf
+full	tile	rivers	49501	2412	ed1f7f46f6164db7ccaadbc1000f674eff4c682b865127f18411da4b886a0785
+full	rivers	49501	3	513	4f1a4b26178cbdd9b10bfd3d66b0f3fe628336c493af42a2a1deb599882128b4
+full	lakes	49501	59	e82d6571132cf5dd1b093df8839988790d3346668b1b0330aa04a37eb2fa2a72
+full	tile	sea	49502	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49502	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49502	487	fc21afa66329cc30d6a439a792470d7e672fe7e320f6e2017303dd26c7f59978
+full	tile	lakes.small	49502	262	144b63ef7f8252475df5a49200ff703bd311d673cd1c8dda17b383ab7a1acd73
+full	tile	rivers	49502	1864	2ee0982395d9ef7e1725109b75900deda537470aeae018d74592daecbd655d49
+full	rivers	49502	2	382	982072cb155782be97a1de4ea9a3568b3735d7fadf147bd15c98e9b41369ae72
+full	lakes	49502	53	a5cf60183b76b54de8b4c06fcfcb104273cc03a1887db1d436fd083de86fea95
+full	tile	sea	49503	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49503	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49503	492	1fb0d1779be1b94d772677db33d1a3dca32dfd346b671525beb39a9ac0665e99
+full	tile	lakes.small	49503	127	9cf66f9c59e7ed620d3b8048a01868a89dd60f34f9d03c5bdfc31dfcef7a8df2
+full	tile	rivers	49503	3174	ad2e91570983734f4591908ea5adfb09286717cf087013ca627b9a30c0272957
+full	rivers	49503	5	731	0ae72425873e6ed65a7c7c0042ab3d5a06947e70e3324f0d42e6c751e122a7f3
+full	lakes	49503	24	60353337422fe3a71f6435d954b8e909741906864c8efc28a3352ecdddd7c3ce
+full	tile	sea	49504	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49504	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49504	488	c4fec5263fc1d9ec68332bcc08f7de2f12030de52a54a5d152b2ab1f5a2cda1f
+full	tile	lakes.small	49504	128	4d2eb4d31084dfef4c0d14f1b2f3b0eb59b6fdbaf2c1bec4e9f0fd08269936db
+full	tile	rivers	49504	228	4015631622dccdfca463cccc7610a9a05d2d30c106118db644312ceb1bde146e
+full	rivers	49504	1	39	506924c2f8222fe82f48ea0bced6b4510914fdc87c591ea3c0c0a485fcf13740
+full	lakes	49504	25	a0e7578f8f9c9cce70aae2fc328891f826af615db6aaf56179b759dfc62f39b4
+full	tile	sea	49859	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49859	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49859	417	4e1d08331ea76b3637c521dfd6ecc0af5b6652c4809f56a3947278f7bf9f6d22
+full	tile	lakes.small	49859	112	3f3454fc8e912210cc5ec0b2d179b449cf0b7f20bc59750bcb653fd693ab5b1e
+full	tile	rivers	49859	664	c1271d86d767531a9b6f6807c836eb56dc56ac114a74a9fbbf651a065d915301
+full	rivers	49859	1	138	1fb480a7ae7f0ba55c7a609e852aaeea37a4abbddfa01bb774e92d90b82de56f
+full	lakes	49859	21	57416dcab05ac3d875351b7fc41d427918e451ec064f084ff62c2d1a4a4ab1d5
+full	tile	sea	49860	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49860	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49860	455	6d669f4b746ed7e9b02221a26915f74ff51184b83fb52754435e95513ea4b5e5
+full	tile	lakes.small	49860	90	2b97d1862b96a5572adc9d38fc4ea8f6b7df6549aa539d0178dd348b03026d83
+full	tile	rivers	49860	207	9bf4912fc1f643c22135155aaabaf369324325e61045d2f9e60c78864c2ded74
+full	rivers	49860	1	35	fda7c94ba63701ebc7e5bea87fba1c9e7302247528e42fe74326d0cb6232829f
+full	lakes	49860	16	e472c32c6bc5587675de14e33247d105639d18ba2faf563b08f488de21b04028
+full	tile	sea	49863	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49863	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	49863	464	39db95ccf90cc1803f2083340aa548e408e30073829b5fe87067b21ad197fd71
+full	tile	lakes.small	49863	294	d24897eb0e91753eb551cd47b477d4ceb097e628d6022f2fd6fdd18379001333
+full	tile	rivers	49863	3459	f5acf6d0cd19bae7408889471b1c69a5c32fd66fe1f84ef2581f0637cc0039a2
+full	rivers	49863	5	799	e00aa75a6d68dd32a0cc201e60e0d0c229bd559ff7101874d06cd91cdfb09ae2
+full	lakes	49863	65	0f02e2e666c7ca49fd53d2ffadd6fcb8fdd52efed823e6036106a3872f3c47ce
+full	tile	sea	49864	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	49864	621	7845f9da350fdebccf30775a3f68ec0b12f110a5f0525965ddb76003130b2343
+full	tile	landcover	49864	451	161a1ac6b71ddfeca0824c6c61881f34cfa7cf7e37e30ec9a1599f6b13176c0f
+full	tile	lakes.small	49864	218	13fc00bcb9d4fe1cc2a335102b2fc361f1c20a57f1c017e402a8218d24712e72
+full	tile	rivers	49864	2975	ac2d3b7067d3f20f7c799c5c0ac92aff75370bcbb5d9b0c55efc4b202bd894a0
+full	rivers	49864	4	689	4d14939c45e610476bef306866d5c55b4046a7782c04901319628fee54c37713
+full	lakes	49864	45	b45daedc18bd50ed21f7ac29bcc00954fa0ac0543c94d2bef414c08583b86c30
+full	tile	sea	50219	423	955e2baf18ec31d305000ec2567078f6a31765bd33a3d19f2ed9975d4a87002a
+full	tile	lake	50219	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50219	177	09dc79ddaf78b9f73f3c6712c88c55db0484241b20f125983fbd528830c8ae8d
+full	tile	lakes.small	50219	14	71a93b6d8272a3ee32f04df52b79418433a47069bf150e130b24250b14a839c8
+full	tile	rivers	50219	0	-
+full	rivers	50219	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	50219	1	6d22e4ac46deb72a0758234102d38bca8243d13dd5f1f07112e0f4e6558fade0
+full	tile	sea	50220	1080	4744009875a382e2c3562dd59f486bac3a374dc6e6b8d87d1ff2091c71c7f8b6
+full	tile	lake	50220	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50220	418	d1d8b56da56446b1c4e981a4295de31c0ea0c8a7a0a71a336ccfb4baec0b8164
+full	tile	lakes.small	50220	114	1e8cdef8a7e6ef04e73452974ee12f4551a3839b59d823ea6bae616a21128b31
+full	tile	rivers	50220	886	d778a84669f7e2de41eb72b79eeef746528d765a04e1f4e28ccb3bb0472d0344
+full	rivers	50220	2	165	f19d9bf74523c4016ff1494707e56f042b8e73dfcd72ff6376f4c223b4c12866
+full	lakes	50220	23	6a179cdc09b419753286de2cfecb877cd64003feace8e766ba791dc13601e014
+full	tile	sea	50223	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	50223	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50223	449	84f7c05c0e3ae31db6b9f982fd42295595ba339500037165b67e2d5326250bb6
+full	tile	lakes.small	50223	250	dd5089d9b5514907bccb42f411d200c6878da412449084b51f124716bb4847f9
+full	tile	rivers	50223	2339	3a39e4345e8a1e8f04ff0229d2931024c6cab8c825bf7c46f971cd8b84614f56
+full	rivers	50223	3	526	117dd9365693c0c221d962bed6634fcedbc2dd8997f5359b98c46e034e5c022c
+full	lakes	50223	54	6ee65de138e4a453b0a4ef1010a048113225e170ae327c8d432967641b4a1224
+full	tile	sea	50224	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	50224	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50224	444	0c3e584286e3d8b1a2d7c58e06134507b1682c6c2ecf03fd446b6ccb91ae351d
+full	tile	lakes.small	50224	83	26e8590c099f0bb433c5cf6f0abe525b0ebca803429b9c07201a061213ec8823
+full	tile	rivers	50224	4428	f2d64cc8efec2ad9c7f5d62006184e3120581a62dd738040d1fe94c80cbff3b0
+full	rivers	50224	5	1021	cbb30fcaafee28a64cdc297afde887c45ddce9436321276afb08da45e7c2e05b
+full	lakes	50224	15	f621628bb79b30155d0e71a10727c11b50ffd7cf9ccf73c2d59254e7f04368ef
+full	tile	sea	50225	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	50225	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50225	489	06d2e9b86718ae1f6e9e8aa38b5a56ccb857aaa6c9f2398afba79cc9695ece31
+full	tile	lakes.small	50225	67	bbbb532c194bc1d30e1fef172f6bef1e8f43a5d341e57f2a0a3bebd5e320e858
+full	tile	rivers	50225	0	-
+full	rivers	50225	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	50225	11	e995c61e5ac58c9521584f2616838ea0d8e19f121027add1f15f424b7658edf7
+full	tile	sea	50226	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	50226	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50226	485	545b007cc91918e44545fcad2e7dd272921c40a2f143209d360b8baf437bf9f5
+full	tile	lakes.small	50226	189	16dac1df030c96dd5ceb4e0d0fc3b80ebc54a18e3e87eb0341b50772fd8c882d
+full	tile	rivers	50226	3717	37e7f68cd8c0dab476755562e59bfdaf50d878b09293fb6c69e5abc7ddc462d8
+full	rivers	50226	4	818	ab75cdaddf5f1df886d2eb0c960ac518c89e345b500917e96a44d130805f088a
+full	lakes	50226	39	2c8af4774623f509eb3fed8636b1b4808966071e8d6ba0f6e1910a22511e275d
+full	tile	sea	50227	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	50227	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50227	475	1f9e7dc793a1acd03bb0e6ac533d249ce302c6712b257ad44da8f416af9d8b80
+full	tile	lakes.small	50227	49	483234157cc0875701c9a8bd3ff75d6871238bab427984cc0e0ce83d3c4a316a
+full	tile	rivers	50227	1360	eac4621dcb32d8679756630157b17d745fcf61f69b1359fb7278387263447832
+full	rivers	50227	6	284	fbdbecf88d23d0792fbd1a1b768445c441a42de43a49c90eac207b8006593c92
+full	lakes	50227	8	6bb98df4cbc0d119a0a685c60506b279dc4da52cd6b239845e09ad2d1602fc3a
+full	tile	sea	50579	720	a9857c969050c90cdc2b0fb314dcfa49f127dc3fcf43f801a6678973f5eb5ccf
+full	tile	lake	50579	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50579	135	30b24543b86e476241072320d7d3cc3b26ac8279403717ceeaba3682e6333659
+full	tile	lakes.small	50579	26	efb578dc05726e69e54a799aabd212d224c6d3b78f5f2558ec6fbfc44777d3f9
+full	tile	rivers	50579	0	-
+full	rivers	50579	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	50579	4	0c4b994a7ee5d0b8b81c3ce6884d8005f2f8b157e1698d9204eccbc615c787a3
+full	tile	sea	50580	398	312353fad3f65fdfe841c077d81659d39910bcc6288765cd915f45c201999382
+full	tile	lake	50580	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50580	132	e8a006df8fd187821313d39ab33b5405975215569eaa48efea4aad9edc932a1b
+full	tile	lakes.small	50580	60	dba397ad1e1f5421c4408080fc1da2580364710f71eeb921abfb125d978810cd
+full	tile	rivers	50580	0	-
+full	rivers	50580	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	50580	10	41ab424b7ef21f141fdedde59e8bbf8861d9843574e8246c0c13ed978fb11fe3
+full	tile	sea	50581	555	4536bc9d5fee5a73231ad621383db07189c8fc5dc022f31227b823e5c6e8917c
+full	tile	lake	50581	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50581	294	78c263de71f897c320d0188e698440f4dfa2e1fa5f1cbe9d8f65c4607241837b
+full	tile	lakes.small	50581	138	2d62898381281ffa8e7016a18ae973b7ea67385fcb6b4b53145a3c9d818a4a85
+full	tile	rivers	50581	0	-
+full	rivers	50581	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	50581	28	272df61c88b9f4abc4e027aa5906269c6a541c59f7290b037fc09d88b365eb27
+full	tile	sea	50582	102	6cb7253b120b178e993e8ee02f03043162c18fccdb1b3d4823704dab3c9e4b41
+full	tile	lake	50582	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50582	368	82e3c887e9788805bbfd226ae95f307a70c5eca74129ee35700c5098bf8b60f4
+full	tile	lakes.small	50582	110	d4f913a4015480682afc88d9eac59524254e6e36522c6f7109e09e71a5d543d4
+full	tile	rivers	50582	1861	385c15ba4f08b1e8310e42f648580e92e4864a81aeed77fa1540fff55ace0f87
+full	rivers	50582	9	389	32dd01feb1b9a092080cd1854c052b3026a46a5c479bfdf8f365365c4b5093bf
+full	lakes	50582	21	4359b9ff7bcdcef8d4b70367a61cc752e60268007f261251bbc0ff796ce1a0ac
+full	tile	sea	50583	114	debeca03d294923dc34c688409ed654a99849ec4fc811614d9f0e5a9a5f0537a
+full	tile	lake	50583	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50583	390	beadc44831ad10c60840c0ea217906802b39cca017dabcd6a66d0d4ebe73cebf
+full	tile	lakes.small	50583	163	c4c8012d9212348f6eee5a9d9681cce7e83e820f76d6e9978d063ec5fb110485
+full	tile	rivers	50583	2734	9d3766833e23b9eb7639d36341b1824342fb3e58a844b17ef7b7c58410dece4a
+full	rivers	50583	12	575	66ea8a4d1a7e336e7aaff4fd75cf9bcdbe5d6129fc23a5183d463d2d83388302
+full	lakes	50583	34	c3e53859513bedd5a04c7034b527fd3744b6a1d61e4ad71d3ebf5c4f5cd25f02
+full	tile	sea	50584	82	1ec2a6a1217a0036a9ea93d5c03ef0dfcd15eced3e54d95ea134dff103d3676b
+full	tile	lake	50584	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50584	459	0e8b38a1d2b226b5b1449938c52b3248d1e9b303499259f00769af3f3fde4ebf
+full	tile	lakes.small	50584	130	0db4dc792b3c6e257ed2ee74b43613ab297bb820cc149ef08bf8d01b222e884d
+full	tile	rivers	50584	2967	fd7a44529281a5b3323c68a5817593224c9586d8d5c8d87b9efae9fc73477a46
+full	rivers	50584	8	628	ae624ab13744a91506776ebb98153685d3b2930fb56451797cb9f02d4227bade
+full	lakes	50584	25	b14a1addf00d9e1e5f6202fa90b3cc6e5c6b2def47a3e915c1ab7e54c20f0d1f
+full	tile	sea	50585	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	50585	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50585	472	5c40c49794ae3d908119c4788e040337d314a7ea3e16fb85442b33c7af69a348
+full	tile	lakes.small	50585	83	4e844ebe5b7ad527e860b56631ed79fa8f19371b2cd9020f1553686ac59f4ba6
+full	tile	rivers	50585	1941	23e49f2afad4fcd30ad8da40803620630b211b5d0ffc2a72b9a9c18b50733c06
+full	rivers	50585	5	400	f4c63d6874f477078c53b70555d9bba63982a733ccd8e731ff0e3e75f6e0d3ca
+full	lakes	50585	15	0d71a4a7fe70c116a9389a689d507ae233a997174c32d97fabf63e8c97bfb31d
+full	tile	sea	50586	90	5e9716fe3443d831c9e2f504160fae9af8754bd822a5d79cf62809dbab2e1ed5
+full	tile	lake	50586	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50586	500	7981f4401dfc80c59b08bf4353100af8316c72127c667b5c992d56d8d2410fd4
+full	tile	lakes.small	50586	226	f9169a6b264e229c33e661cf0043701e223cecf869b50b7f89c9614a003c63fe
+full	tile	rivers	50586	270	e7c8084aceb31b0605bfb182c641abb84b3db36171e042a4c5e1fb48350a4d8d
+full	rivers	50586	2	42	b6f72238772f10cc3faa61794506f642619367349fcd2bb45d690a28075e7321
+full	lakes	50586	46	51b520a371e13f047bda3acea2abef4a1d822a4dacb20bae931fd698cf990c4c
+full	tile	sea	50587	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	50587	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50587	469	a826d2e38c8f930de56f6c8563911d9e9fc61664ec1f05a2ac8d24d68c49dd02
+full	tile	lakes.small	50587	117	31c9edb55bf8866ce8eac8028c972b95ecba76f0a11eb6d5778207bd130f03e8
+full	tile	rivers	50587	3531	c6b3b71416141a554f1ad7fa3d714e2c340652a1bc1e5e522e96a363e4085e10
+full	rivers	50587	7	751	b367011586629157e368152f3c68d8f611ae4011e76c077414936afcb31d94c9
+full	lakes	50587	23	9ba91fce970d7cd23dc0ffbebb56b53fc4e0123169fbd7d2ebbd450e473fc4c6
+full	tile	sea	50939	92	309e22ab6f9d8be9f854eb27e757cef88de48102f1cf3cb24858470c42c059f8
+full	tile	lake	50939	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50939	426	67b984bb73af969ff0f66073a18001a43092854e6faf25f66cdce0a01b720c51
+full	tile	lakes.small	50939	392	1a5aec1e3283e31a25f7b34abab5de4b5e0cd8fe2284efdc1c7a19ba3553cc9c
+full	tile	rivers	50939	1907	2d1de0792bb762d7a9aec26d6c0836840d0b0a9aa8584fd8b695e6ae16c15b6f
+full	rivers	50939	1	407	cc52f66911124c151585ace17f5f98409e4aac511d321268083c7bef3a0544a4
+full	lakes	50939	88	ecbeb3ce7cb57417254150195ceb7937c2bff8c4ba768b0c553850d634c70e15
+full	tile	sea	50940	1179	242c8b1c8c26c94c6469b87b6cce074710fd012ba8e886966f9d881ca68cb0c6
+full	tile	lake	50940	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50940	414	18e303321bd462e8d040c297650255f5798155cc4cf644dc33573e7eaa0cbe29
+full	tile	lakes.small	50940	208	644b42f0b0114ce85350108ad9c7614c9e232e16b5e42a65a3ef207a024e9d37
+full	tile	rivers	50940	766	56f12ab2bc1c415fe0ad590a1bea0f1288aedb9047cf135016837804b727f454
+full	rivers	50940	2	139	65c0324b0e2ac4658b23b513bfeaefc7f2086c3054f77a3b236b37b3bd68a41f
+full	lakes	50940	42	983ab55d8e99e9b8a13563e9d2d960a55c1c0a199674b987196a648f7d41b66d
+full	tile	sea	50941	1156	328440242a1e3481a15648ed33c6a447e5c5652905bb39451b9dec60b0c758e8
+full	tile	lake	50941	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50941	170	4de93dcfffb28d89bff2fe3e7c5281e54461f935e036c1b9c9698e0464a84db9
+full	tile	lakes.small	50941	55	b10e146d33df8b4dc3b99a7d8917d2fbba64b0269b1d31b708a449cbd309f0d1
+full	tile	rivers	50941	0	-
+full	rivers	50941	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	50941	9	8830cc2fbb448b7d48731bb2c12c79daef107d03a62fc915db551fc131db37ee
+full	tile	sea	50942	507	b1b6732d14a09c6e3c70cd879f6b053a2f1b53038ce7895bd6b98b2b08a3496e
+full	tile	lake	50942	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50942	89	4c74a37235e3db7eedab8651377fa57bc94e7f07b1b4feff9f8c5c36745790ed
+full	tile	lakes.small	50942	24	13fc0b1805c90b4b1a400bfec1cf09f0982a280ebb0ddc568432494eeb75852e
+full	tile	rivers	50942	107	2656ef2f3e3ddc58f7f22430c1c60cc585c753c2541030a8613fc39465699fd5
+full	rivers	50942	3	14	7794116afd51d3eab9bc07ea2d403e7ff91aced526fe6dc9e17185627c4e585a
+full	lakes	50942	3	9f67416eb16475a303b1fed9c97ab4f3ba26bfa61c3ae5613c18b2ba7f39f3b2
+full	tile	sea	50946	85	6e27988208bc387bc2c967e79214e51f400e9ae2d5aa176c2b558f35a444a316
+full	tile	lake	50946	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50946	457	6688539442ea3c2ddf91a932cec85c2adcc04279722642336d47e8215c19b2aa
+full	tile	lakes.small	50946	695	9786fbcf04c672bf034eb3b16ca0017bdf0e314ee2e7123e366ff8863dc6d8e6
+full	tile	rivers	50946	3619	2cf896e3b0ec9eac9d310e22b643ea973bb8df86ae10611ef0c12f463cda0ce3
+full	rivers	50946	14	737	370092179d8c8364ca8f3d0b7280980ea9caa44ae5d8fa8ea62c02efdaafb4fe
+full	lakes	50946	160	b72f95eab287dfc3a60d060d11d35fded51b50e24a678e26a58ff72afcbc9b58
+full	tile	sea	50947	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	50947	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	50947	451	a84ed6decf080d6fc69cef8eaff37219756befe092c07d14e108f3e23ae173b2
+full	tile	lakes.small	50947	225	2a813620abf8fb9f2ad11204241fb009c2c567c8aa2464213879514036ef6ca1
+full	tile	rivers	50947	1933	7f083ddf5735bb7f265edcd2cfed8313803dbacff02904250d02f1a965d2c2d0
+full	rivers	50947	7	385	17b09a7332b30072c54d2c1d9f9954cc6913c927ebd99b5276f8872be9717846
+full	lakes	50947	46	4c6d62411ef3ecfc372b4a354c273d99d4e7a483b424b2f113679de0ca806c5c
+full	tile	sea	51301	1319	3aff0490f63e9651202d3a8d5b06857df9f4abb1d861250fea04e7b9ec56fc2a
+full	tile	lake	51301	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	51301	317	26cf20ea1ef1fe4d490628011d3f09fbe170a133189503a8c009c4fbc3473af3
+full	tile	lakes.small	51301	108	a47f861f128a48e72705b13b773d9e848e1397e99abc047253e23c94e462f0cc
+full	tile	rivers	51301	1934	ae0406629b704787b1e96d899b78cbddf1908bf7a54b3aca23b716b2a2526402
+full	rivers	51301	3	433	cae6dfe15d31aca27b078eda1ddbc45a327bfff5d1b28498afd730d9d74790c2
+full	lakes	51301	21	64a2b835ca3e785842176c59c116f1e429c9892d4ed85e25827b1c8da07500b6
+full	tile	sea	51302	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	51302	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	51302	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	51302	0	-
+full	tile	rivers	51302	0	-
+full	rivers	51302	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	51302	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	51306	429	480890899b774a5c6e531ef028e1a064069d77593d3f6e515d8e1d51e69d3925
+full	tile	lake	51306	190	e828e57b6c0cdf9231ac25d165a158c36ce28b591b722900f7b3bcee26f5b5cc
+full	tile	landcover	51306	431	992fa471b2728294469db2c04ea37a23119604f823db0f351e0386762b4ad1bd
+full	tile	lakes.small	51306	342	14565bb5214260cd179ceba51c4ea46a3b98dbb62ef43e6a2e74010264cc4adb
+full	tile	rivers	51306	1907	1c261746c102cbd554325810d75f54464c0ddde376a06fce2e3141c6d2533bfe
+full	rivers	51306	9	398	ac4a6106f9fce340bff2092a85ff3c89fcd17e2a991748e2f5bef240a25175a8
+full	lakes	51306	72	63dfbedda44111d910f4f54206605553446c56fb3a7d3947afd790e6b270d8f8
+full	tile	sea	51307	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	lake	51307	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	51307	432	45254ae203aec0c691d9c782edc9d4a51f5fbbe4bef65859fce60878da16b717
+full	tile	lakes.small	51307	224	cadd72c78db67bc8ddf5eb6490e9a9089b3de83749853be264a3020f3da3d7fe
+full	tile	rivers	51307	2554	ca6ac2b681e1681189ba276a5962bbaab6fec19f24e951859e1143a2bbaaf266
+full	rivers	51307	5	572	e46866c8a754356a9443b35ccc149a8bd67c5e9c5ebfd4d494ae56a824a7867e
+full	lakes	51307	44	8b58f4575fee225a464f739b1fc303b9154cc73586ebc2f80ef437c4f1fe172d
+full	tile	sea	51661	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	51661	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	51661	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	51661	0	-
+full	tile	rivers	51661	0	-
+full	rivers	51661	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	51661	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	51662	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	51662	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	51662	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	51662	0	-
+full	tile	rivers	51662	0	-
+full	rivers	51662	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	51662	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	51663	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	51663	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	51663	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	51663	0	-
+full	tile	rivers	51663	0	-
+full	rivers	51663	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	51663	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	51664	534	dbf55f710dc8db2296ff274669ec29fe39300cc22b657eb9d7920564c4436fa3
+full	tile	lake	51664	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	51664	57	1c601e00d33c9d299344c01e7a3afc98dbe16eccce14a3ec9d221ccd16691c6d
+full	tile	lakes.small	51664	22	f225ca2bafbef994d274d33e56fdeb408ed1e753b71a663013a1968d0be18ec6
+full	tile	rivers	51664	0	-
+full	rivers	51664	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	51664	3	66d6783b3d158999416504280ed60363f1c4bcba7e7c52b2d51bf4d2dac200a8
+full	tile	sea	51665	2112	4cf28086cc31358edac939a660944f0d7143bf7d9a93acc3b1f17a71bf9132b0
+full	tile	lake	51665	301	e21a4569040c299d5c98aa3ac096dd5f5709f76b05e02461f2b68a6a471d0f94
+full	tile	landcover	51665	146	8d3bb41253880e53f05b841540ad498ce812fd7d0e0799bd529be522c2cf7257
+full	tile	lakes.small	51665	166	c103a4b685e7d62654b9daa4545aefc764c0af00947f59bf1ba4973c3fa61012
+full	tile	rivers	51665	1126	c5495d079275d9d6f2dc8fc6e8da5e3ab4802feef14b5b5e33c77b593a0a0c34
+full	rivers	51665	6	214	5ba5aaabb2cde21e711e3107d427ba4c53358435bb839bb54771b10c46bde51b
+full	lakes	51665	36	3e03b16caf8c549e41611e8bd63931eb54e4ceba33bead54da03ade0bc18e358
+full	tile	sea	51666	2129	d1f7a24d25edf8893eb5d9522fe91214f0dc21829f95219d6733bb27b2e3294b
+full	tile	lake	51666	321	524744445d5919915772b5ce33c31abb978a9515e284d0fc291f6ad9e31803d0
+full	tile	landcover	51666	233	790ae19ee61226b2b90baf28d0410b137c87eb5600fabacf5f56a7f84058c3f7
+full	tile	lakes.small	51666	205	c934fbc29991998499bd946f7f0dba274b93438288306d642ce58dca7c39111f
+full	tile	rivers	51666	661	71778983d9788996901d9db774b2571260dcc54320e4ba193b7da56930757ec4
+full	rivers	51666	1	131	46571ca3897a72e2ee5d5cc081649abad23fc32d380047e4d5544fff0d457f9b
+full	lakes	51666	43	86ef44d12b12128062df3b4fbab0311e5c0a255b1242eddb76781dc8eaff7857
+full	tile	sea	51667	1675	3d10c5be72b889da5e9ca0380e4387547bbbb04cd387fb9ae09f5c3c3039636f
+full	tile	lake	51667	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	51667	312	6ce00de0e504f069bce5c4fcdfe74226ac701f5bc2711c745c59f4a737ca0ad0
+full	tile	lakes.small	51667	285	5cc01693acd884bfcbbea948a9c61db5d69fd5a43b08ee9e75010de7d165f9ea
+full	tile	rivers	51667	1031	7c1beecbbf455247966ea9b94118ce135880dc1e01a3e448995b94bff1e52a40
+full	rivers	51667	3	205	c401a0e2b3d897d5c0fa5871fe13a97c2747e2b32d84062b0d0eed51d8fc40ed
+full	lakes	51667	61	0ae26db60dd11277861e92db82f509b03e13898ba38d111870f0d8ed05cd0c63
+full	tile	sea	52021	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	52021	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	52021	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	52021	0	-
+full	tile	rivers	52021	0	-
+full	rivers	52021	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	52021	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	52022	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	52022	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	52022	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	52022	0	-
+full	tile	rivers	52022	0	-
+full	rivers	52022	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	52022	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	52023	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	52023	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	52023	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	52023	0	-
+full	tile	rivers	52023	0	-
+full	rivers	52023	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	52023	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	52024	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	52024	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	52024	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	52024	0	-
+full	tile	rivers	52024	0	-
+full	rivers	52024	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	52024	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	52025	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	52025	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	52025	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	52025	0	-
+full	tile	rivers	52025	0	-
+full	rivers	52025	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	52025	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	52026	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	52026	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	52026	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	52026	0	-
+full	tile	rivers	52026	0	-
+full	rivers	52026	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	52026	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	52027	124	092868a24bafec28dad3b0fa94853fe11ec147abb7fc226b75cacde697595040
+full	tile	lake	52027	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	52027	20	57f047ff710e528c61b2f37b172e4b1d4c1bb9d9f9ef230ccc5786e1a2b14ca9
+full	tile	lakes.small	52027	0	-
+full	tile	rivers	52027	0	-
+full	rivers	52027	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	52027	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	64620	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	64620	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	64620	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	64620	0	-
+full	tile	rivers	64620	0	-
+full	rivers	64620	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	64620	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	sea	64799	-15	788c79b872ef8b8d726befebfa5a79718dd3e4a402a02f35caa49890ad691329
+full	tile	lake	64799	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+full	tile	landcover	64799	0	fa807c957eafe34b850cb453a096df2e5899f0902a837fccd59f9aafa869fb44
+full	tile	lakes.small	64799	0	-
+full	tile	rivers	64799	0	-
+full	rivers	64799	0	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	lakes	64799	0	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+full	tile	far.land	0	-255	ae7f1a260d60b0882ee21d109202c00c7c803640d45f06effc7599ccef2c831d
+full	tile	far.lake	0	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	1	-255	ae7f1a260d60b0882ee21d109202c00c7c803640d45f06effc7599ccef2c831d
+full	tile	far.lake	1	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	2	-255	ae7f1a260d60b0882ee21d109202c00c7c803640d45f06effc7599ccef2c831d
+full	tile	far.lake	2	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	3	-255	ae7f1a260d60b0882ee21d109202c00c7c803640d45f06effc7599ccef2c831d
+full	tile	far.lake	3	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	4	114	eaba8b81d174ad500eadd950337cab9c7106314eefa94bdf6a4ef4b609b435f7
+full	tile	far.lake	4	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	5	-255	ae7f1a260d60b0882ee21d109202c00c7c803640d45f06effc7599ccef2c831d
+full	tile	far.lake	5	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	6	109	03f70bf5030e9f178c1ea313562b777fddf93034adc71b0f2eccbff68e0669ee
+full	tile	far.lake	6	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	7	107	075d67b35d9d9421cbb8fb320126856d1332580245c91435aa263b2205b570f5
+full	tile	far.lake	7	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	8	142	0d0ea328cdc81cedb78f937766782b177ac929e15b12f7be7ea8fcaa7d3f350c
+full	tile	far.lake	8	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	9	121	7ad827408c77bfbd2bae1fbd5c67c09acf5858dd1a5b75e825ec9e0e92c0a373
+full	tile	far.lake	9	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	10	210	ded51dd4f47b27ebc796b0b238d912fc96f315c026300e7d84b52b14a1a6a692
+full	tile	far.lake	10	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	11	1321	c8a4461531eac405eb560e4d588908b514b9742fe4658e738f02fd38e509cb44
+full	tile	far.lake	11	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	12	1445	77c5335f7826f7524ceea6b312b25ea10aeeba74bdd949e48c2828d6def4d30d
+full	tile	far.lake	12	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	13	829	39386516053fbe3c8fecf1f653443e79d0e40f7280fab9d436c14ce3df535e99
+full	tile	far.lake	13	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	14	1340	79c87a1d97f1060071a73d134e57212f26dbb293ab49cc8b5214fa818ef5c7ac
+full	tile	far.lake	14	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	15	1599	e6a001a7a5f8512782b4e78745f2074fc9316c8ebf59d40ff718b045af479ea1
+full	tile	far.lake	15	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	16	1781	184ecf8fe1d2ef80afd2b63a4da4127bbc396dab3756ab7e9f946f5e02810977
+full	tile	far.lake	16	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	17	1694	cb53f29e896dfc754ad030de45bcb7e9fe5151df5b1437aa5125e10f5ae9ab29
+full	tile	far.lake	17	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	18	981	8307267831c3c527bc271049453131fad2a1eb1a9f907867637edff095c5c12a
+full	tile	far.lake	18	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	19	2064	84e7c81effadd79aa91c3c7fd8ba4b51f40cbf63d7117ba098e19cb72df0d80b
+full	tile	far.lake	19	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	20	2326	8e732d8e6eb69bdf937f8c97f6bf8381548b7be4719029224df163014d345eba
+full	tile	far.lake	20	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	21	1583	91b112e646f67dbda066ab4e7bd688f015a70586b51a55054f10e8ff2da0d7e9
+full	tile	far.lake	21	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	22	1831	d018070dc95c04cf2b14203def2a4df55df109a8a3d5d53d9720dd79e6a6d0e3
+full	tile	far.lake	22	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	23	2575	4e7b34f5900a5d2f37d725abe1f942ca5bb967c43e7c2d4ce90518fcbb40ccb1
+full	tile	far.lake	23	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	24	1452	cd38002c390b08bfe4eb452319c397469f99605d9b6cffb201fe65bf80c7e40b
+full	tile	far.lake	24	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	25	1061	5db905d999c1e3a237344d6be608ca28bfe7a505bff68383f4ceae59f4f06d0b
+full	tile	far.lake	25	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	26	821	7f9cad35e3196b8abfb64e0b544dea6cb0bb884d4c760c40d89d57d6464ac007
+full	tile	far.lake	26	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	27	463	35c55284f016fd0cff94115e63942eb1ce435436623d5fcc6b305e5708df570d
+full	tile	far.lake	27	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	28	273	1b0cc25912a8b5ade0eeb715ce90db9ec5d3bb0e36425257655ba7c45b71ab3c
+full	tile	far.lake	28	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	29	237	62ac27adf8144d2130fb19c0b897b0e82b73d457309ddff3a94a68d8867ac94d
+full	tile	far.lake	29	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	30	133	ed5d55f5c7e1baac229a08bbd6ce9cd69def0d7c02630580a65cb102472ace64
+full	tile	far.lake	30	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	31	127	41d9c44d24069b9f5dedbc5f4d43e5253afe52a0e05629f4c6595e056a9a32c6
+full	tile	far.lake	31	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	32	125	39d5d15cda206c1735a963487b8c44aec0babf48371b521f0e990f59a242764e
+full	tile	far.lake	32	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	33	133	34f5e53df08af0002921b9f090730ea8a6559a6c1b53780786d8ed4807670b9b
+full	tile	far.lake	33	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	34	778	f136b8b3a67f47149ecd55eb3820d0402ba6a7a0cea504fc7075ace7cdde704f
+full	tile	far.lake	34	141	6058fcaced365b1344ebaa942d02d65bd0de0d2de991368ee75fd47043d6f510
+full	tile	far.land	35	1609	ec02c584fd7f0b7eea0b9567b974487ac42cd797c9f18ab568b1c70803e75d95
+full	tile	far.lake	35	263	5e26c6ed11132fcebb13082768c4f8de6cd1978ee02d9f9a410a1b0cb8c5a4a1
+full	tile	far.land	36	1147	aa594bf9673ff052b2b7f2ec7769d8e7341e32c391f7b0b5b5a1169a316efec8
+full	tile	far.lake	36	188	5c32be512a403e91130e15d188e6c2806dba2ea335ed07a3963c14a118c6873d
+full	tile	far.land	37	1339	38c17767f7260e652b5e57101720170efcd4efed34c16535dbf71fbd795f8320
+full	tile	far.lake	37	200	44c39a49c6d5dfec13e7cc69cb36287fdb2222417df4b8c3492ec7bfe826c5c1
+full	tile	far.land	38	1410	12f2c0ee55cdb74e02f6813f8d3b41ff7f7b35a2197e9711d0ec7dcc23cb6594
+full	tile	far.lake	38	204	41df83e9af25e52554c298d856940db694ebc70e821cafc750e7c35978b7544d
+full	tile	far.land	39	936	599cafe9f65da96d2809d1d7c27d8cc571b6072b4ca9389526a062b9810f1ee9
+full	tile	far.lake	39	302	7d6558422e92f95283f8d61d0e0d3f869bac3b8f6c2bcefa1d80e6cac322c385
+full	tile	far.land	40	1208	9019e50a7f06094d499aa9ed83498e48908b520842de9f11b056a04958ef8f10
+full	tile	far.lake	40	328	a8364881a0ae2303c187d050e4c663298329aa7eae67b0a4baec080a1b29ed72
+full	tile	far.land	41	1014	132d3d53f707512154fadd1be9697f0701ff043ab5d17fffbcabf6bc5aa723df
+full	tile	far.lake	41	370	a2f6b904b071beb7f60faa6b1b658d37f1bc246534f673aa2403c19d92175513
+full	tile	far.land	42	772	cf231bd2429628d5d846191ae884386b08bbd6dc79bdedd69121b71ce5b06b45
+full	tile	far.lake	42	291	ed1073f748ce91b86251254ee5ea00a1e74b80a6f1ad1bfaa0da2138fb6e1165
+full	tile	far.land	43	1182	34864d8b3f74be59928b2bea0ed5343af4bb4d79e42f272e3daa1acc7e69115b
+full	tile	far.lake	43	440	4b3ff25e04c158a7b675aa693efc5cf46102c97da9234c8ab86263e2a81305ac
+full	tile	far.land	44	1221	0214ea081b1b90df08f1b926be510399a964c0e0fc54663985d7f787815df57b
+full	tile	far.lake	44	458	2dcdac0c79784c27aa33d6d1d667a293c98a8d25b9d8f0ea1b903408fcc2b361
+full	tile	far.land	45	1175	2744cb79835d9999da58d9d135dda388bc3affb6622f30cff923ba3a0bbce3ea
+full	tile	far.lake	45	353	fd044b6db433f3e98b8fb0d61989ae6fc8d3511072473fbc803a694ed95e31d5
+full	tile	far.land	46	1202	4019c7418c73d1efcbf8918f43694521bebd6fff7a2795d43e7b821888162292
+full	tile	far.lake	46	346	1355073b3b301c9977903da68b588b2bf6314a63d65ed1f20368bd9836fe29e3
+full	tile	far.land	47	1337	d5382cf2d4a0e45a92b80128f7ae15f11f3919929d319141d141b70bb13453e9
+full	tile	far.lake	47	404	d51aa3abf3a06679b04949d15e39ce7386235cdd40537d6d3578de6dc42a6b03
+full	tile	far.land	48	1270	183b995a0d91eb80b8b75409a3f6a2e7e68318b328b7f1106acac612c5d03a13
+full	tile	far.lake	48	396	1bb604d60152d41d00670c676badd394a9309f761450c856eb5e77275a3e1511
+full	tile	far.land	49	1323	d4d459eeaef560cbb1352218274122ce90e82f9aff71c26345e2c199c9535b23
+full	tile	far.lake	49	454	23603ca6e286c39f56d94bddad255d3a312cd224eaa2998012f9ba68e6eea47b
+full	tile	far.land	50	975	95b1e8a92a1c6d68eeea2ffca6b3c70c6f9bacb44b7fe1ade051aa8482a02709
+full	tile	far.lake	50	403	78cea760c98e35ba4c6207c4c28b9df93f602daea6b39f530cddeef9035006c4
+full	tile	far.land	51	1453	2f2905b6fe08b08e80d51a694e5b87babcfb49b2ff544fe275e374196ee0ac69
+full	tile	far.lake	51	609	419e410fd065b6307a0e3ad593afbfda197e1d868f003e025c9a032ea8dd162a
+full	tile	far.land	52	1120	f122d6c20179e605d4746aecbc3a77bd24a13ee29e259e62251e9a7b4c6521f2
+full	tile	far.lake	52	378	76e87e441467ce03b36ee8d3e12f26e8775f056ba8ca53a8a3d0571c50525339
+full	tile	far.land	53	1094	c8f62ee9d4556d9fa56d7dcf26f6228532ad2fe4a8b4e9289b9e4a612c7ea88c
+full	tile	far.lake	53	344	3e71c395447518d6c387311d40a1dbdf053e1206e53c72240f7ff70172c750bd
+full	tile	far.land	54	1280	9c47324a29793fd13e6e79a276b09ccfb21cf233b8a446fff35c35c925de45b6
+full	tile	far.lake	54	516	3ab9671e702c1c19a6e1bd99ef4d8f569fb7fd3d0946f1525c4e0aff156e18a9
+full	tile	far.land	55	1974	37c4603188595ecdb4f0217e36cfbd6a27af3b85ab9be5d38716a7bd8979f896
+full	tile	far.lake	55	469	88d4576063fbcb30930c0e553bcb34d7f3c4814ac2cd2decd60d3ef85bd4bd96
+full	tile	far.land	56	1774	4fd9cdf356af762dfee3bf719c931cfcaf4b1bd2948982d44c0d45cae83df00a
+full	tile	far.lake	56	684	357f7d19fed05e2744f10b247816c00233586e210da00702552de571026a0868
+full	tile	far.land	57	1764	efa123288e27ccac33b9d314d83be51776f5a668c3818aab51d2423c97e6d4c2
+full	tile	far.lake	57	962	a85f8c87ba86b3d2fdfa4d6fb8198ddbf26d1b2e81d5dbb523afb4569911de21
+full	tile	far.land	58	1671	9597f79033cd7e6de8c5f71130af3dbe01a7d055bcc8f802cca47161d155b02e
+full	tile	far.lake	58	976	1a38bd22c6d82a1b7193da6a3bb6abc0c66dccab85dffbea3b6636c2de077498
+full	tile	far.land	59	1701	97e9f0d1174dbbe92fd10d19dead2a1c3daf3f7dd6b285d2f5baa1a98fc1f89a
+full	tile	far.lake	59	1178	a4f1acfcb8f485b02e39ad834701cd4b9223a52bab67f0aab8df214f8718bbf7
+full	tile	far.land	60	1492	537eb9a2f298dc3b0864e585dd28c6ff02c55cdb8c60900b902c2f11ee50b92e
+full	tile	far.lake	60	1091	5ff48c649aecda1daee1887a604fe5633f4e5fe80f1178bdf77cf9e7b86fb258
+full	tile	far.land	61	1488	be9e19ab76a33aa2fe6677749e15b521b1afe2d7ab07900b3a7c8d6d4db93f89
+full	tile	far.lake	61	1063	212f2d72dc468626b7d05f3dec2a4ff36768d49be3bb2f5b877ca4a14fce1efd
+full	tile	far.land	62	1376	c82acedf05ff534ccf326268d7cdbea386b3fd85083b8d23616be670f4e1b3ab
+full	tile	far.lake	62	862	d484cca3a40151da134fc1fb4d93a605cba8e8c983090b57459f3916c654d4f4
+full	tile	far.land	63	1241	713c9e037a15ed7f39c3754a11b68f10de412e950d142c09f1a1ccbcd108622e
+full	tile	far.lake	63	642	4eb37f2b7f8fba53306b54bafd00274b116a70a9404ba7bf41bc9480a7231405
+full	tile	far.land	64	1537	d1631108d27827b1014a499b2278e7134f9d31051a05a761fe484c25024fdde7
+full	tile	far.lake	64	658	00ede56faa596c070883487db73403a6a19e3f8850edc784d483dd4b562bb4da
+full	tile	far.land	65	1355	3564c86d57a8570d1e39289fc7586f4721735f5c60413a197e141a49e90b01aa
+full	tile	far.lake	65	665	dea27e0ba271552ad971988025fc1db93c11e52d5e207292f110ec0e5aefc231
+full	tile	far.land	66	1535	a765947308ad513ac0499f8dcf6bcfbea043d9e98d3f4a226b9f8fd321506943
+full	tile	far.lake	66	623	0dd4fa58616445d5cbdd6817ce3cf26eaad3f9f0296ebb85371136aa10cb881a
+full	tile	far.land	67	1716	2f1f300737369dccd3f735267f95b7a824c23051eb5d143d2e32086ee8d536a0
+full	tile	far.lake	67	744	2da0ebbb3ef5ca371d02163c4600cdbdbdab4a88ac2282e2864b61f0bf80a56b
+full	tile	far.land	68	1962	b3b6012fbeb3d261f0ecb063c6fef6c3b937bef3d48a00309d8ce7f1db0e197c
+full	tile	far.lake	68	784	4f685a6de006c197418948a273d68257a2a0b20cfa1881d44fa7d465040aafbe
+full	tile	far.land	69	2444	97ab5690c7bc9515786a3ea699b7ef5c984c0283536ebae341e5c41e73ed3ec2
+full	tile	far.lake	69	1164	2140ecdb64248ee6878b0266d1053d474a77662cfb2c582d37d251a4a04d8f3a
+full	tile	far.land	70	1800	d2d289b3306abe2332f05b0712742f66684dd80e338d4df43e0128073109bd2b
+full	tile	far.lake	70	736	ccd258e593ed19afac1e64bfec16b5f0c1e2a8ea7c5d855ab9cc050e9d28e2b9
+full	tile	far.land	71	1836	d18df28eca1d982b69b6f748b57d21fa5cb79906119cc240e73a81f0d34121f7
+full	tile	far.lake	71	735	e457c950b48bedc0b7bf2aadcbc7ec7a7b0df74deff416ed467f62fa8520d5b4
+full	tile	far.land	72	2225	2b7ceb12a3cd60e2a2351f66b5196d39cce4ec6fbba249b30d576a1f5cfad3d8
+full	tile	far.lake	72	811	a82080e9264d4769dc98afcc49b77e66f1356f1a485ee8499e5e0d79d823f776
+full	tile	far.land	73	2872	bfdaa78ad480708dec17a31350ed30a38caa989ae8978fda35edcfca27fe51b9
+full	tile	far.lake	73	835	a960aeb2745957d03a5a1168ae2943476019a72491772d3e0d286521eaeb6351
+full	tile	far.land	74	2658	11bb10bc36d2dd479d2a07b670a739701eac76e2bbbc3cfc518f18cf857665d8
+full	tile	far.lake	74	976	0178ec677ddc88474eae9aaa598d8cc8e489a7ff96002b0028f625c800ebcb51
+full	tile	far.land	75	2342	d91bf789cffac200ef9a056b5b27dd9a05ad4a04c3104b8b31f9ea707f0f755e
+full	tile	far.lake	75	722	240433ac70ed328136c24ec871c39bab3efa36434eed145f17e488ec5d4a2355
+full	tile	far.land	76	1903	64e54c8c2d42be435449fa405349cfbc8e5032cdc4dd263e7dea7fac6c740b36
+full	tile	far.lake	76	667	b297786fc4998afe7bb9c2852d562db95d3c829039b59554c492061ab492c64a
+full	tile	far.land	77	2098	d7d1fcf9b5f35514f980b0af85c959253cf3dcbd21e8da69cbe77be0979768c0
+full	tile	far.lake	77	501	8e196d2ae272fb032ae0ab304616d97bec9c1db3ce522e056f21159cec45c18f
+full	tile	far.land	78	2000	9e13d5f614116f4e453c0df138656116007565579fec4cf70a6f84196dfcc9e6
+full	tile	far.lake	78	485	4a59c43cd154b52c4b0ced2060ac364cead1161751360d40d74cbb8a1c38ba21
+full	tile	far.land	79	1917	3ee7079961a8281ac901de9e234b0c998bce461563cb7d87ba34c08473716572
+full	tile	far.lake	79	469	765becd89c57e7d3a1ce8c9b1234d2ad7764bdec6bf57b7637eaa6d06763e4ab
+full	tile	far.land	80	2376	3b2848c7c71868c9b51862f5104393fc5c5b6c0be71630121f68e4e786e16228
+full	tile	far.lake	80	665	eb432d026ae5d8f3b08fac32b70120828da7c173a05845e60437fbc10031eff7
+full	tile	far.land	81	3868	702836c62c4221b82b2168f4ec9683bf45ca2f44a57b7a673ac1d10721fc1c01
+full	tile	far.lake	81	804	00078317a5694735a20b98b1429dc7b5f0a96694562de9d6d7d200200831745d
+full	tile	far.land	82	2851	c1d7ac3b8433351142d485a5d0b7434601f924882f471c746895d1c94c5f7a01
+full	tile	far.lake	82	710	a769fdb0a2f8f763026328bb94efa2e03b731a5f1f52f67f6903bd39e4166410
+full	tile	far.land	83	2676	0f3d481ddcff322a61aaeb796bdbb4833d2201aad5aa64ba82100ae2d17c1f68
+full	tile	far.lake	83	712	b08618ef24fdeca9d0f450e9f80441ee236abd481c738bc725a5fb1fc011fc1b
+full	tile	far.land	84	3040	f753b067ed2b856897fd2656b24ef89a083efdd5363eb0b97f45928e4b63cffb
+full	tile	far.lake	84	588	56da9870ba28eb7d68118d6781206c016d953f82e333beb2cd6c053ec38a74b4
+full	tile	far.land	85	2721	84ccb4cc55018561284f478efa9e405a863c5a9bb5e7befba8e053d318212549
+full	tile	far.lake	85	926	43ace49108b568add4981cdceedeb4df85de9833f6a27d15b840c38d23352889
+full	tile	far.land	86	3892	daf2f0fedda873f33e850dfae04da31e67baf5010c646605b31adda366a82fec
+full	tile	far.lake	86	1363	f78cb296c1f6cd8998df689ee9a516cabdf47424d96a7e2c334d6f602aed070d
+full	tile	far.land	87	4668	9c5bd3b7c2fc5f53ec660f7780a360f4408e663d841bd6f27d76873268b2acab
+full	tile	far.lake	87	1759	a345cd87d2d8e84c156cc2f0fb784055db8d0aa6dfc477bd5e76e511d804bdc6
+full	tile	far.land	88	4480	c263f00974c28839768ca21605cac8a3cf2c95d6d620933b1ffb75fd3b1b4912
+full	tile	far.lake	88	1323	966a61d8754fd08461190b7b4223936ff629cfb48c0ecfa27a31c2d34f5baadf
+full	tile	far.land	89	3713	3edccff2a79aa91e20cf8c636d73565a1d9c108dfaa81e1950c98e7ce5a52c29
+full	tile	far.lake	89	951	a2f9c17605b9c24d002a0719d9beff60c848509c2fb57512c3b0ef99faa11c8b
+full	tile	far.land	90	2898	a444b20e2adcdc0ae5e9013aa6e487dd3a29abd391005054ca7e5063bea2145e
+full	tile	far.lake	90	499	03cd7bf5d16ea3d95838f7e3824783f0586cce1910356cb4b1f06edc5c427e58
+full	tile	far.land	91	2571	8b270e1cee98a2b843a30ce7903e316e952e4e90df75b07103305aa315f93d44
+full	tile	far.lake	91	678	bcb578ffd5ef81708bcd804327cc0b6078ce21c861d1363801d305724bf458c6
+full	tile	far.land	92	2046	5de3c8fe1029b55342065703c4a3d6510fb41d3b34f095e9b597b46c32f64bfd
+full	tile	far.lake	92	414	f85ee780816800df6a70d5601d0d9213886e2f36f8551bb21d52385e7d9f3ce7
+full	tile	far.land	93	1711	a572c93a565484baeb991029e816d30f7cb1261324450d387c07e2dcebfe821a
+full	tile	far.lake	93	278	fb9f204f473181c3802c94801388ac58b54097221a8a9f0b969a9b191d1d0508
+full	tile	far.land	94	2058	d0a7a0e8411db03ec9e8726825858713c963fd7f96df324e8e52d6dce161a938
+full	tile	far.lake	94	344	e6150b83b132e2e965afad461522ce82e8b6674bb1e565a569cd1e4565479b22
+full	tile	far.land	95	2427	51c2e1a1628529d1630396001319fa84a8defee15520587ecde25b69993e8269
+full	tile	far.lake	95	500	1e282379c8146f36a0f7a6f7ec82583325328402dc0d4f17622e1e4ed6f22b17
+full	tile	far.land	96	2629	c778f346c317fa014795f8315109785a2e1bf56f875c0250718c3ce34d7f928d
+full	tile	far.lake	96	881	e666a5c2b26178405568757898110876677fba9dfec9ffe85c92bb17b23ea97f
+full	tile	far.land	97	2900	c0497119652199f8b986383855da0231d8ec7c304e190a40ac1441e48abc22f8
+full	tile	far.lake	97	1033	3de118bd36d1fe5e770e254e340d21297633ed3fd01d4975fb848d1128b929b6
+full	tile	far.land	98	3031	7620507cf781821b146e3542287250a462f3a6920f9689d3d8cfac7897e23186
+full	tile	far.lake	98	794	d1633b963acca6e896be7070e7ee46fe7ce7d887e47d43cc567f3c084045f0d7
+full	tile	far.land	99	3436	4bc5fb28e79d6d893c7f47dea012b2a3d9bafef2fcc97dd0da5eebb5044233e1
+full	tile	far.lake	99	840	af43e86f83f31fc9740c8116690d2bc37b582b7fd6b2ee4a77a4e394442eb2a2
+full	tile	far.land	100	3620	87d9ab691cd1a78e53bb1b4f4f0348e149632a268bd21ca867b117fd179dd5da
+full	tile	far.lake	100	669	b005d4ed66cdfa8dc71f031d2f060aa9b46e2d2ffe0e7fe8703df1a5c4cd14d7
+full	tile	far.land	101	3633	d598846a34773dc9eee264ab539f8addba0bd6b6552310a9a9ba9808ce52ac99
+full	tile	far.lake	101	879	f9d628fd8cadb0d98fa5d0296d131a3fbbc7435ff5a9a51b24e0b87ce8902367
+full	tile	far.land	102	2972	006283664a836cd39327004bb84948cdf6e4c1335fb3d71a16ece9fe0d0611b5
+full	tile	far.lake	102	691	1a62340fc03f4383f76701af91e4ffccaa083f57f3da2696f25d9a6bdb62b0bf
+full	tile	far.land	103	2707	c5b4ad11994d0f40c3887351c7218fd4ddead69cce9f3af6cca9015b004fe9f2
+full	tile	far.lake	103	823	6f739b36db414338f2c71704d6518c7f48f12022bca2984703b583c3085f9f2d
+full	tile	far.land	104	2104	e632b1f963fdbdcfd9da812819965556809cf42b6290eb094822be4f71ddb5c9
+full	tile	far.lake	104	819	987e36dc0bbc91620c4cedb021496ad620bf06426cd8d3dc571f5ae7c4ed978a
+full	tile	far.land	105	2409	07429698697557038c2dc62deec4a0799d008925a5dae6a2b8f1cc584ee20e32
+full	tile	far.lake	105	715	6ba1fef90658ca6b9323bf52856c5f9a4cdcadebc7f61e85806e0d7a380029a6
+full	tile	far.land	106	2630	e0908dfc60b3c6069c6fd04c780215cd70cfa172d30e1b8f987a4acf8c7b1040
+full	tile	far.lake	106	729	073e6b538da8fbddc2fba35455c450e24e2c6dc5bd8f0c43733278ab6211092c
+full	tile	far.land	107	2111	3ea06b61f309d08b5df964fe952da08aa68f5ccda18295553133fbd85d15520f
+full	tile	far.lake	107	634	de8d139b39373dad36dc4946ab2efe136f484ffeac45d93f20cc088d339d82a5
+full	tile	far.land	108	3316	917c7e03a7620ee73be15b8b5c505c28129ad49cdb75c9e6dbdb2a60b2d4df26
+full	tile	far.lake	108	971	dd108333fab84a4af339903370422861181f1e251338d5b8429af541d68de20b
+full	tile	far.land	109	2489	ad18f54868f2280a24df8f736726ca95f32eb4862a44272040691ae7a772a845
+full	tile	far.lake	109	627	caecfab5ed6e5110ce446e9e2e28a98a731282738cf079050598ee7fc058f1cf
+full	tile	far.land	110	2522	9eed14adf87560ad3e1dee62dd72c61f4e009609b3c9645bde7e4a3483fcc07e
+full	tile	far.lake	110	576	81eb896b6138ec7365a86c5bf9dd78197a83988fca61abd1013cc3e58aabc3ca
+full	tile	far.land	111	3305	b4332254484cd6628b9d8b1308aba0fe0010a255e376b63e9c472295ec0b5e0f
+full	tile	far.lake	111	707	52ec53486d576596e0eb75652207b5e3ad150ac6a5ac5e7cbdff02f9618bcd16
+full	tile	far.land	112	3481	d115d93e43b4004214aba7500f5156dea534a549b44208452c3ed134fd14ef52
+full	tile	far.lake	112	1025	0aabd05dcb3bc6a1a99e589347af3c8693ee63bef4933462ec8ef27d15879197
+full	tile	far.land	113	2631	581ce728113aa6ecf8475a9136a089fffad25bd89741d01bd498f5bb3375f662
+full	tile	far.lake	113	887	ab39c475a99cf67a55ea22b52ea8612d70d3dba7e2802e633d14dfd32fe46e07
+full	tile	far.land	114	2971	258e829105e8d6f2c5f1c5756e512705214191a3260f5ee44fabca30d04897be
+full	tile	far.lake	114	953	ededfa655c9946bf5aecc59dcb72120baee66336d2282d3ff3c38da8457bbd66
+full	tile	far.land	115	2653	d05349d094786861202840a1a50aa72d8773f29e79bf2918de079bfb2ec7e882
+full	tile	far.lake	115	648	7e76a59b527be65d5f13c969a47affdf609fa993c64602b89b9d71a2edc54f38
+full	tile	far.land	116	2469	343ad0dee6691f8a5d10a987de3c364e14ef38702b536ed86735c35d39cfcd99
+full	tile	far.lake	116	630	57b62f8ce31087a33fe36f0d4cc1a786995062cdebe1082d2111d00ca72c16bc
+full	tile	far.land	117	2114	129037f3726bf7cfdbb057f9471fcf44d7899e43594ad5771a0a4bdce9b4cecc
+full	tile	far.lake	117	584	9dbf5c11bce379a18740c8d22d52187c9a0dd6855aa0321c3d4f2a9b8987e477
+full	tile	far.land	118	2598	5b88dbf03b55aa988f91993bc9b0b4123c94ebfbc3ff6d287cfaed7f29c5d689
+full	tile	far.lake	118	911	6745782d00fd5e889e674e4b0b21dc505cceb79eea6a2696f8d089bbd131b1b7
+full	tile	far.land	119	3596	f9ce59242ede7ef94af8bde427d3edf373611ee5e0e948c8afb29b290b0df4a7
+full	tile	far.lake	119	1867	bfa519702dc73b0b1b15248b8cbdb60b704074ff57c543bc076b813fb74f9966
+full	tile	far.land	120	3276	b0f9e6aec2b0164786845472cb03451c374d39d039f6efccea5fb65f999e752a
+full	tile	far.lake	120	1796	378730915a334c0b0c26d3934853c86decb0f6872055710c9ea845a9f43e9b99
+full	tile	far.land	121	3580	d901907e32086c9318efee654373bce3bb4d8218d56ae47eb0c0ac86e2a0dac0
+full	tile	far.lake	121	2248	cbf5c57c1a4089c95b4977382aae672fbd786d38867ba5038a6134b6e277eb54
+full	tile	far.land	122	3166	b0261d32397d1d13b9ad73c8f6abe6d2d9997e2b78529d321dbc6e265f7a745e
+full	tile	far.lake	122	1828	3a1dea9fa4dac8eb62c3c7cf4b5d29806fb8f14d0af381709c9099093da84768
+full	tile	far.land	123	3318	d567ef213fbcba4c02f6c5a16678ec5d9697ae27895078e205e83ac6233c1d9c
+full	tile	far.lake	123	1772	099e18cf8249893b81aaa9babd108f7f2ade89f3521edc661837d55188c51e8c
+full	tile	far.land	124	4143	f30981d6123e7267306eb42d4aaa76ae8003eeed3f62871548804481a3b7c175
+full	tile	far.lake	124	2099	2f276a56e3448c0a18ce5da40199cd54c81971de566d0f4c66bf9f718e8d6283
+full	tile	far.land	125	3895	25c536ec2b023c72dae8750827f3dd959cecabdc532adff87acb78f0c9f64b39
+full	tile	far.lake	125	2055	7cd09ba513fa15e8f40adc1006f392d752f21a912f322fcec9a62c858ee38671
+full	tile	far.land	126	4533	1c2abe9287d09d418709acdea7811bfcb7852ce0a682296d8a818e4459ac6cf9
+full	tile	far.lake	126	2102	82944650bd8028600f37d49461906cec4a3541a37ba86070f2f84b20f1525047
+full	tile	far.land	127	4395	70603ee8bd1121606588f3c567538cc3904afa35d06fa9cfacbefd962d721e72
+full	tile	far.lake	127	1856	9df40e6f163abf024f172333da0034dbba3d6afb969e054b75cfe3cadb61d627
+full	tile	far.land	128	4525	a3a8411d27ba55d0b852cc7071729d2a832b92d299d63a1d88f566a53de85a31
+full	tile	far.lake	128	2104	66bf3aaa1e77933c5e72ba5889371714ddb01ea83c65fc87036718fb52b4b867
+full	tile	far.land	129	4084	b8c371cef6c523d4678e083a11c3a5e49773acfa78e6dfc7d46cf0d6fe2dccf1
+full	tile	far.lake	129	1720	6d2075ddbe7edeb4cd3e310e96edc8e81f3d24dbaee5e1ae9876420d006abdba
+full	tile	far.land	130	4291	c3bcf61e85b6fa8aeb2eb721245c6109ee1c0ba51383d80cf85d427b823e901d
+full	tile	far.lake	130	2244	96c529067017fa182f669a3092fa8344f4715c54e2c753c3ade2bbc395084020
+full	tile	far.land	131	3864	d752bd75370772da0f22c489090dd0879d87133f7093f95beb8f1f1c3188fcb6
+full	tile	far.lake	131	2198	34986b621959894352cb85646ee3e6c869a95a8613424a919df4632569429c1e
+full	tile	far.land	132	3750	df7274311f891bd01c7aacdafe964d6ba42764b4d1ef816002d1ed622888c4c3
+full	tile	far.lake	132	2254	183e7da50b84fe3c34f6feb974246c589a5e55ffd838ffa5ef81743cb0d73209
+full	tile	far.land	133	4277	6c171632a0629e05299b47ad468e461bb507f103de4c4f2ec5b811c1ac0115f7
+full	tile	far.lake	133	2412	ecbc764b7b14c55a7bd0eb4b2ea98afe6b698c778115775fa4699392893842eb
+full	tile	far.land	134	5220	3049df3c4383454763d11f9ea2ff3a633c521e058fee0d517a5066fdbfe3816c
+full	tile	far.lake	134	3524	256916cfc2827d6eff133d5d84644f258ee4b8b8eab44569a88352c0be4457d8
+full	tile	far.land	135	6831	2938d919ed5d1a79185fd4132636cb9ccfc8e1d001a99fd565ffacc228845377
+full	tile	far.lake	135	4993	081eb0ed4c9f49c79d43a72eb5d634b9c5c2220c2ac80b3c816f65f61ac28cf8
+full	tile	far.land	136	6899	db336e5b6fe3e0015582af05080332ab70973a301a823389d435e9ff56febd04
+full	tile	far.lake	136	4897	c49fa0ff184462a62ccdadf2af8bb7fd3ea53f1eb36831abfe6eb77fbd6cf6a3
+full	tile	far.land	137	6094	85cbba58f68bc9e91b213d7021e1194cb3748c659d307bbec35b5df9fe941d17
+full	tile	far.lake	137	4020	eb70575e9c919cc5c26bb9cf737339419f9f75fb279382b088dc70dbf662527e
+full	tile	far.land	138	6597	176d9193eb975cca07a96ea2d67a33648cc9dc81085b4534b8234a6ea405f026
+full	tile	far.lake	138	4776	65ea25b7d53dde9c53ea30117cab5824b35e198dce69e15d0942ff9af81ad70f
+full	tile	far.land	139	6970	a9778179a8f3d4e2336fbe209507476bb48b963c83187609b7ee3d8570925cbe
+full	tile	far.lake	139	5029	e2ddf480559546f452db228044a965eb8d336e07496ce08cc5acd012caf024dd
+full	tile	far.land	140	7226	d521bcd8258b443a3a315ab31f8af4edd36e0e5f637a3082e04c71b025b7133c
+full	tile	far.lake	140	5451	5b5368e456c32d8945d7c3ddf2574e26fe0ba0b1acf18a1b9529a0bc410a3f93
+full	tile	far.land	141	7258	35195da8319f2fad7537ee0f006abad3c9d72ef7e58ab77f8837b6ab43e044d7
+full	tile	far.lake	141	5158	b999053cdf42826b815997ba99354170255c9e2a7003fba12783d460770856a3
+full	tile	far.land	142	8142	7413abf4e7a5b126ef58a9a0313cfc06dabb10c92e8115c6982a3c8b43172007
+full	tile	far.lake	142	5752	e811379c93c2a3ace68489011da688e1c96ce7c695b36ae37fec3b59824b9f91
+full	tile	far.land	143	9782	3f4be8c85280466252373ee0f12647e784e03d7c86ba7b46f5b09c6ea645edb9
+full	tile	far.lake	143	6859	45f0b354981ede881a14bf36050b4fc40eb54b41746f929fade4a482d9bb2a6b
+full	tile	far.land	144	10875	50070eff3a3b957fe2dc5d38b3af1ad6a903f21a4576e742c4db140da708017d
+full	tile	far.lake	144	7554	3713c615f5694579ec60a54da6cbb16bd02975a50dcb9d29ba49ff17ea55b328
+full	tile	far.land	145	9858	3dd03d0717a9ba8a64fdd6d30045ea4b5385761810bc0110bfe3bfd305772d10
+full	tile	far.lake	145	6305	9589a4af3c160e0f775ddb8b30d29c6bf2e03e4f8df369e0119b6deb3f382b02
+full	tile	far.land	146	8620	20ebe31f259757bd8f47c66a2dbdbafbf56123fe787e2acd0aeea5d813dd7ddc
+full	tile	far.lake	146	5476	91491afc6aae36f696ccccb3d2b29c000eda1313691b64e80ac61a8e1b84278f
+full	tile	far.land	147	7722	e37e277d80ff25d2da641ee63db351413f498d883b0df0288789888d7a7e145f
+full	tile	far.lake	147	4579	3a519c976b5d5090de0923f76da768e3cd828df0c1e0595b6f0151abf7fd1cee
+full	tile	far.land	148	8147	b6619486d4852222c1543ae2765e37aa62b37f4ac2b070b6c43d9f0aaffa9b16
+full	tile	far.lake	148	4807	deb95467e58d72ae674106bc0030c55f76c75f109a710b6ad5b4e877d83184a6
+full	tile	far.land	149	9733	845204fcd146adaf02692a8a52217d3e4d6f3f4468c75c43759485fd5b5e358d
+full	tile	far.lake	149	5880	2388bfe72e3c9d591180dffa5970ab4ee7afe842e84cd4bdc5047a91f4fd09ca
+full	tile	far.land	150	10573	ae53385bffd480384e0fae6b884d029403e80fe721a7e9743e85d089929016e7
+full	tile	far.lake	150	6213	06b14e230007527d41c46d7f181984aa5682bab668c4d5c8a5f02f703366e839
+full	tile	far.land	151	9844	bda02355010c802e1c607708eb485a8e89453c2597217a2097b68ddf032eb0ed
+full	tile	far.lake	151	7257	a1aaffcb2fac09393699612baa5f4087650d42106b40ee41cc2b53000f681546
+full	tile	far.land	152	10065	7d4ab171c18656e43c277cd7debe8f66de646facf19f593e7c6864af579029b5
+full	tile	far.lake	152	7166	a2d6148f25148f53bd03295dff2bc7456fa821372b79b9c782660fe37bc67968
+full	tile	far.land	153	10194	53610725e4fe2135424d11ce615b04ecd962dcc8a688e3a6aa315a34c8766937
+full	tile	far.lake	153	6631	41a0fe28440d71e982b08faa21141afb1e069d9662dae521d890b56f5e891c10
+full	tile	far.land	154	10210	950c8a5272e1d1a5ee0e4bcda2e408e73a89fefe3250d9e8a2a68536a1472f11
+full	tile	far.lake	154	6510	3e1bf6eacbcd8133f9be9b8c37f05e53251ed78e31ff33326b7e4b94e6f62d62
+full	tile	far.land	155	10097	47d5e53b9f7f57f9ddc6c8052904f0e4b962ec79a80863fc583f9532485cd8c5
+full	tile	far.lake	155	5808	380b29aff6e645e44053da53503a0b1891703747a1e16402edb2d3453a63554c
+full	tile	far.land	156	10615	6f88da2e05f5092b46118cfc31b6ddb9530d11feb5554be6e96d41b379e96c3f
+full	tile	far.lake	156	6249	f9894701f652f694e00bc6ad21aea0d75a495bd5feb9acae8b7d3e1c6d44353f
+full	tile	far.land	157	8676	645d0c16e28a914706d1210e0e0541104b2d854331eac418772b73308d749bf8
+full	tile	far.lake	157	4796	9508055e7acab0bb303c7900d256cc1bdb397f69fdbc1d696623ab544fb17818
+full	tile	far.land	158	11854	9e2c02abf9382c04ad3dd2f213d7230b886769dd1a16f7a97374942ed7e82b9d
+full	tile	far.lake	158	5085	8f85b2ae8fa827d370eefe1d7394614f22943ab2612840bb6098bedb2c7ccbf7
+full	tile	far.land	159	11663	a37fdbe9024e8201520314acd08386a0d10f0d15c33e317a241ae95476155665
+full	tile	far.lake	159	4459	99a5c1f95d8d67f7ea49d7d269155fe0557a426a930f286b02c0b1e5f361e7b8
+full	tile	far.land	160	9229	efd62e707f40ebb120626169b27de59b6f40a835d13c3afbcba71821fceb9278
+full	tile	far.lake	160	3353	b342a9308a38d35af93d2f49e1e5f76ec233174cb01ff8c5c3bac0432e1758d4
+full	tile	far.land	161	7434	ecfe89f4689a0508c9cccfc95939f9303a9a439907b93be8964961357e0dcb96
+full	tile	far.lake	161	2561	3cfdb0eaed9ff025215f2e1612cfea13cbd2a14dfe55ab312c344df2d60da60b
+full	tile	far.land	162	6355	5c387228cdb525082687d99bc153d6ea6b56795b08ea3adabb8151c8976304e1
+full	tile	far.lake	162	1647	fb68d09cd6ebb0f6779a10cae1c6cdf9bf93aed643ec3f33d114b7eb8343395c
+full	tile	far.land	163	5576	9007ebe6f9bf8aa532a3ac570de1ba8a3bbc674ab4424a6af39d17ab260a0f90
+full	tile	far.lake	163	819	eebcd7b0fbf3028c81997d03af90d3b950930c3a65fd96c96021e495cd4d54e8
+full	tile	far.land	164	4733	b75a2d3cc6b8e401b8f37d7aec9ef4f9acb352eea0e53314787b495a7a0bce2e
+full	tile	far.lake	164	1180	86d2a25aa30ac219443fc3c21684b1ba5e36ab9ab57a0cb820403d8b29de5e63
+full	tile	far.land	165	5122	3112a587c1f2e46d13b14f535ce7559a32b03bf17adfce299a8fe9a9c57beb1a
+full	tile	far.lake	165	456	97bb1d46f2d5fdc05e9df1d40f8bb12d52d9499cda65645b78ca3cbebaf74492
+full	tile	far.land	166	6052	bdedfd5c98b42eea0ee33763dfb3b6b8a3045868a5af865e31e457fe97f749aa
+full	tile	far.lake	166	279	134a2a764dd9038e0fdcd3c3856bafd303ca987db1af10510b675c856954b2a4
+full	tile	far.land	167	4579	8d4db8012c32553f8a618f3b23aae460fe12ed2d1fc9a1ab1baa94750404952d
+full	tile	far.lake	167	307	cb6aabdb8e7978e8fe4ba046192e2fc9577ec46b6df385f8847d5d16c4f8dcc7
+full	tile	far.land	168	4653	c791d342294c8c6cea3a04ca92d60c4923695e599e84a7df7b64e4c08ad00313
+full	tile	far.lake	168	210	a0a15cf012e814abf297668926faea9a83b81e8d051de51ca14b4bcfe5331cde
+full	tile	far.land	169	4630	e28aa60c0dce9fcb223c6ff79312289d16cb9b00f94e634ada0a689050746a51
+full	tile	far.lake	169	255	8f1047a9764d966ef65713917ff1905d16f5fd0192d4d17215be71f3aaa49092
+full	tile	far.land	170	6122	3270fc1312efd1eb59ba1b46fb0087d672b5573bd06ed4f1c7a75df2b4b38e91
+full	tile	far.lake	170	419	106e6bc8e523a8bfb0f549293d4ce16a8556eeebf9700a9440bf72427945291a
+full	tile	far.land	171	4622	d2e0a2a581fe6ca6b0fcbcba522b429f27696ad39e4d9157abc59df73f7e84e6
+full	tile	far.lake	171	831	f0746511a717cee9c1a1e04430d23fcc78db078573919115e910d18d3f15522b
+full	tile	far.land	172	3430	c3c72318f18efc4db264792e9444e8f385ff31c30cf9b8dedd2575169ef88a1b
+full	tile	far.lake	172	231	152410f5a2ee6cac79fb6f092751e6d1c04ad1f59f0e7b4d6b2b87d703235f9c
+full	tile	far.land	173	1598	1c2926dbe0b903f1859d64af66f6581e90fa14621c8856c95b85809c42fe2527
+full	tile	far.lake	173	145	1a001af632df09cec1df96d7eafa11fdf97be6e374c2c1d322dbc231a21d481e
+full	tile	far.land	174	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.lake	174	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	175	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.lake	175	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	176	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.lake	176	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	177	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.lake	177	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	178	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.lake	178	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.land	179	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	tile	far.lake	179	0	a2cad969affd6c3b85af7a3d7878aeacec8e5d768440c8f68ad0e759257c36c1
+full	segments	Rotterdam and ring	13144	13087	50221	50222	50223	50224	50225	50226	50227	50581	50582	50583	50584	50585	50586	50587	50941	50942	50943	50944	50945	50946	50947	51301	51302	51303	51304	51305	51306	51307	51661	51662	51663	51664	51665	51666	51667	52021	52022	52023	52024	52025	52026	52027
+full	segments	Perth and ring	926	924	20093	20094	20095	20096	20097	20098	20453	20454	20455	20456	20457	20458	20813	20814	20815	20816	20817	20818	21173	21174	21175	21176	21177	21178	21533	21534	21535	21536	21537	21538	21893	21894	21895	21896	21897	21898
+full	segments	Paris and ring	15160	15094	49139	49140	49141	49142	49143	49144	49499	49500	49501	49502	49503	49504	49859	49860	49861	49862	49863	49864	50219	50220	50221	50222	50223	50224	50579	50580	50581	50582	50583	50584	50939	50940	50941	50942	50943	50944

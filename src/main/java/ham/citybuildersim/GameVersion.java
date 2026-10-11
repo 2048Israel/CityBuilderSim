@@ -5049,8 +5049,41 @@ public final class GameVersion {
      *     (BusinessInvestment.zonedForOthersWords(), landReason()'s words).
      *   - Harnesses: ZoningViewCheck (new, eight sections).
      *   - The playtest sets no zone and is 0.7.107's byte for byte.
+     *
+     * 0.7.111 (2026-10-10) - THE EARTH'S READER, PURE. Batch E1 (the
+     * project's spec-earth.md, Jerus's answers of 2026-10-10 "all rec";
+     * runs/brief-batchE1.md, runs/fixE1-notes.md). No save format change
+     * (36): nothing in the game reads either class yet - E2 lays the Earth's
+     * ground on the world through them.
+     *   - EarthProj: Lambert's azimuthal equal-area projection centred on a
+     *     spot, on WGS 84's authalic sphere (6,371,007 m), StrictMath, forward
+     *     and inverse (the inverse through the point's unit vector, so a spot
+     *     on a pole keeps its digits); the world's plots in metres (spec-earth
+     *     2: ((x - SIDE/2) x 30, (SIDE/2 - y) x 30)); a cell's area on the
+     *     planet in closed form (the square less what lies past the
+     *     antipode's circle), and the same measured on the sphere; a tile's
+     *     four corners projected and the points between blended, longitudes
+     *     unwrapped across the date line, every point exact above
+     *     BLEND_MAX_LAT (75 degrees).
+     *   - EarthData: the reader of earth-1.bin, ported from E0's earthread.py
+     *     - the layer table and the tiles' index, an LRU of inflated tiles
+     *     (CACHE_BYTES, 10 MB; java.util.zip, no library), the share layers
+     *     by tile, band or position, rivers and small lakes decoded (a river
+     *     read over several tiles keeps each segment once), the geology, its
+     *     provinces, the places and the meta, and the file's identity
+     *     "earth-1:<SHA-256>" against EARTH_1, the file this build reads.
+     *   - E0's pipeline is in the repository at last, tools/earth/ (the
+     *     bake, earthread.py, FORMAT.txt, ATTRIBUTION.txt), with fixture.py,
+     *     which cuts EarthCheck's fixture from the file. The file itself
+     *     (52.8 MB) is not in the repository; how it ships is E4's.
+     *   - Harnesses: EarthCheck (new, nine sections) on the fixture,
+     *     src/main/resources/earth/ (332 KB: the three windows the study drew
+     *     and Fiji's four tiles, with what earthread.py reads from them and
+     *     from the full file), and on the full file when it is named
+     *     (-Dcbs.earth=<path>).
+     *   - The playtest is 0.7.109's byte for byte.
      */
-    public static final String VERSION = "0.7.109";
+    public static final String VERSION = "0.7.111";
 
     /**
      * The save shape.
