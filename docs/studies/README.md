@@ -16,6 +16,8 @@ where it has been built.
 | [spec-globe.md](spec-globe.md) | 2026-10-11 | The Earth's map as a globe, ice and desert on the ground, panning with W, A, S and D, and a minimap with district pictures; prototypes in `globe/` and `minimap/` | E7 to E9, MM1 and MM2 (planned) |
 | [research-1900.md](research-1900.md) | 2026-10-11 | Research from a 1900 start: what a 1900 city was and how it worked, the 1900 economy, the world to 1950, the Policy levers on Canada's dates, and a 1900-1950 catalogue of 48; the model's 1900 files in `research-model/` | R0, R0b, R0c, then R1 to R5 (planned, after every other batch) |
 | [research-design.md](research-design.md) | 2026-10-10 | Research: grants buy posts, prizes draw labs, recipes and equipment, the world on history's dates, a 1951-1995 catalogue of 40; the model in `research-model/`, five mockups in `mockups-research/` | R1 to R5 (planned; its order replaced by research-1900's) |
+| [spec-materials.md](spec-materials.md) | 2026-10-08 | The materials chains and zoning as a build spec on the code: two bases, field types, the planner's whole cost, captive use, the works' own power, old metal, coal's wash, forestry; the build order in its §5 | I1 to I14 (from 0.7.110) |
+| [spec-oil.md](spec-oil.md) | 2026-10-08 | Oil and ports as a build spec on the code: the refinery as units, the spread rule, wells and platforms, terminals and boats | O1 to O14 (0.7.76 to 0.7.98) |
 | [spec-roads-and-ports.md](spec-roads-and-ports.md) | 2026-10-08 | A district's streets by need, highways on corridors, islands and the two-port rule, routes at sea; prototypes in `roads-prototype/` | RD1 to RD6 (from 0.7.87), O13 (0.7.97) |
 | [spec-earth.md](spec-earth.md) | 2026-10-08 | The world as planet Earth (the projection, the data, the ground, deposits on real geology, founding on a spot) and buying land from the map; prototypes in `earth-prototype.py` | E1 to E6 (from 0.7.111) |
 | [spec-zoning.md](spec-zoning.md) | 2026-10-08 | Zones by sector and the forest law, and what they do to forestry; the forest model in `zoning-forest-model.py`; boards in the artifact "Zoning Study" | Z1 (0.7.107), Z2 (0.7.109) |
@@ -30,9 +32,12 @@ where it has been built.
 
 ## The ones that moved here
 
-Everything above but `spec-globe.md` was written in the claude.ai project
-"Civic Ledger: Java Game" and moved here on 2026-10-11, byte for byte, with
-the same names and folders it had under the project's `claude/`. So:
+Everything above but `spec-globe.md`, `spec-materials.md` and `spec-oil.md`
+was written in the claude.ai project "Civic Ledger: Java Game" and moved here
+on 2026-10-11, byte for byte, with the same names and folders it had under the
+project's `claude/`. The two build specs were written in the cloud session's
+`runs/` folder and copied here the same day, byte for byte: a comment that
+cites `runs/spec-materials.md` or `runs/spec-oil.md` means the copy here. So:
 
 - **Inside those notes, `claude/<name>`** means this folder when the file is
   here (`claude/research-model/` is `research-model/`, `claude/mockups-oil/`

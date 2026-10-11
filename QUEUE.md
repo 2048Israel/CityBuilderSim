@@ -19,11 +19,32 @@ stuff".
 
 ## Queued
 
-_The batches already queued in the project's todo go above PT1: the
-orchestrator's to add, one row each. This line goes when they are in._
-
 | batch | what | brief |
 |---|---|---|
+| I5 | Iron mines by type and size (running) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| I6 | Coal: Coal Mining, four rows and the wash | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| T1-B | Death care served first while the dead wait; the two Debt/GDP figures labelled | project: `claude/why-the-builders-stall.md` §9 B, `claude/decisions-2026-10-10.md` |
+| MM1 | District pictures, each built district drawn small from its plan | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |
+| T1-C | The builders' own depots first | project: `claude/why-the-builders-stall.md` §9 C, `claude/decisions-2026-10-10.md` |
+| I7 | Stone: Quarrying, Cement & Concrete | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| E8 | The globe's model half, pure | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |
+| I8 | Copper: Copper Mining, Copper Refining, the Wire & Cable Works | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| MM2 | The minimap | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |
+| I9 | Forestry, with the 100-ha woodlot | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| E9 | The globe on screen, and W, A, S and D pan | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |
+| I10 | Wood products | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| M6 | Buying land from the map | [spec-earth §3](docs/studies/spec-earth.md#3-buying-from-the-map), project: `claude/decisions-2026-10-10.md` |
+| I11 | The materials pictograms' model | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| I12 | The materials pictograms drawn | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| I13 | Cards and pages for the materials buildings | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| I14 | The materials on the map (0.8.0) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| CC1 | Childcare at real demand | project: `claude/decisions-2026-10-10.md` |
+| R0 | Research: the 1900 economy and the calendar from 1900 | [research-1900](docs/studies/research-1900.md), [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| R1 | Research: recipes and equipment as data | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| R2 | Research: the catalogue and the world | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| R3 | Research: posts and discoveries | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| R4 | Research: prizes and the Research Lab | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | PT1 | Eleven small fixes to screens, words and the log, from a played city | [PT1](docs/queue/PT1.md#pt1) |
 
 ## Pending
