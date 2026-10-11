@@ -2058,7 +2058,7 @@ public abstract class Sector {
      * market is priced on what comes to it, not on what could.
      */
     public double getPlannedOutput(Good g) {
-        double nameplate = getCapacity(g) * getOperatingRate();
+        double nameplate = madeAtRate(g);
         // ...less what it uses of it itself (0.7.112, CAPTIVE USE): the market sees the rest.
         if (captive(g)) nameplate = Math.max(0, nameplate - captiveUnits(g));
         if (!g.stockable()) return nameplate;
@@ -2070,13 +2070,25 @@ public abstract class Sector {
     }
 
     /**
+     * What its plant could make of a stockable good this month: its nameplate
+     * at today's rate - the figure getPlannedOutput(), getExportBoundOutput()
+     * and produceStock() start from. A sector whose stockable good the ground
+     * limits says so here (0.7.126, batch I6: Coal Mining's coals, which are
+     * stockable, so the flow goods' groundLimit() never reaches them - its
+     * month's coal is what its mines can dig, sectors.CoalMining.lift()).
+     */
+    protected double madeAtRate(Good g) {
+        return getCapacity(g) * getOperatingRate();
+    }
+
+    /**
      * Nameplate the city cannot eat, made for export instead - if the export
      * price clears the marginal cost of running the line, which is the
      * energy and water and nothing else: the staff are paid either way.
      */
     public double getExportBoundOutput(Good g) {
         if (!g.exportable() || markets == null) return 0;
-        double nameplate = getCapacity(g) * getOperatingRate();
+        double nameplate = madeAtRate(g);
         if (captive(g)) nameplate = Math.max(0, nameplate - captiveUnits(g));
         double spare = Math.max(0, nameplate - getPlannedOutput(g));
         if (spare <= 0) return 0;
@@ -2346,7 +2358,7 @@ public abstract class Sector {
         if (!g.stockable()) return;
         Output o = output(g);
         o.capacity = getCapacity(g);
-        double nameplate = o.capacity * getOperatingRate();
+        double nameplate = madeAtRate(g);
         // ...its own need of it first, the rest to the market (0.7.112, CAPTIVE USE).
         if (captive(g)) {
             o.captive = captiveUnits(g);

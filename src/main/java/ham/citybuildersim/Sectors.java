@@ -5,6 +5,7 @@ import ham.citybuildersim.sectors.Automotive;
 import ham.citybuildersim.sectors.LuxuryRetail;
 import ham.citybuildersim.sectors.Restaurants;
 import ham.citybuildersim.sectors.BusinessServices;
+import ham.citybuildersim.sectors.CoalMining;
 import ham.citybuildersim.sectors.Construction;
 import ham.citybuildersim.sectors.FoodIndustry;
 import ham.citybuildersim.sectors.FoodProcessing;
@@ -63,7 +64,9 @@ public final class Sectors {
             MANUFACTURING = "Manufacturing", AGRICULTURE = "Agriculture",
             FOOD_PROCESSING = "Food Processing", RAIL = "Rail",
             AUTOMOTIVE = "Automotive", LUXURY_RETAIL = "Luxury Retail",
-            RESTAURANTS = "Restaurants", OIL = "Oil", REFINING = "Refining";
+            RESTAURANTS = "Restaurants", OIL = "Oil", REFINING = "Refining",
+            // ...and the materials chains' new industries (0.7.126, batch I6; Jerus's Q21, 2026-10-08: iron, coal, stone, copper, wood).
+            COAL_MINING = "Coal Mining";
 
     /*
      * ON THE END, AND IT HAS TO STAY THAT WAY - but for a softer reason than
@@ -80,7 +83,9 @@ public final class Sectors {
         BUSINESS_SERVICES, MANUFACTURING, AGRICULTURE, FOOD_PROCESSING, RAIL, AUTOMOTIVE,
         LUXURY_RETAIL, RESTAURANTS,
         // ...and fuel (0.7.62, batch K; spec-land 2.7): the wells, then the refinery.
-        OIL, REFINING
+        OIL, REFINING,
+        // ...and the materials chains' new industries, in Q21's order (0.7.126, batch I6; spec-materials 2.1): coal first.
+        COAL_MINING
     };
 
     private final List<Sector> all = new ArrayList<>();
@@ -103,6 +108,7 @@ public final class Sectors {
     private final Restaurants restaurants;
     private final Oil oil;
     private final Refining refining;
+    private final CoalMining coalMining;
 
     public Sectors(BuildingManager buildings, Markets markets) {
         retail = add(new Retail(), buildings, markets);
@@ -122,6 +128,7 @@ public final class Sectors {
         restaurants = add(new Restaurants(), buildings, markets);
         oil = add(new Oil(), buildings, markets);
         refining = add(new Refining(), buildings, markets);
+        coalMining = add(new CoalMining(), buildings, markets);
 
         if (all.size() != KEYS.length) throw new IllegalStateException("Sectors.KEYS is out of step");
         for (int i = 0; i < KEYS.length; i++) {
@@ -230,6 +237,9 @@ public final class Sectors {
 
     /** ...and the refinery, whose tanks the drivers and the railway draw their fuel from before the world (0.7.62). See sectors.Refining. */
     public Refining refining() { return refining; }
+
+    /** ...and the coal mines (0.7.126, batch I6), whose two coals come off one flow - the surface mines', and the underground mines' raw coal through the preparation plants. See sectors.CoalMining. */
+    public CoalMining coalMining() { return coalMining; }
 
     /** The city, handed to every sector once it exists. */
     public void attachGame(Game game) {

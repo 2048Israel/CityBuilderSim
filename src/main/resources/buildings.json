@@ -45,7 +45,9 @@
   "Mine on HEMATITE, the Magnetite Mine & Concentrator and the Large Magnetite Complex on",
   "MAGNETITE, digging 3 t of rock for a tonne of concentrate; and a works of 20 sites",
   "needs 20 free sites of ONE field of its type (LandManager.fits()), its iron the",
-  "tonnes of its type still in the ground.",
+  "tonnes of its type still in the ground. Since 0.7.126 coal's do: the Surface Coal",
+  "Mine and the Large Surface Mine (four sites of one field) on THERMAL, digging 1/.95 t",
+  "of seam a tonne; the Underground Coal Mine on COKING at 1/.80, its coal RAW.",
   "A well stands only on a dry site (a field whose centre is on land), lifts 10%",
   "less each year and is retired under ten barrels a day, after 263 months.",
   "CRUDE is tonnes of crude oil, lifted by the wells and refined. A refinery 'uses'",
@@ -108,6 +110,11 @@
   "takes goes to landfill.",
   "\"since\" is the year a building first existed (0.7.123), 1900 - the start year - for one",
   "that stood before it; read by nothing yet, for research (absent: not yet dated).",
+  "A COAL PREPARATION PLANT (\"wash\": 500000, 0.7.126) washes the raw coal Coal Mining's",
+  "mines on coking fields dig, tonnes a month at nameplate, into coking coal (55%) and",
+  "thermal coal (20%), the rest to spoil; raw coal no plant washes sells as thermal coal,",
+  "tonne for tonne. Raw coal is not a good: the plant buys and makes none of its own, and",
+  "the sector's flow says what comes of it (sectors.CoalMining).",
   "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
@@ -129,7 +136,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 111,
+ "nextId": 115,
  "buildings": [
   {
    "id": 0,
@@ -2666,6 +2673,128 @@
     "dig": 3
    },
    "since": 1955
+  },
+  {
+   "id": 111,
+   "name": "Surface Coal Mine",
+   "category": "MINING",
+   "sector": "Coal Mining",
+   "cashCost": 92316,
+   "constructionPoints": 46158,
+   "constructionMaterials": 1538,
+   "electricity": 800,
+   "water": 69,
+   "consumables": 599.15,
+   "jobs": {
+    "NO_DIPLOMA": 50,
+    "DIPLOMA": 22,
+    "COLLEGE_ENGINEERING": 6,
+    "UNIV_SCIENCE": 2
+   },
+   "land": 10763910,
+   "roadLoad": 16833,
+   "stock": 300000,
+   "makes": {
+    "THERMAL_COAL": 100000
+   },
+   "uses": {
+    "DIESEL": 230000
+   },
+   "site": {
+    "resource": "COAL",
+    "type": "THERMAL",
+    "sites": 1,
+    "dig": 1.0526315789473684
+   },
+   "since": 1900
+  },
+  {
+   "id": 112,
+   "name": "Large Surface Mine",
+   "category": "MINING",
+   "sector": "Coal Mining",
+   "cashCost": 730778,
+   "constructionPoints": 365389,
+   "constructionMaterials": 12179,
+   "electricity": 6000,
+   "water": 519,
+   "consumables": 2955.15,
+   "jobs": {
+    "NO_DIPLOMA": 210,
+    "DIPLOMA": 96,
+    "COLLEGE_ENGINEERING": 35,
+    "UNIV_SCIENCE": 9
+   },
+   "land": 43055642,
+   "roadLoad": 134662,
+   "stock": 2400000,
+   "makes": {
+    "THERMAL_COAL": 800000
+   },
+   "uses": {
+    "DIESEL": 1840000
+   },
+   "site": {
+    "resource": "COAL",
+    "type": "THERMAL",
+    "sites": 4,
+    "dig": 1.0526315789473684
+   },
+   "since": 1900
+  },
+  {
+   "id": 113,
+   "name": "Underground Coal Mine",
+   "category": "MINING",
+   "sector": "Coal Mining",
+   "cashCost": 615392,
+   "constructionPoints": 307696,
+   "constructionMaterials": 10256,
+   "electricity": 29000,
+   "water": 2508,
+   "consumables": 3727.2,
+   "jobs": {
+    "NO_DIPLOMA": 240,
+    "DIPLOMA": 110,
+    "COLLEGE_ENGINEERING": 40,
+    "UNIV_SCIENCE": 10
+   },
+   "land": 10763910,
+   "roadLoad": 42000,
+   "stock": 750000,
+   "makes": {
+    "THERMAL_COAL": 250000
+   },
+   "site": {
+    "resource": "COAL",
+    "type": "COKING",
+    "sites": 1,
+    "dig": 1.25
+   },
+   "since": 1900
+  },
+  {
+   "id": 114,
+   "name": "Coal Preparation Plant",
+   "category": "MINING",
+   "sector": "Coal Mining",
+   "cashCost": 115386,
+   "constructionPoints": 57693,
+   "constructionMaterials": 1923,
+   "electricity": 4000,
+   "water": 346,
+   "consumables": 512.08,
+   "jobs": {
+    "NO_DIPLOMA": 27,
+    "DIPLOMA": 18,
+    "COLLEGE_ENGINEERING": 4,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 2045143,
+   "roadLoad": 38194,
+   "stock": 1125000,
+   "wash": 500000,
+   "since": 1900
   }
  ]
 }

@@ -1050,8 +1050,10 @@ public class OilCheck {
                 withOil - without, 150_000 * .50 * .05 * level, 5);
 
         String[] keys = Sectors.KEYS;
-        assertTrue("the registry ends with the wells and the refinery: " + keys[keys.length - 2] + ", " + keys[keys.length - 1],
-                keys[keys.length - 2].equals(Sectors.OIL) && keys[keys.length - 1].equals(Sectors.REFINING));
+        int wells = java.util.Arrays.asList(keys).indexOf(Sectors.OIL);
+        // ...on the end when they came (0.7.62), and the materials chains' sectors after them since 0.7.126 (Coal Mining, batch I6).
+        assertTrue("the registry has the wells and then the refinery after Restaurants, where they went on the end: " + keys[15]
+                        + ", " + keys[16], wells == 15 && keys[14].equals(Sectors.RESTAURANTS) && keys[16].equals(Sectors.REFINING));
         Sectors s = new Sectors(new BuildingManager(), new Markets());
         boolean makesAll = true;
         for (Good g : PRODUCTS) makesAll &= s.refining().isMaker(g);

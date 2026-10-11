@@ -3591,9 +3591,24 @@ final class BuildScreen {
                 out.add("Stands in a free slot on an Offshore Platform, one a sea site of its field - cash alone will not"
                         + " put one up. Its crude goes ashore by shuttle tanker, or by a field's pipe once one stands.");
             } else if (Game.siteOf(t) != null) {
-                out.add("Needs land with an " + (Game.siteOf(t) == Resource.OIL ? "oil" : "iron")
-                        + " field under it - cash and space alone will not put one up.");
+                // ...a coal field's mine says its type (0.7.126): a coking mine's coal is raw until a plant washes it.
+                Resource r = Game.siteOf(t);
+                String field = r == Resource.OIL ? "an oil" : r == Resource.IRON ? "an iron"
+                        : "a " + BuildCard.depositWord(r) + (t.site().type() == null ? "" : " (" + t.site().type().name().toLowerCase(java.util.Locale.ROOT).replace('_', ' ') + ")");
+                out.add("Needs land with " + field + " field under it - cash and space alone will not put one up.");
+                if (ham.citybuildersim.sectors.CoalMining.digsRaw(t)) {
+                    out.add("Its coal is raw: it sells as thermal coal, tonne for tonne, until a Coal Preparation Plant washes it.");
+                }
             }
+            return out;
+        }
+        // ...a coal preparation plant (0.7.126): the raw coal it washes, Coal Mining's flow (sectors.CoalMining).
+        if (t.getWash() > 0) {
+            out.add(String.format("Washes %s t of raw coal a month from Coal Mining's underground mines into %.0f%% coking coal"
+                    + " and %.0f%% thermal coal; the rest goes to the spoil tip.", formatter.format(t.getWash()),
+                    ham.citybuildersim.sectors.CoalMining.COKING_YIELD * 100, ham.citybuildersim.sectors.CoalMining.THERMAL_YIELD * 100));
+            out.add("It buys and sells no coal of its own: raw coal no plant washes sells as thermal, and the sector builds"
+                    + " one beside its coking mines.");
             return out;
         }
 

@@ -21,10 +21,9 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| I6 | Coal: Coal Mining, four rows and the wash (running) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | T1-B | Death care served first while the dead wait; the two Debt/GDP figures labelled (running) | project: `claude/why-the-builders-stall.md` §9 B, `claude/decisions-2026-10-10.md` |
+| I7 | Stone: Quarrying, Cement & Concrete (running) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | T1-C | The builders' own depots first | project: `claude/why-the-builders-stall.md` §9 C, `claude/decisions-2026-10-10.md` |
-| I7 | Stone: Quarrying, Cement & Concrete | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | E8 | The globe's model half, pure | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |
 | I8 | Copper: Copper Mining, Copper Refining, the Wire & Cable Works | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | MM2 | The minimap | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |

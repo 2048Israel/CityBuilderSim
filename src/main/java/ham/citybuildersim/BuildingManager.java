@@ -2743,6 +2743,119 @@ public class BuildingManager {
                 .setSince(1955)
                 .setId(110));
 
+        /* ------------------------- COAL MINING (0.7.126, batch I6) -------------------------
+           runs/spec-materials.md 2.1, 2.2, 2.10 and 5's I6 row; the study's
+           (materials-chains-research.md) 1.3, 1.4 and 3. Coal Mining, the sector
+           on the end of Sectors.KEYS, digs coal's two types of field: thermal,
+           sold as dug, and coking, whose raw coal a Coal Preparation Plant
+           washes into coking coal (sectors.CoalMining.flow(); Jerus's Q9: a
+           separate building). Its four, the study's 3.3:
+             - the SURFACE COAL MINE: 100,000 t of thermal coal a month on one
+               thermal site, 2.3 L of diesel a tonne;
+             - the LARGE SURFACE MINE, a dragline pit: 800,000 t on four sites
+               of one thermal field, the same diesel a tonne;
+             - the UNDERGROUND COAL MINE, a longwall: 250,000 t of raw coal on
+               one coking site, 80% of the seam, 29,000 kW;
+             - the COAL PREPARATION PLANT: washes 500,000 t of raw coal a month
+               ("wash") into 275,000 t of coking coal and 100,000 t of thermal,
+               125,000 t to spoil; it buys and makes no good of its own.
+           The house conventions (spec 2.2), as I4's and I5's rows: cash the
+           all-in cost over 1.3, material a sixtieth of the cash, points a half;
+           the study's posts and split where it gives them (the surface mine's
+           50/22/6/2), else its family's by largest remainder (the large pit and
+           the longwall the large mines' 60/27.5/10/2.5, the plant the heavy
+           plants' 54/35/9/2); water the Steel Mini-Mill's 320 for 3,700 kW (the
+           study gives none); ground a coal site's 1 km2 a site, the plant's
+           the study's 19 ha; road load the tonnes in and out at the Iron
+           Mine's 420 for 2,500 t (mines, their diesel at 1,180 L a tonne) or the
+           Steel Foundry's 110 for 2,520 t (the plant); stock three months of
+           what each makes (the plant both coals); diesel where the study names
+           it, the surface mine, and its large sibling scaled by tonnes - the
+           longwall none; consumables the study's running cost less wages,
+           power, water and diesel at D$0.60. A coal site's seam is dug at 1/.95
+           a tonne at the surface and 1/.80 underground (spec 2.4). "since":
+           1900 for all four - surface and underground mines and washeries
+           stood before the start; the longwall's shields are research's E15
+           (1975), equipment on the mine, not the building.
+           ------------------------------------------------------------------------------ */
+        templates.add(new BuildingsTemplate("Surface Coal Mine", BuildingType.MINING)   // a thermal field's coal, sold as dug
+                .setCashCost(92316)
+                .setConstructionPoints(46158)
+                .setConstructionMaterials(1538)
+                .setSector("Coal Mining")
+                .makes(Good.THERMAL_COAL, 100000)
+                .uses(Good.DIESEL, 230000)      // 2.3 L a tonne (the study's 3.3)
+                .setElectricityConsumption(800)
+                .setWaterConsumption(69)
+                .setConsumables(599.15)         // 1,070 - 321.4 wages - 8 power - 3.45 water - 138 diesel
+                .setLandSqFt(10763910)          // one coal site, 1 km2
+                .setRoadLoad(16833)             // 100,000 t out and 195 t of diesel in, at the Iron Mine's 420 for 2,500 t
+                .setStock(300000)
+                .setJobs(JobType.NO_DIPLOMA, 50)
+                .setJobs(JobType.DIPLOMA, 22)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 6)
+                .setJobs(JobType.UNIV_SCIENCE, 2)
+                .setSite(Resource.COAL, Deposit.FieldType.THERMAL, 1, 1 / .95)
+                .setSince(1900)
+                .setId(111));
+        templates.add(new BuildingsTemplate("Large Surface Mine", BuildingType.MINING)   // a dragline pit on four sites of one thermal field
+                .setCashCost(730778)
+                .setConstructionPoints(365389)
+                .setConstructionMaterials(12179)
+                .setSector("Coal Mining")
+                .makes(Good.THERMAL_COAL, 800000)
+                .uses(Good.DIESEL, 1840000)     // the surface mine's 2.3 L a tonne
+                .setElectricityConsumption(6000)
+                .setWaterConsumption(519)
+                .setConsumables(2955.15)        // 5,570 - 1,424.9 wages - 60 power - 25.95 water - 1,104 diesel
+                .setLandSqFt(43055642)          // four coal sites
+                .setRoadLoad(134662)
+                .setStock(2400000)
+                .setJobs(JobType.NO_DIPLOMA, 210)
+                .setJobs(JobType.DIPLOMA, 96)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 35)
+                .setJobs(JobType.UNIV_SCIENCE, 9)
+                .setSite(Resource.COAL, Deposit.FieldType.THERMAL, 4, 1 / .95)
+                .setSince(1900)
+                .setId(112));
+        templates.add(new BuildingsTemplate("Underground Coal Mine", BuildingType.MINING)   // a longwall on a coking field: raw coal
+                .setCashCost(615392)
+                .setConstructionPoints(307696)
+                .setConstructionMaterials(10256)
+                .setSector("Coal Mining")
+                .makes(Good.THERMAL_COAL, 250000)   // raw coal: thermal until a plant washes it (sectors.CoalMining.flow())
+                .setElectricityConsumption(29000)
+                .setWaterConsumption(2508)
+                .setConsumables(3727.2)         // 5,770 - 1,627.4 wages - 290 power - 125.4 water
+                .setLandSqFt(10763910)
+                .setRoadLoad(42000)
+                .setStock(750000)
+                .setJobs(JobType.NO_DIPLOMA, 240)
+                .setJobs(JobType.DIPLOMA, 110)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 40)
+                .setJobs(JobType.UNIV_SCIENCE, 10)
+                .setSite(Resource.COAL, Deposit.FieldType.COKING, 1, 1 / .80)
+                .setSince(1900)
+                .setId(113));
+        templates.add(new BuildingsTemplate("Coal Preparation Plant", BuildingType.MINING)   // washes the coking mines' raw coal
+                .setCashCost(115386)
+                .setConstructionPoints(57693)
+                .setConstructionMaterials(1923)
+                .setSector("Coal Mining")
+                .setWash(500000)                // t of raw coal a month: 275,000 coking + 100,000 thermal + 125,000 spoil
+                .setElectricityConsumption(4000)
+                .setWaterConsumption(346)
+                .setConsumables(512.08)         // 774 - 204.62 wages - 40 power - 17.3 water
+                .setLandSqFt(2045143)           // the study's 19 ha
+                .setRoadLoad(38194)             // 500,000 t in and 375,000 t out, at the Steel Foundry's 110 for 2,520 t
+                .setStock(1125000)
+                .setJobs(JobType.NO_DIPLOMA, 27)
+                .setJobs(JobType.DIPLOMA, 18)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 4)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setSince(1900)
+                .setId(114));
+
         /* ---------------------------- EDUCATION ----------------------------
            The other half of the labour market.
 

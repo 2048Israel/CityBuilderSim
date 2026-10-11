@@ -153,7 +153,7 @@ These are Jerus's, and they do not move.
                                    12 and MoneyCheck hold it (runs/spec-materials.md 2.9)
         SimulationEngine.java      the order the month runs in (200 lines - read it whole)
         Sector.java / Sectors.java the template every business extends, and the registry
-        sectors/                   seventeen sector classes, RefineryFlow (0.7.80: the refinery's units, the
+        sectors/                   eighteen sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the
                                    feed, ground, staff and money gates - and the idle-then-shed rule; the
@@ -172,9 +172,12 @@ These are Jerus's, and they do not move.
                                    pig iron and scrap captive and its works' power its own; since 0.7.124,
                                    batch I5, Iron Mining's four mines by type and size - hematite and
                                    magnetite, one site or twenty of one field - the plan among those that
-                                   fit, LandManager.fits(), the dig and the retirement by type); Mining.java
-                                   is the shape to copy (on ExtractionSector since 0.7.112; Materials.java
-                                   is the shortest on Sector itself)
+                                   fit, LandManager.fits(), the dig and the retirement by type; since
+                                   0.7.126, batch I6, CoalMining, the eighteenth sector on the end of
+                                   Sectors.KEYS - its four buildings, a coking mine's raw coal washed by a
+                                   preparation plant in CoalMining.flow(), its stockable coals' dig at the
+                                   month's end); Mining.java is the shape to copy (on ExtractionSector
+                                   since 0.7.112; Materials.java is the shortest on Sector itself)
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
                                    the businesses' bonds (0.7.12): the market and each participant's rule, the
                                    bond, the limit-order book the bonds and (since round 2) the shares trade on
@@ -259,7 +262,7 @@ These are Jerus's, and they do not move.
                                    ranking where the money, the ground or the payback will not run to the
                                    first - borrowing on the funding page's bond; its log, its inbox
                                    notices - AutoBuildCheck holds it
-        BuildCard.java             one build card's figures for all 111 buildings (0.7.25): what it gives the
+        BuildCard.java             one build card's figures for all 115 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
                                    fails for them (since 0.7.75 every gate, with what it would earn, cost and
@@ -446,7 +449,7 @@ These are Jerus's, and they do not move.
                                    MapTiles, which MapCheck holds), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray). The model never imports it.
-        *Check.java                ninety-seven harnesses, each a main() with static helpers
+        *Check.java                ninety-eight harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103)
