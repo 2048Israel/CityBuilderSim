@@ -488,7 +488,7 @@ The mockups are the four boards in `freight/` beside this note, and the artifact
   - It also shows what a siding would save. For example: "a siding would carry 75% of 150,000 t: about D$0.4M a month less haulage".
   - The Iron & Steel version shows the pellet plant from §3.6, before and after.
 
-- **Build › Infrastructure and Build › Freight (board 4).** The strip with Infrastructure first among the city's tabs, its five groups, and the new **Bulk Berth** card with a payback line, which ports never had. Freight's tab shows the rail rungs and the **Truck Depot** card, with its investors' line ("Freight would build one: 37 trucks over its depots' room").
+- **Build › Infrastructure and Build › Freight (board 4).** The strip with Infrastructure first among the city's tabs, its five groups, and the new **Bulk Berth** card with a payback line, which ports never had. Freight's tab shows the rail rungs and the **Truck Depot** card, with its investors' line ("Freight would build one: 18 trucks over its depots' room").
 
 - **Infrastructure › Freight and › Ports.** The twelfth tab's railway and freight pages become one **Freight** page with the division strip. The new **Ports** page lists berths by kind, tonnes against capacity, the dues collected, and the month's calls by ship class. Its door "The ships on the map" opens the map at the port.
 

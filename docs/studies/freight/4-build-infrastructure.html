@@ -1,0 +1,476 @@
+<title>Build Infrastructure</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;--edge:#24354a;--control-edge:#33475f;--text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;--good:#3fb950;--warn:#e3b341;--bad:#f85149;--accent:#5aa9ff;--people:#2ec4b6;--money:#5aa9ff;--business:#a78bfa;--building:#f17cb0;--ore:#c9b68f;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace}
+body{background:var(--stage);color:var(--text);font-family:var(--sans)}
+
+.b-build{box-sizing:border-box;max-width:1400px;margin:0 auto;padding:28px 24px 40px;color:var(--text);font-family:var(--sans);font-size:11px;line-height:1.45}
+.b-build *,.b-build *::before,.b-build *::after{box-sizing:border-box}
+.b-build button{font:inherit;color:inherit}
+.b-build :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.b-build .sprite{position:absolute;width:0;height:0;overflow:hidden}
+
+/* board head */
+.b-build .kicker{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);font-weight:600;margin:0 0 6px}
+.b-build .board-title{font-size:23px;font-weight:600;margin:0 0 6px;letter-spacing:-.005em}
+.b-build .board-title .sep{color:var(--text3);font-weight:400}
+.b-build .lead{font-size:14px;color:var(--text2);max-width:72ch;margin:0 0 18px}
+.b-build .moves{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px;padding:0;list-style:none}
+.b-build .moves li{border:1px dashed rgba(227,179,65,.45);border-radius:4px;padding:5px 9px;color:var(--text2);font-size:11px}
+.b-build .moves b{font-family:var(--mono);font-weight:600;color:var(--warn);font-size:10px;margin-right:6px;letter-spacing:.04em}
+
+/* the game window */
+.b-build .screen{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:14px 16px 20px}
+.b-build .crumb{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text3);margin-bottom:10px}
+.b-build .crumb strong{color:var(--text);font-size:17px;font-weight:600}
+.b-build .crumb .sw{width:8px;height:8px;border-radius:2px;background:var(--building)}
+
+/* build strip */
+.b-build .strip-scroll{overflow-x:auto;overflow-y:hidden;margin:0 -4px;padding:0 4px 20px;scrollbar-width:thin;scrollbar-color:var(--control-edge) transparent}
+.b-build .strip{display:flex;align-items:stretch;gap:2px;border-bottom:1px solid var(--edge);width:max-content;min-width:100%}
+.b-build .tab{position:relative;display:flex;align-items:center;gap:6px;height:32px;padding:0 9px;background:transparent;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:4px 4px 0 0;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap}
+.b-build .tab:hover{background:var(--hover);color:var(--text)}
+.b-build .tab .dot{width:6px;height:6px;border-radius:50%;flex:none}
+.b-build .tab .dot.city{background:var(--money)}
+.b-build .tab .dot.mkt{background:var(--business)}
+.b-build .tab.is-open{background:var(--pinned);color:var(--text);border-bottom-color:var(--building)}
+.b-build .tab .nn{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:.08em;color:var(--warn);border:1px dashed rgba(227,179,65,.6);border-radius:3px;padding:0 4px;line-height:13px}
+.b-build .tab .was{position:absolute;left:9px;top:calc(100% + 4px);font-size:9px;color:var(--warn);white-space:nowrap;font-style:italic;pointer-events:none}
+.b-build .strip .divider{width:1px;align-self:center;height:18px;background:var(--control-edge);margin:0 6px}
+
+/* constraints + who builds */
+.b-build .constraints{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:baseline;background:var(--raised);border:1px solid var(--edge);border-radius:4px;padding:8px 12px;margin-bottom:10px}
+.b-build .cst{display:flex;align-items:baseline;gap:7px}
+.b-build .cap{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:600}
+.b-build .fig{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--text)}
+.b-build .pips{display:inline-flex;gap:2px;margin-left:2px;transform:translateY(-1px)}
+.b-build .pips i{width:6px;height:8px;border-radius:1px;background:var(--control-edge)}
+.b-build .pips i.on{background:var(--building)}
+.b-build .who{display:flex;align-items:center;gap:8px;color:var(--text2);font-size:12px;margin:0 0 18px}
+.b-build .who .dot{width:6px;height:6px;border-radius:50%}
+
+/* groups */
+.b-build .group{margin:0 0 20px}
+.b-build .ghead{display:flex;align-items:center;gap:8px;margin:0 0 8px}
+.b-build .ghead h3{margin:0;font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--text2)}
+.b-build .ghead .n{font-family:var(--mono);font-weight:600;font-size:10px;color:var(--text3);background:var(--stage);border:1px solid var(--edge);border-radius:3px;padding:0 5px;line-height:15px}
+.b-build .ghead .rule{flex:1;height:1px;background:var(--edge)}
+.b-build .ghead .note{font-size:10px;color:var(--text3)}
+.b-build .cards{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+
+/* build card */
+.b-build .card{width:300px;max-width:100%;background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:10px 12px 12px;transition:border-color .15s}
+.b-build .card.is-pending{border-color:var(--building);box-shadow:0 0 0 1px rgba(241,124,176,.25)}
+.b-build .head{display:flex;align-items:center;gap:8px}
+.b-build .ico{width:24px;height:24px;border-radius:4px;flex:none;display:grid;place-items:center}
+.b-build .ico svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.b-build .ico.city{background:rgba(90,169,255,.16);color:var(--money);box-shadow:inset 0 0 0 1px rgba(90,169,255,.35)}
+.b-build .ico.mkt{background:rgba(167,139,250,.16);color:var(--business);box-shadow:inset 0 0 0 1px rgba(167,139,250,.35)}
+.b-build .name{font-size:14px;font-weight:600;line-height:1.2}
+.b-build .head .info{margin-left:auto;width:15px;height:15px;border-radius:50%;border:1px solid var(--control-edge);color:var(--text3);font-size:9px;font-weight:600;display:grid;place-items:center;font-family:var(--sans)}
+.b-build .tags{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 0}
+.b-build .tag{font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--text3);border:1px solid var(--control-edge);border-radius:3px;padding:0 5px;line-height:15px}
+.b-build .tag.new{color:var(--building);border-color:rgba(241,124,176,.55);background:rgba(241,124,176,.1)}
+.b-build .tag.city{color:var(--money);border-color:rgba(90,169,255,.4)}
+.b-build .tag.mkt{color:var(--business);border-color:rgba(167,139,250,.45)}
+.b-build .hero{margin:10px 0 2px}
+.b-build .hero .big{font-family:var(--mono);font-weight:600;font-size:23px;line-height:1.1;letter-spacing:-.01em}
+.b-build .hero .big small{font-size:14px;color:var(--text2);font-weight:600;margin-left:2px}
+.b-build .hero .cap{display:block;margin-top:2px}
+.b-build .price{font-family:var(--mono);font-size:11px;color:var(--text2);margin:6px 0 0}
+.b-build .price b{color:var(--text);font-weight:600}
+.b-build .bars{margin:10px 0 0;display:grid;gap:7px}
+.b-build .bar .lab{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:var(--text2);margin-bottom:3px}
+.b-build .bar .lab .v{font-family:var(--mono);font-weight:600;color:var(--text)}
+.b-build .bar .lab .proj{color:var(--building)}
+.b-build .track{position:relative;height:4px;border-radius:2px;background:var(--stage);overflow:hidden}
+.b-build .track .f{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--money)}
+.b-build .track .f.mkt{background:var(--business)}
+.b-build .track .f.warn{background:var(--warn)}
+.b-build .track .pf{position:absolute;top:0;bottom:0;left:0;border-radius:2px;background:repeating-linear-gradient(135deg,rgba(241,124,176,.85) 0 3px,rgba(241,124,176,.35) 3px 6px)}
+.b-build .card:not(.is-pending) .proj{display:none}
+.b-build .payback{position:relative;margin:9px 0 0;padding-left:12px;font-size:11px;color:var(--good)}
+.b-build .payback::before{content:"";position:absolute;left:0;top:5px;width:6px;height:6px;border-radius:50%;background:var(--good)}
+.b-build .payback .m{font-family:var(--mono);font-weight:600}
+.b-build .anno{display:inline-block;margin:5px 0 0 12px;font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);border:1px dashed rgba(227,179,65,.6);border-radius:3px;padding:0 5px;line-height:14px}
+.b-build .investors{position:relative;margin:9px 0 0;padding-left:12px;font-size:11px;color:var(--text2)}
+.b-build .investors::before{content:"";position:absolute;left:0;top:5px;width:6px;height:6px;border-radius:50%;background:var(--business)}
+.b-build .investors .m{font-family:var(--mono);font-weight:600;color:var(--text)}
+.b-build .needs{margin:8px 0 0;font-size:10px;color:var(--text3)}
+.b-build .needs .m{font-family:var(--mono);color:var(--text2)}
+
+/* stepper + build */
+.b-build .stepper{display:flex;align-items:center;gap:3px;height:22px;margin:11px 0 8px}
+.b-build .stepper button{height:22px;background:var(--stage);border:1px solid var(--control-edge);border-radius:3px;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;padding:0;line-height:20px}
+.b-build .stepper button:hover{background:var(--hover);color:var(--text)}
+.b-build .stepper .s1{width:26px}
+.b-build .stepper .s10{width:36px}
+.b-build .stepper .s100{width:42px}
+.b-build .stepper .rs{width:24px;margin-left:auto}
+.b-build .stepper .rs[hidden]{display:none}
+.b-build .count{min-width:30px;text-align:center;font-family:var(--mono);font-weight:600;font-size:13px;color:var(--text3)}
+.b-build .card.is-pending .count{color:var(--building)}
+.b-build .buildbtn{display:block;width:100%;height:40px;border:0;border-radius:4px;background:var(--building);color:#1a0d14;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.01em}
+.b-build .buildbtn .m{font-family:var(--mono);font-weight:600}
+.b-build .buildbtn:hover{filter:brightness(1.08)}
+.b-build .card:not(.is-pending) .buildbtn{background:transparent;color:var(--building);box-shadow:inset 0 0 0 1px rgba(241,124,176,.45);cursor:default}
+
+/* compact cards */
+.b-build .card.compact{padding:9px 12px 10px}
+.b-build .card.compact .row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:8px}
+.b-build .card.compact .big{font-family:var(--mono);font-weight:600;font-size:17px;line-height:1.1}
+.b-build .card.compact .big small{font-size:11px;color:var(--text2);margin-left:2px}
+.b-build .card.compact .price{margin:0;white-space:nowrap}
+.b-build .card.compact .cap{display:block;margin-top:2px}
+.b-build .card.placeholder{background:transparent;border:1px dashed var(--control-edge);color:var(--text3);min-height:86px;display:flex;align-items:center;gap:10px}
+.b-build .card.placeholder .ico{background:transparent;box-shadow:inset 0 0 0 1px var(--control-edge);color:var(--text3)}
+.b-build .card.placeholder .name{color:var(--text2);font-size:12px;font-weight:500}
+.b-build .card.placeholder .name small{display:block;color:var(--text3);font-size:10px;font-weight:400;margin-top:2px}
+.b-build .card.elsewhere{opacity:.72;border-style:dashed}
+
+/* pages */
+.b-build .page[hidden]{display:none}
+
+/* captions */
+.b-build .foot{margin:18px 0 0;display:grid;gap:4px;color:var(--text3);font-size:11px;max-width:80ch}
+.b-build .foot p{margin:0}
+.b-build .foot .est{font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+
+@media (max-width:640px){
+  .b-build{padding:20px 16px 32px}
+  .b-build .board-title{font-size:20px}
+  .b-build .lead{font-size:13px}
+  .b-build .screen{padding:12px 12px 16px}
+  .b-build .constraints{gap:6px 16px}
+}
+@media (prefers-reduced-motion:reduce){
+  .b-build *,.b-build *::before,.b-build *::after{transition:none!important;animation:none!important}
+}
+</style>
+
+<section class="board b-build" id="build" aria-labelledby="bd-title">
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="bd-i-gravel" viewBox="0 0 16 16"><path d="M5 1.5 3 14.5M11 1.5l2 13"/><path d="M7 4h.01M9 7h.01M7.5 10h.01M9 12.5h.01"/></symbol>
+  <symbol id="bd-i-road" viewBox="0 0 16 16"><path d="M5 1.5 3 14.5M11 1.5l2 13M8 2v2.2M8 6.9v2.2M8 11.8V14"/></symbol>
+  <symbol id="bd-i-hwy" viewBox="0 0 16 16"><path d="M1 5.5h14M1 8.5h14M4 8.5v6M12 8.5v6M5 7h2M9 7h2"/></symbol>
+  <symbol id="bd-i-bridge" viewBox="0 0 16 16"><path d="M1 10h14M2 10c2-6 10-6 12 0M5 10V6.8M8 10V5.2M11 10V6.8M1 14h14"/></symbol>
+  <symbol id="bd-i-bus" viewBox="0 0 16 16"><rect x="3" y="1.8" width="10" height="10.5" rx="2"/><path d="M3 7.2h10M5.2 14.5v-2.2M10.8 14.5v-2.2M5.5 10h.01M10.5 10h.01"/></symbol>
+  <symbol id="bd-i-tram" viewBox="0 0 16 16"><rect x="4" y="4.5" width="8" height="8" rx="1.6"/><path d="M8 1.5v3M5.5 1.5h5M5 15l1.5-2.5M11 15l-1.5-2.5M4 8.5h8"/></symbol>
+  <symbol id="bd-i-metro" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M5 11V5.2l3 4 3-4V11"/></symbol>
+  <symbol id="bd-i-tanker" viewBox="0 0 16 16"><path d="M1.5 10h13l-2.2 4H3.7z"/><path d="M4 10V8.2a1.6 1.6 0 0 1 3.2 0V10M8.8 10V8.2a1.6 1.6 0 0 1 3.2 0V10M12.5 10V5"/></symbol>
+  <symbol id="bd-i-berth" viewBox="0 0 16 16"><path d="M1.5 9.5h13l-2.2 4.5H3.7z"/><path d="M3.5 9.5 6 6l2 2 1.6-2.4L12.5 9.5M12.5 9.5V2.5h-3"/></symbol>
+  <symbol id="bd-i-bulk" viewBox="0 0 16 16"><path d="M1 14h14M2 14l4.2-6.5 2.3 3.2 1.7-2.2L14 14M11 4.5h4M13 4.5V9"/></symbol>
+  <symbol id="bd-i-box" viewBox="0 0 16 16"><rect x="1.8" y="5" width="12.4" height="7.5" rx=".6"/><path d="M5 5v7.5M8 5v7.5M11 5v7.5M3 2.5h10"/></symbol>
+  <symbol id="bd-i-crane" viewBox="0 0 16 16"><path d="M4 15V2h9.5M4 4.5 9 2M11.5 2v5M10.3 7h2.4v2.4h-2.4zM1.5 15h6"/></symbol>
+  <symbol id="bd-i-tank" viewBox="0 0 16 16"><ellipse cx="8" cy="4" rx="5.5" ry="2"/><path d="M2.5 4v8c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2V4M2.5 8c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2"/></symbol>
+  <symbol id="bd-i-rail" viewBox="0 0 16 16"><path d="M5.5 1 4.5 15M10.5 1l1 14M3.5 3.5h9M3.3 7.5h9.4M3 11.5h10"/></symbol>
+  <symbol id="bd-i-line" viewBox="0 0 16 16"><path d="M3.5 1 2.5 15M7 1l-.5 14M9.5 1l.5 14M13 1l1 14M2 5h6M8.5 9.5h6"/></symbol>
+  <symbol id="bd-i-yard" viewBox="0 0 16 16"><path d="M1 14 6 9.5h9M1 14l5-2h9M1 14h14M7 9.5V5h6v4.5"/></symbol>
+  <symbol id="bd-i-truck" viewBox="0 0 16 16"><path d="M1 3.5h8.5v8H1zM9.5 6.5h3l2.5 3v2h-5.5"/><circle cx="4" cy="12.8" r="1.5"/><circle cx="12" cy="12.8" r="1.5"/></symbol>
+  <symbol id="bd-i-depot" viewBox="0 0 16 16"><path d="M1.2 6.8 8 2l6.8 4.8V15H1.2z"/><path d="M4 15V9.5h8V15M4 11.8h8"/></symbol>
+  <symbol id="bd-i-plant" viewBox="0 0 16 16"><path d="M1 15V7.5l4 2.8V7.5l4 2.8V3h3.5v12z"/><path d="M4 12.5h1.5M8 12.5h1.5"/></symbol>
+</svg>
+
+<p class="kicker">Board 4 · Freight &amp; Infrastructure study</p>
+<h2 class="board-title" id="bd-title">Build <span class="sep">›</span> Infrastructure and Build <span class="sep">›</span> Freight</h2>
+<p class="lead">The city's things on one strip, the businesses' on theirs. Infrastructure gathers the roads, the highways, transit, the ports and the reserve; Freight carries the rail rungs and the new Truck Depot. Click the two tabs.</p>
+<ul class="moves">
+  <li><b>D11</b>"Roads &amp; transit" becomes Infrastructure; the ports and the reserve leave Industry</li>
+  <li><b>D12</b>"Rail" becomes Freight, with the Truck Depot</li>
+  <li><b>D10</b>The Bulk Berth, with a payback line</li>
+</ul>
+
+<div class="screen">
+  <div class="crumb"><span class="sw" aria-hidden="true"></span><strong>Build</strong></div>
+
+  <div class="strip-scroll" id="bd-strip-scroll">
+    <div class="strip" role="group" aria-label="Build categories">
+      <button type="button" class="tab"><span class="dot city" aria-hidden="true"></span>Utilities</button>
+      <button type="button" class="tab is-open" data-page="bd-infra" aria-pressed="true"><span class="dot city" aria-hidden="true"></span>Infrastructure<span class="nn">NEW NAME</span><span class="was">was Roads &amp; transit</span></button>
+      <button type="button" class="tab"><span class="dot city" aria-hidden="true"></span>Healthcare</button>
+      <button type="button" class="tab"><span class="dot city" aria-hidden="true"></span>Education</button>
+      <button type="button" class="tab"><span class="dot city" aria-hidden="true"></span>Safety</button>
+      <span class="divider" aria-hidden="true"></span>
+      <button type="button" class="tab"><span class="dot mkt" aria-hidden="true"></span>Homes</button>
+      <button type="button" class="tab"><span class="dot mkt" aria-hidden="true"></span>Shops</button>
+      <button type="button" class="tab"><span class="dot mkt" aria-hidden="true"></span>Industry</button>
+      <button type="button" class="tab"><span class="dot mkt" aria-hidden="true"></span>Offices</button>
+      <button type="button" class="tab"><span class="dot mkt" aria-hidden="true"></span>Farms</button>
+      <button type="button" class="tab" data-page="bd-freight" aria-pressed="false"><span class="dot mkt" aria-hidden="true"></span>Freight<span class="nn">NEW NAME</span><span class="was">was Rail</span></button>
+      <button type="button" class="tab"><span class="dot mkt" aria-hidden="true"></span>Vehicles</button>
+      <button type="button" class="tab"><span class="dot mkt" aria-hidden="true"></span>Luxury shops</button>
+      <button type="button" class="tab"><span class="dot mkt" aria-hidden="true"></span>Restaurants</button>
+    </div>
+  </div>
+
+  <div class="constraints" aria-label="Constraints">
+    <span class="cst"><span class="cap">Materials</span><span class="fig">41,200</span></span>
+    <span class="cst"><span class="cap">Per unit</span><span class="fig">D$0.9k</span></span>
+    <span class="cst"><span class="cap">Land free</span><span class="fig">312 ha</span></span>
+    <span class="cst"><span class="cap">Builders</span><span class="fig">4 of 6 busy</span><span class="pips" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></span>
+  </div>
+
+  <!-- ============ INFRASTRUCTURE ============ -->
+  <div class="page" id="bd-infra">
+    <p class="who"><span class="dot" style="background:var(--money)" aria-hidden="true"></span>Only the city builds these.</p>
+
+    <div class="group">
+      <div class="ghead"><h3>Roads</h3><span class="n">2</span><span class="rule"></span></div>
+      <div class="cards">
+        <article class="card compact">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-gravel"/></svg></span><span class="name">Gravel Road</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">900<small>trips</small></span><span class="cap">capacity</span></div><p class="price"><b>D$2.3M</b></p></div>
+        </article>
+        <article class="card compact">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-road"/></svg></span><span class="name">Paved Road</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">1,200<small>trips</small></span><span class="cap">capacity</span></div><p class="price"><b>D$5.4M</b></p></div>
+        </article>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="ghead"><h3>Highways</h3><span class="n">1</span><span class="rule"></span><span class="note">+1 coming</span></div>
+      <div class="cards">
+        <article class="card" data-price="9.6" data-count="0">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-hwy"/></svg></span><span class="name">Elevated Highway</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="tags"><span class="tag city">City</span><span class="tag">Corridor</span><span class="tag">Ramps by rule</span></div>
+          <div class="hero"><span class="big">1,500<small> trips</small></span><span class="cap">capacity, across districts</span></div>
+          <p class="price"><b>D$9.6M</b> · 63,000 sq ft · 800 materials</p>
+          <div class="bars">
+            <div class="bar"><div class="lab"><span>Road served</span><span class="v">82%</span></div><div class="track"><span class="f" style="width:82%"></span></div></div>
+            <div class="bar"><div class="lab"><span>Flow</span><span class="v">91%</span></div><div class="track"><span class="f" style="width:91%"></span></div></div>
+          </div>
+          <p class="needs">needs <span class="m">41</span> posts · <span class="m">135 kW</span></p>
+          <div class="stepper">
+            <button type="button" class="s1" data-step="-1" aria-label="One fewer">−</button>
+            <span class="count" aria-live="polite">0</span>
+            <button type="button" class="s1" data-step="1" aria-label="One more">+</button>
+            <button type="button" class="s10" data-step="10">+10</button>
+            <button type="button" class="s100" data-step="100">+100</button>
+            <button type="button" class="rs" data-step="0" aria-label="Reset" hidden>↺</button>
+          </div>
+          <button type="button" class="buildbtn">Build</button>
+        </article>
+        <div class="card placeholder" aria-label="Coming later">
+          <span class="ico"><svg><use href="#bd-i-bridge"/></svg></span>
+          <span class="name">Highway Bridge — with the islands batch<small>the roads study's batch B1; it joins this group when it comes</small></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="ghead"><h3>Transit</h3><span class="n">3</span><span class="rule"></span></div>
+      <div class="cards">
+        <article class="card compact">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-bus"/></svg></span><span class="name">Bus Network</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">2,500<small>riders</small></span><span class="cap">capacity</span></div><p class="price"><b>D$24M</b></p></div>
+        </article>
+        <article class="card compact">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-tram"/></svg></span><span class="name">Light Rail Line</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">8,000<small>riders</small></span><span class="cap">capacity</span></div><p class="price"><b>D$310M</b></p></div>
+        </article>
+        <article class="card compact">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-metro"/></svg></span><span class="name">Metro Line</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">30,000<small>riders</small></span><span class="cap">capacity</span></div><p class="price"><b>D$1,850M</b></p></div>
+        </article>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="ghead"><h3>Ports</h3><span class="n">5</span><span class="rule"></span><span class="note">moved from Industry</span></div>
+      <div class="cards">
+        <article class="card compact">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-tanker"/></svg></span><span class="name">Tanker Terminal</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">3.25<small>Mt a year</small></span><span class="cap">1 berth · 41% full</span></div><p class="price"><b>D$96M</b></p></div>
+        </article>
+
+        <article class="card is-pending" data-price="60" data-count="1" id="bd-berth">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-berth"/></svg></span><span class="name">Bulk Berth</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="tags"><span class="tag new">New</span><span class="tag city">City</span><span class="tag">Dry bulk</span><span class="tag">Landlord port</span></div>
+          <div class="hero"><span class="big">2.5 Mt<small> a year</small></span><span class="cap">ore, coal and grain over the quay</span></div>
+          <p class="price"><b>D$60M</b> · 18 ha · Handysize and Supramax</p>
+          <div class="bars">
+            <div class="bar"><div class="lab"><span>Dry bulk by sea</span><span class="v">0%<span class="proj"> → 61%</span></span></div><div class="track"><span class="pf proj" style="width:61%"></span></div></div>
+            <div class="bar"><div class="lab"><span>Berths busy</span><span class="v" style="color:var(--text3)">—</span></div><div class="track"></div></div>
+          </div>
+          <p class="payback">pays back in <span class="m">11</span> years: dues <span class="m">D$0.5M</span> a month on <span class="m">2.4 Mt</span> a year</p>
+          <span class="anno">a line ports never had</span>
+          <p class="needs">needs owned shore and sea · <span class="m">140</span> posts (Freight's)</p>
+          <div class="stepper">
+            <button type="button" class="s1" data-step="-1" aria-label="One fewer">−</button>
+            <span class="count" aria-live="polite">1</span>
+            <button type="button" class="s1" data-step="1" aria-label="One more">+</button>
+            <button type="button" class="s10" data-step="10">+10</button>
+            <button type="button" class="s100" data-step="100">+100</button>
+            <button type="button" class="rs" data-step="0" aria-label="Reset">↺</button>
+          </div>
+          <button type="button" class="buildbtn">Build 1 · <span class="m">D$60M</span></button>
+        </article>
+
+        <article class="card compact">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-bulk"/></svg></span><span class="name">Bulk Terminal</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">27.5<small>Mt a year</small></span><span class="cap">Capesize · 2 berths · 76% full</span></div><p class="price"><b>D$2,310M</b></p></div>
+        </article>
+
+        <article class="card" data-price="461" data-count="0">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-box"/></svg></span><span class="name">Container Terminal</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="tags"><span class="tag city">City</span><span class="tag">Boxes</span><span class="tag">Landlord port</span></div>
+          <div class="hero"><span class="big">0.75M<small> TEU a year</small></span><span class="cap">boxes over the quay</span></div>
+          <p class="price"><b>D$461M</b> · 32 ha · 2,400 materials</p>
+          <div class="bars">
+            <div class="bar"><div class="lab"><span>Boxes by sea</span><span class="v">34%</span></div><div class="track"><span class="f" style="width:34%"></span></div></div>
+            <div class="bar"><div class="lab"><span>Berths busy</span><span class="v">1 at 58%</span></div><div class="track"><span class="f" style="width:58%"></span></div></div>
+          </div>
+          <p class="needs">needs owned shore and sea · <span class="m">520</span> posts (Freight's)</p>
+          <div class="stepper">
+            <button type="button" class="s1" data-step="-1" aria-label="One fewer">−</button>
+            <span class="count" aria-live="polite">0</span>
+            <button type="button" class="s1" data-step="1" aria-label="One more">+</button>
+            <button type="button" class="s10" data-step="10">+10</button>
+            <button type="button" class="s100" data-step="100">+100</button>
+            <button type="button" class="rs" data-step="0" aria-label="Reset" hidden>↺</button>
+          </div>
+          <button type="button" class="buildbtn">Build</button>
+        </article>
+
+        <article class="card compact">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-crane"/></svg></span><span class="name">General Cargo Terminal</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">0.45<small>Mt a year</small></span><span class="cap">3 berths · 88% full</span></div><p class="price"><b>D$70M</b></p></div>
+        </article>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="ghead"><h3>Reserve</h3><span class="n">1</span><span class="rule"></span><span class="note">moved from Industry</span></div>
+      <div class="cards">
+        <article class="card compact">
+          <div class="head"><span class="ico city"><svg><use href="#bd-i-tank"/></svg></span><span class="name">Strategic Reserve</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">60<small>days</small></span><span class="cap">the city's crude tanks</span></div><p class="price"><b>D$150M</b></p></div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FREIGHT ============ -->
+  <div class="page" id="bd-freight" hidden>
+    <p class="who"><span class="dot" style="background:var(--business)" aria-hidden="true"></span>Freight's investors build these. You can build them too.</p>
+
+    <div class="group">
+      <div class="ghead"><h3>Rail</h3><span class="n">3</span><span class="rule"></span></div>
+      <div class="cards">
+        <article class="card compact">
+          <div class="head"><span class="ico mkt"><svg><use href="#bd-i-rail"/></svg></span><span class="name">Rail Spur</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">50,000<small>t a month</small></span><span class="cap">track</span></div><p class="price"><b>D$140M</b></p></div>
+        </article>
+        <article class="card compact">
+          <div class="head"><span class="ico mkt"><svg><use href="#bd-i-line"/></svg></span><span class="name">Freight Line</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">200,000<small>t a month</small></span><span class="cap">track</span></div><p class="price"><b>D$520M</b></p></div>
+        </article>
+        <article class="card compact">
+          <div class="head"><span class="ico mkt"><svg><use href="#bd-i-yard"/></svg></span><span class="name">Rail Terminal</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="row"><div><span class="big">500,000<small>t a month</small></span><span class="cap">track</span></div><p class="price"><b>D$1,240M</b></p></div>
+        </article>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="ghead"><h3>Haulage</h3><span class="n">1</span><span class="rule"></span></div>
+      <div class="cards">
+        <article class="card" data-price="12" data-count="0" id="bd-depot">
+          <div class="head"><span class="ico mkt"><svg><use href="#bd-i-depot"/></svg></span><span class="name">Truck Depot</span><span class="info" aria-hidden="true">i</span></div>
+          <div class="tags"><span class="tag new">New</span><span class="tag mkt">Freight</span><span class="tag">Haulage</span></div>
+          <div class="hero"><span class="big">100<small> trucks</small></span><span class="cap">parked, fuelled and mended</span></div>
+          <p class="price"><b>D$12M</b> · 4 ha · 25 mechanics</p>
+          <div class="bars">
+            <div class="bar"><div class="lab"><span>Trucks housed</span><span class="v">296 of 300</span></div><div class="track"><span class="f warn" style="width:98.7%"></span></div></div>
+            <div class="bar"><div class="lab"><span>Fleet against need</span><span class="v">93%</span></div><div class="track"><span class="f mkt" style="width:93%"></span></div></div>
+          </div>
+          <p class="investors">Freight would build one: <span class="m">18</span>&nbsp;trucks over its depots' room</p>
+          <p class="needs">needs an access road to a ramp or the arterials · <span class="m">60 kW</span></p>
+          <div class="stepper">
+            <button type="button" class="s1" data-step="-1" aria-label="One fewer">−</button>
+            <span class="count" aria-live="polite">0</span>
+            <button type="button" class="s1" data-step="1" aria-label="One more">+</button>
+            <button type="button" class="s10" data-step="10">+10</button>
+            <button type="button" class="s100" data-step="100">+100</button>
+            <button type="button" class="rs" data-step="0" aria-label="Reset" hidden>↺</button>
+          </div>
+          <button type="button" class="buildbtn">Build</button>
+        </article>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="ghead"><h3>In Vehicles</h3><span class="rule"></span><span class="note">built by Automotive, shown for reference</span></div>
+      <div class="cards">
+        <article class="card compact elsewhere">
+          <div class="head"><span class="ico mkt"><svg><use href="#bd-i-plant"/></svg></span><span class="name">Heavy Truck Plant</span><span class="tags" style="margin:0 0 0 auto"><span class="tag new">New</span></span></div>
+          <div class="row"><div><span class="big">40<small>trucks a month</small></span><span class="cap">makes Haulage's trucks</span></div><p class="price"><b>D$85M</b></p></div>
+        </article>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  <p>Industry keeps only what investors build: the Tank Farm stays there; the ports and the Strategic Reserve moved here.</p>
+  <p class="est">Figures are illustrative (est.)</p>
+</div>
+
+<script>
+(function(){
+  var root=document.getElementById('build');
+  if(!root)return;
+  var tabs=root.querySelectorAll('.tab[data-page]');
+  function open(id){
+    for(var i=0;i<tabs.length;i++){
+      var on=tabs[i].getAttribute('data-page')===id;
+      tabs[i].classList.toggle('is-open',on);
+      tabs[i].setAttribute('aria-pressed',on?'true':'false');
+      var p=root.querySelector('#'+tabs[i].getAttribute('data-page'));
+      if(p)p.hidden=!on;
+    }
+  }
+  for(var i=0;i<tabs.length;i++){
+    tabs[i].addEventListener('click',function(){open(this.getAttribute('data-page'));});
+  }
+
+  function money(m){
+    if(m>=100)return 'D$'+Math.round(m).toLocaleString('en-US')+'M';
+    var r=Math.round(m*10)/10;
+    return 'D$'+(r%1===0?r.toFixed(0):r.toFixed(1))+'M';
+  }
+  function render(card){
+    var n=+card.getAttribute('data-count')||0;
+    var price=+card.getAttribute('data-price')||0;
+    card.classList.toggle('is-pending',n>0);
+    card.querySelector('.count').textContent=n.toLocaleString('en-US');
+    card.querySelector('.rs').hidden=n===0;
+    var b=card.querySelector('.buildbtn');
+    if(n>0){
+      b.innerHTML='Build '+n.toLocaleString('en-US')+' · <span class="m">'+money(n*price)+'</span>';
+      b.removeAttribute('aria-disabled');
+    }else{
+      b.textContent='Build';
+      b.setAttribute('aria-disabled','true');
+    }
+  }
+  var cards=root.querySelectorAll('.card[data-price]');
+  for(var c=0;c<cards.length;c++){
+    (function(card){
+      render(card);
+      card.querySelector('.stepper').addEventListener('click',function(e){
+        var t=e.target.closest('button[data-step]');
+        if(!t)return;
+        var s=+t.getAttribute('data-step');
+        var n=+card.getAttribute('data-count')||0;
+        n=s===0?0:Math.max(0,Math.min(999,n+s));
+        card.setAttribute('data-count',n);
+        render(card);
+        if(n===0&&s===0){var m=card.querySelector('[data-step="1"]');if(m)m.focus();}
+      });
+    })(cards[c]);
+  }
+})();
+</script>
+</section>
