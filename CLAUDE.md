@@ -15,7 +15,7 @@ requirement.
 ## Open these before reading source
 
 The tree is over 300,000 lines; `Game.java` alone is over 16,000, and the
-interface is twenty-seven files, the largest about 6,000. Do not read them. Read the generated indexes and jump.
+interface is twenty-eight files, the largest about 6,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
 |---|---|
@@ -273,6 +273,11 @@ These are Jerus's, and they do not move.
                                    assesses and buys back zoned ground at the zone's price; the zone's
                                    taxes are the sector's own offsets (Game.setZoneTax()); ZoningCheck
                                    holds it (the project's spec-zoning.md; runs/spec-materials.md 2.15)
+        ZoningView.java            Policy › Zoning as figures (0.7.109, batch Z2): the hub's four (zoned,
+                                   held, the price given up, the forest kept), the dry ground as one bar
+                                   cut so its parts add up to it, a zone's row, a sector's page and the
+                                   forest law's before and after a staged copy - every figure a model
+                                   read; pure, ui/ZoningScreen paints it, ZoningViewCheck holds it
         LandGrid.java, GridOffers.java, LegacyLand.java, GridConversion.java
                                    the block grid (0.7.65 to 0.7.67): the ground owned as a quadtree of
                                    blocks lined up with the world, the six places a side and their
@@ -325,8 +330,10 @@ These are Jerus's, and they do not move.
                                    brokerage, 0.7.39: Finances dispatches its area to it), and MapView.java
                                    (the city map on a canvas, 0.7.61: small in the land office, over the
                                    window on Expand; its arithmetic is the model's MapFrame, LandMap and
-                                   MapTiles, which MapCheck holds). The model never imports it.
-        *Check.java                ninety-two harnesses, each a main() with static helpers
+                                   MapTiles, which MapCheck holds), and ZoningScreen.java (Policy's fifth
+                                   area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
+                                   the staged set and the tray). The model never imports it.
+        *Check.java                ninety-three harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103)

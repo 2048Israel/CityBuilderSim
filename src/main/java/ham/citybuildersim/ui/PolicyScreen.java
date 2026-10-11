@@ -38,7 +38,10 @@ import static ham.citybuildersim.ui.Levers.*;
  * The Policy tab: every number the city sets for itself - the taxes, the
  * wage floor, the price of money and the promises - each a dial with what
  * it would do beside it, on a hub of four area cards and the levers that are
- * biting, and the pages behind them, a picture a page.
+ * biting, and the pages behind them, a picture a page. Since 0.7.109 (batch
+ * Z2) a fifth area and card, Zoning - the city's ground, its zones and the
+ * forest law - whose pages ZoningScreen draws, staged and applied through
+ * this screen's set and tray.
  *
  * WHY THIS SHAPE (0.7.36). It was a 560 px statement column in a 1,270 px
  * centre: a landing of four rows and a list of flags, and behind it thirteen
@@ -83,7 +86,13 @@ final class PolicyScreen {
     /** The window this screen draws into: its game, its root, its clearMenu(). */
     private final UserInterface ui;
 
-    PolicyScreen(UserInterface ui) { this.ui = ui; }
+    /** The Zoning area's pages (0.7.109, batch Z2): drawn there, staged and applied through this screen's set and tray. */
+    final ZoningScreen zoning;
+
+    PolicyScreen(UserInterface ui) {
+        this.ui = ui;
+        this.zoning = new ZoningScreen(this, ui);
+    }
 
     /* =====================================================================
        POLICY (0.7.36): THE FRAME
@@ -96,14 +105,14 @@ final class PolicyScreen {
        pages whose dials batch, the staged tray at the foot of the stage.
        ===================================================================== */
 
-    /** The four areas, by what kind of lever each is - Jerus picked the grouping. */
-    static final String TAXES = "Taxes", WAGES = "Wages", MONEY = "Money", PROMISES = "Promises";
+    /** The four areas, by what kind of lever each is - Jerus picked the grouping - and since 0.7.109 (batch Z2) the fifth, the city's ground: Zoning (ZoningScreen draws it). */
+    static final String TAXES = "Taxes", WAGES = "Wages", MONEY = "Money", PROMISES = "Promises", ZONING = "Zoning";
 
     /** ...as the head's chips list them. */
-    static final String[] AREAS = {TAXES, WAGES, MONEY, PROMISES};
+    static final String[] AREAS = {TAXES, WAGES, MONEY, PROMISES, ZONING};
 
-    /** ...and each one's icon: the coin, the staff, the bank, the people. */
-    static final String[] AREA_ICONS = {Icons.COIN, Icons.STAFF, Icons.BANK, Icons.POPULATION};
+    /** ...and each one's icon: the coin, the staff, the bank, the people, the flag on a plot. */
+    static final String[] AREA_ICONS = {Icons.COIN, Icons.STAFF, Icons.BANK, Icons.POPULATION, Icons.ZONING};
 
     /** The area open, one of AREAS, or null for the hub. */
     String policyArea = null;                  // null is the hub
@@ -165,6 +174,7 @@ final class PolicyScreen {
             case WAGES    -> POLICY_WAGE_PAGES;
             case MONEY    -> POLICY_MONEY_PAGES;
             case PROMISES -> POLICY_PROMISE_PAGES;
+            case ZONING   -> ZoningScreen.PAGES;
             default       -> POLICY_TAX_PAGES;
         };
     }
@@ -176,6 +186,7 @@ final class PolicyScreen {
             case WAGES    -> WAGE_ICONS;
             case MONEY    -> MONEY_ICONS;
             case PROMISES -> PROMISE_ICONS;
+            case ZONING   -> ZoningScreen.PAGE_ICONS;
             default       -> TAX_ICONS;
         };
     }
@@ -198,6 +209,8 @@ final class PolicyScreen {
             String[] pages = pagesOf(policyArea);
             boolean page = false;
             for (String p : pages) page |= p.equals(policyPage);
+            // ...and a zone's own page, "zone:<sector>" (0.7.109).
+            if (ZONING.equals(policyArea)) page = zoning.knows(policyPage);
             if (!page) policyPage = pages[0];
         }
 
@@ -211,6 +224,7 @@ final class PolicyScreen {
                     if ("Currency reform".equals(policyPage)) reformPage(page);
                     else                                      ratePage(page);
                 }
+                case ZONING -> zoning.page(page);
                 case PROMISES -> {
                     switch (policyPage) {
                         case "Schools"     -> schoolsPage(page);
@@ -233,12 +247,14 @@ final class PolicyScreen {
 
         VBox frame = new VBox(Palette.GAP, head());
         String[] pages = pagesOf(policyArea);
-        // A strip of one tab is a tab that does nothing, so Wages has none.
-        if (pages.length > 1) {
+        // A strip of one tab is a tab that does nothing, so Wages has none; Zoning's adds a tab a zone.
+        if (ZONING.equals(policyArea)) {
+            frame.getChildren().add(zoning.tabs());
+        } else if (pages.length > 1) {
             frame.getChildren().add(chipStrip(pages, iconsOf(policyArea), policyPage, Palette.SIZE_LABEL, this::openPage));
         }
-        frame.getChildren().add(vitals());
-        frameOver(frame, page, tray());
+        frame.getChildren().add(ZONING.equals(policyArea) ? zoning.vitals() : vitals());
+        frameOver(frame, page, ZONING.equals(policyArea) ? zoning.tray() : tray());
     }
 
     /** The hub, at its top. */
@@ -291,9 +307,9 @@ final class PolicyScreen {
     /** The tab's (i): the landing's lead, and the banner's line that every dial is a proposal (P1). */
     static final String LEAD_INFO = "Every number the city sets for itself, and what each one is doing this month. "
             + "Every dial is a proposal until it is applied: moving one stages a change, the page draws what it "
-            + "would do against last month's books, and nothing reaches the model until Apply. The four cards open "
-            + "the taxes, the wage floor, the price of money and the promises; under them, the levers that are "
-            + "forcing somebody's hand.";
+            + "would do against last month's books, and nothing reaches the model until Apply. The five cards open "
+            + "the taxes, the wage floor, the price of money, the promises and the zoning of the city's ground; under "
+            + "them, the levers that are forcing somebody's hand.";
 
     /** Each area's (i): what it holds (the landing's row blurbs until 0.7.36). */
     static String areaInfo(String area) {
@@ -306,6 +322,7 @@ final class PolicyScreen {
                     + "the bank, the central bank's holdings and its ceiling, and the currency reform.";
             case PROMISES -> "Pensions, EI, food assistance, the clinic's price, school fees, and the sectors the city "
                     + "will not let fail: what the city has promised, what it collects for it and what it costs.";
+            case ZONING -> ZoningScreen.AREA_INFO;
             default -> "Each tax's own rate, and the moves off it by band and by sector. Profit, sales and wage tax "
                     + "each move off a base of their own; property is charged on what things are worth rather "
                     + "than on anything anybody earned.";
@@ -321,7 +338,9 @@ final class PolicyScreen {
     HBox head() {
         FlowPane areas = chipStrip(AREAS, AREA_ICONS, policyArea == null ? "" : policyArea, Palette.SIZE_LABEL, this::openArea);
         if (policyArea == null) return pageHead("Policy", Palette.MONEY, null, null, LEAD_INFO, areas);
-        return pageHead("Policy", Palette.MONEY, this::openHub, policyArea, areaInfo(policyArea), areas);
+        HBox head = pageHead("Policy", Palette.MONEY, this::openHub, policyArea, areaInfo(policyArea), areas);
+        // ..."Policy › Zoning › Agriculture" on a zone's page (0.7.109).
+        return ZONING.equals(policyArea) ? zoning.head(head) : head;
     }
 
     /* ------------------------------ the four figures ------------------------------ */
@@ -983,7 +1002,8 @@ final class PolicyScreen {
        THE HUB (0.7.36; the landing's four rows until then)
 
        What has the city set, what does each part raise or cost, and is any
-       of it biting? Four AREA CARDS - Taxes, Wages, Money, Promises - each a
+       of it biting? Four AREA CARDS - Taxes, Wages, Money, Promises, and
+       since 0.7.109 a fifth, Zoning (ZoningScreen.areaCard()) - each a
        door with its figure, a small picture, a line and a foot (on Taxes,
        the last tax decision); then WHAT IS BITING, a card a lever forcing
        somebody's hand, each with a door to where it is undone (or one card
@@ -992,7 +1012,7 @@ final class PolicyScreen {
        ===================================================================== */
 
     void hubPage(VBox page) {
-        page.getChildren().add(row(taxesCard(), wagesCard(), moneyCard(), promisesCard()));
+        page.getChildren().add(row(taxesCard(), wagesCard(), moneyCard(), promisesCard(), zoning.areaCard()));
 
         page.getChildren().add(sectionHead("WHAT IS BITING", null, quiet("the dials that are forcing someone's hand")));
         List<Flag> flags = policyFlags();
@@ -1021,7 +1041,7 @@ final class PolicyScreen {
         page.getChildren().add(sectionHead("RECENT DECISIONS", null,
                 doorPill("History", Icons.REPORTS, Palette.ACCENT, () -> ui.historyScreen.openOn("revenue", "surplus"))));
         if (recent.isEmpty()) {
-            page.getChildren().add(muted("No tax, promise, central bank or currency decision yet: every dial is as the city was founded."));
+            page.getChildren().add(muted("No tax, promise, central bank, currency or zoning decision yet: every dial is as the city was founded."));
         } else {
             FlowPane row = new FlowPane(8, 6);
             for (DecisionLog.Entry e : recent) row.getChildren().add(chip(decisionWords(e), Palette.TEXT_LABEL));
@@ -1033,7 +1053,7 @@ final class PolicyScreen {
     static final String NOTHING_BINDING_INFO = "Nothing is binding. Every lever has room to move, no sector is shut "
             + "out of credit, and no wage has run out of room to fall.";
 
-    /** The last `n` decisions of the kinds this tab makes - taxes, promises, the central bank, the currency - newest first. */
+    /** The last `n` decisions of the kinds this tab makes - taxes, promises, the central bank, the currency, zoning - newest first. */
     List<DecisionLog.Entry> recentDecisions(int n) {
         List<DecisionLog.Entry> all = ui.game.getDecisions().entries();
         List<DecisionLog.Entry> out = new ArrayList<>();
@@ -1053,7 +1073,8 @@ final class PolicyScreen {
 
     static boolean isPolicyKind(String kind) {
         return DecisionLog.TAX.equals(kind) || DecisionLog.PROMISE.equals(kind)
-                || DecisionLog.CENTRAL_BANK.equals(kind) || DecisionLog.CURRENCY.equals(kind);
+                || DecisionLog.CENTRAL_BANK.equals(kind) || DecisionLog.CURRENCY.equals(kind)
+                || DecisionLog.ZONING.equals(kind);
     }
 
     /** A decision as a chip: "m1,204 · Taxes to 15%". */

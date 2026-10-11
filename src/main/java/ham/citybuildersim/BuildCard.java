@@ -98,7 +98,8 @@ public final class BuildCard {
      * @param owned      how many stand (BuildingManager.getQuantity())
      * @param onSite     how many are on site, for anyone's order
      * @param siteMonths ...and their wait at today's queue (Game.onSiteMonths()); 0 with none
-     * @param landFree   the land free, for the needs line's share of it (LandManager.getAvailableSqFt())
+     * @param landFree   the land free, for the needs line's share of it: since 0.7.109 the ground its sector may
+     *                   build on (LandManager.freeFor(); getAvailableSqFt() until then, the same with no zone)
      */
     public record Figures(BuildingsTemplate template, Kind kind, String group,
                           String verb, double figure, String words, double unit,
@@ -465,7 +466,8 @@ public final class BuildCard {
         double price = one.total, sticker = one.sticker;
         double running = runningCost(game, t);
         double land = t.getLandSqFt();
-        double free = game.getLandManager().getAvailableSqFt();
+        // ...on the ground its sector may build on (0.7.109, Z2): free for anyone, and its zone's (LandManager.freeFor()).
+        double free = game.getLandManager().freeFor(t.getSector());
         BuildingManager bm = game.getBuildingManager();
         int owned = bm.getQuantity(t.getId());
         BuildingsStacks stack = bm.getStack(t);
@@ -871,6 +873,19 @@ public final class BuildCard {
         return !(b.totalBySector(Sectors.REFINING, c -> ham.citybuildersim.sectors.Refining.isCrudeUnit(c) ? 1 : 0) > 0);
     }
 
+    /**
+     * The LAND gate (0.7.109, batch Z2): the ground one needs against the
+     * ground its sector may build on (LandManager.freeFor(): free for anyone,
+     * and its zone's), and in `why` what the other sectors' zones hold
+     * (BusinessInvestment.zonedForOthersWords(), the investors' own words:
+     * "55.9 km² is zoned for others") - null with no other zone holding any.
+     */
+    static Gate landGate(LandManager ground, BuildingsTemplate t, double free) {
+        double others = ground.heldByZones() - ground.heldBy(t.getSector());
+        return new Gate(GateKind.LAND, t.getLandSqFt(), free, null,
+                others > 0 ? BusinessInvestment.zonedForOthersWords(others) : null);
+    }
+
     /** The LOSS gate: what it would lose, worded NO_FEED for a conversion unit nothing feeds (0.7.103). */
     static Gate lossGate(Game game, BuildingsTemplate t, double estimate) {
         return new Gate(GateKind.LOSS, -estimate, 0, null, unfed(game, t) ? NO_FEED : null);
@@ -881,7 +896,8 @@ public final class BuildCard {
      * resource's word in `why` (depositWord(); DRY_OIL for a land Oil Well
      * since 0.7.103); LICENCE
      * {licences one needs, spare licences} with the licence; STAFFING with
-     * the staffing test's own why; LAND {sq ft one needs, sq ft free}; LOSS
+     * the staffing test's own why; LAND {sq ft one needs, sq ft free}, with
+     * what the other sectors' zones hold in `why` (0.7.109; landGate()); LOSS
      * {what the estimate says it would lose a month}, with NO_FEED in `why`
      * for a conversion unit nothing feeds (0.7.103).
      */
@@ -940,8 +956,8 @@ public final class BuildCard {
         }
         Sector.Staffing staffing = owner.staffing(t);
         if (!staffing.passes()) return new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()));
-        double free = ground.getAvailableSqFt();
-        if (t.getLandSqFt() > free) return new Gate(GateKind.LAND, t.getLandSqFt(), free, null, null);
+        double free = ground.freeFor(t.getSector());
+        if (t.getLandSqFt() > free) return landGate(ground, t, free);
         if (estimate <= 0) return lossGate(game, t, estimate);
         return null;
     }
@@ -1029,10 +1045,10 @@ public final class BuildCard {
                 : new GateMark(GateKind.STAFFING, Mark.FAIL,
                         new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()))));
         // The ground.
-        double free = ground.getAvailableSqFt();
+        double free = ground.freeFor(t.getSector());
         gates.add(!(t.getLandSqFt() > 0) ? new GateMark(GateKind.LAND, Mark.NONE, null)
                 : t.getLandSqFt() <= free ? new GateMark(GateKind.LAND, Mark.PASS, null)
-                : new GateMark(GateKind.LAND, Mark.FAIL, new Gate(GateKind.LAND, t.getLandSqFt(), free, null, null)));
+                : new GateMark(GateKind.LAND, Mark.FAIL, landGate(ground, t, free)));
         // ...and whether it pays.
         gates.add(estimate > 0 ? new GateMark(GateKind.LOSS, Mark.PASS, null)
                 : new GateMark(GateKind.LOSS, Mark.FAIL, lossGate(game, t, estimate)));

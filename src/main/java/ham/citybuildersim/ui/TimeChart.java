@@ -987,11 +987,17 @@ final class TimeChart extends VBox {
         g.restore();
     }
 
-    /** A flag's colour: the area its decision is about - money blue, people teal, building pink. Never a verdict. */
+    /**
+     * A flag's colour: the area its decision is about - money blue, people
+     * teal, building pink - and since 0.7.109 (batch Z2) zoning's in the
+     * ground's sand (Palette.ORE, the land office's colour for what the
+     * ground holds), a colour no other kind takes. Never a verdict.
+     */
     static String flagColour(String kind) {
         return switch (kind) {
             case DecisionLog.PROMISE -> Palette.PEOPLE;
             case DecisionLog.CONSTRUCTION -> Palette.BUILDING;
+            case DecisionLog.ZONING -> Palette.ORE;
             default -> Palette.MONEY;
         };
     }

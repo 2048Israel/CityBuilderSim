@@ -5012,8 +5012,45 @@ public final class GameVersion {
      *     before); RobustnessCheck 5b reads the floor where it read the
      *     sectors' format, and the refusal's words.
      *   - The playtest loads nothing older and is 0.7.107's byte for byte.
+     *
+     * 0.7.109 (2026-10-10) - ZONING, THE SCREENS. Batch Z2 (the zoning
+     * study's three boards; runs/brief-batchZ2.md, runs/fixZ2-notes.md). No
+     * save format change (36), no model behaviour moved with nothing zoned.
+     *   - POLICY › ZONING, the fifth Policy area (ui/ZoningScreen; PolicyScreen
+     *     keeps the frame, the staged set and the tray): its chip and its card
+     *     on the hub; THE GROUND - the four figures (ZONED, HELD FOR THEM, PRICE
+     *     GIVEN UP, FOREST KEPT), the dry ground as one bar (built; each zone
+     *     used solid and held hatched; the bare ground and open forest free
+     *     for anyone; the working and protected forest) and a closer bar of
+     *     the zones and the bare ground, THE ZONES a row each, the forest law
+     *     with a door, "Zone ground for an industry"; a zone's page - HOW MUCH
+     *     GROUND (a share of the dry ground or km²), ITS PRICE (0-100% of the
+     *     going price) and ITS TAXES (the sector's own offsets, the Taxes
+     *     rows' keys: one dial, two doors), staged before and after, Apply in
+     *     the tray, the zone taken off; THE FOREST LAW's page - the bar, its
+     *     two shares, the wood kept standing for ever, the most that may be
+     *     cut and the forest a building may take.
+     *   - ZoningView (new, pure): every figure those pages show, each a model
+     *     read (LandManager's ground, PolicyPreview.zoneAt()/forestAt()), the
+     *     bar's parts cut as the land office cuts the ground, so they add up
+     *     to the dry ground; a zone's page and the law's on a staged copy.
+     *   - DecisionLog.ZONING: a zone set, re-sized, re-priced or taken off and
+     *     the forest law are their own kind (TAX in 0.7.107), with their icon
+     *     (Icons.ZONING, a flag on a plot) and their flag's colour (the
+     *     ground's sand, Palette.ORE); a zone's tax rows stay TAX.
+     *   - ELSEWHERE: the land office's THE CITY line adds "· N zoned"; Build's
+     *     LAND FREE says "free for anyone" and, under it, "zoned for <sector>
+     *     Y ›" (Policy › Zoning); NEEDS YOU's GROUND row, listed, names what
+     *     the zones hold for others than the homes (CityNeeds.zonesHoldWords());
+     *     the build card's land gate, an order's quote (Game.quoteBuild())
+     *     and the landlords' "Could not build" read the ground a sector may
+     *     build on (LandManager.freeFor(): its zone's too, as buildFor() does)
+     *     and name what is zoned for others
+     *     (BusinessInvestment.zonedForOthersWords(), landReason()'s words).
+     *   - Harnesses: ZoningViewCheck (new, eight sections).
+     *   - The playtest sets no zone and is 0.7.107's byte for byte.
      */
-    public static final String VERSION = "0.7.108";
+    public static final String VERSION = "0.7.109";
 
     /**
      * The save shape.

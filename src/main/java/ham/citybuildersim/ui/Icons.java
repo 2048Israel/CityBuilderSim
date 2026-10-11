@@ -490,7 +490,7 @@ public final class Icons {
      * its flag is coloured by the area it is about: a tax the government's,
      * a promise the policy scales, the central bank and the bank the bank's,
      * the money the coin, the paper and the fund the treasury's, the queue
-     * the crane.
+     * the crane - and since 0.7.109 zoning its flag on a plot.
      */
     public static String ofDecision(String kind) {
         switch (kind == null ? "" : kind) {
@@ -503,6 +503,7 @@ public final class Icons {
             case ham.citybuildersim.DecisionLog.FUND:         return FINANCES;
             case ham.citybuildersim.DecisionLog.CONSTRUCTION: return CRANE;
             case ham.citybuildersim.DecisionLog.RESERVE:      return DROP;
+            case ham.citybuildersim.DecisionLog.ZONING:       return ZONING;
             default:                                          return PIN;
         }
     }
@@ -513,6 +514,15 @@ public final class Icons {
 
     /** A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's shortcut, "Buy the best: North 3 · ..." (0.7.61; "Buy the best land" until 0.7.69). */
     public static final String MAP = "M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15 M15 6v15";
+
+    /** A flag on a plot (Lucide "land-plot", its relative moves written absolute): Policy's Zoning area, its chip, its card and a zoning decision's flag (0.7.109, batch Z2). */
+    public static final String ZONING = "M12 8l6-3-6-3v10"
+            + " M8 11.99l-5.5 3.14a1 1 0 0 0 0 1.74l8.5 4.86a2 2 0 0 0 2 0l8.5-4.86a1 1 0 0 0 0-1.74L16 12"
+            + " M6.49 12.85l11.02 6.3 M17.51 12.85L6.5 19.15";
+
+    /** Two trees (Lucide "trees"): the forest law - its tab, its card and its page (0.7.109, batch Z2). */
+    public static final String TREES = "M10 10v.2A3 3 0 0 1 8.9 16H5a3 3 0 0 1-1-5.8V10a3 3 0 0 1 6 0Z M7 16v6 M13 19v3"
+            + " M12 19h8.3a1 1 0 0 0 .7-1.7L18 14h.3a1 1 0 0 0 .7-1.7L16 9h.2a1 1 0 0 0 .8-1.7L13 3l-1.4 1.5";
 
     /** Two arrows out to the corners (Lucide "maximize-2"): the land office's Expand (0.7.61). */
     public static final String EXPAND = "M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7";

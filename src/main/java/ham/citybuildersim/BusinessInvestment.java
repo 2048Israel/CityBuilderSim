@@ -420,7 +420,12 @@ public class BusinessInvestment {
         String why = "no land - needs " + LandManager.areaWords(template.getLandSqFt()) + ", "
                 + LandManager.areaWords(landAvailable + zoneHeldFor(template.getSector())) + " free";
         double others = zoneLand.isEmpty() ? 0 : zonedForOthers(template.getSector());
-        return others > 0 ? why + "; " + LandManager.areaWords(others) + " is zoned for others" : why;
+        return others > 0 ? why + "; " + zonedForOthersWords(others) : why;
+    }
+
+    /** What the other sectors' zones hold, as a land refusal names it (0.7.107's words, shared since 0.7.109 with the build card's own land gate and the "Could not build" word): "55.9 km² is zoned for others". */
+    public static String zonedForOthersWords(double sqFt) {
+        return LandManager.areaWords(sqFt) + " is zoned for others";
     }
 
     /* =====================================================================

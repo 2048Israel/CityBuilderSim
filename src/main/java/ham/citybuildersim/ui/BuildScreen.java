@@ -547,11 +547,35 @@ final class BuildScreen {
     /** LAND FREE's width with its shortcut under it: the cell's own 190 and room for the shortcut's words on one line. */
     static final double LAND_FREE_CELL = 236;
 
-    /** LAND FREE: the ground free in km2, the share used, a door to the land office, and the shortcut to buy the best land. */
+    /**
+     * LAND FREE: the ground free in km2, the share used, a door to the land
+     * office, and the shortcut to buy the best land - and with a zone
+     * standing (0.7.109, batch Z2), "free for anyone" in its note and a door
+     * under it to what the zones hold: "zoned for Mining 1.6 km² ›".
+     */
     VBox landFreeCell(double free, double used) {
-        VBox cell = limitCell("LAND FREE", LandManager.areaWords(free), String.format("%.0f%% of the city used", used * 100),
+        String zoned = zonedWords();
+        VBox cell = limitCell("LAND FREE", LandManager.areaWords(free),
+                (zoned == null ? "" : "free for anyone · ") + String.format("%.0f%% of the city used", used * 100),
                 groundTone(CityNeeds.ground(ui.game, SummaryScreen.WORDS).level()),
                 "Go to the land office and buy more", () -> ui.landScreen.showLandMenu());
+        if (zoned != null) {
+            Label door = new Label(zoned);
+            door.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 2 0 0 0;");
+            door.setMaxWidth(LAND_FREE_CELL - 28);
+            List<Zoning.Zone> zones = ui.game.getZoning().zones();
+            String page = zones.size() == 1 ? ZoningScreen.zonePage(zones.get(0).sector()) : ZoningScreen.THE_GROUND;
+            door.setOnMouseClicked(e -> {
+                e.consume();
+                ui.policyScreen.open(PolicyScreen.ZONING, page);
+            });
+            Tooltip tip = new Tooltip("Ground the zones hold for their sectors: no other business may take it.\n"
+                    + "Click for Policy › Zoning.");
+            tip.setShowDelay(Duration.millis(250));
+            Tooltip.install(door, tip);
+            cell.getChildren().add(door);
+            cell.setPrefWidth(LAND_FREE_CELL);
+        }
         LandParcel best = ui.game.bestOffer(Game.LandNeed.room());
         if (best == null) return cell;
         boolean funding = ui.game.landNeedsFunding(List.of(best.getId()));
@@ -568,6 +592,14 @@ final class BuildScreen {
         cell.getChildren().add(shortcut);
         cell.setPrefWidth(LAND_FREE_CELL);
         return cell;
+    }
+
+    /** LAND FREE's zoned line (0.7.109): "zoned for Mining 1.6 km² ›" for one zone, "zoned for 3 industries 4.0 km² ›" for more - what they hold, free for them alone; null with no zone. */
+    String zonedWords() {
+        List<Zoning.Zone> zones = ui.game.getZoning().zones();
+        if (zones.isEmpty()) return null;
+        String who = zones.size() == 1 ? ui.policyScreen.zoning.nameOf(zones.get(0).sector()) : zones.size() + " industries";
+        return "zoned for " + who + " " + LandManager.areaWords(ui.game.getLandManager().heldByZones()) + " ›";
     }
 
     /** The shortcut's words: "Buy the best: North 3 · 0.0288 km² · US$12.1M ›" - the offer's place (0.7.69, spec-grid 2.5), its size and its listed price. */
@@ -1267,8 +1299,9 @@ final class BuildScreen {
             case STAFFING:
                 return gate.why();
             case LAND:
+                // ...and what the other sectors' zones hold, as the investors' word says it (0.7.109, Z2).
                 return "no land - needs " + LandManager.areaWords(gate.a()) + ", "
-                        + LandManager.areaWords(gate.b()) + " free";
+                        + LandManager.areaWords(gate.b()) + " free" + (gate.why() == null ? "" : "; " + gate.why());
             default:
                 // ...a conversion unit nothing feeds (0.7.103, Jerus's B): no feed, not a loss.
                 if (gate.why() != null) return gate.why();
