@@ -163,6 +163,10 @@ public class BuildingDataCheck {
                 fails++;
                 System.out.println("  FAIL " + who + ": site " + actual.site() + " != " + expected.site());
             }
+            // ...and a works' own power and its consumables (0.7.112): one that lost its line would buy all its
+            // power and nothing abroad, one that gained a line would make power or pay the world unasked.
+            check(who + " gen", actual.getGen(), expected.getGen());
+            check(who + " consumables", actual.getConsumables(), expected.getConsumables());
 
             // Every job tier, not just the ones the building uses - a tier that
             // silently failed to load would otherwise pass unnoticed.
@@ -517,6 +521,23 @@ public class BuildingDataCheck {
         assertTrue("every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109)", rule);
         assertTrue("...four stand on sites - the Iron Mine, the Oil Well, the Offshore Platform and the Platform Well", onSites == 4);
         assertTrue("...each on ANY, one site and a tonne of field a unit, but the jacket, which takes none", shape);
+
+        /* ---------- a works' own power and its consumables (0.7.112, batch I2) ----------
+
+           spec-materials 2.5 and 2.8: "gen" (kW a building makes itself) and
+           "consumables" (world thousands a month it buys abroad) are read
+           from the file like every field, and the shared machinery uses them
+           - but no building has either until the materials chains' rows
+           come (I3 onwards), so every building buys its whole draw and sells
+           none, to the bit, and pays the world nothing past its goods. */
+        System.out.println("\n--- a works' own power and its consumables (0.7.112) ---");
+        boolean noneYet = true, wholeDraw = true;
+        for (BuildingsTemplate t : data) {
+            noneYet &= t.getGen() == 0 && t.getConsumables() == 0;
+            wholeDraw &= t.powerBought() == t.getElectricityConsumption() && t.powerSold() == 0;
+        }
+        assertTrue("no building makes power or buys consumables yet", noneYet);
+        assertTrue("...so every building buys its whole draw and sells the grid none, to the bit", wholeDraw);
 
         /* ---------- and every profession has exactly one school ----------
 

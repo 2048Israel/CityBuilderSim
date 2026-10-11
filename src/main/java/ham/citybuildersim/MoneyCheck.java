@@ -293,6 +293,57 @@ public class MoneyCheck {
                 worstDriftPool.isEmpty() ? "" : " (" + worstDriftPool + ")");
         assertTrue("...and nothing moved after the audit struck", Math.abs(worstDrift) < .01);
 
+        /* ==================================================================
+           4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES
+              ABROAD (0.7.112, batch I2; runs/spec-materials.md 2.5, 2.8).
+
+           Two flows the materials chains bring, neither of which any building
+           has yet - so THE FIXTURE CAUSES BOTH: the bakeries are handed power
+           of their own (the Industrial Bakery three times its draw, so it
+           sells the grid twice that; the Bakery half, so it buys the other
+           half) and consumables, before the city founds. The power is the
+           treasury's pool paying the bakers', so the audit notes it, each
+           side off its own book, and the identity sees a mismatch as a
+           residual; the consumables are an import, inside "- Industry
+           Imports", and cross the border in TRADE.
+           ================================================================== */
+        System.out.println("\n--- a works making its own power and buying consumables abroad: still nothing leaks ---");
+        Game works = new Game(GameFiles.scratch("moneycheck"));
+        quietly(works::run);
+        BuildingsTemplate big = t(works, "Industrial Bakery"), small = t(works, "Bakery");
+        big.setGen(3.0 * big.getElectricityConsumption());
+        small.setGen(.5 * small.getElectricityConsumption());
+        big.setConsumables(.001 * big.getCashCost());
+        works.setCashForTest(Founding.WEALTHY_CASH);
+        works.getLandManager().setOwnedSqFt(works.getLandManager().getOwnedSqFt() + 400_000_000L);
+        // ...standing from the first month (no builders in this town to put them up).
+        quietly(() -> {
+            works.buildStack(t(works, "House"), 400, true);
+            works.buildStack(t(works, "Small Grocery Store"), 4, true);
+            works.buildStack(big, 3, true);
+            works.buildStack(small, 2, true);
+            works.buildStack(t(works, "Coal Power Plant"), 1, true);
+            works.buildStack(t(works, "Water Treatment Plant"), 1, true);
+            works.buildStack(t(works, "Paved Road"), 10, true);
+        });
+        worst = play("a city whose bakeries make power and buy consumables, 36 months", works, 36, verbose);
+        Sector industry = works.getSectors().byKey(Sectors.INDUSTRY);
+        MoneyAudit.Result last = works.getLastMoneyAudit();
+        double sold = industry.statement().powerSold;
+        Double consumables = industry.statement().otherInputs.get(Sector.CONSUMABLES);
+        System.out.printf("   the bakers sold the grid $%,.2fk of power and bought $%,.2fk of consumables abroad last month%n",
+                sold, consumables == null ? 0 : consumables);
+        assertTrue("fixture: the bakers sold the grid power and the utility paid them the same, each off its own book",
+                sold > 0 && works.getServicesManager().getUtilitiesHandler().getPowerBought() == works.getEconomyManager().getSectorPowerSold()
+                        && works.getEconomyManager().getSectorPowerSold() == sold);
+        assertTrue("...and bought consumables abroad, inside their imports", consumables != null && consumables > 0
+                && industry.statement().imports >= consumables);
+        assertTrue("a city whose works make power and buy consumables conserves money to within 0.01% of what moved",
+                worst.relative() < 1e-4);
+        assertTrue("...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's"
+                + " imports, in TRADE", last.detail.contains("chk + sectors PowerSold") && last.detail.contains("chk - utilities PowerBought")
+                && last.detail.contains("- Industry Imports") && consumables != null && last.tradeOut >= consumables);
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
