@@ -237,7 +237,7 @@ public class TradeCostCheck {
         for (String name : new String[]{ bm.getTemplate(HeavyIndustry.MINI_MILL).getName(),
                 bm.getTemplate(HeavyIndustry.ARC_FURNACE).getName(), bm.getTemplate(Mining.IRON_MINE).getName(), "Grain Farm" }) {
             BuildingsTemplate t = bm.getTemplateByName(name);
-            report(name + " is mostly ore on the road",
+            report(name + " is mostly bulk on the road (scrap, ore, grain)",
                     t.loadOf(Traffic.BULK) > t.getRoadLoad() / 2,
                     String.format("%.0f%% bulk", t.loadOf(Traffic.BULK) / t.getRoadLoad() * 100));
         }

@@ -5283,7 +5283,8 @@ public class LongPlaytest {
          */
         ForeignAccounts fx = g.getForeignAccounts();
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
-        out.printf("  NX breakdown: exports %,.0f | food %,.0f  materials %,.0f  scrap %,.0f  => NX %,.0f%n",
+        // "the rest" was "scrap" while IRON was scrap and the mills its only buyer (0.7.116: SCRAP is its own good)
+        out.printf("  NX breakdown: exports %,.0f | food %,.0f  materials %,.0f  the rest %,.0f  => NX %,.0f%n",
                 na.getExports(), na.getImportsFood(), na.getImportsMaterials(),
                 na.getImportsRawMaterial(), na.getNetExports());
         /*
