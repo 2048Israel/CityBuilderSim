@@ -309,7 +309,7 @@ public final class CoalMining extends ExtractionSector {
      * makes - its gains through BusinessInvestment.estimatedMakerProfit(),
      * the thermal coal a plant stops selling raw valued as it would have
      * sold (lostValue()) - less its consumables and its lorries. A surface
-     * mine's figure is the maker's on its own makes, to the bit.
+     * mine adds its own makes, so its figure is the maker's on them.
      */
     @Override
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {

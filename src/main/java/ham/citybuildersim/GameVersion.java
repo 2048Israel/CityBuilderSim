@@ -5620,6 +5620,62 @@ public final class GameVersion {
      *     a bad copy, and the load's).
      *   - The playtest is pt07123's byte for byte.
      *
+     * 0.7.126 (2026-10-11) - COAL. Batch I6, the fourth materials batch that
+     * changes the game and the first new sector of the chains (Jerus's Q9,
+     * Q10, Q21 and A of 2026-10-08; runs/spec-materials.md 2.1, 2.4, 2.10 and
+     * 5; runs/brief-batchI6.md, runs/fixI6-notes.md). Written in number
+     * order, after 0.7.127 shipped: VERSION stays 0.7.127. No save format
+     * change (39): a save from before it restores Coal Mining empty - its
+     * key is missing, not misread (Sectors' header; Equity, the households'
+     * shares, the exchange and the bank's year of sheets map by name or
+     * append) - and it digs nothing until it builds.
+     *   - THE SECTOR: "Coal Mining" on the end of Sectors.KEYS, the
+     *     eighteenth (Q21: iron, coal, stone, copper, wood);
+     *     sectors.CoalMining, an ExtractionSector on coal making
+     *     THERMAL_COAL and COKING_COAL - batch I4's goods, imported until
+     *     now, Iron & Steel's ovens, pellet plants and furnaces their buyers -
+     *     on diesel. Equity's companies, the households' share block, the
+     *     audit's pools and the bank's year of sheets grow with the keys.
+     *   - THE ROWS (ids 111-114, Coal Mining's; the study's 3.3 at spec 2.2's
+     *     conventions, "since" 1900): the Surface Coal Mine, 100,000 t of
+     *     thermal coal a month on one thermal site; the Large Surface Mine,
+     *     800,000 t on four of one field; the Underground Coal Mine, a
+     *     longwall, 250,000 t of RAW coal on one coking site; the Coal
+     *     Preparation Plant, washing 500,000 t (Q9: a separate building) - the
+     *     template's new field "wash" (BuildingsTemplate, BuildingCatalog).
+     *   - THE FLOW (CoalMining.flow(), pure; spec 2.10): raw = the coking
+     *     mines' coal; washed = min(raw, the plants' wash); coking .55 of it,
+     *     thermal .20 and spoil .25; the raw past the wash sold as thermal,
+     *     tonne for tonne. getCapacity() and getPipeline() read it.
+     *   - THE GROUND: both coals are stockable, so a month's coal is the
+     *     lift (CoalMining.lift(): each kind's nameplate at the rate, held to
+     *     its type's ground, through the flow) - Sector.madeAtRate(), the
+     *     new hook getPlannedOutput(), getExportBoundOutput() and
+     *     produceStock() start from, every other sector's figure to the bit -
+     *     and the ground gives it up at the month's end (endOfMonth(): 1/.95
+     *     t of seam a tonne at the surface, 1/.80 underground, by type).
+     *   - THE PLAN: a preparation plant first whenever raw coal goes
+     *     unwashed and one would staff and pay on its whole cost (the
+     *     study's 3.4: "the sector builds one beside every coking mine");
+     *     otherwise ExtractionSector's rule among the mines that fit, their
+     *     lorries in (as I5's). What one more building earns is what it adds
+     *     to the flow (madeBy()): a plant's coking coal less the thermal the
+     *     raw no longer sells as.
+     *   - Resource.COAL: sold as THERMAL_COAL (both types; goodOf()), 1/200 of
+     *     its export price in the ground (the study's 8), so an offer's coal
+     *     is in its price and an offer holding coal is no longer bare ground.
+     *   - THE SCREENS: Build's "Coal" group after Iron Mining's; the plant's
+     *     card by the raw coal it washes and what it adds to the flow; its
+     *     sentences, and a coal mine's field by type.
+     *   - Harnesses: CoalMiningCheck (new, the ninety-eighth: the flow, the
+     *     registry, the four rows' cases against the study's arithmetic and
+     *     its stated returns, raw as thermal, the types and the fit, the dig
+     *     by type, the plan, a played month), BuildingDataCheck (115
+     *     buildings, ten on sites, coal's by type, wash, consumables, since),
+     *     BuildCardCheck (the Coal group, the plant's card), OilCheck (the
+     *     wells and the refinery after Restaurants, no longer the end).
+     *   - The playtests: PLAYTEST_LINE.
+     *
      * 0.7.127 (2026-10-11) - ICE AND DESERT ON THE REAL EARTH. Batch E7, the
      * globe study's first (docs/studies/spec-globe.md 3.9, 3.10 and 4;
      * Samuel's answers of 10:26, "yes"; spec-earth's E14; runs/brief-
