@@ -58,6 +58,14 @@ import java.util.Map;
  * centre from the shares there and the octaves wider than a pixel, the
  * narrower at their mean - World's rule for its far view.
  *
+ * THE FAR VIEW (0.7.119, batch E5; spec-earth 3, "Far views"). The map's far
+ * nodes (MapTiles.nodeTerrain()) are farTerrain(): the region's pixels, but
+ * the rivers stroked from their vectors at least a pixel wide and thinned
+ * by width as the view widens (FAR_RIVER_SHARE), the small lakes drawn from
+ * their points and areas, and from DITHER_STRIDE the forest dithered by a
+ * hash - its vectors read from the 1-degree tiles under the node, either
+ * side of the date line alike (nodeTiles()). MapCheck 10 holds it.
+ *
  * THE WORLD'S OTHER HALF. The cells pass (cellsPass()) replaces the
  * generated world's sea pass: each world cell's land and forest from
  * CELL_SAMPLES x CELL_SAMPLES points of the 4' layers, which the fields of
