@@ -70,8 +70,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **ninety-three harnesses plus the
-4,000-odd-month playtest**, which it reports as ninety-four, in about nine minutes.
+`AllChecks` runs the lot, one JVM each — **ninety-four harnesses plus the
+4,000-odd-month playtest**, which it reports as ninety-five, in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:

@@ -121,8 +121,12 @@ These are Jerus's, and they do not move.
                                    feed, ground, staff and money gates - and the idle-then-shed rule; the
                                    refinery its first client, the materials chains' works next; since
                                    0.7.105 its prices at the margin, and Refining's run rule beside it: the
-                                   crude units run only the barrels that pay); Mining.java is the shape to
-                                   copy
+                                   crude units run only the barrels that pay; since 0.7.112 the whole cost
+                                   tested whoever pays, Jerus's decision A, and outValue/inValue, the margin
+                                   split at the month's trade); ProcessingSector and ExtractionSector (0.7.112,
+                                   batch I2: the materials chains' two bases - a works built by SpreadPlanner,
+                                   with captive use and idle-then-shed, and Mining's rule for a mine, Mining
+                                   moved onto it); Mining.java is the shape to copy
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
                                    the businesses' bonds (0.7.12): the market and each participant's rule, the
                                    bond, the limit-order book the bonds and (since round 2) the shares trade on
@@ -333,7 +337,7 @@ These are Jerus's, and they do not move.
                                    MapTiles, which MapCheck holds), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray). The model never imports it.
-        *Check.java                ninety-three harnesses, each a main() with static helpers
+        *Check.java                ninety-four harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103)
