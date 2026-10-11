@@ -513,17 +513,18 @@ public final class LandMap {
      */
     public static String placeWords(EarthData.Place p, double lat, double lon) {
         double km = EarthProj.distanceM(p.lat(), p.lon(), lat, lon) / 1000;
-        if (km < 0.05) return p.name();
+        String name = p.name().trim();
+        if (km < 0.05) return name;
         double f1 = StrictMath.toRadians(p.lat()), f2 = StrictMath.toRadians(lat), dl = StrictMath.toRadians(EarthProj.normaliseLon(lon - p.lon()));
         double bearing = StrictMath.toDegrees(StrictMath.atan2(StrictMath.sin(dl) * StrictMath.cos(f2),
                 StrictMath.cos(f1) * StrictMath.sin(f2) - StrictMath.sin(f1) * StrictMath.cos(f2) * StrictMath.cos(dl)));
         String toward = COMPASS[(int) Math.floorMod(Math.round(bearing / 45), 8L)];
-        return (km < 10 ? String.format("%.1f km", km) : String.format("%,.0f km", km)) + " " + toward + " of " + p.name();
+        return (km < 10 ? String.format("%.1f km", km) : String.format("%,.0f km", km)) + " " + toward + " of " + name;
     }
 
     /** The province under a point and its class: "Geology: Anglo-Dutch Basin, a basin" (Geology's class, the hand table's over the rules'). */
     public static String provinceWords(EarthData.Province p, Geology.Kind kind) {
-        return "Geology: " + p.name() + ", " + KIND_WORDS[kind.ordinal()];
+        return "Geology: " + p.name().trim() + ", " + KIND_WORDS[kind.ordinal()];
     }
 
     /** A reader's places as unit vectors, for the nearest (nearestPlace()): built once a reader. */

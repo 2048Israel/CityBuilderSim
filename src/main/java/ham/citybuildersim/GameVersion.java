@@ -5294,8 +5294,43 @@ public final class GameVersion {
      *     totals and the types).
      *   - The playtest is 0.7.113's byte for byte (pt07113): a generated
      *     world's field land is its land and its fields carry no geology.
+     *
+     * 0.7.119 (2026-10-11) - THE MAP ON EARTH. Batch E5 (the project's
+     * spec-earth.md 3's "Far views" and 8; Jerus's answers of 2026-10-10,
+     * "all rec"; runs/brief-batchE5.md, runs/fixE5-notes.md). No save format
+     * change (36): nothing new is saved, and a generated world's map is
+     * drawn as it was.
+     *   - EarthTerrain.farTerrain() (new): an Earth world's far node. Each
+     *     pixel classed from the shares at its centre as the region classes
+     *     it (the 4' far layers from FAR_STRIDE): under WATER_STRIDE the
+     *     region's pixels exactly, from it each pixel's latitude and longitude
+     *     blended over FAR_BLEND_PX blocks and its forest dithered by a hash
+     *     (DITHER_STRIDE). The rivers stroked from GRWL's vectors at least
+     *     FAR_RIVER_HALF_PX (0.75 px) a side, a run whole while its median
+     *     width is FAR_RIVER_SHARE of a pixel or more (GRWL's 30 m at the
+     *     study's 2.5 km a pixel: every river that close, the wider ones as
+     *     the view widens); the small lakes from their points and areas, each
+     *     its blob (a disc where no octave is wider than a pixel); from
+     *     FAR_TILE_BLEND_STRIDE a tile's points placed between its corners;
+     *     a segment within RIM_M of the planet's rim not stroked. A node reads
+     *     the tiles under its box of latitude and longitude, unwrapped round
+     *     it across the date line (every longitude about a pole or past the
+     *     rim), each kept where its own footprint reaches the node.
+     *   - MapTiles.nodeTerrain(key): an Earth world's node is its far node, a
+     *     generated world's its region as before; nodePixels() draws the void
+     *     past the planet's rim (spec-earth 2).
+     *   - LandMap.earthWords(): the hover card on Earth - how far and which
+     *     way the pointer lies from the nearest of the data's places, by its
+     *     name alone and no border (Jerus's sixth answer), and the geologic
+     *     province under it with its class; past the rim, that the map runs
+     *     off the planet. ui/MapView's card shows them after whose the ground
+     *     is; the province's multipliers wait for E4's founding card.
+     *   - The callers E2 left on the seed read the world by its key:
+     *     ui/MapView's far nodes and OilView's fields by pool.
+     *   - Harnesses: MapCheck 10, the map on Earth.
+     *   - The playtest is 0.7.113's byte for byte (pt07113).
      */
-    public static final String VERSION = "0.7.117";
+    public static final String VERSION = "0.7.119";
 
     /**
      * The save shape.
