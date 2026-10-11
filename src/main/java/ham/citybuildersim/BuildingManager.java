@@ -2676,11 +2676,14 @@ public class BuildingManager {
            cash the all-in cost over 1.3, material a sixtieth of the cash,
            points a half; the study's posts; ground the iron site's 400,000 sq
            ft a site (the study's 74 ha for 20 is that, rounded); road load the
-           Iron Mine's 420 for 2,500 t out; DIESEL only where the study names it,
-           the Iron Mine, and its large sibling scaled by tonnes - the magnetite
-           works none, their running cost all power and consumables, so their
-           four cases hold (MaterialsCheck 15); consumables the study's running
-           cost less wages, power, water and diesel at D$0.60. "since": 1900 for
+           tonnes in and out at the Iron Mine's 420 for 2,500 t, its diesel's
+           1,180 L a tonne in it (the ore alone, 84,000, would not split into
+           its three streams to the bit: TradeCostCheck); DIESEL only where the
+           study names it, the Iron Mine, and its large sibling scaled by tonnes
+           - the magnetite works none, their running cost all power and
+           consumables, so their four cases hold (MaterialsCheck 15);
+           consumables the study's running cost less wages, power, water and
+           diesel at D$0.60. "since": 1900 for
            the open pit (the Mesabi's stood before it), 1955 for the two
            magnetite works (taconite concentrated at Silver Bay: research E4).
            ------------------------------------------------------------------------------ */
@@ -2695,7 +2698,7 @@ public class BuildingManager {
                 .setWaterConsumption(300)
                 .setConsumables(2847.6)         // 5,420 - 1,627.4 wages - 30 power - 15 water - 900 diesel
                 .setLandSqFt(8000000)
-                .setRoadLoad(84000)
+                .setRoadLoad(84214)             // 500,000 t out and 1,271 t of diesel in, at the Iron Mine's 420 for 2,500 t
                 .setJobs(JobType.NO_DIPLOMA, 240)
                 .setJobs(JobType.DIPLOMA, 110)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 40)
