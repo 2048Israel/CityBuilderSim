@@ -151,6 +151,10 @@ public class TradeCostCheck {
         { Good.COPPER_ROD,             10.750,     10.250  },
         { Good.ACID,                     .160,       .070  },
         { Good.WIRE_CABLE,             17.000,     13.000  },
+        // Wood's two (0.7.138, batch I9; spec-materials 2.3, the study's 5.3), a cubic metre: sawlogs, and
+        // pulpwood - its import end (70 in the study's first table) one of the eight widened bands (its 1.2).
+        { Good.SAWLOGS,                  .110,       .065  },
+        { Good.PULPWOOD,                 .090,       .035  },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */
