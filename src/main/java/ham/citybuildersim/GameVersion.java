@@ -6191,8 +6191,52 @@ public final class GameVersion {
      *     the carry; the crossfade and the roll's ease; the founding globe
      *     the model's frame, and its handoff.
      *   - The playtests do not move: default and Earth byte for byte.
+     *
+     * 0.7.137 (2026-10-12) - BUYING LAND FROM THE MAP. Batch M6, Jerus's
+     * design of 2026-10-08 with the Earth study (docs/studies/spec-earth.md 3
+     * and its decisions B1 to B7: "click brings up menu, and to issue bond if
+     * doesnt have cash"; "you should be able to drag and select in the map to
+     * buy all the land parcel or specific ones"; runs/brief-batchM6.md,
+     * runs/fixM6-notes.md). Nothing in the model reads the screen; no save
+     * format change (39).
+     *   - The land office's map over the window: a click on an offer opens
+     *     its card beside it - the office's own words and figures: the place
+     *     and its tag, its blocks and km2, the ground bar and the room for
+     *     houses, its deposits, the price in the toggle's money with the
+     *     other money and the ground a m2 under it, a dry km2, the cash
+     *     before and after, the pay toggle, Buy, and "Open in the land
+     *     office". Enter buys it. Shift-click adds an offer to the card or
+     *     drops it; Shift and a drag draws a box that takes every offer whose
+     *     free ground it meets; Ctrl+A or "Select every offer" in the head
+     *     takes them all; several are summed, each a chip with its x. Esc
+     *     closes the card, a second Esc the map. Wherever the offers are
+     *     drawn: the plane at every scale, and on Earth the globe's GROUND
+     *     tier.
+     *   - Short of cash, the card issues the funding page's first offer, the
+     *     20-year bond for the gap, and buys on it; the 6-month note beside
+     *     it, and "All the ways to pay", the funding page, which comes back to
+     *     the map at the view it left. From the vault, the dollar bond and
+     *     note; with the window abroad shut, why. The funding page takes its
+     *     quotes from the card's figures (LandMap.card()), so both issue the
+     *     same paper.
+     *   - Bought, the card becomes the receipt by the ground - the office's
+     *     receipt, the city's size, each place listing its next ground, NEW,
+     *     as the map draws it under the place's number - and the head's cash
+     *     moves. The head shows the cash and the pay toggle the pane covers;
+     *     its hint is "click an offer to buy it", every key in its tooltip;
+     *     the hover over an offer ends "Click to buy it here".
+     *   - The picks are the view's (LandMap.Picks), never saved: a month, a
+     *     load and putting the map away drop them, and an offer bought falls
+     *     out. The small map in the office clicks as before.
+     *   - Harnesses: MapCheck 14 - the card's figures the office row's for
+     *     every offer both ways of paying, several summed as "Buy the best
+     *     N"; the cash it says once bought; short, its bond the funding
+     *     page's first and buying them all; a box against every plot under
+     *     it, the city's own ground in an offer's rectangle taking nothing,
+     *     and through the globe's camera; the picks on a month and a load.
+     *   - The playtests do not move: default and Earth byte for byte.
      */
-    public static final String VERSION = "0.7.135";
+    public static final String VERSION = "0.7.137";
 
     /**
      * The save shape.
