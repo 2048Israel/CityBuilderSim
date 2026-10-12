@@ -43,6 +43,32 @@ class Earth:
     def meta(self):
         return json.loads(self.raw('meta'))
 
+    def landmass(self, t):
+        """earth-2: a tile's landmass ids, uint32 (240, 240), 0 no land (FORMAT-2.txt)."""
+        L = self.layers['landmass']
+        e = int(L['entries'][t])
+        if e <= 0:
+            return np.full((240, 240), -e, np.uint32)
+        b = self.raw('landmass', t)
+        pos = 0; vals = []
+        def uv():
+            nonlocal pos
+            n = 0; s = 0
+            while True:
+                x = b[pos]; pos += 1; n |= (x & 0x7f) << s; s += 7
+                if not x & 0x80: return n
+        n = uv(); prev = 0
+        for _ in range(n):
+            prev += uv(); vals.append(prev)
+        dt = np.uint8 if n <= 256 else np.dtype('>u2')
+        idx = np.frombuffer(b[pos:], dt).reshape(240, 240)
+        return np.array(vals, np.uint32)[idx]
+
+    def slope_est(self, t):
+        """earth-2: whether a tile's slope shares are GEBCO's estimate rather than NASADEM's measure."""
+        b = self.raw('slope.est')
+        return bool((b[t // 8] >> (7 - t % 8)) & 1)
+
     @staticmethod
     def _varints(b):
         out = []; n = 0; s = 0

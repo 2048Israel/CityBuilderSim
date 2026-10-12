@@ -1,0 +1,49 @@
+earth-2.bin: earth-1.bin's container and layers, and six more (the Earth 2 study, docs/studies/spec-earth2-terrain.md).
+
+THE CONTAINER is earth-1's, unchanged (FORMAT.txt): the same eight bytes "EARTH-1\n" (they name the layout, not the
+file), layout version 1, the same header, index and blob rules. EarthData reads earth-2.bin as it is; a layer it does
+not know is never asked for. The file is told from earth-1 by its meta layer (name "earth-2") and its SHA-256
+(earth-2.sha256); a save names it as "earth-2:<hash>". tools/earth/earthread.py reads it.
+
+EARTH-1'S LAYERS are copied byte for byte (sea, lake, lakes.small, rivers, landcover, far.land, far.lake, geology,
+provinces, places); bake2.py takes them from earth-1.bin and check2.py holds every blob to the original. Only meta is new.
+
+NEW LAYERS (4-bit shares are 0..15, share = v/15, as earth-1's sea and lake)
+
+  slope         kind 0, 120/deg (30"), a byte a cell: the cell's LAND (its four 15" cells' land, 1 - (sea + lake)/15 of
+                earth-1, summed) by slope:
+                  bits 0-2  F x 7: the share of its land at or above FOOTHILL (10% grade, 5.7 degrees)
+                  bits 3-5  S x 7: the share at or above STEEP (30% grade, 16.7 degrees); S <= F
+                  bits 6-7  (V / S) x 3: the part of the steep ground that is VERY STEEP (60% grade, 31 degrees)
+                So with F = (b & 7)/7, S = ((b >> 3) & 7)/7 and V = S x (b >> 6)/3, a cell's land is flat 1 - F,
+                foothill F - S, steep S - V and very steep V. A cell with no land holds 0.
+                The slope of a 90 m cell: NASADEM's 1" heights averaged over 3 x 3 (3", 90 m), the grade by Horn's
+                3 x 3 method over that grid; 100 such cells to a 30" cell, a share their count over 100 x the land
+                share, capped at 1. (Eight levels, not sixteen, and 30" not 15": the layer at 15" would be 204 MB,
+                at 30" 57 MB, projected from 2,037 random tiles; bake2.py makes 15" with CBS_SLOPE_CPD=240.)
+  slope.est     kind 2: 8,100 bytes, a bit a 1-degree tile (tile i is bit 7 - i%8 of byte i/8): set where the slope
+                shares are an estimate - north of 61 N, south of 56 S, and any tile NASADEM has no heights for -
+                from GEBCO 2026's 15" slope (Horn over 15") through a table: the mean shares of NASADEM's land cells
+                at 45-60 degrees north and south in the same bin of GEBCO slope (meta.slope.estimate gives the bins).
+  shallow       kind 0, 240/deg, a byte a cell: the share of the cell's SEA no deeper than 30 m (depth.SHALLOW_M),
+                0..15; 0 where the cell has no sea. GEBCO 2026's elevation bilinear between cell centres at 4 x 4
+                points a cell gives q, the points' share above -30 m; the sea is taken to fill the deepest part of
+                the cell, so with earth-1's sea share s the shallow part of the sea is clamp((q - (1 - s)) / s, 0, 1).
+  depth         kind 0, 60/deg (1'), a byte a cell: the mean depth of the cell's sea, its 16 15" cells' GEBCO depth
+                (elevation below 0; 0 where GEBCO has land under earth-1's sea) weighted by their sea share:
+                  0 no sea (or under 0.5 m)   1..200 that many metres   201..254 200 m + 10 m x (v - 200)
+                  255 750 m or deeper
+                A sea plot is never shallower than 1 m in the game (depthAt() over 0 means sea).
+  landmass      kind 0, 240/deg, an id a cell: the land cell's landmass, 0 no land. A cell is land when its sea +
+                lake levels come to 7 or less (EarthTerrain.COAST_BELOW's side) and no GRWL river 420 m wide or more
+                covers it (a river segment of that mean width cuts the cells within half its width of its line, and
+                every cell the line passes through). Cells join their four edge neighbours, across tile edges and the
+                180th meridian. Ids are by area, largest first (1 is Afro-Eurasia). A uniform tile is -id in the
+                index (0: no land). A blob, zlib: uvarint n, then n uvarints, the tile's ids ascending as deltas (the
+                first from 0), then 240 x 240 palette indexes, rows from the north, a byte each when n <= 256, else a
+                big-endian short each.
+  landmasses    kind 2: UTF-8 text, a line a landmass in id order (line 1 is id 1): area in km2 (its cells' dry share
+                x cell area, two decimals), its count of 15" cells, and the name of the most populous Natural Earth
+                place on it (empty when none), tab-separated.
+  meta          as earth-1's, with name "earth-2", the earth-1 file it was made from and its hash, the thresholds,
+                the shallow depth, the depth code, the stats and every source (earth-1's and the new).

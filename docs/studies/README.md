@@ -13,6 +13,7 @@ where it has been built.
 
 | study | date | what | batches |
 |---|---|---|---|
+| [spec-earth2-terrain.md](spec-earth2-terrain.md) | 2026-10-12 | Earth 2: slope measured from NASADEM over 90 m in four classes (three greys, and snow as earth-1's ice), foothill site preparation as builders' work and a land price for each class, highways and rail by slope, a shallow-sea class, short crossings and long bridge orders (all or nothing) that link landmasses, real depth in place of E4's guess, and why Samuel's Nova Scotia cities had oil and iron all round them; `earth-2.bin` baked (137 MB; the release is Samuel's), its pipeline in `tools/earth/`, prototypes, figures and the mockups in `earth2/` | ET1 to ET6 (queued); EG1 (his call) |
 | [spec-freight-and-infrastructure.md](spec-freight-and-infrastructure.md) | 2026-10-11 | Freight as one sector with three divisions (trucks for the city leg, the railway, ports run as a landlord port), the Bulk Berth, Build › Infrastructure, and the map's network: gateways, the main line and yards, rail drawn as rail, trains, access roads, junctions by rule; "today" renders, their harness and the mockups in `freight/` | FR0 to FR6 (queued, FR5 and FR6 his call) |
 | [spec-globe.md](spec-globe.md) | 2026-10-11 | The Earth's map as a globe, ice and desert on the ground, panning with W, A, S and D, and a minimap with district pictures; prototypes in `globe/` and `minimap/` | E7 to E9, MM1 and MM2 (planned) |
 | [research-1900.md](research-1900.md) | 2026-10-11 | Research from a 1900 start: what a 1900 city was and how it worked, the 1900 economy, the world to 1950, the Policy levers on Canada's dates, and a 1900-1950 catalogue of 48; the model's 1900 files in `research-model/` | R0, R0b, R0c, then R1 to R5 (planned, after every other batch) |
@@ -33,7 +34,7 @@ where it has been built.
 
 ## The ones that moved here
 
-Everything above but `spec-globe.md`, `spec-materials.md` and `spec-oil.md`
+Everything above but `spec-earth2-terrain.md` (written here, 2026-10-12), `spec-globe.md`, `spec-materials.md` and `spec-oil.md`
 was written in the claude.ai project "Civic Ledger: Java Game" and moved here
 on 2026-10-11, byte for byte, with the same names and folders it had under the
 project's `claude/`. The two build specs were written in the cloud session's
