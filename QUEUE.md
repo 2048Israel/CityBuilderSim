@@ -21,7 +21,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| FX1 | Three small faults copper found: stock written off in food, materials and luxuries; shares raised before the credit test; the playtest's bank trace on short keys (running) | [FX1](docs/queue/FX1.md) |
 | I9 | Forestry, with the 100-ha woodlot (running) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I10 | Wood products | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I11 | The materials pictograms' model | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
@@ -65,3 +64,4 @@ Not done, and waiting on Jerus.
 | FR5 | Trucks drawn on the map | his call (D21), optional | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR6 | The railway carries the city's own bulk | his call (D4), after FR2 is measured | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | I7-K | A works on imported feed is ordered, loses money and is sold back: a Lime Kiln seven times in the playtest (stone, 0.7.131), a Scrap Copper Refinery six times (copper, 0.7.133) | his call on I4's ★2 (weigh one more works at the prices after its own supply), and the shed rule's wait (IDLE_MONTHS 6 against FLEET_DELIVERY_MONTHS 8) | `runs/fixI7-notes.md` ★1, in the project's `claude/todo.md` |
+| FX1-2 | A sector raises shares before its own credit test and keeps them when the order falls through (FX1's item 2, built on `batch/FX1-with-preflight`, e821d7f) | it turns HealthCheck's hunger gap red, 5.2 points against 5, the shelf's half of it the weather the check already touches on main (6.0 in other years); his call among four: read the money half, a longer window, accept red, or a store planner for Retail | `runs/fixFX1-notes.md` ★7, in the project's `claude/todo.md` |

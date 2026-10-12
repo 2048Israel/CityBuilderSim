@@ -1239,8 +1239,10 @@ public abstract class Sector {
        always read zero by the time they asked. bank() keeps the month's
        write-offs here before it clears the rows, for the accounts
        (NationalAccounts, A YARD SOLD BACK FULL IS WRITTEN OFF, NOT
-       UNPRODUCED); and the rows are not saved, so the month a save was taken
-       in carries its write-offs to the first strike, as the trade above does.
+       UNPRODUCED - HELD's goods, and since 0.7.136 food, materials and
+       luxuries too: EVERY TERM ADDS ITS WRITE-OFF BACK); and the rows are not
+       saved, so the month a save was taken in carries its write-offs to the
+       first strike, as the trade above does.
        =================================================================== */
 
     /** Units written off in the month a save was taken, by good: read by unitsWrittenOff() until the first strike after the load. */
@@ -1257,7 +1259,7 @@ public abstract class Sector {
         return carried == null ? row : row + carried;
     }
 
-    /** ...and in the month the last strike banked (0.7.133): what NationalAccounts' fifth term adds back. */
+    /** ...and in the month the last strike banked (0.7.133): what NationalAccounts' fifth term adds back, and since 0.7.136 the food, materials and luxuries terms too. */
     public double writtenOffStruck(Good g) {
         Double v = struckWrittenOff.get(g);
         return v == null ? 0 : v;

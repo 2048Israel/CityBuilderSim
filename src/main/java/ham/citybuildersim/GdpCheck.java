@@ -274,6 +274,60 @@ public class GdpCheck {
         check("a yard exported is still the fall in stock it is", sold.getInventoryHeld(), -cathode * tonne);
         check("...matched by the export, so the month adds nothing", sold.getGdp(), 0);
 
+        /*
+         * EVERY TERM ADDS ITS WRITE-OFF BACK (0.7.136, batch FX1). I8 gave
+         * HELD's goods the rule; food's own add-back had read a row the strike
+         * had already cleared, and the materials and the luxuries had none.
+         * A mill's warehouse, a materials plant's shed and a stockroom, each
+         * filled and then written off with the works that held it: the month
+         * it goes books no change in that term, and the next measures from
+         * what is left. The quantities are each building's own room
+         * (BuildingsTemplate.stocks()) - a Bakery's 996,000 kg of bread, a
+         * Construction Materials Plant's 480 units, a Boutique's 960 pieces -
+         * at a price of one, so the term reads in units.
+         */
+        System.out.println("\n--- a mill's warehouse, a plant's shed and a stockroom written off are a loss of assets, not negative output (0.7.136) ---");
+        BuildingManager rooms = new BuildingManager();
+        rooms.initializeTemplates();
+        double bread = rooms.getTemplateByName("Bakery").stocks(Good.BREAD);
+        double brick = rooms.getTemplateByName("Construction Materials Plant").stocks(Good.MATERIALS);
+        double pieces = rooms.getTemplateByName("Boutique").stocks(Good.LUXURIES);
+        assertTrue("fixture: each of the three holds something", bread > 0 && brick > 0 && pieces > 0);
+        double[] noHeld = new double[NationalAccounts.HELD.length];
+        // update(retail, rent, construction, foodUnits, foodWrittenOff, foodPrice, matlUnits, matlWrittenOff, matlPrice,
+        //        luxUnits, luxWrittenOff, luxPrice, govt, foodImports, matlImports, rawImports, exports, held, heldWrittenOff, heldPrices)
+        NationalAccounts sheds = new NationalAccounts();
+        sheds.update(0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, noHeld, noHeld, noHeld);
+        sheds.update(0, 0, 0, bread, 0, 1, brick, 0, 1, pieces, 0, 1, 0, 0, 0, 0, 0, noHeld, noHeld, noHeld);
+        check("fixture: the warehouse filled is food held", sheds.getInventoryFood(), bread);
+        check("fixture: ...the shed filled, materials held", sheds.getInventoryMaterials(), brick);
+        check("fixture: ...and the stockroom filled, luxuries held", sheds.getInventoryLuxuries(), pieces);
+        sheds.update(0, 0, 0, 0, bread, 1, 0, brick, 1, 0, pieces, 1, 0, 0, 0, 0, 0, noHeld, noHeld, noHeld);
+        check("the month the mill goes with its warehouse, food's write-off is added back: no change in food held",
+                sheds.getInventoryFood(), 0);
+        check("...the plant with its shed, materials' alike", sheds.getInventoryMaterials(), 0);
+        check("...and the shop with its stockroom, luxuries' alike", sheds.getInventoryLuxuries(), 0);
+        assertTrue("...so the month is not negative output", sheds.getGdp() >= 0);
+        check("...and the accounts keep what each wrote off: the food", sheds.getFoodWrittenOff(), bread);
+        check("...the materials", sheds.getMaterialsWrittenOff(), brick);
+        check("...and the luxuries", sheds.getLuxuriesWrittenOff(), pieces);
+        double[] addedBack = sheds.getWrittenOffAddedBack();
+        check("...and what each term added back, at its price", addedBack[0] + addedBack[1] + addedBack[2], bread + brick + pieces);
+        sheds.update(0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, noHeld, noHeld, noHeld);
+        check("...and the month after books no change in any of them",
+                sheds.getInventoryFood() + sheds.getInventoryMaterials() + sheds.getInventoryLuxuries(), 0);
+        // ...and the same fact the other way up: a shed SOLD is a fall in stock, matched by the sale.
+        NationalAccounts shipped = new NationalAccounts();
+        shipped.update(0, 0, 0, 0, 0, 1, brick, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, noHeld, noHeld, noHeld);
+        shipped.update(0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, brick, noHeld, noHeld, noHeld);
+        check("a shed exported is still the fall in stock it is", shipped.getInventoryMaterials(), -brick);
+        check("...matched by the export, so the month adds nothing", shipped.getGdp(), 0);
+        // ...and the shorter overloads hand in none, as they always have.
+        NationalAccounts older2 = new NationalAccounts();
+        older2.update(0, 0, 0, 0, 0, 1, brick, 1, 0, 0, 0, 0, 0, 0, 0);
+        older2.update(0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        check("an update with no write-offs handed in reads the shed's fall as before", older2.getInventoryMaterials(), -brick);
+
         System.out.println("\n--- a price move is not production ---");
 
         /*
@@ -722,6 +776,8 @@ public class GdpCheck {
             });
         } catch (java.io.IOException ignored) { }
 
+        sheds(quiet, out);
+
         try (var walk = java.nio.file.Files.walk(railFiles.getDirectory())) {
             walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
                 try { java.nio.file.Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }
@@ -742,5 +798,145 @@ public class GdpCheck {
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /*
+     * ...AND IN A CITY (0.7.136, batch FX1): a town's bakeries and materials
+     * plants retired with their sheds full. The copper town's shape - nine
+     * hundred houses, the shops, roads, power, water and four depots - played
+     * three years with the bakers (Industry) and the materials plants
+     * (Materials) held, so what stands of theirs is what the fixture lays:
+     * as many Industrial Bakeries, and as many Construction Materials Plants,
+     * as hold twice the month's GDP in their sheds at the city's prices,
+     * stood by hand, filled to their room and a month played so the accounts
+     * count it held; then every one retired. The month after, the sheds go
+     * with them, written off on their rows; the strike at the top of the
+     * next keeps the units past the rows it clears, and the accounts struck
+     * after it are handed them - food's at the fixed weights its volume is
+     * struck at, the materials in units: the month is not negative, though
+     * booked as a fall in stock it would be. NO SECTOR MAKES LUXURIES, so in
+     * a city nothing writes them off (Sector.produceStock() is the only
+     * write-off, and a boutique's shelf is a pantry): the boutiques' row is
+     * given a Boutique's stockroom by hand in the same month, as a maker's
+     * warehouse sold back would write it, to show the term is handed it.
+     * Saved in that month, a city loaded from the save hands its accounts
+     * the same.
+     */
+    static void sheds(java.io.PrintStream quiet, java.io.PrintStream out) {
+        System.out.println("\n--- a city whose bakeries and materials plants go with their sheds full (0.7.136) ---");
+        GameFiles files = GameFiles.scratch("gdpcheck-sheds");
+        Game town = new Game(files);
+        Game back = new Game(files);
+        Good[] shelf = ham.citybuildersim.sectors.Retail.SHELF;
+        double[] lostFood = new double[shelf.length];
+        double lostBrick = 0, pieces = 0, gdpThen = 0, foodHeld = 0, brickHeld = 0;
+        int bakeries = 0, plants = 0;
+        boolean saved;
+        Sector bakers, makers;
+        System.setOut(quiet);
+        try {
+            town.newGame();
+            town.setCashForTest(Founding.WEALTHY_CASH);
+            town.getBusinessInvestment().holdSector(Sectors.INDUSTRY);
+            town.getBusinessInvestment().holdSector(Sectors.MATERIALS);
+            town.getLandManager().setOwnedSqFt(400_000_000L);
+            BuildingManager b = town.getBuildingManager();
+            BuildingsTemplate bakery = b.getTemplateByName("Industrial Bakery");
+            BuildingsTemplate plant = b.getTemplateByName("Construction Materials Plant");
+            town.buildStack(b.getTemplateByName("House"), 900, true);
+            town.buildStack(b.getTemplateByName("Convenience Store"), 20, true);
+            town.buildStack(b.getTemplateByName("Small Grocery Store"), 6, true);
+            town.buildStack(b.getTemplateByName("Paved Road"), 60, true);
+            town.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            town.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+            town.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
+            town.simulateMonths(36);
+            bakers = town.getSectors().industry();
+            makers = town.getSectors().materials();
+            gdpThen = town.getEconomyManager().getNationalAccounts().getGdp();
+            // A shed's worth at the city's prices, and as many as hold twice the month's GDP.
+            double bakeryWorth = 0;
+            for (Good g : shelf) {
+                if (bakery.makes(g) > 0) bakeryWorth += bakery.stocks(g) * town.getMarkets().get(g).getLocalPrice();
+            }
+            double plantWorth = plant.stocks(Good.MATERIALS) * town.getMarkets().get(Good.MATERIALS).getLocalPrice();
+            bakeries = (int) Math.ceil(2 * Math.max(gdpThen, 0) / bakeryWorth);
+            plants = (int) Math.ceil(2 * Math.max(gdpThen, 0) / plantWorth);
+            town.buildStack(bakery, bakeries, true);
+            town.buildStack(plant, plants, true);
+            for (Good g : shelf) if (bakers.isMaker(g)) bakers.setStock(g, bakers.getStockCapacity(g));
+            makers.setStock(Good.MATERIALS, makers.getStockCapacity(Good.MATERIALS));
+            town.simulateMonths(1);
+            for (Good g : shelf) foodHeld += bakers.getStock(g);
+            brickHeld = makers.getStock(Good.MATERIALS);
+            b.retire(bakery, bakeries);
+            b.retire(plant, plants);
+            town.simulateMonths(1);
+            for (Sector s : town.getSectors().all()) {
+                for (int i = 0; i < shelf.length; i++) {
+                    Sector.Output row = s.outputRow(shelf[i]);
+                    if (row != null) lostFood[i] += row.writtenOff;
+                }
+                Sector.Output row = s.outputRow(Good.MATERIALS);
+                if (row != null) lostBrick += row.writtenOff;
+            }
+            // ...and a stockroom's write-off on the boutiques' row, by hand: what no sector's month writes today.
+            pieces = b.getTemplateByName("Boutique").stocks(Good.LUXURIES);
+            town.getSectors().luxuryRetail().output(Good.LUXURIES).writtenOff = pieces;
+            saved = town.saveGame(1, "gdpcheck sheds").ok;
+            back.loadGameSave(1);
+            town.simulateMonths(1);
+            back.simulateMonths(1);
+        } finally { System.setOut(out); }
+        NationalAccounts acc = town.getEconomyManager().getNationalAccounts();
+        double lostFoodAll = 0;
+        for (double v : lostFood) lostFoodAll += v;
+        // What the strike kept, summed as EconomyManager sums it - every sector, the shelf's goods at their weights.
+        double struckVolume = 0, struckBrick = 0, struckPieces = 0;
+        double[] struckFood = new double[shelf.length];
+        for (Sector s : town.getSectors().all()) {
+            for (int i = 0; i < shelf.length; i++) {
+                struckFood[i] += s.writtenOffStruck(shelf[i]);
+                struckVolume += s.writtenOffStruck(shelf[i]) * shelf[i].worldImportPrice();
+            }
+            struckBrick += s.writtenOffStruck(Good.MATERIALS);
+            struckPieces += s.writtenOffStruck(Good.LUXURIES);
+        }
+        double[] added = acc.getWrittenOffAddedBack();
+        double booked = acc.getGdp() - added[0] - added[1] - added[2];
+        System.out.printf("   %d Industrial Bakeries and %d Construction Materials Plants against GDP %,.2f a month; %,.0f kg of food"
+                        + " and %,.0f units of material held a month, %,.0f kg and %,.0f units written off, and %,.0f pieces by hand;"
+                        + " added back %,.2f, %,.2f and %,.2f; GDP %,.2f - booked as a fall in stock it would read %,.2f%n",
+                bakeries, plants, gdpThen, foodHeld, brickHeld, lostFoodAll, lostBrick, pieces,
+                added[0], added[1], added[2], acc.getGdp(), booked);
+        assertTrue("fixture: the bakeries went with food in their warehouses, and it was written off",
+                foodHeld > 0 && lostFoodAll > 0 && bakers.getStock(Good.BREAD) <= bakers.getStockCapacity(Good.BREAD));
+        assertTrue("fixture: ...and the plants with materials in their sheds, written off alike",
+                brickHeld > 0 && lostBrick > 0 && makers.getStock(Good.MATERIALS) <= makers.getStockCapacity(Good.MATERIALS));
+        boolean keptEach = true;
+        for (int i = 0; i < shelf.length; i++) keptEach &= struckFood[i] == lostFood[i];
+        assertTrue("the strike kept the food its rows wrote off, good by good", keptEach);
+        check("...and the materials", struckBrick, lostBrick);
+        check("...and the pieces written off by hand", struckPieces, pieces);
+        check("the accounts were handed the food written off, at its fixed weights", acc.getFoodWrittenOff(), struckVolume);
+        check("...and the materials, in units", acc.getMaterialsWrittenOff(), lostBrick);
+        check("...and the luxuries, in pieces", acc.getLuxuriesWrittenOff(), pieces);
+        assertTrue("fixture: the sheds are worth more than the town makes in a month, so booked as a fall in stock the month reads negative",
+                booked < 0);
+        assertTrue("...so the month the works go is not negative output", acc.getGdp() >= 0);
+        check("...and the identity holds in it", acc.getGdp(),
+                acc.getConsumption() + acc.getInvestment() + acc.getGovernment() + acc.getNetExports());
+        // ...and across a save taken in the month the sheds went: the rows are not saved, the units written off are.
+        NationalAccounts backAcc = back.getEconomyManager().getNationalAccounts();
+        assertTrue("fixture: saved in the month the sheds were written off", saved && lostFoodAll > 0 && lostBrick > 0);
+        check("a city loaded from that save hands its accounts the same food", backAcc.getFoodWrittenOff(), acc.getFoodWrittenOff());
+        check("...the same materials", backAcc.getMaterialsWrittenOff(), lostBrick);
+        check("...the same luxuries", backAcc.getLuxuriesWrittenOff(), pieces);
+        check("...and strikes the same GDP", backAcc.getGdp(), acc.getGdp());
+        try (var walk = java.nio.file.Files.walk(files.getDirectory())) {
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try { java.nio.file.Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }
+            });
+        } catch (java.io.IOException ignored) { }
     }
 }

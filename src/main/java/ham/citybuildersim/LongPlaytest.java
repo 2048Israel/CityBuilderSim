@@ -953,7 +953,7 @@ public class LongPlaytest {
                     if (owed <= 0 && wo <= 0 && bk.getSectorAllowance(s) <= 0) continue;
                     if (bk.getStage(s) < 2 && wo < .01 * Math.max(1, open) && !cr.wasRestructuredThisMonth(s)) continue;
                     sb.append(String.format(" | %s owes %,.0f qL %.2f assets %,.0f L %.2f pd %.3f %s %,.0f allow %,.0f",
-                            s.length() > 6 ? s.substring(0, 6) : s, owed, cr.getQuarterLeverage(s), cr.getAssets(s),
+                            cut(s, 6), owed, cr.getQuarterLeverage(s), cr.getAssets(s),
                             cr.getAssets(s) > 0 ? owed / cr.getAssets(s) : Double.POSITIVE_INFINITY,
                             cr.getDefaultRate(s), cr.wasRestructuredThisMonth(s) ? "WHOLE" : "slice", wo,
                             bk.getSectorAllowance(s)));
@@ -1327,7 +1327,7 @@ public class LongPlaytest {
                 g.getLastInvestment(mat.key()));
             StringBuilder sb = new StringBuilder(String.format("   CREDIT m%-4d", g.getMonth()));
             for (Sector s : g.getSectors().all()) {
-                sb.append(String.format(" %s cash %,.0f debt %,.0f assets %,.0f wo %,.0f restr %d ban %d |", s.key().substring(0, 4), s.getCash(), cr.getPrincipal(s.key()), cr.getAssets(s.key()), cr.getWrittenOffThisMonth(s.key()), cr.getRestructureCount(s.key()), cr.getBlockedMonths(s.key())));
+                sb.append(String.format(" %s cash %,.0f debt %,.0f assets %,.0f wo %,.0f restr %d ban %d |", cut(s.key(), 4), s.getCash(), cr.getPrincipal(s.key()), cr.getAssets(s.key()), cr.getWrittenOffThisMonth(s.key()), cr.getRestructureCount(s.key()), cr.getBlockedMonths(s.key())));
             }
             out.println(sb);
             {
@@ -1390,7 +1390,7 @@ public class LongPlaytest {
             for (int c = 0; c < Equity.COMPANIES.length; c++) {
                 SectorBooks.SectorMonth sm = c == Equity.BANK ? null : g.getSectorBooks().get(Equity.COMPANIES[c]);
                 co.append(String.format(" %s %s sh %,.1f eq/assets %.2f tgt %.2f price %.3f fair %.3f yield %.1f%% abroad %.0f%% bought back %,.0f |",
-                    Equity.COMPANIES[c].substring(0, 3), g.getEquity().getRegime(c), g.getEquity().getShares(c),
+                    cut(Equity.COMPANIES[c], 3), g.getEquity().getRegime(c), g.getEquity().getShares(c),
                     sm == null ? 0 : (sm.totalAssets() > 0 ? sm.equity() / sm.totalAssets() : 0), g.getEquity().getTargetEquityShare(c),
                     ex.price(c), ex.fair(c), ex.yieldAt(g.getEquity(), c, ex.price(c)) * 100, g.getEquity().foreignShare(c) * 100,
                     g.getEquity().getLifetimeBoughtBack(c)));
@@ -4236,6 +4236,8 @@ public class LongPlaytest {
             }
             lifetimeWriteOffs += g.getBank().getWriteOffs();
             lifetimeHouseholdWriteOffs += g.getHouseholdBalance().getWrittenOff();
+            // ...and the stock the accounts added back (0.7.136, batch FX1).
+            countAddedBack(g);
 
             /*
              * THE PLAYER RESOLVES A FAILED BANK AND ANSWERS ITS OFFER (0.7.14),
@@ -4607,6 +4609,31 @@ public class LongPlaytest {
     static double lowestPaidIn = Double.POSITIVE_INFINITY, worstSplitOff;
     static int lowestPaidInMonth = -1;
     static double lifetimeHouseholdWriteOffs;
+
+    /* ---------------- what the accounts added back (0.7.136, batch FX1) ---------------- */
+
+    /** The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. */
+    static final String[] ADDED_BACK_TERMS = { "food", "materials", "luxuries", "held goods" };
+    /** Months each term added a write-off back, the first, and the largest with its month. */
+    static final int[] addedBackMonths = new int[ADDED_BACK_TERMS.length], addedBackFirst = { -1, -1, -1, -1 },
+            addedBackWorstMonth = new int[ADDED_BACK_TERMS.length];
+    static final double[] addedBackWorst = new double[ADDED_BACK_TERMS.length];
+    /** The events printed as they happen, each term's first few: enough to say where a trace moved. */
+    static final int EVENTS_PRINTED = 12;
+
+    /** The month's write-offs the accounts added back, counted term by term, and each term's first few printed - nothing printed for a harness that borrows run() with no report to print to. */
+    static void countAddedBack(Game g) {
+        int m = g.getMonth();
+        double[] back = g.getEconomyManager().getNationalAccounts().getWrittenOffAddedBack();
+        for (int i = 0; i < back.length && i < ADDED_BACK_TERMS.length; i++) {
+            if (!(back[i] > 0)) continue;
+            if (addedBackMonths[i]++ < EVENTS_PRINTED && out != null) {
+                out.printf("   ADDED BACK m%d: %s written off, %,.2f added back to the stock term%n", m, ADDED_BACK_TERMS[i], back[i]);
+            }
+            if (addedBackFirst[i] < 0) addedBackFirst[i] = m;
+            if (back[i] > addedBackWorst[i]) { addedBackWorst[i] = back[i]; addedBackWorstMonth[i] = m; }
+        }
+    }
 
     /* ---------------- the city's fund and the bank's rescue (0.7.14) ---------------- */
 
@@ -5658,6 +5685,17 @@ public class LongPlaytest {
                 Math.min(999, bnk.capitalRatio()) * 100, Bank.CAPITAL_RATIO * 100);
         out.printf("  written off over the run: $%,.0fk, of which $%,.0fk was families%n",
                 lifetimeWriteOffs, lifetimeHouseholdWriteOffs);
+        // ...and the stock the accounts added back, term by term (0.7.136, batch FX1).
+        StringBuilder backLine = new StringBuilder();
+        for (int i = 0; i < ADDED_BACK_TERMS.length; i++) {
+            backLine.append(String.format("%s %d month(s)", ADDED_BACK_TERMS[i], addedBackMonths[i]));
+            if (addedBackMonths[i] > 0) {
+                backLine.append(String.format(" (first m%d, largest $%,.0fk m%d)", addedBackFirst[i],
+                        addedBackWorst[i], addedBackWorstMonth[i]));
+            }
+            backLine.append(i < ADDED_BACK_TERMS.length - 1 ? "; " : "");
+        }
+        out.printf("  stock written off, added back to the accounts: %s%n", backLine);
         /*
          * THE CITY'S CAPITAL IN ITS BANK, ITS STAKE AND ITS FUND (0.7.14),
          * each line stating its setting, as the rollover's does.
@@ -6313,17 +6351,71 @@ public class LongPlaytest {
      * Derived from the key so that adding a sector cannot break it: initials
      * for a two-word name, the first three letters otherwise. Retail -> Ret,
      * Real Estate -> RE, Business Services -> BS.
+     *
+     * ...AND NO TWO ALIKE (0.7.136, batch FX1): Coal Mining and Copper Mining
+     * were both CM. Where two of Sectors.KEYS share a tag, each spells its
+     * first word out a letter further until they differ - CoaM and CopM -
+     * and a tag no other sector shares is as it was (distinctCuts()).
      */
     static String shortTag(String key) {
         if (key == null || key.isEmpty()) return "?";
+        String tag = distinctCuts(Sectors.KEYS, LongPlaytest::tagAt).get(key);
+        return tag != null ? tag : tagAt(key, 0);
+    }
+
+    /** shortTag()'s rule with the first word `extra` letters longer: the initials of a name of several words, the first three letters (and `extra` more) of one. */
+    static String tagAt(String key, int extra) {
         String[] words = key.trim().split("\\s+");
         if (words.length > 1) {
             StringBuilder t = new StringBuilder();
-            for (String w : words) if (!w.isEmpty()) t.append(Character.toUpperCase(w.charAt(0)));
+            t.append(Character.toUpperCase(words[0].charAt(0)))
+                    .append(words[0], 1, Math.min(words[0].length(), 1 + extra));
+            for (int i = 1; i < words.length; i++) if (!words[i].isEmpty()) t.append(Character.toUpperCase(words[i].charAt(0)));
             return t.toString();
         }
-        return key.substring(0, Math.min(3, key.length()));
+        return key.substring(0, Math.min(3 + extra, key.length()));
     }
+
+    /**
+     * A company's name cut to `letters` characters for a trace line (0.7.136,
+     * batch FX1): the whole of a shorter one - "Oil", which the bank trace's
+     * substring(0, 4) threw on - and, where two of Equity.COMPANIES (the
+     * sectors and the bank) share their first `letters`, as many more as
+     * tell them apart ("Copper M", "Copper R"). A name no other shares its
+     * cut with is cut as it was, so its columns do not move.
+     */
+    static String cut(String key, int letters) {
+        String c = distinctCuts(Equity.COMPANIES, (k, extra) -> k.substring(0, Math.min(k.length(), letters + extra))).get(key);
+        return c != null ? c : key.substring(0, Math.min(key.length(), letters));
+    }
+
+    /**
+     * Each key's cut, `cut.apply(key, extra)`, its `extra` raised a step at a
+     * time for every key whose cut another shares, until no two are alike -
+     * or the cuts stop growing, after a key's whole length (0.7.136).
+     */
+    static Map<String, String> distinctCuts(String[] keys, java.util.function.BiFunction<String, Integer, String> cut) {
+        int[] extra = new int[keys.length];
+        String[] tags = new String[keys.length];
+        for (int round = 0; ; round++) {
+            for (int i = 0; i < keys.length; i++) tags[i] = cut.apply(keys[i], extra[i]);
+            boolean[] clash = new boolean[keys.length];
+            boolean any = false;
+            for (int i = 0; i < keys.length; i++) {
+                for (int j = i + 1; j < keys.length; j++) {
+                    if (tags[i].equals(tags[j])) { clash[i] = clash[j] = true; any = true; }
+                }
+            }
+            if (!any || round >= DISTINCT_ROUNDS) break;
+            for (int i = 0; i < keys.length; i++) if (clash[i]) extra[i]++;
+        }
+        Map<String, String> out = new java.util.LinkedHashMap<>();
+        for (int i = 0; i < keys.length; i++) out.put(keys[i], tags[i]);
+        return out;
+    }
+
+    /** The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. */
+    static final int DISTINCT_ROUNDS = 64;
 
     /**
      * The business economy at a checkpoint, on one line: per sector its cash,

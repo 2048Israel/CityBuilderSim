@@ -6192,6 +6192,54 @@ public final class GameVersion {
      *     the model's frame, and its handoff.
      *   - The playtests do not move: default and Earth byte for byte.
      *
+     * 0.7.136 (2026-10-12) - TWO OF THE FAULTS COPPER FOUND. Batch FX1
+     * (docs/queue/FX1.md; runs/fixI8-notes.md 6 and 7, runs/fixFX1-notes.md).
+     * No save format change (39): the write-offs a save carries are I8's
+     * (SectorState.writtenOff), by good, every good already.
+     *   - EVERY TERM ADDS ITS WRITE-OFF BACK (NationalAccounts): I8 gave
+     *     HELD's goods the rule and found food's own add-back dead - it read
+     *     the row after strikeSectors() had cleared it, so zero in every month
+     *     there has been - and the materials' and the luxuries' terms with
+     *     none. A mill's warehouse or a materials plant's shed sold back full
+     *     booked its stock as negative investment, as the copper yard did.
+     *     Each term now adds back what the strike kept
+     *     (Sector.writtenOffStruck(), summed over every sector by
+     *     EconomyManager): food's at the fixed weights its volume is struck
+     *     at, the materials and the luxuries in units, through update()'s
+     *     whole measure (the shorter overloads hand in none). No sector makes
+     *     luxuries, so nothing writes them off yet; their term follows the
+     *     rule for the day one does. The accounts keep each term's units and
+     *     what each added back (getWrittenOffAddedBack()).
+     *   - LONGPLAYTEST'S NAMES: the bank trace's substring(0, 4) threw on
+     *     "Oil", and the report's tags called Coal Mining and Copper Mining
+     *     both "CM". cut() and shortTag() are safe on a short key and
+     *     distinct: where two names share a cut each is lengthened until they
+     *     differ (Copper M, Copper R; CoaM, CopM), and every other name is cut
+     *     as it was. The report counts, by term, the write-offs added back,
+     *     and prints each term's first few.
+     *   - The brief's second fault is not in this version: consider() still
+     *     sells a sector's shares before the order's own credit test (on the
+     *     Earth playtest at m1,293 Copper Refining raised D$3.8B for an order
+     *     the bank's capital rule then refused). Its fix, the order's gates
+     *     asked first, moved HealthCheck 13's dear twin by the shelf's
+     *     weather, and waits for Jerus on the branch batch/FX1-with-preflight.
+     *   - Harnesses: GdpCheck (the three terms written off, in the accounts'
+     *     arithmetic; and a town whose Industrial Bakeries and Construction
+     *     Materials Plants go with their sheds full, a stockroom's write-off
+     *     set by hand on the boutiques' row, across a save); ReadPathCheck
+     *     (the new getters).
+     *   - THE PLAYTESTS MOVE from the first month materials are written off,
+     *     byte for byte until then: m1,370 in the default, m1,034 on the
+     *     Earth. That month's GDP is higher by exactly what was added back
+     *     ($68,224k; $55,948k), the model reads it (the balance of payments,
+     *     the city's debt ratio), the exchange rate moves in its fourth
+     *     decimal place the same month, and the runs part from there.
+     *     Write-offs added back: materials in 5 months of the default (the
+     *     largest $70,299k, m1376) and 4 of the Earth's (the largest
+     *     $108,855k, m1871), food and luxuries in none, HELD's goods as I8
+     *     made them.
+     *     Every month passes the audit and every reload matches; re-baselined.
+     *
      * 0.7.137 (2026-10-12) - BUYING LAND FROM THE MAP. Batch M6, Jerus's
      * design of 2026-10-08 with the Earth study (docs/studies/spec-earth.md 3
      * and its decisions B1 to B7: "click brings up menu, and to issue bond if
