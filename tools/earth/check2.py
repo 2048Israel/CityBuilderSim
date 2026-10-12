@@ -120,13 +120,21 @@ def main():
             t, r, c = cell(lat, lon); return int(E.landmass(t)[r, c])
         for nm, la, lo in [('Paris', 48.86, 2.35), ('Beijing', 39.9, 116.4), ('Denver', 39.74, -104.99), ('Sydney', -33.87, 151.0),
                            ('Halifax peninsula', 44.648, -63.580), ('Dartmouth', 44.672, -63.565), ('Bedford', 44.73, -63.66),
-                           ('McNabs Island', 44.612, -63.525), ('Buenos Aires', -34.6, -58.45), ('Cairo', 30.05, 31.25)]:
+                           ('McNabs Island', 44.612, -63.525), ('Buenos Aires', -34.6, -58.45), ('Cairo', 30.05, 31.25),
+                           ('Prince Edward Island', 46.3, -63.3), ('Great Britain', 51.13, 1.30), ('Sicily', 37.5, 14.2),
+                           ('Zealand', 55.5, 12.0), ('Funen', 55.3, 10.4), ('Goeree-Overflakkee', 51.77, 4.15)]:
             k = lm(la, lo); row = tab[k - 1].split('\t') if k > 0 else ['', '', '']
             say('  %-18s landmass %d: %s km2, %s cells, named %r' % (nm, k, row[0], row[1], row[2]))
         check('Paris and Beijing are on landmass 1', lm(48.86, 2.35) == 1 and lm(39.9, 116.4) == 1)
         check('Cairo is on landmass 1 and Buenos Aires on Denver\'s (Suez and Panama do not cut)', lm(30.05, 31.25) == 1 and lm(-34.6, -58.45) == lm(39.74, -104.99) == 2)
         check('Halifax peninsula and Dartmouth are one landmass (round the head of Bedford Basin)', lm(44.648, -63.58) == lm(44.672, -63.565) != 0)
-        check('McNabs Island is a landmass of its own', lm(44.612, -63.525) not in (0, lm(44.648, -63.58)))
+        check('McNabs Island joins the mainland (a crossing of 1,020 m or less over shallow water)', lm(44.612, -63.525) == lm(44.648, -63.58) != 0)
+        check('Manhattan and Long Island are on the mainland\'s landmass', lm(40.78, -73.97) == lm(40.65, -73.95) == lm(39.74, -104.99))
+        check('Prince Edward Island is a landmass of its own (the Northumberland Strait, 12.9 km)', lm(46.3, -63.3) not in (0, lm(46.10, -64.0)))
+        check('Great Britain is not France\'s landmass (the Strait of Dover, 33 km)', lm(51.13, 1.30) not in (0, lm(50.95, 1.85)))
+        check('Sicily is not Italy\'s landmass (the Strait of Messina, about 3 km and deep)', lm(37.5, 14.2) not in (0, lm(38.22, 15.64)))
+        check('Zealand and Funen are not one landmass (the Great Belt, about 18 km)', lm(55.5, 12.0) != lm(55.3, 10.4))
+        check('Goeree-Overflakkee is a landmass of its own (its narrowest crossable water about 1.4 km at 15")', lm(51.77, 4.15) not in (0, lm(51.92, 4.48)))
     for name, L in E.layers.items():
         say('  layer %-14s %10d bytes' % (name, L['index_len'] + L['data_len']))
     say('%d failure(s)' % fails[0])

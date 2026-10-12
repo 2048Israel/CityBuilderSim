@@ -34,14 +34,23 @@ NEW LAYERS (4-bit shares are 0..15, share = v/15, as earth-1's sea and lake)
                   0 no sea (or under 0.5 m)   1..200 that many metres   201..254 200 m + 10 m x (v - 200)
                   255 750 m or deeper
                 A sea plot is never shallower than 1 m in the game (depthAt() over 0 means sea).
-  landmass      kind 0, 240/deg, an id a cell: the land cell's landmass, 0 no land. A cell is land when its sea +
-                lake levels come to 7 or less (EarthTerrain.COAST_BELOW's side) and no GRWL river 420 m wide or more
-                covers it (a river segment of that mean width cuts the cells within half its width of its line, and
-                every cell the line passes through). Cells join their four edge neighbours, across tile edges and the
-                180th meridian. Ids are by area, largest first (1 is Afro-Eurasia). A uniform tile is -id in the
-                index (0: no land). A blob, zlib: uvarint n, then n uvarints, the tile's ids ascending as deltas (the
-                first from 0), then 240 x 240 palette indexes, rows from the north, a byte each when n <= 256, else a
-                big-endian short each.
+  landmass      kind 0, 240/deg, an id a cell: the land cell's landmass, 0 no land. A landmass is ground cut off by
+                more water than a SHORT CROSSING spans (landmass.CROSS_M, 34 plots, 1,020 m of fresh water or shallow
+                sea; deep sea is never crossed):
+                  land       a cell whose sea + lake levels come to 7 or less (EarthTerrain.COAST_BELOW's side), unless
+                             a GRWL river wider than 1,020 m covers it (a segment of that mean width cuts the cells
+                             within half its width of its line, and every cell the line passes through)
+                  crossable  a water cell that is fresh (lake share at least sea share, or a river's cut) or shallow
+                             (this file's shallow share 8 of 15 or more); the rest is deep
+                  joined     land cells along their four edges; and two pieces of land across crossable water when,
+                             each crossable cell taking its nearest land's label and its distance from that shore (a
+                             distance transform less the half cell to the shore), two neighbouring cells of different
+                             labels come to shore-to-cell + cell-to-cell + cell-to-shore of 1,020 m or less - worked in a
+                             window round each tile, so across tile edges and the 180th meridian. Joins chain: islands
+                             each within a crossing of the next join the shore they lead to.
+                Ids are by area, largest first (1 is Afro-Eurasia). A uniform tile is -id in the index (0: no land). A
+                blob, zlib: uvarint n, then n uvarints, the tile's ids ascending as deltas (the first from 0), then
+                240 x 240 palette indexes, rows from the north, a byte each when n <= 256, else a big-endian short each.
   landmasses    kind 2: UTF-8 text, a line a landmass in id order (line 1 is id 1): area in km2 (its cells' dry share
                 x cell area, two decimals), its count of 15" cells, and the name of the most populous Natural Earth
                 place on it (empty when none), tab-separated.

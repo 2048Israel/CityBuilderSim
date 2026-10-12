@@ -1,14 +1,26 @@
-# earth-2's landmass layer (the roads study's I7, docs/studies/spec-roads-and-ports.md 3.1): every 15" land cell's
-# connected component, after taking out the sea and HydroLAKES lakes (earth-1's sea and lake shares, a cell land when
-# they come to under half: sea + lake <= 7 of 15, EarthTerrain.COAST_BELOW's side) and GRWL rivers 420 m wide or more
-# (earth-1's rivers layer, each such segment cutting the cells within half its width of its line, and every cell its
-# line passes through). Cells join their four edge neighbours (not corners), across tile edges and the 180th meridian.
+# earth-2's landmass layer (the roads study's I7, docs/studies/spec-roads-and-ports.md 3.1, as the Earth 2 study
+# widened it on 2026-10-12): a landmass is ground cut off by more water than a SHORT CROSSING spans - a highway or
+# railway bridge of up to CROSS_M (34 plots, 1,020 m) over fresh water or shallow sea. Deep sea is never crossed.
+#   LAND       a 15" cell whose earth-1 sea + lake levels come to 7 of 15 or less (EarthTerrain.COAST_BELOW's side),
+#              unless a GRWL river wider than RIVER_CUT_M (1,020 m) covers it (each such segment cuts the cells within
+#              half its width of its line, and every cell its line passes through).
+#   CROSSABLE  a water cell that is fresh (its lake share at least its sea share, or a river's cut) or shallow sea (its
+#              earth-2 shallow share, depth.shallow_share() at depth.SHALLOW_M, 8 of 15 or more). Every other water
+#              cell is deep and joins nothing.
+#   JOINED     land cells that touch along an edge; and two pieces of land when a crossable cell next to the one and a
+#              crossable cell next to the other (or the other's own shore) are close enough: each crossable cell takes
+#              the nearest land's label and its distance from that shore (a distance transform, the half cell to the
+#              shore taken off), and two neighbouring cells of different labels join them when shore-to-cell +
+#              cell-to-cell + cell-to-shore comes to CROSS_M or less. Done in a window round every tile (wide enough for
+#              CROSS_M at its latitude), so across tile edges and the 180th meridian.
 # Landmasses are numbered by area, largest first (1 = Afro-Eurasia); 0 is no land.
-#   pass 1: label each tile, keep its border labels and each label's area; join the labels across tile edges.
-#   pass 2: label each tile again (the same labels), write its blob: uniform tiles as -id in the index; else a
-#           palette (uvarint count, uvarint ids ascending) and the cells' palette index, a byte each (a short each,
-#           big-endian, when the palette passes 255), rows from the north; zlib.
-# Writes <E2>/work/landmass/blobs.npz (index entries and blobs) and table.tsv; bake2.py puts them in earth-2.bin.
+#   pass 1: label each tile's land (4-connected), keep its border labels and each label's area; join across edges.
+#   pass 2: the crossings, tile by tile in a window (above).
+#   pass 3: label each tile again (the same labels), write its blob: uniform tiles as -id in the index; else a
+#           palette (uvarint count, uvarint ids ascending as deltas) and the cells' palette index, a byte each (a short
+#           each, big-endian, when the palette passes 256), rows from the north; zlib.
+# Writes <E2>/work/landmass/blobs.npz (index entries and blobs), table.tsv and stats.json; bake2.py puts them in
+# earth-2.bin. Needs GEBCO 2026 (terrain.gebco(), for the shallow sea).
 #   python3 -I landmass.py
 import sys, os, time, json, math, zlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -16,10 +28,14 @@ import numpy as np
 from scipy import ndimage
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
-import terrain as T
+from scipy.ndimage import distance_transform_edt
+from collections import OrderedDict
+import terrain as T, depth as D
 from earthread import Earth
 
-RIVER_CUT_M = 420.0          # the highway bridge's reach over fresh water (14 plots; the roads study, 3.1)
+CROSS_M = 1020.0             # the short crossing: a highway or rail bridge of up to 34 plots over fresh water or shallow sea
+RIVER_CUT_M = CROSS_M        # a river wider than that cuts the land it runs through (it is crossable water like a lake)
+SHALLOW_Q = 8                # a sea cell is crossable when this much of its sea, of 15, is shallow (depth.SHALLOW_M)
 LAND_MAX_WATER = 7           # sea + lake levels (of 15) a land cell may hold
 CELL_M = 2 * math.pi * T.R_M / 360 / 240     # a 15" cell's height, 463.3 m
 OUT = os.path.join(T.WORK2, 'landmass')
@@ -27,7 +43,7 @@ TILES = 64800
 
 
 def river_cut(E, t, lat0, lon0):
-    """The tile's cells (240 x 240, bool) GRWL rivers RIVER_CUT_M wide or more cover."""
+    """The tile's cells (240 x 240, bool) GRWL rivers wider than RIVER_CUT_M cover."""
     cut = np.zeros((240, 240), bool)
     runs = E.rivers(t)
     if not runs:
@@ -37,7 +53,7 @@ def river_cut(E, t, lat0, lon0):
         w = a[:, 2]
         for k in range(len(a) - 1):
             wk = 0.5 * (w[k] + w[k + 1])
-            if wk < RIVER_CUT_M:
+            if wk <= RIVER_CUT_M:
                 continue
             p0, p1 = a[k, :2], a[k + 1, :2]
             seg_m = math.hypot((p1[0] - p0[0]) * 111195, (p1[1] - p0[1]) * 111195 * cosl)
@@ -72,19 +88,118 @@ def land_of(E, t):
 _cuts = {}
 
 
+def cut_of(E, t):
+    """The tile's river cut (bool 240 x 240) or None; worked out once and kept."""
+    if t not in _cuts:
+        c = river_cut(E, t, t // 360 - 90, t % 360 - 180)
+        _cuts[t] = np.packbits(c) if c.any() else None
+    return None if _cuts[t] is None else np.unpackbits(_cuts[t])[:57600].reshape(240, 240).astype(bool)
+
+
 def labels(E, t):
-    """The tile's land labelled (4-connected), and its dry share; the river cut is worked out once and kept."""
-    lat0, lon0 = t // 360 - 90, t % 360 - 180
+    """The tile's land labelled (4-connected), and its dry share."""
     land, dry = land_of(E, t)
     if land is None:
         return None, None
-    if t not in _cuts:
-        c = river_cut(E, t, lat0, lon0)
-        _cuts[t] = np.packbits(c) if c.any() else None
-    if _cuts[t] is not None:
-        land &= ~np.unpackbits(_cuts[t])[:57600].reshape(240, 240).astype(bool)
+    cut = cut_of(E, t)
+    if cut is not None:
+        land &= ~cut
     lab, n = ndimage.label(land)                      # 4-connected (the default structure)
     return lab, dry
+
+
+def crossable(E, G, t, land):
+    """The tile's crossable water cells (bool 240 x 240): fresh water (lake share at least sea share, or a river's
+    cut) and shallow sea (shallow share SHALLOW_Q of 15 or more); land is the tile's land (bool) or None."""
+    se = E.layers['sea']['entries'][t]; le = E.layers['lake']['entries'][t]
+    if se == 0 and le == 0 and land is not None and land.all():
+        return np.zeros((240, 240), bool)
+    sea = E.grid('sea', t).astype(np.int16); lake = E.grid('lake', t).astype(np.int16)
+    water = ~land if land is not None else np.ones((240, 240), bool)
+    cut = cut_of(E, t)
+    fresh = water & ((lake >= sea) | (cut if cut is not None else False))
+    out = fresh
+    if sea.max() > 0:
+        gp = T.gebco_tile(G, t // 360 - 90, t % 360 - 180, pad=1)
+        if gp.max() >= -D.SHALLOW_M - 50:
+            q = D.q4(D.shallow_share(gp, sea))
+            out = out | (water & (sea > lake) & (q >= SHALLOW_Q))
+    return out
+
+
+def water_joins(E, offset):
+    """Pass 2: the pairs of pass-1 labels (global, 1-based) a short crossing joins, from a window round every tile
+    holding crossable water (CROSS_M, the module's header)."""
+    G = T.gebco()
+    cache = OrderedDict()
+
+    def data(t):
+        """(global labels int32 or None, crossable bool) of a tile, kept for the windows of its neighbours."""
+        if t in cache:
+            cache.move_to_end(t); return cache[t]
+        lab, _ = labels(E, t)
+        land = None if lab is None else lab > 0
+        glab = None if lab is None or not land.any() else np.where(land, lab + offset[t], 0).astype(np.int32)
+        cr = crossable(E, G, t, land)
+        cache[t] = (glab, cr)
+        if len(cache) > 1300:
+            cache.popitem(last=False)
+        return cache[t]
+
+    A, B = [], []; tiles = 0; t0 = time.time()
+    for t in range(TILES):
+        b, l = divmod(t, 360)
+        lat0 = b - 90
+        glab, cr = data(t)
+        if not cr.any():
+            continue
+        mr = int(math.ceil(CROSS_M / CELL_M)) + 1
+        cpole = max(0.02, math.cos(math.radians(max(abs(lat0), abs(lat0 + 1)))))
+        mc = min(240, int(math.ceil(CROSS_M / (CELL_M * cpole))) + 1)
+        H, W = 240 + 2 * mr, 240 + 2 * mc
+        wl = np.zeros((H, W), np.int32); wc = np.zeros((H, W), bool)
+        for ddr, bb in ((-1, b + 1), (0, b), (1, b - 1)):          # north, this band, south (rows from the north)
+            if bb < 0 or bb > 179:
+                continue
+            for ddc in (-1, 0, 1):
+                tt = bb * 360 + (l + ddc) % 360
+                gl, cc = data(tt)
+                r0 = mr + ddr * 240; c0 = mc + ddc * 240
+                rs, re_ = max(0, r0), min(H, r0 + 240); cs, ce = max(0, c0), min(W, c0 + 240)
+                if rs >= re_ or cs >= ce:
+                    continue
+                if gl is not None:
+                    wl[rs:re_, cs:ce] = gl[rs - r0:re_ - r0, cs - c0:ce - c0]
+                wc[rs:re_, cs:ce] = cc[rs - r0:re_ - r0, cs - c0:ce - c0]
+        land = wl > 0
+        if not land.any():
+            continue
+        tiles += 1
+        dy = CELL_M; dx = CELL_M * math.cos(math.radians(lat0 + 0.5))
+        dist, ind = distance_transform_edt(~land, sampling=(dy, dx), return_indices=True)
+        rr, cc_ = np.indices((H, W))
+        n = np.maximum(np.abs(ind[0] - rr), np.abs(ind[1] - cc_))
+        s = dist - 0.5 * dist / np.maximum(n, 1)                 # from the shore, not the land cell's centre
+        lab = np.where(land, wl, np.where(wc, wl[ind[0], ind[1]], 0))
+        inner = np.zeros((H, W), bool); inner[mr:mr + 240, mc:mc + 240] = True
+        for step, ax in ((dx, 1), (dy, 0)):
+            if ax == 1:
+                la_, lb_ = lab[:, :-1], lab[:, 1:]; sa, sb = s[:, :-1], s[:, 1:]; na, nb = land[:, :-1], land[:, 1:]
+                ia, ib = inner[:, :-1], inner[:, 1:]
+            else:
+                la_, lb_ = lab[:-1], lab[1:]; sa, sb = s[:-1], s[1:]; na, nb = land[:-1], land[1:]
+                ia, ib = inner[:-1], inner[1:]
+            ga = np.where(na, -0.5 * step, sa); gb = np.where(nb, -0.5 * step, sb)
+            ok = (la_ > 0) & (lb_ > 0) & (la_ != lb_) & (ga + step + gb <= CROSS_M) & (ia | ib) & ~(na & nb)
+            if ok.any():
+                pr = np.unique(np.stack([np.minimum(la_[ok], lb_[ok]), np.maximum(la_[ok], lb_[ok])], 1), axis=0)
+                A.append(pr[:, 0]); B.append(pr[:, 1])
+        if t % 3600 == 3599:
+            T.log('landmass', 'pass 2: band %d, %d tiles with crossings, %.0f s' % (b, tiles, time.time() - t0))
+    if A:
+        P = np.unique(np.stack([np.concatenate(A), np.concatenate(B)], 1), axis=0)
+        return P[:, 0].astype(np.int64), P[:, 1].astype(np.int64), dict(tiles=tiles)
+    return np.zeros(0, np.int64), np.zeros(0, np.int64), dict(tiles=tiles)
 
 
 def main():
@@ -126,13 +241,17 @@ def main():
             if nt in borders:
                 x, y = nr, borders[nt][1]; m = (x > 0) & (y > 0); ea.append(x[m]); eb.append(y[m])
     ea = np.concatenate(ea) - 1; eb = np.concatenate(eb) - 1
+    T.log('landmass', 'pass 1 done: %d labels, %d edge joins, %.0f s' % (base, len(ea), time.time() - t0))
+    wa, wb, st2 = water_joins(E, offset)
+    T.log('landmass', 'pass 2 done: %d crossings joined over %d tiles, %.0f s' % (len(wa), st2['tiles'], time.time() - t0))
+    ea = np.concatenate([ea, wa - 1]); eb = np.concatenate([eb, wb - 1])
     g = coo_matrix((np.ones(len(ea), np.int8), (ea, eb)), shape=(base, base))
     ncomp, comp = connected_components(g, directed=False)
     carea = np.bincount(comp, areas, minlength=ncomp); ccells = np.bincount(comp, cells, minlength=ncomp)
     order = np.argsort(-carea, kind='stable')
     rank = np.empty(ncomp, np.int64); rank[order] = np.arange(1, ncomp + 1)
     gid = rank[comp]                                   # local label (global index) -> landmass id
-    T.log('landmass', 'pass 1 done: %d labels, %d landmasses, %.0f s' % (base, ncomp, time.time() - t0))
+    T.log('landmass', 'joined: %d labels, %d landmasses, %.0f s' % (base, ncomp, time.time() - t0))
     # places, for names: the most populous place in each landmass
     places = []
     for line in E.raw('places').decode('utf-8').splitlines():
@@ -143,7 +262,7 @@ def main():
         r = min(239, int((math.floor(la) + 1 - la) * 240)); c = min(239, int((lo - math.floor(lo)) * 240))
         pt.setdefault(t, []).append((name, r, c, pop))
     best = {}
-    # pass 2: blobs
+    # pass 3: blobs
     entries = np.zeros(TILES, np.int64); blobs = {}
     for t in range(TILES):
         lab, _ = labels(E, t)
@@ -170,7 +289,7 @@ def main():
         z = zlib.compress(bytes(buf), 9)
         entries[t] = len(z); blobs[t] = z
         if t % 3600 == 3599:
-            T.log('landmass', 'pass 2: band %d, %.2f MB, %.0f s' % (t // 360, sum(map(len, blobs.values())) / 1e6, time.time() - t0))
+            T.log('landmass', 'pass 3: band %d, %.2f MB, %.0f s' % (t // 360, sum(map(len, blobs.values())) / 1e6, time.time() - t0))
     srt_area = carea[order]; srt_cells = ccells[order]
     lines = []
     for i in range(ncomp):
@@ -184,7 +303,9 @@ def main():
     os.replace(os.path.join(OUT, 'blobs.npz.tmp.npz'), os.path.join(OUT, 'blobs.npz'))
     with open(os.path.join(OUT, 'table.tsv'), 'wb') as f:
         f.write(table)
-    st = dict(landmasses=int(ncomp), labels=int(base), blob_bytes=int(sum(map(len, blobs.values()))),
+    st = dict(rule=dict(cross_m=CROSS_M, river_cut_m=RIVER_CUT_M, shallow_m=D.SHALLOW_M, shallow_q=SHALLOW_Q),
+              water_joins=int(len(wa)), water_join_tiles=int(st2['tiles']),
+              landmasses=int(ncomp), labels=int(base), blob_bytes=int(sum(map(len, blobs.values()))),
               blobs=len(blobs), uniform_land_tiles=int((entries < 0).sum()),
               table_bytes=len(table), table_zlib=len(zlib.compress(table, 9)),
               at_least_km2={str(a): int((srt_area >= a).sum()) for a in (0.01, 0.1, 1, 10, 100, 1000, 10000, 1e6)},

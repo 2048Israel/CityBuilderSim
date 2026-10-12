@@ -44,7 +44,7 @@ p b, li b { color: var(--text); font-weight: 600; }
 .meas { font: 600 10px/1 var(--mono); letter-spacing: .06em; color: var(--good); border: 1px solid rgba(63,185,80,.5); border-radius: 3px; padding: 2px 5px; white-space: nowrap; }
 .illus { font: 600 10px/1 var(--mono); letter-spacing: .06em; color: var(--text3); border: 1px solid var(--control-edge); border-radius: 3px; padding: 2px 5px; white-space: nowrap; }
 .newtag { font: 600 9px/1 var(--mono); letter-spacing: .08em; color: var(--building); border: 1px solid rgba(241,124,176,.55); background: rgba(241,124,176,.1); border-radius: 3px; padding: 2px 4px; vertical-align: 1px; }
-nav.nav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--stage) 92%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--edge); }
+nav.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--stage) 92%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--edge); }
 nav.nav div { max-width: 1240px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 6px; overflow-x: auto; }
 nav.nav a { flex: none; color: var(--text2); text-decoration: none; font-size: 13px; padding: 5px 12px; border: 1px solid var(--edge); border-radius: 3px; background: var(--panel); }
 nav.nav a:hover, nav.nav a:focus-visible { color: var(--text); border-color: var(--accent); outline: none; }
@@ -76,6 +76,8 @@ table.t td b, table.t th { color: var(--text); font-weight: 600; }
 .finding { border: 1px solid rgba(227,179,65,.45); background: rgba(227,179,65,.06); border-radius: 6px; padding: 12px 14px; margin: 14px 0; }
 .finding .eyebrow { color: var(--warn); }
 .finding p { font-size: 13.5px; margin: .45em 0 0; max-width: none; }
+.finding.settled { border-color: rgba(63,185,80,.45); background: rgba(63,185,80,.05); }
+.finding.settled .eyebrow { color: var(--good); }
 
 /* the expanded map, as MapView lays it over the window */
 .window { max-width: 1094px; border: 1px solid var(--edge); border-radius: 8px; background: var(--stage); padding: 10px 12px 12px; }
@@ -310,11 +312,11 @@ footer li { margin: .2em 0; }
   <!-- 1b: Halifax -->
   <div class="part">
     <div class="part-head"><span class="tag">Short crossings</span><h3>Halifax: the Narrows, shallow and deep water, and the runs' bridges</h3></div>
-    <p>The expanded map at 2 px a plot, 16 by 14 km. The city's ground (white box, <span class="illus">illustrative</span>) holds both shores of the Narrows; the rest is dimmed. The Narrows and the harbour are shallow sea, Bedford Basin and the harbour's outer approach deep. A run lays a short bridge where the water is no wider than 14 plots (420 m) for a highway or rail and the city's own ground lies beyond, as today.</p>
+    <p>The expanded map at 2 px a plot, 16 by 14 km. The city's ground (white box, <span class="illus">illustrative</span>) holds both shores of the Narrows; the rest is dimmed. The Narrows and the harbour are shallow sea, Bedford Basin and the harbour's outer approach deep. A run lays a short bridge where the water is no wider than 34 plots (1,020 m, <span class="est">est.</span>) for a highway or rail and the city's own ground lies beyond - raised from today's 14 plots (420 m) because the Narrows is about 800 m of water from shore to shore on earth-2. A street still bridges 6 plots (180 m).</p>
     <div class="window" role="img" aria-label="The expanded map over Halifax with the legend and a hover card on the Narrows">
       <div class="whead"><strong>Land office › Map</strong><span>March 2231</span><span>2 px a plot · 15 m a px</span><span class="gap"></span><span>Drag or W, A, S, D to move · wheel to zoom</span><span class="chip">Fit</span><span class="chip">Back to the land office · Esc</span></div>
       <div class="mapbox">
-        <img src="mock-halifax.png" width="1066" height="934" alt="Halifax harbour at 1 pixel a plot: the Narrows in light blue between Halifax and Dartmouth, Bedford Basin dark blue to the north-west, the MacKay's deck drawn, the Macdonald's line dashed in amber">
+        <img src="mock-halifax.png" width="1066" height="934" alt="Halifax harbour at 1 pixel a plot: the Narrows in light blue between Halifax and Dartmouth, Bedford Basin dark blue to the north-west, both bridges drawn as highways on their decks">
         <span class="pointer" style="left:58.3%;top:49.9%"></span>
         <div class="hovercard" style="left:59.6%;top:51.6%"><b>Shallow sea · 30 m deep or less, about 15 m here · a bridge may cross it</b><span>The city's: South 2, bought in month 31</span><span>2.9 km east of Halifax</span><span>Geology: Appalachian Foldbelt, a fold belt</span></div>
         <div class="legend" aria-label="Legend">
@@ -324,13 +326,12 @@ footer li { margin: .2em 0; }
       </div>
     </div>
     <div class="grid2" style="margin-top:14px">
-      <figure><img src="mock-halifax-narrows.png" width="600" height="440" alt="The Narrows at 5 pixels a plot: the MacKay drawn as a highway on a deck over 12 plots of water, the Macdonald dashed in amber over 27 plots"><figcaption><b>The Narrows at 5 px a plot</b> (the light blue box above), the same plots. The MacKay's line crosses 350 m of water here, 12 plots: the run lays it, a highway <span class="sw" style="background:var(--highway)"></span> on its deck <span class="sw" style="background:var(--deck)"></span>. The Macdonald's line crosses 800 m, 27 plots: past the 14 a run may bridge, so the run turns along the shore and nothing is laid (dashed in <span style="color:var(--warn)">amber</span> to show where it would stand).</figcaption></figure>
+      <figure><img src="mock-halifax-narrows.png" width="600" height="440" alt="The Narrows at 5 pixels a plot: the MacKay and the Macdonald drawn as highways on decks, over 12 and 27 plots of water"><figcaption><b>The Narrows at 5 px a plot</b> (the light blue box above), the same plots. The MacKay's line crosses 350 m of water here, 12 plots, and the Macdonald's 800 m, 27 plots: both inside the 34 a highway may bridge, so the run lays both, a highway <span class="sw" style="background:var(--highway)"></span> on its deck <span class="sw" style="background:var(--deck)"></span>, where the real bridges stand.</figcaption></figure>
       <div>
-        <div class="finding">
-          <div class="eyebrow">Finding · the 14-plot cap does not fit Halifax</div>
-          <p><b>Measured on earth-2:</b> along the bridges' own lines the 15" sea share passes a half for <b>820 m</b> (Macdonald) and <b>805 m</b> (MacKay). With the seed's fray a run meets <b>555-1,000 m</b> under the Macdonald and <b>295-915 m</b> under the MacKay over eight seeds; seven seeds in eight leave the MacKay over 14 plots, and all eight the Macdonald.</p>
-          <p>Halifax and Dartmouth are one landmass (id 2, joined round the head of Bedford Basin), so the long-bridge order refuses the crossing as well. <b>On most seeds neither of Halifax's bridges could be built.</b> The study's D12 ("Halifax's two bridges are this kind", §6.2) rests on the BIO's "300 to 400 metres wide", which is the sill's width under water, not shore to shore.</p>
-          <p>The study has to widen one rule: a short crossing of about 34 plots (1 km) for highway and rail <span class="est">est.</span>, or the long order allowed within one landmass where the water is wider than a run's bridge.</p>
+        <div class="finding settled">
+          <div class="eyebrow">Found while drawing, and settled</div>
+          <p>The study first took Halifax's bridges for short crossings on the BIO's "300 to 400 metres wide", which is the sill's width under water, not shore to shore. <b>Measured on earth-2:</b> the 15" sea share passes a half for <b>820 m</b> under the Macdonald's line and <b>805 m</b> under the MacKay's; with the seed's fray a run meets <b>555-1,000 m</b> and <b>295-915 m</b> over eight seeds, past today's 14 plots (420 m) on most of them. Both shores being one landmass, the long order would have refused them too.</p>
+          <p><b>The study changed.</b> A highway's or rail's short crossing now spans up to 34 plots (1,020 m, <span class="est">est.</span>), which holds both bridges on every seed measured; a street stays at 6 plots (§6.2, D12). A landmass is now ground cut off by more than that: water a run can span (fresh, or sea with 8/15 of the cell 30 m deep or less) never separates two landmasses, and deep sea always does (§2.6, D16).</p>
         </div>
         <p class="note">Depths along the lines (GEBCO 2026, 15"): Macdonald 6-21 m, MacKay 7-14 m; the depth layer's 1' cells 4-11 m and 13-19 m. Bedford Basin's middle cell 51 m. Every sea plot within 5 km of downtown is shallow on this render once the shallow share is weighted by the sea share (read plain, the land cells' 0 drew a fringe of deep sea along every shore).</p>
       </div>
@@ -356,7 +357,7 @@ footer li { margin: .2em 0; }
     <div class="grid2">
       <figure><img src="mock-confederation.png" width="867" height="600" alt="The Northumberland Strait at 1 pixel a plot, all of it light shallow blue, with one deck from Cape Jourimain to Borden-Carleton"><figcaption><b>26 by 18 km at 1 px a plot</b>, not dimmed so the sea's two blues read. The city's ground (white boxes, <span class="illus">illustrative</span>): its home round Cape Jourimain, and an offer it bought at Borden-Carleton. The whole span is one deck, priced and built as one order (board 5).</figcaption></figure>
       <div>
-        <p><b>Measured on the bridge's line</b> (Borden-Carleton to Cape Jourimain): <b>12.8 km of water</b> by earth-1's 15" sea; every water cell 15 of 15 shallow; <b>GEBCO 1-24 m</b>, the depth layer's 1' cells 1-21 m. The two shores are <b>landmass 103</b>, Prince Edward Island, 5,596.50 km² in the landmasses table (Charlottetown its largest place), and <b>landmass 2</b>, the Americas. Real: 12.9 km, 44 main piers 250 m apart, built 1993-97 for C$1.3 billion.</p>
+        <p><b>Measured on the bridge's line</b> (Borden-Carleton to Cape Jourimain): <b>12.8 km of water</b> by earth-1's 15" sea; every water cell 15 of 15 shallow; <b>GEBCO 1-24 m</b>, the depth layer's 1' cells 1-21 m. The two shores are <b>landmass 101</b>, Prince Edward Island, 5,611.10 km² in the landmasses table (Charlottetown its largest place), and <b>landmass 2</b>, the Americas. Real: 12.9 km, 44 main piers 250 m apart, built 1993-97 for C$1.3 billion.</p>
         <p>The order is judged whole before a plot is laid: a continuous way of shallow sea or fresh water from the city's dry ground on one shore to its dry ground on the other, no cell of it deep, no longer than 36 km <span class="est">est.</span>, the two ends on different landmasses. Ground on an unlinked landmass holds only a port or a bridge's landing until then.</p>
         <p class="note">The far view below shows the same strait with the crossing the order refuses: Caribou to Wood Islands meets water deeper than 30 m 11.1 km out.</p>
       </div>
@@ -403,7 +404,7 @@ footer li { margin: .2em 0; }
       <tr><td><span class="sw" style="background:var(--shallow)"></span></td><td><b>Shallow sea</b> <span class="newtag">NEW</span></td><td>"Shallow sea · 30 m deep or less, about 18 m here · a bridge may cross it"</td><td>bridges</td><td>as sea</td></tr>
       <tr><td><span class="sw" style="background:var(--sea)"></span></td><td><b>Sea</b></td><td>"Sea · deeper than 30 m, about 51 m here · too deep for a bridge; a platform stands in 150 m or less"</td><td>ports, platforms</td><td>as sea</td></tr>
       <tr><td><span class="sw" style="background:var(--fresh)"></span></td><td><b>Lake or river</b></td><td>"Lake or river · a bridge may cross it"</td><td>bridges</td><td>as fresh water</td></tr>
-      <tr><td><span class="sw" style="background:var(--deck)"></span></td><td><b>Bridge</b> <span class="newtag">NEW</span> (plane)</td><td>"Bridge · the highway over 12 plots (360 m) of shallow sea, laid with the run"</td><td></td><td></td></tr>
+      <tr><td><span class="sw" style="background:var(--deck)"></span></td><td><b>Bridge</b> <span class="newtag">NEW</span> (plane)</td><td>"Bridge · the highway over 27 plots (810 m) of shallow sea, laid with the run" (the Macdonald on board 1)</td><td></td><td></td></tr>
       <tr><td><span class="sw" style="background:var(--highway);box-shadow:inset 0 0 0 3px var(--deck)"></span></td><td><b>Bridge</b> (a long one)</td><td>"Highway Bridge · 12.8 km over shallow sea, built in month 1,322 · links Prince Edward Island"</td><td></td><td></td></tr>
     </tbody>
   </table>
@@ -498,7 +499,7 @@ footer li { margin: .2em 0; }
         <p class="new">Buildable: 58.3 km², 49.5 flat and 8.8 foothill</p>
         <p>Fresh water 3.0 km away · the sea 0.6 km away</p>
         <p class="new">The sea within 5 km is all shallow, 30 m or less: bridges may cross it · 19 m at its deepest</p>
-        <p class="new">Its landmass: New York's, 36.7 million km² (id 2)</p>
+        <p class="new">Its landmass: New York's, 36.8 million km² (id 2)</p>
         <p class="old">Geology: Appalachian Foldbelt, a fold belt · deposits iron ore ×0.72, oil ×0.60, stone ×1.38, coal ×0.79, copper ×2.93, uranium ×0.38</p>
         <p class="old">The nearest iron field: 18.0 km south-west</p>
         <p class="muted">World seed 758,809,812: the detail below the data, the fields and the streets.</p>
@@ -510,7 +511,7 @@ footer li { margin: .2em 0; }
         <p class="new">Its land: flat 42% · foothill 45% · steep 12% · very steep under 1%</p>
         <p class="new">Buildable: 68.6 km², 33.1 flat and 35.5 foothill</p>
         <p>Fresh water 1.0 km away · no sea within 5 km</p>
-        <p class="new">Its landmass: New York's, 36.7 million km² (id 2)</p>
+        <p class="new">Its landmass: New York's, 36.8 million km² (id 2)</p>
         <p class="old">Geology: West-Central Cordillera, a fold belt · deposits iron ore ×0.72, oil ×0.60, stone ×1.38, coal ×0.79, copper ×2.93, uranium ×0.38</p>
         <p class="old">The nearest iron field: as the seed draws it</p>
         <p class="muted">World seed 758,809,812: the detail below the data, the fields and the streets.</p>
@@ -583,7 +584,7 @@ footer li { margin: .2em 0; }
 <section class="board" id="build" aria-labelledby="b5">
   <div class="eyebrow">Board 5 · Build › Infrastructure</div>
   <h2 id="b5">Long crossings are orders: the whole span judged, priced and built at once</h2>
-  <p>A city founded at Cape Jourimain (<span class="illus">illustrative</span>; its money T$, at T$1.00 to the US dollar) owns an offer at Borden-Carleton on Prince Edward Island. The bridges are three new buildings in Infrastructure, each one order for one crossing: no stepper, no count. The price is <span class="est">est.</span>: the Confederation Bridge's C$1.3 billion of 1993-97 for 12.9 km, about US$133M a km in today's money (Canadian prices ×1.8 since 1995, C$1 = US$0.73), rail dearer by a third, a two-lane road at a little over half. Wikipedia gives C$1.3 billion; the study's §6.4 has C$1.0 billion, for ET6's brief to settle. The study prices by length, kind and depth, plus the two landings; this card shows the length's share as its first bar.</p>
+  <p>A city founded at Cape Jourimain (<span class="illus">illustrative</span>; its money T$, at T$1.00 to the US dollar) owns an offer at Borden-Carleton on Prince Edward Island. The bridges are three new buildings in Infrastructure, each one order for one crossing: no stepper, no count. The price is <span class="est">est.</span>: the Confederation Bridge's C$1.3 billion of 1993-97 for 12.9 km, about US$133M a km in today's money (Canadian prices ×1.8 since 1995, C$1 = US$0.73), rail dearer by a third, a two-lane road at a little over half. The study's §6.4 takes C$1.3 billion (Wikipedia); some sources give C$1.0 billion, and ET6's brief settles which. The study prices by length, kind and depth, plus the two landings; this card shows the length's share as its first bar.</p>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="i-bridge" viewBox="0 0 16 16"><path d="M1 10h14M2 10c2-6 10-6 12 0M5 10V6.8M8 10V5.2M11 10V6.8M1 14h14"/></symbol>
     <symbol id="i-rail" viewBox="0 0 16 16"><path d="M5 1.5 3 14.5M11 1.5l2 13M3.6 4h8.8M3.3 7.5h9.4M2.9 11h10.2"/></symbol>
@@ -596,8 +597,8 @@ footer li { margin: .2em 0; }
       <article class="card pending" aria-label="Highway Bridge card, a valid order">
         <div class="top"><span class="ico"><svg><use href="#i-bridge"/></svg></span><div><div class="name">Highway Bridge</div><div class="have">none built</div></div><span class="info">i</span></div>
         <div class="ctags"><span class="new">new</span><span>City</span><span>Long crossing</span><span>One order</span></div>
-        <div class="herol">links <span class="big">5,596.5 km²</span> Prince Edward Island to the city's home landmass</div>
-        <div class="detail">12.8 km over shallow sea, 1-24 m deep: Cape Jourimain to Borden-Carleton (East 2, bought in month 1,204). Every cell of the way 30 m or less; the island is landmass 103, the home landmass 2.</div>
+        <div class="herol">links <span class="big">5,611.1 km²</span> Prince Edward Island to the city's home landmass</div>
+        <div class="detail">12.8 km over shallow sea, 1-24 m deep: Cape Jourimain to Borden-Carleton (East 2, bought in month 1,204). Every cell of the way 30 m or less; the island is landmass 101, the home landmass 2.</div>
         <div class="price"><b>T$1.70B</b><span>all in · sticker T$1.62B</span><span class="est">est.</span></div>
         <div class="cbar"><div class="lab"><span>its price a km of crossing</span><span class="v">T$133M</span></div><div class="track"><i style="width:74%"></i></div></div>
         <div class="cbar"><div class="lab"><span>its landings, both shores</span><span class="v">0.24 km²</span></div><div class="track"><i class="land" style="width:77%"></i></div></div>
@@ -644,13 +645,13 @@ footer li { margin: .2em 0; }
         <div class="top"><span class="ico"><svg><use href="#i-bridge"/></svg></span><div><div class="name">Highway Bridge</div><div class="have">Bahrain to Qatar · 41.8 km</div></div></div>
         <div class="press held"><div class="main">Longer than a bridge can be</div><div class="sub">41.8 km against 36 km: a port on each shore - Ports ›</div></div>
         <div class="quote bad">Longer than a bridge can be: 41.8 km against 36 km.</div>
-        <div class="why">The way across from Bahrain (landmass 400, 618 km²) to Qatar is <b>41.8 km of shallow sea</b>, 6 m at its deepest (GEBCO) - past the 36 km a bridge may run <span class="est">est.</span>: the Hangzhou Bay Bridge, 35.7 km, is the longest wholly over sea. <span class="meas">measured</span> on a line from Bahrain's east coast to Az Zubarah; the planner's own search may find a shorter way.</div>
+        <div class="why">The way across from Bahrain (landmass 340, 682 km²) to Qatar is <b>41.8 km of shallow sea</b>, 6 m at its deepest (GEBCO) - past the 36 km a bridge may run <span class="est">est.</span>: the Hangzhou Bay Bridge, 35.7 km, is the longest wholly over sea. <span class="meas">measured</span> on a line from Bahrain's east coast to Az Zubarah; the planner's own search may find a shorter way.</div>
       </article>
       <article class="card" aria-label="Refused: both ends on one landmass">
         <div class="top"><span class="ico"><svg><use href="#i-bridge"/></svg></span><div><div class="name">Highway Bridge</div><div class="have">Halifax to Dartmouth · 0.8 km</div></div></div>
         <div class="press held"><div class="main">Both ends on one landmass</div><div class="sub">a long bridge links two: the highways cross the Narrows</div></div>
         <div class="quote bad">Both ends are on Halifax's landmass: a long bridge must link two landmasses (a short crossing is laid by the highways themselves).</div>
-        <div class="why">Halifax and Dartmouth are joined round the head of Bedford Basin (landmass 2). A long bridge links two landmasses; water within one is crossed by the runs' short bridges, 14 plots (420 m) at most. <span class="meas">measured</span> - and the Narrows is 800 m of water under the Macdonald's line here: see board 1's finding.</div>
+        <div class="why">Halifax and Dartmouth are one landmass (2): joined round the head of Bedford Basin, and across the Narrows itself, since water a run can span joins land. A long bridge links two landmasses; water within one is crossed by the runs' short bridges, 34 plots (1,020 m) at most, and the Narrows' ~800 m under the Macdonald's line is inside that. <span class="meas">measured</span></div>
       </article>
     </div>
   </div>
@@ -659,10 +660,10 @@ footer li { margin: .2em 0; }
 </main>
 
 <footer class="wrap">
-  <p><b style="color:var(--text2)">How the boards were made.</b> <code>docs/studies/earth2/mockups.py</code> draws every map from <code>earth-2.bin</code> (136,924,697 bytes, SHA-256 b48adce1...ae9a) through <code>tools/earth/earthread.py</code>, with <code>figures.py</code>'s noise and rule; run it with <code>python3 -I mockups.py</code> and it rewrites the mock-*.png beside this page and prints every figure the boards quote. The ground colours are <code>TileRaster.GROUND</code> (L69), the deck <code>TileRaster.DECK</code> (L81), the highway <code>TileRaster.ROAD</code>, the page's colours and fonts <code>ui/Palette.java</code>; the three greys and the shallow blue are <code>figures.py</code>'s proposals.</p>
+  <p><b style="color:var(--text2)">How the boards were made.</b> <code>docs/studies/earth2/mockups.py</code> draws every map from <code>earth-2.bin</code> (135,965,097 bytes, SHA-256 6ccb4794...fa8c3, re-baked with the landmasses cut at 1,020 m) through <code>tools/earth/earthread.py</code>, with <code>figures.py</code>'s noise and rule; run it with <code>python3 -I mockups.py</code> and it rewrites the mock-*.png beside this page and prints every figure the boards quote. The ground colours are <code>TileRaster.GROUND</code> (L69), the deck <code>TileRaster.DECK</code> (L81), the highway <code>TileRaster.ROAD</code>, the page's colours and fonts <code>ui/Palette.java</code>; the three greys and the shallow blue are <code>figures.py</code>'s proposals.</p>
   <ul>
     <li><b style="color:var(--text2)">Not the game's own renderer.</b> The plot rule is <code>figures.py</code>'s estimate of the game's: its noise is box-relative, the plane is drawn latitude-longitude rather than Lambert's equal-area, small lakes are frayed discs, beaches are not drawn, and the city's buildings and streets are left out.</li>
-    <li><b style="color:var(--text2)">Two rendering rules found while drawing.</b> The shallow share is of a cell's sea, so it must be interpolated weighted by the sea share (read plain, every coast grew a fringe of deep sea); and the coast's fray (the water noise at ±0.3 of a share) moves the Narrows' width by ±250 m from seed to seed, which decides whether a run bridges it.</li>
+    <li><b style="color:var(--text2)">Two rendering rules found while drawing.</b> The shallow share is of a cell's sea, so it must be interpolated weighted by the sea share (read plain, every coast grew a fringe of deep sea); and the coast's fray (the water noise at ±0.3 of a share) moves the Narrows' width by ±250 m from seed to seed, which is why the study's 34-plot cap carries a margin over the 820 m the share alone gives.</li>
     <li><b style="color:var(--text2)">Sources.</b> GEBCO Compilation Group (2026) GEBCO 2026 Grid; NASA JPL NASADEM (slope, via earth-2); ESA WorldCover (earth-1's land cover); GRWL (rivers); Natural Earth (places); USGS World Energy Project provinces. The Confederation Bridge: 12.9 km, 44 main piers 250 m apart, C$1.3 billion, 1993-97 (Wikipedia, "Confederation Bridge", read 2026-10-12). The Narrows' sill: McGonigal, Loucks and Ingraham, BIO Data Series BI-D-74-5 (1974). The longest bridge wholly over sea: the Hangzhou Bay Bridge, 35.673 km.</li>
   </ul>
 </footer>

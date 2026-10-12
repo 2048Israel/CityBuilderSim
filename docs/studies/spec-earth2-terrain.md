@@ -4,7 +4,7 @@
 
 *What was read: the code at 0.7.135 (main 1afe9c0), not changed: `World`, `EarthTerrain`, `EarthData`, `EarthSite`, `Geology`, `CityLand`, `GridConversion`, `LandManager`, `LandMarket`, `Zoning`, `BusinessInvestment`, `Game` (`buildFor`, `consider`, `interestTest`, `bestOffer`), `BuildCard`, `BuildAdvice`, `AutoBuilder`, `SpreadPlanner`, `ExtractionSector`, `Oil`, `CityRuns`, `DistrictPlan`, `TilePainter`, `TileRaster`, `LandMap`, `MapTiles`, `GlobePicture`, `SectorStatements`, `EconomyManager`, `GameVersion`, `GameFiles` and the harnesses that hold them; the studies `spec-earth.md`, `spec-globe.md`, `spec-roads-and-ports.md`; Samuel's two Nova Scotia saves (slots 1 and 2, read-only copies).*
 
-*What was measured: the whole land's slope from NASADEM (all 14,520 tiles, 136 GB streamed), GEBCO 2026's depth over every sea tile, a landmass layer over the whole Earth, and **earth-2.bin baked** (§2.8). Fourteen sites were measured four ways. The Nova Scotia deposits were redrawn from the game's own code (`earth2/DepositProbe.java`). The pipeline is in `tools/earth/` (`slope_tiles.py`, `depth.py`, `landmass.py`, `bake2.py`, `check2.py`, `FORMAT-2.txt`, `ATTRIBUTION-2.txt`, `bake-earth-2.bat`); the prototypes and figures are in `earth2/`; the mockups are `earth2/earth2-study.html` and the artifact "Earth 2 Study". Figures marked (est.) are estimates, each with its reason; [S#] are the sources at the end.*
+*What was measured: the whole land's slope from NASADEM (all 14,520 tiles, 136 GB streamed), GEBCO 2026's depth over every sea tile, a landmass layer over the whole Earth, and **earth-2.bin baked** (§2.8). Fourteen sites were measured four ways. The Nova Scotia deposits were redrawn from the game's own code (`earth2/DepositProbe.java`). The pipeline is in `tools/earth/` (`slope_tiles.py`, `depth.py`, `landmass.py`, `bake2.py`, `check2.py`, `FORMAT-2.txt`, `ATTRIBUTION-2.txt`, `bake-earth-2.bat`); the prototypes and figures are in `earth2/`; the mockups are `earth2/earth2-study.html` and the artifact "Earth 2 Study" (https://claude.ai/artifact/4k5kFnyJgaLB1THqvkmbE1). Figures marked (est.) are estimates, each with its reason; [S#] are the sources at the end.*
 
 ---
 
@@ -14,7 +14,7 @@
 - **Slope comes from NASADEM** (NASA, no restriction [S3]), measured over 90 m. Measured at 30 m, radar noise and tree tops put 15% "foothill" on the flat Amazon; over 90 m it is 0.3%.
 - **Depth comes from GEBCO 2026** (public domain, credit [S1]), which earth-1 already uses.
 - **Copernicus DEM fails your rule**: it asks for an indemnity and a liability sentence passed on to players, the same reasons HydroRIVERS failed. AW3D30 and FABDEM fail too (§2.1).
-- **earth-2.bin is baked**: 136,924,697 bytes. It holds earth-1's ten layers byte for byte, plus slope, shallow sea, depth and landmasses, and all 30 of its checks pass. **The release `earth-2` is yours to make** (§2.8).
+- **earth-2.bin is baked**: 135,965,097 bytes. It holds earth-1's ten layers byte for byte, plus slope, shallow sea, depth and landmasses, and all 36 of its checks pass. **The release `earth-2` is yours to make** (§2.8).
 
 **Slope decides, not altitude.** Four classes by grade, at the FAO's class edges [S9]:
 
@@ -56,7 +56,7 @@ The checks:
   - Before anything is laid, a continuous path of shallow or fresh water must reach dry land on the far side.
   - The whole span is judged and priced as one order. Deep water anywhere on the path refuses it.
   - A long bridge links two **landmasses**. This finally builds the roads study's island rule (decided 2026-10-09, never built), with the bridge as a second way to link besides two ports.
-  - The model example is the Confederation Bridge: 12.9 km over 24 m of water to Prince Edward Island, which earth-2 holds as its own landmass of 5,597 km².
+  - The model example is the Confederation Bridge: 12.9 km over 24 m of water to Prince Edward Island, which earth-2 holds as its own landmass of 5,611 km².
 
 **Real depth replaces E4's guess.**
 - E4 makes the North Sea 80 km off Rotterdam 150 m deep; GEBCO says 34 m.
@@ -252,20 +252,39 @@ The record main span is 2,023 m (the 1915 Çanakkale Bridge [S19]), which bears 
 
 The roads study's decision I7 put "the landmass layer in the Earth pack"; Earth 2 is that pack.
 
-**How the layer was built** (5.8 minutes for the whole Earth, `tools/earth/landmass.py`):
-- A 15″ cell is land where earth-1's sea and lake levels sum to 7/15 or less, the same side of the coast that `EarthTerrain` draws.
-- Rivers 420 m wide or more cut the land.
-- Cells join their four neighbours, across tile edges and the 180th meridian.
+**The rule: ground cut off by more than a short crossing.** A landmass is ground that more than 1,020 m of crossable water separates from the rest, or that deep sea separates at any width. Anything a highway's short crossing can span (§6.2, D16) stays inside one landmass, so the model and the map agree.
+
+**How the layer was built** (7.9 minutes for the whole Earth, `tools/earth/landmass.py`):
+- **Land:** a 15″ cell where earth-1's sea and lake levels sum to 7/15 or less, the same side of the coast that `EarthTerrain` draws. Rivers wider than 1,020 m cut it.
+- **Crossable water:** fresh water, or sea where at least 8/15 of the cell is 30 m deep or less.
+- **The join:** each crossable cell takes the label of its nearest shore and its distance from it. Two land pieces join when shore to water to shore is 1,020 m or less.
+  - It works across tile edges and the 180th meridian.
+  - Joins chain: islands each within a crossing of the next reach the mainland.
+- 144,599 crossings were joined.
 
 **What it found:**
-- 113,291 landmasses; 19,868 of at least 1 km²; 288 of at least 1,000 km².
+- 24,889 landmasses; 10,405 of at least 1 km²; 273 of at least 1,000 km². (Under a first rule that joined only touching land, the counts were 113,291, 19,868 and 288.)
 - The five largest: Afro-Eurasia (Suez does not cut it), the Americas, Antarctica, Australia, Greenland.
-- Prince Edward Island is landmass 103, 5,597 km² (real about 5,660).
-- **Halifax, Dartmouth and Bedford are one landmass**, joined by land round the head of Bedford Basin, so a bridge over the Narrows is a shortcut, not a link. McNabs and Lawlor islands are one landmass of 3.3 km².
+- **Halifax, Dartmouth and Bedford are one landmass**, joined by land round the head of Bedford Basin, so the Narrows' bridges are shortcuts, not links. McNabs and Lawlor islands join the mainland across 463 m.
+- **Still separate, as they should be:**
+  - Prince Edward Island: landmass 101, 5,611 km² (real about 5,660), 13.6 km across the Northumberland Strait;
+  - Great Britain from France, and Sicily from Italy, both by deep water;
+  - Zealand from Funen, 23.5 km;
+  - Sri Lanka, Sardinia, Corsica, the Isle of Wight, Ireland, Newfoundland and Vancouver Island.
+- **Joined, as real short crossings join them:**
+  - Cape Breton Island to Nova Scotia at Canso (787 m);
+  - Funen to Jutland across the Little Belt (927 m);
+  - Hong Kong Island to Kowloon (446 m);
+  - Rügen by way of Dänholm (two crossings under 1,020 m each);
+  - Skye, Manitoulin, Leyte with Samar, and Lolland with Falster.
+- **A near thing:** Goeree-Overflakkee, in the Rotterdam delta, stays separate at 1,390 m. The real Haringvliet bridge is about 1.2 km.
+- **Two to doubt, where the 15″ data may be wrong about the strait:**
+  - Wellington Island in Chile (10,642 km²) joins the mainland across 935 m that GEBCO calls shallow, in poorly surveyed fjords;
+  - Vaygach joins Eurasia across 954 m, where the Yugorsky Strait is usually given as about 2.5 km.
 
-**Its limit:** a channel narrower than a cell does not separate land. Manhattan, Long Island and Montreal Island come out joined to the mainland. Those crossings are short, and the map's runs make them anyway.
+**Its limit:** a channel narrower than a cell joins by land: Manhattan, Long Island and Montreal Island come out joined to the mainland, as the rule would join them anyway.
 
-**Size and format:** 6.7 MB (the roads study guessed 1–2 MB, but every islet of a cell gets an id). Each landmass's place name is its most populous Natural Earth place.
+**Size and format:** 5.8 MB (the roads study guessed 1–2 MB, but every islet of a cell gets an id). Each landmass's place name is its most populous Natural Earth place. `earth2/landmass_gaps.py` measures any gap.
 
 ### 2.7 One file, not an add-on
 
@@ -277,10 +296,10 @@ The roads study's decision I7 put "the landmass layer in the Earth pack"; Earth 
 | `slope.est` | a bit a 1-degree tile | which tiles are estimated | 0.001 MB |
 | `shallow` | 15″, a byte | share of the cell's sea no deeper than 30 m | 7.75 MB |
 | `depth` | 1′, a byte | the cell's mean sea depth (§2.5) | 12.48 MB |
-| `landmass` | 15″, palette ids | each land cell's landmass | 6.68 MB |
-| `landmasses` | text | id, area, cells, place name | 0.08 MB |
+| `landmass` | 15″, palette ids | each land cell's landmass | 5.76 MB |
+| `landmasses` | text | id, area, cells, place name | 0.04 MB |
 | earth-1's ten layers | as earth-1 | byte for byte | 52.75 MB |
-| **earth-2.bin** | | | **136.92 MB** |
+| **earth-2.bin** | | | **135.97 MB** |
 
 **The container is earth-1's, unchanged** (`EARTH-1\n`, layout 1), so `EarthData` reads it as it is. The file is named earth-2 in its meta layer and identified by its SHA-256.
 
@@ -293,8 +312,8 @@ The cost is that a player downloads earth-1's 53 MB again inside it. Old Earth s
 
 ### 2.8 The bake, and the release
 
-**The baked file:** 136,924,697 bytes, SHA-256 `b48adce10c2a5f65f7670d9b617a96566b6d3aae8cafcb7ee3432eaefb78ae9a`, built 2026-10-12.
-- **check2's 30 checks all pass:** earth-1's layers byte for byte; the shares nested; no slope on water and no depth on land; Medellín's valley floor 100% flat; Everest 47% very steep within 15 km; the Narrows shallow; Halifax and Dartmouth one landmass, McNabs its own.
+**The baked file:** 135,965,097 bytes, SHA-256 `6ccb4794b15f1c217ad368b1dd883223711a35ca54a8de2bc7757606766fa8c3`, built 2026-10-12 (also in `tools/earth/earth-2.sha256`).
+- **check2's 36 checks all pass:** earth-1's layers byte for byte; the shares nested; no slope on water and no depth on land; Medellín's valley floor 100% flat; Everest 47% very steep within 15 km; the Narrows shallow; Halifax and Dartmouth one landmass, Prince Edward Island its own, and the landmass rule's crossings.
 - **It is not in git**, as earth-1 is not.
 - **The release `earth-2` is yours to make on GitHub's website**, as you made `earth-1`. Its assets are earth-2.bin, `tools/earth/earth-2.sha256` and `tools/earth/ATTRIBUTION-2.txt`.
 - **Your PC can bake its own copy instead:** `tools/earth/bake-earth-2.bat`, double-clicked.
@@ -696,7 +715,7 @@ A missing key means flat and none, which is right for every generated city. No c
 
 ### 9.2 Shipping earth-2 instead of earth-1
 
-`EarthData` (`EARTH_1`, `DATA_FILE`, the identity prefix "earth-2:"), `EarthSite`'s words ("about 137 MB"), five places in `FoundingScreen`, `get-earth.bat` (its three names), `Play CityBuilderSim.bat`, `Build EXE.bat`, `fixture.py`, and a new fixture cut from earth-2 for EarthCheck. The container needs no reader change; the new layers need their readers.
+`EarthData` (`EARTH_1`, `DATA_FILE`, the identity prefix "earth-2:"), `EarthSite`'s words ("about 136 MB"), five places in `FoundingScreen`, `get-earth.bat` (its three names), `Play CityBuilderSim.bat`, `Build EXE.bat`, `fixture.py`, and a new fixture cut from earth-2 for EarthCheck. The container needs no reader change; the new layers need their readers.
 
 ### 9.3 The renderers
 
@@ -734,7 +753,7 @@ A missing key means flat and none, which is right for every generated city. No c
 | **ET2** | **Buildable by slope.** Buildings on flat and foothill only; `allocate` flat then foothill; site preparation as builders' work (rates researched in its brief); mines, quarries and wells on any land, steep first; the founding snap and refusal on buildable ground; the hilly Earth run added | default identical; Rotterdam likely identical (flat); Medellín new |
 | **ET3** | **Prices by class and the land line.** The residual price; offers and every picker by buildable km² with preparation; zones by class; sector books by class; the statement's note 11 and the equity row; the land office's and offer card's classes | default identical; Earth moves where a city holds foothill |
 | **ET4** | **Highways and rail by slope.** The works by the city's mix (rates researched); rail above highway; their land from all classes; runs across steep ground drawn as viaducts and tunnels | default identical; Earth moves where a city holds slopes |
-| **ET5** | **Landmasses and the island rule** (the roads study's §3, decided 2026-10-09). The landmass layer read; the books by landmass; `Landmasses` (saved); linked by two ports; free ground on linked landmasses only; ports built on a chosen landmass's shore; the hatching, tags, words and inbox notice | moves only where a city owns ground on another landmass (the Rotterdam delta's Goeree-Overflakkee is one; measured in ET5) |
+| **ET5** | **Landmasses and the island rule** (the roads study's §3, decided 2026-10-09). The landmass layer read; the books by landmass; `Landmasses` (saved); linked by two ports; free ground on linked landmasses only; ports built on a chosen landmass's shore; the hatching, tags, words and inbox notice | moves only where a city owns ground on another landmass (the Rotterdam delta's Goeree-Overflakkee is one, 1,390 m off; measured in ET5) |
 | **ET6** | **Bridges.** Short crossings over SHALLOW by the runs' rule, the highway's and rail's reach widened to 34 plots; Highway, Rail and Road Bridge orders with the all-or-nothing path test, priced by length and depth (rates researched); linking landmasses; the saved list; runs and plans honour them; the Build cards and refusals | moves only where one is built |
 
 **Under Pending, for you:**
@@ -751,7 +770,7 @@ A missing key means flat and none, which is right for every generated city. No c
 **The data**
 1. **D1. Slope from NASADEM, measured over 90 m**; north of 61 N and south of 56 S an estimate from GEBCO, marked by tile; ArcticDEM (CC BY) later to measure the north. **Recommend yes.** All of it is public domain; Copernicus fails your rule (§2.1).
 2. **D2. Thresholds 10%, 30% and 60% grade**, the FAO's class edges. **Recommend yes.** Changing them means baking again, about an hour.
-3. **D3. The slope stored at 30″** (57 MB; earth-2.bin 137 MB). **Recommend 30″.** The alternative, 15″ (204 MB; about 284 MB in all), keeps Medellín's valley floor sharper (0.87 flat against 0.76).
+3. **D3. The slope stored at 30″** (57 MB; earth-2.bin 136 MB). **Recommend 30″.** The alternative, 15″ (204 MB; about 284 MB in all), keeps Medellín's valley floor sharper (0.87 flat against 0.76).
 
 **The ground**
 4. **D4. Four relief classes:** flat in its cover colour; foothill lightest grey, buildable; steep mid grey and very steep dark grey, refused; snow is earth-1's ice, white, and wins over slope. **Recommend yes.** This confirms the brief's assumption about which grey is buildable.

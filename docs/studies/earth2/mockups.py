@@ -498,7 +498,7 @@ def medellin(fig):
     return g
 
 
-SHORT_BRIDGE_M = 14 * PLOT_M      # TilePainter.MAX_BRIDGE / RAIL_BRIDGE: 14 plots, 420 m
+SHORT_BRIDGE_M = 34 * PLOT_M      # the study's short crossing for a highway or rail (§6.2, D12): 34 plots, 1,020 m (est.; today 14)
 
 
 def dashed(img, g, a, b, px, colour=0xe3b341, dash=6):

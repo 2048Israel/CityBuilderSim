@@ -16,8 +16,9 @@ rem
 rem It runs, in order (each is a Python script beside this file):
 rem   get-earth.bat     data\earth-1.bin, whose layers earth-2 copies
 rem   slope_tiles.py    every NASADEM tile: heights to 90 m, the slope, its classes per 15" cell
-rem   landmass.py       every 15" land cell's landmass (lakes and rivers 420 m wide cut them)
-rem   bake2.py          GEBCO 2026 (downloaded here once), the shallow sea and depth; writes earth-2.bin
+rem   landmass.py       GEBCO 2026 (downloaded here once, 7.5 GB); every 15" land cell's landmass
+rem                     (ground cut off by more than a 1,020 m crossing of fresh water or shallow sea)
+rem   bake2.py          the shallow sea and depth; writes earth-2.bin
 rem   check2.py         earth-1's layers byte for byte, the new layers' rules, Halifax, Medellin, Everest
 rem The result: data\earth-2.bin and data\earth-2.sha256, and data\earth2-work\out\check2-report.txt.
 rem For the release "earth-2": upload earth-2.bin, with tools\earth\ATTRIBUTION-2.txt beside it.
@@ -56,10 +57,10 @@ if errorlevel 1 goto fail
 echo Earth 2: [1/4] the slope, tile by tile (the long part; it says how far it is every 100 tiles)
 "%PY%" -I "tools\earth\slope_tiles.py" 12
 if errorlevel 1 goto fail
-echo Earth 2: [2/4] the landmasses
+echo Earth 2: [2/4] GEBCO and the landmasses
 "%PY%" -I "tools\earth\landmass.py"
 if errorlevel 1 goto fail
-echo Earth 2: [3/4] GEBCO, the sea's depth, and earth-2.bin
+echo Earth 2: [3/4] the sea's depth, and earth-2.bin
 "%PY%" -I "tools\earth\bake2.py"
 if errorlevel 1 goto fail
 echo Earth 2: [4/4] the checks

@@ -7,7 +7,8 @@
 #   slope.est            which 1-degree tiles hold the estimate (a bit a tile)
 #   shallow              15": the share of each cell's sea no deeper than depth.SHALLOW_M (GEBCO 2026)
 #   depth                1': the depth of each cell's sea (GEBCO 2026), depth.code_depth()
-#   landmass, landmasses 15": each land cell's landmass id, and the table of landmasses (landmass.py)
+#   landmass, landmasses 15": each land cell's landmass id, and the table of landmasses (landmass.py: ground cut off
+#                        by more than a short crossing, 1,020 m of fresh water or shallow sea; deep sea never crossed)
 # The container is earth-1's (the same magic and layout version), so EarthData reads it as it is; the file's name in
 # its meta layer is earth-2, and its identity its SHA-256.
 #   python3 -I bake2.py
@@ -16,6 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 import terrain as T, depth as D
 from earthread import Earth
+import sources2
 
 OUTF = os.path.join(T.OUT2, os.environ.get('CBS_E2_NAME', 'earth-2.bin'))
 # a trial run over some bands of latitude only (CBS_BANDS=134,135 - band = lat0 + 90); the others' new layers left empty
@@ -56,30 +58,6 @@ def to_cpd(counts, L, cpd=None):
     if k > 1:
         counts = [c.reshape(cpd, k, cpd, k).sum(axis=(1, 3)) for c in counts]; L = L.reshape(cpd, k, cpd, k).sum(axis=(1, 3))
     return [np.where(L > 0, np.minimum(1, c / (PER_CELL * np.maximum(L, 1e-6))), 0) for c in counts]
-
-NEW_SOURCES = [
-    dict(key='nasadem', name='NASADEM Merged DEM Global 1 arc second', version='V001',
-         urls=['https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001',
-               'https://planetarycomputer.microsoft.com/dataset/nasadem (the copy read)'],
-         licence='No restriction (NASA EOSDIS Data Use Guidance: data from a NASA-led mission without a marked licence are '
-                 'CC0 1.0; the NASADEM_HGT page: "openly shared, without restriction")',
-         credit='NASA JPL (2020). NASADEM Merged DEM Global 1 arc second V001. NASA EOSDIS Land Processes DAAC. '
-                'https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001',
-         gives='the slope of the ground from 61 N to 56 S (NASADEM\'s row of tiles at 60-61 N is its own fill): heights averaged to 3" (90 m), the slope by Horn\'s method, '
-               'each 15" cell\'s share of land at or above each threshold'),
-    dict(key='srtmgl1', name='NASA Shuttle Radar Topography Mission Global 1 arc second (SRTMGL1)', version='V003',
-         urls=['https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003', 'https://step.esa.int/auxdata/dem/SRTMGL1/ (the copy read)'],
-         licence='No restriction (NASA EOSDIS Data Use Guidance, CC0 1.0)',
-         credit='NASA JPL (2013). NASA Shuttle Radar Topography Mission Global 1 arc second. NASA EOSDIS Land Processes '
-                'DAAC. https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003',
-         gives='the same, for any tile NASADEM\'s copy lacks'),
-]
-GEBCO_2 = dict(credit='GEBCO Bathymetric Compilation Group 2026 (2026). The GEBCO_2026 Grid - a continuous terrain model '
-                      'for oceans and land at 15 arc-second intervals. NERC EDS British Oceanographic Data Centre NOC. '
-                      'doi:10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa',
-               gives_more='the sea\'s depth (1\') and its shallow share (15"); the slope of the ground where NASADEM does not '
-                          'reach (north of 61 N, south of 56 S), as an estimate from its 15" slope')
-
 
 class Layer:
     def __init__(self, name, kind, cpd, n):
@@ -232,18 +210,19 @@ def main():
     else:
         T.log('bake2', 'no landmass layer (run landmass.py first): left out')
     m1 = E.meta()
-    srcs = m1.get('sources', {}).get('sources', [])
-    for s in srcs:
-        if s.get('key') == 'gebco':
-            s['credit'] = GEBCO_2['credit']; s['gives'] = s['gives'] + '; ' + GEBCO_2['gives_more']
+    srcs = sources2.sources()                         # earth-1's, as earth-2 uses them, and the new (ATTRIBUTION-2.txt's)
     meta = dict(name='earth-2', format=1, built=datetime.datetime.now().strftime('%Y-%m-%d'), from_file='earth-1.bin',
                 from_sha256=open(os.path.join(T.HERE, 'earth-1.sha256')).read().split()[0],
                 slope=dict(thresholds_percent=list(T.THRESHOLDS), baseline='heights averaged to 3" (90 m), Horn over 3"',
                            cpd=SLOPE_CPD, packing='bits 0-2: share >= foothill x 7; bits 3-5: share >= steep x 7; bits 6-7: (very steep / steep) x 3',
                            estimate='GEBCO 2026 15" slope, binned %s, through the mean shares of NASADEM\'s tiles at 45-60 degrees' % GB),
+                landmass=('a landmass is ground cut off by more water than a short crossing spans: land cells (sea + lake '
+                          '<= 7 of 15, less GRWL rivers wider than 1,020 m) joined along edges, and joined across fresh water or '
+                          'sea whose shallow share (30 m) is 8 of 15 or more where shore to shore is 1,020 m or less; deep sea '
+                          'never joins (landmass.py)'),
                 shallow_m=D.SHALLOW_M, depth=dict(cpd=D.DEPTH_CPD, code='0 none; 1-200 metres; 201-254 200 m + 10 m a step; 255 750 m or deeper'),
                 tiles=m1.get('tiles'), stats=dict(earth1=m1.get('stats'), earth2=st),
-                sources=dict(sources=srcs + NEW_SOURCES, fallbacks=m1.get('sources', {}).get('fallbacks', []) + [
+                sources=dict(sources=srcs, fallbacks=m1.get('sources', {}).get('fallbacks', []) + [
                     'North of 61 N and south of 56 S, and in any tile NASADEM lacks, the slope shares are GEBCO 2026\'s estimate '
                     '(slope.est marks the tiles); NASADEM\'s voids are filled from the heights round them before the slope is taken.']))
     sha, sizes, hlen = write(layers, meta)
