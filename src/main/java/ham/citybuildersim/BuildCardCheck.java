@@ -856,6 +856,10 @@ public class BuildCardCheck {
             // ...and the wells' (0.7.62).
             { "Holding: no oil deposit to drill", BuildCard.WordKind.ORE },
             { "Holding: every oil deposit is worked out", BuildCard.WordKind.ORE },
+            // ...and Forestry's (0.7.138): no forest it may cut, or too little for E's 120 months.
+            { "Holding: no forest it may cut", BuildCard.WordKind.ORE },
+            { "Holding: the forest it may cut, 137k m³, would last 69 months of the crews' cut with a Logging Camp; it asks 120",
+                    BuildCard.WordKind.ORE },
             { "Holding: nothing here fabricates steel, and the world will not sell a beam at any price", BuildCard.WordKind.SUPPLY },
             { "Holding: the city fabricates 900 tonnes a month; the smallest plant would want more than the 300 one plant may take", BuildCard.WordKind.SUPPLY },
             { "Holding: borrowing ban, 12 more months - Steel Foundry would need credit", BuildCard.WordKind.CREDIT },

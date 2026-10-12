@@ -48,6 +48,12 @@ import java.util.Locale;
  *      fields break no ground but in their zone.
  *   9. SAVED AND RELOADED, THE SAME CITY: zones, used ground, the law and the
  *      forest cleared, and the month after.
+ *  10. FORESTRY ON THE ZONES AND THE LAW (0.7.138, batch I9; spec-materials
+ *      4, "I9 adds"): E reads the forest the law lets Forestry cut, not the
+ *      forest; no Forestry zone, no plantation - zones for others or none -
+ *      and a plantation takes its zone's held ground alone, at its price.
+ *      (Section 7's standing wood is Forestry's salvage cut since I9:
+ *      waiting for it, never lost.)
  *
  * Every fixture causes its condition.
  */
@@ -137,6 +143,7 @@ public class ZoningCheck {
         clearing();
         theFields(g);
         savedAndReloaded(root, g);
+        forestry();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -410,12 +417,16 @@ public class ZoningCheck {
                 && same(l.getForestClearedThisMonth(), 1.5 * km2Wood));
         assertTrue("...its standing wood counted as taken out: the world's totals hold",
                 same(w, l.getUnowned(f) + l.getRemaining(f) + l.getExtracted(f)) && same(l.getExtracted(f), 2.5 * km2Wood));
+        assertTrue("...and since 0.7.138 Forestry's salvage cut: the standing wood waiting to be sold, not the cut-over",
+                same(l.getSalvagePending(), 1.5 * km2Wood));
         l.release(LandManager.sqFt(1));
         double cleared = l.getForestClearedSqFt();
         l.endMonth();
         assertTrue("a demolition leaves it cleared, and the month's regrowth grows none of it back",
                 l.getForestClearedSqFt() == cleared && same(l.getRemaining(f), remaining - 1.5 * km2Wood)
                 && l.getForestClearedThisMonth() == 0);
+        assertTrue("...its salvage still waiting past the month's end for Forestry's next cut, none lost (0.7.138)",
+                same(l.getSalvagePending(), 1.5 * km2Wood) && same(l.takeSalvage(), 1.5 * km2Wood) && l.getSalvagePending() == 0);
         // Ground set by hand past the bare ground (a fixture, an older save): the month's end clears what it needs.
         LandManager hand = office(80);
         hand.setAllocatedSqFt(hand.getBareSqFt() + LandManager.sqFt(1));
@@ -532,5 +543,49 @@ public class ZoningCheck {
                 && land.usedBy(Sectors.RESTAURANTS) == back.usedBy(Sectors.RESTAURANTS)
                 && Math.abs(g.getSectors().totalCash() - twin.getSectors().totalCash()) < 1e-9
                 && land.getForestClearedSqFt() == back.getForestClearedSqFt());
+    }
+
+    /* ============================ 10. FORESTRY ON THE ZONES AND THE LAW ============================ */
+
+    static void forestry() {
+        out.println("\n--- 10. Forestry on the zones and the law (0.7.138): E on the cuttable forest; no Forestry zone, no plantation ---");
+        Game g = ForestryCheck.forestTown("zoningcheck-forestry");
+        LandManager land = g.getLandManager();
+        ham.citybuildersim.sectors.Forestry fo = g.getSectors().forestry();
+        BuildingManager b = g.getBuildingManager();
+        MaterialsCheck.handWorkers(g);
+        BuildingsTemplate camp = b.getTemplate(ham.citybuildersim.sectors.Forestry.LOGGING_CAMP);
+        double room = ham.citybuildersim.sectors.Forestry.FOREST_CREW_MONTHS * ham.citybuildersim.sectors.Forestry.cutOf(camp);
+        assertTrue("fixture: a town with more forest standing than a Logging Camp's 120 months", land.getRemaining(Resource.FOREST) > 4 * room);
+        // The law protects all but 10 km2 of it: the forest is the same, what Forestry may cut is not.
+        double p = (land.getRemaining(Resource.FOREST) - 10 * World.FOREST_M3_PER_KM2) / land.getOwnedAmount(Resource.FOREST);
+        quietly(() -> g.setForestLaw(p, p));
+        BusinessInvestment.Decision held = fo.plan(g.getBusinessInvestment(), g);
+        assertTrue("E reads the forest the law lets Forestry cut: with all but 10 km2 protected the plan holds, in E's words, on the"
+                        + " same forest a crew had room on",
+                !held.build && held.reason.contains("would last") && same(land.cuttableForest(), 10 * World.FOREST_M3_PER_KM2)
+                && !ham.citybuildersim.sectors.Forestry.roomFor(land.cuttableForest(), 0, camp));
+        quietly(() -> g.setForestLaw(0, 0));
+        assertTrue("...and with the law lifted the crew has its room again",
+                ham.citybuildersim.sectors.Forestry.roomFor(land.cuttableForest(), 0, camp));
+        quietly(() -> b.addStack(b.getTemplate(ham.citybuildersim.sectors.Forestry.HARVESTING_OPERATION), 1, true));
+        fo.addCash(1_000_000);
+        quietly(() -> g.setZone(Sectors.AGRICULTURE, Zoning.Size.KM2, 30, 0));
+        ForestryCheck.cutAMonth(g);
+        quietly(() -> fo.endOfMonth(g));
+        assertTrue("a Harvesting Operation cutting past the regrowth plants nothing with no Forestry zone - a zone for the fields"
+                        + " beside it or not (B)",
+                fo.getCutThisMonth() > land.regrowthDue() && fo.getPlantedThisMonth() == null && land.usedBy(Sectors.AGRICULTURE) == 0
+                && ForestryCheck.onOrder(b) == 0);
+        quietly(() -> g.setZone(Sectors.FORESTRY, Zoning.Size.KM2, 12, .3));
+        double anyone = land.freeForAnyone(), heldBefore = land.heldBy(Sectors.FORESTRY), city = g.getCash();
+        BuildingsTemplate plantation = b.getTemplate(ham.citybuildersim.sectors.Forestry.TREE_PLANTATION);
+        ForestryCheck.cutAMonth(g);
+        quietly(() -> fo.endOfMonth(g));
+        assertTrue("with a Forestry zone of 12 km2 at 30% of the going price a plantation is planted on it: its 10 km2 the zone's used"
+                        + " ground, the ground free for anyone untouched, the city paid 30% of the going price",
+                fo.getPlantedThisMonth() == plantation && same(land.usedBy(Sectors.FORESTRY), plantation.getLandSqFt())
+                && same(land.heldBy(Sectors.FORESTRY), heldBefore - plantation.getLandSqFt()) && same(land.freeForAnyone(), anyone)
+                && Math.abs(g.getCash() - city - .3 * plantation.getLandSqFt() * land.getPricePerSqFt()) < 1e-6);
     }
 }

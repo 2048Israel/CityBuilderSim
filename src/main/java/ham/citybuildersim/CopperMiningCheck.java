@@ -23,9 +23,9 @@ import java.util.Locale;
  *
  * WHAT THIS HAS TO PROVE:
  *
- *   1. THE SECTOR ON THE REGISTRY: copper's two keys on the end of
- *      Sectors.KEYS after Cement & Concrete (Jerus's Q21: iron, coal, stone,
- *      copper, wood), Copper Mining first; an ExtractionSector on copper
+ *   1. THE SECTOR ON THE REGISTRY: copper's two keys on Sectors.KEYS after
+ *      Cement & Concrete (Jerus's Q21: iron, coal, stone, copper, wood; wood's
+ *      after them since 0.7.138), Copper Mining first; an ExtractionSector on copper
  *      making concentrate and cathode and using acid; and what is as long as
  *      the keys grew with them. Resource.COPPER priced as cathode, a sulphide
  *      field's good concentrate and an oxide field's cathode, 1/100 of
@@ -125,10 +125,10 @@ public class CopperMiningCheck {
         out.println("--- 1. the sector on the registry: copper's two keys after stone's, a mine on copper, its goods priced ---");
         String[] keys = Sectors.KEYS;
         int at = java.util.Arrays.asList(keys).indexOf(Sectors.COPPER_MINING);
-        assertTrue("Sectors.KEYS has Copper Mining after Cement & Concrete, the twenty-first, and Copper Refining after it, the last"
-                        + " (Jerus's Q21: iron, coal, stone, copper, wood)",
+        assertTrue("Sectors.KEYS has Copper Mining after Cement & Concrete, the twenty-first, and Copper Refining after it, the"
+                        + " twenty-second - wood's Forestry after them since 0.7.138 (Jerus's Q21: iron, coal, stone, copper, wood)",
                 at == 20 && keys[at - 1].equals(Sectors.CEMENT_CONCRETE) && keys[at + 1].equals(Sectors.COPPER_REFINING)
-                        && keys.length == at + 2);
+                        && keys[at + 2].equals(Sectors.FORESTRY));
         Sectors s = new Sectors(new BuildingManager(), new Markets());
         CopperMining cm = s.copperMining();
         assertTrue("...an extraction sector on copper, found by its saved name, making concentrate and cathode and using acid (and its"

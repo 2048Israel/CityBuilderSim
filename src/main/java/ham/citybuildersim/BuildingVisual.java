@@ -190,7 +190,8 @@ public final class BuildingVisual {
         boolean sea = t.standsAtSea();
         if (c == BuildingType.MINING && !sea) {
             for (Resource r : Resource.values()) {
-                if (r.good() != null && t.makes(r.good()) > 0) site = r;
+                // ...a resource in fields: forest's crews (0.7.138) cut terrain, on no site, and stand as any building does.
+                if (r.good() != null && r.inFields() && t.makes(r.good()) > 0) site = r;
             }
         }
         boolean flats = c == BuildingType.RESIDENTIAL && t.getDwellings() > 1;

@@ -6235,8 +6235,85 @@ public final class GameVersion {
      *     it, the city's own ground in an offer's rectangle taking nothing,
      *     and through the globe's camera; the picks on a month and a load.
      *   - The playtests do not move: default and Earth byte for byte.
+     *
+     * 0.7.138 (2026-10-12) - FORESTRY. Batch I9, the seventh materials batch
+     * that changes the game: the fifth chain's cutting industry (Jerus's Q13,
+     * Q14, Q15, B, E and Z7 of 2026-10-08 and A12 of 2026-10-10;
+     * docs/studies/spec-materials.md 2.1-2.4, 2.11 and 5's I9 row; the
+     * study's 5; spec-zoning.md 2, 3 and 8.4; runs/brief-batchI9.md,
+     * runs/fixI9-notes.md). No save format change (39): a save from before it
+     * restores Forestry empty, its forest as it stood, and no salvage waiting
+     * - missing, not misread.
+     *   - THE SECTOR: "Forestry" on the end of Sectors.KEYS after Copper
+     *     Refining, the twenty-third (Q21: iron, coal, stone, copper, wood).
+     *     sectors.Forestry, an ExtractionSector on the forest making SAWLOGS
+     *     and PULPWOOD, no sites and no cutting limit (Q14). Equity's
+     *     companies, the households' share block, the audit's pools and the
+     *     bank's year of sheets grow with the keys.
+     *   - THE GOODS (Good, appended; the study's 5.3): SAWLOGS 110 / 65 and
+     *     PULPWOOD 90 / 35 a cubic metre (pulpwood's import end widened from
+     *     70), freight three eighths of each wedge; by the cubic metre, 0.9 t
+     *     of green roundwood (Good.tonnesPerCubicMetre(), tonnesPerUnit()'s
+     *     "cubic metre"); flow goods, BULK, by sea general cargo.
+     *   - THE ROWS (ids 129-132; the study's 5.4 at spec 2.2's conventions):
+     *     the Logging Camp, 1,000 m3 of sawlogs and 1,000 of pulpwood a month,
+     *     D$3M; the Harvesting Operation, 6,250 and 6,250, D$15M, "since" 1973
+     *     (E14); the Tree Plantation, 1,000 ha, D$2M; and the Woodlot (A12),
+     *     100 ha, a tenth of a plantation and one post. No power or water,
+     *     the study giving none: the consumables the study's running cost
+     *     less wages. At parity the four cases are the study's 5.5 (the camp
+     *     1.3% exporting and 4.6% replacing imports, the harvesting operation
+     *     2.7% and 6.9%, a plantation -1.2%).
+     *   - THE GROUND: Resource.FOREST priced as PULPWOOD (★ the spec's 2.4 and
+     *     the study's 8, over the brief's SAWLOGS), 2% in the ground - about
+     *     US$9,600 a square kilometre of forest in an offer's price - and
+     *     LandMarket.bareGround() leaves forest out, so a forested offer is
+     *     still bare ground for the shortfall's rule and the auto-builder.
+     *   - E, THE CREWS' RULE (Z13, "yes 120"): a crew only while the forest
+     *     the law lets Forestry cut (LandManager.cuttableForest()) lasts
+     *     FOREST_CREW_MONTHS of every crew's cut with it - a camp 17.5 km2, a
+     *     harvesting operation 109 km2, a 10 km2 forest none; past it the
+     *     best earnings on the whole cost, lorries in, through the money gate.
+     *     The crews cut both goods out of the cuttable forest together, never
+     *     the protected wood.
+     *   - REGROWTH (Q13, kept): E falls a 240th a month and by the planted
+     *     stands' growth, 20 m3 a hectare a year (LandManager.setPlantedGrowth(),
+     *     THE PLANTED STANDS), never below nothing - W exact; the page says
+     *     where the forest settles (Forestry.settlesAt(): the law's protected
+     *     share, else 240 x the cut gone).
+     *   - PLANTING (Q15, B): at the month's end, one stand a month while the
+     *     crews' cut exceeds the regrowth (the stands on site counted grown),
+     *     only on ground Forestry's zone holds - a plantation where it holds
+     *     1,000 ha, a woodlot where 100 but not 1,000 (★) - at the zone's
+     *     price, from Forestry's cash outside the interest test, never
+     *     borrowed. No Forestry zone, no plantation.
+     *   - THE SALVAGE CUT (Z7): the standing wood a building clears
+     *     (LandManager.takeSalvage(): the month's floor settled first) is sold
+     *     that month, half sawlogs and half pulpwood, billed to Forestry by
+     *     the builders at its crews' running cost a cubic metre - a
+     *     Harvesting Operation's with none standing - the builders' "Salvage
+     *     cut cleared" (sectors.Construction.earnSalvageCut()). A clearing
+     *     after the month's market or between two presses waits for the next
+     *     month's, saved with the zoning (Zoning.State.salvageM3). Until now
+     *     that wood was lost.
+     *   - THE SCREENS: Build's "Wood" group after Copper, Forestry's four
+     *     cards; its operations page the forest, the cut, the regrowth,
+     *     where it settles, E's months and the planting.
+     *   - Harnesses: ForestryCheck (new, the 106th: the registry, the four
+     *     rows against the study's 5.5, E, the cut, regrowth, planting, the
+     *     salvage, where it settles, a played city saved and reloaded);
+     *     ZoningCheck 7 and 10 (the salvage waiting; E on the cuttable
+     *     forest, no Forestry zone no plantation), LandCheck 27 (where the
+     *     cut and the clearing meet), BuildingDataCheck (133 buildings, the
+     *     crews' site, consumables, since), BuildCardCheck (the Wood group).
+     *   - THE PLAYTESTS MOVE, from the first forest a building clears: the
+     *     default at m1962 (266 m3 salvaged), the Earth at m3 (Rotterdam's
+     *     founding, 1,111 m3). Neither city ever holds 17.5 km2 of cuttable
+     *     forest, so no crew stands in either: the salvage alone, 484,000 m3
+     *     and 327,000 m3 over the runs. Every month passes the audit and
+     *     every reload matches; re-baselined (pt07138, pte07138).
      */
-    public static final String VERSION = "0.7.137";
+    public static final String VERSION = "0.7.138";
 
     /**
      * The save shape.

@@ -1187,7 +1187,8 @@ public final class BuildCard {
      * What a sector's word is about. BUILDING: investors have an order on
      * site, or the word says it built; SELLING: it sold buildings back;
      * LAND: no ground, or the month's land-blocked list has it; STAFF: the
-     * staffing test; LICENCE: licences; ORE: a deposit or the ore; SUPPLY:
+     * staffing test; LICENCE: licences; ORE: a deposit, the ore or (0.7.138)
+     * the forest Forestry may cut; SUPPLY:
      * a part the city does not make enough of and the world will not sell
      * (the car plants' fabricated steel - not in the design study's table,
      * which had no kind for it); CREDIT:
@@ -1204,8 +1205,8 @@ public final class BuildCard {
     static final String[] STAFF_WORDS   = { "could staff" };
     /** ...LICENCE's: whole words, so the plural as well. */
     static final String[] LICENCE_WORDS = { "licence", "licences" };
-    /** ...ORE's. */
-    static final String[] ORE_WORDS     = { "deposit", "ore" };
+    /** ...ORE's: the ground has none - and since 0.7.138 Forestry's, the forest it may cut (none, or too little for E). */
+    static final String[] ORE_WORDS     = { "deposit", "ore", "forest" };
     /** ...SUPPLY's. */
     static final String[] SUPPLY_WORDS  = { "fabricates", "will not sell" };
     /** ...CREDIT's. */

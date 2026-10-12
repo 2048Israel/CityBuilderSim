@@ -278,6 +278,10 @@ public class ForestryCheck {
             report("...its four cases are the study's 5.5 to its rounding: " + java.util.Arrays.toString(STUDY_TABLE[r]) + "%", all,
                     got.toString().trim());
         }
+        boolean drawn = true;
+        for (int id : ROWS) drawn &= BuildingVisual.of(b.getTemplate(id)).site() == null;
+        assertTrue("...and the map draws each as a building on its own ground, on no resource's sites - a crew cuts terrain, so the"
+                + " map's districts sum to Forestry's buildings (BuildingVisual)", drawn);
         BuildingsTemplate plantation = b.getTemplate(Forestry.TREE_PLANTATION), woodlot = b.getTemplate(Forestry.WOODLOT);
         double cost = woodlot.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * woodlot.getConstructionMaterials();
         double plantationCost = plantation.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * plantation.getConstructionMaterials();

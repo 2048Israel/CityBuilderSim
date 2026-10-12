@@ -446,7 +446,7 @@ public final class Forestry extends ExtractionSector {
             }
             if (staffingHold != null) return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
             if (forestHold != null) return BusinessInvestment.Decision.no(sector, eWords(cuttable, committed, forestHold));
-            return BusinessInvestment.Decision.no(sector, "nothing worth putting on the forest");
+            return BusinessInvestment.Decision.no(sector, "nothing worth building");
         }
         if (plans.plotsAvailableFor(best) < 1) {
             return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
@@ -535,6 +535,12 @@ public final class Forestry extends ExtractionSector {
         double full = land.getOwnedAmount(Resource.FOREST), standing = land.getRemaining(Resource.FOREST);
         double cuttable = land.cuttableForest(), crews = crewsCut(false);
         lines.add(Line.head("The forest"));
+        if (!(full > 0)) {
+            lines.add(Line.of("Owned", "none", Line.Tone.MUTED));
+            if (salvageThisMonth > 0) lines.add(Line.of("Salvage cut, from ground built on", f.count(salvageThisMonth) + " m³"));
+            lines.add(Line.note("The city's ground holds no forest: buy ground with forest on it for a crew to cut."));
+            return lines;
+        }
         lines.add(Line.of("Owned", f.count(full) + " m³ on " + LandManager.areaWords(land.getForestSqFt())));
         lines.add(Line.of("Standing", f.count(standing) + " m³" + (full > 0 ? ", " + f.pct(standing / full) : "")));
         if (land.getProtectedWood() > 0) lines.add(Line.of("Kept by the forest law", f.count(land.getProtectedWood()) + " m³"));
