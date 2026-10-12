@@ -4002,7 +4002,8 @@ public class Game {
      * share of the city's dry ground (Zoning.Size.SHARE, 0 to 1) or square
      * kilometres (KM2); `priceShare` 0 to 1 of the going business price,
      * what the next sale in it pays (Z3: ground already sold is not
-     * re-priced). Any of the seventeen sectors, Real Estate's for homes.
+     * re-priced). Any sector of the registry (Sectors.KEYS), Real Estate's for
+     * homes.
      */
     public void setZone(String sector, Zoning.Size kind, double size, double priceShare) {
         if (getSectors().byKey(sector) == null) return;
@@ -7375,8 +7376,8 @@ public class Game {
     /**
      * Whether an order for this building is placed on the city's fields by
      * packing (0.7.124, batch I5): a works on the sites of a resource whose
-     * fields have types (Resource.hasTypes() - iron, and coal, copper and
-     * stone as their chains come), which needs room for its sites on one
+     * fields have types (Resource.hasTypes() - iron, and coal, stone and
+     * copper since their chains came, 0.7.126 to 0.7.133), which needs room for its sites on one
      * field of its type (LandManager.fits()), not a free site anywhere. Oil's
      * wells and platforms are counted as they were.
      */

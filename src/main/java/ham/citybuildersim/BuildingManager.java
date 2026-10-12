@@ -4756,8 +4756,9 @@ public class BuildingManager {
         controlEvents = new ConstructionControl.Events();
 
         // The player's hand on the queue (0.7.22): an order set, a rush, a
-        // cancel or a demolition. Without one, the month below is the one it
-        // always was - see THE PLAYER'S HAND ON THE QUEUE.
+        // cancel or a demolition. Without one - and without the model's own
+        // two rules below, death care and the builders' depots first - the
+        // month below is the one it always was - see THE PLAYER'S HAND ON THE QUEUE.
         boolean engaged = control.engaged();
         Plan plan = null;
         lastPlan = null;
@@ -4852,8 +4853,10 @@ public class BuildingManager {
        has done none of it: advanceConstruction() asks control.engaged()
        first, and siteShares() appends no demolition it has not got - except
        the city's death care served first while the dead wait (0.7.129,
-       DEATH CARE FIRST WHILE THE DEAD WAIT, below), which is the model's
-       rule, not the player's hand, and plans the month the same way.
+       DEATH CARE FIRST WHILE THE DEAD WAIT, below) and the builders' own
+       depots served first (0.7.130, THE BUILDERS' OWN DEPOTS FIRST, below),
+       which are the model's rules, not the player's hand, and plan the month
+       the same way.
        ===================================================================== */
 
     /** The player's hand on the queue: the order, the rushes, the shells, the demolitions and the buy-outs. */
@@ -5033,7 +5036,7 @@ public class BuildingManager {
                 new java.util.ArrayList<>(order.subList(0, dead.size())), unburiedNow(), builders, buildersOn);
     }
 
-    /** The plan the last month's advance applied, or null when the player's hand was not on the queue and no death care was served first (0.7.129): a month's reading, not saved. */
+    /** The plan the last month's advance applied, or null when the player's hand was not on the queue and nothing was served first - no death care (0.7.129), no depot of the builders' (0.7.130): a month's reading, not saved. */
     private Plan lastPlan;
 
     public Plan getLastPlan() { return lastPlan; }
