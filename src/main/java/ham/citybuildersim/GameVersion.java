@@ -6175,6 +6175,16 @@ public final class GameVersion {
      *     the month's raises withheld, raised for no order, and withheld yet
      *     placed - a smaller order on the till alone, where the gates are not
      *     monotone in the till - are kept for the playtest to count.
+     *   - A DOWN PAYMENT TO A PART IN A BILLION (Mortgage.DOWN_PAYMENT_ROUNDING):
+     *     a landlord's owners are asked for exactly the down payment its till
+     *     lacks, so the till lands on it and the rounding of the offering's
+     *     two halves decided whether the home was built - DenominationCheck's
+     *     twins, one reformed by a hundred, parted on it at m132. A till within
+     *     a part in a billion of it puts it down, the margin the lender's door
+     *     already gave the same down payment (canFundMortgage()). In the
+     *     playtests it moves only the words of a trim (t-house's why): "the
+     *     lender's test passes 7" where it read "its own funds put the 15%
+     *     down on 7" - the till did hold the whole order's.
      *   - LONGPLAYTEST'S NAMES: the bank trace's substring(0, 4) threw on
      *     "Oil", and the report's tags called Coal Mining and Copper Mining
      *     both "CM". cut() and shortTag() are safe on a short key and
@@ -6189,7 +6199,15 @@ public final class GameVersion {
      *     Diner under a capital rule that lends only to keep borrowers going,
      *     and a landlord's House with the bank shut: the owners asked for
      *     nothing, the order not placed; each with the bar lifted, raised and
-     *     placed - Game.considerForTest()); ReadPathCheck (the new getters).
+     *     placed - Game.considerForTest()); ReadPathCheck (the new getters);
+     *     MortgageCheck 3 (a till a rounding under the down payment puts it
+     *     down, one short by more than the margin does not). Two fixtures
+     *     re-established by their own premises: BankCheck 14 pushes retail at
+     *     month 48, not 72 (its city's restaurants, without the owners' money
+     *     for a Diner the interest test declined in months 6 to 8, are past the
+     *     default point from 69), and ScaleCheck's FREE_FIXTURE_MONTHS 644,
+     *     not 635 (at 635 the 5 billion copy's rents pulled migrants 0.045 off
+     *     the city's; every assertion holds from 640 to 648).
      *   - THE PLAYTESTS MOVE, from m8 in both: the first raise withheld, the
      *     restaurants' founding Diner, which consider()'s own interest test
      *     declines with or without the $685k its owners would have put in.

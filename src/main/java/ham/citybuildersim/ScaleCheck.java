@@ -193,8 +193,21 @@ public class ScaleCheck {
      * migrants otherwise than the city's, or the copies built no more homes
      * than they began with. 635 is the middle of 625 to 645: 5,213 people at
      * 640.
+     *
+     * ...AT 644 SINCE 0.7.136 (batch FX1), BY THE SAME PREMISE. A sector's
+     * owners are asked only for an order that will be placed (Game, THE
+     * CREDIT BEFORE THE OWNERS), so the playtest moves from month 8 - the
+     * restaurants' first Diner, declined, no longer raised for - and at 635
+     * the 5 billion copy's rents pulled migrants otherwise than the city's
+     * (worst 0.045 off). Scanned (scratch-fx1/probe/scan, ScaleCheck with the
+     * month changed, every assertion read): every assertion holds at 610,
+     * 640, 641, 642, 643, 644, 645, 646, 647, 648, 670 and 680; at 620, 625,
+     * 630, 635, 637, 638, 639, 650 and 660 a copy's rents pulled migrants
+     * otherwise than the city's, and at 600 the copies built no more homes
+     * than they began with. 644 is the middle of 640 to 648: 3,102 people at
+     * 649.
      */
-    static final int FREE_FIXTURE_MONTHS = 635;
+    static final int FREE_FIXTURE_MONTHS = 644;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;
