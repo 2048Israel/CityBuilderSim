@@ -12958,3 +12958,224 @@ each one Jerus's call, in the order they pay back:
   that cause and assert the cause as well as the effect**; and **run the whole
   cycle the game runs — `BankCheck`'s branch fixture has to open a month and
   CLOSE it, or it asserts nothing.**
+
+---
+
+# The todo's archive, part 3 - what left the list with the records for 0.7.138 and 0.7.139 (2026-10-12)
+
+This is the third move out of the claude.ai project's `claude/todo.md` for CityBuilderSim, made by the records agent for 0.7.138 (I9, forestry) and 0.7.139 (CC1, childcare at real demand) after Jerus's answers of 2026-10-12 (afternoon, `QUEUE.md`, commit 4d57d87). Every line below is **verbatim**, in the file's own order, under the heading it sat under. What moved:
+
+- **The opening paragraph's history** (the thirteen "Updated ... time" sentences and the "Open now" sentence, lines 3 to 47): the status is now a new sentence of four lines; the changelog has the history.
+- **The tags item** (TAGS 0.7.100 TO 0.7.106 AND THE `test/push-check` BRANCH): Jerus pushed those tags from the PC; the item now speaks of tags 0.7.107 to 0.7.139.
+- **The I9 and I10 lines of NEXT: THE MATERIALS CHAINS** (I9 shipped as 0.7.138; I10's "Decide I7-K first" is answered: I7-K is closed).
+- **FX1-2** (the whole bullet; it is a queue row now: he said to merge the held branch and accept HealthCheck 13 red), and the bodies of three CONFIRM items that his answers closed: FX1 item 2 (CONFIRM from 0.7.136 to 0.7.137, item 1) and the two I7-K items (I8 ★2, CONFIRM from 0.7.133 to 0.7.135, item 5; I7 ★1, CONFIRM from 0.7.130 to 0.7.132, item 2). Each stays in its list as a one-line stub with its number.
+- **LOOK AT ON THE PC, items 5 to 10** (E9, MM2, I8 and T1-C, 0.7.130 to 0.7.135), to keep the list at ten with the new items of 0.7.138 and 0.7.139.
+- **The LOOSE ENDS line for I7-K.**
+- **At the end, the old text of eleven places reworded in place** (not moved): the A12 woodlot, CC1 running, the docs pass header, two LOOSE ENDS lines, the leads and item 7 of three CONFIRM lists, Healthcare and the end of the lorries bullet.
+
+The HTML comment before each run gives the line numbers it held in the todo just before this move (the project's `claude/todo.md` as the records agent received it, 95,350 bytes) and, for a child, the parent it sat under; GitHub does not show it. Append this file to `docs/notes/todo-archive.md`, under a rule.
+
+## The opening paragraph (before section 0)
+
+<!-- moved verbatim from todo.md, lines 3-47 of the file before the 0.7.139 records, the 'Updated ... time' chain and the 'Open now' sentence -->
+Updated 2026-10-10 (0.7.99: fewer and bigger deposits - a tenth as many fields,
+ten times bigger and clustered, the world's totals the same, no iron promised at
+a founding; tag 0.7.99, the first version to ship through GitHub; before it
+0.7.93 to 0.7.98, the oil chain finished, tags 1009f to 1009k). Updated again
+2026-10-10 for Jerus's 31 answers ("all rec", 00:51,
+`claude/decisions-2026-10-10.md`) and the docs pass's part 1 (0.7.70 to 0.7.79,
+merged into `main` as fb20b5e at 01:30, no new version). Updated a third time,
+2026-10-10 afternoon (0.7.104: the fixes from the decisions, P1 0.7.100 to P4
+0.7.103 and P2b 0.7.104, each merged into `main` and pushed to GitHub; see
+`the-fixes-from-the-decisions.md`). Updated a fourth time, 2026-10-10 evening
+(0.7.106: P6 0.7.105, the refinery's run, pushed 17:02, and P5 0.7.106,
+prices and rules, pushed 18:39; the fixes are done). Updated a fifth time,
+2026-10-10 night (0.7.109: the docs pass, manual 16, zoning Z1 and Z2 and P7,
+an old save refused cleanly, all pushed). Updated a sixth time, 2026-10-11
+(0.7.115: the materials chains' I1, I2 and I2b, 0.7.110, 0.7.112 and 0.7.113,
+and the Earth's E1 and E2, 0.7.111 and 0.7.115, all pushed; the docs pass for
+0.7.107 to 0.7.115 running, then manual 17, then I3, 0.7.116; research after
+every planned batch). Updated a seventh time, 2026-10-11 (0.7.120: the docs
+pass and manual 17 done; the Earth's E3 and E5, 0.7.117 and 0.7.119, and I3,
+0.7.120, iron at the world's price, with `SAVE_FORMAT` and the floor at 37 so
+his saves are refused, all pushed; I4 and E4 then running). Updated an eighth
+time, 2026-10-11 (0.7.123: founding on Earth, 0.7.121, the card's interest
+gate, 0.7.122, and I4's old steel, 0.7.123, all pushed; the Earth file ships
+as the release `earth-1`; the docs pass for 0.7.117 to 0.7.123 running, then
+manual 18 and I5). Updated a ninth time, 2026-10-11 (0.7.127: I5, iron mines by
+type and size, 0.7.124, C2, the Earth file's words, 0.7.125, and E7, ice and
+desert on the Earth, 0.7.127, all pushed; 0.7.126 is reserved for I6, coal, not
+yet built; MM1 and I6 running, T1-B next). Updated a tenth time, 2026-10-11
+(0.7.129: I6, coal, 0.7.126, MM1, district pictures, 0.7.128, and T1-B, death
+care first, 0.7.129, all pushed; Jerus's answers of 09:29 recorded below; I7 and
+EC1 running, T1-C next). Updated an eleventh time, 2026-10-12 (0.7.132: T1-C,
+the builders' own depots first, 0.7.130, I7, stone, 0.7.131, E8, the globe's
+model half, 0.7.132, and EC1, all pushed, and the old record moved to the
+repository; I8 and MM2 running, the docs pass for 0.7.124 to 0.7.134 next).
+Updated a twelfth time, 2026-10-12 (0.7.135: I8, copper, 0.7.133, MM2, the
+minimap, 0.7.134, and E9, the globe on screen, 0.7.135, all pushed; the globe
+study is done; FX1 running as 0.7.136, the docs pass for 0.7.124 to 0.7.136
+next). Updated a thirteenth time, 2026-10-12 (0.7.137: the docs pass for 0.7.124
+to 0.7.135 and manual 19 done; FX1, 0.7.136, two of copper's faults, and M6,
+0.7.137, buying land from the map, pushed; FX1's item 2 held for him as FX1-2;
+I9 and CC1 running). Open now: the PC check of 0.7.34 to 0.7.137; Jerus's calls
+(CONFIRM from 0.7.136 to 0.7.137, eight; from 0.7.133 to 0.7.135, ten; from 0.7.130 to 0.7.132, ten; from 0.7.126 to 0.7.129, ten; from 0.7.124 to 0.7.127, ten; from
+0.7.121 to 0.7.123, eight; the lists from 0.7.100 to 0.7.120 were answered at
+09:29 by "yes all rec", P2b's care apart). His word on the ★ decisions of the
+CONFIRM lists is in ("all rec"): each list says which decision answered it.
+
+## 0. Do this week — costs nothing, saves weeks
+
+<!-- moved verbatim from todo.md, lines 69-73 of the file before the 0.7.139 records -->
+- **TAGS 0.7.100 TO 0.7.106 AND THE `test/push-check` BRANCH (2026-10-10).** The
+  tags exist only in the cloud clone: this session's git proxy refuses tag
+  pushes and branch deletes, so GitHub holds the commits (e859997, 9bb7be3,
+  b327419, bad33d2, e097c0f, 2de79da, 75bac03) and no tags. The `test/push-check` branch from the
+  push test is still on GitHub; Jerus can delete it from the PC.
+
+<!-- moved verbatim from todo.md, lines 145-150 of the file before the 0.7.139 records, a child of NEXT: THE MATERIALS CHAINS, I1 TO I14 -->
+  - I9 ★: forestry, after Z1 (Logging Camp, Harvesting Operation, Tree
+    Plantation; a crew only while the forest it may cut lasts 120 months;
+    planting on its zone). **From I8 (`runs/fixI8-notes.md` §7) and the
+    orchestrator:** I7-K, the churn of a works on imported feed (I7's Lime Kiln,
+    now I8's Scrap Copper Refinery, under Pending in `QUEUE.md`), is best decided
+    by Jerus before I9 and I10, which add more processing works.
+
+<!-- moved verbatim from todo.md, lines 151-152 of the file before the 0.7.139 records, a child of NEXT: THE MATERIALS CHAINS, I1 TO I14 (replaced in the todo by a line saying I10 is running) -->
+  - I10 ★: wood products (six rows, the pulp mill's own power). Decide I7-K
+    first (see I9).
+
+<!-- moved verbatim from todo.md, lines 273-297 of the file before the 0.7.139 records -->
+- **FX1-2: THE SHARES RAISED BEFORE THE CREDIT TEST (FX1's item 2; HELD for Jerus,
+  under Pending in `QUEUE.md`).** Built and gated on `batch/FX1-with-preflight`
+  (e821d7f, pushed), not merged (`runs/fixFX1-notes.md` ★7). `Game.consider()` sells
+  shares before its own credit test (Earth m1293: Copper Refining raised D$3.8B, the
+  bank's capital rule then refused the loan, no order); the branch asks the order's
+  gates first (`BusinessDebtManager.mortgageRefusalFor()`), and that turns
+  HealthCheck 13 red: "the dear city is no hungrier than the free one by more than
+  the price of care" (last year, x15 - x0, at most 5 points) reads 5.2 (1.9 priced
+  out of a basket, 3.3 short on the shelf) against main's -3.1 (0.2, -3.4). The
+  margin plays no part (pre-flight off -3.1, from m49 -0.6); not a cash prop (the
+  grocers' purchases forgone 0 in every month of both twins); the shelf half is the
+  shops' reach (coverage 19,840 on the branch against 24,800 on main at m133, one
+  store order on site at a time), and on main itself the same year-average reads
+  +6.0 ending m126 and +5.2 ending m132, so a variant chosen because it passes
+  would be chosen by weather. **His call among four:** (a) read the money half
+  (priced out), which is what the label claims, a premise change; (b) a longer
+  window than the last year; (c) accept the red; (d) a store planner that keeps the
+  shops' reach ahead of demand (Retail, outside FX1). Riding on the branch with it:
+  ★1 (test first, not hand back), ★2 (a withheld plan still asked on the real till;
+  the notes say "11 / 18 placed smaller"), ★4 (`projectLoanRoom()` for
+  `canFundProject()`), ★5 (the down payment's margin, a real knife-edge since
+  0.7.11 that main's Mortgage tests pass without) and ★6 (BankCheck 14 at 48 against main's month 72, ScaleCheck's
+  FREE_FIXTURE_MONTHS 644 against 635). When he chooses: merge the branch's Game,
+  BusinessDebtManager, InvestCheck and Mortgage hunks onto 0.7.136; its ensemble
+  07136b scored 21 of 25, the same four red as 07133f.
+
+<!-- moved verbatim from todo.md, lines 395-400 of the file before the 0.7.139 records, items 5 to 10 of LOOK AT ON THE PC -->
+  5. **0.7.135, E9** (`fixE9-notes.md` §8): W, A, S, D pan at one speed at every zoom (arrows still the clock; on New city > Earth click the globe first); zooming out past 0.48 km a pixel hands the flat map to the globe with no jump; Fit shows the planet facing the city.
+  6. **0.7.135, E9:** dragging the globe is smooth and crisp when still; the hover card names place and province ("Not the city's" away from it); on New city on Earth the globe matches the map and hands to the close view at about 2.3 km a pixel.
+  7. **0.7.134, MM2** (`fixMM2-notes.md` §8): the rail's foot has a 66 x 44 stamp above Menu, the eleven buttons not squashed; hover opens a 288 x 192 preview that survives a month landing; a new city's stamp shows its lake whole and follows a purchase and a load.
+  8. **0.7.134, MM2:** clicking the stamp opens the land office's map on the built-up city; Fit goes to the usual opening, Esc comes back.
+  9. **0.7.133, I8** (`fixI8-notes.md` §8): Build > Industry has a "Copper" group of seven cards (a mine refused without its field); the land office prices an offer holding copper (a site's 300,000 t about US$30M).
+  10. **0.7.130, T1-C** (`fixT1C-notes.md` §8): a city with stalled builders shows "The builders' own depots first: ..." under SITES in Build > Construction (time left about a month; with the dead unburied it names both, the cemetery first); a healthy city shows none.
+
+<!-- moved verbatim from todo.md, lines 404-404 of the file before the 0.7.139 records, a child of LOOSE ENDS -->
+  - **I7-K:** works on imported feed are ordered, lose money and are sold back (Lime Kiln, Scrap Copper Refinery); his call on I4's ★2 and the shed wait (`IDLE_MONTHS` 6 against `FLEET_DELIVERY_MONTHS` 8), under Pending in `QUEUE.md`; I10 waits for it [THE MATERIALS CHAINS > I7, I8].
+
+<!-- moved verbatim from todo.md, lines 423-434 of the file before the 0.7.139 records, item 1 of CONFIRM (from 0.7.136 to 0.7.137), left in the list as a stub -->
+  1. **FX1 item 2, HELD: the shares raised before the credit test, and the four
+     ways to read the hunger gap** (fixFX1 §6 ★7; **FX1-2** under Pending in
+     `QUEUE.md`; the item's text is in NEXT, above). The fix is built and pushed
+     on `batch/FX1-with-preflight` (e821d7f) and turns HealthCheck 13 red: the dear
+     city's hunger gap over the free one's reads 5.2 points against the limit 5
+     (main -3.1), the shelf half of it the shops' reach, which on main itself reads
+     +6.0 ending m126 and +5.2 ending m132. (a) read the money half (priced out),
+     which is what the label claims, a premise change; (b) a longer window than the
+     last year; (c) accept the red; (d) a store planner that keeps the shops' reach
+     ahead of demand (Retail, outside FX1). **Recommended:** none in the notes,
+     which only warn that a variant chosen because it passes would be chosen by
+     weather. His call.
+
+<!-- moved verbatim from todo.md, lines 525-537 of the file before the 0.7.139 records, item 5 of CONFIRM (from 0.7.133 to 0.7.135), left in the list as a stub -->
+  5. **I8 ★2: the Scrap Copper Refinery churn, accepted** (fixI8 §6, §7; **I7-K**
+     under Pending in `QUEUE.md`, which now names it beside the Lime Kiln). The
+     previous list's item 2 again. Ordered on imported scrap, where its case A
+     clears at the city's narrowed freight and weak currency (0.21% on its whole
+     cost at order), throttled by its vans, shed by idle-then-shed and sold back:
+     six times in the default playtest and three on Earth, every one. No smelter
+     (its case A is -0.3%), electrolytic refinery or mine is ordered. The brief
+     said to count it, not fix it. Two levers outside I8 flip it, the old list's:
+     weigh one more works at the prices after its own supply (I4's ★2), and let
+     idle-then-shed wait out the fleet (`IDLE_MONTHS` 6 against
+     `FLEET_DELIVERY_MONTHS` 8). **Recommended: accept it for this version and take
+     I7-K as a fix batch with both levers before I9 and I10**, which add more
+     processing works; the playtest is its witness. His call.
+
+<!-- moved verbatim from todo.md, lines 627-640 of the file before the 0.7.139 records, item 2 of CONFIRM (from 0.7.130 to 0.7.132), left in the list as a stub -->
+  2. **I7 ★1: the Lime Kiln churn, accepted** (fixI7 §6, §7; **I7-K**, under
+     Pending in `QUEUE.md`). His decision A builds what earns on its whole cost
+     at the city's prices. At its carriers' narrowed freight a Lime Kiln on
+     imported limestone exporting lime clears the gate (0.20 to 0.55% at order,
+     lorries in), stands, loses D$47.7M to 51.4M a month on its own tonnes and
+     vans and is sold back eight months on: seven times in the playtest. The
+     guardrails hold (every month audited, every reload matched, no stall;
+     people -4.0% default and +6.6% Earth against `pt07126`). Two levers outside
+     I7 flip it: weigh one more works at the prices after its own supply (I4's
+     ★2, `outValue`/`inValue` for `ProcessingSector`), and let idle-then-shed wait
+     out the fleet's mobilisation (`IDLE_MONTHS` 6 against
+     `FLEET_DELIVERY_MONTHS` 8); the vans' own haulage is in no estimate.
+     **Recommended: accept it for this version and take I7-K as a fix batch with
+     both levers**, the playtest its witness. His call.
+
+## Lines rewritten in place (the old text; the new text is in the todo)
+
+These were not moved out but reworded, so the todo says what is true after 0.7.139 and Jerus's answers of 2026-10-12 (afternoon); the old lines are kept here in full.
+
+<!-- old text of todo.md, lines 136-137 of the file before the 0.7.139 records, the A12 woodlot (I9) now marked done -->
+  the game is on Steam, then private). **Carried to later batches:** A12 the
+  100-ha woodlot (I9), A13 the whole-cost test for `Game.Slices` and the sea's
+
+<!-- old text of todo.md, lines 269-270 of the file before the 0.7.139 records, CC1 running, now done -->
+  `runs/fixM6-notes.md`, its calls under CONFIRM (from 0.7.136 to 0.7.137); and
+  CC1 childcare at real demand is running as 0.7.139 (ahead of I10).
+
+<!-- old text of todo.md, lines 299-300 of the file before the 0.7.139 records, the docs pass bullet's header -->
+  brief; I9 and CC1 are running, so it waits for them).** What the notes (§7) of
+  FX1 and M6 left for it:
+
+<!-- old text of todo.md, lines 405-405 of the file before the 0.7.139 records, the P2b line of LOOSE ENDS -->
+  - **P2b's care,** the one CONFIRM item to 0.7.120 left open, is CC1's (`QUEUE.md`) [CONFIRM (from 0.7.100 to 0.7.106)].
+
+<!-- old text of todo.md, lines 408-408 of the file before the 0.7.139 records, the uranium and forest line of LOOSE ENDS -->
+  - **Uranium and forest** are in the world and the map but priced at 0 until an industry exists (forest waits for I9); nothing cuts timber [THE LAND, THE WATER AND THE WORLD'S DEPOSITS].
+
+<!-- old text of todo.md, lines 416-422 of the file before the 0.7.139 records, the lead of CONFIRM (from 0.7.136 to 0.7.137) -->
+  Jerus's words were taken as he made them (the changelog's top block): M6 built
+  every item of his B1 to B7 for buying land from the map (fixM6 ★1: nothing in
+  place of what he asked; the calls below fill in what the design left open), and
+  FX1 fixed two of copper's three faults and held the third for him (item 1). He
+  has not yet answered what is below: eight calls, each with its recommendation.
+  **I7-K** (a works ordered on imported feed and sold back, under Pending in
+  `QUEUE.md`) stays open from the lists before, and it gates I10.
+
+<!-- old text of todo.md, lines 478-479 of the file before the 0.7.139 records, item 7 of the same list -->
+     branch with item 1 (their write-ups are in that branch's GameVersion entry).
+     **Recommended: keep ★3; the rest go with item 1's answer.** As built?
+
+<!-- old text of todo.md, lines 494-496 of the file before the 0.7.139 records, the lead of CONFIRM (from 0.7.133 to 0.7.135) -->
+  item 2); I8's churn (item 5) is I7's again, which the previous list's item 2
+  already asks about. He has not yet answered what is below: ten calls, each with
+  its recommendation (items 7 to 10 gather the batches' other ★ calls).
+
+<!-- old text of todo.md, lines 607-609 of the file before the 0.7.139 records, the lead of CONFIRM (from 0.7.130 to 0.7.132) -->
+  EarthTerrainCheck what his A28 did for MapCheck's month. He has not yet
+  answered what is below: ten calls, each with its recommendation (item 10
+  gathers the batches' other ★ calls).
+
+<!-- old text of todo.md, lines 1099-1099 of the file before the 0.7.139 records, Healthcare in section 5 -->
+- **Healthcare:** the birth rate at full childcare is 30 a thousand against Canada's 10 (CC1 takes childcare at real demand); the health premium has no employer half and the fees do not index to wages; no per-care-type P&L; CPP and pension rates as Policy levers [archive §5].
+
+<!-- old text of todo.md, lines 225-225 of the file before the 0.7.139 records, the end of the lorries bullet (an update sentence was added after it) -->
+  Industry was ordered into works that could not pay (`runs/fixI4-notes.md` §6).
+
