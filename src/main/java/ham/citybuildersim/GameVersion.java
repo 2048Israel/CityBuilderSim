@@ -6027,8 +6027,55 @@ public final class GameVersion {
      *     the stamp within STAMP_MS of the thread's CPU (A28), on Earth too,
      *     and the click's view against the land office's opening.
      *   - The playtests do not move: default and Earth byte for byte.
+     *
+     * 0.7.135 (2026-10-12) - THE GLOBE ON SCREEN. Batch E9, the last of the
+     * globe study's three (docs/studies/spec-globe.md 3, 3.8, 3.11 and 4's E9
+     * row; Jerus's answers of 2026-10-11, "yes", and his "the wasd or up down
+     * side keys span the map as well" and "ya arros only for speed";
+     * runs/brief-batchE9.md, runs/fixE9-notes.md). Nothing in the model reads
+     * the screen; no save format change (39).
+     *   - W, A, S and D pan the land office's map over the window, held, at
+     *     every scale and on the generated world too: 600 px a second on
+     *     the screen at every zoom (MapFrame.KEY_PX_A_SECOND), two at once
+     *     diagonally at that speed, a held-up frame stepping a tenth of a
+     *     second at most; on the globe as a drag of those pixels would turn
+     *     it, stopping at the reach on the plane (GlobeFrame.keyPan()). The
+     *     arrows stay the clock's speed; not while typing; not on the small
+     *     map. The founding screen's globe takes them while it has the focus.
+     *   - The expanded map on Earth is a globe in three tiers by its scale:
+     *     the planet's picture (made once, 12' then 4', on a thread of its
+     *     own); the GROUND tier - near the city the plane's own far nodes
+     *     through the camera (GlobeFrame.ground(): the city, its edge and its
+     *     ground as the plane draws them, so the swap at 16 plots a pixel
+     *     shows only the projections' third of a pixel), past that the far
+     *     rule through the camera in pieces on the worker once the view holds
+     *     still, the last picture carried meanwhile; and the city's plane as
+     *     before. Half resolution while the view moves; the swap crossfades
+     *     over a notch; the roll eases back to north up over 50 km past the
+     *     reach instead of in one step; the wheel stops at the handoff away
+     *     from the city; Fit is the whole planet facing the city, north up,
+     *     and the map still opens on the city. Over it the city's ring, its
+     *     edge, its offers and centre; the hover's words by latitude and
+     *     longitude past the plane ("Not the city's", the nearest place, the
+     *     province), the plane's own card where it draws; the legend by tier;
+     *     the scale bar "at the centre". Generated worlds keep the flat map.
+     *   - The founding screen's globe is the map's: GlobeFrame and the
+     *     planet's picture (GlobePicture.view()), so the desert is DESERT's
+     *     colour and the rivers are drawn wide; it hands off to the ground
+     *     round its centre at 2.32 km a pixel, half a pixel at its corners
+     *     (4 km parted by 1.5). Its own orthographic arithmetic and picture
+     *     are gone.
+     *   - Every frame of the globe on one pool of threads, a core each
+     *     (GlobePicture.bands()).
+     *   - Harnesses: MapCheck 13 - the keys on the plane and the globe and
+     *     the reach's stop; the hover at the handoff the plane's for the same
+     *     point, and past it by latitude and longitude; the legend by tier;
+     *     the GROUND tier near the city the plane's nodes pixel for pixel;
+     *     the carry; the crossfade and the roll's ease; the founding globe
+     *     the model's frame, and its handoff.
+     *   - The playtests do not move: default and Earth byte for byte.
      */
-    public static final String VERSION = "0.7.134";
+    public static final String VERSION = "0.7.135";
 
     /**
      * The save shape.

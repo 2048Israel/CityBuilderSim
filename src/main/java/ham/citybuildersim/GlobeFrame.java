@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 /**
- * The Earth's map as a globe, without the toolkit: where the view looks on the planet, how close and which way is up, how a notch of the wheel, a drag and Fit move it, which of three pictures it draws - the planet's picture, the ground through the globe, or the city's plane - and where a pixel is on the planet; what the land office's map on Earth will draw by (E9) and GlobeCheck holds.
+ * The Earth's map as a globe, without the toolkit: where the view looks on the planet, how close and which way is up, how a notch of the wheel, a drag, a held key and Fit move it, which of three pictures it draws - the planet's picture, the ground through the globe, or the city's plane - and where a pixel is on the planet and on the city's plane; what the land office's map on Earth and the founding screen's globe draw by (since 0.7.135) and GlobeCheck and MapCheck 13 hold.
  *
  * WHY THIS EXISTS (0.7.132, batch E8; docs/studies/spec-globe.md 3, Jerus's
  * answers of 2026-10-11, "yes"). The map on Earth drew the whole planet on
@@ -43,6 +43,23 @@ package ham.citybuildersim;
  * grabbed under the pointer, on the globe as on the plane (spec-globe 4's
  * E8 row): the view centre is solved from the point, its place on the
  * screen and the roll (centreFor()). Pure: nothing in the model reads it.
+ *
+ * ON SCREEN (0.7.135, batch E9; spec-globe 3.2 to 3.8 and 3.11). ui/MapView
+ * draws the expanded map on Earth by it and ui/FoundingScreen its wide
+ * views: W, A, S and D turn it as a drag of MapFrame.keyStep()'s pixels
+ * (keyPan()); the GROUND tier near the city is the plane's own far nodes
+ * through the camera (ground(), ★E9: the two projections composed as one
+ * matrix on the point's unit vector), out to planeDrawsKm() - the reach
+ * and the view's half-diagonal at the handoff, so a view at the swap is the
+ * plane's own ground to its corners - and past it the far rule through the
+ * camera (groundPiece()), the last picture carried to its own pixels
+ * meanwhile (Carry); the swap crossfades over CROSSFADE_NOTCHES (crossfade());
+ * the roll eases back to north up over ROLL_EASE_KM past the reach, not in
+ * a step at its edge (E8's ★3); the scale bar is true at the centre and
+ * says so; the plot and whose it is under a pixel (plotAt(), planeHolds())
+ * are the hover's and a click's; and the founding globe, with no city and
+ * no reach, hands off at half a pixel of its canvas (FOUNDING_HANDOFF_KM,
+ * halfPixelKm()).
  */
 public final class GlobeFrame {
 

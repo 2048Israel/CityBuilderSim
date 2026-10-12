@@ -398,7 +398,15 @@ These are Jerus's, and they do not move.
                                    to the plane's up over ROLL_NOTCHES - and the planet's picture, a
                                    class a texel at 4' made by the far rule through the grid's camera,
                                    12' first, never saved, and a frame from it in bands of rows a core;
-                                   pure, nothing on screen until E9 - GlobeCheck holds them
+                                   pure; since 0.7.135 (batch E9) on screen: ui/MapView's expanded map
+                                   on Earth and ui/FoundingScreen's globe draw by them - W, A, S and D
+                                   turning it (keyPan()), the GROUND tier near the city the plane's own
+                                   far nodes through the camera (ground(), out to planeDrawsKm()) and
+                                   the far rule through it past that, the last picture carried (Carry),
+                                   the swap crossfaded (crossfade()), the roll eased past the reach,
+                                   every frame's bands on one pool (GlobePicture.bands()), the founding
+                                   globe's view() and its half-pixel handoff - GlobeCheck and MapCheck
+                                   13 hold them
         LandManager.java, LandMarket.java
                                    the city's land: what it owns, what is built on and what it sells - the
                                    ore and oil its ground holds less what is taken out, since 0.7.93 the
@@ -478,14 +486,17 @@ These are Jerus's, and they do not move.
                                    its nested Fonts, which loads IBM Plex since 0.7.21), Icons.java, and
                                    FoundingScreen.java (New city's page, 0.7.10, one panel since 0.7.21, two
                                    columns on the real Earth since 0.7.121 - its globe and the founding card,
-                                   EarthSite's; the record it fills is Founding.java), and ConstructionScreen.java (the Build
+                                   EarthSite's, the globe the map's own since 0.7.135 (GlobeFrame,
+                                   GlobePicture); the record it fills is Founding.java), and ConstructionScreen.java (the Build
                                    tab's construction page, 0.7.22), and TimeChart.java (City History's
                                    charts, 0.7.23: pan, zoom, ranges, an overview, named crises, the
                                    decision flags, full screen), and FundScreen.java (the city's fund as a
                                    brokerage, 0.7.39: Finances dispatches its area to it), and MapView.java
                                    (the city map on a canvas, 0.7.61: small in the land office, over the
                                    window on Expand; its arithmetic is the model's MapFrame, LandMap and
-                                   MapTiles, which MapCheck holds), and ZoningScreen.java (Policy's fifth
+                                   MapTiles, which MapCheck holds; since 0.7.135 W, A, S and D pan it,
+                                   and on Earth it is the globe - GlobeFrame and GlobePicture - in three
+                                   tiers by its scale, MapCheck 13), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray), and MiniMap.java (the minimap, 0.7.134: a
                                    stamp of the city at the rail's foot above Menu, its preview on hover,

@@ -35,6 +35,15 @@ import java.util.concurrent.Future;
  * inverse (EarthProj.Ortho) to its texel and the texel's colour, space off
  * the disc - in bands of rows, one a core. GlobeCheck holds the picture's
  * land per 1-degree cell against the far layers', and a frame's time.
+ *
+ * ON SCREEN (0.7.135, batch E9): every frame of the globe - this picture's,
+ * and the GROUND tier's composed by GlobeFrame.ground() - is cut into bands
+ * on one pool of daemon threads, a core each (bands(); E8's frame() made a
+ * pool a call); the pictures are made on a thread of their own the first
+ * time a screen asks (prepare(), best()); and the founding screen's globe
+ * is drawn by view(), the picture and then the far rule through the camera,
+ * so both screens draw the same planet in the same colours (spec-globe 3.8,
+ * Jerus's Q7) - MapCheck 13 holds it.
  */
 public final class GlobePicture {
 
