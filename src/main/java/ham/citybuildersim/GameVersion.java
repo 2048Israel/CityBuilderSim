@@ -6134,8 +6134,75 @@ public final class GameVersion {
      *     the stamp within STAMP_MS of the thread's CPU (A28), on Earth too,
      *     and the click's view against the land office's opening.
      *   - The playtests do not move: default and Earth byte for byte.
+     *
+     * 0.7.136 (2026-10-12) - THREE FAULTS COPPER FOUND. Batch FX1
+     * (docs/queue/FX1.md; runs/fixI8-notes.md 6 and 7, runs/fixFX1-notes.md).
+     * No save format change (39): the write-offs a save carries are I8's
+     * (SectorState.writtenOff), by good, every good already.
+     *   - EVERY TERM ADDS ITS WRITE-OFF BACK (NationalAccounts): I8 gave
+     *     HELD's goods the rule and found food's own add-back dead - it read
+     *     the row after strikeSectors() had cleared it, so zero in every month
+     *     there has been - and the materials' and the luxuries' terms with
+     *     none. A mill's warehouse or a materials plant's shed sold back full
+     *     booked its stock as negative investment, as the copper yard did.
+     *     Each term now adds back what the strike kept
+     *     (Sector.writtenOffStruck(), summed over every sector by
+     *     EconomyManager): food's at the fixed weights its volume is struck
+     *     at, the materials and the luxuries in units, through update()'s
+     *     whole measure (the shorter overloads hand in none). No sector makes
+     *     luxuries, so nothing writes them off yet; their term follows the
+     *     rule for the day one does. The accounts keep each term's units and
+     *     what each added back (getWrittenOffAddedBack()).
+     *   - THE CREDIT BEFORE THE OWNERS (Game, below consider()): consider()
+     *     sold the register's shares before it asked the order's other
+     *     questions, so an order those turned down left the sector holding
+     *     the equity - on the Earth playtest at m1,293 Copper Refining raised
+     *     D$3.8B for an order the bank's capital rule then refused. It asks
+     *     the order's gates first, with the raise in the till as if every
+     *     share sold and the money abroad home as the recall would bring it,
+     *     booking nothing - the borrowing ban; the interest on its whole cost
+     *     or a landlord's down payment and the lender's test; and buildFor()'s
+     *     ground, coast, licences, land and loan (a bond that raises it all,
+     *     projectLoanRoom() for canFundProject()'s answer, and
+     *     BusinessDebtManager.mortgageRefusalFor(), canFundMortgage()'s rules
+     *     with no record kept). An order that would fall through even so
+     *     raises nothing and is asked as before on the till it has; one that
+     *     would go through raises as it always did. Tested first rather than
+     *     handed back (★): undoing an offering would put back each
+     *     household's subscription, the world's, the register's shares and
+     *     price, the month's equity flow and the audit's. consider() is the
+     *     owners' step and the order's (askTheOwners(), placeOrder(), weigh());
+     *     the month's raises withheld, raised for no order, and withheld yet
+     *     placed - a smaller order on the till alone, where the gates are not
+     *     monotone in the till - are kept for the playtest to count.
+     *   - LONGPLAYTEST'S NAMES: the bank trace's substring(0, 4) threw on
+     *     "Oil", and the report's tags called Coal Mining and Copper Mining
+     *     both "CM". cut() and shortTag() are safe on a short key and
+     *     distinct: where two names share a cut each is lengthened until they
+     *     differ (Copper M, Copper R; CoaM, CopM), and every other name is cut
+     *     as it was. The report counts, by term, the write-offs added back and
+     *     the raises withheld, and prints each kind's first few.
+     *   - Harnesses: GdpCheck (the three terms written off, in the accounts'
+     *     arithmetic; and a town whose Industrial Bakeries and Construction
+     *     Materials Plants go with their sheds full, a stockroom's write-off
+     *     set by hand on the boutiques' row, across a save); InvestCheck (a
+     *     Diner under a capital rule that lends only to keep borrowers going,
+     *     and a landlord's House with the bank shut: the owners asked for
+     *     nothing, the order not placed; each with the bar lifted, raised and
+     *     placed - Game.considerForTest()); ReadPathCheck (the new getters).
+     *   - THE PLAYTESTS MOVE, from m8 in both: the first raise withheld, the
+     *     restaurants' founding Diner, which consider()'s own interest test
+     *     declines with or without the $685k its owners would have put in.
+     *     Over the default run 664 raises withheld - 395 a landlord's home the
+     *     mortgage lender's coverage test declines, 222 orders the interest
+     *     test declines, 24 mortgages and 23 buildings' loans the bank's
+     *     capital refuses - none raised for no order, 11 withheld yet placed;
+     *     on the Earth, 244, none and 18. Write-offs added back: materials in
+     *     5 months of the default (the largest $5,288,346k, m3027) and 1 of
+     *     the Earth's, food and luxuries in none. Every month passes the audit
+     *     and every reload matches; re-baselined.
      */
-    public static final String VERSION = "0.7.134";
+    public static final String VERSION = "0.7.136";
 
     /**
      * The save shape.
