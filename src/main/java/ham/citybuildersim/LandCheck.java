@@ -2529,7 +2529,7 @@ public class LandCheck {
     }
 
     /* ==================================================================
-       26. THE GROUND BY TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4)
+       26. THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4)
 
        Each field is of one type (Deposit.type()), and the city's ground is
        counted by type per holding, its fields as far as each holding listed
@@ -2546,7 +2546,9 @@ public class LandCheck {
        works of n sites fits only where a piece of its type has n sites free
        - 1-site works fill every site and not one more, a standing works the
        packing cannot place counts against the free sites first - with
-       nothing moved.
+       nothing moved. Since 0.7.124 (batch I5) the Iron Mines stand on
+       hematite, a site each, a Large Open-Pit Mine on twenty, and the order
+       gate packs them (Game.claimsOn(), LandManager.fits()).
        ================================================================== */
     static void byType() {
         System.out.println("\n--- 26. the ground by type (0.7.110) ---");

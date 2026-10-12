@@ -20,8 +20,8 @@ import java.util.Map;
 /**
  * The refinery. THE SEVENTEENTH SECTOR (0.7.62, batch K; the project's
  * spec-land.md 2.7), and since 0.7.76 a crude unit that cuts a barrel into
- * what a real one does (batch O1; runs/spec-oil.md 2.1 and 2.3) - and since
- * 0.7.80 a campus: crude units, and the conversion units behind them that
+ * what a real one does (batch O1; docs/studies/spec-oil.md 2.1 and 2.3) - and
+ * since 0.7.80 a campus: crude units, and the conversion units behind them that
  * turn the cheap cuts into dear products (batch O4; THE FLOW, below).
  *
  * HEAVY INDUSTRY'S SHAPE, ON OIL. A refinery buys crude - the city's wells'
@@ -401,7 +401,7 @@ public final class Refining extends Sector {
         monthsRun = Double.NaN;
     }
 
-    /* ----- THE MONTH AS IT RAN (0.7.95, batch O11; runs/spec-oil.md 2.12) -----
+    /* ----- THE MONTH AS IT RAN (0.7.95, batch O11; docs/studies/spec-oil.md 2.12) -----
      * The flow the month's products were made on (Sector.produceStock() reads
      * getCapacity(), the flow's, after every market has cleared), its crude
      * mix and its operating rate - kept at the month's end before the mix is
@@ -646,7 +646,7 @@ public final class Refining extends Sector {
 
     /* =====================================================================
        THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103, batch P4; Jerus's A9,
-       2026-10-10; runs/spec-oil.md 6's risk, fixO5-notes 7)
+       2026-10-10; docs/studies/spec-oil.md 6's risk, fixO5-notes 7)
 
        A lube plant upgrades gas oil, and lubricants are the gas oil's best
        use (1.89 times crude), so a Small Lube Plant beside an Oil Refinery
@@ -670,7 +670,7 @@ public final class Refining extends Sector {
        for a market that is not there.
        ===================================================================== */
 
-    /** The share of a city's crude, litre for litre, the world takes in lubricants a month: the real share of crude that becomes lubricants, about 1% [R37] (runs/spec-oil.md 6; the research's risk line was 2%). */
+    /** The share of a city's crude, litre for litre, the world takes in lubricants a month: the real share of crude that becomes lubricants, about 1% [R37] (docs/studies/spec-oil.md 6; the research's risk line was 2%). */
     public static final double LUBRICANTS_WORLD_SHARE = .01;
 
     /** Litres of lubricants the world takes a month of a city whose crude units run `crudeLitres`: LUBRICANTS_WORLD_SHARE of them. Pure. */

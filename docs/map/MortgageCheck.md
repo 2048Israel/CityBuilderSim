@@ -1,6 +1,6 @@
 # MortgageCheck.java - 1,199 lines · 25 methods · 2 constants · harnesses
 
-`ham/citybuildersim/MortgageCheck.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MortgageCheck.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The landlords' insured mortgages (0.7.11): the instrument, the lender's
 > tests, the city's insurance and the bank's book.
@@ -60,6 +60,8 @@
 > Every fixture causes its condition.
 
 **Uses:** [Mortgage](Mortgage.md) (83), [Bank](Bank.md) (62), [BusinessDebtManager](BusinessDebtManager.md) (34), [Game](Game.md) (20), [LongPlaytest](LongPlaytest.md) (7), [GameFiles](GameFiles.md) (6), [MoneyAudit](MoneyAudit.md) (6), [Equity](Equity.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [BusinessDebt](BusinessDebt.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [Sectors](Sectors.md) (2), [EconomyManager](EconomyManager.md) (2), [SectorBooks](SectorBooks.md) (2), [Founding](Founding.md) (1), [Formats](Formats.md) (1), [BusinessLoan](BusinessLoan.md) (1), [RealEstate](RealEstate.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Ladder](Ladder.md) (1), [CentralBank](CentralBank.md) (1), [DebtManager](DebtManager.md) (1), [TaxPolicy](TaxPolicy.md) (1), [DemolitionLog](DemolitionLog.md) (1)
+
+**Used by (1):** [BuildersFirstCheck](BuildersFirstCheck.md)
 
 ## Sections
 

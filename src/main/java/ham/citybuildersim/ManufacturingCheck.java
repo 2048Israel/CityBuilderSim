@@ -542,11 +542,12 @@ public class ManufacturingCheck {
         assertTrue("the fabricators bought from them", withMill.input(Good.STEEL).boughtLocal > 0);
 
         /*
-         * ...AND THE OIL ON THE LINE (0.7.83, batch O6; runs/spec-oil.md 2.5):
-         * LUBRICANTS on each plant's uses, ten litres a tonne of machinery and
-         * two a tonne of fabricated steel, bought on the market as the steel
-         * is - a maker's input, bought whole at the operating rate - from the
-         * world here, the city having no lube plant.
+         * ...AND THE OIL ON THE LINE (0.7.83, batch O6;
+         * docs/studies/spec-oil.md 2.5): LUBRICANTS on each plant's uses, ten
+         * litres a tonne of machinery and two a tonne of fabricated steel,
+         * bought on the market as the steel is - a maker's input, bought whole
+         * at the operating rate - from the world here, the city having no lube
+         * plant.
          */
         double oil = 2 * 1200 * Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED
                 + 180 * Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY;

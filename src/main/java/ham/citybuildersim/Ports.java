@@ -3,8 +3,8 @@ package ham.citybuildersim;
 /**
  * The city's ports: the berths its sea terminals stand, the share of each
  * kind of cargo they take off the lorries and the railway, and the tonnes
- * that went by sea in the month (0.7.86, batch O9; runs/spec-oil.md 2.9, the
- * research's 4.1-4.3 and Q9-Q10, runs/research-freight.md 5).
+ * that went by sea in the month (0.7.86, batch O9; docs/studies/spec-oil.md
+ * 2.9, the research's 4.1-4.3 and Q9-Q10, runs/research-freight.md 5).
  *
  * WHY. A coastal city traded by lorry and, once the investors laid track,
  * by rail, and nothing it could build moved its freight more cheaply than

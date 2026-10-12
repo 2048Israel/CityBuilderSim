@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * One build card's figures, for every one of the 108 buildings (0.7.25): what
+ * One build card's figures, for every one of the buildings in buildings.json
+ * (0.7.25; 129 of them since 0.7.133): what
  * it gives the city and in what unit, its price per unit of that, the scarce
  * resource it takes, the group it is compared within and where in that group
  * it stands, what one costs to run, the verdict on an order of it - and, for
@@ -211,7 +212,10 @@ public final class BuildCard {
        THE MARKET'S GROUPS
 
        On a market page the cards sit under their owning sector, so Industry
-       has nine groups and Shops two, and the bars and tags compare within a
+       has thirteen groups by owning sector since 0.7.133 (and four by kind
+       beside them: oil storage, the ports and the oil at sea's platforms and
+       pipelines) and Shops three (the grocers', their forecourts and the
+       bank's branches), and the bars and tags compare within a
        group: a steel mill against a steel mill, not against a bakery. The
        names are the design note's, and since 0.7.62 the wells' and the
        refinery's ("Oil", "Refining") after the mines'; since 0.7.120 (batch

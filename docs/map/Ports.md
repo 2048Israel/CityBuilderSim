@@ -1,11 +1,11 @@
 # Ports.java - 546 lines · 46 methods · 10 constants · model
 
-`ham/citybuildersim/Ports.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Ports.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The city's ports: the berths its sea terminals stand, the share of each
 > kind of cargo they take off the lorries and the railway, and the tonnes
-> that went by sea in the month (0.7.86, batch O9; runs/spec-oil.md 2.9, the
-> research's 4.1-4.3 and Q9-Q10, runs/research-freight.md 5).
+> that went by sea in the month (0.7.86, batch O9; docs/studies/spec-oil.md
+> 2.9, the research's 4.1-4.3 and Q9-Q10, runs/research-freight.md 5).
 > 
 > WHY. A coastal city traded by lorry and, once the investors laid track,
 > by rail, and nothing it could build moved its freight more cheaply than
@@ -59,7 +59,7 @@
 
 **Uses:** [Good](Good.md) (17), [Traffic](Traffic.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [BuildingManager](BuildingManager.md) (2), [Refining](Refining.md) (2), [Rail](Rail.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
 
-**Used by (22):** [BoatSchedule](BoatSchedule.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [CityShore](CityShore.md), [DataSave](DataSave.md), [Game](Game.md), [Good](Good.md), [InfrastructureCheck](InfrastructureCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [Rail](Rail.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [ShipShapes](ShipShapes.md)
+**Used by (24):** [BoatSchedule](BoatSchedule.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [CityShore](CityShore.md), [CopperMiningCheck](CopperMiningCheck.md), [DataSave](DataSave.md), [Game](Game.md), [Good](Good.md), [InfrastructureCheck](InfrastructureCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [QuarryingCheck](QuarryingCheck.md), [Rail](Rail.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [ShipShapes](ShipShapes.md)
 
 ## Sections
 
@@ -138,7 +138,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 488 | **type** `public final class Ports` | The city's ports: the berths its sea terminals stand, the share of each kind of cargo they take off the lorries and the railway, and the tonnes that went by sea in the month (0.7.86, batch O9; runs/spec-oil.md 2.9, th... |
+| 59 | 488 | **type** `public final class Ports` | The city's ports: the berths its sea terminals stand, the share of each kind of cargo they take off the lorries and the railway, and the tonnes that went by sea in the month (0.7.86, batch O9; docs/studies/spec-oil.md... |
 
 ### THE FREIGHT RULE (runs/research-freight.md 5) (lines 61-166)
 

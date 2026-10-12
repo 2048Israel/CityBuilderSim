@@ -11,14 +11,16 @@ import ham.citybuildersim.Resource;
  * "Mining" (Jerus's Q2, 2026-10-08: rename, keeping the saved keys). Its own
  * sector because the ore has a price.
  *
- * THE SMALLEST SECTOR CLASS THERE IS, and the shape a thousand of them
- * should have: it says what it makes, and which resource's ground it lifts -
+ * THE SMALLEST MINE THERE IS (since 0.7.131 Cement & Concrete, a works on
+ * ProcessingSector, is the smallest sector class of all), and the shape a
+ * thousand of them should have: it says what it makes, and which resource's
+ * ground it lifts -
  * everything else is a template's. The books, the credit, the market, the
  * payroll and the export of what the mills do not want are Sector's; the
  * ground as the limit, the plan that sinks a mine on a free site, and the
  * retirement once the ore is out are ExtractionSector's, since 0.7.112
- * (batch I2; runs/spec-materials.md 2.1) - Mining's own code until then,
- * moved there whole so the materials chains' mines and quarries share it.
+ * (batch I2; docs/studies/spec-materials.md 2.1) - Mining's own code until
+ * then, moved there whole so the materials chains' mines and quarries share it.
  *
  * A mine ships what it lifts: the ore is not stockable (see Good.IRON), so
  * what the works will not take at the local price leaves at the export
@@ -30,9 +32,9 @@ import ham.citybuildersim.Resource;
  * the deposit is out.
  *
  * FOUR MINES, BY TYPE AND SIZE, SINCE 0.7.124 (batch I5; Jerus's Q3 and Q19,
- * 2026-10-08; runs/spec-materials.md 2.4): on hematite, shipped as dug, the
- * Iron Mine (one site) and the Large Open-Pit Mine (twenty of one field); on
- * magnetite, ground and concentrated three tonnes of rock to one, the
+ * 2026-10-08; docs/studies/spec-materials.md 2.4): on hematite, shipped as dug,
+ * the Iron Mine (one site) and the Large Open-Pit Mine (twenty of one field);
+ * on magnetite, ground and concentrated three tonnes of rock to one, the
  * Magnetite Mine & Concentrator (one) and the Large Magnetite Complex
  * (twenty). Which the sector sinks is ExtractionSector's rule: the best
  * earnings on the whole cost among those that fit the fields it owns.

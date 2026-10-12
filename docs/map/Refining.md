@@ -1,11 +1,11 @@
 # Refining.java - 1,918 lines · 108 methods · 19 constants · sectors
 
-`ham/citybuildersim/sectors/Refining.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Refining.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The refinery. THE SEVENTEENTH SECTOR (0.7.62, batch K; the project's
 > spec-land.md 2.7), and since 0.7.76 a crude unit that cuts a barrel into
-> what a real one does (batch O1; runs/spec-oil.md 2.1 and 2.3) - and since
-> 0.7.80 a campus: crude units, and the conversion units behind them that
+> what a real one does (batch O1; docs/studies/spec-oil.md 2.1 and 2.3) - and
+> since 0.7.80 a campus: crude units, and the conversion units behind them that
 > turn the cheap cuts into dear products (batch O4; THE FLOW, below).
 > 
 > HEAVY INDUSTRY'S SHAPE, ON OIL. A refinery buys crude - the city's wells'
@@ -56,7 +56,7 @@
 |---:|---|
 | 67 | THE SLATE (0.7.76, batch O1; spec-oil 2.2 and 2.3) |
 | 262 | THE MONTH'S CRUDE MIX (0.7.79, batch O3; spec-oil 2.2) |
-| 404 | · THE MONTH AS IT RAN (0.7.95, batch O11; runs/spec-oil.md 2.12) |
+| 404 | · THE MONTH AS IT RAN (0.7.95, batch O11; docs/studies/spec-oil.md 2.12) |
 | 437 | THE FLOW (0.7.80, batch O4; spec-oil 2.3) |
 | 515 | · the reads, off the flow (spec-oil 2.3, 6) |
 | 647 | THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103, batch P4; Jerus's A9, |
@@ -94,7 +94,7 @@
 | 157 | `Refining.BOUGHT_HERE` | `{ Good.PETROL, Good.DIESEL }` | The products something in the city buys (spec-oil 2.5, O1): the drivers' petrol and the railway's diesel - what the gate is struck on. |
 | 357 | `Refining.RUN_KEY` | `"run.share"` | The run's share in the saved extras (THE RUN). |
 | 360 | `Refining.RUN_HISTORY_KEY` | `"run.history."` | ...and each of the last months' shares, the oldest at 0 (THE RUN). |
-| 674 | `Refining.LUBRICANTS_WORLD_SHARE` | `.01` | The share of a city's crude, litre for litre, the world takes in lubricants a month: the real share of crude that becomes lubricants, about 1% [R37] (runs/spec-oil.md 6; the research's risk line was 2%). |
+| 674 | `Refining.LUBRICANTS_WORLD_SHARE` | `.01` | The share of a city's crude, litre for litre, the world takes in lubricants a month: the real share of crude that becomes lubricants, about 1% [R37] (docs/studies/spec-oil.md 6; the research's risk line was 2%). |
 | 785 | `Refining.CRUDE_COVER_MONTHS` | `1` | Months of the crude units' run kept on hand in a Tank Farm's room (★ spec-oil 2.8): one, a month's run. |
 | 827 | `Refining.CARGO_KEPT_FREE` | `ham.citybuildersim.Ports.Ship.MR.tonnes()` | Tonnes of a farm's room kept free for the next cargo (R2): an MR's, the smallest tanker's (Ports.Ship.MR). |
 | 1037 | `Refining.RUN_PACE` | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | The most of nameplate the crude units' run moves in a month (★ the brief's example, not measured): BusinessInvestment.MAX_RETIREMENT_FRACTION, the quarter the spare-capacity rule sheds at most. |
@@ -153,7 +153,7 @@
 | 364 | 25 | `protected void restoreExtras(Map<String, Double> extras)` | A save from before 0.7.79, or one whose mix is not a mix, reads MEDIUM. |
 | 391 | 12 | `public void reset()` |  |
 
-### THE MONTH AS IT RAN (0.7.95, batch O11; runs/spec-oil.md 2.12) (lines 404-436)
+### THE MONTH AS IT RAN (0.7.95, batch O11; docs/studies/spec-oil.md 2.12) (lines 404-436)
 
 | line | len | member | says |
 |---:|---:|---|---|

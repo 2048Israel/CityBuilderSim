@@ -31,8 +31,12 @@ import java.util.List;
  * the world if there are not - and sells two things abroad:
  *
  *   Fabrication Shop      fabricated steel   135 posts, mostly labour and trades
- *   Fabrication Works     fabricated steel   330 posts, the same trade at scale
+ *   Fabrication Works     fabricated steel   276 posts, the same trade at scale
  *   Machine Works         machinery          173 posts, trades and technicians
+ *
+ * (and since 0.7.133, batch I8, a third of copper: the Wire & Cable Works
+ * draws Copper Refining's rod into wire and cable, 400 posts - THE WIRE &
+ * CABLE WORKS below).
  *
  * TWO GOODS, BOUNDED BY TWO DIFFERENT THINGS, and that is the whole design
  * rather than a detail. Fabricated steel is 61% steel and 20% wages, so what
@@ -72,12 +76,12 @@ import java.util.List;
 public final class Manufacturing extends Sector {
 
     /*
-     * THE OIL ON THE LINE (0.7.83, batch O6; runs/spec-oil.md 2.5, est., to
-     * confirm). A machine shop's cutting fluids, hydraulic and gear oils, and
-     * the grease on a fabricator's cranes: LUBRICANTS, in litres, on each
-     * template's `uses` - bought on the market as the steel is, the refiners'
-     * lube plants first and the world for the rest. The first home buyer the
-     * refinery's lubricants have had.
+     * THE OIL ON THE LINE (0.7.83, batch O6; docs/studies/spec-oil.md 2.5,
+     * est., to confirm). A machine shop's cutting fluids, hydraulic and gear
+     * oils, and the grease on a fabricator's cranes: LUBRICANTS, in litres, on
+     * each template's `uses` - bought on the market as the steel is, the
+     * refiners' lube plants first and the world for the rest. The first home
+     * buyer the refinery's lubricants have had.
      */
 
     /** Lubricants a tonne of machinery made takes: ten litres (spec-oil 2.5, est.). */
@@ -87,10 +91,10 @@ public final class Manufacturing extends Sector {
     public static final double LUBRICANT_LITRES_A_TONNE_FABRICATED = 2;
 
     /*
-     * THE WIRE & CABLE WORKS (0.7.133, batch I8; runs/spec-materials.md 2.1,
-     * the study's 4.3 and 4.4): copper's third industry, the one building of
-     * the chain that is not Copper Mining's or Copper Refining's - 2,000 t of
-     * wire and cable a month from 2,000 t of Copper Refining's rod, its
+     * THE WIRE & CABLE WORKS (0.7.133, batch I8; docs/studies/spec-materials.md
+     * 2.1, the study's 4.3 and 4.4): copper's third industry, the one building
+     * of the chain that is not Copper Mining's or Copper Refining's - 2,000 t
+     * of wire and cable a month from 2,000 t of Copper Refining's rod, its
      * insulation in its upkeep (consumables). Built by this sector's own
      * plan, unchanged: what it earns on its cost against the fabrication
      * shops' and the machine works'. The study's four cases: -0.3% of its

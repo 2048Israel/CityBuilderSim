@@ -66,7 +66,7 @@ public enum Resource {
     /**
      * Stone: 0.01 fields a km2, a site 0.1 km2, 13.5 Mt a site - a quarry 50
      * m deep at 2.7 t a cubic metre. Dug by Quarrying since 0.7.131 (batch I7;
-     * runs/spec-materials.md 2.4, 2.10): a limestone field's stone is
+     * docs/studies/spec-materials.md 2.4, 2.10): a limestone field's stone is
      * LIMESTONE and a hard-rock field's AGGREGATE (goodOf()), and what
      * limestone no buyer here takes sells as aggregate (Jerus's Q17) - so
      * stone is priced as AGGREGATE, its one pricing good. The ground sells at
@@ -78,9 +78,9 @@ public enum Resource {
     /**
      * Coal: 0.002 fields a km2, a site 1 km2, 6.5 Mt a site - a seam 5 m
      * thick at 1.3 t a cubic metre. Dug by Coal Mining since 0.7.126 (batch
-     * I6; runs/spec-materials.md 2.4): sold as THERMAL_COAL, the pricing good
-     * of both its types - a coking field's raw coal is thermal until a
-     * preparation plant washes it, which is the sector's flow
+     * I6; docs/studies/spec-materials.md 2.4): sold as THERMAL_COAL, the
+     * pricing good of both its types - a coking field's raw coal is thermal
+     * until a preparation plant washes it, which is the sector's flow
      * (sectors.CoalMining.flow()), not the ground's. The ground sells at
      * 1/200 of thermal coal's world export price (the study's 8, est.):
      * US$0.25 a tonne in the ground, about US$1.6M a site.
@@ -90,9 +90,9 @@ public enum Resource {
     /**
      * Copper: 0.0005 fields a km2, a site 0.5 km2, 300,000 t of metal a site
      * - 120 Mt of ore a km2 at 0.5%. Dug by Copper Mining since 0.7.133
-     * (batch I8; runs/spec-materials.md 2.4): a sulphide field's ore floated
-     * to COPPER_CONC at the mine, .341 t of the field's metal a tonne of
-     * concentrate, and an oxide field's leached to cathode, COPPER, 1.4 t a
+     * (batch I8; docs/studies/spec-materials.md 2.4): a sulphide field's ore
+     * floated to COPPER_CONC at the mine, .341 t of the field's metal a tonne
+     * of concentrate, and an oxide field's leached to cathode, COPPER, 1.4 t a
      * tonne (goodOf()) - so copper is priced as COPPER, its one pricing good.
      * The ground sells at 1/100 of cathode's world export price (the study's
      * 8, est.: "a rich, scarce field"): a tonne of metal in the ground at
@@ -159,7 +159,7 @@ public enum Resource {
     public boolean inFields()      { return fieldsPerKm2 > 0; }
 
     /* =====================================================================
-       ITS FIELDS' TYPES (0.7.110, batch I1; runs/spec-materials.md 2.4)
+       ITS FIELDS' TYPES (0.7.110, batch I1; docs/studies/spec-materials.md 2.4)
 
        Each of the four the materials chains dig lies in fields of two types
        (Deposit.type()), the commoner first: iron hematite or magnetite, coal

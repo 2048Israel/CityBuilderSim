@@ -28,9 +28,9 @@ import java.util.Map;
  *   4. the stockable goods are made into the warehouses, for next month
  *   5. each sector finishes its month
  *
- * THE CITY TRADES IN ONE MARKET (0.7.85, batch O8; runs/spec-oil.md 2.8):
- * its strategic reserve (StrategicReserve, a CityTrader) bids for crude to
- * fill it and offers crude to release it, in crude's clearing beside the
+ * THE CITY TRADES IN ONE MARKET (0.7.85, batch O8; docs/studies/spec-oil.md
+ * 2.8): its strategic reserve (StrategicReserve, a CityTrader) bids for crude
+ * to fill it and offers crude to release it, in crude's clearing beside the
  * sectors - its fill pro rata with theirs from the wells and the world for
  * the rest, its release pro rata with the wells' offers - and since 0.7.103
  * (Jerus's A8) what the buyers do not take of it stays in its tanks, where

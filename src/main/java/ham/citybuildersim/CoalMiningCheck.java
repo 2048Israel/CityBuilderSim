@@ -11,10 +11,10 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Coal Mining, checked (0.7.126, batch I6; runs/spec-materials.md 2.1, 2.4,
- * 2.10, 4 and 5's I6 row; the study's - materials-chains-research.md - 1.3,
- * 1.4 and 3): the second materials chain's digging industry, on the end of
- * Sectors.KEYS.
+ * Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1,
+ * 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.md -
+ * 1.3, 1.4 and 3): the second materials chain's digging industry, on
+ * Sectors.KEYS after the refinery (its end when it came).
  *
  * WHY A HARNESS OF ITS OWN. A new sector gets one (CLAUDE.md, "adding
  * things": a <Name>Check modelled on RestaurantsCheck), and coal brings the
@@ -31,9 +31,9 @@ import java.util.Map;
  *      comes out; raw past the plants' wash sells as thermal tonne for tonne,
  *      and a wash past the raw washes only the raw.
  *
- *   2. THE SECTOR ON THE END OF THE REGISTRY: Sectors.KEYS ends with Coal
- *      Mining, after the refinery (Jerus's Q21: iron, coal, stone, copper,
- *      wood); an ExtractionSector on coal making both coals on diesel; and
+ *   2. THE SECTOR ON THE REGISTRY: Sectors.KEYS has Coal Mining after the
+ *      refinery, eighteenth - its end when it came, stone's two and copper's
+ *      two after it since (Jerus's Q21: iron, coal, stone, copper, wood); an ExtractionSector on coal making both coals on diesel; and
  *      what is as long as the keys grew with them - Equity's companies (the
  *      keys and the bank), the households' share block, the audit's pools,
  *      the bank's year of sheets. Resource.COAL is priced: THERMAL_COAL for
@@ -86,7 +86,9 @@ import java.util.Map;
 public class CoalMiningCheck {
 
     static int fails = 0;
+    /** Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. */
     static final PrintStream out = System.out;
+    /** A stream that drops what is written to it: the game's prose while a fixture town is founded and played. */
     static final PrintStream quiet = new PrintStream(OutputStream.nullOutputStream());
 
     static void assertTrue(String label, boolean ok) {
@@ -146,10 +148,10 @@ public class CoalMiningCheck {
                 short_.washed() == 250_000 && short_.coking() == 137_500 && short_.thermal() == 50_000);
     }
 
-    /* ============================ 2. the sector on the end of the registry ============================ */
+    /* ============================ 2. the sector on the registry, after the refinery ============================ */
 
     static void sector() {
-        out.println("\n--- 2. the sector on the end of the registry, and what grew with it ---");
+        out.println("\n--- 2. the sector on the registry after the refinery, and what grew with it ---");
         String[] keys = Sectors.KEYS;
         // ...on the end when it came (0.7.126), and stone's two after it since 0.7.131 (batch I7; Q21's order).
         int coalAt = java.util.Arrays.asList(keys).indexOf(Sectors.COAL_MINING);
@@ -219,6 +221,7 @@ public class CoalMiningCheck {
 
     /** ...the sites each stands on, and of which type (the study's 1.3 and 3.3; the plant none). */
     static final int[] STUDY_SITES = { 1, 4, 1, 0 };
+    /** ...and the type of field each stands on (null for the plant, which stands on none). */
     static final Deposit.FieldType[] STUDY_TYPES = { Deposit.FieldType.THERMAL, Deposit.FieldType.THERMAL, Deposit.FieldType.COKING, null };
 
     /** ...the tonnes of seam a tonne of coal takes: 95% of the seam recovered at the surface, 80% by a longwall (the study's 3.1; spec 2.4). */

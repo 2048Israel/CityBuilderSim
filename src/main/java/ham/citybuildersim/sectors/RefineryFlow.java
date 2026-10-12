@@ -12,9 +12,10 @@ import java.util.function.ToDoubleFunction;
 
 /**
  * The refinery as a campus of units, and a month's flow through them (0.7.80,
- * batch O4; runs/spec-oil.md 2.3): the crude units' run cut into its streams,
- * the conversion units taking their feed stream by stream, and what is left
- * of each stream sold as the product it is worth with no unit to upgrade it.
+ * batch O4; docs/studies/spec-oil.md 2.3): the crude units' run cut into its
+ * streams, the conversion units taking their feed stream by stream, and what is
+ * left of each stream sold as the product it is worth with no unit to upgrade
+ * it.
  *
  * WHY. Until 0.7.80 a refinery was only its crude units (Refining, THE
  * SLATE): a tonne of medium crude made 70 L of petrol, 169 L of diesel and

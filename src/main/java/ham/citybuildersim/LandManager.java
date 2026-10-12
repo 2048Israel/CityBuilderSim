@@ -1125,7 +1125,7 @@ public class LandManager {
     }
 
     /* =====================================================================
-       THE GROUND BY TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4)
+       THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4)
 
        A field is of one type (Deposit.type()): iron hematite or magnetite,
        coal thermal or coking, copper sulphide or oxide, stone limestone or
@@ -1153,7 +1153,9 @@ public class LandManager {
        by type holds to the tonne. In I1 nothing dug by type; since batch I5
        (0.7.124) every iron mine stands on a type, the Iron Mine on hematite,
        and digs its own (extractIron(type, ...)), so a city's first month of
-       ore makes its save carry E by type.
+       ore makes its save carry E by type - and coal's mines (0.7.126),
+       stone's quarries (0.7.131) and copper's mines and leach plants
+       (0.7.133) dig theirs the same way (extract(r, type, amount)).
 
        WHERE A WORKS FITS (fits()): a works takes a number of sites of one
        field (BuildingsTemplate.site()). No mine is recorded on a field, so
@@ -1162,7 +1164,10 @@ public class LandManager {
        pieces in acquisition order, typed works before ANY and ANY onto the
        first type first; a standing works the packing cannot place (an
        older save's) keeps standing and its sites count against the free
-       sites first; a new one fits if it then packs with them.
+       sites first; a new one fits if it then packs with them. Since 0.7.131
+       (batch I7) packed() says where that packing puts each standing works,
+       by type - what Quarrying reads to say which of its quarries on ANY
+       stand on limestone and which on hard rock.
        ===================================================================== */
 
     /** What has been taken out of each typed resource by type, in Resource.typesOf()'s order, once a works has dug it by type; null while E by type is the walk's reading of E. */
@@ -1702,7 +1707,7 @@ public class LandManager {
 
     /* =====================================================================
        ZONES AND THE FOREST LAW (0.7.107, batch Z1; Jerus, 2026-10-08, the
-       project's spec-zoning.md; runs/spec-materials.md 2.15)
+       project's spec-zoning.md; docs/studies/spec-materials.md 2.15)
 
        THE GROUND. The dry ground D is bare ground B and forest F (forest is
        dry ground a building can take, World.FOREST, and was until now built

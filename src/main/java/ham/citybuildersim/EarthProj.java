@@ -356,7 +356,8 @@ public final class EarthProj {
      * The planet as a globe looks from space, round a view centre and turned
      * by a roll: the orthographic projection (Snyder, Map Projections - A
      * Working Manual, 1987, chapter 20, as the study's globe-prototype.py and
-     * the founding globe draw it), beside the Lambert plane above, which stays
+     * the founding globe's own arithmetic drew it - since 0.7.135 the
+     * founding globe draws through this), beside the Lambert plane above, which stays
      * the city's. Metres on the view's plane, x to the right and y up; the
      * roll is the angle, degrees clockwise, from the view's up to north at
      * its centre - 0 is north up (spec-globe 3.3).

@@ -1,10 +1,10 @@
 # StrategicReserve.java - 238 lines · 32 methods · 0 constants · model
 
-`ham/citybuildersim/StrategicReserve.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/StrategicReserve.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The city's strategic reserve of crude oil: what it holds, what it paid for
 > it, and what the player has told it to fill and release (0.7.85, batch O8;
-> runs/spec-oil.md 2.8, the research's 4.5 and Q14).
+> docs/studies/spec-oil.md 2.8, the research's 4.5 and Q14).
 > 
 > WHY. Crude was a flow until the oil run: the wells shipped what they
 > lifted and the refiners ran what they bought, the month it landed. The
@@ -75,7 +75,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 194 | **type** `public final class StrategicReserve implements Markets.CityTrader` | The city's strategic reserve of crude oil: what it holds, what it paid for it, and what the player has told it to fill and release (0.7.85, batch O8; runs/spec-oil.md 2.8, the research's 4.5 and Q14). |
+| 45 | 194 | **type** `public final class StrategicReserve implements Markets.CityTrader` | The city's strategic reserve of crude oil: what it holds, what it paid for it, and what the player has told it to fill and release (0.7.85, batch O8; docs/studies/spec-oil.md 2.8, the research's 4.5 and Q14). |
 | 48 | 4 | `public static boolean isReserve(BuildingsTemplate t)` | Whether a building is a Strategic Reserve (0.7.85): the city's (no sector), with tanks - crude oil's room. |
 | 54 | 8 | `public static double room(BuildingManager buildings)` | Tonnes of crude the city's Strategic Reserves standing hold: their tanks' litres at a tonne of crude's (sectors.Refining.CRUDE_LITRES_PER_TONNE). |
 

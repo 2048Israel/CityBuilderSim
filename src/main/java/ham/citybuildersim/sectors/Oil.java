@@ -34,13 +34,13 @@ import java.util.Map;
  * through the template's hook (groundLimit()), and the wells retire when
  * the oil runs out, as the mines do when the ore does.
  *
- * SINCE 0.7.84 (batch O7; runs/spec-oil.md 2.6) A WELL DECLINES: it lifts
- * its 415 t the month it opens and 10% less each year after, and is retired
- * below ten barrels a day, after 263 months (THE WELLS DECLINE, below); a
- * land well stands only on a dry site - a field whose centre is on land -
+ * SINCE 0.7.84 (batch O7; docs/studies/spec-oil.md 2.6) A WELL DECLINES: it
+ * lifts its 415 t the month it opens and 10% less each year after, and is
+ * retired below ten barrels a day, after 263 months (THE WELLS DECLINE, below);
+ * a land well stands only on a dry site - a field whose centre is on land -
  * and has one post, not three.
  *
- * SINCE 0.7.91 (batch O10; runs/spec-oil.md 2.7, 2.11) THE SEA'S OIL IS
+ * SINCE 0.7.91 (batch O10; docs/studies/spec-oil.md 2.7, 2.11) THE SEA'S OIL IS
  * LIFTED TOO: an Offshore Platform stands on a shallow sea field the city
  * owns, its Platform Wells lift in its slots, shuttle tankers take their
  * crude ashore at the boundary's freight, and a Crude Pipeline replaces
@@ -99,7 +99,7 @@ public final class Oil extends Sector {
     }
 
     /* =====================================================================
-       THE WELLS DECLINE (0.7.84, batch O7; runs/spec-oil.md 2.6, the
+       THE WELLS DECLINE (0.7.84, batch O7; docs/studies/spec-oil.md 2.6, the
        project's oil-and-ports-research.md 3)
 
        A well lifted its 415 t a month - a hundred barrels a day - for as
@@ -624,8 +624,8 @@ public final class Oil extends Sector {
     }
 
     /* =====================================================================
-       THE OIL AT SEA (0.7.91, batch O10; runs/spec-oil.md 2.7 and 2.11, the
-       project's oil-and-ports-research.md 3.2 and 4.5; Jerus's answer B)
+       THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7 and 2.11,
+       the project's oil-and-ports-research.md 3.2 and 4.5; Jerus's answer B)
 
        Since 0.7.84 a land well stood only on a dry site, and a field whose
        centre is in the sea waited. The research's platform - 18,000 b/d,

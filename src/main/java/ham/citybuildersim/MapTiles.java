@@ -329,6 +329,8 @@ public final class MapTiles {
 
     /** The city's edge over a far node's pixels: white at 0.55, the view's edge's (MapView's EDGE_ALPHA, since 0.7.61), on the inner ring of the pixels drawn as the city's and on any holding ground of it smaller than a pixel - at least a pixel wide at every scale, where the view's own edge, runs along the block lines, drops a run under a pixel long. */
     public static final int EDGE = 0xffffffff;
+
+    /** ...its white's alpha: 0.55, the view's own edge's since 0.7.61 - ui/MapView's EDGE_ALPHA reads this one since 0.7.128, so the two are one dial. */
     public static final double EDGE_ALPHA = 0.55;
 
     /** The districts the last nodePixels() drew at PICTURE_FROM_PX or more with no current picture: what the view asks the pictures of (CityMap.pictureJobs()). */

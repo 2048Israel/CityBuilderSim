@@ -11,8 +11,8 @@ import java.io.PrintStream;
 
 /**
  * The refinery's units and the flow through them (0.7.80, batch O4;
- * runs/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread
- * planner that orders them (batch O5; spec-oil 2.4, SpreadPlanner).
+ * docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the
+ * spread planner that orders them (batch O5; spec-oil 2.4, SpreadPlanner).
  *
  * WHAT THIS HAS TO PROVE:
  *

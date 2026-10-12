@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * The oil wells' lives (0.7.84, batch O7; runs/spec-oil.md 2.6 and 4's
+ * The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's
  * WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil
  * 2.7, 2.11): the platforms, their wells, the shuttle tankers and the pipes;
  * and since 0.7.93 the two pools they lift (batch O10b).

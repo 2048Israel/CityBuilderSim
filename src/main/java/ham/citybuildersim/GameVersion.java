@@ -3846,8 +3846,8 @@ public final class GameVersion {
      *   - Harnesses: SectorStatementCheck, sections 6b, 8 and 9 (85).
      *
      * 0.7.76 (2026-10-08) - OIL: THE GOODS, AND FUEL SPLIT INTO THE REFINERY'S
-     * PRODUCTS. Batch O1 (runs/spec-oil.md 5's first row, 2.1, 2.3 and 3;
-     * runs/fixO1-notes.md).
+     * PRODUCTS. Batch O1 (docs/studies/spec-oil.md 5's first row, 2.1, 2.3 and
+     * 3; runs/fixO1-notes.md).
      *   - THE GOODS: FUEL is retired with a note (Good), and nine are
      *     appended - petroleum gas, naphtha, petrol, jet fuel, diesel,
      *     lubricants, fuel oil (litres, each with its litres a tonne,
@@ -3908,8 +3908,8 @@ public final class GameVersion {
      *     buying its ground saved and loaded) (85).
      *
      * 0.7.78 (2026-10-08) - OIL: PETROL AND DIESEL AT WHOLESALE. Batch O2
-     * (runs/spec-oil.md 5's second row, 2.1, 2.5 and 6 A; Jerus 2026-10-08,
-     * "yes wholesale"; runs/fixO2-notes.md).
+     * (docs/studies/spec-oil.md 5's second row, 2.1, 2.5 and 6 A; Jerus
+     * 2026-10-08, "yes wholesale"; runs/fixO2-notes.md).
      *   - THE PRICES: petrol and diesel leave FUEL's band - a journey's $2.00
      *     over its 1.2 L in, .0007 out, a pump price - for the research's
      *     wholesale ladder, 1.20 and 1.35 of crude's world middle a litre:
@@ -3933,7 +3933,8 @@ public final class GameVersion {
      *     game's own load) (85).
      *
      * 0.7.79 (2026-10-08) - OIL: CRUDE GRADES AND THE SEA'S DEPTH. Batch O3
-     * (runs/spec-oil.md 5's third row, 2.2 and 2.7; runs/fixO3-notes.md).
+     * (docs/studies/spec-oil.md 5's third row, 2.2 and 2.7;
+     * runs/fixO3-notes.md).
      *   - THE GRADES: every oil field is light, medium or heavy crude, a third
      *     of fields each (Deposit.grade(), drawn from the field's cell and
      *     index, so nothing is stored and no tonne moves). Each grade cuts by
@@ -3965,7 +3966,7 @@ public final class GameVersion {
      *     SaveFileCheck and ReadPathCheck (the mix) (85).
      *
      * 0.7.80 (2026-10-08) - OIL: THE REFINERY'S UNITS AND THE FLOW. Batch O4
-     * (runs/spec-oil.md 5's fourth row and 2.3; runs/fixO4-notes.md).
+     * (docs/studies/spec-oil.md 5's fourth row and 2.3; runs/fixO4-notes.md).
      *   - THE BUILDINGS: the Crude Unit (id 76), the large crude unit -
      *     100,000 barrels a day, 50 Oil Refineries' crude, road load and
      *     tanks; and fourteen conversion units, a small and a large of each of
@@ -4026,13 +4027,13 @@ public final class GameVersion {
      *     year of GDP across a save) (86).
      *
      * 0.7.82 (2026-10-08) - OIL: THE SPREAD PLANNER. Batch O5
-     * (runs/spec-oil.md 5's fifth row and 2.4; runs/fixO5-notes.md).
+     * (docs/studies/spec-oil.md 5's fifth row and 2.4; runs/fixO5-notes.md).
      *   - SHARED (sectors.SpreadPlanner): what a processing sector orders -
      *     of its buildings that pass the gates (feed, ground, staff, money),
      *     the one that earns most on its cost at the city's own prices - and
      *     which kind it may sell back once it stands idle. Refining is its
      *     first client; the materials chains' works are the next
-     *     (runs/spec-materials.md 2.6).
+     *     (docs/studies/spec-materials.md 2.6).
      *   - THE CITY'S OWN PRICE: a good at its net import price while the city
      *     imports it, its net export price while it exports it, its local
      *     price otherwise.
@@ -4061,8 +4062,8 @@ public final class GameVersion {
      *     (the planner's words) (86).
      *
      * 0.7.83 (2026-10-08) - OIL: THE PHASE-1 BUYERS, AND THE FILLING STATION.
-     * Batch O6 (runs/spec-oil.md 5's sixth row and 2.5; the brief's O6 note,
-     * runs/research-pump.md; runs/fixO6-notes.md).
+     * Batch O6 (docs/studies/spec-oil.md 5's sixth row and 2.5; the brief's O6
+     * note, runs/research-pump.md; runs/fixO6-notes.md).
      *   - THE VANS BURN DIESEL: every van-month 240 L - forty loads of fifty
      *     km at twelve litres a hundred (Sector.DIESEL_LITRES_A_VAN_MONTH,
      *     est.) - drawn at the operating rate with the month's wear, off the
@@ -4094,7 +4095,8 @@ public final class GameVersion {
      *     BondCheck 5d, SaveFileCheck, ReadPathCheck (86).
      *
      * 0.7.84 (2026-10-08) - OIL: THE WELLS DECLINE, AND ONE POST A WELL.
-     * Batch O7 (runs/spec-oil.md 5's seventh row and 2.6; runs/fixO7-notes.md).
+     * Batch O7 (docs/studies/spec-oil.md 5's seventh row and 2.6;
+     * runs/fixO7-notes.md).
      *   - A WELL DECLINES: it lifts its 415 t the month it opens and 10% less
      *     each year after (sectors.Oil.LAND_KEEPS_A_YEAR, est. [W6]); a
      *     platform well's profile - three years flat, then 8.5% less a year -
@@ -4119,7 +4121,8 @@ public final class GameVersion {
      *     ReadPathCheck (87).
      *
      * 0.7.85 (2026-10-08) - OIL: THE TANK FARM AND THE CITY'S STRATEGIC RESERVE.
-     * Batch O8 (runs/spec-oil.md 5's eighth row and 2.8; runs/fixO8-notes.md).
+     * Batch O8 (docs/studies/spec-oil.md 5's eighth row and 2.8;
+     * runs/fixO8-notes.md).
      *   - THE TANK FARM (id 92, the refiners'): 500,000 m3 of tanks on 10 ha,
      *     D$190M (the research's US$60 a barrel), ten posts. With one standing
      *     the refiners keep a month of their crude units' crude on hand
@@ -4150,8 +4153,8 @@ public final class GameVersion {
      *     SaveFileCheck, ReadPathCheck (87).
      *
      * 0.7.86 (2026-10-08) - OIL AND PORTS: THE CITY'S SEA TERMINALS, AND THE BOATS.
-     * Batch O9 (runs/spec-oil.md 5's ninth row, 2.9 and 2.10; runs/research-freight.md;
-     * runs/fixO9-notes.md).
+     * Batch O9 (docs/studies/spec-oil.md 5's ninth row, 2.9 and 2.10;
+     * runs/research-freight.md; runs/fixO9-notes.md).
      *   - FOUR TERMINALS, THE CITY'S (BuildingType.PORTS, appended; ids
      *     94-97): a Tanker Terminal (3.25 Mt a year, D$96M, 7 posts), a Bulk
      *     Terminal (27.5 Mt, D$2,310M, 234), a Container Terminal (0.75M TEU,
@@ -4320,8 +4323,8 @@ public final class GameVersion {
      *   - The playtest is 0.7.89's, byte for byte.
      *
      * 0.7.91 (2026-10-09) - OIL AND PORTS, TENTH: THE OIL AT SEA.
-     * Batch O10 (runs/spec-oil.md 5's tenth row, 2.7 and 2.11; Jerus's answer
-     * B, the per-well platform; runs/fixO10-notes.md).
+     * Batch O10 (docs/studies/spec-oil.md 5's tenth row, 2.7 and 2.11; Jerus's
+     * answer B, the per-well platform; runs/fixO10-notes.md).
      *   - THREE BUILDINGS AT SEA, the Oil sector's (ids 98-100; on none of the
      *     city's dry ground, BuildingsTemplate.standsAtSea()): an Offshore
      *     Platform, a steel jacket (D$18M, 12 posts) on a shallow sea field
@@ -4438,8 +4441,8 @@ public final class GameVersion {
      *     byte.
      *
      * 0.7.95 (2026-10-09) - OIL AND PORTS, ELEVENTH: THE REFINERY AS A
-     * PICTURE. Batch O11 (runs/spec-oil.md 2.12; the research's mockup 1,
-     * Jerus's idea; runs/fixO11-notes.md). Drawing only.
+     * PICTURE. Batch O11 (docs/studies/spec-oil.md 2.12; the research's mockup
+     * 1, Jerus's idea; runs/fixO11-notes.md). Drawing only.
      *   - Refining's Operations page opens on OPERATIONS · THE REFINERY: the
      *     month's crude in on the left (the city's wells on land and at sea,
      *     its reserve, the world), the column filled with its cuts in boiling
@@ -4466,7 +4469,7 @@ public final class GameVersion {
      *     to scale). The playtest is 0.7.94's, byte for byte.
      *
      * 0.7.96 (2026-10-09) - OIL AND PORTS, TWELFTH: THE OIL INDUSTRY SCREEN.
-     * Batch O12 (runs/spec-oil.md 2.13; the research's mockup 2;
+     * Batch O12 (docs/studies/spec-oil.md 2.13; the research's mockup 2;
      * runs/fixO12-notes.md). Drawing, and the reserve's two levers.
      *   - Oil's Operations page opens on the whole chain: four figures (what
      *     the wells lifted, the crude left in the two pools and the years it
@@ -4494,7 +4497,7 @@ public final class GameVersion {
      *     byte.
      *
      * 0.7.97 (2026-10-09) - OIL AND PORTS, THIRTEENTH: THE MAP AT SEA AND ON
-     * THE SHORE. Batch O13 (runs/spec-oil.md 5's O13 row; the project's
+     * THE SHORE. Batch O13 (docs/studies/spec-oil.md 5's O13 row; the project's
      * spec-roads-and-ports.md 2.8 and 4; the research's mockup 3;
      * runs/fixO13-notes.md). Drawing, and the map's sidecar.
      *   - The refinery is a campus: the city map deals all its units to one
@@ -4525,7 +4528,7 @@ public final class GameVersion {
      *     byte.
      *
      * 0.7.98 (2026-10-09) - OIL AND PORTS, FOURTEENTH: THE REFINERY SHIPS
-     * ITS SLATE. Batch O14 (runs/spec-oil.md 2.3, 2.5 and 6;
+     * ITS SLATE. Batch O14 (docs/studies/spec-oil.md 2.3, 2.5 and 6;
      * runs/fixO14-notes.md). A model fix, and one on the map.
      *   - What the city does not take of the refiners' products ships, every
      *     month, at the export price less the railway's charge. Until now the
@@ -5052,10 +5055,10 @@ public final class GameVersion {
      *     built beside P7 on 0.7.107 and shipped after it).
      *
      * 0.7.110 (2026-10-10) - FIELDS BY TYPE. Batch I1, the first of the
-     * materials chains (runs/spec-materials.md 2.4, 2.5; runs/brief-batchI1.md,
-     * runs/fixI1-notes.md). Plumbing: no sector, good or building behaves
-     * differently, and nothing in the month reads a type yet. No save format
-     * change (36), and every save that loaded at 0.7.108 loads.
+     * materials chains (docs/studies/spec-materials.md 2.4, 2.5;
+     * runs/brief-batchI1.md, runs/fixI1-notes.md). Plumbing: no sector, good or
+     * building behaves differently, and nothing in the month reads a type yet.
+     * No save format change (36), and every save that loaded at 0.7.108 loads.
      *   - EACH FIELD IS OF A TYPE (Deposit.FieldType, Deposit.type()): iron
      *     hematite or magnetite, coal thermal or coking, copper sulphide or
      *     oxide, stone limestone or hard rock (Resource.typesOf()); oil,
@@ -5128,7 +5131,7 @@ public final class GameVersion {
      *   - The playtest is 0.7.110's byte for byte.
      *
      * 0.7.112 (2026-10-10) - THE SHARED MACHINERY. Batch I2, the second of
-     * the materials chains (runs/spec-materials.md 2.1, 2.5-2.8;
+     * the materials chains (docs/studies/spec-materials.md 2.1, 2.5-2.8;
      * runs/brief-batchI2.md, runs/fixI2-notes.md): what every chain after it
      * stands on, and no chain yet - no new sector, good or building. No save
      * format change (36): Statement.powerSold is a new key, an older save
@@ -5265,8 +5268,8 @@ public final class GameVersion {
      *     (pt07113).
      *
      * 0.7.117 (2026-10-11) - DEPOSITS ON THE EARTH'S GEOLOGY. Batch E3 (the
-     * project's spec-earth.md 4 and 8, runs/spec-materials.md 2.4; Jerus's
-     * answers of 2026-10-10, "all rec"; runs/brief-batchE3.md,
+     * project's spec-earth.md 4 and 8, docs/studies/spec-materials.md 2.4;
+     * Jerus's answers of 2026-10-10, "all rec"; runs/brief-batchE3.md,
      * runs/fixE3-notes.md). No save format change (36): nothing new is
      * saved, and a generated world draws what it drew.
      *   - Geology (new): each USGS province's class (ocean, shield, fold belt,
@@ -5334,9 +5337,9 @@ public final class GameVersion {
      *
      * 0.7.120 (2026-10-11) - IRON'S PRICES, AND SCRAP SPLIT FROM ORE. Batch
      * I3, the first materials batch that changes the game (Jerus's Q2, Q4,
-     * Q5, Q6, Q6b, A, C and D of 2026-10-08; runs/spec-materials.md 2.1-2.3,
-     * 2.6b and 4; runs/brief-batchI3.md, runs/fixI3-notes.md). Built as
-     * 0.7.116; it shipped after 0.7.117 and 0.7.119, so it takes the next
+     * Q5, Q6, Q6b, A, C and D of 2026-10-08; docs/studies/spec-materials.md
+     * 2.1-2.3, 2.6b and 4; runs/brief-batchI3.md, runs/fixI3-notes.md). Built
+     * as 0.7.116; it shipped after 0.7.117 and 0.7.119, so it takes the next
      * number, and 0.7.116 and 0.7.118 are unused - the harnesses' labels and
      * the comments it wrote say 0.7.120 (the docs pass of 0.7.123). SAVE
      * FORMAT 37, AND THE FLOOR RAISED TO IT: a save at format 36 - from
@@ -5487,8 +5490,8 @@ public final class GameVersion {
      *
      * 0.7.123 (2026-10-11) - THE INTEGRATED ROUTE, AND OLD STEEL. Batch I4,
      * the second materials batch that changes the game (Jerus's Q4, Q6, Q7,
-     * Q8, Q19, Q20 and A of 2026-10-08; runs/spec-materials.md 2.2, 2.3,
-     * 2.7-2.9 and 4; runs/brief-batchI4.md, runs/fixI4-notes.md). Launched
+     * Q8, Q19, Q20 and A of 2026-10-08; docs/studies/spec-materials.md 2.2,
+     * 2.3, 2.7-2.9 and 4; runs/brief-batchI4.md, runs/fixI4-notes.md). Launched
      * as 0.7.121, a number E4 shipped under first, it takes the next one
      * free - the harnesses' labels and the comments it wrote say 0.7.123 (the
      * docs pass of 0.7.123). No save format change (38): a save from 0.7.120
@@ -5542,10 +5545,12 @@ public final class GameVersion {
      *
      * 0.7.124 (2026-10-11) - IRON MINING BY TYPE AND SIZE. Batch I5, the third
      * materials batch that changes the game (Jerus's Q3, Q19 and A of
-     * 2026-10-08; runs/spec-materials.md 2.2, 2.4, 2.6b and 5;
-     * runs/brief-batchI5.md, runs/fixI5-notes.md). No save format change
-     * (38): a save from 0.7.120 on loads, its Iron Mines on hematite from then
-     * on, and its first month of ore makes it carry E by type.
+     * 2026-10-08; docs/studies/spec-materials.md 2.2, 2.4, 2.6b and 5;
+     * runs/brief-batchI5.md, runs/fixI5-notes.md). Written in number order,
+     * after 0.7.125 and 0.7.127 shipped: VERSION stayed 0.7.127. No save
+     * format change (39 when it shipped, 0.7.127's; 38 when it was built): a
+     * save from 0.7.120 on loads as before, its Iron Mines on hematite from
+     * then on, and its first month of ore makes it carry E by type.
      *   - THE MINES (ids 108-110, Iron Mining's): the Large Open-Pit Mine,
      *     500,000 t of ore a month on twenty sites of one hematite field; the
      *     Magnetite Mine & Concentrator, 20,000 t of concentrate from 60,000
@@ -5622,11 +5627,12 @@ public final class GameVersion {
      *
      * 0.7.126 (2026-10-11) - COAL. Batch I6, the fourth materials batch that
      * changes the game and the first new sector of the chains (Jerus's Q9,
-     * Q10, Q21 and A of 2026-10-08; runs/spec-materials.md 2.1, 2.4, 2.10 and
-     * 5; runs/brief-batchI6.md, runs/fixI6-notes.md). Written in number
-     * order, after 0.7.127 shipped: VERSION stays 0.7.127. No save format
-     * change (39): a save from before it restores Coal Mining empty - its
-     * key is missing, not misread (Sectors' header; Equity, the households'
+     * Q10, Q21 and A of 2026-10-08; docs/studies/spec-materials.md 2.1, 2.4,
+     * 2.10 and 5; runs/brief-batchI6.md, runs/fixI6-notes.md). Written in
+     * number order, after 0.7.127 and 0.7.128 shipped: VERSION stayed
+     * 0.7.128. No save
+     * format change (39): a save from before it restores Coal Mining empty -
+     * its key is missing, not misread (Sectors' header; Equity, the households'
      * shares, the exchange and the bank's year of sheets map by name or
      * append) - and it digs nothing until it builds.
      *   - THE SECTOR: "Coal Mining" on the end of Sectors.KEYS, the
@@ -5722,14 +5728,16 @@ public final class GameVersion {
      *     so the card and the map agree; the snap never lands on ice, and a
      *     spot on an ice sheet with no dry ground within 5 km gets its own
      *     plot's card, refused on ice; the ground within 5 km counts ice on
-     *     its own (Card.icePlots(), the founding screen's ground line). The
+     *     its own (the Card's icePlots, the founding screen's ground line). The
      *     desert's warning is still its cell's bare-ground bit.
      *   - Harnesses: EarthTerrainCheck 15 (the rule, the books, a district
      *     plan with its grass made desert and ice, each kind's share and edge
      *     on the full file, the card at Greenland's sheet, its margin and the
      *     Sahara, a far node, and the refusal of an Earth save before 39).
      *   - The default playtest is pt07123's byte for byte, and the Earth one
-     *     (--earth rotterdam) pte07121's: Rotterdam's city holds no ice.
+     *     (--earth rotterdam) its base's own run byte for byte (re-baselined
+     *     pte07127; pte07121 had been left behind by the batches merged since
+     *     0.7.121): Rotterdam's city holds no ice.
      *
      * 0.7.128 (2026-10-11) - DISTRICT PICTURES. Batch MM1, the minimap's
      * first (docs/studies/spec-globe.md 8.1 and 8.2, its 4's MM1 row and 5's
@@ -5810,7 +5818,7 @@ public final class GameVersion {
      *     panel's "Debt/GDP, bonds and bills"; automatic building's limit card
      *     "All it owes is now X of GDP; the left panel's Debt/GDP counts its
      *     bonds and bills alone", its mark "all it owes, now X". Words only.
-     *   - Harnesses: DeathCareFirstCheck (new; ninety-eight harnesses), on a
+     *   - Harnesses: DeathCareFirstCheck (new, the ninety-ninth), on a
      *     fixture that causes the trap; LongPlaytest's report counts the
      *     months the dead waited and the months the rule fired.
      *   - The playtests move (re-baselined; fixT1B-notes.md 4): the rule
@@ -5827,8 +5835,9 @@ public final class GameVersion {
      * builders-stall.md, option C, its own batch with the ensemble and
      * retirement watched; and of 2026-10-11, "basically theyll priotozie those
      * two buildings at the same time": beside the death care, at one
-     * priority; runs/brief-batchT1C.md, runs/fixT1C-notes.md). No save
-     * format change (39): the rule keeps no state.
+     * priority; runs/brief-batchT1C.md, runs/fixT1C-notes.md). Written in
+     * number order, after 0.7.131 and 0.7.132 shipped: VERSION stayed
+     * 0.7.132. No save format change (39): the rule keeps no state.
      *   - THE STALL (batch T1's trace of his city): repairs took 0.81 of the
      *     builders' nameplate, about 420 points a month reached the sites, and
      *     the builders' one depot order (MAX_CONCURRENT_ORDERS) waited at its
@@ -5867,7 +5876,7 @@ public final class GameVersion {
      *     floor as empty (DenominationCheck's twins parted on 0 against 1.6e-17
      *     after a recall that brought home exactly what an order lacked); and
      *     HoldersCheck 9 holds its town's builders, whose question it is not.
-     *   - Harnesses: BuildersFirstCheck (new; a hundred harnesses), on
+     *   - Harnesses: BuildersFirstCheck (new, the hundred and third), on
      *     DeathCareFirstCheck's trap; LongPlaytest's report counts the months
      *     the rule fired.
      *   - The playtests move (re-baselined; fixT1C-notes.md 4): the default run
@@ -5939,7 +5948,7 @@ public final class GameVersion {
      *   - THE SCREENS: Build's "Stone" and "Cement" groups after Coal; a
      *     quarry's sentence (limestone, the rest as aggregate).
      *   - Harnesses: QuarryingCheck and CementConcreteCheck (new, the
-     *     ninety-ninth and hundredth: the carry, the registry, the six rows'
+     *     hundredth and hundred and first: the carry, the registry, the six rows'
      *     cases against the study's arithmetic and its stated returns, hard
      *     rock, the packing, the dig by type, the plan, the buyers, the
      *     carried limestone weighed as exported, played months);
@@ -6001,7 +6010,8 @@ public final class GameVersion {
      * changes the game: the fourth chain's two sectors and the Wire & Cable
      * Works (Jerus's Q11, Q12, Q21 and A of 2026-10-08; docs/studies/
      * spec-materials.md 2.1-2.4, 2.9, 2.12 and 5; the study's 4; runs/brief-
-     * batchI8.md, runs/fixI8-notes.md). No save format change (39): a save
+     * batchI8.md, runs/fixI8-notes.md). Written in number order, after
+     * 0.7.134 shipped: VERSION stayed 0.7.134. No save format change (39): a save
      * from before it restores Copper Mining and Copper Refining empty,
      * cathode held as none and no old copper - missing, not misread - and its
      * copper is untouched ground until a mine digs it.
@@ -6073,8 +6083,8 @@ public final class GameVersion {
      *     them to the first strike (SectorState.writtenOff; an older save has
      *     none, which is what its accounts added back). Food's own add-back
      *     reads the cleared row, so zero - marked, and left to its own batch.
-     *   - Harnesses: CopperMiningCheck and CopperRefiningCheck (new, the 103rd
-     *     and 104th: the registry, the eight rows against the study's 4.4
+     *   - Harnesses: CopperMiningCheck and CopperRefiningCheck (new, the 104th
+     *     and 105th: the registry, the eight rows against the study's 4.4
      *     table, the dig by type, the leach plant's lift and its acid, the
      *     chain by its ratios, the smelter's acid sold, old copper bought and
      *     its books, the planner's old copper, the wire works' estimate);
@@ -6815,9 +6825,9 @@ public final class GameVersion {
      *     scrap and the mines' ore as one good - one market's price and demand,
      *     one line in Heavy Industry's books - and would load wrongly here, the
      *     mills' scrap read as ore at a price outside its band. The spec's
-     *     IronSplit (runs/spec-materials.md 3) is not written: until the game
-     *     is published old saves need not load (Jerus, 2026-10-10). The build
-     *     that saved such a city, 0.7.119 or older, still opens it.
+     *     IronSplit (docs/studies/spec-materials.md 3) is not written: until
+     *     the game is published old saves need not load (Jerus, 2026-10-10).
+     *     The build that saved such a city, 0.7.119 or older, still opens it.
      *
      * 38 - A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6):
      *     worldKind ("EARTH"), earthLat and earthLon (the spot the projection

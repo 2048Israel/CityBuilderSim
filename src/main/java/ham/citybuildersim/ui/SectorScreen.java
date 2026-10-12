@@ -3779,13 +3779,13 @@ final class SectorScreen {
     }
 
     /* ------------------- OPERATIONS · THE REFINERY (0.7.95) -------------------
-       Batch O11 (runs/spec-oil.md 2.12; the research's mockup 1, Jerus's idea):
-       Refining's page opens on the refinery as a picture - the crude in on the
-       left, the column filled with its cuts, the conversion units, the tank
-       filled by product, and who took each on the right, every ribbon to one
-       scale - and a strip of the products under it: made, imported, exported,
-       in or out of the tanks, and the price here. The generic flow card follows
-       it, with the money.
+       Batch O11 (docs/studies/spec-oil.md 2.12; the research's mockup 1,
+       Jerus's idea): Refining's page opens on the refinery as a picture - the
+       crude in on the left, the column filled with its cuts, the conversion
+       units, the tank filled by product, and who took each on the right, every
+       ribbon to one scale - and a strip of the products under it: made,
+       imported, exported, in or out of the tanks, and the price here. The
+       generic flow card follows it, with the money.
 
        NOTHING HERE IS WORKED OUT: every figure, every position, every word and
        its colour is RefineryView's (the model's, pure, held by
@@ -4079,12 +4079,12 @@ final class SectorScreen {
     }
 
     /* ----------------- OPERATIONS · THE OIL INDUSTRY (0.7.96) -----------------
-       Batch O12 (runs/spec-oil.md 2.13; the research's mockup 2, Jerus's oil
-       industry screen): Oil's page opens on the whole chain - four figures
-       (what the wells lifted, the crude left in the two pools, the crude
-       bought abroad, the products across the edge); THE WELLS by type, land
-       and offshore, and LOCAL CRUDE, a bar a year of what they would lift if
-       nothing new were built; THE REFINERY's units, each with its spread at
+       Batch O12 (docs/studies/spec-oil.md 2.13; the research's mockup 2,
+       Jerus's oil industry screen): Oil's page opens on the whole chain - four
+       figures (what the wells lifted, the crude left in the two pools, the
+       crude bought abroad, the products across the edge); THE WELLS by type,
+       land and offshore, and LOCAL CRUDE, a bar a year of what they would lift
+       if nothing new were built; THE REFINERY's units, each with its spread at
        the city's own prices and the gate that stops one more; PRODUCTS, each
        one's price and month and who took it; and THE STRATEGIC RESERVE with
        its two levers, Fill and Release. The generic flow card follows.

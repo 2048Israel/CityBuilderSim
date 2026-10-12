@@ -12,7 +12,7 @@ import java.util.Random;
 import java.util.zip.CRC32;
 
 /**
- * The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, GlobeFrame's view and its handoff to the city's plane, the far rule's three cameras, and the planet's picture with a frame drawn from it - nothing on screen yet (E9).
+ * The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, GlobeFrame's view and its handoff to the city's plane, the far rule's three cameras, and the planet's picture with a frame drawn from it - on screen since 0.7.135 (batch E9), which MapCheck 13 holds.
  *
  * WHY. The globe is drawn on a canvas, which cannot be drawn headless in
  * the cloud loop, so its look is checked by eye on the PC; the half of it
@@ -35,7 +35,8 @@ import java.util.zip.CRC32;
  *      whole planet facing the city, north up; the tiers change at
  *      PICTURE_FROM_KM and HANDOFF_KM; the roll is nought wide, the plane's up
  *      at the handoff and eased by notches between, and nought beyond the
- *      reach; the plane's up in closed form is EarthProj.forward()'s own;
+ *      reach (since 0.7.135 eased back over GlobeFrame.ROLL_EASE_KM past it,
+ *      so held at twice REACH_KM); the plane's up in closed form is EarthProj.forward()'s own;
  *      away from the city the wheel stops at the handoff, and at the plane's
  *      scales a pan stops at the reach, which a city's own ground extends.
  *   3. THE HANDOFF: the plane and the globe facing the city part by under
@@ -126,6 +127,7 @@ public class GlobeCheck {
         out.printf("%-110s %s%n", label, ok ? "OK" : "FAIL");
     }
 
+    /** The planet's radius in metres (EarthProj.RADIUS_M), which the sections measure arcs and the disc by. */
     static final double R = EarthProj.RADIUS_M;
 
     public static void main(String[] args) throws Exception {

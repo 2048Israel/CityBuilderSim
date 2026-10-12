@@ -18,7 +18,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 /**
- * The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, each district's street plan kept for the painter with what it cannot hold carried to the next, the city's highways and railway laid on corridors across it, one drawn building for each the model has, summed up a pyramid for the far view, and written beside the save as a sidecar - what the tile painter paints the city from.
+ * The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, each district's street plan kept for the painter with what it cannot hold carried to the next, the city's highways and railway laid on corridors across it, one drawn building for each the model has, summed up a pyramid, each built district's picture drawn with its plan for the far view (0.7.128), and written beside the save as a sidecar - what the tile painter paints the city from.
  *
  * WHY THIS EXISTS (0.7.60, batch J3; the project's spec-land.md 2.5). The
  * model counts buildings by type and nothing else: a city of ten billion has
@@ -74,7 +74,15 @@ import java.util.zip.InflaterInputStream;
  *
  * THE PYRAMID sums ten classes, used plots and owned plots two by two up to
  * one node, built when the map is, each district's ancestors updated as it
- * changes: what the far view draws (batch J4).
+ * changes: batch J4's for the far view, which since 0.7.128 draws from the
+ * district pictures instead (MapCheck holds the pyramid's sums).
+ *
+ * THE DISTRICT PICTURES (0.7.128, batch MM1; docs/studies/spec-globe.md
+ * 8.2): each built district's 32 x 32 picture (DistrictPicture), drawn by
+ * its plan's job and kept by a stamp of the plots it is drawn from, so a
+ * month redraws only the districts whose plots it moved - what the far
+ * nodes draw from (MapTiles.nodePixels()), the minimap's too (0.7.134).
+ * Never saved: drawn again from the plans after a load.
  *
  * THE SIDECAR (slot-NN-map.bin, writeSidecar()/readSidecar()): one record a
  * district, deflated, its header the magic, the format, the world's seed (on
@@ -97,7 +105,7 @@ import java.util.zip.InflaterInputStream;
  * one still read; FORMAT 6 since 0.7.97, its works on the shore after the
  * runs, laid from its counts when a FORMAT 5 sidecar is read).
  *
- * AT SEA AND ON THE SHORE (0.7.97, batch O13; runs/spec-oil.md 2.12,
+ * AT SEA AND ON THE SHORE (0.7.97, batch O13; docs/studies/spec-oil.md 2.12,
  * spec-roads-and-ports.md 2.8 and 4): THE CAMPUS deals the refinery's units
  * to the district holding the most of them, THE SHORE lays the city's
  * terminals and tank farms at the water city-wide (CityShore), THE OIL AT
@@ -960,21 +968,21 @@ public final class CityMap {
     }
 
     /*
-     * THE CAMPUS (0.7.97, batch O13; runs/spec-oil.md 2.12, the research's
-     * Q11: "the refinery is drawn as a campus"). The refinery's units - its
-     * crude units and conversion units (BuildingVisual.Type.campus()) - were
-     * placed as any industry, into the first district with room, so Jerus's
-     * sixteen stood in five districts. Now a unit goes first to the district
-     * already holding the most of the refinery's ground, while it has room
-     * (place()), and the district's plan packs them together, first of its
-     * industry (DistrictPlan's THE CAMPUS); drawn canonically, the whole
-     * refinery goes to the first district with room for all of it, before
-     * the rest is shared (allocate()). What no campus district has room for
-     * goes as any industry. Nothing placed moves, but once: a map read from
-     * a sidecar older than FORMAT 6 (0.7.96's and before) has its refinery
-     * gathered into its campus district as it is read, while it has room
-     * (gatherCampus(), star O13-1) - the picture shifts once, as FORMAT 4's
-     * did.
+     * THE CAMPUS (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the
+     * research's Q11: "the refinery is drawn as a campus"). The refinery's
+     * units - its crude units and conversion units
+     * (BuildingVisual.Type.campus()) - were placed as any industry, into the
+     * first district with room, so Jerus's sixteen stood in five districts. Now
+     * a unit goes first to the district already holding the most of the
+     * refinery's ground, while it has room (place()), and the district's plan
+     * packs them together, first of its industry (DistrictPlan's THE CAMPUS);
+     * drawn canonically, the whole refinery goes to the first district with
+     * room for all of it, before the rest is shared (allocate()). What no
+     * campus district has room for goes as any industry. Nothing placed moves,
+     * but once: a map read from a sidecar older than FORMAT 6 (0.7.96's and
+     * before) has its refinery gathered into its campus district as it is read,
+     * while it has room (gatherCampus(), star O13-1) - the picture shifts once,
+     * as FORMAT 4's did.
      */
 
     /** The refinery's unit types, by id: worked out once a table. */
@@ -2980,7 +2988,7 @@ public final class CityMap {
 
     /* =====================================================================
        THE SHORE: TERMINALS AND TANK FARMS AT THE WATER (0.7.97, batch O13;
-       spec-roads-and-ports.md 2.8, runs/spec-oil.md 2.12)
+       spec-roads-and-ports.md 2.8, docs/studies/spec-oil.md 2.12)
 
        The city's sea terminals and tank farms (BuildingVisual.Type.shore())
        are laid city-wide on its shore, as its railway's yards are on its
@@ -3216,7 +3224,7 @@ public final class CityMap {
     }
 
     /* =====================================================================
-       THE OIL AT SEA (0.7.97, batch O13; runs/spec-oil.md 2.12, the
+       THE OIL AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the
        research's 3.3)
 
        The model's platforms and pipelines are on none of the city's dry

@@ -1,10 +1,10 @@
 # RefineryCheck.java - 1,503 lines · 35 methods · 18 constants · harnesses
 
-`ham/citybuildersim/RefineryCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RefineryCheck.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The refinery's units and the flow through them (0.7.80, batch O4;
-> runs/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread
-> planner that orders them (batch O5; spec-oil 2.4, SpreadPlanner).
+> docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the
+> spread planner that orders them (batch O5; spec-oil 2.4, SpreadPlanner).
 > 
 > WHAT THIS HAS TO PROVE:
 > 
@@ -127,7 +127,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 151 | 1353 | **type** `public class RefineryCheck` | The refinery's units and the flow through them (0.7.80, batch O4; runs/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread planner that orders them (batch O5; spec-oil 2.4, SpreadPlanner). |
+| 151 | 1353 | **type** `public class RefineryCheck` | The refinery's units and the flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread planner that orders them (batch O5; spec-oil 2.4, SpreadPlanner). |
 | 159 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 164 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 169 | 5 | `static void quietly(Runnable r)` |  |

@@ -1,6 +1,6 @@
 # LandGrid.java - 369 lines · 28 methods · 12 constants · model
 
-`ham/citybuildersim/LandGrid.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandGrid.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The ground a city owns, as a region quadtree over the world's plots: which holding owns each plot, and how much of any block or rectangle of plots is owned.
 > 
@@ -38,7 +38,7 @@
 
 **Uses:** [World](World.md) (7)
 
-**Used by (11):** [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [GridCheck](GridCheck.md), [GridConversion](GridConversion.md), [GridOffers](GridOffers.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapView](MapView.md)
+**Used by (14):** [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [GlobeFrame](GlobeFrame.md), [GridCheck](GridCheck.md), [GridConversion](GridConversion.md), [GridOffers](GridOffers.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMapFrame](MiniMapFrame.md)
 
 ## Sections
 

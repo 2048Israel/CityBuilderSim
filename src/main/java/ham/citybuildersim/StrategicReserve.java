@@ -3,7 +3,7 @@ package ham.citybuildersim;
 /**
  * The city's strategic reserve of crude oil: what it holds, what it paid for
  * it, and what the player has told it to fill and release (0.7.85, batch O8;
- * runs/spec-oil.md 2.8, the research's 4.5 and Q14).
+ * docs/studies/spec-oil.md 2.8, the research's 4.5 and Q14).
  *
  * WHY. Crude was a flow until the oil run: the wells shipped what they
  * lifted and the refiners ran what they bought, the month it landed. The

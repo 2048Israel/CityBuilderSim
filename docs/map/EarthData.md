@@ -1,6 +1,6 @@
 # EarthData.java - 753 lines · 65 methods · 26 constants · model
 
-`ham/citybuildersim/EarthData.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthData.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The reader of earth-1.bin, the real Earth's ground as data: its layers'
 > 1-degree tiles inflated into an LRU, the sea, lake, land-cover and far-view
@@ -50,7 +50,7 @@
 > founds a city on one, the game's file found by locate(). EarthCheck holds it,
 > on a fixture of the file and, when it is named, on the file itself.
 
-**Used by (15):** [EarthCheck](EarthCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [Geology](Geology.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (18):** [EarthCheck](EarthCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

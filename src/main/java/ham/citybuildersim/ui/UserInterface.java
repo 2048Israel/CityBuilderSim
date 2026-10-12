@@ -5062,7 +5062,9 @@ public class UserInterface extends Application {
        and Finance; "Sectors", "Trade" and "History" stand for the pages
        titled Sector economy, Trade & the world and City History, whose full
        names are the tooltips. At the foot, Menu: the game menu, which the
-       gear there opened and which was all it did; Settings is on it.
+       gear there opened and which was all it did; Settings is on it. Above
+       Menu since 0.7.134 (batch MM2) the minimap (MiniMap): a stamp of the
+       city, its preview on hover, the land office's map on a click.
        ===================================================================== */
 
     /** The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). */

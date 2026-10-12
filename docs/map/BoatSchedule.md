@@ -1,11 +1,11 @@
 # BoatSchedule.java - 455 lines · 30 methods · 8 constants · model
 
-`ham/citybuildersim/BoatSchedule.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BoatSchedule.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The month's ships, as a pure function of time: which calls the city's sea
 > trade makes, when each arrives, and where each boat is at any moment
-> (0.7.86, batch O9; runs/spec-oil.md 2.10, the research's 4.3-4.4 and Q8;
-> scratch-oil's BoatProto, ported). Model only: since 0.7.97 (batch O13)
+> (0.7.86, batch O9; docs/studies/spec-oil.md 2.10, the research's 4.3-4.4 and
+> Q8; scratch-oil's BoatProto, ported). Model only: since 0.7.97 (batch O13)
 > ui/MapView draws it on the game's clock, on the map's sea routes.
 > 
 > WHY. A port that is a share of the freight band is invisible; the
@@ -94,7 +94,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 402 | **type** `public final class BoatSchedule` | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7.86, batch O9; runs/spec-oil.md 2.10, the research's 4.3-4.4 and Q8; s... |
+| 54 | 402 | **type** `public final class BoatSchedule` | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7.86, batch O9; docs/studies/spec-oil.md 2.10, the research's 4.3-4.4 a... |
 | 79 | 1 | **type** `public record Berth(Ports.Cargo cargo, long x, long y)` | One terminal's quay: its kind and where on the map it stands, in plots. |
 | 89 | 23 | **type** `public record Route(Berth berth, long x1, long y1, double[] xs, double[] ys, double[] along, int offing, in...` | A berth's route: its quay, its far end (x1, y1) out at sea, and the way between as points in plots - the berth first, its turns, the offing (point `offing`), the abyss's end last - with each point's distance along it ... |
 | 92 | 4 | `public Route(Berth berth, long x1, long y1)` _(in BoatSchedule.Route)_ | A straight lane from its quay to (x1, y1): O9's. |

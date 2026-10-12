@@ -9,9 +9,9 @@ import java.io.PrintStream;
 import java.util.Locale;
 
 /**
- * Copper Mining, checked (0.7.133, batch I8; runs/spec-materials.md 2.1, 2.3,
- * 2.4, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.3,
- * 1.4, 4 and 8): the fourth materials chain's digging industry, on the end
+ * Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
+ * 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.md -
+ * 1.3, 1.4, 4 and 8): the fourth materials chain's digging industry, on the end
  * of Sectors.KEYS after Cement & Concrete.
  *
  * WHY A HARNESS OF ITS OWN. A new sector gets one (CLAUDE.md; I6's
@@ -70,7 +70,9 @@ import java.util.Locale;
 public class CopperMiningCheck {
 
     static int fails = 0;
+    /** Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. */
     static final PrintStream out = System.out;
+    /** A stream that drops what is written to it: the game's prose while a fixture town is founded and played. */
     static final PrintStream quiet = new PrintStream(OutputStream.nullOutputStream());
 
     static void assertTrue(String label, boolean ok) {
@@ -102,14 +104,18 @@ public class CopperMiningCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
+    /** Copper, the resource its mines and leach plants dig. */
     static final Resource CU = Resource.COPPER;
+    /** Copper's two types of field (Resource.typesOf()): sulphide, floated at the mine, and oxide, leached. */
     static final Deposit.FieldType SULPHIDE = Deposit.FieldType.SULPHIDE, OXIDE = Deposit.FieldType.OXIDE;
 
     /* ============================ 1. the sector on the registry ============================ */
 
     /** Copper's goods, the study's 4.2: import and export price, D$ thousands a tonne. */
     static final Good[] GOODS = { Good.COPPER_CONC, Good.ANODE, Good.COPPER, Good.COPPER_SCRAP, Good.COPPER_ROD, Good.ACID, Good.WIRE_CABLE };
+    /** ...each one's import price, D$ thousands a tonne (the study's 4.2)... */
     static final double[] STUDY_IMPORT = { 2.800, 10.150, 10.500, 8.700, 10.750, .160, 17.000 };
+    /** ...and its export price. */
     static final double[] STUDY_EXPORT = { 2.575, 9.650, 10.000, 7.300, 10.250, .070, 13.000 };
 
     /** Good.java's rule: freight three eighths of the wedge. */
@@ -200,6 +206,7 @@ public class CopperMiningCheck {
 
     /** ...the sites each stands on, and of which type (its 4.3 and 1.3: "an oxide copper field takes a leach plant"). */
     static final int[] STUDY_SITES = { 1, 8, 1 };
+    /** ...and the type of field each stands on. */
     static final Deposit.FieldType[] STUDY_TYPES = { SULPHIDE, SULPHIDE, OXIDE };
 
     /** The study's 4.4 table, % of the cost a month, cases A to D. */

@@ -1055,7 +1055,7 @@ public class Game {
 
     /**
      * The oil at sea as the map draws it (0.7.97, batch O13; CityMap's THE
-     * OIL AT SEA, runs/spec-oil.md 2.12): each platform's jacket in the
+     * OIL AT SEA, docs/studies/spec-oil.md 2.12): each platform's jacket in the
      * middle of the sea sites its slots hold on its field - the platforms on
      * a field taking its sites in their order, as sectors.Oil.slotsOf() deals
      * them - with its wells on the first of them; and each pipe from its
@@ -3883,7 +3883,7 @@ public class Game {
     }
 
     /* =======================================================================
-       THE STRATEGIC RESERVE (0.7.85, batch O8; runs/spec-oil.md 2.8)
+       THE STRATEGIC RESERVE (0.7.85, batch O8; docs/studies/spec-oil.md 2.8)
 
        The city's crude, in its own tanks (StrategicReserve; the buildings are
        the Strategic Reserves standing). Two levers, recorded where they are
@@ -4002,7 +4002,8 @@ public class Game {
      * share of the city's dry ground (Zoning.Size.SHARE, 0 to 1) or square
      * kilometres (KM2); `priceShare` 0 to 1 of the going business price,
      * what the next sale in it pays (Z3: ground already sold is not
-     * re-priced). Any of the seventeen sectors, Real Estate's for homes.
+     * re-priced). Any sector of the registry (Sectors.KEYS), Real Estate's for
+     * homes.
      */
     public void setZone(String sector, Zoning.Size kind, double size, double priceShare) {
         if (getSectors().byKey(sector) == null) return;
@@ -6228,7 +6229,7 @@ public class Game {
     }
 
     /* ---------------------------------------------------------------------
-       BITUMEN FOR THE PAVING (0.7.83, batch O6; runs/spec-oil.md 2.5)
+       BITUMEN FOR THE PAVING (0.7.83, batch O6; docs/studies/spec-oil.md 2.5)
 
        A paved road's surface is asphalt, and asphalt is aggregate bound with
        bitumen - five per cent of it by weight [R18]. The model's road is its
@@ -7375,8 +7376,8 @@ public class Game {
     /**
      * Whether an order for this building is placed on the city's fields by
      * packing (0.7.124, batch I5): a works on the sites of a resource whose
-     * fields have types (Resource.hasTypes() - iron, and coal, copper and
-     * stone as their chains come), which needs room for its sites on one
+     * fields have types (Resource.hasTypes() - iron, and coal, stone and
+     * copper since their chains came, 0.7.126 to 0.7.133), which needs room for its sites on one
      * field of its type (LandManager.fits()), not a free site anywhere. Oil's
      * wells and platforms are counted as they were.
      */

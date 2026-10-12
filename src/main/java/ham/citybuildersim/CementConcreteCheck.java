@@ -11,10 +11,10 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Cement & Concrete, checked (0.7.131, batch I7; runs/spec-materials.md 2.1,
- * 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-research.md -
- * 1.2, 6 and 7): stone's processing industry, on the end of Sectors.KEYS
- * after Quarrying.
+ * Cement & Concrete, checked (0.7.131, batch I7; docs/studies/spec-materials.md
+ * 2.1, 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-research.md
+ * - 1.2, 6 and 7): stone's processing industry, on Sectors.KEYS after
+ * Quarrying (its end when it came).
  *
  * WHY A HARNESS OF ITS OWN. A new sector gets one (CLAUDE.md; I6's
  * CoalMiningCheck), and this one is ProcessingSector's rule on stone: its
@@ -60,7 +60,9 @@ import java.util.Locale;
 public class CementConcreteCheck {
 
     static int fails = 0;
+    /** Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. */
     static final PrintStream out = System.out;
+    /** A stream that drops what is written to it: the game's prose while a fixture town is founded and played. */
     static final PrintStream quiet = new PrintStream(OutputStream.nullOutputStream());
 
     static void assertTrue(String label, boolean ok) {

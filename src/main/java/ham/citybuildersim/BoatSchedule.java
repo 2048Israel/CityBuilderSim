@@ -6,8 +6,8 @@ import java.util.List;
 /**
  * The month's ships, as a pure function of time: which calls the city's sea
  * trade makes, when each arrives, and where each boat is at any moment
- * (0.7.86, batch O9; runs/spec-oil.md 2.10, the research's 4.3-4.4 and Q8;
- * scratch-oil's BoatProto, ported). Model only: since 0.7.97 (batch O13)
+ * (0.7.86, batch O9; docs/studies/spec-oil.md 2.10, the research's 4.3-4.4 and
+ * Q8; scratch-oil's BoatProto, ported). Model only: since 0.7.97 (batch O13)
  * ui/MapView draws it on the game's clock, on the map's sea routes.
  *
  * WHY. A port that is a share of the freight band is invisible; the

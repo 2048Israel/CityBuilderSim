@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The oil industry screen (0.7.96, batch O12; runs/spec-oil.md 2.13):
+ * The oil industry screen (0.7.96, batch O12; docs/studies/spec-oil.md 2.13):
  * OilView's figures, words, chart and levers, held to the model's own reads
  * in played towns.
  *

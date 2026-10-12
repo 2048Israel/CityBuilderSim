@@ -1,6 +1,6 @@
 # Oil.java - 1,353 lines · 89 methods · 14 constants · sectors
 
-`ham/citybuildersim/sectors/Oil.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Oil.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > Oil wells. THE SIXTEENTH SECTOR (0.7.62, batch K; the project's
 > spec-land.md 2.7).
@@ -16,13 +16,13 @@
 > through the template's hook (groundLimit()), and the wells retire when
 > the oil runs out, as the mines do when the ore does.
 > 
-> SINCE 0.7.84 (batch O7; runs/spec-oil.md 2.6) A WELL DECLINES: it lifts
-> its 415 t the month it opens and 10% less each year after, and is retired
-> below ten barrels a day, after 263 months (THE WELLS DECLINE, below); a
-> land well stands only on a dry site - a field whose centre is on land -
+> SINCE 0.7.84 (batch O7; docs/studies/spec-oil.md 2.6) A WELL DECLINES: it
+> lifts its 415 t the month it opens and 10% less each year after, and is
+> retired below ten barrels a day, after 263 months (THE WELLS DECLINE, below);
+> a land well stands only on a dry site - a field whose centre is on land -
 > and has one post, not three.
 > 
-> SINCE 0.7.91 (batch O10; runs/spec-oil.md 2.7, 2.11) THE SEA'S OIL IS
+> SINCE 0.7.91 (batch O10; docs/studies/spec-oil.md 2.7, 2.11) THE SEA'S OIL IS
 > LIFTED TOO: an Offshore Platform stands on a shallow sea field the city
 > owns, its Platform Wells lift in its slots, shuttle tankers take their
 > crude ashore at the boundary's freight, and a Crude Pipeline replaces
@@ -45,8 +45,8 @@
 
 | line | section |
 |---:|---|
-| 101 | THE WELLS DECLINE (0.7.84, batch O7; runs/spec-oil.md 2.6, the |
-| 626 | THE OIL AT SEA (0.7.91, batch O10; runs/spec-oil.md 2.7 and 2.11, the |
+| 101 | THE WELLS DECLINE (0.7.84, batch O7; docs/studies/spec-oil.md 2.6, the |
+| 626 | THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7 and 2.11, |
 | 965 | · the pipelines |
 | 1066 | · the shuttle tankers |
 | 1111 | · the pipeline rule |
@@ -110,7 +110,7 @@
 | 94 | 1 | `public double getLiftedAtSea()` |  |
 | 97 | 3 | `public double getPotentialOutput()` | What the wells could lift this month if the ground allowed it. |
 
-### THE WELLS DECLINE (0.7.84, batch O7; runs/spec-oil.md 2.6, the (lines 101-625)
+### THE WELLS DECLINE (0.7.84, batch O7; docs/studies/spec-oil.md 2.6, the (lines 101-625)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -150,7 +150,7 @@
 | 596 | 5 | `public double unitsOf(BuildingsTemplate t)` | A well's part of the measure above (0.7.84): the average well's lift - the template's nameplate times the wells' lift over what they would lift new - so a field worked out sheds wells by the count, as it did before th... |
 | 612 | 13 | `public boolean mayRetire(BuildingsTemplate t)` | Whether a holding may be sold back this month (0.7.91): a platform's jacket and a pipeline are not plant the lift measures, so the shrinking rules never pick them while they stand - they go when their wells have (Game... |
 
-### THE OIL AT SEA (0.7.91, batch O10; runs/spec-oil.md 2.7 and 2.11, the (lines 626-964)
+### THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7 and 2.11, (lines 626-964)
 
 | line | len | member | says |
 |---:|---:|---|---|

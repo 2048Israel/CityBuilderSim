@@ -298,7 +298,7 @@ public class MoneyCheck {
 
         /* ==================================================================
            4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES
-              ABROAD (0.7.112, batch I2; runs/spec-materials.md 2.5, 2.8).
+              ABROAD (0.7.112, batch I2; docs/studies/spec-materials.md 2.5, 2.8).
 
            Two flows the materials chains bring, neither of which any building
            has yet - so THE FIXTURE CAUSES BOTH: the bakeries are handed power

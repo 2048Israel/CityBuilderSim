@@ -303,8 +303,11 @@ public final class Stale {
     /**
      * The prose documents: the hand-written pages directly under docs/ and the
      * three front doors. Never docs/map, which is generated, and never
-     * docs/notes/, which is the project's record copied in - the list and the
-     * changelog name files that WERE in the tree, and are right to.
+     * docs/notes/, the archive of the record that left the project (since
+     * 2026-10-11, AR1: the changelog's older blocks and the todo's finished
+     * part) - they name files that WERE in the tree, and are right to. No
+     * folder under docs/ is read (docs/studies/ and docs/queue/ among them):
+     * only the pages directly in it.
      */
     static List<Path> prose(SourceTree tree) throws IOException {
         List<Path> out = new ArrayList<>();

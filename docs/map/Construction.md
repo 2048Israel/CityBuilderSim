@@ -1,6 +1,6 @@
-# Construction.java - 923 lines · 50 methods · 1 constants · sectors
+# Construction.java - 935 lines · 50 methods · 1 constants · sectors
 
-`ham/citybuildersim/sectors/Construction.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Construction.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The builders. Every build order in the city is theirs, and they bill it.
 > 
@@ -35,7 +35,7 @@
 
 **Uses:** [Good](Good.md) (16), [BusinessInvestment](BusinessInvestment.md) (11), [Game](Game.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [BuildingManager](BuildingManager.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [JobType](JobType.md) (1)
 
-**Used by (15):** [BankCheck](BankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Game](Game.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [UserInterface](UserInterface.md)
+**Used by (16):** [BankCheck](BankCheck.md), [BuildersFirstCheck](BuildersFirstCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Game](Game.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -46,8 +46,8 @@
 | 461 | WHAT IT COSTS TO STAND |
 | 490 | MATERIALS ARE DRAWN, NOT BID FOR |
 | 558 | PLANNING - off the order book |
-| 724 | THE SCREEN |
-| 840 | SAVE |
+| 736 | THE SCREEN |
+| 852 | SAVE |
 
 ## Constants
 
@@ -79,7 +79,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 877 | **type** `public final class Construction extends Sector` | The builders. |
+| 47 | 889 | **type** `public final class Construction extends Sector` | The builders. |
 | 152 | 13 | `public void strikeCrews(double work, double cityWorks, double depots)` | Strikes the month's crews. |
 | 167 | 1 | `public double getPostsOfferedShare()` | The share of the depots' posts on offer this month. |
 | 170 | 1 | `public double getCrewsNeeded()` | The work over the depots' full-staffing output, as struck - above 1 when the work is more than they can do. |
@@ -139,30 +139,30 @@
 | 542 | 11 | `public double takeSalvage(double units)` | Draws from the stock, up to what it holds, and books what the units drawn cost - their share of the cost basis - as this month's input. |
 | 556 | 1 | `public double getInventoryValue()` | Its stock of scrapped plant's material at today's price; the yard is the city's and the plant is the plant's. |
 
-### PLANNING - off the order book (lines 558-723)
+### PLANNING - off the order book (lines 558-735)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 585 | 70 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Everyone else's lead times are its output, so when the queue gets long it is the constraint on the whole city. |
-| 674 | 9 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | WHAT A DEPOT WOULD EARN, LESS WHAT IT WOULD COST (0.7.19). |
-| 710 | 13 | `public double[] retirementDemandAndCapacity(Game game)` | Its demand is the repairs and the queue: the city's repair order and the work ordered and not yet done, the queue capped at what the sites could take this month, and never less than what the city has undertaken to kee... |
+| 597 | 70 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Everyone else's lead times are its output, so when the queue gets long it is the constraint on the whole city. |
+| 686 | 9 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | WHAT A DEPOT WOULD EARN, LESS WHAT IT WOULD COST (0.7.19). |
+| 722 | 13 | `public double[] retirementDemandAndCapacity(Game game)` | Its demand is the repairs and the queue: the city's repair order and the work ordered and not yet done, the queue capped at what the sites could take this month, and never less than what the city has undertaken to kee... |
 
-### THE SCREEN (lines 724-839)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 730 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. |
-| 733 | 1 | `public String inputLabel()` |  |
-| 749 | 9 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
-| 760 | 1 | `public boolean hasPlantBlock()` |  |
-| 763 | 76 | `public List<Line> ownLines(Game game)` |  |
-
-### SAVE (lines 840-923)
+### THE SCREEN (lines 736-851)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 845 | 26 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 873 | 26 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 901 | 10 | `protected void resetExtras()` |  |
-| 914 | 9 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
+| 742 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. |
+| 745 | 1 | `public String inputLabel()` |  |
+| 761 | 9 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
+| 772 | 1 | `public boolean hasPlantBlock()` |  |
+| 775 | 76 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE (lines 852-935)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 857 | 26 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 885 | 26 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 913 | 10 | `protected void resetExtras()` |  |
+| 926 | 9 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
 

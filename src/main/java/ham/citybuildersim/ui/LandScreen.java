@@ -808,7 +808,7 @@ final class LandScreen {
             + " a square metre today, then the building's own cash cost; the figure at its right is the ground's"
             + " share of the two.";
 
-    /** The Ore card: the deposits, the tonnes, the mines on them, whether ore lies undug, and the oil (0.7.61). */
+    /** The Ore card: the deposits, the tonnes, those under mines (since 0.7.124 the sites the mines take, a large mine's twenty: Game.minesCommitted()), whether ore lies undug, and the oil (0.7.61). */
     record Ore(String deposits, String tonnes, String mines, boolean undug, String popped, String oil) { }
 
     Ore ore() {
@@ -819,7 +819,7 @@ final class LandScreen {
         long oilSites = ui.game.getCityLand().totalSites(Resource.OIL);
         return new Ore(formatter.format(deposits) + (deposits == 1 ? " deposit" : " deposits"),
                 shortNumber(land.getIronReserveTonnes()) + " t in the ground",
-                formatter.format(mines) + (mines == 1 ? " mine" : " mines") + " on them, standing or on site",
+                formatter.format(mines) + " under mines, standing or on site",
                 mines < deposits,
                 gained > 0 ? "+" + gained + (gained == 1 ? " deposit" : " deposits") : null,
                 oilSites > 0 ? "oil: " + formatter.format(oilSites) + (oilSites == 1 ? " site, " : " sites, ")
@@ -827,11 +827,12 @@ final class LandScreen {
     }
 
     /** The Ore card's (i). */
-    static final String ORE_INFO = "A mine stands on one deposit, and every mine draws on the city's tonnes"
-            + " together. Deposits come only with land, a whole field at a time: an offer holds every field whose"
+    static final String ORE_INFO = "A mine stands on one deposit, a large one on twenty of one field, and each draws on the city's"
+            + " tonnes of its field's type, hematite or magnetite. Deposits come only with land, a whole field at a"
+            + " time: an offer holds every field whose"
             + " centre lies in it - all its sites and all its tonnes, its row says how many - and the ore is paid"
             + " for inside its price. Oil lies in the world's fields as ore does, sold the same way, and an Oil Well"
-            + " stands on an oil site. Click the card for Build › Industry, where the Iron Mine is.";
+            + " stands on an oil site. Click the card for Build › Industry, where the iron mines are.";
 
     /** The sectors waiting on ground, by name: Game.getLandBlockedSectors(), as the sector pages and the inbox read it. */
     List<String> waitingNames() {

@@ -34,7 +34,7 @@ import javafx.scene.text.TextAlignment;
 import static ham.citybuildersim.ui.Pieces.*;
 
 /**
- * The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, the far nodes from the world's ground - with the city's block lines, its edge, its offers hatched and numbered by place, and its deposits over it, a scale bar, and what is under the pointer.
+ * The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, the far nodes from the world's ground and the district pictures (0.7.128), and expanded on the real Earth a globe (0.7.135) - with the city's block lines, its edge, its offers hatched and numbered by place, and its deposits over it, a scale bar, and what is under the pointer.
  *
  * WHY THIS EXISTS (0.7.61, batch J4; the project's spec-land.md 2.6 and
  * 2.8). Jerus: click a side to see its ten offers (six since 0.7.67), the
@@ -96,8 +96,9 @@ import static ham.citybuildersim.ui.Pieces.*;
  * MapCheck holds it; the edge and each offer's cut-outs are found once a
  * purchase or a listing, not every frame.
  *
- * THE BOATS (0.7.97, batch O13; runs/spec-oil.md 2.10, spec-roads-and-ports.md
- * 4): over the tiles, each terminal's lane out to sea - its route (CityMap's
+ * THE BOATS (0.7.97, batch O13; docs/studies/spec-oil.md 2.10,
+ * spec-roads-and-ports.md 4): over the tiles, each terminal's lane out to sea -
+ * its route (CityMap's
  * THE SEA ROUTES, found on WORKER and kept here) - from L2 in, and from L1 in
  * the boats on it: the month's calls (BoatSchedule) where the game's clock
  * puts them, a boat-month BOAT_GAME_MONTHS of the game's, so a month of

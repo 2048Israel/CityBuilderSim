@@ -9,8 +9,8 @@ import java.util.Map;
  * The Earth's geology as its deposits read it: each USGS province's class - ocean, shield, fold belt, rift, shelf, basin or other - by the data's name rules and the hand-checked table, its known petroleum, and the weights, the Z that keeps the land's count of fields today's and the type odds an Earth world's fields are drawn with (spec-earth 4).
  *
  * WHY THIS EXISTS (0.7.117, batch E3; the project's spec-earth.md 4 and 8,
- * runs/spec-materials.md 2.4; Jerus's answers of 2026-10-10, "all rec").
- * Until E3 an Earth world drew its fields as a generated one does, at
+ * docs/studies/spec-materials.md 2.4; Jerus's answers of 2026-10-10, "all
+ * rec"). Until E3 an Earth world drew its fields as a generated one does, at
  * today's densities on its cells' land (E2): iron as thick on the Paris
  * basin as on the Yilgarn shield, oil as thick in the Alps as under the
  * North Sea. The study rasterised the USGS World Energy provinces at 0.25
@@ -51,10 +51,10 @@ import java.util.Map;
  * has it). The study's figures were measured on the rules' classes before
  * the hand pass, and three of them do not follow from its own table (★E3-2).
  *
- * THE TYPES (runs/spec-materials.md 2.4, "On Earth (E3)"). A field's type
- * leans on the class at its centre by an odds ratio: coking coal x3 in fold
- * belts and x0.5 on shields, limestone x2 in basins and on shelves, x0.5 in
- * fold belts and x0.25 on shields, iron and copper flat; one constant a
+ * THE TYPES (docs/studies/spec-materials.md 2.4, "On Earth (E3)"). A field's
+ * type leans on the class at its centre by an odds ratio: coking coal x3 in
+ * fold belts and x0.5 on shields, limestone x2 in basins and on shelves, x0.5
+ * in fold belts and x0.25 on shields, iron and copper flat; one constant a
  * resource (COKING_ODDS, LIMESTONE_ODDS) holds the Earth-wide share - over
  * the fields expected in each class - at the generated world's TYPE_SHARES.
  *
@@ -137,8 +137,8 @@ public final class Geology {
     public static final double OIL_SCALE_MMBOE = 1000;
 
     /* =====================================================================
-       THE TYPES' ODDS (runs/spec-materials.md 2.4, "On Earth (E3)"): the
-       leaning type's share in a class is c x ratio / (1 + c x ratio), in
+       THE TYPES' ODDS (docs/studies/spec-materials.md 2.4, "On Earth (E3)"):
+       the leaning type's share in a class is c x ratio / (1 + c x ratio), in
        Kind's order. The study, on the rules' classes: limestone .886 in
        basins and .493 on shields, 70.00% in all.
        ===================================================================== */

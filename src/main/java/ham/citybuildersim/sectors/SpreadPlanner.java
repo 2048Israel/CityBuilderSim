@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.function.ToDoubleFunction;
 
 /**
- * The spread planner (0.7.82, batch O5; runs/spec-oil.md 2.4, and
- * runs/spec-materials.md 2.6): what a processing sector orders - of the
+ * The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and
+ * docs/studies/spec-materials.md 2.6): what a processing sector orders - of the
  * buildings that pass its gates, the one that earns most on its cost at the
  * city's own prices - and which of its kinds it may sell back once they
  * stand idle.

@@ -1,10 +1,10 @@
-# ExtractionSector.java - 264 lines · 14 methods · 0 constants · sectors
+# ExtractionSector.java - 482 lines · 26 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/ExtractionSector.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/ExtractionSector.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > A sector that digs or cuts one resource out of the ground the city owns:
 > the template every extraction industry of the materials chains extends
-> (0.7.112, batch I2; runs/spec-materials.md 2.1 and 2.6b).
+> (0.7.112, batch I2; docs/studies/spec-materials.md 2.1 and 2.6b).
 > 
 > WHY. The materials chains bring four more industries that lift their
 > good off the city's fields - Coal Mining, Quarrying, Copper Mining and
@@ -40,82 +40,112 @@
 >     its plant is spare;
 >   - THE PAGE (ownLines()): the deposits found and the ones being worked.
 > 
-> WHAT IS LEFT FOR THE CHAINS (spec-materials 2.4, 2.6b): the dig by field
-> type and a building's site (BuildingsTemplate.Site: type, sites, dig) -
-> LandManager.fits() gating the plan and the ground limit split by each
-> type's capacity (I5) - and Forestry's crews on the cuttable forest (I9).
-> Nothing here reads a site's type or dig yet: Mining's one building stands
-> on ANY, one site, a tonne of field a tonne lifted.
+> BY TYPE AND SIZE SINCE 0.7.124 (batch I5; spec-materials 2.4, 2.6b; the
+> study's 1.3: "the sector chooses the mine type that fits"). A building's
+> site (BuildingsTemplate.Site) says the type of field it stands on, the
+> sites it takes and the tonnes of field a unit it makes digs, and each of
+> the four rules above reads it:
+>   - THE GROUND by type: the month's ask split by each type's share of the
+>     sector's nameplate, each part dug from its own type's ground at its
+>     dig (a magnetite works three tonnes of rock a tonne of concentrate),
+>     LandManager.extract(r, type, t) - so a hematite mine never lifts a
+>     magnetite tonne, and W holds by type;
+>   - THE PLAN only among the mines that fit: its type's ore left, and room
+>     for its sites on ONE field of its type beside the works standing
+>     (Game.claimsOn(), LandManager.fits()) - a Large Open-Pit Mine twenty
+>     free sites of one hematite field - the best earnings on the whole cost
+>     winning; the size is the free sites' (Jerus's Q19);
+>   - THE ESTIMATE and the plan's cost with the mine's lorries (★, as I4
+>     weighs every works: ProcessingSector.fleetRunning(), fleetCapital());
+>   - THE RETIREMENT by type: a mine whose type is worked out is spare while
+>     the other type still has ore, and only it may be sold.
+> 
+> A STOCKABLE GOOD'S LIFT (0.7.126, batch I6): groundLimit() reaches only
+> the flow goods. A good the sector stocks - Coal Mining's two coals, Copper
+> ... (9 more lines in the source)
 
-**Uses:** [BusinessInvestment](BusinessInvestment.md) (12), [SpreadPlanner](SpreadPlanner.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Resource](Resource.md) (3), [Good](Good.md) (3), [LandManager](LandManager.md) (3), [Game](Game.md) (3), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [ProcessingSector](ProcessingSector.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (20), [BusinessInvestment](BusinessInvestment.md) (14), [LandManager](LandManager.md) (13), [Deposit](Deposit.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [ProcessingSector](ProcessingSector.md) (5), [Good](Good.md) (4), [Resource](Resource.md) (3), [Game](Game.md) (3), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (2):** [MaterialsCheck](MaterialsCheck.md), [Mining](Mining.md)
+**Used by (8):** [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMining](CopperMining.md), [CopperMiningCheck](CopperMiningCheck.md), [MaterialsCheck](MaterialsCheck.md), [Mining](Mining.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 80 | · the ground |
-| 98 | · the estimate |
-| 123 | · the dig |
-| 140 | · the plan |
-| 220 | · the retirement |
-| 247 | · the page |
+| 109 | · the ground |
+| 183 | · the estimate |
+| 232 | · the dig |
+| 249 | · the plan |
+| 392 | · the retirement |
+| 454 | · the page |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 64 | `private final Resource resource` | The resource whose ground it lifts. |
-| 67 | `private final SpreadPlanner planner` | Its spread planner, for its money gate (0.7.120, batch I3; spec-materials 2.6b): ON_ITS_WHOLE_COST unless a check or a probe sets another. |
+| 93 | `private final Resource resource` | The resource whose ground it lifts. |
+| 96 | `private final SpreadPlanner planner` | Its spread planner, for its money gate (0.7.120, batch I3; spec-materials 2.6b): ON_ITS_WHOLE_COST unless a check or a probe sets another. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 61 | 204 | **type** `public abstract class ExtractionSector extends Sector` | A sector that digs or cuts one resource out of the ground the city owns: the template every extraction industry of the materials chains extends (0.7.112, batch I2; runs/spec-materials.md 2.1 and 2.6b). |
-| 69 | 4 | `protected ExtractionSector(String key, String label, BuildingType group, Resource resource)` |  |
-| 75 | 1 | `public final Resource resource()` | The resource whose ground it lifts. |
-| 78 | 1 | `public final Good groundGood()` | The good its ground limits: its resource's (Resource.good()). |
+| 90 | 393 | **type** `public abstract class ExtractionSector extends Sector` | A sector that digs or cuts one resource out of the ground the city owns: the template every extraction industry of the materials chains extends (0.7.112, batch I2; docs/studies/spec-materials.md 2.1 and 2.6b). |
+| 98 | 4 | `protected ExtractionSector(String key, String label, BuildingType group, Resource resource)` |  |
+| 104 | 1 | `public final Resource resource()` | The resource whose ground it lifts. |
+| 107 | 1 | `public final Good groundGood()` | The good its ground limits: its resource's (Resource.good()). |
 
-### the ground (lines 80-97)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 84 | 5 | `protected double groundLimit(Good g, double asked)` | The ground, not the mine, decides what comes up. |
-| 91 | 3 | `protected double dig(LandManager land, double asked)` | What the ground gives of `asked` this month: its resource's remainder taken out (LandManager.extract()). |
-| 96 | 1 | `public SpreadPlanner planner()` | Its spread planner (0.7.120): its money gate - a check or a probe sets the counterfactual on it. |
-
-### the estimate (lines 98-122)
+### the ground (lines 109-182)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 101 | 3 | `public double exchangeFactor()` | What its mines' consumables are paid at: the exchange factor every world price is converted at; 1 with no markets. |
-| 116 | 6 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more of its mines would clear a month (0.7.120, batch I3): the maker's estimate (Sector's - its good at home and abroad, its inputs, its wages, power, water, repairs and tax, at the rate its plant runs) less ... |
+| 121 | 20 | `protected double groundLimit(Good g, double asked)` | The ground, not the mine, decides what comes up - since 0.7.124 by type (BY TYPE AND SIZE, above): the month's ask split by each kind of dig's share of the nameplate (digs()), each part's field tonnes - the ask times ... |
+| 143 | 3 | `protected double dig(LandManager land, double asked)` | What the ground gives of `asked` this month: its resource's remainder taken out (LandManager.extract()). |
+| 153 | 3 | `protected double dig(LandManager land, Deposit.FieldType type, double fieldTonnes, boolean more)` | ...of one type (0.7.124): `fieldTonnes` of its type's ground (null for ANY, the walk) taken out (LandManager.extract(r, type, t)), what was there; `more` when another type was dug before it this month. |
+| 158 | 1 | **type** `record Dig(Deposit.FieldType type, double dig, double capacity)` | One kind of dig its buildings make: the type of field they stand on (null for ANY), the tonnes of field a unit takes, and their nameplate of the good. |
+| 165 | 14 | `List<Dig> digs(Good g)` | Its buildings standing that make `g`, by the type of field they stand on and their dig (a building with no site of its resource on ANY at a tonne a tonne), each kind's nameplate, in the catalogue's order. |
+| 181 | 1 | `public SpreadPlanner planner()` | Its spread planner (0.7.120): its money gate - a check or a probe sets the counterfactual on it. |
 
-### the dig (lines 123-139)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 126 | 3 | `public double getPotentialOutput()` | What its buildings could lift this month if the ground allowed it. |
-| 131 | 3 | `public int sitesOwned()` | The sites of its resource the city owns: how many of its buildings can stand. |
-| 136 | 3 | `public int sitesWorked()` | ...and those its buildings stand on, standing, on site or ordered (Game.committedOn()). |
-
-### the plan (lines 140-219)
+### the estimate (lines 183-231)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 152 | 67 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to open another mine. |
+| 186 | 3 | `public double exchangeFactor()` | What its mines' consumables are paid at: the exchange factor every world price is converted at; 1 with no markets. |
+| 201 | 6 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more of its mines would clear a month (0.7.120, batch I3): the maker's estimate (Sector's - its good at home and abroad, its inputs, its wages, power, water, repairs and tax, at the rate its plant runs) less ... |
+| 223 | 3 | `public double fleetRunning(BuildingsTemplate t, double rate)` | What one of `t`'s lorries cost a month at `rate`: ProcessingSector.fleetRunning() at what a van and a litre cost here; none with no markets. |
+| 228 | 3 | `public double fleetCapital(BuildingsTemplate t)` | ...and buying them: ProcessingSector.fleetCapital(); none with no markets. |
 
-### the retirement (lines 220-246)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 238 | 8 | `public double[] retirementDemandAndCapacity(Game game)` | A price-taking exporter always sells what it lifts: it shrinks on distress only - WHILE THERE IS ORE. |
-
-### the page (lines 247-264)
+### the dig (lines 232-248)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 250 | 14 | `public List<Line> ownLines(Game game)` |  |
+| 235 | 3 | `public double getPotentialOutput()` | What its buildings could lift this month if the ground allowed it. |
+| 240 | 3 | `public int sitesOwned()` | The sites of its resource the city owns: how many of its buildings can stand. |
+| 245 | 3 | `public int sitesWorked()` | ...and those its buildings stand on, standing, on site or ordered (Game.committedOn()). |
+
+### the plan (lines 249-391)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 267 | 79 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to open another mine. |
+| 353 | 3 | `protected boolean lifts(BuildingsTemplate t)` | Whether a building of its lifts its ground - a mine the plan weighs and the retirement measures: one that makes its ground's good (Resource .good()). |
+| 358 | 3 | `public boolean fits(BuildingsTemplate t)` | Whether one more of `t` fits the city's ground now (0.7.124): fits() below against the works standing, on site or ordered (Game.claimsOn()) - what the plan asks of each candidate, and the build card may. |
+| 369 | 5 | `boolean fits(LandManager land, BuildingsTemplate t, List<LandManager.Claim> standing)` | Whether one more of `t` fits the city's ground beside the claims standing (0.7.124): a building that stands on its resource's sites needs ore of its type left (getRemaining(r, type)) and room for its sites on one fiel... |
+| 376 | 10 | `private String noField(LandManager land, BuildingsTemplate t)` | Why the first mine that does not fit cannot stand: its type worked out, or no field of its type with room for its sites. |
+| 388 | 3 | `static String typeWord(Deposit.FieldType type)` | A field type in words: "hematite", "magnetite". |
+
+### the retirement (lines 392-453)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 410 | 10 | `public double[] retirementDemandAndCapacity(Game game)` | A price-taking exporter always sells what it lifts: it shrinks on distress only - WHILE THERE IS ORE. |
+| 422 | 10 | `double workedOutCapacity(LandManager land)` | Its nameplate standing on a type whose ore is worked out (0.7.124): the mines that lift nothing. |
+| 434 | 6 | `boolean workedOut(LandManager land, BuildingsTemplate t)` | Whether a building of its stands on ground with nothing left: its type's ore (ANY or no site: its resource's) worked out. |
+| 448 | 5 | `public boolean mayRetire(BuildingsTemplate t)` | ...and which of its mines may be sold (0.7.124): while any stands over a worked-out type, only those - by the spare-capacity rule above and by the distress rule alike, so a sector in trouble sells the mines that lift ... |
+
+### the page (lines 454-482)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 457 | 25 | `public List<Line> ownLines(Game game)` |  |
 

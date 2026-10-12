@@ -66,10 +66,10 @@ import java.util.List;
  *      conversion's search, which still asks it, goes on); and the site
  *      table's first LEGACY_MAX_SITES places are the old one's, so an older
  *      save's sites stand where they stood;
- *   9. (0.7.110, batch I1; runs/spec-materials.md 2.4) EACH FIELD'S TYPE, on
- *      the three worlds: each resource's types' TYPE_SHARES add up to one,
- *      oil's and uranium's fields are NONE; a field's type is the same every
- *      time it is drawn, on a world built twice and from its record; each
+ *   9. (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) EACH FIELD'S
+ *      TYPE, on the three worlds: each resource's types' TYPE_SHARES add up to
+ *      one, oil's and uranium's fields are NONE; a field's type is the same
+ *      every time it is drawn, on a world built twice and from its record; each
  *      type is its TYPE_SHARES of the fields within two points - iron's in
  *      the pools round the site, stone's in a wider square, coal's and
  *      copper's the whole world's; every pool's fields of each type add up

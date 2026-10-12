@@ -14,7 +14,8 @@ import java.util.Map;
 /**
  * A sector that turns goods into other goods in works it builds by what
  * pays: the template every processing industry of the materials chains
- * extends (0.7.112, batch I2; runs/spec-materials.md 2.1, 2.6a and 2.7).
+ * extends (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.6a and
+ * 2.7).
  *
  * WHY. The materials chains bring four processing industries - Iron & Steel
  * (Heavy Industry, from batch I3), Cement & Concrete, Copper Refining and
@@ -52,6 +53,10 @@ import java.util.Map;
  * pays (SpreadPlanner.ON_ITS_WHOLE_COST, Jerus's decision A). The one that
  * earns most on its cost is ordered, one order in flight. What Game.consider()
  * tests the order on is that same estimate (estimatedMonthlyProfit()).
+ * The city's values a works is weighed at are values() (0.7.131, batch I7):
+ * SpreadPlanner.values(), with the limestone the quarries carried into
+ * aggregate counted as exported - and a sector may weigh a feed of its own
+ * there too (Copper Refining's old copper, 0.7.133).
  *
  * CAPTIVE USE (spec-materials 2.7): every good it both makes and uses goes
  * to its own need first (captive(): Sector, CAPTIVE USE).
@@ -73,7 +78,8 @@ import java.util.Map;
  *
  * HEAVY INDUSTRY - IRON & STEEL - EXTENDS IT SINCE 0.7.120 (batch I3), its
  * arc furnaces on scrap, and since 0.7.123 (batch I4) the integrated route
- * and the Scrap Yard; the chains' new sectors follow at I7, I8 and I10.
+ * and the Scrap Yard; Cement & Concrete since 0.7.131 (batch I7) and Copper
+ * Refining since 0.7.133 (batch I8), and Wood Products follows at I10.
  * Refining stays its own (★ it
  * overrides every part of the plan - the flow, the package, the run, the
  * Tank Farm - and its idle months are its kinds of unit, not its
@@ -106,7 +112,7 @@ public abstract class ProcessingSector extends Sector {
         return t != null && !t.goodsMade().isEmpty();
     }
 
-    /** Its feed gate for a building, in words, or null when it has its feed: none by default - a works buys its feed on the market, imported past what the city makes. A chain whose works take a stream (the wash plant's raw coal) says so here. */
+    /** Its feed gate for a building, in words, or null when it has its feed: none by default - a works buys its feed on the market, imported past what the city makes. A works that takes a stream no market sells says so here (HeavyIndustry's Scrap Yard, the city's old steel); coal's preparation plant, an extraction sector's, has its own gate (CoalMining.planWash()). */
     protected String feedRefusal(BuildingsTemplate t) {
         return null;
     }

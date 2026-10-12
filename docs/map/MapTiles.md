@@ -1,8 +1,8 @@
-# MapTiles.java - 391 lines · 27 methods · 4 constants · model
+# MapTiles.java - 548 lines · 32 methods · 7 constants · model
 
-`ham/citybuildersim/MapTiles.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MapTiles.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
-> The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kept for the hover and a change of level, the per-tile path from inputs to pixels, and the far view's node pixels from the world's ground and the districts' counts.
+> The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kept for the hover and a change of level, the per-tile path from inputs to pixels, and the far view's node pixels from the world's ground, the districts' pictures and shares, and the city's runs and edge.
 > 
 > WHY THIS EXISTS (0.7.61, batch J4; the project's spec-land.md 2.6). The
 > view holds its images (ui/MapView: JavaFX's WritableImage, one cache a
@@ -21,81 +21,100 @@
 > district plans' jobs (CityMap.Job: their inputs gathered on the FX thread,
 > kept there by CityMap.adopt()) run on the view's worker: a tile is painted
 > only once ready() says its plans are drawn, and jobs() hands out what
-> draws them.
+> draws them. Since 0.7.128 (batch MM1) a plan's job draws its district's
+> picture with it (DistrictPicture), which the far nodes read; a node drawn
+> without one it wanted says so (nodePixels()'s count, wanted()), and the
+> view asks CityMap.pictureJobs() for them while picturesFit().
 
-**Uses:** [World](World.md) (32), [MapFrame](MapFrame.md) (32), [TilePainter](TilePainter.md) (30), [TileRaster](TileRaster.md) (12), [BuildingVisual](BuildingVisual.md) (10), [CityMap](CityMap.md) (9), [EarthProj](EarthProj.md) (3), [CityLand](CityLand.md) (2)
+**Uses:** [World](World.md) (43), [MapFrame](MapFrame.md) (35), [TilePainter](TilePainter.md) (30), [CityMap](CityMap.md) (16), [DistrictPicture](DistrictPicture.md) (12), [LandGrid](LandGrid.md) (9), [TileRaster](TileRaster.md) (8), [CityRuns](CityRuns.md) (4), [EarthProj](EarthProj.md) (3), [CityLand](CityLand.md) (2), [BuildingVisual](BuildingVisual.md) (1)
 
-**Used by (3):** [FoundingScreen](FoundingScreen.md), [MapCheck](MapCheck.md), [MapView](MapView.md)
+**Used by (7):** [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 240 | THE BUDGET (spec-land 2.6: every cache within 48 MB) |
-| 293 | THE FAR NODES |
+| 243 | THE BUDGET (spec-land 2.6: every cache within 48 MB) |
+| 297 | THE FAR NODES |
+| 325 | · the far nodes from the district pictures (0.7.128, batch MM1; docs/studies/spec-globe.md 8.2) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 31 | `MapTiles.TERRAIN_KEPT` | `2048` | Tiles' ground kept: 2,048 (spec-land 2.6), a kilobyte each - a far screen of NEAR_TILES_MOST and its margin. |
-| 34 | `MapTiles.PAINTED_KEPT` | `1` | Painted tiles kept, with their inputs: 1, the hover's (star RD2-5; 64 until 0.7.87) - about 31 KB each on MapCheck 7's densest screen, x 10,000 (the painter's arrays grow to 512). |
-| 37 | `MapTiles.BUDGET_MB` | `48` | What every cache of the view together may hold, in MB: 48 (spec-land 2.6). |
-| 40 | `MapTiles.DESIGN_W` | `1345, DESIGN_H = 806` | The view the budget is sized for, in pixels: the land office's expanded map in a 1,389 x 868 window - 1,345 across inside the pane's padding, 806 down under its head (UserInterface's chart pane, 0.7.23). |
+| 34 | `MapTiles.TERRAIN_KEPT` | `2048` | Tiles' ground kept: 2,048 (spec-land 2.6), a kilobyte each - a far screen of NEAR_TILES_MOST and its margin. |
+| 37 | `MapTiles.PAINTED_KEPT` | `1` | Painted tiles kept, with their inputs: 1, the hover's (star RD2-5; 64 until 0.7.87) - about 31 KB each on MapCheck 7's densest screen, x 10,000 (the painter's arrays grow to 512). |
+| 40 | `MapTiles.BUDGET_MB` | `48` | What every cache of the view together may hold, in MB: 48 (spec-land 2.6). |
+| 43 | `MapTiles.DESIGN_W` | `1345, DESIGN_H = 806` | The view the budget is sized for, in pixels: the land office's expanded map in a 1,389 x 868 window - 1,345 across inside the pane's padding, 806 down under its head (UserInterface's chart pane, 0.7.23). |
+| 328 | `MapTiles.PICTURE_FROM_PX` | `4` | A district is drawn from its picture (DistrictPicture) on a far node where it is at least this many of the node's pixels across: 4 (the study's 8.2) - a node's pixel is shown 1 to 2 screen pixels wide (MapFrame.nodePl... |
+| 331 | `MapTiles.EDGE` | `0xffffffff` | The city's edge over a far node's pixels: white at 0.55, the view's edge's (MapView's EDGE_ALPHA, since 0.7.61), on the inner ring of the pixels drawn as the city's and on any holding ground of it smaller than a pixel... |
+| 334 | `MapTiles.EDGE_ALPHA` | `0.55` | ...its white's alpha: 0.55, the view's own edge's since 0.7.61 - ui/MapView's EDGE_ALPHA reads this one since 0.7.128, so the two are one dial. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 44 | `final TilePainter.Input in` |  |
-| 45 | `final TilePainter.Painted p` |  |
-| 46 | `long stamp` |  |
-| 49 | `private final CityMap map` |  |
-| 50 | `private final Map<Long, byte[]> terrain` |  |
-| 53 | `private final Map<Long, Kept> painted` |  |
-| 58 | `private long paints, stamps` | How many tiles have been painted and how many stamps taken: what a harness reads. |
+| 47 | `final TilePainter.Input in` |  |
+| 48 | `final TilePainter.Painted p` |  |
+| 49 | `long stamp` |  |
+| 52 | `private final CityMap map` |  |
+| 53 | `private final Map<Long, byte[]> terrain` |  |
+| 56 | `private final Map<Long, Kept> painted` |  |
+| 61 | `private long paints, stamps` | How many tiles have been painted and how many stamps taken: what a harness reads. |
+| 337 | `private final java.util.Set<CityMap.District> wanted` | The districts the last nodePixels() drew at PICTURE_FROM_PX or more with no current picture: what the view asks the pictures of (CityMap.pictureJobs()). |
+| 340 | `private boolean[] lastEdge` | Which of the last nodePixels()'s pixels it drew as the city's edge, and as a highway's or the railway's: a harness's. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 364 | **type** `public final class MapTiles` | The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kep... |
-| 43 | 5 | **type** `private static final class Kept` | A tile's painted bytes, kept: its inputs, the picture and the stamp it was painted at. |
-| 60 | 1 | `public MapTiles(CityMap map)` |  |
-| 63 | 1 | `public CityMap map()` | The map these tiles are painted from. |
-| 65 | 1 | `public long paints()` |  |
-| 66 | 1 | `public long stamps()` |  |
-| 69 | 5 | `public static long version(CityMap map, CityLand land)` | What a view's pictures are current against: the map's changes (CityMap.changes()), and the land's purchases and centre - a purchase between months owns ground at once (a tile's ownership is the live land's) that the m... |
-| 76 | 1 | `public static long key(long tx, long ty)` | A tile's key: its column and row, the world's tiles numbering under 2^20 each way. |
-| 79 | 10 | `public byte[] terrain(long tx, long ty)` | A tile's ground, from the world the first time and kept. |
-| 91 | 3 | `public boolean ready(long tx, long ty)` | Whether tile (tx, ty) paints without planning (0.7.88): the district plans it is drawn from are drawn (CityMap.tileReady()). |
-| 96 | 3 | `public java.util.List<CityMap.Job> jobs(long tx, long ty)` | The jobs that draw tile (tx, ty)'s plans, to run in order on one thread away from the screen's and then keep (CityMap.adopt()); none handed out twice. |
-| 101 | 5 | `public long input(long tx, long ty, TilePainter.Input in)` | A tile's inputs into `in` (its ground from the cache), and their stamp - its plans made here if they are not drawn (a harness's way; the view asks ready() first). |
-| 115 | 24 | `public static long stamp(TilePainter.Input in)` | A stamp of everything a tile is painted from but its ground, which is the world's and never changes: what is owned, its plan's streets and those just beyond its edges, the city's highways and track through it, its bui... |
-| 141 | 9 | `private static long packed(byte[] codes)` | Bytes a plot folded into one number, eight a word. |
-| 152 | 9 | `private static long packed(boolean[] flags)` | A plot-by-plot flag folded into one number, sixty-four plots a word. |
-| 167 | 12 | `public TilePainter.Painted painted(long tx, long ty, TilePainter.Input in, long stamp)` | A tile painted from `in` (whose stamp is `stamp`): the kept picture when it was painted at that stamp, else painted now and kept. |
-| 181 | 4 | `public TilePainter.Input paintedInput(long tx, long ty)` | The inputs a kept picture was painted from, or null when the tile is not kept. |
-| 187 | 28 | `static void copy(TilePainter.Input a, TilePainter.Input b)` | A copy of a tile's inputs, the arrays reused. |
-| 223 | 7 | `public long pixels(long tx, long ty, int level, int px, TilePainter.Input in, int[] out)` | The per-tile path a frame takes: the tile's inputs (its ground kept), painted - or the kept picture when its stamp has not moved - and rastered at a level's width into `out` (TileRaster.raster() at L0, its blocks at L... |
-| 232 | 4 | `public static void raster(TilePainter.Input in, TilePainter.Painted p, int level, int px, int[] out)` | A painted tile rastered as a level draws it. |
-| 238 | 1 | `public static int tileImagePixels(int px)` | Pixels in a tile's image at a width. |
+| 31 | 518 | **type** `public final class MapTiles` | The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kep... |
+| 46 | 5 | **type** `private static final class Kept` | A tile's painted bytes, kept: its inputs, the picture and the stamp it was painted at. |
+| 63 | 1 | `public MapTiles(CityMap map)` |  |
+| 66 | 1 | `public CityMap map()` | The map these tiles are painted from. |
+| 68 | 1 | `public long paints()` |  |
+| 69 | 1 | `public long stamps()` |  |
+| 72 | 5 | `public static long version(CityMap map, CityLand land)` | What a view's pictures are current against: the map's changes (CityMap.changes()), and the land's purchases and centre - a purchase between months owns ground at once (a tile's ownership is the live land's) that the m... |
+| 79 | 1 | `public static long key(long tx, long ty)` | A tile's key: its column and row, the world's tiles numbering under 2^20 each way. |
+| 82 | 10 | `public byte[] terrain(long tx, long ty)` | A tile's ground, from the world the first time and kept. |
+| 94 | 3 | `public boolean ready(long tx, long ty)` | Whether tile (tx, ty) paints without planning (0.7.88): the district plans it is drawn from are drawn (CityMap.tileReady()). |
+| 99 | 3 | `public java.util.List<CityMap.Job> jobs(long tx, long ty)` | The jobs that draw tile (tx, ty)'s plans, to run in order on one thread away from the screen's and then keep (CityMap.adopt()); none handed out twice. |
+| 104 | 5 | `public long input(long tx, long ty, TilePainter.Input in)` | A tile's inputs into `in` (its ground from the cache), and their stamp - its plans made here if they are not drawn (a harness's way; the view asks ready() first). |
+| 118 | 24 | `public static long stamp(TilePainter.Input in)` | A stamp of everything a tile is painted from but its ground, which is the world's and never changes: what is owned, its plan's streets and those just beyond its edges, the city's highways and track through it, its bui... |
+| 144 | 9 | `private static long packed(byte[] codes)` | Bytes a plot folded into one number, eight a word. |
+| 155 | 9 | `private static long packed(boolean[] flags)` | A plot-by-plot flag folded into one number, sixty-four plots a word. |
+| 170 | 12 | `public TilePainter.Painted painted(long tx, long ty, TilePainter.Input in, long stamp)` | A tile painted from `in` (whose stamp is `stamp`): the kept picture when it was painted at that stamp, else painted now and kept. |
+| 184 | 4 | `public TilePainter.Input paintedInput(long tx, long ty)` | The inputs a kept picture was painted from, or null when the tile is not kept. |
+| 190 | 28 | `static void copy(TilePainter.Input a, TilePainter.Input b)` | A copy of a tile's inputs, the arrays reused. |
+| 226 | 7 | `public long pixels(long tx, long ty, int level, int px, TilePainter.Input in, int[] out)` | The per-tile path a frame takes: the tile's inputs (its ground kept), painted - or the kept picture when its stamp has not moved - and rastered at a level's width into `out` (TileRaster.raster() at L0, its blocks at L... |
+| 235 | 4 | `public static void raster(TilePainter.Input in, TilePainter.Painted p, int level, int px, int[] out)` | A painted tile rastered as a level draws it. |
+| 241 | 1 | `public static int tileImagePixels(int px)` | Pixels in a tile's image at a width. |
 
-### THE BUDGET (spec-land 2.6: every cache within 48 MB) (lines 240-292)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 252 | 7 | `public static long tilesKept(MapFrame f, int level, int px)` | The tiles a level's image cache keeps for a view this size (star): one screen at the level's least scale with a tile of margin round it (MapFrame.tilesAt()) - at L0 from L0_FROM at SMALL_TILE_PX and from BIG_TILES_FRO... |
-| 261 | 6 | `public static long paintedBytes(TilePainter.Input in, TilePainter.Painted p)` | A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh - since 0.7.88 its plan's streets and runs and its buildings' boxes in, its plots' use, kind, width, role, flags, building and sit... |
-| 276 | 3 | `public static double budgetBytes(MapFrame f, double paintedBytes, double planBytes)` | Every cache of the view together, in bytes, for a view this size: each level's images at four bytes a pixel (L0 at both widths, L1, L2), the far nodes (MapFrame.nodesAtMost()), the tiles' ground and PAINTED_KEPT paint... |
-| 281 | 11 | `public static double budgetBytes(MapFrame f, double paintedBytes)` | ...without the plans: what the view's own caches hold. |
-
-### THE FAR NODES (lines 293-391)
+### THE BUDGET (spec-land 2.6: every cache within 48 MB) (lines 243-296)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 298 | 3 | `public static byte[] nodeTerrain(long seed, long x0, long y0, long plots)` | A far node's ground: MapFrame.NODE_PX squared samples a `plots` apart from (x0, y0), a World class each. |
-| 312 | 8 | `public static byte[] nodeTerrain(World.Key world, long x0, long y0, long plots)` | ...on the world a key names (0.7.115; the map's: CityMap.worldKey()). |
-| 332 | 35 | `public void nodePixels(long x0, long y0, long plots, byte[] ground, int[] out)` | A far node's pixels from its ground: each sample's terrain colour, dimmed where the city does not own it (TileRaster's UNOWNED_DIM), and where it owns dry ground its district's tint over it - the class its buildings t... |
-| 369 | 22 | `int tintOf(CityMap.District d)` | A district's tint for the far nodes: its colour with its opacity in the top byte, 0 for none built. |
+| 255 | 7 | `public static long tilesKept(MapFrame f, int level, int px)` | The tiles a level's image cache keeps for a view this size (star): one screen at the level's least scale with a tile of margin round it (MapFrame.tilesAt()) - at L0 from L0_FROM at SMALL_TILE_PX and from BIG_TILES_FRO... |
+| 264 | 6 | `public static long paintedBytes(TilePainter.Input in, TilePainter.Painted p)` | A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh - since 0.7.88 its plan's streets and runs and its buildings' boxes in, its plots' use, kind, width, role, flags, building and sit... |
+| 280 | 3 | `public static double budgetBytes(MapFrame f, double paintedBytes, double planBytes)` | Every cache of the view together, in bytes, for a view this size: each level's images at four bytes a pixel (L0 at both widths, L1, L2), the far nodes (MapFrame.nodesAtMost()), the tiles' ground and PAINTED_KEPT paint... |
+| 285 | 11 | `public static double budgetBytes(MapFrame f, double paintedBytes)` | ...without the plans: what the view's own caches hold. |
+
+### THE FAR NODES (lines 297-324)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 302 | 3 | `public static byte[] nodeTerrain(long seed, long x0, long y0, long plots)` | A far node's ground: MapFrame.NODE_PX squared samples a `plots` apart from (x0, y0), a World class each. |
+| 316 | 8 | `public static byte[] nodeTerrain(World.Key world, long x0, long y0, long plots)` | ...on the world a key names (0.7.115; the map's: CityMap.worldKey()). |
+
+### the far nodes from the district pictures (0.7.128, batch MM1; docs/studies/spec-globe.md 8.2) (lines 325-548)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 342 | 1 | `public java.util.Set<CityMap.District> wanted()` |  |
+| 343 | 1 | `public boolean[] lastEdge()` |  |
+| 344 | 1 | `public boolean[] lastRun()` |  |
+| 365 | 108 | `public int nodePixels(long x0, long y0, long plots, byte[] ground, int[] out)` | A far node's pixels from its ground (0.7.128, batch MM1; spec-globe 8.2): each sample's terrain colour, dimmed where the city does not own it (TileRaster's UNOWNED_DIM); over the city's districts what stands there - w... |
+| 482 | 33 | `private void stroke(CityRuns.Net net, int colour, long x0, long y0, long plots, int[] out)` | A net's stretches over a far node's pixels in a colour: every pixel holding a plot of a stretch - each step's, from the plot it starts from (its arm's start, or the last of the stretch before) to its last, and a 45-de... |
+| 517 | 8 | `private void mark(long x, long y, long x0, long y0, long plots, int colour, int[] out)` | Plot (x, y)'s pixel on the node, when it is on it, in a run's colour. |
+| 534 | 14 | `public boolean picturesFit(MapFrame f)` | Whether a far view asks for the pictures of the built districts it shows (0.7.128): while they are no more than CityMap.PICTURES_KEPT and lie in no more of the map's bands than it keeps the links of (CityMap.BANDS_KEP... |
 

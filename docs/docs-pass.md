@@ -73,6 +73,9 @@ from the code.
      <date>`), add a line for anything the batch opened and did not do.
      Section 0 if it is a thing to do on the PC this week.
    - `claude/index.md`: a line for a new design note, under its subsystem.
+   - `QUEUE.md`, in the tree since 2026-10-11, is the queue, not the
+     record: a batch's row leaves it in the merge that ships it, and what
+     was not done goes under Pending there (its first lines are its rules).
    If you cannot reach the project — a headless run on the PC cannot — write
    the changelog block and the todo lines to `docs/notes/pending.md` in the
    repository instead, newest at the top, and the next Cowork session moves

@@ -1,10 +1,10 @@
 # FuelSplit.java - 229 lines · 8 methods · 3 constants · model
 
-`ham/citybuildersim/FuelSplit.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FuelSplit.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > FUEL, split into the PETROL and DIESEL it became: a save written before
 > 0.7.76 converted once, on its load, before anything is restored (batch O1;
-> runs/spec-oil.md 3).
+> docs/studies/spec-oil.md 3).
 > 
 > WHY. Until 0.7.76 a refinery made FUEL, a litre of whatever a car or a
 > locomotive burned (Good's note where FUEL was). Now it makes petrol for the
@@ -68,7 +68,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 170 | **type** `public final class FuelSplit` | FUEL, split into the PETROL and DIESEL it became: a save written before 0.7.76 converted once, on its load, before anything is restored (batch O1; runs/spec-oil.md 3). |
+| 60 | 170 | **type** `public final class FuelSplit` | FUEL, split into the PETROL and DIESEL it became: a save written before 0.7.76 converted once, on its load, before anything is restored (batch O1; docs/studies/spec-oil.md 3). |
 | 71 | 1 | `private FuelSplit()` |  |
 | 74 | 1 | **type** `public record Result(boolean ran, double petrolShare, double driversLitres, double railwayLitres, int figures)` | What a conversion did: whether it ran, the share that became petrol, and how many FUEL figures it split. |
 | 80 | 4 | `public static double petrolShare(DataSave s)` | The share of a save's FUEL that becomes PETROL: the drivers' litres over the drivers' and the railway's that month, 1 with neither. |

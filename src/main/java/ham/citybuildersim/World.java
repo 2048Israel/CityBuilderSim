@@ -112,7 +112,7 @@ public final class World {
     /** Beach: dry land within BEACH_BAND of the sea's level. */
     public static final byte SAND = 4;
 
-    /** Ice (0.7.127, batch E7; spec-earth's E14, the project's spec-globe.md 3.9): land under snow and ice - never dry, never built on, never a founding site - counted in a holding's whole area only. The real Earth's sheets and glaciers (EarthTerrain); a generated world has none. */
+    /** Ice (0.7.127, batch E7; spec-earth's E14, docs/studies/spec-globe.md 3.9): land under snow and ice - never dry, never built on, never a founding site - counted in a holding's whole area only. The real Earth's sheets and glaciers (EarthTerrain); a generated world has none. */
     public static final byte ICE = 5;
 
     /** Desert (0.7.127, batch E7; spec-globe Q1): dry ground every rule treats as grass - only its colour and its name differ. The real Earth's bare ground (EarthTerrain); a generated world has none. */
@@ -216,7 +216,7 @@ public final class World {
     /** How far above the sea's level, in the elevation field, land is beach: 0.0015. */
     public static final double BEACH_BAND = 0.0015;
 
-    /* ----- the sea's depth (0.7.79, batch O3; runs/spec-oil.md 2.7) -----
+    /* ----- the sea's depth (0.7.79, batch O3; docs/studies/spec-oil.md 2.7) -----
      * The generated world had a sea and no depth; a platform stands only on
      * shallow sea (O10), so the sea gets one, from the same elevation field:
      * the shallowest SHELF_SHARE of the sea's samples are the continental

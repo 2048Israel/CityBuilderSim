@@ -1,6 +1,6 @@
 # LandMarket.java - 1,069 lines · 54 methods · 11 constants · model
 
-`ham/citybuildersim/LandMarket.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandMarket.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The land office's window: twenty-four offers standing, six on each side of the city - in each place a rectangle of whole blocks against the city's edge, or none while that side has no room - and what the ground costs.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [LandParcel](LandParcel.md) (52), [CityLand](CityLand.md) (14), [Resource](Resource.md) (11), [GridOffers](GridOffers.md) (8), [LandManager](LandManager.md) (2), [World](World.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
 
-**Used by (20):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [ConversionCheck](ConversionCheck.md), [Founding](Founding.md), [FundCheck](FundCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [OilCheck](OilCheck.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md)
+**Used by (24):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [CoalMiningCheck](CoalMiningCheck.md), [ConversionCheck](ConversionCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [Founding](Founding.md), [FundCheck](FundCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [OilCheck](OilCheck.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md)
 
 ## Sections
 

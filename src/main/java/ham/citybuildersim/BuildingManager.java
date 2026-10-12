@@ -2030,10 +2030,10 @@ public class BuildingManager {
         templates.add(oilRefinery);
 
         /* ------------------- THE REFINERY'S UNITS (0.7.80, batch O4) -------------------
-           runs/spec-oil.md 2.3. The Oil Refinery above is the small crude unit;
-           the Crude Unit is the large one, 100,000 barrels a day: 50 of its
-           crude (415,000 t), its road load (32,950) and its tanks (1.25B L),
-           D$400M [the research's 2.4], 160 posts, 4,400 kW, 40 ha.
+           docs/studies/spec-oil.md 2.3. The Oil Refinery above is the small
+           crude unit; the Crude Unit is the large one, 100,000 barrels a day:
+           50 of its crude (415,000 t), its road load (32,950) and its tanks
+           (1.25B L), D$400M [the research's 2.4], 160 posts, 4,400 kW, 40 ha.
 
            Behind the crude units, seven kinds of conversion unit in two sizes
            each (sectors.RefineryFlow.Kind), each taking a stream of the crude
@@ -2321,17 +2321,17 @@ public class BuildingManager {
         templates.add(fillingStation);
 
         /* ------------------ THE TANK FARM AND THE STRATEGIC RESERVE (0.7.85) ------------------
-           Batch O8 (runs/spec-oil.md 2.8; the research's 4.5 and Q14). A tank
-           farm of 500,000 m3 - 500,000,000 litres of room, about 3.1M barrels -
-           on 10 ha ([P13]: 27 ha of tanks for 1.3M m3; 1,076,391 sq ft), for
-           D$190M (the research's estimate at US$60 a barrel of room, star; the
-           one figure found, Edmonton's Base Line Terminal at about $150 a barrel
-           all in [S1], is its upper bound), split as the refiners' units are
-           (O4): the cash cost the capital, material a sixtieth of it and
-           points a half, id 75's ratios. Ten posts (est., spec-oil 6), in the
-           units' mix, 5/3/2. No power, water or road load: the research gives
-           none, and the crude it holds is the crude units' own, moved by their
-           pumps and their lorries (star).
+           Batch O8 (docs/studies/spec-oil.md 2.8; the research's 4.5 and Q14).
+           A tank farm of 500,000 m3 - 500,000,000 litres of room, about 3.1M
+           barrels - on 10 ha ([P13]: 27 ha of tanks for 1.3M m3; 1,076,391 sq
+           ft), for D$190M (the research's estimate at US$60 a barrel of room,
+           star; the one figure found, Edmonton's Base Line Terminal at about
+           $150 a barrel all in [S1], is its upper bound), split as the
+           refiners' units are (O4): the cash cost the capital, material a
+           sixtieth of it and points a half, id 75's ratios. Ten posts (est.,
+           spec-oil 6), in the units' mix, 5/3/2. No power, water or road load:
+           the research gives none, and the crude it holds is the crude units'
+           own, moved by their pumps and their lorries (star).
              - The TANK FARM is the refiners' (sectors.Refining, THE TANK FARM):
                with one standing they keep a month of their crude units' crude
                on hand, and their products share the rest of the room.
@@ -2368,9 +2368,9 @@ public class BuildingManager {
         templates.add(strategicReserve);
 
         /* ---------------------------- THE PORTS (0.7.86) ----------------------------
-           Batch O9 (runs/spec-oil.md 2.9; the research's 4.1 and Q9). Four sea
-           terminals, the city's (no sector), each one berth of one kind of
-           cargo on owned coast (Game.hasCoastFor()), its tonnes a year
+           Batch O9 (docs/studies/spec-oil.md 2.9; the research's 4.1 and Q9).
+           Four sea terminals, the city's (no sector), each one berth of one
+           kind of cargo on owned coast (Game.hasCoastFor()), its tonnes a year
            (Ports): a Tanker Terminal 3.25 Mt [P1][P2], D$96M [P11], 7 posts
            [P13][P28], 4 ha (est.); a Bulk Terminal 27.5 Mt [P3][P5], D$2,310M
            (US$84 a tonne-year [P3]), 234 posts [P22], 22 ha [P14]; a
@@ -2430,8 +2430,8 @@ public class BuildingManager {
                 .setId(97));
 
         /* ------------------------- THE OIL AT SEA (0.7.91) -------------------------
-           Batch O10 (runs/spec-oil.md 2.7, 2.11; the research's 3.1-3.2 and
-           4.5), the Oil sector's, standing at sea on none of the city's dry
+           Batch O10 (docs/studies/spec-oil.md 2.7, 2.11; the research's 3.1-3.2
+           and 4.5), the Oil sector's, standing at sea on none of the city's dry
            ground (BuildingsTemplate.standsAtSea()):
              - an OFFSHORE PLATFORM, a fixed steel jacket on a shallow sea field
                (150 m at most) with slots for 12 wells: D$18M, [W13]'s jacket;
@@ -2487,7 +2487,7 @@ public class BuildingManager {
                 .setId(100));
 
         /* ------------------- THE INTEGRATED ROUTE (0.7.123, batch I4) -------------------
-           Iron & Steel's seven other works (runs/spec-materials.md 2.2;
+           Iron & Steel's seven other works (docs/studies/spec-materials.md 2.2;
            materials-chains-research.md 2.4, 1.6 and 2.7), ids 101 to 107:
              - a SCRAP YARD buys the city's old steel (OldMetal: its scrapped
                cars, its demolitions, its fabricators' offcuts and its worn-out
@@ -2656,14 +2656,14 @@ public class BuildingManager {
                 .setId(107));
 
         /* ------------------- IRON MINING BY TYPE AND SIZE (0.7.124, batch I5) -------------------
-           runs/spec-materials.md 2.2 and 2.4; the study's (materials-chains-
-           research.md) 1.3, 1.4 and 2.4. Iron's fields are of two types, at
-           real shares (Deposit.type(): three in four hematite, shipped as
-           dug; one in four magnetite, about 30% iron, concentrated about 3:1),
-           and real mines come in two sizes (Jerus's Q19). Each mine stands on
-           its type (LandManager.fits(): a works of 20 sites on 20 free sites of
-           one field of its type), and the sector builds the one that earns
-           most on its cost among those that fit:
+           docs/studies/spec-materials.md 2.2 and 2.4; the study's
+           (materials-chains-research.md) 1.3, 1.4 and 2.4. Iron's fields are
+           of two types, at real shares (Deposit.type(): three in four hematite,
+           shipped as dug; one in four magnetite, about 30% iron, concentrated
+           about 3:1), and real mines come in two sizes (Jerus's Q19). Each mine
+           stands on its type (LandManager.fits(): a works of 20 sites on 20
+           free sites of one field of its type), and the sector builds the one
+           that earns most on its cost among those that fit:
              - the LARGE OPEN-PIT MINE, a typical modern hematite pit: 500,000 t
                of ore a month on 20 sites, its diesel the Iron Mine's 3 L a
                tonne;
@@ -2744,12 +2744,13 @@ public class BuildingManager {
                 .setId(110));
 
         /* ------------------------- COAL MINING (0.7.126, batch I6) -------------------------
-           runs/spec-materials.md 2.1, 2.2, 2.10 and 5's I6 row; the study's
-           (materials-chains-research.md) 1.3, 1.4 and 3. Coal Mining, the sector
-           on the end of Sectors.KEYS, digs coal's two types of field: thermal,
-           sold as dug, and coking, whose raw coal a Coal Preparation Plant
-           washes into coking coal (sectors.CoalMining.flow(); Jerus's Q9: a
-           separate building). Its four, the study's 3.3:
+           docs/studies/spec-materials.md 2.1, 2.2, 2.10 and 5's I6 row; the
+           study's (materials-chains-research.md) 1.3, 1.4 and 3. Coal Mining,
+           the sector after the refinery on Sectors.KEYS (its end when it
+           came), digs coal's two types of field: thermal, sold as dug, and
+           coking, whose raw coal a Coal Preparation Plant washes into coking
+           coal (sectors.CoalMining.flow(); Jerus's Q9: a separate building).
+           Its four, the study's 3.3:
              - the SURFACE COAL MINE: 100,000 t of thermal coal a month on one
                thermal site, 2.3 L of diesel a tonne;
              - the LARGE SURFACE MINE, a dragline pit: 800,000 t on four sites
@@ -2857,12 +2858,12 @@ public class BuildingManager {
                 .setId(114));
 
         /* --------------------- QUARRYING AND CEMENT & CONCRETE (0.7.131, batch I7) ---------------------
-           runs/spec-materials.md 2.1, 2.2, 2.4, 2.10 and 5's I7 row; the study's
-           (materials-chains-research.md) 1.4 and 6. Quarrying, on the end of
-           Sectors.KEYS after Coal Mining, digs stone's two types of field -
-           limestone, the kilns' and furnaces' feed, and hard rock - and Cement &
-           Concrete, after it, burns limestone into lime and cement. Their six,
-           the study's 6.4:
+           docs/studies/spec-materials.md 2.1, 2.2, 2.4, 2.10 and 5's I7 row; the
+           study's (materials-chains-research.md) 1.4 and 6. Quarrying, on
+           Sectors.KEYS after Coal Mining (its end when it came), digs stone's two
+           types of field - limestone, the kilns' and furnaces' feed, and hard
+           rock - and Cement & Concrete, after it, burns limestone into lime and
+           cement. Their six, the study's 6.4:
              - the QUARRY: 40,000 t a month on one stone site of either type,
                packed onto limestone first - its stone limestone on a limestone
                field, aggregate on hard rock (sectors.Quarrying); its row makes
@@ -3012,12 +3013,13 @@ public class BuildingManager {
                 .setId(120));
 
         /* --------------------- COPPER MINING AND COPPER REFINING (0.7.133, batch I8) ---------------------
-           runs/spec-materials.md 2.1, 2.2, 2.4, 2.9 and 5's I8 row; the study's
-           (materials-chains-research.md) 1.4 and 4. Copper Mining, on the end of
-           Sectors.KEYS after Cement & Concrete, digs copper's two types of field -
-           sulphide, floated into concentrate at the mine, and oxide, leached to
-           cathode there - and Copper Refining, after it, smelts, refines and rolls
-           it; Manufacturing draws the rod into wire and cable. Their eight, the
+           docs/studies/spec-materials.md 2.1, 2.2, 2.4, 2.9 and 5's I8 row; the
+           study's (materials-chains-research.md) 1.4 and 4. Copper Mining, on
+           the end of Sectors.KEYS with Copper Refining, after Cement &
+           Concrete, digs copper's two types of field - sulphide, floated into
+           concentrate at the mine, and oxide, leached to cathode there - and
+           Copper Refining, after it, smelts, refines and rolls it;
+           Manufacturing draws the rod into wire and cable. Their eight, the
            study's 4.3:
              - the COPPER MINE & MILL: 2,200 t of concentrate a month on one
                sulphide site, .341 t of the field's copper a tonne;
@@ -4756,8 +4758,9 @@ public class BuildingManager {
         controlEvents = new ConstructionControl.Events();
 
         // The player's hand on the queue (0.7.22): an order set, a rush, a
-        // cancel or a demolition. Without one, the month below is the one it
-        // always was - see THE PLAYER'S HAND ON THE QUEUE.
+        // cancel or a demolition. Without one - and without the model's own
+        // two rules below, death care and the builders' depots first - the
+        // month below is the one it always was - see THE PLAYER'S HAND ON THE QUEUE.
         boolean engaged = control.engaged();
         Plan plan = null;
         lastPlan = null;
@@ -4852,8 +4855,10 @@ public class BuildingManager {
        has done none of it: advanceConstruction() asks control.engaged()
        first, and siteShares() appends no demolition it has not got - except
        the city's death care served first while the dead wait (0.7.129,
-       DEATH CARE FIRST WHILE THE DEAD WAIT, below), which is the model's
-       rule, not the player's hand, and plans the month the same way.
+       DEATH CARE FIRST WHILE THE DEAD WAIT, below) and the builders' own
+       depots served first (0.7.130, THE BUILDERS' OWN DEPOTS FIRST, below),
+       which are the model's rules, not the player's hand, and plan the month
+       the same way.
        ===================================================================== */
 
     /** The player's hand on the queue: the order, the rushes, the shells, the demolitions and the buy-outs. */
@@ -5033,7 +5038,7 @@ public class BuildingManager {
                 new java.util.ArrayList<>(order.subList(0, dead.size())), unburiedNow(), builders, buildersOn);
     }
 
-    /** The plan the last month's advance applied, or null when the player's hand was not on the queue and no death care was served first (0.7.129): a month's reading, not saved. */
+    /** The plan the last month's advance applied, or null when the player's hand was not on the queue and nothing was served first - no death care (0.7.129), no depot of the builders' (0.7.130): a month's reading, not saved. */
     private Plan lastPlan;
 
     public Plan getLastPlan() { return lastPlan; }

@@ -11,10 +11,11 @@ import java.io.PrintStream;
 import java.util.Locale;
 
 /**
- * Copper Refining, checked (0.7.133, batch I8; runs/spec-materials.md 2.1,
- * 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md
- * - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing industry, the last
- * key, and the Wire & Cable Works it feeds in Manufacturing.
+ * Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
+ * 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's -
+ * materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's
+ * processing industry, the last key, and the Wire & Cable Works it feeds in
+ * Manufacturing.
  *
  * WHY A HARNESS OF ITS OWN. A new sector gets one (CLAUDE.md; I7's
  * CementConcreteCheck), and copper's works add three things the other
@@ -72,7 +73,9 @@ import java.util.Locale;
 public class CopperRefiningCheck {
 
     static int fails = 0;
+    /** Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. */
     static final PrintStream out = System.out;
+    /** A stream that drops what is written to it: the game's prose while a fixture town is founded and played. */
     static final PrintStream quiet = new PrintStream(OutputStream.nullOutputStream());
 
     static void assertTrue(String label, boolean ok) {
@@ -173,10 +176,12 @@ public class CopperRefiningCheck {
 
     /** ...what it makes a month, t. */
     static final Good[][] STUDY_MADE = { { Good.ANODE, Good.ACID }, { Good.COPPER }, { Good.COPPER }, { Good.COPPER_ROD }, { Good.WIRE_CABLE } };
+    /** ...and how many tonnes of each, a month. */
     static final double[][] STUDY_MAKES = { { 9_750, 29_700 }, { 9_700 }, { 4_000 }, { 8_000 }, { 2_000 } };
 
     /** ...and what it takes, t a month. */
     static final Good[] STUDY_FEED = { Good.COPPER_CONC, Good.ANODE, Good.COPPER_SCRAP, Good.COPPER, Good.COPPER_ROD };
+    /** ...and how many tonnes of it, a month. */
     static final double[] STUDY_USES = { 33_000, 9_750, 4_400, 8_016, 2_000 };
 
     /** The study's 4.4 table, % of the cost a month, cases A to D. */

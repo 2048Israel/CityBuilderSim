@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * FUEL, split into the PETROL and DIESEL it became: a save written before
  * 0.7.76 converted once, on its load, before anything is restored (batch O1;
- * runs/spec-oil.md 3).
+ * docs/studies/spec-oil.md 3).
  *
  * WHY. Until 0.7.76 a refinery made FUEL, a litre of whatever a car or a
  * locomotive burned (Good's note where FUEL was). Now it makes petrol for the

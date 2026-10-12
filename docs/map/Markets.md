@@ -1,6 +1,6 @@
 # Markets.java - 513 lines · 26 methods · 0 constants · model
 
-`ham/citybuildersim/Markets.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Markets.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > Every goods market in the city, and the month they clear in.
 > 
@@ -24,9 +24,9 @@
 >   4. the stockable goods are made into the warehouses, for next month
 >   5. each sector finishes its month
 > 
-> THE CITY TRADES IN ONE MARKET (0.7.85, batch O8; runs/spec-oil.md 2.8):
-> its strategic reserve (StrategicReserve, a CityTrader) bids for crude to
-> fill it and offers crude to release it, in crude's clearing beside the
+> THE CITY TRADES IN ONE MARKET (0.7.85, batch O8; docs/studies/spec-oil.md
+> 2.8): its strategic reserve (StrategicReserve, a CityTrader) bids for crude
+> to fill it and offers crude to release it, in crude's clearing beside the
 > sectors - its fill pro rata with theirs from the wells and the world for
 > the rest, its release pro rata with the wells' offers - and since 0.7.103
 > (Jerus's A8) what the buyers do not take of it stays in its tanks, where
@@ -50,7 +50,7 @@
 
 **Uses:** [Good](Good.md) (24), [Sector](Sector.md) (24), [GoodsMarket](GoodsMarket.md) (16), [Trade](Trade.md) (14), [Sectors](Sectors.md) (5), [Game](Game.md) (1), [SupplierCredit](SupplierCredit.md) (1)
 
-**Used by (25):** [BooksCheck](BooksCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessInvestment](BusinessInvestment.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FoodProcessingCheck](FoodProcessingCheck.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LuxuryRetail](LuxuryRetail.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [Sectors](Sectors.md), [SpreadPlanner](SpreadPlanner.md), [StrategicReserve](StrategicReserve.md)
+**Used by (30):** [BooksCheck](BooksCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessInvestment](BusinessInvestment.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FoodProcessingCheck](FoodProcessingCheck.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LuxuryRetail](LuxuryRetail.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [QuarryingCheck](QuarryingCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [Sectors](Sectors.md), [SpreadPlanner](SpreadPlanner.md), [StrategicReserve](StrategicReserve.md)
 
 ## Sections
 

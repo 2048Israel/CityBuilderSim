@@ -17,7 +17,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The refinery's pictogram (0.7.95, batch O11; runs/spec-oil.md 2.12):
+ * The refinery's pictogram (0.7.95, batch O11; docs/studies/spec-oil.md 2.12):
  * RefineryView's figures and its picture, held to the model's own reads in
  * played towns.
  *
