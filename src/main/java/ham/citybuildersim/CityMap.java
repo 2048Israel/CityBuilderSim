@@ -18,7 +18,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 /**
- * The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, each district's street plan kept for the painter with what it cannot hold carried to the next, the city's highways and railway laid on corridors across it, one drawn building for each the model has, summed up a pyramid for the far view, and written beside the save as a sidecar - what the tile painter paints the city from.
+ * The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, each district's street plan kept for the painter with what it cannot hold carried to the next, the city's highways and railway laid on corridors across it, one drawn building for each the model has, summed up a pyramid, each built district's picture drawn with its plan for the far view (0.7.128), and written beside the save as a sidecar - what the tile painter paints the city from.
  *
  * WHY THIS EXISTS (0.7.60, batch J3; the project's spec-land.md 2.5). The
  * model counts buildings by type and nothing else: a city of ten billion has
@@ -74,7 +74,15 @@ import java.util.zip.InflaterInputStream;
  *
  * THE PYRAMID sums ten classes, used plots and owned plots two by two up to
  * one node, built when the map is, each district's ancestors updated as it
- * changes: what the far view draws (batch J4).
+ * changes: batch J4's for the far view, which since 0.7.128 draws from the
+ * district pictures instead (MapCheck holds the pyramid's sums).
+ *
+ * THE DISTRICT PICTURES (0.7.128, batch MM1; docs/studies/spec-globe.md
+ * 8.2): each built district's 32 x 32 picture (DistrictPicture), drawn by
+ * its plan's job and kept by a stamp of the plots it is drawn from, so a
+ * month redraws only the districts whose plots it moved - what the far
+ * nodes draw from (MapTiles.nodePixels()), the minimap's too (0.7.134).
+ * Never saved: drawn again from the plans after a load.
  *
  * THE SIDECAR (slot-NN-map.bin, writeSidecar()/readSidecar()): one record a
  * district, deflated, its header the magic, the format, the world's seed (on

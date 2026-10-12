@@ -1241,7 +1241,7 @@ public class EarthTerrainCheck {
        project's spec-globe.md 3.9, and 4's E7 row)
        ===================================================================== */
 
-    /** Each kind's share of a 1-degree cell's ground drawn is the data's within this, in points: SHARE_POINTS, the bound the sea's share of a 15" cell is held to (spec-earth 8); E7 measured 0.02 to 0.26. */
+    /** Each kind's share of a 1-degree cell's ground drawn is the data's within this, in points: SHARE_POINTS, the bound the sea's share of a 15" cell is held to (spec-earth 8); E7 measured 0.02 to 0.34. */
     static final double COVER_POINTS = SHARE_POINTS;
 
     /** The 1-degree cells each kind is held on, {lat0, lon0}, on the full file: ice at Vatnajokull and on south Greenland's margin, the desert at the Sahel's edge and on the Ustyurt by the Aral Sea - each a cell with its kind's bit on a fifth to four fifths of its land, so it has an edge to draw (★E7). */

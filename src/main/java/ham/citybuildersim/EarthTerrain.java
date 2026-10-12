@@ -436,8 +436,8 @@ public final class EarthTerrain {
          * way, and (0.7.127, batch E7) its ice and desert bits each read 0 or
          * 1 at its cell and interpolated from the same four cells: out[0] the
          * level, out[1] ice's share, out[2] the desert's. The level is the
-         * arithmetic the forest was read with before (bilinearLow(), which
-         * this replaced), so the forest drawn is the same to the bit.
+         * arithmetic the forest was read with before (the old bilinearLow,
+         * which this replaced), so the forest drawn is the same to the bit.
          */
         void cover(double lat, double lon, double[] out) {
             double g = (90 - lat) * cpd - 0.5, c = (lon + 180) * cpd - 0.5;
@@ -1356,6 +1356,7 @@ public final class EarthTerrain {
         /** A unit's ground across over a unit's ground down, at a latitude: 1 but on the grid. */
         double xScale(double lat) { return 1; }
 
+        /** The one shift a camera whose x does not wrap draws a shape at: none, the shape where it is. */
         private static final double[] NO_SHIFT = { 0 };
 
         /** The whole turns a shape spanning x0 to x1 is drawn at: none but where x wraps (the grid's). */
@@ -1989,7 +1990,10 @@ public final class EarthTerrain {
      * share times land cover's forest level; a point off the planet holds
      * neither. Each cell's points from its four corners, blended
      * (EarthProj.blend()). What the fields are drawn on (World's deposits)
-     * and the far views ask; 0.39 to 0.42 s (EarthTerrainCheck 9; the study 0.37 to 0.45).
+     * and the far views ask; 0.39 to 0.42 s on the wall clock when it was
+     * written (the study 0.37 to 0.45). EarthTerrainCheck 9 holds it to
+     * CELLS_PASS_MS of the main thread's CPU since batch EC1 (0.42 to 0.55 s
+     * measured, the first time, the wall clock printed beside it).
      *
      * Since 0.7.117 (batch E3) each point also reads its province
      * (Geology): a resource's FIELD LAND is the points' land times the
