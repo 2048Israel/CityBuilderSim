@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Earth 2 Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* The Earth 2 study's boards, in the game's own dark look (ui/Palette.java): the map at each zoom, the legend and hover
+   words, the land office and the founding card, a sector's land line, and Build's bridges. One page, the boards
+   stacked, a sticky nav between them; the pictures are the mock-*.png files beside it, drawn by mockups.py. */
+:root {
+  color-scheme: dark;
+  /* ui/Palette.java */
+  --stage: #0b1118; --panel: #101924; --raised: #152130; --pinned: #1a2839; --control: #1a2839; --hover: #22334a;
+  --edge: #24354a; --control-edge: #33475f; --text: #e6edf3; --text2: #a9b8c9; --text3: #8496ab; --spent: #5f7189;
+  --good: #3fb950; --warn: #e3b341; --bad: #f85149; --bad-soft: #ff9e9e; --accent: #5aa9ff; --accent-light: #8cc4ff;
+  --money: #5aa9ff; --business: #a78bfa; --building: #f17cb0; --people: #2ec4b6; --ore: #c9b68f;
+  /* TileRaster.GROUND (L69), DECK (L81), ROAD, and the study's proposals */
+  --grass: #a8c47e; --forest: #527c45; --fresh: #78b4dc; --sea: #2f5d88; --sand: #e6daaa; --ice: #dfe7ee; --desert: #d2b48c;
+  --foothill: #c8c3b8; --steep: #9b968c; --vsteep: #6c6862; --shallow: #4f87b5;
+  --forest-foothill: #8d9f7f; --forest-steep: #76896b; --forest-vsteep: #626f58;
+  --deck: #5d4c3c; --highway: #3b4048; --rail: #707070; --offer: #f6a6c9; --void: #16222c;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--stage); color: var(--text); font: 15px/1.55 var(--sans); }
+a { color: var(--accent-light); }
+code { font: 500 0.88em var(--mono); color: var(--text2); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: 16px; }
+.eyebrow { font: 600 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--text3); }
+h1 { font-size: 26px; font-weight: 600; margin: .4em 0 .3em; text-wrap: balance; }
+h2 { font-size: 21px; font-weight: 600; margin: .2em 0 .3em; text-wrap: balance; }
+h3 { font-size: 15px; font-weight: 600; margin: 0; }
+p { margin: .5em 0; max-width: 74ch; color: var(--text2); }
+p b, li b { color: var(--text); font-weight: 600; }
+.head { padding-block: 28px 10px; }
+.keys { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 12px 0 4px; padding: 0; list-style: none; font-size: 13px; color: var(--text2); }
+.keys li { display: flex; align-items: center; gap: 7px; }
+.est { font: 600 10px/1 var(--mono); letter-spacing: .06em; color: var(--warn); border: 1px dashed rgba(227,179,65,.6); border-radius: 3px; padding: 2px 5px; white-space: nowrap; }
+.meas { font: 600 10px/1 var(--mono); letter-spacing: .06em; color: var(--good); border: 1px solid rgba(63,185,80,.5); border-radius: 3px; padding: 2px 5px; white-space: nowrap; }
+.illus { font: 600 10px/1 var(--mono); letter-spacing: .06em; color: var(--text3); border: 1px solid var(--control-edge); border-radius: 3px; padding: 2px 5px; white-space: nowrap; }
+.newtag { font: 600 9px/1 var(--mono); letter-spacing: .08em; color: var(--building); border: 1px solid rgba(241,124,176,.55); background: rgba(241,124,176,.1); border-radius: 3px; padding: 2px 4px; vertical-align: 1px; }
+nav.nav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--stage) 92%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--edge); }
+nav.nav div { max-width: 1240px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 6px; overflow-x: auto; }
+nav.nav a { flex: none; color: var(--text2); text-decoration: none; font-size: 13px; padding: 5px 12px; border: 1px solid var(--edge); border-radius: 3px; background: var(--panel); }
+nav.nav a:hover, nav.nav a:focus-visible { color: var(--text); border-color: var(--accent); outline: none; }
+section.board { border-top: 1px solid var(--edge); padding-block: 30px 20px; scroll-margin-top: 50px; }
+.part { margin: 26px 0 8px; }
+.part-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; border-top: 1px solid var(--edge); padding-top: 14px; margin-bottom: 8px; }
+.tag { font: 600 10.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; border: 1px solid var(--control-edge); color: var(--text2); }
+.tag.rec { border-color: var(--accent); color: var(--accent); }
+.tag.bad { border-color: #6b2b24; color: #ffb4a8; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 18px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.grid2 > *, .grid3 > *, .hero > *, .options > *, .stack > * { min-width: 0; }
+figure { margin: 0; display: grid; gap: 7px; align-content: start; min-width: 0; }
+figure img { width: 100%; height: auto; display: block; image-rendering: pixelated; border: 1px solid var(--edge); border-radius: 6px; background: var(--void); }
+figcaption { font-size: 13px; color: var(--text2); line-height: 1.5; }
+figcaption b { color: var(--text); }
+.note { font-size: 12.5px; color: var(--text3); max-width: 90ch; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.t { border-collapse: collapse; font-size: 13px; width: 100%; min-width: 720px; }
+table.t th, table.t td { border-top: 1px solid var(--edge); padding: 9px 10px; vertical-align: top; text-align: left; }
+table.t thead th { border-top: 0; font: 500 10.5px/1.3 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text3); }
+table.t td { color: var(--text2); }
+table.t td b, table.t th { color: var(--text); font-weight: 600; }
+.sw { display: inline-block; width: 14px; height: 14px; border-radius: 2px; vertical-align: -2px; border: 1px solid rgba(0,0,0,.35); }
+.options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; margin-top: 12px; }
+.opt { border-top: 2px solid var(--edge); padding-top: 10px; }
+.opt.rec { border-top-color: var(--accent); }
+.opt p { font-size: 13.5px; margin: .4em 0 0; }
+.finding { border: 1px solid rgba(227,179,65,.45); background: rgba(227,179,65,.06); border-radius: 6px; padding: 12px 14px; margin: 14px 0; }
+.finding .eyebrow { color: var(--warn); }
+.finding p { font-size: 13.5px; margin: .45em 0 0; max-width: none; }
+
+/* the expanded map, as MapView lays it over the window */
+.window { max-width: 1094px; border: 1px solid var(--edge); border-radius: 8px; background: var(--stage); padding: 10px 12px 12px; }
+.whead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 8px; font-size: 11px; color: var(--text3); }
+.whead strong { color: var(--text); font-size: 15px; font-weight: 600; }
+.whead .chip { border: 1px solid var(--control-edge); border-radius: 3px; padding: 2px 8px; color: var(--text2); }
+.whead .gap { flex: 1; }
+.mapbox { position: relative; overflow: hidden; border-radius: 4px; }
+.mapbox img { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+.legend { position: absolute; right: 8px; bottom: 8px; background: rgba(11,17,24,.85); border-radius: 6px; padding: 8px 10px; display: grid; grid-auto-flow: column; grid-template-rows: repeat(6, auto); gap: 2px 14px; font-size: 10px; color: var(--text2); }
+.legend span { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.hovercard { position: absolute; background: rgba(11,17,24,.9); border: 1px solid var(--edge); border-radius: 6px; padding: 6px 9px 7px; display: grid; gap: 2px; max-width: 330px; }
+.hovercard b { font-size: 11px; font-weight: 600; color: var(--text); }
+.hovercard span { font-size: 10px; color: var(--text2); }
+.pointer { position: absolute; width: 10px; height: 10px; border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 1px #000; }
+@media (max-width: 700px) {
+  .legend { position: static; margin-top: 8px; grid-template-rows: none; grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hovercard { position: static; margin-top: 8px; max-width: none; }
+  .pointer { display: none; }
+}
+
+/* legend lists and hover cards (board 2) */
+.leglist { display: grid; gap: 4px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--edge); border-radius: 6px; font-size: 12px; color: var(--text2); }
+.leglist span { display: flex; align-items: center; gap: 7px; }
+.leglist i { width: 12px; height: 12px; border-radius: 2px; flex: none; }
+.leglist .new::after { content: "new"; font: 600 8.5px/1 var(--mono); letter-spacing: .08em; color: var(--building); border: 1px solid rgba(241,124,176,.55); border-radius: 3px; padding: 1px 3px; margin-left: 2px; }
+.hc { background: rgba(11,17,24,.9); border: 1px solid var(--edge); border-radius: 6px; padding: 7px 10px 8px; display: grid; gap: 3px; }
+.hc b { font-size: 12px; font-weight: 600; color: var(--text); }
+.hc span { font-size: 11px; color: var(--text2); }
+.hc-wrap { display: grid; gap: 6px; align-content: start; }
+.hc-wrap .where { font: 500 10.5px/1.3 var(--mono); color: var(--text3); letter-spacing: .04em; }
+
+/* the land office (board 3) */
+.office { background: var(--panel); border: 1px solid var(--edge); border-radius: 6px; padding: 14px 16px 16px; }
+.ohead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 12px; }
+.ohead .title { font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.ohead .title i { width: 9px; height: 9px; border-radius: 2px; background: var(--building); }
+.toggle { display: inline-flex; border: 1px solid var(--control-edge); border-radius: 4px; overflow: hidden; font-size: 11px; }
+.toggle span { padding: 3px 10px; color: var(--text2); background: var(--control); }
+.toggle span.on { background: var(--raised); color: var(--text); box-shadow: inset 0 -2px 0 var(--accent); }
+.ohead .line { font-size: 11px; color: var(--text3); }
+.hero { display: grid; grid-template-columns: minmax(0, 600px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 1100px) { .hero { grid-template-columns: 1fr; } }
+.hero .map img { width: 100%; height: auto; display: block; image-rendering: pixelated; border-radius: 4px; border: 1px solid var(--edge); }
+.citycap { font: 600 9px/1 var(--sans); letter-spacing: .1em; color: var(--text2); }
+.cityline { font: 600 14px/1.3 var(--mono); color: var(--text); margin: 3px 0 1px; }
+.worldline { font-size: 9.5px; color: var(--text3); }
+.sides { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
+.sides span { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--control-edge); border-radius: 4px; padding: 3px 9px; font-size: 10.5px; color: var(--text2); background: var(--control); }
+.sides span.on { color: var(--text); border-color: var(--building); background: var(--raised); }
+.sides span em { font: 400 9.5px var(--mono); font-style: normal; color: var(--text3); }
+.sides span.on em { color: var(--text); }
+.ttag { font: 600 8.5px/1 var(--sans); letter-spacing: .06em; padding: 2px 4px; border-radius: 3px; border: 1px solid currentColor; }
+.ttag.best { color: var(--good); }
+.rows { min-width: 560px; }
+.rows .r { display: grid; grid-template-columns: 18px 66px 108px minmax(58px, 1fr) 62px 64px 68px 40px; gap: 4px; align-items: center; min-height: 28px; padding: 0 6px; border-radius: 4px; font-size: 11px; }
+.rows .r.h { min-height: 18px; font-size: 9px; color: var(--text2); }
+.rows .r.picked { background: var(--raised); box-shadow: inset 2px 0 0 var(--building); }
+.rows .num { font-family: var(--mono); color: var(--text3); font-size: 10px; }
+.rows .fig { font-family: var(--mono); color: var(--text); white-space: nowrap; }
+.rows .mut { font-family: var(--mono); color: var(--text3); font-size: 10px; }
+.bar { display: flex; height: 8px; width: 102px; }
+.bar i { display: block; height: 8px; }
+.dep { white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; font: 400 9px var(--mono); color: var(--text2); }
+.dep i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--stage); }
+.buy { font: 600 10px/1 var(--sans); color: var(--stage); background: var(--building); border-radius: 4px; padding: 4px 0; text-align: center; }
+.offercard { overflow-x: auto; margin-top: 14px; background: rgba(11,17,24,.92); border: 1px solid var(--edge); border-radius: 6px; padding: 10px 12px; max-width: 640px; font-size: 11.5px; color: var(--text2); }
+.offercard b { color: var(--text); }
+.offercard table { border-collapse: collapse; width: 100%; min-width: 520px; margin: 6px 0; font-size: 11px; }
+.offercard td:first-child { white-space: nowrap; }
+.offercard td { padding: 3px 8px 3px 0; border-top: 1px solid var(--edge); vertical-align: top; }
+.offercard td.n { font-family: var(--mono); color: var(--text); white-space: nowrap; text-align: right; }
+.offercard .sum { margin-top: 6px; font-family: var(--mono); color: var(--text); font-size: 11px; }
+
+/* the founding card */
+.fcard { background: var(--panel); border: 1px solid var(--edge); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.fcard .cap { font: 600 9px/1 var(--sans); letter-spacing: .1em; color: var(--text2); margin-bottom: 3px; }
+.fcard p { margin: 0; font-size: 12px; line-height: 1.45; color: var(--text); max-width: none; }
+.fcard p.head { font-weight: 600; }
+.fcard p.muted { color: var(--text3); }
+.fcard p.warn { color: var(--warn); }
+.fcard p.refuse { color: var(--bad-soft); }
+.fcard p.new { border-left: 2px solid var(--building); padding-left: 7px; margin-left: -9px; }
+.fcard p.old { color: var(--text2); }
+
+/* a statement (board 4) */
+.stmt { background: var(--panel); border: 1px solid var(--edge); border-radius: 6px; padding: 14px 16px; }
+.stmt .who { font-size: 14px; font-weight: 600; }
+.stmt .what { font-size: 11px; font-weight: 600; color: var(--text); }
+.stmt .when { font-size: 9px; color: var(--text3); margin-bottom: 8px; }
+.stmt .tb { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; font-size: 9px; }
+.stmt .tb span { padding: 2px 8px; border-radius: 3px; background: var(--control); color: var(--text2); }
+.stmt .tb span.on { background: var(--raised); color: var(--text); box-shadow: inset 0 -1px 0 var(--accent); }
+.stmt .tb span.act { background: transparent; color: var(--accent); }
+.stbl { min-width: 680px; font-size: 11px; }
+.stbl .r { display: grid; grid-template-columns: 34px minmax(160px, 1fr) 100px 100px 96px 64px; gap: 8px; align-items: center; padding: 1px 0; }
+.stbl .r > :nth-child(n+3) { text-align: right; font-family: var(--mono); }
+.stbl .r.heads { font-size: 9px; color: var(--text2); border-bottom: 1px solid var(--edge); padding-bottom: 4px; }
+.stbl .r.heads > :nth-child(n+3) { font-family: var(--sans); }
+.stbl .r.top { padding-top: 10px; font-weight: 600; color: var(--text); }
+.stbl .r.sub { padding-top: 6px; font-size: 10px; font-weight: 600; color: var(--text2); }
+.stbl .r.line > :nth-child(2) { padding-left: 12px; color: var(--text2); }
+.stbl .r.line > :nth-child(3) { color: var(--text); }
+.stbl .r.line > :nth-child(n+4) { color: var(--text3); }
+.stbl .r.gt > :nth-child(2) { font-weight: 600; color: var(--text); }
+.stbl .r.gt > :nth-child(n+3) { border-top: 1px solid var(--text3); font-weight: 600; color: var(--text); }
+.stbl .r.gt > :nth-child(n+4) { color: var(--text3); }
+.stbl .r.tt > :nth-child(2) { font-weight: 600; color: var(--text); }
+.stbl .r.tt > :nth-child(n+3) { border-top: 1px solid var(--text3); border-bottom: 3px double var(--text3); font-weight: 600; color: var(--text); }
+.stbl .nt { font-size: 9px; color: var(--text3); }
+.stbl .nt.door { color: var(--accent); }
+.stbl .r.hl { background: rgba(241,124,176,.06); border-radius: 3px; }
+.stbl .r.nrow { font-size: 9.5px; padding: 0; }
+.stbl .r.nrow > :nth-child(2) { padding-left: 12px; color: var(--text3); }
+.stbl .r.nrow > :nth-child(3) { color: var(--text3); }
+.stbl p.nsent { font-size: 9.5px; color: var(--text3); margin: 3px 0 7px 54px; max-width: 520px; line-height: 1.45; }
+.stack { display: grid; gap: 18px; max-width: 860px; }
+
+/* Build (board 5) */
+.build { background: var(--panel); border: 1px solid var(--edge); border-radius: 6px; padding: 14px 16px 18px; font-size: 11px; }
+.crumb { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text3); margin-bottom: 10px; }
+.crumb strong { color: var(--text); font-size: 17px; font-weight: 600; }
+.crumb i { width: 8px; height: 8px; border-radius: 2px; background: var(--building); }
+.ghead { display: flex; align-items: center; gap: 8px; margin: 14px 0 8px; }
+.ghead h3 { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: var(--text2); }
+.ghead .n { font: 600 10px var(--mono); color: var(--text3); border: 1px solid var(--edge); border-radius: 3px; padding: 0 5px; background: var(--stage); }
+.ghead .rule { flex: 1; height: 1px; background: var(--edge); }
+.ghead .gnote { font-size: 10px; color: var(--text3); }
+.cards { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+.card { width: 300px; max-width: 100%; background: var(--raised); border: 1px solid var(--edge); border-radius: 8px; padding: 10px 12px 12px; display: grid; gap: 7px; }
+.card.pending { border-color: var(--building); box-shadow: 0 0 0 1px rgba(241,124,176,.25); }
+.card .top { display: flex; gap: 10px; align-items: flex-start; }
+.ico { width: 34px; height: 34px; border-radius: 6px; flex: none; display: grid; place-items: center; background: rgba(90,169,255,.16); color: var(--money); box-shadow: inset 0 0 0 1px rgba(90,169,255,.35); }
+.ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.card .name { font-size: 13px; font-weight: 600; line-height: 1.25; }
+.card .have { font-size: 10px; color: var(--text2); }
+.card .info { margin-left: auto; width: 18px; height: 18px; border-radius: 50%; background: var(--control); color: var(--text); font: 700 10px/18px Georgia, serif; text-align: center; flex: none; }
+.ctags { display: flex; flex-wrap: wrap; gap: 4px; }
+.ctags span { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--text3); border: 1px solid var(--control-edge); border-radius: 3px; padding: 0 5px; line-height: 15px; }
+.ctags span.new { color: var(--building); border-color: rgba(241,124,176,.55); background: rgba(241,124,176,.1); }
+.ctags span.good { color: var(--good); border-color: rgba(63,185,80,.5); }
+.herol { font-size: 10px; color: var(--text3); line-height: 1.5; }
+.herol .big { font: 600 16px var(--mono); color: var(--text); }
+.detail { font-size: 9.5px; color: var(--text3); line-height: 1.45; }
+.price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 4px; }
+.price b { font: 600 14px var(--mono); color: var(--good); }
+.price span { font-size: 9.5px; color: var(--text3); }
+.cbar .lab { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; color: var(--text2); margin-bottom: 3px; }
+.cbar .lab .v { font-family: var(--mono); font-weight: 600; color: var(--text); }
+.cbar .track { height: 4px; border-radius: 2px; background: var(--stage); overflow: hidden; }
+.cbar .track i { display: block; height: 4px; border-radius: 2px; background: var(--money); }
+.cbar .track i.land { background: var(--building); }
+.needs { font-size: 9.5px; color: var(--text3); line-height: 1.45; }
+.one { font-size: 10px; color: var(--text2); background: var(--stage); border: 1px solid var(--control-edge); border-radius: 3px; padding: 4px 7px; }
+.press { border-radius: 4px; min-height: 40px; display: grid; place-content: center; text-align: center; padding: 4px 8px; }
+.press .main { font-size: 13px; font-weight: 600; }
+.press .sub { font-size: 9.5px; }
+.press.go { background: var(--building); color: #1a0d14; }
+.press.go .main span { font-family: var(--mono); }
+.press.held { background: var(--control); border: 1px solid var(--control-edge); color: var(--text2); }
+.press.held .sub { color: var(--text3); }
+.quote { font-size: 10px; color: var(--good); }
+.quote.bad { color: var(--bad); }
+.why { font-size: 10px; color: var(--text2); line-height: 1.5; border-top: 1px solid var(--edge); padding-top: 6px; }
+.compact .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.compact .row b { font: 600 14px var(--mono); color: var(--text); }
+foot, footer { display: block; }
+footer { border-top: 1px solid var(--edge); padding-block: 22px 40px; color: var(--text3); font-size: 12.5px; }
+footer p { color: var(--text3); font-size: 12.5px; max-width: 100ch; }
+footer ul { padding-left: 18px; margin: .4em 0; max-width: 100ch; }
+footer li { margin: .2em 0; }
+@media (prefers-reduced-motion: no-preference) { nav.nav a { transition: border-color .15s, color .15s; } }
+</style>
+</head>
+<body>
+
+<header class="wrap head">
+  <div class="eyebrow">CityBuilderSim · design study · Earth 2 · 2026-10-12</div>
+  <h1>Earth 2 Study: slope, snow, shallow sea and bridges on the real Earth</h1>
+  <p>Five boards for the Earth 2 study: the map at each zoom it draws, the legend and the hover words, the land office and the founding card, a sector's land line, and Build's bridges. Every map here is drawn from <b>earth-2.bin</b> itself: its 30" slope shares, its 15" shallow-sea share and landmass ids, and earth-1's sea, lakes, rivers and land cover inside it, by <code>figures.py</code>'s rule with seeded detail at 30 m plots (<code>mockups.py</code> beside this page). The screens' wording follows the code (<code>EarthSite</code>, <code>FoundingScreen</code>, <code>LandScreen</code>, <code>LandMap</code>, <code>SectorStatements</code>, <code>StatementView</code>, <code>BuildScreen</code>); the new lines are written in the same voice and marked.</p>
+  <ul class="keys">
+    <li><span class="meas">measured</span> read from earth-2.bin or GEBCO here</li>
+    <li><span class="est">est.</span> an estimate, with its reason</li>
+    <li><span class="illus">illustrative</span> a made-up city's figure</li>
+    <li><span class="newtag">NEW</span> a line or entry Earth 2 adds</li>
+  </ul>
+</header>
+
+<nav class="nav" aria-label="Boards"><div>
+  <a href="#map">1 · The map</a><a href="#legend">2 · Legend and hover</a><a href="#office">3 · Land office and founding</a><a href="#statement">4 · The land line</a><a href="#build">5 · Build: bridges</a>
+</div></nav>
+
+<main class="wrap">
+
+<!-- ======================================================================= BOARD 1 -->
+<section class="board" id="map" aria-labelledby="b1">
+  <div class="eyebrow">Board 1 · the map</div>
+  <h2 id="b1">The ground at every zoom the map draws</h2>
+  <p>Land gets a second plane beside its cover: <b>flat</b> (under 10% grade) keeps its cover's colour; <b>foothill</b> (10-30%, buildable, dearer to prepare), <b>steep</b> (30-60%) and <b>very steep</b> (60% and more) are three greys, lightest to darkest. Snow and ice is earth-1's <code>ICE</code>, white, and wins over slope. The sea gets a second blue: <b>shallow sea</b>, 30 m or less (GEBCO), lighter than the deep. Each tier reads the same shares; only what a pixel stands for changes.</p>
+  <div class="scroll">
+  <table class="t">
+    <thead><tr><th>Tier</th><th>Scale</th><th>How the ground is drawn</th><th>Slope and snow</th><th>Shallow sea</th><th>Bridges</th></tr></thead>
+    <tbody>
+      <tr><th>Plane · L0</th><td>3.2 to 16 px a plot (<code>MapFrame.L0_FROM</code>, <code>MOST_PX_A_PLOT</code>)</td><td>painted tiles, plot by plot</td><td>a plot's class: its rank in the seed's noise against the 30" shares at its centre (<code>figures.py</code>'s rule) <span class="est">est.</span></td><td>the 15" shallow share the same way, weighted by the sea share</td><td>the runs' decks, edged in <code>DECK</code> from 4 px a plot</td></tr>
+      <tr><th>Plane · L1, L2</th><td>1 to 3.2 px a plot</td><td>blocks of 4 and 8 plots</td><td>the blocks' own plots</td><td>the same</td><td>the run's line</td></tr>
+      <tr><th>Plane · far nodes</th><td>out to 16 plots a pixel, 0.48 km (<code>GlobeFrame.HANDOFF_PLOTS</code>)</td><td>node images, 128 px across (<code>MapTiles</code>)</td><td>the far rule: the shares at a pixel's centre, a hash dither against them, as forest is dithered now</td><td>the same</td><td>a pixel wide at every scale</td></tr>
+      <tr><th>Globe · GROUND</th><td>0.48 to 7.41 km a pixel</td><td>the far rule through the globe's camera</td><td>the same</td><td>the same</td><td>long bridges a pixel wide; short ones not drawn</td></tr>
+      <tr><th>Globe · PICTURE</th><td>7.41 km a pixel and wider</td><td>the planet's picture, a class a 4' texel (<code>GlobePicture</code>)</td><td>the far rule at the texel's centre</td><td>the same: wide shallows and banks read</td><td>none</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- 1a: D5 -->
+  <div class="part">
+    <div class="part-head"><span class="tag rec">★ D5</span><h3>Forest on a slope: drawn grey (A), or forest shaded toward its slope's grey (B)</h3></div>
+    <p>Medellín's valley, 18 km square round its centre, a pixel a 30 m plot, drawn as if the city owned it all (the map dims ground it does not own 40% toward its background, as today). Measured on this render: <b>25% flat, 50% foothill, 24% steep, 1% very steep</b> of the land; forest covers 46% of it, and <b>37% of the land is forest on a slope</b>. The white box is the close-up below.</p>
+    <div class="grid2">
+      <figure><img src="mock-medellin-a.png" width="600" height="600" alt="Medellín's valley drawn with the slope greys over the forest: the slopes are grey and the forest shows only on the valley floor"><figcaption><span class="tag">A</span> <b>Greys over everything on a slope.</b> The forest on the valley's sides is gone from the map: forest reads on 9% of the land, where it is flat. A player sees bare hills where the data says woods.</figcaption></figure>
+      <figure><img src="mock-medellin-b.png" width="600" height="600" alt="Medellín's valley with the greys on open ground and the forest on the slopes kept green, shaded greyer as the slope steepens"><figcaption><span class="tag rec">B · recommended</span> <b>Greys on open ground; forest shaded toward its slope's grey.</b> All 46% of the forest reads as forest, and the slope under it still reads: sage on a foothill, greyer on steep ground, darkest on very steep.</figcaption></figure>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <figure><img src="mock-medellin-l0-a.png" width="480" height="320" alt="Close-up at 8 pixels a plot, way A: grey slopes, forest only on the flat"><figcaption><span class="tag">A at L0</span> 8 px a plot (past <code>BIG_TILES_FROM</code>): 1.8 km by 1.2 km on the valley's eastern rim, 39% flat, 27% foothill, 13% steep, 22% very steep; forest on 72% of it, 48% of it forest on a slope.</figcaption></figure>
+      <figure><img src="mock-medellin-l0-b.png" width="480" height="320" alt="The same close-up, way B: the forest on the slopes in three greener greys"><figcaption><span class="tag rec">B at L0</span> The same plots. Forest on a foothill is <span class="sw" style="background:var(--forest-foothill)"></span> (forest 50% of the way to the foothill grey), on steep ground <span class="sw" style="background:var(--forest-steep)"></span> (50%), on very steep <span class="sw" style="background:var(--forest-vsteep)"></span> (60%) <span class="est">est.</span>: chosen so the three step down in lightness as the bare greys do.</figcaption></figure>
+    </div>
+    <div class="options">
+      <div class="opt"><h3>A · greys over everything</h3><p>One colour a class, nothing mixed; the slope reads at a glance. It hides the forest on every hillside, which the forest law and Forestry count, and makes wooded hills (most of them) look like bare rock.</p></div>
+      <div class="opt rec"><h3>B · forest kept, shaded by its slope (recommended)</h3><p>Three more colours, one per slope class on forest, each a fixed mix of the two (a dither of the two at plot level would read the same at L0 and average to the mix farther out). The forest and the slope both read, and a forested foothill is visibly buildable ground and visibly forest.</p></div>
+    </div>
+  </div>
+
+  <!-- 1b: Halifax -->
+  <div class="part">
+    <div class="part-head"><span class="tag">Short crossings</span><h3>Halifax: the Narrows, shallow and deep water, and the runs' bridges</h3></div>
+    <p>The expanded map at 2 px a plot, 16 by 14 km. The city's ground (white box, <span class="illus">illustrative</span>) holds both shores of the Narrows; the rest is dimmed. The Narrows and the harbour are shallow sea, Bedford Basin and the harbour's outer approach deep. A run lays a short bridge where the water is no wider than 14 plots (420 m) for a highway or rail and the city's own ground lies beyond, as today.</p>
+    <div class="window" role="img" aria-label="The expanded map over Halifax with the legend and a hover card on the Narrows">
+      <div class="whead"><strong>Land office › Map</strong><span>March 2231</span><span>2 px a plot · 15 m a px</span><span class="gap"></span><span>Drag or W, A, S, D to move · wheel to zoom</span><span class="chip">Fit</span><span class="chip">Back to the land office · Esc</span></div>
+      <div class="mapbox">
+        <img src="mock-halifax.png" width="1066" height="934" alt="Halifax harbour at 1 pixel a plot: the Narrows in light blue between Halifax and Dartmouth, Bedford Basin dark blue to the north-west, the MacKay's deck drawn, the Macdonald's line dashed in amber">
+        <span class="pointer" style="left:58.3%;top:49.9%"></span>
+        <div class="hovercard" style="left:59.6%;top:51.6%"><b>Shallow sea · 30 m deep or less, about 15 m here · a bridge may cross it</b><span>The city's: South 2, bought in month 31</span><span>2.9 km east of Halifax</span><span>Geology: Appalachian Foldbelt, a fold belt</span></div>
+        <div class="legend" aria-label="Legend">
+          <span><i style="background:var(--grass)"></i>Grass</span><span><i style="background:var(--forest)"></i>Forest</span><span><i style="background:var(--foothill)"></i>Foothill</span><span><i style="background:var(--steep)"></i>Steep</span><span><i style="background:var(--vsteep)"></i>Very steep</span><span><i style="background:var(--forest-foothill)"></i>Forest on a slope</span>
+          <span><i style="background:var(--ice)"></i>Snow and ice</span><span><i style="background:var(--fresh)"></i>Lake or river</span><span><i style="background:var(--shallow)"></i>Shallow sea</span><span><i style="background:var(--sea)"></i>Sea</span><span><i style="background:var(--deck)"></i>Bridge</span><span><i style="background:#fff"></i>The city's edge</span>
+        </div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <figure><img src="mock-halifax-narrows.png" width="600" height="440" alt="The Narrows at 5 pixels a plot: the MacKay drawn as a highway on a deck over 12 plots of water, the Macdonald dashed in amber over 27 plots"><figcaption><b>The Narrows at 5 px a plot</b> (the light blue box above), the same plots. The MacKay's line crosses 350 m of water here, 12 plots: the run lays it, a highway <span class="sw" style="background:var(--highway)"></span> on its deck <span class="sw" style="background:var(--deck)"></span>. The Macdonald's line crosses 800 m, 27 plots: past the 14 a run may bridge, so the run turns along the shore and nothing is laid (dashed in <span style="color:var(--warn)">amber</span> to show where it would stand).</figcaption></figure>
+      <div>
+        <div class="finding">
+          <div class="eyebrow">Finding · the 14-plot cap does not fit Halifax</div>
+          <p><b>Measured on earth-2:</b> along the bridges' own lines the 15" sea share passes a half for <b>820 m</b> (Macdonald) and <b>805 m</b> (MacKay). With the seed's fray a run meets <b>555-1,000 m</b> under the Macdonald and <b>295-915 m</b> under the MacKay over eight seeds; seven seeds in eight leave the MacKay over 14 plots, and all eight the Macdonald.</p>
+          <p>Halifax and Dartmouth are one landmass (id 2, joined round the head of Bedford Basin), so the long-bridge order refuses the crossing as well. <b>On most seeds neither of Halifax's bridges could be built.</b> The study's D12 ("Halifax's two bridges are this kind", §6.2) rests on the BIO's "300 to 400 metres wide", which is the sill's width under water, not shore to shore.</p>
+          <p>The study has to widen one rule: a short crossing of about 34 plots (1 km) for highway and rail <span class="est">est.</span>, or the long order allowed within one landmass where the water is wider than a run's bridge.</p>
+        </div>
+        <p class="note">Depths along the lines (GEBCO 2026, 15"): Macdonald 6-21 m, MacKay 7-14 m; the depth layer's 1' cells 4-11 m and 13-19 m. Bedford Basin's middle cell 51 m. Every sea plot within 5 km of downtown is shallow on this render once the shallow share is weighted by the sea share (read plain, the land cells' 0 drew a fringe of deep sea along every shore).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1c: Khumbu -->
+  <div class="part">
+    <div class="part-head"><span class="tag">Greys and snow</span><h3>The Khumbu: Namche Bazaar to Everest</h3></div>
+    <div class="grid2">
+      <figure><img src="mock-everest.png" width="1000" height="1000" alt="The Khumbu at 1 pixel a plot: snow and ice white above, the valleys below in three greys with a few pale green flats, the 5 km circle round Tengboche in red"><figcaption><b>30 km square at 1 px a plot.</b> Measured on this render: 4% flat, 12% foothill, 22% steep, 25% very steep, <b>38% snow and ice</b>. Ice is earth-1's 2' bit (snow and ice on half a cell's land or more) and wins over slope; below it the valley floors at Dingboche and Lobuche keep a little flat and foothill ground, and the gorges round Namche and Tengboche are steep and very steep. The red circle is the founding card's 5 km round Tengboche (board 3).</figcaption></figure>
+      <div>
+        <p>Slope, not height, decides: Medellín at 1,500 m is mostly buildable, and so is the Tibetan plateau at 4,500 m (the globe tier below); the Himalaya's flanks are not. The few pale flats here are real valley floors at 4,300-4,900 m.</p>
+        <p class="note">Two things look odd here, both earth-1's land cover, not earth-2's slope: the ice bit covers 77% of a 20 km box round the summit, bare rock faces included; and a few tan <span class="sw" style="background:var(--desert)"></span> patches are the desert bit (bare ground on half a cell's land) on moraine. Both draw as they do in the game today.</p>
+        <p class="note">The noise here is box-relative (<code>figures.py</code>'s): another crop of the same place draws the same shares with different detail. The game's noise is the world's, so a place draws the same in every view.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1d: Confederation -->
+  <div class="part">
+    <div class="part-head"><span class="tag">Long crossings</span><h3>The Confederation Bridge, as one order on Build</h3></div>
+    <div class="grid2">
+      <figure><img src="mock-confederation.png" width="867" height="600" alt="The Northumberland Strait at 1 pixel a plot, all of it light shallow blue, with one deck from Cape Jourimain to Borden-Carleton"><figcaption><b>26 by 18 km at 1 px a plot</b>, not dimmed so the sea's two blues read. The city's ground (white boxes, <span class="illus">illustrative</span>): its home round Cape Jourimain, and an offer it bought at Borden-Carleton. The whole span is one deck, priced and built as one order (board 5).</figcaption></figure>
+      <div>
+        <p><b>Measured on the bridge's line</b> (Borden-Carleton to Cape Jourimain): <b>12.8 km of water</b> by earth-1's 15" sea; every water cell 15 of 15 shallow; <b>GEBCO 1-24 m</b>, the depth layer's 1' cells 1-21 m. The two shores are <b>landmass 103</b>, Prince Edward Island, 5,596.50 km² in the landmasses table (Charlottetown its largest place), and <b>landmass 2</b>, the Americas. Real: 12.9 km, 44 main piers 250 m apart, built 1993-97 for C$1.3 billion.</p>
+        <p>The order is judged whole before a plot is laid: a continuous way of shallow sea or fresh water from the city's dry ground on one shore to its dry ground on the other, no cell of it deep, no longer than 36 km <span class="est">est.</span>, the two ends on different landmasses. Ground on an unlinked landmass holds only a port or a bridge's landing until then.</p>
+        <p class="note">The far view below shows the same strait with the crossing the order refuses: Caribou to Wood Islands meets water deeper than 30 m 11.1 km out.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1e: far -->
+  <div class="part">
+    <div class="part-head"><span class="tag">Far nodes and the GROUND tier</span><h3>A pixel 0.5 to 1 km: greys from the 30" shares</h3></div>
+    <p>The far rule: each pixel's classes from the shares at its centre (slope at 30", sea, lakes and the shallow share at 15", land cover at 2'), a hash dither against them, rivers of GRWL 100 m wide or more stroked at least 1.5 px. Way B.</p>
+    <div class="grid3">
+      <figure><img src="mock-far-andes.png" width="480" height="320" alt="The Andes round Medellín at half a kilometre a pixel: speckled greys and greens, the Aburrá valley lighter"><figcaption><b>The Andes round Medellín, 0.5 km a pixel</b>, 240 by 160 km: 19% flat, 41% foothill, 33% steep, 7% very steep; the river valleys read as the flats.</figcaption></figure>
+      <figure><img src="mock-far-himalaya.png" width="400" height="260" alt="The Himalaya at a kilometre a pixel: the Tibetan plateau tan and flat to the north, white snow on the crest, grey flanks, green Nepal hills"><figcaption><b>The Himalaya, 1 km a pixel</b>, 400 by 260 km: the plateau to the north flat (tan is the desert bit), the crest white, the flanks grey, the hills of Nepal green over grey.</figcaption></figure>
+      <figure><img src="mock-far-strait.png" width="480" height="300" alt="The Northumberland Strait at half a kilometre a pixel: the strait light blue, deeper water darker to the east, the Confederation deck and a refused crossing in red"><figcaption><b>The Northumberland Strait, 0.5 km a pixel</b>: the strait shallow (light), the Gulf deeper (dark). The Confederation Bridge as a deck; Caribou to Wood Islands in <span style="color:var(--bad)">red</span>, refused for deep water 11.1 km out.</figcaption></figure>
+    </div>
+  </div>
+
+  <!-- 1f: globe -->
+  <div class="part">
+    <div class="part-head"><span class="tag">The PICTURE tier</span><h3>The planet's picture, a class a 4' texel (7.4 km)</h3></div>
+    <div class="grid2">
+      <figure><img src="mock-globe-tibet.png" width="810" height="404" alt="The Himalaya and Tibet at 7.4 km a texel: the plateau flat and tan, the mountain arc grey with snow, the Ganges plain green"><figcaption><b>Tibet and the Himalaya</b>, 3,000 by 1,500 km, 2 px a texel: half the land flat (the plateau and the Ganges plain), 19% foothill, 20% steep, 9% very steep. High is not steep.</figcaption></figure>
+      <figure><img src="mock-globe-maritimes.png" width="525" height="324" alt="The Maritimes at 7.4 km a texel: light shallow sea in the Northumberland Strait, round the Magdalen Islands and on Sable Island Bank"><figcaption><b>The Maritimes</b>, 1,300 by 800 km, 3 px a texel: the shallow sea reads only where it is wide (the Northumberland Strait, the Magdalen shallows, Sable Island Bank); 7% of the sea in the box is 30 m or less.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================= BOARD 2 -->
+<section class="board" id="legend" aria-labelledby="b2">
+  <div class="eyebrow">Board 2 · legend and hover</div>
+  <h2 id="b2">Every new class: its swatch, its legend entry, its hover line</h2>
+  <p>The hover card's first line is the ground's words (<code>LandMap.groundWords()</code>); Earth 2 adds the slope class to every land line and the depth to every sea line. The rest of the card is as today: whose it is, where it is from the nearest place, the province, the fields.</p>
+
+  <div class="scroll">
+  <table class="t">
+    <thead><tr><th></th><th>Legend entry</th><th>Hover card's first line</th><th>Buildable</th><th>Priced on a sector's land line</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sw" style="background:var(--grass)"></span> <span class="sw" style="background:var(--forest)"></span> <span class="sw" style="background:var(--desert)"></span></td><td><b>Grass</b>, <b>Forest</b>, <b>Desert</b> (as today)</td><td>"Grass · flat, under 10% grade" <span class="newtag">NEW</span> suffix</td><td>yes</td><td>at the going price</td></tr>
+      <tr><td><span class="sw" style="background:var(--foothill)"></span></td><td><b>Foothill</b> <span class="newtag">NEW</span></td><td>"Foothill · 10-30% grade · buildable; preparing a site costs more"</td><td>yes, dearer</td><td>the going price less its preparation, never under the base price</td></tr>
+      <tr><td><span class="sw" style="background:var(--forest-foothill)"></span></td><td><b>Forest on a slope</b> <span class="newtag">NEW</span> (B)</td><td>"Forest on a foothill · 10-30% grade · buildable; preparing a site costs more"</td><td>yes, dearer</td><td>as foothill</td></tr>
+      <tr><td><span class="sw" style="background:var(--steep)"></span> <span class="sw" style="background:var(--forest-steep)"></span></td><td><b>Steep</b> <span class="newtag">NEW</span></td><td>"Steep · 30-60% grade · no buildings: mines, quarries, wells; highways and rail on viaducts" (forest: "Forest on steep ground · ...")</td><td>no</td><td>the base price</td></tr>
+      <tr><td><span class="sw" style="background:var(--vsteep)"></span> <span class="sw" style="background:var(--forest-vsteep)"></span></td><td><b>Very steep</b> <span class="newtag">NEW</span></td><td>"Very steep · 60% grade or more · no buildings: mines, quarries, wells; highways and rail in tunnels"</td><td>no</td><td>the base price</td></tr>
+      <tr><td><span class="sw" style="background:var(--ice)"></span></td><td><b>Snow and ice</b> (today "Ice")</td><td>"Snow and ice · never built on, whatever its slope"</td><td>no</td><td>nothing: in the whole area only, as today</td></tr>
+      <tr><td><span class="sw" style="background:var(--shallow)"></span></td><td><b>Shallow sea</b> <span class="newtag">NEW</span></td><td>"Shallow sea · 30 m deep or less, about 18 m here · a bridge may cross it"</td><td>bridges</td><td>as sea</td></tr>
+      <tr><td><span class="sw" style="background:var(--sea)"></span></td><td><b>Sea</b></td><td>"Sea · deeper than 30 m, about 51 m here · too deep for a bridge; a platform stands in 150 m or less"</td><td>ports, platforms</td><td>as sea</td></tr>
+      <tr><td><span class="sw" style="background:var(--fresh)"></span></td><td><b>Lake or river</b></td><td>"Lake or river · a bridge may cross it"</td><td>bridges</td><td>as fresh water</td></tr>
+      <tr><td><span class="sw" style="background:var(--deck)"></span></td><td><b>Bridge</b> <span class="newtag">NEW</span> (plane)</td><td>"Bridge · the highway over 12 plots (360 m) of shallow sea, laid with the run"</td><td></td><td></td></tr>
+      <tr><td><span class="sw" style="background:var(--highway);box-shadow:inset 0 0 0 3px var(--deck)"></span></td><td><b>Bridge</b> (a long one)</td><td>"Highway Bridge · 12.8 km over shallow sea, built in month 1,322 · links Prince Edward Island"</td><td></td><td></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">"about 18 m here" is the depth layer's 1' cell, a mean of its sea (GEBCO); it is the hover's figure, not the plot's class. A bridge reads the shallow share, which is 15" and of the sea alone.</p>
+
+  <div class="grid3" style="margin-top:18px">
+    <div class="hc-wrap"><div class="eyebrow">Legend on the plane</div>
+      <div class="leglist">
+        <span><i style="background:var(--grass)"></i>Grass</span><span><i style="background:var(--forest)"></i>Forest</span>
+        <span class="new"><i style="background:var(--foothill)"></i>Foothill</span><span class="new"><i style="background:var(--steep)"></i>Steep</span><span class="new"><i style="background:var(--vsteep)"></i>Very steep</span>
+        <span class="new"><i style="background:linear-gradient(90deg,var(--forest-foothill) 33%,var(--forest-steep) 33% 66%,var(--forest-vsteep) 66%)"></i>Forest on a slope</span>
+        <span><i style="background:var(--ice)"></i>Snow and ice</span><span><i style="background:var(--desert)"></i>Desert</span>
+        <span><i style="background:var(--fresh)"></i>Lake or river</span><span class="new"><i style="background:var(--shallow)"></i>Shallow sea</span><span><i style="background:var(--sea)"></i>Sea</span>
+        <span class="new"><i style="background:var(--deck)"></i>Bridge</span>
+        <span style="color:var(--text3);display:block">… with today's buildings, roads, railway, the shore's nine, the city's edge, the offers and the six fields (<code>planeLegend()</code>)</span>
+      </div>
+    </div>
+    <div class="hc-wrap"><div class="eyebrow">Legend on the globe (PICTURE, GROUND)</div>
+      <div class="leglist">
+        <span><i style="background:var(--grass)"></i>Grass</span><span><i style="background:var(--forest)"></i>Forest</span><span><i style="background:var(--desert)"></i>Desert</span>
+        <span class="new"><i style="background:var(--foothill)"></i>Foothill</span><span class="new"><i style="background:var(--steep)"></i>Steep</span><span class="new"><i style="background:var(--vsteep)"></i>Very steep</span>
+        <span class="new"><i style="background:linear-gradient(90deg,var(--forest-foothill) 33%,var(--forest-steep) 33% 66%,var(--forest-vsteep) 66%)"></i>Forest on a slope</span>
+        <span><i style="background:var(--ice)"></i>Snow and ice</span><span><i style="background:var(--sand)"></i>Beach</span><span><i style="background:var(--fresh)"></i>Lake or river</span>
+        <span class="new"><i style="background:var(--shallow)"></i>Shallow sea</span><span><i style="background:var(--sea)"></i>Sea</span>
+        <span><i style="background:var(--accent-light)"></i>The city</span><span><i style="background:#fff"></i>The city's edge</span><span><i style="background:var(--offer)"></i>On offer <span style="color:var(--text3)">(GROUND only)</span></span>
+      </div>
+    </div>
+    <div class="hc-wrap"><div class="eyebrow">Hover cards</div>
+      <div class="where">Medellín · the land office's map, East 3</div>
+      <div class="hc"><b>Foothill · 10-30% grade · buildable; preparing a site costs more</b><span>On offer: East 3 · 0.432 km², 0.412 buildable · US$6.65M</span><span>4.3 km south-east of Medellín</span><span>Geology: West-Central Cordillera, a fold belt</span></div>
+      <div class="where">Medellín · East 2, a forested slope <span class="illus">illustrative</span></div>
+      <div class="hc"><b>Forest on steep ground · 30-60% grade · no buildings: mines, quarries, wells; highways and rail on viaducts</b><span>On offer: East 2 · 0.360 km², 0.277 buildable · US$2.71M</span><span>Stone: a field of 2 sites, 27.0 Mt · this site 13.5 Mt · all of it with East 2, on offer</span></div>
+      <div class="where">Halifax · Bedford Basin</div>
+      <div class="hc"><b>Sea · deeper than 30 m, about 51 m here · too deep for a bridge; a platform stands in 150 m or less</b><span>Not the city's</span><span>6.1 km north-west of Halifax</span></div>
+      <div class="where">The globe · the Khumbu</div>
+      <div class="hc"><b>Very steep · 60% grade or more · no buildings: mines, quarries, wells; highways and rail in tunnels</b><span>Not the city's</span><span>88 km north-east of Ramechhap</span><span>Geology: Himalayan, a fold belt</span></div>
+    </div>
+  </div>
+  <p class="note">Place words are <code>LandMap.placeWords()</code>' form from the data's places (Natural Earth): the Khumbu's nearest is Ramechhap, 88 km away; Tengboche and Namche are not in it. The stone field and the offers are <span class="illus">illustrative</span>.</p>
+</section>
+
+<!-- ======================================================================= BOARD 3 -->
+<section class="board" id="office" aria-labelledby="b3">
+  <div class="eyebrow">Board 3 · the land office and the founding card</div>
+  <h2 id="b3">An offer's ground by class, and a spot's slope and water</h2>
+  <p>The office's map is Medellín at 2 px a plot (the same plots as board 1), the city's ground on the valley floor (<span class="illus">illustrative</span>), East's six offers climbing the valley's east side. Each offer's ground by class is <span class="meas">measured</span> on that render; its price is the class rule's on a going price of US$21.40/m² <span class="illus">illustrative</span> and the study's preparation of a foothill m², about US$105 <span class="est">est.</span> (§4.1: 1.3 m³ of earth and 0.17 m² of wall a m², at about US$15 a m³ and US$500 a m²).</p>
+
+  <div class="office" role="img" aria-label="The land office: the map of Medellín with East's six offers, and the rows with the ground split flat, foothill and steep">
+    <div class="ohead"><span class="title"><i></i>Land office</span><span class="toggle"><span>Convert M$</span><span class="on">From the vault</span></span><span class="line">Land is priced in US dollars. Paying from the vault spends its dollars as they are.</span></div>
+    <div class="hero">
+      <div class="map"><img src="mock-landoffice-map.png" width="600" height="400" alt="Medellín's valley at 2 pixels a plot: the city's ground lit on the valley floor, six offers edged in pink along its east side, East 3 picked"></div>
+      <div>
+        <div class="citycap">THE CITY</div>
+        <div class="cityline">8.64 km² · 5.78 flat · 2.83 foothill · 0.013 steep · 0.025 fresh · 0 sea</div>
+        <div class="worldline">of the world's 1.12 Pt of iron, the city owns none of it</div>
+        <div class="sides"><span>North <em>US$61.2M a km²</em></span><span>South <em>US$66.0M a km²</em></span><span class="on">East <em>US$58.8M a km²</em><b class="ttag best">BEST VALUE</b></span><span>West <em>US$72.4M a km²</em></span></div>
+        <div class="scroll">
+        <div class="rows">
+          <div class="r h"><span>#</span><span>size</span><span>flat · foothill · steep · fresh · sea</span><span>deposits</span><span>price</span><span>a buildable km², prepared</span><span></span><span></span></div>
+          <div class="r"><span class="num">1</span><span class="fig">0.288 km²</span><span class="bar"><i style="width:100%;background:var(--foothill)"></i></span><span></span><span class="fig">US$2.17M</span><span class="mut">US$113M</span><span></span><span class="buy">Buy</span></div>
+          <div class="r"><span class="num">2</span><span class="fig">0.36 km²</span><span class="bar"><i style="width:77%;background:var(--foothill)"></i><i style="width:23%;background:var(--steep)"></i></span><span class="dep"><i style="background:#ded8c6"></i>2 · 27.0 Mt</span><span class="fig">US$2.71M</span><span class="mut">US$115M</span><span></span><span class="buy">Buy</span></div>
+          <div class="r picked"><span class="num">3</span><span class="fig">0.432 km²</span><span class="bar"><i style="width:56.7%;background:var(--grass)"></i><i style="width:38.7%;background:var(--foothill)"></i><i style="width:4.6%;background:var(--steep)"></i></span><span></span><span class="fig">US$6.65M</span><span class="mut">US$58.8M</span><span><b class="ttag best">BEST VALUE</b></span><span class="buy">Buy</span></div>
+          <div class="r"><span class="num">4</span><span class="fig">0.432 km²</span><span class="bar"><i style="width:25.8%;background:var(--grass)"></i><i style="width:65%;background:var(--foothill)"></i><i style="width:9.2%;background:var(--steep)"></i></span><span></span><span class="fig">US$4.80M</span><span class="mut">US$87.4M</span><span></span><span class="buy">Buy</span></div>
+          <div class="r"><span class="num">5</span><span class="fig">0.36 km²</span><span class="bar"><i style="width:2.8%;background:var(--grass)"></i><i style="width:93.5%;background:var(--foothill)"></i><i style="width:3.7%;background:var(--steep)"></i></span><span></span><span class="fig">US$2.85M</span><span class="mut">US$110M</span><span></span><span class="buy">Buy</span></div>
+          <div class="r"><span class="num">6</span><span class="fig">0.288 km²</span><span class="bar"><i style="width:16.3%;background:var(--grass)"></i><i style="width:83.7%;background:var(--foothill)"></i></span><span></span><span class="fig">US$2.82M</span><span class="mut">US$97.7M</span><span></span><span class="buy">Buy</span></div>
+        </div>
+        <div class="offercard" aria-label="The offer card for East 3">
+          <b>East 3</b>: 6 × 5 blocks of 120 m · 0.432 km² · 0.245 flat, 0.167 foothill, 0.0198 steep<br>
+          Listed in month 1,204 at US$6.65M: M$8.31M at today's rate.
+          <table>
+            <tr><td><span class="sw" style="background:var(--grass)"></span> Flat</td><td class="n">0.245 km²</td><td class="n">US$21.40/m²</td><td class="n">US$5.24M</td><td>the going price</td></tr>
+            <tr><td><span class="sw" style="background:var(--foothill)"></span> Foothill</td><td class="n">0.167 km²</td><td class="n">US$7.53/m²</td><td class="n">US$1.26M</td><td>the base price: the going price less about US$105/m² to prepare it <span class="est">est.</span> is under it</td></tr>
+            <tr><td><span class="sw" style="background:var(--steep)"></span> Steep</td><td class="n">0.0198 km²</td><td class="n">US$7.53/m²</td><td class="n">US$0.149M</td><td>the base price: no buildings; mines, quarries, wells, highways and rail only</td></tr>
+          </table>
+          <div class="sum">Buildable 0.412 km² · 62,000 m² a US$1M as listed · 17,000 m² a US$1M prepared (US$58.8M a km²)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="note">The base price is <code>LandMarket.BASE_PRICE_PER_SQ_FT</code>, US$0.70 a square foot, US$7.53/m². The column "a buildable km², prepared" adds the foothill's preparation, so the office ranks what it costs to build on (the study's §5.2). At US$21.40 the going price is under the base price and the preparation together (about US$113 a m²), so foothill sells at the base price and costs about US$113 a m² prepared, five times flat ground: the flattest offer, East 3, is the best value, and an all-foothill offer like East 1 is the dearest to build on although it is the cheapest to buy. Foothill pays once crowding lifts the going price past about US$113 a m², 15 times the base (§5.1); board 4's city is that far on.</p>
+
+  <div class="part">
+    <div class="part-head"><span class="tag">The founding card</span><h3>Three spots: Halifax, Medellín, and a Himalayan spot refused</h3></div>
+    <p>The card under the founding globe (<code>FoundingScreen.fillCard()</code>), its lines in the code's order and words; the lines with a pink rule are new. The snap now needs <b>buildable</b> ground (flat or foothill, not ice) at the site and at eight points 600 m round it (<code>World.SITE_DRY_PLOTS</code>). Each card's ground is <span class="meas">measured</span> on the board-1 render, plot by plot within 5 km (<code>CARD_PLOTS</code>, 167).</p>
+    <div class="grid3">
+      <div class="fcard" aria-label="The founding card for Halifax">
+        <div class="cap">THE SPOT</div>
+        <p class="head">1.7 km east of Halifax · 44.65° N, 63.58° W · the site 0.3 km from the spot</p>
+        <p>Within 5 km: 74% dry · 2% rivers and lakes · 24% sea</p>
+        <p class="new">Its land: flat 85% · foothill 15% · steep 0%</p>
+        <p class="new">Buildable: 58.3 km², 49.5 flat and 8.8 foothill</p>
+        <p>Fresh water 3.0 km away · the sea 0.6 km away</p>
+        <p class="new">The sea within 5 km is all shallow, 30 m or less: bridges may cross it · 19 m at its deepest</p>
+        <p class="new">Its landmass: New York's, 36.7 million km² (id 2)</p>
+        <p class="old">Geology: Appalachian Foldbelt, a fold belt · deposits iron ore ×0.72, oil ×0.60, stone ×1.38, coal ×0.79, copper ×2.93, uranium ×0.38</p>
+        <p class="old">The nearest iron field: 18.0 km south-west</p>
+        <p class="muted">World seed 758,809,812: the detail below the data, the fields and the streets.</p>
+      </div>
+      <div class="fcard" aria-label="The founding card for Medellín">
+        <div class="cap">THE SPOT</div>
+        <p class="head">2.9 km south of Medellín · 6.25° N, 75.57° W</p>
+        <p>Within 5 km: 99% dry · 1% rivers and lakes · 0% sea</p>
+        <p class="new">Its land: flat 42% · foothill 45% · steep 12% · very steep under 1%</p>
+        <p class="new">Buildable: 68.6 km², 33.1 flat and 35.5 foothill</p>
+        <p>Fresh water 1.0 km away · no sea within 5 km</p>
+        <p class="new">Its landmass: New York's, 36.7 million km² (id 2)</p>
+        <p class="old">Geology: West-Central Cordillera, a fold belt · deposits iron ore ×0.72, oil ×0.60, stone ×1.38, coal ×0.79, copper ×2.93, uranium ×0.38</p>
+        <p class="old">The nearest iron field: as the seed draws it</p>
+        <p class="muted">World seed 758,809,812: the detail below the data, the fields and the streets.</p>
+      </div>
+      <div class="fcard" aria-label="The founding card for a spot by Tengboche, refused">
+        <div class="cap">THE SPOT</div>
+        <p class="head">27.84° N, 86.76° E</p>
+        <p class="refuse">No ground within 5 km to found a city on: the land here is steep, 30% grade or more, or under snow and ice. A city's centre needs ground under 30% for 600 m round it; the nearest is 5.5 km west.</p>
+        <p class="new muted">Its land within 5 km: flat under 1% · foothill 6% · steep 34% · very steep 59% · snow and ice 1%</p>
+      </div>
+    </div>
+    <p class="note">Halifax: the spot is <code>GlobeCheck</code>'s 44.6488, -63.5752; the snap moves it 0.3 km onto ground with 600 m of buildable ground round it. "19 m at its deepest" is the depth layer's deepest 1' cell within 5 km; the shallow share is what says "all shallow". The iron line is the code report's probe of seed 758,809,812 (hematite, 28 sites, at 44.513, -63.704), measured from this site. Medellín's multipliers are the fold belt's at no known petroleum, the same as Halifax's <span class="est">est.</span>: the province is a fold belt with 0 MMBOE. The third spot is by Tengboche monastery (3,867 m), picked on the globe; Natural Earth names no place near it. Its own plot is flat grass, and the snap finds no buildable 600 m round anywhere within 5 km; searched farther, the nearest is 5.5 km west, by Namche Bazaar. The landmass line names the table's most populous place on it (Natural Earth): the Americas are "New York's".</p>
+  </div>
+</section>
+
+<!-- ======================================================================= BOARD 4 -->
+<section class="board" id="statement" aria-labelledby="b4">
+  <div class="eyebrow">Board 4 · a sector's land line</div>
+  <h2 id="b4">The Land line and its note 11: the land by class, its area and its price a m²</h2>
+  <p><code>SectorStatements.sheet()</code> writes the Land line with note 0 today; notes 5 to 10 are taken, so the land's note is <b>11</b>. Opened in place, as the other notes open (<code>StatementView.noteRows()</code>): a row a class, its km² and its price a m² in the label, its value this month at the right, then one sentence. The figures are <span class="illus">illustrative</span>, the arithmetic exact: Medellín generations on, crowded, in its money (M$1.25 to the US dollar): going price M$170.00/m² (US$136, 18 times the base), foothill M$38.75 (the going price less M$131.25, the study's US$105, to prepare it <span class="est">est.</span>), base M$9.41. In board 3's young city the floor binds; here the subtraction shows.</p>
+  <div class="stack">
+    <div class="stmt" aria-label="Manufacturing's statement of financial position with note 11 open">
+      <div class="who">Manufacturing</div><div class="what">Statement of financial position</div><div class="when">As March 2311 closed · in $ thousands</div>
+      <div class="tb"><span class="on">✓ change</span><span class="on">✓ % of assets</span><span class="act">open every note</span><span class="act">close them</span></div>
+      <div class="scroll"><div class="stbl">
+        <div class="r heads"><span>note</span><span></span><span>this month</span><span>last month</span><span>change</span><span>of assets</span></div>
+        <div class="r top"><span></span><span>ASSETS</span><span></span><span></span><span></span><span></span></div>
+        <div class="r sub"><span></span><span>Current assets</span><span></span><span></span><span></span><span></span></div>
+        <div class="r line"><span></span><span>Cash</span><span>61,400</span><span>58,210</span><span>3,190</span><span>9.4%</span></div>
+        <div class="r line"><span class="nt door">▸ 7</span><span>Stock, at today's price</span><span>31,050</span><span>30,420</span><span>630</span><span>4.7%</span></div>
+        <div class="r line"><span></span><span>Owed by its buyers</span><span>7,150</span><span>6,700</span><span>450</span><span>1.1%</span></div>
+        <div class="r gt"><span></span><span>Total current assets</span><span>99,600</span><span>95,330</span><span>4,270</span><span>15.2%</span></div>
+        <div class="r sub"><span></span><span>Long-lived assets</span><span></span><span></span><span></span><span></span></div>
+        <div class="r line hl"><span class="nt door">▾ 11</span><span>Land</span><span>324,813</span><span>316,840</span><span>7,973</span><span>49.6%</span></div>
+        <div class="r nrow"><span></span><span>Flat 1.84 km² at M$170.00 a m²</span><span>312,800</span><span></span><span></span><span></span></div>
+        <div class="r nrow"><span></span><span>Foothill 0.31 km² at M$38.75 a m²</span><span>12,013</span><span></span><span></span><span></span></div>
+        <p class="nsent">At today's prices, by the ground it stands on: flat at the going price; foothill at the going price less what preparing it costs, M$131.25 a m², never under the base price of ground nobody wants, M$9.41; steep ground at that base price, which only mines, quarries, wells, highways and rail stand on. It holds none.</p>
+        <div class="r line"><span class="nt door">▸ 8</span><span>Buildings, at cost</span><span>214,000</span><span>211,500</span><span>2,500</span><span>32.7%</span></div>
+        <div class="r line"><span class="nt door">▸ 9</span><span>Held abroad</span><span>10,400</span><span>10,350</span><span>50</span><span>1.6%</span></div>
+        <div class="r line"><span></span><span>Other businesses' bonds</span><span>6,000</span><span>6,000</span><span>–</span><span>0.9%</span></div>
+        <div class="r gt"><span></span><span>Total long-lived assets</span><span>555,213</span><span>544,690</span><span>10,523</span><span>84.8%</span></div>
+        <div class="r tt"><span></span><span>TOTAL ASSETS</span><span>654,813</span><span>640,020</span><span>14,793</span><span>100.0%</span></div>
+      </div></div>
+    </div>
+    <div class="stmt" aria-label="Quarrying's long-lived assets with note 11 open, steep ground included">
+      <div class="who">Quarrying</div><div class="what">Statement of financial position</div><div class="when">As March 2311 closed · in $ thousands</div>
+      <div class="tb"><span class="on">✓ change</span><span class="on">✓ % of assets</span><span class="act">open every note</span><span class="act">close them</span></div>
+      <div class="scroll"><div class="stbl">
+        <div class="r heads"><span>note</span><span></span><span>this month</span><span>last month</span><span>change</span><span>of assets</span></div>
+        <div class="r top"><span></span><span>ASSETS</span><span></span><span></span><span></span><span></span></div>
+        <div class="r gt"><span></span><span>Total current assets</span><span>20,800</span><span>19,950</span><span>850</span><span>9.3%</span></div>
+        <div class="r sub"><span></span><span>Long-lived assets</span><span></span><span></span><span></span><span></span></div>
+        <div class="r line hl"><span class="nt door">▾ 11</span><span>Land</span><span>63,936</span><span>61,553</span><span>2,383</span><span>28.7%</span></div>
+        <div class="r nrow"><span></span><span>Flat 0.12 km² at M$170.00 a m²</span><span>20,400</span><span></span><span></span><span></span></div>
+        <div class="r nrow"><span></span><span>Foothill 0.48 km² at M$38.75 a m²</span><span>18,600</span><span></span><span></span><span></span></div>
+        <div class="r nrow"><span></span><span>Steep (its quarries) 2.21 km² at M$9.41 a m²</span><span>20,796</span><span></span><span></span><span></span></div>
+        <div class="r nrow"><span></span><span>Very steep (its quarries) 0.44 km² at M$9.41 a m²</span><span>4,140</span><span></span><span></span><span></span></div>
+        <p class="nsent">At today's prices, by the ground it stands on: flat at the going price; foothill at the going price less what preparing it costs, M$131.25 a m², never under the base price, M$9.41; its steep and very steep ground at the base price - a quarry may stand on any ground, and takes steep ground first.</p>
+        <div class="r line"><span class="nt door">▸ 8</span><span>Buildings, at cost</span><span>138,300</span><span>136,600</span><span>1,700</span><span>62.0%</span></div>
+        <div class="r gt"><span></span><span>Total long-lived assets</span><span>202,236</span><span>198,153</span><span>4,083</span><span>90.7%</span></div>
+        <div class="r tt"><span></span><span>TOTAL ASSETS</span><span>223,036</span><span>218,103</span><span>4,933</span><span>100.0%</span></div>
+      </div></div>
+      <p class="note" style="margin-top:10px">Its steep and very steep ground is 82% of its land by area and 39% of the line's value: the base price keeps a quarry's hillside on the books without pricing it as building land.</p>
+    </div>
+  </div>
+  <p class="note">The equity statement's "Its land at the start, at today's price" (<code>landRevalued()</code>) stays one row; the class split lives in the note, where the statement keeps every split. Last month's going price is M$168.20 (foothill M$36.95), so the land line moves by both the ground bought and the price.</p>
+</section>
+
+<!-- ======================================================================= BOARD 5 -->
+<section class="board" id="build" aria-labelledby="b5">
+  <div class="eyebrow">Board 5 · Build › Infrastructure</div>
+  <h2 id="b5">Long crossings are orders: the whole span judged, priced and built at once</h2>
+  <p>A city founded at Cape Jourimain (<span class="illus">illustrative</span>; its money T$, at T$1.00 to the US dollar) owns an offer at Borden-Carleton on Prince Edward Island. The bridges are three new buildings in Infrastructure, each one order for one crossing: no stepper, no count. The price is <span class="est">est.</span>: the Confederation Bridge's C$1.3 billion of 1993-97 for 12.9 km, about US$133M a km in today's money (Canadian prices ×1.8 since 1995, C$1 = US$0.73), rail dearer by a third, a two-lane road at a little over half. Wikipedia gives C$1.3 billion; the study's §6.4 has C$1.0 billion, for ET6's brief to settle. The study prices by length, kind and depth, plus the two landings; this card shows the length's share as its first bar.</p>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-bridge" viewBox="0 0 16 16"><path d="M1 10h14M2 10c2-6 10-6 12 0M5 10V6.8M8 10V5.2M11 10V6.8M1 14h14"/></symbol>
+    <symbol id="i-rail" viewBox="0 0 16 16"><path d="M5 1.5 3 14.5M11 1.5l2 13M3.6 4h8.8M3.3 7.5h9.4M2.9 11h10.2"/></symbol>
+    <symbol id="i-road" viewBox="0 0 16 16"><path d="M5 1.5 3 14.5M11 1.5l2 13M8 2v2.2M8 6.9v2.2M8 11.8V14"/></symbol>
+  </svg>
+  <div class="build">
+    <div class="crumb"><i></i><strong>Infrastructure</strong><span>Build</span></div>
+    <div class="ghead"><h3>Bridges</h3><span class="n">3</span><span class="rule"></span><span class="gnote">long crossings: one order each · short ones the runs lay</span></div>
+    <div class="cards">
+      <article class="card pending" aria-label="Highway Bridge card, a valid order">
+        <div class="top"><span class="ico"><svg><use href="#i-bridge"/></svg></span><div><div class="name">Highway Bridge</div><div class="have">none built</div></div><span class="info">i</span></div>
+        <div class="ctags"><span class="new">new</span><span>City</span><span>Long crossing</span><span>One order</span></div>
+        <div class="herol">links <span class="big">5,596.5 km²</span> Prince Edward Island to the city's home landmass</div>
+        <div class="detail">12.8 km over shallow sea, 1-24 m deep: Cape Jourimain to Borden-Carleton (East 2, bought in month 1,204). Every cell of the way 30 m or less; the island is landmass 103, the home landmass 2.</div>
+        <div class="price"><b>T$1.70B</b><span>all in · sticker T$1.62B</span><span class="est">est.</span></div>
+        <div class="cbar"><div class="lab"><span>its price a km of crossing</span><span class="v">T$133M</span></div><div class="track"><i style="width:74%"></i></div></div>
+        <div class="cbar"><div class="lab"><span>its landings, both shores</span><span class="v">0.24 km²</span></div><div class="track"><i class="land" style="width:77%"></i></div></div>
+        <div class="needs">needs no staff · the city's dry ground on both shores · 0.24 km² · 31% of what is free · runs T$0.71M/mo <span class="est">est.</span></div>
+        <div class="one">One order: the whole span, priced and built at once. Nothing is laid until all of it is.</div>
+        <div class="press go"><div class="main">Build the crossing · <span>T$1.70B</span></div></div>
+        <div class="quote">T$1.70B with T$85.0M sales tax · ~43 mo at today's queue</div>
+      </article>
+      <article class="card" aria-label="Rail Bridge card">
+        <div class="top"><span class="ico"><svg><use href="#i-rail"/></svg></span><div><div class="name">Rail Bridge</div><div class="have">none built</div></div><span class="info">i</span></div>
+        <div class="ctags"><span class="new">new</span><span>City</span><span>Long crossing</span><span>One order</span></div>
+        <div class="herol">carries the railway <span class="big">12.8 km</span> to Prince Edward Island</div>
+        <div class="detail">The same way across, at a grade a train climbs: longer approaches, a heavier deck. The island's rail joins the city's when its Rail Spur reaches Borden-Carleton.</div>
+        <div class="price"><b>T$2.30B</b><span>all in · sticker T$2.19B</span><span class="est">est.</span></div>
+        <div class="cbar"><div class="lab"><span>its price a km of crossing</span><span class="v">T$180M</span></div><div class="track"><i style="width:100%"></i></div></div>
+        <div class="cbar"><div class="lab"><span>its landings, both shores</span><span class="v">0.31 km²</span></div><div class="track"><i class="land" style="width:100%"></i></div></div>
+        <div class="needs">needs no staff · the city's dry ground on both shores · 0.31 km² · 40% of what is free · runs T$0.96M/mo <span class="est">est.</span></div>
+        <div class="one">One order: the whole span, priced and built at once.</div>
+        <div class="press go" style="background:transparent;color:var(--building);box-shadow:inset 0 0 0 1px rgba(241,124,176,.45)"><div class="main">Build the crossing · <span>T$2.30B</span></div></div>
+        <div class="quote">T$2.30B with T$115M sales tax · ~48 mo at today's queue</div>
+      </article>
+      <article class="card compact" aria-label="Road Bridge card, compact">
+        <div class="top"><span class="ico"><svg><use href="#i-road"/></svg></span><div><div class="name">Road Bridge</div><div class="have">none built</div></div><span class="info">i</span></div>
+        <div class="row"><span class="herol">a two-lane road, <span class="big">12.8 km</span></span><b>T$0.94B</b></div>
+        <div class="detail">The gravel road's crossing: cheapest, the least traffic. <span class="est">est.</span></div>
+      </article>
+    </div>
+
+    <div class="ghead"><h3>Refused orders</h3><span class="n">4</span><span class="rule"></span><span class="gnote">the button says why; the red line is the study's refusal, word for word, with this data's figures</span></div>
+    <div class="cards">
+      <article class="card" aria-label="Refused: deep water">
+        <div class="top"><span class="ico"><svg><use href="#i-bridge"/></svg></span><div><div class="name">Highway Bridge</div><div class="have">Caribou to Wood Islands · 21.8 km</div></div></div>
+        <div class="press held"><div class="main">No bridgeable path</div><div class="sub">deep water 11.1 km out: a port crosses it - Ports ›</div></div>
+        <div class="quote bad">No bridgeable path: deep water (32 m) 11.1 km out. A bridge needs water 30 m deep or less all the way across.</div>
+        <div class="why">Every way across from the city's shore meets water deeper than 30 m: toward Wood Islands the sea is <b>32 m deep 11.1 km out</b>, 47 m at its deepest (GEBCO). A bridge's piers stand in 30 m or less <span class="est">est.</span>, and nothing is laid until a whole way across is. <span class="meas">measured</span></div>
+      </article>
+      <article class="card" aria-label="Refused: the far side is not dry land">
+        <div class="top"><span class="ico"><svg><use href="#i-bridge"/></svg></span><div><div class="name">Highway Bridge</div><div class="have">to East 4, Prince Edward Island</div></div></div>
+        <div class="press held"><div class="main">The far side is not dry land</div><div class="sub">a far end on dry land across the water</div></div>
+        <div class="quote bad">The far side is not dry land.</div>
+        <div class="why">The far end picked off Borden-Carleton is sea, 0.31 km² of East 4 that is 97% water. An order runs from the city's buildable ground on a linked landmass to dry land across the water, owned or bought with the order as its landing. <span class="illus">illustrative</span></div>
+      </article>
+      <article class="card" aria-label="Refused: longer than the cap">
+        <div class="top"><span class="ico"><svg><use href="#i-bridge"/></svg></span><div><div class="name">Highway Bridge</div><div class="have">Bahrain to Qatar · 41.8 km</div></div></div>
+        <div class="press held"><div class="main">Longer than a bridge can be</div><div class="sub">41.8 km against 36 km: a port on each shore - Ports ›</div></div>
+        <div class="quote bad">Longer than a bridge can be: 41.8 km against 36 km.</div>
+        <div class="why">The way across from Bahrain (landmass 400, 618 km²) to Qatar is <b>41.8 km of shallow sea</b>, 6 m at its deepest (GEBCO) - past the 36 km a bridge may run <span class="est">est.</span>: the Hangzhou Bay Bridge, 35.7 km, is the longest wholly over sea. <span class="meas">measured</span> on a line from Bahrain's east coast to Az Zubarah; the planner's own search may find a shorter way.</div>
+      </article>
+      <article class="card" aria-label="Refused: both ends on one landmass">
+        <div class="top"><span class="ico"><svg><use href="#i-bridge"/></svg></span><div><div class="name">Highway Bridge</div><div class="have">Halifax to Dartmouth · 0.8 km</div></div></div>
+        <div class="press held"><div class="main">Both ends on one landmass</div><div class="sub">a long bridge links two: the highways cross the Narrows</div></div>
+        <div class="quote bad">Both ends are on Halifax's landmass: a long bridge must link two landmasses (a short crossing is laid by the highways themselves).</div>
+        <div class="why">Halifax and Dartmouth are joined round the head of Bedford Basin (landmass 2). A long bridge links two landmasses; water within one is crossed by the runs' short bridges, 14 plots (420 m) at most. <span class="meas">measured</span> - and the Narrows is 800 m of water under the Macdonald's line here: see board 1's finding.</div>
+      </article>
+    </div>
+  </div>
+  <p class="note">The order of the checks proposed here, in the way <code>BuildCard.verdict()</code> orders its refusals: the two landmasses first, then the far side's dry ground, then the way across (deep water), then the length, then land and money as today. The bars are scaled to the longest in the group, as every Build card's are: the Rail Bridge's, the dearest and the widest landings.</p>
+</section>
+</main>
+
+<footer class="wrap">
+  <p><b style="color:var(--text2)">How the boards were made.</b> <code>docs/studies/earth2/mockups.py</code> draws every map from <code>earth-2.bin</code> (136,924,697 bytes, SHA-256 b48adce1...ae9a) through <code>tools/earth/earthread.py</code>, with <code>figures.py</code>'s noise and rule; run it with <code>python3 -I mockups.py</code> and it rewrites the mock-*.png beside this page and prints every figure the boards quote. The ground colours are <code>TileRaster.GROUND</code> (L69), the deck <code>TileRaster.DECK</code> (L81), the highway <code>TileRaster.ROAD</code>, the page's colours and fonts <code>ui/Palette.java</code>; the three greys and the shallow blue are <code>figures.py</code>'s proposals.</p>
+  <ul>
+    <li><b style="color:var(--text2)">Not the game's own renderer.</b> The plot rule is <code>figures.py</code>'s estimate of the game's: its noise is box-relative, the plane is drawn latitude-longitude rather than Lambert's equal-area, small lakes are frayed discs, beaches are not drawn, and the city's buildings and streets are left out.</li>
+    <li><b style="color:var(--text2)">Two rendering rules found while drawing.</b> The shallow share is of a cell's sea, so it must be interpolated weighted by the sea share (read plain, every coast grew a fringe of deep sea); and the coast's fray (the water noise at ±0.3 of a share) moves the Narrows' width by ±250 m from seed to seed, which decides whether a run bridges it.</li>
+    <li><b style="color:var(--text2)">Sources.</b> GEBCO Compilation Group (2026) GEBCO 2026 Grid; NASA JPL NASADEM (slope, via earth-2); ESA WorldCover (earth-1's land cover); GRWL (rivers); Natural Earth (places); USGS World Energy Project provinces. The Confederation Bridge: 12.9 km, 44 main piers 250 m apart, C$1.3 billion, 1993-97 (Wikipedia, "Confederation Bridge", read 2026-10-12). The Narrows' sill: McGonigal, Loucks and Ingraham, BIO Data Series BI-D-74-5 (1974). The longest bridge wholly over sea: the Hangzhou Bay Bridge, 35.673 km.</li>
+  </ul>
+</footer>
+</body>
+</html>
