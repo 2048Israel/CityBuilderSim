@@ -4236,8 +4236,8 @@ public class LongPlaytest {
             }
             lifetimeWriteOffs += g.getBank().getWriteOffs();
             lifetimeHouseholdWriteOffs += g.getHouseholdBalance().getWrittenOff();
-            // ...and the stock the accounts added back, and the raises the owners were not asked for (0.7.136, batch FX1).
-            countAddedBackAndWithheld(g);
+            // ...and the stock the accounts added back (0.7.136, batch FX1).
+            countAddedBack(g);
 
             /*
              * THE PLAYER RESOLVES A FAILED BANK AND ANSWERS ITS OFFER (0.7.14),
@@ -4610,7 +4610,7 @@ public class LongPlaytest {
     static int lowestPaidInMonth = -1;
     static double lifetimeHouseholdWriteOffs;
 
-    /* ---------------- what the accounts added back, and the raises withheld (0.7.136, batch FX1) ---------------- */
+    /* ---------------- what the accounts added back (0.7.136, batch FX1) ---------------- */
 
     /** The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. */
     static final String[] ADDED_BACK_TERMS = { "food", "materials", "luxuries", "held goods" };
@@ -4618,14 +4618,11 @@ public class LongPlaytest {
     static final int[] addedBackMonths = new int[ADDED_BACK_TERMS.length], addedBackFirst = { -1, -1, -1, -1 },
             addedBackWorstMonth = new int[ADDED_BACK_TERMS.length];
     static final double[] addedBackWorst = new double[ADDED_BACK_TERMS.length];
-    /** Raises Game.consider() withheld for an order that would have fallen through (THE CREDIT BEFORE THE OWNERS), and raises left with no order: how many, how much, the first month. */
-    static int raisesWithheld, raisesWithheldFirst = -1, raisedForNoOrder, raisedForNoOrderFirst = -1, withheldYetPlaced;
-    static double raisesWithheldMoney, raisedForNoOrderMoney;
-    /** The events printed as they happen, each kind's first few: enough to say where a trace moved. */
+    /** The events printed as they happen, each term's first few: enough to say where a trace moved. */
     static final int EVENTS_PRINTED = 12;
 
-    /** The month's write-offs the accounts added back and its raises withheld or left with no order, counted, and each kind's first few printed - nothing printed for a harness that borrows run() with no report to print to. */
-    static void countAddedBackAndWithheld(Game g) {
+    /** The month's write-offs the accounts added back, counted term by term, and each term's first few printed - nothing printed for a harness that borrows run() with no report to print to. */
+    static void countAddedBack(Game g) {
         int m = g.getMonth();
         double[] back = g.getEconomyManager().getNationalAccounts().getWrittenOffAddedBack();
         for (int i = 0; i < back.length && i < ADDED_BACK_TERMS.length; i++) {
@@ -4635,27 +4632,6 @@ public class LongPlaytest {
             }
             if (addedBackFirst[i] < 0) addedBackFirst[i] = m;
             if (back[i] > addedBackWorst[i]) { addedBackWorst[i] = back[i]; addedBackWorstMonth[i] = m; }
-        }
-        for (Map.Entry<String, Double> e : g.getRaisesWithheld().entrySet()) {
-            if (raisesWithheld++ < EVENTS_PRINTED && out != null) {
-                out.printf("   RAISE WITHHELD m%d: %s would have raised $%,.0fk for an order that would fall through - %s%n", m, e.getKey(),
-                        e.getValue(), g.getLastInvestment(e.getKey()));
-            }
-            if (raisesWithheldFirst < 0) raisesWithheldFirst = m;
-            raisesWithheldMoney += e.getValue();
-        }
-        for (Map.Entry<String, Double> e : g.getRaisedForNoOrder().entrySet()) {
-            if (raisedForNoOrder++ < EVENTS_PRINTED && out != null) {
-                out.printf("   RAISED, NO ORDER m%d: %s raised $%,.0fk and placed none - %s%n", m, e.getKey(), e.getValue(),
-                        g.getLastInvestment(e.getKey()));
-            }
-            if (raisedForNoOrderFirst < 0) raisedForNoOrderFirst = m;
-            raisedForNoOrderMoney += e.getValue();
-        }
-        for (Map.Entry<String, Double> e : g.getWithheldYetPlaced().entrySet()) {
-            if (withheldYetPlaced++ < EVENTS_PRINTED && out != null) {
-                out.printf("   WITHHELD, YET PLACED m%d: %s - %s%n", m, e.getKey(), g.getLastInvestment(e.getKey()));
-            }
         }
     }
 
@@ -5709,7 +5685,7 @@ public class LongPlaytest {
                 Math.min(999, bnk.capitalRatio()) * 100, Bank.CAPITAL_RATIO * 100);
         out.printf("  written off over the run: $%,.0fk, of which $%,.0fk was families%n",
                 lifetimeWriteOffs, lifetimeHouseholdWriteOffs);
-        // ...and the stock the accounts added back, term by term, and the raises withheld (0.7.136, batch FX1).
+        // ...and the stock the accounts added back, term by term (0.7.136, batch FX1).
         StringBuilder backLine = new StringBuilder();
         for (int i = 0; i < ADDED_BACK_TERMS.length; i++) {
             backLine.append(String.format("%s %d month(s)", ADDED_BACK_TERMS[i], addedBackMonths[i]));
@@ -5720,11 +5696,6 @@ public class LongPlaytest {
             backLine.append(i < ADDED_BACK_TERMS.length - 1 ? "; " : "");
         }
         out.printf("  stock written off, added back to the accounts: %s%n", backLine);
-        out.printf("  raises withheld for an order that would fall through: %d, $%,.0fk%s;"
-                        + " raised with no order placed: %d, $%,.0fk%s; withheld, yet placed on the till without it: %d%n",
-                raisesWithheld, raisesWithheldMoney, raisesWithheldFirst >= 0 ? " (first m" + raisesWithheldFirst + ")" : "",
-                raisedForNoOrder, raisedForNoOrderMoney, raisedForNoOrderFirst >= 0 ? " (first m" + raisedForNoOrderFirst + ")" : "",
-                withheldYetPlaced);
         /*
          * THE CITY'S CAPITAL IN ITS BANK, ITS STAKE AND ITS FUND (0.7.14),
          * each line stating its setting, as the rollover's does.

@@ -2358,24 +2358,7 @@ public class BankCheck {
              * BusinessInvestment.holdSector().
              */
             city.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
-            /*
-             * ...AND RETAIL IS PUSHED AT MONTH 48, NOT 72, SINCE 0.7.136 (batch
-             * FX1), BY THE SAME PREMISE. The restaurants' owners were asked for
-             * a Diner in months 6 to 8 that the interest test then declined,
-             * and kept the money: some 2,000k that carried the sector's later
-             * losses under the default point. Asked only for an order that will
-             * be placed (Game, THE CREDIT BEFORE THE OWNERS), its first Diner is
-             * half borrowed, its losses shed two of its three Diners by month 69,
-             * and it is past the default point, news, from then - "0 of
-             * the 12 months" quiet from 72. Held from the founding it builds no
-             * Diner and retail's own slices go past the line (on the build
-             * before this one too). Scanned (scratch-fx1/probe, BankProbe, the
-             * section's city with retail pushed at another month): 12 of 12
-             * quiet at 42, 48 and 54, 9 at 51, 10 at 57, 7 at 60, none at 72;
-             * the build before 0.7.136, 12 at 48 and 54. 48 is the middle of
-             * 42 to 54.
-             */
-            city.simulateMonths(48);
+            city.simulateMonths(72);
         } finally {
             System.setOut(out);
         }

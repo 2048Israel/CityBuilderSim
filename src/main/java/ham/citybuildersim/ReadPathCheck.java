@@ -888,12 +888,9 @@ public class ReadPathCheck {
             trader.toState();
         }
         g.getEconomyManager().getNationalAccounts().getHeldWrittenOff();
-        // ...and since 0.7.136 (batch FX1) the other three terms' write-offs and what each added back, the month's raises
-        // withheld and left, and the mortgage lender's answer asked without its record (THE CREDIT BEFORE THE OWNERS)
+        // ...and since 0.7.136 (batch FX1) the other three terms' write-offs and what each added back
         NationalAccounts fx1 = g.getEconomyManager().getNationalAccounts();
         fx1.getFoodWrittenOff(); fx1.getMaterialsWrittenOff(); fx1.getLuxuriesWrittenOff(); fx1.getWrittenOffAddedBack();
-        g.getRaisesWithheld(); g.getRaisedForNoOrder(); g.getWithheldYetPlaced();
-        for (String key : Sectors.KEYS) g.getEconomyManager().getBusinessDebtManager().mortgageRefusalFor(key, 1_000, 10_000);
         g.getForeignAccounts().coverWith(1_000);
         g.getForeignAccounts().coverWith(-1_000);
         g.getForeignAccounts().toCover(ForeignAccounts.THIN_COVER);
