@@ -25,9 +25,10 @@ package ham.citybuildersim;
  * WHAT USES IT. Iron, since J1b put the city's land on the world; oil, lifted
  * as CRUDE by the wells since 0.7.62 (batch K); coal, dug by Coal Mining
  * since 0.7.126 (batch I6); stone, quarried by Quarrying since 0.7.131
- * (batch I7); copper, dug by Copper Mining since 0.7.133 (batch I8). The
- * other two wait for their industries, and until then their ground is free
- * (an in-ground share of zero and no good). Since 0.7.110 (batch I1) iron's,
+ * (batch I7); copper, dug by Copper Mining since 0.7.133 (batch I8); forest,
+ * cut by Forestry since 0.7.138 (batch I9). Uranium waits for its industry,
+ * and until then its ground is free (an in-ground share of zero and no good).
+ * Since 0.7.110 (batch I1) iron's,
  * coal's, copper's and stone's fields are each of two types (typesOf(),
  * Deposit.type()): iron's mines stand on theirs since 0.7.124 (batch I5),
  * coal's since 0.7.126, stone's quarries since 0.7.131, copper's mines and
@@ -106,9 +107,17 @@ public enum Resource {
     /**
      * Standing timber: the terrain's forest class, 31% of land (FAO 2020),
      * World.FOREST_M3_PER_KM2 a square kilometre. Not in fields; the map's
-     * forest green.
+     * forest green. Cut by Forestry since 0.7.138 (batch I9;
+     * docs/studies/spec-materials.md 2.4, 2.11): about half sawlogs and half
+     * pulpwood, and priced as PULPWOOD, its one pricing good (spec 2.4; ★
+     * over the brief's SAWLOGS: the study's 8 strikes the share against "its
+     * standing timber at the pulpwood price"). The ground sells at 2% of
+     * pulpwood's world export price (the study's 8, est.): US$0.70 a cubic
+     * metre standing, about US$9,600 a square kilometre of forest - so an
+     * offer's forest is in its price, and LandMarket.bareGround() leaves it
+     * out (spec 2.4: or every forested offer would read as a deposit).
      */
-    FOREST("Forest", "cubic metre", 0, 0, 0, 0x527C45, null, 0);
+    FOREST("Forest", "cubic metre", 0, 0, 0, 0x527C45, Good.PULPWOOD, .02);
 
     private final String label;
     private final String unit;

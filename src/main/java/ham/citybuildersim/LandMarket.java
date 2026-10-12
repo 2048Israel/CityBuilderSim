@@ -721,9 +721,18 @@ public class LandMarket {
         return Math.max(dx, dy);
     }
 
-    /** Whether an offer is bare ground (0.7.58): it holds none of a resource the office prices - ore under it is in its price, and a buyer short of ground has not asked for it (Game.bestOffer(), A SHORTFALL IS MET WITH GROUND). */
+    /**
+     * Whether an offer is bare ground (0.7.58): it holds none of a resource the
+     * office prices - ore under it is in its price, and a buyer short of ground
+     * has not asked for it (Game.bestOffer(), A SHORTFALL IS MET WITH GROUND).
+     * Forest is left out since it is priced (0.7.138, batch I9; spec-materials
+     * 2.4): it is the terrain over a third of the land, not a deposit, and
+     * counting it would turn nearly every offer into one for the shortfall's
+     * rule and the auto-builder.
+     */
     public static boolean bareGround(LandParcel p) {
         for (Resource r : Resource.values()) {
+            if (r == Resource.FOREST) continue;
             if (r.good() != null && r.inGroundShare() > 0 && p.getAmount(r) > 0) return false;
         }
         return true;

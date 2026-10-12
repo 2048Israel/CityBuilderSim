@@ -300,9 +300,9 @@ public class LandManager {
     /**
      * Forest's stored depletion falls by this share a month: 1/240, a
      * twenty-year time constant, so 95% of what is cut grows back within a
-     * sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). Nothing
-     * cuts timber yet - a timber industry will - so the harnesses test the
-     * regrowth on a fixture.
+     * sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). Forestry's
+     * crews cut it since 0.7.138 (batch I9), and its planted stands add to
+     * the regrowth (THE PLANTED STANDS, below; Jerus's Q13: the rule kept).
      */
     public static final double FOREST_REGROWTH = 1.0 / 240;
 
@@ -1734,8 +1734,9 @@ public class LandManager {
        ground the zones hold for others - and past it on open forest, which
        it clears: cut-over ground first (E moves to C, the cleared wood,
        never regrowing), then standing forest, whose wood is counted as taken
-       out (C) and is Forestry's salvage cut once Forestry exists (materials
-       I9) - lost until then (getForestClearedThisMonth()). allocate() clears
+       out (C) and, since 0.7.138 (batch I9), is Forestry's salvage cut
+       (takeSalvage(): sold as its sawlogs and pulpwood, billed to it by the
+       builders who cleared it) - lost until then. allocate() clears
        as it builds; the month's end (settleClearing()) holds C to at least
        what the built ground past the bare ground needs, for ground set by
        hand. A demolition leaves it cleared. Remaining is O - C - E, so the
@@ -1761,8 +1762,19 @@ public class LandManager {
     /** ...and its wood, in cubic metres: the cut-over wood it took from E and the standing wood it took out (C). */
     private double clearedM3;
 
-    /** The standing wood cleared this month, cubic metres: Forestry's salvage cut from materials I9, lost until then. */
+    /** The standing wood cleared this month, cubic metres: what the month cleared for Forestry's salvage cut since materials I9 (takeSalvage() hands it over), lost until then. */
     private double forestClearedThisMonth;
+
+    /**
+     * The standing wood cleared and not yet sold, cubic metres (0.7.138, batch
+     * I9): what Forestry's next salvage cut takes (takeSalvage()) - the month's
+     * clearing, and a clearing between two presses or past the month's market,
+     * carried to the next and saved with the zoning, so none of it is lost.
+     */
+    private double salvagePendingM3;
+
+    /** The planted stands' growth this month, cubic metres (0.7.138, batch I9): Forestry's plantations and woodlots, taken off E at the month's end with the regrowth (THE PLANTED STANDS). */
+    private double plantedGrowthThisMonth;
 
     /** The city's zones and its forest law. */
     public Zoning getZoning() { return zoning; }
@@ -1793,8 +1805,11 @@ public class LandManager {
     /** ...and the wood that stood or had been cut on it, cubic metres. */
     public double getForestClearedM3()     { return clearedM3; }
 
-    /** The standing wood cleared this month, cubic metres: lost until Forestry's salvage cut (I9). */
+    /** The standing wood cleared this month, cubic metres: Forestry's salvage cut since 0.7.138 (batch I9; takeSalvage()). */
     public double getForestClearedThisMonth() { return forestClearedThisMonth; }
+
+    /** The standing wood cleared and not yet sold as Forestry's salvage cut, cubic metres (0.7.138): what takeSalvage() would hand over, before the month's floor. */
+    public double getSalvagePending()      { return salvagePendingM3; }
 
     private double protectedSqFt(Zoning z) {
         return z.protectedShare() > 0 ? z.protectedShare() * getForestSqFt() : 0;
@@ -1994,8 +2009,8 @@ public class LandManager {
      * Clears this much open forest, as far as it goes: cut-over ground first
      * - its wood moves from E to C - then standing forest, whose wood is
      * taken out into C, never past what may be cut (the protected wood stands
-     * on ground nothing builds on): the month's salvage, lost until Forestry
-     * (I9). W holds: what leaves remaining arrives in C.
+     * on ground nothing builds on): the month's salvage, Forestry's to sell
+     * since 0.7.138 (takeSalvage()). W holds: what leaves remaining arrives in C.
      */
     private void clear(double sqFt) {
         double take = Math.min(sqFt, openSqFt(zoning) - clearedSqFt);
@@ -2008,16 +2023,65 @@ public class LandManager {
         clearedSqFt += take;
         clearedM3 += cutOver + standing;
         forestClearedThisMonth += standing;
+        // ...and sold as Forestry's salvage cut since 0.7.138 (takeSalvage()), not lost.
+        salvagePendingM3 += standing;
+    }
+
+    /* ----- the salvage cut and the planted stands (0.7.138, batch I9) ----- */
+
+    /**
+     * THE SALVAGE CUT (Z7; spec-materials 2.11): the standing wood a building
+     * cleared, handed to Forestry once, to be sold as its month's sawlogs and
+     * pulpwood - the month's floor settled first (settleClearing()), so ground
+     * set by hand is cleared and its wood sold in the same month, and what was
+     * cleared between two presses with it. Cubic metres; nothing twice.
+     */
+    public double takeSalvage() {
+        settleClearing();
+        double m3 = salvagePendingM3;
+        salvagePendingM3 = 0;
+        return Math.max(0, m3);
+    }
+
+    /*
+     * THE PLANTED STANDS (0.7.138, batch I9; spec-materials 2.11, Jerus's Q15
+     * and B): Forestry's plantations and woodlots grow wood on its zone, 20
+     * m3 a hectare a year as a managed estate of every age [W4]. The month's
+     * end takes their growth off E with the regrowth - E becomes max(0,
+     * E (1 - FOREST_REGROWTH) - planted) - so a planted stand is regrowth and
+     * never timber past the forest's full stock: W = unowned + remaining + C
+     * + E holds exactly, and with no stand the month is what it was.
+     */
+
+    /** The planted stands' growth this month, cubic metres, as Forestry's month's end sets it (Forestry.endOfMonth()); cleared with the month's flows. */
+    public void setPlantedGrowth(double m3) {
+        plantedGrowthThisMonth = Double.isFinite(m3) ? Math.max(0, m3) : 0;
+    }
+
+    /** ...as set this month. */
+    public double getPlantedGrowth() { return plantedGrowthThisMonth; }
+
+    /** The wood the month's end will grow back (pure): the regrowth of what was cut, FOREST_REGROWTH of E, and the planted stands' growth as set - never more than was cut. */
+    public double regrowthDue() {
+        return regrowthDue(plantedGrowthThisMonth);
+    }
+
+    /** ...with `planted` cubic metres of planted growth in place of the month's (pure): what Forestry's planting weighs with its stands on site counted as grown. */
+    public double regrowthDue(double planted) {
+        double e = extracted[Resource.FOREST.ordinal()];
+        return Math.min(e, e * FOREST_REGROWTH + Math.max(0, planted));
     }
 
     /* ----- the save ----- */
 
     /** DataSave's zoning (0.7.107): the zones, the law and the forest cleared; null when nothing is set and nothing cleared, as an older save reads. */
     public Zoning.State zoningState() {
-        if (zoning.isEmpty() && clearedSqFt == 0 && clearedM3 == 0) return null;
+        if (zoning.isEmpty() && clearedSqFt == 0 && clearedM3 == 0 && salvagePendingM3 == 0) return null;
         Zoning.State s = zoning.toState();
         s.clearedSqFt = clearedSqFt;
         s.clearedM3 = clearedM3;
+        // ...and the wood cleared and not yet sold (0.7.138): a clearing between two presses, sold the next month.
+        s.salvageM3 = salvagePendingM3;
         return s;
     }
 
@@ -2026,6 +2090,7 @@ public class LandManager {
         zoning.restore(s);
         clearedSqFt = s == null ? 0 : Math.max(0, s.clearedSqFt);
         clearedM3 = s == null ? 0 : Math.max(0, s.clearedM3);
+        salvagePendingM3 = s == null ? 0 : Math.max(0, s.salvageM3);
     }
 
     /**
@@ -2092,11 +2157,14 @@ public class LandManager {
      * grows back by FOREST_REGROWTH, then the month's flows are cleared. The
      * month calls this; a load calls clearMonth() alone, so loading a city
      * grows nothing back. Since 0.7.107 the forest the built ground needs is
-     * cleared first (settleClearing()): cleared ground never grows back.
+     * cleared first (settleClearing()): cleared ground never grows back. Since
+     * 0.7.138 the planted stands' growth comes off E with the regrowth, never
+     * below nothing (THE PLANTED STANDS).
      */
     public void endMonth() {
         settleClearing();
-        extracted[Resource.FOREST.ordinal()] *= 1 - FOREST_REGROWTH;
+        int f = Resource.FOREST.ordinal();
+        extracted[f] = Math.max(0, extracted[f] * (1 - FOREST_REGROWTH) - plantedGrowthThisMonth);
         clearMonth();
     }
 
@@ -2110,6 +2178,7 @@ public class LandManager {
         oilLiftedThisMonth = 0;
         java.util.Arrays.fill(liftedByGrade, 0);
         forestClearedThisMonth = 0;
+        plantedGrowthThisMonth = 0;
     }
 
     public void reset() {
@@ -2124,6 +2193,7 @@ public class LandManager {
         zoning.clear();
         clearedSqFt = 0;
         clearedM3 = 0;
+        salvagePendingM3 = 0;
         worldTotals = null;
         market.reset();
         market.attach(null);

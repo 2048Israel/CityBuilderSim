@@ -11,6 +11,7 @@ import ham.citybuildersim.sectors.Construction;
 import ham.citybuildersim.sectors.CopperMining;
 import ham.citybuildersim.sectors.CopperRefining;
 import ham.citybuildersim.sectors.FoodIndustry;
+import ham.citybuildersim.sectors.Forestry;
 import ham.citybuildersim.sectors.FoodProcessing;
 import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.Manufacturing;
@@ -74,7 +75,9 @@ public final class Sectors {
             // ...stone's two (0.7.131, batch I7): the quarries, and the kilns and cement plants.
             QUARRYING = "Quarrying", CEMENT_CONCRETE = "Cement & Concrete",
             // ...copper's two (0.7.133, batch I8): the mines and leach plants, and the smelters, refineries and rod mills.
-            COPPER_MINING = "Copper Mining", COPPER_REFINING = "Copper Refining";
+            COPPER_MINING = "Copper Mining", COPPER_REFINING = "Copper Refining",
+            // ...and wood's first (0.7.138, batch I9): the crews that cut the forest, and the plantations they plant.
+            FORESTRY = "Forestry";
 
     /*
      * ON THE END, AND IT HAS TO STAY THAT WAY - but for a softer reason than
@@ -97,7 +100,9 @@ public final class Sectors {
         // ...then stone's (0.7.131, batch I7): the quarries, then the kilns and cement plants that burn their limestone.
         QUARRYING, CEMENT_CONCRETE,
         // ...then copper's (0.7.133, batch I8): the mines, then the works that smelt, refine and roll their copper.
-        COPPER_MINING, COPPER_REFINING
+        COPPER_MINING, COPPER_REFINING,
+        // ...then wood's (0.7.138, batch I9): the crews on the forest the law lets them cut.
+        FORESTRY
     };
 
     private final List<Sector> all = new ArrayList<>();
@@ -125,6 +130,7 @@ public final class Sectors {
     private final CementConcrete cementConcrete;
     private final CopperMining copperMining;
     private final CopperRefining copperRefining;
+    private final Forestry forestry;
 
     public Sectors(BuildingManager buildings, Markets markets) {
         retail = add(new Retail(), buildings, markets);
@@ -149,6 +155,7 @@ public final class Sectors {
         cementConcrete = add(new CementConcrete(), buildings, markets);
         copperMining = add(new CopperMining(), buildings, markets);
         copperRefining = add(new CopperRefining(), buildings, markets);
+        forestry = add(new Forestry(), buildings, markets);
 
         if (all.size() != KEYS.length) throw new IllegalStateException("Sectors.KEYS is out of step");
         for (int i = 0; i < KEYS.length; i++) {
@@ -272,6 +279,9 @@ public final class Sectors {
 
     /** ...and the smelters, refineries and rod mills (0.7.133, batch I8), which take the mines' concentrate and the city's old copper to cathode and rod. See sectors.CopperRefining. */
     public CopperRefining copperRefining() { return copperRefining; }
+
+    /** ...and the forest's crews (0.7.138, batch I9), who cut the forest the law lets them and plant on its zone - and sell the wood a building clears. */
+    public Forestry forestry() { return forestry; }
 
     /** The city, handed to every sector once it exists. */
     public void attachGame(Game game) {

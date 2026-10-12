@@ -295,6 +295,7 @@ public final class Construction extends Sector {
         recognisedThisMonth = 0;
         escalationThisMonth = 0;
         overtimeThisMonth = 0;
+        salvageCutThisMonth = 0;
 
         double take = Math.max(0, Math.min(earned, unearnedRevenue));
         if (take > 0) {
@@ -411,6 +412,27 @@ public final class Construction extends Sector {
             repairsThisMonth = amount;
         }
     }
+
+    /**
+     * THE SALVAGE CUT'S CLEARING (0.7.138, batch I9; docs/studies/spec-materials.md
+     * 2.11, ★): the builders who cleared standing forest under a building are
+     * paid by Forestry, whose wood it is to sell, for felling and hauling it -
+     * at its crews' running cost a cubic metre (sectors.Forestry.salvage()).
+     * Forestry's input (Sector.billForService(), so the sales tax nets across
+     * the pair) and the builders' revenue here, in the same strike. Not
+     * building work: kept off the investment line, as the repairs are.
+     */
+    public void earnSalvageCut(double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        bookOtherRevenue(amount);
+        salvageCutThisMonth += amount;
+    }
+
+    /** ...this month's: booked at the month's market after recogniseWork() cleared it, named at the next strike (nameOtherRevenue()). */
+    private double salvageCutThisMonth;
+
+    /** ...this month's, for the screens and the strike. */
+    public double getSalvageCutThisMonth() { return salvageCutThisMonth; }
 
     /** Building work recognised this month - the national accounts' investment. */
     public double getRecognisedThisMonth() { return recognisedThisMonth; }
@@ -765,6 +787,8 @@ public final class Construction extends Sector {
         if (Math.abs(escalationThisMonth) > 0) parts.put("Material escalation", escalationThisMonth);
         if (Math.abs(overtimeThisMonth) > 0) parts.put("Overtime on rushed sites", overtimeThisMonth);
         if (Math.abs(repairsThisMonth) > 0) parts.put("Repairs billed", repairsThisMonth);
+        // ...and the forest it cleared, billed to Forestry (0.7.138, earnSalvageCut()).
+        if (Math.abs(salvageCutThisMonth) > 0) parts.put("Salvage cut cleared", salvageCutThisMonth);
         return parts.isEmpty() ? super.nameOtherRevenue() : parts;
     }
 
@@ -868,6 +892,8 @@ public final class Construction extends Sector {
         // ...and the overtime (0.7.22), only when there is some, so a city
         // that has rushed nothing saves what it always saved.
         if (overtimeThisMonth != 0) extras.put("overtimeThisMonth", overtimeThisMonth);
+        // ...and the salvage cut's clearing (0.7.138), the same way, so its strike names it after a load.
+        if (salvageCutThisMonth != 0) extras.put("salvageCutThisMonth", salvageCutThisMonth);
         if (overtimeWages != null) {
             for (int i = 0; i < overtimeWages.length; i++) {
                 if (overtimeWages[i] != 0) extras.put("overtimeWages." + i, overtimeWages[i]);
@@ -894,6 +920,7 @@ public final class Construction extends Sector {
         crewsNeeded = extras.getOrDefault("crewsNeeded", 1.0);
         fillStruckOn = extras.getOrDefault("fillStruckOn", 1.0);
         overtimeThisMonth = extras.getOrDefault("overtimeThisMonth", 0.0);
+        salvageCutThisMonth = extras.getOrDefault("salvageCutThisMonth", 0.0);
         overtimeWages = null;
         for (java.util.Map.Entry<String, Double> e : extras.entrySet()) {
             if (!e.getKey().startsWith("overtimeWages.")) continue;

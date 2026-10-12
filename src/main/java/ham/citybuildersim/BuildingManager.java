@@ -3205,6 +3205,92 @@ public class BuildingManager {
                 .setSince(1900)
                 .setId(128));
 
+        /* --------------------- FORESTRY (0.7.138, batch I9) ---------------------
+           docs/studies/spec-materials.md 2.1, 2.2, 2.11 and 5's I9 row; the
+           study's (materials-chains-research.md) 5.4 and 5.7; the zoning study's
+           8.4 and Jerus's A12 (2026-10-10). Forestry, on the end of Sectors.KEYS
+           after Copper Refining, cuts the forest the law lets it cut and plants on
+           its zone. Its four:
+             - the LOGGING CAMP: 1,000 m3 of sawlogs and 1,000 of pulpwood a month;
+             - the HARVESTING OPERATION: 6,250 and 6,250, a harvester and
+               forwarder, 1973 (research-design.md E14);
+             - the TREE PLANTATION: 1,000 ha growing 20 m3 a ha a year;
+             - the WOODLOT: 100 ha the same (A12), so a small zone fills in steps.
+           The house conventions (spec 2.2), as I4's to I8's rows: cash the all-in
+           cost over 1.3, material a sixtieth of the cash, points a half, cash
+           taking the material's rounding; the study's posts split by the mines'
+           75/20/5/0 by largest remainder, ties to the less skilled, the woodlot one
+           post (half the plantation's tenth, rounded up to a person); no power or
+           water - the study gives none, the crews' machines burn their own fuel
+           and the plantations are hand work - so the consumables are the study's
+           running cost less wages (the woodlot a tenth of the plantation's); the
+           crews' ground the Steel Foundry's per D$ of cost, a plantation's its
+           hectares; road load the logs out at 0.9 t a cubic metre at the Iron
+           Mine's 420 for 2,500 t; no stock - logs are a flow good; no diesel, the
+           study naming none. "since": 1900 but the Harvesting Operation's 1973.
+           ------------------------------------------------------------------------------ */
+        templates.add(new BuildingsTemplate("Logging Camp", BuildingType.MINING)   // a crew on the forest: 1,000 m3 of sawlogs and 1,000 of pulpwood a month
+                .setCashCost(2316)
+                .setConstructionPoints(1158)
+                .setConstructionMaterials(38)
+                .setSector("Forestry")
+                .makes(Good.SAWLOGS, 1000)
+                .makes(Good.PULPWOOD, 1000)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setConsumables(18.82)          // runs 61 (the study's 5.4) - 42.18 wages: the saws' fuel and wear
+                .setLandSqFt(9012)              // the Steel Foundry's ground per D$ of cost: its landing
+                .setRoadLoad(302)               // 1,800 t of logs out, at the Iron Mine's 420 for 2,500 t
+                .setJobs(JobType.NO_DIPLOMA, 8)
+                .setJobs(JobType.DIPLOMA, 2)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                .setSince(1900)
+                .setId(129));
+        templates.add(new BuildingsTemplate("Harvesting Operation", BuildingType.MINING)   // a harvester and forwarder crew, 1973 (PIKA 75)
+                .setCashCost(11544)
+                .setConstructionPoints(5772)
+                .setConstructionMaterials(192)
+                .setSector("Forestry")
+                .makes(Good.SAWLOGS, 6250)
+                .makes(Good.PULPWOOD, 6250)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setConsumables(148.52)         // 217 - 68.48 wages: the machines' diesel and wear
+                .setLandSqFt(45062)             // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(1890)              // 11,250 t of logs out
+                .setJobs(JobType.NO_DIPLOMA, 13)
+                .setJobs(JobType.DIPLOMA, 4)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                .setSince(1973)
+                .setId(130));
+        templates.add(new BuildingsTemplate("Tree Plantation", BuildingType.MINING)   // 1,000 ha planted on Forestry's zone, 20 m3 a ha a year
+                .setCashCost(1532)
+                .setConstructionPoints(766)
+                .setConstructionMaterials(26)
+                .setSector("Forestry")
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setConsumables(5.66)           // 24 - 18.34 wages: seedlings and their care
+                .setLandSqFt(107639104)         // its 1,000 ha
+                .setRoadLoad(0)                 // nothing to ship: its wood is the forest's
+                .setJobs(JobType.NO_DIPLOMA, 4)
+                .setJobs(JobType.DIPLOMA, 1)
+                .setSince(1900)
+                .setId(131));
+        templates.add(new BuildingsTemplate("Woodlot", BuildingType.MINING)   // a 100-ha woodlot (Jerus's A12), a tenth of a plantation
+                .setCashCost(146)
+                .setConstructionPoints(73)
+                .setConstructionMaterials(3)
+                .setSector("Forestry")
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setConsumables(0.566)          // a tenth of the plantation's: its seedlings
+                .setLandSqFt(10763910)          // its 100 ha
+                .setRoadLoad(0)                 // nothing to ship
+                .setJobs(JobType.NO_DIPLOMA, 1)
+                .setSince(1900)
+                .setId(132));
+
         /* ---------------------------- EDUCATION ----------------------------
            The other half of the labour market.
 
