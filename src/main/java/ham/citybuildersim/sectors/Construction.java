@@ -580,6 +580,17 @@ public final class Construction extends Sector {
      * MIN_STAFFABLE_TO_ORDER, floored and weighted exactly as Manufacturing,
      * Automotive, Rail and Business Services use it - since 0.7.18 through
      * Sector.staffing(), the one test every planner that builds posts asks.
+     *
+     * ONE DEPOT AT A TIME, BUILT FIRST (0.7.130). The plan still orders one
+     * depot and waits while it is on site (MAX_CONCURRENT_ORDERS), but the
+     * depot no longer waits at its crew's weight: it is built off the top of
+     * the month (BuildingManager, THE BUILDERS' OWN DEPOTS FIRST), so "already
+     * building" holds the plan only while the depot owes more than a month,
+     * and the next is ordered the month after it opens - at most a depot a
+     * month. Ordering more at once, sized to the queue, was measured and not
+     * built (the batch's notes): alone the depots sat in the queue and the
+     * city collapsed; with the depots first the builders ran away to ten
+     * times the depots.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {

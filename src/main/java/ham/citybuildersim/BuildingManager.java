@@ -4295,6 +4295,13 @@ public class BuildingManager {
     /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone. */
     private double waitWith(BuildingsTemplate t, int quantity, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
+        // ...the first group's, with a depot on site or a depot weighed (0.7.130).
+        if (firstOn(t)) {
+            String key = ConstructionControl.keyOf(t);
+            double months = firstWait(key, withMore(t, quantity, quantity * (double) t.getConstructionPoints()),
+                    !isOnSite(t), false, siteOutput);
+            return Double.isNaN(months) ? Double.MAX_VALUE : months;
+        }
         double others = 0, aheadOwed = 0;
         int aheadUnits = 0;
         for (BuildingsStacks s : stacks) {
@@ -4407,8 +4414,10 @@ public class BuildingManager {
             // and, once the player has a hand on it, the city's share in the
             // city's order and its rushed sites on overtime (plan()); and
             // while the dead wait, the city's death care first in that share
-            // (0.7.129, DEATH CARE FIRST WHILE THE DEAD WAIT).
-            boolean planned = engaged || !deathCareFirst().isEmpty();
+            // (0.7.129, DEATH CARE FIRST WHILE THE DEAD WAIT); and the
+            // builders' own depots off the top of the month, with that death
+            // care beside them (0.7.130, THE BUILDERS' OWN DEPOTS FIRST).
+            boolean planned = engaged || !deathCareFirst().isEmpty() || !buildersOwnOnSite().isEmpty();
             if (planned) plan = lastPlan = plan(constructionOutput);
             double[] share = planned ? plan.work : siteShares(constructionOutput);
             for (int k = 0; k < stacks.size(); k++) {
@@ -4516,13 +4525,15 @@ public class BuildingManager {
      * overtime. One slot per stack in the stacks' order, one empty slot (the
      * rule's slot for an order being weighed), then one per demolition.
      * Since 0.7.129 it also says whether the city's death care was served
-     * first because the dead wait (deathCareFirst, line()).
+     * first because the dead wait (deathCareFirst, line()), and since 0.7.130
+     * whether the builders' own depots were, off the top of the month and
+     * beside that death care (buildersFirst; THE BUILDERS' OWN DEPOTS FIRST).
      */
     public static final class Plan {
         public final java.util.List<String> keys;
         /** The site output it was struck on. */
         public final double output;
-        /** Points owed; the rule's share (siteShares()); the share after the city's order; the work, overtime in. */
+        /** Points owed; the rule's share (siteShares()); the share after the first group and the city's order; the work, overtime in. */
         public final double[] owed, rule, share, work;
         public final java.util.List<ConstructionControl.Overtime> overtime;
         public final double overtimePoints;
@@ -4530,22 +4541,41 @@ public class BuildingManager {
         public final java.util.List<String> deathCareFirst;
         /** ...and the dead lying unburied that put them there, as Healthcare counted them last month; 0 when the rule is off. */
         public final double unburied;
+        /** The builders' own sites served off the top of the month (0.7.130), in the stacks' order; empty when none is on site. */
+        public final java.util.List<String> buildersFirst;
+        /** ...and the buildings on them: the depots the line counts. */
+        public final int buildersOnSite;
         Plan(java.util.List<String> keys, double output, double[] owed, double[] rule, double[] share, double[] work,
              java.util.List<ConstructionControl.Overtime> overtime, double overtimePoints,
-             java.util.List<String> deathCareFirst, double unburied) {
+             java.util.List<String> deathCareFirst, double unburied,
+             java.util.List<String> buildersFirst, int buildersOnSite) {
             this.keys = keys; this.output = output; this.owed = owed; this.rule = rule; this.share = share;
             this.work = work; this.overtime = overtime; this.overtimePoints = overtimePoints;
             this.deathCareFirst = java.util.Collections.unmodifiableList(deathCareFirst);
             this.unburied = deathCareFirst.isEmpty() ? 0 : unburied;
+            this.buildersFirst = java.util.Collections.unmodifiableList(buildersFirst);
+            this.buildersOnSite = buildersFirst.isEmpty() ? 0 : buildersOnSite;
         }
         /**
          * The construction page's line where the order shows: DEATH_CARE_FIRST and
-         * how many lie unburied, or null when the rule is off (0.7.129).
+         * how many lie unburied (0.7.129); BUILDERS_FIRST and their depots on
+         * site, with the death care beside them while the dead wait (0.7.130);
+         * null when neither rule is on.
          */
         public String line() {
-            if (deathCareFirst.isEmpty()) return null;
-            return String.format(java.util.Locale.CANADA, "%s: %,.0f lie unburied, so the city's cemeteries and"
-                    + " crematoria take its crews before its other sites.", DEATH_CARE_FIRST, Math.ceil(unburied));
+            if (buildersFirst.isEmpty() && deathCareFirst.isEmpty()) return null;
+            if (buildersFirst.isEmpty()) {
+                return String.format(java.util.Locale.CANADA, "%s: %,.0f lie unburied, so the city's cemeteries and"
+                        + " crematoria take its crews before its other sites.", DEATH_CARE_FIRST, Math.ceil(unburied));
+            }
+            String depots = buildersOnSite == 1 ? "1 depot" : String.format(java.util.Locale.CANADA, "%,d depots", buildersOnSite);
+            if (deathCareFirst.isEmpty()) {
+                return String.format(java.util.Locale.CANADA, "%s: %s on site, which they build before every other"
+                        + " site.", BUILDERS_FIRST, depots);
+            }
+            return String.format(java.util.Locale.CANADA, "%s, and death care beside them: %s on site and %,.0f dead"
+                    + " unburied, so the depots and the city's cemeteries and crematoria share the crews before every"
+                    + " other site.", BUILDERS_FIRST, depots, Math.ceil(unburied));
         }
         /** This month's share of the crews, before any overtime. */
         public double shareOf(String key) { int i = keys.indexOf(key); return i < 0 ? 0 : share[i]; }
@@ -4591,19 +4621,39 @@ public class BuildingManager {
         double[] rule = siteShares(siteOutput, null, 0);
         double[] share = rule.clone();
         java.util.List<String> city = citySiteKeys();
+        double[] weight = new double[keys.size()];
+        for (int k = 0; k < n; k++) {
+            BuildingsStacks s = stacks.get(k);
+            if (s.getUnderConstruction() > 0) weight[k] = weightOf(s.getBuilding(), s.getUnderConstruction());
+        }
+        for (int j = 0; j < d; j++) weight[n + 1 + j] = demolitionWeight(demolitions.get(j));
+        java.util.List<String> dead = deathCareAmong(city);
+        java.util.List<String> order = firstTheDead(control.effectiveOrder(city), dead);
+        // The builders' own depots on site (0.7.130): with the death care while
+        // the dead wait, one first group off the top of the whole month, shared
+        // among them by the crews' rule; the rest of the month to every other
+        // site by the rule, and the city's part of it in the player's order.
+        java.util.List<String> first = firstGroup();
+        java.util.List<String> builders = new java.util.ArrayList<>();
+        int buildersOn = 0;
+        if (!first.isEmpty()) {
+            share = firstOffTheTop(siteOutput, weight, owed, keys, first);
+            if (control.isPrioritySet()) {
+                java.util.List<String> rest = new java.util.ArrayList<>(control.effectiveOrder(city));
+                rest.removeAll(first);
+                applyPriority(share, owed, keys, rest);
+            }
+            for (String k : first) {
+                if (!addsToTheBuilders(k)) continue;
+                builders.add(k);
+                buildersOn += stackOfKey(k).getUnderConstruction();
+            }
+        }
         // While the dead wait, the city's death care first in its share (0.7.129):
         // with the player's order, at its top; without one, top down before the
         // rest of the city's sites share what is left by the crews' rule.
-        java.util.List<String> dead = deathCareAmong(city);
-        java.util.List<String> order = firstTheDead(control.effectiveOrder(city), dead);
-        if (control.isPrioritySet()) applyPriority(share, owed, keys, order);
+        else if (control.isPrioritySet()) applyPriority(share, owed, keys, order);
         else if (!dead.isEmpty()) {
-            double[] weight = new double[keys.size()];
-            for (int k = 0; k < n; k++) {
-                BuildingsStacks s = stacks.get(k);
-                if (s.getUnderConstruction() > 0) weight[k] = weightOf(s.getBuilding(), s.getUnderConstruction());
-            }
-            for (int j = 0; j < d; j++) weight[n + 1 + j] = demolitionWeight(demolitions.get(j));
             applyDeathCareFirst(share, owed, weight, keys, order.subList(0, dead.size()), city);
         }
 
@@ -4624,7 +4674,7 @@ public class BuildingManager {
             extra += work[i] - share[i];
         }
         return new Plan(keys, siteOutput, owed, rule, share, work, overtime, extra,
-                new java.util.ArrayList<>(order.subList(0, dead.size())), unburiedNow());
+                new java.util.ArrayList<>(order.subList(0, dead.size())), unburiedNow(), builders, buildersOn);
     }
 
     /** The plan the last month's advance applied, or null when the player's hand was not on the queue and no death care was served first (0.7.129): a month's reading, not saved. */
@@ -4664,11 +4714,24 @@ public class BuildingManager {
     /**
      * ...in the order the city's crews serve them: the player's, or the
      * stacks' order with none set - and while the dead wait, the city's
-     * death care at its top (0.7.129, DEATH CARE FIRST WHILE THE DEAD WAIT).
+     * death care at its top (0.7.129, DEATH CARE FIRST WHILE THE DEAD WAIT);
+     * and a depot of the city's own, which goes first with the builders'
+     * (0.7.130, THE BUILDERS' OWN DEPOTS FIRST), at the top beside it.
      */
     public java.util.List<String> cityOrder() {
         java.util.List<String> city = citySiteKeys();
-        return firstTheDead(control.effectiveOrder(city), deathCareAmong(city));
+        java.util.List<String> first = firstGroup();
+        return firstTheDead(control.effectiveOrder(city), first.isEmpty() ? deathCareAmong(city) : first);
+    }
+
+    /** How many of the city's order head it because they are served first (0.7.130): its death care while the dead wait, and its depots - what the page's arrows keep within. */
+    public int cityOrderFirst() {
+        java.util.List<String> city = citySiteKeys();
+        java.util.List<String> first = firstGroup();
+        java.util.List<String> top = first.isEmpty() ? deathCareAmong(city) : first;
+        int n = 0;
+        for (String k : city) if (top.contains(k)) n++;
+        return n;
     }
 
     /* ---------------------------------------------------------------------
@@ -4808,6 +4871,125 @@ public class BuildingManager {
         for (int j = 0; j < rest.size(); j++) share[rest.get(j)] = fill[j];
     }
 
+    /* ---------------------------------------------------------------------
+       THE BUILDERS' OWN DEPOTS FIRST (0.7.130, batch T1-C)
+
+       Whenever a depot is on site - a stack of a template that adds to the
+       builders' capacity (addsToTheBuilders(): the Construction sector's, and
+       it makes building work), whoever paid for it - it is served off the
+       top of the month's site output, before the crews' rule shares the rest:
+       it takes what it still owes, or the whole month if less. While the
+       dead wait, the city's death care is served beside it, at the same
+       priority: the FIRST GROUP, the depots and the death care together, is
+       served first, and shares what it takes among its sites by the crews'
+       rule (waterFill(), each by its crew's weight and no more than it owes),
+       so neither leads the other. What is left of the month goes to every
+       other site by the rule, and the city's part of it in the player's
+       order when one is set (firstOffTheTop(), then applyPriority()). With
+       no depot on site, death care first is T1-B's rule as it was, out of
+       the city's share (DEATH CARE FIRST WHILE THE DEAD WAIT, above).
+
+       WHY. Batch T1 traced Jerus's construction-bound city (the project's
+       why-the-builders-stall.md, section 3): its repairs took 0.81 of the
+       builders' nameplate and the dead the rest, so about 420 points a month
+       reached 26 sites. The builders' plan saw the queue (4,690 months of it)
+       and ordered a depot - one at a time, MAX_CONCURRENT_ORDERS - and the
+       depot waited in the same queue at its crew's weight, 400 to the power
+       0.70, 66.3 of 90,640: 0.4 points a month. Their gate said "already
+       building" in 119 of 120 months; the new depot had 31.4 of its 400
+       points after 80. The builders grew 4.5 depots per 100 months in every
+       era, healthy or not, which is how repairs came to 0.81 of nameplate.
+       Off the top, the depot takes 400 of the 420 and opens the month after
+       it is ordered: at most a depot a month (the planner orders one), each
+       adding its points at the crews' work ratio to every month after. Jerus
+       chose it (2026-10-10, "1 both yes": option C, its own batch, with the
+       ensemble and retirement watched), and placed it beside the death care
+       (2026-10-11, "basically theyll priotozie those two buildings at the
+       same time").
+
+       HOW IT REACHES ACROSS OWNERS. Every crew on every site is the
+       builders': the city's share, the landlords' and each sector's are
+       what the crews' rule hands each owner of the builders' month. The
+       builders building their own yard first is the builders' call on all
+       of it, so the depot is served off the whole month, not out of an
+       owner's share - and the death care, at its priority, is served out of
+       the same whole month beside it. The city's own order still sets only
+       the city's part of what is left.
+
+       ONE WAIT. Every wait reads it while a depot is on site, or a depot is
+       the thing being quoted (firstWait()): a site of the first group by the
+       crews' rule among the group, every other one behind the group's points
+       at the month's whole pace and then as it would wait among the rest.
+       BuildersFirstCheck holds it, on a fixture that causes the stall.
+       --------------------------------------------------------------------- */
+
+    /** Whether the rule is on: always, in the game; a harness's twin turns it off to measure the city without it. */
+    private boolean buildersFirstOn = true;
+
+    /** Harnesses only (BuildersFirstCheck): the twin without the rule, its depots crewed by the crews' rule alone - the counterfactual. Nothing in the game calls it. */
+    void setBuildersFirstForTest(boolean on) { buildersFirstOn = on; }
+
+    /** The page's words for the rule, which Plan.line() opens with when a depot is on site. */
+    public static final String BUILDERS_FIRST = "The builders' own depots first";
+
+    /** Whether a template adds to the builders' capacity: the Construction sector's, and it makes building work - a depot. */
+    public static boolean addsToTheBuilders(BuildingsTemplate t) {
+        return t != null && "Construction".equals(t.getSector()) && t.makes(Good.BUILDING_WORK) > 0;
+    }
+
+    /** ...and a site's key: a stack of such a template. A demolition never does. */
+    public boolean addsToTheBuilders(String key) {
+        int id = ConstructionControl.templateIdOf(key);
+        return id >= 0 && addsToTheBuilders(getTemplate(id));
+    }
+
+    /** The builders' own sites on site, in the stacks' order: every stack that adds to their capacity with buildings on site, whoever paid for them. */
+    public java.util.List<String> buildersOwnOnSite() {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        if (!buildersFirstOn) return out;
+        for (BuildingsStacks s : stacks) {
+            if (s.getUnderConstruction() > 0 && addsToTheBuilders(s.getBuilding())) out.add(ConstructionControl.keyOf(s.getBuilding()));
+        }
+        return out;
+    }
+
+    /**
+     * The first group this month, in the order the sites stand: the
+     * builders' own sites on site, and while the dead wait the city's death
+     * care beside them - or none, when no depot is on site (death care first
+     * is then the city's alone, out of its share).
+     */
+    public java.util.List<String> firstGroup() {
+        java.util.List<String> depots = buildersOwnOnSite();
+        if (depots.isEmpty()) return depots;
+        java.util.List<String> dead = deathCareAmong(citySiteKeys());
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (String k : siteKeysOnSite()) if (depots.contains(k) || dead.contains(k)) out.add(k);
+        return out;
+    }
+
+    /**
+     * The month with the first group served off its top: of the whole
+     * output, the group takes what it owes, or all of it if less, shared
+     * among its sites by the crews' rule (waterFill(), each by its crew's
+     * weight and no more than it owes); what is left goes to every other
+     * site by the same rule. One share per slot, in the slots' order.
+     */
+    static double[] firstOffTheTop(double output, double[] weight, double[] owed, java.util.List<String> keys,
+                                   java.util.List<String> first) {
+        int n = weight.length;
+        double[] top = new double[n], others = new double[n];
+        for (int i = 0; i < n; i++) {
+            if (first.contains(keys.get(i))) top[i] = weight[i]; else others[i] = weight[i];
+        }
+        double[] share = waterFill(Math.max(0, output), top, owed);
+        double taken = 0;
+        for (double v : share) taken += v;
+        double[] rest = waterFill(Math.max(0, output - taken), others, owed);
+        for (int i = 0; i < n; i++) share[i] += rest[i];
+        return share;
+    }
+
     /** Every site with work on it: the stacks with buildings on site, and the demolitions. */
     public java.util.List<String> siteKeysOnSite() {
         java.util.List<String> out = new java.util.ArrayList<>();
@@ -4942,7 +5124,10 @@ public class BuildingManager {
        over the city's share of the crews; a rushed one at each coming
        month's overtime factor, from the month it is in. A city order joins
        its building's site where it stands in the order, or - with nothing of
-       it on site - a new city site at the bottom of the order.
+       it on site - a new city site at the bottom of the order. And since
+       0.7.130, while a depot is on site or a depot is what is quoted, every
+       wait is the first group's (firstWait(); THE BUILDERS' OWN DEPOTS
+       FIRST), the hand's within it.
        --------------------------------------------------------------------- */
 
     /**
@@ -4966,6 +5151,8 @@ public class BuildingManager {
         ConstructionControl.Demolition d = control.demolitionOf(key);
         BuildingsStacks s = d == null ? stackOfKey(key) : null;
         if (d == null && (s == null || s.getUnderConstruction() <= 0)) return 0;
+        // ...the first group's, with a depot on site (0.7.130).
+        if (firstOn(null)) return firstWait(key, null, false, false, siteOutput);
         // The rule's wait, to the bit, with the player's hand off the site.
         if (s != null && !handOn(key)) return waitWith(s.getBuilding(), 0, siteOutput);
         return handWait(key, null, false, siteOutput);
@@ -4981,6 +5168,11 @@ public class BuildingManager {
     public double cityOrderWait(BuildingsTemplate t, int quantity, double siteOutput) {
         if (t == null || quantity < 1) return 0;
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
+        // ...the first group's, with a depot on site or a depot quoted (0.7.130).
+        if (firstOn(t)) {
+            return firstWait(ConstructionControl.keyOf(t), withMore(t, quantity, quantity * (double) t.getConstructionPoints()),
+                    !isOnSite(t), true, siteOutput);
+        }
         double[] mine = joined(t, quantity, quantity * (double) t.getConstructionPoints());
         if (mine == null) return waitFor(t, quantity, siteOutput);
         return handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput);
@@ -4995,6 +5187,7 @@ public class BuildingManager {
     public double restartWait(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (t == null || n < 1 || !(owedPoints > 0)) return 0;
+        if (firstOn(t)) return firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), true, siteOutput);
         double[] mine = joined(t, n, owedPoints);
         if (mine == null) return siteMonthsWith(t, n, owedPoints, siteOutput);
         return handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput);
@@ -5043,7 +5236,9 @@ public class BuildingManager {
         ConstructionControl.Demolition probe = new ConstructionControl.Demolition();
         probe.buildings = n;
         probe.points = points;
-        return handWait("D?", new double[] { demolitionWeight(probe), points }, true, siteOutput);
+        double[] mine = { demolitionWeight(probe), points };
+        if (firstOn(null)) return firstWait("D?", mine, true, true, siteOutput);
+        return handWait("D?", mine, true, siteOutput);
     }
 
     /**
@@ -5055,6 +5250,7 @@ public class BuildingManager {
     public double siteMonthsWith(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (t == null || n < 1 || !(owedPoints > 0)) return 0;
+        if (firstOn(t)) return firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), false, siteOutput);
         BuildingsStacks s = getStack(t);
         int ahead = s == null ? 0 : s.getUnderConstruction();
         double aheadOwed = s == null || ahead <= 0 ? 0
@@ -5131,9 +5327,13 @@ public class BuildingManager {
             if (!(me[0] > 0)) return Double.NaN;
             months = me[1] * total / (siteOutput * me[0]);
         }
+        return onOvertime(key, me[1], months, isNew, city);
+    }
+
+    /** A wait worked on overtime when the site is a rushed city site on site: the same pace, at each coming month's factor; the wait itself otherwise. */
+    private double onOvertime(String key, double owed, double months, boolean isNew, java.util.List<String> city) {
         if (isNew || !control.isRushed(key) || !city.contains(key) || !(months > 0)) return months;
-        // On overtime: the same pace, worked at each coming month's factor.
-        double pace = me[1] / months, left = me[1];
+        double pace = owed / months, left = owed;
         int from = control.monthsOnOvertime(key);
         for (int m = 1; m <= 1200; m++) {
             double step = pace * ConstructionControl.overtimeOutput(from + m);
@@ -5141,6 +5341,90 @@ public class BuildingManager {
             left -= step;
         }
         return Double.MAX_VALUE;
+    }
+
+    /** Whether a wait is the first group's (0.7.130): a depot of the builders' on site, or `t` one. */
+    private boolean firstOn(BuildingsTemplate t) {
+        return buildersFirstOn && (addsToTheBuilders(t) || !buildersOwnOnSite().isEmpty());
+    }
+
+    /** t's site with n more of it owing `owed` more points on it: {its crew's weight, its points owed}. */
+    private double[] withMore(BuildingsTemplate t, int n, double owed) {
+        BuildingsStacks s = getStack(t);
+        int on = s == null ? 0 : Math.max(0, s.getUnderConstruction());
+        double aheadOwed = on > 0 ? Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress()) : 0;
+        return new double[] { weightOf(t, (long) on + n), aheadOwed + owed };
+    }
+
+    /**
+     * THE FIRST GROUP'S ARITHMETIC (0.7.130): every site on site with its
+     * crew's weight and its points owed - `key`'s replaced by `mine` when it
+     * is given, a new one added - and the first group: the builders' own
+     * sites, and while the dead wait the city's death care (with `key` among
+     * them when it is one; a new site is the city's when `cityOrder`). Then a
+     * site of the group by the crews' rule among the group held steady - its
+     * points over its weight's share of the whole month; any other, the
+     * group's points at the month's whole pace and then its own as it waits
+     * among the rest: by the rule, or a city site while the player's order
+     * is set, everything of the city's ahead of it in the order over the
+     * city's share of the rest; a rushed one at each coming month's overtime
+     * factor. NaN when its pace is nothing; MAX_VALUE past a hundred years.
+     */
+    private double firstWait(String key, double[] mine, boolean isNew, boolean cityOrder, double siteOutput) {
+        if (!(siteOutput > 0)) return Double.NaN;
+        java.util.Map<String, double[]> by = new java.util.LinkedHashMap<>();
+        java.util.Set<String> group = new java.util.HashSet<>();
+        for (BuildingsStacks s : stacks) {
+            int on = s.getUnderConstruction();
+            if (on <= 0) continue;
+            double o = Math.max(0, on * (double) s.getBuilding().getConstructionPoints() - s.getConstructionProgress());
+            String k = ConstructionControl.keyOf(s.getBuilding());
+            by.put(k, new double[] { weightOf(s.getBuilding(), on), o });
+            if (addsToTheBuilders(s.getBuilding())) group.add(k);
+        }
+        for (ConstructionControl.Demolition site : control.demolitions()) {
+            by.put(site.key(), new double[] { site.owed() > 0 ? demolitionWeight(site) : 0, site.owed() });
+        }
+        if (mine != null) {
+            by.put(key, mine);
+            if (addsToTheBuilders(key)) group.add(key);
+        }
+        double[] me = by.get(key);
+        if (me == null || !(me[1] > 0)) return 0;
+        java.util.List<String> city = citySiteKeys();
+        if (isNew && cityOrder && !city.contains(key)) city.add(key);
+        group.addAll(deathCareAmong(city));
+        double groupWeight = 0, groupOwed = 0, restWeight = 0;
+        for (java.util.Map.Entry<String, double[]> e : by.entrySet()) {
+            String k = e.getKey();
+            if (group.contains(k)) {
+                groupWeight += e.getValue()[0];
+                groupOwed += e.getValue()[1];
+            } else {
+                restWeight += e.getValue()[0];
+            }
+        }
+        double months;
+        if (group.contains(key)) {
+            if (!(me[0] > 0)) return Double.NaN;
+            months = me[1] * groupWeight / (siteOutput * me[0]);
+        } else if (city.contains(key) && control.isPrioritySet()) {
+            double cityWeight = 0, ahead = 0;
+            for (String k : city) { double[] v = by.get(k); if (v != null && !group.contains(k)) cityWeight += v[0]; }
+            for (String k : control.effectiveOrder(city)) {
+                if (group.contains(k)) continue;
+                double[] v = by.get(k);
+                if (v != null) ahead += v[1];
+                if (k.equals(key)) break;
+            }
+            double pace = restWeight > 0 ? siteOutput * cityWeight / restWeight : 0;
+            if (!(pace > 0)) return Double.NaN;
+            months = groupOwed / siteOutput + ahead / pace;
+        } else {
+            if (!(me[0] > 0) || !(restWeight > 0)) return Double.NaN;
+            months = groupOwed / siteOutput + me[1] * restWeight / (siteOutput * me[0]);
+        }
+        return onOvertime(key, me[1], months, isNew, city);
     }
 
     /* ---------------------------------------------------------------------

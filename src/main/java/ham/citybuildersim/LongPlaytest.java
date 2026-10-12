@@ -1044,6 +1044,14 @@ public class LongPlaytest {
      * served the city's death care first - the first and the last of them.
      */
     static int monthsUnburied = 0, monthsDeathCareFirst = 0, firstDeathCareFirst = 0, lastDeathCareFirst = 0;
+    /**
+     * THE BUILDERS' OWN DEPOTS FIRST (0.7.130; BuildingManager): the months the
+     * advance served a depot on site off the top of the month - the first and
+     * the last of them, those with the death care beside it, and the points the
+     * depots got over what the crews' rule would have given them.
+     */
+    static int monthsBuildersFirst = 0, firstBuildersFirst = 0, lastBuildersFirst = 0, monthsBothFirst = 0;
+    static double buildersFirstPoints = 0;
     static double workLostToIllness = 0;
     static int monthsObserved = 0;
     static double totalDepartures = 0;
@@ -1444,6 +1452,16 @@ public class LongPlaytest {
             monthsDeathCareFirst++;
             if (firstDeathCareFirst == 0) firstDeathCareFirst = g.getMonth();
             lastDeathCareFirst = g.getMonth();
+        }
+        // ...and the months the builders' own depots went first, off the top (0.7.130).
+        if (applied != null && !applied.buildersFirst.isEmpty()) {
+            monthsBuildersFirst++;
+            if (firstBuildersFirst == 0) firstBuildersFirst = g.getMonth();
+            lastBuildersFirst = g.getMonth();
+            if (!applied.deathCareFirst.isEmpty()) monthsBothFirst++;
+            for (String k : applied.buildersFirst) {
+                if (applied.shareOf(k) > applied.ruleOf(k)) buildersFirstPoints += applied.shareOf(k) - applied.ruleOf(k);
+            }
         }
         lastSickRate = health.getSickRate();
         if (lastSickRate > worstSickRate) worstSickRate = lastSickRate;
@@ -5293,6 +5311,9 @@ public class LongPlaytest {
                 hc.getBurials(), hc.getCremations(), hc.getPlotsUsed(), hc.getUnburied());
         out.printf("  the dead waited: anybody unburied at the end of %,d months; death care served first in %,d"
                 + " (months %,d to %,d)%n", monthsUnburied, monthsDeathCareFirst, firstDeathCareFirst, lastDeathCareFirst);
+        out.printf("  the builders' depots first: a depot on site and served off the top in %,d months (months %,d to %,d),"
+                + " %,d of them beside death care; %,.0f points over their crews' share%n",
+                monthsBuildersFirst, firstBuildersFirst, lastBuildersFirst, monthsBothFirst, buildersFirstPoints);
         /*
          * THE PRICE OF A PLACE (2026-09-21): the four dials, who is studying,
          * who has graduated, what is owed and what the loans brought in -

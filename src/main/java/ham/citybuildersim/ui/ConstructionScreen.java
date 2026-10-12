@@ -41,7 +41,12 @@ import static ham.citybuildersim.ui.Pieces.*;
  * 0.7.129, while the dead wait and the city's death care is served first
  * (BuildingManager, DEATH CARE FIRST WHILE THE DEAD WAIT), the plan's own
  * line says so under the caption, and the arrows move a site within its
- * group - the death care at the top, the rest below - never across.
+ * group - the death care at the top, the rest below - never across. Since
+ * 0.7.130, while a depot is on site the builders build it first, off the top
+ * of their month, and the death care beside it at the same priority
+ * (BuildingManager, THE BUILDERS' OWN DEPOTS FIRST): the plan's line says
+ * that instead, and a depot of the city's own heads its order with the
+ * death care.
  *
  * Reached from the right panel's "Open" and from Build's head; a build
  * card's "N on site", or a site's name on the right panel, opens it at that
@@ -252,6 +257,12 @@ final class ConstructionScreen {
                 + "its share of the crews first - each what it still owes - ahead of your order, and the rest "
                 + "of the city's sites follow in your order or, with none set, by the rule. The unburied make "
                 + "people sick, and the sick do not build. Once they are buried, the order is yours again.\n\n"
+                + "THE BUILDERS' DEPOTS FIRST. A depot on site - the builders' own, or one the city bought - is "
+                + "built before every other site, out of the builders' whole month: they put their own crews on "
+                + "their own yard first, and the city gets the crews it adds from the month after it opens. "
+                + "While the dead wait, the death care goes first beside the depots, at the same priority: the "
+                + "two share the crews by the rule, neither ahead of the other, and every other site, yours "
+                + "included, shares what is left.\n\n"
                 + "RUSH. A city's site on a 50-hour week: about 1.14 times a month's work the first month, 1.02 "
                 + "the second and 0.94 from the third (The Business Roundtable, Report C-2, 1980), for 1.375 "
                 + "times its crews' wages - hours past 40 at time and a half (Canada Labour Code, s. 174). The "
@@ -269,13 +280,16 @@ final class ConstructionScreen {
         }
         top.setStyle("-fx-padding: 10 12 6 12;");
         table.getChildren().add(top);
-        // ...and while the dead wait, the line that says their care goes first (0.7.129).
-        String deathCare = plan.line();
-        if (deathCare != null) {
-            Label first = new Label(deathCare);
+        // ...and while the dead wait, the line that says their care goes first (0.7.129);
+        // while a depot is on site, the one that says the builders build it first
+        // (0.7.130) - a warning only while the dead wait.
+        String firstLine = plan.line();
+        if (firstLine != null) {
+            Label first = new Label(firstLine);
             first.setWrapText(true);
             first.setMinWidth(0);
-            first.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.WARN) + " -fx-padding: 0 12 6 12;");
+            first.setStyle(Palette.words(Palette.SIZE_CAPTION,
+                    plan.deathCareFirst.isEmpty() ? Palette.TEXT_MUTED : Palette.WARN) + " -fx-padding: 0 12 6 12;");
             table.getChildren().add(first);
         }
         table.getChildren().add(headerRow());
@@ -325,9 +339,10 @@ final class ConstructionScreen {
         VBox order = new VBox(0);
         order.setAlignment(Pos.CENTER);
         if (mine) {
-            // While the dead wait their care heads the order (0.7.129): an arrow
-            // moves a site within its group, never across the line between them.
-            int dead = plan.deathCareFirst.size();
+            // While the dead wait their care heads the order (0.7.129), and a
+            // depot of the city's beside it (0.7.130): an arrow moves a site
+            // within its group, never across the line between them.
+            int dead = bm.cityOrderFirst();
             int top = rank > dead ? dead + 1 : 1, bottom = rank > dead ? ranks : dead;
             order.getChildren().addAll(
                     arrow("▲", rank > top, () -> { g.moveSite(key, -1); draw(); }),
