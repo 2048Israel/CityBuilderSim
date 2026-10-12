@@ -6065,18 +6065,18 @@ public class UserInterface extends Application {
     /** The screen that laid the pane (a clearMenu() name): its own redraws keep it, any other screen closes it (0.7.61: City History's chart, the land office's map). */
     private String chartFullOwner;
 
-    /**
-     * Lays the chart's pane over the whole window. `leave` is the screen's
-     * own way back, which Esc calls with true - come back and redraw the
-     * page - and P or another screen with false: the page is not what is
-     * drawn next.
-     */
     /** The map W, A, S and D pan while it is over the window (0.7.135, batch E9): MapView's expand() sets it, its collapse() clears it. */
     private MapView panKeys;
 
     /** ...set, or cleared with null. */
     void panKeysTo(MapView map) { panKeys = map; }
 
+    /**
+     * Lays the chart's pane over the whole window. `leave` is the screen's
+     * own way back, which Esc calls with true - come back and redraw the
+     * page - and P or another screen with false: the page is not what is
+     * drawn next.
+     */
     void showChartFullScreen(Region pane, Label clockLine, java.util.function.Consumer<Boolean> leave) {
         if (chartFull != null) windowStack.getChildren().remove(chartFull);
         hideTooltips();

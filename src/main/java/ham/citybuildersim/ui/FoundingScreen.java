@@ -1011,9 +1011,8 @@ final class FoundingScreen {
         /** W, A, S and D held, and when they last turned it. */
         private boolean keyW, keyA, keyS, keyD;
         private long keyNanos;
-        private final javafx.animation.AnimationTimer keys = new javafx.animation.AnimationTimer() {
-            @Override public void handle(long now) { keysFrame(); }
-        };
+        /** The frames that turn it while a key is held: made at the first key (an AnimationTimer needs the toolkit, which a harness's window has not started). */
+        private javafx.animation.AnimationTimer keys;
 
         /** The worker the globe is drawn on: one at a time, the newest asked for. */
         private final ExecutorService worker = Executors.newSingleThreadExecutor(r -> {
@@ -1186,6 +1185,9 @@ final class FoundingScreen {
             }
             if (keyW || keyA || keyS || keyD) {
                 if (keyNanos == 0) keyNanos = System.nanoTime();
+                if (keys == null) keys = new javafx.animation.AnimationTimer() {
+                    @Override public void handle(long now) { keysFrame(); }
+                };
                 keys.start();
             }
             return true;
@@ -1200,7 +1202,7 @@ final class FoundingScreen {
         private void keysFrame() {
             if (!(keyW || keyA || keyS || keyD) || canvas == null || canvas.getScene() == null) {
                 keyNanos = 0;
-                keys.stop();
+                if (keys != null) keys.stop();
                 return;
             }
             long now = System.nanoTime();
