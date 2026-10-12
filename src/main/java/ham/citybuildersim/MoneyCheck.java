@@ -400,6 +400,55 @@ public class MoneyCheck {
                 lastYard.detail.contains("- sectors OldMetalToHouseholds") && lastYard.detail.contains("chk + households OldMetalSold")
                         && lastYard.detail.contains("chk + sectors OldMetalSold") && lastYard.detail.contains("chk - sectors OldMetalBought"));
 
+        /* ==================================================================
+           OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):
+           a Scrap Copper Refinery buys the city's old copper the same way, at
+           70% of COPPER_SCRAP's export price - the households' from their
+           cars into their savings, out of the pools as the old steel's is,
+           and a sector's for its demolitions, a pool paying a pool - and bids
+           on the scrap market for the rest. THE FIXTURE CAUSES IT: the town's
+           own cars hold too little copper to feed a refinery, so its pool is
+           handed old copper from the households and a sector each month,
+           more than the refinery takes.
+           ================================================================== */
+        System.out.println("\n--- a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks ---");
+        Game refiners = new Game(GameFiles.scratch("moneycheck-oldcopper"));
+        quietly(refiners::run);
+        refiners.setCashForTest(Founding.WEALTHY_CASH);
+        refiners.getLandManager().setOwnedSqFt(refiners.getLandManager().getOwnedSqFt() + 400_000_000L);
+        quietly(() -> {
+            refiners.buildStack(t(refiners, "House"), 400, true);
+            refiners.buildStack(t(refiners, "Small Grocery Store"), 4, true);
+            refiners.buildStack(t(refiners, "Coal Power Plant"), 1, true);
+            refiners.buildStack(t(refiners, "Water Treatment Plant"), 1, true);
+            refiners.buildStack(t(refiners, "Paved Road"), 10, true);
+            refiners.buildStack(refiners.getBuildingManager().getTemplate(ham.citybuildersim.sectors.CopperRefining.SCRAP_REFINERY), 1, true);
+        });
+        MoneyAudit.Result worstCopper = MoneyAudit.Result.NONE;
+        double copperHouseholds = 0, copperSectors = 0, copperBought = 0;
+        for (int m = 0; m < 24; m++) {
+            refiners.getOldMetal().carsScrapped(3_000 / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
+            refiners.getOldMetal().copper().arise(OldMetal.Source.DEMOLITIONS, Sectors.MANUFACTURING, 3_000 / OldMetal.RECOVERY);
+            quietly(() -> refiners.simulateMonths(1));
+            MoneyAudit.Result r = refiners.getLastMoneyAudit();
+            if (r.relative() > worstCopper.relative()) worstCopper = r;
+            copperHouseholds += MoneyAudit.oldMetalBoughtOfHouseholds(refiners.getSectors());
+            for (Sector x : refiners.getSectors().all()) {
+                copperSectors += x.statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0);
+                copperBought += x.statement().otherInputs.getOrDefault(OldMetal.LINE, 0.0);
+            }
+        }
+        System.out.printf("   over 24 months the refinery bought $%,.1fk of old copper: $%,.1fk of the households', $%,.1fk of the sectors'%n",
+                copperBought, copperHouseholds, copperSectors);
+        assertTrue("fixture: the refinery bought old copper from the households and from a sector",
+                copperHouseholds > 0 && copperSectors > 0 && refiners.getOldMetal().copper().lastBought() > 0);
+        assertTrue("a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month",
+                worstCopper.relative() < 1e-4);
+        assertTrue("...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it"
+                        + " leaves the pools (\"- sectors OldMetalToHouseholds\"), the sectors' a pool paying a pool",
+                Math.abs(copperBought - copperHouseholds - copperSectors) < .01
+                        && refiners.getLastMoneyAudit().detail.contains("- sectors OldMetalToHouseholds"));
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }

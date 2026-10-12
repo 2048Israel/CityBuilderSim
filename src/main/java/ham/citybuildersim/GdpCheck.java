@@ -528,19 +528,23 @@ public class GdpCheck {
         assertTrue("every good a sector holds is in an inventory term, or named as left out", missed.length() == 0);
         // ...and the integrated route's three stockable goods (0.7.123, batch I4; spec-materials 2.3) on HELD's end, in Good's
         // order - the steelworks' coke in the Coke Ovens' yard and the two coals - after crude, so a save's held slots keep their places.
-        // ...and since 0.7.131 (batch I7) cement after them, the cement plants' silos.
+        // ...and since 0.7.131 (batch I7) cement after them, the cement plants' silos, and since 0.7.133 (batch I8) cathode, copper's yards.
         int n = NationalAccounts.HELD.length;
-        assertTrue("HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), and cement after them"
-                        + " (0.7.131), each stockable",
-                n >= 5 && NationalAccounts.HELD[n - 5] == Good.CRUDE && NationalAccounts.HELD[n - 4] == Good.MET_COKE
-                        && NationalAccounts.HELD[n - 3] == Good.THERMAL_COAL && NationalAccounts.HELD[n - 2] == Good.COKING_COAL
-                        && NationalAccounts.HELD[n - 1] == Good.CEMENT
+        assertTrue("HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), cement after them (0.7.131)"
+                        + " and cathode after it (0.7.133), each stockable",
+                n >= 6 && NationalAccounts.HELD[n - 6] == Good.CRUDE && NationalAccounts.HELD[n - 5] == Good.MET_COKE
+                        && NationalAccounts.HELD[n - 4] == Good.THERMAL_COAL && NationalAccounts.HELD[n - 3] == Good.COKING_COAL
+                        && NationalAccounts.HELD[n - 2] == Good.CEMENT && NationalAccounts.HELD[n - 1] == Good.COPPER
                         && Good.MET_COKE.stockable() && Good.THERMAL_COAL.stockable() && Good.COKING_COAL.stockable()
-                        && Good.CEMENT.stockable());
+                        && Good.CEMENT.stockable() && Good.COPPER.stockable());
         boolean ovensHold = served.getSectors().heavyIndustry().isMaker(Good.MET_COKE) && Good.MET_COKE.stockable();
         assertTrue("...and Iron & Steel, which keeps a yard of coke, is counted by it", ovensHold && counted.contains(Good.MET_COKE));
         boolean silos = served.getSectors().cementConcrete().isMaker(Good.CEMENT) && Good.CEMENT.stockable();
         assertTrue("...and Cement & Concrete, which keeps a silo of cement, is counted by it (0.7.131)", silos && counted.contains(Good.CEMENT));
+        boolean yards = served.getSectors().copperMining().isMaker(Good.COPPER) && served.getSectors().copperRefining().isMaker(Good.COPPER)
+                && Good.COPPER.stockable();
+        assertTrue("...and Copper Mining and Copper Refining, which keep yards of cathode, are counted by it (0.7.133)",
+                yards && counted.contains(Good.COPPER));
 
         /*
          * ...AND IN A CITY: a railway that buys its fleet abroad. RailCheck's

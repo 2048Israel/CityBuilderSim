@@ -1352,6 +1352,17 @@ public class SaveFileCheck {
         oldState.lastArisen = 1_330.875; oldState.lastBought = 1_000; oldState.lastLandfill = 330.875; oldState.lastPrice = .2105;
         oldState.lastPaid.put(Trade.HOUSEHOLDS, 140.5);
         oldState.lastPaid.put(Sectors.MANUFACTURING, 70.0);
+        // ...and its old copper beside it (0.7.133, batch I8): the households' cars' and a sector's demolition, and the scrap
+        // refineries' last month.
+        OldMetal.State copperState = new OldMetal.State();
+        copperState.pending.put(Trade.HOUSEHOLDS, 31.25);
+        copperState.pending.put(Sectors.REAL_ESTATE, 17.0);
+        copperState.pendingBySource = new double[] { 31.25, 17.0, 0, 0 };
+        copperState.lastBySource = new double[] { 22.5, 8.125, 0, 0 };
+        copperState.lastArisen = 30.625; copperState.lastBought = 30.625; copperState.lastLandfill = 0; copperState.lastPrice = 5.11;
+        copperState.lastPaid.put(Trade.HOUSEHOLDS, 114.975);
+        copperState.lastPaid.put(Sectors.REAL_ESTATE, 41.51875);
+        oldState.copper = copperState;
         full.getOldMetal().restore(oldState);
         // ...and the ports' month (0.7.86), which no city founds with: shares in force, a kind after the railway,
         // crude in a VLCC, the road's two shares, and the month's tonnes by kind and direction.
@@ -1468,6 +1479,16 @@ public class SaveFileCheck {
         same("...what they bought and sent to landfill", oldNow.lastBought() + oldNow.lastLandfill(), oldThen.lastBought() + oldThen.lastLandfill());
         same("...the price they paid a tonne", oldNow.lastPrice(), oldThen.lastPrice());
         assertTrue("...and who was paid what", oldNow.lastPaid().equals(oldThen.lastPaid()));
+        // ...and the old copper beside it (0.7.133): its own pool, saved under the same key.
+        OldMetal.Pool cuThen = oldThen.copper(), cuNow = oldNow.copper();
+        assertTrue("fixture: the city held old copper from two sellers, and a month of the scrap refineries' record",
+                cuThen.available() > 0 && cuThen.lastBought() > 0 && cuThen.lastPaid().size() == 2);
+        same("the old copper standing to be bought (0.7.133)", cuNow.available(), cuThen.available());
+        same("...a seller's of it, and by source", cuNow.availableFrom(Sectors.REAL_ESTATE) + cuNow.available(OldMetal.Source.DEMOLITIONS),
+                cuThen.availableFrom(Sectors.REAL_ESTATE) + cuThen.available(OldMetal.Source.DEMOLITIONS));
+        same("...what arose in the refineries' last month, bought, to landfill, and the price", cuNow.lastArisen() + cuNow.lastBought()
+                + cuNow.lastLandfill() + cuNow.lastPrice(), cuThen.lastArisen() + cuThen.lastBought() + cuThen.lastLandfill() + cuThen.lastPrice());
+        assertTrue("...and who was paid what for it", cuNow.lastPaid().equals(cuThen.lastPaid()));
         // ...and the ports' month (0.7.86): the band and the road are struck from it on the load, the boats from its tonnes.
         Ports portThen = full.getPorts(), portNow = back.getPorts();
         boolean portSame = portThen.anyAtSea() && portNow.crudeShip() == Ports.Ship.VLCC

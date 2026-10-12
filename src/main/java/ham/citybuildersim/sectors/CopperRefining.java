@@ -182,13 +182,13 @@ public final class CopperRefining extends ProcessingSector {
     }
 
     /** Old copper arisen in the pool's last month past what the refineries standing take at nameplate: what one more would run on. */
-    double spareOldCopper() {
+    public double spareOldCopper() {
         OldMetal.Pool pool = pool();
         return pool == null ? 0 : Math.max(0, pool.lastArisen() - oldCopperIntake());
     }
 
     /** ...and what the others leave the last one standing: the pool's last month less the rest's intake at nameplate, at most its own. */
-    double leftForTheLast() {
+    public double leftForTheLast() {
         OldMetal.Pool pool = pool();
         if (pool == null || buildings == null) return 0;
         BuildingsTemplate refinery = buildings.getTemplate(SCRAP_REFINERY);

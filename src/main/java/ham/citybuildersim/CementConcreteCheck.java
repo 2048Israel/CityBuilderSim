@@ -95,8 +95,10 @@ public class CementConcreteCheck {
     static void sector() {
         out.println("--- 1. the sector on the registry: a works on limestone, aggregate and coal, making cement and lime ---");
         String[] keys = Sectors.KEYS;
-        assertTrue("Sectors.KEYS ends with Cement & Concrete, after Quarrying", keys[keys.length - 1].equals(Sectors.CEMENT_CONCRETE)
-                && keys[keys.length - 2].equals(Sectors.QUARRYING));
+        // ...on the end when it came (0.7.131), and copper's two after it since 0.7.133 (batch I8; Q21's order).
+        int at = java.util.Arrays.asList(keys).indexOf(Sectors.CEMENT_CONCRETE);
+        assertTrue("Sectors.KEYS has Cement & Concrete after Quarrying, the twentieth, and copper's two after it (0.7.133)",
+                at == 19 && keys[at - 1].equals(Sectors.QUARRYING) && keys[at + 1].equals(Sectors.COPPER_MINING));
         Sectors s = new Sectors(new BuildingManager(), new Markets());
         CementConcrete c = s.cementConcrete();
         assertTrue("...a processing sector found by its saved name, Iron & Steel's group, making cement and lime and using limestone,"

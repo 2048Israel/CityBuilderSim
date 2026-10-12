@@ -141,6 +141,16 @@ public class TradeCostCheck {
         { Good.AGGREGATE,                .040,       .010  },
         { Good.DIMENSION_STONE,          .260,       .170  },
         { Good.CEMENT,                   .110,       .045  },
+        // Copper's seven (0.7.133, batch I8; spec-materials 2.3, the study's 4.2): concentrate, anode,
+        // cathode, scrap, rod, acid and wire and cable - scrap's import (8,200 in its first table) and
+        // wire's export (14,500) two of the study's eight widened bands (its 1.2).
+        { Good.COPPER_CONC,             2.800,      2.575  },
+        { Good.ANODE,                  10.150,      9.650  },
+        { Good.COPPER,                 10.500,     10.000  },
+        { Good.COPPER_SCRAP,            8.700,      7.300  },
+        { Good.COPPER_ROD,             10.750,     10.250  },
+        { Good.ACID,                     .160,       .070  },
+        { Good.WIRE_CABLE,             17.000,     13.000  },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */
