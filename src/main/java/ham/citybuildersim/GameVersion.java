@@ -6201,7 +6201,9 @@ public final class GameVersion {
      *     nothing, the order not placed; each with the bar lifted, raised and
      *     placed - Game.considerForTest()); ReadPathCheck (the new getters);
      *     MortgageCheck 3 (a till a rounding under the down payment puts it
-     *     down, one short by more than the margin does not). Two fixtures
+     *     down, one short by more than the margin does not) and
+     *     OrderSearchCheck's countdown of a mortgage, which reads the down
+     *     payment as a slice does. Two fixtures
      *     re-established by their own premises: BankCheck 14 pushes retail at
      *     month 48, not 72 (its city's restaurants, without the owners' money
      *     for a Diner the interest test declined in months 6 to 8, are past the
