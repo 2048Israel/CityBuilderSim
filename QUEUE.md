@@ -22,8 +22,8 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | I8 | Copper: Copper Mining, Copper Refining, the Wire & Cable Works (running) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| E9 | The globe on screen, and W, A, S and D pan (running) | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |
 | I9 | Forestry, with the 100-ha woodlot | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
-| E9 | The globe on screen, and W, A, S and D pan | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |
 | I10 | Wood products | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | M6 | Buying land from the map | [spec-earth §3](docs/studies/spec-earth.md#3-buying-from-the-map), project: `claude/decisions-2026-10-10.md` |
 | I11 | The materials pictograms' model | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
