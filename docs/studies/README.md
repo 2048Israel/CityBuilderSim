@@ -35,7 +35,7 @@ where it has been built.
 
 ## The ones that moved here
 
-Everything above but `spec-earth2-terrain.md` (written here, 2026-10-12), `spec-globe.md`, `spec-materials.md` and `spec-oil.md`
+Everything above but `spec-earth2-terrain.md` and `spec-city-debt.md` (written here, 2026-10-12), `spec-globe.md`, `spec-materials.md` and `spec-oil.md`
 was written in the claude.ai project "Civic Ledger: Java Game" and moved here
 on 2026-10-11, byte for byte, with the same names and folders it had under the
 project's `claude/`. The two build specs were written in the cloud session's
