@@ -150,7 +150,7 @@ These are Jerus's, and they do not move.
                                    demolitions, fabrication offcuts and worn wagon sets, 85% recovered,
                                    kept by seller; Iron & Steel's Scrap Yards buy it at 70% of scrap's
                                    export price, the rest to landfill - saved under one key, MaterialsCheck
-                                   12 and MoneyCheck hold it (runs/spec-materials.md 2.9); since 0.7.133
+                                   12 and MoneyCheck hold it (docs/studies/spec-materials.md 2.9); since 0.7.133
                                    (batch I8) its old copper in a pool of its own beside it (copper():
                                    23 kg a car, 0.1 t a unit of a demolished building's material), which
                                    Copper Refining's Scrap Copper Refineries buy the same way at 70% of
@@ -190,9 +190,13 @@ These are Jerus's, and they do not move.
                                    field's cathode leached at the mine, and the smelters, refineries and
                                    rod mills on ProcessingSector, the smelter's acid sold to the leach
                                    plants and the city's old copper bought first by the scrap
-                                   refineries; Manufacturing's Wire & Cable Works draws their rod);
-                                   Mining.java is the shape to copy (on ExtractionSector since 0.7.112;
-                                   Materials.java is the shortest on Sector itself)
+                                   refineries; Manufacturing's Wire & Cable Works draws their rod) -
+                                   each new sector held by its own check: CoalMiningCheck,
+                                   QuarryingCheck and CementConcreteCheck, CopperMiningCheck and
+                                   CopperRefiningCheck; Mining.java is the shape to copy for a mine (on
+                                   ExtractionSector since 0.7.112), CementConcrete.java the shortest of
+                                   all (0.7.131, on ProcessingSector) and Materials.java the shortest on
+                                   Sector itself
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
                                    the businesses' bonds (0.7.12): the market and each participant's rule, the
                                    bond, the limit-order book the bonds and (since round 2) the shares trade on
@@ -235,12 +239,12 @@ These are Jerus's, and they do not move.
                                    the fill ordered and the release standing, the city's side of crude's
                                    clearing (Markets.CityTrader) and the month the next strike settles;
                                    Game's THE STRATEGIC RESERVE pulls the levers and pays - OilCheck 16
-                                   holds it (runs/spec-oil.md 2.8)
+                                   holds it (docs/studies/spec-oil.md 2.8)
         FuelSplit.java             FUEL split into the PETROL and DIESEL it became (0.7.76): a save written
                                    before then converted once, on its load, before anything is restored -
                                    every FUEL figure by the drivers' share of the month's litres, the
                                    railway's own all diesel, no money moving; OilCheck 10 holds it
-                                   (runs/spec-oil.md 3)
+                                   (docs/studies/spec-oil.md 3)
         Ports.java, BoatSchedule.java
                                    the city's sea terminals (0.7.86): each kind of cargo's berths, the share
                                    of its goods they take before or after the railway, the band they narrow
@@ -248,7 +252,8 @@ These are Jerus's, and they do not move.
                                    saved under one key; and the month's ships as a pure function of time -
                                    the calls those tonnes make, each boat's place on its route, a frame's
                                    query - never saved, the map's to draw (since 0.7.97). PortCheck holds
-                                   both, MapCheck 9 the boats on the map (runs/spec-oil.md 2.9-2.10)
+                                   both, MapCheck 9 the boats on the map (docs/studies/spec-oil.md
+                                   2.9-2.10)
         DecisionLog.java           what the player decided, and when (0.7.23): every change of a policy and
                                    every spend at scale, recorded where it is applied, held while a city is
                                    founded or loaded, saved under one key; the History chart's flags
@@ -303,13 +308,14 @@ These are Jerus's, and they do not move.
                                    the column's cuts, each unit's run, spread and gate, the products and who took
                                    them, the flow traced cut to unit to product, and the pictogram's layout to
                                    scale with its words and colours; what Refining's Operations page paints;
-                                   pure - RefineryViewCheck holds it (runs/spec-oil.md 2.12)
+                                   pure - RefineryViewCheck holds it (docs/studies/spec-oil.md 2.12)
         OilView.java               the oil industry on one page (0.7.96): the wells by kind and what they would
                                    lift over ten years if nothing new were built, each pool within its oil;
                                    every kind of refinery unit with its spread and the gate that stops one
                                    more; every product's price and month off the refinery picture's; the
                                    strategic reserve and its levers' reach; the chart and every word; what
-                                   Oil's Operations page paints - pure, OilViewCheck holds it (runs/spec-oil.md 2.13)
+                                   Oil's Operations page paints - pure, OilViewCheck holds it
+                                   (docs/studies/spec-oil.md 2.13)
         SectorStatements.java      one business's month as formal statements (0.7.74): profit or loss through
                                    gross and operating profit, the classified sheet, the cash flow in three
                                    sections, the changes in equity (since 0.7.75 in columns, share capital and
@@ -432,7 +438,7 @@ These are Jerus's, and they do not move.
                                    works out what each zone holds, clears the forest built on and sells,
                                    assesses and buys back zoned ground at the zone's price; the zone's
                                    taxes are the sector's own offsets (Game.setZoneTax()); ZoningCheck
-                                   holds it (docs/studies/spec-zoning.md; runs/spec-materials.md 2.15)
+                                   holds it (docs/studies/spec-zoning.md and spec-materials.md 2.15)
         ZoningView.java            Policy › Zoning as figures (0.7.109, batch Z2): the hub's four (zoned,
                                    held, the price given up, the forest kept), the dry ground as one bar
                                    cut so its parts add up to it, a zone's row, a sector's page and the
@@ -612,9 +618,10 @@ are the project's `claude/todo.md` and `claude/changelog.md`.
 
 - **A sector:** one class extending `Sector` in `sectors/`, one key constant
   and one line at the end of `Sectors.KEYS`; `sectors/Mining.java` is the
-  shortest (a mine, on `ExtractionSector` since 0.7.112; a materials chain's
-  processing sector extends `ProcessingSector`, and `Materials.java` is the
-  shortest on `Sector` itself). Add its buildings to `buildings.json` (`BuildingDataCheck`), a
+  shortest mine (on `ExtractionSector` since 0.7.112), and a materials chain's
+  processing sector extends `ProcessingSector` - `CementConcrete.java`, the
+  shortest of all since 0.7.131; `Materials.java` is the shortest on `Sector`
+  itself. Add its buildings to `buildings.json` (`BuildingDataCheck`), a
   `<Name>Check` modelled on `RestaurantsCheck` (sections numbered from the
   header's "what this has to prove" list), and its line in `AllChecks`.
 - **A saved field:** the field, `DataSave` out and in, `HistorySave` if it is

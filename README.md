@@ -217,7 +217,10 @@ src/main/java/ham/citybuildersim/     over 300 files
     AllChecks.java                    the runner
     LongPlaytest.java                 4,000-odd months, audited every one
 src/main/resources/buildings.json     the balance file
-docs/                                 generated indexes of all of the above
+docs/                                 generated indexes of all of the above; the manual, the design
+                                      studies (studies/), the queue's briefs (queue/) and the record's
+                                      archive (notes/)
+QUEUE.md                              the batches waiting to be done, in order
 tools/earth/                          the pipeline that bakes the real Earth's data (Python, outside the game),
                                       and get-earth.bat, which fetches the baked file from the release earth-1
 data/earth-1.bin                      the real Earth's data itself, about 53 MB, beside the game and not in git;
@@ -230,11 +233,12 @@ size, what it is and how many files use it.
 **Adding a sector** is one class extending `Sector`, one key constant, and one
 line in `Sectors.KEYS`. A sector class is a declaration of about twenty lines —
 what it makes, what it uses, what it stocks, and any hook it overrides.
-`sectors/Mining.java` is the shortest one and the shape to copy (a mine, on
-`ExtractionSector`; `Materials.java` is the shortest on `Sector` itself). Before the
+`sectors/Mining.java` is the shortest mine and the shape to copy (on
+`ExtractionSector`); `CementConcrete.java`, a works on `ProcessingSector`, is the
+shortest of all, and `Materials.java` the shortest on `Sector` itself. Before the
 template the sectors were five handlers in five shapes named by hand in about a
 hundred places; the whole point of it is that the eighth costs an afternoon.
-Ten have been added since, and each did.
+Fifteen have been added since, and each did.
 
 **The order of `Sectors.KEYS` is load-bearing.** Equity's company index, the
 households' share arrays and the audit's pool list all follow it, so a new
@@ -299,6 +303,10 @@ moving does not mean editing the README:
   `tools.ManualToMarkdown`; do not edit them.
 - Per-batch design notes, the running to-do list and the changelog live
   alongside it, in the claude.ai project.
+- **The queue** is in the repository: `QUEUE.md` at the root lists the batches
+  waiting to be done, in order, a line and a link each (a brief with no other
+  home is in `docs/queue/`). The design studies are in `docs/studies/`, and
+  `docs/notes/` holds the part of the record that left the project.
 
 **Inside the repository**, four documents are generated from the sources and
 committed with them, so that anyone — and in practice any AI session, which
