@@ -1,0 +1,689 @@
+# DepositProbe on 0.7.135 (main 1afe9c0) and earth-1 (b754a28f...c13a), 2026-10-12.
+# Modes in order: provinces, expected, verify (slot-01 then slot-02, read-only copies), fields.
+
+data earth-1:b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a
+
+=== provinces: Nova Scotia and the Scotian Shelf (43.00..47.30 N, -66.60..-59.40 E, every 0.05 deg)
+  row   code name                                land   sea rules     class        MMBOE    pf |   iron    oil  stone   coal copper   uran
+  161   5219 Appalachian Foldbelt                2156  1153 fold belt fold belt        0  1.00 |  0.722  0.603  1.383  0.788  2.929  0.376
+  195   5221 Magdalen Basin                      1911  1939 basin     basin            0  1.00 |  0.361  1.207  0.692  1.577  0.220  1.128  (sea holds oil)
+  215   5220 Sidney Basin                           0   165 basin     basin            0  1.00 |  0.361  1.207  0.692  1.577  0.220  1.128  (sea holds oil)
+  233   5217 Scotian Shelf                          1  4134 shelf     shelf            0  1.00 |  0.000  1.810  0.000  0.000  0.000  0.000  (sea holds oil)
+  240   5222 Fundy Basin                          335   555 basin     basin            0  1.00 |  0.361  1.207  0.692  1.577  0.220  1.128  (sea holds oil)
+  921      1 Ocean                                  0    35 other     ocean            0  1.00 |  0.722  0.302  0.692  0.394  0.732  0.752
+
+=== provinces: Calgary and the Alberta basin (50.00..52.00 N, -116.00..-112.00 E, every 0.05 deg)
+  row   code name                                land   sea rules     class        MMBOE    pf |   iron    oil  stone   coal copper   uran
+   56   5243 Alberta Basin                       1800     0 basin     basin        31101  2.51 |  0.361  3.024  0.692  1.577  0.220  1.128  (sea holds oil)
+   84   5245 Rocky Mountain Deformed Belt        1400     0 fold belt fold belt     3115  1.61 |  0.722  0.974  1.383  0.788  2.929  0.376
+
+=== provinces: Mesabi, Minnesota (46.80..48.20 N, -94.00..-91.00 E, every 0.05 deg)
+  row   code name                                land   sea rules     class        MMBOE    pf |   iron    oil  stone   coal copper   uran
+  185   5051 Superior                            1680     0 other     shield           0  1.00 |  2.888  0.030  1.383  0.079  0.732  1.504
+
+=== provinces: Pilbara (-23.50..-20.50 N, 116.50..120.50 E, every 0.05 deg)
+  row   code name                                land   sea rules     class        MMBOE    pf |   iron    oil  stone   coal copper   uran
+  828   3953 Pilbara Block                       1917   108 shield    shield           0  1.00 |  2.888  0.030  1.383  0.079  0.732  1.504
+  830   3927 Gascoyne Block                      2775     0 shield    shield           0  1.00 |  2.888  0.030  1.383  0.079  0.732  1.504
+
+data earth-1:b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a
+
+=== the places nearest Samuel's two spots (Natural Earth, the file's places layer)
+  44.6500, -63.6000: Halifax (0 km); Windsor (56 km); Liverpool (112 km); New Glasgow (129 km);
+  45.1695, -61.7246: Antigonish (55 km); New Glasgow (85 km); Baddeck (128 km); Sydney (156 km);
+
+=== provinces under real Nova Scotian deposits (the geology layer at 0.25 deg)
+  Halifax                                    44.65  -63.58  land  5219 Appalachian Foldbelt        fold belt  oil x0.603 coal x0.788 iron x0.722  (the city)
+  Stellarton (Pictou coalfield, Westray)     45.56  -62.66  land  5221 Magdalen Basin              basin      oil x1.207 coal x1.577 iron x0.361  (coal, mined to 1990s)
+  Sydney coalfield (Cape Breton)             46.14  -60.19  land  5219 Appalachian Foldbelt        fold belt  oil x0.603 coal x0.788 iron x0.722  (coal, mined to 2001)
+  Springhill (Cumberland coalfield)          45.65  -64.06  land  5221 Magdalen Basin              basin      oil x1.207 coal x1.577 iron x0.361  (coal, mined to 1970)
+  Joggins                                    45.70  -64.45  land  5221 Magdalen Basin              basin      oil x1.207 coal x1.577 iron x0.361  (coal)
+  Windsor / Walton (Hants Co.)               44.99  -64.13  land  5219 Appalachian Foldbelt        fold belt  oil x0.603 coal x0.788 iron x0.722  (gypsum, barite)
+  Londonderry (Cobequid iron)                45.48  -63.60  land  5222 Fundy Basin                 basin      oil x1.207 coal x1.577 iron x0.361  (iron, small, closed 1908)
+  Torbrook (Annapolis iron)                  44.98  -65.00  land  5222 Fundy Basin                 basin      oil x1.207 coal x1.577 iron x0.361  (iron, small)
+  Sable Island (Sable Offshore Energy)       43.93  -59.90  land  5217 Scotian Shelf               shelf      oil x1.810 coal x0.000 iron x0.000  (offshore gas)
+  Deep Panuke                                43.80  -60.70  sea   5217 Scotian Shelf               shelf      oil x1.810 coal x0.000 iron x0.000  (offshore gas)
+  Lake Ainslie (Cape Breton)                 46.13  -61.18  land  5219 Appalachian Foldbelt        fold belt  oil x0.603 coal x0.788 iron x0.722  (small onshore oil shows)
+
+=== expected fields within 150 km of Halifax (44.6500, -63.6000), from the geology alone, every 0.02 deg: land 33508 km2, sea 37150 km2
+  province [class]                                 land km2  sea km2 iron land/sea  oil land/sea coal land/sea stone land/sea copper land/sea
+  5217 Scotian Shelf [shelf]                              3    25200    0.0/0.0       0.0/91.2      0.0/0.0       0.0/0.0       0.0/0.0   
+  5219 Appalachian Foldbelt [fold belt]               21830     5856  315.2/0.0      26.3/0.0       3.4/0.0      30.2/0.0       3.2/0.0   
+  5221 Magdalen Basin [basin]                          6513     2518   47.0/0.0      15.7/6.1       2.1/0.0       4.5/0.0       0.1/0.0   
+  5222 Fundy Basin [basin]                             5162     3577   37.3/0.0      12.5/8.6       1.6/0.0       3.6/0.0       0.1/0.0   
+  ALL                                                 33508    37150  399.5/0.0      54.5/105.9     7.1/0.0      38.3/0.0       3.3/0.0   
+
+=== expected fields within 50 km of Halifax (44.6500, -63.6000), from the geology alone, every 0.02 deg: land 4545 km2, sea 3277 km2
+  province [class]                                 land km2  sea km2 iron land/sea  oil land/sea coal land/sea stone land/sea copper land/sea
+  5217 Scotian Shelf [shelf]                              0      958    0.0/0.0       0.0/3.5       0.0/0.0       0.0/0.0       0.0/0.0   
+  5219 Appalachian Foldbelt [fold belt]                4545     2319   65.6/0.0       5.5/0.0       0.7/0.0       6.3/0.0       0.7/0.0   
+  ALL                                                  4545     3277   65.6/0.0       5.5/3.5       0.7/0.0       6.3/0.0       0.7/0.0   
+
+=== expected fields within 50 km of Eastern Shore (slot-02) (45.1695, -61.7246), from the geology alone, every 0.02 deg: land 4411 km2, sea 3414 km2
+  province [class]                                 land km2  sea km2 iron land/sea  oil land/sea coal land/sea stone land/sea copper land/sea
+  5217 Scotian Shelf [shelf]                              3     1731    0.0/0.0       0.0/6.3       0.0/0.0       0.0/0.0       0.0/0.0   
+  5219 Appalachian Foldbelt [fold belt]                4407     1683   63.6/0.0       5.3/0.0       0.7/0.0       6.1/0.0       0.6/0.0   
+  ALL                                                  4411     3414   63.6/0.0       5.3/6.3       0.7/0.0       6.1/0.0       0.6/0.0   
+
+=== expected fields within 150 km of Eastern Shore (slot-02) (45.1695, -61.7246), from the geology alone, every 0.02 deg: land 25758 km2, sea 44909 km2
+  province [class]                                 land km2  sea km2 iron land/sea  oil land/sea coal land/sea stone land/sea copper land/sea
+  5217 Scotian Shelf [shelf]                              3    28930    0.0/0.0       0.0/104.7     0.0/0.0       0.0/0.0       0.0/0.0   
+  5219 Appalachian Foldbelt [fold belt]               20051     7935  289.5/0.0      24.2/0.0       3.2/0.0      27.7/0.0       2.9/0.0   
+  5221 Magdalen Basin [basin]                          5013     7967   36.2/0.0      12.1/19.2      1.6/0.0       3.5/0.0       0.1/0.0   
+  5222 Fundy Basin [basin]                              691       76    5.0/0.0       1.7/0.2       0.2/0.0       0.5/0.0       0.0/0.0   
+  ALL                                                 25758    44909  330.7/0.0      38.0/124.1     5.0/0.0      31.7/0.0       3.0/0.0   
+
+=== expected fields within 150 km of Calgary (51.0500, -114.0700), from the geology alone, every 0.02 deg: land 70642 km2, sea 0 km2
+  province [class]                                 land km2  sea km2 iron land/sea  oil land/sea coal land/sea stone land/sea copper land/sea
+  5243 Alberta Basin [basin]                          40442        0  292.0/0.0     244.6/0.0      12.8/0.0      28.0/0.0       0.4/0.0   
+  5245 Rocky Mountain Deformed Belt [fold belt]       30200        0  436.0/0.0      58.8/0.0       4.8/0.0      41.8/0.0       4.4/0.0   
+  ALL                                                 70642        0  728.0/0.0     303.4/0.0      17.5/0.0      69.7/0.0       4.9/0.0   
+
+data earth-1:b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a
+
+=== a save's holdings with fields against this build's fields: seed 758809812, 44.650000, -63.600000 (founding plot 376832, 376832)
+  holding row 259 [376512,377280)-[376640,377536): iron saved 61 sites 8.508e+08 t, drawn now 3 fields 61 sites 8.508e+08 t (same);
+  holding row 260 [376448,377344)-[376576,377600): iron saved 35 sites 4.881e+08 t, drawn now 2 fields 35 sites 4.881e+08 t (same);
+  holding row 264 [376320,377344)-[376384,377472): iron saved 36 sites 5.021e+08 t, drawn now 2 fields 36 sites 5.021e+08 t (same);
+  holding row 291 [376320,377344)-[376448,377472): iron saved 20 sites 2.789e+08 t, drawn now 1 fields 20 sites 2.789e+08 t (same);
+data earth-1:b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a
+
+=== a save's holdings with fields against this build's fields: seed 284719415, 45.169486, -61.724632 (founding plot 376837, 376829)
+  holding row 278 [376832,376192)-[376960,376448): iron saved 143 sites 2.738e+09 t, drawn now 7 fields 143 sites 2.738e+09 t (same);
+  holding row 279 [376896,376128)-[377024,376384): iron saved 70 sites 1.340e+09 t, drawn now 4 fields 70 sites 1.340e+09 t (same);
+
+data earth-1:b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a
+
+=== EARTH Halifax (slot-01's key), seed 758809812: spot 44.6500, -63.6000; founding plot 376832, 376832 at 44.6499, -63.5998, province 5219 Appalachian Foldbelt (fold belt); world built in 1.6 s
+  site's cell 67896: land share 0.00123; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 0.0668 oil 8.55 stone 0.00640 coal 0.000729 copper 0.000677 uranium 3.48e-05
+  founding card's nearest iron: [575.9001649591706, -275.0, 506.0]
+  IRON: nearest 17.3 km at 44.513, -63.704: hematite, 28 sites, 3.91e+08 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:   45 fields (0 at sea, 3 in fresh water, 42 on dry land),    976 sites, 1.34e+10 t; types {hematite=28, magnetite=17}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 45/0;
+    <=150 km:  417 fields (1 at sea, 16 in fresh water, 400 on dry land),  10285 sites, 1.48e+11 t; types {hematite=314, magnetite=103}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/1; 5219 Appalachian Foldbelt [fold belt] 347/0; 5221 Magdalen Basin [basin] 39/0; 5222 Fundy Basin [basin] 30/0;
+    <=300 km:  941 fields (10 at sea, 45 in fresh water, 886 on dry land),  23487 sites, 3.45e+11 t; types {hematite=710, magnetite=231}
+             by province (land/sea): 5072 New England [fold belt] 12/0; 5217 Scotian Shelf [shelf] 0/2; 5219 Appalachian Foldbelt [fold belt] 589/0; 5221 Magdalen Basin [basin] 286/0; 5222 Fundy Basin [basin] 44/8;
+  OIL: nearest 24.1 km at 44.676, -63.298: -, 22 sites, 3.07e+06 t, ground fresh, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:   14 fields (6 at sea, 1 in fresh water, 7 on dry land),    309 sites, 4.31e+07 t; types {-=14}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 8/6;
+    <=150 km:  155 fields (102 at sea, 5 in fresh water, 48 on dry land),   3504 sites, 4.88e+08 t; types {-=155}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/75; 5219 Appalachian Foldbelt [fold belt] 37/6; 5222 Fundy Basin [basin] 16/21;
+    <=300 km:  661 fields (516 at sea, 8 in fresh water, 137 on dry land),  17039 sites, 2.52e+09 t; types {-=661}
+             by province (land/sea): 1 Ocean [ocean] 0/1; 5217 Scotian Shelf [shelf] 0/393; 5219 Appalachian Foldbelt [fold belt] 54/7; 5221 Magdalen Basin [basin] 64/59; 5222 Fundy Basin [basin] 27/56;
+  STONE: nearest 55.0 km at 45.006, -63.114: limestone, 33 sites, 3.92e+08 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km: none
+    <=150 km:   37 fields (0 at sea, 1 in fresh water, 36 on dry land),    846 sites, 1.23e+10 t; types {hard_rock=9, limestone=28}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 37/0;
+    <=300 km:   91 fields (0 at sea, 8 in fresh water, 83 on dry land),   2249 sites, 2.94e+10 t; types {hard_rock=25, limestone=66}
+             by province (land/sea): 5072 New England [fold belt] 3/0; 5219 Appalachian Foldbelt [fold belt] 71/0; 5221 Magdalen Basin [basin] 14/0; 5222 Fundy Basin [basin] 3/0;
+  COAL: nearest 33.3 km at 44.949, -63.584: thermal, 18 sites, 7.68e+07 t, ground fresh, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:    2 fields (0 at sea, 1 in fresh water, 1 on dry land),     47 sites, 2.00e+08 t; types {thermal=2}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 2/0;
+    <=150 km:   11 fields (0 at sea, 2 in fresh water, 9 on dry land),    344 sites, 1.84e+09 t; types {coking=2, thermal=9}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 9/0; 5221 Magdalen Basin [basin] 1/0; 5222 Fundy Basin [basin] 1/0;
+    <=300 km:   20 fields (0 at sea, 2 in fresh water, 18 on dry land),    557 sites, 3.21e+09 t; types {coking=6, thermal=14}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 18/0; 5221 Magdalen Basin [basin] 1/0; 5222 Fundy Basin [basin] 1/0;
+  COPPER: nearest 22.0 km at 44.835, -63.499: sulphide, 18 sites, 3.97e+06 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:    4 fields (0 at sea, 1 in fresh water, 3 on dry land),    109 sites, 2.40e+07 t; types {sulphide=4}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 4/0;
+    <=150 km:    7 fields (0 at sea, 1 in fresh water, 6 on dry land),    183 sites, 4.04e+07 t; types {oxide=1, sulphide=6}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 7/0;
+    <=300 km:    7 fields (0 at sea, 1 in fresh water, 6 on dry land),    183 sites, 4.04e+07 t; types {oxide=1, sulphide=6}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 7/0;
+  URANIUM: nearest 233.8 km at 46.032, -65.854: -, 17 sites, 5.03e+03 t, ground forest, 5221 Magdalen Basin [basin]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:    9 fields (0 at sea, 1 in fresh water, 8 on dry land),    182 sites, 5.38e+04 t; types {-=9}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 1/0; 5221 Magdalen Basin [basin] 8/0;
+
+=== EARTH Eastern Shore, Guysborough Co. (slot-02's key), seed 284719415: spot 45.1695, -61.7246; founding plot 376837, 376829 at 45.1702, -61.7225, province 5219 Appalachian Foldbelt (fold belt); world built in 0.6 s
+  site's cell 67528: land share 0.640; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 34.9 oil 2.92 stone 3.34 coal 0.381 copper 0.354 uranium 0.0182
+  founding card's nearest iron: [450.1388674620311, 32.0, -449.0]
+  IRON: nearest 13.5 km at 45.291, -61.710: hematite, 16 sites, 3.06e+08 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:   72 fields (1 at sea, 4 in fresh water, 67 on dry land),   1741 sites, 3.01e+10 t; types {hematite=45, magnetite=27}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/1; 5219 Appalachian Foldbelt [fold belt] 71/0;
+    <=150 km:  320 fields (1 at sea, 44 in fresh water, 275 on dry land),   8073 sites, 1.31e+11 t; types {hematite=224, magnetite=96}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/1; 5219 Appalachian Foldbelt [fold belt] 267/0; 5221 Magdalen Basin [basin] 46/0; 5222 Fundy Basin [basin] 6/0;
+    <=300 km:  699 fields (4 at sea, 64 in fresh water, 631 on dry land),  17599 sites, 2.74e+11 t; types {hematite=508, magnetite=191}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/3; 5219 Appalachian Foldbelt [fold belt] 457/0; 5221 Magdalen Basin [basin] 167/1; 5222 Fundy Basin [basin] 71/0;
+  OIL: nearest 12.0 km at 45.103, -61.603: -, 15 sites, 2.57e+06 t, ground sea, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:    8 fields (8 at sea, 0 in fresh water, 0 on dry land),    205 sites, 3.30e+07 t; types {-=8}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/1; 5219 Appalachian Foldbelt [fold belt] 0/7;
+    <=150 km:  182 fields (156 at sea, 2 in fresh water, 24 on dry land),   4685 sites, 6.92e+08 t; types {-=182}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/90; 5219 Appalachian Foldbelt [fold belt] 25/13; 5221 Magdalen Basin [basin] 1/53;
+    <=300 km:  646 fields (601 at sea, 3 in fresh water, 42 on dry land),  17055 sites, 2.44e+09 t; types {-=646}
+             by province (land/sea): 1 Ocean [ocean] 0/11; 5217 Scotian Shelf [shelf] 0/393; 5219 Appalachian Foldbelt [fold belt] 27/24; 5220 Sidney Basin [basin] 0/28; 5221 Magdalen Basin [basin] 8/145; 5222 Fundy Basin [basin] 10/0;
+  STONE: nearest 41.5 km at 44.972, -62.170: limestone, 16 sites, 3.24e+08 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:    9 fields (0 at sea, 0 in fresh water, 9 on dry land),    171 sites, 2.53e+09 t; types {hard_rock=3, limestone=6}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 9/0;
+    <=150 km:   56 fields (0 at sea, 6 in fresh water, 50 on dry land),   1183 sites, 1.83e+10 t; types {hard_rock=16, limestone=40}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 40/0; 5221 Magdalen Basin [basin] 16/0;
+    <=300 km:   71 fields (0 at sea, 6 in fresh water, 65 on dry land),   1506 sites, 2.37e+10 t; types {hard_rock=19, limestone=52}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 46/0; 5221 Magdalen Basin [basin] 25/0;
+  COAL: nearest 146.8 km at 45.128, -63.594: thermal, 13 sites, 6.25e+07 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km: none
+    <=150 km:    3 fields (0 at sea, 0 in fresh water, 3 on dry land),     47 sites, 2.26e+08 t; types {coking=1, thermal=2}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 1/0; 5221 Magdalen Basin [basin] 1/0; 5222 Fundy Basin [basin] 1/0;
+    <=300 km:   15 fields (0 at sea, 1 in fresh water, 14 on dry land),    491 sites, 2.28e+09 t; types {coking=4, thermal=11}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 9/0; 5221 Magdalen Basin [basin] 1/0; 5222 Fundy Basin [basin] 5/0;
+  COPPER: none within 300 km
+    <= 50 km: none
+    <=150 km: none
+    <=300 km: none
+  URANIUM: none within 300 km
+    <= 50 km: none
+    <=150 km: none
+    <=300 km: none
+
+=== EARTH Halifax, seed 1: spot 44.6500, -63.5800; founding plot 376827, 376832 at 44.6499, -63.5817, province 5219 Appalachian Foldbelt (fold belt); world built in 0.8 s
+  site's cell 67895: land share 0.212; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 11.5 oil 3.53 stone 1.11 coal 0.126 copper 0.117 uranium 0.00601
+  founding card's nearest iron: [1020.2783933809438, 838.0, -582.0]
+  IRON: nearest 30.6 km at 44.806, -63.263: hematite, 21 sites, 2.22e+08 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:   53 fields (0 at sea, 5 in fresh water, 48 on dry land),   1439 sites, 1.99e+10 t; types {hematite=35, magnetite=18}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 53/0;
+    <=150 km:  360 fields (0 at sea, 22 in fresh water, 338 on dry land),   8377 sites, 1.48e+11 t; types {hematite=263, magnetite=97}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 278/0; 5221 Magdalen Basin [basin] 53/0; 5222 Fundy Basin [basin] 29/0;
+    <=300 km:  967 fields (1 at sea, 55 in fresh water, 911 on dry land),  23060 sites, 3.91e+11 t; types {hematite=728, magnetite=239}
+             by province (land/sea): 5072 New England [fold belt] 22/0; 5217 Scotian Shelf [shelf] 0/1; 5219 Appalachian Foldbelt [fold belt] 559/0; 5221 Magdalen Basin [basin] 345/0; 5222 Fundy Basin [basin] 40/0;
+  OIL: nearest 38.2 km at 44.367, -63.310: -, 17 sites, 3.34e+06 t, ground sea, 5217 Scotian Shelf [shelf]
+    <= 50 km:    5 fields (5 at sea, 0 in fresh water, 0 on dry land),     90 sites, 1.77e+07 t; types {-=5}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/5;
+    <=150 km:  134 fields (86 at sea, 3 in fresh water, 45 on dry land),   2886 sites, 4.44e+08 t; types {-=134}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/72; 5219 Appalachian Foldbelt [fold belt] 39/1; 5221 Magdalen Basin [basin] 7/6; 5222 Fundy Basin [basin] 2/7;
+    <=300 km:  657 fields (507 at sea, 7 in fresh water, 143 on dry land),  17173 sites, 2.59e+09 t; types {-=657}
+             by province (land/sea): 1 Ocean [ocean] 0/4; 5217 Scotian Shelf [shelf] 0/361; 5219 Appalachian Foldbelt [fold belt] 74/22; 5221 Magdalen Basin [basin] 71/109; 5222 Fundy Basin [basin] 5/11;
+  STONE: nearest 5.5 km at 44.605, -63.611: limestone, 87 sites, 9.01e+08 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:   15 fields (0 at sea, 2 in fresh water, 13 on dry land),    461 sites, 4.77e+09 t; types {hard_rock=4, limestone=11}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 15/0;
+    <=150 km:   32 fields (0 at sea, 4 in fresh water, 28 on dry land),    870 sites, 1.18e+10 t; types {hard_rock=9, limestone=23}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 32/0;
+    <=300 km:  118 fields (1 at sea, 10 in fresh water, 107 on dry land),   2833 sites, 3.97e+10 t; types {hard_rock=26, limestone=92}
+             by province (land/sea): 5072 New England [fold belt] 13/0; 5219 Appalachian Foldbelt [fold belt] 54/1; 5221 Magdalen Basin [basin] 50/0;
+  COAL: nearest 193.4 km at 45.729, -65.516: thermal, 17 sites, 1.08e+08 t, ground grass, 5221 Magdalen Basin [basin]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:   23 fields (0 at sea, 1 in fresh water, 22 on dry land),    463 sites, 3.47e+09 t; types {coking=2, thermal=21}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 4/0; 5221 Magdalen Basin [basin] 19/0;
+  COPPER: nearest 159.9 km at 45.783, -64.839: sulphide, 15 sites, 3.54e+06 t, ground forest, 5221 Magdalen Basin [basin]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:   11 fields (0 at sea, 0 in fresh water, 11 on dry land),    229 sites, 5.41e+07 t; types {oxide=3, sulphide=8}
+             by province (land/sea): 5221 Magdalen Basin [basin] 11/0;
+  URANIUM: none within 300 km
+    <= 50 km: none
+    <=150 km: none
+    <=300 km: none
+
+=== EARTH Halifax, seed 42: spot 44.6500, -63.5800; founding plot 376830, 376832 at 44.6499, -63.5806, province 5219 Appalachian Foldbelt (fold belt); world built in 0.5 s
+  site's cell 67895: land share 0.212; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 11.5 oil 3.53 stone 1.11 coal 0.126 copper 0.117 uranium 0.00601
+  founding card's nearest iron: [203.54115063052976, -190.0, 73.0]
+  IRON: nearest 6.1 km at 44.630, -63.653: magnetite, 11 sites, 2.50e+08 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:   60 fields (1 at sea, 1 in fresh water, 58 on dry land),   1827 sites, 3.39e+10 t; types {hematite=44, magnetite=16}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/1; 5219 Appalachian Foldbelt [fold belt] 59/0;
+    <=150 km:  390 fields (1 at sea, 13 in fresh water, 376 on dry land),   9888 sites, 1.69e+11 t; types {hematite=294, magnetite=96}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/1; 5219 Appalachian Foldbelt [fold belt] 249/0; 5221 Magdalen Basin [basin] 115/0; 5222 Fundy Basin [basin] 25/0;
+    <=300 km: 1011 fields (27 at sea, 33 in fresh water, 951 on dry land),  25340 sites, 3.80e+11 t; types {hematite=766, magnetite=245}
+             by province (land/sea): 5072 New England [fold belt] 15/0; 5217 Scotian Shelf [shelf] 0/2; 5219 Appalachian Foldbelt [fold belt] 564/1; 5221 Magdalen Basin [basin] 378/11; 5222 Fundy Basin [basin] 27/13;
+  OIL: nearest 36.3 km at 44.371, -63.344: -, 43 sites, 4.80e+06 t, ground sea, 5217 Scotian Shelf [shelf]
+    <= 50 km:   20 fields (19 at sea, 0 in fresh water, 1 on dry land),    541 sites, 6.14e+07 t; types {-=20}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/17; 5219 Appalachian Foldbelt [fold belt] 1/2;
+    <=150 km:  154 fields (108 at sea, 2 in fresh water, 44 on dry land),   3500 sites, 5.98e+08 t; types {-=154}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/96; 5219 Appalachian Foldbelt [fold belt] 29/12; 5221 Magdalen Basin [basin] 17/0;
+    <=300 km:  737 fields (596 at sea, 3 in fresh water, 138 on dry land),  17840 sites, 3.04e+09 t; types {-=737}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/428; 5219 Appalachian Foldbelt [fold belt] 54/21; 5221 Magdalen Basin [basin] 82/99; 5222 Fundy Basin [basin] 5/48;
+  STONE: nearest 95.7 km at 44.224, -64.628: hard_rock, 27 sites, 1.72e+08 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km: none
+    <=150 km:   37 fields (0 at sea, 1 in fresh water, 36 on dry land),   1252 sites, 1.22e+10 t; types {hard_rock=5, limestone=32}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 7/0; 5221 Magdalen Basin [basin] 20/0; 5222 Fundy Basin [basin] 10/0;
+    <=300 km:   90 fields (1 at sea, 2 in fresh water, 87 on dry land),   2483 sites, 2.72e+10 t; types {hard_rock=14, limestone=76}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/1; 5219 Appalachian Foldbelt [fold belt] 27/0; 5221 Magdalen Basin [basin] 50/0; 5222 Fundy Basin [basin] 12/0;
+  COAL: nearest 170.5 km at 45.465, -65.420: thermal, 17 sites, 1.33e+08 t, ground forest, 5222 Fundy Basin [basin]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:   23 fields (0 at sea, 0 in fresh water, 23 on dry land),    550 sites, 4.10e+09 t; types {coking=2, thermal=21}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 4/0; 5221 Magdalen Basin [basin] 14/0; 5222 Fundy Basin [basin] 5/0;
+  COPPER: nearest 89.8 km at 44.398, -64.658: sulphide, 42 sites, 1.12e+07 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km: none
+    <=150 km:    7 fields (0 at sea, 1 in fresh water, 6 on dry land),    239 sites, 6.35e+07 t; types {oxide=2, sulphide=5}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 7/0;
+    <=300 km:   13 fields (0 at sea, 2 in fresh water, 11 on dry land),    414 sites, 1.10e+08 t; types {oxide=5, sulphide=8}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 13/0;
+  URANIUM: none within 300 km
+    <= 50 km: none
+    <=150 km: none
+    <=300 km: none
+
+=== EARTH Halifax, seed 20261012: spot 44.6500, -63.5800; founding plot 376832, 376832 at 44.6499, -63.5798, province 5219 Appalachian Foldbelt (fold belt); world built in 0.4 s
+  site's cell 67896: land share 0.00123; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 0.0668 oil 10.3 stone 0.00640 coal 0.000729 copper 0.000677 uranium 3.48e-05
+  founding card's nearest iron: [59.413803110051795, -43.0, -41.0]
+  IRON: nearest 1.8 km at 44.661, -63.596: hematite, 17 sites, 2.51e+08 t, ground grass, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:   92 fields (0 at sea, 10 in fresh water, 82 on dry land),   2303 sites, 3.40e+10 t; types {hematite=66, magnetite=26}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 92/0;
+    <=150 km:  428 fields (0 at sea, 18 in fresh water, 410 on dry land),  11127 sites, 1.67e+11 t; types {hematite=327, magnetite=101}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 322/0; 5221 Magdalen Basin [basin] 67/0; 5222 Fundy Basin [basin] 39/0;
+    <=300 km:  989 fields (1 at sea, 55 in fresh water, 933 on dry land),  24866 sites, 3.73e+11 t; types {hematite=750, magnetite=239}
+             by province (land/sea): 5072 New England [fold belt] 28/0; 5219 Appalachian Foldbelt [fold belt] 588/1; 5221 Magdalen Basin [basin] 321/0; 5222 Fundy Basin [basin] 51/0;
+  OIL: nearest 44.3 km at 44.832, -64.079: -, 20 sites, 4.67e+06 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:    5 fields (0 at sea, 1 in fresh water, 4 on dry land),    106 sites, 2.47e+07 t; types {-=5}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 5/0;
+    <=150 km:  141 fields (110 at sea, 3 in fresh water, 28 on dry land),   3983 sites, 6.28e+08 t; types {-=141}
+             by province (land/sea): 5217 Scotian Shelf [shelf] 0/91; 5219 Appalachian Foldbelt [fold belt] 16/4; 5221 Magdalen Basin [basin] 11/2; 5222 Fundy Basin [basin] 4/13;
+    <=300 km:  662 fields (543 at sea, 4 in fresh water, 115 on dry land),  16682 sites, 2.58e+09 t; types {-=662}
+             by province (land/sea): 1 Ocean [ocean] 0/7; 5217 Scotian Shelf [shelf] 0/434; 5219 Appalachian Foldbelt [fold belt] 41/20; 5221 Magdalen Basin [basin] 74/60; 5222 Fundy Basin [basin] 4/22;
+  STONE: nearest 28.6 km at 44.841, -63.822: limestone, 44 sites, 6.78e+08 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km:    8 fields (0 at sea, 0 in fresh water, 8 on dry land),    174 sites, 2.68e+09 t; types {hard_rock=2, limestone=6}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 8/0;
+    <=150 km:   46 fields (1 at sea, 2 in fresh water, 43 on dry land),   1254 sites, 1.88e+10 t; types {hard_rock=10, limestone=36}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 23/0; 5221 Magdalen Basin [basin] 11/0; 5222 Fundy Basin [basin] 11/1;
+    <=300 km:   85 fields (1 at sea, 6 in fresh water, 78 on dry land),   2158 sites, 2.98e+10 t; types {hard_rock=20, limestone=65}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 38/0; 5221 Magdalen Basin [basin] 35/0; 5222 Fundy Basin [basin] 11/1;
+  COAL: nearest 140.3 km at 45.603, -62.409: thermal, 17 sites, 1.07e+08 t, ground forest, 5221 Magdalen Basin [basin]
+    <= 50 km: none
+    <=150 km:    6 fields (0 at sea, 0 in fresh water, 6 on dry land),    212 sites, 1.33e+09 t; types {coking=1, thermal=5}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 4/0; 5221 Magdalen Basin [basin] 2/0;
+    <=300 km:   21 fields (0 at sea, 0 in fresh water, 21 on dry land),    523 sites, 3.37e+09 t; types {coking=4, thermal=17}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 14/0; 5221 Magdalen Basin [basin] 7/0;
+  COPPER: nearest 61.6 km at 44.846, -62.850: sulphide, 14 sites, 4.11e+06 t, ground forest, 5219 Appalachian Foldbelt [fold belt]
+    <= 50 km: none
+    <=150 km:   10 fields (0 at sea, 0 in fresh water, 10 on dry land),    216 sites, 7.66e+07 t; types {oxide=1, sulphide=9}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 9/0; 5221 Magdalen Basin [basin] 1/0;
+    <=300 km:   29 fields (0 at sea, 4 in fresh water, 25 on dry land),    699 sites, 2.76e+08 t; types {oxide=9, sulphide=20}
+             by province (land/sea): 5072 New England [fold belt] 1/0; 5219 Appalachian Foldbelt [fold belt] 24/0; 5221 Magdalen Basin [basin] 4/0;
+  URANIUM: nearest 247.6 km at 45.812, -66.277: -, 20 sites, 2.99e+03 t, ground forest, 5221 Magdalen Basin [basin]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:    5 fields (0 at sea, 0 in fresh water, 5 on dry land),    140 sites, 2.09e+04 t; types {-=5}
+             by province (land/sea): 5219 Appalachian Foldbelt [fold belt] 2/0; 5221 Magdalen Basin [basin] 3/0;
+
+=== EARTH Calgary, seed 1: spot 51.0500, -114.0700; founding plot 376831, 376832 at 51.0499, -114.0702, province 5243 Alberta Basin (basin); world built in 0.5 s
+  site's cell 67895: land share 1.00; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 54.5 oil 7.35 stone 5.22 coal 0.595 copper 0.553 uranium 0.0284
+  founding card's nearest iron: [13.341664064126334, 3.0, 13.0]
+  IRON: nearest 0.4 km at 51.046, -114.069: hematite, 14 sites, 2.22e+08 t, ground grass, 5243 Alberta Basin [basin]
+    <= 50 km:   38 fields (0 at sea, 0 in fresh water, 38 on dry land),    900 sites, 1.54e+10 t; types {hematite=27, magnetite=11}
+             by province (land/sea): 5243 Alberta Basin [basin] 9/0; 5245 Rocky Mountain Deformed Belt [fold belt] 29/0;
+    <=150 km:  732 fields (0 at sea, 4 in fresh water, 728 on dry land),  17761 sites, 2.98e+11 t; types {hematite=542, magnetite=190}
+             by province (land/sea): 5243 Alberta Basin [basin] 288/0; 5245 Rocky Mountain Deformed Belt [fold belt] 444/0;
+    <=300 km: 2916 fields (0 at sea, 37 in fresh water, 2879 on dry land),  72364 sites, 1.12e+12 t; types {hematite=2176, magnetite=740}
+             by province (land/sea): 5017 Idaho-Snake River Downwarp [basin] 1/0; 5027 Montana Thrust Belt [fold belt] 276/0; 5028 North-Central Montana [basin] 24/0; 5243 Alberta Basin [basin] 838/0; 5244 Williston Basin [basin] 236/0; 5245 Rocky Mountain Deformed Belt [fold belt] 1064/0; 5248 Canadian Cordillera [fold belt] 477/0;
+  OIL: nearest 15.5 km at 51.167, -113.951: -, 26 sites, 2.24e+06 t, ground grass, 5243 Alberta Basin [basin]
+    <= 50 km:   37 fields (0 at sea, 0 in fresh water, 37 on dry land),    957 sites, 1.25e+08 t; types {-=37}
+             by province (land/sea): 5243 Alberta Basin [basin] 32/0; 5245 Rocky Mountain Deformed Belt [fold belt] 5/0;
+    <=150 km:  257 fields (0 at sea, 2 in fresh water, 255 on dry land),   7677 sites, 1.06e+09 t; types {-=257}
+             by province (land/sea): 5243 Alberta Basin [basin] 200/0; 5245 Rocky Mountain Deformed Belt [fold belt] 57/0;
+    <=300 km: 1134 fields (0 at sea, 28 in fresh water, 1106 on dry land),  29810 sites, 4.37e+09 t; types {-=1134}
+             by province (land/sea): 5027 Montana Thrust Belt [fold belt] 26/0; 5028 North-Central Montana [basin] 6/0; 5243 Alberta Basin [basin] 708/0; 5244 Williston Basin [basin] 173/0; 5245 Rocky Mountain Deformed Belt [fold belt] 187/0; 5248 Canadian Cordillera [fold belt] 34/0;
+  STONE: nearest 88.1 km at 50.841, -115.284: limestone, 18 sites, 2.96e+08 t, ground desert, 5245 Rocky Mountain Deformed Belt [fold belt]
+    <= 50 km: none
+    <=150 km:   31 fields (0 at sea, 1 in fresh water, 30 on dry land),    738 sites, 1.07e+10 t; types {hard_rock=9, limestone=22}
+             by province (land/sea): 5243 Alberta Basin [basin] 9/0; 5245 Rocky Mountain Deformed Belt [fold belt] 22/0;
+    <=300 km:  311 fields (0 at sea, 3 in fresh water, 308 on dry land),   7952 sites, 1.05e+11 t; types {hard_rock=75, limestone=236}
+             by province (land/sea): 5027 Montana Thrust Belt [fold belt] 22/0; 5028 North-Central Montana [basin] 11/0; 5243 Alberta Basin [basin] 82/0; 5244 Williston Basin [basin] 37/0; 5245 Rocky Mountain Deformed Belt [fold belt] 90/0; 5248 Canadian Cordillera [fold belt] 69/0;
+  COAL: nearest 93.8 km at 51.422, -112.862: thermal, 12 sites, 1.13e+08 t, ground grass, 5243 Alberta Basin [basin]
+    <= 50 km: none
+    <=150 km:    9 fields (0 at sea, 0 in fresh water, 9 on dry land),    374 sites, 3.54e+09 t; types {coking=1, thermal=8}
+             by province (land/sea): 5243 Alberta Basin [basin] 9/0;
+    <=300 km:   77 fields (0 at sea, 2 in fresh water, 75 on dry land),   2098 sites, 1.42e+10 t; types {coking=13, thermal=64}
+             by province (land/sea): 5017 Idaho-Snake River Downwarp [basin] 3/0; 5243 Alberta Basin [basin] 46/0; 5244 Williston Basin [basin] 18/0; 5245 Rocky Mountain Deformed Belt [fold belt] 10/0;
+  COPPER: nearest 200.4 km at 50.874, -116.919: sulphide, 10 sites, 2.45e+06 t, ground forest, 5248 Canadian Cordillera [fold belt]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:   24 fields (0 at sea, 1 in fresh water, 23 on dry land),    467 sites, 1.50e+08 t; types {oxide=2, sulphide=22}
+             by province (land/sea): 5027 Montana Thrust Belt [fold belt] 5/0; 5245 Rocky Mountain Deformed Belt [fold belt] 2/0; 5248 Canadian Cordillera [fold belt] 17/0;
+  URANIUM: none within 300 km
+    <= 50 km: none
+    <=150 km: none
+    <=300 km: none
+
+=== EARTH Calgary, seed 42: spot 51.0500, -114.0700; founding plot 376831, 376832 at 51.0499, -114.0702, province 5243 Alberta Basin (basin); world built in 0.4 s
+  site's cell 67895: land share 1.00; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 54.5 oil 7.35 stone 5.22 coal 0.595 copper 0.553 uranium 0.0284
+  founding card's nearest iron: [300.59274775017445, -140.0, 266.0]
+  IRON: nearest 9.0 km at 50.978, -114.130: magnetite, 46 sites, 8.95e+08 t, ground forest, 5245 Rocky Mountain Deformed Belt [fold belt]
+    <= 50 km:   49 fields (0 at sea, 0 in fresh water, 49 on dry land),   1211 sites, 1.82e+10 t; types {hematite=36, magnetite=13}
+             by province (land/sea): 5243 Alberta Basin [basin] 18/0; 5245 Rocky Mountain Deformed Belt [fold belt] 31/0;
+    <=150 km:  764 fields (0 at sea, 5 in fresh water, 759 on dry land),  21252 sites, 3.33e+11 t; types {hematite=568, magnetite=196}
+             by province (land/sea): 5243 Alberta Basin [basin] 325/0; 5245 Rocky Mountain Deformed Belt [fold belt] 439/0;
+    <=300 km: 2995 fields (0 at sea, 74 in fresh water, 2921 on dry land),  79464 sites, 1.16e+12 t; types {hematite=2258, magnetite=737}
+             by province (land/sea): 5017 Idaho-Snake River Downwarp [basin] 10/0; 5027 Montana Thrust Belt [fold belt] 231/0; 5028 North-Central Montana [basin] 33/0; 5243 Alberta Basin [basin] 903/0; 5244 Williston Basin [basin] 189/0; 5245 Rocky Mountain Deformed Belt [fold belt] 1145/0; 5248 Canadian Cordillera [fold belt] 484/0;
+  OIL: nearest 11.8 km at 51.142, -113.986: -, 12 sites, 1.66e+06 t, ground grass, 5243 Alberta Basin [basin]
+    <= 50 km:   44 fields (0 at sea, 0 in fresh water, 44 on dry land),    983 sites, 1.12e+08 t; types {-=44}
+             by province (land/sea): 5243 Alberta Basin [basin] 42/0; 5245 Rocky Mountain Deformed Belt [fold belt] 2/0;
+    <=150 km:  304 fields (0 at sea, 4 in fresh water, 300 on dry land),   8164 sites, 1.27e+09 t; types {-=304}
+             by province (land/sea): 5243 Alberta Basin [basin] 278/0; 5245 Rocky Mountain Deformed Belt [fold belt] 26/0;
+    <=300 km: 1065 fields (0 at sea, 22 in fresh water, 1043 on dry land),  26817 sites, 4.22e+09 t; types {-=1065}
+             by province (land/sea): 5027 Montana Thrust Belt [fold belt] 19/0; 5028 North-Central Montana [basin] 9/0; 5243 Alberta Basin [basin] 736/0; 5244 Williston Basin [basin] 173/0; 5245 Rocky Mountain Deformed Belt [fold belt] 63/0; 5248 Canadian Cordillera [fold belt] 65/0;
+  STONE: nearest 67.8 km at 51.245, -114.991: hard_rock, 14 sites, 1.62e+08 t, ground forest, 5245 Rocky Mountain Deformed Belt [fold belt]
+    <= 50 km: none
+    <=150 km:   96 fields (0 at sea, 2 in fresh water, 94 on dry land),   2674 sites, 3.36e+10 t; types {hard_rock=27, limestone=69}
+             by province (land/sea): 5243 Alberta Basin [basin] 19/0; 5245 Rocky Mountain Deformed Belt [fold belt] 77/0;
+    <=300 km:  330 fields (0 at sea, 8 in fresh water, 322 on dry land),   8917 sites, 1.17e+11 t; types {hard_rock=88, limestone=242}
+             by province (land/sea): 5027 Montana Thrust Belt [fold belt] 62/0; 5243 Alberta Basin [basin] 81/0; 5244 Williston Basin [basin] 26/0; 5245 Rocky Mountain Deformed Belt [fold belt] 131/0; 5248 Canadian Cordillera [fold belt] 30/0;
+  COAL: nearest 120.7 km at 52.083, -113.538: thermal, 17 sites, 1.23e+08 t, ground grass, 5243 Alberta Basin [basin]
+    <= 50 km: none
+    <=150 km:    4 fields (0 at sea, 0 in fresh water, 4 on dry land),     76 sites, 5.48e+08 t; types {thermal=4}
+             by province (land/sea): 5243 Alberta Basin [basin] 4/0;
+    <=300 km:   72 fields (0 at sea, 1 in fresh water, 71 on dry land),   1895 sites, 1.50e+10 t; types {coking=22, thermal=50}
+             by province (land/sea): 5017 Idaho-Snake River Downwarp [basin] 2/0; 5027 Montana Thrust Belt [fold belt] 16/0; 5243 Alberta Basin [basin] 17/0; 5244 Williston Basin [basin] 17/0; 5245 Rocky Mountain Deformed Belt [fold belt] 12/0; 5248 Canadian Cordillera [fold belt] 8/0;
+  COPPER: nearest 18.3 km at 50.951, -114.279: oxide, 60 sites, 2.47e+07 t, ground grass, 5245 Rocky Mountain Deformed Belt [fold belt]
+    <= 50 km:    3 fields (0 at sea, 0 in fresh water, 3 on dry land),    121 sites, 4.97e+07 t; types {oxide=1, sulphide=2}
+             by province (land/sea): 5243 Alberta Basin [basin] 1/0; 5245 Rocky Mountain Deformed Belt [fold belt] 2/0;
+    <=150 km:   12 fields (0 at sea, 0 in fresh water, 12 on dry land),    465 sites, 1.82e+08 t; types {oxide=3, sulphide=9}
+             by province (land/sea): 5243 Alberta Basin [basin] 2/0; 5245 Rocky Mountain Deformed Belt [fold belt] 10/0;
+    <=300 km:   46 fields (0 at sea, 2 in fresh water, 44 on dry land),   1250 sites, 4.06e+08 t; types {oxide=6, sulphide=40}
+             by province (land/sea): 5027 Montana Thrust Belt [fold belt] 9/0; 5243 Alberta Basin [basin] 14/0; 5245 Rocky Mountain Deformed Belt [fold belt] 20/0; 5248 Canadian Cordillera [fold belt] 3/0;
+  URANIUM: none within 300 km
+    <= 50 km: none
+    <=150 km: none
+    <=300 km: none
+
+=== EARTH Calgary, seed 20261012: spot 51.0500, -114.0700; founding plot 376831, 376832 at 51.0499, -114.0702, province 5243 Alberta Basin (basin); world built in 0.5 s
+  site's cell 67895: land share 1.00; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 54.5 oil 7.35 stone 5.22 coal 0.595 copper 0.553 uranium 0.0284
+  founding card's nearest iron: [405.1777387764535, 180.0, -363.0]
+  IRON: nearest 12.2 km at 51.148, -113.993: hematite, 18 sites, 2.90e+08 t, ground grass, 5243 Alberta Basin [basin]
+    <= 50 km:  118 fields (0 at sea, 0 in fresh water, 118 on dry land),   2535 sites, 4.34e+10 t; types {hematite=83, magnetite=35}
+             by province (land/sea): 5243 Alberta Basin [basin] 52/0; 5245 Rocky Mountain Deformed Belt [fold belt] 66/0;
+    <=150 km:  743 fields (0 at sea, 7 in fresh water, 736 on dry land),  18170 sites, 2.93e+11 t; types {hematite=544, magnetite=199}
+             by province (land/sea): 5243 Alberta Basin [basin] 326/0; 5245 Rocky Mountain Deformed Belt [fold belt] 417/0;
+    <=300 km: 3030 fields (0 at sea, 48 in fresh water, 2982 on dry land),  75840 sites, 1.16e+12 t; types {hematite=2295, magnetite=735}
+             by province (land/sea): 5017 Idaho-Snake River Downwarp [basin] 14/0; 5027 Montana Thrust Belt [fold belt] 266/0; 5028 North-Central Montana [basin] 11/0; 5243 Alberta Basin [basin] 927/0; 5244 Williston Basin [basin] 245/0; 5245 Rocky Mountain Deformed Belt [fold belt] 971/0; 5248 Canadian Cordillera [fold belt] 596/0;
+  OIL: nearest 27.5 km at 51.093, -113.682: -, 14 sites, 2.92e+06 t, ground grass, 5243 Alberta Basin [basin]
+    <= 50 km:   41 fields (0 at sea, 1 in fresh water, 40 on dry land),    974 sites, 1.68e+08 t; types {-=41}
+             by province (land/sea): 5243 Alberta Basin [basin] 31/0; 5245 Rocky Mountain Deformed Belt [fold belt] 10/0;
+    <=150 km:  336 fields (0 at sea, 4 in fresh water, 332 on dry land),   7924 sites, 1.37e+09 t; types {-=336}
+             by province (land/sea): 5243 Alberta Basin [basin] 255/0; 5245 Rocky Mountain Deformed Belt [fold belt] 81/0;
+    <=300 km: 1031 fields (0 at sea, 18 in fresh water, 1013 on dry land),  24985 sites, 4.00e+09 t; types {-=1031}
+             by province (land/sea): 5027 Montana Thrust Belt [fold belt] 15/0; 5028 North-Central Montana [basin] 4/0; 5243 Alberta Basin [basin] 697/0; 5244 Williston Basin [basin] 114/0; 5245 Rocky Mountain Deformed Belt [fold belt] 149/0; 5248 Canadian Cordillera [fold belt] 52/0;
+  STONE: nearest 31.1 km at 50.782, -114.200: hard_rock, 12 sites, 1.53e+08 t, ground forest, 5245 Rocky Mountain Deformed Belt [fold belt]
+    <= 50 km:   11 fields (0 at sea, 0 in fresh water, 11 on dry land),    205 sites, 2.72e+09 t; types {hard_rock=4, limestone=7}
+             by province (land/sea): 5243 Alberta Basin [basin] 2/0; 5245 Rocky Mountain Deformed Belt [fold belt] 9/0;
+    <=150 km:  107 fields (0 at sea, 0 in fresh water, 107 on dry land),   2439 sites, 3.69e+10 t; types {hard_rock=31, limestone=76}
+             by province (land/sea): 5243 Alberta Basin [basin] 39/0; 5245 Rocky Mountain Deformed Belt [fold belt] 68/0;
+    <=300 km:  294 fields (0 at sea, 2 in fresh water, 292 on dry land),   7184 sites, 9.81e+10 t; types {hard_rock=82, limestone=212}
+             by province (land/sea): 5027 Montana Thrust Belt [fold belt] 28/0; 5028 North-Central Montana [basin] 5/0; 5243 Alberta Basin [basin] 115/0; 5244 Williston Basin [basin] 17/0; 5245 Rocky Mountain Deformed Belt [fold belt] 114/0; 5248 Canadian Cordillera [fold belt] 15/0;
+  COAL: nearest 68.6 km at 50.711, -113.254: thermal, 45 sites, 4.80e+08 t, ground grass, 5243 Alberta Basin [basin]
+    <= 50 km: none
+    <=150 km:   29 fields (0 at sea, 1 in fresh water, 28 on dry land),    789 sites, 7.31e+09 t; types {coking=3, thermal=26}
+             by province (land/sea): 5243 Alberta Basin [basin] 29/0;
+    <=300 km:   58 fields (0 at sea, 1 in fresh water, 57 on dry land),   1359 sites, 1.20e+10 t; types {coking=12, thermal=46}
+             by province (land/sea): 5027 Montana Thrust Belt [fold belt] 11/0; 5028 North-Central Montana [basin] 4/0; 5243 Alberta Basin [basin] 41/0; 5245 Rocky Mountain Deformed Belt [fold belt] 2/0;
+  COPPER: nearest 99.3 km at 50.681, -115.359: sulphide, 17 sites, 6.00e+06 t, ground grass, 5245 Rocky Mountain Deformed Belt [fold belt]
+    <= 50 km: none
+    <=150 km:    2 fields (0 at sea, 0 in fresh water, 2 on dry land),     35 sites, 1.24e+07 t; types {oxide=1, sulphide=1}
+             by province (land/sea): 5245 Rocky Mountain Deformed Belt [fold belt] 2/0;
+    <=300 km:   13 fields (0 at sea, 0 in fresh water, 13 on dry land),    268 sites, 9.46e+07 t; types {oxide=6, sulphide=7}
+             by province (land/sea): 5245 Rocky Mountain Deformed Belt [fold belt] 5/0; 5248 Canadian Cordillera [fold belt] 8/0;
+  URANIUM: nearest 157.4 km at 52.207, -112.755: -, 25 sites, 4.54e+03 t, ground grass, 5243 Alberta Basin [basin]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:   11 fields (0 at sea, 0 in fresh water, 11 on dry land),    271 sites, 4.92e+04 t; types {-=11}
+             by province (land/sea): 5243 Alberta Basin [basin] 11/0;
+
+=== EARTH Mesabi (Hibbing), seed 1: spot 47.4300, -92.9400; founding plot 376832, 376832 at 47.4299, -92.9398, province 5051 Superior (shield); world built in 0.5 s
+  site's cell 67896: land share 1.00; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 218 oil 0.228 stone 5.22 coal 0.0595 copper 0.138 uranium 0.114
+  founding card's nearest iron: [11.180339887498949, -10.0, -5.0]
+  IRON: nearest 0.3 km at 47.431, -92.944: magnetite, 16 sites, 2.50e+08 t, ground forest, 5051 Superior [shield]
+    <= 50 km:  476 fields (0 at sea, 10 in fresh water, 466 on dry land),  12221 sites, 1.81e+11 t; types {hematite=352, magnetite=124}
+             by province (land/sea): 5051 Superior [shield] 476/0;
+    <=150 km: 4073 fields (0 at sea, 473 in fresh water, 3600 on dry land),  99027 sites, 1.60e+12 t; types {hematite=3086, magnetite=987}
+             by province (land/sea): 5051 Superior [shield] 3986/0; 5226 Canadian Shield [shield] 87/0;
+    <=300 km: 15821 fields (0 at sea, 2649 in fresh water, 13172 on dry land), 394499 sites, 6.05e+12 t; types {hematite=11877, magnetite=3944}
+             by province (land/sea): 5051 Superior [shield] 12582/0; 5052 Iowa Shelf [basin] 2/0; 5226 Canadian Shield [shield] 3225/0; 5244 Williston Basin [basin] 12/0;
+  OIL: nearest 71.5 km at 47.404, -93.890: -, 27 sites, 3.08e+06 t, ground forest, 5051 Superior [shield]
+    <= 50 km: none
+    <=150 km:    5 fields (0 at sea, 1 in fresh water, 4 on dry land),    146 sites, 1.67e+07 t; types {-=5}
+             by province (land/sea): 5051 Superior [shield] 5/0;
+    <=300 km:   41 fields (0 at sea, 10 in fresh water, 31 on dry land),   1574 sites, 1.62e+08 t; types {-=41}
+             by province (land/sea): 5051 Superior [shield] 14/0; 5226 Canadian Shield [shield] 27/0;
+  STONE: nearest 3.0 km at 47.409, -92.913: limestone, 18 sites, 1.62e+08 t, ground forest, 5051 Superior [shield]
+    <= 50 km:   16 fields (0 at sea, 2 in fresh water, 14 on dry land),    330 sites, 2.99e+09 t; types {hard_rock=8, limestone=8}
+             by province (land/sea): 5051 Superior [shield] 16/0;
+    <=150 km:  110 fields (0 at sea, 6 in fresh water, 104 on dry land),   2876 sites, 3.72e+10 t; types {hard_rock=52, limestone=58}
+             by province (land/sea): 5051 Superior [shield] 103/0; 5226 Canadian Shield [shield] 7/0;
+    <=300 km:  448 fields (0 at sea, 66 in fresh water, 382 on dry land),  11814 sites, 1.64e+11 t; types {hard_rock=236, limestone=212}
+             by province (land/sea): 5051 Superior [shield] 337/0; 5226 Canadian Shield [shield] 111/0;
+  COAL: nearest 177.6 km at 47.225, -95.277: thermal, 21 sites, 1.21e+08 t, ground forest, 5051 Superior [shield]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:   18 fields (0 at sea, 1 in fresh water, 17 on dry land),    594 sites, 3.41e+09 t; types {coking=1, thermal=17}
+             by province (land/sea): 5051 Superior [shield] 18/0;
+  COPPER: nearest 240.0 km at 47.529, -89.750: sulphide, 12 sites, 4.98e+06 t, ground fresh, 5051 Superior [shield]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:    9 fields (0 at sea, 3 in fresh water, 6 on dry land),    246 sites, 8.71e+07 t; types {oxide=2, sulphide=7}
+             by province (land/sea): 5051 Superior [shield] 9/0;
+  URANIUM: nearest 195.4 km at 47.684, -95.516: -, 18 sites, 2.84e+03 t, ground grass, 5051 Superior [shield]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:    4 fields (0 at sea, 0 in fresh water, 4 on dry land),    145 sites, 2.29e+04 t; types {-=4}
+             by province (land/sea): 5051 Superior [shield] 4/0;
+
+=== EARTH Mesabi (Hibbing), seed 42: spot 47.4300, -92.9400; founding plot 376832, 376832 at 47.4299, -92.9398, province 5051 Superior (shield); world built in 0.4 s
+  site's cell 67896: land share 1.00; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 218 oil 0.228 stone 5.22 coal 0.0595 copper 0.138 uranium 0.114
+  founding card's nearest iron: [103.12128781197411, -97.0, -35.0]
+  IRON: nearest 3.1 km at 47.439, -92.978: magnetite, 26 sites, 4.90e+08 t, ground forest, 5051 Superior [shield]
+    <= 50 km:  608 fields (0 at sea, 32 in fresh water, 576 on dry land),  14816 sites, 2.46e+11 t; types {hematite=470, magnetite=138}
+             by province (land/sea): 5051 Superior [shield] 608/0;
+    <=150 km: 4081 fields (0 at sea, 444 in fresh water, 3637 on dry land), 102244 sites, 1.68e+12 t; types {hematite=3081, magnetite=1000}
+             by province (land/sea): 5051 Superior [shield] 3974/0; 5226 Canadian Shield [shield] 107/0;
+    <=300 km: 15825 fields (0 at sea, 2277 in fresh water, 13548 on dry land), 401372 sites, 6.20e+12 t; types {hematite=11880, magnetite=3945}
+             by province (land/sea): 5051 Superior [shield] 12466/0; 5052 Iowa Shelf [basin] 1/0; 5226 Canadian Shield [shield] 3349/0; 5244 Williston Basin [basin] 9/0;
+  OIL: nearest 146.6 km at 47.799, -91.063: -, 19 sites, 1.92e+06 t, ground forest, 5051 Superior [shield]
+    <= 50 km: none
+    <=150 km:    1 fields (0 at sea, 0 in fresh water, 1 on dry land),     19 sites, 1.92e+06 t; types {-=1}
+             by province (land/sea): 5051 Superior [shield] 1/0;
+    <=300 km:   19 fields (0 at sea, 11 in fresh water, 8 on dry land),    489 sites, 6.71e+07 t; types {-=19}
+             by province (land/sea): 5051 Superior [shield] 19/0;
+  STONE: nearest 67.6 km at 47.574, -93.814: hard_rock, 12 sites, 1.32e+08 t, ground fresh, 5051 Superior [shield]
+    <= 50 km: none
+    <=150 km:   98 fields (0 at sea, 9 in fresh water, 89 on dry land),   2150 sites, 2.77e+10 t; types {hard_rock=52, limestone=46}
+             by province (land/sea): 5051 Superior [shield] 97/0; 5226 Canadian Shield [shield] 1/0;
+    <=300 km:  368 fields (0 at sea, 48 in fresh water, 320 on dry land),   9923 sites, 1.25e+11 t; types {hard_rock=182, limestone=186}
+             by province (land/sea): 5051 Superior [shield] 298/0; 5226 Canadian Shield [shield] 70/0;
+  COAL: none within 300 km
+    <= 50 km: none
+    <=150 km: none
+    <=300 km: none
+  COPPER: nearest 102.1 km at 46.803, -91.953: sulphide, 12 sites, 2.64e+06 t, ground fresh, 5051 Superior [shield]
+    <= 50 km: none
+    <=150 km:    4 fields (0 at sea, 1 in fresh water, 3 on dry land),     66 sites, 1.45e+07 t; types {oxide=1, sulphide=3}
+             by province (land/sea): 5051 Superior [shield] 4/0;
+    <=300 km:   11 fields (0 at sea, 1 in fresh water, 10 on dry land),    242 sites, 5.32e+07 t; types {oxide=3, sulphide=8}
+             by province (land/sea): 5051 Superior [shield] 11/0;
+  URANIUM: nearest 55.1 km at 46.936, -92.891: -, 24 sites, 4.06e+03 t, ground forest, 5051 Superior [shield]
+    <= 50 km: none
+    <=150 km:    6 fields (0 at sea, 1 in fresh water, 5 on dry land),    105 sites, 1.98e+04 t; types {-=6}
+             by province (land/sea): 5051 Superior [shield] 6/0;
+    <=300 km:   26 fields (0 at sea, 4 in fresh water, 22 on dry land),    749 sites, 1.65e+05 t; types {-=26}
+             by province (land/sea): 5051 Superior [shield] 11/0; 5226 Canadian Shield [shield] 15/0;
+
+=== EARTH Mesabi (Hibbing), seed 20261012: spot 47.4300, -92.9400; founding plot 376832, 376832 at 47.4299, -92.9398, province 5051 Superior (shield); world built in 0.5 s
+  site's cell 67896: land share 1.00; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 218 oil 0.228 stone 5.22 coal 0.0595 copper 0.138 uranium 0.114
+  founding card's nearest iron: [27.459060435491963, -5.0, 27.0]
+  IRON: nearest 0.8 km at 47.423, -92.942: magnetite, 15 sites, 2.11e+08 t, ground forest, 5051 Superior [shield]
+    <= 50 km:  604 fields (0 at sea, 18 in fresh water, 586 on dry land),  14449 sites, 2.30e+11 t; types {hematite=462, magnetite=142}
+             by province (land/sea): 5051 Superior [shield] 604/0;
+    <=150 km: 4148 fields (0 at sea, 514 in fresh water, 3634 on dry land), 102522 sites, 1.58e+12 t; types {hematite=3132, magnetite=1016}
+             by province (land/sea): 5051 Superior [shield] 4032/0; 5226 Canadian Shield [shield] 116/0;
+    <=300 km: 16118 fields (0 at sea, 2622 in fresh water, 13496 on dry land), 408286 sites, 6.10e+12 t; types {hematite=12104, magnetite=4014}
+             by province (land/sea): 5051 Superior [shield] 12504/0; 5052 Iowa Shelf [basin] 4/0; 5226 Canadian Shield [shield] 3589/0; 5244 Williston Basin [basin] 21/0;
+  OIL: nearest 186.4 km at 48.922, -91.794: -, 19 sites, 3.28e+06 t, ground fresh, 5226 Canadian Shield [shield]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:   22 fields (0 at sea, 4 in fresh water, 18 on dry land),    492 sites, 8.66e+07 t; types {-=22}
+             by province (land/sea): 5051 Superior [shield] 6/0; 5226 Canadian Shield [shield] 16/0;
+  STONE: nearest 31.4 km at 47.160, -93.064: hard_rock, 40 sites, 6.05e+08 t, ground forest, 5051 Superior [shield]
+    <= 50 km:    7 fields (0 at sea, 0 in fresh water, 7 on dry land),    212 sites, 3.37e+09 t; types {hard_rock=7}
+             by province (land/sea): 5051 Superior [shield] 7/0;
+    <=150 km:  130 fields (0 at sea, 15 in fresh water, 115 on dry land),   3063 sites, 4.91e+10 t; types {hard_rock=71, limestone=59}
+             by province (land/sea): 5051 Superior [shield] 130/0;
+    <=300 km:  418 fields (0 at sea, 59 in fresh water, 359 on dry land),  10056 sites, 1.45e+11 t; types {hard_rock=219, limestone=199}
+             by province (land/sea): 5051 Superior [shield] 348/0; 5226 Canadian Shield [shield] 70/0;
+  COAL: nearest 284.3 km at 44.873, -92.961: thermal, 13 sites, 1.37e+08 t, ground grass, 5051 Superior [shield]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:    4 fields (0 at sea, 0 in fresh water, 4 on dry land),     59 sites, 6.20e+08 t; types {thermal=4}
+             by province (land/sea): 5051 Superior [shield] 4/0;
+  COPPER: none within 300 km
+    <= 50 km: none
+    <=150 km: none
+    <=300 km: none
+  URANIUM: none within 300 km
+    <= 50 km: none
+    <=150 km: none
+    <=300 km: none
+
+=== EARTH Pilbara (Tom Price), seed 1: spot -22.6900, 117.7900; founding plot 376832, 376832 at -22.6901, 117.7901, province 3927 Gascoyne Block (shield); world built in 0.3 s
+  site's cell 67896: land share 1.00; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 218 oil 0.228 stone 5.22 coal 0.0595 copper 0.138 uranium 0.114
+  founding card's nearest iron: [11.180339887498949, -10.0, -5.0]
+  IRON: nearest 0.3 km at -22.689, 117.787: magnetite, 16 sites, 2.50e+08 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km:  456 fields (0 at sea, 0 in fresh water, 456 on dry land),  11512 sites, 1.66e+11 t; types {hematite=332, magnetite=124}
+             by province (land/sea): 3927 Gascoyne Block [shield] 456/0;
+    <=150 km: 3952 fields (0 at sea, 0 in fresh water, 3952 on dry land),  98195 sites, 1.57e+12 t; types {hematite=2996, magnetite=956}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 31/0; 3927 Gascoyne Block [shield] 3633/0; 3953 Pilbara Block [shield] 288/0;
+    <=300 km: 12627 fields (4 at sea, 9 in fresh water, 12614 on dry land), 318852 sites, 4.86e+12 t; types {hematite=9495, magnetite=3132}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 794/0; 3916 Carnarvon Basin [basin] 74/0; 3927 Gascoyne Block [shield] 8602/1; 3948 Northwest Shelf [shelf] 1/0; 3953 Pilbara Block [shield] 3152/3;
+  OIL: nearest 171.9 km at -24.098, 117.094: -, 15 sites, 2.65e+06 t, ground grass, 3906 Bangemall and Nabberu Basins [basin]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:  176 fields (39 at sea, 2 in fresh water, 135 on dry land),   5519 sites, 6.34e+08 t; types {-=176}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 92/0; 3916 Carnarvon Basin [basin] 16/8; 3927 Gascoyne Block [shield] 25/3; 3948 Northwest Shelf [shelf] 0/22; 3953 Pilbara Block [shield] 4/6;
+  STONE: nearest 58.8 km at -22.666, 118.362: hard_rock, 10 sites, 9.37e+07 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km: none
+    <=150 km:   84 fields (0 at sea, 0 in fresh water, 84 on dry land),   2257 sites, 2.97e+10 t; types {hard_rock=45, limestone=39}
+             by province (land/sea): 3927 Gascoyne Block [shield] 64/0; 3953 Pilbara Block [shield] 20/0;
+    <=300 km:  359 fields (3 at sea, 0 in fresh water, 356 on dry land),   9011 sites, 1.20e+11 t; types {hard_rock=167, limestone=192}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 39/0; 3927 Gascoyne Block [shield] 183/0; 3953 Pilbara Block [shield] 134/3;
+  COAL: nearest 190.7 km at -22.556, 119.642: thermal, 13 sites, 4.80e+07 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:   12 fields (0 at sea, 0 in fresh water, 12 on dry land),    468 sites, 2.42e+09 t; types {coking=1, thermal=11}
+             by province (land/sea): 3927 Gascoyne Block [shield] 11/0; 3953 Pilbara Block [shield] 1/0;
+  COPPER: nearest 244.6 km at -24.821, 117.192: sulphide, 29 sites, 8.97e+06 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:    4 fields (0 at sea, 0 in fresh water, 4 on dry land),     71 sites, 2.20e+07 t; types {oxide=1, sulphide=3}
+             by province (land/sea): 3927 Gascoyne Block [shield] 4/0;
+  URANIUM: none within 300 km
+    <= 50 km: none
+    <=150 km: none
+    <=300 km: none
+
+=== EARTH Pilbara (Tom Price), seed 42: spot -22.6900, 117.7900; founding plot 376832, 376832 at -22.6901, 117.7901, province 3927 Gascoyne Block (shield); world built in 0.4 s
+  site's cell 67896: land share 1.00; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 218 oil 0.228 stone 5.22 coal 0.0595 copper 0.138 uranium 0.114
+  founding card's nearest iron: [103.12128781197411, -97.0, -35.0]
+  IRON: nearest 3.1 km at -22.681, 117.762: magnetite, 26 sites, 4.90e+08 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km:  604 fields (0 at sea, 0 in fresh water, 604 on dry land),  14401 sites, 2.34e+11 t; types {hematite=468, magnetite=136}
+             by province (land/sea): 3927 Gascoyne Block [shield] 604/0;
+    <=150 km: 3920 fields (0 at sea, 0 in fresh water, 3920 on dry land),  99357 sites, 1.61e+12 t; types {hematite=2956, magnetite=964}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 16/0; 3927 Gascoyne Block [shield] 3517/0; 3953 Pilbara Block [shield] 387/0;
+    <=300 km: 12730 fields (8 at sea, 9 in fresh water, 12713 on dry land), 322715 sites, 5.00e+12 t; types {hematite=9566, magnetite=3164}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 801/0; 3916 Carnarvon Basin [basin] 123/0; 3927 Gascoyne Block [shield] 8609/0; 3953 Pilbara Block [shield] 3165/8; 3974 Yilgarn Block [shield] 24/0;
+  OIL: nearest 146.6 km at -22.300, 119.153: -, 19 sites, 1.92e+06 t, ground forest, 3927 Gascoyne Block [shield]
+    <= 50 km: none
+    <=150 km:    3 fields (0 at sea, 0 in fresh water, 3 on dry land),     62 sites, 9.69e+06 t; types {-=3}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 1/0; 3927 Gascoyne Block [shield] 2/0;
+    <=300 km:  175 fields (38 at sea, 0 in fresh water, 137 on dry land),   4091 sites, 6.97e+08 t; types {-=175}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 75/0; 3916 Carnarvon Basin [basin] 14/11; 3927 Gascoyne Block [shield] 48/2; 3948 Northwest Shelf [shelf] 0/25;
+  STONE: nearest 52.6 km at -22.369, 117.414: limestone, 21 sites, 3.19e+08 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km: none
+    <=150 km:   97 fields (0 at sea, 0 in fresh water, 97 on dry land),   2412 sites, 3.12e+10 t; types {hard_rock=53, limestone=44}
+             by province (land/sea): 3927 Gascoyne Block [shield] 91/0; 3953 Pilbara Block [shield] 6/0;
+    <=300 km:  373 fields (0 at sea, 0 in fresh water, 373 on dry land),   8927 sites, 1.22e+11 t; types {hard_rock=182, limestone=191}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 20/0; 3916 Carnarvon Basin [basin] 6/0; 3927 Gascoyne Block [shield] 275/0; 3953 Pilbara Block [shield] 70/0; 3974 Yilgarn Block [shield] 2/0;
+  COAL: nearest 145.8 km at -23.462, 116.638: coking, 39 sites, 2.78e+08 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km: none
+    <=150 km:    1 fields (0 at sea, 0 in fresh water, 1 on dry land),     39 sites, 2.78e+08 t; types {coking=1}
+             by province (land/sea): 3927 Gascoyne Block [shield] 1/0;
+    <=300 km:   14 fields (0 at sea, 0 in fresh water, 14 on dry land),    328 sites, 2.50e+09 t; types {coking=3, thermal=11}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 10/0; 3927 Gascoyne Block [shield] 4/0;
+  COPPER: nearest 135.1 km at -21.626, 117.158: sulphide, 83 sites, 1.69e+07 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km: none
+    <=150 km:    3 fields (0 at sea, 0 in fresh water, 3 on dry land),    191 sites, 3.88e+07 t; types {sulphide=3}
+             by province (land/sea): 3927 Gascoyne Block [shield] 2/0; 3953 Pilbara Block [shield] 1/0;
+    <=300 km:   16 fields (0 at sea, 0 in fresh water, 16 on dry land),    580 sites, 1.18e+08 t; types {oxide=3, sulphide=13}
+             by province (land/sea): 3927 Gascoyne Block [shield] 6/0; 3953 Pilbara Block [shield] 10/0;
+  URANIUM: nearest 33.8 km at -22.553, 118.084: -, 27 sites, 5.76e+03 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km:    1 fields (0 at sea, 0 in fresh water, 1 on dry land),     27 sites, 5.76e+03 t; types {-=1}
+             by province (land/sea): 3927 Gascoyne Block [shield] 1/0;
+    <=150 km:    5 fields (0 at sea, 0 in fresh water, 5 on dry land),    116 sites, 2.48e+04 t; types {-=5}
+             by province (land/sea): 3927 Gascoyne Block [shield] 4/0; 3953 Pilbara Block [shield] 1/0;
+    <=300 km:   17 fields (0 at sea, 0 in fresh water, 17 on dry land),    424 sites, 9.15e+04 t; types {-=17}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 1/0; 3916 Carnarvon Basin [basin] 1/0; 3927 Gascoyne Block [shield] 11/0; 3953 Pilbara Block [shield] 4/0;
+
+=== EARTH Pilbara (Tom Price), seed 20261012: spot -22.6900, 117.7900; founding plot 376832, 376832 at -22.6901, 117.7901, province 3927 Gascoyne Block (shield); world built in 0.4 s
+  site's cell 67896: land share 1.00; mean fields drawn a cell (field land x density x cell km2 / FIELD_SCALE): iron 218 oil 0.228 stone 5.22 coal 0.0595 copper 0.138 uranium 0.114
+  founding card's nearest iron: [27.459060435491963, -5.0, 27.0]
+  IRON: nearest 0.8 km at -22.697, 117.789: magnetite, 15 sites, 2.11e+08 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km:  593 fields (0 at sea, 0 in fresh water, 593 on dry land),  14289 sites, 2.25e+11 t; types {hematite=449, magnetite=144}
+             by province (land/sea): 3927 Gascoyne Block [shield] 593/0;
+    <=150 km: 4029 fields (0 at sea, 0 in fresh water, 4029 on dry land),  99052 sites, 1.53e+12 t; types {hematite=3068, magnetite=961}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 32/0; 3927 Gascoyne Block [shield] 3786/0; 3953 Pilbara Block [shield] 211/0;
+    <=300 km: 12859 fields (27 at sea, 15 in fresh water, 12817 on dry land), 323912 sites, 4.90e+12 t; types {hematite=9659, magnetite=3200}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 889/0; 3916 Carnarvon Basin [basin] 184/0; 3927 Gascoyne Block [shield] 8621/0; 3953 Pilbara Block [shield] 3113/27; 3974 Yilgarn Block [shield] 25/0;
+  OIL: nearest 146.3 km at -24.004, 117.702: -, 13 sites, 1.73e+06 t, ground grass, 3906 Bangemall and Nabberu Basins [basin]
+    <= 50 km: none
+    <=150 km:    2 fields (0 at sea, 0 in fresh water, 2 on dry land),     34 sites, 4.53e+06 t; types {-=2}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 2/0;
+    <=300 km:  169 fields (0 at sea, 0 in fresh water, 169 on dry land),   4411 sites, 7.00e+08 t; types {-=169}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 79/0; 3916 Carnarvon Basin [basin] 20/0; 3927 Gascoyne Block [shield] 67/0; 3953 Pilbara Block [shield] 3/0;
+  STONE: nearest 42.7 km at -23.019, 117.574: hard_rock, 13 sites, 1.72e+08 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km:   12 fields (0 at sea, 0 in fresh water, 12 on dry land),    246 sites, 3.55e+09 t; types {hard_rock=8, limestone=4}
+             by province (land/sea): 3927 Gascoyne Block [shield] 12/0;
+    <=150 km:  150 fields (0 at sea, 0 in fresh water, 150 on dry land),   3369 sites, 5.14e+10 t; types {hard_rock=77, limestone=73}
+             by province (land/sea): 3927 Gascoyne Block [shield] 127/0; 3953 Pilbara Block [shield] 23/0;
+    <=300 km:  365 fields (0 at sea, 0 in fresh water, 365 on dry land),   8685 sites, 1.23e+11 t; types {hard_rock=169, limestone=196}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 33/0; 3927 Gascoyne Block [shield] 208/0; 3953 Pilbara Block [shield] 124/0;
+  COAL: nearest 193.4 km at -24.161, 118.803: thermal, 16 sites, 1.33e+08 t, ground grass, 3906 Bangemall and Nabberu Basins [basin]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:   15 fields (0 at sea, 0 in fresh water, 15 on dry land),    376 sites, 3.65e+09 t; types {coking=1, thermal=14}
+             by province (land/sea): 3906 Bangemall and Nabberu Basins [basin] 10/0; 3927 Gascoyne Block [shield] 5/0;
+  COPPER: nearest 174.6 km at -22.791, 119.489: sulphide, 18 sites, 7.40e+06 t, ground grass, 3927 Gascoyne Block [shield]
+    <= 50 km: none
+    <=150 km: none
+    <=300 km:    8 fields (0 at sea, 0 in fresh water, 8 on dry land),    137 sites, 5.62e+07 t; types {oxide=2, sulphide=6}
+             by province (land/sea): 3927 Gascoyne Block [shield] 6/0; 3953 Pilbara Block [shield] 2/0;
+  URANIUM: none within 300 km
+    <= 50 km: none
+    <=150 km: none
+    <=300 km: none
+
+=== GENERATED seed 758809812: founding plot 371704, 369649
+  IRON    <=50 km  161 (0 sea), <=150 km 1111 (13 sea), <=300 km  4109 (17 sea); nearest 1.1 km: magnetite, 19 sites, 3.13e+08 t, ground grass
+  OIL     <=50 km   11 (4 sea), <=150 km   83 (15 sea), <=300 km   378 (34 sea); nearest 10.1 km: -, 13 sites, 2.15e+06 t, ground sea
+  STONE   <=50 km    4 (0 sea), <=150 km   77 (3 sea), <=300 km   163 (3 sea); nearest 33.0 km: limestone, 16 sites, 1.30e+08 t, ground forest
+  COAL    <=50 km    0 (0 sea), <=150 km    1 (0 sea), <=300 km    24 (0 sea); nearest 145.5 km: thermal, 26 sites, 1.75e+08 t, ground grass
+  COPPER  <=50 km    0 (0 sea), <=150 km    0 (0 sea), <=300 km     0 (0 sea); none within 300 km
+  URANIUM <=50 km    0 (0 sea), <=150 km    2 (0 sea), <=300 km     8 (0 sea); nearest 117.3 km: -, 18 sites, 3.33e+03 t, ground grass
+
+=== GENERATED seed 284719415: founding plot 379947, 373871
+  IRON    <=50 km   99 (0 sea), <=150 km 1278 (0 sea), <=300 km  5266 (0 sea); nearest 28.7 km: magnetite, 71 sites, 1.02e+09 t, ground grass
+  OIL     <=50 km   13 (0 sea), <=150 km  105 (10 sea), <=300 km   447 (47 sea); nearest 21.2 km: -, 15 sites, 1.96e+06 t, ground grass
+  STONE   <=50 km    8 (0 sea), <=150 km  101 (0 sea), <=300 km   293 (0 sea); nearest 32.7 km: limestone, 21 sites, 2.85e+08 t, ground grass
+  COAL    <=50 km    0 (0 sea), <=150 km    0 (0 sea), <=300 km    82 (0 sea); nearest 169.3 km: thermal, 24 sites, 7.51e+07 t, ground forest
+  COPPER  <=50 km    0 (0 sea), <=150 km    0 (0 sea), <=300 km    16 (0 sea); nearest 203.8 km: sulphide, 14 sites, 4.12e+06 t, ground grass
+  URANIUM <=50 km    0 (0 sea), <=150 km    5 (0 sea), <=300 km    17 (0 sea); nearest 97.1 km: -, 40 sites, 8.16e+03 t, ground grass
+
+=== GENERATED seed 1: founding plot 356475, 388575
+  IRON    <=50 km   21 (21 sea), <=150 km  134 (25 sea), <=300 km  1197 (36 sea); nearest 4.4 km: hematite, 14 sites, 1.74e+08 t, ground sea
+  OIL     <=50 km    7 (6 sea), <=150 km   12 (8 sea), <=300 km   135 (42 sea); nearest 24.8 km: -, 15 sites, 9.55e+05 t, ground sea
+  STONE   <=50 km    1 (1 sea), <=150 km    9 (1 sea), <=300 km    73 (2 sea); nearest 49.5 km: limestone, 28 sites, 1.70e+08 t, ground sea
+  COAL    <=50 km    0 (0 sea), <=150 km    0 (0 sea), <=300 km     4 (0 sea); nearest 283.2 km: thermal, 12 sites, 7.37e+07 t, ground forest
+  COPPER  <=50 km    0 (0 sea), <=150 km    0 (0 sea), <=300 km    11 (0 sea); nearest 168.6 km: sulphide, 12 sites, 3.82e+06 t, ground grass
+  URANIUM <=50 km    0 (0 sea), <=150 km    0 (0 sea), <=300 km     0 (0 sea); none within 300 km
+
+=== GENERATED seed 42: founding plot 378297, 346123
+  IRON    <=50 km   66 (6 sea), <=150 km  236 (35 sea), <=300 km   508 (90 sea); nearest 4.5 km: hematite, 18 sites, 2.36e+08 t, ground grass
+  OIL     <=50 km    2 (1 sea), <=150 km   36 (18 sea), <=300 km    51 (30 sea); nearest 48.5 km: -, 25 sites, 5.89e+06 t, ground sea
+  STONE   <=50 km    0 (0 sea), <=150 km   25 (5 sea), <=300 km    25 (5 sea); nearest 58.9 km: hard_rock, 38 sites, 6.26e+08 t, ground sea
+  COAL    <=50 km    0 (0 sea), <=150 km    2 (0 sea), <=300 km     9 (1 sea); nearest 54.8 km: thermal, 23 sites, 1.27e+08 t, ground grass
+  COPPER  <=50 km    0 (0 sea), <=150 km    1 (0 sea), <=300 km     4 (1 sea); nearest 79.9 km: oxide, 17 sites, 1.24e+06 t, ground grass
+  URANIUM <=50 km    0 (0 sea), <=150 km    1 (0 sea), <=300 km     1 (0 sea); nearest 132.2 km: -, 17 sites, 4.89e+03 t, ground grass
+
+=== GENERATED seed 20261012: founding plot 403979, 359135
+  IRON    <=50 km   17 (17 sea), <=150 km   56 (17 sea), <=300 km   177 (20 sea); nearest 18.3 km: hematite, 16 sites, 2.14e+08 t, ground sea
+  OIL     <=50 km    0 (0 sea), <=150 km    7 (7 sea), <=300 km     8 (8 sea); nearest 83.9 km: -, 18 sites, 3.17e+06 t, ground sea
+  STONE   <=50 km    1 (1 sea), <=150 km    5 (2 sea), <=300 km    13 (2 sea); nearest 33.1 km: limestone, 42 sites, 2.28e+08 t, ground sea
+  COAL    <=50 km    0 (0 sea), <=150 km    0 (0 sea), <=300 km     1 (0 sea); nearest 151.0 km: thermal, 14 sites, 2.16e+08 t, ground grass
+  COPPER  <=50 km    0 (0 sea), <=150 km    0 (0 sea), <=300 km     0 (0 sea); none within 300 km
+  URANIUM <=50 km    0 (0 sea), <=150 km    0 (0 sea), <=300 km     0 (0 sea); none within 300 km
