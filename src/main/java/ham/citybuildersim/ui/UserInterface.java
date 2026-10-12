@@ -1082,7 +1082,24 @@ public class UserInterface extends Application {
                         ? buildScreen.buildPending()
                         : buildScreen.clearPending();
                 if (acted) e.consume();
+            } else if (!typing && panKeys != null && panKeys.panKey(e.getCode(), true)) {
+                /*
+                 * W, A, S AND D PAN THE MAP (0.7.135, batch E9; spec-globe
+                 * 3.11). Jerus: "yes but add to that that the wasd or up down
+                 * side keys span the map as well", then "ya arros only for
+                 * speed". Held, while the land office's map is over the
+                 * window (MapView sets itself here, panKeysTo()); the map's
+                 * frame pump moves it until the key comes up - the filter
+                 * below hears that whatever has the focus. Bound to nothing
+                 * else; the arrows stay the ladder's.
+                 */
+                e.consume();
             }
+        });
+
+        scene.addEventFilter(javafx.scene.input.KeyEvent.KEY_RELEASED, e -> {
+            // A pan key let go (0.7.135): heard even while typing, so none is left held.
+            if (panKeys != null && panKeys.panKey(e.getCode(), false)) e.consume();
         });
 
         /*
@@ -6054,6 +6071,12 @@ public class UserInterface extends Application {
      * page - and P or another screen with false: the page is not what is
      * drawn next.
      */
+    /** The map W, A, S and D pan while it is over the window (0.7.135, batch E9): MapView's expand() sets it, its collapse() clears it. */
+    private MapView panKeys;
+
+    /** ...set, or cleared with null. */
+    void panKeysTo(MapView map) { panKeys = map; }
+
     void showChartFullScreen(Region pane, Label clockLine, java.util.function.Consumer<Boolean> leave) {
         if (chartFull != null) windowStack.getChildren().remove(chartFull);
         hideTooltips();

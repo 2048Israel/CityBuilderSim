@@ -459,12 +459,18 @@ public final class LandMap {
 
     /** The hover card's lines for a plot: its ground, whose it is, on Earth where it is and its geology (earthWords(), 0.7.119), and each field with a site on it. */
     public static List<String> hoverWords(CityLand land, LandMarket market, long x, long y) {
+        return hoverWords(land, market, x, y, Integer.MAX_VALUE);
+    }
+
+    /** ...with no more than `fieldsMost` fields (the expanded map's card lists MapView.CARD_FIELDS; since 0.7.135 its card is this). */
+    public static List<String> hoverWords(CityLand land, LandMarket market, long x, long y, int fieldsMost) {
         Pick p = pick(land, market, x, y);
         List<String> lines = new ArrayList<>();
         lines.add(groundWords(p.ground()));
         lines.add(ownerWords(land, p));
         lines.addAll(earthWords(land, x, y));
-        for (FieldAt f : fieldsAt(land, x, y)) lines.add(fieldWords(f, land, market));
+        List<FieldAt> under = fieldsAt(land, x, y);
+        for (int i = 0; i < under.size() && i < fieldsMost; i++) lines.add(fieldWords(under.get(i), land, market));
         return lines;
     }
 
@@ -490,12 +496,127 @@ public final class LandMap {
             out.add(OFF_PLANET_WORDS);
             return out;
         }
-        EarthData.Place near = nearestPlace(e.data(), ll[0], ll[1]);
-        if (near != null) out.add(placeWords(near, ll[0], ll[1]));
-        int row = w.provinceAt(x, y);
-        if (row > 0) out.add(provinceWords(e.data().province(row), w.geology().kindOf(row)));
+        return earthWords(e, ll[0], ll[1]);
+    }
+
+    /**
+     * ...by latitude and longitude (0.7.135, batch E9; spec-globe 3.7): the
+     * nearest place and the province under the point, the plot's lines at
+     * its centre's - what the globe's hover says wherever the pointer is on
+     * the planet, beyond the world's square too.
+     */
+    public static List<String> earthWords(EarthTerrain e, double lat, double lon) {
+        List<String> out = new ArrayList<>();
+        EarthData.Place near = nearestPlace(e.data(), lat, lon);
+        if (near != null) out.add(placeWords(near, lat, lon));
+        Geology geo = e.geology();
+        int row = geo.provinceAt(lat, lon);
+        if (row > 0) out.add(provinceWords(e.data().province(row), geo.kindOf(row)));
         return out;
     }
+
+    /** Whose a point on the globe is beyond the city's plane and its reach (spec-globe 3.7). */
+    public static final String NOT_THE_CITYS = "Not the city's";
+
+    /**
+     * The hover card's lines on the globe (0.7.135, batch E9; spec-globe
+     * 3.7) at a screen point of the view `f`: where the globe draws the
+     * city's plane - within the world's square and GlobeFrame.planeDrawsKm()
+     * of the city, the reach and more (GlobeFrame.planeHolds(), ★E9) - the
+     * plane's own card for the plot under it (hoverWords()), so at the
+     * handoff the globe and the plane say the same of the same point;
+     * elsewhere on the planet the ground drawn there (`drawn`, a World
+     * class), NOT_THE_CITYS, and the nearest place and the province by its
+     * latitude and longitude (earthWords()). None off the planet. No
+     * more than `fieldsMost` fields.
+     */
+    public static List<String> globeHoverWords(GlobeFrame f, CityLand land, LandMarket market, double sx, double sy, byte drawn, int fieldsMost) {
+        double[] ll = f.latLonAt(sx, sy);
+        if (ll == null) return new ArrayList<>();
+        double[] xy = new double[2];
+        if (f.planeHolds(sx, sy) && f.plotAt(sx, sy, xy)) return hoverWords(land, market, (long) Math.floor(xy[0]), (long) Math.floor(xy[1]), fieldsMost);
+        List<String> lines = new ArrayList<>();
+        lines.add(groundWords(drawn));
+        lines.add(NOT_THE_CITYS);
+        World w = World.of(land.key());
+        if (w.isEarth()) lines.addAll(earthWords(w.earthTerrain(), ll[0], ll[1]));
+        return lines;
+    }
+
+    /* ----------------------------- the legend by tier (0.7.135, batch E9) ----------------------------- */
+
+    /** A legend's entry: its swatch's colour (0xAARRGGBB) and its words. */
+    public record Entry(int colour, String words) { }
+
+    /** The city's ring on the globe: the founding globe's site mark's light blue (Palette.ACCENT_LIGHT, #8cc4ff). */
+    public static final int RING = 0xff8cc4ff;
+
+    /** The ring's legend words. */
+    public static final String CITY_RING_WORDS = "The city";
+
+    /** The city's edge's legend words (its swatch white, as it is drawn). */
+    public static final String EDGE_WORDS = "The city's edge";
+
+    /** The offers' legend words (their swatch the offers' pink, #f6a6c9). */
+    public static final String OFFER_WORDS = "On offer";
+
+    /** The offers' pink: the mockup's band edge (rgba(246, 166, 201)). */
+    public static final int OFFER_EDGE = 0xfff6a6c9;
+
+    /**
+     * The expanded map's legend in a tier (spec-globe 3.7: "the legend on the
+     * globe lists the kinds of ground and the city's ring; the whole legend
+     * is back from the handoff in"): on the globe (GlobeFrame.PICTURE and
+     * GROUND) the seven kinds of ground, the city's ring and its edge - and
+     * in the GROUND tier, where the city's plane draws within the reach, the
+     * offers; on the plane (GlobeFrame.PLANE, and a generated world at every
+     * scale) the plane's legend, planeLegend().
+     */
+    public static List<Entry> legend(int tier) {
+        if (tier == GlobeFrame.PLANE) return planeLegend();
+        List<Entry> out = new ArrayList<>();
+        for (byte g : new byte[] { World.GRASS, World.FOREST, World.DESERT, World.ICE, World.SAND, World.FRESH, World.SALT }) {
+            out.add(new Entry(TileRaster.GROUND[g], groundWords(g)));
+        }
+        out.add(new Entry(RING, CITY_RING_WORDS));
+        out.add(new Entry(0xffffffff, EDGE_WORDS));
+        if (tier == GlobeFrame.GROUND) out.add(new Entry(OFFER_EDGE, OFFER_WORDS));
+        return out;
+    }
+
+    /** The plane's legend (the expanded map's since 0.7.61; ui/MapView's until 0.7.135): the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, (0.7.97) the nine of the shore and the sea, (0.7.127) ice and the desert, the land, the six resources in fields. */
+    public static List<Entry> planeLegend() {
+        List<Entry> out = new ArrayList<>();
+        for (int c = 0; c < BuildingVisual.CLASSES; c++) {
+            out.add(new Entry(BuildingVisual.FILL[c], BuildingVisual.CLASS_NAMES[c]));
+            if (c == BuildingVisual.HOME) out.add(new Entry(BuildingVisual.FLATS_FILL, "Flats"));
+        }
+        out.add(new Entry(TileRaster.ROAD[BuildingVisual.GRAVEL], "Gravel road"));
+        out.add(new Entry(TileRaster.ROAD[BuildingVisual.PAVED], "Paved road"));
+        out.add(new Entry(TileRaster.TRACK_DASH, TRACK_ENTRY));
+        out.add(new Entry(TileRaster.ROAD[BuildingVisual.HIGHWAY], "Highway"));
+        out.add(new Entry(TileRaster.RAIL_LINE, "Railway"));
+        // At sea and on the shore (0.7.97).
+        out.add(new Entry(BuildingVisual.CAMPUS_FILL, "Refinery"));
+        out.add(new Entry(BuildingVisual.TERMINAL_FILL, "Sea terminal"));
+        out.add(new Entry(TileRaster.QUAY_DECK, "Quay"));
+        out.add(new Entry(BuildingVisual.TANKS_FILL, "Tank farm"));
+        out.add(new Entry(TileRaster.OIL_TAN, "Platform, pipeline"));
+        out.add(new Entry(ShipShapes.IMPORT, "Ship in, full"));
+        out.add(new Entry(ShipShapes.EXPORT, "Ship out, full"));
+        out.add(new Entry(ShipShapes.EMPTY, "Ship, empty leg"));
+        out.add(new Entry(ShipShapes.BOXES, "Box ship, both ways"));
+        // The two kinds of ground the real Earth has and the map's colours alone would not name (0.7.127; spec-globe 3.9).
+        out.add(new Entry(TileRaster.GROUND[World.ICE], groundWords(World.ICE)));
+        out.add(new Entry(TileRaster.GROUND[World.DESERT], groundWords(World.DESERT)));
+        out.add(new Entry(0xffffffff, EDGE_WORDS));
+        out.add(new Entry(OFFER_EDGE, OFFER_WORDS));
+        for (Resource r : Resource.values()) if (r.inFields()) out.add(new Entry(0xff000000 | r.colour(), r.label()));
+        return out;
+    }
+
+    /** The legend's tracks (0.7.88; spec 5): a street the city has bought no road for. */
+    public static final String TRACK_ENTRY = "Track";
 
     /** The hover past the planet's rim, where the map's square runs on beyond the antipode (spec-earth 2: the far node draws it as the void). */
     public static final String OFF_PLANET_WORDS = "Off the planet: the map runs on past the antipode, the point opposite the city";
