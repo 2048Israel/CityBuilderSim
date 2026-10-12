@@ -2546,7 +2546,9 @@ public class LandCheck {
        works of n sites fits only where a piece of its type has n sites free
        - 1-site works fill every site and not one more, a standing works the
        packing cannot place counts against the free sites first - with
-       nothing moved.
+       nothing moved. Since 0.7.124 (batch I5) the Iron Mines stand on
+       hematite, a site each, a Large Open-Pit Mine on twenty, and the order
+       gate packs them (Game.claimsOn(), LandManager.fits()).
        ================================================================== */
     static void byType() {
         System.out.println("\n--- 26. the ground by type (0.7.110) ---");

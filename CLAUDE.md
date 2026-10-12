@@ -97,8 +97,9 @@ These are Jerus's, and they do not move.
   run, kept by the file's own rules. Whoever queues a batch adds its row
   straight away. That means the orchestrator when Jerus decides or asks for
   one, a study when he takes the batches it proposes, and any other session
-  that takes a request of his. When a batch ships or is dropped, its row says
-  so. A decision written only in a project note, a todo line or a chat is not
+  that takes a request of his. When a batch ships its row is deleted in the
+  merge, and what it left undone goes under Pending (the file's own rules,
+  above). A decision written only in a project note, a todo line or a chat is not
   queued. T1-B, T1-C, M6 and childcare at real demand, all decided on
   2026-10-10, sat in `decisions-2026-10-10.md` for a day and reached no list.
   A batch's name is never reused: C1 was childcare's before the build card
