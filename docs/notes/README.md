@@ -7,3 +7,5 @@ This folder holds the part of the design record that left the claude.ai project 
 - **`pending.md`** — stays as it was: the docs pass's place for lines it cannot write to the project.
 
 The live record is in the project, not here: `claude/todo.md` (the list, the CHECK and CONFIRM lists still open), `claude/changelog.md` (2026-09-11 onward) and `claude/index.md` (the map of the design notes). Each of the project's two files carries one line saying that its older part is in this folder.
+
+- **The second move, 2026-10-12** (Jerus: keep the todo small, `claude/git-workflow.md` "Keeping usage down"): appended to `todo-archive.md` after a rule: the CONFIRM lists up to 0.7.120, every PC check list, every "found on the way" list, every struck item and sections 2 to 6 of the September backlog, verbatim, each run with its old line numbers. Ten still-live findings became `QUEUE.md` rows FW1 to FW10. The todo went from 735 KB to 93 KB; whenever it passes 100 KB it is archived again.
