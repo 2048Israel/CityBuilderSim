@@ -109,6 +109,7 @@ public class BuildersFirstCheck {
         return t;
     }
 
+    /** The builders' sector's key: whose depots the rule serves first, and whose plan the fixture asks. */
     static final String BUILDERS = Sectors.CONSTRUCTION;
 
     /** The builders' depot: the one template that adds to their capacity. */

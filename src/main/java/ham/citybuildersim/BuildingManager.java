@@ -2746,7 +2746,7 @@ public class BuildingManager {
         /* ------------------------- COAL MINING (0.7.126, batch I6) -------------------------
            runs/spec-materials.md 2.1, 2.2, 2.10 and 5's I6 row; the study's
            (materials-chains-research.md) 1.3, 1.4 and 3. Coal Mining, the sector
-           on the end of Sectors.KEYS, digs coal's two types of field: thermal,
+           after the refinery on Sectors.KEYS (its end when it came), digs coal's two types of field: thermal,
            sold as dug, and coking, whose raw coal a Coal Preparation Plant
            washes into coking coal (sectors.CoalMining.flow(); Jerus's Q9: a
            separate building). Its four, the study's 3.3:
@@ -2858,8 +2858,8 @@ public class BuildingManager {
 
         /* --------------------- QUARRYING AND CEMENT & CONCRETE (0.7.131, batch I7) ---------------------
            runs/spec-materials.md 2.1, 2.2, 2.4, 2.10 and 5's I7 row; the study's
-           (materials-chains-research.md) 1.4 and 6. Quarrying, on the end of
-           Sectors.KEYS after Coal Mining, digs stone's two types of field -
+           (materials-chains-research.md) 1.4 and 6. Quarrying, on Sectors.KEYS
+           after Coal Mining (its end when it came), digs stone's two types of field -
            limestone, the kilns' and furnaces' feed, and hard rock - and Cement &
            Concrete, after it, burns limestone into lime and cement. Their six,
            the study's 6.4:
@@ -3014,7 +3014,7 @@ public class BuildingManager {
         /* --------------------- COPPER MINING AND COPPER REFINING (0.7.133, batch I8) ---------------------
            runs/spec-materials.md 2.1, 2.2, 2.4, 2.9 and 5's I8 row; the study's
            (materials-chains-research.md) 1.4 and 4. Copper Mining, on the end of
-           Sectors.KEYS after Cement & Concrete, digs copper's two types of field -
+           Sectors.KEYS with Copper Refining, after Cement & Concrete, digs copper's two types of field -
            sulphide, floated into concentrate at the mine, and oxide, leached to
            cathode there - and Copper Refining, after it, smelts, refines and rolls
            it; Manufacturing draws the rod into wire and cable. Their eight, the

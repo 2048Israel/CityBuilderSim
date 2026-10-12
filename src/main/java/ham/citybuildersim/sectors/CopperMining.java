@@ -16,10 +16,11 @@ import java.util.Map;
 
 /**
  * Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133,
- * batch I8; runs/spec-materials.md 2.1, 2.4 and 5's I8 row; the study's -
- * materials-chains-research.md - 4): the fourth materials chain's digging
- * industry, on the end of Sectors.KEYS after Cement & Concrete (Jerus's Q21,
- * 2026-10-08: iron, coal, stone, copper, wood).
+ * batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the
+ * study's - materials-chains-research.md - 4): the fourth materials chain's
+ * digging industry, on the end of Sectors.KEYS with Copper Refining, after
+ * Cement & Concrete (Jerus's Q21, 2026-10-08: iron, coal, stone, copper,
+ * wood).
  *
  * WHY. Copper lies in the world's ground since 0.7.56 and its fields have had
  * two types since 0.7.110 - sulphide (80% of fields) and oxide (20%: SX-EW

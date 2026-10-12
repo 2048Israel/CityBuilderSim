@@ -22,8 +22,8 @@ import java.nio.file.Path;
  *   1. THE GOODS AND THE BUILDINGS ARE THE SPEC'S. Crude at US$550 a tonne,
  *      fuel at a journey's $2.00 over its 1.2 litres - so a city with no
  *      refinery pays what it always paid a journey - freight by Good's rule,
- *      oil in the ground at 5% of the crude's price, and two sectors on the
- *      end of the registry. SINCE 0.7.76 (batch O1; runs/spec-oil.md 2.1,
+ *      oil in the ground at 5% of the crude's price, and two sectors after
+ *      Restaurants (the registry's end when they came). SINCE 0.7.76 (batch O1; runs/spec-oil.md 2.1,
  *      2.3): FUEL is nine products - all at the research's wholesale ladder
  *      (petrol and diesel since 0.7.78, batch O2; at FUEL's band before),
  *      each litre weighing its good's tonne

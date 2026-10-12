@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Quarries - Quarrying (0.7.131, batch I7; runs/spec-materials.md 2.1, 2.4,
- * 2.10 and 5's I7 row; the study's 6): the third materials chain's digging
- * industry, on the end of Sectors.KEYS after Coal Mining (Jerus's Q21,
- * 2026-10-08: iron, coal, stone, copper, wood).
+ * Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md
+ * 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's
+ * digging industry, on Sectors.KEYS after Coal Mining - its end when it came
+ * (Jerus's Q21, 2026-10-08: iron, coal, stone, copper, wood).
  *
  * WHY. Since the integrated route (0.7.123, batch I4) the blast furnaces
  * have taken LIMESTONE as flux and the oxygen shop LIME, and nobody in the

@@ -6,9 +6,9 @@ import ham.citybuildersim.Sectors;
 
 /**
  * Kilns and cement plants - Cement & Concrete (0.7.131, batch I7;
- * runs/spec-materials.md 2.1, 2.12 and 5's I7 row; the study's 6): stone's
- * processing industry, on the end of Sectors.KEYS after Quarrying (Jerus's
- * Q21).
+ * docs/studies/spec-materials.md 2.1, 2.12 and 5's I7 row; the study's 6):
+ * stone's processing industry, on Sectors.KEYS after Quarrying - its end
+ * when it came (Jerus's Q21).
  *
  * WHY. Limestone is what the kilns burn: into quicklime, the Oxygen Steel
  * Shop's flux, which the city imported since the integrated route (0.7.123,

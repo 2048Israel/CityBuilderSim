@@ -126,6 +126,7 @@ public class GlobeCheck {
         out.printf("%-110s %s%n", label, ok ? "OK" : "FAIL");
     }
 
+    /** The planet's radius in metres (EarthProj.RADIUS_M), which the sections measure arcs and the disc by. */
     static final double R = EarthProj.RADIUS_M;
 
     public static void main(String[] args) throws Exception {

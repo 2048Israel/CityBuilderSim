@@ -1236,6 +1236,7 @@ public class MaterialsCheck {
 
     /** ...the type of field each stands on, and the sites it takes (the study's 1.3, 2.4: twenty sites for a large mine, one for a small). */
     static final Deposit.FieldType[] MINE_TYPES = { Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE, Deposit.FieldType.MAGNETITE };
+    /** ...and the sites each takes. */
     static final int[] MINE_SITES = { 20, 1, 20 };
 
     static void mineRows() {

@@ -92,6 +92,7 @@ public class DeathCareFirstCheck {
         return t;
     }
 
+    /** Real Estate's key: the landlords, whose Houses the fixture's town is given. */
     static final String RE = Sectors.REAL_ESTATE;
 
     /** The death care the fixture puts on site: the smaller cemetery, which serves the dead by its care type. */

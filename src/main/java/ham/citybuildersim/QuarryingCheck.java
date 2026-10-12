@@ -14,8 +14,8 @@ import java.util.Map;
 /**
  * Quarrying, checked (0.7.131, batch I7; runs/spec-materials.md 2.1, 2.3,
  * 2.4, 2.10, 4 and 5's I7 row; the study's - materials-chains-research.md -
- * 1.4, 6 and 8): the third materials chain's digging industry, on the end of
- * Sectors.KEYS after Coal Mining.
+ * 1.4, 6 and 8): the third materials chain's digging industry, on
+ * Sectors.KEYS after Coal Mining (its end when it came).
  *
  * WHY A HARNESS OF ITS OWN. A new sector gets one (CLAUDE.md, "adding
  * things"; I6's CoalMiningCheck the same), and stone brings the one market
@@ -32,8 +32,9 @@ import java.util.Map;
  *      (a Lime Kiln) limestone clears first, the kiln takes its limestone
  *      at home and only the rest is carried.
  *
- *   2. THE SECTOR ON THE END OF THE REGISTRY: Sectors.KEYS ends with
- *      Quarrying and Cement & Concrete after Coal Mining (Q21's order); an
+ *   2. THE SECTOR ON THE REGISTRY: Sectors.KEYS has Quarrying and Cement &
+ *      Concrete after Coal Mining (Q21's order) - its end when they came,
+ *      copper's two after them since 0.7.133; an
  *      ExtractionSector on stone making limestone, aggregate and blocks;
  *      what grew with the keys - Equity's companies, the households' share
  *      block, the audit's pools, the bank's year of sheets. Resource.STONE
@@ -78,7 +79,9 @@ import java.util.Map;
 public class QuarryingCheck {
 
     static int fails = 0;
+    /** Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. */
     static final PrintStream out = System.out;
+    /** A stream that drops what is written to it: the game's prose while a fixture town is founded and played. */
     static final PrintStream quiet = new PrintStream(OutputStream.nullOutputStream());
 
     static void assertTrue(String label, boolean ok) {
@@ -110,7 +113,9 @@ public class QuarryingCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
+    /** Stone, the resource its quarries dig. */
     static final Resource STONE = Resource.STONE;
+    /** Stone's two types of field (Resource.typesOf()): limestone, and hard rock. */
     static final Deposit.FieldType LIME = Deposit.FieldType.LIMESTONE, HARD = Deposit.FieldType.HARD_ROCK;
 
     /* ============================ 1. the carry ============================ */
@@ -213,10 +218,10 @@ public class QuarryingCheck {
                         kAudit.relative()));
     }
 
-    /* ============================ 2. the sector on the end of the registry ============================ */
+    /* ============================ 2. the sector on the registry, after Coal Mining ============================ */
 
     static void sector() {
-        out.println("\n--- 2. the sector on the end of the registry, stone priced, and stone's goods ---");
+        out.println("\n--- 2. the sector on the registry after Coal Mining, stone priced, and stone's goods ---");
         String[] keys = Sectors.KEYS;
         int at = java.util.Arrays.asList(keys).indexOf(Sectors.QUARRYING);
         // ...on the end when they came (0.7.131), and copper's two after them since 0.7.133 (batch I8; Q21's order).
@@ -303,6 +308,7 @@ public class QuarryingCheck {
 
     /** ...the sites it takes, and of which type (null for either; the study's 6.4). */
     static final int[] STUDY_SITES = { 1, 3, 1 };
+    /** ...and the type of field each stands on (null for either). */
     static final Deposit.FieldType[] STUDY_TYPES = { null, null, HARD };
 
     /** ...and the tonnes of rock a tonne of blocks takes (spec 2.4: "dimension stone 3"); stone is a tonne a tonne. */
