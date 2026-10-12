@@ -200,6 +200,26 @@ import java.util.Map;
  *      is timed (A28), on Earth too, the plane and not the void; and a click
  *      opens the expanded map on the frame, where the land office's opening
  *      takes in the far block.
+ *  13. the globe on screen (0.7.135, batch E9; docs/studies/spec-globe.md
+ *      3, 3.8 and 3.11), on EarthCheck's fixture and Jerus's city x 1 at
+ *      Rotterdam: W, A, S and D held a second move the ground
+ *      MapFrame.KEY_PX_A_SECOND pixels at every zoom on the plane - each
+ *      way, two at once diagonally at that speed, opposite keys cancelling,
+ *      a frame held up moving KEY_STEP_MOST_S's worth, the world's square
+ *      stopping it - and turn the globe as much under its middle in every
+ *      tier, stopping at the reach on the plane; the hover's words on the
+ *      globe at the handoff are the plane's for the same point everywhere
+ *      the plane draws, the city's own ground among them, and past it "Not
+ *      the city's" with the place and the province by latitude and
+ *      longitude, which are the plot's at its centre; the legend's entries
+ *      by tier; the GROUND tier near the city is the plane's own far nodes,
+ *      pixel for pixel through the camera, the composed matrix within a
+ *      millionth of a plot of the camera's and the plane's projections and
+ *      the last picture carried to its own pixels; the crossfade whole at
+ *      the handoff and gone a notch in, the roll eased past the reach; and
+ *      the founding screen's globe the model's frame - its pixels the
+ *      planet's picture's, then the far rule's through the camera - handing
+ *      off at half a pixel.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -320,6 +340,7 @@ public class MapCheck {
         onEarth(sq.types);
         pictures(city, sq);
         miniMap(city, sq);
+        globeOnScreen(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -4298,6 +4319,361 @@ public class MapCheck {
             b[3] = Math.max(b[3], ay + D);
         }
         return new MiniMapFrame.Box(b[0], b[1], b[2], b[3]);
+    }
+
+    /* =====================================================================
+       13. THE GLOBE ON SCREEN (0.7.135, batch E9)
+       ===================================================================== */
+
+    /** Frames of the keys' second: 60, the pump's (a sixtieth each). */
+    static final int KEY_FRAMES = 60;
+
+    /** How far a second of the keys may miss KEY_PX_A_SECOND, in pixels: a thousandth (★E9) - on the plane it is exact; on the globe each frame's drag keeps the point grabbed under the pointer to GlobeCheck's POINTER_PX. */
+    static final double KEY_SLOP_PX = 1e-3;
+
+    /** The composed matrix's worst against the camera's and the plane's own projections, in plots: a millionth (★E9; measured 4e-10). */
+    static final double MATRIX_PLOTS = 1e-6;
+
+    static void globeOnScreen(Squares sq) throws Exception {
+        out.println("\n--- 13. the globe on screen: the keys, the hover at the handoff, the legend by tier, the plane's nodes through the camera, the founding globe ---");
+        int w = MapTiles.DESIGN_W, h = MapTiles.DESIGN_H;
+        double frame = 1.0 / KEY_FRAMES;
+
+        // The keys on the plane: each way, two at once, opposite ones, at every zoom a second of them crosses within the world.
+        boolean[][] sets = { { true, false, false, false }, { false, true, false, false }, { false, false, true, false }, { false, false, false, true },
+                { true, false, false, true }, { false, true, true, false }, { true, true, true, true } };
+        double[][] dirs = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 }, { -Math.sqrt(0.5), Math.sqrt(0.5) }, { Math.sqrt(0.5), -Math.sqrt(0.5) }, { 0, 0 } };
+        boolean plane = true;
+        double worst = 0;
+        double least = 2 * MapFrame.KEY_PX_A_SECOND / World.SIDE;
+        for (double s : new double[] { least, 0.01, 0.1, 1, MapFrame.L0_FROM, MapFrame.MOST_PX_A_PLOT }) {
+            for (int k = 0; k < sets.length; k++) {
+                MapFrame f = new MapFrame(w, h);
+                f.set(World.SIDE / 2.0, World.SIDE / 2.0, s);
+                double x0 = f.centreX(), y0 = f.centreY();
+                double[] v = MapFrame.keyVelocity(sets[k][0], sets[k][1], sets[k][2], sets[k][3]);
+                for (int i = 0; i < KEY_FRAMES; i++) f.keyPan(v, frame);
+                double dx = f.screenX(x0) - w / 2.0, dy = f.screenY(y0) - h / 2.0;
+                double miss = Math.hypot(dx - dirs[k][0] * MapFrame.KEY_PX_A_SECOND, dy - dirs[k][1] * MapFrame.KEY_PX_A_SECOND);
+                worst = Math.max(worst, miss);
+                plane &= miss < KEY_SLOP_PX;
+            }
+        }
+        MapFrame held = new MapFrame(w, h);
+        held.set(World.SIDE / 2.0, World.SIDE / 2.0, 1);
+        double hx = held.centreX();
+        held.keyPan(MapFrame.keyVelocity(false, false, false, true), 0.5);
+        boolean heldUp = Math.abs((held.centreX() - hx) * held.scale() - MapFrame.KEY_PX_A_SECOND * MapFrame.KEY_STEP_MOST_S) < 1e-9;
+        MapFrame edge = new MapFrame(w, h);
+        edge.set(World.SIDE - 10, World.SIDE / 2.0, 1);
+        for (int i = 0; i < KEY_FRAMES; i++) edge.keyPan(MapFrame.keyVelocity(false, false, false, true), frame);
+        out.printf("      the plane: a second of each key, two at once and all four, at %d scales from %.4f to %.0f px a plot: %.2g px from the dial's %.0f at worst%n",
+                6, least, MapFrame.MOST_PX_A_PLOT, worst, MapFrame.KEY_PX_A_SECOND);
+        check("W, A, S and D held a second move the plane's ground KEY_PX_A_SECOND px, the way each looks, at every zoom", plane);
+        check("...two at once diagonally at that speed, opposite keys cancelling; a frame held up moves KEY_STEP_MOST_S's worth; the square stops it",
+                heldUp && edge.centreX() == World.SIDE);
+
+        // The fixture's Earth, and Jerus's city x 1 on it at Rotterdam.
+        CityMap x1 = earthX1(sq);
+        check("EarthCheck's fixture is beside the classes, for the globe", x1 != null);
+        if (x1 == null) return;
+        CityLand land = x1.land();
+        World.Key key = land.key();
+        World world = World.of(key);
+        EarthTerrain e = world.earthTerrain();
+
+        // The keys on the globe: a second of them moves the ground under the view's middle the dial's pixels in every tier - from
+        // the equator wide, so that no second runs into the pole's clamp (POLE_LAT), and on the plane from the city, its reach.
+        boolean globeKeys = true;
+        double globeWorst = 0;
+        GlobeFrame g = new GlobeFrame(w, h, key.lat(), key.lon());
+        g.setReach(GlobeFrame.reachKm(land, null));
+        StringBuilder tiers = new StringBuilder();
+        double wideKm = (GlobeFrame.POLE_LAT - 1) * EarthTerrain.M_A_DEGREE / 1000 / MapFrame.KEY_PX_A_SECOND;
+        for (double km : new double[] { wideKm, 2, GlobeFrame.HANDOFF_KM, 0.1 }) {
+            for (int k = 0; k < sets.length - 1; k++) {
+                g.set(GlobeFrame.tierOf(km) == GlobeFrame.PLANE ? key.lat() : 0, key.lon(), km);
+                double moved = 0;
+                double[] v = MapFrame.keyVelocity(sets[k][0], sets[k][1], sets[k][2], sets[k][3]);
+                for (int i = 0; i < KEY_FRAMES; i++) {
+                    double la = g.centreLat(), lo = g.centreLon();
+                    g.keyPan(v, frame);
+                    double[] p = g.at(la, lo);
+                    moved += p == null ? Double.NaN : Math.hypot(p[0] - w / 2.0, p[1] - h / 2.0);
+                }
+                globeWorst = Math.max(globeWorst, Math.abs(moved - MapFrame.KEY_PX_A_SECOND));
+                globeKeys &= Math.abs(moved - MapFrame.KEY_PX_A_SECOND) < KEY_SLOP_PX;
+            }
+            tiers.append(String.format(" %.2f km %s;", km, new String[] { "PICTURE", "GROUND", "PLANE" }[GlobeFrame.tierOf(km)]));
+        }
+        out.printf("      the globe:%s the ground under the middle %.2g px from the dial at worst%n", tiers, globeWorst);
+        check("...and turn the globe as much under its middle, in every tier", globeKeys);
+        g.set(key.lat(), key.lon(), 0.1);
+        for (int i = 0; i < 40 * KEY_FRAMES; i++) g.keyPan(MapFrame.keyVelocity(false, false, false, true), frame);
+        double stopped = g.cityKm(g.centreLat(), g.centreLon());
+        out.printf("      D held forty seconds at 0.1 km a pixel: stopped %.3f km from the city, its reach %.1f km%n", stopped, g.reach());
+        check("...and on the plane D held stops at the reach, the view still the plane's", g.tier() == GlobeFrame.PLANE && stopped <= g.reach() && stopped > g.reach() - 1);
+
+        // The legend by tier.
+        List<LandMap.Entry> pic = LandMap.legend(GlobeFrame.PICTURE), gro = LandMap.legend(GlobeFrame.GROUND), pla = LandMap.legend(GlobeFrame.PLANE);
+        boolean kinds = pic.size() == World.CLASSES + 2 && gro.size() == World.CLASSES + 3;
+        java.util.Set<String> ground = new java.util.HashSet<>();
+        for (byte c = 0; c < World.CLASSES; c++) ground.add(LandMap.groundWords(c));
+        for (int i = 0; kinds && i < World.CLASSES; i++) {
+            LandMap.Entry en = pic.get(i);
+            kinds = ground.remove(en.words()) && en.colour() == TileRaster.GROUND[groundClass(en.words())] && gro.get(i).equals(en);
+        }
+        kinds &= ground.isEmpty() && pic.get(World.CLASSES).words().equals(LandMap.CITY_RING_WORDS) && pic.get(World.CLASSES).colour() == LandMap.RING
+                && pic.get(World.CLASSES + 1).words().equals(LandMap.EDGE_WORDS) && gro.subList(0, World.CLASSES + 2).equals(pic)
+                && gro.get(World.CLASSES + 2).words().equals(LandMap.OFFER_WORDS);
+        long fieldKinds = Arrays.stream(Resource.values()).filter(Resource::inFields).count();
+        boolean planeLegend = pla.equals(LandMap.planeLegend()) && pla.size() == BuildingVisual.CLASSES + 1 + 5 + 9 + 2 + 2 + fieldKinds
+                && pla.get(0).words().equals(BuildingVisual.CLASS_NAMES[0]);
+        out.printf("      the legend: %d entries on the PICTURE tier, %d on the GROUND, %d on the plane%n", pic.size(), gro.size(), pla.size());
+        check("the legend on the globe is the seven kinds of ground, the city's ring and its edge, the GROUND tier's its offers too", kinds);
+        check("...and from the handoff in, the plane's whole legend, as before", planeLegend);
+
+        // The hover at the handoff: the same words for the same point, wherever the plane draws.
+        double[] c = LandMap.centre(land);
+        GlobeFrame at = new GlobeFrame(w, h, key.lat(), key.lon());
+        at.setReach(GlobeFrame.reachKm(land, null));
+        at.fromPlane((c[0] + c[2]) / 2, (c[1] + c[3]) / 2, 1.0 / GlobeFrame.HANDOFF_PLOTS);
+        int asked = 0, same = 0, own = 0, planet = 0;
+        double[] xy = new double[2];
+        for (double sy = 0.5; sy < h; sy += 23) {
+            for (double sx = 0.5; sx < w; sx += 29) {
+                double[] ll = at.latLonAt(sx, sy);
+                if (ll == null) continue;
+                planet++;
+                if (!at.plane().plotOf(ll[0], ll[1], xy)) continue;
+                long x = (long) Math.floor(xy[0]), y = (long) Math.floor(xy[1]);
+                asked++;
+                List<String> onPlane = LandMap.hoverWords(land, null, x, y, LandMap.CARD_FIELDS);
+                List<String> onGlobe = LandMap.globeHoverWords(at, land, null, sx, sy, World.SALT, LandMap.CARD_FIELDS);
+                if (onPlane.equals(onGlobe)) same++;
+                if (LandMap.pick(land, null, x, y).owner() != LandMap.OUTSIDE) own++;
+            }
+        }
+        out.printf("      at the handoff over the city: %,d points on the planet, %,d asked of both, %,d alike, %,d of them the city's own ground%n", planet, asked, same, own);
+        check("the hover's words on the globe at the handoff are the plane's for the same point, wherever the plane draws", at.tier() == GlobeFrame.GROUND
+                && asked == planet && same == asked && own > 0);
+        double[] far = GlobeFrame.destination(key.lat(), key.lon(), 135, 2000);
+        GlobeFrame away = new GlobeFrame(w, h, key.lat(), key.lon());
+        away.set(far[0], far[1], 0.1);
+        int beyond = 0, beyondRight = 0;
+        for (double sy = 0.5; sy < h; sy += 101) {
+            for (double sx = 0.5; sx < w; sx += 131) {
+                double[] ll = away.latLonAt(sx, sy);
+                if (ll == null) continue;
+                beyond++;
+                List<String> words = LandMap.globeHoverWords(away, land, null, sx, sy, World.DESERT, LandMap.CARD_FIELDS);
+                List<String> want = new ArrayList<>(List.of(LandMap.groundWords(World.DESERT), LandMap.NOT_THE_CITYS));
+                want.addAll(LandMap.earthWords(e, ll[0], ll[1]));
+                if (words.equals(want)) beyondRight++;
+            }
+        }
+        boolean byPlot = true;
+        for (int k = 0; k < 50; k++) {
+            long x = EarthTerrain.spotPlot() + (k - 25) * 997L, y = EarthTerrain.spotPlot() + (k % 7 - 3) * 1931L;
+            double[] ll = new double[2];
+            e.projection().latLonOfPlot(x + 0.5, y + 0.5, ll);
+            byPlot &= LandMap.earthWords(land, x, y).equals(LandMap.earthWords(e, ll[0], ll[1]));
+        }
+        GlobeFrame whole = new GlobeFrame(w, h, key.lat(), key.lon());
+        out.printf("      2,000 km south-east, the wheel's stop: %d points, %d said as past the plane%n", beyond, beyondRight);
+        check("...past it the ground drawn there, \"Not the city's\", and the place and the province by latitude and longitude", away.tier() == GlobeFrame.GROUND
+                && beyond > 0 && beyondRight == beyond);
+        check("...which are the plot's own at its centre; and off the planet it says nothing", byPlot
+                && LandMap.globeHoverWords(whole, land, null, 1, 1, World.SALT, LandMap.CARD_FIELDS).isEmpty() && whole.latLonAt(1, 1) == null);
+
+        // The composed matrix, and the GROUND tier near the city from the plane's own nodes.
+        java.util.Random r = new java.util.Random(13);
+        double matrix = 0;
+        for (int t = 0; t < 60; t++) {
+            GlobeFrame v = new GlobeFrame(w, h, key.lat(), key.lon());
+            double[] d = GlobeFrame.destination(key.lat(), key.lon(), 360 * r.nextDouble(), 3000 * r.nextDouble());
+            v.set(d[0], d[1], GlobeFrame.HANDOFF_KM * Math.pow(GlobeFrame.PICTURE_FROM_KM * 4 / GlobeFrame.HANDOFF_KM, r.nextDouble()));
+            double[] a = new double[2], b = new double[2];
+            for (int k = 0; k < 100; k++) {
+                double sx = w * r.nextDouble(), sy = h * r.nextDouble();
+                if (v.planeAt(sx, sy, a) != v.plotAt(sx, sy, b)) matrix = Double.MAX_VALUE;
+                else if (v.plotAt(sx, sy, b)) matrix = Math.max(matrix, Math.hypot(a[0] - b[0], a[1] - b[1]));
+            }
+        }
+        check("the composed matrix finds the plot under a pixel within MATRIX_PLOTS of the camera's and the plane's projections", matrix < MATRIX_PLOTS);
+        MapTiles tiles = new MapTiles(x1);
+        for (double[] view : new double[][] { { 384, 256, GlobeFrame.HANDOFF_KM }, { w, h, 2 } }) {
+            GlobeFrame v = new GlobeFrame(view[0], view[1], key.lat(), key.lon());
+            v.setReach(GlobeFrame.reachKm(land, null));
+            v.set(at.centreLat(), at.centreLon(), view[2]);
+            long plots = MapFrame.nodePlotsAt(v.planeScale());
+            long span = MapFrame.NODE_PX * plots;
+            Map<Long, int[]> nodes = new java.util.HashMap<>();
+            int vw = (int) view[0], vh = (int) view[1];
+            int[] px = new int[vw * vh];
+            int missed = v.ground(plots, (nx, ny) -> {
+                long nk = (nx << 32) ^ (ny & 0xffffffffL);
+                int[] got = nodes.get(nk);
+                if (got == null && !nodes.containsKey(nk)) {
+                    byte[] gr = MapTiles.nodeTerrain(key, nx * span, ny * span, plots);
+                    got = new int[MapFrame.NODE_PX * MapFrame.NODE_PX];
+                    tiles.nodePixels(nx * span, ny * span, plots, gr, got);
+                    nodes.put(nk, got);
+                }
+                return got;
+            }, (i, j, vx, vy, vz) -> 1, 2, px, vw, 0, vw, 0, vh);
+            int drawn = 0, alike = 0, edgeOnly = 0, onPlane = 0;
+            for (int j = 0; j < vh; j++) {
+                for (int i = 0; i < vw; i++) {
+                    if (!v.drawsHold(i + 0.5, j + 0.5)) continue;
+                    onPlane++;
+                    if (!v.plotAt(i + 0.5, j + 0.5, xy)) continue;
+                    drawn++;
+                    long nx = Math.floorDiv((long) Math.floor(xy[0]), span), ny = Math.floorDiv((long) Math.floor(xy[1]), span);
+                    int[] node = nodes.get((nx << 32) ^ (ny & 0xffffffffL));
+                    if (node == null) continue;
+                    int u = (int) ((xy[0] - nx * span) / plots), q = (int) ((xy[1] - ny * span) / plots);
+                    if (px[j * vw + i] == node[Math.min(MapFrame.NODE_PX - 1, q) * MapFrame.NODE_PX + Math.min(MapFrame.NODE_PX - 1, u)]) alike++;
+                    else {
+                        double fx = xy[0] / plots, fy = xy[1] / plots;
+                        if (Math.abs(fx - Math.rint(fx)) * plots < MATRIX_PLOTS || Math.abs(fy - Math.rint(fy)) * plots < MATRIX_PLOTS) edgeOnly++;
+                    }
+                }
+            }
+            out.printf("      %.0f x %.0f at %.2f km a pixel (%d plots a node pixel, %d nodes): %,d pixels where the plane draws, %,d alike its node's,"
+                    + " %d on a node pixel's edge; %d without a node%n", view[0], view[1], view[2], plots, nodes.size(), drawn, alike, edgeOnly, missed);
+            check("the GROUND tier at " + view[2] + " km a pixel is the plane's own far nodes, pixel for pixel through the camera",
+                    drawn > 0 && drawn == onPlane && alike + edgeOnly == drawn && missed == 0);
+        }
+
+        // The last picture carried: a point's pixel in an older view is where that view puts it.
+        GlobeFrame old = new GlobeFrame(w, h, key.lat(), key.lon());
+        old.set(at.centreLat(), at.centreLon(), 3);
+        GlobeFrame now = new GlobeFrame(w, h, key.lat(), key.lon());
+        now.set(at.centreLat() + 1, at.centreLon() - 2, 2.5);
+        GlobeFrame.Carry carry = now.carryFrom(old);
+        int carried = 0, carriedRight = 0;
+        double[] sp = new double[2];
+        for (int k = 0; k < 2000; k++) {
+            double sx = w * r.nextDouble(), sy = h * r.nextDouble();
+            double[] ll = now.latLonAt(sx, sy);
+            if (ll == null) continue;
+            double[] o = old.at(ll[0], ll[1]);
+            // The unit vector Beyond is handed, in the camera's frame: Ortho.inverse()'s, from the point's latitude and longitude.
+            double la = Math.toRadians(ll[0]), dl = Math.toRadians(ll[1] - now.centreLon());
+            double vx = Math.cos(la) * Math.cos(dl), vy = Math.cos(la) * Math.sin(dl), vz = Math.sin(la);
+            boolean seen = carry.screen(vx, vy, vz, sp);
+            carried++;
+            if (o == null ? !seen : seen && Math.hypot(sp[0] - o[0], sp[1] - o[1]) < 1e-6) carriedRight++;
+        }
+        check("the last picture is carried to its own pixels: a point's place on an older view's screen, by the cameras' turn alone", carried > 0 && carriedRight == carried);
+
+        // The crossfade, and the roll past the reach.
+        double notchIn = GlobeFrame.HANDOFF_KM / Math.pow(GlobeFrame.ZOOM_STEP, GlobeFrame.CROSSFADE_NOTCHES);
+        check("the swap crossfades: the globe whole at the handoff and wider, gone CROSSFADE_NOTCHES notches in, half way between",
+                GlobeFrame.crossfade(GlobeFrame.HANDOFF_KM) == 1 && GlobeFrame.crossfade(1) == 1 && GlobeFrame.crossfade(notchIn) < 1e-12
+                        && GlobeFrame.crossfade(notchIn / GlobeFrame.ZOOM_STEP) == 0
+                        && Math.abs(GlobeFrame.crossfade(GlobeFrame.HANDOFF_KM / Math.sqrt(Math.pow(GlobeFrame.ZOOM_STEP, GlobeFrame.CROSSFADE_NOTCHES))) - 0.5) < 1e-9);
+        GlobeFrame rf = new GlobeFrame(w, h, key.lat(), key.lon());
+        double reach = rf.reach();
+        double[] in = GlobeFrame.destination(key.lat(), key.lon(), 90, reach - 1e-6), out1 = GlobeFrame.destination(key.lat(), key.lon(), 90, reach + 1e-6);
+        double[] half = GlobeFrame.destination(key.lat(), key.lon(), 90, reach + GlobeFrame.ROLL_EASE_KM / 2), gone = GlobeFrame.destination(key.lat(), key.lon(), 90, reach + GlobeFrame.ROLL_EASE_KM);
+        double rIn = rf.rollFor(in[0], in[1], GlobeFrame.HANDOFF_KM), rOut = rf.rollFor(out1[0], out1[1], GlobeFrame.HANDOFF_KM);
+        double rHalf = rf.rollFor(half[0], half[1], GlobeFrame.HANDOFF_KM), up = rf.planeRollAt(half[0], half[1]);
+        out.printf("      the roll at the handoff east of the city: %.4f degrees at the reach's edge inside, %.4f outside, %.4f half way out of %.0f km (the plane's up there %.4f), %.4f past it%n",
+                rIn, rOut, rHalf, GlobeFrame.ROLL_EASE_KM, up, rf.rollFor(gone[0], gone[1], GlobeFrame.HANDOFF_KM));
+        check("...and the roll eases back to north up over ROLL_EASE_KM past the reach, with no step at its edge", Math.abs(rIn) > 1 && Math.abs(rIn - rOut) < 1e-4
+                && Math.abs(rHalf - up / 2) < 1e-9 && rf.rollFor(gone[0], gone[1], GlobeFrame.HANDOFF_KM) == 0);
+
+        // The founding screen's globe: the model's frame and the planet's picture, then the far rule through the camera.
+        EarthData data = e.data();
+        long t0 = System.nanoTime();
+        GlobePicture picture = GlobePicture.of(data, GlobePicture.FIRST_ARCMIN);
+        double madeMs = (System.nanoTime() - t0) / 1e6;
+        int fw = (int) GlobeFrame.FOUNDING_W, fh = (int) GlobeFrame.FOUNDING_H;
+        GlobeFrame fg = new GlobeFrame(fw, fh, key.lat(), key.lon());
+        int[] colours = GlobePicture.colours(false), shot = new int[fw * fh];
+        picture.view(fg, key, colours, GlobePicture.SPACE, shot);
+        int pictured = 0, space = 0, wrong = 0;
+        for (int j = 0; j < fh; j++) {
+            for (int i = 0; i < fw; i++) {
+                double[] ll = fg.latLonAt(i + 0.5, j + 0.5);
+                int want = ll == null ? GlobePicture.SPACE : colours[picture.at(ll[0], ll[1])];
+                if (ll == null) space++; else pictured++;
+                if (shot[j * fw + i] != want) wrong++;
+            }
+        }
+        fg.set(key.lat(), key.lon(), (GlobeFrame.PICTURE_FROM_KM + GlobeFrame.FOUNDING_HANDOFF_KM) / 2);
+        picture.view(fg, key, colours, GlobePicture.SPACE, shot);
+        byte[] cls = fg.groundPiece(key, 0, 0, fw, fh);
+        int groundWrong = 0;
+        for (int k = 0; k < shot.length; k++) {
+            int i = k % fw, j = k / fw;
+            int want = fg.onPlanet(i + 0.5, j + 0.5) ? colours[cls[k]] : GlobePicture.SPACE;
+            if (shot[k] != want) groundWrong++;
+        }
+        out.printf("      the founding globe, %d x %d: whole, %,d pixels of the picture (made in %.0f ms at %d') and %,d of space, %d unlike;"
+                + " at %.2f km a pixel the far rule through the camera, %d unlike%n", fw, fh, pictured, madeMs, GlobePicture.FIRST_ARCMIN, space, wrong,
+                fg.kmPx(), groundWrong);
+        check("the founding screen's globe is the model's frame: its pixels the planet's picture's, space off the disc", fg.tier() == GlobeFrame.GROUND
+                && pictured > 0 && space > 0 && wrong == 0);
+        check("...and closer, the far rule's through the globe's camera (GlobeFrame.groundPiece()), as the map's GROUND tier draws", groundWrong == 0);
+        // Its handoff: half a pixel at the canvas's corner, against the ground drawn round the view's centre.
+        double handoff = GlobeFrame.FOUNDING_HANDOFF_KM, parting = foundingParting(key.lat(), key.lon(), handoff), e4 = foundingParting(key.lat(), key.lon(), 4);
+        out.printf("      its handoff %.4f km a pixel (spec-globe 3.2: 2.3): the globe and the ground round its centre part by %.6f px at the corners; at E4's 4 km by %.2f (the study 1.50); the expanded map's %.3f (the study 0.58)%n",
+                handoff, parting, e4, GlobeFrame.halfPixelKm(w, h));
+        check("...handing off to the ground round its centre at FOUNDING_HANDOFF_KM, half a pixel at its corners (halfPixelKm())",
+                handoff == GlobeFrame.halfPixelKm(fw, fh) && Math.abs(parting - 0.5) < 1e-6 && e4 > 1);
+
+        // A frame's cost in each tier (printed: the screen's, by eye on the PC).
+        int[] big = new int[w * h];
+        GlobeFrame cost = new GlobeFrame(w, h, key.lat(), key.lon());
+        double[] best = { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE };
+        int[] node = new int[MapFrame.NODE_PX * MapFrame.NODE_PX];
+        for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
+            cost.fit();
+            long a0 = System.nanoTime();
+            picture.frame(cost, colours, GlobePicture.SPACE, big, GlobePicture.cores());
+            double pMs = (System.nanoTime() - a0) / 1e6;
+            cost.set(key.lat(), key.lon(), GlobeFrame.HANDOFF_KM * 1.2);
+            GlobeFrame cc = cost.copy(w, h, cost.kmPx());
+            a0 = System.nanoTime();
+            GlobePicture.bands(h, GlobePicture.cores(), (j0, j1) -> cc.ground(32, (nx, ny) -> node, (i, j, vx, vy, vz) -> 1, 2, big, w, 0, w, j0, j1));
+            double gMs = (System.nanoTime() - a0) / 1e6;
+            a0 = System.nanoTime();
+            cost.groundPiece(key, w / 2 - 64, h / 2 - 64, 128, 128);
+            double qMs = (System.nanoTime() - a0) / 1e6;
+            if (round >= WARM_ROUNDS) {
+                best[0] = Math.min(best[0], pMs);
+                best[1] = Math.min(best[1], gMs);
+                best[2] = Math.min(best[2], qMs);
+            }
+        }
+        out.printf("      a %d x %d frame on %d cores: the PICTURE tier %.1f ms; the GROUND tier from the plane's nodes %.1f ms (a quarter of it on the move);"
+                + " a %d-pixel piece of the far rule through the camera %.1f ms on the worker%n", w, h, GlobePicture.cores(), best[0], best[1], 128, best[2]);
+    }
+
+    /** The class a legend's ground words name. */
+    static byte groundClass(String words) {
+        for (byte c = 0; c < World.CLASSES; c++) if (LandMap.groundWords(c).equals(words)) return c;
+        return -1;
+    }
+
+    /** How far the founding globe's two drawings part at a scale, in pixels at worst over its canvas's corners and edges: the globe through GlobeFrame against the ground drawn round the view's centre (Lambert's plane there, as FoundingScreen's close tier draws it). */
+    static double foundingParting(double lat, double lon, double km) {
+        GlobeFrame f = new GlobeFrame(GlobeFrame.FOUNDING_W, GlobeFrame.FOUNDING_H, lat, lon);
+        f.set(lat, lon, km);
+        EarthProj round = new EarthProj(f.centreLat(), f.centreLon());
+        double worst = 0, m = km * 1000;
+        double[] ll = new double[2];
+        for (double sx : new double[] { 0, GlobeFrame.FOUNDING_W / 2, GlobeFrame.FOUNDING_W }) {
+            for (double sy : new double[] { 0, GlobeFrame.FOUNDING_H / 2, GlobeFrame.FOUNDING_H }) {
+                if (!round.inverse((sx - GlobeFrame.FOUNDING_W / 2) * m, (GlobeFrame.FOUNDING_H / 2 - sy) * m, ll)) continue;
+                double[] p = f.at(ll[0], ll[1]);
+                if (p != null) worst = Math.max(worst, Math.hypot(p[0] - sx, p[1] - sy));
+            }
+        }
+        return worst;
     }
 
     /** Jerus's city x 1 on the real Earth at Rotterdam, EarthCheck's fixture (section 10's window): null when the fixture is not beside the classes. */

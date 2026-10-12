@@ -1859,8 +1859,8 @@ final class MapView {
         card.setVisible(true);
     }
 
-    /** The most fields a hover card lists: 3. */
-    static final int CARD_FIELDS = 3;
+    /** The most fields a hover card lists: 3 (LandMap.CARD_FIELDS since 0.7.135). */
+    static final int CARD_FIELDS = LandMap.CARD_FIELDS;
 
     /** A model building's name, by its type id: the catalogue's. */
     private String nameOf(int id) {

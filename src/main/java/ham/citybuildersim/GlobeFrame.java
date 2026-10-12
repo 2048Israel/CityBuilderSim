@@ -91,15 +91,16 @@ public final class GlobeFrame {
     /**
      * The scale at which a view of w x h pixels and the plane centred where it
      * looks part by half a pixel at its corners, km a pixel (spec-globe 3.2):
-     * a place an angle c out is drawn 2R sin(c/2) out on the plane and R sin c
-     * on the globe, which differ by about R c^3 / 8, so a view of
-     * half-diagonal D parts by D^3 k^2 / (8 R^2) at k km a pixel, half a pixel
-     * at k = 2R / D^1.5 - 0.58 on the expanded map, 2.32 on the founding
-     * globe.
+     * a point rho out from the middle is the angle c = 2 asin(rho / 2R) from
+     * the centre on Lambert's plane, and R sin c = rho sqrt(1 - rho^2/4R^2)
+     * out on the globe, so at the corner, D pixels out at k km a pixel, the
+     * two part by D (1 - sqrt(1 - (Dk / 2R)^2)) pixels - half a pixel at
+     * k = (2R / D) sqrt(1 - (1 - 1/2D)^2), the study's 2R / D^1.5 to first
+     * order: 0.58 on the expanded map, 2.32 on the founding globe.
      */
     public static double halfPixelKm(double w, double h) {
-        double d = Math.hypot(w, h) / 2;
-        return 2 * EarthProj.RADIUS_M / 1000 / Math.pow(d, 1.5);
+        double d = Math.hypot(w, h) / 2, q = 1 - 1 / (2 * d);
+        return 2 * EarthProj.RADIUS_M / 1000 / d * Math.sqrt(1 - q * q);
     }
 
     /** The founding globe hands its view to the ground drawn round its centre at this, km a pixel (★E9, spec-globe 3.2's choice): halfPixelKm() of its canvas, 2.32 - under half a pixel at the swap, as the map's 16 plots is, where E4's 4 km parted by 1.5. */

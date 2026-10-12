@@ -462,7 +462,10 @@ public final class LandMap {
         return hoverWords(land, market, x, y, Integer.MAX_VALUE);
     }
 
-    /** ...with no more than `fieldsMost` fields (the expanded map's card lists MapView.CARD_FIELDS; since 0.7.135 its card is this). */
+    /** The most fields the expanded map's hover card lists: 3 (MapView's since 0.7.61; the model's since 0.7.135, its card being hoverWords()'s). */
+    public static final int CARD_FIELDS = 3;
+
+    /** ...with no more than `fieldsMost` fields (the expanded map's card lists CARD_FIELDS; since 0.7.135 its card is this). */
     public static List<String> hoverWords(CityLand land, LandMarket market, long x, long y, int fieldsMost) {
         Pick p = pick(land, market, x, y);
         List<String> lines = new ArrayList<>();
