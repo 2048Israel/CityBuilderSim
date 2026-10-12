@@ -80,9 +80,20 @@ public enum CareType {
     }
 
     /**
+     * True for the types whose need is counted in places rather than heads:
+     * each band wants a share of a place (senior care since 2026-09-15,
+     * childcare since 0.7.139), so a screen says "places needed", not
+     * "people to serve". General care wants a whole place a head.
+     */
+    public boolean countsPlaces() {
+        return this == CHILDCARE || this == SENIOR;
+    }
+
+    /**
      * How much of a place one person in this band needs.
      *
-     * ONE PER HEAD FOR EVERY TYPE BUT SENIOR CARE, where it is the whole point.
+     * ONE PER HEAD FOR GENERAL CARE; WEIGHTED FOR SENIOR CARE AND CHILDCARE,
+     * where it is the whole point.
      *
      * The model used to want a senior-care place for every person over seventy,
      * which is a claim nobody would make out loud: in Canada about one person in
@@ -103,9 +114,27 @@ public enum CareType {
      * the denominator by about two and a half times instead. The absolute
      * version is a defensible thing to want; it is a separate, measured
      * decision, not a side effect of this one.
+     *
+     * CHILDCARE IS WEIGHTED TOO, AND ABSOLUTELY (0.7.139, batch CC1). Until
+     * then it wanted a whole place for every baby and every child, so a city
+     * built a centre's place for every under-6 and every schoolchild, and
+     * Jerus, on the map: "real life doesnt have that many like even with the
+     * expanded facilities i still check the map and its quite the bit of
+     * childcares". Most children are not in a centre: in Canada in 2025 58% of
+     * the under-6s were in child care of any kind but 32% in centre-based care
+     * (daycares, preschools, centres de la petite enfance), and of the 6-to-12s
+     * 35% were in child care, 52% of those in a before- or after-school
+     * programme - 18.2% of them. So a baby wants CHILDCARE_UNDER_SIX of a place
+     * and a child CHILDCARE_SIX_TO_TWELVE. Here the absolute rates are the
+     * decision itself, not a side effect of one (decisions-2026-10-10.md):
+     * fewer places wanted is fewer centres on the map and full coverage from
+     * fewer of them, and the founding's places, the mortality and birth
+     * factors that read coverage, NEEDS YOU, the build advice and automatic
+     * building all read this one denominator, so they all moved with it.
      */
     public double placesPerHead(AgeBand band) {
         if (band == null || !servedBy(band)) return 0;
+        if (this == CHILDCARE) return band == AgeBand.BABY ? CHILDCARE_UNDER_SIX : CHILDCARE_SIX_TO_TWELVE;
         if (this != SENIOR) return 1;
         return band == AgeBand.ELDER ? 1.0 : SENIOR_NEED_AGAINST_AN_ELDER;
     }
@@ -113,8 +142,16 @@ public enum CareType {
     /** 5.5% of 70-84 in care against 29.6% of the over-85s - see placesPerHead. */
     public static final double SENIOR_NEED_AGAINST_AN_ELDER = .19;
 
+    /** A baby's place in childcare: the 32% of Canada's children aged 0 to 5 in centre-based child care in 2025 (Statistics Canada, Child care arrangements, 2025, The Daily 2025-10-21). */
+    public static final double CHILDCARE_UNDER_SIX = .32;
+
+    /** A child's place: 35% of school-attending 6-to-12s in child care, 52% of them in before- or after-school programmes (Statistics Canada, The Daily 2026-03-12), so 0.35 x 0.52 = 18.2% - derived here, the release gives no share of all children. */
+    public static final double CHILDCARE_SIX_TO_TWELVE = .35 * .52;
+
     /**
-     * How many people this type is on the hook for, given the pyramid.
+     * How many people this type is on the hook for, given the pyramid - in
+     * places: a head a place for general care, each band at its weight for
+     * senior care and childcare (placesPerHead()).
      *
      * Zero for the two that serve the dead and for NONE, so a caller dividing by
      * this must guard - see Health.coverage(), which treats a zero denominator as

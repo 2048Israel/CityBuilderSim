@@ -121,10 +121,20 @@ public class HealthCheck {
          * seventy, the equilibrium's seniors passed its children, and the
          * assertion failed with the endowment still sized exactly as intended.
          */
-        check("the childcare endowment is the pyramid's own share of the founding city",
+        /*
+         * ...AND CHILDCARE IS WEIGHTED TOO, since 0.7.139 (batch CC1): a baby
+         * wants the 32% of under-6s in a centre of a place, a child the 18.2%
+         * of 6-to-12s in a before- or after-school programme. Until then the
+         * endowment was the babies' and children's whole share; the rule it
+         * asserts is the same - the pyramid's own share at CareType's weights -
+         * read through those weights, as senior care's below is.
+         */
+        check("the childcare endowment is the pyramid's own share of the founding city, at CareType's weights",
                 Healthcare.foundingCapacity(CareType.CHILDCARE),
                 Healthcare.FOUNDING_CITY * (PopulationCohorts.equilibriumShare(AgeBand.BABY)
-                        + PopulationCohorts.equilibriumShare(AgeBand.CHILD)), 1e-9);
+                                * CareType.CHILDCARE.placesPerHead(AgeBand.BABY)
+                        + PopulationCohorts.equilibriumShare(AgeBand.CHILD)
+                                * CareType.CHILDCARE.placesPerHead(AgeBand.CHILD)), 1e-9);
         /*
          * SENIOR CARE SERVES TWO BANDS NOW, and not equally: a place per elder
          * against 0.19 of one per senior, which is the census residency curve

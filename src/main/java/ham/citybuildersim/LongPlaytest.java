@@ -1064,6 +1064,7 @@ public class LongPlaytest {
 
         int month = g.getMonth();
         noteChildcare(g, month);
+        budgetLine(g, month);
         EconomyManager e = g.getEconomyManager();
         PopulationManager p = g.getPopulationManager();
         BuildingManager b = g.getBuildingManager();
@@ -2615,6 +2616,35 @@ public class LongPlaytest {
                 g.getBuildingManager().getCareCapacity(CareType.CHILDCARE),
                 CareType.CHILDCARE.populationServed(c), kids,
                 g.getHealthcare().getCoverage(CareType.CHILDCARE) * 100, homeBuildings(g)));
+    }
+
+    /**
+     * -Dplaytest.budget=N (0.7.139, batch CC1): every N months the treasury's
+     * month, line by line - what came in and what went out, care by kind and
+     * childcare's own running (its centres' posts and upkeep) beside it. The
+     * instrument that says on what a stalled village stands still; the run
+     * itself unmoved. Unset or 0, nothing.
+     */
+    static final int BUDGET_EVERY = Integer.getInteger("playtest.budget", 0);
+
+    static void budgetLine(Game g, int month) {
+        if (BUDGET_EVERY <= 0 || month % BUDGET_EVERY != 0) return;
+        NationalAccounts na = g.getEconomyManager().getNationalAccounts();
+        BuildingManager bm = g.getBuildingManager();
+        double[] wages = g.getPopulationManager().getWagesPerType(), fill = g.getPopulationManager().getJobFillRate();
+        double[] run = new double[3];
+        CareType[] kinds = { CareType.CHILDCARE, CareType.GENERAL, CareType.SENIOR };
+        for (int i = 0; i < 3; i++) run[i] = bm.getCarePayroll(kinds[i], wages, fill) + bm.getCareUpkeep(kinds[i]);
+        out.printf("BUDGET m%-4d pop %,d | in $%,.0fk: tax %,.0fk (wages %,.0fk), care fees %,.0fk, contributions %,.0fk,"
+                + " premiums %,.0fk | out $%,.0fk: health %,.0fk (centres' running: childcare %,.0fk, general %,.0fk,"
+                + " senior %,.0fk), education %,.0fk, safety %,.0fk, transit %,.0fk, pensions %,.0fk, EI %,.0fk,"
+                + " interest %,.0fk, capital %,.0fk | balance %,.0fk; childcare %,.0f places for %,.0f wanted%n",
+                month, g.getPopulationManager().getPopulation(), na.getTotalRevenue(), CityNeeds.taxRaised(g),
+                na.getTaxWage(), na.getHealthFees(), na.getContributions(), na.getEiPremiums() + na.getHealthPremiums(),
+                na.getTotalExpenses(), na.getHealthSpending(), run[0], run[1], run[2], na.getEducationSpending(),
+                na.getSafetySpending(), na.getTransitSpending(), na.getPensions(), na.getEiBenefits(),
+                na.getInterestExpense(), na.getCapitalSpending(), na.getBalance(),
+                bm.getCareCapacity(CareType.CHILDCARE), CareType.CHILDCARE.populationServed(g.getCohorts()));
     }
 
     /** What the childcare flag has ordered: orders, and buildings by name. */

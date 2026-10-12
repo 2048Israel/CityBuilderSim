@@ -49,10 +49,15 @@ public class Healthcare {
        has learned nothing about why the clinic matters.
 
        SIZED OFF THE PYRAMID'S OWN SHARES rather than typed in. Childcare's
-       founding capacity is whatever share of twelve hundred people are babies
-       and children at equilibrium, and senior care's is the senior share, so
-       these stay right if AgeBand's spans ever move. A constant is a cached
-       answer to a question nobody re-asks; this asks it.
+       founding capacity is the places twelve hundred people's babies and
+       children want at equilibrium, and senior care's the places its seniors
+       and elders want, each band at CareType's weight for it, so these stay
+       right if AgeBand's spans or the weights ever move. A constant is a
+       cached answer to a question nobody re-asks; this asks it. Since 0.7.139
+       (batch CC1) childcare is weighted as senior care is - a baby at the 32%
+       of under-6s in a centre, a child at the 18.2% of 6-to-12s in a before-
+       or after-school programme - so the nursery holds 49 places where it held
+       201: the same twelve hundred people covered, at real demand.
 
        THE CHURCHYARD RUNS OUT, and that is the point of it being plots rather
        than a rate. Two and a half thousand graves is four centuries for a city
@@ -79,9 +84,12 @@ public class Healthcare {
         if (care == null) return 0;
         switch (care) {
             case GENERAL:   return FOUNDING_CITY;
+            // Both childcare bands, each at the share of it that is in care (0.7.139).
             case CHILDCARE: return FOUNDING_CITY
                     * (PopulationCohorts.equilibriumShare(AgeBand.BABY)
-                     + PopulationCohorts.equilibriumShare(AgeBand.CHILD));
+                            * CareType.CHILDCARE.placesPerHead(AgeBand.BABY)
+                     + PopulationCohorts.equilibriumShare(AgeBand.CHILD)
+                            * CareType.CHILDCARE.placesPerHead(AgeBand.CHILD));
             // Both retired bands, each at what a head of it actually needs.
             case SENIOR:    return FOUNDING_CITY
                     * (PopulationCohorts.equilibriumShare(AgeBand.SENIOR)
