@@ -1063,6 +1063,7 @@ public class LongPlaytest {
     static void audit(Game g) {
 
         int month = g.getMonth();
+        noteChildcare(g, month);
         EconomyManager e = g.getEconomyManager();
         PopulationManager p = g.getPopulationManager();
         BuildingManager b = g.getBuildingManager();
@@ -2587,6 +2588,34 @@ public class LongPlaytest {
 
     /** Offers bought for automatic building's ground (the autobuild flag). */
     static int autoBuildGroundBought = 0;
+
+    /**
+     * CHILDCARE ON THE MAP (0.7.139, batch CC1). Jerus, 2026-10-10: "real
+     * life doesnt have that many like even with the expanded facilities i
+     * still check the map and its quite the bit of childcares". So the run
+     * says what it stands at CHILDCARE_SEEN's months, whoever built it (the
+     * childcare flag, automatic building, or nobody but the founders): each
+     * centre by size, the places with the founding's, the places the city
+     * wants at CareType's weights against its babies and children, the
+     * month's coverage and the home buildings - a reading, the run unmoved.
+     */
+    static final int[] CHILDCARE_SEEN = { 1_000, 2_000, 3_000, 4_000 };
+
+    /** ...what it said at each, in order. */
+    static final java.util.List<String> childcareSeen = new java.util.ArrayList<>();
+
+    static void noteChildcare(Game g, int month) {
+        if (java.util.Arrays.stream(CHILDCARE_SEEN).noneMatch(m -> m == month)) return;
+        PopulationCohorts c = g.getCohorts();
+        double kids = c.get(AgeBand.BABY) + c.get(AgeBand.CHILD);
+        childcareSeen.add(String.format("m%,d %,d centre(s) (%,d Small, %,d Childcare Centre, %,d Large) and the"
+                + " founding's %,.0f = %,.0f places for %,.0f wanted of %,.0f babies and children, %.0f%% covered,"
+                + " %,d home building(s)", month, qtyOf(g, 15) + qtyOf(g, 16) + qtyOf(g, 17), qtyOf(g, 15), qtyOf(g, 16),
+                qtyOf(g, 17), Healthcare.foundingCapacity(CareType.CHILDCARE),
+                g.getBuildingManager().getCareCapacity(CareType.CHILDCARE),
+                CareType.CHILDCARE.populationServed(c), kids,
+                g.getHealthcare().getCoverage(CareType.CHILDCARE) * 100, homeBuildings(g)));
+    }
 
     /** What the childcare flag has ordered: orders, and buildings by name. */
     static int childcareOrders = 0;
@@ -6194,6 +6223,8 @@ public class LongPlaytest {
                     + " against %,d home building(s)%n", childcareOrders, childcareBuilt,
                     qtyOf(g, 15), qtyOf(g, 16), qtyOf(g, 17), homeBuildings(g));
         }
+        out.printf("  ...childcare on the map (0.7.139, CC1): %s%n",
+                childcareSeen.isEmpty() ? "the run reached none of its months" : String.join("; ", childcareSeen));
         out.printf("  ...iron a whole field at a time (0.7.64): %,d offer(s) bought, %,d on the funding page's bond; first"
                 + " needed %s, the first bought %s; looks that needed iron and could not pay %,d, found none listed %,d,"
                 + " and whose cheapest field would not pay itself back (0.7.67) %,d; %,d iron site(s) and %d mine(s) at the"
