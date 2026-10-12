@@ -49,6 +49,11 @@ package ham.citybuildersim;
  * the Earth's ground on a world with an Earth key through it - a key only
  * harnesses made until 0.7.121, when the founding screen came to found a
  * city on one (E4). EarthCheck holds it, EarthTerrainCheck its use.
+ *
+ * THE GLOBE (0.7.132, batch E8; docs/studies/spec-globe.md 3.5): ortho(),
+ * the orthographic projection round a view centre with a roll, forward and
+ * inverse - the planet as GlobeFrame's wide views draw it, beside the
+ * Lambert plane, which stays the city's. GlobeCheck holds it.
  */
 public final class EarthProj {
 
@@ -338,6 +343,102 @@ public final class EarthProj {
             double iu = 1 - u, iv = 1 - v;
             latLon[0] = (lat00 * iu + lat10 * u) * iv + (lat01 * iu + lat11 * u) * v;
             latLon[1] = normaliseLon((lon00 * iu + lon10 * u) * iv + (lon01 * iu + lon11 * u) * v);
+            return true;
+        }
+    }
+
+    /* =====================================================================
+       THE GLOBE - the orthographic view round a view centre, with a roll
+       (0.7.132, batch E8; docs/studies/spec-globe.md 3.5)
+       ===================================================================== */
+
+    /**
+     * The planet as a globe looks from space, round a view centre and turned
+     * by a roll: the orthographic projection (Snyder, Map Projections - A
+     * Working Manual, 1987, chapter 20, as the study's globe-prototype.py and
+     * the founding globe draw it), beside the Lambert plane above, which stays
+     * the city's. Metres on the view's plane, x to the right and y up; the
+     * roll is the angle, degrees clockwise, from the view's up to north at
+     * its centre - 0 is north up (spec-globe 3.3).
+     *
+     * The inverse goes through the point's unit vector, as inverse() does,
+     * rather than through the textbook's arcsine of the latitude, which loses
+     * digits round a pole; the forward is the textbook's. StrictMath, as the
+     * rest of the class is.
+     */
+    public static Ortho ortho(double lat, double lon, double rollDeg) {
+        return new Ortho(lat, lon, rollDeg);
+    }
+
+    /** One view of the globe: see ortho(). */
+    public static final class Ortho {
+        private final double lat0, lon0, roll;
+        private final double sinLat0, cosLat0, sinRoll, cosRoll;
+
+        private Ortho(double lat, double lon, double rollDeg) {
+            if (!(lat >= -90 && lat <= 90)) throw new IllegalArgumentException("latitude " + lat);
+            this.lat0 = lat;
+            this.lon0 = normaliseLon(lon);
+            this.roll = rollDeg;
+            double p = StrictMath.toRadians(lat), r = StrictMath.toRadians(rollDeg);
+            this.sinLat0 = StrictMath.sin(p);
+            this.cosLat0 = StrictMath.cos(p);
+            this.sinRoll = StrictMath.sin(r);
+            this.cosRoll = StrictMath.cos(r);
+        }
+
+        /** The view's centre, degrees. */
+        public double centreLat() { return lat0; }
+        public double centreLon() { return lon0; }
+
+        /** The roll, degrees clockwise from the view's up to north at the centre. */
+        public double roll() { return roll; }
+
+        /** Whether a point of the view's plane lies on the planet's disc: within RADIUS_M of the centre. */
+        public static boolean onDisc(double x, double y) {
+            return x * x + y * y <= RADIUS_M * RADIUS_M;
+        }
+
+        /**
+         * The view's plane point of (lat, lon), metres right (xy[0]) and up
+         * (xy[1]) of the centre. False on the far side of the planet, which
+         * the globe hides (the angle from the centre past 90 degrees); the
+         * limb itself is seen.
+         */
+        public boolean forward(double lat, double lon, double[] xy) {
+            double p = StrictMath.toRadians(lat);
+            double sinP = StrictMath.sin(p), cosP = StrictMath.cos(p);
+            double dl = StrictMath.toRadians(normaliseLon(lon - lon0));
+            double cosDl = StrictMath.cos(dl);
+            double up = sinLat0 * sinP + cosLat0 * cosP * cosDl;            // cos of the angle from the centre
+            if (!(up >= 0)) {
+                xy[0] = Double.NaN;
+                xy[1] = Double.NaN;
+                return false;
+            }
+            double east = RADIUS_M * cosP * StrictMath.sin(dl);
+            double north = RADIUS_M * (cosLat0 * sinP - sinLat0 * cosP * cosDl);
+            xy[0] = east * cosRoll + north * sinRoll;
+            xy[1] = north * cosRoll - east * sinRoll;
+            return true;
+        }
+
+        /** The (lat, lon) of a point of the view's plane, degrees, the longitude in [-180, 180). False off the disc. */
+        public boolean inverse(double x, double y, double[] latLon) {
+            double e = (x * cosRoll - y * sinRoll) / RADIUS_M, n = (x * sinRoll + y * cosRoll) / RADIUS_M;
+            double s2 = e * e + n * n;
+            if (s2 > 1) {
+                latLon[0] = Double.NaN;
+                latLon[1] = Double.NaN;
+                return false;
+            }
+            double a = StrictMath.sqrt(1 - s2);                             // cos of the angle from the centre
+            // the point's unit vector in the frame whose x axis is the centre's meridian at the equator
+            double px = a * cosLat0 - n * sinLat0;
+            double py = e;
+            double pz = a * sinLat0 + n * cosLat0;
+            latLon[0] = StrictMath.toDegrees(StrictMath.atan2(pz, StrictMath.sqrt(px * px + py * py)));
+            latLon[1] = normaliseLon(lon0 + StrictMath.toDegrees(StrictMath.atan2(py, px)));
             return true;
         }
     }
