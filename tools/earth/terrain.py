@@ -25,9 +25,10 @@ R_M = 6371007.0                         # EarthProj.RADIUS_M
 C15 = 240                               # 15" cells a degree (earth-1's sea and lake grid; GEBCO's grid)
 
 # ------------------------------------------------------------------ the slope classes
-# Percent grade (rise over run x 100) of the ground, measured over 90 m (THE BASELINE below). A class is the share of a
-# cell's land at or above each threshold: FOOTHILL_PCT (dearer to prepare), STEEP_PCT (refused for buildings), and
-# VERY_STEEP_PCT (the darkest grey). The study (spec-earth2-terrain.md, section 2) gives the evidence for each.
+# Percent grade (rise over run x 100) of the ground, measured over 90 m (slope_tiles.py: heights averaged to 3", Horn's
+# method over 3"). A class is the share of a cell's land at or above each threshold: FOOTHILL_PCT (dearer to prepare),
+# STEEP_PCT (refused for buildings) and VERY_STEEP_PCT (the darkest grey) - FAO's slope-class edges (Guidelines for
+# soil description, 2006, Table 7); the Earth 2 study gives the evidence for each.
 FOOTHILL_PCT = 10.0       # 5.7 degrees
 STEEP_PCT = 30.0          # 16.7 degrees
 VERY_STEEP_PCT = 60.0     # 31.0 degrees
@@ -97,13 +98,14 @@ CA = '/root/.ccr/ca-bundle.crt'
 UA = 'curl/8.5.0 (CityBuilderSim earth-2 pipeline)'
 
 
-def fetch(url, dst, tries=6):
-    """url to dst through a temporary name; True when written, False on 404 (no such tile)."""
+def fetch(url, dst, tries=6, resume=False):
+    """url to dst through a temporary name; True when written, False on 404 (no such tile). resume: a part left by
+    an earlier try is continued (the 7.47 GB GEBCO file)."""
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     part = dst + '.part'
     for k in range(tries):
-        r = subprocess.run(['curl', '-sS', '-L', '--fail', '-A', UA, '-o', part, '-w', '%{http_code}', url],
-                           capture_output=True, text=True)
+        cmd = ['curl', '-sS', '-L', '--fail', '-A', UA, '-o', part, '-w', '%{http_code}'] + (['-C', '-'] if resume else []) + [url]
+        r = subprocess.run(cmd, capture_output=True, text=True)
         code = r.stdout.strip()[-3:]
         if r.returncode == 0:
             os.replace(part, dst); return True
@@ -148,7 +150,7 @@ def read_tif(path):
 def nasadem_tile(lat0, lon0, keep=None):
     """The 1" heights of a 1-degree tile, int16 (3601 x 3601, rows from lat0 + 1, pixel centres on whole seconds;
     -32768 none), from NASADEM's Planetary Computer mirror, else SRTMGL1 v3 from ESA STEP; None when neither has it
-    (sea, or beyond 60 N / 56 S). Returns (array, source name)."""
+    (sea, or beyond 61 N / 56 S). Returns (array, source name)."""
     keep = KEEP_TILES if keep is None else keep
     p = os.path.join(DL2, 'nasadem', 'NASADEM_HGT_%s.tif' % tile_name(lat0, lon0))
     if os.path.exists(p) or fetch(nasadem_url(lat0, lon0), p):
@@ -191,7 +193,7 @@ def gebco():
     downloads the whole file (7.47 GB) first when it is not there."""
     if not os.path.exists(GEBCO_NC):
         log('gebco', 'downloading GEBCO_2026.nc, 7.47 GB')
-        fetch(GEBCO_URL, GEBCO_NC)
+        fetch(GEBCO_URL, GEBCO_NC, tries=20, resume=True)
     assert os.path.getsize(GEBCO_NC) == GEBCO_BYTES, os.path.getsize(GEBCO_NC)
     return np.memmap(GEBCO_NC, dtype='<i2', mode='r', offset=GEBCO_OFFSET, shape=(43200, 86400))
 

@@ -2,8 +2,8 @@
 #   shallow   15", the share of a cell's sea no deeper than SHALLOW_M, in 16 levels: GEBCO bilinear between its cell
 #             centres at 4 x 4 points a cell (q = the points' share above -SHALLOW_M), and the sea taken to fill the
 #             deepest part of the cell, so of earth-1's sea share s the shallow part is clamp((q - (1 - s)) / s, 0, 1).
-#   depth     DEPTH_CPD a degree, a byte a cell: the depth of the cell's sea (GEBCO elevation below 0, averaged over the
-#             cell's 15" cells weighted by their sea share), coded by code_depth().
+#   depth     DEPTH_CPD a degree (1'), a byte a cell: the depth of the cell's sea (GEBCO elevation below 0, averaged over
+#             the cell's 15" cells weighted by their earth-1 sea share), coded by code_depth().
 import os, sys, zlib
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -15,20 +15,23 @@ DEPTH_CPD = 60         # the depth layer's cells a degree (1')
 Q = 15
 
 
+DEPTH_FINE_M = 200          # 1 m steps to here (platforms stand to sectors.Oil.PLATFORM_MAX_DEPTH_M, 150 m)
+DEPTH_COARSE_M = 10         # then 10 m steps...
+DEPTH_DEEP = 255            # ...to 750 m; this code is 750 m or deeper (the abyss is one code: it compresses to nothing)
+
+
 def code_depth(d):
-    """Metres below the sea's level to a byte: 0 under 0.5 m (or no sea); 1-100 m by the metre; then 5 m steps to
-    500 m (101-180); 100 m steps to 7,900 m (181-254); 255 deeper."""
+    """Metres below the sea's level to a byte: 0 under 0.5 m (or no sea); 1 to 200 the metres; 201 to 254 are
+    200 m + 10 m a step; 255 is 750 m or deeper."""
     d = np.asarray(d, np.float64)
-    v = np.where(d < 0.5, 0,
-        np.where(d <= 100, np.round(d),
-        np.where(d <= 500, 100 + np.round((d - 100) / 5),
-        np.where(d <= 7900, 180 + np.round((d - 500) / 100), 255))))
-    return np.clip(v, 0, 255).astype(np.uint8)
+    v = np.where(d < 0.5, 0, np.where(d <= DEPTH_FINE_M, np.round(d), DEPTH_FINE_M + np.round((d - DEPTH_FINE_M) / DEPTH_COARSE_M)))
+    return np.clip(v, 0, DEPTH_DEEP).astype(np.uint8)
 
 
 def decode_depth(v):
+    """A code's depth in metres (255: 750, the least it may be)."""
     v = np.asarray(v, np.float64)
-    return np.where(v <= 100, v, np.where(v <= 180, 100 + (v - 100) * 5, np.where(v <= 254, 500 + (v - 180) * 100, 8000)))
+    return np.where(v <= DEPTH_FINE_M, v, DEPTH_FINE_M + (v - DEPTH_FINE_M) * DEPTH_COARSE_M)
 
 
 def subsample(gp, k=SUB):
