@@ -42,8 +42,9 @@ import static ham.citybuildersim.ui.Pieces.*;
  * (BuildingManager, DEATH CARE FIRST WHILE THE DEAD WAIT), the plan's own
  * line says so under the caption, and the arrows move a site within its
  * group - the death care at the top, the rest below - never across. Since
- * 0.7.130, while a depot is on site the builders build it first, off the top
- * of their month, and the death care beside it at the same priority
+ * 0.7.130, while a depot on site would be starved by the crews' rule the
+ * builders build it first, off the top of their month, and the death care
+ * beside it at the same priority
  * (BuildingManager, THE BUILDERS' OWN DEPOTS FIRST): the plan's line says
  * that instead, and a depot of the city's own heads its order with the
  * death care.
@@ -257,9 +258,13 @@ final class ConstructionScreen {
                 + "its share of the crews first - each what it still owes - ahead of your order, and the rest "
                 + "of the city's sites follow in your order or, with none set, by the rule. The unburied make "
                 + "people sick, and the sick do not build. Once they are buried, the order is yours again.\n\n"
-                + "THE BUILDERS' DEPOTS FIRST. A depot on site - the builders' own, or one the city bought - is "
-                + "built before every other site, out of the builders' whole month: they put their own crews on "
-                + "their own yard first, and the city gets the crews it adds from the month after it opens. "
+                + "THE BUILDERS' DEPOTS FIRST. A depot on site - the builders' own, or one the city bought - that "
+                + "the crews' rule would keep there longer than the "
+                + String.format("%.0f", ham.citybuildersim.BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING)
+                + " months of queue the builders expand at is "
+                + "built before every other site, out of the builders' whole month, as long as the city could staff "
+                + "it: they put their own crews on their own yard first, and the city gets the crews it adds from "
+                + "the month after it opens. "
                 + "While the dead wait, the death care goes first beside the depots, at the same priority: the "
                 + "two share the crews by the rule, neither ahead of the other, and every other site, yours "
                 + "included, shares what is left.\n\n"
@@ -281,8 +286,8 @@ final class ConstructionScreen {
         top.setStyle("-fx-padding: 10 12 6 12;");
         table.getChildren().add(top);
         // ...and while the dead wait, the line that says their care goes first (0.7.129);
-        // while a depot is on site, the one that says the builders build it first
-        // (0.7.130) - a warning only while the dead wait.
+        // while a depot on site goes first, the one that says the builders build it
+        // first (0.7.130) - a warning only while the dead wait.
         String firstLine = plan.line();
         if (firstLine != null) {
             Label first = new Label(firstLine);

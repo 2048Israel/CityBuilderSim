@@ -10,10 +10,11 @@ import java.util.Locale;
 
 /**
  * The builders' own depots first (0.7.130, batch T1-C): the rule that serves
- * a depot on site off the top of the builders' month, before the crews' rule
- * shares the rest - and, while the dead wait, the city's death care beside it
- * at the same priority - held on a city whose builders are stalled the way
- * the trace found Jerus's.
+ * a depot on site the crews' rule would starve - keep there past the months
+ * the builders expand at - off the top of their month, before the rule shares
+ * the rest, while the city could staff it; and, while the dead wait, the
+ * city's death care beside it at the same priority - held on a city whose
+ * builders are stalled the way the trace found Jerus's.
  *
  * WHY. Batch T1 traced Jerus's construction-bound city (the project's
  * why-the-builders-stall.md, section 3): repairs took 0.81 of the builders'
@@ -46,9 +47,11 @@ import java.util.Locale;
  *      left; the line and the one wait say so.
  *   4. THE BUILDERS GROW: over a fixed run the city with the rule opens its
  *      first depot within the months its points take at the trap's month
- *      (and one more), orders the next the month it opens, and ends with
- *      more nameplate; the twin without it holds its nameplate and its plan
- *      says "already building" every month.
+ *      (and one more), orders the next the month after, and from then its
+ *      one order never holds the plan past the months it expands at (and
+ *      one more) - a depot the rule would open in time waits by the rule -
+ *      and it ends with more nameplate; the twin without it holds its
+ *      nameplate and its plan says "already building" every month.
  *   5. NEVER LAID OFF THE MONTH IT OPENS (the 0.7.17 failure: depots bought
  *      for rushes, then laid off): every month a depot opens the builders
  *      offer every post and their loss clock is under the retirement rule's,

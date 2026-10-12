@@ -4577,12 +4577,14 @@ public class BuildingManager {
             }
             String depots = buildersOnSite == 1 ? "1 depot" : String.format(java.util.Locale.CANADA, "%,d depots", buildersOnSite);
             if (deathCareFirst.isEmpty()) {
-                return String.format(java.util.Locale.CANADA, "%s: %s on site, which they build before every other"
-                        + " site.", BUILDERS_FIRST, depots);
+                return String.format(java.util.Locale.CANADA, "%s: %s on site that the crews' rule would hold past"
+                        + " %.0f months, so they build it before every other site.", BUILDERS_FIRST, depots,
+                        BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING);
             }
-            return String.format(java.util.Locale.CANADA, "%s, and death care beside them: %s on site and %,.0f dead"
-                    + " unburied, so the depots and the city's cemeteries and crematoria share the crews before every"
-                    + " other site.", BUILDERS_FIRST, depots, Math.ceil(unburied));
+            return String.format(java.util.Locale.CANADA, "%s, and death care beside them: %s on site that the crews'"
+                    + " rule would hold past %.0f months, and %,.0f dead unburied, so the depots and the city's cemeteries"
+                    + " and crematoria share the crews before every other site.", BUILDERS_FIRST, depots,
+                    BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING, Math.ceil(unburied));
         }
         /** This month's share of the crews, before any overtime. */
         public double shareOf(String key) { int i = keys.indexOf(key); return i < 0 ? 0 : share[i]; }
@@ -4881,11 +4883,12 @@ public class BuildingManager {
     /* ---------------------------------------------------------------------
        THE BUILDERS' OWN DEPOTS FIRST (0.7.130, batch T1-C)
 
-       Whenever a depot is on site - a stack of a template that adds to the
-       builders' capacity (addsToTheBuilders(): the Construction sector's, and
-       it makes building work), whoever paid for it - it is served off the
-       top of the month's site output, before the crews' rule shares the rest:
-       it takes what it still owes, or the whole month if less. While the
+       A depot on site - a stack of a template that adds to the builders'
+       capacity (addsToTheBuilders(): the Construction sector's, and it makes
+       building work), whoever paid for it - that the crews' rule would
+       starve is served off the top of the month's site output, before the
+       rule shares the rest: it takes what it still owes, or the whole month
+       if less (goesFirst(), the two tests below). While the
        dead wait, the city's death care is served beside it, at the same
        priority: the FIRST GROUP, the depots and the death care together, is
        served first, and shares what it takes among its sites by the crews'
@@ -4895,6 +4898,23 @@ public class BuildingManager {
        order when one is set (firstOffTheTop(), then applyPriority()). With
        no depot on site, death care first is T1-B's rule as it was, out of
        the city's share (DEATH CARE FIRST WHILE THE DEAD WAIT, above).
+
+       ONLY A DEPOT THE RULE WOULD STARVE. A depot goes first only while the
+       crews' rule would keep it on site longer than the months the builders
+       expand at (BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING, its
+       wait held steady at their month for the sites with every post offered,
+       Game.getBuildingOutputAtEveryPost(), through setSitesAtEveryPost()):
+       a depot that cannot open inside the queue it was ordered to clear is
+       the stall the trace found, one the rule opens in time is not. Served
+       first whenever on site, the first version moved every city: in the
+       ensemble's first ten cities its builders had twice the nameplate and,
+       though fewer banks failed (85 against 115), unemployment's monthly
+       move was half as much again (p95 4.80 points against 3.28) - 0.7.17's
+       signature (EVERY BUILDING GETS THE CREW IT CAN USE, above); in the
+       default playtest the builders laid crews off in 3,133 months of 3,993
+       (1,885 before), and three harnesses' played towns took other paths.
+       Starved alone, the trap's arithmetic is the same: a depot owing 400 at
+       79 points a month waits 327 months by the rule.
 
        ONLY A DEPOT THE CITY COULD STAFF. A depot goes first only while the
        city could staff the depots on site - the test the builders' own plan
@@ -4935,8 +4955,8 @@ public class BuildingManager {
        the same whole month beside it. The city's own order still sets only
        the city's part of what is left.
 
-       ONE WAIT. Every wait reads it while a depot is on site, or a depot is
-       the thing being quoted (firstWait()): a site of the first group by the
+       ONE WAIT. Every wait reads it while a depot is served first, or a
+       depot quoted would be (firstWait()): a site of the first group by the
        crews' rule among the group, every other one behind the group's points
        at the month's whole pace and then as it would wait among the rest.
        BuildersFirstCheck holds it, on a fixture that causes the stall.

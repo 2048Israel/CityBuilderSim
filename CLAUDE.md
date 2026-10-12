@@ -211,10 +211,11 @@ These are Jerus's, and they do not move.
                                    crews first (BuildingManager, DEATH CARE FIRST WHILE THE DEAD WAIT;
                                    DeathCareFirstCheck holds it on a fixture that causes the trap); and
                                    since 0.7.130 (batch T1-C) a depot on site, the builders' own or one
-                                   the city bought, is built off the top of the builders' whole month,
-                                   with that death care beside it at one priority (BuildingManager, THE
-                                   BUILDERS' OWN DEPOTS FIRST; BuildersFirstCheck holds it on a fixture
-                                   that causes the stall)
+                                   the city bought, that the crews' rule would keep there past the months
+                                   the builders expand at, and the city could staff, is built off the top
+                                   of the builders' whole month, with that death care beside it at one
+                                   priority (BuildingManager, THE BUILDERS' OWN DEPOTS FIRST;
+                                   BuildersFirstCheck holds it on a fixture that causes the stall)
         StrategicReserve.java      the city's strategic reserve of crude (0.7.85): what its tanks hold and cost,
                                    the fill ordered and the release standing, the city's side of crude's
                                    clearing (Markets.CityTrader) and the month the next strike settles;
