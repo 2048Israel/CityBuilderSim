@@ -312,7 +312,9 @@ The cost is that a player downloads earth-1's 53 MB again inside it. Old Earth s
 
 ### 2.8 The bake, and the release
 
-**The baked file:** 135,965,097 bytes, SHA-256 `6ccb4794b15f1c217ad368b1dd883223711a35ca54a8de2bc7757606766fa8c3`, built 2026-10-12 (also in `tools/earth/earth-2.sha256`).
+**The released file (2026-10-12, at 15″, D3):** 281,761,695 bytes, SHA-256 `c897b2421d0b742899c034eeba84a4668f6534cae85e9c5500fa9a26172ae33b` (also in `tools/earth/earth-2.sha256`), the asset of the release `earth-2`; GitHub's own digest of the asset matches.
+
+**The first bake, at 30″, superseded:** 135,965,097 bytes, SHA-256 `6ccb4794b15f1c217ad368b1dd883223711a35ca54a8de2bc7757606766fa8c3`, built 2026-10-12.
 - **check2's 36 checks all pass:** earth-1's layers byte for byte; the shares nested; no slope on water and no depth on land; Medellín's valley floor 100% flat; Everest 47% very steep within 15 km; the Narrows shallow; Halifax and Dartmouth one landmass, Prince Edward Island its own, and the landmass rule's crossings.
 - **It is not in git**, as earth-1 is not.
 - **The release `earth-2` is yours to make on GitHub's website**, as you made `earth-1`. Its assets are earth-2.bin, `tools/earth/earth-2.sha256` and `tools/earth/ATTRIBUTION-2.txt`.
