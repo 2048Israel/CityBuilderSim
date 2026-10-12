@@ -155,6 +155,15 @@ public class TradeCostCheck {
         // pulpwood - its import end (70 in the study's first table) one of the eight widened bands (its 1.2).
         { Good.SAWLOGS,                  .110,       .065  },
         { Good.PULPWOOD,                 .090,       .035  },
+        // ...and the mills' six (0.7.140, batch I10; spec-materials 2.3, the study's 5.3 and 5.6): lumber, panels and residues
+        // a cubic metre, pulp, paper and pellets a tonne - residues' import end and panels', pulp's and pellets' export ends four
+        // of the eight widened bands (its 1.2).
+        { Good.LUMBER,                   .340,       .250  },
+        { Good.PANELS,                   .420,       .260  },
+        { Good.RESIDUES,                 .045,       .015  },
+        { Good.PULP,                     .760,       .600  },
+        { Good.PAPER,                   1.050,       .880  },
+        { Good.WOOD_PELLETS,             .220,       .150  },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */

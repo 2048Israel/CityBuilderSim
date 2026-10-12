@@ -6418,8 +6418,64 @@ public final class GameVersion {
      *     still stall as villages, now on general and senior care, the
      *     school and the pensions against their tax - one Small Childcare
      *     Centre each (runs/fixCC1-notes.md).
+     *
+     * 0.7.140 (2026-10-12) - WOOD PRODUCTS. Batch I10, the eighth materials
+     * batch that changes the game: the fifth chain's processing industry
+     * (Jerus's Q16, Q20 and A of 2026-10-08; docs/studies/spec-materials.md
+     * 2.1-2.3, 2.7, 2.8, 2.12 and 5's I10 row; the study's 1.6 and 5.3-5.6;
+     * runs/brief-batchI10.md, runs/fixI10-notes.md). No save format change
+     * (39): a save from before it restores Wood Products empty, wood's five
+     * held as none and their markets fresh - missing, not misread.
+     *   - THE SECTOR: "Wood Products" on the end of Sectors.KEYS after
+     *     Forestry, the twenty-fourth. sectors.WoodProducts, a
+     *     ProcessingSector making LUMBER, RESIDUES, PANELS, PULP, PAPER and
+     *     WOOD_PELLETS of SAWLOGS, PULPWOOD, RESIDUES, PULP and FUEL_OIL;
+     *     residues and pulp captive - the sawmills' chips to the pulp and
+     *     pellet mills, the pulp mill's pulp to the paper mill - lumber its
+     *     planning good. Forestry's logs are bought at home before the
+     *     world's, as the markets clear any city's own supply first.
+     *   - THE GOODS (Good, appended; the study's 5.3 and 5.6): lumber 340 /
+     *     250, panels 420 / 260 and residues 45 / 15 a cubic metre (0.5,
+     *     0.62 and 0.9 t), pulp 760 / 600, paper 1,050 / 880 and pellets 220
+     *     / 150 a tonne, freight three eighths of each wedge; all but the
+     *     residues stockable, on NationalAccounts.HELD's end; lumber, panels
+     *     and paper by the goods stream and containers, the rest bulk - chips
+     *     and pellets dry bulk by sea, pulp's bales general cargo. Nobody here
+     *     buys lumber, panels, paper or pellets yet: they ship.
+     *   - THE ROWS (ids 133-138; the study's 5.4 at spec 2.2's conventions):
+     *     the Sawmill, D$15M, and the Large Sawmill, D$150M; the Panel Mill,
+     *     D$140M, "since" 1980; the Pulp Mill, D$260M, its liquor and bark
+     *     its own power - none bought and 13,500 kW sold to the grid at the
+     *     tariff (the template's gen, the study's 1.6, Q20); the Paper Mill,
+     *     D$150M, on 850,000 litres of fuel oil a month - the refinery's first
+     *     fuel-oil buyer - and 19 ha; the Wood Pellet Mill, D$30M, "since"
+     *     1970. Power by the research's kWh a unit (the sawmills 104 a cubic
+     *     metre, the panel mill 207, the pellet mill the Pelletising
+     *     Plant's), the consumables the study's running cost less wages, the
+     *     power bought, water and the paper mill's fuel at the middle of its
+     *     band (★). At parity the four cases are the study's 5.5: case A at
+     *     most 0.4% (the pulp and pellet mills), the paper mill 0.0% on the
+     *     city's pulp exporting and 0.6% replacing imported paper.
+     *   - THE SCREENS: Build's "Wood" group holds Forestry's four and Wood
+     *     Products' six.
+     *   - Harnesses: WoodProductsCheck (new, the 107th: the registry and the
+     *     goods, the six rows against the study's 5.5, the chain captive, the
+     *     pulp mill's power sold, Forestry's logs before imports, the plan at
+     *     founding, a played city saved and reloaded); BuildingDataCheck (139
+     *     buildings, four works making power, forty-one buying consumables,
+     *     since), BuildCardCheck (the Wood group), GdpCheck (HELD's end and
+     *     the mills' yards), MaterialsCheck 3 (three sectors keep captive
+     *     goods), TradeCostCheck (six prices), ForestryCheck 1 (Wood Products
+     *     after it).
+     *   - THE PLAYTESTS MOVE from Wood Products' first order, on imported
+     *     feed for export (no crew stands in either city: the logs are the
+     *     salvage cut's): the default at m1560, a Panel Mill; the Earth at
+     *     m856, a Wood Pellet Mill. Each run orders two and sells both back
+     *     within a year of opening - the churn of works on imported feed
+     *     Jerus let stand (I7-K, 2026-10-12). Every month passes the audit
+     *     and every reload matches; re-baselined.
      */
-    public static final String VERSION = "0.7.139";
+    public static final String VERSION = "0.7.140";
 
     /**
      * The save shape.

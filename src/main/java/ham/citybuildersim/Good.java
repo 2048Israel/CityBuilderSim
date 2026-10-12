@@ -1037,7 +1037,62 @@ public enum Good {
     SAWLOGS("Sawlogs", "cubic metre", .110, .065, .016875, false, Pricing.BAND, false, Double.NaN, .9),
 
     /** Pulpwood - roundwood for chips, pulp and panels - by the cubic metre: the other half. Forest's pricing good (Resource.FOREST). A flow good. */
-    PULPWOOD("Pulpwood", "cubic metre", .090, .035, .020625, false, Pricing.BAND, false, Double.NaN, .9);
+    PULPWOOD("Pulpwood", "cubic metre", .090, .035, .020625, false, Pricing.BAND, false, Double.NaN, .9),
+
+    /* =======================================================================
+       WOOD'S GOODS (0.7.140, batch I10; docs/studies/spec-materials.md 2.3,
+       materials-chains-research.md 5.3 and 5.6). Wood Products saws SAWLOGS
+       into LUMBER, and into RESIDUES - the chips and sawdust that are four
+       tenths of a log [W26] - presses PULPWOOD into PANELS (oriented strand
+       board), cooks pulpwood and residues into PULP, makes PAPER of pulp
+       (Jerus's Q16) and presses residues into WOOD_PELLETS (sectors
+       .WoodProducts). The study's prices, D$ at the founding parity, import
+       over export: lumber 340 / 250 a cubic metre (framing lumber about
+       US$275 a cubic metre actual [W49]), panels 420 / 260, residues 45 / 15,
+       pulp 760 / 600 a tonne (NBSK net US$680-750 [W53]), paper 1,050 / 880
+       (UPM's about US$980 [W56]) and pellets 220 / 150 (CIF NW Europe US$202
+       [W54]) - five of the study's eight widened bands among them (its 1.2:
+       residues' import end, loose chips taking about 2.5 times the room of
+       solid wood; panels', pulp's and pellets' export ends, the netback after
+       ocean freight). Freight three eighths of each wedge (this file's rule).
+       At these bands case A - feed imported, output exported - earns at most
+       0.4% of a works' cost a month (the pulp mill and the pellet mill; the
+       study's 1.2), under the hurdle.
+
+       BY THE CUBIC METRE, lumber, panels and residues (spec 2.3, est.): sawn
+       lumber 0.5 t a cubic metre, OSB 0.62 [W35], chips and sawdust green as
+       the logs they came from, 0.9 (tonnesPerUnit()). Pulp, paper and pellets
+       by the tonne.
+
+       STOCKABLE: lumber, panels, pulp, paper and pellets, each joining
+       NationalAccounts.HELD on its end; residues are a flow good, as the logs
+       are - a mill's chips go to the pulp mill or the pellet mill beside it
+       (captive, the spec's 2.7) or out of the gate. Lumber, panels and paper go
+       by the GOODS stream (spec 2.3) and so, by sea, in containers, as the rest
+       of that stream goes (Ports.Cargo.CONTAINER); residues, pulp and pellets
+       by the BULK stream - chips and pellets by sea as dry bulk, by grab, and
+       pulp as general cargo, its bales lifted in units. Nobody here buys
+       lumber or panels until the construction upgrade, or paper until a
+       basket does (spec 2.12): they ship.
+       ======================================================================= */
+
+    /** Sawn lumber, by the cubic metre: a sawmill's, of sawlogs, about half of each log. Stockable. */
+    LUMBER("Lumber", "cubic metre", .340, .250, .03375, true, Pricing.BAND, false, Double.NaN, .5),
+
+    /** Wood panels - oriented strand board - by the cubic metre: the Panel Mill's, of pulpwood. Stockable. */
+    PANELS("Panels", "cubic metre", .420, .260, .06, true, Pricing.BAND, false, Double.NaN, .62),
+
+    /** Mill residues - chips and sawdust - by the cubic metre, green: a sawmill's, four tenths of each log; the pulp mill's and the pellet mill's feed. A flow good. */
+    RESIDUES("Residues", "cubic metre", .045, .015, .01125, false, Pricing.BAND, false, Double.NaN, .9),
+
+    /** Wood pulp - northern bleached softwood kraft - by the tonne: the Pulp Mill's, of pulpwood and residues; the paper mill's feed. Stockable. */
+    PULP("Pulp", "tonne", .760, .600, .06, true, Pricing.BAND, false),
+
+    /** Paper - printing and writing - by the tonne: the Paper Mill's, of pulp. Nobody here buys it yet (spec 2.12): it ships. Stockable. */
+    PAPER("Paper", "tonne", 1.050, .880, .06375, true, Pricing.BAND, false),
+
+    /** Wood pellets, by the tonne: the Wood Pellet Mill's, of residues. Exported until the electricity run brings a buyer (spec 2.12). Stockable. */
+    WOOD_PELLETS("Wood pellets", "tonne", .220, .150, .02625, true, Pricing.BAND, false);
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -1251,8 +1306,10 @@ public enum Good {
             case AGGREGATE: case CEMENT:
             // ...and copper's (0.7.133): concentrate, anode, cathode, scrap and acid; rod and wire and cable are GOODS.
             case COPPER_CONC: case ANODE: case COPPER: case COPPER_SCRAP: case ACID:
-            // ...and wood's logs (0.7.138), on log trucks and flatcars.
+            // ...and wood's logs (0.7.138), on log trucks and flatcars; and (0.7.140) the mills' chips, pulp and
+            // pellets, by chip van, bale and hopper. Lumber, panels and paper are GOODS (spec 2.3).
             case SAWLOGS: case PULPWOOD:
+            case RESIDUES: case PULP: case WOOD_PELLETS:
             // A locomotive on a low-loader is not a crate of bread.
             case ROLLING_STOCK:
             // ...and crude, in tank wagons, as ore goes in hoppers. Petrol and
@@ -1288,11 +1345,14 @@ public enum Good {
      * seven, pig iron among them, (0.7.131) aggregate and cement, and
      * (0.7.133) copper concentrate and copper scrap. GENERAL is what is
      * lifted piece by piece - steel, fabricated steel, machinery, wagon sets,
-     * cars and vans, (0.7.133) copper anode and cathode, and (0.7.138) wood's
-     * sawlogs and pulpwood, slung aboard a log carrier. CONTAINER is the
+     * cars and vans, (0.7.133) copper anode and cathode, (0.7.138) wood's
+     * sawlogs and pulpwood, slung aboard a log carrier, and (0.7.140) pulp in
+     * bales; and dry bulk since 0.7.140 the mills' chips and the pellet mills'
+     * pellets as well. CONTAINER is the
      * rest of what the GOODS stream carries: the shelf, the drinks and the
-     * watches, in boxes, since 0.7.131 dimension stone's cut slabs, and since
-     * 0.7.133 copper rod and wire and cable.
+     * watches, in boxes, since 0.7.131 dimension stone's cut slabs, since
+     * 0.7.133 copper rod and wire and cable, and since 0.7.140 lumber, panels
+     * and paper.
      */
     public Ports.Cargo cargo() {
         switch (this) {
@@ -1308,12 +1368,16 @@ public enum Good {
             case AGGREGATE: case CEMENT:
             // ...and copper's concentrate and scrap (0.7.133), as ore and steel scrap go.
             case COPPER_CONC: case COPPER_SCRAP:
+            // ...and wood's chips and pellets (0.7.140), by grab out of a bulker's hold.
+            case RESIDUES: case WOOD_PELLETS:
                 return Ports.Cargo.DRY_BULK;
             case STEEL: case FABRICATED_STEEL: case MACHINERY: case ROLLING_STOCK: case CARS: case VANS:
             // ...and copper's anode and cathode (0.7.133), lifted in bundles as steel is.
             case ANODE: case COPPER:
-            // ...and wood's logs (0.7.138), slung aboard a log carrier by its own cranes.
+            // ...and wood's logs (0.7.138), slung aboard a log carrier by its own cranes; and (0.7.140) pulp, its
+            // bales lifted in units.
             case SAWLOGS: case PULPWOOD:
+            case PULP:
                 return Ports.Cargo.GENERAL;
             default:
                 Traffic stream = traffic();

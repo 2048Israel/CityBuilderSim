@@ -165,7 +165,7 @@ These are Jerus's, and they do not move.
                                    CopperRefiningCheck and MoneyCheck hold it
         SimulationEngine.java      the order the month runs in (200 lines - read it whole)
         Sector.java / Sectors.java the template every business extends, and the registry
-        sectors/                   twenty-three sector classes, RefineryFlow (0.7.80: the refinery's units, the
+        sectors/                   twenty-four sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the
                                    feed, ground, staff and money gates - and the idle-then-shed rule; the
@@ -204,9 +204,15 @@ These are Jerus's, and they do not move.
                                    what was cut and its planted stands' growth, a Tree Plantation or a
                                    Woodlot planted on its zone while its cut outgrows the regrowth, and
                                    the standing wood a building clears sold as its salvage cut,
-                                   billed by the builders) - each new sector held by its own check:
-                                   CoalMiningCheck, QuarryingCheck and CementConcreteCheck,
-                                   CopperMiningCheck and CopperRefiningCheck, and ForestryCheck;
+                                   billed by the builders; since 0.7.140, batch I10, WoodProducts,
+                                   the twenty-fourth - sawmills, a panel, pulp, paper and pellet
+                                   mill on ProcessingSector, the sawmills' residues and the pulp
+                                   mill's pulp to its own mills first, the pulp mill's liquor its
+                                   own power and 13,500 kW sold, the paper mill on fuel oil, and
+                                   Forestry's logs bought before the world's) - each new sector held
+                                   by its own check: CoalMiningCheck, QuarryingCheck and
+                                   CementConcreteCheck, CopperMiningCheck and CopperRefiningCheck,
+                                   ForestryCheck and WoodProductsCheck;
                                    Mining.java is the shape to copy for a mine (on ExtractionSector
                                    since 0.7.112), CementConcrete.java the shortest of all (0.7.131,
                                    on ProcessingSector) and Materials.java the shortest on Sector
@@ -306,7 +312,7 @@ These are Jerus's, and they do not move.
                                    ranking where the money, the ground or the payback will not run to the
                                    first - borrowing on the funding page's bond; its log, its inbox
                                    notices - AutoBuildCheck holds it
-        BuildCard.java             one build card's figures for all 133 buildings (0.7.25): what it gives the
+        BuildCard.java             one build card's figures for all 139 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
                                    fails for them (since 0.7.75 every gate, with what it would earn, cost and
@@ -539,7 +545,7 @@ These are Jerus's, and they do not move.
                                    stamp of the city at the rail's foot above Menu, its preview on hover,
                                    the land office's map over the window on a click; MiniMapFrame's
                                    arithmetic). The model never imports it.
-        *Check.java                106 harnesses, each a main() with static helpers
+        *Check.java                107 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103);

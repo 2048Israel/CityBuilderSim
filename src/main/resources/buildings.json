@@ -137,6 +137,14 @@
   "ha) makes nothing to sell: its 'land' is its hectares, which grow 20 m3 of wood a",
   "hectare a year back into the forest, and Forestry plants one on its zone, never",
   "anywhere else, while its cut exceeds the regrowth.",
+  "WOOD PRODUCTS (0.7.140) turns the logs into goods: a SAWMILL or a LARGE SAWMILL saws",
+  "SAWLOGS into LUMBER and RESIDUES (chips and sawdust), the PANEL MILL presses PULPWOOD into",
+  "PANELS (OSB), the PULP MILL cooks PULPWOOD and RESIDUES into PULP, the PAPER MILL makes",
+  "PAPER of PULP and burns FUEL_OIL (litres) for its drying steam, and the WOOD PELLET MILL",
+  "presses RESIDUES into WOOD_PELLETS. Lumber, panels and residues are cubic metres, the rest",
+  "tonnes. Residues and pulp go to the sector's own mills first and only the rest is sold or",
+  "bought (captive). The Pulp Mill burns its black liquor and bark: its \"gen\" of 13,500 kW",
+  "meets its own draw and is all sold to the grid.",
   "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
@@ -158,7 +166,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 133,
+ "nextId": 139,
  "buildings": [
   {
    "id": 0,
@@ -3313,6 +3321,179 @@
    "land": 10763910,
    "roadLoad": 0,
    "since": 1900
+  },
+  {
+   "id": 133,
+   "name": "Sawmill",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Wood Products",
+   "cashCost": 11544,
+   "constructionPoints": 5772,
+   "constructionMaterials": 192,
+   "electricity": 296,
+   "water": 26,
+   "consumables": 28.3,
+   "jobs": {
+    "NO_DIPLOMA": 19,
+    "DIPLOMA": 12,
+    "COLLEGE_ENGINEERING": 3,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 45062,
+   "roadLoad": 267,
+   "stock": 6240,
+   "makes": {
+    "LUMBER": 2080,
+    "RESIDUES": 1640
+   },
+   "uses": {
+    "SAWLOGS": 4000
+   },
+   "since": 1900
+  },
+  {
+   "id": 134,
+   "name": "Large Sawmill",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Wood Products",
+   "cashCost": 115386,
+   "constructionPoints": 57693,
+   "constructionMaterials": 1923,
+   "electricity": 2852,
+   "water": 247,
+   "consumables": 267.83,
+   "jobs": {
+    "NO_DIPLOMA": 70,
+    "DIPLOMA": 45,
+    "COLLEGE_ENGINEERING": 12,
+    "UNIV_SCIENCE": 3
+   },
+   "land": 450616,
+   "roadLoad": 2570,
+   "stock": 60060,
+   "makes": {
+    "LUMBER": 20020,
+    "RESIDUES": 15785
+   },
+   "uses": {
+    "SAWLOGS": 38500
+   },
+   "since": 1900
+  },
+  {
+   "id": 135,
+   "name": "Panel Mill",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Wood Products",
+   "cashCost": 107690,
+   "constructionPoints": 53845,
+   "constructionMaterials": 1795,
+   "electricity": 4253,
+   "water": 368,
+   "consumables": 888.83,
+   "jobs": {
+    "NO_DIPLOMA": 54,
+    "DIPLOMA": 35,
+    "COLLEGE_ENGINEERING": 9,
+    "UNIV_SCIENCE": 2
+   },
+   "land": 420575,
+   "roadLoad": 1496,
+   "stock": 45000,
+   "makes": {
+    "PANELS": 15000
+   },
+   "uses": {
+    "PULPWOOD": 27750
+   },
+   "since": 1980
+  },
+  {
+   "id": 136,
+   "name": "Pulp Mill",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Wood Products",
+   "cashCost": 200006,
+   "constructionPoints": 100003,
+   "constructionMaterials": 3333,
+   "electricity": 0,
+   "water": 11600,
+   "gen": 13500,
+   "consumables": 713.76,
+   "jobs": {
+    "NO_DIPLOMA": 84,
+    "DIPLOMA": 74,
+    "COLLEGE_ENGINEERING": 34,
+    "UNIV_SCIENCE": 8
+   },
+   "land": 781067,
+   "roadLoad": 2425,
+   "stock": 33000,
+   "makes": {
+    "PULP": 11000
+   },
+   "uses": {
+    "PULPWOOD": 28000,
+    "RESIDUES": 21500
+   },
+   "since": 1900
+  },
+  {
+   "id": 137,
+   "name": "Paper Mill",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Wood Products",
+   "cashCost": 115386,
+   "constructionPoints": 57693,
+   "constructionMaterials": 1923,
+   "electricity": 4900,
+   "water": 1450,
+   "consumables": 338.7475,
+   "jobs": {
+    "NO_DIPLOMA": 50,
+    "DIPLOMA": 45,
+    "COLLEGE_ENGINEERING": 20,
+    "UNIV_SCIENCE": 5
+   },
+   "land": 2045143,
+   "roadLoad": 529,
+   "stock": 16500,
+   "makes": {
+    "PAPER": 5500
+   },
+   "uses": {
+    "PULP": 5775,
+    "FUEL_OIL": 850000
+   },
+   "since": 1900
+  },
+  {
+   "id": 138,
+   "name": "Wood Pellet Mill",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Wood Products",
+   "cashCost": 23070,
+   "constructionPoints": 11535,
+   "constructionMaterials": 385,
+   "electricity": 230,
+   "water": 20,
+   "consumables": 54.64,
+   "jobs": {
+    "NO_DIPLOMA": 16,
+    "DIPLOMA": 10,
+    "COLLEGE_ENGINEERING": 3,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 90123,
+   "roadLoad": 780,
+   "stock": 18000,
+   "makes": {
+    "WOOD_PELLETS": 6000
+   },
+   "uses": {
+    "RESIDUES": 13200
+   },
+   "since": 1970
   }
  ]
 }

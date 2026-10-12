@@ -25,8 +25,8 @@ import java.util.Locale;
  *
  * WHAT THIS HAS TO PROVE:
  *
- *   1. THE SECTOR ON THE REGISTRY: Forestry the twenty-third and last key,
- *      after Copper Refining; an ExtractionSector on the forest making sawlogs
+ *   1. THE SECTOR ON THE REGISTRY: Forestry the twenty-third key, after
+ *      Copper Refining (Wood Products after it since 0.7.140); an ExtractionSector on the forest making sawlogs
  *      and pulpwood; what is as long as the keys grew with them; the two
  *      goods at the study's 5.3 prices, freight three eighths of each wedge,
  *      by the cubic metre at 0.9 t, flow goods; Resource.FOREST priced as
@@ -149,8 +149,9 @@ public class ForestryCheck {
         out.println("--- 1. the sector on the registry: Forestry after copper's two, a cutter of the forest, its goods priced ---");
         String[] keys = Sectors.KEYS;
         int at = java.util.Arrays.asList(keys).indexOf(Sectors.FORESTRY);
-        assertTrue("Sectors.KEYS has Forestry after Copper Refining, the twenty-third and last (Jerus's Q21: iron, coal, stone, copper,"
-                + " wood)", at == 22 && keys[at - 1].equals(Sectors.COPPER_REFINING) && keys.length == at + 1);
+        assertTrue("Sectors.KEYS has Forestry after Copper Refining, the twenty-third (Jerus's Q21: iron, coal, stone, copper, wood) -"
+                + " Wood Products after it since 0.7.140", at == 22 && keys[at - 1].equals(Sectors.COPPER_REFINING)
+                && keys[at + 1].equals(Sectors.WOOD_PRODUCTS));
         Sectors s = new Sectors(new BuildingManager(), new Markets());
         Forestry fo = s.forestry();
         assertTrue("...an extraction sector on the forest, found by its saved name, making sawlogs and pulpwood (and buying its vans, as"
@@ -682,7 +683,7 @@ public class ForestryCheck {
                 input != null && revenue != null && same(input, billed) && same(revenue, billed),
                 String.format("D$%,.2fk / %s", input == null ? 0 : input, revenue == null ? "none" : String.format("D$%,.2fk", revenue)));
         Sector.Split exported = fo.statement().sold.get(Good.SAWLOGS);
-        assertTrue("...and the wood sold - abroad, nobody here buying logs until Wood Products", exported != null && exported.abroad > 0);
+        assertTrue("...and the wood sold - abroad, nobody here buying logs without a Wood Products mill (0.7.140)", exported != null && exported.abroad > 0);
         assertTrue("W exact after the months played", w(land));
         double cutBefore = fo.getCutThisMonth();
         quietly(() -> g.saveGame(10, "forestrycheck-played"));

@@ -407,11 +407,12 @@ public class BuildingDataCheck {
         assertTrue("the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated"
                         + " Highway 1.25% - and no other building has: " + repairs,
                 repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125)));
-        assertTrue("...and 133 buildings in all (0.7.138: Forestry's two crews and two planted stands; 129 from 0.7.133, Copper"
+        assertTrue("...and 139 buildings in all (0.7.140: Wood Products' six; 133 from 0.7.138, Forestry's two crews and two planted"
+                        + " stands; 129 from 0.7.133, Copper"
                         + " Mining's three, Copper Refining's four and Manufacturing's Wire & Cable Works; 121 from 0.7.131, Quarrying's three and Cement & Concrete's three; 115 from 0.7.126, Coal Mining's four;"
                         + " 111 from 0.7.124, Iron Mining's three; 108 from 0.7.123, the integrated route's seven; 101 from 0.7.91, 98 from"
                         + " 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76 until then)",
-                data.size() == 133);
+                data.size() == 139);
 
         /* ---------- the oil storage (0.7.85, batch O8; spec-oil 2.8) ----------
 
@@ -651,13 +652,18 @@ public class BuildingDataCheck {
         }
         int ovens = ham.citybuildersim.sectors.HeavyIndustry.COKE_OVENS, furnace = ham.citybuildersim.sectors.HeavyIndustry.BLAST_FURNACE,
                 shop = ham.citybuildersim.sectors.HeavyIndustry.OXYGEN_STEEL_SHOP;
-        assertTrue("three works make power, the study's 1.6: the Coke Ovens 8,000 kW, the Blast Furnace 60,000, the Oxygen Steel Shop"
-                + " 25,000: " + making, making.equals(java.util.Map.of(ovens, 8000.0, furnace, 60000.0, shop, 25000.0)));
+        int pulp = ham.citybuildersim.sectors.WoodProducts.PULP_MILL;
+        assertTrue("four works make power, the study's 1.6: the Coke Ovens 8,000 kW, the Blast Furnace 60,000, the Oxygen Steel Shop"
+                + " 25,000 - and since 0.7.140 the Pulp Mill 13,500, from its liquor and bark: " + making,
+                making.equals(java.util.Map.of(ovens, 8000.0, furnace, 60000.0, shop, 25000.0, pulp, 13500.0)));
         BuildingsTemplate ovensT = byId(data, ovens), furnaceT = byId(data, furnace), shopT = byId(data, shop);
         assertTrue("...so the ovens sell the grid 5,800 kW and the furnace 8,600, buying none, and the shop buys 26,600 and sells none"
                         + " (the study's 1.6)",
                 ovensT.powerSold() == 5800 && ovensT.powerBought() == 0 && furnaceT.powerSold() == 8600 && furnaceT.powerBought() == 0
                         && shopT.powerBought() == 26600 && shopT.powerSold() == 0);
+        BuildingsTemplate pulpT = byId(data, pulp);
+        assertTrue("...and the pulp mill draws nothing from the grid - its boiler meets its own draw - and sells it all 13,500 kW (0.7.140)",
+                pulpT.getElectricityConsumption() == 0 && pulpT.powerBought() == 0 && pulpT.powerSold() == 13500);
         assertTrue("...and every other building buys its whole draw and sells the grid none, to the bit", wholeDraw);
         java.util.Set<Integer> iron = new java.util.TreeSet<>(List.of(
                 ham.citybuildersim.sectors.HeavyIndustry.ARC_FURNACE, ham.citybuildersim.sectors.HeavyIndustry.MINI_MILL,
@@ -668,11 +674,13 @@ public class BuildingDataCheck {
         for (int id = ham.citybuildersim.sectors.Quarrying.QUARRY; id <= ham.citybuildersim.sectors.CementConcrete.LIME_KILN; id++) iron.add(id);
         for (int id = ham.citybuildersim.sectors.CopperMining.MINE_AND_MILL; id <= ham.citybuildersim.sectors.Manufacturing.WIRE_CABLE_WORKS; id++) iron.add(id);
         for (int id = ham.citybuildersim.sectors.Forestry.LOGGING_CAMP; id <= ham.citybuildersim.sectors.Forestry.WOODLOT; id++) iron.add(id);
-        assertTrue("thirty-five buy consumables, the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and"
+        for (int id = ham.citybuildersim.sectors.WoodProducts.SAWMILL; id <= ham.citybuildersim.sectors.WoodProducts.PELLET_MILL; id++) iron.add(id);
+        assertTrue("forty-one buy consumables, the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and"
                 + " the Iron Mine (14) of batch I3, Iron & Steel's seven of batch I4 (101-107), Iron Mining's three of batch I5 (108-110),"
                 + " Coal Mining's four of batch I6 (111-114), stone's six of batch I7 (115-120), copper's eight of batch I8 (121-128,"
-                + " the wire works' insulation among them) and Forestry's four of batch I9 (129-132: the crews' fuel and wear, the"
-                + " stands' seedlings); every other none: " + buying,
+                + " the wire works' insulation among them), Forestry's four of batch I9 (129-132: the crews' fuel and wear, the"
+                + " stands' seedlings) and Wood Products' six of batch I10 (133-138: the panel mill's resin among them); every other"
+                + " none: " + buying,
                 buying.equals(iron));
 
         /* ---------- the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) ----------
@@ -729,6 +737,11 @@ public class BuildingDataCheck {
             years.put(id, 1900);
         }
         years.put(ham.citybuildersim.sectors.Forestry.HARVESTING_OPERATION, 1973);
+        for (int id = ham.citybuildersim.sectors.WoodProducts.SAWMILL; id <= ham.citybuildersim.sectors.WoodProducts.PELLET_MILL; id++) {
+            years.put(id, 1900);
+        }
+        years.put(ham.citybuildersim.sectors.WoodProducts.PANEL_MILL, 1980);
+        years.put(ham.citybuildersim.sectors.WoodProducts.PELLET_MILL, 1970);
         assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1952 (E1, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
                         + " as standing before it - and batch I5's three: the Large Open-Pit Mine 1900, the two magnetite works 1955 (E4,"
@@ -737,7 +750,9 @@ public class BuildingDataCheck {
                         + " Cement Plant, 1902 (Edison's long kilns, research-1900.md 1.2); and batch I8's eight 1900 but the Large Copper"
                         + " Mine, 1906 (Bingham Canyon, research-1900.md 1.2), and the Leach & SX-EW Plant, 1968 (E12, Bluebird); and"
                         + " batch I9's four 1900 but the Harvesting Operation, 1973 (E14, PIKA 75) - the Tree Plantation and the Woodlot"
-                        + " available from the start (research-1900.md 12); no row before them: " + dated,
+                        + " available from the start (research-1900.md 12); and batch I10's six 1900 but the Panel Mill, 1980 (OSB about"
+                        + " 1980), and the Wood Pellet Mill, 1970 (the 1970s) - research-1900.md 1.2's words, both unverified; no row"
+                        + " before them: " + dated,
                 dated.equals(years));
 
         /* ---------- the raw coal a preparation plant washes (0.7.126, batch I6) ----------

@@ -21,7 +21,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| I10 | Wood products | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I11 | The materials pictograms' model | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I12 | The materials pictograms drawn | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I13 | Cards and pages for the materials buildings | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
