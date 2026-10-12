@@ -417,6 +417,7 @@ public class InvestCheck {
 
         /* ==================== 6b. ON ITS WHOLE COST (0.7.113) ==================== */
         wholeCost(root);
+        creditBeforeTheOwners(root);
 
         /* ==================== 7. costing matches the build path ==================== */
         System.out.println("\n--- quoted cost matches what the build charges ---");
@@ -1602,5 +1603,103 @@ public class InvestCheck {
         Game.Afford thinThree = g.sliceFor(three, cost, thin);
         assertTrue("...and earning half the lower bar, none of it - the slice the till pays for included",
                 thinThree.quantity() == 0);
+    }
+
+    /*
+     * THE CREDIT BEFORE THE OWNERS (0.7.136, batch FX1; Game, THE CREDIT
+     * BEFORE THE OWNERS). On the Earth playtest at month 1,293 Copper
+     * Refining raised D$3.8B of shares for an order the bank's capital rule
+     * then refused, and was left holding the equity (the I8 notes). The
+     * fixture causes it: a city a month old, the restaurants held out of its
+     * month and their till emptied, so a Diner is a new company's plan - the
+     * register asks its owners for their share of it (Equity.raiseFor(),
+     * NEW_EQUITY_SHARE) and the rest is borrowed; a Diner earning its whole
+     * cost a month, so the interest on it is no bar; and the bank's capital
+     * rule set to keep its borrowers going only, so no building's loan is
+     * written (BusinessDebtManager.setCapitalRule()). Asked of consider(), the
+     * owners are asked for nothing, the order is not placed, and the capital
+     * rule is what the investor names; with the rule lifted, the same order
+     * raises its owners' share and is placed. And a landlord's home alike,
+     * on a mortgage the lender will not write while the bank is shut: its
+     * owners' share (the down payment within it) is not raised for it.
+     */
+    static void creditBeforeTheOwners(Path root) {
+        System.out.println("\n--- the owners are asked only for an order the bank will lend the rest of (0.7.136) ---");
+        Game g = city(root, "owners");
+        BusinessInvestment plans = g.getBusinessInvestment();
+        BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
+        Equity register = g.getEquity();
+        String eat = Sectors.RESTAURANTS;
+        BuildingsTemplate diner = template(g, "Diner");
+        plans.holdSector(eat);
+        month(g);
+        g.getEconomyManager().setSectorCash(eat, 0);
+        int company = Equity.indexOf(eat);
+        double cost = plans.getCostOf(diner, 1);
+        double[] split = g.financingOf(eat, diner);
+        double rich = cost;
+        BusinessInvestment.Decision one = new BusinessInvestment.Decision(eat, diner, 1, "the fixture's", true);
+        System.out.printf("   a Diner: $%,.1fk - its owners asked for $%,.1fk, its till $%,.1fk, borrowed $%,.1fk%n",
+                split[0], split[1], split[2], split[3]);
+        assertTrue("fixture: the restaurants are a new company, so the register asks their owners for part of a Diner"
+                + " and the rest is borrowed", register.getRegime(company) == Equity.Regime.NEW && split[1] > 0 && split[3] > 0);
+        assertTrue("fixture: a Diner earning its whole cost a month carries the interest on its whole cost",
+                g.sliceFor(one, split[1] + split[2], rich).quantity() == 1);
+        credit.setCapitalRule(0, true);
+        assertTrue("fixture: the bank lends only to keep its borrowers going, so no building's loan is written",
+                credit.isKeepGoingOnly() && credit.projectLoanRoom(eat, split[3]) == 0);
+
+        double raisedBefore = register.getLifetimeRaisedHome(company) + register.getLifetimeRaisedAbroad(company);
+        double sharesBefore = register.getShares(company);
+        boolean placed = g.considerForTest(one, rich);
+        System.out.printf("   asked under the rule: %s%n", g.getLastInvestment(eat));
+        assertTrue("A PLAN THE BANK WILL NOT LEND THE REST OF RAISES NOTHING FROM ITS OWNERS",
+                register.getLifetimeRaisedHome(company) + register.getLifetimeRaisedAbroad(company) == raisedBefore
+                        && register.getShares(company) == sharesBefore);
+        check("...and its till is as it was", g.getEconomyManager().getSectorCash(eat), 0);
+        check("...and what the register would have asked is counted as withheld",
+                g.getRaisesWithheld().getOrDefault(eat, 0.0), split[1]);
+        assertTrue("no order is placed, and the investor says it was the bank's capital", !placed
+                && credit.wasRefusedForCapital(eat) && g.getLastInvestment(eat).startsWith("Holding: the bank is under its capital minimum"));
+        assertTrue("...and nothing was raised for an order not placed", g.getRaisedForNoOrder().isEmpty());
+
+        // ...and the same fact the other way up: with no limit on its lending, the same order raises and is placed.
+        credit.setCapitalRule(Double.POSITIVE_INFINITY, false);
+        boolean placedFree = g.considerForTest(one, rich);
+        System.out.printf("   asked with the rule lifted: %s%n", g.getLastInvestment(eat));
+        check("WITH THE BANK FREE TO LEND THE REST, THE SAME ORDER RAISES ITS OWNERS' SHARE",
+                register.getLifetimeRaisedHome(company) + register.getLifetimeRaisedAbroad(company) - raisedBefore, split[1]);
+        assertTrue("...and is placed", placedFree && g.getLastInvestment(eat).startsWith("Built 1 Diner"));
+        assertTrue("...and nothing is withheld", g.getRaisesWithheld().isEmpty());
+
+        // A landlord's home: its owners' share and the down payment within it, on a mortgage the lender will not write.
+        String re = Sectors.REAL_ESTATE;
+        BuildingsTemplate house = template(g, "House");
+        int landlords = Equity.indexOf(re);
+        g.getEconomyManager().setSectorCash(re, 0);
+        double[] homeSplit = g.financingOf(re, house);
+        double rent = plans.getCostOf(house, 1);
+        BusinessInvestment.Decision home = new BusinessInvestment.Decision(re, house, 1, "the fixture's", true);
+        System.out.printf("   a House: $%,.1fk - its owners asked for $%,.1fk, borrowed $%,.1fk%n", homeSplit[0], homeSplit[1], homeSplit[3]);
+        assertTrue("fixture: the landlords' owners are asked for a share of a House, the down payment within it, and the rest"
+                + " is a mortgage", g.buysOnMortgage(re, house) && homeSplit[1] >= Mortgage.ownFundsFor(homeSplit[0])
+                && homeSplit[3] > 0);
+        credit.setLendingOpen(false);
+        assertTrue("fixture: the bank is shut, so the lender writes no mortgage",
+                BusinessDebtManager.MORTGAGE_BANK_SHUT.equals(credit.mortgageRefusalFor(re, homeSplit[3], homeSplit[0])));
+        double homeRaisedBefore = register.getLifetimeRaisedHome(landlords) + register.getLifetimeRaisedAbroad(landlords);
+        boolean homePlaced = g.considerForTest(home, rent);
+        System.out.printf("   asked with the bank shut: %s%n", g.getLastInvestment(re));
+        assertTrue("A LANDLORD WHOSE LENDER WILL NOT WRITE THE MORTGAGE RAISES NOTHING FROM ITS OWNERS FOR THE HOME",
+                register.getLifetimeRaisedHome(landlords) + register.getLifetimeRaisedAbroad(landlords) == homeRaisedBefore
+                        && !homePlaced);
+        check("...and what the register would have asked is counted as withheld",
+                g.getRaisesWithheld().getOrDefault(re, 0.0), homeSplit[1]);
+        credit.setLendingOpen(true);
+        boolean homeFree = g.considerForTest(home, rent);
+        System.out.printf("   asked with the bank open: %s%n", g.getLastInvestment(re));
+        check("...and with the bank open, the same home raises its owners' share",
+                register.getLifetimeRaisedHome(landlords) + register.getLifetimeRaisedAbroad(landlords) - homeRaisedBefore, homeSplit[1]);
+        assertTrue("...and is built", homeFree && g.getLastInvestment(re).startsWith("Built 1 House"));
     }
 }

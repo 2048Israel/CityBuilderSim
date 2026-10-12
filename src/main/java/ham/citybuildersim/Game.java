@@ -1998,6 +1998,7 @@ public class Game {
         // ...and the raises the month withheld or left with no order (0.7.136): THE CREDIT BEFORE THE OWNERS.
         raisesWithheld.clear();
         raisedForNoOrder.clear();
+        withheldYetPlaced.clear();
 
         // Shrinking is decided before growing. A sector cannot sensibly do both
         // in one month, and running retirement first means a firm that has just
@@ -4522,12 +4523,37 @@ public class Game {
 
         double perUnitProfit = businessInvestment.estimatedMonthlyProfit(
                 decision.sector, decision.template);
+        weigh(decision, payer, slot, perUnitProfit);
+    }
 
-        // The owners first, then the order - and since 0.7.136 (batch FX1) the owners only for an order that will be
-        // placed: see THE CREDIT BEFORE THE OWNERS, below. What was raised for an order not placed is counted.
+    /**
+     * The owners first, then the order - and since 0.7.136 (batch FX1) the
+     * owners only for an order that will be placed: see THE CREDIT BEFORE THE
+     * OWNERS, below. What was raised for an order then not placed is counted.
+     * True when an order was placed.
+     */
+    private boolean weigh(BusinessInvestment.Decision decision, Investor payer, String slot, double perUnitProfit) {
+        double withheldBefore = raisesWithheld.getOrDefault(decision.sector, 0.0);
         double raised = askTheOwners(decision, payer, perUnitProfit);
+        double withheld = raisesWithheld.getOrDefault(decision.sector, 0.0) - withheldBefore;
         boolean placed = placeOrder(decision, payer, slot, perUnitProfit);
         if (raised > 0 && !placed) raisedForNoOrder.merge(decision.sector, raised, Double::sum);
+        if (withheld > 0 && placed) withheldYetPlaced.merge(decision.sector, withheld, Double::sum);
+        return placed;
+    }
+
+    /**
+     * Harnesses only (InvestCheck, 0.7.136): consider() on a check's decision
+     * between months, with `perUnitProfit` a building in place of the
+     * planner's estimate - its owners, then its order, booked as the month
+     * books them, the month's raises withheld and left cleared first as the
+     * month clears them. True when an order was placed.
+     */
+    boolean considerForTest(BusinessInvestment.Decision decision, double perUnitProfit) {
+        raisesWithheld.clear();
+        raisedForNoOrder.clear();
+        withheldYetPlaced.clear();
+        return weigh(decision, sectorInvestor(decision.sector), decision.sector, perUnitProfit);
     }
 
     /**
@@ -4807,6 +4833,12 @@ public class Game {
 
     /** ...and the month's raises left with no order placed, by sector. */
     public java.util.Map<String, Double> getRaisedForNoOrder() { return java.util.Collections.unmodifiableMap(raisedForNoOrder); }
+
+    /** ...and the month's raises withheld for an order then placed on the till without them, by sector: the rare way the gates are not monotone in the till (0.7.136). */
+    private final java.util.Map<String, Double> withheldYetPlaced = new java.util.LinkedHashMap<>();
+
+    /** ...read in the month, not saved. */
+    public java.util.Map<String, Double> getWithheldYetPlaced() { return java.util.Collections.unmodifiableMap(withheldYetPlaced); }
 
     /* =======================================================================
        THE LARGEST SLICE, WITHOUT COUNTING TO IT (0.7.54)

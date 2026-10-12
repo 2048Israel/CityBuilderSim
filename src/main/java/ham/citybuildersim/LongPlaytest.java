@@ -4619,7 +4619,7 @@ public class LongPlaytest {
             addedBackWorstMonth = new int[ADDED_BACK_TERMS.length];
     static final double[] addedBackWorst = new double[ADDED_BACK_TERMS.length];
     /** Raises Game.consider() withheld for an order that would have fallen through (THE CREDIT BEFORE THE OWNERS), and raises left with no order: how many, how much, the first month. */
-    static int raisesWithheld, raisesWithheldFirst = -1, raisedForNoOrder, raisedForNoOrderFirst = -1;
+    static int raisesWithheld, raisesWithheldFirst = -1, raisedForNoOrder, raisedForNoOrderFirst = -1, withheldYetPlaced;
     static double raisesWithheldMoney, raisedForNoOrderMoney;
     /** The events printed as they happen, each kind's first few: enough to say where a trace moved. */
     static final int EVENTS_PRINTED = 12;
@@ -4638,17 +4638,24 @@ public class LongPlaytest {
         }
         for (Map.Entry<String, Double> e : g.getRaisesWithheld().entrySet()) {
             if (raisesWithheld++ < EVENTS_PRINTED) {
-                out.printf("   RAISE WITHHELD m%d: %s would have raised $%,.0fk for an order that would fall through%n", m, e.getKey(), e.getValue());
+                out.printf("   RAISE WITHHELD m%d: %s would have raised $%,.0fk for an order that would fall through - %s%n", m, e.getKey(),
+                        e.getValue(), g.getLastInvestment(e.getKey()));
             }
             if (raisesWithheldFirst < 0) raisesWithheldFirst = m;
             raisesWithheldMoney += e.getValue();
         }
         for (Map.Entry<String, Double> e : g.getRaisedForNoOrder().entrySet()) {
             if (raisedForNoOrder++ < EVENTS_PRINTED) {
-                out.printf("   RAISED, NO ORDER m%d: %s raised $%,.0fk and placed none%n", m, e.getKey(), e.getValue());
+                out.printf("   RAISED, NO ORDER m%d: %s raised $%,.0fk and placed none - %s%n", m, e.getKey(), e.getValue(),
+                        g.getLastInvestment(e.getKey()));
             }
             if (raisedForNoOrderFirst < 0) raisedForNoOrderFirst = m;
             raisedForNoOrderMoney += e.getValue();
+        }
+        for (Map.Entry<String, Double> e : g.getWithheldYetPlaced().entrySet()) {
+            if (withheldYetPlaced++ < EVENTS_PRINTED) {
+                out.printf("   WITHHELD, YET PLACED m%d: %s - %s%n", m, e.getKey(), g.getLastInvestment(e.getKey()));
+            }
         }
     }
 
@@ -5714,9 +5721,10 @@ public class LongPlaytest {
         }
         out.printf("  stock written off, added back to the accounts: %s%n", backLine);
         out.printf("  raises withheld for an order that would fall through: %d, $%,.0fk%s;"
-                        + " raised with no order placed: %d, $%,.0fk%s%n",
+                        + " raised with no order placed: %d, $%,.0fk%s; withheld, yet placed on the till without it: %d%n",
                 raisesWithheld, raisesWithheldMoney, raisesWithheldFirst >= 0 ? " (first m" + raisesWithheldFirst + ")" : "",
-                raisedForNoOrder, raisedForNoOrderMoney, raisedForNoOrderFirst >= 0 ? " (first m" + raisedForNoOrderFirst + ")" : "");
+                raisedForNoOrder, raisedForNoOrderMoney, raisedForNoOrderFirst >= 0 ? " (first m" + raisedForNoOrderFirst + ")" : "",
+                withheldYetPlaced);
         /*
          * THE CITY'S CAPITAL IN ITS BANK, ITS STAKE AND ITS FUND (0.7.14),
          * each line stating its setting, as the rollover's does.
