@@ -961,6 +961,20 @@ public class UserInterface extends Application {
             }
 
             /*
+             * THE MAP'S CARD TAKES ESC, ENTER AND CTRL+A (0.7.137, batch M6;
+             * docs/studies/spec-earth.md 3): while the land office's map is
+             * over the window (panKeys, as W, A, S and D) and only then, the
+             * first Esc closes the card on it before the one below closes
+             * the map, Enter buys what the card shows, and Ctrl+A picks
+             * every offer - wherever the focus is in the pane, as a chip on
+             * the card takes it. MapView.cardKey() says when it took one.
+             */
+            if (!typing && panKeys != null && panKeys.cardKey(e)) {
+                e.consume();
+                return;
+            }
+
+            /*
              * THE CHART'S FULL SCREEN KEEPS ESCAPE FOR LEAVING IT (0.7.23):
              * the first Esc comes back to City History, the next opens the
              * menu as everywhere. P leaves it and opens the menu, since the

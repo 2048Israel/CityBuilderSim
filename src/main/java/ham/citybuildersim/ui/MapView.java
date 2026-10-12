@@ -136,6 +136,16 @@ import static ham.citybuildersim.ui.Pieces.*;
  * typing - each frame of the pump by MapFrame.keyVelocity() over the time
  * since the last (MapFrame.keyPan(), GlobeFrame.keyPan()). Not on the small
  * map, which never pans.
+ *
+ * BUYING FROM THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3):
+ * on the expanded map, wherever the offers are drawn, a click on one opens
+ * its card beside it - the land office's (LandScreen.mapCardNode()), its
+ * figures LandMap.card()'s - shift adds one or drops it, Shift and a drag
+ * draws a box that takes every offer whose free ground it meets, and
+ * Ctrl+A or the head's "Select every offer" takes them all; Buy or Enter
+ * buys them, short the card issues the funding page's bond, the funding
+ * page comes back to the map, and the head shows the cash and the pay
+ * toggle the pane covers. The small map clicks as before.
  */
 final class MapView {
 
@@ -199,7 +209,7 @@ final class MapView {
     private VBox bigPane;
     private StackPane bigBox;
     private VBox card;
-    private Label clockLine, bigLine;
+    private Label clockLine;
 
     /* ----------------------------- what it draws from ----------------------------- */
 
@@ -248,6 +258,30 @@ final class MapView {
     private double pressX, pressY, lastX, lastY, moved;
     private boolean pressed;
     private double[] hoverAt;
+
+    /* ----------------------------- buying from the map (0.7.137, batch M6) ----------------------------- */
+
+    /** The offers picked on the expanded map, in the order picked (LandMap.Picks): the view's alone, dropped on a month, a load and a collapse. */
+    private final LandMap.Picks picks = new LandMap.Picks();
+    /** The card in the pane (the land office's: LandScreen.mapCardNode(), mapReceiptNode()) and what it was drawn for - null for a receipt. */
+    private VBox buyBox;
+    private String cardFor;
+    /** The sites of the fields the card's offers hold, each its square of plots and its resource's colour, {x0, y0, x1, y1, argb}: ringed wherever they lie (board 7). */
+    private List<double[]> rings = List.of();
+    /** The box of plots the card stands beside: the offer clicked, what a box took, the shelf's first for Ctrl+A, the ground just bought. */
+    private double[] cardAt;
+    /** A purchase from the card and its receipt: what is being bought - ids, places, the ground - shown by the ground once it is the city's. */
+    private Bought bought;
+    private boolean receiptShown;
+    /** The card sent to the funding page (B5): the map comes back over the window at the view it left when the page is done. */
+    private boolean backFromFunding;
+    /** Shift and a drag (B7): a box drawn from the press to (boxX, boxY), in the screen's pixels. */
+    private boolean boxing;
+    private double boxX, boxY;
+    /** The head's money and its pay toggle (the pane covers the window's header), and what they were drawn for. */
+    private Label headMoney;
+    private HBox headPay;
+    private String headFor;
 
     private boolean running, dirty;
 
@@ -353,8 +387,16 @@ final class MapView {
     /** The Expand button's tooltip. */
     static final String EXPAND_TIP = "The map over the whole window: drag or W, A, S and D to pan, scroll to zoom, Esc to come back.";
 
-    /** The expanded map's hint, at the right of its head. */
-    static final String HINT = "drag or W A S D to pan · scroll to zoom · 0 fits · Esc closes";
+    /** The expanded map's hint, at the right of its head: since 0.7.137 how to buy (spec-earth 3.1, "its hint becomes"), every key in its tooltip (KEYS_TIP). */
+    static final String HINT = "click an offer to buy it";
+
+    /** ...the hint's tooltip: every key and gesture the expanded map takes - the panning and zooming the hint said until 0.7.137, and the buying since. */
+    static final String KEYS_TIP = "Click an offer to open its card beside it; shift-click adds an offer to the card or drops it;"
+            + " Shift and a drag picks every offer in a box; Ctrl+A picks them all. Enter buys the card's offers; Esc closes the"
+            + " card, then the map.\nDrag or W, A, S and D to pan · scroll, + or - to zoom · 0 fits.";
+
+    /** The head's chip that picks every offer listed (B7). */
+    static final String SELECT_EVERY = "Select every offer";
 
     /** The small map, its Expand button and its readout: what the land office lays in its hero row. */
     Region smallNode() { return smallBox; }
@@ -364,7 +406,11 @@ final class MapView {
 
     /** A new city or a load: everything drawn is another city's. */
     void forget() {
+        backFromFunding = false;
         if (expanded) collapse(false);
+        picks.clear();
+        bought = null;
+        hideBuyCard();
         reset();
         resetGlobe();
         side = place = litSide = litPlace = overSide = overPlace = -1;
@@ -431,6 +477,11 @@ final class MapView {
         long deadline = System.nanoTime() + (long) (FRAME_MS * 1e6);
         boolean more = keepUp();
         more |= keys();
+        // The head's money and the card caught up with the city (0.7.137): a month, a purchase, the toggle.
+        if (expanded) {
+            syncHead();
+            syncCard();
+        }
         if (tiles != null) more |= paint(deadline);
         if (hoverAt != null) {
             hover(hoverAt[0], hoverAt[1]);
@@ -771,6 +822,9 @@ final class MapView {
             }
         }
         overlays(gc, f);
+        drawRings(gc);
+        drawBox(gc);
+        placeBuyCard();
     }
 
     /* =====================================================================
@@ -982,13 +1036,15 @@ final class MapView {
         double ax = Math.floorMod((long) Math.floor(f.screenX(0)), 8), ay = Math.floorMod((long) Math.floor(f.screenY(0)), 8);
         ImagePattern pattern = new ImagePattern(hatch.getImage(), ax, ay, 8, 8, false);
         gc.setFillRule(FillRule.EVEN_ODD);
+        List<Integer> chosen = expanded ? picks.live(g) : List.of();
         for (int i = 0; i < listing.size(); i++) {
             LandParcel p = listing.get(i);
             double[] box = f.onScreen(p.getX0(), p.getY0(), p.getX1(), p.getY1());
             if (box == null) continue;
             boolean mine = p.getSide() == side;
             boolean lit = (p.getSide() == overSide && p.getPlace() == overPlace) || (p.getSide() == litSide && p.getPlace() == litPlace);
-            boolean picked = p.getSide() == side && p.getPlace() == place;
+            // The office's pick, and on the expanded map the card's (0.7.137): edged solid.
+            boolean picked = (p.getSide() == side && p.getPlace() == place) || chosen.contains(p.getId());
             // Its free ground: the box, less the city's own ground in it, filled even-odd.
             gc.beginPath();
             gc.rect(box[0], box[1], box[2] - box[0], box[3] - box[1]);
@@ -1104,9 +1160,25 @@ final class MapView {
             gc.strokeText(words, x, y);
             gc.setFill(Color.rgb(255, 255, 255, p.getSide() == side ? 0.95 : 0.6));
             gc.fillText(words, x, y);
+            newTag(gc, p, x, y, b[3] - b[1]);
         }
         gc.setTextAlign(TextAlignment.LEFT);
         gc.setTextBaseline(VPos.BASELINE);
+    }
+
+    /** The words under an offer's number on the expanded map while it is NEW (0.7.137, board 6): the office's tag (LandScreen.isNew()), in the building pink. */
+    static final String NEW_TAG = "NEW";
+
+    /** ...under the number at (x, y), where the offer's box on the screen is at least two numbers tall (MapFrame.PLACE_LABEL_FROM each). */
+    private void newTag(GraphicsContext gc, LandParcel p, double x, double y, double boxH) {
+        if (!expanded || boxH < 2 * MapFrame.PLACE_LABEL_FROM || !ui.landScreen.isNew(p)) return;
+        double below = Math.rint(y + MapFrame.PLACE_LABEL_FROM);
+        gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_CAPTION));
+        gc.setStroke(Color.rgb(11, 17, 24, 0.85));
+        gc.strokeText(NEW_TAG, x, below);
+        gc.setFill(Color.web(Palette.BUILDING));
+        gc.fillText(NEW_TAG, x, below);
+        gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
     }
 
     /** The fields in and about the city's land and offers, each a dot in its resource's colour, sized by its sites - the far views' deposits (spec-land 2.6). */
@@ -1525,6 +1597,9 @@ final class MapView {
             gc.fillText(DRAWING_EARTH, Palette.GAP + 2, Palette.GAP + 14);
         }
         globeScaleBar(gc);
+        drawRings(gc);
+        drawBox(gc);
+        placeBuyCard();
     }
 
     /** The note while the planet's picture is made, the first time an Earth map is expanded. */
@@ -1546,6 +1621,7 @@ final class MapView {
     private void globeOffers(GraphicsContext gc, CityLand land, LandMarket market) {
         ImagePattern pattern = new ImagePattern(hatch.getImage(), 0, 0, 8, 8, false);
         gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
+        List<Integer> chosen = picks.live(ui.game);
         for (LandParcel p : market.getListing()) {
             double[][] q = onGlobe(new double[] { p.getX0(), p.getX1(), p.getX1(), p.getX0() }, new double[] { p.getY0(), p.getY0(), p.getY1(), p.getY1() });
             if (q == null) continue;
@@ -1554,7 +1630,7 @@ final class MapView {
             if (bx1 < 0 || by1 < 0 || bx0 > globe.width() || by0 > globe.height()) continue;
             boolean mine = p.getSide() == side;
             boolean lit = (p.getSide() == overSide && p.getPlace() == overPlace) || (p.getSide() == litSide && p.getPlace() == litPlace);
-            boolean picked = p.getSide() == side && p.getPlace() == place;
+            boolean picked = (p.getSide() == side && p.getPlace() == place) || chosen.contains(p.getId());
             gc.setFill(Color.rgb(12, 18, 26, 0.24));
             gc.fillPolygon(q[0], q[1], 4);
             gc.setFill(pattern);
@@ -1579,6 +1655,7 @@ final class MapView {
                 gc.strokeText(words, x, y);
                 gc.setFill(Color.rgb(255, 255, 255, p.getSide() == side ? 0.95 : 0.6));
                 gc.fillText(words, x, y);
+                newTag(gc, p, x, y, by1 - by0);
                 gc.setTextAlign(TextAlignment.LEFT);
                 gc.setTextBaseline(VPos.BASELINE);
             }
@@ -1646,7 +1723,10 @@ final class MapView {
             overPlace = op;
             dirty = true;
         }
-        showCard(LandMap.globeHoverWords(globe, land, market, sx, sy, drawnAt(sx, sy), CARD_FIELDS), sx, sy, globe.width(), globe.height());
+        List<String> lines = new ArrayList<>(LandMap.globeHoverWords(globe, land, market, sx, sy, drawnAt(sx, sy), CARD_FIELDS));
+        // An offer drawn here - the GROUND tier's - is bought with a click (0.7.137).
+        if (os >= 0 && canPick()) lines.add(CLICK_TO_BUY);
+        showCard(lines, sx, sy, globe.width(), globe.height());
     }
 
     /** The ground drawn at a screen point on the globe, past the plane: the GROUND tier's piece where one is in, else the planet's picture's texel. */
@@ -1722,15 +1802,21 @@ final class MapView {
         });
         canvas.setOnMousePressed(e -> {
             pressed = true;
-            pressX = lastX = e.getX();
-            pressY = lastY = e.getY();
+            pressX = lastX = boxX = e.getX();
+            pressY = lastY = boxY = e.getY();
             moved = 0;
+            // Shift held, a drag draws a box rather than panning (0.7.137, B7), where the offers are drawn to be picked.
+            boxing = expanded && e.isShiftDown() && canPick();
             if (expanded) canvas.requestFocus();
         });
         canvas.setOnMouseDragged(e -> {
             if (!pressed) return;
             moved = Math.max(moved, Math.hypot(e.getX() - pressX, e.getY() - pressY));
-            if (expanded) {
+            if (boxing) {
+                boxX = e.getX();
+                boxY = e.getY();
+                requestDraw();
+            } else if (expanded) {
                 if (globe != null) {
                     globe.drag(lastX, lastY, e.getX(), e.getY());
                     follow();
@@ -1741,9 +1827,11 @@ final class MapView {
             lastY = e.getY();
         });
         canvas.setOnMouseReleased(e -> {
-            boolean click = pressed && moved < CLICK_SLOP;
+            boolean click = pressed && moved < CLICK_SLOP, box = pressed && boxing && !click;
             pressed = false;
-            if (click) click(e.getX(), e.getY());
+            boxing = false;
+            if (box) boxed(pressX, pressY, e.getX(), e.getY());
+            else if (click) click(e.getX(), e.getY(), e.isShiftDown());
         });
         canvas.setOnScroll(e -> {
             if (!expanded) return;
@@ -1778,21 +1866,50 @@ final class MapView {
         } else big.zoomNotches(sx, sy, notches);
     }
 
-    /** A click: an offer's free ground picks it, anywhere else picks the side it lies on - on the globe only where the city's plane is drawn (0.7.135). */
-    private void click(double sx, double sy) {
+    /**
+     * A click: an offer's free ground picks it, anywhere else picks the side
+     * it lies on - on the globe only where the city's plane is drawn
+     * (0.7.135). On the expanded map, where the offers are drawn to be
+     * picked (canPick(), since 0.7.137): a click on an offer opens its card
+     * beside it (B1), shift adds it to the card's picks or drops it (B3) and
+     * leaves the office's pick alone; a click on the city or bare ground
+     * closes the card, and shift there does nothing.
+     */
+    private void click(double sx, double sy, boolean shift) {
         MapFrame f = frame();
         Game g = ui.game;
         long px = (long) Math.floor(f.plotX(sx)), py = (long) Math.floor(f.plotY(sy));
         if (onGlobe()) {
             double[] xy = new double[2];
-            if (!globe.planeHolds(sx, sy) || !globe.plotAt(sx, sy, xy)) return;
+            if (!globe.planeHolds(sx, sy) || !globe.plotAt(sx, sy, xy)) {
+                if (expanded && !shift) closeCard();
+                return;
+            }
             px = (long) Math.floor(xy[0]);
             py = (long) Math.floor(xy[1]);
         }
         LandMap.Pick p = LandMap.pick(g.getCityLand(), g.getLandManager().getMarket(), px, py);
+        boolean offer = p.owner() == LandMap.OFFER;
+        if (expanded) {
+            if (offer && canPick()) {
+                bought = null;
+                if (shift) {
+                    if (picks.toggle(g, p.offer().getId())) cardAt = box(p.offer());
+                    showBuyCard();
+                    requestDraw();
+                    return;
+                }
+                picks.only(g, p.offer().getId());
+                cardAt = box(p.offer());
+                showBuyCard();
+            } else if (shift) {
+                return;
+            } else {
+                closeCard();
+            }
+        }
         side = p.side();
-        place = p.owner() == LandMap.OFFER ? p.place() : -1;
-        if (expanded) picked();
+        place = offer ? p.place() : -1;
         picker.picked(side, place);
         requestDraw();
     }
@@ -1834,10 +1951,15 @@ final class MapView {
         List<String> lines = new ArrayList<>();
         if (what != null) lines.add(what);
         lines.addAll(LandMap.hoverWords(land, market, x, y, CARD_FIELDS));
+        // ...and over an offer, how to buy it (0.7.137, board 4).
+        if (os >= 0 && canPick()) lines.add(CLICK_TO_BUY);
         showCard(lines, sx, sy, f.width(), f.height());
     }
 
-    /** The expanded map's hover card: its lines, the first bold, by the pointer and inside the view. */
+    /** The hover card's last line over an offer on the expanded map (spec-earth 3.1, board 4), in blue. */
+    static final String CLICK_TO_BUY = "Click to buy it here";
+
+    /** The expanded map's hover card: its lines, the first bold, by the pointer and inside the view - CLICK_TO_BUY in the accent's light blue. */
     private void showCard(List<String> lines, double sx, double sy, double vw, double vh) {
         if (lines.isEmpty()) {
             card.setVisible(false);
@@ -1846,7 +1968,9 @@ final class MapView {
         card.getChildren().clear();
         for (int i = 0; i < lines.size(); i++) {
             Label l = new Label(lines.get(i));
-            l.setStyle(i == 0 ? Palette.strong(Palette.SIZE_BODY, Palette.TEXT) : Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            l.setStyle(i == 0 ? Palette.strong(Palette.SIZE_BODY, Palette.TEXT)
+                    : CLICK_TO_BUY.equals(lines.get(i)) ? Palette.strong(Palette.SIZE_LABEL, Palette.ACCENT_LIGHT)
+                    : Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
             card.getChildren().add(l);
         }
         card.applyCss();
@@ -1870,10 +1994,413 @@ final class MapView {
     }
 
     /* =====================================================================
+       BUYING FROM THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3)
+
+       Jerus (2026-10-08): "click brings up menu, and to issue bond if
+       doesnt have cash"; "you should be able to drag and select in the map
+       to buy all the land parcel or specific ones". On the expanded map,
+       where the offers are drawn to be picked - the plane at every scale,
+       and on Earth the globe's GROUND tier, not its PICTURE tier, which
+       draws none (canPick()) - a click on an offer opens its card beside it
+       (B1), shift adds one or drops it (B3), Shift and a drag draws a box
+       that takes every offer whose free ground it meets (B7:
+       LandMap.boxPicks(), through the plane's frame or the globe's camera),
+       and "Select every offer" or Ctrl+A takes them all. Only listed offers
+       (B4). The card is the land office's (LandScreen.mapCardNode()), its
+       figures LandMap.card()'s, which MapCheck 14 holds against the office's
+       rows. Buy, or Enter (B2), buys them as the office's Buy does
+       (LandScreen.buyOrFund()): the office drawn again under the map, which
+       stays. Short, the card's bond is the funding page's first offer
+       (LandScreen.offers()), issued, then bought on; "All the ways to pay"
+       opens the funding page, which comes back to the map at the view it
+       left (B5, back()). Bought, the card becomes the receipt by the ground,
+       the place's next offer drawn NEW and the head's cash moved. The picks
+       are the view's (LandMap.Picks): a month, a load and a collapse drop
+       them. Esc closes the card, a second Esc the map. The small map in the
+       office stays as it was (B6).
+       ===================================================================== */
+
+    /** A purchase from the card: the offers found listed when it was asked for, their places ({side, place} each), the card's title for them and the ground they stand on, in plots. */
+    record Bought(List<Integer> ids, List<int[]> places, String title, double[] at) { }
+
+    /** The card stands off its offer's box by this many pixels: 14, as the hover card stands off the pointer (showCard()). */
+    static final double CARD_GAP = 14;
+
+    /** ...and at least this far inside the view: 10, the hover card's (showCard()). */
+    static final double CARD_MARGIN = 10;
+
+    /** The box's fill (B7), the offers' pink at this alpha: 0.12 (star M6) - under the lit offer's 0.34 and the picked one's 0.22 (overlays()), so the offers under the box read through it. */
+    static final double BOX_FILL_ALPHA = 0.12;
+
+    /** Whether the offers are drawn to be picked where the expanded map looks (star M6): on the plane at every scale, and on Earth in the globe's GROUND tier, where globeOffers() draws them - not its PICTURE tier, which draws none. */
+    private boolean canPick() {
+        return expanded && (globe == null || globe.tier() != GlobeFrame.PICTURE);
+    }
+
+    /** A plot of the city's plane on the screen, as the expanded map draws it now: through the globe's camera, or the plane's frame. */
+    private LandMap.ToScreen toScreen() {
+        if (onGlobe()) {
+            GlobeFrame view = globe;
+            return view::screenOfPlot;
+        }
+        return LandMap.onScreen(frame());
+    }
+
+    /** An offer's box in plots, {x0, y0, x1, y1}. */
+    private static double[] box(LandParcel p) {
+        return new double[] { p.getX0(), p.getY0(), p.getX1(), p.getY1() };
+    }
+
+    /** ...and the bounds of several, or null with none. */
+    private static double[] bounds(List<LandParcel> ps) {
+        if (ps.isEmpty()) return null;
+        double[] b = box(ps.get(0));
+        for (LandParcel p : ps) {
+            b[0] = Math.min(b[0], p.getX0());
+            b[1] = Math.min(b[1], p.getY0());
+            b[2] = Math.max(b[2], p.getX1());
+            b[3] = Math.max(b[3], p.getY1());
+        }
+        return b;
+    }
+
+    /** The listed offers among these ids, in their order. */
+    private List<LandParcel> listed(List<Integer> ids) {
+        LandMarket market = ui.game.getLandManager().getMarket();
+        List<LandParcel> out = new ArrayList<>();
+        for (int id : ids) {
+            LandParcel p = market.find(id);
+            if (p != null) out.add(p);
+        }
+        return out;
+    }
+
+    /** Shift and a drag let go (B7): every offer whose free ground the box meets added to the card's picks, in the office's order - the cheapest dry ground first - the card beside them. */
+    private void boxed(double x0, double y0, double x1, double y1) {
+        Game g = ui.game;
+        List<Integer> took = LandMap.boxPicks(g.getCityLand(), g.landShelf(), toScreen(), x0, y0, x1, y1);
+        if (!took.isEmpty()) {
+            bought = null;
+            picks.add(g, took);
+            cardAt = bounds(listed(took));
+            showBuyCard();
+        }
+        requestDraw();
+    }
+
+    /** "Select every offer" in the head, or Ctrl+A (B7): every offer listed onto the card, the office's best first, the card beside the best (star M6). */
+    void selectAll() {
+        if (!expanded) return;
+        Game g = ui.game;
+        List<LandParcel> shelf = g.landShelf();
+        if (shelf.isEmpty()) return;
+        List<Integer> ids = new ArrayList<>();
+        for (LandParcel p : shelf) ids.add(p.getId());
+        bought = null;
+        picks.add(g, ids);
+        cardAt = box(shelf.get(0));
+        showBuyCard();
+        requestDraw();
+    }
+
+    /** The card drawn again for the picks as they stand, or put away with none listed. */
+    private void showBuyCard() {
+        if (buyBox == null) return;
+        List<Integer> ids = picks.live(ui.game);
+        LandScreen.MapCard m = ids.isEmpty() ? null : ui.landScreen.mapCard(ids);
+        if (m == null) {
+            hideBuyCard();
+            return;
+        }
+        receiptShown = false;
+        cardFor = cardKey(ids);
+        List<double[]> sites = new ArrayList<>();
+        CityLand land = ui.game.getCityLand();
+        for (LandParcel p : listed(m.ids())) {
+            for (Deposit f : LandMap.offerFields(land, p)) {
+                for (double[] q : LandMap.siteSquares(f)) sites.add(new double[] { q[0], q[1], q[2], q[3], 0xff000000 | f.kind().colour() });
+            }
+        }
+        rings = sites;
+        buyBox.getChildren().setAll(ui.landScreen.mapCardNode(m, this));
+        buyBox.setVisible(true);
+        layoutBuyCard();
+    }
+
+    /** The card put away. */
+    private void hideBuyCard() {
+        cardFor = null;
+        rings = List.of();
+        receiptShown = false;
+        if (buyBox == null) return;
+        buyBox.getChildren().clear();
+        buyBox.setVisible(false);
+    }
+
+    /** What the card was drawn from: the picks, the toggle, the cash and the vault, the month and the listing. */
+    private String cardKey(List<Integer> ids) {
+        Game g = ui.game;
+        return ids + "|" + g.isLandPaidFromVault() + "|" + g.getCash() + "|" + g.getForeignAccounts().getReservesUsd() + "|"
+                + g.getMonth() + "|" + g.getLandManager().getMarket().getNextOfferId();
+    }
+
+    /** A frame's look at the card (tick()): drawn again when what it says moved - the month dropping the picks, an offer bought elsewhere falling out of them, the cash - and the receipt put away with its month. */
+    private void syncCard() {
+        if (buyBox == null || !buyBox.isVisible()) return;
+        Game g = ui.game;
+        if (receiptShown) {
+            if (g.getLastLandReceipt().isEmpty()) {
+                bought = null;
+                hideBuyCard();
+                dirty = true;
+            }
+            return;
+        }
+        if (!cardKey(picks.live(g)).equals(cardFor)) {
+            showBuyCard();
+            dirty = true;
+        }
+    }
+
+    /** The card sized to what it says, then placed. */
+    private void layoutBuyCard() {
+        buyBox.applyCss();
+        buyBox.autosize();
+        placeBuyCard();
+    }
+
+    /** The card beside its box of plots as the view moves (each draw): at its right, else at its left, its top level with the box's, inside the view. */
+    private void placeBuyCard() {
+        if (buyBox == null || !buyBox.isVisible()) return;
+        double vw = canvas.getWidth(), vh = canvas.getHeight();
+        double cw = buyBox.getWidth(), ch = buyBox.getHeight();
+        double[] s = cardAt == null ? null : screenBox(cardAt);
+        double left = vw - cw - CARD_MARGIN, top = CARD_MARGIN;
+        if (s != null) {
+            left = s[2] + CARD_GAP;
+            if (left + cw > vw - CARD_MARGIN) left = s[0] - CARD_GAP - cw;
+            top = s[1];
+        }
+        left = Math.max(CARD_MARGIN, Math.min(left, vw - cw - CARD_MARGIN));
+        top = Math.max(CARD_MARGIN, Math.min(top, vh - ch - CARD_MARGIN));
+        buyBox.setTranslateX(Math.rint(left));
+        buyBox.setTranslateY(Math.rint(top));
+    }
+
+    /** A box of plots on the screen, {x0, y0, x1, y1} round its corners as drawn now, or null when none is seen. */
+    private double[] screenBox(double[] b) {
+        LandMap.ToScreen at = toScreen();
+        double x0 = Double.MAX_VALUE, y0 = Double.MAX_VALUE, x1 = -Double.MAX_VALUE, y1 = -Double.MAX_VALUE;
+        boolean any = false;
+        for (double[] c : new double[][] { { b[0], b[1] }, { b[2], b[1] }, { b[2], b[3] }, { b[0], b[3] } }) {
+            double[] p = at.at(c[0], c[1]);
+            if (p == null) continue;
+            any = true;
+            x0 = Math.min(x0, p[0]);
+            y0 = Math.min(y0, p[1]);
+            x1 = Math.max(x1, p[0]);
+            y1 = Math.max(y1, p[1]);
+        }
+        return any ? new double[] { x0, y0, x1, y1 } : null;
+    }
+
+    /** The card's fields' sites, ringed wherever they lie (board 7): each a ring in its resource's colour on a dark halo, as the city's ring is drawn (ring()), round its square - RING_PX at least. */
+    private void drawRings(GraphicsContext gc) {
+        if (rings.isEmpty() || buyBox == null || !buyBox.isVisible()) return;
+        for (double[] q : rings) {
+            double[] s = screenBox(q);
+            if (s == null) continue;
+            double cx = (s[0] + s[2]) / 2, cy = (s[1] + s[3]) / 2;
+            double r = Math.max(RING_PX, Math.hypot(s[2] - s[0], s[3] - s[1]) / 2);
+            if (cx + r < 0 || cy + r < 0 || cx - r > canvas.getWidth() || cy - r > canvas.getHeight()) continue;
+            gc.setStroke(Color.rgb(11, 17, 24, 0.85));
+            gc.setLineWidth(3.5);
+            gc.strokeOval(cx - r, cy - r, 2 * r, 2 * r);
+            gc.setStroke(colour((int) (long) q[4]));
+            gc.setLineWidth(1.5);
+            gc.strokeOval(cx - r, cy - r, 2 * r, 2 * r);
+        }
+    }
+
+    /** The box Shift and a drag draws (B7): the offers' pink, faint inside, dashed round. */
+    private void drawBox(GraphicsContext gc) {
+        if (!boxing || moved < CLICK_SLOP) return;
+        double x = Math.min(pressX, boxX), y = Math.min(pressY, boxY), w = Math.abs(boxX - pressX), h = Math.abs(boxY - pressY);
+        gc.setFill(Color.web(OFFER_EDGE, BOX_FILL_ALPHA));
+        gc.fillRect(x, y, w, h);
+        gc.setStroke(Color.web(OFFER_EDGE, 0.95));
+        gc.setLineWidth(1);
+        gc.setLineDashes(5, 4);
+        gc.strokeRect(Math.floor(x) + 0.5, Math.floor(y) + 0.5, Math.floor(w), Math.floor(h));
+        gc.setLineDashes((double[]) null);
+    }
+
+    /** The card's ×, Esc, a click off the offers: no picks, no card. */
+    void closeCard() {
+        picks.clear();
+        bought = null;
+        hideBuyCard();
+        requestDraw();
+    }
+
+    /** A chip's × on a card of several: that one dropped. */
+    void dropPick(int id) {
+        picks.drop(id);
+        showBuyCard();
+        requestDraw();
+    }
+
+    /** The toggle moved, on the card or the head: both drawn again in the other money. */
+    void paidOtherwise() {
+        headFor = null;
+        syncHead();
+        if (!receiptShown) showBuyCard();
+    }
+
+    /** What a purchase from the card is of, asked for now. */
+    private Bought boughtOf(List<Integer> ids) {
+        List<LandParcel> ps = listed(ids);
+        List<Integer> found = new ArrayList<>();
+        List<int[]> places = new ArrayList<>();
+        for (LandParcel p : ps) {
+            found.add(p.getId());
+            places.add(new int[] { p.getSide(), p.getPlace() });
+        }
+        return new Bought(found, places, ps.size() == 1 ? ps.get(0).where() : ps.size() + " offers", bounds(ps));
+    }
+
+    /** The card's Buy, or Enter (B2): the offers bought as the office's Buy buys them (LandScreen.buyOrFund()) - the office drawn again under the map, which stays - and the receipt by the ground; short after all, the funding page, which comes back here. */
+    void buy(List<Integer> ids) {
+        bought = boughtOf(ids);
+        backFromFunding = true;
+        ui.landScreen.buyOrFund(ids);
+        if (expanded) {
+            backFromFunding = false;
+            showBought();
+        }
+    }
+
+    /** The card's bond or note (B1): issued as the funding page issues it, the offers bought on it (LandScreen.offers()' own action), and the receipt; what falls short shows the office's page, which comes back here. */
+    void buyOnLoan(List<Integer> ids, Runnable issue) {
+        bought = boughtOf(ids);
+        backFromFunding = true;
+        issue.run();
+        if (expanded) {
+            backFromFunding = false;
+            showBought();
+        }
+    }
+
+    /** "All the ways to pay" (B5): the funding page for the picks, the map put away until the page is done and brought back at the view it left (back()). */
+    void toFunding(List<Integer> ids) {
+        bought = boughtOf(ids);
+        backFromFunding = true;
+        ui.landScreen.showLandFunding(ids);
+        if (expanded) {
+            // Nothing to fund after all: the office stayed under the map.
+            backFromFunding = false;
+            bought = null;
+        }
+    }
+
+    /** "Open in the land office": the map put away on the offer's row, the office's side and pick. */
+    void toOffice(int s, int p) {
+        side = s;
+        place = p;
+        picker.picked(s, p);
+        collapse(true);
+    }
+
+    /**
+     * The office drawn (LandScreen.showLandMenu()), `fromFunding` when the
+     * funding page or what it fell short with is what it comes back from: a
+     * purchase the card sent there brings the map back over the window at
+     * the view it left, with the receipt when it was bought (B5). Reached
+     * any other way, the map stays put away and the purchase is forgotten.
+     */
+    void back(boolean fromFunding) {
+        if (!backFromFunding || expanded) return;
+        backFromFunding = false;
+        if (!fromFunding) {
+            bought = null;
+            return;
+        }
+        expand(true);
+        showBought();
+    }
+
+    /** The receipt by the ground just bought (board 6): the card's purchase, those of it no longer listed - "2 of 3 offers" when it fell short - in the office's words (LandScreen.mapReceiptNode()); with none bought, the card as it stands. */
+    private void showBought() {
+        Bought b = bought;
+        if (b == null || buyBox == null) return;
+        LandMarket market = ui.game.getLandManager().getMarket();
+        List<int[]> places = new ArrayList<>();
+        for (int i = 0; i < b.ids().size(); i++) if (market.find(b.ids().get(i)) == null) places.add(b.places().get(i));
+        if (places.isEmpty()) {
+            bought = null;
+            showBuyCard();
+            return;
+        }
+        picks.clear();
+        cardFor = null;
+        rings = List.of();
+        receiptShown = true;
+        cardAt = b.at();
+        String title = places.size() == b.ids().size() ? b.title() : places.size() + " of " + b.title();
+        buyBox.getChildren().setAll(ui.landScreen.mapReceiptNode(title, places, this));
+        buyBox.setVisible(true);
+        layoutBuyCard();
+        requestDraw();
+    }
+
+    /**
+     * Esc, Enter and Ctrl+A while the map is over the window, from
+     * UserInterface's key filter (0.7.137): Esc closes the card - a second
+     * Esc, not taken here, the map - Enter presses the card's main button
+     * (B2: Buy, or short the bond, or the funding page), Ctrl+A picks every
+     * offer (B7). True when it took the key.
+     */
+    boolean cardKey(javafx.scene.input.KeyEvent e) {
+        if (!expanded) return false;
+        KeyCode k = e.getCode();
+        if (k == KeyCode.ESCAPE && buyBox != null && buyBox.isVisible()) {
+            closeCard();
+            return true;
+        }
+        if (k == KeyCode.ENTER && !receiptShown) {
+            List<Integer> ids = picks.live(ui.game);
+            LandScreen.MapCard m = ids.isEmpty() ? null : ui.landScreen.mapCard(ids);
+            if (m == null) return false;
+            ui.landScreen.mapCardPress(m, this);
+            return true;
+        }
+        if (k == KeyCode.A && e.isShortcutDown()) {
+            selectAll();
+            return true;
+        }
+        return false;
+    }
+
+    /** The head's money and pay toggle, drawn again when the toggle, the cash, the vault or the month moved. */
+    private void syncHead() {
+        if (headMoney == null) return;
+        Game g = ui.game;
+        String key = g.isLandPaidFromVault() + "|" + g.getCash() + "|" + g.getForeignAccounts().getReservesUsd() + "|" + g.getMonth();
+        if (key.equals(headFor)) return;
+        headFor = key;
+        headMoney.setText(ui.landScreen.mapHeadMoney());
+        // The office's chips on one line, the chip strip's 6 px apart: a FlowPane would ask for its whole wrap length in the head.
+        headPay.getChildren().setAll(new ArrayList<>(ui.landScreen.mapPayChips(this).getChildren()));
+    }
+
+    /* =====================================================================
        EXPAND: THE MAP OVER THE WHOLE WINDOW
        ===================================================================== */
 
-    void expand() {
+    void expand() { expand(false); }
+
+    /** ...or (0.7.137, B5) back at the view it left - the funding page done - when `keepView` and it has been over the window before. */
+    private void expand(boolean keepView) {
         if (expanded) return;
         if (bigPane == null) buildPane();
         expanded = true;
@@ -1881,11 +2408,14 @@ final class MapView {
         bigBox.getChildren().add(0, canvas);
         showIf(readout, false);
         clockLine.setText(ui.clockWords());
-        picked();
+        headFor = null;
+        syncHead();
         ui.showChartFullScreen(bigPane, clockLine, this::collapse);
         ui.panKeysTo(this);
+        boolean before = big != null;
         fitPane();
-        openBig();
+        if (keepView && before) requestDraw();
+        else openBig();
         canvas.requestFocus();
     }
 
@@ -1907,13 +2437,17 @@ final class MapView {
         }
     }
 
-    /** Esc, the button, or another screen: the canvas back in the office, and the office drawn again when asked. */
+    /** Esc, the button, or another screen: the canvas back in the office, and the office drawn again when asked - the card's picks dropped (0.7.137), and its purchase forgotten unless the funding page has it (B5). */
     void collapse(boolean redraw) {
         if (!expanded) return;
         expanded = false;
         ui.panKeysTo(null);
         keyW = keyA = keyS = keyD = false;
         keyNanos = 0;
+        boxing = false;
+        picks.clear();
+        if (!backFromFunding) bought = null;
+        hideBuyCard();
         ui.closeChartFullScreen();
         if (card != null) card.setVisible(false);
         bigBox.getChildren().remove(canvas);
@@ -1930,15 +2464,26 @@ final class MapView {
         title.setStyle(Palette.Fonts.sansSemiBold() + " -fx-font-size: 15px; -fx-text-fill: " + Palette.TEXT + ";");
         clockLine = new Label();
         clockLine.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        bigLine = new Label();
-        bigLine.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        // The cash and the pay toggle (0.7.137, spec-earth 6.1): the pane covers the window's header, so the head says them.
+        headMoney = new Label();
+        headMoney.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+        headMoney.setMinWidth(Region.USE_PREF_SIZE);
+        headPay = new HBox(6);
+        headPay.setAlignment(Pos.CENTER_LEFT);
+        headPay.setMinWidth(Region.USE_PREF_SIZE);
         Label hint = new Label(HINT);
         hint.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        hint.setMinWidth(Region.USE_PREF_SIZE);
+        HistoryScreen.tip(hint, KEYS_TIP);
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
+        Label every = stepChip(SELECT_EVERY, this::selectAll, true);
+        every.setMinWidth(Region.USE_PREF_SIZE);
+        HistoryScreen.tip(every, "Picks every offer listed, the office's best first, onto the card · Ctrl+A");
         Label fit = stepChip("Fit", this::fitBig, true);
         Label close = stepChip("Back to the land office · Esc", () -> collapse(true), true);
-        HBox head = new HBox(Palette.GAP_LOOSE, title, clockLine, bigLine, gap, hint, fit, close);
+        close.setMinWidth(Region.USE_PREF_SIZE);
+        HBox head = new HBox(Palette.GAP_LOOSE, title, clockLine, headMoney, headPay, gap, hint, every, fit, close);
         head.setAlignment(Pos.CENTER_LEFT);
         head.setMinHeight(PANE_HEAD - Palette.GAP);
         card = new VBox(2);
@@ -1951,8 +2496,13 @@ final class MapView {
         VBox legend = legend();
         StackPane.setAlignment(legend, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(legend, new Insets(Palette.GAP));
-        bigBox = new StackPane(legend, card);
+        // The buying card (0.7.137): laid out by hand beside its offer, under the hover card, never managed either.
+        buyBox = new VBox();
+        buyBox.setManaged(false);
+        buyBox.setVisible(false);
+        bigBox = new StackPane(legend, buyBox, card);
         StackPane.setAlignment(card, Pos.TOP_LEFT);
+        StackPane.setAlignment(buyBox, Pos.TOP_LEFT);
         bigBox.setStyle("-fx-background-color: " + Palette.STAGE + ";");
         clip(bigBox);
         bigPane = new VBox(Palette.GAP, head, bigBox);
@@ -1962,14 +2512,6 @@ final class MapView {
         bigPane.heightProperty().addListener((o, was, now) -> fitPane());
     }
 
-    /** The picked side and offer on the expanded map's head. */
-    private void picked() {
-        if (bigLine == null) return;
-        LandParcel o = side >= 0 && place >= 0 ? ui.game.getLandManager().getMarket().offerIn(side, place) : null;
-        bigLine.setText(o != null ? "picked: " + o.where() + " · " + LandMap.area(o.getKm2()) + " · "
-                + LandMap.usd(o.getPriceUsd()) + " — Esc to buy it in the office"
-                : side >= 0 ? "showing the " + CityLand.sideName(side).toLowerCase(java.util.Locale.ROOT) + " side's offers" : "");
-    }
 
     /** The canvas sized to the pane: the window's width and height inside its padding and under its head (City History's rule, read off the window). */
     private void fitPane() {

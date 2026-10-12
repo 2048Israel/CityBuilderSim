@@ -71,7 +71,10 @@ import static ham.citybuildersim.ui.Pieces.*;
  * What it says is worked out in methods that make no node (strip(),
  * groundFigures(), cityLine(), sideChips(), sideRows(), margin(), and the
  * rest), so a probe without the toolkit can read every word on a played
- * city; the drawing methods lay those out. Split out of UserInterface on 2026-09-18; the rail calls
+ * city; the drawing methods lay those out. Since 0.7.137 (batch M6) it also
+ * words and draws the expanded map's card for buying from the map (THE CARD
+ * ON THE MAP: mapCard(), mapCardNode()), its rows' words and figures the
+ * card's. Split out of UserInterface on 2026-09-18; the rail calls
  * showLandMenu(), as do Build's LAND FREE and its no-land and no-deposit
  * pages, NEEDS YOU's GROUND row, HOW THE CITY IS's GROUND USED and the
  * inbox's landlock notice.
@@ -184,6 +187,8 @@ final class LandScreen {
     void showLandMenu() {
         // The month's pop is for a page being watched as it turns, as the clock's is: arriving, nothing pops.
         if (!"showLandMenu".equals(ui.currentScreen)) shownMonth = -1;
+        // Back from the funding page, or from what it fell short with (0.7.137, B5): the map it was opened from comes back.
+        boolean fromFunding = "showLandFunding".equals(ui.currentScreen) || "showLandFellShort".equals(ui.currentScreen);
         ui.clearMenu("showLandMenu", () -> showLandMenu());
         noteShelf();
 
@@ -210,6 +215,7 @@ final class LandScreen {
         shownMonth = ui.game.getMonth();
         shownRate = ui.game.getForeignAccounts().getRate();
         shownWorldUsd = ui.game.getLandManager().getGroundUsdPerSqFt();
+        if (map != null) map.back(fromFunding);
     }
 
     /**
@@ -652,18 +658,25 @@ final class LandScreen {
         return w.toString();
     }
 
+    /** Each resource in fields that ground holds - its colour, its sites and amount, the tooltip's line - in Resource's order: a row's (one offer's), and since 0.7.137 the map's card's (several summed, LandMap.card()). */
+    static List<DepositWords> depositWords(java.util.function.ToIntFunction<Resource> sites, java.util.function.ToDoubleFunction<Resource> amounts) {
+        List<DepositWords> deposits = new ArrayList<>();
+        for (Resource r : Resource.values()) {
+            int n = sites.applyAsInt(r);
+            if (!r.inFields() || n <= 0) continue;
+            String amount = LandMap.amountWords(r, amounts.applyAsDouble(r));
+            deposits.add(new DepositWords(MapView.css(0xff000000 | r.colour()), formatter.format(n) + " · " + amount,
+                    r.label() + ": " + n + (n == 1 ? " site, " : " sites, ") + amount));
+        }
+        return deposits;
+    }
+
     Row row(LandParcel p, LandParcel office, LandParcel richest) {
         Game g = ui.game;
         boolean vault = g.isLandPaidFromVault();
         double rate = g.getForeignAccounts().getRate();
         double km2 = p.getKm2();
-        List<DepositWords> deposits = new ArrayList<>();
-        for (Resource r : Resource.values()) {
-            if (!r.inFields() || p.getSites(r) <= 0) continue;
-            String amount = LandMap.amountWords(r, p.getAmount(r));
-            deposits.add(new DepositWords(MapView.css(0xff000000 | r.colour()), formatter.format(p.getSites(r)) + " · " + amount,
-                    r.label() + ": " + p.getSites(r) + (p.getSites(r) == 1 ? " site, " : " sites, ") + amount));
-        }
+        List<DepositWords> deposits = depositWords(p::getSites, p::getAmount);
         int shown = Math.min(deposits.size(), ROW_DEPOSITS);
         if (shown == 2 && deposits.get(0).words().length() + deposits.get(1).words().length() > ROW_DEPOSIT_CHARS) shown = 1;
         String more = deposits.size() > shown ? "+" + (deposits.size() - shown) : "";
@@ -1095,7 +1108,14 @@ final class LandScreen {
         return line;
     }
 
-    /** Buys these plots the way the toggle pays, or - the city short - opens the funding page for them. */
+    /**
+     * Buys these plots the way the toggle pays, or - the city short - opens
+     * the funding page for them. From the map over the window (0.7.137, the
+     * card's Buy: MapView.buy()) the map stays: the office is drawn again
+     * under it as its own screen, which keeps the pane it laid
+     * (UserInterface.clearMenu()); the funding page, another screen, puts
+     * it away, and showLandMenu() brings it back when the page is done.
+     */
     void buyOrFund(List<Integer> ids) {
         if (ui.game.landNeedsFunding(ids)) {
             showLandFunding(ids);
@@ -1628,16 +1648,20 @@ final class LandScreen {
      * cash gap; from the vault, in dollars on the world's curve for the
      * vault's gap, or none while the window abroad is shut. Every figure is
      * the quote's; a button books exactly it, then buys the plots. Nothing is
-     * booked until one is pressed.
+     * booked until one is pressed. Since 0.7.137 (batch M6) the quotes are
+     * LandMap.card()'s, the map's card's own, so the card and this page
+     * issue the same paper; with nothing to fund it offers none.
      */
     List<Offer> offers(List<Integer> ids) {
         Game game = ui.game;
         List<Offer> out = new ArrayList<>();
         String buy = buyWords(ids);
+        LandMap.Card card = LandMap.card(game, ids);
+        if (!card.funding()) return out;
         if (!game.isLandPaidFromVault()) {
-            double gap = game.landCashGap(ids);
-            DebtQuote bond = game.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
-            DebtQuote note = game.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+            double gap = card.gap();
+            DebtQuote bond = card.bond();
+            DebtQuote note = card.note();
             out.add(new Offer(Game.BUILD_BOND_YEARS + "-year bond", null, bond,
                     pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
                     rateColour(bond, game.getDebtManager()),
@@ -1661,11 +1685,9 @@ final class LandScreen {
                         buyOnTheLoan(ids, "note");
                     }, Money::money));
         } else if (game.foreignWindowOpen()) {
-            double gapUsd = game.landVaultGapUsd(ids);
-            DebtQuote bond = game.quoteForeignForCash("Term", gapUsd, Game.BUILD_BOND_YEARS,
-                    Game.BUILD_BOND_GRANULE);
-            DebtQuote note = game.quoteForeignForCash("Note", gapUsd, Game.BUILD_NOTE_MONTHS,
-                    Game.BUILD_NOTE_GRANULE);
+            double gapUsd = card.gap();
+            DebtQuote bond = card.bond();
+            DebtQuote note = card.note();
             out.add(new Offer(Game.BUILD_BOND_YEARS + "-year dollar bond", ABROAD_INFO, bond,
                     pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
                     rateColour(bond, game.getDebtManager()),
@@ -1835,5 +1857,296 @@ final class LandScreen {
         back.setOnAction(e -> showLandMenu());
         page.getChildren().addAll(card, back);
         ui.rootMenu.getChildren().add(page);
+    }
+
+    /* =====================================================================
+       THE CARD ON THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3)
+
+       Jerus: "click brings up menu, and to issue bond if doesnt have cash".
+       The expanded map's card (MapView) for the offers picked on it, in the
+       office's own words: one offer is its row (row(), sizeWords()) - the
+       place and its tag, its blocks and km2, the ground bar and "room for N
+       houses", its deposits, the price in the toggle's money with the other
+       money and the ground a m2 under it, a dry km2 - and several are summed
+       as "Buy the best N" sums them (LandMap.card(), next()'s words); then
+       the cash before and after, the pay toggle, and Buy, which Enter
+       presses - or, short, the funding page's first offer, the bond for the
+       gap (offers(), on LandMap.card()'s quotes), the note beside it, and
+       the funding page itself, which comes back to the map (showLandMenu(),
+       MapView.back()). "Open in the land office" puts the map away on the
+       offer's row. Every figure is the model's; MapCheck 14 holds them
+       against the rows.
+       ===================================================================== */
+
+    /** The map's card, its width: 320 px, the pay toggle's wrap (payToggle()), so the toggle lies on one line in it. */
+    static final double MAP_CARD_W = 320;
+
+    /** The map's card's padding, a side: the hover card's 9 px, and 3 more for the buttons' edges. */
+    static final double MAP_CARD_PAD = 12;
+
+    /**
+     * What the map's card says for some picks, worked out without a node:
+     * the picks still listed and the first of them, the title (the place,
+     * or "3 offers") and one offer's tag, the chips of several, the size,
+     * the ground's shares for the bar, the room, the deposits, the price and
+     * its colour, the other money and the ground a m2 under it, a dry km2,
+     * the cash before and after (or short), whether it needs a loan, Buy's
+     * words, the funding page's loans, and why none is offered from the
+     * vault while the window abroad is shut.
+     */
+    record MapCard(List<Integer> ids, LandParcel first, String title, TagWords tag, List<LandParcel> chips, String size,
+                   double dry, double fresh, double sea, String room, List<DepositWords> deposits, String price,
+                   String priceTone, String other, String perKm2, String cash, String cashTone, boolean funding,
+                   Pieces.Press buy, List<Offer> loans, String shut) { }
+
+    /** The card for these picks, or null with none of them listed. */
+    MapCard mapCard(List<Integer> picks) {
+        Game g = ui.game;
+        LandMap.Card c = LandMap.card(g, picks);
+        LandMarket market = g.getLandManager().getMarket();
+        List<LandParcel> parcels = new ArrayList<>();
+        for (int id : c.ids()) parcels.add(market.find(id));
+        if (parcels.isEmpty()) return null;
+        LandParcel first = parcels.get(0);
+        boolean one = parcels.size() == 1, vault = c.vault();
+        String here = here();
+        Row row = one ? row(first, officeBest(), market.richest(Resource.IRON)) : null;
+        String title = one ? first.where() : parcels.size() + " offers";
+        double km2 = c.km2();
+        String price = one ? row.price() : vault ? usd(c.usd()) : marked(here, money(c.local()));
+        String other = (vault ? marked(here, money(c.local())) + " at today's rate" : usd(c.usd()) + " listed")
+                + (c.drySqFt() > 0 ? " · " + dollars(c.usd() / c.drySqFt()) + "/m² dry" : "");
+        java.util.function.DoubleFunction<String> inMoney = v -> vault ? usd(v) : marked(here, money(v));
+        String cash = (vault ? "vault " : "cash ") + inMoney.apply(c.before())
+                + (c.funding() ? " · short " + inMoney.apply(c.gap()) : " → " + inMoney.apply(c.after()));
+        return new MapCard(c.ids(), first, title, one ? row.tag() : null, one ? List.<LandParcel>of() : parcels,
+                one ? row.sizeTip() : sizeWords(c),
+                km2 > 0 ? c.dryKm2() / km2 : 0, km2 > 0 ? c.freshKm2() / km2 : 0, km2 > 0 ? c.seaKm2() / km2 : 0,
+                room(c.drySqFt()),
+                depositWords(r -> c.sites()[r.ordinal()], r -> c.amounts()[r.ordinal()]),
+                price, one ? row.priceTone() : g.canAffordLandParcels(c.ids()) ? Palette.TEXT_HEAD : Palette.BAD,
+                other, one ? row.perKm2() : c.dryKm2() > 0 ? inToggle(c.usd() / c.dryKm2()) : "—",
+                cash, c.funding() ? Palette.BAD : Palette.TEXT_BODY, c.funding(),
+                new Pieces.Press(Pieces.Look.GO, "Buy " + title + " · " + price, "Enter"),
+                c.funding() ? offers(c.ids()) : List.<Offer>of(),
+                c.funding() && vault && !g.foreignWindowOpen() ? g.foreignWindowReason() : null);
+    }
+
+    /** Several offers' size as one: "0.0864 km² · 0.0819 dry, 0.0045 fresh" - sizeWords()' ground, its parts in the whole's unit. */
+    static String sizeWords(LandMap.Card c) {
+        double whole = LandManager.sqFt(c.km2());
+        StringBuilder w = new StringBuilder(LandMap.area(c.km2()) + " · " + LandManager.partFigure(LandManager.sqFt(c.dryKm2()), whole) + " dry");
+        if (c.freshKm2() > 0) w.append(", ").append(LandManager.partFigure(LandManager.sqFt(c.freshKm2()), whole)).append(" fresh");
+        if (c.seaKm2() > 0) w.append(", ").append(LandManager.partFigure(LandManager.sqFt(c.seaKm2()), whole)).append(" sea");
+        return w.toString();
+    }
+
+    /** What the card's main button - and Enter - does: buy them, or short issue the bond and buy them, or with no loan on offer open the funding page. */
+    void mapCardPress(MapCard m, MapView map) {
+        if (!m.funding()) map.buy(m.ids());
+        else if (!m.loans().isEmpty()) map.buyOnLoan(m.ids(), m.loans().get(0).issue());
+        else map.toFunding(m.ids());
+    }
+
+    /** The card as a node, its buttons the map's (MapView): the drawing of mapCard(). */
+    VBox mapCardNode(MapCard m, MapView map) {
+        VBox box = mapCardFrame(m.title(), map);
+        HBox top = (HBox) box.getChildren().get(0);
+        if (m.tag() != null) top.getChildren().add(1, tag(m.tag().text(), m.tag().colour()));
+        if (!m.chips().isEmpty()) {
+            javafx.scene.layout.FlowPane chips = new javafx.scene.layout.FlowPane(4, 4);
+            chips.setPrefWrapLength(MAP_CARD_W - 2 * MAP_CARD_PAD);
+            for (LandParcel p : m.chips()) {
+                Label chip = new Label(p.where(), icon(Icons.CLOSE, Palette.TEXT_LABEL, 9));
+                chip.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+                chip.setGraphicTextGap(5);
+                chip.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY) + " -fx-padding: 2 6 2 7; -fx-cursor: hand;"
+                        + Palette.block(Palette.CONTROL));
+                HistoryScreen.tip(chip, "Drop " + p.where() + " from the card");
+                int id = p.getId();
+                chip.setOnMouseClicked(e -> { map.dropPick(id); e.consume(); });
+                chips.getChildren().add(chip);
+            }
+            box.getChildren().add(chips);
+        }
+        Label size = new Label(m.size());
+        size.setWrapText(true);
+        size.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        box.getChildren().add(size);
+        // The ground bar, dry, fresh and sea, and the room it holds.
+        HBox bar = new HBox(0);
+        double[] shares = { m.dry(), m.fresh(), m.sea() };
+        int[] ground = { TileRaster.GROUND[World.GRASS], TileRaster.GROUND[World.FRESH], TileRaster.GROUND[World.SALT] };
+        double barW = MAP_CARD_W - 2 * MAP_CARD_PAD;
+        for (int k = 0; k < 3; k++) {
+            if (!(shares[k] > 0)) continue;
+            Region part = new Region();
+            double w = Math.max(1, shares[k] * barW);
+            part.setMinSize(w, 8);
+            part.setPrefSize(w, 8);
+            part.setMaxSize(w, 8);
+            part.setStyle("-fx-background-color: " + MapView.css(ground[k]) + ";");
+            bar.getChildren().add(part);
+        }
+        HistoryScreen.tip(bar, String.format("dry %.0f%% · fresh water %.0f%% · sea %.0f%%", m.dry() * 100, m.fresh() * 100, m.sea() * 100));
+        box.getChildren().add(bar);
+        if (!m.room().isEmpty()) box.getChildren().add(gridCell(m.room(), Palette.TEXT_LABEL, Palette.SIZE_LABEL, false));
+        if (!m.deposits().isEmpty()) {
+            javafx.scene.layout.FlowPane deposits = new javafx.scene.layout.FlowPane(8, 3);
+            deposits.setPrefWrapLength(barW);
+            for (DepositWords d : m.deposits()) {
+                Region dot = new Region();
+                dot.setMinSize(8, 8);
+                dot.setMaxSize(8, 8);
+                dot.setStyle("-fx-background-color: " + d.colour() + "; -fx-background-radius: 4; -fx-border-color: #0b1118;"
+                        + " -fx-border-radius: 4; -fx-border-width: 1;");
+                Label words = new Label(d.words());
+                words.setStyle(Palette.figureRegular(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
+                HBox one = new HBox(3, dot, words);
+                one.setAlignment(Pos.CENTER_LEFT);
+                HistoryScreen.tip(one, d.tip() + WHOLE_FIELDS);
+                deposits.getChildren().add(one);
+            }
+            box.getChildren().add(deposits);
+        }
+        // The price, large, in the toggle's money; the other money and the ground a m2 under it; a dry km2.
+        Label price = new Label(m.price());
+        price.setStyle(Palette.figure(Palette.SIZE_SECTION + 4, m.priceTone()));
+        Label other = new Label(m.other());
+        other.setWrapText(true);
+        other.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        Label perKm2 = new Label(m.perKm2() + " a dry km²");
+        perKm2.setStyle(Palette.figureRegular(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        box.getChildren().addAll(price, other, perKm2);
+        Label cash = new Label(m.cash());
+        cash.setWrapText(true);
+        cash.setStyle(Palette.figure(Palette.SIZE_LABEL, m.cashTone()));
+        javafx.scene.layout.FlowPane pay = mapPayChips(map);
+        pay.setPrefWrapLength(MAP_CARD_W - 2 * MAP_CARD_PAD);
+        box.getChildren().addAll(cash, pay);
+        // Buy; or, short, the bond, the note and the funding page.
+        if (!m.funding()) {
+            box.getChildren().add(actionButton(Icons.LAND, Palette.BUILDING, ACTION_TALL, m.buy(), () -> map.buy(m.ids())));
+        } else if (!m.loans().isEmpty()) {
+            // The loans' figures in the money they are issued in, marked: the funding page's cards say whose money above them.
+            String here = here();
+            java.util.function.DoubleFunction<String> inMoney = ui.game.isLandPaidFromVault() ? Money::usd : v -> marked(here, money(v));
+            Offer bond = m.loans().get(0);
+            box.getChildren().add(actionButton(Icons.LAND, Palette.BUILDING, ACTION_TALL,
+                    new Pieces.Press(Pieces.Look.CREDIT, "Issue a " + bond.name() + " and buy · " + inMoney.apply(bond.quote().cashReceived()),
+                            bond.rate() + "  ·  Enter"),
+                    () -> map.buyOnLoan(m.ids(), bond.issue())));
+            Label ending = new Label("The coupon " + inMoney.apply(bond.quote().monthlyInterest()) + " a month. " + bond.ending());
+            ending.setWrapText(true);
+            ending.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            box.getChildren().add(ending);
+            HBox more = new HBox(Palette.GAP);
+            more.setAlignment(Pos.CENTER_LEFT);
+            if (m.loans().size() > 1) {
+                Offer note = m.loans().get(1);
+                Label noteChip = stepChip(note.name() + " · " + inMoney.apply(note.quote().cashReceived()),
+                        () -> map.buyOnLoan(m.ids(), note.issue()), false);
+                HistoryScreen.tip(noteChip, note.rate() + "\n" + note.ending() + "\nIssues it, then buys.");
+                more.getChildren().add(noteChip);
+            }
+            more.getChildren().add(stepChip("All the ways to pay ›", () -> map.toFunding(m.ids()), true));
+            box.getChildren().add(more);
+        } else {
+            Label shut = new Label(m.shut() != null ? "Nobody abroad will lend the dollars: " + m.shut() + "." : "The city is short of it.");
+            shut.setWrapText(true);
+            shut.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.BAD));
+            box.getChildren().addAll(shut, actionButton(Icons.LAND, Palette.BUILDING, ACTION_TALL,
+                    new Pieces.Press(Pieces.Look.CREDIT, "All the ways to pay ›", "the funding page · Enter"), () -> map.toFunding(m.ids())));
+        }
+        LandParcel at = m.first();
+        box.getChildren().add(stepChip("Open in the land office ›", () -> map.toOffice(at.getSide(), at.getPlace()), true));
+        return box;
+    }
+
+    /** A purchase made from the map, its receipt by the ground (spec-earth 3.1, board 6): what was bought - its title and its places, side and place - drawn as the office's receipt, the city's size now and each place listing its next ground, NEW. */
+    VBox mapReceiptNode(String title, List<int[]> places, MapView map) {
+        Game g = ui.game;
+        VBox box = mapCardFrame("Bought " + title, map);
+        HBox top = (HBox) box.getChildren().get(0);
+        top.getChildren().add(0, icon(Icons.TICK, Palette.BUILDING, 14));
+        String receipt = g.getLastLandReceipt();
+        if (receipt != null && !receipt.isEmpty()) {
+            Label words = new Label(receipt);
+            words.setWrapText(true);
+            words.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY));
+            box.getChildren().add(words);
+        }
+        Label size = new Label("The city now: " + cityLine());
+        size.setWrapText(true);
+        size.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        box.getChildren().add(size);
+        LandMarket market = g.getLandManager().getMarket();
+        for (int[] sp : places) {
+            LandParcel next = market.offerIn(sp[0], sp[1]);
+            if (next == null || !isNew(next)) continue;
+            Label line = new Label(next.where() + " lists its next ground");
+            line.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY));
+            HBox row = new HBox(6, line, tag("NEW", Palette.BUILDING));
+            row.setAlignment(Pos.CENTER_LEFT);
+            box.getChildren().add(row);
+        }
+        int[] at = places.isEmpty() ? new int[] { side, place } : places.get(0);
+        box.getChildren().add(stepChip("Open in the land office ›", () -> map.toOffice(at[0], at[1]), true));
+        return box;
+    }
+
+    /** The card's frame: its width and padding, a title line with a close at its right. */
+    private VBox mapCardFrame(String title, MapView map) {
+        Label name = new Label(title);
+        name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        name.setWrapText(true);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        Label close = new Label("", icon(Icons.CLOSE, Palette.TEXT_LABEL, 12));
+        close.setStyle("-fx-padding: 2; -fx-cursor: hand;");
+        HistoryScreen.tip(close, "Close the card · Esc");
+        close.setOnMouseClicked(e -> { map.closeCard(); e.consume(); });
+        HBox top = new HBox(6, name, gap, close);
+        top.setAlignment(Pos.CENTER_LEFT);
+        VBox box = new VBox(6, top);
+        box.setMinWidth(MAP_CARD_W);
+        box.setPrefWidth(MAP_CARD_W);
+        box.setMaxWidth(MAP_CARD_W);
+        box.setStyle(Palette.block(Palette.PANEL, Palette.EDGE) + " -fx-padding: " + (MAP_CARD_PAD - 2) + " " + MAP_CARD_PAD + " "
+                + MAP_CARD_PAD + " " + MAP_CARD_PAD + ";"
+                + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 14, 0.2, 0, 3);");
+        return box;
+    }
+
+    /** The money the map's head shows, as the pane covers the window's header (spec-earth 6.1): the cash, and paying from the vault its dollars first. */
+    String mapHeadMoney() {
+        Game g = ui.game;
+        String cash = "cash " + marked(here(), money(g.getCash()));
+        return g.isLandPaidFromVault() ? "vault " + usd(g.getForeignAccounts().getReservesUsd()) + " · " + cash : cash;
+    }
+
+    /** The pay toggle on the map, its head's and its card's: the office's chips, applied at once - the office drawn again under the map, which stays - and the map told; the caller sets where they wrap. */
+    javafx.scene.layout.FlowPane mapPayChips(MapView map) {
+        String[] names = payNames();
+        boolean vault = ui.game.isLandPaidFromVault();
+        javafx.scene.layout.FlowPane chips = chipStrip(names, vault ? names[1] : names[0], Palette.SIZE_LABEL, name -> {
+            ui.game.setLandPaidFromVault(names[1].equals(name));
+            showLandMenu();
+            map.paidOtherwise();
+        });
+        chips.setAlignment(Pos.CENTER_LEFT);
+        String caption = payCaption()[1];
+        for (int i = 0; i < chips.getChildren().size() && i < PAY_TIPS.length; i++) {
+            if (chips.getChildren().get(i) instanceof Button b) {
+                // Clicked, a chip keeps no focus: Enter and Esc stay the map's.
+                b.setFocusTraversable(false);
+                Tooltip tip = new Tooltip(PAY_TIPS[i] + "\n" + caption);
+                tip.setShowDelay(Duration.millis(250));
+                tip.setWrapText(true);
+                tip.setMaxWidth(MAP_CARD_W);
+                b.setTooltip(tip);
+            }
+        }
+        return chips;
     }
 }

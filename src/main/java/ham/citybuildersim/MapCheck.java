@@ -220,6 +220,27 @@ import java.util.Map;
  *      the founding screen's globe the model's frame - its pixels the
  *      planet's picture's, then the far rule's through the camera - handing
  *      off at half a pixel.
+ *  14. buying from the map (0.7.137, batch M6; docs/studies/spec-earth.md
+ *      3 and its decisions B1 to B7), on the played city: the expanded
+ *      map's card for one offer has the figures the land office's row reads
+ *      for it - its price listed and at today's rate, its km2 by kind, its
+ *      dry ground, its price a dry km2, its sites and tonnes - with the cash
+ *      before and after in the money the toggle pays in, converting and
+ *      from the vault; the fields it rings an offer's own, their sites and
+ *      tonnes its row's and each site's square the hover's for the field -
+ *      the city first buying toward an iron field until an offer holds one;
+ *      for several, their sums, the office's "Buy the best N" totals, in the
+ *      order picked, an offer no longer listed or picked twice left out; what the card says the cash will be is what it is
+ *      once they are bought, converting and from the vault; short, the
+ *      card's bond is the funding page's first offer for the same gap -
+ *      Game.BUILD_BOND_YEARS' term for the cash, its face on
+ *      BUILD_BOND_GRANULE - and issued, it buys them all, and from the vault
+ *      the dollar bond, or none with the window shut; a box on the screen
+ *      takes exactly the offers whose free ground it meets, every plot under
+ *      it tried, the city's own ground inside an offer's rectangle taking
+ *      nothing, and through the globe's camera every offer a point of its
+ *      free ground puts inside the box; and the picks drop on a month and
+ *      on a load into the same Game, an offer bought falling out of them.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -341,6 +362,7 @@ public class MapCheck {
         pictures(city, sq);
         miniMap(city, sq);
         globeOnScreen(sq);
+        buyingFromTheMap(city);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -4691,5 +4713,402 @@ public class MapCheck {
                     (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), c);
         }
         return null;
+    }
+
+    /* =====================================================================
+       14. BUYING FROM THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3)
+       ===================================================================== */
+
+    /** Boxes drawn at random on the played city's opening view, each tried against every plot under it: 200. */
+    static final int BOXES = 200;
+
+    /** ...and through the globe's camera, each against a point at every free plot's middle: 60. */
+    static final int GLOBE_BOXES = 60;
+
+    /** The most offers the city buys toward an iron field for one to be on offer: 200, MiningCheck.makeRoom()'s own bound. */
+    static final int FIELD_BUYS_MOST = 200;
+
+    /** The most plots a box is tried on, one by one: 200,000 - a box larger is drawn again smaller. */
+    static final long BOX_PLOTS_MOST = 200_000;
+
+    /** Where the globe's check looks from: EarthCheck's Rotterdam window's centre, the played city's site put there. */
+    static final double GLOBE_LAT = 51.90625, GLOBE_LON = 4.48125;
+
+    static void buyingFromTheMap(Game g) throws Exception {
+        out.println("\n--- 14. buying from the map: the card's figures are the office row's, its bond the funding page's first offer,"
+                + " a box takes the offers whose free ground it meets, and the picks drop on a month and a load ---");
+        CityLand land = g.getCityLand();
+        LandMarket market = g.getLandManager().getMarket();
+        // A field on offer (board 7's case): the city buys toward the nearest iron field it does not own, as MiningCheck.makeRoom()
+        // does, the offer nearest it each time, until an offer holds one - handed each price, so the field is what is tested.
+        int towardField = 0;
+        PrintStream was = System.out;
+        System.setOut(QUIET);
+        try {
+            while (towardField < FIELD_BUYS_MOST && market.richest(Resource.IRON) == null) {
+                LandParcel step = MiningCheck.towardIron(g);
+                if (step == null) break;
+                if (!g.canAffordParcel(step)) g.setCashForTest(g.getCash() + step.localPrice(g.getForeignAccounts().getRate()));
+                if (!g.buyLandParcel(step.getId())) break;
+                towardField++;
+            }
+        } finally {
+            System.setOut(was);
+        }
+        out.printf("      %d offers bought toward the nearest iron field until one holds it%n", towardField);
+        List<LandParcel> listing = market.getListing();
+        double rate = g.getForeignAccounts().getRate();
+        boolean wasVault = g.isLandPaidFromVault();
+        check("fixture: the played city lists four offers or more", listing.size() >= 4);
+        if (listing.size() < 4) return;
+
+        // The card for one offer: the figures the office's row reads for it, converting and from the vault.
+        int rowsSame = 0, rowsTried = 0, rowsShort = 0;
+        for (boolean vault : new boolean[] { false, true }) {
+            g.setLandPaidFromVault(vault);
+            for (LandParcel p : listing) {
+                rowsTried++;
+                List<Integer> just = List.of(p.getId());
+                LandMap.Card c = LandMap.card(g, just);
+                boolean same = c.ids().equals(just) && c.vault() == vault
+                        && c.usd() == p.getPriceUsd() && c.local() == p.localPrice(rate)
+                        && c.price() == (vault ? p.getPriceUsd() : p.localPrice(rate))
+                        && c.km2() == p.getKm2() && c.dryKm2() == p.getKm2(CityLand.DRY) && c.freshKm2() == p.getKm2(CityLand.FRESH)
+                        && c.seaKm2() == p.getKm2(CityLand.SEA) && c.drySqFt() == p.getSizeSqFt()
+                        && (p.getDryKm2() > 0 ? c.usd() / c.dryKm2() == p.getPriceUsd() / p.getDryKm2() : c.dryKm2() == 0);
+                for (Resource r : Resource.values()) same &= c.sites()[r.ordinal()] == p.getSites(r) && c.amounts()[r.ordinal()] == p.getAmount(r);
+                double before = vault ? g.getForeignAccounts().getReservesUsd() : g.getCash();
+                same &= c.before() == before && c.after() == before - c.price() && c.funding() == g.landNeedsFunding(just)
+                        && c.gap() == (vault ? g.landVaultGapUsd(just) : g.landCashGap(just));
+                if (c.funding()) rowsShort++;
+                if (same) rowsSame++;
+            }
+        }
+        g.setLandPaidFromVault(false);
+        out.printf("      %d offers' cards against their rows, converting and from the vault: %d the same (%d short)%n", rowsTried, rowsSame, rowsShort);
+        check("the card for one offer has its row's figures - its price listed and at today's rate, its km2 by kind, its dry ground,"
+                + " a dry km2, its sites and tonnes - and the cash before and after it, for every offer, both ways of paying",
+                rowsTried == 2 * listing.size() && rowsSame == rowsTried);
+
+        // The fields the card rings (board 7): each offer's own, its row's sites and tonnes, each site's square where the hover names it.
+        int fieldsSame = 0, withFields = 0, ringed = 0;
+        for (LandParcel p : listing) {
+            int[] sites = new int[Resource.values().length];
+            double[] tonnes = new double[Resource.values().length];
+            boolean squares = true;
+            for (Deposit f : LandMap.offerFields(land, p)) {
+                sites[f.kind().ordinal()] += f.sites();
+                tonnes[f.kind().ordinal()] += f.amount();
+                List<double[]> sq = LandMap.siteSquares(f);
+                squares &= sq.size() == f.sites();
+                for (double[] s : sq) {
+                    boolean named = false;
+                    for (LandMap.FieldAt at : LandMap.fieldsAt(land, (long) s[0], (long) s[1])) named |= at.field().equals(f);
+                    squares &= named;
+                    ringed++;
+                }
+            }
+            boolean same = squares, any = false;
+            for (Resource r : Resource.values()) {
+                same &= sites[r.ordinal()] == p.getSites(r) && sameFigure(tonnes[r.ordinal()], p.getAmount(r));
+                any |= p.getSites(r) > 0;
+            }
+            if (any) withFields++;
+            if (same) fieldsSame++;
+        }
+        out.printf("      %d of %d offers hold fields, %d sites ringed; %d offers' fields their rows' sites and tonnes%n", withFields,
+                listing.size(), ringed, fieldsSame);
+        check("fixture: some offers hold fields", withFields > 0);
+        check("the fields the card rings are the offer's own: their sites and tonnes its row's, each site's square one the hover names"
+                + " for its field, for every offer", fieldsSame == listing.size());
+
+        // Several: the sums, "Buy the best N"'s totals, in the order picked; one picked twice and an id not on offer left out.
+        List<Integer> best = g.nextLandParcels(3);
+        List<Integer> order = List.of(best.get(2), best.get(0), best.get(1));
+        List<Integer> asked = new ArrayList<>(order);
+        asked.add(best.get(0));
+        asked.add(market.getNextOfferId());
+        LandMap.Card several = LandMap.card(g, asked);
+        double usd = 0, local = 0, km2 = 0, sqFt = 0;
+        for (int id : order) {
+            LandParcel p = market.find(id);
+            usd += p.getPriceUsd();
+            local += p.localPrice(rate);
+            km2 += p.getKm2();
+            sqFt += p.getSizeSqFt();
+        }
+        out.printf("      three picked: %s, US$%,.1fk, %.4f km2, cash D$%,.1fk -> D$%,.1fk%n", several.ids(), several.usd(), several.km2(),
+                several.before(), several.after());
+        check("for several: their sums, \"Buy the best N\"'s totals, in the order picked, one picked twice and an id not on offer left out",
+                several.ids().equals(order) && sameFigure(several.usd(), usd) && sameFigure(several.local(), local)
+                        && sameFigure(several.usd(), g.landPriceUsd(best)) && sameFigure(several.local(), g.landPriceLocal(best))
+                        && sameFigure(several.km2(), km2) && sameFigure(several.drySqFt(), sqFt)
+                        && several.after() == several.before() - several.local());
+
+        // A box on the plane: exactly the offers whose free ground it meets, every plot under it tried.
+        MapFrame f = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
+        LandMap.open(f, land, market);
+        java.util.Random rnd = new java.util.Random(BOXES);
+        int boxesExact = 0, boxesTaking = 0, boxesSeveral = 0;
+        java.util.Set<Integer> takenBy = new java.util.HashSet<>(), missedBy = new java.util.HashSet<>();
+        for (int b = 0; b < BOXES; b++) {
+            double w, h, sx0, sy0;
+            do {
+                w = f.width() * (0.01 + 0.3 * rnd.nextDouble());
+                h = f.height() * (0.01 + 0.3 * rnd.nextDouble());
+                sx0 = rnd.nextDouble() * (f.width() - w);
+                sy0 = rnd.nextDouble() * (f.height() - h);
+            } while ((w / f.scale() + 2) * (h / f.scale() + 2) > BOX_PLOTS_MOST);
+            List<Integer> got = LandMap.boxPicks(land, listing, LandMap.onScreen(f), sx0, sy0, sx0 + w, sy0 + h);
+            java.util.Set<Integer> plots = boxByPlots(land, listing, f.plotX(sx0), f.plotY(sy0), f.plotX(sx0 + w), f.plotY(sy0 + h));
+            if (got.size() == plots.size() && plots.containsAll(got) && inOrder(got, listing)) boxesExact++;
+            if (!got.isEmpty()) boxesTaking++;
+            if (got.size() > 1) boxesSeveral++;
+            for (LandParcel p : listing) (got.contains(p.getId()) ? takenBy : missedBy).add(p.getId());
+        }
+        // ...a box inside one free plot of each offer takes it alone.
+        int alone = 0;
+        for (LandParcel p : listing) {
+            double[] c = LandMap.freeCells(land, p).get(0);
+            List<Integer> got = LandMap.boxPicks(land, listing, LandMap.onScreen(f), f.screenX(c[0] + 0.25), f.screenY(c[1] + 0.25),
+                    f.screenX(c[0] + 0.75), f.screenY(c[1] + 0.75));
+            if (got.equals(List.of(p.getId()))) alone++;
+        }
+        out.printf("      %d boxes at %.2f px a plot: %d as every plot under them says, %d taking an offer, %d several; %d of %d offers taken by"
+                + " some and %d missed by others; a box in one free plot of each takes it alone for %d%n", BOXES, f.scale(), boxesExact,
+                boxesTaking, boxesSeveral, takenBy.size(), listing.size(), missedBy.size(), alone);
+        check("fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others",
+                boxesTaking > 0 && boxesSeveral > 0 && takenBy.size() == listing.size() && missedBy.size() == listing.size());
+        check("a box takes exactly the offers whose free ground it meets - every plot under it tried - in the order given",
+                boxesExact == BOXES);
+        check("...and a box inside one free plot of an offer takes that offer alone, for every offer", alone == listing.size());
+
+        // The city's own ground inside an offer's rectangle: a rectangle of two blocks across its east edge, as section 7's.
+        long ex = land.siteX(), ey = land.siteY(), kb = 1L << land.level();
+        while (land.ownsPlot(ex + 1, ey)) ex++;
+        LandParcel across = new LandParcel(-1, 1, 0, land.level(), ex + 1 - kb, ey, ex + 1 + kb, ey + kb, null, null, null, 0, 0);
+        List<double[]> cells = LandMap.freeCells(land, across);
+        long freeArea = 0, unowned = 0;
+        boolean cellsFree = true;
+        for (double[] c : cells) {
+            freeArea += (long) ((c[2] - c[0]) * (c[3] - c[1]));
+            for (long x = (long) c[0]; x < c[2]; x++) for (long y = (long) c[1]; y < c[3]; y++) cellsFree &= !land.ownsPlot(x, y);
+        }
+        for (long x = across.getX0(); x < across.getX1(); x++) for (long y = across.getY0(); y < across.getY1(); y++) if (!land.ownsPlot(x, y)) unowned++;
+        List<LandParcel> justAcross = List.of(across);
+        List<Integer> onOwned = LandMap.boxPicks(land, justAcross, LandMap.onScreen(f), f.screenX(ex + 0.25), f.screenY(ey + 0.25),
+                f.screenX(ex + 0.75), f.screenY(ey + 0.75));
+        List<Integer> onFree = LandMap.boxPicks(land, justAcross, LandMap.onScreen(f), f.screenX(ex + 1.25), f.screenY(ey + 0.25),
+                f.screenX(ex + 1.75), f.screenY(ey + 0.75));
+        out.printf("      a rectangle of %d x %d plots across the city's east edge: %d free plots in %d cells; a box on its owned plot takes %s,"
+                + " one on the free plot beside it %s%n", 2 * kb, kb, freeArea, cells.size(), onOwned, onFree);
+        check("fixture: the rectangle takes in some of the city's ground", unowned < 2 * kb * kb && unowned > 0 && land.ownsPlot(ex, ey));
+        check("an offer's free cells are exactly its free plots, and a box over the city's own ground inside its rectangle takes nothing",
+                cellsFree && freeArea == unowned && onOwned.isEmpty() && onFree.equals(List.of(-1)));
+
+        // Through the globe's camera, in the GROUND tier: every offer a point of its free ground puts inside the box is taken, and
+        // nothing whose free ground's corners all fall outside the box's reach.
+        GlobeFrame globe = new GlobeFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H, GLOBE_LAT, GLOBE_LON);
+        globe.set(GLOBE_LAT, GLOBE_LON, GlobeFrame.HANDOFF_KM * 1.2);
+        double shiftX = World.SIDE / 2.0 - land.siteX(), shiftY = World.SIDE / 2.0 - land.siteY();
+        LandMap.ToScreen camera = (x, y) -> globe.screenOfPlot(x + shiftX, y + shiftY);
+        double[] lo = { Double.MAX_VALUE, Double.MAX_VALUE }, hi = { -Double.MAX_VALUE, -Double.MAX_VALUE };
+        for (LandParcel p : listing) {
+            for (double[] q : new double[][] { camera.at(p.getX0(), p.getY0()), camera.at(p.getX1(), p.getY1()) }) {
+                if (q == null) continue;
+                lo[0] = Math.min(lo[0], q[0]);
+                lo[1] = Math.min(lo[1], q[1]);
+                hi[0] = Math.max(hi[0], q[0]);
+                hi[1] = Math.max(hi[1], q[1]);
+            }
+        }
+        int globeHeld = 0, globeTaking = 0;
+        for (int b = 0; b < GLOBE_BOXES; b++) {
+            double bx0 = lo[0] + rnd.nextDouble() * (hi[0] - lo[0]), by0 = lo[1] + rnd.nextDouble() * (hi[1] - lo[1]);
+            double bx1 = bx0 + rnd.nextDouble() * (hi[0] - lo[0]) / 2, by1 = by0 + rnd.nextDouble() * (hi[1] - lo[1]) / 2;
+            List<Integer> got = LandMap.boxPicks(land, listing, camera, bx0, by0, bx1, by1);
+            boolean held = inOrder(got, listing);
+            for (LandParcel p : listing) {
+                boolean inside = false, near = false;
+                for (double[] c : LandMap.freeCells(land, p)) {
+                    for (long x = (long) c[0]; x < c[2]; x++) {
+                        for (long y = (long) c[1]; y < c[3]; y++) {
+                            double[] s = camera.at(x + 0.5, y + 0.5);
+                            inside |= s != null && s[0] > bx0 && s[0] < bx1 && s[1] > by0 && s[1] < by1;
+                        }
+                    }
+                    double[] a = camera.at(c[0], c[1]), d = camera.at(c[2], c[3]), e = camera.at(c[2], c[1]), k = camera.at(c[0], c[3]);
+                    near |= a != null && d != null && e != null && k != null
+                            && Math.max(Math.max(a[0], d[0]), Math.max(e[0], k[0])) > bx0 && Math.min(Math.min(a[0], d[0]), Math.min(e[0], k[0])) < bx1
+                            && Math.max(Math.max(a[1], d[1]), Math.max(e[1], k[1])) > by0 && Math.min(Math.min(a[1], d[1]), Math.min(e[1], k[1])) < by1;
+                }
+                boolean taken = got.contains(p.getId());
+                held &= (!inside || taken) && (!taken || near);
+            }
+            if (held) globeHeld++;
+            if (!got.isEmpty()) globeTaking++;
+        }
+        out.printf("      %d boxes through the globe's camera at %.2f km a pixel (the %s tier), the offers %.1f x %.1f px: %d held, %d taking an offer%n",
+                GLOBE_BOXES, globe.kmPx(), globe.tier() == GlobeFrame.GROUND ? "GROUND" : "other", hi[0] - lo[0], hi[1] - lo[1], globeHeld, globeTaking);
+        check("fixture: the globe's view is in the GROUND tier and its boxes take offers", globe.tier() == GlobeFrame.GROUND && globeTaking > 0);
+        check("through the globe's camera a box takes every offer a point of its free ground puts inside it, and none it cannot reach",
+                globeHeld == GLOBE_BOXES);
+
+        // The picks: a click takes one, shift adds and drops, a box adds in order, a chip drops one.
+        List<Integer> four = g.nextLandParcels(4);
+        int a = four.get(0), b2 = four.get(1), c3 = four.get(2), d4 = four.get(3);
+        LandMap.Picks picks = new LandMap.Picks();
+        picks.only(g, d4);
+        picks.only(g, a);
+        boolean added = picks.toggle(g, b2);
+        picks.add(g, List.of(c3, b2, d4));
+        List<Integer> afterAdd = picks.live(g);
+        boolean dropped = !picks.toggle(g, a);
+        picks.drop(c3);
+        List<Integer> afterDrop = picks.live(g);
+        check("the picks: a click takes one alone, shift adds one and drops it again, a box adds what it takes in order, a chip's x drops one",
+                added && afterAdd.equals(List.of(a, b2, c3, d4)) && dropped && afterDrop.equals(List.of(b2, d4)));
+
+        // What the card says the cash will be is what it is once bought - converting, then from the vault - and a pick bought
+        // falls out of the picks.
+        picks.clear();
+        picks.add(g, List.of(a, b2, c3, d4));
+        PrintStream real = System.out;
+        System.setOut(QUIET);
+        LandMap.Card convert, vaultCard;
+        double cashAfter, cashBefore, reservesAfter, cashFromVault;
+        int boughtA, boughtB;
+        try {
+            LandParcel pa = market.find(a);
+            if (g.landNeedsFunding(List.of(a))) g.setCashForTest(pa.localPrice(rate) * 2);
+            convert = LandMap.card(g, List.of(a));
+            boughtA = g.buyLandParcels(List.of(a));
+            cashAfter = g.getCash();
+            g.setLandPaidFromVault(true);
+            LandParcel pb = market.find(b2);
+            double reserves = g.getForeignAccounts().getReservesUsd();
+            if (reserves < pb.getPriceUsd()) g.getForeignAccounts().buyReserves((pb.getPriceUsd() - reserves) * 2 * rate);
+            vaultCard = LandMap.card(g, List.of(b2));
+            cashBefore = g.getCash();
+            boughtB = g.buyLandParcels(List.of(b2));
+            reservesAfter = g.getForeignAccounts().getReservesUsd();
+            cashFromVault = g.getCash();
+            g.setLandPaidFromVault(false);
+        } finally {
+            System.setOut(real);
+        }
+        List<Integer> afterBuying = picks.live(g);
+        out.printf("      bought %s converting: the card said cash D$%,.3fk after, the treasury holds D$%,.3fk; %s from the vault: the card said"
+                + " US$%,.3fk after, the vault holds US$%,.3fk; the picks now %s%n", a, convert.after(), cashAfter, b2, vaultCard.after(),
+                reservesAfter, afterBuying);
+        check("fixture: neither needed a loan, and both were bought", !convert.funding() && !vaultCard.funding() && boughtA == 1 && boughtB == 1);
+        check("what the card says the cash will be is the treasury's once bought, and the vault's from the vault, no cash moving",
+                sameFigure(convert.after(), cashAfter) && sameFigure(vaultCard.after(), reservesAfter) && cashFromVault == cashBefore);
+        check("...and an offer bought falls out of the picks, the rest kept in order", afterBuying.equals(List.of(c3, d4)));
+
+        // Short, converting: the card's bond is the funding page's first offer for the same gap, and issued it buys them all.
+        List<Integer> three = g.nextLandParcels(3);
+        g.setCashForTest(g.landPriceLocal(three) * 0.4);
+        LandMap.Card shortCard = LandMap.card(g, three);
+        DebtQuote bond = shortCard.bond(), note = shortCard.note();
+        DebtQuote again = g.quoteLongBondForCash(g.landCashGap(three), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        boolean bondRight = bond != null && bond.equals(again) && bond.duration() == Game.BUILD_BOND_YEARS && bond.requested() == shortCard.gap()
+                && Math.abs(bond.faceValue() / Game.BUILD_BOND_GRANULE - Math.rint(bond.faceValue() / Game.BUILD_BOND_GRANULE)) < 1e-9
+                && bond.cashReceived() >= shortCard.gap();
+        boolean noteRight = note != null && note.duration() == Game.BUILD_NOTE_MONTHS && note.cashReceived() >= shortCard.gap();
+        System.setOut(QUIET);
+        int boughtShort;
+        try {
+            g.handleLongBondForCash(shortCard.gap(), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+            boughtShort = g.buyLandParcels(shortCard.ids());
+        } finally {
+            System.setOut(real);
+        }
+        out.printf("      three short by D$%,.1fk: the card's bond %s, face D$%,.1fk for D$%,.1fk; its note %s months; bought %d once issued%n",
+                shortCard.gap(), bond == null ? "none" : bond.duration() + " years", bond == null ? 0 : bond.faceValue(),
+                bond == null ? 0 : bond.cashReceived(), note == null ? "none" : String.valueOf(note.duration()), boughtShort);
+        check("fixture: three offers the treasury is short of", shortCard.funding() && shortCard.gap() > 0
+                && sameFigure(shortCard.gap(), shortCard.local() - shortCard.before()));
+        check("short, the card's bond is the funding page's first: the " + Game.BUILD_BOND_YEARS + "-year term for the gap, its face on the granule,"
+                + " its cash covering it - and the note beside it", bondRight && noteRight);
+        check("...and issued, the card's bond buys them all", boughtShort == three.size());
+
+        // Short from the vault: the dollar bond and note for the vault's gap, or none while the window abroad is shut.
+        g.setLandPaidFromVault(true);
+        List<Integer> all = g.nextLandParcels(LandMarket.OFFERS);
+        LandMap.Card vaultShort = LandMap.card(g, all);
+        boolean open = g.foreignWindowOpen();
+        boolean dollars = open
+                ? vaultShort.bond() != null && vaultShort.bond().equals(g.quoteForeignForCash("Term", vaultShort.gap(), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE))
+                        && vaultShort.note() != null && vaultShort.note().equals(g.quoteForeignForCash("Note", vaultShort.gap(), Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE))
+                : vaultShort.bond() == null && vaultShort.note() == null;
+        g.setLandPaidFromVault(false);
+        out.printf("      every offer from the vault: short by US$%,.1fk, the window abroad %s%n", vaultShort.gap(), open ? "open" : "shut");
+        check("fixture: the vault is short of every offer", vaultShort.funding() && vaultShort.gap() > 0);
+        check("...and the card's loans from the vault are the dollar bond and note for its gap, or none while the window abroad is shut", dollars);
+
+        // A month drops the picks; so does a load into the same Game, though its month and its offers are the same.
+        picks.add(g, g.nextLandParcels(2));
+        List<Integer> beforeMonth = picks.live(g);
+        System.setOut(QUIET);
+        try {
+            LongPlaytest.run(g, 1);
+        } finally {
+            System.setOut(real);
+        }
+        List<Integer> afterMonth = picks.live(g);
+        picks.add(g, g.nextLandParcels(2));
+        List<Integer> beforeLoad = picks.live(g);
+        int month = g.getMonth();
+        System.setOut(QUIET);
+        try {
+            g.saveGame(8, "mapcheck picks");
+            g.loadGameSave(8);
+        } finally {
+            System.setOut(real);
+        }
+        boolean stillListed = !beforeLoad.isEmpty();
+        for (int id : beforeLoad) stillListed &= g.getLandManager().getMarket().find(id) != null;
+        List<Integer> afterLoad = picks.live(g);
+        picks.add(g, g.nextLandParcels(1));
+        boolean cleared = !picks.live(g).isEmpty();
+        picks.clear();
+        cleared &= picks.live(g).isEmpty();
+        out.printf("      picks %s before a month, %s after; %s before a load in month %,d, %s after it (the month %,d, the offers %s)%n",
+                beforeMonth, afterMonth, beforeLoad, month, afterLoad, g.getMonth(), stillListed ? "still listed" : "gone");
+        check("fixture: picks stood before the month and the load, and the load kept the month and the offers",
+                beforeMonth.size() == 2 && beforeLoad.size() == 2 && g.getMonth() == month && stillListed);
+        check("the picks drop on a month, and on a load into the same Game; clear() - Esc, a click off the offers, the map collapsed -"
+                + " empties them", afterMonth.isEmpty() && afterLoad.isEmpty() && cleared);
+        g.setLandPaidFromVault(wasVault);
+    }
+
+    /** The offers a box of plots meets, plot by plot: every plot under (x0, y0)-(x1, y1) in some part, not the city's, inside an offer's rectangle. */
+    static java.util.Set<Integer> boxByPlots(CityLand land, List<LandParcel> offers, double x0, double y0, double x1, double y1) {
+        java.util.Set<Integer> out = new java.util.HashSet<>();
+        for (long x = (long) Math.floor(Math.min(x0, x1)); x < Math.max(x0, x1); x++) {
+            for (long y = (long) Math.floor(Math.min(y0, y1)); y < Math.max(y0, y1); y++) {
+                if (land.ownsPlot(x, y)) continue;
+                for (LandParcel o : offers) if (o.contains(x, y)) out.add(o.getId());
+            }
+        }
+        return out;
+    }
+
+    /** Whether these ids stand in the listing's order. */
+    static boolean inOrder(List<Integer> ids, List<LandParcel> listing) {
+        int at = -1;
+        for (int id : ids) {
+            int i = -1;
+            for (int k = 0; k < listing.size(); k++) if (listing.get(k).getId() == id) i = k;
+            if (i <= at) return false;
+            at = i;
+        }
+        return true;
+    }
+
+    /** Two money or area figures the same to a billionth of the larger. */
+    static boolean sameFigure(double a, double b) {
+        return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.max(Math.abs(a), Math.abs(b)));
     }
 }

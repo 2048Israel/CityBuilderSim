@@ -22,7 +22,6 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | FX1 | Three small faults copper found: stock written off in food, materials and luxuries; shares raised before the credit test; the playtest's bank trace on short keys (running) | [FX1](docs/queue/FX1.md) |
-| M6 | Buying land from the map (running) | [spec-earth §3](docs/studies/spec-earth.md#3-buying-from-the-map), project: `claude/decisions-2026-10-10.md` |
 | I9 | Forestry, with the 100-ha woodlot | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I10 | Wood products | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I11 | The materials pictograms' model | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |

@@ -514,7 +514,11 @@ These are Jerus's, and they do not move.
                                    window on Expand; its arithmetic is the model's MapFrame, LandMap and
                                    MapTiles, which MapCheck holds; since 0.7.135 W, A, S and D pan it,
                                    and on Earth it is the globe - GlobeFrame and GlobePicture - in three
-                                   tiers by its scale, MapCheck 13), and ZoningScreen.java (Policy's fifth
+                                   tiers by its scale, MapCheck 13; since 0.7.137, batch M6, land is
+                                   bought on it - a click on an offer opens its card, shift-click and a
+                                   Shift-drag box pick several, Enter buys, short the card issues the
+                                   funding page's bond - the card LandScreen's words, its figures, the
+                                   picks and the box LandMap's, MapCheck 14), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray), and MiniMap.java (the minimap, 0.7.134: a
                                    stamp of the city at the rail's foot above Menu, its preview on hover,

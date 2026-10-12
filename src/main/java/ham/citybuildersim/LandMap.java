@@ -781,4 +781,283 @@ public final class LandMap {
 
     /** A building packed without a street, in the hover (R7). */
     public static final String PACKED_WORDS = " · packed without a street";
+
+    /* ----------------------------- buying from the map (0.7.137, batch M6) -----------------------------
+     *
+     * Jerus (2026-10-08): "click brings up menu, and to issue bond if doesnt
+     * have cash"; "you should be able to drag and select in the map to buy
+     * all the land parcel or specific ones" (docs/studies/spec-earth.md 3,
+     * decisions B1 to B7). The expanded map's card and the box that picks
+     * offers are ui/MapView's and ui/LandScreen's; what they work out is
+     * here, so MapCheck 14 holds it: the picks (Picks - the view's, never
+     * saved, dropped on a month and a load, a pick no longer listed falling
+     * out); the offers a box on the screen meets on their free ground
+     * (boxPicks(), through a ToScreen: the plane's MapFrame, the globe's
+     * camera); and the card's figures (card()) - what the land office's rows
+     * and "Buy the best N" read from the model, summed, the cash before and
+     * after in the money the toggle pays in, and when the city is short the
+     * funding page's two loans for the gap, the bond first: the funding page
+     * takes its quotes from here (LandScreen.offers()), so the card and the
+     * page issue the same paper.
+     * --------------------------------------------------------------------------------------------------- */
+
+    /**
+     * The offers picked on the expanded map, in the order picked (B1 a click
+     * takes one, B3 shift adds or drops one, B7 a box or Ctrl+A adds what it
+     * takes): the view's own, never saved (spec-earth 3.2, "no new model
+     * state"). They belong to one city's month: live() drops them all once
+     * the month has turned or another city has been founded or loaded since
+     * - into another Game, or into this one, which builds its world again
+     * and so its land office (Game.loadGameSave(): a new LandManager) - and
+     * drops a pick no longer listed, bought here or elsewhere.
+     */
+    public static final class Picks {
+        private final List<Integer> ids = new ArrayList<>();
+        private LandManager office;
+        private int month;
+
+        /** The picks for this city as it stands, in order: none once its month has turned or another city was founded or loaded, and only those still listed. */
+        public List<Integer> live(Game g) {
+            LandManager now = g == null ? null : g.getLandManager();
+            if (now == null || now != office || g.getMonth() != month) {
+                ids.clear();
+                office = now;
+                month = g == null ? 0 : g.getMonth();
+            }
+            if (g != null) {
+                LandMarket market = g.getLandManager().getMarket();
+                ids.removeIf(id -> market.find(id) == null);
+            }
+            return List.copyOf(ids);
+        }
+
+        /** A plain click: this offer alone. */
+        public void only(Game g, int id) {
+            live(g);
+            ids.clear();
+            ids.add(id);
+        }
+
+        /** Shift and a click: the offer added at the end, or dropped when it is picked already; true when added. */
+        public boolean toggle(Game g, int id) {
+            live(g);
+            if (ids.remove(Integer.valueOf(id))) return false;
+            ids.add(id);
+            return true;
+        }
+
+        /** A box or Ctrl+A: these added at the end in their order, those picked already kept where they stand. */
+        public void add(Game g, List<Integer> more) {
+            live(g);
+            for (int id : more) if (!ids.contains(id)) ids.add(id);
+        }
+
+        /** A chip's ×: this one dropped. */
+        public void drop(int id) { ids.remove(Integer.valueOf(id)); }
+
+        /** Esc, a click off the offers, the map collapsed: none. */
+        public void clear() { ids.clear(); }
+    }
+
+    /** A point of the city's plane on a screen, {x, y} in pixels, or null where it is not seen: the plane's MapFrame (onScreen()), the globe's camera (GlobeFrame.screenOfPlot()). */
+    public interface ToScreen { double[] at(double x, double y); }
+
+    /** ...the plane's: a MapFrame's. */
+    public static ToScreen onScreen(MapFrame f) {
+        return (x, y) -> new double[] { f.screenX(x), f.screenY(y) };
+    }
+
+    /**
+     * An offer's free ground as rectangles {x0, y0, x1, y1} in plots: its
+     * rectangle cut on the lines of the city's own ground in it (ownedIn()),
+     * the cuts the city owns left out - its whole rectangle when it takes in
+     * none. Together exactly the plots pick() names the offer on.
+     */
+    public static List<double[]> freeCells(CityLand land, LandParcel o) {
+        List<double[]> own = ownedIn(land, o);
+        List<double[]> out = new ArrayList<>();
+        if (own.isEmpty()) {
+            out.add(new double[] { o.getX0(), o.getY0(), o.getX1(), o.getY1() });
+            return out;
+        }
+        java.util.TreeSet<Double> xs = new java.util.TreeSet<>(), ys = new java.util.TreeSet<>();
+        xs.add((double) o.getX0());
+        xs.add((double) o.getX1());
+        ys.add((double) o.getY0());
+        ys.add((double) o.getY1());
+        for (double[] r : own) {
+            xs.add(r[0]);
+            xs.add(r[2]);
+            ys.add(r[1]);
+            ys.add(r[3]);
+        }
+        Double[] cx = xs.toArray(new Double[0]), cy = ys.toArray(new Double[0]);
+        for (int i = 0; i + 1 < cx.length; i++) {
+            for (int j = 0; j + 1 < cy.length; j++) {
+                double mx = (cx[i] + cx[i + 1]) / 2, my = (cy[j] + cy[j + 1]) / 2;
+                boolean owned = false;
+                for (double[] r : own) owned |= mx > r[0] && mx < r[2] && my > r[1] && my < r[3];
+                if (!owned) out.add(new double[] { cx[i], cy[j], cx[i + 1], cy[j + 1] });
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Whether a convex polygon - its corners xs, ys in order, either way
+     * round - and the box [x0, x1] x [y0, y1] share some area: no axis of the
+     * box's or of the polygon's edges parts them (the separating axis
+     * theorem). A touch along an edge or at a corner is not a meeting.
+     */
+    public static boolean meets(double[] xs, double[] ys, double x0, double y0, double x1, double y1) {
+        int n = xs.length;
+        double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY, minY = minX, maxY = maxX;
+        for (int k = 0; k < n; k++) {
+            minX = Math.min(minX, xs[k]);
+            maxX = Math.max(maxX, xs[k]);
+            minY = Math.min(minY, ys[k]);
+            maxY = Math.max(maxY, ys[k]);
+        }
+        if (maxX <= x0 || minX >= x1 || maxY <= y0 || minY >= y1) return false;
+        double[] bx = { x0, x1, x1, x0 }, by = { y0, y0, y1, y1 };
+        for (int i = 0; i < n; i++) {
+            int j = (i + 1) % n;
+            double nx = ys[j] - ys[i], ny = xs[i] - xs[j];
+            if (nx == 0 && ny == 0) continue;
+            double pMin = Double.POSITIVE_INFINITY, pMax = Double.NEGATIVE_INFINITY, bMin = pMin, bMax = pMax;
+            for (int k = 0; k < n; k++) {
+                double v = nx * xs[k] + ny * ys[k];
+                pMin = Math.min(pMin, v);
+                pMax = Math.max(pMax, v);
+            }
+            for (int k = 0; k < 4; k++) {
+                double v = nx * bx[k] + ny * by[k];
+                bMin = Math.min(bMin, v);
+                bMax = Math.max(bMax, v);
+            }
+            if (pMax <= bMin || bMax <= pMin) return false;
+        }
+        return true;
+    }
+
+    /**
+     * The offers a box on the screen takes (B1b and B7: "every offer whose
+     * free ground it touches"), in the order given: each whose free ground
+     * (freeCells()) shares some area with the box between (sx0, sy0) and
+     * (sx1, sy1) on the screen - each cell taken through `screen` as the
+     * quadrilateral of its corners (on the plane a rectangle; through the
+     * globe's camera near enough one over an offer), a cell with a corner
+     * not seen not met. The city's own ground inside an offer's rectangle
+     * is not the offer's, so a box over it alone takes nothing.
+     */
+    public static List<Integer> boxPicks(CityLand land, List<LandParcel> offers, ToScreen screen,
+                                         double sx0, double sy0, double sx1, double sy1) {
+        double x0 = Math.min(sx0, sx1), x1 = Math.max(sx0, sx1), y0 = Math.min(sy0, sy1), y1 = Math.max(sy0, sy1);
+        List<Integer> out = new ArrayList<>();
+        for (LandParcel o : offers) {
+            for (double[] c : freeCells(land, o)) {
+                double[] a = screen.at(c[0], c[1]), b = screen.at(c[2], c[1]), d = screen.at(c[2], c[3]), e = screen.at(c[0], c[3]);
+                if (a == null || b == null || d == null || e == null) continue;
+                if (meets(new double[] { a[0], b[0], d[0], e[0] }, new double[] { a[1], b[1], d[1], e[1] }, x0, y0, x1, y1)) {
+                    out.add(o.getId());
+                    break;
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * The fields an offer holds whole (board 7: the card rings their sites
+     * wherever they lie): those of every resource in fields centred on its
+     * free ground - a field goes whole with the ground holding its centre
+     * plot (fieldOwnerWords()) - but a converted city's field held site by
+     * site, which is the city's.
+     */
+    public static List<Deposit> offerFields(CityLand land, LandParcel o) {
+        List<Deposit> out = new ArrayList<>();
+        for (Resource r : Resource.values()) {
+            for (Deposit f : fieldsIn(land, r, o.getX0(), o.getY0(), o.getX1() - 1, o.getY1() - 1, Integer.MAX_VALUE)) {
+                if (f.cell() >= 0 && !land.isPart(f) && !land.ownsPlot(f.x(), f.y())) out.add(f);
+            }
+        }
+        return out;
+    }
+
+    /** A field's sites as the map draws them (fieldsAt(), CityMap's site squares): each a square of plots, {x0, y0, x1, y1}. */
+    public static List<double[]> siteSquares(Deposit f) {
+        double w = Deposit.siteWidth(f.kind());
+        List<double[]> out = new ArrayList<>();
+        for (int k = 0; k < f.sites(); k++) {
+            double[] at = f.siteAt(k);
+            double cx = f.x() + at[0], cy = f.y() + at[1];
+            long sx0 = Math.round(cx - w / 2), sy0 = Math.round(cy - w / 2);
+            long sx1 = Math.max(sx0, Math.round(cx + w / 2) - 1), sy1 = Math.max(sy0, Math.round(cy + w / 2) - 1);
+            out.add(new double[] { sx0, sy0, sx1 + 1, sy1 + 1 });
+        }
+        return out;
+    }
+
+    /**
+     * The card's figures for some picked offers (spec-earth 3.1, boards 5, 7
+     * and 8): those still listed, in the order given, once each, and what the
+     * land office's rows and "Buy the best N" read from the model for them,
+     * summed - their ground by kind in km2 and the dry ground in square feet
+     * (what "room for N houses" divides), each resource's sites and amount,
+     * their price listed in US dollars and at today's rate in local money
+     * (Game.landPriceUsd(), landPriceLocal()); paid the way the toggle says,
+     * what the city holds of that money before and after (converting the
+     * treasury's cash, from the vault its dollars), whether that needs a loan
+     * and the gap (Game.landNeedsFunding(), landCashGap(), landVaultGapUsd());
+     * and then the funding page's two loans for the gap, the bond first -
+     * converting Game.BUILD_BOND_YEARS' bond for the cash, its face rounded
+     * up to BUILD_BOND_GRANULE, and BUILD_NOTE_MONTHS' note; from the vault
+     * the same two in dollars, issued abroad, or none while the window
+     * abroad is shut. Books nothing.
+     */
+    public record Card(List<Integer> ids, double km2, double dryKm2, double freshKm2, double seaKm2, double drySqFt,
+                       int[] sites, double[] amounts, double usd, double local, boolean vault, double before, double after,
+                       boolean funding, double gap, DebtQuote bond, DebtQuote note) {
+
+        /** The price in the money the toggle pays in: US dollars from the vault, local money converting. */
+        public double price() { return vault ? usd : local; }
+    }
+
+    /** The card's figures for these picks, as the city stands. */
+    public static Card card(Game g, List<Integer> picks) {
+        LandMarket market = g.getLandManager().getMarket();
+        List<Integer> ids = new ArrayList<>();
+        double km2 = 0, dry = 0, fresh = 0, sea = 0, sqFt = 0;
+        int[] sites = new int[Resource.values().length];
+        double[] amounts = new double[Resource.values().length];
+        for (int id : picks) {
+            LandParcel p = market.find(id);
+            if (p == null || ids.contains(id)) continue;
+            ids.add(id);
+            km2 += p.getKm2();
+            dry += p.getKm2(CityLand.DRY);
+            fresh += p.getKm2(CityLand.FRESH);
+            sea += p.getKm2(CityLand.SEA);
+            sqFt += p.getSizeSqFt();
+            for (Resource r : Resource.values()) {
+                sites[r.ordinal()] += p.getSites(r);
+                amounts[r.ordinal()] += p.getAmount(r);
+            }
+        }
+        boolean vault = g.isLandPaidFromVault();
+        double usd = g.landPriceUsd(ids), local = g.landPriceLocal(ids);
+        double before = vault ? g.getForeignAccounts().getReservesUsd() : g.getCash();
+        boolean funding = !ids.isEmpty() && g.landNeedsFunding(ids);
+        double gap = vault ? g.landVaultGapUsd(ids) : g.landCashGap(ids);
+        DebtQuote bond = null, note = null;
+        if (funding && !vault) {
+            bond = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+            note = g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+        } else if (funding && g.foreignWindowOpen()) {
+            bond = g.quoteForeignForCash("Term", gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+            note = g.quoteForeignForCash("Note", gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+        }
+        return new Card(List.copyOf(ids), km2, dry, fresh, sea, sqFt, sites, amounts, usd, local, vault, before,
+                before - (vault ? usd : local), funding, gap, bond, note);
+    }
 }
