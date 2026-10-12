@@ -462,6 +462,22 @@ public class HoldersCheck {
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
+            /*
+             * ...AND ITS BUILDERS HELD TO THE FOUR DEPOTS IT WAS FOUNDED WITH
+             * (0.7.130, batch T1-C): the section is about the paper, not the
+             * builders (BusinessInvestment.holdSector(), "a harness names the
+             * sectors its question is not about"). Since a depot the crews'
+             * rule would starve is built first (BuildingManager, THE BUILDERS'
+             * OWN DEPOTS FIRST) the founding four opened sooner, the builders
+             * had ordered six more by the bond's month, the town grew to 1,801
+             * people from 1,053, and in the months watched households short of money
+             * sold the desk paper - the bank held some again after the central
+             * bank had cleared it, and the step took the households' last with
+             * it, so the middle never came. Held, the builders order nothing,
+             * as they ordered nothing here before (their founding depots on
+             * site held them "already building" all sixty months).
+             */
+            city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);

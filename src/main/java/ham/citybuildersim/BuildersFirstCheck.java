@@ -347,7 +347,7 @@ public class BuildersFirstCheck {
         int points = template(with, DEPOT).getConstructionPoints();
         int bound = (int) Math.ceil(points / trap) + 1;
         out.printf("  the bound: a depot's %,d points over the trap's month of %,.0f, and one more: %d months%n", points, trap, bound);
-        int firstOpened = 0, holdingWithout = 0, holdingWith = 0;
+        int firstOpened = 0, holdingWithout = 0, holdingWith = 0, streak = 0, longestAfter = 0;
         boolean orderedAfter = false;
         for (int m = 1; m <= RUN_MONTHS; m++) {
             int before = b.countByName(DEPOT);
@@ -368,7 +368,13 @@ public class BuildersFirstCheck {
                 }
             }
             if (now < before) monthsFell++;
-            if (plan.contains("already building")) holdingWith++;
+            if (plan.contains("already building")) {
+                holdingWith++;
+                if (firstOpened > 0) streak++;
+            } else {
+                streak = 0;
+            }
+            longestAfter = Math.max(longestAfter, streak);
             if (without.getLastInvestment(BUILDERS).contains("already building")) holdingWithout++;
             out.printf("  month %2d: %2d depots, the sites %,6d a month, owed %,9.0f | %s%n", m, now, with.getBuildingOutput(),
                     b.getRemainingConstructionPoints(), plan.length() > 110 ? plan.substring(0, 110) + "..." : plan);
@@ -383,7 +389,9 @@ public class BuildersFirstCheck {
                 holdingWithout, RUN_MONTHS);
         assertTrue("with the rule the first depot opens within the bound", firstOpened > 0 && firstOpened <= bound);
         assertTrue("...and the month after, the builders' plan orders the next one", orderedAfter);
-        assertTrue("...its one order holding it only while the first was on site", holdingWith <= firstOpened);
+        out.printf("  after the first opened, its one order held the plan at most %d months running%n", longestAfter);
+        assertTrue("...and after it, its one order never held the plan past the months it expands at, and one more",
+                longestAfter <= (int) Math.ceil(BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING) + 1);
         assertTrue("with the rule the builders' nameplate grows", endB > startB
                 && endB - startB == (long) (b.countByName(DEPOT) - depotsB) * template(with, DEPOT).makes(Good.BUILDING_WORK));
         assertTrue("...by more than one depot over the run", b.countByName(DEPOT) - depotsB >= 2);
@@ -440,16 +448,22 @@ public class BuildersFirstCheck {
         boolean same = p.share.length == rule.length;
         for (int i = 0; same && i < rule.length; i++) same = Double.doubleToLongBits(p.share[i]) == Double.doubleToLongBits(rule[i]);
         assertTrue("...the plan is the crews' rule's, every slot to the bit", same && p.buildersFirst.isEmpty());
-        assertTrue("...and the twin told it could staff them serves them first", ungated.getBuildingManager().firstGroup().equals(List.of(key)));
         long homesAtStart = bm.getTotalHomes();
         double floorG = Double.MAX_VALUE, floorU = Double.MAX_VALUE, fillU = 1;
+        int firstG = 0, firstU = 0;
         for (int m = 1; m <= NEW_TOWN_MONTHS; m++) {
             month(gated);
             month(ungated);
+            BuildingManager.Plan pg = bm.getLastPlan(), pu = ungated.getBuildingManager().getLastPlan();
+            if (pg != null && !pg.buildersFirst.isEmpty()) firstG++;
+            if (pu != null && !pu.buildersFirst.isEmpty()) firstU++;
             floorG = Math.min(floorG, gated.getBuildingOutput());
             floorU = Math.min(floorU, ungated.getBuildingOutput());
             fillU = Math.min(fillU, ungated.getSectors().construction().getAverageFill());
         }
+        out.printf("  months the depots went first: %d in the town with the test, %d in the twin without it%n", firstG, firstU);
+        assertTrue("in the town with the test its depots never went first", firstG == 0);
+        assertTrue("...where the twin told it could staff them built them first", firstU > 0);
         BuildingManager bu = ungated.getBuildingManager();
         out.printf("  after %d months: with the test %d depots open, the sites at least %,.0f a month, %,d homes, %,d people;"
                         + " without it %d open, the builders' fill down to %.2f, the sites at least %,.0f, %,d homes, %,d people%n",

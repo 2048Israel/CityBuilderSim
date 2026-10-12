@@ -323,9 +323,12 @@ public class Game {
         // DEAD WAIT) - read off the healthcare a load or a new city puts here.
         buildingManager.setUnburied(() -> healthcare.getUnburied());
         // ...and whether the city could staff the builders' depots, by their own
-        // plan's test, while which a depot on site is built first (0.7.130;
+        // plan's test, which a depot on site must pass to be built first (0.7.130;
         // BuildingManager, THE BUILDERS' OWN DEPOTS FIRST).
         buildingManager.setBuildersCouldStaff((t, n) -> economyManager.getSectors().construction().staffing(t, n).passes());
+        // ...and the builders' month for the sites with every post offered, which
+        // says whether the crews' rule would starve a depot (0.7.130).
+        buildingManager.setSitesAtEveryPost(this::getBuildingOutputAtEveryPost);
         // ...and the overtime on the city's rushed sites is wages the
         // households are paid (0.7.22; PopulationManager, THE OVERTIME ON A
         // RUSHED SITE IS WAGES), read off the builders who pay it.

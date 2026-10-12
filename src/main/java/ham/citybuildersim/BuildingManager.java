@@ -4295,13 +4295,20 @@ public class BuildingManager {
     /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone. */
     private double waitWith(BuildingsTemplate t, int quantity, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
-        // ...the first group's, with a depot on site or a depot weighed (0.7.130).
-        if (firstOn(t)) {
+        // ...the first group's, with a depot served first on site or a depot
+        // weighed that would be (0.7.130).
+        if (firstOn(t, quantity)) {
             String key = ConstructionControl.keyOf(t);
             double months = firstWait(key, withMore(t, quantity, quantity * (double) t.getConstructionPoints()),
                     !isOnSite(t), false, siteOutput);
             return Double.isNaN(months) ? Double.MAX_VALUE : months;
         }
+        return ruleWait(t, quantity, siteOutput);
+    }
+
+    /** The crews' rule's own wait, held steady, for an order of `quantity` - none, for what is on site alone: waitWith() before 0.7.130, and still, with no depot served first. */
+    private double ruleWait(BuildingsTemplate t, int quantity, double siteOutput) {
+        if (!(siteOutput > 0)) return Double.MAX_VALUE;
         double others = 0, aheadOwed = 0;
         int aheadUnits = 0;
         for (BuildingsStacks s : stacks) {
@@ -4963,10 +4970,29 @@ public class BuildingManager {
         this.buildersCouldStaff = couldStaff;
     }
 
-    /** Whether n of a template that adds to the builders go first: the rule on, and the city could staff them; never anything else. */
-    public boolean goesFirst(BuildingsTemplate t, int n) {
-        if (!buildersFirstOn || !addsToTheBuilders(t) || n < 1) return false;
-        return buildersCouldStaff == null || buildersCouldStaff.test(t, n);
+    /** The builders' month for the sites with every post offered, as Game hands it (Game.getBuildingOutputAtEveryPost(), their planner's figure); null - a bare manager - reads none, and every depot is starved. */
+    private java.util.function.DoubleSupplier sitesAtEveryPost;
+
+    /** Told by Game: where the builders' month for the sites, every post offered, is read from (0.7.130). */
+    public void setSitesAtEveryPost(java.util.function.DoubleSupplier sites) { this.sitesAtEveryPost = sites; }
+
+    /**
+     * Whether t's site, with `extra` more of it ordered, goes first: the rule
+     * on, t a template that adds to the builders, the city able to staff what
+     * would be on site (buildersCouldStaff()), and that site starved - the
+     * crews' rule would keep it on site longer than the months the builders
+     * expand at (ruleWait() past BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING,
+     * at their month for the sites with every post offered). Never anything else.
+     */
+    public boolean goesFirst(BuildingsTemplate t, int extra) {
+        if (!buildersFirstOn || !addsToTheBuilders(t)) return false;
+        BuildingsStacks s = getStack(t);
+        int n = Math.max(0, extra) + (s == null ? 0 : Math.max(0, s.getUnderConstruction()));
+        if (n < 1) return false;
+        if (buildersCouldStaff != null && !buildersCouldStaff.test(t, n)) return false;
+        if (sitesAtEveryPost == null) return true;
+        double sites = sitesAtEveryPost.getAsDouble();
+        return !(sites > 0) || ruleWait(t, Math.max(0, extra), sites) > BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING;
     }
 
     /** The builders' own sites served first, in the stacks' order: every stack that adds to their capacity with buildings on site, whoever paid for them, while the city could staff them (goesFirst()). */
@@ -4974,7 +5000,7 @@ public class BuildingManager {
         java.util.List<String> out = new java.util.ArrayList<>();
         if (!buildersFirstOn) return out;
         for (BuildingsStacks s : stacks) {
-            if (s.getUnderConstruction() > 0 && goesFirst(s.getBuilding(), s.getUnderConstruction())) {
+            if (s.getUnderConstruction() > 0 && goesFirst(s.getBuilding(), 0)) {
                 out.add(ConstructionControl.keyOf(s.getBuilding()));
             }
         }
@@ -5180,7 +5206,7 @@ public class BuildingManager {
         BuildingsStacks s = d == null ? stackOfKey(key) : null;
         if (d == null && (s == null || s.getUnderConstruction() <= 0)) return 0;
         // ...the first group's, with a depot on site (0.7.130).
-        if (firstOn(null)) return firstWait(key, null, false, false, siteOutput);
+        if (firstOn(null, 0)) return firstWait(key, null, false, false, siteOutput);
         // The rule's wait, to the bit, with the player's hand off the site.
         if (s != null && !handOn(key)) return waitWith(s.getBuilding(), 0, siteOutput);
         return handWait(key, null, false, siteOutput);
@@ -5196,8 +5222,9 @@ public class BuildingManager {
     public double cityOrderWait(BuildingsTemplate t, int quantity, double siteOutput) {
         if (t == null || quantity < 1) return 0;
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
-        // ...the first group's, with a depot on site or a depot quoted (0.7.130).
-        if (firstOn(t)) {
+        // ...the first group's, with a depot served first on site or a depot
+        // quoted that would be (0.7.130).
+        if (firstOn(t, quantity)) {
             return firstWait(ConstructionControl.keyOf(t), withMore(t, quantity, quantity * (double) t.getConstructionPoints()),
                     !isOnSite(t), true, siteOutput);
         }
@@ -5215,7 +5242,7 @@ public class BuildingManager {
     public double restartWait(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (t == null || n < 1 || !(owedPoints > 0)) return 0;
-        if (firstOn(t)) return firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), true, siteOutput);
+        if (firstOn(t, n)) return firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), true, siteOutput);
         double[] mine = joined(t, n, owedPoints);
         if (mine == null) return siteMonthsWith(t, n, owedPoints, siteOutput);
         return handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput);
@@ -5265,7 +5292,7 @@ public class BuildingManager {
         probe.buildings = n;
         probe.points = points;
         double[] mine = { demolitionWeight(probe), points };
-        if (firstOn(null)) return firstWait("D?", mine, true, true, siteOutput);
+        if (firstOn(null, 0)) return firstWait("D?", mine, true, true, siteOutput);
         return handWait("D?", mine, true, siteOutput);
     }
 
@@ -5278,7 +5305,7 @@ public class BuildingManager {
     public double siteMonthsWith(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (t == null || n < 1 || !(owedPoints > 0)) return 0;
-        if (firstOn(t)) return firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), false, siteOutput);
+        if (firstOn(t, n)) return firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), false, siteOutput);
         BuildingsStacks s = getStack(t);
         int ahead = s == null ? 0 : s.getUnderConstruction();
         double aheadOwed = s == null || ahead <= 0 ? 0
@@ -5371,12 +5398,11 @@ public class BuildingManager {
         return Double.MAX_VALUE;
     }
 
-    /** Whether a wait is the first group's (0.7.130): a depot of the builders' on site served first, or `t` one that would be. */
-    private boolean firstOn(BuildingsTemplate t) {
+    /** Whether a wait is the first group's (0.7.130): a depot of the builders' on site served first, or `quantity` more of `t` that would be. */
+    private boolean firstOn(BuildingsTemplate t, int quantity) {
         if (!buildersFirstOn) return false;
         if (!buildersOwnOnSite().isEmpty()) return true;
-        BuildingsStacks s = t == null ? null : getStack(t);
-        return goesFirst(t, 1 + (s == null ? 0 : Math.max(0, s.getUnderConstruction())));
+        return quantity > 0 && goesFirst(t, quantity);
     }
 
     /** t's site with n more of it owing `owed` more points on it: {its crew's weight, its points owed}. */
@@ -5411,7 +5437,7 @@ public class BuildingManager {
             double o = Math.max(0, on * (double) s.getBuilding().getConstructionPoints() - s.getConstructionProgress());
             String k = ConstructionControl.keyOf(s.getBuilding());
             by.put(k, new double[] { weightOf(s.getBuilding(), on), o });
-            if (goesFirst(s.getBuilding(), on)) group.add(k);
+            if (goesFirst(s.getBuilding(), 0)) group.add(k);
         }
         for (ConstructionControl.Demolition site : control.demolitions()) {
             by.put(site.key(), new double[] { site.owed() > 0 ? demolitionWeight(site) : 0, site.owed() });
@@ -5422,9 +5448,10 @@ public class BuildingManager {
             // buildings, read back off its crew's weight (weightOf()).
             int id = ConstructionControl.templateIdOf(key);
             BuildingsTemplate t = id < 0 ? null : getTemplate(id);
+            BuildingsStacks st = t == null ? null : getStack(t);
             int n = t == null ? 0 : (int) Math.round(mine[0] / Math.pow(t.getConstructionPoints(), CREW_SCALE_EXPONENT));
             group.remove(key);
-            if (goesFirst(t, n)) group.add(key);
+            if (goesFirst(t, n - (st == null ? 0 : Math.max(0, st.getUnderConstruction())))) group.add(key);
         }
         double[] me = by.get(key);
         if (me == null || !(me[1] > 0)) return 0;
