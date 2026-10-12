@@ -6031,11 +6031,14 @@ public final class GameVersion {
      *     have narrowed and its weak currency (the study's case A at parity:
      *     -0.02%); once
      *     built its vans arrive over eight months and IDLE, THEN SHED sells it
-     *     at six - batch I7's lime kiln again, ordered four times in each run
-     *     and a Rod Mill once on the Earth, each sold back (fixI8-notes 4 and
-     *     6; the fix is Jerus's, QUEUE.md's Pending I7-K). Every month passes
-     *     the audit and every reload matches; re-baselined (pt07133,
-     *     pte07133).
+     *     - batch I7's lime kiln again, ordered six times in the default and
+     *     three on the Earth, each sold back (fixI8-notes 4 and 6; the fix is
+     *     Jerus's, QUEUE.md's Pending I7-K). The first sale's yard, written
+     *     off, read as a month's GDP of 361,116 for 2,118,487 in the default
+     *     until the accounts added it back (above); with that, the runs part from the
+     *     ones without it at m1213 and m1557, the months after that sale.
+     *     Every month passes the audit and every reload matches; re-baselined
+     *     (pt07133, pte07133).
      */
     public static final String VERSION = "0.7.133";
 
