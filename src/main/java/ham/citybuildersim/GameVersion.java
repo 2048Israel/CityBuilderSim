@@ -6360,8 +6360,66 @@ public final class GameVersion {
      *     forest, so no crew stands in either: the salvage alone, 484,000 m3
      *     and 327,000 m3 over the runs. Every month passes the audit and
      *     every reload matches; re-baselined (pt07138, pte07138).
+     *
+     * 0.7.139 (2026-10-12) - CHILDCARE AT REAL DEMAND. Batch CC1 (the
+     * project's decisions-2026-10-10.md; runs/brief-batchCC1.md,
+     * runs/fixCC1-notes.md). Jerus, 2026-10-10, on the map: "real life
+     * doesnt have that many like even with the expanded facilities i still
+     * check the map and its quite the bit of childcares". No save format
+     * change (39): a save carries no demand, and the month after a load
+     * strikes coverage at the weights.
+     *   - A BABY WANTS 0.32 OF A PLACE, A CHILD 0.182 (CareType
+     *     .placesPerHead(): CHILDCARE_UNDER_SIX, CHILDCARE_SIX_TO_TWELVE),
+     *     where every child 0 to 12 wanted a whole one. Statistics Canada,
+     *     2025: 32% of the under-6s in centre-based care (The Daily
+     *     2025-10-21); 35% of the 6-to-12s in child care, 52% of them in a
+     *     before- or after-school programme (The Daily 2026-03-12), 18.2% -
+     *     derived, the release gives no share of all children. The shares
+     *     themselves, not normalised as senior care's are: they are the
+     *     decision.
+     *   - EVERY READER MOVED WITH THE ONE DENOMINATOR, CareType
+     *     .populationServed(): the month's coverage, and through it the
+     *     babies' and children's mortality, the birth bonus and the babies'
+     *     extra sickness; the places served and the fees charged on them;
+     *     who can pay (Game.careAffordability(), at the same weights); NEEDS
+     *     YOU's childcare row; the build advice's card and its size;
+     *     automatic building's childcare; the inbox's line; Services' and
+     *     People's figures. Full coverage is now the places real demand
+     *     wants, and the factors that read it are as they were.
+     *   - THE FOUNDING NURSERY at the weights too (Healthcare
+     *     .foundingCapacity()): 49 places where it held 201, the same twelve
+     *     hundred people covered.
+     *   - Services › Health gives childcare's need in places, as senior
+     *     care's ("places needed"; CareType.countsPlaces()), its (i) the
+     *     weights and the city's babies and children.
+     *   - LongPlaytest says what childcare it stands at m1,000 to m4,000
+     *     (CHILDCARE_SEEN), and -Dplaytest.budget=N prints the treasury's
+     *     month every N months, care by kind.
+     *   - Harnesses: ChildcareCheck 6 (new) - the weights, a pyramid of known
+     *     bands and its places, the founding nursery, the Large centres that
+     *     serve it whole, NEEDS YOU's row and the month's coverage;
+     *     ChildcareCheck 2's towns four and sixteen times over (once and four
+     *     times until now: at real demand they are short of tens and hundreds
+     *     of places), built as copies of the town each on its own cash and
+     *     ground; HealthCheck's endowment at the weights.
+     *   - THE PLAYTESTS MOVE from month 4: the founding village's childcare
+     *     fees are charged on the places its babies and children want, 1.5
+     *     where it was 6.2. The default player builds no childcare, so its
+     *     coverage stays the founders' (10% at m1,000, 8% until now); it ends
+     *     at 558,232 people (630,307 until now; 10,000 at m976 against m861);
+     *     the Earth's from month 4 the same way, 585,337 people at m4,000
+     *     (715,471; 10,000 at m830 against m779). Every month passes the
+     *     audit and every reload matches in both; re-baselined.
+     *   - The auto-built seeds 0 to 7 stand 2,780 childcare centres at
+     *     m4,000 against 9,361 until now, 0.077 a home building against
+     *     0.276; seeds 0, 1 and 7, three of P2b's four towns that stalled
+     *     with care as their largest deficit, reach 10,000 people at m556,
+     *     m551 and m541 (m747, m3,814 and m1,295 until now). Seeds 4 and 5
+     *     still stall as villages, now on general and senior care, the
+     *     school and the pensions against their tax - one Small Childcare
+     *     Centre each (runs/fixCC1-notes.md).
      */
-    public static final String VERSION = "0.7.138";
+    public static final String VERSION = "0.7.139";
 
     /**
      * The save shape.

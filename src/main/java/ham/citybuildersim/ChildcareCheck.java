@@ -54,6 +54,22 @@ import java.util.Map;
  *      nothing.
  *   5. THE MAP DRAWS A CENTRE AS CARE: id 15 is no longer drawn as a home;
  *      home care (22) still is.
+ *   6. THE PLACES A CITY WANTS AT REAL DEMAND (0.7.139, batch CC1): a baby
+ *      wants CareType.CHILDCARE_UNDER_SIX of a place and a child
+ *      CHILDCARE_SIX_TO_TWELVE, nobody else any; a pyramid of known bands
+ *      wants exactly those places, under a third of the place a head the
+ *      rule wanted until then; the founding's nursery is twelve hundred
+ *      people's at those weights; the Large Childcare Centres that serve a
+ *      known city whole are its places over one centre's, one fewer short;
+ *      and NEEDS YOU's childcare row and the model's month read those places
+ *      as the demand.
+ *
+ * WHY 6. Jerus, 2026-10-10, on the map: "real life doesnt have that many
+ * like even with the expanded facilities i still check the map and its quite
+ * the bit of childcares". Until 0.7.139 childcare wanted a whole place for
+ * every child 0 to 12; in Canada 32% of the under-6s are in centre-based care
+ * and 18.2% of the 6-to-12s in a before- or after-school programme
+ * (CareType.placesPerHead()).
  *
  * Every fixture causes its condition.
  */
@@ -113,30 +129,45 @@ public class ChildcareCheck {
      * The fixture: BuildAdviceCheck's short city with no daycare of its own -
      * nine hundred houses, its schools, college, university and four medical
      * schools for the posts that bring the people, every sector held - played
-     * three years: its children far past the founding's 201 places, more
-     * than a Large Childcare Centre holds (calibrated: scratch-n2/h/cc-2.txt).
+     * three years: its children far past the founding's places (calibrated:
+     * scratch-n2/h/cc-2.txt). Until 0.7.139 more than a Large Childcare Centre
+     * holds; at real demand (CareType's weights) about 194 places wanted
+     * against the founding's 49, so section 2 asks four and sixteen times it.
      */
     static Game town(Path root, String name) {
         return town(root, name, 1);
     }
 
-    /** ...with every building `k` times over: at k 4 a city of thousands of children (calibrated: scratch-n2/h/cc-3.txt). */
+    /**
+     * ...with every building `k` times over: at k 4 a city of thousands of
+     * children (calibrated: scratch-n2/h/cc-3.txt). Since 0.7.139 k copies of
+     * the town as it is built, each on the founders' cash and its own ground,
+     * where until then each building was ordered k at once on one cash and one
+     * ground, and the dearest of them refused for want of it (the Coal Power
+     * Plants, the University and the Medical Schools at k 4; past k 4 the
+     * houses too). At real demand (CareType's weights) k 4 is short of
+     * hundreds of places, k 16 - some 67,000 people - of thousands
+     * (calibrated: scratch-cc1/probe2). At k 1 the town to the bit.
+     */
     static Game town(Path root, String name, int k) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
         Game g = new Game(files);
         quietly(() -> {
             g.run();
             g.setCashForTest(Founding.WEALTHY_CASH);
-            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 80_000_000L);
+            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 80_000_000L * k);
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
-            for (String[] w : new String[][] {
-                    { "Industrial Bakery", "4" }, { "Coal Power Plant", "1" }, { "Water Treatment Plant", "1" },
-                    { "Commercial Bank", "1" }, { "Convenience Store", "10" }, { "House", "900" },
-                    { "Elementary School", "1" }, { "Middle School", "1" }, { "High School", "1" },
-                    { "Community College", "1" }, { "University", "1" }, { "Medical School", "4" },
-                    { "Construction Depot", "4" }, { "Paved Road", "1" }, { "Police Station", "2" },
-                    { "Home Care Service", "2" } }) {
-                g.buildStack(template(g, w[0]), Integer.parseInt(w[1]) * k, true);
+            for (int copy = 0; copy < k; copy++) {
+                if (copy > 0) g.setCashForTest(Founding.WEALTHY_CASH);
+                for (String[] w : new String[][] {
+                        { "Industrial Bakery", "4" }, { "Coal Power Plant", "1" }, { "Water Treatment Plant", "1" },
+                        { "Commercial Bank", "1" }, { "Convenience Store", "10" }, { "House", "900" },
+                        { "Elementary School", "1" }, { "Middle School", "1" }, { "High School", "1" },
+                        { "Community College", "1" }, { "University", "1" }, { "Medical School", "4" },
+                        { "Construction Depot", "4" }, { "Paved Road", "1" }, { "Police Station", "2" },
+                        { "Home Care Service", "2" } }) {
+                    g.buildStack(template(g, w[0]), Integer.parseInt(w[1]), true);
+                }
             }
             g.simulateMonths(36);
             g.setCashForTest(Founding.WEALTHY_CASH);
@@ -202,6 +233,7 @@ public class ChildcareCheck {
         keepTheirType(root);
         thePlayer(root);
         theMap(root);
+        realDemand(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -262,14 +294,15 @@ public class ChildcareCheck {
         out.println("\n--- 2. the size that fits the need ---");
         BuildAdvice.Suggestion s;
 
-        // Short of thousands: the town four times over.
-        Game big = town(root, "town-x4", 4);
+        // Short of thousands: the town sixteen times over (four times over until 0.7.139, when a child
+        // wanted a whole place: at real demand four times over is short of hundreds, below).
+        Game big = town(root, "town-x16", 16);
         BuildingsTemplate small = byId(big, SMALL), large = byId(big, LARGE);
         s = advice(big);
         double gap = s == null ? 0 : lacks(big, s.ahead());
-        out.printf("      the town x4: %,d people, %,.0f children; lacks %,.0f at the card's projection%n",
+        out.printf("      the town x16: %,d people, %,.0f places wanted; lacks %,.0f at the card's projection%n",
                 big.getPopulationManager().getPopulation(), CareType.CHILDCARE.populationServed(big.getCohorts()), gap);
-        assertTrue("fixture: the town four times over lacks more places than five Large Childcare Centres hold",
+        assertTrue("fixture: the town sixteen times over lacks more places than five Large Childcare Centres hold",
                 s != null && gap > 5 * large.getCapacity());
         if (s != null) {
             theLeast(big, s, "short of thousands");
@@ -277,16 +310,16 @@ public class ChildcareCheck {
                     + s.template().getName() + ")", s.template() != small);
         }
 
-        // Short of hundreds: the town (its own catalogue's templates).
-        Game g = town(root, "town");
+        // Short of hundreds: the town four times over (its own catalogue's templates; the town itself until 0.7.139).
+        Game g = town(root, "town-x4", 4);
         small = byId(g, SMALL);
         large = byId(g, LARGE);
         s = advice(g);
         gap = s == null ? 0 : lacks(g, s.ahead());
-        out.printf("      the town: %,d people, %,.0f children, %,.0f places staffed; lacks %,.0f at the card's projection%n",
+        out.printf("      the town x4: %,d people, %,.0f places wanted, %,.0f places staffed; lacks %,.0f at the card's projection%n",
                 g.getPopulationManager().getPopulation(), CareType.CHILDCARE.populationServed(g.getCohorts()),
                 g.getBuildingManager().getStaffedCareCapacity(CareType.CHILDCARE, g.getPopulationManager().getJobFillRate()), gap);
-        assertTrue("fixture: the town lacks more places than one Large Childcare Centre holds",
+        assertTrue("fixture: the town four times over lacks more places than one Large Childcare Centre holds",
                 s != null && gap > large.getCapacity());
         if (s != null) theLeast(g, s, "short of hundreds");
 
@@ -347,8 +380,10 @@ public class ChildcareCheck {
         Game g = town(root, "kept");
         BuildingsTemplate small = byId(g, SMALL);
         double kids = CareType.CHILDCARE.populationServed(g.getCohorts());
-        // As many of id 15 as Jerus's city held of it per child (629 for 6,845): eight times the places they need.
-        int n = (int) Math.ceil(kids * 629 / 6845.0);
+        // As many of id 15 as Jerus's city held of it per child (629 for 6,845): eight times the places they needed
+        // when a child wanted a whole one, and since 0.7.139 (CareType's weights) about thirty times the places wanted.
+        double heads = g.getCohorts().get(AgeBand.BABY) + g.getCohorts().get(AgeBand.CHILD);
+        int n = (int) Math.ceil(heads * 629 / 6845.0);
         quietly(() -> g.buildStack(small, n, true));
         double founding = Healthcare.foundingCapacity(CareType.CHILDCARE);
         quietly(() -> g.saveGame(10, "childcarecheck"));
@@ -379,8 +414,8 @@ public class ChildcareCheck {
                 ground >= n * (double) small.getLandSqFt());
         List<CityNeeds.Need> all = CityNeeds.measure(back, CityNeeds.PLAIN);
         CityNeeds.Need need = BuildAdvice.needFor(all, CHILDCARE);
-        assertTrue(String.format("fixture: overbuilt - %,.0f places for %,.0f children", bm.getCareCapacity(CareType.CHILDCARE),
-                kids), bm.getCareCapacity(CareType.CHILDCARE) > 4 * kids);
+        assertTrue(String.format("fixture: overbuilt - %,.0f places for %,.0f wanted (%,.0f babies and children)",
+                bm.getCareCapacity(CareType.CHILDCARE), kids, heads), bm.getCareCapacity(CareType.CHILDCARE) > 4 * kids);
         assertTrue("overbuilt so, the advice says nothing for childcare", need == null
                 || BuildAdvice.suggestFor(back, need, CHILDCARE, back.getCash(), back.getLandManager().getAvailableSqFt()) == null);
         boolean listed = false;
@@ -444,5 +479,75 @@ public class ChildcareCheck {
                 && BuildingVisual.of(small).cls() == BuildingVisual.classOf(BuildingType.HEALTHCARE)
                 && BuildingVisual.of(small).cls() != BuildingVisual.HOME);
         assertTrue("...and home care (22) still as a home", home != null && BuildingVisual.of(home).cls() == BuildingVisual.HOME);
+    }
+
+    /* ---------------------------------------------------------------- 6 */
+
+    static void realDemand(Path root) {
+        out.println("\n--- 6. the places a city wants at real demand (0.7.139) ---");
+        double under = CareType.CHILDCARE_UNDER_SIX, over = CareType.CHILDCARE_SIX_TO_TWELVE;
+        bits("a baby wants the share of under-6s in centre-based care of a place",
+                CareType.CHILDCARE.placesPerHead(AgeBand.BABY), under);
+        bits("...a child the share of 6-to-12s in a before- or after-school programme",
+                CareType.CHILDCARE.placesPerHead(AgeBand.CHILD), over);
+        boolean nobodyElse = true;
+        for (AgeBand b : AgeBand.values()) {
+            if (b != AgeBand.BABY && b != AgeBand.CHILD) nobodyElse &= CareType.CHILDCARE.placesPerHead(b) == 0;
+        }
+        assertTrue("...and nobody else any", nobodyElse);
+        assertTrue(String.format("...each a share of a place, a child's less than a baby's (%.3f, %.3f)", under, over),
+                0 < over && over < under && under < 1);
+        assertTrue("childcare counts places, as senior care does, and general care heads",
+                CareType.CHILDCARE.countsPlaces() && CareType.SENIOR.countsPlaces() && !CareType.GENERAL.countsPlaces());
+
+        // A pyramid of known bands: 4,000 babies and 5,000 children in a city of 48,500.
+        double babies = 4_000, children = 5_000;
+        double[] bands = { babies, children, 3_000, 30_000, 5_000, 1_500, 0, 0, 0 };
+        PopulationCohorts p = new PopulationCohorts();
+        p.restore(PopulationCohorts.saveBands(), bands);
+        assertTrue("fixture: the pyramid holds its 4,000 babies and 5,000 children",
+                p.get(AgeBand.BABY) == babies && p.get(AgeBand.CHILD) == children);
+        double wanted = CareType.CHILDCARE.populationServed(p);
+        bits("a city of 4,000 babies and 5,000 children wants their places at those weights", wanted,
+                babies * under + children * over);
+        assertTrue(String.format("...%,.0f places, under a third of the %,.0f a place a head wanted until 0.7.139",
+                wanted, babies + children), wanted < (babies + children) / 3);
+
+        double founding = Healthcare.foundingCapacity(CareType.CHILDCARE);
+        bits("the founding's nursery is twelve hundred people's babies and children at those weights", founding,
+                Healthcare.FOUNDING_CITY * (PopulationCohorts.equilibriumShare(AgeBand.BABY) * under
+                        + PopulationCohorts.equilibriumShare(AgeBand.CHILD) * over));
+
+        // Its centres: the Large Childcare Centres that serve it whole, on the founding's places.
+        BuildingManager bm = new BuildingManager();
+        quietly(bm::initializeTemplates);
+        BuildingsTemplate large = null;
+        for (BuildingsTemplate t : bm.getTemplates()) if (t.getId() == LARGE) large = t;
+        if (large == null) { assertTrue("fixture: the catalogue has the Large Childcare Centre", false); return; }
+        int n = (int) Math.ceil((wanted - founding) / large.getCapacity());
+        bm.addStack(large, n - 1, true);
+        double shortOne = Health.coverageOf(bm.getCareCapacity(CareType.CHILDCARE), wanted);
+        bm.addStack(large, 1, true);
+        double whole = Health.coverageOf(bm.getCareCapacity(CareType.CHILDCARE), wanted);
+        assertTrue(String.format("%d Large Childcare Centres serve it whole (%.1f%%), and %d do not (%.1f%%)", n, whole * 100,
+                n - 1, shortOne * 100), whole == 1 && shortOne < 1);
+        double headRule = Health.coverageOf(bm.getCareCapacity(CareType.CHILDCARE), babies + children);
+        assertTrue(String.format("...where a place a head, the same %d would have served %.1f%% of its babies and children",
+                n, headRule * 100), headRule < 1.0 / 3);
+
+        // NEEDS YOU and the month read those places: a founded city with that pyramid.
+        GameFiles files = new GameFiles(root.resolve("demand"), root.resolve("demand-no-legacy"));
+        Game g = new Game(files);
+        quietly(g::run);
+        g.getCohorts().restore(PopulationCohorts.saveBands(), bands);
+        CityNeeds.Need need = need(g);
+        assertTrue("fixture: NEEDS YOU has a childcare row for the city", need != null);
+        if (need != null) bits("NEEDS YOU's childcare row wants those places", need.b(), wanted);
+        double[] fill = g.getPopulationManager().getJobFillRate();
+        double staffed = g.getBuildingManager().getStaffedCareCapacity(CareType.CHILDCARE, fill);
+        quietly(() -> g.simulateMonths(1));
+        double afford = g.getHealthcare().getAffordability(CareType.CHILDCARE);
+        bits("...and the month's coverage is its places over them, times the share who can pay",
+                g.getHealthcare().getCoverage(CareType.CHILDCARE), Health.coverageOf(staffed, wanted) * afford);
     }
 }

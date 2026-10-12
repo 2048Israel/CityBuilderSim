@@ -965,7 +965,7 @@ final class ServicesScreen {
         // SERVED (0.7.41): the ring is the month's coverage read as served, in the one verdict on it.
         CityNeeds.Served v = CityNeeds.verdict(CityNeeds.Kind.CARE, care, cover);
         String tone = BuildScreen.servedTone(v);
-        String toServe = care == CareType.SENIOR ? " places needed" : " to serve";
+        String toServe = care.countsPlaces() ? " places needed" : " to serve";
         String caption = BuildScreen.servedWords(v) + " · " + people(staffed) + " staffed of " + people(built) + " built · "
                 + people(served) + toServe;
         String buys, buysWords, range, icon, page;
@@ -1009,7 +1009,7 @@ final class ServicesScreen {
 
     /** Who a kind of care serves, and what its ring is (the old page's three notes, and the month's coverage). */
     String careInfo(CareType care, double cover) {
-        String who = care == CareType.CHILDCARE ? "Babies and children — the band it is measured against."
+        String who = care == CareType.CHILDCARE ? childNeedWords()
                 : care == CareType.SENIOR ? seniorNeedWords()
                 : "Everybody in the city. General care is not means-tested or age-banded.";
         return who + "\n\nThe ring is what it served the month it applied, " + CityNeeds.servedPct(cover) + ": the staffed "
@@ -1029,6 +1029,22 @@ final class ServicesScreen {
                 + "so it needs %s places.",
                 CareType.SENIOR.placesPerHead(AgeBand.SENIOR), people(cohorts.get(AgeBand.SENIOR)),
                 people(cohorts.get(AgeBand.ELDER)), people(CareType.SENIOR.populationServed(cohorts)));
+    }
+
+    /**
+     * CHILDCARE'S DENOMINATOR IS PLACES TOO (0.7.139, batch CC1): a baby
+     * wants about a third of a place - the share of under-6s in a centre -
+     * and a child a little under a fifth, the share of 6-to-12s in a before-
+     * or after-school programme (CareType.placesPerHead()).
+     */
+    String childNeedWords() {
+        PopulationCohorts cohorts = ui.game.getCohorts();
+        return String.format("Babies and children, in places: a baby (under 6) needs %.2f of a place, the share "
+                + "of under-6s in a daycare or preschool, and a child (6 to 12) %.2f, the share in a before- or "
+                + "after-school programme. This city has %s babies and %s children, so it needs %s places.",
+                CareType.CHILDCARE.placesPerHead(AgeBand.BABY), CareType.CHILDCARE.placesPerHead(AgeBand.CHILD),
+                people(cohorts.get(AgeBand.BABY)), people(cohorts.get(AgeBand.CHILD)),
+                people(CareType.CHILDCARE.populationServed(cohorts)));
     }
 
     /** Death care's card: the dead dealt with as its ring, the ground left as what it buys, the plots as its bar. */
@@ -1213,7 +1229,7 @@ final class ServicesScreen {
                     false, Palette.SIZE_LABEL, Palette.TEXT_HEAD, 560));
         }
         double gap = Math.max(0, served - staffed);
-        box.getChildren().add(words(gap >= .5 ? "short by " + people(gap) + (care == CareType.SENIOR ? " places" : " people")
+        box.getChildren().add(words(gap >= .5 ? "short by " + people(gap) + (care.countsPlaces() ? " places" : " people")
                 : "enough places for everyone", Palette.SIZE_LABEL, gap >= .5 ? Palette.TEXT_HEAD : Palette.TEXT_LABEL));
         return box;
     }
@@ -1229,7 +1245,7 @@ final class ServicesScreen {
         double priced = service.getPricedOut(care);
         boolean measured = !healthNotRunYet();
         List<FunnelStep> steps = new ArrayList<>();
-        steps.add(new FunnelStep(care == CareType.SENIOR ? "places needed" : "to serve", served, people(served), null));
+        steps.add(new FunnelStep(care.countsPlaces() ? "places needed" : "to serve", served, people(served), null));
         steps.add(new FunnelStep("places built", built, people(built), null));
         steps.add(new FunnelStep("staffed", staffed, people(staffed),
                 built - staffed > .5 ? people(built - staffed) + " places stand empty for want of staff" : null));
@@ -1336,7 +1352,7 @@ final class ServicesScreen {
         double cover = service.getCoverage(care);
         VBox col = column(statementHead(care.getLabel()),
                 statementLine("Serves", CityNeeds.servedPct(cover)),
-                statementLine(care == CareType.SENIOR ? "Places needed" : "People to serve", people(served)),
+                statementLine(care.countsPlaces() ? "Places needed" : "People to serve", people(served)),
                 statementLine("Places built", people(built)),
                 statementLine("Places staffed", people(staffed), staffed < built * .95 ? Palette.WARN : null));
         if (built - staffed > .5) {

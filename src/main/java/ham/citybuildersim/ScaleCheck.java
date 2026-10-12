@@ -193,8 +193,20 @@ public class ScaleCheck {
      * migrants otherwise than the city's, or the copies built no more homes
      * than they began with. 635 is the middle of 625 to 645: 5,213 people at
      * 640.
+     *
+     * ...AT 600 SINCE 0.7.139 (batch CC1), BY THE SAME PREMISE. Childcare at
+     * real demand (CareType's weights) charges the founding village's fees
+     * on fewer places and moves its town from month 4: at 635 the larger
+     * copy built no more homes than it began with. Scanned (scratch-cc1/
+     * probe3, ScaleCheck with the month changed, every assertion read):
+     * every assertion holds at 500, 510, 520, 540, 580, 595, 600, 605 and
+     * 610; at 505, 525, 530, 535, 545, 560, 590, 620, 625 and 635 the copies
+     * built no more homes than they began with (at 505 and 535 a copy's rents
+     * pulled migrants otherwise as well), and at 515 the city's own rents
+     * priced migrants out. 600 is the middle of 595 to 610: 3,877 people at
+     * 605.
      */
-    static final int FREE_FIXTURE_MONTHS = 635;
+    static final int FREE_FIXTURE_MONTHS = 600;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;

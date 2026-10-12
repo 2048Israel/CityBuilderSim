@@ -542,7 +542,9 @@ These are Jerus's, and they do not move.
         *Check.java                106 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
-                                   its player asks the build advice which road (0.7.70) and how many (0.7.103)
+                                   its player asks the build advice which road (0.7.70) and how many (0.7.103);
+                                   since 0.7.139 it says what childcare it stands at m1,000 to m4,000, and
+                                   -Dplaytest.budget=N prints the treasury's month line by line
         tools/                     the index generators, the two look-up tools, Stale (the prose check) and ManualToMarkdown (the manual into docs/); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
