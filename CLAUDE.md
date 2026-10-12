@@ -88,9 +88,15 @@ These are Jerus's, and they do not move.
   merges it into `main`, tags it and pushes, and the PC pulls `main` every
   ten minutes. Nothing is written to the PC by hand. Ask as many questions
   as you like; do not wait on answers to ship what is already decided.
-- **Per-batch write-up** goes to the project as `claude/<title>.md`, in prose,
-  with what was found and what was decided; the todo and the changelog get
-  their lines. The README's counts are not the record - the changelog is.
+- **Each batch is told once** (Jerus, 2026-10-12, on usage). The changelog
+  gets one paragraph per version, at most 12 lines, and the todo only what is
+  still open. A write-up goes to the project as `claude/<title>.md`, in prose,
+  with what was found and what was decided, but only for a batch that changes
+  how the game plays or leaves calls for Jerus; for the rest, the changelog's
+  paragraph is the record. The README's counts are not the record - the
+  changelog is. The project's `git-workflow.md`, "Keeping usage down", has the
+  rest: the orchestrator as a dispatcher, 15-line reports, and a todo kept
+  under 100 KB.
 - **A batch that is decided goes in `QUEUE.md` the same turn** (Jerus,
   2026-10-11). `QUEUE.md` is the queue as an index (from
   `batch/pt1-playtest-1011`): one row for each batch queued, in the order they
@@ -578,8 +584,12 @@ Conventions the code is written to, which the indexes rely on:
    Earth (the file needed); its trace is a baseline of its own.
 4. `Regenerate maps.bat`. Commit the sources, `buildings.json` and `docs/`
    together; bump `GameVersion.VERSION` when the batch is player-visible.
-5. Write the batch up in the project - the why, while you still know it.
-6. **The docs pass, by a fresh agent** - `docs/docs-pass.md` is its brief.
+5. Write the batch up in the project - the why, while you still know it -
+   if it changes how the game plays or leaves calls for Jerus; otherwise its
+   changelog paragraph is the record (the standing rules above).
+6. **The docs pass, by a fresh agent, at most once a day** (Jerus,
+   2026-10-12), over everything merged since the last one; a manual edition
+   only at a milestone or when Jerus asks - `docs/docs-pass.md` is its brief.
    It makes every comment, header, index and count agree with the code
    again, and it is done by a context that did not make the change, because
    the one that did has stopped seeing the prose. `Docs pass.bat` runs it
