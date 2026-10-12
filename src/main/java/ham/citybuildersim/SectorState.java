@@ -82,6 +82,15 @@ public final class SectorState {
     public Map<String, Double> exported, imported;
 
     /**
+     * ...and the units of each good written off in that month (0.7.133, batch
+     * I8): stock a yard sold back or demolished could not hold, which the
+     * national accounts add back at the next strike - see Sector, WHAT A
+     * MONTH WROTE OFF, PAST ITS STRIKE. Null in an older save, which wrote
+     * nothing off its accounts' term either.
+     */
+    public Map<String, Double> writtenOff;
+
+    /**
      * A good's money in a save: what it sold or bought at home and abroad.
      *
      * A NEW FIELD IN AN OLD SAVE READS ZERO, which is what this class's header

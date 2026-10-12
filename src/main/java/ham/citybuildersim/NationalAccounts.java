@@ -232,6 +232,9 @@ public class NationalAccounts {
 
     private final double[] lastHeldUnits = new double[HELD.length];
 
+    /** The month's units of each good in HELD written off with the yard that held them (0.7.133): a flow, read in the month it is handed in. */
+    private final double[] heldWrittenOffUnits = new double[HELD.length];
+
     /** Whether lastHeldUnits is a real baseline: false only after loading a save from before 0.7.58, whose first month books no change in these goods. */
     private boolean heldBaselineKnown = true;
 
@@ -340,6 +343,8 @@ public class NationalAccounts {
     public double getInventoryHeld()         { return invHeld; }
     /** Last month's units of each good in HELD, in its order (0.7.58). */
     public double[] getLastHeldUnits()       { return lastHeldUnits.clone(); }
+    /** The month's units of each good in HELD destroyed with the yard that held them, in its order, added back before the change was measured (0.7.133). */
+    public double[] getHeldWrittenOff()      { return heldWrittenOffUnits.clone(); }
     public boolean isBaselineKnown()     { return inventoryBaselineKnown; }
 
     /**
@@ -397,6 +402,26 @@ public class NationalAccounts {
                        double foodImports, double materialImports,
                        double rawMaterialImports, double exportRevenue,
                        double[] heldUnits, double[] heldPrices) {
+        update(retailSales, rentPaid, constructionWorkDone, foodUnits, foodStockWrittenOff, foodPrice,
+                materialUnits, materialPrice, luxuryUnits, luxuryPrice, governmentServices,
+                foodImports, materialImports, rawMaterialImports, exportRevenue, heldUnits, null, heldPrices);
+    }
+
+    /**
+     * ...and with the units of HELD's goods written off this month (0.7.133),
+     * in HELD's order, or null for none: stock destroyed with the yard that
+     * held it, added back before the change is measured as food's write-off
+     * is - see A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED.
+     */
+    public void update(double retailSales, double rentPaid,
+                       double constructionWorkDone,
+                       double foodUnits, double foodStockWrittenOff, double foodPrice,
+                       double materialUnits, double materialPrice,
+                       double luxuryUnits, double luxuryPrice,
+                       double governmentServices,
+                       double foodImports, double materialImports,
+                       double rawMaterialImports, double exportRevenue,
+                       double[] heldUnits, double[] heldWrittenOff, double[] heldPrices) {
 
         consumptionGoods = retailSales;
         consumptionHousing = rentPaid;
@@ -473,10 +498,32 @@ public class NationalAccounts {
 
             // ...and every other good held, a good at a time (0.7.58): see
             // EVERY OTHER GOOD A SECTOR HOLDS IS THE FIFTH TERM.
+            /* =============================================================
+               A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED (0.7.133,
+               batch I8)
+
+               FIFTH SIGHTING OF THE SHAPE, the other way up. The ensemble's
+               first run with copper read GDP of -305,164 in month 899 of seed
+               5 (AUTO2), and in three seeds besides, where 0.7.131's run read
+               none: Copper Refining had sold back its one Scrap Copper
+               Refinery the month before with 9,600 t of cathode in its yard,
+               the yard went with the works (Sector.produceStock() caps the
+               stock at the room left and reports the rest as
+               Output.writtenOff), and the fifth term booked the fall as
+               785,645 of negative investment. Food's write-off has been added
+               back since the warehouse note above; the goods in HELD never
+               had theirs, and no works sold back full until copper's.
+
+               So the same rule as food's: the units written off are added
+               back before the change is measured, and last month's units for
+               next month are what is left. The stock was counted as output
+               the month it was made; losing it with the works is a loss of
+               assets, not a month of negative production.
+               ============================================================= */
             invHeld = 0;
             if (heldBaselineKnown) {
                 for (int i = 0; i < HELD.length; i++) {
-                    invHeld += (held(heldUnits, i) - lastHeldUnits[i]) * held(heldPrices, i);
+                    invHeld += (held(heldUnits, i) + held(heldWrittenOff, i) - lastHeldUnits[i]) * held(heldPrices, i);
                 }
             }
 
@@ -487,6 +534,7 @@ public class NationalAccounts {
             inventoryBaselineKnown = true;
         }
         heldBaselineKnown = true;
+        for (int i = 0; i < HELD.length; i++) heldWrittenOffUnits[i] = held(heldWrittenOff, i);
 
         lastFoodVolume = foodUnits;
         lastMaterialUnits = materialUnits;

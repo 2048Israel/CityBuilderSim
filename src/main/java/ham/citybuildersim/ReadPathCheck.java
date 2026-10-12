@@ -883,8 +883,11 @@ public class ReadPathCheck {
         // save carries (A1, both maps through the getters and the save's state)
         for (Sector trader : g.getSectors().all()) {
             for (Good good : Good.values()) { trader.unitsExported(good); trader.unitsImported(good); }
+            // ...and since 0.7.133 the month's write-offs, carried the same way, and the struck ones the accounts read
+            for (Good good : Good.values()) { trader.unitsWrittenOff(good); trader.writtenOffStruck(good); }
             trader.toState();
         }
+        g.getEconomyManager().getNationalAccounts().getHeldWrittenOff();
         g.getForeignAccounts().coverWith(1_000);
         g.getForeignAccounts().coverWith(-1_000);
         g.getForeignAccounts().toCover(ForeignAccounts.THIN_COVER);
