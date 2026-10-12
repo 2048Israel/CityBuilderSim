@@ -226,9 +226,11 @@ import java.util.Map;
  *      for it - its price listed and at today's rate, its km2 by kind, its
  *      dry ground, its price a dry km2, its sites and tonnes - with the cash
  *      before and after in the money the toggle pays in, converting and
- *      from the vault; for several, their sums, the office's "Buy the best
- *      N" totals, in the order picked, an offer no longer listed or picked
- *      twice left out; what the card says the cash will be is what it is
+ *      from the vault; the fields it rings an offer's own, their sites and
+ *      tonnes its row's and each site's square the hover's for the field -
+ *      the city first buying toward an iron field until an offer holds one;
+ *      for several, their sums, the office's "Buy the best N" totals, in the
+ *      order picked, an offer no longer listed or picked twice left out; what the card says the cash will be is what it is
  *      once they are bought, converting and from the vault; short, the
  *      card's bond is the funding page's first offer for the same gap -
  *      Game.BUILD_BOND_YEARS' term for the cash, its face on
@@ -4723,6 +4725,9 @@ public class MapCheck {
     /** ...and through the globe's camera, each against a point at every free plot's middle: 60. */
     static final int GLOBE_BOXES = 60;
 
+    /** The most offers the city buys toward an iron field for one to be on offer: 200, MiningCheck.makeRoom()'s own bound. */
+    static final int FIELD_BUYS_MOST = 200;
+
     /** The most plots a box is tried on, one by one: 200,000 - a box larger is drawn again smaller. */
     static final long BOX_PLOTS_MOST = 200_000;
 
@@ -4734,6 +4739,23 @@ public class MapCheck {
                 + " a box takes the offers whose free ground it meets, and the picks drop on a month and a load ---");
         CityLand land = g.getCityLand();
         LandMarket market = g.getLandManager().getMarket();
+        // A field on offer (board 7's case): the city buys toward the nearest iron field it does not own, as MiningCheck.makeRoom()
+        // does, the offer nearest it each time, until an offer holds one - handed each price, so the field is what is tested.
+        int towardField = 0;
+        PrintStream was = System.out;
+        System.setOut(QUIET);
+        try {
+            while (towardField < FIELD_BUYS_MOST && market.richest(Resource.IRON) == null) {
+                LandParcel step = MiningCheck.towardIron(g);
+                if (step == null) break;
+                if (!g.canAffordParcel(step)) g.setCashForTest(g.getCash() + step.localPrice(g.getForeignAccounts().getRate()));
+                if (!g.buyLandParcel(step.getId())) break;
+                towardField++;
+            }
+        } finally {
+            System.setOut(was);
+        }
+        out.printf("      %d offers bought toward the nearest iron field until one holds it%n", towardField);
         List<LandParcel> listing = market.getListing();
         double rate = g.getForeignAccounts().getRate();
         boolean wasVault = g.isLandPaidFromVault();
@@ -4767,6 +4789,38 @@ public class MapCheck {
         check("the card for one offer has its row's figures - its price listed and at today's rate, its km2 by kind, its dry ground,"
                 + " a dry km2, its sites and tonnes - and the cash before and after it, for every offer, both ways of paying",
                 rowsTried == 2 * listing.size() && rowsSame == rowsTried);
+
+        // The fields the card rings (board 7): each offer's own, its row's sites and tonnes, each site's square where the hover names it.
+        int fieldsSame = 0, withFields = 0, ringed = 0;
+        for (LandParcel p : listing) {
+            int[] sites = new int[Resource.values().length];
+            double[] tonnes = new double[Resource.values().length];
+            boolean squares = true;
+            for (Deposit f : LandMap.offerFields(land, p)) {
+                sites[f.kind().ordinal()] += f.sites();
+                tonnes[f.kind().ordinal()] += f.amount();
+                List<double[]> sq = LandMap.siteSquares(f);
+                squares &= sq.size() == f.sites();
+                for (double[] s : sq) {
+                    boolean named = false;
+                    for (LandMap.FieldAt at : LandMap.fieldsAt(land, (long) s[0], (long) s[1])) named |= at.field().equals(f);
+                    squares &= named;
+                    ringed++;
+                }
+            }
+            boolean same = squares, any = false;
+            for (Resource r : Resource.values()) {
+                same &= sites[r.ordinal()] == p.getSites(r) && sameFigure(tonnes[r.ordinal()], p.getAmount(r));
+                any |= p.getSites(r) > 0;
+            }
+            if (any) withFields++;
+            if (same) fieldsSame++;
+        }
+        out.printf("      %d of %d offers hold fields, %d sites ringed; %d offers' fields their rows' sites and tonnes%n", withFields,
+                listing.size(), ringed, fieldsSame);
+        check("fixture: some offers hold fields", withFields > 0);
+        check("the fields the card rings are the offer's own: their sites and tonnes its row's, each site's square one the hover names"
+                + " for its field, for every offer", fieldsSame == listing.size());
 
         // Several: the sums, "Buy the best N"'s totals, in the order picked; one picked twice and an id not on offer left out.
         List<Integer> best = g.nextLandParcels(3);

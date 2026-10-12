@@ -968,6 +968,37 @@ public final class LandMap {
     }
 
     /**
+     * The fields an offer holds whole (board 7: the card rings their sites
+     * wherever they lie): those of every resource in fields centred on its
+     * free ground - a field goes whole with the ground holding its centre
+     * plot (fieldOwnerWords()) - but a converted city's field held site by
+     * site, which is the city's.
+     */
+    public static List<Deposit> offerFields(CityLand land, LandParcel o) {
+        List<Deposit> out = new ArrayList<>();
+        for (Resource r : Resource.values()) {
+            for (Deposit f : fieldsIn(land, r, o.getX0(), o.getY0(), o.getX1() - 1, o.getY1() - 1, Integer.MAX_VALUE)) {
+                if (f.cell() >= 0 && !land.isPart(f) && !land.ownsPlot(f.x(), f.y())) out.add(f);
+            }
+        }
+        return out;
+    }
+
+    /** A field's sites as the map draws them (fieldsAt(), CityMap's site squares): each a square of plots, {x0, y0, x1, y1}. */
+    public static List<double[]> siteSquares(Deposit f) {
+        double w = Deposit.siteWidth(f.kind());
+        List<double[]> out = new ArrayList<>();
+        for (int k = 0; k < f.sites(); k++) {
+            double[] at = f.siteAt(k);
+            double cx = f.x() + at[0], cy = f.y() + at[1];
+            long sx0 = Math.round(cx - w / 2), sy0 = Math.round(cy - w / 2);
+            long sx1 = Math.max(sx0, Math.round(cx + w / 2) - 1), sy1 = Math.max(sy0, Math.round(cy + w / 2) - 1);
+            out.add(new double[] { sx0, sy0, sx1 + 1, sy1 + 1 });
+        }
+        return out;
+    }
+
+    /**
      * The card's figures for some picked offers (spec-earth 3.1, boards 5, 7
      * and 8): those still listed, in the order given, once each, and what the
      * land office's rows and "Buy the best N" read from the model for them,

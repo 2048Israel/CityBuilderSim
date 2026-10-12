@@ -266,6 +266,8 @@ final class MapView {
     /** The card in the pane (the land office's: LandScreen.mapCardNode(), mapReceiptNode()) and what it was drawn for - null for a receipt. */
     private VBox buyBox;
     private String cardFor;
+    /** The sites of the fields the card's offers hold, each its square of plots and its resource's colour, {x0, y0, x1, y1, argb}: ringed wherever they lie (board 7). */
+    private List<double[]> rings = List.of();
     /** The box of plots the card stands beside: the offer clicked, what a box took, the shelf's first for Ctrl+A, the ground just bought. */
     private double[] cardAt;
     /** A purchase from the card and its receipt: what is being bought - ids, places, the ground - shown by the ground once it is the city's. */
@@ -820,6 +822,7 @@ final class MapView {
             }
         }
         overlays(gc, f);
+        drawRings(gc);
         drawBox(gc);
         placeBuyCard();
     }
@@ -1594,6 +1597,7 @@ final class MapView {
             gc.fillText(DRAWING_EARTH, Palette.GAP + 2, Palette.GAP + 14);
         }
         globeScaleBar(gc);
+        drawRings(gc);
         drawBox(gc);
         placeBuyCard();
     }
@@ -2110,6 +2114,14 @@ final class MapView {
         }
         receiptShown = false;
         cardFor = cardKey(ids);
+        List<double[]> sites = new ArrayList<>();
+        CityLand land = ui.game.getCityLand();
+        for (LandParcel p : listed(m.ids())) {
+            for (Deposit f : LandMap.offerFields(land, p)) {
+                for (double[] q : LandMap.siteSquares(f)) sites.add(new double[] { q[0], q[1], q[2], q[3], 0xff000000 | f.kind().colour() });
+            }
+        }
+        rings = sites;
         buyBox.getChildren().setAll(ui.landScreen.mapCardNode(m, this));
         buyBox.setVisible(true);
         layoutBuyCard();
@@ -2118,6 +2130,7 @@ final class MapView {
     /** The card put away. */
     private void hideBuyCard() {
         cardFor = null;
+        rings = List.of();
         receiptShown = false;
         if (buyBox == null) return;
         buyBox.getChildren().clear();
@@ -2189,6 +2202,24 @@ final class MapView {
             y1 = Math.max(y1, p[1]);
         }
         return any ? new double[] { x0, y0, x1, y1 } : null;
+    }
+
+    /** The card's fields' sites, ringed wherever they lie (board 7): each a ring in its resource's colour on a dark halo, as the city's ring is drawn (ring()), round its square - RING_PX at least. */
+    private void drawRings(GraphicsContext gc) {
+        if (rings.isEmpty() || buyBox == null || !buyBox.isVisible()) return;
+        for (double[] q : rings) {
+            double[] s = screenBox(q);
+            if (s == null) continue;
+            double cx = (s[0] + s[2]) / 2, cy = (s[1] + s[3]) / 2;
+            double r = Math.max(RING_PX, Math.hypot(s[2] - s[0], s[3] - s[1]) / 2);
+            if (cx + r < 0 || cy + r < 0 || cx - r > canvas.getWidth() || cy - r > canvas.getHeight()) continue;
+            gc.setStroke(Color.rgb(11, 17, 24, 0.85));
+            gc.setLineWidth(3.5);
+            gc.strokeOval(cx - r, cy - r, 2 * r, 2 * r);
+            gc.setStroke(colour((int) (long) q[4]));
+            gc.setLineWidth(1.5);
+            gc.strokeOval(cx - r, cy - r, 2 * r, 2 * r);
+        }
     }
 
     /** The box Shift and a drag draws (B7): the offers' pink, faint inside, dashed round. */
@@ -2312,6 +2343,7 @@ final class MapView {
         }
         picks.clear();
         cardFor = null;
+        rings = List.of();
         receiptShown = true;
         cardAt = b.at();
         String title = places.size() == b.ids().size() ? b.title() : places.size() + " of " + b.title();
