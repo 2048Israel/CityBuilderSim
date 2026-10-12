@@ -6329,8 +6329,10 @@ public final class GameVersion {
      *     fees are charged on the places its babies and children want, 1.5
      *     where it was 6.2. The default player builds no childcare, so its
      *     coverage stays the founders' (10% at m1,000, 8% until now); it ends
-     *     at 558,232 people (630,307 until now; 10,000 at m976 against m861).
-     *     Every month passes the audit and every reload matches; re-baselined.
+     *     at 558,232 people (630,307 until now; 10,000 at m976 against m861);
+     *     the Earth's from month 4 the same way, 585,337 people at m4,000
+     *     (715,471; 10,000 at m830 against m779). Every month passes the
+     *     audit and every reload matches in both; re-baselined.
      *   - The auto-built seeds 0 to 7 stand 2,780 childcare centres at
      *     m4,000 against 9,361 until now, 0.077 a home building against
      *     0.276; seeds 0, 1 and 7, three of P2b's four towns that stalled

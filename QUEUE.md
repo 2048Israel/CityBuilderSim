@@ -27,7 +27,6 @@ stuff".
 | I12 | The materials pictograms drawn | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I13 | Cards and pages for the materials buildings | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I14 | The materials on the map (0.8.0) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
-| CC1 | Childcare at real demand | project: `claude/decisions-2026-10-10.md` |
 | CD1 | The city's debt: the curve from the dial the market expects, every payment priced on its month | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
@@ -64,4 +63,6 @@ Not done, and waiting on Jerus.
 | FR5 | Trucks drawn on the map | his call (D21), optional | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR6 | The railway carries the city's own bulk | his call (D4), after FR2 is measured | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | I7-K | A works on imported feed is ordered, loses money and is sold back: a Lime Kiln seven times in the playtest (stone, 0.7.131), a Scrap Copper Refinery six times (copper, 0.7.133) | his call on I4's ★2 (weigh one more works at the prices after its own supply), and the shed rule's wait (IDLE_MONTHS 6 against FLEET_DELIVERY_MONTHS 8) | `runs/fixI7-notes.md` ★1, in the project's `claude/todo.md` |
+| CC1-S | Two of the eight auto-built seeds (4 and 5) still stall as villages to about m3,000, now on general and senior care, the school and the pensions against their tax - childcare there is one Small Childcare Centre; seeds 0, 1 and 7 of P2b's four no longer stall | his call on P2b's question: keep care essential, or weigh general and senior care for their payback too | `runs/fixCC1-notes.md` ★ |
+| CC1-M | The city map did not survive a save once: LongPlaytest -Dplaytest.childcare at m1,184 (slot 3), a run the map sidecar has not met before; not childcare's - nothing in the model reads the map | a bug for a batch of its own, MapCheck's area | `runs/fixCC1-notes.md` 7 |
 | FX1-2 | A sector raises shares before its own credit test and keeps them when the order falls through (FX1's item 2, built on `batch/FX1-with-preflight`, e821d7f) | it turns HealthCheck's hunger gap red, 5.2 points against 5, the shelf's half of it the weather the check already touches on main (6.0 in other years); his call among four: read the money half, a longer window, accept red, or a store planner for Retail | `runs/fixFX1-notes.md` ★7, in the project's `claude/todo.md` |
