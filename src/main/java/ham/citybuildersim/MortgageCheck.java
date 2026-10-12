@@ -343,6 +343,12 @@ public class MortgageCheck {
                 shortOne.refusal("House"),
                 String.format("Holding: needs %s of its own for the %.0f%% down payment on a House",
                         Formats.INSTANCE.cash(need), (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100));
+        // ...and a rounding short of it puts it down (0.7.136, batch FX1; Mortgage.DOWN_PAYMENT_ROUNDING): the owners are
+        // asked for exactly what a till lacks, so the till lands on the down payment, and a rounding must not decide it.
+        Mortgage.Decision rounding = Mortgage.decide(1, costOf, Math.nextDown(need), 1_000, .04);
+        assertTrue("a till a rounding under the down payment on one puts it down, as the lender's door would", rounding.quantity() == 1);
+        Mortgage.Decision margin = Mortgage.decide(1, costOf, need * (1 - 2 * Mortgage.DOWN_PAYMENT_ROUNDING), 1_000, .04);
+        assertTrue("...and one short by more than DOWN_PAYMENT_ROUNDING of it does not", margin.quantity() == 0 && margin.shortOfDown());
         Mortgage.Decision overdrawn = Mortgage.decide(5, costOf, -50, 1_000, .04);
         assertTrue("a till in overdraft covers nothing", overdrawn.quantity() == 0 && overdrawn.shortOfDown());
         Mortgage.Decision three = Mortgage.decide(5, costOf, Mortgage.ownFundsFor(3 * one), 1_000, .04);

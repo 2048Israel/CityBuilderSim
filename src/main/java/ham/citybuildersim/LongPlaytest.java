@@ -4624,20 +4624,20 @@ public class LongPlaytest {
     /** The events printed as they happen, each kind's first few: enough to say where a trace moved. */
     static final int EVENTS_PRINTED = 12;
 
-    /** The month's write-offs the accounts added back and its raises withheld or left with no order, counted, and each kind's first few printed. */
+    /** The month's write-offs the accounts added back and its raises withheld or left with no order, counted, and each kind's first few printed - nothing printed for a harness that borrows run() with no report to print to. */
     static void countAddedBackAndWithheld(Game g) {
         int m = g.getMonth();
         double[] back = g.getEconomyManager().getNationalAccounts().getWrittenOffAddedBack();
         for (int i = 0; i < back.length && i < ADDED_BACK_TERMS.length; i++) {
             if (!(back[i] > 0)) continue;
-            if (addedBackMonths[i]++ < EVENTS_PRINTED) {
+            if (addedBackMonths[i]++ < EVENTS_PRINTED && out != null) {
                 out.printf("   ADDED BACK m%d: %s written off, %,.2f added back to the stock term%n", m, ADDED_BACK_TERMS[i], back[i]);
             }
             if (addedBackFirst[i] < 0) addedBackFirst[i] = m;
             if (back[i] > addedBackWorst[i]) { addedBackWorst[i] = back[i]; addedBackWorstMonth[i] = m; }
         }
         for (Map.Entry<String, Double> e : g.getRaisesWithheld().entrySet()) {
-            if (raisesWithheld++ < EVENTS_PRINTED) {
+            if (raisesWithheld++ < EVENTS_PRINTED && out != null) {
                 out.printf("   RAISE WITHHELD m%d: %s would have raised $%,.0fk for an order that would fall through - %s%n", m, e.getKey(),
                         e.getValue(), g.getLastInvestment(e.getKey()));
             }
@@ -4645,7 +4645,7 @@ public class LongPlaytest {
             raisesWithheldMoney += e.getValue();
         }
         for (Map.Entry<String, Double> e : g.getRaisedForNoOrder().entrySet()) {
-            if (raisedForNoOrder++ < EVENTS_PRINTED) {
+            if (raisedForNoOrder++ < EVENTS_PRINTED && out != null) {
                 out.printf("   RAISED, NO ORDER m%d: %s raised $%,.0fk and placed none - %s%n", m, e.getKey(), e.getValue(),
                         g.getLastInvestment(e.getKey()));
             }
@@ -4653,7 +4653,7 @@ public class LongPlaytest {
             raisedForNoOrderMoney += e.getValue();
         }
         for (Map.Entry<String, Double> e : g.getWithheldYetPlaced().entrySet()) {
-            if (withheldYetPlaced++ < EVENTS_PRINTED) {
+            if (withheldYetPlaced++ < EVENTS_PRINTED && out != null) {
                 out.printf("   WITHHELD, YET PLACED m%d: %s - %s%n", m, e.getKey(), g.getLastInvestment(e.getKey()));
             }
         }

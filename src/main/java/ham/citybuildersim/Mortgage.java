@@ -89,6 +89,9 @@ public class Mortgage extends BusinessDebt {
     /** The lender's test: the building's net operating income must cover the mortgage's monthly payment this many times - CMHC's minimum debt coverage ratio, 1.20, on a term of ten years or more. */
     public static final double MORTGAGE_DEBT_COVERAGE = 1.20;
 
+    /** How far under its down payment a landlord's own funds may fall and still put it down, as a share of it (0.7.136, batch FX1): a part in a billion, the margin the lender's door gives the same down payment (BusinessDebtManager.canFundMortgage()) - the owners are asked for exactly what a till lacks of it (Game, THE OWNERS FIRST), so the till lands on it, and the rounding of the offering's two halves must not decide whether a home is built (DenominationCheck's twins, one reformed by a hundred, parted on it). */
+    public static final double DOWN_PAYMENT_ROUNDING = 1e-9;
+
     /**
      * CMHC's premium on a standard rental loan at an LTV of 85% or less, as
      * a share of the loan: 5.00%. CMHC, multi-unit fees and premiums,
@@ -325,7 +328,8 @@ public class Mortgage extends BusinessDebt {
             // Its own funds buy it outright: no lender to ask.
             if (cash >= cost) return new Slice(true, Double.NaN, false, Double.NaN, null);
             double own = ownFundsFor(cost);
-            if (!(cash > 0) || cash < own) return new Slice(false, own, true, Double.NaN, Decision.DOWN_PAYMENT);
+            // ...to a part in a billion (0.7.136): DOWN_PAYMENT_ROUNDING.
+            if (!(cash > 0) || cash < own * (1 - DOWN_PAYMENT_ROUNDING)) return new Slice(false, own, true, Double.NaN, Decision.DOWN_PAYMENT);
             double coverage = Mortgage.coverage(noiPerUnit * n, cost - cash, annualRate);
             return new Slice(false, own, false, coverage,
                     coverage >= MORTGAGE_DEBT_COVERAGE ? null : Decision.LENDERS_TEST);
