@@ -29,7 +29,11 @@ import java.util.Set;
  *   production    the goods it makes and the goods it uses, in units per
  *                 building per month from the templates; the operating rate
  *                 (staffing x power x water x roads x sickness) that scales
- *                 output, and payroll that scales with staffing alone
+ *                 output, and payroll that scales with staffing alone; what
+ *                 its plant makes of a stockable good this month,
+ *                 madeAtRate() (0.7.126), a hook a sector whose ground
+ *                 limits that good overrides (Coal Mining's coals, Copper
+ *                 Mining's cathode)
  *   stock         a warehouse per stockable output, a pantry per input it
  *                 buys ahead of using
  *   books         one income statement in one order for everyone; the cash
@@ -45,8 +49,9 @@ import java.util.Set;
  * one file each: what it makes, what it uses, what it stocks, and any hook it
  * overrides. The quantities come from the buildings and the prices from the
  * goods, so a sector that is nothing but a factory needs no code of its own
- * at all - see sectors.Mining for the smallest one and sectors.RealEstate for
- * the largest.
+ * at all - see sectors.CementConcrete for the smallest one (0.7.131; a works
+ * on ProcessingSector), sectors.Mining for the smallest mine and
+ * sectors.Refining for the largest.
  *
  * THE MONTH, in the order Sectors runs it (the same order the handlers ran
  * in, so nothing about when money moves has changed):
@@ -2116,7 +2121,8 @@ public abstract class Sector {
      * and produceStock() start from. A sector whose stockable good the ground
      * limits says so here (0.7.126, batch I6: Coal Mining's coals, which are
      * stockable, so the flow goods' groundLimit() never reaches them - its
-     * month's coal is what its mines can dig, sectors.CoalMining.lift()).
+     * month's coal is what its mines can dig, sectors.CoalMining.lift(); and
+     * since 0.7.133 Copper Mining's cathode, its leach plants' lift).
      */
     protected double madeAtRate(Good g) {
         return getCapacity(g) * getOperatingRate();

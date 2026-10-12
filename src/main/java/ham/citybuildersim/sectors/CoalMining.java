@@ -78,8 +78,8 @@ import java.util.Map;
  * selling raw is a loss to it, the coking coal it makes its gain.
  *
  * Who buys: Iron & Steel's coke ovens the coking coal, its pellet plants and
- * blast furnaces the thermal (I4); the cement kilns with stone (I7); the
- * world the rest. Coal power plants wait for the electricity run (Jerus's
+ * blast furnaces the thermal (I4); Cement & Concrete's kilns and cement
+ * plants since 0.7.131 (I7); the world the rest. Coal power plants wait for the electricity run (Jerus's
  * Q10: a coal plant at today's tariff would lose money on its fuel alone).
  */
 public final class CoalMining extends ExtractionSector {

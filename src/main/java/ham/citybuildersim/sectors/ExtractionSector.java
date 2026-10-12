@@ -74,7 +74,18 @@ import java.util.Map;
  *     weighs every works: ProcessingSector.fleetRunning(), fleetCapital());
  *   - THE RETIREMENT by type: a mine whose type is worked out is spare while
  *     the other type still has ore, and only it may be sold.
- * Forestry's crews on the cuttable forest are I9's.
+ *
+ * A STOCKABLE GOOD'S LIFT (0.7.126, batch I6): groundLimit() reaches only
+ * the flow goods. A good the sector stocks - Coal Mining's two coals, Copper
+ * Mining's cathode (0.7.133) - is made at its ground's limit through
+ * Sector.madeAtRate(), the hook getPlannedOutput(), getExportBoundOutput()
+ * and produceStock() start from: the sector's own lift() holds each kind's
+ * nameplate at the rate to its type's ground, and its endOfMonth() takes the
+ * same dig out. WHICH BUILDINGS LIFT (0.7.131, batch I7): lifts(), the
+ * plan's and the retirement's test of a building - one that makes its
+ * ground's good, and Quarrying's blocks too. Coal Mining (0.7.126),
+ * Quarrying (0.7.131) and Copper Mining (0.7.133) extend it; Forestry's
+ * crews on the cuttable forest are I9's.
  */
 public abstract class ExtractionSector extends Sector {
 

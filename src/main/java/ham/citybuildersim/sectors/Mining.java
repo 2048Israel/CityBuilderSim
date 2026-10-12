@@ -11,8 +11,10 @@ import ham.citybuildersim.Resource;
  * "Mining" (Jerus's Q2, 2026-10-08: rename, keeping the saved keys). Its own
  * sector because the ore has a price.
  *
- * THE SMALLEST SECTOR CLASS THERE IS, and the shape a thousand of them
- * should have: it says what it makes, and which resource's ground it lifts -
+ * THE SMALLEST MINE THERE IS (since 0.7.131 Cement & Concrete, a works on
+ * ProcessingSector, is the smallest sector class of all), and the shape a
+ * thousand of them should have: it says what it makes, and which resource's
+ * ground it lifts -
  * everything else is a template's. The books, the credit, the market, the
  * payroll and the export of what the mills do not want are Sector's; the
  * ground as the limit, the plan that sinks a mine on a free site, and the

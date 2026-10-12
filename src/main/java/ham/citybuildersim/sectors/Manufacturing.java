@@ -31,8 +31,12 @@ import java.util.List;
  * the world if there are not - and sells two things abroad:
  *
  *   Fabrication Shop      fabricated steel   135 posts, mostly labour and trades
- *   Fabrication Works     fabricated steel   330 posts, the same trade at scale
+ *   Fabrication Works     fabricated steel   276 posts, the same trade at scale
  *   Machine Works         machinery          173 posts, trades and technicians
+ *
+ * (and since 0.7.133, batch I8, a third of copper: the Wire & Cable Works
+ * draws Copper Refining's rod into wire and cable, 400 posts - THE WIRE &
+ * CABLE WORKS below).
  *
  * TWO GOODS, BOUNDED BY TWO DIFFERENT THINGS, and that is the whole design
  * rather than a detail. Fabricated steel is 61% steel and 20% wages, so what
