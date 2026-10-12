@@ -4,7 +4,7 @@
 
 *What was read: the code at 0.7.135 (main 1afe9c0), not changed: `World`, `EarthTerrain`, `EarthData`, `EarthSite`, `Geology`, `CityLand`, `GridConversion`, `LandManager`, `LandMarket`, `Zoning`, `BusinessInvestment`, `Game` (`buildFor`, `consider`, `interestTest`, `bestOffer`), `BuildCard`, `BuildAdvice`, `AutoBuilder`, `SpreadPlanner`, `ExtractionSector`, `Oil`, `CityRuns`, `DistrictPlan`, `TilePainter`, `TileRaster`, `LandMap`, `MapTiles`, `GlobePicture`, `SectorStatements`, `EconomyManager`, `GameVersion`, `GameFiles` and the harnesses that hold them; the studies `spec-earth.md`, `spec-globe.md`, `spec-roads-and-ports.md`; Samuel's two Nova Scotia saves (slots 1 and 2, read-only copies).*
 
-*What was measured: the whole land's slope from NASADEM (all 14,520 tiles, 136 GB streamed), GEBCO 2026's depth over every sea tile, a landmass layer over the whole Earth, and **earth-2.bin baked** (§2.8). Fourteen sites were measured four ways. The Nova Scotia deposits were redrawn from the game's own code (`earth2/DepositProbe.java`). The pipeline is in `tools/earth/` (`slope_tiles.py`, `depth.py`, `landmass.py`, `bake2.py`, `check2.py`, `FORMAT-2.txt`, `ATTRIBUTION-2.txt`, `bake-earth-2.bat`); the prototypes and figures are in `earth2/`; the mockups are `earth2/earth2-study.html` and the artifact "Earth 2 Study" (https://claude.ai/artifact/4k5kFnyJgaLB1THqvkmbE1). Figures marked (est.) are estimates, each with its reason; [S#] are the sources at the end.*
+*What was measured: the whole land's slope from NASADEM (all 14,520 tiles, 136 GB streamed), GEBCO 2026's depth over every sea tile, a landmass layer over the whole Earth, and **earth-2.bin baked** (§2.8). Fourteen sites were measured four ways. The Nova Scotia deposits were redrawn from the game's own code (`earth2/DepositProbe.java`). The pipeline is in `tools/earth/` (`slope_tiles.py`, `depth.py`, `landmass.py`, `bake2.py`, `check2.py`, `FORMAT-2.txt`, `ATTRIBUTION-2.txt`, `bake-earth-2.bat`); the prototypes and figures are in `earth2/`; the mockups are `earth2/earth2-study.html` and the artifact "Earth 2 Study" (https://claude.ai/artifact/4k5kFnyJgaLB1THqvkmbE1). The three agents' full reports are beside it: `earth2/data-report.md` (every licence clause quoted, every measurement), `earth2/code-report.md` (the code read, with line numbers, and the Nova Scotia probe) and `earth2/mockup-report.md`. Figures marked (est.) are estimates, each with its reason; [S#] are the sources at the end.*
 
 ---
 
@@ -110,7 +110,7 @@ The checks:
 
 ### 2.1 Sources and licences
 
-Your rule: anything shipped must be sellable with no licence fee and credits only; otherwise use a public-domain source. Each licence was read in its own text on 2026-10-12 (quotes and URLs in `earth2/` and the data report's §1).
+Your rule: anything shipped must be sellable with no licence fee and credits only; otherwise use a public-domain source. Each licence was read in its own text on 2026-10-12 (quotes and URLs in full in `earth2/data-report.md` §1).
 
 | source | verdict | the deciding text |
 |---|---|---|
