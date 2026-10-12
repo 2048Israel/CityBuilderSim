@@ -1574,7 +1574,7 @@ final class BuildScreen {
     /**
      * The stat cover, as tall as the card it covers: what the building does
      * in sentences (whatItDoes(), which BuildMenuCheck holds for every one,
-     * 129 since 0.7.133), the
+     * 133 since 0.7.138), the
      * figures the face does not say - materials, build points, road load,
      * electricity, water, the wage bill and the job mix - and on a market
      * card the investors' estimate of what one would make its owner.
@@ -3509,6 +3509,16 @@ final class BuildScreen {
             out.add(String.format("The grocers buy it off the city's refineries first and from the world for the rest."
                     + " Past what the stations can sell the drivers queue and pay %.0f%% more, and the grocers build"
                     + " another.", ham.citybuildersim.sectors.Retail.QUEUE_MARGIN * 100));
+            return out;
+        }
+        // ...a planted stand (0.7.138): Forestry's plantation or woodlot, what it grows and where it may stand (sectors.Forestry, PLANTING).
+        if (ham.citybuildersim.sectors.Forestry.isStand(t)) {
+            double grows = ham.citybuildersim.sectors.Forestry.growthOf(t);
+            out.add(String.format("Grows %s cubic metres of wood a month on its %s hectares, back into the forest Forestry"
+                    + " cuts - never past the forest's full stock.", formatter.format(Math.round(grows)),
+                    formatter.format(Math.round(grows * 12 / ham.citybuildersim.sectors.Forestry.PLANTED_M3_A_HA_A_YEAR))));
+            out.add("Forestry plants one a month while its cut outgrows the regrowth, only on ground the city zones for it,"
+                    + " at the zone's price. With no Forestry zone it plants none.");
             return out;
         }
         // ...oil storage (0.7.85): the refiners' Tank Farm and the city's Strategic Reserve (sectors.Refining, THE TANK FARM; StrategicReserve).
