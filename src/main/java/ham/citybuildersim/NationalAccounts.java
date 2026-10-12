@@ -441,7 +441,9 @@ public class NationalAccounts {
              * The write-off is added back before the change is measured. Stock
              * destroyed with the capacity that held it left the city, but it was
              * not consumed and it was not unproduced - counting it here would
-             * book a demolition as a month of negative output.
+             * book a demolition as a month of negative output. (Found 0.7.133:
+             * the figure handed in here has read zero - see A YARD SOLD BACK
+             * FULL IS WRITTEN OFF, NOT UNPRODUCED, below.)
              */
             invFood = ((foodUnits + foodStockWrittenOff) - lastFoodVolume) * foodPrice;
 
@@ -504,21 +506,23 @@ public class NationalAccounts {
 
                FIFTH SIGHTING OF THE SHAPE, the other way up. The ensemble's
                first run with copper read GDP of -305,164 in month 899 of seed
-               5 (AUTO2), and in three seeds besides, where 0.7.131's run read
-               none: Copper Refining had sold back its one Scrap Copper
-               Refinery the month before with 9,600 t of cathode in its yard,
-               the yard went with the works (Sector.produceStock() caps the
-               stock at the room left and reports the rest as
-               Output.writtenOff), and the fifth term booked the fall as
-               785,645 of negative investment. Food's write-off has been added
-               back since the warehouse note above; the goods in HELD never
-               had theirs, and no works sold back full until copper's.
+               5 (AUTO2), and in three seeds besides, where main's run before
+               copper read none: Copper Refining had sold back its one Scrap
+               Copper Refinery with 9,600 t of cathode in its yard, the yard
+               went with the works (Sector.produceStock() caps the stock at
+               the room left and reports the rest as Output.writtenOff), and
+               the fifth term booked the fall as 785,645 of negative
+               investment. The goods in HELD never had the add-back food's
+               line above was given.
 
-               So the same rule as food's: the units written off are added
-               back before the change is measured, and last month's units for
-               next month are what is left. The stock was counted as output
-               the month it was made; losing it with the works is a loss of
-               assets, not a month of negative production.
+               So food's rule: the units written off are added back before the
+               change is measured, and next month measures from what is left.
+               The stock was counted as output the month it was made; losing
+               it with the works is a loss of assets, not a month of negative
+               production. The units come from Sector.writtenOffStruck(), not
+               the row: the accounts are struck after strikeSectors() clears
+               the rows - which is why food's own add-back, reading the row
+               (EconomyManager.updateNationalAccounts()), has read zero.
                ============================================================= */
             invHeld = 0;
             if (heldBaselineKnown) {

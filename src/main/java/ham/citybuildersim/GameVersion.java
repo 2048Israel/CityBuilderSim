@@ -5997,6 +5997,18 @@ public final class GameVersion {
      *     sector's older rows as they were, to the bit.
      *   - THE SCREENS: Build's "Copper" group after Cement, both sectors'
      *     seven cards.
+     *   - A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED (NationalAccounts;
+     *     Sector, WHAT A MONTH WROTE OFF, PAST ITS STRIKE): the ensemble's
+     *     first run with copper read negative GDP in four AUTO2 seeds of
+     *     sixteen (-305,164 at m899 of seed 5) where main's read none - a
+     *     Scrap Copper Refinery sold back with cathode in its yard, the yard
+     *     written off and the fifth term booking the fall as negative
+     *     investment. HELD's goods add their write-off back now, as food's
+     *     line meant to: bank() keeps the month's write-offs past the rows it
+     *     clears, since the accounts are struck after it, and a save carries
+     *     them to the first strike (SectorState.writtenOff; an older save has
+     *     none, which is what its accounts added back). Food's own add-back
+     *     reads the cleared row, so zero - marked, and left to its own batch.
      *   - Harnesses: CopperMiningCheck and CopperRefiningCheck (new, the 103rd
      *     and 104th: the registry, the eight rows against the study's 4.4
      *     table, the dig by type, the leach plant's lift and its acid, the
@@ -6004,8 +6016,10 @@ public final class GameVersion {
      *     its books, the planner's old copper, the wire works' estimate);
      *     BuildingDataCheck (129 buildings, sixteen on sites, copper's,
      *     consumables, old metal, since), BuildCardCheck (the Copper group),
-     *     GdpCheck (HELD's end), TradeCostCheck (the seven prices), MoneyCheck,
-     *     SaveFileCheck and ReadPathCheck (old copper), QuarryingCheck and
+     *     GdpCheck (HELD's end; a yard written off, in the accounts' arithmetic
+     *     and in a town, across a save), TradeCostCheck (the seven prices),
+     *     MoneyCheck, SaveFileCheck and ReadPathCheck (old copper; ReadPathCheck
+     *     the write-offs' getters), QuarryingCheck and
      *     CementConcreteCheck (stone no longer the last keys).
      *   - THE PLAYTESTS MOVE, not from the first offer holding copper - the
      *     city buys none in either run - but from Copper Refining's planner:
