@@ -89,6 +89,9 @@ rate. Then the choice is Jerus's: the rule reads the index through a
 one-month jump in one component, or a new shop's first month is kept out of
 the index, or it stays and the episode is named for the player.
 
+**Jerus, 2026-10-12: "keep it for now the boutique thing".** Kept as built,
+no batch; it left Pending.
+
 ## M2
 
 **The ground runs out and the city stops, quietly.** The inbox's "Your
@@ -103,6 +106,11 @@ Recommend one of: a NEEDS YOU row while a sector has waited on ground some
 months, if there is not one; the toast again each year it lasts; or a choice
 on automatic building to buy the businesses' ground within the debt limit.
 
+**Jerus, 2026-10-12: "a notice repeated".** Do: the "Your businesses have
+nowhere to build" notice comes again each year the wait lasts (a new inbox
+notice, dated, naming the sectors waiting and the ground each needs), not
+once. Queued as PT1-M2.
+
 ## M3
 
 **The advice and automatic building disagree on the same page.** Month 304:
@@ -115,6 +123,8 @@ saying why ("it would not pay back: the 504 residents it would cover over its
 Recommend the advice card carries that verdict in the appraisal's own words;
 neither rule changes.
 
+**Jerus, 2026-10-12: "yes do rec".** Do as recommended. Queued as PT1-M3.
+
 ## M4
 
 **Construction earns with nobody working.** Month 183: it kept $377k of the
@@ -124,3 +134,27 @@ out of work.
 
 Recommend Jerus confirms it is meant; if it is, the card says who does the
 work, and where that cash goes is a question for him.
+
+**Jerus, 2026-10-12: not meant.** "its cause there is some construction points
+base, so ya sure fix, perhaps a starting depot or something instead?" The
+cause is `BuildingManager.BASE_CONSTRUCTION`, the works department's 400
+points a month with no posts behind them (`getTotalConstructionCapacity()`;
+`Game.getConstructionOutput()` keeps them whole whatever the fill), which
+Construction is paid for. Queued as PT1-M4. Do: retire the free points and
+found the city with a starting depot instead, staffed and paid like any
+other, so the sector earns only for work its people do. ★ for the
+implementer, each to measure, not assume:
+
+- **A founding town must still build.** T1-C found that a depot opened among
+  106 people fills at 0.16 and nothing is built again (BuildersFirstCheck 6,
+  `runs/fixT1C-notes.md`), and `BASE_CONSTRUCTION` was raised from 100 to 400
+  on 2026-09-09 because the opening decade was spent waiting on the first
+  depot. The starting depot's size, posts and skills must let a founding
+  town staff it; a new, smaller template is allowed if none fits (the rule:
+  a template only for a new mechanic, and this is one).
+- **What else reads the 400:** housing maintenance was calibrated against
+  it (its javadoc), `BASE_MATERIALS` moved with it on 2026-09-09, and every
+  harness and the playtests' openings stand on it. Say which move, and
+  never move a harness's premise to let the change through.
+- Old saves need not load (the standing rule): bump `SAVE_FORMAT` and the
+  floor only if a save would load wrongly.

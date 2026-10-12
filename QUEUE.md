@@ -28,6 +28,11 @@ stuff".
 | I12 | The materials pictograms drawn | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I13 | Cards and pages for the materials buildings | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I14 | The materials on the map (0.8.0) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| FR0 | The map's network: gateways, the main line and yards, rail drawn as rail, access roads, junctions by rule | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
+| FR1 | Trains on the map, as the ships are | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
+| FR2 | The Freight sector: Haulage's trucks carry the city leg, vans for goods only | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
+| FR3 | Ports as a landlord port, and the Bulk Berth | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
+| FR4 | The freight screens, and Build's Infrastructure and Freight tabs | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | CD1 | The city's debt: the curve from the dial the market expects, every payment priced on its month | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
@@ -44,11 +49,9 @@ stuff".
 | R4 | Research: prizes and the Research Lab | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | PT1 | Eleven small fixes to screens, words and the log, from a played city | [PT1](docs/queue/PT1.md#pt1) |
-| FR0 | The map's network: gateways, the main line and yards, rail drawn as rail, access roads, junctions by rule | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
-| FR1 | Trains on the map, as the ships are | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
-| FR2 | The Freight sector: Haulage's trucks carry the city leg, vans for goods only | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
-| FR3 | Ports as a landlord port, and the Bulk Berth | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
-| FR4 | The freight screens, and Build's Infrastructure and Freight tabs | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
+| PT1-M2 | The "nowhere to build" notice again each year the businesses wait on ground (Jerus, 2026-10-12: "a notice repeated") | [M2](docs/queue/PT1.md#m2) |
+| PT1-M3 | The advice card carries automatic building's payback verdict in its own words (Jerus, 2026-10-12: "yes do rec") | [M3](docs/queue/PT1.md#m3) |
+| PT1-M4 | The works department's free 400 points retired for a starting depot, so Construction earns only for work its people do (Jerus, 2026-10-12) | [M4](docs/queue/PT1.md#m4) |
 | ET1 | Earth 2 in the game, and drawn: earth-2.bin read, slope's greys, snow and the shallow sea on the map, real depth for E4's guess | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
 | ET2 | Buildable by slope: buildings on flat and foothill only, a foothill site's preparation as builders' work, mines, quarries and wells on any ground | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
 | ET3 | A price for each class of ground, and the land line by class | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
@@ -65,6 +68,7 @@ stuff".
 | FW8 | WHAT IS BITING has no zoning flag (a zone short of what it wants would be one); the map's tint of a zone's districts is I14's | `todo-archive.md`, FOUND ON THE WAY IN 0.7.107 TO 0.7.109 and 0.7.117 TO 0.7.120; `runs/fixZ2-notes.md` §7 |
 | FW9 | ScaleCheck's copies lose about 0.85% a month because the founding care and police endowments do not scale, and the scaler leaves the bond market, the exchange, the equity register and the fund unscaled | `todo-archive.md`, FOUND ON THE WAY IN 0.7.55 TO 0.7.64 and 0.7.53 TO 0.7.54; `runs/fixH2-notes.md` ★9 |
 | FW10 | A full-screen chart with a wrapped legend is a row too tall: `TimeChart.heightBesidePlot()` assumes a one-row toolbar, so the foot is cut | `todo-archive.md`, FOUND ON THE WAY IN 0.7.40 AND 0.7.41; `runs/ui21-notes.md` §8 |
+| FX1-2 | Merge the held `batch/FX1-with-preflight` (e821d7f): a sector's credit test before its share sale; HealthCheck 13 accepted red (Jerus, 2026-10-12: "accept the red"), so it joins the gate's known reds | `runs/fixFX1-notes.md` ★7, in the project's `claude/todo.md` |
 
 ## Pending
 
@@ -72,15 +76,9 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
-| PT1-M1 | One Boutique opening moved the policy rate to 23% | his decision on the model; a harness first | [M1](docs/queue/PT1.md#m1) |
-| PT1-M2 | The ground runs out and the city stops, quietly | his choice of three | [M2](docs/queue/PT1.md#m2) |
-| PT1-M3 | The advice and automatic building disagree on the same page | his word on the wording | [M3](docs/queue/PT1.md#m3) |
-| PT1-M4 | Construction earns with nobody working | is it meant? | [M4](docs/queue/PT1.md#m4) |
 | FR-D | The freight study's 22 decisions | his word, each or "all rec"; FR0 to FR4 follow the recommendations until then | [spec-freight §8](docs/studies/spec-freight-and-infrastructure.md#8--decisions) |
 | FR5 | Trucks drawn on the map | his call (D21), optional | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR6 | The railway carries the city's own bulk | his call (D4), after FR2 is measured | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | ET-D | The Earth 2 study's 21 decisions | his word, each or "all rec"; ET1 to ET6 follow the recommendations until then | [spec-earth2-terrain §11](docs/studies/spec-earth2-terrain.md#11--decisions) |
 | ET-R | The release `earth-2` on GitHub: earth-2.bin, `tools/earth/earth-2.sha256` and `tools/earth/ATTRIBUTION-2.txt` | only he makes releases, on GitHub's website; ET1 cannot ship without it. The baked file (135,965,097 bytes, sha256 6ccb4794...fa8c3, the hash in `tools/earth/earth-2.sha256`) is on his PC in `Downloads\earth-2-release`, in five parts that `join-earth-2.bat` joins and checks; `tools/earth/bake-earth-2.bat` bakes another (about 140 GB downloaded), and whichever file is released defines the sha256 | [spec-earth2-terrain §2.8](docs/studies/spec-earth2-terrain.md#28-the-bake-and-the-release) |
 | EG1 | Deposits where the geology says: oil by known petroleum, iron on shields and recorded deposits, fewer and bigger fields (why his Nova Scotia cities had oil, then iron, all round them) | his call (D20); with the industrial calls, after research and freight | [spec-earth2-terrain §8.5](docs/studies/spec-earth2-terrain.md#85-the-recommendation-eg1-deposits-where-the-geology-says-d20-your-call) |
-| I7-K | A works on imported feed is ordered, loses money and is sold back: a Lime Kiln seven times in the playtest (stone, 0.7.131), a Scrap Copper Refinery six times (copper, 0.7.133) | his call on I4's ★2 (weigh one more works at the prices after its own supply), and the shed rule's wait (IDLE_MONTHS 6 against FLEET_DELIVERY_MONTHS 8); Jerus, 2026-10-12: the industrial calls are reviewed after research and freight, "cause research and how freighting works will change alot of stuff" | `runs/fixI7-notes.md` ★1, in the project's `claude/todo.md` |
-| FX1-2 | A sector raises shares before its own credit test and keeps them when the order falls through (FX1's item 2, built on `batch/FX1-with-preflight`, e821d7f) | it turns HealthCheck's hunger gap red, 5.2 points against 5, the shelf's half of it the weather the check already touches on main (6.0 in other years); his call among four: read the money half, a longer window, accept red, or a store planner for Retail | `runs/fixFX1-notes.md` ★7, in the project's `claude/todo.md` |
