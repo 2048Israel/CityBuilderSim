@@ -55,7 +55,7 @@ stuff".
 | PT1-M3 | The advice card carries automatic building's payback verdict in its own words (Jerus, 2026-10-12: "yes do rec") | [M3](docs/queue/PT1.md#m3) |
 | PT1-M4 | The works department's free 400 points retired for a starting depot, so Construction earns only for work its people do (Jerus, 2026-10-12) | [M4](docs/queue/PT1.md#m4) |
 | ET1 | Earth 2 in the game, and drawn: earth-2.bin read, slope's greys, snow and the shallow sea on the map, real depth for E4's guess | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
-| ET2 | Buildable by slope: buildings on flat and foothill only, a foothill site's preparation as builders' work, mines, quarries and wells on any ground | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
+| ET2 | Buildable by slope: buildings on flat and foothill only, a foothill site's preparation as builders' work, mines, quarries and wells on any ground; streets and runs refuse ice as buildings do (E7 ★10) | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
 | ET3 | A price for each class of ground, and the land line by class | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
 | ET4 | Highways and rail priced by slope: cuts, viaducts, tunnels | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
 | ET5 | Landmasses and the island rule | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
@@ -78,6 +78,5 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
-| ET-D | The Earth 2 study's 21 decisions | his word, each or "all rec"; ET1 to ET6 follow the recommendations until then | [spec-earth2-terrain §11](docs/studies/spec-earth2-terrain.md#11--decisions) |
 | ET-R | The release `earth-2` on GitHub: earth-2.bin, `tools/earth/earth-2.sha256` and `tools/earth/ATTRIBUTION-2.txt` | only he makes releases, on GitHub's website; ET1 cannot ship without it. The baked file (135,965,097 bytes, sha256 6ccb4794...fa8c3, the hash in `tools/earth/earth-2.sha256`) is on his PC in `Downloads\earth-2-release`, in five parts that `join-earth-2.bat` joins and checks; `tools/earth/bake-earth-2.bat` bakes another (about 140 GB downloaded), and whichever file is released defines the sha256 | [spec-earth2-terrain §2.8](docs/studies/spec-earth2-terrain.md#28-the-bake-and-the-release) |
-| EG1 | Deposits where the geology says: oil by known petroleum, iron on shields and recorded deposits, fewer and bigger fields (why his Nova Scotia cities had oil, then iron, all round them) | his call (D20); with the industrial calls, after research and freight | [spec-earth2-terrain §8.5](docs/studies/spec-earth2-terrain.md#85-the-recommendation-eg1-deposits-where-the-geology-says-d20-your-call) |
+| EG1 | Deposits where the geology says: oil by known petroleum, iron on shields and recorded deposits, fewer and bigger fields (why his Nova Scotia cities had oil, then iron, all round them) | decided (Jerus, 2026-10-12, "all rec" on D20): its own batch after his review of the industrial calls, which comes after research and freight; it waits here until that review | [spec-earth2-terrain §8.5](docs/studies/spec-earth2-terrain.md#85-the-recommendation-eg1-deposits-where-the-geology-says-d20-your-call) |
