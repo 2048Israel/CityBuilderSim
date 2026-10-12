@@ -6007,7 +6007,18 @@ public final class GameVersion {
      *     GdpCheck (HELD's end), TradeCostCheck (the seven prices), MoneyCheck,
      *     SaveFileCheck and ReadPathCheck (old copper), QuarryingCheck and
      *     CementConcreteCheck (stone no longer the last keys).
-     *   - THE PLAYTESTS MOVE [I8-PLAYTEST]
+     *   - THE PLAYTESTS MOVE, not from the first offer holding copper - the
+     *     city buys none in either run - but from Copper Refining's planner:
+     *     at m1099 of the default (m1452 on the Earth) a Scrap Copper Refinery
+     *     on imported scrap shipping cathode weighs 0.21% a month on its whole
+     *     cost, its lorries in, on the bands the city's carriers have narrowed
+     *     and its weak currency (the study's case A at parity: -0.02%); once
+     *     built its vans arrive over eight months and IDLE, THEN SHED sells it
+     *     at six - batch I7's lime kiln again, ordered four times in each run
+     *     and a Rod Mill once on the Earth, each sold back (fixI8-notes 4 and
+     *     6; the fix is Jerus's, QUEUE.md's Pending I7-K). Every month passes
+     *     the audit and every reload matches; re-baselined (pt07133,
+     *     pte07133).
      */
     public static final String VERSION = "0.7.133";
 
