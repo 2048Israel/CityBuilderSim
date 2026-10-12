@@ -1162,6 +1162,11 @@ final class LandScreen {
         return row;
     }
 
+    /** The map over the window on a box of plots (0.7.134: the minimap's click, UserInterface.openMapOn()), once the office is drawn. */
+    void expandMapOn(MiniMapFrame.Box box) {
+        if (map != null) map.expandOn(box);
+    }
+
     /** The map picked a side, and an offer's place on it (-1 for none): its rows, the offer's lit. */
     void picked(int side, int place) {
         this.side = side;

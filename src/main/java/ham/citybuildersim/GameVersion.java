@@ -5996,8 +5996,38 @@ public final class GameVersion {
      *     0.7.131 by their CRC32; the globe's cameras; the picture's land per
      *     1-degree cell; a frame within FRAME_MS of the main thread's CPU.
      *   - The playtests do not move: default and Earth byte for byte.
+     *
+     * 0.7.134 (2026-10-12) - THE MINIMAP. Batch MM2, the second of the
+     * minimap's two (docs/studies/spec-globe.md 8.3 and 4's MM2 row; Jerus,
+     * 2026-10-11: "i think a small map always visible on the ui would be
+     * nice or no?", and his "yes" to Q10 to Q12 as the defaults;
+     * runs/brief-batchMM2.md, runs/fixMM2-notes.md). Nothing in the model
+     * reads it; no save format change (39).
+     *   - ui/MiniMap (new): a stamp of the city, 66 x 44, at the rail's foot
+     *     above Menu, on screen from every tab (Q10); while the pointer is on
+     *     it a preview beside the rail, 288 x 192; a click opens the land
+     *     office with its map over the window on what the stamp frames
+     *     (MapView.expandOn()). Drawn when the map's version moves - a
+     *     month's end, a purchase - from the district pictures through the
+     *     far nodes, a node a frame; the map drawn aside the first time, the
+     *     nodes' ground and the pictures it lacks on the map's one worker
+     *     (MapView.WORKER), one draft at a time with the land office's map
+     *     (MapView.drafting). No boats (Q12); on Earth the city's plane.
+     *   - MiniMapFrame (new, pure): the frame - the ground the city owns in
+     *     its districts with buildings, MARGIN (a tenth of its longer side)
+     *     round it, owned ground with nothing built on it left out, so
+     *     bought sea or a far field does not shrink the city to a dot; the
+     *     least whole number of plots a pixel that holds it; the views' far
+     *     nodes (MapTiles.nodePixels()) cut to them; what a click opens.
+     *   - Harnesses: MapCheck 12 - the frame against the grid's leaves, the
+     *     margin, one district and many, owned ground left out (Jerus's city
+     *     x 1's empty districts, the played city's far block), no plan drawn
+     *     on the screen's thread and the pictures sampled once drawn aside,
+     *     the stamp within STAMP_MS of the thread's CPU (A28), on Earth too,
+     *     and the click's view against the land office's opening.
+     *   - The playtests do not move: default and Earth byte for byte.
      */
-    public static final String VERSION = "0.7.132";
+    public static final String VERSION = "0.7.134";
 
     /**
      * The save shape.

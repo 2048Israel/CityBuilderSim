@@ -183,6 +183,23 @@ import java.util.Map;
  *      CityMap.PICTURES_KEPT asks for none; at the widest view the highways,
  *      the track and the city's edge on every pixel they hold, a city under a
  *      pixel drawn one; and the pictures not in the sidecar.
+ *  12. the minimap (0.7.134, batch MM2; docs/studies/spec-globe.md 8.3),
+ *      MiniMapFrame: on a new city as founded, the played city, Jerus's city
+ *      x 1 and x 10,000, and the played city's ground with a block bought
+ *      FAR_DISTRICTS out - the stamp frames the ground owned in the districts
+ *      with buildings, found again here from the grid's leaves, and MARGIN
+ *      round it, and leaves out owned ground with nothing built on it (x 1's
+ *      empty districts; the far block, a month on, frames as before it); a
+ *      city of one district frames its own ground, smaller than its
+ *      district, and every city at the least whole stride that holds the
+ *      frame, at least half the stamp but for the margin; the stamp drawn
+ *      with no plan drawn and no picture kept, asking for the pictures it
+ *      would sample, then sampling them pixel for pixel; at x 10,000's stride
+ *      dithered, asking none; the stamp - its frame and its node - in no more
+ *      than MiniMapFrame.STAMP_MS of the thread's CPU, as section 5's month
+ *      is timed (A28), on Earth too, the plane and not the void; and a click
+ *      opens the expanded map on the frame, where the land office's opening
+ *      takes in the far block.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -302,6 +319,7 @@ public class MapCheck {
         atSea(sq.types, sq.seed);
         onEarth(sq.types);
         pictures(city, sq);
+        miniMap(city, sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -4035,5 +4053,259 @@ public class MapCheck {
         int n = MapFrame.NODE_PX;
         long p = Math.floorDiv(x - x0, plots), q = Math.floorDiv(y - y0, plots);
         if (p >= 0 && q >= 0 && p < n && q < n) out[(int) (q * n + p)] = true;
+    }
+
+    /* =====================================================================
+       12. THE MINIMAP (0.7.134, batch MM2; docs/studies/spec-globe.md 8.3)
+       ===================================================================== */
+
+    /** How far out the played city's far block is bought: 4 districts past its built-up ground's east edge (31 km) - districts of its own, nothing built in them. */
+    static final int FAR_DISTRICTS = 4;
+
+    static void miniMap(Game city, Squares sq) throws Exception {
+        out.println("\n--- 12. the minimap (0.7.134, batch MM2): the stamp frames the built-up ground, from the pictures, in a few milliseconds ---");
+        int W = MiniMapFrame.STAMP_W, H = MiniMapFrame.STAMP_H;
+
+        // ----- The fixtures: one district, a few, a great many, and owned ground with nothing built on it -----
+        PrintStream real = System.out;
+        Game fresh;
+        System.setOut(QUIET);
+        try {
+            fresh = new Game(GameFiles.scratch("mapcheck-mini"));
+            fresh.newGame();
+        } finally {
+            System.setOut(real);
+        }
+        CityMap founded = fresh.getCityMap(), played = city.getCityMap(), x1 = sq.maps[0], dense = sq.maps[DENSE];
+        // The played city's ground, its map drawn canonically on a copy; then a block of a district bought FAR_DISTRICTS out, and a month.
+        CityLand copy = city.getCityLand().copy();
+        long[] counts = city.getMapCounts();
+        CityMap far = CityMap.canonical(copy, r -> copy.amountsInOrder(r), city.getMapTypes(), counts);
+        MiniMapFrame.Box before = MiniMapFrame.frame(far);
+        long D = World.DISTRICT, bx = (Math.floorDiv(before.x1(), D) + FAR_DISTRICTS) * D, by = Math.floorDiv(copy.siteY(), D) * D;
+        int districtsBefore = far.districts().size();
+        copy.extend(new LandParcel(-3, 1, 0, 8, bx, by, bx + D, by + D, null, null, null, 0, 0), city.getMonth(), 0);
+        boolean reconciled = far.reconcile(counts);
+        MiniMapFrame.Box after = MiniMapFrame.frame(far);
+
+        Object[][] fixtures = { { "a new city as founded", founded }, { "the played city", played }, { "Jerus's city x 1", x1 },
+                { "x 10,000", dense }, { "the played city with its far block", far } };
+        boolean byLeaves = true, margins = true, least = true, holds = true, half = true;
+        // Half the stamp but for the margin: at a stride s of 2 or more the frame is over (s - 1) of the stamp's side, so at least half
+        // of s, and the margin of the built-up ground's longer side, on the stamp's shorter, is up to W / H of it - and a plot each way.
+        double share = 0.5 / (1 + 2 * MiniMapFrame.MARGIN * W / H) - 1.0 / H;
+        for (Object[] fx : fixtures) {
+            CityMap m = (CityMap) fx[1];
+            int built = 0;
+            for (CityMap.District d : m.districts()) if (d.usedCells() > 0) built++;
+            MiniMapFrame.Box bu = MiniMapFrame.builtUp(m), fr = MiniMapFrame.frame(m), leaves = builtUpByLeaves(m);
+            byLeaves &= bu != null && bu.equals(leaves);
+            long mg = (long) Math.ceil(MiniMapFrame.MARGIN * Math.max(bu.width(), bu.height()));
+            margins &= fr.equals(new MiniMapFrame.Box(bu.x0() - mg, bu.y0() - mg, bu.x1() + mg, bu.y1() + mg));
+            MiniMapFrame.View st = MiniMapFrame.stamp(fr), pv = MiniMapFrame.preview(fr);
+            for (MiniMapFrame.View v : List.of(st, pv)) {
+                long s = v.stride();
+                least &= s >= 1 && (s == 1 || (s - 1) * v.w() < fr.width() || (s - 1) * v.h() < fr.height());
+                holds &= v.shown().holds(fr);
+            }
+            double across = Math.max(bu.width() / (double) (st.stride() * W), bu.height() / (double) (st.stride() * H));
+            half &= st.stride() == 1 || across >= share;
+            LandGrid g = m.land().grid();
+            out.printf("      %s: %,d district(s), %,d built; owned %,d x %,d plots, built-up %,d x %,d, framed %,d x %,d; the stamp at %,d plots"
+                            + " a pixel (%.0f m), the city %.0f x %.0f px of it; the preview at %,d%n", fx[0], m.districts().size(), built,
+                    g.maxX() - g.minX(), g.maxY() - g.minY(), bu.width(), bu.height(), fr.width(), fr.height(), st.stride(), st.stride() * World.PLOT_M,
+                    bu.width() / (double) st.stride(), bu.height() / (double) st.stride(), pv.stride());
+        }
+        check("the stamp's built-up ground is the ground owned in each district with buildings - found again from the grid's leaves", byLeaves);
+        check("...framed with MARGIN of its longer side round it each way", margins);
+        MiniMapFrame.Box fb = MiniMapFrame.builtUp(founded), ff = MiniMapFrame.frame(founded);
+        check("a city of one district frames its own ground, smaller than its district, not the district's square",
+                fb != null && ff.width() < World.DISTRICT && ff.height() < World.DISTRICT);
+        check("every view at the least whole number of plots a pixel that holds the frame, and holding it whole", least && holds);
+        check("...so the city is at least half the stamp across but for the margin, or drawn a plot a pixel", half);
+        // Owned ground with nothing built on it: x 1's empty districts, and the far block a month after it was bought.
+        LandGrid xg = x1.land().grid(), cg = copy.grid();
+        MiniMapFrame.Box xf = MiniMapFrame.frame(x1), xg1 = new MiniMapFrame.Box(xg.minX(), xg.minY(), xg.maxX(), xg.maxY());
+        MiniMapFrame.Box cg1 = new MiniMapFrame.Box(cg.minX(), cg.minY(), cg.maxX(), cg.maxY());
+        CityMap.District block = far.district((int) (Math.floorDiv(bx, D) - Math.floorDiv(copy.siteX(), D)), (int) (Math.floorDiv(by, D) - Math.floorDiv(copy.siteY(), D)));
+        out.printf("      x 1's owned ground %,d x %,d plots, its frame %,d x %,d; the far block bought %,d plots east of the frame, a district of its own"
+                        + " (%d districts -> %d), nothing built on it (%s); the owned ground now %,d x %,d, the frame %s%n", xg1.width(), xg1.height(),
+                xf.width(), xf.height(), bx - before.x1(), districtsBefore, far.districts().size(), block == null ? "no district" : block.usedCells() + " plots built",
+                cg1.width(), cg1.height(), after.equals(before) ? "as before it" : "moved, " + after);
+        check("fixture: x 1 owns districts with nothing built in them, and the far block is a district of the played city's own, nothing built",
+                !xf.holds(xg1) && reconciled && block != null && block.usedCells() == 0 && !after.holds(cg1));
+        check("owned ground with nothing built on it is left out: x 1 framed on its built districts, the far block's city framed as before it",
+                (xf.width() < xg1.width() || xf.height() < xg1.height()) && after.equals(before));
+
+        // ----- From the pictures and the dither, no plan drawn on the screen's thread -----
+        x1.forgetPainted();
+        MiniMapFrame.View v1 = MiniMapFrame.stamp(xf);
+        byte[][] g1 = MiniMapFrame.ground(x1.worldKey(), v1);
+        MapTiles t1 = new MapTiles(x1);
+        int[] px = new int[W * H];
+        java.util.Set<CityMap.District> wanted = new java.util.LinkedHashSet<>();
+        long kept0 = x1.picturesKept(), plans0 = x1.plansBytes();
+        MiniMapFrame.pixels(t1, v1, g1, px, wanted);
+        boolean noPlan = x1.picturesKept() == kept0 && x1.plansBytes() == plans0 && x1.picturesHeld() == 0;
+        java.util.Set<CityMap.District> builtInView = new java.util.LinkedHashSet<>();
+        MiniMapFrame.Box shown = v1.shown();
+        for (CityMap.District d : x1.districts()) {
+            if (d.usedCells() <= 0) continue;
+            noPlan &= x1.pictureIfCurrent(d) == null;
+            MiniMapFrame.Box b = MiniMapFrame.districtBox(x1, d);
+            if (b.x1() > shown.x0() && b.x0() < shown.x1() && b.y1() > shown.y0() && b.y0() < shown.y1()) builtInView.add(d);
+        }
+        boolean asksThem = v1.stride() * MapTiles.PICTURE_FROM_PX <= World.DISTRICT && wanted.equals(builtInView);
+        // Their pictures drawn as the map's worker draws them, then the stamp again: each pixel its district's picture's at its plot.
+        for (CityMap.District d : wanted) for (CityMap.Job j : x1.pictureJobs(d)) { j.run(); x1.adopt(j); }
+        java.util.Set<CityMap.District> after1 = new java.util.LinkedHashSet<>();
+        MiniMapFrame.pixels(t1, v1, g1, px, after1);
+        int n = MapFrame.NODE_PX, sampled = 0, right = 0;
+        for (int k = 0; k < W * H; k++) {
+            int i = k % W, j = k / W;
+            if (t1.lastEdge()[j * n + i] || t1.lastRun()[j * n + i]) continue;
+            long s1 = v1.stride(), ax = v1.x0() + i * s1, ay = v1.y0() + j * s1, x = ax + s1 / 2, y = ay + s1 / 2;
+            CityMap.District d = x1.districtOfTile(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE));
+            // A pixel holding none of the city's ground is the world's, dimmed; one holding some is its district's.
+            if (d == null || d.usedCells() <= 0 || x1.land().grid().owned(ax, ay, ax + s1, ay + s1) == 0) continue;
+            DistrictPicture pic = x1.pictureIfCurrent(d);
+            if (pic == null) continue;
+            MiniMapFrame.Box b = MiniMapFrame.districtBox(x1, d);
+            int code = pic.codeAtPlot((int) (x - b.x0()), (int) (y - b.y0()));
+            int c = TileRaster.GROUND[g1[0][j * n + i]];
+            if (!x1.land().ownsPlot(x, y)) c = TileRaster.blend(c, TileRaster.VOID, TileRaster.UNOWNED_DIM);
+            if (code != DistrictPicture.GROUND) c = DistrictPicture.colour(code);
+            sampled++;
+            if (px[k] == c) right++;
+        }
+        // x 10,000's stamp: districts a pixel or two, dithered by their shares - none asked.
+        MiniMapFrame.Box df = MiniMapFrame.frame(dense);
+        MiniMapFrame.View vd = MiniMapFrame.stamp(df);
+        byte[][] gd = MiniMapFrame.ground(dense.worldKey(), vd);
+        MapTiles td = new MapTiles(dense);
+        java.util.Set<CityMap.District> wantedDense = new java.util.LinkedHashSet<>();
+        long keptD = dense.picturesKept(), plansD = dense.plansBytes();
+        MiniMapFrame.pixels(td, vd, gd, new int[W * H], wantedDense);
+        out.printf("      x 1's stamp at %d plots a pixel, no plan drawn: %d district(s) asked for, of %d built in view; their pictures drawn aside,"
+                        + " %,d pixels sampled, %,d their picture's; x 10,000's at %,d plots a pixel asks %d%n", v1.stride(), wanted.size(), builtInView.size(),
+                sampled, right, vd.stride(), wantedDense.size());
+        check("the stamp draws no plan on the screen's thread: none held, no picture kept; it asks for the pictures of the built districts it shows",
+                noPlan && asksThem && !wanted.isEmpty());
+        check("...and once they are drawn aside it samples them, pixel for pixel, asking for none", after1.isEmpty() && sampled > 0 && right == sampled);
+        check("...and at a stride where a district is under PICTURE_FROM_PX pixels it dithers, asking for none and drawing nothing",
+                vd.stride() * MapTiles.PICTURE_FROM_PX > World.DISTRICT && wantedDense.isEmpty() && dense.picturesKept() == keptD && dense.plansBytes() == plansD);
+
+        // ----- The cost: the stamp - its frame and its node - on the screen's thread at a month's end, on its CPU (A28) -----
+        CityMap earth = earthX1(sq);
+        Object[][] timed = { { "a new city", founded }, { "the played city", played }, { "x 1", x1 }, { "x 10,000", dense }, { "x 1 on Earth", earth } };
+        double worst = 0, worstPreview = 0;
+        String worstAt = "";
+        boolean noVoid = true;
+        StringBuilder costs = new StringBuilder();
+        for (Object[] fx : timed) {
+            CityMap m = (CityMap) fx[1];
+            if (m == null) continue;
+            MapTiles t = new MapTiles(m);
+            MiniMapFrame.View v = MiniMapFrame.stamp(MiniMapFrame.frame(m)), pv = MiniMapFrame.preview(MiniMapFrame.frame(m));
+            byte[][] g = MiniMapFrame.ground(m.worldKey(), v), gp = MiniMapFrame.ground(m.worldKey(), pv);
+            int[] out1 = new int[W * H], outP = new int[pv.w() * pv.h()], buf = new int[n * n];
+            // As the screen draws it once its pictures are in: those it lacks drawn first.
+            java.util.Set<CityMap.District> lack = new java.util.LinkedHashSet<>();
+            MiniMapFrame.pixels(t, v, g, out1, lack);
+            if (t.picturesFit(v.asMapFrame())) for (CityMap.District d : lack) for (CityMap.Job j : m.pictureJobs(d)) { j.run(); m.adopt(j); }
+            double best = Double.MAX_VALUE, bestWall = Double.MAX_VALUE, bestNode = Double.MAX_VALUE;
+            for (int r = 0; r < WARM_ROUNDS + TIMED_ROUNDS; r++) {
+                long c0 = monthClock(), w0 = System.nanoTime();
+                MiniMapFrame.View vv = MiniMapFrame.stamp(MiniMapFrame.frame(m));
+                MiniMapFrame.pixels(t, vv, g, out1, null);
+                long c1 = monthClock(), w1 = System.nanoTime();
+                double nodeMost = 0;
+                for (int k = 0; k < pv.nodesAcross() * pv.nodesDown(); k++) {
+                    long p0 = monthClock();
+                    MiniMapFrame.node(t, pv, k, gp[k], buf, outP, null);
+                    nodeMost = Math.max(nodeMost, (monthClock() - p0) / 1e6);
+                }
+                if (r >= WARM_ROUNDS) {
+                    best = Math.min(best, (c1 - c0) / 1e6);
+                    bestWall = Math.min(bestWall, (w1 - w0) / 1e6);
+                    bestNode = Math.min(bestNode, nodeMost);
+                }
+            }
+            if (m == earth) for (int c : out1) noVoid &= c != TileRaster.VOID;
+            if (best > worst) { worst = best; worstAt = (String) fx[0]; }
+            worstPreview = Math.max(worstPreview, bestNode);
+            costs.append(String.format(" %s %.2f (%.2f wall), its preview's slowest node %.2f;", fx[0], best, bestWall, bestNode));
+        }
+        out.printf("      the stamp, ms of the thread's %s:%s the worst %s%n", CPU_TIMED ? "CPU" : "wall clock (no thread CPU here)", costs, worstAt);
+        check("fixture: the Earth's fixture is beside the classes, and x 1 stands on it", earth != null);
+        check("the stamp - its frame and its node - drawn in no more than MiniMapFrame.STAMP_MS (" + (int) MiniMapFrame.STAMP_MS + " ms) of the "
+                + (CPU_TIMED ? "thread's CPU" : "wall clock"), worst > 0 && worst <= MiniMapFrame.STAMP_MS);
+        check("...on Earth the city's plane round it: no pixel the void past the planet's rim", earth != null && noVoid);
+
+        // ----- A click: the expanded map on the frame, where the land office's opening takes in the far block -----
+        MapFrame big = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H), office = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
+        MiniMapFrame.open(big, after);
+        LandMap.open(office, copy, null);
+        boolean onFrame = big.plotX(0) <= after.x0() && big.plotY(0) <= after.y0() && big.plotX(big.width()) >= after.x1()
+                && big.plotY(big.height()) >= after.y1() && Math.abs(big.centreX() - after.centreX()) < 1e-6 && Math.abs(big.centreY() - after.centreY()) < 1e-6;
+        out.printf("      a click on the far block's city: the expanded map at %.1f m a pixel on its frame; the land office's opening at %.1f m%n",
+                World.PLOT_M / big.scale(), World.PLOT_M / office.scale());
+        check("a click opens the expanded map on the stamp's frame, centred and whole, where the land office's opening shrinks it for the far block",
+                onFrame && big.scale() > office.scale());
+    }
+
+    /**
+     * The built-up ground found another way, for the check: every leaf of
+     * the grid cut to each district with buildings it lies in, their bounds;
+     * a built district with none owned its whole square.
+     */
+    static MiniMapFrame.Box builtUpByLeaves(CityMap m) {
+        java.util.Set<Long> built = new java.util.HashSet<>();
+        for (CityMap.District d : m.districts()) if (d.usedCells() > 0) built.add(((long) d.dx << 32) ^ (d.dy & 0xffffffffL));
+        if (built.isEmpty()) return null;
+        long[] b = { Long.MAX_VALUE, Long.MAX_VALUE, Long.MIN_VALUE, Long.MIN_VALUE };
+        java.util.Set<Long> owning = new java.util.HashSet<>();
+        long bdx = m.baseDX(), bdy = m.baseDY(), D = World.DISTRICT;
+        m.land().grid().leaves((level, x, y, holding) -> {
+            long s = 1L << level;
+            for (long dy = Math.floorDiv(y, D) - bdy; dy <= Math.floorDiv(y + s - 1, D) - bdy; dy++) {
+                for (long dx = Math.floorDiv(x, D) - bdx; dx <= Math.floorDiv(x + s - 1, D) - bdx; dx++) {
+                    long key = (dx << 32) ^ (dy & 0xffffffffL);
+                    if (!built.contains(key)) continue;
+                    owning.add(key);
+                    long ax = (bdx + dx) * D, ay = (bdy + dy) * D;
+                    b[0] = Math.min(b[0], Math.max(x, ax));
+                    b[1] = Math.min(b[1], Math.max(y, ay));
+                    b[2] = Math.max(b[2], Math.min(x + s, ax + D));
+                    b[3] = Math.max(b[3], Math.min(y + s, ay + D));
+                }
+            }
+        });
+        for (long key : built) {
+            if (owning.contains(key)) continue;
+            long ax = (bdx + (key >> 32)) * D, ay = (bdy + (int) key) * D;
+            b[0] = Math.min(b[0], ax);
+            b[1] = Math.min(b[1], ay);
+            b[2] = Math.max(b[2], ax + D);
+            b[3] = Math.max(b[3], ay + D);
+        }
+        return new MiniMapFrame.Box(b[0], b[1], b[2], b[3]);
+    }
+
+    /** Jerus's city x 1 on the real Earth at Rotterdam, EarthCheck's fixture (section 10's window): null when the fixture is not beside the classes. */
+    static CityMap earthX1(Squares sq) throws Exception {
+        byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE), expect = EarthCheck.resource(EarthCheck.EXPECT);
+        if (fixture == null || expect == null) return null;
+        String id = EarthTerrain.use(EarthData.of(fixture));
+        for (String line : new String(expect, java.nio.charset.StandardCharsets.UTF_8).split("\n")) {
+            String[] f = line.split("\t", -1);
+            if (f.length <= 4 || !f[1].equals("window") || !f[2].equals("Rotterdam")) continue;
+            World w = World.of(World.Key.earth(EarthTerrainCheck.SEED, Double.parseDouble(f[3]), Double.parseDouble(f[4]), id));
+            long[] c = sq.counts[0].clone();
+            if (Mining.IRON_MINE < c.length) c[Mining.IRON_MINE] = 0;
+            return CityMap.square(w.key(), w.foundingX(), w.foundingY(), sq.types, x1Side(sq.types),
+                    (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), c);
+        }
+        return null;
     }
 }

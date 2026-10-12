@@ -15,7 +15,7 @@ requirement.
 ## Open these before reading source
 
 The tree is over 300,000 lines; `Game.java` alone is over 16,000, and the
-interface is twenty-eight files, the largest about 6,000. Do not read them. Read the generated indexes and jump.
+interface is twenty-nine files, the largest about 6,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
 |---|---|
@@ -437,6 +437,14 @@ These are Jerus's, and they do not move.
                                    and the city's edge a pixel wide at every scale; the sidecar
                                    beside the save (no picture in it); nothing in the model reads
                                    it - MapCheck holds it
+        MiniMapFrame.java          the minimap's arithmetic (0.7.134, batch MM2; docs/studies/spec-globe.md
+                                   8.3): what the stamp at the rail's foot and its hover preview frame -
+                                   the ground the city owns in its districts with buildings and MARGIN
+                                   round it, owned ground with nothing built on it left out - at the
+                                   least whole number of plots a pixel that holds it, its pixels the far
+                                   nodes (MapTiles.nodePixels()) from the district pictures, and what a
+                                   click opens the expanded map on; pure - ui/MiniMap draws it, MapCheck
+                                   12 holds it
         CityRuns.java              the city's highways and railway (0.7.89): laid city-wide, month by
                                    month, on corridors from the founding site's lines - straight by
                                    preference, never moved, the newest end taken first - with the
@@ -479,7 +487,10 @@ These are Jerus's, and they do not move.
                                    window on Expand; its arithmetic is the model's MapFrame, LandMap and
                                    MapTiles, which MapCheck holds), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
-                                   the staged set and the tray). The model never imports it.
+                                   the staged set and the tray), and MiniMap.java (the minimap, 0.7.134: a
+                                   stamp of the city at the rail's foot above Menu, its preview on hover,
+                                   the land office's map over the window on a click; MiniMapFrame's
+                                   arithmetic). The model never imports it.
         *Check.java                103 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;

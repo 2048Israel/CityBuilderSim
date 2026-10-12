@@ -178,6 +178,8 @@ public class UserInterface extends Application {
 
     /** The navigation rail down the window's left edge (0.7.21; it was the panel's right edge); see start(). */
     private VBox tabRail;
+    /** The minimap at the rail's foot (0.7.134); see THE RAIL. Made the first time the rail is. */
+    private MiniMap miniMap;
     /** The middle of the window, with the City overview's drawer and the construction panel (both since 0.7.24), the inbox's list and the toasts on top of it. */
     private StackPane stagePane;
     /** The inbox's list, dropped down at the stage's top right while it is open (its envelope is the header's since 0.7.21). */
@@ -3569,6 +3571,8 @@ public class UserInterface extends Application {
         buildScreen.measurePicked.clear();
         // ...and the land office forgets what it last showed: nothing on a new shelf is NEW (0.7.26).
         landScreen.forget();
+        // ...and the minimap what it drew (0.7.134).
+        if (miniMap != null) miniMap.forget();
         // ...and People: no month has just landed on it (0.7.27).
         peopleScreen.forget();
     }
@@ -5264,13 +5268,17 @@ public class UserInterface extends Application {
 
         if (tabRail == null) return;
         showIf(tabRail, !isGameMenu(currentScreen));
-        tabRail.getChildren().clear();
+        // The minimap stays in the rail while its buttons are made again (0.7.134): taken out and put back, its preview
+        // would close every month a page is redrawn under the pointer.
+        if (miniMap == null) miniMap = new MiniMap(this);
+        tabRail.getChildren().retainAll(miniMap.node());
 
         String active = tabFor(currentScreen);
 
+        List<javafx.scene.Node> above = new ArrayList<>();
         for (Tab tab : tabs()) {
             final Tab t = tab;
-            tabRail.getChildren().add(railButton(t.svg(), t.label(), t.name(), areaOf(t.key()),
+            above.add(railButton(t.svg(), t.label(), t.name(), areaOf(t.key()),
                     t.key().equals(active), () -> goHome(t)));
         }
 
@@ -5280,9 +5288,24 @@ public class UserInterface extends Application {
         Region gap = new Region();
         gap.setMinHeight(0);
         VBox.setVgrow(gap, Priority.ALWAYS);
-        tabRail.getChildren().add(gap);
+        above.add(gap);
+        tabRail.getChildren().addAll(0, above);
+        // THE MINIMAP (0.7.134, batch MM2; docs/studies/spec-globe.md 8.3): a stamp of the city above Menu, its preview on
+        // hover, the land office's map over the window on a click (MiniMap; openMapOn()).
+        if (!tabRail.getChildren().contains(miniMap.node())) tabRail.getChildren().add(miniMap.node());
         tabRail.getChildren().add(railButton(Icons.MENU, "Menu", "The game menu: save, load, settings, quit  (Esc)",
                 Palette.TEXT_HEAD, "showMainMenu".equals(currentScreen), this::showMainMenu));
+    }
+
+    /**
+     * The minimap's click (0.7.134): the land office, as its rail button
+     * opens it, and its map over the window on the minimap's frame - the
+     * city's built-up ground (MiniMapFrame.frame(); none yet, as Expand
+     * opens it).
+     */
+    void openMapOn(MiniMapFrame.Box frame) {
+        for (Tab t : tabs()) if ("land".equals(t.key())) goHome(t);
+        landScreen.expandMapOn(frame);
     }
 
     /* =====================================================================

@@ -130,6 +130,9 @@ final class MapView {
     /** Drafts a city may fail to keep before its map is drawn on the FX thread instead: 3. */
     static final int DRAFTS_MOST = 3;
 
+    /** The draft of the city's map on WORKER, this view's or the minimap's (0.7.134), until it comes back: the other waits for it rather than draw the same map aside twice. The screen's thread's. */
+    static Game.MapDraft drafting;
+
     /** Game months a boat-month spans (0.7.97): BoatSchedule.MONTH_SECONDS over UserInterface.SECONDS_PER_MONTH, 12 - so at 1x a month of ships plays as the research's 60 s (Q8), at every speed in step with the game's clock, and stands while it is paused (star O13-7). */
     static final double BOAT_GAME_MONTHS = BoatSchedule.MONTH_SECONDS / UserInterface.SECONDS_PER_MONTH;
 
@@ -142,8 +145,8 @@ final class MapView {
     /** Who hears a click: a side, and an offer's place on it or -1. */
     interface Picker { void picked(int side, int place); }
 
-    /** The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128). Low priority; it dies with the window. */
-    private static final ExecutorService WORKER = Executors.newSingleThreadExecutor(r -> {
+    /** The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128) - and since 0.7.134 the minimap's (MiniMap), so the map's jobs run on one thread in the order handed out. Low priority; it dies with the window. */
+    static final ExecutorService WORKER = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r, "city-map");
         t.setDaemon(true);
         t.setPriority(Thread.MIN_PRIORITY);
@@ -379,19 +382,26 @@ final class MapView {
      * time (a draft, kept when drawn), a new map (a load, the land drawn
      * again) thrown out with its pictures, the small map fitted again when
      * the land grows, and the pictures' version moved when the map or the
-     * land did. Never more to do this frame: a draft back from WORKER asks.
+     * land did. Never more to do this frame - a draft back from WORKER asks -
+     * but while the minimap's draft is there (0.7.134: MiniMap, drafting),
+     * which keeps the frames coming until it is kept.
      */
     private boolean keepUp() {
         Game g = ui.game;
         CityLand land = g.getCityLand();
+        boolean waiting = false;
         if (!g.hasCityMap()) {
             if (shownMap != null) reset();
             if (draft == null || draft.game() != g) {
-                if (draftsFailed >= DRAFTS_MOST) {
+                if (drafting != null && drafting.game() == g && drafting != draft) {
+                    // The minimap's draft on WORKER (0.7.134): this frame and the next look again until it is kept.
+                    waiting = true;
+                } else if (draftsFailed >= DRAFTS_MOST) {
                     g.getCityMap();
                 } else {
                     Game.MapDraft d = g.mapDraft();
                     draft = d;
+                    drafting = d;
                     if (d != null) WORKER.submit(() -> {
                         try {
                             d.draw();
@@ -426,11 +436,12 @@ final class MapView {
             }
         }
         size();
-        return false;
+        return waiting;
     }
 
     /** A draft drawn on WORKER, back on the FX thread: kept as the city's map when it still is the city's. */
     private void kept(Game.MapDraft d) {
+        if (drafting == d) drafting = null;
         if (d != draft) return;
         draft = null;
         Game g = ui.game;
@@ -1218,6 +1229,20 @@ final class MapView {
         fitPane();
         fitBig();
         canvas.requestFocus();
+    }
+
+    /**
+     * Expanded on a box of plots (0.7.134, batch MM2): the minimap's click,
+     * the map over the window fitted on what the stamp frames
+     * (MiniMapFrame.open()) rather than on the land office's opening; Fit
+     * goes back to that. With no box, as Expand opens.
+     */
+    void expandOn(MiniMapFrame.Box box) {
+        expand();
+        if (big != null && box != null) {
+            MiniMapFrame.open(big, box);
+            requestDraw();
+        }
     }
 
     /** Esc, the button, or another screen: the canvas back in the office, and the office drawn again when asked. */
