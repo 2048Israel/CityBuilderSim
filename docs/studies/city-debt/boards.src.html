@@ -294,7 +294,8 @@ svg .grid{stroke:rgba(36,53,74,.55);stroke-width:1}
         <div class="toggle"><span class="sw2"></span><span>Callable from year 5 · the coupon would carry <span class="mono" id="bw-call"></span> more</span></div>
         <div class="grid2" style="gap:10px">
           <div class="field"><label for="bw-ask">How much face</label><input class="input" id="bw-ask" value="D$300.0M" readonly></div>
-          <div class="field"><label for="bw-max">The highest yield you will take</label><input class="input" id="bw-max" readonly></div>
+          <div class="field"><label for="bw-max">The highest yield you will take</label><input class="input" id="bw-max" readonly>
+            <div class="chips"><span class="chip on">fair + 1 pt</span><span class="chip">fair + 2 pts</span><span class="chip">Fill it, at any yield</span></div></div>
         </div>
         <p class="flag" id="bw-line"></p>
       </div>
@@ -312,7 +313,7 @@ svg .grid{stroke:rgba(36,53,74,.55);stroke-width:1}
     <p><i>A</i><b>Five kinds of paper.</b> Bills at a discount, bonds at par near the market, the amortizing bond on one coupon solved on the curve, the floating note on the policy rate, the linked bond on the price index.</p>
     <p><i>B</i><b>The coupon is the market's.</b> The clearing yield rounded down to an eighth of a point, so a new line sells just under 100. A reopening keeps its line's coupon and sells at whatever price that makes.</p>
     <p><i>C</i><b>The bidders are the game's own.</b> Households non-competitive and first; the bank at fair while it has room; the world as hot money. The central bank never bids, except to roll its own paper.</p>
-    <p><i>D</i><b>An auction can fail.</b> When the bids do not reach the issue at the highest yield you take, the city sells only what was bid and the rest is not raised.</p>
+    <p><i>D</i><b>Capped, or filled.</b> With a highest yield, bids that do not reach the issue there sell only what was bid. With Fill it, the yield rises until the bidders' own rules cover the issue, and the card says what that costs.</p>
   </div>
 </section>
 
@@ -699,8 +700,10 @@ function curveChart(host, opt) {
     line("Effective rate", pct(a.eir, 3)),
     line("You raise", money(a.proceeds), "total"));
   document.getElementById("bw-go").textContent = "Hold the auction · raise " + money(a.proceeds);
+  const fl = D.filled;
   document.getElementById("bw-tight").append(el("p", {class: "cap", style: "color:#ffd9d4"}, "The same auction, if the bank's room were nearly gone"),
-    el("p", {style: "color:#ffd9d4", html: `The bids reach only <b>${money(t.sold)}</b> at your highest yield, ${t.cover.toFixed(2)}× the issue. It sells that, at <b>${pct(t.stop, 2)}</b>, a tail of ${bp(t.tail)}, and <b>${money(a.offered - t.sold)}</b> is not raised. The city's next month runs short by that, onto the central bank's advances if it must.`}));
+    el("p", {style: "color:#ffd9d4", html: `<b>Capped at fair + 1 pt:</b> the bids reach only <b>${money(t.sold)}</b>, ${t.cover.toFixed(2)}× the issue. It sells that at <b>${pct(t.stop, 2)}</b>, a tail of ${bp(t.tail)}, and <b>${money(a.offered - t.sold)}</b> of face is not sold. The city's month runs short by what that would have raised, onto the central bank's advances if it must.`}),
+    el("p", {style: "color:#ffd9d4", html: `<b>Fill it:</b> the yield rises until the world's hot money covers what the bank cannot hold. It stops at <b>${pct(fl.stop, 2)}</b>, a tail of ${bp(fl.tail)}, the world taking ${money(fl.fills["the world"])}. The 6% line sells at <b>${px(fl.price, 2)}</b>, so ${money(fl.sold, 0)} of face raises <b>${money(fl.proceeds)}</b>, at an effective ${pct(fl.eir, 2)} for the next ${Math.round(114 / 12 * 10) / 10} years.`}));
 })();
 
 /* ================= YOUR RATE ================= */

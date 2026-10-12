@@ -390,6 +390,12 @@ def auction(city: City, kind, years, offered, max_tail=MAX_TAIL, line_coupon=Non
     which the bids cover the issue, never under fair and never over fair +
     max_tail; everyone is filled at it (single price), the competitive bids
     at the stop pro rata.
+
+    FILL IT (Jerus, 2026-10-12, on D20: "increased yield if you allow for it
+    to get fully filled"): max_tail=None takes whatever yield covers the
+    issue. The ceiling is then where no bidder's rule adds anything more -
+    the world's, at its rate plus MAX_SPREAD - and only an issue bigger than
+    every rule will take at any yield sells short.
     """
     months = months or years * 12
     curve = Curve(city, extra_debt=offered)
@@ -400,6 +406,8 @@ def auction(city: City, kind, years, offered, max_tail=MAX_TAIL, line_coupon=Non
     def competitive(y):
         return [b for b in demand(city, y, offered, fair, months) if b.who != "households"]
 
+    if max_tail is None:
+        max_tail = max(0.0, WORLD_BASE_RATE + city.depreciation + CF_MAX_SPREAD - fair)
     stop = None
     for y in np.arange(fair, fair + max_tail + 1e-9, .00005):
         if retail + sum(b.face for b in competitive(y)) >= offered:
@@ -612,6 +620,19 @@ def main():
               f"effective rate {pct(a['eir'], 3)}")
         print("      filled: " + ", ".join(f"{k} {money(v)}" for k, v in a["fills"].items()))
         out["auctions"][c.name] = a
+
+    print("\n   ...the same, FILLED (no highest yield: the stop rises until the bids cover it)")
+    for c in [replace(CALM, name="calm, the bank's room nearly gone", bank_room=2e7)]:
+        a = auction(c, "bullet", 10, 3e8, max_tail=None)
+        fair_cost = a["sold"] * a["fair"]
+        print(f"   {c.name}")
+        print(f"      fair {pct(a['fair'], 3)}  stop-out {pct(a['stop'], 3)}  tail {a['tail'] * 1e4:.0f} bp  "
+              f"sold {money(a['sold'])}  coupon {pct(a['coupon'], 3)}  price {a['price']:.3f}  "
+              f"proceeds {money(a['proceeds'])}  effective {pct(a['eir'], 3)}")
+        print("      filled: " + ", ".join(f"{k} {money(v)}" for k, v in a["fills"].items()))
+        print(f"      a year of interest at its effective rate {money(a['proceeds'] * a['eir'])} against "
+              f"{money(a['proceeds'] * a['fair'])} at fair")
+        out["auctions"]["filled: " + c.name] = a
 
     print("\n" + "=" * 78)
     print("5. ONE LINE'S LIFE - the 10-year sold in the calm city, then the bank hikes")
