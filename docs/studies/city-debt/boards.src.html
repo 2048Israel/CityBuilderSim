@@ -1,0 +1,748 @@
+<title>City Debt Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: the study's boards down one column; each board a caption outside and the game's own window inside, drawn in the game's palette (ui/Palette.java) - one dark look on purpose, because it is the game's. */
+:root{
+  color-scheme:dark;
+  --stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;
+  --edge:#24354a;--control-edge:#33475f;
+  --text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;
+  --good:#3fb950;--warn:#e3b341;--bad:#f85149;--bad-text:#ffd9d4;--alert-ground:#331d1d;
+  --accent:#5aa9ff;--accent-fill:#2f6fa8;--confirm:#2f7d52;
+  --people:#2ec4b6;--money:#5aa9ff;--money-dark:#2f80d9;--money-light:#a9d1ff;--business:#a78bfa;--ore:#c9b68f;
+  --bill:#8cc4ff;--bond:#5aa9ff;--amort:#2f80d9;--frn:#e3b341;--ilb:#2ec4b6;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--stage);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.45}
+.study{max-width:1260px;margin:0 auto;padding-block:32px 64px;padding-inline:16px;display:grid;gap:56px}
+h1,h2,h3,h4,p{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* the study's own head */
+.top{display:grid;gap:14px}
+.eyebrow{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)}
+.top h1{font-size:26px;font-weight:600;letter-spacing:-.005em;text-wrap:balance}
+.top .lead{font-size:15px;color:var(--text2);max-width:78ch}
+.answers{display:flex;flex-wrap:wrap;gap:6px}
+.answers span{font-size:11.5px;padding:3px 9px;border:1px solid var(--edge);border-radius:999px;color:var(--text2);background:var(--panel)}
+.answers b{color:var(--text);font-weight:500}
+.toc{display:flex;flex-wrap:wrap;gap:8px}
+.toc a{font-size:12px;color:var(--accent);text-decoration:none;border:1px solid var(--control-edge);border-radius:6px;padding:5px 10px;background:var(--panel)}
+.toc a:hover{background:var(--hover)}
+
+/* a board */
+.board{display:grid;gap:14px;scroll-margin-top:16px}
+.board>header{display:grid;gap:6px;max-width:86ch}
+.board h2{font-size:20px;font-weight:600;text-wrap:balance}
+.board .says{font-size:14px;color:var(--text2)}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 22px;margin-top:4px}
+.notes p{font-size:12.5px;color:var(--text2);padding-left:22px;position:relative}
+.notes p i{position:absolute;left:0;top:1px;font-style:normal;font-family:var(--mono);font-size:10.5px;width:16px;height:16px;border-radius:50%;background:var(--accent-fill);color:var(--text);display:grid;place-items:center}
+.notes b{color:var(--text);font-weight:500}
+
+/* the game's window */
+.frame{background:var(--stage);border:1px solid var(--edge);border-radius:10px;padding:18px;display:grid;gap:14px;overflow:hidden}
+.crumb{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.crumb .sw{width:12px;height:12px;border-radius:3px;background:var(--money)}
+.crumb h3{font-size:20px;font-weight:600}
+.crumb h3 span{color:var(--accent)}
+.crumb .when{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--text3)}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.kpi .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:600}
+.kpi .v{font-family:var(--mono);font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi .n{font-size:11px;color:var(--text3)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--control-edge);color:var(--text2);background:var(--panel)}
+.chip.on{background:var(--accent-fill);border-color:var(--accent);color:var(--text)}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:14px;display:grid;gap:10px;min-width:0;align-content:start}
+.card.raised{background:var(--raised)}
+.card.alarm{background:var(--alert-ground);border-color:#c0392b}
+.cap{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:600;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.cap .hint{letter-spacing:0;text-transform:none;font-weight:400;font-size:11px}
+.cap .i{width:14px;height:14px;border:1px solid var(--text3);border-radius:50%;display:inline-grid;place-items:center;font-size:9px;letter-spacing:0;text-transform:none}
+.grid2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.muted{color:var(--text3)}
+.lab{color:var(--text2)}
+.big{font-family:var(--mono);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.mid{font-family:var(--mono);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.06em;padding:2px 6px;border-radius:4px;color:var(--stage);white-space:nowrap}
+.btn{font:inherit;font-size:12.5px;border-radius:6px;padding:7px 14px;border:1px solid var(--control-edge);background:var(--pinned);color:var(--text);cursor:pointer}
+.btn.go{background:var(--confirm);border-color:var(--confirm);color:#fff}
+.btn.ghost{background:transparent;color:var(--text2)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.line{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;padding:3px 0;border-bottom:1px solid rgba(36,53,74,.6)}
+.line:last-child{border-bottom:0}
+.line .mono{white-space:nowrap}
+.total{border-top:1px solid var(--control-edge);border-bottom:0;padding-top:6px;font-weight:600}
+.scroll{overflow-x:auto}
+
+/* the desk */
+table.desk{border-collapse:collapse;width:100%;min-width:1130px;font-size:12px}
+.desk th{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-weight:600;text-align:right;padding:6px 8px;border-bottom:1px solid var(--control-edge);white-space:nowrap;vertical-align:bottom}
+.desk th:first-child,.desk td:first-child{text-align:left}
+.desk td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--edge);font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.desk tr.sel td{background:var(--pinned)}
+.desk tr:hover td{background:var(--hover)}
+.desk td .nm{font-family:var(--sans);font-weight:500;color:var(--text)}
+.desk td .sub{font-family:var(--sans);font-size:10.5px;color:var(--text3);display:block}
+.desk tfoot td{font-weight:600;border-top:1px solid var(--control-edge);border-bottom:0}
+.desk .grp{color:var(--text3);font-size:10px}
+.hold{display:flex;height:8px;width:96px;min-width:96px;border-radius:3px;overflow:hidden;background:var(--hover);margin-left:auto}
+.desk td.hc{width:112px}
+.hold span{display:block;height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text3)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+/* charts */
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--mono);font-size:10px;fill:var(--text3)}
+svg .axis{stroke:var(--edge);stroke-width:1}
+svg .grid{stroke:rgba(36,53,74,.55);stroke-width:1}
+
+.ticket{display:grid;gap:8px}
+.field{display:grid;gap:4px}
+.field label{font-size:11px;color:var(--text3)}
+.input{font-family:var(--mono);font-size:16px;background:var(--stage);border:1px solid var(--control-edge);border-radius:6px;padding:7px 10px;color:var(--text);width:100%}
+.entry{font-family:var(--mono);font-size:12px;display:grid;grid-template-columns:1fr auto auto;gap:3px 18px}
+.entry .cr{padding-left:22px}
+.entry .h{color:var(--text3);font-size:10px;letter-spacing:.08em}
+.flag{font-size:12px;padding:8px 10px;border-radius:6px;background:var(--raised);border:1px solid var(--edge);color:var(--text2)}
+.flag b{color:var(--text);font-weight:500}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.tile{border:1px solid var(--edge);background:var(--raised);border-radius:7px;padding:9px 10px;display:grid;gap:3px}
+.tile.on{border-color:var(--accent);background:var(--pinned)}
+.tile b{font-size:12.5px;font-weight:600}
+.tile span{font-size:10.5px;color:var(--text3)}
+.terms{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.term{border:1px solid var(--edge);border-radius:6px;padding:6px;text-align:center;background:var(--raised)}
+.term.on{border-color:var(--accent);background:var(--pinned)}
+.term b{display:block;font-size:11px;color:var(--text2);font-weight:500}
+.term span{font-family:var(--mono);font-size:12.5px}
+.toggle{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--text2)}
+.sw2{width:30px;height:16px;border-radius:999px;background:var(--hover);position:relative;border:1px solid var(--control-edge)}
+.sw2::after{content:"";position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--text3)}
+.parts{display:flex;height:22px;border-radius:4px;overflow:hidden}
+.parts span{display:block;height:100%}
+
+@media (max-width:900px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid2,.grid3{grid-template-columns:minmax(0,1fr)}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .terms{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<main class="study">
+
+<section class="top">
+  <p class="eyebrow">CityBuilderSim · design study · docs/studies/spec-city-debt.md</p>
+  <h1>The city's debt, priced and sold as a treasury does</h1>
+  <p class="lead">Five screens of Finances, redrawn for the new debt: every line with its coupon, its yield and what closing it would book; one line's own page; the buyback; the auction; and the curve the central bank sets. Every figure is the study's model (<span class="mono">debt-model.py</span>), for one city in January 2203, eighteen months into a hike from a calm January 2201.</p>
+  <div class="answers" id="answers"></div>
+  <nav class="toc" aria-label="Boards">
+    <a href="#book">The book</a><a href="#line">A line</a><a href="#close">Close it now</a><a href="#borrow">Borrow</a><a href="#curve">Your rate</a>
+  </nav>
+</section>
+
+<!-- ============================== THE BOOK ============================== -->
+<section class="board" id="book">
+  <header>
+    <p class="eyebrow">Finances › The book</p>
+    <h2>Every line on one desk, with what closing it would book</h2>
+    <p class="says">The book stops being cards of D$-a-month. A line reads as a bond desk reads it: its coupon, the yield it was sold at, today's price and yield, what it is worth, what it is carried at, and what buying it back now would book against both.</p>
+  </header>
+  <div class="frame">
+    <div class="crumb"><span class="sw"></span><h3><span>Finances</span> › The book</h3><span class="when" id="bk-when"></span></div>
+    <div class="kpis" id="bk-kpis"></div>
+    <div class="grid2">
+      <div class="card">
+        <p class="cap">Where each line sits on the curve <span class="hint">· today's yield, by what it has left</span></p>
+        <div id="bk-curve"></div>
+        <div class="legend" id="bk-legend"></div>
+      </div>
+      <div class="card">
+        <p class="cap">At face, carried, and worth today</p>
+        <div id="bk-bars"></div>
+        <p class="muted" style="font-size:11.5px">Carried is what the books say the city owes: what it raised, plus the discount amortised since at each line's effective rate. Worth is what the remaining payments are worth on today's curve. The gap is what a buyback at today's prices would book.</p>
+      </div>
+    </div>
+    <div class="card">
+      <p class="cap">Every line <span class="hint">· by when it falls due · click a line for its page</span></p>
+      <div class="scroll"><table class="desk" id="bk-desk"></table></div>
+      <p class="muted" style="font-size:11.5px">If closed now: carried less worth. Positive is a gain the statement would book buying it back at today's fair price, before the premium a buyback pays. It is positive because rates rose, and the replacement borrowing costs more.</p>
+    </div>
+  </div>
+  <div class="notes">
+    <p><i>A</i><b>A line is named as a treasury names it:</b> coupon and due date, "3½% Jan 2211". A reopened line is one row, its sales listed on its page.</p>
+    <p><i>B</i><b>Two yields, side by side.</b> The issue yield is the effective rate the city booked at the sale; today's yield is what the market prices it at now. The coupon is a third, separate figure.</p>
+    <p><i>C</i><b>No colour on a gain or a loss.</b> A price under carried means the city's paper got cheaper because its rates rose; the 0.7.32 spec took green off it for that reason, and it stays off.</p>
+    <p><i>D</i><b>Duration and the value of a point.</b> What a one-point move on the curve does to each line, and to the book, in money.</p>
+  </div>
+</section>
+
+<!-- ============================== A LINE ============================== -->
+<section class="board" id="line">
+  <header>
+    <p class="eyebrow">Finances › The book › 3½% Jan 2211</p>
+    <h2>One line: its price over its life, its books, and what closing it means</h2>
+    <p class="says">The page a line opens. The price is the market's, the carrying value is the accountant's, and the effective-interest table is how one becomes the other by the date it falls due.</p>
+  </header>
+  <div class="frame">
+    <div class="crumb"><span class="sw"></span><h3><span>Finances › The book</span> › 3½% Jan 2211</h3><span class="when">10-year bond · sold Jan 2201 · falls due Jan 2211 · 96 months left</span></div>
+    <div class="kpis" id="ln-kpis"></div>
+    <div class="grid2">
+      <div class="card">
+        <p class="cap">Its price since it was sold <span class="hint">· per 100 of face · and what it is carried at</span></p>
+        <div id="ln-chart"></div>
+        <div class="legend"><span><i style="background:var(--money)"></i>price, at the curve each month</span><span><i style="background:var(--text2)"></i>carried, per 100</span></div>
+      </div>
+      <div class="card raised">
+        <p class="cap">If you closed it today</p>
+        <div id="ln-close"></div>
+        <div class="row"><a class="btn go" href="#close" style="text-decoration:none">Buy it back…</a><button class="btn" disabled>Call it · not callable</button></div>
+      </div>
+    </div>
+    <div class="grid3">
+      <div class="card">
+        <p class="cap">The next six months on the books <span class="hint">· effective interest at 3.60%</span></p>
+        <div class="scroll"><table class="desk" style="min-width:0" id="ln-eir"></table></div>
+      </div>
+      <div class="card">
+        <p class="cap">Who holds it</p>
+        <div id="ln-holders"></div>
+      </div>
+      <div class="card">
+        <p class="cap">Its sales, and its risk</p>
+        <div id="ln-sales"></div>
+      </div>
+    </div>
+  </div>
+  <div class="notes">
+    <p><i>A</i><b>Carried creeps to 100, the price does not.</b> The issue discount amortises month by month at the effective rate; the price follows the curve.</p>
+    <p><i>B</i><b>The honest line.</b> A buyback's gain is real on the statement, but the cash to pay for it costs today's rate. The panel says both.</p>
+    <p><i>C</i><b>The books in full.</b> Opening carrying value, a month of it at the effective rate, the coupon paid, the discount amortised: IFRS 9's amortised cost, the way a ledger shows it.</p>
+  </div>
+</section>
+
+<!-- ============================== CLOSE IT NOW ============================== -->
+<section class="board" id="close">
+  <header>
+    <p class="eyebrow">Finances › The book › 3½% Jan 2211 › Buy back</p>
+    <h2>Closing early: the buyback as a reverse auction, and the call</h2>
+    <p class="says">The city names how much face it wants back and the most it will pay. Every holder offers what it holds, each slice at the price where its own buying rule stops wanting it, and never under fair. The city takes the cheapest offers and pays each its own price.</p>
+  </header>
+  <div class="frame">
+    <div class="crumb"><span class="sw"></span><h3><span>3½% Jan 2211</span> › Buy back</h3><span class="when" id="cl-when"></span></div>
+    <div class="grid2">
+      <div class="card">
+        <p class="cap">The offers <span class="hint">· every slice the holders offer, cheapest first</span></p>
+        <div id="cl-chart"></div>
+        <div class="legend"><span><i style="background:var(--money)"></i>the bank, at the desk's ask</span><span><i style="background:var(--people)"></i>households</span><span><i style="background:var(--ore)"></i>the world</span><span style="color:var(--text3)">the central bank does not offer: its holdings follow its own dial</span></div>
+      </div>
+      <div class="card raised ticket">
+        <p class="cap">The buyback</p>
+        <div class="field"><label for="cl-face">Face to retire</label><input class="input" id="cl-face" value="D$100.0M" readonly></div>
+        <div class="field"><label for="cl-max">The most you will pay, per 100</label><input class="input" id="cl-max" value="no limit" readonly></div>
+        <div id="cl-result"></div>
+        <button class="btn go">Hold the buyback · pay D$84.9M</button>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <p class="cap">What the books record</p>
+        <div class="entry" id="cl-entry"></div>
+        <div id="cl-books"></div>
+      </div>
+      <div class="card">
+        <p class="cap">The call <span class="hint">· a callable line, the 6¾% Jul 2232</span></p>
+        <div id="cl-call"></div>
+      </div>
+    </div>
+  </div>
+  <div class="notes">
+    <p><i>A</i><b>One rule, both directions.</b> A household bought because the line paid more than a deposit; it sells only for what that spread is worth to it. The bank bought at fair; it sells at its desk's ask. Nobody sells under fair.</p>
+    <p><i>B</i><b>Multiple price.</b> Each accepted offer is paid its own price, as treasury buybacks are run; the stop is the dearest one taken.</p>
+    <p><i>C</i><b>Three comparisons, one booked.</b> Against carrying value is the statement's line. Against face is what the debt-to-GDP measure sees. Over fair is what the auction cost.</p>
+    <p><i>D</i><b>The call is a right the city paid for.</b> Its coupon carried the option at the sale; past the first call date the line can be retired at 100 whatever the market says.</p>
+  </div>
+</section>
+
+<!-- ============================== BORROW ============================== -->
+<section class="board" id="borrow">
+  <header>
+    <p class="eyebrow">Finances › Borrow › At home</p>
+    <h2>Borrowing is an auction, run on the city as it stands</h2>
+    <p class="says">Pick the paper, the term and the amount, and the most you will pay. The preview is the auction itself, run on today's bidders by their own rules, so what it shows is exactly what pressing the button books.</p>
+  </header>
+  <div class="frame">
+    <div class="crumb"><span class="sw"></span><h3><span>Finances</span> › Borrow</h3><span class="when">At home · Abroad</span></div>
+    <div class="grid2">
+      <div class="card">
+        <p class="cap">What you sell</p>
+        <div class="tiles" id="bw-tiles"></div>
+        <p class="cap">For how long <span class="hint">· today's fair yield at each term</span></p>
+        <div class="terms" id="bw-terms"></div>
+        <div class="toggle"><span class="sw2"></span><span>Callable from year 5 · the coupon would carry <span class="mono" id="bw-call"></span> more</span></div>
+        <div class="grid2" style="gap:10px">
+          <div class="field"><label for="bw-ask">How much face</label><input class="input" id="bw-ask" value="D$300.0M" readonly></div>
+          <div class="field"><label for="bw-max">The highest yield you will take</label><input class="input" id="bw-max" readonly></div>
+        </div>
+        <p class="flag" id="bw-line"></p>
+      </div>
+      <div class="card raised">
+        <p class="cap">The auction <span class="hint">· run on the city as it stands</span></p>
+        <div id="bw-chart"></div>
+        <div class="legend"><span><i style="background:var(--money)"></i>bids, today</span><span><i style="background:var(--warn)"></i>if the bank's room were nearly gone</span><span><i style="background:var(--text)"></i>the issue</span></div>
+        <div id="bw-result"></div>
+        <button class="btn go" id="bw-go"></button>
+      </div>
+    </div>
+    <div class="card alarm" id="bw-tight"></div>
+  </div>
+  <div class="notes">
+    <p><i>A</i><b>Five kinds of paper.</b> Bills at a discount, bonds at par near the market, the amortizing bond on one coupon solved on the curve, the floating note on the policy rate, the linked bond on the price index.</p>
+    <p><i>B</i><b>The coupon is the market's.</b> The clearing yield rounded down to an eighth of a point, so a new line sells just under 100. A reopening keeps its line's coupon and sells at whatever price that makes.</p>
+    <p><i>C</i><b>The bidders are the game's own.</b> Households non-competitive and first; the bank at fair while it has room; the world as hot money. The central bank never bids, except to roll its own paper.</p>
+    <p><i>D</i><b>An auction can fail.</b> When the bids do not reach the issue at the highest yield you take, the city sells only what was bid and the rest is not raised.</p>
+  </div>
+</section>
+
+<!-- ============================== YOUR RATE ============================== -->
+<section class="board" id="curve">
+  <header>
+    <p class="eyebrow">Finances › The position › Your rate</p>
+    <h2>The curve is where the market expects the central bank to go</h2>
+    <p class="says">The short end is the dial. The long end is what the market expects the dial to be, month by month, plus a premium for time and for the city's debt, less what the central bank's holdings take off. A hike the market expects to undo inverts the curve.</p>
+  </header>
+  <div class="frame">
+    <div class="crumb"><span class="sw"></span><h3><span>Finances › The position</span> › Your rate</h3><span class="when" id="cv-when"></span></div>
+    <div class="grid2">
+      <div class="card">
+        <p class="cap">The city's curve <span class="hint">· zero rates by maturity · and the dial the market expects</span></p>
+        <div id="cv-chart"></div>
+        <div class="legend"><span><i style="background:var(--money)"></i>today</span><span><i style="background:var(--money-dark)"></i>a year ago</span><span><i style="background:var(--spent)"></i>two years ago</span><span><i style="background:var(--warn)"></i>the dial, as expected</span><span><i style="background:var(--ore)"></i>the world's, for dollar paper</span></div>
+      </div>
+      <div class="card raised">
+        <p class="cap">What the market expects the dial to do</p>
+        <div id="cv-dial"></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <p class="cap">The 10-year rate, taken apart</p>
+        <div id="cv-parts"></div>
+      </div>
+      <div class="card">
+        <p class="cap">Real rates, and the inflation the market prices <span class="hint">· from the linked bonds</span></p>
+        <div id="cv-real"></div>
+      </div>
+    </div>
+  </div>
+  <div class="notes">
+    <p><i>A</i><b>The dial drifts to the rule, whoever holds it.</b> Today's gap to what the rule would set closes over about six months, and the rule follows the inflation the market expects.</p>
+    <p><i>B</i><b>Credibility shows at the long end.</b> At 65% the market expects inflation to settle at 3.4%, not the 2% target, and every nominal line pays for the difference.</p>
+    <p><i>C</i><b>Prices from the whole curve.</b> Each payment is discounted at its own month's rate, so a line's yield is a result, not the rate it was handed.</p>
+  </div>
+</section>
+
+</main>
+
+<script>
+const D = /*DATA*/null;
+
+/* ---------- formatting ---------- */
+const money = (x, d) => {
+  const a = Math.abs(x), s = x < 0 ? "−" : "";
+  if (a >= 1e9) return s + "D$" + (a / 1e9).toFixed(d ?? 2) + "B";
+  if (a >= 1e6) return s + "D$" + (a / 1e6).toFixed(d ?? 1) + "M";
+  if (a >= 1e3) return s + "D$" + (a / 1e3).toFixed(0) + "k";
+  return s + "D$" + a.toFixed(0);
+};
+const signed = x => (x >= 0 ? "+" : "") + money(x);
+const pct = (x, d = 2) => (x * 100).toFixed(d) + "%";
+const pts = x => (x * 100).toFixed(2) + " pts";
+const bp = x => Math.round(x * 1e4) + " bp";
+const px = (x, d = 3) => x.toFixed(d);
+const FR = {0: "", 0.125: "⅛", 0.25: "¼", 0.375: "⅜", 0.5: "½", 0.625: "⅝", 0.75: "¾", 0.875: "⅞"};
+function couponName(c) {
+  const v = c * 100, w = Math.floor(v + 1e-9), f = Math.round((v - w) * 8) / 8;
+  if (FR[f] !== undefined && Math.abs(v - w - f) < 1e-6) return (w ? w : "") + FR[f] + "%";
+  return v.toFixed(2) + "%";
+}
+function lineName(r) {
+  if (r.kind === "BILL") return "Bill " + r.due;
+  if (r.kind === "FRN") return "Floating " + r.due;
+  if (r.kind === "ILB") return couponName(r.coupon) + " linked " + r.due;
+  if (r.kind === "AMORT") return couponName(r.coupon) + " amortizing " + r.due;
+  return couponName(r.coupon) + " " + r.due + (r.callable ? " callable" : "");
+}
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const monthOf = s => Number(s.slice(4)) * 12 + MON.indexOf(s.slice(0, 3));
+const KIND_COLOUR = {BILL: "var(--bill)", BOND: "var(--bond)", AMORT: "var(--amort)", FRN: "var(--frn)", ILB: "var(--ilb)"};
+const KIND_WORD = {BILL: "BILL", BOND: "BOND", AMORT: "AMORT", FRN: "FLOAT", ILB: "LINKED"};
+const HOLD_COLOUR = {households: "var(--people)", bank: "var(--money)", world: "var(--ore)", cb: "var(--money-dark)"};
+const el = (t, a = {}, ...kids) => {
+  const e = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) {
+    if (k === "html") e.innerHTML = v; else if (k === "style") e.setAttribute("style", v); else e.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) e.append(k);
+  return e;
+};
+const svgNS = "http://www.w3.org/2000/svg";
+const S = (t, a = {}, txt) => {
+  const e = document.createElementNS(svgNS, t);
+  for (const [k, v] of Object.entries(a)) e.setAttribute(k, v);
+  if (txt != null) e.textContent = txt;
+  return e;
+};
+const line = (label, value, cls = "") => el("div", {class: "line " + cls}, el("span", {class: "lab"}, label), el("span", {class: "mono"}, value));
+
+/* ---------- the answers so far ---------- */
+const ANSWERS = [
+  ["Sell", "bills, bonds, amortizing, floating, linked"], ["Coupon", "the market's, near par"], ["Terms", "2 5 10 20 30 50"],
+  ["Coupons", "monthly"], ["Sold by", "auction"], ["Lines", "reopened"], ["The world", "bids as hot money"],
+  ["Central bank", "arm's length"], ["The dial", "expected to drift to the rule"], ["Books", "effective interest"],
+  ["Close early", "buy back or call"], ["Buyback", "reverse auction"]
+];
+document.getElementById("answers").append(...ANSWERS.map(([k, v]) => el("span", {html: k + " · <b>" + v + "</b>"})));
+
+/* ---------- a maturity axis: square root of the years, as desks draw a curve over fifty years ---------- */
+const MT = [[3, "3m"], [12, "1y"], [24, "2y"], [60, "5y"], [120, "10y"], [240, "20y"], [360, "30y"], [600, "50y"]];
+function curveChart(host, opt) {
+  const W = 640, H = opt.h || 230, L = 46, R = 14, T = 14, B = 26;
+  const s = S("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opt.label});
+  const x = m => L + Math.sqrt(m / 600) * (W - L - R);
+  const y = v => T + (1 - (v - opt.lo) / (opt.hi - opt.lo)) * (H - T - B);
+  for (let v = opt.lo; v <= opt.hi + 1e-9; v += opt.step) {
+    s.append(S("line", {x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid"}));
+    s.append(S("text", {x: L - 6, y: y(v) + 3, "text-anchor": "end"}, (v * 100).toFixed(opt.dp ?? 0) + "%"));
+  }
+  for (const [m, n] of MT) {
+    s.append(S("line", {x1: x(m), x2: x(m), y1: H - B, y2: H - B + 4, class: "axis"}));
+    s.append(S("text", {x: x(m), y: H - B + 15, "text-anchor": "middle"}, n));
+  }
+  s.append(S("line", {x1: L, x2: W - R, y1: H - B, y2: H - B, class: "axis"}));
+  for (const sr of opt.series) {
+    let d = "";
+    sr.data.forEach((v, i) => { const m = sr.from + i; if (m < 1 && !sr.zero) return; d += (d ? "L" : "M") + x(Math.max(m, .3)).toFixed(1) + " " + y(v).toFixed(1); });
+    s.append(S("path", {d, fill: "none", stroke: sr.colour, "stroke-width": sr.w || 2, "stroke-dasharray": sr.dash || "none", "stroke-linejoin": "round"}));
+    if (sr.end) {
+      const m = sr.from + sr.data.length - 1, v = sr.data[sr.data.length - 1];
+      s.append(S("text", {x: x(m) - 4, y: y(v) - 7, "text-anchor": "end", fill: sr.colour}, sr.end));
+    }
+  }
+  (opt.dots || []).forEach(dt => {
+    s.append(S("circle", {cx: x(dt.m), cy: y(dt.v), r: 4.5, fill: dt.colour, stroke: "#0b1118", "stroke-width": 1.5}));
+    if (dt.label) s.append(S("text", {x: x(dt.m) + (dt.dx ?? 7), y: y(dt.v) + (dt.dy ?? -6), "text-anchor": dt.anchor || "start", fill: "#a9b8c9"}, dt.label));
+  });
+  host.append(s);
+}
+
+/* ================= THE BOOK ================= */
+(function book() {
+  const rows = D.rows;
+  document.getElementById("bk-when").textContent = D.today;
+  const face = rows.reduce((a, r) => a + r.face, 0), cv = rows.reduce((a, r) => a + r.cv, 0), mv = rows.reduce((a, r) => a + r.mv, 0);
+  const coupon = rows.reduce((a, r) => a + (r.kind === "BILL" ? 0 : r.kind === "FRN" ? r.face * (D.policy + r.coupon) / 12 : r.face * r.coupon / 12), 0);
+  const dv01 = rows.reduce((a, r) => a + r.dv01, 0);
+  const k = [["Owed, at face", money(face), rows.length + " lines"], ["Carried", money(cv), "what the books say"],
+             ["Worth today", money(mv), "on today's curve"], ["Coupon", money(coupon), "a month"],
+             ["A point on the curve", money(dv01 * 100), "moves what it is worth"]];
+  document.getElementById("bk-kpis").append(...k.map(([l, v, n]) => el("div", {class: "kpi"}, el("span", {class: "l"}, l), el("span", {class: "v"}, v), el("span", {class: "n"}, n))));
+
+  // the curve and the dots
+  const z = D.curves.now.zero;
+  const dots = rows.filter(r => r.ytm != null).map(r => ({m: Math.max(1, r.left), v: r.ytm, colour: KIND_COLOUR[r.kind]}));
+  const lab = {"Jan 2211": 1, "Jan 2231": 1, "Jul 2232": 1, "Jan 2206": 1};
+  rows.filter(r => r.ytm != null).forEach((r, i) => { if (r.kind === "BOND") dots[i].label = couponName(r.coupon) + " " + r.due.slice(4); });
+  dots.forEach(d => {
+    if (!d.label) return;
+    if (d.label.startsWith("6¾")) { d.dy = -9; d.anchor = "end"; d.dx = -8; }
+    if (d.label.startsWith("4%")) { d.dy = 16; d.anchor = "end"; d.dx = -6; }
+    if (d.label.startsWith("6%")) { d.dy = 16; d.anchor = "end"; d.dx = -8; }
+  });
+  curveChart(document.getElementById("bk-curve"), {label: "Today's curve with every line on it", lo: .05, hi: .08, step: .005, dp: 1, h: 220,
+    series: [{data: z, from: 1, colour: "var(--money)", w: 2}], dots});
+  document.getElementById("bk-legend").append(...["BILL", "BOND", "AMORT", "FRN", "ILB"].map(k => el("span", {}, el("i", {style: "background:" + KIND_COLOUR[k]}), {BILL: "bills", BOND: "bonds", AMORT: "amortizing", FRN: "floating (off the chart: no fixed yield)", ILB: "linked (real yield, off the chart)"}[k])));
+
+  // face / carried / worth, three bars by kind
+  const W = 520, H = 150, L = 92, R = 70;
+  const s = S("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Face, carried and worth today"});
+  const max = Math.ceil(face / 5e8) * 5e8;
+  const xs = v => L + v / max * (W - L - R);
+  const kinds = ["BILL", "BOND", "AMORT", "FRN", "ILB"];
+  [["at face", "face"], ["carried", "cv"], ["worth today", "mv"]].forEach(([name, key], i) => {
+    const yy = 14 + i * 44;
+    s.append(S("text", {x: L - 8, y: yy + 14, "text-anchor": "end", fill: "#a9b8c9", style: "font-family:var(--sans);font-size:11px"}, name));
+    let acc = 0;
+    kinds.forEach(kd => {
+      const v = rows.filter(r => r.kind === kd).reduce((a, r) => a + r[key], 0);
+      s.append(S("rect", {x: xs(acc), y: yy, width: Math.max(0, xs(acc + v) - xs(acc) - 1), height: 20, fill: KIND_COLOUR[kd], rx: 2}));
+      acc += v;
+    });
+    s.append(S("text", {x: xs(acc) + 6, y: yy + 14, fill: "#e6edf3"}, money(acc)));
+  });
+  s.append(S("line", {x1: xs(mv), x2: xs(mv), y1: 8, y2: 142, stroke: "#e6edf3", "stroke-dasharray": "3 3"}));
+  document.getElementById("bk-bars").append(s);
+
+  // the desk
+  const t = document.getElementById("bk-desk");
+  t.append(el("thead", {}, el("tr", {}, ...["Line", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "If closed now", "vs face", "Duration", "Holders"].map(h => el("th", {}, h)))));
+  const tb = el("tbody");
+  rows.forEach(r => {
+    const tr = el("tr", r.name === "10-year bond" && r.due === "Jan 2211" ? {class: "sel"} : {});
+    const name = el("td", {}, el("span", {class: "tag", style: "background:" + KIND_COLOUR[r.kind] + ";margin-right:8px"}, KIND_WORD[r.kind]),
+      el("span", {class: "nm"}, lineName(r)),
+      el("span", {class: "sub"}, (r.kind === "BILL" ? "3-month" : r.name.replace(" bond", "").replace(" callable", "")) + " · sold " + r.issued + " · " + r.left + " months left" + (r.callable ? " · call from " + r.first_call : "") + (r.tranches && r.tranches.length > 1 ? " · reopened" : "")));
+    const cpn = r.kind === "BILL" ? "discount" : r.kind === "FRN" ? "policy + " + bp(r.coupon) : r.kind === "ILB" ? pct(r.coupon, 3) + " real" : pct(r.coupon, 3);
+    const iy = r.eir == null ? (r.kind === "FRN" ? "+" + bp(r.coupon) : pct(r.coupon, 2) + " real") : pct(r.eir);
+    const yl = r.ytm == null ? r.yield_text : pct(r.ytm);
+    const hold = el("div", {class: "hold"});
+    Object.entries(r.holders).forEach(([w, v]) => { if (v > 0) hold.append(el("span", {style: `width:${v * 100}%;background:${HOLD_COLOUR[w]}`})); });
+    const faceCell = r.kind === "ILB" ? money(r.face) + " " : money(r.face);
+    [name, faceCell, cpn, iy, px(r.price), yl, money(r.mv), money(r.cv), signed(r.gl_cv), signed(r.gl_face), r.dur.toFixed(1)].forEach(c => tr.append(c instanceof Node ? c : el("td", {}, c)));
+    tr.append(el("td", {class: "hc"}, hold));
+    tb.append(tr);
+  });
+  t.append(tb);
+  t.append(el("tfoot", {}, el("tr", {}, el("td", {}, "The book"), el("td", {}, money(face)), el("td", {}, money(coupon) + "/mo"), el("td", {}, ""), el("td", {}, ""), el("td", {}, ""),
+    el("td", {}, money(mv)), el("td", {}, money(cv)), el("td", {}, signed(cv - mv)), el("td", {}, signed(face - mv)), el("td", {}, ""), el("td", {}, ""))));
+  t.parentNode.after(el("div", {class: "legend"}, el("span", {}, "Holders:"), el("span", {}, el("i", {style: "background:var(--people)"}), "households"), el("span", {}, el("i", {style: "background:var(--money)"}), "the bank"), el("span", {}, el("i", {style: "background:var(--ore)"}), "the world"), el("span", {}, el("i", {style: "background:var(--money-dark)"}), "the central bank")));
+})();
+
+/* ================= A LINE ================= */
+(function lineBoard() {
+  const r = D.rows.find(r => r.name === "10-year bond" && r.due === "Jan 2211");
+  const h = D.hist;
+  const k = [["Coupon", pct(r.coupon, 3), money(r.face * r.coupon / 12) + " a month"], ["Issue yield", pct(r.eir), "the effective rate booked"],
+             ["Price", px(r.price), "yields " + pct(r.ytm) + " today"], ["Worth", money(r.mv), "on today's curve"], ["Carried", money(r.cv), px(r.cv / r.face * 100) + " per 100"]];
+  document.getElementById("ln-kpis").append(...k.map(([l, v, n]) => el("div", {class: "kpi"}, el("span", {class: "l"}, l), el("span", {class: "v"}, v), el("span", {class: "n"}, n))));
+
+  // price history
+  const W = 640, H = 230, L = 40, R = 16, T = 14, B = 28;
+  const s = S("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "The line's price over 24 months"});
+  const lo = 80, hi = 102;
+  const x = i => L + i / (h.length - 1) * (W - L - R);
+  const y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  for (let v = lo; v <= hi; v += 4) { s.append(S("line", {x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid"})); s.append(S("text", {x: L - 6, y: y(v) + 3, "text-anchor": "end"}, v)); }
+  h.forEach((p, i) => { if (i % 6 === 0) s.append(S("text", {x: x(i), y: H - B + 16, "text-anchor": "middle"}, p.month)); });
+  s.append(S("line", {x1: L, x2: W - R, y1: H - B, y2: H - B, class: "axis"}));
+  s.append(S("rect", {x: x(6), y: T, width: x(18) - x(6), height: H - T - B, fill: "rgba(227,179,65,.06)"}));
+  s.append(S("text", {x: (x(6) + x(18)) / 2, y: T + 12, "text-anchor": "middle", fill: "#e3b341"}, "the hike: 3% to 7%"));
+  let a = "M" + x(0) + " " + y(lo), d = "", c = "";
+  h.forEach((p, i) => { a += "L" + x(i) + " " + y(p.price); d += (i ? "L" : "M") + x(i) + " " + y(p.price); c += (i ? "L" : "M") + x(i) + " " + y(p.cv); });
+  a += "L" + x(h.length - 1) + " " + y(lo) + "Z";
+  s.append(S("path", {d: a, fill: "rgba(90,169,255,.10)"}));
+  s.append(S("path", {d: c, fill: "none", stroke: "#a9b8c9", "stroke-width": 1.5, "stroke-dasharray": "4 3"}));
+  s.append(S("path", {d, fill: "none", stroke: "#5aa9ff", "stroke-width": 2.2}));
+  const last = h[h.length - 1];
+  s.append(S("circle", {cx: x(h.length - 1), cy: y(last.price), r: 4, fill: "#5aa9ff"}));
+  s.append(S("text", {x: x(h.length - 1) - 6, y: y(last.price) + 16, "text-anchor": "end", fill: "#e6edf3"}, px(last.price, 2) + " · " + pct(last.ytm)));
+  s.append(S("text", {x: x(h.length - 1) - 6, y: y(last.cv) - 7, "text-anchor": "end", fill: "#a9b8c9"}, "carried " + px(last.cv, 2)));
+  document.getElementById("ln-chart").append(s);
+
+  // if closed today
+  const y10 = D.close.y10, cost = r.mv * y10, saved = r.face * r.coupon;
+  document.getElementById("ln-close").append(
+    line("At today's fair price, it would cost", money(r.mv)),
+    line("Against face (" + money(r.face) + ")", signed(r.face - r.mv)),
+    line("Against carried (" + money(r.cv) + ") · the statement's line", signed(r.cv - r.mv), "total"),
+    el("p", {class: "flag", html: `Retiring it stops <b>${money(saved)}</b> a year of coupon. Borrowing the ${money(r.mv)} again on today's 10-year line, at <b>${pct(y10)}</b>, costs <b>${money(cost)}</b> a year. The gain is real on the statement; the cash costs today's rate.`}),
+    el("p", {class: "muted", style: "font-size:11.5px"}, "A buyback pays more than fair: the holders' offers start at the desk's ask. Buy back… opens the reverse auction with its real price."));
+
+  // effective interest, the next six months
+  const t = document.getElementById("ln-eir");
+  t.append(el("thead", {}, el("tr", {}, ...["Month", "Opening", "Interest", "Coupon", "Amortised", "Closing"].map(x => el("th", {}, x)))));
+  const tb = el("tbody");
+  let cv = r.cv;
+  const months = ["Feb 2203", "Mar 2203", "Apr 2203", "May 2203", "Jun 2203", "Jul 2203"];
+  months.forEach(m => {
+    const i = cv * r.eir / 12, pay = r.face * r.coupon / 12, close = cv + i - pay;
+    tb.append(el("tr", {}, ...[m, money(cv, 2), money(i), money(pay), money(i - pay), money(close, 2)].map(v => el("td", {}, v))));
+    cv = close;
+  });
+  t.append(tb);
+
+  // holders
+  const HN = {households: "households", bank: "the bank", world: "the world", cb: "the central bank"};
+  const bar = el("div", {class: "hold", style: "width:100%;height:12px"});
+  Object.entries(r.holders).forEach(([w, v]) => bar.append(el("span", {style: `width:${v * 100}%;background:${HOLD_COLOUR[w]}`})));
+  document.getElementById("ln-holders").append(bar, ...Object.entries(r.holders).map(([w, v]) => line(HN[w], money(r.face * v) + " · " + Math.round(v * 100) + "%")),
+    el("p", {class: "muted", style: "font-size:11.5px"}, "The central bank's 5% came from its holdings dial, bought on the market; it never bought at the sale."));
+
+  // sales and risk
+  const tr0 = r.tranches[0];
+  document.getElementById("ln-sales").append(
+    line("Sold " + tr0.when, money(tr0.face) + " at " + px(tr0.price) + " · " + pct(tr0.yld)),
+    line("Reopened", "never: no longer the 10-year benchmark"),
+    line("Duration", r.dur.toFixed(2) + " years"),
+    line("A point on the curve", money(r.dv01 * 100)),
+    el("p", {class: "muted", style: "font-size:11.5px"}, "A line stays the benchmark for its term while it has at least nine tenths of the term left; the 10-year now sold is the 6% Jul 2212."));
+})();
+
+/* ================= CLOSE IT NOW ================= */
+(function closeBoard() {
+  const c = D.close, r = D.rows.find(r => r.name === "10-year bond" && r.due === "Jan 2211");
+  document.getElementById("cl-when").textContent = D.today + " · fair " + px(c.fair) + " · carried " + px(r.cv / r.face * 100);
+  const W = 640, H = 240, L = 44, R = 16, T = 16, B = 30;
+  const s = S("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Every offer, cheapest first"});
+  const total = c.ladder.reduce((a, o) => a + o.face, 0);
+  const lo = 82, hi = 106;
+  const x = v => L + v / total * (W - L - R);
+  const y = v => T + (1 - (Math.min(hi, v) - lo) / (hi - lo)) * (H - T - B);
+  for (let v = lo; v <= hi; v += 4) { s.append(S("line", {x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid"})); s.append(S("text", {x: L - 6, y: y(v) + 3, "text-anchor": "end"}, v)); }
+  for (let f = 0; f <= total + 1; f += 5e7) s.append(S("text", {x: x(f), y: H - B + 16, "text-anchor": "middle"}, money(f, 0)));
+  s.append(S("line", {x1: L, x2: W - R, y1: H - B, y2: H - B, class: "axis"}));
+  const col = {"households": "#2ec4b6", "the bank": "#5aa9ff", "the world": "#c9b68f"};
+  let acc = 0;
+  c.ladder.forEach(o => {
+    const taken = acc < c.ra.retired - 1;
+    s.append(S("rect", {x: x(acc), y: y(o.price), width: Math.max(.5, x(acc + o.face) - x(acc) - .4), height: H - B - y(o.price), fill: col[o.who], opacity: taken ? .95 : .35}));
+    acc += o.face;
+  });
+  s.append(S("line", {x1: L, x2: W - R, y1: y(c.fair), y2: y(c.fair), stroke: "#e6edf3", "stroke-dasharray": "4 3"}));
+  s.append(S("text", {x: x(c.ra.retired) + 6, y: y(c.fair) - 22, fill: "#e6edf3"}, "fair " + px(c.fair, 2)));
+  s.append(S("line", {x1: x(c.ra.retired), x2: x(c.ra.retired), y1: T, y2: H - B, stroke: "#e6edf3", "stroke-width": 1.5}));
+  s.append(S("text", {x: x(c.ra.retired) + 6, y: T + 10, fill: "#e6edf3"}, "you ask for " + money(c.ra.retired, 0) + " · stop " + px(c.ra.stop, 2)));
+  s.append(S("text", {x: x(total) - 4, y: T + 10, "text-anchor": "end"}, "the world asks up to " + px(Math.max(...c.ladder.map(o => o.price)), 0)));
+  document.getElementById("cl-chart").append(s);
+
+  const tk = Object.entries(c.ra.taken).map(([w, v]) => w + " " + money(v)).join(" · ");
+  document.getElementById("cl-result").append(
+    line("Offered", money(total) + " · " + c.ra.cover.toFixed(2) + "× what you ask"),
+    line("Taken from", tk),
+    line("Stop · average", px(c.ra.stop) + " · " + px(c.ra.avg)),
+    line("You pay", money(c.ra.paid), "total"));
+
+  const e = document.getElementById("cl-entry");
+  const cvr = c.cv_retired, disc = c.ra.retired - cvr;
+  const rowE = (a, dr, cr, cls) => [el("span", {class: cls || ""}, a), el("span", {}, dr), el("span", {}, cr)];
+  e.append(...rowE("", "Dr", "Cr", "h"), ...rowE("City paper payable, at face", money(c.ra.retired), ""),
+    ...rowE("Unamortised discount", "", money(disc), "cr"), ...rowE("Cash", "", money(c.ra.paid), "cr"),
+    ...rowE("Gain on debt retired", "", money(c.gain_cv), "cr"));
+  document.getElementById("cl-books").append(
+    line("Gain against carried · the statement's line", signed(c.gain_cv), "total"),
+    line("Against face · what debt to GDP sees", signed(c.gain_face)),
+    line("Paid over fair · what the auction cost", money(c.premium)),
+    el("p", {class: "flag", html: `It stops <b>${money(c.coupon_saved)}</b> a year of coupon. The ${money(c.ra.paid)} it pays costs <b>${money(c.replace_cost)}</b> a year at today's ${pct(c.y10)} 10-year, so it raises the city's interest by <b>${money(c.replace_cost - c.coupon_saved)}</b> a year while it books the gain.`}));
+
+  const cl = D.rows.find(r => r.callable);
+  document.getElementById("cl-call").append(
+    line("Coupon", pct(cl.coupon, 3) + " · " + bp(cl.option) + " of it is the option"),
+    line("Callable", "from " + cl.first_call + " at 100, then any month"),
+    line("Price today", px(cl.price) + " · yields " + pct(cl.ytm)),
+    line("Calling it", "not yet: " + (monthOf(cl.first_call) - monthOf(D.today)) + " months to the first call"),
+    el("p", {class: "flag", html: "Past the first call date the card reads it for you: calling pays 100 for a line worth more than 100 when rates have fallen below its coupon. <b>Worth calling</b> appears when the saving, less a new sale's cost, passes 3% of face."}),
+    el("div", {class: "row"}, el("button", {class: "btn", disabled: ""}, "Call it · from " + cl.first_call)));
+})();
+
+/* ================= BORROW ================= */
+(function borrow() {
+  const a = D.auction, t = D.tight;
+  const tiles = [["Bill", "1, 3, 6, 12 months · a discount"], ["Bond", "2 to 50 years · coupon near par"], ["Amortizing", "5 to 30 years · repaid yearly"],
+                 ["Floating", "2, 5 years · policy rate + margin"], ["Linked", "10, 30 years · to the price index"]];
+  document.getElementById("bw-tiles").append(...tiles.map(([n, s], i) => el("div", {class: "tile" + (i === 1 ? " on" : "")}, el("b", {}, n), el("span", {}, s))));
+  document.getElementById("bw-terms").append(...Object.entries(D.terms).map(([n, v]) => el("div", {class: "term" + (n === "10y" ? " on" : "")}, el("b", {}, n), el("span", {}, pct(v)))));
+  document.getElementById("bw-call").textContent = bp(D.call["10y"]);
+  document.getElementById("bw-max").value = pct(a.fair + 0.01) + " · fair + 1 pt";
+  document.getElementById("bw-line").innerHTML = "This <b>reopens the 6% Jul 2212</b>, the 10-year line: same coupon, same date, sold at today's price. It is the benchmark until it has under nine tenths of ten years left.";
+
+  // cumulative bids against yield: today, and with the bank's room nearly gone
+  const W = 640, H = 220, L = 52, R = 18, T = 14, B = 30;
+  const s = S("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Bids against yield"});
+  const lo = a.fair - .002, hi = a.fair + .0125, cap = 4.2e8;
+  const x = v => L + (v - lo) / (hi - lo) * (W - L - R);
+  const y = v => T + (1 - Math.min(v, cap) / cap) * (H - T - B);
+  for (let v = 0; v <= cap; v += 1e8) { s.append(S("line", {x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid"})); s.append(S("text", {x: L - 6, y: y(v) + 3, "text-anchor": "end"}, money(v, 0))); }
+  for (let v = Math.ceil(lo * 400) / 400; v <= hi; v += .0025) s.append(S("text", {x: x(v), y: H - B + 16, "text-anchor": "middle"}, pct(v, 2)));
+  s.append(S("line", {x1: L, x2: W - R, y1: H - B, y2: H - B, class: "axis"}));
+  const total = g => g.households + g["the world"] + g["the bank"];
+  const tightRoom = 2e7 / .2;
+  let d1 = "", d2 = "";
+  D.auction_grid.forEach((g, i) => {
+    const v1 = total(g), v2 = g.households + g["the world"] + (g["the bank"] > 0 ? tightRoom : 0);
+    d1 += (i ? "L" : "M") + x(g.y).toFixed(1) + " " + y(v1).toFixed(1);
+    d2 += (i ? "L" : "M") + x(g.y).toFixed(1) + " " + y(v2).toFixed(1);
+  });
+  s.append(S("line", {x1: L, x2: W - R, y1: y(a.offered), y2: y(a.offered), stroke: "#e6edf3", "stroke-width": 1.4}));
+  s.append(S("text", {x: W - R - 4, y: y(a.offered) + 14, "text-anchor": "end", fill: "#e6edf3"}, "the issue " + money(a.offered, 0)));
+  s.append(S("path", {d: d2, fill: "none", stroke: "#e3b341", "stroke-width": 2, "stroke-dasharray": "5 3"}));
+  s.append(S("path", {d: d1, fill: "none", stroke: "#5aa9ff", "stroke-width": 2.4}));
+  s.append(S("line", {x1: x(a.fair), x2: x(a.fair), y1: T, y2: H - B, stroke: "#8496ab", "stroke-dasharray": "3 3"}));
+  s.append(S("text", {x: x(a.fair) + 5, y: H - B - 8}, "fair " + pct(a.fair)));
+  s.append(S("text", {x: W - R, y: y(cap) + 12, "text-anchor": "end", fill: "#5aa9ff"}, "the bank's room ▲ " + money(D.auction_grid[10]["the bank"] > 0 ? 5e9 : 0, 1)));
+  s.append(S("line", {x1: x(a.fair + .01), x2: x(a.fair + .01), y1: T, y2: H - B, stroke: "#f85149", "stroke-dasharray": "2 3"}));
+  s.append(S("text", {x: x(a.fair + .01) - 5, y: y(1.5e8), "text-anchor": "end", fill: "#f85149"}, "your highest yield"));
+  s.append(S("circle", {cx: x(t.stop), cy: y(t.sold), r: 4, fill: "#e3b341"}));
+  s.append(S("text", {x: x(t.stop) - 6, y: y(t.sold) + 16, "text-anchor": "end", fill: "#e3b341"}, "sells " + money(t.sold) + " of " + money(a.offered, 0)));
+  document.getElementById("bw-chart").append(s);
+
+  const f = a.fills;
+  document.getElementById("bw-result").append(
+    line("Stops at · tail", pct(a.stop, 3) + " · " + bp(a.tail) + " over fair"),
+    line("Bids", a.cover.toFixed(2) + "× the issue, up to your highest yield"),
+    line("Coupon · price", "6% (the line's) · " + px(a.price)),
+    line("Households, non-competitive, first", money(f.households)),
+    line("The bank", money(f["the bank"])),
+    line("The world", money(f["the world"])),
+    line("The central bank", "none · it bids only to roll its own"),
+    line("Effective rate", pct(a.eir, 3)),
+    line("You raise", money(a.proceeds), "total"));
+  document.getElementById("bw-go").textContent = "Hold the auction · raise " + money(a.proceeds);
+  document.getElementById("bw-tight").append(el("p", {class: "cap", style: "color:#ffd9d4"}, "The same auction, if the bank's room were nearly gone"),
+    el("p", {style: "color:#ffd9d4", html: `The bids reach only <b>${money(t.sold)}</b> at your highest yield, ${t.cover.toFixed(2)}× the issue. It sells that, at <b>${pct(t.stop, 2)}</b>, a tail of ${bp(t.tail)}, and <b>${money(a.offered - t.sold)}</b> is not raised. The city's next month runs short by that, onto the central bank's advances if it must.`}));
+})();
+
+/* ================= YOUR RATE ================= */
+(function rate() {
+  document.getElementById("cv-when").textContent = D.today + " · the dial " + pct(D.policy) + " · credibility " + Math.round(D.credibility * 100) + "%";
+  const c = D.curves;
+  curveChart(document.getElementById("cv-chart"), {label: "The city's curve today, a year ago and two years ago", lo: .02, hi: .10, step: .01, h: 250,
+    series: [
+      {data: c["two years ago"].zero, from: 1, colour: "var(--spent)", w: 1.6},
+      {data: c["a year ago"].zero, from: 1, colour: "var(--money-dark)", w: 1.8},
+      {data: D.world, from: 1, colour: "var(--ore)", w: 1.4, dash: "2 3"},
+      {data: c.now.path, from: 0, zero: true, colour: "var(--warn)", w: 1.6, dash: "5 4"},
+      {data: c.now.zero, from: 1, colour: "var(--money)", w: 2.6, end: "today"}]});
+  document.getElementById("cv-dial").append(
+    line("The dial today", pct(D.policy)),
+    line("The rule, at today's inflation", pct(D.rule_now)),
+    line("Expected in a year", pct(D.dial_1y)),
+    line("Expected in five years", pct(D.dial_5y)),
+    line("Where it settles", pct(D.curves.now.path[600])),
+    el("p", {class: "flag", html: `The rule would set <b>${pct(D.rule_now)}</b> at 6% inflation, so the market expects a little more hiking, then cuts as inflation falls. It expects inflation to settle at <b>${pct(D.expected_inflation, 1)}</b>, not the 2% target: at ${Math.round(D.credibility * 100)}% credibility the rest is what the city has lived through.`}),
+    el("p", {class: "muted", style: "font-size:11.5px"}, "By hand or on autopilot, the market prices the same path: a dial held off the rule is expected to come back to it over about six months."));
+
+  const p = D.parts;
+  const tot = p.path + p.credit + p.premium;
+  const bar = el("div", {class: "parts"},
+    el("span", {style: `width:${p.path / tot * 100}%;background:var(--warn)`}),
+    el("span", {style: `width:${p.credit / tot * 100}%;background:var(--bad)`}),
+    el("span", {style: `width:${p.premium / tot * 100}%;background:var(--money)`}));
+  document.getElementById("cv-parts").append(bar,
+    line("The dial the market expects, averaged over ten years", pct(p.path)),
+    line("What the city's debt adds", pts(p.credit)),
+    line("The term premium", pts(p.premium)),
+    line("Taken off by the central bank's holdings", p.qe === 0 ? "none · it holds none of the term paper" : pts(p.qe)),
+    line("The 10-year zero rate", pct(p.total), "total"));
+
+  const W = 640, H = 200, L = 46, R = 14, T = 14, B = 26;
+  const host = document.getElementById("cv-real");
+  curveChart(host, {label: "Real rates and expected inflation", lo: 0, hi: .07, step: .01, h: 200,
+    series: [{data: D.infl.slice(1), from: 1, colour: "var(--people)", w: 2},
+             {data: D.real, from: 1, colour: "var(--money-light)", w: 2},
+             {data: D.infl.map(() => .02).slice(1), from: 1, colour: "var(--text3)", w: 1, dash: "3 3"}]});
+  host.append(el("div", {class: "legend"}, el("span", {}, el("i", {style: "background:var(--people)"}), "inflation expected"), el("span", {}, el("i", {style: "background:var(--money-light)"}), "the real rate"), el("span", {}, el("i", {style: "background:var(--text3)"}), "the 2% target")));
+  host.append(el("p", {class: "flag", html: `The 10-year linked line pays a real <b>${pct(D.ilb["10y"])}</b> plus the inflation the city actually has. A nominal 10-year pays <b>${pct(D.terms["10y"])}</b>, which prices about <b>${pct(D.infl.slice(0, 120).reduce((a, b) => a + b, 0) / 120, 1)}</b> a year of inflation. A city that brings inflation back to 2% pays less on the linked line.`}));
+})();
+</script>

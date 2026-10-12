@@ -45,6 +45,12 @@ stuff".
 | FR2 | The Freight sector: Haulage's trucks carry the city leg, vans for goods only | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR3 | Ports as a landlord port, and the Bulk Berth | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR4 | The freight screens, and Build's Infrastructure and Freight tabs | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
+| CD1 | The city's debt: the curve from the dial the market expects, every payment priced on its month | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD4 | The city's debt: the buyback as a reverse auction, callable lines and the call | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD5 | The city's debt: floating-rate notes and inflation-linked bonds | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD6 | The city's debt: the screens - the book as a desk, a line's page, Close it now, Borrow as an auction, Your rate | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 
 ## Pending
 
