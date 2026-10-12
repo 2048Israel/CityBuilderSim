@@ -22,12 +22,12 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | I9 | Forestry, with the 100-ha woodlot (running) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
+| CC1 | Childcare at real demand (running) | project: `claude/decisions-2026-10-10.md` |
 | I10 | Wood products | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I11 | The materials pictograms' model | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I12 | The materials pictograms drawn | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I13 | Cards and pages for the materials buildings | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I14 | The materials on the map (0.8.0) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
-| CC1 | Childcare at real demand | project: `claude/decisions-2026-10-10.md` |
 | CD1 | The city's debt: the curve from the dial the market expects, every payment priced on its month | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
