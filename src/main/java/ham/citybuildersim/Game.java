@@ -322,6 +322,10 @@ public class Game {
         // served first (0.7.129; BuildingManager, DEATH CARE FIRST WHILE THE
         // DEAD WAIT) - read off the healthcare a load or a new city puts here.
         buildingManager.setUnburied(() -> healthcare.getUnburied());
+        // ...and whether the city could staff the builders' depots, by their own
+        // plan's test, while which a depot on site is built first (0.7.130;
+        // BuildingManager, THE BUILDERS' OWN DEPOTS FIRST).
+        buildingManager.setBuildersCouldStaff((t, n) -> economyManager.getSectors().construction().staffing(t, n).passes());
         // ...and the overtime on the city's rushed sites is wages the
         // households are paid (0.7.22; PopulationManager, THE OVERTIME ON A
         // RUSHED SITE IS WAGES), read off the builders who pay it.

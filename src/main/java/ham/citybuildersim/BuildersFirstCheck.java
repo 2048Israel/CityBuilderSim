@@ -53,13 +53,20 @@ import java.util.Locale;
  *      for rushes, then laid off): every month a depot opens the builders
  *      offer every post and their loss clock is under the retirement rule's,
  *      and no depot is retired over the run.
- *   6. ONE PRIORITY WITH THE DEATH CARE: while the dead wait, a depot of the
+ *   6. ONLY A DEPOT THE CITY COULD STAFF: in a new town whose founding
+ *      put depots on site among a hundred people, the builders' own test
+ *      (Sector.staffing()) says the town could not staff them, and they are
+ *      crewed by the rule, to the bit; the twin that builds them first all
+ *      the same opens one in its second month, its builders' fill falls
+ *      under MIN_STAFFABLE_TO_ORDER, the month under the repairs, and no
+ *      home is built, where the town with the test builds its homes.
+ *   7. ONE PRIORITY WITH THE DEATH CARE: while the dead wait, a depot of the
  *      builders' and the city's cemetery on site together share what the
  *      first group takes by the crews' rule - neither ahead, neither starved;
  *      the city's order keeps the cemetery at its top; with the player's
  *      order set, the city's other sites take the city's share of what is
  *      left in that order.
- *   7. MONEY IS CONSERVED: the money audit every month played here.
+ *   8. MONEY IS CONSERVED: the money audit every month played here.
  *
  * Every fixture causes its condition. How often the rule fires in a real
  * run is LongPlaytest's line "the builders' depots first".
@@ -134,6 +141,7 @@ public class BuildersFirstCheck {
         beforeAndWith(twins[0], twins[1]);
         grow(twins[0], twins[1]);
         neverLaidOff();
+        onlyWhatItCouldStaff(root);
         onePriority(root);
         conserved();
 
@@ -400,10 +408,65 @@ public class BuildersFirstCheck {
         assertTrue("no depot is retired in any month of the run", monthsFell == 0);
     }
 
-    /* ============================ 6. ONE PRIORITY ============================ */
+    /* ============================ 6. ONLY WHAT IT COULD STAFF ============================ */
+
+    /** The months the new town is played: long enough for its first depot to open, crewed first, and its homes to come or not. */
+    static final int NEW_TOWN_MONTHS = 6;
+
+    static void onlyWhatItCouldStaff(Path root) {
+        out.println("\n--- 6. only a depot the city could staff: a new town's founding depots, crewed by the rule ---");
+        // MortgageCheck's new town: its works standing, its four founding depots
+        // on site, a hundred people; the landlords build. Twins: one as the game
+        // has it, one told the town could staff anything.
+        MortgageCheck.out = out;
+        MortgageCheck.quiet = quiet;
+        Game gated = MortgageCheck.landlordCity(root, "town-gated", true);
+        Game ungated = MortgageCheck.landlordCity(root, "town-ungated", true);
+        ungated.getBuildingManager().setBuildersCouldStaff(null);
+        BuildingManager bm = gated.getBuildingManager();
+        BuildingsTemplate depot = template(gated, DEPOT);
+        String key = ConstructionControl.keyOf(depot);
+        int onSite = bm.underConstructionByName(DEPOT);
+        ham.citybuildersim.sectors.Construction builders = gated.getSectors().construction();
+        Sector.Staffing staffing = builders.staffing(depot, onSite);
+        out.printf("  %,d people; %d depots on site, the town could staff %.0f%% of their posts%n",
+                gated.getPopulationManager().getPopulation(), onSite, staffing.share * 100);
+        assertTrue("fixture: depots on site in a new town", onSite > 0 && bm.getTotalHomes() < 100);
+        assertTrue("fixture: by the builders' own test it could not staff them", !staffing.passes());
+        assertTrue("the depots are not served first", bm.firstGroup().isEmpty() && !bm.goesFirst(depot, onSite));
+        double output = gated.getBuildingOutput();
+        BuildingManager.Plan p = bm.plan(output);
+        double[] rule = bm.siteShares(output, null, 0);
+        boolean same = p.share.length == rule.length;
+        for (int i = 0; same && i < rule.length; i++) same = Double.doubleToLongBits(p.share[i]) == Double.doubleToLongBits(rule[i]);
+        assertTrue("...the plan is the crews' rule's, every slot to the bit", same && p.buildersFirst.isEmpty());
+        assertTrue("...and the twin told it could staff them serves them first", ungated.getBuildingManager().firstGroup().equals(List.of(key)));
+        long homesAtStart = bm.getTotalHomes();
+        double floorG = Double.MAX_VALUE, floorU = Double.MAX_VALUE, fillU = 1;
+        for (int m = 1; m <= NEW_TOWN_MONTHS; m++) {
+            month(gated);
+            month(ungated);
+            floorG = Math.min(floorG, gated.getBuildingOutput());
+            floorU = Math.min(floorU, ungated.getBuildingOutput());
+            fillU = Math.min(fillU, ungated.getSectors().construction().getAverageFill());
+        }
+        BuildingManager bu = ungated.getBuildingManager();
+        out.printf("  after %d months: with the test %d depots open, the sites at least %,.0f a month, %,d homes, %,d people;"
+                        + " without it %d open, the builders' fill down to %.2f, the sites at least %,.0f, %,d homes, %,d people%n",
+                NEW_TOWN_MONTHS, bm.countByName(DEPOT), floorG, bm.getTotalHomes(), gated.getPopulationManager().getPopulation(),
+                bu.countByName(DEPOT), fillU, floorU, bu.getTotalHomes(), ungated.getPopulationManager().getPopulation());
+        assertTrue("without the test a depot opens early", bu.countByName(DEPOT) > bm.countByName(DEPOT));
+        assertTrue("...the builders' fill falls under MIN_STAFFABLE_TO_ORDER", fillU < Sector.MIN_STAFFABLE_TO_ORDER);
+        assertTrue("...and their month under the repairs: the sites get nothing", floorU == 0);
+        assertTrue("...so no home is built", bu.getTotalHomes() == homesAtStart);
+        assertTrue("with the test the sites get work every month", floorG > 0);
+        assertTrue("...and the town builds its homes", bm.getTotalHomes() > bu.getTotalHomes());
+    }
+
+    /* ============================ 7. ONE PRIORITY ============================ */
 
     static void onePriority(Path root) {
-        out.println("\n--- 6. one priority with the death care: the depot and the cemetery share the first group's month ---");
+        out.println("\n--- 7. one priority with the death care: the depot and the cemetery share the first group's month ---");
         // The trap with the dead waiting, the death-care rule live: the
         // builders let plan, a month played - their depot ordered, the
         // cemetery served first - and both on site at the next.
@@ -484,10 +547,10 @@ public class BuildersFirstCheck {
         bm.getControl().clearOrder();
     }
 
-    /* ============================ 7. CONSERVED ============================ */
+    /* ============================ 8. CONSERVED ============================ */
 
     static void conserved() {
-        out.println("\n--- 7. money is conserved ---");
+        out.println("\n--- 8. money is conserved ---");
         out.printf("  %d months audited; the worst residual %.3g, the worst drift after the audit %.3g%n",
                 monthsAudited, worstResidual, worstDrift);
         assertTrue("every month played here was audited", monthsAudited > 0);

@@ -4889,6 +4889,18 @@ public class BuildingManager {
        no depot on site, death care first is T1-B's rule as it was, out of
        the city's share (DEATH CARE FIRST WHILE THE DEAD WAIT, above).
 
+       ONLY A DEPOT THE CITY COULD STAFF. A depot goes first only while the
+       city could staff the depots on site - the test the builders' own plan
+       asks before it orders one (Sector.staffing(), MIN_STAFFABLE_TO_ORDER,
+       through the hook Game sets: buildersCouldStaff()). Otherwise it waits by
+       the crews' rule, as before. Measured, not guessed: in a new town whose
+       founding ordered four depots (MortgageCheck's), the first opened in the
+       second month among 106 people, the builders' fill fell to 0.16, and
+       since that fill is what their whole month is worked at, the works
+       department's with it (Game.getConstructionOutput()), the month fell
+       under the repairs: no site advanced again and nobody came. Crewed by
+       the rule the depots opened from the ninth month, at 382 people.
+
        WHY. Batch T1 traced Jerus's construction-bound city (the project's
        why-the-builders-stall.md, section 3): its repairs took 0.81 of the
        builders' nameplate and the dead the rest, so about 420 points a month
@@ -4943,12 +4955,28 @@ public class BuildingManager {
         return id >= 0 && addsToTheBuilders(getTemplate(id));
     }
 
-    /** The builders' own sites on site, in the stacks' order: every stack that adds to their capacity with buildings on site, whoever paid for them. */
+    /** Whether the city could staff n of the builders' depots, by their own plan's test (Sector.staffing(), MIN_STAFFABLE_TO_ORDER), as Game hands it; null - a bare manager - says yes. */
+    private java.util.function.BiPredicate<BuildingsTemplate, Integer> buildersCouldStaff;
+
+    /** Told by Game: how the builders' planner tests a depot's posts against the city's workers (0.7.130). */
+    public void setBuildersCouldStaff(java.util.function.BiPredicate<BuildingsTemplate, Integer> couldStaff) {
+        this.buildersCouldStaff = couldStaff;
+    }
+
+    /** Whether n of a template that adds to the builders go first: the rule on, and the city could staff them; never anything else. */
+    public boolean goesFirst(BuildingsTemplate t, int n) {
+        if (!buildersFirstOn || !addsToTheBuilders(t) || n < 1) return false;
+        return buildersCouldStaff == null || buildersCouldStaff.test(t, n);
+    }
+
+    /** The builders' own sites served first, in the stacks' order: every stack that adds to their capacity with buildings on site, whoever paid for them, while the city could staff them (goesFirst()). */
     public java.util.List<String> buildersOwnOnSite() {
         java.util.List<String> out = new java.util.ArrayList<>();
         if (!buildersFirstOn) return out;
         for (BuildingsStacks s : stacks) {
-            if (s.getUnderConstruction() > 0 && addsToTheBuilders(s.getBuilding())) out.add(ConstructionControl.keyOf(s.getBuilding()));
+            if (s.getUnderConstruction() > 0 && goesFirst(s.getBuilding(), s.getUnderConstruction())) {
+                out.add(ConstructionControl.keyOf(s.getBuilding()));
+            }
         }
         return out;
     }
@@ -5343,9 +5371,12 @@ public class BuildingManager {
         return Double.MAX_VALUE;
     }
 
-    /** Whether a wait is the first group's (0.7.130): a depot of the builders' on site, or `t` one. */
+    /** Whether a wait is the first group's (0.7.130): a depot of the builders' on site served first, or `t` one that would be. */
     private boolean firstOn(BuildingsTemplate t) {
-        return buildersFirstOn && (addsToTheBuilders(t) || !buildersOwnOnSite().isEmpty());
+        if (!buildersFirstOn) return false;
+        if (!buildersOwnOnSite().isEmpty()) return true;
+        BuildingsStacks s = t == null ? null : getStack(t);
+        return goesFirst(t, 1 + (s == null ? 0 : Math.max(0, s.getUnderConstruction())));
     }
 
     /** t's site with n more of it owing `owed` more points on it: {its crew's weight, its points owed}. */
@@ -5380,14 +5411,20 @@ public class BuildingManager {
             double o = Math.max(0, on * (double) s.getBuilding().getConstructionPoints() - s.getConstructionProgress());
             String k = ConstructionControl.keyOf(s.getBuilding());
             by.put(k, new double[] { weightOf(s.getBuilding(), on), o });
-            if (addsToTheBuilders(s.getBuilding())) group.add(k);
+            if (goesFirst(s.getBuilding(), on)) group.add(k);
         }
         for (ConstructionControl.Demolition site : control.demolitions()) {
             by.put(site.key(), new double[] { site.owed() > 0 ? demolitionWeight(site) : 0, site.owed() });
         }
         if (mine != null) {
             by.put(key, mine);
-            if (addsToTheBuilders(key)) group.add(key);
+            // ...a depot among them when the city could staff all of it: its
+            // buildings, read back off its crew's weight (weightOf()).
+            int id = ConstructionControl.templateIdOf(key);
+            BuildingsTemplate t = id < 0 ? null : getTemplate(id);
+            int n = t == null ? 0 : (int) Math.round(mine[0] / Math.pow(t.getConstructionPoints(), CREW_SCALE_EXPONENT));
+            group.remove(key);
+            if (goesFirst(t, n)) group.add(key);
         }
         double[] me = by.get(key);
         if (me == null || !(me[1] > 0)) return 0;
