@@ -1055,7 +1055,7 @@ public class Game {
 
     /**
      * The oil at sea as the map draws it (0.7.97, batch O13; CityMap's THE
-     * OIL AT SEA, runs/spec-oil.md 2.12): each platform's jacket in the
+     * OIL AT SEA, docs/studies/spec-oil.md 2.12): each platform's jacket in the
      * middle of the sea sites its slots hold on its field - the platforms on
      * a field taking its sites in their order, as sectors.Oil.slotsOf() deals
      * them - with its wells on the first of them; and each pipe from its
@@ -3883,7 +3883,7 @@ public class Game {
     }
 
     /* =======================================================================
-       THE STRATEGIC RESERVE (0.7.85, batch O8; runs/spec-oil.md 2.8)
+       THE STRATEGIC RESERVE (0.7.85, batch O8; docs/studies/spec-oil.md 2.8)
 
        The city's crude, in its own tanks (StrategicReserve; the buildings are
        the Strategic Reserves standing). Two levers, recorded where they are
@@ -6229,7 +6229,7 @@ public class Game {
     }
 
     /* ---------------------------------------------------------------------
-       BITUMEN FOR THE PAVING (0.7.83, batch O6; runs/spec-oil.md 2.5)
+       BITUMEN FOR THE PAVING (0.7.83, batch O6; docs/studies/spec-oil.md 2.5)
 
        A paved road's surface is asphalt, and asphalt is aggregate bound with
        bitumen - five per cent of it by weight [R18]. The model's road is its

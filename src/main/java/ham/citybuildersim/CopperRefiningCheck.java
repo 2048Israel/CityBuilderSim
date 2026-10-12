@@ -11,10 +11,11 @@ import java.io.PrintStream;
 import java.util.Locale;
 
 /**
- * Copper Refining, checked (0.7.133, batch I8; runs/spec-materials.md 2.1,
- * 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md
- * - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing industry, the last
- * key, and the Wire & Cable Works it feeds in Manufacturing.
+ * Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
+ * 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's -
+ * materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's
+ * processing industry, the last key, and the Wire & Cable Works it feeds in
+ * Manufacturing.
  *
  * WHY A HARNESS OF ITS OWN. A new sector gets one (CLAUDE.md; I7's
  * CementConcreteCheck), and copper's works add three things the other

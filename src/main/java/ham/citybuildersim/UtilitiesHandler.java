@@ -288,8 +288,8 @@ public class UtilitiesHandler {
     }
 
     /* =====================================================================
-       THE POWER THE WORKS MAKE (0.7.112, batch I2; runs/spec-materials.md
-       2.8, the study's 1.6)
+       THE POWER THE WORKS MAKE (0.7.112, batch I2;
+       docs/studies/spec-materials.md 2.8, the study's 1.6)
 
        A works may make its own power (BuildingsTemplate.getGen()): it draws
        from the grid only what it needs past that, so the grid's consumption

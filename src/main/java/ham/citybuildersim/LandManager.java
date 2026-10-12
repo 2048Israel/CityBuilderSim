@@ -1125,7 +1125,7 @@ public class LandManager {
     }
 
     /* =====================================================================
-       THE GROUND BY TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4)
+       THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4)
 
        A field is of one type (Deposit.type()): iron hematite or magnetite,
        coal thermal or coking, copper sulphide or oxide, stone limestone or
@@ -1707,7 +1707,7 @@ public class LandManager {
 
     /* =====================================================================
        ZONES AND THE FOREST LAW (0.7.107, batch Z1; Jerus, 2026-10-08, the
-       project's spec-zoning.md; runs/spec-materials.md 2.15)
+       project's spec-zoning.md; docs/studies/spec-materials.md 2.15)
 
        THE GROUND. The dry ground D is bare ground B and forest F (forest is
        dry ground a building can take, World.FOREST, and was until now built

@@ -23,10 +23,10 @@ import java.nio.file.Path;
  *      fuel at a journey's $2.00 over its 1.2 litres - so a city with no
  *      refinery pays what it always paid a journey - freight by Good's rule,
  *      oil in the ground at 5% of the crude's price, and two sectors after
- *      Restaurants (the registry's end when they came). SINCE 0.7.76 (batch O1; runs/spec-oil.md 2.1,
- *      2.3): FUEL is nine products - all at the research's wholesale ladder
- *      (petrol and diesel since 0.7.78, batch O2; at FUEL's band before),
- *      each litre weighing its good's tonne
+ *      Restaurants (the registry's end when they came). SINCE 0.7.76 (batch O1;
+ *      docs/studies/spec-oil.md 2.1, 2.3): FUEL is nine products - all at the
+ *      research's wholesale ladder (petrol and diesel since 0.7.78, batch O2;
+ *      at FUEL's band before), each litre weighing its good's tonne
  *      over its litres - and the refinery a crude unit whose products are
  *      THE SLATE of its crude: a tonne of medium crude into 70 L of petrol
  *      and 169 L of diesel, not a thousand litres of fuel, the litres

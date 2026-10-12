@@ -15,9 +15,9 @@ import java.util.List;
 
 /**
  * Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8;
- * runs/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the study's -
- * materials-chains-research.md - 4): copper's processing industry, on the end
- * of Sectors.KEYS after Copper Mining (Jerus's Q21).
+ * docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the
+ * study's - materials-chains-research.md - 4): copper's processing industry, on
+ * the end of Sectors.KEYS after Copper Mining (Jerus's Q21).
  *
  * WHY. Copper Mining's concentrate is 30% copper and nobody uses it but a
  * smelter; the city's old copper (OldMetal) is copper nobody here could use

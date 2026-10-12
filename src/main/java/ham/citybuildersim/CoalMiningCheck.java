@@ -11,10 +11,10 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Coal Mining, checked (0.7.126, batch I6; runs/spec-materials.md 2.1, 2.4,
- * 2.10, 4 and 5's I6 row; the study's - materials-chains-research.md - 1.3,
- * 1.4 and 3): the second materials chain's digging industry, on Sectors.KEYS
- * after the refinery (its end when it came).
+ * Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1,
+ * 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.md -
+ * 1.3, 1.4 and 3): the second materials chain's digging industry, on
+ * Sectors.KEYS after the refinery (its end when it came).
  *
  * WHY A HARNESS OF ITS OWN. A new sector gets one (CLAUDE.md, "adding
  * things": a <Name>Check modelled on RestaurantsCheck), and coal brings the

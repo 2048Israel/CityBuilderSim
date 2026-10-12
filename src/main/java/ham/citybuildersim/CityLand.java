@@ -694,7 +694,7 @@ public final class CityLand {
         return out;
     }
 
-    /* ----- the ground by type (0.7.110, batch I1; runs/spec-materials.md 2.4) ----- */
+    /* ----- the ground by type (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) ----- */
 
     /**
      * A piece of a resource's ground as a holding listed it, of one type: a

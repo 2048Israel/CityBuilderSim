@@ -910,17 +910,17 @@ public final class DistrictPlan {
         }
 
         /*
-         * THE CAMPUS (0.7.97, batch O13; runs/spec-oil.md 2.12, the research's
-         * Q11; spec-roads-and-ports.md 2.8: "the refinery as a campus: an
-         * estate cell whose strips hold the units, a service street between
-         * them"). The city map deals the refinery's units to one district
-         * (CityMap's THE CAMPUS); here they are placed first of its industry,
-         * largest first, so they open the first estate cells - its crude units
-         * whole cells, its conversion units along the strips of the cells they
-         * open, the cell's streets laid to fit them (ESTATE LINES) - and the
-         * rest of industry follows, its small works in the gaps they leave
-         * (star O13-2). Once one unit stands, the next goes only to a cell
-         * one stands in or one touching it, side or corner, and opens the
+         * THE CAMPUS (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the
+         * research's Q11; spec-roads-and-ports.md 2.8: "the refinery as a
+         * campus: an estate cell whose strips hold the units, a service street
+         * between them"). The city map deals the refinery's units to one
+         * district (CityMap's THE CAMPUS); here they are placed first of its
+         * industry, largest first, so they open the first estate cells - its
+         * crude units whole cells, its conversion units along the strips of the
+         * cells they open, the cell's streets laid to fit them (ESTATE LINES) -
+         * and the rest of industry follows, its small works in the gaps they
+         * leave (star O13-2). Once one unit stands, the next goes only to a
+         * cell one stands in or one touching it, side or corner, and opens the
          * first such cell in the order when none has room (campusNext()):
          * one campus. A district holding no unit sorts and places as it did,
          * so its plan is the same plan, box for box.

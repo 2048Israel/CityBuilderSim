@@ -72,8 +72,8 @@ import java.util.Map;
  *      left out; and the widest river EarthTerrain.WIDEST_RIVER_M, its half
  *      within EarthTerrain.WATER_PAD_DEG.
  *
- * ...and since 0.7.117 (batch E3; spec-earth 4 and 8, runs/spec-materials.md
- * 2.4), the deposits on the Earth's geology:
+ * ...and since 0.7.117 (batch E3; spec-earth 4 and 8,
+ * docs/studies/spec-materials.md 2.4), the deposits on the Earth's geology:
  *  10. THE CLASSES: the data's provinces are the study's 1,023, the rules'
  *      count STUDY_CLASSES; Geology's hand table holds every one the rules
  *      leave other, once, each row naming the data's province and the rules'
@@ -817,7 +817,7 @@ public class EarthTerrainCheck {
 
     /* =====================================================================
        10 TO 14. THE DEPOSITS ON THE EARTH'S GEOLOGY (0.7.117, batch E3;
-       spec-earth 4 and 8, runs/spec-materials.md 2.4)
+       spec-earth 4 and 8, docs/studies/spec-materials.md 2.4)
        ===================================================================== */
 
     /** The study's count of the provinces by geology.py's rules (spec-earth 4): 474 basin, 151 fold belt, 66 shelf, 55 ocean, 38 shield, 20 rift and 219 other, in Geology.Kind's order. */

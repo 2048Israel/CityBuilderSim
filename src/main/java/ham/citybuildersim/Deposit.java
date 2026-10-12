@@ -161,7 +161,7 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
     }
 
     /* =====================================================================
-       THE CRUDE'S GRADE (0.7.79, batch O3; runs/spec-oil.md 2.2)
+       THE CRUDE'S GRADE (0.7.79, batch O3; docs/studies/spec-oil.md 2.2)
 
        An oil field is light, medium or heavy crude, and the grade decides
        what a barrel of it cuts into (Refining.CUTS): light is Brent's column
@@ -200,7 +200,7 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
     }
 
     /* =====================================================================
-       THE FIELD'S TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4)
+       THE FIELD'S TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4)
 
        A field of iron is hematite or magnetite, of coal thermal or coking,
        of copper sulphide or oxide, of stone limestone or hard rock
@@ -215,9 +215,9 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
        draws flat. Since 0.7.99 a field is ten of the old draws' sites, so a
        city's ore is more often one type than it was (fixI1-notes.md).
 
-       ON EARTH (0.7.117, batch E3; runs/spec-materials.md 2.4) the same draw
-       is held against the share of its first type in the class of the ground
-       under its centre (its geology, Geology.firstShare()): coking coal
+       ON EARTH (0.7.117, batch E3; docs/studies/spec-materials.md 2.4) the same
+       draw is held against the share of its first type in the class of the
+       ground under its centre (its geology, Geology.firstShare()): coking coal
        three times the odds in a fold belt and half on a shield, limestone
        twice in a basin or on a shelf, half in a fold belt and a quarter on a
        shield, iron and copper flat - one constant a resource holding the
@@ -228,7 +228,7 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
     public enum FieldType { HEMATITE, MAGNETITE, THERMAL, COKING, SULPHIDE, OXIDE, LIMESTONE, HARD_ROCK, NONE }
 
     /**
-     * The share of its resource's fields of each type, in FieldType's order: the first of each resource's two the study's (runs/spec-materials.md 2.4, the study's 1.4: hematite .75, thermal .85, sulphide .80, limestone .70), the second the rest; NONE, the one type of oil, uranium and forest, all of them.
+     * The share of its resource's fields of each type, in FieldType's order: the first of each resource's two the study's (docs/studies/spec-materials.md 2.4, the study's 1.4: hematite .75, thermal .85, sulphide .80, limestone .70), the second the rest; NONE, the one type of oil, uranium and forest, all of them.
      */
     public static final double[] TYPE_SHARES = { .75, .25, .85, .15, .80, .20, .70, .30, 1 };
 

@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * A sector that digs or cuts one resource out of the ground the city owns:
  * the template every extraction industry of the materials chains extends
- * (0.7.112, batch I2; runs/spec-materials.md 2.1 and 2.6b).
+ * (0.7.112, batch I2; docs/studies/spec-materials.md 2.1 and 2.6b).
  *
  * WHY. The materials chains bring four more industries that lift their
  * good off the city's fields - Coal Mining, Quarrying, Copper Mining and

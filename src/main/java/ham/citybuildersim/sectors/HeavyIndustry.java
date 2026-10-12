@@ -10,11 +10,11 @@ import ham.citybuildersim.Good;
  * sort the city's old steel into scrap - steel sold to the city's fabricators
  * or abroad, every works built by what pays.
  *
- * WHY (0.7.120, batch I3; runs/spec-materials.md 2.1 and 2.3, and Jerus's
- * Q2, Q4 and Q6 of 2026-10-08). Until then a mill bought IRON - "iron ore,
- * and the scrap that stands in for it" - local ore first and imported scrap
- * for the rest, sold steel at the US band (1.284 / .847), and was built only
- * into spare local ore: "no spare local ore to smelt" was its plan's gate,
+ * WHY (0.7.120, batch I3; docs/studies/spec-materials.md 2.1 and 2.3, and
+ * Jerus's Q2, Q4 and Q6 of 2026-10-08). Until then a mill bought IRON - "iron
+ * ore, and the scrap that stands in for it" - local ore first and imported
+ * scrap for the rest, sold steel at the US band (1.284 / .847), and was built
+ * only into spare local ore: "no spare local ore to smelt" was its plan's gate,
  * and an order the sector could not make a case for was the borrowing
  * spiral the investment engine was written to end. Three of Jerus's answers
  * took that apart. Scrap splits from ore (Q4): the furnaces take SCRAP, and
@@ -39,9 +39,10 @@ import ham.citybuildersim.Good;
  * fabricators import steel and its own scrap is cheap, shed where neither
  * holds. MaterialsCheck 9 holds the rows to the study.
  *
- * THE INTEGRATED ROUTE AND OLD STEEL (0.7.123, batch I4; runs/spec-materials.md
- * 2.2, 2.7, 2.8 and 2.9, the study's 2.4 to 2.7; Jerus's Q4, Q6, Q7, Q8, Q19
- * and Q20 of 2026-10-08). Seven more rows, each a candidate the same way:
+ * THE INTEGRATED ROUTE AND OLD STEEL (0.7.123, batch I4;
+ * docs/studies/spec-materials.md 2.2, 2.7, 2.8 and 2.9, the study's 2.4 to 2.7;
+ * Jerus's Q4, Q6, Q7, Q8, Q19 and Q20 of 2026-10-08). Seven more rows, each a
+ * candidate the same way:
  *   - the SCRAP YARD sorts the city's old steel (OldMetal) into scrap;
  *   - the PELLETISING PLANT fires ore into pellets, which ship (nothing here
  *     uses them until a DRI plant exists, the study's 2.8);

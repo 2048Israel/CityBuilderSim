@@ -3308,7 +3308,7 @@ public class LongPlaytest {
     }
 
     /* =====================================================================
-       THE PORTS (0.7.86, batch O9; runs/spec-oil.md 5's O9 row)
+       THE PORTS (0.7.86, batch O9; docs/studies/spec-oil.md 5's O9 row)
 
        The test player's rule, at each look: while the city owns coast
        (Game.hasCoastFor()), when a kind's tonnes across the boundary that

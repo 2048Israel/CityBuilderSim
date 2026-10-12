@@ -634,7 +634,7 @@ public abstract class Sector {
 
     /* -------------------------------------------------------------------
        WHAT ITS WORKS BUY ABROAD THAT IS NOT A GOOD (0.7.112, batch I2;
-       runs/spec-materials.md 2.5)
+       docs/studies/spec-materials.md 2.5)
 
        A works' consumables (BuildingsTemplate.getConsumables(): refractories,
        reagents, explosives, rolls and spares, in the world's money a month at
@@ -775,7 +775,7 @@ public abstract class Sector {
     public static final double MIN_VAN_RATE = .6;
 
     /* -------------------------------------------------------------------
-       AND THE DIESEL THEY BURN (0.7.83, batch O6; runs/spec-oil.md 2.5)
+       AND THE DIESEL THEY BURN (0.7.83, batch O6; docs/studies/spec-oil.md 2.5)
 
        A van cost a sector its price and its wear and nothing to run. Since
        0.7.83 every van-month burns diesel, drawn as the railway draws its own
@@ -788,10 +788,10 @@ public abstract class Sector {
     /** The loads a van-month carries: TONNES_PER_VAN at a van's own weight, three tonnes (Good.VANS.tonnesPerUnit()) - forty. */
     public static final double LOADS_A_VAN_MONTH = TONNES_PER_VAN / Good.VANS.tonnesPerUnit();
 
-    /** How far a load goes, there and back: fifty kilometres (runs/spec-oil.md 2.5, est.; to confirm). */
+    /** How far a load goes, there and back: fifty kilometres (docs/studies/spec-oil.md 2.5, est.; to confirm). */
     public static final double KM_A_LOAD = 50;
 
-    /** What a laden van or truck burns: twelve litres of diesel a hundred kilometres (runs/spec-oil.md 2.5, est.; to confirm). */
+    /** What a laden van or truck burns: twelve litres of diesel a hundred kilometres (docs/studies/spec-oil.md 2.5, est.; to confirm). */
     public static final double DIESEL_LITRES_PER_100_KM = 12;
 
     /** ...so a van-month burns LOADS_A_VAN_MONTH x KM_A_LOAD x DIESEL_LITRES_PER_100_KM / 100 litres: 240. */
@@ -2329,7 +2329,7 @@ public abstract class Sector {
     protected double groundLimit(Good g, double asked) { return asked; }
 
     /* ===================================================================
-       CAPTIVE USE (0.7.112, batch I2; runs/spec-materials.md 2.7)
+       CAPTIVE USE (0.7.112, batch I2; docs/studies/spec-materials.md 2.7)
 
        A good a sector both makes and uses - coke, pig iron and scrap in
        Iron & Steel, anode and cathode in Copper Refining, residues and pulp

@@ -150,7 +150,7 @@ public class MiningCheck {
         return best;
     }
 
-    /** The share of its sales an arc furnace keeps on imported scrap, selling its steel at home, at least and at most (runs/spec-materials.md 4, from the study's 2.5: the furnace about 7%, the Mini-Mill 13%). */
+    /** The share of its sales an arc furnace keeps on imported scrap, selling its steel at home, at least and at most (docs/studies/spec-materials.md 4, from the study's 2.5: the furnace about 7%, the Mini-Mill 13%). */
     static final double IMPORTED_SCRAP_LOW = .05, IMPORTED_SCRAP_HIGH = .15;
 
     /** ...and on the city's own scrap, at its export price (the study's 25% and 31%). */

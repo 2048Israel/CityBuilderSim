@@ -930,12 +930,12 @@ public class CarCheck {
 
         /*
          * ...AND ITS MONTH OF FUEL IS PETROL AT WHOLESALE (0.7.78, batch O2;
-         * runs/spec-oil.md 2.1 and 6 A, Jerus: "yes wholesale"). A town with no
-         * refinery buys a journey's 1.2 litres at petrol's import price - the
-         * research's ladder, 1.20 of crude's world middle a litre, x1.08 -
-         * where until 0.7.77 it paid a journey's $2.00 at the pump. The owners
-         * weigh the same journey's fuel against a ride (WHO RIDES, BY WHAT
-         * THEY PAY), so at the default fare fewer of them take the bus on cost
+         * docs/studies/spec-oil.md 2.1 and 6 A, Jerus: "yes wholesale"). A town
+         * with no refinery buys a journey's 1.2 litres at petrol's import price
+         * - the research's ladder, 1.20 of crude's world middle a litre, x1.08
+         * - where until 0.7.77 it paid a journey's $2.00 at the pump. The
+         * owners weigh the same journey's fuel against a ride (WHO RIDES, BY
+         * WHAT THEY PAY), so at the default fare fewer of them take the bus on cost
          * alone than the pump price sent there.
          *
          * ...AT THE FORECOURTS' PRICE ON IT SINCE 0.7.83 (batch O6): the

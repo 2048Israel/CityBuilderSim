@@ -12,7 +12,7 @@ import java.util.List;
  *
  * WHY THIS EXISTS (0.7.97, batch O13; the project's spec-roads-and-ports.md
  * 2.8: "Ports and tank farms: estate cells on the shore, the berths over owned
- * sea"; runs/spec-oil.md 2.12: "terminals stand on owned coast with a
+ * sea"; docs/studies/spec-oil.md 2.12: "terminals stand on owned coast with a
  * quay"). Until 0.7.96 a sea terminal was one more industry building in its
  * district's plan, wherever that district's estate cells had room: the
  * playtest's 23 General Cargo Terminals stood in five districts, inland as

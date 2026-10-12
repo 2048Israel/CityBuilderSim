@@ -16,8 +16,8 @@ import java.util.Map;
 
 /**
  * The materials chains, checked: the shared machinery every chain stands on
- * (0.7.112, batch I2; runs/spec-materials.md 2.1, 2.5-2.8 and 4), and each
- * chain's section as its batch comes (I3 onwards).
+ * (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and
+ * each chain's section as its batch comes (I3 onwards).
  *
  * WHY. Five chains - iron redone, coal, stone, copper and wood - share one
  * planner, two sector bases, a captive good, a works' own power and the
@@ -83,7 +83,7 @@ import java.util.Map;
  *      dig the iron's tally, and its plant spare only once the ore is out.
  *
  * ...AND EACH CHAIN'S SECTIONS, FROM BATCH I3 (0.7.120; iron's prices and
- * scrap split from ore - runs/spec-materials.md 4):
+ * scrap split from ore - docs/studies/spec-materials.md 4):
  *
  *   9. THE IRON ROWS ARE THE STUDY'S: the Iron Mine (id 14), the Electric Arc
  *      Furnace (11) and the Steel Mini-Mill (12), each at parity, its four
@@ -103,7 +103,7 @@ import java.util.Map;
  *      furnaces' scrap in it apart from the ore, loads as it was saved.
  *
  * ...AND BATCH I4's (0.7.123; the integrated route and old steel -
- * runs/spec-materials.md 2.2, 2.3, 2.7 to 2.9 and 4):
+ * docs/studies/spec-materials.md 2.2, 2.3, 2.7 to 2.9 and 4):
  *
  *  11. THE INTEGRATED ROUTE'S ROWS ARE THE STUDY'S: the Scrap Yard, the
  *      Pelletising Plant, the Coke Ovens, the Mini Blast Furnace, the Blast
@@ -136,7 +136,7 @@ import java.util.Map;
  *      utility paying it, and the audit closes.
  *
  * ...AND BATCH I5's (0.7.124; Iron Mining by type and size -
- * runs/spec-materials.md 2.2, 2.4, 2.6b and 5's I5 row):
+ * docs/studies/spec-materials.md 2.2, 2.4, 2.6b and 5's I5 row):
  *
  *  15. IRON MINING'S ROWS ARE THE STUDY'S: the Large Open-Pit Mine, the
  *      Magnetite Mine & Concentrator and the Large Magnetite Complex (ids 108

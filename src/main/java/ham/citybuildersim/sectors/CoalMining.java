@@ -20,10 +20,10 @@ import java.util.Map;
 
 /**
  * Coal mines and the plants that wash their coal - Coal Mining (0.7.126,
- * batch I6; runs/spec-materials.md 2.1, 2.10 and 5's I6 row; the study's 3):
- * the second chain's digging industry, the first sector added on the end of
- * Sectors.KEYS since the refinery (Jerus's Q21, 2026-10-08: iron, coal,
- * stone, copper, wood).
+ * batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the
+ * study's 3): the second chain's digging industry, the first sector added on
+ * the end of Sectors.KEYS since the refinery (Jerus's Q21, 2026-10-08: iron,
+ * coal, stone, copper, wood).
  *
  * WHY. The integrated route (0.7.123, batch I4) brought the coals as goods -
  * THERMAL_COAL for the pellet plants and the blast furnaces, COKING_COAL for

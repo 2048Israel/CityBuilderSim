@@ -467,8 +467,8 @@ public final class TilePainter {
     }
 
     /* =====================================================================
-       AT SEA (0.7.97, batch O13; runs/spec-oil.md 2.12, the research's 3.3
-       and 4.4; spec-roads-and-ports.md 2.8)
+       AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the research's
+       3.3 and 4.4; spec-roads-and-ports.md 2.8)
 
        What the city has on the water, drawn over it: a terminal's quay, out
        from its box on the shore (CityShore); an offshore platform's jacket on

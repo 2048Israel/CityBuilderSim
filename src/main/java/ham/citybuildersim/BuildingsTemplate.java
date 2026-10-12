@@ -221,7 +221,7 @@ public class BuildingsTemplate {
     /** The same, asked per good: a building has one warehouse and it holds whatever the building holds. */
     public double stocks(Good good) { return stock; }
 
-    /* ----- A REFINERY'S CONVERSION UNIT (0.7.80, batch O4; runs/spec-oil.md 2.3) -----
+    /* ----- A REFINERY'S CONVERSION UNIT (0.7.80, batch O4; docs/studies/spec-oil.md 2.3) -----
        A reformer, a cracking unit, a coker and the rest buy nothing and make
        nothing of their own: each takes one stream of the crude units' run - its
        feed, in litres a month at nameplate - and the refinery's flow
@@ -294,7 +294,7 @@ public class BuildingsTemplate {
         return repairsPerYear > 0 ? repairsPerYear : ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR;
     }
 
-    /* ----- A SEA TERMINAL'S BERTH (0.7.86, batch O9; runs/spec-oil.md 2.9) -----
+    /* ----- A SEA TERMINAL'S BERTH (0.7.86, batch O9; docs/studies/spec-oil.md 2.9) -----
        A terminal is one berth of one kind of cargo (Ports.Cargo) and handles
        its berth's tonnes a year ("port": {"cargo": "LIQUID", "tonnes":
        3250000} in buildings.json): what share of that kind's trade goes by
@@ -322,7 +322,7 @@ public class BuildingsTemplate {
     /** Whether an order for this has to stand on owned sea: a desalination plant (0.7.59) and a sea terminal (0.7.86). */
     public boolean needsCoast() { return isSeaWater() || isPort(); }
 
-    /* ----- THE OIL AT SEA (0.7.91, batch O10; runs/spec-oil.md 2.7, 2.11) -----
+    /* ----- THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7, 2.11) -----
        Three of the Oil sector's buildings stand at sea, not on the city's
        dry ground ("offshore": {"kind": "PLATFORM", "slots": 12} in
        buildings.json): an Offshore Platform, a steel jacket on a shallow
@@ -369,7 +369,7 @@ public class BuildingsTemplate {
     /** A pipeline's kilometre on land, in thousands (its own cash is a kilometre at sea); 0 for every other building. */
     public double onshoreCashPerKm() { return onshoreCashPerKm; }
 
-    /* ----- THE SITE IT STANDS ON (0.7.110, batch I1; runs/spec-materials.md 2.4, 2.5) -----
+    /* ----- THE SITE IT STANDS ON (0.7.110, batch I1; docs/studies/spec-materials.md 2.4, 2.5) -----
        A mine or a well stands on its resource's sites ("site": {"resource":
        "IRON", "type": "ANY", "sites": 1, "dig": 1} in buildings.json): the
        resource, the type of field it needs (Deposit.FieldType, or ANY), how
@@ -404,7 +404,7 @@ public class BuildingsTemplate {
     /** The site it stands on, or null for a building that stands on no resource's sites. */
     public Site site() { return site; }
 
-    /* ----- THE POWER A WORKS MAKES ITSELF (0.7.112, batch I2; runs/spec-materials.md 2.5, 2.8) -----
+    /* ----- THE POWER A WORKS MAKES ITSELF (0.7.112, batch I2; docs/studies/spec-materials.md 2.5, 2.8) -----
        A real integrated steelworks makes most of its own electricity from its
        furnace and oven gas, and a kraft pulp mill burns its black liquor and
        sells about 0.9 MWh a tonne of pulp (the study's 1.6, Q20). So a
@@ -438,7 +438,7 @@ public class BuildingsTemplate {
         return gen > 0 ? Math.max(0, gen - electricityConsumption) : 0;
     }
 
-    /* ----- WHAT A WORKS BUYS ABROAD THAT IS NOT A GOOD (0.7.112, batch I2; runs/spec-materials.md 2.5) -----
+    /* ----- WHAT A WORKS BUYS ABROAD THAT IS NOT A GOOD (0.7.112, batch I2; docs/studies/spec-materials.md 2.5) -----
        A works burns through refractories, reagents, explosives, rolls and
        spares the model keeps no market for. The study costs them as the rest
        of its running costs at parity ("consumables" in buildings.json, in
@@ -460,7 +460,7 @@ public class BuildingsTemplate {
     /** Its consumables a month at nameplate, thousands of the world's money; 0 for every building but the materials chains' rows (the iron rows since 0.7.120, the integrated route's since 0.7.123). */
     public double getConsumables() { return consumables; }
 
-    /* ----- THE OLD METAL A YARD TAKES (0.7.123, batch I4; runs/spec-materials.md 2.5, 2.9) -----
+    /* ----- THE OLD METAL A YARD TAKES (0.7.123, batch I4; docs/studies/spec-materials.md 2.5, 2.9) -----
        The city's old steel - its scrapped cars, its demolitions, its
        fabricators' offcuts, its railway's worn-out sets - is not a good: it
        is a pool that arises each month (OldMetal), and a Scrap Yard buys
@@ -506,7 +506,7 @@ public class BuildingsTemplate {
     /** The year it first existed, or 0 for a row not yet dated. */
     public int getSince() { return since; }
 
-    /* ----- THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; runs/spec-materials.md 2.5, 2.10) -----
+    /* ----- THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; docs/studies/spec-materials.md 2.5, 2.10) -----
        A coking field's coal comes out of the ground raw - run-of-mine, ash
        and rock in it - and sells as thermal coal, tonne for tonne, until a
        Coal Preparation Plant washes it ("wash": 500000 in buildings.json,

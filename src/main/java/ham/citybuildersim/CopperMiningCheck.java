@@ -9,9 +9,9 @@ import java.io.PrintStream;
 import java.util.Locale;
 
 /**
- * Copper Mining, checked (0.7.133, batch I8; runs/spec-materials.md 2.1, 2.3,
- * 2.4, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.3,
- * 1.4, 4 and 8): the fourth materials chain's digging industry, on the end
+ * Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
+ * 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.md -
+ * 1.3, 1.4, 4 and 8): the fourth materials chain's digging industry, on the end
  * of Sectors.KEYS after Cement & Concrete.
  *
  * WHY A HARNESS OF ITS OWN. A new sector gets one (CLAUDE.md; I6's

@@ -2529,7 +2529,7 @@ public class LandCheck {
     }
 
     /* ==================================================================
-       26. THE GROUND BY TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4)
+       26. THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4)
 
        Each field is of one type (Deposit.type()), and the city's ground is
        counted by type per holding, its fields as far as each holding listed

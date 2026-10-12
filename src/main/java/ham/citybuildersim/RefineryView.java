@@ -17,11 +17,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The refinery's month as a picture (0.7.95, batch O11; runs/spec-oil.md
- * 2.12): the crude it ran and where that came from, the column's cuts, each
- * conversion unit's run, spread and gate, the products and who took them -
- * home, abroad, into the tanks - with the imports beside them, and the
- * residue burned; and the pictogram those figures draw, laid out to scale.
+ * The refinery's month as a picture (0.7.95, batch O11;
+ * docs/studies/spec-oil.md 2.12): the crude it ran and where that came from,
+ * the column's cuts, each conversion unit's run, spread and gate, the products
+ * and who took them - home, abroad, into the tanks - with the imports beside
+ * them, and the residue burned; and the pictogram those figures draw, laid out
+ * to scale.
  *
  * WHY. Refining's Operations page drew the refinery as every business is
  * drawn (SectorFlow): crude in, nine products out, a ring of the rate. Since

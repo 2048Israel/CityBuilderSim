@@ -14,7 +14,8 @@ import java.util.Map;
 /**
  * A sector that turns goods into other goods in works it builds by what
  * pays: the template every processing industry of the materials chains
- * extends (0.7.112, batch I2; runs/spec-materials.md 2.1, 2.6a and 2.7).
+ * extends (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.6a and
+ * 2.7).
  *
  * WHY. The materials chains bring four processing industries - Iron & Steel
  * (Heavy Industry, from batch I3), Cement & Concrete, Copper Refining and

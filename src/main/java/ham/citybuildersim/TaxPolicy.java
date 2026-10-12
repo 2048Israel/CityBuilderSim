@@ -1007,8 +1007,8 @@ public class TaxPolicy {
 
        A duty a litre on the petrol the forecourts sell the drivers, paid to
        the treasury as its own budget line, the pump price rising by it - the
-       "third way" of runs/spec-oil.md 6 A: wholesale fuel, and a duty on top.
-       Jerus: a Policy dial, default 0. At 0 nothing moves.
+       "third way" of docs/studies/spec-oil.md 6 A: wholesale fuel, and a duty
+       on top. Jerus: a Policy dial, default 0. At 0 nothing moves.
 
        A LITRE AT THE PUMP. The research's rule is the pump at wholesale x
        (1 + the margin) plus the duty (runs/research-pump.md 7), and the

@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Cement & Concrete, checked (0.7.131, batch I7; runs/spec-materials.md 2.1,
- * 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-research.md -
- * 1.2, 6 and 7): stone's processing industry, on Sectors.KEYS after
+ * Cement & Concrete, checked (0.7.131, batch I7; docs/studies/spec-materials.md
+ * 2.1, 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-research.md
+ * - 1.2, 6 and 7): stone's processing industry, on Sectors.KEYS after
  * Quarrying (its end when it came).
  *
  * WHY A HARNESS OF ITS OWN. A new sector gets one (CLAUDE.md; I6's

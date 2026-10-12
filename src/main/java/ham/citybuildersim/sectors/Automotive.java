@@ -109,12 +109,12 @@ public final class Automotive extends Sector {
     public static final double MAX_SHARE_OF_LOCAL_SUPPLY = .25;
 
     /**
-     * Lubricants a vehicle built takes (0.7.83, batch O6; runs/spec-oil.md 2.5,
-     * est., to confirm): eight litres - its first fill of engine, gearbox and
-     * axle oils and the line's own - on the car plants' and (star O6) the van
-     * plant's `uses`, bought on the market as the steel is. A van takes a
-     * car's: the spec gives no other figure for one. A wagon set takes none
-     * here: the spec gives no figure for it.
+     * Lubricants a vehicle built takes (0.7.83, batch O6;
+     * docs/studies/spec-oil.md 2.5, est., to confirm): eight litres - its first
+     * fill of engine, gearbox and axle oils and the line's own - on the car
+     * plants' and (star O6) the van plant's `uses`, bought on the market as the
+     * steel is. A van takes a car's: the spec gives no other figure for one. A
+     * wagon set takes none here: the spec gives no figure for it.
      */
     public static final double LUBRICANT_LITRES_A_VEHICLE = 8;
 

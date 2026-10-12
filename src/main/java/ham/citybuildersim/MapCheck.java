@@ -129,9 +129,9 @@ import java.util.Map;
  *      0.7.86's painter the network's checks fail on Jerus's save and the
  *      playtest (runs/fixRD2-notes.md): N3's passed because they measured
  *      the deal's x 1 fixture;
- *   9. at sea and on the shore (0.7.97, batch O13; runs/spec-oil.md 2.12
- *      and 5's O13 row, spec-roads-and-ports.md 2.8 and 4), on a square city
- *      on the default world's coast, a district west of its founding site:
+ *   9. at sea and on the shore (0.7.97, batch O13; docs/studies/spec-oil.md
+ *      2.12 and 5's O13 row, spec-roads-and-ports.md 2.8 and 4), on a square
+ *      city on the default world's coast, a district west of its founding site:
  *      the refinery's units in one district, a unit more a month on there
  *      too, its plan placing them first of its industry in cells that touch
  *      (a side or a corner), and an older sidecar's units gathered

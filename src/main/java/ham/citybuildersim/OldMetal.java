@@ -10,8 +10,8 @@ import java.util.Map;
  * The city's old steel: what it throws out each month that a Scrap Yard can
  * buy and sort into scrap - its scrapped cars, its demolitions, its
  * fabricators' offcuts and its railway's worn-out wagon sets (0.7.123, batch
- * I4; runs/spec-materials.md 2.9, materials-chains-research.md 2.7) - and
- * since 0.7.133 (batch I8) its old copper, from its cars and demolitions,
+ * I4; docs/studies/spec-materials.md 2.9, materials-chains-research.md 2.7) -
+ * and since 0.7.133 (batch I8) its old copper, from its cars and demolitions,
  * which a Scrap Copper Refinery buys (OLD COPPER, below).
  *
  * WHY. Until 0.7.123 the scrap the arc furnaces melt (Good.SCRAP, since
@@ -104,9 +104,9 @@ public final class OldMetal {
     }
 
     /* =====================================================================
-       OLD COPPER (0.7.133, batch I8; runs/spec-materials.md 2.9, the study's
-       4.1 and 7). What the city throws out holds copper too - a petrol car's
-       wiring and motors, COPPER_A_CAR, and a building's wire and pipe,
+       OLD COPPER (0.7.133, batch I8; docs/studies/spec-materials.md 2.9, the
+       study's 4.1 and 7). What the city throws out holds copper too - a petrol
+       car's wiring and motors, COPPER_A_CAR, and a building's wire and pipe,
        COPPER_A_MATERIALS_UNIT a unit of its material - recovered at RECOVERY
        as steel is, kept by the same sellers, in a pool of its own (copper()).
        Copper Refining's Scrap Copper Refineries buy it as Iron & Steel's yards

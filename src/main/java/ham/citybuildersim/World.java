@@ -216,7 +216,7 @@ public final class World {
     /** How far above the sea's level, in the elevation field, land is beach: 0.0015. */
     public static final double BEACH_BAND = 0.0015;
 
-    /* ----- the sea's depth (0.7.79, batch O3; runs/spec-oil.md 2.7) -----
+    /* ----- the sea's depth (0.7.79, batch O3; docs/studies/spec-oil.md 2.7) -----
      * The generated world had a sea and no depth; a platform stands only on
      * shallow sea (O10), so the sea gets one, from the same elevation field:
      * the shallowest SHELF_SHARE of the sea's samples are the continental

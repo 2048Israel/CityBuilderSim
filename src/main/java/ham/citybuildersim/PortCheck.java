@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The city's ports and their boats (0.7.86, batch O9; runs/spec-oil.md 2.9,
- * 2.10 and 4's PortCheck; runs/research-freight.md 5).
+ * The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md
+ * 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5).
  *
  * WHAT THIS HAS TO PROVE:
  *

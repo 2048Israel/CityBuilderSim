@@ -12,9 +12,9 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Quarrying, checked (0.7.131, batch I7; runs/spec-materials.md 2.1, 2.3,
- * 2.4, 2.10, 4 and 5's I7 row; the study's - materials-chains-research.md -
- * 1.4, 6 and 8): the third materials chain's digging industry, on
+ * Quarrying, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1,
+ * 2.3, 2.4, 2.10, 4 and 5's I7 row; the study's - materials-chains-research.md
+ * - 1.4, 6 and 8): the third materials chain's digging industry, on
  * Sectors.KEYS after Coal Mining (its end when it came).
  *
  * WHY A HARNESS OF ITS OWN. A new sector gets one (CLAUDE.md, "adding

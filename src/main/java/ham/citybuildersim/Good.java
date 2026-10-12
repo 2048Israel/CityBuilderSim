@@ -754,7 +754,7 @@ public enum Good {
 
     /* =======================================================================
        FUEL IS GONE, AND THIS IS THE NOTE THAT REPLACES IT (0.7.76, batch O1;
-       runs/spec-oil.md 2.1 and 3).
+       docs/studies/spec-oil.md 2.1 and 3).
 
        FUEL("Fuel", "litre", Motoring.CAR_FUEL_PER_JOURNEY / Motoring.LITRES_PER_JOURNEY,
        .0007, .0003625, ...) - one litre was a litre of whatever a car or a
@@ -861,14 +861,14 @@ public enum Good {
     SCRAP("Scrap", "tonne", .41, .30, .04125, false, Pricing.BAND, false),
 
     /* =======================================================================
-       THE INTEGRATED ROUTE'S GOODS (0.7.123, batch I4; runs/spec-materials.md
-       2.3, materials-chains-research.md 2.3, 3.2 and 6.3). Iron & Steel's
-       works make and use them: the pelletising plant's pellets, the coke
-       ovens' coke, the blast furnaces' pig iron, and what those take - coal
-       of two kinds, limestone for flux and lime for the oxygen shop. Coal
-       and stone are imported until their own sectors come (Coal Mining at
-       batch I6, Quarrying and Cement & Concrete at I7); then the same rows
-       are what those sectors sell.
+       THE INTEGRATED ROUTE'S GOODS (0.7.123, batch I4;
+       docs/studies/spec-materials.md 2.3, materials-chains-research.md 2.3, 3.2
+       and 6.3). Iron & Steel's works make and use them: the pelletising plant's
+       pellets, the coke ovens' coke, the blast furnaces' pig iron, and what
+       those take - coal of two kinds, limestone for flux and lime for the
+       oxygen shop. Coal and stone are imported until their own sectors come
+       (Coal Mining at batch I6, Quarrying and Cement & Concrete at I7); then
+       the same rows are what those sectors sell.
 
        THE PRICES are the study's, D$ a tonne at the founding parity, import
        over export; the freight in each band three eighths of the wedge, this
@@ -922,7 +922,7 @@ public enum Good {
     LIME("Lime", "tonne", .280, .110, .06375, false, Pricing.BAND, false),
 
     /* =======================================================================
-       STONE'S GOODS (0.7.131, batch I7; runs/spec-materials.md 2.3,
+       STONE'S GOODS (0.7.131, batch I7; docs/studies/spec-materials.md 2.3,
        materials-chains-research.md 6.3). Quarrying digs stone's two types of
        field - limestone, which sells as LIMESTONE to the kilns and furnaces
        and as aggregate past them (the study's 6.1, Q17), and hard rock,
@@ -956,7 +956,7 @@ public enum Good {
     CEMENT("Cement", "tonne", .110, .045, .024375, true, Pricing.BAND, false),
 
     /* =======================================================================
-       COPPER'S GOODS (0.7.133, batch I8; runs/spec-materials.md 2.3,
+       COPPER'S GOODS (0.7.133, batch I8; docs/studies/spec-materials.md 2.3,
        materials-chains-research.md 4.2). Copper Mining floats a sulphide
        field's ore into COPPER_CONC and leaches an oxide field's into
        cathode, COPPER, at the mine; Copper Refining smelts concentrate into
@@ -1232,8 +1232,8 @@ public enum Good {
 
     /**
      * What kind of ship carries it, and so which terminal's berth (0.7.86,
-     * batch O9; runs/spec-oil.md 2.1, Ports.Cargo), or null for the things
-     * that never cross the boundary as freight.
+     * batch O9; docs/studies/spec-oil.md 2.1, Ports.Cargo), or null for the
+     * things that never cross the boundary as freight.
      *
      * LIQUID is crude, the seven litre goods and bitumen - tankers, the
      * bitumen in a heated one - and (0.7.133) sulphuric acid. DRY_BULK is
