@@ -5546,9 +5546,11 @@ public final class GameVersion {
      * 0.7.124 (2026-10-11) - IRON MINING BY TYPE AND SIZE. Batch I5, the third
      * materials batch that changes the game (Jerus's Q3, Q19 and A of
      * 2026-10-08; docs/studies/spec-materials.md 2.2, 2.4, 2.6b and 5;
-     * runs/brief-batchI5.md, runs/fixI5-notes.md). No save format change
-     * (38): a save from 0.7.120 on loads, its Iron Mines on hematite from then
-     * on, and its first month of ore makes it carry E by type.
+     * runs/brief-batchI5.md, runs/fixI5-notes.md). Written in number order,
+     * after 0.7.125 and 0.7.127 shipped: VERSION stayed 0.7.127. No save
+     * format change (39 when it shipped, 0.7.127's; 38 when it was built): a
+     * save from 0.7.120 on loads as before, its Iron Mines on hematite from
+     * then on, and its first month of ore makes it carry E by type.
      *   - THE MINES (ids 108-110, Iron Mining's): the Large Open-Pit Mine,
      *     500,000 t of ore a month on twenty sites of one hematite field; the
      *     Magnetite Mine & Concentrator, 20,000 t of concentrate from 60,000
@@ -5627,7 +5629,8 @@ public final class GameVersion {
      * changes the game and the first new sector of the chains (Jerus's Q9,
      * Q10, Q21 and A of 2026-10-08; docs/studies/spec-materials.md 2.1, 2.4,
      * 2.10 and 5; runs/brief-batchI6.md, runs/fixI6-notes.md). Written in
-     * number order, after 0.7.127 shipped: VERSION stays 0.7.127. No save
+     * number order, after 0.7.127 and 0.7.128 shipped: VERSION stayed
+     * 0.7.128. No save
      * format change (39): a save from before it restores Coal Mining empty -
      * its key is missing, not misread (Sectors' header; Equity, the households'
      * shares, the exchange and the bank's year of sheets map by name or
@@ -5725,14 +5728,16 @@ public final class GameVersion {
      *     so the card and the map agree; the snap never lands on ice, and a
      *     spot on an ice sheet with no dry ground within 5 km gets its own
      *     plot's card, refused on ice; the ground within 5 km counts ice on
-     *     its own (Card.icePlots(), the founding screen's ground line). The
+     *     its own (the Card's icePlots, the founding screen's ground line). The
      *     desert's warning is still its cell's bare-ground bit.
      *   - Harnesses: EarthTerrainCheck 15 (the rule, the books, a district
      *     plan with its grass made desert and ice, each kind's share and edge
      *     on the full file, the card at Greenland's sheet, its margin and the
      *     Sahara, a far node, and the refusal of an Earth save before 39).
      *   - The default playtest is pt07123's byte for byte, and the Earth one
-     *     (--earth rotterdam) pte07121's: Rotterdam's city holds no ice.
+     *     (--earth rotterdam) its base's own run byte for byte (re-baselined
+     *     pte07127; pte07121 had been left behind by the batches merged since
+     *     0.7.121): Rotterdam's city holds no ice.
      *
      * 0.7.128 (2026-10-11) - DISTRICT PICTURES. Batch MM1, the minimap's
      * first (docs/studies/spec-globe.md 8.1 and 8.2, its 4's MM1 row and 5's
@@ -5813,7 +5818,7 @@ public final class GameVersion {
      *     panel's "Debt/GDP, bonds and bills"; automatic building's limit card
      *     "All it owes is now X of GDP; the left panel's Debt/GDP counts its
      *     bonds and bills alone", its mark "all it owes, now X". Words only.
-     *   - Harnesses: DeathCareFirstCheck (new; ninety-eight harnesses), on a
+     *   - Harnesses: DeathCareFirstCheck (new, the ninety-ninth), on a
      *     fixture that causes the trap; LongPlaytest's report counts the
      *     months the dead waited and the months the rule fired.
      *   - The playtests move (re-baselined; fixT1B-notes.md 4): the rule
@@ -5830,8 +5835,9 @@ public final class GameVersion {
      * builders-stall.md, option C, its own batch with the ensemble and
      * retirement watched; and of 2026-10-11, "basically theyll priotozie those
      * two buildings at the same time": beside the death care, at one
-     * priority; runs/brief-batchT1C.md, runs/fixT1C-notes.md). No save
-     * format change (39): the rule keeps no state.
+     * priority; runs/brief-batchT1C.md, runs/fixT1C-notes.md). Written in
+     * number order, after 0.7.131 and 0.7.132 shipped: VERSION stayed
+     * 0.7.132. No save format change (39): the rule keeps no state.
      *   - THE STALL (batch T1's trace of his city): repairs took 0.81 of the
      *     builders' nameplate, about 420 points a month reached the sites, and
      *     the builders' one depot order (MAX_CONCURRENT_ORDERS) waited at its
@@ -5870,7 +5876,7 @@ public final class GameVersion {
      *     floor as empty (DenominationCheck's twins parted on 0 against 1.6e-17
      *     after a recall that brought home exactly what an order lacked); and
      *     HoldersCheck 9 holds its town's builders, whose question it is not.
-     *   - Harnesses: BuildersFirstCheck (new; a hundred harnesses), on
+     *   - Harnesses: BuildersFirstCheck (new, the hundred and third), on
      *     DeathCareFirstCheck's trap; LongPlaytest's report counts the months
      *     the rule fired.
      *   - The playtests move (re-baselined; fixT1C-notes.md 4): the default run
@@ -5942,7 +5948,7 @@ public final class GameVersion {
      *   - THE SCREENS: Build's "Stone" and "Cement" groups after Coal; a
      *     quarry's sentence (limestone, the rest as aggregate).
      *   - Harnesses: QuarryingCheck and CementConcreteCheck (new, the
-     *     ninety-ninth and hundredth: the carry, the registry, the six rows'
+     *     hundredth and hundred and first: the carry, the registry, the six rows'
      *     cases against the study's arithmetic and its stated returns, hard
      *     rock, the packing, the dig by type, the plan, the buyers, the
      *     carried limestone weighed as exported, played months);
@@ -6004,7 +6010,8 @@ public final class GameVersion {
      * changes the game: the fourth chain's two sectors and the Wire & Cable
      * Works (Jerus's Q11, Q12, Q21 and A of 2026-10-08; docs/studies/
      * spec-materials.md 2.1-2.4, 2.9, 2.12 and 5; the study's 4; runs/brief-
-     * batchI8.md, runs/fixI8-notes.md). No save format change (39): a save
+     * batchI8.md, runs/fixI8-notes.md). Written in number order, after
+     * 0.7.134 shipped: VERSION stayed 0.7.134. No save format change (39): a save
      * from before it restores Copper Mining and Copper Refining empty,
      * cathode held as none and no old copper - missing, not misread - and its
      * copper is untouched ground until a mine digs it.
@@ -6076,8 +6083,8 @@ public final class GameVersion {
      *     them to the first strike (SectorState.writtenOff; an older save has
      *     none, which is what its accounts added back). Food's own add-back
      *     reads the cleared row, so zero - marked, and left to its own batch.
-     *   - Harnesses: CopperMiningCheck and CopperRefiningCheck (new, the 103rd
-     *     and 104th: the registry, the eight rows against the study's 4.4
+     *   - Harnesses: CopperMiningCheck and CopperRefiningCheck (new, the 104th
+     *     and 105th: the registry, the eight rows against the study's 4.4
      *     table, the dig by type, the leach plant's lift and its acid, the
      *     chain by its ratios, the smelter's acid sold, old copper bought and
      *     its books, the planner's old copper, the wire works' estimate);
