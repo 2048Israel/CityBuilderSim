@@ -237,6 +237,8 @@ public final class Manufacturing extends Sector {
 
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
+            // ...the Wire & Cable Works' lorries with it (0.7.133, ★ as every works of the materials chains is weighed).
+            if (t.getId() == WIRE_CABLE_WORKS) cost += fleetCapital(t);
             // Still discounted as well as floored: the floor says whether any
             // of them is worth opening, the weight says which.
             double score = estimatedMonthlyProfit(t, plans) * staffable / cost;
@@ -259,6 +261,37 @@ public final class Manufacturing extends Sector {
         }
         return new BusinessInvestment.Decision(sector, best, 1,
                 "steel worth more shaped than shipped", true);
+    }
+
+    /**
+     * What one more of its buildings would clear a month (0.7.133, batch I8):
+     * the maker's estimate (Sector's) - and for the Wire & Cable Works, the
+     * materials chains' row, less what it buys abroad that is not a good, its
+     * insulation at the exchange factor (SpreadPlanner.ownCosts()), and its
+     * lorries' wear and diesel (★, as every works and mine of the materials
+     * chains is weighed: ProcessingSector.fleetRunning()). The figure the
+     * plan and Game.consider() read. The sector's older rows buy no
+     * consumables and were never weighed with their lorries, so theirs is
+     * the maker's estimate to the bit.
+     *
+     * WHY. Without them the works' D$3.2M of insulation a month at parity was
+     * invisible to the plan and to consider(), and on a weak currency and the
+     * city's narrowed freight the playtest ordered Wire & Cable Works on
+     * imported rod for export that lost money from their first month (I8's
+     * probe, fixI8-notes 4).
+     */
+    @Override
+    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+        double maker = super.estimatedMonthlyProfit(t, plans);
+        if (t == null || t.getId() != WIRE_CABLE_WORKS || markets == null) return maker;
+        double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
+        return maker - SpreadPlanner.ownCosts(t, rate, markets.getExchangeRate(), pricePerWatt)
+                - ProcessingSector.fleetRunning(t, SpreadPlanner.values(markets), rate);
+    }
+
+    /** The vans one of `t` must buy, at what a van costs here (ProcessingSector.fleetCapital()); none with no markets. */
+    double fleetCapital(BuildingsTemplate t) {
+        return markets == null || t == null ? 0 : ProcessingSector.fleetCapital(t, SpreadPlanner.values(markets));
     }
 
     /**
