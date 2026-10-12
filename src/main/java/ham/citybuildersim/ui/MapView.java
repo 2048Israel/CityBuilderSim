@@ -34,7 +34,7 @@ import javafx.scene.text.TextAlignment;
 import static ham.citybuildersim.ui.Pieces.*;
 
 /**
- * The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, the far nodes from the world's ground - with the city's block lines, its edge, its offers hatched and numbered by place, and its deposits over it, a scale bar, and what is under the pointer.
+ * The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, the far nodes from the world's ground and the district pictures (0.7.128), and expanded on the real Earth a globe (0.7.135) - with the city's block lines, its edge, its offers hatched and numbered by place, and its deposits over it, a scale bar, and what is under the pointer.
  *
  * WHY THIS EXISTS (0.7.61, batch J4; the project's spec-land.md 2.6 and
  * 2.8). Jerus: click a side to see its ten offers (six since 0.7.67), the

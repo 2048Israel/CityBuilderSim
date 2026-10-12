@@ -84,7 +84,8 @@ import static ham.citybuildersim.ui.Pieces.*;
  * once it ships, the generated world kept as the other choice). THE WORLD is
  * two joined chips, Earth | Generated, Earth chosen when the Earth's data is
  * here (EarthSite.gameData()); where it is not, Earth is greyed and a line
- * says in plain words where the file goes. On Earth the panel widens to two
+ * says in plain words where the file goes and, since 0.7.125, how it gets
+ * there (EarthSite.dataWords()). On Earth the panel widens to two
  * columns, the city's choices on the left and the world on the right, in the
  * page's own style - captions over controls, the cards' greys:
  *   - a search field over the data's place names (EarthSite.search(): names
@@ -99,7 +100,7 @@ import static ham.citybuildersim.ui.Pieces.*;
  *     and D turn it, the wheel or - and + zoom it, a click picks the spot;
  *   - the card (EarthSite.measure(), on a worker): the site the snap found
  *     and how far from the spot, the ground within 5 km - dry, rivers and
- *     lakes, sea - and the nearest fresh water and sea, the province and its
+ *     lakes, sea and (0.7.127) ice - and the nearest fresh water and sea, the province and its
  *     deposit multipliers, the nearest iron; a refusal (the sea, ice) in the
  *     bad colour, which keeps Found dark, and a warning (a desert, no water
  *     near) in the warning colour, which does not.

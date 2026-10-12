@@ -55,7 +55,10 @@ import java.util.Locale;
  *   7. MONEY IS CONSERVED: the money audit every month played here.
  *
  * Every fixture causes its condition. How often the rule fires in a real
- * run is LongPlaytest's line "the dead waited".
+ * run is LongPlaytest's line "the dead waited". Since 0.7.130 a depot of
+ * the builders' served first takes the death care beside it, out of the
+ * whole month (BuildingManager, THE BUILDERS' OWN DEPOTS FIRST); that is
+ * BuildersFirstCheck's 7, and no depot goes first here.
  */
 public class DeathCareFirstCheck {
 

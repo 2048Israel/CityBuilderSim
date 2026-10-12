@@ -17,7 +17,9 @@ import java.util.Map;
 /**
  * The materials chains, checked: the shared machinery every chain stands on
  * (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and
- * each chain's section as its batch comes (I3 onwards).
+ * iron's sections as its batches came (I3 to I5) - coal, stone and copper
+ * have harnesses of their own (CoalMiningCheck, QuarryingCheck,
+ * CementConcreteCheck, CopperMiningCheck, CopperRefiningCheck).
  *
  * WHY. Five chains - iron redone, coal, stone, copper and wood - share one
  * planner, two sector bases, a captive good, a works' own power and the
@@ -49,8 +51,9 @@ import java.util.Map;
  *      uses goes to its own need first, min(made, needed); the market sees
  *      the net - bid() and what is made for the market - and the ledger
  *      books sales of the rest and no purchase of it, a flow good and a
- *      stockable one; one sector in the game has captive goods, Iron & Steel
- *      (its scrap, coke and pig iron, since 0.7.123 - none until then).
+ *      stockable one; two sectors in the game have captive goods, Iron &
+ *      Steel (its scrap, coke and pig iron, since 0.7.123 - none until then)
+ *      and Copper Refining (its anode and cathode, since 0.7.133).
  *
  *   4. A WORKS' OWN POWER IS BILLED NET AND THE CITY PAYS THE SURPLUS: in a
  *      town whose bakeries are handed power of their own, each building buys
