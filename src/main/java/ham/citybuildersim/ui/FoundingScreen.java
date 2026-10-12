@@ -91,10 +91,12 @@ import static ham.citybuildersim.ui.Pieces.*;
  *     for finding a spot, no borders - a hit is its name and its latitude and
  *     longitude), and Random spot, which rolls the seed and lets it pick a
  *     place that passes the site test (EarthSite.randomPlace());
- *   - the globe (Globe below): the planet orthographic from the 4' layers
- *     when it is wide, and from GROUND_KM_PX down to the 150 m view the
- *     city's own far view (MapTiles.nodeTerrain(), E5's), drawn on a worker;
- *     drag turns it, the wheel or - and + zoom it, a click picks the spot;
+ *   - the globe (Globe below): the planet orthographic when it is wide -
+ *     since 0.7.135 the land office's map's own globe (GlobeFrame, the
+ *     planet's picture GlobePicture and the far rule through its camera) -
+ *     and from GROUND_KM_PX down to the 150 m view the city's own far view
+ *     (MapTiles.nodeTerrain(), E5's), drawn on a worker; drag or W, A, S
+ *     and D turn it, the wheel or - and + zoom it, a click picks the spot;
  *   - the card (EarthSite.measure(), on a worker): the site the snap found
  *     and how far from the spot, the ground within 5 km - dry, rivers and
  *     lakes, sea - and the nearest fresh water and sea, the province and its
@@ -213,11 +215,11 @@ final class FoundingScreen {
     /** Between the two columns on Earth. */
     static final double COLUMN_GAP = 40;
 
-    /** The globe's width, the right column's: 560 px. */
-    static final double GLOBE_W = 560;
+    /** The globe's width, the right column's: 560 px (GlobeFrame.FOUNDING_W since 0.7.135, so a harness draws what it draws). */
+    static final double GLOBE_W = GlobeFrame.FOUNDING_W;
 
-    /** The globe's height: 270 px, so the page still fits an 868-pixel window with the longest card under it (the words probe's, 0.7.121). */
-    static final double GLOBE_H = 270;
+    /** The globe's height: 270 px, so the page still fits an 868-pixel window with the longest card under it (the words probe's, 0.7.121; GlobeFrame.FOUNDING_H since 0.7.135). */
+    static final double GLOBE_H = GlobeFrame.FOUNDING_H;
 
     /** The left column's width on Earth: what the panel leaves. */
     static final double LEFT = EARTH_PANEL - 2 * PANEL_PAD - COLUMN_GAP - GLOBE_W;
@@ -656,7 +658,7 @@ final class FoundingScreen {
     }
 
     /** The card's line before a spot is picked; how the globe is used. */
-    static final String NO_SPOT_WORDS = "None yet. Drag the globe to turn it, zoom with the wheel or - and +, and click to pick a spot;"
+    static final String NO_SPOT_WORDS = "None yet. Drag the globe or hold W, A, S and D to turn it, zoom with the wheel or - and +, and click to pick a spot;"
             + " or search for a place, or press Random spot.";
 
     /** The card's last line: what the seed decides on Earth. */
@@ -946,33 +948,37 @@ final class FoundingScreen {
 
     /* =====================================================================
        THE GLOBE (0.7.121, batch E4; spec-earth 2: "the globe from the 4'
-       layer, with zoom down to the 150 m view")
+       layer, with zoom down to the 150 m view"; since 0.7.135, batch E9,
+       the map's own globe - docs/studies/spec-globe.md 3.8, Jerus's Q7)
 
-       One canvas, two pictures by how far it is zoomed:
-         - WIDE, from MOST_KM_PX to GROUND_KM_PX: the planet orthographic, as
-           a globe looks, from a picture of it at TEXEL_ARCMIN made once from
-           the 4' layers - sea, lakes, and the land coloured as the map
-           colours ground, its forest by land cover, and its ice and deserts
-           marked (the founding's refusal and warning) - since 0.7.127 in
-           the map's own ICE and DESERT (spec-globe 3.9);
-         - CLOSE, from GROUND_KM_PX down to LEAST_KM_PX (150 m): the city's own
-           far view of the ground (MapTiles.nodeTerrain(), E5's, rivers and
-           small lakes from their vectors) on an Earth world centred where the
-           view is, a whole number of plots a pixel - on the spot's own world
-           while the view is centred on it, so what is drawn there is the
-           city's ground.
-       At GROUND_KM_PX the two projections differ by under a pixel at the
-       canvas's edge (azimuthal equal-area against orthographic: H^3/8R^2).
-       Drawn on a worker, the newest asked for drawn and the rest dropped; a
-       drag slides the last picture until it is drawn again.
+       One canvas, its view in one of the map's tiers by how far it is
+       zoomed:
+         - WIDE, from MOST_KM_PX to FOUNDING_HANDOFF_KM: the planet as the
+           land office's map draws it, a GlobeFrame north up - the planet's
+           picture (GlobePicture, 12' then 4', ice and the desert in the
+           map's own colours, its rivers) to PICTURE_FROM_KM, then the far
+           rule through the globe's camera (GlobePicture.view()) - so both
+           screens show the same planet; its zoom at the pointer and its
+           drag (the point grabbed stays under the pointer) the frame's;
+         - CLOSE, from FOUNDING_HANDOFF_KM (★E9: 2.32 km, half a pixel at
+           the canvas's corner, where E4's 4 km parted by 1.5) down to
+           LEAST_KM_PX (150 m): the city's own far view of the ground
+           (MapTiles.nodeTerrain(), E5's) on an Earth world centred where
+           the view is, a whole number of plots a pixel - on the spot's own
+           world while the view is centred on it, so what is drawn there is
+           the city's ground. There is no city yet, so no reach: any spot.
+       Drawn on a worker, the newest asked for drawn and the rest dropped;
+       the last picture is laid where its centre lies now until then. W,
+       A, S and D held turn it while it has the focus (★E9) - never while
+       the name or the search is typed, which have it then.
        ===================================================================== */
     final class Globe {
 
-        /** The widest view: the whole planet, 12,742 km, across nine tenths of the globe's height. */
-        static final double MOST_KM_PX = 2 * EarthProj.RADIUS_M / 1000 / (0.9 * GLOBE_H);
+        /** The widest view: the whole planet, 12,742 km, across GlobeFrame.FIT_SHARE (nine tenths) of the globe's height. */
+        static final double MOST_KM_PX = 2 * EarthProj.RADIUS_M / 1000 / (GlobeFrame.FIT_SHARE * GLOBE_H);
 
-        /** From here closer the ground is the city's own far view, not the globe's picture: 4 km a pixel. */
-        static final double GROUND_KM_PX = 4;
+        /** From here closer the ground is drawn round the view's centre, not through the globe: GlobeFrame.FOUNDING_HANDOFF_KM, 2.32 km a pixel (★E9; 4 until 0.7.135). */
+        static final double GROUND_KM_PX = GlobeFrame.FOUNDING_HANDOFF_KM;
 
         /** The closest view: 150 m a pixel, five plots (spec-earth 2's 150 m view). */
         static final double LEAST_KM_PX = 5 * World.PLOT_M / 1000.0;
@@ -983,22 +989,31 @@ final class FoundingScreen {
         /** A wheel notch's zoom, the map's: MapFrame.ZOOM_STEP. */
         static final double STEP = MapFrame.ZOOM_STEP;
 
-        /** The globe picture's cell, in minutes of arc: 12, three of the 4' layers' cells a side (1,800 x 900 for the planet). */
-        static final int TEXEL_ARCMIN = 12;
-
         /** Space round the globe: the page's stage. */
         static final int SPACE = 0xff0b1118;
+
+        /** The ground's colours, as the map draws them where the city owns it (GlobePicture.colours()): the founding globe dims nothing. */
+        static final int[] COLOURS = GlobePicture.colours(false);
 
         /** The view: its centre, degrees, and its scale, km a pixel. */
         double lat = 30, lon = 0, kmPx = MOST_KM_PX;
 
+        /** The wide view's arithmetic: the map's globe, a canvas's size, north up (it never comes near the map's handoff, where it would turn). */
+        private final GlobeFrame wide = new GlobeFrame(GLOBE_W, GLOBE_H, lat, lon);
+
         private Canvas canvas;
         private WritableImage picture;
-        /** The view the picture was drawn for; a drag's offset from it while it is not drawn again. */
+        /** The view the picture was drawn for. */
         private double drawnLat = Double.NaN, drawnLon = Double.NaN, drawnKm = Double.NaN;
         private long asked;
-        private double pressX, pressY, dragX, dragY;
+        private double pressX, pressY, lastX, lastY;
         private boolean dragging;
+        /** W, A, S and D held, and when they last turned it. */
+        private boolean keyW, keyA, keyS, keyD;
+        private long keyNanos;
+        private final javafx.animation.AnimationTimer keys = new javafx.animation.AnimationTimer() {
+            @Override public void handle(long now) { keysFrame(); }
+        };
 
         /** The worker the globe is drawn on: one at a time, the newest asked for. */
         private final ExecutorService worker = Executors.newSingleThreadExecutor(r -> {
@@ -1010,19 +1025,25 @@ final class FoundingScreen {
         /** The globe's canvas with its zoom buttons, made again with the page. */
         StackPane node(FoundingScreen screen) {
             canvas = new Canvas(GLOBE_W, GLOBE_H);
-            canvas.setOnMousePressed(e -> { pressX = e.getX(); pressY = e.getY(); dragX = dragY = 0; dragging = false; });
+            canvas.setFocusTraversable(true);
+            canvas.setOnMousePressed(e -> {
+                pressX = lastX = e.getX();
+                pressY = lastY = e.getY();
+                dragging = false;
+                canvas.requestFocus();
+            });
             canvas.setOnMouseDragged(e -> {
-                dragX = e.getX() - pressX;
-                dragY = e.getY() - pressY;
-                if (Math.abs(dragX) + Math.abs(dragY) > 4) dragging = true;
-                if (dragging) repaint();
+                if (Math.abs(e.getX() - pressX) + Math.abs(e.getY() - pressY) > 4) dragging = true;
+                if (!dragging) return;
+                turn(lastX, lastY, e.getX(), e.getY());
+                lastX = e.getX();
+                lastY = e.getY();
+                redraw();
             });
             canvas.setOnMouseReleased(e -> {
                 if (dragging) {
-                    turn(dragX, dragY);
-                    dragX = dragY = 0;
                     dragging = false;
-                    redraw();
+                    repaint();
                 } else {
                     double[] ll = latLonAt(e.getX(), e.getY());
                     if (ll != null) {
@@ -1032,14 +1053,17 @@ final class FoundingScreen {
                 }
             });
             canvas.setOnScroll(e -> {
-                // The wheel zooms the globe, and the page under it does not scroll.
+                // The wheel zooms the globe at the pointer, and the page under it does not scroll.
                 e.consume();
                 if (e.getDeltaY() == 0) return;
-                zoom(e.getDeltaY() > 0 ? 1 / STEP : STEP);
+                zoomAt(e.getX(), e.getY(), e.getDeltaY() > 0 ? 1 / STEP : STEP);
             });
+            canvas.setOnKeyPressed(e -> { if (key(e.getCode(), true)) e.consume(); });
+            canvas.setOnKeyReleased(e -> { if (key(e.getCode(), false)) e.consume(); });
+            canvas.focusedProperty().addListener((o, was, now) -> { if (!now) letGo(); });
             Button in = zoomButton("+", "Closer"), out = zoomButton("-", "Wider");
-            in.setOnAction(e -> zoom(1 / STEP / STEP));
-            out.setOnAction(e -> zoom(STEP * STEP));
+            in.setOnAction(e -> zoomAt(GLOBE_W / 2, GLOBE_H / 2, 1 / STEP / STEP));
+            out.setOnAction(e -> zoomAt(GLOBE_W / 2, GLOBE_H / 2, STEP * STEP));
             VBox zooms = new VBox(4, in, out);
             zooms.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             StackPane.setAlignment(zooms, Pos.TOP_RIGHT);
@@ -1069,40 +1093,130 @@ final class FoundingScreen {
             redraw();
         }
 
-        private void zoom(double by) {
-            kmPx = snapped(Math.max(LEAST_KM_PX, Math.min(MOST_KM_PX, kmPx * by)));
+        /** Whether the view is wide: drawn through the map's globe. */
+        private boolean isWide() { return kmPx >= GROUND_KM_PX; }
+
+        /** The wide view's frame, on the view. */
+        private GlobeFrame wide() {
+            if (wide.centreLat() != lat || wide.centreLon() != lon || wide.kmPx() != kmPx) wide.set(lat, lon, kmPx);
+            return wide;
+        }
+
+        /** A zoom by a factor (under one closer) at a canvas point: the point under it stays under it - through the map's globe while wide, round the view's centre close - snapped to whole plots close. */
+        private void zoomAt(double px, double py, double by) {
+            double to = snapped(Math.max(LEAST_KM_PX, Math.min(MOST_KM_PX, kmPx * by)));
+            double[] p = latLonAt(px, py);
+            if (isWide() && to >= GROUND_KM_PX) {
+                GlobeFrame f = wide();
+                f.zoomAt(px, py, to / kmPx);
+                lat = f.centreLat();
+                lon = f.centreLon();
+                kmPx = Math.max(GROUND_KM_PX, f.kmPx());
+            } else {
+                kmPx = to;
+                if (p != null) {
+                    // The point back under the pointer on the plane round the old centre, at the new scale.
+                    EarthProj plane = new EarthProj(lat, EarthProj.normaliseLon(lon));
+                    double[] xy = new double[2], ll = new double[2];
+                    if (plane.forward(p[0], p[1], xy)
+                            && plane.inverse(xy[0] - (px - GLOBE_W / 2) * kmPx * 1000, xy[1] + (py - GLOBE_H / 2) * kmPx * 1000, ll)) {
+                        lat = Math.max(-GlobeFrame.POLE_LAT, Math.min(GlobeFrame.POLE_LAT, ll[0]));
+                        lon = ll[1];
+                    }
+                }
+            }
             redraw();
         }
 
-        /** A scale as drawn: on the ground a whole number of plots a pixel. */
+        /** A scale as drawn: close, a whole number of plots a pixel. */
         private double snapped(double km) {
             if (km >= GROUND_KM_PX) return km;
             long plots = Math.max(5, Math.round(km * 1000 / World.PLOT_M));
             return plots * World.PLOT_M / 1000.0;
         }
 
-        /** The view turned by a drag of (dx, dy) pixels: the ground follows the pointer. */
-        private void turn(double dx, double dy) {
-            double kmPerDeg = Math.PI * EarthProj.RADIUS_M / 180 / 1000;
-            lat = Math.max(-89, Math.min(89, lat + dy * kmPx / kmPerDeg));
-            lon = EarthProj.normaliseLon(lon - dx * kmPx / (kmPerDeg * Math.max(0.05, Math.cos(Math.toRadians(lat)))));
+        /** The view turned by the pointer from (x0, y0) to (x1, y1): the point grabbed stays under it - the map's globe's drag while wide, the plane round the view's centre slid close. */
+        private void turn(double x0, double y0, double x1, double y1) {
+            if (isWide()) {
+                GlobeFrame f = wide();
+                f.drag(x0, y0, x1, y1);
+                lat = f.centreLat();
+                lon = f.centreLon();
+                return;
+            }
+            slide(x1 - x0, y1 - y0);
+        }
+
+        /** Close, the ground slid by (dx, dy) pixels: the new centre is the point that lay (dx, dy) back from it, on the plane round the old. */
+        private void slide(double dx, double dy) {
+            double[] ll = new double[2];
+            double m = kmPx * 1000;
+            if (new EarthProj(lat, EarthProj.normaliseLon(lon)).inverse(-dx * m, dy * m, ll)) {
+                lat = Math.max(-GlobeFrame.POLE_LAT, Math.min(GlobeFrame.POLE_LAT, ll[0]));
+                lon = ll[1];
+            }
         }
 
         /** The latitude and longitude under a canvas point, in the view as it is drawn; null off the planet. */
         double[] latLonAt(double px, double py) {
+            if (isWide()) return wide().latLonAt(px, py);
             double x = (px - GLOBE_W / 2) * kmPx * 1000, y = (GLOBE_H / 2 - py) * kmPx * 1000;
             double[] ll = new double[2];
-            if (kmPx < GROUND_KM_PX) return new EarthProj(lat, EarthProj.normaliseLon(lon)).inverse(x, y, ll) ? ll : null;
-            return orthoInverse(lat, lon, x, y, ll) ? ll : null;
+            return new EarthProj(lat, EarthProj.normaliseLon(lon)).inverse(x, y, ll) ? ll : null;
         }
 
         /** Where a latitude and longitude lie on the canvas in the view as drawn, or null where it is not seen. */
         double[] at(double atLat, double atLon) {
+            if (isWide()) return wide().at(atLat, atLon);
             double[] xy = new double[2];
-            if (kmPx < GROUND_KM_PX) {
-                if (!new EarthProj(lat, EarthProj.normaliseLon(lon)).forward(atLat, atLon, xy)) return null;
-            } else if (!orthoForward(lat, lon, atLat, atLon, xy)) return null;
+            if (!new EarthProj(lat, EarthProj.normaliseLon(lon)).forward(atLat, atLon, xy)) return null;
             return new double[] { GLOBE_W / 2 + xy[0] / 1000 / kmPx, GLOBE_H / 2 - xy[1] / 1000 / kmPx };
+        }
+
+        /* ----- W, A, S and D (0.7.135; spec-globe 3.11, ★E9: the founding globe takes the keys while it has the focus) ----- */
+
+        /** A key down or up on the focused globe: true when it was one of the four. */
+        private boolean key(javafx.scene.input.KeyCode k, boolean down) {
+            switch (k) {
+                case W: keyW = down; break;
+                case A: keyA = down; break;
+                case S: keyS = down; break;
+                case D: keyD = down; break;
+                default: return false;
+            }
+            if (keyW || keyA || keyS || keyD) {
+                if (keyNanos == 0) keyNanos = System.nanoTime();
+                keys.start();
+            }
+            return true;
+        }
+
+        /** The focus gone: the keys let go, whose key-ups it would not hear. */
+        private void letGo() {
+            keyW = keyA = keyS = keyD = false;
+        }
+
+        /** A frame of the keys held: the globe turned by MapFrame.keyVelocity() over the time since the last - the map's globe's keyPan() while wide, the ground slid close. */
+        private void keysFrame() {
+            if (!(keyW || keyA || keyS || keyD) || canvas == null || canvas.getScene() == null) {
+                keyNanos = 0;
+                keys.stop();
+                return;
+            }
+            long now = System.nanoTime();
+            double dt = keyNanos == 0 ? 0 : (now - keyNanos) / 1e9;
+            keyNanos = now;
+            double[] v = MapFrame.keyVelocity(keyW, keyA, keyS, keyD);
+            if (isWide()) {
+                GlobeFrame f = wide();
+                f.keyPan(v, dt);
+                lat = f.centreLat();
+                lon = f.centreLon();
+            } else {
+                double[] d = MapFrame.keyStep(v, dt);
+                slide(d[0], d[1]);
+            }
+            redraw();
         }
 
         /** The picture asked for again, on the worker: the newest wins. */
@@ -1111,13 +1225,24 @@ final class FoundingScreen {
             double vLat = lat, vLon = lon, vKm = kmPx;
             World.Key spot = spotKey();
             EarthSite.Data d = earthData;
+            GlobeFrame view = isWide() ? wide().copy(GLOBE_W, GLOBE_H, vKm) : null;
             repaint();
             if (d == null || !d.here()) return;
             worker.submit(() -> {
                 if (me != asked) return;
                 int[] px;
                 try {
-                    px = vKm >= GROUND_KM_PX ? globePixels(d.reader(), vLat, vLon, vKm) : groundPixels(spot, vLat, vLon, vKm);
+                    if (view != null) {
+                        GlobePicture pic = GlobePicture.best(d.reader());
+                        if (pic == null) {
+                            // The planet's picture made once (the map's own), and the globe drawn again when each is kept.
+                            GlobePicture.prepare(d.reader(), () -> Platform.runLater(this::redraw));
+                            return;
+                        }
+                        px = new int[(int) GLOBE_W * (int) GLOBE_H];
+                        World.Key key = spot != null ? spot : World.Key.earth(Founding.DEFAULT_WORLD_SEED, vLat, vLon, EarthData.EARTH_1);
+                        pic.view(view, key, COLOURS, SPACE, px);
+                    } else px = groundPixels(spot, vLat, vLon, vKm);
                 } catch (RuntimeException e) {
                     System.out.println("The founding globe could not be drawn at " + EarthSite.latLonWords(vLat, vLon) + ": " + e);
                     return;
@@ -1143,21 +1268,21 @@ final class FoundingScreen {
             return World.Key.earth(seed, spotLat, spotLon, EarthData.EARTH_1);
         }
 
-        /** The canvas painted: the last picture (slid by a drag), the spot, and the site with its 5 km once the card has one. */
+        /** The canvas painted: the last picture (where its centre lies now, at the view's scale), the spot, and the site with its 5 km once the card has one. */
         void repaint() {
             if (canvas == null) return;
             GraphicsContext g = canvas.getGraphicsContext2D();
             g.setFill(Color.web(Palette.STAGE));
             g.fillRect(0, 0, GLOBE_W, GLOBE_H);
             if (picture != null) {
-                // The last picture where its centre lies in the view now, at the view's scale - slid by a drag, grown
-                // or shrunk by a zoom - until the worker draws the view again.
+                // The last picture where its centre lies in the view now, at the view's scale - slid by a drag or the keys,
+                // grown or shrunk by a zoom - until the worker draws the view again.
                 double[] c = at(drawnLat, drawnLon);
                 if (c != null) {
                     double f = drawnKm / kmPx;
                     boolean current = drawnLat == lat && drawnLon == lon && drawnKm == kmPx;
                     if (!current) g.setGlobalAlpha(0.6);
-                    g.drawImage(picture, c[0] - GLOBE_W / 2 * f + dragX, c[1] - GLOBE_H / 2 * f + dragY, GLOBE_W * f, GLOBE_H * f);
+                    g.drawImage(picture, c[0] - GLOBE_W / 2 * f, c[1] - GLOBE_H / 2 * f, GLOBE_W * f, GLOBE_H * f);
                     g.setGlobalAlpha(1);
                 }
             }
@@ -1193,119 +1318,9 @@ final class FoundingScreen {
         }
     }
 
-    /* ------------------------------------------------------- the globe's arithmetic */
+    /* ------------------------------------------------------- the close tier's ground */
 
-    /** The orthographic projection's inverse round (lat0, lon0): the point x metres east and y north on the plane, into ll; false off the planet's disc. */
-    static boolean orthoInverse(double lat0, double lon0, double x, double y, double[] ll) {
-        double r = EarthProj.RADIUS_M, rho = Math.hypot(x, y);
-        if (rho > r) return false;
-        double f0 = Math.toRadians(lat0);
-        if (rho == 0) {
-            ll[0] = lat0;
-            ll[1] = EarthProj.normaliseLon(lon0);
-            return true;
-        }
-        double c = Math.asin(rho / r), sc = Math.sin(c), cc = Math.cos(c);
-        ll[0] = Math.toDegrees(Math.asin(cc * Math.sin(f0) + y * sc * Math.cos(f0) / rho));
-        ll[1] = EarthProj.normaliseLon(lon0 + Math.toDegrees(Math.atan2(x * sc, rho * cc * Math.cos(f0) - y * sc * Math.sin(f0))));
-        return true;
-    }
-
-    /** ...and forward: (lat, lon) on the plane round (lat0, lon0), metres; false on the far side. */
-    static boolean orthoForward(double lat0, double lon0, double lat, double lon, double[] xy) {
-        double f0 = Math.toRadians(lat0), f = Math.toRadians(lat), dl = Math.toRadians(lon - lon0);
-        double cosc = Math.sin(f0) * Math.sin(f) + Math.cos(f0) * Math.cos(f) * Math.cos(dl);
-        if (cosc < 0) return false;
-        xy[0] = EarthProj.RADIUS_M * Math.cos(f) * Math.sin(dl);
-        xy[1] = EarthProj.RADIUS_M * (Math.cos(f0) * Math.sin(f) - Math.sin(f0) * Math.cos(f) * Math.cos(dl));
-        return true;
-    }
-
-    /** The globe's picture of the planet, made once from a reader (Globe.TEXEL_ARCMIN), and the reader it was made from. */
-    private static int[] texture;
-    private static EarthData textured;
-
-    /** The planet's picture: a texel every TEXEL_ARCMIN, its colour the sea's, the lakes' and the land's by their shares in the 4' layers - the land the map's grass, its forest by land cover, ice and desert in the map's ICE and DESERT (0.7.127). */
-    static synchronized int[] texture(EarthData d) {
-        if (texture != null && textured == d) return texture;
-        int per = Globe.TEXEL_ARCMIN / 4, cols = 360 * 60 / Globe.TEXEL_ARCMIN, rows = 180 * 60 / Globe.TEXEL_ARCMIN;
-        int[] t = new int[cols * rows];
-        EarthData.Layer far = d.layer("far.land");
-        int fcpd = far.cellsPerDegree, fcols = 360 * fcpd;
-        EarthData.Layer cover = d.layer("landcover");
-        int ccpd = cover.cellsPerDegree;
-        int[] g = TileRaster.GROUND;
-        for (int band = 179; band >= 0; band--) {
-            byte[] land = d.grid("far.land", band), lake = d.grid("far.lake", band);
-            int r0 = (179 - band) * fcpd;
-            for (int rr = 0; rr < fcpd; rr += per) {
-                int row = (r0 + rr) / per;
-                if (row >= rows) continue;
-                for (int col = 0; col < cols; col++) {
-                    double dry = 0, wet = 0;
-                    for (int a = 0; a < per; a++) for (int b = 0; b < per; b++) {
-                        int k = (rr + a) * fcols + col * per + b;
-                        dry += land[k] & 0xFF;
-                        wet += lake[k] & 0xFF;
-                    }
-                    dry /= per * per * (double) EarthData.FAR_LEVELS;
-                    wet /= per * per * (double) EarthData.FAR_LEVELS;
-                    double sea = Math.max(0, 1 - dry - wet);
-                    int ground = g[World.GRASS];
-                    if (dry > 0) {
-                        double lat = 90 - (row + 0.5) * Globe.TEXEL_ARCMIN / 60.0, lon = (col + 0.5) * Globe.TEXEL_ARCMIN / 60.0 - 180;
-                        int lc = d.at("landcover", lat, lon);
-                        if ((lc & EarthData.LC_ICE) != 0) ground = g[World.ICE];
-                        else if ((lc & EarthData.LC_DESERT) != 0) ground = g[World.DESERT];
-                        else {
-                            double f = (lc & EarthData.LC_FOREST) / (double) EarthData.SHARE_LEVELS;
-                            ground = mix(new int[] { g[World.GRASS], g[World.FOREST] }, new double[] { 1 - f, f });
-                        }
-                    }
-                    double sum = dry + wet + sea;
-                    t[row * cols + col] = mix(new int[] { ground, g[World.FRESH], g[World.SALT] }, new double[] { dry / sum, wet / sum, sea / sum });
-                }
-            }
-        }
-        texture = t;
-        textured = d;
-        return t;
-    }
-
-    /** Colours mixed by weights, opaque. */
-    static int mix(int[] colours, double[] w) {
-        double r = 0, gg = 0, b = 0;
-        for (int i = 0; i < colours.length; i++) {
-            r += w[i] * ((colours[i] >> 16) & 255);
-            gg += w[i] * ((colours[i] >> 8) & 255);
-            b += w[i] * (colours[i] & 255);
-        }
-        return 0xff000000 | ((int) Math.round(r) << 16) | ((int) Math.round(gg) << 8) | (int) Math.round(b);
-    }
-
-    /** The globe wide: each pixel's point on the planet, orthographic round the view's centre, its texel's colour; space off the disc. */
-    static int[] globePixels(EarthData d, double lat0, double lon0, double kmPx) {
-        int[] t = texture(d);
-        int cols = 360 * 60 / Globe.TEXEL_ARCMIN, rows = 180 * 60 / Globe.TEXEL_ARCMIN;
-        int w = (int) GLOBE_W, h = (int) GLOBE_H;
-        int[] out = new int[w * h];
-        double[] ll = new double[2];
-        for (int j = 0; j < h; j++) {
-            for (int i = 0; i < w; i++) {
-                double x = (i + 0.5 - w / 2.0) * kmPx * 1000, y = (h / 2.0 - j - 0.5) * kmPx * 1000;
-                if (!orthoInverse(lat0, lon0, x, y, ll)) {
-                    out[j * w + i] = Globe.SPACE;
-                    continue;
-                }
-                int row = (int) Math.min(rows - 1, Math.max(0, Math.floor((90 - ll[0]) * 60 / Globe.TEXEL_ARCMIN)));
-                int col = Math.floorMod((int) Math.floor((ll[1] + 180) * 60 / Globe.TEXEL_ARCMIN), cols);
-                out[j * w + i] = t[row * cols + col];
-            }
-        }
-        return out;
-    }
-
-    /** The ground close: the city's own far view (MapTiles.nodeTerrain()) on an Earth world centred on the view - the spot's own when it is there - a whole number of plots a pixel; the void past the planet's rim. */
+    /** The ground close: the city's own far view (MapTiles.nodeTerrain()) on an Earth world centred on the view - the spot's own when it is there - a whole number of plots a pixel; the void past the planet's rim. Since 0.7.135 the globe's wide views are the map's (GlobePicture.view()), and this is the founding globe's own arithmetic alone. */
     static int[] groundPixels(World.Key spot, double lat0, double lon0, double kmPx) {
         World.Key key = spot != null ? spot : World.Key.earth(Founding.DEFAULT_WORLD_SEED, lat0, lon0, EarthData.EARTH_1);
         long s = Math.max(1, Math.round(kmPx * 1000 / World.PLOT_M));
