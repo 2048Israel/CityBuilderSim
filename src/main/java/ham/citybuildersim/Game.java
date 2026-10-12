@@ -1995,6 +1995,9 @@ public class Game {
         refusedOnPrice.clear();
         refusedByLender.clear();
         heldForDownPayment.clear();
+        // ...and the raises the month withheld or left with no order (0.7.136): THE CREDIT BEFORE THE OWNERS.
+        raisesWithheld.clear();
+        raisedForNoOrder.clear();
 
         // Shrinking is decided before growing. A sector cannot sensibly do both
         // in one month, and running retirement first means a firm that has just
@@ -4517,10 +4520,24 @@ public class Game {
             return;
         }
 
-        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
-
         double perUnitProfit = businessInvestment.estimatedMonthlyProfit(
                 decision.sector, decision.template);
+
+        // The owners first, then the order - and since 0.7.136 (batch FX1) the owners only for an order that will be
+        // placed: see THE CREDIT BEFORE THE OWNERS, below. What was raised for an order not placed is counted.
+        double raised = askTheOwners(decision, payer, perUnitProfit);
+        boolean placed = placeOrder(decision, payer, slot, perUnitProfit);
+        if (raised > 0 && !placed) raisedForNoOrder.merge(decision.sector, raised, Double::sum);
+    }
+
+    /**
+     * The owners first: the register's offering for the plan and what the
+     * sector holds abroad brought home, before the order reads its till -
+     * the offering only where consider()'s gates would place the order with
+     * it (THE CREDIT BEFORE THE OWNERS, 0.7.136). Returns what was raised.
+     */
+    private double askTheOwners(BusinessInvestment.Decision decision, Investor payer, double perUnitProfit) {
+        double raisedNow = 0;
 
         /*
          * THE OWNERS FIRST, since 2026-09-10 (evening). Before a sector reads
@@ -4571,6 +4588,15 @@ public class Game {
             }
             // ...and not at a quote under what the shares are worth: then it borrows.
             if (ask > 0 && !exchange.quoteSupportsIssue(company)) ask = 0;
+            // ...and not for an order that would fall through even with it (0.7.136): THE CREDIT BEFORE THE OWNERS.
+            if (ask > 0) {
+                double till = payer.getCash() + ask;
+                till += Math.min(outward.localValue(decision.sector), Math.max(0, planCost - till));
+                if (!wouldBePlaced(decision, till, perUnitProfit)) {
+                    raisesWithheld.merge(decision.sector, ask, Double::sum);
+                    ask = 0;
+                }
+            }
             if (ask > 0) {
                 // Built at the book's price: its last trade, or fair value
                 // before one (0.7.12 round 2 - the dealer's mid until then).
@@ -4581,11 +4607,23 @@ public class Game {
                     economyManager.setSectorCash(decision.sector,
                             economyManager.getSectorCash(decision.sector) + raised);
                     economyManager.recordEquityRaised(decision.sector, raised);
+                    raisedNow = raised;
                 }
             }
             double short_ = planCost - payer.getCash();
             if (short_ > 0) outward.recall(decision.sector, short_, economyManager);
         }
+        return raisedNow;
+    }
+
+    /**
+     * ...then the order, on the till the owners left: the borrowing ban, a
+     * landlord's mortgage, the largest slice that carries the interest on
+     * its whole cost, and buildFor() - and the advisor's line. True when an
+     * order was placed.
+     */
+    private boolean placeOrder(BusinessInvestment.Decision decision, Investor payer, String slot, double perUnitProfit) {
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
 
         double cash = payer.getCash();
 
@@ -4599,14 +4637,13 @@ public class Game {
                     String.format("Holding: borrowing ban, %d more months - %s would need credit",
                             credit.getBlockedMonths(decision.sector),
                             decision.template.getName()));
-            return;
+            return false;
         }
 
         // A landlord's home is bought on an insured mortgage (0.7.11): its own
         // down payment, and the lender's test - see THE LANDLORDS' MORTGAGES.
         if (buysOnMortgage(decision)) {
-            considerOnMortgage(decision, slot, cash, perUnitProfit);
-            return;
+            return considerOnMortgage(decision, slot, cash, perUnitProfit);
         }
 
         // The largest slice that carries the interest on its whole cost (0.7.113):
@@ -4629,7 +4666,7 @@ public class Game {
                             borrows ? " at the debt it would take on" : " it")
                     : String.format("Declined %s - not even one would cover its interest on its whole cost",
                             decision.template.getName()));
-            return;
+            return false;
         }
 
         int quantity = affordable;
@@ -4644,6 +4681,7 @@ public class Game {
                     String.format("Built %,d %s%s%s - %s",
                             quantity, decision.template.getName(), trimmed,
                             financingWords(projectFinancing.get(decision.sector)), decision.reason));
+            return true;
         } else if (credit.wasRefusedAtDefaultPoint(decision.sector)) {
             /*
              * PAST THE DEFAULT POINT (0.7.12, round 2): the sector owes more
@@ -4688,7 +4726,87 @@ public class Game {
                             LandManager.areaWords(landManager.freeFor(sector)),
                             others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : ""));
         }
+        return false;
     }
+
+    /* =======================================================================
+       THE CREDIT BEFORE THE OWNERS (0.7.136, batch FX1)
+
+       consider() put the register's offering to the households and the
+       world before it asked any of its other questions, and an order those
+       questions then turned down left the sector holding the equity: on the
+       Earth playtest at month 1,293 Copper Refining raised D$3.8B of shares,
+       the bank's capital rule refused the loan for the rest, and no order
+       was placed (the I8 notes, runs/fixI8-notes.md 4 and 7). A company
+       does not sell its shares and then find out whether its lender will
+       close; it sells them for a plan that will be built.
+
+       So the order's gates are asked first, with the raise in the till as
+       if every share sold and what the sector holds abroad brought home as
+       the recall would bring it: a plan that would fall through even so
+       raises nothing, and is asked as before on the till it has - it falls
+       through in its own words, or, the rare way, carries itself without
+       its owners. A plan that would go through raises as it always did, and
+       everything after is unchanged. Testing first rather than handing the
+       raise back: an offering undone would be five ledgers put back - each
+       household's subscription, the world's, the register's shares and
+       price, the month's equity flow and the audit's - for a sale that
+       should not have happened; a test books none of them.
+
+       The gates are consider()'s, asked the way it asks them and booking
+       nothing: the borrowing ban; the largest slice that carries the
+       interest on its whole cost, or a landlord's down payment and the
+       lender's test (Mortgage.decide()); and buildFor()'s - the ground with
+       ore in it, the coast, the licences, the land, and what the shortfall
+       would borrow: a bond that raises it all, or the bank's answer
+       (canFundProject()'s, read through projectLoanRoom(), which books no
+       refusal; a mortgage's through mortgageRefusalFor()). What can still
+       leave a sector holding a raise is an offering that sold short of the
+       ask - the till then lower than the gates were asked on. The month's
+       raises withheld and raises left with no order are kept, for the
+       playtest to count (getRaisesWithheld(), getRaisedForNoOrder()).
+       ======================================================================= */
+
+    /** Whether consider() would place this order with `cash` in the till: its gates asked ahead, booking nothing - see THE CREDIT BEFORE THE OWNERS. */
+    private boolean wouldBePlaced(BusinessInvestment.Decision decision, double cash, double perUnitProfit) {
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        BuildingsTemplate t = decision.template;
+        if (credit.isBorrowingBlocked(decision.sector) && businessInvestment.getCostOf(t, 1) > cash) return false;
+        boolean mortgaged = buysOnMortgage(decision);
+        int quantity;
+        if (mortgaged) {
+            double tested = businessInvestment.realTestRate(credit.getInsuredMortgageRate());
+            quantity = Mortgage.decide(decision.quantity, n -> businessInvestment.getCostOf(t, n), cash,
+                    perUnitProfit - economyManager.housingCarry(t), tested).quantity();
+        } else {
+            quantity = largestSliceThatCarries(decision, cash, perUnitProfit).quantity();
+        }
+        if (quantity <= 0) return false;
+        // ...and buildFor()'s, in its order.
+        if (!hasDepositFor(t, quantity) || !hasCoastFor(t, quantity) || !hasLicencesFor(t, quantity)) return false;
+        double landNeeded = t.getLandSqFt() * quantity;
+        String zoned = t.getSector();
+        if (!landManager.canAllocate(landNeeded, zoned)) return false;
+        double shortfall = quoteBuild(t, quantity).total + landManager.priceFor(landNeeded, zoned) - cash;
+        if (!(shortfall > 0)) return true;
+        if (mortgaged) return credit.mortgageRefusalFor(decision.sector, shortfall, shortfall + cash) == null;
+        double gross = grossedForFee(shortfall);
+        BusinessDebtManager.Plan plan = financeProject(decision.sector, gross, credit.projectRate(decision.sector, gross));
+        if (plan != null && plan.hasBond() && plan.covers()) return true;
+        return credit.projectLoanRoom(decision.sector, gross) >= gross;
+    }
+
+    /** The month's raises consider() withheld, by sector: what the register would have asked for an order that would have fallen through even with it (0.7.136). */
+    private final java.util.Map<String, Double> raisesWithheld = new java.util.LinkedHashMap<>();
+
+    /** ...and the month's raises made for an order then not placed, by sector: an offering that sold short of its ask (0.7.136). */
+    private final java.util.Map<String, Double> raisedForNoOrder = new java.util.LinkedHashMap<>();
+
+    /** The month's raises withheld, by sector (THE CREDIT BEFORE THE OWNERS): read in the month, not saved. */
+    public java.util.Map<String, Double> getRaisesWithheld() { return java.util.Collections.unmodifiableMap(raisesWithheld); }
+
+    /** ...and the month's raises left with no order placed, by sector. */
+    public java.util.Map<String, Double> getRaisedForNoOrder() { return java.util.Collections.unmodifiableMap(raisedForNoOrder); }
 
     /* =======================================================================
        THE LARGEST SLICE, WITHOUT COUNTING TO IT (0.7.54)
@@ -5112,8 +5230,9 @@ public class Game {
      * 0.7.54) - and the advisor's line, in the lender's words when it says no.
      *
      * @param perUnitRent what one of these would let for a month (estimatedMonthlyProfit())
+     * @return whether an order was placed (0.7.136: consider() counts a raise left with none)
      */
-    private void considerOnMortgage(BusinessInvestment.Decision decision, String slot,
+    private boolean considerOnMortgage(BusinessInvestment.Decision decision, String slot,
                                     double cash, double perUnitRent) {
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
         BuildingsTemplate t = decision.template;
@@ -5128,7 +5247,7 @@ public class Game {
         if (d.quantity() <= 0) {
             (d.shortOfDown() ? heldForDownPayment : refusedByLender).add(decision.sector);
             lastInvestment.put(slot, d.refusal(t.getName(), tested, insured));
-            return;
+            return false;
         }
 
         int quantity = d.quantity();
@@ -5141,6 +5260,7 @@ public class Game {
             boolean mortgaged = credit.getMortgagesWrittenThisMonth() > written;
             lastInvestment.put(slot, String.format("Built %,d %s%s%s - %s", quantity, t.getName(),
                     mortgaged ? " on an insured mortgage" : "", trimmed, decision.reason));
+            return true;
         } else if (refusal[0] != null) {
             /*
              * THE LENDER SAID NO AT THE DOOR, after the plan passed: the price
@@ -5176,6 +5296,7 @@ public class Game {
                             LandManager.areaWords(landManager.freeFor(t.getSector())),
                             others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : ""));
         }
+        return false;
     }
 
     /**

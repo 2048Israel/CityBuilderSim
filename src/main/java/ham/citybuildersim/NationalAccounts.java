@@ -235,6 +235,12 @@ public class NationalAccounts {
     /** The month's units of each good in HELD written off with the yard that held them (0.7.133): a flow, read in the month it is handed in. */
     private final double[] heldWrittenOffUnits = new double[HELD.length];
 
+    /** ...and the first three terms' (0.7.136, batch FX1): the food written off, as the fixed-weight volume foodUnits is; the materials and the luxuries, in units. The month's, as handed in. */
+    private double foodWrittenOffVolume, materialsWrittenOffUnits, luxuriesWrittenOffUnits;
+
+    /** What each term added back of the month's write-offs, at the price it measured the change at: food, materials, luxuries, HELD's goods (0.7.136). */
+    private final double[] writtenOffAddedBack = new double[4];
+
     /** Whether lastHeldUnits is a real baseline: false only after loading a save from before 0.7.58, whose first month books no change in these goods. */
     private boolean heldBaselineKnown = true;
 
@@ -345,6 +351,14 @@ public class NationalAccounts {
     public double[] getLastHeldUnits()       { return lastHeldUnits.clone(); }
     /** The month's units of each good in HELD destroyed with the yard that held them, in its order, added back before the change was measured (0.7.133). */
     public double[] getHeldWrittenOff()      { return heldWrittenOffUnits.clone(); }
+    /** The month's food destroyed with the warehouse that held it, as a volume at fixed weights, added back before the change was measured (live since 0.7.136). */
+    public double getFoodWrittenOff()        { return foodWrittenOffVolume; }
+    /** ...the materials plants' units (0.7.136). */
+    public double getMaterialsWrittenOff()   { return materialsWrittenOffUnits; }
+    /** ...the luxuries' pieces (0.7.136). */
+    public double getLuxuriesWrittenOff()    { return luxuriesWrittenOffUnits; }
+    /** What the month's terms added back of what was written off, at the price each measured the change at - {food, materials, luxuries, HELD's goods} (0.7.136): none in a month that books no change. */
+    public double[] getWrittenOffAddedBack() { return writtenOffAddedBack.clone(); }
     public boolean isBaselineKnown()     { return inventoryBaselineKnown; }
 
     /**
@@ -411,13 +425,34 @@ public class NationalAccounts {
      * ...and with the units of HELD's goods written off this month (0.7.133),
      * in HELD's order, or null for none: stock destroyed with the yard that
      * held it, added back before the change is measured as food's write-off
-     * is - see A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED.
+     * is - see A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED. No
+     * materials or luxuries written off.
      */
     public void update(double retailSales, double rentPaid,
                        double constructionWorkDone,
                        double foodUnits, double foodStockWrittenOff, double foodPrice,
                        double materialUnits, double materialPrice,
                        double luxuryUnits, double luxuryPrice,
+                       double governmentServices,
+                       double foodImports, double materialImports,
+                       double rawMaterialImports, double exportRevenue,
+                       double[] heldUnits, double[] heldWrittenOff, double[] heldPrices) {
+        update(retailSales, rentPaid, constructionWorkDone, foodUnits, foodStockWrittenOff, foodPrice,
+                materialUnits, 0, materialPrice, luxuryUnits, 0, luxuryPrice, governmentServices,
+                foodImports, materialImports, rawMaterialImports, exportRevenue, heldUnits, heldWrittenOff, heldPrices);
+    }
+
+    /**
+     * ...and with the materials and the luxuries written off this month
+     * (0.7.136, batch FX1), each in its own units beside its stock, as food's
+     * is: every term adds its write-off back - see EVERY TERM ADDS ITS
+     * WRITE-OFF BACK. The whole measure; the shorter overloads pass none.
+     */
+    public void update(double retailSales, double rentPaid,
+                       double constructionWorkDone,
+                       double foodUnits, double foodStockWrittenOff, double foodPrice,
+                       double materialUnits, double materialWrittenOff, double materialPrice,
+                       double luxuryUnits, double luxuryWrittenOff, double luxuryPrice,
                        double governmentServices,
                        double foodImports, double materialImports,
                        double rawMaterialImports, double exportRevenue,
@@ -442,8 +477,8 @@ public class NationalAccounts {
              * destroyed with the capacity that held it left the city, but it was
              * not consumed and it was not unproduced - counting it here would
              * book a demolition as a month of negative output. (Found 0.7.133:
-             * the figure handed in here has read zero - see A YARD SOLD BACK
-             * FULL IS WRITTEN OFF, NOT UNPRODUCED, below.)
+             * the figure handed in here had always read zero; since 0.7.136 it
+             * is the strike's - see EVERY TERM ADDS ITS WRITE-OFF BACK, below.)
              */
             invFood = ((foodUnits + foodStockWrittenOff) - lastFoodVolume) * foodPrice;
 
@@ -462,9 +497,10 @@ public class NationalAccounts {
              * yet sold, exactly as a mill's warehouse of food is. Building it
              * up is production; the sale to the builders moves it into a
              * contract and nets to zero. So `materialUnits` is the makers'
-             * stock and it is measured like food.
+             * stock and it is measured like food - its write-off added back as
+             * food's is, since 0.7.136 (EVERY TERM ADDS ITS WRITE-OFF BACK).
              */
-            invMaterials = (materialUnits - lastMaterialUnits) * materialPrice;
+            invMaterials = ((materialUnits + materialWrittenOff) - lastMaterialUnits) * materialPrice;
 
             /* =============================================================
                AND THE BOUTIQUE'S STOCKROOM IS THE FOURTH TERM (2026-09-17)
@@ -496,7 +532,7 @@ public class NationalAccounts {
                the good is written. Two of the three were found by a negative
                month rather than by remembering.
                ============================================================= */
-            invLuxuries = (luxuryUnits - lastLuxuryUnits) * luxuryPrice;
+            invLuxuries = ((luxuryUnits + luxuryWrittenOff) - lastLuxuryUnits) * luxuryPrice;
 
             // ...and every other good held, a good at a time (0.7.58): see
             // EVERY OTHER GOOD A SECTOR HOLDS IS THE FIFTH TERM.
@@ -522,23 +558,51 @@ public class NationalAccounts {
                production. The units come from Sector.writtenOffStruck(), not
                the row: the accounts are struck after strikeSectors() clears
                the rows - which is why food's own add-back, reading the row
-               (EconomyManager.updateNationalAccounts()), has read zero.
+               (EconomyManager.updateNationalAccounts()), read zero until
+               0.7.136.
+               ============================================================= */
+            /* =============================================================
+               EVERY TERM ADDS ITS WRITE-OFF BACK (0.7.136, batch FX1)
+
+               I8 gave HELD's goods the rule and left the three before them:
+               food's add-back read the row after the strike had cleared it,
+               so it was zero in every month there has been, and the
+               materials' and the luxuries' terms had none. A mill's
+               warehouse or a materials plant's shed sold back full booked
+               its stock as negative investment, as the copper yard did.
+               Now each reads what the strike kept (Sector.writtenOffStruck(),
+               summed over every sector by EconomyManager): food's at the
+               fixed weights its volume is struck at, the materials and the
+               luxuries in their units. No sector makes luxuries today, so
+               nothing writes them off (Sector.produceStock() is the only
+               write-off, and a boutique's shelf is a pantry no sale-back
+               empties); their term follows the rule for the day one does.
                ============================================================= */
             invHeld = 0;
+            double heldAddedBack = 0;
             if (heldBaselineKnown) {
                 for (int i = 0; i < HELD.length; i++) {
                     invHeld += (held(heldUnits, i) + held(heldWrittenOff, i) - lastHeldUnits[i]) * held(heldPrices, i);
+                    heldAddedBack += held(heldWrittenOff, i) * held(heldPrices, i);
                 }
             }
+            writtenOffAddedBack[0] = foodStockWrittenOff * foodPrice;
+            writtenOffAddedBack[1] = materialWrittenOff * materialPrice;
+            writtenOffAddedBack[2] = luxuryWrittenOff * luxuryPrice;
+            writtenOffAddedBack[3] = heldAddedBack;
 
             investmentInventories = invFood + invMaterials + invLuxuries + invHeld;
         } else {
             investmentInventories = 0;
             invHeld = 0;
+            java.util.Arrays.fill(writtenOffAddedBack, 0);
             inventoryBaselineKnown = true;
         }
         heldBaselineKnown = true;
         for (int i = 0; i < HELD.length; i++) heldWrittenOffUnits[i] = held(heldWrittenOff, i);
+        foodWrittenOffVolume = foodStockWrittenOff;
+        materialsWrittenOffUnits = materialWrittenOff;
+        luxuriesWrittenOffUnits = luxuryWrittenOff;
 
         lastFoodVolume = foodUnits;
         lastMaterialUnits = materialUnits;

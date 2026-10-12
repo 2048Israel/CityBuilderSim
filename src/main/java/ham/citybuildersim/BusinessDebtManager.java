@@ -2052,30 +2052,36 @@ public class BusinessDebtManager {
      * @param cost      what the order costs
      */
     public boolean canFundMortgage(String sector, double shortfall, double cost) {
-        mortgageRefusal = null;
-        if (!(shortfall > 0)) { mortgageRefusal = MORTGAGE_NOTHING; return false; }
-        if (!lendingOpen) { mortgageRefusal = MORTGAGE_BANK_SHUT; return false; }
-        if (isBorrowingBlocked(sector)) { mortgageRefusal = MORTGAGE_BANNED; return false; }
-        double loan = Mortgage.loanFor(shortfall);
-        if (loan > Mortgage.MORTGAGE_MAX_LOAN_TO_COST * cost * (1 + 1e-9)) {
-            mortgageRefusal = MORTGAGE_DOWN_PAYMENT;
-            return false;
+        mortgageRefusal = mortgageRefusalFor(sector, shortfall, cost);
+        if (MORTGAGE_CAPITAL.equals(mortgageRefusal)) {
+            refusedForCapital.add(sector);
+            refusedMortgageForCapital.add(sector);
         }
+        return mortgageRefusal == null;
+    }
+
+    /**
+     * ...the same question booking nothing (0.7.136, batch FX1): why the
+     * lender would refuse, one of the MORTGAGE_ words, or null where it
+     * would write it - canFundMortgage()'s rules, which record the answer
+     * and a capital refusal. What Game.consider() asks before a landlord's
+     * owners are offered shares (THE CREDIT BEFORE THE OWNERS).
+     */
+    public String mortgageRefusalFor(String sector, double shortfall, double cost) {
+        if (!(shortfall > 0)) return MORTGAGE_NOTHING;
+        if (!lendingOpen) return MORTGAGE_BANK_SHUT;
+        if (isBorrowingBlocked(sector)) return MORTGAGE_BANNED;
+        double loan = Mortgage.loanFor(shortfall);
+        if (loan > Mortgage.MORTGAGE_MAX_LOAN_TO_COST * cost * (1 + 1e-9)) return MORTGAGE_DOWN_PAYMENT;
         double principal = loan * (1 + Mortgage.premiumRate());
         double assetsAfter = Math.max(0, getAssets(sector)) + principal;
         // ...as it stands, too (0.7.12, round 2): see canFundProject().
         if (pastDefaultPoint(sector, getCash(sector))
                 || getPrincipal(sector) + principal > assetsAfter * INSOLVENCY_TRIGGER) {
-            mortgageRefusal = MORTGAGE_PAST_DEFAULT_POINT;
-            return false;
+            return MORTGAGE_PAST_DEFAULT_POINT;
         }
-        if (insuredRationed && principal > capitalRoom(sector)) {
-            mortgageRefusal = MORTGAGE_CAPITAL;
-            refusedForCapital.add(sector);
-            refusedMortgageForCapital.add(sector);
-            return false;
-        }
-        return true;
+        if (insuredRationed && principal > capitalRoom(sector)) return MORTGAGE_CAPITAL;
+        return null;
     }
 
     /** Why canFundMortgage() last said no, or null if it said yes. */

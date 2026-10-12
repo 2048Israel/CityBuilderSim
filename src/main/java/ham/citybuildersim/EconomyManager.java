@@ -1931,18 +1931,20 @@ public class EconomyManager {
          * MATERIALS IS STILL ONE GOOD and is still counted in bricks.
          */
         double foodUnits = 0, foodWrittenOff = 0, foodAtLocal = 0;
-        double materialUnits = 0;
+        double materialUnits = 0, materialWrittenOff = 0;
         for (Sector s : sectors.all()) {
             for (Good fg : ham.citybuildersim.sectors.Retail.SHELF) {
                 double held = s.getStock(fg) + s.getPantry(fg);
                 foodUnits      += held * fg.worldImportPrice();
-                // NOT A LIVE FIGURE (found 0.7.133): this row was cleared by strikeSectors() before the accounts
-                // are struck, so it reads zero. HELD's goods read Sector.writtenOffStruck(); moving food onto it
-                // would move every city whose shop or mill loses a warehouse, so it is left to its own batch.
-                foodWrittenOff += s.output(fg).writtenOff * fg.worldImportPrice();
+                // ...and what the strike kept of the month's write-offs (0.7.136, batch FX1), at the same weights:
+                // the row it read until then had been cleared by strikeSectors() before the accounts are struck,
+                // so food's add-back read zero. See NationalAccounts, EVERY TERM ADDS ITS WRITE-OFF BACK.
+                foodWrittenOff += s.writtenOffStruck(fg) * fg.worldImportPrice();
                 foodAtLocal    += held * Math.max(0, markets.get(fg).getLocalPrice());
             }
             materialUnits += s.getStock(Good.MATERIALS);
+            // ...and the plants' shed written off with them (0.7.136), as food's is.
+            materialWrittenOff += s.writtenOffStruck(Good.MATERIALS);
         }
         double foodPrice = foodUnits > 0 ? foodAtLocal / foodUnits : 0;
         double materialPrice = markets.get(Good.MATERIALS).getLocalPrice();
@@ -1955,9 +1957,11 @@ public class EconomyManager {
          * starts holding the good later. See the note in NationalAccounts for
          * why a month of imports read as negative output without this.
          */
-        double luxuryUnits = 0;
+        double luxuryUnits = 0, luxuryWrittenOff = 0;
         for (Sector s : sectors.all()) {
             luxuryUnits += s.getStock(Good.LUXURIES) + s.getPantry(Good.LUXURIES);
+            // ...and the pieces written off (0.7.136): none while no sector makes them, the rule kept all the same.
+            luxuryWrittenOff += s.writtenOffStruck(Good.LUXURIES);
         }
         // At what a piece costs to bring in, not at the local price: a month
         // nobody bid struck "the middle" of a band with no maker in it, and
@@ -2003,8 +2007,8 @@ public class EconomyManager {
         nationalAccounts.update(retailSales, rentPaid,
                 constructionWorkDone,
                 foodUnits, foodWrittenOff, foodPrice,
-                materialUnits, materialPrice,
-                luxuryUnits, luxuryPrice,
+                materialUnits, materialWrittenOff, materialPrice,
+                luxuryUnits, luxuryWrittenOff, luxuryPrice,
                 governmentServices,
                 foodImports, materialImports,
                 rawImports, exports,
