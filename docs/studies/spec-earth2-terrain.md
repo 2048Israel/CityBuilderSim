@@ -49,7 +49,9 @@ The checks:
 - At this threshold, a third of the sea within 20 km of land is bridgeable, and 98% of all the sea is not.
 
 **Bridges come in two kinds (§6):**
-- **Short crossings, up to 420 m for a highway or rail and 180 m for a street:** the map's runs lay them as they lay fresh-water bridges today, and only where the city's own ground lies beyond. **Halifax's Macdonald and MacKay bridges are this kind.**
+- **Short crossings, up to 1,020 m (34 plots) for a highway or rail and 180 m for a street:** the map's runs lay them as they lay fresh-water bridges today, and only where the city's own ground lies beyond. **Halifax's Macdonald and MacKay bridges are this kind.**
+  - The mockup measured about 805–820 m of water under them on earth-2's ground. That is why the highway's cap rises from today's 14 plots (420 m).
+  - Water a short crossing can span does not cut land into separate landmasses, so the model and the map agree.
 - **Long crossings are orders on Build:** a Highway, Rail or Road Bridge.
   - Before anything is laid, a continuous path of shallow or fresh water must reach dry land on the far side.
   - The whole span is judged and priced as one order. Deep water anywhere on the path refuses it.
@@ -218,7 +220,9 @@ A share from 25 to 100 samples is only good to about a tenth anyway, and this co
   - MacKay: 1.2 km long, 740 m of suspended spans.
   - Main spans of 441 m and 426 m (Wikipedia).
 
-**How 15″ resolves a channel.** A 15″ cell there is 463 × 329 m, so the Narrows is 1 to 1.5 cells wide. earth-1's sea share already draws its shape. In the baked shallow layer, the Narrows' cells at the Macdonald Bridge are 15/15 shallow and Bedford Basin's middle is 0/15 (`earth2/halifax.png`).
+**How 15″ resolves a channel.** A 15″ cell there is 463 × 329 m, so the sill is 1 to 1.5 cells wide. earth-1's sea share already draws the channel's shape. In the baked shallow layer, the Narrows' cells at the Macdonald Bridge are 15/15 shallow and Bedford Basin's middle is 0/15.
+
+**The sill is not the channel.** BIO's "300 to 400 metres wide" is the sill's width under water, not the water from shore to shore. Along the bridges' own lines, earth-2's sea share passes a half for **820 m (Macdonald)** and **805 m (MacKay)**. With each seed's coastline detail, a road meets 555–1,000 m and 295–915 m of water over eight seeds (measured by the mockup). That figure sets the short crossing in §6.2.
 
 **The threshold: 30 m (est.).** Real long sea bridges mostly stand in 5–25 m of water.
 - GEBCO gives 24 m for the Confederation Bridge's deepest water.
@@ -499,11 +503,22 @@ The mockup's board 4 shows a services sector's note and a mining sector's.
 
 `CityRuns.clear()` bridges FRESH water today: a highway or rail up to 14 plots (420 m), a street up to 6 plots (180 m), and only if the city's own non-sea ground lies beyond. That condition is already all or nothing.
 
-**The widening:** the same rule, with SHALLOW alongside FRESH. Deep sea still stops a run, and the run turns along the shore.
+**Widening 1: the water.** SHALLOW counts alongside FRESH. Deep sea still stops a run, and the run turns along the shore.
 
-**Halifax's two bridges are this kind.** The Narrows is 300–400 m wide and 20 m deep, inside 420 m and 30 m. A Halifax city that owns both shores sees its highways cross where the real bridges stand.
+**Widening 2: the reach.** A highway or rail now spans up to **34 plots (1,020 m)**; a street stays at 6. 14 plots fails Halifax:
+- the water under the Macdonald's line is about 820 m, and under the MacKay's about 805 m (§2.5);
+- over eight seeds the run would refuse the Macdonald every time and the MacKay seven times in eight;
+- since both shores are one landmass, the long order would refuse them too.
+
+1,020 m holds both bridges on every seed measured (the widest was 1,000 m). Water that wide is spanned by ordinary highway bridges everywhere. The dial is `TilePainter.MAX_BRIDGE` and `RAIL_BRIDGE` (est., D12). It is the map's alone, so the default trace does not move, though generated maps redraw some wider rivers with a bridge.
+
+**The same width defines a landmass** (§2.6, D16). Two pieces of ground joined by 1,020 m or less of shallow or fresh water are one landmass, so anything a run can span lies inside one landmass. A wider gap is a landmass's edge, which only a long bridge or two ports link.
+
+**Halifax's two bridges are this kind.** A Halifax city that owns both shores sees its highways cross the Narrows where the real bridges stand.
 
 **What the model sees:** nothing new. Short crossings are paid inside the highway's own cost, as fresh-water crossings are today.
+
+**A rule for ET1's drawing.** The shallow share is a share of a cell's sea, so it must be interpolated weighted by the sea share. Read plainly, the land cells' zeros draw a fringe of deep sea along every coast. Also, the coast's seeded fray moves a narrow channel's width by about ±250 m from seed to seed, which is why the cap carries a margin over 820 m.
 
 ### 6.3 Long crossings: an order, all or nothing
 
@@ -530,7 +545,7 @@ The mockup's board 4 shows a services sector's note and a mining sector's.
 **The order's price** is its length times a cost per m by kind (rail above highway above road) and by depth (taller piers in deeper water), plus its two landings.
 
 **The rates (est.)** are researched in ET6's brief from built bridges. For scale:
-- the Confederation Bridge cost about C$1.0 billion (1997) for 12.9 km, about C$78,000 a m;
+- the Confederation Bridge cost C$1.3 billion (built 1993–97) for 12.9 km, about C$100,000 a m [S18]; some sources give C$1.0 billion, and ET6's brief settles which;
 - spans this long are among the dearest structures a city buys.
 
 The cost goes through the builders' quote, so a long bridge takes their capacity for years, as real ones did.
@@ -720,7 +735,7 @@ A missing key means flat and none, which is right for every generated city. No c
 | **ET3** | **Prices by class and the land line.** The residual price; offers and every picker by buildable km² with preparation; zones by class; sector books by class; the statement's note 11 and the equity row; the land office's and offer card's classes | default identical; Earth moves where a city holds foothill |
 | **ET4** | **Highways and rail by slope.** The works by the city's mix (rates researched); rail above highway; their land from all classes; runs across steep ground drawn as viaducts and tunnels | default identical; Earth moves where a city holds slopes |
 | **ET5** | **Landmasses and the island rule** (the roads study's §3, decided 2026-10-09). The landmass layer read; the books by landmass; `Landmasses` (saved); linked by two ports; free ground on linked landmasses only; ports built on a chosen landmass's shore; the hatching, tags, words and inbox notice | moves only where a city owns ground on another landmass (the Rotterdam delta's Goeree-Overflakkee is one; measured in ET5) |
-| **ET6** | **Bridges.** Short crossings over SHALLOW by the runs' rule; Highway, Rail and Road Bridge orders with the all-or-nothing path test, priced by length and depth (rates researched); linking landmasses; the saved list; runs and plans honour them; the Build cards and refusals | moves only where one is built |
+| **ET6** | **Bridges.** Short crossings over SHALLOW by the runs' rule, the highway's and rail's reach widened to 34 plots; Highway, Rail and Road Bridge orders with the all-or-nothing path test, priced by length and depth (rates researched); linking landmasses; the saved list; runs and plans honour them; the Build cards and refusals | moves only where one is built |
 
 **Under Pending, for you:**
 - **ET-D:** the 21 decisions below.
@@ -749,11 +764,11 @@ A missing key means flat and none, which is right for every generated city. No c
 
 **Water and bridges**
 11. **D11. SHALLOW sea at 30 m or less (est.),** a lighter blue. **Recommend yes.** The Narrows (20 m) is in, and open straits are out.
-12. **D12. Short crossings** (highway or rail up to 420 m, street up to 180 m) **of fresh or shallow water are laid by the runs' rule**, only with the city's ground beyond, and paid inside the road. **Recommend yes.** Halifax's two bridges are this kind.
+12. **D12. Short crossings of fresh or shallow water are laid by the runs' rule:** a highway or rail up to 34 plots (1,020 m, est.; today 14 plots, 420 m), a street up to 180 m, only with the city's ground beyond, and paid inside the road. **Recommend yes.** Halifax's two bridges are this kind: on earth-2 they cross about 805–820 m of water, which 420 m would refuse.
 13. **D13. Long crossings are orders:** Highway, Rail and Road Bridge; a continuous shallow or fresh path to dry land must exist first; the whole span priced and built as one contract; deep water refuses; capped at 36 km (est.). **Recommend yes.**
 14. **D14. A long bridge must link two landmasses.** **Recommend yes**, until the model has distance.
 15. **D15. A deep gap crossed by one suspension span (to about 2 km):** **recommend not now;** later, with research.
-16. **D16. The island rule as decided on 2026-10-09,** with the bridge as a second way to link and the landmass layer from earth-2. **Recommend yes.** It widens your rule "the only bridge is a highway bridge, over fresh water" to highway, rail and road, over fresh water and shallow sea.
+16. **D16. The island rule as decided on 2026-10-09,** with the bridge as a second way to link and the landmass layer from earth-2. A landmass is ground cut off by more than a short crossing: more than 1,020 m of shallow or fresh water, or any deep sea (the roads study said fresh water wider than 420 m). **Recommend yes.** It widens your rule "the only bridge is a highway bridge, over fresh water" to highway, rail and road, over fresh water and shallow sea.
 17. **D17. Real depth replaces E4's guess;** platforms stand on real depth. **Recommend yes.**
 
 **The file, the worlds, the deposits**
@@ -771,6 +786,9 @@ A missing key means flat and none, which is right for every generated city. No c
 2. **The Sydney coalfield sits in the wrong province**, and the Scotian Shelf records no petroleum (§8.2).
 3. **The roads study's island batches I1 and I2 lost their names** to the materials batches without being renamed or queued. They are ET5 here.
 4. **`docs/map` is dated 0.7.123**, so its line numbers lag the tree. The docs pass owes a regeneration.
+5. **The Halifax Narrows is a 300–400 m sill under about 800 m of water from shore to shore.** The first draft of this study took the sill for the channel. The mockup measured it, and §6.2 widened the short crossing.
+6. **The shallow share must be drawn weighted by the sea share**, or every coast grows a fringe of deep sea. The coast's seeded fray moves a narrow channel's width by about ±250 m between seeds (§6.2).
+7. **Earth-1's ice round Everest covers bare rock:** 77% of a 20 km box round the summit is ice, rock faces included, and a few moraine patches carry the desert bit. This is WorldCover's classing at 2′, unchanged by earth-2.
 
 **What could not be checked, said plainly:**
 - **NASADEM's gap-filling** used GDEM and AW3D30 in places, according to its page. NASA distributes the whole product "without restriction", and that statement is what this study relies on. The filled pixels could not be separated, because the layer that marks them is not in the mirror.
