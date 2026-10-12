@@ -21,7 +21,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| T1-C | The builders' own depots first, at one priority with death care (running) | project: `claude/why-the-builders-stall.md` §9 C, `claude/decisions-2026-10-10.md`; [AR1 item 4](docs/queue/AR1.md#his-answers-2026-10-11-0929) |
 | I8 | Copper: Copper Mining, Copper Refining, the Wire & Cable Works (running) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | MM2 | The minimap | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |
 | I9 | Forestry, with the 100-ha woodlot | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |

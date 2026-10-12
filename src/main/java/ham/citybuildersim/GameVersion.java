@@ -5822,6 +5822,70 @@ public final class GameVersion {
      *     the same four red; the AUTO2 cities it moves part at m713-838, when
      *     the founding churchyard fills, and end 7 higher and 5 lower.
      *
+     * 0.7.130 (2026-10-11) - THE BUILDERS' OWN DEPOTS FIRST. Batch T1-C
+     * (Jerus's decisions of 2026-10-10, "1 both yes": the project's why-the-
+     * builders-stall.md, option C, its own batch with the ensemble and
+     * retirement watched; and of 2026-10-11, "basically theyll priotozie those
+     * two buildings at the same time": beside the death care, at one
+     * priority; runs/brief-batchT1C.md, runs/fixT1C-notes.md). No save
+     * format change (39): the rule keeps no state.
+     *   - THE STALL (batch T1's trace of his city): repairs took 0.81 of the
+     *     builders' nameplate, about 420 points a month reached the sites, and
+     *     the builders' one depot order (MAX_CONCURRENT_ORDERS) waited at its
+     *     crew's weight, 0.4 points a month; their plan said "already building"
+     *     in 119 of 120 months, so they could not grow out of it.
+     *   - THE RULE (BuildingManager, THE BUILDERS' OWN DEPOTS FIRST): a depot
+     *     on site - the builders' own or one the city bought - that the crews'
+     *     rule would keep there past BACKLOG_MONTHS_BEFORE_EXPANDING months, at
+     *     the builders' month for the sites with every post offered, and that
+     *     the city could staff by the builders' own test (Sector.staffing()),
+     *     is served off the top of the month: what it owes, or the whole month
+     *     if less. While the dead wait the city's death care joins it in one
+     *     first group, shared by the crews' rule, neither ahead; the rest of
+     *     the month goes to every other site by the rule, the city's part in
+     *     the player's order. With no such depot, death care first is 0.7.129's
+     *     rule as it was. Game hands in the staffing test and the month at
+     *     every post (setBuildersCouldStaff(), setSitesAtEveryPost()).
+     *   - WHY THOSE TWO TESTS (measured, the notes' section 6): served first
+     *     whenever on site, a new town's founding depot opened among 106
+     *     people, the builders' fill fell to 0.16 and their whole month under
+     *     the repairs - nothing was ever built again (MortgageCheck's town,
+     *     now BuildersFirstCheck 6); and in the ensemble's first ten cities
+     *     the builders' nameplate doubled and unemployment's monthly move grew
+     *     by half (p95 4.80 points against 3.28), 0.7.17's signature, though
+     *     fewer banks failed (85 against 115). Ordering more depots at
+     *     once, sized to the queue (the brief's half b), collapsed the default
+     *     city alone and ran its builders to 1,749 depots with the first half.
+     *   - ONE WAIT: firstWait() times every site while a depot is served
+     *     first, or a depot quoted would be - the group by the rule among it,
+     *     every other site behind the group's points at the month's pace.
+     *   - THE PAGE: Plan.buildersFirst and its line under SITES ("The
+     *     builders' own depots first: ..."), muted, a warning only while the
+     *     dead wait; the (i) a paragraph; a depot of the city's own heads its
+     *     order with the death care, the arrows within the group.
+     *   - OUTSIDE THE RULE: OutwardInvestment's sweep reads a till under its
+     *     floor as empty (DenominationCheck's twins parted on 0 against 1.6e-17
+     *     after a recall that brought home exactly what an order lacked); and
+     *     HoldersCheck 9 holds its town's builders, whose question it is not.
+     *   - Harnesses: BuildersFirstCheck (new; a hundred harnesses), on
+     *     DeathCareFirstCheck's trap; LongPlaytest's report counts the months
+     *     the rule fired.
+     *   - The playtests move (re-baselined; fixT1C-notes.md 4): the default run
+     *     fires in 83 months (m830-3,972) and parts at m830, ending at 724,287
+     *     people (605,278) with 225 depots (147), 5.62 depots per 100 months
+     *     (3.67; pt07124's 4.10), four bank failures as before and none shed;
+     *     the Earth run fires in 122 (m476-3,900), 702,805 people (530,082),
+     *     226 depots (107), twelve bank failures (four), in clusters from
+     *     m1,549. Every month audited, every reload matched. The
+     *     ensemble against aee9479's: AUTO2's sixteen cities saw 138
+     *     bank failures against 183 (fewer in 12), ZERO_SLACK's 118 against
+     *     143; no depot was shed; builders' nameplate (median) 36,200 against
+     *     29,400 in AUTO2; unemployment's p95 monthly move 3.79 points against
+     *     3.18; people 194,404 against 186,148. Over all five policies 256
+     *     bank failures against 327, no depot shed in any of the 160 runs, and
+     *     it scores 21 of 25 as aee9479 and 07129 do, the same four red (A2,
+     *     S1, H1, R3; H2 vacuous); no audit failure, no finding.
+     *
      * 0.7.131 (2026-10-11) - STONE. Batch I7, the fifth materials batch that
      * changes the game: the third chain's two sectors (Jerus's Q17, Q18, Q21
      * and A of 2026-10-08; docs/studies/spec-materials.md 2.1-2.4, 2.10,

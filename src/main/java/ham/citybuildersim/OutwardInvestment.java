@@ -204,7 +204,11 @@ public class OutwardInvestment {
             double abroad = held * rate;
             double wealth = cash + abroad;
             boolean borrower = credit != null && credit.getPrincipal(sector) > 0;
-            double target = (cash > 0 && !borrower && wealth > 0) ? wealth * targetShare : 0;
+            // A till under the floor is an empty one (0.7.130): a recall that
+            // brought home exactly what an order lacked leaves zero, or a
+            // rounding hair over it that one unit of money has and another
+            // has not - DenominationCheck's twins parted on 0 against 1.6e-17.
+            double target = (cash > minMove && !borrower && wealth > 0) ? wealth * targetShare : 0;
 
             /* ----------------------------- the move ----------------------------- */
             double gap = target - abroad;
