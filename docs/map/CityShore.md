@@ -1,12 +1,12 @@
 # CityShore.java - 244 lines · 21 methods · 4 constants · model
 
-`ham/citybuildersim/CityShore.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityShore.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The city's works on its shore as the map draws them: each sea terminal's box on owned dry ground at the water with its quay run straight out over owned sea, and each tank farm's box at the water, laid city-wide in the order the city builds them - never moved, the newest of a type taken first - what CityMap fixes in its districts' plans, the tile painter draws and the boats come alongside; kept in the map's sidecar.
 > 
 > WHY THIS EXISTS (0.7.97, batch O13; the project's spec-roads-and-ports.md
 > 2.8: "Ports and tank farms: estate cells on the shore, the berths over owned
-> sea"; runs/spec-oil.md 2.12: "terminals stand on owned coast with a
+> sea"; docs/studies/spec-oil.md 2.12: "terminals stand on owned coast with a
 > quay"). Until 0.7.96 a sea terminal was one more industry building in its
 > district's plan, wherever that district's estate cells had room: the
 > playtest's 23 General Cargo Terminals stood in five districts, inland as

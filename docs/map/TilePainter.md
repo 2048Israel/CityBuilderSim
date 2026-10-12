@@ -1,6 +1,6 @@
 # TilePainter.java - 565 lines · 20 methods · 36 constants · model
 
-`ham/citybuildersim/TilePainter.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TilePainter.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, width and role, and every building's box - the city's highways and railway through it and the resource sites under it, what each plot is - the same picture from the same inputs, on any machine.
 > 
@@ -68,7 +68,7 @@
 | 141 | THE NETWORK'S RULES, IN PLOTS (0.7.72, batch N3; the plan's since |
 | 175 | THE INPUTS AND THE PICTURE |
 | 388 | THE PAINT |
-| 469 | AT SEA (0.7.97, batch O13; runs/spec-oil.md 2.12, the research's 3.3 |
+| 469 | AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the research's |
 | 542 | · the mines on their sites |
 
 ## Constants
@@ -201,7 +201,7 @@
 |---:|---:|---|---|
 | 393 | 75 | `public static void paint(Input in, Painted p)` | Paints a tile from its inputs into p. |
 
-### AT SEA (0.7.97, batch O13; runs/spec-oil.md 2.12, the research's 3.3 (lines 469-541)
+### AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the research's (lines 469-541)
 
 | line | len | member | says |
 |---:|---:|---|---|

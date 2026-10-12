@@ -1,6 +1,6 @@
-# Stale.java - 627 lines · 26 methods · 14 constants · tools
+# Stale.java - 630 lines · 26 methods · 14 constants · tools
 
-`ham/citybuildersim/tools/Stale.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/Stale.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > Finds the comments and documents that have stopped being true, mechanically.
 > 
@@ -45,10 +45,10 @@
 | 133 | · WHAT THE TREE ACTUALLY CONTAINS |
 | 185 | · 1. ORPHANED JAVADOC |
 | 247 | · 2. MISSING FILE |
-| 323 | · 3. STATED COUNT |
-| 528 | · 4. UNRESOLVED MEMBER |
-| 581 | · 5. MAP OLDER THAN SOURCE |
-| 612 | · SMALL CHANGE |
+| 326 | · 3. STATED COUNT |
+| 531 | · 4. UNRESOLVED MEMBER |
+| 584 | · 5. MAP OLDER THAN SOURCE |
+| 615 | · SMALL CHANGE |
 
 ## Enum constants
 
@@ -68,17 +68,17 @@
 | 251 | `Stale.JAVA_REF` | `Pattern.compile("\\b([A-Z][A-Za-z0-9]*)\\.java\\b")` |  |
 | 259 | `Stale.DOC_REF` | `Pattern.compile("\\b(docs(?:/[A-Za-z0-9_-]+)*/[a-z0-9][a-z0-9-]*\\.md)\\b")` | A document is only reported when it is written as a path under docs/ with a lower-case name. |
 | 265 | `Stale.SHAPE_NAMES` | `Set.of("Name", "NAME", "Something", "Foo", "Bar", "Baz", "ClassName", "Class"...` | Names that are written as a shape rather than as a file: "&lt;Name&gt;Screen.java", "*Check.java", "NAME.md". |
-| 327 | `Stale.NUMBERS` | `numbers()` |  |
-| 328 | `Stale.NUM` | `alternation()` |  |
-| 331 | `Stale.SAID` | `"(?<![A-Za-z-])(" + NUM + ")"` | A number is only a number when a letter or a hyphen does not run into it: "fifty-six" is 56, never six. |
-| 333 | `Stale.BANNERS` | `Pattern.compile("(?i)\\b(?:the\\s+)?" + SAID + "\\s+(?:top-level\\s+\|class-le...` |  |
-| 334 | `Stale.SECTIONS` | `Pattern.compile("(?i)\\b(?:the\\s+)?" + SAID + "\\s+sections?\\b")` |  |
-| 335 | `Stale.HARNESSES` | `Pattern.compile("(?i)\\b" + SAID + "\\s+harness(?:es)?\\b")` |  |
-| 336 | `Stale.UI_FILES` | `Pattern.compile("(?i)\\b" + SAID + "\\s+files\\b")` |  |
-| 337 | `Stale.SECTORS` | `Pattern.compile("(?i)\\b" + SAID + "\\s+(?:private\\s+)?sectors?(?:\\s+classe...` |  |
-| 533 | `Stale.LIBRARY` | `Set.of("println", "runLater", "equals", "hashCode", "toString", "compareTo", ...` | Names that appear in prose here and belong to the JDK or JavaFX, not to the tree. |
-| 541 | `Stale.PLACEHOLDERS` | `Set.of("foo", "bar", "baz", "doSomething")` | Names written as an example of a member rather than as one: "see foo()" is the shape, not a claim. |
-| 549 | `Stale.CALL` | `Pattern.compile("\\b([A-Z][A-Za-z0-9_]*)\\.([a-zA-Z][A-Za-z0-9_]*)\\(\\)\|\\b(...` | A member is named in prose as name() - the empty parentheses, with nothing between them and no space before them, are what makes it a member and not an English word with a parenthesis after it. |
+| 330 | `Stale.NUMBERS` | `numbers()` |  |
+| 331 | `Stale.NUM` | `alternation()` |  |
+| 334 | `Stale.SAID` | `"(?<![A-Za-z-])(" + NUM + ")"` | A number is only a number when a letter or a hyphen does not run into it: "fifty-six" is 56, never six. |
+| 336 | `Stale.BANNERS` | `Pattern.compile("(?i)\\b(?:the\\s+)?" + SAID + "\\s+(?:top-level\\s+\|class-le...` |  |
+| 337 | `Stale.SECTIONS` | `Pattern.compile("(?i)\\b(?:the\\s+)?" + SAID + "\\s+sections?\\b")` |  |
+| 338 | `Stale.HARNESSES` | `Pattern.compile("(?i)\\b" + SAID + "\\s+harness(?:es)?\\b")` |  |
+| 339 | `Stale.UI_FILES` | `Pattern.compile("(?i)\\b" + SAID + "\\s+files\\b")` |  |
+| 340 | `Stale.SECTORS` | `Pattern.compile("(?i)\\b" + SAID + "\\s+(?:private\\s+)?sectors?(?:\\s+classe...` |  |
+| 536 | `Stale.LIBRARY` | `Set.of("println", "runLater", "equals", "hashCode", "toString", "compareTo", ...` | Names that appear in prose here and belong to the JDK or JavaFX, not to the tree. |
+| 544 | `Stale.PLACEHOLDERS` | `Set.of("foo", "bar", "baz", "doSomething")` | Names written as an example of a member rather than as one: "see foo()" is the shape, not a claim. |
+| 552 | `Stale.CALL` | `Pattern.compile("\\b([A-Z][A-Za-z0-9_]*)\\.([a-zA-Z][A-Za-z0-9_]*)\\(\\)\|\\b(...` | A member is named in prose as name() - the empty parentheses, with nothing between them and no space before them, are what makes it a member and not an English word with a parenthesis after it. |
 
 ## Fields (state)
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 577 | **type** `public final class Stale` | Finds the comments and documents that have stopped being true, mechanically. |
+| 51 | 580 | **type** `public final class Stale` | Finds the comments and documents that have stopped being true, mechanically. |
 
 ### WHAT A FINDING IS (lines 53-88)
 
@@ -136,44 +136,44 @@
 | 189 | 40 | `static void orphanedJavadoc(SourceTree tree, List<Finding> out)` |  |
 | 231 | 15 | `static int skipAnnotation(List<JavaScan.Tok> toks, int at)` | From an '@' at index, the index of the token after the annotation. |
 
-### 2. MISSING FILE (lines 247-322)
+### 2. MISSING FILE (lines 247-325)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 268 | 12 | `static void missingFile(SourceTree tree, Index ix, List<Finding> out) throws IOException` |  |
 | 282 | 20 | `static void refs(SourceTree tree, Index ix, String where, String text, int firstLine, List<Finding> out)` | Every .java and docs/ reference in one piece of text, checked against the tree. |
-| 309 | 13 | `static List<Path> prose(SourceTree tree) throws IOException` | The prose documents: the hand-written pages directly under docs/ and the three front doors. |
+| 312 | 13 | `static List<Path> prose(SourceTree tree) throws IOException` | The prose documents: the hand-written pages directly under docs/ and the three front doors. |
 
-### 3. STATED COUNT (lines 323-527)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 339 | 96 | `static void statedCount(SourceTree tree, Index ix, List<Finding> out) throws IOException` |  |
-| 445 | 16 | `static boolean agrees(int said, int banners, String sentence, JavaScan f)` | Whether a stated count is a claim the file bears out. |
-| 468 | 5 | `static boolean quoted(String text, int at)` | Whether a position sits inside a quotation. |
-| 475 | 13 | `static String sentence(String text, int at)` | The sentence around a position: a full stop followed by a space ends one, a dot inside a name does not. |
-| 494 | 15 | `static Map<String, Integer> numbers()` | One to ninety-nine in words, and the tens on their own. |
-| 510 | 7 | `static String alternation()` |  |
-| 519 | 8 | `static int number(String said)` | The number a matched word or figure says, or -1 if it is neither. |
-
-### 4. UNRESOLVED MEMBER (lines 528-580)
+### 3. STATED COUNT (lines 326-530)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 551 | 29 | `static void unresolvedMember(SourceTree tree, Index ix, List<Finding> out)` |  |
+| 342 | 96 | `static void statedCount(SourceTree tree, Index ix, List<Finding> out) throws IOException` |  |
+| 448 | 16 | `static boolean agrees(int said, int banners, String sentence, JavaScan f)` | Whether a stated count is a claim the file bears out. |
+| 471 | 5 | `static boolean quoted(String text, int at)` | Whether a position sits inside a quotation. |
+| 478 | 13 | `static String sentence(String text, int at)` | The sentence around a position: a full stop followed by a space ends one, a dot inside a name does not. |
+| 497 | 15 | `static Map<String, Integer> numbers()` | One to ninety-nine in words, and the tens on their own. |
+| 513 | 7 | `static String alternation()` |  |
+| 522 | 8 | `static int number(String said)` | The number a matched word or figure says, or -1 if it is neither. |
 
-### 5. MAP OLDER THAN SOURCE (lines 581-611)
+### 4. UNRESOLVED MEMBER (lines 531-583)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 585 | 26 | `static void mapOlderThanSource(SourceTree tree, List<Finding> out) throws IOException` |  |
+| 554 | 29 | `static void unresolvedMember(SourceTree tree, Index ix, List<Finding> out)` |  |
 
-### SMALL CHANGE (lines 612-627)
+### 5. MAP OLDER THAN SOURCE (lines 584-614)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 616 | 1 | `static String path(JavaScan f)` |  |
-| 618 | 1 | `static String rel(Path p)` |  |
-| 620 | 1 | `static String flat(String s)` |  |
-| 622 | 5 | `static int newlines(String s, int upTo)` |  |
+| 588 | 26 | `static void mapOlderThanSource(SourceTree tree, List<Finding> out) throws IOException` |  |
+
+### SMALL CHANGE (lines 615-630)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 619 | 1 | `static String path(JavaScan f)` |  |
+| 621 | 1 | `static String rel(Path p)` |  |
+| 623 | 1 | `static String flat(String s)` |  |
+| 625 | 5 | `static int newlines(String s, int upTo)` |  |
 

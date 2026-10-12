@@ -1,12 +1,12 @@
 # UtilitiesHandler.java - 705 lines · 66 methods · 4 constants · model
 
-`ham/citybuildersim/UtilitiesHandler.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/UtilitiesHandler.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
 **Uses:** [CityNeeds](CityNeeds.md) (2)
 
-**Used by (16):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [ConservationCheck](ConservationCheck.md), [Game](Game.md), [LandManager](LandManager.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [ReadPathCheck](ReadPathCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [WaterCheck](WaterCheck.md)
+**Used by (21):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CementConcreteCheck](CementConcreteCheck.md), [CityNeeds](CityNeeds.md), [CoalMiningCheck](CoalMiningCheck.md), [ConservationCheck](ConservationCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [Game](Game.md), [LandManager](LandManager.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [WaterCheck](WaterCheck.md)
 
 ## Sections
 
@@ -16,7 +16,7 @@
 | 59 | THE FRESH WATER LIMIT (0.7.59, batch J2; spec-land 2.3 and star 7) |
 | 151 | · READ-ONLY ACCESSORS for the utilities screen. printUtilitiesInfo() is |
 | 230 | · Split books. The two utilities share one workforce and one fill rate, but |
-| 290 | THE POWER THE WORKS MAKE (0.7.112, batch I2; runs/spec-materials.md |
+| 290 | THE POWER THE WORKS MAKE (0.7.112, batch I2; |
 | 587 | · · ELECTRIC POWER |
 | 618 | · · WATER |
 | 658 | · · CONSOLIDATED |
@@ -119,7 +119,7 @@
 | 278 | 5 | `public void setBilledRevenue(double electricity, double water)` |  |
 | 285 | 4 | `public void setBilledRevenue(double electricity, double water, double powerBought)` | ...and what the works sold it of their own power, as their statements booked it (0.7.112; THE POWER THE WORKS MAKE, below). |
 
-### THE POWER THE WORKS MAKE (0.7.112, batch I2; runs/spec-materials.md (lines 290-705)
+### THE POWER THE WORKS MAKE (0.7.112, batch I2; (lines 290-705)
 
 | line | len | member | says |
 |---:|---:|---|---|

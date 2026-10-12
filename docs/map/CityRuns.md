@@ -1,6 +1,6 @@
 # CityRuns.java - 1,157 lines · 57 methods · 25 constants · model
 
-`ham/citybuildersim/CityRuns.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityRuns.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The city's highways and railway as runs on corridors: each laid month by month from its hub's lines out, straight by preference, never moved, with the railway's yards on its track nearest the mines - what the city map draws them from and keeps in its sidecar.
 > 
@@ -61,9 +61,9 @@
 > machine; nothing in the model reads them (CityMap's banner). MapCheck holds
 > them on the drawn raster.
 
-**Uses:** [World](World.md) (25), [CityMap](CityMap.md) (12), [DistrictPlan](DistrictPlan.md) (4), [TilePainter](TilePainter.md) (3), [BuildingVisual](BuildingVisual.md) (2)
+**Uses:** [World](World.md) (24), [CityMap](CityMap.md) (12), [DistrictPlan](DistrictPlan.md) (4), [TilePainter](TilePainter.md) (3), [BuildingVisual](BuildingVisual.md) (2)
 
-**Used by (6):** [CityMap](CityMap.md), [DistrictPlan](DistrictPlan.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md)
+**Used by (8):** [CityMap](CityMap.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md)
 
 ## Sections
 
@@ -159,7 +159,7 @@
 | 149 | 1 | `int at(long x, long y, int dir)` _(in CityRuns.Ground)_ | The ground at world plot (x, y), read along heading `dir` (0 to 7, or -1): a World class, or -1 where the city does not own it. |
 | 151 | 1 | `long version()` _(in CityRuns.Ground)_ | A number that moves whenever the city's ground does (a purchase): what a waiting arm and a stuck net wait on. |
 | 153 | 1 | `long[] box()` _(in CityRuns.Ground)_ | The city's owned box, {x0, y0, x1, y1} in plots, inclusive: how far out a corridor is sought. |
-| 157 | 3 | `static boolean dry(int g)` | Whether a ground class is the city's dry ground: owned, not water. |
+| 157 | 3 | `static boolean dry(int g)` | Whether a ground class is the city's dry ground: owned (a class at all, not -1), and dry by World.dry() - not water, and since 0.7.127 not ice. |
 
 ### A NET: ITS HUB, CORRIDORS AND ARMS (lines 161-287)
 

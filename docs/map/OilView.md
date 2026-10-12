@@ -1,11 +1,11 @@
 # OilView.java - 1,347 lines · 71 methods · 41 constants · model
 
-`ham/citybuildersim/OilView.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OilView.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
-> The oil industry on one page (0.7.96, batch O12; runs/spec-oil.md 2.13):
-> the city's wells by kind with what they would lift over the next ten years
-> if nothing new were built, the refinery's units with each one's spread and
-> the gate that stops one more, every product's price and month, the
+> The oil industry on one page (0.7.96, batch O12; docs/studies/spec-oil.md
+> 2.13): the city's wells by kind with what they would lift over the next ten
+> years if nothing new were built, the refinery's units with each one's spread
+> and the gate that stops one more, every product's price and month, the
 > planners' words, and the strategic reserve with its two levers.
 > 
 > WHY. Oil's Operations page drew the wells as every business is drawn
@@ -120,7 +120,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 1294 | **type** `public final class OilView` | The oil industry on one page (0.7.96, batch O12; runs/spec-oil.md 2.13): the city's wells by kind with what they would lift over the next ten years if nothing new were built, the refinery's units with each one's sprea... |
+| 54 | 1294 | **type** `public final class OilView` | The oil industry on one page (0.7.96, batch O12; docs/studies/spec-oil.md 2.13): the city's wells by kind with what they would lift over the next ten years if nothing new were built, the refinery's units with each one... |
 | 56 | 1 | `private OilView()` |  |
 
 ### THE FIGURES (lines 58-447)

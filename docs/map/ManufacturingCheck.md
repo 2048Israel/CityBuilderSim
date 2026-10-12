@@ -1,6 +1,6 @@
-# ManufacturingCheck.java - 609 lines · 8 methods · 5 constants · harnesses
+# ManufacturingCheck.java - 610 lines · 8 methods · 5 constants · harnesses
 
-`ham/citybuildersim/ManufacturingCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ManufacturingCheck.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The ninth sector: what the city makes out of its own steel, and ships.
 > 
@@ -63,18 +63,18 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 573 | **type** `public class ManufacturingCheck` | The ninth sector: what the city makes out of its own steel, and ships. |
+| 37 | 574 | **type** `public class ManufacturingCheck` | The ninth sector: what the city makes out of its own steel, and ships. |
 | 43 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 48 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 53 | 9 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 63 | 5 | `static void quietly(Runnable r)` |  |
 
-### WHOSE COST IS IT - Sector.costShareOf(), guarded here because this is (lines 85-609)
+### WHOSE COST IS IT - Sector.costShareOf(), guarded here because this is (lines 85-610)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 98 | 23 | `static void costSharesAddUp(Game g)` |  |
-| 122 | 475 | `public static void main(String[] args) throws Exception` |  |
-| 598 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
-| 604 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
+| 122 | 476 | `public static void main(String[] args) throws Exception` |  |
+| 599 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
+| 605 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
 

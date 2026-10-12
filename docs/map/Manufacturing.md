@@ -1,6 +1,6 @@
-# Manufacturing.java - 307 lines · 12 methods · 2 constants · sectors
+# Manufacturing.java - 364 lines · 14 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > What the city makes out of its own steel, and ships.
 > 
@@ -22,8 +22,12 @@
 > the world if there are not - and sells two things abroad:
 > 
 >   Fabrication Shop      fabricated steel   135 posts, mostly labour and trades
->   Fabrication Works     fabricated steel   330 posts, the same trade at scale
+>   Fabrication Works     fabricated steel   276 posts, the same trade at scale
 >   Machine Works         machinery          173 posts, trades and technicians
+> 
+> (and since 0.7.133, batch I8, a third of copper: the Wire & Cable Works
+> draws Copper Refining's rod into wire and cable, 400 posts - THE WIRE &
+> CABLE WORKS below).
 > 
 > TWO GOODS, BOUNDED BY TWO DIFFERENT THINGS, and that is the whole design
 > rather than a detail. Fabricated steel is 61% steel and 20% wages, so what
@@ -58,57 +62,60 @@
 > difference between a sector that absorbs labour and one designed around a
 > deposit.
 > 
-> See claude/manufacturing.md.
+> ... (1 more lines in the source)
 
-**Uses:** [Good](Good.md) (10), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (3), [Formats](Formats.md) (3), [Sector](Sector.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (3), [SpreadPlanner](SpreadPlanner.md) (3), [Sector](Sector.md) (2), [ProcessingSector](ProcessingSector.md) (2), [BuildingType](BuildingType.md) (1)
 
-**Used by (4):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [ManufacturingCheck](ManufacturingCheck.md), [Sectors](Sectors.md)
+**Used by (5):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ManufacturingCheck](ManufacturingCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 109 | · reading |
-| 160 | · plan |
-| 255 | · the screen |
+| 133 | · reading |
+| 184 | · plan |
+| 312 | · the screen |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 84 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY` | `10` | Lubricants a tonne of machinery made takes: ten litres (spec-oil 2.5, est.). |
-| 87 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED` | `2` | ...and a tonne of fabricated steel: two litres (spec-oil 2.5, est.). |
+| 88 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY` | `10` | Lubricants a tonne of machinery made takes: ten litres (spec-oil 2.5, est.). |
+| 91 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED` | `2` | ...and a tonne of fabricated steel: two litres (spec-oil 2.5, est.). |
+| 108 | `Manufacturing.WIRE_CABLE_WORKS` | `128` | The Wire & Cable Works' permanent id in buildings.json (0.7.133): 2,000 t of wire and cable a month from 2,000 t of rod. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 236 | **type** `public final class Manufacturing extends Sector` | What the city makes out of its own steel, and ships. |
-| 89 | 12 | `public Manufacturing()` |  |
-| 104 | 4 | `public void produceFlow(Good g)` | What it makes of a flow good, and since 0.7.123 (batch I4) the offcuts of its fabricated steel to the city's old steel, its own to sell (OldMetal). |
+| 76 | 289 | **type** `public final class Manufacturing extends Sector` | What the city makes out of its own steel, and ships. |
+| 110 | 15 | `public Manufacturing()` |  |
+| 128 | 4 | `public void produceFlow(Good g)` | What it makes of a flow good, and since 0.7.123 (batch I4) the offcuts of its fabricated steel to the city's old steel, its own to sell (OldMetal). |
 
-### reading (lines 109-159)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 112 | 6 | `public double getPosts()` | Every post the sector holds, staffed or not - the sector in one number. |
-| 120 | 3 | `public double getSteelDemand()` | Tonnes of steel the plants want this month, at the rate they are running. |
-| 125 | 3 | `public double getSteelPrice()` | What a tonne of steel is costing the plants here - the number the shops live or die on. |
-| 134 | 3 | `public double getSteelPosition()` | Where the steel price sits between the mills' export floor and the world's delivered ceiling: 0 is a mill with nobody else to sell to, 1 is a city with no mill at all. |
-| 146 | 4 | `public double steelShare()` | The steel bill as a share of what the sector sold. |
-| 152 | 4 | `public double payrollShare()` | ...and the wage bill, the same way. |
-| 158 | 1 | `public double costShare()` | Both together, which is what has to stay under one. |
-
-### plan (lines 160-254)
+### reading (lines 133-183)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 192 | 51 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
-| 253 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+| 136 | 6 | `public double getPosts()` | Every post the sector holds, staffed or not - the sector in one number. |
+| 144 | 3 | `public double getSteelDemand()` | Tonnes of steel the plants want this month, at the rate they are running. |
+| 149 | 3 | `public double getSteelPrice()` | What a tonne of steel is costing the plants here - the number the shops live or die on. |
+| 158 | 3 | `public double getSteelPosition()` | Where the steel price sits between the mills' export floor and the world's delivered ceiling: 0 is a mill with nobody else to sell to, 1 is a city with no mill at all. |
+| 170 | 4 | `public double steelShare()` | The steel bill as a share of what the sector sold. |
+| 176 | 4 | `public double payrollShare()` | ...and the wage bill, the same way. |
+| 182 | 1 | `public double costShare()` | Both together, which is what has to stay under one. |
 
-### the screen (lines 255-307)
+### plan (lines 184-311)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 258 | 49 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 216 | 53 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
+| 288 | 7 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more of its buildings would clear a month (0.7.133, batch I8): the maker's estimate (Sector's) - and for the Wire & Cable Works, the materials chains' row, less what it buys abroad that is not a good, its ins... |
+| 297 | 3 | `double fleetCapital(BuildingsTemplate t)` | The vans one of `t` must buy, at what a van costs here (ProcessingSector.fleetCapital()); none with no markets. |
+| 310 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+
+### the screen (lines 312-364)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 315 | 49 | `public List<Sector.Line> ownLines(Game game)` |  |
 

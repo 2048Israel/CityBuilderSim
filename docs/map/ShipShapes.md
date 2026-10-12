@@ -1,6 +1,6 @@
 # ShipShapes.java - 165 lines · 10 methods · 12 constants · model
 
-`ham/citybuildersim/ShipShapes.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ShipShapes.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > How the map draws a boat: its length and beam by its class, its outline and deck marks as points in plots about where it is and the way it heads, its colours by what it carries and which way, and how much bigger than true it is drawn at a zoom - what ui/MapView fills and strokes, and a Java2D mirror can draw the same; pure.
 > 
@@ -26,7 +26,7 @@
 
 **Uses:** [BoatSchedule](BoatSchedule.md) (7), [Ports](Ports.md) (2), [World](World.md) (2), [MapFrame](MapFrame.md) (1)
 
-**Used by (1):** [MapView](MapView.md)
+**Used by (2):** [LandMap](LandMap.md), [MapView](MapView.md)
 
 ## Constants
 

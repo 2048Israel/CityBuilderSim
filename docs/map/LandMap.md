@@ -1,6 +1,6 @@
-# LandMap.java - 658 lines · 36 methods · 16 constants · model
+# LandMap.java - 784 lines · 41 methods · 24 constants · model
 
-`ham/citybuildersim/LandMap.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandMap.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectangle - what lies under a plot (its ground, whose it is, the fields there), the box the land office opens on, and the hover card's words; pure, so MapCheck holds the hit-testing.
 > 
@@ -26,9 +26,9 @@
 > COORDINATES: the world's plots. A plot x covers x to x + 1, so a rectangle
 > [x0, x1) is drawn from x0 to x1 and the outlines lie on plot edges.
 
-**Uses:** [CityLand](CityLand.md) (24), [TilePainter](TilePainter.md) (18), [Deposit](Deposit.md) (12), [Resource](Resource.md) (11), [LandParcel](LandParcel.md) (10), [World](World.md) (9), [EarthData](EarthData.md) (9), [LandMarket](LandMarket.md) (7), [LandGrid](LandGrid.md) (7), [LandManager](LandManager.md) (5), [MapFrame](MapFrame.md) (4), [BuildingVisual](BuildingVisual.md) (4), [GridOffers](GridOffers.md) (3), [EarthProj](EarthProj.md) (2), [Formats](Formats.md) (1), [Currency](Currency.md) (1), [EarthTerrain](EarthTerrain.md) (1), [Geology](Geology.md) (1), [CityRuns](CityRuns.md) (1)
+**Uses:** [CityLand](CityLand.md) (26), [World](World.md) (24), [TilePainter](TilePainter.md) (18), [BuildingVisual](BuildingVisual.md) (15), [Resource](Resource.md) (13), [Deposit](Deposit.md) (12), [LandParcel](LandParcel.md) (10), [TileRaster](TileRaster.md) (10), [LandMarket](LandMarket.md) (9), [EarthData](EarthData.md) (9), [LandGrid](LandGrid.md) (7), [LandManager](LandManager.md) (5), [MapFrame](MapFrame.md) (4), [ShipShapes](ShipShapes.md) (4), [GridOffers](GridOffers.md) (3), [GlobeFrame](GlobeFrame.md) (3), [EarthTerrain](EarthTerrain.md) (2), [Geology](Geology.md) (2), [EarthProj](EarthProj.md) (2), [Formats](Formats.md) (1), [Currency](Currency.md) (1), [CityRuns](CityRuns.md) (1)
 
-**Used by (7):** [BuildScreen](BuildScreen.md), [EarthSite](EarthSite.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [ReadPathCheck](ReadPathCheck.md)
+**Used by (8):** [BuildScreen](BuildScreen.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [ReadPathCheck](ReadPathCheck.md)
 
 ## Sections
 
@@ -37,7 +37,8 @@
 | 64 | · the outlines |
 | 301 | · the fields |
 | 357 | · the words |
-| 469 | · on Earth (0.7.119, batch E5) |
+| 480 | · on Earth (0.7.119, batch E5) |
+| 549 | · the legend by tier (0.7.135, batch E9) |
 
 ## Constants
 
@@ -45,32 +46,40 @@
 |---:|---|---|---|
 | 36 | `LandMap.OUTSIDE` | `0, CENTRE = 1, BOUGHT = 2, OFFER = 3` | Whose a plot is: nobody's, the centre's, a purchase's, or an offer's. |
 | 85 | `LandMap.NORTH_EDGE` | `0, EAST_EDGE = 1, SOUTH_EDGE = 2, WEST_EDGE = 3` | The four edges a run of the outline lies on, by the side of the city's ground it bounds: its north edge, east, south and west. |
-| 499 | `LandMap.OFF_PLANET_WORDS` | `"Off the planet: the map runs on past the antipode, the point opposite the city"` | The hover past the planet's rim, where the map's square runs on beyond the antipode (spec-earth 2: the far node draws it as the void). |
-| 502 | `LandMap.COMPASS` | `{ "north", "north-east", "east", "south-east", "south", "south-west", "west",...` | The eight directions a place is named from, clockwise from north. |
-| 505 | `LandMap.KIND_WORDS` | `{ "oceanic", "a shield", "a fold belt", "a rift", "a shelf", "a basin", "uncl...` | A geologic class in the hover's words, in Geology.Kind's order: ocean, shield, fold belt, rift, shelf, basin, other. |
-| 573 | `LandMap.CLASS_ONE` | `{ "Home", "Shop", "Offices", "Industry", "Farm", "Utility", "School", "Health...` | One building of each class, as the hover card names a type it has no name for. |
-| 630 | `LandMap.QUAY_WORDS` | `"Quay: a terminal's berth, where its ships come alongside"` | A terminal's quay in the hover (0.7.97): where its ships come alongside. |
-| 633 | `LandMap.JACKET_WORDS` | `"Offshore platform: its wells drilled from the jacket"` | An offshore platform's jacket in the hover (0.7.97). |
-| 636 | `LandMap.WELL_WORDS` | `"Platform well, on its sea site"` | ...a platform well, on its sea site. |
-| 639 | `LandMap.RING_WORDS` | `"A platform's 500 m safety zone"` | ...the ring of a platform's safety zone (the research's 3.3 [W32]). |
-| 642 | `LandMap.PIPE_WORDS` | `"Crude pipeline, buried: the platforms' crude ashore without tankers"` | ...a crude pipeline, buried (spec-roads-and-ports.md 2.8). |
-| 645 | `LandMap.RAMP_WORDS` | `" · a ramp"` | A highway's ramp in the hover (0.7.89; spec 2.7). |
-| 648 | `LandMap.RAIL_OVER_WORDS` | `" · the railway over it"` | ...and the railway bridging it (0.7.89; spec 2.8). |
-| 651 | `LandMap.TRACK_WORDS` | `"Track: the city has bought no road here"` | A track's words in the hover (0.7.88; spec 5). |
-| 654 | `LandMap.HALF_WORDS` | `"15 m", FULL_WORDS = "30 m"` | A street's widths in the hover: half (15 m) and full (30 m), a plot's 30 m right of way (spec 2.1). |
-| 657 | `LandMap.PACKED_WORDS` | `" · packed without a street"` | A building packed without a street, in the hover (R7). |
+| 466 | `LandMap.CARD_FIELDS` | `3` | The most fields the expanded map's hover card lists: 3 (MapView's since 0.7.61; the model's since 0.7.135, its card being hoverWords()'s). |
+| 522 | `LandMap.NOT_THE_CITYS` | `"Not the city's"` | Whose a point on the globe is beyond the city's plane and its reach (spec-globe 3.7). |
+| 555 | `LandMap.RING` | `0xff8cc4ff` | The city's ring on the globe: the founding globe's site mark's light blue (Palette.ACCENT_LIGHT, #8cc4ff). |
+| 558 | `LandMap.CITY_RING_WORDS` | `"The city"` | The ring's legend words. |
+| 561 | `LandMap.EDGE_WORDS` | `"The city's edge"` | The city's edge's legend words (its swatch white, as it is drawn). |
+| 564 | `LandMap.OFFER_WORDS` | `"On offer"` | The offers' legend words (their swatch the offers' pink, #f6a6c9). |
+| 567 | `LandMap.OFFER_EDGE` | `0xfff6a6c9` | The offers' pink: the mockup's band edge (rgba(246, 166, 201)). |
+| 622 | `LandMap.TRACK_ENTRY` | `"Track"` | The legend's tracks (0.7.88; spec 5): a street the city has bought no road for. |
+| 625 | `LandMap.OFF_PLANET_WORDS` | `"Off the planet: the map runs on past the antipode, the point opposite the city"` | The hover past the planet's rim, where the map's square runs on beyond the antipode (spec-earth 2: the far node draws it as the void). |
+| 628 | `LandMap.COMPASS` | `{ "north", "north-east", "east", "south-east", "south", "south-west", "west",...` | The eight directions a place is named from, clockwise from north. |
+| 631 | `LandMap.KIND_WORDS` | `{ "oceanic", "a shield", "a fold belt", "a rift", "a shelf", "a basin", "uncl...` | A geologic class in the hover's words, in Geology.Kind's order: ocean, shield, fold belt, rift, shelf, basin, other. |
+| 699 | `LandMap.CLASS_ONE` | `{ "Home", "Shop", "Offices", "Industry", "Farm", "Utility", "School", "Health...` | One building of each class, as the hover card names a type it has no name for. |
+| 756 | `LandMap.QUAY_WORDS` | `"Quay: a terminal's berth, where its ships come alongside"` | A terminal's quay in the hover (0.7.97): where its ships come alongside. |
+| 759 | `LandMap.JACKET_WORDS` | `"Offshore platform: its wells drilled from the jacket"` | An offshore platform's jacket in the hover (0.7.97). |
+| 762 | `LandMap.WELL_WORDS` | `"Platform well, on its sea site"` | ...a platform well, on its sea site. |
+| 765 | `LandMap.RING_WORDS` | `"A platform's 500 m safety zone"` | ...the ring of a platform's safety zone (the research's 3.3 [W32]). |
+| 768 | `LandMap.PIPE_WORDS` | `"Crude pipeline, buried: the platforms' crude ashore without tankers"` | ...a crude pipeline, buried (spec-roads-and-ports.md 2.8). |
+| 771 | `LandMap.RAMP_WORDS` | `" · a ramp"` | A highway's ramp in the hover (0.7.89; spec 2.7). |
+| 774 | `LandMap.RAIL_OVER_WORDS` | `" · the railway over it"` | ...and the railway bridging it (0.7.89; spec 2.8). |
+| 777 | `LandMap.TRACK_WORDS` | `"Track: the city has bought no road here"` | A track's words in the hover (0.7.88; spec 5). |
+| 780 | `LandMap.HALF_WORDS` | `"15 m", FULL_WORDS = "30 m"` | A street's widths in the hover: half (15 m) and full (30 m), a plot's 30 m right of way (spec 2.1). |
+| 783 | `LandMap.PACKED_WORDS` | `" · packed without a street"` | A building packed without a street, in the hover (R7). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 540 | `private static volatile Places places` |  |
+| 666 | `private static volatile Places places` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 628 | **type** `public final class LandMap` | The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectangle - what lies under a plot (its ground, whose it is, the fields there... |
+| 31 | 754 | **type** `public final class LandMap` | The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectangle - what lies under a plot (its ground, whose it is, the fields there... |
 | 33 | 1 | `private LandMap()` |  |
 | 39 | 1 | **type** `public record Pick(long x, long y, byte ground, int owner, int side, int place, int purchase, LandParcel of...` | What lies under a plot: its ground (a World class), whose it is, its side and place, the purchase (from 0, in the order bought) or the offer. |
 | 42 | 16 | `public static Pick pick(CityLand land, LandMarket market, long x, long y)` | The plot (x, y) on this land, against these offers: its holding on the grid, else the offer whose rectangle holds it. |
@@ -102,32 +111,43 @@
 | 307 | 30 | `public static List<FieldAt> fieldsAt(CityLand land, long x, long y)` | The fields with a site on plot (x, y): the world's as the city sees them (CityLand.fieldsIn(): its old world's ground's own, 0.7.99), and a converted centre's legacy iron field. |
 | 339 | 17 | `public static List<Deposit> fieldsIn(CityLand land, Resource r, double x0, double y0, double x1, double y1, int most)` | The fields of a resource whose centres lie in a box of plots - the deposits the far views mark - at most `most` of them: the world's as the city sees them (CityLand.fieldsIn(), 0.7.99). |
 
-### the words (lines 357-468)
+### the words (lines 357-479)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 360 | 9 | `public static String groundWords(byte ground)` | A World class as the hover card names it. |
-| 371 | 7 | `public static String tonnes(double t)` | Tonnes to three figures in their unit: "449 Mt", "12.8 Mt", "150 kt", "200 t", "1.12 Pt". |
-| 380 | 4 | `static String three(double v)` | A figure to three significant figures, no trailing zeros: 449, 12.8, 1.12. |
-| 386 | 3 | `public static String amountWords(Resource r, double amount)` | What a resource's amount is, in its unit: tonnes for the fields, cubic metres for forest. |
-| 391 | 3 | `public static String usd(double thousands)` | Thousands of US dollars as the screens write them: "US$12.1M". |
-| 396 | 3 | `public static String area(double km2)` | An area given in km2, as the player reads it (LandManager.areaWords(), since 0.7.68): "0.842 km²", "7,200 m²". |
-| 401 | 18 | `public static String ownerWords(CityLand land, Pick p)` | Whose a plot is, in the hover card's words: "The city's centre", "The city's: North 3, bought in month 1,204", "On offer: North 3 · 0.842 km², 0.79 dry · US$12.1M", "Not the city's". |
-| 429 | 15 | `public static String fieldOwnerWords(CityLand land, LandMarket market, Deposit d)` | Whose a field is (0.7.64, batch L): it goes whole with the piece of ground holding its centre plot (CityLand, THE FIELDS ON A PIECE OF GROUND), wherever the site under the pointer lies - "the city's, whole", "all of i... |
-| 446 | 4 | `public static String fieldWords(FieldAt f, CityLand land, LandMarket market)` | ...and the hover card's line for it: fieldWords() and, when it has one, whose it is - "Iron ore: a field of 35 sites, 449 Mt · this site 12.8 Mt · all of it with South 3, on offer". |
-| 452 | 5 | `public static String fieldWords(FieldAt f)` | A field under the pointer: "Iron ore: a field of 35 sites, 449 Mt · this site 12.8 Mt". |
-| 459 | 9 | `public static List<String> hoverWords(CityLand land, LandMarket market, long x, long y)` | The hover card's lines for a plot: its ground, whose it is, on Earth where it is and its geology (earthWords(), 0.7.119), and each field with a site on it. |
+| 360 | 11 | `public static String groundWords(byte ground)` | A World class as the hover card names it; since 0.7.127 ice and the desert by their own names (spec-globe 3.9). |
+| 373 | 7 | `public static String tonnes(double t)` | Tonnes to three figures in their unit: "449 Mt", "12.8 Mt", "150 kt", "200 t", "1.12 Pt". |
+| 382 | 4 | `static String three(double v)` | A figure to three significant figures, no trailing zeros: 449, 12.8, 1.12. |
+| 388 | 3 | `public static String amountWords(Resource r, double amount)` | What a resource's amount is, in its unit: tonnes for the fields, cubic metres for forest. |
+| 393 | 3 | `public static String usd(double thousands)` | Thousands of US dollars as the screens write them: "US$12.1M". |
+| 398 | 3 | `public static String area(double km2)` | An area given in km2, as the player reads it (LandManager.areaWords(), since 0.7.68): "0.842 km²", "7,200 m²". |
+| 403 | 18 | `public static String ownerWords(CityLand land, Pick p)` | Whose a plot is, in the hover card's words: "The city's centre", "The city's: North 3, bought in month 1,204", "On offer: North 3 · 0.842 km², 0.79 dry · US$12.1M", "Not the city's". |
+| 431 | 15 | `public static String fieldOwnerWords(CityLand land, LandMarket market, Deposit d)` | Whose a field is (0.7.64, batch L): it goes whole with the piece of ground holding its centre plot (CityLand, THE FIELDS ON A PIECE OF GROUND), wherever the site under the pointer lies - "the city's, whole", "all of i... |
+| 448 | 4 | `public static String fieldWords(FieldAt f, CityLand land, LandMarket market)` | ...and the hover card's line for it: fieldWords() and, when it has one, whose it is - "Iron ore: a field of 35 sites, 449 Mt · this site 12.8 Mt · all of it with South 3, on offer". |
+| 454 | 5 | `public static String fieldWords(FieldAt f)` | A field under the pointer: "Iron ore: a field of 35 sites, 449 Mt · this site 12.8 Mt". |
+| 461 | 3 | `public static List<String> hoverWords(CityLand land, LandMarket market, long x, long y)` | The hover card's lines for a plot: its ground, whose it is, on Earth where it is and its geology (earthWords(), 0.7.119), and each field with a site on it. |
+| 469 | 10 | `public static List<String> hoverWords(CityLand land, LandMarket market, long x, long y, int fieldsMost)` | ...with no more than `fieldsMost` fields (the expanded map's card lists CARD_FIELDS; since 0.7.135 its card is this). |
 
-### on Earth (0.7.119, batch E5) (lines 469-658)
+### on Earth (0.7.119, batch E5) (lines 480-548)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 481 | 16 | `public static List<String> earthWords(CityLand land, long x, long y)` | The hover card's lines for a plot on the real Earth (spec-earth 2 and 4; Jerus's answer to the study's sixth question, 2026-10-10: names for finding a place, and no borders): where it is - its distance and direction f... |
-| 514 | 10 | `public static String placeWords(EarthData.Place p, double lat, double lon)` | Where a point lies from a place: "4.1 km south-west of Rotterdam" - the great-circle distance (EarthProj.distanceM()), to a tenth of a km under ten and to the km from there, and the direction from the place, of the ei... |
-| 526 | 3 | `public static String provinceWords(EarthData.Province p, Geology.Kind kind)` | The province under a point and its class: "Geology: Anglo-Dutch Basin, a basin" (Geology's class, the hand table's over the rules'). |
-| 531 | 8 | **type** `private record Places(EarthData data, List<EarthData.Place> list, double[] xyz)` | A reader's places as unit vectors, for the nearest (nearestPlace()): built once a reader. |
-| 532 | 6 | `static Places of(EarthData d)` _(in LandMap.Places)_ |  |
-| 543 | 6 | `private static void unit(double lat, double lon, double[] v, int k)` | A point's unit vector on the sphere into v at k. |
-| 551 | 20 | `public static EarthData.Place nearestPlace(EarthData d, double lat, double lon)` | The nearest of a reader's places to a point - the least angle between them, the first in the data's order (by population) on a tie; null when it has none. |
-| 587 | 41 | `public static String plotWords(TilePainter.Input in, TilePainter.Painted p, int plot, java.util.function.IntFunction<String> na...` | What a painted plot holds, in the hover card's words, or null for bare ground: a building by its type's name (nameOf, by type id; its class when null) - since 0.7.64 every drawn building is one of the model's - and si... |
+| 492 | 12 | `public static List<String> earthWords(CityLand land, long x, long y)` | The hover card's lines for a plot on the real Earth (spec-earth 2 and 4; Jerus's answer to the study's sixth question, 2026-10-10: names for finding a place, and no borders): where it is - its distance and direction f... |
+| 511 | 9 | `public static List<String> earthWords(EarthTerrain e, double lat, double lon)` | ...by latitude and longitude (0.7.135, batch E9; spec-globe 3.7): the nearest place and the province under the point, the plot's lines at its centre's - what the globe's hover says wherever the pointer is on the plane... |
+| 536 | 12 | `public static List<String> globeHoverWords(GlobeFrame f, CityLand land, LandMarket market, double sx, double sy, byte drawn, in...` | The hover card's lines on the globe (0.7.135, batch E9; spec-globe 3.7) at a screen point of the view `f`: where the globe draws the city's plane - within the world's square and GlobeFrame.planeDrawsKm() of the city, ... |
+
+### the legend by tier (0.7.135, batch E9) (lines 549-784)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 552 | 1 | **type** `public record Entry(int colour, String words)` | A legend's entry: its swatch's colour (0xAARRGGBB) and its words. |
+| 578 | 11 | `public static List<Entry> legend(int tier)` | The expanded map's legend in a tier (spec-globe 3.7: "the legend on the globe lists the kinds of ground and the city's ring; the whole legend is back from the handoff in"): on the globe (GlobeFrame.PICTURE and GROUND)... |
+| 591 | 29 | `public static List<Entry> planeLegend()` | The plane's legend (the expanded map's since 0.7.61; ui/MapView's until 0.7.135): the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, (0.7.97) the nine of the shore and the sea, (... |
+| 640 | 10 | `public static String placeWords(EarthData.Place p, double lat, double lon)` | Where a point lies from a place: "4.1 km south-west of Rotterdam" - the great-circle distance (EarthProj.distanceM()), to a tenth of a km under ten and to the km from there, and the direction from the place, of the ei... |
+| 652 | 3 | `public static String provinceWords(EarthData.Province p, Geology.Kind kind)` | The province under a point and its class: "Geology: Anglo-Dutch Basin, a basin" (Geology's class, the hand table's over the rules'). |
+| 657 | 8 | **type** `private record Places(EarthData data, List<EarthData.Place> list, double[] xyz)` | A reader's places as unit vectors, for the nearest (nearestPlace()): built once a reader. |
+| 658 | 6 | `static Places of(EarthData d)` _(in LandMap.Places)_ |  |
+| 669 | 6 | `private static void unit(double lat, double lon, double[] v, int k)` | A point's unit vector on the sphere into v at k. |
+| 677 | 20 | `public static EarthData.Place nearestPlace(EarthData d, double lat, double lon)` | The nearest of a reader's places to a point - the least angle between them, the first in the data's order (by population) on a tie; null when it has none. |
+| 713 | 41 | `public static String plotWords(TilePainter.Input in, TilePainter.Painted p, int plot, java.util.function.IntFunction<String> na...` | What a painted plot holds, in the hover card's words, or null for bare ground: a building by its type's name (nameOf, by type id; its class when null) - since 0.7.64 every drawn building is one of the model's - and si... |
 

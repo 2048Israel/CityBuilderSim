@@ -1,6 +1,6 @@
-# HeavyIndustry.java - 251 lines · 12 methods · 9 constants · sectors
+# HeavyIndustry.java - 252 lines · 12 methods · 9 constants · sectors
 
-`ham/citybuildersim/sectors/HeavyIndustry.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/HeavyIndustry.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The mills - Iron & Steel since 0.7.120, under the key it was saved by,
 > "Heavy Industry": the arc furnaces, which melt scrap into steel, and since
@@ -8,11 +8,11 @@
 > sort the city's old steel into scrap - steel sold to the city's fabricators
 > or abroad, every works built by what pays.
 > 
-> WHY (0.7.120, batch I3; runs/spec-materials.md 2.1 and 2.3, and Jerus's
-> Q2, Q4 and Q6 of 2026-10-08). Until then a mill bought IRON - "iron ore,
-> and the scrap that stands in for it" - local ore first and imported scrap
-> for the rest, sold steel at the US band (1.284 / .847), and was built only
-> into spare local ore: "no spare local ore to smelt" was its plan's gate,
+> WHY (0.7.120, batch I3; docs/studies/spec-materials.md 2.1 and 2.3, and
+> Jerus's Q2, Q4 and Q6 of 2026-10-08). Until then a mill bought IRON - "iron
+> ore, and the scrap that stands in for it" - local ore first and imported
+> scrap for the rest, sold steel at the US band (1.284 / .847), and was built
+> only into spare local ore: "no spare local ore to smelt" was its plan's gate,
 > and an order the sector could not make a case for was the borrowing
 > spiral the investment engine was written to end. Three of Jerus's answers
 > took that apart. Scrap splits from ore (Q4): the furnaces take SCRAP, and
@@ -37,9 +37,10 @@
 > fabricators import steel and its own scrap is cheap, shed where neither
 > holds. MaterialsCheck 9 holds the rows to the study.
 > 
-> THE INTEGRATED ROUTE AND OLD STEEL (0.7.123, batch I4; runs/spec-materials.md
-> 2.2, 2.7, 2.8 and 2.9, the study's 2.4 to 2.7; Jerus's Q4, Q6, Q7, Q8, Q19
-> and Q20 of 2026-10-08). Seven more rows, each a candidate the same way:
+> THE INTEGRATED ROUTE AND OLD STEEL (0.7.123, batch I4;
+> docs/studies/spec-materials.md 2.2, 2.7, 2.8 and 2.9, the study's 2.4 to 2.7;
+> Jerus's Q4, Q6, Q7, Q8, Q19 and Q20 of 2026-10-08). Seven more rows, each a
+> candidate the same way:
 >   - the SCRAP YARD sorts the city's old steel (OldMetal) into scrap;
 >   - the PELLETISING PLANT fires ore into pellets, which ship (nothing here
 >     uses them until a DRI plant exists, the study's 2.8);
@@ -61,53 +62,52 @@
 > furnaces - and only the rest is bought or sold.
 > 
 > ITS OWN POWER (the spec's 2.8, Q20): the Coke Ovens make 8,000 kW against a
-> 2,200 kW draw, the Blast Furnace 60,000 against 51,400 and the Oxygen Steel
-> ... (13 more lines in the source)
+> ... (14 more lines in the source)
 
 **Uses:** [Good](Good.md) (25), [OldMetal](OldMetal.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (4), [Trade](Trade.md) (2), [ProcessingSector](ProcessingSector.md) (1), [BuildingType](BuildingType.md) (1), [Sector](Sector.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
 
-**Used by (19):** [AgricultureCheck](AgricultureCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [DenominationCheck](DenominationCheck.md), [GdpCheck](GdpCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [Sectors](Sectors.md), [TradeCostCheck](TradeCostCheck.md), [VanCheck](VanCheck.md)
+**Used by (21):** [AgricultureCheck](AgricultureCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DenominationCheck](DenominationCheck.md), [GdpCheck](GdpCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [Sectors](Sectors.md), [TradeCostCheck](TradeCostCheck.md), [VanCheck](VanCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 134 | THE OLD STEEL (0.7.123, batch I4; OldMetal, the spec's 2.9) |
+| 135 | THE OLD STEEL (0.7.123, batch I4; OldMetal, the spec's 2.9) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 84 | `HeavyIndustry.ARC_FURNACE` | `11` | The Electric Arc Furnace's permanent id in buildings.json, the Steel Foundry's until 0.7.120 (batch I3; spec-materials 4): what the harnesses and the test player find it by. |
-| 87 | `HeavyIndustry.MINI_MILL` | `12` | The Steel Mini-Mill's permanent id in buildings.json (0.7.120). |
-| 90 | `HeavyIndustry.SCRAP_YARD` | `101` | The Scrap Yard's permanent id in buildings.json (0.7.123, batch I4): the city's old steel into scrap. |
-| 93 | `HeavyIndustry.PELLETISING_PLANT` | `102` | The Pelletising Plant's permanent id (0.7.123): ore into pellets. |
-| 96 | `HeavyIndustry.COKE_OVENS` | `103` | The Coke Ovens' permanent id (0.7.123): coking coal into coke, and power. |
-| 99 | `HeavyIndustry.MINI_BLAST_FURNACE` | `104` | The Mini Blast Furnace's permanent id (0.7.123): ore, coke and limestone into pig iron. |
-| 102 | `HeavyIndustry.BLAST_FURNACE` | `105` | The Blast Furnace's permanent id (0.7.123): the big furnace, its sinter plant and its top-gas turbine. |
-| 105 | `HeavyIndustry.OXYGEN_STEEL_SHOP` | `106` | The Oxygen Steel Shop's permanent id (0.7.123): pig iron, scrap and lime into steel. |
-| 108 | `HeavyIndustry.LARGE_MINI_MILL` | `107` | The Large Mini-Mill's permanent id (0.7.123): the big arc-furnace plant. |
+| 85 | `HeavyIndustry.ARC_FURNACE` | `11` | The Electric Arc Furnace's permanent id in buildings.json, the Steel Foundry's until 0.7.120 (batch I3; spec-materials 4): what the harnesses and the test player find it by. |
+| 88 | `HeavyIndustry.MINI_MILL` | `12` | The Steel Mini-Mill's permanent id in buildings.json (0.7.120). |
+| 91 | `HeavyIndustry.SCRAP_YARD` | `101` | The Scrap Yard's permanent id in buildings.json (0.7.123, batch I4): the city's old steel into scrap. |
+| 94 | `HeavyIndustry.PELLETISING_PLANT` | `102` | The Pelletising Plant's permanent id (0.7.123): ore into pellets. |
+| 97 | `HeavyIndustry.COKE_OVENS` | `103` | The Coke Ovens' permanent id (0.7.123): coking coal into coke, and power. |
+| 100 | `HeavyIndustry.MINI_BLAST_FURNACE` | `104` | The Mini Blast Furnace's permanent id (0.7.123): ore, coke and limestone into pig iron. |
+| 103 | `HeavyIndustry.BLAST_FURNACE` | `105` | The Blast Furnace's permanent id (0.7.123): the big furnace, its sinter plant and its top-gas turbine. |
+| 106 | `HeavyIndustry.OXYGEN_STEEL_SHOP` | `106` | The Oxygen Steel Shop's permanent id (0.7.123): pig iron, scrap and lime into steel. |
+| 109 | `HeavyIndustry.LARGE_MINI_MILL` | `107` | The Large Mini-Mill's permanent id (0.7.123): the big arc-furnace plant. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 81 | 171 | **type** `public final class HeavyIndustry extends ProcessingSector` | The mills - Iron & Steel since 0.7.120, under the key it was saved by, "Heavy Industry": the arc furnaces, which melt scrap into steel, and since 0.7.123 the integrated route from ore and coke to steel and the yards t... |
-| 110 | 23 | `public HeavyIndustry()` |  |
+| 82 | 171 | **type** `public final class HeavyIndustry extends ProcessingSector` | The mills - Iron & Steel since 0.7.120, under the key it was saved by, "Heavy Industry": the arc furnaces, which melt scrap into steel, and since 0.7.123 the integrated route from ore and coke to steel and the yards t... |
+| 111 | 23 | `public HeavyIndustry()` |  |
 
-### THE OLD STEEL (0.7.123, batch I4; OldMetal, the spec's 2.9) (lines 134-251)
+### THE OLD STEEL (0.7.123, batch I4; OldMetal, the spec's 2.9) (lines 135-252)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 139 | 3 | `private ham.citybuildersim.OldMetal pool()` | The city's old steel, or null with no city (a fixture's bare sector). |
-| 144 | 3 | `public double oldSteelIntake()` | Tonnes of old steel its standing yards take a month at nameplate. |
-| 149 | 4 | `public double oldSteelPerTonneOfScrap()` | ...and the tonnes of old steel a tonne of their scrap takes: their intake over their scrap at nameplate (10,500 into 10,000), 0 with no yard standing. |
-| 155 | 5 | `public double oldSteelPrice()` | What its yards pay a tonne of old steel today: OldMetal.PAY_SHARE of scrap's export price (Jerus's Q8); 0 with no markets. |
-| 162 | 3 | `private double spareOldSteel(ham.citybuildersim.OldMetal pool)` | Old steel arisen in the pool's last month past what the yards standing take: what one more would run on. |
-| 168 | 7 | `protected double groundLimit(Good g, double asked)` | Its scrap is limited by the old steel that arose (the yards make no scrap past it); every other good as Sector's. |
-| 189 | 23 | `public void produceFlow(Good g)` | Makes a flow good for the month; its scrap, from the old steel its yards buy now (THE OLD STEEL): what they made at the rate, at oldSteelPerTonneOfScrap() a tonne, bought from the pool pro rata to each seller at oldSt... |
-| 215 | 9 | `protected String feedRefusal(ham.citybuildersim.BuildingsTemplate t)` | A yard is fed only while old steel for FEED_GATE of one arises past what the yards standing take; every other works buys its feed on the market. |
-| 227 | 6 | `protected double feedShare(ham.citybuildersim.BuildingsTemplate t)` | One more yard runs on the old steel past what the yards standing take, at most its nameplate; every other works on all of it. |
-| 236 | 8 | `protected double feedShareStanding(ham.citybuildersim.BuildingsTemplate t)` | The last yard standing runs on what the others leave of the old steel that arose, at most its nameplate. |
-| 247 | 4 | `protected double offMarketFeed(ham.citybuildersim.BuildingsTemplate t, double rate)` | What a yard pays a month for the old steel it takes at `rate`: its intake at the rate, at oldSteelPrice(). |
+| 140 | 3 | `private ham.citybuildersim.OldMetal pool()` | The city's old steel, or null with no city (a fixture's bare sector). |
+| 145 | 3 | `public double oldSteelIntake()` | Tonnes of old steel its standing yards take a month at nameplate. |
+| 150 | 4 | `public double oldSteelPerTonneOfScrap()` | ...and the tonnes of old steel a tonne of their scrap takes: their intake over their scrap at nameplate (10,500 into 10,000), 0 with no yard standing. |
+| 156 | 5 | `public double oldSteelPrice()` | What its yards pay a tonne of old steel today: OldMetal.PAY_SHARE of scrap's export price (Jerus's Q8); 0 with no markets. |
+| 163 | 3 | `private double spareOldSteel(ham.citybuildersim.OldMetal pool)` | Old steel arisen in the pool's last month past what the yards standing take: what one more would run on. |
+| 169 | 7 | `protected double groundLimit(Good g, double asked)` | Its scrap is limited by the old steel that arose (the yards make no scrap past it); every other good as Sector's. |
+| 190 | 23 | `public void produceFlow(Good g)` | Makes a flow good for the month; its scrap, from the old steel its yards buy now (THE OLD STEEL): what they made at the rate, at oldSteelPerTonneOfScrap() a tonne, bought from the pool pro rata to each seller at oldSt... |
+| 216 | 9 | `protected String feedRefusal(ham.citybuildersim.BuildingsTemplate t)` | A yard is fed only while old steel for FEED_GATE of one arises past what the yards standing take; every other works buys its feed on the market. |
+| 228 | 6 | `protected double feedShare(ham.citybuildersim.BuildingsTemplate t)` | One more yard runs on the old steel past what the yards standing take, at most its nameplate; every other works on all of it. |
+| 237 | 8 | `protected double feedShareStanding(ham.citybuildersim.BuildingsTemplate t)` | The last yard standing runs on what the others leave of the old steel that arose, at most its nameplate. |
+| 248 | 4 | `protected double offMarketFeed(ham.citybuildersim.BuildingsTemplate t, double rate)` | What a yard pays a month for the old steel it takes at `rate`: its intake at the rate, at oldSteelPrice(). |
 

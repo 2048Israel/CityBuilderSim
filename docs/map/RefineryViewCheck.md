@@ -1,8 +1,8 @@
 # RefineryViewCheck.java - 628 lines · 23 methods · 6 constants · harnesses
 
-`ham/citybuildersim/RefineryViewCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RefineryViewCheck.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
-> The refinery's pictogram (0.7.95, batch O11; runs/spec-oil.md 2.12):
+> The refinery's pictogram (0.7.95, batch O11; docs/studies/spec-oil.md 2.12):
 > RefineryView's figures and its picture, held to the model's own reads in
 > played towns.
 > 
@@ -89,7 +89,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 562 | **type** `public class RefineryViewCheck` | The refinery's pictogram (0.7.95, batch O11; runs/spec-oil.md 2.12): RefineryView's figures and its picture, held to the model's own reads in played towns. |
+| 67 | 562 | **type** `public class RefineryViewCheck` | The refinery's pictogram (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): RefineryView's figures and its picture, held to the model's own reads in played towns. |
 | 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 78 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 83 | 5 | `static void quietly(Runnable r)` |  |

@@ -1,8 +1,8 @@
 # WellCheck.java - 1,112 lines · 27 methods · 6 constants · harnesses
 
-`ham/citybuildersim/WellCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WellCheck.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
-> The oil wells' lives (0.7.84, batch O7; runs/spec-oil.md 2.6 and 4's
+> The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's
 > WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil
 > 2.7, 2.11): the platforms, their wells, the shuttle tankers and the pipes;
 > and since 0.7.93 the two pools they lift (batch O10b).
@@ -110,7 +110,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 93 | 1020 | **type** `public class WellCheck` | The oil wells' lives (0.7.84, batch O7; runs/spec-oil.md 2.6 and 4's WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil 2.7, 2.11): the platforms, their wells, the shuttle tankers and the pipe... |
+| 93 | 1020 | **type** `public class WellCheck` | The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil 2.7, 2.11): the platforms, their wells, the shuttle tankers and ... |
 | 99 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 104 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 109 | 5 | `static void quietly(Runnable r)` |  |

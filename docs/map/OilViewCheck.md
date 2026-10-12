@@ -1,8 +1,8 @@
 # OilViewCheck.java - 706 lines · 20 methods · 3 constants · harnesses
 
-`ham/citybuildersim/OilViewCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OilViewCheck.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
-> The oil industry screen (0.7.96, batch O12; runs/spec-oil.md 2.13):
+> The oil industry screen (0.7.96, batch O12; docs/studies/spec-oil.md 2.13):
 > OilView's figures, words, chart and levers, held to the model's own reads
 > in played towns.
 > 
@@ -96,7 +96,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 77 | 630 | **type** `public class OilViewCheck` | The oil industry screen (0.7.96, batch O12; runs/spec-oil.md 2.13): OilView's figures, words, chart and levers, held to the model's own reads in played towns. |
+| 77 | 630 | **type** `public class OilViewCheck` | The oil industry screen (0.7.96, batch O12; docs/studies/spec-oil.md 2.13): OilView's figures, words, chart and levers, held to the model's own reads in played towns. |
 | 83 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 88 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 93 | 5 | `static void quietly(Runnable r)` |  |

@@ -1,12 +1,12 @@
 # Geology.java - 751 lines · 33 methods · 21 constants · model
 
-`ham/citybuildersim/Geology.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Geology.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > The Earth's geology as its deposits read it: each USGS province's class - ocean, shield, fold belt, rift, shelf, basin or other - by the data's name rules and the hand-checked table, its known petroleum, and the weights, the Z that keeps the land's count of fields today's and the type odds an Earth world's fields are drawn with (spec-earth 4).
 > 
 > WHY THIS EXISTS (0.7.117, batch E3; the project's spec-earth.md 4 and 8,
-> runs/spec-materials.md 2.4; Jerus's answers of 2026-10-10, "all rec").
-> Until E3 an Earth world drew its fields as a generated one does, at
+> docs/studies/spec-materials.md 2.4; Jerus's answers of 2026-10-10, "all
+> rec"). Until E3 an Earth world drew its fields as a generated one does, at
 > today's densities on its cells' land (E2): iron as thick on the Paris
 > basin as on the Yilgarn shield, oil as thick in the Alps as under the
 > North Sea. The study rasterised the USGS World Energy provinces at 0.25
@@ -47,10 +47,10 @@
 > has it). The study's figures were measured on the rules' classes before
 > the hand pass, and three of them do not follow from its own table (★E3-2).
 > 
-> THE TYPES (runs/spec-materials.md 2.4, "On Earth (E3)"). A field's type
-> leans on the class at its centre by an odds ratio: coking coal x3 in fold
-> belts and x0.5 on shields, limestone x2 in basins and on shelves, x0.5 in
-> fold belts and x0.25 on shields, iron and copper flat; one constant a
+> THE TYPES (docs/studies/spec-materials.md 2.4, "On Earth (E3)"). A field's
+> type leans on the class at its centre by an odds ratio: coking coal x3 in
+> fold belts and x0.5 on shields, limestone x2 in basins and on shelves, x0.5
+> in fold belts and x0.25 on shields, iron and copper flat; one constant a
 > resource (COKING_ODDS, LIMESTONE_ODDS) holds the Earth-wide share - over
 > the fields expected in each class - at the generated world's TYPE_SHARES.
 > 
@@ -58,7 +58,7 @@
 
 **Uses:** [EarthData](EarthData.md) (13), [Resource](Resource.md) (12), [Deposit](Deposit.md) (2), [EarthProj](EarthProj.md) (2)
 
-**Used by (7):** [Deposit](Deposit.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [LandMap](LandMap.md), [World](World.md)
+**Used by (8):** [CoalMiningCheck](CoalMiningCheck.md), [Deposit](Deposit.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [LandMap](LandMap.md), [World](World.md)
 
 ## Sections
 
@@ -66,7 +66,7 @@
 |---:|---|
 | 83 | THE WEIGHTS (spec-earth 4's table), in Kind's order - ocean, shield, |
 | 108 | Z, measured on earth-1 with the hand table (measure(); EarthTerrainCheck |
-| 139 | THE TYPES' ODDS (runs/spec-materials.md 2.4, "On Earth (E3)"): the |
+| 139 | THE TYPES' ODDS (docs/studies/spec-materials.md 2.4, "On Earth (E3)"): |
 | 158 | THE HAND-CHECKED TABLE (★E3-1). A row: the province's row in the data, |
 | 476 | THE WEIGHTS AND ODDS, read |
 | 539 | ONE DATA FILE'S GEOLOGY: its provinces' classes and the grid |
@@ -136,7 +136,7 @@
 
 ### Z, measured on earth-1 with the hand table (measure(); EarthTerrainCheck (lines 108-138)
 
-### THE TYPES' ODDS (runs/spec-materials.md 2.4, "On Earth (E3)"): the (lines 139-157)
+### THE TYPES' ODDS (docs/studies/spec-materials.md 2.4, "On Earth (E3)"): (lines 139-157)
 
 ### THE HAND-CHECKED TABLE (★E3-1). A row: the province's row in the data, (lines 158-475)
 

@@ -1,6 +1,6 @@
-# OutwardInvestment.java - 384 lines · 24 methods · 5 constants · model
+# OutwardInvestment.java - 388 lines · 24 methods · 5 constants · model
 
-`ham/citybuildersim/OutwardInvestment.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OutwardInvestment.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > Outward investment: what the city's businesses do with money the bank will
 > not pay for.
@@ -59,9 +59,9 @@
 | 154 | · the month |
 | 184 | · · the income, first |
 | 203 | · · the target |
-| 209 | · · the move |
-| 264 | · reading |
-| 315 | · save and restore |
+| 213 | · · the move |
+| 268 | · reading |
+| 319 | · save and restore |
 
 ## Constants
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 333 | **type** `public class OutwardInvestment` | Outward investment: what the city's businesses do with money the bank will not pay for. |
+| 52 | 337 | **type** `public class OutwardInvestment` | Outward investment: what the city's businesses do with money the bank will not pay for. |
 
 ### HOW MUCH WANTS TO GO (lines 54-85)
 
@@ -108,40 +108,40 @@
 |---:|---:|---|---|
 | 146 | 7 | `public OutwardInvestment()` |  |
 
-### the month (lines 154-263)
+### the month (lines 154-267)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 169 | 67 | `public void takeMonth(double depositRate, double worldRate, double rate, EconomyManager economy)` | Moves the month's money, in both directions, and rolls the month's income. |
-| 251 | 12 | `public double recall(String sector, double local, EconomyManager economy)` | Brings money home because it is needed now - to build, or to pay the owners - rather than because the bank pays more. |
+| 169 | 71 | `public void takeMonth(double depositRate, double worldRate, double rate, EconomyManager economy)` | Moves the month's money, in both directions, and rolls the month's income. |
+| 255 | 12 | `public double recall(String sector, double local, EconomyManager economy)` | Brings money home because it is needed now - to build, or to pay the owners - rather than because the bank pays more. |
 
-### reading (lines 264-314)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 267 | 1 | `public double getUsd(String sector)` | Dollars held abroad by one sector. |
-| 270 | 1 | `public double localValue(String sector)` | ...and what they are worth in the city's money, at the rate they were last valued at. |
-| 272 | 5 | `public double totalUsd()` |  |
-| 278 | 1 | `public double totalLocalValue()` |  |
-| 281 | 1 | `public double getMovedThisMonth(String sector)` | This month's move for one sector, local money: positive went abroad. |
-| 284 | 1 | `public double getInterestThisMonth(String sector)` | This month's income from abroad for one sector, local money - earned and reinvested there, not in the till. |
-| 287 | 5 | `public double getInvestedAbroadThisMonth()` | Everything that went abroad this month, all sectors, local money. |
-| 294 | 5 | `public double getBroughtHomeThisMonth()` | Everything that came home this month, all sectors, local money. |
-| 301 | 5 | `public double getInterestThisMonth()` | Everything the world paid the city's businesses this month, local money, reinvested where it was paid. |
-| 307 | 1 | `public double getSpread()` |  |
-| 308 | 1 | `public double getTargetShare()` |  |
-| 309 | 1 | `public double getLastRate()` |  |
-| 310 | 1 | `public double getLifetimeOut()` |  |
-| 311 | 1 | `public double getLifetimeHome()` |  |
-| 312 | 1 | `public double getLifetimeInterest()` |  |
-| 313 | 1 | `public double getPeakUsd()` |  |
-
-### save and restore (lines 315-384)
+### reading (lines 268-318)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 322 | 17 | `public double[] toSaveArray()` | Seven headline figures, then three per sector in SECTORS order. |
-| 340 | 16 | `public void restore(double[] saved)` |  |
-| 357 | 10 | `public void reset()` |  |
-| 373 | 11 | `public void redenominate(double scale)` | A reform divides the local money and leaves the dollars alone. |
+| 271 | 1 | `public double getUsd(String sector)` | Dollars held abroad by one sector. |
+| 274 | 1 | `public double localValue(String sector)` | ...and what they are worth in the city's money, at the rate they were last valued at. |
+| 276 | 5 | `public double totalUsd()` |  |
+| 282 | 1 | `public double totalLocalValue()` |  |
+| 285 | 1 | `public double getMovedThisMonth(String sector)` | This month's move for one sector, local money: positive went abroad. |
+| 288 | 1 | `public double getInterestThisMonth(String sector)` | This month's income from abroad for one sector, local money - earned and reinvested there, not in the till. |
+| 291 | 5 | `public double getInvestedAbroadThisMonth()` | Everything that went abroad this month, all sectors, local money. |
+| 298 | 5 | `public double getBroughtHomeThisMonth()` | Everything that came home this month, all sectors, local money. |
+| 305 | 5 | `public double getInterestThisMonth()` | Everything the world paid the city's businesses this month, local money, reinvested where it was paid. |
+| 311 | 1 | `public double getSpread()` |  |
+| 312 | 1 | `public double getTargetShare()` |  |
+| 313 | 1 | `public double getLastRate()` |  |
+| 314 | 1 | `public double getLifetimeOut()` |  |
+| 315 | 1 | `public double getLifetimeHome()` |  |
+| 316 | 1 | `public double getLifetimeInterest()` |  |
+| 317 | 1 | `public double getPeakUsd()` |  |
+
+### save and restore (lines 319-388)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 326 | 17 | `public double[] toSaveArray()` | Seven headline figures, then three per sector in SECTORS order. |
+| 344 | 16 | `public void restore(double[] saved)` |  |
+| 361 | 10 | `public void reset()` |  |
+| 377 | 11 | `public void redenominate(double scale)` | A reform divides the local money and leaves the dollars alone. |
 

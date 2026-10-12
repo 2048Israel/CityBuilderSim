@@ -1,9 +1,9 @@
 # PortCheck.java - 873 lines · 21 methods · 7 constants · harnesses
 
-`ham/citybuildersim/PortCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PortCheck.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
-> The city's ports and their boats (0.7.86, batch O9; runs/spec-oil.md 2.9,
-> 2.10 and 4's PortCheck; runs/research-freight.md 5).
+> The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md
+> 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5).
 > 
 > WHAT THIS HAS TO PROVE:
 > 
@@ -97,7 +97,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 807 | **type** `public class PortCheck` | The city's ports and their boats (0.7.86, batch O9; runs/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). |
+| 67 | 807 | **type** `public class PortCheck` | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). |
 | 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 78 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 83 | 5 | `static void quietly(Runnable r)` |  |

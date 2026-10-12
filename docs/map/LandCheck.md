@@ -1,6 +1,6 @@
-# LandCheck.java - 2,742 lines · 35 methods · 3 constants · harnesses
+# LandCheck.java - 2,762 lines · 35 methods · 3 constants · harnesses
 
-`ham/citybuildersim/LandCheck.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandCheck.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
 
 > Verifies the land ledger: what the city owns, what it can allocate, what it
 > charges, and that the three numbers never drift apart.
@@ -51,7 +51,9 @@
 > moving its own type's E and nothing else, W by type to the tonne, the
 > state through a save, and where a works fits (fits()), pure (26).
 
-**Uses:** [LandManager](LandManager.md) (183), [Game](Game.md) (83), [Resource](Resource.md) (76), [CityLand](CityLand.md) (75), [LandParcel](LandParcel.md) (71), [World](World.md) (66), [LandMarket](LandMarket.md) (43), [LongPlaytest](LongPlaytest.md) (35), [Deposit](Deposit.md) (26), [LandGrid](LandGrid.md) (14), [MiningCheck](MiningCheck.md) (12), [Sectors](Sectors.md) (12), [CityNeeds](CityNeeds.md) (10), [GameFiles](GameFiles.md) (8), [ForeignAccounts](ForeignAccounts.md) (7), [LandMap](LandMap.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [LegacyLand](LegacyLand.md) (5), [MoneyAudit](MoneyAudit.md) (4), [DebtQuote](DebtQuote.md) (4), [BuildingManager](BuildingManager.md) (3), [LandConversion](LandConversion.md) (3), [Formats](Formats.md) (3), [GridConversion](GridConversion.md) (3), [Mining](Mining.md) (3), [BuildAdvice](BuildAdvice.md) (3), [Good](Good.md) (2), [TreasuryJournal](TreasuryJournal.md) (2), [SaveFileCheck](SaveFileCheck.md) (2), [Founding](Founding.md) (2)... and 3 more
+**Uses:** [LandManager](LandManager.md) (186), [Game](Game.md) (83), [Resource](Resource.md) (76), [CityLand](CityLand.md) (75), [LandParcel](LandParcel.md) (71), [World](World.md) (66), [LandMarket](LandMarket.md) (43), [LongPlaytest](LongPlaytest.md) (35), [Deposit](Deposit.md) (26), [LandGrid](LandGrid.md) (14), [MiningCheck](MiningCheck.md) (12), [Sectors](Sectors.md) (12), [CityNeeds](CityNeeds.md) (10), [GameFiles](GameFiles.md) (8), [Mining](Mining.md) (8), [ForeignAccounts](ForeignAccounts.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [LandMap](LandMap.md) (6), [LegacyLand](LegacyLand.md) (5), [MoneyAudit](MoneyAudit.md) (4), [DebtQuote](DebtQuote.md) (4), [BuildingManager](BuildingManager.md) (3), [LandConversion](LandConversion.md) (3), [Formats](Formats.md) (3), [GridConversion](GridConversion.md) (3), [BuildAdvice](BuildAdvice.md) (3), [Good](Good.md) (2), [TreasuryJournal](TreasuryJournal.md) (2), [SaveFileCheck](SaveFileCheck.md) (2), [Founding](Founding.md) (2)... and 3 more
+
+**Used by (4):** [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [MaterialsCheck](MaterialsCheck.md), [QuarryingCheck](QuarryingCheck.md)
 
 ## Sections
 
@@ -88,7 +90,7 @@
 | 2253 | 22. THE TEST PLAYER KEEPS ITS GROUND AHEAD (0.7.58, batch J1d) |
 | 2336 | 23. THE TEST PLAYER BUYS ITS IRON A WHOLE FIELD AT A TIME (0.7.64, batch L) |
 | 2485 | 25. THE LEDGER WITH ZONES AND THE FOREST LAW (0.7.107, batch Z1) |
-| 2531 | 26. THE GROUND BY TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4) |
+| 2531 | 26. THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) |
 
 ## Constants
 
@@ -108,7 +110,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 2688 | **type** `public class LandCheck` | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. |
+| 55 | 2708 | **type** `public class LandCheck` | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. |
 | 59 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 66 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 72 | 5 | `static void near(String label, double actual, double expected, double relative)` | ...and to a part in `relative` of the expected figure (0.7.55): prices a ten-thousandth of a unit, where check()'s 1e-6 is no test. |
@@ -219,10 +221,10 @@
 |---:|---:|---|---|
 | 2496 | 34 | `static void zonesOnTheLedger()` |  |
 
-### 26. THE GROUND BY TYPE (0.7.110, batch I1; runs/spec-materials.md 2.4) (lines 2531-2742)
+### 26. THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) (lines 2531-2762)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2551 | 178 | `static void byType()` |  |
-| 2731 | 10 | `static boolean wByType(LandManager land)` | Unowned + the remaining by type + E by type is the world's total, every resource, to the tonne. |
+| 2553 | 196 | `static void byType()` |  |
+| 2751 | 10 | `static boolean wByType(LandManager land)` | Unowned + the remaining by type + E by type is the world's total, every resource, to the tonne. |
 
