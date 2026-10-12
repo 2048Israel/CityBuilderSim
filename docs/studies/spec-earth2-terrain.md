@@ -767,7 +767,7 @@ A missing key means flat and none, which is right for every generated city. No c
 
 ## 11. ★ Decisions
 
-**Answered, Jerus, 2026-10-12: "all rec".** Every recommendation below stands: the slope at 30″ (D3), forest green shaded toward its grey (D5), short crossings to 1,020 m (D12), generated worlds flat (D19), and EG1 (D20) as its own batch after his review of the industrial calls, so it stays under Pending. With the same answer, the CONFIRM item E7 ★10 (streets and runs refuse ice, as buildings do) rides with ET2.
+**Answered, Jerus, 2026-10-12: "all rec", then 15″ for D3.** Every recommendation below stands but D3: asked what a 284 MB file would mean, he chose the slope at **15″** ("sure do that"), so earth-2 is baked again before its release (`bake2.py` now defaults to 15″). The rest: forest green shaded toward its grey (D5), short crossings to 1,020 m (D12), generated worlds flat (D19), and EG1 (D20) as its own batch after his review of the industrial calls, so it stays under Pending. With the same answer, the CONFIRM item E7 ★10 (streets and runs refuse ice, as buildings do) rides with ET2.
 
 **The data**
 1. **D1. Slope from NASADEM, measured over 90 m**; north of 61 N and south of 56 S an estimate from GEBCO, marked by tile; ArcticDEM (CC BY) later to measure the north. **Recommend yes.** All of it is public domain; Copernicus fails your rule (§2.1).

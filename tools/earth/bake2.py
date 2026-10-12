@@ -29,7 +29,7 @@ SLOPE = os.path.join(T.WORK2, 'slope')
 CALIB = os.path.join(T.WORK2, 'slope_calib.json')
 GB = [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 18, 22, 26, 30, 35, 40, 50, 60, 80, 1e9]    # GEBCO 15" slope bins, percent
 PER_CELL = 25                                     # 3" slopes in a 15" cell
-SLOPE_CPD = int(os.environ.get('CBS_SLOPE_CPD', '120'))   # the slope layer's cells a degree: 120 (30", 57 MB projected) or 240 (15", 204 MB)
+SLOPE_CPD = int(os.environ.get('CBS_SLOPE_CPD', '240'))   # the slope layer's cells a degree: 240 (15", 204 MB projected; Jerus, 2026-10-12, D3) or 120 (30", 57 MB)
 
 
 def pack_slope(F, S, V):

@@ -10,17 +10,19 @@ provinces, places); bake2.py takes them from earth-1.bin and check2.py holds eve
 
 NEW LAYERS (4-bit shares are 0..15, share = v/15, as earth-1's sea and lake)
 
-  slope         kind 0, 120/deg (30"), a byte a cell: the cell's LAND (its four 15" cells' land, 1 - (sea + lake)/15 of
-                earth-1, summed) by slope:
+  slope         kind 0, 240/deg (15"), a byte a cell: the cell's LAND (1 - (sea + lake)/15 of earth-1; at 120/deg,
+                its four 15" cells' land summed) by slope:
                   bits 0-2  F x 7: the share of its land at or above FOOTHILL (10% grade, 5.7 degrees)
                   bits 3-5  S x 7: the share at or above STEEP (30% grade, 16.7 degrees); S <= F
                   bits 6-7  (V / S) x 3: the part of the steep ground that is VERY STEEP (60% grade, 31 degrees)
                 So with F = (b & 7)/7, S = ((b >> 3) & 7)/7 and V = S x (b >> 6)/3, a cell's land is flat 1 - F,
                 foothill F - S, steep S - V and very steep V. A cell with no land holds 0.
                 The slope of a 90 m cell: NASADEM's 1" heights averaged over 3 x 3 (3", 90 m), the grade by Horn's
-                3 x 3 method over that grid; 100 such cells to a 30" cell, a share their count over 100 x the land
-                share, capped at 1. (Eight levels, not sixteen, and 30" not 15": the layer at 15" would be 204 MB,
-                at 30" 57 MB, projected from 2,037 random tiles; bake2.py makes 15" with CBS_SLOPE_CPD=240.)
+                3 x 3 method over that grid; 25 such cells to a 15" cell (100 to a 30" one), a share their count over
+                that number x the land share, capped at 1. (Eight levels, not sixteen. 15" since 2026-10-12, Jerus's
+                D3: the layer at 15" is about 204 MB, at 30" 57 MB, projected from 2,037 random tiles; the first bake
+                was 30". The reader takes the grid from the layer's header, cpd; bake2.py makes 30" with
+                CBS_SLOPE_CPD=120.)
   slope.est     kind 2: 8,100 bytes, a bit a 1-degree tile (tile i is bit 7 - i%8 of byte i/8): set where the slope
                 shares are an estimate - north of 61 N, south of 56 S, and any tile NASADEM has no heights for -
                 from GEBCO 2026's 15" slope (Horn over 15") through a table: the mean shares of NASADEM's land cells
