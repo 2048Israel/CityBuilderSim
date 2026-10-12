@@ -216,10 +216,17 @@ public class NationalAccounts {
      * leach plants' and the refineries' yards (Copper Mining, Copper
      * Refining). A save from before carries one slot fewer and reads cathode
      * as none, which is what that city held.
+     *
+     * ...AND SINCE 0.7.140 (batch I10) WOOD'S FIVE, on the end in Good's
+     * order: the sawmills' lumber, the panel mill's panels, the pulp mill's
+     * pulp, the paper mill's paper and the pellet mill's pellets, each in its
+     * maker's yard (Wood Products). A save from before carries five slots
+     * fewer and reads them as none, which is what that city held.
      */
     public static final Good[] HELD = { Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL,
             Good.LPG, Good.NAPHTHA, Good.JET, Good.LUBRICANTS, Good.FUEL_OIL, Good.BITUMEN, Good.COKE, Good.CRUDE,
-            Good.MET_COKE, Good.THERMAL_COAL, Good.COKING_COAL, Good.CEMENT, Good.COPPER };
+            Good.MET_COKE, Good.THERMAL_COAL, Good.COKING_COAL, Good.CEMENT, Good.COPPER,
+            Good.LUMBER, Good.PANELS, Good.PULP, Good.PAPER, Good.WOOD_PELLETS };
 
     /** ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. */
     public static final int HELD_BEFORE_FUEL = 3;

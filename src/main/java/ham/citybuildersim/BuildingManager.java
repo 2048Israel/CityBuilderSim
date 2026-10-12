@@ -3291,6 +3291,164 @@ public class BuildingManager {
                 .setSince(1900)
                 .setId(132));
 
+        /* --------------------- WOOD PRODUCTS (0.7.140, batch I10) ---------------------
+           docs/studies/spec-materials.md 2.1, 2.2, 2.7, 2.8 and 5's I10 row; the
+           study's (materials-chains-research.md) 1.6 and 5.3 to 5.6. Wood
+           Products, on the end of Sectors.KEYS after Forestry, makes goods of its
+           logs. Its six, the study's 5.4:
+             - the SAWMILL: 2,080 m3 of lumber and 1,640 m3 of residues (chips and
+               sawdust) from 4,000 m3 of sawlogs;
+             - the LARGE SAWMILL: 20,020 and 15,785 from 38,500;
+             - the PANEL MILL: 15,000 m3 of OSB from 27,750 m3 of pulpwood, its
+               resin in its upkeep;
+             - the PULP MILL: 11,000 t of pulp from 28,000 m3 of pulpwood and
+               21,500 m3 of residues, its black liquor and bark burned for its own
+               power: 13,500 kW, all sold (the study's 1.6);
+             - the PAPER MILL: 5,500 t of paper from 5,775 t of pulp, its drying
+               steam 850,000 L of fuel oil (the study's 5.6, Q16);
+             - the WOOD PELLET MILL: 6,000 t of pellets from 13,200 m3 of residues.
+           The house conventions (spec 2.2), as I4's to I9's rows: cash the all-in
+           cost over 1.3, material a sixtieth of the cash, points a half, cash
+           taking the material's rounding; posts split by their families by
+           largest remainder, ties to the less skilled - the sawmills, the panel
+           mill and the pellet mill the heavy plants' 54/35/9/2, the pulp mill pulp
+           and paper's 42/37/17/4, the paper mill the study's own 50/45/20/5;
+           power the research's kWh a unit over the study's 730-hour month - the
+           sawmills 104 a m3 of lumber (the middle of 99-109 [W27]), the panel mill
+           207 a m3 [W34], the pellet mill the Pelletising Plant's 5,750 kW for
+           150,000 t (the spec's "pellets est." is not in the tree) - the paper
+           mill the study's 4,900 kW, and the pulp mill none bought, its boiler
+           meeting its draw; water the study's for the pulp and paper mills, else
+           the Steel Mini-Mill's 320 for 3,700 kW; ground the paper mill's 19 ha,
+           the rest the Steel Foundry's per D$ of cost; road load the tonnes in
+           and out (lumber 0.5 t a m3, OSB 0.62, logs and residues 0.9) at the
+           Steel Foundry's 110 for 2,520 t; stock three months of each stockable
+           output; consumables the study's running cost less wages, the power
+           bought and water - and the paper mill's fuel at the middle of fuel
+           oil's band, the study naming no price. "since": 1900 but the Panel
+           Mill, about 1980, and the Wood Pellet Mill, the 1970s (research-1900.md
+           1.2, both unverified).
+           ------------------------------------------------------------------------------ */
+        templates.add(new BuildingsTemplate("Sawmill", BuildingType.HEAVY_INDUSTRY)   // sawlogs into lumber, chips and sawdust
+                .setCashCost(11544)
+                .setConstructionPoints(5772)
+                .setConstructionMaterials(192)
+                .setSector("Wood Products")
+                .makes(Good.LUMBER, 2080)
+                .makes(Good.RESIDUES, 1640)
+                .uses(Good.SAWLOGS, 4000)
+                .setElectricityConsumption(296)
+                .setWaterConsumption(26)
+                .setConsumables(28.3)           // runs 177 (the study's 5.4) - 144.44 wages - 2.96 power - 1.30 water
+                .setLandSqFt(45062)             // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(267)               // 3,600 t of logs in, 1,040 t of lumber and 1,476 t of residues out
+                .setStock(6240)
+                .setJobs(JobType.NO_DIPLOMA, 19)
+                .setJobs(JobType.DIPLOMA, 12)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 3)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setSince(1900)
+                .setId(133));
+        templates.add(new BuildingsTemplate("Large Sawmill", BuildingType.HEAVY_INDUSTRY)   // the same at ten times the scale
+                .setCashCost(115386)
+                .setConstructionPoints(57693)
+                .setConstructionMaterials(1923)
+                .setSector("Wood Products")
+                .makes(Good.LUMBER, 20020)
+                .makes(Good.RESIDUES, 15785)
+                .uses(Good.SAWLOGS, 38500)
+                .setElectricityConsumption(2852)
+                .setWaterConsumption(247)
+                .setConsumables(267.83)         // 844 - 535.30 wages - 28.52 power - 12.35 water
+                .setLandSqFt(450616)            // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(2570)              // 34,650 t in, 24,217 t out, at the Steel Foundry's 110 for 2,520 t
+                .setStock(60060)
+                .setJobs(JobType.NO_DIPLOMA, 70)
+                .setJobs(JobType.DIPLOMA, 45)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 12)
+                .setJobs(JobType.UNIV_SCIENCE, 3)
+                .setSince(1900)
+                .setId(134));
+        templates.add(new BuildingsTemplate("Panel Mill", BuildingType.HEAVY_INDUSTRY)   // pulpwood pressed into OSB, 1980
+                .setCashCost(107690)
+                .setConstructionPoints(53845)
+                .setConstructionMaterials(1795)
+                .setSector("Wood Products")
+                .makes(Good.PANELS, 15000)
+                .uses(Good.PULPWOOD, 27750)
+                .setElectricityConsumption(4253)
+                .setWaterConsumption(368)
+                .setConsumables(888.83)         // 1,360 - 410.24 wages - 42.53 power - 18.40 water: its resin
+                .setLandSqFt(420575)            // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(1496)              // 24,975 t in, 9,300 t out
+                .setStock(45000)
+                .setJobs(JobType.NO_DIPLOMA, 54)
+                .setJobs(JobType.DIPLOMA, 35)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 9)
+                .setJobs(JobType.UNIV_SCIENCE, 2)
+                .setSince(1980)
+                .setId(135));
+        templates.add(new BuildingsTemplate("Pulp Mill", BuildingType.HEAVY_INDUSTRY)   // pulpwood and residues cooked into pulp; its liquor and bark its own power
+                .setCashCost(200006)
+                .setConstructionPoints(100003)
+                .setConstructionMaterials(3333)
+                .setSector("Wood Products")
+                .makes(Good.PULP, 11000)
+                .uses(Good.PULPWOOD, 28000)
+                .uses(Good.RESIDUES, 21500)
+                .setElectricityConsumption(0)
+                .setGen(13500)                  // 11,000 t of pulp at 0.9 MWh a tonne [W42], all sold
+                .setWaterConsumption(11600)
+                .setConsumables(713.76)         // 2,170 - 876.24 wages - 580.00 water; no power bought
+                .setLandSqFt(781067)            // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(2425)              // 44,550 t in, 11,000 t out
+                .setStock(33000)
+                .setJobs(JobType.NO_DIPLOMA, 84)
+                .setJobs(JobType.DIPLOMA, 74)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 34)
+                .setJobs(JobType.UNIV_SCIENCE, 8)
+                .setSince(1900)
+                .setId(136));
+        templates.add(new BuildingsTemplate("Paper Mill", BuildingType.HEAVY_INDUSTRY)   // pulp into paper, its drying steam on fuel oil
+                .setCashCost(115386)
+                .setConstructionPoints(57693)
+                .setConstructionMaterials(1923)
+                .setSector("Wood Products")
+                .makes(Good.PAPER, 5500)
+                .uses(Good.PULP, 5775)
+                .uses(Good.FUEL_OIL, 850000)
+                .setElectricityConsumption(4900)
+                .setWaterConsumption(1450)
+                .setConsumables(338.7475)       // 1,380 - 526.50 wages - 49.00 power - 72.50 water - 393.25 fuel
+                .setLandSqFt(2045143)           // its 19 ha (the study's 5.6)
+                .setRoadLoad(529)               // 5,775 t of pulp and 842 t of fuel oil in, 5,500 t out
+                .setStock(16500)
+                .setJobs(JobType.NO_DIPLOMA, 50)
+                .setJobs(JobType.DIPLOMA, 45)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 20)
+                .setJobs(JobType.UNIV_SCIENCE, 5)
+                .setSince(1900)
+                .setId(137));
+        templates.add(new BuildingsTemplate("Wood Pellet Mill", BuildingType.HEAVY_INDUSTRY)   // residues pressed into pellets
+                .setCashCost(23070)
+                .setConstructionPoints(11535)
+                .setConstructionMaterials(385)
+                .setSector("Wood Products")
+                .makes(Good.WOOD_PELLETS, 6000)
+                .uses(Good.RESIDUES, 13200)
+                .setElectricityConsumption(230)
+                .setWaterConsumption(20)
+                .setConsumables(54.64)          // 183 - 125.06 wages - 2.30 power - 1.00 water
+                .setLandSqFt(90123)             // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(780)               // 11,880 t in, 6,000 t out
+                .setStock(18000)
+                .setJobs(JobType.NO_DIPLOMA, 16)
+                .setJobs(JobType.DIPLOMA, 10)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 3)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setSince(1970)
+                .setId(138));
+
         /* ---------------------------- EDUCATION ----------------------------
            The other half of the labour market.
 

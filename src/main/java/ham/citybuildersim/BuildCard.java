@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * One build card's figures, for every one of the buildings in buildings.json
- * (0.7.25; 133 of them since 0.7.138): what
+ * (0.7.25; 139 of them since 0.7.140): what
  * it gives the city and in what unit, its price per unit of that, the scarce
  * resource it takes, the group it is compared within and where in that group
  * it stands, what one costs to run, the verdict on an order of it - and, for
@@ -228,7 +228,9 @@ public final class BuildCard {
        "Copper" after them, Copper Mining's and Copper Refining's together
        (★ the spec's one word for the chain, as its list gives it); since
        0.7.138 (batch I9) Forestry's "Wood" after copper, its crews and its
-       planted stands together (the spec's 4: "Wood" for Forestry).
+       planted stands together (the spec's 4: "Wood" for Forestry), and since
+       0.7.140 (batch I10) Wood Products' mills in it beside them (★ the
+       chain's one word, as copper's two sectors share theirs).
        ===================================================================== */
 
     /** The market groups, in the order a page lays them out. */
@@ -277,6 +279,7 @@ public final class BuildCard {
                     case Sectors.COPPER_MINING:   return "Copper";
                     case Sectors.COPPER_REFINING: return "Copper";
                     case Sectors.FORESTRY:        return "Wood";
+                    case Sectors.WOOD_PRODUCTS:   return "Wood";
                     case Sectors.OIL:             return "Oil";
                     case Sectors.REFINING:        return "Refining";
                     case Sectors.MATERIALS:       return "Building materials";
