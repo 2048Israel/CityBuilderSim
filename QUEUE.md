@@ -33,6 +33,8 @@ stuff".
 | FR2 | The Freight sector: Haulage's trucks carry the city leg, vans for goods only | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR3 | Ports as a landlord port, and the Bulk Berth | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR4 | The freight screens, and Build's Infrastructure and Freight tabs | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
+| FR5 | Trucks drawn on the map, near zoom only, with a Settings toggle on by default (Jerus, 2026-10-12) | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
+| FR6 | The railway carries the city's own bulk (D4), measured after FR2, with the port yard (D7) | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | CD1 | The city's debt: the curve from the dial the market expects, every payment priced on its month | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
@@ -76,9 +78,6 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
-| FR-D | The freight study's 22 decisions | his word, each or "all rec"; FR0 to FR4 follow the recommendations until then | [spec-freight §8](docs/studies/spec-freight-and-infrastructure.md#8--decisions) |
-| FR5 | Trucks drawn on the map | his call (D21), optional | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
-| FR6 | The railway carries the city's own bulk | his call (D4), after FR2 is measured | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | ET-D | The Earth 2 study's 21 decisions | his word, each or "all rec"; ET1 to ET6 follow the recommendations until then | [spec-earth2-terrain §11](docs/studies/spec-earth2-terrain.md#11--decisions) |
 | ET-R | The release `earth-2` on GitHub: earth-2.bin, `tools/earth/earth-2.sha256` and `tools/earth/ATTRIBUTION-2.txt` | only he makes releases, on GitHub's website; ET1 cannot ship without it. The baked file (135,965,097 bytes, sha256 6ccb4794...fa8c3, the hash in `tools/earth/earth-2.sha256`) is on his PC in `Downloads\earth-2-release`, in five parts that `join-earth-2.bat` joins and checks; `tools/earth/bake-earth-2.bat` bakes another (about 140 GB downloaded), and whichever file is released defines the sha256 | [spec-earth2-terrain §2.8](docs/studies/spec-earth2-terrain.md#28-the-bake-and-the-release) |
 | EG1 | Deposits where the geology says: oil by known petroleum, iron on shields and recorded deposits, fewer and bigger fields (why his Nova Scotia cities had oil, then iron, all round them) | his call (D20); with the industrial calls, after research and freight | [spec-earth2-terrain §8.5](docs/studies/spec-earth2-terrain.md#85-the-recommendation-eg1-deposits-where-the-geology-says-d20-your-call) |

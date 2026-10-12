@@ -514,6 +514,8 @@ FR0, FR1 and FR5 are the map's alone and can go now, in any order after FR0. FR2
 
 ## 8. ★ Decisions
 
+**Answered, Jerus, 2026-10-12:** "all the freighting just do rec, and for far view yes, and for drawn trucks yes just only when zoomed in, and a toggle in settings with defualt on". Every recommendation below stands. D22, the far view's skeleton, goes in FR0. D21, trucks drawn on the map, is FR5: near zoom only, with a Settings toggle, on by default. D4 is FR6, after FR2 is measured, and D7, the port yard, rides with it. D20 checks the Elevated Highway's price source in FR2's brief before any raise.
+
 **The sector**
 1. **D1. One Freight sector with three divisions** (Haulage, Rail, Ports), in Rail's slot of `Sectors.KEYS`, renamed. **Jerus's call, 2026-10-11** ("freighting or something should be one sector, and it has subdivisions"). Recommend the name **Freight**.
 2. **D2. The city leg is a service** billed per tonne by Freight. The buyer pays for what it receives (from abroad or at home), the seller for what it exports. Each leg is paid once. **Recommend yes.** It ends the double charge on imported tonnes (§2).
