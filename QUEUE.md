@@ -21,7 +21,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| I9 | Forestry, with the 100-ha woodlot (running) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | CC1 | Childcare at real demand (running) | project: `claude/decisions-2026-10-10.md` |
 | I10 | Wood products | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I11 | The materials pictograms' model | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |

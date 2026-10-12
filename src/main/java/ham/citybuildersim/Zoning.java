@@ -231,7 +231,10 @@ public final class Zoning {
      * for building (LandManager's C: its ground in square feet, the ledger's
      * unit, and the wood that stood on it). Absent on an older save, which
      * reads no zones, the law at 0 and 0 and nothing cleared, and loads as it
-     * always did (Gson leaves a missing key alone; no format bump).
+     * always did (Gson leaves a missing key alone; no format bump). Since
+     * 0.7.138 (batch I9) the wood cleared and not yet sold as Forestry's
+     * salvage cut too (salvageM3: a clearing between two presses, sold the
+     * month after); an older save has none, which is what it ever had.
      */
     public static final class State {
         public List<ZoneState> zones = new ArrayList<>();
@@ -239,6 +242,7 @@ public final class Zoning {
         public double keptShare;
         public double clearedSqFt;
         public double clearedM3;
+        public double salvageM3;
         public State() { }
     }
 

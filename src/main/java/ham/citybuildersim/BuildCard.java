@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * One build card's figures, for every one of the buildings in buildings.json
- * (0.7.25; 129 of them since 0.7.133): what
+ * (0.7.25; 133 of them since 0.7.138): what
  * it gives the city and in what unit, its price per unit of that, the scarce
  * resource it takes, the group it is compared within and where in that group
  * it stands, what one costs to run, the verdict on an order of it - and, for
@@ -212,7 +212,7 @@ public final class BuildCard {
        THE MARKET'S GROUPS
 
        On a market page the cards sit under their owning sector, so Industry
-       has thirteen groups by owning sector since 0.7.133 (and four by kind
+       has fourteen groups by owning sector since 0.7.138 (and four by kind
        beside them: oil storage, the ports and the oil at sea's platforms and
        pipelines) and Shops three (the grocers', their forecourts and the
        bank's branches), and the bars and tags compare within a
@@ -226,13 +226,15 @@ public final class BuildCard {
        Stone, Wood, Cement"); since 0.7.131 (batch I7) Quarrying's "Stone"
        and Cement & Concrete's "Cement" after it; since 0.7.133 (batch I8)
        "Copper" after them, Copper Mining's and Copper Refining's together
-       (★ the spec's one word for the chain, as its list gives it).
+       (★ the spec's one word for the chain, as its list gives it); since
+       0.7.138 (batch I9) Forestry's "Wood" after copper, its crews and its
+       planted stands together (the spec's 4: "Wood" for Forestry).
        ===================================================================== */
 
     /** The market groups, in the order a page lays them out. */
     static final String[] GROUP_ORDER = {
             "Homes", "Groceries", "Filling stations", "The bank's branches",
-            "Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal", "Stone", "Cement", "Copper", "Oil",
+            "Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal", "Stone", "Cement", "Copper", "Wood", "Oil",
             "Oil platforms",
             "Oil pipelines", "Refining",
             "Oil storage", "Ports", "Building materials", "Builders",
@@ -274,6 +276,7 @@ public final class BuildCard {
                     case Sectors.CEMENT_CONCRETE: return "Cement";
                     case Sectors.COPPER_MINING:   return "Copper";
                     case Sectors.COPPER_REFINING: return "Copper";
+                    case Sectors.FORESTRY:        return "Wood";
                     case Sectors.OIL:             return "Oil";
                     case Sectors.REFINING:        return "Refining";
                     case Sectors.MATERIALS:       return "Building materials";
@@ -1184,7 +1187,8 @@ public final class BuildCard {
      * What a sector's word is about. BUILDING: investors have an order on
      * site, or the word says it built; SELLING: it sold buildings back;
      * LAND: no ground, or the month's land-blocked list has it; STAFF: the
-     * staffing test; LICENCE: licences; ORE: a deposit or the ore; SUPPLY:
+     * staffing test; LICENCE: licences; ORE: a deposit, the ore or (0.7.138)
+     * the forest Forestry may cut; SUPPLY:
      * a part the city does not make enough of and the world will not sell
      * (the car plants' fabricated steel - not in the design study's table,
      * which had no kind for it); CREDIT:
@@ -1201,8 +1205,8 @@ public final class BuildCard {
     static final String[] STAFF_WORDS   = { "could staff" };
     /** ...LICENCE's: whole words, so the plural as well. */
     static final String[] LICENCE_WORDS = { "licence", "licences" };
-    /** ...ORE's. */
-    static final String[] ORE_WORDS     = { "deposit", "ore" };
+    /** ...ORE's: the ground has none - and since 0.7.138 Forestry's, the forest it may cut (none, or too little for E). */
+    static final String[] ORE_WORDS     = { "deposit", "ore", "forest" };
     /** ...SUPPLY's. */
     static final String[] SUPPLY_WORDS  = { "fabricates", "will not sell" };
     /** ...CREDIT's. */

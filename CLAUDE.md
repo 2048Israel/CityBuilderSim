@@ -165,7 +165,7 @@ These are Jerus's, and they do not move.
                                    CopperRefiningCheck and MoneyCheck hold it
         SimulationEngine.java      the order the month runs in (200 lines - read it whole)
         Sector.java / Sectors.java the template every business extends, and the registry
-        sectors/                   twenty-two sector classes, RefineryFlow (0.7.80: the refinery's units, the
+        sectors/                   twenty-three sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the
                                    feed, ground, staff and money gates - and the idle-then-shed rule; the
@@ -197,13 +197,20 @@ These are Jerus's, and they do not move.
                                    field's cathode leached at the mine, and the smelters, refineries and
                                    rod mills on ProcessingSector, the smelter's acid sold to the leach
                                    plants and the city's old copper bought first by the scrap
-                                   refineries; Manufacturing's Wire & Cable Works draws their rod) -
-                                   each new sector held by its own check: CoalMiningCheck,
-                                   QuarryingCheck and CementConcreteCheck, CopperMiningCheck and
-                                   CopperRefiningCheck; Mining.java is the shape to copy for a mine (on
-                                   ExtractionSector since 0.7.112), CementConcrete.java the shortest of
-                                   all (0.7.131, on ProcessingSector) and Materials.java the shortest on
-                                   Sector itself
+                                   refineries; Manufacturing's Wire & Cable Works draws their rod;
+                                   since 0.7.138, batch I9, Forestry, the twenty-third - crews on the
+                                   forest the law lets them cut, no sites, added only while it lasts
+                                   120 months of every crew's cut (E), the forest regrowing a 240th of
+                                   what was cut and its planted stands' growth, a Tree Plantation or a
+                                   Woodlot planted on its zone while its cut outgrows the regrowth, and
+                                   the standing wood a building clears sold as its salvage cut,
+                                   billed by the builders) - each new sector held by its own check:
+                                   CoalMiningCheck, QuarryingCheck and CementConcreteCheck,
+                                   CopperMiningCheck and CopperRefiningCheck, and ForestryCheck;
+                                   Mining.java is the shape to copy for a mine (on ExtractionSector
+                                   since 0.7.112), CementConcrete.java the shortest of all (0.7.131,
+                                   on ProcessingSector) and Materials.java the shortest on Sector
+                                   itself
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
                                    the businesses' bonds (0.7.12): the market and each participant's rule, the
                                    bond, the limit-order book the bonds and (since round 2) the shares trade on
@@ -299,7 +306,7 @@ These are Jerus's, and they do not move.
                                    ranking where the money, the ground or the payback will not run to the
                                    first - borrowing on the funding page's bond; its log, its inbox
                                    notices - AutoBuildCheck holds it
-        BuildCard.java             one build card's figures for all 129 buildings (0.7.25): what it gives the
+        BuildCard.java             one build card's figures for all 133 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
                                    fails for them (since 0.7.75 every gate, with what it would earn, cost and
@@ -436,9 +443,11 @@ These are Jerus's, and they do not move.
                                    ore and oil its ground holds less what is taken out, since 0.7.93 the
                                    oil in two pools, the ground's and the sea's (THE TWO OIL POOLS), and
                                    since 0.7.106 the land a new city is founded with (foundingLand()),
-                                   since 0.7.107 the zones and the forest law (ZONES AND THE FOREST LAW)
-                                   and since 0.7.110 the ground by type (THE GROUND BY TYPE) - and the land
-                                   office's window, six offers a side; LandCheck holds them
+                                   since 0.7.107 the zones and the forest law (ZONES AND THE FOREST LAW),
+                                   since 0.7.110 the ground by type (THE GROUND BY TYPE) and since 0.7.138
+                                   the salvage cut a clearing leaves Forestry and its planted stands'
+                                   growth (THE PLANTED STANDS) - and the land office's window, six offers
+                                   a side, an offer's forest priced since 0.7.138; LandCheck holds them
         Zoning.java                zoning and the forest law (0.7.107, batch Z1): zones by sector, each a
                                    share of the dry ground or km2 at a share of the going price, and the
                                    law's two shares of the forest; LandManager's ZONES AND THE FOREST LAW
@@ -530,7 +539,7 @@ These are Jerus's, and they do not move.
                                    stamp of the city at the rail's foot above Menu, its preview on hover,
                                    the land office's map over the window on a click; MiniMapFrame's
                                    arithmetic). The model never imports it.
-        *Check.java                105 harnesses, each a main() with static helpers
+        *Check.java                106 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103)

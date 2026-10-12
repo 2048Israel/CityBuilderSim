@@ -130,6 +130,13 @@
   "nameplate, paying the sellers 70% of COPPER_SCRAP's export price, and its 'uses' of",
   "COPPER_SCRAP are bought on the market past it (sectors.CopperRefining, THE OLD COPPER).",
   "A COPPER SMELTER makes ACID, sulphuric acid, beside its anode: the leach plants buy it.",
+  "FORESTRY's crews (0.7.138) cut the city's forest, not a field's sites: a Logging Camp",
+  "or a Harvesting Operation makes SAWLOGS and PULPWOOD, cubic metres a month, out of the",
+  "forest the law lets them cut, and is built only while that forest lasts 120 months of",
+  "every crew's cut (sectors.Forestry, E). A TREE PLANTATION (1,000 ha) or a WOODLOT (100",
+  "ha) makes nothing to sell: its 'land' is its hectares, which grow 20 m3 of wood a",
+  "hectare a year back into the forest, and Forestry plants one on its zone, never",
+  "anywhere else, while its cut exceeds the regrowth.",
   "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
@@ -151,7 +158,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 129,
+ "nextId": 133,
  "buildings": [
   {
    "id": 0,
@@ -3220,6 +3227,91 @@
    "uses": {
     "COPPER_ROD": 2000
    },
+   "since": 1900
+  },
+  {
+   "id": 129,
+   "name": "Logging Camp",
+   "category": "MINING",
+   "sector": "Forestry",
+   "cashCost": 2316,
+   "constructionPoints": 1158,
+   "constructionMaterials": 38,
+   "electricity": 0,
+   "water": 0,
+   "consumables": 18.82,
+   "jobs": {
+    "NO_DIPLOMA": 8,
+    "DIPLOMA": 2,
+    "COLLEGE_ENGINEERING": 1
+   },
+   "land": 9012,
+   "roadLoad": 302,
+   "makes": {
+    "SAWLOGS": 1000,
+    "PULPWOOD": 1000
+   },
+   "since": 1900
+  },
+  {
+   "id": 130,
+   "name": "Harvesting Operation",
+   "category": "MINING",
+   "sector": "Forestry",
+   "cashCost": 11544,
+   "constructionPoints": 5772,
+   "constructionMaterials": 192,
+   "electricity": 0,
+   "water": 0,
+   "consumables": 148.52,
+   "jobs": {
+    "NO_DIPLOMA": 13,
+    "DIPLOMA": 4,
+    "COLLEGE_ENGINEERING": 1
+   },
+   "land": 45062,
+   "roadLoad": 1890,
+   "makes": {
+    "SAWLOGS": 6250,
+    "PULPWOOD": 6250
+   },
+   "since": 1973
+  },
+  {
+   "id": 131,
+   "name": "Tree Plantation",
+   "category": "MINING",
+   "sector": "Forestry",
+   "cashCost": 1532,
+   "constructionPoints": 766,
+   "constructionMaterials": 26,
+   "electricity": 0,
+   "water": 0,
+   "consumables": 5.66,
+   "jobs": {
+    "NO_DIPLOMA": 4,
+    "DIPLOMA": 1
+   },
+   "land": 107639104,
+   "roadLoad": 0,
+   "since": 1900
+  },
+  {
+   "id": 132,
+   "name": "Woodlot",
+   "category": "MINING",
+   "sector": "Forestry",
+   "cashCost": 146,
+   "constructionPoints": 73,
+   "constructionMaterials": 3,
+   "electricity": 0,
+   "water": 0,
+   "consumables": 0.566,
+   "jobs": {
+    "NO_DIPLOMA": 1
+   },
+   "land": 10763910,
+   "roadLoad": 0,
    "since": 1900
   }
  ]

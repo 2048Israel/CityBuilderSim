@@ -1009,7 +1009,35 @@ public enum Good {
     ACID("Sulphuric acid", "tonne", .160, .070, .03375, false, Pricing.BAND, false),
 
     /** Wire and cable, by the tonne of copper contained: the Wire & Cable Works' (Manufacturing), of rod. Nobody here buys it until the construction upgrade (spec 2.12, 2.14), so it ships. A flow good. */
-    WIRE_CABLE("Wire and cable", "tonne", 17.000, 13.000, 1.5, false, Pricing.BAND, false);
+    WIRE_CABLE("Wire and cable", "tonne", 17.000, 13.000, 1.5, false, Pricing.BAND, false),
+
+    /* =======================================================================
+       WOOD'S FIRST TWO (0.7.138, batch I9; docs/studies/spec-materials.md 2.3,
+       materials-chains-research.md 5.3). Forestry's crews cut the city's
+       forest about half and half into SAWLOGS and PULPWOOD [W14][W15], and a
+       building on open forest clears it as a salvage cut sold the same way
+       (sectors.Forestry). The study's prices, D$ a cubic metre at the
+       founding parity, import over export: sawlogs 110 / 65 (delivered about
+       US$93-96 in Finland and BC [W14][W15]) and pulpwood 90 / 35, its import
+       end one of the study's eight widened bands (its 1.2: roundwood is heavy
+       and wet and ships badly; 70 until then). Wide bands both, as logs
+       travel badly (its 8). Freight three eighths of each wedge (this file's
+       rule): .016875 and .020625.
+
+       BY THE CUBIC METRE, solid wood, green: 0.9 t a cubic metre (spec 2.3,
+       est.; tonnesPerUnit()), so the road and the railway count a cubic
+       metre of logs as 0.9 t. Flow goods, as ore is - a crew ships what it
+       cuts. By the BULK stream (spec 2.3), by sea as GENERAL cargo: a log
+       carrier lifts roundwood in slings with its own cranes, as steel is
+       lifted, not by grab out of a hold. Wood Products (batch I10) buys them;
+       until it comes the world takes them.
+       ======================================================================= */
+
+    /** Sawlogs - roundwood fit for the saw - by the cubic metre: about half a crew's cut and half the salvage cut. A flow good. */
+    SAWLOGS("Sawlogs", "cubic metre", .110, .065, .016875, false, Pricing.BAND, false, Double.NaN, .9),
+
+    /** Pulpwood - roundwood for chips, pulp and panels - by the cubic metre: the other half. Forest's pricing good (Resource.FOREST). A flow good. */
+    PULPWOOD("Pulpwood", "cubic metre", .090, .035, .020625, false, Pricing.BAND, false, Double.NaN, .9);
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -1031,6 +1059,9 @@ public enum Good {
     /** Litres to the tonne for a good counted in litres (0.7.76), NaN for every other. See tonnesPerUnit(). */
     private final double litresPerTonne;
 
+    /** Tonnes to the cubic metre for a good counted in cubic metres (0.7.138, batch I9; spec-materials 2.3): green roundwood's 0.9; NaN for every other. See tonnesPerUnit(). */
+    private final double tonnesPerCubicMetre;
+
     Good(String label, String unit, double worldImportPrice, double worldExportPrice,
          double baseFreight, boolean stockable, Pricing pricing, boolean taxExempt) {
         this(label, unit, worldImportPrice, worldExportPrice, baseFreight, stockable, pricing, taxExempt, Double.NaN);
@@ -1038,6 +1069,13 @@ public enum Good {
 
     Good(String label, String unit, double worldImportPrice, double worldExportPrice,
          double baseFreight, boolean stockable, Pricing pricing, boolean taxExempt, double litresPerTonne) {
+        this(label, unit, worldImportPrice, worldExportPrice, baseFreight, stockable, pricing, taxExempt, litresPerTonne, Double.NaN);
+    }
+
+    Good(String label, String unit, double worldImportPrice, double worldExportPrice,
+         double baseFreight, boolean stockable, Pricing pricing, boolean taxExempt, double litresPerTonne,
+         double tonnesPerCubicMetre) {
+        this.tonnesPerCubicMetre = tonnesPerCubicMetre;
         this.label = label;
         this.unit = unit;
         this.worldImportPrice = worldImportPrice;
@@ -1051,6 +1089,9 @@ public enum Good {
 
     /** Litres to the tonne (0.7.76): what a litre of this weighs, inverted; NaN for a good not counted in litres. */
     public double litresPerTonne() { return litresPerTonne; }
+
+    /** Tonnes to the cubic metre (0.7.138): what a cubic metre of this weighs; NaN for a good not counted in cubic metres. */
+    public double tonnesPerCubicMetre() { return tonnesPerCubicMetre; }
 
     public String label() { return label; }
     public String unit()  { return unit; }
@@ -1166,6 +1207,9 @@ public enum Good {
             // spec-oil 2.1): petrol 1,320 to the tonne, fuel oil 1,010. FUEL's
             // litre was a kilogram, the refinery's thousand litres a tonne.
             case "litre":     return 1 / litresPerTonne;
+            // ...and a cubic metre of wood its own good's tonnes (0.7.138, spec-materials
+            // 2.3): green roundwood 0.9, so a crew's logs weigh on the road what they weigh.
+            case "cubic metre": return tonnesPerCubicMetre;
             // A meal is served where it stands. What it is made of travelled
             // as the thirteen foods and was counted then; counting it twice
             // would put a restaurant's dinners on the road as freight.
@@ -1207,6 +1251,8 @@ public enum Good {
             case AGGREGATE: case CEMENT:
             // ...and copper's (0.7.133): concentrate, anode, cathode, scrap and acid; rod and wire and cable are GOODS.
             case COPPER_CONC: case ANODE: case COPPER: case COPPER_SCRAP: case ACID:
+            // ...and wood's logs (0.7.138), on log trucks and flatcars.
+            case SAWLOGS: case PULPWOOD:
             // A locomotive on a low-loader is not a crate of bread.
             case ROLLING_STOCK:
             // ...and crude, in tank wagons, as ore goes in hoppers. Petrol and
@@ -1242,7 +1288,8 @@ public enum Good {
      * seven, pig iron among them, (0.7.131) aggregate and cement, and
      * (0.7.133) copper concentrate and copper scrap. GENERAL is what is
      * lifted piece by piece - steel, fabricated steel, machinery, wagon sets,
-     * cars and vans, and (0.7.133) copper anode and cathode. CONTAINER is the
+     * cars and vans, (0.7.133) copper anode and cathode, and (0.7.138) wood's
+     * sawlogs and pulpwood, slung aboard a log carrier. CONTAINER is the
      * rest of what the GOODS stream carries: the shelf, the drinks and the
      * watches, in boxes, since 0.7.131 dimension stone's cut slabs, and since
      * 0.7.133 copper rod and wire and cable.
@@ -1265,6 +1312,8 @@ public enum Good {
             case STEEL: case FABRICATED_STEEL: case MACHINERY: case ROLLING_STOCK: case CARS: case VANS:
             // ...and copper's anode and cathode (0.7.133), lifted in bundles as steel is.
             case ANODE: case COPPER:
+            // ...and wood's logs (0.7.138), slung aboard a log carrier by its own cranes.
+            case SAWLOGS: case PULPWOOD:
                 return Ports.Cargo.GENERAL;
             default:
                 Traffic stream = traffic();

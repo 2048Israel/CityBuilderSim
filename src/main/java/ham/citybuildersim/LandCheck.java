@@ -50,7 +50,11 @@ import ham.citybuildersim.sectors.Mining;
  * the ground by type - sites and tonnes by type adding up to the whole, E
  * by type the walk's reading of E until a works digs by type, a typed dig
  * moving its own type's E and nothing else, W by type to the tonne, the
- * state through a save, and where a works fits (fits()), pure (26).
+ * state through a save, and where a works fits (fits()), pure (26); and,
+ * since 0.7.138 (batch I9), where Forestry's cut and the clearing meet - the
+ * clearing taking the crews' cut-over ground first, the salvage the standing
+ * wood alone and taken once, cleared ground never grown back by the planted
+ * stands, W exact (27).
  */
 public class LandCheck {
 
@@ -820,6 +824,7 @@ public class LandCheck {
         inThePlayersUnits();
         zonesOnTheLedger();
         byType();
+        cutAndCleared();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -2757,6 +2762,51 @@ public class LandCheck {
             ok &= sum == land.getWorldTotal(r);
         }
         return ok;
+    }
+
+
+    /* ==================================================================
+       27. WHERE THE CUT AND THE CLEARING MEET (0.7.138, batch I9;
+           docs/studies/spec-materials.md 2.11, 2.15)
+
+       Forestry's crews cut the forest the law lets them (extract(FOREST):
+       E), and a building on open forest clears it (C): cut-over ground
+       first, its wood moving from E to C, then standing forest, whose wood
+       is the salvage cut Forestry sells (takeSalvage()). Where they meet the
+       books still close: the salvage is the standing wood only, never the
+       crews' cut over again; the cleared ground never grows back, whatever
+       the planted stands grow; and W = unowned + remaining + C + E.
+       ================================================================== */
+    static void cutAndCleared() {
+        System.out.println("\n--- 27. where the cut and the clearing meet (0.7.138) ---");
+        LandManager lm = new LandManager();
+        quietly(() -> lm.setOwnedSqFt(LandManager.sqFt(400)));
+        Resource f = Resource.FOREST;
+        double km2Wood = World.FOREST_M3_PER_KM2;
+        lm.allocate(lm.getBareSqFt());
+        assertTrue("fixture: the bare ground built on to the foot, forest beyond it, nothing cleared, nothing to salvage",
+                lm.getForestSqFt() > LandManager.sqFt(20) && lm.getForestClearedSqFt() == 0 && lm.getSalvagePending() == 0);
+        double cut = lm.extract(f, 2 * km2Wood);
+        double standing = lm.getRemaining(f);
+        check("the crews cut two square kilometres' wood: E", lm.getDepletionState()[f.ordinal()], cut);
+        lm.allocate(LandManager.sqFt(3));
+        check("three square kilometres built past the bare ground clear the two cut over first - no salvage in them - and one"
+                + " standing, its wood the salvage", lm.getSalvagePending(), km2Wood);
+        check("...E is the crews' cut moved into C, nothing of it left to regrow", lm.getDepletionState()[f.ordinal()], 0);
+        check("...what stands is less only the standing square kilometre", lm.getRemaining(f), standing - km2Wood);
+        near("...and W holds: unowned + remaining + taken out", lm.getUnowned(f) + lm.getRemaining(f) + lm.getExtracted(f),
+                lm.getWorldTotal(f), 1e-12);
+        double salvage = lm.takeSalvage();
+        check("Forestry takes the salvage once: the standing wood, and nothing waits after it", salvage, km2Wood);
+        check("...nothing twice", lm.takeSalvage(), 0);
+        double cut2 = lm.extract(f, 5 * km2Wood);
+        lm.setPlantedGrowth(1e12);
+        lm.endMonth();
+        check("the crews cut again and stands growing past it bring E to nothing: the forest full again but for the cleared ground",
+                lm.getRemaining(f), lm.getOwnedAmount(f) - lm.getForestClearedM3());
+        assertTrue("...which never grows back: C still the three square kilometres' wood, W exact",
+                cut2 == 5 * km2Wood && lm.getForestClearedM3() == 3 * km2Wood
+                && Math.abs(lm.getUnowned(f) + lm.getRemaining(f) + lm.getExtracted(f) - lm.getWorldTotal(f)) <= 1e-9 * lm.getWorldTotal(f));
     }
 
 }

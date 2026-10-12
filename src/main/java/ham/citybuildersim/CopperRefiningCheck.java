@@ -14,7 +14,7 @@ import java.util.Locale;
  * Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
  * 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's -
  * materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's
- * processing industry, the last key, and the Wire & Cable Works it feeds in
+ * processing industry, the twenty-second key, and the Wire & Cable Works it feeds in
  * Manufacturing.
  *
  * WHY A HARNESS OF ITS OWN. A new sector gets one (CLAUDE.md; I7's
@@ -25,8 +25,8 @@ import java.util.Locale;
  *
  * WHAT THIS HAS TO PROVE:
  *
- *   1. THE SECTOR ON THE REGISTRY: a ProcessingSector, the last key, after
- *      Copper Mining; making cathode, anode, acid and rod of concentrate,
+ *   1. THE SECTOR ON THE REGISTRY: a ProcessingSector, the twenty-second key,
+ *      after Copper Mining (Forestry after it since 0.7.138); making cathode, anode, acid and rod of concentrate,
  *      anode, cathode and scrap, Iron & Steel's group; anode and cathode
  *      captive; cathode its planning good. Manufacturing makes wire and cable
  *      of rod, its planning good still fabricated steel.
@@ -112,8 +112,9 @@ public class CopperRefiningCheck {
     static void sector() {
         out.println("--- 1. the sector on the registry: a works on concentrate, anode, cathode and scrap; the wire works in Manufacturing ---");
         String[] keys = Sectors.KEYS;
-        assertTrue("Sectors.KEYS ends with Copper Refining, after Copper Mining", keys[keys.length - 1].equals(Sectors.COPPER_REFINING)
-                && keys[keys.length - 2].equals(Sectors.COPPER_MINING));
+        int at = java.util.Arrays.asList(keys).indexOf(Sectors.COPPER_REFINING);
+        assertTrue("Sectors.KEYS has Copper Refining after Copper Mining, the twenty-second - wood's Forestry after it since 0.7.138",
+                at == 21 && keys[at - 1].equals(Sectors.COPPER_MINING) && keys[at + 1].equals(Sectors.FORESTRY));
         Sectors s = new Sectors(new BuildingManager(), new Markets());
         CopperRefining cr = s.copperRefining();
         assertTrue("...a processing sector found by its saved name, Iron & Steel's group, making cathode, anode, acid and rod of"
