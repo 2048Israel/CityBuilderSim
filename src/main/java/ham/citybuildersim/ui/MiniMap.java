@@ -419,16 +419,18 @@ final class MiniMap {
        THE PREVIEW, ON HOVER
        ===================================================================== */
 
-    /** The preview beside the rail, its foot level with the stamp's, while the pointer is on the stamp. */
+    /** The preview beside the rail, its foot level with the stamp's, while the pointer is on the stamp: shown, then moved by what its box measures on the screen (its shadow is the popup's too). */
     private void showPreview() {
         if (node.getScene() == null || node.getScene().getWindow() == null || ui.game == null) return;
         Node rail = node.getParent() != null ? node.getParent() : node;
         Bounds r = rail.localToScreen(rail.getBoundsInLocal()), s = stampBox.localToScreen(stampBox.getBoundsInLocal());
         if (r == null || s == null) return;
-        previewBox.applyCss();
-        double h = previewBox.prefHeight(-1);
-        double x = r.getMaxX() + PREVIEW_GAP, y = Math.max(r.getMinY(), s.getMaxY() - h);
-        popup.show(node.getScene().getWindow(), x, y);
+        popup.show(node.getScene().getWindow(), r.getMaxX() + PREVIEW_GAP, Math.max(r.getMinY(), s.getMaxY() - previewBox.prefHeight(-1)));
+        Bounds b = previewBox.localToScreen(previewBox.getBoundsInLocal());
+        if (b != null) {
+            popup.setX(popup.getX() + r.getMaxX() + PREVIEW_GAP - b.getMinX());
+            popup.setY(popup.getY() + Math.max(r.getMinY() - b.getMinY(), s.getMaxY() - b.getMaxY()));
+        }
         start();
     }
 
