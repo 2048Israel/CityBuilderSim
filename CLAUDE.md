@@ -362,7 +362,14 @@ These are Jerus's, and they do not move.
                                    and since 0.7.127 (batch E7, docs/studies/spec-globe.md 3.9) ice and
                                    desert drawn from land cover's two bits, each its half-contour frayed
                                    by its own noise - ice never dry, the desert dry as grass is, each
-                                   with its colour, name and legend entry (EarthTerrainCheck 15)
+                                   with its colour, name and legend entry (EarthTerrainCheck 15); and
+                                   since 0.7.132 (batch E8, docs/studies/spec-globe.md 3.5) the
+                                   orthographic projection round a view centre with a roll
+                                   (EarthProj.Ortho) and the far rule through a camera
+                                   (EarthTerrain.Camera): the city's plane, the far nodes byte for byte
+                                   as before; a latitude-longitude grid, the planet's picture's; the
+                                   globe's, its forest dithered from a fixed latitude-longitude grid
+                                   (GlobeCheck)
         EarthSite.java             founding a city on the real Earth (0.7.121, batch E4; spec-earth.md 2
                                    and 6): whether the game has the Earth's data (gameData(), the file at
                                    EarthData.DATA_FILE, which is not in git - data/ is ignored; since
@@ -376,6 +383,16 @@ These are Jerus's, and they do not move.
                                    DataSave its four fields (SAVE_FORMAT 38) - EarthFoundingCheck holds it;
                                    since 0.7.127 the card's ice is the site's plot's class, and an Earth
                                    save from before ice (format 39, ICE_FORMAT) is refused
+        GlobeFrame.java, GlobePicture.java
+                                   the Earth's map as a globe, its model half (0.7.132, batch E8;
+                                   docs/studies/spec-globe.md 3): the view - its centre in latitude and
+                                   longitude, its km a pixel and its roll; zoom at the pointer, a drag,
+                                   Fit; the tiers PICTURE, GROUND and PLANE; the handoff to the city's
+                                   plane at HANDOFF_PLOTS, close views within REACH_KM, the roll eased
+                                   to the plane's up over ROLL_NOTCHES - and the planet's picture, a
+                                   class a texel at 4' made by the far rule through the grid's camera,
+                                   12' first, never saved, and a frame from it in bands of rows a core;
+                                   pure, nothing on screen until E9 - GlobeCheck holds them
         LandManager.java, LandMarket.java
                                    the city's land: what it owns, what is built on and what it sells - the
                                    ore and oil its ground holds less what is taken out, since 0.7.93 the
@@ -457,7 +474,7 @@ These are Jerus's, and they do not move.
                                    MapTiles, which MapCheck holds), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray). The model never imports it.
-        *Check.java                101 harnesses, each a main() with static helpers
+        *Check.java                102 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103)

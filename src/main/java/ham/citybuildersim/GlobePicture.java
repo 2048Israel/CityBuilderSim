@@ -81,6 +81,9 @@ public final class GlobePicture {
     /** Texel (row, col)'s class. */
     public byte texel(int row, int col) { return texels[row * cols + col]; }
 
+    /** Its texels, row by row from the north: shared, do not write into it (GlobeCheck's). */
+    byte[] texels() { return texels; }
+
     /** The class of the texel (lat, lon) lies in. */
     public byte at(double lat, double lon) {
         return texels[row(lat) * cols + col(lon)];

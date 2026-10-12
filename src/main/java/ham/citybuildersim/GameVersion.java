@@ -5892,8 +5892,48 @@ public final class GameVersion {
      *     eight months and it is shed by IDLE, THEN SHED at six (batch I4's
      *     "lumpy works" again; fixI7-notes 4 and 6). Every month passes the
      *     audit and every reload matches; re-baselined (pt07131, pte07131).
+     *
+     * 0.7.132 (2026-10-11) - THE GLOBE'S MODEL HALF. Batch E8, the second of
+     * the globe study's three (docs/studies/spec-globe.md 3.1-3.7 and 4's E8
+     * row; Jerus's Q3 to Q6 of 2026-10-11, "yes"; runs/brief-batchE8.md,
+     * runs/fixE8-notes.md). Pure: nothing on screen yet - E9 draws it - and
+     * nothing in the model reads it. No save format change (39).
+     *   - GlobeFrame (new): the Earth's map as a globe without the toolkit -
+     *     its centre in latitude and longitude, its scale in km a pixel and
+     *     its roll; a zoom at the pointer, a drag and Fit (the whole planet
+     *     facing the city, north up); the tiers PICTURE, GROUND and PLANE by
+     *     the scale; the handoff to the city's plane at HANDOFF_PLOTS (16
+     *     plots a pixel, 0.48 km, Q6), close views within REACH_KM (300 km,
+     *     Q3) or the city's own ground and offers and REACH_MARGIN_KM round
+     *     them, the wheel stopping at the handoff away from the city; north
+     *     up wide and the roll eased to the plane's up over ROLL_NOTCHES
+     *     notches before the handoff (2, Q4); latLonAt() and at(); the plane's
+     *     view at the swap and back; the GROUND tier's pieces (groundPiece()).
+     *   - EarthProj.Ortho (new): the orthographic projection round a view
+     *     centre with a roll, forward and inverse, beside the Lambert plane,
+     *     which stays the city's.
+     *   - THE CAMERA: EarthTerrain's far rule reaches the planet through a
+     *     Camera - where a pixel is, where a river's vertex lands, which
+     *     tiles it reads - with three: the city's plane (plane(), the far
+     *     nodes byte for byte as before), a latitude-longitude grid (grid())
+     *     and the globe (globe()); on the globe the forest is dithered from a
+     *     fixed latitude-longitude grid at the pixel's scale (globeDither()),
+     *     so it moves with the ground as the globe turns (Q5).
+     *   - GlobePicture (new): the planet's picture, a class a texel at 4'
+     *     (5,400 x 2,700 bytes) made by the far rule through the grid's
+     *     camera - ice, desert, the forest dithered, rivers 89 m and wider -
+     *     12' first, once for each Earth file, never saved; a frame from it,
+     *     each pixel's orthographic inverse then its texel, in bands of rows
+     *     a core.
+     *   - Harnesses: GlobeCheck (new, the hundred and second): the round
+     *     trip, zoom at the pointer and a drag, Fit, the tiers, the roll and
+     *     the reach; the swap at the handoff (0.34 px facing the city) and at
+     *     REACH_KM (1.21 px, roll eased); the plane's camera the far nodes of
+     *     0.7.131 by their CRC32; the globe's cameras; the picture's land per
+     *     1-degree cell; a frame within FRAME_MS of the main thread's CPU.
+     *   - The playtests do not move: default and Earth byte for byte.
      */
-    public static final String VERSION = "0.7.131";
+    public static final String VERSION = "0.7.132";
 
     /**
      * The save shape.

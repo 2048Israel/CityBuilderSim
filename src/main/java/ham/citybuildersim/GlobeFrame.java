@@ -143,8 +143,13 @@ public final class GlobeFrame {
         if (market != null) {
             for (LandParcel p : market.getListing()) far = Math.max(far, corner(p.getX0(), p.getY0(), p.getX1(), p.getY1(), c));
         }
-        if (far <= 0) return REACH_KM;
-        double ground = 2 * EarthProj.RADIUS_M * StrictMath.asin(Math.min(1, far * World.PLOT_M / EarthProj.REACH_M)) / 1000;
+        return reachKm(far);
+    }
+
+    /** ...from the farthest of them, in plots from the spot on its plane: REACH_KM, or that along the ground and REACH_MARGIN_KM if farther. */
+    public static double reachKm(double farthestPlots) {
+        if (!(farthestPlots > 0)) return REACH_KM;
+        double ground = 2 * EarthProj.RADIUS_M * StrictMath.asin(Math.min(1, farthestPlots * World.PLOT_M / EarthProj.REACH_M)) / 1000;
         return Math.max(REACH_KM, ground + REACH_MARGIN_KM);
     }
 
