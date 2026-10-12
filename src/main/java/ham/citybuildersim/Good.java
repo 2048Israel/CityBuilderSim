@@ -953,7 +953,63 @@ public enum Good {
     DIMENSION_STONE("Dimension stone", "tonne", .260, .170, .03375, false, Pricing.BAND, false),
 
     /** Portland cement, by the tonne: Cement & Concrete's cement plants', of limestone, aggregate and thermal coal. Stockable. */
-    CEMENT("Cement", "tonne", .110, .045, .024375, true, Pricing.BAND, false);
+    CEMENT("Cement", "tonne", .110, .045, .024375, true, Pricing.BAND, false),
+
+    /* =======================================================================
+       COPPER'S GOODS (0.7.133, batch I8; runs/spec-materials.md 2.3,
+       materials-chains-research.md 4.2). Copper Mining floats a sulphide
+       field's ore into COPPER_CONC and leaches an oxide field's into
+       cathode, COPPER, at the mine; Copper Refining smelts concentrate into
+       ANODE - and the sulphuric ACID the smelter's gas makes, a co-product
+       it sells (Jerus's Q12: "traded"), which the leach plants buy - refines
+       anode and the city's old copper and COPPER_SCRAP into cathode, and
+       rolls cathode into COPPER_ROD; Manufacturing's Wire & Cable Works draws
+       rod into WIRE_CABLE. The study's prices, D$ a tonne at the founding
+       parity, import over export, on an LME basis of D$10,000, the 2024-25
+       range, at the 2024 benchmark treatment charges (Jerus's Q11):
+       concentrate 2,800 / 2,575 (30% copper, 96.5% payable), anode 10,150 /
+       9,650, cathode 10,500 / 10,000, scrap 8,700 / 7,300, rod 10,750 /
+       10,250, acid 160 / 70 and wire and cable 17,000 / 13,000 (a tonne of
+       copper contained, wire worth 1.3-1.7 times its copper, est.) - the
+       scrap's import end and the wire's export end two of the study's eight
+       widened bands (its 1.2: sorted scrap landed is about 87% of cathode,
+       and cable drums ship by volume, not weight). Freight three eighths of
+       each wedge (this file's rule). With these bands no copper works earns
+       more than 0.4% of its cost a month on imported feed for export (the
+       study's case A, its 1.2 and 4.4): the smelter loses 0.3% there and
+       imported scrap only breaks even, so freight, not a gate, keeps a city
+       from importing concentrate to ship anode.
+
+       STOCKABLE: cathode, which keeps in a yard; it joins
+       NationalAccounts.HELD on its end. The rest are flow goods, as ore is -
+       a mine or a works ships what it makes. Wire and cable and rod go by
+       the GOODS stream (spec 2.3) and so, by sea, in containers, as the rest
+       of that stream goes (Ports.Cargo.CONTAINER); concentrate and scrap by
+       the BULK stream and dry bulk, as ore and steel scrap go; anode and
+       cathode BULK and, by sea, general cargo, lifted in bundles as steel
+       is; acid BULK and a tanker's.
+       ======================================================================= */
+
+    /** Copper concentrate - sulphide ore floated to 30% copper - by the tonne: a sulphide field's mine and mill's, the smelters' feed. A flow good. */
+    COPPER_CONC("Copper concentrate", "tonne", 2.800, 2.575, .084375, false, Pricing.BAND, false),
+
+    /** Copper anode, by the tonne: a smelter's, of concentrate, the electrolytic refinery's feed. A flow good. */
+    ANODE("Copper anode", "tonne", 10.150, 9.650, .1875, false, Pricing.BAND, false),
+
+    /** Copper cathode, by the tonne, LME grade A: an electrolytic refinery's of anode, a scrap refinery's of the city's old copper and scrap, and an oxide field's leach plant's at the mine; the rod mills' feed. Copper's pricing good (Resource.COPPER). Stockable. */
+    COPPER("Copper cathode", "tonne", 10.500, 10.000, .1875, true, Pricing.BAND, false),
+
+    /** Copper scrap, sorted, by the tonne: what the Scrap Copper Refinery buys past the city's own old copper (OldMetal). A flow good. */
+    COPPER_SCRAP("Copper scrap", "tonne", 8.700, 7.300, .525, false, Pricing.BAND, false),
+
+    /** Copper wire rod, by the tonne: a rod mill's, of cathode, the Wire & Cable Works' feed. A flow good. */
+    COPPER_ROD("Copper rod", "tonne", 10.750, 10.250, .1875, false, Pricing.BAND, false),
+
+    /** Sulphuric acid, by the tonne: the smelters' co-product from their gas, about 0.9 t a tonne of concentrate [K27], sold; the leach plants' reagent, 3.5 t a tonne of copper. Traded (Jerus's Q12). A flow good. */
+    ACID("Sulphuric acid", "tonne", .160, .070, .03375, false, Pricing.BAND, false),
+
+    /** Wire and cable, by the tonne of copper contained: the Wire & Cable Works' (Manufacturing), of rod. Nobody here buys it until the construction upgrade (spec 2.12, 2.14), so it ships. A flow good. */
+    WIRE_CABLE("Wire and cable", "tonne", 17.000, 13.000, 1.5, false, Pricing.BAND, false);
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -1149,6 +1205,8 @@ public enum Good {
             case LIMESTONE: case LIME:
             // ...and stone's aggregate and cement (0.7.131), by hopper and tanker; dimension stone is GOODS.
             case AGGREGATE: case CEMENT:
+            // ...and copper's (0.7.133): concentrate, anode, cathode, scrap and acid; rod and wire and cable are GOODS.
+            case COPPER_CONC: case ANODE: case COPPER: case COPPER_SCRAP: case ACID:
             // A locomotive on a low-loader is not a crate of bread.
             case ROLLING_STOCK:
             // ...and crude, in tank wagons, as ore goes in hoppers. Petrol and
@@ -1178,26 +1236,35 @@ public enum Good {
      * that never cross the boundary as freight.
      *
      * LIQUID is crude, the seven litre goods and bitumen - tankers, the
-     * bitumen in a heated one. DRY_BULK is what a grab lifts out of a hold:
-     * iron ore, crops, grains, building materials, coke, (0.7.120) scrap and
-     * (0.7.123) the integrated route's seven, pig iron among them, and (0.7.131)
-     * aggregate and cement. GENERAL is what is lifted piece by piece - steel,
-     * fabricated steel, machinery, wagon sets, cars and vans. CONTAINER is the
+     * bitumen in a heated one - and (0.7.133) sulphuric acid. DRY_BULK is
+     * what a grab lifts out of a hold: iron ore, crops, grains, building
+     * materials, coke, (0.7.120) scrap and (0.7.123) the integrated route's
+     * seven, pig iron among them, (0.7.131) aggregate and cement, and
+     * (0.7.133) copper concentrate and copper scrap. GENERAL is what is
+     * lifted piece by piece - steel, fabricated steel, machinery, wagon sets,
+     * cars and vans, and (0.7.133) copper anode and cathode. CONTAINER is the
      * rest of what the GOODS stream carries: the shelf, the drinks and the
-     * watches, in boxes, and since 0.7.131 dimension stone's cut slabs.
+     * watches, in boxes, since 0.7.131 dimension stone's cut slabs, and since
+     * 0.7.133 copper rod and wire and cable.
      */
     public Ports.Cargo cargo() {
         switch (this) {
             case CRUDE: case LPG: case NAPHTHA: case PETROL: case JET: case DIESEL:
             case LUBRICANTS: case FUEL_OIL: case BITUMEN:
+            // ...and copper's sulphuric acid (0.7.133), in a chemical tanker.
+            case ACID:
                 return Ports.Cargo.LIQUID;
             case IRON: case CROPS: case GRAINS: case MATERIALS: case COKE: case SCRAP:
             case PELLETS: case PIG_IRON: case MET_COKE: case THERMAL_COAL: case COKING_COAL:
             case LIMESTONE: case LIME:
             // ...and stone's aggregate and cement (0.7.131).
             case AGGREGATE: case CEMENT:
+            // ...and copper's concentrate and scrap (0.7.133), as ore and steel scrap go.
+            case COPPER_CONC: case COPPER_SCRAP:
                 return Ports.Cargo.DRY_BULK;
             case STEEL: case FABRICATED_STEEL: case MACHINERY: case ROLLING_STOCK: case CARS: case VANS:
+            // ...and copper's anode and cathode (0.7.133), lifted in bundles as steel is.
+            case ANODE: case COPPER:
                 return Ports.Cargo.GENERAL;
             default:
                 Traffic stream = traffic();

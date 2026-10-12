@@ -220,13 +220,15 @@ public final class BuildCard {
        then); since 0.7.126 (batch I6) Coal Mining's "Coal" after the iron
        mines', the materials chains' groups by the spec's 4 ("Coal, Copper,
        Stone, Wood, Cement"); since 0.7.131 (batch I7) Quarrying's "Stone"
-       and Cement & Concrete's "Cement" after it.
+       and Cement & Concrete's "Cement" after it; since 0.7.133 (batch I8)
+       "Copper" after them, Copper Mining's and Copper Refining's together
+       (★ the spec's one word for the chain, as its list gives it).
        ===================================================================== */
 
     /** The market groups, in the order a page lays them out. */
     static final String[] GROUP_ORDER = {
             "Homes", "Groceries", "Filling stations", "The bank's branches",
-            "Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal", "Stone", "Cement", "Oil",
+            "Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal", "Stone", "Cement", "Copper", "Oil",
             "Oil platforms",
             "Oil pipelines", "Refining",
             "Oil storage", "Ports", "Building materials", "Builders",
@@ -266,6 +268,8 @@ public final class BuildCard {
                     case Sectors.COAL_MINING:     return "Coal";
                     case Sectors.QUARRYING:       return "Stone";
                     case Sectors.CEMENT_CONCRETE: return "Cement";
+                    case Sectors.COPPER_MINING:   return "Copper";
+                    case Sectors.COPPER_REFINING: return "Copper";
                     case Sectors.OIL:             return "Oil";
                     case Sectors.REFINING:        return "Refining";
                     case Sectors.MATERIALS:       return "Building materials";

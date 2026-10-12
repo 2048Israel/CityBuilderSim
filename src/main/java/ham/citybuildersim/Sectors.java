@@ -8,6 +8,8 @@ import ham.citybuildersim.sectors.BusinessServices;
 import ham.citybuildersim.sectors.CementConcrete;
 import ham.citybuildersim.sectors.CoalMining;
 import ham.citybuildersim.sectors.Construction;
+import ham.citybuildersim.sectors.CopperMining;
+import ham.citybuildersim.sectors.CopperRefining;
 import ham.citybuildersim.sectors.FoodIndustry;
 import ham.citybuildersim.sectors.FoodProcessing;
 import ham.citybuildersim.sectors.HeavyIndustry;
@@ -70,7 +72,9 @@ public final class Sectors {
             // ...and the materials chains' new industries (0.7.126, batch I6; Jerus's Q21, 2026-10-08: iron, coal, stone, copper, wood).
             COAL_MINING = "Coal Mining",
             // ...stone's two (0.7.131, batch I7): the quarries, and the kilns and cement plants.
-            QUARRYING = "Quarrying", CEMENT_CONCRETE = "Cement & Concrete";
+            QUARRYING = "Quarrying", CEMENT_CONCRETE = "Cement & Concrete",
+            // ...copper's two (0.7.133, batch I8): the mines and leach plants, and the smelters, refineries and rod mills.
+            COPPER_MINING = "Copper Mining", COPPER_REFINING = "Copper Refining";
 
     /*
      * ON THE END, AND IT HAS TO STAY THAT WAY - but for a softer reason than
@@ -91,7 +95,9 @@ public final class Sectors {
         // ...and the materials chains' new industries, in Q21's order (0.7.126, batch I6; spec-materials 2.1): coal first.
         COAL_MINING,
         // ...then stone's (0.7.131, batch I7): the quarries, then the kilns and cement plants that burn their limestone.
-        QUARRYING, CEMENT_CONCRETE
+        QUARRYING, CEMENT_CONCRETE,
+        // ...then copper's (0.7.133, batch I8): the mines, then the works that smelt, refine and roll their copper.
+        COPPER_MINING, COPPER_REFINING
     };
 
     private final List<Sector> all = new ArrayList<>();
@@ -117,6 +123,8 @@ public final class Sectors {
     private final CoalMining coalMining;
     private final Quarrying quarrying;
     private final CementConcrete cementConcrete;
+    private final CopperMining copperMining;
+    private final CopperRefining copperRefining;
 
     public Sectors(BuildingManager buildings, Markets markets) {
         retail = add(new Retail(), buildings, markets);
@@ -139,6 +147,8 @@ public final class Sectors {
         coalMining = add(new CoalMining(), buildings, markets);
         quarrying = add(new Quarrying(), buildings, markets);
         cementConcrete = add(new CementConcrete(), buildings, markets);
+        copperMining = add(new CopperMining(), buildings, markets);
+        copperRefining = add(new CopperRefining(), buildings, markets);
 
         if (all.size() != KEYS.length) throw new IllegalStateException("Sectors.KEYS is out of step");
         for (int i = 0; i < KEYS.length; i++) {
@@ -256,6 +266,12 @@ public final class Sectors {
 
     /** ...and the kilns and cement plants (0.7.131, batch I7), which burn limestone into lime and cement. See sectors.CementConcrete. */
     public CementConcrete cementConcrete() { return cementConcrete; }
+
+    /** ...and the copper mines (0.7.133, batch I8): a sulphide field's concentrate floated at the mine, an oxide field's cathode leached there. See sectors.CopperMining. */
+    public CopperMining copperMining() { return copperMining; }
+
+    /** ...and the smelters, refineries and rod mills (0.7.133, batch I8), which take the mines' concentrate and the city's old copper to cathode and rod. See sectors.CopperRefining. */
+    public CopperRefining copperRefining() { return copperRefining; }
 
     /** The city, handed to every sector once it exists. */
     public void attachGame(Game game) {
