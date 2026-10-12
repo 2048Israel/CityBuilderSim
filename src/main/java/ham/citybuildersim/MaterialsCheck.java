@@ -51,9 +51,10 @@ import java.util.Map;
  *      uses goes to its own need first, min(made, needed); the market sees
  *      the net - bid() and what is made for the market - and the ledger
  *      books sales of the rest and no purchase of it, a flow good and a
- *      stockable one; two sectors in the game have captive goods, Iron &
- *      Steel (its scrap, coke and pig iron, since 0.7.123 - none until then)
- *      and Copper Refining (its anode and cathode, since 0.7.133).
+ *      stockable one; three sectors in the game have captive goods, Iron &
+ *      Steel (its scrap, coke and pig iron, since 0.7.123 - none until then),
+ *      Copper Refining (its anode and cathode, since 0.7.133) and Wood
+ *      Products (its residues and pulp, since 0.7.140).
  *
  *   4. A WORKS' OWN POWER IS BILLED NET AND THE CITY PAYS THE SURPLUS: in a
  *      town whose bakeries are handed power of their own, each building buys
@@ -431,22 +432,27 @@ public class MaterialsCheck {
                 w.outputRow(Good.STEEL).captive == steelMade && w.outputRow(Good.STEEL).produced == 0
                         && w.bid(Good.STEEL) == 2 * 2000 * rate - steelMade);
         // One sector in the game keeps captive goods since 0.7.123 (batch I4): Iron & Steel, its scrap, coke and pig iron; and since
-        // 0.7.133 (batch I8; spec 2.7, "anode and cathode in Copper Refining") a second, Copper Refining.
+        // 0.7.133 (batch I8; spec 2.7, "anode and cathode in Copper Refining") a second, Copper Refining; and since 0.7.140 (batch
+        // I10; spec 2.7, "residues and pulp") a third, Wood Products.
         Game g = new Game(GameFiles.scratch("materialscheck-captive"));
         quietly(g::newGame);
         boolean others = true;
-        java.util.Set<Good> kept = java.util.EnumSet.noneOf(Good.class), copper = java.util.EnumSet.noneOf(Good.class);
+        java.util.Set<Good> kept = java.util.EnumSet.noneOf(Good.class), copper = java.util.EnumSet.noneOf(Good.class),
+                wood = java.util.EnumSet.noneOf(Good.class);
         for (Sector s : g.getSectors().all()) for (Good x : s.goodsMade()) {
             if (s == g.getSectors().heavyIndustry()) { if (s.captive(x)) kept.add(x); }
             else if (s == g.getSectors().copperRefining()) { if (s.captive(x)) copper.add(x); }
+            else if (s == g.getSectors().woodProducts()) { if (s.captive(x)) wood.add(x); }
             else others &= !s.captive(x) && s.captiveUnits(x) == 0;
         }
-        assertTrue("two sectors in the game keep captive goods, Iron & Steel (a ProcessingSector since 0.7.120): since 0.7.123 its"
-                        + " scrap, coke and pig iron, which its works both make and use - and since 0.7.133 Copper Refining, its anode and"
-                        + " cathode; every other none (Sector.captive() false): " + kept + " " + copper,
+        assertTrue("three sectors in the game keep captive goods, Iron & Steel (a ProcessingSector since 0.7.120): since 0.7.123 its"
+                        + " scrap, coke and pig iron, which its works both make and use - since 0.7.133 Copper Refining, its anode and"
+                        + " cathode, and since 0.7.140 Wood Products, its residues and pulp; every other none (Sector.captive() false): "
+                        + kept + " " + copper + " " + wood,
                 others && g.getSectors().heavyIndustry() instanceof ProcessingSector
                         && kept.equals(java.util.EnumSet.of(Good.SCRAP, Good.PIG_IRON, Good.MET_COKE))
-                        && copper.equals(java.util.EnumSet.of(Good.ANODE, Good.COPPER)));
+                        && copper.equals(java.util.EnumSet.of(Good.ANODE, Good.COPPER))
+                        && wood.equals(java.util.EnumSet.of(Good.RESIDUES, Good.PULP)));
     }
 
     /* ============================ 4. the works' own power ============================ */

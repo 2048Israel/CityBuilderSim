@@ -180,8 +180,10 @@ public class CopperMiningCheck {
                         && Good.ANODE.cargo() == Ports.Cargo.GENERAL && Good.COPPER.cargo() == Ports.Cargo.GENERAL
                         && Good.COPPER_ROD.cargo() == Ports.Cargo.CONTAINER && Good.WIRE_CABLE.cargo() == Ports.Cargo.CONTAINER);
         Good[] held = NationalAccounts.HELD;
-        assertTrue("...and cathode joins NationalAccounts.HELD on its end, after cement", held[held.length - 1] == Good.COPPER
-                && held[held.length - 2] == Good.CEMENT);
+        // ...wood's five after it since 0.7.140 (batch I10).
+        int cathode = java.util.Arrays.asList(held).indexOf(Good.COPPER);
+        assertTrue("...and cathode joins NationalAccounts.HELD after cement, its end until wood's five followed it (0.7.140)",
+                cathode > 0 && held[cathode - 1] == Good.CEMENT && held[cathode + 1] == Good.LUMBER && held.length == cathode + 6);
     }
 
     /* ============================ 2. the three rows against the study ============================ */

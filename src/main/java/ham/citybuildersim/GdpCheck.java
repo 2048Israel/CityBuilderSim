@@ -618,15 +618,21 @@ public class GdpCheck {
         assertTrue("every good a sector holds is in an inventory term, or named as left out", missed.length() == 0);
         // ...and the integrated route's three stockable goods (0.7.123, batch I4; spec-materials 2.3) on HELD's end, in Good's
         // order - the steelworks' coke in the Coke Ovens' yard and the two coals - after crude, so a save's held slots keep their places.
-        // ...and since 0.7.131 (batch I7) cement after them, the cement plants' silos, and since 0.7.133 (batch I8) cathode, copper's yards.
+        // ...and since 0.7.131 (batch I7) cement after them, the cement plants' silos, and since 0.7.133 (batch I8) cathode, copper's yards;
+        // and since 0.7.140 (batch I10) wood's five after cathode, the mills' yards.
         int n = NationalAccounts.HELD.length;
-        assertTrue("HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), cement after them (0.7.131)"
-                        + " and cathode after it (0.7.133), each stockable",
-                n >= 6 && NationalAccounts.HELD[n - 6] == Good.CRUDE && NationalAccounts.HELD[n - 5] == Good.MET_COKE
-                        && NationalAccounts.HELD[n - 4] == Good.THERMAL_COAL && NationalAccounts.HELD[n - 3] == Good.COKING_COAL
-                        && NationalAccounts.HELD[n - 2] == Good.CEMENT && NationalAccounts.HELD[n - 1] == Good.COPPER
+        assertTrue("HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), cement after them (0.7.131),"
+                        + " cathode after it (0.7.133) and wood's five after that (0.7.140) - lumber, panels, pulp, paper and pellets -"
+                        + " each stockable",
+                n >= 11 && NationalAccounts.HELD[n - 11] == Good.CRUDE && NationalAccounts.HELD[n - 10] == Good.MET_COKE
+                        && NationalAccounts.HELD[n - 9] == Good.THERMAL_COAL && NationalAccounts.HELD[n - 8] == Good.COKING_COAL
+                        && NationalAccounts.HELD[n - 7] == Good.CEMENT && NationalAccounts.HELD[n - 6] == Good.COPPER
+                        && NationalAccounts.HELD[n - 5] == Good.LUMBER && NationalAccounts.HELD[n - 4] == Good.PANELS
+                        && NationalAccounts.HELD[n - 3] == Good.PULP && NationalAccounts.HELD[n - 2] == Good.PAPER
+                        && NationalAccounts.HELD[n - 1] == Good.WOOD_PELLETS
                         && Good.MET_COKE.stockable() && Good.THERMAL_COAL.stockable() && Good.COKING_COAL.stockable()
-                        && Good.CEMENT.stockable() && Good.COPPER.stockable());
+                        && Good.CEMENT.stockable() && Good.COPPER.stockable() && Good.LUMBER.stockable() && Good.PANELS.stockable()
+                        && Good.PULP.stockable() && Good.PAPER.stockable() && Good.WOOD_PELLETS.stockable());
         boolean ovensHold = served.getSectors().heavyIndustry().isMaker(Good.MET_COKE) && Good.MET_COKE.stockable();
         assertTrue("...and Iron & Steel, which keeps a yard of coke, is counted by it", ovensHold && counted.contains(Good.MET_COKE));
         boolean silos = served.getSectors().cementConcrete().isMaker(Good.CEMENT) && Good.CEMENT.stockable();
@@ -635,6 +641,11 @@ public class GdpCheck {
                 && Good.COPPER.stockable();
         assertTrue("...and Copper Mining and Copper Refining, which keep yards of cathode, are counted by it (0.7.133)",
                 yards && counted.contains(Good.COPPER));
+        ham.citybuildersim.sectors.WoodProducts mills = served.getSectors().woodProducts();
+        boolean woodYards = mills.isMaker(Good.LUMBER) && mills.isMaker(Good.PANELS) && mills.isMaker(Good.PULP) && mills.isMaker(Good.PAPER)
+                && mills.isMaker(Good.WOOD_PELLETS);
+        assertTrue("...and Wood Products, which keeps yards of lumber, panels, pulp, paper and pellets, is counted by it (0.7.140)",
+                woodYards && counted.containsAll(java.util.List.of(Good.LUMBER, Good.PANELS, Good.PULP, Good.PAPER, Good.WOOD_PELLETS)));
 
         /*
          * ...AND IN A CITY: a railway that buys its fleet abroad. RailCheck's

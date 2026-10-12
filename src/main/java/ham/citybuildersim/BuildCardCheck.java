@@ -16,7 +16,7 @@ import java.util.Set;
 
 /**
  * The build card (0.7.25): BuildCard's figures for every building in
- * buildings.json (133 since 0.7.138) held to
+ * buildings.json (139 since 0.7.140) held to
  * the model's own reads - the quote, the land, the staffing tests, the
  * markets, the investors' words and their gates - in a played city.
  *
@@ -291,13 +291,15 @@ public class BuildCardCheck {
                 copper.equals(List.of("Copper Mine & Mill", "Large Copper Mine", "Leach & SX-EW Plant", "Copper Smelter",
                         "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mill")) && fab.contains("Wire & Cable Works"));
         // ...and Forestry's one group (0.7.138, batch I9; spec-materials 4: "Wood" for Forestry): its two crews and its two
-        // planted stands, in the catalogue's order.
+        // planted stands, in the catalogue's order - and since 0.7.140 (batch I10) Wood Products' six mills after them, the chain's
+        // one word as copper's two sectors share theirs.
         List<String> wood = new ArrayList<>();
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) {
             if (gr.title().equals("Wood")) for (BuildCard.Figures f : gr.cards()) wood.add(f.template().getName());
         }
-        assertTrue("...the Wood group is Forestry's four, in the catalogue's order (0.7.138): " + wood,
-                wood.equals(List.of("Logging Camp", "Harvesting Operation", "Tree Plantation", "Woodlot")));
+        assertTrue("...the Wood group is Forestry's four (0.7.138) and Wood Products' six (0.7.140), in the catalogue's order: " + wood,
+                wood.equals(List.of("Logging Camp", "Harvesting Operation", "Tree Plantation", "Woodlot", "Sawmill", "Large Sawmill",
+                        "Panel Mill", "Pulp Mill", "Paper Mill", "Wood Pellet Mill")));
         // ...the oil at sea (0.7.91): the wells' group the Oil Well and the Platform Well, the platforms' the jacket in its wells'
         // slots, the pipelines' a kilometre of pipe - all the investors'.
         java.util.Map<String, List<String>> oilGroups = new java.util.LinkedHashMap<>();

@@ -2,7 +2,7 @@
 
 A macroeconomic city simulator in Java 21 and JavaFX. You lay out a city; the
 economy underneath it is the game. An age pyramid decides the workforce, a
-labour market prices it, twenty-three private sectors keep their own books and expand on
+labour market prices it, twenty-four private sectors keep their own books and expand on
 their own judgement, a commercial bank funds them and cannot lend below what its
 own money costs it, a treasury borrows at a rate the market quotes it, and a
 currency floats against a world that has its own prices and its own inflation.
@@ -78,8 +78,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **106 harnesses plus the
-4,000-odd-month playtest**, which it counts as 107 run (106 where
+`AllChecks` runs the lot, one JVM each — **107 harnesses plus the
+4,000-odd-month playtest**, which it counts as 108 run (107 where
 JavaFX is not on the classpath, which skips `BuildMenuCheck`), in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
@@ -119,7 +119,7 @@ suite into a record of what the code does rather than what it should do.
 ## `buildings.json` — the balance file
 
 Every building in the game is a row in `src/main/resources/buildings.json` —
-133 of them: cash cost, construction points, materials,
+139 of them: cash cost, construction points, materials,
 maintenance, capacity, footprint in square feet, power and water draw, road load,
 its job mix across the eleven job types, which sector owns it, and what it makes
 and uses.
@@ -208,7 +208,7 @@ src/main/java/ham/citybuildersim/     over 300 files
     CityCalendar.java                 the date, and the days the clock runs through
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
-    sectors/                          the twenty-three sector classes, the refinery's flow and spread planner, and
+    sectors/                          the twenty-four sector classes, the refinery's flow and spread planner, and
                                       the materials chains' two bases (ProcessingSector, ExtractionSector)
     BondMarket.java, CorporateBond.java, OrderBook.java
                                       the businesses' bonds, and the order book they and the shares trade on
