@@ -46,18 +46,19 @@ import java.util.zip.CRC32;
  *   4. THE PLANE'S CAMERA IS TODAY'S FAR NODES: every stride's node over the
  *      fixture's four windows and the world's, and on the full file eight
  *      spots' (when it is named), the CRC32 of 0.7.131's.
- *   5. THE GLOBE'S CAMERAS: the grid's every texel the far rule's at its
- *      cell - sea at the far layers' half-contour, ice and desert by their
- *      bits - its forest the data's within SHARE_POINTS; the globe's at the
- *      handoff facing the city draws the plane's node but for the forest's
- *      dither, its forest within SHARE_POINTS of the plane's; its dither
- *      cells at least a pixel each way, so a turn of TURN_PX flips no more
- *      than that share of the dry pixels.
- *   6. THE PLANET'S PICTURE: its land per 1-degree cell the far layers'
+ *   5. THE GLOBE'S CAMERA: at the handoff facing the city it draws the
+ *      plane's node but for the forest's dither, its forest within
+ *      SHARE_POINTS of the plane's and its rivers where the plane's are; its
+ *      dither cells at least a pixel tall and under two at every scale of the
+ *      GROUND tier, so a turn of TURN_PX flips no more than that share of the
+ *      dry pixels' forest.
+ *   6. THE PLANET'S PICTURE, the grid's camera: the same made twice and on
+ *      two threads as on one; its land per 1-degree cell the far layers'
  *      within SHARE_POINTS in the mean over the cells with a coast and each
  *      within its own rounding (the half-contour's most), the planet's within
- *      EarthTerrainCheck.LAND_WITHIN; ice, desert, forest and fresh water
- *      drawn; the same made twice and on two threads as on one; its cost and
+ *      EarthTerrainCheck.LAND_WITHIN; every texel's sea the far layers'
+ *      half-contour, its ice and desert their bits, its forest the data's
+ *      within SHARE_POINTS; ice, desert, forest and rivers drawn; its cost and
  *      memory printed - on the fixture's bands, and the planet on the full
  *      file, FIRST_ARCMIN then ARCMIN.
  *   7. A FRAME of the expanded map from the picture in no more than FRAME_MS
@@ -556,7 +557,7 @@ public class GlobeCheck {
     static int folded(byte b) { return b == World.FOREST || b == World.GRASS || b == World.DESERT ? World.GRASS : b; }
 
     static void cameras(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData data) {
-        out.println("\n--- 5. the globe's cameras: the grid's texel the far rule's, the globe's ground the plane's at the handoff, its dither on the ground ---");
+        out.println("\n--- 5. the globe's camera: its ground the plane's at the handoff, its dither on the ground ---");
         long seed = EarthTerrainCheck.SEED;
         // The globe's camera at the handoff facing the city: a piece the window's size, against the plane's node over the window.
         int n = MapFrame.NODE_PX, s = GlobeFrame.HANDOFF_PLOTS;
@@ -622,7 +623,7 @@ public class GlobeCheck {
        ===================================================================== */
 
     static GlobePicture picture(EarthData fixture, EarthData full) {
-        out.println("\n--- 6. the planet's picture: a class a texel through the grid's camera, its land the far layers' ---");
+        out.println("\n--- 6. the planet's picture: a class a texel through the grid's camera, its land and its rule the far layers' ---");
         GlobePicture one = GlobePicture.make(fixture, GlobePicture.ARCMIN, 1), two = GlobePicture.make(fixture, GlobePicture.ARCMIN, 2);
         out.printf("      on the fixture: %,d x %,d texels, %,d bytes, made in %.0f ms on one thread and %.0f on two%n", one.cols(), one.rows(), one.bytes(), one.madeMs(), two.madeMs());
         check("the picture is the same made twice, on two threads as on one", Arrays.equals(one.texels(), two.texels()));
