@@ -35,6 +35,15 @@ import java.util.concurrent.Future;
  * inverse (EarthProj.Ortho) to its texel and the texel's colour, space off
  * the disc - in bands of rows, one a core. GlobeCheck holds the picture's
  * land per 1-degree cell against the far layers', and a frame's time.
+ *
+ * ON SCREEN (0.7.135, batch E9): every frame of the globe - this picture's,
+ * and the GROUND tier's composed by GlobeFrame.ground() - is cut into bands
+ * on one pool of daemon threads, a core each (bands(); E8's frame() made a
+ * pool a call); the pictures are made on a thread of their own the first
+ * time a screen asks (prepare(), best()); and the founding screen's globe
+ * is drawn by view(), the picture and then the far rule through the camera,
+ * so both screens draw the same planet in the same colours (spec-globe 3.8,
+ * Jerus's Q7) - MapCheck 13 holds it.
  */
 public final class GlobePicture {
 
@@ -190,18 +199,160 @@ public final class GlobePicture {
         }
     }
 
-    /** ...the whole frame, in bands of rows, one a thread (`threads`; this one alone at one). */
+    /** ...the whole frame, in bands of rows, one a thread (`threads`; this one alone at one) - on the one pool the globe's frames share (FRAMES, since 0.7.135). */
     public void frame(GlobeFrame f, int[] colours, int space, int[] out, int threads) {
         int h = (int) f.height();
         if (threads <= 1) {
             frame(f, colours, space, out, 0, h);
             return;
         }
+        bands(h, threads, (j0, j1) -> frame(f, colours, space, out, j0, j1));
+    }
+
+    /* =====================================================================
+       THE FRAMES' POOL (0.7.135, batch E9; E8's notes 7: frame() made a pool
+       a call): one pool of daemon threads, one a core, that every frame of
+       the globe is cut into bands on - the land office's map and the
+       founding screen's globe alike - made the first time a frame asks
+       ===================================================================== */
+
+    /** Rows j0 to j1 - 1 of a frame. */
+    public interface Rows { void run(int j0, int j1); }
+
+    private static volatile ExecutorService frames;
+
+    /** The pool: as many threads as there are cores, daemons, made once. */
+    static ExecutorService frames() {
+        ExecutorService p = frames;
+        if (p != null) return p;
+        synchronized (GlobePicture.class) {
+            if (frames == null) {
+                int n = Math.max(1, Runtime.getRuntime().availableProcessors());
+                frames = Executors.newFixedThreadPool(n, r -> {
+                    Thread t = new Thread(r, "globe-frames");
+                    t.setDaemon(true);
+                    return t;
+                });
+            }
+            return frames;
+        }
+    }
+
+    /** The threads a frame is cut into bands for: one a core. */
+    public static int cores() { return Math.max(1, Runtime.getRuntime().availableProcessors()); }
+
+    /** A frame's `rows` rows cut into `threads` bands, run on the pool and waited for (on this thread alone at one). */
+    public static void bands(int rows, int threads, Rows job) {
+        if (threads <= 1 || rows < 2) {
+            job.run(0, rows);
+            return;
+        }
         List<Runnable> jobs = new ArrayList<>();
         for (int b = 0; b < threads; b++) {
-            int j0 = b * h / threads, j1 = (b + 1) * h / threads;
-            jobs.add(() -> frame(f, colours, space, out, j0, j1));
+            int j0 = b * rows / threads, j1 = (b + 1) * rows / threads;
+            if (j1 > j0) jobs.add(() -> job.run(j0, j1));
         }
-        run(jobs, threads);
+        ExecutorService pool = frames();
+        try {
+            List<Future<?>> fs = new ArrayList<>();
+            for (Runnable r : jobs) fs.add(pool.submit(r));
+            for (Future<?> f : fs) f.get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(ex);
+        } catch (java.util.concurrent.ExecutionException ex) {
+            throw new IllegalStateException(ex.getCause());
+        }
+    }
+
+    /* ----- what both screens draw it with ----- */
+
+    /** The ground's colours as the globe draws them: TileRaster.GROUND, or (`dimmed`) the world off the city's land as the expanded map dims it (TileRaster.UNOWNED_DIM; spec-globe 3.7) - the far nodes' own. */
+    public static int[] colours(boolean dimmed) {
+        int[] c = TileRaster.GROUND.clone();
+        if (dimmed) for (int k = 0; k < c.length; k++) c[k] = TileRaster.blend(c[k], TileRaster.VOID, TileRaster.UNOWNED_DIM);
+        return c;
+    }
+
+    /** Space round the globe: the map's own void (TileRaster.VOID), as the plane draws past the planet's rim. */
+    public static final int SPACE = TileRaster.VOID;
+
+    /**
+     * A view of the globe in its own tier, into out (a pixel an int, the
+     * view's width a row), on the calling thread and the pool - the founding
+     * screen's globe (0.7.135, spec-globe 3.8): in the PICTURE tier this
+     * picture's frame; wider than the handoff closer, the far rule through
+     * the camera (GlobeFrame.groundPiece()) on the Earth world `key` names,
+     * a piece a band; `space` off the disc. Closer than the handoff the
+     * founding screen draws the ground round the view's centre itself.
+     */
+    public void view(GlobeFrame f, World.Key key, int[] colours, int space, int[] out) {
+        int w = (int) f.width(), h = (int) f.height();
+        if (f.tier() == GlobeFrame.PICTURE) {
+            frame(f, colours, space, out, cores());
+            return;
+        }
+        double m = f.kmPx() * 1000, cx = f.width() / 2, cy = f.height() / 2;
+        bands(h, cores(), (j0, j1) -> {
+            byte[] g = f.groundPiece(key, 0, j0, w, j1 - j0);
+            for (int j = j0; j < j1; j++) {
+                double y = (cy - j - 0.5) * m;
+                for (int i = 0; i < w; i++) {
+                    out[j * w + i] = EarthProj.Ortho.onDisc((i + 0.5 - cx) * m, y) ? colours[g[(j - j0) * w + i]] : space;
+                }
+            }
+        });
+    }
+
+    /* ----- made away from the screen ----- */
+
+    /** The identities whose pictures are being made, and who to tell as each is kept. */
+    private static final Map<String, List<Runnable>> MAKING = new HashMap<>();
+
+    /** The Earth's data an Earth world is drawn from (the screen's way to its picture); null for a generated world. */
+    public static EarthData dataOf(World.Key key) {
+        World w = World.of(key);
+        return w.isEarth() ? w.earthTerrain().data() : null;
+    }
+
+    /** The finest picture kept of the data: ARCMIN's once it is made, FIRST_ARCMIN's before, null before either. */
+    public static GlobePicture best(EarthData d) {
+        synchronized (KEPT) {
+            GlobePicture p = KEPT.get(d.identity() + "@" + ARCMIN);
+            return p != null ? p : KEPT.get(d.identity() + "@" + FIRST_ARCMIN);
+        }
+    }
+
+    /** The data's pictures made on a thread of their own if they are not kept - FIRST_ARCMIN, then ARCMIN (spec-globe 3.6) - and `kept` run on that thread after each (every caller's, while they are made); the screens draw best() meanwhile. */
+    public static void prepare(EarthData d, Runnable kept) {
+        String id = d.identity();
+        synchronized (KEPT) {
+            if (KEPT.containsKey(id + "@" + ARCMIN)) return;
+            List<Runnable> told = MAKING.get(id);
+            if (told != null) {
+                if (kept != null) told.add(kept);
+                return;
+            }
+            told = new ArrayList<>();
+            if (kept != null) told.add(kept);
+            MAKING.put(id, told);
+        }
+        Thread t = new Thread(() -> {
+            try {
+                for (int arcmin : new int[] { FIRST_ARCMIN, ARCMIN }) {
+                    of(d, arcmin);
+                    List<Runnable> tell;
+                    synchronized (KEPT) { tell = new ArrayList<>(MAKING.get(id)); }
+                    for (Runnable r : tell) r.run();
+                }
+            } catch (RuntimeException e) {
+                System.out.println("The planet's picture could not be made: " + e);
+            } finally {
+                synchronized (KEPT) { MAKING.remove(id); }
+            }
+        }, "globe-picture");
+        t.setDaemon(true);
+        t.setPriority(Thread.MIN_PRIORITY);
+        t.start();
     }
 }

@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 /**
- * The map view's arithmetic without the toolkit: where the view looks and how close, how a drag and a notch of the wheel move it, which level of detail it draws and which tiles or far nodes that takes, the land's overlay on whole pixels, and how long its scale bar is - what ui/MapView draws by and MapCheck holds.
+ * The map view's arithmetic without the toolkit: where the view looks and how close, how a drag, a notch of the wheel and a held key (0.7.135) move it, which level of detail it draws and which tiles or far nodes that takes, the land's overlay on whole pixels, and how long its scale bar is - what ui/MapView draws by and MapCheck holds.
  *
  * WHY THIS EXISTS (0.7.61, batch J4; the project's spec-land.md 2.6). The
  * map is drawn on a JavaFX Canvas, and JavaFX cannot draw headless in the
@@ -160,6 +160,57 @@ public final class MapFrame {
         clamp();
     }
 
+    /* ----------------------------- the keys (0.7.135, batch E9; docs/studies/spec-globe.md 3.11) -----------------------------
+     *
+     * Jerus, 2026-10-11: "yes but add to that that the wasd or up down side
+     * keys span the map as well", then "ya arros only for speed". W, A, S and
+     * D pan the expanded map, held: the view's frame pump moves the ground by
+     * the keys' velocity each frame - a steady speed on the screen, the same
+     * at every zoom, on the generated world's square as on the Earth's globe
+     * (GlobeFrame.keyPan(), which turns it as a drag of the same pixels
+     * would and stops at the reach on the plane). The arrows stay the
+     * clock's speed.
+     * ------------------------------------------------------------------------------------------------------------ */
+
+    /** A held key moves the ground this many screen pixels a second: 600 (spec-globe 3.11's est.) - the same at every zoom, so the expanded map's 1,345 pixels cross in a little over two seconds. */
+    public static final double KEY_PX_A_SECOND = 600;
+
+    /** A frame of the pump moves the keys' ground no more than this many seconds' worth: 0.1 (★E9) - a frame held up (a far node coloured, a collection) steps the view a sixth of the screen at most, not the whole stall's worth; the pump's own frames are a sixtieth. */
+    public static final double KEY_STEP_MOST_S = 0.1;
+
+    /**
+     * The ground's velocity on the screen from the keys held, {across, down}
+     * in pixels a second: W looks north, so the ground moves down; A west,
+     * the ground right; S south; D east. Two keys at once move it
+     * diagonally, at the same speed (★E9: the speed is the ground's on the
+     * screen, whichever way it goes); opposite keys cancel.
+     */
+    public static double[] keyVelocity(boolean w, boolean a, boolean s, boolean d) {
+        double vx = (a ? 1 : 0) - (d ? 1 : 0), vy = (w ? 1 : 0) - (s ? 1 : 0);
+        double n = Math.hypot(vx, vy);
+        if (n == 0) return new double[] { 0, 0 };
+        return new double[] { KEY_PX_A_SECOND * vx / n, KEY_PX_A_SECOND * vy / n };
+    }
+
+    /** The pixels a frame of `seconds` moves the ground at a velocity, its time capped at KEY_STEP_MOST_S: {across, down}. */
+    public static double[] keyStep(double[] velocity, double seconds) {
+        double t = Math.max(0, Math.min(KEY_STEP_MOST_S, seconds));
+        return new double[] { velocity[0] * t, velocity[1] * t };
+    }
+
+    /** A frame of the keys held: the ground panned by keyStep() - as a drag of those pixels, the world's square its stop. */
+    public void keyPan(double[] velocity, double seconds) {
+        double[] d = keyStep(velocity, seconds);
+        pan(d[0], d[1]);
+    }
+
+    /** Plots a far node's pixel stands for at a scale: nodePlots()'s rule, the least power of two at least a screen pixel wide. */
+    public static long nodePlotsAt(double scale) {
+        long p = 1;
+        while (p * scale < 1 && p < World.SIDE) p <<= 1;
+        return p;
+    }
+
     /** A plot's place on the screen. */
     public double screenX(double x) { return (x - cx) * scale + width / 2; }
     public double screenY(double y) { return (y - cy) * scale + height / 2; }
@@ -284,11 +335,7 @@ public final class MapFrame {
     }
 
     /** Plots a far node's pixel stands for: the least power of two at least a screen pixel wide, so a node is shown at NODE_PX to twice that. */
-    public long nodePlots() {
-        long p = 1;
-        while (p * scale < 1 && p < World.SIDE) p <<= 1;
-        return p;
-    }
+    public long nodePlots() { return nodePlotsAt(scale); }
 
     /** A far node's side in plots. */
     public long nodeSpan() { return NODE_PX * nodePlots(); }

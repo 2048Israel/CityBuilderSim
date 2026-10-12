@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 /**
- * The Earth's map as a globe, without the toolkit: where the view looks on the planet, how close and which way is up, how a notch of the wheel, a drag and Fit move it, which of three pictures it draws - the planet's picture, the ground through the globe, or the city's plane - and where a pixel is on the planet; what the land office's map on Earth will draw by (E9) and GlobeCheck holds.
+ * The Earth's map as a globe, without the toolkit: where the view looks on the planet, how close and which way is up, how a notch of the wheel, a drag, a held key and Fit move it, which of three pictures it draws - the planet's picture, the ground through the globe, or the city's plane - and where a pixel is on the planet and on the city's plane; what the land office's map on Earth and the founding screen's globe draw by (since 0.7.135) and GlobeCheck and MapCheck 13 hold.
  *
  * WHY THIS EXISTS (0.7.132, batch E8; docs/studies/spec-globe.md 3, Jerus's
  * answers of 2026-10-11, "yes"). The map on Earth drew the whole planet on
@@ -43,6 +43,23 @@ package ham.citybuildersim;
  * grabbed under the pointer, on the globe as on the plane (spec-globe 4's
  * E8 row): the view centre is solved from the point, its place on the
  * screen and the roll (centreFor()). Pure: nothing in the model reads it.
+ *
+ * ON SCREEN (0.7.135, batch E9; spec-globe 3.2 to 3.8 and 3.11). ui/MapView
+ * draws the expanded map on Earth by it and ui/FoundingScreen its wide
+ * views: W, A, S and D turn it as a drag of MapFrame.keyStep()'s pixels
+ * (keyPan()); the GROUND tier near the city is the plane's own far nodes
+ * through the camera (ground(), ★E9: the two projections composed as one
+ * matrix on the point's unit vector), out to planeDrawsKm() - the reach
+ * and the view's half-diagonal at the handoff, so a view at the swap is the
+ * plane's own ground to its corners - and past it the far rule through the
+ * camera (groundPiece()), the last picture carried to its own pixels
+ * meanwhile (Carry); the swap crossfades over CROSSFADE_NOTCHES (crossfade());
+ * the roll eases back to north up over ROLL_EASE_KM past the reach, not in
+ * a step at its edge (E8's ★3); the scale bar is true at the centre and
+ * says so; the plot and whose it is under a pixel (plotAt(), planeHolds())
+ * are the hover's and a click's; and the founding globe, with no city and
+ * no reach, hands off at half a pixel of its canvas (FOUNDING_HANDOFF_KM,
+ * halfPixelKm()).
  */
 public final class GlobeFrame {
 
@@ -75,6 +92,36 @@ public final class GlobeFrame {
 
     /** The PICTURE tier draws down to the planet's picture's texel, in km a pixel: a GlobePicture.ARCMIN texel's height on the ground, 7.41 (spec-globe 3.1). */
     public static final double PICTURE_FROM_KM = GlobePicture.texelKm(GlobePicture.ARCMIN);
+
+    /** The swap crossfades over this many notches of the wheel inside the handoff: 1 (spec-globe 3.2's est., ★E9) - the globe laid over the plane from whole at the handoff to gone a notch in, hiding the third of a pixel they part by and the change of drawing. */
+    public static final int CROSSFADE_NOTCHES = 1;
+
+    /** Past the reach the roll eases back to north up over this many km (★E9; E8's ★3): REACH_MARGIN_KM, the margin the reach keeps round the city's ground - so a pan at the handoff across the reach's edge turns the view by degrees over 50 km instead of in one step. */
+    public static final double ROLL_EASE_KM = REACH_MARGIN_KM;
+
+    /** The city's edge is drawn through the globe's camera once the city is at least this many pixels across: 4 (spec-globe 3.7's est.) - under it the ring alone marks it. */
+    public static final double EDGE_FROM_PX = 4;
+
+    /** The founding screen's globe, in pixels: 560 x 270 (ui/FoundingScreen's right column, 0.7.121; GlobeFrame's since 0.7.135, so a harness draws what it draws). */
+    public static final double FOUNDING_W = 560, FOUNDING_H = 270;
+
+    /**
+     * The scale at which a view of w x h pixels and the plane centred where it
+     * looks part by half a pixel at its corners, km a pixel (spec-globe 3.2):
+     * a point rho out from the middle is the angle c = 2 asin(rho / 2R) from
+     * the centre on Lambert's plane, and R sin c = rho sqrt(1 - rho^2/4R^2)
+     * out on the globe, so at the corner, D pixels out at k km a pixel, the
+     * two part by D (1 - sqrt(1 - (Dk / 2R)^2)) pixels - half a pixel at
+     * k = (2R / D) sqrt(1 - (1 - 1/2D)^2), the study's 2R / D^1.5 to first
+     * order: 0.58 on the expanded map, 2.32 on the founding globe.
+     */
+    public static double halfPixelKm(double w, double h) {
+        double d = Math.hypot(w, h) / 2, q = 1 - 1 / (2 * d);
+        return 2 * EarthProj.RADIUS_M / 1000 / d * Math.sqrt(1 - q * q);
+    }
+
+    /** The founding globe hands its view to the ground drawn round its centre at this, km a pixel (★E9, spec-globe 3.2's choice): halfPixelKm() of its canvas, 2.32 - under half a pixel at the swap, as the map's 16 plots is, where E4's 4 km parted by 1.5. */
+    public static final double FOUNDING_HANDOFF_KM = halfPixelKm(FOUNDING_W, FOUNDING_H);
 
     private double width, height;
     private final double cityLat, cityLon;
@@ -197,11 +244,21 @@ public final class GlobeFrame {
         return t <= 0 ? 0 : t >= 1 ? 1 : t;
     }
 
-    /** The roll a view centred at (atLat, atLon) at a scale takes: the eased share of the plane's up there within the reach, north up beyond it. */
+    /** The roll a view centred at (atLat, atLon) at a scale takes: the eased share of the plane's up there within the reach, north up beyond it - since 0.7.135 (★E9) back to north up over ROLL_EASE_KM past the reach rather than in one step at its edge. */
     public double rollFor(double atLat, double atLon, double atKmPx) {
         double e = ease(atKmPx);
-        if (e <= 0 || !withinReach(atLat, atLon)) return 0;
+        if (e <= 0) return 0;
+        double past = cityKm(atLat, atLon) - reachKm;
+        if (past >= ROLL_EASE_KM) return 0;
+        if (past > 0) e *= 1 - past / ROLL_EASE_KM;
         return e * planeRollAt(atLat, atLon);
+    }
+
+    /** The globe's share of the picture at a scale, over the plane's: 1 at the handoff and wider, 0 CROSSFADE_NOTCHES notches inside it and closer, by notches between (spec-globe 3.2's crossfade; within the reach, where the swap is). */
+    public static double crossfade(double kmPx) {
+        if (kmPx >= HANDOFF_KM) return 1;
+        double t = StrictMath.log(kmPx / HANDOFF_KM) / (CROSSFADE_NOTCHES * StrictMath.log(ZOOM_STEP)) + 1;
+        return t <= 0 ? 0 : t >= 1 ? 1 : t;
     }
 
     /* ----- moving it ----- */
@@ -263,6 +320,38 @@ public final class GlobeFrame {
     /** A drag of (dx, dy) pixels from the centre: what a held key moves (spec-globe 3.11). */
     public void pan(double dx, double dy) {
         drag(width / 2, height / 2, width / 2 + dx, height / 2 + dy);
+    }
+
+    /** A frame of the keys held (0.7.135, spec-globe 3.11): the globe turned as a drag of MapFrame.keyStep()'s pixels from the centre would turn it - at the plane's scales the centre stopping at the reach. */
+    public void keyPan(double[] velocity, double seconds) {
+        double[] d = MapFrame.keyStep(velocity, seconds);
+        if (d[0] != 0 || d[1] != 0) pan(d[0], d[1]);
+    }
+
+    /** This view at another size and scale - its centre and its roll as they are (the half-resolution frame a moving view is drawn at): w x h pixels at kmPx. */
+    public GlobeFrame copy(double w, double h, double atKmPx) {
+        return new GlobeFrame(this, w, h, atKmPx);
+    }
+
+    private GlobeFrame(GlobeFrame f, double w, double h, double atKmPx) {
+        this.width = Math.max(1, w);
+        this.height = Math.max(1, h);
+        this.cityLat = f.cityLat;
+        this.cityLon = f.cityLon;
+        this.plane = f.plane;
+        this.lat = f.lat;
+        this.lon = f.lon;
+        this.kmPx = atKmPx;
+        this.roll = f.roll;
+        this.reachKm = f.reachKm;
+        this.ortho = f.ortho;
+        this.drawsKm = f.planeDrawsKm();
+    }
+
+    /** Whether two views draw the same picture: their size, centre, scale, roll and reach. */
+    public boolean sameView(GlobeFrame o) {
+        return o != null && o.width == width && o.height == height && o.lat == lat && o.lon == lon && o.kmPx == kmPx && o.roll == roll
+                && o.reachKm == reachKm && o.cityLat == cityLat && o.cityLon == cityLon;
     }
 
     /** The view at scale `to` with (pLat, pLon) at screen point (sx, sy): on the plane by its plots, on the globe by centreFor() with the roll it will take there. */
@@ -449,4 +538,298 @@ public final class GlobeFrame {
         e.farTerrain(e.globe(ortho, kmPx, width, height, sx0, sy0, w, h), out);
         return out;
     }
+
+    /* =====================================================================
+       THE GLOBE ON SCREEN (0.7.135, batch E9; docs/studies/spec-globe.md 3.5
+       to 3.7): the city's plane under the globe's pixels, the GROUND tier
+       near the city from the plane's own far nodes, the overlay through the
+       camera, the scale bar
+       ===================================================================== */
+
+    /** The plot under a screen point in the tier this view draws, into xy: on the plane its own; on the globe through the camera to the city's plane (EarthProj.plotOf()). False off the planet, or at the plane's antipode. */
+    public boolean plotAt(double sx, double sy, double[] xy) {
+        if (tier() == PLANE) {
+            double s = planeScale();
+            xy[0] = planeX() + (sx - width / 2) / s;
+            xy[1] = planeY() + (sy - height / 2) / s;
+            return EarthProj.onPlanet(EarthProj.metresX(xy[0]), EarthProj.metresY(xy[1]));
+        }
+        double[] ll = latLonAt(sx, sy);
+        return ll != null && plane.plotOf(ll[0], ll[1], xy);
+    }
+
+    /** Where a plot of the city's plane lies on the screen, {x, y} in pixels, in the tier this view draws: null on the globe's far side or off the planet. */
+    public double[] screenOfPlot(double x, double y) {
+        if (tier() == PLANE) {
+            double s = planeScale();
+            return new double[] { (x - planeX()) * s + width / 2, (y - planeY()) * s + height / 2 };
+        }
+        double[] ll = new double[2];
+        if (!plane.latLonOfPlot(x, y, ll)) return null;
+        return at(ll[0], ll[1]);
+    }
+
+    /** Whether a screen point is drawn from the city's plane - within planeDrawsKm() of the city and the world's square, or anywhere on the plane's own tier: the plane's answer is the one there (the hover's, a click's). */
+    public boolean planeHolds(double sx, double sy) {
+        double[] ll = latLonAt(sx, sy);
+        if (ll == null || (tier() != PLANE && cityKm(ll[0], ll[1]) > planeDrawsKm())) return false;
+        double[] xy = new double[2];
+        return plotAt(sx, sy, xy) && xy[0] >= 0 && xy[1] >= 0 && xy[0] < World.SIDE && xy[1] < World.SIDE;
+    }
+
+    /**
+     * How far from the city the globe draws the city's plane's own far nodes,
+     * km (★E9): the reach and the view's half-diagonal at the handoff, so a
+     * view at the handoff with its centre within the reach - every view the
+     * wheel can take across it - is the plane's own ground to its corners,
+     * and the swap shows only the projections' parting (within 1,000 km of
+     * the city Lambert's plane is true to a third of a percent). Past it the
+     * globe draws its own ground (groundPiece()). A copy keeps its view's.
+     */
+    public double planeDrawsKm() {
+        return Double.isNaN(drawsKm) ? reachKm + Math.hypot(width, height) / 2 * HANDOFF_KM : drawsKm;
+    }
+
+    /** A copy's planeDrawsKm(), its view's; NaN in a view of its own. */
+    private double drawsKm = Double.NaN;
+
+    /** The pixels of a far node of the city's plane, its colours (MapTiles.nodePixels()) - null where it is not drawn yet. */
+    public interface NodePixels { int[] at(long nx, long ny); }
+
+    /** A pixel's colour beyond the reach, or where the plane's node is not drawn: by its place on the screen, and its point on the planet as a unit vector in the camera's frame (vx, vy, vz: Ortho.inverse()'s), which latOf() and lonOf() turn into degrees when it is wanted. */
+    public interface Beyond { int colour(int i, int j, double vx, double vy, double vz); }
+
+    /** The latitude of a point given as Beyond's unit vector, degrees: Ortho.inverse()'s. */
+    public static double latOf(double vx, double vy, double vz) {
+        return StrictMath.toDegrees(StrictMath.atan2(vz, Math.sqrt(vx * vx + vy * vy)));
+    }
+
+    /** ...and its longitude, in [-180, 180). */
+    public double lonOf(double vx, double vy) {
+        return EarthProj.normaliseLon(lon + StrictMath.toDegrees(StrictMath.atan2(vy, vx)));
+    }
+
+    /**
+     * The GROUND tier near the city (★E9; spec-globe 3.5's "cheaper GROUND
+     * tier"): the screen's pixels sx in [i0, i1), sy in [j0, j1) into out
+     * (outW a row), each pixel's centre through the globe to the city's
+     * plane and, within planeDrawsKm() of the city, the colour of the
+     * plane's far node pixel under it at `plots` plots a pixel
+     * (MapFrame.nodePlots()'s level) - exactly the plane's ground, its city
+     * and edge with it, so the swap shows only the projections' parting;
+     * beyond it, and where a node is not drawn yet, `beyond`'s colour; off the disc
+     * `space`. The two projections composed as one matrix on the point's
+     * unit vector, not through its latitude and longitude (planeAt(), which
+     * a harness holds to the camera's and the plane's own). Returns how many
+     * pixels the plane draws found no node.
+     */
+    public int ground(long plots, NodePixels nodes, Beyond beyond, int space, int[] out, int outW, int i0, int i1, int j0, int j1) {
+        Composed c = composed();
+        int n = MapFrame.NODE_PX;
+        double span = (double) n * plots, perSpan = 1 / span;
+        double half = World.SIDE / 2.0, rPlots = EarthProj.RADIUS_M / World.PLOT_M;
+        // The camera's east and north on the unit sphere step by these a pixel across.
+        double step = c.m / EarthProj.RADIUS_M, de = step * c.cosR, dn = step * c.sinR;
+        long lastNx = Long.MIN_VALUE, lastNy = Long.MIN_VALUE;
+        int[] node = null;
+        int missing = 0;
+        for (int j = j0; j < j1; j++) {
+            double y = (height / 2 - j - 0.5) * step, x0 = (i0 + 0.5 - width / 2) * step;
+            double e0 = x0 * c.cosR - y * c.sinR, n0 = x0 * c.sinR + y * c.cosR;
+            int row = j * outW;
+            for (int i = i0; i < i1; i++) {
+                double e = e0 + (i - i0) * de, nn = n0 + (i - i0) * dn;
+                double s2 = e * e + nn * nn;
+                if (s2 > 1) {
+                    out[row + i] = space;
+                    continue;
+                }
+                double a = Math.sqrt(1 - s2);
+                double up = c.ue * e + c.un * nn + c.ua * a;
+                if (up >= c.cosDraws) {
+                    double k = rPlots * Math.sqrt(2 / (1 + up));
+                    double px = half + k * (c.ee * e + c.en * nn + c.ea * a), py = half - k * (c.ne * e + c.nn * nn + c.na * a);
+                    double fx = px * perSpan, fy = py * perSpan;
+                    long nx = (long) Math.floor(fx), ny = (long) Math.floor(fy);
+                    if (nx != lastNx || ny != lastNy) {
+                        lastNx = nx;
+                        lastNy = ny;
+                        node = nodes.at(nx, ny);
+                    }
+                    if (node != null) {
+                        int u = (int) ((fx - nx) * n), v = (int) ((fy - ny) * n);
+                        out[row + i] = node[(v < n ? v : n - 1) * n + (u < n ? u : n - 1)];
+                        continue;
+                    }
+                    missing++;
+                }
+                out[row + i] = beyond.colour(i, j, a * c.cosL0 - nn * c.sinL0, e, a * c.sinL0 + nn * c.cosL0);
+            }
+        }
+        return missing;
+    }
+
+    /** The plot of the city's plane under a screen point by ground()'s matrix, into xy: false off the disc or at the plane's antipode - what a harness holds to the camera and the plane's own projections (plotAt()). */
+    public boolean planeAt(double sx, double sy, double[] xy) {
+        Composed c = composed();
+        double x = (sx - width / 2) * c.m, y = (height / 2 - sy) * c.m;
+        double e = (x * c.cosR - y * c.sinR) / EarthProj.RADIUS_M, nn = (x * c.sinR + y * c.cosR) / EarthProj.RADIUS_M;
+        double s2 = e * e + nn * nn;
+        if (s2 > 1) return false;
+        double a = Math.sqrt(1 - s2);
+        double up = c.ue * e + c.un * nn + c.ua * a;
+        if (!(1 + up > 0)) return false;
+        double k = EarthProj.RADIUS_M * Math.sqrt(2 / (1 + up));
+        xy[0] = k * (c.ee * e + c.en * nn + c.ea * a) / World.PLOT_M + World.SIDE / 2.0;
+        xy[1] = World.SIDE / 2.0 - k * (c.ne * e + c.nn * nn + c.na * a) / World.PLOT_M;
+        return true;
+    }
+
+    /** Whether a screen point lies within the reach, by ground()'s matrix: the angle from the city no wider than the reach's. */
+    public boolean reachHolds(double sx, double sy) {
+        Composed c = composed();
+        double x = (sx - width / 2) * c.m, y = (height / 2 - sy) * c.m;
+        double e = (x * c.cosR - y * c.sinR) / EarthProj.RADIUS_M, nn = (x * c.sinR + y * c.cosR) / EarthProj.RADIUS_M;
+        double s2 = e * e + nn * nn;
+        return s2 <= 1 && c.ue * e + c.un * nn + c.ua * Math.sqrt(1 - s2) >= c.cosReach;
+    }
+
+    /** ...and within planeDrawsKm(): where ground() draws the city's plane. */
+    public boolean drawsHold(double sx, double sy) {
+        Composed c = composed();
+        double x = (sx - width / 2) * c.m, y = (height / 2 - sy) * c.m;
+        double e = (x * c.cosR - y * c.sinR) / EarthProj.RADIUS_M, nn = (x * c.sinR + y * c.cosR) / EarthProj.RADIUS_M;
+        double s2 = e * e + nn * nn;
+        return s2 <= 1 && c.ue * e + c.un * nn + c.ua * Math.sqrt(1 - s2) >= c.cosDraws;
+    }
+
+    /**
+     * The view's two projections composed: the screen's metres turned by the
+     * roll into the camera's east and north (e, n) on the unit sphere, its
+     * third coordinate a = sqrt(1 - e^2 - n^2); the point's unit vector in
+     * the camera's frame (Ortho.inverse()'s) turned about the axis by the
+     * longitudes' difference into the city's, then into its east, north and
+     * up (EarthProj.forward()'s) - each a sum of e, n and a, the matrix here.
+     */
+    private static final class Composed {
+        final double lat, lon, kmPx, roll, reach, draws;
+        final double m, cosR, sinR, cosL0, sinL0, cosReach, cosDraws;
+        final double ee, en, ea, ne, nn, na, ue, un, ua;
+
+        Composed(GlobeFrame f) {
+            lat = f.lat;
+            lon = f.lon;
+            kmPx = f.kmPx;
+            roll = f.roll;
+            reach = f.reachKm;
+            draws = f.planeDrawsKm();
+            double r = StrictMath.toRadians(roll), l0 = StrictMath.toRadians(lat), lc = StrictMath.toRadians(f.cityLat);
+            double d = StrictMath.toRadians(lon - f.cityLon);
+            m = kmPx * 1000;
+            cosR = StrictMath.cos(r);
+            sinR = StrictMath.sin(r);
+            cosL0 = StrictMath.cos(l0);
+            sinL0 = StrictMath.sin(l0);
+            double cosLc = StrictMath.cos(lc), sinLc = StrictMath.sin(lc), cosD = StrictMath.cos(d), sinD = StrictMath.sin(d);
+            // The camera's frame (px = a cos l0 - n sin l0, py = e, pz = a sin l0 + n cos l0), turned by the longitudes' difference:
+            // qx = cosD px - sinD py, qy = sinD px + cosD py, qz = pz; then east = qy, north = cos lc qz - sin lc qx, up = sin lc qz + cos lc qx.
+            ee = cosD;
+            en = -sinD * sinL0;
+            ea = sinD * cosL0;
+            ne = sinLc * sinD;
+            nn = cosLc * cosL0 + sinLc * cosD * sinL0;
+            na = cosLc * sinL0 - sinLc * cosD * cosL0;
+            ue = -cosLc * sinD;
+            un = sinLc * cosL0 - cosLc * cosD * sinL0;
+            ua = sinLc * sinL0 + cosLc * cosD * cosL0;
+            cosReach = StrictMath.cos(Math.min(Math.PI, reach * 1000 / EarthProj.RADIUS_M));
+            cosDraws = StrictMath.cos(Math.min(Math.PI, draws * 1000 / EarthProj.RADIUS_M));
+        }
+
+        boolean of(GlobeFrame f) {
+            return lat == f.lat && lon == f.lon && kmPx == f.kmPx && roll == f.roll && reach == f.reachKm && draws == f.planeDrawsKm();
+        }
+    }
+
+    /** The matrix for the view as it is, made when it moved; its fields final, so the bands' threads read it whole. */
+    private Composed composed;
+
+    private Composed composed() {
+        Composed c = composed;
+        if (c != null && c.of(this)) return c;
+        c = new Composed(this);
+        composed = c;
+        return c;
+    }
+
+    /**
+     * Where the points of this view's pixels lie on an older view's screen
+     * (★E9): the GROUND tier is drawn again in pieces as a view comes to
+     * rest, and until a piece is in, its pixels are the last whole picture's
+     * at their own points - the founding globe's "last picture slid", pixel
+     * by pixel. Takes Beyond's unit vector, so no latitude or longitude is
+     * worked out: the camera's frame turned into the older camera's, its
+     * east, north and up there, its roll and scale.
+     */
+    public static final class Carry {
+        private final double ax, ay, az, bx, by, bz, cx, cy, cz, w2, h2;
+        private final int w, h;
+
+        private Carry(GlobeFrame now, GlobeFrame old) {
+            double d = StrictMath.toRadians(now.lon - old.lon), l = StrictMath.toRadians(old.lat), r = StrictMath.toRadians(old.roll);
+            double cosD = StrictMath.cos(d), sinD = StrictMath.sin(d), cosL = StrictMath.cos(l), sinL = StrictMath.sin(l);
+            double cR = StrictMath.cos(r), sR = StrictMath.sin(r), k = EarthProj.RADIUS_M / (old.kmPx * 1000);
+            // east = sinD vx + cosD vy; north = -sinL cosD vx + sinL sinD vy + cosL vz; up = cosL cosD vx - cosL sinD vy + sinL vz.
+            double ex = sinD, ey = cosD, ez = 0, nx = -sinL * cosD, ny = sinL * sinD, nz = cosL;
+            ax = k * (ex * cR + nx * sR);
+            ay = k * (ey * cR + ny * sR);
+            az = k * (ez * cR + nz * sR);
+            bx = -k * (nx * cR - ex * sR);
+            by = -k * (ny * cR - ey * sR);
+            bz = -k * (nz * cR - ez * sR);
+            cx = cosL * cosD;
+            cy = -cosL * sinD;
+            cz = sinL;
+            w2 = old.width / 2;
+            h2 = old.height / 2;
+            w = (int) old.width;
+            h = (int) old.height;
+        }
+
+        /** The older view's screen point of Beyond's unit vector, into out: false on its far side. */
+        public boolean screen(double vx, double vy, double vz, double[] out) {
+            if (cx * vx + cy * vy + cz * vz < 0) return false;
+            out[0] = w2 + ax * vx + ay * vy + az * vz;
+            out[1] = h2 + bx * vx + by * vy + bz * vz;
+            return true;
+        }
+
+        /** ...as the older view's pixel, its row times its width and its column: -1 on its far side or off its screen. */
+        public int pixel(double vx, double vy, double vz) {
+            if (cx * vx + cy * vy + cz * vz < 0) return -1;
+            double x = w2 + ax * vx + ay * vy + az * vz, y = h2 + bx * vx + by * vy + bz * vz;
+            if (!(x >= 0 && y >= 0 && x < w && y < h)) return -1;
+            return (int) y * w + (int) x;
+        }
+    }
+
+    /** ...this view's points on `old`'s screen. */
+    public Carry carryFrom(GlobeFrame old) { return new Carry(this, old); }
+
+    /** The scale bar on the globe (spec-globe 3.7): MapFrame.scaleBar()'s rule at the view's centre, where alone it is true - {metres, pixels}. */
+    public double[] scaleBar(double mostPx) {
+        double perPx = kmPx * 1000, most = mostPx * perPx, metres = 1;
+        while (metres * 10 <= most) metres *= 10;
+        if (metres * 5 <= most) metres *= 5;
+        else if (metres * 2 <= most) metres *= 2;
+        return new double[] { metres, metres / perPx };
+    }
+
+    /** ...its words: the plane's, true at the centre only and saying so - "500 km at the centre". */
+    public static String scaleWords(double metres) {
+        return MapFrame.scaleWords(metres) + AT_THE_CENTRE;
+    }
+
+    /** What the globe's scale bar adds to its length (spec-globe 3.7: "true at the view's centre only, and says so"). */
+    public static final String AT_THE_CENTRE = " at the centre";
 }

@@ -54,8 +54,9 @@ import static ham.citybuildersim.ui.Pieces.*;
  * under the pointer and lights an offer). Expand moves the canvas
  * into UserInterface's pane over the whole window (City History's, 0.7.23):
  * drag pans, the wheel zooms by MapFrame.ZOOM_STEP a notch at the pointer,
- * + and - zoom, 0 fits, Esc closes (the arrows stay the clock's speed, as
- * on City History's full screen); a legend and a hover
+ * + and - zoom, 0 fits, Esc closes, and since 0.7.135 W, A, S and D pan
+ * (the arrows stay the clock's speed, as on City History's full screen);
+ * a legend and a hover
  * card (the ground, whose it is - the centre, a purchase, an offer and its
  * price - the fields and their tonnes, and at L0 the building or road; on
  * Earth, since 0.7.119, how far and which way from the nearest place, and
@@ -103,6 +104,37 @@ import static ham.citybuildersim.ui.Pieces.*;
  * ships plays as BoatSchedule.MONTH_SECONDS at 1x and stands while the clock
  * is paused; each boat's shape and colours ShipShapes'. While any is in view
  * the frame goes on and draws again whenever the clock moves them.
+ *
+ * THE GLOBE (0.7.135, batch E9; docs/studies/spec-globe.md 3, Jerus's
+ * answers of 2026-10-11, "yes"): on an Earth world the expanded map is a
+ * view of the planet (GlobeFrame) drawn in one of three tiers by its scale
+ * - PICTURE, the planet's picture (GlobePicture, made once on a thread of
+ * its own, 12' then 4'), each pixel through the camera to its texel;
+ * GROUND, within GlobeFrame.planeDrawsKm() of the city the plane's own far
+ * nodes reprojected through the camera (GlobeFrame.ground(), ★E9), and
+ * past it the far rule through the camera (GlobeFrame.groundPiece()) in
+ * pieces on WORKER once the view holds still, the last whole picture
+ * carried pixel by pixel and the planet's picture under it meanwhile;
+ * PLANE, the map as before, its MapFrame following the globe's view. A
+ * view on the move is drawn at half its resolution and a still one at its
+ * own, in bands on the frames' pool (GlobePicture.bands()); the swap
+ * crossfades over a notch inside the handoff (GlobeFrame.crossfade()).
+ * Drag, the wheel, + and - and the keys move the globe's view; Fit shows
+ * the whole planet facing the city, north up, and the map still opens on
+ * the city. Over it the city's ring at every scale, its edge through the
+ * camera in the PICTURE tier once it is EDGE_FROM_PX across (the plane's
+ * nodes draw it in the GROUND tier), and its offers and centre where the
+ * plane draws; the hover is LandMap.globeHoverWords(), the legend
+ * LandMap.legend() by tier, the scale bar true at the centre and saying so
+ * (GlobeFrame.scaleBar()). A generated world keeps the flat map at every
+ * scale (Q8), and the small map never leaves the plane.
+ *
+ * THE KEYS (0.7.135; spec-globe 3.11): W, A, S and D held pan the expanded
+ * map, on the plane and the globe, at every scale - UserInterface's key
+ * filter hands them here while the map is over the window and nobody is
+ * typing - each frame of the pump by MapFrame.keyVelocity() over the time
+ * since the last (MapFrame.keyPan(), GlobeFrame.keyPan()). Not on the small
+ * map, which never pans.
  */
 final class MapView {
 
@@ -186,6 +218,8 @@ final class MapView {
         byte[] ground;
         boolean partial;
         long pictures;
+        /** A far node's colours as drawn (0.7.135): what the globe reprojects near the city. */
+        int[] pixels;
     }
 
     /** A level's pictures, the most recently drawn kept: `most` of them. */
@@ -233,6 +267,44 @@ final class MapView {
 
     private final ImagePattern hatch;
 
+    /* ----------------------------- the globe (0.7.135, batch E9) ----------------------------- */
+
+    /** The expanded map's view on an Earth world, and the world and data it is of; null on a generated world. */
+    private GlobeFrame globe;
+    private World.Key globeKey;
+    private EarthData globeData;
+    /** The land and offers its reach was found for. */
+    private long reachFor = Long.MIN_VALUE;
+
+    /** The globe's picture of the view: its pixels, the view it was drawn for (a copy, its size the picture's), how, and what moved since. */
+    private WritableImage globeImg;
+    private int[] globePx = new int[0];
+    private GlobeFrame globeDrawn;
+    private int globeMode = -1;
+    private long globeInputs = Long.MIN_VALUE;
+    /** Bumped when a far node is coloured or the planet's picture kept: a still view is drawn again from them. */
+    private long inputs;
+    /** The screen's box a still picture is to be drawn again over (a piece in, a node coloured), or null. */
+    private double[] patch;
+
+    /** The GROUND tier's pieces past the plane, for one view at rest: its classes a pixel (-1 not in yet), the view and its number. */
+    private byte[] pieceCls;
+    private GlobeFrame pieceView;
+    private volatile int pieceGen;
+    /** The last whole picture at rest, carried pixel by pixel while the next is drawn. */
+    private int[] carryPx;
+    private GlobeFrame carryView;
+
+    /** How the globe's picture was drawn: the planet's picture, the GROUND tier, or the plane's nodes alone for the crossfade. */
+    private static final int MODE_PICTURE = 0, MODE_GROUND = 1, MODE_FADE = 2;
+
+    /** W, A, S and D held, and when the keys last moved the view (0 when none is held). */
+    private boolean keyW, keyA, keyS, keyD;
+    private long keyNanos;
+
+    /** The tier the legend was laid out for. */
+    private int legendTier = Integer.MIN_VALUE;
+
     MapView(UserInterface ui, Picker picker, Runnable onClose) {
         this.ui = ui;
         this.picker = picker;
@@ -278,10 +350,10 @@ final class MapView {
     static final String DRAWING = "Drawing the city's map…";
 
     /** The Expand button's tooltip. */
-    static final String EXPAND_TIP = "The map over the whole window: drag to pan, scroll to zoom, Esc to come back.";
+    static final String EXPAND_TIP = "The map over the whole window: drag or W, A, S and D to pan, scroll to zoom, Esc to come back.";
 
     /** The expanded map's hint, at the right of its head. */
-    static final String HINT = "drag to pan · scroll to zoom · 0 fits · Esc closes";
+    static final String HINT = "drag or W A S D to pan · scroll to zoom · 0 fits · Esc closes";
 
     /** The small map, its Expand button and its readout: what the land office lays in its hero row. */
     Region smallNode() { return smallBox; }
@@ -293,12 +365,14 @@ final class MapView {
     void forget() {
         if (expanded) collapse(false);
         reset();
+        resetGlobe();
         side = place = litSide = litPlace = overSide = overPlace = -1;
         fittedFor = Long.MIN_VALUE;
         draftsFailed = 0;
     }
 
     private void reset() {
+        resetGlobePicture();
         shownMap = null;
         tiles = null;
         draft = null;
@@ -355,6 +429,7 @@ final class MapView {
         }
         long deadline = System.nanoTime() + (long) (FRAME_MS * 1e6);
         boolean more = keepUp();
+        more |= keys();
         if (tiles != null) more |= paint(deadline);
         if (hoverAt != null) {
             hover(hoverAt[0], hoverAt[1]);
@@ -368,7 +443,16 @@ final class MapView {
         if (dirty) {
             dirty = false;
             draw();
-            if (expanded) legendNote();
+            if (expanded) {
+                legendNote();
+                legendFor(shownTier());
+            }
+        }
+        // A globe drawn on the move at half resolution is drawn again at its own the frame after it holds still; a piece or a
+        // node come in is laid over the still picture the next frame.
+        if (globeShown() && (globeHalf || patch != null) && globeImg != null) {
+            dirty = true;
+            more = true;
         }
         // Idle: nothing to paint, nothing to draw. A draft or a far node coming back from WORKER asks again.
         if (!more && !dirty && hoverAt == null) {
@@ -428,6 +512,7 @@ final class MapView {
             LandMap.open(small, land, market);
             dirty = true;
         }
+        globeUp(land, market, landKey);
         if (tiles != null) {
             long v = MapTiles.version(shownMap, land);
             if (v != version) {
@@ -476,6 +561,7 @@ final class MapView {
      * True when there is more to do.
      */
     private boolean paint(long deadline) {
+        if (onGlobe()) return paintGlobe(deadline);
         MapFrame f = frame();
         int level = f.level();
         if (level == MapFrame.FAR) return paintNodes(f, deadline);
@@ -556,7 +642,7 @@ final class MapView {
     private boolean paintNodes(MapFrame f, long deadline) {
         picturesWanted.clear();
         try {
-            return paintNodes(f, deadline, shownMap.picturesKept());
+            return paintNodes(f.nodePlots(), f.nodeX0(), f.nodeX1(), f.nodeY0(), f.nodeY1(), deadline, shownMap.picturesKept());
         } finally {
             askPictures(f);
         }
@@ -603,13 +689,14 @@ final class MapView {
         });
     }
 
-    private boolean paintNodes(MapFrame f, long deadline, long picturesKept) {
-        long plots = f.nodePlots(), span = f.nodeSpan();
+    /** The far nodes nx0 to nx1 across and ny0 to ny1 down at `plots` plots a pixel: their ground asked of WORKER, coloured here until the deadline (0.7.135: the plane's view's, or the globe's near the city). True when there is more to do. */
+    private boolean paintNodes(long plots, long nx0, long nx1, long ny0, long ny1, long deadline, long picturesKept) {
+        long span = MapFrame.NODE_PX * plots;
         World.Key world = shownMap.worldKey();
         int n = MapFrame.NODE_PX;
         if (buffer.length < n * n) buffer = new int[n * n];
-        for (long ny = f.nodeY0(); ny <= f.nodeY1(); ny++) {
-            for (long nx = f.nodeX0(); nx <= f.nodeX1(); nx++) {
+        for (long ny = ny0; ny <= ny1; ny++) {
+            for (long nx = nx0; nx <= nx1; nx++) {
                 long key = nodeKey(plots, nx, ny);
                 Img img = nodes.get(key);
                 if (img == null) {
@@ -638,8 +725,11 @@ final class MapView {
                 picturesWanted.addAll(tiles.wanted());
                 if (img.image == null) img.image = new WritableImage(n, n);
                 img.image.getPixelWriter().setPixels(0, 0, n, n, PixelFormat.getIntArgbInstance(), buffer, 0, n);
+                if (img.pixels == null) img.pixels = new int[n * n];
+                System.arraycopy(buffer, 0, img.pixels, 0, n * n);
                 img.version = version;
                 dirty = true;
+                nodeColoured(nx * span, ny * span, span);
             }
         }
         return false;
@@ -650,6 +740,10 @@ final class MapView {
        ===================================================================== */
 
     private void draw() {
+        if (onGlobe()) {
+            drawGlobe();
+            return;
+        }
         MapFrame f = frame();
         GraphicsContext gc = canvas.getGraphicsContext2D();
         double w = f.width(), h = f.height();
@@ -662,6 +756,17 @@ final class MapView {
             else {
                 drawTiles(gc, f, level);
                 boats(gc, f, level);
+            }
+        }
+        // The swap (0.7.135): a notch inside the handoff the globe's picture of the plane's own nodes is laid over them, whole at
+        // the handoff and gone a notch in (GlobeFrame.crossfade()).
+        if (expanded && globe != null && tiles != null) {
+            double a = GlobeFrame.crossfade(globe.kmPx());
+            if (a > 0) {
+                composeGlobe(MODE_FADE);
+                gc.setGlobalAlpha(a);
+                drawGlobeImage(gc);
+                gc.setGlobalAlpha(1);
             }
         }
         overlays(gc, f);
@@ -1033,22 +1138,26 @@ final class MapView {
     /** The scale bar at the bottom left: the longest of 1, 2 or 5 times a power of ten metres in SCALE_BAR_PX, its length in words. */
     private void scaleBar(GraphicsContext gc, MapFrame f) {
         double[] bar = f.scaleBar(SCALE_BAR_PX);
-        double x = Palette.GAP + 2, y = f.height() - Palette.GAP - 4;
+        scaleBar(gc, f.height(), bar[1], MapFrame.scaleWords(bar[0]));
+    }
+
+    /** ...drawn: `px` long at the bottom left of a view `h` high, and its words. */
+    private static void scaleBar(GraphicsContext gc, double h, double px, String words) {
+        double x = Palette.GAP + 2, y = h - Palette.GAP - 4;
         gc.setStroke(Color.rgb(11, 17, 24, 0.8));
         gc.setLineWidth(4);
-        gc.strokeLine(x, y, x + bar[1], y);
+        gc.strokeLine(x, y, x + px, y);
         gc.setStroke(Color.rgb(255, 255, 255, 0.9));
         gc.setLineWidth(1.5);
-        gc.strokeLine(x, y, x + bar[1], y);
+        gc.strokeLine(x, y, x + px, y);
         gc.strokeLine(x, y - 4, x, y + 1);
-        gc.strokeLine(x + bar[1], y - 4, x + bar[1], y + 1);
+        gc.strokeLine(x + px, y - 4, x + px, y + 1);
         gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_LABEL));
-        String words = MapFrame.scaleWords(bar[0]);
         gc.setLineWidth(3);
         gc.setStroke(Color.rgb(11, 17, 24, 0.85));
-        gc.strokeText(words, x + bar[1] + 6, y + 4);
+        gc.strokeText(words, x + px + 6, y + 4);
         gc.setFill(Color.rgb(255, 255, 255, 0.95));
-        gc.fillText(words, x + bar[1] + 6, y + 4);
+        gc.fillText(words, x + px + 6, y + 4);
     }
 
     /** The scale bar's longest, in pixels: 120 (the mockup's). */
@@ -1073,6 +1182,523 @@ final class MapView {
             if (i < 7) img.getPixelWriter().setArgb(i + 1, 7 - i, 0x2bffffff);
         }
         return new ImagePattern(img, 0, 0, 8, 8, false);
+    }
+
+    /* =====================================================================
+       THE GLOBE (0.7.135, batch E9; docs/studies/spec-globe.md 3)
+       ===================================================================== */
+
+    /** The ground's colours on the globe: the world off the city's land dimmed, as the far nodes dim it (GlobePicture.colours()). */
+    private static final int[] DIMMED = GlobePicture.colours(true);
+
+    /** A GROUND-tier piece past the plane, in pixels a side: 128, a far node's (MapFrame.NODE_PX) - 9 to 50 ms on the worker from 0.48 to 7.3 km a pixel (E9's probe on the full file). */
+    static final int PIECE_PX = MapFrame.NODE_PX;
+
+    /** The city's ring on the globe, its radius in pixels: 6, the founding globe's site mark's arms (FoundingScreen, 6 px each way). */
+    static final double RING_PX = 6;
+
+    /** The screen is sampled every this many pixels for the part of it the plane draws (globeNodes()): 16, an eighth of a node - the part's edge found to 16 px, and padded by as much. */
+    static final int NODE_SAMPLE_PX = 16;
+
+    /** The globe drawn while it was half its resolution (the view on the move). */
+    private boolean globeHalf;
+
+    /** Whether the expanded map draws the globe: on an Earth world, wider than the handoff. */
+    private boolean onGlobe() { return expanded && globe != null && globe.tier() != GlobeFrame.PLANE; }
+
+    /** ...or lays its picture over the plane's in the crossfade's notch. */
+    private boolean globeShown() { return onGlobe() || (expanded && globe != null && GlobeFrame.crossfade(globe.kmPx()) > 0); }
+
+    /** A new city, or another world: no globe until the map is over the window on Earth again. */
+    private void resetGlobe() {
+        resetGlobePicture();
+        globe = null;
+        globeKey = null;
+        globeData = null;
+        reachFor = Long.MIN_VALUE;
+    }
+
+    /** What the globe drew from and drew: another map, or another view of the world. */
+    private void resetGlobePicture() {
+        globeImg = null;
+        globeDrawn = null;
+        globeMode = -1;
+        globeHalf = false;
+        patch = null;
+        pieceCls = null;
+        pieceView = null;
+        pieceGen++;
+        carryPx = null;
+        carryView = null;
+        globeNodesFor = null;
+    }
+
+    /** The globe made for the city's world while the map is over the window on Earth (none on a generated world), its reach found again when the land or the offers move, and the planet's picture asked for. */
+    private void globeUp(CityLand land, LandMarket market, long landKey) {
+        World.Key key = land.key();
+        if (!key.earth()) {
+            if (globe != null) resetGlobe();
+            return;
+        }
+        if (!expanded || big == null) return;
+        if (globe == null || !key.equals(globeKey)) {
+            resetGlobe();
+            globe = new GlobeFrame(big.width(), big.height(), key.lat(), key.lon());
+            globeKey = key;
+            globeData = GlobePicture.dataOf(key);
+            globe.fromPlane(big.centreX(), big.centreY(), big.scale());
+            GlobePicture.prepare(globeData, () -> Platform.runLater(() -> {
+                inputs++;
+                requestDraw();
+            }));
+        }
+        if (landKey != reachFor) {
+            reachFor = landKey;
+            globe.setReach(GlobeFrame.reachKm(land, market));
+            follow();
+        }
+    }
+
+    /** The view moved on the globe: at the plane's scales the plane's frame follows it; the view drawn again. */
+    private void follow() {
+        if (globe != null && big != null && globe.tier() == GlobeFrame.PLANE) big.set(globe.planeX(), globe.planeY(), globe.planeScale());
+        requestDraw();
+    }
+
+    /** The far nodes the globe reprojects for a view - {plots a pixel, nx0, nx1, ny0, ny1} - over the part of it the plane draws; null where it draws none. Kept for the view. */
+    private long[] globeNodes(GlobeFrame v) {
+        if (globeNodesFor != null && globeNodesFor.sameView(v)) return globeNodesAt;
+        globeNodesFor = v.copy(v.width(), v.height(), v.kmPx());
+        long plots = MapFrame.nodePlotsAt(v.planeScale());
+        double span = MapFrame.NODE_PX * (double) plots, x0 = Double.MAX_VALUE, y0 = Double.MAX_VALUE, x1 = -Double.MAX_VALUE, y1 = -Double.MAX_VALUE;
+        double[] xy = new double[2];
+        double w = v.width(), h = v.height();
+        for (double sy = 0.5; sy < h + NODE_SAMPLE_PX; sy += NODE_SAMPLE_PX) {
+            for (double sx = 0.5; sx < w + NODE_SAMPLE_PX; sx += NODE_SAMPLE_PX) {
+                double px = Math.min(sx, w - 0.5), py = Math.min(sy, h - 0.5);
+                if (!v.drawsHold(px, py) || !v.planeAt(px, py, xy)) continue;
+                x0 = Math.min(x0, xy[0]);
+                y0 = Math.min(y0, xy[1]);
+                x1 = Math.max(x1, xy[0]);
+                y1 = Math.max(y1, xy[1]);
+            }
+        }
+        if (x0 > x1) return globeNodesAt = null;
+        double pad = NODE_SAMPLE_PX / v.planeScale();
+        long most = (World.SIDE - 1) / (long) span;
+        globeNodesAt = new long[] { plots,
+                Math.max(0, (long) Math.floor((x0 - pad) / span)), Math.min(most, (long) Math.floor((x1 + pad) / span)),
+                Math.max(0, (long) Math.floor((y0 - pad) / span)), Math.min(most, (long) Math.floor((y1 + pad) / span)) };
+        return globeNodesAt;
+    }
+
+    private GlobeFrame globeNodesFor;
+    private long[] globeNodesAt;
+
+    /** A frame's work on the globe: in the GROUND tier the plane's far nodes near the city, their ground asked of WORKER and coloured here until the deadline, and the district pictures they lack. True while there is more. */
+    private boolean paintGlobe(long deadline) {
+        if (globe.tier() != GlobeFrame.GROUND || shownMap == null) return false;
+        long[] r = globeNodes(globe);
+        if (r == null) return false;
+        nodes.most = Math.max(nodes.most, (r[2] - r[1] + 1) * (r[4] - r[3] + 1));
+        MapFrame pf = new MapFrame(globe.width(), globe.height());
+        pf.set(globe.planeX(), globe.planeY(), globe.planeScale());
+        picturesWanted.clear();
+        try {
+            return paintNodes(r[0], r[1], r[2], r[3], r[4], deadline, shownMap.picturesKept());
+        } finally {
+            askPictures(pf);
+        }
+    }
+
+    /** A far node coloured (the plane's or the globe's): where the globe's still picture shows it, laid over again next frame. */
+    private void nodeColoured(long x0, long y0, long span) {
+        if (globe == null || !expanded || globeDrawn == null || globeHalf) return;
+        double[] box = null;
+        for (int k = 0; k < 9; k++) {
+            double[] p = globe.screenOfPlot(x0 + (k % 3) * span / 2.0, y0 + (k / 3) * span / 2.0);
+            if (p == null) {
+                box = new double[] { 0, 0, globe.width(), globe.height() };
+                break;
+            }
+            box = box == null ? new double[] { p[0], p[1], p[0], p[1] }
+                    : new double[] { Math.min(box[0], p[0]), Math.min(box[1], p[1]), Math.max(box[2], p[0]), Math.max(box[3], p[1]) };
+        }
+        addPatch(box[0] - 2, box[1] - 2, box[2] + 2, box[3] + 2);
+    }
+
+    /** The still picture's box to be drawn again, grown to take in another. */
+    private void addPatch(double x0, double y0, double x1, double y1) {
+        x0 = Math.max(0, Math.floor(x0));
+        y0 = Math.max(0, Math.floor(y0));
+        x1 = Math.min(globe.width(), Math.ceil(x1));
+        y1 = Math.min(globe.height(), Math.ceil(y1));
+        if (x1 <= x0 || y1 <= y0) return;
+        patch = patch == null ? new double[] { x0, y0, x1, y1 }
+                : new double[] { Math.min(patch[0], x0), Math.min(patch[1], y0), Math.max(patch[2], x1), Math.max(patch[3], y1) };
+    }
+
+    /**
+     * The globe's picture of the view, drawn again when the view, the way it
+     * is drawn or what it is drawn from moved: at half resolution while the
+     * view moves (its frame a copy of half the size at twice the km a
+     * pixel), at its own once it holds still - in the GROUND tier then the
+     * pieces past the plane asked for, and the last whole picture kept to
+     * carry. A piece or a node come in is laid over the still picture alone.
+     */
+    private void composeGlobe(int mode) {
+        GlobeFrame v = globe;
+        int w = (int) v.width(), h = (int) v.height();
+        boolean moved = globeDrawn == null || globeMode != mode || !globeDrawn.sameView(v);
+        if (moved) {
+            if (globeDrawn != null && globeMode == MODE_GROUND && !globeHalf && globeImg != null) {
+                carryPx = globePx.clone();
+                carryView = globeDrawn;
+            }
+            globeDrawn = v.copy(w, h, v.kmPx());
+            globeMode = mode;
+            globeHalf = true;
+            patch = null;
+            globeInputs = inputs;
+            int hw = (w + 1) / 2, hh = (h + 1) / 2;
+            drawGlobePart(v.copy(hw, hh, v.kmPx() * 2), mode, 0, hw, 0, hh);
+            return;
+        }
+        if (globeHalf || globeInputs != inputs) {
+            globeHalf = false;
+            patch = null;
+            globeInputs = inputs;
+            drawGlobePart(globeDrawn, mode, 0, w, 0, h);
+            if (mode == MODE_GROUND) askPieces(globeDrawn);
+            return;
+        }
+        if (patch != null) {
+            double[] b = patch;
+            patch = null;
+            drawGlobePart(globeDrawn, mode, (int) b[0], (int) b[2], (int) b[1], (int) b[3]);
+        }
+    }
+
+    /** The picture of frame t (the view, or its half) over its pixels [i0, i1) x [j0, j1), in bands on the frames' pool, into the image. */
+    private void drawGlobePart(GlobeFrame t, int mode, int i0, int i1, int j0, int j1) {
+        int w = (int) t.width(), h = (int) t.height();
+        boolean whole = i0 == 0 && j0 == 0 && i1 == w && j1 == h;
+        if (globePx.length != w * h) globePx = new int[w * h];
+        if (globeImg == null || (int) globeImg.getWidth() != w || (int) globeImg.getHeight() != h) {
+            globeImg = new WritableImage(w, h);
+            if (!whole) {
+                i0 = 0; j0 = 0; i1 = w; j1 = h;
+            }
+        }
+        final int[] px = globePx;
+        GlobePicture pic = globeData == null ? null : GlobePicture.best(globeData);
+        if (mode == MODE_PICTURE) {
+            if (pic == null) java.util.Arrays.fill(px, GlobePicture.SPACE);
+            else pic.frame(t, DIMMED, GlobePicture.SPACE, px, GlobePicture.cores());
+            i0 = 0; j0 = 0; i1 = w; j1 = h;
+        } else {
+            long[] r = globeNodes(globe);
+            long plots = MapFrame.nodePlotsAt(globe.planeScale());
+            Map<Long, int[]> snap = new HashMap<>();
+            if (r != null) {
+                for (long ny = r[3]; ny <= r[4]; ny++) {
+                    for (long nx = r[1]; nx <= r[2]; nx++) {
+                        Img img = nodes.get(nodeKey(plots, nx, ny));
+                        if (img != null && img.pixels != null) snap.put(nodeKey(plots, nx, ny), img.pixels);
+                    }
+                }
+            }
+            GlobeFrame.NodePixels np = (nx, ny) -> snap.get(nodeKey(plots, nx, ny));
+            GlobeFrame.Beyond beyond = mode == MODE_FADE ? (i, j, vx, vy, vz) -> 0 : beyond(t, pic);
+            final int a0 = i0, a1 = i1, b0 = j0;
+            GlobePicture.bands(j1 - j0, GlobePicture.cores(), (k0, k1) -> t.ground(plots, np, beyond, GlobePicture.SPACE, px, w, a0, a1, b0 + k0, b0 + k1));
+        }
+        globeImg.getPixelWriter().setPixels(i0, j0, i1 - i0, j1 - j0, PixelFormat.getIntArgbInstance(), px, j0 * w + i0, w);
+    }
+
+    /** Past the plane, in the GROUND tier: the piece drawn for this view where it is in, else the last whole picture carried, else the planet's picture; space where there is none yet. */
+    private GlobeFrame.Beyond beyond(GlobeFrame t, GlobePicture pic) {
+        final int w = (int) t.width();
+        final byte[] pcs = pieceView != null && pieceView.sameView(t) ? pieceCls : null;
+        final int[] cpx = carryPx;
+        final GlobeFrame.Carry carry = cpx != null && carryView != null ? t.carryFrom(carryView) : null;
+        return (i, j, vx, vy, vz) -> {
+            if (pcs != null) {
+                byte c = pcs[j * w + i];
+                if (c >= 0) return DIMMED[c];
+            }
+            if (carry != null) {
+                int k = carry.pixel(vx, vy, vz);
+                if (k >= 0 && cpx[k] != 0) return cpx[k];
+            }
+            if (pic == null) return GlobePicture.SPACE;
+            return DIMMED[pic.at(GlobeFrame.latOf(vx, vy, vz), t.lonOf(vx, vy))];
+        };
+    }
+
+    /** The globe's picture on the canvas: at its own size, or doubled while it was drawn at half (no smoothing - the far nodes' way). */
+    private void drawGlobeImage(GraphicsContext gc) {
+        if (globeImg == null) return;
+        gc.setImageSmoothing(false);
+        double f = globeHalf ? 2 : 1;
+        gc.drawImage(globeImg, 0, 0, globeImg.getWidth() * f, globeImg.getHeight() * f);
+        gc.setImageSmoothing(true);
+    }
+
+    /**
+     * The GROUND tier's pieces past the plane for a view come to rest: the
+     * far rule through the camera (GlobeFrame.groundPiece()) a PIECE_PX
+     * square at a time on WORKER, from the middle out, each one with some
+     * of its pixels on the planet and past where the plane draws - and only
+     * while the view is still that one.
+     */
+    private void askPieces(GlobeFrame view) {
+        if (pieceView != null && pieceView.sameView(view)) return;
+        int w = (int) view.width(), h = (int) view.height();
+        final GlobeFrame pv = view.copy(w, h, view.kmPx());
+        pieceView = pv;
+        pieceCls = new byte[w * h];
+        java.util.Arrays.fill(pieceCls, (byte) -1);
+        final int gen = ++pieceGen;
+        final World.Key key = globeKey;
+        List<int[]> asked = new ArrayList<>();
+        for (int y0 = 0; y0 < h; y0 += PIECE_PX) {
+            for (int x0 = 0; x0 < w; x0 += PIECE_PX) {
+                int pw = Math.min(PIECE_PX, w - x0), ph = Math.min(PIECE_PX, h - y0);
+                boolean plane = true, planet = false;
+                for (int k = 0; k < 9; k++) {
+                    double sx = x0 + 0.5 + (k % 3) * (pw - 1) / 2.0, sy = y0 + 0.5 + (k / 3) * (ph - 1) / 2.0;
+                    plane &= pv.drawsHold(sx, sy);
+                    planet |= pv.onPlanet(sx, sy);
+                }
+                if (planet && !plane) asked.add(new int[] { x0, y0, pw, ph });
+            }
+        }
+        double cx = w / 2.0, cy = h / 2.0;
+        asked.sort((a, b) -> Double.compare(Math.hypot(a[0] + a[2] / 2.0 - cx, a[1] + a[3] / 2.0 - cy),
+                Math.hypot(b[0] + b[2] / 2.0 - cx, b[1] + b[3] / 2.0 - cy)));
+        for (int[] q : asked) {
+            WORKER.submit(() -> {
+                if (gen != pieceGen) return;
+                byte[] b;
+                try {
+                    b = pv.groundPiece(key, q[0], q[1], q[2], q[3]);
+                } catch (RuntimeException e) {
+                    System.out.println("The globe's ground could not be drawn: " + e);
+                    return;
+                }
+                Platform.runLater(() -> pieceIn(gen, q, b));
+            });
+        }
+    }
+
+    /** A piece back from WORKER: kept while its view is the one shown, and laid over the still picture. */
+    private void pieceIn(int gen, int[] q, byte[] b) {
+        if (gen != pieceGen || pieceCls == null || globe == null) return;
+        int w = (int) pieceView.width();
+        for (int r = 0; r < q[3]; r++) System.arraycopy(b, r * q[2], pieceCls, (q[1] + r) * w + q[0], q[2]);
+        if (globeDrawn != null && !globeHalf && globeDrawn.sameView(pieceView)) addPatch(q[0], q[1], q[0] + q[2], q[1] + q[3]);
+        requestDraw();
+    }
+
+    /** The globe on the canvas: its picture, then over it the city - its offers and centre where the plane draws in the GROUND tier, its edge through the camera in the PICTURE tier once it is EDGE_FROM_PX across, its ring - and the scale bar. */
+    private void drawGlobe() {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        double w = globe.width(), h = globe.height();
+        gc.setFill(colour(TileRaster.VOID));
+        gc.fillRect(0, 0, w, h);
+        boatsLive = false;
+        int tier = globe.tier();
+        composeGlobe(tier == GlobeFrame.PICTURE ? MODE_PICTURE : MODE_GROUND);
+        drawGlobeImage(gc);
+        Game g = ui.game;
+        CityLand land = g.getCityLand();
+        LandMarket market = g.getLandManager().getMarket();
+        shapes(land, market);
+        if (tier == GlobeFrame.GROUND) globeOffers(gc, land, market);
+        else globeEdge(gc, land);
+        ring(gc, land);
+        if (globeData != null && GlobePicture.best(globeData) == null) {
+            gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
+            gc.setFill(Color.web(Palette.TEXT_MUTED));
+            gc.fillText(DRAWING_EARTH, Palette.GAP + 2, Palette.GAP + 14);
+        }
+        globeScaleBar(gc);
+    }
+
+    /** The note while the planet's picture is made, the first time an Earth map is expanded. */
+    static final String DRAWING_EARTH = "Drawing the Earth…";
+
+    /** A shape of plots through the camera: its corners on the screen, or null where one is not seen. */
+    private double[][] onGlobe(double[] xs, double[] ys) {
+        double[][] out = new double[2][xs.length];
+        for (int k = 0; k < xs.length; k++) {
+            double[] p = globe.screenOfPlot(xs[k], ys[k]);
+            if (p == null) return null;
+            out[0][k] = p[0];
+            out[1][k] = p[1];
+        }
+        return out;
+    }
+
+    /** The offers and the centre's box through the camera, where the plane draws (spec-globe 3.7): as the plane draws them at its far level - hatched, edged in pink, the office's side bright, the one lit or picked, numbered where the box holds a number. */
+    private void globeOffers(GraphicsContext gc, CityLand land, LandMarket market) {
+        ImagePattern pattern = new ImagePattern(hatch.getImage(), 0, 0, 8, 8, false);
+        gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
+        for (LandParcel p : market.getListing()) {
+            double[][] q = onGlobe(new double[] { p.getX0(), p.getX1(), p.getX1(), p.getX0() }, new double[] { p.getY0(), p.getY0(), p.getY1(), p.getY1() });
+            if (q == null) continue;
+            double bx0 = Math.min(Math.min(q[0][0], q[0][1]), Math.min(q[0][2], q[0][3])), bx1 = Math.max(Math.max(q[0][0], q[0][1]), Math.max(q[0][2], q[0][3]));
+            double by0 = Math.min(Math.min(q[1][0], q[1][1]), Math.min(q[1][2], q[1][3])), by1 = Math.max(Math.max(q[1][0], q[1][1]), Math.max(q[1][2], q[1][3]));
+            if (bx1 < 0 || by1 < 0 || bx0 > globe.width() || by0 > globe.height()) continue;
+            boolean mine = p.getSide() == side;
+            boolean lit = (p.getSide() == overSide && p.getPlace() == overPlace) || (p.getSide() == litSide && p.getPlace() == litPlace);
+            boolean picked = p.getSide() == side && p.getPlace() == place;
+            gc.setFill(Color.rgb(12, 18, 26, 0.24));
+            gc.fillPolygon(q[0], q[1], 4);
+            gc.setFill(pattern);
+            gc.fillPolygon(q[0], q[1], 4);
+            if (lit || picked) {
+                gc.setFill(Color.web(Palette.BUILDING, lit ? 0.34 : 0.22));
+                gc.fillPolygon(q[0], q[1], 4);
+            }
+            gc.setStroke(Color.web(OFFER_EDGE, mine || lit ? 0.95 : 0.4));
+            gc.setLineWidth(picked ? 2 : 1);
+            if (picked) gc.setLineDashes((double[]) null);
+            else gc.setLineDashes(5, 4);
+            gc.strokePolygon(q[0], q[1], 4);
+            gc.setLineDashes((double[]) null);
+            if (bx1 - bx0 >= MapFrame.PLACE_LABEL_FROM && by1 - by0 >= MapFrame.PLACE_LABEL_FROM) {
+                String words = LandMap.placeLabel(p);
+                double x = Math.rint((bx0 + bx1) / 2), y = Math.rint((by0 + by1) / 2);
+                gc.setTextAlign(TextAlignment.CENTER);
+                gc.setTextBaseline(VPos.CENTER);
+                gc.setLineWidth(3);
+                gc.setStroke(Color.rgb(11, 17, 24, 0.85));
+                gc.strokeText(words, x, y);
+                gc.setFill(Color.rgb(255, 255, 255, p.getSide() == side ? 0.95 : 0.6));
+                gc.fillText(words, x, y);
+                gc.setTextAlign(TextAlignment.LEFT);
+                gc.setTextBaseline(VPos.BASELINE);
+            }
+        }
+        double[] c = LandMap.centre(land);
+        double[][] q = onGlobe(new double[] { c[0], c[2], c[2], c[0] }, new double[] { c[1], c[1], c[3], c[3] });
+        if (q != null) {
+            gc.setStroke(Color.rgb(255, 255, 255, 0.3));
+            gc.setLineWidth(1);
+            gc.setLineDashes(3, 4);
+            gc.strokePolygon(q[0], q[1], 4);
+            gc.setLineDashes((double[]) null);
+        }
+    }
+
+    /** The city's edge through the camera in the PICTURE tier (spec-globe 3.7), once the city's ground is EDGE_FROM_PX across on the screen: each run of LandMap.outline() a line, white at the edge's alpha. */
+    private void globeEdge(GraphicsContext gc, CityLand land) {
+        LandGrid grid = land.grid();
+        if (grid.ownedPlots() == 0 || edge[0].length == 0) return;
+        double[] a = globe.screenOfPlot(grid.minX(), grid.minY()), b = globe.screenOfPlot(grid.maxX(), grid.maxY());
+        if (a == null || b == null || Math.hypot(b[0] - a[0], b[1] - a[1]) < GlobeFrame.EDGE_FROM_PX) return;
+        gc.setStroke(Color.rgb(255, 255, 255, EDGE_ALPHA));
+        gc.setLineWidth(1);
+        for (int i = 0; i < edge[0].length; i++) {
+            double[] p = globe.screenOfPlot(edge[0][i], edge[1][i]), q = globe.screenOfPlot(edge[2][i], edge[3][i]);
+            if (p != null && q != null) gc.strokeLine(p[0], p[1], q[0], q[1]);
+        }
+    }
+
+    /** The city's ring at its centre, at every scale on the globe (spec-globe 3.7): RING_PX round, the founding globe's light blue on a dark halo. */
+    private void ring(GraphicsContext gc, CityLand land) {
+        double[] c = LandMap.centre(land);
+        double[] p = globe.screenOfPlot((c[0] + c[2]) / 2, (c[1] + c[3]) / 2);
+        if (p == null) return;
+        gc.setStroke(Color.rgb(11, 17, 24, 0.85));
+        gc.setLineWidth(3.5);
+        gc.strokeOval(p[0] - RING_PX, p[1] - RING_PX, 2 * RING_PX, 2 * RING_PX);
+        gc.setStroke(colour(LandMap.RING));
+        gc.setLineWidth(1.5);
+        gc.strokeOval(p[0] - RING_PX, p[1] - RING_PX, 2 * RING_PX, 2 * RING_PX);
+    }
+
+    /** The scale bar on the globe: GlobeFrame.scaleBar() at the view's centre, its words saying so. */
+    private void globeScaleBar(GraphicsContext gc) {
+        double[] bar = globe.scaleBar(SCALE_BAR_PX);
+        scaleBar(gc, globe.height(), bar[1], GlobeFrame.scaleWords(bar[0]));
+    }
+
+    /** The hover on the globe (spec-globe 3.7): the offer the plane lights there, and the card - LandMap.globeHoverWords(), the ground drawn there where the plane does not draw it. */
+    private void globeHover(double sx, double sy) {
+        Game g = ui.game;
+        CityLand land = g.getCityLand();
+        LandMarket market = g.getLandManager().getMarket();
+        int os = -1, op = -1;
+        double[] xy = new double[2];
+        if (globe.planeHolds(sx, sy) && globe.plotAt(sx, sy, xy)) {
+            LandMap.Pick p = LandMap.pick(land, market, (long) Math.floor(xy[0]), (long) Math.floor(xy[1]));
+            if (p.owner() == LandMap.OFFER) {
+                os = p.side();
+                op = p.place();
+            }
+        }
+        if (os != overSide || op != overPlace) {
+            overSide = os;
+            overPlace = op;
+            dirty = true;
+        }
+        showCard(LandMap.globeHoverWords(globe, land, market, sx, sy, drawnAt(sx, sy), CARD_FIELDS), sx, sy, globe.width(), globe.height());
+    }
+
+    /** The ground drawn at a screen point on the globe, past the plane: the GROUND tier's piece where one is in, else the planet's picture's texel. */
+    private byte drawnAt(double sx, double sy) {
+        int i = (int) sx, j = (int) sy, w = (int) globe.width(), h = (int) globe.height();
+        if (pieceCls != null && pieceView != null && pieceView.sameView(globe) && i >= 0 && j >= 0 && i < w && j < h) {
+            byte c = pieceCls[j * w + i];
+            if (c >= 0) return c;
+        }
+        GlobePicture pic = globeData == null ? null : GlobePicture.best(globeData);
+        double[] ll = globe.latLonAt(sx, sy);
+        return pic != null && ll != null ? pic.at(ll[0], ll[1]) : World.SALT;
+    }
+
+    /* ----- the keys (0.7.135; spec-globe 3.11) ----- */
+
+    /** A frame of the keys held: the expanded map panned by their velocity over the time since the last frame (MapFrame.keyPan(), GlobeFrame.keyPan()); all let go when the window loses the focus, whose key-ups it would not hear. True while one is held. */
+    private boolean keys() {
+        if (!expanded || big == null || !(keyW || keyA || keyS || keyD)) {
+            keyNanos = 0;
+            return false;
+        }
+        javafx.stage.Window win = canvas.getScene() == null ? null : canvas.getScene().getWindow();
+        if (win != null && !win.isFocused()) {
+            keyW = keyA = keyS = keyD = false;
+            keyNanos = 0;
+            return false;
+        }
+        long now = System.nanoTime();
+        double dt = keyNanos == 0 ? 0 : (now - keyNanos) / 1e9;
+        keyNanos = now;
+        double[] v = MapFrame.keyVelocity(keyW, keyA, keyS, keyD);
+        if (globe != null) {
+            globe.keyPan(v, dt);
+            follow();
+        } else big.keyPan(v, dt);
+        if (card != null) card.setVisible(false);
+        dirty = true;
+        return true;
+    }
+
+    /** W, A, S or D pressed (`down`) or let go while the map is over the window: from UserInterface's key filter. True when it was one of them. */
+    boolean panKey(KeyCode k, boolean down) {
+        switch (k) {
+            case W: keyW = down; break;
+            case A: keyA = down; break;
+            case S: keyS = down; break;
+            case D: keyD = down; break;
+            default: return false;
+        }
+        if (down && keyNanos == 0) keyNanos = System.nanoTime();
+        requestDraw();
+        return true;
     }
 
     /* =====================================================================
@@ -1104,7 +1730,10 @@ final class MapView {
             if (!pressed) return;
             moved = Math.max(moved, Math.hypot(e.getX() - pressX, e.getY() - pressY));
             if (expanded) {
-                big.pan(e.getX() - lastX, e.getY() - lastY);
+                if (globe != null) {
+                    globe.drag(lastX, lastY, e.getX(), e.getY());
+                    follow();
+                } else big.pan(e.getX() - lastX, e.getY() - lastY);
                 requestDraw();
             }
             lastX = e.getX();
@@ -1119,7 +1748,10 @@ final class MapView {
             if (!expanded) return;
             double notches = e.getDeltaY() / 40.0;
             if (notches == 0) return;
-            big.zoomNotches(e.getX(), e.getY(), notches);
+            if (globe != null) {
+                globe.zoomNotches(e.getX(), e.getY(), notches);
+                follow();
+            } else big.zoomNotches(e.getX(), e.getY(), notches);
             if (card != null) card.setVisible(false);
             requestDraw();
             e.consume();
@@ -1128,8 +1760,8 @@ final class MapView {
             if (!expanded) return;
             KeyCode k = e.getCode();
             double cx = big.width() / 2, cy = big.height() / 2;
-            if (k == KeyCode.PLUS || k == KeyCode.EQUALS || k == KeyCode.ADD) big.zoomNotches(cx, cy, 1);
-            else if (k == KeyCode.MINUS || k == KeyCode.SUBTRACT) big.zoomNotches(cx, cy, -1);
+            if (k == KeyCode.PLUS || k == KeyCode.EQUALS || k == KeyCode.ADD) zoomBig(cx, cy, 1);
+            else if (k == KeyCode.MINUS || k == KeyCode.SUBTRACT) zoomBig(cx, cy, -1);
             else if (k == KeyCode.DIGIT0 || k == KeyCode.NUMPAD0) fitBig();
             else return;
             requestDraw();
@@ -1137,12 +1769,26 @@ final class MapView {
         });
     }
 
-    /** A click: an offer's free ground picks it, anywhere else picks the side it lies on. */
+    /** The wheel's or + and -'s notches at a point of the expanded map: the globe's view on Earth, the plane's elsewhere. */
+    private void zoomBig(double sx, double sy, double notches) {
+        if (globe != null) {
+            globe.zoomNotches(sx, sy, notches);
+            follow();
+        } else big.zoomNotches(sx, sy, notches);
+    }
+
+    /** A click: an offer's free ground picks it, anywhere else picks the side it lies on - on the globe only where the city's plane is drawn (0.7.135). */
     private void click(double sx, double sy) {
         MapFrame f = frame();
         Game g = ui.game;
-        LandMap.Pick p = LandMap.pick(g.getCityLand(), g.getLandManager().getMarket(),
-                (long) Math.floor(f.plotX(sx)), (long) Math.floor(f.plotY(sy)));
+        long px = (long) Math.floor(f.plotX(sx)), py = (long) Math.floor(f.plotY(sy));
+        if (onGlobe()) {
+            double[] xy = new double[2];
+            if (!globe.planeHolds(sx, sy) || !globe.plotAt(sx, sy, xy)) return;
+            px = (long) Math.floor(xy[0]);
+            py = (long) Math.floor(xy[1]);
+        }
+        LandMap.Pick p = LandMap.pick(g.getCityLand(), g.getLandManager().getMarket(), px, py);
         side = p.side();
         place = p.owner() == LandMap.OFFER ? p.place() : -1;
         if (expanded) picked();
@@ -1152,6 +1798,10 @@ final class MapView {
 
     /** What the pointer is over: the offer it lights, and the words - one line on the small map, a card on the expanded one. */
     private void hover(double sx, double sy) {
+        if (onGlobe()) {
+            globeHover(sx, sy);
+            return;
+        }
         MapFrame f = frame();
         Game g = ui.game;
         CityLand land = g.getCityLand();
@@ -1178,14 +1828,20 @@ final class MapView {
             showIf(readout, true);
             return;
         }
+        // The model's card (since 0.7.135 LandMap.hoverWords() itself, as the globe's is): the ground, whose, on Earth (0.7.119)
+        // where it is by the nearest place and its geology, the fields - with at L0 the building or road first.
         List<String> lines = new ArrayList<>();
-        lines.add(what != null ? what : LandMap.groundWords(p.ground()));
-        if (what != null) lines.add(LandMap.groundWords(p.ground()));
-        lines.add(LandMap.ownerWords(land, p));
-        // On Earth (0.7.119): where it is, by the nearest place, and its geology.
-        lines.addAll(LandMap.earthWords(land, x, y));
-        List<LandMap.FieldAt> under = LandMap.fieldsAt(land, x, y);
-        for (int i = 0; i < under.size() && i < CARD_FIELDS; i++) lines.add(LandMap.fieldWords(under.get(i), land, market));
+        if (what != null) lines.add(what);
+        lines.addAll(LandMap.hoverWords(land, market, x, y, CARD_FIELDS));
+        showCard(lines, sx, sy, f.width(), f.height());
+    }
+
+    /** The expanded map's hover card: its lines, the first bold, by the pointer and inside the view. */
+    private void showCard(List<String> lines, double sx, double sy, double vw, double vh) {
+        if (lines.isEmpty()) {
+            card.setVisible(false);
+            return;
+        }
         card.getChildren().clear();
         for (int i = 0; i < lines.size(); i++) {
             Label l = new Label(lines.get(i));
@@ -1196,15 +1852,15 @@ final class MapView {
         card.autosize();
         double cw = card.prefWidth(-1), ch = card.prefHeight(-1);
         double left = sx + 14, top = sy + 14;
-        if (left + cw > f.width() - 10) left = Math.max(10, sx - cw - 14);
-        if (top + ch > f.height() - 10) top = Math.max(10, f.height() - ch - 10);
+        if (left + cw > vw - 10) left = Math.max(10, sx - cw - 14);
+        if (top + ch > vh - 10) top = Math.max(10, vh - ch - 10);
         card.setTranslateX(left);
         card.setTranslateY(top);
         card.setVisible(true);
     }
 
-    /** The most fields a hover card lists: 3. */
-    static final int CARD_FIELDS = 3;
+    /** The most fields a hover card lists: 3 (LandMap.CARD_FIELDS since 0.7.135). */
+    static final int CARD_FIELDS = LandMap.CARD_FIELDS;
 
     /** A model building's name, by its type id: the catalogue's. */
     private String nameOf(int id) {
@@ -1226,8 +1882,9 @@ final class MapView {
         clockLine.setText(ui.clockWords());
         picked();
         ui.showChartFullScreen(bigPane, clockLine, this::collapse);
+        ui.panKeysTo(this);
         fitPane();
-        fitBig();
+        openBig();
         canvas.requestFocus();
     }
 
@@ -1241,6 +1898,10 @@ final class MapView {
         expand();
         if (big != null && box != null) {
             MiniMapFrame.open(big, box);
+            if (globe != null) {
+                globe.fromPlane(big.centreX(), big.centreY(), big.scale());
+                follow();
+            }
             requestDraw();
         }
     }
@@ -1249,6 +1910,9 @@ final class MapView {
     void collapse(boolean redraw) {
         if (!expanded) return;
         expanded = false;
+        ui.panKeysTo(null);
+        keyW = keyA = keyS = keyD = false;
+        keyNanos = 0;
         ui.closeChartFullScreen();
         if (card != null) card.setVisible(false);
         bigBox.getChildren().remove(canvas);
@@ -1323,46 +1987,46 @@ final class MapView {
         bigBox.setMaxSize(w, h);
         if (big == null) big = new MapFrame(w, h);
         else big.resize(w, h);
+        if (globe != null) {
+            globe.resize(w, h);
+            follow();
+        }
         requestDraw();
     }
 
-    /** The expanded map on the city, as the small map opens. */
-    private void fitBig() {
+    /** The expanded map on the city, as the small map opens - on Earth too (spec-globe 3.7), the globe's view on the plane's. */
+    private void openBig() {
         if (big == null) return;
         LandMap.open(big, ui.game.getCityLand(), ui.game.getLandManager().getMarket());
+        globeUp(ui.game.getCityLand(), ui.game.getLandManager().getMarket(), fittedFor);
+        if (globe != null) {
+            globe.fromPlane(big.centreX(), big.centreY(), big.scale());
+            follow();
+        }
         requestDraw();
     }
 
-    /** The legend's entries: the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, (0.7.97) the nine of the shore and the sea, (0.7.127) ice and the desert, the land, the six resources in fields. */
-    static List<String[]> legendEntries() {
-        List<String[]> out = new ArrayList<>();
-        for (int c = 0; c < BuildingVisual.CLASSES; c++) {
-            out.add(new String[] { css(BuildingVisual.FILL[c]), BuildingVisual.CLASS_NAMES[c] });
-            if (c == BuildingVisual.HOME) out.add(new String[] { css(BuildingVisual.FLATS_FILL), "Flats" });
+    /** Fit (0): on Earth the whole planet, facing the city, north up (spec-globe 3.7); on a generated world the city, as it opens. */
+    private void fitBig() {
+        if (big == null) return;
+        if (globe == null) {
+            openBig();
+            return;
         }
-        out.add(new String[] { css(TileRaster.ROAD[BuildingVisual.GRAVEL]), "Gravel road" });
-        out.add(new String[] { css(TileRaster.ROAD[BuildingVisual.PAVED]), "Paved road" });
-        out.add(new String[] { css(TileRaster.TRACK_DASH), TRACK_ENTRY });
-        out.add(new String[] { css(TileRaster.ROAD[BuildingVisual.HIGHWAY]), "Highway" });
-        out.add(new String[] { css(TileRaster.RAIL_LINE), "Railway" });
-        // At sea and on the shore (0.7.97).
-        out.add(new String[] { css(BuildingVisual.CAMPUS_FILL), "Refinery" });
-        out.add(new String[] { css(BuildingVisual.TERMINAL_FILL), "Sea terminal" });
-        out.add(new String[] { css(TileRaster.QUAY_DECK), "Quay" });
-        out.add(new String[] { css(BuildingVisual.TANKS_FILL), "Tank farm" });
-        out.add(new String[] { css(TileRaster.OIL_TAN), "Platform, pipeline" });
-        out.add(new String[] { css(ShipShapes.IMPORT), "Ship in, full" });
-        out.add(new String[] { css(ShipShapes.EXPORT), "Ship out, full" });
-        out.add(new String[] { css(ShipShapes.EMPTY), "Ship, empty leg" });
-        out.add(new String[] { css(ShipShapes.BOXES), "Box ship, both ways" });
-        // The two kinds of ground the real Earth has and the map's colours alone would not name (0.7.127; spec-globe 3.9).
-        out.add(new String[] { css(TileRaster.GROUND[World.ICE]), LandMap.groundWords(World.ICE) });
-        out.add(new String[] { css(TileRaster.GROUND[World.DESERT]), LandMap.groundWords(World.DESERT) });
-        out.add(new String[] { "#ffffff", "The city's edge" });
-        out.add(new String[] { OFFER_EDGE, "On offer" });
-        for (Resource r : Resource.values()) if (r.inFields()) out.add(new String[] { css(0xff000000 | r.colour()), r.label() });
+        globe.fit();
+        follow();
+        requestDraw();
+    }
+
+    /** The legend's entries in a tier (since 0.7.135 the model's, LandMap.legend(): on the globe the kinds of ground, the city's ring and edge, in the GROUND tier its offers; on the plane the plane's), as CSS colours and words. */
+    static List<String[]> legendEntries(int tier) {
+        List<String[]> out = new ArrayList<>();
+        for (LandMap.Entry e : LandMap.legend(tier)) out.add(new String[] { css(e.colour()), e.words() });
         return out;
     }
+
+    /** ...the plane's, at every scale on a generated world. */
+    static List<String[]> legendEntries() { return legendEntries(GlobeFrame.PLANE); }
 
     /** Rows a column of the legend holds: 12, its 35 entries in three columns (since 0.7.127 ice and the desert, 33 before; since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
     static final int LEGEND_ROWS = 12;
@@ -1370,8 +2034,8 @@ final class MapView {
     /** The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). */
     static final String SHIP_SIZE_WORDS = "Ships are drawn 1.6\u00d7 their size until 6 px a plot";
 
-    /** The legend's tracks (0.7.88; spec 5): a street the city has bought no road for. */
-    static final String TRACK_ENTRY = "Track";
+    /** The legend's tracks (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. */
+    static final String TRACK_ENTRY = LandMap.TRACK_ENTRY;
 
     /** The legend's note under its entries, when the city has buildings its plans hold none of (R7; spec 5): how many are packed without a street. */
     static String packedWords(int packed) {
@@ -1392,31 +2056,48 @@ final class MapView {
     static final double LEGEND_NOTE_WIDTH = 300;
 
     private final Label legendNote = new Label();
+    private final GridPane legendGrid = new GridPane();
+    private final Label shipsLine = new Label(SHIP_SIZE_WORDS);
 
     private VBox legend() {
-        GridPane grid = new GridPane();
-        grid.setHgap(Palette.GAP_LOOSE);
-        grid.setVgap(2);
-        List<String[]> entries = legendEntries();
-        for (int i = 0; i < entries.size(); i++) {
-            grid.add(keySwatch(entries.get(i)[0], entries.get(i)[1]), i / LEGEND_ROWS, i % LEGEND_ROWS);
-        }
+        legendGrid.setHgap(Palette.GAP_LOOSE);
+        legendGrid.setVgap(2);
+        legendTier = Integer.MIN_VALUE;
+        legendFor(GlobeFrame.PLANE);
         legendNote.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         legendNote.setWrapText(true);
         legendNote.setMaxWidth(LEGEND_NOTE_WIDTH);
         showIf(legendNote, false);
-        Label ships = new Label(SHIP_SIZE_WORDS);
-        ships.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        VBox box = new VBox(6, grid, ships, legendNote);
+        shipsLine.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        VBox box = new VBox(6, legendGrid, shipsLine, legendNote);
         box.setStyle("-fx-background-color: #0b1118d9; -fx-background-radius: 6; -fx-padding: 8 10 8 10;");
         box.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         box.setMouseTransparent(true);
         return box;
     }
 
-    /** The legend's note, from the map's packing at the city's edge once it is drawn (never planned here): what the city has no room for. */
+    /** The legend laid out for a tier (0.7.135, spec-globe 3.7): its entries (legendEntries()), and the ships' line on the plane alone. */
+    private void legendFor(int tier) {
+        if (tier == legendTier) return;
+        legendTier = tier;
+        legendGrid.getChildren().clear();
+        List<String[]> entries = legendEntries(tier);
+        for (int i = 0; i < entries.size(); i++) {
+            legendGrid.add(keySwatch(entries.get(i)[0], entries.get(i)[1]), i / LEGEND_ROWS, i % LEGEND_ROWS);
+        }
+        showIf(shipsLine, tier == GlobeFrame.PLANE);
+    }
+
+    /** The tier the expanded map shows: the globe's on Earth, the plane at every scale on a generated world. */
+    private int shownTier() { return globe != null ? globe.tier() : GlobeFrame.PLANE; }
+
+    /** The legend's note, from the map's packing at the city's edge once it is drawn (never planned here): what the city has no room for - on the plane. */
     private void legendNote() {
         if (shownMap == null) return;
+        if (shownTier() != GlobeFrame.PLANE) {
+            showIf(legendNote, false);
+            return;
+        }
         long[] f = shownMap.legendFiguresIfDrawn();
         String words = null;
         if (f != null && f[0] > 0) words = packedWords((int) f[0]);

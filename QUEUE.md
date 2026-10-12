@@ -21,7 +21,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| E9 | The globe on screen, and W, A, S and D pan (running) | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |
 | FX1 | Three small faults copper found: stock written off in food, materials and luxuries; shares raised before the credit test; the playtest's bank trace on short keys (running) | [FX1](docs/queue/FX1.md) |
 | I9 | Forestry, with the 100-ha woodlot | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I10 | Wood products | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
