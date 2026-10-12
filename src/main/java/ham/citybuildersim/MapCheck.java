@@ -187,11 +187,11 @@ import java.util.Map;
  *      MiniMapFrame: on a new city as founded, the played city, Jerus's city
  *      x 1 and x 10,000, and the played city's ground with a block bought
  *      FAR_DISTRICTS out - the stamp frames the ground owned in the districts
- *      with buildings, found again here from the grid's leaves, and MARGIN
- *      round it, and leaves out owned ground with nothing built on it (x 1's
- *      empty districts; the far block, a month on, frames as before it); a
- *      city of one district frames its own ground, smaller than its
- *      district, and every city at the least whole stride that holds the
+ *      with buildings, found again here from the grid's leaves, with the
+ *      city's centre and MARGIN round it, and leaves out owned ground with
+ *      nothing built on it (the far block, a month on, frames as before it);
+ *      a city of one district frames its founding ground whole, smaller than
+ *      its district, and every city at the least whole stride that holds the
  *      frame, at least half the stamp but for the margin; the stamp drawn
  *      with no plan drawn and no picture kept, asking for the pictures it
  *      would sample, then sampling them pixel for pixel; at x 10,000's stride
@@ -4062,6 +4062,9 @@ public class MapCheck {
     /** How far out the played city's far block is bought: 4 districts past its built-up ground's east edge (31 km) - districts of its own, nothing built in them. */
     static final int FAR_DISTRICTS = 4;
 
+    /** Rounds the stamp is drawn before it is timed, and rounds timed, the least its time: 20 and 10 - it is drawn every month of play, so its steady state is what is timed, the JIT's compiling done (about 5 ms a round; section 11's WARM_ROUNDS left a far node half compiled, 3.9 to 5.6 ms on x 10,000 from run to run). */
+    static final int STAMP_WARM = 20, STAMP_TIMED = 10;
+
     static void miniMap(Game city, Squares sq) throws Exception {
         out.println("\n--- 12. the minimap (0.7.134, batch MM2): the stamp frames the built-up ground, from the pictures, in a few milliseconds ---");
         int W = MiniMapFrame.STAMP_W, H = MiniMapFrame.STAMP_H;
@@ -4100,42 +4103,47 @@ public class MapCheck {
             for (CityMap.District d : m.districts()) if (d.usedCells() > 0) built++;
             MiniMapFrame.Box bu = MiniMapFrame.builtUp(m), fr = MiniMapFrame.frame(m), leaves = builtUpByLeaves(m);
             byLeaves &= bu != null && bu.equals(leaves);
-            long mg = (long) Math.ceil(MiniMapFrame.MARGIN * Math.max(bu.width(), bu.height()));
-            margins &= fr.equals(new MiniMapFrame.Box(bu.x0() - mg, bu.y0() - mg, bu.x1() + mg, bu.y1() + mg));
+            MiniMapFrame.Box with = MiniMapFrame.union(bu, MiniMapFrame.centre(m.land()));
+            long mg = (long) Math.ceil(MiniMapFrame.MARGIN * Math.max(with.width(), with.height()));
+            margins &= fr.equals(new MiniMapFrame.Box(with.x0() - mg, with.y0() - mg, with.x1() + mg, with.y1() + mg));
             MiniMapFrame.View st = MiniMapFrame.stamp(fr), pv = MiniMapFrame.preview(fr);
             for (MiniMapFrame.View v : List.of(st, pv)) {
                 long s = v.stride();
-                least &= s >= 1 && (s == 1 || (s - 1) * v.w() < fr.width() || (s - 1) * v.h() < fr.height());
-                holds &= v.shown().holds(fr);
+                // The least: one plot a pixel fewer and no view on its multiples holds the frame.
+                least &= s >= 1 && (s == 1 || MiniMapFrame.corner(fr.x0(), fr.x1(), v.w(), s - 1) == MiniMapFrame.NO_CORNER
+                        || MiniMapFrame.corner(fr.y0(), fr.y1(), v.h(), s - 1) == MiniMapFrame.NO_CORNER);
+                holds &= v.shown().holds(fr) && Math.floorMod(v.x0(), s) == 0 && Math.floorMod(v.y0(), s) == 0;
             }
-            double across = Math.max(bu.width() / (double) (st.stride() * W), bu.height() / (double) (st.stride() * H));
+            double across = Math.max(with.width() / (double) (st.stride() * W), with.height() / (double) (st.stride() * H));
             half &= st.stride() == 1 || across >= share;
             LandGrid g = m.land().grid();
-            out.printf("      %s: %,d district(s), %,d built; owned %,d x %,d plots, built-up %,d x %,d, framed %,d x %,d; the stamp at %,d plots"
-                            + " a pixel (%.0f m), the city %.0f x %.0f px of it; the preview at %,d%n", fx[0], m.districts().size(), built,
-                    g.maxX() - g.minX(), g.maxY() - g.minY(), bu.width(), bu.height(), fr.width(), fr.height(), st.stride(), st.stride() * World.PLOT_M,
-                    bu.width() / (double) st.stride(), bu.height() / (double) st.stride(), pv.stride());
+            MiniMapFrame.Box ce = MiniMapFrame.centre(m.land());
+            out.printf("      %s: %,d district(s), %,d built; owned %,d x %,d plots, built-up %,d x %,d, its centre %,d x %,d, framed %,d x %,d; the stamp"
+                            + " at %,d plots a pixel (%.0f m), the city %.0f x %.0f px of it; the preview at %,d%n", fx[0], m.districts().size(), built,
+                    g.maxX() - g.minX(), g.maxY() - g.minY(), bu.width(), bu.height(), ce == null ? 0 : ce.width(), ce == null ? 0 : ce.height(),
+                    fr.width(), fr.height(), st.stride(), st.stride() * World.PLOT_M,
+                    with.width() / (double) st.stride(), with.height() / (double) st.stride(), pv.stride());
         }
         check("the stamp's built-up ground is the ground owned in each district with buildings - found again from the grid's leaves", byLeaves);
-        check("...framed with MARGIN of its longer side round it each way", margins);
-        MiniMapFrame.Box fb = MiniMapFrame.builtUp(founded), ff = MiniMapFrame.frame(founded);
-        check("a city of one district frames its own ground, smaller than its district, not the district's square",
-                fb != null && ff.width() < World.DISTRICT && ff.height() < World.DISTRICT);
-        check("every view at the least whole number of plots a pixel that holds the frame, and holding it whole", least && holds);
-        check("...so the city is at least half the stamp across but for the margin, or drawn a plot a pixel", half);
-        // Owned ground with nothing built on it: x 1's empty districts, and the far block a month after it was bought.
-        LandGrid xg = x1.land().grid(), cg = copy.grid();
-        MiniMapFrame.Box xf = MiniMapFrame.frame(x1), xg1 = new MiniMapFrame.Box(xg.minX(), xg.minY(), xg.maxX(), xg.maxY());
-        MiniMapFrame.Box cg1 = new MiniMapFrame.Box(cg.minX(), cg.minY(), cg.maxX(), cg.maxY());
+        check("...framed with the city's centre and MARGIN of their longer side round them each way", margins);
+        MiniMapFrame.Box fb = MiniMapFrame.builtUp(founded), ff = MiniMapFrame.frame(founded), fc = MiniMapFrame.centre(founded.land());
+        int foundedBuilt = 0;
+        for (CityMap.District d : founded.districts()) if (d.usedCells() > 0) foundedBuilt++;
+        check("a city of one district frames its founding ground whole, smaller than its district, not the district's square",
+                foundedBuilt == 1 && fb != null && fc != null && ff.holds(fc) && ff.width() < World.DISTRICT && ff.height() < World.DISTRICT);
+        check("every view at the least whole number of plots a pixel whose multiples hold the frame, its corner on one, holding it whole", least && holds);
+        check("...so the city - its built-up ground and centre - is at least half the stamp across but for the margin, or drawn a plot a pixel", half);
+        // Owned ground with nothing built on it: the far block, a month after it was bought.
+        LandGrid cg = copy.grid();
+        MiniMapFrame.Box xf = MiniMapFrame.frame(x1), cg1 = new MiniMapFrame.Box(cg.minX(), cg.minY(), cg.maxX(), cg.maxY());
         CityMap.District block = far.district((int) (Math.floorDiv(bx, D) - Math.floorDiv(copy.siteX(), D)), (int) (Math.floorDiv(by, D) - Math.floorDiv(copy.siteY(), D)));
-        out.printf("      x 1's owned ground %,d x %,d plots, its frame %,d x %,d; the far block bought %,d plots east of the frame, a district of its own"
-                        + " (%d districts -> %d), nothing built on it (%s); the owned ground now %,d x %,d, the frame %s%n", xg1.width(), xg1.height(),
-                xf.width(), xf.height(), bx - before.x1(), districtsBefore, far.districts().size(), block == null ? "no district" : block.usedCells() + " plots built",
-                cg1.width(), cg1.height(), after.equals(before) ? "as before it" : "moved, " + after);
-        check("fixture: x 1 owns districts with nothing built in them, and the far block is a district of the played city's own, nothing built",
-                !xf.holds(xg1) && reconciled && block != null && block.usedCells() == 0 && !after.holds(cg1));
-        check("owned ground with nothing built on it is left out: x 1 framed on its built districts, the far block's city framed as before it",
-                (xf.width() < xg1.width() || xf.height() < xg1.height()) && after.equals(before));
+        out.printf("      the far block bought %,d plots east of the frame, a district of its own (%d districts -> %d), nothing built on it (%s);"
+                        + " the owned ground now %,d x %,d plots, the frame %s%n", bx - before.x1(), districtsBefore, far.districts().size(),
+                block == null ? "no district" : block.usedCells() + " plots built", cg1.width(), cg1.height(),
+                after.equals(before) ? "as before it, " + after.width() + " x " + after.height() : "moved, " + after);
+        check("fixture: the far block is a district of the played city's own, nothing built on it, its owned ground past the frame",
+                reconciled && block != null && block.usedCells() == 0 && !after.holds(cg1));
+        check("owned ground with nothing built on it is left out: the far block's city framed as before it", after.equals(before));
 
         // ----- From the pictures and the dither, no plan drawn on the screen's thread -----
         x1.forgetPainted();
@@ -4214,7 +4222,7 @@ public class MapCheck {
             MiniMapFrame.pixels(t, v, g, out1, lack);
             if (t.picturesFit(v.asMapFrame())) for (CityMap.District d : lack) for (CityMap.Job j : m.pictureJobs(d)) { j.run(); m.adopt(j); }
             double best = Double.MAX_VALUE, bestWall = Double.MAX_VALUE, bestNode = Double.MAX_VALUE;
-            for (int r = 0; r < WARM_ROUNDS + TIMED_ROUNDS; r++) {
+            for (int r = 0; r < STAMP_WARM + STAMP_TIMED; r++) {
                 long c0 = monthClock(), w0 = System.nanoTime();
                 MiniMapFrame.View vv = MiniMapFrame.stamp(MiniMapFrame.frame(m));
                 MiniMapFrame.pixels(t, vv, g, out1, null);
@@ -4225,7 +4233,7 @@ public class MapCheck {
                     MiniMapFrame.node(t, pv, k, gp[k], buf, outP, null);
                     nodeMost = Math.max(nodeMost, (monthClock() - p0) / 1e6);
                 }
-                if (r >= WARM_ROUNDS) {
+                if (r >= STAMP_WARM) {
                     best = Math.min(best, (c1 - c0) / 1e6);
                     bestWall = Math.min(bestWall, (w1 - w0) / 1e6);
                     bestNode = Math.min(bestNode, nodeMost);

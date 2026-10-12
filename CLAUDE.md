@@ -439,12 +439,12 @@ These are Jerus's, and they do not move.
                                    it - MapCheck holds it
         MiniMapFrame.java          the minimap's arithmetic (0.7.134, batch MM2; docs/studies/spec-globe.md
                                    8.3): what the stamp at the rail's foot and its hover preview frame -
-                                   the ground the city owns in its districts with buildings and MARGIN
-                                   round it, owned ground with nothing built on it left out - at the
-                                   least whole number of plots a pixel that holds it, its pixels the far
-                                   nodes (MapTiles.nodePixels()) from the district pictures, and what a
-                                   click opens the expanded map on; pure - ui/MiniMap draws it, MapCheck
-                                   12 holds it
+                                   the ground the city owns in its districts with buildings, its centre
+                                   and MARGIN round them, owned ground with nothing built on it left out
+                                   - at the least whole number of plots a pixel that holds it, its pixels
+                                   the far nodes (MapTiles.nodePixels()) from the district pictures, and
+                                   what a click opens the expanded map on; pure - ui/MiniMap draws it,
+                                   MapCheck 12 holds it
         CityRuns.java              the city's highways and railway (0.7.89): laid city-wide, month by
                                    month, on corridors from the founding site's lines - straight by
                                    preference, never moved, the newest end taken first - with the

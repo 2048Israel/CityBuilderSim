@@ -6014,14 +6014,15 @@ public final class GameVersion {
      *     (MapView.WORKER), one draft at a time with the land office's map
      *     (MapView.drafting). No boats (Q12); on Earth the city's plane.
      *   - MiniMapFrame (new, pure): the frame - the ground the city owns in
-     *     its districts with buildings, MARGIN (a tenth of its longer side)
-     *     round it, owned ground with nothing built on it left out, so
+     *     its districts with buildings and its centre, MARGIN (a tenth of
+     *     their longer side) round them, owned ground with nothing built on
+     *     it left out, so
      *     bought sea or a far field does not shrink the city to a dot; the
      *     least whole number of plots a pixel that holds it; the views' far
      *     nodes (MapTiles.nodePixels()) cut to them; what a click opens.
      *   - Harnesses: MapCheck 12 - the frame against the grid's leaves, the
-     *     margin, one district and many, owned ground left out (Jerus's city
-     *     x 1's empty districts, the played city's far block), no plan drawn
+     *     margin, one district and many, owned ground left out (the played
+     *     city's far block), no plan drawn
      *     on the screen's thread and the pictures sampled once drawn aside,
      *     the stamp within STAMP_MS of the thread's CPU (A28), on Earth too,
      *     and the click's view against the land office's opening.

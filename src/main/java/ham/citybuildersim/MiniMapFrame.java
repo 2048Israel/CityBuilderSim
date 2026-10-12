@@ -3,7 +3,7 @@ package ham.citybuildersim;
 import java.util.Set;
 
 /**
- * The minimap's arithmetic without the toolkit: what the stamp at the rail's foot and its hover preview frame - the city's built-up ground, the ground it owns in its districts with buildings, and a margin round it - at how many whole plots a pixel, the far nodes that draw them from the district pictures, and what a click opens the expanded map on: what ui/MiniMap draws by and MapCheck holds.
+ * The minimap's arithmetic without the toolkit: what the stamp at the rail's foot and its hover preview frame - the city's built-up ground, the ground it owns in its districts with buildings, with its centre and a margin round it - at how many whole plots a pixel, the far nodes that draw them from the district pictures, and what a click opens the expanded map on: what ui/MiniMap draws by and MapCheck holds.
  *
  * WHY THIS EXISTS (0.7.134, batch MM2; docs/studies/spec-globe.md 8.3).
  * Jerus, 2026-10-11: "i think a small map always visible on the ui would be
@@ -16,11 +16,13 @@ import java.util.Set;
  * dot in a 66-pixel stamp; so the stamp frames its BUILT-UP ground: each
  * district with buildings (CityMap.District.usedCells()), shrunk to the
  * ground the city owns in it - a new town's few hundred plots, not the
- * 256-plot square of the district it stands in - and MARGIN round that.
- * Owned ground in a district with nothing built on it is left out.
+ * 256-plot square of the district it stands in - with the city's centre,
+ * the ground it was founded on (star MM2-3), and MARGIN round that. Owned
+ * ground in a district with nothing built on it is left out.
  *
  * HOW IT IS DRAWN. A view (View) is w x h pixels at a whole number of plots
- * a pixel, the least that holds the frame, centred on it; its pixels are
+ * a pixel, the least at which a corner on its multiples holds the frame,
+ * as near centred on it as that allows (view()); its pixels are
  * MapTiles.nodePixels()'s far nodes at that stride (MM1: each district from
  * its picture where it is MapTiles.PICTURE_FROM_PX pixels across or more,
  * dithered by its shares where smaller, the highways, the railway and the
@@ -44,7 +46,7 @@ public final class MiniMapFrame {
     /** The preview beside it on hover, in pixels: 288 x 192 (the study's 8.3, est.; the mockup's panel). */
     public static final int PREVIEW_W = 288, PREVIEW_H = 192;
 
-    /** The margin round the built-up ground, each way, as a share of its longer side (star MM2-2): 0.1 - the city 83% of the frame, a tenth of its size round it, so its white edge (MapTiles.EDGE) stands clear of the stamp's border with the ground beyond in view, as the mockup's stamp draws it (the city's edge 5 to 11% of the frame in from its sides there). */
+    /** The margin round the built-up ground and the centre, each way, as a share of their longer side (star MM2-2): 0.1 - the city 83% of the frame, a tenth of its size round it, so its white edge (MapTiles.EDGE) stands clear of the stamp's border with the ground beyond in view, as the mockup's stamp draws it (the city's edge 5 to 11% of the frame in from its sides there). */
     public static final double MARGIN = 0.1;
 
     /** The most the stamp may cost the screen's thread when the map's version moves - its frame found and its far node drawn - in ms of the thread's CPU (MapCheck 12): 8, a frame's painting (spec-land 2.6; ui/MapView's FRAME_MS), so it is drawn in the frame the month lands in (the study's "a few milliseconds", est.). */
@@ -146,16 +148,39 @@ public final class MiniMapFrame {
         return new Box(b.x0() - m, b.y0() - m, b.x1() + m, b.y1() + m);
     }
 
+    /** The city's centre: the bounds of the blocks it was founded on (CityLand.centreRects()); null with none. */
+    public static Box centre(CityLand land) {
+        if (land == null || land.centreRects().isEmpty()) return null;
+        long x0 = Long.MAX_VALUE, y0 = Long.MAX_VALUE, x1 = Long.MIN_VALUE, y1 = Long.MIN_VALUE;
+        for (LandGrid.Fill f : land.centreRects()) {
+            x0 = Math.min(x0, f.x0());
+            y0 = Math.min(y0, f.y0());
+            x1 = Math.max(x1, f.x1());
+            y1 = Math.max(y1, f.y1());
+        }
+        return new Box(x0, y0, x1, y1);
+    }
+
+    /** Two boxes' bounds; either may be null. */
+    public static Box union(Box a, Box b) {
+        if (a == null) return b;
+        if (b == null) return a;
+        return new Box(Math.min(a.x0(), b.x0()), Math.min(a.y0(), b.y0()), Math.max(a.x1(), b.x1()), Math.max(a.y1(), b.y1()));
+    }
+
     /**
-     * What the stamp and the preview frame: the built-up ground with its
-     * margin (builtUp(), withMargin()); before anything is built, the ground
-     * the city owns with it (star MM2-3: a city founded and not yet built on
-     * has only its centre); null for a map with no land.
+     * What the stamp and the preview frame: the built-up ground and the
+     * city's centre (builtUp(), centre(); star MM2-3: a new town's founding
+     * ground straddles two districts as often as not, its lake in the one
+     * with nothing built yet - the centre keeps the town whole while its
+     * first district fills), with its margin (withMargin()); with neither,
+     * the ground the city owns, or its founding plot; null for a map with
+     * no land.
      */
     public static Box frame(CityMap m) {
-        Box b = builtUp(m);
+        CityLand land = m.land();
+        Box b = union(builtUp(m), centre(land));
         if (b == null) {
-            CityLand land = m.land();
             if (land == null) return null;
             LandGrid g = land.grid();
             b = g.ownedPlots() > 0 ? new Box(g.minX(), g.minY(), g.maxX(), g.maxY())
@@ -195,11 +220,33 @@ public final class MiniMapFrame {
         return Math.max(1, Math.max(sx, sy));
     }
 
-    /** A w x h view of a box: at strideFor(), centred on it, its corner on whole plots - so it holds the box whole. */
+    /**
+     * A w x h view of a box: its corner on whole multiples of its stride
+     * (star MM2-5) - so its pixels lie on the world's own grid at that
+     * stride, the same from month to month, and at a power of two the far
+     * node takes the grid's blocks whole (MapTiles.nodePixels()'s aligned
+     * way, LandGrid.cover(): a quarter of the time of a sum a pixel,
+     * runs/fixMM2-notes.md) - as near centred on the box as that allows,
+     * holding it whole; at the least whole stride from strideFor() at which
+     * such a corner does.
+     */
     public static View view(Box b, int w, int h) {
-        long s = strideFor(b, w, h);
-        long x0 = (long) Math.floor(b.centreX() - w * s / 2.0), y0 = (long) Math.floor(b.centreY() - h * s / 2.0);
-        return new View(x0, y0, s, w, h);
+        for (long s = strideFor(b, w, h); ; s++) {
+            long x0 = corner(b.x0(), b.x1(), w, s), y0 = corner(b.y0(), b.y1(), h, s);
+            if (x0 != NO_CORNER && y0 != NO_CORNER) return new View(x0, y0, s, w, h);
+        }
+    }
+
+    /** What corner() says when no multiple of the stride will do. */
+    static final long NO_CORNER = Long.MIN_VALUE;
+
+    /** The multiple of s nearest centring [lo, hi) in n pixels of s plots, among those whose n s plots hold it; NO_CORNER with none. */
+    static long corner(long lo, long hi, int n, long s) {
+        long least = hi - n * s, most = lo;
+        long c = Math.round((lo + hi - n * s) / 2.0 / s) * s;
+        if (c < least) c = Math.ceilDiv(least, s) * s;
+        if (c > most) c = Math.floorDiv(most, s) * s;
+        return c >= least && c <= most ? c : NO_CORNER;
     }
 
     /** The stamp's view of a frame (STAMP_W x STAMP_H)... */
