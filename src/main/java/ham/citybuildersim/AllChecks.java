@@ -26,7 +26,7 @@ public class AllChecks {
     /** In the order they are cheapest to fail. LongPlaytest last: it is the slow one. */
     static final String[] HARNESSES = {
         "BuildingDataCheck", "NewGameCheck", "WorldCheck", "GridCheck", "ConversionCheck", "CalendarCheck", "BooksCheck", "WaterCheck",
-        "EarthCheck", "EarthTerrainCheck", "EarthFoundingCheck",
+        "EarthCheck", "EarthTerrainCheck", "EarthFoundingCheck", "GlobeCheck",
         "PolicyCheck", "LandCheck", "ZoningCheck", "ZoningViewCheck", "MiningCheck", "InvestCheck", "CreditCheck", "MortgageCheck",
         "ConstructionControlCheck", "DeathCareFirstCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "SectorFlowCheck", "PolicyPreviewCheck",
         "RestructureCheck", "ConservationCheck", "MoneyCheck", "GdpCheck", "HistoryCheck",

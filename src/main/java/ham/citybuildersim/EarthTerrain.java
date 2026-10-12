@@ -75,6 +75,16 @@ import java.util.Map;
  * hash - its vectors read from the 1-degree tiles under the node, either
  * side of the date line alike (nodeTiles()). MapCheck 10 holds it.
  *
+ * THE CAMERA (0.7.132, batch E8; docs/studies/spec-globe.md 3.5). The far
+ * rule reaches the planet through a camera (Camera): where a pixel is, where
+ * a river's vertex lands and which tiles it reads. The city's plane's is the
+ * far node, byte for byte as before (plane()); a latitude-longitude grid's
+ * makes the planet's picture (grid(), GlobePicture); the globe's,
+ * orthographic round a view centre with a roll, draws GlobeFrame's GROUND
+ * tier (globe()). On the globe the forest is dithered from a fixed
+ * latitude-longitude grid at the pixel's scale (globeDither()), so it moves
+ * with the ground as the globe turns. GlobeCheck holds them.
+ *
  * THE WORLD'S OTHER HALF. The cells pass (cellsPass()) replaces the
  * generated world's sea pass: each world cell's land and forest from
  * CELL_SAMPLES x CELL_SAMPLES points of the 4' layers, which the fields of
@@ -1065,48 +1075,58 @@ public final class EarthTerrain {
      * and areas (frayed by their own noise where a pixel is narrower than its
      * widest octave), on every pixel that is not sea. The vectors are read
      * from the 1-degree tiles under the node (nodeTiles()), either side of
-     * the date line alike. A pure function of the key and the node.
+     * the date line alike. A pure function of the key and the node: since
+     * 0.7.132 (batch E8) the far rule through the city's plane's camera
+     * (plane()), byte for byte what it drew before (GlobeCheck 4).
      */
     public void farTerrain(long x0, long y0, int stride, int n, byte[] out) {
         if (stride <= 1) {
             regionTerrain(x0, y0, stride, n, out);
             return;
         }
+        farTerrain(plane(x0, y0, stride, n), out);
+    }
+
+    /**
+     * The far rule through a camera (0.7.132, batch E8; spec-globe 3.5): the
+     * camera's w x h pixels, each classed at its centre on the planet as a
+     * far node's are (classAt(), the camera's stride picking the layers and
+     * the octaves at their mean, its dither the forest's), then the rivers
+     * and small lakes stroked from their vectors through the camera, each run
+     * at least FAR_RIVER_SHARE of a pixel wide and FAR_RIVER_HALF_PX a side.
+     * A pixel off the planet, or off the plane's square, is sea; the screen
+     * draws the void or space there (the camera says where).
+     */
+    public void farTerrain(Camera c, byte[] out) {
         Scratch s = scratch();
         double[] q = quantile(), ll = s.ll;
-        boolean dither = stride >= DITHER_STRIDE;
-        long ds = World.mix(seed ^ F_DITHER ^ (stride * 0x632BE59BD9B4E019L));
-        int b = FAR_BLEND_PX;
-        for (int by = 0; by < n; by += b) {
-            for (int bx = 0; bx < n; bx += b) {
-                EarthProj.Blend blend = stride >= WATER_STRIDE ? proj.blend(x0 + (double) bx * stride, y0 + (double) by * stride, (double) b * stride) : null;
-                for (int py = by; py < Math.min(n, by + b); py++) {
-                    double y = y0 + (double) py * stride + stride * 0.5;
-                    long gy = y0 + (long) py * stride;
-                    for (int px = bx; px < Math.min(n, bx + b); px++) {
-                        double x = x0 + (double) px * stride + stride * 0.5;
-                        int at = py * n + px;
-                        if (x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE || !(blend != null ? blend.latLon(x, y, ll) : proj.latLonOfPlot(x, y, ll))) {
+        int b = FAR_BLEND_PX, w = c.w, h = c.h;
+        for (int by = 0; by < h; by += b) {
+            for (int bx = 0; bx < w; bx += b) {
+                for (int py = by; py < Math.min(h, by + b); py++) {
+                    for (int px = bx; px < Math.min(w, bx + b); px++) {
+                        int at = py * w + px;
+                        if (!c.latLon(px, py, ll)) {
                             out[at] = World.SALT;
                             continue;
                         }
-                        double d = dither ? World.unit(World.mix(ds ^ World.mix((x0 + (long) px * stride) * 0x9E3779B97F4A7C15L ^ gy))) : Double.NaN;
-                        out[at] = classAt(s, q, x, y, ll[0], ll[1], stride, false, d);
+                        double d = c.dither(px, py, ll[0], ll[1]);
+                        out[at] = classAt(s, q, c.x(px), c.y(py), ll[0], ll[1], c.stride, false, d);
                     }
                 }
             }
         }
-        strokeWater(x0, y0, stride, n, out, q);
+        strokeWater(c, out, q);
     }
 
     /** How many river segments and small lakes the last far node on this thread drew from, and how many 1-degree tiles it read: what a harness prints. */
     static final ThreadLocal<long[]> FAR_COUNTS = ThreadLocal.withInitial(() -> new long[3]);
 
-    /** The rivers and small lakes over a far node's pixels (farTerrain()): fresh water on every pixel that is not sea whose centre a river's stroke or a small lake's blob covers. */
-    private void strokeWater(long x0, long y0, int stride, int n, byte[] out, double[] q) {
-        double side = (double) stride * n, least = FAR_RIVER_HALF_PX * stride;
-        double nx0 = x0 - least, ny0 = y0 - least, nx1 = x0 + side + least, ny1 = y0 + side + least;
-        double rim = EarthProj.REACH_M - RIM_M, narrowest = FAR_RIVER_SHARE * stride * World.PLOT_M;
+    /** The rivers and small lakes over a camera's pixels (farTerrain()): fresh water on every pixel that is not sea whose centre a river's stroke or a small lake's blob covers. */
+    private void strokeWater(Camera c, byte[] out, double[] q) {
+        double sideX = c.step * c.w, sideY = c.step * c.h, least = FAR_RIVER_HALF_PX * c.step;
+        double nx0 = c.ox - least, ny0 = c.oy - least, nx1 = c.ox + sideX + least, ny1 = c.oy + sideY + least;
+        double narrowest = FAR_RIVER_SHARE * c.step * c.unitM;
         double grow = Math.sqrt(1 + BLOB_FRAY / 2);
         double[] a = new double[2], b = new double[2];
         int[] widths = new int[64];
@@ -1117,10 +1137,9 @@ public final class EarthTerrain {
             widestRun = widest;
         }
         long segs = 0, lakes = 0;
-        int[] tiles = nodeTiles(x0, y0, side);
-        double[] corners = new double[8];
+        int[] tiles = c.tiles();
         for (int t : tiles) {
-            boolean blended = stride >= FAR_TILE_BLEND_STRIDE && tileCorners(t, corners, rim);
+            c.tile(t);
             if (widest[t] < 0 || widest[t] >= narrowest) {
                 int most = 0;
                 for (EarthData.Run run : data.rivers(t)) {
@@ -1131,15 +1150,19 @@ public final class EarthTerrain {
                     Arrays.sort(widths, 0, m);
                     most = Math.max(most, widths[m / 2]);
                     if (widths[m / 2] < narrowest) continue;
-                    boolean have = place(run.lat(0), run.lon(0), blended, corners, t, a) && !nearRim(a, rim);
+                    boolean have = c.place(run.lat(0), run.lon(0), a, true);
                     for (int k = 0; k + 1 < m; k++) {
-                        boolean next = place(run.lat(k + 1), run.lon(k + 1), blended, corners, t, b) && !nearRim(b, rim);
+                        boolean next = c.place(run.lat(k + 1), run.lon(k + 1), b, true);
                         if (have && next) {
-                            double ha = Math.max(least, run.width(k) / 2.0 / World.PLOT_M), hb = Math.max(least, run.width(k + 1) / 2.0 / World.PLOT_M);
-                            double h = Math.max(ha, hb);
-                            if (Math.max(a[0], b[0]) + h >= nx0 && Math.min(a[0], b[0]) - h <= nx1 && Math.max(a[1], b[1]) + h >= ny0 && Math.min(a[1], b[1]) - h <= ny1) {
-                                stroke(a[0], a[1], b[0], b[1], ha, hb, x0, y0, stride, n, out);
-                                segs++;
+                            if (c.wrap > 0) b[0] = unwrapped(b[0], a[0], c.wrap);
+                            double ha = Math.max(least, run.width(k) / 2.0 / c.unitM), hb = Math.max(least, run.width(k + 1) / 2.0 / c.unitM);
+                            double h = Math.max(ha, hb), xs = c.xScale(0.5 * (run.lat(k) + run.lat(k + 1))), hx = h / xs;
+                            for (double sh : c.shifts(Math.min(a[0], b[0]) - hx, Math.max(a[0], b[0]) + hx)) {
+                                double ax = a[0] + sh, bx = b[0] + sh;
+                                if (Math.max(ax, bx) + hx >= nx0 && Math.min(ax, bx) - hx <= nx1 && Math.max(a[1], b[1]) + h >= ny0 && Math.min(a[1], b[1]) - h <= ny1) {
+                                    stroke(ax, a[1], bx, b[1], ha, hb, c, xs, out);
+                                    segs++;
+                                }
                             }
                         }
                         a[0] = b[0];
@@ -1151,17 +1174,28 @@ public final class EarthTerrain {
             }
             EarthData.SmallLakes sl = data.smallLakes(t);
             for (int k = 0; k < sl.size(); k++) {
-                if (!place(sl.lat(k), sl.lon(k), blended, corners, t, a)) continue;
-                double r = Math.sqrt(sl.areaKm2(k) * 1e6 / Math.PI) / World.PLOT_M, reach = r * grow;
-                if (a[0] + reach < x0 || a[0] - reach > x0 + side || a[1] + reach < y0 || a[1] - reach > y0 + side) continue;
-                blob(a[0], a[1], r, x0, y0, stride, n, out, q);
-                lakes++;
+                if (!c.place(sl.lat(k), sl.lon(k), a, false)) continue;
+                double r = Math.sqrt(sl.areaKm2(k) * 1e6 / Math.PI) / c.unitM, reach = r * grow;
+                double xs = c.xScale(sl.lat(k)), rx = reach / xs;
+                for (double sh : c.shifts(a[0] - rx, a[0] + rx)) {
+                    double lx = a[0] + sh;
+                    if (lx + rx < c.ox || lx - rx > c.ox + sideX || a[1] + reach < c.oy || a[1] - reach > c.oy + sideY) continue;
+                    blob(lx, a[1], r, c, xs, out, q);
+                    lakes++;
+                }
             }
         }
-        long[] c = FAR_COUNTS.get();
-        c[0] = segs;
-        c[1] = lakes;
-        c[2] = tiles.length;
+        long[] counts = FAR_COUNTS.get();
+        counts[0] = segs;
+        counts[1] = lakes;
+        counts[2] = tiles.length;
+    }
+
+    /** A wrapped coordinate moved by whole turns to within half a turn of a reference: a river's next vertex across the grid's date line. */
+    private static double unwrapped(double v, double ref, double wrap) {
+        if (v - ref > wrap / 2) return v - wrap;
+        if (ref - v > wrap / 2) return v + wrap;
+        return v;
     }
 
     /** Tile t's four corners in plots into c (south-west, south-east, north-west, north-east, x then y), projected exactly: false - the tile's points then each projected - where the tile reaches past EarthProj.BLEND_MAX_LAT or a corner is off the planet or within RIM_M of its rim. */
@@ -1193,55 +1227,427 @@ public final class EarthTerrain {
         return mx * mx + my * my >= rim * rim;
     }
 
-    /** One river segment stroked onto a far node: every pixel not sea whose centre lies within the segment's half-width there, interpolated along it (onRiver()'s rule). */
-    private static void stroke(double ax, double ay, double bx, double by, double ha, double hb, long x0, long y0, int stride, int n, byte[] out) {
-        double h = Math.max(ha, hb);
-        int i0 = first(Math.min(ax, bx) - h, x0, stride, n), i1 = last(Math.max(ax, bx) + h, x0, stride, n);
-        int j0 = first(Math.min(ay, by) - h, y0, stride, n), j1 = last(Math.max(ay, by) + h, y0, stride, n);
+    /**
+     * One river segment stroked onto a camera's pixels: every pixel not sea
+     * whose centre lies within the segment's half-width there, interpolated
+     * along it (onRiver()'s rule) - the camera's x units xs of its y units
+     * on the ground (the grid's cos lat; 1, and the arithmetic as before, on
+     * the plane and the globe).
+     */
+    private static void stroke(double ax, double ay, double bx, double by, double ha, double hb, Camera c, double xs, byte[] out) {
+        double h = Math.max(ha, hb), hx = h / xs;
+        int i0 = first(Math.min(ax, bx) - hx, c.ox, c.step, c.w), i1 = last(Math.max(ax, bx) + hx, c.ox, c.step, c.w);
+        int j0 = first(Math.min(ay, by) - h, c.oy, c.step, c.h), j1 = last(Math.max(ay, by) + h, c.oy, c.step, c.h);
         if (i0 > i1 || j0 > j1) return;
-        double vx = bx - ax, vy = by - ay, l2 = vx * vx + vy * vy;
+        double vx = (bx - ax) * xs, vy = by - ay, l2 = vx * vx + vy * vy;
         for (int j = j0; j <= j1; j++) {
-            double y = y0 + (j + 0.5) * stride;
+            double y = c.oy + (j + 0.5) * c.step;
             for (int i = i0; i <= i1; i++) {
-                int at = j * n + i;
+                int at = j * c.w + i;
                 if (out[at] == World.SALT || out[at] == World.FRESH) continue;
-                double x = x0 + (i + 0.5) * stride;
-                double t = l2 > 0 ? ((x - ax) * vx + (y - ay) * vy) / l2 : 0;
+                double x = c.ox + (i + 0.5) * c.step, ex = (x - ax) * xs;
+                double t = l2 > 0 ? (ex * vx + (y - ay) * vy) / l2 : 0;
                 t = t < 0 ? 0 : t > 1 ? 1 : t;
-                double dx = x - ax - t * vx, dy = y - ay - t * vy, w = ha + (hb - ha) * t;
+                double dx = ex - t * vx, dy = y - ay - t * vy, w = ha + (hb - ha) * t;
                 if (dx * dx + dy * dy < w * w) out[at] = World.FRESH;
             }
         }
     }
 
-    /** One small lake drawn onto a far node: every pixel not sea whose centre its blob holds - inLake()'s rule, its noise at the node's stride (at DITHER_STRIDE and up, at its mean: the lake's disc). */
-    private void blob(double lx, double ly, double r, long x0, long y0, int stride, int n, byte[] out, double[] q) {
-        double reach = r * Math.sqrt(1 + BLOB_FRAY / 2);
-        int i0 = first(lx - reach, x0, stride, n), i1 = last(lx + reach, x0, stride, n);
-        int j0 = first(ly - reach, y0, stride, n), j1 = last(ly + reach, y0, stride, n);
+    /** One small lake drawn onto a camera's pixels: every pixel not sea whose centre its blob holds - inLake()'s rule, its noise at the camera's stride (at DITHER_STRIDE and up, at its mean: the lake's disc) - x scaled as stroke()'s. */
+    private void blob(double lx, double ly, double r, Camera c, double xs, byte[] out, double[] q) {
+        double reach = r * Math.sqrt(1 + BLOB_FRAY / 2), rx = reach / xs;
+        int i0 = first(lx - rx, c.ox, c.step, c.w), i1 = last(lx + rx, c.ox, c.step, c.w);
+        int j0 = first(ly - reach, c.oy, c.step, c.h), j1 = last(ly + reach, c.oy, c.step, c.h);
         for (int j = j0; j <= j1; j++) {
-            double y = y0 + (j + 0.5) * stride;
+            double y = c.oy + (j + 0.5) * c.step;
             for (int i = i0; i <= i1; i++) {
-                int at = j * n + i;
+                int at = j * c.w + i;
                 if (out[at] == World.SALT || out[at] == World.FRESH) continue;
-                double x = x0 + (i + 0.5) * stride, dx = x - lx, dy = y - ly;
+                double x = c.ox + (i + 0.5) * c.step, dx = (x - lx) * xs, dy = y - ly;
                 double t = (dx * dx + dy * dy) / (r * r);
                 if (t >= 1 + BLOB_FRAY / 2) continue;
-                if (t <= 1 - BLOB_FRAY / 2 || noiseAt(os[BLOB], x, y, stride) < below(q, 0.5 + (1 - t) / BLOB_FRAY)) out[at] = World.FRESH;
+                if (t <= 1 - BLOB_FRAY / 2 || noiseAt(os[BLOB], x, y, c.stride) < below(q, 0.5 + (1 - t) / BLOB_FRAY)) out[at] = World.FRESH;
             }
         }
     }
 
-    /** The first pixel of a node (from plot `o`, `stride` plots each, n of them) whose centre is at `v` or past it, clamped to the node: n when none is. */
-    private static int first(double v, long o, int stride, int n) {
-        double i = Math.ceil((v - o) / stride - 0.5);
+    /** The first pixel of a run (from `o`, `step` units each, n of them) whose centre is at `v` or past it, clamped to the run: n when none is. */
+    private static int first(double v, double o, double step, int n) {
+        double i = Math.ceil((v - o) / step - 0.5);
         return i <= 0 ? 0 : i >= n ? n : (int) i;
     }
 
     /** ...and the last whose centre is at `v` or before it: -1 when none is. */
-    private static int last(double v, long o, int stride, int n) {
-        double i = Math.floor((v - o) / stride - 0.5);
+    private static int last(double v, double o, double step, int n) {
+        double i = Math.floor((v - o) / step - 0.5);
         return i < 0 ? -1 : i >= n - 1 ? n - 1 : (int) i;
+    }
+
+    /* ----- the camera: where the far rule's pixels lie on the planet (0.7.132, batch E8; spec-globe 3.5) ----- */
+
+    /**
+     * Where the far rule's pixels lie on the planet, and where a river's
+     * vertex lands among them (0.7.132, batch E8; docs/studies/spec-globe.md
+     * 3.5). Two things tied farTerrain() to the city's plane: where a pixel
+     * is (the projection, or its FAR_BLEND_PX blend) and where a vertex lands
+     * with which 1-degree tiles a node reads (place(), nodeTiles()). Both are
+     * a camera's, and there are three:
+     *   - the city's plane (plane()): a far node, byte for byte as before;
+     *   - a latitude-longitude grid (grid()): the planet's picture, a texel
+     *     a pixel (GlobePicture);
+     *   - the globe round a view centre with a roll (globe()): GlobeFrame's
+     *     GROUND tier, a piece of the screen.
+     * A camera's pixels are w x h, pixel (i, j) centred at
+     * (ox + (i + 0.5) step, oy + (j + 0.5) step) in its own units - plots on
+     * the plane, texels on the grid, the screen's pixels on the globe - a
+     * unit unitM metres of ground down and xScale(lat) x unitM across.
+     * stride is the rule's: a pixel's ground in plots, which picks the layers
+     * the shares are read from and the noise's octaves at their mean - on
+     * the globe never under DITHER_STRIDE, where every octave is at its mean
+     * and a pixel's place in plots no longer matters.
+     */
+    public abstract static class Camera {
+        final int w, h, stride;
+        final double ox, oy, step, unitM;
+        /** Units round the planet across, where the camera's x wraps (the grid's columns at the date line); 0 where it does not. */
+        final double wrap;
+
+        Camera(int w, int h, int stride, double ox, double oy, double step, double unitM, double wrap) {
+            this.w = w;
+            this.h = h;
+            this.stride = stride;
+            this.ox = ox;
+            this.oy = oy;
+            this.step = step;
+            this.unitM = unitM;
+            this.wrap = wrap;
+        }
+
+        /** Its pixels across and down. */
+        public int width() { return w; }
+        public int height() { return h; }
+
+        /** The rule's stride: a pixel's ground, in plots. */
+        public int stride() { return stride; }
+
+        /** Metres of ground a pixel stands for, down. */
+        public double pixelM() { return step * unitM; }
+
+        /** Pixel (px, py)'s centre on the planet into ll; false off the planet (or off the plane's square), where it is drawn as sea. */
+        abstract boolean latLon(int px, int py, double[] ll);
+
+        /** Where pixel column px and row py stand for the rule's noise, in plots. */
+        abstract double x(int px);
+        abstract double y(int py);
+
+        /** The dither at pixel (px, py), whose centre is (lat, lon): a number in [0, 1), or NaN where the forest is ranked through its noise. */
+        abstract double dither(int px, int py, double lat, double lon);
+
+        /** The 1-degree tiles whose rivers and small lakes may reach its pixels. */
+        abstract int[] tiles();
+
+        /** Ready to place tile t's vertices and small lakes. */
+        void tile(int t) { }
+
+        /** A point of tile t's - a river's vertex (`river`) or a small lake's - in the camera's units into xy; false where it is not drawn. */
+        abstract boolean place(double lat, double lon, double[] xy, boolean river);
+
+        /** A unit's ground across over a unit's ground down, at a latitude: 1 but on the grid. */
+        double xScale(double lat) { return 1; }
+
+        private static final double[] NO_SHIFT = { 0 };
+
+        /** The whole turns a shape spanning x0 to x1 is drawn at: none but where x wraps (the grid's). */
+        double[] shifts(double x0, double x1) {
+            if (wrap <= 0) return NO_SHIFT;
+            double lo = ox, hi = ox + step * w;
+            int k0 = (int) Math.ceil((lo - x1) / wrap), k1 = (int) Math.floor((hi - x0) / wrap);
+            if (k1 < k0) return new double[0];
+            double[] s = new double[k1 - k0 + 1];
+            for (int k = k0; k <= k1; k++) s[k - k0] = k * wrap;
+            return s;
+        }
+    }
+
+    /** The city's plane's camera: a far node of n x n pixels from plot (x0, y0), stride plots each (MapTiles.nodeTerrain()). */
+    public Camera plane(long x0, long y0, int stride, int n) {
+        return new Plane(x0, y0, stride, n);
+    }
+
+    /** The city's plane: the far node as it was drawn before the camera, the same arithmetic in the same order. */
+    private final class Plane extends Camera {
+        private final long x0, y0;
+        private final long ds;
+        private final double rim = EarthProj.REACH_M - RIM_M;
+        private final double[] corners = new double[8];
+        private boolean blended;
+        private int tile = -1;
+        private EarthProj.Blend blend;
+        private int blendX = -1, blendY = -1;
+
+        Plane(long x0, long y0, int stride, int n) {
+            super(n, n, stride, x0, y0, stride, World.PLOT_M, 0);
+            this.x0 = x0;
+            this.y0 = y0;
+            this.ds = World.mix(seed ^ F_DITHER ^ (stride * 0x632BE59BD9B4E019L));
+        }
+
+        @Override double x(int px) { return x0 + (double) px * stride + stride * 0.5; }
+        @Override double y(int py) { return y0 + (double) py * stride + stride * 0.5; }
+
+        @Override boolean latLon(int px, int py, double[] ll) {
+            double x = x(px), y = y(py);
+            if (x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE) return false;
+            if (stride < WATER_STRIDE) return proj.latLonOfPlot(x, y, ll);
+            int b = FAR_BLEND_PX, bx = px / b * b, by = py / b * b;
+            if (bx != blendX || by != blendY) {
+                blend = proj.blend(x0 + (double) bx * stride, y0 + (double) by * stride, (double) b * stride);
+                blendX = bx;
+                blendY = by;
+            }
+            return blend.latLon(x, y, ll);
+        }
+
+        @Override double dither(int px, int py, double lat, double lon) {
+            if (stride < DITHER_STRIDE) return Double.NaN;
+            long gy = y0 + (long) py * stride;
+            return World.unit(World.mix(ds ^ World.mix((x0 + (long) px * stride) * 0x9E3779B97F4A7C15L ^ gy)));
+        }
+
+        @Override int[] tiles() { return nodeTiles(x0, y0, (double) stride * w); }
+
+        @Override void tile(int t) {
+            tile = t;
+            blended = stride >= FAR_TILE_BLEND_STRIDE && tileCorners(t, corners, rim);
+        }
+
+        @Override boolean place(double lat, double lon, double[] xy, boolean river) {
+            return EarthTerrain.this.place(lat, lon, blended, corners, tile, xy) && !(river && nearRim(xy, rim));
+        }
+    }
+
+    /**
+     * The globe's dither cell (spec-globe 3.5: "the dither's hash comes from
+     * a fixed latitude-longitude grid at the pixel's scale, so the forest
+     * does not shimmer as the globe turns"): rows of GLOBE_DITHER_DEG x 2^level
+     * degrees, and in each row cells as many times as wide in longitude as
+     * the least power of two that keeps them as wide on the ground as tall -
+     * so a cell is the same ground whichever way the globe looks, about
+     * square, and never narrower than it is tall.
+     */
+    public static final double GLOBE_DITHER_DEG = 4.0 / 60;
+
+    /** The latitudes past which a dither cell is 2^m times as wide in longitude as tall, m = 1, 2, ...: where cos lat falls to 2^-m. */
+    private static final double[] DITHER_WIDENS = new double[30];
+
+    static {
+        for (int m = 1; m <= DITHER_WIDENS.length; m++) DITHER_WIDENS[m - 1] = StrictMath.toDegrees(StrictMath.acos(StrictMath.scalb(1.0, -m)));
+    }
+
+    /** The globe's dither's stream (the far node's F_DITHER is the plane's, by plot and the world's seed). */
+    private static final long F_GLOBE_DITHER = 0x610BED17L;
+
+    /** The dither level of a pixel `degrees` of latitude tall: the least whose cell, GLOBE_DITHER_DEG x 2^level, is no shorter than the pixel. */
+    public static int ditherLevel(double degrees) {
+        return (int) Math.ceil(Math.log(degrees / GLOBE_DITHER_DEG) / Math.log(2) - 1e-9);
+    }
+
+    /** The globe's dither at (lat, lon) at a level: its cell's hash, a number in [0, 1) - a function of the point and the level alone, not of the view, the city or its seed. */
+    public static double globeDither(int level, double lat, double lon) {
+        double cell = StrictMath.scalb(GLOBE_DITHER_DEG, level);
+        long r = (long) Math.floor((lat + 90) / cell);
+        double mid = Math.abs(-90 + (r + 0.5) * cell);
+        int m = 0;
+        while (m < DITHER_WIDENS.length && mid > DITHER_WIDENS[m]) m++;
+        double across = Math.min(360, StrictMath.scalb(cell, m));
+        long col = (long) Math.floor((EarthProj.normaliseLon(lon) + 180) / across);
+        long hsh = World.mix(F_GLOBE_DITHER ^ (level * 0x632BE59BD9B4E019L));
+        hsh = World.mix(hsh ^ r);
+        hsh = World.mix(hsh ^ (col * 0x9E3779B97F4A7C15L));
+        return World.unit(hsh);
+    }
+
+    /** How many metres of ground a degree of latitude is on the sphere: pi R / 180. */
+    public static final double M_A_DEGREE = Math.PI * EarthProj.RADIUS_M / 180;
+
+    /** A latitude-longitude grid's camera: rows row0 to row0 + rows - 1 of the planet at `arcmin` minutes a texel, every column (360 x 60 / arcmin), row 0 at the north pole - the planet's picture (GlobePicture). */
+    public Camera grid(int arcmin, int row0, int rows) {
+        return new Grid(arcmin, row0, rows);
+    }
+
+    /**
+     * The planet on a latitude-longitude grid: a pixel a texel, its centre
+     * the texel's; the rule's stride at least FAR_STRIDE, so each pixel reads
+     * the 4' far layers at its centre - at 4' its own cell of them (★E8); a
+     * vertex at its column and row, the columns wrapping at the date line; a
+     * column cos lat as wide on the ground as a row is tall (xScale()).
+     */
+    private final class Grid extends Camera {
+        private final double perDeg;
+        private final int level;
+
+        Grid(int arcmin, int row0, int rows) {
+            super(360 * 60 / arcmin, rows, Math.max(FAR_STRIDE, (int) Math.round(arcmin / 60.0 * M_A_DEGREE / World.PLOT_M)),
+                    0, row0, 1, arcmin / 60.0 * M_A_DEGREE, 360 * 60 / arcmin);
+            if (arcmin <= 0 || 60 % arcmin != 0) throw new IllegalArgumentException("a texel of " + arcmin + "' does not divide a degree");
+            this.perDeg = 60.0 / arcmin;
+            this.level = ditherLevel(arcmin / 60.0);
+        }
+
+        @Override double x(int px) { return 0; }
+        @Override double y(int py) { return 0; }
+
+        @Override boolean latLon(int px, int py, double[] ll) {
+            ll[0] = 90 - (oy + py + 0.5) / perDeg;
+            ll[1] = (px + 0.5) / perDeg - 180;
+            return true;
+        }
+
+        @Override double dither(int px, int py, double lat, double lon) { return globeDither(level, lat, lon); }
+
+        @Override int[] tiles() {
+            double north = 90 - oy / perDeg + WATER_PAD_DEG, south = 90 - (oy + h) / perDeg - WATER_PAD_DEG;
+            int r0 = (int) Math.max(-90, Math.floor(south)), r1 = (int) Math.min(89, Math.floor(north));
+            int[] out = new int[(r1 - r0 + 1) * 360];
+            int k = 0;
+            for (int lat = r0; lat <= r1; lat++) {
+                for (int lon = -180; lon < 180; lon++) {
+                    int t = EarthData.tile(lat, lon);
+                    if (data.entry("rivers", t) > 0 || data.entry("lakes.small", t) > 0) out[k++] = t;
+                }
+            }
+            return Arrays.copyOf(out, k);
+        }
+
+        @Override boolean place(double lat, double lon, double[] xy, boolean river) {
+            xy[0] = (EarthProj.normaliseLon(lon) + 180) * perDeg;
+            xy[1] = (90 - lat) * perDeg;
+            return true;
+        }
+
+        @Override double xScale(double lat) { return Math.max(1e-6, StrictMath.cos(StrictMath.toRadians(lat))); }
+    }
+
+    /**
+     * The globe's camera: pixels sx0 to sx0 + w - 1 across and sy0 to
+     * sy0 + h - 1 down of a view viewW x viewH pixels at kmPx km a pixel,
+     * orthographic round its centre with its roll (EarthProj.Ortho) -
+     * GlobeFrame's GROUND tier, a piece at a time. Its stride is a pixel's
+     * ground in plots, at least DITHER_STRIDE (GlobeFrame's handoff).
+     */
+    public Camera globe(EarthProj.Ortho view, double kmPx, double viewW, double viewH, int sx0, int sy0, int w, int h) {
+        return new Globe(view, kmPx, viewW, viewH, sx0, sy0, w, h);
+    }
+
+    /** The globe round a view centre with a roll: a pixel's centre through the orthographic inverse, a vertex through the forward (hidden on the far side), the forest dithered by globeDither() at the pixel's scale. */
+    private final class Globe extends Camera {
+        private final EarthProj.Ortho view;
+        private final double viewW, viewH, m;
+        private final int level;
+
+        Globe(EarthProj.Ortho view, double kmPx, double viewW, double viewH, int sx0, int sy0, int w, int h) {
+            super(w, h, Math.max(DITHER_STRIDE, (int) Math.round(kmPx * 1000 / World.PLOT_M)), sx0, sy0, 1, kmPx * 1000, 0);
+            this.view = view;
+            this.viewW = viewW;
+            this.viewH = viewH;
+            this.m = kmPx * 1000;
+            this.level = ditherLevel(m / M_A_DEGREE);
+        }
+
+        @Override double x(int px) { return 0; }
+        @Override double y(int py) { return 0; }
+
+        @Override boolean latLon(int px, int py, double[] ll) {
+            double sx = ox + px + 0.5, sy = oy + py + 0.5;
+            return view.inverse((sx - viewW / 2) * m, (viewH / 2 - sy) * m, ll);
+        }
+
+        @Override double dither(int px, int py, double lat, double lon) { return globeDither(level, lat, lon); }
+
+        @Override int[] tiles() { return globeTiles(view, m, viewW, viewH, ox, oy, w, h); }
+
+        @Override boolean place(double lat, double lon, double[] xy, boolean river) {
+            if (!view.forward(lat, lon, xy)) return false;
+            xy[0] = viewW / 2 + xy[0] / m;
+            xy[1] = viewH / 2 - xy[1] / m;
+            return true;
+        }
+    }
+
+    /**
+     * The 1-degree tiles whose rivers and small lakes may reach a piece of
+     * the globe's screen: (NODE_EDGE_POINTS + 1)^2 points over the piece -
+     * those past the disc taken at its limb - give a box of latitude and its
+     * arc of longitude (the widest gap between them left out), widened by
+     * WATER_PAD_DEG and the widest step between neighbouring points; every
+     * longitude where a pole is in the piece.
+     */
+    private int[] globeTiles(EarthProj.Ortho view, double m, double viewW, double viewH, double sx0, double sy0, int w, int h) {
+        int g = NODE_EDGE_POINTS;
+        double[][] pts = new double[(g + 1) * (g + 1)][];
+        double[] ll = new double[2];
+        double minLat = 90, maxLat = -90, gap = 0;
+        double limb = EarthProj.RADIUS_M * (1 - 1e-9);
+        for (int j = 0; j <= g; j++) {
+            for (int i = 0; i <= g; i++) {
+                double x = (sx0 + (double) w * i / g - viewW / 2) * m, y = (viewH / 2 - sy0 - (double) h * j / g) * m;
+                double r = Math.sqrt(x * x + y * y);
+                if (r > limb) {
+                    x *= limb / r;
+                    y *= limb / r;
+                }
+                view.inverse(x, y, ll);
+                pts[j * (g + 1) + i] = new double[] { ll[0], ll[1] };
+                minLat = Math.min(minLat, ll[0]);
+                maxLat = Math.max(maxLat, ll[0]);
+            }
+        }
+        // The widest step between neighbouring points, in degrees on the sphere: how far the ground between them may reach past the box.
+        for (int j = 0; j <= g; j++) {
+            for (int i = 0; i <= g; i++) {
+                double[] p = pts[j * (g + 1) + i];
+                if (i < g) gap = Math.max(gap, EarthProj.distanceM(p[0], p[1], pts[j * (g + 1) + i + 1][0], pts[j * (g + 1) + i + 1][1]));
+                if (j < g) gap = Math.max(gap, EarthProj.distanceM(p[0], p[1], pts[(j + 1) * (g + 1) + i][0], pts[(j + 1) * (g + 1) + i][1]));
+            }
+        }
+        double pad = WATER_PAD_DEG + gap / M_A_DEGREE;
+        double[] xy = new double[2];
+        boolean north = view.forward(90, 0, xy) && inPiece(xy, m, viewW, viewH, sx0, sy0, w, h);
+        boolean south = view.forward(-90, 0, xy) && inPiece(xy, m, viewW, viewH, sx0, sy0, w, h);
+        double lat0 = (south ? -90 : minLat) - pad, lat1 = (north ? 90 : maxLat) + pad;
+        // The arc of longitude the points hold: the circle less its widest gap between them.
+        double[] lons = new double[pts.length];
+        for (int k = 0; k < pts.length; k++) lons[k] = pts[k][1];
+        Arrays.sort(lons);
+        double widest = lons[0] + 360 - lons[lons.length - 1], from = lons[0];
+        for (int k = 1; k < lons.length; k++) {
+            if (lons[k] - lons[k - 1] > widest) {
+                widest = lons[k] - lons[k - 1];
+                from = lons[k];
+            }
+        }
+        double span = 360 - widest;
+        double cos = StrictMath.cos(StrictMath.toRadians(Math.min(89.9, Math.max(Math.abs(lat0), Math.abs(lat1)))));
+        double padLon = pad / cos;
+        boolean allLon = north || south || lat1 >= 90 || lat0 <= -90 || span + 2 * padLon >= 360;
+        int r0 = (int) Math.max(-90, Math.floor(lat0)), r1 = (int) Math.min(89, Math.floor(lat1));
+        long c0 = allLon ? -180 : (long) Math.floor(from - padLon), c1 = allLon ? 179 : (long) Math.floor(from + span + padLon);
+        int[] out = new int[(r1 - r0 + 1) * (int) (c1 - c0 + 1)];
+        int k = 0;
+        for (int lat = r0; lat <= r1; lat++) {
+            for (long lon = c0; lon <= c1; lon++) {
+                int t = EarthData.tile(lat, (int) (Math.floorMod(lon + 180, 360L) - 180));
+                if (data.entry("rivers", t) > 0 || data.entry("lakes.small", t) > 0) out[k++] = t;
+            }
+        }
+        return Arrays.copyOf(out, k);
+    }
+
+    /** Whether a point of the view's plane (metres) lies on the piece's pixels. */
+    private static boolean inPiece(double[] xy, double m, double viewW, double viewH, double sx0, double sy0, int w, int h) {
+        double sx = viewW / 2 + xy[0] / m, sy = viewH / 2 - xy[1] / m;
+        return sx >= sx0 && sx <= sx0 + w && sy >= sy0 && sy <= sy0 + h;
     }
 
     /**
