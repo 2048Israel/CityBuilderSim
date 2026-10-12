@@ -238,6 +238,42 @@ public class GdpCheck {
         older.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, worn, heldPrice);
         check("...and the month after measures against it", older.getInventoryHeld(), -wear * setPrice);
 
+        /*
+         * A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED (0.7.133, batch
+         * I8). The ensemble's first run with copper read GDP of -305,164 in
+         * month 899 of seed 5: Copper Refining had sold back a Scrap Copper
+         * Refinery the month before with 9,600 t of cathode in its yard, the
+         * yard went with the works (Sector.produceStock() reports the units it
+         * cannot hold as Output.writtenOff), and the fifth term booked the
+         * fall as negative investment. The units below are that yard's, at
+         * cathode's landed price from abroad.
+         */
+        System.out.println("\n--- a works sold back with its yard full is a loss of assets, not negative output ---");
+        int cu = heldAt(Good.COPPER);
+        double cathode = 9_600, tonne = Good.COPPER.worldImportPrice();
+        double[] cuPrice = new double[NationalAccounts.HELD.length];
+        cuPrice[cu] = tonne;
+        double[] none = new double[NationalAccounts.HELD.length], yardFull = new double[NationalAccounts.HELD.length];
+        yardFull[cu] = cathode;
+        NationalAccounts yard = new NationalAccounts();
+        yard.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, none, cuPrice);
+        yard.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, yardFull, cuPrice);
+        check("fixture: the yard filled is output held", yard.getInventoryHeld(), cathode * tonne);
+        yard.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, none, yardFull, cuPrice);
+        check("the month the works goes with its yard, the write-off is added back: no change in stock held",
+                yard.getInventoryHeld(), 0);
+        assertTrue("...so the month is not negative output", yard.getGdp() >= 0);
+        check("...and the accounts keep what was written off, in units", yard.getHeldWrittenOff()[cu], cathode);
+        check("...and measure next month from what was left, none", yard.getLastHeldUnits()[cu], 0);
+        yard.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, none, cuPrice);
+        check("...so the month after books no change either", yard.getInventoryHeld(), 0);
+        // ...and the same fact the other way up: a yard SOLD is a fall in stock, matched by the sale.
+        NationalAccounts sold = new NationalAccounts();
+        sold.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, yardFull, cuPrice);
+        sold.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cathode * tonne, none, cuPrice);
+        check("a yard exported is still the fall in stock it is", sold.getInventoryHeld(), -cathode * tonne);
+        check("...matched by the export, so the month adds nothing", sold.getGdp(), 0);
+
         System.out.println("\n--- a price move is not production ---");
 
         /*
@@ -528,19 +564,23 @@ public class GdpCheck {
         assertTrue("every good a sector holds is in an inventory term, or named as left out", missed.length() == 0);
         // ...and the integrated route's three stockable goods (0.7.123, batch I4; spec-materials 2.3) on HELD's end, in Good's
         // order - the steelworks' coke in the Coke Ovens' yard and the two coals - after crude, so a save's held slots keep their places.
-        // ...and since 0.7.131 (batch I7) cement after them, the cement plants' silos.
+        // ...and since 0.7.131 (batch I7) cement after them, the cement plants' silos, and since 0.7.133 (batch I8) cathode, copper's yards.
         int n = NationalAccounts.HELD.length;
-        assertTrue("HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), and cement after them"
-                        + " (0.7.131), each stockable",
-                n >= 5 && NationalAccounts.HELD[n - 5] == Good.CRUDE && NationalAccounts.HELD[n - 4] == Good.MET_COKE
-                        && NationalAccounts.HELD[n - 3] == Good.THERMAL_COAL && NationalAccounts.HELD[n - 2] == Good.COKING_COAL
-                        && NationalAccounts.HELD[n - 1] == Good.CEMENT
+        assertTrue("HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), cement after them (0.7.131)"
+                        + " and cathode after it (0.7.133), each stockable",
+                n >= 6 && NationalAccounts.HELD[n - 6] == Good.CRUDE && NationalAccounts.HELD[n - 5] == Good.MET_COKE
+                        && NationalAccounts.HELD[n - 4] == Good.THERMAL_COAL && NationalAccounts.HELD[n - 3] == Good.COKING_COAL
+                        && NationalAccounts.HELD[n - 2] == Good.CEMENT && NationalAccounts.HELD[n - 1] == Good.COPPER
                         && Good.MET_COKE.stockable() && Good.THERMAL_COAL.stockable() && Good.COKING_COAL.stockable()
-                        && Good.CEMENT.stockable());
+                        && Good.CEMENT.stockable() && Good.COPPER.stockable());
         boolean ovensHold = served.getSectors().heavyIndustry().isMaker(Good.MET_COKE) && Good.MET_COKE.stockable();
         assertTrue("...and Iron & Steel, which keeps a yard of coke, is counted by it", ovensHold && counted.contains(Good.MET_COKE));
         boolean silos = served.getSectors().cementConcrete().isMaker(Good.CEMENT) && Good.CEMENT.stockable();
         assertTrue("...and Cement & Concrete, which keeps a silo of cement, is counted by it (0.7.131)", silos && counted.contains(Good.CEMENT));
+        boolean yards = served.getSectors().copperMining().isMaker(Good.COPPER) && served.getSectors().copperRefining().isMaker(Good.COPPER)
+                && Good.COPPER.stockable();
+        assertTrue("...and Copper Mining and Copper Refining, which keep yards of cathode, are counted by it (0.7.133)",
+                yards && counted.contains(Good.COPPER));
 
         /*
          * ...AND IN A CITY: a railway that buys its fleet abroad. RailCheck's
@@ -601,6 +641,87 @@ public class GdpCheck {
         assertTrue("...so the month it lands is not negative output", town.getGdp() >= 0);
         check("...and the identity holds in it", town.getGdp(),
                 town.getConsumption() + town.getInvestment() + town.getGovernment() + town.getNetExports());
+
+        /*
+         * ...AND IN A CITY: a copper refinery retired with its yard full
+         * (0.7.133). The railway town's shape without its railway, played
+         * three years; one Electrolytic Refinery stood by hand, Copper
+         * Refining held so what stands is what the fixture laid, its yard
+         * filled to the room it has and a month played so the accounts count
+         * it as held; then the refinery retired. The month after, the yard
+         * goes with it, written off on its row; the strike at the top of the
+         * next keeps those units past the rows it clears, and the accounts
+         * struck after it are handed them: the month is not negative, though
+         * the yard is worth more than the town makes, so booked as a fall in
+         * stock it would be.
+         */
+        System.out.println("\n--- a city whose copper refinery goes with its yard full ---");
+        GameFiles cuFiles = GameFiles.scratch("gdpcheck-copper");
+        Game cuTown = new Game(cuFiles);
+        BuildingsTemplate refinery;
+        ham.citybuildersim.sectors.CopperRefining refiners;
+        double room, kept, lost = 0;
+        boolean cuSaved;
+        Game cuBack = new Game(cuFiles);
+        System.setOut(quiet);
+        try {
+            cuTown.newGame();
+            cuTown.setCashForTest(Founding.WEALTHY_CASH);
+            cuTown.getBusinessInvestment().holdSector(Sectors.COPPER_REFINING);
+            cuTown.getLandManager().setOwnedSqFt(400_000_000L);
+            BuildingManager b = cuTown.getBuildingManager();
+            refinery = b.getTemplate(ham.citybuildersim.sectors.CopperRefining.ELECTROLYTIC_REFINERY);
+            cuTown.buildStack(b.getTemplateByName("House"), 900, true);
+            cuTown.buildStack(b.getTemplateByName("Convenience Store"), 20, true);
+            cuTown.buildStack(b.getTemplateByName("Small Grocery Store"), 6, true);
+            cuTown.buildStack(b.getTemplateByName("Paved Road"), 60, true);
+            cuTown.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            cuTown.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+            cuTown.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
+            cuTown.simulateMonths(36);
+            cuTown.buildStack(refinery, 1, true);
+            refiners = cuTown.getSectors().copperRefining();
+            room = refiners.getStockCapacity(Good.COPPER);
+            refiners.setStock(Good.COPPER, room);
+            cuTown.simulateMonths(1);
+            kept = refiners.getStock(Good.COPPER);
+            cuTown.getBuildingManager().retire(refinery, 1);
+            cuTown.simulateMonths(1);
+            for (Sector s : cuTown.getSectors().all()) {
+                Sector.Output row = s.outputRow(Good.COPPER);
+                if (row != null) lost += row.writtenOff;
+            }
+            cuSaved = cuTown.saveGame(1, "gdpcheck copper").ok;
+            cuBack.loadGameSave(1);
+            cuTown.simulateMonths(1);
+            cuBack.simulateMonths(1);
+        } finally { System.setOut(out); }
+        NationalAccounts cuAcc = cuTown.getEconomyManager().getNationalAccounts();
+        double cuLanded = EconomyManager.heldPrice(cuTown.getMarkets().get(Good.COPPER));
+        double booked = cuAcc.getGdp() - lost * cuLanded;
+        System.out.printf("   a yard of %,.0f t, %,.0f t of it kept a month; %,.0f t written off at %,.2f a tonne;"
+                        + " GDP %,.2f (held stock %,.2f) - booked as a fall in stock it would read %,.2f%n",
+                room, kept, lost, cuLanded, cuAcc.getGdp(), cuAcc.getInventoryHeld(), booked);
+        assertTrue("fixture: the refinery went with cathode in its yard, and the yard was written off",
+                room > 0 && kept > 0 && lost > 0 && refiners.getStock(Good.COPPER) == 0);
+        check("the strike kept the units its rows wrote off", refiners.writtenOffStruck(Good.COPPER), lost);
+        check("the accounts were handed the units written off", cuAcc.getHeldWrittenOff()[cu], lost);
+        assertTrue("fixture: the yard is worth more than the town makes in a month, so booked as a fall in stock the month reads negative",
+                booked < 0);
+        assertTrue("...so the month the works goes is not negative output", cuAcc.getGdp() >= 0);
+        check("...and the identity holds in it", cuAcc.getGdp(),
+                cuAcc.getConsumption() + cuAcc.getInvestment() + cuAcc.getGovernment() + cuAcc.getNetExports());
+        // ...and across a save taken in the month the yard went: the rows are not saved, the units written off are.
+        NationalAccounts cuBackAcc = cuBack.getEconomyManager().getNationalAccounts();
+        assertTrue("fixture: saved in the month the yard was written off", cuSaved && lost > 0);
+        check("a city loaded from that save hands its accounts the same units", cuBackAcc.getHeldWrittenOff()[cu], lost);
+        check("...and strikes the same GDP", cuBackAcc.getGdp(), cuAcc.getGdp());
+        try (var walk = java.nio.file.Files.walk(cuFiles.getDirectory())) {
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try { java.nio.file.Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }
+            });
+        } catch (java.io.IOException ignored) { }
+
         try (var walk = java.nio.file.Files.walk(railFiles.getDirectory())) {
             walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
                 try { java.nio.file.Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }

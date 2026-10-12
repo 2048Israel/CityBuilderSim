@@ -253,12 +253,12 @@ public class BuildCardCheck {
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) industry.add(gr.title());
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.SHOPS, null)) shops.add(gr.title());
         // ...the mills' and the mines' named for their sectors since 0.7.120 (batch I3, Jerus's Q2): "Steel" and "Iron" until then.
-        assertTrue("Industry is twelve groups by owning sector - Coal Mining's \"Coal\" since 0.7.126, Quarrying's \"Stone\" and Cement &"
-                        + " Concrete's \"Cement\" since 0.7.131 - and oil storage (0.7.85), the ports (0.7.86) and the oil at sea's platforms"
-                        + " and pipelines (0.7.91): " + industry,
+        assertTrue("Industry is thirteen groups by owning sector - Coal Mining's \"Coal\" since 0.7.126, Quarrying's \"Stone\" and Cement &"
+                        + " Concrete's \"Cement\" since 0.7.131, copper's \"Copper\" since 0.7.133 - and oil storage (0.7.85), the ports"
+                        + " (0.7.86) and the oil at sea's platforms and pipelines (0.7.91): " + industry,
                 industry.equals(List.of("Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal",
-                        "Stone", "Cement", "Oil", "Oil platforms", "Oil pipelines", "Refining", "Oil storage", "Ports", "Building materials",
-                        "Builders")));
+                        "Stone", "Cement", "Copper", "Oil", "Oil platforms", "Oil pipelines", "Refining", "Oil storage", "Ports",
+                        "Building materials", "Builders")));
         // ...and the Coal group (0.7.126, batch I6; spec-materials 4: "+ Coal, Copper, Stone, Wood, Cement"): Coal Mining's four.
         List<String> coal = new ArrayList<>();
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) {
@@ -278,6 +278,17 @@ public class BuildCardCheck {
                         + " (0.7.131): " + stone,
                 stone.equals(java.util.Map.of("Stone", List.of("Quarry", "Large Quarry", "Dimension Stone Quarry"),
                         "Cement", List.of("Cement Plant", "Large Cement Plant", "Lime Kiln"))));
+        // ...and copper's one group (0.7.133, batch I8; spec-materials 4's one word for the chain): Copper Mining's three and Copper
+        // Refining's four together, the Wire & Cable Works with Manufacturing's.
+        List<String> copper = new ArrayList<>(), fab = new ArrayList<>();
+        for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) {
+            if (gr.title().equals("Copper")) for (BuildCard.Figures f : gr.cards()) copper.add(f.template().getName());
+            if (gr.title().equals("Fabrication & machinery")) for (BuildCard.Figures f : gr.cards()) fab.add(f.template().getName());
+        }
+        assertTrue("...the Copper group is Copper Mining's three and Copper Refining's four, in the catalogue's order, and the Wire & Cable"
+                        + " Works sits with Manufacturing's (0.7.133): " + copper,
+                copper.equals(List.of("Copper Mine & Mill", "Large Copper Mine", "Leach & SX-EW Plant", "Copper Smelter",
+                        "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mill")) && fab.contains("Wire & Cable Works"));
         // ...the oil at sea (0.7.91): the wells' group the Oil Well and the Platform Well, the platforms' the jacket in its wells'
         // slots, the pipelines' a kilometre of pipe - all the investors'.
         java.util.Map<String, List<String>> oilGroups = new java.util.LinkedHashMap<>();

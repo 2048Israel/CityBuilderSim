@@ -1936,6 +1936,9 @@ public class EconomyManager {
             for (Good fg : ham.citybuildersim.sectors.Retail.SHELF) {
                 double held = s.getStock(fg) + s.getPantry(fg);
                 foodUnits      += held * fg.worldImportPrice();
+                // NOT A LIVE FIGURE (found 0.7.133): this row was cleared by strikeSectors() before the accounts
+                // are struck, so it reads zero. HELD's goods read Sector.writtenOffStruck(); moving food onto it
+                // would move every city whose shop or mill loses a warehouse, so it is left to its own batch.
                 foodWrittenOff += s.output(fg).writtenOff * fg.worldImportPrice();
                 foodAtLocal    += held * Math.max(0, markets.get(fg).getLocalPrice());
             }
@@ -1971,10 +1974,16 @@ public class EconomyManager {
          * SECTOR HOLDS IS THE FIFTH TERM, for the month it read as -16,056.
          */
         double[] heldUnits = new double[NationalAccounts.HELD.length];
+        double[] heldWrittenOff = new double[NationalAccounts.HELD.length];
         double[] heldPrices = new double[NationalAccounts.HELD.length];
         for (int i = 0; i < NationalAccounts.HELD.length; i++) {
             Good g = NationalAccounts.HELD[i];
-            for (Sector s : sectors.all()) heldUnits[i] += s.getStock(g) + s.getPantry(g);
+            for (Sector s : sectors.all()) {
+                heldUnits[i] += s.getStock(g) + s.getPantry(g);
+                // ...and what went with a yard sold back in the month struck (0.7.133): see NationalAccounts,
+                // A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED. Kept past the strike, which has cleared the rows by now.
+                heldWrittenOff[i] += s.writtenOffStruck(g);
+            }
             // ...and the city's own crude, its strategic reserve (0.7.85).
             if (g == Good.CRUDE && cityCrudeTonnes > 0) heldUnits[i] += cityCrudeTonnes;
             heldPrices[i] = heldPrice(markets.get(g));
@@ -1999,7 +2008,7 @@ public class EconomyManager {
                 governmentServices,
                 foodImports, materialImports,
                 rawImports, exports,
-                heldUnits, heldPrices);
+                heldUnits, heldWrittenOff, heldPrices);
 
         nationalAccounts.updateGovernment(
                 getBusinessTax(), getIndustrialTax(), salesTax, totalWageTax,

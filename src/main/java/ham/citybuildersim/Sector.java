@@ -1224,6 +1224,40 @@ public abstract class Sector {
         }
     }
 
+    /* ===================================================================
+       WHAT A MONTH WROTE OFF, PAST ITS STRIKE (0.7.133, batch I8)
+
+       The national accounts are struck after strikeSectors() has banked the
+       month and cleared the rows (Game.startOfMonthUpdate(): strikeSectors(),
+       then updateNationalAccounts()), so a row's writtenOff - the stock a
+       yard sold back or demolished could not hold, produceStock() - had
+       always read zero by the time they asked. bank() keeps the month's
+       write-offs here before it clears the rows, for the accounts
+       (NationalAccounts, A YARD SOLD BACK FULL IS WRITTEN OFF, NOT
+       UNPRODUCED); and the rows are not saved, so the month a save was taken
+       in carries its write-offs to the first strike, as the trade above does.
+       =================================================================== */
+
+    /** Units written off in the month a save was taken, by good: read by unitsWrittenOff() until the first strike after the load. */
+    private final Map<Good, Double> carriedWrittenOff = new EnumMap<>(Good.class);
+
+    /** ...and the units written off in the month the last strike banked, by good: what the accounts add back. */
+    private final Map<Good, Double> struckWrittenOff = new EnumMap<>(Good.class);
+
+    /** Units of a good written off in the month in progress: its row, and in a city just loaded what the save carried. Read-only. */
+    public double unitsWrittenOff(Good g) {
+        Output o = outputs.get(g);
+        double row = o == null ? 0 : o.writtenOff;
+        Double carried = carriedWrittenOff.get(g);
+        return carried == null ? row : row + carried;
+    }
+
+    /** ...and in the month the last strike banked (0.7.133): what NationalAccounts' fifth term adds back. */
+    public double writtenOffStruck(Good g) {
+        Double v = struckWrittenOff.get(g);
+        return v == null ? 0 : v;
+    }
+
     /** True from the load of a save that carried the month's trade in money alone until deriveCarriedTrade() has read it. */
     private boolean tradeToDerive;
 
@@ -1967,6 +2001,13 @@ public abstract class Sector {
         if (s.borrowingCosts != 0) cash += s.borrowingCosts;
         pending.clear();
         rShelfShort = rShelfShortValue = 0;
+        // ...the month's write-offs kept past the rows, for the accounts (0.7.133): WHAT A MONTH WROTE OFF, PAST ITS STRIKE.
+        struckWrittenOff.clear();
+        for (Good g : Good.values()) {
+            double lost = unitsWrittenOff(g);
+            if (lost > 0) struckWrittenOff.put(g, lost);
+        }
+        carriedWrittenOff.clear();
         for (Output o : outputs.values()) {
             o.soldLocal = 0; o.exported = 0; o.writtenOff = 0; o.offered = 0; o.withheld = 0;
         }
@@ -2770,6 +2811,12 @@ public abstract class Sector {
             if (shipped > 0) s.exported.put(g.name(), shipped);
             if (landed > 0) s.imported.put(g.name(), landed);
         }
+        // ...and what the month wrote off (0.7.133), through its getter: WHAT A MONTH WROTE OFF, PAST ITS STRIKE.
+        s.writtenOff = new LinkedHashMap<>();
+        for (Good g : Good.values()) {
+            double lost = unitsWrittenOff(g);
+            if (lost > 0) s.writtenOff.put(g.name(), lost);
+        }
         s.extras = new LinkedHashMap<>();
         saveExtras(s.extras);
         return s;
@@ -2833,6 +2880,9 @@ public abstract class Sector {
         // from before it has no map, which is the zero it always read.
         carry(s.exported, carriedExports);
         carry(s.imported, carriedImports);
+        // ...and its write-offs (0.7.133); an older save has none, which is what its accounts added back.
+        carry(s.writtenOff, carriedWrittenOff);
+        struckWrittenOff.clear();
         // ...and a save from before the units carries neither map: derived once the prices are back.
         tradeToDerive = s.exported == null && s.imported == null;
         restoreExtras(s.extras == null ? new LinkedHashMap<>() : s.extras);
@@ -2874,6 +2924,8 @@ public abstract class Sector {
         inputs.clear();
         carriedExports.clear();
         carriedImports.clear();
+        carriedWrittenOff.clear();
+        struckWrittenOff.clear();
         restoreStatement(new Statement());
         interestExpense = propertyTaxExpense = maintenanceExpense = 0;
         landValue = buildingsValue = bondsPayable = 0;

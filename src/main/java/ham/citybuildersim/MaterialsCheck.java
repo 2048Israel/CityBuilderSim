@@ -427,19 +427,23 @@ public class MaterialsCheck {
         assertTrue("a works needing more than it makes uses all it makes and asks the market for the rest: 2,400 t made, 1,600 t asked",
                 w.outputRow(Good.STEEL).captive == steelMade && w.outputRow(Good.STEEL).produced == 0
                         && w.bid(Good.STEEL) == 2 * 2000 * rate - steelMade);
-        // One sector in the game keeps captive goods since 0.7.123 (batch I4): Iron & Steel, its scrap, coke and pig iron.
+        // One sector in the game keeps captive goods since 0.7.123 (batch I4): Iron & Steel, its scrap, coke and pig iron; and since
+        // 0.7.133 (batch I8; spec 2.7, "anode and cathode in Copper Refining") a second, Copper Refining.
         Game g = new Game(GameFiles.scratch("materialscheck-captive"));
         quietly(g::newGame);
         boolean others = true;
-        java.util.Set<Good> kept = java.util.EnumSet.noneOf(Good.class);
+        java.util.Set<Good> kept = java.util.EnumSet.noneOf(Good.class), copper = java.util.EnumSet.noneOf(Good.class);
         for (Sector s : g.getSectors().all()) for (Good x : s.goodsMade()) {
             if (s == g.getSectors().heavyIndustry()) { if (s.captive(x)) kept.add(x); }
+            else if (s == g.getSectors().copperRefining()) { if (s.captive(x)) copper.add(x); }
             else others &= !s.captive(x) && s.captiveUnits(x) == 0;
         }
-        assertTrue("one sector in the game keeps captive goods, Iron & Steel (a ProcessingSector since 0.7.120): since 0.7.123 its"
-                        + " scrap, coke and pig iron, which its works both make and use; every other none (Sector.captive() false): " + kept,
+        assertTrue("two sectors in the game keep captive goods, Iron & Steel (a ProcessingSector since 0.7.120): since 0.7.123 its"
+                        + " scrap, coke and pig iron, which its works both make and use - and since 0.7.133 Copper Refining, its anode and"
+                        + " cathode; every other none (Sector.captive() false): " + kept + " " + copper,
                 others && g.getSectors().heavyIndustry() instanceof ProcessingSector
-                        && kept.equals(java.util.EnumSet.of(Good.SCRAP, Good.PIG_IRON, Good.MET_COKE)));
+                        && kept.equals(java.util.EnumSet.of(Good.SCRAP, Good.PIG_IRON, Good.MET_COKE))
+                        && copper.equals(java.util.EnumSet.of(Good.ANODE, Good.COPPER)));
     }
 
     /* ============================ 4. the works' own power ============================ */

@@ -211,10 +211,15 @@ public class NationalAccounts {
      * ...AND SINCE 0.7.131 (batch I7) CEMENT, on the end: the cement plants'
      * silos (Cement & Concrete). A save from before carries one slot fewer
      * and reads cement as none, which is what that city held.
+     *
+     * ...AND SINCE 0.7.133 (batch I8) COPPER, the cathode, on the end: the
+     * leach plants' and the refineries' yards (Copper Mining, Copper
+     * Refining). A save from before carries one slot fewer and reads cathode
+     * as none, which is what that city held.
      */
     public static final Good[] HELD = { Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL,
             Good.LPG, Good.NAPHTHA, Good.JET, Good.LUBRICANTS, Good.FUEL_OIL, Good.BITUMEN, Good.COKE, Good.CRUDE,
-            Good.MET_COKE, Good.THERMAL_COAL, Good.COKING_COAL, Good.CEMENT };
+            Good.MET_COKE, Good.THERMAL_COAL, Good.COKING_COAL, Good.CEMENT, Good.COPPER };
 
     /** ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. */
     public static final int HELD_BEFORE_FUEL = 3;
@@ -226,6 +231,9 @@ public class NationalAccounts {
     public static final Good NOT_HELD = Good.CARS;
 
     private final double[] lastHeldUnits = new double[HELD.length];
+
+    /** The month's units of each good in HELD written off with the yard that held them (0.7.133): a flow, read in the month it is handed in. */
+    private final double[] heldWrittenOffUnits = new double[HELD.length];
 
     /** Whether lastHeldUnits is a real baseline: false only after loading a save from before 0.7.58, whose first month books no change in these goods. */
     private boolean heldBaselineKnown = true;
@@ -335,6 +343,8 @@ public class NationalAccounts {
     public double getInventoryHeld()         { return invHeld; }
     /** Last month's units of each good in HELD, in its order (0.7.58). */
     public double[] getLastHeldUnits()       { return lastHeldUnits.clone(); }
+    /** The month's units of each good in HELD destroyed with the yard that held them, in its order, added back before the change was measured (0.7.133). */
+    public double[] getHeldWrittenOff()      { return heldWrittenOffUnits.clone(); }
     public boolean isBaselineKnown()     { return inventoryBaselineKnown; }
 
     /**
@@ -392,6 +402,26 @@ public class NationalAccounts {
                        double foodImports, double materialImports,
                        double rawMaterialImports, double exportRevenue,
                        double[] heldUnits, double[] heldPrices) {
+        update(retailSales, rentPaid, constructionWorkDone, foodUnits, foodStockWrittenOff, foodPrice,
+                materialUnits, materialPrice, luxuryUnits, luxuryPrice, governmentServices,
+                foodImports, materialImports, rawMaterialImports, exportRevenue, heldUnits, null, heldPrices);
+    }
+
+    /**
+     * ...and with the units of HELD's goods written off this month (0.7.133),
+     * in HELD's order, or null for none: stock destroyed with the yard that
+     * held it, added back before the change is measured as food's write-off
+     * is - see A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED.
+     */
+    public void update(double retailSales, double rentPaid,
+                       double constructionWorkDone,
+                       double foodUnits, double foodStockWrittenOff, double foodPrice,
+                       double materialUnits, double materialPrice,
+                       double luxuryUnits, double luxuryPrice,
+                       double governmentServices,
+                       double foodImports, double materialImports,
+                       double rawMaterialImports, double exportRevenue,
+                       double[] heldUnits, double[] heldWrittenOff, double[] heldPrices) {
 
         consumptionGoods = retailSales;
         consumptionHousing = rentPaid;
@@ -411,7 +441,9 @@ public class NationalAccounts {
              * The write-off is added back before the change is measured. Stock
              * destroyed with the capacity that held it left the city, but it was
              * not consumed and it was not unproduced - counting it here would
-             * book a demolition as a month of negative output.
+             * book a demolition as a month of negative output. (Found 0.7.133:
+             * the figure handed in here has read zero - see A YARD SOLD BACK
+             * FULL IS WRITTEN OFF, NOT UNPRODUCED, below.)
              */
             invFood = ((foodUnits + foodStockWrittenOff) - lastFoodVolume) * foodPrice;
 
@@ -468,10 +500,34 @@ public class NationalAccounts {
 
             // ...and every other good held, a good at a time (0.7.58): see
             // EVERY OTHER GOOD A SECTOR HOLDS IS THE FIFTH TERM.
+            /* =============================================================
+               A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED (0.7.133,
+               batch I8)
+
+               FIFTH SIGHTING OF THE SHAPE, the other way up. The ensemble's
+               first run with copper read GDP of -305,164 in month 899 of seed
+               5 (AUTO2), and in three seeds besides, where main's run before
+               copper read none: Copper Refining had sold back its one Scrap
+               Copper Refinery with 9,600 t of cathode in its yard, the yard
+               went with the works (Sector.produceStock() caps the stock at
+               the room left and reports the rest as Output.writtenOff), and
+               the fifth term booked the fall as 785,645 of negative
+               investment. The goods in HELD never had the add-back food's
+               line above was given.
+
+               So food's rule: the units written off are added back before the
+               change is measured, and next month measures from what is left.
+               The stock was counted as output the month it was made; losing
+               it with the works is a loss of assets, not a month of negative
+               production. The units come from Sector.writtenOffStruck(), not
+               the row: the accounts are struck after strikeSectors() clears
+               the rows - which is why food's own add-back, reading the row
+               (EconomyManager.updateNationalAccounts()), has read zero.
+               ============================================================= */
             invHeld = 0;
             if (heldBaselineKnown) {
                 for (int i = 0; i < HELD.length; i++) {
-                    invHeld += (held(heldUnits, i) - lastHeldUnits[i]) * held(heldPrices, i);
+                    invHeld += (held(heldUnits, i) + held(heldWrittenOff, i) - lastHeldUnits[i]) * held(heldPrices, i);
                 }
             }
 
@@ -482,6 +538,7 @@ public class NationalAccounts {
             inventoryBaselineKnown = true;
         }
         heldBaselineKnown = true;
+        for (int i = 0; i < HELD.length; i++) heldWrittenOffUnits[i] = held(heldWrittenOff, i);
 
         lastFoodVolume = foodUnits;
         lastMaterialUnits = materialUnits;

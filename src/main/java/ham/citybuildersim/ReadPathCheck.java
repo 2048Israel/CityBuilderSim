@@ -230,6 +230,14 @@ public class ReadPathCheck {
         into.put("oldMetal.lastLandfill", old.lastLandfill());
         into.put("oldMetal.lastPrice", old.lastPrice());
         into.put("oldMetal.lastPaid", old.lastPaidTotal());
+        // ...and its old copper (0.7.133, batch I8): the same, the scrap refineries' month.
+        OldMetal.Pool cu = old.copper();
+        into.put("oldCopper.available", cu.available());
+        into.put("oldCopper.lastArisen", cu.lastArisen());
+        into.put("oldCopper.lastBought", cu.lastBought());
+        into.put("oldCopper.lastLandfill", cu.lastLandfill());
+        into.put("oldCopper.lastPrice", cu.lastPrice());
+        into.put("oldCopper.lastPaid", cu.lastPaidTotal());
         for (String s : cr.sectors()) {
             into.put("credit.bonds." + s, cr.getBondPrincipal(s));
             into.put("credit.bondsLost." + s, cr.getBondWrittenOffTotal(s));
@@ -281,6 +289,24 @@ public class ReadPathCheck {
         heavy.oldSteelPrice();
         heavy.tonnesMoved();
         heavy.appraise(g.getBusinessInvestment(), g);
+        // ...and the old copper and what Copper Refining's scrap refineries would make of it (0.7.133, batch I8), as its page and the
+        // build card read them: the pool, the refineries' intake, price and take, their bid for scrap, and every works weighed.
+        OldMetal.Pool cu = old.copper();
+        cu.available();
+        cu.lastArisen();
+        cu.lastPaid();
+        for (OldMetal.Source src : OldMetal.Source.values()) { cu.available(src); cu.lastArisen(src); }
+        ham.citybuildersim.sectors.CopperRefining copper = g.getSectors().copperRefining();
+        copper.oldCopperIntake();
+        copper.oldCopperPrice();
+        copper.oldCopperTaken();
+        copper.spareOldCopper();
+        copper.leftForTheLast();
+        copper.bid(Good.COPPER_SCRAP);
+        copper.ownLines(g);
+        copper.appraise(g.getBusinessInvestment(), g);
+        g.getSectors().copperMining().lift();
+        g.getSectors().copperMining().ownLines(g);
         // ...and the health service's price and premium, as the Health page
         // and the Services tab read them (2026-09-19)
         e.getHealthPremiums();
@@ -857,8 +883,11 @@ public class ReadPathCheck {
         // save carries (A1, both maps through the getters and the save's state)
         for (Sector trader : g.getSectors().all()) {
             for (Good good : Good.values()) { trader.unitsExported(good); trader.unitsImported(good); }
+            // ...and since 0.7.133 the month's write-offs, carried the same way, and the struck ones the accounts read
+            for (Good good : Good.values()) { trader.unitsWrittenOff(good); trader.writtenOffStruck(good); }
             trader.toState();
         }
+        g.getEconomyManager().getNationalAccounts().getHeldWrittenOff();
         g.getForeignAccounts().coverWith(1_000);
         g.getForeignAccounts().coverWith(-1_000);
         g.getForeignAccounts().toCover(ForeignAccounts.THIN_COVER);

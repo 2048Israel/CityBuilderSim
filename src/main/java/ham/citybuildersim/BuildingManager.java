@@ -3011,6 +3011,198 @@ public class BuildingManager {
                 .setSince(1900)
                 .setId(120));
 
+        /* --------------------- COPPER MINING AND COPPER REFINING (0.7.133, batch I8) ---------------------
+           runs/spec-materials.md 2.1, 2.2, 2.4, 2.9 and 5's I8 row; the study's
+           (materials-chains-research.md) 1.4 and 4. Copper Mining, on the end of
+           Sectors.KEYS after Cement & Concrete, digs copper's two types of field -
+           sulphide, floated into concentrate at the mine, and oxide, leached to
+           cathode there - and Copper Refining, after it, smelts, refines and rolls
+           it; Manufacturing draws the rod into wire and cable. Their eight, the
+           study's 4.3:
+             - the COPPER MINE & MILL: 2,200 t of concentrate a month on one
+               sulphide site, .341 t of the field's copper a tonne;
+             - the LARGE COPPER MINE: 26,400 t on eight sites of one sulphide
+               field, the same;
+             - the LEACH & SX-EW PLANT: 1,000 t of cathode on one oxide site, 1.4 t
+               a tonne, from 3,500 t of acid;
+             - the COPPER SMELTER: 9,750 t of anode and 29,700 t of sulphuric acid
+               from 33,000 t of concentrate;
+             - the ELECTROLYTIC REFINERY: 9,700 t of cathode from 9,750 t of anode;
+             - the SCRAP COPPER REFINERY: 4,000 t of cathode from 4,400 t of the
+               city's old copper (its oldMetal) and scrap past it;
+             - the ROD MILL: 8,000 t of rod from 8,016 t of cathode;
+             - the WIRE & CABLE WORKS, Manufacturing's: 2,000 t of wire and cable
+               from 2,000 t of rod, its insulation in its upkeep.
+           The house conventions (spec 2.2), as I4's to I7's rows: cash the all-in
+           cost over 1.3, material a sixtieth of the cash, points a half, cash
+           taking the material's rounding; the study's posts split by its
+           families by largest remainder, ties to the less skilled (the Copper
+           Mine & Mill the mines' 75/20/5/0, the Large Copper Mine and the leach
+           plant the large mines' 60/27.5/10/2.5, the four works the heavy
+           plants' 54/35/9/2, the wire works the light plants' 50/46/4/0); power
+           the study's kW; water the Steel Mini-Mill's 320 for 3,700 kW, the study
+           giving none; ground a copper site's 0.5 km2 a site, the works the Steel
+           Foundry's ground per D$ of cost and the wire works the Fabrication
+           Shop's; road load the tonnes out (mines; the leach plant's acid in too)
+           at the Iron Mine's 420 for 2,500 t, or in and out at the Steel
+           Foundry's 110 for 2,520 t (plants); stock three months of cathode, the
+           one stockable output; no diesel - the study names none. The study's
+           4.3 gives no running cost, so each row's is the middle of the range on
+           which all four of its 4.4 returns round to the table - the scrap
+           refinery's from its stated -0.02% in case A - and the consumables that
+           running cost less wages, power and water. "since": 1900 for all but
+           the Large Copper Mine, 1906 (Bingham Canyon, research-1900.md 1.2),
+           and the Leach & SX-EW Plant, 1968 (Bluebird, research-design.md E12).
+           ------------------------------------------------------------------------------ */
+        templates.add(new BuildingsTemplate("Copper Mine & Mill", BuildingType.MINING)   // one sulphide site: ore floated to concentrate at the mine
+                .setCashCost(123082)
+                .setConstructionPoints(61541)
+                .setConstructionMaterials(2051)
+                .setSector("Copper Mining")
+                .makes(Good.COPPER_CONC, 2200)
+                .setElectricityConsumption(5500)
+                .setWaterConsumption(476)
+                .setConsumables(981.3)          // runs 1,512.5 (the study's 4.4) - 452.40 wages - 55.00 power - 23.80 water
+                .setLandSqFt(5381955)           // one copper site, 0.5 km2
+                .setRoadLoad(370)               // 2,200 t of concentrate out, at the Iron Mine's 420 for 2,500 t
+                .setJobs(JobType.NO_DIPLOMA, 90)
+                .setJobs(JobType.DIPLOMA, 24)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 6)
+                .setSite(Resource.COPPER, Deposit.FieldType.SULPHIDE, 1, 0.341)
+                .setSince(1900)
+                .setId(121));
+        templates.add(new BuildingsTemplate("Large Copper Mine", BuildingType.MINING)   // eight sites of one sulphide field: an open pit, Bingham Canyon 1906
+                .setCashCost(1538462)
+                .setConstructionPoints(769231)
+                .setConstructionMaterials(25641)
+                .setSector("Copper Mining")
+                .makes(Good.COPPER_CONC, 26400)
+                .setElectricityConsumption(60000)
+                .setWaterConsumption(5189)
+                .setConsumables(9260.65)        // 11,950 - 1,829.90 wages - 600.00 power - 259.45 water
+                .setLandSqFt(43055642)          // eight copper sites
+                .setRoadLoad(4435)              // 26,400 t of concentrate out
+                .setJobs(JobType.NO_DIPLOMA, 270)
+                .setJobs(JobType.DIPLOMA, 124)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 45)
+                .setJobs(JobType.UNIV_SCIENCE, 11)
+                .setSite(Resource.COPPER, Deposit.FieldType.SULPHIDE, 8, 0.341)
+                .setSince(1906)
+                .setId(122));
+        templates.add(new BuildingsTemplate("Leach & SX-EW Plant", BuildingType.MINING)   // one oxide site: ore leached with acid to cathode at the mine, 1968
+                .setCashCost(192310)
+                .setConstructionPoints(96155)
+                .setConstructionMaterials(3205)
+                .setSector("Copper Mining")
+                .makes(Good.COPPER, 1000)
+                .uses(Good.ACID, 3500)
+                .setElectricityConsumption(6000)
+                .setWaterConsumption(519)
+                .setConsumables(1025.35)        // 1,722.5 - 611.20 wages - 60.00 power - 25.95 water
+                .setLandSqFt(5381955)           // one copper site
+                .setRoadLoad(756)               // 1,000 t of cathode out and 3,500 t of acid in
+                .setStock(3000)
+                .setJobs(JobType.NO_DIPLOMA, 90)
+                .setJobs(JobType.DIPLOMA, 41)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 15)
+                .setJobs(JobType.UNIV_SCIENCE, 4)
+                .setSite(Resource.COPPER, Deposit.FieldType.OXIDE, 1, 1.4)
+                .setSince(1968)
+                .setId(123));
+        templates.add(new BuildingsTemplate("Copper Smelter", BuildingType.HEAVY_INDUSTRY)   // concentrate into anode, and acid from its gas
+                .setCashCost(384620)
+                .setConstructionPoints(192310)
+                .setConstructionMaterials(6410)
+                .setSector("Copper Refining")
+                .makes(Good.ANODE, 9750)
+                .makes(Good.ACID, 29700)
+                .uses(Good.COPPER_CONC, 33000)
+                .setElectricityConsumption(13400)
+                .setWaterConsumption(1159)
+                .setConsumables(2189.37)        // 5,253 - 2,871.68 wages - 134.00 power - 57.95 water
+                .setLandSqFt(1502053)           // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(3163)              // 33,000 t in and 39,450 t out, at the Steel Foundry's 110 for 2,520 t
+                .setJobs(JobType.NO_DIPLOMA, 378)
+                .setJobs(JobType.DIPLOMA, 245)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 63)
+                .setJobs(JobType.UNIV_SCIENCE, 14)
+                .setSince(1900)
+                .setId(124));
+        templates.add(new BuildingsTemplate("Electrolytic Refinery", BuildingType.HEAVY_INDUSTRY)   // anode into cathode
+                .setCashCost(138456)
+                .setConstructionPoints(69228)
+                .setConstructionMaterials(2308)
+                .setSector("Copper Refining")
+                .makes(Good.COPPER, 9700)
+                .uses(Good.ANODE, 9750)
+                .setElectricityConsumption(6000)
+                .setWaterConsumption(519)
+                .setConsumables(553.57)         // 1,460 - 820.48 wages - 60.00 power - 25.95 water
+                .setLandSqFt(540739)            // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(849)               // 9,750 t in and 9,700 t out
+                .setStock(29100)
+                .setJobs(JobType.NO_DIPLOMA, 108)
+                .setJobs(JobType.DIPLOMA, 70)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 18)
+                .setJobs(JobType.UNIV_SCIENCE, 4)
+                .setSince(1900)
+                .setId(125));
+        templates.add(new BuildingsTemplate("Scrap Copper Refinery", BuildingType.HEAVY_INDUSTRY)   // the city's old copper and scrap into cathode
+                .setCashCost(215380)
+                .setConstructionPoints(107690)
+                .setConstructionMaterials(3590)
+                .setSector("Copper Refining")
+                .makes(Good.COPPER, 4000)
+                .uses(Good.COPPER_SCRAP, 4400)
+                .setOldMetal(Good.COPPER, 4400)
+                .setElectricityConsumption(5500)
+                .setWaterConsumption(476)
+                .setConsumables(876.72)         // 1,776 (the study's -0.02%) - 820.48 wages - 55.00 power - 23.80 water
+                .setLandSqFt(841150)            // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(367)               // 4,400 t in and 4,000 t out
+                .setStock(12000)
+                .setJobs(JobType.NO_DIPLOMA, 108)
+                .setJobs(JobType.DIPLOMA, 70)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 18)
+                .setJobs(JobType.UNIV_SCIENCE, 4)
+                .setSince(1900)
+                .setId(126));
+        templates.add(new BuildingsTemplate("Rod Mill", BuildingType.HEAVY_INDUSTRY)   // cathode into wire rod
+                .setCashCost(34614)
+                .setConstructionPoints(17307)
+                .setConstructionMaterials(577)
+                .setSector("Copper Refining")
+                .makes(Good.COPPER_ROD, 8000)
+                .uses(Good.COPPER, 8016)
+                .setElectricityConsumption(1100)
+                .setWaterConsumption(95)
+                .setConsumables(500.57)         // 846 - 329.68 wages - 11.00 power - 4.75 water
+                .setLandSqFt(135185)            // the Steel Foundry's ground per D$ of cost
+                .setRoadLoad(699)               // 8,016 t in and 8,000 t out
+                .setJobs(JobType.NO_DIPLOMA, 43)
+                .setJobs(JobType.DIPLOMA, 28)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 7)
+                .setJobs(JobType.UNIV_SCIENCE, 2)
+                .setSince(1900)
+                .setId(127));
+        templates.add(new BuildingsTemplate("Wire & Cable Works", BuildingType.HEAVY_INDUSTRY)   // rod into wire and cable, Manufacturing's
+                .setCashCost(84620)
+                .setConstructionPoints(42310)
+                .setConstructionMaterials(1410)
+                .setSector("Manufacturing")
+                .makes(Good.WIRE_CABLE, 2000)
+                .uses(Good.COPPER_ROD, 2000)
+                .setElectricityConsumption(2500)
+                .setWaterConsumption(216)
+                .setConsumables(3176.2)         // 4,820 - 1,608.00 wages - 25.00 power - 10.80 water: its insulation
+                .setLandSqFt(1660377)           // the Fabrication Shop's ground per D$ of cost
+                .setRoadLoad(175)               // 2,000 t in and 2,000 t out
+                .setJobs(JobType.NO_DIPLOMA, 200)
+                .setJobs(JobType.DIPLOMA, 184)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 16)
+                .setSince(1900)
+                .setId(128));
+
         /* ---------------------------- EDUCATION ----------------------------
            The other half of the labour market.
 

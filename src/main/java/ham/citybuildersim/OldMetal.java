@@ -10,7 +10,9 @@ import java.util.Map;
  * The city's old steel: what it throws out each month that a Scrap Yard can
  * buy and sort into scrap - its scrapped cars, its demolitions, its
  * fabricators' offcuts and its railway's worn-out wagon sets (0.7.123, batch
- * I4; runs/spec-materials.md 2.9, materials-chains-research.md 2.7).
+ * I4; runs/spec-materials.md 2.9, materials-chains-research.md 2.7) - and
+ * since 0.7.133 (batch I8) its old copper, from its cars and demolitions,
+ * which a Scrap Copper Refinery buys (OLD COPPER, below).
  *
  * WHY. Until 0.7.123 the scrap the arc furnaces melt (Good.SCRAP, since
  * 0.7.120) had no source in the city: every tonne was imported, because
@@ -57,9 +59,11 @@ import java.util.Map;
  * their statements there.
  *
  * Saved whole (DataSave.oldMetal, state() and restore()): the steel arisen
- * since the yards last bought, by seller, and the last month's record. A
- * save from before 0.7.123 carries none, which is right: that city had
- * thrown nothing out that a yard could have bought.
+ * since the yards last bought, by seller, and the last month's record - and
+ * the copper's beside it since 0.7.133. A save from before 0.7.123 carries
+ * none, which is right: that city had thrown nothing out that a yard could
+ * have bought; one from before 0.7.133 no copper, which had all gone to
+ * landfill.
  */
 public final class OldMetal {
 
@@ -99,37 +103,56 @@ public final class OldMetal {
         ROLLING_STOCK
     }
 
-    /** Steel arisen since the yards last bought, tonnes recovered, by seller (a sector's key, or Trade.HOUSEHOLDS), in the order each first arose. */
-    private final Map<String, Double> pending = new LinkedHashMap<>();
+    /* =====================================================================
+       OLD COPPER (0.7.133, batch I8; runs/spec-materials.md 2.9, the study's
+       4.1 and 7). What the city throws out holds copper too - a petrol car's
+       wiring and motors, COPPER_A_CAR, and a building's wire and pipe,
+       COPPER_A_MATERIALS_UNIT a unit of its material - recovered at RECOVERY
+       as steel is, kept by the same sellers, in a pool of its own (copper()).
+       Copper Refining's Scrap Copper Refineries buy it as Iron & Steel's yards
+       buy steel - as much as they take at the rate they run, pro rata, at
+       PAY_SHARE of COPPER_SCRAP's export price (★ the spec's 2.9, as Jerus's
+       Q8 rule for steel) - and bid on the scrap market for the rest
+       (sectors.CopperRefining, THE OLD COPPER); what they do not take goes to
+       landfill that month. Saved beside the steel (State.copper).
+       ===================================================================== */
 
-    /** ...and by source, in Source's order. */
-    private final double[] pendingBySource = new double[Source.values().length];
+    /** Tonnes of copper in a car scrapped: 23 kg, a petrol car's (the study's 4.1, [K45]). */
+    public static final double COPPER_A_CAR = .023;
 
-    /* ----- the last month the yards bought (settle()): the record, for the planner and the screens ----- */
+    /** Tonnes of copper a unit of a demolished building's construction material holds: ★est., spec-materials 2.9 (0.1 t a unit). */
+    public static final double COPPER_A_MATERIALS_UNIT = .1;
 
-    private final double[] lastBySource = new double[Source.values().length];
-    private double lastArisen, lastBought, lastLandfill, lastPrice;
-    private final Map<String, Double> lastPaid = new LinkedHashMap<>();
+    /** The steel: what the Scrap Yards buy (since 0.7.123). */
+    private final Pool steel = new Pool();
+
+    /** ...and the copper: what the Scrap Copper Refineries buy (0.7.133). */
+    private final Pool copper = new Pool();
+
+    /** The city's old steel, as a pool: what every method of this class not named for copper reads and moves. */
+    public Pool steel() { return steel; }
+
+    /** ...and its old copper (0.7.133): cars and demolitions, bought by Copper Refining's scrap refineries. */
+    public Pool copper() { return copper; }
 
     /* ============================ the steel arises ============================ */
 
     /** `tonnes` of steel thrown out by `seller` from `source`, of which RECOVERY comes back as old steel; nothing for none, or for nobody. */
     public void arise(Source source, String seller, double tonnes) {
-        if (source == null || seller == null || !(tonnes > 0) || !Double.isFinite(tonnes)) return;
-        double steel = tonnes * RECOVERY;
-        pending.merge(seller, steel, Double::sum);
-        pendingBySource[source.ordinal()] += steel;
+        steel.arise(source, seller, tonnes);
     }
 
-    /** Cars the households scrapped (Motoring, at the top of the month). */
+    /** Cars the households scrapped (Motoring, at the top of the month): their steel, and since 0.7.133 their copper. */
     public void carsScrapped(double cars) {
         if (cars > 0) arise(Source.CARS, Trade.HOUSEHOLDS, cars * STEEL_A_CAR);
+        if (cars > 0) copper.arise(Source.CARS, Trade.HOUSEHOLDS, cars * COPPER_A_CAR);
     }
 
-    /** `n` of a building pulled down, its steel its owner's (`owner`, a sector's key). */
+    /** `n` of a building pulled down, its steel - and since 0.7.133 its copper - its owner's (`owner`, a sector's key). */
     public void demolished(BuildingsTemplate t, int n, String owner) {
         if (t == null || n <= 0) return;
         arise(Source.DEMOLITIONS, owner, t.getConstructionMaterials() * (double) n * STEEL_A_MATERIALS_UNIT);
+        copper.arise(Source.DEMOLITIONS, owner, t.getConstructionMaterials() * (double) n * COPPER_A_MATERIALS_UNIT);
     }
 
     /** `tonnes` of fabricated steel made by `maker` this month: its offcuts. */
@@ -143,17 +166,13 @@ public final class OldMetal {
     }
 
     /** Tonnes of old steel standing to be bought now: arisen since the yards last bought. */
-    public double available() {
-        double t = 0;
-        for (double v : pending.values()) t += v;
-        return t;
-    }
+    public double available() { return steel.available(); }
 
     /** ...and from one source. */
-    public double available(Source s) { return s == null ? 0 : pendingBySource[s.ordinal()]; }
+    public double available(Source s) { return steel.available(s); }
 
     /** ...and one seller's. */
-    public double availableFrom(String seller) { return pending.getOrDefault(seller, 0.0); }
+    public double availableFrom(String seller) { return steel.availableFrom(seller); }
 
     /* ============================ the yards buy ============================ */
 
@@ -169,53 +188,176 @@ public final class OldMetal {
      * month (lastArisen() and the rest).
      */
     public List<Sale> settle(double tonnes, double pricePerTonne) {
-        double stood = available();
-        double take = stood > 0 && tonnes > 0 && Double.isFinite(tonnes) ? Math.min(tonnes, stood) : 0;
-        double price = Double.isFinite(pricePerTonne) && pricePerTonne > 0 ? pricePerTonne : 0;
-        List<Sale> sales = new ArrayList<>();
-        lastPaid.clear();
-        if (take > 0) {
-            for (Map.Entry<String, Double> e : pending.entrySet()) {
-                double t = take == stood ? e.getValue() : e.getValue() * (take / stood);
-                if (!(t > 0)) continue;
-                double paid = t * price;
-                sales.add(new Sale(e.getKey(), t, paid));
-                if (paid > 0) lastPaid.merge(e.getKey(), paid, Double::sum);
-            }
-        }
-        System.arraycopy(pendingBySource, 0, lastBySource, 0, lastBySource.length);
-        lastArisen = stood;
-        lastBought = take;
-        lastLandfill = Math.max(0, stood - take);
-        lastPrice = price;
-        pending.clear();
-        java.util.Arrays.fill(pendingBySource, 0);
-        return Collections.unmodifiableList(sales);
+        return steel.settle(tonnes, pricePerTonne);
     }
 
     /** Old steel that arose in the last month the yards bought (or would have), tonnes recovered: what the planner weighs a yard against. */
-    public double lastArisen() { return lastArisen; }
+    public double lastArisen() { return steel.lastArisen(); }
 
     /** ...from one source. */
-    public double lastArisen(Source s) { return s == null ? 0 : lastBySource[s.ordinal()]; }
+    public double lastArisen(Source s) { return steel.lastArisen(s); }
 
     /** ...of it the yards bought. */
-    public double lastBought() { return lastBought; }
+    public double lastBought() { return steel.lastBought(); }
 
     /** ...and sent to landfill. */
-    public double lastLandfill() { return lastLandfill; }
+    public double lastLandfill() { return steel.lastLandfill(); }
 
     /** What the yards paid a tonne that month: PAY_SHARE of scrap's export price; 0 before any month. */
-    public double lastPrice() { return lastPrice; }
+    public double lastPrice() { return steel.lastPrice(); }
 
     /** What each seller was paid that month, by seller. */
-    public Map<String, Double> lastPaid() { return Collections.unmodifiableMap(lastPaid); }
+    public Map<String, Double> lastPaid() { return steel.lastPaid(); }
 
     /** ...and in all. */
-    public double lastPaidTotal() {
-        double t = 0;
-        for (double v : lastPaid.values()) t += v;
-        return t;
+    public double lastPaidTotal() { return steel.lastPaidTotal(); }
+
+    /* ============================ a pool ============================ */
+
+    /**
+     * One metal's old metal: what arose since its buyers last bought, by
+     * seller and by source, and their last month - the steel's until 0.7.133
+     * this class's own fields, moved here whole when copper came (batch I8),
+     * so the copper's pool is the same arithmetic to the bit.
+     */
+    public static final class Pool {
+
+        /** Metal arisen since the buyers last bought, tonnes recovered, by seller (a sector's key, or Trade.HOUSEHOLDS), in the order each first arose. */
+        private final Map<String, Double> pending = new LinkedHashMap<>();
+
+        /** ...and by source, in Source's order. */
+        private final double[] pendingBySource = new double[Source.values().length];
+
+        /* ----- the last month the buyers bought (settle()): the record, for the planner and the screens ----- */
+
+        private final double[] lastBySource = new double[Source.values().length];
+        private double lastArisen, lastBought, lastLandfill, lastPrice;
+        private final Map<String, Double> lastPaid = new LinkedHashMap<>();
+
+        /** `tonnes` of the metal thrown out by `seller` from `source`, of which RECOVERY comes back; nothing for none, or for nobody. */
+        public void arise(Source source, String seller, double tonnes) {
+            if (source == null || seller == null || !(tonnes > 0) || !Double.isFinite(tonnes)) return;
+            double metal = tonnes * RECOVERY;
+            pending.merge(seller, metal, Double::sum);
+            pendingBySource[source.ordinal()] += metal;
+        }
+
+        /** Tonnes standing to be bought now: arisen since the buyers last bought. */
+        public double available() {
+            double t = 0;
+            for (double v : pending.values()) t += v;
+            return t;
+        }
+
+        /** ...and from one source. */
+        public double available(Source s) { return s == null ? 0 : pendingBySource[s.ordinal()]; }
+
+        /** ...and one seller's. */
+        public double availableFrom(String seller) { return pending.getOrDefault(seller, 0.0); }
+
+        /**
+         * The month's purchase: the buyers take `tonnes` (no more than
+         * stands), from every seller pro rata to what each threw out, at
+         * `pricePerTonne`; the rest goes to landfill, and the pool starts
+         * again. Books no money - the buyer does - and returns each seller's
+         * part, in the order each first arose. Recorded as the last month.
+         */
+        public List<Sale> settle(double tonnes, double pricePerTonne) {
+            double stood = available();
+            double take = stood > 0 && tonnes > 0 && Double.isFinite(tonnes) ? Math.min(tonnes, stood) : 0;
+            double price = Double.isFinite(pricePerTonne) && pricePerTonne > 0 ? pricePerTonne : 0;
+            List<Sale> sales = new ArrayList<>();
+            lastPaid.clear();
+            if (take > 0) {
+                for (Map.Entry<String, Double> e : pending.entrySet()) {
+                    double t = take == stood ? e.getValue() : e.getValue() * (take / stood);
+                    if (!(t > 0)) continue;
+                    double paid = t * price;
+                    sales.add(new Sale(e.getKey(), t, paid));
+                    if (paid > 0) lastPaid.merge(e.getKey(), paid, Double::sum);
+                }
+            }
+            System.arraycopy(pendingBySource, 0, lastBySource, 0, lastBySource.length);
+            lastArisen = stood;
+            lastBought = take;
+            lastLandfill = Math.max(0, stood - take);
+            lastPrice = price;
+            pending.clear();
+            java.util.Arrays.fill(pendingBySource, 0);
+            return Collections.unmodifiableList(sales);
+        }
+
+        /** What arose in the last month the buyers bought (or would have), tonnes recovered: what the planner weighs a buyer against. */
+        public double lastArisen() { return lastArisen; }
+
+        /** ...from one source. */
+        public double lastArisen(Source s) { return s == null ? 0 : lastBySource[s.ordinal()]; }
+
+        /** ...of it the buyers bought. */
+        public double lastBought() { return lastBought; }
+
+        /** ...and sent to landfill. */
+        public double lastLandfill() { return lastLandfill; }
+
+        /** What the buyers paid a tonne that month; 0 before any month. */
+        public double lastPrice() { return lastPrice; }
+
+        /** What each seller was paid that month, by seller. */
+        public Map<String, Double> lastPaid() { return Collections.unmodifiableMap(lastPaid); }
+
+        /** ...and in all. */
+        public double lastPaidTotal() {
+            double t = 0;
+            for (double v : lastPaid.values()) t += v;
+            return t;
+        }
+
+        /** Its state, for the save (State's own fields; its copper left null). */
+        State state() {
+            State s = new State();
+            s.pending = new LinkedHashMap<>(pending);
+            s.pendingBySource = pendingBySource.clone();
+            s.lastBySource = lastBySource.clone();
+            s.lastArisen = lastArisen;
+            s.lastBought = lastBought;
+            s.lastLandfill = lastLandfill;
+            s.lastPrice = lastPrice;
+            s.lastPaid = new LinkedHashMap<>(lastPaid);
+            return s;
+        }
+
+        /** Puts a saved state back (its own fields; not its copper); null is a city that has thrown nothing out yet. */
+        void restore(State s) {
+            reset();
+            if (s == null) return;
+            if (s.pending != null) for (Map.Entry<String, Double> e : s.pending.entrySet()) {
+                if (e.getKey() != null && e.getValue() != null && Double.isFinite(e.getValue())) pending.put(e.getKey(), e.getValue());
+            }
+            copyInto(s.pendingBySource, pendingBySource);
+            copyInto(s.lastBySource, lastBySource);
+            lastArisen = finite(s.lastArisen);
+            lastBought = finite(s.lastBought);
+            lastLandfill = finite(s.lastLandfill);
+            lastPrice = finite(s.lastPrice);
+            if (s.lastPaid != null) for (Map.Entry<String, Double> e : s.lastPaid.entrySet()) {
+                if (e.getKey() != null && e.getValue() != null && Double.isFinite(e.getValue())) lastPaid.put(e.getKey(), e.getValue());
+            }
+        }
+
+        /** Nothing arisen and no month recorded. */
+        void reset() {
+            pending.clear();
+            java.util.Arrays.fill(pendingBySource, 0);
+            java.util.Arrays.fill(lastBySource, 0);
+            lastArisen = lastBought = lastLandfill = lastPrice = 0;
+            lastPaid.clear();
+        }
+
+        /** A currency reform: the price paid a tonne and what each seller was paid scaled, the tonnes not. */
+        void scale(double s) {
+            lastPrice *= s;
+            lastPaid.replaceAll((k, v) -> v * s);
+        }
     }
 
     /* ============================ across a save ============================ */
@@ -223,7 +365,10 @@ public final class OldMetal {
     /**
      * Everything it holds, as DataSave.oldMetal keeps it: the steel arisen
      * since the yards last bought by seller and by source, and the last
-     * month's record. Plain fields, so Gson writes it as it is.
+     * month's record - and since 0.7.133 the copper's, the same fields under
+     * `copper` (null on a save from before, which reads none: that city's
+     * old copper had all gone to landfill). Plain fields, so Gson writes it
+     * as it is.
      */
     public static final class State {
         public Map<String, Double> pending = new LinkedHashMap<>();
@@ -231,47 +376,27 @@ public final class OldMetal {
         public double[] lastBySource;
         public double lastArisen, lastBought, lastLandfill, lastPrice;
         public Map<String, Double> lastPaid = new LinkedHashMap<>();
+        /** The old copper's own (0.7.133), or null. */
+        public State copper;
     }
 
-    /** Its state, for the save. */
+    /** Its state, for the save: the steel's, and the copper's under it. */
     public State state() {
-        State s = new State();
-        s.pending = new LinkedHashMap<>(pending);
-        s.pendingBySource = pendingBySource.clone();
-        s.lastBySource = lastBySource.clone();
-        s.lastArisen = lastArisen;
-        s.lastBought = lastBought;
-        s.lastLandfill = lastLandfill;
-        s.lastPrice = lastPrice;
-        s.lastPaid = new LinkedHashMap<>(lastPaid);
+        State s = steel.state();
+        s.copper = copper.state();
         return s;
     }
 
-    /** Puts a saved state back; null (a save from before 0.7.123) is a city that has thrown nothing out yet. */
+    /** Puts a saved state back; null (a save from before 0.7.123) is a city that has thrown nothing out yet, and a state with no copper (before 0.7.133) one whose old copper had all gone. */
     public void restore(State s) {
-        reset();
-        if (s == null) return;
-        if (s.pending != null) for (Map.Entry<String, Double> e : s.pending.entrySet()) {
-            if (e.getKey() != null && e.getValue() != null && Double.isFinite(e.getValue())) pending.put(e.getKey(), e.getValue());
-        }
-        copyInto(s.pendingBySource, pendingBySource);
-        copyInto(s.lastBySource, lastBySource);
-        lastArisen = finite(s.lastArisen);
-        lastBought = finite(s.lastBought);
-        lastLandfill = finite(s.lastLandfill);
-        lastPrice = finite(s.lastPrice);
-        if (s.lastPaid != null) for (Map.Entry<String, Double> e : s.lastPaid.entrySet()) {
-            if (e.getKey() != null && e.getValue() != null && Double.isFinite(e.getValue())) lastPaid.put(e.getKey(), e.getValue());
-        }
+        steel.restore(s);
+        copper.restore(s == null ? null : s.copper);
     }
 
     /** Nothing arisen and no month recorded: a new city. */
     public void reset() {
-        pending.clear();
-        java.util.Arrays.fill(pendingBySource, 0);
-        java.util.Arrays.fill(lastBySource, 0);
-        lastArisen = lastBought = lastLandfill = lastPrice = 0;
-        lastPaid.clear();
+        steel.reset();
+        copper.reset();
     }
 
     /**
@@ -280,8 +405,8 @@ public final class OldMetal {
      * a tonne being a tonne through a reform.
      */
     public void scale(double s) {
-        lastPrice *= s;
-        lastPaid.replaceAll((k, v) -> v * s);
+        steel.scale(s);
+        copper.scale(s);
     }
 
     private static void copyInto(double[] from, double[] to) {

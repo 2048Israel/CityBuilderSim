@@ -5997,6 +5997,113 @@ public final class GameVersion {
      *     1-degree cell; a frame within FRAME_MS of the main thread's CPU.
      *   - The playtests do not move: default and Earth byte for byte.
      *
+     * 0.7.133 (2026-10-12) - COPPER. Batch I8, the sixth materials batch that
+     * changes the game: the fourth chain's two sectors and the Wire & Cable
+     * Works (Jerus's Q11, Q12, Q21 and A of 2026-10-08; docs/studies/
+     * spec-materials.md 2.1-2.4, 2.9, 2.12 and 5; the study's 4; runs/brief-
+     * batchI8.md, runs/fixI8-notes.md). No save format change (39): a save
+     * from before it restores Copper Mining and Copper Refining empty,
+     * cathode held as none and no old copper - missing, not misread - and its
+     * copper is untouched ground until a mine digs it.
+     *   - THE SECTORS: "Copper Mining" and "Copper Refining" on the end of
+     *     Sectors.KEYS after Cement & Concrete, the twenty-first and
+     *     twenty-second (Q21: iron, coal, stone, copper, wood).
+     *     sectors.CopperMining, an ExtractionSector on copper making
+     *     COPPER_CONC and COPPER and using ACID; sectors.CopperRefining, a
+     *     ProcessingSector making COPPER, ANODE, ACID and COPPER_ROD of
+     *     COPPER_CONC, ANODE, COPPER and COPPER_SCRAP, anode and cathode
+     *     captive. Manufacturing makes WIRE_CABLE of COPPER_ROD. Equity's
+     *     companies, the households' share block, the audit's pools and the
+     *     bank's year of sheets grow with the keys.
+     *   - THE GOODS (Good, appended; the study's 4.2, at the 2024 benchmark
+     *     treatment charges, Q11): COPPER_CONC 2,800 / 2,575, ANODE 10,150 /
+     *     9,650, COPPER 10,500 / 10,000, COPPER_SCRAP 8,700 / 7,300, COPPER_ROD
+     *     10,750 / 10,250, ACID 160 / 70 (traded, Q12) and WIRE_CABLE 17,000
+     *     / 13,000 - scrap's import and wire's export two of the study's
+     *     widened bands - freight three eighths of each wedge; cathode
+     *     stockable, on NationalAccounts.HELD's end; rod and wire by the GOODS
+     *     stream, the rest BULK; by sea acid LIQUID, concentrate and scrap dry
+     *     bulk, anode and cathode general cargo, rod and wire containers.
+     *   - THE ROWS (ids 121-128; the study's 4.3 at spec 2.2's conventions):
+     *     the Copper Mine & Mill, 2,200 t of concentrate a month on one
+     *     sulphide site; the Large Copper Mine, 26,400 t on eight of one
+     *     field, "since" 1906 (Bingham Canyon); the Leach & SX-EW Plant, 1,000
+     *     t of cathode on one oxide site from 3,500 t of acid, 1968; the
+     *     Copper Smelter, 9,750 t of anode and 29,700 t of acid from 33,000 t
+     *     of concentrate; the Electrolytic Refinery, 9,700 t of cathode; the
+     *     Scrap Copper Refinery, 4,000 t of cathode from 4,400 t of the city's
+     *     old copper and scrap past it; the Rod Mill, 8,000 t of rod; and
+     *     Manufacturing's Wire & Cable Works, 2,000 t of wire and cable. The
+     *     study's 4.3 gives no running cost: each row's is the middle of the
+     *     range on which all four of its 4.4 returns round to the table (the
+     *     scrap refinery's from its stated -0.02%), its consumables that less
+     *     wages, power and water.
+     *   - THE GROUND (spec 2.4): Resource.COPPER priced as COPPER, 1/100 of
+     *     cathode's export price in the ground (US$30M a site), a sulphide
+     *     field's good COPPER_CONC and an oxide field's COPPER (goodOf());
+     *     concentrate dug as the month makes it, .341 t of the field's copper
+     *     a tonne (groundLimit()), cathode leached to the oxide ground's limit
+     *     (CopperMining.lift(), Sector.madeAtRate()) and dug at the month's
+     *     end, 1.4 t a tonne - W exact by type.
+     *   - OLD COPPER (OldMetal.copper(), spec 2.9): 23 kg a scrapped car and
+     *     0.1 t a unit of a demolished building's material, at 85%, in a pool
+     *     of its own beside the steel's (the steel's arithmetic moved into
+     *     OldMetal.Pool whole, to the bit), saved under the same key; the
+     *     Scrap Copper Refineries buy it before they bid for scrap, at 70% of
+     *     COPPER_SCRAP's export price, pro rata, the rest to landfill - the
+     *     households paid into their savings, the audit's old-metal lines
+     *     I4's - and one more is weighed on the old copper past those
+     *     standing (CopperRefining.values()).
+     *   - THE WIRE & CABLE WORKS WEIGHED WHOLE (★): Manufacturing's estimate
+     *     for it less its insulation (consumables) and its lorries, as every
+     *     materials-chains row is - without them the probe ordered twenty of
+     *     them on imported rod that lost money from their first month; the
+     *     sector's older rows as they were, to the bit.
+     *   - THE SCREENS: Build's "Copper" group after Cement, both sectors'
+     *     seven cards.
+     *   - A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED (NationalAccounts;
+     *     Sector, WHAT A MONTH WROTE OFF, PAST ITS STRIKE): the ensemble's
+     *     first run with copper read negative GDP in four AUTO2 seeds of
+     *     sixteen (-305,164 at m899 of seed 5) where main's read none - a
+     *     Scrap Copper Refinery sold back with cathode in its yard, the yard
+     *     written off and the fifth term booking the fall as negative
+     *     investment. HELD's goods add their write-off back now, as food's
+     *     line meant to: bank() keeps the month's write-offs past the rows it
+     *     clears, since the accounts are struck after it, and a save carries
+     *     them to the first strike (SectorState.writtenOff; an older save has
+     *     none, which is what its accounts added back). Food's own add-back
+     *     reads the cleared row, so zero - marked, and left to its own batch.
+     *   - Harnesses: CopperMiningCheck and CopperRefiningCheck (new, the 103rd
+     *     and 104th: the registry, the eight rows against the study's 4.4
+     *     table, the dig by type, the leach plant's lift and its acid, the
+     *     chain by its ratios, the smelter's acid sold, old copper bought and
+     *     its books, the planner's old copper, the wire works' estimate);
+     *     BuildingDataCheck (129 buildings, sixteen on sites, copper's,
+     *     consumables, old metal, since), BuildCardCheck (the Copper group),
+     *     GdpCheck (HELD's end; a yard written off, in the accounts' arithmetic
+     *     and in a town, across a save), TradeCostCheck (the seven prices),
+     *     MoneyCheck, SaveFileCheck and ReadPathCheck (old copper; ReadPathCheck
+     *     the write-offs' getters), QuarryingCheck and
+     *     CementConcreteCheck (stone no longer the last keys).
+     *   - THE PLAYTESTS MOVE, not from the first offer holding copper - the
+     *     city buys none in either run - but from Copper Refining's planner:
+     *     at m1099 of the default (m1452 on the Earth, where at m1293 it
+     *     first sold D$3.8B of shares to the households for one the bank's
+     *     capital rule then would not lend the rest of) a Scrap Copper
+     *     Refinery on imported scrap shipping cathode weighs 0.21% a month on
+     *     its whole cost, its lorries in, on the bands the city's carriers
+     *     have narrowed and its weak currency (the study's case A at parity:
+     *     -0.02%); once
+     *     built its vans arrive over eight months and IDLE, THEN SHED sells it
+     *     - batch I7's lime kiln again, ordered six times in the default and
+     *     three on the Earth, each sold back (fixI8-notes 4 and 6; the fix is
+     *     Jerus's, QUEUE.md's Pending I7-K). The first sale's yard, written
+     *     off, read as a month's GDP of 361,116 for 2,118,487 in the default
+     *     until the accounts added it back (above); with that, the runs part from the
+     *     ones without it at m1213 and m1557, the months after that sale.
+     *     Every month passes the audit and every reload matches; re-baselined
+     *     (pt07133, pte07133).
+     *
      * 0.7.134 (2026-10-12) - THE MINIMAP. Batch MM2, the second of the
      * minimap's two (docs/studies/spec-globe.md 8.3 and 4's MM2 row; Jerus,
      * 2026-10-11: "i think a small map always visible on the ui would be

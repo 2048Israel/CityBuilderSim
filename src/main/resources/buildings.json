@@ -52,6 +52,9 @@
   "field) on ANY, packed onto LIMESTONE first - a quarry's stone is limestone on a",
   "limestone field and aggregate on hard rock - and the Dimension Stone Quarry on",
   "HARD_ROCK, digging 3 t of rock for a tonne of blocks.",
+  "Since 0.7.133 copper's do: the Copper Mine & Mill (one site) and the Large Copper",
+  "Mine (eight of one field) on SULPHIDE, digging .341 t of the field's copper a tonne of",
+  "concentrate; the Leach & SX-EW Plant on OXIDE, 1.4 t a tonne of cathode.",
   "A well stands only on a dry site (a field whose centre is on land), lifts 10%",
   "less each year and is retired under ten barrels a day, after 263 months.",
   "CRUDE is tonnes of crude oil, lifted by the wells and refined. A refinery 'uses'",
@@ -122,6 +125,11 @@
   "A QUARRY's limestone (0.7.131) goes to the kilns, cement plants and blast furnaces;",
   "what they do not take sells as AGGREGATE, tonne for tonne, its ground still limestone's",
   "(sectors.Quarrying, THE CARRY). Its rows say they make AGGREGATE, stone's pricing good.",
+  "A SCRAP COPPER REFINERY (0.7.133) takes the city's OLD COPPER - its scrapped cars' and",
+  "its demolitions' - first: \"oldMetal\": {\"COPPER\": 4400} is the tonnes a month it takes at",
+  "nameplate, paying the sellers 70% of COPPER_SCRAP's export price, and its 'uses' of",
+  "COPPER_SCRAP are bought on the market past it (sectors.CopperRefining, THE OLD COPPER).",
+  "A COPPER SMELTER makes ACID, sulphuric acid, beside its anode: the leach plants buy it.",
   "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
@@ -143,7 +151,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 121,
+ "nextId": 129,
  "buildings": [
   {
    "id": 0,
@@ -2976,6 +2984,241 @@
    "uses": {
     "LIMESTONE": 32400,
     "THERMAL_COAL": 3600
+   },
+   "since": 1900
+  },
+  {
+   "id": 121,
+   "name": "Copper Mine & Mill",
+   "category": "MINING",
+   "sector": "Copper Mining",
+   "cashCost": 123082,
+   "constructionPoints": 61541,
+   "constructionMaterials": 2051,
+   "electricity": 5500,
+   "water": 476,
+   "consumables": 981.3,
+   "jobs": {
+    "NO_DIPLOMA": 90,
+    "DIPLOMA": 24,
+    "COLLEGE_ENGINEERING": 6,
+    "UNIV_SCIENCE": 0
+   },
+   "land": 5381955,
+   "roadLoad": 370,
+   "makes": {
+    "COPPER_CONC": 2200
+   },
+   "site": {
+    "resource": "COPPER",
+    "type": "SULPHIDE",
+    "sites": 1,
+    "dig": 0.341
+   },
+   "since": 1900
+  },
+  {
+   "id": 122,
+   "name": "Large Copper Mine",
+   "category": "MINING",
+   "sector": "Copper Mining",
+   "cashCost": 1538462,
+   "constructionPoints": 769231,
+   "constructionMaterials": 25641,
+   "electricity": 60000,
+   "water": 5189,
+   "consumables": 9260.65,
+   "jobs": {
+    "NO_DIPLOMA": 270,
+    "DIPLOMA": 124,
+    "COLLEGE_ENGINEERING": 45,
+    "UNIV_SCIENCE": 11
+   },
+   "land": 43055642,
+   "roadLoad": 4435,
+   "makes": {
+    "COPPER_CONC": 26400
+   },
+   "site": {
+    "resource": "COPPER",
+    "type": "SULPHIDE",
+    "sites": 8,
+    "dig": 0.341
+   },
+   "since": 1906
+  },
+  {
+   "id": 123,
+   "name": "Leach & SX-EW Plant",
+   "category": "MINING",
+   "sector": "Copper Mining",
+   "cashCost": 192310,
+   "constructionPoints": 96155,
+   "constructionMaterials": 3205,
+   "electricity": 6000,
+   "water": 519,
+   "consumables": 1025.35,
+   "jobs": {
+    "NO_DIPLOMA": 90,
+    "DIPLOMA": 41,
+    "COLLEGE_ENGINEERING": 15,
+    "UNIV_SCIENCE": 4
+   },
+   "land": 5381955,
+   "roadLoad": 756,
+   "stock": 3000,
+   "makes": {
+    "COPPER": 1000
+   },
+   "uses": {
+    "ACID": 3500
+   },
+   "site": {
+    "resource": "COPPER",
+    "type": "OXIDE",
+    "sites": 1,
+    "dig": 1.4
+   },
+   "since": 1968
+  },
+  {
+   "id": 124,
+   "name": "Copper Smelter",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Copper Refining",
+   "cashCost": 384620,
+   "constructionPoints": 192310,
+   "constructionMaterials": 6410,
+   "electricity": 13400,
+   "water": 1159,
+   "consumables": 2189.37,
+   "jobs": {
+    "NO_DIPLOMA": 378,
+    "DIPLOMA": 245,
+    "COLLEGE_ENGINEERING": 63,
+    "UNIV_SCIENCE": 14
+   },
+   "land": 1502053,
+   "roadLoad": 3163,
+   "makes": {
+    "ANODE": 9750,
+    "ACID": 29700
+   },
+   "uses": {
+    "COPPER_CONC": 33000
+   },
+   "since": 1900
+  },
+  {
+   "id": 125,
+   "name": "Electrolytic Refinery",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Copper Refining",
+   "cashCost": 138456,
+   "constructionPoints": 69228,
+   "constructionMaterials": 2308,
+   "electricity": 6000,
+   "water": 519,
+   "consumables": 553.57,
+   "jobs": {
+    "NO_DIPLOMA": 108,
+    "DIPLOMA": 70,
+    "COLLEGE_ENGINEERING": 18,
+    "UNIV_SCIENCE": 4
+   },
+   "land": 540739,
+   "roadLoad": 849,
+   "stock": 29100,
+   "makes": {
+    "COPPER": 9700
+   },
+   "uses": {
+    "ANODE": 9750
+   },
+   "since": 1900
+  },
+  {
+   "id": 126,
+   "name": "Scrap Copper Refinery",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Copper Refining",
+   "cashCost": 215380,
+   "constructionPoints": 107690,
+   "constructionMaterials": 3590,
+   "electricity": 5500,
+   "water": 476,
+   "consumables": 876.72,
+   "jobs": {
+    "NO_DIPLOMA": 108,
+    "DIPLOMA": 70,
+    "COLLEGE_ENGINEERING": 18,
+    "UNIV_SCIENCE": 4
+   },
+   "land": 841150,
+   "roadLoad": 367,
+   "stock": 12000,
+   "makes": {
+    "COPPER": 4000
+   },
+   "uses": {
+    "COPPER_SCRAP": 4400
+   },
+   "oldMetal": {
+    "COPPER": 4400
+   },
+   "since": 1900
+  },
+  {
+   "id": 127,
+   "name": "Rod Mill",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Copper Refining",
+   "cashCost": 34614,
+   "constructionPoints": 17307,
+   "constructionMaterials": 577,
+   "electricity": 1100,
+   "water": 95,
+   "consumables": 500.57,
+   "jobs": {
+    "NO_DIPLOMA": 43,
+    "DIPLOMA": 28,
+    "COLLEGE_ENGINEERING": 7,
+    "UNIV_SCIENCE": 2
+   },
+   "land": 135185,
+   "roadLoad": 699,
+   "makes": {
+    "COPPER_ROD": 8000
+   },
+   "uses": {
+    "COPPER": 8016
+   },
+   "since": 1900
+  },
+  {
+   "id": 128,
+   "name": "Wire & Cable Works",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Manufacturing",
+   "cashCost": 84620,
+   "constructionPoints": 42310,
+   "constructionMaterials": 1410,
+   "electricity": 2500,
+   "water": 216,
+   "consumables": 3176.2,
+   "jobs": {
+    "NO_DIPLOMA": 200,
+    "DIPLOMA": 184,
+    "COLLEGE_ENGINEERING": 16,
+    "UNIV_SCIENCE": 0
+   },
+   "land": 1660377,
+   "roadLoad": 175,
+   "makes": {
+    "WIRE_CABLE": 2000
+   },
+   "uses": {
+    "COPPER_ROD": 2000
    },
    "since": 1900
   }

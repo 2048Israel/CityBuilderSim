@@ -219,8 +219,11 @@ public class QuarryingCheck {
         out.println("\n--- 2. the sector on the end of the registry, stone priced, and stone's goods ---");
         String[] keys = Sectors.KEYS;
         int at = java.util.Arrays.asList(keys).indexOf(Sectors.QUARRYING);
-        assertTrue("Sectors.KEYS ends with Quarrying and Cement & Concrete, after Coal Mining (Jerus's Q21: iron, coal, stone)",
-                keys.length == 20 && at == 18 && keys[17].equals(Sectors.COAL_MINING) && keys[19].equals(Sectors.CEMENT_CONCRETE));
+        // ...on the end when they came (0.7.131), and copper's two after them since 0.7.133 (batch I8; Q21's order).
+        assertTrue("Sectors.KEYS has Quarrying and Cement & Concrete after Coal Mining, nineteenth and twentieth (Jerus's Q21: iron, coal,"
+                        + " stone), and copper's Copper Mining and Copper Refining after them (0.7.133)",
+                keys.length >= 22 && at == 18 && keys[17].equals(Sectors.COAL_MINING) && keys[19].equals(Sectors.CEMENT_CONCRETE)
+                        && keys[20].equals(Sectors.COPPER_MINING) && keys[21].equals(Sectors.COPPER_REFINING));
         Sectors s = new Sectors(new BuildingManager(), new Markets());
         Quarrying q = s.quarrying();
         assertTrue("...an extraction sector on stone, found by its saved name, making limestone, aggregate and blocks - aggregate its planning"
@@ -229,13 +232,13 @@ public class QuarryingCheck {
                         && q.isMaker(Good.LIMESTONE) && q.isMaker(Good.AGGREGATE) && q.isMaker(Good.DIMENSION_STONE)
                         && q.goodsMade().size() == 3 && q.planningGood() == Good.AGGREGATE && !q.isUser(Good.LIMESTONE)
                         && q.group() == BuildingType.MINING);
-        assertTrue("Equity's companies are the keys and then the bank, the bank's index the keys' count; the stone pair before the bank",
+        assertTrue("Equity's companies are the keys and then the bank, the bank's index the keys' count; the stone pair in the keys' place",
                 Equity.COMPANIES.length == keys.length + 1 && Equity.COMPANIES[at].equals(Sectors.QUARRYING)
                         && Equity.COMPANIES[at + 1].equals(Sectors.CEMENT_CONCRETE) && Equity.BANK == keys.length
                         && Equity.COMPANIES[Equity.BANK].equals("Bank"));
         assertTrue("...the households' share block a slot a company",
                 HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD - HouseholdBalance.CELL_SLOTS_BEFORE_SHARES == Equity.COMPANIES.length);
-        assertTrue("...the audit's pools the city, a pool a sector in the keys' order - quarrying's and cement & concrete's last - and the"
+        assertTrue("...the audit's pools the city, a pool a sector in the keys' order - quarrying's and cement & concrete's after coal's - and the"
                         + " three after",
                 MoneyAudit.POOL_NAMES.length == keys.length + 4 && MoneyAudit.POOL_NAMES[at + 1].equals("quarrying")
                         && MoneyAudit.POOL_NAMES[at + 2].equals("cement & concrete") && MoneyAudit.POOL_NAMES[keys.length + 1].equals("order book"));
@@ -266,10 +269,13 @@ public class QuarryingCheck {
                         && Math.abs(Good.AGGREGATE.baseFreight() - .375 * .030) < 1e-12
                         && Math.abs(Good.DIMENSION_STONE.baseFreight() - .375 * .090) < 1e-12
                         && Math.abs(Good.CEMENT.baseFreight() - .375 * .065) < 1e-12);
-        assertTrue("...cement stockable, on HELD's end; aggregate and blocks flow goods; aggregate and cement BULK and dry bulk by sea,"
-                        + " the blocks GOODS by road and in containers by sea, as the rest of that stream",
+        // ...cement on HELD's end when it came (0.7.131), and copper's cathode after it since 0.7.133 (batch I8).
+        java.util.List<Good> held = java.util.Arrays.asList(NationalAccounts.HELD);
+        assertTrue("...cement stockable, on HELD after the coals (cathode after it since 0.7.133); aggregate and blocks flow goods;"
+                        + " aggregate and cement BULK and dry bulk by sea, the blocks GOODS by road and in containers by sea, as the rest"
+                        + " of that stream",
                 Good.CEMENT.stockable() && !Good.AGGREGATE.stockable() && !Good.DIMENSION_STONE.stockable()
-                        && NationalAccounts.HELD[NationalAccounts.HELD.length - 1] == Good.CEMENT
+                        && held.indexOf(Good.CEMENT) == held.indexOf(Good.COKING_COAL) + 1
                         && Good.AGGREGATE.traffic() == Traffic.BULK && Good.CEMENT.traffic() == Traffic.BULK
                         && Good.DIMENSION_STONE.traffic() == Traffic.GOODS && Good.AGGREGATE.cargo() == Ports.Cargo.DRY_BULK
                         && Good.CEMENT.cargo() == Ports.Cargo.DRY_BULK && Good.DIMENSION_STONE.cargo() == Ports.Cargo.CONTAINER);

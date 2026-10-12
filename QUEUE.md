@@ -21,7 +21,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| I8 | Copper: Copper Mining, Copper Refining, the Wire & Cable Works (running) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | E9 | The globe on screen, and W, A, S and D pan (running) | [spec-globe §4](docs/studies/spec-globe.md#4-the-batches) |
 | I9 | Forestry, with the 100-ha woodlot | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I10 | Wood products | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
@@ -60,4 +59,4 @@ Not done, and waiting on Jerus.
 | FR-D | The freight study's 22 decisions | his word, each or "all rec"; FR0 to FR4 follow the recommendations until then | [spec-freight §8](docs/studies/spec-freight-and-infrastructure.md#8--decisions) |
 | FR5 | Trucks drawn on the map | his call (D21), optional | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR6 | The railway carries the city's own bulk | his call (D4), after FR2 is measured | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
-| I7-K | A Lime Kiln is ordered, loses about D$50M a month and is sold back eight months on, seven times in the playtest (stone, 0.7.131) | his call on I4's ★2 (weigh one more works at the prices after its own supply), and the shed rule's wait (IDLE_MONTHS 6 against FLEET_DELIVERY_MONTHS 8) | `runs/fixI7-notes.md` ★1, in the project's `claude/todo.md` |
+| I7-K | A works on imported feed is ordered, loses money and is sold back: a Lime Kiln seven times in the playtest (stone, 0.7.131), a Scrap Copper Refinery six times (copper, 0.7.133) | his call on I4's ★2 (weigh one more works at the prices after its own supply), and the shed rule's wait (IDLE_MONTHS 6 against FLEET_DELIVERY_MONTHS 8) | `runs/fixI7-notes.md` ★1, in the project's `claude/todo.md` |

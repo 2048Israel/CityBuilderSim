@@ -25,11 +25,13 @@ package ham.citybuildersim;
  * WHAT USES IT. Iron, since J1b put the city's land on the world; oil, lifted
  * as CRUDE by the wells since 0.7.62 (batch K); coal, dug by Coal Mining
  * since 0.7.126 (batch I6); stone, quarried by Quarrying since 0.7.131
- * (batch I7). The other three wait for their industries, and until then
- * their ground is free (an in-ground share of zero and no good). Since
- * 0.7.110 (batch I1) iron's, coal's, copper's and stone's fields are each of
- * two types (typesOf(), Deposit.type()): iron's mines stand on theirs since
- * 0.7.124 (batch I5), coal's since 0.7.126, stone's quarries since 0.7.131.
+ * (batch I7); copper, dug by Copper Mining since 0.7.133 (batch I8). The
+ * other two wait for their industries, and until then their ground is free
+ * (an in-ground share of zero and no good). Since 0.7.110 (batch I1) iron's,
+ * coal's, copper's and stone's fields are each of two types (typesOf(),
+ * Deposit.type()): iron's mines stand on theirs since 0.7.124 (batch I5),
+ * coal's since 0.7.126, stone's quarries since 0.7.131, copper's mines and
+ * leach plants since 0.7.133.
  */
 public enum Resource {
 
@@ -85,8 +87,18 @@ public enum Resource {
      */
     COAL("Coal", "tonne", 0.002, 1.0, 6_500_000, 0x2E2E34, Good.THERMAL_COAL, 1.0 / 200),
 
-    /** Copper: 0.0005 fields a km2, a site 0.5 km2, 300,000 t of metal a site - 120 Mt of ore a km2 at 0.5%. */
-    COPPER("Copper", "tonne", 0.0005, 0.5, 300_000, 0x40AA8C, null, 0),
+    /**
+     * Copper: 0.0005 fields a km2, a site 0.5 km2, 300,000 t of metal a site
+     * - 120 Mt of ore a km2 at 0.5%. Dug by Copper Mining since 0.7.133
+     * (batch I8; runs/spec-materials.md 2.4): a sulphide field's ore floated
+     * to COPPER_CONC at the mine, .341 t of the field's metal a tonne of
+     * concentrate, and an oxide field's leached to cathode, COPPER, 1.4 t a
+     * tonne (goodOf()) - so copper is priced as COPPER, its one pricing good.
+     * The ground sells at 1/100 of cathode's world export price (the study's
+     * 8, est.: "a rich, scarce field"): a tonne of metal in the ground at
+     * US$100, about US$30M a site.
+     */
+    COPPER("Copper", "tonne", 0.0005, 0.5, 300_000, 0x40AA8C, Good.COPPER, 1.0 / 100),
 
     /** Uranium: 0.0002 fields a km2, a site 0.1 km2, 200 t a site - 1 Mt of ore a km2 at 0.2%. */
     URANIUM("Uranium", "tonne", 0.0002, 0.1, 200, 0xCEDE42, null, 0),
@@ -181,14 +193,17 @@ public enum Resource {
      * The good a field of a type becomes when it is dug (0.7.110): null for a
      * type that is not one of its own; for ANY (null) or one of its own, its
      * good() for now - IRON for both iron types, THERMAL_COAL for both coals
-     * since 0.7.126 (washing a coking field's raw coal is Coal Mining's flow),
-     * nothing for copper, whose goods come with its industries (spec-materials
-     * 2.4: COPPER_CONC or COPPER, at I8). Stone's since 0.7.131 (batch I7) by
-     * type: LIMESTONE for a limestone field, AGGREGATE for hard rock (and for
-     * ANY, its good()). good() stays the one pricing good.
+     * since 0.7.126 (washing a coking field's raw coal is Coal Mining's flow).
+     * Stone's since 0.7.131 (batch I7) by type: LIMESTONE for a limestone
+     * field, AGGREGATE for hard rock (and for ANY, its good()). Copper's since
+     * 0.7.133 (batch I8; spec-materials 2.4) by type: COPPER_CONC for a
+     * sulphide field, floated at the mine, and COPPER, cathode, for an oxide
+     * field, leached at the mine (and for ANY, its good()). good() stays the
+     * one pricing good.
      */
     public Good goodOf(Deposit.FieldType type) {
         if (this == STONE && type == Deposit.FieldType.LIMESTONE) return Good.LIMESTONE;
+        if (this == COPPER && type == Deposit.FieldType.SULPHIDE) return Good.COPPER_CONC;
         return type == null || typesOf().contains(type) ? good : null;
     }
 }
