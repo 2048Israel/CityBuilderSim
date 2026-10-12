@@ -1,6 +1,6 @@
 # The city's debt, priced and sold as a treasury does: a design study
 
-*2026-10-12. A read-only design study: no game code was changed. Samuel asked for it in one message: "you wont be writing code, you will be making the finances better, right now, it should be better pricing, show actually what the coupon and ytm is as well as gain and loss if you close it now compared to market value and face value, and all that stuff like in real life, and a more better ui, and also you can redo how city loans work, do take note there is the central bank, so take that into account, talk to me also, you can ask questions, also basically design study and ui mockup then once we are done put it on github and add it to the end of the queue". He answered twelve questions the same morning (§9, marked **Jerus's call, 2026-10-12**), and on reading the study: "actually add it before research int he queue. and also i think for d20 increased yield if you allow for it to get fully filled? the rest is good" (D20 rewritten, D13 to D27 taken).*
+*2026-10-12. A read-only design study: no game code was changed. Samuel asked for it in one message: "you wont be writing code, you will be making the finances better, right now, it should be better pricing, show actually what the coupon and ytm is as well as gain and loss if you close it now compared to market value and face value, and all that stuff like in real life, and a more better ui, and also you can redo how city loans work, do take note there is the central bank, so take that into account, talk to me also, you can ask questions, also basically design study and ui mockup then once we are done put it on github and add it to the end of the queue". He answered twelve questions the same morning (§9, marked **Jerus's call, 2026-10-12**), and on reading the study: "actually add it before research int he queue. and also i think for d20 increased yield if you allow for it to get fully filled? the rest is good" (D20 rewritten, D13 to D27 taken); then "and auto issue for building, and rollover? what happens then?", answered as D28 to D30 (§4.5).*
 
 *What was read:*
 - *The code at `4269198` (main, 0.7.135), read and not changed: `Debt`, `ShortTermTBill`, `MediumTermBond`, `LongTermBond`, `DebtManager` (the policy rate, the curve, the holders, the rate taken apart), `DebtQuote`, `Game`'s issuance (`quoteTBill`, `quoteMediumBond`, `quoteLongBond`, `quoteLongBondForCash`, `longBondCouponYield`) and buyback (`quoteRepurchase`, `repurchaseGain`, `repurchaseDebt`), `CentralBank`, `Expectations`, `CapitalFlows`, `HouseholdBalance`'s paper rule, `Bank`'s floor and room, `Exchange.SPREAD`, `Rollover`, and `ui/FinancesScreen`'s hub, The book and Borrow.*
@@ -24,7 +24,7 @@
 **The pieces:**
 - **The curve (§3).** The short rate the market expects each month is the dial drifting to what the rule would set at the inflation it expects; the long rate compounds that path, adds the term premium and the credit spread, and takes off what QE compresses. A calm city prices exactly as today. A hiking city's curve inverts. A dial held low by hand gets a steep curve.
 - **The lineup (§2).** Bills at a discount (1, 3, 6, 12 months); bonds at 2, 5, 10, 20, 30 and 50 years with the market's coupon, near par; an amortizing bond with one coupon solved on the curve; floating-rate notes on the policy rate; inflation-linked bonds on the price index; any bond of ten years or more may be sold callable. The low-coupon term loan goes.
-- **The auction (§4).** The bidders are the game's own rules: households non-competitive and first, the bank at fair while it has room, the world as hot money. One clearing yield; the cover and the tail say how it went. The player caps the yield, or tells it to fill: then the yield rises until the bidders' own rules cover the issue, and the card says what that costs. The central bank bids only to roll its own paper.
+- **The auction (§4).** The bidders are the game's own rules: households non-competitive and first, the bank at fair while it has room, the world as hot money. One clearing yield; the cover and the tail say how it went. The player caps the yield, or tells it to fill: then the yield rises until the bidders' own rules cover the issue, and the card says what that costs. The central bank bids only to roll its own paper. The rollover and automatic building run the same auction on their own settings: a short rollover is paid from cash and then the central bank's advances, and a short building sale keeps its ask open until the money is there (§4.5).
 - **The books (§5).** Amortised cost by effective interest: each line's carrying value, its interest expense, and a gain or loss on retirement against carrying value, on the statements.
 - **Closing early (§6).** A reverse auction: holders offer, each at the price where its own buying rule stops wanting the bond, never under fair; the city takes the cheapest and pays each its own price. A callable line can be called at 100 from its first call date; the card says when calling is worth it.
 - **The screens (§7).** The book as a desk, a line's own page, the buyback and the call, Borrow as an auction, and Your rate as the curve the central bank sets.
@@ -220,11 +220,25 @@ Filling it in that city costs D$25.9M a year of interest at its effective rate, 
 
 An auction has no underwriter, so **the 0.75% spread goes**; the fixed cost and the minimum issue stay (D21). The cost of selling is now the tail, which the city can see and cap.
 
-### 4.5 The rollover, the build screen and automatic building
+### 4.5 When nobody presses the button: the rollover, automatic building, the build screen
 
-- **The rollover** (`Rollover.Mode`): By hand as today; "Same structure" sells each maturing piece into the line that is now the benchmark for its term (a bill for a bill); "12-month bills" as today.
-- **The build screen's two offers** become a bill and a 10-year sold into the benchmark line, each sized so the cash that arrives covers the order (the note's question, answered for the auction's price).
-- **Automatic building** borrows on the 10-year line.
+Three things sell paper on the city's behalf, and each runs the same auction on the city as it stands. Jerus, 2026-10-12, asked what happens to them; his answers are D28 to D30.
+
+**Each has its own cap or Fill it** (D28, **Jerus's call**: "each its own"). The rollover's card on the Finances hub and automatic building's panel each carry the same chips as Borrow: fair + 1 point (the default), another cap, or Fill it. The time skip runs both on their own settings, month after month, and its report lists every automatic sale: the stop, the tail, anything short and where the rest came from.
+
+**The rollover.**
+- By hand as today. "Same structure" sells each maturing piece into the line that is now the benchmark for its term, a bill for a bill and an amortizing piece into a new amortizing line of its remaining years; "12-month bills" as today. The central bank still rolls its own par at issue, outside the auction, and last year's surplus still nets first (`Rollover`'s rule, unchanged).
+- **Capped and short** (D29, **Jerus's call**): the maturity is a promise and is paid in full. What the sale did not raise comes out of the treasury's cash, and past the cash from the central bank's advances, past their ceiling if it must, as any promise is paid today (`TreasuryLine`). That is printing, and the inbox says so: "The rollover's 10-year sale covered D$X at its cap of Y%; D$Z of January's maturity was paid by the central bank's advances."
+- **Filled:** it pays the tail instead, and the inbox names the tail when it passes the cap the player would otherwise have set.
+
+**Automatic building** (D30, **Jerus's call**: "stays open the ask until money raised, and what already raised plus cash can be used").
+- It borrows the gap on the 20-year line (`BUILD_BOND_YEARS`, today's 20-year term bond), at its own cap or filled.
+- **Capped and short:** it sells what was bid, and **the rest of the ask stays open**. The order is placed as soon as what has been raised for it plus the cash over its reserve covers it, that month or a later one. Each month the open ask is offered again at the month's auction, at the builder's cap, until it is covered or no longer needed.
+- **What is raised is the order's.** The automatic builder counts it against the order and spends it on nothing else; the treasury's other bills may still draw on it if the month needs the cash, as any cash. If the order drops out of the ranking or the debt limit closes, the ask is withdrawn and what was raised stays in the treasury: the paper is sold and cannot be unsold, so the log and the inbox say so.
+- The panel lists the open asks: the order, raised so far, still to raise, the months open, and a Withdraw button.
+- Nothing is ever borrowed for an order that is then refused: the order waits for the money, not the reverse.
+
+**The build screen's funding card** becomes the auction's preview for a 6-month bill (`BUILD_NOTE_MONTHS`) or the 20-year line, sized so the cash that arrives covers the order. The player is there, so a short preview offers the three answers the automatic sales use: raise the cap or Fill it, keep the ask open as automatic building does, or not borrow.
 
 ---
 
@@ -330,7 +344,7 @@ The boards in `city-debt/city-debt-study.html`, one city in January 2203, eighte
 | Batch | What | Traces |
 |---|---|---|
 | **CD1 ★** | **The curve** (§3): the expected path from `Expectations` and the rule, discount factors month by month, every piece priced on its own schedule and its yield solved from the price; `BondMarket`'s benchmark reads it; the rate taken apart in its new parts. A `CurveCheck`: a fixture that causes each shape (calm equal to today's curve, hiking inverted, behind steep, QE), asserted against `DRIFT_MONTHS`, `ADAPT_MONTHS` and the rule's own constants; `RestructureCheck` neutral or worse | every trace that borrows moves; re-baseline, the ensemble |
-| **CD2 ★** | **The lineup and the auction** (§2.1–2.3, 2.7, §4): bills, bonds at the six terms in lines that reopen, the amortizing bond on one solved coupon; the auction with the game's own bidders, non-competitive households, single price, cover, tail, the highest yield or Fill it, a capped sale that falls short; the fees; `DebtQuote` as the auction's preview; the rollover, the build screen and automatic building on the new paper; the term loan and the old serial removed; `SAVE_FORMAT` and its floor raised. An `AuctionCheck` | moves |
+| **CD2 ★** | **The lineup and the auction** (§2.1–2.3, 2.7, §4): bills, bonds at the six terms in lines that reopen, the amortizing bond on one solved coupon; the auction with the game's own bidders, non-competitive households, single price, cover, tail, the highest yield or Fill it, a capped sale that falls short; the fees; `DebtQuote` as the auction's preview; the rollover, automatic building, the build screen and the time skip on the new paper, each with its own cap or Fill it, the rollover's shortfall to the advances and automatic building's open ask (§4.5); the term loan and the old serial removed; `SAVE_FORMAT` and its floor raised. An `AuctionCheck` | moves |
 | **CD3** | **The books** (§5): effective interest a line, blended at a reopening; carrying value; the budget's interest line, the gain or loss on retirement, the balance at carrying value and the fair-value note; dollar paper amortised too. `TreasuryCheck` and `MoneyCheck` extended | moves (the interest line) |
 | **CD4** | **Closing early** (§6, §2.6): the reverse auction (offers by each holder's own rule, multiple price, the most to pay, the central bank out), callable lines on a Ho–Lee tree at the measured volatility, the call, "worth calling"; `repurchaseDebt()` replaced. `RestructureCheck`'s round trip on the new mechanism, its premise unchanged | identical unless a playtest buys back |
 | **CD5** | **Floating and linked** (§2.4, 2.5, 5.3): the floating-rate note on the dial, the linked bond on the price index with its deflation floor and its uplift line | identical (nothing sells them unasked) |
@@ -372,6 +386,11 @@ In `QUEUE.md` before R0, the research batches (Jerus, 2026-10-12: "add it before
 25. **D25. Floating notes at 2 and 5 years; linked bonds at 10 and 30, with the deflation floor.** **Taken.**
 26. **D26. Dollar paper** keeps the world's pricing and its window, sold to the world, but gets the book's figures, effective interest and the buyback. **Taken.**
 27. **D27. `MAX_TAIL` = one point,** the default highest yield over fair. **Taken at that value; still his to move.**
+
+**The sales nobody presses, 2026-10-12** (§4.5)
+28. **D28. The rollover and automatic building each have their own cap or Fill it.** **Jerus's call:** "each its own" (not one setting shared). Default fair + 1 point.
+29. **D29. A capped rollover that falls short pays the rest of the maturity from cash, then the central bank's advances.** **Jerus's call.** The maturity is a promise; the inbox names what was printed for it.
+30. **D30. A capped automatic-building sale that falls short keeps its ask open** until what was raised plus the spare cash covers the order, offered again each month. **Jerus's call:** "stays open the ask until money raised, and what already raised plus cash can be used". The build screen offers the same choice when the player is there.
 
 ---
 
