@@ -18,6 +18,9 @@
 #    3. the merge, uncommitted; a conflict is aborted and its files named;
 #    4. batch-check.sh on the merge - compile, suite, maps regenerated on the
 #       merged tree, Stale, line endings - and the maps added to the merge;
+#       on a chatgpt/ or gemini/ branch, tools.Names too: the names its text
+#       uses that the tree does not declare, said and never a gate (a passage
+#       about the past may name a method that existed then);
 #    5. the merge committed as "Merge batch/I12: <title>, <version>", the title
 #       QUEUE.md's on main unless -m gives one;
 #    6. tagged with GameVersion.VERSION unless that tag exists already (a batch
@@ -108,6 +111,19 @@ say "merged $AHEAD commit(s) of $BRANCH, uncommitted"
 # 4. the checks on the merged tree
 ./batch-check.sh "$@"
 CHECKED=$?
+case "$BRANCH" in
+    chatgpt/*|gemini/*)   # RV1: what a review used to ask by hand, a name at a time
+        if [ -f target/classes/ham/citybuildersim/tools/Names.class ]; then
+            java -cp target/classes ham.citybuildersim.tools.Names "$REF" HEAD 2>&1 \
+                | grep -v '^Picked up JAVA_TOOL_OPTIONS' > target/checks/names.txt
+            say "names: $(tail -1 target/checks/names.txt)"
+            sed '$d' target/checks/names.txt | head -20 | sed 's/^/    /'
+            MORE=$(( $(wc -l < target/checks/names.txt) - 21 ))
+            [ "$MORE" -le 0 ] || echo "    ... and $MORE more: target/checks/names.txt"
+        else
+            say "names: not run - no tools.Names in the build"
+        fi ;;
+esac
 if [ "$CHECKED" != 0 ] || [ "$DRY" = 1 ]; then
     undo
     [ "$CHECKED" = 0 ] || die "the checks failed on the merge (above); main is where it was"

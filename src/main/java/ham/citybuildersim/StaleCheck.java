@@ -1,5 +1,6 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.tools.Names;
 import ham.citybuildersim.tools.SourceTree;
 import ham.citybuildersim.tools.Stale;
 import java.io.IOException;
@@ -11,7 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The prose still describes the code: the firm half of `tools.Stale`, asserted.
+ * The prose still describes the code: the firm half of `tools.Stale`, asserted,
+ * and `tools.Names` proved on a fixture.
  *
  * WHAT THIS HAS TO PROVE, and none of it is about what the game does - a
  * finding here is a sentence that has stopped being true, not a mechanic that
@@ -41,6 +43,16 @@ import java.util.List;
  *      banners, and the two front doors where they count the harnesses and the
  *      interface files, have to agree with the files on disk. This is the one
  *      the interface split of 2026-09-18 broke in a dozen places by hand.
+ *
+ *   6. tools.Names TELLS A REAL NAME FROM A MADE-UP ONE (RV1). A canned diff
+ *      over a fixture tree names members declared the ways a regex misses
+ *      (`final`, `double[]`, a generic return, a record's component, an
+ *      inherited method), a made-up method and constant, a member put on the
+ *      wrong class and a type that is not there; only the second kind may come
+ *      back, at the line the diff gives it, and a proposal, a file name, code
+ *      and a generated document are not read as claims. Its run on the tree's
+ *      own branches is ship.sh's, and a warning: a name in a passage about the
+ *      past, or the future, is not a defect of the tree's.
  *
  * The soft categories - a member named in a comment that nothing declares, and
  * docs/map being older than the sources - are printed by the tool and are NOT
@@ -138,8 +150,51 @@ public class StaleCheck {
         System.out.printf("%n(%d soft finding%s not asserted here - run tools.Stale to read them)%n",
                 soft, soft == 1 ? "" : "s");
 
+        /* ==================== 6. tools.Names on a fixture ================== */
+        names();
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** Section 6: the fixture tree, a diff over it, and what Names makes of each line. */
+    static void names() throws IOException {
+        System.out.println("\n--- tools.Names: a real name resolves, a made-up one and a member on the wrong class do not ---");
+
+        Path root = Files.createTempDirectory("names");
+        Path src = root.resolve("src");
+        Files.createDirectories(src.resolve("ham/citybuildersim"));
+        Files.writeString(src.resolve("ham/citybuildersim/Alpha.java"), ALPHA, StandardCharsets.UTF_8);
+        Files.writeString(src.resolve("ham/citybuildersim/Beta.java"), BETA, StandardCharsets.UTF_8);
+        SourceTree fixture = new SourceTree(src, Paths.get(System.getProperty("docs", "docs")));
+        Names.Result r = Names.scan(fixture, NAMES_DIFF, path -> path.endsWith("Gamma.java") ? GAMMA : null);
+        cleanUp(root);
+
+        java.util.Map<String, Names.Miss> miss = new java.util.HashMap<>();
+        for (Names.Miss m : r.unresolved) miss.put(m.name, m);
+        System.out.printf("(%d names read, %d unresolved: %s)%n", r.read.size(), r.unresolved.size(), miss.keySet());
+
+        for (String real : List.of("Alpha.weights()", "Alpha.sorted()", "Alpha.LIMIT", "Beta.weights()",
+                "Alpha.Pair.left()", "Alpha.Mode.values()", "own()", "Gamma.fresh()")) {
+            assertTrue("a real name is read and resolves: " + real, r.read.contains(real) && !miss.containsKey(real));
+        }
+        Names.Miss made = miss.get("frobnicate()");
+        assertTrue("a made-up method comes back, at the line the diff gives it",
+                made != null && made.path.equals("docs/fixture.md") && made.line == 3);
+        assertTrue("...and a made-up constant on a real class", miss.containsKey("Alpha.NO_SUCH_LIMIT"));
+        Names.Miss wrong = miss.get("Alpha.own()");
+        assertTrue("a member put on the wrong class comes back, though Beta declares it",
+                wrong != null && wrong.why.contains("Alpha does not declare own"));
+        assertTrue("a type the tree does not have comes back", miss.containsKey("Omega.run()"));
+        Names.Miss java = miss.get("madeUpInJava()");
+        assertTrue("a made-up name in a Java comment comes back at its line in the branch's file",
+                java != null && java.path.endsWith("Gamma.java") && java.line == 3);
+        assertTrue("those five and nothing else", r.unresolved.size() == 5);
+        assertTrue("code is not read as prose", !r.read.contains("notInAComment()"));
+        assertTrue("a generated document is not read", !r.read.contains("ghostInGenerated()"));
+        assertTrue("a file name is not a member", r.read.stream().noneMatch(n -> n.endsWith(".java")));
+        assertTrue("a name the text proposes is set apart, not counted",
+                r.proposed.contains("GammaCheck") && r.proposed.contains("DELTA_MONTHS"));
     }
 
     static void cleanUp(Path root) {
@@ -179,6 +234,78 @@ public class StaleCheck {
 
                 /** A javadoc with nothing under it at all. */
             }
+            """;
+
+    /** Section 6's tree: members declared the ways a regex over source misses. */
+    private static final String ALPHA = """
+            package ham.citybuildersim;
+
+            /** A fixture class for tools.Names. */
+            public class Alpha {
+                /** A constant. */
+                public static final int LIMIT = 3;
+                /** Final, returning an array. */
+                public final double[] weights(int n) { return new double[n]; }
+                /** A generic return type. */
+                public static <T extends Comparable<T>> java.util.List<T> sorted(java.util.List<T> in) { return in; }
+                /** A record, whose accessors are its components. */
+                public record Pair(int left, int right) { }
+                /** An enum, which has values(). */
+                public enum Mode { ON, OFF }
+            }
+            """;
+
+    /** A subclass: what it inherits resolves on it, and what it declares does not resolve on Alpha. */
+    private static final String BETA = """
+            package ham.citybuildersim;
+
+            /** A fixture subclass for tools.Names. */
+            public class Beta extends Alpha {
+                /** Its own. */
+                public void own() { }
+            }
+            """;
+
+    /** A file the branch adds, read as the branch has it. */
+    private static final String GAMMA = """
+            package ham.citybuildersim;
+
+            /** Added on the branch; this comment names madeUpInJava(). */
+            public class Gamma {
+                /** The branch's own method. */
+                public void fresh() { int x = notInAComment(); }
+            }
+            """;
+
+    /** The diff: a document's six lines (2 to 7), the Java file whole, and a generated page. */
+    private static final String NAMES_DIFF = """
+            diff --git a/docs/fixture.md b/docs/fixture.md
+            --- a/docs/fixture.md
+            +++ b/docs/fixture.md
+            @@ -1,0 +2,6 @@
+            +Real: `Alpha.weights()`, Alpha.sorted(list), `Alpha.LIMIT`, `Beta.weights()`, `Alpha.Pair.left()`, `Alpha.Mode.values()` and own().
+            +Made up: frobnicate() and `Alpha.NO_SUCH_LIMIT`.
+            +On the wrong class: `Alpha.own()`. Not a type here: `Omega.run()`.
+            +A file, not a member: `Alpha.java`. Proposals: a new `GammaCheck`, and `DELTA_MONTHS`, written `DELTA_MONTHS = 6`.
+            +The branch's own: `Gamma.fresh()`.
+            +
+            diff --git a/src/ham/citybuildersim/Gamma.java b/src/ham/citybuildersim/Gamma.java
+            new file mode 100644
+            --- /dev/null
+            +++ b/src/ham/citybuildersim/Gamma.java
+            @@ -0,0 +1,7 @@
+            +package ham.citybuildersim;
+            +
+            +/** Added on the branch; this comment names madeUpInJava(). */
+            +public class Gamma {
+            +    /** The branch's own method. */
+            +    public void fresh() { int x = notInAComment(); }
+            +}
+            diff --git a/docs/dials.md b/docs/dials.md
+            --- a/docs/dials.md
+            +++ b/docs/dials.md
+            @@ -9,0 +10 @@
+            +| generated | ghostInGenerated() |
             """;
 
     /** The same shapes, all of them true. */
