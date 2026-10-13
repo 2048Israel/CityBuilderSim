@@ -16,7 +16,7 @@ the power and the month's note - every ribbon one scale, in tonnes, the forest's
 under it. New model class IndustryPicture (pure: the month traced end to end, then laid out), painted by
 ui/SectorScreen with the refinery's painter. IndustryViewCheck 12 holds it: ribbons to scale, each node the view's
 figures, every label's figure the view's, nothing off the frame at 1,389 x 868. A words probe of every string and nine
-headless renders are in docs/queue/I12-notes/. No save change; the playtests byte-identical by construction.
+headless renders are in docs/queue/I12-notes/. No save change. Gate: suite 109 of 109, BuildMenuCheck 139, Stale 0 firm, both playtests 8/8 traces byte-identical.
 
 ## 0.7.143 - for `claude/todo.md`
 
