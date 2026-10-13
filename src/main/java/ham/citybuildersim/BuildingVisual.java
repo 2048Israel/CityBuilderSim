@@ -415,7 +415,10 @@ public final class BuildingVisual {
     /**
      * The whole plots a type is drawn on, {across, down}: its land in plots,
      * round(sqrt(plots)) across and round(plots / across) down, at least one
-     * each way and never past a tile - within half a plot a side of its own
+     * each way and never past a cell's interior (DistrictPlan.INTERIOR, 31;
+     * a tile's 32 until 0.8.0, which no plan could hold: a Tree Plantation,
+     * a Woodlot, a Large Copper Mine or a coal mine standing on no site threw
+     * its district's plan - batch I14) - within half a plot a side of its own
      * ground (a House 1 x 1, Studio Apartments 2 x 1 for 2.6 plots, Low-Rise
      * Apartments 2 x 3 for 6.2, an Iron Mine 6 x 7 for 41.3, a Livestock Farm
      * 23 x 23 for 540). The same for every building of the type; the painter
@@ -423,8 +426,8 @@ public final class BuildingVisual {
      */
     public static int[] footprint(Type t) {
         double p = Math.max(0, t.plots());
-        int across = (int) Math.max(1, Math.min(TilePainter.TILE, Math.round(Math.sqrt(p))));
-        int down = (int) Math.max(1, Math.min(TilePainter.TILE, Math.round(p / across)));
+        int across = (int) Math.max(1, Math.min(DistrictPlan.INTERIOR, Math.round(Math.sqrt(p))));
+        int down = (int) Math.max(1, Math.min(DistrictPlan.INTERIOR, Math.round(p / across)));
         return new int[] { across, down };
     }
 

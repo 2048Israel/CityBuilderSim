@@ -241,6 +241,22 @@ import java.util.Map;
  *      nothing, and through the globe's camera every offer a point of its
  *      free ground puts inside the box; and the picks drop on a month and
  *      on a load into the same Game, an offer bought falling out of them.
+ *  15. the materials drawn as themselves (0.8.0, batch I14;
+ *      docs/studies/spec-materials.md 5's I14 row): every building of the
+ *      nine industries has a look of its own, never a plain mine's or
+ *      industry's box, and one on a resource's sites stands on its
+ *      template's; on Jerus's city x 1 with one or two of every materials
+ *      kind, on a square of MATERIALS_SIDE districts holding sites enough of
+ *      every type of field, the districts sum to the counts, every building
+ *      is drawn once - a works on its sites once for all of them - a works of
+ *      twenty sites on twenty, each site under a works of its type of field;
+ *      one more Iron Mine takes one more hematite site and moves no works;
+ *      each industry's works stand in one district and its plan places them
+ *      in touching cells; each look is drawn in its own colours; with no
+ *      zone no district is tinted, and each zone's districts cover its ground
+ *      and one fewer would not, none twice, its first holding its sector's
+ *      buildings; and a screen over the industry paints and rasters within
+ *      SCREEN_MS of the thread's CPU, every tile within it.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -363,6 +379,7 @@ public class MapCheck {
         miniMap(city, sq);
         globeOnScreen(sq);
         buyingFromTheMap(city);
+        materials(sq.seed);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -502,8 +519,11 @@ public class MapCheck {
 
     /** What the painted map draws over every tile of a map's districts and a tile round them (0.7.88: a district's plan lays the next one's first column and row). */
     static final class Drawn {
-        /** Buildings by type id: a mine or well on a site once, however many tiles its site spans; packed ones among them. */
+        /** Buildings by type id: a mine or well on a site once, however many tiles its site spans - since 0.8.0 a works once for all the sites it takes; packed ones among them. */
         long[] buildings;
+        /** The sites under each type's works, by type id (0.8.0), each once; and the types whose sites are not a whole number of its works. */
+        long[] siteCount;
+        long partWorks;
         /** The streets' surface in plots by kind [0, gravel, paved, highway] - a highway's own plots among the highway's - and what the plans have no street for (CityMap.leftoverByKind()). */
         final double[] surface = new double[4], leftover = new double[4];
         /** The railway's track laid, in plots (0.7.72), and (0.7.89) what the runs could not lay; buildings packed at the city's edge (R7); tiles painted; districts. */
@@ -546,6 +566,7 @@ public class MapCheck {
     static Drawn drawn(CityMap m) {
         Drawn d = new Drawn();
         d.buildings = new long[m.types().length];
+        d.siteCount = new long[m.types().length];
         d.districts = m.districts().size();
         TilePainter.Input in = new TilePainter.Input();
         TilePainter.Painted p = new TilePainter.Painted();
@@ -562,10 +583,17 @@ public class MapCheck {
                 d.rail += p.railLaid;
                 for (int b = 0; b < p.buildings; b++) {
                     if (p.bsite[b] >= 0) {
-                        if (sites.add(in.siteKey[p.bsite[b]])) d.buildings[p.btype[b]]++;
+                        if (sites.add(in.siteKey[p.bsite[b]])) d.siteCount[p.btype[b]]++;
                     } else d.buildings[p.btype[b]]++;
                 }
             }
+        }
+        // ...a works on its sites once, for as many as it takes (0.8.0).
+        for (int t = 0; t < d.siteCount.length; t++) {
+            if (d.siteCount[t] == 0) continue;
+            int each = m.types()[t] == null ? 1 : Math.max(1, m.types()[t].sites());
+            d.buildings[t] += d.siteCount[t] / each;
+            if (d.siteCount[t] % each != 0) d.partWorks++;
         }
         double[] left = m.leftoverByKind();
         System.arraycopy(left, 0, d.leftover, 0, 4);
@@ -4455,7 +4483,8 @@ public class MapCheck {
                 && pic.get(World.CLASSES + 1).words().equals(LandMap.EDGE_WORDS) && gro.subList(0, World.CLASSES + 2).equals(pic)
                 && gro.get(World.CLASSES + 2).words().equals(LandMap.OFFER_WORDS);
         long fieldKinds = Arrays.stream(Resource.values()).filter(Resource::inFields).count();
-        boolean planeLegend = pla.equals(LandMap.planeLegend()) && pla.size() == BuildingVisual.CLASSES + 1 + 5 + 9 + 2 + 2 + fieldKinds
+        boolean planeLegend = pla.equals(LandMap.planeLegend()) && pla.size() == BuildingVisual.CLASSES + 1 + 5 + 9
+                + (BuildingVisual.GROUPS - BuildingVisual.STEEL) + (BuildingVisual.STAND - BuildingVisual.PIT + 1) + 2 + 2 + fieldKinds
                 && pla.get(0).words().equals(BuildingVisual.CLASS_NAMES[0]);
         out.printf("      the legend: %d entries on the PICTURE tier, %d on the GROUND, %d on the plane%n", pic.size(), gro.size(), pla.size());
         check("the legend on the globe is the seven kinds of ground, the city's ring and its edge, the GROUND tier's its offers too", kinds);
@@ -5116,5 +5145,373 @@ public class MapCheck {
     /** Two money or area figures the same to a billionth of the larger. */
     static boolean sameFigure(double a, double b) {
         return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.max(Math.abs(a), Math.abs(b)));
+    }
+
+    /* =====================================================================
+       15. THE MATERIALS DRAWN AS THEMSELVES (0.8.0, batch I14;
+       docs/studies/spec-materials.md 5's I14 row)
+       ===================================================================== */
+
+    /** The materials fixture's square, in districts a side: 10 (77 km), wide enough to hold fields of every typed slot on the default world. */
+    static final int MATERIALS_SIDE = 10;
+
+    /** The nine materials industries, Iron Mining to Wood Products (spec-materials 2.1): every building of theirs drawn with a look of its own. */
+    static final String[] MATERIALS_SECTORS = { Sectors.MINING, Sectors.HEAVY_INDUSTRY, Sectors.COAL_MINING, Sectors.QUARRYING,
+            Sectors.CEMENT_CONCRETE, Sectors.COPPER_MINING, Sectors.COPPER_REFINING, Sectors.FORESTRY, Sectors.WOOD_PRODUCTS };
+
+    /** Whether a template is one of the nine industries'. */
+    static boolean materialsOf(BuildingsTemplate t) {
+        return Arrays.asList(MATERIALS_SECTORS).contains(t.getSector());
+    }
+
+    /** The fixture's count of a materials type: one of a works on more than one site, two of anything else - so each slot holds two kinds and the larger is laid first. */
+    static long materialsCount(BuildingVisual.Type t) {
+        return t.sites() > 1 ? 1 : 2;
+    }
+
+    static void materials(long seed) {
+        out.println("\n--- 15. the materials drawn as themselves (0.8.0): each kind its own look, every works on its own sites by type,"
+                + " each industry's works one campus, each thing drawn once, the zones tinted where they are, the screen within 80 ms ---");
+        List<BuildingsTemplate> templates = new BuildingCatalog().load();
+        BuildingVisual.Type[] types = BuildingVisual.table(templates);
+        // Every building of the nine industries: a look of its own, and on its template's sites.
+        int kinds = 0, own = 0, sited = 0, sitesRight = 0;
+        int[] byLook = new int[BuildingVisual.LOOKS];
+        StringBuilder plain = new StringBuilder();
+        for (BuildingsTemplate t : templates) {
+            if (!materialsOf(t)) continue;
+            kinds++;
+            BuildingVisual.Type ty = types[t.getId()];
+            boolean mine = ty.materials() && ty.fill() != BuildingVisual.FILL[BuildingVisual.MINE] && ty.fill() != BuildingVisual.FILL[BuildingVisual.INDUSTRY];
+            if (mine) own++;
+            else plain.append(' ').append(t.getName());
+            byLook[ty.look()]++;
+            BuildingsTemplate.Site s = t.site();
+            if (s != null && s.sites() > 0) {
+                sited++;
+                if (ty.site() == s.resource() && ty.sites() == s.sites() && ty.field() == s.type()) sitesRight++;
+            }
+        }
+        out.printf("      the nine industries' %d kinds: %d with a look of their own (open pits %d, shafts %d, quarries %d, leach plants %d,"
+                + " wash plants %d, camps %d, stands %d, works %d)%s; %d on a resource's sites, %d of them as their templates say%n",
+                kinds, own, byLook[BuildingVisual.PIT], byLook[BuildingVisual.SHAFT], byLook[BuildingVisual.QUARRY], byLook[BuildingVisual.LEACH],
+                byLook[BuildingVisual.WASH], byLook[BuildingVisual.CAMP], byLook[BuildingVisual.STAND], byLook[BuildingVisual.WORKS],
+                plain.length() == 0 ? "" : "; plain:" + plain, sited, sitesRight);
+        check("every building of the nine materials industries has a look of its own - none a plain mine's or industry's box", kinds > 0 && own == kinds);
+        check("...and every one on a resource's sites stands on its template's: the resource, its type of field, as many sites as it takes",
+                sited > 0 && sitesRight == sited);
+
+        // The fixture: Jerus's city x 1 on a square of MATERIALS_SIDE districts holding fields of every typed slot, and of each
+        // materials kind one works of many sites or two of any other.
+        World w = World.of(seed);
+        long[] c = new long[types.length];
+        for (int t = 0; t < JERUS_COUNTS.length && t < c.length; t++) c[t] = JERUS_COUNTS[t];
+        int[] need = new int[CityMap.SLOTS];
+        for (BuildingsTemplate t : templates) {
+            if (!materialsOf(t)) continue;
+            BuildingVisual.Type ty = types[t.getId()];
+            c[t.getId()] = materialsCount(ty);
+            if (ty.site() == null) continue;
+            BuildingVisual.Type x = ty;
+            Deposit.FieldType f = x.field() != null ? x.field() : x.site().typesOf().get(0);
+            need[CityMap.slotOf(x.site(), f)] += (int) (materialsCount(x) * x.sites());
+        }
+        long[] place = materialsPlace(w, MATERIALS_SIDE, need);
+        int capacity = (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
+        CityMap m = CityMap.square(seed, place[0], place[1], types, MATERIALS_SIDE, capacity, c);
+        StringBuilder slots = new StringBuilder();
+        for (int k = 0; k < CityMap.SLOTS; k++) {
+            if (CityMap.SLOT_RESOURCE[k] == Resource.OIL) continue;
+            slots.append(String.format(" %s %d of %d needed;", CityMap.SLOT_TYPE[k].name().toLowerCase(java.util.Locale.ROOT),
+                    m.ownedSites(CityMap.SLOT_RESOURCE[k], CityMap.SLOT_TYPE[k]), need[k]));
+        }
+        out.printf("      the fixture: plot (%d, %d), %d cells out; %d districts; its sites by type:%s %,d buildings%n", place[0], place[1], place[2],
+                m.districts().size(), slots, Arrays.stream(c).sum());
+        boolean room = place[2] >= 0;
+        for (int k = 0; k < CityMap.SLOTS; k++) room &= m.ownedSites(CityMap.SLOT_RESOURCE[k], CityMap.SLOT_TYPE[k]) >= need[k];
+        check("fixture: its square holds sites enough of every type for all its works", room);
+        check("its districts sum to its counts exactly, every type on its sites among them (coal's, stone's and copper's first types were placed nowhere until 0.8.0)",
+                Arrays.equals(m.totals(), c));
+
+        // Each thing drawn once: a works on sites once for all its sites, the rest box by box.
+        Drawn d = drawn(m);
+        out.printf("      drawn: %,d buildings of the model's %,d, %d works drawn on only some of their sites%n", d.total(), modelBuildings(c, types), d.partWorks);
+        check("every building drawn once - each type as many as the model has, a works on its sites once for all of them, none twice, none missing",
+                d.sameAs(c, types) && d.partWorks == 0);
+
+        // A works on as many sites as it takes, each of its own type of field.
+        boolean typed = true;
+        long[] onSites = new long[types.length];
+        for (CityMap.District dd : m.districts()) {
+            for (int k = 0; k < CityMap.SLOTS; k++) {
+                int[] rs = dd.siteRuns[k];
+                if (rs == null) continue;
+                for (int a = 0; a + 2 < rs.length; a += 3) {
+                    BuildingVisual.Type ty = types[rs[a + 1]];
+                    typed &= ty.site() == CityMap.SLOT_RESOURCE[k] && (ty.field() == null || ty.field() == CityMap.SLOT_TYPE[k]);
+                    onSites[rs[a + 1]] += rs[a + 2];
+                }
+            }
+        }
+        boolean twenty = true, any20 = false;
+        StringBuilder works = new StringBuilder();
+        for (BuildingsTemplate t : templates) {
+            BuildingVisual.Type ty = types[t.getId()];
+            if (ty == null || ty.site() == null || c[t.getId()] <= 0) continue;
+            long stood = d.siteCount[t.getId()] / Math.max(1, ty.sites());
+            twenty &= d.siteCount[t.getId()] == stood * ty.sites() && onSites[t.getId()] == d.siteCount[t.getId()];
+            if (ty.sites() >= 20 && stood > 0) any20 = true;
+            if (ty.sites() > 1) works.append(String.format(" %s %d on %d sites;", t.getName(), stood, d.siteCount[t.getId()]));
+        }
+        out.printf("      the works of many sites:%s%n", works);
+        check("a works of twenty sites is drawn on twenty sites - every works on all of its sites - and each site under a works is of its type of field",
+                any20 && twenty && typed);
+
+        // Nothing placed moves: one more Iron Mine, the last laid on hematite, and every other works keeps its sites.
+        java.util.Map<Long, Integer> before = sitesUnder(m), after;
+        long[] more = c.clone();
+        more[Mining.IRON_MINE]++;
+        m.reconcile(more);
+        after = sitesUnder(m);
+        int moved = 0, added = 0;
+        for (java.util.Map.Entry<Long, Integer> e : after.entrySet()) {
+            Integer was = before.get(e.getKey());
+            if (was == null) { if (e.getValue() == Mining.IRON_MINE) added++; else moved++; }
+            else if (!was.equals(e.getValue())) moved++;
+        }
+        for (Long k : before.keySet()) if (!after.containsKey(k)) moved++;
+        out.printf("      one more Iron Mine: %d site(s) newly under one, %d site(s) under another works or none than before%n", added, moved);
+        check("...one more Iron Mine takes one more hematite site, and no works placed before it moves", added == 1 && moved == 0
+                && Arrays.equals(m.totals(), more));
+        m.reconcile(c);
+
+        // Each industry's works one campus: one district, cells that touch one another, first of its industry after those before it.
+        for (int g = BuildingVisual.STEEL; g < BuildingVisual.GROUPS; g++) {
+            int want = 0;
+            for (BuildingVisual.Type ty : types) if (ty != null && ty.campusGroup() == g) want += (int) c[ty.id()];
+            CityMap.District home = null;
+            int holding = 0;
+            for (CityMap.District dd : m.districts()) if (m.campusCells(dd, g) > 0) { holding++; home = dd; }
+            java.util.Set<Integer> cells = new java.util.HashSet<>();
+            int placed = 0;
+            if (home != null) {
+                DistrictPlan p = m.plan(home);
+                for (int b = 0; b < p.buildings; b++) {
+                    BuildingVisual.Type ty = types[p.btype[b]];
+                    if (ty == null || ty.campusGroup() != g) continue;
+                    cells.add((p.by[b] / DistrictPlan.CELL) * DistrictPlan.CELLS_A_SIDE + p.bx[b] / DistrictPlan.CELL);
+                    placed++;
+                }
+            }
+            out.printf("      %s: %d works, in %d district(s); its plan places %d in %d cell(s)%n", BuildingVisual.GROUP_NAMES[g], want, holding, placed,
+                    cells.size());
+            check("...the " + BuildingVisual.GROUP_NAMES[g].toLowerCase(java.util.Locale.ROOT) + " stand in one district, every one placed, in cells that touch: one campus",
+                    want > 0 && holding == 1 && placed == want && connected(cells));
+        }
+
+        // The looks drawn: on the tiles holding each look, its own colours.
+        TilePainter.Input in = new TilePainter.Input();
+        TilePainter.Painted p = new TilePainter.Painted();
+        int px = 8;
+        int[] img = new int[(World.TILE * px) * (World.TILE * px)];
+        int[] seen = new int[BuildingVisual.LOOKS], drawnLook = new int[BuildingVisual.LOOKS];
+        // A works on a site is seen once for the site, whichever tiles it spans, and shows its look on any of them.
+        java.util.Map<Long, Integer> siteLook = new java.util.HashMap<>();
+        java.util.Set<Long> siteShows = new java.util.HashSet<>();
+        long[] box = tilesOf(m);
+        for (long ty = box[1]; ty < box[1] + box[3]; ty++) {
+            for (long tx = box[0]; tx < box[0] + box[2]; tx++) {
+                m.tileInput(tx, ty, in);
+                TilePainter.paint(in, p);
+                boolean anyLook = false;
+                for (int b = 0; b < p.buildings; b++) anyLook |= in.types[p.btype[b]].materials();
+                if (!anyLook) continue;
+                TileRaster.raster(in, p, px, img);
+                for (int b = 0; b < p.buildings; b++) {
+                    BuildingVisual.Type t = in.types[p.btype[b]];
+                    boolean onSite = p.bsite[b] >= 0;
+                    if (!t.materials() || p.bpacked[b] || (!onSite && (p.bw[b] < 2 || p.bh[b] < 2))) continue;
+                    int sign = lookSign(t);
+                    boolean found = false;
+                    for (int y = p.by[b] * px; y < (p.by[b] + p.bh[b]) * px && !found; y++) {
+                        for (int x = p.bx[b] * px; x < (p.bx[b] + p.bw[b]) * px && !found; x++) found = img[y * World.TILE * px + x] == sign;
+                    }
+                    if (onSite) {
+                        long key = in.siteKey[p.bsite[b]];
+                        siteLook.put(key, t.look());
+                        if (found) siteShows.add(key);
+                        continue;
+                    }
+                    seen[t.look()]++;
+                    if (found) drawnLook[t.look()]++;
+                }
+            }
+        }
+        for (java.util.Map.Entry<Long, Integer> e : siteLook.entrySet()) {
+            seen[e.getValue()]++;
+            if (siteShows.contains(e.getKey())) drawnLook[e.getValue()]++;
+        }
+        boolean looks = true;
+        StringBuilder lw = new StringBuilder();
+        for (int k = 1; k < BuildingVisual.LOOKS; k++) {
+            lw.append(String.format(" %s %d of %d;", BuildingVisual.LOOK_NAMES[k].toLowerCase(java.util.Locale.ROOT), drawnLook[k], seen[k]));
+            looks &= seen[k] > 0 && drawnLook[k] == seen[k];
+        }
+        out.printf("      rastered at %d px a plot, the boxes showing their look's own colour:%s%n", px, lw);
+        check("each look is drawn on its tiles in its own colours - a pit's benches, a shaft's headframe, a quarry's stone, a leach plant's pond,"
+                + " the wash plant's conveyor, a camp's logs, planted forest's crowns, a works' industry", looks);
+
+        // The zones tinted by district, where they are and nowhere else.
+        check("with no zone set no district is tinted", m.zoneTint(List.of()).isEmpty());
+        double districtSqFt = capacity * BuildingVisual.SQ_FT_PER_PLOT;
+        List<CityMap.ZoneArea> zones = List.of(new CityMap.ZoneArea(Sectors.COAL_MINING, 1.5 * districtSqFt),
+                new CityMap.ZoneArea(Sectors.FORESTRY, 0.4 * districtSqFt));
+        List<CityMap.Tinted> tint = m.zoneTint(zones);
+        boolean covers = true, least = true, once = true, firstHolds = true;
+        java.util.Set<Long> tinted = new java.util.HashSet<>();
+        for (int z = 0; z < zones.size(); z++) {
+            double got = 0, smallest = Double.MAX_VALUE;
+            // The district holding the most of its sector's ground: the first the map picks for it.
+            CityMap.District most = null;
+            double mostGround = 0;
+            for (CityMap.District dd : m.districts()) {
+                double ground = 0;
+                for (BuildingVisual.Type ty : types) if (ty != null && zones.get(z).sector().equals(ty.sector())) ground += (double) dd.count(ty.id()) * ty.sqFt();
+                if (dd.owned() > 0 && ground > mostGround) { mostGround = ground; most = dd; }
+            }
+            boolean mostTinted = false;
+            for (CityMap.Tinted t : tint) {
+                if (t.zone() != z) continue;
+                CityMap.District dd = m.districtOfTile(Math.floorDiv(t.x0(), World.TILE), Math.floorDiv(t.y0(), World.TILE));
+                once &= tinted.add(t.x0() * 1_000_003L + t.y0());
+                mostTinted |= dd == most;
+                got += dd.owned() * BuildingVisual.SQ_FT_PER_PLOT;
+                smallest = Math.min(smallest, dd.owned() * BuildingVisual.SQ_FT_PER_PLOT);
+            }
+            firstHolds &= most != null && mostTinted;
+            covers &= got >= zones.get(z).sqFt();
+            least &= got - smallest < zones.get(z).sqFt();
+            out.printf("      zoned for %s, %.1f km2: %d district(s), %.1f km2 of free ground%n", zones.get(z).sector(),
+                    zones.get(z).sqFt() / LandManager.SQ_FT_PER_KM2, countZone(tint, z), got / LandManager.SQ_FT_PER_KM2);
+        }
+        check("each zone's districts cover its ground, and one fewer would not: the tint where a zone is and nowhere else, no district twice",
+                covers && least && once && tint.size() == tinted.size());
+        check("...the district holding the most of a zone's sector's buildings is the zone's (the map picks where they stand)", firstHolds);
+        check("...and each zone in its sector's own colour", LandMap.zoneColour(Sectors.COAL_MINING) != LandMap.zoneColour(Sectors.FORESTRY));
+
+        // The screen over the industry, on the thread's CPU (section 5's clock, A28): within SCREEN_MS.
+        CityMap.District at = m.districts().get(0);
+        long most = -1;
+        for (CityMap.District dd : m.districts()) {
+            long g = 0;
+            for (BuildingVisual.Type ty : types) if (ty != null && ty.materials()) g += (long) dd.count(ty.id()) * BuildingVisual.cells(ty);
+            if (g > most) { most = g; at = dd; }
+        }
+        long cx = (m.baseDX() + at.dx) * CityMap.TILES_A_SIDE + CityMap.TILES_A_SIDE / 2, cy = (m.baseDY() + at.dy) * CityMap.TILES_A_SIDE + CityMap.TILES_A_SIDE / 2;
+        long tx0 = cx - SCREEN_ACROSS / 2, ty0 = cy - SCREEN_DOWN / 2;
+        int[] img4 = new int[(World.TILE * PX) * (World.TILE * PX)];
+        double best = Double.MAX_VALUE, worstTile = 0;
+        long built = 0;
+        for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
+            long t0 = monthClock();
+            double tileWorst = 0;
+            built = 0;
+            for (int j = 0; j < SCREEN_DOWN; j++) {
+                for (int i = 0; i < SCREEN_ACROSS; i++) {
+                    long a = monthClock();
+                    m.tileInput(tx0 + i, ty0 + j, in);
+                    TilePainter.paint(in, p);
+                    TileRaster.raster(in, p, PX, img4);
+                    tileWorst = Math.max(tileWorst, (monthClock() - a) / 1e6);
+                    built += p.buildings;
+                }
+            }
+            double ms = (monthClock() - t0) / 1e6;
+            if (round >= WARM_ROUNDS && ms < best) { best = ms; worstTile = tileWorst; }
+        }
+        out.printf("      the screen over its industry, district (%d, %d): %d tiles, %,d buildings, in %.1f ms of %s (%.3f ms a tile, its slowest %.2f)%n",
+                at.dx, at.dy, SCREEN_TILES, built, best, CPU_TIMED ? "the main thread's CPU" : "the wall clock", best / SCREEN_TILES, worstTile);
+        check("a 1,389 x 868 L0 screen over the industry paints and rasters in no more than 80 ms of " + (CPU_TIMED ? "the main thread's CPU" : "the wall clock")
+                + " - every tile of it well within its 80 ms", best <= SCREEN_MS && worstTile <= SCREEN_MS);
+    }
+
+    /** How many districts a zone's tint takes. */
+    static long countZone(List<CityMap.Tinted> tint, int z) {
+        return tint.stream().filter(t -> t.zone() == z).count();
+    }
+
+    /** Each site under a works on a map, by its key, and the works' type. */
+    static java.util.Map<Long, Integer> sitesUnder(CityMap m) {
+        java.util.Map<Long, Integer> out = new java.util.HashMap<>();
+        for (CityMap.District d : m.districts()) {
+            for (CityMap.DrawnSite s : m.siteList(d.dx, d.dy)) if (s.mine() >= 0) out.put((s.x0() << 32) | (s.y0() & 0xffffffffL), s.mine());
+        }
+        return out;
+    }
+
+    /** The colour a look shows on a box of it rastered (TileRaster's THE MATERIALS AS THEMSELVES): a pit's benches, a shaft's headframe, a quarry's stone, the leach plant's pond, the wash plant's conveyor, a camp's logs, planted forest's crowns, a works' industry fill. */
+    static int lookSign(BuildingVisual.Type t) {
+        switch (t.look()) {
+            case BuildingVisual.PIT:    return BuildingVisual.pitColours(t.site())[1];
+            case BuildingVisual.SHAFT:  return TileRaster.HEADFRAME;
+            case BuildingVisual.QUARRY: return BuildingVisual.LOOK_FILL[BuildingVisual.QUARRY];
+            case BuildingVisual.LEACH:  return TileRaster.POND;
+            case BuildingVisual.WASH:   return TileRaster.CONVEYOR;
+            case BuildingVisual.CAMP:   return TileRaster.LOGS;
+            case BuildingVisual.STAND:  return TileRaster.CROWN;
+            default:                    return BuildingVisual.GROUP_FILL[t.group()];
+        }
+    }
+
+    /**
+     * The world cell nearest the founding site's whose square of `side`
+     * districts (as CityMap.square() lays it round the cell's middle) is
+     * DRY_PLACE dry in its middle 3 x 3 districts and holds fields centred in
+     * it with at least `need` sites of each slot: {x, y, rings out}, or the
+     * founding site and -1.
+     */
+    static long[] materialsPlace(World w, int side, int[] need) {
+        int n = 3 * CityMap.TILES_A_SIDE;
+        byte[] buf = new byte[n * n];
+        long sx = Math.floorDiv(w.foundingX(), World.CELL), sy = Math.floorDiv(w.foundingY(), World.CELL);
+        for (int ring = 0; ring < MATERIALS_RINGS; ring++) {
+            for (long dy = -ring; dy <= ring; dy++) {
+                for (long dx = -ring; dx <= ring; dx++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) != ring) continue;
+                    long cx = (sx + dx) * World.CELL + World.CELL / 2, cy = (sy + dy) * World.CELL + World.CELL / 2;
+                    int[] got = slotSites(w, cx, cy, side);
+                    boolean enough = true;
+                    for (int k = 0; k < need.length; k++) enough &= got[k] >= need[k];
+                    if (!enough) continue;
+                    w.regionTerrain(cx - 3 * CityMap.DISTRICT / 2, cy - 3 * CityMap.DISTRICT / 2, World.TILE, n, buf);
+                    int dry = 0;
+                    for (byte b : buf) if (b != World.SALT && b != World.FRESH) dry++;
+                    if (dry >= DRY_PLACE * buf.length) return new long[] { cx, cy, ring };
+                }
+            }
+        }
+        return new long[] { w.foundingX(), w.foundingY(), -1 };
+    }
+
+    /** How far out materialsPlace() looks, in cells: 24. */
+    static final int MATERIALS_RINGS = 24;
+
+    /** The sites of each slot of the fields centred in the square of `side` districts CityMap.square() lays round plot (x, y). */
+    static int[] slotSites(World w, long x, long y, int side) {
+        long bx = Math.floorDiv(x, CityMap.DISTRICT), by = Math.floorDiv(y, CityMap.DISTRICT);
+        int h = side / 2;
+        long x0 = (bx - h) * CityMap.DISTRICT, x1 = (bx - h + side) * CityMap.DISTRICT;
+        long y0 = (by - h) * CityMap.DISTRICT, y1 = (by - h + side) * CityMap.DISTRICT;
+        int[] got = new int[CityMap.SLOTS];
+        for (int cell : CityLand.cellsUnder(x0, y0, x1 - 1, y1 - 1)) {
+            for (Resource r : CityMap.SITED) {
+                for (Deposit d : w.fieldsInCell(cell, r)) {
+                    if (d.x() < x0 || d.x() >= x1 || d.y() < y0 || d.y() >= y1) continue;
+                    int k = CityMap.slotOf(r, d.type());
+                    if (k >= 0) got[k] += d.sites();
+                }
+            }
+        }
+        return got;
     }
 }

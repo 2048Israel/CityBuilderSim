@@ -4084,6 +4084,77 @@ public final class CityMap {
     }
 
     /* =====================================================================
+       ZONES BY DISTRICT (0.8.0, batch I14; docs/studies/spec-zoning.md 4:
+       "the map tints a zone's districts ... Zones are quantities, not places
+       (star Z1), so the map picks where to draw them; the map draws from the
+       model and never the other way")
+
+       A zone is ground held for one sector, an amount with no place. The
+       map picks its districts: the zones in Zoning's order, each taking
+       first the districts holding its sector's buildings - the most of
+       their ground first, the map's order on a tie - then, while what it
+       has taken covers less than its ground, the rest of the districts with
+       free ground in the map's order, from the outside in for a sector of
+       outer buildings (a mine, a farm, Forestry's) and from the inside out
+       for any other. A district one zone takes is no other's. Nothing in
+       the model reads it.
+       ===================================================================== */
+
+    /** A zone as the map tints it: its sector and the ground it covers, in square feet - what it holds free and what its sector has built in it (LandManager.heldBy() and usedBy()). */
+    public record ZoneArea(String sector, double sqFt) { }
+
+    /** A district a zone's tint covers: its box's first plot, {x, y} in the world, a district (DISTRICT plots) a side, and the zone's index in the list given. */
+    public record Tinted(long x0, long y0, int zone) { }
+
+    /** Each zone's districts (ZONES BY DISTRICT), in the map's order: none with no zone. */
+    public List<Tinted> zoneTint(List<ZoneArea> zones) {
+        List<Tinted> out = new ArrayList<>();
+        int n = districts.size();
+        if (zones == null || zones.isEmpty() || n == 0) return out;
+        int[] zoneOf = new int[n];
+        Arrays.fill(zoneOf, -1);
+        for (int z = 0; z < zones.size(); z++) {
+            ZoneArea a = zones.get(z);
+            if (a == null || a.sector() == null || !(a.sqFt() > 0)) continue;
+            boolean outer = false;
+            List<Integer> mine = new ArrayList<>();
+            for (int t = 0; t < types.length; t++) {
+                if (types[t] == null || !a.sector().equals(types[t].sector())) continue;
+                mine.add(t);
+                outer |= types[t].outer();
+            }
+            double want = a.sqFt() / BuildingVisual.SQ_FT_PER_PLOT, got = 0;
+            // ...the districts holding its sector's buildings, the most of their ground first.
+            double[] ground = new double[n];
+            List<Integer> holding = new ArrayList<>();
+            for (int i = 0; i < n; i++) {
+                District d = districts.get(i);
+                for (int t : mine) ground[i] += (double) d.counts[t] * types[t].sqFt();
+                if (ground[i] > 0 && zoneOf[i] < 0 && d.owned > 0) holding.add(i);
+            }
+            holding.sort((x, y) -> ground[x] != ground[y] ? Double.compare(ground[y], ground[x]) : Integer.compare(x, y));
+            for (int i : holding) {
+                if (got >= want) break;
+                zoneOf[i] = z;
+                got += districts.get(i).owned;
+            }
+            // ...then the rest with free ground, in the map's order.
+            for (int k = 0; k < n && got < want; k++) {
+                int i = outer ? n - 1 - k : k;
+                if (zoneOf[i] >= 0 || districts.get(i).owned <= 0) continue;
+                zoneOf[i] = z;
+                got += districts.get(i).owned;
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            if (zoneOf[i] < 0) continue;
+            District d = districts.get(i);
+            out.add(new Tinted((baseDX + d.dx) * DISTRICT, (baseDY + d.dy) * DISTRICT, zoneOf[i]));
+        }
+        return out;
+    }
+
+    /* =====================================================================
        THE PYRAMID (spec-land 2.5): TEN CLASSES, USED AND OWNED, 2 x 2
        ===================================================================== */
 
