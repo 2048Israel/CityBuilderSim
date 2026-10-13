@@ -63,6 +63,14 @@ public final class Mining extends ExtractionSector {
                 + "buy the ground it is under.");
     }
 
+    /** The page (0.7.142, batch I13): what is under the ground, then where its ore goes - Iron & Steel's pellets and furnaces at nameplate, or the world (BuildCard.chainLines()). */
+    @Override
+    public java.util.List<Line> ownLines(ham.citybuildersim.Game game) {
+        java.util.List<Line> lines = super.ownLines(game);
+        lines.addAll(ham.citybuildersim.BuildCard.chainLines(game, this));
+        return lines;
+    }
+
     /** The iron the ground gives, with the month's tonnes kept for the land office (LandManager.extractIron()). */
     @Override
     protected double dig(LandManager land, double asked) {

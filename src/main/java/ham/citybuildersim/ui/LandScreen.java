@@ -660,15 +660,48 @@ final class LandScreen {
 
     /** Each resource in fields that ground holds - its colour, its sites and amount, the tooltip's line - in Resource's order: a row's (one offer's), and since 0.7.137 the map's card's (several summed, LandMap.card()). */
     static List<DepositWords> depositWords(java.util.function.ToIntFunction<Resource> sites, java.util.function.ToDoubleFunction<Resource> amounts) {
+        return depositWords(sites, amounts, null);
+    }
+
+    /**
+     * ...with a typed resource's sites by type on its tooltip's line (0.7.142,
+     * batch I13; spec-materials 5's I13 row, "the land office's hover - field
+     * types"): "Iron ore: 3 sites, 38.4 Mt - 2 hematite, 1 magnetite", off
+     * CityLand.fieldsOnByType() - `byType` a resource's sites of each type in
+     * Resource.typesOf()'s order, or null for none.
+     */
+    static List<DepositWords> depositWords(java.util.function.ToIntFunction<Resource> sites, java.util.function.ToDoubleFunction<Resource> amounts,
+                                           java.util.function.Function<Resource, long[]> byType) {
         List<DepositWords> deposits = new ArrayList<>();
         for (Resource r : Resource.values()) {
             int n = sites.applyAsInt(r);
             if (!r.inFields() || n <= 0) continue;
             String amount = LandMap.amountWords(r, amounts.applyAsDouble(r));
+            String types = byType == null || !r.hasTypes() ? "" : typeWords(r, byType.apply(r));
             deposits.add(new DepositWords(MapView.css(0xff000000 | r.colour()), formatter.format(n) + " · " + amount,
-                    r.label() + ": " + n + (n == 1 ? " site, " : " sites, ") + amount));
+                    r.label() + ": " + n + (n == 1 ? " site, " : " sites, ") + amount + (types.isEmpty() ? "" : " - " + types)));
         }
         return deposits;
+    }
+
+    /** A typed resource's sites by type, each with any: "2 hematite, 1 magnetite", "4 limestone"; "" with none. */
+    static String typeWords(Resource r, long[] byType) {
+        List<String> out = new ArrayList<>();
+        List<Deposit.FieldType> types = r.typesOf();
+        for (int i = 0; byType != null && i < byType.length && i < types.size(); i++) {
+            if (byType[i] > 0) out.add(formatter.format(byType[i]) + " " + types.get(i).name().toLowerCase(java.util.Locale.ROOT).replace('_', ' '));
+        }
+        return String.join(", ", out);
+    }
+
+    /** The sites of each type of a resource several offers hold together (0.7.142): CityLand.sitesOnByType() summed. */
+    static long[] typesOn(CityLand land, List<LandParcel> parcels, Resource r) {
+        long[] sum = new long[r.typesOf().size()];
+        for (LandParcel p : parcels) {
+            long[] one = land.sitesOnByType(p, r);
+            for (int i = 0; i < sum.length; i++) sum[i] += one[i];
+        }
+        return sum;
     }
 
     Row row(LandParcel p, LandParcel office, LandParcel richest) {
@@ -676,7 +709,8 @@ final class LandScreen {
         boolean vault = g.isLandPaidFromVault();
         double rate = g.getForeignAccounts().getRate();
         double km2 = p.getKm2();
-        List<DepositWords> deposits = depositWords(p::getSites, p::getAmount);
+        CityLand land = g.getCityLand();
+        List<DepositWords> deposits = depositWords(p::getSites, p::getAmount, r -> land.sitesOnByType(p, r));
         int shown = Math.min(deposits.size(), ROW_DEPOSITS);
         if (shown == 2 && deposits.get(0).words().length() + deposits.get(1).words().length() > ROW_DEPOSIT_CHARS) shown = 1;
         String more = deposits.size() > shown ? "+" + (deposits.size() - shown) : "";
@@ -1923,7 +1957,7 @@ final class LandScreen {
                 one ? row.sizeTip() : sizeWords(c),
                 km2 > 0 ? c.dryKm2() / km2 : 0, km2 > 0 ? c.freshKm2() / km2 : 0, km2 > 0 ? c.seaKm2() / km2 : 0,
                 room(c.drySqFt()),
-                depositWords(r -> c.sites()[r.ordinal()], r -> c.amounts()[r.ordinal()]),
+                depositWords(r -> c.sites()[r.ordinal()], r -> c.amounts()[r.ordinal()], r -> typesOn(g.getCityLand(), parcels, r)),
                 price, one ? row.priceTone() : g.canAffordLandParcels(c.ids()) ? Palette.TEXT_HEAD : Palette.BAD,
                 other, one ? row.perKm2() : c.dryKm2() > 0 ? inToggle(c.usd() / c.dryKm2()) : "—",
                 cash, c.funding() ? Palette.BAD : Palette.TEXT_BODY, c.funding(),

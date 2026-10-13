@@ -13179,3 +13179,127 @@ These were not moved out but reworded, so the todo says what is true after 0.7.1
 <!-- old text of todo.md, lines 225-225 of the file before the 0.7.139 records, the end of the lorries bullet (an update sentence was added after it) -->
   Industry was ordered into works that could not pay (`runs/fixI4-notes.md` §6).
 
+
+---
+
+# The todo's archive, part 4 - what left the list with the records for 0.7.140 to 0.7.142 (2026-10-12)
+
+This is the fourth move out of the claude.ai project's `claude/todo.md` for CityBuilderSim, made by the records agent for 0.7.140 (I10, wood products), 0.7.141 (I11, the materials pictograms' model) and 0.7.142 (I13, cards and pages for the materials buildings). Every line below is **verbatim**, in the file's own order, under the heading it sat under. What moved:
+
+- **NEXT: AFTER THE GRID and NEXT: THE FIXES FROM JERUS'S DECISIONS** (finished: the first is struck through or done item by item, the second is "all done" by its own text; both were named as finished in the records for 0.7.139, and the file passed 100 KB with the 0.7.142 items).
+- **The I10, I11 and I13 lines of NEXT: THE MATERIALS CHAINS** (all three shipped). What I11 and I13 left for I12 and I14 (their notes' section 7) is one sentence each on the I12 and I14 lines that stay; I13's old carry-overs from I1 to I9 were answered by I13 or sit under Pending in `QUEUE.md` (the landlords' card and the land office's Ore card: **I13-L**) or stay on the I14 line (the map draws a 20-site works as one mine).
+- **LOOK AT ON THE PC, items 7 to 10** (M6, 0.7.137, three items, and FX1 with I8, 0.7.136 and 0.7.133), to keep the list at ten with I13's items.
+- **At the end, the old text of four places reworded in place** (not moved): the opening paragraph's status, the tags item, the docs pass's header and the LOOK AT ON THE PC header.
+
+The HTML comment before each run gives the line numbers it held in the todo just before this move (the project's `claude/todo.md` as the records agent received it, 95,453 bytes); GitHub does not show it. Append this file to `docs/notes/todo-archive.md`, under a rule.
+
+## 0. Do this week — costs nothing, saves weeks
+
+### NEXT: AFTER THE GRID, and NEXT: THE FIXES FROM JERUS'S DECISIONS, T1 AND P1 TO P7
+
+<!-- moved verbatim from todo.md, lines 60-96 of the file before the 0.7.142 records: both bullets, every item of them done -->
+- **NEXT: AFTER THE GRID** (Jerus, 2026-10-07, sent during batch M4: "couple
+  random design stuff for later, once you finish all the M's"; the list is in
+  `after-the-grid.md`; his answers of 2026-10-08 are in the changelog's top
+  block). ~~Gravel advice and a gravel-to-paved upgrade~~ — **done in 0.7.70**
+  (N1); ~~daycares resized into childcare centres~~ — **done in 0.7.71** (N2;
+  old saves load by id, "old saves don't matter"); ~~highways straight and
+  connected, + junctions at least ~8 houses apart, every road connected and
+  every building near one, rail connected with terminals near mines~~ — **done
+  in 0.7.72** (N3; gravel roads bridge rivers from 0.7.77, N5); ~~automatic
+  building with a slack setting and debt~~ — **done in 0.7.73** (N4), **buying
+  the ground its orders need in 0.7.77** (N5) **and with its limit a share of
+  GDP in 0.7.81** (N6); ~~the world as planet Earth (design study first)~~ —
+  **study done and approved 2026-10-08, the data file E0 built** (52,757,374
+  bytes, `runs/fixE0-notes.md`), E1 to E5 below; ~~oil in depth first~~ — **the
+  goods, the refinery as many buildings and the land wells are done in 0.7.76 to
+  0.7.84** (O1 to O7), the Tank Farm and the strategic reserve in 0.7.85 and the
+  ports in 0.7.86 (O8, O9); offshore wells, the pictogram, the screens and the
+  boats on the map are O10 to O13, below.
+  - **Asked of him before building:** the refinery pictogram ("you can ask me
+    later"), now O11 (0.7.95). The boats' counts come from the model's trade
+    volumes, so the map still draws only what the city has.
+- **NEXT: THE FIXES FROM JERUS'S DECISIONS, T1 AND P1 TO P7** (Jerus's 31
+  answers, "all rec", 2026-10-10 00:51: `claude/decisions-2026-10-10.md` holds
+  them and the plan; versions as launched: P1 0.7.100, P2 0.7.101, P3
+  0.7.102, P4 0.7.103 (all done), P2b 0.7.104 (added at 09:47, done), P6
+  0.7.105 and P5 0.7.106 (both done; P5 was 0.7.104 until P2b took it), and P7
+  0.7.108 (added at 12:51 on his rule for old saves, done). One
+  version a batch, each gated; a harness premise changes only where a decision
+  changes the rule it asserts. Now: the docs pass, manual 16 and zoning are
+  done; materials I1, I2 and I2b and Earth E1 and E2 are done (0.7.110 to 0.7.115). **Closed by the decisions, kept as built:** A1 (W1 as intended; the
+  test player imports), A10 (the ports' 23 General Cargo Terminals and "the
+  world" at 5,000 km), A25 (a high rate raises rent through the landlords'
+  mortgage interest, his 0.7.11 rule), A26 (the fare cap), A29 (the
+  held-at-25% stress city need not live), A30 (the repo stays public until
+  the game is on Steam, then private). **Carried to later batches:** A12 the
+  100-ha woodlot (I9, done in 0.7.138), A13 the whole-cost test for `Game.Slices` and the sea's
+  orders (I2b, done as 0.7.113).
+
+### NEXT: THE MATERIALS CHAINS, I1 TO I14 (the lines that shipped)
+
+<!-- moved verbatim from todo.md, lines 103-104 of the file before the 0.7.142 records: the I10 line -->
+  - I10 ★: wood products (six rows, the pulp mill's own power); running as
+    0.7.140 (I7-K is closed).
+
+<!-- moved verbatim from todo.md, lines 105-106: the I11 line -->
+  - I11 (UI): the pictograms' model (`IndustryView`,
+    IndustryViewCheck).
+
+<!-- moved verbatim from todo.md, lines 109-133: the I13 line, with every "From Ix" carry-over it held -->
+  - I13 (UI): cards and pages for the 37 new buildings (sites, type,
+    earns, gate; the land office's hover). **From I1 (§7):** the offers are not
+    typed yet; `CityLand.fieldsOn()` would need a by-type twin for the hover.
+    **From I4 (§7):** the build cards say nothing of `gen`, old steel or lorries
+    yet (BuildMenuCheck reads only makes and uses). **From C1 (§7):** the
+    landlords' card could ask the mortgage lender's test the same way (a door on
+    Game around `Mortgage.decide()` with its NOI and payment), so a home's card
+    says when the lender would refuse it. **From I5 (`runs/fixI5-notes.md`
+    §7):** the card shows `sitesFor()` and `committedFor()` by type, but not
+    "fits on one field"; `BuildAdvice.fieldEarnings()` (the test player's iron
+    rule, Build's field payback) still values a field as Iron Mines on all its
+    sites, whatever its type, where by type and size it should be the best mine
+    that fits each field (it did not move the playtest); `minesCommitted()`
+    counts sites now (LandScreen's "mines", the report's "mines X/Y");
+    `BuildCard.java`'s and `BuildCardCheck`'s headers still say 108 buildings
+    (111 since I5; the docs pass's); the map (I14) draws a 20-site works as one
+    mine. **From I6 (`runs/fixI6-notes.md` §7):** the coal cards show their sites
+    by type, not "fits on one field"; the Land screen's "mines" is still iron's
+    (115 buildings since I6). **From I7 (`runs/fixI7-notes.md` §7):** a
+    quarry's card says "makes Aggregate" even on limestone (121 buildings since
+    I7). **From I8 (`runs/fixI8-notes.md` §7):** the cards say nothing of old
+    copper, of the smelter's acid buyer or of lorries (129 buildings since I8).
+    **From I9 (`runs/fixI9-notes.md` §7):** `Forestry.settlesAt()`,
+    `getCutThisMonth()`, `regrowthDue()` and `roomFor()` are the page's figures;
+    the card says nothing of E (the 120 months).
+
+### LOOK AT ON THE PC (2026-10-12), items 7 to 10
+
+<!-- moved verbatim from todo.md, lines 349-352 -->
+  7. **0.7.137, M6** (`runs/fixM6-notes.md` §8): land office, Expand: hover an offer ("Click to buy it here"), click it, Enter buys; the card opens beside it and never runs off the view, nothing in the head is cut, NEW shows, the cash moves.
+  8. **0.7.137, M6:** short of cash (an iron field, or the vault toggle) the button is "Issue a 20-year bond and buy" with yield, coupon, note chip and "All the ways to pay ›"; paying or Cancel returns to the same view.
+  9. **0.7.137, M6:** Shift-click, Shift+drag a box, Ctrl+A: "N offers" with × chips, field sites ringed, a plain drag pans, Esc closes the card then the map; on Earth the same in the globe's ground tier, no card in the picture tier.
+  10. **0.7.136, FX1, and 0.7.133, I8** (`fixFX1-notes.md` §8, `fixI8-notes.md` §8): History's GDP has no dip the month after a plant, a mill or a Scrap Copper Refinery is sold back with stock in its shed.
+
+## Lines rewritten in place (the old text; the new text is in the todo)
+
+<!-- the opening paragraph's status, lines 3-6 -->
+Updated 2026-10-12 (0.7.139: I9, forestry, 0.7.138, and CC1, childcare at real
+demand, 0.7.139, pushed; I10, wood products, running as 0.7.140). Open now: the PC
+check (ten items); his calls: CONFIRM from 0.7.138 to 0.7.139 (eight), from 0.7.136
+to 0.7.137 (seven), and the five lists back to 0.7.121 (a stub marks an answered item).
+
+<!-- the tags item, lines 28-31 -->
+- **TAGS 0.7.107 TO 0.7.139 (2026-10-12).** He pushed 0.7.100 to 0.7.106 from the
+  PC. GitHub refuses tag pushes from the cloud session (HTTP 403), so the 30 tags
+  0.7.107 to 0.7.139 live only in the orchestrator's clone; every tagged commit is
+  on `main` (list: `/home/claude/runs/unpushed-tags.txt`). A one-click script is his call.
+
+<!-- the docs pass's header, lines 241-243 -->
+- **NEXT: THE NEXT DOCS PASS, FROM 0.7.136 (a fresh agent, `docs/docs-pass.md` is its
+  brief; I9 and CC1 have shipped, I10 is running, and the pass runs at most once a
+  day).** What the notes (§7) of FX1, M6, I9 and CC1 left for it:
+
+<!-- the LOOK AT ON THE PC header, line 342 -->
+- **LOOK AT ON THE PC (2026-10-12; the newest batches' notes §8, newest first).** The CHECK lists to 0.7.137 are in the archive, and so are the items for 0.7.130 to 0.7.135; he has played since, so anything still wrong will show. At 1,389 x 868:
+

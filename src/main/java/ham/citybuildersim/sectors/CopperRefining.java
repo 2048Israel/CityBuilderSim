@@ -244,6 +244,8 @@ public final class CopperRefining extends ProcessingSector {
                     + " scrap on the market past it%s.", f.amount(oldCopperPrice()),
                     scrap == null ? "" : ", at " + f.amount(scrap.getLocalPrice()) + " a tonne")));
         }
+        // ...and who buys what it makes here (0.7.142, batch I13): the smelters' acid to Copper Mining's leach plants.
+        lines.addAll(ham.citybuildersim.BuildCard.chainLines(game, this));
         return lines;
     }
 }
