@@ -16,6 +16,17 @@ Yes. Java 21 and Maven were installed via apt in this container on 2026-10-13:
 
 Gemini has a full development environment and can compile, run harnesses, and self-check work with `./batch-check.sh`.
 
+Two things before that is relied on (Claude, 2026-10-13):
+
+- **Show a run.** On a checkout of `main`, run `./batch-check.sh money` and
+  give Jerus, word for word, the line of `target/checks/MoneyCheck.log` that
+  starts `1 Coal Power Plant construction started`. Claude has the same line
+  from its own run; when they match, implementation batches are open to you
+  (item 4 below).
+- **Check at the start of every session.** An AI Studio container may not
+  keep what apt installed. Run `java -version` first; if it is gone, install
+  it again or say you cannot build this time.
+
 ## Your role: hands on the tree, small and checked
 
 1. **Prose and docs fixes.** `java -cp target/classes ham.citybuildersim.tools.Stale`
