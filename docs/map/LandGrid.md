@@ -1,6 +1,6 @@
 # LandGrid.java - 369 lines · 28 methods · 12 constants · model
 
-`ham/citybuildersim/LandGrid.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandGrid.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > The ground a city owns, as a region quadtree over the world's plots: which holding owns each plot, and how much of any block or rectangle of plots is owned.
 > 

@@ -1,6 +1,6 @@
 # QuarryingCheck.java - 638 lines · 13 methods · 18 constants · harnesses
 
-`ham/citybuildersim/QuarryingCheck.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/QuarryingCheck.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > Quarrying, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1,
 > 2.3, 2.4, 2.10, 4 and 5's I7 row; the study's - materials-chains-research.md

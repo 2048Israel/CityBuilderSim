@@ -1,6 +1,6 @@
-# CementConcrete.java - 67 lines · 1 methods · 3 constants · sectors
+# CementConcrete.java - 73 lines · 2 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/CementConcrete.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CementConcrete.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > Kilns and cement plants - Cement & Concrete (0.7.131, batch I7;
 > docs/studies/spec-materials.md 2.1, 2.12 and 5's I7 row; the study's 6):
@@ -38,9 +38,9 @@
 > rest of the lime, until the construction upgrade draws cement for the
 > builders (spec 2.14).
 
-**Uses:** [Good](Good.md) (5), [ProcessingSector](ProcessingSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (5), [ProcessingSector](ProcessingSector.md) (1), [Game](Game.md) (1), [BuildCard](BuildCard.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (4):** [BuildingDataCheck](BuildingDataCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [QuarryingCheck](QuarryingCheck.md), [Sectors](Sectors.md)
+**Used by (5):** [BuildingDataCheck](BuildingDataCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [QuarryingCheck](QuarryingCheck.md), [Sectors](Sectors.md)
 
 ## Constants
 
@@ -54,6 +54,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 44 | 24 | **type** `public final class CementConcrete extends ProcessingSector` | Kilns and cement plants - Cement & Concrete (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.12 and 5's I7 row; the study's 6): stone's processing industry, on Sectors.KEYS after Quarrying - its end when it c... |
-| 55 | 12 | `public CementConcrete()` |  |
+| 44 | 30 | **type** `public final class CementConcrete extends ProcessingSector` | Kilns and cement plants - Cement & Concrete (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.12 and 5's I7 row; the study's 6): stone's processing industry, on Sectors.KEYS after Quarrying - its end when it c... |
+| 57 | 3 | `public java.util.List<Line> ownLines(ham.citybuildersim.Game game)` | The page (0.7.142, batch I13): who buys its cement and lime here - Iron & Steel's oxygen shops the lime - or that they ship (BuildCard.chainLines()). |
+| 61 | 12 | `public CementConcrete()` |  |
 

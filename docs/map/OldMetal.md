@@ -1,6 +1,6 @@
 # OldMetal.java - 418 lines · 40 methods · 10 constants · model
 
-`ham/citybuildersim/OldMetal.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OldMetal.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > The city's old steel: what it throws out each month that a Scrap Yard can
 > buy and sort into scrap - its scrapped cars, its demolitions, its
@@ -62,7 +62,7 @@
 
 **Uses:** [Trade](Trade.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (12):** [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [Game](Game.md), [HeavyIndustry](HeavyIndustry.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [MoneyCheck](MoneyCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SpreadPlanner](SpreadPlanner.md)
+**Used by (17):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [Game](Game.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [MoneyCheck](MoneyCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SpreadPlanner](SpreadPlanner.md)
 
 ## Sections
 

@@ -3762,6 +3762,8 @@ final class SectorScreen {
         if (sector instanceof ham.citybuildersim.sectors.Refining) page.getChildren().add(refineryCard(RefineryView.of(ui.game)));
         // ...and the oil industry on the wells' page (0.7.96): OPERATIONS · THE OIL INDUSTRY.
         if (sector instanceof ham.citybuildersim.sectors.Oil) page.getChildren().addAll(oilPanels(OilView.of(ui.game)));
+        // ...and the nine materials industries' pictures (0.7.143): OPERATIONS · THE MATERIALS INDUSTRIES.
+        if (IndustryView.covers(sector)) page.getChildren().add(industryCard(IndustryView.of(ui.game, sector)));
         SectorFlow.Flow flow = SectorFlow.of(ui.game, sector);
         page.getChildren().add(flowCard(sector, flow, animate));
         // The new price model, read (0.7.45): the grocers' shelf, the kitchens' and the counters' margin.
@@ -3853,8 +3855,21 @@ final class SectorScreen {
 
     /** A picture's shapes as nodes, in its painting order: the ribbons, the boxes over them, the outlines, lines, icons and words. */
     static List<Node> paint(RefineryView.Picture p, Sectors sectors) {
+        List<Node> out = shapes(p.ribbons(), p.boxes(), p.outlines(), p.lines());
+        for (RefineryView.Mark m : p.marks()) {
+            Region icon = icon(iconOf(m, sectors), m.colour(), m.size());
+            icon.relocate(m.x(), m.y());
+            out.add(icon);
+        }
+        for (RefineryView.Words w : p.words()) out.addAll(text(w));
+        return out;
+    }
+
+    /** A picture's ribbons, the boxes over them, its outlines and lines, as nodes in that order (the refinery's and, since 0.7.143, the materials industries'). */
+    static List<Node> shapes(List<RefineryView.Ribbon> ribbons, List<RefineryView.Box> boxes, List<RefineryView.Outline> outlines,
+                             List<RefineryView.Line> lines) {
         List<Node> out = new ArrayList<>();
-        for (RefineryView.Ribbon r : p.ribbons()) {
+        for (RefineryView.Ribbon r : ribbons) {
             double xm = (r.x1() + r.x2()) / 2;
             javafx.scene.shape.Path path = new javafx.scene.shape.Path(
                     new javafx.scene.shape.MoveTo(r.x1(), r.a0()),
@@ -3871,7 +3886,7 @@ final class SectorScreen {
             path.setMouseTransparent(true);
             out.add(path);
         }
-        for (RefineryView.Box b : p.boxes()) {
+        for (RefineryView.Box b : boxes) {
             javafx.scene.shape.Rectangle rect = new javafx.scene.shape.Rectangle(b.x(), b.y(), b.w(), b.h());
             rect.setArcWidth(2 * b.round());
             rect.setArcHeight(2 * b.round());
@@ -3895,7 +3910,7 @@ final class SectorScreen {
             }
             out.add(rect);
         }
-        for (RefineryView.Outline o : p.outlines()) {
+        for (RefineryView.Outline o : outlines) {
             javafx.scene.shape.SVGPath s = new javafx.scene.shape.SVGPath();
             s.setContent(o.path());
             s.setFill(o.fill() == null ? null : javafx.scene.paint.Color.web(o.fill(), o.opacity()));
@@ -3903,18 +3918,12 @@ final class SectorScreen {
             s.setMouseTransparent(true);
             out.add(s);
         }
-        for (RefineryView.Line l : p.lines()) {
+        for (RefineryView.Line l : lines) {
             javafx.scene.shape.Line line = new javafx.scene.shape.Line(l.x1(), l.y1(), l.x2(), l.y2());
             line.setStroke(javafx.scene.paint.Color.web(l.colour()));
             line.setMouseTransparent(true);
             out.add(line);
         }
-        for (RefineryView.Mark m : p.marks()) {
-            Region icon = icon(iconOf(m, sectors), m.colour(), m.size());
-            icon.relocate(m.x(), m.y());
-            out.add(icon);
-        }
-        for (RefineryView.Words w : p.words()) out.addAll(text(w));
         return out;
     }
 
@@ -4075,6 +4084,190 @@ final class SectorScreen {
         cell.setMinWidth(0);
         Tooltip.install(cell, new Tooltip(c.name() + ": made here " + c.made() + ", imported " + c.imported() + ", exported "
                 + c.exported() + ", into (+) or out of (−) the refiners' tanks " + c.tanks() + ", " + c.price() + " here."));
+        return cell;
+    }
+
+    /* --------------- OPERATIONS · THE MATERIALS INDUSTRIES (0.7.143) ---------------
+       Batch I12 (docs/studies/spec-materials.md 2.13; the study's mockups 1 to
+       5): the nine materials industries' pages - Iron Mining to Wood Products -
+       open on their month as a picture, the refinery's pictogram made general:
+       a mine's fields as vessels filled to what is left, or a works' feeds by
+       where they came from, the imports hatched; the works in ranks, each kind
+       with its run and the gate one more would fail; the tank of what left the
+       works under the industry's roof; who took it, on the right, every ribbon
+       to one scale - and a strip of cells under it: the fields or the forest,
+       the products, the old metal, the power. The generic flow card follows
+       it, with the money.
+
+       NOTHING HERE IS WORKED OUT: every figure, every position, every word and
+       its colour is IndustryPicture's (the model's, pure, held by
+       IndustryViewCheck), and this paints it with the refinery's painter -
+       shapes(), text(), hatch() - and its own icons. */
+
+    /** What the materials card's (i) says: the picture read from left to right. */
+    static final String INDUSTRY_INFO = "On the left is what the month worked: a mine's fields, each a vessel filled to "
+            + "what is left of it with the bar of what it dug beside it, or the forest; a works' feeds by where they came "
+            + "from - another industry here, the city's old metal, the world (hatched). In the middle are its works, each "
+            + "kind with its run and, in a word, the gate one more would fail; one on site is dashed. Point at one for "
+            + "what the last one earns and what one more would, in the investors' own words. The tank under the "
+            + "industry's roof is filled by what left the works, product by product, and under it what was taken out of "
+            + "the warehouse. On the right is who took each product. Every ribbon is to the same scale, in tonnes - the "
+            + "forest's in cubic metres; a works' box is as tall as the larger of what went in and what came out, and "
+            + "the rest is what its process takes away.";
+
+    /** A materials industry's picture and strip, or a line saying why there is nothing to draw. */
+    VBox industryCard(IndustryView.View v) {
+        Label head = new Label(IndustryPicture.headWords(v));
+        head.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        head.setMinWidth(Region.USE_PREF_SIZE);
+        Label sub = new Label(IndustryPicture.subWords(v));
+        sub.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        sub.setMinWidth(0);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox row = new HBox(Palette.GAP, head, infoButton(INDUSTRY_INFO, true), sub, gap);
+        row.setAlignment(Pos.CENTER_LEFT);
+        IndustryPicture.Picture wide = IndustryPicture.picture(ui.game, v, PAGE_WIDE, IndustryPicture.HEIGHT);
+        if (!v.drawn() || wide.empty()) return card(row, caption(IndustryPicture.emptyWords(v), Palette.TEXT_MUTED));
+        Label scale = new Label(IndustryPicture.scaleWords(wide));
+        scale.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+        scale.setMinWidth(Region.USE_PREF_SIZE);
+        row.getChildren().add(scale);
+        return card(row, new IndustryPane(ui.game, v), industryStrip(v));
+    }
+
+    /** The picture: IndustryPicture.picture() at the pane's width, painted. */
+    static final class IndustryPane extends javafx.scene.layout.Pane {
+        private final Game game;
+        private final IndustryView.View view;
+        private double drawnAt = -1;
+
+        IndustryPane(Game game, IndustryView.View view) {
+            this.game = game;
+            this.view = view;
+            setMinSize(IndustryPicture.LEAST_WIDTH, IndustryPicture.HEIGHT);
+            setPrefSize(PAGE_WIDE, IndustryPicture.HEIGHT);
+            setMaxSize(Double.MAX_VALUE, IndustryPicture.HEIGHT);
+            widthProperty().addListener((o, was, now) -> draw(now.doubleValue()));
+        }
+
+        private void draw(double width) {
+            if (!(width > 0) || Math.abs(width - drawnAt) < .5) return;
+            drawnAt = width;
+            getChildren().setAll(paintIndustry(IndustryPicture.picture(game, view, width, IndustryPicture.HEIGHT),
+                    game == null ? null : game.getSectors()));
+        }
+    }
+
+    /** A materials picture's shapes as nodes, in its painting order: the ribbons, the boxes over them, the outlines, lines, icons and words. */
+    static List<Node> paintIndustry(IndustryPicture.Picture p, Sectors sectors) {
+        List<Node> out = shapes(p.ribbons(), p.boxes(), p.outlines(), p.lines());
+        for (IndustryPicture.Mark m : p.marks()) {
+            Region icon = icon(iconOf(m, sectors), m.colour(), m.size());
+            icon.relocate(m.x(), m.y());
+            out.add(icon);
+        }
+        for (RefineryView.Words w : p.words()) out.addAll(text(w));
+        return out;
+    }
+
+    /** What an icon of a materials picture's is drawn as: a field by its resource, the works by their roof. */
+    static String iconOf(IndustryPicture.Mark m, Sectors sectors) {
+        return switch (m.icon()) {
+            case FIELD -> "IRON".equals(m.key()) || "COPPER".equals(m.key()) ? Icons.ORE : Icons.PICK;
+            case FOREST -> Icons.TREES;
+            case SECTOR -> Icons.ofSector(sectors == null || m.key() == null ? null : sectors.byKey(m.key()));
+            case HOUSEHOLDS -> Icons.HOMES;
+            case CITY -> Icons.GOVERNMENT;
+            case GLOBE -> Icons.TRADE;
+            case SHIP -> Icons.TANKER;
+            case OLD_METAL -> Icons.CAN;
+            case WAREHOUSE -> Icons.TANK;
+            case LOST -> Icons.ALERT;
+            case WORKS -> switch (m.key() == null ? "" : m.key()) {
+                case "CAMP" -> Icons.TREES;
+                case "FURNACE" -> Icons.FLAME;
+                case "KILN" -> Icons.INDUSTRY;
+                case "MILL" -> Icons.MILL;
+                default -> Icons.PICK;
+            };
+            case LORRY -> Icons.LORRY;
+            case POWER -> Icons.UTILITIES;
+        };
+    }
+
+    /** THIS MONTH, CELL BY CELL: its heading, and a cell a field, the forest, a product, the old metal or the power, in equal columns. */
+    static VBox industryStrip(IndustryView.View v) {
+        Label head = new Label(IndustryPicture.STRIP_HEAD);
+        head.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        head.setMinWidth(Region.USE_PREF_SIZE);
+        Label words = new Label(IndustryPicture.STRIP_WORDS);
+        words.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        HBox top = new HBox(Palette.GAP_LOOSE, head, words);
+        top.setAlignment(Pos.BASELINE_LEFT);
+        GridPane grid = new GridPane();
+        grid.setHgap(6);
+        List<IndustryPicture.Cell> cells = IndustryPicture.strip(v);
+        for (int i = 0; i < cells.size(); i++) {
+            javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
+            c.setPercentWidth(100.0 / cells.size());
+            grid.getColumnConstraints().add(c);
+            grid.add(industryCell(cells.get(i)), i, 0);
+        }
+        return new VBox(6, top, grid);
+    }
+
+    /** One cell: its swatch and name, its bar in its segments, and its lines. */
+    static VBox industryCell(IndustryPicture.Cell c) {
+        Region swatch = new Region();
+        swatch.setMinSize(10, 10);
+        swatch.setMaxSize(10, 10);
+        swatch.setStyle("-fx-background-color: " + c.colour() + "; -fx-background-radius: 2;");
+        Label name = new Label(c.name());
+        name.setStyle(Palette.Fonts.sansMedium() + " -fx-font-size: 11.5px; -fx-text-fill: " + Palette.TEXT + ";");
+        HBox nameRow = new HBox(6, swatch, name);
+        nameRow.setAlignment(Pos.CENTER_LEFT);
+
+        GridPane bar = new GridPane();
+        bar.setMinHeight(7);
+        bar.setPrefHeight(7);
+        bar.setMaxHeight(7);
+        bar.setStyle("-fx-background-color: #0e1620; -fx-background-radius: 2;");
+        for (int i = 0; i < c.bar().size(); i++) {
+            IndustryPicture.Segment s = c.bar().get(i);
+            javafx.scene.layout.ColumnConstraints cc = new javafx.scene.layout.ColumnConstraints();
+            cc.setPercentWidth(100 * Math.max(0, s.share()));
+            bar.getColumnConstraints().add(cc);
+            Region seg = new Region();
+            seg.setMinHeight(7);
+            seg.setMaxWidth(Double.MAX_VALUE);
+            javafx.scene.paint.Paint fill = s.hatched() ? hatch(s.colour(), s.opacity())
+                    : javafx.scene.paint.Color.web(s.colour(), s.opacity());
+            seg.setBackground(new javafx.scene.layout.Background(new javafx.scene.layout.BackgroundFill(fill, null, null)));
+            bar.add(seg, i, 0);
+        }
+
+        VBox lines = new VBox(0);
+        StringBuilder tip = new StringBuilder(c.name()).append(':');
+        for (IndustryPicture.Row r : c.rows()) {
+            Label l = new Label(r.label());
+            l.setStyle("-fx-font-size: 10.5px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+            l.setMinWidth(Region.USE_PREF_SIZE);
+            Label f = new Label(r.figure());
+            f.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10.5px; -fx-text-fill: "
+                    + (r.hot() ? Palette.WARN : Palette.TEXT_LABEL) + ";");
+            f.setMinWidth(Region.USE_PREF_SIZE);
+            Region spring = new Region();
+            HBox.setHgrow(spring, Priority.ALWAYS);
+            lines.getChildren().add(new HBox(4, l, spring, f));
+            tip.append(' ').append(r.label()).append(' ').append(r.figure()).append(',');
+        }
+        VBox cell = new VBox(4, nameRow, bar, lines);
+        cell.setStyle("-fx-padding: 6 8 7 8; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 4;"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-radius: 4;");
+        cell.setMinWidth(0);
+        tip.setLength(tip.length() - 1);
+        Tooltip.install(cell, new Tooltip(tip.append('.').toString()));
         return cell;
     }
 

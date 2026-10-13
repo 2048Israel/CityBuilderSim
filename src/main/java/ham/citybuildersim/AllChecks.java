@@ -1,8 +1,14 @@
 package ham.citybuildersim;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Runs every harness, one JVM each, and says which failed.
@@ -15,11 +21,21 @@ import java.util.List;
  *
  *     java -cp <classes> ham.citybuildersim.AllChecks            everything
  *     java -cp <classes> ham.citybuildersim.AllChecks -q         verdicts only
+ *     java -cp <classes> ham.citybuildersim.AllChecks -f         failures only
  *     java -cp <classes> ham.citybuildersim.AllChecks Labour Money   a subset, by name
  *
  * Exit status is the number of harnesses that failed, so a build script can
  * stop on it. BuildMenuCheck needs JavaFX on the classpath and is skipped,
  * with a note, when it is not there.
+ *
+ * -f is for an AI session, where every line printed is read and paid for
+ * (2026-10-13). -q printed a line for each of a hundred-odd harnesses and,
+ * for a red one, only "FAILED", so the session ran it again in full to find
+ * the assertion and carried its thousands of lines from then on. -f keeps
+ * each harness's whole output in target/checks/NAME.log, says nothing of a
+ * harness that passed, and for one that failed prints its failing lines
+ * under the section they are in - at most FAIL_LINES of them - and where
+ * the rest is.
  */
 public class AllChecks {
 
@@ -38,12 +54,27 @@ public class AllChecks {
         "ConsumptionCheck", "SectorBooksCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "MaterialsCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "StaleCheck", "LongPlaytest"
     };
 
+    /** The most lines -f prints for one failed harness; the rest stays in its log. */
+    static final int FAIL_LINES = 40;
+
+    /** Where -f keeps each harness's whole output. */
+    static final Path LOGS = Paths.get("target", "checks");
+
+    /** A harness's section title, "--- what it proves ---". */
+    static final Pattern SECTION = Pattern.compile("^\\s*---\\s.*\\s---\\s*$");
+
+    /** A line that says something failed: an assertion's FAIL, the "N FAILED" summary, an exception. */
+    static final Pattern FAILING = Pattern.compile("\\bFAIL(ED)?\\b|Exception|^\\S*Error\\b|^Caused by");
+
     public static void main(String[] args) throws Exception {
-        boolean quiet = false;
+        boolean quiet = false, failuresOnly = false;
         List<String> only = new ArrayList<>();
         for (String a : args) {
-            if (a.equals("-q")) quiet = true; else only.add(a.toLowerCase());
+            if (a.equals("-q")) quiet = true;
+            else if (a.equals("-f")) failuresOnly = true;
+            else only.add(a.toLowerCase());
         }
+        if (failuresOnly) Files.createDirectories(LOGS);
 
         String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         String classpath = System.getProperty("java.class.path");
@@ -64,7 +95,10 @@ public class AllChecks {
             long t = System.currentTimeMillis();
             ProcessBuilder pb = new ProcessBuilder(java, "-cp", classpath, "ham.citybuildersim." + name);
             pb.redirectErrorStream(true);
-            if (quiet) {
+            Path log = LOGS.resolve(name + ".log");
+            if (failuresOnly) {
+                pb.redirectOutput(log.toFile());
+            } else if (quiet) {
                 pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
             } else {
                 pb.inheritIO();
@@ -72,12 +106,43 @@ public class AllChecks {
             int code = pb.start().waitFor();
             ran++;
             if (code != 0) failed++;
+            if (failuresOnly && code == 0) continue;
             System.out.printf("%-24s %s  (%.1fs)%n", name, code == 0 ? "OK" : "FAILED - exit " + code,
                     (System.currentTimeMillis() - t) / 1000.0);
+            if (failuresOnly) for (String line : failingLines(log)) System.out.println("    " + line);
         }
         System.out.printf("%n%d harness%s run in %.0fs: %d passed, %d failed%n",
                 ran, ran == 1 ? "" : "es", (System.currentTimeMillis() - started) / 1000.0,
                 ran - failed, failed);
+        if (failuresOnly && failed > 0) System.out.println("Whole output of each: " + LOGS + File.separator + "NAME.log");
         System.exit(failed);
+    }
+
+    /**
+     * What -f prints of a failed harness's log: each failing line, after the
+     * title of the section it is in (once per section), at most FAIL_LINES in
+     * all; a log with no failing line in it - a harness that died some other
+     * way - gives its last ten lines instead.
+     */
+    static List<String> failingLines(Path log) throws IOException {
+        List<String> lines = Files.readAllLines(log, StandardCharsets.UTF_8);
+        List<String> out = new ArrayList<>();
+        String section = null, printed = null;
+        int matched = 0;
+        for (String line : lines) {
+            if (SECTION.matcher(line).matches()) { section = line.strip(); continue; }
+            if (!FAILING.matcher(line).find()) continue;
+            matched++;
+            if (out.size() >= FAIL_LINES) continue;
+            if (section != null && !section.equals(printed)) { out.add(section); printed = section; }
+            out.add(line.strip());
+        }
+        if (matched == 0) {
+            out.add("(no FAIL line; its last lines:)");
+            for (String line : lines.subList(Math.max(0, lines.size() - 10), lines.size())) out.add(line);
+        } else if (out.size() >= FAIL_LINES) {
+            out.add("... " + matched + " failing lines in all: " + log);
+        }
+        return out;
     }
 }

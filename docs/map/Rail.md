@@ -1,6 +1,6 @@
 # Rail.java - 1,018 lines · 43 methods · 10 constants · sectors
 
-`ham/citybuildersim/sectors/Rail.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Rail.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > The railway. THE TWELFTH SECTOR (2026-09-16, Jerus's call).
 > 

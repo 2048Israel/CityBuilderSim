@@ -1,6 +1,6 @@
-# ZoningScreen.java - 1,064 lines · 70 methods · 25 constants · interface
+# ZoningScreen.java - 1,087 lines · 71 methods · 25 constants · interface
 
-`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's
 > ground and its zones on one page, a sector's zone on its own page of dial
@@ -38,7 +38,7 @@
 > PolicyPreview's (the tax take, THE BUDGET, zoningTaxChange()) and
 > LandManager's - ZoningViewCheck holds them; nothing here adds up a figure.
 
-**Uses:** [Palette](Palette.md) (80), [PolicyScreen](PolicyScreen.md) (74), [ZoningView](ZoningView.md) (64), [Zoning](Zoning.md) (53), [LandManager](LandManager.md) (42), [Icons](Icons.md) (16), [Pieces](Pieces.md) (15), [PolicyPreview](PolicyPreview.md) (9), [TaxPolicy](TaxPolicy.md) (6), [Money](Money.md) (6), [Sector](Sector.md) (4), [Ladder](Ladder.md) (4), [Game](Game.md) (3), [UserInterface](UserInterface.md) (2), [Formats](Formats.md) (2), [Sectors](Sectors.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [Palette](Palette.md) (82), [PolicyScreen](PolicyScreen.md) (77), [ZoningView](ZoningView.md) (64), [Zoning](Zoning.md) (53), [LandManager](LandManager.md) (42), [Icons](Icons.md) (16), [Pieces](Pieces.md) (15), [PolicyPreview](PolicyPreview.md) (9), [Money](Money.md) (9), [TaxPolicy](TaxPolicy.md) (6), [Sector](Sector.md) (4), [Ladder](Ladder.md) (4), [BuildCard](BuildCard.md) (4), [Game](Game.md) (3), [UserInterface](UserInterface.md) (2), [Formats](Formats.md) (2), [Forestry](Forestry.md) (2), [Sectors](Sectors.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
 **Used by (2):** [BuildScreen](BuildScreen.md), [PolicyScreen](PolicyScreen.md)
 
@@ -53,7 +53,7 @@
 | 523 | THE STAGED SET: the zone's and the law's keys, beside the taxes' |
 | 703 | A SECTOR'S ZONE (board 2): HOW MUCH GROUND, ITS PRICE, ITS TAXES |
 | 975 | THE FOREST LAW (board 3) |
-| 1033 | THE HUB'S CARD (Policy's fifth area card) |
+| 1056 | THE HUB'S CARD (Policy's fifth area card) |
 
 ## Constants
 
@@ -96,7 +96,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 996 | **type** `final class ZoningScreen` | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial cards, and the forest law on a third - drawn in Policy's own style (the... |
+| 69 | 1019 | **type** `final class ZoningScreen` | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial cards, and the forest law on a third - drawn in Policy's own style (the... |
 | 74 | 4 | `ZoningScreen(PolicyScreen policy, UserInterface ui)` |  |
 
 ### THE PAGES (lines 79-178)
@@ -194,18 +194,19 @@
 | 930 | 39 | `VBox taxesCard(String s, String name)` | ITS TAXES: the sector's three offsets, as Policy › Taxes' rows, the same keys. |
 | 971 | 3 | `static String sameDials(String name)` | The study's line: "The same dials as Policy › Taxes: a move here moves it for every Agriculture building." |
 
-### THE FOREST LAW (board 3) (lines 975-1032)
+### THE FOREST LAW (board 3) (lines 975-1055)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 984 | 33 | `void forestPage(VBox page)` |  |
-| 1019 | 13 | `List<Effect> forestEffects(ZoningView.Forest now, String key, double v)` | WHAT IT WOULD DO at any value of either thumb (pure: the probe reads them): the wood kept standing for ever, the most that may be cut, the forest a building may take, the ground free for anyone. |
+| 984 | 40 | `void forestPage(VBox page)` |  |
+| 1031 | 9 | `static String crewRuleWords(BuildCard.CrewRule rule, BuildingsTemplate smallest)` | The crew rule in a line (0.7.142; spec-zoning board 3: "room for 1 more crew now; the forest carries 7"): a crew is added only while the forest Forestry may cut lasts FOREST_CREW_MONTHS of every crew's cut - BuildCard... |
+| 1042 | 13 | `List<Effect> forestEffects(ZoningView.Forest now, String key, double v)` | WHAT IT WOULD DO at any value of either thumb (pure: the probe reads them): the wood kept standing for ever, the most that may be cut, the forest a building may take, the ground free for anyone. |
 
-### THE HUB'S CARD (Policy's fifth area card) (lines 1033-1064)
+### THE HUB'S CARD (Policy's fifth area card) (lines 1056-1087)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1038 | 14 | `VBox areaCard()` | Policy's ZONING area card: the zoned ground, the dry ground as slices, the zones' line and the law. |
-| 1054 | 8 | `static SegmentBar areaSlices(List<Slice> slices)` | Area slices as one bar, a part's name and ground its tooltip. |
-| 1063 | 1 | `static String pct0(double share)` |  |
+| 1061 | 14 | `VBox areaCard()` | Policy's ZONING area card: the zoned ground, the dry ground as slices, the zones' line and the law. |
+| 1077 | 8 | `static SegmentBar areaSlices(List<Slice> slices)` | Area slices as one bar, a part's name and ground its tooltip. |
+| 1086 | 1 | `static String pct0(double share)` |  |
 

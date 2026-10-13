@@ -1,6 +1,6 @@
 # PopulationCohorts.java - 604 lines · 35 methods · 2 constants · model
 
-`ham/citybuildersim/PopulationCohorts.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PopulationCohorts.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > The city's age pyramid, and since the switch, the city's POPULATION.
 > 
@@ -40,7 +40,7 @@
 
 **Uses:** [AgeBand](AgeBand.md) (37)
 
-**Used by (26):** [BuildAdvice](BuildAdvice.md), [CareType](CareType.md), [CityNeeds](CityNeeds.md), [Crime](Crime.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [Education](Education.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HistorySave](HistorySave.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
+**Used by (27):** [BuildAdvice](BuildAdvice.md), [CareType](CareType.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [Crime](Crime.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [Education](Education.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HistorySave](HistorySave.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
