@@ -221,7 +221,8 @@ their full-file sections only where earth-1.bin is named
 is a baseline of its own.
 
 **Other assistants** (2026-10-13): ChatGPT (the GitHub connector: reads and
-writes, runs nothing) and Gemini (AI Studio: a shell and git; Java unproven)
+writes, runs nothing) and Gemini (AI Studio: a shell, git, Java and Maven;
+it ran the checks to the cent on 2026-10-13)
 work on branches `chatgpt/<topic>` and `gemini/<topic>`, never `main`, by
 their briefs `openai-dontread.md` and `gemini-notes.md`. A Claude session
 ships such a branch with `./ship.sh --no-tag <branch>` after reading its diff;

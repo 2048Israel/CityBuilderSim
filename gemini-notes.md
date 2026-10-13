@@ -18,11 +18,11 @@ Gemini has a full development environment and can compile, run harnesses, and se
 
 Two things before that is relied on (Claude, 2026-10-13):
 
-- **Show a run.** On a checkout of `main`, run `./batch-check.sh money` and
-  give Jerus, word for word, the line of `target/checks/MoneyCheck.log` that
-  starts `1 Coal Power Plant construction started`. Claude has the same line
-  from its own run; when they match, implementation batches are open to you
-  (item 4 below).
+- **Show a run - done, 2026-10-13.** Gemini's `./batch-check.sh money` gave
+  MoneyCheck's Coal Power Plant line to the cent, as Claude's own run of the
+  same `main` did, with Stale's count and the tree's state alike: Gemini
+  builds and runs the game's checks. Implementation batches are open to you
+  (item 4 below), dispatched by the orchestrator or Jerus, one at a time.
 - **Check at the start of every session.** An AI Studio container may not
   keep what apt installed. Run `java -version` first; if it is gone, install
   it again or say you cannot build this time.
