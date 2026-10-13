@@ -619,6 +619,63 @@ The model (`scenarios_1900.py`, 400 cities each) runs the same city founded in 1
 
 ---
 
+
+### 12.1 Current-code handoff (2026-10-13)
+
+This is an implementation pass over the current repository, not the older 0.7.108 tree cited in the opening note. The source and generated maps were inspected for `CityCalendar`, `PayTier`, `LabourMarket`, `PopulationManager`, `WorldEconomy`, `Consumption`, `CityBasket`, `Migration`, `Founding`, and the month order. No game code or tests were run or changed for this pass.
+
+#### The important seams in today's code
+
+| R0 requirement | Current source / fact | Consequence for the batch |
+|---|---|---|
+| Calendar starts in 1900 | `CityCalendar.EPOCH_YEAR` is 2000. Month 1 is January; the counter itself is used by saves, transactions, loans and histories. | Changing the epoch changes every existing save's displayed date. Treat this as a save-meaning change: the shipping batch must bump `SAVE_FORMAT` and `OLDEST_LOADABLE_FORMAT` together so an old city is refused, not silently re-dated. The shipper owns the version bump. |
+| 1900 founding wages | `PayTier` owns six present-day Nova Scotia monthly wages; `PopulationManager.setWagesPerType()` copies them, and `LabourMarket.DEFAULT_MINIMUM_WAGE` is anchored to `PayTier.UNSKILLED`. The live wage is then priced by the labour market. | Do not simply change `PayTier` constants: that would rewrite today's ladder and all default cities. Give a newly founded 1900 city a historical starting ladder through an explicit history/founding seam, then let the existing labour market move it. The study's ~D$0.8k/month is a real-wage anchor, not a direct conversion of the census's nominal 1901 dollars. |
+| Skill mix by year | `Migration` already chooses who arrives by skill band and wage/opportunity, but the current model is not a year-indexed Canadian immigration and education series. | Keep two inputs separate: how many people are arriving from outside, and the skill composition of those arrivals. Use annual immigration per Canadian capita as the external-volume signal, then normalize the educational shares independently. Do not add raw national arrivals as literal people to a city. |
+| World prices through history | `WorldEconomy` currently makes a deterministic stochastic inflation path around a chosen mean; it does not contain the CPI/wholesale history in §6.1. Goods' base prices live elsewhere. | Add one historical price-level source with 1900 normalized to 1.0, and define exactly how the current stochastic component continues around it. Do not multiply historical CPI on top of an already compounded historical CPI path. Keep CPI (household cost of living) distinct from wholesale prices (business inputs); use the wheat series only as a relative price path unless a defensible conversion to the game's price units is documented. |
+| Household basket by year | `consumption.json` is read by `Consumption`, but its own current contract says it is a **shadow basket**: actual households do not consume it yet. `CityBasket` reports what they would buy. | A year-dependent edit to `consumption.json` alone will not change actual shopping. Identify the live demand path before wiring a historical basket. Keep the 1900 light/heat goods for R0c, which introduces those mechanics, rather than referring to goods that do not exist yet. |
+| World interest and city debt | R0 is queued after CD1–CD6, which are intended to replace the current city-debt pricing. The 1900 study's world bond yield is an outside-world historical observation, not automatically the right rate for every city's own debt. | Read the landed debt code when R0 begins. Feed the historical world rate to the outside-world/foreign-investor side it actually represents; do not overwrite a city's own curve if the new debt system derives that from its monetary regime, inflation expectations and credit risk. |
+| Historical policy dates | The current policy and money systems are active model state, while §7 gives the proposed Canadian opening dates. | Gate the existing levers by dates in the model, not by greying out buttons only. Before a lever exists it must not affect monthly flows; on its date it becomes available at zero with its dated terms. Keep the Law-school advance as the sole exception. |
+
+#### Recommended data contract
+
+Use one small, immutable, keyed historical data class (for example `HistoricalEconomy`) rather than putting a second set of unrelated arrays into `Game`, `Migration` and `WorldEconomy`. This is a proposed name, not an existing class. It should answer questions for a game month, using `CityCalendar.yearOf(month)` and `monthOfYear(month)`:
+
+- **Annual source rows:** year; CPI index; wholesale index; real GNP index; GDP per head in constant international dollars; wheat price; immigration count; unemployment where observed; external nominal/benchmark rate where sourced; skill shares where there is evidence.
+- **Units:** indices are dimensionless and normalized to 1900 = 1.0 at the model boundary; rates are decimal annual rates; migration volume is a rate or per-capita measure, never a national headcount applied directly to a city; all money entering the game is converted to the game's founding-money units exactly once.
+- **Between annual observations:** interpolate index *levels* between annual knots, then derive monthly growth from the level ratio. Interpolate rates linearly. For an unavailable series, return an explicit documented fallback, not zero or a silently repeated unrelated series.
+- **Before/after the data:** January 1900 uses the 1900 row. For years after 1950, join smoothly to the existing model at the 1950 endpoint and then let the post-1950 system continue; avoid a jump in the price level, wages or interest at the join. If the project later permits a player-chosen start year, the epoch and historical offset must become per-city saved state rather than a mutable global constant.
+- **Determinism:** the historical series itself has no random draws. Existing stochastic shocks can remain seeded, but their baseline must be explicit so a history path is not counted twice.
+
+The §6.1 table already contains the principal annual anchors for 1900–1950: real GNP, GDP per head, CPI, wholesale prices, unemployment (from 1921), wheat and immigration. The source keys are listed in §13. Preserve the asterisks on the pre-1914 spliced CPI values in comments or data metadata; they are estimates, not observations. Do not fabricate annual rates or skill shares to fill a blank: source those series separately or document a simpler proxy.
+
+#### Wage ladder: make the normalization explicit
+
+The source evidence in §5.2 is annual nominal wage data from the 1901 census; the game pays monthly in thousands of founding D$. These are not directly comparable units. The study's estimate, D$0.8k per month for the unskilled floor, comes from taking today's D$3.46k floor to roughly 23% in real terms. It is an anchor to calibrate against, not an exchange-rate conversion.
+
+The 1901 evidence gives useful relative observations against a male factory worker: farm hand 0.51, male labourer/domestic service 0.68, trade/transport 1.25, teachers 1.21, electricians 1.29, engineers 3.24. It does **not** identify reliable 1900 wages for every modern tier (notably doctors/lawyers, senior finance and some university jobs). R0 should therefore:
+
+1. Record the mapping from each `JobType`/`PayTier` to a historical comparator in one table, with a source or an explicit estimate flag.
+2. Normalize that ladder to the chosen unskilled floor once. Do not apply both a historical multiplier and `LabourMarket`'s cost-of-living multiplier to the same wage.
+3. Keep the labour-market scarcity premium and the player's minimum-wage dial operational. Test the starting values before scarcity or local inflation moves them, then test that a month of simulation moves them through the normal labour-market path.
+4. Report the unsupported tiers rather than imply that the census supplies a number it does not.
+
+#### A small, high-value harness set for R0
+
+- **Calendar:** month 1 = January 1900; months 12 and 13 = December 1900 and January 1901; month 121 = January 1910. Gregorian leap-year checks must still make 1900 a common year and 1904 a leap year.
+- **Historical table:** each annual anchor returns its exact row; monthly lookup is deterministic and monotonic where the source index is monotonic; the 1900 index is exactly 1.0; spliced/estimated observations remain marked.
+- **Join:** the 1950 endpoint and first post-history month have no unexplained jump in the price level, wage baseline, or outside rate. A historical level and the current stochastic inflation mechanism must not compound the same inflation twice.
+- **Wages:** a fresh 1900 city starts at the declared historical floor and relative ladder; an ordinary modern city still starts on today's `PayTier` ladder; scarcity, cost-of-living and the player's dial still operate after founding.
+- **Migration:** external volume and skill mix change at the intended historical dates, the shares sum to one, no arrival count becomes negative, and a small city receives a scaled flow rather than Canada's national total.
+- **Policy:** every dated lever is closed before its date, opens at zero on its date, and the four-year early-opening rule is available only when a Law discovery actually occurs.
+- **Repeatability and saves:** two runs of the same seed produce the same historical path; saving and loading preserve the same date and historical state. If the epoch change would misread old saves, assert that the loader refuses them after the format floor is raised.
+- **Accounting:** run the existing money-conservation harnesses against the historical price and migration paths. A historical data change is not permission to relax cent-exact conservation.
+
+#### Scope boundary
+
+R0 should deliver the date/epoch, the dated macro series and the initial wage/skill/basket inputs, plus their harnesses. R0b owns the new causes of death; R0c owns horses, steam recipes, lamp oil/heat and hydro. R1 owns research recipes/equipment. The historical data can describe those later mechanics, but R0 must not quietly introduce their goods, buildings or health causes ahead of their queued batches.
+
+**No code was changed or executed for this handoff.** The next implementation session should re-open the current source after CD1–CD6 have landed, because this handoff is based on the repository as inspected on 2026-10-13.
+
 ## 13. Sources
 
 *Keys `[P1.n]` and `[P2.n]` are source n of the energy-and-transport and materials passes; the named keys are the people-and-services and economy passes' own. `[R2]`, `[BJVW]` and `[SC-E]` are the first study's (`research-design.md` §11); `[R2]` and `[R4]` are its research files `R2-1950-baseline.md` and `R4-medical-business-law.md`, in `research-sources.zip`. The four research files, with every source, the arithmetic behind each (est.) and the gaps, went with this study as `research-1900-sources.zip`: `P1-energy-oil-transport.md`, `P2-materials-farms-food.md`, `P3-people-and-services.md`, `P4-economy-world-policy.md`. They are not in the project, which is near its knowledge limit.*
