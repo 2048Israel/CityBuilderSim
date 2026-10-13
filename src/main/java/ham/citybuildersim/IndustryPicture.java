@@ -112,6 +112,9 @@ public final class IndustryPicture {
      */
     public record Flow(String from, String to, Good good, double units, double drawn) { }
 
+    /** The least part of a feed, a sale or the old metal the picture draws, in its good's unit: under half a unit its figure reads "0 t", and it is left out (I11's ★11: Iron & Steel buys a sliver of its own scrap). */
+    public static final double LEAST_PART = .5;
+
     /** The unit a picture is drawn in: "m³" where every good the industry makes or uses is counted in cubic metres (Forestry), "t" otherwise. */
     public static String unitOf(View v) {
         boolean m3 = !v.products().isEmpty();
@@ -199,13 +202,13 @@ public final class IndustryPicture {
             double toLorries = bought > 0 ? lorries / bought : 0;
             for (Origin o : new Origin[] { Origin.HOME, Origin.WORLD }) {
                 double part = Math.max(0, o == Origin.HOME ? f.home() : f.imported());
-                if (!(part > 0)) continue;
+                if (!(part >= LEAST_PART)) continue;
                 if (toLorries > 0) add(merged, v, sourceKey(g, o), LORRIES, g, part * toLorries);
                 for (Map.Entry<Unit, Double> e : split(part * (1 - toLorries), users).entrySet()) {
                     add(merged, v, sourceKey(g, o), unitKey(e.getKey()), g, e.getValue());
                 }
             }
-            if (f.oldMetal() > 0) {
+            if (f.oldMetal() >= LEAST_PART) {
                 Map<Unit, Double> takers = oldMetalUsers(built, Good.COPPER);
                 if (takers.isEmpty()) takers = users;
                 for (Map.Entry<Unit, Double> e : split(f.oldMetal(), takers).entrySet()) {
@@ -214,7 +217,7 @@ public final class IndustryPicture {
             }
         }
         // ...and Iron & Steel's old steel, which is not a good: the yards' purchase.
-        if (v.sector() instanceof HeavyIndustry && v.oldMetal() != null && v.oldMetal().bought() > 0) {
+        if (v.sector() instanceof HeavyIndustry && v.oldMetal() != null && v.oldMetal().bought() >= LEAST_PART) {
             for (Map.Entry<Unit, Double> e : split(v.oldMetal().bought(), oldMetalUsers(built, Good.STEEL)).entrySet()) {
                 merge(merged, new Flow(sourceKey(Good.STEEL, Origin.OLD_METAL), unitKey(e.getKey()), null, e.getValue(),
                         e.getValue()));
@@ -230,6 +233,7 @@ public final class IndustryPicture {
             if (!(band + stored > 0)) continue;
             double fromBand = band / (band + stored);
             for (Part part : takers(p)) {
+                if (!(part.units() >= LEAST_PART)) continue;
                 String to = takerKey(part.origin() == Origin.WORLD ? ABROAD : part.party());
                 boolean bandOnly = part.party() != null && (part.party().equals(WAREHOUSE) || part.party().equals(LOST));
                 double take = part.units(), a = bandOnly ? take : take * fromBand;
@@ -1294,7 +1298,7 @@ public final class IndustryPicture {
         if (o == Origin.OLD_METAL) return "the city's " + (v.sector() instanceof HeavyIndustry ? "old steel" : "old copper");
         Feed f = v.feed(Good.valueOf(p[1]));
         List<String> names = new ArrayList<>();
-        if (f != null) for (Part s : f.sellers()) names.add(IndustryView.partyWords(s.party(), game));
+        if (f != null) for (Part s : f.sellers()) if (s.units() >= LEAST_PART) names.add(IndustryView.partyWords(s.party(), game));
         if (names.isEmpty()) return "bought here";
         return names.size() == 1 ? names.get(0) : names.get(0) + " +" + (names.size() - 1);
     }
@@ -1307,7 +1311,9 @@ public final class IndustryPicture {
             return sourceName(v, key) + ", " + sourceLine(game, v, key) + ": " + sourceFigure(v, key);
         }
         List<String> each = new ArrayList<>();
-        for (Part s : f.sellers()) each.add(IndustryView.partyWords(s.party(), game) + " " + IndustryView.unitsWords(f.good(), s.units()));
+        for (Part s : f.sellers()) {
+            if (s.units() >= LEAST_PART) each.add(IndustryView.partyWords(s.party(), game) + " " + IndustryView.unitsWords(f.good(), s.units()));
+        }
         return sourceName(v, key) + " bought here: " + String.join(", ", each);
     }
 
@@ -1336,7 +1342,8 @@ public final class IndustryPicture {
     static String sellerKey(View v, String key) {
         if (!key.endsWith(":" + Origin.HOME)) return null;
         Feed f = v.feed(Good.valueOf(key.split(":")[1]));
-        return f == null || f.sellers().isEmpty() ? null : f.sellers().get(0).party();
+        if (f != null) for (Part s : f.sellers()) if (s.units() >= LEAST_PART) return s.party();
+        return null;
     }
 
     /** A kind's name over its box: "Coke Ovens ×2"; a kind only on site its name alone. */

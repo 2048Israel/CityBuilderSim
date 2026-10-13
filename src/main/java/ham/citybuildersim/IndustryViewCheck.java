@@ -968,7 +968,7 @@ public class IndustryViewCheck {
      */
     static void thePicture(List<Town> towns) {
         out.println("\n--- 12. the picture: ribbons to scale, every label's figure the view's, nothing off the frame at 1,389 x 868 ---");
-        int pictures = 0, ribbons = 0, nodes = 0, labels = 0, roofs = 0;
+        int pictures = 0, ribbons = 0, nodes = 0, labels = 0, roofs = 0, passes = 0, hatched = 0, vessels = 0, ranked = 0;
         List<String> loose = new ArrayList<>(), unscaled = new ArrayList<>(), figures = new ArrayList<>(), off = new ArrayList<>();
         Set<IndustryView.Roof> roofed = EnumSet.noneOf(IndustryView.Roof.class);
         for (Town t : towns) {
@@ -983,6 +983,12 @@ public class IndustryViewCheck {
                 }
                 pictures++;
                 double k = p.scale();
+                for (RefineryView.Place q : p.places()) {
+                    if (q.key().startsWith("pass:")) passes++;
+                    if (q.key().startsWith("field:")) vessels++;
+                }
+                for (RefineryView.Ribbon r : p.ribbons()) if (r.hatched()) hatched++;
+                if (IndustryPicture.ranks(v).containsValue(1)) ranked++;
                 List<IndustryPicture.Flow> flows = IndustryPicture.trace(v);
 
                 // Every ribbon attached at both ends, and each pair's ribbons its flows' quantity times the one scale.
@@ -1026,30 +1032,34 @@ public class IndustryViewCheck {
                             - q.carriedOut()), Double::sum);
                     node.merge("out " + IndustryPicture.storedKey(x), IndustryPicture.drawn(v, x, Math.max(0, -q.intoStock())), Double::sum);
                     for (IndustryView.Part b : q.buyers()) {
-                        node.merge("in " + IndustryPicture.takerKey(b.party()), IndustryPicture.drawn(v, x, b.units()), Double::sum);
+                        node.merge("in " + IndustryPicture.takerKey(b.party()), IndustryPicture.drawn(v, x, drawnPart(b.units())), Double::sum);
                     }
-                    node.merge("in " + IndustryPicture.takerKey(IndustryPicture.ABROAD), IndustryPicture.drawn(v, x, q.exported()), Double::sum);
-                    node.merge("in " + IndustryPicture.takerKey(IndustryPicture.WAREHOUSE), IndustryPicture.drawn(v, x, Math.max(0, q.intoStock())),
+                    node.merge("in " + IndustryPicture.takerKey(IndustryPicture.ABROAD), IndustryPicture.drawn(v, x, drawnPart(q.exported())),
                             Double::sum);
-                    node.merge("in " + IndustryPicture.takerKey(IndustryPicture.LOST), IndustryPicture.drawn(v, x, q.lost()), Double::sum);
+                    node.merge("in " + IndustryPicture.takerKey(IndustryPicture.WAREHOUSE), IndustryPicture.drawn(v, x,
+                            drawnPart(Math.max(0, q.intoStock()))), Double::sum);
+                    node.merge("in " + IndustryPicture.takerKey(IndustryPicture.LOST), IndustryPicture.drawn(v, x, drawnPart(q.lost())), Double::sum);
                 }
                 for (IndustryView.Feed f : v.feeds()) {
                     Good x = f.good();
                     boolean used = false;
                     for (IndustryView.Unit u : v.units()) used |= u.standing() > 0 && u.template().uses(x) > 0;
                     if (!used) continue;
-                    node.merge("out " + IndustryPicture.sourceKey(x, IndustryView.Origin.HOME), IndustryPicture.drawn(v, x, f.home()), Double::sum);
-                    node.merge("out " + IndustryPicture.sourceKey(x, IndustryView.Origin.WORLD), IndustryPicture.drawn(v, x, f.imported()),
-                            Double::sum);
-                    node.merge("out " + IndustryPicture.sourceKey(x, IndustryView.Origin.OLD_METAL), IndustryPicture.drawn(v, x, f.oldMetal()),
-                            Double::sum);
-                    if (x == Good.DIESEL) node.merge("in " + IndustryPicture.LORRIES, IndustryPicture.drawn(v, x, Math.min(f.lorries(),
-                            f.home() + f.imported())), Double::sum);
+                    double home = drawnPart(f.home()), imported = drawnPart(f.imported());
+                    node.merge("out " + IndustryPicture.sourceKey(x, IndustryView.Origin.HOME), IndustryPicture.drawn(v, x, home), Double::sum);
+                    node.merge("out " + IndustryPicture.sourceKey(x, IndustryView.Origin.WORLD), IndustryPicture.drawn(v, x, imported), Double::sum);
+                    node.merge("out " + IndustryPicture.sourceKey(x, IndustryView.Origin.OLD_METAL), IndustryPicture.drawn(v, x,
+                            drawnPart(f.oldMetal())), Double::sum);
+                    // ...the lorries' share of each part drawn: the diesel they burned over all that was bought.
+                    double bought = f.home() + f.imported();
+                    if (x == Good.DIESEL && bought > 0) node.merge("in " + IndustryPicture.LORRIES, IndustryPicture.drawn(v, x,
+                            Math.min(f.lorries(), bought) / bought * (home + imported)), Double::sum);
                 }
                 boolean yards = false;
                 for (IndustryView.Unit u : v.units()) yards |= u.standing() > 0 && u.template().oldMetal(Good.STEEL) > 0;
                 if (v.sector() instanceof HeavyIndustry && v.oldMetal() != null && yards) {
-                    node.merge("out " + IndustryPicture.sourceKey(Good.STEEL, IndustryView.Origin.OLD_METAL), v.oldMetal().bought(), Double::sum);
+                    node.merge("out " + IndustryPicture.sourceKey(Good.STEEL, IndustryView.Origin.OLD_METAL), drawnPart(v.oldMetal().bought()),
+                            Double::sum);
                 }
                 for (Map.Entry<String, Double> e : node.entrySet()) {
                     String key = e.getKey().substring(e.getKey().indexOf(' ') + 1);
@@ -1106,7 +1116,7 @@ public class IndustryViewCheck {
                         double u = party.equals(IndustryPicture.ABROAD) ? x.exported() : party.equals(IndustryPicture.WAREHOUSE)
                                 ? Math.max(0, x.intoStock()) : party.equals(IndustryPicture.LOST) ? x.lost() : 0;
                         for (IndustryView.Part b : x.buyers()) if (party.equals(b.party())) u += b.units();
-                        if (u > 0) took.put(x.good(), u);
+                        if (drawnPart(u) > 0) took.put(x.good(), u);
                     }
                     if (took.size() != 1) continue;
                     Map.Entry<Good, Double> e = took.entrySet().iterator().next();
@@ -1184,6 +1194,9 @@ public class IndustryViewCheck {
                 off.isEmpty() ? pictures + " pictures" : off.toString());
         Set<String> shapes = new HashSet<>();
         for (IndustryView.Roof r : IndustryView.Roof.values()) shapes.add(IndustryPicture.roof(r, 100, 100, IndustryPicture.TANK_W).toString());
+        report("fixture: the towns draw works in two ranks or more, a flow in a band through a works' column, imports hatched, and"
+                + " fields as vessels", ranked > 0 && passes > 0 && hatched > 0 && vessels > 0,
+                String.format("%d pictures ranked, %d bands through, %d hatched ribbons, %d vessels", ranked, passes, hatched, vessels));
         report("each picture under its industry's roof, the five roofs each its own outline (CAMP Forestry's)", roofs == pictures
                 && shapes.size() == IndustryView.Roof.values().length && roofed.contains(IndustryView.Roof.CAMP), roofed.toString());
         Game g = towns.get(0).game();
@@ -1191,6 +1204,11 @@ public class IndustryViewCheck {
         report("fixture: an industry with nothing standing (the works town's Forestry) draws nothing, and says so",
                 none.standing() == 0 && IndustryPicture.picture(g, none, FRAME_WIDTH, IndustryPicture.HEIGHT).empty()
                         && IndustryPicture.emptyWords(none).endsWith("has nothing standing."), IndustryPicture.emptyWords(none));
+    }
+
+    /** A part as the picture draws it: nothing under IndustryPicture.LEAST_PART. */
+    static double drawnPart(double units) {
+        return units >= IndustryPicture.LEAST_PART ? units : 0;
     }
 
     static boolean inside(double x0, double y0, double x1, double y1, double w, double h) {
