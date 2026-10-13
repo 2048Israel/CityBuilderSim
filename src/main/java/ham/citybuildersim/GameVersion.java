@@ -6553,8 +6553,35 @@ public final class GameVersion {
      *     self-powered works, a scrap yard, the buyers, E on a forest town,
      *     the hover by type, the payback by type), 8 (the field words).
      *   - THE PLAYTESTS do not move: byte-identical.
+     *
+     * 0.7.143 (2026-10-13) - THE MATERIALS PICTOGRAMS DRAWN.
+     * Batch I12, the second of the four screen batches that finish the
+     * materials chains (docs/studies/spec-materials.md 2.13's second bullet
+     * and 5's I12 row; the study's mockups 1 to 5; docs/queue/I12.md,
+     * docs/queue/I12-notes/fixI12-notes.md). No save format change (39):
+     * nothing is saved.
+     *   - THE PICTURE (IndustryPicture, new, pure): each of the nine
+     *     industries' month laid out to scale, IndustryView's figures traced
+     *     end to end - a mine's fields as vessels filled to what is left with
+     *     the bar of what each dug, or a works' feeds by where they came from,
+     *     the imports hatched; the works in ranks (the coke ovens left of the
+     *     blast furnace, the mines left of the wash plant), each with its run
+     *     and the gate one more would fail; the tank of what left the works
+     *     under the industry's roof (pit, camp, furnace, kiln, mill); who took
+     *     it; the power and the month's note - every ribbon one scale, in
+     *     tonnes, the forest's in cubic metres; and a strip of cells under it.
+     *   - THE PAGE (ui/SectorScreen, OPERATIONS · THE MATERIALS INDUSTRIES):
+     *     the nine's Operations pages open on it, painted with the
+     *     refinery's painter, as Refining's opens on RefineryView's; every
+     *     other page as it was.
+     *   - Harnesses: IndustryViewCheck 12 (new: every ribbon attached and to
+     *     one scale, each node's ribbons the view's figures, every label's
+     *     figure the view's, nothing off the frame at 1,389 x 868, the five
+     *     roofs, nothing drawn with nothing standing), 9 and 10 (the picture
+     *     pure, and empty after a load).
+     *   - THE PLAYTESTS do not move: byte-identical.
      */
-    public static final String VERSION = "0.7.142";
+    public static final String VERSION = "0.7.143";
 
     /**
      * The save shape.

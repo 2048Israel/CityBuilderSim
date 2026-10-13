@@ -42,7 +42,7 @@
 
 **Uses:** [Good](Good.md) (69), [Refining](Refining.md) (17), [RefineryFlow](RefineryFlow.md) (9), [SpreadPlanner](SpreadPlanner.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [Sector](Sector.md) (4), [Deposit](Deposit.md) (4), [Rail](Rail.md) (3), [Game](Game.md) (2), [Sectors](Sectors.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Oil](Oil.md) (1), [Retail](Retail.md) (1)
 
-**Used by (7):** [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (8):** [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

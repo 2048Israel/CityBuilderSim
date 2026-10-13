@@ -21,7 +21,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| I12 | The materials pictograms drawn | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | I14 | The materials on the map (0.8.0) | [spec-materials §5](docs/studies/spec-materials.md#5-build-order) |
 | FR0 | The map's network: gateways, the main line and yards, rail drawn as rail, access roads, junctions by rule | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR1 | Trains on the map, as the ships are | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
@@ -77,3 +76,4 @@ Not done, and waiting on Jerus.
 | CC1-S | Two of the eight auto-built seeds (4 and 5) still stall as villages to about m3,000, now on general and senior care, the school and the pensions against their tax - childcare there is one Small Childcare Centre; seeds 0, 1 and 7 of P2b's four no longer stall | his call on P2b's question: keep care essential, or weigh general and senior care for their payback too | `runs/fixCC1-notes.md` ★ |
 | CC1-M | The city map did not survive a save once: LongPlaytest -Dplaytest.childcare at m1,184 (slot 3), a run the map sidecar has not met before; not childcare's - nothing in the model reads the map | a bug for a batch of its own, MapCheck's area | `runs/fixCC1-notes.md` 7 |
 | I13-L | Two notes the I13 item carried that its brief did not build: the landlords' card asking the mortgage lender's test (C1's note: a door on Game round Mortgage.decide()), and the land office's Ore card, still iron's alone (I6's note) | neither is a materials card; his call whether they are a batch | `runs/fixI13-notes.md` 7 |
+| I12-C | The nine materials pictures checked by eye on the PC at 1,389 x 868 - the probe's words and nine headless PNGs are beside the notes; and copper drawn in tonnes of the good, not of copper contained as the mockups' line says (★2: the model holds no copper content for a good) | his PC check (spec-materials §5's I12 row), and his call on ★2 | [fixI12-notes §8](docs/queue/I12-notes/fixI12-notes.md) |

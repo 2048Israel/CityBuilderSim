@@ -23,8 +23,8 @@
 > mill sells, not where the forest settles. The refinery has had a picture
 > since 0.7.95 (RefineryView, O11); this is the same for the nine, its
 > figures held by a harness (IndustryViewCheck) rather than worked out in
-> the screen, which lays them out (batch I12; ui/SectorScreen's
-> OPERATIONS, a roof per industry).
+> the screen. Since 0.7.143 (batch I12) IndustryPicture lays them out and
+> ui/SectorScreen's OPERATIONS paints that, a roof per industry.
 > 
 > WHICH MONTH. The month the production rows were made on (Sector.Output,
 > Sector.Input): what each good made, kept for its own works (captive), sold
@@ -47,7 +47,7 @@
 
 **Uses:** [Good](Good.md) (33), [Sectors](Sectors.md) (19), [Resource](Resource.md) (11), [Sector](Sector.md) (10), [Forestry](Forestry.md) (10), [SpreadPlanner](SpreadPlanner.md) (8), [RefineryView](RefineryView.md) (8), [Deposit](Deposit.md) (7), [OldMetal](OldMetal.md) (7), [Game](Game.md) (7), [Trade](Trade.md) (5), [CoalMining](CoalMining.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LandManager](LandManager.md) (3), [ExtractionSector](ExtractionSector.md) (3), [BuildingManager](BuildingManager.md) (2), [Markets](Markets.md) (2), [ProcessingSector](ProcessingSector.md) (2), [CopperRefining](CopperRefining.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [Quarrying](Quarrying.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Formats](Formats.md) (1)
 
-**Used by (1):** [IndustryViewCheck](IndustryViewCheck.md)
+**Used by (3):** [IndustryPicture](IndustryPicture.md), [IndustryViewCheck](IndustryViewCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

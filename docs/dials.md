@@ -2,9 +2,9 @@
 
 Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**3,209 constants in 345 files.**
+**3,247 constants in 346 files.**
 
-## model (1610 constants)
+## model (1645 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1066,10 +1066,10 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 6557 | `GameVersion.VERSION` | `"0.7.142"` | Bump on release. |
-| 7227 | `GameVersion.SAVE_FORMAT` | `39` | The save shape. |
-| 7255 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `37` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
-| 7257 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 6584 | `GameVersion.VERSION` | `"0.7.143"` | Bump on release. |
+| 7254 | `GameVersion.SAVE_FORMAT` | `39` | The save shape. |
+| 7282 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `37` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 7284 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ### Geology.java ([map](map/Geology.md))
 
@@ -1296,6 +1296,46 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 39 | `Inbox.KEEP_MONTHS` | `24` | How long a resolved notice stays readable. |
 | 216 | `Inbox.BODY_COLUMNS` | `62` | A body line's most characters (0.7.73): the measure the bodies written by hand keep, inside the list's width in its mono face. |
+
+### IndustryPicture.java ([map](map/IndustryPicture.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 89 | `IndustryPicture.SALVAGE` | `"salvage"` | ...the forest cleared for building, Forestry's salvage cut. |
+| 95 | `IndustryPicture.LORRIES` | `"lorries"` | ...the lorries' diesel. |
+| 105 | `IndustryPicture.ABROAD` | `"ABROAD", WAREHOUSE = "WAREHOUSE", LOST = "LOST"` | The takers that are not a party: the world, the warehouse, what was lost. |
+| 117 | `IndustryPicture.LEAST_PART` | `.5` | The least part of a feed, a sale or the old metal the picture draws, in its good's unit: under half a unit its figure reads "0 t", and it is left out (I11's ★11: Iron & Steel buys a sliver of its o... |
+| 475 | `IndustryPicture.HEIGHT` | `420` | The picture's height on the page (the materials mockups' 420 px at 1,389 x 868). |
+| 478 | `IndustryPicture.LEAST_WIDTH` | `RefineryView.LEAST_WIDTH` | The least width it is laid out at (RefineryView's: the 1,280 window's card is about 1,094). |
+| 481 | `IndustryPicture.TOP` | `60` | Room above the columns for their headings and a line of notes (the mockups' 60). |
+| 484 | `IndustryPicture.HEAD_Y` | `14, SUB_Y = 27, NOTE_Y = 46` | ...the headings' baselines, their lines' and the notes' (the mockups' 14, 27 and 46). |
+| 487 | `IndustryPicture.PAD` | `4` | ...and the margin under and over what the columns hold. |
+| 490 | `IndustryPicture.SOURCE_ZONE` | `214` | Where the sources' bar stands: its words, an icon and a field's vessel at its left (the mockups' 196 to 232). |
+| 493 | `IndustryPicture.SOURCE_W` | `12` | The sources' bar (the mockups' 10 and 12). |
+| 496 | `IndustryPicture.VESSEL_W` | `22, VESSEL_H = 40, VESSEL_GAP = 12` | A field's vessel, and its gap to the bar (the mockups' 22 x 40, 12). |
+| 499 | `IndustryPicture.FIELD_ROOM` | `44` | The least room a field's row takes: its vessel and three lines of words (the mockups' 42). |
+| 502 | `IndustryPicture.BUYER_ZONE` | `236` | The takers' room at the right: the bar, an icon, a name and its figure, a line of words (RefineryView's). |
+| 505 | `IndustryPicture.BUYER_W` | `12` | The takers' bar. |
+| 508 | `IndustryPicture.UNIT_W` | `60` | A works' box (the mockups' 54 to 64). |
+| 511 | `IndustryPicture.TANK_W` | `150` | The tank's width: a product's name and its figure inside its band (the mockups' 136 to 156). |
+| 514 | `IndustryPicture.TANK_TO_TAKERS` | `60` | The room between the tank and the takers' bar, for the ribbons to cross (the mockups' 44 to 60). |
+| 517 | `IndustryPicture.UNIT_GAP` | `42` | The gap over a works' box: its three lines of words - its name, its run, one more in a word. |
+| 520 | `IndustryPicture.FIRST_RANK_GAP` | `70, LAST_RANK_ROOM = 130` | ...the room between the sources' bar and the first rank of works, for the ribbons to turn; and the room the last rank's words have before the tank. |
+| 523 | `IndustryPicture.CAPITAL` | `.74, LETTER =.6` | The share of its size a letter of the picture's words is set at, at most: a capital's and a lower-case letter's or a figure's (IBM Plex Sans's average is .55, measured at 1,389 x 868 by the batch's... |
+| 526 | `IndustryPicture.SOURCE_GAP` | `22, FIELD_GAP = 14, BUYER_GAP = 12, BLOCK_GAP = 22` | The gap between the sources, between the fields' rows, between the takers, and over the warehouse's block. |
+| 529 | `IndustryPicture.BLOCK_WORDS` | `16` | The room under the warehouse's block for its line: its baseline 13 px under, and the line's descent. |
+| 532 | `IndustryPicture.ROOF_ROOM` | `48` | The room over the tank for its roof: the furnace's stack and flame, the tallest. |
+| 535 | `IndustryPicture.FOOT_ROOM` | `8` | The room under the tank for its foot (the mockups' 7), when no warehouse's block stands under it. |
+| 538 | `IndustryPicture.SOURCE_SPACING` | `30, LABEL_SPACING = 31` | The least a source's or a taker's label centre stands from the next (the mockups' 30 and 31). |
+| 541 | `IndustryPicture.WORDS_IN_BAND` | `12` | The least band a product's name and figure are written in (the mockups' 12). |
+| 544 | `IndustryPicture.FIGURE_IN_BAND` | `52, FIGURE_ROOM = 56` | The room a product's figure has at the right of its band, and a taker's at the right of its name. |
+| 547 | `IndustryPicture.PASS_GAP` | `3` | The gap over a band through a works' column (RefineryView's PASS_GAP). |
+| 550 | `IndustryPicture.LEAST_NODE` | `1.5, ON_SITE_NODE = 6` | The least a node is drawn, so a trickle shows; and a kind only on site, drawn dashed with nothing through it. |
+| 553 | `IndustryPicture.ICON_ROOM` | `22` | The least a box is drawn with an icon in it (the mockups' 22). |
+| 556 | `IndustryPicture.RIBBON` | `.5, HATCHED =.95` | The opacity of a ribbon, and of an imported one, hatched (the mockups' .5 and .95). |
+| 1508 | `IndustryPicture.STRIP_MOST` | `6` | The most cells the strip holds: six at about 200 px each at 1,389 x 868. |
+| 1511 | `IndustryPicture.STRIP_HEAD` | `"THIS MONTH, CELL BY CELL"` | The strip's heading. |
+| 1523 | `IndustryPicture.STRIP_WORDS` | `"a field's bar what is left of it · a product's: used here, shipped(pale), into the war...` | The strip's line: what its bars show. |
 
 ### IndustryView.java ([map](map/IndustryView.md))
 
@@ -2513,7 +2553,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (809 constants)
+## interface (810 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -3237,20 +3277,21 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 3399 | `SectorScreen.CONTROL_INFO` | `"None of this is yours to set.These are private companies deciding for " + "themselves ...` | WHAT YOU CONTROL's (i): the old page's last paragraph. |
 | 3404 | `SectorScreen.WAITING_INFO` | `"This business wants to build and there is nowhere to put it.It is the one " + "refusal...` | The waiting-on-ground alert's (i). |
 | 3755 | `SectorScreen.FLOW_INFO` | `"Each row's money is the month the books closed on - the Income page's - and its " + "u...` | The flow's money and units: which month each is (SectorFlow's two months). |
-| 3799 | `SectorScreen.REFINERY_HEAD` | `"THE REFINERY THIS MONTH"` | The card's heading, its line, and what its (i) says. |
-| 3801 | `SectorScreen.REFINERY_SUB` | `"where the crude went · ribbons to scale"` | ...the line beside the heading... |
-| 3803 | `SectorScreen.REFINERY_INFO` | `"The month's crude comes in on the left, from the wells, the reserve or the world." + "...` | ...and the (i)'s words: the picture read from left to right. |
-| 4002 | `SectorScreen.HATCHES` | `new java.util.HashMap<>()` | The hatchings made so far, by colour and opacity (hatch()'s cache). |
-| 4099 | `SectorScreen.OIL_WELLS_INFO` | `"The city's wells by kind.A land well lifts the ground pool - the oil under the city's ...` | What the oil industry's (i)s say. |
-| 4105 | `SectorScreen.OIL_UNITS_INFO` | `"Every kind of refinery unit.Its spread is what it makes of a litre of its feed, less" ...` | ...THE REFINERY's, its units' table... |
-| 4110 | `SectorScreen.OIL_PRODUCTS_INFO` | `"Every product of the refinery, and crude: its price here and the world's, the" + " wor...` | ...PRODUCTS', crude's and the nine products' table... |
-| 4114 | `SectorScreen.OIL_RESERVE_INFO` | `"The city's own crude, in its Strategic Reserves' tanks.Fill orders crude for the next"...` | ...and THE STRATEGIC RESERVE's, which the Fill and Release cards' (i)s say too. |
-| 4120 | `SectorScreen.RESERVE_CAVEAT` | `"bought at the next clearing at what crude then costs; what the room cannot take lapses"` | The Fill card's caveat under its effects... |
-| 4122 | `SectorScreen.RESERVE_CAVEAT_INFO` | `"A fill is an order for the next clearing: the wells' crude pro rata with the" + " refi...` | ...and what its (i) says: an order for the next clearing, paid at the next strike. |
-| 4126 | `SectorScreen.RELEASE_CAVEAT` | `"offered to the refiners; what they do not take stays in the tanks"` | The Release card's caveat; its (i) is OIL_RESERVE_INFO. |
-| 4129 | `SectorScreen.RESERVE_LADDER` | `380` | The lever's ladder width on its dial card. |
-| 4602 | `SectorScreen.SHELF_INFO` | `"A basket is one person's groceries for a month.The shelf moves a sixth of the way " + ...` | THE SHELF's (i). |
-| 4758 | `SectorScreen.FOLD_PAST` | `6` | The goods a column folds into one row past this many (the shops' and the kitchens' thirteen foods). |
+| 3801 | `SectorScreen.REFINERY_HEAD` | `"THE REFINERY THIS MONTH"` | The card's heading, its line, and what its (i) says. |
+| 3803 | `SectorScreen.REFINERY_SUB` | `"where the crude went · ribbons to scale"` | ...the line beside the heading... |
+| 3805 | `SectorScreen.REFINERY_INFO` | `"The month's crude comes in on the left, from the wells, the reserve or the world." + "...` | ...and the (i)'s words: the picture read from left to right. |
+| 4011 | `SectorScreen.HATCHES` | `new java.util.HashMap<>()` | The hatchings made so far, by colour and opacity (hatch()'s cache). |
+| 4108 | `SectorScreen.INDUSTRY_INFO` | `"On the left is what the month worked: a mine's fields, each a vessel filled to " + "wh...` | What the materials card's (i) says: the picture read from left to right. |
+| 4292 | `SectorScreen.OIL_WELLS_INFO` | `"The city's wells by kind.A land well lifts the ground pool - the oil under the city's ...` | What the oil industry's (i)s say. |
+| 4298 | `SectorScreen.OIL_UNITS_INFO` | `"Every kind of refinery unit.Its spread is what it makes of a litre of its feed, less" ...` | ...THE REFINERY's, its units' table... |
+| 4303 | `SectorScreen.OIL_PRODUCTS_INFO` | `"Every product of the refinery, and crude: its price here and the world's, the" + " wor...` | ...PRODUCTS', crude's and the nine products' table... |
+| 4307 | `SectorScreen.OIL_RESERVE_INFO` | `"The city's own crude, in its Strategic Reserves' tanks.Fill orders crude for the next"...` | ...and THE STRATEGIC RESERVE's, which the Fill and Release cards' (i)s say too. |
+| 4313 | `SectorScreen.RESERVE_CAVEAT` | `"bought at the next clearing at what crude then costs; what the room cannot take lapses"` | The Fill card's caveat under its effects... |
+| 4315 | `SectorScreen.RESERVE_CAVEAT_INFO` | `"A fill is an order for the next clearing: the wells' crude pro rata with the" + " refi...` | ...and what its (i) says: an order for the next clearing, paid at the next strike. |
+| 4319 | `SectorScreen.RELEASE_CAVEAT` | `"offered to the refiners; what they do not take stays in the tanks"` | The Release card's caveat; its (i) is OIL_RESERVE_INFO. |
+| 4322 | `SectorScreen.RESERVE_LADDER` | `380` | The lever's ladder width on its dial card. |
+| 4795 | `SectorScreen.SHELF_INFO` | `"A basket is one person's groceries for a month.The shelf moves a sixth of the way " + ...` | THE SHELF's (i). |
+| 4951 | `SectorScreen.FOLD_PAST` | `6` | The goods a column folds into one row past this many (the shops' and the kitchens' thirteen foods). |
 
 ### ServicesScreen.java ([map](map/ServicesScreen.md))
 
@@ -3469,7 +3510,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 724 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 980 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (606 constants)
+## harnesses (608 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -3869,10 +3910,12 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 117 | `IndustryViewCheck.SETTLE_MONTHS` | `2` | Months a town plays before the month it is read on. |
-| 120 | `IndustryViewCheck.OLD_STEEL` | `14_000` | Old metal arisen before the month read, tonnes before recovery: enough for one Scrap Yard's 10,500 t and some to landfill. |
-| 122 | `IndustryViewCheck.OLD_COPPER` | `4_000` | ...and old copper, for one Scrap Copper Refinery's 4,400 t. |
-| 127 | `IndustryViewCheck.FILES` | `new ArrayList<>()` |  |
+| 123 | `IndustryViewCheck.SETTLE_MONTHS` | `2` | Months a town plays before the month it is read on. |
+| 126 | `IndustryViewCheck.OLD_STEEL` | `14_000` | Old metal arisen before the month read, tonnes before recovery: enough for one Scrap Yard's 10,500 t and some to landfill. |
+| 128 | `IndustryViewCheck.OLD_COPPER` | `4_000` | ...and old copper, for one Scrap Copper Refinery's 4,400 t. |
+| 133 | `IndustryViewCheck.FILES` | `new ArrayList<>()` |  |
+| 956 | `IndustryViewCheck.FRAME_WIDTH` | `1_200` | The picture's width at the 1,389 x 868 window: the Operations card's inside (RefineryViewCheck's 1,200). |
+| 959 | `IndustryViewCheck.PX` | `1e-6` | The slack a laid-out pixel is held to. |
 
 ### LabourCheck.java ([map](map/LabourCheck.md))
 

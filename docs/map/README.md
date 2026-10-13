@@ -4,9 +4,9 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 345 files, 348,736 lines, 14,746 methods, 3,209 constants. `GameVersion.VERSION` is "0.7.142", `SAVE_FORMAT` 39.
+**The tree:** 346 files, 350,847 lines, 14,842 methods, 3,247 constants. `GameVersion.VERSION` is "0.7.143", `SAVE_FORMAT` 39.
 
-## model (166 files)
+## model (167 files)
 
 | file | lines | methods | what it is | used by |
 |---|---:|---:|---|---:|
@@ -25,7 +25,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BuildingType.java](BuildingType.md) | 239 | 0 |  | 69 |
 | [BuildingVisual.java](BuildingVisual.md) | 344 | 16 | How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which ... | 16 |
 | [BuildingsStacks.java](BuildingsStacks.md) | 466 | 42 | One building type in the city: how many stand, how many are on site, and the progress, material and contract its sites carry. | 25 |
-| [BuildingsTemplate.java](BuildingsTemplate.md) | 1,102 | 116 | One kind of building, and what it costs to put up. | 140 |
+| [BuildingsTemplate.java](BuildingsTemplate.md) | 1,102 | 116 | One kind of building, and what it costs to put up. | 141 |
 | [BusinessDebt.java](BusinessDebt.md) | 93 | 12 | Base class for private-sector borrowing. | 9 |
 | [BusinessDebtManager.java](BusinessDebtManager.md) | 3,590 | 233 | Private-sector credit. | 29 |
 | [BusinessInvestment.java](BusinessInvestment.md) | 1,224 | 60 | Capacity planning for the private sector. | 64 |
@@ -53,7 +53,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [DecisionLog.java](DecisionLog.md) | 213 | 24 | What the player decided, and when: every change of a policy and every spend at scale, one short line each, at the month it was made (0.7.23). | 31 |
 | [DemolitionLog.java](DemolitionLog.md) | 142 | 10 | What the city has lost, and when. | 7 |
 | [Denomination.java](Denomination.md) | 199 | 12 | The currency's unit, and the power to lop zeros off it. | 3 |
-| [Deposit.java](Deposit.md) | 252 | 13 | One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a pl... | 50 |
+| [Deposit.java](Deposit.md) | 252 | 13 | One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a pl... | 51 |
 | [DistrictPicture.java](DistrictPicture.md) | 297 | 17 | A district's picture for the far views: 32 x 32 pixels, a pixel for 8 x 8 plots (240 m), each the colour of one of its 64 plots - the plot a fixed ... | 3 |
 | [DistrictPlan.java](DistrictPlan.md) | 3,121 | 112 | One district's street plan: from its ground, the buildings and road plots the city map gives it and the city's highway and railway plots through it... | 8 |
 | [EarthData.java](EarthData.md) | 753 | 65 | The reader of earth-1.bin, the real Earth's ground as data: its layers' 1-degree tiles inflated into an LRU, the sea, lake, land-cover and far-view... | 18 |
@@ -74,15 +74,15 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FuelSplit.java](FuelSplit.md) | 229 | 8 | FUEL, split into the PETROL and DIESEL it became: a save written before 0.7.76 converted once, on its load, before anything is restored (batch O1; ... | 2 |
 | [FundLedger.java](FundLedger.md) | 766 | 92 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 10 |
 | [FundView.java](FundView.md) | 846 | 38 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 5 |
-| [Game.java](Game.md) | 16,454 | 660 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 176 |
+| [Game.java](Game.md) | 16,454 | 660 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 177 |
 | [GameFiles.java](GameFiles.md) | 425 | 37 | Where the game keeps its files, and how it writes them. | 106 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 10 |
 | [GamePrefs.java](GamePrefs.md) | 202 | 17 | How the player likes the window, kept between runs. | 2 |
-| [GameVersion.java](GameVersion.md) | 7,297 | 5 | What build this is, and what shape its saves are. | 15 |
+| [GameVersion.java](GameVersion.md) | 7,324 | 5 | What build this is, and what shape its saves are. | 15 |
 | [Geology.java](Geology.md) | 751 | 33 | The Earth's geology as its deposits read it: each USGS province's class - ocean, shield, fold belt, rift, shelf, basin or other - by the data's nam... | 8 |
 | [GlobeFrame.java](GlobeFrame.md) | 835 | 74 | The Earth's map as a globe, without the toolkit: where the view looks on the planet, how close and which way is up, how a notch of the wheel, a dra... | 6 |
 | [GlobePicture.java](GlobePicture.md) | 358 | 27 | The planet's picture: a World class a texel on a latitude-longitude grid at ARCMIN, made from the Earth's data by the far rule through the grid's c... | 5 |
-| [Good.java](Good.md) | 1,394 | 23 | A thing that can be made, bought, held, imported and exported. | 119 |
+| [Good.java](Good.md) | 1,394 | 23 | A thing that can be made, bought, held, imported and exported. | 120 |
 | [GoodsMarket.java](GoodsMarket.md) | 493 | 51 | Where one good clears between whoever makes it and whoever wants it. | 50 |
 | [GridConversion.java](GridConversion.md) | 510 | 40 | A saved city's land put on the block grid: a format-31 save's lanes snapped to whole blocks with its fields deciding, or an older save's one figure... | 5 |
 | [GridOffers.java](GridOffers.md) | 339 | 26 | The city's offers on the block grid: on each of its four sides six places, left to right facing out, and in each place one standing offer - a recta... | 8 |
@@ -94,7 +94,8 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HouseholdAccounts.java](HouseholdAccounts.md) | 1,365 | 102 | The city's residents, treated as one household. | 14 |
 | [HouseholdBalance.java](HouseholdBalance.md) | 4,673 | 243 | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. | 47 |
 | [Inbox.java](Inbox.md) | 622 | 24 | Everything the city has had to say for itself, newest first. | 3 |
-| [IndustryView.java](IndustryView.md) | 883 | 64 | Each materials industry's month as a picture (0.7.141, batch I11; docs/studies/spec-materials.md 2.13): where what it worked came from - its fields... | 1 |
+| [IndustryPicture.java](IndustryPicture.md) | 1,614 | 85 | Each materials industry's month drawn as a picture, laid out to scale (0.7.143, batch I12; docs/studies/spec-materials.md 2.13, the study's mockups... | 2 |
+| [IndustryView.java](IndustryView.md) | 883 | 64 | Each materials industry's month as a picture (0.7.141, batch I11; docs/studies/spec-materials.md 2.13): where what it worked came from - its fields... | 3 |
 | [InfrastructureManager.java](InfrastructureManager.md) | 1,084 | 84 | The road network: what the city's buildings demand of it, what it can carry, and what happens when the first number passes the second. | 19 |
 | [InterimLoan.java](InterimLoan.md) | 35 | 1 | Interim financing: the bank's loan to a sector in the month it defaulted, for what the month's bills left unpaid after its debt was written down, r... | 4 |
 | [Investor.java](Investor.md) | 44 | 6 | Whoever is paying for a building. | 3 |
@@ -133,8 +134,8 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Ports.java](Ports.md) | 546 | 46 | The city's ports: the berths its sea terminals stand, the share of each kind of cargo they take off the lorries and the railway, and the tonnes tha... | 26 |
 | [PriceIndex.java](PriceIndex.md) | 694 | 32 | What a month costs a household, against what it cost at founding. | 18 |
 | [PrisonerHousehold.java](PrisonerHousehold.md) | 79 | 17 | Adults serving a sentence, as one ledger: the prisoners' ledger. | 5 |
-| [RefineryView.java](RefineryView.md) | 1,602 | 82 | The refinery's month as a picture (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): the crude it ran and where that came from, the column's cuts,... | 7 |
-| [Resource.java](Resource.md) | 218 | 13 | The seven things that lie in the world's ground: iron ore, oil, stone, coal, copper, uranium and standing timber, each with how thickly its fields ... | 65 |
+| [RefineryView.java](RefineryView.md) | 1,602 | 82 | The refinery's month as a picture (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): the crude it ran and where that came from, the column's cuts,... | 8 |
+| [Resource.java](Resource.md) | 218 | 13 | The seven things that lie in the world's ground: iron ore, oil, stone, coal, copper, uranium and standing timber, each with how thickly its fields ... | 66 |
 | [RetiredHousehold.java](RetiredHousehold.md) | 51 | 6 | A household with nobody of working age in it: a senior or an elder, alone or as a couple. | 3 |
 | [Rollover.java](Rollover.md) | 350 | 32 | What falls due next month, refinanced: the treasury's rollover setting and the ledger of the surplus it has netted (0.7.13). | 14 |
 | [SafetyType.java](SafetyType.md) | 68 | 4 | What a safety building does: police, or prison cells. | 13 |
@@ -146,7 +147,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [SectorFlow.java](SectorFlow.md) | 261 | 17 | One business's month as a flow (0.7.30): what went in, what its plant made of it and what held the plant back, and what came out - each good's unit... | 4 |
 | [SectorState.java](SectorState.md) | 261 | 6 | One sector, as a save carries it. | 9 |
 | [SectorStatements.java](SectorStatements.md) | 1,024 | 64 | A business's month as formal statements (0.7.74): the income statement classified down through gross and operating profit, the balance sheet in cur... | 13 |
-| [Sectors.java](Sectors.md) | 468 | 46 | Every sector in the city, in one order, by one name. | 98 |
+| [Sectors.java](Sectors.md) | 468 | 46 | Every sector in the city, in one order, by one name. | 99 |
 | [ServicesManager.java](ServicesManager.md) | 362 | 26 | / | 7 |
 | [ShadowBasket.java](ShadowBasket.md) | 201 | 1 | What a played city WOULD buy, measured against what it spends today. | 0 |
 | [ShipShapes.java](ShipShapes.md) | 165 | 10 | How the map draws a boat: its length and beam by its class, its outline and deck marks as points in plots about where it is and the way it heads, i... | 2 |
@@ -161,7 +162,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [TilePainter.java](TilePainter.md) | 565 | 20 | Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, widt... | 12 |
 | [TileRaster.java](TileRaster.md) | 828 | 28 | A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixe... | 13 |
 | [TimeSkipReport.java](TimeSkipReport.md) | 538 | 63 | What happened while you were not watching. | 4 |
-| [Trade.java](Trade.md) | 40 | 4 | One fill: somebody sold somebody some units of a good at a price. | 29 |
+| [Trade.java](Trade.md) | 40 | 4 | One fill: somebody sold somebody some units of a good at a price. | 30 |
 | [Traffic.java](Traffic.md) | 60 | 3 | The three things that move, which used to be one number. | 22 |
 | [TreasuryFund.java](TreasuryFund.md) | 1,063 | 147 | The city's fund: the government's holding of its own city's companies and their bonds, bought on the order book by a rule and by the player's hand,... | 26 |
 | [TreasuryJournal.java](TreasuryJournal.md) | 281 | 16 | The treasury's journal: every movement of the city's cash that is neither a budget line nor paper raised or repaid, recorded by name as it happens,... | 11 |
@@ -185,29 +186,29 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Automotive.java](Automotive.md) | 294 | 7 | The automobile industry. | 4 |
 | [BusinessServices.java](BusinessServices.md) | 274 | 9 | Somebody else's work, done here, paid for from outside. | 3 |
 | [CementConcrete.java](CementConcrete.md) | 73 | 2 | Kilns and cement plants - Cement & Concrete (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.12 and 5's I7 row; the study's 6): stone's pr... | 5 |
-| [CoalMining.java](CoalMining.md) | 445 | 23 | Coal mines and the plants that wash their coal - Coal Mining (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the study... | 8 |
+| [CoalMining.java](CoalMining.md) | 445 | 23 | Coal mines and the plants that wash their coal - Coal Mining (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the study... | 9 |
 | [Construction.java](Construction.md) | 962 | 52 | The builders. | 16 |
 | [CopperMining.java](CopperMining.md) | 256 | 12 | Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the s... | 6 |
 | [CopperRefining.java](CopperRefining.md) | 251 | 12 | Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the stu... | 10 |
 | [ExtractionSector.java](ExtractionSector.md) | 586 | 33 | A sector that digs or cuts one resource out of the ground the city owns: the template every extraction industry of the materials chains extends (0.... | 16 |
 | [FoodIndustry.java](FoodIndustry.md) | 98 | 6 | The mills and the plants that feed the shops. | 4 |
 | [FoodProcessing.java](FoodProcessing.md) | 567 | 12 | The plants between the farm and the shelf. | 2 |
-| [Forestry.java](Forestry.md) | 632 | 35 | The crews that cut the city's forest, and the plantations they plant - Forestry (0.7.138, batch I9; docs/studies/spec-materials.md 2.1, 2.11 and 5'... | 11 |
-| [HeavyIndustry.java](HeavyIndustry.md) | 278 | 13 | The mills - Iron & Steel since 0.7.120, under the key it was saved by, "Heavy Industry": the arc furnaces, which melt scrap into steel, and since 0... | 26 |
+| [Forestry.java](Forestry.md) | 632 | 35 | The crews that cut the city's forest, and the plantations they plant - Forestry (0.7.138, batch I9; docs/studies/spec-materials.md 2.1, 2.11 and 5'... | 12 |
+| [HeavyIndustry.java](HeavyIndustry.md) | 278 | 13 | The mills - Iron & Steel since 0.7.120, under the key it was saved by, "Heavy Industry": the arc furnaces, which melt scrap into steel, and since 0... | 27 |
 | [LuxuryRetail.java](LuxuryRetail.md) | 547 | 23 | The luxury shops. | 5 |
 | [Manufacturing.java](Manufacturing.md) | 364 | 14 | What the city makes out of its own steel, and ships. | 5 |
 | [Materials.java](Materials.md) | 88 | 4 | The materials plant. | 1 |
 | [Mining.java](Mining.md) | 85 | 4 | Iron mines - Iron Mining since 0.7.120, under the key it was saved by, "Mining" (Jerus's Q2, 2026-10-08: rename, keeping the saved keys). | 22 |
 | [Oil.java](Oil.md) | 1,353 | 89 | Oil wells. | 18 |
 | [ProcessingSector.java](ProcessingSector.md) | 472 | 40 | A sector that turns goods into other goods in works it builds by what pays: the template every processing industry of the materials chains extends ... | 15 |
-| [Quarrying.java](Quarrying.md) | 400 | 19 | Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's ... | 8 |
+| [Quarrying.java](Quarrying.md) | 400 | 19 | Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's ... | 9 |
 | [Rail.java](Rail.md) | 1,018 | 43 | The railway. | 16 |
 | [RealEstate.java](RealEstate.md) | 950 | 91 | The landlords. | 18 |
 | [RefineryFlow.java](RefineryFlow.md) | 372 | 29 | The refinery as a campus of units, and a month's flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3): the crude units' run cut into ... | 16 |
 | [Refining.java](Refining.md) | 1,918 | 108 | The refinery. | 20 |
 | [Restaurants.java](Restaurants.md) | 521 | 24 | The kitchens. | 7 |
 | [Retail.java](Retail.md) | 1,352 | 102 | The shops. | 38 |
-| [SpreadPlanner.java](SpreadPlanner.md) | 556 | 47 | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of t... | 30 |
+| [SpreadPlanner.java](SpreadPlanner.md) | 556 | 47 | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of t... | 31 |
 | [WoodProducts.java](WoodProducts.md) | 107 | 2 | Sawmills, and the panel, pulp, paper and pellet mills - Wood Products (0.7.140, batch I10; docs/studies/spec-materials.md 2.1, 2.7, 2.8, 2.12 and 5... | 6 |
 
 ## interface (30 files)
@@ -235,7 +236,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PeopleScreen.java](PeopleScreen.md) | 4,361 | 148 | The People tab and its second page, Household money. | 3 |
 | [Pieces.java](Pieces.md) | 5,307 | 232 | The small pieces of text and layout every screen is made from: a sentence, an alert, a sub-heading, a grid and its cells, a chip strip, a vitals ba... | 14 |
 | [PolicyScreen.java](PolicyScreen.md) | 4,424 | 215 | The Policy tab: every number the city sets for itself - the taxes, the wage floor, the price of money and the promises - each a dial with what it w... | 10 |
-| [SectorScreen.java](SectorScreen.md) | 5,081 | 194 | The sector economy: every business in the city as a card, and each one's five pages - what goes in and what comes out, the income statement with la... | 6 |
+| [SectorScreen.java](SectorScreen.md) | 5,274 | 202 | The sector economy: every business in the city as a card, and each one's five pages - what goes in and what comes out, the income statement with la... | 6 |
 | [ServicesScreen.java](ServicesScreen.md) | 3,167 | 125 | The services tab: the four systems the city runs for its people - health, education, utilities and safety - each opening on an Overview whose one p... | 4 |
 | [Statement.java](Statement.md) | 482 | 23 | The rows a statement is built from: a head, a line, a note, a total, a disclosure that opens, and the two-column book the sector pages and the bank... | 27 |
 | [StatementView.java](StatementView.md) | 587 | 36 | A formal statement on the page (0.7.74): SectorStatements' rows set as an accountant sets them - a title block, the columns (note, this month, last... | 2 |
@@ -306,7 +307,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HouseholdMemoryCheck.java](HouseholdMemoryCheck.md) | 278 | 6 | The households remember: the builder keeps what still fits. | 0 |
 | [HousingCheck.java](HousingCheck.md) | 636 | 5 | Audits the three subsystems that describe the same housing, every month, and makes them agree. | 0 |
 | [InboxCheck.java](InboxCheck.md) | 364 | 5 | Verifies the inbox: raising, refreshing, resolving, culling and the round trip. | 0 |
-| [IndustryViewCheck.java](IndustryViewCheck.md) | 941 | 29 | The materials pictograms' model, checked (0.7.141, batch I11; docs/studies/spec-materials.md 2.13, 4's IndustryViewCheck line and 5's I11 row): Ind... | 0 |
+| [IndustryViewCheck.java](IndustryViewCheck.md) | 1,218 | 32 | The materials pictograms' model, checked (0.7.141, batch I11; docs/studies/spec-materials.md 2.13, 4's IndustryViewCheck line and 5's I11 row): Ind... | 0 |
 | [InfrastructureCheck.java](InfrastructureCheck.md) | 1,168 | 8 | The road network, from the curve up to a city that actually jams. | 0 |
 | [InvestCheck.java](InvestCheck.md) | 1,606 | 8 | Verifies the private investment engine: forecasting, the demand tests, and the brake. | 0 |
 | [LabourCheck.java](LabourCheck.md) | 1,181 | 14 | Verifies the labour market: who can hold a job, and what it costs. | 0 |

@@ -149,7 +149,7 @@ These are Jerus's, and they do not move.
         CityMap, DistrictPlan, CityRuns, CityShore, MiniMapFrame   the map (nothing in the model reads it)
         Bond*, OrderBook, Rollover, TreasuryFund, Fund*, Expectations   finance and the city's money
         BuildAdvice, AutoBuilder, BuildCard, ConstructionControl   building: the advice, the auto-builder, the card
-        *View.java, SectorFlow, SectorStatements, PolicyPreview   pure models of what a screen draws
+        *View.java, IndustryPicture, SectorFlow, SectorStatements, PolicyPreview   pure models of what a screen draws
         ui/                     the interface; the model never imports it
         *Check.java             the harnesses, each a main(); AllChecks.HARNESSES is the registry
         LongPlaytest.java       4,000-odd months audited every one; the fixture builder harnesses borrow

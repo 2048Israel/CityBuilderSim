@@ -66,7 +66,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (22), [Good](Good.md) (18), [BusinessInvestment](BusinessInvestment.md) (13), [LandManager](LandManager.md) (9), [ProcessingSector](ProcessingSector.md) (6), [Resource](Resource.md) (5), [Game](Game.md) (5), [BuildCard](BuildCard.md) (4), [Sectors](Sectors.md) (3), [Formats](Formats.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [Investor](Investor.md) (1)
 
-**Used by (11):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [ForestryCheck](ForestryCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md)
+**Used by (12):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [ForestryCheck](ForestryCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md)
 
 ## Sections
 

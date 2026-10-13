@@ -61,7 +61,7 @@
 
 **Uses:** [Good](Good.md) (43), [Resource](Resource.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (15), [Deposit](Deposit.md) (8), [LandManager](LandManager.md) (6), [GoodsMarket](GoodsMarket.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Game](Game.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
 
-**Used by (8):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [QuarryingCheck](QuarryingCheck.md), [Sectors](Sectors.md)
+**Used by (9):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [QuarryingCheck](QuarryingCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
