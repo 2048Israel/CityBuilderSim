@@ -464,7 +464,10 @@ public final class IndustryPicture {
        at which every column fits; a works' box is as tall as the larger of
        what went in and what came out, the rest what its process takes away
        (the slag, the spoil, the rock). Ribbons leave and arrive in the order
-       of the node at their other end, top first.
+       of the node at their other end, top first; a flow that skips a rank of
+       works runs as a band straight through that rank's column (a "pass:"
+       node, RefineryView's rule), and a rank whose words would run into the
+       next rank's is moved up or down, whole (apart()).
        ===================================================================== */
 
     /** The picture's height on the page (the materials mockups' 420 px at 1,389 x 868). */

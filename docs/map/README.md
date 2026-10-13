@@ -4,7 +4,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 346 files, 350,777 lines, 14,841 methods, 3,243 constants. `GameVersion.VERSION` is "0.7.143", `SAVE_FORMAT` 39.
+**The tree:** 346 files, 350,780 lines, 14,841 methods, 3,243 constants. `GameVersion.VERSION` is "0.7.143", `SAVE_FORMAT` 39.
 
 ## model (167 files)
 
@@ -94,7 +94,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HouseholdAccounts.java](HouseholdAccounts.md) | 1,365 | 102 | The city's residents, treated as one household. | 14 |
 | [HouseholdBalance.java](HouseholdBalance.md) | 4,673 | 243 | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. | 47 |
 | [Inbox.java](Inbox.md) | 622 | 24 | Everything the city has had to say for itself, newest first. | 3 |
-| [IndustryPicture.java](IndustryPicture.md) | 1,610 | 85 | Each materials industry's month drawn as a picture, laid out to scale (0.7.143, batch I12; docs/studies/spec-materials.md 2.13, the study's mockups... | 2 |
+| [IndustryPicture.java](IndustryPicture.md) | 1,613 | 85 | Each materials industry's month drawn as a picture, laid out to scale (0.7.143, batch I12; docs/studies/spec-materials.md 2.13, the study's mockups... | 2 |
 | [IndustryView.java](IndustryView.md) | 883 | 64 | Each materials industry's month as a picture (0.7.141, batch I11; docs/studies/spec-materials.md 2.13): where what it worked came from - its fields... | 3 |
 | [InfrastructureManager.java](InfrastructureManager.md) | 1,084 | 84 | The road network: what the city's buildings demand of it, what it can carry, and what happens when the first number passes the second. | 19 |
 | [InterimLoan.java](InterimLoan.md) | 35 | 1 | Interim financing: the bank's loan to a sector in the month it defaulted, for what the month's bills left unpaid after its debt was written down, r... | 4 |
