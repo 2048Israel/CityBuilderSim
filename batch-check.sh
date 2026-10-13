@@ -60,6 +60,7 @@ CP="target/classes:$(cat target/classpath.txt)"
 
 # --- the suite -------------------------------------------------------------
 if [ "$FAST" = 0 ]; then
+    touch "$OUT/.started"   # the logs this run writes are newer; an earlier run's are not read
     java -cp "$CP" ham.citybuildersim.AllChecks -f "$@" 2>&1 | quiet > "$OUT/suite.txt"
     if grep -q ' 0 failed$' "$OUT/suite.txt"; then
         echo "suite     OK - $(grep 'harness.* run in ' "$OUT/suite.txt" | sed 's/:.*//')"
@@ -69,7 +70,7 @@ if [ "$FAST" = 0 ]; then
         sed '/^$/d' "$OUT/suite.txt" | sed 's/^/    /'
     fi
     # what did not run here: the Earth harnesses' full-file sections, BuildMenuCheck without JavaFX
-    grep -q '^earth-1.bin not named' "$OUT"/Earth*Check.log 2>/dev/null \
+    find "$OUT" -name 'Earth*Check.log' -newer "$OUT/.started" -exec grep -l '^earth-1.bin not named' {} + 2>/dev/null | grep -q . \
         && echo "    note: no earth-1.bin here, so the Earth harnesses' full-file sections did not run"
     grep 'skipped (needs JavaFX' "$OUT/suite.txt" | sed 's/^/    note: /'
 fi
