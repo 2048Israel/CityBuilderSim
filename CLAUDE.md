@@ -220,6 +220,13 @@ their full-file sections only where earth-1.bin is named
 `LongPlaytest --earth rotterdam` plays the run on the real Earth; its trace
 is a baseline of its own.
 
+**Other assistants** (2026-10-13): ChatGPT (the GitHub connector: reads and
+writes, runs nothing) and Gemini (AI Studio: a shell and git; Java unproven)
+work on branches `chatgpt/<topic>` and `gemini/<topic>`, never `main`, by
+their briefs `openai-dontread.md` and `gemini-notes.md`. A Claude session
+ships such a branch with `./ship.sh --no-tag <branch>` after reading its diff;
+what they report as run is checked, not taken.
+
 **Which model** (Jerus, 2026-09-21): the implementer and the docs pass run on
 Opus, whatever the job's size. The orchestrating session keeps the gate.
 
