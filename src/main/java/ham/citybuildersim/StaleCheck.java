@@ -180,7 +180,7 @@ public class StaleCheck {
         }
         Names.Miss made = miss.get("frobnicate()");
         assertTrue("a made-up method comes back, at the line the diff gives it",
-                made != null && made.path.equals("docs/fixture.md") && made.line == 3);
+                made != null && made.path.equals("fixture/names.md") && made.line == 3);
         assertTrue("...and a made-up constant on a real class", miss.containsKey("Alpha.NO_SUCH_LIMIT"));
         Names.Miss wrong = miss.get("Alpha.own()");
         assertTrue("a member put on the wrong class comes back, though Beta declares it",
@@ -279,9 +279,9 @@ public class StaleCheck {
 
     /** The diff: a document's six lines (2 to 7), the Java file whole, and a generated page. */
     private static final String NAMES_DIFF = """
-            diff --git a/docs/fixture.md b/docs/fixture.md
-            --- a/docs/fixture.md
-            +++ b/docs/fixture.md
+            diff --git a/fixture/names.md b/fixture/names.md
+            --- a/fixture/names.md
+            +++ b/fixture/names.md
             @@ -1,0 +2,6 @@
             +Real: `Alpha.weights()`, Alpha.sorted(list), `Alpha.LIMIT`, `Beta.weights()`, `Alpha.Pair.left()`, `Alpha.Mode.values()` and own().
             +Made up: frobnicate() and `Alpha.NO_SUCH_LIMIT`.
