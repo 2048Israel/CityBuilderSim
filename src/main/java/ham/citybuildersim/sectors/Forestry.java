@@ -607,4 +607,18 @@ public final class Forestry extends ExtractionSector {
         due.clear();
         asked.clear();
     }
+
+    /* =====================================================================
+       THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and
+       ham.citybuildersim.IndustryView)
+       ===================================================================== */
+
+    /** A crew's ground is the forest it may cut, in plan()'s words: none at all, or E - room for 120 months of every crew's cut with one more (roomFor(), eWords()). */
+    @Override
+    protected String groundRefusal(BuildingsTemplate t) {
+        double cuttable = game.getLandManager().cuttableForest();
+        if (!(cuttable > 0)) return "no forest it may cut";
+        double committed = crewsCut(true);
+        return roomFor(cuttable, committed, t) ? null : eWords(cuttable, committed, t);
+    }
 }

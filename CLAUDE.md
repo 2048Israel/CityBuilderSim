@@ -336,6 +336,18 @@ These are Jerus's, and they do not move.
                                    strategic reserve and its levers' reach; the chart and every word; what
                                    Oil's Operations page paints - pure, OilViewCheck holds it
                                    (docs/studies/spec-oil.md 2.13)
+        IndustryView.java          each materials industry's month as a picture (0.7.141, batch I11): for the
+                                   nine - Iron Mining to Wood Products - the fields by type as vessels filled to
+                                   what remains, or the forest; each feed by where it came from (its own works,
+                                   each seller here off the month's fills, the old metal, the world); each kind
+                                   of building with its run, the last one's earnings as the idle book counts
+                                   them and one more weighed at every gate in SpreadPlanner's words
+                                   (ProcessingSector.appraise(), ExtractionSector.appraise()); each product
+                                   made, kept, sold by buyer, carried and shipped; the power made, drawn and
+                                   sold; Forestry's settling point and planting line; its words, colours and a
+                                   roof per industry - pure, IndustryViewCheck holds it (every good balancing
+                                   against its warehouse's move); ui/SectorScreen draws it from batch I12
+                                   (docs/studies/spec-materials.md 2.13)
         SectorStatements.java      one business's month as formal statements (0.7.74): profit or loss through
                                    gross and operating profit, the classified sheet, the cash flow in three
                                    sections, the changes in equity (since 0.7.75 in columns, share capital and
@@ -545,7 +557,7 @@ These are Jerus's, and they do not move.
                                    stamp of the city at the rail's foot above Menu, its preview on hover,
                                    the land office's map over the window on a click; MiniMapFrame's
                                    arithmetic). The model never imports it.
-        *Check.java                107 harnesses, each a main() with static helpers
+        *Check.java                108 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103);

@@ -2975,4 +2975,33 @@ public abstract class Sector {
 
     @Override
     public String toString() { return key; }
+
+    /* =====================================================================
+       THE POWER, FOR THE PICTOGRAMS (0.7.141, batch I11; IndustryView)
+
+       THE POWER ITS WORKS MAKE THEMSELVES nets each building's power against
+       its draw (EconomyManager.setElectricityConsumption()) and keeps the
+       two sides: what it buys from the grid and what it sells. The picture
+       draws all four - made, drawn, bought and sold - so the two it nets are
+       read here off the same buildings, by the same test; for each building
+       what it makes less what it draws is what it sells less what it buys.
+       Reads only.
+       ===================================================================== */
+
+    /** kW its buildings make themselves, at nameplate: every billed building's gen (BuildingsTemplate.getGen()) - nothing until a works makes power. */
+    public double getPowerMade() {
+        return buildings == null ? 0 : buildings.totalBySector(key,
+                t -> BuildingsTemplate.isBilledForUtilities(t) ? t.getGen() : 0);
+    }
+
+    /** ...and kW they draw, at nameplate, before what they make: every billed building's whole draw. */
+    public double getPowerDrawn() {
+        return buildings == null ? 0 : buildings.totalBySector(key,
+                t -> BuildingsTemplate.isBilledForUtilities(t) ? t.getElectricityConsumption() : 0);
+    }
+
+    /** ...and kW they draw from the grid past what they make: the net draw its bill is struck on (setElectricityConsumption()), beside the surplus it sells (getPowerSurplus()). */
+    public double getGridDraw() {
+        return electricity;
+    }
 }
