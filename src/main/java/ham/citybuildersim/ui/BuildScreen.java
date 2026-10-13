@@ -722,6 +722,9 @@ final class BuildScreen {
         face.getChildren().addAll(heroRow(f), priceRow(f, afford));
         face.getChildren().addAll(cardBars(f, group, m));
         if (f.market()) face.getChildren().add(investorsLine(template));
+        // ...and a materials building's own lines (0.7.142, batch I13): where it stands, how its sector weighs it, its power,
+        // its old metal and who buys what it makes (THE MATERIALS' LINES).
+        if (BuildCard.materials(ui.game, template)) face.getChildren().add(materialsBlock(template));
         face.getChildren().add(needsLine(f));
 
         StackPane card = new StackPane();
@@ -1066,8 +1069,9 @@ final class BuildScreen {
                     // ...a platform's well (0.7.91): a slot on a platform standing, not a deposit of its own; its oil the offshore pool's (0.7.93).
                     parts.add("needs a platform's slot: " + formatter.format(d[0]) + " standing, "
                             + formatter.format(d[1]) + " spoken for, " + shortNumber(d[2]) + " t under the sea");
-                } else if (d.length == 3) {
-                    // ...a land Oil Well's count is its dry sites alone (0.7.103, Jerus's B): "dry" on it.
+                } else if (d.length == 3 && BuildCard.stands(ui.game, t) == null) {
+                    // ...a land Oil Well's count is its dry sites alone (0.7.103, Jerus's B): "dry" on it. A building on a typed
+                    // resource's sites says where it stands on its own line since 0.7.142 (materialsWords()).
                     parts.add("needs a deposit: the city owns " + formatter.format(d[0]) + BuildCard.siteCountWord(t) + ", "
                             + formatter.format(d[1]) + " spoken for, " + shortNumber(d[2]) + " t in the ground");
                 }
@@ -1279,7 +1283,11 @@ final class BuildScreen {
         } else {
             rest = " " + Character.toLowerCase(word.charAt(0)) + word.substring(1);
         }
-        return new String[] {rest, inv.showOwn() ? " · this one: " + gateWords(inv.own()) : null};
+        // ...a materials building's first gate its sector's planner's, in its words (0.7.142): the planner asks before consider().
+        if (inv.showPlanned()) return new String[] {rest, " · this one: " + inv.planned().why()};
+        // ...and where it passes the planner's, consider()'s, which buildStack() asks after it (the licence, above all).
+        boolean planned = inv.planned() != null && !inv.planned().passes();
+        return new String[] {rest, !planned && inv.showOwn() ? " · this one: " + gateWords(inv.own()) : null};
     }
 
     /** A gate, in the words its own refusal uses: the deposit, the licence, the staffing test's why, landReason()'s land, the estimate's loss, and consider()'s interest on its whole cost (0.7.122). */
@@ -1326,6 +1334,158 @@ final class BuildScreen {
                 BusinessInvestment.PROFIT_OVER_INTEREST, money(test.interest()), test.real() * 100);
         return gate.a() > 0 ? "earns " + money(gate.a()) + " a month, under " + bar
                 : "would lose " + money(-gate.a()) + " a month, so not " + bar;
+    }
+
+    /* =====================================================================
+       THE MATERIALS' LINES (0.7.142, batch I13; docs/studies/spec-materials.md
+       2.13, its last bullet)
+
+       A materials building's card says, under the investors' line, what the
+       0.7.25 card could not (BuildCard, THE MATERIALS' CARDS): where it
+       stands - "stands on 20 sites of one hematite field", the city's sites
+       by type, and whether one more fits or the field it lacks; how its
+       sector weighs it - its whole cost with its ground and lorries, what it
+       would earn on it and the money gate's bar (its first refusal is the
+       investors' line's "this one:"); its own power; the city's old metal a
+       yard buys; who here buys what it makes, or that it ships; and a crew's
+       E. Each a line of muted words, the refusal in amber, a field it lacks
+       in red. The figures are BuildCard's, which BuildCardCheck 12 holds;
+       these are the words, worked out without a node (materialsWords()).
+       ===================================================================== */
+
+    /** The block: one label a line, each {words, colour} of materialsWords(). */
+    VBox materialsBlock(BuildingsTemplate t) {
+        VBox box = new VBox(2);
+        for (String[] w : materialsWords(t)) {
+            Label line = new Label(w[0]);
+            line.setWrapText(true);
+            line.setMinHeight(Region.USE_PREF_SIZE);
+            line.setStyle(wordsAt(9.5, w[1]));
+            box.getChildren().add(line);
+        }
+        return box;
+    }
+
+    /** A materials building's lines, worked out without drawing them (a probe reads them): each {words, colour}, in the block's order. */
+    List<String[]> materialsWords(BuildingsTemplate t) {
+        Game g = ui.game;
+        List<String[]> out = new ArrayList<>();
+        BuildCard.Stands at = BuildCard.stands(g, t);
+        if (at != null) out.add(standsWords(at));
+        BuildCard.Weighed w = BuildCard.weighed(g, t);
+        if (w != null) out.add(new String[] {weighedWords(w), Palette.TEXT_MUTED});
+        BuildCard.Power p = BuildCard.power(g, t);
+        if (p != null) out.add(new String[] {powerWords(p), Palette.TEXT_MUTED});
+        BuildCard.OldMetalBought o = BuildCard.oldMetal(g, t);
+        if (o != null) out.add(new String[] {oldMetalWords(o), o.spare() < o.intake() ? Palette.WARN : Palette.TEXT_MUTED});
+        String goes = outletWords(BuildCard.outlets(g, t));
+        if (!goes.isEmpty()) out.add(new String[] {goes, Palette.TEXT_MUTED});
+        if (ham.citybuildersim.sectors.Forestry.isCrew(t)) {
+            BuildCard.CrewRule rule = BuildCard.crewRule(g, t);
+            out.add(new String[] {crewWords(rule, t), rule.room() ? Palette.TEXT_MUTED : Palette.WARN});
+        }
+        return out;
+    }
+
+    /**
+     * Where it stands: "stands on 20 sites of one hematite field · the city
+     * owns 27 hematite and 4 magnetite sites, 3 of its kind spoken for, 405 Mt
+     * of hematite ore left · fits on one" - or the field it lacks, in the
+     * plan's words and red; a quarry on either type, which it stands on and
+     * what one more would make there.
+     */
+    static String[] standsWords(BuildCard.Stands at) {
+        Resource r = at.resource();
+        List<Deposit.FieldType> types = r.typesOf();
+        StringBuilder w = new StringBuilder();
+        String sites = formatter.format(at.sites()) + (at.sites() == 1 ? " site" : " sites");
+        w.append("stands on ").append(sites).append(" of ").append(at.sites() == 1 ? "a " : "one ")
+                .append(ham.citybuildersim.sectors.ExtractionSector.fieldWords(r, at.type()));
+        if (at.anyType()) w.append(" of either type");
+        List<String> owns = new ArrayList<>();
+        for (int i = 0; i < types.size(); i++) {
+            owns.add(formatter.format(at.byType()[i]) + " " + types.get(i).name().toLowerCase(java.util.Locale.ROOT).replace('_', ' '));
+        }
+        w.append(" · the city owns ").append(String.join(" and ", owns)).append(" sites, ")
+                .append(formatter.format(at.committed())).append(at.anyType() ? "" : " of its kind").append(" spoken for, ")
+                .append(shortNumber(at.left())).append(" t of ")
+                .append(ham.citybuildersim.sectors.ExtractionSector.oreWords(r, at.type())).append(" left");
+        if (at.anyType()) {
+            // ...a quarry on either type (0.7.131): limestone while a limestone field has room for it - not its row's aggregate.
+            double lime = at.makes().getOrDefault(Good.LIMESTONE, 0.0);
+            if (lime > 0) w.append(" · one more stands on limestone: ").append(formatter.format(Math.round(lime)))
+                    .append(" t of limestone a month, not aggregate");
+            else if (at.makes().getOrDefault(Good.AGGREGATE, 0.0) > 0) w.append(" · one more stands on hard rock: aggregate");
+        }
+        if (!at.fits()) {
+            w.append(" · ").append(at.wanting() != null ? at.wanting() : "no room for one");
+            return new String[] {w.toString(), Palette.BAD};
+        }
+        w.append(" · fits on one");
+        return new String[] {w.toString(), Palette.TEXT_MUTED};
+    }
+
+    /** How its sector weighs one: "its whole cost $268.6M, its ground and 2,538 lorries ($173.0M) with it · it would earn $1.2M a month on it, 0.45% a month · the money gate asks $1.5M". */
+    static String weighedWords(BuildCard.Weighed w) {
+        StringBuilder s = new StringBuilder("its whole cost ").append(money(w.cost()));
+        if (w.vans() > 0) {
+            s.append(", its ground and ").append(formatter.format(Math.round(w.vans())))
+                    .append(Math.round(w.vans()) == 1 ? " lorry (" : " lorries (").append(money(w.fleet())).append(") with it");
+        } else {
+            s.append(", its ground with it");
+        }
+        s.append(" · it would ").append(w.earns() >= 0 ? "earn " + money(w.earns()) : "lose " + money(-w.earns()))
+                .append(" a month on it");
+        if (w.earns() > 0) s.append(String.format(", %.2f%% a month", 100 * w.score()));
+        if (w.hurdle() > 0) s.append(" · the money gate asks ").append(money(w.hurdle()));
+        return s.toString();
+    }
+
+    /** Its own power: "makes 60,000 kW of its own power: its 51,400 kW draw, and 8,600 kW sold to the grid, $X a month at the tariff". */
+    static String powerWords(BuildCard.Power p) {
+        String made = "makes " + formatter.format(Math.round(p.gen())) + " kW of its own power: ";
+        if (p.sold() > 0) {
+            return made + (p.draw() > 0 ? "its " + formatter.format(p.draw()) + " kW draw, and " : "")
+                    + formatter.format(Math.round(p.sold())) + " kW sold to the grid"
+                    + (Double.isFinite(p.soldValue()) ? ", " + money(p.soldValue()) + " a month at the tariff" : "");
+        }
+        return made + "it buys " + formatter.format(Math.round(p.bought())) + " kW of its " + formatter.format(p.draw()) + " kW draw";
+    }
+
+    /** The old metal it buys: "buys the city's old steel first: 10,500 t a month at $X a tonne · 12,300 t arose last month, 10,500 t of it the yards standing take". */
+    static String oldMetalWords(BuildCard.OldMetalBought o) {
+        String metal = o.metal() == Good.COPPER ? "copper" : "steel";
+        return "buys the city's old " + metal + " first: " + formatter.format(Math.round(o.intake())) + " t a month at "
+                + unitPrice(o.price()) + " a tonne, " + Math.round(100 * OldMetal.PAY_SHARE) + "% of scrap's export price · "
+                + formatter.format(Math.round(o.arisen())) + " t arose last month, " + formatter.format(Math.round(o.standingTake()))
+                + " t of it the " + (o.metal() == Good.COPPER ? "scrap refineries" : "yards") + " standing take";
+    }
+
+    /** Where what it makes goes: "acid to Copper Mining, 3,500 t a month at nameplate · anode to its own works first" - or "nobody here buys lumber: it ships". */
+    static String outletWords(List<BuildCard.Outlet> outlets) {
+        List<String> parts = new ArrayList<>();
+        for (BuildCard.Outlet o : outlets) {
+            String good = o.good().label().toLowerCase(java.util.Locale.ROOT);
+            if (o.ships()) { parts.add("nobody here buys " + good + ": it ships"); continue; }
+            List<String> who = new ArrayList<>();
+            if (o.captive()) who.add("its own works first");
+            for (BuildCard.Buyer b : o.others()) {
+                who.add(b.sector().label() + (b.takes() > 0 ? ", " + Formats.INSTANCE.units(b.takes(), o.good()) + " a month at nameplate"
+                        : ", none standing"));
+            }
+            parts.add(good + " to " + String.join("; ", who));
+        }
+        return String.join(" · ", parts);
+    }
+
+    /** A crew's E: "E: the forest it may cut, 2,800k m³, lasts 240 months of the crews' cut, 150 with one more; it asks 120 · room for 3 more, it carries 7". */
+    static String crewWords(BuildCard.CrewRule rule, BuildingsTemplate t) {
+        String months = Double.isInfinite(rule.months()) ? "no crew cuts it yet"
+                : "lasts " + formatter.format(Math.round(rule.months())) + " months of the crews' cut";
+        return "E: the forest it may cut, " + shortNumber(rule.cuttable()) + " m³, " + months + ", "
+                + formatter.format(Math.round(rule.monthsWith())) + " with one more; it asks "
+                + ham.citybuildersim.sectors.Forestry.FOREST_CREW_MONTHS + " · room for " + formatter.format(rule.more())
+                + " more, it carries " + formatter.format(rule.carries()) + " of them";
     }
 
     /**

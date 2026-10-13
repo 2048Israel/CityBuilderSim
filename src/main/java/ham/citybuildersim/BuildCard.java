@@ -26,6 +26,11 @@ import java.util.Map;
  * without the toolkit; the screen keeps the words that carry money (it
  * formats money the way every screen does) and the layout.
  *
+ * Since 0.7.142 (batch I13) a materials building's card says where it
+ * stands, how its sector weighs it, its own power, the old metal it buys,
+ * who here buys what it makes and a crew's E (THE MATERIALS' CARDS), and
+ * the nine industries' pages end on the same chain (chainLines()).
+ *
  * Pure: it reads the city and changes nothing. Every figure is a model read,
  * or a ratio of two, and each is named where it is made below.
  */
@@ -1007,12 +1012,22 @@ public final class BuildCard {
      * @param own       the first gate this building fails now, or null
      * @param estimate  the investors' estimate of what one would make its owner a month
      *                  (BusinessInvestment.estimatedMonthlyProfit())
+     * @param planned   a materials building weighed by the rule its sector orders by (0.7.142,
+     *                  weighed()), or null for any other
      */
     public record Investors(String building, String slot, Sector owner, boolean theirs, boolean yoursToo,
-                            int onSite, double months, String word, Gate own, double estimate) {
+                            int onSite, double months, String word, Gate own, double estimate, Weighed planned) {
 
         /** "this one:" is said when there is a gate, no investor is already building it, and the word does not already name it. */
         public boolean showOwn() { return own != null && !theirs && !word.contains(building); }
+
+        /**
+         * ...and for a materials building the planner's gate is said in its
+         * place (0.7.142): the first its sector asks, in SpreadPlanner's words,
+         * on the same terms - when it fails one, no investor is building it and
+         * the word does not already name it.
+         */
+        public boolean showPlanned() { return planned != null && !planned.passes() && !theirs && !word.contains(building); }
     }
 
     public static Investors investors(Game game, BuildingsTemplate t) {
@@ -1030,7 +1045,8 @@ public final class BuildCard {
         String word = game.getLastInvestment(slot);
         double estimate = game.getBusinessInvestment().estimatedMonthlyProfit(owner.key(), t);
         return new Investors(t.getName(), slot, owner, theirs, theirs && yours, onSite,
-                onSite > 0 ? game.onSiteMonths(t) : 0, word == null ? "" : word, gate(game, t, owner, estimate), estimate);
+                onSite > 0 ? game.onSiteMonths(t) : 0, word == null ? "" : word, gate(game, t, owner, estimate), estimate,
+                weighed(game, t));
     }
 
     /** The first gate investors would stop this building at now, in buildStack()'s order and then the planners': null when it passes them all. */
@@ -1090,9 +1106,11 @@ public final class BuildCard {
      * @param owners   of the cost, what its register would ask its owners for (Game.financingOf())
      * @param own      ...what its till and its money abroad would put in
      * @param borrowed ...and what it would borrow
+     * @param planned  a materials building weighed by the rule its sector orders by - its whole cost with
+     *                 its lorries, its earnings and the planner's first gate (0.7.142, weighed()) - or null
      */
     public record Appraisal(BuildingsTemplate template, Sector owner, List<GateMark> gates, double estimate,
-                            double cost, double payback, double owners, double own, double borrowed) {
+                            double cost, double payback, double owners, double own, double borrowed, Weighed planned) {
 
         /** The first gate it fails - gate()'s answer - or null when it passes them all. */
         public Gate first() {
@@ -1155,7 +1173,8 @@ public final class BuildCard {
                 : interest == null ? new GateMark(GateKind.INTEREST, Mark.PASS, null)
                 : new GateMark(GateKind.INTEREST, Mark.FAIL, interest));
         double[] f = game.financingOf(owner.key(), t);
-        return new Appraisal(t, owner, gates, estimate, f[0], estimate > 0 ? f[0] / estimate : Double.NaN, f[1], f[2], f[3]);
+        return new Appraisal(t, owner, gates, estimate, f[0], estimate > 0 ? f[0] / estimate : Double.NaN, f[1], f[2], f[3],
+                weighed(game, t));
     }
 
     /** Every market building one sector owns, appraised at every gate, in the catalogue's order: the investor report's (R4). */
@@ -1166,6 +1185,367 @@ public final class BuildCard {
             out.add(appraise(game, t));
         }
         return out;
+    }
+
+    /* =====================================================================
+       THE MATERIALS' CARDS (0.7.142, batch I13; docs/studies/spec-materials.md
+       2.13, its last bullet, and 5's I13 row)
+
+       WHY. The nine materials industries' forty-seven buildings - Iron &
+       Steel's, the mines', the quarries', the kilns', copper's, the crews'
+       and the mills' (ids 11, 12, 14 and 101 to 138) - came onto the 0.7.25
+       card as they were added, and it read each as any maker: the hero, what
+       one adds at today's prices, the investors' estimate and consider()'s
+       gates. But a works is ordered by its sector's SpreadPlanner, which
+       weighs it on its whole cost, its lorries in it, and asks its own gates
+       first - feed, ground, staff, money; a mine only on one field of its
+       type with room for all its sites; a crew only while the forest lasts
+       FOREST_CREW_MONTHS of every crew's cut (E). The card said none of it:
+       not where a 20-site works stands ("needs a deposit: the city owns 27"
+       on 27 hematite sites over three fields, none with 20 free), nor what a
+       works' own power sells, what a yard pays for the city's old metal, or
+       who here buys what it makes - so the four wood products, which nothing
+       here buys yet, looked like any good. Each piece below is a model read,
+       named where it is made; ui/BuildScreen words them (THE MATERIALS'
+       LINES) and BuildCardCheck 12 holds them.
+         - WHERE IT STANDS (stands()): its resource and type, the sites one
+           takes, the city's sites by type, those spoken for, what is left,
+           whether one more fits on one field and the plan's words for the
+           field it lacks; and what one more would make where the ground puts
+           it - a quarry on limestone makes limestone, not the aggregate its
+           row says.
+         - WEIGHED (weighed()): what one more would earn on its whole cost by
+           the rule its sector orders by, its lorries' share of that cost, the
+           money gate's bar, and the first of the planner's gates it fails in
+           the planner's own words. The investors' line says it in place of
+           consider()'s gate (Investors.showPlanned()), and the investor
+           report carries it (Appraisal.planned()).
+         - ITS OWN POWER (power()), THE OLD METAL IT BUYS (oldMetal()), WHO
+           BUYS WHAT IT MAKES (outlets(), buyers()) and THE CREW RULE
+           (crewRule(), which Policy › Zoning's forest law says too).
+       ===================================================================== */
+
+    /** Whether a building is one of the nine materials industries' (0.7.142): its owner a ProcessingSector or an ExtractionSector. */
+    public static boolean materials(Game game, BuildingsTemplate t) {
+        Sector owner = t == null ? null : game.getSectors().ownerOf(t);
+        return owner instanceof ham.citybuildersim.sectors.ProcessingSector
+                || owner instanceof ham.citybuildersim.sectors.ExtractionSector;
+    }
+
+    /**
+     * Where a building on a typed resource's sites stands (0.7.142): its
+     * resource and the type of field it needs (null for ANY - a quarry), the
+     * sites one takes, the city's sites of its type and those spoken for
+     * (Game.sitesFor(), committedFor() - every type's for ANY), what is left
+     * of its type in the ground (Game.remainingFor()), the city's sites of
+     * each type in Resource.typesOf()'s order (LandManager.getSites(r,
+     * type)), whether one more fits on one field of its type beside the
+     * works standing, on site or ordered (Game.hasDepositFor()), the field it
+     * lacks in the plan's words (ExtractionSector.fieldWanting(); null when
+     * it fits), and what one more would make where the ground would put it:
+     * the sector's own madeBy() for a quarry (limestone while a limestone
+     * field has room) and a coal mine (raw coal washed or sold as thermal),
+     * its row's makes for any other.
+     */
+    public record Stands(Resource resource, Deposit.FieldType type, int sites, int owned, int committed, double left,
+                         long[] byType, boolean fits, String wanting, Map<Good, Double> makes) {
+
+        /** Whether it stands on its resource's fields of either type (a Quarry, a Large Quarry). */
+        public boolean anyType() { return type == null; }
+    }
+
+    /** ...for a building on a typed resource's sites (iron, coal, copper, stone); null for any other. */
+    public static Stands stands(Game game, BuildingsTemplate t) {
+        BuildingsTemplate.Site site = t == null ? null : t.site();
+        if (site == null || site.resource() == null || !site.resource().hasTypes()) return null;
+        Resource r = site.resource();
+        LandManager land = game.getLandManager();
+        List<Deposit.FieldType> types = r.typesOf();
+        long[] byType = new long[types.size()];
+        for (int i = 0; i < byType.length; i++) byType[i] = land.getSites(r, types.get(i));
+        Sector owner = game.getSectors().ownerOf(t);
+        String wanting = owner instanceof ham.citybuildersim.sectors.ExtractionSector e ? e.fieldWanting(t) : null;
+        Map<Good, Double> makes = owner instanceof ham.citybuildersim.sectors.Quarrying q ? q.madeBy(t)
+                : owner instanceof ham.citybuildersim.sectors.CoalMining c ? c.madeBy(t) : t.goodsMade();
+        return new Stands(r, site.type(), site.sites(), game.sitesFor(t), game.committedFor(t), game.remainingFor(t),
+                byType, game.hasDepositFor(t, 1), wanting, makes);
+    }
+
+    /**
+     * A materials building weighed by the rule its sector orders by
+     * (0.7.142): what one more would earn a month at the city's values, its
+     * lorries' wear and diesel in it; its whole cost, its ground and its
+     * lorries with it; its lorries (ProcessingSector.vansFor()) and what they
+     * cost of that whole (fleetCapital()); what the money gate asks it to
+     * earn a month on that cost (SpreadPlanner.hurdle()); and the first gate
+     * it fails in SpreadPlanner.Gate's order - FEED (a works' feed, a mine's
+     * field, a crew's forest under E, a washing plant's raw coal), LAND,
+     * STAFF, MONEY - with that gate's refusal in the planner's own words;
+     * failed null when it passes them all.
+     */
+    public record Weighed(double earns, double cost, double vans, double fleet, double hurdle,
+                          ham.citybuildersim.sectors.SpreadPlanner.Gate failed, String why) {
+
+        /** What it earns a month on its whole cost; 0 with no cost (SpreadPlanner.Candidate.score()). */
+        public double score() { return cost > 0 ? earns / cost : 0; }
+
+        /** Whether it passes every gate its sector asks. */
+        public boolean passes() { return failed == null; }
+    }
+
+    /** What a washing plant's feed gate says while its sector's coking mines make no raw coal its plants do not wash (CoalMining.unwashed()). */
+    public static final String NOTHING_TO_WASH = "no raw coal goes unwashed";
+
+    /**
+     * ...a works by its sector's own appraisal (ProcessingSector.appraise():
+     * the candidate the plan weighs, to the bit); a mine, a crew or a washing
+     * plant as its sector's plan weighs one - ExtractionSector
+     * .estimatedMonthlyProfit() on plans.getCostOf() and its lorries
+     * (fleetCapital()), asked SpreadPlanner.judge()'s gates with its feed:
+     * the field it lacks (ExtractionSector.fieldWanting()), E's refusal
+     * (crewRule(), eWords()), or NOTHING_TO_WASH. Null for any other
+     * building, and for a planted stand, which Forestry plants on its zone
+     * and does not weigh.
+     */
+    public static Weighed weighed(Game game, BuildingsTemplate t) {
+        Sector owner = t == null ? null : game.getSectors().ownerOf(t);
+        BusinessInvestment plans = game.getBusinessInvestment();
+        double vans = ham.citybuildersim.sectors.ProcessingSector.vansFor(t);
+        if (owner instanceof ham.citybuildersim.sectors.ProcessingSector p) {
+            if (t.goodsMade().isEmpty() || game.getMarkets() == null) return null;
+            ham.citybuildersim.sectors.SpreadPlanner.Candidate c = p.appraise(t, plans);
+            double fleet = ham.citybuildersim.sectors.ProcessingSector.fleetCapital(t,
+                    ham.citybuildersim.sectors.SpreadPlanner.values(game.getMarkets()));
+            return new Weighed(c.earns(), c.cost(), vans, fleet, p.planner().hurdle(p, plans, game, c.cost()), c.failed(), c.why());
+        }
+        if (!(owner instanceof ham.citybuildersim.sectors.ExtractionSector e)) return null;
+        String feed;
+        if (owner instanceof ham.citybuildersim.sectors.Forestry) {
+            if (!ham.citybuildersim.sectors.Forestry.isCrew(t)) return null;
+            CrewRule rule = crewRule(game, t);
+            feed = rule.room() ? null : eWords(rule, t);
+        } else if (t.getWash() > 0 && owner instanceof ham.citybuildersim.sectors.CoalMining coal) {
+            feed = coal.unwashed() > 0 ? null : NOTHING_TO_WASH;
+        } else if (t.site() != null && t.site().resource() == e.resource()) {
+            feed = e.fieldWanting(t);
+        } else {
+            return null;
+        }
+        double fleet = e.fleetCapital(t);
+        double cost = plans.getCostOf(t, 1) + fleet;
+        double earns = e.estimatedMonthlyProfit(t, plans);
+        ham.citybuildersim.sectors.SpreadPlanner.Candidate c = ham.citybuildersim.sectors.SpreadPlanner.judge(t, earns, cost,
+                feed, e.planner().city(e, plans, game), null);
+        return new Weighed(earns, cost, vans, fleet, e.planner().hurdle(e, plans, game, cost), c.failed(), c.why());
+    }
+
+    /**
+     * A works' own power (0.7.142): the kW it makes (BuildingsTemplate
+     * .getGen()), its draw, what it buys past what it makes and what it
+     * sells the grid past its draw (powerBought(), powerSold()), and what
+     * that sells for a month at its sector's tariff (ProcessingSector
+     * .tariff(), the price Sector.getPowerSoldValue() strikes the surplus
+     * at). Null for a building that makes none.
+     */
+    public record Power(double gen, double draw, double bought, double sold, double soldValue) { }
+
+    public static Power power(Game game, BuildingsTemplate t) {
+        if (t == null || !(t.getGen() > 0)) return null;
+        Sector owner = game.getSectors().ownerOf(t);
+        double tariff = owner instanceof ham.citybuildersim.sectors.ProcessingSector p ? p.tariff() : Double.NaN;
+        return new Power(t.getGen(), t.getElectricityConsumption(), t.powerBought(), t.powerSold(), t.powerSold() * tariff);
+    }
+
+    /**
+     * The city's old metal a yard buys (0.7.142; OldMetal, the spec's 2.9):
+     * the metal (STEEL for a Scrap Yard, COPPER for a Scrap Copper
+     * Refinery), what one takes a month at nameplate (BuildingsTemplate
+     * .oldMetal()), what its owner pays a tonne today (OldMetal.PAY_SHARE of
+     * its scrap's export price: HeavyIndustry.oldSteelPrice(),
+     * CopperRefining.oldCopperPrice()), what arose in the pool's last month
+     * (OldMetal.Pool.lastArisen()), what the owner's yards standing take of
+     * it at nameplate (oldSteelIntake(), oldCopperIntake()) and what arose
+     * past that - what one more would run on. Null for a building that
+     * takes none.
+     */
+    public record OldMetalBought(Good metal, double intake, double price, double arisen, double standingTake, double spare) { }
+
+    public static OldMetalBought oldMetal(Game game, BuildingsTemplate t) {
+        if (t == null || t.oldMetalTaken().isEmpty() || game.getOldMetal() == null) return null;
+        Good metal = t.oldMetalTaken().keySet().iterator().next();
+        double intake = t.oldMetal(metal);
+        double price, standing;
+        OldMetal.Pool pool;
+        if (metal == Good.COPPER) {
+            ham.citybuildersim.sectors.CopperRefining c = game.getSectors().copperRefining();
+            price = c.oldCopperPrice();
+            standing = c.oldCopperIntake();
+            pool = game.getOldMetal().copper();
+        } else {
+            ham.citybuildersim.sectors.HeavyIndustry h = game.getSectors().heavyIndustry();
+            price = h.oldSteelPrice();
+            standing = h.oldSteelIntake();
+            pool = game.getOldMetal().steel();
+        }
+        double arisen = pool.lastArisen();
+        return new OldMetalBought(metal, intake, price, arisen, standing, Math.max(0, arisen - standing));
+    }
+
+    /** One sector here that buys a good (0.7.142): what its standing buildings take of it a month at nameplate (Sector.getInputAtCapacity()) - none while none stands. */
+    public record Buyer(Sector sector, double takes) { }
+
+    /**
+     * Every sector here whose catalogue holds a building that uses `g`, in
+     * Sectors' order, with what its standing buildings take a month at
+     * nameplate (0.7.142): who could buy the good in this city. Empty when
+     * nothing here can - what ships until a buyer comes (spec-materials
+     * 2.12: lumber, panels, paper and pellets, cement, aggregate, dimension
+     * stone and thermal coal, today). Households' basket is not a building
+     * and not counted.
+     */
+    public static List<Buyer> buyers(Game game, Good g) {
+        List<Buyer> out = new ArrayList<>();
+        BuildingManager b = game.getBuildingManager();
+        for (Sector s : game.getSectors().all()) {
+            boolean uses = false;
+            for (BuildingsTemplate t : b.getTemplatesBySector(s.key())) {
+                if (t.uses(g) > 0) { uses = true; break; }
+            }
+            if (uses) out.add(new Buyer(s, s.getInputAtCapacity(g)));
+        }
+        return out;
+    }
+
+    /**
+     * What one of a materials building makes of a good, and where it goes
+     * (0.7.142): its tonnes a month at nameplate (Stands.makes() for a
+     * building on sites, its row's for any other), whether its owner's own
+     * works take it first (Sector.captive(): a ProcessingSector's every good
+     * it both makes and uses - Wood Products' residues and pulp, Iron &
+     * Steel's coke, pig iron and scrap) and what they take of it at
+     * nameplate, and the other sectors here that buy it (buyers(), the owner
+     * left out) - none, and not captive, when it ships.
+     */
+    public record Outlet(Good good, double made, boolean captive, double ownTakes, List<Buyer> others) {
+
+        /** Whether nothing here buys it: no other sector, and its owner does not take it first. */
+        public boolean ships() { return !captive && others.isEmpty(); }
+    }
+
+    /** ...each good one makes, in its makes' order; empty for a building that is not a materials one. */
+    public static List<Outlet> outlets(Game game, BuildingsTemplate t) {
+        List<Outlet> out = new ArrayList<>();
+        if (!materials(game, t)) return out;
+        Sector owner = game.getSectors().ownerOf(t);
+        Stands at = stands(game, t);
+        Map<Good, Double> makes = at != null ? at.makes() : t.goodsMade();
+        for (Map.Entry<Good, Double> e : makes.entrySet()) {
+            if (!(e.getValue() > 0)) continue;
+            Good g = e.getKey();
+            List<Buyer> others = new ArrayList<>();
+            for (Buyer by : buyers(game, g)) if (by.sector() != owner) others.add(by);
+            boolean captive = owner.captive(g);
+            out.add(new Outlet(g, e.getValue(), captive, captive ? owner.getInputAtCapacity(g) : 0, others));
+        }
+        return out;
+    }
+
+    /**
+     * A materials sector's chain as its Sectors page's lines (0.7.142; each of
+     * the nine industries' ownLines() ends on them): its works' own power,
+     * when any standing makes some - what they make (BuildingsTemplate
+     * .getGen()), what the sector sells the grid past its draws
+     * (Sector.getPowerSurplus()) and what that sells for a month
+     * (getPowerSoldValue()); then WHO BUYS IT HERE, each good it makes in its
+     * own order (Sector.goodsMade()): its own works first where they take it
+     * (captive, with what they take at nameplate), each other sector here
+     * that could buy it with what its standing buildings take at nameplate
+     * (buyers()), or that nothing here buys it and it ships - outlets()'s
+     * reading, for a sector rather than one building.
+     */
+    public static List<Sector.Line> chainLines(Game game, Sector sector) {
+        List<Sector.Line> lines = new ArrayList<>();
+        if (game == null || sector == null) return lines;
+        Formats f = Formats.INSTANCE;
+        BuildingManager b = game.getBuildingManager();
+        double made = b.totalBySector(sector.key(), BuildingsTemplate::getGen);
+        if (made > 0) {
+            lines.add(Sector.Line.head("Its own power, a month"));
+            lines.add(Sector.Line.of("Its works make", f.count(made) + " kW"));
+            lines.add(Sector.Line.of("Sold to the grid, past their draw", f.count(Math.max(0, sector.getPowerSurplus())) + " kW · "
+                    + f.amount(sector.getPowerSoldValue()), sector.getPowerSurplus() > 0 ? Sector.Line.Tone.GOOD : Sector.Line.Tone.NONE));
+        }
+        lines.add(Sector.Line.head("Who buys it here, at nameplate"));
+        for (Good g : sector.goodsMade()) {
+            List<String> who = new ArrayList<>();
+            if (sector.captive(g)) who.add("its own works first, " + f.units(sector.getInputAtCapacity(g), g));
+            for (Buyer by : buyers(game, g)) {
+                if (by.sector() == sector) continue;
+                who.add(by.sector().label() + (by.takes() > 0 ? " " + f.units(by.takes(), g) : ", none standing"));
+            }
+            lines.add(who.isEmpty() ? Sector.Line.of(g.label(), "nobody here: it ships", Sector.Line.Tone.MUTED)
+                    : Sector.Line.of(g.label(), String.join(" · ", who)));
+        }
+        return lines;
+    }
+
+    /**
+     * E, the crew rule (0.7.142; sectors.Forestry, E AND THE PLAN; spec-zoning
+     * 3 and board 3): the forest Forestry may cut (LandManager
+     * .cuttableForest()), every crew's cut a month standing and on site
+     * (Forestry.crewsCut(true)), one more `t`'s (Forestry.cutOf()), the
+     * months the forest lasts the crews now (infinite with none) and with one
+     * more, whether it has room for one more (Forestry.roomFor()), how many
+     * more of `t` it has room for, and how many of `t` it would carry alone -
+     * each at FOREST_CREW_MONTHS of the cut.
+     */
+    public record CrewRule(double cuttable, double committed, double cut, double months, double monthsWith,
+                           boolean room, int more, int carries) { }
+
+    public static CrewRule crewRule(Game game, BuildingsTemplate t) {
+        ham.citybuildersim.sectors.Forestry f = game.getSectors().forestry();
+        double cuttable = game.getLandManager().cuttableForest(), committed = f.crewsCut(true);
+        double cut = ham.citybuildersim.sectors.Forestry.cutOf(t);
+        double horizon = ham.citybuildersim.sectors.Forestry.FOREST_CREW_MONTHS;
+        int more = 0, carries = 0;
+        if (cut > 0) {
+            more = (int) Math.max(0, Math.floor((cuttable / horizon - committed) / cut));
+            while (more > 0 && !(cuttable >= horizon * (committed + more * cut))) more--;
+            while (cuttable >= horizon * (committed + (more + 1) * cut)) more++;
+            carries = (int) Math.max(0, Math.floor(cuttable / (horizon * cut)));
+        }
+        return new CrewRule(cuttable, committed, cut, committed > 0 ? cuttable / committed : Double.POSITIVE_INFINITY,
+                committed + cut > 0 ? cuttable / (committed + cut) : Double.POSITIVE_INFINITY,
+                ham.citybuildersim.sectors.Forestry.roomFor(cuttable, committed, t), more, carries);
+    }
+
+    /** ...the rule as the forest law's page says it: for the smallest crew in the catalogue (the one E refuses last); null with none. */
+    public static CrewRule crewRule(Game game) {
+        BuildingsTemplate smallest = smallestCrew(game);
+        return smallest == null ? null : crewRule(game, smallest);
+    }
+
+    /** The crew in the catalogue that cuts least a month (Forestry.cutOf()), the first on a tie; null with none. */
+    public static BuildingsTemplate smallestCrew(Game game) {
+        BuildingsTemplate best = null;
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplatesBySector(Sectors.FORESTRY)) {
+            if (!ham.citybuildersim.sectors.Forestry.isCrew(t)) continue;
+            if (best == null || ham.citybuildersim.sectors.Forestry.cutOf(t) < ham.citybuildersim.sectors.Forestry.cutOf(best)) best = t;
+        }
+        return best;
+    }
+
+    /** E's refusal in Forestry's plan's words (Forestry.eWords(), which BuildCardCheck 12 holds this to): the forest it may cut, and the months it would last with one more. */
+    static String eWords(CrewRule rule, BuildingsTemplate t) {
+        double with = rule.committed() + rule.cut();
+        return String.format("the forest it may cut, %,.0fk m³, would last %.0f months of the crews' cut with %s; it asks %d",
+                rule.cuttable() / 1000, with > 0 ? rule.cuttable() / with : 0, a(t.getName()),
+                ham.citybuildersim.sectors.Forestry.FOREST_CREW_MONTHS);
+    }
+
+    /** "a Logging Camp", "an Iron Mine": ProcessingSector.a()'s article. */
+    static String a(String name) {
+        return (name != null && !name.isEmpty() && "AEIOU".indexOf(Character.toUpperCase(name.charAt(0))) >= 0 ? "an " : "a ") + name;
     }
 
     /* =====================================================================
@@ -1208,8 +1588,8 @@ public final class BuildCard {
     static final String[] STAFF_WORDS   = { "could staff" };
     /** ...LICENCE's: whole words, so the plural as well. */
     static final String[] LICENCE_WORDS = { "licence", "licences" };
-    /** ...ORE's: the ground has none - and since 0.7.138 Forestry's, the forest it may cut (none, or too little for E). */
-    static final String[] ORE_WORDS     = { "deposit", "ore", "forest" };
+    /** ...ORE's: the ground has none - and since 0.7.138 Forestry's, the forest it may cut (none, or too little for E); since 0.7.142 a field of its type and a resource worked out, named as itself ("no coking coal left in the city's fields", "the coal is worked out"). */
+    static final String[] ORE_WORDS     = { "deposit", "ore", "forest", "field", "fields", "worked out" };
     /** ...SUPPLY's. */
     static final String[] SUPPLY_WORDS  = { "fabricates", "will not sell" };
     /** ...CREDIT's. */
@@ -1288,7 +1668,7 @@ public final class BuildCard {
 
         /** The sector's line as a build card's line is worded: its own name, its word, no gate of its own. */
         public Investors line() {
-            return new Investors(owner.label(), owner.key(), owner, theirs, yoursToo, onSite, months, word, null, Double.NaN);
+            return new Investors(owner.label(), owner.key(), owner, theirs, yoursToo, onSite, months, word, null, Double.NaN, null);
         }
     }
 

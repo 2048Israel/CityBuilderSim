@@ -695,7 +695,7 @@ public class MaterialsCheck {
         BusinessInvestment.Decision d = mining.plan(plans, g);
         report("with free sites and ore in the ground it sinks an Iron Mine, or says why not (the staff, the ground)",
                 d.build ? d.template == mine && d.quantity == 1 && d.reason.contains("deposit(s) unworked")
-                        : d.reason != null && !d.reason.equals("no deposit to dig") && !d.reason.equals("the ore is worked out"),
+                        : d.reason != null && !d.reason.equals("no deposit to dig") && !d.reason.equals("the iron ore is worked out"),
                 d.reason);
         quietly(() -> g.buildStack(mine, sites, true));
         double before = land.getIronReserveTonnes();

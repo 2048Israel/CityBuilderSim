@@ -643,6 +643,55 @@ public final class CityLand {
         }
     }
 
+    /**
+     * ...and fieldsOn()'s twin by type (0.7.142, batch I13; I1's note): what
+     * the plots of [x0, x1) x [y0, y1) no holding owns hold of one resource's
+     * fields, split by each field's type (Deposit.type()) in
+     * Resource.typesOf()'s order - added into sites and amounts, each array
+     * as long as the resource's types. The same fields fieldsOn() counts, by
+     * the same rules, so the types add up to its count of the resource: the
+     * land office's hover reads it (an offer's fields by type), and
+     * BuildCardCheck 12 holds the two together.
+     */
+    public void fieldsOnByType(long x0, long y0, long x1, long y1, Resource r, long[] sites, double[] amounts) {
+        if (r == null || !r.inFields()) return;
+        World world = World.of(key);
+        java.util.List<Deposit.FieldType> types = r.typesOf();
+        for (int cell : cellsUnder(x0, y0, x1 - 1, y1 - 1)) {
+            for (Deposit d : fields(world, cell, r)) {
+                if (d.x() < x0 || d.x() >= x1 || d.y() < y0 || d.y() >= y1) continue;
+                if (isPart(d) || grid.owner(d.x(), d.y()) >= 0) continue;
+                int t = Math.max(0, types.indexOf(d.type()));
+                sites[t] += d.sites();
+                amounts[t] += d.amount();
+            }
+        }
+        for (GridConversion.PartField p : parts) {
+            if (p.kind() != r) continue;
+            Deposit d = fieldOf(world, p);
+            if (d == null) continue;
+            int t = Math.max(0, types.indexOf(d.type()));
+            boolean[] mine = new boolean[d.sites()];
+            for (int s : p.owned()) if (s >= 0 && s < mine.length) mine[s] = true;
+            for (int k = 0; k < d.sites(); k++) {
+                if (mine[k]) continue;
+                long[] at = GridConversion.sitePlot(d, k);
+                if (at[0] < x0 || at[0] >= x1 || at[1] < y0 || at[1] >= y1 || grid.owner(at[0], at[1]) >= 0) continue;
+                sites[t]++;
+                amounts[t] += d.siteAmount(k);
+            }
+        }
+    }
+
+    /** ...an offer's (0.7.142): its rectangle's sites of each of a resource's types, in Resource.typesOf()'s order. */
+    public long[] sitesOnByType(LandParcel p, Resource r) {
+        int n = r == null ? 0 : r.typesOf().size();
+        long[] sites = new long[n];
+        if (p == null || n == 0) return sites;
+        fieldsOnByType(p.getX0(), p.getY0(), p.getX1(), p.getY1(), r, sites, new double[n]);
+        return sites;
+    }
+
     /** A field the city holds, and how much of it: every site and all its amount of a whole field, the sites a holding has of a part field. */
     public record Held(Deposit field, int sites, double amount) { }
 

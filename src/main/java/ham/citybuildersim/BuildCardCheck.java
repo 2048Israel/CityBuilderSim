@@ -1,6 +1,16 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.CoalMining;
+import ham.citybuildersim.sectors.CopperMining;
+import ham.citybuildersim.sectors.CopperRefining;
+import ham.citybuildersim.sectors.ExtractionSector;
+import ham.citybuildersim.sectors.Forestry;
+import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.Mining;
+import ham.citybuildersim.sectors.ProcessingSector;
+import ham.citybuildersim.sectors.Quarrying;
+import ham.citybuildersim.sectors.SpreadPlanner;
+import ham.citybuildersim.sectors.WoodProducts;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -86,6 +96,25 @@ import java.util.Set;
  *       today's prime passes it and consider() builds it; a loss fails it
  *       behind the loss; and under a borrowing ban it fails in the ban's
  *       words.
+ *   12. THE MATERIALS' CARDS (0.7.142): every materials building - the nine
+ *       industries' - is weighed by the rule its sector orders by, to the
+ *       bit: a works by its sector's own appraisal (its whole cost with its
+ *       lorries, the planner's bar, its first gate and its words), a mine,
+ *       quarry or washing plant as its plan weighs one, a crew under E, a
+ *       planted stand not at all; on three hematite sites by fiat an Iron
+ *       Mine fits and a Large Open-Pit Mine and a magnetite works do not, in
+ *       the plan's words, each resource named by its type; a Quarry on
+ *       limestone makes limestone; a Pelletising Plant on imported ore fails
+ *       the money gate and the card's "this one:" is the planner's; a Blast
+ *       Furnace's, an Oxygen Steel Shop's and a Pulp Mill's own power are the
+ *       template's at the tariff; a Scrap Yard standing buys the city's old
+ *       steel at Iron & Steel's price, refused for want of it, and a Scrap
+ *       Copper Refinery its copper; every good goes to the sectors whose
+ *       buildings use it - the smelter's acid to the leach plants - or ships,
+ *       and each of the nine pages says so; on a forest town E's refusal is
+ *       Forestry's plan's own words, and its room what E allows; and the
+ *       land office's hover by type adds up to every offer's fields, an
+ *       offer on each copper type's nearest field all of that type.
  *
  * Every fixture causes its condition.
  */
@@ -98,6 +127,11 @@ public class BuildCardCheck {
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         out.printf("%-96s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
+    static void report(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        out.printf("%-96s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
     }
 
     static void bits(String label, double actual, double expected) {
@@ -179,6 +213,7 @@ public class BuildCardCheck {
         theRun(g);
         theServed(g);
         theInterest(g);
+        theMaterials(g, root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -855,6 +890,9 @@ public class BuildCardCheck {
             { "Holding: no deposit to dig", BuildCard.WordKind.ORE },
             { "Holding: no spare local ore to smelt", BuildCard.WordKind.ORE },
             { "Holding: the ore is worked out", BuildCard.WordKind.ORE },
+            { "Holding: the coal is worked out", BuildCard.WordKind.ORE },
+            { "Holding: no coking coal left in the city's fields for an Underground Coal Mine", BuildCard.WordKind.ORE },
+            { "Holding: no hematite field with 20 free sites for a Large Open-Pit Mine", BuildCard.WordKind.ORE },
             // ...and the wells' (0.7.62).
             { "Holding: no oil deposit to drill", BuildCard.WordKind.ORE },
             { "Holding: every oil deposit is worked out", BuildCard.WordKind.ORE },
@@ -1351,5 +1389,385 @@ public class BuildCardCheck {
     /** What the card's test counts as the sector's till: its cash and what it holds abroad (Game.interestTest()). */
     static double tillOf(Game g, String sector) {
         return g.getEconomyManager().getSectorCash(sector) + Math.max(0, g.getEconomyManager().getForeignAssets(sector));
+    }
+
+    /* ============================ 12. THE MATERIALS' CARDS ============================ */
+
+    /**
+     * The materials buildings' cards (0.7.142, batch I13; spec-materials 2.13):
+     * each line a fixture causes, each figure against the model's own. Every
+     * materials building is weighed by the rule its sector orders by - a
+     * works by its sector's own appraisal, a mine, a crew or a washing plant
+     * as its plan weighs one; a typed field puts a 20-site works off it in
+     * the plan's words, each resource named; a quarry on limestone makes
+     * limestone; a works on imported feed fails the money gate, and the
+     * card's "this one:" is the planner's; a self-powered works and a yard
+     * on the city's old metal read their template and their owner; each good
+     * goes to the sectors here whose buildings use it, or ships; E on a
+     * forest town is Forestry's plan's own words; and the land office's
+     * hover by type adds up to its offer's fields.
+     */
+    static void theMaterials(Game g, Path root) {
+        out.println("\n--- 12. the materials' cards: where it stands, how its sector weighs it, its power, old metal, buyers, E ---");
+        BuildingManager bm = g.getBuildingManager();
+        LandManager land = g.getLandManager();
+        BusinessInvestment plans = g.getBusinessInvestment();
+        Sectors sectors = g.getSectors();
+
+        // a. Every materials building weighed by its sector's own rule, to the bit.
+        int works = 0, mines = 0, crews = 0, stands = 0, washers = 0, others = 0;
+        boolean worksSame = true, minesSame = true, onlyThem = true, crewsSame = true;
+        List<String> off = new ArrayList<>();
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            Sector owner = sectors.ownerOf(t);
+            BuildCard.Weighed w = BuildCard.weighed(g, t);
+            boolean m = owner instanceof ProcessingSector || owner instanceof ExtractionSector;
+            if (BuildCard.materials(g, t) != m) onlyThem = false;
+            if (!m) {
+                if (w != null || !BuildCard.outlets(g, t).isEmpty()) onlyThem = false;
+                others++;
+                continue;
+            }
+            if (owner instanceof ProcessingSector p) {
+                works++;
+                SpreadPlanner.Candidate c = p.appraise(t, plans);
+                boolean same = w != null && Double.doubleToLongBits(w.earns()) == Double.doubleToLongBits(c.earns())
+                        && Double.doubleToLongBits(w.cost()) == Double.doubleToLongBits(c.cost()) && w.failed() == c.failed()
+                        && java.util.Objects.equals(w.why(), c.why())
+                        && Double.doubleToLongBits(w.hurdle()) == Double.doubleToLongBits(p.planner().hurdle(p, plans, g, c.cost()))
+                        && Math.abs(c.cost() - plans.getCostOf(t, 1) - w.fleet()) <= 1e-9 * c.cost()
+                        && w.vans() == ProcessingSector.vansFor(t);
+                if (!same) { worksSame = false; off.add(t.getName()); }
+                continue;
+            }
+            ExtractionSector e = (ExtractionSector) owner;
+            if (owner instanceof Forestry) {
+                if (Forestry.isCrew(t)) crews++; else stands++;
+                if (Forestry.isCrew(t) == (w == null)) crewsSame = false;
+                if (w != null && w.failed() == SpreadPlanner.Gate.FEED
+                        == Forestry.roomFor(land.cuttableForest(), g.getSectors().forestry().crewsCut(true), t)) crewsSame = false;
+                continue;
+            }
+            double cost = plans.getCostOf(t, 1) + e.fleetCapital(t);
+            boolean same = w != null && Double.doubleToLongBits(w.earns()) == Double.doubleToLongBits(e.estimatedMonthlyProfit(t, plans))
+                    && Double.doubleToLongBits(w.cost()) == Double.doubleToLongBits(cost)
+                    && Double.doubleToLongBits(w.hurdle()) == Double.doubleToLongBits(e.planner().hurdle(e, plans, g, cost));
+            if (t.getWash() > 0) {
+                washers++;
+                same &= (w.failed() == SpreadPlanner.Gate.FEED) == !(g.getSectors().coalMining().unwashed() > 0)
+                        && (w.failed() != SpreadPlanner.Gate.FEED || BuildCard.NOTHING_TO_WASH.equals(w.why()));
+            } else {
+                mines++;
+                String wanting = e.fieldWanting(t);
+                same &= (wanting == null) == g.hasDepositFor(t, 1)
+                        && (wanting == null ? w.failed() != SpreadPlanner.Gate.FEED : w.failed() == SpreadPlanner.Gate.FEED && wanting.equals(w.why()));
+            }
+            if (!same) { minesSame = false; off.add(t.getName()); }
+        }
+        report("fixture: the catalogue's materials buildings - the nine industries' - and the rest", works > 0 && mines > 0
+                && crews == 2 && stands == 2 && washers == 1, String.format("%d works, %d mines and quarries, %d crews, %d stands,"
+                + " %d washing plant; %d other buildings", works, mines, crews, stands, washers, others));
+        assertTrue("only a materials building is one (its owner a ProcessingSector or an ExtractionSector), and only it is weighed",
+                onlyThem);
+        assertTrue("a works is weighed as its sector's appraisal weighs it: what it earns, its whole cost with its lorries, the"
+                + " planner's bar, its first gate and its words, to the bit", worksSame);
+        assertTrue("...a mine, a quarry and the washing plant as their plan weighs one - ExtractionSector's estimate on its cost"
+                + " and lorries, its field (or the raw coal it washes) the feed", minesSame);
+        assertTrue("...a crew under E, and a planted stand not at all (Forestry plants it, nothing orders it)", crewsSame);
+        if (!off.isEmpty()) out.println("      off: " + off);
+
+        typedField(g);
+        moneyGate(g);
+        ownPowerAndOldMetal(g);
+        whoBuys(g);
+        crewRule(root);
+        hoverByType(g);
+    }
+
+    /** b. A typed field: three hematite sites by fiat - the one-site mine fits, the 20-site works not, each resource named. */
+    static void typedField(Game g) {
+        LandManager land = g.getLandManager();
+        BuildingManager bm = g.getBuildingManager();
+        Mining mining = (Mining) g.getSectors().byKey(Sectors.MINING);
+        int deposits = land.getIronDeposits();
+        double reserve = land.getIronReserveTonnes();
+        // Ground listed by fiat is the resource's first type (LandManager.restoreSites()).
+        land.restoreSites(Resource.IRON, 3, 3 * Resource.IRON.amountPerSite());
+        BuildingsTemplate mine = bm.getTemplate(Mining.IRON_MINE), pit = bm.getTemplate(Mining.LARGE_OPEN_PIT),
+                magnetite = bm.getTemplate(Mining.MAGNETITE_MINE);
+        BuildCard.Stands one = BuildCard.stands(g, mine), big = BuildCard.stands(g, pit), mag = BuildCard.stands(g, magnetite);
+        report("fixture: the town holds three iron sites by fiat, all hematite (the first type)",
+                land.getSites(Resource.IRON, Deposit.FieldType.HEMATITE) == 3 && land.getSites(Resource.IRON, Deposit.FieldType.MAGNETITE) == 0,
+                String.format("%d hematite, %d magnetite", land.getSites(Resource.IRON, Deposit.FieldType.HEMATITE),
+                        land.getSites(Resource.IRON, Deposit.FieldType.MAGNETITE)));
+        assertTrue("an Iron Mine's card: one hematite site, the city's three by type, its own and those spoken for, what is left -"
+                + " each Game's own (sitesFor(), committedFor(), remainingFor()) - and it fits",
+                one != null && one.resource() == Resource.IRON && one.type() == Deposit.FieldType.HEMATITE && one.sites() == 1
+                && one.byType()[0] == 3 && one.byType()[1] == 0 && one.owned() == g.sitesFor(mine) && one.committed() == g.committedFor(mine)
+                && one.left() == g.remainingFor(mine) && one.fits() && g.hasDepositFor(mine, 1) && one.wanting() == null);
+        assertTrue("a Large Open-Pit Mine's: twenty sites of one hematite field, which three do not hold - it does not fit"
+                + " (Game.hasDepositFor()), in the plan's words: " + (big == null ? null : big.wanting()),
+                big != null && big.sites() == 20 && !big.fits() && !g.hasDepositFor(pit, 1)
+                && big.wanting() != null && big.wanting().equals(mining.fieldWanting(pit))
+                && big.wanting().contains("hematite field with 20 free sites"));
+        assertTrue("...a magnetite works on a city of hematite: none of its type, in its words: " + (mag == null ? null : mag.wanting()),
+                mag != null && !mag.fits() && mag.byType()[1] == 0 && mag.wanting() != null
+                && mag.wanting().equals(mining.fieldWanting(magnetite)) && mag.wanting().contains("magnetite ore"));
+        BuildCard.Weighed w = BuildCard.weighed(g, pit);
+        assertTrue("...and how its sector weighs it: the field its feed, refused first in the same words",
+                w != null && w.failed() == SpreadPlanner.Gate.FEED && w.why().equals(big.wanting()));
+        land.restoreIron(deposits, reserve);
+
+        // Each resource named where it read "ore" (the docs pass's flag, CONFIRM 0.7.136-0.7.137 item 8).
+        CoalMining coal = g.getSectors().coalMining();
+        BuildingsTemplate deep = bm.getTemplate(CoalMining.UNDERGROUND_MINE);
+        String coking = coal.fieldWanting(deep);
+        assertTrue("the words name each resource by its type: hematite ore, coking coal, sulphide copper ore, limestone - and"
+                + " their fields - where coal, stone and copper read \"ore\"",
+                "hematite ore".equals(ExtractionSector.oreWords(Resource.IRON, Deposit.FieldType.HEMATITE))
+                && "coking coal".equals(ExtractionSector.oreWords(Resource.COAL, Deposit.FieldType.COKING))
+                && "sulphide copper ore".equals(ExtractionSector.oreWords(Resource.COPPER, Deposit.FieldType.SULPHIDE))
+                && "limestone".equals(ExtractionSector.oreWords(Resource.STONE, Deposit.FieldType.LIMESTONE))
+                && "thermal coal field".equals(ExtractionSector.fieldWords(Resource.COAL, Deposit.FieldType.THERMAL))
+                && "hard rock field".equals(ExtractionSector.fieldWords(Resource.STONE, Deposit.FieldType.HARD_ROCK))
+                && "coal".equals(ExtractionSector.oreWords(Resource.COAL, null)));
+        assertTrue("an Underground Coal Mine on a town with no coking coal says so in coal's words, read as the ground (ORE): "
+                + coking, coking != null && coking.contains("coking coal") && !coking.contains(" ore ")
+                && BuildCard.wordKind(coking) == BuildCard.WordKind.ORE
+                && BuildCard.wordKind(big.wanting()) == BuildCard.WordKind.ORE);
+
+        // A quarry on limestone makes limestone: two stone sites by fiat, limestone (the first type).
+        Quarrying q = g.getSectors().quarrying();
+        int stoneSites = land.getSites(Resource.STONE);
+        double stoneLeft = land.getOwnedAmount(Resource.STONE);
+        land.restoreSites(Resource.STONE, 2, 2 * Resource.STONE.amountPerSite());
+        BuildingsTemplate quarry = bm.getTemplate(Quarrying.QUARRY);
+        BuildCard.Stands at = BuildCard.stands(g, quarry);
+        double row = quarry.makes(Good.AGGREGATE);
+        report("fixture: two stone sites by fiat, limestone; a Quarry's row makes aggregate",
+                land.getSites(Resource.STONE, Deposit.FieldType.LIMESTONE) == 2 && row > 0, Formats.INSTANCE.count(row) + " t");
+        assertTrue("a Quarry's card: either type, and one more stands on limestone - it makes the row's tonnes of limestone,"
+                + " not aggregate (Quarrying.madeBy())", at != null && at.anyType() && at.fits()
+                && at.makes().equals(q.madeBy(quarry)) && at.makes().getOrDefault(Good.LIMESTONE, 0.0) == row
+                && !at.makes().containsKey(Good.AGGREGATE));
+        boolean limeOut = false;
+        for (BuildCard.Outlet o : BuildCard.outlets(g, quarry)) limeOut |= o.good() == Good.LIMESTONE;
+        assertTrue("...and where it goes is limestone's buyers", limeOut);
+        land.restoreSites(Resource.STONE, stoneSites, stoneLeft);
+    }
+
+    /** c. A works on imported feed fails the money gate: the card's "this one:" is the planner's, in its words. */
+    static void moneyGate(Game g) {
+        BusinessInvestment plans = g.getBusinessInvestment();
+        BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
+        HeavyIndustry steel = g.getSectors().heavyIndustry();
+        BuildingsTemplate pellets = g.getBuildingManager().getTemplate(HeavyIndustry.PELLETISING_PLANT);
+        double prime = credit.getPrimeRate();
+        BuildCard.Weighed w = BuildCard.weighed(g, pellets);
+        // Caused: if it earns over the bar at today's prime, prime raised until it does not.
+        if (w.failed() == null && w.earns() > 0) {
+            credit.setPrimeRate(prime + 2 * (12 * w.earns() / w.cost()) + plans.getExpectedInflation());
+            w = BuildCard.weighed(g, pellets);
+        }
+        report("fixture: a Pelletising Plant in a town that digs no ore - its feed imported - fails only the money gate",
+                g.getSectors().byKey(Sectors.MINING).getCapacity(Good.IRON) == 0 && w.failed() == SpreadPlanner.Gate.MONEY,
+                String.format("earns %s on %s, the bar %s; %s", Formats.INSTANCE.amount(w.earns()), Formats.INSTANCE.amount(w.cost()),
+                        Formats.INSTANCE.amount(w.hurdle()), w.why()));
+        SpreadPlanner.Candidate c = steel.appraise(pellets, plans);
+        assertTrue("its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost"
+                + " with its lorries", w.why().equals(c.refusal(SpreadPlanner.Gate.MONEY))
+                && w.why().equals(steel.planner().city(steel, plans, g).money(w.earns(), w.cost())) && w.fleet() > 0
+                && w.cost() > plans.getCostOf(pellets, 1));
+        BuildCard.Investors inv = BuildCard.investors(g, pellets);
+        assertTrue("the card's \"this one:\" is it - the planner asks before consider() - unless the sector's word already"
+                + " names it or investors are building one: " + inv.word(), inv.planned() != null
+                && inv.showPlanned() == (!inv.theirs() && !inv.word().contains(pellets.getName()))
+                && BuildCard.appraise(g, pellets).planned().why().equals(w.why()));
+        credit.setPrimeRate(prime);
+    }
+
+    /** d. A self-powered works and a yard on the city's old metal: the template's and the owner's own figures. */
+    static void ownPowerAndOldMetal(Game g) {
+        BuildingManager bm = g.getBuildingManager();
+        HeavyIndustry steel = g.getSectors().heavyIndustry();
+        BuildingsTemplate furnace = bm.getTemplate(HeavyIndustry.BLAST_FURNACE), shop = bm.getTemplate(HeavyIndustry.OXYGEN_STEEL_SHOP),
+                pulp = bm.getTemplate(WoodProducts.PULP_MILL), yard = bm.getTemplate(HeavyIndustry.SCRAP_YARD);
+        BuildCard.Power bf = BuildCard.power(g, furnace), os = BuildCard.power(g, shop), pm = BuildCard.power(g, pulp);
+        assertTrue(String.format("a Blast Furnace makes %,.0f kW of its own, draws %,d and sells the rest at the tariff: the"
+                + " template's (powerSold()) times Iron & Steel's tariff", furnace.getGen(), furnace.getElectricityConsumption()),
+                bf != null && bf.gen() == furnace.getGen() && bf.draw() == furnace.getElectricityConsumption()
+                && bf.sold() == furnace.powerSold() && bf.sold() > 0 && bf.bought() == 0
+                && Double.doubleToLongBits(bf.soldValue()) == Double.doubleToLongBits(furnace.powerSold() * steel.tariff()));
+        assertTrue("...an Oxygen Steel Shop makes less than it draws, and buys the rest; a Pulp Mill draws none and sells it all;"
+                + " a Scrap Yard makes none", os != null && os.sold() == 0 && os.bought() == shop.powerBought() && os.bought() > 0
+                && pm != null && pm.draw() == 0 && pm.sold() == pulp.getGen() && BuildCard.power(g, yard) == null);
+
+        OldMetal.Pool pool = g.getOldMetal().steel();
+        quietly(() -> g.buildStack(yard, 1, true));
+        BuildCard.OldMetalBought o = BuildCard.oldMetal(g, yard);
+        report("fixture: a Scrap Yard standing in the town", bm.getQuantity(yard.getId()) >= 1,
+                Formats.INSTANCE.count(pool.lastArisen()) + " t of old steel arose last month");
+        assertTrue("its card buys the city's old steel: its intake (oldMetal()), Iron & Steel's price - PAY_SHARE of scrap's"
+                + " export price - what arose last month, what the yards standing take and the rest, each the model's",
+                o != null && o.metal() == Good.STEEL && o.intake() == yard.oldMetal(Good.STEEL)
+                && Double.doubleToLongBits(o.price()) == Double.doubleToLongBits(steel.oldSteelPrice())
+                && Math.abs(o.price() - OldMetal.PAY_SHARE * g.getMarkets().get(Good.SCRAP).exportPrice()) <= 1e-12 * o.price()
+                && o.arisen() == pool.lastArisen() && o.standingTake() == steel.oldSteelIntake()
+                && o.standingTake() == bm.getQuantity(yard.getId()) * yard.oldMetal(Good.STEEL)
+                && o.spare() == Math.max(0, pool.lastArisen() - steel.oldSteelIntake()));
+        BuildCard.Weighed w = BuildCard.weighed(g, yard);
+        assertTrue("...and with less old steel arising past the yards standing than one more takes, its sector's feed gate"
+                + " refuses it, in its words: " + w.why(), o.spare() >= SpreadPlanner.FEED_GATE * o.intake()
+                || w.failed() == SpreadPlanner.Gate.FEED && w.why().startsWith("too little old steel"));
+        CopperRefining copper = g.getSectors().copperRefining();
+        BuildingsTemplate scrapCu = bm.getTemplate(CopperRefining.SCRAP_REFINERY);
+        BuildCard.OldMetalBought cu = BuildCard.oldMetal(g, scrapCu);
+        assertTrue("a Scrap Copper Refinery's buys the city's old copper the same way: Copper Refining's price and spare",
+                cu != null && cu.metal() == Good.COPPER && cu.intake() == scrapCu.oldMetal(Good.COPPER)
+                && Double.doubleToLongBits(cu.price()) == Double.doubleToLongBits(copper.oldCopperPrice())
+                && cu.arisen() == g.getOldMetal().copper().lastArisen() && cu.spare() == copper.spareOldCopper()
+                && BuildCard.oldMetal(g, furnace) == null);
+    }
+
+    /** e. Who buys what it makes: the sectors here whose buildings use a good, its owner's own works first, or it ships. */
+    static void whoBuys(Game g) {
+        BuildingManager bm = g.getBuildingManager();
+        // buyers() against a count of its own: every sector whose catalogue holds a building that uses the good.
+        boolean same = true;
+        for (Good good : Good.values()) {
+            Set<String> expect = new HashSet<>();
+            for (BuildingsTemplate t : bm.getTemplates()) {
+                Sector s = g.getSectors().ownerOf(t);
+                if (t.uses(good) > 0 && s != null && s.key().equals(t.getSector())) expect.add(s.key());
+            }
+            Set<String> got = new HashSet<>();
+            for (BuildCard.Buyer b : BuildCard.buyers(g, good)) {
+                got.add(b.sector().key());
+                same &= b.takes() == b.sector().getInputAtCapacity(good);
+            }
+            same &= got.equals(expect);
+        }
+        assertTrue("every good's buyers are the sectors whose buildings use it, each taking its standing buildings' need at"
+                + " nameplate (Sector.getInputAtCapacity())", same);
+        BuildingsTemplate smelter = bm.getTemplate(CopperRefining.SMELTER), panels = bm.getTemplate(WoodProducts.PANEL_MILL),
+                saw = bm.getTemplate(WoodProducts.SAWMILL);
+        BuildCard.Outlet acid = null, anode = null, board = null, chips = null;
+        for (BuildCard.Outlet o : BuildCard.outlets(g, smelter)) { if (o.good() == Good.ACID) acid = o; if (o.good() == Good.ANODE) anode = o; }
+        for (BuildCard.Outlet o : BuildCard.outlets(g, panels)) if (o.good() == Good.PANELS) board = o;
+        for (BuildCard.Outlet o : BuildCard.outlets(g, saw)) if (o.good() == Good.RESIDUES) chips = o;
+        CopperMining cm = g.getSectors().copperMining();
+        assertTrue("a Copper Smelter's acid goes to Copper Mining's leach plants, its take theirs at nameplate; its anode to its"
+                + " own refineries first", acid != null && acid.made() == smelter.makes(Good.ACID) && !acid.ships()
+                && acid.others().size() == 1 && acid.others().get(0).sector() == cm
+                && acid.others().get(0).takes() == cm.getInputAtCapacity(Good.ACID)
+                && anode != null && anode.captive() && anode.ownTakes() == g.getSectors().copperRefining().getInputAtCapacity(Good.ANODE));
+        assertTrue("a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's"
+                + " residues go to its own mills first", board != null && board.ships() && chips != null && chips.captive()
+                && !chips.ships());
+        // ...and each of the nine pages ends on who buys what it makes: a line a good, "it ships" exactly when nobody does.
+        int pages = 0;
+        boolean lines = true;
+        for (Sector s : g.getSectors().all()) {
+            if (!(s instanceof ProcessingSector || s instanceof ExtractionSector)) continue;
+            pages++;
+            List<Sector.Line> chain = BuildCard.chainLines(g, s);
+            int at = -1;
+            for (int i = 0; i < chain.size(); i++) if (chain.get(i).label().startsWith("Who buys it here")) at = i;
+            if (at < 0 || chain.size() - at - 1 != s.goodsMade().size()) { lines = false; continue; }
+            int i = at + 1;
+            for (Good good : s.goodsMade()) {
+                boolean nobody = !s.captive(good);
+                for (BuildCard.Buyer b : BuildCard.buyers(g, good)) nobody &= b.sector() == s;
+                lines &= chain.get(i).label().equals(good.label()) && nobody == chain.get(i).value().endsWith("it ships");
+                i++;
+            }
+        }
+        assertTrue("each of the nine industries' pages says who here buys each good it makes, or that it ships", pages == 9 && lines);
+    }
+
+    /** f. E on a forest town: the card's crew rule is Forestry's, and its refusal the plan's own words. */
+    static void crewRule(Path root) {
+        Game f = ForestryCheck.forestTown(new GameFiles(root.resolve("forest"), root.resolve("forest-no-legacy")));
+        Forestry fo = f.getSectors().forestry();
+        BuildingsTemplate camp = f.getBuildingManager().getTemplate(Forestry.LOGGING_CAMP);
+        MaterialsCheck.handWorkers(f);
+        // The law leaves 10 km2 cuttable: less than a Logging Camp's 120 months.
+        ForestryCheck.protect(f, 10 * ForestryCheck.M3_A_KM2);
+        BusinessInvestment.Decision d = fo.plan(f.getBusinessInvestment(), f);
+        BuildCard.CrewRule rule = BuildCard.crewRule(f, camp);
+        report("fixture: a forest town with 10 km2 cuttable - its plan holds in E's words", !d.build && d.reason.contains("would last")
+                && camp == BuildCard.smallestCrew(f), d.reason);
+        BuildCard.Weighed w = BuildCard.weighed(f, camp);
+        assertTrue("a Logging Camp's card: no room under E, none more, and its refusal the plan's own words, to the letter",
+                !rule.room() && rule.more() == 0 && rule.cuttable() == f.getLandManager().cuttableForest()
+                && rule.committed() == fo.crewsCut(true) && rule.cut() == Forestry.cutOf(camp)
+                && w != null && w.failed() == SpreadPlanner.Gate.FEED && w.why().equals(d.reason));
+        ForestryCheck.protect(f, f.getLandManager().getRemaining(Resource.FOREST));
+        rule = BuildCard.crewRule(f, camp);
+        double horizon = Forestry.FOREST_CREW_MONTHS;
+        report("the whole forest cuttable: room for N more Logging Camps exactly where E allows N and not N + 1, and it carries"
+                        + " cuttable / (120 x a camp's cut) in all", rule.room() && rule.more() > 0
+                        && Forestry.roomFor(rule.cuttable(), rule.committed() + (rule.more() - 1) * rule.cut(), camp)
+                        && !Forestry.roomFor(rule.cuttable(), rule.committed() + rule.more() * rule.cut(), camp)
+                        && rule.carries() == (int) Math.floor(rule.cuttable() / (horizon * rule.cut()))
+                        && rule.monthsWith() == rule.cuttable() / (rule.committed() + rule.cut()),
+                String.format("%,.0f m3: room for %d more, carries %d", rule.cuttable(), rule.more(), rule.carries()));
+    }
+
+    /** g. The land office's hover by type: an offer's fields by type add up to its fields. */
+    static void hoverByType(Game g) {
+        CityLand land = g.getCityLand();
+        World w = World.of(land.key());
+        boolean adds = true;
+        int offers = 0;
+        for (LandParcel p : g.getLandManager().getMarket().getListing()) {
+            offers++;
+            for (Resource r : Resource.values()) {
+                if (!r.inFields()) continue;
+                long[] by = land.sitesOnByType(p, r);
+                int[] sites = new int[CityLand.KINDS];
+                land.fieldsOn(p.getX0(), p.getY0(), p.getX1(), p.getY1(), sites, new double[CityLand.KINDS]);
+                long sum = 0;
+                for (long n : by) sum += n;
+                adds &= sum == sites[r.ordinal()] && sum == p.getSites(r) && by.length == r.typesOf().size();
+            }
+        }
+        assertTrue("every offer standing: its fields of each resource by type add up to its sites (CityLand.fieldsOn()), as"
+                + " listed (" + offers + " offers)", offers > 0 && adds);
+        // Caused: an offer drawn round the oxide and the sulphide copper fields nearest the town, its ground unowned.
+        for (Deposit.FieldType type : new Deposit.FieldType[] { Deposit.FieldType.SULPHIDE, Deposit.FieldType.OXIDE }) {
+            Deposit field = unownedNearest(g, w, Resource.COPPER, type);
+            LandParcel p = g.getLandManager().getMarket().measure(new GridOffers.Rect(0, 0, 0, field.x(), field.y(),
+                    field.x() + 1, field.y() + 1));
+            long[] by = land.sitesOnByType(p, Resource.COPPER);
+            int at = Resource.COPPER.typesOf().indexOf(type);
+            report("an offer on the " + type.name().toLowerCase(Locale.ROOT) + " field nearest the town: its copper sites, all of"
+                            + " that type", by[at] == field.sites() && by[1 - at] == 0 && p.getSites(Resource.COPPER) == field.sites(),
+                    String.format("%d site(s) at %d,%d: %d sulphide, %d oxide", field.sites(), field.x(), field.y(), by[0], by[1]));
+        }
+    }
+
+    /** The field of a type nearest the town's founding site whose centre plot nobody owns and that no part field holds. */
+    static Deposit unownedNearest(Game g, World w, Resource r, Deposit.FieldType type) {
+        CityLand land = g.getCityLand();
+        long fx = w.foundingX(), fy = w.foundingY();
+        int cx = (int) (fx / World.CELL), cy = (int) (fy / World.CELL);
+        for (int ring = 0; ring < World.CELLS; ring++) {
+            Deposit best = null;
+            double far = Double.MAX_VALUE;
+            for (int y = cy - ring; y <= cy + ring; y++) {
+                for (int x = cx - ring; x <= cx + ring; x++) {
+                    if (Math.max(Math.abs(x - cx), Math.abs(y - cy)) != ring) continue;
+                    if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
+                    for (Deposit d : w.fieldsInCell(y * World.CELLS + x, r)) {
+                        if (d.type() != type || land.ownsPlot(d.x(), d.y())) continue;
+                        double dist = Math.hypot(d.x() - fx, d.y() - fy);
+                        if (dist < far) { far = dist; best = d; }
+                    }
+                }
+            }
+            if (best != null) return best;
+        }
+        throw new IllegalStateException("no unowned " + type + " field on " + w);
     }
 }

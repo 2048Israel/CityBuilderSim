@@ -403,7 +403,11 @@ public final class CoalMining extends ExtractionSector {
         if (game == null) return lines;
         Formats f = Formats.INSTANCE;
         Flow now = flow();
-        if (!(now.surface() > 0 || now.raw() > 0 || now.wash() > 0)) return lines;
+        // ...and where the coal goes (0.7.142, batch I13), standing or not: Iron & Steel's ovens and furnaces, or the world.
+        if (!(now.surface() > 0 || now.raw() > 0 || now.wash() > 0)) {
+            lines.addAll(ham.citybuildersim.BuildCard.chainLines(game, this));
+            return lines;
+        }
         lines.add(Line.head("The coal, a month at nameplate"));
         if (now.surface() > 0) lines.add(Line.of("Thermal coal dug", f.count(now.surface()) + " t"));
         if (now.raw() > 0) {
@@ -417,6 +421,7 @@ public final class CoalMining extends ExtractionSector {
         if (now.washed() < now.raw()) {
             lines.add(Line.note("Raw coal no plant washes sells as thermal coal, tonne for tonne."));
         }
+        lines.addAll(ham.citybuildersim.BuildCard.chainLines(game, this));
         return lines;
     }
 }

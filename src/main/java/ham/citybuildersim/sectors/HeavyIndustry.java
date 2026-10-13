@@ -159,6 +159,32 @@ public final class HeavyIndustry extends ProcessingSector {
         return Double.isFinite(export) && export > 0 ? ham.citybuildersim.OldMetal.PAY_SHARE * export : 0;
     }
 
+    /**
+     * The page (0.7.142, batch I13): the city's old steel last month - what
+     * arose, what its yards bought and what went to landfill (OldMetal), as
+     * Copper Refining's page says its old copper - and the price they pay;
+     * then its works' own power and who buys what it makes here
+     * (BuildCard.chainLines()).
+     */
+    @Override
+    public java.util.List<Line> ownLines(ham.citybuildersim.Game game) {
+        java.util.List<Line> lines = new java.util.ArrayList<>();
+        ham.citybuildersim.OldMetal pool = pool();
+        if (game == null || pool == null) return lines;
+        ham.citybuildersim.Formats f = ham.citybuildersim.Formats.INSTANCE;
+        lines.add(Line.head("The city's old steel, last month"));
+        lines.add(Line.of("Arose, from cars, demolitions, offcuts and wagons", f.count(pool.lastArisen()) + " t"));
+        lines.add(Line.of("Bought by the scrap yards", f.count(pool.lastBought()) + " t"));
+        lines.add(Line.of("To landfill", f.count(pool.lastLandfill()) + " t", Line.Tone.MUTED));
+        if (oldSteelIntake() > 0) {
+            lines.add(Line.note(String.format("Its scrap yards take the city's old steel first, at %s a tonne - %.0f%% of"
+                    + " scrap's export price - %s of it a month at nameplate.", f.amount(oldSteelPrice()),
+                    100 * ham.citybuildersim.OldMetal.PAY_SHARE, f.count(oldSteelIntake()) + " t")));
+        }
+        lines.addAll(ham.citybuildersim.BuildCard.chainLines(game, this));
+        return lines;
+    }
+
     /** Old steel arisen in the pool's last month past what the yards standing take: what one more would run on. */
     private double spareOldSteel(ham.citybuildersim.OldMetal pool) {
         return Math.max(0, pool.lastArisen() - oldSteelIntake());

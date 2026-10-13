@@ -277,7 +277,8 @@ public abstract class ExtractionSector extends Sector {
         double reserveTonnes = land.getRemaining(resource);
 
         if (unminedDeposits <= 0) return BusinessInvestment.Decision.no(sector, "no deposit to dig");
-        if (reserveTonnes <= 0)   return BusinessInvestment.Decision.no(sector, "the ore is worked out");
+        // ...its own resource named since 0.7.142 (batch I13): "the coal is worked out", not the ore.
+        if (reserveTonnes <= 0)   return BusinessInvestment.Decision.no(sector, "the " + oreWords(resource, null) + " is worked out");
 
         List<LandManager.Claim> standing = game.claimsOn(resource);
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
@@ -372,21 +373,69 @@ public abstract class ExtractionSector extends Sector {
         return land.getRemaining(resource, site.type()) > 0 && land.fits(resource, site.type(), standing, site.sites());
     }
 
-    /** Why the first mine that does not fit cannot stand: its type worked out, or no field of its type with room for its sites. */
+    /**
+     * Why the first mine that does not fit cannot stand: its type worked out,
+     * or no field of its type with room for its sites - each in its own
+     * resource's words since 0.7.142 (batch I13; the docs pass's flag, CONFIRM
+     * 0.7.136-0.7.137 item 8): "no coking coal left in the city's fields for
+     * an Underground Coal Mine", "no hematite field with 20 free sites for a
+     * Large Open-Pit Mine", where coal, stone and copper all read "ore".
+     */
     private String noField(LandManager land, BuildingsTemplate t) {
         BuildingsTemplate.Site site = t.site();
-        String type = site == null || site.type() == null ? "" : typeWord(site.type()) + " ";
-        if (site != null && !(land.getRemaining(resource, site.type()) > 0)) {
-            return String.format("no %sore left for %s", type, ProcessingSector.a(t.getName()));
+        Deposit.FieldType type = site == null ? null : site.type();
+        if (site != null && !(land.getRemaining(resource, type) > 0)) {
+            return String.format("no %s left in the city's fields for %s", oreWords(resource, type), ProcessingSector.a(t.getName()));
         }
         int sites = site == null ? 1 : site.sites();
-        return String.format("no %sfield with %d free site%s for %s", type, sites, sites == 1 ? "" : "s",
+        return String.format("no %s with %d free site%s for %s", fieldWords(resource, type), sites, sites == 1 ? "" : "s",
                 ProcessingSector.a(t.getName()));
+    }
+
+    /**
+     * Why one more of `t` cannot stand on the city's ground now, in the plan's
+     * words (noField()), or null when it fits (fits()): the build card's
+     * field, the planner's feed for a mine (0.7.142, batch I13).
+     */
+    public String fieldWanting(BuildingsTemplate t) {
+        if (game == null || t == null || fits(t)) return null;
+        return noField(game.getLandManager(), t);
     }
 
     /** A field type in words: "hematite", "magnetite". */
     static String typeWord(Deposit.FieldType type) {
         return type == null ? "" : type.name().toLowerCase(java.util.Locale.ROOT).replace('_', ' ');
+    }
+
+    /**
+     * What a resource's ground holds, of a type, in words (0.7.142): "hematite
+     * ore", "coking coal", "sulphide copper ore", "limestone", "hard rock";
+     * of ANY (null) or a resource of one type its own - "iron ore", "coal",
+     * "copper ore", "stone".
+     */
+    public static String oreWords(Resource r, Deposit.FieldType type) {
+        if (r == null) return "ore";
+        String of = type == null || !r.hasTypes() ? "" : typeWord(type);
+        switch (r) {
+            case IRON:   return of.isEmpty() ? "iron ore" : of + " ore";
+            case COAL:   return of.isEmpty() ? "coal" : of + " coal";
+            case COPPER: return of.isEmpty() ? "copper ore" : of + " copper ore";
+            case STONE:  return of.isEmpty() ? "stone" : of;
+            default:     return r.label().toLowerCase(java.util.Locale.ROOT);
+        }
+    }
+
+    /** ...and one field of it (0.7.142): "hematite field", "thermal coal field", "oxide copper field", "limestone field"; "iron field", "stone field" of ANY. */
+    public static String fieldWords(Resource r, Deposit.FieldType type) {
+        if (r == null) return "field";
+        String of = type == null || !r.hasTypes() ? "" : typeWord(type);
+        switch (r) {
+            case IRON:   return (of.isEmpty() ? "iron" : of) + " field";
+            case COAL:   return (of.isEmpty() ? "coal" : of + " coal") + " field";
+            case COPPER: return (of.isEmpty() ? "copper" : of + " copper") + " field";
+            case STONE:  return (of.isEmpty() ? "stone" : of) + " field";
+            default:     return r.label().toLowerCase(java.util.Locale.ROOT) + " field";
+        }
     }
 
     /* ----- the retirement ----- */
@@ -475,7 +524,8 @@ public abstract class ExtractionSector extends Sector {
             }
         }
         if (worked < owned) {
-            lines.add(Line.note("There is ore under this city that nothing is digging."));
+            // ...its own resource named since 0.7.142 (batch I13): coal, stone or copper ore under the city, not "ore".
+            lines.add(Line.note("There is " + oreWords(resource, null) + " under this city that nothing is digging."));
         }
         return lines;
     }

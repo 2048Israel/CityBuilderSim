@@ -79,6 +79,12 @@ public final class WoodProducts extends ProcessingSector {
     /** The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. */
     public static final int PELLET_MILL = 138;
 
+    /** The page (0.7.142, batch I13): the pulp mills' own power sold, and who buys what it makes - its own mills the residues and the pulp first, nobody here the lumber, panels, paper or pellets yet (BuildCard.chainLines()). */
+    @Override
+    public java.util.List<Line> ownLines(ham.citybuildersim.Game game) {
+        return ham.citybuildersim.BuildCard.chainLines(game, this);
+    }
+
     public WoodProducts() {
         super(Sectors.WOOD_PRODUCTS, "Wood Products", BuildingType.HEAVY_INDUSTRY);
         // Lumber first: its planning good, the first it keeps in a yard.
