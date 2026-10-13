@@ -419,4 +419,22 @@ public final class CoalMining extends ExtractionSector {
         }
         return lines;
     }
+
+    /* =====================================================================
+       THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and
+       ham.citybuildersim.IndustryView)
+       ===================================================================== */
+
+    /** Whether the plan weighs a building of its: a mine that lifts its coal, and since its plants are planned too (planWash()), a plant that washes it. */
+    @Override
+    public boolean isWeighed(BuildingsTemplate t) {
+        return super.isWeighed(t) || (t != null && t.getWash() > 0);
+    }
+
+    /** A wash plant's ground is the raw coal: planWash() weighs one only while raw coal standing or on site goes unwashed (unwashed()); a mine's is ExtractionSector's. */
+    @Override
+    protected String groundRefusal(BuildingsTemplate t) {
+        if (t == null || lifts(t) || !(t.getWash() > 0)) return super.groundRefusal(t);
+        return unwashed() > 0 ? null : "no raw coal goes unwashed";
+    }
 }

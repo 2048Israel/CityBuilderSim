@@ -479,4 +479,58 @@ public abstract class ExtractionSector extends Sector {
         }
         return lines;
     }
+
+    /* =====================================================================
+       THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md
+       2.13; ham.citybuildersim.IndustryView)
+
+       Each industry's month is drawn as a picture, each kind of its buildings
+       with the gate one more of it would fail, in the plan's words. plan()
+       asks its gates inline and keeps only the refusal it reports, where a
+       works' sector weighs every building and keeps them all
+       (ProcessingSector.appraise()). So one more of a mine is weighed here
+       the way plan() weighs it - the same ground test and words, the same
+       estimate (estimatedMonthlyProfit()), the same cost with its lorries
+       (fleetCapital()), the same planner - and judged at every gate in
+       SpreadPlanner's order (SpreadPlanner.judge()): its ground as the FEED
+       gate, then the ground for the building, the staff and the money on its
+       whole cost. Reads only: plan() does not call them.
+       ===================================================================== */
+
+    /** Whether the plan weighs a building of its: one that lifts its ground (lifts()); Coal Mining's wash plants too. */
+    public boolean isWeighed(BuildingsTemplate t) {
+        return lifts(t);
+    }
+
+    /**
+     * Its ground's refusal of one more `t`, in plan()'s words, or null when
+     * the ground has room for it: a site of its resource unworked, its ore not
+     * worked out, and room for its sites on one field of its type (fits(),
+     * noField()). Forestry's is E, Coal Mining's wash plant's the raw coal.
+     */
+    protected String groundRefusal(BuildingsTemplate t) {
+        LandManager land = game.getLandManager();
+        if (land.getSites(resource) - game.committedOn(resource) <= 0) return "no deposit to dig";
+        if (land.getRemaining(resource) <= 0) return "the ore is worked out";
+        return fits(land, t, game.claimsOn(resource)) ? null : noField(land, t);
+    }
+
+    /**
+     * One more of `t` weighed as plan() weighs it (above), every gate asked:
+     * its ground (groundRefusal()), the ground for the building, the staff,
+     * and the money on its whole cost - its order and its lorries
+     * (fleetCapital()) - for what it would earn (estimatedMonthlyProfit()).
+     * Null for a building the plan does not weigh, or with no city. Pure.
+     */
+    public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
+        if (t == null || plans == null || game == null || buildings == null || markets == null || !isWeighed(t)) return null;
+        double cost = plans.getCostOf(t, 1) + fleetCapital(t);
+        return SpreadPlanner.judge(t, estimatedMonthlyProfit(t, plans), cost, groundRefusal(t), planner.city(this, plans, game), null);
+    }
+
+    /** Whether a building of its stands over ground with nothing left of its type (workedOut()): a mine that lifts nothing; false with no city. */
+    public boolean isWorkedOut(BuildingsTemplate t) {
+        LandManager land = game == null ? null : game.getLandManager();
+        return land != null && t != null && workedOut(land, t);
+    }
 }

@@ -382,10 +382,7 @@ public abstract class ProcessingSector extends Sector {
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
             if (!weighs(t)) continue;
             boolean standing = buildings.getQuantity(t.getId()) > 0;
-            double share = standing ? feedShareStanding(t) : 1;
-            double rate = share == 1 ? city.rate() : city.rate() * share;
-            planner.noteMonth(kindOf(t), standing, standing && lastEarns(t, v, city, exchangeFactor(), tariff(), share,
-                    offMarketFeed(t, rate) + fleetRunning(t, v, rate)) < 0);
+            planner.noteMonth(kindOf(t), standing, standing && lastOneEarns(t, v, city) < 0);
         }
     }
 
@@ -440,5 +437,36 @@ public abstract class ProcessingSector extends Sector {
     @Override
     protected void resetExtras() {
         planner.reset();
+    }
+
+    /* =====================================================================
+       THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md
+       2.13; ham.citybuildersim.IndustryView)
+
+       Each industry's month is drawn as a picture, each kind of its works
+       with its run, what the last one standing earns and what one more would
+       - the plan's own figures, not the screen's. What a kind runs at and
+       what its last one earns were the idle book's arithmetic inside
+       noteIdleWorks(); they are read here through the one method that
+       counts the idle months (lastOneEarns()), so the picture says what the
+       rule weighed. Reads only.
+       ===================================================================== */
+
+    /** What the last one of `t` standing earns a month at `v` and `city`: lastEarns() at the share of nameplate its feed fills (feedShareStanding()), that feed and its lorries in its costs - IDLE, THEN SHED's test, and the pictograms' (lastEarns(t)). */
+    private double lastOneEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city) {
+        double share = feedShareStanding(t);
+        double rate = share == 1 ? city.rate() : city.rate() * share;
+        return lastEarns(t, v, city, exchangeFactor(), tariff(), share, offMarketFeed(t, rate) + fleetRunning(t, v, rate));
+    }
+
+    /** Whether the plan weighs a building of its, and the idle book counts its kind (weighs()): one that makes something. */
+    public boolean isWeighed(BuildingsTemplate t) {
+        return weighs(t);
+    }
+
+    /** What the last one of `t` standing earns a month at this month's values, as IDLE, THEN SHED counts it (lastOneEarns()) - below nothing an idle month; NaN with no city or markets. */
+    public double lastEarns(BuildingsTemplate t) {
+        if (t == null || game == null || buildings == null || markets == null || game.getBusinessInvestment() == null) return Double.NaN;
+        return lastOneEarns(t, values(), planner.city(this, game.getBusinessInvestment(), game));
     }
 }

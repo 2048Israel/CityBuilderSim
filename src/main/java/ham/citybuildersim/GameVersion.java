@@ -6474,8 +6474,47 @@ public final class GameVersion {
      *     within a year of opening - the churn of works on imported feed
      *     Jerus let stand (I7-K, 2026-10-12). Every month passes the audit
      *     and every reload matches; re-baselined.
+     *
+     * 0.7.141 (2026-10-12) - THE MATERIALS PICTOGRAMS' MODEL. Batch I11, the
+     * first of the four screen batches that finish the materials chains
+     * (docs/studies/spec-materials.md 2.13, 4's IndustryViewCheck line and
+     * 5's I11 row; runs/brief-batchI11.md, runs/fixI11-notes.md). Reads only:
+     * no save format change (39), and the playtests byte-identical.
+     *   - IndustryView.of(Game, Sector), pure, for each of the nine
+     *     industries - Iron Mining, Iron & Steel, Coal Mining, Quarrying,
+     *     Cement & Concrete, Copper Mining, Copper Refining, Forestry and
+     *     Wood Products: the fields by type as vessels filled to what remains
+     *     (the works on ANY where the packing places them), the forest; each
+     *     feed by where it came from - its own works (captive), each seller
+     *     in the city off the month's fills, the old metal, the world; each
+     *     kind of building with its run, the last one's earnings as the idle
+     *     book counts them, its idle months and one more weighed at every
+     *     gate in SpreadPlanner's words; each product made, kept, sold at
+     *     home by buyer, carried (Quarrying's limestone into aggregate),
+     *     shipped and stocked; the works' power made, drawn, bought and sold;
+     *     the lorries; Coal Mining's wash; the old metal's month; and
+     *     Forestry's forest - where it settles with the law and without, and
+     *     the planting line. Its words and colours, and a roof per industry.
+     *     The screen draws it in batch I12.
+     *   - The reads it needed, getters only: Sector.getPowerMade(),
+     *     getPowerDrawn(), getGridDraw(); ProcessingSector.isWeighed(),
+     *     lastEarns(t) (the idle book's own figure, noteIdleWorks() reading it
+     *     through the same method); ExtractionSector.isWeighed(), appraise(t,
+     *     plans) - one more of a mine weighed as plan() weighs it, every gate
+     *     asked - and isWorkedOut(), with Coal Mining's wash plant and
+     *     Forestry's E as their own ground's refusal (groundRefusal()).
+     *   - Harnesses: IndustryViewCheck (new, the 108th: the nine and their
+     *     roofs; each vessel the ground's reads; every good of every industry
+     *     balancing against its warehouse's move over the month, in units and
+     *     tonnes, and every feed's parts against what its works needed; every
+     *     figure the rows', the fills', the appraisals' and the idle book's;
+     *     imported feed, captive chains, old steel and old copper, goods sold
+     *     across industries and the limestone carried; the power; the forest
+     *     and its settling point with 40% protected; the words and colours;
+     *     pure - a save before and after a read the same; after a load; and
+     *     the plan ordering the kind the view would, in towns at founding).
      */
-    public static final String VERSION = "0.7.140";
+    public static final String VERSION = "0.7.141";
 
     /**
      * The save shape.
