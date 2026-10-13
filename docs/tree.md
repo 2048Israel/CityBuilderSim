@@ -450,7 +450,7 @@ adds its line here, not in `CLAUDE.md`.
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103);
                                    since 0.7.139 it says what childcare it stands at m1,000 to m4,000, and
                                    -Dplaytest.budget=N prints the treasury's month line by line
-        tools/                     the index generators, the two look-up tools, Stale (the prose check) and ManualToMarkdown (the manual into docs/); nothing in the game uses them
+        tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1) and ManualToMarkdown (the manual into docs/); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
                                          conversion-saves.json the five saves' land ConversionCheck converts (0.7.66)

@@ -28,8 +28,9 @@ every call after it.
   or a large screen whole.
 - **The big indexes:** `docs/harnesses.md` (800 KB) and `docs/dials.md`
   (500 KB) are for grep, never for reading.
-- **Sessions:** one fresh session or agent per batch, briefs to the point,
-  and reports of 15 lines.
+- **Sessions:** a long session costs more per call, because each call
+  re-sends all of it: start a fresh session or agent per task (a batch, a
+  review), with a brief to the point and a report of 15 lines.
 
 ## Open these before reading source
 
@@ -55,6 +56,7 @@ with it. The look-up tools:
     java -cp target/classes ham.citybuildersim.tools.Where "THE BANK"             # a banner section by its title
     java -cp "target/classes;<gson.jar>" ham.citybuildersim.tools.SaveDump 3 sectors   # inside a save without loading it
     java -cp target/classes ham.citybuildersim.tools.Stale                        # prose no longer true; StaleCheck asserts its firm half
+    java -cp target/classes ham.citybuildersim.tools.Names chatgpt/<topic>        # names a branch's new text uses that the tree does not declare
     java -cp target/classes ham.citybuildersim.tools.ManualToMarkdown --wrap page.html docs/manual.html   # the pulled manual, then...
     java -cp target/classes ham.citybuildersim.tools.ManualToMarkdown docs/manual.html docs/manual.md     # ...as Markdown
 
@@ -225,8 +227,12 @@ writes, runs nothing) and Gemini (AI Studio: a shell, git, Java and Maven;
 it ran the checks to the cent on 2026-10-13)
 work on branches `chatgpt/<topic>` and `gemini/<topic>`, never `main`, by
 their briefs `openai-dontread.md` and `gemini-notes.md`. A Claude session
-ships such a branch with `./ship.sh --no-tag <branch>` after reading its diff;
-what they report as run is checked, not taken.
+ships such a branch with `./ship.sh --no-tag <branch>` after its review;
+what they report as run is checked, not taken. The review goes to the
+`assistant-review` subagent (`.claude/agents/`) or a fresh session, never a
+long conversation (RV1). `ship.sh` runs `tools.Names` on their branches and
+prints the names their text uses that the tree does not declare: a warning,
+not a gate, since a passage about the past may name what existed then.
 
 **Which model** (Jerus, 2026-09-21): the implementer and the docs pass run on
 Opus, whatever the job's size. The orchestrating session keeps the gate.
