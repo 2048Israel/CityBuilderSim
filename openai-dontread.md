@@ -22,9 +22,12 @@ Take work that needs reading and reasoning, not running:
    constants, as `README.md`, *The checks*, asks. Put it on your branch as
    Java when you are sure of the API from the source; otherwise as a design
    note in `docs/queue/`.
-3. **Research.** The research rows in `QUEUE.md` (R0, R0b: the 1900 economy,
-   causes of death) are reading and writing, with sources. Draft them into
-   `docs/studies/` on your branch.
+3. **Handoffs for batches already researched.** R0 and R0b in `QUEUE.md` are
+   builds: their research is done (`docs/studies/research-1900.md`). What
+   helps is what you did for R0 on 2026-10-13: the current code's seams and
+   traps, checked against the source, the harnesses it needs. Research
+   proper - reading and sourcing - only when Jerus asks for a study.
+   Put "read / edited / not run" in the commit message itself.
 4. **Explain existing code from the source**, when Jerus asks.
 
 ## How you work
