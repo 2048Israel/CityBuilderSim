@@ -14,7 +14,16 @@ instance `Bank.java` names `ratePremium()` three times) and 17 "fuzzy count"
 (a count of sections or sectors that may be stale, or may mean something
 else).
 
-Take **ten** of them that are plainly stale prose and make each true again:
+Take **ten** of them that are plainly stale prose and make each true again.
+
+**A passage about the past is not stale** (added after the first try,
+2026-10-13). "Until 0.7.7 ratePremium() turned it into ...", "X USED TO BE
+HERE", "it was ... plus ratePremium()": the method existed then, and its
+exact name is the record - leave it. About 70 of the 124 findings are of this
+kind. Take only a comment that says what the code does *now* and names
+something that no longer exists, or a count that is wrong *now*. Never
+reword a name only so that Stale stops matching it (`getSetCost()` to "a
+getSetCost method"): the finding is the sentence's truth, not the tool's.
 
 - For an unresolved member, find what the comment meant - the method was
   renamed, moved or folded into another - with `Where` or grep, and name the
@@ -37,7 +46,10 @@ Take **ten** of them that are plainly stale prose and make each true again:
    maps; commit them with your change - and not `QUEUE.md`: the session that
    ships this takes GS1's row out.
 4. `./batch-check.sh --fast`: compile OK, Stale 0 firm and ten fewer soft.
-   Then `./batch-check.sh` (the whole suite, about 15 minutes) once.
+   Then `./batch-check.sh` (the whole suite, about 15 minutes) once. Its
+   wall-clock bounds (MapCheck, PlanCheck, EarthTerrainCheck) fail in your
+   container, which runs the suite at about half speed: report them as
+   that, as you did; the gate runs the suite again on Claude's machine.
 5. Commit with a message that lists each fix as `file:line - was / now`, the
    skipped ones and why, and what you ran with its last lines. Push the
    branch and tell Jerus it is ready. Claude reviews the diff and ships it.
