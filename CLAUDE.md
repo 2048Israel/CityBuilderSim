@@ -351,8 +351,16 @@ These are Jerus's, and they do not move.
                                    made, kept, sold by buyer, carried and shipped; the power made, drawn and
                                    sold; Forestry's settling point and planting line; its words, colours and a
                                    roof per industry - pure, IndustryViewCheck holds it (every good balancing
-                                   against its warehouse's move); ui/SectorScreen draws it from batch I12
-                                   (docs/studies/spec-materials.md 2.13)
+                                   against its warehouse's move); IndustryPicture lays it out and
+                                   ui/SectorScreen draws it (docs/studies/spec-materials.md 2.13)
+        IndustryPicture.java       the nine's pictures laid out to scale (0.7.143, batch I12): IndustryView's
+                                   month traced end to end (trace(): each good split over the kinds that made
+                                   and used it) and laid out as RefineryView's picture is - a mine's fields as
+                                   vessels filled to what is left, or a works' feeds by origin, the imports
+                                   hatched; the works in ranks; the tank under the industry's roof (pit, camp,
+                                   furnace, kiln, mill); the takers; one scale, in tonnes (the forest's m3) -
+                                   and the strip of cells under it; pure, ui/SectorScreen's OPERATIONS paints
+                                   it with the refinery's painter, IndustryViewCheck 12 holds it
         SectorStatements.java      one business's month as formal statements (0.7.74): profit or loss through
                                    gross and operating profit, the classified sheet, the cash flow in three
                                    sections, the changes in equity (since 0.7.75 in columns, share capital and

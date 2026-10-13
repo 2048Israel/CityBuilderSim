@@ -83,6 +83,11 @@ import java.util.Set;
  *  11. THE PLAN'S ORDER: in towns at their founding where kinds pass every
  *      gate - a longwall's coal unwashed, a forest with no crew, ore with no
  *      mine - each sector's plan orders the kind the view would.
+ *  12. THE PICTURE (0.7.143, batch I12; IndustryPicture): every industry the
+ *      towns draw, at the 1,389 x 868 window's width - its ribbons to scale,
+ *      each pair's its flows' quantity times one scale and each node's the
+ *      view's figures; every label's figure the view's; nothing off the
+ *      frame; each under its roof; nothing drawn with nothing standing.
  *
  * Every fixture causes its condition.
  */
@@ -144,6 +149,7 @@ public class IndustryViewCheck {
         pure(works);
         afterALoad(copper);
         thePlansOrder();
+        thePicture(towns);
 
         for (GameFiles f : FILES) LongPlaytest.cleanUp(f.getDirectory().getParent());
         out.println();
@@ -864,6 +870,7 @@ public class IndustryViewCheck {
             for (IndustryView.Vessel x : v.fields()) s.append(IndustryView.vesselWords(x));
             if (v.forest() != null) s.append(IndustryView.forestWords(v.forest()));
             if (v.oldMetal() != null) s.append(IndustryView.metalWords(v.oldMetal()));
+            s.append(IndustryPicture.picture(g, v, FRAME_WIDTH, IndustryPicture.HEIGHT).texts()).append(IndustryPicture.strip(v));
         }
         return s.toString();
     }
@@ -934,8 +941,244 @@ public class IndustryViewCheck {
         report("the loaded twin reads its month as not counted, drawing nothing, its rows not saved",
                 (twin.getLoadFailure() == null || twin.getLoadFailure().isEmpty()) && !v.counted() && !v.drawn() && v.standing() > 0
                         && none, IndustryView.headline(v));
+        report("...and its picture is empty, saying a month must run", IndustryPicture.picture(twin, v, FRAME_WIDTH,
+                IndustryPicture.HEIGHT).empty() && IndustryPicture.emptyWords(v).contains("once a month has run"), IndustryPicture.emptyWords(v));
         quietly(() -> twin.simulateMonths(1));
         IndustryView.View on = IndustryView.of(twin, twin.getSectors().copperRefining());
-        assertTrue("...and a month on, it is counted and drawn again", on.counted() && on.drawn());
+        assertTrue("...and a month on, it is counted and drawn again", on.counted() && on.drawn()
+                && !IndustryPicture.picture(twin, on, FRAME_WIDTH, IndustryPicture.HEIGHT).empty());
+    }
+
+    /* ============================ 12. THE PICTURE ============================ */
+
+    /** The picture's width at the 1,389 x 868 window: the Operations card's inside (RefineryViewCheck's 1,200). */
+    static final double FRAME_WIDTH = 1_200;
+
+    /** The slack a laid-out pixel is held to. */
+    static final double PX = 1e-6;
+
+    /**
+     * The picture of every industry drawn in the three towns, at the 1,389 x
+     * 868 window's width: every ribbon from one node's right edge to another's
+     * left, its height its flow's quantity times the picture's one scale; each
+     * node's ribbons the view's own figures times that scale - a product's band
+     * what left the works, a taker's bar what it took, a source's bar what was
+     * bought from it; every label's figure the view's, in IndustryView's
+     * words; and nothing off the frame.
+     */
+    static void thePicture(List<Town> towns) {
+        out.println("\n--- 12. the picture: ribbons to scale, every label's figure the view's, nothing off the frame at 1,389 x 868 ---");
+        int pictures = 0, ribbons = 0, nodes = 0, labels = 0, roofs = 0;
+        List<String> loose = new ArrayList<>(), unscaled = new ArrayList<>(), figures = new ArrayList<>(), off = new ArrayList<>();
+        Set<IndustryView.Roof> roofed = EnumSet.noneOf(IndustryView.Roof.class);
+        for (Town t : towns) {
+            Game g = t.game();
+            for (IndustryView.View v : IndustryView.all(g)) {
+                if (!v.drawn()) continue;
+                IndustryPicture.Picture p = IndustryPicture.picture(g, v, FRAME_WIDTH, IndustryPicture.HEIGHT);
+                String who = v.sector().label();
+                if (p.empty()) {
+                    figures.add(who + " drew nothing");
+                    continue;
+                }
+                pictures++;
+                double k = p.scale();
+                List<IndustryPicture.Flow> flows = IndustryPicture.trace(v);
+
+                // Every ribbon attached at both ends, and each pair's ribbons its flows' quantity times the one scale.
+                Map<String, Double> want = new HashMap<>(), drawn = new HashMap<>();
+                Map<String, double[]> sides = new HashMap<>();
+                for (IndustryPicture.Flow f : flows) want.merge(f.from() + ">" + f.to(), f.drawn() * k, Double::sum);
+                for (RefineryView.Ribbon r : p.ribbons()) {
+                    RefineryView.Place from = null, to = null;
+                    for (RefineryView.Place q : p.places()) {
+                        if (from == null && Math.abs(q.right() - r.x1()) < PX && r.a0() >= q.y() - PX && r.a1() <= q.y() + q.h() + PX) from = q;
+                        if (to == null && Math.abs(q.x() - r.x2()) < PX && r.b0() >= q.y() - PX && r.b1() <= q.y() + q.h() + PX) to = q;
+                    }
+                    if (from == null || to == null) {
+                        loose.add(String.format("%s: %.1f,%.1f-%.1f to %.1f,%.1f-%.1f", who, r.x1(), r.a0(), r.a1(), r.x2(), r.b0(), r.b1()));
+                        continue;
+                    }
+                    ribbons++;
+                    drawn.merge(from.key() + ">" + to.key(), r.height(), Double::sum);
+                    sides.computeIfAbsent(from.key(), x -> new double[2])[1] += r.height();
+                    sides.computeIfAbsent(to.key(), x -> new double[2])[0] += r.height();
+                }
+                for (String pair : want.keySet()) {
+                    double a = want.get(pair), b = drawn.getOrDefault(pair, 0.0);
+                    if (Math.abs(a - b) > 1e-6 * Math.max(1, a)) unscaled.add(String.format("%s %s %.3f px, wants %.3f", who, pair, b, a));
+                }
+                for (String pair : drawn.keySet()) if (!want.containsKey(pair)) unscaled.add(who + " " + pair + " drawn, never traced");
+
+                // Each node's ribbons are the view's figures times the scale.
+                Map<String, Double> node = new HashMap<>();
+                for (IndustryView.Product q : v.products()) {
+                    Good x = q.good();
+                    node.merge("in " + IndustryPicture.bandKey(x), IndustryPicture.drawn(v, x, q.made() + q.carriedIn() - q.captive()
+                            - q.carriedOut()), Double::sum);
+                    node.merge("out " + IndustryPicture.storedKey(x), IndustryPicture.drawn(v, x, Math.max(0, -q.intoStock())), Double::sum);
+                    for (IndustryView.Part b : q.buyers()) {
+                        node.merge("in " + IndustryPicture.takerKey(b.party()), IndustryPicture.drawn(v, x, b.units()), Double::sum);
+                    }
+                    node.merge("in " + IndustryPicture.takerKey(IndustryPicture.ABROAD), IndustryPicture.drawn(v, x, q.exported()), Double::sum);
+                    node.merge("in " + IndustryPicture.takerKey(IndustryPicture.WAREHOUSE), IndustryPicture.drawn(v, x, Math.max(0, q.intoStock())),
+                            Double::sum);
+                    node.merge("in " + IndustryPicture.takerKey(IndustryPicture.LOST), IndustryPicture.drawn(v, x, q.lost()), Double::sum);
+                }
+                for (IndustryView.Feed f : v.feeds()) {
+                    Good x = f.good();
+                    boolean used = false;
+                    for (IndustryView.Unit u : v.units()) used |= u.standing() > 0 && u.template().uses(x) > 0;
+                    if (!used) continue;
+                    node.merge("out " + IndustryPicture.sourceKey(x, IndustryView.Origin.HOME), IndustryPicture.drawn(v, x, f.home()), Double::sum);
+                    node.merge("out " + IndustryPicture.sourceKey(x, IndustryView.Origin.WORLD), IndustryPicture.drawn(v, x, f.imported()),
+                            Double::sum);
+                    node.merge("out " + IndustryPicture.sourceKey(x, IndustryView.Origin.OLD_METAL), IndustryPicture.drawn(v, x, f.oldMetal()),
+                            Double::sum);
+                    if (x == Good.DIESEL) node.merge("in " + IndustryPicture.LORRIES, IndustryPicture.drawn(v, x, Math.min(f.lorries(),
+                            f.home() + f.imported())), Double::sum);
+                }
+                boolean yards = false;
+                for (IndustryView.Unit u : v.units()) yards |= u.standing() > 0 && u.template().oldMetal(Good.STEEL) > 0;
+                if (v.sector() instanceof HeavyIndustry && v.oldMetal() != null && yards) {
+                    node.merge("out " + IndustryPicture.sourceKey(Good.STEEL, IndustryView.Origin.OLD_METAL), v.oldMetal().bought(), Double::sum);
+                }
+                for (Map.Entry<String, Double> e : node.entrySet()) {
+                    String key = e.getKey().substring(e.getKey().indexOf(' ') + 1);
+                    int side = e.getKey().startsWith("in ") ? 0 : 1;
+                    double a = e.getValue() * k, b = sides.getOrDefault(key, new double[2])[side];
+                    nodes++;
+                    if (Math.abs(a - b) > 1e-6 * Math.max(1, a)) {
+                        unscaled.add(String.format("%s %s %s %.3f px, the view's %.3f", who, key, side == 0 ? "in" : "out", b, a));
+                    }
+                }
+                for (RefineryView.Place q : p.places()) {
+                    double[] s = sides.getOrDefault(q.key(), new double[2]);
+                    if (Math.max(s[0], s[1]) > q.h() + 1e-6 * Math.max(1, q.h())) unscaled.add(who + " " + q.key() + " taller than its node");
+                }
+
+                // Every label's figure the view's, in IndustryView's words.
+                List<String> texts = p.texts();
+                for (IndustryView.Product q : v.products()) {
+                    RefineryView.Place band = p.place(IndustryPicture.bandKey(q.good()));
+                    if (band == null || band.h() < 4) continue;
+                    String fig = IndustryView.figure(q.good(), q.made() + q.carriedIn() - q.captive() - q.carriedOut());
+                    labels++;
+                    if (!texts.contains(fig) && texts.stream().noneMatch(s -> s.endsWith(" " + fig))) figures.add(who + " band " + q.good() + " " + fig);
+                }
+                for (IndustryView.Vessel x : v.fields()) {
+                    String fig = IndustryView.pct(x.filled()) + (x.resource() == Resource.FOREST ? " standing · " : " left · ")
+                            + IndustryView.groundWords(x.resource(), x.remaining());
+                    labels++;
+                    if (!texts.contains(fig)) figures.add(who + " vessel " + fig);
+                }
+                for (IndustryView.Feed f : v.feeds()) {
+                    for (IndustryView.Origin o : new IndustryView.Origin[] { IndustryView.Origin.HOME, IndustryView.Origin.WORLD }) {
+                        if (p.place(IndustryPicture.sourceKey(f.good(), o)) == null) continue;
+                        String fig = IndustryView.unitsWords(f.good(), o == IndustryView.Origin.HOME ? f.home() : f.imported());
+                        labels++;
+                        if (texts.stream().noneMatch(s -> s.endsWith(" · " + fig))) figures.add(who + " source " + f.good() + " " + o + " " + fig);
+                    }
+                }
+                for (IndustryView.Unit u : v.built()) {
+                    String name = u.standing() > 0 ? u.template().getName() + " ×" + u.standing() : u.template().getName();
+                    labels++;
+                    if (!texts.contains(name)) figures.add(who + " kind " + name);
+                    if (u.standing() > 0 && u.run() > 0 && !u.workedOut() && u.oneMore() != null) {
+                        String run = "runs " + IndustryView.pct(u.run());
+                        labels++;
+                        if (texts.stream().noneMatch(s -> s.startsWith(run))) figures.add(who + " kind " + name + " " + run);
+                    }
+                }
+                for (RefineryView.Place q : p.places()) {
+                    if (!q.key().startsWith("taker:")) continue;
+                    Map<Good, Double> took = new HashMap<>();
+                    String party = q.key().substring("taker:".length());
+                    for (IndustryView.Product x : v.products()) {
+                        double u = party.equals(IndustryPicture.ABROAD) ? x.exported() : party.equals(IndustryPicture.WAREHOUSE)
+                                ? Math.max(0, x.intoStock()) : party.equals(IndustryPicture.LOST) ? x.lost() : 0;
+                        for (IndustryView.Part b : x.buyers()) if (party.equals(b.party())) u += b.units();
+                        if (u > 0) took.put(x.good(), u);
+                    }
+                    if (took.size() != 1) continue;
+                    Map.Entry<Good, Double> e = took.entrySet().iterator().next();
+                    String fig = IndustryView.figure(e.getKey(), e.getValue());
+                    labels++;
+                    if (!texts.contains(fig)) figures.add(who + " taker " + party + " " + fig);
+                }
+                if (v.power().made() > 0 || v.power().drawn() > 0) {
+                    labels++;
+                    if (!texts.contains(IndustryView.powerWords(v.power()))) figures.add(who + " power");
+                }
+                if (!IndustryPicture.noteWords(v).isEmpty()) {
+                    labels++;
+                    if (!texts.contains(IndustryPicture.noteWords(v))) figures.add(who + " note");
+                }
+                for (IndustryPicture.Cell c : IndustryPicture.strip(v)) {
+                    for (IndustryView.Product q : v.products()) {
+                        if (!c.name().equals(q.good().label())) continue;
+                        labels++;
+                        if (!c.rows().get(0).figure().equals(IndustryView.unitsWords(q.good(), q.made()))) figures.add(who + " cell " + c.name());
+                    }
+                }
+
+                // Nothing off the frame: every ribbon, box, line, icon and outline, and every line of words with the room it is given.
+                double w = p.width(), h = p.height();
+                for (RefineryView.Ribbon r : p.ribbons()) {
+                    if (!inside(Math.min(r.x1(), r.x2()), Math.min(r.a0(), r.b0()), Math.max(r.x1(), r.x2()), Math.max(r.a1(), r.b1()), w, h)) {
+                        off.add(who + " a ribbon");
+                    }
+                }
+                for (RefineryView.Box b : p.boxes()) if (!inside(b.x(), b.y(), b.x() + b.w(), b.y() + b.h(), w, h)) off.add(who + " a box " + b.tip());
+                for (RefineryView.Line l : p.lines()) {
+                    if (!inside(Math.min(l.x1(), l.x2()), Math.min(l.y1(), l.y2()), Math.max(l.x1(), l.x2()), Math.max(l.y1(), l.y2()), w, h)) {
+                        off.add(who + " a line");
+                    }
+                }
+                for (IndustryPicture.Mark m : p.marks()) if (!inside(m.x(), m.y(), m.x() + m.size(), m.y() + m.size(), w, h)) off.add(who + " an icon");
+                for (RefineryView.Outline o : p.outlines()) {
+                    String[] n = o.path().replaceAll("[MLQZ]", " ").trim().split("\\s+");
+                    for (int i = 0; i + 1 < n.length; i += 2) {
+                        double x = Double.parseDouble(n[i]), y = Double.parseDouble(n[i + 1]);
+                        if (!inside(x, y, x, y, w, h)) {
+                            off.add(who + " its roof");
+                            break;
+                        }
+                    }
+                }
+                for (RefineryView.Words x : p.words()) {
+                    double left = x.align() == RefineryView.Align.START ? x.x() : x.align() == RefineryView.Align.END ? x.x() - x.slot()
+                            : x.x() - x.slot() / 2;
+                    if (!inside(left, x.y() - x.size(), left + x.slot(), x.y() + 3, w, h) || x.slot() <= 0) off.add(who + " \"" + x.line() + "\"");
+                }
+                if (!p.outlines().isEmpty()) {
+                    roofs++;
+                    roofed.add(v.roof());
+                }
+            }
+        }
+        report("every ribbon leaves one node's right edge and reaches another's left, inside each", loose.isEmpty() && ribbons > 0,
+                loose.isEmpty() ? String.format("%,d ribbons in %d pictures", ribbons, pictures) : loose.toString());
+        report("ribbons to scale: each pair's ribbons are its flows' quantity times the picture's one scale, and each node's"
+                + " the view's figures - a band what left the works, a taker's bar what it took, a source's what was bought",
+                unscaled.isEmpty() && nodes > 0, unscaled.isEmpty() ? nodes + " node sides" : unscaled.toString());
+        report("every label's figure is the view's, in its words: bands, vessels, sources, kinds and runs, takers, power, notes, cells",
+                figures.isEmpty() && labels > 0, figures.isEmpty() ? labels + " labels" : figures.toString());
+        report("nothing off the frame at the 1,389 x 868 window's " + (int) FRAME_WIDTH + " x " + (int) IndustryPicture.HEIGHT
+                + ": ribbons, boxes, lines, icons, roofs, and every line of words with its room", off.isEmpty() && pictures > 0,
+                off.isEmpty() ? pictures + " pictures" : off.toString());
+        Set<String> shapes = new HashSet<>();
+        for (IndustryView.Roof r : IndustryView.Roof.values()) shapes.add(IndustryPicture.roof(r, 100, 100, IndustryPicture.TANK_W).toString());
+        report("each picture under its industry's roof, the five roofs each its own outline (CAMP Forestry's)", roofs == pictures
+                && shapes.size() == IndustryView.Roof.values().length && roofed.contains(IndustryView.Roof.CAMP), roofed.toString());
+        Game g = towns.get(0).game();
+        IndustryView.View none = IndustryView.of(g, g.getSectors().byKey(Sectors.FORESTRY));
+        report("fixture: an industry with nothing standing (the works town's Forestry) draws nothing, and says so",
+                none.standing() == 0 && IndustryPicture.picture(g, none, FRAME_WIDTH, IndustryPicture.HEIGHT).empty()
+                        && IndustryPicture.emptyWords(none).endsWith("has nothing standing."), IndustryPicture.emptyWords(none));
+    }
+
+    static boolean inside(double x0, double y0, double x1, double y1, double w, double h) {
+        return x0 >= -PX && y0 >= -PX && x1 <= w + PX && y1 <= h + PX;
     }
 }
