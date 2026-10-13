@@ -1000,9 +1000,17 @@ public class IndustryViewCheck {
                         continue;
                     }
                     ribbons++;
-                    drawn.merge(from.key() + ">" + to.key(), r.height(), Double::sum);
-                    sides.computeIfAbsent(from.key(), x -> new double[2])[1] += r.height();
-                    sides.computeIfAbsent(to.key(), x -> new double[2])[0] += r.height();
+                    // A band through a works' column carries its flow whole: the ribbon into it counts as the flow's, the one out of it
+                    // reaches the flow's end.
+                    boolean fromPass = from.key().startsWith("pass:"), toPass = to.key().startsWith("pass:");
+                    if (fromPass) {
+                        if (Math.abs(r.height() - from.h()) > 1e-6 * Math.max(1, from.h())) unscaled.add(who + " " + from.key() + " narrows");
+                    } else {
+                        drawn.merge(from.key() + ">" + (toPass ? to.key().substring(to.key().indexOf(':', 5) + 1).split(">")[1] : to.key()),
+                                r.height(), Double::sum);
+                        sides.computeIfAbsent(from.key(), x -> new double[2])[1] += r.height();
+                    }
+                    if (!toPass) sides.computeIfAbsent(to.key(), x -> new double[2])[0] += r.height();
                 }
                 for (String pair : want.keySet()) {
                     double a = want.get(pair), b = drawn.getOrDefault(pair, 0.0);
@@ -1129,7 +1137,11 @@ public class IndustryViewCheck {
                         off.add(who + " a ribbon");
                     }
                 }
-                for (RefineryView.Box b : p.boxes()) if (!inside(b.x(), b.y(), b.x() + b.w(), b.y() + b.h(), w, h)) off.add(who + " a box " + b.tip());
+                for (RefineryView.Box b : p.boxes()) {
+                    if (!inside(b.x(), b.y(), b.x() + b.w(), b.y() + b.h(), w, h)) {
+                        off.add(String.format("%s a box at %.1f,%.1f %.1f x %.1f", who, b.x(), b.y(), b.w(), b.h()));
+                    }
+                }
                 for (RefineryView.Line l : p.lines()) {
                     if (!inside(Math.min(l.x1(), l.x2()), Math.min(l.y1(), l.y2()), Math.max(l.x1(), l.x2()), Math.max(l.y1(), l.y2()), w, h)) {
                         off.add(who + " a line");
@@ -1150,6 +1162,9 @@ public class IndustryViewCheck {
                     double left = x.align() == RefineryView.Align.START ? x.x() : x.align() == RefineryView.Align.END ? x.x() - x.slot()
                             : x.x() - x.slot() / 2;
                     if (!inside(left, x.y() - x.size(), left + x.slot(), x.y() + 3, w, h) || x.slot() <= 0) off.add(who + " \"" + x.line() + "\"");
+                    if (IndustryPicture.widthOf(x) > x.slot() + PX) {
+                        off.add(String.format("%s \"%s\" %.0f px wide in %.0f", who, x.line(), IndustryPicture.widthOf(x), x.slot()));
+                    }
                 }
                 if (!p.outlines().isEmpty()) {
                     roofs++;
@@ -1165,7 +1180,7 @@ public class IndustryViewCheck {
         report("every label's figure is the view's, in its words: bands, vessels, sources, kinds and runs, takers, power, notes, cells",
                 figures.isEmpty() && labels > 0, figures.isEmpty() ? labels + " labels" : figures.toString());
         report("nothing off the frame at the 1,389 x 868 window's " + (int) FRAME_WIDTH + " x " + (int) IndustryPicture.HEIGHT
-                + ": ribbons, boxes, lines, icons, roofs, and every line of words with its room", off.isEmpty() && pictures > 0,
+                + ": ribbons, boxes, lines, icons, roofs, and every line of words in its room, at Plex's widest", off.isEmpty() && pictures > 0,
                 off.isEmpty() ? pictures + " pictures" : off.toString());
         Set<String> shapes = new HashSet<>();
         for (IndustryView.Roof r : IndustryView.Roof.values()) shapes.add(IndustryPicture.roof(r, 100, 100, IndustryPicture.TANK_W).toString());

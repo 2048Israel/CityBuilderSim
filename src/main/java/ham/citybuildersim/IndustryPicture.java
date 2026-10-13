@@ -96,6 +96,8 @@ public final class IndustryPicture {
     public static String bandKey(Good g) { return "made:" + g; }
     /** ...what was taken out of its warehouse. */
     public static String storedKey(Good g) { return "stored:" + g; }
+    /** ...a flow's band through the r-th rank of works' column: "pass:1:unit:44>made:COKE>COKE". */
+    public static String passKey(int rank, Flow f) { return "pass:" + rank + ":" + f.from() + ">" + f.to() + ">" + f.good(); }
     /** ...a taker: a party in the city (a sector's key, Trade.HOUSEHOLDS, Trade.CITY), or ABROAD, WAREHOUSE, LOST. */
     public static String takerKey(String who) { return "taker:" + who; }
     /** The takers that are not a party: the world, the warehouse, what was lost. */
@@ -496,11 +498,17 @@ public final class IndustryPicture {
     /** The tank's width: a product's name and its figure inside its band (the mockups' 136 to 156). */
     static final double TANK_W = 150;
 
-    /** The room between the tank and the takers' bar, for the ribbons to cross. */
-    static final double TANK_TO_TAKERS = 110;
+    /** The room between the tank and the takers' bar, for the ribbons to cross (the mockups' 44 to 60). */
+    static final double TANK_TO_TAKERS = 60;
 
-    /** The gap over a works' box: its two lines of words. */
-    static final double UNIT_GAP = 30;
+    /** The gap over a works' box: its three lines of words - its name, its run, one more in a word. */
+    static final double UNIT_GAP = 42;
+
+    /** ...the room between the sources' bar and the first rank of works, for the ribbons to turn; and the room the last rank's words have before the tank. */
+    static final double FIRST_RANK_GAP = 70, LAST_RANK_ROOM = 130;
+
+    /** The share of its size a letter of the picture's words is set at, at most: a capital's and a lower-case letter's or a figure's (IBM Plex Sans's average is .55, measured at 1,389 x 868 by the batch's probe; Plex Mono's every letter .6). */
+    static final double CAPITAL = .74, LETTER = .6;
 
     /** The gap between the sources, between the fields' rows, between the takers, and over the warehouse's block. */
     static final double SOURCE_GAP = 22, FIELD_GAP = 14, BUYER_GAP = 12, BLOCK_GAP = 22;
@@ -511,6 +519,9 @@ public final class IndustryPicture {
     /** The room over the tank for its roof: the furnace's stack and flame, the tallest. */
     static final double ROOF_ROOM = 48;
 
+    /** The room under the tank for its foot (the mockups' 7), when no warehouse's block stands under it. */
+    static final double FOOT_ROOM = 8;
+
     /** The least a source's or a taker's label centre stands from the next (the mockups' 30 and 31). */
     static final double SOURCE_SPACING = 30, LABEL_SPACING = 31;
 
@@ -518,7 +529,10 @@ public final class IndustryPicture {
     static final double WORDS_IN_BAND = 12;
 
     /** The room a product's figure has at the right of its band, and a taker's at the right of its name. */
-    static final double FIGURE_IN_BAND = 52, FIGURE_ROOM = 64;
+    static final double FIGURE_IN_BAND = 52, FIGURE_ROOM = 56;
+
+    /** The gap over a band through a works' column (RefineryView's PASS_GAP). */
+    static final double PASS_GAP = 3;
 
     /** The least a node is drawn, so a trickle shows; and a kind only on site, drawn dashed with nothing through it. */
     static final double LEAST_NODE = 1.5, ON_SITE_NODE = 6;
@@ -647,6 +661,27 @@ public final class IndustryPicture {
         takerKeys.sort(Comparator.comparingInt(IndustryPicture::takerRank));
         List<Node> takers = new ArrayList<>();
         for (String key : takerKeys) takers.add(new Node(key, in(sides, key), LEAST_NODE, takers.isEmpty() ? 0 : BUYER_GAP));
+        // The bands through the works' columns: a flow that skips a rank - the ore to the blast furnace past the coke ovens, the
+        // coke to the tank past the furnace - runs straight through that rank's column, beside its works (the refinery's rule).
+        Map<String, Integer> columnOf = new LinkedHashMap<>();
+        for (Node n : sources) columnOf.put(n.key, 0);
+        for (int r = 0; r < rankCount; r++) for (Node n : ranks.get(r)) columnOf.put(n.key, r + 1);
+        for (Node n : tank) columnOf.put(n.key, rankCount + 1);
+        for (Node n : takers) columnOf.put(n.key, rankCount + 2);
+        Map<Flow, List<String>> through = new LinkedHashMap<>();
+        Map<String, Flow> passOf = new LinkedHashMap<>();
+        for (Flow f : flows) {
+            Integer a = columnOf.get(f.from()), b = columnOf.get(f.to());
+            if (a == null || b == null || b - a < 2) continue;
+            List<String> keys = new ArrayList<>();
+            for (int c = a + 1; c < b && c <= rankCount; c++) {
+                String key = passKey(c - 1, f);
+                ranks.get(c - 1).add(new Node(key, f.drawn(), 0, PASS_GAP));
+                keys.add(key);
+                passOf.put(key, f);
+            }
+            through.put(f, keys);
+        }
 
         /* ----- one scale: the largest at which every column fits ----- */
         double usable = height - TOP - 2 * PAD;
@@ -658,7 +693,7 @@ public final class IndustryPicture {
         for (int pass = 0; pass < 4; pass++) {
             double kk = Double.POSITIVE_INFINITY;
             for (List<Node> c : columns) kk = Math.min(kk, fit(c, usable, k));
-            kk = Math.min(kk, fit(tank, usable - ROOF_ROOM - (stored.isEmpty() ? 0 : BLOCK_WORDS), k));
+            kk = Math.min(kk, fit(tank, usable - ROOF_ROOM - (stored.isEmpty() ? FOOT_ROOM : BLOCK_WORDS), k));
             k = kk;
         }
         if (!(k > 0) || !Double.isFinite(k)) return none;
@@ -670,27 +705,46 @@ public final class IndustryPicture {
         double xSrc = SOURCE_ZONE, srcRight = xSrc + SOURCE_W, xBuy = right, xTank = xBuy - TANK_TO_TAKERS - TANK_W;
         double mid = TOP + (height - TOP) / 2;
         stack(sources, xSrc, SOURCE_W, mid);
+        double firstLeft = srcRight + FIRST_RANK_GAP, lastLeft = xTank - LAST_RANK_ROOM - UNIT_W;
+        double[] rankAt = new double[rankCount];
         for (int r = 0; r < rankCount; r++) {
-            double x = srcRight + (xTank - srcRight) * (r + 1) / (rankCount + 1) - UNIT_W / 2;
-            stack(ranks.get(r), x, UNIT_W, mid);
+            rankAt[r] = rankCount == 1 ? (firstLeft + lastLeft) / 2 : firstLeft + (lastLeft - firstLeft) * r / (rankCount - 1);
+            stack(ranks.get(r), rankAt[r], UNIT_W, mid);
         }
-        stack(tank, xTank, TANK_W, TOP + ROOF_ROOM + (height - TOP - ROOF_ROOM - (stored.isEmpty() ? 0 : BLOCK_WORDS)) / 2);
+        stack(tank, xTank, TANK_W, TOP + ROOF_ROOM + (height - TOP - ROOF_ROOM - (stored.isEmpty() ? FOOT_ROOM : BLOCK_WORDS)) / 2);
         stack(takers, xBuy, BUYER_W, mid);
         Map<String, Node> nodes = new LinkedHashMap<>();
         for (List<Node> c : columns) for (Node n : c) nodes.put(n.key, n);
         for (Node n : tank) nodes.put(n.key, n);
+        // ...each band through a column beside the works nearest the height it comes from, then each rank stacked again.
+        if (!passOf.isEmpty()) {
+            for (int r = 0; r < rankCount; r++) {
+                Map<Node, Double> at = new java.util.IdentityHashMap<>();
+                for (Node n : ranks.get(r)) {
+                    Node by = passOf.containsKey(n.key) ? nodes.get(passOf.get(n.key).from()) : n;
+                    at.put(n, by == null ? n.y : by.y + by.h / 2);
+                }
+                ranks.get(r).sort(Comparator.comparingDouble(at::get));
+                stack(ranks.get(r), rankAt[r], UNIT_W, mid);
+            }
+        }
+        apart(ranks, unitOfKey, v, TOP + PAD, height - PAD);
         for (Node n : nodes.values()) {
             double h = n.key.startsWith("field:") ? n.q * k : n.h;
             places.add(new Place(n.key, n.x, n.y, n.w, h));
         }
 
         /* ----- the ribbons, each from its node's right edge to the next's left ----- */
-        record Hop(Flow f, Node from, Node to, double h) { }
+        record Hop(Flow f, Node from, Node to, double h, boolean last) { }
         List<Hop> hops = new ArrayList<>();
         for (Flow f : flows) {
             Node a = nodes.get(f.from()), b = nodes.get(f.to());
             if (a == null || b == null) continue;
-            hops.add(new Hop(f, a, b, f.drawn() * k));
+            List<Node> chain = new ArrayList<>();
+            chain.add(a);
+            for (String key : through.getOrDefault(f, List.of())) chain.add(nodes.get(key));
+            chain.add(b);
+            for (int i = 0; i + 1 < chain.size(); i++) hops.add(new Hop(f, chain.get(i), chain.get(i + 1), f.drawn() * k, i + 2 == chain.size()));
         }
         Map<Hop, Double> leave = new java.util.IdentityHashMap<>(), arrive = new java.util.IdentityHashMap<>();
         List<Hop> leaving = new ArrayList<>(hops);
@@ -710,10 +764,14 @@ public final class IndustryPicture {
             Flow f = h.f();
             double a0 = leave.get(h), b0 = arrive.get(h);
             boolean hatched = f.from().startsWith("source:") && f.from().endsWith(":" + Origin.WORLD);
-            String c0 = colourFrom(v, f), c1 = colourTo(v, f);
+            String c0 = colourFrom(v, f), c1 = h.last() ? colourTo(v, f) : c0;
             double op = hatched ? HATCHED : f.from().startsWith("stored:") ? RIBBON * .7 : RIBBON;
             ribbons.add(new Ribbon(h.from().right(), a0, a0 + h.h(), h.to().x, b0, b0 + h.h(), c0, c1, op, hatched));
-            if (f.to().startsWith("taker:")) {
+            if (!h.last()) {
+                Node pass = h.to();
+                boxes.add(new Box(pass.x, pass.y, pass.w, pass.h, c0, op, null, false, hatched, 0, null));
+            }
+            if (h.last() && f.to().startsWith("taker:")) {
                 segments.computeIfAbsent(f.to(), x -> new ArrayList<>()).add(new Box(h.to().x, b0, BUYER_W, Math.max(h.h(), .8),
                         c1, f.from().startsWith("stored:") ? .6 : 1, null, false, false, 0, null));
             }
@@ -725,12 +783,11 @@ public final class IndustryPicture {
                 : figureOf(unit, totalOut(sides, sources)) + " in";
         words.add(new Words(srcHead, 8, HEAD_Y, Face.SANS_STRONG, 9.5, RefineryView.TEXT_3, Align.START, srcRight - 8, false));
         words.add(new Words(srcSub, 8, SUB_Y, Face.SANS, 10, RefineryView.TEXT_2, Align.START, srcRight - 8, false));
-        double rankX = srcRight + (xTank - srcRight) / (rankCount + 1) - UNIT_W / 2;
-        double rankSlot = (xTank - srcRight) / (rankCount + 1);
-        words.add(new Words(worksHead(v), rankX, HEAD_Y, Face.SANS_STRONG, 9.5, RefineryView.TEXT_3, Align.START,
-                rankCount > 1 ? rankSlot : xTank - rankX - 8, false));
+        double rankX = ranks.get(0).isEmpty() ? firstLeft : ranks.get(0).get(0).x;
+        double rankSlot = rankCount > 1 ? ranks.get(1).get(0).x - rankX - 8 : xTank - rankX - 8;
+        words.add(new Words(worksHead(v), rankX, HEAD_Y, Face.SANS_STRONG, 9.5, RefineryView.TEXT_3, Align.START, rankSlot, false));
         if (rankCount > 1 && v.sector() instanceof CoalMining) {
-            double x2 = srcRight + (xTank - srcRight) * 2 / (rankCount + 1) - UNIT_W / 2;
+            double x2 = ranks.get(1).get(0).x;
             words.add(new Words("WASHING", x2, HEAD_Y, Face.SANS_STRONG, 9.5, RefineryView.TEXT_3, Align.START, xTank - x2 - 8, false));
         }
         double tankQ = 0;
@@ -741,14 +798,16 @@ public final class IndustryPicture {
                 xTank + TANK_W / 2, SUB_Y, Face.SANS, 10, RefineryView.TEXT_2, Align.MIDDLE, TANK_W + 60, false));
         words.add(new Words("WHO TOOK IT", xBuy, HEAD_Y, Face.SANS_STRONG, 9.5, RefineryView.TEXT_3, Align.START, width - xBuy, false));
         String note = noteWords(v);
-        double powerX = xTank - 24;
+        // ...the power over the tank, or left of it as far as its line needs to end inside the frame.
+        String powerLine = IndustryView.powerWords(v.power());
+        double powerX = Math.min(xTank - 24, Math.max(LEAST_WIDTH, width) - 4 - widthOf(Words.run(powerLine, Face.SANS, 9.5, "")) - 18);
         if (!note.isEmpty()) {
-            words.add(new Words(note, rankX, NOTE_Y, Face.SANS, 9.5, RefineryView.TEXT_3, Align.START, powerX - rankX - 12, false));
+            words.add(new Words(note, 8, NOTE_Y, Face.SANS, 9.5, RefineryView.TEXT_3, Align.START, powerX - 8 - 12, false));
         }
         if (v.power().made() > 0 || v.power().drawn() > 0) {
             marks.add(new Mark(Icon.POWER, null, powerX, NOTE_Y - 11, 14, IndustryView.POWER));
-            words.add(new Words(IndustryView.powerWords(v.power()), powerX + 18, NOTE_Y, Face.SANS, 9.5, RefineryView.TEXT_2,
-                    Align.START, width - powerX - 18, false));
+            words.add(new Words(powerLine, powerX + 18, NOTE_Y, Face.SANS, 9.5, RefineryView.TEXT_2,
+                    Align.START, Math.max(LEAST_WIDTH, width) - powerX - 18, false));
         }
 
         /* ----- the sources: the fields' vessels and bars, the feeds' bars, their words ----- */
@@ -779,7 +838,7 @@ public final class IndustryPicture {
                 boolean hatched = n.key.endsWith(":" + Origin.WORLD);
                 String colour = sourceColour(v, n.key);
                 boxes.add(new Box(n.x, n.y, SOURCE_W, n.h, colour, 1, hatched ? colour : null, hatched, hatched, 1.5,
-                        sourceName(v, n.key) + ", " + sourceLine(game, v, n.key) + ": " + sourceFigure(v, n.key)));
+                        sourceTip(game, v, n.key)));
                 labelled.add(n);
             }
         }
@@ -808,18 +867,24 @@ public final class IndustryPicture {
                             "Its lorries burned " + IndustryView.unitsWords(Good.DIESEL, v.lorries().diesel()) + " of diesel, "
                                     + String.format("%,.0f", v.lorries().vans()) + " vans"));
                     words.add(new Words("Lorries", n.x, n.y - 18, Face.SANS_MEDIUM, 10.5, RefineryView.TEXT, Align.START, slot, true));
-                    words.add(new Words(IndustryView.unitsWords(Good.DIESEL, v.lorries().diesel()) + " of diesel", n.x, n.y - 5,
-                            Face.SANS, 9.5, RefineryView.TEXT_2, Align.START, slot, true));
+                    words.add(new Words(lorriesLine(v), n.x, n.y - 5, Face.SANS, 9.5, RefineryView.TEXT_2, Align.START, slot, true));
                     continue;
                 }
                 Unit u = unitOfKey.get(n.key);
+                if (u == null) continue;
                 boolean only = u.standing() <= 0;
                 boxes.add(new Box(n.x, n.y, n.w, n.h, RefineryView.UNIT_FILL, only ? .5 : 1, only ? RefineryView.IMPORT_EDGE
                         : RefineryView.UNIT_EDGE, only, false, 3, unitTip(u)));
-                words.add(new Words(unitName(u), n.x, n.y - 18, Face.SANS_MEDIUM, 10.5, only ? RefineryView.TEXT_2 : RefineryView.TEXT,
+                String gate = gateLine(u);
+                double y = gate.isEmpty() ? n.y - 18 : n.y - 31;
+                words.add(new Words(unitName(u), n.x, y, Face.SANS_MEDIUM, 10.5, only ? RefineryView.TEXT_2 : RefineryView.TEXT,
                         Align.START, slot, true));
-                words.add(new Words(unitLine(u), n.x, n.y - 5, Face.SANS, 9.5, idle(u) ? RefineryView.HOT : RefineryView.TEXT_2,
+                words.add(new Words(runLine(u), n.x, y + 13, Face.SANS, 9.5, idle(u) ? RefineryView.HOT : RefineryView.TEXT_2,
                         Align.START, slot, true));
+                if (!gate.isEmpty()) {
+                    words.add(new Words(gate, n.x, n.y - 5, Face.SANS, 9.5, u.oneMore().passes() ? RefineryView.TEXT_2 : RefineryView.TEXT_3,
+                            Align.START, slot, true));
+                }
                 if (n.h >= ICON_ROOM) marks.add(new Mark(Icon.WORKS, v.roof().name(), n.x + n.w / 2 - 8, n.y + n.h / 2 - 8, 16, "#8fb3e0"));
             }
         }
@@ -842,7 +907,7 @@ public final class IndustryPicture {
                             FIGURE_IN_BAND, false));
                 } else if (n.h >= 4) {
                     words.add(new Words(bandName(g) + " " + fig, xTank - 6, n.y + n.h / 2 + 3.5, Face.SANS, 9.5, RefineryView.TEXT_2,
-                            Align.END, xTank - 6 - (xTank - TANK_TO_TAKERS), true));
+                            Align.END, xTank - 6 - (lastLeft + UNIT_W) - 6, true));
                 }
             }
             boxes.add(new Box(xTank, ty, TANK_W, tb - ty, null, 1, RefineryView.FRAME, false, false, 0, null));
@@ -879,7 +944,7 @@ public final class IndustryPicture {
             boolean abroad = who.equals(ABROAD);
             marks.add(new Mark(takerIcon(who), who, lx, t - 15, 18, abroad ? RefineryView.TEXT_3 : "#c3ccd3"));
             words.add(new Words(takerName(game, v, who), lx + 24, t - 3, Face.SANS_MEDIUM, 11.5, RefineryView.TEXT, Align.START,
-                    w - (lx + 24) - FIGURE_ROOM - 8, false));
+                    w - (lx + 24) - FIGURE_ROOM - 4, false));
             words.add(new Words(takerFigure(v, flows, n.key), w - 4, t - 3, Face.MONO, 11, RefineryView.TEXT_2, Align.END, FIGURE_ROOM,
                     false));
             words.add(new Words(takerLine(v, flows, n.key), lx + 24, t + 11, Face.SANS, 9.5, RefineryView.TEXT_3, Align.START,
@@ -889,6 +954,70 @@ public final class IndustryPicture {
         return new Picture(width, height, k, unit, Collections.unmodifiableList(ribbons), Collections.unmodifiableList(boxes),
                 Collections.unmodifiableList(outlines), Collections.unmodifiableList(lines), Collections.unmodifiableList(marks),
                 Collections.unmodifiableList(words), Collections.unmodifiableList(places));
+    }
+
+    /** The most a line of words is set wide, px: each capital at CAPITAL of its size, every other letter at LETTER - an upper bound on IBM Plex at the picture's sizes. */
+    public static double widthOf(Words w) {
+        double t = 0;
+        for (Words r = w; r != null; r = r.then()) {
+            for (int i = 0; i < r.text().length(); i++) t += r.size() * (Character.isUpperCase(r.text().charAt(i)) ? CAPITAL : LETTER);
+        }
+        return t;
+    }
+
+    /** The words over a works' box, as {left, top, right, bottom}: its name and its lines, as wide as the widest (widthOf()); null for a band through the column, which has none. */
+    private static double[] wordsOver(Node n, Unit u, View v) {
+        if (n.key.startsWith("pass:")) return null;
+        double wide;
+        if (u == null) {
+            wide = Math.max(widthOf(Words.run("Lorries", Face.SANS_MEDIUM, 10.5, "")), widthOf(Words.run(lorriesLine(v), Face.SANS, 9.5, "")));
+        } else {
+            wide = Math.max(widthOf(Words.run(unitName(u), Face.SANS_MEDIUM, 10.5, "")), Math.max(widthOf(Words.run(runLine(u), Face.SANS, 9.5,
+                    "")), widthOf(Words.run(gateLine(u), Face.SANS, 9.5, ""))));
+        }
+        return new double[] { n.x, n.y - n.gap + 2, n.x + wide, n.y };
+    }
+
+    /**
+     * Each rank of works moved up or down, whole, until no works' words run
+     * into the next rank's boxes or words (a rank's words reach right, past
+     * its boxes, toward the tank): the least move that clears them and keeps
+     * the rank between `top` and `bottom`; a rank with no room to move stays.
+     * A band through a column is no obstacle: words read over it on their
+     * halo, as over any ribbon.
+     */
+    private static void apart(List<List<Node>> ranks, Map<String, Unit> unitOfKey, View v, double top, double bottom) {
+        for (int r = 1; r < ranks.size(); r++) {
+            List<Node> rank = ranks.get(r);
+            if (rank.isEmpty()) continue;
+            for (int pass = 0; pass < 8; pass++) {
+                double move = 0;
+                for (int q = 0; q < r && move == 0; q++) {
+                    for (Node a : ranks.get(q)) {
+                        double[] w = wordsOver(a, unitOfKey.get(a.key), v);
+                        if (w == null) continue;
+                        for (Node b : rank) {
+                            double[] bw = wordsOver(b, unitOfKey.get(b.key), v);
+                            if (bw == null) continue;
+                            double bTop = b.y - b.gap + 2, bBottom = b.y + b.h, bRight = Math.max(b.x + b.w, bw[2]);
+                            if (w[2] <= b.x || w[0] >= bRight || w[3] <= bTop || w[1] >= bBottom) continue;
+                            double down = w[3] - bTop + 2, up = w[1] - bBottom - 2;
+                            double first = rank.get(0).y - rank.get(0).gap, last = rank.get(rank.size() - 1).y + rank.get(rank.size() - 1).h;
+                            boolean canDown = last + down <= bottom, canUp = first + up >= top;
+                            move = canDown && (!canUp || down <= -up) ? down : canUp ? up : 0;
+                            if (move != 0) break;
+                        }
+                        if (move != 0) break;
+                    }
+                }
+                if (move == 0) break;
+                for (Node b : rank) {
+                    b.y += move;
+                    b.inAt = b.y;
+                    b.outAt = b.y;
+                }
+            }
+        }
     }
 
     /** The scale at which a column fits `room`, its nodes under their least at the last scale `k` held at their least (the mockups' three passes). */
@@ -1156,7 +1285,7 @@ public final class IndustryPicture {
         return Good.valueOf(p[1]).label();
     }
 
-    /** ...its line: who sold it, imported, the city's old metal, the forest cleared for building. */
+    /** ...its line: who sold it - the first seller here and how many more ("Coal Mining +1") - imported, the city's old metal, the forest cleared for building. */
     static String sourceLine(Game game, View v, String key) {
         if (key.equals(SALVAGE)) return "the forest cleared for building";
         String[] p = key.split(":");
@@ -1167,7 +1296,19 @@ public final class IndustryPicture {
         List<String> names = new ArrayList<>();
         if (f != null) for (Part s : f.sellers()) names.add(IndustryView.partyWords(s.party(), game));
         if (names.isEmpty()) return "bought here";
-        return names.size() <= 2 ? String.join(", ", names) : names.get(0) + ", " + names.get(1) + " and more";
+        return names.size() == 1 ? names.get(0) : names.get(0) + " +" + (names.size() - 1);
+    }
+
+    /** Under the pointer, a source: its name, every seller here with what each sold, or where it came from, and its figure. */
+    static String sourceTip(Game game, View v, String key) {
+        String[] p = key.split(":");
+        Feed f = key.equals(SALVAGE) ? null : v.feed(Good.valueOf(p[1]));
+        if (f == null || !key.endsWith(":" + Origin.HOME) || f.sellers().size() < 2) {
+            return sourceName(v, key) + ", " + sourceLine(game, v, key) + ": " + sourceFigure(v, key);
+        }
+        List<String> each = new ArrayList<>();
+        for (Part s : f.sellers()) each.add(IndustryView.partyWords(s.party(), game) + " " + IndustryView.unitsWords(f.good(), s.units()));
+        return sourceName(v, key) + " bought here: " + String.join(", ", each);
     }
 
     /** ...and its figure, in its good's own unit. */
@@ -1204,23 +1345,27 @@ public final class IndustryPicture {
         return u.standing() > 0 ? name + " ×" + u.standing() : name;
     }
 
-    /** ...its line: its run, those on site, and one more in a word - "runs 87% · +1 on site · one more: the money", "worked out", "grow 500 m³ a month". */
-    public static String unitLine(Unit u) {
-        List<String> parts = new ArrayList<>();
-        if (u.standing() <= 0) {
-            parts.add(String.format("%,d on site", u.onSite()));
-        } else if (u.oneMore() == null && u.growth() > 0) {
-            parts.add(String.format("grows %,.0f m³ a month", u.growth()));
-        } else if (u.workedOut()) {
-            parts.add("worked out");
-        } else {
-            parts.add(idle(u) ? "idle" : "runs " + IndustryView.pct(u.run()));
-        }
-        if (u.standing() > 0 && u.onSite() > 0) parts.add(String.format("+%,d on site", u.onSite()));
+    /** ...its run: "runs 87%", "idle", "worked out", "grows 500 m³ a month", "2 on site" - and those on site beside it, "+1 on site". */
+    public static String runLine(Unit u) {
+        String s;
+        if (u.standing() <= 0) s = String.format("%,d on site", u.onSite());
+        else if (u.oneMore() == null && u.growth() > 0) s = String.format("grows %,.0f m³ a month", u.growth());
+        else if (u.workedOut()) s = "worked out";
+        else s = idle(u) ? "idle" : "runs " + IndustryView.pct(u.run());
+        if (u.standing() > 0 && u.onSite() > 0) s += String.format(" · +%,d on site", u.onSite());
+        return s;
+    }
+
+    /** ...and one more in a word: "one more pays 1.20% a month", or the first gate it fails - "one more: the money"; "" for a kind the plan does not weigh. */
+    public static String gateLine(Unit u) {
         SpreadPlanner.Candidate c = u.oneMore();
-        if (c != null) parts.add(c.passes() ? String.format("one more pays %.2f%% a month", 100 * c.score())
-                : "one more: " + IndustryView.gateName(c.failed()));
-        return String.join(" · ", parts);
+        if (c == null) return "";
+        return c.passes() ? String.format("one more pays %.2f%% a month", 100 * c.score()) : "one more: " + IndustryView.gateName(c.failed());
+    }
+
+    /** The lorries' line: the diesel they burned. */
+    static String lorriesLine(View v) {
+        return IndustryView.unitsWords(Good.DIESEL, v.lorries().diesel()) + " of diesel";
     }
 
     /** Whether a kind standing ran at nothing. */
@@ -1322,8 +1467,7 @@ public final class IndustryPicture {
         for (Good g : took(flows, key).keySet()) names.add(bandName(g).toLowerCase(Locale.ROOT));
         String goods = names.size() <= 3 ? String.join(", ", names) : String.join(", ", names.subList(0, 3)) + " and more";
         String who = key.substring("taker:".length());
-        if (who.equals(WAREHOUSE)) return goods + " · nobody took it";
-        if (who.equals(LOST)) return goods + " · nobody took it, and it could not ship";
+        if (who.equals(LOST)) return goods + " · it could not ship";
         return goods;
     }
 
@@ -1383,7 +1527,7 @@ public final class IndustryPicture {
                 rows.add(new Row("dug this month", IndustryView.groundWords(f.resource(), dug), false));
                 rows.add(new Row("lasts", lastsWords(f.remaining(), dug), dug > 0 && f.remaining() / dug < 120));
             }
-            out.add(new Cell(IndustryView.typeWords(f.resource(), f.type()), colour,
+            out.add(new Cell(fieldName(f), colour,
                     List.of(new Segment(f.filled(), colour, 1, false), new Segment(1 - f.filled(), RefineryView.FRAME, 1, false)), rows));
         }
         if (v.forest() != null) {
@@ -1435,6 +1579,12 @@ public final class IndustryPicture {
                     new Row("bought", IndustryView.kw(p.bought()), false))));
         }
         return out.size() <= STRIP_MOST ? Collections.unmodifiableList(out) : Collections.unmodifiableList(out.subList(0, STRIP_MOST));
+    }
+
+    /** A field type's cell's name: "Hematite fields", "Coking fields"; the forest "Forest" - apart from a product's cell of the same good ("Limestone"). */
+    public static String fieldName(Vessel f) {
+        String w = IndustryView.typeWords(f.resource(), f.type());
+        return f.resource() == Resource.FOREST ? w : w + " fields";
     }
 
     /** How long a field lasts at this month's dig: "38 years", "11 months", "—" with nothing dug. */
