@@ -554,7 +554,7 @@ public final class IndustryPicture {
         }
 
         /** Every word it writes, a line each, in painting order. */
-        public List<String> lines() {
+        public List<String> texts() {
             List<String> out = new ArrayList<>();
             for (Words w : words) out.add(w.line());
             return out;
@@ -575,8 +575,8 @@ public final class IndustryPicture {
         double right() { return x + w; }
     }
 
-    /** The picture of `v` at a width and a height (pure); empty when there is no month to draw. */
-    public static Picture picture(View v, double width, double height) {
+    /** The picture of `v` at a width and a height (pure); empty when there is no month to draw. `game` names the parties (IndustryView.partyWords()). */
+    public static Picture picture(Game game, View v, double width, double height) {
         List<Ribbon> ribbons = new ArrayList<>();
         List<Box> boxes = new ArrayList<>();
         List<Outline> outlines = new ArrayList<>();
@@ -779,7 +779,7 @@ public final class IndustryPicture {
                 boolean hatched = n.key.endsWith(":" + Origin.WORLD);
                 String colour = sourceColour(v, n.key);
                 boxes.add(new Box(n.x, n.y, SOURCE_W, n.h, colour, 1, hatched ? colour : null, hatched, hatched, 1.5,
-                        sourceName(v, n.key) + ", " + sourceLine(v, n.key) + ": " + sourceFigure(v, n.key)));
+                        sourceName(v, n.key) + ", " + sourceLine(game, v, n.key) + ": " + sourceFigure(v, n.key)));
                 labelled.add(n);
             }
         }
@@ -795,7 +795,7 @@ public final class IndustryPicture {
                     n.key.endsWith(":" + Origin.WORLD) ? RefineryView.TEXT_3 : "#c9b68f"));
             words.add(new Words(sourceName(v, n.key), tx, t - 4, Face.SANS_MEDIUM, 11.5, RefineryView.TEXT, Align.END, tx - 22, false));
             boolean hot = n.key.endsWith(":" + Origin.WORLD);
-            words.add(new Words(sourceLine(v, n.key) + " · ", tx, t + 9, Face.SANS, 10, hot ? RefineryView.HOT : RefineryView.TEXT_3,
+            words.add(new Words(sourceLine(game, v, n.key) + " · ", tx, t + 9, Face.SANS, 10, hot ? RefineryView.HOT : RefineryView.TEXT_3,
                     Align.END, tx - 22, false, Words.run(sourceFigure(v, n.key), Face.MONO, 10, RefineryView.TEXT_2)));
         }
 
@@ -878,13 +878,13 @@ public final class IndustryPicture {
             if (Math.abs(cy - t) > 3) lines.add(new Line(xBuy + BUYER_W + 1, cy, lx - 4, t, RefineryView.FRAME));
             boolean abroad = who.equals(ABROAD);
             marks.add(new Mark(takerIcon(who), who, lx, t - 15, 18, abroad ? RefineryView.TEXT_3 : "#c3ccd3"));
-            words.add(new Words(takerName(v, who), lx + 24, t - 3, Face.SANS_MEDIUM, 11.5, RefineryView.TEXT, Align.START,
+            words.add(new Words(takerName(game, v, who), lx + 24, t - 3, Face.SANS_MEDIUM, 11.5, RefineryView.TEXT, Align.START,
                     w - (lx + 24) - FIGURE_ROOM - 8, false));
             words.add(new Words(takerFigure(v, flows, n.key), w - 4, t - 3, Face.MONO, 11, RefineryView.TEXT_2, Align.END, FIGURE_ROOM,
                     false));
             words.add(new Words(takerLine(v, flows, n.key), lx + 24, t + 11, Face.SANS, 9.5, RefineryView.TEXT_3, Align.START,
                     w - (lx + 24) - 4, false));
-            boxes.add(new Box(n.x, n.y, n.w, Math.max(n.h, .8), null, 1, null, false, false, 0, takerTip(v, flows, n.key)));
+            boxes.add(new Box(n.x, n.y, n.w, Math.max(n.h, .8), null, 1, null, false, false, 0, takerTip(game, v, flows, n.key)));
         }
         return new Picture(width, height, k, unit, Collections.unmodifiableList(ribbons), Collections.unmodifiableList(boxes),
                 Collections.unmodifiableList(outlines), Collections.unmodifiableList(lines), Collections.unmodifiableList(marks),
@@ -1157,7 +1157,7 @@ public final class IndustryPicture {
     }
 
     /** ...its line: who sold it, imported, the city's old metal, the forest cleared for building. */
-    static String sourceLine(View v, String key) {
+    static String sourceLine(Game game, View v, String key) {
         if (key.equals(SALVAGE)) return "the forest cleared for building";
         String[] p = key.split(":");
         Origin o = Origin.valueOf(p[2]);
@@ -1165,8 +1165,7 @@ public final class IndustryPicture {
         if (o == Origin.OLD_METAL) return "the city's " + (v.sector() instanceof HeavyIndustry ? "old steel" : "old copper");
         Feed f = v.feed(Good.valueOf(p[1]));
         List<String> names = new ArrayList<>();
-        if (f != null) for (Part s : f.sellers()) names.add(IndustryView.partyWords(s.party(), null).equals(s.party())
-                ? partyName(v, s.party()) : IndustryView.partyWords(s.party(), null));
+        if (f != null) for (Part s : f.sellers()) names.add(IndustryView.partyWords(s.party(), game));
         if (names.isEmpty()) return "bought here";
         return names.size() <= 2 ? String.join(", ", names) : names.get(0) + ", " + names.get(1) + " and more";
     }
@@ -1197,13 +1196,6 @@ public final class IndustryPicture {
         if (!key.endsWith(":" + Origin.HOME)) return null;
         Feed f = v.feed(Good.valueOf(key.split(":")[1]));
         return f == null || f.sellers().isEmpty() ? null : f.sellers().get(0).party();
-    }
-
-    /** A party's name with no city to ask: the industry's own label where it is the party, else the key. */
-    static String partyName(View v, String party) {
-        if (v.sector().key().equals(party)) return v.sector().label();
-        String label = Sectors.labelOf(party);
-        return label == null ? party : label;
     }
 
     /** A kind's name over its box: "Coke Ovens ×2"; a kind only on site its name alone. */
@@ -1275,14 +1267,14 @@ public final class IndustryPicture {
     }
 
     /** A taker's name: a sector's label, "Households", "The city", "Abroad", "Into the warehouse", "Lost". */
-    static String takerName(View v, String who) {
+    static String takerName(Game game, View v, String who) {
         return switch (who) {
             case ABROAD -> "Abroad";
             case WAREHOUSE -> "Into the warehouse";
             case LOST -> "Lost";
             case Trade.HOUSEHOLDS -> "Households";
             case Trade.CITY -> "The city";
-            default -> partyName(v, who);
+            default -> IndustryView.partyWords(who, game);
         };
     }
 
@@ -1336,8 +1328,8 @@ public final class IndustryPicture {
     }
 
     /** Under the pointer, a taker: each good it took. */
-    static String takerTip(View v, List<Flow> flows, String key) {
-        StringBuilder s = new StringBuilder(takerName(v, key.substring("taker:".length()))).append(" took ");
+    static String takerTip(Game game, View v, List<Flow> flows, String key) {
+        StringBuilder s = new StringBuilder(takerName(game, v, key.substring("taker:".length()))).append(" took ");
         boolean first = true;
         for (Map.Entry<Good, Double> e : took(flows, key).entrySet()) {
             if (!first) s.append(", ");
