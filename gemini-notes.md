@@ -52,6 +52,13 @@ tools unless Jerus asks for one.
   force-push anyone else's branch, and never push to theirs.
 - **Commit under the name and email Jerus gives you** (`git config
   user.name`, `user.email`), the same every time.
+- **Spend your day's credits on the change, not the checks** (2026-10-13:
+  setup and one batch used a day). Run `./batch-check.sh --fast` and the
+  harnesses for the area you touched (`./batch-check.sh money bank`), never
+  the whole suite: it takes 25 minutes here, its timing bounds fail in this
+  container, and `ship.sh` runs it on Claude's machine before anything
+  ships. One batch a day; nothing waits on you, so stop cleanly when the
+  credits run low and say where you stopped.
 - **Say what you did and did not do**: read, edited, ran (with the command
   and its last lines), not run.
 - **Read the indexes, not the giants**: `docs/map/README.md`, then

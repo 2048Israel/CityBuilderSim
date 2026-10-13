@@ -46,10 +46,9 @@ getSetCost method"): the finding is the sentence's truth, not the tool's.
    maps; commit them with your change - and not `QUEUE.md`: the session that
    ships this takes GS1's row out.
 4. `./batch-check.sh --fast`: compile OK, Stale 0 firm and ten fewer soft.
-   Then `./batch-check.sh` (the whole suite, about 15 minutes) once. Its
-   wall-clock bounds (MapCheck, PlanCheck, EarthTerrainCheck) fail in your
-   container, which runs the suite at about half speed: report them as
-   that, as you did; the gate runs the suite again on Claude's machine.
+   That is all: **do not run the whole suite** (2026-10-13). It took 25
+   minutes in your container and most of a day's credits, its wall-clock
+   bounds fail there anyway, and the gate runs it on Claude's machine.
 5. Commit with a message that lists each fix as `file:line - was / now`, the
    skipped ones and why, and what you ran with its last lines. Push the
    branch and tell Jerus it is ready. Claude reviews the diff and ships it.
