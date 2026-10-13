@@ -7,6 +7,7 @@
 #      ./ship.sh batch/I12 -m "the title"       the same, the merge's title given
 #      ./ship.sh batch/I12 -F body.txt          the same, the message's body (and trailers) from a file
 #      ./ship.sh --dry-run batch/I12            the gate alone: nothing committed or pushed
+#      ./ship.sh --no-tag some/branch           a merge that is not a version's (tools, records): no tag
 #      ./ship.sh batch/I12 -- money bank        the suite only the harnesses named (to try the script)
 #
 #  Run it in the clone where main is checked out, with nothing uncommitted.
@@ -32,10 +33,11 @@
 
 cd "$(dirname "$0")" || exit 1
 
-DRY=0; BRANCH=""; TITLE=""; BODY=""
+DRY=0; NOTAG=0; BRANCH=""; TITLE=""; BODY=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run) DRY=1 ;;
+        --no-tag) NOTAG=1 ;;
         -m) shift; TITLE="$1" ;;
         -F) shift; BODY="$1"; [ -f "$BODY" ] || { echo "ship      no file $BODY"; exit 2; } ;;
         --) shift; break ;;
@@ -43,7 +45,7 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
-[ -n "$BRANCH" ] || { echo "usage: ship.sh [--dry-run] batch/<id> [-m title] [-F body] [-- harness names]"; exit 2; }
+[ -n "$BRANCH" ] || { echo "usage: ship.sh [--dry-run] [--no-tag] batch/<id> [-m title] [-F body] [-- harness names]"; exit 2; }
 
 say() { echo "ship      $*"; }
 die() { echo "ship      STOPPED - $*"; exit 1; }
@@ -112,7 +114,8 @@ fi
 VERSION=$(sed -n 's/^ *public static final String VERSION = "\([^"]*\)";.*/\1/p' src/main/java/ham/citybuildersim/GameVersion.java)
 MSG="Merge $BRANCH: $TITLE, $VERSION"
 TAG=""
-git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null || git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1 || TAG="$VERSION"
+[ "$NOTAG" = 1 ] || git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null \
+    || git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1 || TAG="$VERSION"
 
 if [ "$DRY" = 1 ]; then
     say "dry run, nothing kept: would commit \"$MSG\"${TAG:+, tag $TAG} and push"
@@ -132,6 +135,8 @@ say "committed $(git rev-parse --short HEAD) \"$MSG\""
 if [ -n "$TAG" ]; then
     git tag "$TAG" || die "cannot tag $TAG"
     say "tagged $TAG"
+elif [ "$NOTAG" = 1 ]; then
+    say "not tagged (--no-tag)"
 else
     say "not tagged: $VERSION is tagged already (the batch did not bump the version)"
 fi
