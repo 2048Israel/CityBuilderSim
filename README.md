@@ -90,6 +90,11 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
 ```
 
 - `-q` suppresses each harness's own output and prints only the pass/fail line.
+- `-f` prints only what failed: nothing for a harness that passed, and for one
+  that failed its failing lines under their sections, each harness's whole
+  output kept in `target/checks/NAME.log`. `batch-check.sh` runs it with the
+  build, the maps and Stale; `Batch check.bat` is the same on Windows, the
+  maps only with `--maps`.
 - Any other argument filters by substring: `AllChecks money bank` runs
   `MoneyCheck` and `BankCheck` and nothing else.
 - The exit status is the number of harnesses that failed, so a build script can

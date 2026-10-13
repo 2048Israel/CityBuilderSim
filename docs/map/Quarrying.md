@@ -1,6 +1,6 @@
-# Quarrying.java - 395 lines · 19 methods · 3 constants · sectors
+# Quarrying.java - 400 lines · 19 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Quarrying.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Quarrying.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md
 > 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's
@@ -59,9 +59,9 @@
 > aggregate or the blocks until the construction upgrade (Q18), so they ship
 > - a quarry pays where it replaces imported limestone (the study's 6.5).
 
-**Uses:** [Good](Good.md) (43), [Resource](Resource.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (15), [Deposit](Deposit.md) (8), [LandManager](LandManager.md) (6), [GoodsMarket](GoodsMarket.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Game](Game.md) (2), [Formats](Formats.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
+**Uses:** [Good](Good.md) (43), [Resource](Resource.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (15), [Deposit](Deposit.md) (8), [LandManager](LandManager.md) (6), [GoodsMarket](GoodsMarket.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Game](Game.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
 
-**Used by (4):** [BuildingDataCheck](BuildingDataCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [QuarryingCheck](QuarryingCheck.md), [Sectors](Sectors.md)
+**Used by (8):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [QuarryingCheck](QuarryingCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 318 | **type** `public final class Quarrying extends ExtractionSector` | Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's digging industry, on Sectors.KEYS after Coal Mining - its end when it ... |
+| 78 | 323 | **type** `public final class Quarrying extends ExtractionSector` | Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's digging industry, on Sectors.KEYS after Coal Mining - its end when it ... |
 | 92 | 10 | `public Quarrying()` |  |
 
 ### which field a quarry is on (lines 103-230)
@@ -137,9 +137,9 @@
 | 354 | 9 | `public double[] retirementDemandAndCapacity(Game game)` | Stone worked out leaves its quarries spare, measured in the tonnes they dig: all of them once the city's stone is out; while some is left, those over a type worked out (ExtractionSector's workedOut(): the Dimension St... |
 | 366 | 9 | `double workedOutCapacity(LandManager land)` | Its nameplate standing over a type worked out, in the tonnes each digs (unitsOf()): the blocks' once the hard rock is out. |
 
-### the page (lines 376-395)
+### the page (lines 376-400)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 379 | 16 | `public List<Line> ownLines(Game game)` |  |
+| 379 | 21 | `public List<Line> ownLines(Game game)` |  |
 
