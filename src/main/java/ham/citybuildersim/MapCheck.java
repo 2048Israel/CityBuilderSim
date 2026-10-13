@@ -608,6 +608,12 @@ public class MapCheck {
         return Math.max(0, (long) Math.floor(k + 1e-9)) >= 1;
     }
 
+    /** The sites a mine type may stand on (0.8.0, batch I14): its resource's of its type of field - the game's own rule since I5 (Game.committedOn(r, type), LandManager.fits()), an Iron Mine on hematite. */
+    static long mineSites(CityMap m, int mine) {
+        BuildingVisual.Type t = m.types()[mine];
+        return m.ownedSites(t.site(), t.field());
+    }
+
     static int mineId(Game g) {
         for (BuildingVisual.Type t : g.getMapTypes()) if (t != null && t.site() == Resource.IRON) return t.id();
         return 0;
@@ -731,7 +737,7 @@ public class MapCheck {
                 buildMs[i] = (System.nanoTime() - t0) / 1e6;
                 // No more mines than the square's iron sites: the game's own rule (Game.hasDepositFor()).
                 if (mine >= 0) {
-                    c[mine] = Math.min(wantMines, m.ownedSites(Resource.IRON));
+                    c[mine] = Math.min(wantMines, mineSites(m, mine));
                     m.reconcile(c);
                 }
                 maps[i] = m;
@@ -751,7 +757,7 @@ public class MapCheck {
             if (mine >= 0) c[mine] = 0;
             ironX1 = CityMap.square(seed, ironX, ironY, types, x1Side(types), (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), c);
             if (mine >= 0) {
-                c[mine] = Math.min(wantMines, ironX1.ownedSites(Resource.IRON));
+                c[mine] = Math.min(wantMines, mineSites(ironX1, mine));
                 ironX1.reconcile(c);
             }
             ironCounts = c;
@@ -1446,7 +1452,7 @@ public class MapCheck {
         int side = (int) Math.ceil(Math.sqrt(groundKm2(sq.types) / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
         CityMap m = CityMap.square(sq.seed, (long) Math.floor(river.xs()[at]), (long) Math.floor(river.ys()[at]), sq.types, side,
                 capacity, c);
-        c[mine] = Math.min(wantMines, m.ownedSites(Resource.IRON));
+        c[mine] = Math.min(wantMines, mineSites(m, mine));
         m.reconcile(c);
         return m;
     }
@@ -1785,7 +1791,7 @@ public class MapCheck {
         int side = (int) Math.ceil(Math.sqrt(groundKm2(sq.types) / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
         // Where his square holds iron (0.7.99, Squares.ironX1): the yards are laid with his mines.
         CityMap m = CityMap.square(sq.seed, sq.ironX, sq.ironY, sq.types, side, capacity, c);
-        c[mine] = Math.min(wantMines, m.ownedSites(Resource.IRON));
+        c[mine] = Math.min(wantMines, mineSites(m, mine));
         m.reconcile(c);
         for (int t = 0; t < c.length; t++) c[t] += rail[t];
         m.reconcile(c);
@@ -1922,7 +1928,7 @@ public class MapCheck {
             t0 = System.nanoTime();
             CityMap read = CityMap.readSidecar(bytes, m.land(), r -> m.land().amountsInOrder(r), m.types(), 1, CityMap.stampIn(bytes));
             double rms = (System.nanoTime() - t0) / 1e6;
-            long raw = (long) m.districts().size() * (2 + 2 + 4 + 8 + 4 * CityMap.SITED.length + 4L * m.types().length);
+            long raw = (long) m.districts().size() * (2 + 2 + 4 + 8 + 4 * CityMap.SLOTS + 4L * m.types().length);
             out.printf("      x %,.0f: %,d districts, %.2f MB raw, %.2f MB deflated, written in %.0f ms, read in %.0f ms%n",
                     TIMES[i], m.districts().size(), raw / 1e6, bytes.length / 1e6, wms, rms);
             check("at " + (TIMES[i] < 10_000 ? "5" : "10") + " billion it is read back the same and written again byte for byte",
@@ -2035,7 +2041,7 @@ public class MapCheck {
             long[] c = sq.counts[i].clone();
             int mine = -1;
             for (BuildingVisual.Type t : m.types()) if (t != null && t.id() == Mining.IRON_MINE) mine = t.id();
-            long sites = m.ownedSites(Resource.IRON);
+            long sites = mine >= 0 ? mineSites(m, mine) : 0;
             // Each month on the bound's clock (monthClock(): the main thread's CPU) and on the wall clock; the
             // bound reads the year of +0.01% and the -0.05%, the worst of them.
             double worst = 0, worstsWall = 0, worstWall = 0, firstMs, firstWall, downMs, downWall;

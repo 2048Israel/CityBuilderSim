@@ -215,6 +215,8 @@ public final class TilePainter {
         public int[] siteKind = new int[16], siteState = new int[16], siteMine = new int[16];
         /** ...and the site itself, its square's first plot in the world packed (x << 32 | y), unclipped: one site seen from the tiles it spans (0.7.64). */
         public long[] siteKey = new long[16];
+        /** ...and its whole square in plots of the tile, unclipped (0.8.0, batch I14): what a pit's benches step down to the middle of, whichever tiles it spans. */
+        public int[] siteFX0 = new int[16], siteFY0 = new int[16], siteFX1 = new int[16], siteFY1 = new int[16];
 
         /** Each plot's work at sea (0.7.97): a terminal's QUAY, a platform's JACKET, a platform WELL; 0 for none. */
         public final byte[] sea = new byte[PLOTS];
@@ -281,7 +283,10 @@ public final class TilePainter {
                 siteX1 = Arrays.copyOf(siteX1, n); siteY1 = Arrays.copyOf(siteY1, n);
                 siteKind = Arrays.copyOf(siteKind, n); siteState = Arrays.copyOf(siteState, n);
                 siteMine = Arrays.copyOf(siteMine, n); siteKey = Arrays.copyOf(siteKey, n);
+                siteFX0 = Arrays.copyOf(siteFX0, n); siteFY0 = Arrays.copyOf(siteFY0, n);
+                siteFX1 = Arrays.copyOf(siteFX1, n); siteFY1 = Arrays.copyOf(siteFY1, n);
             }
+            siteFX0[sites] = x0; siteFY0[sites] = y0; siteFX1[sites] = x1; siteFY1[sites] = y1;
             siteX0[sites] = Math.max(0, x0); siteY0[sites] = Math.max(0, y0);
             siteX1[sites] = Math.min(TILE - 1, x1); siteY1[sites] = Math.min(TILE - 1, y1);
             siteKind[sites] = kind; siteState[sites] = state; siteMine[sites] = mine; siteKey[sites] = key;

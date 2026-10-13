@@ -894,7 +894,7 @@ public class PlanCheck {
         int capacity = (int) Math.round(MapCheck.JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
         CityMap m = CityMap.square(seed, place[0], place[1], types, side, capacity, c);
         if (mine >= 0) {
-            c[mine] = Math.min(wantMines, m.ownedSites(Resource.IRON));
+            c[mine] = Math.min(wantMines, m.ownedSites(Resource.IRON, m.types()[mine].field()));
             m.reconcile(c);
         }
         return m;
