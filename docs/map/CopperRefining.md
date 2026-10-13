@@ -1,6 +1,6 @@
-# CopperRefining.java - 249 lines · 12 methods · 4 constants · sectors
+# CopperRefining.java - 251 lines · 12 methods · 4 constants · sectors
 
-`ham/citybuildersim/sectors/CopperRefining.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CopperRefining.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8;
 > docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the
@@ -59,9 +59,9 @@
 > plants the acid; the world the rest - anode, cathode, rod and acid all
 > ship.
 
-**Uses:** [Good](Good.md) (22), [OldMetal](OldMetal.md) (10), [SpreadPlanner](SpreadPlanner.md) (3), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [ProcessingSector](ProcessingSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Sector](Sector.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Game](Game.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (22), [OldMetal](OldMetal.md) (10), [SpreadPlanner](SpreadPlanner.md) (3), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [ProcessingSector](ProcessingSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Sector](Sector.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Game](Game.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildCard](BuildCard.md) (1)
 
-**Used by (6):** [BuildingDataCheck](BuildingDataCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [GdpCheck](GdpCheck.md), [MoneyCheck](MoneyCheck.md), [ReadPathCheck](ReadPathCheck.md), [Sectors](Sectors.md)
+**Used by (10):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [GdpCheck](GdpCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [MoneyCheck](MoneyCheck.md), [ReadPathCheck](ReadPathCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
@@ -83,7 +83,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 74 | 176 | **type** `public final class CopperRefining extends ProcessingSector` | Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the study's - materials-chains-research.md - 4): copper's processing industry... |
+| 74 | 178 | **type** `public final class CopperRefining extends ProcessingSector` | Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the study's - materials-chains-research.md - 4): copper's processing industry... |
 | 88 | 16 | `public CopperRefining()` |  |
 
 ### THE OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9) (lines 105-228)
@@ -101,9 +101,9 @@
 | 191 | 8 | `public double leftForTheLast()` | ...and what the others leave the last one standing: the pool's last month less the rest's intake at nameplate, at most its own. |
 | 211 | 17 | `protected SpreadPlanner.Values values()` | The city's values a works of its is weighed at (ProcessingSector's), with the old copper in its scrap (THE OLD COPPER): one more refinery's scrap is the old copper past what those standing take, at oldCopperPrice(), a... |
 
-### the page (lines 229-249)
+### the page (lines 229-251)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 232 | 17 | `public List<Line> ownLines(Game game)` |  |
+| 232 | 19 | `public List<Line> ownLines(Game game)` |  |
 

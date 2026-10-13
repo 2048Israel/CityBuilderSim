@@ -1,6 +1,6 @@
-# CentralBankCheck.java - 1,917 lines · 26 methods · 5 constants · harnesses
+# CentralBankCheck.java - 1,932 lines · 26 methods · 5 constants · harnesses
 
-`ham/citybuildersim/CentralBankCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CentralBankCheck.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > Proves the central bank's books: that money is made and destroyed on them
 > and nowhere else, every price 0.7.0 hangs off the policy rate, and its two
@@ -112,7 +112,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 167 | 1751 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
+| 167 | 1766 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
 | 173 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 178 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 188 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
@@ -163,7 +163,7 @@
 |---:|---:|---|---|
 | 1421 | 116 | `static void theSurplusPaysEveryone() throws Exception` |  |
 
-### 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, (lines 1538-1917)
+### 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, (lines 1538-1932)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -171,7 +171,7 @@
 | 1556 | 7 | `static double rule052(double inflation, double target, DebtManager.Strictness s)` | The rule at a step as it was from 0.7.52 to 0.7.80, written out: struck at the aim, on the gap past the band either side of it, at the step's weight. |
 | 1565 | 1 | `static boolean bits(double a, double b)` | Equal to the bit (a NaN as any NaN). |
 | 1573 | 232 | `static void howStrict() throws Exception` |  |
-| 1858 | 43 | `static Game probeCity(GameFiles files)` | The probe city: the playtest's founding (LongPlaytest.founding()) in its seed 8's shape since 0.7.102 - 40 houses, then five months before the next 20 - and its rhythm (LongPlaytest.main's skips, schools and advice) t... |
-| 1903 | 3 | `static void playTo(Game g, int months)` | Up to `months` of the playtest's months, never past STRICT_BRANCH. |
-| 1908 | 9 | `static void strictMonth(Game g)` | One of a twin's months: the playtest's month, with nothing built. |
+| 1873 | 43 | `static Game probeCity(GameFiles files)` | The probe city: the playtest's founding (LongPlaytest.founding()) in its seed 5's shape since 0.7.139 - 41 houses, then four months before the next 20 (seed 8's, 40 and five months, from 0.7.102) - and its rhythm (Lon... |
+| 1918 | 3 | `static void playTo(Game g, int months)` | Up to `months` of the playtest's months, never past STRICT_BRANCH. |
+| 1923 | 9 | `static void strictMonth(Game g)` | One of a twin's months: the playtest's month, with nothing built. |
 

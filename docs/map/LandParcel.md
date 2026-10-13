@@ -1,6 +1,6 @@
 # LandParcel.java - 338 lines · 45 methods · 4 constants · model
 
-`ham/citybuildersim/LandParcel.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandParcel.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > One offer on the market, as the land office lists it: a rectangle of whole blocks against one side of the city, in one of that side's six places, with what its ground holds - its area dry, fresh, sea and forest, and the sites and amounts of the seven resources - and its price.
 > 
@@ -47,7 +47,7 @@
 
 **Uses:** [CityLand](CityLand.md) (35), [LandManager](LandManager.md) (6), [Resource](Resource.md) (6), [GridOffers](GridOffers.md) (3)
 
-**Used by (28):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [OilCheck](OilCheck.md), [PortCheck](PortCheck.md), [ScaleCheck](ScaleCheck.md), [TreasuryCheck](TreasuryCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md)
+**Used by (30):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [OilCheck](OilCheck.md), [PortCheck](PortCheck.md), [ScaleCheck](ScaleCheck.md), [TreasuryCheck](TreasuryCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md)
 
 ## Sections
 

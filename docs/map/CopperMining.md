@@ -1,6 +1,6 @@
-# CopperMining.java - 251 lines · 12 methods · 5 constants · sectors
+# CopperMining.java - 256 lines · 12 methods · 5 constants · sectors
 
-`ham/citybuildersim/sectors/CopperMining.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CopperMining.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133,
 > batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the
@@ -51,9 +51,9 @@
 > cathode; the world the rest. The leach plants buy Copper Refining's acid
 > first, the world's past it.
 
-**Uses:** [Good](Good.md) (14), [LandManager](LandManager.md) (5), [Resource](Resource.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Deposit](Deposit.md) (1)
+**Uses:** [Good](Good.md) (14), [LandManager](LandManager.md) (5), [Resource](Resource.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Deposit](Deposit.md) (1)
 
-**Used by (4):** [BuildingDataCheck](BuildingDataCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [Sectors](Sectors.md)
+**Used by (6):** [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
@@ -77,7 +77,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 185 | **type** `public final class CopperMining extends ExtractionSector` | Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the study's - materials-chains-research.md - 4): the fourth materials chain... |
+| 67 | 190 | **type** `public final class CopperMining extends ExtractionSector` | Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the study's - materials-chains-research.md - 4): the fourth materials chain... |
 | 84 | 10 | `public CopperMining()` |  |
 
 ### the ground (lines 95-186)
@@ -100,9 +100,9 @@
 | 212 | 9 | `public double[] retirementDemandAndCapacity(Game game)` | Copper worked out leaves its mines spare, measured in the tonnes they make: all of them once the city's copper is out; while some is left, those over a type worked out (ExtractionSector's workedOut()). |
 | 224 | 9 | `double workedOutCapacity(LandManager land)` | Its nameplate standing over a type worked out, in the tonnes each makes (unitsOf()). |
 
-### the page (lines 234-251)
+### the page (lines 234-256)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 237 | 14 | `public List<Line> ownLines(Game game)` |  |
+| 237 | 19 | `public List<Line> ownLines(Game game)` |  |
 

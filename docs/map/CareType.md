@@ -1,6 +1,6 @@
-# CareType.java - 133 lines · 6 methods · 1 constants · model
+# CareType.java - 170 lines · 7 methods · 3 constants · model
 
-`ham/citybuildersim/CareType.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CareType.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > What a healthcare building actually does.
 > 
@@ -35,7 +35,7 @@
 > share this one. NONE is the same shape for the opposite reason: every
 > non-healthcare building in the game has it.
 
-**Uses:** [AgeBand](AgeBand.md) (7), [PopulationCohorts](PopulationCohorts.md) (1)
+**Uses:** [AgeBand](AgeBand.md) (8), [PopulationCohorts](PopulationCohorts.md) (1)
 
 **Used by (29):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [ConstructionScreen](ConstructionScreen.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [Inbox](Inbox.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
 
@@ -54,7 +54,9 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 114 | `CareType.SENIOR_NEED_AGAINST_AN_ELDER` | `.19` | 5.5% of 70-84 in care against 29.6% of the over-85s - see placesPerHead. |
+| 143 | `CareType.SENIOR_NEED_AGAINST_AN_ELDER` | `.19` | 5.5% of 70-84 in care against 29.6% of the over-85s - see placesPerHead. |
+| 146 | `CareType.CHILDCARE_UNDER_SIX` | `.32` | A baby's place in childcare: the 32% of Canada's children aged 0 to 5 in centre-based child care in 2025 (Statistics Canada, Child care arrangements, 2025, The Daily 2025-10-21). |
+| 149 | `CareType.CHILDCARE_SIX_TO_TWELVE` | `.35 *.52` | A child's place: 35% of school-attending 6-to-12s in child care, 52% of them in before- or after-school programmes (Statistics Canada, The Daily 2026-03-12), so 0.35 x 0.52 = 18.2% - derived here, the release gives no... |
 
 ## Fields (state)
 
@@ -66,11 +68,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 97 | **type** `public enum CareType` | What a healthcare building actually does. |
+| 37 | 134 | **type** `public enum CareType` | What a healthcare building actually does. |
 | 59 | 3 | `CareType(String label)` |  |
 | 63 | 3 | `public String getLabel()` |  |
 | 68 | 3 | `public boolean servesTheLiving()` | True for the types whose coverage is measured against living residents. |
 | 73 | 8 | `public boolean servedBy(AgeBand band)` | True if a resident in this band is somebody this type has to have room for. |
-| 107 | 5 | `public double placesPerHead(AgeBand band)` | How much of a place one person in this band needs. |
-| 124 | 9 | `public double populationServed(PopulationCohorts cohorts)` | How many people this type is on the hook for, given the pyramid. |
+| 88 | 3 | `public boolean countsPlaces()` | True for the types whose need is counted in places rather than heads: each band wants a share of a place (senior care since 2026-09-15, childcare since 0.7.139), so a screen says "places needed", not "people to serve". |
+| 135 | 6 | `public double placesPerHead(AgeBand band)` | How much of a place one person in this band needs. |
+| 161 | 9 | `public double populationServed(PopulationCohorts cohorts)` | How many people this type is on the hook for, given the pyramid - in places: a head a place for general care, each band at its weight for senior care and childcare (placesPerHead()). |
 

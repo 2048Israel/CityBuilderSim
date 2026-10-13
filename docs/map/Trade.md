@@ -1,6 +1,6 @@
 # Trade.java - 40 lines · 4 methods · 3 constants · model
 
-`ham/citybuildersim/Trade.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Trade.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > One fill: somebody sold somebody some units of a good at a price.
 > 
@@ -19,7 +19,7 @@
 
 **Uses:** [Good](Good.md) (1)
 
-**Used by (27):** [BooksCheck](BooksCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [GoodsMarket](GoodsMarket.md), [HeavyIndustry](HeavyIndustry.md), [LuxuryRetail](LuxuryRetail.md), [Markets](Markets.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyAudit](MoneyAudit.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OldMetal](OldMetal.md), [RealEstate](RealEstate.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [StrategicReserve](StrategicReserve.md), [SupplierCreditCheck](SupplierCreditCheck.md)
+**Used by (29):** [BooksCheck](BooksCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [GoodsMarket](GoodsMarket.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LuxuryRetail](LuxuryRetail.md), [Markets](Markets.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyAudit](MoneyAudit.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OldMetal](OldMetal.md), [RealEstate](RealEstate.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [StrategicReserve](StrategicReserve.md), [SupplierCreditCheck](SupplierCreditCheck.md)
 
 ## Constants
 

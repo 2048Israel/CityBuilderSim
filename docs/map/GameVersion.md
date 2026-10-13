@@ -1,6 +1,6 @@
-# GameVersion.java - 6,935 lines · 5 methods · 4 constants · model
+# GameVersion.java - 7,297 lines · 5 methods · 4 constants · model
 
-`ham/citybuildersim/GameVersion.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GameVersion.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > What build this is, and what shape its saves are.
 > 
@@ -46,19 +46,19 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 6195 | `GameVersion.VERSION` | `"0.7.135"` | Bump on release. |
-| 6865 | `GameVersion.SAVE_FORMAT` | `39` | The save shape. |
-| 6893 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `37` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
-| 6895 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 6557 | `GameVersion.VERSION` | `"0.7.142"` | Bump on release. |
+| 7227 | `GameVersion.SAVE_FORMAT` | `39` | The save shape. |
+| 7255 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `37` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
+| 7257 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 6894 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
-| 6897 | 1 | `private GameVersion()` |  |
-| 6900 | 3 | `public static String title()` | For the window title. |
-| 6910 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
-| 6919 | 3 | `public static boolean isNoLongerReadable(int saveFormat)` | True when a save is older than this build loads, below OLDEST_LOADABLE_FORMAT: refused as a newer build's is, its file left as it was, the player told in noLongerReadable()'s words. |
-| 6929 | 6 | `public static String noLongerReadable(String savedBy)` | What the load screen's slot list, a refused load and the log tell the player when a save is older than this build loads: the build that saved the city, which still opens it, and this one, which cannot. |
+| 42 | 7256 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
+| 7259 | 1 | `private GameVersion()` |  |
+| 7262 | 3 | `public static String title()` | For the window title. |
+| 7272 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
+| 7281 | 3 | `public static boolean isNoLongerReadable(int saveFormat)` | True when a save is older than this build loads, below OLDEST_LOADABLE_FORMAT: refused as a newer build's is, its file left as it was, the player told in noLongerReadable()'s words. |
+| 7291 | 6 | `public static String noLongerReadable(String savedBy)` | What the load screen's slot list, a refused load and the log tell the player when a save is older than this build loads: the build that saved the city, which still opens it, and this one, which cannot. |
 

@@ -85,9 +85,10 @@ fi
 [ -n "$TITLE" ] || TITLE=$(git log -1 --format=%s "$REF")
 
 GENERATED="docs/map docs/dials.md docs/month-order.md docs/harnesses.md"
-undo() {   # the merge taken back: the maps the checks rewrote first, or the abort refuses
+undo() {   # the merge taken back: the maps the checks rewrote first, or the abort refuses, and the new ones they wrote
     git checkout -q -- $GENERATED 2>/dev/null
     git merge --abort
+    git clean -fq -- $GENERATED
     LEFT=$(git status --porcelain | head -5 | tr '\n' ' ')
     [ -z "$LEFT" ] || say "left in the tree after the abort (not tracked by the merge): $LEFT"
 }
