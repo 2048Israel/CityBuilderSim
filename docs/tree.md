@@ -371,8 +371,16 @@ adds its line here, not in `CLAUDE.md`.
                                    and kept by its plots - what the far nodes draw from (MapTiles), a
                                    district under 4 of their pixels dithered by its shares, the runs
                                    and the city's edge a pixel wide at every scale; the sidecar
-                                   beside the save (no picture in it); nothing in the model reads
-                                   it - MapCheck holds it
+                                   beside the save (no picture in it); since 0.8.0 (batch I14) the
+                                   materials drawn as themselves - every type of iron, oil, coal,
+                                   stone and copper on its own sites by type of field, a works on
+                                   as many as it takes (a Large Open-Pit Mine on twenty), each kind
+                                   its look (BuildingVisual.LOOKS: pits, shafts, quarries, a leach
+                                   plant, the wash plant, camps, planted forest), each processing
+                                   industry's works one campus as the refinery's (GROUPS), and the
+                                   zones tinted by district (CityMap.zoneTint(), ui/MapView), the
+                                   sidecar FORMAT 7; nothing in the model reads it - MapCheck holds
+                                   it (15 the materials)
         MiniMapFrame.java          the minimap's arithmetic (0.7.134, batch MM2; docs/studies/spec-globe.md
                                    8.3): what the stamp at the rail's foot and its hover preview frame -
                                    the ground the city owns in its districts with buildings, its centre

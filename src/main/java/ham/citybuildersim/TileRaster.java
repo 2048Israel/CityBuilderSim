@@ -191,10 +191,13 @@ public final class TileRaster {
                 y1 = y0 + sh;
             } else {
                 int inset = px >= INSET_FROM ? 1 : 0;
-                x0 = p.bx[b] * px + inset;
-                y0 = p.by[b] * px + inset;
-                x1 = Math.min(tile, p.bx[b] + p.bw[b]) * px - inset;
-                y1 = Math.min(tile, p.by[b] + p.bh[b]) * px - inset;
+                // ...a site's works inset only where its site ends (0.8.0): a site across tiles, a coal mine's 33 plots, one box.
+                int il = site >= 0 && p.bx[b] > in.siteFX0[site] ? 0 : inset, it = site >= 0 && p.by[b] > in.siteFY0[site] ? 0 : inset;
+                int ir = site >= 0 && p.bx[b] + p.bw[b] - 1 < in.siteFX1[site] ? 0 : inset, ib = site >= 0 && p.by[b] + p.bh[b] - 1 < in.siteFY1[site] ? 0 : inset;
+                x0 = p.bx[b] * px + il;
+                y0 = p.by[b] * px + it;
+                x1 = Math.min(tile, p.bx[b] + p.bw[b]) * px - ir;
+                y1 = Math.min(tile, p.by[b] + p.bh[b]) * px - ib;
             }
             boolean edged = px >= EDGE_FROM;
             int look = t == null ? BuildingVisual.PLAIN : t.look();

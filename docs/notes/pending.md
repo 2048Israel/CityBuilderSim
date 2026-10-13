@@ -5,6 +5,27 @@ session moves them over and empties this file. Newest at the top. It holds
 changelog and todo lines for the claude.ai project, which the sessions that
 write them cannot reach.
 
+## 0.8.0 (batch I14, 2026-10-13) - for `claude/changelog.md`
+
+**0.8.0 - the release that finishes industry; the materials on the map (I14).** The oil chain (0.7.76-0.7.98) and
+the five materials chains (0.7.110-0.7.143) are whole, and now drawn as themselves: every type of iron, oil, coal,
+stone and copper stands on its resource's sites by its type of field, on as many as it takes (a Large Open-Pit Mine
+on twenty hematite sites, counted once), laid as LandManager.fits() packs them - coal's, stone's and copper's first
+types had been placed nowhere. Each kind has a look of its own (open pits in the ore's colour, a shaft, quarries, a
+leach plant, the wash plant, camps, planted forest), each processing industry's works one campus in its colours (the
+arc furnaces keep their places), and a zone's districts are tinted in its sector's colour with the legend naming it.
+Found on the way: a footprint of a tile's 32 plots threw the district's plan; capped at a cell's 31. MapCheck 15
+holds it, a screen over the industry 32 ms of thread CPU. Sidecar FORMAT 7; no save change; playtests byte-identical.
+
+## 0.8.0 - for `claude/todo.md`
+
+- CHECK (Jerus, on the PC): the materials on the map - a pan over an industrial city, a zone's tint - beside
+  docs/queue/I14-notes/png/ (QUEUE.md Pending, I14-C; fixI14-notes §8).
+- CONFIRM: a plantation drawn on a cell's 31 x 31 plots of its 105 x 105 (I14 ★3); the arc furnaces and mini-mills
+  not gathered into steel's campus (★4); sited works grey in the far views (★6); no toggle for the zones' tint (★7).
+- W1's walled street piece over a dense iron cluster stays open (QUEUE.md Pending, W1-P).
+- Section 0: the build is 0.8.0, the release that finishes industry - for the manual's next edition (a milestone).
+
 ## 0.7.143 (batch I12, 2026-10-13) - for `claude/changelog.md`
 
 **0.7.143 - the materials pictograms drawn (I12).** The nine materials industries' Operations pages open on their

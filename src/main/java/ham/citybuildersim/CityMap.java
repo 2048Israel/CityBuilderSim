@@ -705,7 +705,7 @@ public final class CityMap {
         for (int roads = 0; roads < 2; roads++) {
             for (int t = 0; t < types.length; t++) {
                 // ...not the buildings at sea (0.7.91): on none of the city's dry ground, so in no district (BuildingVisual.of()'s sea flag).
-                if (types[t] == null || types[t].sea() || types[t].site() != null || (types[t].road() != BuildingVisual.NOT_A_ROAD) != (roads == 1)) continue;
+                if (types[t] == null || types[t].sea() || onSites(t) || (types[t].road() != BuildingVisual.NOT_A_ROAD) != (roads == 1)) continue;
                 long want = t < model.length ? model[t] : 0;
                 long delta = want - have[t];
                 if (delta > 0) touched += roads == 1 ? placeRoad(t, delta) : place(t, delta);
@@ -1235,7 +1235,7 @@ public final class CityMap {
         }
         double total = 0;
         for (int t = 0; t < types.length; t++) {
-            if (types[t] == null || types[t].site() != null || types[t].sea() || gathered[t] || t >= counts.length) continue;
+            if (types[t] == null || onSites(t) || types[t].sea() || gathered[t] || t >= counts.length) continue;
             total += counts[t] * (double) BuildingVisual.cells(types[t]);
         }
         double[] share = new double[n];
@@ -1259,7 +1259,7 @@ public final class CityMap {
         for (int t : ranked) order[no++] = t;
         for (int oi = 0; oi < no; oi++) {
             int t = order[oi];
-            if (types[t] == null || types[t].site() != null || gathered[t] || t >= counts.length || counts[t] <= 0) continue;
+            if (types[t] == null || onSites(t) || gathered[t] || t >= counts.length || counts[t] <= 0) continue;
             long c = counts[t], given = 0, each = BuildingVisual.cells(types[t]);
             int m = 0;
             for (int i = 0; i < n; i++) {
@@ -1463,6 +1463,11 @@ public final class CityMap {
             for (District d : districts) n += d.sites[k];
         }
         return n;
+    }
+
+    /** Whether type t stands on its resource's sites (placeSited()): a site of a SITED resource, and sites to take - any other building, a site on none, placed as any building is, so the districts always sum to the counts. */
+    private boolean onSites(int t) {
+        return types[t] != null && types[t].site() != null && types[t].sites() > 0 && siteSlot(types[t].site()) >= 0;
     }
 
     /** The slot of a resource's fields of a type, or -1 (not SITED, or a type not the resource's). */
