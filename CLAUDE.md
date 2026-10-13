@@ -207,8 +207,9 @@ time on the machine, under the shared lock (`batch-check.sh` takes it).
    only at a milestone or when Jerus asks.
 
 **On the PC (Claude Code, NetBeans beside it):** the same steps; build with
-NetBeans *Clean and Build* or `mvn -q compile`, check with `Batch check.bat`,
-regenerate with `Regenerate maps.bat`. The full suite is
+NetBeans *Clean and Build* or `mvn -q compile`, check with `Batch check.bat`
+(`--maps` to regenerate the maps too; without it it writes nothing git
+tracks, because the PC's copy pulls `main` and must stay clean). The full suite is
 `java -cp "target/classes;%USERPROFILE%\.m2\repository\com\google\code\gson\gson\2.10.1\gson-2.10.1.jar" ham.citybuildersim.AllChecks -f`
 (about nine minutes; `AllChecks money bank` runs two).
 
