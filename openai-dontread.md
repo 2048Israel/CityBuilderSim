@@ -4,6 +4,15 @@
 
 This document describes what ChatGPT can contribute to CityBuilderSim and where the connected GitHub environment has limits.
 
+### Current model and environment
+
+- **Model in this ChatGPT session:** GPT-6.
+- **Interface:** ChatGPT, using the GitHub connector for repository access and edits.
+- **Repository:** `2048Israel/CityBuilderSim`; the connected GitHub account has been able to read and write repository files.
+- **Execution environment:** GitHub API/connector operations, not a local checkout or provisioned development machine. I do not have an ordinary repository terminal, Java/Maven runtime, or guaranteed CI runner exposed in this session.
+- **Testing implication:** I can inspect source and reason about tests, and I can read CI results if accessible, but I must not say I ran `mvn`, Java tests, harnesses, or long simulations unless an actual available tool ran them and returned the result.
+- **Plan/access caveat:** This describes the capabilities exposed in this session, not a promise about every ChatGPT plan or future connector configuration. Access and write ability depend on the active connection and permissions.
+
 ### Useful tasks
 
 - Read repository files and docs through the connected GitHub tools, search symbols, and explain code based on inspected sources.
@@ -17,7 +26,7 @@ This document describes what ChatGPT can contribute to CityBuilderSim and where 
 
 - GitHub access is connector-based. I do not automatically have a local clone, repository terminal, or unrestricted filesystem.
 - I must not claim a build, Java test, harness, batch check, or long simulation passed unless I actually ran it in an available execution environment and observed the result.
-- Treat this as the ordinary/free-tier GitHub environment exposed by the connected account, not a provisioned cloud IDE or guaranteed CI runner. Connector permissions and platform limits apply.
+- Treat this as the ordinary GitHub connector environment, not a provisioned cloud IDE or guaranteed CI runner. Connector permissions and platform limits apply.
 - Design studies and generated code maps may be stale. Inspect current source before making claims about current behavior.
 - I cannot see Claude's private conversation, local files, terminal history, or uncommitted changes unless they are shared here.
 - Repository instructions remain authoritative. Protect user saves and accounting invariants. Never weaken a test's premise merely to make a change pass.
