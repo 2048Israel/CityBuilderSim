@@ -66,6 +66,7 @@ stuff".
 | FX1-2 | Merge the held `batch/FX1-with-preflight` (e821d7f): a sector's credit test before its share sale; HealthCheck 13 accepted red (Jerus, 2026-10-12: "accept the red"), so it joins the gate's known reds | `runs/fixFX1-notes.md` ★7, in the project's `claude/todo.md` |
 
 | CC1-S | Keep care essential even when it is not financially self-supporting; investigate why seeds 4 and 5 still stall around 3,000 people despite care, school and pensions | [fixCC1 notes](runs/fixCC1-notes.md) |
+| GS1 | Ten of Stale's soft findings made true again - Gemini's first batch, running now (Jerus, 2026-10-13) | [docs/queue/GS1.md](docs/queue/GS1.md) |
 
 ## Pending
 
