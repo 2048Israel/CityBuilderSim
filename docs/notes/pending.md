@@ -24,3 +24,5 @@ headless renders are in docs/queue/I12-notes/. No save change; the playtests byt
   docs/queue/I12-notes/png/ and fixI12-words.txt (QUEUE.md Pending, I12-C).
 - CONFIRM: copper drawn in tonnes of the good, not of copper contained as the mockups say (I12 ★2: the model holds no
   copper content); the three lines over a works (I12 ★5).
+- Section 0, under the manual's entry: the build is 0.7.143 (the manual's header says 0.7.135; save format still 39,
+  harnesses still 108); the nine materials industries' Operations pages open on a picture now, for its next edition.

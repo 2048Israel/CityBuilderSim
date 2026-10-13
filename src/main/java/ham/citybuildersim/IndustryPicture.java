@@ -72,7 +72,8 @@ import java.util.Map;
  * ★ Copper is drawn in tonnes of the good, not of copper contained: the model
  * holds no copper content for a good (the concentrate's 30% is a comment).
  *
- * Pure: it reads a View and builds nothing in the city.
+ * Pure: it reads a View (and picture() the Game, for the parties' names) and
+ * builds nothing in the city.
  */
 public final class IndustryPicture {
 

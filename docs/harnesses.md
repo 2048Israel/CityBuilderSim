@@ -7144,83 +7144,83 @@ _(this harness does not label its checks through a helper - it prints its findin
 > docs/studies/spec-materials.md 2.13, 4's IndustryViewCheck line and 5's
 > I11 row): IndustryView's figures held to the model's own reads in three
 > played towns built to cause each part of the picture, and three at their
-> founding where the plans order.
+> founding where the plans order; and since 0.7.143 (batch I12)
+> IndustryPicture's layout of those figures, to scale and on the frame.
 > 
 > WHY. The nine materials industries' Operations pages draw IndustryView's
 > figures (batch I12): the fields as vessels, the feeds by where they came
 > from, each kind of works with its run and its gate, the products and who
 > took them, the power, the forest. A feed drawn from a seller that sold
 > nothing, a product whose parts do not add to what was made, a gate in
-> words the plan never says, or a view that wrote to the city it read would
 > ...
 
-- **L264 1. the nine industries, each under its roof, and no other**
-  - L273 it covers the nine materials industries of Sectors.KEYS, and reads no other sector (null for each)
-  - L275 ...each under its roof: the four that dig a pit, Forestry its camp, the smelters a furnace, the kilns a kiln,
-  - L299 every town reads all nine, counted, each its sector's own and its buildings standing
-- **L306 2. the fields by type, each a vessel filled to what remains**
-  - L348 fixture: the works town's Surface Coal Mine works a thermal site and its Underground Coal Mine a coking one, each
-  - L356 ...and its Iron Mine a hematite site
-  - L361 ...and its two Quarries, which stand on ANY stone, on its two limestone sites by fiat, where the packing put them
-  - L367 the forest town's forest is one vessel: its full stock, and what stands of it
-  - L373 a works has no fields
-- **L379 3. every good balances: made = kept + sold + shipped + carried + lost + what the warehouse moved**
-  - L403 ...and each industry's tonnes made to its tonnes out, the warehouse's move in them
-- **L432 4. every figure is the model's: rows, fills, counts, appraisals and the plan's order**
-  - L497 ...its buyers and sellers are the month's fills, by party, adding to what the rows sold and bought at home
-  - L500 ...one more of each is its sector's own appraisal - a works' from the plan's list, a mine's the plan's
-  - L502 ...a works' last earnings and idle months are the idle book's
-  - L503 ...and the book counted each kind standing idle this month exactly where the view's last one loses money
-  - L505 ...and the kind the view would order is the one each sector's plan orders, or none where it orders none
-  - L509 ...and its power and lorries are its sector's reads
-- **L594 5. from where: imported feed, captive chains, old metal, sold across industries, carried**
-  - L598 a works on imported feed: the copper smelter takes far more concentrate than the town's one mine digs, the rest
-  - L607 a captive chain: the smelter's anode to the refinery, the refinery's cathode to the rod mill, each its own works'
-  - L617 old metal bought: the scrap refinery takes the city's old copper first, its feed's old-metal part the pool's
-  - L626 sold at home across industries: the leach plant's acid bought from Copper Refining's smelter
-  - L637 the works town's chain: coking coal bought from Coal Mining, its ovens' coke to the blast furnace first, captive
-  - L642 ...the blast furnace's ore from Iron Mining at home, the rest landed, and its limestone from Quarrying
-  - L652 ...old steel bought at the yard: the pool's month the view's, the yard's scrap to the arc furnace first, captive,
-  - L662 ...the limestone no buyer took carried into aggregate: out of the one, into the other, the quarry's carry
-  - L671 ...the coking mine's raw coal through the wash plant: the view's wash the sector's lift, the plant run on what it
-  - L679 ...and its coking coal the month's: what the rows made and idled is the lift's, the ground holding plenty
-  - L688 the wood town: the sawmill's residues to the pellet and pulp mills first, captive, the rest of their need landed;
-- **L700 6. the power: made less drawn is sold less bought**
-  - L708 in every industry of every town, the power its works make less what they draw is what they sell the grid less
-  - L713 fixture: the works town's Coke Ovens make 8,000 kW of their gas: Iron & Steel makes them, and sells their surplus
-  - L720 ...and the wood town's Pulp Mill its 13,500 kW, all of it sold, the sawmill's and the pellet mill's draws bought
-- **L728 7. the forest: what stands, the cut, the planting line, where it settles**
-  - L734 fixture: the forest town's Logging Camp cut this month
-  - L737 its figures are the forest's own reads: full, standing, protected, cuttable, cleared
-  - L741 ...and Forestry's: the crews with those on site, the salvage, the stands, the planting word
-  - L746 the planting line is the regrowth Forestry's planting weighs the cut against, its stands on site counted as
-  - L750 it settles where Forestry.settlesAt() says, and with no law at the regrowth rule's depletion - the same here, the
-  - L757 the camp's run is the forest's cut over the crews' ask at the rate
-  - L762 with 40% of the forest protected, it settles at no less than 40% - Forestry.settlesAt() under the law - and with no
-- **L773 8. the words and the colours**
-  - L789 every good the nine make or use has a colour of its own
-  - L795 ...and every origin and every field type, the world's hatched
-  - L830 every headline, kind, gate, vessel, part, power line and forest line has its words
-  - L831 ...a good's figure in its own unit: tonnes, cubic metres, litres
-  - L839 ...and a gate one more fails, in the plan's words: its first refusal
-- **L846 9. pure**
-  - L848 read twice, the same views, figure for figure and word for word
-  - L852 ...and reading them makes no production row (asked of a sector that buys and makes none of the goods)
-  - L857 the city saved before the nine are read and after is the same save, byte for byte but its time stamp
-- **L897 11. the plan's order, in towns at their founding where kinds pass**
-  - L925 fixture: in each town the plan orders the kind the view would - the best that passes every gate, Coal Mining's
-- **L933 10. after a load**
-  - L941 the loaded twin reads its month as not counted, drawing nothing, its rows not saved
-  - L944 ...and its picture is empty, saying a month must run
-  - L948 ...and a month on, it is counted and drawn again
-- **L970 12. the picture: ribbons to scale, every label's figure the view's, nothing off the frame at 1,389 x 868**
-  - L1185 every ribbon leaves one node's right edge and reaches another's left, inside each
-  - L1187 ribbons to scale: each pair's ribbons are its flows' quantity times the picture's one scale, and each node's
-  - L1190 every label's figure is the view's, in its words: bands, vessels, sources, kinds and runs, takers, power, notes, cells
-  - L1192 nothing off the frame at the 1,389 x 868 window's
-  - L1197 fixture: the towns draw works in two ranks or more, a flow in a band through a works' column, imports hatched, and
-  - L1200 each picture under its industry's roof, the five roofs each its own outline (CAMP Forestry's)
-  - L1204 fixture: an industry with nothing standing (the works town's Forestry) draws nothing, and says so
+- **L265 1. the nine industries, each under its roof, and no other**
+  - L274 it covers the nine materials industries of Sectors.KEYS, and reads no other sector (null for each)
+  - L276 ...each under its roof: the four that dig a pit, Forestry its camp, the smelters a furnace, the kilns a kiln,
+  - L300 every town reads all nine, counted, each its sector's own and its buildings standing
+- **L307 2. the fields by type, each a vessel filled to what remains**
+  - L349 fixture: the works town's Surface Coal Mine works a thermal site and its Underground Coal Mine a coking one, each
+  - L357 ...and its Iron Mine a hematite site
+  - L362 ...and its two Quarries, which stand on ANY stone, on its two limestone sites by fiat, where the packing put them
+  - L368 the forest town's forest is one vessel: its full stock, and what stands of it
+  - L374 a works has no fields
+- **L380 3. every good balances: made = kept + sold + shipped + carried + lost + what the warehouse moved**
+  - L404 ...and each industry's tonnes made to its tonnes out, the warehouse's move in them
+- **L433 4. every figure is the model's: rows, fills, counts, appraisals and the plan's order**
+  - L498 ...its buyers and sellers are the month's fills, by party, adding to what the rows sold and bought at home
+  - L501 ...one more of each is its sector's own appraisal - a works' from the plan's list, a mine's the plan's
+  - L503 ...a works' last earnings and idle months are the idle book's
+  - L504 ...and the book counted each kind standing idle this month exactly where the view's last one loses money
+  - L506 ...and the kind the view would order is the one each sector's plan orders, or none where it orders none
+  - L510 ...and its power and lorries are its sector's reads
+- **L595 5. from where: imported feed, captive chains, old metal, sold across industries, carried**
+  - L599 a works on imported feed: the copper smelter takes far more concentrate than the town's one mine digs, the rest
+  - L608 a captive chain: the smelter's anode to the refinery, the refinery's cathode to the rod mill, each its own works'
+  - L618 old metal bought: the scrap refinery takes the city's old copper first, its feed's old-metal part the pool's
+  - L627 sold at home across industries: the leach plant's acid bought from Copper Refining's smelter
+  - L638 the works town's chain: coking coal bought from Coal Mining, its ovens' coke to the blast furnace first, captive
+  - L643 ...the blast furnace's ore from Iron Mining at home, the rest landed, and its limestone from Quarrying
+  - L653 ...old steel bought at the yard: the pool's month the view's, the yard's scrap to the arc furnace first, captive,
+  - L663 ...the limestone no buyer took carried into aggregate: out of the one, into the other, the quarry's carry
+  - L672 ...the coking mine's raw coal through the wash plant: the view's wash the sector's lift, the plant run on what it
+  - L680 ...and its coking coal the month's: what the rows made and idled is the lift's, the ground holding plenty
+  - L689 the wood town: the sawmill's residues to the pellet and pulp mills first, captive, the rest of their need landed;
+- **L701 6. the power: made less drawn is sold less bought**
+  - L709 in every industry of every town, the power its works make less what they draw is what they sell the grid less
+  - L714 fixture: the works town's Coke Ovens make 8,000 kW of their gas: Iron & Steel makes them, and sells their surplus
+  - L721 ...and the wood town's Pulp Mill its 13,500 kW, all of it sold, the sawmill's and the pellet mill's draws bought
+- **L729 7. the forest: what stands, the cut, the planting line, where it settles**
+  - L735 fixture: the forest town's Logging Camp cut this month
+  - L738 its figures are the forest's own reads: full, standing, protected, cuttable, cleared
+  - L742 ...and Forestry's: the crews with those on site, the salvage, the stands, the planting word
+  - L747 the planting line is the regrowth Forestry's planting weighs the cut against, its stands on site counted as
+  - L751 it settles where Forestry.settlesAt() says, and with no law at the regrowth rule's depletion - the same here, the
+  - L758 the camp's run is the forest's cut over the crews' ask at the rate
+  - L763 with 40% of the forest protected, it settles at no less than 40% - Forestry.settlesAt() under the law - and with no
+- **L774 8. the words and the colours**
+  - L790 every good the nine make or use has a colour of its own
+  - L796 ...and every origin and every field type, the world's hatched
+  - L831 every headline, kind, gate, vessel, part, power line and forest line has its words
+  - L832 ...a good's figure in its own unit: tonnes, cubic metres, litres
+  - L840 ...and a gate one more fails, in the plan's words: its first refusal
+- **L847 9. pure**
+  - L849 read twice, the same views, figure for figure and word for word
+  - L853 ...and reading them makes no production row (asked of a sector that buys and makes none of the goods)
+  - L858 the city saved before the nine are read and after is the same save, byte for byte but its time stamp
+- **L898 11. the plan's order, in towns at their founding where kinds pass**
+  - L926 fixture: in each town the plan orders the kind the view would - the best that passes every gate, Coal Mining's
+- **L934 10. after a load**
+  - L942 the loaded twin reads its month as not counted, drawing nothing, its rows not saved
+  - L945 ...and its picture is empty, saying a month must run
+  - L949 ...and a month on, it is counted and drawn again
+- **L971 12. the picture: ribbons to scale, every label's figure the view's, nothing off the frame at 1,389 x 868**
+  - L1186 every ribbon leaves one node's right edge and reaches another's left, inside each
+  - L1188 ribbons to scale: each pair's ribbons are its flows' quantity times the picture's one scale, and each node's
+  - L1191 every label's figure is the view's, in its words: bands, vessels, sources, kinds and runs, takers, power, notes, cells
+  - L1193 nothing off the frame at the 1,389 x 868 window's
+  - L1198 fixture: the towns draw works in two ranks or more, a flow in a band through a works' column, imports hatched, and
+  - L1201 each picture under its industry's roof, the five roofs each its own outline (CAMP Forestry's)
+  - L1205 fixture: an industry with nothing standing (the works town's Forestry) draws nothing, and says so
 
 ## InfrastructureCheck.java - 101 labelled assertions
 

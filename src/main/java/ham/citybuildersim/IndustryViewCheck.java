@@ -31,7 +31,8 @@ import java.util.Set;
  * docs/studies/spec-materials.md 2.13, 4's IndustryViewCheck line and 5's
  * I11 row): IndustryView's figures held to the model's own reads in three
  * played towns built to cause each part of the picture, and three at their
- * founding where the plans order.
+ * founding where the plans order; and since 0.7.143 (batch I12)
+ * IndustryPicture's layout of those figures, to scale and on the frame.
  *
  * WHY. The nine materials industries' Operations pages draw IndustryView's
  * figures (batch I12): the fields as vessels, the feeds by where they came
@@ -75,11 +76,11 @@ import java.util.Set;
  *      at no less than 40%.
  *   8. THE WORDS AND COLOURS: every good the nine make or use has a colour of
  *      its own; every kind, vessel, part and line has its words.
- *   9. PURE: read twice, the same view; reading it makes no production row;
- *      the save before a read and after it is the same, byte for byte, but
- *      for its time stamp.
- *  10. AFTER A LOAD: a saved town's twin reads its month as not counted
- *      until one runs.
+ *   9. PURE: read twice, the same view, picture and strip; reading it makes
+ *      no production row; the save before a read and after it is the same,
+ *      byte for byte, but for its time stamp.
+ *  10. AFTER A LOAD: a saved town's twin reads its month as not counted,
+ *      its picture empty, until one runs.
  *  11. THE PLAN'S ORDER: in towns at their founding where kinds pass every
  *      gate - a longwall's coal unwashed, a forest with no crew, ore with no
  *      mine - each sector's plan orders the kind the view would.
@@ -859,7 +860,7 @@ public class IndustryViewCheck {
                 String.format("%,d bytes", after.length()));
     }
 
-    /** Every view of the town and its words, as text. */
+    /** Every view of the town and its words, as text - and since batch I12 each picture's words and its strip. */
     static String words(Game g) {
         StringBuilder s = new StringBuilder();
         for (IndustryView.View v : IndustryView.all(g)) {

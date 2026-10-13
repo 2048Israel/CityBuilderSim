@@ -1301,41 +1301,41 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 88 | `IndustryPicture.SALVAGE` | `"salvage"` | ...the forest cleared for building, Forestry's salvage cut. |
-| 94 | `IndustryPicture.LORRIES` | `"lorries"` | ...the lorries' diesel. |
-| 104 | `IndustryPicture.ABROAD` | `"ABROAD", WAREHOUSE = "WAREHOUSE", LOST = "LOST"` | The takers that are not a party: the world, the warehouse, what was lost. |
-| 116 | `IndustryPicture.LEAST_PART` | `.5` | The least part of a feed, a sale or the old metal the picture draws, in its good's unit: under half a unit its figure reads "0 t", and it is left out (I11's ★11: Iron & Steel buys a sliver of its o... |
-| 474 | `IndustryPicture.HEIGHT` | `420` | The picture's height on the page (the materials mockups' 420 px at 1,389 x 868). |
-| 477 | `IndustryPicture.LEAST_WIDTH` | `RefineryView.LEAST_WIDTH` | The least width it is laid out at (RefineryView's: the 1,280 window's card is about 1,094). |
-| 480 | `IndustryPicture.TOP` | `60` | Room above the columns for their headings and a line of notes (the mockups' 60). |
-| 483 | `IndustryPicture.HEAD_Y` | `14, SUB_Y = 27, NOTE_Y = 46` | ...the headings' baselines, their lines' and the notes' (the mockups' 14, 27 and 46). |
-| 486 | `IndustryPicture.PAD` | `4` | ...and the margin under and over what the columns hold. |
-| 489 | `IndustryPicture.SOURCE_ZONE` | `214` | Where the sources' bar stands: its words, an icon and a field's vessel at its left (the mockups' 196 to 232). |
-| 492 | `IndustryPicture.SOURCE_W` | `12` | The sources' bar (the mockups' 10 and 12). |
-| 495 | `IndustryPicture.VESSEL_W` | `22, VESSEL_H = 40, VESSEL_GAP = 12` | A field's vessel, and its gap to the bar (the mockups' 22 x 40, 12). |
-| 498 | `IndustryPicture.FIELD_ROOM` | `44` | The least room a field's row takes: its vessel and three lines of words (the mockups' 42). |
-| 501 | `IndustryPicture.BUYER_ZONE` | `236` | The takers' room at the right: the bar, an icon, a name and its figure, a line of words (RefineryView's). |
-| 504 | `IndustryPicture.BUYER_W` | `12` | The takers' bar. |
-| 507 | `IndustryPicture.UNIT_W` | `60` | A works' box (the mockups' 54 to 64). |
-| 510 | `IndustryPicture.TANK_W` | `150` | The tank's width: a product's name and its figure inside its band (the mockups' 136 to 156). |
-| 513 | `IndustryPicture.TANK_TO_TAKERS` | `60` | The room between the tank and the takers' bar, for the ribbons to cross (the mockups' 44 to 60). |
-| 516 | `IndustryPicture.UNIT_GAP` | `42` | The gap over a works' box: its three lines of words - its name, its run, one more in a word. |
-| 519 | `IndustryPicture.FIRST_RANK_GAP` | `70, LAST_RANK_ROOM = 130` | ...the room between the sources' bar and the first rank of works, for the ribbons to turn; and the room the last rank's words have before the tank. |
-| 522 | `IndustryPicture.CAPITAL` | `.74, LETTER =.6` | The share of its size a letter of the picture's words is set at, at most: a capital's and a lower-case letter's or a figure's (IBM Plex Sans's average is .55, measured at 1,389 x 868 by the batch's... |
-| 525 | `IndustryPicture.SOURCE_GAP` | `22, FIELD_GAP = 14, BUYER_GAP = 12, BLOCK_GAP = 22` | The gap between the sources, between the fields' rows, between the takers, and over the warehouse's block. |
-| 528 | `IndustryPicture.BLOCK_WORDS` | `16` | The room under the warehouse's block for its line: its baseline 13 px under, and the line's descent. |
-| 531 | `IndustryPicture.ROOF_ROOM` | `48` | The room over the tank for its roof: the furnace's stack and flame, the tallest. |
-| 534 | `IndustryPicture.FOOT_ROOM` | `8` | The room under the tank for its foot (the mockups' 7), when no warehouse's block stands under it. |
-| 537 | `IndustryPicture.SOURCE_SPACING` | `30, LABEL_SPACING = 31` | The least a source's or a taker's label centre stands from the next (the mockups' 30 and 31). |
-| 540 | `IndustryPicture.WORDS_IN_BAND` | `12` | The least band a product's name and figure are written in (the mockups' 12). |
-| 543 | `IndustryPicture.FIGURE_IN_BAND` | `52, FIGURE_ROOM = 56` | The room a product's figure has at the right of its band, and a taker's at the right of its name. |
-| 546 | `IndustryPicture.PASS_GAP` | `3` | The gap over a band through a works' column (RefineryView's PASS_GAP). |
-| 549 | `IndustryPicture.LEAST_NODE` | `1.5, ON_SITE_NODE = 6` | The least a node is drawn, so a trickle shows; and a kind only on site, drawn dashed with nothing through it. |
-| 552 | `IndustryPicture.ICON_ROOM` | `22` | The least a box is drawn with an icon in it (the mockups' 22). |
-| 555 | `IndustryPicture.RIBBON` | `.5, HATCHED =.95` | The opacity of a ribbon, and of an imported one, hatched (the mockups' .5 and .95). |
-| 1507 | `IndustryPicture.STRIP_MOST` | `6` | The most cells the strip holds: six at about 200 px each at 1,389 x 868. |
-| 1510 | `IndustryPicture.STRIP_HEAD` | `"THIS MONTH, CELL BY CELL"` | The strip's heading. |
-| 1522 | `IndustryPicture.STRIP_WORDS` | `"a field's bar what is left of it · a product's: used here, shipped(pale), into the war...` | The strip's line: what its bars show. |
+| 89 | `IndustryPicture.SALVAGE` | `"salvage"` | ...the forest cleared for building, Forestry's salvage cut. |
+| 95 | `IndustryPicture.LORRIES` | `"lorries"` | ...the lorries' diesel. |
+| 105 | `IndustryPicture.ABROAD` | `"ABROAD", WAREHOUSE = "WAREHOUSE", LOST = "LOST"` | The takers that are not a party: the world, the warehouse, what was lost. |
+| 117 | `IndustryPicture.LEAST_PART` | `.5` | The least part of a feed, a sale or the old metal the picture draws, in its good's unit: under half a unit its figure reads "0 t", and it is left out (I11's ★11: Iron & Steel buys a sliver of its o... |
+| 475 | `IndustryPicture.HEIGHT` | `420` | The picture's height on the page (the materials mockups' 420 px at 1,389 x 868). |
+| 478 | `IndustryPicture.LEAST_WIDTH` | `RefineryView.LEAST_WIDTH` | The least width it is laid out at (RefineryView's: the 1,280 window's card is about 1,094). |
+| 481 | `IndustryPicture.TOP` | `60` | Room above the columns for their headings and a line of notes (the mockups' 60). |
+| 484 | `IndustryPicture.HEAD_Y` | `14, SUB_Y = 27, NOTE_Y = 46` | ...the headings' baselines, their lines' and the notes' (the mockups' 14, 27 and 46). |
+| 487 | `IndustryPicture.PAD` | `4` | ...and the margin under and over what the columns hold. |
+| 490 | `IndustryPicture.SOURCE_ZONE` | `214` | Where the sources' bar stands: its words, an icon and a field's vessel at its left (the mockups' 196 to 232). |
+| 493 | `IndustryPicture.SOURCE_W` | `12` | The sources' bar (the mockups' 10 and 12). |
+| 496 | `IndustryPicture.VESSEL_W` | `22, VESSEL_H = 40, VESSEL_GAP = 12` | A field's vessel, and its gap to the bar (the mockups' 22 x 40, 12). |
+| 499 | `IndustryPicture.FIELD_ROOM` | `44` | The least room a field's row takes: its vessel and three lines of words (the mockups' 42). |
+| 502 | `IndustryPicture.BUYER_ZONE` | `236` | The takers' room at the right: the bar, an icon, a name and its figure, a line of words (RefineryView's). |
+| 505 | `IndustryPicture.BUYER_W` | `12` | The takers' bar. |
+| 508 | `IndustryPicture.UNIT_W` | `60` | A works' box (the mockups' 54 to 64). |
+| 511 | `IndustryPicture.TANK_W` | `150` | The tank's width: a product's name and its figure inside its band (the mockups' 136 to 156). |
+| 514 | `IndustryPicture.TANK_TO_TAKERS` | `60` | The room between the tank and the takers' bar, for the ribbons to cross (the mockups' 44 to 60). |
+| 517 | `IndustryPicture.UNIT_GAP` | `42` | The gap over a works' box: its three lines of words - its name, its run, one more in a word. |
+| 520 | `IndustryPicture.FIRST_RANK_GAP` | `70, LAST_RANK_ROOM = 130` | ...the room between the sources' bar and the first rank of works, for the ribbons to turn; and the room the last rank's words have before the tank. |
+| 523 | `IndustryPicture.CAPITAL` | `.74, LETTER =.6` | The share of its size a letter of the picture's words is set at, at most: a capital's and a lower-case letter's or a figure's (IBM Plex Sans's average is .55, measured at 1,389 x 868 by the batch's... |
+| 526 | `IndustryPicture.SOURCE_GAP` | `22, FIELD_GAP = 14, BUYER_GAP = 12, BLOCK_GAP = 22` | The gap between the sources, between the fields' rows, between the takers, and over the warehouse's block. |
+| 529 | `IndustryPicture.BLOCK_WORDS` | `16` | The room under the warehouse's block for its line: its baseline 13 px under, and the line's descent. |
+| 532 | `IndustryPicture.ROOF_ROOM` | `48` | The room over the tank for its roof: the furnace's stack and flame, the tallest. |
+| 535 | `IndustryPicture.FOOT_ROOM` | `8` | The room under the tank for its foot (the mockups' 7), when no warehouse's block stands under it. |
+| 538 | `IndustryPicture.SOURCE_SPACING` | `30, LABEL_SPACING = 31` | The least a source's or a taker's label centre stands from the next (the mockups' 30 and 31). |
+| 541 | `IndustryPicture.WORDS_IN_BAND` | `12` | The least band a product's name and figure are written in (the mockups' 12). |
+| 544 | `IndustryPicture.FIGURE_IN_BAND` | `52, FIGURE_ROOM = 56` | The room a product's figure has at the right of its band, and a taker's at the right of its name. |
+| 547 | `IndustryPicture.PASS_GAP` | `3` | The gap over a band through a works' column (RefineryView's PASS_GAP). |
+| 550 | `IndustryPicture.LEAST_NODE` | `1.5, ON_SITE_NODE = 6` | The least a node is drawn, so a trickle shows; and a kind only on site, drawn dashed with nothing through it. |
+| 553 | `IndustryPicture.ICON_ROOM` | `22` | The least a box is drawn with an icon in it (the mockups' 22). |
+| 556 | `IndustryPicture.RIBBON` | `.5, HATCHED =.95` | The opacity of a ribbon, and of an imported one, hatched (the mockups' .5 and .95). |
+| 1508 | `IndustryPicture.STRIP_MOST` | `6` | The most cells the strip holds: six at about 200 px each at 1,389 x 868. |
+| 1511 | `IndustryPicture.STRIP_HEAD` | `"THIS MONTH, CELL BY CELL"` | The strip's heading. |
+| 1523 | `IndustryPicture.STRIP_WORDS` | `"a field's bar what is left of it · a product's: used here, shipped(pale), into the war...` | The strip's line: what its bars show. |
 
 ### IndustryView.java ([map](map/IndustryView.md))
 
@@ -3906,12 +3906,12 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 122 | `IndustryViewCheck.SETTLE_MONTHS` | `2` | Months a town plays before the month it is read on. |
-| 125 | `IndustryViewCheck.OLD_STEEL` | `14_000` | Old metal arisen before the month read, tonnes before recovery: enough for one Scrap Yard's 10,500 t and some to landfill. |
-| 127 | `IndustryViewCheck.OLD_COPPER` | `4_000` | ...and old copper, for one Scrap Copper Refinery's 4,400 t. |
-| 132 | `IndustryViewCheck.FILES` | `new ArrayList<>()` |  |
-| 955 | `IndustryViewCheck.FRAME_WIDTH` | `1_200` | The picture's width at the 1,389 x 868 window: the Operations card's inside (RefineryViewCheck's 1,200). |
-| 958 | `IndustryViewCheck.PX` | `1e-6` | The slack a laid-out pixel is held to. |
+| 123 | `IndustryViewCheck.SETTLE_MONTHS` | `2` | Months a town plays before the month it is read on. |
+| 126 | `IndustryViewCheck.OLD_STEEL` | `14_000` | Old metal arisen before the month read, tonnes before recovery: enough for one Scrap Yard's 10,500 t and some to landfill. |
+| 128 | `IndustryViewCheck.OLD_COPPER` | `4_000` | ...and old copper, for one Scrap Copper Refinery's 4,400 t. |
+| 133 | `IndustryViewCheck.FILES` | `new ArrayList<>()` |  |
+| 956 | `IndustryViewCheck.FRAME_WIDTH` | `1_200` | The picture's width at the 1,389 x 868 window: the Operations card's inside (RefineryViewCheck's 1,200). |
+| 959 | `IndustryViewCheck.PX` | `1e-6` | The slack a laid-out pixel is held to. |
 
 ### LabourCheck.java ([map](map/LabourCheck.md))
 

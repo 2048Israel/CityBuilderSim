@@ -23,8 +23,8 @@
 > mill sells, not where the forest settles. The refinery has had a picture
 > since 0.7.95 (RefineryView, O11); this is the same for the nine, its
 > figures held by a harness (IndustryViewCheck) rather than worked out in
-> the screen, which lays them out (batch I12; ui/SectorScreen's
-> OPERATIONS, a roof per industry).
+> the screen. Since 0.7.143 (batch I12) IndustryPicture lays them out and
+> ui/SectorScreen's OPERATIONS paints that, a roof per industry.
 > 
 > WHICH MONTH. The month the production rows were made on (Sector.Output,
 > Sector.Input): what each good made, kept for its own works (captive), sold
