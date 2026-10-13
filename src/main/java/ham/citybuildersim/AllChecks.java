@@ -63,6 +63,9 @@ public class AllChecks {
     /** A harness's section title, "--- what it proves ---". */
     static final Pattern SECTION = Pattern.compile("^\\s*---\\s.*\\s---\\s*$");
 
+    /** A harness's closing count, "N FAILED": printed, but not under the last section's title. */
+    static final Pattern SUMMARY = Pattern.compile("^\\s*\\d+ FAILED\\s*$");
+
     /** A line that says something failed: an assertion's FAIL, the "N FAILED" summary, an exception. */
     static final Pattern FAILING = Pattern.compile("\\bFAIL(ED)?\\b|Exception|^\\S*Error\\b|^Caused by");
 
@@ -147,7 +150,7 @@ public class AllChecks {
             if (!FAILING.matcher(line).find()) continue;
             matched++;
             if (out.size() >= FAIL_LINES) continue;
-            if (section != null && !section.equals(printed)) { out.add(section); printed = section; }
+            if (section != null && !section.equals(printed) && !SUMMARY.matcher(line).matches()) { out.add(section); printed = section; }
             out.add(line.strip());
         }
         if (matched == 0) {
