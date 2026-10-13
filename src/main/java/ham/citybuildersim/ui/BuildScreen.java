@@ -2309,7 +2309,9 @@ final class BuildScreen {
             String ordinal = card == 0 ? "first" : card == 1 ? "second" : "third";
             BuildingsTemplate stopAt = at;
             String why = switch (g.buildRunStop(run)) {
-                case NO_DEPOSIT -> Game.siteOf(stopAt) == Resource.OIL ? "no oil left to drill" : "no ore left to dig";
+                // ...its own resource named since 0.7.142: "no coal left to dig", not the ore.
+                case NO_DEPOSIT -> Game.siteOf(stopAt) == Resource.OIL ? "no oil left to drill"
+                        : "no " + ham.citybuildersim.sectors.ExtractionSector.oreWords(Game.siteOf(stopAt), null) + " left to dig";
                 case NO_COAST   -> "no sea owned for it";
                 case NO_LICENCE -> "nobody licensed to practise";
                 default         -> "short of land - buy it at the land office first";
