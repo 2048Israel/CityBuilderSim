@@ -179,3 +179,5 @@ public enum AgeBand {
     /** No band may lose more than this in a single month, whatever modifies it. */
     public static final double MAX_MONTHLY_MORTALITY = .05;
 }
+
+// Attribution test: this comment is intentionally behavior-neutral.
