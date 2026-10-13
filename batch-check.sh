@@ -68,8 +68,10 @@ if [ "$FAST" = 0 ]; then
         echo "suite     FAILED"
         sed '/^$/d' "$OUT/suite.txt" | sed 's/^/    /'
     fi
-    # a harness that has nothing to check here says so in one line (the Earth file, JavaFX)
-    grep -h -i 'skipped\|not found - \|without the earth' "$OUT"/*Check.log 2>/dev/null | sort -u | head -3 | sed 's/^/    note: /'
+    # what did not run here: the Earth harnesses' full-file sections, BuildMenuCheck without JavaFX
+    grep -q '^earth-1.bin not named' "$OUT"/Earth*Check.log 2>/dev/null \
+        && echo "    note: no earth-1.bin here, so the Earth harnesses' full-file sections did not run"
+    grep 'skipped (needs JavaFX' "$OUT/suite.txt" | sed 's/^/    note: /'
 fi
 
 # --- the maps ----------------------------------------------------------------
