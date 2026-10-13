@@ -51,6 +51,7 @@ import java.util.List;
  * a month, and its group - so a city of billions is a sorted array, not
  * millions of objects (spec-oil 6's scale).
  */
+// Attribution test: boat schedule represents maritime movements as a pure function of time.
 public final class BoatSchedule {
 
     /** Seconds of boats a game month: 60 (the research's Q8: about one boat every 4 s at district zoom in the big city). */
