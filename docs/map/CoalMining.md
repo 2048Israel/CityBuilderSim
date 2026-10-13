@@ -1,6 +1,6 @@
-# CoalMining.java - 422 lines · 21 methods · 7 constants · sectors
+# CoalMining.java - 445 lines · 23 methods · 7 constants · sectors
 
-`ham/citybuildersim/sectors/CoalMining.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CoalMining.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > Coal mines and the plants that wash their coal - Coal Mining (0.7.126,
 > batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the
@@ -64,9 +64,9 @@
 > blast furnaces the thermal (I4); Cement & Concrete's kilns and cement
 > ... (2 more lines in the source)
 
-**Uses:** [Good](Good.md) (28), [BusinessInvestment](BusinessInvestment.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (9), [Resource](Resource.md) (5), [Deposit](Deposit.md) (4), [Game](Game.md) (4), [LandManager](LandManager.md) (2), [Formats](Formats.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (28), [BusinessInvestment](BusinessInvestment.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (11), [Resource](Resource.md) (5), [Deposit](Deposit.md) (4), [Game](Game.md) (4), [LandManager](LandManager.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
-**Used by (4):** [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [Sectors](Sectors.md)
+**Used by (9):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
@@ -77,6 +77,7 @@
 | 284 | · the estimate |
 | 344 | · the plan |
 | 398 | · the page |
+| 428 | THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and |
 
 ## Constants
 
@@ -94,7 +95,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 338 | **type** `public final class CoalMining extends ExtractionSector` | Coal mines and the plants that wash their coal - Coal Mining (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the study's 3): the second chain's digging industry, the first sector added on ... |
+| 85 | 361 | **type** `public final class CoalMining extends ExtractionSector` | Coal mines and the plants that wash their coal - Coal Mining (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the study's 3): the second chain's digging industry, the first sector added on ... |
 | 108 | 10 | `public CoalMining()` |  |
 
 ### the flow (lines 119-191)
@@ -138,9 +139,16 @@
 | 358 | 4 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to open another mine, or a plant to wash the raw coal: the plant first (planWash()), whenever raw coal goes unwashed and one would staff and pay; otherwise ExtractionSector's rule for a mine. |
 | 372 | 25 | `BusinessInvestment.Decision planWash(BusinessInvestment plans, Game game)` | A preparation plant beside the coking mines (the study's 3.4: "the sector builds one beside every coking mine"): with no order in flight and raw coal standing or on site that no plant washes, the plant that earns most... |
 
-### the page (lines 398-422)
+### the page (lines 398-427)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 401 | 21 | `public List<Line> ownLines(Game game)` |  |
+| 401 | 26 | `public List<Line> ownLines(Game game)` |  |
+
+### THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and (lines 428-445)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 435 | 3 | `public boolean isWeighed(BuildingsTemplate t)` | Whether the plan weighs a building of its: a mine that lifts its coal, and since its plants are planned too (planWash()), a plant that washes it. |
+| 441 | 4 | `protected String groundRefusal(BuildingsTemplate t)` | A wash plant's ground is the raw coal: planWash() weighs one only while raw coal standing or on site goes unwashed (unwashed()); a mine's is ExtractionSector's. |
 

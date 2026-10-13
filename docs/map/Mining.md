@@ -1,6 +1,6 @@
-# Mining.java - 77 lines · 3 methods · 4 constants · sectors
+# Mining.java - 85 lines · 4 methods · 4 constants · sectors
 
-`ham/citybuildersim/sectors/Mining.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Mining.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > Iron mines - Iron Mining since 0.7.120, under the key it was saved by,
 > "Mining" (Jerus's Q2, 2026-10-08: rename, keeping the saved keys). Its own
@@ -34,9 +34,9 @@
 > (twenty). Which the sector sinks is ExtractionSector's rule: the best
 > earnings on the whole cost among those that fit the fields it owns.
 
-**Uses:** [Good](Good.md) (2), [LandManager](LandManager.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [Resource](Resource.md) (1), [Deposit](Deposit.md) (1)
+**Uses:** [Good](Good.md) (2), [LandManager](LandManager.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [Resource](Resource.md) (1), [Game](Game.md) (1), [BuildCard](BuildCard.md) (1), [Deposit](Deposit.md) (1)
 
-**Used by (20):** [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [ConservationCheck](ConservationCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [DenominationCheck](DenominationCheck.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [OilCheck](OilCheck.md), [PlanCheck](PlanCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sectors](Sectors.md), [TradeCostCheck](TradeCostCheck.md), [WellCheck](WellCheck.md)
+**Used by (22):** [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [ConservationCheck](ConservationCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [DenominationCheck](DenominationCheck.md), [ForestryCheck](ForestryCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [OilCheck](OilCheck.md), [PlanCheck](PlanCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sectors](Sectors.md), [TradeCostCheck](TradeCostCheck.md), [WellCheck](WellCheck.md)
 
 ## Constants
 
@@ -51,8 +51,9 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 36 | **type** `public final class Mining extends ExtractionSector` | Iron mines - Iron Mining since 0.7.120, under the key it was saved by, "Mining" (Jerus's Q2, 2026-10-08: rename, keeping the saved keys). |
+| 42 | 44 | **type** `public final class Mining extends ExtractionSector` | Iron mines - Iron Mining since 0.7.120, under the key it was saved by, "Mining" (Jerus's Q2, 2026-10-08: rename, keeping the saved keys). |
 | 56 | 9 | `public Mining()` |  |
-| 68 | 3 | `protected double dig(LandManager land, double asked)` | The iron the ground gives, with the month's tonnes kept for the land office (LandManager.extractIron()). |
-| 74 | 3 | `protected double dig(LandManager land, Deposit.FieldType type, double fieldTonnes, boolean more)` | ...of one type (0.7.124): its ground's, the month's tonnes of ground kept for the land office, added up across the types. |
+| 68 | 5 | `public java.util.List<Line> ownLines(ham.citybuildersim.Game game)` | The page (0.7.142, batch I13): what is under the ground, then where its ore goes - Iron & Steel's pellets and furnaces at nameplate, or the world (BuildCard.chainLines()). |
+| 76 | 3 | `protected double dig(LandManager land, double asked)` | The iron the ground gives, with the month's tonnes kept for the land office (LandManager.extractIron()). |
+| 82 | 3 | `protected double dig(LandManager land, Deposit.FieldType type, double fieldTonnes, boolean more)` | ...of one type (0.7.124): its ground's, the month's tonnes of ground kept for the land office, added up across the types. |
 

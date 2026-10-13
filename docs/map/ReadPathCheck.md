@@ -1,6 +1,6 @@
-# ReadPathCheck.java - 1,890 lines · 10 methods · 0 constants · harnesses
+# ReadPathCheck.java - 1,893 lines · 10 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ReadPathCheck.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReadPathCheck.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > Reading the city must not change the city.
 > 
@@ -36,19 +36,19 @@
 > would pass a before/after comparison; one that accumulates shows up as a field
 > that drifts further the more the screens are opened.
 
-**Uses:** [Good](Good.md) (29), [Game](Game.md) (27), [BuildAdvice](BuildAdvice.md) (27), [FundView](FundView.md) (23), [Bank](Bank.md) (18), [CityNeeds](CityNeeds.md) (16), [BuildCard](BuildCard.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (15), [PolicyPreview](PolicyPreview.md) (14), [Resource](Resource.md) (14), [Ports](Ports.md) (14), [OrderBook](OrderBook.md) (12), [CorporateBond](CorporateBond.md) (9), [Sectors](Sectors.md) (8), [OldMetal](OldMetal.md) (8), [Sector](Sector.md) (8), [Founding](Founding.md) (8), [World](World.md) (8), [BondMarket](BondMarket.md) (7), [Retail](Retail.md) (7), [CareType](CareType.md) (7), [Refining](Refining.md) (7), [TaxPolicy](TaxPolicy.md) (6), [ChartModel](ChartModel.md) (6), [Equity](Equity.md) (5), [TilePainter](TilePainter.md) (5), [BusinessDebtManager](BusinessDebtManager.md) (4), [FundLedger](FundLedger.md) (4), [EducationType](EducationType.md) (4), [GameFiles](GameFiles.md) (4)... and 53 more
+**Uses:** [Good](Good.md) (29), [Game](Game.md) (27), [BuildAdvice](BuildAdvice.md) (27), [FundView](FundView.md) (23), [Bank](Bank.md) (18), [CityNeeds](CityNeeds.md) (16), [BuildCard](BuildCard.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (15), [PolicyPreview](PolicyPreview.md) (14), [Resource](Resource.md) (14), [Ports](Ports.md) (14), [OrderBook](OrderBook.md) (12), [CorporateBond](CorporateBond.md) (9), [Sectors](Sectors.md) (8), [OldMetal](OldMetal.md) (8), [Sector](Sector.md) (8), [Founding](Founding.md) (8), [World](World.md) (8), [BondMarket](BondMarket.md) (7), [Retail](Retail.md) (7), [CareType](CareType.md) (7), [Refining](Refining.md) (7), [TaxPolicy](TaxPolicy.md) (6), [ChartModel](ChartModel.md) (6), [Equity](Equity.md) (5), [TilePainter](TilePainter.md) (5), [BusinessDebtManager](BusinessDebtManager.md) (4), [FundLedger](FundLedger.md) (4), [EducationType](EducationType.md) (4), [GameFiles](GameFiles.md) (4)... and 54 more
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 1397 | · a city with money moving in every sector |
-| 1500 | · the FIRST read, which is the hard one |
-| 1577 | · read it, and read it again |
-| 1606 | · and the specific one item 7 was about |
-| 1674 | · the tax the city takes is the tax it shows |
-| 1691 | · a rate change reaches the treasury at once |
-| 1724 | · the build advice's reads, after a load (0.7.51) |
+| 1400 | · a city with money moving in every sector |
+| 1503 | · the FIRST read, which is the hard one |
+| 1580 | · read it, and read it again |
+| 1609 | · and the specific one item 7 was about |
+| 1677 | · the tax the city takes is the tax it shows |
+| 1694 | · a rate change reaches the treasury at once |
+| 1727 | · the build advice's reads, after a load (0.7.51) |
 
 ## Fields (state)
 
@@ -62,15 +62,15 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 1843 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
+| 48 | 1846 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
 | 54 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 59 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 71 | 178 | `static void bankPrint(Game g, Map<String, Double> into)` | The bank's own fields beside NewGameCheck's (0.7.7): its price is now struck from records it keeps, and a read that struck it again would move the price and nothing in the shared snapshot. |
 | 251 | 5 | `static int restingOrders(BondMarket bm)` | What rests on every bond's book. |
-| 265 | 1123 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
-| 1389 | 346 | `public static void main(String[] args) throws Exception` |  |
-| 1737 | 36 | `static Map<String, Double> adviceReads(Game g)` | The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. |
-| 1782 | 38 | `static void afterALoad(Game g, GameFiles files)` | THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the businesses' growth, the land office's price, the high schools' leavers (not getNewDiplomas(), this month's flow, NaN after a load), the higher schools' ... |
-| 1829 | 53 | `static void onEarth(GameFiles files) throws Exception` | A CITY ON THE REAL EARTH (0.7.121, batch E4): reading its world - the founding card of its own spot, the hover's place and province, the sea's depth (the coast's distance, kept by plot), the founding's problem and rec... |
-| 1883 | 7 | `static void cleanUp(Path root)` |  |
+| 265 | 1126 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
+| 1392 | 346 | `public static void main(String[] args) throws Exception` |  |
+| 1740 | 36 | `static Map<String, Double> adviceReads(Game g)` | The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. |
+| 1785 | 38 | `static void afterALoad(Game g, GameFiles files)` | THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the businesses' growth, the land office's price, the high schools' leavers (not getNewDiplomas(), this month's flow, NaN after a load), the higher schools' ... |
+| 1832 | 53 | `static void onEarth(GameFiles files) throws Exception` | A CITY ON THE REAL EARTH (0.7.121, batch E4): reading its world - the founding card of its own spot, the hover's place and province, the sea's depth (the coast's distance, kept by plot), the founding's problem and rec... |
+| 1886 | 7 | `static void cleanUp(Path root)` |  |
 

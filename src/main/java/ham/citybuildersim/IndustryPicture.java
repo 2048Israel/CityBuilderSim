@@ -117,8 +117,12 @@ public final class IndustryPicture {
 
     /** The unit a picture is drawn in: "m³" where every good the industry makes or uses is counted in cubic metres (Forestry), "t" otherwise. */
     public static String unitOf(View v) {
-        boolean m3 = !v.products().isEmpty();
-        for (Product p : v.products()) m3 &= isCubic(p.good());
+        List<Good> made = new ArrayList<>();
+        for (Product p : v.products()) made.add(p.good());
+        // ...an industry that made nothing yet by the goods its plant is for.
+        if (made.isEmpty()) made.addAll(v.sector().goodsMade());
+        boolean m3 = !made.isEmpty();
+        for (Good g : made) m3 &= isCubic(g);
         for (Feed f : v.feeds()) m3 &= isCubic(f.good());
         return m3 ? "m³" : "t";
     }
@@ -1258,7 +1262,9 @@ public final class IndustryPicture {
         }
         if (v.carried() > 0) return "limestone no buyer took, carried into aggregate: " + IndustryView.unitsWords(Good.LIMESTONE, v.carried());
         if (v.forest() != null) return IndustryView.forestWords(v.forest()).get(1);
-        if (v.oldMetal() != null && (v.oldMetal().arose() > 0 || v.oldMetal().bought() > 0)) return IndustryView.metalWords(v.oldMetal());
+        if (v.oldMetal() != null && (v.oldMetal().arose() >= LEAST_PART || v.oldMetal().bought() >= LEAST_PART)) {
+            return IndustryView.metalWords(v.oldMetal());
+        }
         return "";
     }
 
@@ -1564,7 +1570,7 @@ public final class IndustryPicture {
                     new Row("shipped", IndustryView.unitsWords(g, shipped), false),
                     new Row("warehouse", warehouse, p.lost() > 0))));
         }
-        if (v.oldMetal() != null && v.oldMetal().arose() > 0) {
+        if (v.oldMetal() != null && v.oldMetal().arose() >= LEAST_PART) {
             IndustryView.Metal m = v.oldMetal();
             double share = m.arose() > 0 ? clamp(m.bought() / m.arose(), 1) : 0;
             String name = IndustryView.metalName(m);

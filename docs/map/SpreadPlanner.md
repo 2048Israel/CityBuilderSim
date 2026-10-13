@@ -1,6 +1,6 @@
 # SpreadPlanner.java - 556 lines · 47 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/SpreadPlanner.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/SpreadPlanner.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and
 > docs/studies/spec-materials.md 2.6): what a processing sector orders - of the
@@ -66,7 +66,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (17), [Good](Good.md) (10), [BusinessInvestment](BusinessInvestment.md) (6), [GoodsMarket](GoodsMarket.md) (6), [Sector](Sector.md) (5), [Game](Game.md) (4), [Rail](Rail.md) (1), [Markets](Markets.md) (1), [OldMetal](OldMetal.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Refining](Refining.md) (1)
 
-**Used by (24):** [CementConcreteCheck](CementConcreteCheck.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ExtractionSector](ExtractionSector.md), [Game](Game.md), [HeavyIndustry](HeavyIndustry.md), [LongPlaytest](LongPlaytest.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [PortCheck](PortCheck.md), [ProcessingSector](ProcessingSector.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md)
+**Used by (31):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ExtractionSector](ExtractionSector.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [HeavyIndustry](HeavyIndustry.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LongPlaytest](LongPlaytest.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [PortCheck](PortCheck.md), [ProcessingSector](ProcessingSector.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 

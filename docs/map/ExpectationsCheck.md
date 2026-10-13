@@ -1,6 +1,6 @@
 # ExpectationsCheck.java - 570 lines · 21 methods · 1 constants · harnesses
 
-`ham/citybuildersim/ExpectationsCheck.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ExpectationsCheck.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > Proves the anchor (Expectations, 0.7.42): credibility won on target and lost to a miss nobody leans against, expected inflation and its floor, the expected price level, the wages' half-and-half indexing, the money constants struck at the level, the currency's anchored drift and its UIP level, and the anchor through a save. Not part of the game.
 > 

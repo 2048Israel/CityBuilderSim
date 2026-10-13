@@ -1,6 +1,6 @@
 # SectorFlow.java - 261 lines · 17 methods · 1 constants · model
 
-`ham/citybuildersim/SectorFlow.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorFlow.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > One business's month as a flow (0.7.30): what went in, what its plant made
 > of it and what held the plant back, and what came out - each good's units
@@ -33,7 +33,7 @@
 
 **Uses:** [Good](Good.md) (10), [Sector](Sector.md) (8), [BuildCard](BuildCard.md) (4), [GoodsMarket](GoodsMarket.md) (2), [Game](Game.md) (1), [Statement](Statement.md) (1), [Markets](Markets.md) (1), [Construction](Construction.md) (1), [RealEstate](RealEstate.md) (1)
 
-**Used by (3):** [ReadPathCheck](ReadPathCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (4):** [IndustryViewCheck](IndustryViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

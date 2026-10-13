@@ -1,6 +1,6 @@
-# BuildingDataCheck.java - 798 lines · 4 methods · 0 constants · harnesses
+# BuildingDataCheck.java - 824 lines · 4 methods · 0 constants · harnesses
 
-`ham/citybuildersim/BuildingDataCheck.java` - generated 2026-10-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingDataCheck.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > The migration's safety net: buildings.json must produce exactly the templates
 > the hardcoded definitions did.
@@ -11,7 +11,7 @@
 > Field-by-field equality against the built-ins is the only check that catches
 > that.
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (47), [Good](Good.md) (21), [HeavyIndustry](HeavyIndustry.md) (16), [BuildingType](BuildingType.md) (14), [Resource](Resource.md) (12), [Sectors](Sectors.md) (10), [Mining](Mining.md) (10), [CoalMining](CoalMining.md) (10), [CopperMining](CopperMining.md) (10), [JobType](JobType.md) (9), [Refining](Refining.md) (7), [Game](Game.md) (6), [Quarrying](Quarrying.md) (6), [CementConcrete](CementConcrete.md) (6), [Manufacturing](Manufacturing.md) (5), [BuildingManager](BuildingManager.md) (4), [EducationType](EducationType.md) (3), [SafetyType](SafetyType.md) (3), [CopperRefining](CopperRefining.md) (3), [BuildingCatalog](BuildingCatalog.md) (2), [RefineryFlow](RefineryFlow.md) (2), [StrategicReserve](StrategicReserve.md) (2), [CareType](CareType.md) (1), [Sector](Sector.md) (1), [Automotive](Automotive.md) (1), [Retail](Retail.md) (1), [Ports](Ports.md) (1), [Oil](Oil.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (48), [Good](Good.md) (21), [HeavyIndustry](HeavyIndustry.md) (16), [BuildingType](BuildingType.md) (14), [Resource](Resource.md) (13), [Sectors](Sectors.md) (10), [Mining](Mining.md) (10), [CoalMining](CoalMining.md) (10), [CopperMining](CopperMining.md) (10), [JobType](JobType.md) (9), [Refining](Refining.md) (7), [Game](Game.md) (7), [WoodProducts](WoodProducts.md) (7), [Quarrying](Quarrying.md) (6), [Forestry](Forestry.md) (6), [CementConcrete](CementConcrete.md) (6), [Manufacturing](Manufacturing.md) (5), [BuildingManager](BuildingManager.md) (4), [EducationType](EducationType.md) (3), [SafetyType](SafetyType.md) (3), [CopperRefining](CopperRefining.md) (3), [BuildingCatalog](BuildingCatalog.md) (2), [RefineryFlow](RefineryFlow.md) (2), [StrategicReserve](StrategicReserve.md) (2), [CareType](CareType.md) (1), [Sector](Sector.md) (1), [Automotive](Automotive.md) (1), [Retail](Retail.md) (1), [Ports](Ports.md) (1), [Oil](Oil.md) (1)
 
 ## Sections
 
@@ -25,16 +25,16 @@
 | 278 | · · fuel (0.7.62, batch K; spec-land 2.7) |
 | 312 | · · the refinery's units (0.7.80, batch O4; spec-oil 2.3) |
 | 361 | · · the phase-1 buyers and the forecourt (0.7.83, batch O6) |
-| 416 | · · the oil storage (0.7.85, batch O8; spec-oil 2.8) |
-| 449 | · · the ports (0.7.86, batch O9; spec-oil 2.9) |
-| 471 | · · the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11) |
-| 515 | · · the site each stands on (0.7.110, batch I1) |
-| 625 | · · a works' own power and its consumables (0.7.112, batch I2) |
-| 672 | · · the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) |
-| 732 | · · the raw coal a preparation plant washes (0.7.126, batch I6) |
-| 749 | · · and every profession has exactly one school |
-| 768 | · · ids are unique, which the saves depend on |
-| 781 | · · the manager actually uses the file |
+| 417 | · · the oil storage (0.7.85, batch O8; spec-oil 2.8) |
+| 450 | · · the ports (0.7.86, batch O9; spec-oil 2.9) |
+| 472 | · · the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11) |
+| 516 | · · the site each stands on (0.7.110, batch I1) |
+| 630 | · · a works' own power and its consumables (0.7.112, batch I2) |
+| 686 | · · the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) |
+| 758 | · · the raw coal a preparation plant washes (0.7.126, batch I6) |
+| 775 | · · and every profession has exactly one school |
+| 794 | · · ids are unique, which the saves depend on |
+| 807 | · · the manager actually uses the file |
 
 ## Fields (state)
 
@@ -46,9 +46,9 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 784 | **type** `public class BuildingDataCheck` | The migration's safety net: buildings.json must produce exactly the templates the hardcoded definitions did. |
+| 15 | 810 | **type** `public class BuildingDataCheck` | The migration's safety net: buildings.json must produce exactly the templates the hardcoded definitions did. |
 | 19 | 7 | `static void check(String label, double actual, double expected)` |  |
 | 28 | 4 | `static BuildingsTemplate byId(List<BuildingsTemplate> data, int id)` | The building with this id in a list of templates, or null. |
 | 33 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 38 | 760 | `public static void main(String[] args)` |  |
+| 38 | 786 | `public static void main(String[] args)` |  |
 

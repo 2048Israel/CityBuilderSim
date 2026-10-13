@@ -1,6 +1,6 @@
-# Zoning.java - 276 lines · 29 methods · 2 constants · model
+# Zoning.java - 280 lines · 29 methods · 2 constants · model
 
-`ham/citybuildersim/Zoning.java` - generated 2026-10-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Zoning.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > The city's zoning (0.7.107, batch Z1): ground held for one sector's
 > buildings - a share of the city's dry ground or a size in square
@@ -42,7 +42,7 @@
 
 **Uses:** [LandManager](LandManager.md) (1), [Sectors](Sectors.md) (1)
 
-**Used by (13):** [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (14):** [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
@@ -86,17 +86,18 @@
 | 223 | `public double size` |  |
 | 224 | `public double priceShare` |  |
 | 225 | `public double usedSqFt` |  |
-| 237 | `public List<ZoneState> zones` |  |
-| 238 | `public double protectedShare` |  |
-| 239 | `public double keptShare` |  |
-| 240 | `public double clearedSqFt` |  |
-| 241 | `public double clearedM3` |  |
+| 240 | `public List<ZoneState> zones` |  |
+| 241 | `public double protectedShare` |  |
+| 242 | `public double keptShare` |  |
+| 243 | `public double clearedSqFt` |  |
+| 244 | `public double clearedM3` |  |
+| 245 | `public double salvageM3` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 230 | **type** `public final class Zoning` | The city's zoning (0.7.107, batch Z1): ground held for one sector's buildings - a share of the city's dry ground or a size in square kilometres, at a share of the going business price - and the forest law, two shares ... |
+| 47 | 234 | **type** `public final class Zoning` | The city's zoning (0.7.107, batch Z1): ground held for one sector's buildings - a share of the city's dry ground or a size in square kilometres, at a share of the going business price - and the forest law, two shares ... |
 | 50 | 1 | **type** `public enum Size` | How a zone's size is given: a share of the city's dry ground, re-read as the city buys land so 2% stays 2% (Z2, the default), or square kilometres. |
 | 53 | 1 | **type** `public enum Tax` | A zone's three tax rows (Z5): the sector's own profit, sales and property offsets, through the zone's door (Game.setZoneTax()). |
 | 68 | 29 | **type** `public static final class Zone` | One sector's zone: its size, the share of the going business price its ground is sold and assessed at, and the ground its sector has built on in it (used) - the zone's own, in square feet, saved; what it HOLDS of the ... |
@@ -136,14 +137,14 @@
 | 202 | 5 | `public void clear()` | Every zone gone and the law at 0 and 0: a new city's. |
 | 209 | 7 | `public Zoning copy()` | A detached copy, for a preview to stage a dial on (PolicyPreview's zoning reads): nothing it does reaches the city. |
 
-### the save (lines 217-276)
+### the save (lines 217-280)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 220 | 8 | **type** `public static final class ZoneState` | One zone as saved: its sector, its size's kind by name, its size, its price share and the ground used. |
 | 226 | 1 | `public ZoneState()` _(in Zoning.ZoneState)_ |  |
-| 236 | 8 | **type** `public static final class State` | DataSave's zoning (0.7.107): the zones, the law and the forest cleared for building (LandManager's C: its ground in square feet, the ledger's unit, and the wood that stood on it). |
-| 242 | 1 | `public State()` _(in Zoning.State)_ |  |
-| 246 | 15 | `State toState()` | The zones and the law as saved; the forest cleared is the land's, filled in by LandManager.zoningState(). |
-| 263 | 13 | `void restore(State s)` | Puts the zones and the law back as saved; null, none and 0 and 0. |
+| 239 | 9 | **type** `public static final class State` | DataSave's zoning (0.7.107): the zones, the law and the forest cleared for building (LandManager's C: its ground in square feet, the ledger's unit, and the wood that stood on it). |
+| 246 | 1 | `public State()` _(in Zoning.State)_ |  |
+| 250 | 15 | `State toState()` | The zones and the law as saved; the forest cleared is the land's, filled in by LandManager.zoningState(). |
+| 267 | 13 | `void restore(State s)` | Puts the zones and the law back as saved; null, none and 0 and 0. |
 

@@ -1,6 +1,6 @@
 # HistoryScreen.java - 3,129 lines · 109 methods · 23 constants · interface
 
-`ham/citybuildersim/ui/HistoryScreen.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/HistoryScreen.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
 > City History: the city as a shape over time.
 > 

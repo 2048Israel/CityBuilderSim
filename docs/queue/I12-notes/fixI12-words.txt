@@ -1,0 +1,1037 @@
+
+=== m03 Iron & Steel (town 0, city month 4) ===
+HEAD  THE STEELWORKS THIS MONTH  |  from what it bought to who bought it · ribbons to scale in tonnes  |  10 px of ribbon = 277 t
+  IN
+  6,696 t in
+  THE WORKS
+  WHAT IT MADE
+  4,219 t · 4 products
+  WHO TOOK IT
+  old steel: 11,900 t arose · 761 t bought at $210.50 · 11,139 t to landfill
+  makes 8,000 kW, draws 5,550 kW · sells 5,800 kW to the grid · buys 3,350 kW from it
+  Iron ore
+  Iron Mining · 1,203 t
+  Iron ore
+  imported · 535 t
+  Coking coal
+  Coal Mining · 3,151 t
+  Coking coal
+  imported · 774 t
+  Limestone
+  Quarrying · 273 t
+  Old steel
+  the city's old steel · 761 t
+  Scrap Yard ×1
+  runs 7%
+  one more: its feed
+  Coke Ovens ×1
+  runs 7%
+  one more: the staff
+  Electric Arc Furnace ×1
+  runs 7%
+  one more: the staff
+  Mini Blast Furnace ×1
+  runs 7%
+  one more: the staff
+  Scrap
+  629 t
+  Pig iron
+  1,087 t
+  Coke
+  2,417 t
+  Into the warehouse
+  2,417 t
+  coke
+  Abroad
+  1,802 t
+  pig iron, scrap, steel
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Coke]  made here: 2,907 t  kept, and sold here: 491 t  shipped: 0 t  warehouse: +2,417 t
+  [Pig iron]  made here: 1,087 t  sold here: 0 t  shipped: 1,087 t  warehouse: +0 t
+  [Scrap]  made here: 724 t  kept, and sold here: 96 t  shipped: 628 t  warehouse: +0 t
+  [Steel]  made here: 87 t  sold here: 0 t  shipped: 87 t  warehouse: +0 t
+  [Old steel]  arose: 11,900 t  bought: 761 t  to landfill: 11,139 t  price: $210.50
+  [Power]  made: 8,000 kW  drawn: 5,550 kW  sold: 5,800 kW  bought: 3,350 kW
+
+=== m03 Iron Mining (town 0, city month 4) ===
+HEAD  THE MINES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 45 t
+  THE FIELDS
+  how full · what it dug
+  THE MINES
+  WHAT IT DUG
+  1,203 t · 1 product
+  WHO TOOK IT
+  draws 600 kW from the grid
+  Hematite
+  1 of 1 site worked
+  100% left · 15.0M t
+  Diesel
+  imported · 6,033 L
+  Iron Mine ×1
+  runs 6%
+  one more: its feed
+  Lorries
+  2,412 L of diesel
+  Iron ore
+  1,203 t
+  Iron & Steel
+  1,203 t
+  iron ore
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Hematite fields]  sites worked: 1 of 1  left: 15.0M t  dug this month: 1,203 t  lasts: over a century
+  [Iron ore]  made here: 1,203 t  sold here: 1,203 t  shipped: 0 t  warehouse: +0 t
+
+=== m03 Coal Mining (town 0, city month 4) ===
+HEAD  THE MINES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 1,345 t
+  THE FIELDS
+  how full · what it dug
+  THE MINES
+  WASHING
+  WHAT IT DUG
+  21k t · 2 products
+  WHO TOOK IT
+  the wash keeps 14k t of the 18k t of raw coal it takes; 4,515 t of spoil goes to the tip
+  draws 33,800 kW from the grid
+  Thermal
+  1 of 1 site worked
+  100% left · 6.49M t
+  Coking
+  2 of 11 sites worked
+  100% left · 104.9M t
+  Diesel
+  imported · 58,046 L
+  Surface Coal Mine ×1
+  runs 7%
+  one more: its feed
+  Underground Coal Mine ×1
+  runs 7% · +1 on site
+  one more: the staff
+  Lorries
+  41,430 L of diesel
+  Coal Preparation Plant ×1
+  runs 4%
+  one more: its feed
+  Thermal coal
+  11k t
+  Coking coal
+  9,933 t
+  Iron & Steel
+  3,151 t
+  coking coal
+  Cement & Concrete
+  213 t
+  thermal coal
+  Into the warehouse
+  5,016 t
+  coking coal, thermal coal
+  Abroad
+  12k t
+  thermal coal, coking coal
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Thermal fields]  sites worked: 1 of 1  left: 6.49M t  dug this month: 7,605 t  lasts: 71 years
+  [Coking fields]  sites worked: 2 of 11  left: 104.9M t  dug this month: 23k t  lasts: over a century
+  [Thermal coal]  made here: 10,837 t  sold here: 213 t  shipped: 10,305 t  warehouse: +318 t
+  [Coking coal]  made here: 9,933 t  sold here: 3,151 t  shipped: 2,084 t  warehouse: +4,698 t
+
+=== m03 Quarrying (town 0, city month 4) ===
+HEAD  THE QUARRIES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 160 t
+  THE FIELDS
+  how full · what it dug
+  THE QUARRIES
+  WHAT IT DUG
+  4,735 t · 2 products
+  WHO TOOK IT
+  limestone no buyer took, carried into aggregate: 2,073 t
+  draws 186 kW from the grid
+  Limestone
+  2 of 2 sites worked
+  100% left · 27.0M t
+  Quarry ×2
+  runs 6%
+  one more: its feed
+  Aggregate
+  2,073 t
+  Limestone
+  2,662 t
+  Iron & Steel
+  273 t
+  limestone
+  Cement & Concrete
+  2,390 t
+  limestone
+  Abroad
+  2,073 t
+  aggregate
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Limestone fields]  sites worked: 2 of 2  left: 27.0M t  dug this month: 4,735 t  lasts: over a century
+  [Limestone]  made here: 4,735 t  sold here: 2,662 t  shipped: 0 t  warehouse: +0 t
+  [Aggregate]  made here: 0 t  sold here: 0 t  shipped: 2,073 t  warehouse: +0 t
+
+=== m03 Cement & Concrete (town 0, city month 4) ===
+HEAD  THE KILNS AND PLANTS THIS MONTH  |  from what it bought to who bought it · ribbons to scale in tonnes  |  10 px of ribbon = 86 t
+  IN
+  2,655 t in
+  THE WORKS
+  WHAT IT MADE
+  1,323 t · 1 product
+  WHO TOOK IT
+  draws 690 kW from the grid
+  Limestone
+  Quarrying · 2,390 t
+  Thermal coal
+  Coal Mining · 213 t
+  Thermal coal
+  imported · 52 t
+  Lime Kiln ×1
+  runs 7%
+  one more: the staff
+  Lime
+  1,323 t
+  Abroad
+  1,323 t
+  lime
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Lime]  made here: 1,323 t  sold here: 0 t  shipped: 1,323 t  warehouse: +0 t
+
+=== m03 Copper Mining (town 1, city month 4) ===
+HEAD  THE MINES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 23 t
+  THE FIELDS
+  how full · what it dug
+  THE MINES
+  WHAT IT DUG
+  272 t · 2 products
+  WHO TOOK IT
+  draws 11,500 kW from the grid
+  Sulphide
+  1 of 1 site worked
+  100% left · 300k t
+  Oxide
+  2 of 15 sites worked
+  100% left · 2.89M t
+  Sulphuric acid
+  Copper Refining · 298 t
+  Copper Mine & Mill ×1
+  runs 9%
+  one more: its feed
+  Leach & SX-EW Plant ×1
+  runs 9% · +1 on site
+  one more: the staff
+  Concentrate
+  187 t
+  Cathode
+  85 t
+  Copper Refining
+  187 t
+  concentrate
+  Into the warehouse
+  85 t
+  cathode
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Sulphide fields]  sites worked: 1 of 1  left: 300k t  dug this month: 64 t  lasts: over a century
+  [Oxide fields]  sites worked: 2 of 15  left: 2.89M t  dug this month: 119 t  lasts: over a century
+  [Copper concentrate]  made here: 187 t  sold here: 187 t  shipped: 0 t  warehouse: +0 t
+  [Copper cathode]  made here: 85 t  sold here: 0 t  shipped: 0 t  warehouse: +85 t
+
+=== m03 Copper Refining (town 1, city month 4) ===
+HEAD  THE SMELTER AND REFINERY THIS MONTH  |  from what it bought to who bought it · ribbons to scale in tonnes  |  10 px of ribbon = 153 t
+  IN
+  3,472 t in
+  THE WORKS
+  WHAT IT MADE
+  4,013 t · 3 products
+  WHO TOOK IT
+  old copper: 3,400 t arose · 407 t bought at $5,122 · 2,993 t to landfill
+  draws 26,000 kW from the grid
+  Copper concentrate
+  Copper Mining · 187 t
+  Copper concentrate
+  imported · 2,874 t
+  Copper anode
+  imported · 3 t
+  Old copper
+  the city's old copper · 407 t
+  Copper scrap
+  imported · 1 t
+  Copper Smelter ×1
+  runs 9%
+  one more: the staff
+  Scrap Copper Refinery ×1
+  runs 9%
+  one more: the staff
+  Electrolytic Refinery ×1
+  runs 9%
+  one more: the staff
+  Rod Mill ×1
+  runs 9%
+  one more: the staff
+  Cathode
+  527 t
+  Acid
+  2,746 t
+  Rod
+  740 t
+  Copper Mining
+  298 t
+  acid
+  Into the warehouse
+  527 t
+  cathode
+  Abroad
+  3,187 t
+  acid, rod
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Sulphuric acid]  made here: 2,746 t  sold here: 298 t  shipped: 2,447 t  warehouse: +0 t
+  [Copper cathode]  made here: 1,271 t  kept, and sold here: 744 t  shipped: 0 t  warehouse: +527 t
+  [Copper anode]  made here: 901 t  kept, and sold here: 901 t  shipped: 0 t  warehouse: +0 t
+  [Copper rod]  made here: 740 t  sold here: 0 t  shipped: 740 t  warehouse: +0 t
+  [Old copper]  arose: 3,400 t  bought: 407 t  to landfill: 2,993 t  price: $5,122
+
+=== m03 Forestry (town 1, city month 4) ===
+HEAD  THE FOREST THIS MONTH  |  from the ground to who took it · ribbons to scale in cubic metres  |  
+EMPTY Forestry has nothing standing yet: 1 building on site.
+
+=== m03 Forestry (town 2, city month 4) ===
+HEAD  THE FOREST THIS MONTH  |  from the ground to who took it · ribbons to scale in cubic metres  |  10 px of ribbon = 18 m³
+  THE FOREST
+  what stands · what was cut
+  THE CREWS
+  WHAT WAS CUT
+  468 m³ · 2 products
+  WHO TOOK IT
+  the crews cut 468 m³ a month of 2,000 m³ at nameplate · regrowth 3 m³
+  Forest
+  may cut 3.47M m³
+  100% standing · 3.47M m³
+  Logging Camp ×1
+  runs 23%
+  one more: the staff
+  Harvesting Operation
+  1 on site
+  one more: the staff
+  Sawlogs
+  234 m³
+  Pulpwood
+  234 m³
+  Wood Products
+  468 m³
+  sawlogs, pulpwood
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Forest]  standing: 3.47M m³  may cut: 3.47M m³  cut this month: 468 m³  grows back: 3 m³
+  [Where it settles]  under the law: 97%  protected: 0%  with no law: 97%  planting past: 3 m³
+  [Sawlogs]  made here: 234 m³  sold here: 234 m³  shipped: 0 m³  warehouse: +0 m³
+  [Pulpwood]  made here: 234 m³  sold here: 234 m³  shipped: 0 m³  warehouse: +0 m³
+
+=== m03 Wood Products (town 2, city month 4) ===
+HEAD  THE MILLS THIS MONTH  |  from what it bought to who bought it · ribbons to scale in tonnes  |  10 px of ribbon = 677 t
+  IN
+  18k t in
+  THE WORKS
+  WHAT IT MADE
+  5,508 t · 3 products
+  WHO TOOK IT
+  makes 13,500 kW, draws 526 kW · sells 13,500 kW to the grid · buys 526 kW from it
+  Sawlogs
+  Forestry · 234 m³
+  Sawlogs
+  imported · 987 m³
+  Pulpwood
+  Forestry · 234 m³
+  Pulpwood
+  imported · 8,314 m³
+  Residues
+  imported · 10,095 m³
+  Sawmill ×1
+  runs 31%
+  one more: the staff
+  Pulp Mill ×1
+  runs 31%
+  one more: the staff
+  Wood Pellet Mill ×1
+  runs 31%
+  one more: the staff
+  Lumber 635 m³
+  Pulp
+  3,358 t
+  Wood pellets
+  1,832 t
+  Into the warehouse
+  5,508 t
+  pulp, wood pellets, lumber
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Pulp]  made here: 3,358 t  sold here: 0 t  shipped: 0 t  warehouse: +3,358 t
+  [Wood pellets]  made here: 1,832 t  sold here: 0 t  shipped: 0 t  warehouse: +1,832 t
+  [Residues]  made here: 499 m³  kept, and sold here: 499 m³  shipped: 0 m³  warehouse: +0 m³
+  [Lumber]  made here: 635 m³  sold here: 0 m³  shipped: 0 m³  warehouse: +635 m³
+  [Power]  made: 13,500 kW  drawn: 526 kW  sold: 13,500 kW  bought: 526 kW
+
+=== m06 Iron & Steel (town 0, city month 7) ===
+HEAD  THE STEELWORKS THIS MONTH  |  from what it bought to who bought it · ribbons to scale in tonnes  |  10 px of ribbon = 542 t
+  IN
+  14k t in
+  THE WORKS
+  WHAT IT MADE
+  8,207 t · 3 products
+  WHO TOOK IT
+  makes 8,000 kW, draws 5,550 kW · sells 5,800 kW to the grid · buys 3,350 kW from it
+  Scrap
+  imported · 219 t
+  Iron ore
+  Iron Mining · 2,850 t
+  Iron ore
+  imported · 1,124 t
+  Coking coal
+  Coal Mining · 8,972 t
+  Limestone
+  Quarrying · 623 t
+  Scrap Yard ×1
+  idle
+  one more: its feed
+  Coke Ovens ×1
+  runs 17%
+  one more: the staff
+  Electric Arc Furnace ×1
+  runs 17%
+  one more: the staff
+  Mini Blast Furnace ×1
+  runs 17%
+  one more: the staff
+  Pig iron
+  2,484 t
+  Coke
+  5,524 t
+  Into the warehouse
+  5,524 t
+  coke
+  Abroad
+  2,683 t
+  pig iron, steel
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Coke]  made here: 6,646 t  kept, and sold here: 1,122 t  shipped: 0 t  warehouse: +5,524 t
+  [Pig iron]  made here: 2,484 t  sold here: 0 t  shipped: 2,484 t  warehouse: +0 t
+  [Steel]  made here: 199 t  sold here: 0 t  shipped: 199 t  warehouse: +0 t
+  [Power]  made: 8,000 kW  drawn: 5,550 kW  sold: 5,800 kW  bought: 3,350 kW
+
+=== m06 Iron Mining (town 0, city month 7) ===
+HEAD  THE MINES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 107 t
+  THE FIELDS
+  how full · what it dug
+  THE MINES
+  WHAT IT DUG
+  2,850 t · 1 product
+  WHO TOOK IT
+  draws 600 kW from the grid
+  Hematite
+  1 of 1 site worked
+  100% left · 15.0M t
+  Diesel
+  imported · 14,295 L
+  Iron Mine ×1
+  runs 14%
+  one more: its feed
+  Lorries
+  5,715 L of diesel
+  Iron ore
+  2,850 t
+  Iron & Steel
+  2,850 t
+  iron ore
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Hematite fields]  sites worked: 1 of 1  left: 15.0M t  dug this month: 2,850 t  lasts: over a century
+  [Iron ore]  made here: 2,850 t  sold here: 2,850 t  shipped: 0 t  warehouse: +0 t
+
+=== m06 Coal Mining (town 0, city month 7) ===
+HEAD  THE MINES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 3,036 t
+  THE FIELDS
+  how full · what it dug
+  THE MINES
+  WASHING
+  WHAT IT DUG
+  47k t · 2 products
+  WHO TOOK IT
+  the wash keeps 31k t of the 41k t of raw coal it takes; 10k t of spoil goes to the tip
+  draws 33,800 kW from the grid
+  Thermal
+  1 of 1 site worked
+  99% left · 6.45M t
+  Coking
+  2 of 11 sites worked
+  100% left · 104.7M t
+  Diesel
+  imported · 131,035 L
+  Surface Coal Mine ×1
+  runs 16%
+  one more: its feed
+  Underground Coal Mine ×1
+  runs 16% · +1 on site
+  one more: the staff
+  Lorries
+  93,525 L of diesel
+  Coal Preparation Plant ×1
+  runs 8%
+  one more: its feed
+  Thermal coal
+  24k t
+  Coking coal
+  22k t
+  Iron & Steel
+  8,972 t
+  coking coal
+  Cement & Concrete
+  603 t
+  thermal coal
+  Into the warehouse
+  4,250 t
+  coking coal, thermal coal
+  Abroad
+  33k t
+  thermal coal, coking coal
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Thermal fields]  sites worked: 1 of 1  left: 6.45M t  dug this month: 17k t  lasts: 31 years
+  [Coking fields]  sites worked: 2 of 11  left: 104.7M t  dug this month: 51k t  lasts: over a century
+  [Thermal coal]  made here: 24,463 t  sold here: 603 t  shipped: 23,594 t  warehouse: +266 t
+  [Coking coal]  made here: 22,424 t  sold here: 8,972 t  shipped: 9,468 t  warehouse: +3,984 t
+
+=== m06 Quarrying (town 0, city month 7) ===
+HEAD  THE QUARRIES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 379 t
+  THE FIELDS
+  how full · what it dug
+  THE QUARRIES
+  WHAT IT DUG
+  11k t · 2 products
+  WHO TOOK IT
+  limestone no buyer took, carried into aggregate: 5,166 t
+  draws 186 kW from the grid
+  Limestone
+  2 of 2 sites worked
+  100% left · 27.0M t
+  Quarry ×2
+  runs 14%
+  one more: its feed
+  Aggregate
+  5,166 t
+  Limestone
+  6,051 t
+  Iron & Steel
+  623 t
+  limestone
+  Cement & Concrete
+  5,428 t
+  limestone
+  Abroad
+  5,166 t
+  aggregate
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Limestone fields]  sites worked: 2 of 2  left: 27.0M t  dug this month: 11k t  lasts: over a century
+  [Limestone]  made here: 11,217 t  sold here: 6,051 t  shipped: 0 t  warehouse: +0 t
+  [Aggregate]  made here: 0 t  sold here: 0 t  shipped: 5,166 t  warehouse: +0 t
+
+=== m06 Cement & Concrete (town 0, city month 7) ===
+HEAD  THE KILNS AND PLANTS THIS MONTH  |  from what it bought to who bought it · ribbons to scale in tonnes  |  10 px of ribbon = 195 t
+  IN
+  6,032 t in
+  THE WORKS
+  WHAT IT MADE
+  3,006 t · 1 product
+  WHO TOOK IT
+  draws 690 kW from the grid
+  Limestone
+  Quarrying · 5,428 t
+  Thermal coal
+  Coal Mining · 603 t
+  Lime Kiln ×1
+  runs 17%
+  one more: the staff
+  Lime
+  3,006 t
+  Abroad
+  3,006 t
+  lime
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Lime]  made here: 3,006 t  sold here: 0 t  shipped: 3,006 t  warehouse: +0 t
+
+=== m06 Copper Mining (town 1, city month 7) ===
+HEAD  THE MINES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 91 t
+  THE FIELDS
+  how full · what it dug
+  THE MINES
+  WHAT IT DUG
+  1,100 t · 2 products
+  WHO TOOK IT
+  draws 11,500 kW from the grid
+  Sulphide
+  1 of 1 site worked
+  100% left · 299k t
+  Oxide
+  2 of 15 sites worked
+  100% left · 2.88M t
+  Sulphuric acid
+  Copper Refining · 1,206 t
+  Copper Mine & Mill ×1
+  runs 34%
+  one more: its feed
+  Leach & SX-EW Plant ×1
+  runs 34% · +1 on site
+  one more: the staff
+  Concentrate
+  755 t
+  Cathode
+  345 t
+  Copper Refining
+  755 t
+  concentrate
+  Into the warehouse
+  345 t
+  cathode
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Sulphide fields]  sites worked: 1 of 1  left: 299k t  dug this month: 258 t  lasts: 97 years
+  [Oxide fields]  sites worked: 2 of 15  left: 2.88M t  dug this month: 482 t  lasts: over a century
+  [Copper concentrate]  made here: 755 t  sold here: 755 t  shipped: 0 t  warehouse: +0 t
+  [Copper cathode]  made here: 345 t  sold here: 0 t  shipped: 0 t  warehouse: +345 t
+
+=== m06 Copper Refining (town 1, city month 7) ===
+HEAD  THE SMELTER AND REFINERY THIS MONTH  |  from what it bought to who bought it · ribbons to scale in tonnes  |  10 px of ribbon = 614 t
+  IN
+  14k t in
+  THE WORKS
+  WHAT IT MADE
+  16k t · 3 products
+  WHO TOOK IT
+  draws 26,000 kW from the grid
+  Copper concentrate
+  Copper Mining · 755 t
+  Copper concentrate
+  imported · 11,514 t
+  Copper anode
+  imported · 12 t
+  Copper scrap
+  imported · 1,636 t
+  Copper Smelter ×1
+  runs 37%
+  one more: the staff
+  Scrap Copper Refinery ×1
+  runs 37%
+  one more: the staff
+  Electrolytic Refinery ×1
+  runs 37%
+  one more: the staff
+  Rod Mill ×1
+  runs 37%
+  one more: the staff
+  Cathode
+  2,113 t
+  Acid
+  11k t
+  Rod
+  2,965 t
+  Copper Mining
+  1,206 t
+  acid
+  Into the warehouse
+  2,113 t
+  cathode
+  Abroad
+  13k t
+  acid, rod
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Sulphuric acid]  made here: 11,006 t  sold here: 1,206 t  shipped: 9,800 t  warehouse: +0 t
+  [Copper cathode]  made here: 5,094 t  kept, and sold here: 2,980 t  shipped: 0 t  warehouse: +2,113 t
+  [Copper anode]  made here: 3,613 t  kept, and sold here: 3,613 t  shipped: 0 t  warehouse: +0 t
+  [Copper rod]  made here: 2,965 t  sold here: 0 t  shipped: 2,965 t  warehouse: +0 t
+
+=== m06 Forestry (town 1, city month 7) ===
+HEAD  THE FOREST THIS MONTH  |  from the ground to who took it · ribbons to scale in cubic metres  |  
+EMPTY Forestry has nothing standing yet: 1 building on site.
+
+=== m06 Forestry (town 2, city month 7) ===
+HEAD  THE FOREST THIS MONTH  |  from the ground to who took it · ribbons to scale in cubic metres  |  10 px of ribbon = 45 m³
+  THE FOREST
+  what stands · what was cut
+  THE CREWS
+  WHAT WAS CUT
+  1,173 m³ · 2 products
+  WHO TOOK IT
+  the crews cut 1,173 m³ a month of 2,000 m³ at nameplate · regrowth 15 m³
+  Forest
+  may cut 3.47M m³
+  100% standing · 3.47M m³
+  Logging Camp ×1
+  runs 59%
+  one more: the staff
+  Harvesting Operation
+  1 on site
+  one more: the staff
+  Sawlogs
+  587 m³
+  Pulpwood
+  587 m³
+  Wood Products
+  1,173 m³
+  sawlogs, pulpwood
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Forest]  standing: 3.47M m³  may cut: 3.47M m³  cut this month: 1,173 m³  grows back: 15 m³
+  [Where it settles]  under the law: 92%  protected: 0%  with no law: 92%  planting past: 15 m³
+  [Sawlogs]  made here: 587 m³  sold here: 587 m³  shipped: 0 m³  warehouse: +0 m³
+  [Pulpwood]  made here: 587 m³  sold here: 587 m³  shipped: 0 m³  warehouse: +0 m³
+
+=== m06 Wood Products (town 2, city month 7) ===
+HEAD  THE MILLS THIS MONTH  |  from what it bought to who bought it · ribbons to scale in tonnes  |  10 px of ribbon = 1,545 t
+  IN
+  41k t in
+  THE WORKS
+  WHAT IT MADE
+  13k t · 3 products
+  WHO TOOK IT
+  makes 13,500 kW, draws 526 kW · sells 13,500 kW to the grid · buys 526 kW from it
+  Sawlogs
+  Forestry · 587 m³
+  Sawlogs
+  imported · 2,200 m³
+  Pulpwood
+  Forestry · 587 m³
+  Pulpwood
+  imported · 18,918 m³
+  Residues
+  imported · 23,033 m³
+  Sawmill ×1
+  runs 70%
+  one more: the staff
+  Pulp Mill ×1
+  runs 70%
+  one more: the staff
+  Wood Pellet Mill ×1
+  runs 70%
+  one more: the staff
+  Lumber 1,449 m³
+  Pulp
+  7,662 t
+  Wood pellets
+  4,179 t
+  Into the warehouse
+  13k t
+  pulp, wood pellets, lumber
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Pulp]  made here: 7,662 t  sold here: 0 t  shipped: 0 t  warehouse: +7,662 t
+  [Wood pellets]  made here: 4,179 t  sold here: 0 t  shipped: 0 t  warehouse: +4,179 t
+  [Residues]  made here: 1,139 m³  kept, and sold here: 1,139 m³  shipped: 0 m³  warehouse: +0 m³
+  [Lumber]  made here: 1,449 m³  sold here: 0 m³  shipped: 0 m³  warehouse: +1,449 m³
+  [Power]  made: 13,500 kW  drawn: 526 kW  sold: 13,500 kW  bought: 526 kW
+
+=== m12 Iron Mining (town 0, city month 13) ===
+HEAD  THE MINES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 242 t
+  THE FIELDS
+  how full · what it dug
+  THE MINES
+  WHAT IT DUG
+  6,428 t · 1 product
+  WHO TOOK IT
+  draws 600 kW from the grid
+  Hematite
+  1 of 1 site worked
+  100% left · 15.0M t
+  Diesel
+  imported · 32,235 L
+  Iron Mine ×1
+  runs 32%
+  one more: its feed
+  Lorries
+  12,888 L of diesel
+  Iron ore
+  6,428 t
+  Abroad
+  6,428 t
+  iron ore
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Hematite fields]  sites worked: 1 of 1  left: 15.0M t  dug this month: 6,428 t  lasts: over a century
+  [Iron ore]  made here: 6,428 t  sold here: 0 t  shipped: 6,428 t  warehouse: +0 t
+TIPS
+  ~ Hematite · 1 of 1 site worked · 15.0M t of 15.0M t left · dug this month: 6,428 t
+  ~ Hematite · 1 of 1 site worked · 15.0M t of 15.0M t left
+  ~ Diesel, imported: 32,235 L
+  ~ 1 Iron Mine · runs 32%. / One more: no deposit to dig.
+  ~ Its lorries burned 12,888 L of diesel, 167 vans
+  ~ Iron ore: made 6,428 t. Sold here 0 t, shipped 6,428 t.
+  ~ Abroad took 6,428 t of iron ore.
+
+=== m12 Coal Mining (town 0, city month 13) ===
+HEAD  THE MINES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 6,003 t
+  THE FIELDS
+  how full · what it dug
+  THE MINES
+  WASHING
+  WHAT IT DUG
+  93k t · 2 products
+  WHO TOOK IT
+  the wash keeps 60k t of the 81k t of raw coal it takes; 20k t of spoil goes to the tip
+  draws 33,800 kW from the grid
+  Thermal
+  1 of 1 site worked
+  97% left · 6.27M t
+  Coking
+  2 of 11 sites worked
+  99% left · 104.2M t
+  Diesel
+  imported · 259,083 L
+  Surface Coal Mine ×1
+  runs 32%
+  one more: its feed
+  Underground Coal Mine ×1
+  runs 32% · +1 on site
+  one more: the money
+  Lorries
+  184,918 L of diesel
+  Coal Preparation Plant ×1
+  runs 16%
+  one more: its feed
+  Thermal coal
+  48k t
+  Coking coal
+  44k t
+  Into the warehouse
+  93k t
+  thermal coal, coking coal
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Thermal fields]  sites worked: 1 of 1  left: 6.27M t  dug this month: 34k t  lasts: 15 years
+  [Coking fields]  sites worked: 2 of 11  left: 104.2M t  dug this month: 101k t  lasts: 86 years
+  [Thermal coal]  made here: 48,368 t  sold here: 0 t  shipped: 0 t  warehouse: +48,368 t
+  [Coking coal]  made here: 44,337 t  sold here: 0 t  shipped: 0 t  warehouse: +44,337 t
+TIPS
+  ~ Thermal · 1 of 1 site worked · 6.27M t of 6.50M t left · dug this month: 34k t
+  ~ Thermal · 1 of 1 site worked · 6.27M t of 6.50M t left
+  ~ Coking · 2 of 11 sites worked · 104.2M t of 104.9M t left · dug this month: 101k t
+  ~ Coking · 2 of 11 sites worked · 104.2M t of 104.9M t left
+  ~ Diesel, imported: 259,083 L
+  ~ 1 Surface Coal Mine · runs 32%. / One more: no thermal coal field with 1 free site for a Surface Coal Mine.
+  ~ 1 Underground Coal Mine · runs 32% · 1 on site. / One more: would lose $2,638.5k a month on it.
+  ~ Its lorries burned 184,918 L of diesel, 2,397 vans
+  ~ 1 Coal Preparation Plant · runs 16%. / One more: no raw coal goes unwashed.
+  ~ Thermal coal: made 48,368 t. Sold here 0 t, shipped 0 t, into its warehouse 48,368 t.
+  ~ Coking coal: made 44,337 t. Sold here 0 t, shipped 0 t, into its warehouse 44,337 t.
+  ~ Into the warehouse took 48,368 t of thermal coal, 44,337 t of coking coal.
+
+=== m12 Quarrying (town 0, city month 13) ===
+HEAD  THE QUARRIES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 869 t
+  THE FIELDS
+  how full · what it dug
+  THE QUARRIES
+  WHAT IT DUG
+  26k t · 1 product
+  WHO TOOK IT
+  limestone no buyer took, carried into aggregate: 25,710 t
+  draws 186 kW from the grid
+  Limestone
+  2 of 2 sites worked
+  99% left · 26.8M t
+  Quarry ×2
+  runs 32%
+  one more: its feed
+  Aggregate
+  26k t
+  Abroad
+  26k t
+  aggregate
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Limestone fields]  sites worked: 2 of 2  left: 26.8M t  dug this month: 26k t  lasts: 87 years
+  [Limestone]  made here: 25,710 t  sold here: 0 t  shipped: 0 t  warehouse: +0 t
+  [Aggregate]  made here: 0 t  sold here: 0 t  shipped: 25,710 t  warehouse: +0 t
+TIPS
+  ~ Limestone · 2 of 2 sites worked · 26.8M t of 27.0M t left · dug this month: 26k t
+  ~ Limestone · 2 of 2 sites worked · 26.8M t of 27.0M t left
+  ~ 2 Quarries · runs 32%. / One more: no deposit to dig.
+  ~ Aggregate: made 0 t, and 25,710 t of limestone carried in. Sold here 0 t, shipped 25,710 t.
+  ~ Abroad took 25,710 t of aggregate.
+
+=== m12 Copper Mining (town 1, city month 13) ===
+HEAD  THE MINES THIS MONTH  |  from the ground to who took it · ribbons to scale in tonnes  |  10 px of ribbon = 242 t
+  THE FIELDS
+  how full · what it dug
+  THE MINES
+  WHAT IT DUG
+  2,925 t · 2 products
+  WHO TOOK IT
+  draws 11,500 kW from the grid
+  Sulphide
+  1 of 1 site worked
+  99% left · 296k t
+  Oxide
+  2 of 15 sites worked
+  100% left · 2.88M t
+  Sulphuric acid
+  imported · 3,206 t
+  Copper Mine & Mill ×1
+  runs 92%
+  one more: its feed
+  Leach & SX-EW Plant ×1
+  runs 92% · +1 on site
+  one more pays 2.04% a month
+  Concentrate
+  2,009 t
+  Cathode
+  916 t
+  Abroad
+  2,925 t
+  concentrate, cathode
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Sulphide fields]  sites worked: 1 of 1  left: 296k t  dug this month: 685 t  lasts: 36 years
+  [Oxide fields]  sites worked: 2 of 15  left: 2.88M t  dug this month: 1,282 t  lasts: over a century
+  [Copper concentrate]  made here: 2,009 t  sold here: 0 t  shipped: 2,009 t  warehouse: +0 t
+  [Copper cathode]  made here: 916 t  sold here: 0 t  shipped: 916 t  warehouse: +0 t
+TIPS
+  ~ Sulphide · 1 of 1 site worked · 296k t of 300k t left · dug this month: 685 t
+  ~ Sulphide · 1 of 1 site worked · 296k t of 300k t left
+  ~ Oxide · 2 of 15 sites worked · 2.88M t of 2.89M t left · dug this month: 1,282 t
+  ~ Oxide · 2 of 15 sites worked · 2.88M t of 2.89M t left
+  ~ Sulphuric acid, imported: 3,206 t
+  ~ 1 Copper Mine & Mill · runs 92%. / One more: no sulphide copper field with 1 free site for a Copper Mine & Mill.
+  ~ 1 Leach & SX-EW Plant · runs 92% · 1 on site. / One more earns $6,396.6k a month on $313,918k at the city's prices, 2.04% a month.
+  ~ Copper concentrate: made 2,009 t. Sold here 0 t, shipped 2,009 t.
+  ~ Copper cathode: made 916 t. Sold here 0 t, shipped 916 t.
+  ~ Abroad took 2,009 t of copper concentrate, 916 t of copper cathode.
+
+=== m12 Copper Refining (town 1, city month 13) ===
+HEAD  THE SMELTER AND REFINERY THIS MONTH  |  from what it bought to who bought it · ribbons to scale in tonnes  |  10 px of ribbon = 484 t
+  IN
+  13k t in
+  THE WORKS
+  WHAT IT MADE
+  13k t · 2 products
+  WHO TOOK IT
+  draws 12,600 kW from the grid
+  Copper anode
+  imported · 8,931 t
+  Copper scrap
+  imported · 4,031 t
+  Electrolytic Refinery ×1
+  runs 92%
+  one more: the money
+  Scrap Copper Refinery ×1
+  runs 92%
+  one more: the money
+  Rod Mill ×1
+  runs 92%
+  one more: the money
+  Cathode
+  5,207 t
+  Rod
+  7,328 t
+  Into the warehouse
+  3,852 t
+  cathode
+  Abroad
+  8,683 t
+  rod, cathode
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Copper cathode]  made here: 12,550 t  kept, and sold here: 7,343 t  shipped: 1,354 t  warehouse: +3,852 t
+  [Copper rod]  made here: 7,328 t  sold here: 0 t  shipped: 7,328 t  warehouse: +0 t
+TIPS
+  ~ Copper anode, imported: 8,931 t
+  ~ Copper scrap, imported: 4,031 t
+  ~ 1 Electrolytic Refinery · runs 92%. / The last one loses $561,132 a month · idle 1 month. / One more: would lose $3,902.0k a month on it.
+  ~ 1 Scrap Copper Refinery · runs 92%. / The last one loses $228,779 a month · idle 1 month. / One more: would lose $932.7k a month on it.
+  ~ 1 Rod Mill · runs 92%. / The last one earns $635,041 a month. / One more: would lose $1,926.8k a month on it.
+  ~ Copper cathode: made 12,550 t, 7,343 t of it kept for its own works. Sold here 0 t, shipped 1,354 t, into its warehouse 3,852 t.
+  ~ Copper rod: made 7,328 t. Sold here 0 t, shipped 7,328 t.
+  ~ Into the warehouse took 3,852 t of copper cathode.
+  ~ Abroad took 7,328 t of copper rod, 1,354 t of copper cathode.
+
+=== m12 Forestry (town 1, city month 13) ===
+HEAD  THE FOREST THIS MONTH  |  from the ground to who took it · ribbons to scale in cubic metres  |  
+EMPTY Forestry has nothing standing yet: 1 building on site.
+
+=== m12 Forestry (town 2, city month 13) ===
+HEAD  THE FOREST THIS MONTH  |  from the ground to who took it · ribbons to scale in cubic metres  |  10 px of ribbon = 74 m³
+  THE FOREST
+  what stands · what was cut
+  THE CREWS
+  WHAT WAS CUT
+  1,931 m³ · 2 products
+  WHO TOOK IT
+  the crews cut 1,931 m³ a month of 2,000 m³ at nameplate · regrowth 60 m³
+  Forest
+  may cut 3.46M m³
+  100% standing · 3.46M m³
+  Logging Camp ×1
+  runs 97%
+  one more pays 1.43% a month
+  Harvesting Operation
+  1 on site
+  one more pays 2.48% a month
+  Sawlogs
+  966 m³
+  Pulpwood
+  966 m³
+  Wood Products
+  1,931 m³
+  sawlogs, pulpwood
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Forest]  standing: 3.46M m³  may cut: 3.46M m³  cut this month: 1,931 m³  grows back: 60 m³
+  [Where it settles]  under the law: 87%  protected: 0%  with no law: 87%  planting past: 60 m³
+  [Sawlogs]  made here: 966 m³  sold here: 966 m³  shipped: 0 m³  warehouse: +0 m³
+  [Pulpwood]  made here: 966 m³  sold here: 966 m³  shipped: 0 m³  warehouse: +0 m³
+TIPS
+  ~ Forest · 3.46M m³ of 3.47M m³ standing · dug this month: 1,931 m³
+  ~ Forest · 3.46M m³ of 3.47M m³ standing
+  ~ 1 Logging Camp · runs 97%. / One more earns $65.0k a month on $4,555k at the city's prices, 1.43% a month.
+  ~ 1 Harvesting Operation on site. / One more earns $610.6k a month on $24,575k at the city's prices, 2.48% a month.
+  ~ Sawlogs: made 966 m³. Sold here 966 m³, shipped 0 m³.
+  ~ Pulpwood: made 966 m³. Sold here 966 m³, shipped 0 m³.
+  ~ Wood Products took 966 m³ of sawlogs, 966 m³ of pulpwood.
+
+=== m12 Wood Products (town 2, city month 13) ===
+HEAD  THE MILLS THIS MONTH  |  from what it bought to who bought it · ribbons to scale in tonnes  |  10 px of ribbon = 2,149 t
+  IN
+  57k t in
+  THE WORKS
+  WHAT IT MADE
+  17k t · 3 products
+  WHO TOOK IT
+  makes 13,500 kW, draws 526 kW · sells 13,500 kW to the grid · buys 526 kW from it
+  Sawlogs
+  Forestry · 966 m³
+  Sawlogs
+  imported · 2,910 m³
+  Pulpwood
+  Forestry · 966 m³
+  Pulpwood
+  imported · 26,162 m³
+  Residues
+  imported · 32,036 m³
+  Sawmill ×1
+  runs 97%
+  one more: the money
+  Pulp Mill ×1
+  runs 97%
+  one more: the money
+  Wood Pellet Mill ×1
+  runs 97%
+  one more: the money
+  Lumber 2,015 m³
+  Pulp
+  11k t
+  Wood pellets
+  5,813 t
+  Into the warehouse
+  5,236 t
+  wood pellets, lumber
+  Abroad
+  12k t
+  pulp, wood pellets
+STRIP THIS MONTH, CELL BY CELL · a field's bar what is left of it · a product's: used here, shipped (pale), into the warehouse (hatched)
+  [Pulp]  made here: 10,657 t  sold here: 0 t  shipped: 10,657 t  warehouse: +0 t
+  [Wood pellets]  made here: 5,813 t  sold here: 0 t  shipped: 1,584 t  warehouse: +4,229 t
+  [Residues]  made here: 1,584 m³  kept, and sold here: 1,584 m³  shipped: 0 m³  warehouse: +0 m³
+  [Lumber]  made here: 2,015 m³  sold here: 0 m³  shipped: 0 m³  warehouse: +2,015 m³
+  [Power]  made: 13,500 kW  drawn: 526 kW  sold: 13,500 kW  bought: 526 kW
+TIPS
+  ~ Sawlogs, Forestry: 966 m³
+  ~ Sawlogs, imported: 2,910 m³
+  ~ Pulpwood, Forestry: 966 m³
+  ~ Pulpwood, imported: 26,162 m³
+  ~ Residues, imported: 32,036 m³
+  ~ 1 Sawmill · runs 97%. / The last one earns $114,757 a month. / One more: would lose $112.3k a month on it.
+  ~ 1 Pulp Mill · runs 97%. / The last one earns $112,740 a month. / One more: would earn $59.1k a month on $348,087k, which would not clear 1.25 times the interest on its whole cost ($1,872.7k).
+  ~ 1 Wood Pellet Mill · runs 97%. / The last one earns $229,280 a month. / One more: would lose $69.7k a month on it.
+  ~ Lumber: made 2,015 m³. Sold here 0 m³, shipped 0 m³, into its warehouse 2,015 m³.
+  ~ Pulp: made 10,657 t. Sold here 0 t, shipped 10,657 t.
+  ~ Wood pellets: made 5,813 t. Sold here 0 t, shipped 1,584 t, into its warehouse 4,229 t.
+  ~ Into the warehouse took 4,229 t of wood pellets, 2,015 m³ of lumber.
+  ~ Abroad took 10,657 t of pulp, 1,584 t of wood pellets.
