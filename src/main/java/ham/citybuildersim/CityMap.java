@@ -35,7 +35,8 @@ import java.util.zip.InflaterInputStream;
  * samples before), recounted in every district a purchase touches; the
  * ground its buildings use (a type's land / 9,687.5 sq ft a plot) and the
  * whole plots they are drawn on (BuildingVisual.cells(), roads by their own
- * plots); its owned iron and oil sites; and its count of every type.
+ * plots); its owned sites of each SITED resource's types of field (iron's
+ * and oil's until 0.8.0: SLOTS); and its count of every type.
  *
  * EACH MONTH, ONCE CONSTRUCTION COMPLETES (reconcile(), star 12): each type's
  * change is placed - new buildings into the first district with room for
@@ -47,7 +48,9 @@ import java.util.zip.InflaterInputStream;
  * month at 10B in the design. Mines and wells are the exception the design
  * names: they stand on their resource's sites, the first in acquisition order
  * (the centre, then each purchase) not worked out, so they go to the
- * districts holding those sites.
+ * districts holding those sites - since 0.8.0 every works on a SITED
+ * resource, by the type of its field and on as many sites as it takes
+ * (THE WORKS ON THEIR SITES BY TYPE).
  *
  * CANONICALLY (canonical()), for a save with no sidecar, a lost one or one
  * that does not match: each type in proportion in every district, inner
@@ -103,7 +106,8 @@ import java.util.zip.InflaterInputStream;
  * highway and railway runs after the districts - 0.7.88 wrote none, and a
  * sidecar with none has them laid from its counts as it is read - an older
  * one still read; FORMAT 6 since 0.7.97, its works on the shore after the
- * runs, laid from its counts when a FORMAT 5 sidecar is read).
+ * runs, laid from its counts when a FORMAT 5 sidecar is read; FORMAT 7
+ * since 0.8.0, a district's sites by slot).
  *
  * AT SEA AND ON THE SHORE (0.7.97, batch O13; docs/studies/spec-oil.md 2.12,
  * spec-roads-and-ports.md 2.8 and 4): THE CAMPUS deals the refinery's units
@@ -111,6 +115,13 @@ import java.util.zip.InflaterInputStream;
  * terminals and tank farms at the water city-wide (CityShore), THE OIL AT
  * SEA draws the platforms and pipes the game hands it, and THE SEA ROUTES
  * finds each terminal's way out to the world (SeaRoutes) for the boats.
+ *
+ * THE MATERIALS (0.8.0, batch I14; spec-materials 5's I14 row): THE WORKS
+ * ON THEIR SITES BY TYPE stands every mine, quarry and leach plant on its
+ * resource's sites of its type, a works on as many as it takes; EVERY
+ * INDUSTRY'S CAMPUS gathers each processing industry's works as THE CAMPUS
+ * does the refinery's; and ZONES BY DISTRICT picks the districts a zone's
+ * tint covers.
  */
 public final class CityMap {
 
@@ -4302,7 +4313,8 @@ public final class CityMap {
      * it was drawn on (CityLand.stamp(), 0.7.67) and its purchases, the type count, the district count), then a
      * record a district in its order - dx and dy (int16), its free plots and
      * those inside its tiles' edge rings (int32), plots used (double), owned
-     * iron and oil sites and a count a type (int32) - and since FORMAT 5 the
+     * iron and oil sites (since FORMAT 7, 0.8.0, its owned sites of each slot,
+     * SLOTS) and a count a type (int32) - and since FORMAT 5 the
      * city's highway and railway runs (int32 their count: 0 until batch RD3
      * lays them, which adds their records), and since FORMAT 6 (0.7.97) its
      * works on the shore (CityShore.write()).

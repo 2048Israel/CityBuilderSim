@@ -270,7 +270,7 @@ public final class TilePainter {
         /** Clears the sites; the arrays are reused. */
         public void clearSites() { sites = 0; }
 
-        /** Adds a site: its square (clipped to the tile), resource, state and the mine on it (-1 for none). */
+        /** Adds a site: its square (clipped to the tile, and since 0.8.0 kept unclipped too), resource, state and the mine on it (-1 for none). */
         public void addSite(int x0, int y0, int x1, int y1, int kind, int state, int mine) {
             addSite(x0, y0, x1, y1, kind, state, mine, ((long) (x0 + tx * TILE) << 32) | ((y0 + ty * TILE) & 0xffffffffL));
         }

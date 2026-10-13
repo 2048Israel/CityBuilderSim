@@ -4,7 +4,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 346 files, 352,072 lines, 14,879 methods, 3,294 constants. `GameVersion.VERSION` is "0.8.0", `SAVE_FORMAT` 39.
+**The tree:** 346 files, 352,086 lines, 14,879 methods, 3,294 constants. `GameVersion.VERSION` is "0.8.0", `SAVE_FORMAT` 39.
 
 ## model (167 files)
 
@@ -23,7 +23,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BuildingInstance.java](BuildingInstance.md) | 40 | 4 |  | 1 |
 | [BuildingManager.java](BuildingManager.md) | 7,672 | 200 | The city's buildings: the catalogue of templates, the stacks standing and on site with the contracts the builders are working to and who placed the... | 91 |
 | [BuildingType.java](BuildingType.md) | 239 | 0 |  | 69 |
-| [BuildingVisual.java](BuildingVisual.md) | 506 | 22 | How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which ... | 16 |
+| [BuildingVisual.java](BuildingVisual.md) | 508 | 22 | How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which ... | 16 |
 | [BuildingsStacks.java](BuildingsStacks.md) | 466 | 42 | One building type in the city: how many stand, how many are on site, and the progress, material and contract its sites carry. | 25 |
 | [BuildingsTemplate.java](BuildingsTemplate.md) | 1,102 | 116 | One kind of building, and what it costs to put up. | 141 |
 | [BusinessDebt.java](BusinessDebt.md) | 93 | 12 | Base class for private-sector borrowing. | 9 |
@@ -37,7 +37,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CityBasket.java](CityBasket.md) | 120 | 2 | What the city eats: the basket per head, struck from the households' own statements, and the file's reference basket for a city that has none yet. | 1 |
 | [CityCalendar.java](CityCalendar.md) | 146 | 13 | Turns the month counter into a date a person can hold in their head. | 25 |
 | [CityLand.java](CityLand.md) | 1,159 | 82 | The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase sinc... | 41 |
-| [CityMap.java](CityMap.md) | 4,523 | 252 | The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves,... | 16 |
+| [CityMap.java](CityMap.md) | 4,535 | 252 | The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves,... | 16 |
 | [CityNeeds.java](CityNeeds.md) | 1,033 | 47 | NEEDS YOU, measured: everything with a lever, each against its own line, in the order a city is built - the list the left panel's Summary prints, t... | 26 |
 | [CityRuns.java](CityRuns.md) | 1,157 | 57 | The city's highways and railway as runs on corridors: each laid month by month from its hub's lines out, straight by preference, never moved, with ... | 8 |
 | [CityShore.java](CityShore.md) | 244 | 21 | The city's works on its shore as the map draws them: each sea terminal's box on owned dry ground at the water with its quay run straight out over o... | 2 |
@@ -55,7 +55,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Denomination.java](Denomination.md) | 199 | 12 | The currency's unit, and the power to lop zeros off it. | 3 |
 | [Deposit.java](Deposit.md) | 252 | 13 | One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a pl... | 52 |
 | [DistrictPicture.java](DistrictPicture.md) | 309 | 17 | A district's picture for the far views: 32 x 32 pixels, a pixel for 8 x 8 plots (240 m), each the colour of one of its 64 plots - the plot a fixed ... | 3 |
-| [DistrictPlan.java](DistrictPlan.md) | 3,142 | 112 | One district's street plan: from its ground, the buildings and road plots the city map gives it and the city's highway and railway plots through it... | 9 |
+| [DistrictPlan.java](DistrictPlan.md) | 3,143 | 112 | One district's street plan: from its ground, the buildings and road plots the city map gives it and the city's highway and railway plots through it... | 9 |
 | [EarthData.java](EarthData.md) | 753 | 65 | The reader of earth-1.bin, the real Earth's ground as data: its layers' 1-degree tiles inflated into an LRU, the sea, lake, land-cover and far-view... | 18 |
 | [EarthProj.java](EarthProj.md) | 446 | 34 | The real Earth flattened round a city's spot: Lambert's azimuthal equal-area projection on a sphere, forward and inverse, the world's plots in metr... | 13 |
 | [EarthSite.java](EarthSite.md) | 541 | 34 | A spot on the real Earth as the founding screen weighs it: whether the game has the Earth's data, the place names a player searches, the spot the s... | 10 |
@@ -314,7 +314,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandCheck.java](LandCheck.md) | 2,812 | 36 | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. | 4 |
 | [LongPlaytest.java](LongPlaytest.md) | 6,632 | 111 | A city played for four thousand months, the way a person plays. | 35 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 610 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
-| [MapCheck.java](MapCheck.md) | 5,517 | 119 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 3 |
+| [MapCheck.java](MapCheck.md) | 5,516 | 119 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 3 |
 | [MaterialsCheck.java](MaterialsCheck.md) | 1,516 | 31 | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), a... | 10 |
 | [MiningCheck.java](MiningCheck.md) | 600 | 10 | Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore. | 9 |
 | [MonetaryCheck.java](MonetaryCheck.md) | 899 | 10 | Money: what a basket costs, what the world charges, and what the rate does. | 2 |

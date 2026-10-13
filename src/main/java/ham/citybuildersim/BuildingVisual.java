@@ -21,7 +21,9 @@ import java.util.List;
  * a road capacity and no transit, its kind by its freight grade (none gravel,
  * some paved, all a highway); flats are the homes with more than one dwelling
  * (the apartment types, the mockup's star 9 by type, not by people); a mine
- * or well stands on the sites of the resource whose good it makes. One type
+ * or well stands on the sites of the resource whose good it makes (since
+ * 0.8.0 the sites its template declares: THE MATERIALS DRAWN AS THEMSELVES,
+ * below). One type
  * is named by its permanent id, home care (22), drawn as a home because it
  * is run from homes (spec-land star 10); id 15 was the home daycare until
  * 0.7.71 made it the Small Childcare Centre, a centre, drawn as care.

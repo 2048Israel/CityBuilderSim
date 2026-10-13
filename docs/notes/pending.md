@@ -16,15 +16,21 @@ leach plant, the wash plant, camps, planted forest), each processing industry's 
 arc furnaces keep their places), and a zone's districts are tinted in its sector's colour with the legend naming it.
 Found on the way: a footprint of a tile's 32 plots threw the district's plan; capped at a cell's 31. MapCheck 15
 holds it, a screen over the industry 32 ms of thread CPU. Sidecar FORMAT 7; no save change; playtests byte-identical.
+Gate: BuildMenuCheck 139, Stale 0 firm, MapCheck and PlanCheck green; EarthTerrainCheck 8's Earth screen bound red, as
+on main on the same machine. See docs/queue/I14-notes/fixI14-notes.md.
 
 ## 0.8.0 - for `claude/todo.md`
 
+- ~~I14 (UI), 0.8.0: the map and the release~~ - done 2026-10-13 (0.8.0): with it I5's 20-site works drawn as one
+  mine, I6's coal mines and preparation plant and I7's Dimension Stone Quarry drawn as plain MINING, and I9's ★10
+  (coal's, stone's and copper's first types placed nowhere); W1's note stays open (below).
 - CHECK (Jerus, on the PC): the materials on the map - a pan over an industrial city, a zone's tint - beside
   docs/queue/I14-notes/png/ (QUEUE.md Pending, I14-C; fixI14-notes §8).
 - CONFIRM: a plantation drawn on a cell's 31 x 31 plots of its 105 x 105 (I14 ★3); the arc furnaces and mini-mills
   not gathered into steel's campus (★4); sited works grey in the far views (★6); no toggle for the zones' tint (★7).
 - W1's walled street piece over a dense iron cluster stays open (QUEUE.md Pending, W1-P).
-- Section 0: the build is 0.8.0, the release that finishes industry - for the manual's next edition (a milestone).
+- Section 0, under the manual's entry: the build is 0.8.0, the release that finishes industry (save format still 39,
+  harnesses still 108) - for the manual's next edition (a milestone).
 
 ## 0.7.143 (batch I12, 2026-10-13) - for `claude/changelog.md`
 

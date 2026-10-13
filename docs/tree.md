@@ -436,7 +436,9 @@ adds its line here, not in `CLAUDE.md`.
                                    bought on it - a click on an offer opens its card, shift-click and a
                                    Shift-drag box pick several, Enter buys, short the card issues the
                                    funding page's bond - the card LandScreen's words, its figures, the
-                                   picks and the box LandMap's, MapCheck 14), and ZoningScreen.java (Policy's fifth
+                                   picks and the box LandMap's, MapCheck 14; since 0.8.0, batch I14, the
+                                   zones' districts tinted under the offers and named in its legend -
+                                   CityMap.zoneTint(), LandMap.zoneAreas(), MapCheck 15), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray), and MiniMap.java (the minimap, 0.7.134: a
                                    stamp of the city at the rail's foot above Menu, its preview on hover,

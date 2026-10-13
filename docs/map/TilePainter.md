@@ -186,7 +186,7 @@
 | 256 | 4 | `public void clearBuildings()` _(in TilePainter.Input)_ | Clears the buildings; the arrays are reused. |
 | 262 | 7 | `public void addBuilding(int box, int type)` _(in TilePainter.Input)_ | Adds a building: its packed box and type id. |
 | 271 | 1 | `public void clearSites()` _(in TilePainter.Input)_ | Clears the sites; the arrays are reused. |
-| 274 | 3 | `public void addSite(int x0, int y0, int x1, int y1, int kind, int state, int mine)` _(in TilePainter.Input)_ | Adds a site: its square (clipped to the tile), resource, state and the mine on it (-1 for none). |
+| 274 | 3 | `public void addSite(int x0, int y0, int x1, int y1, int kind, int state, int mine)` _(in TilePainter.Input)_ | Adds a site: its square (clipped to the tile, and since 0.8.0 kept unclipped too), resource, state and the mine on it (-1 for none). |
 | 279 | 16 | `public void addSite(int x0, int y0, int x1, int y1, int kind, int state, int mine, long key)` _(in TilePainter.Input)_ | ...with the site's own key (siteKey). |
 | 297 | 4 | `public boolean anyOwned()` _(in TilePainter.Input)_ | Whether any of its plots is owned. |
 | 304 | 70 | **type** `public static final class Painted` | A painted tile: what each plot is, and every building on it. |

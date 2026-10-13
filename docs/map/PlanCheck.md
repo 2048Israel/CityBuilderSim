@@ -204,7 +204,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 886 | 16 | `static CityMap squareCity(BuildingVisual.Type[] types, long seed, long[] place, double k)` | Jerus's city x k on the design's square city at the dry place, as MapCheck's copies (MapCheck.Squares): his mines no more than its iron sites. |
+| 886 | 16 | `static CityMap squareCity(BuildingVisual.Type[] types, long seed, long[] place, double k)` | Jerus's city x k on the design's square city at the dry place, as MapCheck's copies (MapCheck.Squares): his mines no more than its iron sites of their type (since 0.8.0, an Iron Mine's hematite). |
 | 903 | 38 | `static void fixture(BuildingVisual.Type[] types)` |  |
 
 ### 6. A CITY PLAYED AS THE PLAYTEST PLAYS IT (lines 942-996)

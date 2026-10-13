@@ -1252,7 +1252,8 @@ public final class DistrictPlan {
         /**
          * The campus's next cell (THE CAMPUS): the index in the order, from
          * the next to open on, of the first closed cell touching (eight ways:
-         * a side or a corner) a cell a refinery unit already stands in; -1
+         * a side or a corner) a cell a refinery unit already stands in - since
+         * 0.8.0 a unit of the group asked; -1
          * when none stands yet or no closed cell touches theirs - then the
          * order's next opens, as for any building.
          */

@@ -763,7 +763,7 @@ public class MapCheck {
                 long t0 = System.nanoTime();
                 CityMap m = CityMap.square(seed, x, y, types, side, capacity, c);
                 buildMs[i] = (System.nanoTime() - t0) / 1e6;
-                // No more mines than the square's iron sites: the game's own rule (Game.hasDepositFor()).
+                // No more mines than the square's sites of their type (since 0.8.0 an Iron Mine's hematite, mineSites()): the game's own rule (Game.hasDepositFor()).
                 if (mine >= 0) {
                     c[mine] = Math.min(wantMines, mineSites(m, mine));
                     m.reconcile(c);
@@ -5170,8 +5170,7 @@ public class MapCheck {
     }
 
     static void materials(long seed) {
-        out.println("\n--- 15. the materials drawn as themselves (0.8.0): each kind its own look, every works on its own sites by type,"
-                + " each industry's works one campus, each thing drawn once, the zones tinted where they are, the screen within 80 ms ---");
+        out.println("\n--- 15. the materials drawn as themselves (0.8.0): each kind its own look, every works on its own sites by type, each industry's works one campus, each thing drawn once, the zones tinted where they are, the screen within 80 ms ---");
         List<BuildingsTemplate> templates = new BuildingCatalog().load();
         BuildingVisual.Type[] types = BuildingVisual.table(templates);
         // Every building of the nine industries: a look of its own, and on its template's sites.

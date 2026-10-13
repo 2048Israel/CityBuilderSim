@@ -8642,20 +8642,21 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L5083 ...and the card's loans from the vault are the dollar bond and note for its gap, or none while the window abroad is shut
   - L5114 fixture: picks stood before the month and the load, and the load kept the month and the offers
   - L5116 the picks drop on a month, and on a load into the same Game; clear() - Esc, a click off the offers, the map collapsed -
-  - L5200 every building of the nine materials industries has a look of its own - none a plain mine's or industry's box
-  - L5201 ...and every one on a resource's sites stands on its template's: the resource, its type of field, as many sites as it takes
-  - L5232 fixture: its square holds sites enough of every type for all its works
-  - L5233 its districts sum to its counts exactly, every type on its sites among them (coal's, stone's and copper's first types were placed nowhere until 0.8.0)
-  - L5239 every building drawn once - each type as many as the model has, a works on its sites once for all of them, none twice, none missing
-  - L5267 a works of twenty sites is drawn on twenty sites - every works on all of its sites - and each site under a works is of its type of field
-  - L5284 ...one more Iron Mine takes one more hematite site, and no works placed before it moves
-  - L5308 ...the
-  - L5361 each look is drawn on its tiles in its own colours - a pit's benches, a shaft's headframe, a quarry's stone, a leach plant's pond,
-  - L5365 with no zone set no district is tinted
-  - L5397 each zone's districts cover its ground, and one fewer would not: the tint where a zone is and nowhere else, no district twice
-  - L5399 ...the district holding the most of a zone's sector's buildings is the zone's (the map picks where they stand)
-  - L5400 ...and each zone in its sector's own colour
-  - L5434 a 1,389 x 868 L0 screen over the industry paints and rasters in no more than 80 ms of
+- **L5173 15. the materials drawn as themselves (0.8.0): each kind its own look, every works on its own sites by type, each industry's works one ca...**
+  - L5199 every building of the nine materials industries has a look of its own - none a plain mine's or industry's box
+  - L5200 ...and every one on a resource's sites stands on its template's: the resource, its type of field, as many sites as it takes
+  - L5231 fixture: its square holds sites enough of every type for all its works
+  - L5232 its districts sum to its counts exactly, every type on its sites among them (coal's, stone's and copper's first types were placed nowhere until 0.8.0)
+  - L5238 every building drawn once - each type as many as the model has, a works on its sites once for all of them, none twice, none missing
+  - L5266 a works of twenty sites is drawn on twenty sites - every works on all of its sites - and each site under a works is of its type of field
+  - L5283 ...one more Iron Mine takes one more hematite site, and no works placed before it moves
+  - L5307 ...the
+  - L5360 each look is drawn on its tiles in its own colours - a pit's benches, a shaft's headframe, a quarry's stone, a leach plant's pond,
+  - L5364 with no zone set no district is tinted
+  - L5396 each zone's districts cover its ground, and one fewer would not: the tint where a zone is and nowhere else, no district twice
+  - L5398 ...the district holding the most of a zone's sector's buildings is the zone's (the map picks where they stand)
+  - L5399 ...and each zone in its sector's own colour
+  - L5433 a 1,389 x 868 L0 screen over the industry paints and rasters in no more than 80 ms of
 
 ## MaterialsCheck.java - 126 labelled assertions
 
