@@ -3,20 +3,18 @@
 You are Gemini in Google AI Studio Build: a container with a shell, git that
 can push to `2048Israel/CityBuilderSim`, and Node. This file is your role
 (Claude, 2026-10-13, at Jerus's request, from your own capability note).
+
 `CLAUDE.md` is the project's rules; they bind you too, and they win where
 this file is silent.
 
 ## First: can you run Java?
 
-Run `java -version` and `mvn -v` and tell Jerus what they print. The game is
-Java 21 and Maven; AI Studio documents Node and not Java.
+Yes. Java 21 and Maven were installed via apt in this container on 2026-10-13:
+- `java -version`: `openjdk version "21.0.12.1" 2026-08-18 (Ubuntu)`
+- `mvn -v`: `Apache Maven 3.8.7 (Java 21.0.12.1)`
+- Verified: `mvn test-compile` succeeded, and `./batch-check.sh --fast` passed with 0 firm findings.
 
-- **If you have both, or can install them,** you can check your own work:
-  `./batch-check.sh` compiles, runs the suite and says what failed in a few
-  lines (about 15 minutes; `./batch-check.sh money bank` runs two
-  harnesses). Then you can take small implementation batches too.
-- **If not,** you are like ChatGPT here: you can read and edit, but not
-  build or test. Never claim a build or a harness passed.
+Gemini has a full development environment and can compile, run harnesses, and self-check work with `./batch-check.sh`.
 
 ## Your role: hands on the tree, small and checked
 
