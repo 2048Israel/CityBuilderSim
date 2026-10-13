@@ -93,7 +93,13 @@ public class AllChecks {
                 continue;
             }
             long t = System.currentTimeMillis();
-            ProcessBuilder pb = new ProcessBuilder(java, "-cp", classpath, "ham.citybuildersim." + name);
+            // -f reads the log back, so the harness writes it in UTF-8 whatever the machine's
+            // own charset is: on Windows a redirected System.out is Cp1252, and the first
+            // non-ASCII label stopped the run (2026-10-13, MapCheck on the PC)
+            ProcessBuilder pb = failuresOnly
+                    ? new ProcessBuilder(java, "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8",
+                            "-cp", classpath, "ham.citybuildersim." + name)
+                    : new ProcessBuilder(java, "-cp", classpath, "ham.citybuildersim." + name);
             pb.redirectErrorStream(true);
             Path log = LOGS.resolve(name + ".log");
             if (failuresOnly) {
@@ -109,7 +115,13 @@ public class AllChecks {
             if (failuresOnly && code == 0) continue;
             System.out.printf("%-24s %s  (%.1fs)%n", name, code == 0 ? "OK" : "FAILED - exit " + code,
                     (System.currentTimeMillis() - t) / 1000.0);
-            if (failuresOnly) for (String line : failingLines(log)) System.out.println("    " + line);
+            if (failuresOnly) {
+                try {
+                    for (String line : failingLines(log)) System.out.println("    " + line);
+                } catch (IOException e) {
+                    System.out.println("    (its log could not be read: " + e + "; it is " + log + ")");
+                }
+            }
         }
         System.out.printf("%n%d harness%s run in %.0fs: %d passed, %d failed%n",
                 ran, ran == 1 ? "" : "es", (System.currentTimeMillis() - started) / 1000.0,
@@ -122,10 +134,11 @@ public class AllChecks {
      * What -f prints of a failed harness's log: each failing line, after the
      * title of the section it is in (once per section), at most FAIL_LINES in
      * all; a log with no failing line in it - a harness that died some other
-     * way - gives its last ten lines instead.
+     * way - gives its last ten lines instead. A byte that is not UTF-8 is read
+     * as a replacement character, never thrown.
      */
     static List<String> failingLines(Path log) throws IOException {
-        List<String> lines = Files.readAllLines(log, StandardCharsets.UTF_8);
+        List<String> lines = List.of(new String(Files.readAllBytes(log), StandardCharsets.UTF_8).split("\\R"));
         List<String> out = new ArrayList<>();
         String section = null, printed = null;
         int matched = 0;
