@@ -22,7 +22,9 @@
 #       QUEUE.md's on main unless -m gives one;
 #    6. tagged with GameVersion.VERSION unless that tag exists already (a batch
 #       that did not bump the version is not tagged);
-#    7. main and the tag pushed, a failed push tried four more times.
+#    7. main and the tag pushed, a failed push tried four more times; when
+#       main moved on origin meanwhile, the merge (and tag) taken back here,
+#       to be run again on the new main.
 #  A failure before 5 leaves main where it was. It prints a line a step.
 #
 #  WHY (2026-10-13): the gate was a conversation - a dozen calls, each
@@ -142,6 +144,15 @@ else
 fi
 
 # 7. push
-retry git push origin main || die "the push of main failed five times; it is committed here, push it by hand"
+if ! retry git push origin main; then
+    # the usual cause: somebody shipped while the checks ran, and the push is not a fast-forward
+    git fetch -q origin main
+    if ! git merge-base --is-ancestor origin/main HEAD; then
+        git reset -q --keep origin/main
+        [ -z "$TAG" ] || git tag -d "$TAG" >/dev/null
+        die "main moved on origin while the checks ran ($(git log -1 --format='%h %s' origin/main)); this merge is taken back and main is origin's: run ship.sh again"
+    fi
+    die "the push of main failed five times; it is committed here, push it by hand"
+fi
 [ -z "$TAG" ] || retry git push origin "$TAG" || die "main is pushed, the tag $TAG is not: push it by hand"
 say "pushed main${TAG:+ and $TAG}"
