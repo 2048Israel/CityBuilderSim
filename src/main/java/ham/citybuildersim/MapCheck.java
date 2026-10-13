@@ -1981,12 +1981,20 @@ public class MapCheck {
      * The design's bound is on the month's own work, which is the thread's
      * CPU; its value stays 5 ms, and the wall clock is printed beside it.
      * Where the JVM cannot measure a thread's CPU the month is timed on the
-     * wall clock, and the output and the label say so.
+     * wall clock, and the output and the label say so. So too where its clock
+     * steps coarser than CPU_STEP_MS (2026-10-13): Windows counts a thread's
+     * CPU only at its 15.6 ms clock tick, so on Jerus's PC every month and
+     * every stamp read 0.00 - the month's bound passed without measuring
+     * anything and MapCheck 12's stamp, 0.4 to 2.7 ms on the wall clock,
+     * failed its "more than nothing". A28 holds wherever the CPU can be read.
      */
     /** The JVM's threads, read for the main thread's CPU time. */
     static final java.lang.management.ThreadMXBean THREADS = java.lang.management.ManagementFactory.getThreadMXBean();
 
-    /** Whether a month is timed on the main thread's CPU: this JVM measures it and it is on (turned on here if it is off). */
+    /** The coarsest step of the thread's CPU clock a bound is read on, in ms: 0.1, a twentieth of the quickest stamp timed; coarser (Windows: 15.6) and the bounds are read on the wall clock. */
+    static final double CPU_STEP_MS = 0.1;
+
+    /** Whether a month is timed on the main thread's CPU: this JVM measures it, it is on (turned on here if it is off), and its clock steps no coarser than CPU_STEP_MS. */
     static final boolean CPU_TIMED = cpuTimed();
 
     static boolean cpuTimed() {
@@ -1996,7 +2004,19 @@ public class MapCheck {
         } catch (UnsupportedOperationException | SecurityException e) {
             return false;
         }
-        return THREADS.isThreadCpuTimeEnabled();
+        return THREADS.isThreadCpuTimeEnabled() && cpuStepMs() <= CPU_STEP_MS;
+    }
+
+    /** The least step the main thread's CPU clock takes, in ms: five times, spinning until it moves (200 ms of the wall clock at most each); infinite if it never does. */
+    static double cpuStepMs() {
+        double least = Double.POSITIVE_INFINITY;
+        for (int i = 0; i < 5; i++) {
+            long w0 = System.nanoTime(), c0 = THREADS.getCurrentThreadCpuTime(), c1 = c0;
+            while (c1 == c0 && System.nanoTime() - w0 < 200_000_000L) c1 = THREADS.getCurrentThreadCpuTime();
+            if (c1 == c0) return Double.POSITIVE_INFINITY;
+            least = Math.min(least, (c1 - c0) / 1e6);
+        }
+        return least;
     }
 
     /** The clock a month's bound reads, in ns: the main thread's CPU, or the wall clock where CPU_TIMED is false. */
@@ -2101,7 +2121,7 @@ public class MapCheck {
             if (downMs > worst) { worst = downMs; worstsWall = downWall; }
             worstWall = Math.max(worstWall, downWall);
             String size = TIMES[i] < 10_000 ? "5" : "10";
-            String clock = CPU_TIMED ? "the main thread's CPU" : "the wall clock (this JVM measures no thread's CPU)";
+            String clock = CPU_TIMED ? "the main thread's CPU" : "the wall clock (this JVM cannot read a thread's CPU finely enough)";
             out.printf("      x %,.0f, in ms of %s / on the wall clock: +0.05%% in %.2f/%.2f, then a year of +0.01%%:%s,"
                     + " then -0.05%% in %.2f/%.2f; the bounded months' worst %.2f (its wall clock %.2f), the wall clock's worst %.2f%n",
                     TIMES[i], clock, firstMs, firstWall, months, downMs, downWall, worst, worstsWall, worstWall);
@@ -4321,7 +4341,7 @@ public class MapCheck {
             worstPreview = Math.max(worstPreview, bestNode);
             costs.append(String.format(" %s %.2f (%.2f wall), its preview's slowest node %.2f;", fx[0], best, bestWall, bestNode));
         }
-        out.printf("      the stamp, ms of the thread's %s:%s the worst %s%n", CPU_TIMED ? "CPU" : "wall clock (no thread CPU here)", costs, worstAt);
+        out.printf("      the stamp, ms of the thread's %s:%s the worst %s%n", CPU_TIMED ? "CPU" : "wall clock (no fine thread CPU here)", costs, worstAt);
         check("fixture: the Earth's fixture is beside the classes, and x 1 stands on it", earth != null);
         check("the stamp - its frame and its node - drawn in no more than MiniMapFrame.STAMP_MS (" + (int) MiniMapFrame.STAMP_MS + " ms) of the "
                 + (CPU_TIMED ? "thread's CPU" : "wall clock"), worst > 0 && worst <= MiniMapFrame.STAMP_MS);

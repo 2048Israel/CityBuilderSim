@@ -4,7 +4,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 346 files, 352,099 lines, 14,879 methods, 3,294 constants. `GameVersion.VERSION` is "0.8.0", `SAVE_FORMAT` 39.
+**The tree:** 346 files, 352,122 lines, 14,880 methods, 3,296 constants. `GameVersion.VERSION` is "0.8.0", `SAVE_FORMAT` 39.
 
 ## model (167 files)
 
@@ -251,7 +251,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | file | lines | methods | what it is | used by |
 |---|---:|---:|---|---:|
 | [AgricultureCheck.java](AgricultureCheck.md) | 414 | 7 | The ground under the loaf. | 0 |
-| [AllChecks.java](AllChecks.md) | 161 | 2 | Runs every harness, one JVM each, and says which failed. | 0 |
+| [AllChecks.java](AllChecks.md) | 164 | 2 | Runs every harness, one JVM each, and says which failed. | 0 |
 | [AutoBuildCheck.java](AutoBuildCheck.md) | 1,469 | 32 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 0 |
 | [BankCheck.java](BankCheck.md) | 4,303 | 22 | The commercial bank, and the families it discharges. | 1 |
 | [BondCheck.java](BondCheck.md) | 1,566 | 37 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
@@ -314,7 +314,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandCheck.java](LandCheck.md) | 2,812 | 36 | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. | 4 |
 | [LongPlaytest.java](LongPlaytest.md) | 6,632 | 111 | A city played for four thousand months, the way a person plays. | 35 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 610 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
-| [MapCheck.java](MapCheck.md) | 5,516 | 119 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 3 |
+| [MapCheck.java](MapCheck.md) | 5,536 | 120 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 3 |
 | [MaterialsCheck.java](MaterialsCheck.md) | 1,516 | 31 | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), a... | 10 |
 | [MiningCheck.java](MiningCheck.md) | 600 | 10 | Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore. | 9 |
 | [MonetaryCheck.java](MonetaryCheck.md) | 899 | 10 | Money: what a basket costs, what the world charges, and what the rate does. | 2 |

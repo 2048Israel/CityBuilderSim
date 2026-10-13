@@ -771,7 +771,7 @@ public class EarthTerrainCheck {
         c0 = passClock();
         e.cellsPass();
         double warm = (passClock() - c0) / 1e6, warmWall = (System.nanoTime() - w0) / 1e6;
-        String clock = MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock (this JVM measures no thread's CPU)";
+        String clock = MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock (this JVM cannot read a thread's CPU finely enough)";
         report("the cells pass in no more than CELLS_PASS_MS of " + (MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock")
                         + ", its tiles read from the file the first time", cold <= CELLS_PASS_MS,
                 String.format("%.0f ms of %s the first time (%.0f on the wall clock), %.0f again (%.0f on the wall clock); the study 370-450 on the wall clock",
