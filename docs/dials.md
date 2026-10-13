@@ -2,7 +2,7 @@
 
 Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**3,243 constants in 346 files.**
+**3,247 constants in 346 files.**
 
 ## model (1645 constants)
 
@@ -3510,7 +3510,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 724 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 980 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (604 constants)
+## harnesses (608 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -3524,7 +3524,11 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 27 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "NewGameCheck", "WorldCheck", "GridCheck", "ConversionCheck", "C...` | In the order they are cheapest to fail. |
+| 43 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "NewGameCheck", "WorldCheck", "GridCheck", "ConversionCheck", "C...` | In the order they are cheapest to fail. |
+| 58 | `AllChecks.FAIL_LINES` | `40` | The most lines -f prints for one failed harness; the rest stays in its log. |
+| 61 | `AllChecks.LOGS` | `Paths.get("target", "checks")` | Where -f keeps each harness's whole output. |
+| 64 | `AllChecks.SECTION` | `Pattern.compile("^\\s*---\\s.*\\s---\\s*$")` | A harness's section title, "--- what it proves ---". |
+| 67 | `AllChecks.FAILING` | `Pattern.compile("\\bFAIL(ED)?\\b\|Exception\|^\\S*Error\\b\|^Caused by")` | A line that says something failed: an assertion's FAIL, the "N FAILED" summary, an exception. |
 
 ### AutoBuildCheck.java ([map](map/AutoBuildCheck.md))
 

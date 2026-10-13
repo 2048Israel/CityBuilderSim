@@ -84,7 +84,10 @@ from the code.
 5. **The two front doors.** `README.md` and `CLAUDE.md` state counts and
    shapes — files, harnesses, sectors, the tree — and each batch that changes
    one leaves the other wrong. `grep -c` the real number; fix the sentence.
-   `AGENTS.md` only points at `CLAUDE.md` and should stay that way.
+   `AGENTS.md` only points at `CLAUDE.md` and should stay that way. Each
+   file's entry and history is `docs/tree.md`'s since 2026-10-13, not
+   `CLAUDE.md`'s: a new or reshaped file gets its line there, and `CLAUDE.md`
+   stays short, because every session pays for it on every turn.
 
 6. **The manual.** If the batch changed a headline number the manual carries
    (build, save format, building count, harness count, sector count) or
