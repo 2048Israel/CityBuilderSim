@@ -7,6 +7,7 @@ package ham.citybuildersim;
  * every month. Ages are inclusive of the first year and exclusive of the next
  * band's, so a resident is a BABY from 0 up to their sixth birthday.
  */
+// Attribution test: age-band definitions are shared across the resident model.
 public enum AgeBand {
 
     BABY   ("Babies",   0,   6, .0010),
