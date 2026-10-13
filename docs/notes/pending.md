@@ -29,6 +29,13 @@ on main on the same machine. See docs/queue/I14-notes/fixI14-notes.md.
 - CONFIRM: a plantation drawn on a cell's 31 x 31 plots of its 105 x 105 (I14 ★3); the arc furnaces and mini-mills
   not gathered into steel's campus (★4); sited works grey in the far views (★6); no toggle for the zones' tint (★7).
 - W1's walled street piece over a dense iron cluster stays open (QUEUE.md Pending, W1-P).
+- CONFIRM: the map's zone tint is LandMap.ZONE_COLOURS, a palette apart from ZoningScreen.ZONE_COLOURS, so a zone's
+  colour on the map is not its colour on Policy > Zoning (the I14 docs pass) - one palette, or two on purpose?
+- FOUND (the cloud orchestrator, 2026-10-13): EarthTerrainCheck 8's Earth screen bound (MapCheck.SCREEN_MS, 80 ms)
+  went red on the cloud machine mid-session, on main without I12 too (81 ms at d4e12dc; 105-109 ms on the batches'
+  trees), having passed in the session's first two full runs: a timing on a shared VM, not a batch's. On the PC it
+  should pass; if it does not, the bound or the Earth screen's raster wants a look. MapCheck 14's title is two joined
+  strings, so docs/harnesses.md shows no heading for it (the docs pass, left: outside I14's change).
 - Section 0, under the manual's entry: the build is 0.8.0, the release that finishes industry (save format still 39,
   harnesses still 108) - for the manual's next edition (a milestone).
 

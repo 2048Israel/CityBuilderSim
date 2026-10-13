@@ -1,4 +1,4 @@
-# AllChecks.java - 148 lines · 2 methods · 5 constants · harnesses
+# AllChecks.java - 161 lines · 2 methods · 5 constants · harnesses
 
 `ham/citybuildersim/AllChecks.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
 
@@ -42,7 +42,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 109 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
-| 69 | 51 | `public static void main(String[] args) throws Exception` |  |
-| 127 | 21 | `static List<String> failingLines(Path log) throws IOException` | What -f prints of a failed harness's log: each failing line, after the title of the section it is in (once per section), at most FAIL_LINES in all; a log with no failing line in it - a harness that died some other way... |
+| 40 | 122 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
+| 69 | 63 | `public static void main(String[] args) throws Exception` |  |
+| 140 | 21 | `static List<String> failingLines(Path log) throws IOException` | What -f prints of a failed harness's log: each failing line, after the title of the section it is in (once per section), at most FAIL_LINES in all; a log with no failing line in it - a harness that died some other way... |
 
