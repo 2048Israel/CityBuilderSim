@@ -882,7 +882,7 @@ public class PlanCheck {
        5. MAPCHECK'S FIXTURE OF JERUS'S CITY, AND THE DENSE SCREEN
        ===================================================================== */
 
-    /** Jerus's city x k on the design's square city at the dry place, as MapCheck's copies (MapCheck.Squares): his mines no more than its iron sites. */
+    /** Jerus's city x k on the design's square city at the dry place, as MapCheck's copies (MapCheck.Squares): his mines no more than its iron sites of their type (since 0.8.0, an Iron Mine's hematite). */
     static CityMap squareCity(BuildingVisual.Type[] types, long seed, long[] place, double k) {
         long[] c = new long[types.length];
         for (int t = 0; t < MapCheck.JERUS_COUNTS.length && t < c.length; t++) c[t] = Math.round(MapCheck.JERUS_COUNTS[t] * k);
@@ -894,7 +894,7 @@ public class PlanCheck {
         int capacity = (int) Math.round(MapCheck.JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
         CityMap m = CityMap.square(seed, place[0], place[1], types, side, capacity, c);
         if (mine >= 0) {
-            c[mine] = Math.min(wantMines, m.ownedSites(Resource.IRON));
+            c[mine] = Math.min(wantMines, m.ownedSites(Resource.IRON, m.types()[mine].field()));
             m.reconcile(c);
         }
         return m;

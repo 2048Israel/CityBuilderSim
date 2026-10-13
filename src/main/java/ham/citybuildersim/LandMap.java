@@ -587,7 +587,7 @@ public final class LandMap {
         return out;
     }
 
-    /** The plane's legend (the expanded map's since 0.7.61; ui/MapView's until 0.7.135): the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, (0.7.97) the nine of the shore and the sea, (0.7.127) ice and the desert, the land, the six resources in fields. */
+    /** The plane's legend (the expanded map's since 0.7.61; ui/MapView's until 0.7.135): the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, (0.7.97) the nine of the shore and the sea, (0.8.0) the four industries' works and the seven looks of the materials, (0.7.127) ice and the desert, the land, the six resources in fields. */
     public static List<Entry> planeLegend() {
         List<Entry> out = new ArrayList<>();
         for (int c = 0; c < BuildingVisual.CLASSES; c++) {
@@ -601,6 +601,10 @@ public final class LandMap {
         out.add(new Entry(TileRaster.RAIL_LINE, "Railway"));
         // At sea and on the shore (0.7.97).
         out.add(new Entry(BuildingVisual.CAMPUS_FILL, "Refinery"));
+        // The materials as themselves (0.8.0, batch I14): each processing industry's works, then each look of the mines, quarries and forest.
+        for (int g = BuildingVisual.STEEL; g < BuildingVisual.GROUPS; g++) out.add(new Entry(BuildingVisual.GROUP_FILL[g], BuildingVisual.GROUP_NAMES[g]));
+        out.add(new Entry(BuildingVisual.pitColours(Resource.IRON)[1], BuildingVisual.LOOK_NAMES[BuildingVisual.PIT]));
+        for (int k = BuildingVisual.SHAFT; k <= BuildingVisual.STAND; k++) out.add(new Entry(BuildingVisual.LOOK_FILL[k], BuildingVisual.LOOK_NAMES[k]));
         out.add(new Entry(BuildingVisual.TERMINAL_FILL, "Sea terminal"));
         out.add(new Entry(TileRaster.QUAY_DECK, "Quay"));
         out.add(new Entry(BuildingVisual.TANKS_FILL, "Tank farm"));
@@ -615,6 +619,42 @@ public final class LandMap {
         out.add(new Entry(0xffffffff, EDGE_WORDS));
         out.add(new Entry(OFFER_EDGE, OFFER_WORDS));
         for (Resource r : Resource.values()) if (r.inFields()) out.add(new Entry(0xff000000 | r.colour(), r.label()));
+        return out;
+    }
+
+    /* ----------------------------- the zones by district (0.8.0, batch I14) ----------------------------- */
+
+    /** A zone's districts are tinted in its sector's colour this much over the map: 22%, a low alpha (spec-zoning 4: "the map tints a zone's districts"). */
+    public static final double ZONE_ALPHA = 0.22;
+
+    /** Each sector's zone colour, in Sectors.KEYS' order: bright, so a low alpha shows over the ground - its industry's own where the map has one (Forestry's green, Quarrying's stone, Copper's teal). */
+    static final int[] ZONE_COLOURS = { 0xfff2c94c, 0xffeaa572, 0xffb39ddb, 0xffffb74d, 0xffe57373, 0xffd4825a, 0xffbdbdbd,
+            0xff64b5f6, 0xff9575cd, 0xffdce775, 0xffffd54f, 0xffb0bec5, 0xff4fc3f7, 0xfff48fb1, 0xffff8a65, 0xffc9b68f, 0xffa48fd0,
+            0xff90a4ae, 0xffe0d8c0, 0xffcfd8dc, 0xff4db6ac, 0xffd08a5a, 0xff81c784, 0xffbcaaa4 };
+
+    /** A sector's zone colour (ZONE_COLOURS), white for one past them. */
+    public static int zoneColour(String sector) {
+        for (int i = 0; i < Sectors.KEYS.length; i++) if (Sectors.KEYS[i].equals(sector)) return i < ZONE_COLOURS.length ? ZONE_COLOURS[i] : 0xffffffff;
+        return 0xffffffff;
+    }
+
+    /** The city's zones as the map tints them (CityMap's ZONES BY DISTRICT), in Zoning's order: each its sector's and the ground it covers - what it holds free and what its sector has built in it; none with no zone set. */
+    public static List<CityMap.ZoneArea> zoneAreas(LandManager lm) {
+        List<CityMap.ZoneArea> out = new ArrayList<>();
+        for (Zoning.Zone z : lm.getZoning().zones()) out.add(new CityMap.ZoneArea(z.sector(), lm.heldBy(z.sector()) + lm.usedBy(z.sector())));
+        return out;
+    }
+
+    /** A zone's legend words: "Zoned for Forestry". */
+    public static String zoneWords(String label) { return "Zoned for " + label; }
+
+    /** The zones' legend entries (0.8.0): each zone's colour and its words, its sector by the label given; none with no zone. */
+    public static List<Entry> zoneLegend(List<CityMap.ZoneArea> zones, java.util.function.Function<String, String> labelOf) {
+        List<Entry> out = new ArrayList<>();
+        for (CityMap.ZoneArea z : zones) {
+            String label = labelOf == null ? null : labelOf.apply(z.sector());
+            out.add(new Entry(zoneColour(z.sector()), zoneWords(label != null ? label : z.sector())));
+        }
         return out;
     }
 

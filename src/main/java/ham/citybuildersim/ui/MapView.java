@@ -1031,6 +1031,7 @@ final class MapView {
         CityLand land = g.getCityLand();
         LandMarket market = g.getLandManager().getMarket();
         shapes(land, market);
+        zoneTints(gc, f, g);
         blockLines(gc, f, market.getLevel());
         List<LandParcel> listing = market.getListing();
         double ax = Math.floorMod((long) Math.floor(f.screenX(0)), 8), ay = Math.floorMod((long) Math.floor(f.screenY(0)), 8);
@@ -1112,6 +1113,45 @@ final class MapView {
     private final Map<Integer, double[]> labelAt = new HashMap<>();
     private long labelsFor = Long.MIN_VALUE;
     private double labelsAtScale = Double.NaN;
+
+    /* ----- the zones by district (0.8.0, batch I14; spec-zoning 4: "the map tints a zone's districts") ----- */
+
+    /** The zones' districts as last worked out (CityMap.zoneTint()), and what from: the map, its changes and the zones. */
+    private List<CityMap.Tinted> tints = List.of();
+    private CityMap tintsMap;
+    private long tintsAt = -1;
+    private String tintsKey = "";
+
+    /** The city's zones over the ground, under the offers and the city's edge: each zone's districts in its sector's colour at LandMap.ZONE_ALPHA, the districts the map picks for it (CityMap's ZONES BY DISTRICT); nothing with no zone set. */
+    private void zoneTints(GraphicsContext gc, MapFrame f, Game g) {
+        List<CityMap.ZoneArea> zones = LandMap.zoneAreas(g.getLandManager());
+        if (shownMap == null || zones.isEmpty()) return;
+        String key = zones.toString();
+        if (tintsMap != shownMap || tintsAt != shownMap.changes() || !key.equals(tintsKey)) {
+            tints = shownMap.zoneTint(zones);
+            tintsMap = shownMap;
+            tintsAt = shownMap.changes();
+            tintsKey = key;
+        }
+        for (CityMap.Tinted t : tints) {
+            double[] box = f.onScreen(t.x0(), t.y0(), t.x0() + World.DISTRICT, t.y0() + World.DISTRICT);
+            if (box == null || t.zone() >= zones.size()) continue;
+            gc.setFill(colour(LandMap.zoneColour(zones.get(t.zone()).sector()), LandMap.ZONE_ALPHA));
+            gc.fillRect(box[0], box[1], box[2] - box[0], box[3] - box[1]);
+        }
+    }
+
+    /** The zones' legend entries on the plane (0.8.0): each zone set, by its sector's label. */
+    private List<String[]> zoneEntries() {
+        Game g = ui.game;
+        List<String[]> out = new ArrayList<>();
+        if (g == null) return out;
+        for (LandMap.Entry e : LandMap.zoneLegend(LandMap.zoneAreas(g.getLandManager()), k -> {
+            Sector sec = g.getSectors().byKey(k);
+            return sec == null ? k : sec.label();
+        })) out.add(new String[] { css(e.colour()), e.words() });
+        return out;
+    }
 
     private void shapes(CityLand land, LandMarket market) {
         long key = land.stamp() * 31L + land.purchases().size() * 1_000_003L + market.getNextOfferId();
@@ -2571,8 +2611,8 @@ final class MapView {
     /** ...the plane's, at every scale on a generated world. */
     static List<String[]> legendEntries() { return legendEntries(GlobeFrame.PLANE); }
 
-    /** Rows a column of the legend holds: 12, its 35 entries in three columns (since 0.7.127 ice and the desert, 33 before; since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
-    static final int LEGEND_ROWS = 12;
+    /** Rows a column of the legend holds: 16, its 46 entries in three columns and the zones set after them (since 0.8.0 the four industries' works and the seven looks of the materials, 35 in three columns of 12 before; since 0.7.127 ice and the desert, 33 before; since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
+    static final int LEGEND_ROWS = 16;
 
     /** The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). */
     static final String SHIP_SIZE_WORDS = "Ships are drawn 1.6\u00d7 their size until 6 px a plot";
@@ -2599,6 +2639,8 @@ final class MapView {
     static final double LEGEND_NOTE_WIDTH = 300;
 
     private final Label legendNote = new Label();
+    /** The zones the legend was laid out with (0.8.0): their words, joined. */
+    private String legendZones = "";
     private final GridPane legendGrid = new GridPane();
     private final Label shipsLine = new Label(SHIP_SIZE_WORDS);
 
@@ -2621,10 +2663,15 @@ final class MapView {
 
     /** The legend laid out for a tier (0.7.135, spec-globe 3.7): its entries (legendEntries()), and the ships' line on the plane alone. */
     private void legendFor(int tier) {
-        if (tier == legendTier) return;
+        // ...and (0.8.0) on the plane the zones set, drawn again when they move.
+        List<String[]> zones = tier == GlobeFrame.PLANE ? zoneEntries() : List.of();
+        String zoneKey = String.join("|", zones.stream().map(z -> z[1]).toList());
+        if (tier == legendTier && zoneKey.equals(legendZones)) return;
         legendTier = tier;
+        legendZones = zoneKey;
         legendGrid.getChildren().clear();
-        List<String[]> entries = legendEntries(tier);
+        List<String[]> entries = new ArrayList<>(legendEntries(tier));
+        entries.addAll(zones);
         for (int i = 0; i < entries.size(); i++) {
             legendGrid.add(keySwatch(entries.get(i)[0], entries.get(i)[1]), i / LEGEND_ROWS, i % LEGEND_ROWS);
         }

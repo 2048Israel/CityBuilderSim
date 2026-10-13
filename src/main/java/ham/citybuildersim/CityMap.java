@@ -35,7 +35,8 @@ import java.util.zip.InflaterInputStream;
  * samples before), recounted in every district a purchase touches; the
  * ground its buildings use (a type's land / 9,687.5 sq ft a plot) and the
  * whole plots they are drawn on (BuildingVisual.cells(), roads by their own
- * plots); its owned iron and oil sites; and its count of every type.
+ * plots); its owned sites of each SITED resource's types of field (iron's
+ * and oil's until 0.8.0: SLOTS); and its count of every type.
  *
  * EACH MONTH, ONCE CONSTRUCTION COMPLETES (reconcile(), star 12): each type's
  * change is placed - new buildings into the first district with room for
@@ -47,7 +48,9 @@ import java.util.zip.InflaterInputStream;
  * month at 10B in the design. Mines and wells are the exception the design
  * names: they stand on their resource's sites, the first in acquisition order
  * (the centre, then each purchase) not worked out, so they go to the
- * districts holding those sites.
+ * districts holding those sites - since 0.8.0 every works on a SITED
+ * resource, by the type of its field and on as many sites as it takes
+ * (THE WORKS ON THEIR SITES BY TYPE).
  *
  * CANONICALLY (canonical()), for a save with no sidecar, a lost one or one
  * that does not match: each type in proportion in every district, inner
@@ -103,7 +106,8 @@ import java.util.zip.InflaterInputStream;
  * highway and railway runs after the districts - 0.7.88 wrote none, and a
  * sidecar with none has them laid from its counts as it is read - an older
  * one still read; FORMAT 6 since 0.7.97, its works on the shore after the
- * runs, laid from its counts when a FORMAT 5 sidecar is read).
+ * runs, laid from its counts when a FORMAT 5 sidecar is read; FORMAT 7
+ * since 0.8.0, a district's sites by slot).
  *
  * AT SEA AND ON THE SHORE (0.7.97, batch O13; docs/studies/spec-oil.md 2.12,
  * spec-roads-and-ports.md 2.8 and 4): THE CAMPUS deals the refinery's units
@@ -111,6 +115,13 @@ import java.util.zip.InflaterInputStream;
  * terminals and tank farms at the water city-wide (CityShore), THE OIL AT
  * SEA draws the platforms and pipes the game hands it, and THE SEA ROUTES
  * finds each terminal's way out to the world (SeaRoutes) for the boats.
+ *
+ * THE MATERIALS (0.8.0, batch I14; spec-materials 5's I14 row): THE WORKS
+ * ON THEIR SITES BY TYPE stands every mine, quarry and leach plant on its
+ * resource's sites of its type, a works on as many as it takes; EVERY
+ * INDUSTRY'S CAMPUS gathers each processing industry's works as THE CAMPUS
+ * does the refinery's; and ZONES BY DISTRICT picks the districts a zone's
+ * tint covers.
  */
 public final class CityMap {
 
@@ -133,8 +144,29 @@ public final class CityMap {
     /** A district with less room than this many whole plots is passed by the cursors: one, the least a building is drawn on (0.7.64; half a plot of ground before). */
     static final int MIN_ROOM = 1;
 
-    /** The resources a district counts its owned sites of, and mines and wells stand on: iron and oil (spec-land 2.5). */
-    static final Resource[] SITED = { Resource.IRON, Resource.OIL };
+    /** The resources a district counts its owned sites of, and mines and wells stand on: iron and oil (spec-land 2.5); since 0.8.0 (batch I14) coal, stone and copper after them, every resource a works on dry ground stands on. */
+    static final Resource[] SITED = { Resource.IRON, Resource.OIL, Resource.COAL, Resource.STONE, Resource.COPPER };
+
+    /** The site slots (0.8.0, batch I14): each SITED resource's types of field in Resource.typesOf()'s order - iron's hematite and magnetite, oil's one, coal's thermal and coking, stone's limestone and hard rock, copper's sulphide and oxide - what a district counts its sites by, and a works of a type stands on. */
+    static final int SLOTS;
+
+    /** ...each slot's resource... */
+    static final Resource[] SLOT_RESOURCE;
+
+    /** ...and its type of field. */
+    static final Deposit.FieldType[] SLOT_TYPE;
+
+    static {
+        List<Resource> rs = new ArrayList<>();
+        List<Deposit.FieldType> ts = new ArrayList<>();
+        for (Resource r : SITED) for (Deposit.FieldType f : r.typesOf()) { rs.add(r); ts.add(f); }
+        SLOTS = rs.size();
+        SLOT_RESOURCE = rs.toArray(new Resource[0]);
+        SLOT_TYPE = ts.toArray(new Deposit.FieldType[0]);
+    }
+
+    /** The sites a district the sidecar wrote before FORMAT 7: iron's and oil's, SITED's until 0.8.0. */
+    static final int OLD_SITED = 2;
 
     /** How many districts' lists of sites are kept: 64. */
     static final int SITE_LISTS_KEPT = 64;
@@ -148,8 +180,8 @@ public final class CityMap {
     /** The sidecar's magic: "CMAP". */
     static final int MAGIC = 0x434D4150;
 
-    /** The sidecar's format: 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
-    static final int FORMAT = 6;
+    /** The sidecar's format: 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
+    static final int FORMAT = 7;
 
     /** The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. */
     static final int OLDEST_READ = 4;
@@ -178,8 +210,8 @@ public final class CityMap {
         long usedRoad;
         /** Its count of every type, by id. */
         final int[] counts;
-        /** Its owned sites of each SITED resource. */
-        final int[] sites = new int[SITED.length];
+        /** Its owned sites of each slot (SLOTS; of each SITED resource until 0.8.0). */
+        final int[] sites = new int[SLOTS];
         /** Each tile's free plots, row by row: owned and dry; null until measured or asked for. */
         short[] tileFree;
         /** ...and those inside its edge ring, where alone the painter laid a road until 0.7.87 (the counts' room for roads still measures it). */
@@ -187,10 +219,10 @@ public final class CityMap {
         /** Each tile's sites, by key (TilePainter.Input.siteKey), and their free plots on it, all and inside the edge ring: what a mine standing on one takes of the tile. */
         long[][] tileSiteKey;
         short[][] tileSiteFree, tileSiteInner;
-        /** How many of each site-bound type stand on its sites (the rest of its count has none); null when none. */
+        /** How many of each site-bound type stand on sites, each counted in the district of its first site (the rest of its count has none); null when none. */
         int[] sited;
-        /** For painting: per SITED resource, pairs of {holding, mines} - how many of each holding's sites here carry one. */
-        int[][] holdingMines = new int[SITED.length][];
+        /** For painting (0.8.0, batch I14; pairs of {holding, mines} by resource before): per slot, the works on its sites here in the walk's order, triples of {holding, type, sites} - which type each holding's sites here carry, a works of twenty sites twenty of them. */
+        int[][] siteRuns = new int[SLOTS][];
         /** Bumped whenever its counts change: what its sites' list is kept against (its deal's until 0.7.87). */
         long version;
         /** Its place in the map's order, nearest first. */
@@ -212,8 +244,9 @@ public final class CityMap {
         public long usedCells()  { return usedCells; }
         public int count(int t)  { return t < counts.length ? counts[t] : 0; }
         public int sites(Resource r) {
-            for (int k = 0; k < SITED.length; k++) if (SITED[k] == r) return sites[k];
-            return 0;
+            int n = 0;
+            for (int k = 0; k < SLOTS; k++) if (SLOT_RESOURCE[k] == r) n += sites[k];
+            return n;
         }
         /** Its room in whole plots, never below nothing (0.7.64; in ground, half square feet, before). */
         long freeCells()         { return Math.max(0, owned - usedCells); }
@@ -683,7 +716,7 @@ public final class CityMap {
         for (int roads = 0; roads < 2; roads++) {
             for (int t = 0; t < types.length; t++) {
                 // ...not the buildings at sea (0.7.91): on none of the city's dry ground, so in no district (BuildingVisual.of()'s sea flag).
-                if (types[t] == null || types[t].sea() || types[t].site() != null || (types[t].road() != BuildingVisual.NOT_A_ROAD) != (roads == 1)) continue;
+                if (types[t] == null || types[t].sea() || onSites(t) || (types[t].road() != BuildingVisual.NOT_A_ROAD) != (roads == 1)) continue;
                 long want = t < model.length ? model[t] : 0;
                 long delta = want - have[t];
                 if (delta > 0) touched += roads == 1 ? placeRoad(t, delta) : place(t, delta);
@@ -887,9 +920,10 @@ public final class CityMap {
         boolean out = types[t].outer(), road = types[t].road() != BuildingVisual.NOT_A_ROAD;
         long each = BuildingVisual.cells(types[t]);
         int touched = 0;
-        // THE CAMPUS (0.7.97): a refinery unit first into the district holding the most of the refinery's ground, while it has room.
-        if (types[t].campus()) {
-            District c = campusDistrict();
+        // THE CAMPUS (0.7.97): a refinery unit first into the district holding the most of the refinery's ground, while it has
+        // room - and since 0.8.0 each processing industry's works into its own campus (BuildingVisual.Type.campusGroup()).
+        if (types[t].campusGroup() > BuildingVisual.NO_GROUP) {
+            District c = campusDistrict(types[t].campusGroup());
             long k = c == null ? 0 : Math.min(n, buildingRoom(c, each));
             if (k > 0) {
                 add(c, c.index, t, k);
@@ -985,40 +1019,81 @@ public final class CityMap {
      * as FORMAT 4's did.
      */
 
-    /** The refinery's unit types, by id: worked out once a table. */
-    private int[] campusTypes;
+    /*
+     * EVERY INDUSTRY'S CAMPUS (0.8.0, batch I14; spec-materials 5's I14 row:
+     * "the works as O13's campus"). The refinery's rule, for each group of
+     * BuildingVisual's - the refinery's units, then Iron & Steel's,
+     * Cement & Concrete's, Copper Refining's and Wood Products' works: a
+     * works first into the district holding the most of its group's ground
+     * while it has room, the plan packing its group in touching cells; drawn
+     * canonically, a group whole into the first district with room for all
+     * of it - the refinery's into the roomiest when none has, as before, and
+     * a works group shared as any industry, so a city of ten billion is not
+     * poured into one district. Iron & Steel's arc furnaces and mini-mills,
+     * on every map before, are drawn in its colours but not gathered
+     * (BuildingVisual.NOT_GATHERED), and only the refinery is gathered from
+     * an older sidecar (gatherCampus()): nothing else placed moves.
+     */
 
-    private int[] campusTypes() {
+    /** The most districts a works group's units may stand across, in the map's order, and still have a campus a new one goes to first: 64 (0.8.0) - past it, a city whose works of a group stand in every district (a city of billions) places them as any industry, and a month does not read every district for the one holding the most. The refinery's has no bound, as before. */
+    static final int CAMPUS_REACH = 64;
+
+    /** Each group's types, by id: worked out once a table. */
+    private int[][] campusTypes;
+
+    private int[] campusTypes(int g) {
         if (campusTypes == null) {
-            int n = 0;
-            for (BuildingVisual.Type ty : types) if (ty != null && ty.campus()) n++;
-            int[] out = new int[n];
-            n = 0;
-            for (int u = 0; u < types.length; u++) if (types[u] != null && types[u].campus()) out[n++] = u;
-            campusTypes = out;
+            int[][] all = new int[BuildingVisual.GROUPS][];
+            for (int q = 0; q < BuildingVisual.GROUPS; q++) {
+                int n = 0;
+                for (BuildingVisual.Type ty : types) if (ty != null && ty.campusGroup() == q && q > BuildingVisual.NO_GROUP) n++;
+                int[] out = new int[n];
+                n = 0;
+                for (int u = 0; u < types.length; u++) if (types[u] != null && types[u].campusGroup() == q && q > BuildingVisual.NO_GROUP) out[n++] = u;
+                all[q] = out;
+            }
+            campusTypes = all;
         }
-        return campusTypes;
+        return campusTypes[g];
+    }
+
+    /** The refinery's unit types, by id. */
+    private int[] campusTypes() {
+        return campusTypes(BuildingVisual.REFINERY);
     }
 
     /** The refinery's ground in district d, in the whole plots its units are drawn on. */
     long campusCells(District d) {
+        return campusCells(d, BuildingVisual.REFINERY);
+    }
+
+    /** ...a group's (0.8.0). */
+    long campusCells(District d, int g) {
         long c = 0;
-        for (int u : campusTypes()) c += (long) d.counts[u] * BuildingVisual.cells(types[u]);
+        int[] cells = BuildingVisual.cellsById(types);
+        for (int u : campusTypes(g)) c += (long) d.counts[u] * cells[u];
         return c;
     }
 
     /** The district holding the most of the refinery's ground, the nearer on a tie; null when it has none. Looks only between the districts holding a unit (lo, hi). */
     District campusDistrict() {
+        return campusDistrict(BuildingVisual.REFINERY);
+    }
+
+    /** ...of a group's (0.8.0). */
+    District campusDistrict(int g) {
         int from = Integer.MAX_VALUE, to = -1;
-        for (int u : campusTypes()) {
+        for (int u : campusTypes(g)) {
             if (hi[u] < 0) continue;
             from = Math.min(from, lo[u]);
             to = Math.max(to, hi[u]);
         }
+        // ...a works group spread over more than CAMPUS_REACH districts has no campus: it is placed as any industry (0.8.0).
+        if (g != BuildingVisual.REFINERY && to - from + 1 > CAMPUS_REACH) return null;
         District best = null;
         long most = 0;
         for (int i = Math.max(0, from); i <= to && i < districts.size(); i++) {
-            long c = campusCells(districts.get(i));
+            long c = campusCells(districts.get(i), g);
             if (c > most) { most = c; best = districts.get(i); }
         }
         return best;
@@ -1147,17 +1222,22 @@ public final class CityMap {
         long[] used = new long[n];
         for (int i = 0; i < n; i++) used[i] = cellsOf(districts.get(i));
         // THE CAMPUS (0.7.97): the refinery whole, into the first district with room for all of it (the roomiest when none
-        // has), before the rest is shared - as the mines' ground is theirs first.
-        long campus = 0;
-        for (int u : campusTypes()) if (u < counts.length && counts[u] > 0) campus += counts[u] * (long) BuildingVisual.cells(types[u]);
-        if (campus > 0 && n > 0) {
+        // has), before the rest is shared - as the mines' ground is theirs first; since 0.8.0 each works group too, shared as
+        // any industry when no district has room for it whole (EVERY INDUSTRY'S CAMPUS).
+        boolean[] gathered = new boolean[types.length];
+        for (int g = BuildingVisual.REFINERY; g < BuildingVisual.GROUPS; g++) {
+            long campus = 0;
+            for (int u : campusTypes(g)) if (u < counts.length && counts[u] > 0) campus += counts[u] * (long) BuildingVisual.cells(types[u]);
+            if (campus <= 0 || n <= 0) continue;
             int at = -1;
             for (int i = 0; i < n && at < 0; i++) if (districts.get(i).owned - used[i] >= campus) at = i;
+            if (at < 0 && g != BuildingVisual.REFINERY) continue;
             if (at < 0) {
                 at = 0;
                 for (int i = 1; i < n; i++) if (districts.get(i).owned - used[i] > districts.get(at).owned - used[at]) at = i;
             }
-            for (int u : campusTypes()) {
+            for (int u : campusTypes(g)) {
+                gathered[u] = true;
                 if (u >= counts.length || counts[u] <= 0) continue;
                 districts.get(at).counts[u] += (int) counts[u];
                 have[u] = counts[u];
@@ -1166,7 +1246,7 @@ public final class CityMap {
         }
         double total = 0;
         for (int t = 0; t < types.length; t++) {
-            if (types[t] == null || types[t].site() != null || types[t].sea() || types[t].campus() || t >= counts.length) continue;
+            if (types[t] == null || onSites(t) || types[t].sea() || gathered[t] || t >= counts.length) continue;
             total += counts[t] * (double) BuildingVisual.cells(types[t]);
         }
         double[] share = new double[n];
@@ -1190,7 +1270,7 @@ public final class CityMap {
         for (int t : ranked) order[no++] = t;
         for (int oi = 0; oi < no; oi++) {
             int t = order[oi];
-            if (types[t] == null || types[t].site() != null || types[t].campus() || t >= counts.length || counts[t] <= 0) continue;
+            if (types[t] == null || onSites(t) || gathered[t] || t >= counts.length || counts[t] <= 0) continue;
             long c = counts[t], given = 0, each = BuildingVisual.cells(types[t]);
             int m = 0;
             for (int i = 0; i < n; i++) {
@@ -1321,13 +1401,18 @@ public final class CityMap {
         // the districts under its rectangle, which syncLand() recounted: the
         // others they lie in are drawn again too.
         java.util.Set<District> redraw = from > 0 ? new java.util.LinkedHashSet<>() : null;
-        for (int k = 0; k < SITED.length; k++) {
+        for (int k = 0; k < SLOTS; k++) {
             if (ix.tally.size() <= k) ix.tally.add(new ArrayList<>());
             List<Map<District, int[]>> m = ix.tally.get(k);
             while (m.size() < holdings) m.add(new HashMap<>());
-            Resource r = SITED[k];
+        }
+        for (Resource r : SITED) {
             if (!r.inFields()) continue;
             for (Deposit f : fieldsNear(r, siteX + bx0, siteY + by0, siteX + bx1, siteY + by1)) {
+                // ...each field's sites in the slot of its type (0.8.0): a hematite field's for the hematite mines.
+                int k = slotOf(r, f.type());
+                if (k < 0) continue;
+                List<Map<District, int[]>> m = ix.tally.get(k);
                 double fx = f.x() - siteX, fy = f.y() - siteY;
                 boolean legacy = f.cell() < 0;
                 if (legacy && from > 0) continue;
@@ -1360,9 +1445,9 @@ public final class CityMap {
         }
         SiteIndex out = new SiteIndex();
         out.tally.addAll(ix.tally);
-        out.where = new District[SITED.length][holdings][];
-        out.how = new int[SITED.length][holdings][];
-        for (int k = 0; k < SITED.length; k++) {
+        out.where = new District[SLOTS][holdings][];
+        out.how = new int[SLOTS][holdings][];
+        for (int k = 0; k < SLOTS; k++) {
             for (int h = 0; h < holdings; h++) {
                 Map<District, int[]> m = out.tally.get(k).get(h);
                 List<District> where = new ArrayList<>(m.keySet());
@@ -1377,11 +1462,29 @@ public final class CityMap {
 
     /** The owned sites of a SITED resource on the map. */
     public long ownedSites(Resource r) {
+        return ownedSites(r, null);
+    }
+
+    /** ...of one type of its fields (0.8.0, batch I14), or of all of them (null): what a works of that type may stand on. */
+    public long ownedSites(Resource r, Deposit.FieldType type) {
         siteIndex();
-        int k = siteSlot(r);
         long n = 0;
-        if (k >= 0) for (District d : districts) n += d.sites[k];
+        for (int k = 0; k < SLOTS; k++) {
+            if (SLOT_RESOURCE[k] != r || (type != null && SLOT_TYPE[k] != type)) continue;
+            for (District d : districts) n += d.sites[k];
+        }
         return n;
+    }
+
+    /** Whether type t stands on its resource's sites (placeSited()): a site of a SITED resource, and sites to take - any other building, a site on none, placed as any building is, so the districts always sum to the counts. */
+    private boolean onSites(int t) {
+        return types[t] != null && types[t].site() != null && types[t].sites() > 0 && siteSlot(types[t].site()) >= 0;
+    }
+
+    /** The slot of a resource's fields of a type, or -1 (not SITED, or a type not the resource's). */
+    static int slotOf(Resource r, Deposit.FieldType type) {
+        for (int k = 0; k < SLOTS; k++) if (SLOT_RESOURCE[k] == r && SLOT_TYPE[k] == type) return k;
+        return -1;
     }
 
     /** Nearest the founding site first, then north to south, west to east. */
@@ -1404,58 +1507,319 @@ public final class CityMap {
         return out;
     }
 
-    /** One SITED resource's sites in the order mines and wells take them, and how far its type's count has filled them. */
+    /*
+     * THE WORKS ON THEIR SITES BY TYPE (0.8.0, batch I14; spec-materials 5's
+     * I14 row: "pits by sites"). Until 0.7.143 one type stood on a resource's
+     * sites - the first in the table with it as its site - and every other
+     * (a Large Open-Pit Mine, the magnetite mines) stood in the founding
+     * site's district on none, drawn as one plain mine; coal's, stone's and
+     * copper's first types were placed nowhere (the latent "districts do not
+     * sum" of fixI9-notes' star 10). Now each SITED resource's types are
+     * claims on its slots (SLOTS: its fields by type), laid as LandManager.
+     * fits() packs them - the typed before those on ANY of its fields, the
+     * larger first, then by id; ANY onto the first type's sites first - each
+     * works on as many sites as its template takes (a Large Open-Pit Mine on
+     * twenty, counted once, in the district of its first), a works for which
+     * its slots have no whole room left in the founding site's district on
+     * none. A month that moves only the last claim on its slots fills or
+     * empties it from where it stood; any other move, or the land or a
+     * holding's state moving, lays the resource again.
+     */
+
+    /** One slot's sites in the order works take them (layWalk()), and how far its claims have filled them. */
     private static final class Walk {
-        SiteIndex ix;
-        int[] states;
-        int type;
         District[] at = new District[0];
         int[] holding = new int[0], sites = new int[0];
-        int length, pos, partial;
-        long placed, overflow;
+        int length, slot;
+        /** The next free site: its entry, and the sites of that entry taken. */
+        int pos, partial;
+        /** Its sites, and those taken. */
+        long total, taken;
+
+        long free() { return total - taken; }
     }
 
-    private final Walk[] walks = new Walk[SITED.length];
+    /** One SITED resource's works on its sites: its slots' walks, laid against an index and its holdings' states, and each claim's works on each slot and on none. */
+    private static final class Lay {
+        SiteIndex ix;
+        int[] states;
+        /** By the resource's own slots, in SLOTS' order. */
+        Walk[] walks;
+        /** By claim (claims()): its works on each of the resource's slots, on none, and its count at the last month. */
+        long[][] on;
+        long[] over, count;
+    }
 
-    /** The type standing on a SITED resource's sites: the first with it as its site, or -1. */
-    private int typeOn(Resource r) {
-        for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].site() == r) return t;
-        return -1;
+    private final Lay[] lays = new Lay[SITED.length];
+
+    /** Each SITED resource's claims (the types standing on its sites) in the order they are laid: worked out once a table. */
+    private int[][] claims;
+
+    /** A SITED resource's claims: its typed works first, by their type's slot, then those on ANY of its fields; within each the larger first (BuildingVisual.Type.sites()), then by id - first fit decreasing, as LandManager.fits() packs them. */
+    int[] claims(int k) {
+        if (claims == null) {
+            int[][] all = new int[SITED.length][];
+            for (int q = 0; q < SITED.length; q++) {
+                Resource r = SITED[q];
+                List<Integer> ts = new ArrayList<>();
+                for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].site() == r && types[t].sites() > 0) ts.add(t);
+                ts.sort((a, b) -> {
+                    int sa = claimSlot(a), sb = claimSlot(b);
+                    if (sa != sb) return Integer.compare(sa, sb);
+                    if (types[a].sites() != types[b].sites()) return Integer.compare(types[b].sites(), types[a].sites());
+                    return Integer.compare(a, b);
+                });
+                all[q] = ts.stream().mapToInt(Integer::intValue).toArray();
+            }
+            claims = all;
+        }
+        return claims[k];
+    }
+
+    /** A claim's slot to sort by: its type's, or past every slot for ANY (or a type not its resource's). */
+    private int claimSlot(int t) {
+        int s = types[t].field() == null ? -1 : slotOf(types[t].site(), types[t].field());
+        return s < 0 ? SLOTS : s;
+    }
+
+    /** The resource's own slots (indexes into Lay.walks) a claim stands on, in order: its type's alone, or every one for ANY. */
+    private int[] slotsOf(int k, int t) {
+        Resource r = SITED[k];
+        int first = slotOf(r, r.typesOf().get(0)), n = r.typesOf().size();
+        int s = types[t].field() == null ? -1 : slotOf(r, types[t].field());
+        if (s >= 0) return new int[] { s - first };
+        int[] all = new int[n];
+        for (int j = 0; j < n; j++) all[j] = j;
+        return all;
+    }
+
+    /** Whether claim c is the last laid on each of its slots: no later claim stands on any of them. */
+    private boolean lastOnItsSlots(int k, int c) {
+        int[] cl = claims(k);
+        int[] mine = slotsOf(k, cl[c]);
+        for (int d = c + 1; d < cl.length; d++) {
+            for (int s : slotsOf(k, cl[d])) for (int m : mine) if (s == m) return false;
+        }
+        return true;
     }
 
     /**
-     * Puts each SITED resource's mines or wells on its sites (spec-land 2.4,
-     * 2.5): the first sites in acquisition order whose holding is not worked
-     * out, then the worked-out ones, a holding's districts nearest first;
-     * more than there are sites stand in the founding site's district on
-     * none. Incremental: a month's change fills or empties the walk from
-     * where it stood; the land or a holding's state changing lays it out
-     * again. A second type on the same resource stands on no site.
+     * Puts each SITED resource's works on its sites (spec-land 2.4, 2.5;
+     * since 0.8.0 every type of them, by the type of its field and on as
+     * many sites as it takes): in each slot the first sites in acquisition
+     * order whose holding is not worked out, then the worked-out ones, a
+     * holding's districts nearest first; those with no room in the founding
+     * site's district on none. Incremental where only the last claim on its
+     * slots moved (THE WORKS ON THEIR SITES BY TYPE).
      */
     private void placeSited(long[] model) {
         for (int k = 0; k < SITED.length; k++) {
-            Resource r = SITED[k];
-            int t = typeOn(r);
-            if (t < 0) continue;
-            long n = t < model.length ? Math.max(0, model[t]) : 0;
-            Walk w = walks[k];
-            if (n == 0 && (w == null ? have[t] == 0 : w.placed + w.overflow == 0)) continue;
-            SiteIndex ix = siteIndex();
-            int[] states = holdingStates(r);
-            if (w == null || w.ix != ix || !Arrays.equals(w.states, states) || w.type != t) {
-                clearType(t, k);
-                w = layWalk(ix, states, k, t);
-                walks[k] = w;
+            int[] cl = claims(k);
+            if (cl.length == 0) continue;
+            Lay lay = lays[k];
+            long[] want = new long[cl.length];
+            boolean any = false;
+            for (int c = 0; c < cl.length; c++) {
+                want[c] = cl[c] < model.length ? Math.max(0, model[cl[c]]) : 0;
+                any |= want[c] > 0 || have[cl[c]] != 0;
             }
-            fill(w, k, n);
-        }
-        // Any further type on a SITED resource: in the founding site's district, on no site, as any building.
-        for (int t = 0; t < types.length; t++) {
-            if (types[t] == null || types[t].site() == null || typeOn(types[t].site()) == t) continue;
-            long delta = (t < model.length ? model[t] : 0) - have[t];
-            if (delta != 0) add(home(), indexOf(home()), t, delta);
+            if (lay == null && !any) continue;
+            SiteIndex ix = siteIndex();
+            int[] states = holdingStates(SITED[k]);
+            if (lay == null || lay.ix != ix || !Arrays.equals(lay.states, states)) {
+                relay(k, ix, states, want);
+                continue;
+            }
+            int moved = -1, how = 0;
+            for (int c = 0; c < cl.length; c++) if (want[c] != lay.count[c]) { moved = c; how++; }
+            if (how == 0) continue;
+            if (how == 1 && lastOnItsSlots(k, moved)) restand(k, lay, moved, want[moved]);
+            else relay(k, ix, states, want);
         }
         sitedPlaced = true;
+    }
+
+    /** Lays a resource's works on its sites again: every one of its types taken off the map, then each claim in order on its slots' walks from their first site. */
+    private void relay(int k, SiteIndex ix, int[] states, long[] want) {
+        int[] cl = claims(k);
+        Resource r = SITED[k];
+        int first = slotOf(r, r.typesOf().get(0)), n = r.typesOf().size();
+        Lay old = lays[k];
+        if (old != null) for (Walk w : old.walks) for (int e = 0; e < w.length; e++) w.at[e].siteRuns[w.slot] = null;
+        for (int t : cl) clearType(t);
+        Lay lay = new Lay();
+        lay.ix = ix;
+        lay.states = states;
+        lay.walks = new Walk[n];
+        for (int j = 0; j < n; j++) lay.walks[j] = layWalk(ix, states, first + j);
+        lay.on = new long[cl.length][n];
+        lay.over = new long[cl.length];
+        lay.count = new long[cl.length];
+        lays[k] = lay;
+        for (int c = 0; c < cl.length; c++) restand(k, lay, c, want[c]);
+    }
+
+    /** One claim to a new count: more filled onto its slots in order from where they stand, then on none; fewer taken off what stands on none first, then off its slots from the last back. */
+    private void restand(int k, Lay lay, int c, long n) {
+        int t = claims(k)[c];
+        int each = Math.max(1, types[t].sites());
+        int[] slots = slotsOf(k, t);
+        long delta = n - lay.count[c];
+        if (delta > 0) {
+            for (int j : slots) {
+                if (delta <= 0) break;
+                long q = fill(lay.walks[j], t, each, delta);
+                lay.on[c][j] += q;
+                delta -= q;
+            }
+            if (delta > 0) {
+                District h = home();
+                add(h, indexOf(h), t, delta);
+                lay.over[c] += delta;
+            }
+        } else if (delta < 0) {
+            long off = -delta;
+            long o = Math.min(off, lay.over[c]);
+            if (o > 0) {
+                District h = home();
+                add(h, indexOf(h), t, -o);
+                lay.over[c] -= o;
+                off -= o;
+            }
+            for (int s = slots.length - 1; s >= 0 && off > 0; s--) {
+                int j = slots[s];
+                long q = Math.min(off, lay.on[c][j]);
+                empty(lay.walks[j], t, each, q);
+                lay.on[c][j] -= q;
+                off -= q;
+            }
+        }
+        lay.count[c] = n;
+    }
+
+    /** The walk's order: holdings not worked out in acquisition order, then the worked-out; within each, its districts nearest first. */
+    private Walk layWalk(SiteIndex ix, int[] states, int k) {
+        Walk w = new Walk();
+        w.slot = k;
+        int holdings = ix.where[k].length, size = 0;
+        for (int h = 0; h < holdings; h++) size += ix.where[k][h].length;
+        w.at = new District[size];
+        w.holding = new int[size];
+        w.sites = new int[size];
+        for (int pass = 0; pass < 2; pass++) {
+            for (int h = 0; h < holdings; h++) {
+                boolean out = h < states.length && states[h] == TilePainter.WORKED_OUT;
+                if (out != (pass == 1)) continue;
+                for (int i = 0; i < ix.where[k][h].length; i++) {
+                    w.at[w.length] = ix.where[k][h][i];
+                    w.holding[w.length] = h;
+                    w.sites[w.length] = ix.how[k][h][i];
+                    w.total += w.sites[w.length];
+                    w.length++;
+                }
+            }
+        }
+        return w;
+    }
+
+    /** Up to n works of type t, `each` sites apiece, onto a walk from its next free site - only while a whole one has room - each counted in the district of its first site. How many stood. */
+    private long fill(Walk w, int t, int each, long n) {
+        long k = Math.min(n, w.free() / each);
+        long stood = k;
+        int owed = 0;
+        while (k > 0 || owed > 0) {
+            if (w.partial >= w.sites[w.pos]) { w.pos++; w.partial = 0; continue; }
+            District d = w.at[w.pos];
+            int h = w.holding[w.pos], avail = w.sites[w.pos] - w.partial;
+            if (owed > 0) {
+                // ...the rest of a works begun in an entry before.
+                int take = Math.min(owed, avail);
+                markRun(d, w.slot, h, t, take);
+                w.partial += take;
+                w.taken += take;
+                owed -= take;
+                continue;
+            }
+            long whole = Math.min(k, avail / each);
+            if (whole > 0) {
+                markRun(d, w.slot, h, t, (int) (whole * each));
+                count(d, t, whole);
+                w.partial += (int) (whole * each);
+                w.taken += whole * each;
+                k -= whole;
+                continue;
+            }
+            // ...one begun here, on what the entry has left, and owed the rest from the next.
+            markRun(d, w.slot, h, t, avail);
+            count(d, t, 1);
+            w.partial += avail;
+            w.taken += avail;
+            owed = each - avail;
+            k--;
+        }
+        return stood;
+    }
+
+    /** n works of type t, `each` sites apiece, taken back off a walk from its last taken site: the last claim on it, so they are the ones there. */
+    private void empty(Walk w, int t, int each, long n) {
+        while (n > 0) {
+            int left = each;
+            while (left > 0) {
+                if (w.partial == 0) { w.pos--; w.partial = w.sites[w.pos]; }
+                District d = w.at[w.pos];
+                int h = w.holding[w.pos];
+                if (left == each && w.partial >= each) {
+                    // ...as many whole ones as end in this entry at once.
+                    long whole = Math.min(n, w.partial / each);
+                    markRun(d, w.slot, h, t, (int) -(whole * each));
+                    count(d, t, -whole);
+                    w.partial -= (int) (whole * each);
+                    w.taken -= whole * each;
+                    n -= whole;
+                    left = 0;
+                    break;
+                }
+                int take = Math.min(left, w.partial);
+                markRun(d, w.slot, h, t, -take);
+                w.partial -= take;
+                w.taken -= take;
+                left -= take;
+                // ...a works is counted where its first site is: the last of its sites taken back.
+                if (left == 0) { count(d, t, -1); n--; }
+            }
+        }
+    }
+
+    /** m more (or fewer) sites of a district's slot, of one holding, under a works of type t: its painting's runs. */
+    private void markRun(District d, int slot, int holding, int t, int m) {
+        if (m == 0) return;
+        int[] runs = d.siteRuns[slot];
+        int at = -1;
+        if (runs != null) for (int a = runs.length - 3; a >= 0 && at < 0; a -= 3) if (runs[a] == holding) at = a;
+        if (at < 0 || runs[at + 1] != t) {
+            runs = runs == null ? new int[3] : Arrays.copyOf(runs, runs.length + 3);
+            at = runs.length - 3;
+            runs[at] = holding;
+            runs[at + 1] = t;
+        }
+        runs[at + 2] += m;
+        if (runs[at + 2] <= 0) {
+            int[] less = new int[runs.length - 3];
+            System.arraycopy(runs, 0, less, 0, at);
+            System.arraycopy(runs, at + 3, less, at, runs.length - at - 3);
+            runs = less.length == 0 ? null : less;
+        }
+        d.siteRuns[slot] = runs;
+        d.version++;
+        changes++;
+    }
+
+    /** q more (or fewer) works of type t counted on sites in a district. */
+    private void count(District d, int t, long q) {
+        if (q == 0) return;
+        if (d.sited == null) d.sited = new int[types.length];
+        d.sited[t] += (int) q;
+        add(d, indexOf(d), t, q, true);
     }
 
     /** The mines and wells stood on their sites (placeSited()), once, before anything reads a district's counts less them: a plan's inputs and its stamp (0.7.88), as the sites' lists do. */
@@ -1483,8 +1847,8 @@ public final class CityMap {
         return -1;
     }
 
-    /** Takes every one of type t off the map, its sites' marks with it. */
-    private void clearType(int t, int k) {
+    /** Takes every one of type t off the map (its sites' runs are its resource's lay's to clear: relay()). */
+    private void clearType(int t) {
         if (hi[t] < 0) return;
         for (int i = Math.max(0, lo[t]); i <= hi[t] && i < districts.size(); i++) {
             District d = districts.get(i);
@@ -1492,89 +1856,9 @@ public final class CityMap {
             if (d.counts[t] - sited != 0) add(d, i, t, -(d.counts[t] - sited));
             if (sited != 0) add(d, i, t, -sited, true);
             if (d.sited != null) d.sited[t] = 0;
-            d.holdingMines[k] = null;
         }
         lo[t] = Integer.MAX_VALUE;
         hi[t] = -1;
-    }
-
-    /** The walk's order: holdings not worked out in acquisition order, then the worked-out; within each, its districts nearest first. */
-    private Walk layWalk(SiteIndex ix, int[] states, int k, int t) {
-        Walk w = new Walk();
-        w.ix = ix;
-        w.states = states;
-        w.type = t;
-        int holdings = ix.where[k].length, size = 0;
-        for (int h = 0; h < holdings; h++) size += ix.where[k][h].length;
-        w.at = new District[size];
-        w.holding = new int[size];
-        w.sites = new int[size];
-        for (int pass = 0; pass < 2; pass++) {
-            for (int h = 0; h < holdings; h++) {
-                boolean out = h < states.length && states[h] == TilePainter.WORKED_OUT;
-                if (out != (pass == 1)) continue;
-                for (int i = 0; i < ix.where[k][h].length; i++) {
-                    w.at[w.length] = ix.where[k][h][i];
-                    w.holding[w.length] = h;
-                    w.sites[w.length] = ix.how[k][h][i];
-                    w.length++;
-                }
-            }
-        }
-        return w;
-    }
-
-    /** Fills or empties a walk to n: on sites from where it stood, past the last site in the founding site's district. */
-    private void fill(Walk w, int k, long n) {
-        int t = w.type;
-        while (w.placed + w.overflow < n) {
-            if (w.pos >= w.length) {
-                long rest = n - w.placed - w.overflow;
-                District h = home();
-                add(h, indexOf(h), t, rest);
-                w.overflow += rest;
-                break;
-            }
-            District d = w.at[w.pos];
-            int take = (int) Math.min(w.sites[w.pos] - w.partial, n - w.placed - w.overflow);
-            mark(d, k, t, w.holding[w.pos], take);
-            w.placed += take;
-            w.partial += take;
-            if (w.partial >= w.sites[w.pos]) { w.pos++; w.partial = 0; }
-        }
-        while (w.placed + w.overflow > n) {
-            if (w.overflow > 0) {
-                long off = Math.min(w.overflow, w.placed + w.overflow - n);
-                District h = home();
-                add(h, indexOf(h), t, -off);
-                w.overflow -= off;
-                continue;
-            }
-            if (w.partial == 0) { w.pos--; w.partial = w.sites[w.pos]; }
-            District d = w.at[w.pos];
-            int take = (int) Math.min(w.partial, w.placed - n);
-            mark(d, k, t, w.holding[w.pos], -take);
-            w.placed -= take;
-            w.partial -= take;
-        }
-    }
-
-    /** m more (or fewer) of type t on a district's sites of one holding. */
-    private void mark(District d, int k, int t, int holding, int m) {
-        if (m == 0) return;
-        if (d.sited == null) d.sited = new int[types.length];
-        d.sited[t] += m;
-        int[] pairs = d.holdingMines[k];
-        int at = -1;
-        if (pairs != null) for (int a = 0; a < pairs.length; a += 2) if (pairs[a] == holding) at = a;
-        if (at < 0) {
-            pairs = pairs == null ? new int[2] : Arrays.copyOf(pairs, pairs.length + 2);
-            at = pairs.length - 2;
-            pairs[at] = holding;
-        }
-        pairs[at + 1] += m;
-        d.holdingMines[k] = pairs;
-        add(d, indexOf(d), t, m, true);
     }
 
     /* =====================================================================
@@ -2941,9 +3225,8 @@ public final class CityMap {
         sitedNow();
         List<long[]> out = new ArrayList<>();
         for (District d : districts) {
-            if (d.sited == null) continue;
             boolean any = false;
-            for (int c : d.sited) any |= c > 0;
+            for (int[] rs : d.siteRuns) any |= rs != null;
             if (!any) continue;
             for (DrawnSite s : siteList(d.dx, d.dy)) if (s.mine() >= 0) out.add(new long[] { s.x0(), s.y0(), s.x1(), s.y1() });
         }
@@ -3607,7 +3890,9 @@ public final class CityMap {
      * owned or not - each with its holding's state (its field's holding, the
      * one holding the field's centre, since 0.7.64) and, for the SITED
      * resources, the mine on it: in each holding, the first of its sites here
-     * (in field order) carry the mines the district holds from that holding.
+     * (in field order) carry the mines the district holds from that holding -
+     * since 0.8.0 each slot's own, in the walk's order, each works on as many
+     * sites as it takes (District.siteRuns).
      */
     List<DrawnSite> siteList(int dx, int dy) {
         long k = key(dx, dy);
@@ -3620,17 +3905,23 @@ public final class CityMap {
         long x0 = (baseDX + dx) * DISTRICT, y0 = (baseDY + dy) * DISTRICT;
         List<DrawnSite> out = new ArrayList<>();
         Map<Resource, int[]> states = new HashMap<>();
+        // Each slot's works here, by holding, in the walk's order (0.8.0): {type, sites} pairs popped site by site.
+        Map<Long, java.util.ArrayDeque<int[]>> runs = new HashMap<>();
+        if (d != null) {
+            for (int q = 0; q < SLOTS; q++) {
+                int[] rs = d.siteRuns[q];
+                if (rs == null) continue;
+                for (int a = 0; a + 2 < rs.length; a += 3) {
+                    runs.computeIfAbsent(((long) q << 32) | rs[a], x -> new java.util.ArrayDeque<>()).add(new int[] { rs[a + 1], rs[a + 2] });
+                }
+            }
+        }
         for (Resource r : Resource.values()) {
             if (!r.inFields()) continue;
-            int slot = siteSlot(r);
-            int[][] pairs = d == null || slot < 0 ? null : new int[][] { d.holdingMines[slot] };
-            int[] left = new int[1 + land.purchases().size()];
-            if (pairs != null && pairs[0] != null) for (int a = 0; a + 1 < pairs[0].length; a += 2) left[pairs[0][a]] += pairs[0][a + 1];
-            int mineType = -1;
-            for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].site() == r) { mineType = t; break; }
             double w = Deposit.siteWidth(r);
             for (Deposit f : fieldsNear(r, x0, y0, x0 + DISTRICT - 1, y0 + DISTRICT - 1)) {
                 boolean legacy = f.cell() < 0;
+                int slot = slotOf(r, f.type());
                 for (int s = 0; s < f.sites(); s++) {
                     double[] at = f.siteAt(s);
                     double cx = f.x() + at[0], cy = f.y() + at[1];
@@ -3643,9 +3934,11 @@ public final class CityMap {
                         state = h < st.length ? st[h] : TilePainter.UNWORKED;
                     }
                     int mine = -1;
-                    if (h >= 0 && h < left.length && left[h] > 0 && mineType >= 0) {
-                        mine = mineType;
-                        left[h]--;
+                    java.util.ArrayDeque<int[]> q = h >= 0 && slot >= 0 ? runs.get(((long) slot << 32) | h) : null;
+                    if (q != null && !q.isEmpty()) {
+                        int[] head = q.peek();
+                        mine = head[0];
+                        if (--head[1] <= 0) q.poll();
                     }
                     long sx0 = Math.round(cx - w / 2), sy0 = Math.round(cy - w / 2);
                     long sx1 = Math.round(cx + w / 2) - 1, sy1 = Math.round(cy + w / 2) - 1;
@@ -3807,6 +4100,77 @@ public final class CityMap {
     }
 
     /* =====================================================================
+       ZONES BY DISTRICT (0.8.0, batch I14; docs/studies/spec-zoning.md 4:
+       "the map tints a zone's districts ... Zones are quantities, not places
+       (star Z1), so the map picks where to draw them; the map draws from the
+       model and never the other way")
+
+       A zone is ground held for one sector, an amount with no place. The
+       map picks its districts: the zones in Zoning's order, each taking
+       first the districts holding its sector's buildings - the most of
+       their ground first, the map's order on a tie - then, while what it
+       has taken covers less than its ground, the rest of the districts with
+       free ground in the map's order, from the outside in for a sector of
+       outer buildings (a mine, a farm, Forestry's) and from the inside out
+       for any other. A district one zone takes is no other's. Nothing in
+       the model reads it.
+       ===================================================================== */
+
+    /** A zone as the map tints it: its sector and the ground it covers, in square feet - what it holds free and what its sector has built in it (LandManager.heldBy() and usedBy()). */
+    public record ZoneArea(String sector, double sqFt) { }
+
+    /** A district a zone's tint covers: its box's first plot, {x, y} in the world, a district (DISTRICT plots) a side, and the zone's index in the list given. */
+    public record Tinted(long x0, long y0, int zone) { }
+
+    /** Each zone's districts (ZONES BY DISTRICT), in the map's order: none with no zone. */
+    public List<Tinted> zoneTint(List<ZoneArea> zones) {
+        List<Tinted> out = new ArrayList<>();
+        int n = districts.size();
+        if (zones == null || zones.isEmpty() || n == 0) return out;
+        int[] zoneOf = new int[n];
+        Arrays.fill(zoneOf, -1);
+        for (int z = 0; z < zones.size(); z++) {
+            ZoneArea a = zones.get(z);
+            if (a == null || a.sector() == null || !(a.sqFt() > 0)) continue;
+            boolean outer = false;
+            List<Integer> mine = new ArrayList<>();
+            for (int t = 0; t < types.length; t++) {
+                if (types[t] == null || !a.sector().equals(types[t].sector())) continue;
+                mine.add(t);
+                outer |= types[t].outer();
+            }
+            double want = a.sqFt() / BuildingVisual.SQ_FT_PER_PLOT, got = 0;
+            // ...the districts holding its sector's buildings, the most of their ground first.
+            double[] ground = new double[n];
+            List<Integer> holding = new ArrayList<>();
+            for (int i = 0; i < n; i++) {
+                District d = districts.get(i);
+                for (int t : mine) ground[i] += (double) d.counts[t] * types[t].sqFt();
+                if (ground[i] > 0 && zoneOf[i] < 0 && d.owned > 0) holding.add(i);
+            }
+            holding.sort((x, y) -> ground[x] != ground[y] ? Double.compare(ground[y], ground[x]) : Integer.compare(x, y));
+            for (int i : holding) {
+                if (got >= want) break;
+                zoneOf[i] = z;
+                got += districts.get(i).owned;
+            }
+            // ...then the rest with free ground, in the map's order.
+            for (int k = 0; k < n && got < want; k++) {
+                int i = outer ? n - 1 - k : k;
+                if (zoneOf[i] >= 0 || districts.get(i).owned <= 0) continue;
+                zoneOf[i] = z;
+                got += districts.get(i).owned;
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            if (zoneOf[i] < 0) continue;
+            District d = districts.get(i);
+            out.add(new Tinted((baseDX + d.dx) * DISTRICT, (baseDY + d.dy) * DISTRICT, zoneOf[i]));
+        }
+        return out;
+    }
+
+    /* =====================================================================
        THE PYRAMID (spec-land 2.5): TEN CLASSES, USED AND OWNED, 2 x 2
        ===================================================================== */
 
@@ -3949,7 +4313,8 @@ public final class CityMap {
      * it was drawn on (CityLand.stamp(), 0.7.67) and its purchases, the type count, the district count), then a
      * record a district in its order - dx and dy (int16), its free plots and
      * those inside its tiles' edge rings (int32), plots used (double), owned
-     * iron and oil sites and a count a type (int32) - and since FORMAT 5 the
+     * iron and oil sites (since FORMAT 7, 0.8.0, its owned sites of each slot,
+     * SLOTS) and a count a type (int32) - and since FORMAT 5 the
      * city's highway and railway runs (int32 their count: 0 until batch RD3
      * lays them, which adds their records), and since FORMAT 6 (0.7.97) its
      * works on the shore (CityShore.write()).
@@ -3987,7 +4352,9 @@ public final class CityMap {
                 out.writeInt(d.owned);
                 out.writeInt(d.inner);
                 out.writeDouble(d.used());
-                for (int k = 0; k < SITED.length; k++) out.writeInt(d.sites[k]);
+                // ...its sites by slot (FORMAT 7, 0.8.0), or as an older sidecar wrote them, iron's and oil's.
+                if (format >= 7) for (int k = 0; k < SLOTS; k++) out.writeInt(d.sites[k]);
+                else { out.writeInt(d.sites(Resource.IRON)); out.writeInt(d.sites(Resource.OIL)); }
                 for (int t = 0; t < types.length; t++) out.writeInt(d.counts[t]);
             }
             // The runs (FORMAT 5): their count - 0 for none - and since 0.7.89 (batch RD3) the highways' and the railway's.
@@ -4105,7 +4472,12 @@ public final class CityMap {
                 d.inner = in.readInt();
                 double used = in.readDouble();
                 d.tileFree = null;
-                for (int k = 0; k < SITED.length; k++) d.sites[k] = in.readInt();
+                if (format >= 7) for (int k = 0; k < SLOTS; k++) d.sites[k] = in.readInt();
+                else {
+                    // ...an older sidecar's iron and oil (0.8.0): on their first slots until the index counts them by type.
+                    d.sites[slotOf(Resource.IRON, Resource.IRON.typesOf().get(0))] = in.readInt();
+                    d.sites[slotOf(Resource.OIL, Resource.OIL.typesOf().get(0))] = in.readInt();
+                }
                 for (int t = 0; t < nTypes; t++) {
                     d.counts[t] = in.readInt();
                     m.have[t] += d.counts[t];

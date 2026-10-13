@@ -191,21 +191,32 @@ public final class TileRaster {
                 y1 = y0 + sh;
             } else {
                 int inset = px >= INSET_FROM ? 1 : 0;
-                x0 = p.bx[b] * px + inset;
-                y0 = p.by[b] * px + inset;
-                x1 = Math.min(tile, p.bx[b] + p.bw[b]) * px - inset;
-                y1 = Math.min(tile, p.by[b] + p.bh[b]) * px - inset;
+                // ...a site's works inset only where its site ends (0.8.0): a site across tiles, a coal mine's 33 plots, one box.
+                int il = site >= 0 && p.bx[b] > in.siteFX0[site] ? 0 : inset, it = site >= 0 && p.by[b] > in.siteFY0[site] ? 0 : inset;
+                int ir = site >= 0 && p.bx[b] + p.bw[b] - 1 < in.siteFX1[site] ? 0 : inset, ib = site >= 0 && p.by[b] + p.bh[b] - 1 < in.siteFY1[site] ? 0 : inset;
+                x0 = p.bx[b] * px + il;
+                y0 = p.by[b] * px + it;
+                x1 = Math.min(tile, p.bx[b] + p.bw[b]) * px - ir;
+                y1 = Math.min(tile, p.by[b] + p.bh[b]) * px - ib;
             }
             boolean edged = px >= EDGE_FROM;
-            for (int y = y0; y < y1; y++) {
-                for (int x = x0; x < x1; x++) {
-                    boolean onEdge = edged && (y == y0 || y == y1 - 1 || x == x0 || x == x1 - 1);
-                    img[y * w + x] = onEdge ? edge : fill;
+            int look = t == null ? BuildingVisual.PLAIN : t.look();
+            if (look != BuildingVisual.PLAIN && px >= LOOK_FROM && !p.bpacked[b] && (p.bw[b] > 1 || p.bh[b] > 1 || site >= 0)) {
+                // A materials building as itself (0.8.0, batch I14): its pit, quarry, heaps, works, camp or forest.
+                drawLook(in, t, site, px, edged, img, w, x0, y0, x1, y1);
+            } else {
+                for (int y = y0; y < y1; y++) {
+                    for (int x = x0; x < x1; x++) {
+                        boolean onEdge = edged && (y == y0 || y == y1 - 1 || x == x0 || x == x1 - 1);
+                        img[y * w + x] = onEdge ? edge : fill;
+                    }
                 }
             }
             if (site >= 0 && px >= 4) {
-                // A mine's mark: its resource's colour at its centre, ringed.
-                int cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, r = Math.max(1, px / 2);
+                // A mine's mark: its resource's colour at its centre, ringed - since 0.8.0 the whole site's centre, so a site
+                // across tiles is marked once.
+                int cx = (in.siteFX0[site] + in.siteFX1[site] + 1) * px / 2, cy = (in.siteFY0[site] + in.siteFY1[site] + 1) * px / 2;
+                int r = Math.max(1, px / 2);
                 int colour = 0xff000000 | Resource.values()[in.siteKind[site]].colour();
                 for (int y = cy - r; y <= cy + r; y++) {
                     for (int x = cx - r; x <= cx + r; x++) {
@@ -218,6 +229,118 @@ public final class TileRaster {
         }
         overBuildings(in, p, px, img);
         atSea(in, p, px, img);
+    }
+
+    /* =====================================================================
+       THE MATERIALS AS THEMSELVES (0.8.0, batch I14; spec-materials 5's I14
+       row). Each look of BuildingVisual's drawn in its box from LOOK_FROM px
+       a plot: an open pit's benches stepping down to its floor and a
+       quarry's straight ones, measured from the whole site's square so a
+       site across tiles is one pit (TilePainter.Input.siteFX0); a shaft's
+       yard and headframe; a leach plant's heaps in rows and its pond; the
+       wash plant's conveyor; a camp's log stacks; planted forest's trees in
+       rows; a works' roof ridges in its industry's colours. Below LOOK_FROM
+       a box of the look's fill, as every building is.
+       ===================================================================== */
+
+    /** Pixels a plot from which a materials building is drawn as its look rather than a box of its colour: 3 (TileRaster's INSET_FROM; the L0 image is 4). */
+    public static final int LOOK_FROM = 3;
+
+    /** The benches a pit or a quarry steps down by from its rim to its middle: 6. */
+    public static final int BENCHES = 6;
+
+    /** A leach plant's pond: #4f8fbf. */
+    static final int POND = 0xff4f8fbf;
+
+    /** A shaft's headframe: #2b2622, and the winding house in it #8a7f72. */
+    static final int HEADFRAME = 0xff2b2622, WINDING = 0xff8a7f72;
+
+    /** The wash plant's conveyor: #9a9aa2. */
+    static final int CONVEYOR = 0xff9a9aa2;
+
+    /** A camp's log stacks: #5a3e22. */
+    static final int LOGS = 0xff5a3e22;
+
+    /** Planted forest's crowns, in rows over its darker floor: #6a9a55. */
+    static final int CROWN = 0xff6a9a55;
+
+    /** How much darker a works' roof ridges are than its fill: 18%. */
+    static final double RIDGE_DARK = 0.18;
+
+    /** One materials building's look over its box [x0, x1) x [y0, y1) in pixels: a site's measured from the site's whole square. */
+    static void drawLook(TilePainter.Input in, BuildingVisual.Type t, int site, int px, boolean edged, int[] img, int w,
+                         int x0, int y0, int x1, int y1) {
+        int look = t.look();
+        int fill = t.fill(), edge = t.edge();
+        // The square the pattern is measured from: the whole site's, or the box.
+        int fx0 = x0, fy0 = y0, fx1 = x1 - 1, fy1 = y1 - 1;
+        if (site >= 0) {
+            fx0 = in.siteFX0[site] * px; fy0 = in.siteFY0[site] * px;
+            fx1 = (in.siteFX1[site] + 1) * px - 1; fy1 = (in.siteFY1[site] + 1) * px - 1;
+        }
+        int sw = fx1 - fx0 + 1, sh = fy1 - fy0 + 1;
+        int half = Math.max(1, Math.min(sw, sh) / 2);
+        int step = Math.max(2, half / BENCHES);
+        int[] pit = t.site() != null ? BuildingVisual.pitColours(t.site()) : null;
+        for (int y = y0; y < y1; y++) {
+            for (int x = x0; x < x1; x++) {
+                int depth = Math.min(Math.min(x - fx0, fx1 - x), Math.min(y - fy0, fy1 - y));
+                boolean onEdge = edged && (y == y0 || y == y1 - 1 || x == x0 || x == x1 - 1);
+                int c;
+                switch (look) {
+                    case BuildingVisual.PIT: {
+                        int j = depth / step;
+                        c = j <= 0 ? pit[2] : depth >= half - step ? pit[0] : (j & 1) == 1 ? pit[1] : blend(pit[1], pit[0], 0.5);
+                        break;
+                    }
+                    case BuildingVisual.QUARRY: {
+                        int j = (y - fy0) / step;
+                        c = depth < Math.max(1, step / 2) ? edge : (j & 1) == 0 ? fill : blend(fill, edge, 0.35);
+                        break;
+                    }
+                    case BuildingVisual.LEACH: {
+                        boolean pond = x - fx0 < sw / 3 && y - fy0 < sh / 3 && depth >= step / 2;
+                        int j = (x - fx0) / step;
+                        c = pond ? POND : depth < Math.max(1, step / 2) ? edge : (j & 1) == 0 ? fill : blend(fill, edge, 0.4);
+                        break;
+                    }
+                    case BuildingVisual.SHAFT: {
+                        int cx = (fx0 + fx1) / 2, cy = (fy0 + fy1) / 2, r = Math.max(1, Math.min(sw, sh) / 10);
+                        int dx = Math.abs(x - cx), dy = Math.abs(y - cy);
+                        c = dx <= r && dy <= r ? (dx < r / 2 + 1 && dy < r / 2 + 1 && r > 2 ? WINDING : HEADFRAME)
+                                : depth < Math.max(1, step / 2) ? edge : fill;
+                        break;
+                    }
+                    case BuildingVisual.WASH: {
+                        int band = Math.max(1, px / 4), mid = (y0 + y1) / 2;
+                        c = Math.abs(y - mid) < band && x < (x0 + x1) / 2 ? CONVEYOR : onEdge ? edge : fill;
+                        break;
+                    }
+                    case BuildingVisual.CAMP: {
+                        int band = Math.max(1, px / 4), h = y1 - y0;
+                        boolean log = (Math.abs(y - (y0 + h / 3)) < band || Math.abs(y - (y0 + 2 * h / 3)) < band)
+                                && x > x0 + (x1 - x0) / 5 && x < x1 - (x1 - x0) / 5;
+                        c = log ? LOGS : onEdge ? edge : fill;
+                        break;
+                    }
+                    case BuildingVisual.STAND: {
+                        int g = Math.max(2, px / 2), row = (y - y0) / g;
+                        int ox = (x - x0 + ((row & 1) == 1 ? g / 2 : 0)) % g - g / 2, oy = (y - y0) % g - g / 2;
+                        int rr = Math.max(0, g / 3);
+                        c = ox * ox + oy * oy <= rr * rr ? CROWN : onEdge ? edge : fill;
+                        break;
+                    }
+                    case BuildingVisual.WORKS: {
+                        int g = Math.max(3, px);
+                        c = onEdge ? edge : (y - y0) % g == g - 1 ? blend(fill, 0xff000000, RIDGE_DARK) : fill;
+                        break;
+                    }
+                    default:
+                        c = onEdge ? edge : fill;
+                }
+                img[y * w + x] = c;
+            }
+        }
     }
 
     /* =====================================================================

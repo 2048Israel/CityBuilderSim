@@ -923,13 +923,20 @@ public final class DistrictPlan {
          * cell one stands in or one touching it, side or corner, and opens the
          * first such cell in the order when none has room (campusNext()):
          * one campus. A district holding no unit sorts and places as it did,
-         * so its plan is the same plan, box for box.
+         * so its plan is the same plan, box for box. Since 0.8.0 (batch I14)
+         * each processing industry's works likewise, after the refinery's -
+         * Iron & Steel's, Cement & Concrete's, Copper Refining's, Wood
+         * Products' (BuildingVisual.Type.campusGroup()) - each group its own campus
+         * of touching cells.
          */
 
-        /** The order of two types in a band: a refinery unit before anything else, else none (0). */
+        /** The order of two types in a band: a refinery unit before anything else, then (0.8.0) each works group in turn, else none (0). */
         static int campusFirst(BuildingVisual.Type[] types, int a, int b) {
-            boolean ca = types[a] != null && types[a].campus(), cb = types[b] != null && types[b].campus();
-            return ca == cb ? 0 : ca ? -1 : 1;
+            int ga = types[a] == null ? 0 : types[a].campusGroup(), gb = types[b] == null ? 0 : types[b].campusGroup();
+            if (ga == gb) return 0;
+            if (ga == BuildingVisual.NO_GROUP) return 1;
+            if (gb == BuildingVisual.NO_GROUP) return -1;
+            return Integer.compare(ga, gb);
         }
 
         void bands() {
@@ -1052,6 +1059,7 @@ public final class DistrictPlan {
                     rescan(c);
                 }
                 bPlaced = 0;
+                campusGen++;
                 bUnplaced = new ArrayList<>();
                 bNext = 0;
                 bOpened = 0;
@@ -1060,6 +1068,7 @@ public final class DistrictPlan {
             } else {
                 resume(from, out);
                 bPlaced = from.placed;
+                campusGen++;
                 bUnplaced = new ArrayList<>(from.unplacedAt);
                 bNext = from.kNext;
                 bOpened = from.opened;
@@ -1172,9 +1181,11 @@ public final class DistrictPlan {
                 while (m0 < bNMine && holdsNone[mine[m0] * nShapes + own]) m0++;
                 skipFrom[own] = m0;
             }
-            // THE CAMPUS (0.7.97): once a refinery unit stands, the next goes only to a cell of the campus's or one touching it.
-            boolean campus = in.types[bandType[g][i]] != null && in.types[bandType[g][i]].campus();
-            boolean gathered = campus && campusStands();
+            // THE CAMPUS (0.7.97): once a refinery unit stands, the next goes only to a cell of the campus's or one touching it -
+            // since 0.8.0 a works of each group to its own group's.
+            int group = in.types[bandType[g][i]] == null ? BuildingVisual.NO_GROUP : in.types[bandType[g][i]].campusGroup();
+            boolean campus = group != BuildingVisual.NO_GROUP;
+            boolean gathered = campus && campusStands(group);
             for (int m = m0; m < bNMine && best < 0 && !looked; m++) {
                 int c = mine[m];
                 if (gathered && !nearCampus(c)) continue;
@@ -1185,7 +1196,7 @@ public final class DistrictPlan {
             }
             // ...and opens the first cell in the order that touches the campus's cells, while one does.
             while (best < 0 && bNext < order.length) {
-                int pick = campus ? campusNext(out) : -1;
+                int pick = campus ? campusNext(out, group) : -1;
                 // A later step's turn: the cell about to open is the one it opens otherwise.
                 if (bTurnAt != null && out.cellKind[pick >= 0 ? order[pick] : order[bNext]] == CLOSED) {
                     int at = bByHomes ? (g == 0 ? bHomes : -1) : bOpened;
@@ -1241,28 +1252,39 @@ public final class DistrictPlan {
         /**
          * The campus's next cell (THE CAMPUS): the index in the order, from
          * the next to open on, of the first closed cell touching (eight ways:
-         * a side or a corner) a cell a refinery unit already stands in; -1
+         * a side or a corner) a cell a refinery unit already stands in - since
+         * 0.8.0 a unit of the group asked; -1
          * when none stands yet or no closed cell touches theirs - then the
          * order's next opens, as for any building.
          */
-        int campusNext(DistrictPlan out) {
-            if (!campusStands()) return -1;
+        int campusNext(DistrictPlan out, int group) {
+            if (!campusStands(group)) return -1;
             for (int k = bNext; k < order.length; k++) if (out.cellKind[order[k]] == CLOSED && nearCampus(order[k])) return k;
             return -1;
         }
 
-        /** Whether a refinery unit stands yet, the cells they stand in marked in campusCells. */
-        boolean campusStands() {
-            boolean any = false;
-            Arrays.fill(campusCells, false);
-            for (int k = 0; k < bPlaced; k++) {
-                BuildingVisual.Type t = in.types[placedT[k]];
-                if (t == null || !t.campus()) continue;
-                campusCells[(placedY[k] / CELL) * CELLS_A_SIDE + placedX[k] / CELL] = true;
-                any = true;
+        /** Whether a unit of a group stands yet (the refinery's, or since 0.8.0 a works group's), the cells they stand in marked in campusCells - read on from the last look while the same group's and nothing placed was undone (campusGen), so a campus of thousands is not read again for each. */
+        boolean campusStands(int group) {
+            if (group != campusGroup || bPlaced < campusSeen || campusGen != campusGenSeen) {
+                Arrays.fill(campusCells, false);
+                campusAny = false;
+                campusSeen = 0;
+                campusGroup = group;
+                campusGenSeen = campusGen;
             }
-            return any;
+            for (int k = campusSeen; k < bPlaced; k++) {
+                BuildingVisual.Type t = in.types[placedT[k]];
+                if (t == null || t.campusGroup() != group) continue;
+                campusCells[(placedY[k] / CELL) * CELLS_A_SIDE + placedX[k] / CELL] = true;
+                campusAny = true;
+            }
+            campusSeen = bPlaced;
+            return campusAny;
         }
+
+        /** campusStands()' reading: the group read, how far, whether one stood, and the undoing it was read at. */
+        int campusGroup = -1, campusSeen, campusGen, campusGenSeen;
+        boolean campusAny;
 
         /** Whether cell c is one of campusCells or touches one, eight ways (a side or a corner). */
         boolean nearCampus(int c) {

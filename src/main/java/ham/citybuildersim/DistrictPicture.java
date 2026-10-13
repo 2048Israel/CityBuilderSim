@@ -66,10 +66,14 @@ public final class DistrictPicture {
     public static final byte FLATS = FIRST_CLASS + BuildingVisual.CLASSES;
     /** ...the refinery's units (CAMPUS_FILL), a sea terminal (TERMINAL_FILL) and a tank farm (TANKS_FILL): each type's own fill, as the painter draws it (BuildingVisual.Type.fill()). */
     public static final byte CAMPUS = FLATS + 1, TERMINAL = FLATS + 2, TANKS = FLATS + 3;
+    /** ...since 0.8.0 (batch I14) each processing industry's works, Iron & Steel's to Wood Products' (BuildingVisual.GROUP_FILL, STEEL to WOOD), at WORKS + its group - STEEL... */
+    public static final byte WORKS = TANKS + 1;
+    /** ...and the coal wash plant, a logging camp and planted forest (BuildingVisual.LOOK_FILL): the materials' boxes that are not on a site (a mine on its site is the plan's SITE_MINED, Mines and wells). */
+    public static final byte WASH = WORKS + BuildingVisual.GROUPS - BuildingVisual.STEEL, CAMP = WASH + 1, STAND = WASH + 2;
     /** A paved street of the plan, in TileRaster's colour below LINES_FROM px a plot (ROAD_SMALL's paved: its casing) - its gravel streets and tracks are the ground's, hidden as the far view's blocks hide them at L2 (TileRaster.blocks(), star MM1-5)... */
-    public static final byte PAVED = TANKS + 1;
+    public static final byte PAVED = STAND + 1;
     /** ...and a highway's plot - the city's runs' Elevated Highway, or a street of highway plots - and the railway's track: ROAD_SMALL's highway and RAIL_LINE. */
-    public static final byte HIGHWAY = TANKS + 2, RAIL = TANKS + 3;
+    public static final byte HIGHWAY = STAND + 2, RAIL = STAND + 3;
     /** How many codes. */
     public static final int CODES = RAIL + 1;
 
@@ -81,6 +85,10 @@ public final class DistrictPicture {
         COLOUR[CAMPUS] = BuildingVisual.CAMPUS_FILL;
         COLOUR[TERMINAL] = BuildingVisual.TERMINAL_FILL;
         COLOUR[TANKS] = BuildingVisual.TANKS_FILL;
+        for (int g = BuildingVisual.STEEL; g < BuildingVisual.GROUPS; g++) COLOUR[WORKS + g - BuildingVisual.STEEL] = BuildingVisual.GROUP_FILL[g];
+        COLOUR[WASH] = BuildingVisual.LOOK_FILL[BuildingVisual.WASH];
+        COLOUR[CAMP] = BuildingVisual.LOOK_FILL[BuildingVisual.CAMP];
+        COLOUR[STAND] = BuildingVisual.LOOK_FILL[BuildingVisual.STAND];
         COLOUR[PAVED] = TileRaster.ROAD_SMALL[BuildingVisual.PAVED];
         COLOUR[HIGHWAY] = TileRaster.ROAD_SMALL[BuildingVisual.HIGHWAY];
         COLOUR[RAIL] = TileRaster.RAIL_LINE;
@@ -89,12 +97,16 @@ public final class DistrictPicture {
     /** A code's colour (0 for GROUND: none of the picture's own). */
     public static int colour(int code) { return COLOUR[code]; }
 
-    /** Whether a code is a building's (FIRST_CLASS to TANKS): what a picture's class shares are counted over. */
-    public static boolean isBuilding(int code) { return code >= FIRST_CLASS && code <= TANKS; }
+    /** Whether a code is a building's (FIRST_CLASS to STAND): what a picture's class shares are counted over. */
+    public static boolean isBuilding(int code) { return code >= FIRST_CLASS && code <= STAND; }
 
-    /** A type's code: its fill's - its class's, the flats', or the refinery's units', a terminal's or a tank farm's own (BuildingVisual.Type.fill()); an unknown type industry's, as the painter draws one. */
+    /** A type's code: its fill's - its class's, the flats', or the refinery's units', a terminal's or a tank farm's own, since 0.8.0 a works' group's and the wash plant's, a camp's and planted forest's (BuildingVisual.Type.fill()); an unknown type industry's, as the painter draws one. */
     public static byte codeOf(BuildingVisual.Type t) {
         if (t == null) return (byte) (FIRST_CLASS + BuildingVisual.INDUSTRY);
+        if (t.group() >= BuildingVisual.STEEL) return (byte) (WORKS + t.group() - BuildingVisual.STEEL);
+        if (t.look() == BuildingVisual.WASH) return WASH;
+        if (t.look() == BuildingVisual.CAMP) return CAMP;
+        if (t.look() == BuildingVisual.STAND) return STAND;
         return t.flats() ? FLATS : t.campus() ? CAMPUS : t.berth() >= 0 ? TERMINAL : t.shore() ? TANKS : (byte) (FIRST_CLASS + t.cls());
     }
 

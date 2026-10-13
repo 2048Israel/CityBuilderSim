@@ -6580,8 +6580,60 @@ public final class GameVersion {
      *     roofs, nothing drawn with nothing standing), 9 and 10 (the picture
      *     pure, and empty after a load).
      *   - THE PLAYTESTS do not move: byte-identical.
+     *
+     * 0.8.0 (2026-10-13) - THE RELEASE THAT FINISHES INDUSTRY.
+     * The oil chain and the five materials chains are whole. Oil from 0.7.76
+     * to 0.7.98: its goods, FUEL split into petrol and diesel, the crude
+     * grades, the refinery's units and their flow, the spread planner, the
+     * wells' decline, the tank farm and the strategic reserve, the sea
+     * terminals and their boats, the oil at sea in two pools, the refinery
+     * as a picture and the oil industry's screen. The materials from 0.7.110
+     * to 0.7.143: fields by type, the shared machinery (ProcessingSector,
+     * ExtractionSector, every order on its whole cost), iron's prices and
+     * scrap, steel's integrated route and the city's old metal, iron mining
+     * by type and size, coal, stone and cement, copper, forestry under
+     * zoning's forest law, wood products - each its own sector - then their
+     * pictograms, cards and pages. This batch, I14, the last of the four
+     * screen batches (docs/studies/spec-materials.md 5's I14 row;
+     * docs/queue/I14.md, docs/queue/I14-notes/fixI14-notes.md), puts them on
+     * the map. No save format change (39): nothing is saved; the map's
+     * sidecar is FORMAT 7 (an older one is read).
+     *   - EVERY WORKS ON ITS OWN SITES (CityMap, THE WORKS ON THEIR SITES BY
+     *     TYPE): every type of iron, oil, coal, stone and copper stands on
+     *     its resource's sites by the type of field its template names, on as
+     *     many as it takes - a Large Open-Pit Mine on twenty hematite sites,
+     *     counted once - laid as LandManager.fits() packs them. Until now one
+     *     type a resource stood on sites, the rest drew as one plain mine in
+     *     the founding district, and coal's, stone's and copper's first types
+     *     were placed nowhere (fixI9-notes' star 10, a latent "districts do
+     *     not sum").
+     *   - THE LOOKS (BuildingVisual, TileRaster's THE MATERIALS AS
+     *     THEMSELVES): an open pit's benches in its ore's colour, an
+     *     underground mine's headframe, a quarry, a leach plant's heaps and
+     *     pond, the coal wash plant, a logging camp, planted forest, and each
+     *     processing industry's works in its own colours - in the legend, and
+     *     in the far views' pictures (DistrictPicture's new codes).
+     *   - EACH INDUSTRY'S CAMPUS (CityMap, DistrictPlan): Iron & Steel's,
+     *     Cement & Concrete's, Copper Refining's and Wood Products' works
+     *     each gathered into one district and packed in touching cells, as
+     *     the refinery's units since 0.7.97; the arc furnaces and mini-mills
+     *     every city had keep their places (BuildingVisual.NOT_GATHERED).
+     *   - THE ZONES BY DISTRICT (CityMap, LandMap; ui/MapView): a zone's
+     *     districts tinted in its sector's colour, the districts holding its
+     *     buildings first, the legend naming each zone; none with no zone.
+     *   - FOUND ON THE WAY: a footprint is capped at a cell's interior (31
+     *     plots, DistrictPlan.INTERIOR), not a tile's 32, which no plan held -
+     *     a Tree Plantation, a Woodlot, or a coal or copper mine on no site
+     *     threw its district's plan.
+     *   - Harnesses: MapCheck 15 (new: each look its own, every works on its
+     *     sites by type and drawn once, one more mine moves none, each
+     *     campus one, the looks' colours rastered, the zones' tint, a screen
+     *     over the industry within 80 ms of the thread's CPU), 13 (the
+     *     legend's entries), and the fixtures' Iron Mines capped by hematite
+     *     sites, the game's own rule since 0.7.124 (MapCheck, PlanCheck).
+     *   - THE PLAYTESTS do not move: byte-identical.
      */
-    public static final String VERSION = "0.7.143";
+    public static final String VERSION = "0.8.0";
 
     /**
      * The save shape.
