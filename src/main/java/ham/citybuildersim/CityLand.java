@@ -683,6 +683,45 @@ public final class CityLand {
         }
     }
 
+    /**
+     * ...and field by field (0.7.142): each field of a resource an offer's
+     * ground holds, by fieldsOn()'s rules and in its order - {its type's
+     * index in Resource.typesOf(), its sites there} - a whole field all its
+     * sites, a field the city holds in part the sites of it on the offer.
+     * What Build's field payback weighs, the best mine that fits each field
+     * (BuildAdvice.fieldMines()).
+     */
+    public java.util.List<int[]> fieldSitesOn(LandParcel p, Resource r) {
+        java.util.List<int[]> out = new java.util.ArrayList<>();
+        if (p == null || r == null || !r.inFields()) return out;
+        long x0 = p.getX0(), y0 = p.getY0(), x1 = p.getX1(), y1 = p.getY1();
+        World world = World.of(key);
+        java.util.List<Deposit.FieldType> types = r.typesOf();
+        for (int cell : cellsUnder(x0, y0, x1 - 1, y1 - 1)) {
+            for (Deposit d : fields(world, cell, r)) {
+                if (d.x() < x0 || d.x() >= x1 || d.y() < y0 || d.y() >= y1) continue;
+                if (isPart(d) || grid.owner(d.x(), d.y()) >= 0) continue;
+                out.add(new int[] { Math.max(0, types.indexOf(d.type())), d.sites() });
+            }
+        }
+        for (GridConversion.PartField pf : parts) {
+            if (pf.kind() != r) continue;
+            Deposit d = fieldOf(world, pf);
+            if (d == null) continue;
+            boolean[] mine = new boolean[d.sites()];
+            for (int s : pf.owned()) if (s >= 0 && s < mine.length) mine[s] = true;
+            int n = 0;
+            for (int k = 0; k < d.sites(); k++) {
+                if (mine[k]) continue;
+                long[] at = GridConversion.sitePlot(d, k);
+                if (at[0] < x0 || at[0] >= x1 || at[1] < y0 || at[1] >= y1 || grid.owner(at[0], at[1]) >= 0) continue;
+                n++;
+            }
+            if (n > 0) out.add(new int[] { Math.max(0, types.indexOf(d.type())), n });
+        }
+        return out;
+    }
+
     /** ...an offer's (0.7.142): its rectangle's sites of each of a resource's types, in Resource.typesOf()'s order. */
     public long[] sitesOnByType(LandParcel p, Resource r) {
         int n = r == null ? 0 : r.typesOf().size();

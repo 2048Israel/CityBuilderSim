@@ -1679,10 +1679,102 @@ public final class BuildAdvice {
         public boolean pays() { return earns >= payment; }
     }
 
-    /** Whether an offer holding iron would pay itself back in this city (fieldEarnings() against fieldPayment()). */
+    /** Whether an offer holding iron would pay itself back in this city (fieldEarnings() against fieldPayment()) - since 0.7.142 by the best mine that fits each of its fields. */
     public static Payback ironPayback(Game game, LandParcel field) {
-        double[] earned = fieldEarnings(game, field.getDeposits());
+        double[] earned = fieldEarnings(game, field);
         return new Payback((int) earned[0], earned[1], fieldPayment(game, field));
+    }
+
+    /*
+     * BY THE FIELDS IT HOLDS (0.7.142, batch I13; I5's note). fieldEarnings()
+     * below values an offer as Iron Mines on all its sites, whatever their
+     * type, where since 0.7.124 Iron Mining builds the mine that fits each
+     * field by its type and size (ExtractionSector, BY TYPE AND SIZE): a
+     * magnetite field takes a magnetite works, never an Iron Mine, and a
+     * field of twenty free sites a large one if it scores best. So the
+     * offer's fields are weighed one by one (CityLand.fieldSitesOn()), each
+     * filled with the iron mines of its type in the plan's order - the best
+     * earnings on its whole cost first (ExtractionSector.estimatedMonthlyProfit()
+     * on BusinessInvestment.getCostOf() and its lorries), as many of it as
+     * the field's sites hold, then the next on what is left (fieldMines());
+     * and the mines are counted as fieldEarnings() counts them, each kind
+     * over all the fields it fills up to what the sector could staff of it,
+     * the room at home shared in turn, the first that would not pay ending
+     * its kind. On an offer whose fields take Iron Mines alone (hematite,
+     * none of twenty sites or more, or the large works scoring worse) it is
+     * fieldEarnings()'s figure for its sites, to the bit.
+     * Build's no-deposit page reads it (ironPayback()), and the test
+     * player's iron rule (LongPlaytest.ironWhenNeeded()) - which neither
+     * playtest reaches: no iron offer is listed when it looks, "found none
+     * listed" every time, so neither trace moves.
+     */
+
+    /** A field of an offer and the mines that would fill it (0.7.142): its type, its sites, a kind of mine and how many of it. */
+    public record FieldMines(Deposit.FieldType type, int sites, BuildingsTemplate mine, int count) { }
+
+    /** Each iron field an offer holds, filled with the iron mines that fit it by type and size in the plan's order (above); a field no mine fits has a row with none. */
+    public static List<FieldMines> fieldMines(Game game, LandParcel field) {
+        List<FieldMines> out = new ArrayList<>();
+        ham.citybuildersim.sectors.ExtractionSector mining = (ham.citybuildersim.sectors.ExtractionSector) game.getSectors().byKey(Sectors.MINING);
+        if (mining == null || field == null) return out;
+        BusinessInvestment plans = game.getBusinessInvestment();
+        List<Deposit.FieldType> types = Resource.IRON.typesOf();
+        for (int[] f : game.getCityLand().fieldSitesOn(field, Resource.IRON)) {
+            Deposit.FieldType type = types.get(f[0]);
+            List<BuildingsTemplate> kinds = new ArrayList<>();
+            for (BuildingsTemplate t : game.getBuildingManager().getTemplatesBySector(Sectors.MINING)) {
+                BuildingsTemplate.Site site = t.site();
+                if (site != null && site.resource() == Resource.IRON && site.type() == type && site.sites() > 0) kinds.add(t);
+            }
+            java.util.Map<BuildingsTemplate, Double> score = new java.util.HashMap<>();
+            for (BuildingsTemplate t : kinds) {
+                double cost = plans.getCostOf(t, 1) + mining.fleetCapital(t);
+                score.put(t, cost > 0 ? mining.estimatedMonthlyProfit(t, plans) / cost : Double.NEGATIVE_INFINITY);
+            }
+            kinds.sort((a, b) -> Double.compare(score.get(b), score.get(a)));
+            int left = f[1];
+            boolean any = false;
+            for (BuildingsTemplate t : kinds) {
+                int n = left / t.site().sites();
+                if (n <= 0) continue;
+                out.add(new FieldMines(type, f[1], t, n));
+                left -= n * t.site().sites();
+                any = true;
+            }
+            if (!any) out.add(new FieldMines(type, f[1], null, 0));
+        }
+        return out;
+    }
+
+    /** What an offer's iron fields would earn the city's mines a month (0.7.142; BY THE FIELDS IT HOLDS, above): {mines, their monthly profit}, fieldEarnings()'s count on fieldMines()' mines. */
+    public static double[] fieldEarnings(Game game, LandParcel field) {
+        Sector mining = game.getSectors().byKey(Sectors.MINING);
+        if (mining == null || field == null) return new double[] { 0, 0 };
+        BusinessInvestment plans = game.getBusinessInvestment();
+        GoodsMarket ore = game.getEconomyManager().getMarkets().get(Good.IRON);
+        double room = Math.max(0, plans.forecast(mining, ore) - mining.getCapacity(Good.IRON) - mining.getPipeline(Good.IRON));
+        double abroad = Good.IRON.exportable() ? Math.max(0, ore.netExportPrice()) : 0;
+        double perTonneAtHome = (ore.getLocalPrice() - abroad) * BusinessInvestment.operatingRateOf(mining.getOperatingRate());
+        // Each kind of mine over all the fields it fills, in the order they first come: the staffing test is a kind's.
+        Map<BuildingsTemplate, Integer> kinds = new LinkedHashMap<>();
+        for (FieldMines f : fieldMines(game, field)) if (f.mine() != null) kinds.merge(f.mine(), f.count(), Integer::sum);
+        int mines = 0;
+        double monthly = 0, home = room;
+        for (Map.Entry<BuildingsTemplate, Integer> k : kinds.entrySet()) {
+            double units = k.getKey().makes(Good.IRON);
+            double first = plans.estimatedMonthlyProfit(Sectors.MINING, k.getKey());
+            double homeFirst = Math.min(units, room);
+            int staffable = mining.staffableCount(k.getKey(), k.getValue());
+            for (int i = 0; i < staffable; i++) {
+                double h = Math.max(0, Math.min(units, home));
+                double profit = first + (h - homeFirst) * perTonneAtHome;
+                if (!(profit > 0)) break;
+                mines++;
+                monthly += profit;
+                home -= h;
+            }
+        }
+        return new double[] { mines, monthly };
     }
 
     /**

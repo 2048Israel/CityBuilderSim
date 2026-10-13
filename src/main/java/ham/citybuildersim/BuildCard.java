@@ -1478,7 +1478,10 @@ public final class BuildCard {
         lines.add(Sector.Line.head("Who buys it here, at nameplate"));
         for (Good g : sector.goodsMade()) {
             List<String> who = new ArrayList<>();
-            if (sector.captive(g)) who.add("its own works first, " + f.units(sector.getInputAtCapacity(g), g));
+            if (sector.captive(g)) {
+                double own = sector.getInputAtCapacity(g);
+                who.add("its own works first" + (own > 0 ? ", " + f.units(own, g) : ""));
+            }
             for (Buyer by : buyers(game, g)) {
                 if (by.sector() == sector) continue;
                 who.add(by.sector().label() + (by.takes() > 0 ? " " + f.units(by.takes(), g) : ", none standing"));

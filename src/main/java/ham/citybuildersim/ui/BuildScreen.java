@@ -1388,41 +1388,35 @@ final class BuildScreen {
     }
 
     /**
-     * Where it stands: "stands on 20 sites of one hematite field · the city
-     * owns 27 hematite and 4 magnetite sites, 3 of its kind spoken for, 405 Mt
-     * of hematite ore left · fits on one" - or the field it lacks, in the
-     * plan's words and red; a quarry on either type, which it stands on and
-     * what one more would make there.
+     * Where it stands: "stands on 20 sites of one hematite field · the
+     * city's: 4 hematite, 23 magnetite, 3 of its kind spoken for · 161.7M t
+     * of hematite ore left · fits" - "does not fit" in red, the field it
+     * lacks being the investors' "this one:" in the plan's words; a quarry on
+     * either type, and what one more would make where it would stand.
      */
     static String[] standsWords(BuildCard.Stands at) {
         Resource r = at.resource();
         List<Deposit.FieldType> types = r.typesOf();
-        StringBuilder w = new StringBuilder();
-        String sites = formatter.format(at.sites()) + (at.sites() == 1 ? " site" : " sites");
-        w.append("stands on ").append(sites).append(" of ").append(at.sites() == 1 ? "a " : "one ")
-                .append(ham.citybuildersim.sectors.ExtractionSector.fieldWords(r, at.type()));
-        if (at.anyType()) w.append(" of either type");
+        String field = ham.citybuildersim.sectors.ExtractionSector.fieldWords(r, at.type());
+        StringBuilder w = new StringBuilder("stands on ");
+        w.append(at.sites() == 1 ? "1 site of " + (field.matches("^[aeiou].*") ? "an " : "a ") : formatter.format(at.sites()) + " sites of one ")
+                .append(field).append(at.anyType() ? ", either type" : "");
         List<String> owns = new ArrayList<>();
         for (int i = 0; i < types.size(); i++) {
             owns.add(formatter.format(at.byType()[i]) + " " + types.get(i).name().toLowerCase(java.util.Locale.ROOT).replace('_', ' '));
         }
-        w.append(" · the city owns ").append(String.join(" and ", owns)).append(" sites, ")
-                .append(formatter.format(at.committed())).append(at.anyType() ? "" : " of its kind").append(" spoken for, ")
-                .append(shortNumber(at.left())).append(" t of ")
+        w.append(" · the city's: ").append(String.join(", ", owns)).append(", ").append(formatter.format(at.committed()))
+                .append(at.anyType() ? "" : " of its kind").append(" spoken for · ").append(shortNumber(at.left())).append(" t of ")
                 .append(ham.citybuildersim.sectors.ExtractionSector.oreWords(r, at.type())).append(" left");
+        if (!at.fits()) return new String[] {w.append(" · does not fit").toString(), Palette.BAD};
         if (at.anyType()) {
             // ...a quarry on either type (0.7.131): limestone while a limestone field has room for it - not its row's aggregate.
             double lime = at.makes().getOrDefault(Good.LIMESTONE, 0.0);
-            if (lime > 0) w.append(" · one more stands on limestone: ").append(formatter.format(Math.round(lime)))
+            if (lime > 0) w.append(" · one more on limestone makes ").append(formatter.format(Math.round(lime)))
                     .append(" t of limestone a month, not aggregate");
-            else if (at.makes().getOrDefault(Good.AGGREGATE, 0.0) > 0) w.append(" · one more stands on hard rock: aggregate");
+            else if (at.makes().getOrDefault(Good.AGGREGATE, 0.0) > 0) w.append(" · one more on hard rock makes aggregate");
         }
-        if (!at.fits()) {
-            w.append(" · ").append(at.wanting() != null ? at.wanting() : "no room for one");
-            return new String[] {w.toString(), Palette.BAD};
-        }
-        w.append(" · fits on one");
-        return new String[] {w.toString(), Palette.TEXT_MUTED};
+        return new String[] {w.append(" · fits").toString(), Palette.TEXT_MUTED};
     }
 
     /** How its sector weighs one: "its whole cost $268.6M, its ground and 2,538 lorries ($173.0M) with it · it would earn $1.2M a month on it, 0.45% a month · the money gate asks $1.5M". */
@@ -1468,7 +1462,7 @@ final class BuildScreen {
             String good = o.good().label().toLowerCase(java.util.Locale.ROOT);
             if (o.ships()) { parts.add("nobody here buys " + good + ": it ships"); continue; }
             List<String> who = new ArrayList<>();
-            if (o.captive()) who.add("its own works first");
+            if (o.captive()) who.add("its own works first" + (o.ownTakes() > 0 ? ", " + Formats.INSTANCE.units(o.ownTakes(), o.good()) : ""));
             for (BuildCard.Buyer b : o.others()) {
                 who.add(b.sector().label() + (b.takes() > 0 ? ", " + Formats.INSTANCE.units(b.takes(), o.good()) + " a month at nameplate"
                         : ", none standing"));
@@ -1478,14 +1472,12 @@ final class BuildScreen {
         return String.join(" · ", parts);
     }
 
-    /** A crew's E: "E: the forest it may cut, 2,800k m³, lasts 240 months of the crews' cut, 150 with one more; it asks 120 · room for 3 more, it carries 7". */
+    /** A crew's E: "E: the forest it may cut, 3.5M m³, would last 150 months of the crews' cut with one more; it asks 120 · room for 3 more, 7 in all". */
     static String crewWords(BuildCard.CrewRule rule, BuildingsTemplate t) {
-        String months = Double.isInfinite(rule.months()) ? "no crew cuts it yet"
-                : "lasts " + formatter.format(Math.round(rule.months())) + " months of the crews' cut";
-        return "E: the forest it may cut, " + shortNumber(rule.cuttable()) + " m³, " + months + ", "
-                + formatter.format(Math.round(rule.monthsWith())) + " with one more; it asks "
+        return "E: the forest it may cut, " + shortNumber(rule.cuttable()) + " m³, would last "
+                + formatter.format(Math.round(rule.monthsWith())) + " months of the crews' cut with one more; it asks "
                 + ham.citybuildersim.sectors.Forestry.FOREST_CREW_MONTHS + " · room for " + formatter.format(rule.more())
-                + " more, it carries " + formatter.format(rule.carries()) + " of them";
+                + " more, " + formatter.format(rule.carries()) + " in all";
     }
 
     /**

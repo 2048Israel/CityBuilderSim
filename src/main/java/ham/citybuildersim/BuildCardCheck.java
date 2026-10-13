@@ -114,7 +114,10 @@ import java.util.Set;
  *       and each of the nine pages says so; on a forest town E's refusal is
  *       Forestry's plan's own words, and its room what E allows; and the
  *       land office's hover by type adds up to every offer's fields, an
- *       offer on each copper type's nearest field all of that type.
+ *       offer on each copper type's nearest field all of that type; and
+ *       Build's field payback fills a magnetite field with magnetite works,
+ *       a hematite field under twenty sites with Iron Mines at the old
+ *       rule's figure to the bit.
  *
  * Every fixture causes its condition.
  */
@@ -1482,6 +1485,7 @@ public class BuildCardCheck {
         whoBuys(g);
         crewRule(root);
         hoverByType(g);
+        paybackByType(g);
     }
 
     /** b. A typed field: three hematite sites by fiat - the one-site mine fits, the 20-site works not, each resource named. */
@@ -1736,7 +1740,7 @@ public class BuildCardCheck {
                 + " listed (" + offers + " offers)", offers > 0 && adds);
         // Caused: an offer drawn round the oxide and the sulphide copper fields nearest the town, its ground unowned.
         for (Deposit.FieldType type : new Deposit.FieldType[] { Deposit.FieldType.SULPHIDE, Deposit.FieldType.OXIDE }) {
-            Deposit field = unownedNearest(g, w, Resource.COPPER, type);
+            Deposit field = unownedNearest(g, w, Resource.COPPER, type, Integer.MAX_VALUE);
             LandParcel p = g.getLandManager().getMarket().measure(new GridOffers.Rect(0, 0, 0, field.x(), field.y(),
                     field.x() + 1, field.y() + 1));
             long[] by = land.sitesOnByType(p, Resource.COPPER);
@@ -1747,8 +1751,33 @@ public class BuildCardCheck {
         }
     }
 
-    /** The field of a type nearest the town's founding site whose centre plot nobody owns and that no part field holds. */
-    static Deposit unownedNearest(Game g, World w, Resource r, Deposit.FieldType type) {
+    /** h. Build's field payback by type (0.7.142): an offer's iron fields weighed by the mine that fits each, not Iron Mines on all. */
+    static void paybackByType(Game g) {
+        World w = World.of(g.getCityLand().key());
+        Deposit hem = unownedNearest(g, w, Resource.IRON, Deposit.FieldType.HEMATITE, 19);
+        Deposit mag = unownedNearest(g, w, Resource.IRON, Deposit.FieldType.MAGNETITE, Integer.MAX_VALUE);
+        LandMarket market = g.getLandManager().getMarket();
+        LandParcel onHem = market.measure(new GridOffers.Rect(0, 0, 0, hem.x(), hem.y(), hem.x() + 1, hem.y() + 1));
+        LandParcel onMag = market.measure(new GridOffers.Rect(0, 0, 0, mag.x(), mag.y(), mag.x() + 1, mag.y() + 1));
+        List<BuildAdvice.FieldMines> h = BuildAdvice.fieldMines(g, onHem), m = BuildAdvice.fieldMines(g, onMag);
+        report("fixture: offers on the nearest hematite field under twenty sites and the nearest magnetite field",
+                onHem.getDeposits() == hem.sites() && onMag.getDeposits() == mag.sites(),
+                String.format("%d hematite site(s), %d magnetite", hem.sites(), mag.sites()));
+        boolean magOnly = !m.isEmpty();
+        for (BuildAdvice.FieldMines f : m) magOnly &= f.type() == Deposit.FieldType.MAGNETITE && f.mine() != null
+                && f.mine().site().type() == Deposit.FieldType.MAGNETITE && f.count() * f.mine().site().sites() <= f.sites();
+        assertTrue("the magnetite field is filled with magnetite works, never an Iron Mine, no more sites than it holds", magOnly);
+        double[] byType = BuildAdvice.fieldEarnings(g, onHem), old = BuildAdvice.fieldEarnings(g, hem.sites());
+        assertTrue("the hematite field under twenty sites takes Iron Mines alone, and its earnings are the old rule's for its"
+                + " sites, to the bit", h.size() == 1 && h.get(0).mine().getId() == Mining.IRON_MINE && h.get(0).count() == hem.sites()
+                && byType[0] == old[0] && Double.doubleToLongBits(byType[1]) == Double.doubleToLongBits(old[1]));
+        BuildAdvice.Payback p = BuildAdvice.ironPayback(g, onMag);
+        double[] e = BuildAdvice.fieldEarnings(g, onMag);
+        assertTrue("Build's payback on the magnetite offer is its by-type earnings", p.mines() == (int) e[0] && p.earns() == e[1]);
+    }
+
+    /** The field of a type nearest the town's founding site whose centre plot nobody owns, of at most `maxSites` sites. */
+    static Deposit unownedNearest(Game g, World w, Resource r, Deposit.FieldType type, int maxSites) {
         CityLand land = g.getCityLand();
         long fx = w.foundingX(), fy = w.foundingY();
         int cx = (int) (fx / World.CELL), cy = (int) (fy / World.CELL);
@@ -1760,7 +1789,7 @@ public class BuildCardCheck {
                     if (Math.max(Math.abs(x - cx), Math.abs(y - cy)) != ring) continue;
                     if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
                     for (Deposit d : w.fieldsInCell(y * World.CELLS + x, r)) {
-                        if (d.type() != type || land.ownsPlot(d.x(), d.y())) continue;
+                        if (d.type() != type || d.sites() > maxSites || land.ownsPlot(d.x(), d.y())) continue;
                         double dist = Math.hypot(d.x() - fx, d.y() - fy);
                         if (dist < far) { far = dist; best = d; }
                     }
