@@ -239,13 +239,18 @@ public final class CopperMining extends ExtractionSector {
         if (game == null || buildings == null) return lines;
         Formats f = Formats.INSTANCE;
         double conc = getCapacity(Good.COPPER_CONC), cathode = getCapacity(Good.COPPER);
-        if (!(conc > 0 || cathode > 0)) return lines;
+        // ...and where the copper goes (0.7.142, batch I13), standing or not: the smelters the concentrate, the rod mills the cathode.
+        if (!(conc > 0 || cathode > 0)) {
+            lines.addAll(ham.citybuildersim.BuildCard.chainLines(game, this));
+            return lines;
+        }
         lines.add(Line.head("The copper, a month at nameplate"));
         if (conc > 0) lines.add(Line.of("Concentrate, on sulphide fields", f.count(conc) + " t"));
         if (cathode > 0) {
             lines.add(Line.of("Cathode leached, on oxide fields", f.count(cathode) + " t"));
             lines.add(Line.of("Acid it takes", f.count(getInputAtCapacity(Good.ACID)) + " t"));
         }
+        lines.addAll(ham.citybuildersim.BuildCard.chainLines(game, this));
         return lines;
     }
 }

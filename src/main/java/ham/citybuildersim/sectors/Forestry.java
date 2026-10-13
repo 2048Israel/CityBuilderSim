@@ -556,6 +556,13 @@ public final class Forestry extends ExtractionSector {
         double committed = crewsCut(true);
         lines.add(Line.of("It lasts the crews", committed > 0 ? String.format("%.0f months", cuttable / committed) : "no crew",
                 committed > 0 && cuttable < FOREST_CREW_MONTHS * committed ? Line.Tone.WARN : Line.Tone.NONE));
+        // ...and E as the forest law's page says it (0.7.142, batch I13): the crews of the smallest kind it has room for.
+        ham.citybuildersim.BuildCard.CrewRule rule = ham.citybuildersim.BuildCard.crewRule(game);
+        if (rule != null) {
+            lines.add(Line.of("Room under E for more " + ham.citybuildersim.BuildCard.smallestCrew(game).getName() + "s",
+                    f.count(rule.more()) + " more; it carries " + f.count(rule.carries()),
+                    rule.more() > 0 ? Line.Tone.NONE : Line.Tone.WARN));
+        }
         lines.add(Line.note("A crew is added only while the forest it may cut lasts " + FOREST_CREW_MONTHS
                 + " months of every crew's cut. What is cut grows back a 240th a month, so the forest settles with 240 months"
                 + " of the cut gone; the law's protected share is what always stands."));
@@ -566,6 +573,7 @@ public final class Forestry extends ExtractionSector {
         if (land.getZoning().zone(key()) == null) {
             lines.add(Line.note("No Forestry zone, no plantation: zone ground for Forestry in Policy › Zoning."));
         }
+        lines.addAll(ham.citybuildersim.BuildCard.chainLines(game, this));
         return lines;
     }
 

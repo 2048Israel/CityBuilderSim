@@ -3212,7 +3212,8 @@ public class LongPlaytest {
             ironNoneListed++;
             return;
         }
-        if (!(fieldEarnings(g, field.getDeposits())[1] >= fieldPayment(g, field))) {
+        // ...its fields weighed by the mine that fits each, by type and size (0.7.142, BuildAdvice's BY THE FIELDS IT HOLDS).
+        if (!(BuildAdvice.fieldEarnings(g, field)[1] >= fieldPayment(g, field))) {
             ironDoesNotPay++;
             return;
         }

@@ -381,7 +381,11 @@ public final class Quarrying extends ExtractionSector {
         if (game == null) return lines;
         Formats f = Formats.INSTANCE;
         double[] now = nameplate(false, null);
-        if (!(now[0] > 0 || now[1] > 0 || now[2] > 0)) return lines;
+        // ...and where the stone goes (0.7.142, batch I13), standing or not: the kilns and furnaces the limestone, the world the rest.
+        if (!(now[0] > 0 || now[1] > 0 || now[2] > 0)) {
+            lines.addAll(ham.citybuildersim.BuildCard.chainLines(game, this));
+            return lines;
+        }
         lines.add(Line.head("The stone, a month at nameplate"));
         if (now[0] > 0) lines.add(Line.of("Limestone, on limestone fields", f.count(now[0]) + " t"));
         if (now[1] > 0) lines.add(Line.of("Aggregate, on hard rock", f.count(now[1]) + " t"));
@@ -390,6 +394,7 @@ public final class Quarrying extends ExtractionSector {
             lines.add(Line.of("Limestone sold as aggregate", f.count(carried) + " t", Line.Tone.MUTED));
             lines.add(Line.note("Limestone no kiln or furnace here buys sells as aggregate, tonne for tonne."));
         }
+        lines.addAll(ham.citybuildersim.BuildCard.chainLines(game, this));
         return lines;
     }
 }

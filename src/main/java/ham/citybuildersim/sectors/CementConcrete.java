@@ -52,6 +52,12 @@ public final class CementConcrete extends ProcessingSector {
     /** The Lime Kiln's (0.7.131): 18,000 t of quicklime a month. */
     public static final int LIME_KILN = 120;
 
+    /** The page (0.7.142, batch I13): who buys its cement and lime here - Iron & Steel's oxygen shops the lime - or that they ship (BuildCard.chainLines()). */
+    @Override
+    public java.util.List<Line> ownLines(ham.citybuildersim.Game game) {
+        return ham.citybuildersim.BuildCard.chainLines(game, this);
+    }
+
     public CementConcrete() {
         super(Sectors.CEMENT_CONCRETE, "Cement & Concrete", BuildingType.HEAVY_INDUSTRY);
         makes(Good.CEMENT);

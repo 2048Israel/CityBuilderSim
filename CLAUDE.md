@@ -319,7 +319,12 @@ These are Jerus's, and they do not move.
                                    take to pay back: appraise(); since 0.7.122 the last of them consider()'s
                                    brake, the interest on its whole cost - INTEREST, through
                                    Game.interestTest() - a landlord's home not asked it), the verdict on an
-                                   order; pure - BuildCardCheck holds it
+                                   order; since 0.7.142 (batch I13) a materials building's own lines - where
+                                   it stands on its typed field, how its sector's planner weighs it on its
+                                   whole cost with its lorries (the investors' "this one:" its gate), its
+                                   own power, the old metal a yard buys, who here buys what it makes, a
+                                   crew's E - and the nine industries' pages' chain (chainLines()); pure -
+                                   BuildCardCheck holds it
         SectorFlow.java            one business's month as a flow (0.7.30): each good in and out, its units off
                                    the production rows and its money off the statement, the plant's six
                                    throttles and the rate they multiply to; what the Sectors screen's
@@ -382,8 +387,10 @@ These are Jerus's, and they do not move.
                                    Resource.typesOf(); since 0.7.115 a world's key, World.Key: the
                                    generated world a seed makes, or the real Earth round a spot; since
                                    0.7.127 seven kinds of ground, ICE and DESERT after the five, and one
-                                   rule for dry ground, World.dry(), that every test of it asks) -
-                                   LandManager and LandMarket sell it, WorldCheck and LandCheck hold it
+                                   rule for dry ground, World.dry(), that every test of it asks; since
+                                   0.7.142 an offer's fields by type, CityLand.fieldsOnByType(), the land
+                                   office's hover) - LandManager and LandMarket sell it, WorldCheck and
+                                   LandCheck hold it
                                    (docs/studies/spec-land.md and spec-grid.md)
         EarthProj.java, EarthData.java, EarthTerrain.java, Geology.java
                                    the real Earth for "the world as planet Earth" (0.7.111, batch E1;

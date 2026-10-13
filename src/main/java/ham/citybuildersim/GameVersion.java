@@ -6513,8 +6513,48 @@ public final class GameVersion {
      *     and its settling point with 40% protected; the words and colours;
      *     pure - a save before and after a read the same; after a load; and
      *     the plan ordering the kind the view would, in towns at founding).
+     *
+     * 0.7.142 (2026-10-12) - CARDS AND PAGES FOR THE MATERIALS BUILDINGS.
+     * Batch I13, the third of the four screen batches that finish the
+     * materials chains (docs/studies/spec-materials.md 2.13's last bullet
+     * and 5's I13 row; spec-zoning board 3; runs/brief-batchI13.md,
+     * runs/fixI13-notes.md). No save format change (39): nothing is saved.
+     *   - THE CARD (BuildCard, THE MATERIALS' CARDS; ui/BuildScreen, THE
+     *     MATERIALS' LINES): a materials building - the nine industries' -
+     *     says where it stands ("stands on 20 sites of one hematite field",
+     *     the city's sites by type, those spoken for, what is left, fits or
+     *     not; a quarry on limestone makes limestone, not aggregate); how its
+     *     sector weighs one - its whole cost with its ground and lorries, what
+     *     it would earn on it, the money gate's bar - and the investors'
+     *     "this one:" is the planner's first refusal in its own words; its
+     *     own power and what it sells; the city's old steel or copper a yard
+     *     buys and at what price; who here buys each good it makes, its own
+     *     works first, or that it ships; and a crew's E.
+     *   - THE WORDS: a mine that does not fit names its resource by type -
+     *     "no coking coal left in the city's fields", "no hematite field with
+     *     20 free sites" - where coal, stone and copper read "ore"; the
+     *     investors' word reads as the ground (WordKind.ORE).
+     *   - THE PAGES: the nine industries' Sectors pages end on their chain -
+     *     their works' own power, and who here buys each good they make
+     *     (BuildCard.chainLines()); Iron & Steel's says its old steel, as
+     *     Copper Refining's its copper; Forestry's its room under E.
+     *   - THE LAND OFFICE'S HOVER: an offer's fields by type ("Iron ore: 224
+     *     sites, 2.19 Gt - 206 hematite, 18 magnetite"), CityLand
+     *     .fieldsOnByType(), fieldsOn()'s twin; and Policy › Zoning's forest
+     *     law page carries THE CREW RULE (E): room for N more crews now, and
+     *     how many the forest carries.
+     *   - BUILD'S FIELD PAYBACK by the mine that fits each field, by type and
+     *     size (BuildAdvice.fieldMines()), where it valued every site as an
+     *     Iron Mine - the test player's iron rule with it; neither playtest
+     *     reaches that rule (no iron offer is listed when it looks).
+     *   - Harnesses: BuildCardCheck 12 (new: every materials building weighed
+     *     by its sector's rule to the bit; a typed field, a quarry on
+     *     limestone, a works on imported feed at the money gate, a
+     *     self-powered works, a scrap yard, the buyers, E on a forest town,
+     *     the hover by type, the payback by type), 8 (the field words).
+     *   - THE PLAYTESTS do not move: byte-identical.
      */
-    public static final String VERSION = "0.7.141";
+    public static final String VERSION = "0.7.142";
 
     /**
      * The save shape.

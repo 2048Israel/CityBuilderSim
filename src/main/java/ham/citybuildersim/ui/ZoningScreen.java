@@ -978,8 +978,8 @@ final class ZoningScreen {
 
     /** The law's (i) on its page. */
     static final String FOREST_INFO = LAW_INFO + " What it would do is the long run: the protected share of the forest's "
-            + "wood stands for ever, the rest may be cut; the open forest is what a building may take. Forestry's crews, "
-            + "which will cut it, come later: this is what the law holds now.";
+            + "wood stands for ever, the rest may be cut; the open forest is what a building may take. Forestry's crews "
+            + "cut what the law leaves them, under the crew rule below.";
 
     void forestPage(VBox page) {
         Game g = ui.game;
@@ -1013,6 +1013,29 @@ final class ZoningScreen {
         page.getChildren().add(multiDialCard(Icons.TREES, "THE FOREST LAW", FOREST_INFO,
                 "The kept share is never under the protected: a law of more protected than kept keeps the protected.",
                 dials, effects, "In the long run, on the forest as it stands.", FOREST_INFO));
+        // THE CREW RULE (E) (0.7.142, batch I13; board 3's last line): Forestry's rule on the forest it may cut now.
+        BuildCard.CrewRule rule = BuildCard.crewRule(g);
+        if (rule != null) {
+            page.getChildren().add(PolicyScreen.card(PolicyScreen.words("THE CREW RULE (E) · at "
+                    + ham.citybuildersim.sectors.Forestry.FOREST_CREW_MONTHS + " months", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
+                    PolicyScreen.muted(crewRuleWords(rule, BuildCard.smallestCrew(g)))));
+        }
+    }
+
+    /**
+     * The crew rule in a line (0.7.142; spec-zoning board 3: "room for 1 more
+     * crew now; the forest carries 7"): a crew is added only while the forest
+     * Forestry may cut lasts FOREST_CREW_MONTHS of every crew's cut -
+     * BuildCard.crewRule()'s figures for the smallest crew.
+     */
+    static String crewRuleWords(BuildCard.CrewRule rule, BuildingsTemplate smallest) {
+        String name = smallest == null ? "crew" : smallest.getName();
+        return "Room for " + Money.formatter.format(rule.more()) + " more " + name + (rule.more() == 1 ? "" : "s")
+                + " now; the forest it may cut, " + m3(rule.cuttable()) + ", carries " + Money.formatter.format(rule.carries())
+                + (Double.isInfinite(rule.months()) ? ". No crew cuts it yet."
+                        : ". It lasts the crews standing and on site " + Money.formatter.format(Math.round(rule.months())) + " months.")
+                + " A crew is added only while it would last " + ham.citybuildersim.sectors.Forestry.FOREST_CREW_MONTHS
+                + " months of every crew's cut.";
     }
 
     /** WHAT IT WOULD DO at any value of either thumb (pure: the probe reads them): the wood kept standing for ever, the most that may be cut, the forest a building may take, the ground free for anyone. */
