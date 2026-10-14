@@ -1034,7 +1034,7 @@ public class ReadPathCheck {
         g.getDenomination().describeUnit(money);
 
         /*
-         * the former sales tax calculation used to be read here. It is settleSalesTax() now -
+         * calculateSalesTax() used to be read here. It is settleSalesTax() now -
          * a monthly step that strikes the VAT and assigns it, exactly like
          * chargePropertyTax() - so it has no business in a sweep whose entire
          * premise is that nothing in it changes anything. It is called once a

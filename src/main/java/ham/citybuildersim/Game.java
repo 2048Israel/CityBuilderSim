@@ -9981,8 +9981,8 @@ public class Game {
         // to GDP, and left commercialCash/realEstateCash frozen.
         //
         // The calculation now runs here, unconditionally, before anything reads
-        // it (settleSalesTax() and getMonthGdp() both do). the sector statements are
-        // pure readers now, so the reports flag only controls output.
+        // it (settleSalesTax() and getMonthGdp() both do). printSectorInfo() is a
+        // pure printer now, so the reports flag only controls output.
         // Price this month's business credit and hand the sectors their interest
         // bill BEFORE the statements run, so the figures they bank are net of it.
         // The assessor works off the price the player is currently charging, so

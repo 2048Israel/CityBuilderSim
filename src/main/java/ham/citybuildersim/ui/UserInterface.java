@@ -1216,7 +1216,7 @@ public class UserInterface extends Application {
          * (the header's play button, since 0.7.21), so after the month has run it has to redraw
          * whatever was on show - and a string cannot be called. Every screen
          * hands over a lambda that calls itself with the arguments it was given,
-         * which is why the call reads clearMenu("showMiningMenu", () ->
+         * which is why the call reads clearMenu("showSectorMenu", () ->
          * showSectorMenu()) rather than something cleverer: the screen that
          * knows its own arguments is the only thing that can supply them.
          */
