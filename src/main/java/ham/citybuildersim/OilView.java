@@ -113,7 +113,7 @@ public final class OilView {
      * @param citySpread its spread a litre of feed at the city's own prices (SpreadPlanner.cityValue()); NaN for the crude units
      * @param gate       one more weighed by the planner (RefineryView.oneMore()); null with no template
      * @param spare      litres a month of its feed spare in the flow the planner weighs it in; for the crude units the
-     *                   tonnes of crude the wells could lift that no refinery takes (Refining.Outlook.spareCrude())
+     *                   tonnes of crude the wells could lift that no refinery takes (Refining.spareCrude())
      * @param fuelShort  the crude units only: litres a month of petrol and diesel the city wants past what its refinery
      *                   makes (Refining.Outlook.room()); NaN for a conversion unit
      * @param months     months its site would take at today's queue (Game.onSiteMonths()); 0 with none on site

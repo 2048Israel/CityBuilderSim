@@ -485,7 +485,7 @@ public class GdpCheck {
            interest portion." It never could. refreshGovernmentAccounts() runs a
            few lines after finalEconUpdate(), which zeroes the interest field it
            was reading - so the government block was re-struck every month with
-           an interest expense of zero, and budgetPie() drops a zero slice.
+           an interest expense of zero, and the budget card drops a zero slice.
 
            Note which way the failure ran: the LOAD path was correct, because
            rebuildSimulationState() restores the accrual and never calls

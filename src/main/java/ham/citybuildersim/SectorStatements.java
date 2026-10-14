@@ -360,7 +360,7 @@ public final class SectorStatements {
      * expensed over each debt's life inside the profit (Sector, WHAT ITS
      * BORROWING COST IT UP FRONT), so they move its equity through the
      * profit and are outside nothing. Their three lines read nothing on a
-     * month struck since (SectorMonth.borrowingCostsDeferred()), and what
+     * month struck since (with its borrowing costs deferred), and what
      * an older save's months paid, which moved its equity then, as before.
      */
     static double[] outside(SectorBooks.SectorMonth m) {
