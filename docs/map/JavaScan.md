@@ -1,6 +1,6 @@
 # JavaScan.java - 666 lines · 39 methods · 2 constants · tools
 
-`ham/citybuildersim/tools/JavaScan.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/JavaScan.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > A structural read of one Java source file, without a compiler.
 > 
@@ -30,7 +30,7 @@
 > harness map). Everything is line-numbered so the reader can go straight
 > to the source.
 
-**Used by (7):** [CodeMap](CodeMap.md), [Dials](Dials.md), [HarnessMap](HarnessMap.md), [MonthOrder](MonthOrder.md), [SourceTree](SourceTree.md), [Stale](Stale.md), [Where](Where.md)
+**Used by (8):** [CodeMap](CodeMap.md), [Dials](Dials.md), [HarnessMap](HarnessMap.md), [MonthOrder](MonthOrder.md), [Names](Names.md), [SourceTree](SourceTree.md), [Stale](Stale.md), [Where](Where.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
 # CoalMining.java - 445 lines · 23 methods · 7 constants · sectors
 
-`ham/citybuildersim/sectors/CoalMining.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CoalMining.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > Coal mines and the plants that wash their coal - Coal Mining (0.7.126,
 > batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the

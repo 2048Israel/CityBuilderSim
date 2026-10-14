@@ -1,6 +1,6 @@
 # UnemployedHousehold.java - 88 lines · 14 methods · 0 constants · model
 
-`ham/citybuildersim/UnemployedHousehold.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/UnemployedHousehold.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > Adults who are out of work, as one ledger per situation.
 > 

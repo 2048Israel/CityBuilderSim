@@ -334,7 +334,9 @@ comments and documents have stopped being true — a javadoc with no member unde
 it, prose naming a file that is not in the tree, a header that miscounts its
 own banners (`Stale report.bat` prints the list; `StaleCheck` asserts the firm
 half of it in the suite). A fourth, `tools.ManualToMarkdown`, turns the
-published manual into the two files under `docs/` described above. `CLAUDE.md` at the root is the
+published manual into the two files under `docs/` described above, and a
+fifth, `tools.Names`, lists the names a branch's new text uses that the tree
+does not declare (`ship.sh` runs it on ChatGPT's and Gemini's branches). `CLAUDE.md` at the root is the
 briefing an AI session reads first — the standing rules, the working loop and
 where everything is.
 

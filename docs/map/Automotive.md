@@ -1,6 +1,6 @@
 # Automotive.java - 294 lines · 7 methods · 2 constants · sectors
 
-`ham/citybuildersim/sectors/Automotive.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Automotive.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > The automobile industry. THE THIRTEENTH SECTOR (2026-09-16, Jerus's call).
 > 

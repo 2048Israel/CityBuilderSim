@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-10-13 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**109 harness files, 10,199 labelled assertions.** AllChecks runs 109 of them.
+**109 harness files, 10,210 labelled assertions.** AllChecks runs 109 of them.
 
 ## Which harnesses read which class
 
@@ -12359,9 +12359,10 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L313 ...and how many months it lived on them
   - L318 ...which its headline says
 
-## StaleCheck.java - 11 labelled assertions
+## StaleCheck.java - 22 labelled assertions
 
-> The prose still describes the code: the firm half of `tools.Stale`, asserted.
+> The prose still describes the code: the firm half of `tools.Stale`, asserted,
+> and `tools.Names` proved on a fixture.
 > 
 > WHAT THIS HAS TO PROVE, and none of it is about what the game does - a
 > finding here is a sentence that has stopped being true, not a mechanic that
@@ -12372,24 +12373,36 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      comment naming a source file that is not in the tree, and a class
 >      header that miscounts its own banners - and each one has to come back.
 >      A checker that cannot fail is the failure mode this harness itself is
->      most exposed to, because the tree it reads is usually clean.
 > ...
 
-- **L84 no source tree**
-- **L90 1. the tool sees a defect**
-  - L104 the fixture is two files
-  - L105 a javadoc with no member under it is found
-  - L107 a comment naming a source file that is not in the tree is found
-  - L109 a header that miscounts its own banners is found
-- **L112 2. ...and nothing when there is none**
-  - L115 no orphaned javadoc in the sound file
-  - L117 ...no missing file
-  - L118 ...and no stated count, because its header counts right
-- **L123 3. the tree itself**
-  - L128 the scan read the whole tree, not an empty one
-  - L131 no javadoc is left documenting nothing
-  - L132 nothing names a source file or a docs/ page that is not there
-  - L133 every stated count is the count
+- **L96 no source tree**
+- **L102 1. the tool sees a defect**
+  - L116 the fixture is two files
+  - L117 a javadoc with no member under it is found
+  - L119 a comment naming a source file that is not in the tree is found
+  - L121 a header that miscounts its own banners is found
+- **L124 2. ...and nothing when there is none**
+  - L127 no orphaned javadoc in the sound file
+  - L129 ...no missing file
+  - L130 ...and no stated count, because its header counts right
+- **L135 3. the tree itself**
+  - L140 the scan read the whole tree, not an empty one
+  - L143 no javadoc is left documenting nothing
+  - L144 nothing names a source file or a docs/ page that is not there
+  - L145 every stated count is the count
+- **L153 6. tools.Names on a fixture**
+- **L162 tools.Names: a real name resolves, a made-up one and a member on the wrong class do not**
+  - L179 a real name is read and resolves:
+  - L182 a made-up method comes back, at the line the diff gives it
+  - L184 ...and a made-up constant on a real class
+  - L186 a member put on the wrong class comes back, though Beta declares it
+  - L188 a type the tree does not have comes back
+  - L190 a made-up name in a Java comment comes back at its line in the branch's file
+  - L192 those five and nothing else
+  - L193 code is not read as prose
+  - L194 a generated document is not read
+  - L195 a file name is not a member
+  - L196 a name the text proposes is set apart, not counted
 
 ## SupplierCreditCheck.java - 51 labelled assertions
 

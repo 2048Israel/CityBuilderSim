@@ -157,19 +157,22 @@ public final class Stale {
                     else if (dir.equals("citybuildersim") && name.endsWith("Check.java")) harnessFiles++;
                 }
             }
-            for (JavaScan f : tree.files) {
-                mentioned.addAll(f.identifiers);
-                Set<String> own = byOwner.computeIfAbsent(f.typeName, k -> new TreeSet<>());
-                for (JavaScan.Member m : f.members) {
-                    declared.add(m.name);
-                    own.add(m.name);
-                    // an inner type's members belong to the file's type as well, so a comment
-                    // naming Game.something resolves against Game.BuildQuote's members too
-                    // an inner type's own name is worth having too, so a comment about a
-                    // nested record's method resolves against the type that declares it
-                    if (!m.owner.isEmpty() && !m.owner.equals(f.typeName)) {
-                        byOwner.computeIfAbsent(m.owner.substring(m.owner.lastIndexOf('.') + 1), k -> new TreeSet<>()).add(m.name);
-                    }
+            for (JavaScan f : tree.files) add(f);
+        }
+
+        /** One file's names, added; tools.Names adds a branch's version of a file this way. */
+        void add(JavaScan f) {
+            mentioned.addAll(f.identifiers);
+            Set<String> own = byOwner.computeIfAbsent(f.typeName, k -> new TreeSet<>());
+            for (JavaScan.Member m : f.members) {
+                declared.add(m.name);
+                own.add(m.name);
+                // an inner type's members belong to the file's type as well, so a comment
+                // naming Game.something resolves against Game.BuildQuote's members too
+                // an inner type's own name is worth having too, so a comment about a
+                // nested record's method resolves against the type that declares it
+                if (!m.owner.isEmpty() && !m.owner.equals(f.typeName)) {
+                    byOwner.computeIfAbsent(m.owner.substring(m.owner.lastIndexOf('.') + 1), k -> new TreeSet<>()).add(m.name);
                 }
             }
         }

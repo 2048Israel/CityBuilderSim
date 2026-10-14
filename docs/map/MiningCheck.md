@@ -1,6 +1,6 @@
 # MiningCheck.java - 600 lines · 10 methods · 3 constants · harnesses
 
-`ham/citybuildersim/MiningCheck.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MiningCheck.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore.
 > 
