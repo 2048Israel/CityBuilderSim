@@ -1,6 +1,6 @@
 # BuildAdvice.java - 1,842 lines · 95 methods · 9 constants · model
 
-`ham/citybuildersim/BuildAdvice.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildAdvice.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > What the city should build next, and why: the Build tab's categories and
 > the measures its five city categories open on, each measure's figure

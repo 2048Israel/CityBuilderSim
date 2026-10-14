@@ -1,6 +1,6 @@
 # EarthCheck.java - 702 lines · 22 methods · 10 constants · harnesses
 
-`ham/citybuildersim/EarthCheck.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthCheck.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > The Earth's reader (0.7.111, batch E1; the project's spec-earth.md 2 and
 > 8): EarthProj's projection, blend and areas held to the spec's measures,

@@ -1,6 +1,6 @@
 # MaterialsCheck.java - 1,516 lines · 31 methods · 27 constants · harnesses
 
-`ham/citybuildersim/MaterialsCheck.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MaterialsCheck.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > The materials chains, checked: the shared machinery every chain stands on
 > (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and

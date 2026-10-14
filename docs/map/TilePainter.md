@@ -1,6 +1,6 @@
 # TilePainter.java - 570 lines · 20 methods · 36 constants · model
 
-`ham/citybuildersim/TilePainter.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TilePainter.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, width and role, and every building's box - the city's highways and railway through it and the resource sites under it, what each plot is - the same picture from the same inputs, on any machine.
 > 

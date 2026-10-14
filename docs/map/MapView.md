@@ -1,6 +1,6 @@
 # MapView.java - 2,709 lines · 125 methods · 37 constants · interface
 
-`ham/citybuildersim/ui/MapView.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/MapView.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, the far nodes from the world's ground and the district pictures (0.7.128), and expanded on the real Earth a globe (0.7.135) - with the city's block lines, its edge, its offers hatched and numbered by place, and its deposits over it, a scale bar, and what is under the pointer.
 > 

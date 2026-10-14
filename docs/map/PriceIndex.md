@@ -1,6 +1,6 @@
 # PriceIndex.java - 694 lines · 32 methods · 14 constants · model
 
-`ham/citybuildersim/PriceIndex.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PriceIndex.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > What a month costs a household, against what it cost at founding.
 > 

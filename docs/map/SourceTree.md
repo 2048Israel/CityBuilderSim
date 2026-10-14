@@ -1,6 +1,6 @@
 # SourceTree.java - 154 lines · 13 methods · 1 constants · tools
 
-`ham/citybuildersim/tools/SourceTree.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/SourceTree.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > The whole source tree, scanned once, and the little that every generator
 > shares: where the sources are, where the documents go, what area a file
@@ -14,7 +14,7 @@
 
 **Uses:** [JavaScan](JavaScan.md) (17)
 
-**Used by (8):** [CodeMap](CodeMap.md), [Dials](Dials.md), [HarnessMap](HarnessMap.md), [Maps](Maps.md), [MonthOrder](MonthOrder.md), [Stale](Stale.md), [StaleCheck](StaleCheck.md), [Where](Where.md)
+**Used by (9):** [CodeMap](CodeMap.md), [Dials](Dials.md), [HarnessMap](HarnessMap.md), [Maps](Maps.md), [MonthOrder](MonthOrder.md), [Names](Names.md), [Stale](Stale.md), [StaleCheck](StaleCheck.md), [Where](Where.md)
 
 ## Sections
 

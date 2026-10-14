@@ -1,8 +1,8 @@
 # The dials
 
-Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-14 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**3,296 constants in 346 files.**
+**3,313 constants in 347 files.**
 
 ## model (1689 constants)
 
@@ -3554,7 +3554,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 724 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 980 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (613 constants)
+## harnesses (617 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -4423,8 +4423,12 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 158 | `StaleCheck.PLANTED` | `""" package ham.citybuildersim; /** * A fixture with three defects planted in it. * * I...` | Three planted lies: a stranded javadoc, a file that is not there, and a header out by one. |
-| 185 | `StaleCheck.SOUND` | `""" package ham.citybuildersim; /** * A fixture with nothing wrong with it. * * The one...` | The same shapes, all of them true. |
+| 213 | `StaleCheck.PLANTED` | `""" package ham.citybuildersim; /** * A fixture with three defects planted in it. * * I...` | Three planted lies: a stranded javadoc, a file that is not there, and a header out by one. |
+| 240 | `StaleCheck.ALPHA` | `""" package ham.citybuildersim; /** A fixture class for tools.Names.*/ public class Alp...` | Section 6's tree: members declared the ways a regex over source misses. |
+| 259 | `StaleCheck.BETA` | `""" package ham.citybuildersim; /** A fixture subclass for tools.Names.*/ public class ...` | A subclass: what it inherits resolves on it, and what it declares does not resolve on Alpha. |
+| 270 | `StaleCheck.GAMMA` | `""" package ham.citybuildersim; /** Added on the branch; this comment names madeUpInJav...` | A file the branch adds, read as the branch has it. |
+| 281 | `StaleCheck.NAMES_DIFF` | `""" diff --git a/fixture/names.md b/fixture/names.md --- a/fixture/names.md +++ b/fixtu...` | The diff: a document's six lines (2 to 7), the Java file whole, and a generated page. |
+| 312 | `StaleCheck.SOUND` | `""" package ham.citybuildersim; /** * A fixture with nothing wrong with it. * * The one...` | The same shapes, all of them true. |
 
 ### SupplierCreditCheck.java ([map](map/SupplierCreditCheck.md))
 
@@ -4539,7 +4543,7 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 87 | `ZoningViewCheck.ORDERS` | `{ { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | ZoningCheck's orders: a small city with homes, shops, diners and works. |
 | 93 | `ZoningViewCheck.CITY_KM2` | `80` | The ground the city is drawn to round the default world's founding site: ZoningCheck's land office's 80 km², forest and bare ground both. |
 
-## tools (34 constants)
+## tools (47 constants)
 
 ### HarnessMap.java ([map](map/HarnessMap.md))
 
@@ -4580,6 +4584,24 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 30 | `MonthOrder.DEFAULT` | `"Game.nextMonth,Game.startOfMonthUpdate,SimulationEngine.simulateMonth," + "SimulationE...` |  |
 
+### Names.java ([map](map/Names.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 166 | `Names.HUNK` | `Pattern.compile("^@@ -\\d+(?:,\\d+)? \\+(\\d+)(?:,\\d+)? @@")` |  |
+| 204 | `Names.GENERATED` | `List.of("docs/map/", "docs/dials.md", "docs/month-order.md", "docs/harnesses.md", "docs...` | The documents Maps and ManualToMarkdown write: what they name is the tree's own, or the manual's. |
+| 228 | `Names.TICKS` | `Pattern.compile("'([^'\\n]+)'")` |  |
+| 230 | `Names.WHOLE` | `Pattern.compile("([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)(\\([^()]*\\))?")` | A whole span that is one name: dotted identifiers, then perhaps one argument list. |
+| 232 | `Names.GIVEN` | `Pattern.compile("([A-Za-z_][A-Za-z0-9_]*)\\s*=[^=].*")` | A span that gives a name a value is the text proposing it: `DRIFT_MONTHS = 6`. |
+| 233 | `Names.FILE` | `Pattern.compile(".*\\.(java\|md\|json\|bin\|bat\|cmd\|sh\|txt\|html\|jar\|csv\|png\|xml\|properties\|...` |  |
+| 234 | `Names.QCALL` | `Pattern.compile("\\b([A-Z][A-Za-z0-9_]*(?:\\.[A-Z][A-Za-z0-9_]*)*)\\.([a-zA-Z_][A-Za-z0...` |  |
+| 235 | `Names.CONST` | `Pattern.compile("\\b([A-Z][A-Za-z0-9_]*(?:\\.[A-Z][A-Za-z0-9_]*)*)\\.([A-Z][A-Z0-9]*_[A...` |  |
+| 236 | `Names.CALL` | `Pattern.compile("\\b([a-z_][A-Za-z0-9_]*)\\(\\)")` |  |
+| 238 | `Names.NEW_BEFORE` | `Pattern.compile("(?i)\\b(?:new\|proposed\|for example)\\s+['*_\"(]*$")` | "new `CurveCheck`", "for example `HistoricalEconomy`": the text says the name is one it proposes. |
+| 277 | `Names.LANGUAGE` | `Set.of("abstract", "boolean", "break", "byte", "case", "catch", "char", "class", "const...` | Words a backtick holds that are Java's, the codebase's conventions' or the shell's, not the tree's. |
+| 286 | `Names.OBJECT` | `Set.of("equals", "hashCode", "toString", "getClass", "clone")` | What every object has, and every enum. |
+| 287 | `Names.ENUM` | `Set.of("values", "valueOf", "ordinal", "name", "compareTo")` |  |
+
 ### SourceTree.java ([map](map/SourceTree.md))
 
 | line | constant | value | says |
@@ -4590,18 +4612,18 @@ Generated 2026-10-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 251 | `Stale.JAVA_REF` | `Pattern.compile("\\b([A-Z][A-Za-z0-9]*)\\.java\\b")` |  |
-| 259 | `Stale.DOC_REF` | `Pattern.compile("\\b(docs(?:/[A-Za-z0-9_-]+)*/[a-z0-9][a-z0-9-]*\\.md)\\b")` | A document is only reported when it is written as a path under docs/ with a lower-case name. |
-| 265 | `Stale.SHAPE_NAMES` | `Set.of("Name", "NAME", "Something", "Foo", "Bar", "Baz", "ClassName", "Class", "Screen"...` | Names that are written as a shape rather than as a file: "&lt;Name&gt;Screen.java", "*Check.java", "NAME.md". |
-| 330 | `Stale.NUMBERS` | `numbers()` |  |
-| 331 | `Stale.NUM` | `alternation()` |  |
-| 334 | `Stale.SAID` | `"(?<![A-Za-z-])(" + NUM + ")"` | A number is only a number when a letter or a hyphen does not run into it: "fifty-six" is 56, never six. |
-| 336 | `Stale.BANNERS` | `Pattern.compile("(?i)\\b(?:the\\s+)?" + SAID + "\\s+(?:top-level\\s+\|class-level\\s+)?b...` |  |
-| 337 | `Stale.SECTIONS` | `Pattern.compile("(?i)\\b(?:the\\s+)?" + SAID + "\\s+sections?\\b")` |  |
-| 338 | `Stale.HARNESSES` | `Pattern.compile("(?i)\\b" + SAID + "\\s+harness(?:es)?\\b")` |  |
-| 339 | `Stale.UI_FILES` | `Pattern.compile("(?i)\\b" + SAID + "\\s+files\\b")` |  |
-| 340 | `Stale.SECTORS` | `Pattern.compile("(?i)\\b" + SAID + "\\s+(?:private\\s+)?sectors?(?:\\s+classes)?\\b")` |  |
-| 536 | `Stale.LIBRARY` | `Set.of("println", "runLater", "equals", "hashCode", "toString", "compareTo", "format", ...` | Names that appear in prose here and belong to the JDK or JavaFX, not to the tree. |
-| 544 | `Stale.PLACEHOLDERS` | `Set.of("foo", "bar", "baz", "doSomething")` | Names written as an example of a member rather than as one: "see foo()" is the shape, not a claim. |
-| 552 | `Stale.CALL` | `Pattern.compile("\\b([A-Z][A-Za-z0-9_]*)\\.([a-zA-Z][A-Za-z0-9_]*)\\(\\)\|\\b([a-z][A-Za...` | A member is named in prose as name() - the empty parentheses, with nothing between them and no space before them, are what makes it a member and not an English word with a parenthesis after it. |
+| 254 | `Stale.JAVA_REF` | `Pattern.compile("\\b([A-Z][A-Za-z0-9]*)\\.java\\b")` |  |
+| 262 | `Stale.DOC_REF` | `Pattern.compile("\\b(docs(?:/[A-Za-z0-9_-]+)*/[a-z0-9][a-z0-9-]*\\.md)\\b")` | A document is only reported when it is written as a path under docs/ with a lower-case name. |
+| 268 | `Stale.SHAPE_NAMES` | `Set.of("Name", "NAME", "Something", "Foo", "Bar", "Baz", "ClassName", "Class", "Screen"...` | Names that are written as a shape rather than as a file: "&lt;Name&gt;Screen.java", "*Check.java", "NAME.md". |
+| 333 | `Stale.NUMBERS` | `numbers()` |  |
+| 334 | `Stale.NUM` | `alternation()` |  |
+| 337 | `Stale.SAID` | `"(?<![A-Za-z-])(" + NUM + ")"` | A number is only a number when a letter or a hyphen does not run into it: "fifty-six" is 56, never six. |
+| 339 | `Stale.BANNERS` | `Pattern.compile("(?i)\\b(?:the\\s+)?" + SAID + "\\s+(?:top-level\\s+\|class-level\\s+)?b...` |  |
+| 340 | `Stale.SECTIONS` | `Pattern.compile("(?i)\\b(?:the\\s+)?" + SAID + "\\s+sections?\\b")` |  |
+| 341 | `Stale.HARNESSES` | `Pattern.compile("(?i)\\b" + SAID + "\\s+harness(?:es)?\\b")` |  |
+| 342 | `Stale.UI_FILES` | `Pattern.compile("(?i)\\b" + SAID + "\\s+files\\b")` |  |
+| 343 | `Stale.SECTORS` | `Pattern.compile("(?i)\\b" + SAID + "\\s+(?:private\\s+)?sectors?(?:\\s+classes)?\\b")` |  |
+| 539 | `Stale.LIBRARY` | `Set.of("println", "runLater", "equals", "hashCode", "toString", "compareTo", "format", ...` | Names that appear in prose here and belong to the JDK or JavaFX, not to the tree. |
+| 547 | `Stale.PLACEHOLDERS` | `Set.of("foo", "bar", "baz", "doSomething")` | Names written as an example of a member rather than as one: "see foo()" is the shape, not a claim. |
+| 555 | `Stale.CALL` | `Pattern.compile("\\b([A-Z][A-Za-z0-9_]*)\\.([a-zA-Z][A-Za-z0-9_]*)\\(\\)\|\\b([a-z][A-Za...` | A member is named in prose as name() - the empty parentheses, with nothing between them and no space before them, are what makes it a member and not an English word with a parenthesis after it. |
 

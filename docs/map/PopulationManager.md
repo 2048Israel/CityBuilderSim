@@ -1,6 +1,6 @@
 # PopulationManager.java - 1,242 lines · 61 methods · 2 constants · model
 
-`ham/citybuildersim/PopulationManager.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PopulationManager.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > The working population: the workforce by skill band, the city's posts and
 > their wages by job type, and who fills which post (fillByBand()).

@@ -1,6 +1,6 @@
 # Resource.java - 218 lines · 13 methods · 1 constants · model
 
-`ham/citybuildersim/Resource.java` - generated 2026-10-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Resource.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
 
 > The seven things that lie in the world's ground: iron ore, oil, stone, coal, copper, uranium and standing timber, each with how thickly its fields lie, how big a site is, what a site holds, its colour on the map, the good it becomes and what the ground under it sells for.
 > 
