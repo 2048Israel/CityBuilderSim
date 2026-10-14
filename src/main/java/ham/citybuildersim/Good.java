@@ -694,7 +694,7 @@ public enum Good {
      * SO THE MARGIN IS THE PRICE, and it is the only thing in this pair that
      * a city can be short of. The world has no shortage of watches. It has a
      * shortage of shops open on a Tuesday, which is a thing a player builds.
-     * See LuxuryRetail.sellOwnPriced() for the strike.
+     * See LuxuryRetail.strikeMargin() for the strike.
      */
     LUXURY_TRADE("Luxury retail", "piece", Double.NaN, Double.NaN, 0, false, Pricing.SELLER, false),
 

@@ -929,7 +929,7 @@ public class CreditCheck {
            The reason is simple once seen: retail BUILDS. Give it thirty-six
            months of freedom and it puts up exactly the shops its city needs, so
            by the time the ban lands there is nothing it wants. Adding houses
-           does not help, because retail adds shops to match; planRetail()
+           does not help, because retail adds shops to match; Retail.plan()
            forecasts on population plus growth, so doors alone cannot outrun it.
 
            So the fixture stops giving retail those months. It is funded and

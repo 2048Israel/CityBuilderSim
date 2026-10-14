@@ -5859,7 +5859,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L534 fixture: the city really did issue a coupon bond
   - L535 THE INTEREST REACHES THE ACCOUNTS AT ALL
   - L537 ...and it is the coupon, not some other number
-  - L539 ...so it survives budgetPie(), which drops a zero slice
+  - L539 ...so it survives Pieces.topSlices(), which drops a zero slice
   - L550 fixture: saved
   - L551 and a reloaded city reports the same interest
   - L587 fixture: the town's school and its buses both cost something

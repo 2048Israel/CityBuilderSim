@@ -99,7 +99,7 @@ public class Education {
 
        This was one figure, static, read directly - and it was the thirteenth
        sighting of the redenomination family and the worst-behaved of them,
-       because it does not merely misreport. tuitionOf() feeds affordability(),
+       because it does not merely misreport. feeFor() feeds affordability(),
        which decides who can go to school at all: after a 100:1 reform a
        university place still cost 1.20 in a city where a month's unskilled wage
        had become 0.05, so the whole pipeline stalled and the city stopped

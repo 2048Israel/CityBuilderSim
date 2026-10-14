@@ -38,7 +38,7 @@ import java.util.List;
  * berths sail SeaRoutes' routes: from the quay's end along the way found on
  * the sea's grid to the offing and on into the abyss, where a boat fades
  * (Boat.alpha()); each call's last leg turned a few degrees about its start
- * by the call's own hash (Route.spread()), so the boats do not queue on one
+ * by the call's own hash (turnOf()), so the boats do not queue on one
  * line. A leg is the whole route, quay to the abyss's end, whatever its
  * length. A frame asks which routes cross the screen (an index by district
  * of every leg) and, on each, which calls are on the water now (a binary
