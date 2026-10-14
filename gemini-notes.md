@@ -31,7 +31,8 @@ Two things before that is relied on (Claude, 2026-10-13):
 
 1. **Prose and docs fixes.** `java -cp target/classes ham.citybuildersim.tools.Stale`
    (needs Java) or the docs pass's report lists comments and documents that
-   no longer match the code. Fix the soft findings by reading the code.
+   no longer match the code. Fix the soft findings by reading the code,
+   by the rules under *Prose fixes* below.
 2. **Mechanical changes across files**, where your checkout's grep and
    multi-file edits help: a rename, a constant moved to its owner class, a
    label made a sentence. Only when Jerus or a brief asks for it.
@@ -69,5 +70,31 @@ tools unless Jerus asks for one.
   `docs/month-order.md`, `docs/harnesses.md`, `docs/manual.*`), save slots,
   `buildings.json` ids, `Sectors.KEYS` order.
 - **Line endings LF**; the `.bat` files CRLF.
+
+## Prose fixes: what GS1 taught (2026-10-14)
+
+Your checks on GS1 were true to the count. The text was not: of ten edits,
+four stood, and six were changed in review. Three comments were correct
+before you touched them, one became false, one was half changed, one became
+vague. Every one of these compiled and passed, so nothing but a reader
+catches them. From now on:
+
+- **A Stale finding is a suspicion, not a fact.** Before editing, look for
+  the name it cites (`tools.Where Name`, and grep for `record` headers:
+  Stale does not yet see a record's components, so `SectorMonth.borrowingCostsDeferred()`
+  and `Refining.Outlook.spareCrude()` looked missing and are not). If the name
+  exists, leave the comment and list it as a false finding.
+- **A passage about the past stays as written**: "used to", "was", a dated
+  account of a bug. It names what existed then.
+- **Quote the code that makes each new comment true**: in the commit
+  message, one line per edit, the `file:line` of the method or field the
+  comment now describes. A claim with no line behind it is not made.
+- **Name the thing, do not paraphrase it.** "Pieces.topSlices()", not "the
+  budget card"; a sentence starts with a capital.
+- **Read the whole sentence you edit.** A comment that names a method twice
+  changes in both places (`clearMenu("showMiningMenu", () -> showSectorMenu())`
+  was half changed).
+- **The commit message says what the diff does, nothing more.** Read
+  `git diff` against it before committing.
 
 Jerus decides scope and anything that changes how the game plays.
