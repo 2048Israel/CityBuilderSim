@@ -1,6 +1,6 @@
 # PolicyPreview.java - 526 lines · 45 methods · 0 constants · model
 
-`ham/citybuildersim/PolicyPreview.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyPreview.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
 
 > What a staged set of the Policy tab's dials would do, by the model's own
 > arithmetic (0.7.36): the tax take under another policy, line by line, and

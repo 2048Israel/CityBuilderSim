@@ -1,6 +1,6 @@
 # ManufacturingCheck.java - 610 lines · 8 methods · 5 constants · harnesses
 
-`ham/citybuildersim/ManufacturingCheck.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ManufacturingCheck.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
 
 > The ninth sector: what the city makes out of its own steel, and ships.
 > 

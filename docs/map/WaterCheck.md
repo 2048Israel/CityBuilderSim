@@ -1,6 +1,6 @@
 # WaterCheck.java - 529 lines · 10 methods · 0 constants · harnesses
 
-`ham/citybuildersim/WaterCheck.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WaterCheck.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
 
 > Sanity harness for water production, demand, throttling and billing - and,
 > since 0.7.59, the fresh water limit and the desalination plant (sections

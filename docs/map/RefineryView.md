@@ -1,6 +1,6 @@
 # RefineryView.java - 1,602 lines · 82 methods · 43 constants · model
 
-`ham/citybuildersim/RefineryView.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RefineryView.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
 
 > The refinery's month as a picture (0.7.95, batch O11;
 > docs/studies/spec-oil.md 2.12): the crude it ran and where that came from,

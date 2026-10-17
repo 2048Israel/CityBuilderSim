@@ -1,6 +1,6 @@
 # BuildingManager.java - 7,672 lines · 200 methods · 7 constants · model
 
-`ham/citybuildersim/BuildingManager.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingManager.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
 
 > The city's buildings: the catalogue of templates, the stacks standing and
 > on site with the contracts the builders are working to and who placed

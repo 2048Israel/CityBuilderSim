@@ -1,6 +1,6 @@
 # SupplierCreditCheck.java - 341 lines · 10 methods · 1 constants · harnesses
 
-`ham/citybuildersim/SupplierCreditCheck.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SupplierCreditCheck.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
 
 > The grocers' supplier credit (0.7.44): stock bought on the suppliers' credit
 > when the till cannot pay for it, owed for a month, repaid out of the sale it

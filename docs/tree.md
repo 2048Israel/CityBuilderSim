@@ -462,3 +462,6 @@ adds its line here, not in `CLAUDE.md`.
                                          get-earth.bat, which fetches the file into data/ from the GitHub release
                                          earth-1 and checks it against earth-1.sha256 (Play CityBuilderSim.bat
                                          and Build EXE.bat call it first)
+    tools/deepseek/                      agent.py, the DeepSeek coding agent a batch's Claude session hands a slice
+                                         to, and system.md, its standing instructions (Python, outside the game;
+                                         2026-10-17, after the FR0 test in 6fd8dda); docs/deepseek.md is the how

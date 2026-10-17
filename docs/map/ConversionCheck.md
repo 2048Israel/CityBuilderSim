@@ -1,6 +1,6 @@
 # ConversionCheck.java - 702 lines · 20 methods · 2 constants · harnesses
 
-`ham/citybuildersim/ConversionCheck.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ConversionCheck.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
 
 > Saved cities put on the block grid (0.7.66, batch M2): the five saves the design was measured on, each converted - a format-31 save's lanes snapped to blocks with no field changing hands and its part fields' sites on the right side, an older save's figure drawn to the plot - with the books the plots drawn and the sites and tonnes the save's to the bit.
 > 

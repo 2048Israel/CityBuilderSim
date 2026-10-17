@@ -1,6 +1,6 @@
 # IndustryPicture.java - 1,614 lines · 85 methods · 35 constants · model
 
-`ham/citybuildersim/IndustryPicture.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/IndustryPicture.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
 
 > Each materials industry's month drawn as a picture, laid out to scale
 > (0.7.143, batch I12; docs/studies/spec-materials.md 2.13, the study's

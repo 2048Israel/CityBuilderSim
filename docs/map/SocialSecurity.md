@@ -1,6 +1,6 @@
 # SocialSecurity.java - 150 lines · 9 methods · 4 constants · model
 
-`ham/citybuildersim/SocialSecurity.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SocialSecurity.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
 
 > Contributions off every wage, and a pension for everyone too old to work.
 > 

@@ -1,6 +1,6 @@
 # OutwardInvestment.java - 388 lines · 24 methods · 5 constants · model
 
-`ham/citybuildersim/OutwardInvestment.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OutwardInvestment.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
 
 > Outward investment: what the city's businesses do with money the bank will
 > not pay for.

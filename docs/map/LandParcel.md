@@ -1,6 +1,6 @@
 # LandParcel.java - 338 lines · 45 methods · 4 constants · model
 
-`ham/citybuildersim/LandParcel.java` - generated 2026-10-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandParcel.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
 
 > One offer on the market, as the land office lists it: a rectangle of whole blocks against one side of the city, in one of that side's six places, with what its ground holds - its area dry, fresh, sea and forest, and the sites and amounts of the seven resources - and its price.
 > 
