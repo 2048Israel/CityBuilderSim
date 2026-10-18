@@ -23,7 +23,7 @@ stuff".
 |---|---|---|
 | FX3 | The freight map's faults Jerus's second eye check found: the second yard's ladders off the line, a train across the sidings and a track into a yard's side, a 45-degree highway drawn as a staircase, track along a street drawn as a crossing on every plot | [FX3](docs/queue/FX3.md) |
 | TM1 | Two batches' checks at once on the PC: timing assertions soft while another batch or the game runs, hard at the ship gate; batch-check.sh in Git Bash | [TM1](docs/queue/TM1.md) |
-| FR2 | The Freight sector: Haulage's trucks carry the city leg, vans for goods only | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
+| FR2 | The Freight sector: Haulage's trucks carry the city leg, vans for goods only | [FR2](docs/queue/FR2.md), [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR3 | Ports as a landlord port, and the Bulk Berth | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR4 | The freight screens, and Build's Infrastructure and Freight tabs | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR5 | Trucks drawn on the map, near zoom only, with a Settings toggle on by default (Jerus, 2026-10-12) | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
