@@ -72,7 +72,11 @@ import java.util.TreeSet;
  *      railway whose gate arm waits at the sea, with the city's own sea
  *      beyond it (FR0's walk crosses it), has its line start where an arm's
  *      track ends at the city's edge on dry ground and run out over dry
- *      ground, and every train's route lies on dry ground or on track.
+ *      ground, and every train's route lies on dry ground or on track. And
+ *      over its months: the same city laid month by month from nothing to
+ *      those counts over MapCheck.MONTHS months, each month's map holds no
+ *      line's point and no train position on water (MapCheck.worldWaysOk()),
+ *      and some months have a line and trains, so the run exercised it.
  *
  *  17. HALIFAX ON THE EARTH, when earth-1.bin is named: the same, on
  *      Jerus's founding site, where FR0's line lay across the harbour.
@@ -497,6 +501,7 @@ public class GatewayCheck {
                 small.worldLines().equals(fresh.worldLines()));
 
         coastSection();
+        coastMonths();
         halifaxSection();
         labelSection();
         undrawnSection();
@@ -681,6 +686,38 @@ public class GatewayCheck {
         for (CityMap.WorldLine l : m.worldLines()) if (l.net() == CityRuns.RAILWAY) rail = l;
         check("the coast: the railway has a line, so the checks above are not vacuous", rail != null);
         check("...and its main arm is not the gate arm", rail != null && runs.mainArm() != gate);
+    }
+
+    /**
+     * Section 16's coast over its months (FX2's "over a real run's months": the
+     * played city of MapCheck 1 lays no highway and no track in its 120): the
+     * same city from nothing, its counts rising evenly to coastCounts() over
+     * MapCheck.MONTHS months and reconciled each month as the game's map is,
+     * every month checked by MapCheck.worldWaysOk().
+     */
+    static void coastMonths() {
+        System.out.println("\n--- the coast's months: the line on land as the city grows ---");
+        BuildingVisual.Type[] types = gatewayTypes();
+        World w = World.of(Founding.DEFAULT_WORLD_SEED);
+        long[] last = coastCounts(types), now = new long[last.length];
+        CityMap m = MapCheck.coastal(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, now);
+        int bad = 0, lineMonths = 0, routeMonths = 0, offGate = 0, firstLine = -1, firstRoutes = -1;
+        for (int month = 1; month <= MapCheck.MONTHS; month++) {
+            for (int t = 0; t < last.length; t++) now[t] = last[t] * month / MapCheck.MONTHS;
+            m.reconcile(now);
+            int[] seen = new int[2];
+            if (!MapCheck.worldWaysOk(m, seen)) bad++;
+            lineMonths += seen[0];
+            routeMonths += seen[1];
+            if (seen[0] == 1 && firstLine < 0) firstLine = month;
+            if (seen[1] == 1 && firstRoutes < 0) firstRoutes = month;
+            if (seen[1] == 1 && m.runs().mainArm() != CityRuns.gateArm(m.runs().rail(), m.gateway())) offGate++;
+        }
+        System.out.printf("  over %d months: a world line in %d (from month %d), trains' routes in %d (from month %d), %d of them from an arm"
+                + " not the gate arm; %d month(s) with a line or a train on water%n", MapCheck.MONTHS, lineMonths, firstLine, routeMonths,
+                firstRoutes, offGate, bad);
+        check("the coast's months: some months have a world line and trains' routes, so the run exercised the rule", lineMonths > 0 && routeMonths > 0);
+        check("...and no month has a line's point or a train position on water off the track", bad == 0);
     }
 
     /** Section 17: a square city at Jerus's founding site on the Earth, when earth-1.bin is named. */
