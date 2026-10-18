@@ -1046,6 +1046,7 @@ public class Game {
             // The oil at sea handed over once the city it is read from is whole (0.7.97): after a draw or a load.
             mapAtSeaStale = false;
             cityMap.atSea(mapAtSea());
+            cityMap.railPicture(mapRail());
         }
         return cityMap;
     }
@@ -1112,6 +1113,20 @@ public class Game {
             pipes.add(new CityMap.Pipe(from[0], from[1], from[0] + (tx - from[0]) * frac, from[1] + (ty - from[1]) * frac));
         }
         return new CityMap.AtSea(List.copyOf(jackets), List.copyOf(pipes));
+    }
+
+    /**
+     * The railway as the map draws its yard (0.8.1, batch FR0; CityMap's
+     * railPicture, spec-freight 4.3): whether the railway carries goods, and
+     * the share of its track's wagon sets the fleet has standing. Read from
+     * the saved state - the carried shares, the rolling stock in its pantry,
+     * the track - so a loaded city draws the same yard as the one saved.
+     */
+    CityMap.RailPicture mapRail() {
+        ham.citybuildersim.sectors.Rail rail = getSectors().rail();
+        boolean goodsByRail = rail.getCarried()[Traffic.GOODS.ordinal()] > 0;
+        double wagonShare = rail.setsNeeded() > 0 ? rail.fleet() / rail.setsNeeded() : 0;
+        return new CityMap.RailPicture(goodsByRail, wagonShare);
     }
 
     /** A sea field in the list by its world cell and index, or null. */
@@ -1247,6 +1262,7 @@ public class Game {
         try {
             // The oil at sea as it stands this month (0.7.97): none, read without touching the ground, in a city with none.
             cityMap.atSea(mapAtSea());
+            cityMap.railPicture(mapRail());
             if (!cityMap.reconcile(getMapCounts())) cityMap = drawMap();
         } catch (RuntimeException e) {
             mapFailures++;

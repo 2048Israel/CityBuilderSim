@@ -7,7 +7,7 @@ import java.util.List;
  * How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which kind, whether it stands on a resource's sites, and whether the map places it from the outside of the city in.
  *
  * WHY THIS EXISTS (0.7.60, batch J3; the project's spec-land.md 2.5 and 2.6,
- * star 10). Jerus's map mockup (city-map.html) drew ten kinds of building -
+ * star 10). Jerus's map mockup (city-map.html) drew eleven kinds of building -
  * homes, shops, offices, industry, farms, utilities, schools, health, safety,
  * and mines and wells - each with its fill, its edge and its footprint (the
  * mockup's star 8), and the game has its building types in eighteen
@@ -59,7 +59,7 @@ public final class BuildingVisual {
     private BuildingVisual() { }
 
     /* =====================================================================
-       THE TEN CLASSES (the mockup's TYPES, in its order)
+       THE ELEVEN CLASSES (the mockup's TYPES, in its order)
        ===================================================================== */
 
     /** Homes: houses, and the flats drawn darker. */
@@ -68,11 +68,11 @@ public final class BuildingVisual {
     public static final int SHOP = 1;
     /** Offices: business services. */
     public static final int OFFICE = 2;
-    /** Industry: bakeries to steel, construction, the railway and the car plants. */
+    /** Industry: bakeries to steel, construction and the car plants. */
     public static final int INDUSTRY = 3;
     /** Farms: on open grass only. */
     public static final int FARM = 4;
-    /** Utilities: power, water and the transit depots. */
+    /** Utilities: power and water. */
     public static final int UTILITY = 5;
     /** Schools, colleges and universities. */
     public static final int SCHOOL = 6;
@@ -82,21 +82,23 @@ public final class BuildingVisual {
     public static final int SAFETY = 8;
     /** Mines and wells: on their resource's sites. */
     public static final int MINE = 9;
+    /** Transport: the railway's yards, the sea terminals and the transit networks (0.8.1, batch FR0; spec-freight 4.2, D15). */
+    public static final int TRANSPORT = 10;
 
-    /** How many classes: ten - what the pyramid sums a node's buildings by (spec-land 2.5). */
-    public static final int CLASSES = 10;
+    /** How many classes: eleven - what the pyramid sums a node's buildings by (spec-land 2.5). */
+    public static final int CLASSES = 11;
 
     /** The classes' names, as the legend writes them (the mockup's). */
     public static final String[] CLASS_NAMES = { "Homes", "Shops", "Offices", "Industry", "Farms", "Utilities",
-            "Schools", "Health", "Safety", "Mines and wells" };
+            "Schools", "Health", "Safety", "Mines and wells", "Transport" };
 
     /** Each class's fill, 0xAARRGGBB - the mockup's TYPES. */
     public static final int[] FILL = { 0xffeaa572, 0xfff2c94c, 0xff5b8fd6, 0xff9076ba, 0xffe0cb84, 0xff2ea89e,
-            0xffd0587a, 0xfff7f4ee, 0xffd8442f, 0xff8e9093 };
+            0xffd0587a, 0xfff7f4ee, 0xffd8442f, 0xff8e9093, 0xff5e7d8c };
 
     /** ...and its edge, drawn from 6 px a plot (the mockup's). */
     public static final int[] EDGE = { 0xff9a5a2c, 0xff987718, 0xff2c5590, 0xff55407a, 0xffa99550, 0xff17635d,
-            0xff86304a, 0xff8f8a82, 0xff86251a, 0xff3d3f42 };
+            0xff86304a, 0xff8f8a82, 0xff86251a, 0xff3d3f42, 0xff2f4450 };
 
     /** Flats' fill: the mockup's FLATS, a darker orange than a house. */
     public static final int FLATS_FILL = 0xffd07a44;
@@ -381,7 +383,7 @@ public final class BuildingVisual {
         return new int[] { TileRaster.blend(c, PIT_SHADE, 0.45), TileRaster.blend(c, PIT_DUST, 0.5), TileRaster.blend(PIT_DUST, PIT_SHADE, 0.35) };
     }
 
-    /** A category's class (the mockup's ten). */
+    /** A category's class (the mockup's eleven). */
     public static int classOf(BuildingType c) {
         if (c == null) return INDUSTRY;
         switch (c) {
@@ -389,7 +391,8 @@ public final class BuildingVisual {
             case COMMERCIAL: case LUXURY: case HOSPITALITY:     return SHOP;
             case BUSINESS_SERVICES:                             return OFFICE;
             case AGRICULTURE:                                   return FARM;
-            case ELECTRICITY: case WATER: case INFRASTRUCTURE:  return UTILITY;
+            case ELECTRICITY: case WATER:                       return UTILITY;
+            case INFRASTRUCTURE: case RAIL: case PORTS:         return TRANSPORT;
             case EDUCATION:                                     return SCHOOL;
             case HEALTHCARE:                                    return HEALTH;
             case SAFETY:                                        return SAFETY;
