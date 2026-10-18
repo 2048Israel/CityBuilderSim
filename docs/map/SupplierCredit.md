@@ -1,6 +1,6 @@
 # SupplierCredit.java - 255 lines · 21 methods · 0 constants · model
 
-`ham/citybuildersim/SupplierCredit.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SupplierCredit.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > What a buyer owes its suppliers for stock they let it have on credit (0.7.44): the grocers' trade credit, struck and repaid a month at a time.
 > 

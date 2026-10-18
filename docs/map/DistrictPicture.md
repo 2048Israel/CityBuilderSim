@@ -1,6 +1,6 @@
 # DistrictPicture.java - 309 lines · 17 methods · 15 constants · model
 
-`ham/citybuildersim/DistrictPicture.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DistrictPicture.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > A district's picture for the far views: 32 x 32 pixels, a pixel for 8 x 8 plots (240 m), each the colour of one of its 64 plots - the plot a fixed hash picks from them ranked by class - drawn from the district's own plan as the painter reads it, so a far view shows where things stand, each kind in proportion to the ground it stands on, the same from month to month.
 > 
@@ -68,7 +68,7 @@
 | 70 | `DistrictPicture.WORKS` | `TANKS + 1` | ...since 0.8.0 (batch I14) each processing industry's works, Iron & Steel's to Wood Products' (BuildingVisual.GROUP_FILL, STEEL to WOOD), at WORKS + its group - STEEL... |
 | 72 | `DistrictPicture.WASH` | `WORKS + BuildingVisual.GROUPS - BuildingVisual.STEEL, CAMP = WASH + 1, STAND ...` | ...and the coal wash plant, a logging camp and planted forest (BuildingVisual.LOOK_FILL): the materials' boxes that are not on a site (a mine on its site is the plan's SITE_MINED, Mines and wells). |
 | 74 | `DistrictPicture.PAVED` | `STAND + 1` | A paved street of the plan, in TileRaster's colour below LINES_FROM px a plot (ROAD_SMALL's paved: its casing) - its gravel streets and tracks are the ground's, hidden as the far view's blocks hide them at L2 (TileRas... |
-| 76 | `DistrictPicture.HIGHWAY` | `STAND + 2, RAIL = STAND + 3` | ...and a highway's plot - the city's runs' Elevated Highway, or a street of highway plots - and the railway's track: ROAD_SMALL's highway and RAIL_LINE. |
+| 76 | `DistrictPicture.HIGHWAY` | `STAND + 2, RAIL = STAND + 3` | ...and a highway's plot - the city's runs' Elevated Highway, or a street of highway plots - and the railway's track: ROAD_SMALL's highway and RAIL_DARK. |
 | 78 | `DistrictPicture.CODES` | `RAIL + 1` | How many codes. |
 | 81 | `DistrictPicture.COLOUR` | `new int [ CODES ]` | Each code's colour, 0xAARRGGBB - the painter's (BuildingVisual's fills, TileRaster's roads below LINES_FROM); 0 for GROUND, which is the node's own. |
 | 152 | `DistrictPicture.BYTES` | `PIXELS + 16 + 24` | The bytes it holds, about: its codes, their array's header and the picture's own. |

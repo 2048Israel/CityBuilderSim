@@ -1,6 +1,6 @@
 # Equity.java - 1,170 lines · 97 methods · 20 constants · model
 
-`ham/citybuildersim/Equity.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Equity.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > The share register: who owns the city's companies, what they paid for them,
 > and what the companies pay them back.

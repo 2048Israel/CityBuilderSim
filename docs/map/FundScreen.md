@@ -1,6 +1,6 @@
 # FundScreen.java - 2,441 lines · 99 methods · 23 constants · interface
 
-`ham/citybuildersim/ui/FundScreen.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/FundScreen.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with its average cost and P&L - a Search of the shares and bonds it can buy, a page a security with the order ticket beside the fund's position in it, its Activity, and its Rules & cash.
 > 

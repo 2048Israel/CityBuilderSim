@@ -1,6 +1,6 @@
 # Geology.java - 751 lines · 33 methods · 21 constants · model
 
-`ham/citybuildersim/Geology.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Geology.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > The Earth's geology as its deposits read it: each USGS province's class - ocean, shield, fold belt, rift, shelf, basin or other - by the data's name rules and the hand-checked table, its known petroleum, and the weights, the Z that keeps the land's count of fields today's and the type odds an Earth world's fields are drawn with (spec-earth 4).
 > 

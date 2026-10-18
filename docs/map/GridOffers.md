@@ -1,6 +1,6 @@
 # GridOffers.java - 339 lines · 26 methods · 6 constants · model
 
-`ham/citybuildersim/GridOffers.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GridOffers.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > The city's offers on the block grid: on each of its four sides six places, left to right facing out, and in each place one standing offer - a rectangle of whole blocks against the city's edge - or none while that side has no room for it.
 > 

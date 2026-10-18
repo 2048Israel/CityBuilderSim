@@ -1,6 +1,6 @@
 # Quarrying.java - 400 lines · 19 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Quarrying.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Quarrying.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md
 > 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's

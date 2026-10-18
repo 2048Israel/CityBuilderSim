@@ -1,6 +1,6 @@
 # PlanCheck.java - 1,254 lines · 38 methods · 24 constants · harnesses
 
-`ham/citybuildersim/PlanCheck.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PlanCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway, and the model's road drawn exactly as the streets' surface - on the prototype's test district, MapCheck's fixture of Jerus's city, a city played as the playtest plays it, and any save named - with the prototype's own figures where they apply, how full a district it can draw, and what a plan costs.
 > 

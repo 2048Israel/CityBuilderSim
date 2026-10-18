@@ -1,6 +1,6 @@
 # SeaRoutes.java - 473 lines · 17 methods · 13 constants · model
 
-`ham/citybuildersim/SeaRoutes.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SeaRoutes.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > Each sea terminal's route out to the world: found once on a grid of the sea at 480 m, pulled straight, sailed from the terminal's quay out to the offing - past the city's ground, on the bearing with the most open sea - and on into the abyss, where a boat fades - what BoatSchedule's boats sail; pure, kept by the map and never saved.
 > 
@@ -51,7 +51,7 @@
 
 **Uses:** [BoatSchedule](BoatSchedule.md) (9), [World](World.md) (9)
 
-**Used by (2):** [CityMap](CityMap.md), [MapCheck](MapCheck.md)
+**Used by (4):** [CityMap](CityMap.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [MapCheck](MapCheck.md)
 
 ## Sections
 

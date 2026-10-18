@@ -1,6 +1,6 @@
 # RestaurantsCheck.java - 576 lines · 6 methods · 2 constants · harnesses
 
-`ham/citybuildersim/RestaurantsCheck.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RestaurantsCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > A meal out is food, and it is the same food.
 > 

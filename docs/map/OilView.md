@@ -1,6 +1,6 @@
 # OilView.java - 1,347 lines · 71 methods · 41 constants · model
 
-`ham/citybuildersim/OilView.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OilView.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > The oil industry on one page (0.7.96, batch O12; docs/studies/spec-oil.md
 > 2.13): the city's wells by kind with what they would lift over the next ten
