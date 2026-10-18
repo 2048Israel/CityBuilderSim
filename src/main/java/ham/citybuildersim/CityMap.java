@@ -3185,6 +3185,14 @@ public final class CityMap {
     /** The founding site, {x, y} in plots. */
     long[] site() { return new long[] { siteX, siteY }; }
 
+    /** Whether the counts have any Freight Line, whose track makes the main line double. */
+    private boolean hasFreightLine(long[] counts) {
+        for (int t = 0; t < types.length && t < counts.length; t++) {
+            if (counts[t] > 0 && BuildingVisual.freightLine(types[t])) return true;
+        }
+        return false;
+    }
+
     /**
      * Lays the runs to the model's counts (CityRuns.layTo()): its Elevated
      * Highways' plots, its track's, its Rail Terminals as yards - the
@@ -3221,6 +3229,7 @@ public final class CityMap {
             Gateways.Gateway g = Gateways.of(World.of(worldKey), siteX, siteY, 0);
             runs.setGateway(g == null ? CityRuns.NO_GATEWAY : g.bearing());
         }
+        runs.setDoubleMain(hasFreightLine(model));
         boolean moved = runs.layTo(highway, track, yards, yw, yh, runGround, siteX, siteY, rx, ry, mines);
         if (moved) {
             changes++;
@@ -4514,6 +4523,7 @@ public final class CityMap {
             }
             // The gateway's bearing (FORMAT 8, 0.8.1): into the runs, whether they were read or none; an older sidecar leaves it unknown.
             if (format >= 8) m.runs.setGateway(in.readInt());
+            m.runs.setDoubleMain(m.hasFreightLine(m.have));
             m.purchasesSeen = bought;
             m.centreSeen = land.centreStamp();
             m.sortDistricts();

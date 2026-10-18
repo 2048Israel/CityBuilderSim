@@ -286,6 +286,13 @@ public final class CityRuns {
     /** A stamp of everything laid: what the map's plans and views are kept against. */
     long version;
 
+    /** Whether the main line is double track: the city has a Freight Line (spec 4.3). */
+    private boolean doubleMain;
+
+    /** mainLine()'s last answer, and the version it was computed at. */
+    private List<int[]> mainLineCache;
+    private long mainLineCacheAt = Long.MIN_VALUE;
+
     public Net highways() { return highways; }
     public Net rail() { return rail; }
     public List<long[]> yards() { return java.util.Collections.unmodifiableList(yards); }
@@ -294,11 +301,20 @@ public final class CityRuns {
     public int yardsShort() { return yardsShort; }
     public long version() { return version; }
 
+    /** Whether the main line is double track: the city has a Freight Line (spec 4.3). */
+    public boolean doubleMain() { return doubleMain; }
+
+    /** Sets whether the main line is double track (the map's, from its Freight Line count). */
+    public void setDoubleMain(boolean doubleMain) { this.doubleMain = doubleMain; }
+
     /** The gateway's bearing: GATEWAY_UNKNOWN until the map looks, NO_GATEWAY where it finds none. */
     public int gateway() { return gateway; }
 
     /** Sets the gateway's bearing (the map's, once it has looked). */
-    void setGateway(int bearing) { gateway = bearing; }
+    void setGateway(int bearing) {
+        gateway = bearing;
+        mainLineCacheAt = Long.MIN_VALUE;
+    }
 
     /* =====================================================================
        WHERE A NET'S PLOTS ARE
@@ -906,6 +922,175 @@ public final class CityRuns {
     }
 
     /* =====================================================================
+       THE MAIN LINE (0.8.1, batch FR0; spec-freight 4.2, D14)
+       ===================================================================== */
+
+    /**
+     * The freight station: the yard nearest the rail net's gate arm's end
+     * (its x, y), by the yard box's middle, the first in yards' order on a
+     * tie. Null when there is no gateway, the railway has not started, the
+     * gate arm is -1, or there are no yards. Returns the yard's own
+     * {x0, y0, w, h}, a copy.
+     */
+    public long[] freightStation() {
+        int gate = gateArm(rail, gateway);
+        if (gate < 0 || yards.isEmpty()) return null;
+        Arm a = rail.arms.get(gate);
+        double bx = a.x, by = a.y;
+        long[] best = null;
+        double bestD = Double.MAX_VALUE;
+        for (long[] y : yards) {
+            double cx = y[0] + y[2] / 2.0, cy = y[1] + y[3] / 2.0;
+            double d = (cx - bx) * (cx - bx) + (cy - by) * (cy - by);
+            if (d < bestD) { bestD = d; best = y; }
+        }
+        return best == null ? null : best.clone();
+    }
+
+    /** The rail net's plot inside a freight station's box nearest its middle; null when the box has none. */
+    private long[] anchorInYard(long[] y) {
+        double mx = y[0] + y[2] / 2.0, my = y[1] + y[3] / 2.0;
+        long[] best = null;
+        double bestD = Double.MAX_VALUE;
+        for (long py = y[1]; py < y[1] + y[3]; py++) {
+            for (long px = y[0]; px < y[0] + y[2]; px++) {
+                if (!covered(rail, px, py)) continue;
+                double d = (px - mx) * (px - mx) + (py - my) * (py - my);
+                if (d < bestD) { bestD = d; best = new long[] { px, py }; }
+            }
+        }
+        return best;
+    }
+
+    /**
+     * The arm and step of the lowest-index arm of n covering plot (x, y);
+     * null if none. Step 0 is the arm's start plot (sx, sy), step k the plot
+     * after k steps; a 45-degree step's corner belongs with its step.
+     */
+    static int[] locate(Net n, long x, long y) {
+        if (!n.started) return null;
+        for (int ai = 0; ai < n.arms.size(); ai++) {
+            Arm a = n.arms.get(ai);
+            int step = 0;
+            for (int s = 0; s < a.segs; s++) {
+                int h = a.segHead[s], dx = DX[h], dy = DY[h], m = a.segSteps[s];
+                if (dy == 0) {
+                    if (y == a.segY[s]) {
+                        long k = (x - a.segX[s]) * dx;
+                        if (k >= 1 && k <= m) return new int[] { ai, step + (int) k };
+                    }
+                } else if (dx == 0) {
+                    if (x == a.segX[s]) {
+                        long k = (y - a.segY[s]) * dy;
+                        if (k >= 1 && k <= m) return new int[] { ai, step + (int) k };
+                    }
+                } else {
+                    long k = (x - a.segX[s]) * dx;
+                    if (k >= 1 && k <= m) {
+                        long j = (y - a.segY[s]) * dy;
+                        if (j == k || j == k - 1) return new int[] { ai, step + (int) k };
+                    }
+                }
+                step += m;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The main line as ranges of steps, each {arm, from, to} inclusive (step
+     * 0 an arm's start plot). Empty when there is no gateway or no gate arm.
+     * No freight station: the whole gate arm. A station on the gate arm: from
+     * its anchor out to the arm's end. Else the whole gate arm plus the chain
+     * from the hub to the anchor, arm by arm through each corridor's
+     * interchange, at most arms.size() times.
+     */
+    public List<int[]> mainLine() {
+        if (mainLineCache != null && mainLineCacheAt == version) return mainLineCache;
+        List<int[]> out = new ArrayList<>();
+        int gate = gateArm(rail, gateway);
+        if (gate >= 0) {
+            Arm g = rail.arms.get(gate);
+            long[] fs = freightStation();
+            int[] loc = null;
+            if (fs != null) {
+                long[] anchor = anchorInYard(fs);
+                if (anchor != null) loc = locate(rail, anchor[0], anchor[1]);
+            }
+            if (loc == null) {
+                out.add(new int[] { gate, 0, g.steps });
+            } else if (loc[0] == gate) {
+                out.add(new int[] { gate, loc[1], g.steps });
+            } else {
+                out.add(new int[] { gate, 0, g.steps });
+                int a = loc[0], to = loc[1];
+                for (int guard = 0; guard < rail.arms.size(); guard++) {
+                    out.add(new int[] { a, 0, to });
+                    Arm arm = rail.arms.get(a);
+                    if (arm.corridor == 0 || arm.corridor == 1) break;
+                    int[] prev = locate(rail, arm.sx, arm.sy);
+                    if (prev == null || prev[0] == a || rail.arms.get(prev[0]).corridor >= arm.corridor) break;
+                    a = prev[0];
+                    to = prev[1];
+                }
+            }
+        }
+        mainLineCache = out;
+        mainLineCacheAt = version;
+        return out;
+    }
+
+    /**
+     * Marks one main-line range's plots inside the box with M_MAIN, and with
+     * M_DOUBLE where doubleMain; returns a hash of the range when any of it
+     * lies in the box, else 0.
+     */
+    private static long mainInto(Arm a, int from, int to, long x0, long y0, int w, int h, byte[] marks, boolean doubleMain) {
+        if (from > to) return 0;
+        boolean any = false;
+        int mark = TilePainter.M_MAIN | (doubleMain ? TilePainter.M_DOUBLE : 0);
+        if (from == 0) {
+            long px = a.sx, py = a.sy;
+            if (px >= x0 && py >= y0 && px < x0 + w && py < y0 + h) {
+                marks[(int) ((py - y0) * w + (px - x0))] |= (byte) mark;
+                any = true;
+            }
+        }
+        int step = 0;
+        for (int s = 0; s < a.segs; s++) {
+            int m = a.segSteps[s], hd = a.segHead[s], dx = DX[hd], dy = DY[hd];
+            boolean diag = dx != 0 && dy != 0;
+            int next = step + m;
+            int lo = Math.max(from, step + 1), hi = Math.min(to, next);
+            if (lo <= hi) {
+                long[] rr = range(a, s, x0, y0, w, h);
+                if (rr[0] <= rr[1]) {
+                    int k0 = (int) Math.max(lo, step + rr[0]), k1 = (int) Math.min(hi, step + rr[1]);
+                    for (int k = k0; k <= k1; k++) {
+                        int kk = k - step;
+                        long px = a.segX[s] + (long) dx * kk, py = a.segY[s] + (long) dy * kk;
+                        if (px >= x0 && py >= y0 && px < x0 + w && py < y0 + h) {
+                            marks[(int) ((py - y0) * w + (px - x0))] |= (byte) mark;
+                            any = true;
+                        }
+                        if (diag) {
+                            long qx = px, qy = py - dy;
+                            if (qx >= x0 && qy >= y0 && qx < x0 + w && qy < y0 + h) {
+                                marks[(int) ((qy - y0) * w + (qx - x0))] |= (byte) mark;
+                                any = true;
+                            }
+                        }
+                    }
+                }
+            }
+            step = next;
+        }
+        if (!any) return 0;
+        long hash = World.mix(World.mix(0x4D41494EL ^ from) ^ to ^ (doubleMain ? 0xD0D0D0D0L : 0));
+        return hash == 0 ? 1 : hash;
+    }
+
+    /* =====================================================================
        THE MONTH: TO THE MODEL'S COUNTS
        ===================================================================== */
 
@@ -943,6 +1128,7 @@ public final class CityRuns {
             h = World.mix(h ^ n.corridors.size());
         }
         for (long[] y : yards) h = World.mix(h ^ y[0] * 0x9E3779B97F4A7C15L ^ y[1]);
+        h = World.mix(h ^ (doubleMain ? 1L : 0L));
         return h;
     }
 
@@ -992,6 +1178,12 @@ public final class CityRuns {
                     if (a.steps == 0 || a.x < x0 || a.y < y0 || a.x >= x0 + w || a.y >= y0 + h) continue;
                     marks[(int) ((a.y - y0) * w + (a.x - x0))] |= M_RAMP;
                 }
+            }
+        }
+        if (marks != null) {
+            for (int[] r : mainLine()) {
+                long mh = mainInto(rail.arms.get(r[0]), r[1], r[2], x0, y0, w, h, marks, doubleMain);
+                if (mh != 0) hash = World.mix(hash ^ mh);
             }
         }
         for (long[] y : yards) {

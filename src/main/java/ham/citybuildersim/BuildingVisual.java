@@ -202,6 +202,16 @@ public final class BuildingVisual {
     /** The permanent ids of the rail types drawn as a yard beside the track, not as track (0.7.72): the Rail Terminal (64). Every other RAIL type - the Rail Spur (62), the Freight Line (63) - is a line, laid plot by plot. */
     static final int[] RAIL_TERMINALS = { 64 };
 
+    /** The permanent ids of the railway lines whose track makes the main line double (0.8.1, batch FR0; spec-freight 4.3): the Freight Line (63). */
+    static final int[] FREIGHT_LINES = { 63 };
+
+    /** Whether the type is one of FREIGHT_LINES: a railway line whose presence doubles the main line. */
+    static boolean freightLine(Type t) {
+        if (t == null || !t.track()) return false;
+        for (int id : FREIGHT_LINES) if (t.id() == id) return true;
+        return false;
+    }
+
     /** The permanent ids of the works drawn in their group's colours but placed as any industry, not gathered into its campus (0.8.0, batch I14): Iron & Steel's Electric Arc Furnace (11) and Steel Mini-Mill (12), the scrap route every city had before 0.7.123's integrated one - placed already in every saved city's map and in the district plan's port of the prototype (PlanCheck 1), which a campus would move. */
     static final int[] NOT_GATHERED = { 11, 12 };
 
