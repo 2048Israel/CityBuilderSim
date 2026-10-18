@@ -62,7 +62,7 @@
 | 54 | `DistrictPicture.PIXELS` | `SIDE * SIDE` | Pixels in a picture: 1,024. |
 | 57 | `DistrictPicture.PLOTS_IN` | `PLOTS_A_PIXEL * PLOTS_A_PIXEL` | The plots a pixel is picked from: 64. |
 | 62 | `DistrictPicture.GROUND` | `0` | Nothing the picture draws: the ground, owned or not - the far node shows its own there. |
-| 64 | `DistrictPicture.FIRST_CLASS` | `1` | A building of a class, HOME to MINE: its class + FIRST_CLASS (BuildingVisual.FILL's colour). |
+| 64 | `DistrictPicture.FIRST_CLASS` | `1` | A building of a class, HOME to TRANSPORT: its class + FIRST_CLASS (BuildingVisual.FILL's colour). |
 | 66 | `DistrictPicture.FLATS` | `FIRST_CLASS + BuildingVisual.CLASSES` | ...the flats (BuildingVisual.FLATS_FILL)... |
 | 68 | `DistrictPicture.CAMPUS` | `FLATS + 1, TERMINAL = FLATS + 2, TANKS = FLATS + 3` | ...the refinery's units (CAMPUS_FILL), a sea terminal (TERMINAL_FILL) and a tank farm (TANKS_FILL): each type's own fill, as the painter draws it (BuildingVisual.Type.fill()). |
 | 70 | `DistrictPicture.WORKS` | `TANKS + 1` | ...since 0.8.0 (batch I14) each processing industry's works, Iron & Steel's to Wood Products' (BuildingVisual.GROUP_FILL, STEEL to WOOD), at WORKS + its group - STEEL... |

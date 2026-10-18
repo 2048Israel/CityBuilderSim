@@ -463,13 +463,16 @@ adds its line here, not in `CLAUDE.md`.
                                    funding page's bond - the card LandScreen's words, its figures, the
                                    picks and the box LandMap's, MapCheck 14; since 0.8.0, batch I14, the
                                    zones' districts tinted under the offers and named in its legend -
-                                   CityMap.zoneTint(), LandMap.zoneAreas(), MapCheck 15), and ZoningScreen.java (Policy's fifth
+                                   CityMap.zoneTint(), LandMap.zoneAreas(), MapCheck 15; since 0.8.1,
+                                   batch FR0, the world line past the gateway, faded to the view's edge
+                                   and labelled "to the world" (worldLines()), and the legend's
+                                   TRANSPORT, the railway in four entries and the gateway its own), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray), and MiniMap.java (the minimap, 0.7.134: a
                                    stamp of the city at the rail's foot above Menu, its preview on hover,
                                    the land office's map over the window on a click; MiniMapFrame's
                                    arithmetic). The model never imports it.
-        *Check.java                108 harnesses, each a main() with static helpers
+        *Check.java                112 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103);

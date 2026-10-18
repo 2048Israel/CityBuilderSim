@@ -106,9 +106,15 @@ import static ham.citybuildersim.ui.Pieces.*;
  * is paused; each boat's shape and colours ShipShapes'. While any is in view
  * the frame goes on and draws again whenever the clock moves them.
  *
- * THE TRAINS (0.8.2, batch FR1; spec-freight 4.4): the same, on land - the
- * month's trains (TrainSchedule, from the railway's tonnes by kind) on the
- * map's routes from the world line to each yard's sidings
+ * THE WORLD LINE (0.8.1, batch FR0; spec-freight 4.1, D13): on the plane,
+ * over the tiles, the city's highway and main line run on from where they
+ * leave its ground along their gateway's bearing (CityMap.worldLines()) to
+ * the canvas's edge, faded (WORLD_LINE_ALPHA) and labelled
+ * LandMap.WORLD_WORDS.
+ *
+ * THE TRAINS (0.8.2, batch FR1; spec-freight 4.4): the boats' way, on land -
+ * the month's trains (TrainSchedule, from the railway's tonnes by kind) on
+ * the map's routes from the world line to each yard's sidings
  * (CityMap.trainRoutes()), on the boats' clock, from L1 in: a dash of the
  * train's colour at the middle view, each vehicle's body and mark
  * (TrainShapes) at the near view.
@@ -2752,7 +2758,7 @@ final class MapView {
     /** ...the plane's, at every scale on a generated world. */
     static List<String[]> legendEntries() { return legendEntries(GlobeFrame.PLANE); }
 
-    /** Rows a column of the legend holds: 17, its 50 entries in three columns and the zones set after them (since 0.8.1 the transport class, the railway's four and the gateway, 50 in three columns of 17; since 0.8.0 the four industries' works and the seven looks of the materials, 35 in three columns of 12 before; since 0.7.127 ice and the desert, 33 before; since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
+    /** Rows a column of the legend holds: 17, its 51 entries in three columns and the zones set after them (since 0.8.1 the transport class, the railway's four and the gateway, 46 in three columns of 16 before; since 0.8.0 the four industries' works and the seven looks of the materials, 35 in three columns of 12 before; since 0.7.127 ice and the desert, 33 before; since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
     static final int LEGEND_ROWS = 17;
 
     /** The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). */

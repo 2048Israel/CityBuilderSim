@@ -242,7 +242,7 @@ public class JunctionCheck {
         TilePainter.Input in = owned();
         highwayRow(in, hy);
         in.marks[hy * T + hx] = CityRuns.M_RAMP;
-        streetColumn(in, hx, ARTERIAL); // The highway plot itself is beneath the street.
+        streetColumn(in, hx, ARTERIAL); // The street runs through the highway's plot too, beneath it.
         TilePainter.Painted p = paint(in);
         int[] img = raster(in, p, px);
 

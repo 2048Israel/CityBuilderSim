@@ -9,10 +9,10 @@
 > (CityRuns.gateway(), saved in the sidecar).
 > 
 > WHY THIS EXISTS (batch FR0; spec-freight-and-infrastructure.md 4.1,
-> decision D13). Today a run stops where the city's owned ground stops and
-> nothing says which way the world is, so the line that carries the city's
-> trade to the world does not reach the world. The sea already has the
-> mirror of this - SeaRoutes finds the offing, the bearing with the longest
+> decision D13). Before it a run stopped where the city's owned ground
+> stopped and nothing said which way the world was, so the line that carries
+> the city's trade to the world did not reach the world. The sea already has
+> the mirror of this - SeaRoutes finds the offing, the bearing with the longest
 > run of open sea from a berth. This is the land's offing, from the founding
 > site itself; on the Earth it is the bearing toward the nearest larger
 > place, along land (4.1). The rail gateway shares the highway's bearing.

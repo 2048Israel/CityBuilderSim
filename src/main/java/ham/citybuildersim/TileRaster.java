@@ -47,6 +47,18 @@ import java.util.Arrays;
  * cross-ticks every block from 2 px. The mockup drew no railway, so the
  * colours are a map's convention (star N3-9, spec-freight 4.3).
  *
+ * YARDS AND JUNCTIONS (0.8.1, batch FR0; spec-freight 4.2, 4.3 and 4.6,
+ * D15 and D19). From 4 px a plot a Rail Terminal is drawn as a yard
+ * (drawYard()): a fan of sidings closing to the line at each end, a freight
+ * shed, the freight it handles - ore stockpiles, or at the freight station
+ * of a railway carrying goods rows of boxes and two gantries - and wagons
+ * standing on as many sidings as the fleet's share of its wagon sets gives.
+ * From JUNCTIONS_FROM the junctions are drawn by rule, none of them a
+ * building: signals where arterials cross, roundabouts where boulevards
+ * cross, diamonds where a street passes beneath a ramp, stacks where
+ * highways cross; and from 4 px a highway's open end comes down to the
+ * ground.
+ *
  * STREETS AS VERGE AND SURFACE (0.7.88, batch RD2; the project's
  * spec-roads-and-ports.md 2.1 and 5, its prototype's render()). A street's
  * plot is its right of way: drawn as VERGE, with its surface down its middle
@@ -75,10 +87,10 @@ public final class TileRaster {
     /** Each road kind's colour (gravel, paved, highway): the mockup's MAP. */
     public static final int[] ROAD = { 0, 0xffcdb07c, 0xffa4aab0, 0xff3b4048 };
 
-    /** The railway's line, and its casing from 4 px a plot (0.7.72): openstreetmap-carto's rail grey, #707070 (the mockup drew no railway; star N3-9)... */
+    /** The railway's line, and its casing from 4 px a plot (0.7.72) until 0.8.1 drew the track as rail; since, a track plot's colour in raster() below LINES_FROM px a plot alone (plotColour()): openstreetmap-carto's rail grey, #707070 (the mockup drew no railway; star N3-9)... */
     public static final int RAIL_LINE = 0xff707070;
 
-    /** ...and its dashes, white on every other plot along it: carto's rail dash. */
+    /** ...and its dashes, white on every other plot along it until 0.8.1: carto's rail dash. Nothing draws it since. */
     public static final int RAIL_DASH = 0xffffffff;
 
     /* ===== RAIL DRAWN AS RAIL (0.8.1, batch FR0; spec-freight 4.3, D15, D18) ===== */
@@ -218,6 +230,10 @@ public final class TileRaster {
     /** A building packed at the city's edge without a street (R7) is drawn this much of the way to the map's background: 35% (star RD2-2) - a shade darker, so it reads as standing apart from the streets, at its own size and place. */
     public static final double PACKED_DIM = 0.35;
 
+    /* =====================================================================
+       THE NEAR VIEW (J3: a tile at 4 or 8 px a plot, MapFrame.L0)
+       ===================================================================== */
+
     /**
      * Fills img with the tile at px pixels a plot: (32 px) squared pixels,
      * row by row. Below LINES_FROM a road plot is its colour; from it, the
@@ -225,7 +241,8 @@ public final class TileRaster {
      * lines, joined across the tile's edge where the plans have them go on
      * (ways()). A one-plot building is drawn the mockup's size, hugging the
      * street it faces; a larger one inset a pixel from 3 px a plot; all
-     * edged from 6; one packed without a street a shade darker.
+     * edged from 6; one packed without a street a shade darker; and from
+     * LINES_FROM a Rail Terminal as its yard (drawYard(), 0.8.1).
      */
     public static void raster(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
@@ -987,13 +1004,21 @@ public final class TileRaster {
         }
     }
 
+    /* =====================================================================
+       THE WAYS AS LINES (0.7.88, batch RD2; from LINES_FROM px a plot)
+       ===================================================================== */
+
     /**
      * The ways as lines (from LINES_FROM px a plot; spec 5): each street's
-     * verge, its whole plot on dry ground; the decks of bridges; the track;
-     * each street's surface down its middle along each way it runs - half
-     * the plot for a half-width street, all of it for a full one - in its
-     * kind's colour, or a track's dashes; then the highways over all, cased,
-     * with a dashed centre line from 6 px.
+     * verge, its whole plot on dry ground; the decks of bridges; the track
+     * (as rail since 0.8.1); each street's surface down its middle along
+     * each way it runs - half the plot for a half-width street, all of it
+     * for a full one - in its kind's colour, or a track's dashes; (0.8.1)
+     * the railway's crossings (railCrossings()) and from JUNCTIONS_FROM the
+     * signals, roundabouts and diamonds; then the highways over all, cased,
+     * their open ends brought down to the ground (highwayEnds()) and from
+     * JUNCTIONS_FROM their stacks; the railway bridging a highway; the
+     * ramps below JUNCTIONS_FROM; and a dashed centre line from 6 px.
      */
     private static void ways(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
@@ -1129,6 +1154,8 @@ public final class TileRaster {
      * at its corners - from the street beside that plot to the highway beside
      * it, across the plot's corner nearest the ramp - paved. A verge plot
      * across the tile's edge from its ramp is drawn by the tile it is on.
+     * Since 0.8.1 below JUNCTIONS_FROM px a plot alone: from it the
+     * diamond's slips are drawn instead (diamonds()).
      */
     private static void ramps(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         if (px >= JUNCTIONS_FROM) return; // The diamond draws these from 6 px a plot; below it, the corner strokes stay.
@@ -1507,14 +1534,17 @@ public final class TileRaster {
         segment(img, w, x0, y0, px, ax, ay, bx, by, half, c);
     }
 
+    /* ----- the track as rail, and its crossings (0.8.1, batch FR0; spec-freight 4.3) ----- */
+
     /**
      * The track (0.7.72; redrawn as rail, 0.8.1, batch FR0, spec-freight 4.3):
      * each plot's middle and its arms to the track beside it - past the tile's
      * edge too, where the line runs on - as a ballast bed, and from 4 px a
      * plot its rails as a centre line and a sleeper tick a plot, from 6 px two
      * rails on sleepers every quarter plot; double track where the main line
-     * is marked. A road crossing it is drawn over the bed; the rails are then
-     * drawn through the street with its crossing marks (railCrossings()).
+     * is marked. A road crossing it is drawn over the bed; from RAILS_FROM px
+     * a plot the rails are then drawn through the street with its crossing
+     * marks (railCrossings()).
      */
     private static void track(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         for (int i = 0; i < TilePainter.PLOTS; i++) {
@@ -1777,6 +1807,10 @@ public final class TileRaster {
             }
         }
     }
+
+    /* =====================================================================
+       A RECTANGLE OF PIXELS, AND THE PLOTS' COLOURS
+       ===================================================================== */
 
     private static void fillRect(int[] img, int w, int x0, int y0, int x1, int y1, int c) {
         for (int y = y0; y < y1; y++) {

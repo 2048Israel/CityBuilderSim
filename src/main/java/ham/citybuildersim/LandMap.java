@@ -762,8 +762,10 @@ public final class LandMap {
      * for it by one (R7); a street by its surface, its width and its role
      * (spec-roads-and-ports.md 5: "Paved street, 15 m · arterial"), a track
      * as one the city has bought no road for, "a bridge" over water and
-     * "crossing the railway" across the track; a highway, a street beneath
-     * it, its ramp and (0.7.89) the railway bridging it; the railway's track.
+     * "crossing the railway" across the track - since 0.8.1 "bridging the
+     * railway" where an arterial or boulevard crosses the main line; a
+     * highway, a street beneath it, its ramp and (0.7.89) the railway
+     * bridging it; the railway's track.
      */
     public static String plotWords(TilePainter.Input in, TilePainter.Painted p, int plot,
                                    java.util.function.IntFunction<String> nameOf) {
