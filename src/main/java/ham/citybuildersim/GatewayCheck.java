@@ -1,5 +1,8 @@
 package ham.citybuildersim;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -65,13 +68,47 @@ import java.util.TreeSet;
  *      month's runs move changes(), the lines are recomputed equal to a fresh
  *      map's, not the same list.
  *
+ *  16. THE LINE TO THE WORLD LEAVES ON LAND, ON A GENERATED COAST (FX2): a
+ *      railway whose gate arm waits at the sea, with the city's own sea
+ *      beyond it (FR0's walk crosses it), has its line start where an arm's
+ *      track ends at the city's edge on dry ground and run out over dry
+ *      ground, and every train's route lies on dry ground or on track.
+ *
+ *  17. HALIFAX ON THE EARTH, when earth-1.bin is named: the same, on
+ *      Jerus's founding site, where FR0's line lay across the harbour.
+ *
+ *  18. THE LABEL STAYS IN VIEW (LandMap.worldLabelAt): a line leaving
+ *      through the right, top, bottom or top right corner of the view has its
+ *      label whole inside the view, on the line; a part too short to hold it
+ *      anywhere still has it in view; a part of no length has none.
+ *
+ *  19. A HIGHWAY THAT REACHES NO STREET IS NOT DRAWN (FX2): one Elevated
+ *      Highway is laid and not drawn, the least count that reaches an
+ *      arterial's ramp is found from both sides, and from there every
+ *      highway plot the map draws lies in a piece with a ramp on a cell line.
+ *
  * WHY THIS EXISTS: batch FR0 finds the land's mirror of SeaRoutes' offing,
  * so the highway and railway know which way the world is. A fixture CAUSES
- * each condition rather than waiting for a map to.
+ * each condition rather than waiting for a map to. Batch FX2 sections 16 to
+ * 19: Jerus's Halifax had the line to the world start on the harbour's open
+ * water and every train run out over it, its label ran off the view, and the
+ * first Elevated Highway stood alone in a block.
  */
 public class GatewayCheck {
 
     static int fails = 0;
+
+    /** The coast fixture's railway: each track type's count times this, 10 - enough track that the railway's gate arm reaches the coast and waits at the sea (section 16). */
+    static final int COAST_TRACK_TIMES = 10;
+
+    /** Jerus's founding site, Halifax (section 17), in degrees. */
+    static final double HALIFAX_LAT = 44.656780322078724, HALIFAX_LON = -63.613890005401984;
+
+    /** The most Elevated Highways section 19 tries when it looks for the count that reaches a street. */
+    static final int MOST_HIGHWAYS = 20;
+
+    /** The tolerance of a position in plots or pixels, well below anything either measures. */
+    static final double EPS = 1e-9;
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
@@ -459,8 +496,423 @@ public class GatewayCheck {
         check("after the runs move, the world lines are recomputed equal to a fresh map's",
                 small.worldLines().equals(fresh.worldLines()));
 
+        coastSection();
+        halifaxSection();
+        labelSection();
+        undrawnSection();
+
         System.out.println();
         System.out.println(fails == 0 ? "The gateways are found." : fails + " FAILED");
         System.exit(fails);
+    }
+
+    /* ============ FX2: the line to the world on land, the label in view, the undrawn highway ============ */
+
+    /** An arm as one line of text: its index, heading in degrees and end, or "none". */
+    static String armText(CityRuns.Net n, int a) {
+        if (a < 0 || a >= n.arms.size()) return "none";
+        CityRuns.Arm arm = n.arms.get(a);
+        return String.format("%d (heading %d, end (%d, %d), %d steps)", a, arm.head * 45, arm.x, arm.y, arm.steps);
+    }
+
+    /**
+     * FR0's walk, written out: from net n's arm a's end (the hub while the arm has no steps) along its heading, up to
+     * CityMap.DISTRICT plots, to the first plot the city does not own. Returns {the owned plots that are not dry ground
+     * it crossed, 1 when it found that plot and 0 when it did not}.
+     */
+    static int[] fr0Walk(CityMap m, CityRuns.Net n, int a) {
+        CityRuns.Arm arm = n.arms.get(a);
+        long x = arm.steps == 0 ? n.hubX : arm.x, y = arm.steps == 0 ? n.hubY : arm.y;
+        int h = arm.steps == 0 ? arm.home : arm.head;
+        int water = 0;
+        for (int s = 1; s <= CityMap.DISTRICT; s++) {
+            int g = m.runGround().at(x + (long) CityRuns.DX[h] * s, y + (long) CityRuns.DY[h] * s, -1);
+            if (g == -1) return new int[] { water, 1 };
+            if (!World.dry(g)) water++;
+        }
+        return new int[] { water, 0 };
+    }
+
+    /** How many of a route's points, read every WORLD_STEP along each leg, lie on neither dry ground nor a plot the railway carries (track, track over a highway, a yard); the points read are in samples[0]. */
+    static int offTrack(World w, CityRuns runs, TrainSchedule.Route r, int[] samples) {
+        int bad = 0;
+        for (int i = 1; i < r.xs().length; i++) {
+            double x0 = r.xs()[i - 1], y0 = r.ys()[i - 1], dx = r.xs()[i] - x0, dy = r.ys()[i] - y0, len = Math.hypot(dx, dy);
+            int n = (int) Math.ceil(len / CityMap.WORLD_STEP);
+            for (int k = 0; k <= n; k++) {
+                double t = len == 0 ? 0 : Math.min(len, k * CityMap.WORLD_STEP) / len;
+                long px = (long) Math.floor(x0 + dx * t), py = (long) Math.floor(y0 + dy * t);
+                samples[0]++;
+                byte at = runs.at(px, py);
+                boolean carried = at == CityRuns.F_RAIL || at == CityRuns.F_RAIL_OVER || at == CityRuns.F_YARD;
+                if (!World.dry(w.terrainAt(px, py)) && !carried) bad++;
+            }
+        }
+        return bad;
+    }
+
+    /**
+     * The checks every FX2 fixture runs: each of the map's world lines starts on a dry plot the city does not own, at the
+     * end of an arm's track within WORLD_GAP plots of it over the city's own dry ground, and runs out over dry ground
+     * for TrainSchedule.WORLD_PLOTS to CityMap.WORLD_REACH plots and no farther than the land runs; the railway's main
+     * arm is its line's arm; and each train route's first point is WORLD_PLOTS out along the line's way, its second the
+     * line's point, its third the main arm's end plot's middle, with no point of any leg on water off the track.
+     */
+    static void worldLinesOnLand(String what, CityMap m) {
+        World w = World.of(m.worldKey());
+        CityRuns runs = m.runs();
+        CityRuns.Ground ground = m.runGround();
+        List<CityMap.WorldLine> lines = m.worldLines();
+        int gateway = m.gateway();
+        int railGate = CityRuns.gateArm(runs.rail(), gateway), main = runs.mainArm();
+        List<TrainSchedule.Route> routes = m.trainRoutes();
+        System.out.printf("  %s: gateway %d; rail gate arm %s; rail main arm %s; %d line(s); %d route(s)%n",
+                what, gateway, armText(runs.rail(), railGate), armText(runs.rail(), main), lines.size(), routes.size());
+        for (CityMap.WorldLine l : lines) {
+            System.out.printf("      line: net %s, way %d, reach %.2f plots, from arm %d at plot (%.1f, %.1f)%n",
+                    l.net() == CityRuns.HIGHWAYS ? "highways" : "railway", l.way(), l.reach(), l.arm(), l.x(), l.y());
+        }
+        check(what + ": fixture: the city has world lines", !lines.isEmpty());
+        boolean oneEach = true, unowned = true, dryPoint = true, armOk = true, gapOk = true, between = true,
+                reachOk = true, onLand = true, tight = true;
+        int[] perNet = new int[2];
+        for (CityMap.WorldLine l : lines) {
+            perNet[l.net() == CityRuns.HIGHWAYS ? 0 : 1]++;
+            long px = (long) Math.floor(l.x()), py = (long) Math.floor(l.y());
+            unowned &= ground.at(px, py, -1) == -1;
+            dryPoint &= World.dry(w.terrainAt(px, py));
+            CityRuns.Net net = l.net() == CityRuns.HIGHWAYS ? runs.highways() : runs.rail();
+            boolean haveArm = l.arm() >= 0 && l.arm() < net.arms.size() && net.arms.get(l.arm()).steps > 0;
+            armOk &= haveArm;
+            if (haveArm) {
+                CityRuns.Arm a = net.arms.get(l.arm());
+                int gap = -1;
+                for (int s = 1; s <= CityMap.WORLD_GAP && gap < 0; s++) {
+                    if (a.x + (long) CityRuns.DX[a.head] * s == px && a.y + (long) CityRuns.DY[a.head] * s == py) gap = s;
+                }
+                gapOk &= gap >= 1;
+                for (int s = 1; s < gap; s++) {
+                    int g = ground.at(a.x + (long) CityRuns.DX[a.head] * s, a.y + (long) CityRuns.DY[a.head] * s, -1);
+                    between &= g != -1 && World.dry(g);
+                }
+            }
+            reachOk &= l.reach() >= TrainSchedule.WORLD_PLOTS && l.reach() <= CityMap.WORLD_REACH;
+            double c = Math.cos(Math.toRadians(l.way())), s = Math.sin(Math.toRadians(l.way()));
+            // The points read are those before the first that is not dry ground (dryRun's): the last, at WORLD_REACH, is read too.
+            boolean full = l.reach() >= CityMap.WORLD_REACH;
+            for (int i = 0; (full ? i * CityMap.WORLD_STEP <= l.reach() : i * CityMap.WORLD_STEP < l.reach()); i++) {
+                double t = i * CityMap.WORLD_STEP;
+                onLand &= World.dry(w.terrainAt((long) Math.floor(l.x() + c * t), (long) Math.floor(l.y() + s * t)));
+            }
+            if (!full) {
+                double t = l.reach();
+                tight &= !World.dry(w.terrainAt((long) Math.floor(l.x() + c * t), (long) Math.floor(l.y() + s * t)));
+            }
+            if (l.net() == CityRuns.RAILWAY) check(what + ": the railway's main arm is its line's arm", main == l.arm());
+        }
+        oneEach = perNet[0] <= 1 && perNet[1] <= 1;
+        check(what + ": at most one world line a net", oneEach);
+        check(what + ": every line's point lies on a plot the city does not own", unowned);
+        check("...and on dry ground", dryPoint);
+        check("...at the end of a laid arm's track", armOk);
+        check("...within WORLD_GAP plots of it along its heading", gapOk);
+        check("...every plot between the arm's end and the point owned and dry", between);
+        check("...its reach from TrainSchedule.WORLD_PLOTS to CityMap.WORLD_REACH", reachOk);
+        check("...every point along its way, every WORLD_STEP, on dry ground", onLand);
+        check("...and it runs as far as the land does: the next point is not dry, or the reach is the most", tight);
+
+        CityMap.WorldLine rail = null;
+        for (CityMap.WorldLine l : lines) if (l.net() == CityRuns.RAILWAY) rail = l;
+        if (rail == null) {
+            check(what + ": with no railway line there are no trains' routes", routes.isEmpty());
+            return;
+        }
+        check(what + ": the railway has trains' routes", !routes.isEmpty());
+        CityRuns.Arm mainArm = runs.rail().arms.get(rail.arm());
+        double fx = rail.x() + Math.cos(Math.toRadians(rail.way())) * TrainSchedule.WORLD_PLOTS;
+        double fy = rail.y() + Math.sin(Math.toRadians(rail.way())) * TrainSchedule.WORLD_PLOTS;
+        boolean first = true, second = true, third = true;
+        int bad = 0;
+        int[] samples = new int[1];
+        for (TrainSchedule.Route r : routes) {
+            if (r.xs().length < 3) { first = false; continue; }
+            first &= Math.abs(r.xs()[0] - fx) < EPS && Math.abs(r.ys()[0] - fy) < EPS;
+            second &= Math.abs(r.xs()[1] - rail.x()) < EPS && Math.abs(r.ys()[1] - rail.y()) < EPS;
+            third &= Math.abs(r.xs()[2] - (mainArm.x + 0.5)) < EPS && Math.abs(r.ys()[2] - (mainArm.y + 0.5)) < EPS;
+            bad += offTrack(w, runs, r, samples);
+        }
+        System.out.printf("      %d route(s), %,d points read, %d on water off the track%n", routes.size(), samples[0], bad);
+        check("...every route's first point is WORLD_PLOTS out along the line's way", first);
+        check("...its second point is the line's point", second);
+        check("...its third is the main arm's end plot's middle: the train meets the line where the track ends", third);
+        check("...no point of any leg on water off the track", bad == 0 && samples[0] > 0);
+    }
+
+    /** The coast fixture's counts: the shore's town with every track type's count times COAST_TRACK_TIMES and YARDS_ADDED more of each Rail Terminal. */
+    static long[] coastCounts(BuildingVisual.Type[] types) {
+        long[] c = MapCheck.shoreCounts(types);
+        for (BuildingVisual.Type t : types) {
+            if (t == null) continue;
+            if (t.track()) c[t.id()] *= COAST_TRACK_TIMES;
+            if (t.terminal()) c[t.id()] += MapCheck.YARDS_ADDED;
+        }
+        return c;
+    }
+
+    /** Section 16: the default world's founding site one district north, three districts a side, drawn canonically on its coast. */
+    static void coastSection() {
+        System.out.println("\n--- the line to the world leaves on land, on a generated coast ---");
+        BuildingVisual.Type[] types = gatewayTypes();
+        World w = World.of(Founding.DEFAULT_WORLD_SEED);
+        long[] counts = coastCounts(types);
+        CityMap m = MapCheck.coastal(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, counts);
+        CityRuns runs = m.runs();
+        int gate = CityRuns.gateArm(runs.rail(), m.gateway());
+        check("fixture: the coast city has a gateway and a railway whose gate arm is laid",
+                m.gateway() >= 0 && gate >= 0 && runs.rail().arms.get(gate).steps > 0);
+        if (gate >= 0) {
+            int[] walk = fr0Walk(m, runs.rail(), gate);
+            System.out.printf("  FR0's walk from the gate arm's end: %d plot(s) of the city's own water crossed, %s an unowned plot%n",
+                    walk[0], walk[1] == 1 ? "then" : "no");
+            check("fixture: the railway's gate arm waits at the sea, FR0's walk crossing the city's own water", walk[0] >= 1);
+        }
+        worldLinesOnLand("the coast", m);
+        CityMap.WorldLine rail = null;
+        for (CityMap.WorldLine l : m.worldLines()) if (l.net() == CityRuns.RAILWAY) rail = l;
+        check("the coast: the railway has a line, so the checks above are not vacuous", rail != null);
+        check("...and its main arm is not the gate arm", rail != null && runs.mainArm() != gate);
+    }
+
+    /** Section 17: a square city at Jerus's founding site on the Earth, when earth-1.bin is named. */
+    static void halifaxSection() {
+        System.out.println("\n--- Halifax on the Earth, when earth-1.bin is named ---");
+        Path file = EarthData.locate();
+        String named = System.getProperty(EarthData.PROPERTY);
+        if (named != null && !named.isBlank() && !Files.isRegularFile(file)) {
+            check("the file -D" + EarthData.PROPERTY + " names is there: " + named, false);
+            return;
+        }
+        if (file == null) {
+            System.out.println("  earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": this section did not run");
+            return;
+        }
+        try (EarthData data = EarthData.open(file)) {
+            BuildingVisual.Type[] types = gatewayTypes();
+            World w = World.of(World.Key.earth(EarthTerrainCheck.SEED, HALIFAX_LAT, HALIFAX_LON, EarthTerrain.use(data)));
+            // Jerus's city x 1 (MapCheck.Squares' first copy: JERUS_COUNTS times TIMES[0]) with no iron mines, and the yards and freight line his city has.
+            long[] counts = new long[types.length];
+            for (int t = 0; t < MapCheck.JERUS_COUNTS.length && t < counts.length; t++) counts[t] = Math.round(MapCheck.JERUS_COUNTS[t] * MapCheck.TIMES[0]);
+            counts[ham.citybuildersim.sectors.Mining.IRON_MINE] = 0;
+            for (BuildingVisual.Type t : types) {
+                if (t == null) continue;
+                if (t.terminal()) counts[t.id()] += MapCheck.YARDS_ADDED;
+                else if (t.track() && t.plots() > 100) counts[t.id()] += MapCheck.FREIGHT_ADDED;
+            }
+            CityMap m = CityMap.square(w.key(), w.foundingX(), w.foundingY(), types, MapCheck.x1Side(types),
+                    (int) Math.round(MapCheck.JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), counts);
+            CityRuns runs = m.runs();
+            int gate = CityRuns.gateArm(runs.rail(), m.gateway());
+            check("fixture: Halifax has a gateway and a railway whose gate arm is laid",
+                    m.gateway() >= 0 && gate >= 0 && runs.rail().arms.get(gate).steps > 0);
+            if (gate >= 0) {
+                int[] walk = fr0Walk(m, runs.rail(), gate);
+                System.out.printf("  FR0's walk from the gate arm's end: %d plot(s) of the city's own water crossed, %s an unowned plot%n",
+                        walk[0], walk[1] == 1 ? "then" : "no");
+                check("fixture: the railway's gate arm waits at the sea, FR0's walk crossing the city's own water", walk[0] >= 1);
+            }
+            worldLinesOnLand("Halifax", m);
+            CityMap.WorldLine rail = null;
+            for (CityMap.WorldLine l : m.worldLines()) if (l.net() == CityRuns.RAILWAY) rail = l;
+            check("Halifax: the railway has a line, so the checks above are not vacuous", rail != null);
+        } catch (IOException e) {
+            check("the Earth's file opens: " + e, false);
+        }
+    }
+
+    /* ----- the label (section 18) ----- */
+
+    /** The view and the label it is tried with: 1,000 x 600 pixels, a label 110 wide and 13 high above its baseline. */
+    static final double VIEW_W = 1000, VIEW_H = 600, LABEL_W = 110, LABEL_H = 13;
+
+    /** Whether a label whose baseline starts at (x, y) lies inside a w x h view by LandMap.WORLD_LABEL_PAD on every side - the harness's own reading of the rule. */
+    static boolean inView(double x, double y, double w, double h) {
+        double pad = LandMap.WORLD_LABEL_PAD;
+        return x >= pad - EPS && x + LABEL_W <= w - pad + EPS && y - LABEL_H >= pad - EPS && y <= h - pad + EPS;
+    }
+
+    /** How far (x, y) lies from the segment (x0, y0) to (x1, y1), in pixels. */
+    static double offPart(double x, double y, double x0, double y0, double x1, double y1) {
+        double dx = x1 - x0, dy = y1 - y0, len2 = dx * dx + dy * dy;
+        double t = len2 == 0 ? 0 : Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / len2));
+        return Math.hypot(x - (x0 + dx * t), y - (y0 + dy * t));
+    }
+
+    /** One line leaving the view: FR0's spot clips, and worldLabelAt() puts the label whole inside the view, its baseline's left end on the part, at the first place along it, from FR0's spot back, that fits. */
+    static void labelLeaving(String what, double x0, double y0, double x1, double y1) {
+        double len = Math.hypot(x1 - x0, y1 - y0), ux = (x1 - x0) / len, uy = (y1 - y0) / len;
+        double frx = x1 - ux * LandMap.WORLD_LABEL_BACK, fry = y1 - uy * LandMap.WORLD_LABEL_BACK;
+        check(what + ": fixture: FR0's spot (" + Math.round(frx) + ", " + Math.round(fry) + ") runs the label past the view", !inView(frx, fry, VIEW_W, VIEW_H));
+        double[] at = LandMap.worldLabelAt(x0, y0, x1, y1, LABEL_W, LABEL_H, VIEW_W, VIEW_H);
+        check("...the label is placed", at != null);
+        if (at == null) return;
+        System.out.printf("      the label's baseline starts at (%.1f, %.1f)%n", at[0], at[1]);
+        check("...its box lies inside the view by WORLD_LABEL_PAD on every side", inView(at[0], at[1], VIEW_W, VIEW_H));
+        check("...its baseline's left end on the line's part", offPart(at[0], at[1], x0, y0, x1, y1) < 1e-6);
+        double back = Math.hypot(x1 - at[0], y1 - at[1]);
+        double nearer = back - 1;
+        check("...at the first place from FR0's spot that fits: a pixel nearer the far end does not",
+                nearer < LandMap.WORLD_LABEL_BACK - EPS || !inView(x1 - ux * nearer, y1 - uy * nearer, VIEW_W, VIEW_H));
+    }
+
+    /** Section 18: LandMap.worldLabelAt() on pure fixtures. */
+    static void labelSection() {
+        System.out.println("\n--- the label stays in view ---");
+        labelLeaving("a line leaving the right edge", 200, 400, VIEW_W, 300);
+        labelLeaving("a line leaving the top edge", 100, 60, 700, 0);
+        labelLeaving("a line leaving the bottom edge", 100, 570, 700, VIEW_H);
+        labelLeaving("a line leaving the top right corner", 400, VIEW_H, VIEW_W, 0);
+
+        double[] fits = LandMap.worldLabelAt(0, 300, 600, 300, LABEL_W, LABEL_H, VIEW_W, VIEW_H);
+        check("a line ending well inside the view keeps FR0's spot, WORLD_LABEL_BACK from its far end",
+                fits != null && Math.abs(fits[0] - (600 - LandMap.WORLD_LABEL_BACK)) < EPS && Math.abs(fits[1] - 300) < EPS);
+
+        // A part too short to hold the label anywhere on it: read every quarter pixel, none fits.
+        double[][] shorts = { { 996, 300, VIEW_W, 300 }, { 500, 3, 500, 0 } };
+        for (double[] p : shorts) {
+            double len = Math.hypot(p[2] - p[0], p[3] - p[1]);
+            boolean anywhere = false;
+            for (double t = 0; t <= len + EPS; t += 0.25) anywhere |= inView(p[0] + (p[2] - p[0]) * t / len, p[1] + (p[3] - p[1]) * t / len, VIEW_W, VIEW_H);
+            check("a part of " + Math.round(len) + " px at (" + Math.round(p[2]) + ", " + Math.round(p[3]) + "): fixture: the label fits nowhere on it", !anywhere);
+            double[] at = LandMap.worldLabelAt(p[0], p[1], p[2], p[3], LABEL_W, LABEL_H, VIEW_W, VIEW_H);
+            check("...the label still lies inside the view", at != null && inView(at[0], at[1], VIEW_W, VIEW_H));
+        }
+        check("a part of no length has no label", LandMap.worldLabelAt(500, 300, 500, 300, LABEL_W, LABEL_H, VIEW_W, VIEW_H) == null);
+        check("a view smaller than the label and its pads has none either",
+                LandMap.worldLabelAt(0, 50, 90, 50, LABEL_W, LABEL_H, LABEL_W, VIEW_H) == null);
+    }
+
+    /* ----- the highway that reaches no street (section 19) ----- */
+
+    /** A whole-box fill of a map's runs: the plots from (x0, y0), w x h, their codes and marks. */
+    static final class BoxFill {
+        final long x0, y0;
+        final int w, h;
+        final byte[] fixed, marks;
+
+        BoxFill(CityMap m) {
+            long[] b = m.runGround().box();
+            x0 = b[0];
+            y0 = b[1];
+            w = (int) (b[2] - b[0] + 1);
+            h = (int) (b[3] - b[1] + 1);
+            fixed = new byte[w * h];
+            marks = new byte[w * h];
+            m.runs().fill(x0, y0, w, h, fixed, marks, false);
+        }
+
+        /** Whether plot index g carries a highway (a railway over one included). */
+        boolean hw(int g) {
+            return fixed[g] == CityRuns.F_HIGHWAY || fixed[g] == CityRuns.F_RAIL_OVER;
+        }
+
+        /** Highway plots drawn. */
+        long drawn() {
+            long n = 0;
+            for (int g = 0; g < w * h; g++) if (hw(g)) n++;
+            return n;
+        }
+
+        /** Whether plot g shows a ramp on a cell line: M_RAMP, and its coordinate along the highway (x on a row, y on a column) a multiple of CityRuns.CELL. */
+        boolean rampOnCellLine(int g) {
+            if ((marks[g] & CityRuns.M_RAMP) == 0) return false;
+            int x = g % w, y = g / w;
+            boolean row = (x > 0 && hw(g - 1)) || (x < w - 1 && hw(g + 1));
+            boolean col = (y > 0 && hw(g - w)) || (y < h - 1 && hw(g + w));
+            return (row && Math.floorMod(x0 + x, (long) CityRuns.CELL) == 0) || (col && Math.floorMod(y0 + y, (long) CityRuns.CELL) == 0);
+        }
+
+        /** {pieces of highway (8 neighbours), highway plots in a piece with no ramp on a cell line}. */
+        long[] pieces() {
+            boolean[] seen = new boolean[w * h];
+            int[] queue = new int[w * h];
+            long pieces = 0, orphaned = 0;
+            for (int s = 0; s < w * h; s++) {
+                if (!hw(s) || seen[s]) continue;
+                pieces++;
+                int head = 0, tail = 0;
+                queue[tail++] = s;
+                seen[s] = true;
+                boolean ramp = false;
+                while (head < tail) {
+                    int g = queue[head++], x = g % w, y = g / w;
+                    ramp |= rampOnCellLine(g);
+                    for (int dy = -1; dy <= 1; dy++) {
+                        for (int dx = -1; dx <= 1; dx++) {
+                            int nx = x + dx, ny = y + dy;
+                            if ((dx == 0 && dy == 0) || nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+                            int k = ny * w + nx;
+                            if (hw(k) && !seen[k]) { seen[k] = true; queue[tail++] = k; }
+                        }
+                    }
+                }
+                if (!ramp) orphaned += tail;
+            }
+            return new long[] { pieces, orphaned };
+        }
+    }
+
+    /** The highway plots the model has (its Elevated Highways' plots), as MapCheck counts them. */
+    static long modelHighwayPlots(CityMap m) {
+        return MapCheck.roadPlotsOf(m.totals(), m.types(), BuildingVisual.HIGHWAY);
+    }
+
+    /** Whether a map has a world line for the highways. */
+    static boolean hasHighwayLine(CityMap m) {
+        for (CityMap.WorldLine l : m.worldLines()) if (l.net() == CityRuns.HIGHWAYS) return true;
+        return false;
+    }
+
+    /** A reaching city's highways as the map draws them: every plot in a piece with a ramp on a cell line, and the drawn plots and the undrawn ones the model's. */
+    static void drawnWhole(String what, CityMap m) {
+        CityRuns runs = m.runs();
+        check(what + ": fixture: the highways reach a street", runs.highwaysReach());
+        BoxFill f = new BoxFill(m);
+        long drawn = f.drawn();
+        long[] pieces = f.pieces();
+        System.out.printf("      %s: %,d highway plots drawn in %d piece(s) of the model's %,d; %,d undrawn%n",
+                what, drawn, pieces[0], modelHighwayPlots(m), runs.highwayUndrawn());
+        check("...the highways are drawn: there is a piece", drawn > 0 && pieces[0] >= 1);
+        check("...every highway plot drawn lies in a piece holding a ramp on a cell line", pieces[1] == 0);
+        check("...the drawn plots and highwayUndrawn() are the model's highway plots", drawn + runs.highwayUndrawn() == modelHighwayPlots(m));
+        check("...none is undrawn but what the runs could not lay", runs.highwayUndrawn() == runs.highwayShort());
+    }
+
+    /** Section 19: gatewayCity() with highways and no track. */
+    static void undrawnSection() {
+        System.out.println("\n--- a highway that reaches no street is not drawn ---");
+        BuildingVisual.Type[] types = gatewayTypes();
+        CityMap one = gatewayCity(types, 1, 0);
+        CityRuns runs = one.runs();
+        check("fixture: with one Elevated Highway the runs laid it", runs.highways().plots() > 0);
+        check("...it reaches no arterial's ramp: highwaysReach() is false", !runs.highwaysReach());
+        BoxFill f = new BoxFill(one);
+        check("...a fill over the city's whole box holds no highway plot", f.drawn() == 0);
+        check("...highwayUndrawn() is the model's highway plots", runs.highwayUndrawn() == modelHighwayPlots(one) && modelHighwayPlots(one) > 0);
+        check("...highwayShort() stays what the runs could not lay: none here", runs.highwayShort() == 0);
+        check("...fixture: the city has a gateway, so the line's absence is the rule's", one.gateway() >= 0);
+        check("...and the world lines hold no highway line", !hasHighwayLine(one));
+
+        int n = 1;
+        CityMap at = one;
+        while (!at.runs().highwaysReach() && n < MOST_HIGHWAYS) at = gatewayCity(types, ++n, 0);
+        check("some count of at most " + MOST_HIGHWAYS + " Elevated Highways reaches a street", at.runs().highwaysReach());
+        CityMap before = gatewayCity(types, n - 1, 0);
+        System.out.printf("  the least count that reaches an arterial's ramp: %d Elevated Highways, %,d plots laid (%,d plots at %d)%n",
+                n, at.runs().highways().plots(), before.runs().highways().plots(), n - 1);
+        check("...one fewer does not (" + (n - 1) + ")", n >= 2 && !before.runs().highwaysReach());
+        check("...and has no highway plot in a whole-box fill", new BoxFill(before).drawn() == 0 && !hasHighwayLine(before));
+        drawnWhole("at " + n, at);
+        CityMap big = gatewayCity(types, 100, 10);
+        drawnWhole("at 100 Elevated Highways and 10 Freight Lines", big);
     }
 }
