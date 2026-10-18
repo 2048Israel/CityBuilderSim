@@ -293,7 +293,11 @@ final class MapView {
     private BoatSchedule schedule;
     private int scheduleMonth = Integer.MIN_VALUE, scheduleGameMonth = Integer.MIN_VALUE;
     private List<BoatSchedule.Route> scheduleRoutes;
-    /** Whether boats are in view (the frame goes on), and the clock they were last drawn at. */
+    /** The trains' schedule drawn from (0.8.2, batch FR1): its boat-month, the routes and the game month it was made on. */
+    private TrainSchedule trainSchedule;
+    private int trainMonth = Integer.MIN_VALUE, trainGameMonth = Integer.MIN_VALUE;
+    private List<TrainSchedule.Route> trainRoutes;
+    /** Whether boats - or since 0.8.2 trains - are in view (the frame goes on), and the clock they were last drawn at. */
     private boolean boatsLive;
     private double drawnClock = Double.NaN;
     private final AnimationTimer pump = new AnimationTimer() {
@@ -438,6 +442,9 @@ final class MapView {
         schedule = null;
         scheduleRoutes = null;
         scheduleMonth = scheduleGameMonth = Integer.MIN_VALUE;
+        trainSchedule = null;
+        trainRoutes = null;
+        trainMonth = trainGameMonth = Integer.MIN_VALUE;
         boatsLive = false;
     }
 
@@ -808,6 +815,7 @@ final class MapView {
             else {
                 drawTiles(gc, f, level);
                 boats(gc, f, level);
+                trains(gc, f, level);
             }
         }
         // The swap (0.7.135): a notch inside the handoff the globe's picture of the plane's own nodes is laid over them, whole at
@@ -972,6 +980,66 @@ final class MapView {
             gc.setStroke(colour(c, b.alpha()));
             gc.setLineWidth(1.2);
             gc.strokePolygon(screenXs(f, hull[0]), screenYs(f, hull[1]), hull[0].length);
+        }
+    }
+
+    /* =====================================================================
+       THE TRAINS (0.8.2, batch FR1; spec-freight 4.4, D16)
+       ===================================================================== */
+
+    /**
+     * The trains over the tiles, from L1 in, as the boats: the month's
+     * schedule (TrainSchedule, from the railway's tonnes by kind) on the
+     * map's routes (CityMap.trainRoutes()) at the boats' clock. At the near
+     * view each vehicle's body and from TrainShapes.MARKS_FROM its kind's
+     * mark (TrainShapes); at the middle view a dash of the train's colour
+     * along the line. Each vehicle fades in along the world line. While a
+     * route crosses the view the frame goes on.
+     */
+    private void trains(GraphicsContext gc, MapFrame f, int level) {
+        if (shownMap == null || (level != MapFrame.L0 && level != MapFrame.L1)) return;
+        List<TrainSchedule.Route> routes = shownMap.trainRoutes();
+        if (routes.isEmpty()) return;
+        double clock = boatClock();
+        int m = (int) Math.floor(clock);
+        double t = clock - m;
+        Game g = ui.game;
+        if (trainSchedule == null || trainMonth != m || trainRoutes != routes || trainGameMonth != g.getMonth()) {
+            trainSchedule = TrainSchedule.of(m, g.getSectors().rail(), routes);
+            trainMonth = m;
+            trainRoutes = routes;
+            trainGameMonth = g.getMonth();
+        }
+        if (trainSchedule.callCount() == 0) return;
+        double margin = TrainSchedule.Kind.HOPPER.length();
+        long x0 = (long) Math.floor(f.plotX(0) - margin), y0 = (long) Math.floor(f.plotY(0) - margin);
+        long x1 = (long) Math.ceil(f.plotX(f.width()) + margin), y1 = (long) Math.ceil(f.plotY(f.height()) + margin);
+        if (!trainSchedule.crosses(x0, y0, x1, y1)) return;
+        drawnClock = clock;
+        boatsLive = true;
+        double s = f.scale();
+        for (TrainSchedule.Train tr : trainSchedule.frame(x0, y0, x1, y1, t)) {
+            List<TrainSchedule.Car> cars = TrainSchedule.cars(tr, routes.get(tr.call().route()));
+            int c = TrainShapes.colour(tr);
+            if (s < TrainShapes.CARS_FROM) {
+                // The middle view: a dash along the line, each vehicle's step at its own fade.
+                gc.setLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
+                gc.setLineWidth(Math.max(2, TrainShapes.WIDTH * s));
+                for (int i = 0; i + 1 < cars.size(); i++) {
+                    TrainSchedule.Car a = cars.get(i), b = cars.get(i + 1);
+                    gc.setStroke(colour(c, Math.min(a.alpha(), b.alpha())));
+                    gc.strokeLine(f.screenX(a.x()), f.screenY(a.y()), f.screenX(b.x()), f.screenY(b.y()));
+                }
+                gc.setLineCap(javafx.scene.shape.StrokeLineCap.SQUARE);
+                continue;
+            }
+            int mc = TrainShapes.markColour(tr);
+            for (TrainSchedule.Car car : cars) {
+                fillShape(gc, f, TrainShapes.body(car), colour(car.loco() ? TrainShapes.LOCO : c, car.alpha()));
+                if (s < TrainShapes.MARKS_FROM) continue;
+                double[][] mark = TrainShapes.mark(car, tr);
+                if (mark != null) fillShape(gc, f, mark, colour(mc, car.alpha()));
+            }
         }
     }
 

@@ -593,7 +593,10 @@ public final class LandMap {
         return out;
     }
 
-    /** The plane's legend (the expanded map's since 0.7.61; ui/MapView's until 0.7.135): the ten classes and flats, the three roads, (0.7.88) the tracks, (0.8.1) the eleventh transport class, the railway's four - ballast, the main line, the freight yard and the level crossing - and the gateway to the world, (0.7.97) the nine of the shore and the sea, (0.8.0) the four industries' works and the seven looks of the materials, (0.7.127) ice and the desert, the land, the six resources in fields. */
+    /** The legend's train (0.8.2, batch FR1): its wagons in the ships' four colours, a locomotive at each end. */
+    public static final String TRAIN_WORDS = "Train: wagons in the ships' colours";
+
+    /** The plane's legend (the expanded map's since 0.7.61; ui/MapView's until 0.7.135): the ten classes and flats, the three roads, (0.7.88) the tracks, (0.8.1) the eleventh transport class, the railway's four - ballast, the main line, the freight yard and the level crossing - and the gateway to the world, (0.7.97) the nine of the shore and the sea, (0.8.2) the train, (0.8.0) the four industries' works and the seven looks of the materials, (0.7.127) ice and the desert, the land, the six resources in fields. */
     public static List<Entry> planeLegend() {
         List<Entry> out = new ArrayList<>();
         for (int c = 0; c < BuildingVisual.CLASSES; c++) {
@@ -623,6 +626,8 @@ public final class LandMap {
         out.add(new Entry(ShipShapes.EXPORT, "Ship out, full"));
         out.add(new Entry(ShipShapes.EMPTY, "Ship, empty leg"));
         out.add(new Entry(ShipShapes.BOXES, "Box ship, both ways"));
+        // The trains (0.8.2, batch FR1; spec-freight 4.9): the ships' four colours, reused, between two locomotives.
+        out.add(new Entry(TrainShapes.LOCO, TRAIN_WORDS));
         // The two kinds of ground the real Earth has and the map's colours alone would not name (0.7.127; spec-globe 3.9).
         out.add(new Entry(TileRaster.GROUND[World.ICE], groundWords(World.ICE)));
         out.add(new Entry(TileRaster.GROUND[World.DESERT], groundWords(World.DESERT)));
