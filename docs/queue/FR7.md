@@ -43,17 +43,25 @@ FR7 comes after FR2, because the access roads need the Truck Depot and the highw
 
 ### Proposed
 
-**1.1 The model: a terminal first, then spurs for works (★1, ★2; traces move).**
+**1.1 The model: a small station first, then spurs for works (★1, ★2; traces move).**
 
-- **The first rail order is a Rail Terminal.** `plan()` orders no spur or line until the city has a terminal, standing or on order.
-  - The first terminal is ordered when the unserved tonnes reach a spur's threshold (30,000 t). `MIN_LINE_UTILISATION` is waived for that one order.
-  - This is Jerus's rule. The real reason for it: cars from sidings are sorted at a yard.
+- **A new first rung, the Rail Depot (★1, Jerus 2026-10-18: "a small freight station").** It is a small goods yard: a few sidings, a shed and a team track, handling about 50,000 t a month (est.).
+  - It takes the next id in `buildings.json` (139 today). It goes at the end of `BuildingType`, sector Rail, category RAIL.
+  - Price it on the rail ladder's per-tonne rule (`BuildingManager.java:1505`, "THE LADDER IS PER TONNE").
+  - **Its working name is Rail Depot,** because "the freight station" already names the main yard in the map's code (`CityRuns.freightStation()`, `CityRuns.java:1040`). Jerus may rename it.
+- **The railway starts with a station.** `plan()` orders no spur or line until the city has a Rail Depot or a Rail Terminal, standing or on order.
+  - The first order is the Rail Depot, when the unserved tonnes reach its threshold.
+  - A Rail Terminal follows when the tonnes outgrow the depots, at its own threshold, as now.
+  - The real reason for the rule: cars from sidings are sorted at a yard.
+- **Tonnes railed are capped by what the stations handle.** Depots plus terminals, as well as by the track and the wagon sets.
+  - The exception is bulk loaded at a works' own siding (below), which runs as a unit train and needs no yard.
+- **On the map, a Rail Depot is a small yard** in the TRANSPORT class: 2 to 3 sidings and a shed, laid as `yardSpots` lays a terminal. Trains route to it as to a yard.
 - **A spur is a siding into one works.** A spur is ordered only for a bulk works within one district of the line that has no siding yet: the largest first, as in spec §4.3.
   - A works that railed nothing would not get one.
   - Tonnes past what the sidings serve go to a Freight Line or a further terminal.
 - **The suspected overbuild** above is fixed if it is real: track is never ordered while track already exceeds the tonnes and the wagon sets are the limit.
-- **Measure what a young city pays.** A terminal costs about nine spurs ($1.24bn against $140m). The batch counts how often a young city's first rail order is now a terminal it half uses, and what that costs over the playtest.
-  - If the cost bites, ★1's alternative is a small first rung.
+- **Measure what a young city pays.** The batch counts the rail rungs a young city orders before and after, and what its first station costs over the playtest.
+  - The Rail Depot exists so that the first station is not a $1.24bn terminal a young city half uses.
 
 **1.2 The map: track only on a train's way (★3; identical traces).**
 
@@ -152,22 +160,22 @@ These are what FR0 left, from `FR0-notes.md` §4. FR0 stopped on one problem: th
 - **The interchanges' ground (D19).** A 19 × 19 plot reserve for a cloverleaf and an 11 × 11 one for a trumpet, laid with the corridor before cells open round it. A stack stays only where the ground is short, which is the spec's rule.
 - **Kerb corners and estate T's:** drawing only (spec §4.6's table).
 
-## 4. ★ Decisions (Jerus)
+## 4. ★ Decisions (answered, Jerus, 2026-10-18)
 
-1. **★1 How the railway starts.** **Recommend:** his rule, the existing Rail Terminal first, with its utilisation threshold waived for the first one.
-   - **The alternative**, if 1.1's measurement shows young cities paying for a half-used terminal: a new small first rung, a Freight Station of about 50,000 t a month. That is a new building with the next id.
-2. **★2 A spur is a siding into one bulk works,** ordered only for a works within a district of the line that has none. **Recommend yes.**
-3. **★3 No track is laid on no train's way.** Leftover plots go to the legend's surplus. **Recommend yes.**
-4. **★4 Streets and highways as two needs,** each with its own measure and line on NEEDS YOU. Through trips fall back onto the streets when there is no highway. **Recommend yes.** This is the change that gets both built.
-5. **★5 Gravel's repairs rise with its traffic,** so paving follows load, not land price. **Recommend yes.**
-6. **★6 Gravel drawn grey** (about `#bdb8ae`, speckled), with brown kept for earth tracks. **Recommend yes** (his lean).
+His words: "1. yes a small freight station? rest rec yes".
 
-Until he answers, the batch follows the recommendations, as FR0-FR4 did.
+1. **★1 How the railway starts: a small station first.** **Decided:** a new small first rung of about 50,000 t a month (1.1, the Rail Depot), then the Rail Terminal as tonnes grow. No spur or line is ordered before a station.
+   - The recommendation had been the existing terminal first. He took the small rung instead.
+2. **★2 A spur is a siding into one bulk works,** ordered only for a works within a district of the line that has none. **Decided: yes.**
+3. **★3 No track is laid on no train's way.** Leftover plots go to the legend's surplus. **Decided: yes.**
+4. **★4 Streets and highways as two needs,** each with its own measure and line on NEEDS YOU. Through trips fall back onto the streets when there is no highway. **Decided: yes.**
+5. **★5 Gravel's repairs rise with its traffic,** so paving follows load, not land price. **Decided: yes.**
+6. **★6 Gravel drawn grey** (about `#bdb8ae`, speckled), with brown kept for earth tracks. **Decided: yes.**
 
 ## 5. What done looks like
 
 - **A harness section for each mechanic, with a fixture that causes it** before checking the fix:
-  - 1.1: a young city's first rail order is a terminal, and a spur is ordered only for a works without a siding. The overbuild fixture as well, if it is real.
+  - 1.1: a young city's first rail order is a Rail Depot. No spur or line is ordered before a station, and a spur is ordered only for a works without a siding. The overbuild fixture as well, if it is real. The new building also passes BuildingDataCheck.
   - 1.2: every drawn track plot lies on a train's route, from the world line to a yard or a siding, and no arm ends in country.
   - 2.1: a large city's NEEDS YOU and its orders over a run include both highways and streets, and a city with no highway carries its through trips on the streets at a strain.
   - 2.2: a busy gravel district is paved and a quiet one stays gravel.
