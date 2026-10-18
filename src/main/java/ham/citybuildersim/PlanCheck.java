@@ -84,7 +84,7 @@ public class PlanCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        out.printf("%-78s %s%n", label, ok ? "OK" : "FAIL");
+        out.printf("%-78s %s%n", label, Timing.verdict(ok));
     }
 
     /** Repeats a district's plan is timed over, after one untimed: its median is its time. */
@@ -936,7 +936,7 @@ public class PlanCheck {
                 + " warm, their plans %.1f ms in all%n", shown.size(), cold, sum);
         check("every district the dense screen shows keeps every check", ts.allHold());
         check("a district's plan, the dense screen's slowest, in no more than " + (int) PLAN_MS + " ms (half the screen's "
-                + (int) MapCheck.SCREEN_MS + ")", Tally.max(ts.planMs) <= PLAN_MS);
+                + (int) MapCheck.SCREEN_MS + ")", Timing.within(Tally.max(ts.planMs), PLAN_MS));
     }
 
     /* =====================================================================
@@ -1249,6 +1249,6 @@ public class PlanCheck {
         }
         out.printf("      ...its own mix on a flat district (2.10), the share of its buildings' ground with no place at:%s%n", sb);
         check("every district of the save keeps every check (one network where the ground does not part it)", t.allHold());
-        check("...each planned in no more than " + (int) PLAN_MS + " ms", Tally.max(t.planMs) <= PLAN_MS);
+        check("...each planned in no more than " + (int) PLAN_MS + " ms", Timing.within(Tally.max(t.planMs), PLAN_MS));
     }
 }

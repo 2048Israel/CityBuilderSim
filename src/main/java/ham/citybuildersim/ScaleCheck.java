@@ -226,7 +226,7 @@ public class ScaleCheck {
 
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
-        out.printf("%-84s %s%n", label, ok ? "OK" : "FAIL");
+        out.printf("%-84s %s%n", label, Timing.verdict(ok));
     }
 
     static void same(String label, long actual, long expected) {
@@ -621,7 +621,7 @@ public class ScaleCheck {
         assertTrue("fixture: the free copy ordered - an order sized from more than a million needed,"
                 + " and one judged on its interest", orders.largestNeeded > 1_000_000 && orders.invested > 0);
         assertTrue(String.format("the median month is under %,.0f ms (%,.0f ms; the slowest %,.0f ms)",
-                MONTH_MEDIAN_MS, median, sorted[FREE_MONTHS - 1]), median < MONTH_MEDIAN_MS);
+                MONTH_MEDIAN_MS, median, sorted[FREE_MONTHS - 1]), Timing.below(median, MONTH_MEDIAN_MS));
     }
 
     /** addsUp()'s sums, as a verdict rather than a list of lines: section 6 asks it every month. */
