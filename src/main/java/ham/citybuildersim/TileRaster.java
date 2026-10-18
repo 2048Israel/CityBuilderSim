@@ -109,6 +109,25 @@ public final class TileRaster {
     /** ...and its barrier's red (spec-freight 4.3 "Crossings"). */
     public static final int BARRIER = 0xffd04a3c;
 
+    /* ===== JUNCTIONS DRAWN BY RULE (0.8.1, batch FR0; spec-freight 4.6, D19) ===== */
+
+    /** Pixels a plot from which junctions are drawn (the 8-px raster): signals, roundabouts, diamonds and stacks; a highway's end comes down to the ground wherever the ways are drawn, from LINES_FROM. */
+    public static final int JUNCTIONS_FROM = 6;
+    /** A signalled junction's box, a shade darker than paved. */
+    public static final int JUNCTION_BOX = 0xff8e949a;
+    /** A crossing's stripes and stop lines. */
+    public static final int ZEBRA = 0xfff2f2f2;
+    /** Plots: a zebra crossing's depth along its arm. */
+    public static final double ZEBRA_DEPTH = 0.3;
+    /** Plots: a roundabout's outer radius, spec: "a circle of 1.5 plots". */
+    public static final double ROUNDABOUT_RADIUS = 0.75;
+    /** Plots: its planted middle's radius. */
+    public static final double ROUNDABOUT_ISLAND = 0.35;
+    /** The planted middle. */
+    public static final int ISLAND = 0xff6f9a4f;
+    /** Plots: a diamond's slip road along the verge each side of its street. */
+    public static final double SLIP_LENGTH = 2;
+
     /** Pixels a plot from which the blocks' view draws the track's cross-ticks (the L1 raster). */
     public static final int TICKS_FROM = 2;
 
@@ -1035,6 +1054,12 @@ public final class TileRaster {
         }
         // The railway's crossings: rails through a level crossing with its marks, an arterial or boulevard over the main line as a bridge.
         railCrossings(in, p, px, img);
+        // Junctions on the streets, before the highways are drawn over them.
+        if (px >= JUNCTIONS_FROM) {
+            signals(in, p, px, img);
+            roundabouts(in, p, px, img);
+            diamonds(in, p, px, img);
+        }
         // The highways: cased, their middles and their arms to the highway beside them, across the tile's edge too.
         int[] cs = crossSection(BuildingVisual.HIGHWAY, px);
         int width = cs[0], cas = cs[1], o = (px - width) / 2;
@@ -1057,6 +1082,10 @@ public final class TileRaster {
                 if (highwayAt(in, p, i, 1)) fillRect(img, w, x0 + z, y0 + a, x0 + px, y0 + z, c);
             }
         }
+        // A highway arm's end, from 4 px a plot as every way is (spec 2.7's ramp at an arm's end, which no street need pass
+        // beneath), and a stack, drawn over the highways.
+        highwayEnds(in, p, px, img);
+        if (px >= JUNCTIONS_FROM) stack(in, p, px, img);
         // The railway bridging a highway (0.7.89; spec 2.8): its deck and, drawn as rail (0.8.1), the track across the highway.
         int[] rs = crossSection(BuildingVisual.PAVED, px);
         for (int i = 0; i < TilePainter.PLOTS; i++) {
@@ -1102,6 +1131,7 @@ public final class TileRaster {
      * across the tile's edge from its ramp is drawn by the tile it is on.
      */
     private static void ramps(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        if (px >= JUNCTIONS_FROM) return; // The diamond draws these from 6 px a plot; below it, the corner strokes stay.
         int tile = TilePainter.TILE, w = tile * px;
         double half = Math.max(0.6, RAMP_WIDTH * px / 2);
         for (int i = 0; i < TilePainter.PLOTS; i++) {
@@ -1168,6 +1198,291 @@ public final class TileRaster {
                 if (ex * ex + ey * ey <= half * half) img[(y0 + v) * w + x0 + u] = c;
             }
         }
+    }
+
+    /* ----- junctions' helpers ----- */
+
+    /** The role of the street at plot (x, y) - in the tile, or just across one of its edges - ARTERIAL or BOULEVARD; 0 for none, a track, a street beneath a highway, or a corner beyond the tile. */
+    private static byte streetRoleAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int tile = TilePainter.TILE;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) {
+            int i = y * tile + x;
+            return isStreet(p, i) ? p.role[i] : 0;
+        }
+        if ((x < 0 || x >= tile) && (y < 0 || y >= tile)) return 0;
+        int dir = y < 0 ? 0 : y >= tile ? 2 : x < 0 ? 3 : 1;
+        int along = dir == 0 || dir == 2 ? x : y;
+        int code = in.beyond[dir * tile + along] & 0xff;
+        int kind = code & TilePainter.S_KIND;
+        if (kind == DistrictPlan.NONE || kind == DistrictPlan.UNDER) return 0;
+        return TilePainter.roleOf(code);
+    }
+
+    /** Whether a street role is one a junction is drawn for. */
+    private static boolean junctionRole(byte role) {
+        return role == TilePainter.ARTERIAL || role == TilePainter.BOULEVARD;
+    }
+
+    /** Whether the street at plot (x, y) is a signalled junction: itself an arterial or boulevard, with one across it on each axis, and not a roundabout. */
+    private static boolean signalAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        byte role = streetRoleAt(in, p, x, y);
+        if (!junctionRole(role) || roundaboutAt(in, p, x, y)) return false;
+        boolean across = junctionRole(streetRoleAt(in, p, x - 1, y)) || junctionRole(streetRoleAt(in, p, x + 1, y));
+        boolean along = junctionRole(streetRoleAt(in, p, x, y - 1)) || junctionRole(streetRoleAt(in, p, x, y + 1));
+        return across && along;
+    }
+
+    /** Whether the street at plot (x, y) is a roundabout: boulevards on both axes and itself a boulevard. */
+    private static boolean roundaboutAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        if (streetRoleAt(in, p, x, y) != TilePainter.BOULEVARD) return false;
+        boolean across = streetRoleAt(in, p, x - 1, y) == TilePainter.BOULEVARD || streetRoleAt(in, p, x + 1, y) == TilePainter.BOULEVARD;
+        boolean along = streetRoleAt(in, p, x, y - 1) == TilePainter.BOULEVARD || streetRoleAt(in, p, x, y + 1) == TilePainter.BOULEVARD;
+        return across && along;
+    }
+
+    /** A street's surface across its plot at px pixels a plot: {its width, its offset from the plot's edge}. */
+    private static int[] surfaceAt(TilePainter.Painted p, int i, int px) {
+        int t = Math.max(1, (int) Math.round(SURFACE[Math.max(1, Math.min(2, (int) p.width[i]))] * px));
+        return new int[] { t, (px - t) / 2 };
+    }
+
+    /* ----- 1. signals: arterial x arterial ----- */
+
+    private static void signals(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int tile = TilePainter.TILE;
+        // Each junction's surface is the dark box.
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (!signalAt(in, p, i % tile, i / tile)) continue;
+            int[] s = surfaceAt(p, i, px);
+            int x0 = (i % tile) * px, y0 = (i / tile) * px;
+            int c = in.owned[i] ? JUNCTION_BOX : blend(JUNCTION_BOX, VOID, UNOWNED_DIM);
+            boolean h = streetAt(in, p, i, 1) || streetAt(in, p, i, 3);
+            boolean v = streetAt(in, p, i, 0) || streetAt(in, p, i, 2);
+            if (h) fillRect(img, tile * px, x0, y0 + s[1], x0 + px, y0 + s[1] + s[0], c);
+            if (v) fillRect(img, tile * px, x0 + s[1], y0, x0 + s[1] + s[0], y0 + px, c);
+        }
+        // Each arm, drawn by the plot it is on (so the two tiles draw their halves of a junction across an edge).
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (!isStreet(p, i) || p.beneath[i] || p.road[i] == TilePainter.TRACK) continue;
+            int x = i % tile, y = i / tile;
+            for (int dir = 0; dir < 4; dir++) {
+                if (!signalAt(in, p, x + TilePainter.DX[dir], y + TilePainter.DY[dir])) continue;
+                drawSignalArm(in, p, i, px, img, dir);
+            }
+        }
+    }
+
+    /** A zebra crossing and its stop line on one arm of a signal, at the edge facing the junction. */
+    private static void drawSignalArm(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int dir) {
+        int tile = TilePainter.TILE, w = tile * px;
+        int[] s = surfaceAt(p, i, px);
+        int x0 = (i % tile) * px, y0 = (i / tile) * px;
+        int depth = Math.max(1, (int) Math.round(ZEBRA_DEPTH * px));
+        int zebra = in.owned[i] ? ZEBRA : blend(ZEBRA, VOID, UNOWNED_DIM);
+        int half = s[0] / 2;
+        if (dir == 0 || dir == 2) { // A north-south arm: stripes run along the arm, across its width.
+            int y = dir == 0 ? 0 : px - depth;
+            for (int dx = s[1]; dx < s[1] + s[0]; dx++) {
+                if ((dx - s[1]) % 2 == 0) fillRect(img, w, x0 + dx, y0 + y, x0 + dx + 1, y0 + y + depth, zebra);
+            }
+            int stopY = dir == 0 ? depth : px - depth - 1;
+            int startX = dir == 0 ? s[1] + s[0] - half : s[1];
+            fillRect(img, w, x0 + startX, y0 + stopY, x0 + startX + half, y0 + stopY + 1, zebra);
+        } else { // An east-west arm.
+            int x = dir == 1 ? px - depth : 0;
+            for (int dy = s[1]; dy < s[1] + s[0]; dy++) {
+                if ((dy - s[1]) % 2 == 0) fillRect(img, w, x0 + x, y0 + dy, x0 + x + depth, y0 + dy + 1, zebra);
+            }
+            int stopX = dir == 1 ? px - depth - 1 : depth;
+            int startY = dir == 1 ? s[1] + s[0] - half : s[1];
+            fillRect(img, w, x0 + stopX, y0 + startY, x0 + stopX + 1, y0 + startY + half, zebra);
+        }
+    }
+
+    /* ----- 2. roundabouts: boulevard x boulevard ----- */
+
+    private static void roundabouts(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int tile = TilePainter.TILE;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (!roundaboutTarget(in, p, i)) continue;
+            int x = i % tile, y = i / tile;
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dx = -1; dx <= 1; dx++) {
+                    if (roundaboutAt(in, p, x + dx, y + dy)) drawRoundaboutOn(in, p, i, px, img, x + dx, y + dy);
+                }
+            }
+        }
+    }
+
+    /** Whether a roundabout's ring or island may be drawn on plot i: a street or empty ground, never a building, the track, a highway or water. */
+    private static boolean roundaboutTarget(TilePainter.Input in, TilePainter.Painted p, int i) {
+        if (p.use[i] == TilePainter.BUILDING || p.use[i] == TilePainter.RAIL || isHighway(p, i)) return false;
+        if (in.terrain[i] == World.SALT || in.terrain[i] == World.FRESH) return false;
+        return p.use[i] == TilePainter.EMPTY || p.use[i] == TilePainter.FIELD || isStreet(p, i);
+    }
+
+    /** The ring's and island's pixels of a roundabout centred on plot (cx, cy) that fall on plot i. */
+    private static void drawRoundaboutOn(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int cx, int cy) {
+        int tile = TilePainter.TILE, w = tile * px;
+        int x0 = (i % tile) * px, y0 = (i / tile) * px;
+        double centreX = (cx + 0.5) * px, centreY = (cy + 0.5) * px;
+        double outer = ROUNDABOUT_RADIUS * px, inner = ROUNDABOUT_ISLAND * px;
+        int paved = in.owned[i] ? ROAD[BuildingVisual.PAVED] : blend(ROAD[BuildingVisual.PAVED], VOID, UNOWNED_DIM);
+        int island = in.owned[i] ? ISLAND : blend(ISLAND, VOID, UNOWNED_DIM);
+        for (int v = 0; v < px; v++) {
+            for (int u = 0; u < px; u++) {
+                double qx = x0 + u + 0.5 - centreX, qy = y0 + v + 0.5 - centreY;
+                double d = Math.sqrt(qx * qx + qy * qy);
+                if (d <= inner) img[(y0 + v) * w + x0 + u] = island;
+                else if (d <= outer) img[(y0 + v) * w + x0 + u] = paved;
+            }
+        }
+    }
+
+    /* ----- 3. diamonds: a street passes beneath a highway ----- */
+
+    private static void diamonds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int tile = TilePainter.TILE;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (!isHighway(p, i) || (in.marks[i] & CityRuns.M_RAMP) == 0 || !p.beneath[i]) continue;
+            int hx = i % tile, hy = i / tile;
+            boolean rowHw = runHighwayAt(in, p, i, 1) || runHighwayAt(in, p, i, 3);
+            boolean colHw = runHighwayAt(in, p, i, 0) || runHighwayAt(in, p, i, 2);
+            if (rowHw == colHw) continue;
+            boolean streetAcross = rowHw
+                    ? streetAt(in, p, i, 0) || streetAt(in, p, i, 2)
+                    : streetAt(in, p, i, 1) || streetAt(in, p, i, 3);
+            if (!streetAcross) continue;
+            for (int side = -1; side <= 1; side += 2) {
+                for (int dir = -1; dir <= 1; dir += 2) drawSlip(in, p, px, img, hx, hy, rowHw, side, dir);
+            }
+        }
+    }
+
+    /** One diamond slip along the verge beside a highway, from the street out for SLIP_LENGTH plots. */
+    private static void drawSlip(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int hx, int hy, boolean rowHw, int side, int dir) {
+        int tile = TilePainter.TILE, w = tile * px;
+        double half = Math.max(0.6, RAMP_WIDTH * px / 2.0);
+        for (int k = 1; k <= (int) SLIP_LENGTH; k++) {
+            int tx = rowHw ? hx + dir * k : hx + side;
+            int ty = rowHw ? hy + side : hy + dir * k;
+            if (tx < 0 || ty < 0 || tx >= tile || ty >= tile) return;
+            int i = ty * tile + tx;
+            if (p.use[i] != TilePainter.EMPTY && p.use[i] != TilePainter.FIELD) return;
+            int x0 = tx * px, y0 = ty * px;
+            int c = in.owned[i] ? ROAD[BuildingVisual.PAVED] : blend(ROAD[BuildingVisual.PAVED], VOID, UNOWNED_DIM);
+            if (rowHw) {
+                segment(img, w, x0, y0, px, 0, px / 2.0, px, px / 2.0, half, c);
+                if (k == SLIP_LENGTH) segment(img, w, x0, y0, px, px / 2.0, px / 2.0, px / 2.0, side < 0 ? px : 0, half, c);
+            } else {
+                segment(img, w, x0, y0, px, px / 2.0, 0, px / 2.0, px, half, c);
+                if (k == SLIP_LENGTH) segment(img, w, x0, y0, px, px / 2.0, px / 2.0, side < 0 ? px : 0, px / 2.0, half, c);
+            }
+        }
+    }
+
+    /* ----- 4. a highway arm's end ----- */
+
+    private static void highwayEnds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int tile = TilePainter.TILE, stride = tile * px;
+        int[] fullCs = crossSection(BuildingVisual.HIGHWAY, px);
+        int full = fullCs[0], cas = fullCs[1];
+        int paved = crossSection(BuildingVisual.PAVED, px)[0];
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (!isHighway(p, i) || (in.marks[i] & CityRuns.M_RAMP) == 0 || p.beneath[i]) continue;
+            boolean n = runHighwayAt(in, p, i, 0), s = runHighwayAt(in, p, i, 2);
+            boolean e = runHighwayAt(in, p, i, 1), west = runHighwayAt(in, p, i, 3);
+            boolean ns = n || s, ew = e || west;
+            if (ns == ew) continue; // A crossing (both) or a lone plot (neither) is not an end.
+            int x0 = (i % tile) * px, y0 = (i / tile) * px;
+            int ground = groundColour(in, p, i);
+            fillRect(img, stride, x0, y0, x0 + px, y0 + px, ground);
+            int fill = in.owned[i] ? ROAD[BuildingVisual.HIGHWAY] : blend(ROAD[BuildingVisual.HIGHWAY], VOID, UNOWNED_DIM);
+            int caseC = in.owned[i] ? HIGHWAY_CASE : blend(HIGHWAY_CASE, VOID, UNOWNED_DIM);
+            int apron = in.owned[i] ? ROAD[BuildingVisual.PAVED] : blend(ROAD[BuildingVisual.PAVED], VOID, UNOWNED_DIM);
+            boolean fromTop = n, fromLeft = west;
+            if (ns) {
+                for (int y = 0; y < px; y++) {
+                    double f = (fromTop ? y : px - 1 - y) / (double) (px - 1);
+                    int band = Math.max(paved, Math.min(px, (int) Math.round(full + (paved - full) * f)));
+                    int left = (px - band) / 2;
+                    fillRect(img, stride, x0 + left, y0 + y, x0 + left + band, y0 + y + 1, fill);
+                    if (cas > 0 && band > 0) {
+                        fillRect(img, stride, x0 + left, y0 + y, x0 + left + 1, y0 + y + 1, caseC);
+                        fillRect(img, stride, x0 + left + band - 1, y0 + y, x0 + left + band, y0 + y + 1, caseC);
+                    }
+                }
+                // The paved apron on the next plot, from the open end to its far edge.
+                int ay = fromTop ? 1 : -1;
+                drawHighwayApron(in, p, px, img, i % tile, i / tile + ay, true, paved, apron);
+            } else {
+                for (int x = 0; x < px; x++) {
+                    double f = (fromLeft ? x : px - 1 - x) / (double) (px - 1);
+                    int band = Math.max(paved, Math.min(px, (int) Math.round(full + (paved - full) * f)));
+                    int top = (px - band) / 2;
+                    fillRect(img, stride, x0 + x, y0 + top, x0 + x + 1, y0 + top + band, fill);
+                    if (cas > 0 && band > 0) {
+                        fillRect(img, stride, x0 + x, y0 + top, x0 + x + 1, y0 + top + 1, caseC);
+                        fillRect(img, stride, x0 + x, y0 + top + band - 1, x0 + x + 1, y0 + top + band, caseC);
+                    }
+                }
+                int ax = fromLeft ? 1 : -1;
+                drawHighwayApron(in, p, px, img, i % tile + ax, i / tile, true, paved, apron);
+            }
+        }
+    }
+
+    /** A paved apron the paved road's width across the plot just past a highway's open end, when that plot is empty ground. */
+    private static void drawHighwayApron(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int tx, int ty, boolean vertical, int paved, int apron) {
+        int tile = TilePainter.TILE, w = tile * px;
+        if (tx < 0 || ty < 0 || tx >= tile || ty >= tile) return;
+        int i = ty * tile + tx;
+        if (p.use[i] != TilePainter.EMPTY && p.use[i] != TilePainter.FIELD) return;
+        int x0 = tx * px, y0 = ty * px;
+        double half = paved / 2.0;
+        if (vertical) segment(img, w, x0, y0, px, px / 2.0, 0, px / 2.0, px, half, apron);
+        else segment(img, w, x0, y0, px, 0, px / 2.0, px, px / 2.0, half, apron);
+    }
+
+    /* ----- 5. a stack: highways cross ----- */
+
+    private static void stack(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int tile = TilePainter.TILE, w = tile * px;
+        int[] cs = crossSection(BuildingVisual.HIGHWAY, px);
+        int width = cs[0], cas = cs[1], o = (px - width) / 2;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (!isHighway(p, i)) continue;
+            boolean ns = highwayAt(in, p, i, 0) || highwayAt(in, p, i, 2);
+            boolean ew = highwayAt(in, p, i, 1) || highwayAt(in, p, i, 3);
+            if (!ns || !ew) continue;
+            int hx = i % tile, hy = i / tile;
+            int x0 = hx * px, y0 = hy * px;
+            int fill = in.owned[i] ? ROAD[BuildingVisual.HIGHWAY] : blend(ROAD[BuildingVisual.HIGHWAY], VOID, UNOWNED_DIM);
+            int caseC = in.owned[i] ? HIGHWAY_CASE : blend(HIGHWAY_CASE, VOID, UNOWNED_DIM);
+            // The row's deck over the column's, its casing a pixel either side across the lower.
+            fillRect(img, w, x0 + o, y0 + o, x0 + o + width, y0 + o + width, fill);
+            if (cas > 0) {
+                fillRect(img, w, x0 + o, y0 + o, x0 + o + width, y0 + o + cas, caseC);
+                fillRect(img, w, x0 + o, y0 + o + width - cas, x0 + o + width, y0 + o + width, caseC);
+            }
+            // The four corner slips, when the diagonal plot is open ground.
+            for (int dy = -1; dy <= 1; dy += 2) {
+                for (int dx = -1; dx <= 1; dx += 2) drawStackSlip(in, p, px, img, hx + dx, hy + dy, dx, dy);
+            }
+        }
+    }
+
+    /** One corner slip of a stack, across the plot diagonal to the crossing. */
+    private static void drawStackSlip(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int cx, int cy, int dx, int dy) {
+        int tile = TilePainter.TILE, w = tile * px;
+        if (cx < 0 || cy < 0 || cx >= tile || cy >= tile) return;
+        int i = cy * tile + cx;
+        if (p.use[i] != TilePainter.EMPTY && p.use[i] != TilePainter.FIELD) return;
+        int x0 = cx * px, y0 = cy * px;
+        double half = Math.max(0.6, RAMP_WIDTH * px / 2.0);
+        int c = in.owned[i] ? ROAD[BuildingVisual.HIGHWAY] : blend(ROAD[BuildingVisual.HIGHWAY], VOID, UNOWNED_DIM);
+        double ax = dx < 0 ? px : 0, ay = px / 2.0, bx = px / 2.0, by = dy < 0 ? px : 0;
+        segment(img, w, x0, y0, px, ax, ay, bx, by, half, c);
     }
 
     /**
