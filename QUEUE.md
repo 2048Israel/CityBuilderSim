@@ -21,6 +21,7 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
+| FX3 | The freight map's faults Jerus's second eye check found: the second yard's ladders off the line, a train across the sidings and a track into a yard's side, a 45-degree highway drawn as a staircase, track along a street drawn as a crossing on every plot | [FX3](docs/queue/FX3.md) |
 | FR2 | The Freight sector: Haulage's trucks carry the city leg, vans for goods only | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR3 | Ports as a landlord port, and the Bulk Berth | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR4 | The freight screens, and Build's Infrastructure and Freight tabs | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
@@ -63,7 +64,6 @@ stuff".
 | FW10 | A full-screen chart with a wrapped legend is a row too tall: `TimeChart.heightBesidePlot()` assumes a one-row toolbar, so the foot is cut | `todo-archive.md`, FOUND ON THE WAY IN 0.7.40 AND 0.7.41; `runs/ui21-notes.md` §8 |
 | FX1-2 | Merge the held `batch/FX1-with-preflight` (e821d7f): a sector's credit test before its share sale; HealthCheck 13 accepted red (Jerus, 2026-10-12: "accept the red"), so it joins the gate's known reds | `runs/fixFX1-notes.md` ★7, in the project's `claude/todo.md` |
 | CC1-S | Keep care essential even when it is not financially self-supporting; investigate why seeds 4 and 5 still stall around 3,000 people despite care, school and pensions | `runs/fixCC1-notes.md` ★ |
-| FX3 | The freight map's faults Jerus's second eye check found: the second yard's ladders off the line, a train across the sidings and a track into a yard's side, a 45-degree highway drawn as a staircase, track along a street drawn as a crossing on every plot | [FX3](docs/queue/FX3.md) |
 
 ## Pending
 
