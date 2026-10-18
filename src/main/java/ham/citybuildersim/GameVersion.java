@@ -6717,8 +6717,40 @@ public final class GameVersion {
      *     in (call, t), the frame, 10 billion within 0.5 ms a frame), RailCheck
      *     7 (the kinds come to the tonnes hauled) and its reload.
      *   - THE PLAYTESTS do not move: byte-identical.
+     *
+     * 0.8.3 (2026-10-18) - FX2, THE FREIGHT MAP'S FAULTS.
+     * What Jerus's eye check of 0.8.1 and 0.8.2 found on his Halifax city
+     * (docs/queue/FX2.md, its screenshots; docs/queue/FX2-notes.md), the map's
+     * alone. The slices by Sonnet 5.5 subagents, DeepSeek's key not being set
+     * on the PC, reviewed by Claude. No save format change (39).
+     *   - THE LINE TO THE WORLD LEAVES ON LAND (CityMap.worldLines()): FR0
+     *     walked the gate arm on to the first plot the city did not own, and
+     *     where the arm waits at the sea and the city owns the sea beyond, the
+     *     line started on open water and every train ran out to it and back:
+     *     a V over the sea. A net's line now starts where an arm's track ends
+     *     at the city's edge on dry ground and runs out over dry ground - along
+     *     the bearing, or the arm's own heading where the land along the
+     *     bearing is short - from the arm whose way out lies nearest the
+     *     bearing; it is drawn as far as the land runs (WORLD_REACH at most).
+     *     The main line, the freight station and the trains' way run from that
+     *     arm (CityRuns.mainArm()), and a train no longer doubles back through
+     *     the hub to a yard on a corridor off its way.
+     *   - A HIGHWAY THAT REACHES NO STREET IS NOT DRAWN (CityRuns.highwaysReach()):
+     *     the first Elevated Highway's stub at the hub, alone in a block; the
+     *     net is drawn once a straight stretch of it crosses an arterial at a
+     *     ramp, its plots counted undrawn before that; and each arm of the
+     *     spine's first arterial is a ramp (the every-other rule counted
+     *     across the map left a 42-plot highway with none).
+     *   - A RAMP MID-HIGHWAY IS NOT ITS END (TileRaster.highwayEnds()): a ramp
+     *     the plan laid no street beneath was drawn as the highway's end.
+     *   - THE LABEL STAYS IN VIEW (LandMap.worldLabelAt()).
+     *   - Harnesses: GatewayCheck 16 (a generated coast, and its months), 17
+     *     (Halifax on the Earth), 18 (the label) and 19 (the undrawn
+     *     highway); MainLineCheck 11 (the main arm); JunctionCheck 9; MapCheck
+     *     1's played city month by month.
+     *   - THE PLAYTESTS do not move: byte-identical.
      */
-    public static final String VERSION = "0.8.2";
+    public static final String VERSION = "0.8.3";
 
     /**
      * The save shape.
