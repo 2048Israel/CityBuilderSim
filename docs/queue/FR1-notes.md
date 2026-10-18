@@ -31,6 +31,8 @@
 
 ## 2. Calls taken where the spec left room (★)
 
+All confirmed as built (Jerus, 2026-10-18, "rec all").
+
 1. **★1 Past 30 trains a month, each train drawn stands for several** (`MOST_A_MONTH`, `stands()`), every kind alike. The 4,000-month playtest's city ships 1,166,821 t a month across its boundary (Rail's header). Railed whole, the spec's rule alone would draw that as 146 unit trains in a 60-s month, one every 0.4 s on one line, and trains 21 plots long would overlap into a ribbon. The spec's own worked example, 25 a month, "reads as a busy line, not a blur", so the cap sits just above it. It is the trucks' rule from D21, one mark per N loads.
 2. **★2 A locomotive at each end** (distributed power, as a unit train has). The train leaves the way it came with no run-round, so nothing jumps when it departs.
 3. **★3 A city with no gateway draws no train.** Its railway has no world line for a train to come in on, and no main line or freight station (FR0's rule). FR0 found half of twelve worlds' default sites coastal with no gateway, so their railways run empty on the map.

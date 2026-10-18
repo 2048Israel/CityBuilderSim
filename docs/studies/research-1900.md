@@ -573,6 +573,8 @@ The model (`scenarios_1900.py`, 400 cities each) runs the same city founded in 1
 
 ## 11. Questions for Jerus
 
+**Answered (Jerus, 2026-10-18, "rec all"):** every question below, Q1 to Q17, as its recommendation.
+
 **The three that matter most:**
 
 1. **Policy on history's dates** (§7). Each lever opens on the date Canada first had it, at zero, with an inbox notice of its first terms; a Law school can bring one forward by up to four years. Money follows Canada's own history: the dollar is on gold, held at par by the city's reserves, to August 1914 and again from July 1926 to 1929–31, and floats in between and after; the government's Advance Rate (1914) opens the policy rate, and the Bank of Canada (1935) the rest of Money. **Recommendation:** yes. It is the strongest part of the tutorial, and it is what a city really controlled in 1900. If Money's dated states are too much, the simpler form is gold until 1935 unless the reserves run out.
