@@ -180,8 +180,8 @@ public final class CityMap {
     /** The sidecar's magic: "CMAP". */
     static final int MAGIC = 0x434D4150;
 
-    /** The sidecar's format: 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
-    static final int FORMAT = 7;
+    /** The sidecar's format: 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
+    static final int FORMAT = 8;
 
     /** The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. */
     static final int OLDEST_READ = 4;
@@ -3073,6 +3073,9 @@ public final class CityMap {
     /** The city's runs. */
     public CityRuns runs() { return runs; }
 
+    /** The gateway's bearing, as CityRuns keeps it: GATEWAY_UNKNOWN until it is looked for, NO_GATEWAY where the land has none. */
+    public int gateway() { return runs.gateway(); }
+
     /** Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. */
     static final int RUN_LINES_KEPT = 4096;
 
@@ -3211,6 +3214,12 @@ public final class CityMap {
         for (long[] s : mines) {
             double cx = (s[0] + s[2] + 1) / 2.0, cy = (s[1] + s[3] + 1) / 2.0, d = (cx - siteX) * (cx - siteX) + (cy - siteY) * (cy - siteY);
             if (d < best) { best = d; rx = (long) Math.floor(cx); ry = (long) Math.floor(cy); }
+        }
+        if (runs.gateway() == CityRuns.GATEWAY_UNKNOWN && (highway > 0 || track > 0 || yards > 0)) {
+            // Found from the founding site alone (a radius of none: the land must run GATEWAY_M from the site), so a map drawn
+            // canonically at the city's size today finds the gateway the month-by-month map found at its first highway.
+            Gateways.Gateway g = Gateways.of(World.of(worldKey), siteX, siteY, 0);
+            runs.setGateway(g == null ? CityRuns.NO_GATEWAY : g.bearing());
         }
         boolean moved = runs.layTo(highway, track, yards, yw, yh, runGround, siteX, siteY, rx, ry, mines);
         if (moved) {
@@ -4365,6 +4374,8 @@ public final class CityMap {
             }
             // The works on the shore (FORMAT 6, 0.7.97): their count, then each one's box, type, side and quay.
             if (format >= 6) shore.write(out);
+            // The gateway's bearing (FORMAT 8, 0.8.1): after the shore, so an older reader stops at what it knows.
+            if (format >= 8) out.writeInt(runs.gateway());
             out.flush();
             byte[] bytes = raw.toByteArray();
             long stamp = stampOf(bytes);
@@ -4501,6 +4512,8 @@ public final class CityMap {
                 if (s == null) return null;
                 m.shore = s;
             }
+            // The gateway's bearing (FORMAT 8, 0.8.1): into the runs, whether they were read or none; an older sidecar leaves it unknown.
+            if (format >= 8) m.runs.setGateway(in.readInt());
             m.purchasesSeen = bought;
             m.centreSeen = land.centreStamp();
             m.sortDistricts();
