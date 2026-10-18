@@ -1127,7 +1127,7 @@ public class Game {
      * into a yard of ore; FR0's was the GOODS stream's share in force.
      */
     CityMap.RailPicture mapRail() {
-        ham.citybuildersim.sectors.Rail rail = getSectors().rail();
+        ham.citybuildersim.sectors.Freight rail = getSectors().freight();
         boolean goodsByRail = TrainSchedule.boxesByRail(rail);
         double wagonShare = rail.setsNeeded() > 0 ? rail.fleet() / rail.setsNeeded() : 0;
         return new CityMap.RailPicture(goodsByRail, wagonShare);
@@ -5655,7 +5655,7 @@ public class Game {
      *
      * Beside chargeBuildingMaintenance() because it is the same kind of thing:
      * one sector billing every other, before any statement is struck. See
-     * sectors.Rail.haul(), which does the arithmetic and explains why the
+     * sectors.Freight.haul(), which does the arithmetic and explains why the
      * invoice is raised at LAST month's quote.
      *
      * AND THE ROAD IS TOLD, in the same breath, because what the railway is
@@ -5665,7 +5665,7 @@ public class Game {
      * exactly what it computed before any of this existed.
      */
     private void chargeFreight() {
-        ham.citybuildersim.sectors.Rail rail = getSectors().rail();
+        ham.citybuildersim.sectors.Freight rail = getSectors().freight();
         // ...WITH THE CITY'S PORTS (0.7.86, batch O9): the berths take their
         // kinds' shares beside the railway, and the road is told both - the
         // railway's of each whole stream, and the ships'. With no terminal
@@ -14432,11 +14432,11 @@ public class Game {
      * before anything is measured against it. See chargeFreight().
      */
     // ...the railway's share of each whole stream, and the ships' beside it (0.7.86; chargeFreight()).
-    getInfrastructureManager().setRailShare(ports.railOfStream(getSectors().rail().getCarried()));
+    getInfrastructureManager().setRailShare(ports.railOfStream(getSectors().freight().getCarried()));
     getInfrastructureManager().setSeaShare(ports.seaOfStream());
     // ...and the band the saved month was quoting, which lives on the markets
-    // and is not saved there. See sectors.Rail.reapplyBand().
-    getSectors().rail().reapplyBand(ports);
+    // and is not saved there. See sectors.Freight.reapplyBand().
+    getSectors().freight().reapplyBand(ports);
     /*
      * ...AND THE CARS, for the same reason and one line later: a reloaded city
      * has the fleet it was saved with, and a fleet is a load on the road. See

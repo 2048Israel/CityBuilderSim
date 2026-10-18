@@ -231,7 +231,7 @@ public class PortCheck {
                         && Ports.Cargo.CONTAINER.seaFreightShare() == Ports.SEA_FREIGHT_SHARE_CONTAINER && Ports.SEA_FREIGHT_SHARE_CONTAINER == .16
                         && Ports.Cargo.GENERAL.seaFreightShare() == Ports.SEA_FREIGHT_SHARE_GENERAL && Ports.SEA_FREIGHT_SHARE_GENERAL == .20);
         boolean under = true;
-        for (Ports.Cargo c : Ports.Cargo.values()) under &= c.seaFreightShare() < ham.citybuildersim.sectors.Rail.RAIL_FLOOR;
+        for (Ports.Cargo c : Ports.Cargo.values()) under &= c.seaFreightShare() < ham.citybuildersim.sectors.Freight.RAIL_FLOOR;
         assertTrue("SEA IS USED ONLY WHERE IT IS CHEAPER: every kind's sea freight is under the railway's floor, so the"
                 + " berths go before it at any quote", under);
     }
@@ -301,7 +301,7 @@ public class PortCheck {
                 + " general 0.45 Mt a year - at D$96M, 2,310M, 461M and 70M, 7, 234, 585 and 11 posts, on the coast", terminals);
         assertTrue("...a berth's month is its year over twelve", Ports.berthMonth(bm.getTemplateByName("Tanker Terminal")) == 3_250_000 / 12.0);
         assertTrue("WORTH_A_BERTH, the test player's line, is the railway's own MIN_LINE_UTILISATION",
-                Ports.WORTH_A_BERTH == ham.citybuildersim.sectors.Rail.MIN_LINE_UTILISATION);
+                Ports.WORTH_A_BERTH == ham.citybuildersim.sectors.Freight.MIN_LINE_UTILISATION);
     }
 
     /* ============================ 3. THE FACTOR ============================ */
@@ -427,7 +427,7 @@ public class PortCheck {
         });
         assertTrue("fixture: two steel foundries and a rail spur stood", stood[0] == Game.BuildResult.SUCCESS
                 && stood[1] == Game.BuildResult.SUCCESS);
-        ham.citybuildersim.sectors.Rail rail = g.getSectors().rail();
+        ham.citybuildersim.sectors.Freight rail = g.getSectors().freight();
         double[] carried = rail.getCarried();
         boolean band = true;
         int railed = 0;
@@ -507,7 +507,7 @@ public class PortCheck {
                 Math.abs(ports.share(Ports.Cargo.GENERAL) - Math.min(1, berth / carriable)) <= 1e-12 && ports.share(Ports.Cargo.GENERAL) > 0
                         && ports.seaFirst(Ports.Cargo.GENERAL),
                 String.format("%.4f of %,.0f t", ports.share(Ports.Cargo.GENERAL), carriable));
-        double[] carried = g.getSectors().rail().getCarried();
+        double[] carried = g.getSectors().freight().getCarried();
         boolean formula = true, narrower = true;
         for (Good good : Good.values()) {
             if (good.cargo() != Ports.Cargo.GENERAL) continue;

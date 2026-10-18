@@ -174,7 +174,7 @@ public enum BuildingType {
      * build, everything is exported by truck, which is obviously more
      * expensive and road demanding." A founding city trades on lorries at the
      * price the world has always charged; rail is what makes that cheaper. See
-     * sectors.Rail and GoodsMarket.setFreightFactor.
+     * sectors.Freight and GoodsMarket.setFreightFactor.
      *
      * ON THE END, for the seventh time, and the reason has not changed since
      * INFRASTRUCTURE: the saved per-sector property tax and interest arrays

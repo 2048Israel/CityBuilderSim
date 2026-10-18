@@ -1346,7 +1346,7 @@ public class SaveFileCheck {
         OldMetal.State oldState = new OldMetal.State();
         oldState.pending.put(Trade.HOUSEHOLDS, 1_234.5);
         oldState.pending.put(Sectors.MANUFACTURING, 678.25);
-        oldState.pending.put(Sectors.RAIL, 255.0);
+        oldState.pending.put(Sectors.FREIGHT, 255.0);
         oldState.pendingBySource = new double[] { 1_234.5, 0, 678.25, 255.0 };
         oldState.lastBySource = new double[] { 900.5, 30.25, 400.125, 0 };
         oldState.lastArisen = 1_330.875; oldState.lastBought = 1_000; oldState.lastLandfill = 330.875; oldState.lastPrice = .2105;
@@ -2108,7 +2108,7 @@ public class SaveFileCheck {
         Game hauls = new Game(new GameFiles(root.resolve("railway"), root.resolve("no-legacy")));
         hauls.run();
         hauls.setCashForTest(Founding.WEALTHY_CASH);
-        hauls.getBusinessInvestment().holdSector(Sectors.RAIL);
+        hauls.getBusinessInvestment().holdSector(Sectors.FREIGHT);
         hauls.getLandManager().setOwnedSqFt(hauls.getLandManager().getOwnedSqFt() + 400_000_000L);
         for (String[] order : new String[][] {
                 {"House", "900"}, {"Convenience Store", "20"}, {"Small Grocery Store", "6"},
@@ -2137,17 +2137,17 @@ public class SaveFileCheck {
                         && hauls.getBuildingManager().countByName("Rail Spur") == 2);
         // ...played until the trains run AND the price index is based: an index
         // still settling reads 1 whatever the shelves did, and could not part.
-        for (int m = 0; m < 120 && (hauls.getSectors().rail().getHauledTonnes() <= 0
+        for (int m = 0; m < 120 && (hauls.getSectors().freight().getHauledTonnes() <= 0
                 || !hauls.getPriceIndex().isBased()); m++) hauls.simulateMonths(1);
         hauls.simulateMonths(1);
         assertTrue("fixture: the railway hauled in the month the city was saved",
-                hauls.getSectors().rail().getHauledTonnes() > 0 && hauls.getSectors().rail().getHaulageBilled() > 0);
+                hauls.getSectors().freight().getHauledTonnes() > 0 && hauls.getSectors().freight().getHaulageBilled() > 0);
         assertTrue("fixture: ...its groceries among the freight, and its price index based",
-                hauls.getSectors().rail().getCarried()[Traffic.GOODS.ordinal()] > 0 && hauls.getPriceIndex().isBased());
+                hauls.getSectors().freight().getCarried()[Traffic.GOODS.ordinal()] > 0 && hauls.getPriceIndex().isBased());
         assertTrue("saved a city whose railway hauls", hauls.saveGame(1, "railway").ok);
         Game twin = new Game(hauls.getGameFiles());
         twin.loadGameSave(1);
-        twin.getBusinessInvestment().holdSector(Sectors.RAIL);
+        twin.getBusinessInvestment().holdSector(Sectors.FREIGHT);
         twin.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         /*
          * ...AND THE SAME SAVE AS A BUILD FROM BEFORE THE UNITS WROTE IT
@@ -2173,7 +2173,7 @@ public class SaveFileCheck {
         Files.copy(hauls.getGameFiles().historyFile(1), hauls.getGameFiles().historyFile(4));
         Game unitlessTwin = new Game(hauls.getGameFiles());
         unitlessTwin.loadGameSave(4);
-        unitlessTwin.getBusinessInvestment().holdSector(Sectors.RAIL);
+        unitlessTwin.getBusinessInvestment().holdSector(Sectors.FREIGHT);
         unitlessTwin.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         hauls.simulateMonths(1);
         twin.simulateMonths(1);
@@ -2187,7 +2187,7 @@ public class SaveFileCheck {
                 twin.getPopulationManager().getPopulation(), hauls.getPopulationManager().getPopulation(),
                 twin.getMigration().getLastArrivals(), hauls.getMigration().getLastArrivals(),
                 twin.getPriceIndex().getIndex(), hauls.getPriceIndex().getIndex());
-        ham.citybuildersim.sectors.Rail liveRail = hauls.getSectors().rail(), unitlessRail = unitlessTwin.getSectors().rail();
+        ham.citybuildersim.sectors.Freight liveRail = hauls.getSectors().freight(), unitlessRail = unitlessTwin.getSectors().freight();
         System.out.printf("   the first haul from a save without its units: %,.6f t, %,.6fk billed; the live city's %,.6f t, %,.6fk%n",
                 unitlessRail.getTradeTonnes(), unitlessRail.getHaulageBilled(), liveRail.getTradeTonnes(), liveRail.getHaulageBilled());
         assertTrue("...and from its save without the month's units, the first haul is the month's: its tonnes and its bill",

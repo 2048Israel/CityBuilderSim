@@ -2,7 +2,7 @@ package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.Mining;
 import ham.citybuildersim.sectors.Oil;
-import ham.citybuildersim.sectors.Rail;
+import ham.citybuildersim.sectors.Freight;
 import ham.citybuildersim.sectors.RefineryFlow;
 import ham.citybuildersim.sectors.Refining;
 import ham.citybuildersim.sectors.Retail;
@@ -1082,10 +1082,10 @@ public class OilCheck {
         // The litres a tonne were WORLD_FUEL_PER_TONNE over FUEL's import price; at the ladder's price the quotient is 43.6.
         report("the railway burns eighteen litres of diesel a tonne hauled, pinned (0.7.78) where WORLD_FUEL_PER_TONNE over the"
                         + " pump price put them, not moved by the ladder's price",
-                Rail.FUEL_LITRES_PER_TONNE == 18 && Math.abs(Rail.WORLD_FUEL_PER_TONNE / PUMP_LITRE - 18) < 1e-12
-                        && Rail.WORLD_FUEL_PER_TONNE / Good.DIESEL.worldImportPrice() > 40,
-                String.format("%.15f L; .03 over the ladder's import price would be %.1f", Rail.FUEL_LITRES_PER_TONNE,
-                        Rail.WORLD_FUEL_PER_TONNE / Good.DIESEL.worldImportPrice()));
+                Freight.FUEL_LITRES_PER_TONNE == 18 && Math.abs(Freight.WORLD_FUEL_PER_TONNE / PUMP_LITRE - 18) < 1e-12
+                        && Freight.WORLD_FUEL_PER_TONNE / Good.DIESEL.worldImportPrice() > 40,
+                String.format("%.15f L; .03 over the ladder's import price would be %.1f", Freight.FUEL_LITRES_PER_TONNE,
+                        Freight.WORLD_FUEL_PER_TONNE / Good.DIESEL.worldImportPrice()));
     }
 
     /* ============================ 2. A WELL LIFTS ONLY OWNED OIL ============================ */
@@ -1315,7 +1315,7 @@ public class OilCheck {
 
         // The railway: track in the oil town, carrying its crude and its fuel across the edge.
         quietly(() -> {
-            g.getBusinessInvestment().holdSector(Sectors.RAIL);
+            g.getBusinessInvestment().holdSector(Sectors.FREIGHT);
             // ...on ground of their own (0.7.103): the town's investors may have built on what was spare by now.
             BuildingsTemplate spur = template(g, "Rail Spur");
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 2 * spur.getLandSqFt());
@@ -1325,7 +1325,7 @@ public class OilCheck {
         // ...and one month more, the litre's price at its draw (the top of the month, the last clearing's) kept.
         double atDraw = g.getMarkets().get(Good.DIESEL).getLocalPrice();
         quietly(() -> g.simulateMonths(1));
-        Rail rail = g.getSectors().rail();
+        Freight rail = g.getSectors().freight();
         report("fixture: the railway hauls and burns diesel, with diesel in the refiners' tanks",
                 rail.getHauledTonnes() > 0 && rail.getFuelBill() > 0 && refiners.getStock(Good.DIESEL) > 0,
                 String.format("%,.0f t hauled, diesel %,.2fk, %,.0f L in the tanks", rail.getHauledTonnes(), rail.getFuelBill(),
@@ -1335,7 +1335,7 @@ public class OilCheck {
         assertTrue("...and bought no petrol", !rail.statement().bought.containsKey(Good.PETROL));
         close("...it bought it at home, on its books", bought.atHome, rail.getFuelBill(), 1e-9);
         close("...eighteen litres a tonne hauled, at the litre's price when it drew them", rail.getFuelBill(),
-                rail.getHauledTonnes() * Rail.FUEL_LITRES_PER_TONNE * atDraw, 1e-9);
+                rail.getHauledTonnes() * Freight.FUEL_LITRES_PER_TONNE * atDraw, 1e-9);
     }
 
     /* ============================ 6. THE AUDIT ============================ */
@@ -1586,7 +1586,7 @@ public class OilCheck {
         Motoring mo = g.getMotoring();
         Refining refiners = g.getSectors().refining();
         refiners.setStock(Good.PETROL, .5 * mo.getFuelLitres());
-        refiners.setStock(Good.DIESEL, g.getSectors().rail().getHauledTonnes() * Rail.FUEL_LITRES_PER_TONNE);
+        refiners.setStock(Good.DIESEL, g.getSectors().freight().getHauledTonnes() * Freight.FUEL_LITRES_PER_TONNE);
         quietly(() -> g.simulateMonths(1));
         // ...the forecourts' since 0.7.83: their wholesale bill, from the tanks and the world (the drivers' own imports nothing).
         ham.citybuildersim.sectors.Retail pump = g.getSectors().retail();
@@ -1759,11 +1759,11 @@ public class OilCheck {
         o.add("nationalAccounts", four);
         Files.writeString(file, new com.google.gson.GsonBuilder().serializeSpecialFloatingPointValues().create().toJson(o));
 
-        com.google.gson.JsonObject refJson = sectorOf(o, Sectors.REFINING), railJson = sectorOf(o, Sectors.RAIL);
+        com.google.gson.JsonObject refJson = sectorOf(o, Sectors.REFINING), railJson = sectorOf(o, Sectors.FREIGHT);
         double fuelStock = refJson.getAsJsonObject("stock").has(FuelSplit.FUEL)
                 ? refJson.getAsJsonObject("stock").get(FuelSplit.FUEL).getAsDouble() : 0;
         double drivers = o.getAsJsonArray("householdFuel").get(2).getAsDouble();
-        double railway = railJson.getAsJsonObject("extras").get("hauled").getAsDouble() * Rail.FUEL_LITRES_PER_TONNE;
+        double railway = railJson.getAsJsonObject("extras").get("hauled").getAsDouble() * Freight.FUEL_LITRES_PER_TONNE;
         double p = drivers / (drivers + railway);
         report("fixture: a format-33 save, FUEL in the refiners' tanks, its market and both sides' books, burned by the"
                         + " drivers and the railway",

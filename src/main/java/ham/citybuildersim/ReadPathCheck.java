@@ -380,9 +380,9 @@ public class ReadPathCheck {
         g.getInfrastructureManager().roadBreakdown().withoutCars();
         g.getInfrastructureManager().getHeadroom();
         g.getInfrastructureManager().getSpareCapacity();
-        g.getSectors().rail().getPaidAbroad();
-        g.getSectors().rail().getKept();
-        g.getSectors().rail().getAllowedRevenue();
+        g.getSectors().freight().getPaidAbroad();
+        g.getSectors().freight().getKept();
+        g.getSectors().freight().getAllowedRevenue();
         for (GoodsMarket m : g.getMarkets().all()) {
             m.freightInBand();
             m.bandByLorry();
@@ -1268,7 +1268,7 @@ public class ReadPathCheck {
         wellsR.retirementDemandAndCapacity(g); g.sitesFor(wellT); g.getWellsWornOut();
         g.getMotoring().getFuelBill(); g.getMotoring().getFuelImports(); g.getMotoring().getFuelLitres();
         Motoring.journeyFuel(g.getMarkets());
-        g.getSectors().rail().getFuelBill(); g.getSectors().rail().getFuelImported();
+        g.getSectors().freight().getFuelBill(); g.getSectors().freight().getFuelImported();
         // ...and the phase-1 buyers (0.7.83): the forecourts' month, their stations, the price on the sign, a station's
         // word and estimate; the vans' diesel; a road's bitumen and its quote
         ham.citybuildersim.sectors.Retail forecourts = g.getSectors().retail();
@@ -1317,15 +1317,15 @@ public class ReadPathCheck {
         }
         for (Good good : Good.values()) { good.cargo(); pts.seaShareOf(good, .5); pts.railShareOf(good, .5); Ports.seaFreightShareOf(good); }
         pts.crudeShip(); pts.billedCrudeShip(); pts.getHeldBack(); pts.anyAtSea(); pts.seaTonnes(); pts.crudeTrade();
-        pts.crudeSeaIn(); pts.crudeSeaOut(); pts.railOfStream(g.getSectors().rail().getCarried()); pts.seaOfStream(); pts.toState();
+        pts.crudeSeaIn(); pts.crudeSeaOut(); pts.railOfStream(g.getSectors().freight().getCarried()); pts.seaOfStream(); pts.toState();
         BoatSchedule boats = g.boats(java.util.List.of(new BoatSchedule.Berth(Ports.Cargo.GENERAL, 0, 0)));
         boats.callCount(); boats.calls(); boats.frame(-256, -256, 256, 256, .5); boats.touched(); boats.routes();
         // ...and the trains (0.8.2, batch FR1): the railway's tonnes by kind, the month's trains on one route, a frame, a
         // train's vehicles and shapes
-        for (Ports.Cargo kind : Ports.Cargo.values()) { g.getSectors().rail().railedIn(kind); g.getSectors().rail().railedOut(kind); TrainSchedule.Kind.of(kind); }
+        for (Ports.Cargo kind : Ports.Cargo.values()) { g.getSectors().freight().railedIn(kind); g.getSectors().freight().railedOut(kind); TrainSchedule.Kind.of(kind); }
         TrainSchedule.Route trainRoute = TrainSchedule.Route.through(0, true, 0, new double[] { -64, 0, 24 }, new double[] { 0, 0, 0 }, TrainSchedule.WORLD_PLOTS);
-        TrainSchedule trains = TrainSchedule.of(g.getMonth(), g.getSectors().rail(), java.util.List.of(trainRoute));
-        trains.callCount(); trains.calls(); trains.frame(-256, -256, 256, 256, .5); trains.touched(); trains.crosses(-256, -256, 256, 256); trains.stands(); trains.boxes(); trains.routes(); TrainSchedule.boxesByRail(g.getSectors().rail());
+        TrainSchedule trains = TrainSchedule.of(g.getMonth(), g.getSectors().freight(), java.util.List.of(trainRoute));
+        trains.callCount(); trains.calls(); trains.frame(-256, -256, 256, 256, .5); trains.touched(); trains.crosses(-256, -256, 256, 256); trains.stands(); trains.boxes(); trains.routes(); TrainSchedule.boxesByRail(g.getSectors().freight());
         for (TrainSchedule.Call trainCall : trains.calls()) {
             TrainSchedule.Train arriving = TrainSchedule.position(trainCall, trainRoute, trainCall.arrives());
             if (arriving == null) continue;

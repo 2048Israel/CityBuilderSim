@@ -674,7 +674,7 @@ public class SectorStatementCheck {
         declared.put(Sectors.RESTAURANTS, SectorStatements.Format.MERCHANTS);
         declared.put(Sectors.REAL_ESTATE, SectorStatements.Format.LANDLORDS);
         declared.put(Sectors.CONSTRUCTION, SectorStatements.Format.BUILDERS);
-        declared.put(Sectors.RAIL, SectorStatements.Format.CARRIERS);
+        declared.put(Sectors.FREIGHT, SectorStatements.Format.CARRIERS);
         declared.put(Sectors.BUSINESS_SERVICES, SectorStatements.Format.CARRIERS);
         boolean right = true;
         Set<SectorStatements.Format> used = EnumSet.noneOf(SectorStatements.Format.class);

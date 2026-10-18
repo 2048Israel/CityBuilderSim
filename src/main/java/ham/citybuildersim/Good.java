@@ -731,7 +731,7 @@ public enum Good {
 
        Until this batch the city's drivers and its railway burned fuel that
        was an import with no good behind it - Motoring's CAR_FUEL_PER_JOURNEY
-       and Rail's WORLD_FUEL_PER_TONNE, money paid to the world for nothing a
+       and Freight's WORLD_FUEL_PER_TONNE, money paid to the world for nothing a
        market could see. The oil was in the ground all along (Resource.OIL,
        batch J1a), and the wells that lift it (sectors.Oil) and the refinery
        that makes it fuel (sectors.Refining) are what make those two bills a
@@ -798,7 +798,7 @@ public enum Good {
        is 63% cheaper and the railway's 59%, and a refinery's petrol and
        diesel are worth what a real one's are, so one on imported crude pays
        only in a big city (spec-oil 1, item 4). The railway keeps its 18
-       litres a tonne (Rail.FUEL_LITRES_PER_TONNE), so its bill falls with
+       litres a tonne (Freight.FUEL_LITRES_PER_TONNE), so its bill falls with
        the price, not its litres. A fuel duty paid to the treasury, on top,
        is a later batch's (spec-oil 6 A's third way).
 
@@ -825,7 +825,7 @@ public enum Good {
     /** Kerosene for aircraft, 1,260 litres a tonne. */
     JET("Jet fuel", "litre", .0006526, .0005559, .00003626, true, Pricing.BAND, false, 1260),
 
-    /** What the railway burns (Rail.haul()), and since 0.7.83 the vans (Sector.runFleet()): the ladder's 1.35 of crude since 0.7.78 (FUEL's band before), 1,180 litres a tonne. */
+    /** What the railway burns (Freight.haul()), and since 0.7.83 the vans (Sector.runFleet()): the ladder's 1.35 of crude since 0.7.78 (FUEL's band before), 1,180 litres a tonne. */
     DIESEL("Diesel", "litre", .0006883, .0005864, .00003824, true, Pricing.BAND, false, 1180),
 
     /** Base oils, the dearest litre in the barrel: 1,127 litres a tonne (est., JODI). */

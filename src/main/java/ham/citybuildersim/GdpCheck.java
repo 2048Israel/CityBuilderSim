@@ -216,12 +216,12 @@ public class GdpCheck {
          *
          * The next month the railway hauls a mill's steel out: the mill ships
          * 2,940 and pays the railway 300 for the haulage, and the railway's
-         * fleet wears a 240th of itself (sectors.Rail.SET_LIFE_MONTHS). The
+         * fleet wears a 240th of itself (sectors.Freight.SET_LIFE_MONTHS). The
          * mill adds 2,940 - 300; the railway adds its 300 less the wear it
          * used; the expenditure side is the export and the fall in stock held.
          */
         double[] worn = twenty.clone();
-        double wear = 20 / ham.citybuildersim.sectors.Rail.SET_LIFE_MONTHS;
+        double wear = 20 / ham.citybuildersim.sectors.Freight.SET_LIFE_MONTHS;
         worn[rs] = 20 - wear;
         fleet.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2_940, worn, heldPrice);
         double haulage = 300;
@@ -666,7 +666,7 @@ public class GdpCheck {
         try {
             railTown.newGame();
             railTown.setCashForTest(Founding.WEALTHY_CASH);
-            railTown.getBusinessInvestment().holdSector(Sectors.RAIL);
+            railTown.getBusinessInvestment().holdSector(Sectors.FREIGHT);
             railTown.getLandManager().setOwnedSqFt(400_000_000L);
             BuildingManager b = railTown.getBuildingManager();
             railTown.buildStack(b.getTemplateByName("House"), 900, true);
@@ -681,7 +681,7 @@ public class GdpCheck {
             RailCheck.lay(railTown, "Rail Spur", 2);
             railTown.simulateMonths(1);
         } finally { System.setOut(out); }
-        ham.citybuildersim.sectors.Rail rail = railTown.getSectors().rail();
+        ham.citybuildersim.sectors.Freight rail = railTown.getSectors().freight();
         GoodsMarket sets = railTown.getMarkets().get(Good.ROLLING_STOCK);
         double bought = rail.fleet(), landedThen = EconomyManager.heldPrice(sets);
         System.setOut(quiet);
@@ -694,7 +694,7 @@ public class GdpCheck {
         // wear, before the month's clearing bought the wear back - against
         // none the month before, when the track stood with no trains.
         double held = town.getLastHeldUnits()[rs] * landedNow;
-        double slack = (bought / ham.citybuildersim.sectors.Rail.SET_LIFE_MONTHS) * landedNow + bought * Math.abs(landedNow - landedThen);
+        double slack = (bought / ham.citybuildersim.sectors.Freight.SET_LIFE_MONTHS) * landedNow + bought * Math.abs(landedNow - landedThen);
         System.out.printf("   %.1f sets bought abroad for %,.2f; held %,.2f at %,.2f a set; GDP %,.2f (held stock %,.2f, NX %,.2f)%n",
                 bought, imported, held, landedNow, town.getGdp(), town.getInventoryHeld(), town.getNetExports());
         assertTrue("fixture: the railway bought its fleet abroad", bought > 0 && imported > 0);

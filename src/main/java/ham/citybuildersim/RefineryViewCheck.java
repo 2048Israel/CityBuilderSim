@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.Oil;
-import ham.citybuildersim.sectors.Rail;
+import ham.citybuildersim.sectors.Freight;
 import ham.citybuildersim.sectors.RefineryFlow;
 import ham.citybuildersim.sectors.RefineryFlow.Kind;
 import ham.citybuildersim.sectors.RefineryFlow.Stream;
@@ -365,7 +365,7 @@ public class RefineryViewCheck {
     static void theTakers(Game g, RefineryView.View v, double[] stockBefore) {
         out.println("\n--- 4. the takers are the buyers' own rows ---");
         Refining r = g.getSectors().refining();
-        Rail rail = g.getSectors().rail();
+        Freight rail = g.getSectors().freight();
         Retail shops = g.getSectors().retail();
         double railLocal = rail.getFuelLitres() - rail.getFuelLitresImported();
         boolean sold = true;
@@ -392,7 +392,7 @@ public class RefineryViewCheck {
                         railway == null ? "none" : RefineryView.buyerFigure(railway)));
         assertTrue("the cars' petrol is the forecourts' month (Retail's pump and queue)", cars != null
                 && near(cars.of(Good.PETROL), shops.getPumpLitres() + shops.getQueueLitres()));
-        double haul = rail.getHauledTonnes() * Rail.FUEL_LITRES_PER_TONNE;
+        double haul = rail.getHauledTonnes() * Freight.FUEL_LITRES_PER_TONNE;
         Sector.Input fleet = rail.inputRow(Good.DIESEL);
         double railFleet = fleet == null ? 0 : fleet.boughtLocal + fleet.imported;
         report("the railway's diesel is its haul's tonnes at FUEL_LITRES_PER_TONNE (and its own vans')", railway != null && haul > 0

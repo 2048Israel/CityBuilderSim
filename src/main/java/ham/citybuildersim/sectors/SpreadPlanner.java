@@ -82,7 +82,7 @@ import java.util.function.ToDoubleFunction;
 public final class SpreadPlanner {
 
     /** The least share of one building's feed the spare stream must cover for it to be weighed at all: the railway's MIN_LINE_UTILISATION, nothing built to stand idle (spec-oil 2.4). */
-    public static final double FEED_GATE = Rail.MIN_LINE_UTILISATION;
+    public static final double FEED_GATE = Freight.MIN_LINE_UTILISATION;
 
     /** Months a kind must stand idle running before its sector may sell it back (spec-oil 2.4): six, RETIREMENT_LOSS_MONTHS - as long as the spare-capacity rule waits on losses. */
     public static final int IDLE_MONTHS = BusinessInvestment.RETIREMENT_LOSS_MONTHS;

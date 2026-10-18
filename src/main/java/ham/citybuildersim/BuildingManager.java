@@ -1491,7 +1491,7 @@ public class BuildingManager {
            profits", and "no at first, rail doesnt even build, everything is
            exported by truck, which is obviously more expensive and road
            demanding." So these are financed by the investor against a business
-           case like a steel mill, they are owned by sectors.Rail, and a city
+           case like a steel mill, they are owned by sectors.Freight, and a city
            that never builds one trades exactly as it always did.
 
            WHAT ONE IS WORTH, AT THE PLAYTEST'S OWN NUMBERS. The 4,000-month
@@ -1521,7 +1521,7 @@ public class BuildingManager {
          * charging the world's price to move it.
          */
         BuildingsTemplate railSpur = new BuildingsTemplate("Rail Spur", BuildingType.RAIL)
-                .setSector("Rail")
+                .setSector("Freight")
                 .setRailCapacity(50000)         // tonnes across the boundary a month
                 .setCashCost(140000)
                 .setConstructionPoints(21000)
@@ -1530,7 +1530,7 @@ public class BuildingManager {
                 .setWaterConsumption(30)
                 .setLandSqFt(700000)
                 // Mostly the drayage between the siding and the works, which is
-                // still a lorry - see Rail's header and BuildingsTemplate.loadOf.
+                // still a lorry - see Freight's header and BuildingsTemplate.loadOf.
                 .setRoadLoad(500)
                 .setJobs(JobType.NO_DIPLOMA, 120)
                 .setJobs(JobType.DIPLOMA, 45)
@@ -1545,7 +1545,7 @@ public class BuildingManager {
          * on.
          */
         BuildingsTemplate freightLine = new BuildingsTemplate("Freight Line", BuildingType.RAIL)
-                .setSector("Rail")
+                .setSector("Freight")
                 .setRailCapacity(200000)
                 .setCashCost(520000)
                 .setConstructionPoints(78000)
@@ -1568,7 +1568,7 @@ public class BuildingManager {
          * biggest single decision in the game.
          */
         BuildingsTemplate railTerminal = new BuildingsTemplate("Rail Terminal", BuildingType.RAIL)
-                .setSector("Rail")
+                .setSector("Freight")
                 .setRailCapacity(500000)
                 .setCashCost(1240000)
                 .setConstructionPoints(186000)

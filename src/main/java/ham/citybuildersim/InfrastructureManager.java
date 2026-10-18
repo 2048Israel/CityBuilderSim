@@ -215,7 +215,7 @@ public class InfrastructureManager {
      *
      * MEASURED AGAINST CROSS-BOUNDARY TONNAGE and applied to the whole bulk
      * stream, which is a deliberate approximation and worth naming. The share
-     * sectors.Rail reports is the share of the city's TRADE it carries; the
+     * sectors.Freight reports is the share of the city's TRADE it carries; the
      * bulk stream also contains ore moving between two plants inside the city,
      * which no train touches. In a city that exports 97% of what it digs those
      * are nearly the same number; in one that does not, this over-credits the
@@ -327,7 +327,7 @@ public class InfrastructureManager {
      * WHY IT IS PUSHED IN RATHER THAN READ. Who rides decides the load, the
      * load decides the ratio, and the ratio decides who rides - a circle
      * inside one month. So the ridership reads a number from BEFORE the month,
-     * exactly as sectors.Rail bills at last month's shares and for the same
+     * exactly as sectors.Freight bills at last month's shares and for the same
      * reason. One month of lag, and it is the behaviourally right lag too:
      * nobody changes how they commute because of a Tuesday.
      */

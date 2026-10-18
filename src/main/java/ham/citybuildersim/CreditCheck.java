@@ -1411,12 +1411,12 @@ public class CreditCheck {
              * below is handed over by hand, as it always was.
              */
             town.getBusinessInvestment().holdSector(Sectors.RESTAURANTS);
-            town.getBusinessInvestment().holdSector(Sectors.RAIL);
+            town.getBusinessInvestment().holdSector(Sectors.FREIGHT);
             town.simulateMonths(3);
         });
         BusinessDebtManager lender = town.getEconomyManager().getBusinessDebtManager();
         BuildingManager plant = town.getBuildingManager();
-        String[] firsts = { Sectors.RESTAURANTS, Sectors.RAIL };
+        String[] firsts = { Sectors.RESTAURANTS, Sectors.FREIGHT };
         for (String k : firsts) {
             assertTrue("fixture: " + k + " has owned nothing, owed nothing and filed no reading",
                     lender.getStatementCount(k) == 0 && lender.getPrincipal(k) == 0

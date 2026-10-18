@@ -111,7 +111,7 @@ public abstract class Sector {
          * and the ones that move none ask for zero of them. Cover of zero
          * months: the pantry rule sizes a shelf by recent USE and is right for
          * a mill's crop bill and wrong for capital - bid() below decides this
-         * one, the way sectors.Rail decides its locomotives.
+         * one, the way sectors.Freight decides its locomotives.
          */
         pantry(Good.VANS, 0);
     }
@@ -291,7 +291,7 @@ public abstract class Sector {
        sectors already use), and the 20% it allows can't be jobs nobody can
        fill."
 
-       WHY. Only Manufacturing, Automotive, Rail and Business Services asked
+       WHY. Only Manufacturing, Automotive, Freight and Business Services asked
        (and Construction since 0.7.17); the shops, the kitchens, the luxury
        counters and every maker built posts without looking. And the question
        the four asked let a fifth of a building be posts NO band could fill:
@@ -808,7 +808,7 @@ public abstract class Sector {
      * Whether this sector's fleet is a fact about the sector rather than a fact
      * about the version it was saved from.
      *
-     * FALSE IN A SAVE FROM BEFORE VANS EXISTED, and the same flag sectors.Rail
+     * FALSE IN A SAVE FROM BEFORE VANS EXISTED, and the same flag sectors.Freight
      * carries for its locomotives, for the same reason and with the same
      * answer: a city saved this morning has mills and no lorries - not because
      * it scrapped them but because the game had none - and a ratio of zero
@@ -1200,7 +1200,7 @@ public abstract class Sector {
 
        What crossed the boundary in the month a save was taken, in units by
        good, carried into the loaded city until its first strike. The railway
-       bills a month's trade at the top of the next one (Rail.haul(), from
+       bills a month's trade at the top of the next one (Freight.haul(), from
        Game.chargeFreight()), before strikeSectors() banks the month and
        clears the rows; the rows were never saved, so the first haul after
        any load read nothing, billed almost nothing, carried nothing the
@@ -1282,7 +1282,7 @@ public abstract class Sector {
      * one division: read against the units every later save carries - Jerus's
      * city as 0.7.49 saved it, and all three research cities a month on -
      * the two agree to two ulps, every good. Game's load path calls it last;
-     * nothing reads the carried maps before Rail.haul() at the top of the
+     * nothing reads the carried maps before Freight.haul() at the top of the
      * first month.
      */
     public void deriveCarriedTrade() {
@@ -1371,8 +1371,8 @@ public abstract class Sector {
          * NAMED WHERE IT IS CHARGED rather than worked out later, which is the
          * lesson otherRevenue taught the hard way (see nameOtherRevenue): a
          * figure reconstructed by subtraction is a figure nobody can label, and
-         * the label is the whole point of opening the line. Rail's haulage
-         * charge names itself "Haulage" on the shipper's ledger as it is
+         * the label is the whole point of opening the line. Freight's rail
+         * charge names itself "Rail freight" on the shipper's ledger as it is
          * raised. See billForService().
          */
         public final Map<String, Double> otherInputs = new LinkedHashMap<>();
@@ -1752,7 +1752,7 @@ public abstract class Sector {
 
     /**
      * A SERVICE BOUGHT FROM ANOTHER BUSINESS IN THE CITY, billed by the
-     * business that performed it. Haulage, today - see sectors.Rail.
+     * business that performed it. Haulage, today - see sectors.Freight.
      *
      * PUBLIC, AND ON THE PAYER, because the biller raises it: the railway walks
      * the shippers whose goods it moved and puts a line on each of their
@@ -1811,7 +1811,7 @@ public abstract class Sector {
      * basic structure for oil cost even tho its not currently in place." Its
      * comment said the day OIL existed the same number would become a good
      * bought on an ordinary market and the call would go away; it went in
-     * 0.7.62 (batch K), when the railway began drawing FUEL (Rail.haul()).
+     * 0.7.62 (batch K), when the railway began drawing FUEL (Freight.haul()).
      */
 
     /**
@@ -2251,7 +2251,7 @@ public abstract class Sector {
          * has enough asks for nothing, one that has just built a factory asks
          * for a fleet, and the wear in runFleet() turns the difference into a
          * standing order rather than a single purchase. Same shape as
-         * sectors.Rail's rolling stock and for the same reason.
+         * sectors.Freight's rolling stock and for the same reason.
          */
         if (g == Good.VANS) {
             double need = vansNeeded();
@@ -2665,8 +2665,8 @@ public abstract class Sector {
      * sector's own lines under it, so it has to be able to tell the two apart.
      * The five sectors that added to the block (Agriculture, Business
      * Services, Food Processing, Manufacturing, Mining) add in ownLines() now;
-     * the seven that replaced it (Automotive, Construction, Luxury Retail,
-     * Rail, Real Estate, Restaurants, Retail) say so in hasPlantBlock() and
+     * the seven that replaced it (Automotive, Construction, Freight, Luxury
+     * Retail, Real Estate, Restaurants, Retail) say so in hasPlantBlock() and
      * return their whole page from ownLines(). This is still the one list the
      * console prints and SectorBooksCheck audits.
      */

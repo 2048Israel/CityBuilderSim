@@ -1416,7 +1416,7 @@ final class SectorScreen {
             box.getChildren().add(bookDetailRow(e.getKey(), -e.getValue(), false));
             services += e.getValue();
         }
-        if (services != 0 && sector != ui.game.getSectors().rail()) {
+        if (services != 0 && sector != ui.game.getSectors().freight()) {
             box.getChildren().add(bookDetailNote("Freight. The railway carries what it can "
                     + "of this business's trade and bills for it here; the rest is inside "
                     + "the import and export prices, paid to whoever moved it."));

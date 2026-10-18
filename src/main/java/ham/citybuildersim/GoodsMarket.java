@@ -154,10 +154,10 @@ public final class GoodsMarket {
      *
      * ZERO IS LEGAL AND IT IS NOT "FREE FREIGHT". A railway carrying all of a
      * good bills the shipper itself, at home, at its own quote - see
-     * sectors.Rail.haul(). What leaves this band is the money that used to go
+     * sectors.Freight.haul(). What leaves this band is the money that used to go
      * abroad with the cargo; what replaces it is a domestic invoice. Jerus:
      * "the freight cant reach zero cause freight needs profit" - and it does
-     * not: Rail.RAIL_FLOOR is what stops the CHARGE falling, and it lives on
+     * not: Freight.RAIL_FLOOR is what stops the CHARGE falling, and it lives on
      * the railway's price rather than on this band, which is only about who
      * is owed the money.
      */
@@ -178,7 +178,7 @@ public final class GoodsMarket {
      * steel with half the network's freight on rail at a 60% quote reads
      *
      *      freightFactor .50   still in the band, paid abroad
-     *      railCharge    .30   billed at home, by sectors.Rail
+     *      railCharge    .30   billed at home, by sectors.Freight
      *      -----------------
      *      .80 of what a lorry alone would have cost
      *

@@ -3872,7 +3872,7 @@ final class BuildScreen {
                  * what the freight costs today and what the railway charges,
                  * and leaves the tonnage as the second sentence.
                  */
-                ham.citybuildersim.sectors.Rail rail = ui.game.getSectors().rail();
+                ham.citybuildersim.sectors.Freight rail = ui.game.getSectors().freight();
                 out.add(String.format("Hauls up to %s tonnes a month of the city's trade "
                         + "to and from the world. Everything it does not carry goes by "
                         + "lorry, at the price the world charges.",

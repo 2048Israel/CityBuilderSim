@@ -961,7 +961,7 @@ public class MaterialsCheck {
         pool.carsScrapped(100);
         pool.demolished(house, 2, Sectors.REAL_ESTATE);
         pool.fabricated(Sectors.MANUFACTURING, 1000);
-        pool.setsRetired(Sectors.RAIL, 2);
+        pool.setsRetired(Sectors.FREIGHT, 2);
         double cars = 100 * OldMetal.STEEL_A_CAR * OldMetal.RECOVERY, demol = 2 * house.getConstructionMaterials() * OldMetal.STEEL_A_MATERIALS_UNIT
                 * OldMetal.RECOVERY, offcuts = 1000 * OldMetal.OFFCUTS_A_TONNE_FABRICATED * OldMetal.RECOVERY,
                 sets = 2 * OldMetal.STEEL_A_SET * OldMetal.RECOVERY;
@@ -969,7 +969,7 @@ public class MaterialsCheck {
                         + " at 0.3 t a unit of material the landlords', 1,000 t of fabricated steel's 5% offcuts its maker's, two worn sets at"
                         + " 300 t the railway's",
                 near(pool.availableFrom(Trade.HOUSEHOLDS), cars) && near(pool.availableFrom(Sectors.REAL_ESTATE), demol)
-                        && near(pool.availableFrom(Sectors.MANUFACTURING), offcuts) && near(pool.availableFrom(Sectors.RAIL), sets)
+                        && near(pool.availableFrom(Sectors.MANUFACTURING), offcuts) && near(pool.availableFrom(Sectors.FREIGHT), sets)
                         && near(pool.available(OldMetal.Source.CARS), cars) && near(pool.available(OldMetal.Source.DEMOLITIONS), demol)
                         && near(pool.available(OldMetal.Source.OFFCUTS), offcuts) && near(pool.available(OldMetal.Source.ROLLING_STOCK), sets)
                         && near(pool.available(), cars + demol + offcuts + sets),
@@ -1122,7 +1122,7 @@ public class MaterialsCheck {
                 String.format("worst residual %.3g of what moved; the yard bought D$%,.1fk", worst, yst.otherInputs.getOrDefault(OldMetal.LINE, 0.0)));
         // ...and across a save: the pool, its record, and a seller's sale still to strike.
         play.getOldMetal().carsScrapped(500);
-        play.getSectors().byKey(Sectors.RAIL).sellOldMetal(12.5);
+        play.getSectors().byKey(Sectors.FREIGHT).sellOldMetal(12.5);
         quietly(() -> play.saveGame(10, "oldsteel"));
         Game back = new Game(playFiles);
         quietly(() -> back.loadGameSave(10));
@@ -1134,7 +1134,7 @@ public class MaterialsCheck {
                         && now.lastArisen() == then.lastArisen() && now.lastBought() == then.lastBought()
                         && now.lastLandfill() == then.lastLandfill() && now.lastPrice() == then.lastPrice()
                         && now.lastPaid().equals(then.lastPaid())
-                        && back.getSectors().byKey(Sectors.RAIL).pending().oldMetalSold == play.getSectors().byKey(Sectors.RAIL).pending().oldMetalSold);
+                        && back.getSectors().byKey(Sectors.FREIGHT).pending().oldMetalSold == play.getSectors().byKey(Sectors.FREIGHT).pending().oldMetalSold);
     }
 
     /* ============================ 13. captive coke and pig iron ============================ */

@@ -814,7 +814,7 @@ public final class BuildCard {
                 return new Note(NoteKind.MEALS, counted(game, sectors.restaurants(), sectors.restaurants().getWanted()),
                         sectors.restaurants().seats(), null);
             case RAIL:
-                return new Note(NoteKind.RAIL, sectors.rail().getTradeTonnes(), sectors.rail().getCapacityTonnes(), null);
+                return new Note(NoteKind.RAIL, sectors.freight().getTradeTonnes(), sectors.freight().getCapacityTonnes(), null);
             case PUMP:
                 // The forecourts' month (0.7.83): the drivers' litres, at the pump and past it, and what the stations could sell.
                 return new Note(NoteKind.PUMP, sectors.retail().getPumpLitres() + sectors.retail().getQueueLitres(),

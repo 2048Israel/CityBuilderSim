@@ -611,7 +611,7 @@ public class BuildCardCheck {
                 case SHOPS:  ok &= n.a() == s.retail().getStoreCoverage() && n.b() == s.retail().getPopulation(); break;
                 case LUXURY: ok &= n.a() == s.luxuryRetail().getWanted() && n.b() == s.luxuryRetail().coverage(); break;
                 case MEALS:  ok &= n.a() == s.restaurants().getWanted() && n.b() == s.restaurants().seats(); break;
-                case RAIL:   ok &= n.a() == s.rail().getTradeTonnes() && n.b() == s.rail().getCapacityTonnes(); break;
+                case RAIL:   ok &= n.a() == s.freight().getTradeTonnes() && n.b() == s.freight().getCapacityTonnes(); break;
                 case PUMP:   ok &= n.a() == s.retail().getPumpLitres() + s.retail().getQueueLitres()
                                      && n.b() == s.retail().getPumpCapacity() && n.good() == Good.PETROL; break;
                 case MADE: {
@@ -765,7 +765,7 @@ public class BuildCardCheck {
 
         // A loss: another spur where the rail already carries every tonne the town trades.
         BuildingsTemplate spur = template(g, "Rail Spur");
-        ham.citybuildersim.sectors.Rail rail = g.getSectors().rail();
+        ham.citybuildersim.sectors.Freight rail = g.getSectors().freight();
         BuildCard.Investors i = BuildCard.investors(g, spur);
         assertTrue(String.format("fixture: the standing spur carries every tonne the town trades (%,.0f of %,.0f t)",
                 rail.getTradeTonnes(), rail.getCapacityTonnes()), rail.getCapacityTonnes() >= rail.getTradeTonnes());

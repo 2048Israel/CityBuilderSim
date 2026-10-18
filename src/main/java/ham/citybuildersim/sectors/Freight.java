@@ -18,7 +18,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The railway. THE TWELFTH SECTOR (2026-09-16, Jerus's call).
+ * The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18;
+ * docs/studies/spec-freight-and-infrastructure.md 3.1, D1). Its Rail division is the
+ * railway, THE TWELFTH SECTOR (2026-09-16, Jerus's call), whose design follows.
  *
  * Every price in this game has always had freight inside it. A tonne of steel
  * lands at $1,284 and leaves at $847, and three quarters of that $437 wedge is
@@ -118,7 +120,7 @@ import java.util.Map;
  * commuters on the street, and in the played city commuters are 64% of the
  * load before any of this.
  */
-public final class Rail extends Sector {
+public final class Freight extends Sector {
 
     /**
      * The cheapest the railway will ever quote, as a share of the lorry rate.
@@ -343,8 +345,8 @@ public final class Rail extends Sector {
      */
     private boolean fleetKnown;
 
-    public Rail() {
-        super("Rail", "Rail", BuildingType.RAIL);
+    public Freight() {
+        super("Freight", "Freight", BuildingType.RAIL);
         /*
          * A PANTRY AND NOT AN ORDINARY INPUT, because a locomotive is not
          * consumed by being used. Sector.receiveInput() keeps only what a
@@ -356,9 +358,10 @@ public final class Rail extends Sector {
          */
         pantry(Good.ROLLING_STOCK, 0);
 
-        blurb("Hauls the city's trade to and from the world for less than the "
-                + "lorries charge, and bills the shippers for it. What it cannot "
-                + "carry still goes by road, at the world's price.");
+        blurb("Carries the city's freight. Its railway hauls the city's trade to "
+                + "and from the world for less than the lorries charge, and bills "
+                + "the shippers for it. What it cannot carry still goes by road, "
+                + "at the world's price.");
     }
 
     /* =====================================================================
@@ -449,7 +452,7 @@ public final class Rail extends Sector {
                 }
             }
             if (bill > 0) {
-                s.billForService(key(), "Haulage", bill);
+                s.billForService(key(), "Rail freight", bill);
                 haulage += bill;
             }
         }
@@ -894,7 +897,7 @@ public final class Rail extends Sector {
     protected Map<String, Double> nameOtherRevenue() {
         Map<String, Double> parts = new LinkedHashMap<>();
         if (Math.abs(statement().otherRevenue) > 0) {
-            parts.put("Haulage billed", statement().otherRevenue);
+            parts.put("Rail freight billed", statement().otherRevenue);
         }
         return parts;
     }
@@ -935,7 +938,7 @@ public final class Rail extends Sector {
         lines.add(Line.of("Charged", String.format("%.0f%% of the lorry rate", quote * 100),
                 quote < .5 ? Line.Tone.GOOD : quote > .85 ? Line.Tone.WARN : Line.Tone.NONE));
         lines.add(Line.of("A lorry charges", f.amount(lorryRatePerTonne()) + " a tonne"));
-        lines.add(Line.of("Haulage billed", f.amount(rHaulage)));
+        lines.add(Line.of("Rail freight billed", f.amount(rHaulage)));
         lines.add(Line.of("Diesel", f.amount(rFuel), Line.Tone.MUTED));
 
         if (rCapacity <= 0) {

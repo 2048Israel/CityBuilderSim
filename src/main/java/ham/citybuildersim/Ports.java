@@ -26,11 +26,11 @@ package ham.citybuildersim;
  * a lorry's) is under the railway's quote takes its share first and the
  * railway hauls what it leaves; one whose sea freight is not takes only what
  * the railway leaves. The railway's quote never falls under its floor of .30
- * (sectors.Rail.RAIL_FLOOR) and no kind's sea freight reaches .30, so today
+ * (sectors.Freight.RAIL_FLOOR) and no kind's sea freight reaches .30, so today
  * the berths always go first - the other order is written and checked
  * (PortCheck) for the day a constant moves.
  *
- * THE BAND (sectors.Rail.haul() step 5). A good's band carries
+ * THE BAND (sectors.Freight.haul() step 5). A good's band carries
  *
  *     1 - rail - sea + sea x SEA_FREIGHT_SHARE        (factor())
  *
@@ -156,8 +156,8 @@ public final class Ports {
         }
     }
 
-    /** The share of a berth's month the uncovered tonnes of its kind must reach before the test player orders one (spec-oil 5's O9 row): the railway's own line, Rail.MIN_LINE_UTILISATION. */
-    public static final double WORTH_A_BERTH = ham.citybuildersim.sectors.Rail.MIN_LINE_UTILISATION;
+    /** The share of a berth's month the uncovered tonnes of its kind must reach before the test player orders one (spec-oil 5's O9 row): the railway's own line, Freight.MIN_LINE_UTILISATION. */
+    public static final double WORTH_A_BERTH = ham.citybuildersim.sectors.Freight.MIN_LINE_UTILISATION;
 
     /** The kinds of cargo a terminal takes, the length of every by-kind array here. */
     private static final int KINDS = Cargo.values().length;
@@ -304,7 +304,7 @@ public final class Ports {
         return carried * (1 - s);
     }
 
-    /** The railway's share of each stream's tonnes, for the road: its share of the remainder (Rail.getCarried()) of what the berths do not take first. */
+    /** The railway's share of each stream's tonnes, for the road: its share of the remainder (Freight.getCarried()) of what the berths do not take first. */
     public double[] railOfStream(double[] carried) {
         double[] out = new double[STREAMS];
         for (int i = 0; i < STREAMS && carried != null && i < carried.length; i++) out[i] = carried[i] * (1 - firstOfStream[i]);
@@ -317,7 +317,7 @@ public final class Ports {
     /* =====================================================================
        THE MONTH BILLED: WHAT CROSSED THE BOUNDARY, AND WHAT OF IT BY SEA
 
-       Tallied by the railway's month (sectors.Rail.haul() step 1) at the
+       Tallied by the railway's month (sectors.Freight.haul() step 1) at the
        shares that were in force while the cargo moved, as the railway bills
        its own. Tonnes, by kind and direction; crude's own, for its tanker.
        Saved, so a reload's boats and screens are the month's.
@@ -387,7 +387,7 @@ public final class Ports {
     }
 
     /* =====================================================================
-       THE NEXT MONTH'S SHARES (sectors.Rail.haul() step 3)
+       THE NEXT MONTH'S SHARES (sectors.Freight.haul() step 3)
 
        planFirst() before the railway's capacity is dealt: the kinds that go
        first take their berths' share, and say what of each stream they take;

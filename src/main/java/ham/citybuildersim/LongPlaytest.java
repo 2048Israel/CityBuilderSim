@@ -3278,7 +3278,7 @@ public class LongPlaytest {
 
     /**
      * The fuel the world sold the city last month (0.7.62): its drivers'
-     * (Game.getHouseholdFuelImports()) and its railway's (Rail.getFuelImported())
+     * (Game.getHouseholdFuelImports()) and its railway's (Freight.getFuelImported())
      * - their petrol and its diesel since 0.7.76 - and since 0.7.83 (batch O6)
      * the drivers' petrol the grocers' forecourts imported for them
      * (Retail.getFuelImported(); the households' own is nothing from then on)
@@ -3288,7 +3288,7 @@ public class LongPlaytest {
     static double fuelBoughtAbroad(Game g) {
         double vans = 0;
         for (Sector s : g.getSectors().all()) vans += s.getFleetDieselImported();
-        return g.getHouseholdFuelImports() + g.getSectors().rail().getFuelImported()
+        return g.getHouseholdFuelImports() + g.getSectors().freight().getFuelImported()
                 + g.getSectors().retail().getFuelImported() + vans;
     }
 
@@ -3323,7 +3323,7 @@ public class LongPlaytest {
         ham.citybuildersim.sectors.Retail pump = g.getSectors().retail();
         double drivers = Double.isFinite(pump.getWholesaleLitre())
                 ? pump.getWholesaleLitre() * (pump.getPumpLitres() + pump.getQueueLitres()) : g.getHouseholdFuel();
-        fuelBillRun += drivers + g.getSectors().rail().getFuelBill();
+        fuelBillRun += drivers + g.getSectors().freight().getFuelBill();
         fuelAbroadRun += fuelBoughtAbroad(g);
         for (Sector s : g.getSectors().all()) {
             vanDieselRun += s.getFleetDieselCost();
