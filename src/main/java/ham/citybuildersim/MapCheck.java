@@ -4503,7 +4503,8 @@ public class MapCheck {
                 && pic.get(World.CLASSES + 1).words().equals(LandMap.EDGE_WORDS) && gro.subList(0, World.CLASSES + 2).equals(pic)
                 && gro.get(World.CLASSES + 2).words().equals(LandMap.OFFER_WORDS);
         long fieldKinds = Arrays.stream(Resource.values()).filter(Resource::inFields).count();
-        boolean planeLegend = pla.equals(LandMap.planeLegend()) && pla.size() == BuildingVisual.CLASSES + 1 + 5 + 9
+        // The roads' five, and since 0.8.1 (batch FR0, spec-freight 4.9) the gateway, the main line, the freight yard and the level crossing.
+        boolean planeLegend = pla.equals(LandMap.planeLegend()) && pla.size() == BuildingVisual.CLASSES + 1 + 5 + 4 + 9
                 + (BuildingVisual.GROUPS - BuildingVisual.STEEL) + (BuildingVisual.STAND - BuildingVisual.PIT + 1) + 2 + 2 + fieldKinds
                 && pla.get(0).words().equals(BuildingVisual.CLASS_NAMES[0]);
         out.printf("      the legend: %d entries on the PICTURE tier, %d on the GROUND, %d on the plane%n", pic.size(), gro.size(), pla.size());

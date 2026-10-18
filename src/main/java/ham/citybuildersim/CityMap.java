@@ -3076,6 +3076,60 @@ public final class CityMap {
     /** The gateway's bearing, as CityRuns keeps it: GATEWAY_UNKNOWN until it is looked for, NO_GATEWAY where the land has none. */
     public int gateway() { return runs.gateway(); }
 
+    /**
+     * A net's line out to the world (spec-freight 4.1): the highway's or the
+     * railway's run, from the first plot past the city's ground, faded to the
+     * edge of the view and labelled "to the world".
+     *
+     * @param net     CityRuns.HIGHWAYS or CityRuns.RAILWAY
+     * @param x       the point's x in plots where the line leaves the city's ground
+     * @param y       the point's y in plots where the line leaves the city's ground
+     * @param bearing the gateway's bearing in degrees
+     */
+    public record WorldLine(int net, double x, double y, int bearing) { }
+
+    /** worldLines()'s last answer, kept against the map's changes: recomputed when a purchase or a month's runs move changes(). */
+    private List<WorldLine> worldLinesCache;
+    private long worldLinesAt = Long.MIN_VALUE;
+
+    /**
+     * The world lines (spec-freight 4.1): for each net whose gateway is found
+     * and whose gate arm is laid, the point where the run leaves the city's
+     * ground, walked from the gate arm's end along its heading up to
+     * CityMap.DISTRICT plots - none for a net whose way finds no unowned plot
+     * that near. Kept against changes().
+     */
+    public List<WorldLine> worldLines() {
+        if (worldLinesCache != null && worldLinesAt == changes) return worldLinesCache;
+        List<WorldLine> out = new ArrayList<>();
+        int gateway = runs.gateway();
+        if (gateway >= 0) {
+            worldLine(runs.highways(), gateway, out);
+            worldLine(runs.rail(), gateway, out);
+        }
+        worldLinesCache = out;
+        worldLinesAt = changes;
+        return out;
+    }
+
+    /** Adds net n's world line to out when its gate arm is laid and the city's ground ends within CityMap.DISTRICT of its end. */
+    private void worldLine(CityRuns.Net n, int gateway, List<WorldLine> out) {
+        int a = CityRuns.gateArm(n, gateway);
+        if (a < 0) return;
+        CityRuns.Arm arm = n.arms.get(a);
+        long x = arm.steps == 0 ? n.hubX : arm.x;
+        long y = arm.steps == 0 ? n.hubY : arm.y;
+        int h = arm.steps == 0 ? arm.home : arm.head;
+        int dx = CityRuns.DX[h], dy = CityRuns.DY[h];
+        for (int s = 1; s <= DISTRICT; s++) {
+            long px = x + (long) dx * s, py = y + (long) dy * s;
+            if (runGround.at(px, py, -1) == -1) {
+                out.add(new WorldLine(n.kind, px + 0.5, py + 0.5, gateway));
+                return;
+            }
+        }
+    }
+
     /** Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. */
     static final int RUN_LINES_KEPT = 4096;
 

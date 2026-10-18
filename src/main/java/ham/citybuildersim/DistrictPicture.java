@@ -72,7 +72,7 @@ public final class DistrictPicture {
     public static final byte WASH = WORKS + BuildingVisual.GROUPS - BuildingVisual.STEEL, CAMP = WASH + 1, STAND = WASH + 2;
     /** A paved street of the plan, in TileRaster's colour below LINES_FROM px a plot (ROAD_SMALL's paved: its casing) - its gravel streets and tracks are the ground's, hidden as the far view's blocks hide them at L2 (TileRaster.blocks(), star MM1-5)... */
     public static final byte PAVED = STAND + 1;
-    /** ...and a highway's plot - the city's runs' Elevated Highway, or a street of highway plots - and the railway's track: ROAD_SMALL's highway and RAIL_LINE. */
+    /** ...and a highway's plot - the city's runs' Elevated Highway, or a street of highway plots - and the railway's track: ROAD_SMALL's highway and RAIL_DARK. */
     public static final byte HIGHWAY = STAND + 2, RAIL = STAND + 3;
     /** How many codes. */
     public static final int CODES = RAIL + 1;
@@ -91,7 +91,7 @@ public final class DistrictPicture {
         COLOUR[STAND] = BuildingVisual.LOOK_FILL[BuildingVisual.STAND];
         COLOUR[PAVED] = TileRaster.ROAD_SMALL[BuildingVisual.PAVED];
         COLOUR[HIGHWAY] = TileRaster.ROAD_SMALL[BuildingVisual.HIGHWAY];
-        COLOUR[RAIL] = TileRaster.RAIL_LINE;
+        COLOUR[RAIL] = TileRaster.RAIL_DARK;
     }
 
     /** A code's colour (0 for GROUND: none of the picture's own). */

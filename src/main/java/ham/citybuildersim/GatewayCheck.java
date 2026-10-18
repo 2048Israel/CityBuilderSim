@@ -56,6 +56,15 @@ import java.util.TreeSet;
  *
  *  13. WHAT FINDING ONE COSTS: one real generated world, timed and printed.
  *
+ *  14. THE WORLD LINE: a square city with a gateway and both nets laid has a
+ *      world line for each net whose gate arm is laid; each line's point is
+ *      the first plot the city does not own along the gate arm's heading, and
+ *      its bearing is the gateway. With NO_GATEWAY there are none.
+ *
+ *  15. THE CACHE: two calls with nothing changed return equal lists; after a
+ *      month's runs move changes(), the lines are recomputed equal to a fresh
+ *      map's, not the same list.
+ *
  * WHY THIS EXISTS: batch FR0 finds the land's mirror of SeaRoutes' offing,
  * so the highway and railway know which way the world is. A fixture CAUSES
  * each condition rather than waiting for a map to.
@@ -88,6 +97,35 @@ public class GatewayCheck {
         @Override public long[] box() {
             return new long[] { x0, y0, x1, y1 };
         }
+    }
+
+    /** The game's building templates, as the map draws them. */
+    static BuildingVisual.Type[] gatewayTypes() {
+        return BuildingVisual.table(new BuildingCatalog().load());
+    }
+
+    /** The highway type's id. */
+    static int highwayType(BuildingVisual.Type[] types) {
+        for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].road() == BuildingVisual.HIGHWAY) return t;
+        return -1;
+    }
+
+    /** The first railway line type's id. */
+    static int trackType(BuildingVisual.Type[] types) {
+        for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].track()) return t;
+        return -1;
+    }
+
+    /** A square city on the default world's dry place with `highway` highways and `track` railway lines, its gateway found. */
+    static CityMap gatewayCity(BuildingVisual.Type[] types, long highway, long track) {
+        World world = World.of(Founding.DEFAULT_WORLD_SEED);
+        long[] place = MapCheck.dryPlace(world);
+        long[] counts = new long[types.length];
+        int h = highwayType(types), t = trackType(types);
+        if (h >= 0) counts[h] = highway;
+        if (t >= 0) counts[t] = track;
+        return CityMap.square(Founding.DEFAULT_WORLD_SEED, place[0], place[1], types, 2, CityMap.DISTRICT * CityMap.DISTRICT,
+                counts);
     }
 
     /** The longest run of land cells out from a cell, over every bearing - the harness's own look at the same ground. */
@@ -369,6 +407,57 @@ public class GatewayCheck {
         double ms = (System.nanoTime() - t0) / 1e6;
         System.out.printf("  one real generated world's gateway found in %.3f ms (bearing %s)%n",
                 ms, timed == null ? "none" : timed.bearing());
+
+        /* ============ 14. the world line ============ */
+        System.out.println("\n--- the world line ---");
+        BuildingVisual.Type[] wtypes = gatewayTypes();
+        int wh = highwayType(wtypes), wt = trackType(wtypes);
+        check("the catalog has a highway and a track type", wh >= 0 && wt >= 0);
+        CityMap wm = gatewayCity(wtypes, 100, 10);
+        System.out.printf("  the world-line city's gateway: %d%n", wm.gateway());
+        check("the fixture has a gateway", wm.gateway() >= 0);
+        List<CityMap.WorldLine> lines = wm.worldLines();
+        CityRuns.Net whw = wm.runs().highways(), wrail = wm.runs().rail();
+        int hwArm = CityRuns.gateArm(whw, wm.gateway()), railArm = CityRuns.gateArm(wrail, wm.gateway());
+        int hwLines = 0, railLines = 0;
+        for (CityMap.WorldLine line : lines) {
+            if (line.net() == CityRuns.HIGHWAYS) hwLines++;
+            else if (line.net() == CityRuns.RAILWAY) railLines++;
+            check("a world line's net is a highway or the railway",
+                    line.net() == CityRuns.HIGHWAYS || line.net() == CityRuns.RAILWAY);
+            check("...its bearing is the gateway", line.bearing() == wm.gateway());
+            long px = (long) Math.floor(line.x()), py = (long) Math.floor(line.y());
+            check("...its point is ground the city does not own", wm.runGround().at(px, py, -1) == -1);
+            CityRuns.Net net = line.net() == CityRuns.HIGHWAYS ? whw : wrail;
+            int a = CityRuns.gateArm(net, wm.gateway());
+            CityRuns.Arm gateArm = net.arms.get(a);
+            int h = gateArm.steps == 0 ? gateArm.home : gateArm.head;
+            check("...and the plot one step back along the gate arm's heading is owned",
+                    wm.runGround().at(px - CityRuns.DX[h], py - CityRuns.DY[h], -1) != -1);
+        }
+        check("worldLines() has one line for the highway, whose gate arm is laid", (hwArm >= 0) == (hwLines == 1));
+        check("...and one for the railway, whose gate arm is laid", (railArm >= 0) == (railLines == 1));
+        CityMap none = gatewayCity(wtypes, 100, 0);
+        none.runs().setGateway(CityRuns.NO_GATEWAY);
+        check("with NO_GATEWAY set there are no world lines", none.worldLines().isEmpty());
+
+        /* ============ 15. the cache ============ */
+        System.out.println("\n--- the cache ---");
+        BuildingVisual.Type[] ctypes = gatewayTypes();
+        int ch = highwayType(ctypes), ct = trackType(ctypes);
+        CityMap small = gatewayCity(ctypes, 1, 1);
+        List<CityMap.WorldLine> first = small.worldLines();
+        List<CityMap.WorldLine> second = small.worldLines();
+        check("two calls with nothing changed return equal lists", first.equals(second));
+        long changesBefore = small.changes();
+        long[] grown = small.totals().clone();
+        grown[ch] = 100;
+        grown[ct] = 10;
+        boolean moved = small.layRuns(grown);
+        check("a month's runs move changes()", moved && small.changes() > changesBefore);
+        CityMap fresh = gatewayCity(ctypes, 100, 10);
+        check("after the runs move, the world lines are recomputed equal to a fresh map's",
+                small.worldLines().equals(fresh.worldLines()));
 
         System.out.println();
         System.out.println(fails == 0 ? "The gateways are found." : fails + " FAILED");

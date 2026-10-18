@@ -1,6 +1,7 @@
 package ham.citybuildersim;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Proves that the railway is drawn as rail, not as a cased road band (0.8.1,
@@ -53,6 +54,11 @@ import java.util.Arrays;
  *      wagonTracks changes, and not otherwise;
  *  18. CityMap.railPicture repaints when goodsByRail or the whole wagon
  *      tracks change, and not when the share moves less than a track's worth.
+ *  19. the far skeleton: MapTiles.nodePixels over a node covering a city with
+ *      highways, track and yards draws the lightened highway colour and
+ *      RAIL_DARK, never RAIL_LINE, and a 2 x 2 TRANSPORT dot at each yard;
+ *  20. the legend: planeLegend() has the transport class, the railway's four
+ *      and the gateway, and no RAIL_LINE entry.
  *
  * Numbering is the running order.
  *
@@ -282,6 +288,8 @@ public class RailDrawCheck {
         atFourAndBelow();
         stampFoldsTheYard();
         railPictureRepaint();
+        farSkeleton();
+        legend();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -706,5 +714,102 @@ public class RailDrawCheck {
         check("a share change under a track's worth does not repaint", m.changes() == c1);
         m.railPicture(new CityMap.RailPicture(true, 0.5));
         check("a share change of a whole track repaints", m.changes() > c1);
+    }
+
+    /* ================= 19. the far skeleton ================= */
+
+    /** A square city on a dry place whose square holds iron, with highways, a freight line and yards: the far skeleton's fixture. */
+    static CityMap skeletonCity() {
+        BuildingVisual.Type[] types = BuildingVisual.table(new BuildingCatalog().load());
+        World world = World.of(Founding.DEFAULT_WORLD_SEED);
+        int side = 4;
+        long[] place = MapCheck.dryPlace(world, side);
+        int highway = -1, freight = -1, terminal = -1, mine = -1;
+        for (int t = 0; t < types.length; t++) {
+            if (types[t] == null) continue;
+            if (highway < 0 && types[t].road() == BuildingVisual.HIGHWAY) highway = t;
+            else if (freight < 0 && types[t].track() && types[t].plots() > 100) freight = t;
+            else if (terminal < 0 && types[t].terminal()) terminal = t;
+            if (mine < 0 && types[t].site() == Resource.IRON) mine = t;
+        }
+        long[] counts = new long[types.length];
+        counts[highway] = 10;
+        counts[freight] = 2;
+        counts[terminal] = 2;
+        counts[mine] = 2;
+        return CityMap.square(Founding.DEFAULT_WORLD_SEED, place[0], place[1], types, side,
+                CityMap.DISTRICT * CityMap.DISTRICT, counts);
+    }
+
+    /** Whether any pixel is exactly `colour`. */
+    static boolean hasColour(int[] img, int colour) {
+        for (int c : img) if (c == colour) return true;
+        return false;
+    }
+
+    static void farSkeleton() {
+        System.out.println("--- 19. the far skeleton: lightened highways, dark track, and TRANSPORT yard dots on the node ---");
+        CityMap m = skeletonCity();
+        int highwayColour = TileRaster.blend(TileRaster.ROAD[BuildingVisual.HIGHWAY], 0xffffffff,
+                MapTiles.FAR_HIGHWAY_LIGHTEN);
+        MapTiles tiles = new MapTiles(m);
+        long plots = 16, span = MapFrame.NODE_PX * plots;
+        long nx = Math.floorDiv(m.land().siteX(), span) * span, ny = Math.floorDiv(m.land().siteY(), span) * span;
+        byte[] ground = MapTiles.nodeTerrain(m.seed(), nx, ny, plots);
+        int[] img = new int[MapFrame.NODE_PX * MapFrame.NODE_PX];
+        tiles.nodePixels(nx, ny, plots, ground, img);
+        check("the node has pixels in the lightened highway colour", hasColour(img, highwayColour));
+        check("...and pixels in RAIL_DARK", hasColour(img, TileRaster.RAIL_DARK));
+        check("...and no pixel in the old RAIL_LINE", !hasColour(img, TileRaster.RAIL_LINE));
+        int transport = BuildingVisual.FILL[BuildingVisual.TRANSPORT];
+        int n = MapFrame.NODE_PX;
+        boolean allYards = true;
+        for (long[] yard : m.runs().yards()) {
+            long px = Math.floorDiv((long) Math.floor(yard[0] + yard[2] / 2.0 - nx), plots);
+            long py = Math.floorDiv((long) Math.floor(yard[1] + yard[3] / 2.0 - ny), plots);
+            boolean dot = px >= 0 && py >= 0 && px + 1 < n && py + 1 < n
+                    && img[(int) (py * n + px)] == transport && img[(int) (py * n + px + 1)] == transport
+                    && img[(int) ((py + 1) * n + px)] == transport && img[(int) ((py + 1) * n + px + 1)] == transport;
+            allYards &= dot;
+        }
+        check("a 2 x 2 TRANSPORT dot sits at each yard's middle", !m.runs().yards().isEmpty() && allYards);
+        if (m.shore().works().isEmpty()) {
+            System.out.println("  the skeleton city has no sea terminals; the yard dots prove the far dot");
+        } else {
+            boolean allTerminals = true;
+            for (CityShore.Work w : m.shore().works()) {
+                if (w.quay() <= 0) continue;
+                long px = Math.floorDiv((long) Math.floor(w.x0() + w.w() / 2.0 - nx), plots);
+                long py = Math.floorDiv((long) Math.floor(w.y0() + w.h() / 2.0 - ny), plots);
+                allTerminals &= px >= 0 && py >= 0 && px + 1 < n && py + 1 < n
+                        && img[(int) (py * n + px)] == transport && img[(int) (py * n + px + 1)] == transport
+                        && img[(int) ((py + 1) * n + px)] == transport && img[(int) ((py + 1) * n + px + 1)] == transport;
+            }
+            check("...and a 2 x 2 TRANSPORT dot sits at each sea terminal's middle", allTerminals);
+        }
+    }
+
+    /* ================= 20. the legend ================= */
+
+    /** Whether the legend has an entry with these words. */
+    static boolean legendHas(List<LandMap.Entry> entries, String words) {
+        for (LandMap.Entry e : entries) if (e.words().equals(words)) return true;
+        return false;
+    }
+
+    static void legend() {
+        System.out.println("--- 20. the legend: the transport class, the railway's four and the gateway ---");
+        List<LandMap.Entry> plane = LandMap.planeLegend();
+        check("planeLegend() has the TRANSPORT class's entry",
+                legendHas(plane, BuildingVisual.CLASS_NAMES[BuildingVisual.TRANSPORT]));
+        check("...has \"Railway\"", legendHas(plane, "Railway"));
+        check("...has \"Freight yard\"", legendHas(plane, "Freight yard"));
+        check("...has \"Level crossing\"", legendHas(plane, "Level crossing"));
+        check("...has \"Main line, double with a Freight Line\"", legendHas(plane, "Main line, double with a Freight Line"));
+        check("...has \"Gateway: to the world\"", legendHas(plane, "Gateway: to the world"));
+        boolean railLine = false;
+        for (LandMap.Entry e : plane) railLine |= e.colour() == TileRaster.RAIL_LINE;
+        check("...and no entry wears the old RAIL_LINE", !railLine);
+        System.out.println("  ui.MapView.LEGEND_ROWS is package-private, so this harness cannot reach it; the layout is checked by eye");
     }
 }
