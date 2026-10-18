@@ -663,6 +663,11 @@ public class RailCheck {
                         && near(kinds, rail.getHauledTonnes(), 1e-9 * rail.getHauledTonnes()),
                 String.format("%,.2f t against %,.2f t: %s", kinds, rail.getHauledTonnes(), byKind));
         report("...and no kind rails more than crossed of it, either way", within, byKind.toString());
+        // ...and the freight station's look is read from them (Game.mapRail(), FR0's star 4): boxes moved, a container yard.
+        double boxes = rail.railedIn(Ports.Cargo.CONTAINER) + rail.railedOut(Ports.Cargo.CONTAINER);
+        report("...and having moved boxes, its freight station is drawn a container yard (TrainSchedule.boxesByRail())",
+                boxes > 0 && game.mapRail().goodsByRail() && TrainSchedule.boxesByRail(rail),
+                String.format("%,.0f t of boxes", boxes));
 
         if (fails > 0) {
             System.out.printf("%n%d check(s) failed%n", fails);
