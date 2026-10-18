@@ -36,12 +36,16 @@ import java.util.Arrays;
  * dominant kind's colour at an opacity by how much of it is built, the roads
  * over them - what the whole city looks like at the land office's zoom.
  *
- * TRACK (0.7.72, batch N3). The railway's lines are drawn plot by plot as
- * track (TilePainter.RAIL): from 4 px a plot a line of a paved road's
- * width, cased in RAIL_LINE and dashed white plot by plot, joined to the
- * track beside it, on a deck over fresh water; a road crossing it drawn over
- * it; below 4 px and in the blocks, its plots in RAIL_LINE. The mockup drew
- * no railway, so the colours are a map's convention (star N3-9).
+ * TRACK (0.7.72, batch N3; redrawn as rail, 0.8.1, batch FR0). The railway's
+ * lines are drawn plot by plot as track (TilePainter.RAIL): from 4 px a plot
+ * a ballast bed with one steel centre line and a sleeper tick a plot, and
+ * from 6 px two steel rails on sleepers (double track where the main line is
+ * marked), joined to the track beside it, on a deck over fresh water; a road
+ * crossing it drawn over the bed with the rails showing through and level
+ * crossing marks, or bridging it where an arterial or boulevard crosses the
+ * main line; below 4 px and in the blocks, its plots in RAIL_DARK with
+ * cross-ticks every block from 2 px. The mockup drew no railway, so the
+ * colours are a map's convention (star N3-9, spec-freight 4.3).
  *
  * STREETS AS VERGE AND SURFACE (0.7.88, batch RD2; the project's
  * spec-roads-and-ports.md 2.1 and 5, its prototype's render()). A street's
@@ -76,6 +80,37 @@ public final class TileRaster {
 
     /** ...and its dashes, white on every other plot along it: carto's rail dash. */
     public static final int RAIL_DASH = 0xffffffff;
+
+    /* ===== RAIL DRAWN AS RAIL (0.8.1, batch FR0; spec-freight 4.3, D15, D18) ===== */
+
+    /** The track's ballast bed (spec-freight 4.3's grey-brown #6f675c). */
+    public static final int BALLAST = 0xff6f675c;
+    /** A sleeper across the bed (spec-freight 4.3's #4a3f35). */
+    public static final int SLEEPER = 0xff4a3f35;
+    /** The rails' steel (spec-freight 4.3's #c9ced3). */
+    public static final int STEEL = 0xffc9ced3;
+    /** The line the track is at the middle and far views (spec-freight 4.3's dark #3a3632). */
+    public static final int RAIL_DARK = 0xff3a3632;
+
+    /** Pixels a plot from which the track is two rails on sleepers (the 8-px raster). */
+    public static final int RAILS_FROM = 6;
+    /** A single track's bed, a share of the plot: the paved road's width, as the track has today. */
+    public static final double BED = 0.52;
+    /** Double track's bed, a share of the plot: the highway's. */
+    public static final double BED_DOUBLE = 0.86;
+    /** Between a track's two rails, a share of the plot (at 8 px: the rails a pixel either side of the track's middle). */
+    public static final double GAUGE = 0.24;
+    /** Between double track's two tracks, middle to middle. */
+    public static final double TRACKS_APART = 0.44;
+    /** A sleeper every quarter plot (spec-freight 4.3: "sleepers across it every 0.25 plot"). */
+    public static final double SLEEPERS_EVERY = 0.25;
+    /** A level crossing's white crossbuck (spec-freight 4.3 "Crossings"). */
+    public static final int CROSSBUCK = 0xffffffff;
+    /** ...and its barrier's red (spec-freight 4.3 "Crossings"). */
+    public static final int BARRIER = 0xffd04a3c;
+
+    /** Pixels a plot from which the blocks' view draws the track's cross-ticks (the L1 raster). */
+    public static final int TICKS_FROM = 2;
 
     /** A bridge's deck, edging a road over fresh water from 4 px a plot: the mockup's. */
     public static final int DECK = 0xff5d4c3c;
@@ -552,9 +587,9 @@ public final class TileRaster {
             int kind = roadKind(p, i);
             boolean hidden = !gravel && (kind == BuildingVisual.GRAVEL || kind == TilePainter.TRACK);
             if (p.use[i] == TilePainter.RAIL && (kind == 0 || hidden)) {
-                // Track (0.7.72), and where a hidden street crosses it.
+                // Track (0.7.72), and where a hidden street crosses it; drawn as rail (0.8.1).
                 int x0 = (i % tile) * px, y0 = (i / tile) * px;
-                fillRect(img, w, x0, y0, x0 + px, y0 + px, in.owned[i] ? RAIL_LINE : blend(RAIL_LINE, VOID, UNOWNED_DIM));
+                fillRect(img, w, x0, y0, x0 + px, y0 + px, in.owned[i] ? RAIL_DARK : blend(RAIL_DARK, VOID, UNOWNED_DIM));
                 continue;
             }
             if (kind == 0 || hidden) continue;
@@ -568,6 +603,29 @@ public final class TileRaster {
                 boolean ns = (y > 0 && isHighway(p, i - tile)) || (y < tile - 1 && isHighway(p, i + tile));
                 if (ns && x < tile - 1) fillRect(img, w, x0 + px, y0, x0 + 2 * px, y0 + px, c);
                 if (!ns && y < tile - 1) fillRect(img, w, x0, y0 + px, x0 + px, y0 + 2 * px, c);
+            }
+        }
+        // The track's cross-ticks (0.8.1, spec-freight 4.3): from 2 px a plot, a pixel beside the line at each block
+        // boundary, so the dark line reads as rail and not a road.
+        if (px >= TICKS_FROM) {
+            for (int i = 0; i < TilePainter.PLOTS; i++) {
+                int kind = roadKind(p, i);
+                boolean hidden = !gravel && (kind == BuildingVisual.GRAVEL || kind == TilePainter.TRACK);
+                if (p.use[i] != TilePainter.RAIL || (kind != 0 && !hidden) || diagonal(in, i)) continue;
+                int x = i % tile, y = i / tile, x0 = x * px, y0 = y * px;
+                boolean ns = railAt(in, p, i, 0) || railAt(in, p, i, 2);
+                boolean ew = railAt(in, p, i, 1) || railAt(in, p, i, 3);
+                if (!ns && !ew) ew = true;
+                int c = in.owned[i] ? RAIL_DARK : blend(RAIL_DARK, VOID, UNOWNED_DIM);
+                if (ew) {
+                    if (x % block != 0) continue;
+                    if (y > 0) img[(y0 - 1) * w + x0] = c;
+                    if (y < tile - 1) img[(y0 + px) * w + x0] = c;
+                } else {
+                    if (y % block != 0) continue;
+                    if (x > 0) img[y0 * w + (x0 - 1)] = c;
+                    if (x < tile - 1) img[y0 * w + (x0 + px)] = c;
+                }
             }
         }
         // The works at sea (0.7.97): the quays and jackets in their colours, the rings and pipes as lines.
@@ -732,6 +790,8 @@ public final class TileRaster {
             if (h) fillRect(img, w, x0, y0 + o, x0 + px, y0 + o + t, c);
             if (v) fillRect(img, w, x0 + o, y0, x0 + o + t, y0 + px, c);
         }
+        // The railway's crossings: rails through a level crossing with its marks, an arterial or boulevard over the main line as a bridge.
+        railCrossings(in, p, px, img);
         // The highways: cased, their middles and their arms to the highway beside them, across the tile's edge too.
         int[] cs = crossSection(BuildingVisual.HIGHWAY, px);
         int width = cs[0], cas = cs[1], o = (px - width) / 2;
@@ -754,21 +814,20 @@ public final class TileRaster {
                 if (highwayAt(in, p, i, 1)) fillRect(img, w, x0 + z, y0 + a, x0 + px, y0 + z, c);
             }
         }
-        // The railway bridging a highway (0.7.89; spec 2.8): its deck and track across the highway, the way the track runs.
+        // The railway bridging a highway (0.7.89; spec 2.8): its deck and, drawn as rail (0.8.1), the track across the highway.
         int[] rs = crossSection(BuildingVisual.PAVED, px);
         for (int i = 0; i < TilePainter.PLOTS; i++) {
             if (p.run[i] != TilePainter.RAIL_OVER || p.use[i] == TilePainter.BUILDING) continue;
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             boolean ns = railAt(in, p, i, 0) || railAt(in, p, i, 2);
-            int deck = Math.min(px, rs[0] + 2), od = (px - deck) / 2, ot = (px - rs[0]) / 2;
-            int dc = in.owned[i] ? DECK : blend(DECK, VOID, UNOWNED_DIM), rc = in.owned[i] ? RAIL_LINE : blend(RAIL_LINE, VOID, UNOWNED_DIM);
+            int deck = Math.min(px, rs[0] + 2), od = (px - deck) / 2;
+            int dc = in.owned[i] ? DECK : blend(DECK, VOID, UNOWNED_DIM);
             if (ns) {
                 fillRect(img, w, x0 + od, y0, x0 + od + deck, y0 + px, dc);
-                fillRect(img, w, x0 + ot, y0, x0 + ot + rs[0], y0 + px, rc);
             } else {
                 fillRect(img, w, x0, y0 + od, x0 + px, y0 + od + deck, dc);
-                fillRect(img, w, x0, y0 + ot, x0 + px, y0 + ot + rs[0], rc);
             }
+            drawTrackLook(in, p, i, px, img);
         }
         ramps(in, p, px, img);
         // The highways' dashed centre line, from 6 px a plot.
@@ -869,32 +928,269 @@ public final class TileRaster {
     }
 
     /**
-     * The track (0.7.72): each plot's middle and its arms to the track beside
-     * it - past the tile's edge too, where the line runs on - at a paved
-     * road's cross-section, cased in RAIL_LINE and filled RAIL_DASH on every
-     * other plot along it (the rest RAIL_LINE), under the streets that cross it.
+     * The track (0.7.72; redrawn as rail, 0.8.1, batch FR0, spec-freight 4.3):
+     * each plot's middle and its arms to the track beside it - past the tile's
+     * edge too, where the line runs on - as a ballast bed, and from 4 px a
+     * plot its rails as a centre line and a sleeper tick a plot, from 6 px two
+     * rails on sleepers every quarter plot; double track where the main line
+     * is marked. A road crossing it is drawn over the bed; the rails are then
+     * drawn through the street with its crossing marks (railCrossings()).
      */
     private static void track(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (p.use[i] != TilePainter.RAIL) continue;
+            drawTrackLook(in, p, i, px, img);
+        }
+    }
+
+    /** The ballast bed's width, whole pixels: BED, or BED_DOUBLE where the plot is marked double track. */
+    private static int bedWidth(int px, boolean doubled) {
+        return Math.min(px, Math.max(1, (int) Math.round((doubled ? BED_DOUBLE : BED) * px)));
+    }
+
+    /** The track's look on one plot that carries rail: its ballast bed, sleepers and rails (a 45-degree stretch's just a bed and one rail). */
+    private static void drawTrackLook(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img) {
+        boolean doubled = (in.marks[i] & TilePainter.M_DOUBLE) != 0;
+        int bed = bedWidth(px, doubled);
+        if (diagonal(in, i)) {
+            int ballast = in.owned[i] ? BALLAST : blend(BALLAST, VOID, UNOWNED_DIM);
+            diagBand(img, TilePainter.TILE * px, i, px, in.marks[i], bed / 2.0, ballast);
+            int steel = in.owned[i] ? STEEL : blend(STEEL, VOID, UNOWNED_DIM);
+            diagBand(img, TilePainter.TILE * px, i, px, in.marks[i], 0.5, steel);
+            return;
+        }
+        int x = i % TilePainter.TILE, y = i / TilePainter.TILE;
+        int x0 = x * px, y0 = y * px, w = TilePainter.TILE * px;
+        boolean ns = railAt(in, p, i, 0) || railAt(in, p, i, 2);
+        boolean ew = railAt(in, p, i, 1) || railAt(in, p, i, 3);
+        if (!ns && !ew) ew = true;
+        int a = (px - bed) / 2, z = a + bed;
+        drawBed(in, p, i, px, img, a, z);
+        if (px >= RAILS_FROM) {
+            int step = Math.max(2, (int) Math.round(SLEEPERS_EVERY * px));
+            drawSleepers(in, p, i, px, img, a, z, ns, ew, step);
+        } else {
+            drawSleeperTicks(in, p, i, px, img, a, z, ns, ew);
+        }
+        drawRails(in, p, i, px, img, a, z, ns, ew, doubled);
+    }
+
+    /** The track's ballast bed: the plot's middle and its arms to the track beside it, as the bed's whole width. */
+    private static void drawBed(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z) {
         int tile = TilePainter.TILE, w = tile * px;
-        int[] cs = crossSection(BuildingVisual.PAVED, px);
-        int width = cs[0], cas = cs[1], o = (px - width) / 2;
-        for (int pass = cas > 0 ? 0 : 1; pass < 2; pass++) {
-            int in0 = pass == 0 ? 0 : cas;
-            for (int i = 0; i < TilePainter.PLOTS; i++) {
-                if (p.use[i] != TilePainter.RAIL) continue;
-                int x = i % tile, y = i / tile, x0 = x * px, y0 = y * px;
-                int c = pass == 0 || ((x + y) & 1) == 1 ? RAIL_LINE : RAIL_DASH;
-                if (!in.owned[i]) c = blend(c, VOID, UNOWNED_DIM);
-                if (diagonal(in, i)) {
-                    diagBand(img, w, i, px, in.marks[i], (width - 2 * in0) / 2.0, c);
-                    continue;
+        int x0 = (i % tile) * px, y0 = (i / tile) * px;
+        int c = in.owned[i] ? BALLAST : blend(BALLAST, VOID, UNOWNED_DIM);
+        fillRect(img, w, x0 + a, y0 + a, x0 + z, y0 + z, c);
+        if (railAt(in, p, i, 0)) fillRect(img, w, x0 + a, y0, x0 + z, y0 + a, c);
+        if (railAt(in, p, i, 2)) fillRect(img, w, x0 + a, y0 + z, x0 + z, y0 + px, c);
+        if (railAt(in, p, i, 3)) fillRect(img, w, x0, y0 + a, x0 + a, y0 + z, c);
+        if (railAt(in, p, i, 1)) fillRect(img, w, x0 + z, y0 + a, x0 + px, y0 + z, c);
+    }
+
+    /** The sleepers, a pixel thick across the bed, every `step` pixels along the way the track runs. */
+    private static void drawSleepers(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z,
+                                     boolean ns, boolean ew, int step) {
+        int tile = TilePainter.TILE, w = tile * px;
+        int x0 = (i % tile) * px, y0 = (i / tile) * px;
+        int c = in.owned[i] ? SLEEPER : blend(SLEEPER, VOID, UNOWNED_DIM);
+        if (ew) {
+            for (int sx = x0; sx < x0 + px; sx += step) {
+                if (!(sx >= x0 + a && sx < x0 + z)
+                        && !(railAt(in, p, i, 3) && sx >= x0 && sx < x0 + a)
+                        && !(railAt(in, p, i, 1) && sx >= x0 + z && sx < x0 + px)) continue;
+                fillRect(img, w, sx, y0 + a, sx + 1, y0 + z, c);
+            }
+        }
+        if (ns) {
+            for (int sy = y0; sy < y0 + px; sy += step) {
+                if (!(sy >= y0 + a && sy < y0 + z)
+                        && !(railAt(in, p, i, 0) && sy >= y0 && sy < y0 + a)
+                        && !(railAt(in, p, i, 2) && sy >= y0 + z && sy < y0 + px)) continue;
+                fillRect(img, w, x0 + a, sy, x0 + z, sy + 1, c);
+            }
+        }
+    }
+
+    /** Below RAILS_FROM px a plot, one sleeper tick across the bed at the start of each plot along the track. */
+    private static void drawSleeperTicks(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z,
+                                         boolean ns, boolean ew) {
+        int tile = TilePainter.TILE, w = tile * px;
+        int x0 = (i % tile) * px, y0 = (i / tile) * px;
+        int c = in.owned[i] ? SLEEPER : blend(SLEEPER, VOID, UNOWNED_DIM);
+        if (ew) fillRect(img, w, x0, y0 + a, x0 + 1, y0 + z, c);
+        if (ns) fillRect(img, w, x0 + a, y0, x0 + z, y0 + 1, c);
+    }
+
+    /** The rails, a pixel each, along the way the track runs. */
+    private static void drawRails(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z,
+                                  boolean ns, boolean ew, boolean doubled) {
+        if (px >= RAILS_FROM) drawRailsFull(in, p, i, px, img, a, z, ns, ew, doubled);
+        else drawRailsLow(in, p, i, px, img, a, z, ns, ew, doubled);
+    }
+
+    /** From RAILS_FROM px a plot: two rails a track, double track's two tracks at the plot's middle +/- TRACKS_APART. */
+    private static void drawRailsFull(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z,
+                                      boolean ns, boolean ew, boolean doubled) {
+        int mid = px / 2;
+        int off = Math.max(1, (int) Math.round(GAUGE / 2.0 * px));
+        int sep = doubled ? Math.max(1, (int) Math.round(TRACKS_APART / 2.0 * px)) : 0;
+        int c = in.owned[i] ? STEEL : blend(STEEL, VOID, UNOWNED_DIM);
+        if (ew) {
+            if (doubled) {
+                railH(in, p, i, px, img, a, z, mid - sep - off, c);
+                railH(in, p, i, px, img, a, z, mid - sep + off, c);
+                railH(in, p, i, px, img, a, z, mid + sep - off, c);
+                railH(in, p, i, px, img, a, z, mid + sep + off, c);
+            } else {
+                railH(in, p, i, px, img, a, z, mid - off, c);
+                railH(in, p, i, px, img, a, z, mid + off, c);
+            }
+        }
+        if (ns) {
+            if (doubled) {
+                railV(in, p, i, px, img, a, z, mid - sep - off, c);
+                railV(in, p, i, px, img, a, z, mid - sep + off, c);
+                railV(in, p, i, px, img, a, z, mid + sep - off, c);
+                railV(in, p, i, px, img, a, z, mid + sep + off, c);
+            } else {
+                railV(in, p, i, px, img, a, z, mid - off, c);
+                railV(in, p, i, px, img, a, z, mid + off, c);
+            }
+        }
+    }
+
+    /** Below RAILS_FROM px a plot: one STEEL line down the track's middle, two at double track's tracks. */
+    private static void drawRailsLow(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z,
+                                     boolean ns, boolean ew, boolean doubled) {
+        int mid = px / 2;
+        int sep = doubled ? Math.max(1, (int) Math.round(TRACKS_APART / 2.0 * px)) : 0;
+        int c = in.owned[i] ? STEEL : blend(STEEL, VOID, UNOWNED_DIM);
+        if (ew) {
+            if (doubled) {
+                railH(in, p, i, px, img, a, z, mid - sep, c);
+                railH(in, p, i, px, img, a, z, mid + sep, c);
+            } else {
+                railH(in, p, i, px, img, a, z, mid, c);
+            }
+        }
+        if (ns) {
+            if (doubled) {
+                railV(in, p, i, px, img, a, z, mid - sep, c);
+                railV(in, p, i, px, img, a, z, mid + sep, c);
+            } else {
+                railV(in, p, i, px, img, a, z, mid, c);
+            }
+        }
+    }
+
+    /** A rail a pixel wide along an east-west track at row `row`, its middle and its arms. */
+    private static void railH(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int row, int c) {
+        int tile = TilePainter.TILE, w = tile * px;
+        int x0 = (i % tile) * px, y0 = (i / tile) * px;
+        fillRect(img, w, x0 + a, y0 + row, x0 + z, y0 + row + 1, c);
+        if (railAt(in, p, i, 3)) fillRect(img, w, x0, y0 + row, x0 + a, y0 + row + 1, c);
+        if (railAt(in, p, i, 1)) fillRect(img, w, x0 + z, y0 + row, x0 + px, y0 + row + 1, c);
+    }
+
+    /** ...and a north-south track's, at column `col`. */
+    private static void railV(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int col, int c) {
+        int tile = TilePainter.TILE, w = tile * px;
+        int x0 = (i % tile) * px, y0 = (i / tile) * px;
+        fillRect(img, w, x0 + col, y0 + a, x0 + col + 1, y0 + z, c);
+        if (railAt(in, p, i, 0)) fillRect(img, w, x0 + col, y0, x0 + col + 1, y0 + a, c);
+        if (railAt(in, p, i, 2)) fillRect(img, w, x0 + col, y0 + z, x0 + col + 1, y0 + px, c);
+    }
+
+    /**
+     * The railway's crossings (0.8.1, spec-freight 4.3, D18): the street's
+     * surface already lies over the bed; from RAILS_FROM px a plot, draw the
+     * rails through a level crossing with its crossbucks and half barriers,
+     * and an arterial or boulevard over the main line as a road bridge's deck
+     * edges, with no rails or crossing marks on its surface.
+     */
+    private static void railCrossings(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        if (px < RAILS_FROM) return;
+        int tile = TilePainter.TILE, w = tile * px;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (p.use[i] != TilePainter.RAIL) continue;
+            int kind = p.road[i];
+            if (kind != BuildingVisual.GRAVEL && kind != BuildingVisual.PAVED) continue;
+            int x = i % tile, y = i / tile, x0 = x * px, y0 = y * px;
+            boolean h = streetAt(in, p, i, 1) || streetAt(in, p, i, 3);
+            boolean v = streetAt(in, p, i, 0) || streetAt(in, p, i, 2);
+            if (!h && !v) h = true;
+            int t = Math.max(1, (int) Math.round(SURFACE[Math.max(1, Math.min(2, (int) p.width[i]))] * px));
+            int o = (px - t) / 2;
+            boolean main = (in.marks[i] & TilePainter.M_MAIN) != 0;
+            boolean arterial = p.role[i] == TilePainter.ARTERIAL || p.role[i] == TilePainter.BOULEVARD;
+            if (main && arterial) {
+                // An arterial or boulevard over the main line: a road bridge, never a level crossing (D18).
+                int deck = in.owned[i] ? DECK : blend(DECK, VOID, UNOWNED_DIM);
+                if (h) {
+                    if (o > 0) fillRect(img, w, x0, y0 + o - 1, x0 + px, y0 + o, deck);
+                    if (o + t < px) fillRect(img, w, x0, y0 + o + t, x0 + px, y0 + o + t + 1, deck);
                 }
-                int a = o + in0, z = o + width - in0;
-                fillRect(img, w, x0 + a, y0 + a, x0 + z, y0 + z, c);
-                if (railAt(in, p, i, 0)) fillRect(img, w, x0 + a, y0, x0 + z, y0 + a, c);
-                if (railAt(in, p, i, 2)) fillRect(img, w, x0 + a, y0 + z, x0 + z, y0 + px, c);
-                if (railAt(in, p, i, 3)) fillRect(img, w, x0, y0 + a, x0 + a, y0 + z, c);
-                if (railAt(in, p, i, 1)) fillRect(img, w, x0 + z, y0 + a, x0 + px, y0 + z, c);
+                if (v) {
+                    if (o > 0) fillRect(img, w, x0 + o - 1, y0, x0 + o, y0 + px, deck);
+                    if (o + t < px) fillRect(img, w, x0 + o + t, y0, x0 + o + t + 1, y0 + px, deck);
+                }
+                continue;
+            }
+            boolean doubled = (in.marks[i] & TilePainter.M_DOUBLE) != 0;
+            if (diagonal(in, i)) {
+                int steel = in.owned[i] ? STEEL : blend(STEEL, VOID, UNOWNED_DIM);
+                diagBand(img, w, i, px, in.marks[i], 0.5, steel);
+            } else {
+                int bed = bedWidth(px, doubled);
+                int a = (px - bed) / 2, z = a + bed;
+                boolean ns = railAt(in, p, i, 0) || railAt(in, p, i, 2);
+                boolean ew = railAt(in, p, i, 1) || railAt(in, p, i, 3);
+                if (!ns && !ew) ew = true;
+                drawRails(in, p, i, px, img, a, z, ns, ew, doubled);
+            }
+            drawCrossbucks(px, img, w, x0, y0);
+            drawBarriers(in, p, i, px, img, w, x0, y0, t, o, h, v);
+        }
+    }
+
+    /** A level crossing's two crossbucks: a white X in the plot's north-west and south-east corners. */
+    private static void drawCrossbucks(int px, int[] img, int w, int x0, int y0) {
+        int s = Math.max(3, (int) Math.round(3 * px / 8.0));
+        drawX(img, w, x0, y0, s);
+        drawX(img, w, x0 + px - s, y0 + px - s, s);
+    }
+
+    /** An X of side `s` in CROSSBUCK, its corner at (x0, y0). */
+    private static void drawX(int[] img, int w, int x0, int y0, int s) {
+        for (int k = 0; k < s; k++) {
+            img[(y0 + k) * w + x0 + k] = CROSSBUCK;
+            img[(y0 + k) * w + x0 + s - 1 - k] = CROSSBUCK;
+        }
+    }
+
+    /** A level crossing's half barriers: a bar across the lane coming in at each edge where the street enters the plot. */
+    private static void drawBarriers(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int w,
+                                     int x0, int y0, int t, int o, boolean h, boolean v) {
+        int half = t / 2;
+        if (half <= 0) return;
+        if (h) {
+            if (streetAt(in, p, i, 3)) {
+                int y = y0 + o + (t - half);
+                for (int k = 0; k < half; k++) img[(y + k) * w + x0] = (k & 1) == 0 ? BARRIER : CROSSBUCK;
+            }
+            if (streetAt(in, p, i, 1)) {
+                int y = y0 + o;
+                for (int k = 0; k < half; k++) img[(y + k) * w + x0 + px - 1] = (k & 1) == 0 ? BARRIER : CROSSBUCK;
+            }
+        }
+        if (v) {
+            if (streetAt(in, p, i, 0)) {
+                int x = x0 + o;
+                for (int k = 0; k < half; k++) img[y0 * w + x + k] = (k & 1) == 0 ? BARRIER : CROSSBUCK;
+            }
+            if (streetAt(in, p, i, 2)) {
+                int x = x0 + o + (t - half);
+                for (int k = 0; k < half; k++) img[(y0 + px - 1) * w + x + k] = (k & 1) == 0 ? BARRIER : CROSSBUCK;
             }
         }
     }
