@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
  *     java -cp <classes> ham.citybuildersim.AllChecks -q         verdicts only
  *     java -cp <classes> ham.citybuildersim.AllChecks -f         failures only
  *     java -cp <classes> ham.citybuildersim.AllChecks Labour Money   a subset, by name
+ *     java -cp <classes> ham.citybuildersim.AllChecks --timing   the timing harnesses alone (Timing.HARNESSES)
  *
  * Exit status is the number of harnesses that failed, so a build script can
  * stop on it. BuildMenuCheck needs JavaFX on the classpath and is skipped,
@@ -36,6 +37,12 @@ import java.util.regex.Pattern;
  * harness that passed, and for one that failed prints its failing lines
  * under the section they are in - at most FAIL_LINES of them - and where
  * the rest is.
+ *
+ * Timing (TM1, 2026-10-18): -Dcbs.timing=soft given to this JVM is given to
+ * every harness it starts, where a timing figure over its budget is SOFT and
+ * not counted (Timing). -f counts the SOFT lines in every log, a passing
+ * harness's too, and says how many under the summary. --timing runs only the
+ * harnesses that time something: what the ship gate runs, hard.
  */
 public class AllChecks {
 
@@ -70,11 +77,12 @@ public class AllChecks {
     static final Pattern FAILING = Pattern.compile("\\bFAIL(ED)?\\b|Exception|^\\S*Error\\b|^Caused by");
 
     public static void main(String[] args) throws Exception {
-        boolean quiet = false, failuresOnly = false;
+        boolean quiet = false, failuresOnly = false, timingOnly = false;
         List<String> only = new ArrayList<>();
         for (String a : args) {
             if (a.equals("-q")) quiet = true;
             else if (a.equals("-f")) failuresOnly = true;
+            else if (a.equals("--timing")) timingOnly = true;
             else only.add(a.toLowerCase());
         }
         if (failuresOnly) Files.createDirectories(LOGS);
@@ -83,9 +91,11 @@ public class AllChecks {
         String classpath = System.getProperty("java.class.path");
         boolean haveFx = classpath.toLowerCase().contains("javafx");
 
-        int failed = 0, ran = 0;
+        int failed = 0, ran = 0, soft = 0;
+        List<String> softIn = new ArrayList<>();
         long started = System.currentTimeMillis();
         for (String name : HARNESSES) {
+            if (timingOnly && !Timing.HARNESSES.contains(name)) continue;
             if (!only.isEmpty()) {
                 boolean wanted = false;
                 for (String o : only) if (name.toLowerCase().contains(o)) wanted = true;
@@ -96,13 +106,7 @@ public class AllChecks {
                 continue;
             }
             long t = System.currentTimeMillis();
-            // -f reads the log back, so the harness writes it in UTF-8 whatever the machine's
-            // own charset is: on Windows a redirected System.out is Cp1252, and the first
-            // non-ASCII label stopped the run (2026-10-13, MapCheck on the PC)
-            ProcessBuilder pb = failuresOnly
-                    ? new ProcessBuilder(java, "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8",
-                            "-cp", classpath, "ham.citybuildersim." + name)
-                    : new ProcessBuilder(java, "-cp", classpath, "ham.citybuildersim." + name);
+            ProcessBuilder pb = new ProcessBuilder(command(java, classpath, name, failuresOnly));
             pb.redirectErrorStream(true);
             Path log = LOGS.resolve(name + ".log");
             if (failuresOnly) {
@@ -115,6 +119,10 @@ public class AllChecks {
             int code = pb.start().waitFor();
             ran++;
             if (code != 0) failed++;
+            if (failuresOnly) {
+                int n = softLines(log);
+                if (n > 0) { soft += n; softIn.add(name + " " + n); }
+            }
             if (failuresOnly && code == 0) continue;
             System.out.printf("%-24s %s  (%.1fs)%n", name, code == 0 ? "OK" : "FAILED - exit " + code,
                     (System.currentTimeMillis() - t) / 1000.0);
@@ -129,8 +137,38 @@ public class AllChecks {
         System.out.printf("%n%d harness%s run in %.0fs: %d passed, %d failed%n",
                 ran, ran == 1 ? "" : "es", (System.currentTimeMillis() - started) / 1000.0,
                 ran - failed, failed);
+        if (soft > 0) System.out.printf("%d timing assertion%s SOFT, not counted (%s): %s%n",
+                soft, soft == 1 ? "" : "s", Timing.forwarded(), String.join(", ", softIn));
         if (failuresOnly && failed > 0) System.out.println("Whole output of each: " + LOGS + File.separator + "NAME.log");
         System.exit(failed);
+    }
+
+    /**
+     * How a harness is started: the JVM and classpath this one was, the timing
+     * property if it is set here (a child JVM inherits no system property, only
+     * JDK_JAVA_OPTIONS), and under -f its output in UTF-8 whatever the
+     * machine's own charset is - on Windows a redirected System.out is Cp1252,
+     * and the first non-ASCII label stopped the run (2026-10-13, MapCheck on
+     * the PC).
+     */
+    static List<String> command(String java, String classpath, String name, boolean failuresOnly) {
+        List<String> c = new ArrayList<>(List.of(java));
+        if (Timing.forwarded() != null) c.add(Timing.forwarded());
+        if (failuresOnly) c.addAll(List.of("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"));
+        c.addAll(List.of("-cp", classpath, "ham.citybuildersim." + name));
+        return c;
+    }
+
+    /** How many of a log's assertion lines went SOFT (Timing.SOFT_LINE); a log that cannot be read has none. */
+    static int softLines(Path log) {
+        try {
+            int n = 0;
+            for (String line : new String(Files.readAllBytes(log), StandardCharsets.UTF_8).split("\\R"))
+                if (Timing.SOFT_LINE.matcher(line).find()) n++;
+            return n;
+        } catch (IOException e) {
+            return 0;
+        }
     }
 
     /**
