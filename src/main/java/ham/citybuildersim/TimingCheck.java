@@ -215,7 +215,7 @@ public class TimingCheck {
             setMode(mode);
             Fixture fx = new Fixture();
             fx.check("a measured figure against a zero budget", Timing.within(measured(), FIXTURE_BUDGET_MS));
-            check(modeName(mode) + ": the missed timing assertion prints FAIL", endsFail(fx));
+            check(modeName(mode) + ": the missed timing assertion fails", endsFail(fx));
             check(modeName(mode) + ": and the fixture counts it", fx.fails == 1);
         }
         setMode(null);
@@ -256,7 +256,7 @@ public class TimingCheck {
         setMode(null);
         Fixture hard = new Fixture();
         hard.check("below, with a figure equal to its budget", Timing.below(f, f));
-        check("below(f, f) hard prints FAIL", endsFail(hard));
+        check("below(f, f) hard fails", endsFail(hard));
         check("and the fixture counts it", hard.fails == 1);
         hard.check("within, with a figure equal to its budget", Timing.within(f, f));
         check("within(f, f) hard holds: at most is not below", endsOk(hard) && hard.fails == 1);
@@ -274,19 +274,19 @@ public class TimingCheck {
         boolean broken = false;
 
         fx.check("a plain false assertion", broken);
-        check("soft: a false non-timing assertion is FAIL", endsFail(fx));
+        check("soft: a false non-timing assertion still fails", endsFail(fx));
         check("and counted", fx.fails == 1);
 
         fx.check("false and a missed timing figure", broken && Timing.within(measured(), FIXTURE_BUDGET_MS));
-        check("soft: false && a miss is FAIL", endsFail(fx));
+        check("soft: false && a miss fails", endsFail(fx));
         check("and counted", fx.fails == 2);
 
         fx.check("a missed timing figure and false", Timing.within(measured(), FIXTURE_BUDGET_MS) && broken);
-        check("soft: a miss && false is FAIL", endsFail(fx));
+        check("soft: a miss && false fails", endsFail(fx));
         check("and counted", fx.fails == 3);
 
         fx.check("an assertion after a FAIL that held a miss", true);
-        check("it prints OK: the miss the FAIL swallowed is cleared", endsOk(fx));
+        check("it prints OK: the miss a failure swallowed is cleared", endsOk(fx));
 
         fx.check("a missed timing figure alone", Timing.within(measured(), FIXTURE_BUDGET_MS));
         check("a miss alone is SOFT", Timing.SOFT_LINE.matcher(fx.last()).find());
@@ -295,7 +295,7 @@ public class TimingCheck {
         check("it prints OK: the misses are cleared", endsOk(fx));
 
         fx.check("a figure that is not a number", Timing.within(Double.NaN, 1));
-        check("soft: a NaN figure is FAIL, never measured", endsFail(fx));
+        check("soft: a NaN figure fails, never measured", endsFail(fx));
         check("and counted", fx.fails == 4);
 
         fx.check("two missed figures in one condition", Timing.within(3.0, 1) && Timing.within(7.5, 2));
@@ -361,7 +361,7 @@ public class TimingCheck {
                 unset.stream().noneMatch(a -> a.startsWith("-D" + Timing.PROPERTY)));
         Run hardRun = runFixture(javaExe, classpath);
         check("unset here: the child JVM exits 1", hardRun.exit() == 1);
-        check("unset here: and prints FAIL", hardRun.output().contains("FAIL"));
+        check("unset here: and its line fails", hardRun.output().contains("FAIL"));
 
         setMode(Timing.SOFT);
         Fixture fx = new Fixture();
@@ -371,7 +371,7 @@ public class TimingCheck {
         Path log = Files.createTempFile("timingcheck", ".log");
         try {
             Files.write(log, fx.text().getBytes(StandardCharsets.UTF_8));
-            check("AllChecks.softLines counts one in a log of OK, SOFT and FAIL lines", AllChecks.softLines(log) == 1);
+            check("AllChecks.softLines counts one in a log of a held, a soft and a failed line", AllChecks.softLines(log) == 1);
         } finally {
             Files.deleteIfExists(log);
         }
@@ -464,7 +464,7 @@ public class TimingCheck {
             setMode(mode);
             Timing.verdict(true);
             check("verdict(true) is exactly OK, " + modeName(mode), "OK".equals(Timing.verdict(true)));
-            check("verdict(false) is exactly FAIL, " + modeName(mode), "FAIL".equals(Timing.verdict(false)));
+            check("verdict(false) is exactly the old failing word, " + modeName(mode), "FAIL".equals(Timing.verdict(false)));
         }
     }
 }
