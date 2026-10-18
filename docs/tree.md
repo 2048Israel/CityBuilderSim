@@ -379,8 +379,15 @@ adds its line here, not in `CLAUDE.md`.
                                    plant, the wash plant, camps, planted forest), each processing
                                    industry's works one campus as the refinery's (GROUPS), and the
                                    zones tinted by district (CityMap.zoneTint(), ui/MapView), the
-                                   sidecar FORMAT 7; nothing in the model reads it - MapCheck holds
-                                   it (15 the materials)
+                                   sidecar FORMAT 7; since 0.8.1 (batch FR0, spec-freight 4) the
+                                   network as itself - rail as ballast, sleepers and rails, double on
+                                   the main line, level crossings and arterials bridging it; yards as
+                                   fans of sidings with a shed, ore or boxes and wagons (the eleventh
+                                   class, TRANSPORT); junctions by rule (signals, roundabouts,
+                                   diamonds, a highway's end, stacks); the world line past the
+                                   gateway and the far view's skeleton - the sidecar FORMAT 8;
+                                   nothing in the model reads it - MapCheck holds it (15 the
+                                   materials), RailDrawCheck and JunctionCheck the drawing
         MiniMapFrame.java          the minimap's arithmetic (0.7.134, batch MM2; docs/studies/spec-globe.md
                                    8.3): what the stamp at the rail's foot and its hover preview frame -
                                    the ground the city owns in its districts with buildings, its centre
@@ -394,7 +401,17 @@ adds its line here, not in `CLAUDE.md`.
                                    preference, never moved, the newest end taken first - with the
                                    rail yards near the mines; kept in the map's sidecar, each
                                    district's plan drawn round them (spec-roads-and-ports.md 2.7,
-                                   2.8) - MapCheck 8 holds it
+                                   2.8) - MapCheck 8 holds it; since 0.8.1 (batch FR0,
+                                   docs/studies/spec-freight-and-infrastructure.md 4) each net's spine
+                                   laid toward the gateway, its gateway arm first, the bearing in the
+                                   sidecar (FORMAT 8), and the main line from the gateway to the
+                                   freight station (the yard nearest it), double with a Freight Line -
+                                   GatewayCheck and MainLineCheck hold them
+        Gateways.java              the land's offing (0.8.1, batch FR0; spec-freight 4.1): the bearing
+                                   with the longest run of land from the founding site, ties by its
+                                   hash; on the Earth toward the nearest larger place along land; none
+                                   for an island founding - found once by the map, kept in its runs;
+                                   pure - GatewayCheck holds it
         DistrictPlan.java          a district's street plan (0.7.87): the cells it opens and their
                                    layouts, every street with its kind and width - the model's road
                                    drawn as the streets' surface - and every building's box; pure, a
