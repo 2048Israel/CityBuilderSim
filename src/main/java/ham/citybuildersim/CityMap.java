@@ -3130,6 +3130,103 @@ public final class CityMap {
         }
     }
 
+    /* =====================================================================
+       THE TRAINS' ROUTES (0.8.2, batch FR1; spec-freight 4.4, D16)
+       ===================================================================== */
+
+    /** trainRoutes()'s last answer, kept against the map's changes. */
+    private List<TrainSchedule.Route> trainRoutesCache;
+    private long trainRoutesAt = Long.MIN_VALUE;
+
+    /**
+     * The trains' routes (TrainSchedule.Route): for each yard the railway's
+     * way reaches, from TrainSchedule.WORLD_PLOTS out along the railway's
+     * world line, in to its gate arm's end and along the main line and the
+     * corridors (CityRuns.wayTo()) to where the way enters the yard's box,
+     * then through its ladder onto each of its TileRaster.YARD_TRACKS sidings
+     * to the fan's far end, as TileRaster.drawYard() lays the fan: one route a
+     * yard and siding. A yard the way enters on a 45-degree stretch has one
+     * route, to its anchor. None without the railway's world line. The map's
+     * alone: nothing in the model reads it. Kept against changes().
+     */
+    public List<TrainSchedule.Route> trainRoutes() {
+        if (trainRoutesCache != null && trainRoutesAt == changes) return trainRoutesCache;
+        List<TrainSchedule.Route> out = new ArrayList<>();
+        WorldLine line = null;
+        for (WorldLine l : worldLines()) if (l.net() == CityRuns.RAILWAY) line = l;
+        if (line != null) {
+            double r = Math.toRadians(line.bearing());
+            double fx = line.x() + Math.cos(r) * TrainSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(r) * TrainSchedule.WORLD_PLOTS;
+            long[] station = runs.freightStation();
+            List<long[]> yards = runs.yards();
+            for (int i = 0; i < yards.size(); i++) {
+                long[] yard = yards.get(i);
+                double[][] way = runs.wayTo(yard);
+                if (way == null) continue;
+                boolean isStation = station != null && Arrays.equals(station, yard);
+                trainRoutesInto(out, i, isStation, yard, way, fx, fy, line.x(), line.y());
+            }
+        }
+        trainRoutesCache = out;
+        trainRoutesAt = changes;
+        return out;
+    }
+
+    /** Adds one yard's routes to out: the world line's part (far end, then where it leaves the city's ground), the way to the box's edge, and the ladder onto each siding. */
+    private static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way,
+                                        double fx, double fy, double wx, double wy) {
+        double[] xs = way[0], ys = way[1];
+        int n = xs.length;
+        double bx0 = yard[0], by0 = yard[1], bx1 = yard[0] + yard[2], by1 = yard[1] + yard[3];
+        // The last point of the way outside the box: the way enters it on the stretch after.
+        int j = n - 1;
+        while (j >= 0 && xs[j] >= bx0 && xs[j] < bx1 && ys[j] >= by0 && ys[j] < by1) j--;
+        if (j < 0 || j == n - 1) return;
+        List<double[]> pts = new ArrayList<>();
+        pts.add(new double[] { fx, fy });
+        pts.add(new double[] { wx, wy });
+        for (int i = 0; i <= j; i++) pts.add(new double[] { xs[i], ys[i] });
+        double ux = Math.signum(xs[j + 1] - xs[j]), uy = Math.signum(ys[j + 1] - ys[j]);
+        if (ux != 0 && uy != 0) {
+            // A 45-degree way in: on to the anchor, no siding.
+            for (int i = j + 1; i < n; i++) pts.add(new double[] { xs[i], ys[i] });
+            out.add(route(yardAt, station, -1, pts));
+            return;
+        }
+        boolean ew = ux != 0;
+        // Where it crosses the box's edge, and the line the fan closes to.
+        double line = ew ? ys[j] : xs[j];
+        double ex = ew ? (ux > 0 ? bx0 : bx1) : line, ey = ew ? line : (uy > 0 ? by0 : by1);
+        double extent = ew ? yard[2] : yard[3], across0 = ew ? by0 : bx0, across1 = ew ? by1 : bx1;
+        int k = TileRaster.YARD_TRACKS;
+        double[] at = new double[k];
+        for (int i = 0; i < k; i++) at[i] = line + (i - (k - 1) / 2.0) * TileRaster.YARD_TRACK_APART;
+        // The fan's whole bed inside the box, as the painter keeps it.
+        double lo = at[0] - TileRaster.BED / 2, hi = at[k - 1] + TileRaster.BED / 2, shift = lo < across0 ? across0 - lo : hi > across1 ? across1 - hi : 0;
+        double u = ew ? ux : uy;
+        for (int s = 0; s < k; s++) {
+            List<double[]> mine = new ArrayList<>(pts);
+            mine.add(new double[] { ex, ey });
+            double off = at[s] + shift;
+            double a = TileRaster.YARD_LADDER, b = extent - TileRaster.YARD_LADDER;
+            if (ew) {
+                mine.add(new double[] { ex + u * a, off });
+                mine.add(new double[] { ex + u * b, off });
+            } else {
+                mine.add(new double[] { off, ey + u * a });
+                mine.add(new double[] { off, ey + u * b });
+            }
+            out.add(route(yardAt, station, s, mine));
+        }
+    }
+
+    /** A route through points, the world line's part its first leg. */
+    private static TrainSchedule.Route route(int yard, boolean station, int siding, List<double[]> pts) {
+        double[] xs = new double[pts.size()], ys = new double[pts.size()];
+        for (int i = 0; i < pts.size(); i++) { xs[i] = pts.get(i)[0]; ys[i] = pts.get(i)[1]; }
+        return TrainSchedule.Route.through(yard, station, siding, xs, ys, Math.hypot(xs[1] - xs[0], ys[1] - ys[0]));
+    }
+
     /** Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. */
     static final int RUN_LINES_KEPT = 4096;
 
