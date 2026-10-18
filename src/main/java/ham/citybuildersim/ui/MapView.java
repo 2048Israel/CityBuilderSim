@@ -821,10 +821,73 @@ final class MapView {
                 gc.setGlobalAlpha(1);
             }
         }
+        worldLines(gc, f);
         overlays(gc, f);
         drawRings(gc);
         drawBox(gc);
         placeBuyCard();
+    }
+
+    /* =====================================================================
+       THE WORLD LINE (0.8.1, batch FR0; spec-freight 4.1, D13)
+       ===================================================================== */
+
+    /**
+     * The highway's and the main line's faded runs past the city's ground
+     * (CityMap.worldLines()): each from its point along the gateway's bearing
+     * to the edge of the canvas, clipped, the highway in its road colour at
+     * WORLD_LINE_ALPHA, the railway dashed in RAIL_DARK; labelled once near
+     * the far end of the part in view.
+     */
+    private void worldLines(GraphicsContext gc, MapFrame f) {
+        if (shownMap == null) return;
+        List<CityMap.WorldLine> lines = shownMap.worldLines();
+        if (lines.isEmpty()) return;
+        double scale = f.scale(), w = f.width(), h = f.height();
+        for (CityMap.WorldLine line : lines) {
+            boolean highway = line.net() == CityRuns.HIGHWAYS;
+            double sx = f.screenX(line.x()), sy = f.screenY(line.y());
+            double r = Math.toRadians(line.bearing());
+            double dx = Math.cos(r), dy = Math.sin(r);
+            double[] cut = rayRect(sx, sy, dx, dy, w, h);
+            if (cut == null) continue;
+            gc.setStroke(colour(highway ? TileRaster.ROAD[BuildingVisual.HIGHWAY] : TileRaster.RAIL_DARK, WORLD_LINE_ALPHA));
+            gc.setLineWidth(highway ? Math.max(2, 0.86 * scale) : Math.max(1.5, 0.52 * scale));
+            if (highway) gc.setLineDashes((double[]) null);
+            else gc.setLineDashes(6, 5);
+            gc.strokeLine(cut[0], cut[1], cut[2], cut[3]);
+            gc.setLineDashes((double[]) null);
+            double len = Math.hypot(cut[2] - cut[0], cut[3] - cut[1]);
+            double back = Math.min(60, len);
+            double lx = cut[2] - dx * back, ly = cut[3] - dy * back;
+            gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
+            gc.setFill(Color.rgb(255, 255, 255, WORLD_LINE_ALPHA));
+            gc.fillText(LandMap.WORLD_WORDS, lx, ly);
+        }
+    }
+
+    /** The part of the ray (x, y) + t (dx, dy), t >= 0, that lies on the canvas, {x0, y0, x1, y1}; null when it misses it. */
+    private static double[] rayRect(double x, double y, double dx, double dy, double w, double h) {
+        double t0 = 0, t1 = Double.POSITIVE_INFINITY;
+        if (Math.abs(dx) < 1e-12) {
+            if (x < 0 || x > w) return null;
+        } else {
+            double a = (0 - x) / dx, b = (w - x) / dx;
+            if (a > b) { double q = a; a = b; b = q; }
+            t0 = Math.max(t0, a);
+            t1 = Math.min(t1, b);
+        }
+        if (Math.abs(dy) < 1e-12) {
+            if (y < 0 || y > h) return null;
+        } else {
+            double a = (0 - y) / dy, b = (h - y) / dy;
+            if (a > b) { double q = a; a = b; b = q; }
+            t0 = Math.max(t0, a);
+            t1 = Math.min(t1, b);
+        }
+        if (t0 > t1 || t1 < 0) return null;
+        double from = Math.max(0, t0);
+        return new double[] { x + dx * from, y + dy * from, x + dx * t1, y + dy * t1 };
     }
 
     /* =====================================================================
@@ -1009,6 +1072,9 @@ final class MapView {
 
     /** The city's edge's white, its alpha: 0.55, as since 0.7.61 - the far nodes' too (MapTiles.EDGE_ALPHA, 0.7.128). */
     static final double EDGE_ALPHA = MapTiles.EDGE_ALPHA;
+
+    /** The world line's opacity (spec-freight 4.1: "faded, to the edge of the view"): the model's dial, LandMap.WORLD_ALPHA, so the line and its legend swatch are one. */
+    static final double WORLD_LINE_ALPHA = LandMap.WORLD_ALPHA;
 
     /**
      * Over the ground (spec-grid 2.4, since 0.7.69): the city's block lines,
@@ -2611,8 +2677,8 @@ final class MapView {
     /** ...the plane's, at every scale on a generated world. */
     static List<String[]> legendEntries() { return legendEntries(GlobeFrame.PLANE); }
 
-    /** Rows a column of the legend holds: 16, its 46 entries in three columns and the zones set after them (since 0.8.0 the four industries' works and the seven looks of the materials, 35 in three columns of 12 before; since 0.7.127 ice and the desert, 33 before; since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
-    static final int LEGEND_ROWS = 16;
+    /** Rows a column of the legend holds: 17, its 50 entries in three columns and the zones set after them (since 0.8.1 the transport class, the railway's four and the gateway, 50 in three columns of 17; since 0.8.0 the four industries' works and the seven looks of the materials, 35 in three columns of 12 before; since 0.7.127 ice and the desert, 33 before; since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
+    static final int LEGEND_ROWS = 17;
 
     /** The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). */
     static final String SHIP_SIZE_WORDS = "Ships are drawn 1.6\u00d7 their size until 6 px a plot";

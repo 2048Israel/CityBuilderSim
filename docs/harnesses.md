@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-10-17 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**109 harness files, 10,210 labelled assertions.** AllChecks runs 109 of them.
+**113 harness files, 10,399 labelled assertions.** AllChecks runs 113 of them.
 
 ## Which harnesses read which class
 
@@ -21,11 +21,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildAdvice](map/BuildAdvice.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, LandCheck, LongPlaytest, ReadPathCheck, RoadCheck, SectorFlowCheck, WaterCheck |
 | [BuildCard](map/BuildCard.md) | BuildCardCheck, ChildcareCheck, OilCheck, PortCheck, ReadPathCheck, RoadCheck, SectorFlowCheck, SectorStatementCheck, WaterCheck, WellCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck |
-| [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck, EarthTerrainCheck, MapCheck, PlanCheck, PortCheck, WellCheck |
+| [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck, EarthTerrainCheck, GatewayCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
 | [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GdpCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
-| [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RoadCheck, SaveFileCheck, ScaleCheck, WoodProductsCheck |
-| [BuildingVisual](map/BuildingVisual.md) | ChildcareCheck, EarthTerrainCheck, ForestryCheck, LongPlaytest, MapCheck, PlanCheck |
+| [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, RoadCheck, SaveFileCheck, ScaleCheck, WoodProductsCheck |
+| [BuildingVisual](map/BuildingVisual.md) | ChildcareCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, JunctionCheck, LongPlaytest, MapCheck, PlanCheck, RailDrawCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LongPlaytest, RefineryCheck, RoadCheck, SaveFileCheck |
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FundCheck, FundLedgerCheck, GdpCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
@@ -41,10 +41,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, LandCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, WaterCheck, WorldCheck |
-| [CityMap](map/CityMap.md) | EarthTerrainCheck, LongPlaytest, MapCheck, PlanCheck, ReadPathCheck, SaveFileCheck |
+| [CityMap](map/CityMap.md) | EarthTerrainCheck, GatewayCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck |
 | [CityNeeds](map/CityNeeds.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
-| [CityRuns](map/CityRuns.md) | EarthTerrainCheck, MapCheck |
-| [CityShore](map/CityShore.md) | MapCheck |
+| [CityRuns](map/CityRuns.md) | EarthTerrainCheck, GatewayCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck |
+| [CityShore](map/CityShore.md) | MapCheck, RailDrawCheck |
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, IndustryViewCheck |
 | [Construction](map/Construction.md) | BankCheck, BuildersFirstCheck, ConstructionControlCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, RobustnessCheck, SaveFileCheck, SectorBooksCheck |
 | [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BuildAdviceCheck, BuildersFirstCheck, ChartCheck, ConstructionControlCheck, DeathCareFirstCheck, LongPlaytest, RoadCheck |
@@ -63,7 +63,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Denomination](map/Denomination.md) | DenominationCheck |
 | [Deposit](map/Deposit.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, IndustryViewCheck, LandCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, WellCheck, WorldCheck |
 | [DistrictPicture](map/DistrictPicture.md) | MapCheck |
-| [DistrictPlan](map/DistrictPlan.md) | EarthTerrainCheck, MapCheck, PlanCheck |
+| [DistrictPlan](map/DistrictPlan.md) | EarthTerrainCheck, JunctionCheck, MapCheck, PlanCheck, RailDrawCheck |
 | [EarthData](map/EarthData.md) | EarthCheck, EarthFoundingCheck, EarthTerrainCheck, GlobeCheck, LongPlaytest, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck |
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthFoundingCheck, EarthTerrainCheck, GlobeCheck, MapCheck |
 | [EarthSite](map/EarthSite.md) | EarthFoundingCheck, EarthTerrainCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck |
@@ -82,7 +82,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, LabourCheck, LandCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, SaveFileCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DenominationCheck, EarthFoundingCheck, EarthTerrainCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FundCheck, GdpCheck, GridCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TreasuryCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [Founding](map/Founding.md) | AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DenominationCheck, EarthFoundingCheck, EarthTerrainCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TreasuryCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [FuelSplit](map/FuelSplit.md) | OilCheck |
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck |
@@ -91,6 +91,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | **none** |
 | [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthTerrainCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
+| [Gateways](map/Gateways.md) | GatewayCheck |
 | [Geology](map/Geology.md) | CoalMiningCheck, EarthTerrainCheck |
 | [GlobeFrame](map/GlobeFrame.md) | GlobeCheck, MapCheck |
 | [GlobePicture](map/GlobePicture.md) | GlobeCheck, MapCheck |
@@ -117,7 +118,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandConversion](map/LandConversion.md) | ConversionCheck, LandCheck, ScaleCheck, WaterCheck |
 | [LandGrid](map/LandGrid.md) | ConversionCheck, GridCheck, LandCheck, MapCheck |
 | [LandManager](map/LandManager.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HealthCheck, IndustryViewCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, WaterCheck, WellCheck, ZoningCheck, ZoningViewCheck |
-| [LandMap](map/LandMap.md) | EarthTerrainCheck, LandCheck, MapCheck, ReadPathCheck |
+| [LandMap](map/LandMap.md) | EarthTerrainCheck, LandCheck, MapCheck, RailDrawCheck, ReadPathCheck |
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LongPlaytest, MapCheck, MiningCheck, MoneyCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck |
 | [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ConversionCheck, EarthFoundingCheck, ForestryCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PortCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
 | [LegacyLand](map/LegacyLand.md) | ConversionCheck, GridCheck, LandCheck, MiningCheck, OilCheck |
@@ -125,8 +126,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LuxuryCounter](map/LuxuryCounter.md) | **none** |
 | [LuxuryRetail](map/LuxuryRetail.md) | **none** |
 | [Manufacturing](map/Manufacturing.md) | BuildingDataCheck, CopperRefiningCheck, ManufacturingCheck |
-| [MapFrame](map/MapFrame.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
-| [MapTiles](map/MapTiles.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
+| [MapFrame](map/MapFrame.md) | EarthTerrainCheck, GlobeCheck, MapCheck, RailDrawCheck |
+| [MapTiles](map/MapTiles.md) | EarthTerrainCheck, GlobeCheck, MainLineCheck, MapCheck, RailDrawCheck |
 | [Markets](map/Markets.md) | BooksCheck, BuildMenuCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, FoodProcessingCheck, ForestryCheck, InfrastructureCheck, InvestCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, RailCheck, WoodProductsCheck |
 | [Materials](map/Materials.md) | **none** |
 | [MediumTermBond](map/MediumTermBond.md) | BankCheck, CentralBankCheck, RestructureCheck |
@@ -159,7 +160,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck |
 | [RefineryView](map/RefineryView.md) | IndustryViewCheck, OilViewCheck, RefineryCheck, RefineryViewCheck |
 | [Refining](map/Refining.md) | BuildCardCheck, BuildingDataCheck, LongPlaytest, OilCheck, OilViewCheck, PortCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck |
-| [Resource](map/Resource.md) | AutoBuildCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, IndustryViewCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [Resource](map/Resource.md) | AutoBuildCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, IndustryViewCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Restaurants](map/Restaurants.md) | LongPlaytest, RestaurantsCheck |
 | [Retail](map/Retail.md) | BondCheck, BuildCardCheck, BuildingDataCheck, CarCheck, ExpectationsCheck, ForeignCheck, GdpCheck, GroceryCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SupplierCreditCheck, WaterCheck |
 | [RetiredHousehold](map/RetiredHousehold.md) | HouseholdCheck |
@@ -167,7 +168,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SafetyType](map/SafetyType.md) | BuildAdviceCheck, BuildingDataCheck, CrimeCheck |
 | [SalesTaxLedger](map/SalesTaxLedger.md) | PolicyCheck |
 | [SaveHeader](map/SaveHeader.md) | SaveFileCheck, SaveSlotCheck, ScaleCheck |
-| [SeaRoutes](map/SeaRoutes.md) | MapCheck |
+| [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck |
 | [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, GdpCheck, HistoryCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, ReadPathCheck, SectorFlowCheck |
@@ -186,8 +187,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
-| [TilePainter](map/TilePainter.md) | EarthTerrainCheck, MapCheck, PlanCheck, ReadPathCheck |
-| [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, MapCheck, ReadPathCheck |
+| [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck |
+| [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MapCheck, RailDrawCheck, ReadPathCheck |
 | [TimeSkipReport](map/TimeSkipReport.md) | HealthCheck, SkipReportCheck |
 | [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
 | [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, InfrastructureCheck, LongPlaytest, OilCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, WoodProductsCheck |
@@ -200,7 +201,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck, ZoningCheck |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
-| [World](map/World.md) | BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GlobeCheck, GridCheck, LandCheck, LongPlaytest, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
+| [World](map/World.md) | BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, LandCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
 | [WorldEconomy](map/WorldEconomy.md) | FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SkipReportCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, HistoryCheck, ReadPathCheck, ScaleCheck, YearBookCheck |
 | [Zoning](map/Zoning.md) | ForestryCheck, LandCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
@@ -5740,6 +5741,91 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L938 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
   - L940 ...and the rule's bid makes way for as much of the order as it would otherwise take
 
+## GatewayCheck.java - 53 labelled assertions
+
+> A city's gateway is the way the world is.
+> 
+> WHAT THIS HAS TO PROVE:
+> 
+>   1. A STRIP OF LAND RUNNING ONE KNOWN WAY gives the gateway on that
+>      bearing, at the city's radius, with every returned bearing a multiple
+>      of the dial's step.
+> 
+>   2. AN ISLAND FOUNDING has no gateway: land only within a small disc round
+>      the site is short of the reach.
+> 
+>   3. TWO EQUAL ARMS, east and south, tie; the gateway is one of the two,
+> ...
+
+  - L169 with gateway
+  - L170 ...and only the
+  - L185 ...laid past the edge, the
+  - L188 ...and no highway plot lies outside the box
+  - L200 ...and taking back fewer plots takes from the
+- **L210 1. a strip of land east**
+  - L215 a strip east gives a gateway
+  - L216 ...whose bearing is east (0)
+  - L217 ...and whose bearing is a multiple of the step
+  - L220 ...and whose point lies on the city's edge on that bearing
+  - L223 ...and is the city's radius out
+- **L226 2. an island founding**
+  - L233 land only within a small disc round the site has no gateway
+- **L236 3. a tie**
+  - L243 equal arms east and south tie, and the gateway is one of the two lone tied bearings
+  - L245 ...and the tied bearing is a multiple of the step
+  - L248 ...and its point lies on the city's edge on that bearing
+  - L259 two founding sites in the same cell pick different tied bearings (the hash, not the smaller bearing)
+  - L260 ...one picks east
+  - L261 ...and the other picks south
+  - L263 no two offsets in the cell pick differently; the site's own pick is one of the two
+- **L266 4. a half-plane of land west**
+  - L270 every westward bearing runs to the cap, and the gateway is the middle of that arc (180)
+- **L273 5. the threshold**
+  - L277 a strip one cell short of the reach has no gateway
+  - L281 a strip that just reaches has one
+  - L282 ...on the east bearing
+- **L284 6. the default world**
+  - L290 the default world's gateway is deterministic
+  - L293 ...its point lies on the city's edge on that bearing
+  - L297 ...and the cell at its point is land
+  - L305 ...with none, its best land run is short of the reach
+- **L310 7. twelve real generated worlds**
+  - L319 at least one of the twelve worlds has a gateway
+- **L321 8. a full tie is not due east for everyone**
+  - L333 an all-land ground finds a gateway at each of 24 founding sites
+  - L334 ...and every full tie's bearing is a multiple of the step
+  - L335 ...with at least 6 distinct bearings among them
+- **L338 9. the Earth's rule**
+  - L342 one larger place due north wins the north bearing (270)
+  - L348 a nearer place whose way is sea is passed over for the farther clear one (east)
+  - L352 an empty Earth list falls back to the land rule's own answer
+  - L354 ...and a null list does too
+- **L356 10. the spine is laid toward the gateway**
+- **L361 11. no gateway lays as before**
+  - L376 with no gateway the row's two arms both grow first
+  - L377 ...and no column arm has grown yet
+- **L379 12. the sidecar keeps it**
+  - L388 the catalog has a highway type
+  - L392 a square city's runs have found a gateway (or found none)
+  - L395 FORMAT 8 writes the gateway and reads it back the same
+  - L398 a FORMAT 7 sidecar reads it back unknown
+  - L400 ...and the next layRuns finds the same gateway again
+- **L402 13. what finding one costs**
+- **L411 14. the world line**
+  - L415 the catalog has a highway and a track type
+  - L418 the fixture has a gateway
+  - L426 a world line's net is a highway or the railway
+  - L428 ...its bearing is the gateway
+  - L430 ...its point is ground the city does not own
+  - L435 ...and the plot one step back along the gate arm's heading is owned
+  - L438 worldLines() has one line for the highway, whose gate arm is laid
+  - L439 ...and one for the railway, whose gate arm is laid
+  - L442 with NO_GATEWAY set there are no world lines
+- **L444 15. the cache**
+  - L451 two calls with nothing changed return equal lists
+  - L457 a month's runs move changes()
+  - L459 after the runs move, the world lines are recomputed equal to a fresh map's
+
 ## GdpCheck.java - 139 labelled assertions
 
 > Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them).
@@ -7626,6 +7712,52 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1600 an order of three, the till paying for one, earning each its share of the bar on all three's cost is
   - L1603 ...and earning half the lower bar, none of it - the slice the till pays for included
 
+## JunctionCheck.java - 21 labelled assertions
+
+> Proves that the junctions and interchanges of spec-freight 4.6 are drawn
+> by rule from what crosses what, not as buildings (0.8.1, batch FR0; D19).
+> Not part of the game.
+> 
+> WHY THIS EXISTS. Until 0.8.1 a + was two street bars overlapping, a ramp
+> was one diagonal stroke across a verge plot's corner, and a highway
+> crossing a highway was a plain overlap. This draws the table's first five
+> rows at the 8-px raster: signals, roundabouts, diamonds, an arm's end and
+> a stack, each from hand-built painted tiles.
+> 
+> What it has to prove, a section each, every one a fixture that sets the
+> condition by hand:
+> ...
+
+- **L160 1. an arterial crossing an arterial: a dark box and four zebra arms; a plain + keeps the paved colour**
+  - L169 the junction plot's surface has JUNCTION_BOX pixels
+  - L187 each of the four arms has a ZEBRA stripe at the edge facing the junction, alternating with the surface
+  - L193 each arm has a stop line across the right-hand half, just beyond the zebra
+  - L200 a plain street crossing keeps the paved colour, not JUNCTION_BOX
+- **L206 2. a boulevard crossing a boulevard: a planted middle, a ring on the four arms, none on a diagonal building**
+  - L214 the roundabout's middle has ISLAND pixels
+  - L219 the ring has paved pixels on the four neighbouring street plots
+  - L235 no ring pixel is drawn on a building placed diagonally beside it
+- **L240 3. a diamond: paved slips on the verge rows both sides of the street, SLIP_LENGTH out; a building stops one**
+  - L251 the north verge row has paved slip pixels on both sides of the street, SLIP_LENGTH plots out
+  - L256 the south verge row has paved slip pixels on both sides of the street, SLIP_LENGTH plots out
+  - L269 no slip pixel is drawn past a building standing on the verge row
+  - L272 the building on the verge row does not stop the other three slips
+- **L280 4. an arm's last plot with M_RAMP and no street beneath: its raster changes, and the open end narrows**
+  - L292 the marked plot rasters differently from the same tile without the mark
+  - L303 at the open end the band is no wider than the paved road's width
+- **L312 5. a stack: the row's deck over the column's, and corner slips where the corners are open**
+  - L322 HIGHWAY_CASE pixels lie across the column's highway on the row's deck
+  - L325 the four corner plots have slip pixels in the highway's colour
+  - L337 no corner slip is drawn in a corner plot holding a building
+- **L343 6. at 4 px, below JUNCTIONS_FROM, no junction colour appears**
+  - L359 no JUNCTION_BOX, ZEBRA or ISLAND pixel is drawn at 4 px
+- **L365 7. the next tile draws its half of a roundabout whose centre is the tile's last column**
+  - L377 the ring's pixels are drawn on this tile's first column
+- **L383 8. a diamond whose street is the tile's first row: each tile draws its own side's slips**
+  - L392 the tile holding the ramp draws its side's slips, on the verge columns, SLIP_LENGTH plots down
+  - L403 the tile across the edge draws the other side's slips from the ramp beyond its edge
+  - L410 ...and without the ramp beyond it, none
+
 ## LabourCheck.java - 94 labelled assertions
 
 > Verifies the labour market: who can hold a job, and what it costs. Not part
@@ -8323,6 +8455,70 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L6386 what the advisor tried, and what happened**
 - **L6392 findings**
 
+## MainLineCheck.java - 37 labelled assertions
+
+> The main line is the railway's run from its gateway to the freight station,
+> the yard nearest the gate arm's end, and it is drawn double where the city
+> has a Freight Line.
+> 
+> WHAT THIS HAS TO PROVE:
+> 
+>   1. NO YARD: with a gateway and track but no yard, fill() marks M_MAIN on
+>      the whole gate arm (the hub and the hub's row toward the gateway) and
+>      on no other plot of the track, and freightStation() is null.
+> 
+>   2. A YARD ON THE GATE ARM: M_MAIN runs from the yard's anchor out to the
+>      arm's end, not between the hub and the yard.
+> ...
+
+- **L119 1. no yard**
+  - L127 the fixture lays a railway with an east gate arm
+  - L128 ...and no yard, so freightStation() is null
+  - L149 every plot of the gate arm (the hub and the row east of it) is M_MAIN
+  - L150 ...and no other plot of the track is M_MAIN
+- **L152 2. a yard on the gate arm**
+  - L162 the gate arm is long enough for a yard part way out
+  - L181 M_MAIN runs from the yard's anchor out to the gate arm's end
+  - L182 ...and not between the hub and the yard
+- **L184 3. a yard on the opposite arm**
+  - L193 the fixture lays the opposite (west) arm
+  - L195 ...far enough to put a yard before its end
+  - L221 the whole gate arm and the hub are M_MAIN
+  - L222 ...the opposite arm from the hub to the yard is M_MAIN
+  - L223 ...the opposite arm beyond the yard is not
+  - L224 ...and no other arm is M_MAIN
+- **L226 4. a yard on a later corridor**
+  - L240 a third corridor opens and one of its arms has steps
+  - L245 ...its interchange lies on an earlier arm
+  - L255 ...the earlier arm's plot at the interchange is M_MAIN
+  - L264 ...the later arm from its start to the yard is M_MAIN
+  - L265 ...the later arm beyond the yard is not
+- **L268 5. two yards**
+  - L281 of two yards on the gate arm, the one nearer its end is the freight station
+- **L284 6. no gateway**
+  - L295 with NO_GATEWAY nothing is marked M_MAIN
+  - L296 ...and freightStation() is null
+- **L298 7. double track**
+  - L315 setDoubleMain(true) marks M_DOUBLE on exactly the M_MAIN plots
+  - L322 ...false marks no M_DOUBLE
+  - L323 ...and signature() differs between the two
+- **L325 8. the hashes**
+  - L344 a nearer yard moving the station changes fill()'s hash with marks
+  - L345 ...with marks == null it does not
+  - L346 ...and frameHash() does not
+- **L348 9. on a real map**
+  - L352 yardCity's runs have a Freight Line, so the main line is double
+  - L356 ...with no gateway its freight station is null
+  - L357 ...and no tile's marks carry M_MAIN \| M_DOUBLE
+  - L359 ...its freight station is not null
+  - L360 ...and some tile's marks carry M_MAIN \| M_DOUBLE
+- **L363 10. a gate arm that bends**
+  - L368 the fixture starts a railway whose gate arm heads east
+  - L379 ...and bends it by hand into three stretches
+  - L393 every step of the bent gate arm, past its first stretch too, is M_MAIN
+  - L394 ...and each 45-degree step's corner with it
+  - L395 ...and no other plot: as many marked as the arm's steps, its start and its corners
+
 ## ManufacturingCheck.java - 60 labelled assertions
 
 > The ninth sector: what the city makes out of its own steel, and ships.
@@ -8606,57 +8802,57 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L4454 EarthCheck's fixture is beside the classes, for the globe
   - L4486 ...and turn the globe as much under its middle, in every tier
   - L4491 ...and on the plane D held stops at the reach, the view still the plane's
-  - L4510 the legend on the globe is the seven kinds of ground, the city's ring and its edge, the GROUND tier's its offers too
-  - L4511 ...and from the handoff in, the plane's whole legend, as before
-  - L4535 the hover's words on the globe at the handoff are the plane's for the same point, wherever the plane draws
-  - L4561 ...past it the ground drawn there, \"Not the city's\", and the place and the province by latitude and longitude
-  - L4563 ...which are the plot's own at its centre; and off the planet it says nothing
-  - L4580 the composed matrix finds the plot under a pixel within MATRIX_PLOTS of the camera's and the plane's projections
-  - L4622 the GROUND tier at
-  - L4646 the last picture is carried to its own pixels: a point's place on an older view's screen, by the cameras' turn alone
-  - L4650 the swap crossfades: the globe whole at the handoff and wider, gone CROSSFADE_NOTCHES notches in, half way between
-  - L4662 ...and the roll eases back to north up over ROLL_EASE_KM past the reach, with no step at its edge
-  - L4695 the founding screen's globe is the model's frame: its pixels the planet's picture's, space off the disc
-  - L4697 ...and closer, the far rule's through the globe's camera (GlobeFrame.groundPiece()), as the map's GROUND tier draws
-  - L4702 ...handing off to the ground round its centre at FOUNDING_HANDOFF_KM, half a pixel at its corners (halfPixelKm())
-  - L4817 fixture: the played city lists four offers or more
-  - L4844 the card for one offer has its row's figures - its price listed and at today's rate, its km2 by kind, its dry ground,
-  - L4876 fixture: some offers hold fields
-  - L4877 the fields the card rings are the offer's own: their sites and tonnes its row's, each site's square one the hover names
-  - L4897 for several: their sums, \"Buy the best N\"'s totals, in the order picked, one picked twice and an id not on offer left out
-  - L4935 fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others
-  - L4937 a box takes exactly the offers whose free ground it meets - every plot under it tried - in the order given
-  - L4939 ...and a box inside one free plot of an offer takes that offer alone, for every offer
-  - L4960 fixture: the rectangle takes in some of the city's ground
-  - L4961 an offer's free cells are exactly its free plots, and a box over the city's own ground inside its rectangle takes nothing
-  - L5008 fixture: the globe's view is in the GROUND tier and its boxes take offers
-  - L5009 through the globe's camera a box takes every offer a point of its free ground puts inside it, and none it cannot reach
-  - L5024 the picks: a click takes one alone, shift adds one and drops it again, a box adds what it takes in order, a chip's x drops one
-  - L5059 fixture: neither needed a loan, and both were bought
-  - L5060 what the card says the cash will be is the treasury's once bought, and the vault's from the vault, no cash moving
-  - L5062 ...and an offer bought falls out of the picks, the rest kept in order
-  - L5085 fixture: three offers the treasury is short of
-  - L5087 short, the card's bond is the funding page's first: the
-  - L5089 ...and issued, the card's bond buys them all
-  - L5102 fixture: the vault is short of every offer
-  - L5103 ...and the card's loans from the vault are the dollar bond and note for its gap, or none while the window abroad is shut
-  - L5134 fixture: picks stood before the month and the load, and the load kept the month and the offers
-  - L5136 the picks drop on a month, and on a load into the same Game; clear() - Esc, a click off the offers, the map collapsed -
-- **L5193 15. the materials drawn as themselves (0.8.0): each kind its own look, every works on its own sites by type, each industry's works one ca...**
-  - L5219 every building of the nine materials industries has a look of its own - none a plain mine's or industry's box
-  - L5220 ...and every one on a resource's sites stands on its template's: the resource, its type of field, as many sites as it takes
-  - L5251 fixture: its square holds sites enough of every type for all its works
-  - L5252 its districts sum to its counts exactly, every type on its sites among them (coal's, stone's and copper's first types were placed nowhere until 0.8.0)
-  - L5258 every building drawn once - each type as many as the model has, a works on its sites once for all of them, none twice, none missing
-  - L5286 a works of twenty sites is drawn on twenty sites - every works on all of its sites - and each site under a works is of its type of field
-  - L5303 ...one more Iron Mine takes one more hematite site, and no works placed before it moves
-  - L5327 ...the
-  - L5380 each look is drawn on its tiles in its own colours - a pit's benches, a shaft's headframe, a quarry's stone, a leach plant's pond,
-  - L5384 with no zone set no district is tinted
-  - L5416 each zone's districts cover its ground, and one fewer would not: the tint where a zone is and nowhere else, no district twice
-  - L5418 ...the district holding the most of a zone's sector's buildings is the zone's (the map picks where they stand)
-  - L5419 ...and each zone in its sector's own colour
-  - L5453 a 1,389 x 868 L0 screen over the industry paints and rasters in no more than 80 ms of
+  - L4511 the legend on the globe is the seven kinds of ground, the city's ring and its edge, the GROUND tier's its offers too
+  - L4512 ...and from the handoff in, the plane's whole legend, as before
+  - L4536 the hover's words on the globe at the handoff are the plane's for the same point, wherever the plane draws
+  - L4562 ...past it the ground drawn there, \"Not the city's\", and the place and the province by latitude and longitude
+  - L4564 ...which are the plot's own at its centre; and off the planet it says nothing
+  - L4581 the composed matrix finds the plot under a pixel within MATRIX_PLOTS of the camera's and the plane's projections
+  - L4623 the GROUND tier at
+  - L4647 the last picture is carried to its own pixels: a point's place on an older view's screen, by the cameras' turn alone
+  - L4651 the swap crossfades: the globe whole at the handoff and wider, gone CROSSFADE_NOTCHES notches in, half way between
+  - L4663 ...and the roll eases back to north up over ROLL_EASE_KM past the reach, with no step at its edge
+  - L4696 the founding screen's globe is the model's frame: its pixels the planet's picture's, space off the disc
+  - L4698 ...and closer, the far rule's through the globe's camera (GlobeFrame.groundPiece()), as the map's GROUND tier draws
+  - L4703 ...handing off to the ground round its centre at FOUNDING_HANDOFF_KM, half a pixel at its corners (halfPixelKm())
+  - L4818 fixture: the played city lists four offers or more
+  - L4845 the card for one offer has its row's figures - its price listed and at today's rate, its km2 by kind, its dry ground,
+  - L4877 fixture: some offers hold fields
+  - L4878 the fields the card rings are the offer's own: their sites and tonnes its row's, each site's square one the hover names
+  - L4898 for several: their sums, \"Buy the best N\"'s totals, in the order picked, one picked twice and an id not on offer left out
+  - L4936 fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others
+  - L4938 a box takes exactly the offers whose free ground it meets - every plot under it tried - in the order given
+  - L4940 ...and a box inside one free plot of an offer takes that offer alone, for every offer
+  - L4961 fixture: the rectangle takes in some of the city's ground
+  - L4962 an offer's free cells are exactly its free plots, and a box over the city's own ground inside its rectangle takes nothing
+  - L5009 fixture: the globe's view is in the GROUND tier and its boxes take offers
+  - L5010 through the globe's camera a box takes every offer a point of its free ground puts inside it, and none it cannot reach
+  - L5025 the picks: a click takes one alone, shift adds one and drops it again, a box adds what it takes in order, a chip's x drops one
+  - L5060 fixture: neither needed a loan, and both were bought
+  - L5061 what the card says the cash will be is the treasury's once bought, and the vault's from the vault, no cash moving
+  - L5063 ...and an offer bought falls out of the picks, the rest kept in order
+  - L5086 fixture: three offers the treasury is short of
+  - L5088 short, the card's bond is the funding page's first: the
+  - L5090 ...and issued, the card's bond buys them all
+  - L5103 fixture: the vault is short of every offer
+  - L5104 ...and the card's loans from the vault are the dollar bond and note for its gap, or none while the window abroad is shut
+  - L5135 fixture: picks stood before the month and the load, and the load kept the month and the offers
+  - L5137 the picks drop on a month, and on a load into the same Game; clear() - Esc, a click off the offers, the map collapsed -
+- **L5194 15. the materials drawn as themselves (0.8.0): each kind its own look, every works on its own sites by type, each industry's works one ca...**
+  - L5220 every building of the nine materials industries has a look of its own - none a plain mine's or industry's box
+  - L5221 ...and every one on a resource's sites stands on its template's: the resource, its type of field, as many sites as it takes
+  - L5252 fixture: its square holds sites enough of every type for all its works
+  - L5253 its districts sum to its counts exactly, every type on its sites among them (coal's, stone's and copper's first types were placed nowhere until 0.8.0)
+  - L5259 every building drawn once - each type as many as the model has, a works on its sites once for all of them, none twice, none missing
+  - L5287 a works of twenty sites is drawn on twenty sites - every works on all of its sites - and each site under a works is of its type of field
+  - L5304 ...one more Iron Mine takes one more hematite site, and no works placed before it moves
+  - L5328 ...the
+  - L5381 each look is drawn on its tiles in its own colours - a pit's benches, a shaft's headframe, a quarry's stone, a leach plant's pond,
+  - L5385 with no zone set no district is tinted
+  - L5417 each zone's districts cover its ground, and one fewer would not: the tint where a zone is and nowhere else, no district twice
+  - L5419 ...the district holding the most of a zone's sector's buildings is the zone's (the map picks where they stand)
+  - L5420 ...and each zone in its sector's own colour
+  - L5454 a 1,389 x 868 L0 screen over the industry paints and rasters in no more than 80 ms of
 
 ## MaterialsCheck.java - 126 labelled assertions
 
@@ -10737,6 +10933,121 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L614 and a wagon set moved with the steel in it, the Locomotive Works' margin a set to the cent (0.7.120)**
   - L615 a wagon set is the world's at 2,302.2: 2,400 less 120 t of fabricated steel at .665 and 20 t of machinery at .9
   - L621 ...so the Locomotive Works makes of a set over the parts in it what it did, to the cent
+
+## RailDrawCheck.java - 78 labelled assertions
+
+> Proves that the railway is drawn as rail, not as a cased road band (0.8.1,
+> batch FR0; docs/studies/spec-freight-and-infrastructure.md 4.3, D15, D18).
+> Not part of the game.
+> 
+> WHY THIS EXISTS. Until 0.8.1 TileRaster.track() drew the railway as a paved
+> road's band, cased grey with white dashes, so it read as a road. This draws
+> it as ballast, sleepers and steel rails at the close views, a dark line
+> with cross-ticks in the blocks, and the crossings as level crossings or a
+> road bridge over the main line.
+> 
+> What it has to prove, a section each, every one a fixture that sets the
+> condition by hand:
+> ...
+
+- **L299 1. a straight east-west single track at 8 px: ballast, two rails, sleepers every quarter plot**
+  - L309 exactly two pixel rows are STEEL, at middle +/- round(GAUGE/2*px)
+  - L310 a bed pixel is BALLAST
+  - L315 SLEEPER columns repeat every max(2, round(SLEEPERS_EVERY*px))
+  - L316 a column between sleepers is not a sleeper
+- **L321 2. M_MAIN \| M_DOUBLE at 8 px: four rails and a double bed; M_MAIN alone is single**
+  - L332 four pixel rows are STEEL, at the two tracks' rails
+  - L334 the bed's first and last pixel rows are BALLAST, as wide as BED_DOUBLE
+  - L343 M_MAIN alone has two STEEL rows, as single track
+- **L349 3. a north-south track at 8 px: the same, by columns**
+  - L359 exactly two pixel columns are STEEL, at middle +/- round(GAUGE/2*px)
+  - L360 a bed pixel is BALLAST
+  - L365 SLEEPER rows repeat every max(2, round(SLEEPERS_EVERY*px))
+- **L370 4. at 4 px: a ballast bed, one steel centre line, one sleeper tick a plot**
+  - L380 one pixel row is STEEL down the bed's middle
+  - L381 a bed pixel is BALLAST
+  - L382 one SLEEPER tick at the start of the plot
+- **L387 5. L1 blocks at 2 px a plot: RAIL_DARK, with a tick beside the line every block**
+  - L403 every track pixel is RAIL_DARK
+  - L404 no track pixel is RAIL_LINE
+  - L414 a tick pixel lies beside the line at every block boundary
+  - L415 no tick pixel lies beside the line between block boundaries
+- **L420 6. L2 blocks at 1 px a plot: RAIL_DARK, no ticks**
+  - L433 every track pixel is RAIL_DARK
+  - L434 no pixel beside the line is a tick
+- **L439 7. a paved street crossing a single track at level: crossbucks, barriers, rails showing**
+  - L448 a CROSSBUCK pixel in the north-west corner
+  - L449 a CROSSBUCK pixel in the south-east corner
+  - L450 a BARRIER pixel at the street's north edge
+  - L451 a BARRIER pixel at the street's south edge
+  - L452 a STEEL pixel on the street's surface
+- **L457 8. an arterial over the main line is a bridge; a level crossing is named as one**
+  - L467 a DECK edge along each side of the street's surface
+  - L478 no CROSSBUCK and no BARRIER on the plot
+  - L479 no STEEL on the street's surface
+  - L481 LandMap.plotWords says \"bridging the railway\" there
+  - L488 LandMap.plotWords says \"crossing the railway\" at a level crossing
+- **L493 9. an unowned track's bed pixel is dimmed toward VOID**
+  - L502 a bed pixel is blend(BALLAST, VOID, UNOWNED_DIM)
+- **L507 10. a diagonal track at 8 px: ballast and steel, no sleepers**
+  - L524 the plot has BALLAST pixels
+  - L525 the plot has STEEL pixels
+  - L526 the plot has no SLEEPER pixels
+- **L531 11. the eleventh class: TRANSPORT, eleven tables, a Rail Terminal's fill**
+  - L533 classOf(RAIL) is TRANSPORT
+  - L534 classOf(PORTS) is TRANSPORT
+  - L535 classOf(INFRASTRUCTURE) is TRANSPORT
+  - L537 CLASSES, CLASS_NAMES, FILL, EDGE and LandMap.CLASS_ONE all have one length
+  - L542 that length is eleven
+  - L543 a Rail Terminal has TRANSPORT's fill
+- **L548 12. a bulk yard at 8 px over an east-west track: ground, fan, shed and stockpiles**
+  - L555 YARD_GROUND pixels inside the box
+  - L556 STEEL on at least YARD_TRACKS distinct pixel rows inside the box
+  - L559 TRANSPORT's fill (the shed) on the north side of the line
+  - L561 ORE_HEAP stockpiles on the south side
+  - L563 no CONTAINER pixels
+- **L568 13. the freight station with goods is a container yard; other yards stay bulk**
+  - L577 the freight station with goods has CONTAINER pixels
+  - L579 ...and GANTRY pixels
+  - L580 ...and no ORE_HEAP
+  - L587 the same yard not the station stays bulk
+  - L597 the station without goods stays bulk
+- **L604 14. wagonTracks: none, every track, then half the tracks**
+  - L611 the yard's fan has YARD_TRACKS ballast bands
+  - L612 wagonTracks 0 has no WAGON pixels
+  - L623 YARD_TRACKS wagons stand on every track's bed
+  - L636 half of YARD_TRACKS wagons stand on that many tracks and none on the rest
+- **L641 15. a north-south line through the yard: the fan runs north-south**
+  - L647 STEEL on at least YARD_TRACKS distinct pixel columns inside the box
+- **L653 16. at 4 px the yard still draws as a yard; below LINES_FROM it is a plain TRANSPORT box**
+  - L660 at 4 px the yard has YARD_GROUND pixels
+  - L662 ...STEEL pixels
+  - L663 ...and TRANSPORT's fill (the shed)
+  - L671 below LINES_FROM the yard is a plain box of TRANSPORT's fill
+- **L678 17. MapTiles.stamp changes when the yard's inputs change, and not otherwise**
+  - L683 the stamp changes when goodsByRail changes
+  - L686 the stamp changes when wagonTracks changes
+  - L689 the stamp changes when stationX changes
+  - L692 the stamp changes when stationY changes
+  - L695 the stamp does not change otherwise
+- **L707 18. CityMap.railPicture repaints on goods or a whole track, not a share less than one**
+  - L711 goodsByRail true repaints
+  - L714 a share change under a track's worth does not repaint
+  - L716 a share change of a whole track repaints
+- **L751 19. the far skeleton: lightened highways, dark track, and TRANSPORT yard dots on the node**
+  - L761 the node has pixels in the lightened highway colour
+  - L762 ...and pixels in RAIL_DARK
+  - L763 ...and no pixel in the old RAIL_LINE
+  - L775 a 2 x 2 TRANSPORT dot sits at each yard's middle
+  - L788 ...and a 2 x 2 TRANSPORT dot sits at each sea terminal's middle
+- **L801 20. the legend: the transport class, the railway's four and the gateway**
+  - L803 planeLegend() has the TRANSPORT class's entry
+  - L805 ...has \"Railway\"
+  - L806 ...has \"Freight yard\"
+  - L807 ...has \"Level crossing\"
+  - L808 ...has \"Main line, double with a Freight Line\"
+  - L809 ...has \"Gateway: to the world\"
+  - L812 ...and no entry wears the old RAIL_LINE
 
 ## ReadPathCheck.java - 25 labelled assertions
 

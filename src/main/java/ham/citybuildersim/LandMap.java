@@ -566,6 +566,12 @@ public final class LandMap {
     /** The offers' pink: the mockup's band edge (rgba(246, 166, 201)). */
     public static final int OFFER_EDGE = 0xfff6a6c9;
 
+    /** The world line's label (spec-freight 4.1: "labelled 'to the world ›'"). */
+    public static final String WORLD_WORDS = "to the world ›";
+
+    /** The world line's opacity (spec-freight 4.1: "faded, to the edge of the view"); ui/MapView's WORLD_LINE_ALPHA reads this one, so the line and its legend swatch are one dial. */
+    public static final double WORLD_ALPHA = 0.45;
+
     /**
      * The expanded map's legend in a tier (spec-globe 3.7: "the legend on the
      * globe lists the kinds of ground and the city's ring; the whole legend
@@ -587,7 +593,7 @@ public final class LandMap {
         return out;
     }
 
-    /** The plane's legend (the expanded map's since 0.7.61; ui/MapView's until 0.7.135): the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, (0.7.97) the nine of the shore and the sea, (0.8.0) the four industries' works and the seven looks of the materials, (0.7.127) ice and the desert, the land, the six resources in fields. */
+    /** The plane's legend (the expanded map's since 0.7.61; ui/MapView's until 0.7.135): the ten classes and flats, the three roads, (0.7.88) the tracks, (0.8.1) the eleventh transport class, the railway's four - ballast, the main line, the freight yard and the level crossing - and the gateway to the world, (0.7.97) the nine of the shore and the sea, (0.8.0) the four industries' works and the seven looks of the materials, (0.7.127) ice and the desert, the land, the six resources in fields. */
     public static List<Entry> planeLegend() {
         List<Entry> out = new ArrayList<>();
         for (int c = 0; c < BuildingVisual.CLASSES; c++) {
@@ -598,7 +604,11 @@ public final class LandMap {
         out.add(new Entry(TileRaster.ROAD[BuildingVisual.PAVED], "Paved road"));
         out.add(new Entry(TileRaster.TRACK_DASH, TRACK_ENTRY));
         out.add(new Entry(TileRaster.ROAD[BuildingVisual.HIGHWAY], "Highway"));
-        out.add(new Entry(TileRaster.RAIL_LINE, "Railway"));
+        out.add(new Entry(TileRaster.blend(TileRaster.ROAD[BuildingVisual.HIGHWAY], TileRaster.VOID, 1 - WORLD_ALPHA), "Gateway: to the world"));
+        out.add(new Entry(TileRaster.BALLAST, "Railway"));
+        out.add(new Entry(TileRaster.RAIL_DARK, "Main line, double with a Freight Line"));
+        out.add(new Entry(TileRaster.YARD_GROUND, "Freight yard"));
+        out.add(new Entry(TileRaster.BARRIER, "Level crossing"));
         // At sea and on the shore (0.7.97).
         out.add(new Entry(BuildingVisual.CAMPUS_FILL, "Refinery"));
         // The materials as themselves (0.8.0, batch I14): each processing industry's works, then each look of the mines, quarries and forest.
@@ -737,7 +747,7 @@ public final class LandMap {
 
     /** One building of each class, as the hover card names a type it has no name for. */
     public static final String[] CLASS_ONE = { "Home", "Shop", "Offices", "Industry", "Farm", "Utility", "School",
-            "Health", "Safety", "Mine" };
+            "Health", "Safety", "Mine", "Transport" };
 
     /**
      * What a painted plot holds, in the hover card's words, or null for bare
@@ -772,7 +782,10 @@ public final class LandMap {
         }
         if (road) {
             String role = p.role[plot] == TilePainter.BOULEVARD ? " · boulevard" : p.role[plot] == TilePainter.ARTERIAL ? " · arterial" : "";
-            String more = (p.bridge[plot] ? " · a bridge" : "") + (p.use[plot] == TilePainter.RAIL ? " · crossing the railway" : "");
+            boolean mainBridge = p.use[plot] == TilePainter.RAIL && (in.marks[plot] & TilePainter.M_MAIN) != 0
+                    && (p.role[plot] == TilePainter.ARTERIAL || p.role[plot] == TilePainter.BOULEVARD);
+            String railWords = p.use[plot] == TilePainter.RAIL ? (mainBridge ? " · bridging the railway" : " · crossing the railway") : "";
+            String more = (p.bridge[plot] ? " · a bridge" : "") + railWords;
             if (p.road[plot] == TilePainter.TRACK) return TRACK_WORDS + role + more;
             String kind = p.road[plot] == BuildingVisual.PAVED ? "Paved street" : p.road[plot] == BuildingVisual.GRAVEL ? "Gravel street"
                     : "Street of highway plots";

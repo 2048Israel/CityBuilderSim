@@ -6632,8 +6632,55 @@ public final class GameVersion {
      *     legend's entries), and the fixtures' Iron Mines capped by hematite
      *     sites, the game's own rule since 0.7.124 (MapCheck, PlanCheck).
      *   - THE PLAYTESTS do not move: byte-identical.
+     *
+     * 0.8.1 (2026-10-18) - FR0, THE MAP'S NETWORK.
+     * The first freight batch (docs/studies/spec-freight-and-infrastructure.md
+     * 4 and 7, D13 to D19 and D22; Jerus, 2026-10-12: "do rec";
+     * docs/queue/FR0-notes.md), the map's alone: nothing in the model reads
+     * it. Its slices were drafted by DeepSeek V4 Pro through tools/deepseek
+     * and reviewed by Claude. No save format change (39); the map's sidecar is
+     * FORMAT 8 (a FORMAT 7 one is read, and finds its gateway at the next
+     * month's runs).
+     *   - GATEWAYS (Gateways, CityRuns): the bearing with the longest run of
+     *     land from the founding site, ties by the site's hash; on the Earth
+     *     toward the nearest larger place along land; none for an island
+     *     founding. Each net's spine is laid toward it, the gateway's arm
+     *     first until it waits at the city's edge, and taken back last; past
+     *     the city's ground the world's highway and line run on faded to the
+     *     view's edge, "to the world" (CityMap.worldLines(), ui/MapView).
+     *   - THE MAIN LINE (CityRuns): from the rail gateway to the freight
+     *     station, the yard nearest it, through each corridor's interchange;
+     *     double track where the city has a Freight Line.
+     *   - RAIL DRAWN AS RAIL (TileRaster): ballast, sleepers and two rails
+     *     from 6 px a plot, four on a double main line; a line and a tick a
+     *     plot from 4 px; a dark line ticked every block at L1, plain at L2;
+     *     level crossings with crossbucks and half barriers; an arterial or
+     *     boulevard over the main line a bridge (D18).
+     *   - YARDS AS YARDS, and the eleventh class, TRANSPORT (BuildingVisual,
+     *     TileRaster, Game.mapRail()): the yards, the sea terminals and the
+     *     transit networks leave Industry and Utilities; a yard is a fan of
+     *     eight sidings with a ladder at each end, a freight shed, ore
+     *     stockpiles - or at the freight station of a railway carrying goods,
+     *     boxes and two gantries - and wagons on the sidings in the fleet's
+     *     share of its wagon sets.
+     *   - JUNCTIONS BY RULE (TileRaster, D19): signals where arterials cross,
+     *     roundabouts where boulevards do, diamonds where a street passes
+     *     beneath a ramp, a highway's end come down to the ground, stacks
+     *     where highways cross; none of them a building.
+     *   - THE FAR VIEW AND THE LEGEND (MapTiles, DistrictPicture, LandMap;
+     *     D22): highways lightened, the railway dark, ports and yards as dots
+     *     in TRANSPORT's colour; the legend's railway four entries and the
+     *     gateway's one.
+     *   - NOT BUILT (QUEUE.md's Pending, FR0-L): access roads (D17), sidings
+     *     into the bulk works (D14), the cloverleaf's and trumpet's reserved
+     *     ground (D19) - each needs the plans to keep ground the runs cannot
+     *     see.
+     *   - Harnesses: GatewayCheck, MainLineCheck, RailDrawCheck and
+     *     JunctionCheck (new); MapCheck 8's fixture on Jerus's city x 1 shows
+     *     its ramp as the highway's end, its six highways now one arm.
+     *   - THE PLAYTESTS do not move: byte-identical.
      */
-    public static final String VERSION = "0.8.0";
+    public static final String VERSION = "0.8.1";
 
     /**
      * The save shape.

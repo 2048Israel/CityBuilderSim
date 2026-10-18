@@ -1,6 +1,6 @@
 # IndustryViewCheck.java - 1,218 lines · 32 methods · 6 constants · harnesses
 
-`ham/citybuildersim/IndustryViewCheck.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/IndustryViewCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > The materials pictograms' model, checked (0.7.141, batch I11;
 > docs/studies/spec-materials.md 2.13, 4's IndustryViewCheck line and 5's

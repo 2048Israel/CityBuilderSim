@@ -39,6 +39,9 @@ public final class MapTiles {
     /** What every cache of the view together may hold, in MB: 48 (spec-land 2.6). */
     public static final double BUDGET_MB = 48;
 
+    /** How much the far view's highway line is lightened toward white against the dark ground (spec-freight 4.8): 40%. */
+    public static final double FAR_HIGHWAY_LIGHTEN = 0.4;
+
     /** The view the budget is sized for, in pixels: the land office's expanded map in a 1,389 x 868 window - 1,345 across inside the pane's padding, 806 down under its head (UserInterface's chart pane, 0.7.23). */
     public static final int DESIGN_W = 1345, DESIGN_H = 806;
 
@@ -122,6 +125,9 @@ public final class MapTiles {
         h = World.mix(h ^ packed(in.beyond));
         h = World.mix(h ^ packed(in.fixed));
         h = World.mix(h ^ packed(in.fixedBeyond));
+        h = World.mix(h ^ in.stationX);
+        h = World.mix(h ^ in.stationY);
+        h = World.mix(h ^ (in.goodsByRail ? 1 : 0) ^ in.wagonTracks);
         h = World.mix(h ^ in.buildings);
         for (int b = 0; b < 2 * in.buildings; b++) h = World.mix(h ^ in.boxes[b]);
         h = World.mix(h ^ in.sites);
@@ -201,6 +207,10 @@ public final class MapTiles {
         // reads had none, so no ramp or smooth band was ever drawn).
         System.arraycopy(a.marks, 0, b.marks, 0, TilePainter.PLOTS);
         System.arraycopy(a.marksBeyond, 0, b.marksBeyond, 0, a.marksBeyond.length);
+        b.stationX = a.stationX;
+        b.stationY = a.stationY;
+        b.goodsByRail = a.goodsByRail;
+        b.wagonTracks = a.wagonTracks;
         b.types = a.types;
         if (b.counts.length != a.counts.length) b.counts = new int[a.counts.length];
         b.clearBuildings();
@@ -336,7 +346,7 @@ public final class MapTiles {
     /** The districts the last nodePixels() drew at PICTURE_FROM_PX or more with no current picture: what the view asks the pictures of (CityMap.pictureJobs()). */
     private final java.util.Set<CityMap.District> wanted = new java.util.LinkedHashSet<>();
 
-    /** Which of the last nodePixels()'s pixels it drew as the city's edge, and as a highway's or the railway's: a harness's. */
+    /** Which of the last nodePixels()'s pixels it drew as the city's edge, and as the far skeleton's - a highway, the railway, a yard or a sea terminal's dot: a harness's. */
     private boolean[] lastEdge = new boolean[0], lastRun = new boolean[0];
 
     public java.util.Set<CityMap.District> wanted() { return wanted; }
@@ -451,8 +461,15 @@ public final class MapTiles {
         java.util.Arrays.fill(lastEdge, false);
         CityRuns runs = map.runs();
         if (runs != null) {
-            stroke(runs.highways(), DistrictPicture.colour(DistrictPicture.HIGHWAY), x0, y0, plots, out);
-            stroke(runs.rail(), DistrictPicture.colour(DistrictPicture.RAIL), x0, y0, plots, out);
+            int highway = TileRaster.blend(TileRaster.ROAD[BuildingVisual.HIGHWAY], 0xffffffff, FAR_HIGHWAY_LIGHTEN);
+            stroke(runs.highways(), highway, x0, y0, plots, out);
+            stroke(runs.rail(), TileRaster.RAIL_DARK, x0, y0, plots, out);
+            for (long[] yard : runs.yards()) dot(yard[0] + yard[2] / 2.0, yard[1] + yard[3] / 2.0, x0, y0, plots,
+                    BuildingVisual.FILL[BuildingVisual.TRANSPORT], out);
+            for (CityShore.Work work : map.shore().works()) {
+                if (work.quay() > 0) dot(work.x0() + work.w() / 2.0, work.y0() + work.h() / 2.0, x0, y0, plots,
+                        BuildingVisual.FILL[BuildingVisual.TRANSPORT], out);
+            }
         }
         // The city's edge: each of its pixels beside one that is not - the inner ring of its shape as drawn - and each pixel
         // holding some of its ground with none of the eight about it its own: ground smaller than a pixel, drawn a pixel.
@@ -521,6 +538,21 @@ public final class MapTiles {
         int k = (int) (q * n + p);
         out[k] = colour;
         lastRun[k] = true;
+    }
+
+    /** A yard's or a sea terminal's 2 x 2 pixel dot at its box's middle, in TRANSPORT's fill (spec-freight 4.8). */
+    private void dot(double x, double y, long x0, long y0, long plots, int colour, int[] out) {
+        int n = MapFrame.NODE_PX;
+        long p = Math.floorDiv((long) Math.floor(x - x0), plots), q = Math.floorDiv((long) Math.floor(y - y0), plots);
+        for (int j = 0; j < 2; j++) {
+            for (int i = 0; i < 2; i++) {
+                long pp = p + i, qq = q + j;
+                if (pp < 0 || qq < 0 || pp >= n || qq >= n) continue;
+                int k = (int) (qq * n + pp);
+                out[k] = colour;
+                lastRun[k] = true;
+            }
+        }
     }
 
     /**

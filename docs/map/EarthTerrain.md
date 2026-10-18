@@ -1,6 +1,6 @@
 # EarthTerrain.java - 2,193 lines · 123 methods · 51 constants · model
 
-`ham/citybuildersim/EarthTerrain.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthTerrain.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > The real Earth's ground on the world's plots: a tile, a plot, a line or a region at a time, each world cell's land and forest (the cells pass), the founding site snapped to dry ground, and a point's sea - spec-earth 3's detail below the data, drawn from earth-1 through EarthData and EarthProj.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [World](World.md) (110), [EarthData](EarthData.md) (76), [EarthProj](EarthProj.md) (27), [Resource](Resource.md) (5), [Geology](Geology.md) (3)
 
-**Used by (12):** [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [GlobePicture](GlobePicture.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [World](World.md)
+**Used by (13):** [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Gateways](Gateways.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [GlobePicture](GlobePicture.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [World](World.md)
 
 ## Sections
 

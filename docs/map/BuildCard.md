@@ -1,6 +1,6 @@
 # BuildCard.java - 1,725 lines · 85 methods · 14 constants · model
 
-`ham/citybuildersim/BuildCard.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildCard.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > One build card's figures, for every one of the buildings in buildings.json
 > (0.7.25; 139 of them since 0.7.140): what

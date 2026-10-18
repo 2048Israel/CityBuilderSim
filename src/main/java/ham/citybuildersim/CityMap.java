@@ -180,8 +180,8 @@ public final class CityMap {
     /** The sidecar's magic: "CMAP". */
     static final int MAGIC = 0x434D4150;
 
-    /** The sidecar's format: 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
-    static final int FORMAT = 7;
+    /** The sidecar's format: 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
+    static final int FORMAT = 8;
 
     /** The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. */
     static final int OLDEST_READ = 4;
@@ -3073,6 +3073,63 @@ public final class CityMap {
     /** The city's runs. */
     public CityRuns runs() { return runs; }
 
+    /** The gateway's bearing, as CityRuns keeps it: GATEWAY_UNKNOWN until it is looked for, NO_GATEWAY where the land has none. */
+    public int gateway() { return runs.gateway(); }
+
+    /**
+     * A net's line out to the world (spec-freight 4.1): the highway's or the
+     * railway's run, from the first plot past the city's ground, faded to the
+     * edge of the view and labelled "to the world".
+     *
+     * @param net     CityRuns.HIGHWAYS or CityRuns.RAILWAY
+     * @param x       the point's x in plots where the line leaves the city's ground
+     * @param y       the point's y in plots where the line leaves the city's ground
+     * @param bearing the gateway's bearing in degrees
+     */
+    public record WorldLine(int net, double x, double y, int bearing) { }
+
+    /** worldLines()'s last answer, kept against the map's changes: recomputed when a purchase or a month's runs move changes(). */
+    private List<WorldLine> worldLinesCache;
+    private long worldLinesAt = Long.MIN_VALUE;
+
+    /**
+     * The world lines (spec-freight 4.1): for each net whose gateway is found
+     * and whose gate arm is laid, the point where the run leaves the city's
+     * ground, walked from the gate arm's end along its heading up to
+     * CityMap.DISTRICT plots - none for a net whose way finds no unowned plot
+     * that near. Kept against changes().
+     */
+    public List<WorldLine> worldLines() {
+        if (worldLinesCache != null && worldLinesAt == changes) return worldLinesCache;
+        List<WorldLine> out = new ArrayList<>();
+        int gateway = runs.gateway();
+        if (gateway >= 0) {
+            worldLine(runs.highways(), gateway, out);
+            worldLine(runs.rail(), gateway, out);
+        }
+        worldLinesCache = out;
+        worldLinesAt = changes;
+        return out;
+    }
+
+    /** Adds net n's world line to out when its gate arm is laid and the city's ground ends within CityMap.DISTRICT of its end. */
+    private void worldLine(CityRuns.Net n, int gateway, List<WorldLine> out) {
+        int a = CityRuns.gateArm(n, gateway);
+        if (a < 0) return;
+        CityRuns.Arm arm = n.arms.get(a);
+        long x = arm.steps == 0 ? n.hubX : arm.x;
+        long y = arm.steps == 0 ? n.hubY : arm.y;
+        int h = arm.steps == 0 ? arm.home : arm.head;
+        int dx = CityRuns.DX[h], dy = CityRuns.DY[h];
+        for (int s = 1; s <= DISTRICT; s++) {
+            long px = x + (long) dx * s, py = y + (long) dy * s;
+            if (runGround.at(px, py, -1) == -1) {
+                out.add(new WorldLine(n.kind, px + 0.5, py + 0.5, gateway));
+                return;
+            }
+        }
+    }
+
     /** Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. */
     static final int RUN_LINES_KEPT = 4096;
 
@@ -3182,6 +3239,14 @@ public final class CityMap {
     /** The founding site, {x, y} in plots. */
     long[] site() { return new long[] { siteX, siteY }; }
 
+    /** Whether the counts have any Freight Line, whose track makes the main line double. */
+    private boolean hasFreightLine(long[] counts) {
+        for (int t = 0; t < types.length && t < counts.length; t++) {
+            if (counts[t] > 0 && BuildingVisual.freightLine(types[t])) return true;
+        }
+        return false;
+    }
+
     /**
      * Lays the runs to the model's counts (CityRuns.layTo()): its Elevated
      * Highways' plots, its track's, its Rail Terminals as yards - the
@@ -3212,6 +3277,13 @@ public final class CityMap {
             double cx = (s[0] + s[2] + 1) / 2.0, cy = (s[1] + s[3] + 1) / 2.0, d = (cx - siteX) * (cx - siteX) + (cy - siteY) * (cy - siteY);
             if (d < best) { best = d; rx = (long) Math.floor(cx); ry = (long) Math.floor(cy); }
         }
+        if (runs.gateway() == CityRuns.GATEWAY_UNKNOWN && (highway > 0 || track > 0 || yards > 0)) {
+            // Found from the founding site alone (a radius of none: the land must run GATEWAY_M from the site), so a map drawn
+            // canonically at the city's size today finds the gateway the month-by-month map found at its first highway.
+            Gateways.Gateway g = Gateways.of(World.of(worldKey), siteX, siteY, 0);
+            runs.setGateway(g == null ? CityRuns.NO_GATEWAY : g.bearing());
+        }
+        runs.setDoubleMain(hasFreightLine(model));
         boolean moved = runs.layTo(highway, track, yards, yw, yh, runGround, siteX, siteY, rx, ry, mines);
         if (moved) {
             changes++;
@@ -3523,6 +3595,36 @@ public final class CityMap {
 
     /** A pipe as the map draws it: from its field's middle (x0, y0) toward the founding site, to (x1, y1), in plots - its kilometres standing. */
     public record Pipe(double x0, double y0, double x1, double y1) { }
+
+    /** The railway as the map draws its yard: whether it carries goods, and the share of the track's wagon sets the fleet has standing. */
+    public record RailPicture(boolean goodsByRail, double wagonShare) { }
+
+    private RailPicture railPicture = new RailPicture(false, 0);
+
+    /** The railway's picture, as the game last handed it. */
+    public RailPicture railPicture() { return railPicture; }
+
+    /** The whole wagon tracks a share of the fleet gives: its share of YARD_TRACKS, rounded to a whole track. */
+    static int wagonTracksOf(double share) {
+        return (int) Math.round(clamp(share, 0, 1) * TileRaster.YARD_TRACKS);
+    }
+
+    /** The railway's picture handed over by the game (Game.mapRail()); a change of goods or of the whole wagon tracks restamps the tiles. */
+    public void railPicture(RailPicture r) {
+        RailPicture now = r == null ? new RailPicture(false, 0) : r;
+        if (now.equals(railPicture)) return;
+        boolean goods = railPicture.goodsByRail();
+        int tracks = wagonTracksOf(railPicture.wagonShare());
+        railPicture = now;
+        if (now.goodsByRail() != goods || wagonTracksOf(now.wagonShare()) != tracks) changes++;
+    }
+
+    private static double clamp(double v, double lo, double hi) {
+        return Math.max(lo, Math.min(hi, v));
+    }
+
+    /** The freight station's yard, {x0, y0, w, h} in world plots: the yard nearest the rail gateway (spec 4.2; CityRuns.freightStation()); null for none. */
+    public long[] freightStation() { return runs.freightStation(); }
 
     /** The oil at sea: its jackets and pipes. */
     public record AtSea(List<Jacket> jackets, List<Pipe> pipes) {
@@ -3841,6 +3943,12 @@ public final class CityMap {
                 in.marksBeyond[3 * World.TILE + m] = ringMarks[(m + 1) * rw];
             }
         }
+        // The railway's picture over the tile: the freight station's yard, and whether its tracks have wagons standing.
+        long[] station = freightStation();
+        in.stationX = station == null ? Long.MIN_VALUE : station[0];
+        in.stationY = station == null ? Long.MIN_VALUE : station[1];
+        in.goodsByRail = railPicture.goodsByRail();
+        in.wagonTracks = wagonTracksOf(railPicture.wagonShare());
         // Its buildings: its yards (0.7.89), its plan's boxes, and those packed at the city's edge (R7).
         int boxBits = (1 << BOX_TYPE_SHIFT) - 1;
         int terminal = -1;
@@ -4365,6 +4473,8 @@ public final class CityMap {
             }
             // The works on the shore (FORMAT 6, 0.7.97): their count, then each one's box, type, side and quay.
             if (format >= 6) shore.write(out);
+            // The gateway's bearing (FORMAT 8, 0.8.1): after the shore, so an older reader stops at what it knows.
+            if (format >= 8) out.writeInt(runs.gateway());
             out.flush();
             byte[] bytes = raw.toByteArray();
             long stamp = stampOf(bytes);
@@ -4501,6 +4611,9 @@ public final class CityMap {
                 if (s == null) return null;
                 m.shore = s;
             }
+            // The gateway's bearing (FORMAT 8, 0.8.1): into the runs, whether they were read or none; an older sidecar leaves it unknown.
+            if (format >= 8) m.runs.setGateway(in.readInt());
+            m.runs.setDoubleMain(m.hasFreightLine(m.have));
             m.purchasesSeen = bought;
             m.centreSeen = land.centreStamp();
             m.sortDistricts();

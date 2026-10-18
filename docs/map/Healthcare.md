@@ -1,6 +1,6 @@
 # Healthcare.java - 958 lines · 55 methods · 18 constants · model
 
-`ham/citybuildersim/Healthcare.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Healthcare.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > The city's healthcare service: what it costs, what it collects, and what it
 > does with the dead.

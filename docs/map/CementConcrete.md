@@ -1,6 +1,6 @@
 # CementConcrete.java - 73 lines · 2 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/CementConcrete.java` - generated 2026-10-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CementConcrete.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
 > Kilns and cement plants - Cement & Concrete (0.7.131, batch I7;
 > docs/studies/spec-materials.md 2.1, 2.12 and 5's I7 row; the study's 6):
