@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -88,12 +90,12 @@ public final class Timing {
         return true;
     }
 
-    /** A figure as the verdict prints it: three significant places or so, never "0.000" for a small one. */
+    /** A figure as the verdict prints it: a whole number bare (a budget of 80 is "80"), else a tenth from 1 up, whole from 100, and three significant places below 1 ("0.3", "0.000123"), never an exponent. */
     private static String figures(double v) {
         double a = Math.abs(v);
-        if (a == 0 || a >= 100) return String.format(Locale.ROOT, "%.0f", v);
+        if (v == Math.rint(v) && a < 1e15 || a >= 100) return String.format(Locale.ROOT, "%.0f", v);
         if (a >= 1) return String.format(Locale.ROOT, "%.1f", v);
-        return String.format(Locale.ROOT, "%.3g", v);
+        return new BigDecimal(v).round(new MathContext(3)).stripTrailingZeros().toPlainString();
     }
 
     /**
