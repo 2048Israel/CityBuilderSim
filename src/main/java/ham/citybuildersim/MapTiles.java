@@ -467,7 +467,8 @@ public final class MapTiles {
         CityRuns runs = map.runs();
         if (runs != null) {
             int highway = TileRaster.blend(TileRaster.ROAD[BuildingVisual.HIGHWAY], 0xffffffff, FAR_HIGHWAY_LIGHTEN);
-            stroke(runs.highways(), highway, x0, y0, plots, out);
+            // The highways only once they reach a street (CityRuns.highwaysReach(), FX2), as the near view draws them.
+            if (runs.highwaysReach()) stroke(runs.highways(), highway, x0, y0, plots, out);
             stroke(runs.rail(), TileRaster.RAIL_DARK, x0, y0, plots, out);
             for (long[] yard : runs.yards()) dot(yard[0] + yard[2] / 2.0, yard[1] + yard[3] / 2.0, x0, y0, plots,
                     BuildingVisual.FILL[BuildingVisual.TRANSPORT], out);

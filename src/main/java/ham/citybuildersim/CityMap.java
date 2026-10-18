@@ -2758,7 +2758,7 @@ public final class CityMap {
     public long[] legendFiguresIfDrawn() {
         int[] p = packSums();
         if (p == null) return null;
-        double surplus = runs.highwayShort();
+        double surplus = runs.highwayUndrawn();
         for (District d : districts) surplus += links.get(d).surplus;
         return new long[] { p[0], Math.round(surplus), runs.railShort() };
     }
@@ -2771,7 +2771,7 @@ public final class CityMap {
             Link l = links.get(d);
             if (l != null && l.leftover != null) for (int k = 0; k < 4; k++) out[k] += l.leftover[k];
         }
-        out[BuildingVisual.HIGHWAY] += runs.highwayShort();
+        out[BuildingVisual.HIGHWAY] += runs.highwayUndrawn();
         return out;
     }
 
@@ -3068,8 +3068,8 @@ public final class CityMap {
        for a corridor - is counted, and the legend says so. Since 0.8.1
        (batch FR0) each net's spine lies toward the city's GATEWAY
        (Gateways: found once, at the first highway, track or yard, and kept
-       in the sidecar, FORMAT 8), and worldLines() carries the gate arms on
-       past the city's ground toward the world.
+       in the sidecar, FORMAT 8), and worldLines() carries each net on from
+       the arm that meets the city's edge on dry ground toward the world.
        ===================================================================== */
 
     /** Bumped whenever free ground is measured again (a purchase): what a run waiting on the ground is tried again on. */
@@ -3093,8 +3093,20 @@ public final class CityMap {
      * @param x       the point's x in plots where the line leaves the city's ground
      * @param y       the point's y in plots where the line leaves the city's ground
      * @param bearing the gateway's bearing in degrees
+     * @param arm     the index in its net's arms of the arm the line leaves the city's ground from (FX2)
+     * @param way     the degrees the line runs out along (x = cos, y = sin): the gateway's bearing, or the arm's heading times 45
+     * @param reach   the plots of dry ground along way from (x, y), at most WORLD_REACH
      */
-    public record WorldLine(int net, double x, double y, int bearing) { }
+    public record WorldLine(int net, double x, double y, int bearing, int arm, int way, double reach) { }
+
+    /** How far ahead of a track's end the city's edge may lie for its line to the world to start there, in plots: 12, twice CityRuns.LOOK - an arm waits LOOK short of the edge, a 45-degree arm sooner (FX2). */
+    public static final int WORLD_GAP = 2 * CityRuns.LOOK;
+
+    /** How far the world line is drawn at most, in plots: 1,024 (30.7 km), four districts; it stops sooner at the first plot that is not dry ground (FX2). */
+    public static final int WORLD_REACH = 4 * DISTRICT;
+
+    /** How finely a way out is read, in plots: a quarter, as MapCheck reads the trains' routes (FX2). */
+    public static final double WORLD_STEP = 0.25;
 
     /** worldLines()'s last answer, kept against the map's changes: recomputed when a purchase or a month's runs move changes(). */
     private List<WorldLine> worldLinesCache;
@@ -3102,41 +3114,93 @@ public final class CityMap {
 
     /**
      * The world lines (spec-freight 4.1): for each net whose gateway is found
-     * and which has started, the point where the run leaves the city's
-     * ground, walked from the gate arm's end (the hub while the arm has no
-     * steps) along its heading up to
-     * CityMap.DISTRICT plots - none for a net whose way finds no unowned plot
-     * that near. Kept against changes().
+     * and which has started, the line to the world that worldLine() finds -
+     * where an arm's track ends at the city's edge on dry ground, and the way
+     * out over dry ground from there; none for a net with no such arm. FR0
+     * walked the gate arm on to the first plot the city did not own, across
+     * the city's own sea, and Jerus saw the line and a train over open sea
+     * in a V (FX2). Each time it is found it sets the runs' main arm to the
+     * railway line's arm (CityRuns.mainArm()): the main line, the freight
+     * station and the trains' way run from there. Kept against changes().
      */
     public List<WorldLine> worldLines() {
         if (worldLinesCache != null && worldLinesAt == changes) return worldLinesCache;
         List<WorldLine> out = new ArrayList<>();
         int gateway = runs.gateway();
+        WorldLine railLine = null;
         if (gateway >= 0) {
             worldLine(runs.highways(), gateway, out);
-            worldLine(runs.rail(), gateway, out);
+            railLine = worldLine(runs.rail(), gateway, out);
         }
+        runs.setMainArm(railLine == null ? -1 : railLine.arm());
         worldLinesCache = out;
         worldLinesAt = changes;
         return out;
     }
 
-    /** Adds net n's world line to out when it has a gate arm (it has started) and the city's ground ends within CityMap.DISTRICT of that arm's end, or of the hub while the arm has no steps. */
-    private void worldLine(CityRuns.Net n, int gateway, List<WorldLine> out) {
-        int a = CityRuns.gateArm(n, gateway);
-        if (a < 0) return;
-        CityRuns.Arm arm = n.arms.get(a);
-        long x = arm.steps == 0 ? n.hubX : arm.x;
-        long y = arm.steps == 0 ? n.hubY : arm.y;
-        int h = arm.steps == 0 ? arm.home : arm.head;
-        int dx = CityRuns.DX[h], dy = CityRuns.DY[h];
-        for (int s = 1; s <= DISTRICT; s++) {
-            long px = x + (long) dx * s, py = y + (long) dy * s;
-            if (runGround.at(px, py, -1) == -1) {
-                out.add(new WorldLine(n.kind, px + 0.5, py + 0.5, gateway));
-                return;
+    /** One way out of the city from an arm at its edge: the score it is tried by, the arm, 0 for the gateway's bearing or 1 for the arm's heading, the degrees, and the edge plot. */
+    private record WayOut(double score, int arm, int which, int way, long ex, long ey) { }
+
+    /**
+     * Adds net n's line to the world to out and returns it; null (none added) for a net that has not started, for the
+     * highways while they reach no street (CityRuns.highwaysReach(), FX2: they are not drawn), or that has no arm to
+     * start it from. An arm with steps is read from its end along its heading up to WORLD_GAP plots: an owned
+     * plot that is not dry ground ends the read (the arm is at the water, no edge), the first plot the city does not
+     * own is the arm's edge plot where it is dry ground (else none), and no unowned plot in reach means the arm is not
+     * at the edge. An arm at the edge offers up to two ways out over the land beyond - the gateway's bearing, when it
+     * lies within 90 degrees of the arm's heading, scored 1, and the arm's own heading, scored by how near it lies to
+     * the bearing - tried best score first (then the lower arm, then the bearing before the heading); the first that
+     * runs TrainSchedule.WORLD_PLOTS plots over dry ground wins, and its line starts in the middle of the edge plot
+     * and runs on over dry ground (dryRun()) up to WORLD_REACH.
+     */
+    private WorldLine worldLine(CityRuns.Net n, int gateway, List<WorldLine> out) {
+        if (!n.started || (n.kind == CityRuns.HIGHWAYS && !runs.highwaysReach())) return null;
+        World w = World.of(worldKey);
+        List<WayOut> offers = new ArrayList<>();
+        for (int i = 0; i < n.arms.size(); i++) {
+            CityRuns.Arm a = n.arms.get(i);
+            if (a.steps <= 0) continue;
+            int dx = CityRuns.DX[a.head], dy = CityRuns.DY[a.head];
+            long ex = 0, ey = 0;
+            boolean edge = false;
+            for (int s = 1; s <= WORLD_GAP; s++) {
+                long px = a.x + (long) dx * s, py = a.y + (long) dy * s;
+                int g = runGround.at(px, py, -1);
+                if (g == -1) {
+                    edge = World.dry(w.terrainAt(px, py));
+                    ex = px;
+                    ey = py;
+                    break;
+                }
+                if (!World.dry(g)) break;
             }
+            if (!edge) continue;
+            // The angle between the heading and the bearing, folded to 0 to 180 so that two arms' scores tie exactly.
+            int heading = a.head * 45, apart = Math.floorMod(heading - gateway, 360);
+            if (apart > 180) apart = 360 - apart;
+            if (apart < 90) offers.add(new WayOut(1, i, 0, gateway, ex, ey));
+            offers.add(new WayOut(Math.cos(Math.toRadians(apart)), i, 1, heading, ex, ey));
         }
+        offers.sort((p, q) -> p.score() != q.score() ? Double.compare(q.score(), p.score())
+                : p.arm() != q.arm() ? Integer.compare(p.arm(), q.arm()) : Integer.compare(p.which(), q.which()));
+        for (WayOut o : offers) {
+            double x = o.ex() + 0.5, y = o.ey() + 0.5;
+            if (dryRun(w, x, y, o.way(), TrainSchedule.WORLD_PLOTS) < TrainSchedule.WORLD_PLOTS) continue;
+            WorldLine line = new WorldLine(n.kind, x, y, gateway, o.arm(), o.way(), dryRun(w, x, y, o.way(), WORLD_REACH));
+            out.add(line);
+            return line;
+        }
+        return null;
+    }
+
+    /** How far from (x, y) the way out along deg degrees runs over dry ground, in plots: the distance to the first point, read every WORLD_STEP, that lies on a plot that is not World.dry(); `most` where none does. */
+    private static double dryRun(World w, double x, double y, int deg, double most) {
+        double c = Math.cos(Math.toRadians(deg)), s = Math.sin(Math.toRadians(deg));
+        for (int i = 0; i * WORLD_STEP <= most; i++) {
+            double t = i * WORLD_STEP;
+            if (!World.dry(w.terrainAt((long) Math.floor(x + c * t), (long) Math.floor(y + s * t)))) return t;
+        }
+        return most;
     }
 
     /* =====================================================================
@@ -3150,8 +3214,10 @@ public final class CityMap {
     /**
      * The trains' routes (TrainSchedule.Route): for each yard the railway's
      * way reaches, from TrainSchedule.WORLD_PLOTS out along the railway's
-     * world line, in to its gate arm's end and along the main line and the
-     * corridors (CityRuns.wayTo()) to where the way enters the yard's box,
+     * world line (along line.way(), over dry ground: FX2), in to the main
+     * arm's end (the arm the line leaves the city's ground from) and along the
+     * main line and the corridors (CityRuns.wayTo()) to where the way enters the
+     * yard's box,
      * then through its ladder onto each of its TileRaster.YARD_TRACKS sidings
      * to the fan's far end, as TileRaster.drawYard() lays the fan: one route a
      * yard and siding. A yard the way enters on a 45-degree stretch has one
@@ -3164,7 +3230,7 @@ public final class CityMap {
         WorldLine line = null;
         for (WorldLine l : worldLines()) if (l.net() == CityRuns.RAILWAY) line = l;
         if (line != null) {
-            double r = Math.toRadians(line.bearing());
+            double r = Math.toRadians(line.way());
             double fx = line.x() + Math.cos(r) * TrainSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(r) * TrainSchedule.WORLD_PLOTS;
             long[] station = runs.freightStation();
             List<long[]> yards = runs.yards();
@@ -3729,8 +3795,11 @@ public final class CityMap {
         return Math.max(lo, Math.min(hi, v));
     }
 
-    /** The freight station's yard, {x0, y0, w, h} in world plots: the yard nearest the rail gateway (spec 4.2; CityRuns.freightStation()); null for none. */
-    public long[] freightStation() { return runs.freightStation(); }
+    /** The freight station's yard, {x0, y0, w, h} in world plots: the yard nearest the rail main arm's end (spec 4.2; CityRuns.freightStation()); null for none. */
+    public long[] freightStation() {
+        worldLines();   // the main arm the station is nearest to is found by the lines (FX2); cached, so it costs nothing twice
+        return runs.freightStation();
+    }
 
     /** The oil at sea: its jackets and pipes. */
     public record AtSea(List<Jacket> jackets, List<Pipe> pipes) {
@@ -4031,6 +4100,8 @@ public final class CityMap {
         int rw = World.TILE + 2;
         byte[] ringFixed = new byte[rw * rw], ringMarks = new byte[rw * rw];
         {
+            // The main line's marks run from where the railway meets the world, so its arm is found first (FX2); cached.
+            worldLines();
             runs.fill(px0 - 1, py0 - 1, rw, rw, ringFixed, ringMarks, false);
             for (int y = 0; y < World.TILE; y++) {
                 for (int x = 0; x < World.TILE; x++) {

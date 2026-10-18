@@ -40,7 +40,12 @@ import java.util.Arrays;
  *   8. a diamond whose street is a tile's first row (an arterial lies on a
  *      cell's ring, so most do): the tile holding the ramp draws its side's
  *      slips, and the tile across the edge draws the other side's from the
- *      ramp it reads beyond its edge.
+ *      ramp it reads beyond its edge;
+ *   9. a ramp in the middle of a highway with no street beneath (the plan
+ *      laid none on the arterial there) is not an arm's end: at 8 px and at
+ *      4 px the tile rasters exactly as the same tile without the mark,
+ *      along a row and down a column; and an arm's last plot still narrows
+ *      (section 4) - Jerus's eye check of 0.8.2 (FX2).
  *
  * Numbering is the running order.
  *
@@ -151,6 +156,7 @@ public class JunctionCheck {
         belowJunctionsFrom();
         roundaboutAcrossEdge();
         diamondAcrossEdge();
+        rampMidHighway();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -408,6 +414,34 @@ public class JunctionCheck {
         highwayColumn(bare, hx);
         int[] bareImg = raster(bare, paint(bare), px);
         check("...and without the ramp beyond it, none", !hasColour(bareImg, w, hx - 1, T - 1, px, paved) && !hasColour(bareImg, w, hx + 1, T - 1, px, paved));
+    }
+
+    /* ================= 9. a ramp mid-highway with no street beneath ================= */
+    static void rampMidHighway() {
+        System.out.println("--- 9. a ramp mid-highway with no street beneath: drawn as the plain highway, at 8 px and 4 px, along a row and a column ---");
+        int mid = 16, line = 10;
+        // Along a row: the highway across the whole tile, the ramp on its middle plot, no street beneath it.
+        TilePainter.Input rowMarked = owned();
+        highwayRow(rowMarked, line);
+        rowMarked.marks[line * T + mid] = CityRuns.M_RAMP;
+        TilePainter.Input rowPlain = owned();
+        highwayRow(rowPlain, line);
+        TilePainter.Painted rowMarkedP = paint(rowMarked), rowPlainP = paint(rowPlain);
+        check("a mid-highway ramp along a row with no street beneath rasters as the plain highway at 8 px",
+                Arrays.equals(raster(rowMarked, rowMarkedP, 8), raster(rowPlain, rowPlainP, 8)));
+        check("a mid-highway ramp along a row with no street beneath rasters as the plain highway at 4 px",
+                Arrays.equals(raster(rowMarked, rowMarkedP, 4), raster(rowPlain, rowPlainP, 4)));
+        // Down a column: the same, the ramp at y = 16.
+        TilePainter.Input colMarked = owned();
+        highwayColumn(colMarked, line);
+        colMarked.marks[mid * T + line] = CityRuns.M_RAMP;
+        TilePainter.Input colPlain = owned();
+        highwayColumn(colPlain, line);
+        TilePainter.Painted colMarkedP = paint(colMarked), colPlainP = paint(colPlain);
+        check("a mid-highway ramp down a column with no street beneath rasters as the plain highway at 8 px",
+                Arrays.equals(raster(colMarked, colMarkedP, 8), raster(colPlain, colPlainP, 8)));
+        check("a mid-highway ramp down a column with no street beneath rasters as the plain highway at 4 px",
+                Arrays.equals(raster(colMarked, colMarkedP, 4), raster(colPlain, colPlainP, 4)));
     }
 
 }

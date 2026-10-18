@@ -1423,6 +1423,13 @@ public final class TileRaster {
 
     /* ----- 4. a highway arm's end ----- */
 
+    /**
+     * A highway arm's end (spec 2.7's ramp at an arm's end): a highway plot the runs mark as a ramp with no street beneath,
+     * where the highway runs on exactly one of its four sides - the band narrows to a paved road's and a paved apron is
+     * laid on the next plot. A ramp where the district plan laid no street beneath, in the middle of a straight highway
+     * (the highway on two sides along it) or at a crossing, is not the highway's end and stays the plain highway (FX2,
+     * Jerus's eye check of 0.8.2).
+     */
     private static void highwayEnds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, stride = tile * px;
         int[] fullCs = crossSection(BuildingVisual.HIGHWAY, px);
@@ -1432,8 +1439,10 @@ public final class TileRaster {
             if (!isHighway(p, i) || (in.marks[i] & CityRuns.M_RAMP) == 0 || p.beneath[i]) continue;
             boolean n = runHighwayAt(in, p, i, 0), s = runHighwayAt(in, p, i, 2);
             boolean e = runHighwayAt(in, p, i, 1), west = runHighwayAt(in, p, i, 3);
-            boolean ns = n || s, ew = e || west;
-            if (ns == ew) continue; // A crossing (both) or a lone plot (neither) is not an end.
+            boolean ns = n || s;
+            // An end has the highway on exactly one side: a lone plot (none), a bend or crossing, and the middle of a straight
+            // highway (two sides, a ramp the plan laid no street beneath) are not ends and stay the plain highway.
+            if ((n ? 1 : 0) + (s ? 1 : 0) + (e ? 1 : 0) + (west ? 1 : 0) != 1) continue;
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             int ground = groundColour(in, p, i);
             fillRect(img, stride, x0, y0, x0 + px, y0 + px, ground);

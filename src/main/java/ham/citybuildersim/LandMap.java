@@ -572,6 +572,46 @@ public final class LandMap {
     /** The world line's opacity (spec-freight 4.1: "faded, to the edge of the view"); ui/MapView's WORLD_LINE_ALPHA reads this one, so the line and its legend swatch are one dial. */
     public static final double WORLD_ALPHA = 0.45;
 
+    /** The gap kept between the world line's label and the view's edge, in pixels: 6 (FX2). */
+    public static final double WORLD_LABEL_PAD = 6;
+
+    /** How far back from the far end of the world line's part in view its label first sits, in pixels: 60, as FR0 drew it (FX2). */
+    public static final double WORLD_LABEL_BACK = 60;
+
+    /**
+     * Where the world line's label goes on a w x h view: the left end of its
+     * baseline {x, y} for a label tw pixels wide and th high above its
+     * baseline, on the line's part in view from (x0, y0) to its far end
+     * (x1, y1). It starts the point min(WORLD_LABEL_BACK, length) back from
+     * the far end along the part and slides back toward (x0, y0), a pixel at
+     * a time, until the whole label lies WORLD_LABEL_PAD inside the view; the
+     * first place that fits wins. Where none fits anywhere on the part, the
+     * starting point is moved inside the view. Null when the part has no
+     * length or the view is smaller than the label and its pads. FX2: FR0 put
+     * the label 60 px back from the view's edge, and the text ran off the edge.
+     */
+    public static double[] worldLabelAt(double x0, double y0, double x1, double y1, double tw, double th, double w, double h) {
+        double len = Math.hypot(x1 - x0, y1 - y0);
+        if (len <= 0) return null;
+        if (w < tw + 2 * WORLD_LABEL_PAD || h < th + 2 * WORLD_LABEL_PAD) return null;
+        double ux = (x1 - x0) / len, uy = (y1 - y0) / len;
+        double start = Math.min(WORLD_LABEL_BACK, len);
+        double back = start;
+        while (true) {
+            double x = x1 - ux * back, y = y1 - uy * back;
+            if (x >= WORLD_LABEL_PAD && x + tw <= w - WORLD_LABEL_PAD
+                    && y - th >= WORLD_LABEL_PAD && y <= h - WORLD_LABEL_PAD) {
+                return new double[] { x, y };
+            }
+            if (back >= len) break;
+            back = Math.min(len, back + 1);
+        }
+        double x = x1 - ux * start, y = y1 - uy * start;
+        x = Math.max(WORLD_LABEL_PAD, Math.min(x, w - WORLD_LABEL_PAD - tw));
+        y = Math.max(WORLD_LABEL_PAD + th, Math.min(y, h - WORLD_LABEL_PAD));
+        return new double[] { x, y };
+    }
+
     /**
      * The expanded map's legend in a tier (spec-globe 3.7: "the legend on the
      * globe lists the kinds of ground and the city's ring; the whole legend

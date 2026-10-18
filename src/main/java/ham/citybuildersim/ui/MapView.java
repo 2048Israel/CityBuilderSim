@@ -108,9 +108,10 @@ import static ham.citybuildersim.ui.Pieces.*;
  *
  * THE WORLD LINE (0.8.1, batch FR0; spec-freight 4.1, D13): on the plane,
  * over the tiles, the city's highway and main line run on from where they
- * leave its ground along their gateway's bearing (CityMap.worldLines()) to
- * the canvas's edge, faded (WORLD_LINE_ALPHA) and labelled
- * LandMap.WORLD_WORDS.
+ * leave its ground along their way out over dry ground, as far as the land
+ * runs (at most CityMap.WORLD_REACH; CityMap.worldLines()), faded
+ * (WORLD_LINE_ALPHA) and labelled LandMap.WORLD_WORDS, the label kept inside
+ * the view.
  *
  * THE TRAINS (0.8.2, batch FR1; spec-freight 4.4): the boats' way, on land -
  * the month's trains (TrainSchedule, from the railway's tonnes by kind) on
@@ -853,24 +854,38 @@ final class MapView {
        THE WORLD LINE (0.8.1, batch FR0; spec-freight 4.1, D13)
        ===================================================================== */
 
+    /** The world line's label as measured: its font, its width and its height above the baseline, kept until the font changes (FX2). */
+    private javafx.scene.text.Font worldLabelFont;
+    private double worldLabelW, worldLabelH;
+
     /**
      * The highway's and the main line's faded runs past the city's ground
-     * (CityMap.worldLines()): each from its point along the gateway's bearing
-     * to the edge of the canvas, clipped, the highway in its road colour at
-     * WORLD_LINE_ALPHA, the railway dashed in RAIL_DARK; labelled once near
-     * the far end of the part in view.
+     * (CityMap.worldLines()): each from its point along its way out over dry
+     * ground, as far as the land runs (CityMap.WorldLine.reach(), at most
+     * CityMap.WORLD_REACH) and no farther, clipped to the canvas, the highway
+     * in its road colour at WORLD_LINE_ALPHA, the railway dashed in RAIL_DARK;
+     * labelled once near the far end of the part in view, the label kept
+     * inside the view (LandMap.worldLabelAt, FX2).
      */
     private void worldLines(GraphicsContext gc, MapFrame f) {
         if (shownMap == null) return;
         List<CityMap.WorldLine> lines = shownMap.worldLines();
         if (lines.isEmpty()) return;
         double scale = f.scale(), w = f.width(), h = f.height();
+        javafx.scene.text.Font labelFont = Palette.Fonts.monoFont(Palette.SIZE_BODY);
+        if (!labelFont.equals(worldLabelFont)) {
+            javafx.scene.text.Text probe = new javafx.scene.text.Text(LandMap.WORLD_WORDS);
+            probe.setFont(labelFont);
+            worldLabelW = probe.getLayoutBounds().getWidth();
+            worldLabelH = probe.getBaselineOffset();
+            worldLabelFont = labelFont;
+        }
         for (CityMap.WorldLine line : lines) {
             boolean highway = line.net() == CityRuns.HIGHWAYS;
             double sx = f.screenX(line.x()), sy = f.screenY(line.y());
-            double r = Math.toRadians(line.bearing());
+            double r = Math.toRadians(line.way());
             double dx = Math.cos(r), dy = Math.sin(r);
-            double[] cut = rayRect(sx, sy, dx, dy, w, h);
+            double[] cut = rayRect(sx, sy, dx, dy, line.reach() * scale, w, h);
             if (cut == null) continue;
             gc.setStroke(colour(highway ? TileRaster.ROAD[BuildingVisual.HIGHWAY] : TileRaster.RAIL_DARK, WORLD_LINE_ALPHA));
             gc.setLineWidth(highway ? Math.max(2, 0.86 * scale) : Math.max(1.5, 0.52 * scale));
@@ -878,18 +893,17 @@ final class MapView {
             else gc.setLineDashes(6, 5);
             gc.strokeLine(cut[0], cut[1], cut[2], cut[3]);
             gc.setLineDashes((double[]) null);
-            double len = Math.hypot(cut[2] - cut[0], cut[3] - cut[1]);
-            double back = Math.min(60, len);
-            double lx = cut[2] - dx * back, ly = cut[3] - dy * back;
-            gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
+            double[] at = LandMap.worldLabelAt(cut[0], cut[1], cut[2], cut[3], worldLabelW, worldLabelH, w, h);
+            if (at == null) continue;
+            gc.setFont(labelFont);
             gc.setFill(Color.rgb(255, 255, 255, WORLD_LINE_ALPHA));
-            gc.fillText(LandMap.WORLD_WORDS, lx, ly);
+            gc.fillText(LandMap.WORLD_WORDS, at[0], at[1]);
         }
     }
 
-    /** The part of the ray (x, y) + t (dx, dy), t >= 0, that lies on the canvas, {x0, y0, x1, y1}; null when it misses it. */
-    private static double[] rayRect(double x, double y, double dx, double dy, double w, double h) {
-        double t0 = 0, t1 = Double.POSITIVE_INFINITY;
+    /** The part of the segment (x, y) + t (dx, dy), 0 <= t <= tMax, that lies on the canvas, {x0, y0, x1, y1}; null when it misses it. */
+    private static double[] rayRect(double x, double y, double dx, double dy, double tMax, double w, double h) {
+        double t0 = 0, t1 = tMax;
         if (Math.abs(dx) < 1e-12) {
             if (x < 0 || x > w) return null;
         } else {
