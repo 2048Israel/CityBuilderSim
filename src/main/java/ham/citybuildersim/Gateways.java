@@ -29,6 +29,9 @@ public final class Gateways {
     /** The longest run of land a bearing is measured to, in cells: 400, 192 km (SeaRoutes.RAY_CELLS; the prototype's). */
     public static final int RAY_CELLS = SeaRoutes.RAY_CELLS;
 
+    /** How far the Earth's rule looks for a larger place, in cells: the offing's 400, 192 km (SeaRoutes.RAY_CELLS); only the land on the place's own bearing is read, and only out to the reach. */
+    public static final int PLACE_CELLS = SeaRoutes.RAY_CELLS;
+
     /** How far past the city's radius the land must run for a gateway, in metres: 10 km, the offing's own margin (SeaRoutes.OFFING_M), so an island founding with less has no gateway (spec 4.1). */
     public static final double GATEWAY_M = SeaRoutes.OFFING_M;
 
@@ -108,7 +111,7 @@ public final class Gateways {
             double dx = p[0] - siteX, dy = p[1] - siteY;
             int step = (int) Math.round(Math.toDegrees(Math.atan2(dy, dx)) / BEARING_STEP);
             int deg = Math.floorMod(step * BEARING_STEP, 360);
-            int run = run(ground, ci, cj, deg);
+            int run = run(ground, ci, cj, deg, reach);
             if (run < reach) continue;
             double r = Math.toRadians(deg);
             return new Gateway(deg,
@@ -124,7 +127,7 @@ public final class Gateways {
      * first (ties by the data's own order): empty unless the world is the
      * Earth; else every place of its EarthData with a population strictly
      * larger than the site's namesake's (all of them when it has none) whose
-     * plot maps and lies within RAY_CELLS * SeaRoutes.CELL plots of the site.
+     * plot maps and lies within PLACE_CELLS * SeaRoutes.CELL plots of the site.
      */
     public static List<long[]> largerPlaces(World world, long siteX, long siteY) {
         if (!world.isEarth()) return List.of();
@@ -132,7 +135,7 @@ public final class Gateways {
         double[] ll = new double[2];
         if (!e.projection().latLonOfPlot(siteX + 0.5, siteY + 0.5, ll)) return List.of();
         EarthData.Place namesake = LandMap.nearestPlace(e.data(), ll[0], ll[1]);
-        double limit = (double) RAY_CELLS * SeaRoutes.CELL;
+        double limit = (double) PLACE_CELLS * SeaRoutes.CELL;
         double[] out = new double[2];
         List<double[]> found = new ArrayList<>();
         for (EarthData.Place p : e.data().places()) {
@@ -187,9 +190,14 @@ public final class Gateways {
 
     /** The run of land cells out from a cell on a bearing, in cells, up to RAY_CELLS; the world's edge, or any non-land cell, ends it. */
     private static int run(Ground ground, long ci, long cj, int deg) {
+        return run(ground, ci, cj, deg, RAY_CELLS);
+    }
+
+    /** ...up to `most` cells. */
+    private static int run(Ground ground, long ci, long cj, int deg, int most) {
         double r = Math.toRadians(deg), c = Math.cos(r), s = Math.sin(r);
         int run = 0;
-        for (int k = 1; k <= RAY_CELLS; k++) {
+        for (int k = 1; k <= most; k++) {
             long i = Math.round(ci + c * k), j = Math.round(cj + s * k);
             if (!ground.land(i, j)) break;
             run = k;

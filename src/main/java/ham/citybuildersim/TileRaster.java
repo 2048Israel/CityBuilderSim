@@ -1541,51 +1541,53 @@ public final class TileRaster {
         }
         int x = i % TilePainter.TILE, y = i / TilePainter.TILE;
         int x0 = x * px, y0 = y * px, w = TilePainter.TILE * px;
-        boolean ns = railAt(in, p, i, 0) || railAt(in, p, i, 2);
-        boolean ew = railAt(in, p, i, 1) || railAt(in, p, i, 3);
+        // The track beside it, north, east, south and west, read once: bit d for direction d.
+        int arms = (railAt(in, p, i, 0) ? 1 : 0) | (railAt(in, p, i, 1) ? 2 : 0) | (railAt(in, p, i, 2) ? 4 : 0) | (railAt(in, p, i, 3) ? 8 : 0);
+        boolean ns = (arms & 5) != 0;
+        boolean ew = (arms & 10) != 0;
         if (!ns && !ew) ew = true;
         int a = (px - bed) / 2, z = a + bed;
-        drawBed(in, p, i, px, img, a, z);
+        drawBed(in, p, i, px, img, a, z, arms);
         if (px >= RAILS_FROM) {
             int step = Math.max(2, (int) Math.round(SLEEPERS_EVERY * px));
-            drawSleepers(in, p, i, px, img, a, z, ns, ew, step);
+            drawSleepers(in, p, i, px, img, a, z, ns, ew, step, arms);
         } else {
-            drawSleeperTicks(in, p, i, px, img, a, z, ns, ew);
+            drawSleeperTicks(in, p, i, px, img, a, z, ns, ew, arms);
         }
-        drawRails(in, p, i, px, img, a, z, ns, ew, doubled);
+        drawRails(in, p, i, px, img, a, z, ns, ew, doubled, arms);
     }
 
     /** The track's ballast bed: the plot's middle and its arms to the track beside it, as the bed's whole width. */
-    private static void drawBed(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z) {
+    private static void drawBed(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int arms) {
         int tile = TilePainter.TILE, w = tile * px;
         int x0 = (i % tile) * px, y0 = (i / tile) * px;
         int c = in.owned[i] ? BALLAST : blend(BALLAST, VOID, UNOWNED_DIM);
         fillRect(img, w, x0 + a, y0 + a, x0 + z, y0 + z, c);
-        if (railAt(in, p, i, 0)) fillRect(img, w, x0 + a, y0, x0 + z, y0 + a, c);
-        if (railAt(in, p, i, 2)) fillRect(img, w, x0 + a, y0 + z, x0 + z, y0 + px, c);
-        if (railAt(in, p, i, 3)) fillRect(img, w, x0, y0 + a, x0 + a, y0 + z, c);
-        if (railAt(in, p, i, 1)) fillRect(img, w, x0 + z, y0 + a, x0 + px, y0 + z, c);
+        if (((arms >> 0) & 1) != 0) fillRect(img, w, x0 + a, y0, x0 + z, y0 + a, c);
+        if (((arms >> 2) & 1) != 0) fillRect(img, w, x0 + a, y0 + z, x0 + z, y0 + px, c);
+        if (((arms >> 3) & 1) != 0) fillRect(img, w, x0, y0 + a, x0 + a, y0 + z, c);
+        if (((arms >> 1) & 1) != 0) fillRect(img, w, x0 + z, y0 + a, x0 + px, y0 + z, c);
     }
 
     /** The sleepers, a pixel thick across the bed, every `step` pixels along the way the track runs. */
     private static void drawSleepers(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z,
-                                     boolean ns, boolean ew, int step) {
+                                     boolean ns, boolean ew, int step, int arms) {
         int tile = TilePainter.TILE, w = tile * px;
         int x0 = (i % tile) * px, y0 = (i / tile) * px;
         int c = in.owned[i] ? SLEEPER : blend(SLEEPER, VOID, UNOWNED_DIM);
         if (ew) {
             for (int sx = x0; sx < x0 + px; sx += step) {
                 if (!(sx >= x0 + a && sx < x0 + z)
-                        && !(railAt(in, p, i, 3) && sx >= x0 && sx < x0 + a)
-                        && !(railAt(in, p, i, 1) && sx >= x0 + z && sx < x0 + px)) continue;
+                        && !(((arms >> 3) & 1) != 0 && sx >= x0 && sx < x0 + a)
+                        && !(((arms >> 1) & 1) != 0 && sx >= x0 + z && sx < x0 + px)) continue;
                 fillRect(img, w, sx, y0 + a, sx + 1, y0 + z, c);
             }
         }
         if (ns) {
             for (int sy = y0; sy < y0 + px; sy += step) {
                 if (!(sy >= y0 + a && sy < y0 + z)
-                        && !(railAt(in, p, i, 0) && sy >= y0 && sy < y0 + a)
-                        && !(railAt(in, p, i, 2) && sy >= y0 + z && sy < y0 + px)) continue;
+                        && !(((arms >> 0) & 1) != 0 && sy >= y0 && sy < y0 + a)
+                        && !(((arms >> 2) & 1) != 0 && sy >= y0 + z && sy < y0 + px)) continue;
                 fillRect(img, w, x0 + a, sy, x0 + z, sy + 1, c);
             }
         }
@@ -1593,7 +1595,7 @@ public final class TileRaster {
 
     /** Below RAILS_FROM px a plot, one sleeper tick across the bed at the start of each plot along the track. */
     private static void drawSleeperTicks(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z,
-                                         boolean ns, boolean ew) {
+                                         boolean ns, boolean ew, int arms) {
         int tile = TilePainter.TILE, w = tile * px;
         int x0 = (i % tile) * px, y0 = (i / tile) * px;
         int c = in.owned[i] ? SLEEPER : blend(SLEEPER, VOID, UNOWNED_DIM);
@@ -1603,82 +1605,82 @@ public final class TileRaster {
 
     /** The rails, a pixel each, along the way the track runs. */
     private static void drawRails(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z,
-                                  boolean ns, boolean ew, boolean doubled) {
-        if (px >= RAILS_FROM) drawRailsFull(in, p, i, px, img, a, z, ns, ew, doubled);
-        else drawRailsLow(in, p, i, px, img, a, z, ns, ew, doubled);
+                                  boolean ns, boolean ew, boolean doubled, int arms) {
+        if (px >= RAILS_FROM) drawRailsFull(in, p, i, px, img, a, z, ns, ew, doubled, arms);
+        else drawRailsLow(in, p, i, px, img, a, z, ns, ew, doubled, arms);
     }
 
     /** From RAILS_FROM px a plot: two rails a track, double track's two tracks at the plot's middle +/- TRACKS_APART. */
     private static void drawRailsFull(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z,
-                                      boolean ns, boolean ew, boolean doubled) {
+                                      boolean ns, boolean ew, boolean doubled, int arms) {
         int mid = px / 2;
         int off = Math.max(1, (int) Math.round(GAUGE / 2.0 * px));
         int sep = doubled ? Math.max(1, (int) Math.round(TRACKS_APART / 2.0 * px)) : 0;
         int c = in.owned[i] ? STEEL : blend(STEEL, VOID, UNOWNED_DIM);
         if (ew) {
             if (doubled) {
-                railH(in, p, i, px, img, a, z, mid - sep - off, c);
-                railH(in, p, i, px, img, a, z, mid - sep + off, c);
-                railH(in, p, i, px, img, a, z, mid + sep - off, c);
-                railH(in, p, i, px, img, a, z, mid + sep + off, c);
+                railH(in, p, i, px, img, a, z, mid - sep - off, c, arms);
+                railH(in, p, i, px, img, a, z, mid - sep + off, c, arms);
+                railH(in, p, i, px, img, a, z, mid + sep - off, c, arms);
+                railH(in, p, i, px, img, a, z, mid + sep + off, c, arms);
             } else {
-                railH(in, p, i, px, img, a, z, mid - off, c);
-                railH(in, p, i, px, img, a, z, mid + off, c);
+                railH(in, p, i, px, img, a, z, mid - off, c, arms);
+                railH(in, p, i, px, img, a, z, mid + off, c, arms);
             }
         }
         if (ns) {
             if (doubled) {
-                railV(in, p, i, px, img, a, z, mid - sep - off, c);
-                railV(in, p, i, px, img, a, z, mid - sep + off, c);
-                railV(in, p, i, px, img, a, z, mid + sep - off, c);
-                railV(in, p, i, px, img, a, z, mid + sep + off, c);
+                railV(in, p, i, px, img, a, z, mid - sep - off, c, arms);
+                railV(in, p, i, px, img, a, z, mid - sep + off, c, arms);
+                railV(in, p, i, px, img, a, z, mid + sep - off, c, arms);
+                railV(in, p, i, px, img, a, z, mid + sep + off, c, arms);
             } else {
-                railV(in, p, i, px, img, a, z, mid - off, c);
-                railV(in, p, i, px, img, a, z, mid + off, c);
+                railV(in, p, i, px, img, a, z, mid - off, c, arms);
+                railV(in, p, i, px, img, a, z, mid + off, c, arms);
             }
         }
     }
 
     /** Below RAILS_FROM px a plot: one STEEL line down the track's middle, two at double track's tracks. */
     private static void drawRailsLow(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z,
-                                     boolean ns, boolean ew, boolean doubled) {
+                                     boolean ns, boolean ew, boolean doubled, int arms) {
         int mid = px / 2;
         int sep = doubled ? Math.max(1, (int) Math.round(TRACKS_APART / 2.0 * px)) : 0;
         int c = in.owned[i] ? STEEL : blend(STEEL, VOID, UNOWNED_DIM);
         if (ew) {
             if (doubled) {
-                railH(in, p, i, px, img, a, z, mid - sep, c);
-                railH(in, p, i, px, img, a, z, mid + sep, c);
+                railH(in, p, i, px, img, a, z, mid - sep, c, arms);
+                railH(in, p, i, px, img, a, z, mid + sep, c, arms);
             } else {
-                railH(in, p, i, px, img, a, z, mid, c);
+                railH(in, p, i, px, img, a, z, mid, c, arms);
             }
         }
         if (ns) {
             if (doubled) {
-                railV(in, p, i, px, img, a, z, mid - sep, c);
-                railV(in, p, i, px, img, a, z, mid + sep, c);
+                railV(in, p, i, px, img, a, z, mid - sep, c, arms);
+                railV(in, p, i, px, img, a, z, mid + sep, c, arms);
             } else {
-                railV(in, p, i, px, img, a, z, mid, c);
+                railV(in, p, i, px, img, a, z, mid, c, arms);
             }
         }
     }
 
     /** A rail a pixel wide along an east-west track at row `row`, its middle and its arms. */
-    private static void railH(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int row, int c) {
+    private static void railH(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int row, int c, int arms) {
         int tile = TilePainter.TILE, w = tile * px;
         int x0 = (i % tile) * px, y0 = (i / tile) * px;
         fillRect(img, w, x0 + a, y0 + row, x0 + z, y0 + row + 1, c);
-        if (railAt(in, p, i, 3)) fillRect(img, w, x0, y0 + row, x0 + a, y0 + row + 1, c);
-        if (railAt(in, p, i, 1)) fillRect(img, w, x0 + z, y0 + row, x0 + px, y0 + row + 1, c);
+        if (((arms >> 3) & 1) != 0) fillRect(img, w, x0, y0 + row, x0 + a, y0 + row + 1, c);
+        if (((arms >> 1) & 1) != 0) fillRect(img, w, x0 + z, y0 + row, x0 + px, y0 + row + 1, c);
     }
 
     /** ...and a north-south track's, at column `col`. */
-    private static void railV(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int col, int c) {
+    private static void railV(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int col, int c, int arms) {
         int tile = TilePainter.TILE, w = tile * px;
         int x0 = (i % tile) * px, y0 = (i / tile) * px;
         fillRect(img, w, x0 + col, y0 + a, x0 + col + 1, y0 + z, c);
-        if (railAt(in, p, i, 0)) fillRect(img, w, x0 + col, y0, x0 + col + 1, y0 + a, c);
-        if (railAt(in, p, i, 2)) fillRect(img, w, x0 + col, y0 + z, x0 + col + 1, y0 + px, c);
+        if (((arms >> 0) & 1) != 0) fillRect(img, w, x0 + col, y0, x0 + col + 1, y0 + a, c);
+        if (((arms >> 2) & 1) != 0) fillRect(img, w, x0 + col, y0 + z, x0 + col + 1, y0 + px, c);
     }
 
     /**
@@ -1723,10 +1725,11 @@ public final class TileRaster {
             } else {
                 int bed = bedWidth(px, doubled);
                 int a = (px - bed) / 2, z = a + bed;
-                boolean ns = railAt(in, p, i, 0) || railAt(in, p, i, 2);
-                boolean ew = railAt(in, p, i, 1) || railAt(in, p, i, 3);
+                int arms = (railAt(in, p, i, 0) ? 1 : 0) | (railAt(in, p, i, 1) ? 2 : 0) | (railAt(in, p, i, 2) ? 4 : 0) | (railAt(in, p, i, 3) ? 8 : 0);
+                boolean ns = (arms & 5) != 0;
+                boolean ew = (arms & 10) != 0;
                 if (!ns && !ew) ew = true;
-                drawRails(in, p, i, px, img, a, z, ns, ew, doubled);
+                drawRails(in, p, i, px, img, a, z, ns, ew, doubled, arms);
             }
             drawCrossbucks(px, img, w, x0, y0);
             drawBarriers(in, p, i, px, img, w, x0, y0, t, o, h, v);

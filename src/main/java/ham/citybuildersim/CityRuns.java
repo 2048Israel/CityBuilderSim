@@ -933,6 +933,21 @@ public final class CityRuns {
      * {x0, y0, w, h}, a copy.
      */
     public long[] freightStation() {
+        // Kept against the runs' version: a tile's input asks it, and a dense city has thousands of yards.
+        if (stationAt == version && stationAtGateway == gateway) return station == null ? null : station.clone();
+        stationAt = version;
+        stationAtGateway = gateway;
+        station = findStation();
+        return station == null ? null : station.clone();
+    }
+
+    /** freightStation()'s last answer, the version and the gateway it was found at. */
+    private long[] station;
+    private long stationAt = Long.MIN_VALUE;
+    private int stationAtGateway = GATEWAY_UNKNOWN;
+
+    /** The freight station found afresh (freightStation()'s rule). */
+    private long[] findStation() {
         int gate = gateArm(rail, gateway);
         if (gate < 0 || yards.isEmpty()) return null;
         Arm a = rail.arms.get(gate);
