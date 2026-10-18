@@ -37,6 +37,10 @@ import java.util.Arrays;
  *   7. a roundabout whose centre is a tile's last column is read through
  *      Input.beyond by the next tile, which draws the ring's pixels on its
  *      first column.
+ *   8. a diamond whose street is a tile's first row (an arterial lies on a
+ *      cell's ring, so most do): the tile holding the ramp draws its side's
+ *      slips, and the tile across the edge draws the other side's from the
+ *      ramp it reads beyond its edge.
  *
  * Numbering is the running order.
  *
@@ -146,6 +150,7 @@ public class JunctionCheck {
         stack();
         belowJunctionsFrom();
         roundaboutAcrossEdge();
+        diamondAcrossEdge();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -372,4 +377,37 @@ public class JunctionCheck {
         check("the ring's pixels are drawn on this tile's first column",
                 pixel(img, w, 0, centreY, 0, px - 1, px) == paved);
     }
+
+    /* ================= 8. a diamond across the tile's edge ================= */
+    static void diamondAcrossEdge() {
+        System.out.println("--- 8. a diamond whose street is the tile's first row: each tile draws its own side's slips ---");
+        int px = 8, hx = 10, w = T * px;
+        int paved = TileRaster.ROAD[BuildingVisual.PAVED];
+        // The tile south of the street: the highway's column, the arterial on its first row beneath it, the ramp there.
+        TilePainter.Input south = owned();
+        highwayColumn(south, hx);
+        streetRow(south, 0, ARTERIAL);
+        south.marks[hx] = CityRuns.M_RAMP;
+        int[] southImg = raster(south, paint(south), px);
+        check("the tile holding the ramp draws its side's slips, on the verge columns, SLIP_LENGTH plots down",
+                hasColour(southImg, w, hx - 1, 1, px, paved) && hasColour(southImg, w, hx + 1, 1, px, paved)
+                        && hasColour(southImg, w, hx - 1, (int) TileRaster.SLIP_LENGTH, px, paved)
+                        && hasColour(southImg, w, hx + 1, (int) TileRaster.SLIP_LENGTH, px, paved));
+        // The tile north of it: the highway's column, and just beyond its south edge the arterial, the highway and the ramp.
+        TilePainter.Input north = owned();
+        highwayColumn(north, hx);
+        for (int x = 0; x < T; x++) north.beyond[2 * T + x] = (byte) ARTERIAL;
+        north.fixedBeyond[2 * T + hx] = BuildingVisual.HIGHWAY;
+        north.marksBeyond[2 * T + hx] = CityRuns.M_RAMP;
+        int[] northImg = raster(north, paint(north), px);
+        check("the tile across the edge draws the other side's slips from the ramp beyond its edge",
+                hasColour(northImg, w, hx - 1, T - 1, px, paved) && hasColour(northImg, w, hx + 1, T - 1, px, paved)
+                        && hasColour(northImg, w, hx - 1, T - (int) TileRaster.SLIP_LENGTH, px, paved)
+                        && hasColour(northImg, w, hx + 1, T - (int) TileRaster.SLIP_LENGTH, px, paved));
+        TilePainter.Input bare = owned();
+        highwayColumn(bare, hx);
+        int[] bareImg = raster(bare, paint(bare), px);
+        check("...and without the ramp beyond it, none", !hasColour(bareImg, w, hx - 1, T - 1, px, paved) && !hasColour(bareImg, w, hx + 1, T - 1, px, paved));
+    }
+
 }

@@ -3569,8 +3569,8 @@ public final class CityMap {
         return Math.max(lo, Math.min(hi, v));
     }
 
-    /** The freight station's yard, {x0, y0, w, h} in world plots: the yard nearest the rail gateway (spec 4.2); null for none. Slice M lays the main line and fills this in. */
-    public long[] freightStation() { return null; }
+    /** The freight station's yard, {x0, y0, w, h} in world plots: the yard nearest the rail gateway (spec 4.2; CityRuns.freightStation()); null for none. */
+    public long[] freightStation() { return runs.freightStation(); }
 
     /** The oil at sea: its jackets and pipes. */
     public record AtSea(List<Jacket> jackets, List<Pipe> pipes) {

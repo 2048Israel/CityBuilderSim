@@ -1343,21 +1343,34 @@ public final class TileRaster {
 
     private static void diamonds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE;
-        for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!isHighway(p, i) || (in.marks[i] & CityRuns.M_RAMP) == 0 || !p.beneath[i]) continue;
-            int hx = i % tile, hy = i / tile;
-            boolean rowHw = runHighwayAt(in, p, i, 1) || runHighwayAt(in, p, i, 3);
-            boolean colHw = runHighwayAt(in, p, i, 0) || runHighwayAt(in, p, i, 2);
-            if (rowHw == colHw) continue;
-            boolean streetAcross = rowHw
-                    ? streetAt(in, p, i, 0) || streetAt(in, p, i, 2)
-                    : streetAt(in, p, i, 1) || streetAt(in, p, i, 3);
-            if (!streetAcross) continue;
-            for (int side = -1; side <= 1; side += 2) {
-                for (int dir = -1; dir <= 1; dir += 2) drawSlip(in, p, px, img, hx, hy, rowHw, side, dir);
+        // The ramps in the tile, and those just across its edges: an arterial lies on a cell's ring, the tile's first row or
+        // column, so a diamond's slips on one side of its street are the next tile's to draw.
+        for (int y = -1; y <= tile; y++) {
+            for (int x = -1; x <= tile; x++) {
+                boolean inside = x >= 0 && y >= 0 && x < tile && y < tile;
+                if (!inside && (x < 0 || x >= tile) && (y < 0 || y >= tile)) continue;
+                if (inside) {
+                    int i = y * tile + x;
+                    if (!isHighway(p, i) || (in.marks[i] & CityRuns.M_RAMP) == 0 || !p.beneath[i]) continue;
+                } else {
+                    int dir = y < 0 ? 0 : y >= tile ? 2 : x < 0 ? 3 : 1, along = dir == 0 || dir == 2 ? x : y;
+                    if (in.fixedBeyond[dir * tile + along] != BuildingVisual.HIGHWAY || (in.marksBeyond[dir * tile + along] & CityRuns.M_RAMP) == 0
+                            || !isStreetAt(in, p, x, y)) continue;
+                }
+                boolean rowHw = isRunHighway(in, p, x - 1, y) || isRunHighway(in, p, x + 1, y);
+                boolean colHw = isRunHighway(in, p, x, y - 1) || isRunHighway(in, p, x, y + 1);
+                if (rowHw == colHw) continue;
+                boolean streetAcross = rowHw
+                        ? isStreetAt(in, p, x, y - 1) || isStreetAt(in, p, x, y + 1)
+                        : isStreetAt(in, p, x - 1, y) || isStreetAt(in, p, x + 1, y);
+                if (!streetAcross) continue;
+                for (int side = -1; side <= 1; side += 2) {
+                    for (int dir = -1; dir <= 1; dir += 2) drawSlip(in, p, px, img, x, y, rowHw, side, dir);
+                }
             }
         }
     }
+
 
     /** One diamond slip along the verge beside a highway, from the street out for SLIP_LENGTH plots. */
     private static void drawSlip(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int hx, int hy, boolean rowHw, int side, int dir) {
@@ -1412,6 +1425,11 @@ public final class TileRaster {
                         fillRect(img, stride, x0 + left + band - 1, y0 + y, x0 + left + band, y0 + y + 1, caseC);
                     }
                 }
+                // Where the highway is no wider than a paved road (4 px a plot), the half toward the open end is the paved road's.
+                if (full <= paved) {
+                    int left = (px - paved) / 2;
+                    fillRect(img, stride, x0 + left, fromTop ? y0 + px / 2 : y0, x0 + left + paved, fromTop ? y0 + px : y0 + px / 2, apron);
+                }
                 // The paved apron on the next plot, from the open end to its far edge.
                 int ay = fromTop ? 1 : -1;
                 drawHighwayApron(in, p, px, img, i % tile, i / tile + ay, true, paved, apron);
@@ -1425,6 +1443,10 @@ public final class TileRaster {
                         fillRect(img, stride, x0 + x, y0 + top, x0 + x + 1, y0 + top + 1, caseC);
                         fillRect(img, stride, x0 + x, y0 + top + band - 1, x0 + x + 1, y0 + top + band, caseC);
                     }
+                }
+                if (full <= paved) {
+                    int top = (px - paved) / 2;
+                    fillRect(img, stride, fromLeft ? x0 + px / 2 : x0, y0 + top, fromLeft ? x0 + px : x0 + px / 2, y0 + top + paved, apron);
                 }
                 int ax = fromLeft ? 1 : -1;
                 drawHighwayApron(in, p, px, img, i % tile + ax, i / tile, true, paved, apron);
