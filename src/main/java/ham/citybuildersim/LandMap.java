@@ -737,7 +737,7 @@ public final class LandMap {
 
     /** One building of each class, as the hover card names a type it has no name for. */
     public static final String[] CLASS_ONE = { "Home", "Shop", "Offices", "Industry", "Farm", "Utility", "School",
-            "Health", "Safety", "Mine" };
+            "Health", "Safety", "Mine", "Transport" };
 
     /**
      * What a painted plot holds, in the hover card's words, or null for bare

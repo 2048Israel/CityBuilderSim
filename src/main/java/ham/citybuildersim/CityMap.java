@@ -3524,6 +3524,36 @@ public final class CityMap {
     /** A pipe as the map draws it: from its field's middle (x0, y0) toward the founding site, to (x1, y1), in plots - its kilometres standing. */
     public record Pipe(double x0, double y0, double x1, double y1) { }
 
+    /** The railway as the map draws its yard: whether it carries goods, and the share of the track's wagon sets the fleet has standing. */
+    public record RailPicture(boolean goodsByRail, double wagonShare) { }
+
+    private RailPicture railPicture = new RailPicture(false, 0);
+
+    /** The railway's picture, as the game last handed it. */
+    public RailPicture railPicture() { return railPicture; }
+
+    /** The whole wagon tracks a share of the fleet gives: its share of YARD_TRACKS, rounded to a whole track. */
+    static int wagonTracksOf(double share) {
+        return (int) Math.round(clamp(share, 0, 1) * TileRaster.YARD_TRACKS);
+    }
+
+    /** The railway's picture handed over by the game (Game.mapRail()); a change of goods or of the whole wagon tracks restamps the tiles. */
+    public void railPicture(RailPicture r) {
+        RailPicture now = r == null ? new RailPicture(false, 0) : r;
+        if (now.equals(railPicture)) return;
+        boolean goods = railPicture.goodsByRail();
+        int tracks = wagonTracksOf(railPicture.wagonShare());
+        railPicture = now;
+        if (now.goodsByRail() != goods || wagonTracksOf(now.wagonShare()) != tracks) changes++;
+    }
+
+    private static double clamp(double v, double lo, double hi) {
+        return Math.max(lo, Math.min(hi, v));
+    }
+
+    /** The freight station's yard, {x0, y0, w, h} in world plots: the yard nearest the rail gateway (spec 4.2); null for none. Slice M lays the main line and fills this in. */
+    public long[] freightStation() { return null; }
+
     /** The oil at sea: its jackets and pipes. */
     public record AtSea(List<Jacket> jackets, List<Pipe> pipes) {
         /** None. */
@@ -3841,6 +3871,12 @@ public final class CityMap {
                 in.marksBeyond[3 * World.TILE + m] = ringMarks[(m + 1) * rw];
             }
         }
+        // The railway's picture over the tile: the freight station's yard, and whether its tracks have wagons standing.
+        long[] station = freightStation();
+        in.stationX = station == null ? Long.MIN_VALUE : station[0];
+        in.stationY = station == null ? Long.MIN_VALUE : station[1];
+        in.goodsByRail = railPicture.goodsByRail();
+        in.wagonTracks = wagonTracksOf(railPicture.wagonShare());
         // Its buildings: its yards (0.7.89), its plan's boxes, and those packed at the city's edge (R7).
         int boxBits = (1 << BOX_TYPE_SHIFT) - 1;
         int terminal = -1;

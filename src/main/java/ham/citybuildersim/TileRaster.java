@@ -157,6 +157,29 @@ public final class TileRaster {
     /** Pixels a plot from which a road is drawn as a line of its own width on its ground - a street as verge and surface (0.7.88) - and below, the whole plot in its colour: 4, the near view's image. */
     public static final int LINES_FROM = 4;
 
+    /* ===== YARDS DRAWN AS YARDS (0.8.1, batch FR0; spec-freight 4.3, D15) ===== */
+
+    /** A yard's ground, light ballast (spec-freight 4.3's yard). */
+    public static final int YARD_GROUND = 0xff8c8478;
+    /** The fan's sidings (spec-freight 4.3: 6 to 10). */
+    public static final int YARD_TRACKS = 8;
+    /** Plots between the fan's tracks, middle to middle. */
+    public static final double YARD_TRACK_APART = 1.5;
+    /** Plots at each end over which the fan closes to the line. */
+    public static final int YARD_LADDER = 3;
+    /** The freight shed: plots deep, and its share of the fan's length. */
+    public static final double SHED_DEPTH = 2.5, SHED_LENGTH = 0.6;
+    /** A bulk yard's stockpiles, the spec's sand colour. */
+    public static final int ORE_HEAP = 0xffc9b68f;
+    /** A container yard's boxes, the boats' white. */
+    public static final int CONTAINER = 0xffd6dde4;
+    /** Its two cranes. */
+    public static final int GANTRY = 0xff2b2f36;
+    /** A wagon standing. */
+    public static final int WAGON = 0xff7b4b3a;
+    /** Plots: a wagon about 15 m. */
+    public static final double WAGON_LENGTH = 0.5;
+
     /** A one-plot building's side as a share of its plot: its own land's (BuildingVisual.plotSide(), 0.7.64 - a House 0.91 of the plot, a Convenience Store 0.72; the mockup's 0.6 to 0.92 by a hash before), never more than 0.92, so a street's buildings stay apart (the mockup's)... */
     public static final double SMALL_MOST = 0.92;
 
@@ -234,6 +257,10 @@ public final class TileRaster {
                 x1 = Math.min(tile, p.bx[b] + p.bw[b]) * px - ir;
                 y1 = Math.min(tile, p.by[b] + p.bh[b]) * px - ib;
             }
+            if (px >= LINES_FROM && t != null && t.terminal() && !p.bpacked[b]) {
+                drawYard(in, p, b, t, px, img, w, x0, y0, x1, y1);
+                continue;
+            }
             boolean edged = px >= EDGE_FROM;
             int look = t == null ? BuildingVisual.PLAIN : t.look();
             if (look != BuildingVisual.PLAIN && px >= LOOK_FROM && !p.bpacked[b] && (p.bw[b] > 1 || p.bh[b] > 1 || site >= 0)) {
@@ -264,6 +291,222 @@ public final class TileRaster {
         }
         overBuildings(in, p, px, img);
         atSea(in, p, px, img);
+    }
+
+    /**
+     * A Rail Terminal's yard as a yard, not its class's plain box (0.8.1,
+     * batch FR0; spec-freight 4.2 and 4.3, D15): ballast ground, a fan of
+     * YARD_TRACKS sidings closing to the line at each end over YARD_LADDER
+     * plots, a freight shed on one side of the fan, and on the other the
+     * freight it handles - a container yard's boxes and gantry cranes where
+     * the freight station carries goods, every other yard's ore stockpiles -
+     * with wagons standing on the first wagonTracks tracks from the shed.
+     */
+    private static void drawYard(TilePainter.Input in, TilePainter.Painted p, int b, BuildingVisual.Type t, int px,
+                                 int[] img, int w, int x0, int y0, int x1, int y1) {
+        int tile = TilePainter.TILE;
+        int bx = p.bx[b], by = p.by[b], bw = p.bw[b], bh = p.bh[b];
+        fillRect(img, w, x0, y0, x1, y1, YARD_GROUND);
+        int railY0 = Integer.MAX_VALUE, railY1 = Integer.MIN_VALUE, railX0 = Integer.MAX_VALUE, railX1 = Integer.MIN_VALUE;
+        int cols = 0, rows = 0;
+        boolean[] railCol = new boolean[tile], railRow = new boolean[tile];
+        for (int y = by; y < Math.min(tile, by + bh); y++) {
+            for (int x = bx; x < Math.min(tile, bx + bw); x++) {
+                if (p.run[y * tile + x] != TilePainter.RAIL) continue;
+                if (!railCol[x]) { railCol[x] = true; cols++; }
+                if (!railRow[y]) { railRow[y] = true; rows++; }
+                railX0 = Math.min(railX0, x); railX1 = Math.max(railX1, x);
+                railY0 = Math.min(railY0, y); railY1 = Math.max(railY1, y);
+            }
+        }
+        boolean ew = rows == 0 ? cols == 0 || cols > rows : cols > rows;
+        int bed = bedWidth(px, false);
+        int off = px >= RAILS_FROM ? Math.max(1, (int) Math.round(GAUGE / 2.0 * px)) : 0;
+        // The line the fan closes to: the middle of the track under the yard, else the box's middle.
+        double line = ew
+                ? (rows == 0 ? (by + bh / 2.0) * px : (railY0 + railY1 + 1) / 2.0 * px)
+                : (cols == 0 ? (bx + bw / 2.0) * px : (railX0 + railX1 + 1) / 2.0 * px);
+        int n = YARD_TRACKS;
+        double[] at = new double[n];
+        double apart = YARD_TRACK_APART * px;
+        for (int i = 0; i < n; i++) at[i] = line + (i - (n - 1) / 2.0) * apart;
+        double min = at[0], max = at[n - 1];
+        // Keep the fan's whole bed inside the box.
+        if (ew) {
+            double lo = min - bed / 2.0, hi = max + bed / 2.0;
+            if (lo < y0) { double shift = y0 - lo; for (int i = 0; i < n; i++) at[i] += shift; }
+            else if (hi > y1) { double shift = y1 - hi; for (int i = 0; i < n; i++) at[i] += shift; }
+        } else {
+            double lo = min - bed / 2.0, hi = max + bed / 2.0;
+            if (lo < x0) { double shift = x0 - lo; for (int i = 0; i < n; i++) at[i] += shift; }
+            else if (hi > x1) { double shift = x1 - hi; for (int i = 0; i < n; i++) at[i] += shift; }
+        }
+        min = at[0]; max = at[n - 1];
+        int fanA = (ew ? x0 : y0) + (int) Math.round(YARD_LADDER * px);
+        int fanB = (ew ? x1 : y1) - (int) Math.round(YARD_LADDER * px);
+        int linePx = (int) Math.round(line);
+        int steel = STEEL;
+        for (int i = 0; i < n; i++) {
+            int mid = (int) Math.round(at[i]);
+            int a = mid - bed / 2, z = a + bed;
+            if (ew) {
+                fillRect(img, w, fanA, a, fanB, z, BALLAST);
+                if (off == 0) fillRect(img, w, fanA, mid, fanB, mid + 1, steel);
+                else {
+                    fillRect(img, w, fanA, mid - off, fanB, mid - off + 1, steel);
+                    fillRect(img, w, fanA, mid + off, fanB, mid + off + 1, steel);
+                }
+                line(img, w, fanA, mid, x0, linePx, steel);
+                line(img, w, fanB - 1, mid, x1 - 1, linePx, steel);
+            } else {
+                fillRect(img, w, a, fanA, z, fanB, BALLAST);
+                if (off == 0) fillRect(img, w, mid, fanA, mid + 1, fanB, steel);
+                else {
+                    fillRect(img, w, mid - off, fanA, mid - off + 1, fanB, steel);
+                    fillRect(img, w, mid + off, fanA, mid + off + 1, fanB, steel);
+                }
+                line(img, w, mid, fanA, linePx, y0, steel);
+                line(img, w, mid, fanB - 1, linePx, y1 - 1, steel);
+            }
+        }
+        // The freight shed, between the fan and the box's edge.
+        int fanNear = (int) Math.round((ew ? min : min) - bed / 2.0);
+        int fanFar = (int) Math.round((ew ? max : max) + bed / 2.0);
+        int depth = ew
+                ? Math.min((int) Math.round(SHED_DEPTH * px), Math.max(0, fanNear - y0))
+                : Math.min((int) Math.round(SHED_DEPTH * px), Math.max(0, fanNear - x0));
+        int len = Math.max(1, (int) Math.round(SHED_LENGTH * (fanB - fanA)));
+        if (depth > 0) {
+            int along = (fanA + fanB) / 2;
+            int s0 = along - len / 2, s1 = s0 + len;
+            if (ew) {
+                s0 = Math.max(x0, s0); s1 = Math.min(x1, s1);
+                int shedTop = fanNear - depth;
+                fillRect(img, w, s0, shedTop, s1, fanNear, t.fill());
+                if (px >= EDGE_FROM) {
+                    for (int x = s0; x < s1; x++) { img[shedTop * w + x] = t.edge(); img[(fanNear - 1) * w + x] = t.edge(); }
+                    for (int y = shedTop; y < fanNear; y++) { img[y * w + s0] = t.edge(); img[y * w + s1 - 1] = t.edge(); }
+                }
+            } else {
+                s0 = Math.max(y0, s0); s1 = Math.min(y1, s1);
+                int shedLeft = fanNear - depth;
+                fillRect(img, w, shedLeft, s0, fanNear, s1, t.fill());
+                if (px >= EDGE_FROM) {
+                    for (int y = s0; y < s1; y++) { img[y * w + shedLeft] = t.edge(); img[y * w + fanNear - 1] = t.edge(); }
+                    for (int x = shedLeft; x < fanNear; x++) { img[s0 * w + x] = t.edge(); img[(s1 - 1) * w + x] = t.edge(); }
+                }
+            }
+        }
+        boolean station = in.tx * tile + bx == in.stationX && in.ty * tile + by == in.stationY;
+        boolean container = station && in.goodsByRail;
+        // What it handles, on the other side of the fan from the shed.
+        if (container) containers(in, p, px, img, w, x0, y0, x1, y1, ew, fanA, fanB, fanNear, fanFar);
+        else stockpiles(px, img, w, x0, y0, x1, y1, ew, fanA, fanB, fanFar);
+        // Wagons standing on the first wagonTracks tracks from the shed's side.
+        for (int k = 0; k < in.wagonTracks && k < n; k++) {
+            int mid = (int) Math.round(at[k]);
+            int wide = px >= RAILS_FROM ? bed : 1;
+            int wagonLen = Math.max(1, (int) Math.round(WAGON_LENGTH * px));
+            int top = mid - wide / 2;
+            for (int s = fanA; s + wagonLen <= fanB; s += wagonLen + 1) {
+                if (ew) {
+                    fillRect(img, w, s, top, s + wagonLen, top + wide, WAGON);
+                    if (container) {
+                        int cw = Math.max(1, wagonLen * 2 / 3), ch = Math.max(1, wide - 2);
+                        fillRect(img, w, s + (wagonLen - cw) / 2, mid - ch / 2, s + (wagonLen - cw) / 2 + cw, mid - ch / 2 + ch, CONTAINER);
+                    }
+                } else {
+                    fillRect(img, w, top, s, top + wide, s + wagonLen, WAGON);
+                    if (container) {
+                        int cw = Math.max(1, wide - 2), ch = Math.max(1, wagonLen * 2 / 3);
+                        fillRect(img, w, mid - cw / 2, s + (wagonLen - ch) / 2, mid - cw / 2 + cw, s + (wagonLen - ch) / 2 + ch, CONTAINER);
+                    }
+                }
+            }
+        }
+    }
+
+    /** A container yard's boxes, in rows, and its two gantry cranes across the fan. */
+    private static void containers(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int w,
+                                   int x0, int y0, int x1, int y1, boolean ew, int fanA, int fanB, int fanNear, int fanFar) {
+        int boxLong = px, boxDeep = Math.max(1, (int) Math.round(0.4 * px));
+        int left = ew ? x0 : fanFar, right = ew ? x1 : x1;
+        int top = ew ? fanFar : y0, bottom = ew ? y1 : y1;
+        int alongStep = ew ? boxLong + 1 : boxDeep + 1;
+        int acrossStep = ew ? boxDeep + 1 : boxLong + 1;
+        for (int a = top; a + (ew ? boxDeep : boxLong) <= bottom; a += acrossStep) {
+            for (int s = left; s + (ew ? boxLong : boxDeep) <= right; s += alongStep) {
+                if (ew) fillRect(img, w, s, a, s + boxLong, a + boxDeep, CONTAINER);
+                else fillRect(img, w, s, a, s + boxDeep, a + boxLong, CONTAINER);
+            }
+        }
+        // The cranes, across the whole fan at a third and two thirds of its length.
+        int one = fanA + (fanB - fanA) / 3, two = fanA + 2 * (fanB - fanA) / 3;
+        for (int g : new int[] { one, two }) {
+            if (ew) {
+                fillRect(img, w, g, fanNear, g + 1, fanFar, GANTRY);
+                fillRect(img, w, g - 1, fanNear, g + 2, fanNear + 1, GANTRY);
+                fillRect(img, w, g - 1, fanFar - 1, g + 2, fanFar, GANTRY);
+            } else {
+                fillRect(img, w, fanNear, g, fanFar, g + 1, GANTRY);
+                fillRect(img, w, fanNear, g - 1, fanNear + 1, g + 2, GANTRY);
+                fillRect(img, w, fanFar - 1, g - 1, fanFar, g + 2, GANTRY);
+            }
+        }
+    }
+
+    /** A bulk yard's three stockpiles, side by side along the fan. */
+    private static void stockpiles(int px, int[] img, int w, int x0, int y0, int x1, int y1,
+                                   boolean ew, int fanA, int fanB, int fanFar) {
+        int edge = blend(ORE_HEAP, 0xff000000, 0.25);
+        for (int k = 0; k < 3; k++) {
+            int cx, cy, rx, ry;
+            if (ew) {
+                int a0 = x0 + k * (x1 - x0) / 3, a1 = x0 + (k + 1) * (x1 - x0) / 3;
+                int b0 = fanFar, b1 = y1;
+                cx = (a0 + a1) / 2; cy = (b0 + b1) / 2;
+                rx = Math.max(1, (a1 - a0) / 2 - 1); ry = Math.max(1, (b1 - b0) / 2 - 1);
+            } else {
+                int a0 = fanFar, a1 = x1;
+                int b0 = y0 + k * (y1 - y0) / 3, b1 = y0 + (k + 1) * (y1 - y0) / 3;
+                cx = (a0 + a1) / 2; cy = (b0 + b1) / 2;
+                rx = Math.max(1, (a1 - a0) / 2 - 1); ry = Math.max(1, (b1 - b0) / 2 - 1);
+            }
+            fillEllipse(img, w, cx, cy, rx, ry, ORE_HEAP, edge);
+        }
+    }
+
+    /** A filled ellipse, its edge a pixel darker. */
+    private static void fillEllipse(int[] img, int w, int cx, int cy, int rx, int ry, int fill, int edge) {
+        for (int y = cy - ry; y <= cy + ry; y++) {
+            for (int x = cx - rx; x <= cx + rx; x++) {
+                double dx = (x - cx) / (double) rx, dy = (y - cy) / (double) ry;
+                if (dx * dx + dy * dy > 1) continue;
+                boolean rim = outside(x - 1, y, cx, cy, rx, ry) || outside(x + 1, y, cx, cy, rx, ry)
+                        || outside(x, y - 1, cx, cy, rx, ry) || outside(x, y + 1, cx, cy, rx, ry);
+                img[y * w + x] = rim ? edge : fill;
+            }
+        }
+    }
+
+    /** Whether (x, y) lies outside the ellipse centred at (cx, cy). */
+    private static boolean outside(int x, int y, int cx, int cy, int rx, int ry) {
+        double dx = (x - cx) / (double) rx, dy = (y - cy) / (double) ry;
+        return dx * dx + dy * dy > 1;
+    }
+
+    /** A one-pixel line from (ax, ay) to (bx, by), Bresenham. */
+    private static void line(int[] img, int w, int ax, int ay, int bx, int by, int c) {
+        int dx = Math.abs(bx - ax), sx = ax < bx ? 1 : -1;
+        int dy = -Math.abs(by - ay), sy = ay < by ? 1 : -1;
+        int err = dx + dy;
+        while (true) {
+            if (ax >= 0 && ay >= 0 && ax < w && ay * w + ax < img.length) img[ay * w + ax] = c;
+            if (ax == bx && ay == by) break;
+            int e2 = 2 * err;
+            if (e2 >= dy) { err += dy; ax += sx; }
+            if (e2 <= dx) { err += dx; ay += sy; }
+        }
     }
 
     /* =====================================================================

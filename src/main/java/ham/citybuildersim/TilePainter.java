@@ -203,6 +203,12 @@ public final class TilePainter {
         public final byte[] marks = new byte[PLOTS];
         /** ...and those just outside the tile, as beyond. */
         public final byte[] marksBeyond = new byte[4 * TILE];
+        /** The freight station's yard, its box's first plot in the world: the yard nearest the rail gateway, spec 4.2; MIN_VALUE for none. */
+        public long stationX = Long.MIN_VALUE, stationY = Long.MIN_VALUE;
+        /** The railway carries goods, so the freight station is a container yard, spec 4.3. */
+        public boolean goodsByRail;
+        /** How many of a yard's tracks have wagons standing, 0 to YARD_TRACKS. */
+        public int wagonTracks;
         /** The types, by id (BuildingVisual.table()). */
         public BuildingVisual.Type[] types = new BuildingVisual.Type[0];
 

@@ -122,6 +122,9 @@ public final class MapTiles {
         h = World.mix(h ^ packed(in.beyond));
         h = World.mix(h ^ packed(in.fixed));
         h = World.mix(h ^ packed(in.fixedBeyond));
+        h = World.mix(h ^ in.stationX);
+        h = World.mix(h ^ in.stationY);
+        h = World.mix(h ^ (in.goodsByRail ? 1 : 0) ^ in.wagonTracks);
         h = World.mix(h ^ in.buildings);
         for (int b = 0; b < 2 * in.buildings; b++) h = World.mix(h ^ in.boxes[b]);
         h = World.mix(h ^ in.sites);
@@ -201,6 +204,10 @@ public final class MapTiles {
         // reads had none, so no ramp or smooth band was ever drawn).
         System.arraycopy(a.marks, 0, b.marks, 0, TilePainter.PLOTS);
         System.arraycopy(a.marksBeyond, 0, b.marksBeyond, 0, a.marksBeyond.length);
+        b.stationX = a.stationX;
+        b.stationY = a.stationY;
+        b.goodsByRail = a.goodsByRail;
+        b.wagonTracks = a.wagonTracks;
         b.types = a.types;
         if (b.counts.length != a.counts.length) b.counts = new int[a.counts.length];
         b.clearBuildings();
