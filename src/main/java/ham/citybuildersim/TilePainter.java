@@ -80,6 +80,11 @@ public final class TilePainter {
     /** A plot of the runs where the railway bridges a highway (0.7.89, CityRuns.F_RAIL_OVER; spec 2.8): Input.fixed's code, the highway's plot with the track over it. */
     public static final byte RAIL_OVER = CityRuns.F_RAIL_OVER;
 
+    /** A plot of the main line, from the rail gateway to the freight station: drawn as the main line, and an arterial or boulevard crossing it on a bridge (spec 4.3, D18). */
+    public static final int M_MAIN = 32;
+    /** A main-line plot drawn as double track: the city has a Freight Line (spec 4.3). */
+    public static final int M_DOUBLE = 64;
+
     /** A road plot's kind past BuildingVisual's GRAVEL, PAVED and HIGHWAY (Painted.road, 0.7.88): a TRACK, a street the city has bought no road for (spec 2.5, R4). */
     public static final byte TRACK = 4;
 

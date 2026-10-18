@@ -772,7 +772,10 @@ public final class LandMap {
         }
         if (road) {
             String role = p.role[plot] == TilePainter.BOULEVARD ? " · boulevard" : p.role[plot] == TilePainter.ARTERIAL ? " · arterial" : "";
-            String more = (p.bridge[plot] ? " · a bridge" : "") + (p.use[plot] == TilePainter.RAIL ? " · crossing the railway" : "");
+            boolean mainBridge = p.use[plot] == TilePainter.RAIL && (in.marks[plot] & TilePainter.M_MAIN) != 0
+                    && (p.role[plot] == TilePainter.ARTERIAL || p.role[plot] == TilePainter.BOULEVARD);
+            String railWords = p.use[plot] == TilePainter.RAIL ? (mainBridge ? " · bridging the railway" : " · crossing the railway") : "";
+            String more = (p.bridge[plot] ? " · a bridge" : "") + railWords;
             if (p.road[plot] == TilePainter.TRACK) return TRACK_WORDS + role + more;
             String kind = p.road[plot] == BuildingVisual.PAVED ? "Paved street" : p.road[plot] == BuildingVisual.GRAVEL ? "Gravel street"
                     : "Street of highway plots";
