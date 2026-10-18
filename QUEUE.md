@@ -24,11 +24,11 @@ stuff".
 | FX3 | The freight map's faults Jerus's second eye check found: the second yard's ladders off the line, a train across the sidings and a track into a yard's side, a 45-degree highway drawn as a staircase, track along a street drawn as a crossing on every plot | [FX3](docs/queue/FX3.md) |
 | TM1 | Two batches' checks at once on the PC: timing assertions soft while another batch or the game runs, hard at the ship gate; batch-check.sh in Git Bash | [TM1](docs/queue/TM1.md) |
 | FR2 | The Freight sector: Haulage's trucks carry the city leg, vans for goods only | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
+| FR7 | Track that goes somewhere and roads for two needs: a small Rail Depot first and spurs as sidings into works, no track on no train's way; streets and highways measured as two needs so a big city builds both; paving by traffic; gravel drawn grey; with FR0-L folded in (access roads, sidings, interchange ground, kerbs) (Jerus, 2026-10-18) | [FR7](docs/queue/FR7.md) |
 | FR3 | Ports as a landlord port, and the Bulk Berth | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR4 | The freight screens, and Build's Infrastructure and Freight tabs | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR5 | Trucks drawn on the map, near zoom only, with a Settings toggle on by default (Jerus, 2026-10-12) | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR6 | The railway carries the city's own bulk (D4), measured after FR2, with the port yard (D7) | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
-| FR7 | Track that goes somewhere and roads for two needs: a small Rail Depot first and spurs as sidings into works, no track on no train's way; streets and highways measured as two needs so a big city builds both; paving by traffic; gravel drawn grey; with FR0-L folded in (access roads, sidings, interchange ground, kerbs) (Jerus, 2026-10-18) | [FR7](docs/queue/FR7.md) |
 | CD1 | The city's debt: the curve from the dial the market expects, every payment priced on its month | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |

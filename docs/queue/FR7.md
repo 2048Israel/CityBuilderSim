@@ -8,7 +8,14 @@ He also folded in **FR0-L**, what FR0 did not build (out of Pending, his review 
 
 **Highway bridges are not here.** They are ET6 (short crossings to 1,020 m, long bridges as orders), and ET4 prices highways and rail by slope.
 
-FR7 comes after FR2, because the access roads need the Truck Depot and the highway's freight need reads Haulage's trucks. It ends the freight batches. It moves traces: §1.1 and §2 change what the city buys.
+**Jerus placed FR7 right after FR2** (2026-10-18), ahead of FR3-FR6:
+- It needs FR2's Truck Depot for the access roads, and Haulage's trucks for the highway's freight need. It needs nothing from FR3-FR6.
+- FR5's trucks run on the access roads and highways FR7 lays.
+- FR6 runs the city's own bulk on FR7's stations and sidings.
+- FR4's Build tabs then list the Rail Depot and the two road needs from the start.
+- FR2 and FR7 both change what the city buys, so one re-baseline covers them.
+
+It moves traces: §1.1 and §2 change what the city buys.
 
 ## 1. Rail: a terminal first, and track only where trains run
 
