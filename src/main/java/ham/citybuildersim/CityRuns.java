@@ -60,7 +60,10 @@ import java.util.PriorityQueue;
  *             drawn smooth; a highway is elevated - streets pass beneath, the
  *             railway bridges over it, it passes over a mine standing on its
  *             site - with RAMPS where it crosses every other arterial
- *             (RAMP_EVERY) and at each arm's end; the railway crosses streets
+ *             (RAMP_EVERY), where each arm of the spine first crosses one
+ *             (FX2: the every-other rule counts across the map, and could
+ *             leave a spine arm's first 1.4 km with none), and at each arm's
+ *             end; the railway crosses streets
  *             level - an arterial or boulevard crosses the main line on a
  *             bridge (D18) - and never runs along a highway; (FX2) a highway
  *             net is drawn once a straight stretch of it crosses an arterial
@@ -128,7 +131,7 @@ public final class CityRuns {
     /** A run off its heading stops short of another arm's plot this near beside it, either side: 40 plots (hw.py's no parallel twin, range(2, 40)). */
     public static final int TWIN_NEAR = 40;
 
-    /** Ramps where a highway crosses every RAMP_EVERY-th arterial: every other one, 1.92 km (spec 2.7). */
+    /** Ramps where a highway crosses every RAMP_EVERY-th arterial: every other one, 1.92 km (spec 2.7); and (FX2) where each arm of the spine first crosses one. */
     public static final int RAMP_EVERY = 2;
 
     /** A hub is sought among its lines' crossings within this many cells of where its net starts, each way, the nearest first: 8 - a district - where its own crossing is not the city's dry ground. */
@@ -424,10 +427,11 @@ public final class CityRuns {
     }
 
     /**
-     * Whether the highways net is drawn: it has started and some straight
-     * stretch of an arm has a step (1 to its steps) on an arterial's ramp line
-     * - a multiple of CELL that is every RAMP_EVERY-th cell line, where
-     * stretchInto() marks M_RAMP; a 45-degree stretch has none. Until then the
+     * Whether the highways net is drawn: it has started and it has a ramp
+     * onto an arterial where stretchInto() marks M_RAMP - a straight
+     * stretch's step on a multiple of CELL that is every RAMP_EVERY-th cell
+     * line, or an arm of the spine's first step on a cell line
+     * (firstLineStep()); a 45-degree stretch has none. Until then the
      * net is laid but not drawn (fill(), frameHash() and at() see none of it,
      * highwayUndrawn() counts its plots), because FX2: a stub of the first
      * Elevated Highway rides the street line through a cell's middle, crosses
@@ -439,6 +443,7 @@ public final class CityRuns {
         boolean reach = false;
         if (highways.started) {
             for (Arm a : highways.arms) {
+                reach = (a.corridor == 0 || a.corridor == 1) && firstLineStep(a) > 0;
                 for (int s = 0; s < a.segs && !reach; s++) reach = onRampLine(a, s);
                 if (reach) break;
             }
@@ -460,6 +465,30 @@ public final class CityRuns {
             if (Math.floorMod(Math.floorDiv(line, CELL), RAMP_EVERY) == 0) return true;
         }
         return false;
+    }
+
+    /**
+     * The step (1 to its steps) at which arm a's straight stretches first put
+     * a plot on a cell line along their heading - x a multiple of CELL going
+     * east or west, y going north or south - or -1 for none: where an arm of
+     * the spine's first ramp is (FX2). The hub rides a cell's middle
+     * (HIGHWAY_AT), so on a straight arm it is the 16th step.
+     */
+    static long firstLineStep(Arm a) {
+        long before = 0;
+        for (int s = 0; s < a.segs; s++) {
+            int h = a.segHead[s], dx = DX[h], dy = DY[h], m = a.segSteps[s];
+            if (m >= 1 && (dx == 0 || dy == 0)) {
+                long from = dy == 0 ? a.segX[s] : a.segY[s];
+                int way = dy == 0 ? dx : dy;
+                // The first multiple of CELL past `from` the way the stretch runs, and the step it is.
+                long line = way > 0 ? Math.floorDiv(from + CELL, CELL) * CELL : Math.floorDiv(from - 1, CELL) * CELL;
+                long j = Math.abs(line - from);
+                if (j <= m) return before + j;
+            }
+            before += m;
+        }
+        return -1;
     }
 
     /* =====================================================================
@@ -1498,6 +1527,13 @@ public final class CityRuns {
         if (k0 > k1) return 0;
         long hash = World.mix(sx * 0x9E3779B97F4A7C15L ^ sy ^ ((long) hd << 50) ^ (k0 << 20) ^ (k1 << 40) ^ code);
         int diagMark = diag ? (M_DIAG | (diagCode(hd) << M_DIAG_SHIFT)) : 0;
+        // An arm of the spine's first step on a cell line is a ramp too (FX2): its stretch's step there, or none.
+        long firstK = -1;
+        if (!diag && marks != null && n.kind == HIGHWAYS && (a.corridor == 0 || a.corridor == 1)) {
+            long first = firstLineStep(a), before = 0;
+            for (int t = 0; t < s; t++) before += a.segSteps[t];
+            if (first > before && first <= before + m) firstK = first - before;
+        }
         for (long k = k0; k <= k1; k++) {
             long px = sx + dx * k, py = sy + dy * k;
             for (int c = 0; c < (diag ? 2 : 1); c++) {
@@ -1508,9 +1544,9 @@ public final class CityRuns {
                 int i = (int) ((qy - y0) * w + (qx - x0));
                 if (diag) marks[i] |= (byte) (diagMark | (c == 1 ? M_CORNER : 0));
                 else if (n.kind == HIGHWAYS) {
-                    // A ramp where it crosses every RAMP_EVERY-th arterial.
+                    // A ramp where it crosses every RAMP_EVERY-th arterial, and where an arm of the spine first crosses one.
                     long along = dy == 0 ? qx : qy;
-                    if (Math.floorMod(along, CELL) == 0 && Math.floorMod(Math.floorDiv(along, CELL), RAMP_EVERY) == 0) marks[i] |= M_RAMP;
+                    if (Math.floorMod(along, CELL) == 0 && Math.floorMod(Math.floorDiv(along, CELL), RAMP_EVERY) == 0 || k == firstK) marks[i] |= M_RAMP;
                 }
             }
         }
