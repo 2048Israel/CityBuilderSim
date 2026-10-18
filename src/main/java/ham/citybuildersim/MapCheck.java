@@ -39,7 +39,12 @@ import java.util.Map;
  *      0.7.88 those its plans could not hold packed at the city's edge), a
  *      mine once on its site, its streets' surface kind by kind with what the
  *      plans have no street for the model's road plots, every plot of its
- *      track;
+ *      track; and (0.8.3, batch FX2) in every one of those months no line to
+ *      the world starts on a plot the city owns or on water, none runs out
+ *      over ground that is not dry (at least TrainSchedule.WORLD_PLOTS, at
+ *      most CityMap.WORLD_REACH, ending where the land does), and no train
+ *      position of any route is on water off the track - the months that had
+ *      a line, and trains, are printed;
  *   2. nothing placed moves: one more building changes one district's count
  *      by one, inner types in the first district with room, outer types in
  *      the last; and (0.7.88, spec-roads-and-ports.md 8.4; one tile's count
@@ -411,6 +416,7 @@ public class MapCheck {
         LongPlaytest.out = QUIET;
         System.setOut(QUIET);
         int monthsSummed = 0, pyramidSummed = 0, bought = 0, ironSites = 0, drawnSamples = 0, drawnExact = 0;
+        int lineMonths = 0, routeMonths = 0, wayMonthsBad = 0;
         StringBuilder drawnLines = new StringBuilder();
         int startDistricts;
         long sitedWorst = 0, ownedAtFounding = 0;
@@ -459,6 +465,10 @@ public class MapCheck {
                 }
                 LongPlaytest.run(g, 1);
                 CityMap map = g.getCityMap();
+                int[] ways = new int[2];
+                if (!worldWaysOk(map, ways)) wayMonthsBad++;
+                lineMonths += ways[0];
+                routeMonths += ways[1];
                 if (Arrays.equals(map.totals(), g.getMapCounts())) monthsSummed++;
                 long[] top = map.pyramid().root(), sum = new long[CityMap.NODE_WIDTH];
                 for (CityMap.District d : map.districts()) {
@@ -498,6 +508,9 @@ public class MapCheck {
         check("its districts sum to the model's count of every type, every month", monthsSummed == MONTHS);
         check("...and its pyramid's top to its districts, every month", pyramidSummed == MONTHS);
         check("...and no month dropped the map", g.getMapFailures() == 0);
+        out.printf("      the lines to the world and the trains (FX2): the map had a world line in %d of %d months and train routes in %d;"
+                + " %d months had a line or a train where it should not be%n", lineMonths, MONTHS, routeMonths, wayMonthsBad);
+        check("no world line point and no train position on water, over every month played", wayMonthsBad == 0);
         CityMap fresh = CityMap.canonical(g.getCityLand(), g.getLandManager()::remainingByHolding, g.getMapTypes(),
                 g.getMapCounts());
         boolean sameGround = fresh.districts().size() == map.districts().size();
@@ -518,6 +531,56 @@ public class MapCheck {
                 + " as its streets' surface and what they do not carry, every plot of its track, a mine once on its site",
                 drawnSamples == MONTHS / DRAWN_EVERY && drawnExact == drawnSamples);
         return g;
+    }
+
+    /**
+     * Whether a month's lines to the world and trains lie on the ground they
+     * should (FX2; GatewayCheck holds the whole list on its fixtures, this is
+     * the cheap half, the points and the routes and never the box): each
+     * world line's point is on a plot the city does not own and that is dry;
+     * the way out along line.way() is dry ground at every CityMap.WORLD_STEP
+     * short of its reach, which is TrainSchedule.WORLD_PLOTS at least and
+     * CityMap.WORLD_REACH at most, and where it is less than that the next
+     * point is not dry (the line ends where the land does); and every quarter
+     * plot of every train route is dry ground or a plot the railway carries
+     * (CityRuns.at(): track, track over a highway, a yard). Sets seen[0] to 1
+     * when the map has a world line and seen[1] to 1 when it has train routes.
+     */
+    static boolean worldWaysOk(CityMap m, int[] seen) {
+        boolean ok = true;
+        World w = World.of(m.worldKey());
+        List<CityMap.WorldLine> lines = m.worldLines();
+        if (!lines.isEmpty()) seen[0] = 1;
+        for (CityMap.WorldLine l : lines) {
+            long px = (long) Math.floor(l.x()), py = (long) Math.floor(l.y());
+            ok &= m.runGround().at(px, py, -1) == -1 && World.dry(w.terrainAt(px, py));
+            ok &= l.reach() >= TrainSchedule.WORLD_PLOTS && l.reach() <= CityMap.WORLD_REACH;
+            double c = Math.cos(Math.toRadians(l.way())), s = Math.sin(Math.toRadians(l.way()));
+            for (int i = 0; i * CityMap.WORLD_STEP < l.reach(); i++) {
+                double t = i * CityMap.WORLD_STEP;
+                ok &= World.dry(w.terrainAt((long) Math.floor(l.x() + c * t), (long) Math.floor(l.y() + s * t)));
+            }
+            if (l.reach() < CityMap.WORLD_REACH) {
+                ok &= !World.dry(w.terrainAt((long) Math.floor(l.x() + c * l.reach()), (long) Math.floor(l.y() + s * l.reach())));
+            }
+        }
+        List<TrainSchedule.Route> routes = m.trainRoutes();
+        if (!routes.isEmpty()) seen[1] = 1;
+        CityRuns runs = m.runs();
+        java.util.Set<Long> plots = new java.util.HashSet<>();
+        for (TrainSchedule.Route rt : routes) {
+            double[] xs = rt.xs(), ys = rt.ys();
+            for (int i = 0; i + 1 < xs.length; i++) {
+                int n = Math.max(1, (int) Math.ceil(Math.hypot(xs[i + 1] - xs[i], ys[i + 1] - ys[i]) * 4));
+                for (int k = 0; k <= n; k++) {
+                    long qx = (long) Math.floor(xs[i] + (xs[i + 1] - xs[i]) * k / n), qy = (long) Math.floor(ys[i] + (ys[i + 1] - ys[i]) * k / n);
+                    if (!plots.add((qx << 32) ^ (qy & 0xffffffffL))) continue;
+                    byte at = runs.at(qx, qy);
+                    ok &= at == CityRuns.F_RAIL || at == CityRuns.F_RAIL_OVER || at == CityRuns.F_YARD || World.dry(w.terrainAt(qx, qy));
+                }
+            }
+        }
+        return ok;
     }
 
     /* ---------------------------------------------------------------------
@@ -3158,7 +3221,7 @@ public class MapCheck {
         int reached = 0;
         for (long[] y : runs.yards()) if (runs.wayTo(y) != null) reached++;
         boolean starts = true, onTrack = true, intoYard = true, sidings = true, stationOnes = true;
-        double r = Math.toRadians(line.bearing());
+        double r = Math.toRadians(line.way());
         java.util.Map<Integer, java.util.Set<Integer>> sidingsOf = new java.util.HashMap<>();
         for (TrainSchedule.Route rt : routes) {
             double[] xs = rt.xs(), ys = rt.ys();

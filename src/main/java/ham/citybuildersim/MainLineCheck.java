@@ -2,7 +2,9 @@ package ham.citybuildersim;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The main line is the railway's run from its gateway to the freight station,
@@ -45,6 +47,18 @@ import java.util.List;
  *  10. A GATE ARM THAT BENDS: an arm of three stretches - east, south-east,
  *      east - is marked step for step, each 45-degree step's corner with it:
  *      a stretch's steps are counted from the arm's start, not the stretch's.
+ *
+ *  11. THE MAIN ARM (0.8.3, batch FX2): where the gate arm waits at the sea
+ *      the city owns ahead of it and the opposite arm runs to the city's
+ *      edge, the main line, the freight station and the trains' way run from
+ *      the arm the map sets (CityRuns.setMainArm(), mainArm()). With none set
+ *      mainArm() is the gate arm and mainLine() the gate arm's; with the west
+ *      arm set, the freight station is the yard nearest its end, the M_MAIN
+ *      marks lie on the west arm from that yard's anchor and on no plot of
+ *      the gate arm, and wayTo() starts at the west arm's end plot's middle;
+ *      -1 and an arm with no steps fall back to the gate arm; and a yard on a
+ *      corridor that starts on the main arm is reached along that arm, no
+ *      plot of the way twice and every quarter plot of it on track.
  *
  * WHY THIS EXISTS: batch FR0 slice M sets the main-line marks that the painter
  * already draws. A fixture CAUSES each condition, and every assertion is
@@ -394,9 +408,214 @@ public class MainLineCheck {
         check("...and each 45-degree step's corner with it", everyCorner);
         check("...and no other plot: as many marked as the arm's steps, its start and its corners", markedB == path.length + 1 + 3);
 
+        theMainArm(siteX, siteY);
+
         System.out.println();
         System.out.println(fails == 0 ? "The main line runs to the freight station." : fails + " FAILED");
         System.exit(fails);
+    }
+
+    /** BoxGround with the city's own sea in it: the plots from seaX east to the box's east edge are owned salt water, the rest owned grass (FX2: Jerus's Halifax, where the gate arm waits at the sea the city owns beyond it). */
+    static class SeaGround extends BoxGround {
+        final long seaX;
+
+        SeaGround(long x0, long y0, long x1, long y1, long seaX) {
+            super(x0, y0, x1, y1);
+            this.seaX = seaX;
+        }
+
+        @Override public int at(long x, long y, int dir) {
+            if (x < x0 || x > x1 || y < y0 || y > y1) return -1;
+            return x >= seaX ? World.SALT : World.GRASS;
+        }
+    }
+
+    /** A railway of `track` plots laid on g with its gateway east, from the site (siteX, siteY). */
+    static CityRuns seaCity(SeaGround g, long track, long siteX, long siteY) {
+        CityRuns runs = new CityRuns();
+        runs.setGateway(0);
+        layRail(runs, g, track, siteX, siteY);
+        return runs;
+    }
+
+    /** The index of the arm opposite the gate arm of a gateway east: corridor 0, home heading west (4); -1 for none. */
+    static int westArm(CityRuns.Net rail) {
+        for (int i = 0; i < rail.arms.size(); i++) if (rail.arms.get(i).corridor == 0 && rail.arms.get(i).home == 4) return i;
+        return -1;
+    }
+
+    /** The plots fill() marks M_MAIN over the box, counted by the arm locate() puts them on; the last entry counts those on no arm (the hub's plot among them). */
+    static int[] mainByArm(CityRuns runs, BoxGround g) {
+        int w = (int) (g.x1 - g.x0 + 1), h = (int) (g.y1 - g.y0 + 1);
+        byte[] fixed = new byte[w * h], marks = new byte[w * h];
+        fillBox(runs, g, fixed, marks);
+        int[] by = new int[runs.rail.arms.size() + 1];
+        for (int i = 0; i < marks.length; i++) {
+            if ((marks[i] & TilePainter.M_MAIN) == 0) continue;
+            int[] loc = CityRuns.locate(runs.rail, g.x0 + i % w, g.y0 + i / w);
+            by[loc == null ? by.length - 1 : loc[0]]++;
+        }
+        return by;
+    }
+
+    /** What the counts hold apart from entry keep: the plots on every other arm and on none. */
+    static int others(int[] by, int keep) {
+        int n = 0;
+        for (int i = 0; i < by.length; i++) if (i != keep) n += by[i];
+        return n;
+    }
+
+    /**
+     * A way (wayTo()'s points, each a plot's middle) walked every quarter plot:
+     * {positions walked, positions that enter a plot the walk had already
+     * left (a way doubling back), positions on a plot the railway does not
+     * cover}.
+     */
+    static int[] walkWay(CityRuns runs, double[][] way) {
+        double[] xs = way[0], ys = way[1];
+        Set<Long> visited = new HashSet<>();
+        long here = Long.MIN_VALUE;
+        int walked = 0, again = 0, off = 0;
+        for (int i = 0; i < xs.length; i++) {
+            int n = i == 0 ? 0 : Math.max(1, (int) Math.ceil(Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]) * 4));
+            for (int k = 0; k <= n; k++) {
+                if (i > 0 && k == 0) continue;
+                double x = i == 0 ? xs[0] : xs[i - 1] + (xs[i] - xs[i - 1]) * k / n;
+                double y = i == 0 ? ys[0] : ys[i - 1] + (ys[i] - ys[i - 1]) * k / n;
+                long px = (long) Math.floor(x), py = (long) Math.floor(y);
+                long key = (px << 32) ^ (py & 0xffffffffL);
+                walked++;
+                if (!CityRuns.covered(runs.rail, px, py)) off++;
+                if (key != here && !visited.add(key)) again++;
+                here = key;
+            }
+        }
+        return new int[] { walked, again, off };
+    }
+
+    /* ============ 11. the main arm (FX2) ============ */
+
+    /**
+     * Section 11. Jerus's Halifax: the gate arm waits at the sea and the city
+     * owns the sea beyond it, so the railway meets the world from another
+     * arm. The fixture is SeaGround - the gate arm (east) ends a few plots
+     * short of owned salt water, the arm opposite it (west) runs to the box's
+     * edge - and the main arm is set the way the map sets it.
+     */
+    static void theMainArm(long siteX, long siteY) {
+        System.out.println("\n--- the main arm (FX2) ---");
+        long seaX = siteX + 60;
+        SeaGround sea = new SeaGround(siteX - 300, siteY - 100, siteX + 90, siteY + 100, seaX);
+        CityRuns runs = seaCity(sea, 1000, siteX, siteY);
+        CityRuns.Net rail = runs.rail;
+        int gate = CityRuns.gateArm(rail, 0), west = westArm(rail);
+        boolean laid = gate >= 0 && west >= 0 && rail.arms.get(gate).steps > 0 && rail.arms.get(west).steps > 0;
+        check("the fixture lays a railway with an east gate arm and the arm opposite it, both with track", laid);
+        if (!laid) return;
+        CityRuns.Arm gateA = rail.arms.get(gate), westA = rail.arms.get(west);
+        int ahead = (int) (seaX - 1 - gateA.x), edge = (int) (westA.x - sea.x0);
+        System.out.printf("  gate arm %d: heading %d, %d steps, ends at (%d, %d), %d plots short of the sea; west arm %d: heading %d, %d steps, ends at (%d, %d), %d plots from the box's edge%n",
+                gate, gateA.head * 45, gateA.steps, gateA.x, gateA.y, ahead, west, westA.head * 45, westA.steps, westA.x, westA.y, edge);
+        check("the gate arm waits at the sea the city owns: its end is fewer than LOOK plots short of it", gateA.home == 0 && ahead >= 0 && ahead < CityRuns.LOOK);
+        check("...and the arm opposite it runs to the box's west edge, within LOOK plots of it", westA.home == 4 && edge >= 0 && edge < CityRuns.LOOK);
+
+        // With no main arm set the gate arm is the main arm: today's rule.
+        List<int[]> line = runs.mainLine();
+        int[] by = mainByArm(runs, sea);
+        check("with no main arm set, mainArm() is the gate arm", runs.mainArm() == gate);
+        check("...mainLine() is the gate arm whole, from its start to its end", line.size() == 1 && Arrays.equals(line.get(0), new int[] { gate, 0, gateA.steps }));
+        check("...and fill() marks M_MAIN on every step of the gate arm and on no plot of any other arm", by[gate] == gateA.steps && others(by, gate) == by[by.length - 1]);
+
+        // setMainArm(west): the freight station, the marks and the trains' way run from the west arm.
+        runs = seaCity(sea, 1000, siteX, siteY);
+        rail = runs.rail;
+        gateA = rail.arms.get(gate);
+        westA = rail.arms.get(west);
+        int gateStep = 10, westStep = 100;
+        check("fixture: both arms are long enough for a yard part way along them", westA.steps > westStep && gateA.steps > gateStep);
+        addYardAtStep(runs, gate, gateStep);
+        addYardAtStep(runs, west, westStep);
+        long[] gp = plotOnArm(gateA, gateStep), wp = plotOnArm(westA, westStep);
+        long[] gateYard = { gp[0], gp[1], 1, 1 }, westYard = { wp[0], wp[1], 1, 1 };
+        check("with no main arm set, the freight station is the yard nearest the gate arm's end: the gate arm's", Arrays.equals(runs.freightStation(), gateYard));
+        runs.setMainArm(west);
+        check("setMainArm(west): mainArm() is the west arm", runs.mainArm() == west);
+        check("...the freight station is the yard nearest the west arm's end: the west arm's, with a yard on the gate arm too", Arrays.equals(runs.freightStation(), westYard));
+        by = mainByArm(runs, sea);
+        System.out.printf("  with the west arm the main arm: %d plots marked on it (its steps %d to %d), %d on the gate arm, %d elsewhere%n",
+                by[west], westStep, westA.steps, by[gate], others(by, west) - by[gate]);
+        check("...fill() marks M_MAIN from that yard's anchor out to the west arm's end", by[west] == westA.steps - westStep + 1);
+        check("...on no plot of the gate arm past the hub", by[gate] == 0);
+        check("...and on no plot of any other arm, or off the arms", others(by, west) == 0);
+        double[][] way = runs.wayTo(runs.freightStation());
+        check("...wayTo(the station) starts at the west arm's end plot's middle", way != null && way[0][0] == westA.x + 0.5 && way[1][0] == westA.y + 0.5);
+        if (way != null) {
+            int[] walked = walkWay(runs, way);
+            double nearest = Double.NEGATIVE_INFINITY;
+            for (double x : way[0]) nearest = Math.max(nearest, x);
+            check("...runs along the west arm to the yard and goes no nearer the hub than it", nearest == westYard[0] + 0.5 && walked[1] == 0 && walked[2] == 0);
+        }
+
+        // -1, an arm with no steps and an index past the arms all fall back to the gate arm.
+        CityRuns shortRun = seaCity(sea, 70, siteX, siteY);
+        CityRuns.Net sr = shortRun.rail;
+        int sGate = CityRuns.gateArm(sr, 0), sWest = westArm(sr), idle = -1;
+        for (int i = 0; i < sr.arms.size() && idle < 0; i++) if (sr.arms.get(i).steps == 0) idle = i;
+        boolean shorter = sGate >= 0 && sWest >= 0 && idle >= 0 && sr.arms.get(sGate).steps > 0 && sr.arms.get(sWest).steps > 0;
+        check("fixture: a shorter railway has track on its gate and west arms and an arm with no steps", shorter);
+        if (shorter) {
+            shortRun.setMainArm(sWest);
+            check("an arm with steps set as the main arm is the main arm", shortRun.mainArm() == sWest);
+            shortRun.setMainArm(-1);
+            check("setMainArm(-1): the main arm is the gate arm", shortRun.mainArm() == sGate);
+            shortRun.setMainArm(idle);
+            check("setMainArm(an arm with no steps): the main arm is the gate arm", shortRun.mainArm() == sGate);
+            shortRun.setMainArm(sr.arms.size());
+            check("...and so is an index past the net's arms", shortRun.mainArm() == sGate);
+            List<int[]> back = shortRun.mainLine();
+            check("...and the main line is the gate arm whole", back.size() == 1 && back.get(0)[0] == sGate && back.get(0)[1] == 0 && back.get(0)[2] == sr.arms.get(sGate).steps);
+        }
+
+        // A yard on a corridor that starts on the main arm: the way turns there, not at the hub.
+        CityRuns grown = null;
+        int gWest = -1, corr = -1, track = 1000;
+        for (; track <= 4000 && corr < 0; track += 1000) {
+            grown = seaCity(sea, track, siteX, siteY);
+            gWest = westArm(grown.rail);
+            for (int ai = 0; ai < grown.rail.arms.size() && corr < 0; ai++) {
+                CityRuns.Arm a = grown.rail.arms.get(ai);
+                int[] on = a.corridor >= 2 && a.steps >= 3 ? CityRuns.locate(grown.rail, a.sx, a.sy) : null;
+                if (on != null && on[0] == gWest) corr = ai;
+            }
+        }
+        check("a corridor opens on the west arm, and its arm has track", corr >= 0);
+        if (corr < 0) return;
+        CityRuns.Arm cArm = grown.rail.arms.get(corr), gWestA = grown.rail.arms.get(gWest);
+        int[] joinedAt = CityRuns.locate(grown.rail, cArm.sx, cArm.sy);
+        int yardStep = 2;
+        grown.setMainArm(gWest);
+        addYardAtStep(grown, corr, yardStep);
+        long[] cp = plotOnArm(cArm, yardStep);
+        long[] corrYard = { cp[0], cp[1], 1, 1 };
+        System.out.printf("  corridor %d's arm %d (%d steps) starts on the west arm at its step %d; the yard stands %d steps out; %d plots of track laid%n",
+                cArm.corridor, corr, cArm.steps, joinedAt[1], yardStep, grown.rail.plots());
+        check("...the yard on it is the freight station, with the west arm the main arm", grown.mainArm() == gWest && Arrays.equals(grown.freightStation(), corrYard));
+        by = mainByArm(grown, sea);
+        check("...fill() marks M_MAIN on the west arm whole and on the corridor's arm to the yard", by[gWest] == gWestA.steps && by[corr] == yardStep);
+        check("...and on no plot of the gate arm, nor anywhere else but the hub", by[gate] == 0 && others(by, gWest) - by[corr] == 1);
+        double[][] cWay = grown.wayTo(corrYard);
+        check("wayTo() reaches the corridor's yard", cWay != null);
+        if (cWay != null) {
+            int[] walked = walkWay(grown, cWay);
+            double farthest = Double.NEGATIVE_INFINITY;
+            for (double x : cWay[0]) farthest = Math.max(farthest, x);
+            System.out.printf("  the way: %d points, %d quarter plots walked, %d of them entering a plot already left, %d off the track%n",
+                    cWay[0].length, walked[0], walked[1], walked[2]);
+            check("...it starts at the west arm's end plot's middle", cWay[0][0] == gWestA.x + 0.5 && cWay[1][0] == gWestA.y + 0.5);
+            check("...it turns at the corridor's start and never comes in to the hub's column", farthest < grown.rail.hubX);
+            check("...it has no plot twice: no doubling back", walked[0] > 0 && walked[1] == 0);
+            check("...and every quarter plot of it is a plot the railway covers", walked[2] == 0);
+        }
     }
 
     static boolean marksCarry(CityMap m, int bits) {
