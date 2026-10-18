@@ -2758,7 +2758,7 @@ public final class CityMap {
     public long[] legendFiguresIfDrawn() {
         int[] p = packSums();
         if (p == null) return null;
-        double surplus = runs.highwayShort();
+        double surplus = runs.highwayUndrawn();
         for (District d : districts) surplus += links.get(d).surplus;
         return new long[] { p[0], Math.round(surplus), runs.railShort() };
     }
@@ -2771,7 +2771,7 @@ public final class CityMap {
             Link l = links.get(d);
             if (l != null && l.leftover != null) for (int k = 0; k < 4; k++) out[k] += l.leftover[k];
         }
-        out[BuildingVisual.HIGHWAY] += runs.highwayShort();
+        out[BuildingVisual.HIGHWAY] += runs.highwayUndrawn();
         return out;
     }
 
@@ -3142,8 +3142,9 @@ public final class CityMap {
     private record WayOut(double score, int arm, int which, int way, long ex, long ey) { }
 
     /**
-     * Adds net n's line to the world to out and returns it; null (none added) for a net that has not started or has no
-     * arm to start it from. An arm with steps is read from its end along its heading up to WORLD_GAP plots: an owned
+     * Adds net n's line to the world to out and returns it; null (none added) for a net that has not started, for the
+     * highways while they reach no street (CityRuns.highwaysReach(), FX2: they are not drawn), or that has no arm to
+     * start it from. An arm with steps is read from its end along its heading up to WORLD_GAP plots: an owned
      * plot that is not dry ground ends the read (the arm is at the water, no edge), the first plot the city does not
      * own is the arm's edge plot where it is dry ground (else none), and no unowned plot in reach means the arm is not
      * at the edge. An arm at the edge offers up to two ways out over the land beyond - the gateway's bearing, when it
@@ -3153,7 +3154,7 @@ public final class CityMap {
      * and runs on over dry ground (dryRun()) up to WORLD_REACH.
      */
     private WorldLine worldLine(CityRuns.Net n, int gateway, List<WorldLine> out) {
-        if (!n.started) return null;
+        if (!n.started || (n.kind == CityRuns.HIGHWAYS && !runs.highwaysReach())) return null;
         World w = World.of(worldKey);
         List<WayOut> offers = new ArrayList<>();
         for (int i = 0; i < n.arms.size(); i++) {

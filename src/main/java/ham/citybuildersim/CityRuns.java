@@ -62,7 +62,10 @@ import java.util.PriorityQueue;
  *             site - with RAMPS where it crosses every other arterial
  *             (RAMP_EVERY) and at each arm's end; the railway crosses streets
  *             level - an arterial or boulevard crosses the main line on a
- *             bridge (D18) - and never runs along a highway;
+ *             bridge (D18) - and never runs along a highway; (FX2) a highway
+ *             net is drawn once a straight stretch of it crosses an arterial
+ *             at a ramp; before that its plots are counted undrawn, the
+ *             legend's;
  *   YARDS     each Rail Terminal on the track, in the cell along it nearest a
  *             mine, its box across the line (spec 2.8);
  *   GATEWAY   (0.8.1, batch FR0; spec-freight 4.1, D13) the bearing toward
@@ -307,6 +310,10 @@ public final class CityRuns {
     private long mainLineCacheAt = Long.MIN_VALUE;
     private int mainLineCacheArm = -1;
 
+    /** highwaysReach()'s last answer, and the version it was computed at. */
+    private boolean highwaysReachCache;
+    private long highwaysReachCacheAt = Long.MIN_VALUE;
+
     /** The rail net's arm the main line runs out along and the trains come in on: the arm the railway's world line leaves the city's ground from (CityMap.worldLines() sets it, FX2), or -1 for the gate arm. The map's, never saved. */
     private int mainArm = -1;
 
@@ -314,6 +321,9 @@ public final class CityRuns {
     public Net rail() { return rail; }
     public List<long[]> yards() { return java.util.Collections.unmodifiableList(yards); }
     public long highwayShort() { return highwayShort; }
+
+    /** The highway plots the model has that the map draws nowhere: those the runs could not lay (highwayShort()), and (FX2) all the net's while it reaches no street (highwaysReach()), laid but not drawn - the legend's. */
+    public long highwayUndrawn() { return highwayShort + (highways.started && !highwaysReach() ? highways.plots : 0); }
     public long railShort() { return railShort; }
     public int yardsShort() { return yardsShort; }
     public long version() { return version; }
@@ -411,6 +421,45 @@ public final class CityRuns {
     /** Whether net n has a plot at (x, y). */
     public static boolean covered(Net n, long x, long y) {
         return coverer(n, x, y, -1) != -1;
+    }
+
+    /**
+     * Whether the highways net is drawn: it has started and some straight
+     * stretch of an arm has a step (1 to its steps) on an arterial's ramp line
+     * - a multiple of CELL that is every RAMP_EVERY-th cell line, where
+     * stretchInto() marks M_RAMP; a 45-degree stretch has none. Until then the
+     * net is laid but not drawn (fill(), frameHash() and at() see none of it,
+     * highwayUndrawn() counts its plots), because FX2: a stub of the first
+     * Elevated Highway rides the street line through a cell's middle, crosses
+     * no arterial and has no ramp onto one, alone in a block (Jerus's eye
+     * check). Kept against version.
+     */
+    public boolean highwaysReach() {
+        if (highwaysReachCacheAt == version) return highwaysReachCache;
+        boolean reach = false;
+        if (highways.started) {
+            for (Arm a : highways.arms) {
+                for (int s = 0; s < a.segs && !reach; s++) reach = onRampLine(a, s);
+                if (reach) break;
+            }
+        }
+        highwaysReachCache = reach;
+        highwaysReachCacheAt = version;
+        return reach;
+    }
+
+    /** Whether straight stretch s of arm a has a step (1 to its steps) on a ramp line: its coordinate along the stretch (x going east or west, y going north or south) a multiple of CELL whose cell line is every RAMP_EVERY-th, counted by the lines it crosses, not by its plots. */
+    static boolean onRampLine(Arm a, int s) {
+        int h = a.segHead[s], dx = DX[h], dy = DY[h], m = a.segSteps[s];
+        if (m < 1 || (dx != 0 && dy != 0)) return false;
+        long from = dy == 0 ? a.segX[s] : a.segY[s];
+        int way = dy == 0 ? dx : dy;
+        long first = from + way, last = from + (long) way * m;
+        long lo = Math.min(first, last), hi = Math.max(first, last);
+        for (long line = Math.floorDiv(lo + CELL - 1, CELL) * CELL; line <= hi; line += CELL) {
+            if (Math.floorMod(Math.floorDiv(line, CELL), RAMP_EVERY) == 0) return true;
+        }
+        return false;
     }
 
     /* =====================================================================
@@ -1320,14 +1369,17 @@ public final class CityRuns {
      * highway) and, `yardsOver`, F_YARD over every plot of a yard (a plan's
      * ground: no street crosses it) - else a yard's track stays track, which
      * the yard is drawn over; into marks (null to leave them), M_RAMP and a
-     * 45-degree stretch's M_DIAG. Returns a hash of what it laid.
+     * 45-degree stretch's M_DIAG. Returns a hash of what it laid. The highways
+     * are filled in only once they reach a street (highwaysReach(), FX2); the
+     * railway always.
      */
     public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver) {
         Arrays.fill(fixed, 0, w * h, (byte) 0);
         if (marks != null) Arrays.fill(marks, 0, w * h, (byte) 0);
         long hash = World.mix(0x46494C4CL);
+        boolean reach = highwaysReach();
         for (Net n : new Net[] { highways, rail }) {
-            if (!n.started) continue;
+            if (!n.started || (n.kind == HIGHWAYS && !reach)) continue;
             byte code = n.kind == HIGHWAYS ? F_HIGHWAY : F_RAIL;
             if (n.hubLaid && n.hubX >= x0 && n.hubY >= y0 && n.hubX < x0 + w && n.hubY < y0 + h) {
                 put(fixed, w, n.hubX - x0, n.hubY - y0, code);
@@ -1379,12 +1431,14 @@ public final class CityRuns {
      * A hash of what the runs lay on the w x h plots from (x0, y0) - each
      * stretch's steps there, the hub, the arms' ends (their ramps), the yards -
      * without drawing them: what a district's plan is kept against
-     * (CityMap.ownStamp()). The same runs over a box give the same hash.
+     * (CityMap.ownStamp()). The same runs over a box give the same hash; the
+     * highways are in it only once they reach a street (highwaysReach(), FX2).
      */
     public long frameHash(long x0, long y0, int w, int h) {
         long hash = World.mix(0x48415348L);
+        boolean reach = highwaysReach();
         for (Net n : new Net[] { highways, rail }) {
-            if (!n.started) continue;
+            if (!n.started || (n.kind == HIGHWAYS && !reach)) continue;
             if (n.hubLaid && n.hubX >= x0 && n.hubY >= y0 && n.hubX < x0 + w && n.hubY < y0 + h) hash = World.mix(hash ^ n.hubX ^ (n.hubY << 21) ^ n.kind);
             java.util.Set<Long> done = new java.util.HashSet<>();
             for (long dxk = Math.floorDiv(x0, CityMap.DISTRICT); dxk <= Math.floorDiv(x0 + w - 1, CityMap.DISTRICT); dxk++) {
@@ -1468,10 +1522,10 @@ public final class CityRuns {
         return h == 1 ? 0 : h == 3 ? 1 : h == 5 ? 2 : 3;
     }
 
-    /** What the runs carry at world plot (x, y): F_YARD, F_RAIL_OVER, F_HIGHWAY, F_RAIL, or 0. */
+    /** What the runs carry at world plot (x, y): F_YARD, F_RAIL_OVER, F_HIGHWAY, F_RAIL, or 0 - no highway while the net reaches no street (highwaysReach(), FX2). */
     public byte at(long x, long y) {
         for (long[] yd : yards) if (x >= yd[0] && y >= yd[1] && x < yd[0] + yd[2] && y < yd[1] + yd[3]) return F_YARD;
-        boolean hw = covered(highways, x, y), rl = covered(rail, x, y);
+        boolean hw = highwaysReach() && covered(highways, x, y), rl = covered(rail, x, y);
         return hw && rl ? F_RAIL_OVER : hw ? F_HIGHWAY : rl ? F_RAIL : 0;
     }
 
