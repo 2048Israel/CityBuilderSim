@@ -5,12 +5,15 @@
 #      powershell -NoProfile -ExecutionPolicy Bypass -File tools\jvms.ps1
 #
 #  Prints one line, "<batch> <game>":
-#    batch  the java.exe and javaw.exe processes running a class of
-#           ham.citybuildersim that is not the game's launcher: a suite and its
-#           harness, LongPlaytest, Maps, a harness run from NetBeans;
+#    batch  the runs of a class of ham.citybuildersim that is not the game's
+#           launcher: a suite, LongPlaytest, Ensemble, Maps, a harness run
+#           from NetBeans;
 #    game   the game's own: the launcher ham.citybuildersim.CityBuilderSim
 #           (NetBeans' Run), the jar (Play CityBuilderSim.bat), or the
 #           packaged CityBuilderSim.exe.
+#  A run is counted once: a matching java.exe or javaw.exe whose parent
+#  matches too is not counted again - the JVM the PATH's javapath shim starts
+#  under itself, or a suite's harness under AllChecks.
 #  A check started while either is above 0 times soft (-Dcbs.timing=soft).
 #  "0 0" when the processes cannot be read: timing is then hard, as before.
 #
@@ -25,14 +28,19 @@ $game = 0
 try {
     $procs = Get-CimInstance Win32_Process -ErrorAction Stop `
         -Filter "Name='java.exe' or Name='javaw.exe' or Name='CityBuilderSim.exe'"
+    $kind = @{}
     foreach ($p in $procs) {
         $line = [string]$p.CommandLine
         if ($p.Name -eq 'CityBuilderSim.exe' -or $line -cmatch 'ham\.citybuildersim\.CityBuilderSim\b' `
                 -or $line -cmatch 'CityBuilderSim-[^\\/"]*\.jar') {
-            $game++
+            $kind[$p.ProcessId] = 'game'
         } elseif ($line -cmatch 'ham\.citybuildersim\.') {
-            $batch++
+            $kind[$p.ProcessId] = 'batch'
         }
+    }
+    foreach ($p in $procs) {
+        if (-not $kind.ContainsKey($p.ProcessId) -or $kind.ContainsKey($p.ParentProcessId)) { continue }
+        if ($kind[$p.ProcessId] -eq 'game') { $game++ } else { $batch++ }
     }
 } catch { }
 "$batch $game"
