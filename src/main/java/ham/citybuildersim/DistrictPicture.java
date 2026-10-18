@@ -60,7 +60,7 @@ public final class DistrictPicture {
 
     /** Nothing the picture draws: the ground, owned or not - the far node shows its own there. */
     public static final byte GROUND = 0;
-    /** A building of a class, HOME to MINE: its class + FIRST_CLASS (BuildingVisual.FILL's colour). */
+    /** A building of a class, HOME to TRANSPORT: its class + FIRST_CLASS (BuildingVisual.FILL's colour). */
     public static final int FIRST_CLASS = 1;
     /** ...the flats (BuildingVisual.FLATS_FILL)... */
     public static final byte FLATS = FIRST_CLASS + BuildingVisual.CLASSES;

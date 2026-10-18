@@ -7,7 +7,7 @@ import java.util.List;
  * How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which kind, whether it stands on a resource's sites, and whether the map places it from the outside of the city in.
  *
  * WHY THIS EXISTS (0.7.60, batch J3; the project's spec-land.md 2.5 and 2.6,
- * star 10). Jerus's map mockup (city-map.html) drew eleven kinds of building -
+ * star 10). Jerus's map mockup (city-map.html) drew ten kinds of building -
  * homes, shops, offices, industry, farms, utilities, schools, health, safety,
  * and mines and wells - each with its fill, its edge and its footprint (the
  * mockup's star 8), and the game has its building types in eighteen
@@ -53,13 +53,19 @@ import java.util.List;
  * one colour and placed as one campus (GROUPS: the refinery's units since
  * 0.7.97, then steel's, cement's, copper's and wood's). Still the picture
  * only: nothing in the model reads it.
+ *
+ * TRANSPORT (0.8.1, batch FR0; spec-freight 4.2, D15). An eleventh class
+ * takes the railway's yards, the sea terminals and the transit networks -
+ * the RAIL, PORTS and INFRASTRUCTURE categories - out of Industry and
+ * Utilities, in a slate between offices' blue and utilities' teal
+ * (#5e7d8c, star FR0-6); a sea terminal keeps its own fill.
  */
 public final class BuildingVisual {
 
     private BuildingVisual() { }
 
     /* =====================================================================
-       THE ELEVEN CLASSES (the mockup's TYPES, in its order)
+       THE ELEVEN CLASSES (the mockup's TYPES, in its order; TRANSPORT, 0.8.1's, last)
        ===================================================================== */
 
     /** Homes: houses, and the flats drawn darker. */
@@ -229,13 +235,13 @@ public final class BuildingVisual {
      *
      * @param id        the template's permanent id
      * @param category  its category
-     * @param cls       its class, HOME to MINE
+     * @param cls       its class, HOME to TRANSPORT
      * @param flats     a home of more than one dwelling, drawn darker
      * @param road      its road kind, NOT_A_ROAD to HIGHWAY
      * @param site      the resource whose sites it stands on, or null
      * @param outer     placed from the outside of the city in: farms, utilities, mines and wells, rail and car plants (spec-land 2.5)
      * @param plots     its land in plots: its footprint (footprint()), and a road's plots
-     * @param transit   a transit network: its depots and yards, drawn as a utility on its own land
+     * @param transit   a transit network: its depots and yards, drawn as transport (a utility until 0.8.1) on its own land
      * @param sqFt      its land in whole square feet: the ground used a district and the pyramid sum, exactly
      * @param people    the people a home of it holds (its capacity; 0 for anything but a home)
      * @param jobs      the jobs it holds
@@ -277,7 +283,7 @@ public final class BuildingVisual {
         /** Whether it is drawn as a building: not a road, nor a railway line (0.7.72), nor at sea (0.7.91). */
         public boolean drawn() { return road == NOT_A_ROAD && !track && !sea; }
 
-        /** Its fill: its class's, the flats darker, and since 0.7.97 the refinery's units, a terminal and a tank farm their own (still of their class's in the blocks and the legend's ten); since 0.8.0 a works its group's and a materials building its look's. */
+        /** Its fill: its class's, the flats darker, and since 0.7.97 the refinery's units, a terminal and a tank farm their own (still of their class's in the blocks and the legend's eleven); since 0.8.0 a works its group's and a materials building its look's. */
         public int fill() {
             return flats ? FLATS_FILL : group > NO_GROUP ? GROUP_FILL[group] : berth >= 0 ? TERMINAL_FILL : shore ? TANKS_FILL
                     : look != PLAIN ? lookFill(this) : FILL[cls];
@@ -383,7 +389,7 @@ public final class BuildingVisual {
         return new int[] { TileRaster.blend(c, PIT_SHADE, 0.45), TileRaster.blend(c, PIT_DUST, 0.5), TileRaster.blend(PIT_DUST, PIT_SHADE, 0.35) };
     }
 
-    /** A category's class (the mockup's eleven). */
+    /** A category's class (the mockup's ten, and since 0.8.1 TRANSPORT). */
     public static int classOf(BuildingType c) {
         if (c == null) return INDUSTRY;
         switch (c) {

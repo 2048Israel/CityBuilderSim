@@ -115,8 +115,10 @@ public final class MapTiles {
      * the world's and never changes: what is owned, its plan's streets and
      * those just beyond its edges, the city's highways and track through it,
      * its buildings' boxes (0.7.88; the counts and road plots dealt to it, its
-     * neighbours' roads and the deal's plan before), and its sites with their
-     * states and mines. Two tiles with one stamp paint the same pixels.
+     * neighbours' roads and the deal's plan before), its sites with their
+     * states and mines, and (0.8.1) the freight station's place, whether the
+     * railway carries goods and on how many of a yard's tracks wagons stand.
+     * Two tiles with one stamp paint the same pixels.
      */
     public static long stamp(TilePainter.Input in) {
         long h = World.mix(in.seed ^ World.mix(in.tx * 0x9E3779B97F4A7C15L ^ in.ty));
@@ -362,9 +364,12 @@ public final class MapTiles {
      * node's own ground), and where it is smaller, or its picture is not
      * drawn yet, its owned dry ground dithered by its shares of each kind
      * (DistrictPicture.shares(), a fixed hash a pixel); then the city's
-     * highways and railway (CityRuns' stretches) on every pixel they cross,
-     * and its edge - the inner ring of the pixels drawn as its (their samples
-     * owned), and a pixel wherever it holds ground smaller than one - so the
+     * highways and railway (CityRuns' stretches) on every pixel they cross -
+     * since 0.8.1 the highways lightened (FAR_HIGHWAY_LIGHTEN), the railway
+     * RAIL_DARK, and each yard and sea terminal a 2 x 2 dot in TRANSPORT's
+     * fill (dot()) - and its edge - the inner ring of the pixels drawn as
+     * its (their samples owned), and a pixel wherever it holds ground
+     * smaller than one - so the
      * city keeps its shape however small. On Earth (0.7.119) past the planet's
      * rim - the antipode, EarthProj.REACH_M from the spot - the void
      * (spec-earth 2: "beyond it is drawn as the void"), which the ground
@@ -455,7 +460,7 @@ public final class MapTiles {
                 out[k] = c;
             }
         }
-        // The city's highways and railway, a pixel wide at least wherever they run.
+        // The city's highways and railway, a pixel wide at least wherever they run, and (0.8.1) its yards' and sea terminals' dots.
         if (lastRun.length != n * n) { lastRun = new boolean[n * n]; lastEdge = new boolean[n * n]; }
         java.util.Arrays.fill(lastRun, false);
         java.util.Arrays.fill(lastEdge, false);

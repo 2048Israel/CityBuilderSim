@@ -63,8 +63,7 @@ stuff".
 | FW9 | ScaleCheck's copies lose about 0.85% a month because the founding care and police endowments do not scale, and the scaler leaves the bond market, the exchange, the equity register and the fund unscaled | `todo-archive.md`, FOUND ON THE WAY IN 0.7.55 TO 0.7.64 and 0.7.53 TO 0.7.54; `runs/fixH2-notes.md` ★9 |
 | FW10 | A full-screen chart with a wrapped legend is a row too tall: `TimeChart.heightBesidePlot()` assumes a one-row toolbar, so the foot is cut | `todo-archive.md`, FOUND ON THE WAY IN 0.7.40 AND 0.7.41; `runs/ui21-notes.md` §8 |
 | FX1-2 | Merge the held `batch/FX1-with-preflight` (e821d7f): a sector's credit test before its share sale; HealthCheck 13 accepted red (Jerus, 2026-10-12: "accept the red"), so it joins the gate's known reds | `runs/fixFX1-notes.md` ★7, in the project's `claude/todo.md` |
-
-| CC1-S | Keep care essential even when it is not financially self-supporting; investigate why seeds 4 and 5 still stall around 3,000 people despite care, school and pensions | [fixCC1 notes](runs/fixCC1-notes.md) |
+| CC1-S | Keep care essential even when it is not financially self-supporting; investigate why seeds 4 and 5 still stall around 3,000 people despite care, school and pensions | `runs/fixCC1-notes.md` ★ |
 
 ## Pending
 

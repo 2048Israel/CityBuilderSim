@@ -228,6 +228,8 @@ docs/                                 generated indexes of all of the above; the
 QUEUE.md                              the batches waiting to be done, in order
 tools/earth/                          the pipeline that bakes the real Earth's data (Python, outside the game),
                                       and get-earth.bat, which fetches the baked file from the release earth-1
+tools/deepseek/                       the DeepSeek coding agent a batch's Claude session hands a slice to
+                                      (Python, outside the game); docs/deepseek.md says how
 data/earth-1.bin                      the real Earth's data itself, about 53 MB, beside the game and not in git;
                                       the game runs without it, and New city offers the generated world then
 ```

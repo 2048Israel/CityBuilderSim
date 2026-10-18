@@ -126,7 +126,7 @@
 | 197 | `public final byte[] beyond` | ...and the street on each plot just outside the tile, north, east, south and west (TILE each, along the edge): what a street at the edge joins to, as the plans have it. |
 | 199 | `public final byte[] fixed` | Each plot of the city's runs (CityRuns.fill(); CityMap's network's until 0.7.88): a highway's (BuildingVisual.HIGHWAY), the railway's track (RAIL) or the track bridging a highway (RAIL_OVER), 0 for none... |
 | 201 | `public final byte[] fixedBeyond` | ...and those just outside the tile, as beyond. |
-| 203 | `public final byte[] marks` | Each plot's marks from the runs (0.7.89): a highway's ramp (CityRuns.M_RAMP), a 45-degree stretch's (M_DIAG and its heading)... |
+| 203 | `public final byte[] marks` | Each plot's marks from the runs (0.7.89): a highway's ramp (CityRuns.M_RAMP), a 45-degree stretch's (M_DIAG and its heading), (0.8.1) the main line's and its double track's (M_MAIN, M_DOUBLE)... |
 | 205 | `public final byte[] marksBeyond` | ...and those just outside the tile, as beyond. |
 | 207 | `public long stationX` | The freight station's yard, its box's first plot in the world: the yard nearest the rail gateway, spec 4.2; MIN_VALUE for none. |
 | 209 | `public boolean goodsByRail` | The railway carries goods, so the freight station is a container yard, spec 4.3. |

@@ -107,7 +107,9 @@ import java.util.zip.InflaterInputStream;
  * sidecar with none has them laid from its counts as it is read - an older
  * one still read; FORMAT 6 since 0.7.97, its works on the shore after the
  * runs, laid from its counts when a FORMAT 5 sidecar is read; FORMAT 7
- * since 0.8.0, a district's sites by slot).
+ * since 0.8.0, a district's sites by slot; FORMAT 8 since 0.8.1, the
+ * gateway's bearing after the shore, a FORMAT 7 sidecar's found again at the
+ * next month's runs).
  *
  * AT SEA AND ON THE SHORE (0.7.97, batch O13; docs/studies/spec-oil.md 2.12,
  * spec-roads-and-ports.md 2.8 and 4): THE CAMPUS deals the refinery's units
@@ -3061,7 +3063,11 @@ public final class CityMap {
        plot for plot. A Rail Terminal is the railway's YARD, on its track in
        the cell nearest a mine; one the runs find no place for is its
        district's plan's to draw. What the runs cannot lay - no ground left
-       for a corridor - is counted, and the legend says so.
+       for a corridor - is counted, and the legend says so. Since 0.8.1
+       (batch FR0) each net's spine lies toward the city's GATEWAY
+       (Gateways: found once, at the first highway, track or yard, and kept
+       in the sidecar, FORMAT 8), and worldLines() carries the gate arms on
+       past the city's ground toward the world.
        ===================================================================== */
 
     /** Bumped whenever free ground is measured again (a purchase): what a run waiting on the ground is tried again on. */
@@ -3094,8 +3100,9 @@ public final class CityMap {
 
     /**
      * The world lines (spec-freight 4.1): for each net whose gateway is found
-     * and whose gate arm is laid, the point where the run leaves the city's
-     * ground, walked from the gate arm's end along its heading up to
+     * and which has started, the point where the run leaves the city's
+     * ground, walked from the gate arm's end (the hub while the arm has no
+     * steps) along its heading up to
      * CityMap.DISTRICT plots - none for a net whose way finds no unowned plot
      * that near. Kept against changes().
      */
@@ -3112,7 +3119,7 @@ public final class CityMap {
         return out;
     }
 
-    /** Adds net n's world line to out when its gate arm is laid and the city's ground ends within CityMap.DISTRICT of its end. */
+    /** Adds net n's world line to out when it has a gate arm (it has started) and the city's ground ends within CityMap.DISTRICT of that arm's end, or of the hub while the arm has no steps. */
     private void worldLine(CityRuns.Net n, int gateway, List<WorldLine> out) {
         int a = CityRuns.gateArm(n, gateway);
         if (a < 0) return;
@@ -3279,7 +3286,7 @@ public final class CityMap {
         }
         if (runs.gateway() == CityRuns.GATEWAY_UNKNOWN && (highway > 0 || track > 0 || yards > 0)) {
             // Found from the founding site alone (a radius of none: the land must run GATEWAY_M from the site), so a map drawn
-            // canonically at the city's size today finds the gateway the month-by-month map found at its first highway.
+            // canonically at the city's size today finds the gateway the month-by-month map found at its first highway, track or yard.
             Gateways.Gateway g = Gateways.of(World.of(worldKey), siteX, siteY, 0);
             runs.setGateway(g == null ? CityRuns.NO_GATEWAY : g.bearing());
         }
@@ -4425,7 +4432,8 @@ public final class CityMap {
      * SLOTS) and a count a type (int32) - and since FORMAT 5 the
      * city's highway and railway runs (int32 their count: 0 until batch RD3
      * lays them, which adds their records), and since FORMAT 6 (0.7.97) its
-     * works on the shore (CityShore.write()).
+     * works on the shore (CityShore.write()), and since FORMAT 8 (0.8.1) the
+     * gateway's bearing (int32, CityRuns.gateway()).
      * The stamp is a hash of every other byte, so the same map always writes
      * the same file.
      */
