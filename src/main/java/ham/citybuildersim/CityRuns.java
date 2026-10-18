@@ -73,7 +73,9 @@ import java.util.PriorityQueue;
  *   MAIN LINE (spec-freight 4.2, D14) the railway from the gateway's arm to
  *             the FREIGHT STATION - the yard nearest that arm's end - arm by
  *             arm through each corridor's interchange; double track where the
- *             city has a Freight Line (4.3).
+ *             city has a Freight Line (4.3). (FX2) it runs out along the MAIN
+ *             ARM: the arm the railway's world line leaves the city's ground
+ *             from, which is the gate arm unless that arm waits at the sea.
  *
  * A net is kept as its arms' straight STRETCHES, not its plots: a city of ten
  * billion has some fifteen million plots of track on a few hundred arms.
@@ -300,9 +302,13 @@ public final class CityRuns {
     /** Whether the main line is double track: the city has a Freight Line (spec 4.3). */
     private boolean doubleMain;
 
-    /** mainLine()'s last answer, and the version it was computed at. */
+    /** mainLine()'s last answer, and the version and the main arm it was computed at. */
     private List<int[]> mainLineCache;
     private long mainLineCacheAt = Long.MIN_VALUE;
+    private int mainLineCacheArm = -1;
+
+    /** The rail net's arm the main line runs out along and the trains come in on: the arm the railway's world line leaves the city's ground from (CityMap.worldLines() sets it, FX2), or -1 for the gate arm. The map's, never saved. */
+    private int mainArm = -1;
 
     public Net highways() { return highways; }
     public Net rail() { return rail; }
@@ -325,6 +331,21 @@ public final class CityRuns {
     void setGateway(int bearing) {
         gateway = bearing;
         mainLineCacheAt = Long.MIN_VALUE;
+    }
+
+    /** Sets the arm the main line runs out along (the map's, from where the railway's world line leaves the city's ground): -1 for the gate arm. */
+    public void setMainArm(int arm) { mainArm = arm; }
+
+    /**
+     * The rail net's main arm: -1 with no gateway or before the railway
+     * starts; else the arm the map set (setMainArm()) while it is an arm of
+     * the net with steps laid, else the gate arm.
+     */
+    public int mainArm() {
+        int gate = gateArm(rail, gateway);
+        if (gate < 0) return -1;
+        if (mainArm >= 0 && mainArm < rail.arms.size() && rail.arms.get(mainArm).steps > 0) return mainArm;
+        return gate;
     }
 
     /* =====================================================================
@@ -938,31 +959,37 @@ public final class CityRuns {
        ===================================================================== */
 
     /**
-     * The freight station: the yard nearest the rail net's gate arm's end
-     * (its x, y), by the yard box's middle, the first in yards' order on a
+     * The freight station: the yard nearest the rail net's main arm's end
+     * (mainArm(): the arm the railway's world line leaves from, else the gate
+     * arm; its x, y), by the yard box's middle, the first in yards' order on a
      * tie. Null when there is no gateway, the railway has not started, the
-     * gate arm is -1, or there are no yards. Returns the yard's own
+     * main arm is -1, or there are no yards. Returns the yard's own
      * {x0, y0, w, h}, a copy.
      */
     public long[] freightStation() {
         // Kept against the runs' version: a tile's input asks it, and a dense city has thousands of yards.
-        if (stationAt == version && stationAtGateway == gateway) return station == null ? null : station.clone();
+        int main = mainArm();
+        if (stationAt == version && stationAtGateway == gateway && stationAtArm == main) {
+            return station == null ? null : station.clone();
+        }
         stationAt = version;
         stationAtGateway = gateway;
+        stationAtArm = main;
         station = findStation();
         return station == null ? null : station.clone();
     }
 
-    /** freightStation()'s last answer, the version and the gateway it was found at. */
+    /** freightStation()'s last answer, the version, the gateway and the main arm it was found at. */
     private long[] station;
     private long stationAt = Long.MIN_VALUE;
     private int stationAtGateway = GATEWAY_UNKNOWN;
+    private int stationAtArm = -1;
 
     /** The freight station found afresh (freightStation()'s rule). */
     private long[] findStation() {
-        int gate = gateArm(rail, gateway);
-        if (gate < 0 || yards.isEmpty()) return null;
-        Arm a = rail.arms.get(gate);
+        int main = mainArm();
+        if (main < 0 || yards.isEmpty()) return null;
+        Arm a = rail.arms.get(main);
         double bx = a.x, by = a.y;
         long[] best = null;
         double bestD = Double.MAX_VALUE;
@@ -1025,31 +1052,68 @@ public final class CityRuns {
     }
 
     /**
+     * The arms from step k of arm a back toward the hub, as {arm, step}: a's
+     * first, then each next the arm and step its predecessor starts on
+     * (locate() of its start plot), ending on an arm of corridor 0 or 1.
+     * Null when that last arm does not start at the hub, when the walk stops
+     * early (nothing under an arm's start, the same arm, a corridor not
+     * earlier than this one) or when it runs past n.arms.size() entries. The
+     * way in from an arm to the hub: mainLine() and wayTo() walk it.
+     */
+    static List<int[]> chain(Net n, int a, int k) {
+        List<int[]> out = new ArrayList<>();
+        for (int guard = 0; guard < n.arms.size(); guard++) {
+            out.add(new int[] { a, k });
+            Arm arm = n.arms.get(a);
+            if (arm.corridor == 0 || arm.corridor == 1) return arm.sx == n.hubX && arm.sy == n.hubY ? out : null;
+            int[] prev = locate(n, arm.sx, arm.sy);
+            if (prev == null || prev[0] == a || n.arms.get(prev[0]).corridor >= arm.corridor) return null;
+            a = prev[0];
+            k = prev[1];
+        }
+        return null;
+    }
+
+    /**
      * The main line as ranges of steps, each {arm, from, to} inclusive (step
-     * 0 an arm's start plot). Empty when there is no gateway or no gate arm.
-     * No freight station: the whole gate arm. A station on the gate arm: from
-     * its anchor out to the arm's end. Else the whole gate arm plus the chain
-     * from the hub to the anchor, arm by arm through each corridor's
-     * interchange, at most arms.size() times.
+     * 0 an arm's start plot). Empty when there is no gateway or no main arm
+     * (mainArm(): the arm the railway's world line leaves from, else the gate
+     * arm). The main arm's chain in to the hub (chain(); the main arm alone
+     * where it has none) is the line's way out: no freight station, all of
+     * it, each arm from its start to where the next begins. A station on one
+     * of those arms: the chain's arms before it whole, and on its arm the
+     * range between the chain's step and the station's anchor. Else all of
+     * the chain plus the chain from the hub to the anchor, arm by arm
+     * through each corridor's interchange, at most arms.size() times.
      */
     public List<int[]> mainLine() {
-        if (mainLineCache != null && mainLineCacheAt == version) return mainLineCache;
+        int main = mainArm();
+        if (mainLineCache != null && mainLineCacheAt == version && mainLineCacheArm == main) return mainLineCache;
         List<int[]> out = new ArrayList<>();
-        int gate = gateArm(rail, gateway);
-        if (gate >= 0) {
-            Arm g = rail.arms.get(gate);
+        if (main >= 0) {
+            Arm g = rail.arms.get(main);
+            List<int[]> mc = chain(rail, main, g.steps);
+            if (mc == null) {
+                mc = new ArrayList<>();
+                mc.add(new int[] { main, g.steps });
+            }
             long[] fs = freightStation();
             int[] loc = null;
             if (fs != null) {
                 long[] anchor = anchorInYard(fs);
                 if (anchor != null) loc = locate(rail, anchor[0], anchor[1]);
             }
+            int at = -1;
+            if (loc != null) for (int i = 0; i < mc.size() && at < 0; i++) if (mc.get(i)[0] == loc[0]) at = i;
             if (loc == null) {
-                out.add(new int[] { gate, 0, g.steps });
-            } else if (loc[0] == gate) {
-                out.add(new int[] { gate, loc[1], g.steps });
+                for (int[] e : mc) out.add(new int[] { e[0], 0, e[1] });
+            } else if (at >= 0) {
+                for (int i = 0; i < at; i++) out.add(new int[] { mc.get(i)[0], 0, mc.get(i)[1] });
+                // On the station's own arm: between the step the chain meets it at and the anchor, the nearer the hub first.
+                int[] e = mc.get(at);
+                out.add(new int[] { e[0], Math.min(loc[1], e[1]), Math.max(loc[1], e[1]) });
             } else {
-                out.add(new int[] { gate, 0, g.steps });
+                for (int[] e : mc) out.add(new int[] { e[0], 0, e[1] });
                 int a = loc[0], to = loc[1];
                 for (int guard = 0; guard < rail.arms.size(); guard++) {
                     out.add(new int[] { a, 0, to });
@@ -1064,6 +1128,7 @@ public final class CityRuns {
         }
         mainLineCache = out;
         mainLineCacheAt = version;
+        mainLineCacheArm = main;
         return out;
     }
 
@@ -1120,55 +1185,59 @@ public final class CityRuns {
     /* ----- the trains' way (0.8.2, batch FR1; spec-freight 4.4) ----- */
 
     /**
-     * The railway's way from its gate arm's end to a yard, as points in plots,
-     * each a plot's middle, at the ends and every turn: in along the gate arm
-     * to the hub - or, the yard on the gate arm, to its anchor - then out arm
-     * by arm through each corridor's interchange to the yard's anchor, the
-     * rail plot in its box nearest its middle: mainLine()'s chain, walked.
-     * {xs, ys}; null with no gate arm, no rail plot in the box, or a chain
+     * The railway's way from its main arm's end (mainArm(): the arm the
+     * railway's world line leaves from, else the gate arm) to a yard, as
+     * points in plots, each a plot's middle, at the ends and every turn: in
+     * along the main arm's chain toward the hub (chain()), then out along the
+     * chain of the yard's anchor, the rail plot in its box nearest its
+     * middle, arm by arm through each corridor's interchange. The way turns
+     * where the two chains first share an arm: a yard on the main arm itself,
+     * or on a corridor that starts on it or on an arm the main arm's chain
+     * passes along, is reached along that arm directly (FX2; before, in to the
+     * hub and back out, a train doubling back), else at the hub.
+     * {xs, ys}; null with no main arm, no rail plot in the box, or a chain
      * that does not reach the hub. What CityMap.trainRoutes() lays the
      * trains on.
      */
     public double[][] wayTo(long[] yard) {
-        int gate = gateArm(rail, gateway);
-        if (gate < 0 || yard == null) return null;
+        int main = mainArm();
+        if (main < 0 || yard == null) return null;
         long[] anchor = anchorInYard(yard);
         if (anchor == null) return null;
         int[] loc = locate(rail, anchor[0], anchor[1]);
         if (loc == null) return null;
-        Arm g = rail.arms.get(gate);
-        List<long[]> pts = new ArrayList<>();
-        List<long[]> in = new ArrayList<>();
-        armPoints(g, loc[0] == gate ? loc[1] : 0, g.steps, in);
-        java.util.Collections.reverse(in);
-        pts.addAll(in);
-        if (loc[0] != gate) {
-            // The chain from the yard's arm back to an arm of the spine, which starts at the hub; walked out from there.
-            List<int[]> chain = new ArrayList<>();
-            int a = loc[0], to = loc[1];
-            boolean home = false;
-            for (int guard = 0; guard < rail.arms.size(); guard++) {
-                chain.add(new int[] { a, to });
-                Arm arm = rail.arms.get(a);
-                if (arm.corridor == 0 || arm.corridor == 1) {
-                    home = arm.sx == rail.hubX && arm.sy == rail.hubY;
-                    break;
-                }
-                int[] prev = locate(rail, arm.sx, arm.sy);
-                if (prev == null || prev[0] == a || rail.arms.get(prev[0]).corridor >= arm.corridor) break;
-                a = prev[0];
-                to = prev[1];
-            }
-            if (!home) return null;
-            for (int i = chain.size() - 1; i >= 0; i--) armPoints(rail.arms.get(chain.get(i)[0]), 0, chain.get(i)[1], pts);
+        List<int[]> mc = chain(rail, main, rail.arms.get(main).steps), yc = chain(rail, loc[0], loc[1]);
+        if (mc == null || yc == null) return null;
+        // Where the chains meet: the first arm of the main arm's chain the yard's also runs along (none: at the hub).
+        int i = mc.size(), j = yc.size();
+        for (int m = 0; m < mc.size() && i == mc.size(); m++) {
+            for (int y = 0; y < yc.size(); y++) if (yc.get(y)[0] == mc.get(m)[0]) { i = m; j = y; break; }
         }
+        List<long[]> pts = new ArrayList<>();
+        // In along the main arm's chain, each arm from its step back to its start...
+        for (int m = 0; m < i; m++) {
+            List<long[]> in = new ArrayList<>();
+            armPoints(rail.arms.get(mc.get(m)[0]), 0, mc.get(m)[1], in);
+            java.util.Collections.reverse(in);
+            pts.addAll(in);
+        }
+        // ...along the shared arm from where the main arm's chain meets it to where the yard's leaves it...
+        if (i < mc.size()) {
+            int from = mc.get(i)[1], to = yc.get(j)[1];
+            List<long[]> between = new ArrayList<>();
+            armPoints(rail.arms.get(mc.get(i)[0]), Math.min(from, to), Math.max(from, to), between);
+            if (from > to) java.util.Collections.reverse(between);
+            pts.addAll(between);
+        }
+        // ...and out along the yard's chain from there.
+        for (int y = j - 1; y >= 0; y--) armPoints(rail.arms.get(yc.get(y)[0]), 0, yc.get(y)[1], pts);
         List<long[]> once = new ArrayList<>();
         for (long[] p : pts) {
             if (!once.isEmpty() && once.get(once.size() - 1)[0] == p[0] && once.get(once.size() - 1)[1] == p[1]) continue;
             once.add(p);
         }
         double[] xs = new double[once.size()], ys = new double[once.size()];
-        for (int i = 0; i < once.size(); i++) { xs[i] = once.get(i)[0] + 0.5; ys[i] = once.get(i)[1] + 0.5; }
+        for (int k = 0; k < once.size(); k++) { xs[k] = once.get(k)[0] + 0.5; ys[k] = once.get(k)[1] + 0.5; }
         return new double[][] { xs, ys };
     }
 
