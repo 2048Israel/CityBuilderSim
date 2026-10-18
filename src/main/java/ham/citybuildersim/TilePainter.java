@@ -199,7 +199,7 @@ public final class TilePainter {
         public final byte[] fixed = new byte[PLOTS];
         /** ...and those just outside the tile, as beyond. */
         public final byte[] fixedBeyond = new byte[4 * TILE];
-        /** Each plot's marks from the runs (0.7.89): a highway's ramp (CityRuns.M_RAMP), a 45-degree stretch's (M_DIAG and its heading)... */
+        /** Each plot's marks from the runs (0.7.89): a highway's ramp (CityRuns.M_RAMP), a 45-degree stretch's (M_DIAG and its heading), (0.8.1) the main line's and its double track's (M_MAIN, M_DOUBLE)... */
         public final byte[] marks = new byte[PLOTS];
         /** ...and those just outside the tile, as beyond. */
         public final byte[] marksBeyond = new byte[4 * TILE];

@@ -5,6 +5,58 @@ session moves them over and empties this file. Newest at the top. It holds
 changelog and todo lines for the claude.ai project, which the sessions that
 write them cannot reach.
 
+## 0.8.1 (batch FR0, 2026-10-18) - for `claude/changelog.md`
+
+**0.8.1 - the map's network (FR0), the first freight batch.** The land's gateway: the bearing with the longest run of
+land from the founding site (on the Earth, toward the nearest larger place along land), ties by the site's hash, none
+for an island founding; each net's spine laid toward it, its arm grown first, and the world's highway and line drawn
+on past the city's ground, "to the world". The main line from the rail gateway to the freight station, double with a
+Freight Line. Rail drawn as rail (ballast, sleepers and two rails, four on a double main line; level crossings; an
+arterial over the main line a bridge), yards as fans of eight sidings with a shed, ore or boxes and wagons, in an
+eleventh class, TRANSPORT; junctions by rule (signals, roundabouts, diamonds, stacks, a highway's end); the far view's
+skeleton and the legend. Each slice drafted by DeepSeek V4 Pro through tools/deepseek and reviewed by Claude. Found:
+half of twelve generated worlds' default sites have no gateway (their land runs under 10 km); a diamond on a tile's
+edge was drawn in half (JunctionCheck 8). Map sidecar FORMAT 8; no save change (39); playtests byte-identical. Gate:
+113 of 113 on the merge on the PC, earth-1.bin named, EarthTerrainCheck 8's screen 27.8 ms against 80. See
+docs/queue/FR0-notes.md.
+
+## 0.8.1 - for `claude/todo.md`
+
+- ~~FR0, the map's network~~ - done 2026-10-18 (0.8.1); what it did not build is FR0-L under QUEUE.md's Pending
+  (access roads D17, sidings into the bulk works D14, the cloverleaf's and trumpet's ground D19, kerb corners).
+- CHECK (Jerus, on the PC): FR0-C - the world line and its label on the expanded map (JavaFX, never run in the
+  cloud), the rail, yards and junctions at the near view, beside docs/queue/FR0-notes/*.png; and his calls on the
+  stars (the gateway arm grown first, ★3; the yards' looks, ★4-5; TRANSPORT's colour #5e7d8c, ★6).
+- ~~FOUND: EarthTerrainCheck 8's Earth screen bound red on the cloud machine~~ - settled 2026-10-18: 27.8 ms on the
+  PC in FR0's ship suite against MapCheck.SCREEN_MS's 80; a shared VM's timing, not the batches'.
+- FOUND (the FR0 docs pass): tools.Stale does not see a record's components, so a comment naming one reads as an
+  unresolved member (gemini-notes.md's Prose fixes says so; CityMap's Type.campus(), sites(), shore() and sea() are
+  four of its soft leads). Teach Stale the record header, or leave the soft list as it is.
+- FOUND (the FR0 docs pass): MapCheck's sections 1, 8 and 14 print titles joined with + (1's with MONTHS), so
+  docs/harnesses.md shows no heading for them - 8 and 14 want one literal each, 1 a reading in tools.Maps (the
+  I14 pass's line named 14 alone). And MapCheck.CPU_STEP_MS's sentence calls 0.1 ms "a twentieth of the quickest
+  stamp timed", where the comment above it gives the quickest stamp as 0.4 ms: a quarter, or another stamp?
+- FOUND (the FR0 docs pass), TileRaster, none of it behaviour: its header draws a track plot below 4 px in
+  RAIL_DARK, but raster()'s plotColour() still fills RAIL_LINE there (the view never asks raster() below 4 px; a
+  harness can) - which is meant?; RAIL_DASH is read by nothing since 0.8.1; FR0's three one-line dial banners at
+  the top take in older dials under them (JUNCTIONS over TICKS_FROM to LINES_FROM, YARDS over SMALL_MOST to
+  PACKED_DIM), a move of declarations; and CityMap's RailPicture, railPicture(), wagonTracksOf() and
+  freightStation() sit inside THE OIL AT SEA, between Pipe and AtSea (left for FR1, which reworks them).
+- Section 0, under the manual's entry: the build is 0.8.1; the harnesses are 112 (113 run with the playtest), 108
+  at 0.8.0; save format still 39 - for the manual's next edition (a milestone).
+
+## 0.8.0, after I14 (2026-10-13 to 2026-10-17, no version bump) - for `claude/changelog.md`
+
+**0.8.0, the merges after I14 - the other assistants and the tools.** MapCheck's bounds read on the wall clock where
+the thread's CPU clock is too coarse (Windows); AllChecks -f writes and reads its logs in UTF-8; ship.sh takes its
+merge back when main moved on origin during the checks. ChatGPT and Gemini given briefs of their own
+(openai-dontread.md, gemini-notes.md), their work on branches, never main: ChatGPT's current-code handoffs for R0
+(docs/studies/research-1900.md) and CD1-H (spec-city-debt.md 8.1); Gemini's GS1, ten of Stale's soft findings, six
+corrected in review, and the Prose fixes rules it taught. RV1: tools.Names (the names a branch's new text uses that
+the tree does not declare, run by ship.sh on their branches) and the assistant-review subagent. DeepSeek as the
+batch's coder (Jerus, 2026-10-17): tools/deepseek/agent.py and docs/deepseek.md, CLAUDE.md's step 3; tried on an FR0
+slice (6fd8dda, reverted, then restored as FR0's slice G).
+
 ## 0.8.0 (batch I14, 2026-10-13) - for `claude/changelog.md`
 
 **0.8.0 - the release that finishes industry; the materials on the map (I14).** The oil chain (0.7.76-0.7.98) and

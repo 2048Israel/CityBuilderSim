@@ -1043,7 +1043,7 @@ public class Game {
     public CityMap getCityMap() {
         if (cityMap == null) cityMap = drawMap();
         if (mapAtSeaStale) {
-            // The oil at sea handed over once the city it is read from is whole (0.7.97): after a draw or a load.
+            // The oil at sea handed over once the city it is read from is whole (0.7.97): after a draw or a load; the railway's picture with it (0.8.1).
             mapAtSeaStale = false;
             cityMap.atSea(mapAtSea());
             cityMap.railPicture(mapRail());
@@ -1260,7 +1260,7 @@ public class Game {
     private void reconcileMap() {
         if (cityMap == null) return;
         try {
-            // The oil at sea as it stands this month (0.7.97): none, read without touching the ground, in a city with none.
+            // The oil at sea as it stands this month (0.7.97): none, read without touching the ground, in a city with none; then the railway's picture (0.8.1).
             cityMap.atSea(mapAtSea());
             cityMap.railPicture(mapRail());
             if (!cityMap.reconcile(getMapCounts())) cityMap = drawMap();

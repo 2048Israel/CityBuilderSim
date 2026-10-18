@@ -20,8 +20,8 @@
 >      beyond the yard is not.
 > 
 >   4. A YARD ON A LATER CORRIDOR: the chain through its interchange is
->      M_MAIN - the later arm from its start to the yard, and the earlier arm
->      from the hub to the interchange.
+>      M_MAIN - the later arm from its start to the yard and not beyond it,
+>      and the earlier arm's plot at the interchange.
 > 
 >   5. TWO YARDS: the one nearer the gate arm's end is freightStation().
 > 

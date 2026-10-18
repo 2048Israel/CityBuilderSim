@@ -35,8 +35,9 @@ import java.util.PriorityQueue;
  *             first, each starting where it crosses the net already laid on
  *             the city's ground (an interchange);
  *   GROWTH    each plot the model adds goes to the shortest arm of the
- *             earliest corridor that can still grow; what it takes away comes
- *             off the newest end - the latest corridor's longest arm - so no
+ *             earliest corridor that can still grow, the gateway's arm before
+ *             the rest (GATEWAY); what it takes away comes off the newest end -
+ *             the latest corridor's longest arm, the gateway's last - so no
  *             plot laid ever moves (H4);
  *   THE COST  (H2: "heavily favours being straight and few junctions"): a step
  *             costs STRAIGHT_COST, a 45-degree turn TURN_COST plots of
@@ -60,9 +61,19 @@ import java.util.PriorityQueue;
  *             railway bridges over it, it passes over a mine standing on its
  *             site - with RAMPS where it crosses every other arterial
  *             (RAMP_EVERY) and at each arm's end; the railway crosses streets
- *             level and never runs along a highway;
+ *             level - an arterial or boulevard crosses the main line on a
+ *             bridge (D18) - and never runs along a highway;
  *   YARDS     each Rail Terminal on the track, in the cell along it nearest a
- *             mine, its box across the line (spec 2.8).
+ *             mine, its box across the line (spec 2.8);
+ *   GATEWAY   (0.8.1, batch FR0; spec-freight 4.1, D13) the bearing toward
+ *             the world (Gateways), found once by the map and kept here: each
+ *             net's spine is the row or column nearer it, its arm toward the
+ *             gateway grown first, until it waits at the city's edge, and
+ *             taken back last; with none, hw.py's order;
+ *   MAIN LINE (spec-freight 4.2, D14) the railway from the gateway's arm to
+ *             the FREIGHT STATION - the yard nearest that arm's end - arm by
+ *             arm through each corridor's interchange; double track where the
+ *             city has a Freight Line (4.3).
  *
  * A net is kept as its arms' straight STRETCHES, not its plots: a city of ten
  * billion has some fifteen million plots of track on a few hundred arms.
@@ -444,8 +455,8 @@ public final class CityRuns {
      * city's dry ground, within HUB_REACH cells; false where none is. With a
      * gateway the spine is the row or column nearer its bearing, and the arm
      * toward it is arm 0 (the column first when |sin| > |cos|, else the row,
-     * as today); with none, exactly today's order - the row first, its arms
-     * east and west, then the column's south and north.
+     * as before FR0); with none, exactly the order before FR0, hw.py's - the
+     * row first, its arms east and west, then the column's south and north.
      */
     static boolean start(Net n, Ground g, long ax, long ay, int gateway) {
         long x0 = ax - Math.floorMod(ax - n.at, CELL), y0 = ay - Math.floorMod(ay - n.at, CELL);
@@ -518,7 +529,8 @@ public final class CityRuns {
     /**
      * Grows net n toward `target` plots (hw.py's grow()): its hub laid first,
      * then each plot to the shortest arm of the earliest corridor that can
-     * still grow, a new corridor when none can. An arm waiting on the ground
+     * still grow - the gateway's arm (gateArm()) before the rest of its
+     * corridor - a new corridor when none can. An arm waiting on the ground
      * is not tried again until the ground moves. True when it laid any.
      */
     static boolean grow(Net n, Net other, long target, Ground g, long ax, long ay, int gateway) {
@@ -743,7 +755,7 @@ public final class CityRuns {
        TAKING FROM THE NEWEST END
        ===================================================================== */
 
-    /** Takes net n back to `target` plots, each from the newest end - the latest corridor's longest arm, its last step (the reverse of grow()'s order); the hub last. */
+    /** Takes net n back to `target` plots, each from the newest end - the latest corridor's longest arm, the gateway's arm after the rest of its corridor, its last step (the reverse of grow()'s order); the hub last. */
     static boolean trim(Net n, long target, int gateway) {
         if (!n.started || n.plots <= target) return false;
         long before = n.plots;
@@ -1406,7 +1418,7 @@ public final class CityRuns {
         return r;
     }
 
-    /** Whether two cities' runs are the same: each net's hub, plots, corridors and arms stretch for stretch, and the yards. */
+    /** Whether two cities' runs are the same: the gateway, each net's hub, plots, corridors and arms stretch for stretch, and the yards. */
     public boolean same(CityRuns o) {
         if (o == null) return false;
         if (gateway != o.gateway) return false;

@@ -14,7 +14,7 @@
 >      the site is short of the reach.
 > 
 >   3. TWO EQUAL ARMS, east and south, tie; the gateway is one of the two,
->      chosen by the founding site's hash (two sites one cell apart that pick
+>      chosen by the founding site's hash (two sites in the same cell that pick
 >      differently are shown when the offsets find them, else the site's own
 >      pick is asserted one of the two).
 > 
