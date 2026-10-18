@@ -197,7 +197,7 @@ A district record holds 73 counts × 4 B, 3 road lengths × 4 B, 6 reserves × 8
   - Jerus's scaled copies show a one-off jump in cash and residual in their first month (relative up to 2e-6).
   - Timing is unaffected, since both builds reach the same state.
 - ★2 **Bisection assumes the test is monotone in n.** It was exact to ×1000 and off by 0.12% at ×10,000. If exactness matters, step down from the top in doubling steps, then bisect.
-- ★3 **The land premium is a balance call for Jerus.** Bigger cities can have dearer land, but not 2 × 10^6 times dearer.
+- ★3 **The land premium is a balance call for Jerus.** Bigger cities can have dearer land, but not 2 × 10^6 times dearer. **Settled:** batch I (0.7.55) made it a crowding premium with a ceiling (`LandMarket.CROWDING_*`), the density option above; confirmed (Jerus, 2026-10-18).
 - ★4 **`long` for counts, not `double`.** Sums stay exact and JSON loads it unchanged.
 - ★5 **No `SAVE_FORMAT` bump.** An old build shows a save over 2^31 as unreadable rather than loading it wrong.
 - ★6 **A relative money tolerance, not long cents** (section 3).

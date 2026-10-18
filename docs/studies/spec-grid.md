@@ -240,7 +240,7 @@ Offers of 2 to 3% of the city against today's 3 to 4% mean slightly more purchas
 12. **No money moves on conversion;** what was paid stays on record.
 
 ## 5. Still to decide, and risks
-1. **Exact books past level 9:** counting a 10B city's offers plot by plot would take 8 to 31 s each. They are sampled there (off by up to 1.6% of an offer's dry ground on land; a few km² on coasts), unless Jerus wants the count run in the background.
+1. **Exact books past level 9:** counting a 10B city's offers plot by plot would take 8 to 31 s each. They are sampled there (off by up to 1.6% of an offer's dry ground on land; a few km² on coasts), unless Jerus wants the count run in the background. **Decided (Jerus, 2026-10-18): keep the sample.**
 2. **Places stuck on water:** a best-value player leaves water standing, so up to 0.40 places wait empty on average.
 3. **The units change the playtest's words,** in M4.
 4. **JavaFX costs are unmeasured,** as in spec-land §5. The overlay is now rectangles and runs, which is cheaper than polygons.
