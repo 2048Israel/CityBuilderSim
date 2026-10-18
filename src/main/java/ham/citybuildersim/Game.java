@@ -1119,12 +1119,16 @@ public class Game {
      * The railway as the map draws its yard (0.8.1, batch FR0; CityMap's
      * railPicture, spec-freight 4.3): whether the railway carries goods, and
      * the share of its track's wagon sets the fleet has standing. Read from
-     * the saved state - the carried shares, the rolling stock in its pantry,
-     * the track - so a loaded city draws the same yard as the one saved.
+     * the saved state - the month billed's railed tonnes by kind, the rolling
+     * stock in its pantry, the track - so a loaded city draws the same yard
+     * as the one saved. Since 0.8.2 (batch FR1) the goods are the boxes the
+     * railway landed or shipped (TrainSchedule.boxesByRail()), the rule its
+     * trains are sent to the yards by, so an intermodal train never pulls
+     * into a yard of ore; FR0's was the GOODS stream's share in force.
      */
     CityMap.RailPicture mapRail() {
         ham.citybuildersim.sectors.Rail rail = getSectors().rail();
-        boolean goodsByRail = rail.getCarried()[Traffic.GOODS.ordinal()] > 0;
+        boolean goodsByRail = TrainSchedule.boxesByRail(rail);
         double wagonShare = rail.setsNeeded() > 0 ? rail.fleet() / rail.setsNeeded() : 0;
         return new CityMap.RailPicture(goodsByRail, wagonShare);
     }

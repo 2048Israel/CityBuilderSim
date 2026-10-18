@@ -429,6 +429,14 @@ adds its line here, not in `CLAUDE.md`.
                                    and pulled straight to the offing and the abyss; a boat's hull, deck
                                    and colours by its class - the map's, nothing in the model reads them
                                    (spec-roads-and-ports.md 2.8, 4) - MapCheck 9 holds them
+        TrainSchedule.java, TrainShapes.java
+                                   the trains (0.8.2, batch FR1; spec-freight 4.4): the month's trains as
+                                   a pure function of time, BoatSchedule's shape - the railway's tonnes
+                                   by kind over a train's payload, each train's place on its route from
+                                   the world line to a yard's siding (CityMap.trainRoutes(),
+                                   CityRuns.wayTo()), a frame's query - never saved; a vehicle's body,
+                                   mark and colours, the ships' four - the map's, nothing in the model
+                                   reads them - MapCheck 9 holds them, RailCheck 7 the tonnes by kind
         ui/                        the interface: UserInterface.java is the window (about 6,000 lines: the header
                                    and its clock, the rail, the main menu, the panels, dialogs), one
                                    <Name>Screen.java per tab (split 2026-09-18 - the project's

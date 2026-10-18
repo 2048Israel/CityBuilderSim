@@ -1320,6 +1320,18 @@ public class ReadPathCheck {
         pts.crudeSeaIn(); pts.crudeSeaOut(); pts.railOfStream(g.getSectors().rail().getCarried()); pts.seaOfStream(); pts.toState();
         BoatSchedule boats = g.boats(java.util.List.of(new BoatSchedule.Berth(Ports.Cargo.GENERAL, 0, 0)));
         boats.callCount(); boats.calls(); boats.frame(-256, -256, 256, 256, .5); boats.touched(); boats.routes();
+        // ...and the trains (0.8.2, batch FR1): the railway's tonnes by kind, the month's trains on one route, a frame, a
+        // train's vehicles and shapes
+        for (Ports.Cargo kind : Ports.Cargo.values()) { g.getSectors().rail().railedIn(kind); g.getSectors().rail().railedOut(kind); TrainSchedule.Kind.of(kind); }
+        TrainSchedule.Route trainRoute = TrainSchedule.Route.through(0, true, 0, new double[] { -64, 0, 24 }, new double[] { 0, 0, 0 }, TrainSchedule.WORLD_PLOTS);
+        TrainSchedule trains = TrainSchedule.of(g.getMonth(), g.getSectors().rail(), java.util.List.of(trainRoute));
+        trains.callCount(); trains.calls(); trains.frame(-256, -256, 256, 256, .5); trains.touched(); trains.crosses(-256, -256, 256, 256); trains.stands(); trains.boxes(); trains.routes(); TrainSchedule.boxesByRail(g.getSectors().rail());
+        for (TrainSchedule.Call trainCall : trains.calls()) {
+            TrainSchedule.Train arriving = TrainSchedule.position(trainCall, trainRoute, trainCall.arrives());
+            if (arriving == null) continue;
+            TrainShapes.colour(arriving); TrainShapes.markColour(arriving);
+            for (TrainSchedule.Car trainCar : TrainSchedule.cars(arriving, trainRoute)) { TrainShapes.body(trainCar); TrainShapes.mark(trainCar, arriving); }
+        }
         g.getInfrastructureManager().getSeaShare(Traffic.BULK);
         BuildCard.of(g, portT, null); BuildCard.citys(portT); g.hasCoastFor(portT, 1); refiners.ownLines(g);
         // ...and the oil at sea (0.7.91): the platforms, their slots and wells, the pipelines, the shuttle tankers, the

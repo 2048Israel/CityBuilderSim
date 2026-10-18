@@ -1117,6 +1117,88 @@ public final class CityRuns {
         return hash == 0 ? 1 : hash;
     }
 
+    /* ----- the trains' way (0.8.2, batch FR1; spec-freight 4.4) ----- */
+
+    /**
+     * The railway's way from its gate arm's end to a yard, as points in plots,
+     * each a plot's middle, at the ends and every turn: in along the gate arm
+     * to the hub - or, the yard on the gate arm, to its anchor - then out arm
+     * by arm through each corridor's interchange to the yard's anchor, the
+     * rail plot in its box nearest its middle: mainLine()'s chain, walked.
+     * {xs, ys}; null with no gate arm, no rail plot in the box, or a chain
+     * that does not reach the hub. What CityMap.trainRoutes() lays the
+     * trains on.
+     */
+    public double[][] wayTo(long[] yard) {
+        int gate = gateArm(rail, gateway);
+        if (gate < 0 || yard == null) return null;
+        long[] anchor = anchorInYard(yard);
+        if (anchor == null) return null;
+        int[] loc = locate(rail, anchor[0], anchor[1]);
+        if (loc == null) return null;
+        Arm g = rail.arms.get(gate);
+        List<long[]> pts = new ArrayList<>();
+        List<long[]> in = new ArrayList<>();
+        armPoints(g, loc[0] == gate ? loc[1] : 0, g.steps, in);
+        java.util.Collections.reverse(in);
+        pts.addAll(in);
+        if (loc[0] != gate) {
+            // The chain from the yard's arm back to an arm of the spine, which starts at the hub; walked out from there.
+            List<int[]> chain = new ArrayList<>();
+            int a = loc[0], to = loc[1];
+            boolean home = false;
+            for (int guard = 0; guard < rail.arms.size(); guard++) {
+                chain.add(new int[] { a, to });
+                Arm arm = rail.arms.get(a);
+                if (arm.corridor == 0 || arm.corridor == 1) {
+                    home = arm.sx == rail.hubX && arm.sy == rail.hubY;
+                    break;
+                }
+                int[] prev = locate(rail, arm.sx, arm.sy);
+                if (prev == null || prev[0] == a || rail.arms.get(prev[0]).corridor >= arm.corridor) break;
+                a = prev[0];
+                to = prev[1];
+            }
+            if (!home) return null;
+            for (int i = chain.size() - 1; i >= 0; i--) armPoints(rail.arms.get(chain.get(i)[0]), 0, chain.get(i)[1], pts);
+        }
+        List<long[]> once = new ArrayList<>();
+        for (long[] p : pts) {
+            if (!once.isEmpty() && once.get(once.size() - 1)[0] == p[0] && once.get(once.size() - 1)[1] == p[1]) continue;
+            once.add(p);
+        }
+        double[] xs = new double[once.size()], ys = new double[once.size()];
+        for (int i = 0; i < once.size(); i++) { xs[i] = once.get(i)[0] + 0.5; ys[i] = once.get(i)[1] + 0.5; }
+        return new double[][] { xs, ys };
+    }
+
+    /** Adds to out arm a's plots at steps from and to (from <= to) and at every turn between, in the order of its steps. */
+    static void armPoints(Arm a, int from, int to, List<long[]> out) {
+        out.add(plotAt(a, from));
+        int step = 0;
+        for (int s = 0; s < a.segs; s++) {
+            int end = step + a.segSteps[s];
+            if (end > from && end < to) out.add(plotAt(a, end));
+            step = end;
+        }
+        if (to > from) out.add(plotAt(a, to));
+    }
+
+    /** The plot at step k of arm a: its start at 0, its end at a.steps and past. */
+    static long[] plotAt(Arm a, int k) {
+        if (k <= 0 || a.segs == 0) return new long[] { a.sx, a.sy };
+        int step = 0;
+        for (int s = 0; s < a.segs; s++) {
+            int m = a.segSteps[s];
+            if (k <= step + m) {
+                int j = k - step, h = a.segHead[s];
+                return new long[] { a.segX[s] + (long) DX[h] * j, a.segY[s] + (long) DY[h] * j };
+            }
+            step += m;
+        }
+        return new long[] { a.x, a.y };
+    }
+
     /* =====================================================================
        THE MONTH: TO THE MODEL'S COUNTS
        ===================================================================== */

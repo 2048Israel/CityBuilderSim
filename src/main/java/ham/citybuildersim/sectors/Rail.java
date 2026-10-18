@@ -289,6 +289,17 @@ public final class Rail extends Sector {
     /** ...and what a lorry would have charged for the tonnes the railway was offered (0.7.86): the lorry bill less the berths' first share of it; the whole bill with no terminal. */
     private double rOfferedBill;
 
+    /**
+     * The month billed's railed tonnes by cargo kind, landed and shipped
+     * (0.8.2, batch FR1; spec-freight 3.3 and 4.4): each owner's tonnes of a
+     * good across the boundary at the railway's share in force, under the
+     * good's kind (Good.cargo()) - what the map's trains are counted from, as
+     * the ports' own tally counts the boats. Read by nothing in the model.
+     * Saved, so a reload's trains are the month's.
+     */
+    private final double[] railIn = new double[ham.citybuildersim.Ports.Cargo.values().length],
+            railOut = new double[ham.citybuildersim.Ports.Cargo.values().length];
+
     /** The part of the month's fuel the world sold it (0.7.62). */
     private double rFuelImported;
 
@@ -402,6 +413,8 @@ public final class Rail extends Sector {
         double[] railTonnes = new double[n];
         boolean atSea = ports != null && ports.anyAtSea();
         if (ports != null) ports.beginMonth();
+        java.util.Arrays.fill(railIn, 0);
+        java.util.Arrays.fill(railOut, 0);
         double haulage = 0, abroad = 0;
         for (Sector s : sectors.all()) {
             if (s == this) continue;
@@ -428,6 +441,12 @@ public final class Rail extends Sector {
                 goodLorry[g.ordinal()] += lorry;
                 railTonnes[i] += weighs * rail;
                 if (ports != null) ports.tally(g, in * g.tonnesPerUnit(), out * g.tonnesPerUnit(), ship);
+                // ...and its kind's railed tonnes each way, for the map's trains (0.8.2): read, never billed.
+                ham.citybuildersim.Ports.Cargo kind = g.cargo();
+                if (kind != null && rail > 0) {
+                    railIn[kind.ordinal()] += in * g.tonnesPerUnit() * rail;
+                    railOut[kind.ordinal()] += out * g.tonnesPerUnit() * rail;
+                }
             }
             if (bill > 0) {
                 s.billForService(key(), "Haulage", bill);
@@ -659,6 +678,11 @@ public final class Rail extends Sector {
     /** ...and what of it the railway was offered: all of it, less what the berths that go before it took (0.7.86). */
     public double getOfferedTonnes()    { return rTonnes; }
     public double getHauledTonnes()     { return rHauled; }
+
+    /** Tonnes of a kind the railway landed, the month billed (0.8.2, batch FR1): the map's trains' to count, read by nothing in the model. */
+    public double railedIn(ham.citybuildersim.Ports.Cargo k)  { return railIn[k.ordinal()]; }
+    /** ...and shipped. Every kind's both ways come to getHauledTonnes(). */
+    public double railedOut(ham.citybuildersim.Ports.Cargo k) { return railOut[k.ordinal()]; }
     public double getTightness()        { return rTightness; }
     public double getTruckBill()        { return rTruckBill; }
     public double getHaulageBilled()    { return rHaulage; }
@@ -952,6 +976,11 @@ public final class Rail extends Sector {
         extras.put("haulage", rHaulage);
         extras.put("fuel", rFuel);
         extras.put("fuelImported", rFuelImported);
+        // The trains' tonnes by kind (0.8.2): a save from before them has none, and draws no train until its next month.
+        for (ham.citybuildersim.Ports.Cargo k : ham.citybuildersim.Ports.Cargo.values()) {
+            extras.put("railIn." + k.name(), railIn[k.ordinal()]);
+            extras.put("railOut." + k.name(), railOut[k.ordinal()]);
+        }
         // The screens' two (0.7.29), only when they are figures (see allowedKnown): an
         // older save has neither, and loads with them unknown, so no format bump.
         if (allowedKnown) extras.put("allowed", rAllowed);
@@ -979,6 +1008,10 @@ public final class Rail extends Sector {
         rFuel = extras.getOrDefault("fuel", 0.0);
         // A save from before 0.7.62 imported every litre.
         rFuelImported = extras.getOrDefault("fuelImported", rFuel);
+        for (ham.citybuildersim.Ports.Cargo k : ham.citybuildersim.Ports.Cargo.values()) {
+            railIn[k.ordinal()] = extras.getOrDefault("railIn." + k.name(), 0.0);
+            railOut[k.ordinal()] = extras.getOrDefault("railOut." + k.name(), 0.0);
+        }
         rAllowed = extras.getOrDefault("allowed", 0.0);
         allowedKnown = extras.containsKey("allowed");
         // Nothing billed at home: nothing was carried, so the whole lorry bill went abroad.
@@ -993,6 +1026,8 @@ public final class Rail extends Sector {
         java.util.Arrays.fill(carried, 0);
         rTonnes = rCrossed = rHauled = rCapacity = rTightness = rTruckBill = rOfferedBill = rHaulage = rFuel = rFuelImported = 0;
         rFuelLitres = rFuelLitresImported = 0;
+        java.util.Arrays.fill(railIn, 0);
+        java.util.Arrays.fill(railOut, 0);
         rAllowed = rPaidAbroad = 0;
         allowedKnown = abroadKnown = true;
     }

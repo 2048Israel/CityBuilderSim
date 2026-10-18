@@ -145,7 +145,13 @@ import java.util.Map;
  *      on the sea's cells to its offing past the city and on into the abyss,
  *      fading; a boat pure in (call, t), a frame touching only the routes on
  *      screen; and at 10B (the oil spec's prototype's trade and lanes) a
- *      frame's boats in no more than BOAT_FRAME_MS.
+ *      frame's boats in no more than BOAT_FRAME_MS. Since 0.8.2 (batch FR1;
+ *      spec-freight 4.4) the trains, on the yard city: each yard's routes
+ *      from the world line onto its sidings, on track all the way in; the
+ *      railed tonnes over a train's payload, sent to the yards by kind; a
+ *      train pure in (call, t), a frame finding every train on screen; at
+ *      10B a frame's trains in no more than TRAIN_FRAME_MS; and the played
+ *      city's station no container yard, its railway having moved no boxes.
  *  10. the map on Earth (0.7.119, batch E5; the project's spec-earth.md 3's
  *      "Far views" and 8's E5 row), on EarthCheck's fixture: a generated
  *      world's far node is its region at every stride, as before; an Earth
@@ -374,6 +380,7 @@ public class MapCheck {
         cost(sq);
         viewHalf(city, sq, root);
         atSea(sq.types, sq.seed);
+        trains(sq, city);
         onEarth(sq.types);
         pictures(city, sq);
         miniMap(city, sq);
@@ -3117,6 +3124,241 @@ public class MapCheck {
                 best[0] <= BOAT_FRAME_MS && best[1] <= BOAT_FRAME_MS && best[2] <= BOAT_FRAME_MS);
     }
 
+    /** The design's bound on a frame's trains at 10 billion, in ms: the boats' (spec-freight 4.4, "the same structure is well inside budget"). */
+    static final double TRAIN_FRAME_MS = BOAT_FRAME_MS;
+
+    /** Yards a side of the synthetic city the frame is timed on at 10 billion: 40, 1,600 yards, 12,800 routes on one main line. */
+    static final int TRAIN_YARDS_A_SIDE = 40;
+
+    /**
+     * Section 9's trains (0.8.2, batch FR1; spec-freight 4.4, D16): on the
+     * yard city (yardCity()), the routes run from the world line along the
+     * track into each yard and onto its sidings; the trains are its railed
+     * tonnes over a train's payload, pure in (call, t), sent to the yards by
+     * kind; a frame finds every train on screen and only those; and at 10
+     * billion a frame's trains take no more than TRAIN_FRAME_MS. The played
+     * city's railway moved no boxes, so its freight station is no container
+     * yard (RailCheck 7 holds the other way, on a city whose railway did).
+     */
+    static void trains(Squares sq, Game city) {
+        out.println("      the trains (0.8.2, batch FR1):");
+        CityMap m = yardCity(sq);
+        CityRuns runs = m.runs();
+        CityMap.WorldLine line = null;
+        for (CityMap.WorldLine l : m.worldLines()) if (l.net() == CityRuns.RAILWAY) line = l;
+        long[] station = runs.freightStation();
+        check("fixture: the yard city has a gateway, its railway's world line, yards and a freight station",
+                m.gateway() >= 0 && line != null && runs.yards().size() >= YARDS_ADDED && station != null);
+        if (line == null || station == null) return;
+
+        // ---- THE ROUTES: from the world line onto each yard's sidings, on track all the way in.
+        long t0 = System.nanoTime();
+        List<TrainSchedule.Route> routes = m.trainRoutes();
+        double routesMs = (System.nanoTime() - t0) / 1e6;
+        int reached = 0;
+        for (long[] y : runs.yards()) if (runs.wayTo(y) != null) reached++;
+        boolean starts = true, onTrack = true, intoYard = true, sidings = true, stationOnes = true;
+        double r = Math.toRadians(line.bearing());
+        java.util.Map<Integer, java.util.Set<Integer>> sidingsOf = new java.util.HashMap<>();
+        for (TrainSchedule.Route rt : routes) {
+            double[] xs = rt.xs(), ys = rt.ys();
+            long[] yard = runs.yards().get(rt.yard());
+            starts &= Math.abs(xs[0] - (line.x() + Math.cos(r) * TrainSchedule.WORLD_PLOTS)) < 1e-9
+                    && Math.abs(ys[0] - (line.y() + Math.sin(r) * TrainSchedule.WORLD_PLOTS)) < 1e-9
+                    && xs[1] == line.x() && ys[1] == line.y() && Math.abs(rt.fadeTo() - TrainSchedule.WORLD_PLOTS) < 1e-9;
+            // From the gate arm's end to where it enters its yard's box, every quarter step on a plot the railway carries.
+            int last = rt.siding() < 0 ? xs.length - 1 : xs.length - 3;
+            for (int i = 2; i < last; i++) {
+                double len = Math.hypot(xs[i + 1] - xs[i], ys[i + 1] - ys[i]);
+                int n = (int) Math.ceil(len * 4);
+                for (int k = 0; k <= n; k++) {
+                    double x = xs[i] + (xs[i + 1] - xs[i]) * k / n, y = ys[i] + (ys[i + 1] - ys[i]) * k / n;
+                    byte at = runs.at((long) Math.floor(x), (long) Math.floor(y));
+                    onTrack &= at == CityRuns.F_RAIL || at == CityRuns.F_RAIL_OVER || at == CityRuns.F_YARD;
+                }
+            }
+            // ...and its ladder and siding inside the box.
+            for (int i = last; i < xs.length; i++) {
+                intoYard &= xs[i] >= yard[0] && xs[i] <= yard[0] + yard[2] && ys[i] >= yard[1] && ys[i] <= yard[1] + yard[3];
+            }
+            sidingsOf.computeIfAbsent(rt.yard(), k -> new java.util.HashSet<>()).add(rt.siding());
+            stationOnes &= rt.station() == java.util.Arrays.equals(yard, station);
+        }
+        for (java.util.Set<Integer> s : sidingsOf.values()) sidings &= s.size() == TileRaster.YARD_TRACKS;
+        out.printf("      %d of %d yards reached, %d routes found in %.1f ms, the longest %.0f plots%n", reached, runs.yards().size(),
+                routes.size(), routesMs, routes.stream().mapToDouble(TrainSchedule.Route::length).max().orElse(0));
+        check("THE TRAINS' ROUTES: one a yard the railway's way reaches and a siding, every yard reached",
+                reached == runs.yards().size() && sidingsOf.size() == reached && routes.size() == reached * TileRaster.YARD_TRACKS && sidings);
+        check("...each from WORLD_PLOTS out along the world line, faded in to where the line leaves the city's ground",
+                starts && !routes.isEmpty());
+        check("...then on track every quarter plot, from the gate arm's end to its yard's box (CityRuns.wayTo())", onTrack);
+        check("...and its ladder and siding inside the yard's box, the freight station's routes marked so", intoYard && stationOnes);
+        check("...kept against the map's changes: asked again, the same list", m.trainRoutes() == routes);
+
+        // ---- CALLS: tonnes over a payload, past MOST_A_MONTH each drawn train standing for several.
+        int kinds = Ports.Cargo.values().length;
+        double[] in = new double[kinds], out0 = new double[kinds];
+        in[Ports.Cargo.DRY_BULK.ordinal()] = 200_000;
+        TrainSchedule worked = TrainSchedule.of(7, in, out0, routes);
+        check("the spec's worked example: 200,000 t of bulk is 25 unit trains, one for one",
+                worked.callCount() == 25 && worked.callsOf(TrainSchedule.Kind.HOPPER) == 25 && worked.stands() == 1);
+        double[] boxIn = new double[kinds], boxOut = new double[kinds];
+        boxIn[Ports.Cargo.CONTAINER.ordinal()] = 9 * TrainSchedule.Kind.INTERMODAL.tonnes();
+        boxOut[Ports.Cargo.CONTAINER.ordinal()] = 4 * TrainSchedule.Kind.INTERMODAL.tonnes();
+        TrainSchedule both = TrainSchedule.of(7, boxIn, boxOut, routes);
+        check("...boxes go both ways in one train: 9 trains' boxes in and 4 out is 9 intermodal trains",
+                both.callsOf(TrainSchedule.Kind.INTERMODAL) == 9 && both.boxes());
+        double[] big = new double[kinds];
+        big[Ports.Cargo.DRY_BULK.ordinal()] = 1_000_000;
+        TrainSchedule busy = TrainSchedule.of(7, big, out0, routes);
+        check("...1,000,000 t is 125 trains, so each of the 25 drawn stands for 5 (MOST_A_MONTH 30)",
+                busy.stands() == 5 && busy.callCount() == 25);
+        check("...and a city that rails nothing has no trains", TrainSchedule.of(7, new double[kinds], new double[kinds], routes).callCount() == 0
+                && TrainSchedule.of(7, (ham.citybuildersim.sectors.Rail) null, routes).callCount() == 0);
+
+        // ---- WHERE THEY GO: boxes and general cargo to the station; bulk elsewhere while the station handles boxes.
+        double[] mixIn = new double[kinds], mixOut = new double[kinds];
+        mixIn[Ports.Cargo.DRY_BULK.ordinal()] = 6 * TrainSchedule.UNIT_TONNES;
+        mixOut[Ports.Cargo.LIQUID.ordinal()] = 3 * TrainSchedule.UNIT_TONNES;
+        mixIn[Ports.Cargo.CONTAINER.ordinal()] = 5 * TrainSchedule.Kind.INTERMODAL.tonnes();
+        mixOut[Ports.Cargo.GENERAL.ordinal()] = 4 * TrainSchedule.MIXED_TONNES;
+        TrainSchedule mix = TrainSchedule.of(7, mixIn, mixOut, routes);
+        boolean byKind = true;
+        boolean others = routes.stream().anyMatch(rt -> !rt.station());
+        for (TrainSchedule.Call c : mix.calls()) {
+            boolean atStation = c.route() >= 0 && routes.get(c.route()).station();
+            byKind &= c.route() >= 0 && (c.kind().toStation() ? atStation : !others || !atStation);
+        }
+        double[] bulkOnly = mixIn.clone();
+        bulkOnly[Ports.Cargo.CONTAINER.ordinal()] = 0;
+        TrainSchedule noBoxes = TrainSchedule.of(7, bulkOnly, new double[kinds], routes);
+        boolean stationToo = false;
+        for (TrainSchedule.Call c : noBoxes.calls()) stationToo |= routes.get(c.route()).station();
+        out.printf("      a month of every kind: %d trains, %d of them bulk; with no boxes the bulk trains use the station too: %b%n",
+                mix.callCount(), mix.callsOf(TrainSchedule.Kind.HOPPER) + mix.callsOf(TrainSchedule.Kind.TANK), stationToo);
+        check("...boxes and general cargo to the freight station, bulk to the other yards while the station is a container yard",
+                mix.callCount() == 18 && mix.boxes() && byKind);
+        check("...and with no boxes, to every yard the station among them", !noBoxes.boxes() && stationToo);
+
+        // ---- PURE IN (call, t): fading in along the world line, whole on its siding, gone at either end of its visit.
+        double leg = TrainSchedule.LEG_SECONDS / TrainSchedule.MONTH_SECONDS, dwell = TrainSchedule.DWELL_SECONDS / TrainSchedule.MONTH_SECONDS;
+        boolean pure = true, alpha = true, whole = true, gone = true, loaded = true;
+        for (TrainSchedule.Call c : mix.calls()) {
+            TrainSchedule.Route rt = routes.get(c.route());
+            for (double t = 0; t <= 1; t += 1 / 97.0) {
+                TrainSchedule.Train a = TrainSchedule.position(c, rt, t), b = TrainSchedule.position(c, rt, t);
+                pure &= java.util.Objects.equals(a, b) && java.util.Objects.equals(TrainSchedule.cars(a, rt), TrainSchedule.cars(b, rt));
+                for (TrainSchedule.Car car : TrainSchedule.cars(a, rt)) alpha &= car.alpha() >= 0 && car.alpha() <= 1;
+            }
+            TrainSchedule.Train standing = TrainSchedule.position(c, rt, c.arrives() + dwell / 2);
+            List<TrainSchedule.Car> cars = TrainSchedule.cars(standing, rt);
+            whole &= standing != null && standing.standing() && cars.size() == c.kind().wagons() + 2;
+            for (TrainSchedule.Car car : cars) whole &= car.alpha() == 1 || rt.length() - c.kind().length() < rt.fadeTo();
+            gone &= TrainSchedule.cars(TrainSchedule.position(c, rt, c.arrives() - leg), rt).isEmpty()
+                    && TrainSchedule.cars(TrainSchedule.position(c, rt, c.arrives() + dwell + leg), rt).isEmpty()
+                    && TrainSchedule.position(c, rt, c.arrives() - leg - 1e-6) == null;
+            boolean in0 = TrainSchedule.position(c, rt, c.arrives() - leg / 2).loaded(), out1 = TrainSchedule.position(c, rt, c.arrives() + dwell + leg / 2).loaded();
+            loaded &= c.kind() == TrainSchedule.Kind.INTERMODAL ? in0 && out1 : in0 == c.inbound() && out1 == !c.inbound();
+        }
+        check("TRAINS: pure in (call, t), each vehicle's fade within [0, 1]", pure && alpha);
+        check("...on its siding every vehicle there, whole past the world line's part", whole);
+        check("...nothing of it on the line at either end of its visit, so none appears or vanishes", gone);
+        check("...an import in full and out empty, an export the other way, boxes loaded both ways", loaded);
+
+        // ---- A FRAME: every train with a vehicle on screen, looking at only those whose visit spans t.
+        long sx = station[0] + station[2] / 2, sy = station[1] + station[3] / 2;
+        long l0w = Math.round(SCREEN_W_PX / MapFrame.L0_FROM), l0h = Math.round(SCREEN_H_PX / MapFrame.L0_FROM);
+        boolean frames = true;
+        int shown = 0, spanned = 0;
+        for (double t = 0.05; t < 1; t += 0.0377) {
+            long vx0 = sx - l0w / 2, vy0 = sy - l0h / 2, vx1 = vx0 + l0w, vy1 = vy0 + l0h;
+            List<TrainSchedule.Train> got = mix.frame(vx0, vy0, vx1, vy1, t);
+            int want = 0, live = 0;
+            for (TrainSchedule.Call c : mix.calls()) {
+                TrainSchedule.Train tr = TrainSchedule.position(c, routes.get(c.route()), t);
+                if (c.arrives() - leg <= t && t <= c.arrives() + dwell + leg) live++;
+                if (tr == null) continue;
+                for (TrainSchedule.Car car : TrainSchedule.cars(tr, routes.get(c.route()))) {
+                    double w = TrainSchedule.LOCO_PLOTS;
+                    if (car.x() + w >= vx0 && car.x() - w < vx1 && car.y() + w >= vy0 && car.y() - w < vy1) { want++; break; }
+                }
+            }
+            frames &= got.size() == want && mix.touched() <= live;
+            shown += got.size();
+            spanned += live;
+        }
+        out.printf("      an L0 screen about the freight station through the month: %d trains drawn in 26 frames, of %d on the line%n", shown, spanned);
+        check("...a frame finds every train with a vehicle on screen, looking at no train off the line", frames && shown > 0);
+
+        // ---- 10 BILLION: the prototype's trade scaled by people, all of it railed, on 1,600 yards of one main line.
+        double tonnes10B = PROTO_TONNES * 1e10 / PROTO_PEOPLE;
+        double[] huge = new double[kinds];
+        for (Ports.Cargo c : Ports.Cargo.values()) huge[c.ordinal()] = tonnes10B / kinds;
+        List<TrainSchedule.Route> many = syntheticYards(sx, sy, TRAIN_YARDS_A_SIDE);
+        TrainSchedule ten = TrainSchedule.of(7, huge, huge, many);
+        long[][] views = {
+                { Math.round(SCREEN_W_PX / MapFrame.L0_FROM), Math.round(SCREEN_H_PX / MapFrame.L0_FROM) },
+                { Math.round(SCREEN_W_PX / MapFrame.L1_FROM), Math.round(SCREEN_H_PX / MapFrame.L1_FROM) } };
+        double[] best = { Double.MAX_VALUE, Double.MAX_VALUE };
+        int[] seen = new int[views.length];
+        ten.frame(sx, sy, sx + 1, sy + 1, .5);
+        for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
+            for (int v = 0; v < views.length; v++) {
+                long ax = sx - views[v][0] / 2, ay = sy - views[v][1] / 2, bx = ax + views[v][0], by = ay + views[v][1];
+                long f0 = System.nanoTime();
+                int n = 0;
+                for (int k = 0; k < BOAT_FRAMES; k++) {
+                    double t = (k + 0.5) / BOAT_FRAMES;
+                    if (!ten.crosses(ax, ay, bx, by)) continue;
+                    for (TrainSchedule.Train tr : ten.frame(ax, ay, bx, by, t)) n += TrainSchedule.cars(tr, many.get(tr.call().route())).size();
+                }
+                double ms = (System.nanoTime() - f0) / 1e6 / BOAT_FRAMES;
+                if (round >= WARM_ROUNDS) best[v] = Math.min(best[v], ms);
+                seen[v] = n / BOAT_FRAMES;
+            }
+        }
+        out.printf("      at 10B (%,.0f t a month railed, %d trains drawn each standing for %,d, on %,d routes): a frame of an L0 screen %.3f ms"
+                + " (%d vehicles), of an L1 screen %.3f ms (%d vehicles)%n", tonnes10B * 2, ten.callCount(), ten.stands(), many.size(),
+                best[0], seen[0], best[1], seen[1]);
+        check("...at 10 billion a frame's trains take no more than TRAIN_FRAME_MS (0.5 ms): an L0 screen and an L1 one",
+                best[0] <= TRAIN_FRAME_MS && best[1] <= TRAIN_FRAME_MS && ten.callCount() <= TrainSchedule.MOST_A_MONTH + 2 * kinds);
+
+        // ---- THE STATION'S LOOK: a railway that moved no boxes draws its station as a bulk yard (RailCheck 7 holds the other way).
+        ham.citybuildersim.sectors.Rail rail = city.getSectors().rail();
+        double boxes = rail.railedIn(Ports.Cargo.CONTAINER) + rail.railedOut(Ports.Cargo.CONTAINER);
+        double railed = 0;
+        for (Ports.Cargo c : Ports.Cargo.values()) railed += rail.railedIn(c) + rail.railedOut(c);
+        out.printf("      the played city's railway moved %,.0f t last month, %,.0f t of it in boxes; its yard's picture says goods: %b%n",
+                railed, boxes, city.getCityMap().railPicture().goodsByRail());
+        check("...and the played city's railway moved no boxes, so its freight station is no container yard (TrainSchedule.boxesByRail())",
+                boxes == 0 && !city.getCityMap().railPicture().goodsByRail() && !city.mapRail().goodsByRail());
+    }
+
+    /**
+     * A city of yards about (cx, cy) for the frame at 10 billion: side x side
+     * yards on a grid four cells apart, each with its YARD_TRACKS routes in
+     * from one gateway WORLD_PLOTS west - along the row to its column, down
+     * the column to the yard, onto a siding - so every route shares the main
+     * line, as a real city's would.
+     */
+    static List<TrainSchedule.Route> syntheticYards(long cx, long cy, int side) {
+        List<TrainSchedule.Route> out = new ArrayList<>();
+        double gx = cx - side * 2.0 * World.TILE - TrainSchedule.WORLD_PLOTS, gy = cy + 0.5;
+        int yard = 0;
+        for (int i = 0; i < side; i++) {
+            for (int j = 0; j < side; j++, yard++) {
+                double x = cx + (i - side / 2.0) * 4 * World.TILE + 0.5, y = cy + (j - side / 2.0) * 4 * World.TILE + 0.5;
+                for (int s = 0; s < TileRaster.YARD_TRACKS; s++) {
+                    double off = (s - (TileRaster.YARD_TRACKS - 1) / 2.0) * TileRaster.YARD_TRACK_APART;
+                    double[] xs = { gx, gx + TrainSchedule.WORLD_PLOTS, x, x, x + off, x + off };
+                    double[] ys = { gy, gy, gy, y, y + TileRaster.YARD_LADDER, y + 24 - TileRaster.YARD_LADDER };
+                    out.add(TrainSchedule.Route.through(yard, yard == 0, s, xs, ys, TrainSchedule.WORLD_PLOTS));
+                }
+            }
+        }
+        return out;
+    }
+
     /** The view's size in pixels the frames are timed at: section 5's 1,389 x 868 screen. */
     static final int SCREEN_W_PX = 1389, SCREEN_H_PX = 868;
 
@@ -4503,8 +4745,9 @@ public class MapCheck {
                 && pic.get(World.CLASSES + 1).words().equals(LandMap.EDGE_WORDS) && gro.subList(0, World.CLASSES + 2).equals(pic)
                 && gro.get(World.CLASSES + 2).words().equals(LandMap.OFFER_WORDS);
         long fieldKinds = Arrays.stream(Resource.values()).filter(Resource::inFields).count();
-        // The roads' five, and since 0.8.1 (batch FR0, spec-freight 4.9) the gateway, the main line, the freight yard and the level crossing.
-        boolean planeLegend = pla.equals(LandMap.planeLegend()) && pla.size() == BuildingVisual.CLASSES + 1 + 5 + 4 + 9
+        // The roads' five, and since 0.8.1 (batch FR0, spec-freight 4.9) the gateway, the main line, the freight yard and the level crossing;
+        // since 0.8.2 (batch FR1) the train.
+        boolean planeLegend = pla.equals(LandMap.planeLegend()) && pla.size() == BuildingVisual.CLASSES + 1 + 5 + 4 + 9 + 1
                 + (BuildingVisual.GROUPS - BuildingVisual.STEEL) + (BuildingVisual.STAND - BuildingVisual.PIT + 1) + 2 + 2 + fieldKinds
                 && pla.get(0).words().equals(BuildingVisual.CLASS_NAMES[0]);
         out.printf("      the legend: %d entries on the PICTURE tier, %d on the GROUND, %d on the plane%n", pic.size(), gro.size(), pla.size());

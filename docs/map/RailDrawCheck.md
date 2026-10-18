@@ -1,4 +1,4 @@
-# RailDrawCheck.java - 815 lines · 47 methods · 2 constants · harnesses
+# RailDrawCheck.java - 816 lines · 47 methods · 2 constants · harnesses
 
 `ham/citybuildersim/RailDrawCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
@@ -60,7 +60,7 @@
 > 
 > Numbering is the running order.
 
-**Uses:** [TileRaster](TileRaster.md) (84), [TilePainter](TilePainter.md) (77), [BuildingVisual](BuildingVisual.md) (40), [CityMap](CityMap.md) (12), [MapTiles](MapTiles.md) (10), [LandMap](LandMap.md) (8), [MapFrame](MapFrame.md) (6), [World](World.md) (4), [Founding](Founding.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [DistrictPlan](DistrictPlan.md) (3), [CityRuns](CityRuns.md) (3), [BuildingType](BuildingType.md) (3), [MapCheck](MapCheck.md) (1), [Resource](Resource.md) (1), [CityShore](CityShore.md) (1)
+**Uses:** [TileRaster](TileRaster.md) (84), [TilePainter](TilePainter.md) (77), [BuildingVisual](BuildingVisual.md) (40), [CityMap](CityMap.md) (12), [LandMap](LandMap.md) (10), [MapTiles](MapTiles.md) (10), [MapFrame](MapFrame.md) (6), [World](World.md) (4), [Founding](Founding.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [DistrictPlan](DistrictPlan.md) (3), [CityRuns](CityRuns.md) (3), [BuildingType](BuildingType.md) (3), [MapCheck](MapCheck.md) (1), [Resource](Resource.md) (1), [CityShore](CityShore.md) (1)
 
 ## Sections
 
@@ -104,7 +104,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 749 | **type** `public class RailDrawCheck` | Proves that the railway is drawn as rail, not as a cased road band (0.8.1, batch FR0; docs/studies/spec-freight-and-infrastructure.md 4.3, D15, D18). |
+| 67 | 750 | **type** `public class RailDrawCheck` | Proves that the railway is drawn as rail, not as a cased road band (0.8.1, batch FR0; docs/studies/spec-freight-and-infrastructure.md 4.3, D15, D18). |
 | 71 | 4 | `static void check(String label, boolean ok)` |  |
 | 82 | 4 | `static BuildingVisual.Type terminal()` | The Rail Terminal type. |
 | 88 | 6 | `static int[] raster(TilePainter.Input in, TilePainter.Painted p, int px)` | The image a painted tile rasters to at px pixels a plot. |
@@ -246,10 +246,10 @@
 | 745 | 4 | `static boolean hasColour(int[] img, int colour)` | Whether any pixel is exactly `colour`. |
 | 750 | 41 | `static void farSkeleton()` |  |
 
-### 20. the legend (lines 792-815)
+### 20. the legend (lines 792-816)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 795 | 4 | `static boolean legendHas(List<LandMap.Entry> entries, String words)` | Whether the legend has an entry with these words. |
-| 800 | 15 | `static void legend()` |  |
+| 800 | 16 | `static void legend()` |  |
 

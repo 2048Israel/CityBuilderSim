@@ -798,7 +798,7 @@ public class RailDrawCheck {
     }
 
     static void legend() {
-        System.out.println("--- 20. the legend: the transport class, the railway's four and the gateway ---");
+        System.out.println("--- 20. the legend: the transport class, the railway's four and the gateway, and (0.8.2) the train ---");
         List<LandMap.Entry> plane = LandMap.planeLegend();
         check("planeLegend() has the TRANSPORT class's entry",
                 legendHas(plane, BuildingVisual.CLASS_NAMES[BuildingVisual.TRANSPORT]));
@@ -807,6 +807,7 @@ public class RailDrawCheck {
         check("...has \"Level crossing\"", legendHas(plane, "Level crossing"));
         check("...has \"Main line, double with a Freight Line\"", legendHas(plane, "Main line, double with a Freight Line"));
         check("...has \"Gateway: to the world\"", legendHas(plane, "Gateway: to the world"));
+        check("...has the train's entry (0.8.2): \"" + LandMap.TRAIN_WORDS + "\"", legendHas(plane, LandMap.TRAIN_WORDS));
         boolean railLine = false;
         for (LandMap.Entry e : plane) railLine |= e.colour() == TileRaster.RAIL_LINE;
         check("...and no entry wears the old RAIL_LINE", !railLine);

@@ -513,6 +513,11 @@ public class RailCheck {
         double quoteWas = rail.getQuote();
         double[] carriedWas = rail.getCarried();
         double allowedWas = rail.getAllowedRevenue(), abroadWas = rail.getPaidAbroad();
+        double[] railInWas = new double[Ports.Cargo.values().length], railOutWas = new double[Ports.Cargo.values().length];
+        for (Ports.Cargo k : Ports.Cargo.values()) {
+            railInWas[k.ordinal()] = rail.railedIn(k);
+            railOutWas[k.ordinal()] = rail.railedOut(k);
+        }
         quietly(() -> game.saveGame(10));
         Game reloaded = new Game(files);
         /*
@@ -575,6 +580,15 @@ public class RailCheck {
         report("...and its locomotives came back with it",
                 same(back.fleet(), rail.fleet()) && back.fleet() > 0,
                 String.format("%,.4f wagon sets against %,.4f", back.fleet(), rail.fleet()));
+        // ...and the month's tonnes by kind (0.8.2, batch FR1), so a reload's trains are the month's.
+        boolean kindsBack = true;
+        double railedWas = 0;
+        for (Ports.Cargo k : Ports.Cargo.values()) {
+            kindsBack &= same(back.railedIn(k), railInWas[k.ordinal()]) && same(back.railedOut(k), railOutWas[k.ordinal()]);
+            railedWas += railInWas[k.ordinal()] + railOutWas[k.ordinal()];
+        }
+        report("...and its tonnes by kind, which the map's trains are counted from (0.8.2)", railedWas > 0 && kindsBack,
+                String.format("%,.0f t both ways", railedWas));
         report("...and the band the reloaded city quotes is the one it was saved with",
                 same(reloaded.getMarkets().get(Good.STEEL).getFreightFactor(),
                      game.getMarkets().get(Good.STEEL).getFreightFactor()),
@@ -621,6 +635,39 @@ public class RailCheck {
         report("...so the Locomotive Works makes of a set over the parts in it what it did, to the cent",
                 CarCheck.marginsHeld(catalogue, Good.ROLLING_STOCK, CarCheck.ROLLING_WAS_IN, Double.NaN, setLines),
                 String.join("; ", setLines));
+
+        /* ================================================================
+           7. ITS TONNES BY KIND, THE MAP'S TRAINS' (0.8.2, batch FR1)
+           ================================================================ */
+
+        /*
+         * THE TRAINS ARE COUNTED FROM WHAT THE RAILWAY CARRIED, kind by kind
+         * (spec-freight 3.3 and 4.4): each good's tonnes across the boundary
+         * at the share in force, under its kind of cargo - read by nothing in
+         * the model, so the playtest's trace cannot move. Every railed tonne
+         * is one kind's, so the kinds come to the tonnes hauled; and no kind
+         * rails more than crossed of it, each way. The month is section 6's.
+         */
+        System.out.println("\n--- its tonnes by kind, the map's trains' (0.8.2) ---");
+        double kinds = 0;
+        boolean within = true;
+        StringBuilder byKind = new StringBuilder();
+        Ports ports = game.getPorts();
+        for (Ports.Cargo k : Ports.Cargo.values()) {
+            double in = rail.railedIn(k), out = rail.railedOut(k);
+            kinds += in + out;
+            within &= in >= 0 && out >= 0 && in <= ports.tradeIn(k) * (1 + 1e-12) + 1e-9 && out <= ports.tradeOut(k) * (1 + 1e-12) + 1e-9;
+            byKind.append(String.format("%s %,.0f in, %,.0f out; ", k.label(), in, out));
+        }
+        report("its tonnes by kind, both ways, come to the tonnes it hauled", rail.getHauledTonnes() > 0
+                        && near(kinds, rail.getHauledTonnes(), 1e-9 * rail.getHauledTonnes()),
+                String.format("%,.2f t against %,.2f t: %s", kinds, rail.getHauledTonnes(), byKind));
+        report("...and no kind rails more than crossed of it, either way", within, byKind.toString());
+        // ...and the freight station's look is read from them (Game.mapRail(), FR0's star 4): boxes moved, a container yard.
+        double boxes = rail.railedIn(Ports.Cargo.CONTAINER) + rail.railedOut(Ports.Cargo.CONTAINER);
+        report("...and having moved boxes, its freight station is drawn a container yard (TrainSchedule.boxesByRail())",
+                boxes > 0 && game.mapRail().goodsByRail() && TrainSchedule.boxesByRail(rail),
+                String.format("%,.0f t of boxes", boxes));
 
         if (fails > 0) {
             System.out.printf("%n%d check(s) failed%n", fails);

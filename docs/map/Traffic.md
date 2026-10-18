@@ -39,7 +39,7 @@
 > all without moving the save format. If that ever stops being true, new
 > constants go on the END, for the reason BuildingType's header gives.
 
-**Used by (23):** [BuildAdvice](BuildAdvice.md), [BuildingsTemplate](BuildingsTemplate.md), [CarCheck](CarCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [EconomyManager](EconomyManager.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [Good](Good.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [OilCheck](OilCheck.md), [PortCheck](PortCheck.md), [Ports](Ports.md), [QuarryingCheck](QuarryingCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesManager](ServicesManager.md), [TradeCostCheck](TradeCostCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (22):** [BuildAdvice](BuildAdvice.md), [BuildingsTemplate](BuildingsTemplate.md), [CarCheck](CarCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [EconomyManager](EconomyManager.md), [ForestryCheck](ForestryCheck.md), [Good](Good.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [OilCheck](OilCheck.md), [PortCheck](PortCheck.md), [Ports](Ports.md), [QuarryingCheck](QuarryingCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesManager](ServicesManager.md), [TradeCostCheck](TradeCostCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Enum constants
 
