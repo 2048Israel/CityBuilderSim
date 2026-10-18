@@ -6679,8 +6679,46 @@ public final class GameVersion {
      *     JunctionCheck (new); MapCheck 8's fixture on Jerus's city x 1 shows
      *     its ramp as the highway's end, its six highways now one arm.
      *   - THE PLAYTESTS do not move: byte-identical.
+     *
+     * 0.8.2 (2026-10-18) - FR1, TRAINS ON THE MAP, AS THE SHIPS ARE.
+     * The second freight batch (docs/studies/spec-freight-and-infrastructure.md
+     * 4.4 and 7, D16; docs/queue/FR1-notes.md), the map's alone: the model
+     * gains a tally nothing in it reads. Written by Claude, DeepSeek's key not
+     * being set on the PC; the read path's slice by a Sonnet 5.5 subagent,
+     * Jerus's rule for then (FR1-notes 6). No save format change (39): the
+     * tally is four pairs of the railway's extras, and a save without them
+     * draws no train until its next month.
+     *   - THE RAILWAY'S TONNES BY KIND (sectors.Rail): the month billed's
+     *     railed tonnes of each kind of cargo, landed and shipped
+     *     (railedIn(), railedOut()), as the ports tally theirs for the boats;
+     *     they come to the tonnes it hauled.
+     *   - THE TRAINS (TrainSchedule): BoatSchedule's shape - a train is a
+     *     schedule entry, its place a pure function of time on the boats'
+     *     clock. Railed tonnes over a payload: unit trains of hoppers or tank
+     *     wagons of 8,000 t, mixed trains of 1,500 t, intermodal trains of 100
+     *     boxes carrying both ways; past 30 a month each train drawn stands
+     *     for several. A train runs its route in 6 s, stands 3 s on a siding
+     *     and runs back out, a locomotive at each end.
+     *   - THE ROUTES (CityMap.trainRoutes(), CityRuns.wayTo()): from the world
+     *     line beyond the gateway, faded in, along the main line and the
+     *     corridors into a yard and through its ladder onto one of its eight
+     *     sidings. Boxes and general cargo go to the freight station, bulk to
+     *     the other yards while the station handles boxes. A city with no
+     *     gateway draws no train.
+     *   - DRAWN (ui/MapView, TrainShapes, LandMap): from L1 in, as the boats;
+     *     at the middle view a dash of the train's colour, at the near view
+     *     each vehicle, and from 8 px a plot each wagon's mark - a hopper's
+     *     heap, a tank's barrel, a flat's two boxes, a van's roof; the ships'
+     *     four colours; the legend's train.
+     *   - THE FREIGHT STATION'S LOOK (Game.mapRail()): a container yard when
+     *     the railway moved boxes the month billed, the rule its trains are
+     *     sent by (FR0's star 4).
+     *   - Harnesses: MapCheck 9's trains (the routes on track, the calls, pure
+     *     in (call, t), the frame, 10 billion within 0.5 ms a frame), RailCheck
+     *     7 (the kinds come to the tonnes hauled) and its reload.
+     *   - THE PLAYTESTS do not move: byte-identical.
      */
-    public static final String VERSION = "0.8.1";
+    public static final String VERSION = "0.8.2";
 
     /**
      * The save shape.

@@ -145,7 +145,13 @@ import java.util.Map;
  *      on the sea's cells to its offing past the city and on into the abyss,
  *      fading; a boat pure in (call, t), a frame touching only the routes on
  *      screen; and at 10B (the oil spec's prototype's trade and lanes) a
- *      frame's boats in no more than BOAT_FRAME_MS.
+ *      frame's boats in no more than BOAT_FRAME_MS. Since 0.8.2 (batch FR1;
+ *      spec-freight 4.4) the trains, on the yard city: each yard's routes
+ *      from the world line onto its sidings, on track all the way in; the
+ *      railed tonnes over a train's payload, sent to the yards by kind; a
+ *      train pure in (call, t), a frame finding every train on screen; at
+ *      10B a frame's trains in no more than TRAIN_FRAME_MS; and the played
+ *      city's station a container yard exactly when its railway moved boxes.
  *  10. the map on Earth (0.7.119, batch E5; the project's spec-earth.md 3's
  *      "Far views" and 8's E5 row), on EarthCheck's fixture: a generated
  *      world's far node is its region at every stride, as before; an Earth

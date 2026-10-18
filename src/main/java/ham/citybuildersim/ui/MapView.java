@@ -106,6 +106,13 @@ import static ham.citybuildersim.ui.Pieces.*;
  * is paused; each boat's shape and colours ShipShapes'. While any is in view
  * the frame goes on and draws again whenever the clock moves them.
  *
+ * THE TRAINS (0.8.2, batch FR1; spec-freight 4.4): the same, on land - the
+ * month's trains (TrainSchedule, from the railway's tonnes by kind) on the
+ * map's routes from the world line to each yard's sidings
+ * (CityMap.trainRoutes()), on the boats' clock, from L1 in: a dash of the
+ * train's colour at the middle view, each vehicle's body and mark
+ * (TrainShapes) at the near view.
+ *
  * THE GLOBE (0.7.135, batch E9; docs/studies/spec-globe.md 3, Jerus's
  * answers of 2026-10-11, "yes"): on an Earth world the expanded map is a
  * view of the planet (GlobeFrame) drawn in one of three tiers by its scale

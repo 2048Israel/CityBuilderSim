@@ -115,6 +115,8 @@ import java.util.zip.InflaterInputStream;
  * terminals and tank farms at the water city-wide (CityShore), THE OIL AT
  * SEA draws the platforms and pipes the game hands it, and THE SEA ROUTES
  * finds each terminal's way out to the world (SeaRoutes) for the boats.
+ * THE TRAINS' ROUTES (0.8.2, batch FR1; spec-freight 4.4) lay the trains'
+ * way from the railway's world line onto each yard's sidings.
  *
  * THE MATERIALS (0.8.0, batch I14; spec-materials 5's I14 row): THE WORKS
  * ON THEIR SITES BY TYPE stands every mine, quarry and leach plant on its
