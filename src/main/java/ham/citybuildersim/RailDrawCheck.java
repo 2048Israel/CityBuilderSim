@@ -58,7 +58,11 @@ import java.util.List;
  *      highways, track and yards draws the lightened highway colour and
  *      RAIL_DARK, never RAIL_LINE, and a 2 x 2 TRANSPORT dot at each yard;
  *  20. the legend: planeLegend() has the transport class, the railway's four
- *      and the gateway, and no RAIL_LINE entry.
+ *      and the gateway, and no RAIL_LINE entry;
+ *  21. (batch FX3, red until the fix) a second line crossing the yard's box:
+ *      the fan closes on the line the yard stands on, not on the middle of
+ *      all the track in the box; the crossing track is drawn from the box's
+ *      edge to that line; no siding runs across it.
  *
  * Numbering is the running order.
  *
@@ -290,6 +294,7 @@ public class RailDrawCheck {
         railPictureRepaint();
         farSkeleton();
         legend();
+        lineCrossingTheYard();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -812,5 +817,64 @@ public class RailDrawCheck {
         for (LandMap.Entry e : plane) railLine |= e.colour() == TileRaster.RAIL_LINE;
         check("...and no entry wears the old RAIL_LINE", !railLine);
         System.out.println("  ui.MapView.LEGEND_ROWS is package-private, so this harness cannot reach it; the layout is checked by eye");
+    }
+
+    /** Whether pixel row y has a pixel of `colour` within `reach` pixels of column x. */
+    static boolean nearInRow(int[] img, int w, int y, int x, int reach, int colour) {
+        for (int xx = Math.max(0, x - reach); xx <= Math.min(w - 1, x + reach); xx++) if (img[y * w + xx] == colour) return true;
+        return false;
+    }
+
+    /* ================= 21. a line crossing the yard's box ================= */
+    static void lineCrossingTheYard() {
+        System.out.println("--- 21. a line crossing a yard's box: the fan closes on the yard's own line, the cross track is drawn, no siding runs across it ---");
+        int px = 8, boxX = 4, boxY = 4, boxW = 24, boxH = 24, lineX = 11, crossY = 8, w = T * px;
+        // Jerus's second yard: its own north-south line (plot column 11, the box's column 7), and an east-west main line across the box on plot row 8 (its row 4).
+        TilePainter.Input in = yardAt(terminal(), boxX, boxY, boxW, boxH);
+        railColumn(in, lineX, 0);
+        railRow(in, crossY, 0);
+        TilePainter.Painted p = paint(in);
+        int[] img = raster(in, p, px);
+
+        // Today drawYard() takes the middle of ALL the track in the box (box column 12, pixel 128) for the line the fan closes to.
+        int apexY = (boxY + boxH) * px - 2, lineMid = lineX * px + px / 2, boxMid = (boxX + boxW / 2) * px;
+        check("the fan's south apex is on the line: STEEL within 1 px of the line's middle column in the box's last row",
+                nearInRow(img, w, apexY, lineMid, 1, TileRaster.STEEL));
+        check("...and no STEEL within 2 px of the box's middle column in that row",
+                !nearInRow(img, w, apexY, boxMid, 2, TileRaster.STEEL));
+
+        int ballasted = 0, firstBare = -1;
+        int midRow = crossY * px + px / 2;
+        for (int plotX = lineX + 1; plotX < boxX + boxW; plotX++) {
+            boolean has = false;
+            for (int x = plotX * px; x < (plotX + 1) * px; x++) has |= img[midRow * w + x] == TileRaster.BALLAST;
+            if (has) ballasted++;
+            else if (firstBare < 0) firstBare = plotX;
+        }
+        int wanted = boxX + boxW - 1 - lineX;
+        check("the east-west track is drawn from the box's east edge to the line: BALLAST in every plot's middle row, columns "
+                + (lineX + 1) + ".." + (boxX + boxW - 1), ballasted == wanted);
+        System.out.println("  plots with BALLAST in row " + crossY + "'s middle pixel row: " + ballasted + " of " + wanted
+                + (firstBare < 0 ? "" : ", the first bare one is plot column " + firstBare));
+
+        int bandY0 = crossY * px, worstRows = 0, worstX = -1;
+        for (int x = 0; x < w; x++) {
+            if (x >= lineX * px && x < (lineX + 1) * px) continue;
+            int rows = 0;
+            for (int y = bandY0; y < bandY0 + px; y++) if (img[y * w + x] == TileRaster.STEEL) rows++;
+            if (rows > worstRows) { worstRows = rows; worstX = x; }
+        }
+        check("no siding runs across the crossing: no pixel column outside the line's own plot has STEEL on more than 2 of row "
+                + crossY + "'s " + px + " pixel rows", worstRows <= 2);
+        System.out.println("  the most STEEL rows in one pixel column of row " + crossY + "'s band outside the line's plot: " + worstRows
+                + (worstRows > 2 ? " at x = " + worstX : ""));
+
+        // The control: the same yard with only the north-south column (section 15's case moved to column 11) must stay as it is.
+        TilePainter.Input only = yardAt(terminal(), boxX, boxY, boxW, boxH);
+        railColumn(only, lineX, 0);
+        TilePainter.Painted po = paint(only);
+        int[] imgo = raster(only, po, px);
+        check("control: with only the north-south column the south apex STEEL is within 1 px of x = " + lineMid,
+                nearInRow(imgo, w, apexY, lineMid, 1, TileRaster.STEEL));
     }
 }

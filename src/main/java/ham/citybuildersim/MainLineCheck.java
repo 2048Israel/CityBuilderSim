@@ -60,6 +60,13 @@ import java.util.Set;
  *      corridor that starts on the main arm is reached along that arm, no
  *      plot of the way twice and every quarter plot of it on track.
  *
+ *  12. TWO YARDS STACKED ON A CORRIDOR (batch FX3, red until the fix): yard B
+ *      stands over a north-south corridor's interchange with the spine, yard
+ *      A a plot above it on the corridor's north arm, so A's way runs north
+ *      through B's box. Each yard's routes (CityMap.trainRoutesInto()) end on
+ *      north-south sidings, enter the fan at an apex on the corridor's
+ *      column, and no leg of any route crosses a siding.
+ *
  * WHY THIS EXISTS: batch FR0 slice M sets the main-line marks that the painter
  * already draws. A fixture CAUSES each condition, and every assertion is
  * against the model's own constants, never a bare number.
@@ -409,6 +416,7 @@ public class MainLineCheck {
         check("...and no other plot: as many marked as the arm's steps, its start and its corners", markedB == path.length + 1 + 3);
 
         theMainArm(siteX, siteY);
+        stackedOnACorridor(siteX, siteY);
 
         System.out.println();
         System.out.println(fails == 0 ? "The main line runs to the freight station." : fails + " FAILED");
@@ -616,6 +624,144 @@ public class MainLineCheck {
             check("...it has no plot twice: no doubling back", walked[0] > 0 && walked[1] == 0);
             check("...and every quarter plot of it is a plot the railway covers", walked[2] == 0);
         }
+    }
+
+    /* ============ 12. two yards stacked on a corridor (FX3) ============ */
+
+    /** The cross product of (b - a) and (c - a): its sign is the side of a-b that c lies on. */
+    static double turn(double[] a, double[] b, double[] c) {
+        return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+    }
+
+    /** Whether segments a-b and c-d cross at a point strictly inside both: parallel, collinear and touching segments do not. */
+    static boolean crossesInside(double[] a, double[] b, double[] c, double[] d) {
+        return turn(a, b, c) * turn(a, b, d) < 0 && turn(c, d, a) * turn(c, d, b) < 0;
+    }
+
+    /** Route r's point k as {x, y}. */
+    static double[] pointOf(TrainSchedule.Route r, int k) {
+        return new double[] { r.xs()[k], r.ys()[k] };
+    }
+
+    /**
+     * Section 12. Jerus's second yard: it stands over the interchange of a
+     * north-south corridor with the spine, so the spine crosses its box, and a
+     * yard a plot above it on the corridor's north arm is reached along the
+     * corridor, through its box. The fixture is a railway laid on a box of
+     * ground until a corridor of kind 1 opens whose interchange is on the
+     * spine and whose track runs clear through both boxes; yard B's box covers
+     * the interchange (24 x 24, the interchange 7 plots in from its north-west
+     * corner), yard A's lies directly above it, a plot's gap between.
+     */
+    /** Plots: a yard's box a side in the fixture, his Rail Terminals' (CityRuns.spotsIn() lays one at either end of its cell: at 1, or CELL - side). */
+    static final int YARD_SIDE = 24;
+
+    static void stackedOnACorridor(long siteX, long siteY) {
+        System.out.println("\n--- two yards stacked on a corridor (FX3) ---");
+        BoxGround g = ground(siteX - 700, siteY - 700, siteX + 700, siteY + 700);
+        CityRuns runs = null;
+        int ci = -1, north = -1, south = -1;
+        long ix = 0, iy = 0, track = 0;
+        for (long t = 3000; t <= 15000 && ci < 0; t += 1500) {
+            CityRuns r = new CityRuns();
+            r.setGateway(0);
+            layRail(r, g, t, siteX, siteY);
+            CityRuns.Net net = r.rail;
+            for (CityRuns.Interchange x : net.interchanges) {
+                if (x.corridor() < 2 || net.corridors.get(x.corridor())[0] != 1 || x.y() != net.hubY) continue;
+                int n = -1, s = -1;
+                for (int ai = 0; ai < net.arms.size(); ai++) {
+                    CityRuns.Arm a = net.arms.get(ai);
+                    if (a.corridor != x.corridor()) continue;
+                    if (a.home == 6) n = ai; else if (a.home == 2) s = ai;
+                }
+                long cx = Math.floorDiv(x.x(), CityRuns.CELL), cy = Math.floorDiv(x.y(), CityRuns.CELL);
+                boolean clear = n >= 0 && s >= 0;
+                // The corridor's column runs through both boxes (yard A's top row to yard B's bottom row), the spine's row through B's.
+                for (long y = (cy - 1) * CityRuns.CELL + CityRuns.CELL - YARD_SIDE; clear && y < cy * CityRuns.CELL + 1 + YARD_SIDE; y++) clear = CityRuns.covered(net, x.x(), y);
+                for (long px = cx * CityRuns.CELL + 1; clear && px < cx * CityRuns.CELL + 1 + YARD_SIDE; px++) clear = CityRuns.covered(net, px, x.y());
+                if (!clear) continue;
+                runs = r; ci = x.corridor(); north = n; south = s; ix = x.x(); iy = x.y(); track = t;
+                break;
+            }
+        }
+        check("the fixture lays a north-south corridor whose interchange is on the spine and whose track runs clear through both boxes", ci >= 0);
+        if (ci < 0) return;
+        CityRuns.Net rail = runs.rail;
+        long cx = Math.floorDiv(ix, CityRuns.CELL), cy = Math.floorDiv(iy, CityRuns.CELL);
+        CityRuns.Arm nArm = rail.arms.get(north), sArm = rail.arms.get(south);
+        int main = runs.mainArm();
+        CityRuns.Arm mainA = rail.arms.get(main);
+        System.out.printf("  %d plots of track: corridor %d is the column x = %d, its interchange on the spine at (%d, %d); north arm %d: %d steps, south arm %d: %d steps; the hub (%d, %d); the main arm %d ends at (%d, %d)%n",
+                track, ci, rail.corridors.get(ci)[1], ix, iy, north, nArm.steps, south, sArm.steps, rail.hubX, rail.hubY, main, mainA.x, mainA.y);
+
+        long[] yardA = { cx * CityRuns.CELL + 1, (cy - 1) * CityRuns.CELL + CityRuns.CELL - YARD_SIDE, YARD_SIDE, YARD_SIDE };
+        long[] yardB = { cx * CityRuns.CELL + 1, cy * CityRuns.CELL + 1, YARD_SIDE, YARD_SIDE };
+        runs.yards.add(yardA);
+        runs.yards.add(yardB);
+        long[][] yards = { yardA, yardB };
+        String[] names = { "A (above)", "B (over the interchange)" };
+        double wx = mainA.x + 0.5, wy = mainA.y + 0.5, fx = wx + TrainSchedule.WORLD_PLOTS, fy = wy;
+        List<TrainSchedule.Route> routes = new ArrayList<>();
+        int[] made = new int[2];
+        for (int y = 0; y < 2; y++) {
+            double[][] way = runs.wayTo(yards[y]);
+            check("wayTo() reaches yard " + names[y], way != null);
+            if (way == null) return;
+            int before = routes.size();
+            CityMap.trainRoutesInto(routes, y, false, yards[y], way, fx, fy, wx, wy);
+            made[y] = routes.size() - before;
+        }
+        check("each yard has a route to every one of its TileRaster.YARD_TRACKS sidings", made[0] == TileRaster.YARD_TRACKS && made[1] == TileRaster.YARD_TRACKS);
+
+        boolean allNorthSouth = true, allOnColumn = true;
+        for (int y = 0; y < 2; y++) {
+            for (int i = 0; i < routes.size(); i++) {
+                TrainSchedule.Route r = routes.get(i);
+                if (r.yard() != y) continue;
+                int n = r.xs().length;
+                if (n < 4) { allNorthSouth = false; allOnColumn = false; continue; }
+                if (r.xs()[n - 1] != r.xs()[n - 2] || r.ys()[n - 1] == r.ys()[n - 2]) allNorthSouth = false;
+                if (Math.abs(r.xs()[n - 3] - (ix + 0.5)) > 1e-9) allOnColumn = false;
+            }
+        }
+        // The last three points of each yard's routes: the fan's apex, then the siding's two ends.
+        for (int y = 0; y < 2; y++) {
+            StringBuilder sb = new StringBuilder("  yard " + names[y] + " at (" + yards[y][0] + ", " + yards[y][1] + "), the column x = " + (ix + 0.5) + ":");
+            for (int i = 0; i < routes.size(); i++) {
+                TrainSchedule.Route r = routes.get(i);
+                if (r.yard() != y) continue;
+                int n = r.xs().length;
+                sb.append(String.format("%n    siding %d:", r.siding()));
+                for (int k = Math.max(0, n - 3); k < n; k++) sb.append(String.format(" (%.2f, %.2f)", r.xs()[k], r.ys()[k]));
+            }
+            System.out.println(sb);
+        }
+        check("each yard's every route ends on a north-south siding: its last leg has the same x at both ends", allNorthSouth);
+        check("...and enters the fan at an apex on the corridor's column: the point before its last two has x = ix + 0.5", allOnColumn);
+
+        // The sidings are the routes' last legs; no leg of any route crosses one at a point strictly inside both.
+        int crossings = 0;
+        String first = null;
+        for (int i = 0; i < routes.size(); i++) {
+            TrainSchedule.Route s = routes.get(i);
+            int sn = s.xs().length;
+            double[] sa = pointOf(s, sn - 2), sb = pointOf(s, sn - 1);
+            for (int j = 0; j < routes.size(); j++) {
+                TrainSchedule.Route r = routes.get(j);
+                for (int k = 0; k + 1 < r.xs().length; k++) {
+                    if (j == i && k + 2 == sn) continue;
+                    double[] a = pointOf(r, k), b = pointOf(r, k + 1);
+                    if (crossesInside(a, b, sa, sb)) {
+                        crossings++;
+                        if (first == null) first = "yard " + r.yard() + " siding " + r.siding() + " leg " + k + " (" + a[0] + ", " + a[1] + ")-(" + b[0] + ", " + b[1]
+                                + ") crosses yard " + s.yard() + " siding " + s.siding() + " (" + sa[0] + ", " + sa[1] + ")-(" + sb[0] + ", " + sb[1] + ")";
+                    }
+                }
+            }
+        }
+        check("no train runs across a siding: no leg of any route crosses another route's siding strictly inside both", crossings == 0);
+        System.out.println("  " + crossings + " leg-over-siding crossings" + (first == null ? "" : ", the first: " + first));
     }
 
     static boolean marksCarry(CityMap m, int bits) {

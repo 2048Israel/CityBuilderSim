@@ -3248,7 +3248,7 @@ public final class CityMap {
     }
 
     /** Adds one yard's routes to out: the world line's part (far end, then where it leaves the city's ground), the way to the box's edge, and the ladder onto each siding. */
-    private static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way,
+    static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way,
                                         double fx, double fy, double wx, double wy) {
         double[] xs = way[0], ys = way[1];
         int n = xs.length;
