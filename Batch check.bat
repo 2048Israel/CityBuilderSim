@@ -10,6 +10,16 @@ rem      Batch check.bat                 compile, the whole suite, Stale, git st
 rem      Batch check.bat money bank      the same, the suite only the harnesses named so
 rem      Batch check.bat --fast          compile, Stale, git status: no suite
 rem      Batch check.bat --maps          the maps regenerated as well
+rem      Batch check.bat --timing        compile and the timing harnesses alone, hard:
+rem                                      the ship gate's (TM1)
+rem
+rem  Timing (TM1, 2026-10-18): batches check side by side. When another
+rem  batch's JVM or Jerus's game is running as the suite starts
+rem  (tools\jvms.ps1), the suite times soft (-Dcbs.timing=soft): a timing
+rem  figure over its budget says SOFT on its line and is not counted, and a
+rem  line says so. --timing is always hard: it waits (up to 30 minutes) for
+rem  the other batches' JVMs to finish, and says so when the game is running,
+rem  whose load a timing red may then be.
 rem
 rem  It writes nothing git tracks unless --maps is given: this folder pulls
 rem  main every ten minutes, and a regenerated docs\ here would stop the pull
@@ -28,12 +38,14 @@ if not exist "%OUT%" mkdir "%OUT%"
 set "FAILED=0"
 set "FAST=0"
 set "MAPS=0"
+set "TIMING=0"
 set "PAUSE=1"
 if defined CLAUDECODE set "PAUSE=0"
 set "NAMES="
 :args
 if "%~1"=="--fast" ( set "FAST=1" & shift & goto args )
 if "%~1"=="--maps" ( set "MAPS=1" & shift & goto args )
+if "%~1"=="--timing" ( set "TIMING=1" & shift & goto args )
 if "%~1"=="--no-pause" ( set "PAUSE=0" & shift & goto args )
 if not "%~1"=="" ( set "NAMES=!NAMES! %~1" & shift & goto args )
 
@@ -67,18 +79,60 @@ for %%M in (base graphics controls fxml) do (
     for %%J in ("%M2%\org\openjfx\javafx-%%M\21\*.jar") do set "CP=!CP!;%%~fJ"
 )
 
+rem --- timing: hard, or soft while another batch's JVM or the game runs (TM1) ---
+set "TIMED="
+if "%FAST%"=="1" goto timed
+set "WAITED=0"
+:count
+set "OTHERS=0"
+set "GAME=0"
+for /f "tokens=1,2" %%A in ('powershell -NoProfile -ExecutionPolicy Bypass -File tools\jvms.ps1 2^>nul') do (
+    set "OTHERS=%%A"
+    set "GAME=%%B"
+)
+if "%TIMING%"=="0" goto soft
+rem --timing: hard, once the other batches' JVMs are done (15 s a look, 120 looks)
+if "%OTHERS%"=="0" goto hard
+if %WAITED% GEQ 120 (
+    echo timing    still %OTHERS% other batch JVM^(s^) after 30 minutes: hard all the same, a red may be their load
+    goto hard
+)
+if %WAITED%==0 echo timing    waiting for %OTHERS% other batch JVM^(s^) to finish first...
+set /a WAITED+=1
+ping -n 16 127.0.0.1 >nul
+goto count
+:hard
+set "TIMED=-Dcbs.timing=hard"
+set "NAMES=!NAMES! --timing"
+if not "%GAME%"=="0" echo timing    the game is running: a timing red may be its load - close it if you can
+echo timing    hard - the timing harnesses alone
+goto timed
+:soft
+if "%OTHERS%%GAME%"=="00" goto timed
+set "TIMED=-Dcbs.timing=soft"
+set "WHO="
+if not "%OTHERS%"=="0" set "WHO=%OTHERS% other batch JVM(s)"
+if not "%GAME%"=="0" if defined WHO set "WHO=!WHO! and"
+if not "%GAME%"=="0" set "WHO=!WHO! the game"
+echo timing    soft - !WHO! running: a timing miss says SOFT and is not counted
+:timed
+
 rem --- the suite -------------------------------------------------------------
 if "%FAST%"=="0" (
-    echo suite     running, about ten minutes...
-    "%JAVA%" -cp "%CP%" ham.citybuildersim.AllChecks -f%NAMES% > "%OUT%\suite.txt" 2>&1
+    if "%TIMING%"=="1" ( echo suite     running the timing harnesses... ) else ( echo suite     running, about ten minutes... )
+    "%JAVA%" %TIMED% -cp "%CP%" ham.citybuildersim.AllChecks -f%NAMES% > "%OUT%\suite.txt" 2>&1
     if errorlevel 1 (
         set "FAILED=1"
         echo suite     FAILED
         type "%OUT%\suite.txt"
     ) else (
         for /f "delims=:" %%L in ('findstr /C:" run in " "%OUT%\suite.txt"') do echo suite     OK - %%L
+        for /f "delims=" %%L in ('findstr /C:" SOFT, not counted " "%OUT%\suite.txt"') do echo timing    %%L
     )
 )
+
+rem --timing: the timing harnesses and nothing more
+if "%TIMING%"=="1" goto done
 
 rem --- the maps, only when asked ---------------------------------------------------
 if "%MAPS%"=="1" (
