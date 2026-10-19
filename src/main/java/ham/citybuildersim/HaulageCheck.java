@@ -196,7 +196,7 @@ public class HaulageCheck {
         for (Sector s : game.getSectors().all()) {
             if (s == fr) continue;
             double t = 0;
-            for (Good g : Good.values()) t += Haulage.legTonnes(s, g, fr.railShareInForce(g));
+            for (Good g : Good.values()) t += Haulage.legTonnes(s, g, fr.railShareInForce(g), fr.seaShareInForce(g), fr.getHomeShare(), fr.getQuayShare());
             if (t > 0) {
                 p.legs.put(s, t);
                 p.tonnes += t;
