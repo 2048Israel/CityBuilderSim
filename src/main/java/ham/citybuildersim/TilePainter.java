@@ -84,6 +84,8 @@ public final class TilePainter {
     public static final int M_MAIN = 32;
     /** A main-line plot drawn as double track: the city has a Freight Line (spec 4.3). */
     public static final int M_DOUBLE = 64;
+    /** A siding's last plot, beside the works' box: drawn with the siding's loading shed, a small mark in TRANSPORT's colours (FR7 2026-10-18, CityRuns.SIDING). The marks' last bit, 128 (a mark byte is read with & 0xff). */
+    public static final int M_SHED = 128;
 
     /** A road plot's kind past BuildingVisual's GRAVEL, PAVED and HIGHWAY (Painted.road, 0.7.88): a TRACK, a street the city has bought no road for (spec 2.5, R4). */
     public static final byte TRACK = 4;

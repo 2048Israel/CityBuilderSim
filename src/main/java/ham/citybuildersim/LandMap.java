@@ -716,6 +716,18 @@ public final class LandMap {
     /** The legend's tracks (0.7.88; spec 5): a street the city has bought no road for. */
     public static final String TRACK_ENTRY = "Track";
 
+    /**
+     * The legend's note when the model has track the railway's ways do not use
+     * (FR7 2026-10-18, slice 3): how much, in plots. It said "with no ground left
+     * for the railway's lines" while the railway's arms ran out into the
+     * country until the ground stopped them; now the railway is its main line,
+     * its sidings and its branches (CityRuns THE RAILWAY'S WAYS), and the
+     * rest is not drawn - as the road's surplus is not (MapView.surplusWords()).
+     */
+    public static String trackSurplusWords(long plots) {
+        return String.format("%,d plots of track more than the line uses", plots);
+    }
+
     /** The hover past the planet's rim, where the map's square runs on beyond the antipode (spec-earth 2: the far node draws it as the void). */
     public static final String OFF_PLANET_WORDS = "Off the planet: the map runs on past the antipode, the point opposite the city";
 

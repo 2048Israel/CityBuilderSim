@@ -210,6 +210,14 @@ public final class BuildingVisual {
     /** The permanent ids of the rail types drawn as a yard beside the track, not as track (0.7.72): the Rail Terminal (64), and since FR7 the Rail Depot (141), the small goods yard a railway starts with. Every other RAIL type - the Rail Spur (62), the Freight Line (63) - is a line, laid plot by plot. */
     static final int[] RAIL_TERMINALS = { 64, 141 };
 
+    /** The permanent id of the Rail Depot (FR7 slice 3): the small yard of RAIL_TERMINALS, drawn at its own footprint with a few sidings, not a Rail Terminal's fan of eight. */
+    static final int RAIL_DEPOT = 141;
+
+    /** Whether the type is the Rail Depot, the railway's small first yard (FR7 slice 3). */
+    static boolean depot(Type t) {
+        return t != null && t.terminal() && t.id() == RAIL_DEPOT;
+    }
+
     /** The permanent ids of the railway lines whose track makes the main line double (0.8.1, batch FR0; spec-freight 4.3): the Freight Line (63). */
     static final int[] FREIGHT_LINES = { 63 };
 
@@ -271,11 +279,16 @@ public final class BuildingVisual {
      *                  touching cells (campusGroup()) - every works of a group but NOT_GATHERED's
      * @param sector    the sector that owns it (0.8.0; BuildingsTemplate.getSector(), "" for none): whose zone
      *                  its district is tinted for (CityMap's ZONES BY DISTRICT)
+     * @param siding    a siding into one works (FR7 slice 3; BuildingsTemplate.isSiding()): the Rail Spur - the map lays
+     *                  a siding for each, into a bulk works
+     * @param bulk      a bulk works (FR7 slice 3; sectors.Freight.isBulkWorks()): a mine, a quarry, a mill - the works
+     *                  a siding is laid into and a further yard stands beside
      */
     public record Type(int id, BuildingType category, int cls, boolean flats, int road, Resource site,
                        boolean outer, double plots, boolean transit, long sqFt, int people, int jobs,
                        boolean track, boolean terminal, boolean sea, boolean campus, boolean shore, int berth,
-                       int sites, Deposit.FieldType field, int look, int group, boolean gathered, String sector) {
+                       int sites, Deposit.FieldType field, int look, int group, boolean gathered, String sector,
+                       boolean siding, boolean bulk) {
 
         /** The campus it is placed in (0.8.0): its group where it is gathered, else NO_GROUP - what the city map and the district plan place by. */
         public int campusGroup() { return gathered ? group : NO_GROUP; }
@@ -342,7 +355,7 @@ public final class BuildingVisual {
         int look = lookOf(t, site, field, group);
         return new Type(id, c, cls, flats, road, site, outer, plots, t.isTransit(), Math.round(Math.max(0, t.getLandSqFt())),
                 people, Math.max(0, t.getTotalJobs()), track, terminal, sea, campus, shore, berth, sites, field, look, group,
-                gathered, t.getSector());
+                gathered, t.getSector(), t.isSiding(), ham.citybuildersim.sectors.Freight.isBulkWorks(t));
     }
 
     /**

@@ -214,6 +214,13 @@ public final class TileRaster {
     public static final int YARD_GROUND = 0xff8c8478;
     /** The fan's sidings (spec-freight 4.3: 6 to 10). */
     public static final int YARD_TRACKS = 8;
+    /** A Rail Depot's sidings (FR7 slice 3, "2 to 3 sidings and a shed"): 3 - its box is 8 plots by 7, a Rail Terminal's 24 by 24. */
+    public static final int DEPOT_TRACKS = 3;
+
+    /** The sidings of a yard of type t: a Rail Depot's DEPOT_TRACKS, else YARD_TRACKS (FR7 slice 3). */
+    public static int tracksOf(BuildingVisual.Type t) {
+        return BuildingVisual.depot(t) ? DEPOT_TRACKS : YARD_TRACKS;
+    }
     /** Plots between the fan's tracks, middle to middle. */
     public static final double YARD_TRACK_APART = 1.5;
     /** Plots at each end over which the fan closes to the line. */
@@ -459,7 +466,7 @@ public final class TileRaster {
         int end = spanB >= boxLong ? (ew ? x1 : y1) : ((ew ? bx : by) + spanB) * px;
         // The box as the shed, the heaps and the boxes see it: the span along, the box across.
         int sx0 = ew ? start : x0, sx1 = ew ? end : x1, sy0 = ew ? y0 : start, sy1 = ew ? y1 : end;
-        int n = YARD_TRACKS;
+        int n = tracksOf(t);
         double[] at = new double[n];
         double apart = YARD_TRACK_APART * px;
         for (int i = 0; i < n; i++) at[i] = line + (i - (n - 1) / 2.0) * apart;
@@ -536,7 +543,8 @@ public final class TileRaster {
         if (container) containers(in, p, px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanNear, fanFar);
         else stockpiles(px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanFar);
         // Wagons standing on the first wagonTracks tracks from the shed's side.
-        for (int k = 0; k < in.wagonTracks && k < n; k++) {
+        int wagonTracks = n == YARD_TRACKS ? in.wagonTracks : (int) Math.round(in.wagonTracks * (double) n / YARD_TRACKS);
+        for (int k = 0; k < wagonTracks && k < n; k++) {
             int mid = (int) Math.round(at[k]);
             int wide = px >= RAILS_FROM ? bed : 1;
             int wagonLen = Math.max(1, (int) Math.round(WAGON_LENGTH * px));
@@ -1256,6 +1264,7 @@ public final class TileRaster {
             if (ew) fillRect(img, w, x0, y0 + o, x0 + px, y0 + o + width, deck);
         }
         track(in, p, px, img);
+        sidingSheds(in, p, px, img);
         // The streets' surfaces, and the tracks' dashes.
         int dashT = Math.max(2, px / 5), dashStep = Math.max(2, px / 2), dashLen = Math.max(2, px / 3);
         for (int i = 0; i < TilePainter.PLOTS; i++) {
@@ -2014,6 +2023,35 @@ public final class TileRaster {
         for (int i = 0; i < TilePainter.PLOTS; i++) {
             if (p.use[i] != TilePainter.RAIL) continue;
             drawTrackLook(in, p, i, px, img);
+        }
+    }
+
+    /** A siding's loading shed, the share of a plot it fills (FR7 slice 3): 0.7, a small block at the siding's end beside the works. */
+    public static final double SIDING_SHED = 0.7;
+
+    /**
+     * A siding's loading shed (FR7 slice 3): on the plot marked M_SHED, the
+     * last of a siding beside its works' box, a small block in TRANSPORT's
+     * colours over the track's end, edged from EDGE_FROM.
+     */
+    private static void sidingSheds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        if (px < LINES_FROM) return;
+        int tile = TilePainter.TILE, w = tile * px;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if ((in.marks[i] & TilePainter.M_SHED) == 0 || p.use[i] != TilePainter.RAIL) continue;
+            int x0 = (i % tile) * px, y0 = (i / tile) * px;
+            int pad = (int) Math.round(px * (1 - SIDING_SHED) / 2.0), side = Math.max(1, px - 2 * pad);
+            int fill = BuildingVisual.FILL[BuildingVisual.TRANSPORT], edge = BuildingVisual.EDGE[BuildingVisual.TRANSPORT];
+            if (!in.owned[i]) { fill = blend(fill, VOID, UNOWNED_DIM); edge = blend(edge, VOID, UNOWNED_DIM); }
+            fillRect(img, w, x0 + pad, y0 + pad, x0 + pad + side, y0 + pad + side, fill);
+            if (px >= EDGE_FROM) {
+                for (int k = 0; k < side; k++) {
+                    img[(y0 + pad) * w + x0 + pad + k] = edge;
+                    img[(y0 + pad + side - 1) * w + x0 + pad + k] = edge;
+                    img[(y0 + pad + k) * w + x0 + pad] = edge;
+                    img[(y0 + pad + k) * w + x0 + pad + side - 1] = edge;
+                }
+            }
         }
     }
 

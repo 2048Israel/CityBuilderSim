@@ -597,7 +597,7 @@ public class MapCheck {
         /** The streets' surface in plots by kind [0, gravel, paved, highway] - a highway's own plots among the highway's - and what the plans have no street for (CityMap.leftoverByKind()). */
         final double[] surface = new double[4], leftover = new double[4];
         /** The railway's track laid, in plots (0.7.72), and (0.7.89) what the runs could not lay; buildings packed at the city's edge (R7); tiles painted; districts. */
-        long rail, railShort, packed, tiles, districts;
+        long rail, trackSurplus, packed, tiles, districts;
 
         long total() { return Arrays.stream(buildings).sum(); }
         int kinds() { int n = 0; for (long b : buildings) if (b > 0) n++; return n; }
@@ -617,7 +617,7 @@ public class MapCheck {
             }
             long track = 0;
             for (int t = 0; t < types.length && t < model.length; t++) if (types[t] != null && types[t].track()) track += model[t] * BuildingVisual.cells(types[t]);
-            return same && rail + railShort == track;
+            return same && rail + trackSurplus == track;
         }
     }
 
@@ -667,7 +667,7 @@ public class MapCheck {
         }
         double[] left = m.leftoverByKind();
         System.arraycopy(left, 0, d.leftover, 0, 4);
-        d.railShort = m.runs().railShort();
+        d.trackSurplus = m.runs().trackSurplus();
         return d;
     }
 
@@ -2016,7 +2016,7 @@ public class MapCheck {
         for (int t = 0; t < totals.length; t++) if (net.map.types()[t] != null && net.map.types()[t].track()) model += totals[t] * BuildingVisual.cells(net.map.types()[t]);
         long plots = net.count(net::isRunRail), over = 0;
         for (int g = 0; g < W * net.h; g++) if (net.run[g] == TilePainter.RAIL_OVER) over++;
-        long shortBy = net.map.runs().railShort();
+        long shortBy = net.map.runs().trackSurplus();
         out.printf("      %s: %,d plots of track drawn of the model's %,d (%,d the runs could not lay), %d piece(s), %d crossed by streets, %d bridging a highway%n",
                 what, net.rail, model, shortBy, pieces[0], net.crossings, over);
         check(what + ": fixture: the city has a railway", model > 0);
@@ -3376,12 +3376,19 @@ public class MapCheck {
         long t0 = System.nanoTime();
         List<TrainSchedule.Route> routes = m.trainRoutes();
         double routesMs = (System.nanoTime() - t0) / 1e6;
-        int reached = 0;
-        for (long[] y : runs.yards()) if (runs.wayTo(y) != null) reached++;
+        // FR7 slice 3: a Rail Depot's yard has TileRaster.DEPOT_TRACKS sidings, a Terminal's YARD_TRACKS (the yard city's yards are
+        // depots: the last terminal type), and each of the works' sidings has one more route, a bulk unit train's (its own rule: MainLineCheck 13).
+        int reached = 0, expectedRoutes = 0, worksRoutes = 0;
+        for (int i = 0; i < runs.yards().size(); i++) {
+            if (runs.wayTo(runs.yards().get(i)) == null) continue;
+            reached++;
+            expectedRoutes += TileRaster.tracksOf(m.types()[m.yardTypeOf(i)]);
+        }
         boolean starts = true, onTrack = true, intoYard = true, sidings = true, stationOnes = true;
         double r = Math.toRadians(line.way());
         java.util.Map<Integer, java.util.Set<Integer>> sidingsOf = new java.util.HashMap<>();
         for (TrainSchedule.Route rt : routes) {
+            if (rt.works()) { worksRoutes++; continue; }
             double[] xs = rt.xs(), ys = rt.ys();
             long[] yard = runs.yards().get(rt.yard());
             starts &= Math.abs(xs[0] - (line.x() + Math.cos(r) * TrainSchedule.WORLD_PLOTS)) < 1e-9
@@ -3405,11 +3412,13 @@ public class MapCheck {
             sidingsOf.computeIfAbsent(rt.yard(), k -> new java.util.HashSet<>()).add(rt.siding());
             stationOnes &= rt.station() == java.util.Arrays.equals(yard, station);
         }
-        for (java.util.Set<Integer> s : sidingsOf.values()) sidings &= s.size() == TileRaster.YARD_TRACKS;
-        out.printf("      %d of %d yards reached, %d routes found in %.1f ms, the longest %.0f plots%n", reached, runs.yards().size(),
-                routes.size(), routesMs, routes.stream().mapToDouble(TrainSchedule.Route::length).max().orElse(0));
-        check("THE TRAINS' ROUTES: one a yard the railway's way reaches and a siding, every yard reached",
-                reached == runs.yards().size() && sidingsOf.size() == reached && routes.size() == reached * TileRaster.YARD_TRACKS && sidings);
+        for (java.util.Map.Entry<Integer, java.util.Set<Integer>> e : sidingsOf.entrySet()) {
+            sidings &= e.getValue().size() == TileRaster.tracksOf(m.types()[m.yardTypeOf(e.getKey())]);
+        }
+        out.printf("      %d of %d yards reached, %d routes found in %.1f ms (%d to a works' siding), the longest %.0f plots%n", reached, runs.yards().size(),
+                routes.size(), routesMs, worksRoutes, routes.stream().mapToDouble(TrainSchedule.Route::length).max().orElse(0));
+        check("THE TRAINS' ROUTES: one a yard the railway's way reaches and a siding of its own (a depot's, a terminal's), every yard reached",
+                reached == runs.yards().size() && sidingsOf.size() == reached && routes.size() == expectedRoutes + worksRoutes && sidings);
         check("...each from WORLD_PLOTS out along the world line, faded in to where the line leaves the city's ground",
                 starts && !routes.isEmpty());
         check("...then on track every quarter plot, from the gate arm's end to its yard's box (CityRuns.wayTo())", onTrack);
