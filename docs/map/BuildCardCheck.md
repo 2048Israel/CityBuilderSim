@@ -3,7 +3,7 @@
 `ham/citybuildersim/BuildCardCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The build card (0.7.25): BuildCard's figures for every building in
-> buildings.json (142 since FR7, the Rail Depot) held to
+> buildings.json (143 since FR3, the Bulk Berth) held to
 > the model's own reads - the quote, the land, the staffing tests, the
 > markets, the investors' words and their gates - in a played city.
 > 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 124 | 1687 | **type** `public class BuildCardCheck` | The build card (0.7.25): BuildCard's figures for every building in buildings.json (142 since FR7, the Rail Depot) held to the model's own reads - the quote, the land, the staffing tests, the markets, the investors' wo... |
+| 124 | 1687 | **type** `public class BuildCardCheck` | The build card (0.7.25): BuildCard's figures for every building in buildings.json (143 since FR3, the Bulk Berth) held to the model's own reads - the quote, the land, the staffing tests, the markets, the investors' wo... |
 | 130 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 135 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 140 | 5 | `static void bits(String label, double actual, double expected)` |  |

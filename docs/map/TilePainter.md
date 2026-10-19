@@ -86,7 +86,7 @@
 | 84 | `TilePainter.M_MAIN` | `32` | A plot of the main line, from the rail gateway to the freight station: drawn as the main line, and an arterial or boulevard crossing it on a bridge (spec 4.3, D18). |
 | 86 | `TilePainter.M_DOUBLE` | `64` | A main-line plot drawn as double track: the city has a Freight Line (spec 4.3). |
 | 88 | `TilePainter.SIDING_PLOT` | `1, SIDING_END = 2` | A plot of a siding laid inside a district's plan (Input.siding; batch FR7 slice 5, D14), and (SIDING_END) its first plot, beside the works' box, which carries the loading shed. |
-| 91 | `TilePainter.M_SHED` | `128` | A siding's last plot, beside the works' box: drawn with the siding's loading shed, a small mark in TRANSPORT's colours (FR7 2026-10-18, CityRuns.SIDING). |
+| 91 | `TilePainter.M_SHED` | `128` | A siding's last plot, beside the works' box: drawn with the siding's loading shed, a small mark in TRANSPORT's colours (FR7 2026-10-18, CityRuns.SIDING; and a district plan's siding's SIDING_END, slice 5, set by CityM... |
 | 94 | `TilePainter.TRACK` | `4` | A road plot's kind past BuildingVisual's GRAVEL, PAVED and HIGHWAY (Painted.road, 0.7.88): a TRACK, a street the city has bought no road for (spec 2.5, R4). |
 | 99 | `TilePainter.QUAY` | `1` | A plot's work at sea (Input.sea, Painted.sea's low two bits): a terminal's quay, out over the water from its box (CityShore)... |
 | 101 | `TilePainter.JACKET` | `2` | ...an offshore platform's jacket... |
@@ -103,8 +103,8 @@
 | 129 | `TilePainter.WORKED_OUT` | `3` | ...in a holding worked out: drawn grey (the mockup's star 7). |
 | 134 | `TilePainter.S_KIND` | `7` | A plot's street as its district's plan gives it the painter (CityMap.Drawn, Input.street), a byte: its kind in the low three bits - DistrictPlan's NONE to UNDER... |
 | 136 | `TilePainter.S_WIDTH_SHIFT` | `3` | ...its surface's width in bits 3 and 4: 1 half (15 m), 2 full (30 m), 0 none... |
-| 138 | `TilePainter.S_ROLE_SHIFT` | `5` | ...its role in bits 5 and 6: 0 a cell's street (or one along a cut, or the join's), S_ARTERIAL, S_BOULEVARD... |
-| 140 | `TilePainter.S_ARTERIAL` | `1, S_BOULEVARD = 2, S_ACCESS = 3` | ...those two roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD), and (batch FR7) an access road's 3 (ROLE_ACCESS)... |
+| 138 | `TilePainter.S_ROLE_SHIFT` | `5` | ...its role in bits 5 and 6: 0 a cell's street (or one along a cut, or the join's), S_ARTERIAL, S_BOULEVARD, S_ACCESS... |
+| 140 | `TilePainter.S_ARTERIAL` | `1, S_BOULEVARD = 2, S_ACCESS = 3` | ...those roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD), and (batch FR7) an access road's 3 (ROLE_ACCESS)... |
 | 142 | `TilePainter.S_BRIDGE` | `0x80` | ...and a bridge over fresh water in bit 7. |
 | 145 | `TilePainter.STREET` | `1` | A painted street plot's role (Painted.role): a cell's street... |
 | 147 | `TilePainter.ARTERIAL` | `2` | ...an arterial, on a cell's ring (every 32 plots, 960 m)... |

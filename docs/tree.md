@@ -79,7 +79,7 @@ adds its line here, not in `CLAUDE.md`.
                                    since 0.7.112), CementConcrete.java the shortest of all (0.7.131,
                                    on ProcessingSector) and Materials.java the shortest on Sector;
                                    since 0.8.5 (batch FR2; spec-freight 3.1) Freight in the
-                                   railway's slot of Sectors.KEYS, where Rail.java was - the city's
+                                   railway's slot of Sectors.KEYS, where the Rail sector was - the city's
                                    carrier, its railway the Rail division - and Haulage, its trucks,
                                    the city leg of every bulk tonne billed once (HaulageCheck); since
                                    0.8.6 (batch FR7) the Rail Depot and a station before any track

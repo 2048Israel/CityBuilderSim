@@ -1,4 +1,4 @@
-# Automotive.java - 304 lines · 7 methods · 3 constants · sectors
+# Automotive.java - 307 lines · 7 methods · 3 constants · sectors
 
 `ham/citybuildersim/sectors/Automotive.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -55,6 +55,9 @@
 > he picked "a real export industry": building cars is a strategy in its own
 > right and not just a way to supply your own people.
 > 
+> ...AND A FOURTH SINCE FR2 (2026-10-18): TRUCKS, the Heavy Truck Plant's,
+> to Freight's Haulage division (Good.TRUCKS) - imported, never exported.
+> 
 > The domestic side comes next, and it is the larger half: a household that
 > owns a car puts far more on the road than one that does not, a business
 > short of vans cannot move what it makes, and a railway with track and no
@@ -68,37 +71,37 @@
 
 | line | section |
 |---:|---|
-| 146 | PLANNING - can the city supply it, and then is it worth it |
-| 257 | · the screen |
+| 149 | PLANNING - can the city supply it, and then is it worth it |
+| 260 | · the screen |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 109 | `Automotive.MAX_SHARE_OF_LOCAL_SUPPLY` | `.25` | The most of the city's WHOLE fabrication output one new plant may want. |
-| 119 | `Automotive.LUBRICANT_LITRES_A_VEHICLE` | `8` | Lubricants a vehicle built takes (0.7.83, batch O6; docs/studies/spec-oil.md 2.5, est., to confirm): eight litres - its first fill of engine, gearbox and axle oils and the line's own - on the car plants' and (star O6)... |
-| 128 | `Automotive.LUBRICANT_LITRES_A_TRUCK` | `40` | Lubricants a heavy truck built takes (FR2, 2026-10-18; docs/queue/FR2.md section 2, est.): forty litres of engine, gearbox and axle oils for its fifteen tonnes of tractor and trailer, on the Heavy Truck Plant's `uses`. |
+| 112 | `Automotive.MAX_SHARE_OF_LOCAL_SUPPLY` | `.25` | The most of the city's WHOLE fabrication output one new plant may want. |
+| 122 | `Automotive.LUBRICANT_LITRES_A_VEHICLE` | `8` | Lubricants a vehicle built takes (0.7.83, batch O6; docs/studies/spec-oil.md 2.5, est., to confirm): eight litres - its first fill of engine, gearbox and axle oils and the line's own - on the car plants' and (star O6)... |
+| 131 | `Automotive.LUBRICANT_LITRES_A_TRUCK` | `40` | Lubricants a heavy truck built takes (FR2, 2026-10-18; docs/queue/FR2.md section 2, est.): forty litres of engine, gearbox and axle oils for its fifteen tonnes of tractor and trailer, on the Heavy Truck Plant's `uses`. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 232 | **type** `public final class Automotive extends Sector` | The automobile industry. |
-| 130 | 15 | `public Automotive()` |  |
+| 76 | 232 | **type** `public final class Automotive extends Sector` | The automobile industry. |
+| 133 | 15 | `public Automotive()` |  |
 
-### PLANNING - can the city supply it, and then is it worth it (lines 146-256)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 151 | 3 | `public double localSupplyOf(Good g, Game game)` | What the city can fabricate a month, whoever is currently buying it. |
-| 156 | 3 | `public double biggestDrawAllowed(Good g, Game game)` | The largest draw a new plant may have on that supply. |
-| 169 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with a supply gate in front of it, the mills' shape to 0.7.119. |
-| 255 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
-
-### the screen (lines 257-304)
+### PLANNING - can the city supply it, and then is it worth it (lines 149-259)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 260 | 1 | `public boolean hasPlantBlock()` |  |
-| 263 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 154 | 3 | `public double localSupplyOf(Good g, Game game)` | What the city can fabricate a month, whoever is currently buying it. |
+| 159 | 3 | `public double biggestDrawAllowed(Good g, Game game)` | The largest draw a new plant may have on that supply. |
+| 172 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with a supply gate in front of it, the mills' shape to 0.7.119. |
+| 258 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
+
+### the screen (lines 260-307)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 263 | 1 | `public boolean hasPlantBlock()` |  |
+| 266 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
 

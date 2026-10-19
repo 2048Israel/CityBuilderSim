@@ -129,7 +129,7 @@
 | 2324 | `MapView.CARD_GAP` | `14` | The card stands off its offer's box by this many pixels: 14, as the hover card stands off the pointer (showCard()). |
 | 2327 | `MapView.CARD_MARGIN` | `10` | ...and at least this far inside the view: 10, the hover card's (showCard()). |
 | 2330 | `MapView.BOX_FILL_ALPHA` | `0.12` | The box's fill (B7), the offers' pink at this alpha: 0.12 (star M6) - under the lit offer's 0.34 and the picked one's 0.22 (overlays()), so the offers under the box read through it. |
-| 2872 | `MapView.LEGEND_ROWS` | `17` | Rows a column of the legend holds: 17, its 51 entries in three columns and the zones set after them (since 0.8.1 the transport class, the railway's four and the gateway, 46 in three columns of 16 before; since 0.8.0 t... |
+| 2872 | `MapView.LEGEND_ROWS` | `17` | Rows a column of the legend holds: 17, its 52 entries in three columns and the first row of a fourth, and the zones set after them (since 0.8.2 the train, 51 in three columns before; since 0.8.1 the transport class, t... |
 | 2875 | `MapView.SHIP_SIZE_WORDS` | `"Ships are drawn 1.6\u00d7 their size until 6 px a plot"` | The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). |
 | 2878 | `MapView.TRUCK_WORDS` | `"Trucks: one per %s"` | The legend's line for the trucks (0.8.8, batch FR5; spec-freight 4.7): "Trucks: one per 12 loads", the unit's words filled in by trucksWords(). |
 | 2886 | `MapView.TRACK_ENTRY` | `LandMap.TRACK_ENTRY` | The legend's tracks (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. |
@@ -200,7 +200,7 @@
 | 320 | `private TrainSchedule trainSchedule` | The trains' schedule drawn from (0.8.2, batch FR1): its boat-month, the routes and the game month it was made on. |
 | 321 | `private int trainMonth` |  |
 | 322 | `private List<TrainSchedule.Route> trainRoutes` |  |
-| 324 | `private boolean boatsLive` | Whether boats - or since 0.8.2 trains - are in view (the frame goes on), and the clock they were last drawn at. |
+| 324 | `private boolean boatsLive` | Whether boats - or since 0.8.2 trains, and since 0.8.8 trucks - are in view (the frame goes on), and the clock they were last drawn at. |
 | 325 | `private double drawnClock` |  |
 | 326 | `private final AnimationTimer pump` |  |
 | 330 | `private final ImagePattern hatch` |  |

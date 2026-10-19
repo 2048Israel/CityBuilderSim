@@ -69,6 +69,15 @@ timing harnesses alone and hard, as the ship gate does. TimingCheck new. No game
   Berth 142), 119 harnesses; the sectors still twenty-four, Freight in Rail's place, with its Haulage and Ports
   divisions; a new dial, the port dues (`TaxPolicy.portDues`, FR3).
 - What each batch left open is under Pending in QUEUE.md (FR2-C, FR7-C, FR3-C, FR5-C, FR6-C, FX3-C, TM1-C).
+- The docs pass of 2026-10-19 flagged, for a code batch (it changes no code):
+  - `Freight.getKept()` may read low since FR6: the railway's bill on the city's own bulk is in what it subtracts
+    (rHaulage) but not in the cross-border truck bill it subtracts from (TODO(docs) in Freight.java).
+  - The Rail build card still says "Owned by the rail sector" (ui/BuildScreen); the sector is Freight - FR4's?
+  - MapView's plane legend has 52 entries since FR1's train against LEGEND_ROWS 17, so the last starts a fourth
+    column before the zones; checked by eye.
+  - MapCheck's two printed trackSurplus() labels still say "what the runs could not lay" (since FR7: the track no
+    train's way uses); BuildingManager's RAIL banner works its example on a Freight Line of 100,000 t, the
+    balance file's is 200,000 (since 2026-09-16).
 
 ## Jerus's answers of 2026-10-18 - for `claude/todo.md`
 
