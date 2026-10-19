@@ -143,10 +143,12 @@ public class TruckCheck {
                 for (Good g : Good.values()) {
                     if (g.traffic() != Traffic.BULK) continue;
                     double rail = Math.max(0, Math.min(1, fr.railShareInForce(g)));
-                    double relief = 1 - InfrastructureManager.RAIL_ROAD_RELIEF * rail;
+                    // ...less the port yard's part of what crossed a berth, and the railway's of the home tonnes (FR6).
+                    double relief = Math.max(0, 1 - InfrastructureManager.RAIL_ROAD_RELIEF * rail
+                            - Freight.PORT_YARD_SHARE * fr.getQuayShare() * fr.seaShareInForce(g));
                     in += g.tonnesPerUnit() * s.unitsImported(g) * relief;
                     out += g.tonnesPerUnit() * s.unitsExported(g) * relief;
-                    home += g.tonnesPerUnit() * s.unitsBoughtLocal(g);
+                    home += g.tonnesPerUnit() * s.unitsBoughtLocal(g) * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * fr.getHomeShare());
                 }
             }
             // The haul run by hand, as HaulageCheck does: the builders' repair imports at the top of a real month are not among the rows the prediction sees.

@@ -227,6 +227,19 @@ public class LongPlaytest {
     static int portBestUncoveredMonth = 0;
 
     /**
+     * THE CITY'S OWN BULK ON THE RAILWAY OVER THE RUN (FR6, docs/queue/FR6.md 5
+     * item 3): the months the railway carried a share of what the city's works
+     * bought at home (the home share above zero) and the first of them, the
+     * months a port yard stood (a station and a sea terminal), the home tonnes
+     * and the quay's the railway carried over the run, what it billed on both,
+     * and the last home share struck. The end state alone is one month of a
+     * mechanic that bites only while a station or a spur stands with room left
+     * after the boundary's tonnes.
+     */
+    static int homeRailMonths = 0, homeRailFirst = 0, portYardMonths = 0;
+    static double homeRailedRun = 0, quayRailedRun = 0, homeBilledRun = 0, homeLastShare = 0;
+
+    /**
      * THE ROADS AND THE RAILS BY YEAR (FR7, 2026-10-18; its brief's 5: "count
      * in a real run how many highways, paved and gravel roads a long playtest
      * builds, and in which years; the same for the rail rungs"): for each of
@@ -1553,6 +1566,17 @@ public class LongPlaytest {
             double bulkShare = bulkUncovered / Ports.berthMonth(bulkBerth);
             if (bulkShare > portBestUncoveredShare) { portBestUncoveredShare = bulkShare; portBestUncoveredMonth = g.getMonth(); }
         }
+        // The city's own bulk on the railway (FR6): see THE CITY'S OWN BULK ON THE RAILWAY OVER THE RUN.
+        ham.citybuildersim.sectors.Freight homeRail = g.getSectors().freight();
+        if (homeRail.getHomeShare() > 0) {
+            homeRailMonths++;
+            if (homeRailFirst == 0) homeRailFirst = g.getMonth();
+            homeLastShare = homeRail.getHomeShare();
+        }
+        if (homeRail.hasPortYard()) portYardMonths++;
+        homeRailedRun += homeRail.getHomeRailed();
+        quayRailedRun += homeRail.getQuayRailed();
+        homeBilledRun += homeRail.getHomeBill();
         // The roads and the rails by year (FR7): see THE ROADS AND THE RAILS BY YEAR.
         for (int k = 0; k < BY_YEAR.length; k++) {
             int n = qty(g, BY_YEAR[k]);
@@ -6481,6 +6505,11 @@ public class LongPlaytest {
                 divisionKinds, portHandlingRun, portDuesRun, portBestUncoveredShare * 100,
                 portBestUncoveredMonth, Ports.WORTH_A_BERTH * 100,
                 berthsStanding.length() > 0 ? berthsStanding.substring(0, berthsStanding.length() - 2) : "none");
+        // The city's own bulk on the railway over the run (FR6): see THE CITY'S OWN BULK ON THE RAILWAY OVER THE RUN.
+        out.printf("  Home rail: the city's own bulk on rails in %d months (%s), %,.0f t, the quay's %,.0f t in %d months with a port yard;"
+                        + " billed $%,.0fk over the run; the last home share %.0f%%.%n",
+                homeRailMonths, homeRailFirst > 0 ? "from m" + homeRailFirst : "never", homeRailedRun, quayRailedRun, portYardMonths,
+                homeBilledRun, homeLastShare * 100);
         out.printf("  ...the vault at its lowest US$%,.0fk (m%d); half the founders' dollars gone %s; all but a"
                 + " hundredth gone %s%n", vaultLow == Double.MAX_VALUE ? 0 : vaultLow, vaultLowMonth,
                 halfGoneMonth > 0 ? "by month " + halfGoneMonth : "never",

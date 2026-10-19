@@ -1,4 +1,4 @@
-# OilCheck.java - 2,095 lines · 40 methods · 10 constants · harnesses
+# OilCheck.java - 2,096 lines · 40 methods · 10 constants · harnesses
 
 `ham/citybuildersim/OilCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -82,13 +82,13 @@
 | 1162 | 3. THE OIL RUNS OUT |
 | 1200 | 4. THE REFINERY TAKES THE WELLS' CRUDE FIRST |
 | 1268 | 5. THE DRIVERS AND THE RAILWAY |
-| 1345 | 6. THE AUDIT |
-| 1451 | 7. NO REFINERY |
-| 1505 | 8. WHEN A REFINERY IS BUILT |
-| 1585 | 9. ACROSS A SAVE |
-| 1640 | 10. A SAVE FROM BEFORE 0.7.76 |
-| 1798 | 11. A REFINERY THAT CLOSES |
-| 1834 | 12. CRUDE BY GRADE (0.7.79) |
+| 1346 | 6. THE AUDIT |
+| 1452 | 7. NO REFINERY |
+| 1506 | 8. WHEN A REFINERY IS BUILT |
+| 1586 | 9. ACROSS A SAVE |
+| 1641 | 10. A SAVE FROM BEFORE 0.7.76 |
+| 1799 | 11. A REFINERY THAT CLOSES |
+| 1835 | 12. CRUDE BY GRADE (0.7.79) |
 
 ## Constants
 
@@ -102,8 +102,8 @@
 | 961 | `OilCheck.PUMP_LITRE` | `Motoring.CAR_FUEL_PER_JOURNEY / Motoring.LITRES_PER_JOURNEY` | FUEL's import price, 0.7.62 to 0.7.75 (petrol's and diesel's at 0.7.76 and 0.7.77): a journey's pump price over its litres. |
 | 964 | `OilCheck.PETROL_CUT_PCT` | `63, DIESEL_CUT_PCT = 59` | What the ladder takes off the pump price, as the spec gives it (spec-oil 1, item 4): petrol 63%, diesel 59%, to the percent. |
 | 967 | `OilCheck.FOUR_FIGURES` | `5e-4` | The spec's four figures: a price within half a unit in its fourth significant figure. |
-| 1842 | `OilCheck.SEA_OIL_SEED` | `518` | The world whose founding site's nearest oil field in the sea is heavy and shallow enough for a jacket: 518, its field 3.5 km out - heavy, 12 sites (a jacket's slots), 58 m deep (fixW1-notes.md, the seed scan) - what s... |
-| 1845 | `OilCheck.FIAT_TONNES` | `1_000` | Tonnes of oil a fixture's centre is handed by fiat ahead of the field, so a lift crosses from it into the field: 1,000. |
+| 1843 | `OilCheck.SEA_OIL_SEED` | `518` | The world whose founding site's nearest oil field in the sea is heavy and shallow enough for a jacket: 518, its field 3.5 km out - heavy, 12 sites (a jacket's slots), 58 m deep (fixW1-notes.md, the seed scan) - what s... |
+| 1846 | `OilCheck.FIAT_TONNES` | `1_000` | Tonnes of oil a fixture's centre is handed by fiat ahead of the field, so a lift crosses from it into the field: 1,000. |
 
 ## Fields (state)
 
@@ -117,7 +117,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 183 | 1913 | **type** `public class OilCheck` | Fuel, from the oil in the ground to the drivers' tanks (0.7.62, batch K; the project's spec-land.md 2.7 and section 3's K entry). |
+| 183 | 1914 | **type** `public class OilCheck` | Fuel, from the oil in the ground to the drivers' tanks (0.7.62, batch K; the project's spec-land.md 2.7 and section 3's K entry). |
 | 189 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 194 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 199 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
@@ -187,60 +187,60 @@
 |---:|---:|---|---|
 | 1202 | 65 | `static Game refineryTakesLocalCrude()` |  |
 
-### 5. THE DRIVERS AND THE RAILWAY (lines 1268-1344)
+### 5. THE DRIVERS AND THE RAILWAY (lines 1268-1345)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1270 | 74 | `static void driversAndRailwayTakeLocalFuel(Game g)` |  |
+| 1270 | 75 | `static void driversAndRailwayTakeLocalFuel(Game g)` |  |
 
-### 6. THE AUDIT (lines 1345-1450)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1347 | 103 | `static void theAudit(Game g)` |  |
-
-### 7. NO REFINERY (lines 1451-1504)
+### 6. THE AUDIT (lines 1346-1451)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1453 | 51 | `static void noRefinery()` |  |
+| 1348 | 103 | `static void theAudit(Game g)` |  |
 
-### 8. WHEN A REFINERY IS BUILT (lines 1505-1584)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1507 | 68 | `static void whenARefineryIsBuilt()` |  |
-| 1577 | 7 | `static double packageEarns(Refining refiners, BusinessInvestment plans, Game g, Refining.Outlook o, double local, double imported)` | The Oil Refinery's package earnings at an outlook with its crude's two prices raised by `local` and `imported` (Refining.packageEstimate()). |
-
-### 9. ACROSS A SAVE (lines 1585-1639)
+### 7. NO REFINERY (lines 1452-1505)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1587 | 52 | `static void acrossASave(Game g) throws Exception` |  |
+| 1454 | 51 | `static void noRefinery()` |  |
 
-### 10. A SAVE FROM BEFORE 0.7.76 (lines 1640-1797)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1643 | 13 | `static void foldUnits(com.google.gson.JsonObject parent, String key)` | A JSON map of numbers by good name: the nine folded into one FUEL figure, as a 0.7.75 refinery made only FUEL. |
-| 1658 | 19 | `static void foldMoney(com.google.gson.JsonObject parent, String key)` | ...and a map of money by good name, each side apart. |
-| 1678 | 6 | `static com.google.gson.JsonObject sectorOf(com.google.gson.JsonObject save, String key)` |  |
-| 1685 | 6 | `static com.google.gson.JsonObject marketOf(com.google.gson.JsonObject save, String good)` |  |
-| 1692 | 4 | `static double money(com.google.gson.JsonObject sector, String part, String map, String side)` |  |
-| 1708 | 89 | `static Game theSplit(Game g) throws Exception` | A FORMAT-33 SAVE (0.7.75's shape), made from the oil town by folding the nine products back into FUEL - its market (PETROL's price, the nine's strike and history summed), every sector's maps, and the goods held four w... |
-
-### 11. A REFINERY THAT CLOSES (lines 1798-1833)
+### 8. WHEN A REFINERY IS BUILT (lines 1506-1585)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1806 | 27 | `static void aRefineryCloses(Game g)` | Its refinery bought out and pulled down (the player's hand, so no planner decides it): the next month its tanks are gone, and what they held - the dead stock of the products nobody here buys among it - is shipped at t... |
+| 1508 | 68 | `static void whenARefineryIsBuilt()` |  |
+| 1578 | 7 | `static double packageEarns(Refining refiners, BusinessInvestment plans, Game g, Refining.Outlook o, double local, double imported)` | The Oil Refinery's package earnings at an outlook with its crude's two prices raised by `local` and `imported` (Refining.packageEstimate()). |
 
-### 12. CRUDE BY GRADE (0.7.79) (lines 1834-2095)
+### 9. ACROSS A SAVE (lines 1586-1640)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1848 | 18 | `static Deposit nearestSeaOil(World w)` | The oil field in the sea nearest a world's founding site, among the nine cells round it; null when there is none. |
-| 1868 | 10 | `static double[] gradesBetween(double[][] runs, double from, double to)` | The grades of the oil from `from` to `to` tonnes into the city's, by its runs (LandManager.oilRuns()), in Deposit.Grade's order. |
-| 1879 | 209 | `static void crudeByGrade() throws Exception` |  |
-| 2089 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
+| 1588 | 52 | `static void acrossASave(Game g) throws Exception` |  |
+
+### 10. A SAVE FROM BEFORE 0.7.76 (lines 1641-1798)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1644 | 13 | `static void foldUnits(com.google.gson.JsonObject parent, String key)` | A JSON map of numbers by good name: the nine folded into one FUEL figure, as a 0.7.75 refinery made only FUEL. |
+| 1659 | 19 | `static void foldMoney(com.google.gson.JsonObject parent, String key)` | ...and a map of money by good name, each side apart. |
+| 1679 | 6 | `static com.google.gson.JsonObject sectorOf(com.google.gson.JsonObject save, String key)` |  |
+| 1686 | 6 | `static com.google.gson.JsonObject marketOf(com.google.gson.JsonObject save, String good)` |  |
+| 1693 | 4 | `static double money(com.google.gson.JsonObject sector, String part, String map, String side)` |  |
+| 1709 | 89 | `static Game theSplit(Game g) throws Exception` | A FORMAT-33 SAVE (0.7.75's shape), made from the oil town by folding the nine products back into FUEL - its market (PETROL's price, the nine's strike and history summed), every sector's maps, and the goods held four w... |
+
+### 11. A REFINERY THAT CLOSES (lines 1799-1834)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1807 | 27 | `static void aRefineryCloses(Game g)` | Its refinery bought out and pulled down (the player's hand, so no planner decides it): the next month its tanks are gone, and what they held - the dead stock of the products nobody here buys among it - is shipped at t... |
+
+### 12. CRUDE BY GRADE (0.7.79) (lines 1835-2096)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1849 | 18 | `static Deposit nearestSeaOil(World w)` | The oil field in the sea nearest a world's founding site, among the nine cells round it; null when there is none. |
+| 1869 | 10 | `static double[] gradesBetween(double[][] runs, double from, double to)` | The grades of the oil from `from` to `to` tonnes into the city's, by its runs (LandManager.oilRuns()), in Deposit.Grade's order. |
+| 1880 | 209 | `static void crudeByGrade() throws Exception` |  |
+| 2090 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
 

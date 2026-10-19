@@ -185,18 +185,27 @@ public final class Haulage {
      *
      * Only BULK has a truck leg; the GOODS stream is the sector's vans'. A tonne
      * bought at home is a truck tonne, paid by its buyer and never by its
-     * seller. A tonne imported or exported is a truck tonne less the siding's
-     * share of its railed part (InfrastructureManager.RAIL_ROAD_RELIEF of what
-     * the railway carried goes door to door by siding); a tonne by sea relieves
-     * nothing, as the quay to the door is a truck (a port yard is a later
-     * batch's). railShare is the railway's share of this good's crossing tonnes
-     * in force while they moved, clamped to 0..1.
+     * seller, less the siding's part of what the railway took of it (FR6: the
+     * home share, RAIL_ROAD_RELIEF of the tonne at that share). A tonne imported
+     * or exported is a truck tonne less the siding's share of its railed part
+     * (InfrastructureManager.RAIL_ROAD_RELIEF of what the railway carried goes
+     * door to door by siding), and less the port yard's: of a tonne that crossed
+     * a berth (seaShare) the yard takes Freight.PORT_YARD_SHARE at the quay
+     * share to rail (FR6, D7); the rest of the quay to the door is a truck. The
+     * shares are those in force while the tonnes moved, each clamped to 0..1.
+     * railShare is the railway's share of this good's crossing tonnes.
      */
-    public static double legTonnes(Sector s, Good g, double railShare) {
+    public static double legTonnes(Sector s, Good g, double railShare, double seaShare, double homeShare, double quayShare) {
         if (s == null || g == null || g.traffic() != Traffic.BULK) return 0;
-        double rail = Double.isFinite(railShare) ? Math.max(0, Math.min(1, railShare)) : 0;
-        return g.tonnesPerUnit() * (s.unitsBoughtLocal(g)
-                + (s.unitsImported(g) + s.unitsExported(g)) * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * rail));
+        double rail = unit(railShare), sea = unit(seaShare), home = unit(homeShare), quay = unit(quayShare);
+        return g.tonnesPerUnit() * (s.unitsBoughtLocal(g) * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * home)
+                + (s.unitsImported(g) + s.unitsExported(g))
+                * Math.max(0, 1 - InfrastructureManager.RAIL_ROAD_RELIEF * rail - Freight.PORT_YARD_SHARE * quay * sea));
+    }
+
+    /** The legs with the railway at the boundary alone (FR2): no home share and no port yard, to the bit what it was before FR6. */
+    public static double legTonnes(Sector s, Good g, double railShare) {
+        return legTonnes(s, g, railShare, 0, 0, 0);
     }
 
     /* ------------------------------------------------------------ the price of a leg */
@@ -209,7 +218,9 @@ public final class Haulage {
      * in(g): the leg of one tonne of g the works receives, at Haulage's quote,
      * the railed part of what is imported a quarter of a truck tonne
      * (InfrastructureManager.RAIL_ROAD_RELIEF by siding); a tonne bought at
-     * home is a full leg, paid by its buyer.
+     * home is a full leg, paid by its buyer, less the siding's part the
+     * railway carries of it (FR6: the home share), and the railway's charge on
+     * that part is in the price too (legPrice()).
      *
      * out(g): the leg of one tonne of g the works makes, on average. Only the
      * share shipped abroad pays it, the tonne sold at home being its buyer's
@@ -236,25 +247,54 @@ public final class Haulage {
      * before the first month's carriage), the railway's share in force for each good
      * (Freight.railShareInForce()), and the shares the city exported and
      * imported of it at the last clearing. Each price finite and not below zero.
+     * From FR6 the railway carries the city's own bulk and the port yard's, so
+     * the planner weighs the railway's charge on the railed part too: the truck
+     * weight at Haulage's quote, plus the railed weight at the railway's quote
+     * on it (the city leg's rate, Freight.getQuote() on Haulage's) - below the
+     * all-truck leg while the railway's quote is below 1.
      */
     public LegPrice legPrice() {
         final double q = getSteadyQuote();
+        final double rq = freight.getQuote();
         return new LegPrice() {
-            @Override public double in(Good g)  { return clean(q * inWeight(g)); }
-            @Override public double out(Good g) { return clean(q * outWeight(g)); }
+            @Override public double in(Good g)  { return clean(q * (inWeight(g) + rq * railWeightIn(g))); }
+            @Override public double out(Good g) { return clean(q * (outWeight(g) + rq * railWeightOut(g))); }
         };
     }
 
-    /** The city leg of a received tonne of `g`, in truck tonnes: 1 less the siding's share of its imported, railed part; 0 for anything but BULK. */
+    /**
+     * The city leg of a received tonne of `g`, in truck tonnes: 1 less the siding's share of its imported, railed part, less the port yard's
+     * part of what crossed a berth and the siding's part of what the railway carries of the home tonnes (FR6); 0 for anything but BULK.
+     */
     private double inWeight(Good g) {
         if (g == null || g.traffic() != Traffic.BULK) return 0;
-        return 1 - InfrastructureManager.RAIL_ROAD_RELIEF * unit(freight.railShareInForce(g)) * importShare(g);
+        double rail = unit(freight.railShareInForce(g)), sea = unit(freight.seaShareInForce(g));
+        double home = unit(freight.getHomeShare()), quay = unit(freight.getQuayShare()), imp = importShare(g);
+        return Math.max(0, 1 - InfrastructureManager.RAIL_ROAD_RELIEF * rail * imp
+                - Freight.PORT_YARD_SHARE * quay * sea * imp
+                - InfrastructureManager.RAIL_ROAD_RELIEF * home * (1 - imp));
     }
 
-    /** ...and of a made tonne, on average: the share the city exported, less the siding's share of its railed part. */
+    /** ...and of a made tonne, on average: the share the city exported, less the siding's share of its railed part and the port yard's (FR6). */
     private double outWeight(Good g) {
         if (g == null || g.traffic() != Traffic.BULK) return 0;
-        return exportShare(g) * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * unit(freight.railShareInForce(g)));
+        double rail = unit(freight.railShareInForce(g)), sea = unit(freight.seaShareInForce(g)), quay = unit(freight.getQuayShare());
+        return exportShare(g) * Math.max(0, 1 - InfrastructureManager.RAIL_ROAD_RELIEF * rail - Freight.PORT_YARD_SHARE * quay * sea);
+    }
+
+    /** The railed part of a received tonne's leg (FR6), in tonnes the railway charges for: the siding's part of the home tonnes and the yard's part of the quay's; 0 for anything but BULK. */
+    private double railWeightIn(Good g) {
+        if (g == null || g.traffic() != Traffic.BULK) return 0;
+        double sea = unit(freight.seaShareInForce(g)), imp = importShare(g);
+        double home = unit(freight.getHomeShare()), quay = unit(freight.getQuayShare());
+        return InfrastructureManager.RAIL_ROAD_RELIEF * home * (1 - imp) + Freight.PORT_YARD_SHARE * quay * sea * imp;
+    }
+
+    /** ...and of a made tonne, on average: the share the city exported, of the yard's part of the quay (FR6). */
+    private double railWeightOut(Good g) {
+        if (g == null || g.traffic() != Traffic.BULK) return 0;
+        double sea = unit(freight.seaShareInForce(g)), quay = unit(freight.getQuayShare());
+        return exportShare(g) * Freight.PORT_YARD_SHARE * quay * sea;
     }
 
     /**

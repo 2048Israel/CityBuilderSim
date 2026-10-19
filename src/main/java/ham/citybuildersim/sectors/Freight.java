@@ -7,6 +7,7 @@ import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
+import ham.citybuildersim.InfrastructureManager;
 import ham.citybuildersim.JobType;
 import ham.citybuildersim.Markets;
 import ham.citybuildersim.Sector;
@@ -283,6 +284,17 @@ public final class Freight extends Sector {
      */
     public static final double FUEL_LITRES_PER_TONNE = 18;
 
+    /**
+     * The most of the BULK tonnes that crossed a berth the port yard takes to rail (FR6, D7): Montreal's rail share, on the port's own railway on the quay (spec R70).
+     */
+    public static final double PORT_YARD_SHARE = .45;
+
+    /**
+     * Litres of diesel the railway burns on a city tonne (FR6): a third of a truck's city leg (Haulage.DIESEL_LITRES_A_TONNE), as rail costs about a third of a truck
+     * a tonne-kilometre (spec R50, R51); FUEL_LITRES_PER_TONNE is a boundary haul's and would cost three trucks' whole leg on a city tonne.
+     */
+    public static final double CITY_LITRES_A_TONNE = Haulage.DIESEL_LITRES_A_TONNE / 3;
+
     /** The share of the lorry rate it is charging, today. */
     private double quote = OPENING_QUOTE;
 
@@ -293,8 +305,33 @@ public final class Freight extends Sector {
      */
     private final double[] carried = new double[Traffic.values().length];
 
+    /**
+     * THE CITY'S OWN BULK ON THE RAILWAY (FR6, D4, D7; docs/queue/FR6.md 2):
+     * the share of the offer of the bulk bought at home (homeShare) and of the
+     * port yard's quay bulk (quayShare) the railway carries, in force for the
+     * month now running as carried[] is: set in step 3 from what the stations,
+     * the sidings and the track left after the boundary's tonnes, read by step
+     * 1's bill when the month is struck. The offer is RAIL_ROAD_RELIEF of a
+     * home tonne and PORT_YARD_SHARE of a quay tonne (the siding's part and
+     * the yard's); one share for both, dealt together pro rata. Zero in a city
+     * with no room left, and zero after loading a save from before them: a
+     * month of trucks, so no format bump.
+     */
+    private double homeShare, quayShare;
+
     /* the month just billed, for the screens */
     private double rTonnes, rHauled, rTruckBill, rHaulage, rFuel;
+
+    /**
+     * The city's own bulk in the month billed (FR6), for the screens: the
+     * city tonnes the railway was offered at the haul (the siding's part of
+     * the home tonnes, and the yard's part of the quay's when a yard stands),
+     * the home and the quay tonnes it carried at the shares in force, what it
+     * billed on both (a part of rHaulage), and the litres of diesel they
+     * burned. rHauled stays the boundary's tonnes. The litres are not saved:
+     * none after a load until the next haul, as rFuelLitres is.
+     */
+    private double rHomeOffered, rHomeRailed, rHomeBill, rQuayRailed, rCityLitres;
 
     /**
      * The BULK stream's part of rTonnes (FR7): the bulk the railway was offered,
@@ -486,6 +523,9 @@ public final class Freight extends Sector {
         java.util.Arrays.fill(railOut, 0);
         truckIn = truckOut = truckHome = 0;
         double haulage = 0, abroad = 0;
+        // ...and the city's own bulk (FR6): the month's offer to the railway of the home tonnes' siding part and the quay's yard part, and what the shares in force carried and billed.
+        double homeOfferMonth = 0, quayOfferMonth = 0, homeRailedMonth = 0, quayRailedMonth = 0, cityBillMonth = 0;
+        double cityQuote = -1;
         // ...and each sector's city-leg tonnes for Haulage (FR2), at the same railway shares: the railed part of what crossed is a quarter truck.
         Map<Sector, Double> legsOf = new LinkedHashMap<>();
         // ...and each sector's sea tonnes by kind of cargo for the Ports division (FR3): landed and shipped, at the berths' share in force.
@@ -502,21 +542,53 @@ public final class Freight extends Sector {
                 int i = stream.ordinal();
                 // The railway's part and the ships' (0.7.86): carried[i] and nothing with no berth.
                 double rail = ports == null ? carried[i] : ports.railShareOf(g, carried[i]);
+                // ...and the berths' share, up here for the quay's tonnes (FR6).
+                double ship = ports == null ? 0 : ports.seaShareOf(g, carried[i]);
                 // ...a bulk tonne bought at home has a city leg too, and crossed nothing (FR2).
                 if (stream == Traffic.BULK) {
-                    legs += Haulage.legTonnes(s, g, rail);
-                    // ...and the same tonnes by load, for the map's trucks (FR5): read, never billed.
-                    double relief = 1 - ham.citybuildersim.InfrastructureManager.RAIL_ROAD_RELIEF * (Double.isFinite(rail) ? Math.max(0, Math.min(1, rail)) : 0);
+                    /*
+                     * ...AND THE RAILWAY'S PART OF IT (FR6, D4, D7): the siding's
+                     * RAIL_ROAD_RELIEF of a home tonne and the yard's PORT_YARD_SHARE
+                     * of a tonne that crossed a berth are offered the railway in
+                     * step 3, and at the shares in force while they moved they are
+                     * billed here at the railway's quote on Haulage's (the city leg's
+                     * rate), the trucks keeping the rest of the leg. Before the
+                     * `units <= 0` line: a sector that only bought at home has no
+                     * crossing tonnes and still has a home leg.
+                     */
+                    double tpu = g.tonnesPerUnit();
+                    double bought = s.unitsBoughtLocal(g);
+                    double home = bought > 0 && Double.isFinite(bought) ? bought * tpu : 0;
+                    double quayT = units > 0 && Double.isFinite(units) ? units * tpu * ship : 0;
+                    homeOfferMonth += home * InfrastructureManager.RAIL_ROAD_RELIEF;
+                    quayOfferMonth += quayT * PORT_YARD_SHARE;
+                    double homeRail = home * InfrastructureManager.RAIL_ROAD_RELIEF * homeShare;
+                    double quayRail = quayT * PORT_YARD_SHARE * quayShare;
+                    double cityRailed = homeRail + quayRail;
+                    if (cityRailed > 0) {
+                        if (cityQuote < 0) cityQuote = haulage().getQuote();
+                        double cityBill = cityRailed * quote * cityQuote;
+                        if (cityBill > 0 && Double.isFinite(cityBill)) {
+                            bill += cityBill;
+                            cityBillMonth += cityBill;
+                        }
+                        homeRailedMonth += homeRail;
+                        quayRailedMonth += quayRail;
+                    }
+                    legs += Haulage.legTonnes(s, g, rail, ship, homeShare, quayShare);
+                    // ...and the same tonnes by load, for the map's trucks (FR5): read, never billed - the trucks' part
+                    // of each, FR6's railed home and quay tonnes off, so the three sum to the legs Haulage carries.
+                    double relief = Math.max(0, 1 - InfrastructureManager.RAIL_ROAD_RELIEF * (Double.isFinite(rail) ? Math.max(0, Math.min(1, rail)) : 0)
+                            - PORT_YARD_SHARE * quayShare * ship);
                     truckIn += g.tonnesPerUnit() * s.unitsImported(g) * relief;
                     truckOut += g.tonnesPerUnit() * s.unitsExported(g) * relief;
-                    truckHome += g.tonnesPerUnit() * s.unitsBoughtLocal(g);
+                    truckHome += g.tonnesPerUnit() * s.unitsBoughtLocal(g) * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * homeShare);
                 }
                 if (units <= 0) continue;
                 double weighs = units * g.tonnesPerUnit();
                 tonnes[i] += weighs;
                 double lorry = units * g.baseFreight() * fx;
                 truck[i] += lorry;
-                double ship = ports == null ? 0 : ports.seaShareOf(g, carried[i]);
                 bill += lorry * rail * quote;
                 // ...and what still went by lorry, paid abroad (0.7.29): read, never billed - and by sea (0.7.86).
                 abroad += lorry * (1 - rail - ship);
@@ -576,7 +648,10 @@ public final class Freight extends Sector {
 
         bookOtherRevenue(haulage);
         // ...its fuel, drawn as a buyer (0.7.62): the refiners' shelf first, the world for the rest - diesel (0.7.76).
-        Markets.Draw took = markets.draw(Good.DIESEL, this, key(), moved * FUEL_LITRES_PER_TONNE, sectors);
+        // ...and the city tonnes' at CITY_LITRES_A_TONNE each, a third of a truck's (FR6); moved stays the boundary's.
+        double cityRailedTotal = homeRailedMonth + quayRailedMonth;
+        Markets.Draw took = markets.draw(Good.DIESEL, this, key(),
+                moved * FUEL_LITRES_PER_TONNE + cityRailedTotal * CITY_LITRES_A_TONNE, sectors);
         double fuel = took.cost();
 
         rHaulage = haulage;
@@ -585,6 +660,10 @@ public final class Freight extends Sector {
         rFuelLitres = took.units();
         rFuelLitresImported = took.imported();
         rHauled = moved;
+        rHomeRailed = homeRailedMonth;
+        rQuayRailed = quayRailedMonth;
+        rHomeBill = cityBillMonth;
+        rCityLitres = cityRailedTotal * CITY_LITRES_A_TONNE;
         rPaidAbroad = abroad;
         abroadKnown = allowedKnown = true;
 
@@ -653,6 +732,23 @@ public final class Freight extends Sector {
             ports.commit(goodTonnes, tonnes, next);
         }
 
+        /*
+         * ...AND THE CITY'S OWN BULK, LAST (FR6, D4, D7): dealt after the
+         * boundary's bulk and goods (spec 3.3) on what is left of the track or
+         * the sets and of the stations and sidings together. The offer is the
+         * home tonnes' siding part, and the quay's yard part when a station and
+         * a sea terminal stand; one share of it for both, taken pro rata, is
+         * in force next month (set at the foot, beside carried[]). These tonnes
+         * enter neither the tightness nor rTonnes nor the planner's figures:
+         * the room after the boundary is what they ride, they do not make it
+         * scarce (FR6.md star 2).
+         */
+        boolean yard = hasPortYard();
+        double cityOffer = homeOfferMonth + (yard ? quayOfferMonth : 0);
+        double cityTook = dealHome(Math.min(trackTonnes(), fleet() * TONNES_PER_SET), stations, sidings, dealt[0], dealt[1], cityOffer);
+        double cityShare = cityOffer > 0 ? cityTook / cityOffer : 0;
+        rHomeOffered = cityOffer;
+
         double offered = (tonnes[Traffic.BULK.ordinal()] - seaFirst[Traffic.BULK.ordinal()])
                 + (tonnes[Traffic.GOODS.ordinal()] - seaFirst[Traffic.GOODS.ordinal()]);
         // ...the freight it could not carry, as the dealing left it: with the stations in the way a network can have the tonnes
@@ -681,6 +777,8 @@ public final class Freight extends Sector {
             for (Traffic stream : Traffic.values()) {
                 atLorryRate += (truck[stream.ordinal()] - seaFirstLorry[stream.ordinal()]) * next[stream.ordinal()];
             }
+            // ...and the city tonnes it took join the revenue the quote is struck over, at the city leg's rate (FR6).
+            if (cityTook > 0) atLorryRate += cityTook * haulage().getQuote();
             double needed = atLorryRate > 0 ? rAllowed / atLorryRate : quote;
             double scarcity = 1 + tightness * (MAX_SCARCITY_MULTIPLE - 1);
             double target = Math.max(RAIL_FLOOR, Math.min(1, needed * scarcity));
@@ -716,6 +814,9 @@ public final class Freight extends Sector {
             m.setRailCharge(rail * quote);
         }
         System.arraycopy(next, 0, carried, 0, n);
+        // ...and the city's own bulk's, with no quay share for want of a yard (FR6).
+        homeShare = cityShare;
+        quayShare = yard ? cityShare : 0;
 
         /* ---- 6. and the trucks' month (FR2): their diesel, wear, need, share and price ---- */
 
@@ -880,6 +981,37 @@ public final class Freight extends Sector {
         double throughStations = Math.max(0, stations - Math.max(0, bulk - sidings));
         double goods = goodsWant > 0 ? Math.max(0, Math.min(Math.min(left, goodsWant), throughStations)) : 0;
         return new double[] { bulk, goods };
+    }
+
+    /**
+     * The city tonnes the railway takes of the offer of the city's own bulk,
+     * after the boundary's (FR6, spec 3.3: "dealt after the boundary's"):
+     * at most the offer, what the track or the sets (`capacity`, the figure
+     * deal() is passed) have left once the boundary's bulk and goods are
+     * dealt, and what the stations and the sidings have left of the same.
+     * A BULK tonne rides a siding or a station (FR7), so both rooms count and
+     * the smaller binds. Each term is floored at zero, and with no station and
+     * no spur (stations + sidings = 0) nothing is taken, whatever is offered.
+     */
+    public static double dealHome(double capacity, double stations, double sidings, double dealtBulk, double dealtGoods, double offer) {
+        if (!(offer > 0) || !Double.isFinite(offer)) return 0;
+        double dealt = dealtBulk + dealtGoods;
+        double track = capacity - dealt;
+        double rooms = stations + sidings - dealt;
+        return Math.min(offer, Math.min(track > 0 ? track : 0, rooms > 0 ? rooms : 0));
+    }
+
+    /**
+     * Whether the port yard stands (FR6, D7): a station (a Rail Depot or a Rail
+     * Terminal) and a sea terminal both standing. The model does not read the
+     * map, so the district is not its test (FR6.md star 4); the stations' room
+     * caps the yard's tonnes in the deal. False with no buildings.
+     */
+    public boolean hasPortYard() {
+        if (buildings == null || !(stationTonnes() > 0)) return false;
+        double berths = 0;
+        for (double b : ham.citybuildersim.Ports.berths(buildings)) berths += b;
+        return berths > 0;
     }
 
     /**
@@ -1214,7 +1346,28 @@ public final class Freight extends Sector {
     /** ...and the part of it bought from the world (0.7.62): all of it with no refinery in the city. */
     public double getFuelImported()     { return rFuelImported; }
 
-    /** The litres of diesel the last haul drew (0.7.95): its tonnes at FUEL_LITRES_PER_TONNE; none after a load until the next. */
+    /** The share of the city's own bulk the railway carries, in force now (FR6): of the siding's part of what was bought at home. Zero until the first deal, and in a save from before it. */
+    public double getHomeShare()        { return homeShare; }
+
+    /** ...and of the quay bulk's yard part (FR6, D7); zero with no port yard. */
+    public double getQuayShare()        { return quayShare; }
+
+    /** The city tonnes the railway was offered in the month billed (FR6): the home tonnes' siding part, and the quay's yard part when a yard stood. */
+    public double getHomeOffered()      { return rHomeOffered; }
+
+    /** The home tonnes the railway carried in the month billed (FR6), at the share in force while they moved. */
+    public double getHomeRailed()       { return rHomeRailed; }
+
+    /** ...and the quay's, the port yard's (FR6, D7). */
+    public double getQuayRailed()       { return rQuayRailed; }
+
+    /** What the railway billed on the home and the quay tonnes in the month billed (FR6): the city leg's rate, the railway's quote on Haulage's. Part of getHaulageBilled(). */
+    public double getHomeBill()         { return rHomeBill; }
+
+    /** The litres of diesel the month billed's city tonnes burned (FR6): CITY_LITRES_A_TONNE each; part of getFuelLitres(), none after a load until the next haul. */
+    public double getCityLitres()       { return rCityLitres; }
+
+    /** The litres of diesel the last haul drew (0.7.95): its tonnes at FUEL_LITRES_PER_TONNE, and the city tonnes at CITY_LITRES_A_TONNE (FR6); none after a load until the next. */
     public double getFuelLitres()         { return rFuelLitres; }
 
     /** ...and the litres of it the world sold, the refiners' tanks having none left (Markets.draw()). */
@@ -1265,6 +1418,19 @@ public final class Freight extends Sector {
         if (stream == null || !stream.isFreight()) return 0;
         ham.citybuildersim.Ports ports = game == null ? null : game.getPorts();
         return ports == null ? carried[stream.ordinal()] : ports.railShareOf(g, carried[stream.ordinal()]);
+    }
+
+    /**
+     * The berths' share of one good's crossing tonnes in force now (FR6): its
+     * stream's carried share through Ports.seaShareOf(); 0 for a good with no
+     * freight stream and with no ports. Read live by Haulage.legPrice(), which
+     * weighs the port yard's relief on the quay's tonnes.
+     */
+    public double seaShareInForce(Good g) {
+        Traffic stream = g == null ? null : g.traffic();
+        if (stream == null || !stream.isFreight()) return 0;
+        ham.citybuildersim.Ports ports = game == null ? null : game.getPorts();
+        return ports == null ? 0 : ports.seaShareOf(g, carried[stream.ordinal()]);
     }
 
     /**
@@ -1715,6 +1881,13 @@ public final class Freight extends Sector {
         for (Traffic stream : Traffic.values()) {
             extras.put("carried." + stream.name(), carried[stream.ordinal()]);
         }
+        // The city's own bulk's shares in force (FR6), and the month's tonnes and bill for the screens: a save from before them has none and loads a month of trucks, so no format bump.
+        extras.put("homeShare", homeShare);
+        extras.put("quayShare", quayShare);
+        extras.put("homeOffered", rHomeOffered);
+        extras.put("homeRailed", rHomeRailed);
+        extras.put("quayRailed", rQuayRailed);
+        extras.put("homeBill", rHomeBill);
         extras.put("tonnes", rTonnes);
         extras.put("bulkOffered", rBulkOffered);
         extras.put("crossed", rCrossed);
@@ -1754,6 +1927,13 @@ public final class Freight extends Sector {
         for (Traffic stream : Traffic.values()) {
             carried[stream.ordinal()] = extras.getOrDefault("carried." + stream.name(), 0.0);
         }
+        // The city's own bulk (FR6): the shares in force the bill is struck at, and the month's figures for the screens; none in a save from before them.
+        homeShare = extras.getOrDefault("homeShare", 0.0);
+        quayShare = extras.getOrDefault("quayShare", 0.0);
+        rHomeOffered = extras.getOrDefault("homeOffered", 0.0);
+        rHomeRailed = extras.getOrDefault("homeRailed", 0.0);
+        rQuayRailed = extras.getOrDefault("quayRailed", 0.0);
+        rHomeBill = extras.getOrDefault("homeBill", 0.0);
         rTonnes = extras.getOrDefault("tonnes", 0.0);
         // ...and its bulk part (FR7), which plan()'s shortfalls read: none in a save from before it.
         rBulkOffered = extras.getOrDefault("bulkOffered", 0.0);
@@ -1793,6 +1973,9 @@ public final class Freight extends Sector {
         java.util.Arrays.fill(carried, 0);
         rTonnes = rBulkOffered = rCrossed = rHauled = rCapacity = rTightness = rTruckBill = rOfferedBill = rHaulage = rFuel = rFuelImported = 0;
         rFuelLitres = rFuelLitresImported = 0;
+        // The city's own bulk (FR6).
+        homeShare = quayShare = 0;
+        rHomeOffered = rHomeRailed = rHomeBill = rQuayRailed = rCityLitres = 0;
         java.util.Arrays.fill(railIn, 0);
         java.util.Arrays.fill(railOut, 0);
         truckIn = truckOut = truckHome = 0;
@@ -1820,6 +2003,7 @@ public final class Freight extends Sector {
         rTruckBill *= scale;
         rOfferedBill *= scale;
         rHaulage *= scale;
+        rHomeBill *= scale;
         rFuel *= scale;
         rFuelImported *= scale;
         rAllowed *= scale;

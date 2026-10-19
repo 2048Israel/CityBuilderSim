@@ -301,8 +301,15 @@ public final class CityRuns {
             return out;
         }
 
+        /**
+         * Back to a net never started, the hub with it (FR6's playtest): a reset
+         * that kept its hub read back from a save as a fresh net's 0, 0, and the
+         * map was not the same map across the save (the default run, m1186,
+         * after its last Rail Depot went).
+         */
         void reset() {
             started = false; hubLaid = false; corridors.clear(); arms.clear(); interchanges.clear(); plots = 0;
+            hubX = hubY = 0;
             buckets.clear(); bucketN.clear(); stuckAt = Long.MIN_VALUE;
         }
     }
