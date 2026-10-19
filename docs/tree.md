@@ -77,7 +77,16 @@ adds its line here, not in `CLAUDE.md`.
                                    ForestryCheck and WoodProductsCheck;
                                    Mining.java is the shape to copy for a mine (on ExtractionSector
                                    since 0.7.112), CementConcrete.java the shortest of all (0.7.131,
-                                   on ProcessingSector) and Materials.java the shortest on Sector
+                                   on ProcessingSector) and Materials.java the shortest on Sector;
+                                   since 0.8.5 (batch FR2; spec-freight 3.1) Freight in the
+                                   railway's slot of Sectors.KEYS, where Rail.java was - the city's
+                                   carrier, its railway the Rail division - and Haulage, its trucks,
+                                   the city leg of every bulk tonne billed once (HaulageCheck); since
+                                   0.8.6 (batch FR7) the Rail Depot and a station before any track
+                                   (RailDepotCheck); since 0.8.7 (batch FR3) PortDivision, its third
+                                   division, the crews that work the city's berths and pay it port
+                                   dues (LandlordPortCheck); since 0.8.9 (batch FR6) the city's own
+                                   bulk and the port yard on the railway (HomeRailCheck)
                                    itself
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
                                    the businesses' bonds (0.7.12): the market and each participant's rule, the
@@ -135,7 +144,10 @@ adds its line here, not in `CLAUDE.md`.
                                    the calls those tonnes make, each boat's place on its route, a frame's
                                    query - never saved, the map's to draw (since 0.7.97). PortCheck holds
                                    both, MapCheck 9 the boats on the map (docs/studies/spec-oil.md
-                                   2.9-2.10)
+                                   2.9-2.10); since 0.8.7 (batch FR3) the Bulk Berth, the Handysize and
+                                   Supramax classes a berth's ships list admits, and a berth that pays
+                                   back on the port dues (berthPaysBack(), payingTerminal()) -
+                                   LandlordPortCheck holds them
         DecisionLog.java           what the player decided, and when (0.7.23): every change of a policy and
                                    every spend at scale, recorded where it is applied, held while a city is
                                    founded or loaded, saved under one key; the History chart's flags
@@ -386,6 +398,12 @@ adds its line here, not in `CLAUDE.md`.
                                    class, TRANSPORT); junctions by rule (signals, roundabouts,
                                    diamonds, a highway's end, stacks); the world line past the
                                    gateway and the far view's skeleton - the sidecar FORMAT 8;
+                                   since 0.8.4 (batch FX3) a yard's fan on its line's longest clear
+                                   stretch, one layout the drawing and the trains both read
+                                   (TileRaster.yardLayout()); since 0.8.6 (batch FR7) the interchanges'
+                                   ground (InterchangeGround), access roads from every yard, sea
+                                   terminal and Truck Depot, and gravel drawn grey; since 0.8.8 (batch
+                                   FR5) the trucks' routes (CityMap.truckRoutes(), accessRoutesIn());
                                    nothing in the model reads it - MapCheck holds it (15 the
                                    materials), RailDrawCheck and JunctionCheck the drawing
         MiniMapFrame.java          the minimap's arithmetic (0.7.134, batch MM2; docs/studies/spec-globe.md
@@ -437,6 +455,19 @@ adds its line here, not in `CLAUDE.md`.
                                    CityRuns.wayTo()), a frame's query - never saved; a vehicle's body,
                                    mark and colours, the ships' four - the map's, nothing in the model
                                    reads them - MapCheck 9 holds them, RailCheck 7 the tonnes by kind
+        TruckSchedule.java, TruckShapes.java
+                                   the trucks (0.8.8, batch FR5; spec-freight 4.7, D21): Haulage's loads
+                                   as a pure function of time, TrainSchedule's shape - Freight's saved
+                                   tally of the month's truck tonnes by load, one truck per N loads to
+                                   at most 1,000, each on a highway route from the world line
+                                   (CityMap.truckRoutes()) or an access road to its gate - drawn at the
+                                   near view alone and while the setting is on; a truck's body and
+                                   colour by its load - the map's - TruckCheck and TruckRouteCheck hold them
+        InterchangeGround.java     the ground a highway interchange keeps (0.8.6, batch FR7; spec-freight
+                                   4.6, D19): a 19 x 19 reserve on a highway crossing (a cloverleaf), an
+                                   11 x 11 one where an arm ends at another highway (a trumpet), else a
+                                   stack - found locally from the runs and the ground, never saved, and
+                                   street ground to a plan (CityRuns.F_RESERVE); the map's alone
         ui/                        the interface: UserInterface.java is the window (about 6,000 lines: the header
                                    and its clock, the rail, the main menu, the panels, dialogs), one
                                    <Name>Screen.java per tab (split 2026-09-18 - the project's
@@ -466,13 +497,15 @@ adds its line here, not in `CLAUDE.md`.
                                    CityMap.zoneTint(), LandMap.zoneAreas(), MapCheck 15; since 0.8.1,
                                    batch FR0, the world line past the gateway, faded to the view's edge
                                    and labelled "to the world" (worldLines()), and the legend's
-                                   TRANSPORT, the railway in four entries and the gateway its own), and ZoningScreen.java (Policy's fifth
+                                   TRANSPORT, the railway in four entries and the gateway its own; since
+                                   0.8.8, batch FR5, Haulage's trucks at the near view (trucks(),
+                                   TruckShapes), while GamePrefs' trucksOnMap is on), and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray), and MiniMap.java (the minimap, 0.7.134: a
                                    stamp of the city at the rail's foot above Menu, its preview on hover,
                                    the land office's map over the window on a click; MiniMapFrame's
                                    arithmetic). The model never imports it.
-        *Check.java                114 harnesses, each a main() with static helpers
+        *Check.java                119 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones
         Timing.java                the one helper every timing assertion goes through (TM1, 2026-10-18): under
