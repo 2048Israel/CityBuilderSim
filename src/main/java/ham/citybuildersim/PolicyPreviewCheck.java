@@ -63,6 +63,13 @@ import java.util.Locale;
  *      price given up, the forest's three kinds and the ground free for
  *      anyone; and a zone's tax relief is the property tax un-zoning it
  *      would raise.
+ *  10. THE PORT DUES (FR4; the dial is FR3's): in a city whose berth has
+ *      worked, the dues previewed at the city's own dial are the month's,
+ *      Freight's and the treasury's, to the bit; at 2 twice that, which is
+ *      what a twin that ran the month at 2 paid, to the cent; at 0 none, and
+ *      the budget moves by the dues' move alone; a tonne's handling at a dial
+ *      is the division's quote at it; and the copy's dial clamps as the
+ *      city's does.
  *
  * Every fixture causes its condition.
  */
@@ -154,6 +161,7 @@ public class PolicyPreviewCheck {
         aDialAtZero(g);
         theWithdrawal(g);
         zoning(g);
+        portDues();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -609,5 +617,77 @@ public class PolicyPreviewCheck {
         assertTrue("fixture: three diners stand in the zone, so the zone gives relief", built.usedSqFt() > 0 && built.taxRelief() > 0);
         assertTrue("un-zoning previews the property tax rising by the relief, and applied it does",
                 near(moved, built.taxRelief()) && near(without - withZone, built.taxRelief()));
+    }
+
+    /* ============================ 10. THE PORT DUES (FR4) ============================ */
+
+    /** A city with a Bulk Terminal handed to it and three months played on, so a berth has worked and Freight has billed its tonnes (LandlordPortCheck.seaBase()'s recipe). */
+    static Game portCity(String label) {
+        Game g = HaulageCheck.played(GameFiles.scratch(label), 14);
+        quietly(() -> {
+            HaulageCheck.lay(g, "Bulk Terminal", 1);
+            for (int i = 0; i < 3; i++) g.toggleNextMonth();
+        });
+        return g;
+    }
+
+    static void portDues() {
+        out.println("\n--- 10. the port dues: last month's tonnes at each kind's due, times the dial (FR4) ---");
+        Game one = portCity("policypreview-ports-1"), two = portCity("policypreview-ports-2");
+        quietly(() -> {
+            two.getEconomyManager().getTaxPolicy().setPortDues(2);
+            one.toggleNextMonth();
+            two.toggleNextMonth();
+        });
+        EconomyManager em = one.getEconomyManager();
+        TaxPolicy live = em.getTaxPolicy();
+        ham.citybuildersim.sectors.PortDivision pd = one.getSectors().freight().portDivision();
+        ham.citybuildersim.sectors.PortDivision pd2 = two.getSectors().freight().portDivision();
+        double share = one.getEducation().getTuitionSubsidy(), dues = pd.getDuesPaid();
+        Ports.Cargo bulk = Ports.Cargo.DRY_BULK;
+        double[] berths = Ports.berths(one.getBuildingManager());
+
+        boolean berthsMatch = true;
+        for (Ports.Cargo kind : Ports.Cargo.values()) berthsMatch &= PolicyPreview.hasBerth(one, kind) == (berths[kind.ordinal()] > 0);
+        out.printf("      the city: %,.0f t across the berths last month, D$%,.4fk of dues at the dial %.2f; the twin at %.2f paid %,.4fk%n",
+                PolicyPreview.portTonnes(one), dues, live.getPortDues(), two.getEconomyManager().getTaxPolicy().getPortDues(), pd2.getDuesPaid());
+        assertTrue("fixture: a berth stands and tonnes crossed it, the treasury took dues at the default dial, and a kind has a berth to charge on only if one stands",
+                PolicyPreview.portTonnes(one) > 0 && dues > 0 && em.getPortDues() > 0 && live.getPortDues() == TaxPolicy.DEFAULT_PORT_DUES
+                        && berths[bulk.ordinal()] > 0 && berthsMatch);
+        boolean alike = pd.isQuoteKnown(bulk) && Math.abs(pd2.getCrewQuote(bulk) - pd.getCrewQuote(bulk)) <= 1e-9;
+        for (Ports.Cargo kind : Ports.Cargo.values()) {
+            alike &= pd2.getTonnes(kind) == pd.getTonnes(kind)
+                    && Math.abs(pd2.getDuesRate(kind) - pd.getDuesRate(kind)) <= 1e-12 * Math.max(1e-9, pd.getDuesRate(kind));
+        }
+        assertTrue("fixture: the twin ran the same month at the dial 2 and is alike but for it - the same tonnes, the same default due, the same crew quote - and paid dues",
+                alike && two.getEconomyManager().getTaxPolicy().getPortDues() == 2 && pd2.getDuesPaid() > 0);
+
+        assertTrue("at the city's own dial the dues previewed are the month's, to the bit: Freight's, the treasury's and the accounts'",
+                PolicyPreview.portDuesAt(one, live) == dues && dues == em.getPortDues()
+                        && dues == em.getNationalAccounts().getPortDues());
+        TaxPolicy double2 = live.copy(), none = live.copy();
+        double2.setPortDues(2);
+        none.setPortDues(0);
+        assertTrue("at the dial 2 the dues previewed are twice the month's, and the twin that ran the month at 2 paid them, to the cent",
+                PolicyPreview.portDuesAt(one, double2) == 2 * dues && near(PolicyPreview.portDuesAt(one, double2), pd2.getDuesPaid())
+                        && near(PolicyPreview.portDuesAt(one, double2), two.getEconomyManager().getPortDues()));
+        assertTrue("at the dial 0 they are none, and the budget falls by the month's dues",
+                PolicyPreview.portDuesAt(one, none) == 0 && near(PolicyPreview.change(one, live, none, share, share), -dues));
+        assertTrue("at 2 the budget rises by them, the dues' move alone, and a set that moves no dial moves it by nothing",
+                near(PolicyPreview.change(one, live, double2, share, share), dues)
+                        && PolicyPreview.change(one, live, live.copy(), share, share) == 0);
+
+        double rate = pd.getDuesRate(bulk);
+        assertTrue("a tonne's handling at the city's dial is the division's quote, to the bit; at 2 it is dearer by the kind's default due, and the twin billed at 2 quotes it",
+                PolicyPreview.handlingQuoteAt(one, bulk, live) == pd.getQuote(bulk) && rate > 0
+                        && Math.abs(PolicyPreview.handlingQuoteAt(one, bulk, double2) - PolicyPreview.handlingQuoteAt(one, bulk, live) - rate) <= 1e-9
+                        && Math.abs(PolicyPreview.handlingQuoteAt(one, bulk, double2) - pd2.getQuote(bulk)) <= 1e-9
+                        && Math.abs(PolicyPreview.handlingQuoteAt(one, bulk, none) - pd.getCrewQuote(bulk)) <= 1e-9);
+        TaxPolicy wild = live.copy();
+        wild.setPortDues(99);
+        boolean top = wild.getPortDues() == TaxPolicy.MAX_PORT_DUES;
+        wild.setPortDues(-1);
+        assertTrue("the copy's dial clamps as the city's: past the top is the top, below none is none, and the city's own dial stays where it was",
+                top && wild.getPortDues() == 0 && live.getPortDues() == TaxPolicy.DEFAULT_PORT_DUES);
     }
 }
