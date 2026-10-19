@@ -1130,7 +1130,8 @@ final class MapView {
             truckGameMonth = g.getMonth();
             truckRoutes = routes;
         }
-        double margin = TruckShapes.LENGTH;
+        // A truck's length past the view's edge, as it is drawn (TruckShapes.MIN_PX), so none pops in at the edge.
+        double margin = Math.max(TruckShapes.LENGTH, TruckShapes.MIN_PX / f.scale());
         long x0 = (long) Math.floor(f.plotX(0) - margin), y0 = (long) Math.floor(f.plotY(0) - margin);
         long x1 = (long) Math.ceil(f.plotX(f.width()) + margin), y1 = (long) Math.ceil(f.plotY(f.height()) + margin);
         int highways = 0;
@@ -1159,7 +1160,7 @@ final class MapView {
     private int fillTrucks(GraphicsContext gc, MapFrame f, TruckSchedule schedule, long x0, long y0, long x1, long y1, double t) {
         if (schedule.callCount() == 0 || !schedule.crosses(x0, y0, x1, y1)) return 0;
         for (TruckSchedule.Truck tk : schedule.frame(x0, y0, x1, y1, t)) {
-            fillShape(gc, f, TruckShapes.body(tk), colour(TruckShapes.colour(tk), tk.alpha()));
+            fillShape(gc, f, TruckShapes.body(tk, f.scale()), colour(TruckShapes.colour(tk), tk.alpha()));
         }
         return Math.max(1, schedule.stands());
     }

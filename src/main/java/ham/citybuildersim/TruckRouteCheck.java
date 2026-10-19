@@ -27,7 +27,7 @@ import java.util.List;
  *      reach no street (not drawn), highways that reach one but find no way
  *      out, and a railway alone;
  *   2. in a city with a highway world line each world route starts
- *      TRUCK_WORLD_PLOTS out along the line's way, passes the line's point,
+ *      TruckSchedule.WORLD_PLOTS out along the line's way, passes the line's point,
  *      runs on highway plots only (the points and the middles of every leg
  *      from the arm's end), ends at a ramp, and is faded in over its world
  *      part; no two end at one ramp, none is shorter than TRUCK_ROUTE_LEAST
@@ -197,7 +197,7 @@ public class TruckRouteCheck {
         check("...no more than TRUCK_ROUTES_MOST", routes.size() <= CityMap.TRUCK_ROUTES_MOST);
 
         double r = Math.toRadians(line.way());
-        double fx = line.x() + Math.cos(r) * 64, fy = line.y() + Math.sin(r) * 64;
+        double fx = line.x() + Math.cos(r) * TruckSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(r) * TruckSchedule.WORLD_PLOTS;
         boolean world = true, starts = true, passes = true, faded = true, onHighways = true, endsAtRamp = true, least = true, grows = true;
         java.util.Set<String> ends = new java.util.HashSet<>();
         boolean distinct = true;
@@ -206,7 +206,7 @@ public class TruckRouteCheck {
             world &= rt.world();
             starts &= n >= 3 && Math.abs(rt.xs()[0] - fx) < EPS && Math.abs(rt.ys()[0] - fy) < EPS;
             passes &= n >= 3 && Math.abs(rt.xs()[1] - line.x()) < EPS && Math.abs(rt.ys()[1] - line.y()) < EPS;
-            faded &= Math.abs(rt.fadeTo() - 64) < EPS && Math.abs(rt.along()[1] - rt.fadeTo()) < EPS;
+            faded &= Math.abs(rt.fadeTo() - TruckSchedule.WORLD_PLOTS) < EPS && Math.abs(rt.along()[1] - rt.fadeTo()) < EPS;
             // From the arm's end (the third point) on: every point, and every quarter plot of every leg, on a highway plot.
             onHighways &= offHighway(runs, rt, 2) == 0;
             for (int i = 2; i < n; i++) onHighways &= CityRuns.covered(runs.highways(), (long) Math.floor(rt.xs()[i]), (long) Math.floor(rt.ys()[i]));
@@ -219,7 +219,7 @@ public class TruckRouteCheck {
             for (int i = 1; i < n; i++) grows &= rt.along()[i] > rt.along()[i - 1];
         }
         check("every world route is a world route", world && !routes.isEmpty());
-        check("...starts TRUCK_WORLD_PLOTS (64) out along the line's way from the line's point", starts);
+        check("...starts TruckSchedule.WORLD_PLOTS out along the line's way from the line's point", starts);
         check("...passes the line's point, its world part the first leg", passes);
         check("...is faded in over the world part: fadeTo is its length", faded);
         check("...from the arm's end runs on highway plots only: its points and every quarter plot of its legs", onHighways);

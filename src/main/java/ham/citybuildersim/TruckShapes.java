@@ -14,10 +14,11 @@ package ham.citybuildersim;
  * and nothing finer - at the pixels a plot a truck has, a door or a wheel is
  * under a pixel.
  *
- * SIZE. LENGTH by WIDTH plots: the length is a lorry's own (a 16 m
- * articulated truck on a 30 m plot, World.PLOT_M), the width is drawn about
- * 2.6 times true (6.6 m for 2.5 m) so that it is more than a line at the
- * near view, where a plot is MapFrame.L0_FROM px or more.
+ * SIZE. LENGTH by WIDTH plots: the length is a lorry's own (16.5 m
+ * articulated, on a 30 m plot), the width is drawn about 2.6 times true
+ * (6.6 m for 2.5 m) so that it is more than a line at the near view, where a
+ * plot is MapFrame.L0_FROM px or more; and never under MIN_PX long, where it
+ * is drawn larger with its shape kept.
  *
  * COLOURS (the boats' and the trains', spec-freight 4.7): a loaded import
  * blue, a loaded export orange, an empty truck grey - ShipShapes' three, the
@@ -29,8 +30,16 @@ public final class TruckShapes {
 
     private TruckShapes() { }
 
-    /** A truck's length in plots: 0.55, a lorry's on the street grid; TruckSchedule.TRUCK_PLOTS once slice A lands (the schedule spaces trucks by it). */
-    public static final double LENGTH = 0.55;
+    /** A truck's length in plots: the schedule's (TruckSchedule.TRUCK_PLOTS, 0.55, a 16.5 m articulated lorry), which frames the trucks by it. */
+    public static final double LENGTH = TruckSchedule.TRUCK_PLOTS;
+
+    /**
+     * The fewest pixels a truck is drawn long: 4 (the review, FR5). At the near
+     * view's far end (MapFrame.L0_FROM, 3.2 px a plot) a truck true to size is
+     * under 2 px by 1 and reads as nothing; under this it is drawn larger, its
+     * shape kept, as the boats are drawn larger until 6 px a plot.
+     */
+    public static final double MIN_PX = 4;
 
     /** A truck's drawn width in plots: 0.22, a lorry's proportions on the road bed, narrower than a train's (TrainShapes.WIDTH 0.42). */
     public static final double WIDTH = 0.22;
@@ -54,9 +63,14 @@ public final class TruckShapes {
         }
     }
 
-    /** A truck's body: its outline as {xs, ys} in plots, a trailer with the cab ahead of it, at its heading. */
-    public static double[][] body(TruckSchedule.Truck t) {
-        double h = LENGTH / 2, w = WIDTH / 2, cw = w * CAB_NARROW, step = h - LENGTH * CAB_SHARE;
+    /** A truck's body: its outline as {xs, ys} in plots, a trailer with the cab ahead of it, at its heading, true to size. */
+    public static double[][] body(TruckSchedule.Truck t) { return body(t, Double.POSITIVE_INFINITY); }
+
+    /** ...drawn at px pixels a plot: true to size, or larger, its shape kept, where that would be under MIN_PX long. */
+    public static double[][] body(TruckSchedule.Truck t, double px) {
+        double grow = px > 0 && LENGTH * px < MIN_PX ? MIN_PX / (LENGTH * px) : 1;
+        double len = LENGTH * grow;
+        double h = len / 2, w = WIDTH * grow / 2, cw = w * CAB_NARROW, step = h - len * CAB_SHARE;
         // Along the heading (u) and across it (v), rear to front on one side and back on the other.
         double[] us = { -h, step, step, h, h, step, step, -h };
         double[] vs = { -w, -w, -cw, -cw, cw, cw, w, w };

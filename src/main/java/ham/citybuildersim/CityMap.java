@@ -3549,8 +3549,6 @@ public final class CityMap {
        by drawing a plan here. Nothing in the model reads them.
        ===================================================================== */
 
-    /** How far out along the highway's world line a truck route begins, in plots: 64, as the trains' (TrainSchedule.WORLD_PLOTS). TODO: TruckSchedule.WORLD_PLOTS when the schedule has one. */
-    private static final double TRUCK_WORLD_PLOTS = 64;
 
     /** The least a highway route runs along the highways, in plots, past the world line's own: shorter is the arm the line leaves from, where the trucks have no road to drive. */
     public static final double TRUCK_ROUTE_LEAST = 4;
@@ -3568,7 +3566,7 @@ public final class CityMap {
     /**
      * The trucks' highway routes (TruckSchedule.Route, world true): for each
      * ramp the highways have (CityRuns.highwayRamps(): their arms' ends),
-     * from TRUCK_WORLD_PLOTS out along the highways' world line (along
+     * from TruckSchedule.WORLD_PLOTS out along the highways' world line (along
      * line.way(), over dry ground), in to where the line leaves the city's
      * ground, to the end of the arm it leaves from and along the highways to
      * the ramp (CityRuns.highwayWayTo(): wayOn() on the highways net, as the
@@ -3587,7 +3585,7 @@ public final class CityMap {
         for (WorldLine l : worldLines()) if (l.net() == CityRuns.HIGHWAYS) line = l;
         if (line != null) {
             double r = Math.toRadians(line.way());
-            double fx = line.x() + Math.cos(r) * TRUCK_WORLD_PLOTS, fy = line.y() + Math.sin(r) * TRUCK_WORLD_PLOTS;
+            double fx = line.x() + Math.cos(r) * TruckSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(r) * TruckSchedule.WORLD_PLOTS;
             java.util.Set<String> ends = new java.util.HashSet<>();
             for (long[] ramp : runs.highwayRamps()) {
                 if (out.size() >= TRUCK_ROUTES_MOST) break;
