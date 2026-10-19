@@ -2,6 +2,10 @@ package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.Freight;
 import ham.citybuildersim.sectors.Haulage;
+import ham.citybuildersim.sectors.PortDivision;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds
@@ -14,8 +18,8 @@ import ham.citybuildersim.sectors.Haulage;
  * crews, bills the shippers for the handling and pays the city dues. It was
  * written in slices by agents from the brief and is held here from the brief's
  * rules and the model's own getters and constants: no figure below is typed in
- * that a getter or a constant could give. Ten claims, numbered as FR3.md
- * section 6 numbers them (its 10, a real run, is LongPlaytest's):
+ * that a getter or a constant could give. Eleven claims, numbered as FR3.md
+ * section 6 numbers them (the save is 9 here, so its advice is 10 and its real run, LongPlaytest's, 11):
  *
  *   1. THE BULK BERTH. (a placeholder: slice 1's, PortCheck holds it now)
  *   2. THE SHIPS. (a placeholder: slice 1's, PortCheck holds it now)
@@ -26,13 +30,23 @@ import ham.citybuildersim.sectors.Haulage;
  *      a terminal's posts; the railway's and Haulage's payroll lines read what
  *      they read before the crews came, to the bit; and the crew by kind sums
  *      to the payroll moved.
- *   4. HANDLING, EACH LEG ONCE. (a placeholder: slice 3's)
- *   5. THE DUES. (a placeholder: slice 3's)
- *   6. THE DUES' DEFAULT. (a placeholder: slice 3's)
- *   7. THE PRICE. (a placeholder: slice 3's)
- *   8. THE MONEY. (a placeholder: slice 3's)
- *   9. THE ADVICE. (a placeholder: slice 4's)
- *  10. A REAL RUN. (LongPlaytest's)
+ *   4. HANDLING, EACH LEG ONCE. A city landing and shipping dry bulk by sea over a Bulk Terminal: each
+ *      shipper's "Port handling" line is its sea tonnes of each kind x the quote it was billed at, to the
+ *      cent; Freight's "Port handling billed" is the shippers' lines summed; a sector that only buys at
+ *      home and a kind with no berth pay none.
+ *   5. THE DUES. Freight's "Port dues" are the tonnes x each kind's dues rate x the dial, to the cent, and
+ *      the treasury's and the national accounts' lines equal them; twins but for the dial: none at 0, twice at 2.
+ *   6. THE DUES' DEFAULT. duesRateOf() is the annuity worked here by hand (the kind's terminals at cash cost
+ *      and materials at market, the city's own rate over PORT_LIFE_MONTHS, over the berths' month at
+ *      DESIGN_USE), and a city owing more pays a dearer due.
+ *   7. THE PRICE. The first quote is the target itself, the next walks REPRICE_SPEED of the way; the
+ *      scarcity is 1 to the berths' month and the cap at twice; a berth below DESIGN_USE bills less than
+ *      its crew and its dues.
+ *   8. THE MONEY. The money audit closes every month of a city working a port that pays dues.
+ *   9. THE SAVE. The dial crosses the policy state (and a short array reads the default); the quotes, the
+ *      month's dues and handling and the treasury's lines cross a save and a reload, to the bit.
+ *  10. THE ADVICE. (a placeholder: slice 4's)
+ *  11. A REAL RUN. (LongPlaytest's)
  *
  * It tests the model through its public getters and constants and changes
  * nothing in it; where the code and the brief disagree it says FAIL and the
@@ -323,24 +337,383 @@ public class LandlordPortCheck {
     }
 
     /* ================================================================
+       4-9. THE PORT DIVISION: THE HANDLING, THE DUES, THE PRICE, THE MONEY, THE SAVE
+       ================================================================ */
+
+    static final int K = Ports.Cargo.values().length;
+
+    /**
+     * A city with the Haulage fixture's bulk chain (three iron mines and a pelletising plant that lands its coal and
+     * ore and ships its pellets, HaulageCheck.base()), played fourteen months, then given a Bulk Terminal and played
+     * three more so the ore, the coal and the pellets go by sea in the berths' share. The fixture is the lorries' and
+     * the ships' trade, with the berth the only new thing in it.
+     */
+    static Game seaBase(GameFiles files) {
+        Game g = HaulageCheck.played(files, 14);
+        quietly(() -> {
+            HaulageCheck.lay(g, "Bulk Terminal", 1);
+            for (int i = 0; i < 3; i++) g.toggleNextMonth();
+        });
+        return g;
+    }
+
+    /** The month about to be billed, worked out from the model's own getters before the haul runs: each shipper's sea tonnes by kind, and the quotes in force. */
+    static final class Plan {
+        final Map<Sector, double[]> sea = new LinkedHashMap<>();
+        final Map<Sector, double[]> landed = new LinkedHashMap<>(), shipped = new LinkedHashMap<>();
+        final double[] quote = new double[K];
+        final boolean[] known = new boolean[K];
+    }
+
+    /**
+     * Last month's rows, at the berths' share in force while they moved (Ports.seaShareOf() at the railway's carried
+     * share): units in + units out, x the good's tonnes a unit, x that share, by the good's kind of cargo. The brief's
+     * rule, not the loop's.
+     */
+    static Plan plan(Game g) {
+        Plan p = new Plan();
+        Freight fr = g.getSectors().freight();
+        Ports ports = g.getPorts();
+        for (Sector s : g.getSectors().all()) {
+            if (s == fr) continue;
+            for (Good good : Good.values()) {
+                Traffic stream = good.traffic();
+                if (stream == null || !stream.isFreight() || good.cargo() == null) continue;
+                double ship = ports.seaShareOf(good, fr.getCarried()[stream.ordinal()]);
+                double in = s.unitsImported(good), out = s.unitsExported(good);
+                if (!(ship > 0) || in + out <= 0) continue;
+                int k = good.cargo().ordinal();
+                p.sea.computeIfAbsent(s, x -> new double[K])[k] += (in + out) * good.tonnesPerUnit() * ship;
+                p.landed.computeIfAbsent(s, x -> new double[K])[k] += in * good.tonnesPerUnit() * ship;
+                p.shipped.computeIfAbsent(s, x -> new double[K])[k] += out * good.tonnesPerUnit() * ship;
+            }
+        }
+        PortDivision pd = fr.portDivision();
+        for (Ports.Cargo kind : Ports.Cargo.values()) {
+            p.known[kind.ordinal()] = pd.isQuoteKnown(kind);
+            p.quote[kind.ordinal()] = pd.getQuote(kind);
+        }
+        return p;
+    }
+
+    static double dial(Game g) { return g.getEconomyManager().getTaxPolicy().getPortDues(); }
+
+    /** The rule's target for a kind from the figures of the month just billed (the division's getters, the berths standing, the tally's boundary tonnes, the dial). */
+    static double target(Game g, Ports.Cargo kind) {
+        PortDivision pd = g.getSectors().freight().portDivision();
+        double berths = Ports.berths(g.getBuildingManager())[kind.ordinal()];
+        return PortDivision.targetOf(pd.getCrew(kind), pd.getTonnes(kind), berths,
+                PortDivision.scarcityOf(g.getPorts().carriable(kind), berths), pd.getDuesRate(kind), dial(g));
+    }
+
+    /** The quote a kind was billed at in the month just run: the one in force before it, or the rule's own target while none was struck. */
+    static double billedAt(Game g, Plan p, Ports.Cargo kind) {
+        return p.known[kind.ordinal()] ? p.quote[kind.ordinal()] : target(g, kind);
+    }
+
+    static double sumOf(double[] a) {
+        double t = 0;
+        for (double v : a) t += v;
+        return t;
+    }
+
+    static double lineOf(Sector s, String what) { return s.otherInputParts().getOrDefault(what, 0.0); }
+
+    static void handling() {
+        System.out.println("\n--- 4. handling, each leg once: a shipper pays its sea tonnes at the quote, Freight bills the sum ---");
+        Game g = seaBase(GameFiles.scratch("landlordport-handling"));
+        Freight fr = g.getSectors().freight();
+        PortDivision pd = fr.portDivision();
+        BuildingManager bm = g.getBuildingManager();
+        double[] berths = Ports.berths(bm);
+        int bulk = Ports.Cargo.DRY_BULK.ordinal();
+        Plan p = plan(g);
+        double landsBySea = 0, shipsBySea = 0;
+        for (double[] a : p.landed.values()) landsBySea += sumOf(a);
+        for (double[] a : p.shipped.values()) shipsBySea += sumOf(a);
+        double noBerth = 0;
+        for (Sector s : g.getSectors().all()) {
+            if (s == fr) continue;
+            for (Good good : Good.values()) {
+                Traffic stream = good.traffic();
+                if (stream == null || !stream.isFreight() || good.cargo() == null || berths[good.cargo().ordinal()] > 0) continue;
+                noBerth += (s.unitsImported(good) + s.unitsExported(good)) * good.tonnesPerUnit();
+            }
+        }
+        // A sector that buys at home as well as landing and shipping: the plant buys the mines' ore at home, and a tonne bought at home crosses no berth.
+        final Sector plant = g.getSectors().heavyIndustry();
+        double[] homeTonnes = new double[K];
+        for (Good good : Good.values()) if (good.cargo() != null && good.traffic() != null) homeTonnes[good.cargo().ordinal()] += plant.unitsBoughtLocal(good) * good.tonnesPerUnit() * g.getPorts().seaShareOf(good, fr.getCarried()[good.traffic().ordinal()]);
+        report("fixture: a Bulk Terminal stands, dry bulk goes by sea in a share in force, and shippers both land and ship by sea",
+                berths[bulk] > 0 && g.getPorts().share(Ports.Cargo.DRY_BULK) > 0 && landsBySea > 0 && shipsBySea > 0 && pd.isQuoteKnown(Ports.Cargo.DRY_BULK),
+                String.format("%,.0f t to land and %,.0f t to ship by sea, %d shippers; berths %,.0f t a month", landsBySea, shipsBySea, p.sea.size(), berths[bulk]));
+        report("fixture: kinds with no berth cross the boundary too (their tonnes are never billed handling), and the plant buys ore at home as well",
+                noBerth > 0 && homeTonnes[bulk] > 0 && p.sea.containsKey(plant),
+                String.format("%,.1f t of kinds with no berth crossed; the plant bought %,.1f t of dry bulk at home", noBerth, homeTonnes[bulk]));
+
+        quietly(g::toggleNextMonth);
+
+        double[] quote = new double[K];
+        for (Ports.Cargo kind : Ports.Cargo.values()) quote[kind.ordinal()] = billedAt(g, p, kind);
+        double worst = 0, billedSum = 0, linesAll = 0, restTonnes = 0;
+        String where = "";
+        double[] others = new double[K];
+        for (Sector s : g.getSectors().all()) {
+            if (s == fr) continue;
+            double got = lineOf(s, PortDivision.BILLED_AS);
+            linesAll += got;
+            double[] sea = p.sea.get(s);
+            if (Sectors.CONSTRUCTION.equals(s.key())) continue;
+            double want = 0;
+            for (int k = 0; k < K; k++) {
+                if (sea != null) {
+                    want += sea[k] * quote[k];
+                    others[k] += sea[k];
+                }
+            }
+            billedSum += got;
+            double miss = Math.abs(got - want);
+            if (miss > worst) { worst = miss; where = String.format("%s billed D$%,.6fk against %,.6fk", s.key(), got, want); }
+        }
+        report("EACH SHIPPER'S \"Port handling\" IS ITS SEA TONNES OF EACH KIND x THE QUOTE IT WAS BILLED AT, to the cent",
+                worst <= CENT && billedSum > 0, String.format("worst miss D$%.6fk (%s), %,.4fk billed to the shippers but the builders", worst, where.isEmpty() ? "none" : where, billedSum));
+        // The builders buy their repair materials at the top of the month, before the haul (HaulageCheck.compare()): their tonnes are in no row between two months, so they are the remainder.
+        double rest = 0, restWant = 0;
+        for (int k = 0; k < K; k++) {
+            double r = pd.getTonnes(Ports.Cargo.values()[k]) - others[k];
+            restTonnes += r;
+            restWant += Math.max(0, r) * quote[k];
+        }
+        Sector builders = g.getSectors().byKey(Sectors.CONSTRUCTION);
+        rest = builders == null ? 0 : lineOf(builders, PortDivision.BILLED_AS);
+        report("...the tonnes billed are the shippers' and the builders' only, and the builders' line is the remainder at the quote",
+                restTonnes >= -1e-6 && toTheCent(rest, restWant),
+                String.format("%,.1f t over the shippers' own; the builders paid D$%,.6fk against %,.6fk", restTonnes, rest, restWant));
+        double billedBy = 0, tonnesBy = 0, seaTally = 0;
+        for (Ports.Cargo kind : Ports.Cargo.values()) {
+            billedBy += pd.getBilled(kind);
+            tonnesBy += pd.getTonnes(kind);
+            seaTally += g.getPorts().seaIn(kind) + g.getPorts().seaOut(kind);
+        }
+        report("FREIGHT BILLS THE SHIPPERS' LINES SUMMED: getHandlingBilled(), its \"Port handling billed\" part and the kinds' bills, to the cent",
+                toTheCent(pd.getHandlingBilled(), linesAll) && toTheCent(pd.getHandlingBilled(), billedBy)
+                        && toTheCent(fr.otherRevenueParts().getOrDefault(PortDivision.REVENUE_NAME, 0.0), linesAll) && pd.getHandlingBilled() > 0,
+                String.format("D$%,.4fk billed; the lines add to %,.4fk; the kinds' bills to %,.4fk", pd.getHandlingBilled(), linesAll, billedBy));
+        assertTrue("...on the tonnes the ports' own tally counted: the sea tonnes the division billed are the berths' tally of them",
+                Math.abs(tonnesBy - seaTally) <= 1e-9 * Math.max(1, seaTally) && tonnesBy > 0);
+        boolean idleKinds = true;
+        for (Ports.Cargo kind : Ports.Cargo.values()) if (berths[kind.ordinal()] == 0) idleKinds &= pd.getTonnes(kind) == 0 && pd.getBilled(kind) == 0;
+        assertTrue("A KIND WITH NO BERTH PAYS NO HANDLING: its tonnes billed and its bill are nothing, whatever crossed", idleKinds);
+        double plantWant = 0, plantIfHome = 0;
+        for (int k = 0; k < K; k++) {
+            plantWant += p.sea.get(plant)[k] * quote[k];
+            plantIfHome += (p.sea.get(plant)[k] + homeTonnes[k]) * quote[k];
+        }
+        report("A TONNE BOUGHT AT HOME PAYS NO HANDLING: the plant's line is its landed and shipped tonnes only, and not those it bought at home as well",
+                toTheCent(lineOf(plant, PortDivision.BILLED_AS), plantWant) && plantIfHome - plantWant > CENT && !toTheCent(lineOf(plant, PortDivision.BILLED_AS), plantIfHome),
+                String.format("billed D$%,.6fk; its sea tonnes alone come to %,.6fk, with the %,.1f t bought at home %,.6fk", lineOf(plant, PortDivision.BILLED_AS), plantWant, homeTonnes[bulk], plantIfHome));
+    }
+
+    static void dues() {
+        System.out.println("\n--- 5. the dues: tonnes x each kind's rate x the dial, to the treasury ---");
+        GameFiles f1 = GameFiles.scratch("landlordport-dues1"), f0 = GameFiles.scratch("landlordport-dues0"), f2 = GameFiles.scratch("landlordport-dues2");
+        Game one = seaBase(f1), zero = seaBase(f0), two = seaBase(f2);
+        quietly(() -> {
+            zero.getEconomyManager().getTaxPolicy().setPortDues(0);
+            two.getEconomyManager().getTaxPolicy().setPortDues(2);
+            one.toggleNextMonth();
+            zero.toggleNextMonth();
+            two.toggleNextMonth();
+        });
+        Freight fr = one.getSectors().freight();
+        PortDivision pd = fr.portDivision();
+        double want = 0;
+        for (Ports.Cargo kind : Ports.Cargo.values()) want += pd.getTonnes(kind) * pd.getDuesRate(kind) * dial(one);
+        double paid = lineOf(fr, PortDivision.DUES_NAME);
+        report("FREIGHT'S \"Port dues\" ARE THE SUM OVER KINDS OF TONNES x THE KIND'S DUES RATE x THE DIAL, to the cent",
+                want > 0 && toTheCent(paid, want) && toTheCent(pd.getDuesPaid(), want) && dial(one) == TaxPolicy.DEFAULT_PORT_DUES,
+                String.format("D$%,.4fk against %,.4fk at the dial %.1f", paid, want, dial(one)));
+        report("...and the treasury's line and the national accounts' are those dues, in the tax take",
+                toTheCent(one.getEconomyManager().getPortDues(), want) && toTheCent(one.getEconomyManager().getNationalAccounts().getPortDues(), want),
+                String.format("treasury D$%,.4fk, accounts %,.4fk", one.getEconomyManager().getPortDues(), one.getEconomyManager().getNationalAccounts().getPortDues()));
+        Freight f0r = zero.getSectors().freight(), f2r = two.getSectors().freight();
+        double dues0 = f0r.portDivision().getDuesPaid(), dues2 = f2r.portDivision().getDuesPaid();
+        assertTrue("fixture: the twins are alike but for the dial: the same sea tonnes were billed, and the dial-1 twin paid dues",
+                toTheCent(f0r.portDivision().getHandlingBilled(), pd.getHandlingBilled()) && toTheCent(f2r.portDivision().getHandlingBilled(), pd.getHandlingBilled())
+                        && f0r.portDivision().getTonnes(Ports.Cargo.DRY_BULK) == pd.getTonnes(Ports.Cargo.DRY_BULK)
+                        && f2r.portDivision().getTonnes(Ports.Cargo.DRY_BULK) == pd.getTonnes(Ports.Cargo.DRY_BULK) && pd.getDuesPaid() > 0);
+        report("AT THE DIAL 0 NO DUES ARE PAID: no \"Port dues\" line in Freight's inputs, and nothing in the treasury's or the accounts'",
+                dues0 == 0 && !f0r.otherInputParts().containsKey(PortDivision.DUES_NAME) && zero.getEconomyManager().getPortDues() == 0
+                        && zero.getEconomyManager().getNationalAccounts().getPortDues() == 0,
+                String.format("D$%,.4fk of dues", dues0));
+        report("...AND AT 2 EXACTLY TWICE THE DIAL-1 TWIN'S, in Freight's line, the treasury's and the accounts'",
+                toTheCent(dues2, 2 * pd.getDuesPaid()) && toTheCent(lineOf(f2r, PortDivision.DUES_NAME), 2 * paid)
+                        && toTheCent(two.getEconomyManager().getPortDues(), 2 * one.getEconomyManager().getPortDues())
+                        && toTheCent(two.getEconomyManager().getNationalAccounts().getPortDues(), 2 * one.getEconomyManager().getNationalAccounts().getPortDues()),
+                String.format("D$%,.4fk against twice D$%,.4fk", dues2, pd.getDuesPaid()));
+    }
+
+    static void duesDefault() {
+        System.out.println("\n--- 6. the dues' default: the annuity of the berths at the city's rate, over their month at DESIGN_USE ---");
+        Game g = HaulageCheck.played(GameFiles.scratch("landlordport-annuity"), 14);
+        quietly(() -> HaulageCheck.lay(g, "Bulk Terminal", 1));
+        Freight fr = g.getSectors().freight();
+        PortDivision pd = fr.portDivision();
+        BuildingManager bm = g.getBuildingManager();
+        double[] berths = Ports.berths(bm);
+        for (Ports.Cargo kind : Ports.Cargo.values()) {
+            int k = kind.ordinal();
+            double value = 0;
+            for (BuildingsTemplate t : bm.getTemplates()) {
+                if (!t.isPort() || t.berthCargo() != kind) continue;
+                value += bm.getQuantity(t.getId()) * (t.getCashCost() + t.getConstructionMaterials() * bm.getConstructionMaterialPrice());
+            }
+            double r = pd.cityRate() / 12, n = PortDivision.PORT_LIFE_MONTHS;
+            double annuity = r > 0 ? value * r / (1 - Math.pow(1 + r, -n)) : value / n;
+            double want = berths[k] > 0 ? annuity / (berths[k] * PortDivision.DESIGN_USE) : 0;
+            double got = pd.duesRateOf(kind, berths[k]);
+            report("the " + kind + " default due is the annuity worked by hand: V r / (1 - (1+r)^-n) over the berths' month at DESIGN_USE",
+                    Math.abs(got - want) <= 1e-12 * Math.max(1e-9, Math.abs(want)) && (berths[k] > 0) == (got > 0),
+                    String.format("D$%.6fk a tonne against %.6fk (V %,.1fk, r %.5f a month)", got, want, value, r));
+        }
+        double v = 100_000, nn = PortDivision.PORT_LIFE_MONTHS;
+        assertTrue("...and at no interest it is V / n, and a rate r the annuity",
+                PortDivision.monthlyRecovery(v, 0, nn) == v / nn
+                        && Math.abs(PortDivision.monthlyRecovery(v, .004, nn) - v * .004 / (1 - Math.pow(1.004, -nn))) <= 1e-12 * v
+                        && PortDivision.monthlyRecovery(v, .004, nn) > v / nn);
+        double curve = g.getDebtManager().curveRate((int) PortDivision.PORT_LIFE_MONTHS);
+        assertTrue("THE CITY'S RATE IS ITS OWN PAPER'S AT THE BERTH'S LIFE: DebtManager.curveRate(PORT_LIFE_MONTHS), and not below nothing",
+                pd.cityRate() == Math.max(0, curve) && PortDivision.PORT_LIFE_MONTHS == 360);
+
+        Game owing = HaulageCheck.played(GameFiles.scratch("landlordport-owing"), 14);
+        quietly(() -> HaulageCheck.lay(owing, "Bulk Terminal", 1));
+        double[] b2 = Ports.berths(owing.getBuildingManager());
+        PortDivision pdo = owing.getSectors().freight().portDivision();
+        double calmRate = pdo.cityRate(), calmDue = pdo.duesRateOf(Ports.Cargo.DRY_BULK, b2[Ports.Cargo.DRY_BULK.ordinal()]);
+        quietly(() -> owing.getDebtManager().addLongTermBond(5_000_000, (int) PortDivision.PORT_LIFE_MONTHS, 1, .04));
+        double owingRate = pdo.cityRate(), owingDue = pdo.duesRateOf(Ports.Cargo.DRY_BULK, b2[Ports.Cargo.DRY_BULK.ordinal()]);
+        report("A CITY OWING MORE PAYS A DEARER DUE: the same berths, a heavier debt, a dearer paper and a dearer due a tonne",
+                owingRate > calmRate && owingDue > calmDue && calmDue > 0,
+                String.format("rate %.5f -> %.5f, due D$%.6fk -> %.6fk a tonne", calmRate, owingRate, calmDue, owingDue));
+    }
+
+    static void price() {
+        System.out.println("\n--- 7. the price: the first quote is the target, then a quarter of the way; the scarcity; the idle crew ---");
+        double berth = 1000;
+        assertTrue("the scarcity is 1 at or under the berths' month, the cap at twice and above, linear between",
+                PortDivision.scarcityOf(berth / 2, berth) == 1 && PortDivision.scarcityOf(berth, berth) == 1
+                        && PortDivision.scarcityOf(2 * berth, berth) == Freight.MAX_SCARCITY_MULTIPLE
+                        && PortDivision.scarcityOf(3 * berth, berth) == Freight.MAX_SCARCITY_MULTIPLE
+                        && Math.abs(PortDivision.scarcityOf(1.5 * berth, berth) - (1 + .5 * (Freight.MAX_SCARCITY_MULTIPLE - 1))) <= 1e-12
+                        && PortDivision.scarcityOf(5 * berth, 0) == 1);
+        Game g = HaulageCheck.played(GameFiles.scratch("landlordport-price"), 14);
+        Freight fr = g.getSectors().freight();
+        PortDivision pd = fr.portDivision();
+        Ports.Cargo kind = Ports.Cargo.DRY_BULK;
+        quietly(() -> HaulageCheck.lay(g, "Bulk Terminal", 1));
+        assertTrue("fixture: a berth standing and no quote struck yet", Ports.berths(g.getBuildingManager())[kind.ordinal()] > 0 && !pd.isQuoteKnown(kind));
+        int months = 0;
+        while (!pd.isQuoteKnown(kind) && months < 4) {
+            quietly(g::toggleNextMonth);
+            months++;
+        }
+        double first = pd.getQuote(kind), want = target(g, kind);
+        report("THE FIRST QUOTE A KIND STRIKES, the month it has a berth and a crew, IS THE RULE'S TARGET from the month's own figures",
+                pd.isQuoteKnown(kind) && pd.getCrew(kind) > 0 && Math.abs(first - want) <= 1e-12 * Math.max(1e-9, want) && first > 0,
+                String.format("D$%.6fk a tonne after %d month(s) against the target %.6fk (crew D$%,.4fk on %,.0f t)", first, months, want, pd.getCrew(kind), pd.getTonnes(kind)));
+        quietly(g::toggleNextMonth);
+        double second = pd.getQuote(kind), target2 = target(g, kind);
+        report("...AND THE NEXT WALKS REPRICE_SPEED OF THE WAY to the new target",
+                Math.abs(second - (first + (target2 - first) * Freight.REPRICE_SPEED)) <= 1e-12 * Math.max(1e-9, Math.abs(second)),
+                String.format("D$%.6fk -> %.6fk, the target %.6fk, a quarter of the way", first, second, target2));
+        double tonnes = pd.getTonnes(kind), design = pd.getDesignTonnes(kind), berths = Ports.berths(g.getBuildingManager())[kind.ordinal()];
+        assertTrue("fixture: the berth is worked below DESIGN_USE (the design tonnes are the berths' month x DESIGN_USE)",
+                tonnes > 0 && tonnes < design && Math.abs(design - berths * PortDivision.DESIGN_USE) <= 1e-9 * design);
+        report("A BERTH BELOW DESIGN USE IS CARRIED BY THE DIVISION: the month's handling billed is less than its crew plus its dues",
+                pd.getBilled(kind) < pd.getCrew(kind) + pd.getDues(kind) && pd.getBilled(kind) > pd.getDues(kind) && pd.getCrew(kind) > 0,
+                String.format("billed D$%,.4fk against a crew of %,.4fk and dues of %,.4fk", pd.getBilled(kind), pd.getCrew(kind), pd.getDues(kind)));
+    }
+
+    static void money() {
+        System.out.println("\n--- 8. the money: the audit closes every month of a city working a port that pays dues ---");
+        Game g = seaBase(GameFiles.scratch("landlordport-money"));
+        Freight fr = g.getSectors().freight();
+        double worst = 0, dues = 0, handling = 0;
+        boolean everyMonth = true;
+        for (int m = 0; m < 6; m++) {
+            quietly(g::toggleNextMonth);
+            worst = Math.max(worst, PortCheck.auditMiss(g));
+            everyMonth &= fr.portDivision().getDuesPaid() > 0 && fr.portDivision().getHandlingBilled() > 0;
+            dues += fr.portDivision().getDuesPaid();
+            handling += fr.portDivision().getHandlingBilled();
+        }
+        assertTrue("fixture: a terminal stands and dues and handling were paid in every one of the months checked", everyMonth && dues > 0 && handling > 0);
+        report("THE MONEY AUDIT'S RESIDUAL IS WITHIN ITS TOLERANCE every month: no dollar made or lost between shipper, Freight, the households and the treasury",
+                worst <= 1, String.format("worst %.2e of the tolerance; D$%,.2fk of dues and %,.2fk of handling over six months", worst, dues, handling));
+    }
+
+    static void save() throws Exception {
+        System.out.println("\n--- 9. the save: the dial in the policy state; the quotes, the month and the treasury's lines across a reload ---");
+        TaxPolicy tp = new TaxPolicy();
+        tp.setPortDues(1.5);
+        double[] state = tp.getPolicyState();
+        TaxPolicy back = new TaxPolicy();
+        back.setPortDues(.25);
+        boolean ok = back.restorePolicyState(state);
+        assertTrue("the dial at 1.5 crosses getPolicyState() and restorePolicyState()", ok && back.getPortDues() == 1.5 && state.length == TaxPolicy.STATE_SLOTS);
+        TaxPolicy old = new TaxPolicy();
+        old.setPortDues(1.5);
+        boolean oldOk = old.restorePolicyState(java.util.Arrays.copyOf(state, TaxPolicy.STATE_BEFORE_PORT_DUES));
+        assertTrue("...and an array cut where the dial was added restores the default", oldOk && old.getPortDues() == TaxPolicy.DEFAULT_PORT_DUES);
+
+        GameFiles files = GameFiles.scratch("landlordport-save");
+        Game g = seaBase(files);
+        quietly(() -> {
+            g.getEconomyManager().getTaxPolicy().setPortDues(1.5);
+            g.toggleNextMonth();
+        });
+        PortDivision pd = g.getSectors().freight().portDivision();
+        assertTrue("fixture: the month paid dues at the dial 1.5 and struck a quote", pd.getDuesPaid() > 0 && dial(g) == 1.5 && pd.isQuoteKnown(Ports.Cargo.DRY_BULK));
+        quietly(() -> g.saveGame(10, "landlordport"));
+        Game again = new Game(files);
+        quietly(() -> again.loadGameSave(10));
+        PortDivision pb = again.getSectors().freight().portDivision();
+        boolean same = again.getLoadFailure() == null;
+        for (Ports.Cargo kind : Ports.Cargo.values()) {
+            same &= pb.getQuote(kind) == pd.getQuote(kind) && pb.isQuoteKnown(kind) == pd.isQuoteKnown(kind) && pb.getTonnes(kind) == pd.getTonnes(kind)
+                    && pb.getBilled(kind) == pd.getBilled(kind) && pb.getDues(kind) == pd.getDues(kind) && pb.getCrew(kind) == pd.getCrew(kind)
+                    && pb.getDuesRate(kind) == pd.getDuesRate(kind) && pb.getDesignTonnes(kind) == pd.getDesignTonnes(kind);
+        }
+        report("A CITY SAVED AND RELOADED READS THE SAME QUOTES, TONNES AND BILLS, to the bit", same && pd.getQuote(Ports.Cargo.DRY_BULK) > 0,
+                String.format("quote D$%.6fk a tonne", pb.getQuote(Ports.Cargo.DRY_BULK)));
+        report("...the same dues paid and handling billed, the treasury's tax take line and the national accounts' line, and the dial",
+                pb.getDuesPaid() == pd.getDuesPaid() && pb.getHandlingBilled() == pd.getHandlingBilled()
+                        && again.getEconomyManager().getPortDues() == g.getEconomyManager().getPortDues()
+                        && again.getEconomyManager().getNationalAccounts().getPortDues() == g.getEconomyManager().getNationalAccounts().getPortDues()
+                        && dial(again) == 1.5 && g.getEconomyManager().getPortDues() > 0,
+                String.format("dues D$%,.4fk, handling %,.4fk", pb.getDuesPaid(), pb.getHandlingBilled()));
+    }
+
+    /* ================================================================
        THE REST OF THE BRIEF, FOR THE SLICES THAT BUILD IT
        ================================================================ */
 
     // 1. THE BULK BERTH: slice 1's (PortCheck holds it; this harness takes it over in FR3's last slice).
     // 2. THE SHIPS: slice 1's (the same).
-    // 4. HANDLING, EACH LEG ONCE: slice 3's.
-    // 5. THE DUES: slice 3's.
-    // 6. THE DUES' DEFAULT: slice 3's.
-    // 7. THE PRICE: slice 3's.
-    // 8. THE MONEY: slice 3's.
-    // 9. THE ADVICE: slice 4's.
-    // 10. A REAL RUN: LongPlaytest's.
+    // 10. THE ADVICE: slice 4's.
+    // 11. A REAL RUN: LongPlaytest's.
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         crews();
+        handling();
+        dues();
+        duesDefault();
+        price();
+        money();
+        save();
         System.out.println();
         if (fails == 0) {
-            System.out.println("LandlordPortCheck: the crews are the city's berths worked by Freight (sections 1-2 and 4-10 are the later slices'): all passed");
+            System.out.println("LandlordPortCheck: the berths worked by Freight - the crews, the handling, the dues, the price, the money and the save (sections 1-2 and 10-11 are the other slices'): all passed");
         } else {
             System.out.println(fails + " FAILED");
         }
