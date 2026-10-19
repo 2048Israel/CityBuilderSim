@@ -18,7 +18,7 @@ import static ham.citybuildersim.ui.Pieces.*;
 import static ham.citybuildersim.ui.Levers.*;
 
 /**
- * The infrastructure tab: the roads, the trams, the railway and the freight -
+ * The infrastructure tab: the roads, the trams, the freight and the ports -
  * four pages under the five figures the whole tab is about, each page led by
  * the one picture that answers its question.
  *
@@ -33,9 +33,13 @@ import static ham.citybuildersim.ui.Levers.*;
  * funnel through transit's three ceilings; the month's freight bill split
  * three ways; a bar a good - the old statements and grids sit behind
  * "details" and the paragraphs behind an (i). Infrastructure explains and
- * Build acts: every page has a door to Build's Roads & transit, and Build's
+ * Build acts: every page has a door to Build's Infrastructure (Roads & transit until FR4), and Build's
  * rings have one back. The rail's Infrastructure tab opens
  * showInfrastructureMenu(); open() is every other door in (infraPage).
+ *
+ * FR4 (2026-10-19): the railway and freight pages became one Freight page with
+ * a division strip (All, Haulage, Rail, Ports), and the Ports are a page of
+ * their own (FREIGHT AND PORTS, below). open("The railway") is still a door in.
  */
 final class InfrastructureScreen {
 
@@ -44,15 +48,19 @@ final class InfrastructureScreen {
 
     InfrastructureScreen(UserInterface ui) { this.ui = ui; }
 
-    /** The tab opened on one of its pages, at the top of it (0.7.28): Services' road card, Build's road and transit doors, a figure or a part of a picture on this tab. */
+    /** The tab opened on one of its pages, at the top of it (0.7.28): Services' road card, Build's road and transit doors, a figure or a part of a picture on this tab. "The railway" is Freight on its Rail division (FR4): the page it was, kept as a door. */
     void open(String page) {
+        if ("The railway".equals(page)) {
+            freightDivision = "Rail";
+            page = "Freight";
+        }
         infraPage = page;
         ui.innerScrollAt.remove("showInfrastructureMenu:body");
         showInfrastructureMenu();
     }
 
     /* =====================================================================
-       INFRASTRUCTURE - the roads, the trams, the railway and the freight
+       INFRASTRUCTURE - the roads, the trams, the freight and the ports
 
        Jerus, 2026-09-17: "add a tab called infrastruture or transporation and
        basically it shows all the info about transportation and buses, and even
@@ -70,9 +78,12 @@ final class InfrastructureScreen {
 
        FOUR PAGES, AND EACH ONE ANSWERS A QUESTION A PLAYER ACTUALLY ASKS.
        Roads: why is my flow 56%, and what is on the road. Transit: how many
-       ride, what stops more, and what would the fare do. The railway: is this
-       business worth anything to me. Freight: what does moving it add to each
-       good's price, and who has not got the lorries to do it.
+       ride, what stops more, and what would the fare do. Freight (the railway
+       and the freight page until FR4, one page now with a division strip): what
+       does moving it add to each good's price, who has not got the lorries to
+       do it, and - on its Rail division - is the railway worth anything to me.
+       Ports (FR4): what the berths carry, what they cost the shippers, and the
+       ships that called.
 
        WHAT IS NOT HERE. Nothing on this screen builds anything - the roads,
        the buses and the track are ordered on the Build tab like everything
@@ -96,14 +107,20 @@ final class InfrastructureScreen {
        money and the modes are categories.
        ===================================================================== */
 
-    /** The tab's four pages, in the strip's order; the first is the one it starts on, and falls back to for a page it does not know. */
+    /** The tab's four pages, in the strip's order; the first is the one it starts on, and falls back to for a page it does not know (FR4: "The railway" and "Freight" are one page, and the Ports a new one; open("The railway") still opens Freight on its Rail division). */
     static final String[] INFRA_PAGES =
-            {"Roads", "Transit", "The railway", "Freight"};
+            {"Roads", "Transit", "Freight", "Ports"};
 
-    /** Each page's icon on its chip (0.7.29): the road, the bus, the train and the lorry. */
-    static final String[] INFRA_ICONS = {Icons.ROADS, Icons.BUS, Icons.RAIL, Icons.LORRY};
+    /** Each page's icon on its chip (0.7.29; FR4): the road, the bus, the lorry and the ship. */
+    static final String[] INFRA_ICONS = {Icons.ROADS, Icons.BUS, Icons.LORRY, Icons.TANKER};
+
+    /** The freight business's divisions, in the strip's order (FR4; spec-freight-and-infrastructure 6): All is today's Freight page, Haulage the trucks, Rail the railway, Ports the Ports page. */
+    static final String[] DIVISIONS = {"All", "Haulage", "Rail", "Ports"};
 
     String infraPage = "Roads";
+
+    /** Which of the Freight page's divisions is open - All, Haulage or Rail; the Ports are a page of their own - kept while the game runs, not saved (FR4, as detailsOpen). */
+    String freightDivision = "All";
 
     /** Which "details" folds are open, by page - kept while the game runs, not saved (0.7.29). */
     private final java.util.Set<String> detailsOpen = new java.util.HashSet<>();
@@ -113,6 +130,9 @@ final class InfrastructureScreen {
 
     /** How much of the stage the fixed frame takes above the page's scroller: the head, the five figures with FLOW's change, the pages, and their gaps (0.7.29). */
     static final double FRAME_CHROME = 232;
+
+    /** ...and what the division strip adds on the Freight and Ports pages (FR4): its chips and the gap above them. */
+    static final double DIVISION_CHROME = 38;
 
     /** The flow curve's x scale: what the road serves, from nothing to this (0.7.41; its use, to 260%, until then), fixed so the dot's motion reads month to month; the floor ends at MIN_THROUGHPUT / FREE_FLOW, 39%, and a road serving more sits at the edge with a "›". */
     static final double CURVE_MAX = 2.0;
@@ -135,37 +155,60 @@ final class InfrastructureScreen {
         }
     }
 
-    /** The page that relieves a stream: transit for the commuters, the railway for the freight. */
-    String reliefPage(Traffic s) { return s == Traffic.COMMUTERS ? "Transit" : "The railway"; }
+    /** The page that relieves a stream: transit for the commuters, freight (its railway) for the freight. */
+    String reliefPage(Traffic s) { return s == Traffic.COMMUTERS ? "Transit" : "Freight"; }
+
+    /** A division of the freight business opened (FR4): the Ports are their own page, the others the Freight page on that division. */
+    void openDivision(String division) {
+        if ("Ports".equals(division)) {
+            open("Ports");
+            return;
+        }
+        freightDivision = division;
+        open("Freight");
+    }
 
     void showInfrastructureMenu() {
         ui.clearMenu("showInfrastructureMenu", () -> showInfrastructureMenu());
 
+        if ("The railway".equals(infraPage)) {
+            freightDivision = "Rail";
+            infraPage = "Freight";
+        }
         boolean known = false;
         for (String page : INFRA_PAGES) if (page.equals(infraPage)) known = true;
         if (!known) infraPage = INFRA_PAGES[0];
+        if (!"Haulage".equals(freightDivision) && !"Rail".equals(freightDivision)) freightDivision = "All";
 
         List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
 
         VBox page = widePage();
         switch (infraPage) {
-            case "Transit"     -> transitPage(page);
-            case "The railway" -> railwayPage(page);
-            case "Freight"     -> freightPage(page);
-            default            -> roadsPage(page, all);
+            case "Transit" -> transitPage(page);
+            case "Freight" -> {
+                switch (freightDivision) {
+                    case "Haulage" -> haulagePage(page);
+                    case "Rail"    -> railwayPage(page);
+                    default        -> freightPage(page);
+                }
+            }
+            case "Ports"   -> portsPage(page);
+            default        -> roadsPage(page, all);
         }
 
         javafx.scene.layout.FlowPane strip =
                 chipStrip(INFRA_PAGES, INFRA_ICONS, infraPage, Palette.SIZE_LABEL, name -> open(name));
 
-        VBox frame = new VBox(Palette.GAP, head(), vitals(all), strip);
+        boolean freight = "Freight".equals(infraPage) || "Ports".equals(infraPage);
+        VBox frame = freight ? new VBox(Palette.GAP, head(), vitals(all), strip, divisionStrip())
+                             : new VBox(Palette.GAP, head(), vitals(all), strip);
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
         frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
 
         // THE FRAME DOES NOT SCROLL (as Services' since 0.7.28): the head, the
         // five figures and the pages stay put; only the page under them moves.
-        body = ui.scrolled(page, FRAME_CHROME);
+        body = ui.scrolled(page, FRAME_CHROME + (freight ? DIVISION_CHROME : 0));
         final javafx.scene.control.ScrollPane scroller = body;
         page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
                 () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
@@ -175,17 +218,44 @@ final class InfrastructureScreen {
 
     /**
      * The head: "Infrastructure" with the people teal's swatch, and at its
-     * right the two doors every page has - Build's Roads & transit, opened on
-     * the ring this page explains (transit's on Transit, the road's
-     * elsewhere), in the building pink; and the road over the years, City
-     * History on its throughput line.
+     * right the two doors every page has - Build's Infrastructure (Roads &
+     * transit until FR4), opened on the ring this page explains (transit's on
+     * Transit, the road's elsewhere; the Ports' on its category), or Build's
+     * Freight on the Freight page, in the building pink; and the road over the
+     * years, City History on its throughput line.
      */
     HBox head() {
-        BuildAdvice.Measure m = BuildAdvice.Measure.of(
-                "Transit".equals(infraPage) ? BuildAdvice.Kind.TRANSIT : BuildAdvice.Kind.ROADS);
-        return pageHead("Infrastructure", Palette.PEOPLE,
-                doorPill("Build · Roads & transit", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openOn(m)),
+        HBox build;
+        if ("Freight".equals(infraPage)) {
+            build = doorPill("Build · Freight", Icons.BUILD, Palette.BUILDING,
+                    () -> ui.buildScreen.openCategory(BuildAdvice.RAIL));
+        } else if ("Ports".equals(infraPage)) {
+            build = doorPill("Build · Infrastructure", Icons.BUILD, Palette.BUILDING,
+                    () -> ui.buildScreen.openCategory(BuildAdvice.ROADS));
+        } else {
+            BuildAdvice.Measure m = BuildAdvice.Measure.of(
+                    "Transit".equals(infraPage) ? BuildAdvice.Kind.TRANSIT : BuildAdvice.Kind.ROADS);
+            build = doorPill("Build · Infrastructure", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openOn(m));
+        }
+        return pageHead("Infrastructure", Palette.PEOPLE, build,
                 door("The road over the years", Palette.ACCENT, () -> ui.historyScreen.openOn("roadRatio")));
+    }
+
+    /**
+     * The division strip (FR4), under the page chips on the Freight and Ports
+     * pages: All, Haulage, Rail and Ports, the open one lit. The Ports are the
+     * Ports page, so on it the strip lights Ports; the others are the Freight
+     * page, which remembers its division (freightDivision).
+     */
+    HBox divisionStrip() {
+        Label cap = new Label("DIVISION");
+        cap.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        cap.setMinWidth(Region.USE_PREF_SIZE);
+        String current = "Ports".equals(infraPage) ? "Ports" : freightDivision;
+        javafx.scene.layout.FlowPane chips = chipStrip(DIVISIONS, current, Palette.SIZE_CAPTION, name -> openDivision(name));
+        HBox strip = new HBox(10, cap, chips);
+        strip.setAlignment(Pos.CENTER_LEFT);
+        return strip;
     }
 
     /* ---------------------------------------------------------------------
@@ -841,7 +911,7 @@ final class InfrastructureScreen {
     /** The no-transit card's (i) (P6). */
     static final String NO_TRANSIT_INFO = "This city has built no transit at all. A Bus Network is the cheap rung "
             + "and a Metro Line is the one that carries a city; all three are on the "
-            + "Build tab under Roads & transit. Until one is standing the fare "
+            + "Build tab under Infrastructure. Until one is standing the fare "
             + "charges nobody anything.";
 
     /** The ceilings' (i) (P7). */
@@ -1145,7 +1215,7 @@ final class InfrastructureScreen {
             left = new VBox(8, caption("WHAT THE RAILWAY CHARGES", null), figure("no track", 28, Palette.TEXT_MUTED),
                     infoLine("Nobody has laid a line: every tonne leaves by lorry, and the freight is paid to the world.",
                             NO_TRACK_INFO, true, Palette.SIZE_BODY, Palette.TEXT_LABEL, 300),
-                    doorPill("Rail on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.RAIL)));
+                    doorPill("Freight on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.RAIL)));
         } else {
             double quote = rail.getQuote();
             SegmentBar gauge = segmentBar(List.of(Segment.of(Math.min(1, quote), Palette.BUSINESS)), 1,
@@ -1174,7 +1244,7 @@ final class InfrastructureScreen {
                                 + "which is why a town does not get a spur.",
                         ham.citybuildersim.sectors.Freight.MIN_LINE_UTILISATION * 100),
                 LINE_RULE_INFO, true, Palette.SIZE_LABEL, Palette.TEXT_MUTED, 600),
-                doorPill("Rail on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.RAIL)));
+                doorPill("Freight on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.RAIL)));
         rule.setAlignment(Pos.CENTER_LEFT);
         page.getChildren().add(rule);
         page.getChildren().add(details("railway", "the track, the hauling and the business, line by line",
@@ -1629,5 +1699,284 @@ final class InfrastructureScreen {
         if (!(imported < bill - 1e-9 * Math.max(1, bill))) return whole;
         if (!(imported > 0)) return ", off the city's refineries";
         return ", " + money(imported) + " of it bought abroad";
+    }
+
+    /* =====================================================================
+       FREIGHT AND PORTS (FR4, 2026-10-19)
+
+       The railway page and the freight page were two pages of one business,
+       and the business grew two more divisions (FR2's Haulage, FR3's Ports):
+       spec-freight-and-infrastructure 5 and 6 fold them into ONE Freight page
+       with a division strip - All, Haulage, Rail, Ports. All is the freight
+       page it was (the band, the month's bill, the lorries); Rail is the
+       railway page it was (open("The railway") still opens it, as the doors
+       that were written to it expect); Haulage is the trucks that carry the
+       city leg, new; and Ports are a page of their own, new, because the sea
+       terminals are the city's (the dues are its revenue), not a sector's:
+       berths by kind, tonnes against their room, the handling billed and the
+       dues paid, and the ships that called.
+
+       NOTHING HERE IS WORKED OUT ON THE SCREEN. The figures come from
+       FreightView (the model's own page, a pure function of the month billed)
+       wherever it holds them, and from the model's getters where it does not
+       (marked FR4: FreightView). The division is a field of the screen, kept
+       while the game runs and not saved, as the folds are.
+       ===================================================================== */
+
+    /** Haulage's quote (i) (FR4). */
+    static final String HAULAGE_QUOTE_INFO = String.format(
+            "What it charges for a tonne's city leg, from the depot or the siding to the door. Haulage is a "
+            + "division of the freight business: it prices as the railway does, from what the month cost it "
+            + "(the drivers, the diesel, the trucks worn out and the fleet paid for) plus a return of %.1f%% "
+            + "on the trucks and depots it has sunk, over the tonnes its trucks could carry - and walks a "
+            + "quarter of the way to that each month, so the figure moves. Short of trucks, it asks more.",
+            ham.citybuildersim.sectors.Freight.TARGET_RETURN * 100);
+
+    /** The trucks' (i) (FR4). */
+    static final String TRUCKS_INFO = String.format(
+            "A truck carries about %,.0f tonnes a month. Haulage owns the fleet and buys toward what the "
+            + "plant standing and the plant on site will ask of it, an eighth of the gap a month - so a "
+            + "town that is growing is short for a while, and a short fleet carries only its share of the "
+            + "city leg: the shippers collect the rest in their own vans.",
+            ham.citybuildersim.sectors.Haulage.TONNES_A_TRUCK_MONTH);
+
+    /** The depots' (i) (FR4). */
+    static final String DEPOTS_INFO = String.format(
+            "A Truck Depot keeps trucks, and its posts are the drivers and the mechanics. A truck past the "
+            + "depots' room is parked on the street: it runs, but unposted, and it wears %.0f%% faster. "
+            + "The depots are on the Build tab, under Freight.",
+            (ham.citybuildersim.sectors.Haulage.STREET_WEAR - 1) * 100);
+
+    /** The ports' (i) (FR4). */
+    static final String PORTS_INFO = "The sea terminals are the city's: only the player builds them. Freight works them. "
+            + "Every tonne that crosses a berth is billed a handling charge - the buyer pays it for what it "
+            + "lands, the exporter for what it ships - and Freight pays the city port dues on the same tonnes, "
+            + "a revenue line of the treasury and a dial in Policy. A tonne sold at home, by train or by lorry "
+            + "pays none: each leg is paid once.";
+
+    /** The berths' (i) (FR4). */
+    static final String BERTHS_INFO = "A berth handles one kind of cargo: liquid bulk, dry bulk, containers or "
+            + "general cargo. The bar is the tonnes the month's ships put across the kind's berths, against the "
+            + "tonnes a month they can handle (the white mark). A kind with more asking than room is dearer: "
+            + "that is how the quote tells the city to build another.";
+
+    /** A kind of cargo's colour on this screen: categories, never verdicts. */
+    static String cargoColour(Ports.Cargo kind) {
+        switch (kind) {
+            case LIQUID:    return Palette.ACCENT;
+            case DRY_BULK:  return Palette.ORE;
+            case CONTAINER: return Palette.BUSINESS;
+            default:        return Palette.MONEY;
+        }
+    }
+
+    /* ----- Haulage ----- */
+
+    /** The Haulage division: the quote, the month's city leg, and the trucks, the depots and the business against them. */
+    void haulagePage(VBox page) {
+
+        ham.citybuildersim.sectors.Freight freight = ui.game.getSectors().freight();
+        FreightView.HaulagePage h = FreightView.of(ui.game).haulage();
+        FreightView.Quote q = h.quote();
+
+        VBox left = new VBox(8, caption("WHAT HAULAGE CHARGES", HAULAGE_QUOTE_INFO),
+                pairLine(unitPrice(q.quote()), Palette.TEXT_HEAD, "a tonne, the city leg", null, null, null),
+                infoLine(q.known() ? "set monthly from its costs + " + String.format("%.1f%%", ham.citybuildersim.sectors.Freight.TARGET_RETURN * 100)
+                                + " on its trucks and depots"
+                        : "an estimate: no month has struck a price yet",
+                        HAULAGE_QUOTE_INFO, true, Palette.SIZE_BODY, Palette.TEXT_LABEL, 300));
+        if (q.target().isPresent()) {
+            left.getChildren().add(words("the rule asks " + unitPrice(q.target().getAsDouble()) + " a tonne"
+                    + (h.tightness() > 1e-9 ? ", dearer for the trucks it is short of" : ""), Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        }
+
+        VBox right = new VBox(8, caption("THE CITY LEG THIS MONTH", null),
+                figureLine(String.format("%,.0f t", h.legTonnes()), "of city leg · trucks carried",
+                        h.legTonnes() > 0 ? pct(h.carried() / h.legTonnes()) : "none", ""),
+                supplyBar(h.legTonnes(), h.legTonnes(), h.carried(), Palette.BUSINESS, null, null,
+                        String.format("%,.0f of %,.0f tonnes by truck", h.carried(), h.legTonnes()), 0, 10),
+                words(String.format("%,.0f loads of %,.0f t · the rest the shippers' own vans, and the sidings",
+                        h.loads(), ham.citybuildersim.sectors.Haulage.TONNES_A_LOAD), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        if (h.legTonnes() <= 0) right.getChildren().add(words("No city leg was billed last month.", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        page.getChildren().add(heroCard(left, 300, right));
+
+        javafx.scene.layout.GridPane cards = equalColumns(3, TILE_GAP);
+        cards.add(trucksCard(h), 0, 0);
+        cards.add(depotsCard(h), 1, 0);
+        cards.add(haulageBusinessCard(freight, h), 2, 0);
+        page.getChildren().add(cards);
+    }
+
+    /** THE TRUCKS: owned against what the plant asks, the ones it is short, the ones it wore out. */
+    VBox trucksCard(FreightView.HaulagePage h) {
+        VBox card = ServicesScreen.card(cardHead(Icons.LORRY, Palette.BUSINESS, "The trucks", TRUCKS_INFO),
+                figureLine(String.format("%,.0f", h.trucks()), "trucks owned"),
+                supplyBar(h.needed(), h.trucks(), h.trucks(), Palette.BUSINESS, "needed", null,
+                        String.format("%,.1f trucks of %,.1f needed", h.trucks(), h.needed()), 0, 10),
+                words(String.format("%,.1f of %,.1f needed · %,.1f asked with the plant on site",
+                        h.trucks(), h.needed(), h.asked()), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        javafx.scene.layout.FlowPane chips = new javafx.scene.layout.FlowPane(Palette.GAP_TIGHT, Palette.GAP_TIGHT);
+        if (h.shortBy() > 1e-9) chips.getChildren().add(chip(String.format("%,.1f trucks short", h.shortBy()), Palette.WARN));
+        if (h.worn() > 1e-9) chips.getChildren().add(chip(String.format("%,.1f worn out last month", h.worn()), Palette.TEXT_MUTED));
+        if (!chips.getChildren().isEmpty()) card.getChildren().add(chips);
+        return card;
+    }
+
+    /** THE DEPOTS: how many stand, the trucks they keep, and the ones parked on the street. */
+    VBox depotsCard(FreightView.HaulagePage h) {
+        VBox card = ServicesScreen.card(cardHead(Icons.BUILD, Palette.BUILDING, "The depots", DEPOTS_INFO),
+                figureLine(String.format("%,d", h.depots()), h.depots() == 1 ? "Truck Depot" : "Truck Depots"),
+                supplyBar(h.trucks(), h.depotRoom(), h.depotRoom(), Palette.BUILDING, "trucks", null,
+                        String.format("room for %,.0f trucks, %,.0f owned", h.depotRoom(), h.trucks()), 0, 10),
+                words(String.format("room for %,.0f trucks · %,.0f spare", h.depotRoom(), h.spareRoom()),
+                        Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        if (h.onStreet() > 1e-9) {
+            card.getChildren().add(chip(String.format("%,.0f on the street", h.onStreet()), Palette.WARN));
+        }
+        card.getChildren().add(doorPill("Freight on Build", Icons.BUILD, Palette.BUILDING,
+                () -> ui.buildScreen.openCategory(BuildAdvice.RAIL)));
+        return card;
+    }
+
+    /** THE BUSINESS: billed against what the rule allows, the diesel, the share of the need its trucks reach, and the door to the books. */
+    VBox haulageBusinessCard(ham.citybuildersim.sectors.Freight freight, FreightView.HaulagePage h) {
+        VBox card = ServicesScreen.card(cardHead(Icons.COIN, Palette.BUSINESS, "The business", null),
+                bulletBar(h.bill(), h.allowed(), Palette.BUSINESS, 0,
+                        "billed " + money(h.bill()) + " · the rule allows " + money(h.allowed())),
+                words("diesel " + money(h.diesel()) + " a month", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
+                words("its trucks reach " + pct(h.share()) + " of the city leg", Palette.SIZE_LABEL,
+                        h.share() + 1e-9 >= 1 ? Palette.TEXT_LABEL : Palette.WARN));
+        card.getChildren().add(door("its books on Sectors", Palette.BUSINESS,
+                () -> ui.sectorScreen.openSectorBooks(freight, "Income")));
+        return card;
+    }
+
+    /* ----- Ports ----- */
+
+    /** The Ports page: the month's handling and dues, the berths by kind, then each kind's bill and the ships that called. */
+    void portsPage(VBox page) {
+
+        ham.citybuildersim.sectors.Freight freight = ui.game.getSectors().freight();
+        FreightView.PortsPage p = FreightView.of(ui.game).ports();
+
+        VBox left = new VBox(8, caption("THE PORTS' MONTH", PORTS_INFO),
+                pairLine(money(p.handlingBilled()), Palette.TEXT_HEAD, "handling billed", money(p.duesPaid()), Palette.TEXT_HEAD, "dues to the city"),
+                figureLine(String.format("%,.0f t", p.tonnes()), "put across the berths · calls",
+                        String.format("%,d", p.calls()), "ships"),
+                words(p.berths() <= 0 ? "No sea terminal stands: every tonne goes by lorry or by train."
+                        : String.format("%,d berths · %,.0f t a month of room · dues at %.2f× the default", p.berths(), p.capacity(), p.dial()),
+                        Palette.SIZE_LABEL, p.berths() <= 0 ? Palette.TEXT_MUTED : Palette.TEXT_LABEL));
+
+        VBox right = new VBox(10, caption("THE BERTHS, BY KIND", BERTHS_INFO));
+        for (FreightView.Berth b : p.kinds()) right.getChildren().add(berthRow(b));
+        page.getChildren().add(heroCard(left, 300, right));
+
+        javafx.scene.layout.GridPane cards = equalColumns(2, TILE_GAP);
+        cards.add(portBillCard(p), 0, 0);
+        cards.add(shipsCard(p), 1, 0);
+        page.getChildren().add(cards);
+
+        HBox doors = new HBox(Palette.GAP_LOOSE,
+                door("The ships on the map", Palette.ACCENT, this::openMapAtPort),
+                door("its books on Sectors", Palette.BUSINESS, () -> ui.sectorScreen.openSectorBooks(freight, "Income")),
+                doorPill("Berths on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.ROADS)));
+        doors.setAlignment(Pos.CENTER_LEFT);
+        page.getChildren().add(doors);
+    }
+
+    /** One kind of berth: its name, how many stand and the room they are, and the month's tonnes against it. */
+    VBox berthRow(FreightView.Berth b) {
+        String colour = cargoColour(b.kind());
+        String says = b.berths() <= 0 ? "no berth" : String.format("%,d %s · %,.0f t a month", b.berths(), b.berths() == 1 ? "berth" : "berths", b.capacity());
+        if (b.onSite() > 0) says += String.format(" · %,.0f t more on site", b.onSite());
+        VBox row = new VBox(3, new HBox(8, keySwatch(colour, b.kind().label()), words(says, Palette.SIZE_LABEL,
+                b.berths() <= 0 ? Palette.TEXT_MUTED : Palette.TEXT_LABEL)));
+        if (b.capacity() > 0) {
+            row.getChildren().add(bulletBar(b.tonnes(), b.capacity(), colour, 0,
+                    String.format("%,.0f t handled of %,.0f t · %s", b.tonnes(), b.capacity(), pct(b.use()))));
+        } else if (b.tonnes() > 0) {
+            row.getChildren().add(words(String.format("%,.0f t handled", b.tonnes()), Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        }
+        return row;
+    }
+
+    /** HANDLING AND DUES, BY KIND: what a tonne is billed, what the kind billed, and the dues it paid the city. */
+    VBox portBillCard(FreightView.PortsPage p) {
+        javafx.scene.layout.GridPane table = grid(new double[] {112, 80, 80, 92, 80}, rightAfterFirst(5));
+        gridHead(table, "", "handled", "a tonne", "billed", "dues");
+        int line = 1;
+        for (FreightView.Berth b : p.kinds()) {
+            boolean any = b.berths() > 0 || b.tonnes() > 0;
+            String tone = any ? Palette.TEXT_HEAD : Palette.TEXT_MUTED;
+            table.add(gridCell(b.kind().label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
+            table.add(gridCell(any ? String.format("%,.0f t", b.tonnes()) : "—", tone, Palette.SIZE_CAPTION, true), 1, line);
+            table.add(gridCell(b.quote().known() ? unitPrice(b.quote().quote()) : "—", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
+            table.add(gridCell(any ? money(b.handlingBilled()) : "—", tone, Palette.SIZE_CAPTION, true), 3, line);
+            table.add(gridCell(any ? money(b.dues()) : "—", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 4, line);
+            line++;
+        }
+        table.add(gridCell("All", Palette.TEXT_LABEL, Palette.SIZE_CAPTION, false), 0, line);
+        table.add(gridCell(String.format("%,.0f t", p.tonnes()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
+        table.add(gridCell("", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
+        table.add(gridCell(money(p.handlingBilled()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, line);
+        table.add(gridCell(money(p.duesPaid()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 4, line);
+        return ServicesScreen.card(cardHead(Icons.COIN, Palette.BUSINESS, "Handling and dues", null), table,
+                words("a tonne is the handling quote with the port dues in it; the billed column is what the shippers paid Freight, "
+                        + "the dues column what Freight paid the city", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+    }
+
+    /** THE SHIPS THAT CALLED: the month's calls by ship class, and what a call carries. */
+    VBox shipsCard(FreightView.PortsPage p) {
+        java.util.Map<Ports.Ship, Integer> byShip = callsByShip();
+        VBox card = ServicesScreen.card(cardHead(Icons.TANKER, Palette.ACCENT, "The ships that called", null));
+        if (byShip.isEmpty()) {
+            card.getChildren().add(words(p.berths() <= 0 ? "No ship can call: there is no berth."
+                    : "No ship called last month.", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            return card;
+        }
+        javafx.scene.layout.GridPane table = grid(new double[] {150, 60, 100, 110}, rightAfterFirst(4));
+        gridHead(table, "", "calls", "a call carries", "kind");
+        int line = 1;
+        for (java.util.Map.Entry<Ports.Ship, Integer> e : byShip.entrySet()) {
+            Ports.Ship s = e.getKey();
+            table.add(gridCell(s.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
+            table.add(gridCell(String.format("%,d", e.getValue()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
+            table.add(gridCell(String.format("%,.0f t", s.tonnes()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
+            table.add(gridCell(s.cargo().label(), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 3, line);
+            line++;
+        }
+        card.getChildren().add(table);
+        card.getChildren().add(words(String.format("%,d calls in the month, the ships of the map", p.calls()),
+                Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        return card;
+    }
+
+    /** The month's calls by ship class, in the classes' order, those with none left out. */
+    java.util.Map<Ports.Ship, Integer> callsByShip() {
+        // FR4: FreightView holds the calls by kind (Berth.calls()) and not by class: the schedule's own calls are counted here.
+        java.util.Map<Ports.Ship, Integer> out = new java.util.EnumMap<>(Ports.Ship.class);
+        if (ui.game.getWorld() == null) return out;
+        for (BoatSchedule.Call c : ui.game.boats(java.util.List.of()).calls()) out.merge(c.ship(), 1, Integer::sum);
+        return out;
+    }
+
+    /**
+     * "The ships on the map": the land office's map over the window on the
+     * city's terminals (the same door the minimap opens, UserInterface
+     * .openMapOn()) - the box round every berthed work on the shore, its
+     * quay's end included, with the map's margin; with none standing, the map
+     * as Expand opens it.
+     */
+    void openMapAtPort() {
+        MiniMapFrame.Box box = null;
+        for (CityShore.Work w : ui.game.getCityMap().shore().works()) {
+            if (!w.berthed()) continue;
+            double[] end = w.berth();
+            long ex = (long) Math.floor(end[0]), ey = (long) Math.floor(end[1]);
+            box = MiniMapFrame.union(box, new MiniMapFrame.Box(
+                    Math.min(w.x0(), ex), Math.min(w.y0(), ey),
+                    Math.max(w.x0() + w.w(), ex + 1), Math.max(w.y0() + w.h(), ey + 1)));
+        }
+        ui.openMapOn(box == null ? null : MiniMapFrame.withMargin(box));
     }
 }
