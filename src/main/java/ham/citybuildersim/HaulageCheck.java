@@ -764,7 +764,9 @@ public class HaulageCheck {
         // ---- the bid ----
         double need = 30 * T;
         setState(h, need, 1);
-        double asked = need / T;
+        // The order is toward the plant standing AND the plant on site (Haulage.trucksAsked(), the review after this harness
+        // was written): this city's works on site add their legs to the need it is bought toward.
+        double asked = h.trucksAsked();
         boolean bids = true;
         StringBuilder bidLine = new StringBuilder();
         double eighth = asked / Sector.FLEET_DELIVERY_MONTHS;
@@ -774,13 +776,15 @@ public class HaulageCheck {
             bids &= same(h.bid(), want) && same(fr.bid(Good.TRUCKS), want);
             bidLine.append(String.format("%.2f->%.3f ", have, h.bid()));
         }
-        report("the bid is min(need - have, need / FLEET_DELIVERY_MONTHS) trucks, and nothing at or past the need",
-                bids && asked > 3 * Sector.FLEET_DELIVERY_MONTHS, "have->bid: " + bidLine);
+        report("the bid is min(asked - have, asked / FLEET_DELIVERY_MONTHS) trucks, asked the need and the works on site's,"
+                        + " and nothing at or past it",
+                bids && asked > 3 * Sector.FLEET_DELIVERY_MONTHS && same(asked, (need + h.getNeedOnSite()) / T),
+                String.format("asked %.2f (on site %,.0f t); have->bid: ", asked, h.getNeedOnSite()) + bidLine);
         fr.setPantry(Good.TRUCKS, 0);
-        report("...a fleet of none asks for an eighth of the need, not all of it (a fleet is built up, not conjured)",
+        report("...a fleet of none asks for an eighth of what it is asked, not all of it (a fleet is built up, not conjured)",
                 same(h.bid(), eighth) && h.bid() < asked, String.format("%.3f of %.1f", h.bid(), asked));
         fr.setPantry(Good.TRUCKS, asked);
-        report("...and a fleet of exactly the need asks for nothing, a literal zero",
+        report("...and a fleet of exactly what it is asked asks for nothing, a literal zero",
                 same(h.bid(), 0) && same(fr.bid(Good.TRUCKS), 0), String.format("%s", h.bid()));
 
         // ---- the wear ----

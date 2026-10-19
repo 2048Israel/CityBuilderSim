@@ -1270,7 +1270,11 @@ public class HealthCheck {
                  * (runs/fixP4-notes.md).
                  */
                 b.addStack(b.getTemplateByName("Construction Depot"), 1, true);
-                town.simulateMonths(48);
+                // ...and the fleet of Freight's Haulage kept ahead of the plant (trucksKeepUp(), FR2).
+                for (int pre = 0; pre < 48; pre++) {
+                    trucksKeepUp(town);
+                    town.simulateMonths(1);
+                }
                 // The drain: nothing saved, nothing abroad, no shares, and
                 // the bank not lending - the waterfall's every step before
                 // "eat less" already spent.
@@ -1282,6 +1286,7 @@ public class HealthCheck {
                 }
                 town.getEconomyManager().getTaxPolicy().setHealthFeeScale(scales[k]);
                 for (int m = 0; m < window; m++) {
+                    trucksKeepUp(town);
                     town.simulateMonths(1);
                     Healthcare hc = town.getHealthcare();
                     double treated = 0, offered = 0;
@@ -1654,6 +1659,27 @@ public class HealthCheck {
         b.addStack(b.getTemplateByName("Construction Depot"), 3, true);
         b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
         b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+    }
+
+    /**
+     * THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18).
+     * Freight's Haulage buys an eighth of the gap to its need a month, and the need is the plant standing, so each
+     * time a twin's businesses open a plant the city's trucks fall short of it for some months and every sector with
+     * bulk to move runs at .6 + .4 x the share that is carried (Sector.getHaulageRatio()). In the poor-city twins
+     * that was 19 and 20 of the 96 months at a share as low as .69, at the moments each twin's own growth chose, and
+     * it moved the grocers' and bakers' output a tenth at a time: over the last year the shelf term of hunger read
+     * 5.1 points in the free twin and 6.3 in the dear one (3.0 and 3.2 before FR2), so the dear city read 5.0 points
+     * hungrier than the free one (3.9 of it priced out of a basket, the fee's own effect, and 1.2 short on the
+     * shelf) against the 5 allowed for the price of care. A real city's carriers are not the thing this section
+     * tests, and its twins differ in when their fleets catch up, not in the fee; so here the fleet is held at twice
+     * what the last haul said the plant needs, the share is exactly 1 in every month of both runs, and the fee is
+     * what differs (3.5 points, with the assertion's tolerance untouched at 5). The trucks are given, as the first
+     * fleet is (Haulage: the trucks a city that "was moving its steel somehow" had).
+     */
+    static void trucksKeepUp(Game town) {
+        ham.citybuildersim.sectors.Freight freight = town.getSectors().freight();
+        double want = 2 * freight.haulage().getNeed() / ham.citybuildersim.sectors.Haulage.TONNES_A_TRUCK_MONTH;
+        if (freight.haulage().trucks() < want) freight.setPantry(Good.TRUCKS, want);
     }
 
     static void cleanUp(Path root) {

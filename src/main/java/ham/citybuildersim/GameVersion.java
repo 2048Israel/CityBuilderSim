@@ -6775,6 +6775,27 @@ public final class GameVersion {
      *   - Harnesses: RailDrawCheck 21, MainLineCheck 12, JunctionCheck 10
      *     and 11.
      *   - THE PLAYTESTS do not move: byte-identical.
+     *
+     * 0.8.5 (2026-10-18) - FR2, THE FREIGHT SECTOR.
+     * The freight batch that changes the model (docs/studies/spec-freight-
+     * and-infrastructure.md 2, 3 and 7; docs/queue/FR2.md, FR2-notes.md).
+     * Slices by Sonnet 5.5 subagents, DeepSeek's key not being set on the
+     * PC, reviewed by Claude. Save format 40, and the floor with it.
+     *   - FREIGHT IN RAIL'S SLOT (sectors.Freight, Sectors.FREIGHT): one
+     *     business, its railway the Rail division as built.
+     *   - HAULAGE (sectors.Haulage): the city leg of every BULK tonne, paid
+     *     once - by its buyer, or its exporter - at a quote the trucks' own
+     *     books set (the railway's rule, over what they could carry), a
+     *     railed tonne's leg a quarter truck by siding. The trucks (TRUCKS,
+     *     D$215k, from the Heavy Truck Plant or the world) sized to the
+     *     plant standing at nameplate; a bulk works short of them runs at .6
+     *     + .4 x the share they carry (Sector.getFreightRatio()). Truck
+     *     Depots of 100, their drivers a post for each truck kept.
+     *   - VANS CARRY GOODS ONLY, and a works is weighed with its freight,
+     *     not its lorries (ProcessingSector.freightRunning()).
+     *   - Harnesses: HaulageCheck (new); RailCheck, VanCheck and the
+     *     weighing, books, oil and save harnesses on the new rules.
+     *   - THE PLAYTESTS MOVE from month 3: both pass every audit and reload.
      */
     public static final String VERSION = "0.8.5";
 

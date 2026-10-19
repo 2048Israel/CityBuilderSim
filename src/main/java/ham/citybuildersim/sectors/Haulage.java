@@ -114,6 +114,9 @@ public final class Haulage {
     /** The city-leg tonnes the share is read against: the plant standing at the last haul, at nameplate (nameplateNeed()). */
     private double need;
 
+    /** ...and what the plant on site will ask when it stands, struck with it (nameplateNeedOnSite()): what the fleet is bought toward besides. */
+    private double needOnSite;
+
     /**
      * Whether the fleet is a figure Haulage knows. FALSE UNTIL THE FIRST MONTH
      * THERE IS A CITY LEG TO CARRY, and then the trucks that leg needs are
@@ -388,6 +391,7 @@ public final class Haulage {
          */
         strikeTrade(sectors);
         need = nameplateNeed(sectors);
+        needOnSite = nameplateNeedOnSite(sectors);
         if (!trucksKnown && need > 0) {
             freight.seedTrucks(need / TONNES_A_TRUCK_MONTH);
             trucksKnown = true;
@@ -460,8 +464,47 @@ public final class Haulage {
      */
     public double bid() {
         if (!trucksKnown) return 0;
-        double asked = trucksNeeded();
+        double asked = trucksAsked();
         return Math.max(0, Math.min(asked - trucks(), asked / Sector.FLEET_DELIVERY_MONTHS));
+    }
+
+    /**
+     * The fleet the month's order is toward: the trucks the plant standing
+     * needs and the plant on site will (FR2, the review). Bought only when a
+     * works stood, the fleet reached it an eighth of the need a month and the
+     * share struck at the next haul a month after that: every bulk sector of a
+     * growing town ran short for about four months after each plant opened,
+     * where its vans never had (HealthCheck's twins, 19 of 96 months at as
+     * little as .69; FR2's notes). A haulier hires for a contract before the
+     * works it serves opens; the share still reads the plant standing.
+     */
+    public double trucksAsked() { return (need + needOnSite) / TONNES_A_TRUCK_MONTH; }
+
+    /** The legs at nameplate the city's works on site will ask when they stand: nameplateNeed()'s weights, over Freight's every other sector's buildings on site. */
+    public double nameplateNeedOnSite(Sectors sectors) {
+        if (sectors == null || freight.buildings() == null) return 0;
+        double t = 0;
+        for (Sector s : sectors.all()) {
+            if (s == freight) continue;
+            t += freight.buildings().underConstructionBySector(s.key(), this::templateLegs);
+        }
+        return Double.isFinite(t) ? Math.max(0, t) : 0;
+    }
+
+    /** One building's legs a month at nameplate, as nameplateNeed() weighs a sector's: its BULK inputs and outputs, VANS and TRUCKS aside. */
+    private double templateLegs(BuildingsTemplate b) {
+        double t = 0;
+        for (Map.Entry<Good, Double> e : b.goodsUsed().entrySet()) {
+            Good g = e.getKey();
+            if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
+            t += e.getValue() * g.tonnesPerUnit() * inWeight(g);
+        }
+        for (Map.Entry<Good, Double> e : b.goodsMade().entrySet()) {
+            Good g = e.getKey();
+            if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
+            t += e.getValue() * g.tonnesPerUnit() * outWeight(g);
+        }
+        return t;
     }
 
     /**
@@ -559,6 +602,9 @@ public final class Haulage {
 
     /** The city-leg tonnes the share is read against, and the tonnes a month the trucks could carry when the month was billed. */
     public double getNeed()            { return need; }
+
+    /** ...and the legs at nameplate of the works on site, struck with it: what trucksAsked() adds. */
+    public double getNeedOnSite()      { return needOnSite; }
     public double getCapacityInForce() { return capacityInForce; }
 
     /* the month billed */
@@ -596,6 +642,7 @@ public final class Haulage {
         extras.put("haul.quoteKnown", quoteKnown ? 1.0 : 0.0);
         extras.put("haul.capacity", capacityInForce);
         extras.put("haul.need", need);
+        extras.put("haul.needOnSite", needOnSite);
         extras.put("haul.trucksKnown", trucksKnown ? 1.0 : 0.0);
         extras.put("haul.tonnes", tonnes);
         extras.put("haul.carried", carried);
@@ -624,6 +671,7 @@ public final class Haulage {
         quoteKnown = extras.getOrDefault("haul.quoteKnown", 0.0) > 0;
         capacityInForce = extras.getOrDefault("haul.capacity", 0.0);
         need = extras.getOrDefault("haul.need", 0.0);
+        needOnSite = extras.getOrDefault("haul.needOnSite", 0.0);
         trucksKnown = extras.getOrDefault("haul.trucksKnown", 0.0) > 0;
         tonnes = extras.getOrDefault("haul.tonnes", 0.0);
         carried = extras.getOrDefault("haul.carried", 0.0);
@@ -641,7 +689,7 @@ public final class Haulage {
     public void reset() {
         quote = 0;
         quoteKnown = false;
-        capacityInForce = need = 0;
+        capacityInForce = need = needOnSite = 0;
         share = 1;
         strikeTrade(null);
         diplomaOffered = 1;

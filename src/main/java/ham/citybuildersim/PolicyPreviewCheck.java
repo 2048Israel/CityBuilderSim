@@ -101,6 +101,17 @@ public class PolicyPreviewCheck {
      * charged about 17 times it, and its businesses hired the pool empty -
      * none on EI in month 62, the month section 6 reads. With 580 homes the
      * pool holds claimants in the months sections 6 and 7 read (222 and 115).
+     *
+     * 700 HOMES SINCE FR2, where it was 580. Haulage carries the city leg of
+     * every bulk tonne at one quote, and a works no longer keeps its own vans
+     * for its bulk (I4's weighing), so the fixture's businesses grow
+     * differently: by month 61 the city stands a Construction Materials Plant
+     * (250 posts; none stood before) and offers 2,474 posts where it offered
+     * 2,125, and the 209 claimants of month 61 were hired - none on EI in the
+     * months sections 6 and 7 read (4,106 people, 0 claimants). 700 homes put
+     * the pool back (204 claimants at month 61, 254 in section 7), the same
+     * remedy as 0.7.55's, for the same reason: the condition is a pool that
+     * the city's businesses have not hired empty.
      */
     static Game city(Path root) {
         GameFiles files = new GameFiles(root.resolve("city"), root.resolve("city-no-legacy"));
@@ -121,7 +132,7 @@ public class PolicyPreviewCheck {
 
     /** The fixture's orders. */
     static final String[][] ORDERS = {
-            { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction Depot", "6" },
+            { "House", "700" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction Depot", "6" },
             { "Coal Power Plant", "2" }, { "Water Treatment Plant", "2" }, { "Industrial Bakery", "3" },
             { LongPlaytest.byId(HeavyIndustry.ARC_FURNACE), "2" }, { "Fabrication Shop", "2" }, { "Commercial Bank", "1" },
             { "Elementary School", "3" }, { "Walk-in Clinic", "3" }, { "Paved Road", "20" } };

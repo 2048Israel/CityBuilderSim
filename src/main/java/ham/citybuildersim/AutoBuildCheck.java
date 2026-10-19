@@ -349,6 +349,17 @@ public class AutoBuildCheck {
         quietly(() -> g.saveGame(11, "autobuildcheck, a pass that borrows"));
         Game copy = new Game(files);
         quietly(() -> copy.loadGameSave(11));
+        /*
+         * ...AND THE COPY IS GIVEN THE PEOPLE TO FALL SHORT (FR2, 2026-10-18). Whether the decades end with a
+         * service short is the city's own path, and FR2 moved it: Haulage carries a farm's bulk for the buyer, so
+         * Agriculture built a third Mixed Farm (600,000 sq ft) before month 100, the ground was gone at month 144,
+         * the Fabrication Shop was refused for want of land, the treasury sat at nothing for 300 months, and the
+         * city ended at 1,571 people (13,608 before) with every service ahead of its target and only the schools,
+         * which the payback holds, short: nothing to borrow for, in the 600 months or at the reserve (0 passes
+         * borrowed, $0.00). So the copy takes as many arrivals again as it has people, as a city that outgrew its
+         * clinics would, and its care falls short by a building or two.
+         */
+        copy.getCohorts().migrate(copy.getCohorts().total());
         copy.getAutoBuilder().setDebtLimit(AutoBuilder.DEBT_LIMIT_MOST, null);
         copy.setCashForTest(AutoBuilder.reserve(copy));
         copy.autoBuildProbeForTest = passReader(copy);
