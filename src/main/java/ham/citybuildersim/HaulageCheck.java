@@ -39,7 +39,8 @@ import java.util.Map;
  *      shares behind its need and the same fleet after it.
  *   4. THE SIDING. A railway carrying a share r of the imports takes
  *      RAIL_ROAD_RELIEF x r of their truck tonnes off the city leg; a share
- *      carried by sea relieves nothing.
+ *      carried by sea alone relieves nothing (since FR6 a station beside a
+ *      sea terminal is a port yard that does: HomeRailCheck 4).
  *   5. VANS FOR GOODS. A works whose tonnes are all bulk keeps no vans; the
  *      vans of a sector with goods are its goods' tonnes over TONNES_PER_VAN.
  *   6. THE FREIGHT FACTOR. A bulk sector runs at MIN_VAN_RATE + (1 - MIN_VAN_RATE)

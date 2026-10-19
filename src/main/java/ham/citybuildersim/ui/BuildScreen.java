@@ -93,7 +93,7 @@ final class BuildScreen {
        on flats that were coming anyway, or waiting for a hospital nobody is
        going to build.
 
-       The list is BusinessInvestment's own, and it is the six types that class
+       The list is BusinessInvestment's own, and it is the thirteen types that class
        actually invests in. Derived from the types rather than the category
        NAMES, so a category that later mixes private and public buildings stops
        claiming to be private the moment it does.

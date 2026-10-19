@@ -65,6 +65,9 @@ import java.util.List;
  * he picked "a real export industry": building cars is a strategy in its own
  * right and not just a way to supply your own people.
  *
+ * ...AND A FOURTH SINCE FR2 (2026-10-18): TRUCKS, the Heavy Truck Plant's,
+ * to Freight's Haulage division (Good.TRUCKS) - imported, never exported.
+ *
  * The domestic side comes next, and it is the larger half: a household that
  * owns a car puts far more on the road than one that does not, a business
  * short of vans cannot move what it makes, and a railway with track and no

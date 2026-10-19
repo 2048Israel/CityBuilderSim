@@ -22,7 +22,8 @@
 #       uses that the tree does not declare, said and never a gate (a passage
 #       about the past may name a method that existed then); then the timing
 #       harnesses alone and hard (batch-check.sh --timing), once no other
-#       batch's JVM runs: the suite above times soft when one ran beside it
+#       batch's JVM runs (it waits up to 30 minutes, then runs hard all the
+#       same): the suite above times soft when one ran beside it
 #       (TM1), the gate never;
 #    5. the merge committed as "Merge batch/I12: <title>, <version>", the title
 #       QUEUE.md's on main unless -m gives one;

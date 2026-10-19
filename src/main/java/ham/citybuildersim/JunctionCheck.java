@@ -94,7 +94,7 @@ import java.util.Arrays;
  *      as track counted apart from the runs'.
  *
  * The ground and the access roads are held on the map's own cities by MapCheck
- * section 8.
+ * section 8 (its 8b), and the spurs dealt to the plans' sidings by its 8c.
  *
  * Numbering is the running order.
  *

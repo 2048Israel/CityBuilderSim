@@ -83,6 +83,11 @@ import java.util.Set;
  *      people, lower than the beds alone; Build's ring reads the same; an
  *      order's after is the beds and its staffed places less the month's
  *      priced out; with nobody priced out, the beds.
+ *  13. A BERTH PAYS BACK (FR3): a city with no coast is advised no berth;
+ *      with one, a berth is advised once the kind's uncovered tonnes reach
+ *      WORTH_A_BERTH / the port dues dial of its month (Ports.berthPaysBack()),
+ *      the largest of the kind's terminals that pays back, and none at a dial
+ *      of 0.
  *
  * Every fixture causes its condition.
  */

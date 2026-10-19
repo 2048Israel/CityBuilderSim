@@ -1409,7 +1409,8 @@ public final class BuildAdvice {
        model's own (unit()), its freight grade in them.
 
        AND A GRAVEL ROAD THE CITY HAS CAN BE PAVED (ConstructionControl, F):
-       a candidate beside the six (weighPaving()), priced the same way for
+       a candidate beside the streets' five (the six until FR7, the highway
+       now the HIGHWAYS measure's; weighPaving()), priced the same way for
        the trips its paving adds, the ground it frees taken off at the price
        the next road would pay for it (landValue() on the land left) - so it
        wins when land is dear, and a paving the gravel roads standing cannot
