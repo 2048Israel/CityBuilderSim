@@ -174,7 +174,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 785 | 5 | `static java.util.Set<BuildingsTemplate> everyRoadAndLine(Game g)` | Every building in the Roads & transit category: what the advice's paving-only ranking leaves out, as automatic building walks past roads the ground cannot hold. |
+| 785 | 5 | `static java.util.Set<BuildingsTemplate> everyRoadAndLine(Game g)` | Every road and line in the Infrastructure category (Roads & transit until FR4): what the advice's paving-only ranking leaves out, as automatic building walks past roads the ground cannot hold. |
 | 799 | 52 | `static void offered(Path root)` | FR7 2.2 (Jerus's star 5, 2026-10-18) retired the premise of the old section 8: that paving beats a new Paved Road only past a CROSSOVER OF THE LAND PRICE above today's. |
 
 ### 9. THE TEST PLAYER (lines 852-966)

@@ -53,6 +53,8 @@
 
 **Uses:** [Good](Good.md) (59), [Freight](Freight.md) (43), [Game](Game.md) (36), [Haulage](Haulage.md) (33), [LongPlaytest](LongPlaytest.md) (28), [HaulageCheck](HaulageCheck.md) (16), [Sector](Sector.md) (15), [GameFiles](GameFiles.md) (10), [Traffic](Traffic.md) (4), [RailDepotCheck](RailDepotCheck.md) (3), [BuildingManager](BuildingManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [SectorState](SectorState.md) (1), [Markets](Markets.md) (1), [Ports](Ports.md) (1), [Sectors](Sectors.md) (1), [Mining](Mining.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
+**Used by (1):** [FreightViewCheck](FreightViewCheck.md)
+
 ## Sections
 
 | line | section |

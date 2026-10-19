@@ -37,7 +37,7 @@
 
 **Uses:** [MapFrame](MapFrame.md) (13), [CityMap](CityMap.md) (8), [World](World.md) (5), [LandGrid](LandGrid.md) (4), [CityLand](CityLand.md) (3), [MapTiles](MapTiles.md) (3)
 
-**Used by (5):** [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [UserInterface](UserInterface.md)
+**Used by (6):** [InfrastructureScreen](InfrastructureScreen.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

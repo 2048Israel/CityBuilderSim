@@ -1,4 +1,4 @@
-# BuildingType.java - 251 lines · 0 methods · 0 constants · model
+# BuildingType.java - 255 lines · 0 methods · 0 constants · model
 
 `ham/citybuildersim/BuildingType.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -28,12 +28,12 @@
 | 204 | `BuildingType.AUTOMOTIVE` | The automobile industry. |
 | 214 | `BuildingType.LUXURY` | ...and for the ninth time, on the end. |
 | 223 | `BuildingType.HOSPITALITY` | ...and for the tenth time, on the end. |
-| 237 | `BuildingType.PORTS` | ...and for the eleventh time, on the end. |
-| 249 | `BuildingType.HAULAGE` | ...and for the twelfth time, on the end. |
+| 240 | `BuildingType.PORTS` | ...and for the eleventh time, on the end. |
+| 253 | `BuildingType.HAULAGE` | ...and for the twelfth time, on the end. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 241 | **type** `public enum BuildingType` |  |
+| 11 | 245 | **type** `public enum BuildingType` |  |
 

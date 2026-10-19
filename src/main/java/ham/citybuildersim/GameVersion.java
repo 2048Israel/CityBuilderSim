@@ -6901,8 +6901,27 @@ public final class GameVersion {
      *     before; the trace is byte-identical.
      *   - Harness: NewGameCheck 15 (a city reformed a hundredfold, then New
      *     Game, against a city never reformed). Save format unchanged.
+     *
+     * 0.8.11 (2026-10-19) - FR4, THE FREIGHT SCREENS (docs/queue/FR4-notes.md;
+     * the spec's §5, §6 and §7). The model is not changed; the trace is
+     * byte-identical to 0.8.10's.
+     *   - Build: "Roads & transit" is Infrastructure again and holds the
+     *     ports and the Strategic Reserve (out of Industry); "Rail" is
+     *     Freight (the rail rungs, the Rail Depot, the Truck Depot).
+     *     AutoBuilder.inRemit() names the ports and the reserve out, so no
+     *     order moves.
+     *   - FreightView (new, pure): the city's freight in legs and modes, each
+     *     division's fleet, quote, floor and target, the berths by kind, the
+     *     shippers billed. Harness: FreightViewCheck.
+     *   - Sectors > Freight's Operations page opens on the division strip;
+     *     Infrastructure's railway and freight pages are one Freight page with
+     *     the strip, and a Ports page; Policy has the port dues dial, with
+     *     its preview (PolicyPreview.portDuesAt()). Save format unchanged.
+     *   - Not built (FR4's rest): "How its tonnes move" on a works' page, the
+     *     Income page's division column, a berth card's payback line, Trade's
+     *     band in legs, the manual.
      */
-    public static final String VERSION = "0.8.10";
+    public static final String VERSION = "0.8.11";
 
     /**
      * The save shape.

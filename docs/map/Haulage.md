@@ -1,4 +1,4 @@
-# Haulage.java - 824 lines · 51 methods · 10 constants · sectors
+# Haulage.java - 844 lines · 53 methods · 10 constants · sectors
 
 `ham/citybuildersim/sectors/Haulage.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -45,7 +45,7 @@
 
 **Uses:** [Good](Good.md) (44), [Sector](Sector.md) (12), [Freight](Freight.md) (12), [Traffic](Traffic.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (10), [InfrastructureManager](InfrastructureManager.md) (6), [Sectors](Sectors.md) (4), [BuildingManager](BuildingManager.md) (3), [JobType](JobType.md) (3), [Markets](Markets.md) (2), [GoodsMarket](GoodsMarket.md) (1)
 
-**Used by (14):** [BondCheck](BondCheck.md), [Freight](Freight.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [HomeRailCheck](HomeRailCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [ProcessingSector](ProcessingSector.md), [RailCheck](RailCheck.md), [RefineryView](RefineryView.md), [Sector](Sector.md), [TruckCheck](TruckCheck.md), [TruckSchedule](TruckSchedule.md)
+**Used by (18):** [BondCheck](BondCheck.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [HomeRailCheck](HomeRailCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [ProcessingSector](ProcessingSector.md), [RailCheck](RailCheck.md), [RefineryView](RefineryView.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [TruckCheck](TruckCheck.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 
@@ -57,7 +57,7 @@
 | 541 | · the fleet |
 | 662 | · the price |
 | 690 | · what it is doing |
-| 735 | · save, reset, reform |
+| 755 | · save, reset, reform |
 
 ## Constants
 
@@ -99,7 +99,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 767 | **type** `public final class Haulage` | Freight's Haulage division: the trucks that carry the city leg of every bulk tonne (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 2, 3.2, 3.3). |
+| 58 | 787 | **type** `public final class Haulage` | Freight's Haulage division: the trucks that carry the city leg of every bulk tonne (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 2, 3.2, 3.3). |
 | 176 | 4 | `Haulage(Freight freight)` |  |
 
 ### the legs (lines 181-210)
@@ -157,7 +157,7 @@
 |---:|---:|---|---|
 | 673 | 16 | `public double estimate()` | What a tonne's city leg costs at today's prices with no history behind it: the quote before the first month's carriage has struck one. |
 
-### what it is doing (lines 690-734)
+### what it is doing (lines 690-754)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -178,13 +178,15 @@
 | 729 | 1 | `public double getWorn()` | The trucks worn out in the month billed. |
 | 732 | 1 | `public double getAllowed()` | What the month had to bring in (the rule's running cost plus the return on the rate base) and the scarcity it was priced at the end of. |
 | 733 | 1 | `public double getTightness()` |  |
+| 744 | 5 | `public double getTarget()` | The rule's target for a tonne's city leg, as the last reprice walked the quote toward it (FR4, for the Freight screen's quote strip): what the month had to bring in (getAllowed()) over what the trucks could carry (get... |
+| 751 | 3 | `private double rawTarget()` | The rule's target a tonne before its guards: what the month had to bring in over the trucks' capacity, at the scarcity (closeMonth(), getTarget()). |
 
-### save, reset, reform (lines 735-824)
+### save, reset, reform (lines 755-844)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 738 | 28 | `public void save(Map<String, Double> extras)` | Haulage's state into Freight's extras (keys haul.*): the dieselLitres are not saved, as the railway's are not. |
-| 768 | 30 | `public void restore(Map<String, Double> extras)` | ...and back. |
-| 800 | 13 | `public void reset()` | Back to a city that has never needed a truck. |
-| 815 | 9 | `public void redenominate(double scale)` | Its money in the new unit (Denomination): the quote, the bill, the diesel and what the month was allowed. |
+| 758 | 28 | `public void save(Map<String, Double> extras)` | Haulage's state into Freight's extras (keys haul.*): the dieselLitres are not saved, as the railway's are not. |
+| 788 | 30 | `public void restore(Map<String, Double> extras)` | ...and back. |
+| 820 | 13 | `public void reset()` | Back to a city that has never needed a truck. |
+| 835 | 9 | `public void redenominate(double scale)` | Its money in the new unit (Denomination): the quote, the bill, the diesel and what the month was allowed. |
 

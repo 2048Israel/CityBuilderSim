@@ -53,7 +53,7 @@
 
 **Uses:** [Ports](Ports.md) (28), [Freight](Freight.md) (4), [Game](Game.md) (2), [Sector](Sector.md) (2), [TaxPolicy](TaxPolicy.md) (1), [BuildingManager](BuildingManager.md) (1)
 
-**Used by (3):** [Freight](Freight.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md)
+**Used by (8):** [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md)
 
 ## Sections
 
