@@ -17,7 +17,7 @@
 > back shows the same train in the same place, and a city that rails
 > nothing has no trains.
 > 
-> CALLS. The month billed's railed tonnes by kind (sectors.Rail.railedIn()
+> CALLS. The month billed's railed tonnes by kind (sectors.Freight.railedIn()
 > and railedOut()) over a train's payload: dry bulk in unit trains of
 > hoppers and liquids in unit trains of tank wagons, UNIT_TONNES each;
 > general cargo in mixed trains of MIXED_TONNES; boxes in intermodal trains
@@ -48,7 +48,7 @@
 > train's front (cars()). A frame looks only at the trains on the line now,
 > found by a binary search of the month's arrivals.
 
-**Uses:** [Ports](Ports.md) (14), [World](World.md) (4), [BoatSchedule](BoatSchedule.md) (3), [Rail](Rail.md) (2), [TileRaster](TileRaster.md) (1)
+**Uses:** [Ports](Ports.md) (14), [World](World.md) (4), [BoatSchedule](BoatSchedule.md) (3), [Freight](Freight.md) (2), [TileRaster](TileRaster.md) (1)
 
 **Used by (9):** [CityMap](CityMap.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [TrainShapes](TrainShapes.md)
 
@@ -136,8 +136,8 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 202 | 3 | `public static boolean boxesByRail(ham.citybuildersim.sectors.Rail rail)` | Whether the freight station is a container yard: the railway landed or shipped any boxes the month billed (the map's yard and these trains read the same). |
-| 207 | 11 | `public static TrainSchedule of(int month, ham.citybuildersim.sectors.Rail rail, List<Route> routes)` | The month's schedule from the railway's month billed (sectors.Rail.railedIn() and railedOut()), on the map's routes; none with no railway. |
+| 202 | 3 | `public static boolean boxesByRail(ham.citybuildersim.sectors.Freight rail)` | Whether the freight station is a container yard: the railway landed or shipped any boxes the month billed (the map's yard and these trains read the same). |
+| 207 | 11 | `public static TrainSchedule of(int month, ham.citybuildersim.sectors.Freight rail, List<Route> routes)` | The month's schedule from the railway's month billed (sectors.Freight.railedIn() and railedOut()), on the map's routes; none with no railway. |
 | 225 | 21 | `public static TrainSchedule of(int month, double[] in, double[] out, List<Route> routes)` | ...from tonnes by kind of cargo (Ports.Cargo's order), landed and shipped: each kind's trains counted at its payload - times stands(), past MOST_A_MONTH trains in all - each to go on a route its kind goes to, by a has... |
 | 247 | 4 | `private static double tonnes(double[] t, Kind k)` |  |
 | 252 | 5 | `private static void add(List<Group> groups, int month, Kind k, boolean inbound, double tonnes, int stands)` |  |

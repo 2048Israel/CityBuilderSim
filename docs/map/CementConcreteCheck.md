@@ -116,7 +116,7 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 254 | 50 | `static void carriedIsExported()` |  |
-| 306 | 5 | `static SpreadPlanner.Candidate weigh(CementConcrete c, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, G...` | One works of `c` weighed at `v`, as ProcessingSector weighs it: its lorries in its earnings and its cost. |
+| 306 | 5 | `static SpreadPlanner.Candidate weigh(CementConcrete c, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, G...` | One works of `c` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. |
 | 313 | 1 | **type** `record MarketsCheckValues(double limeIn)` | What a tonne of limestone used costs the city now (the values' in()). |
 | 315 | 3 | `static MarketsCheckValues valuesOf(Game g)` |  |
 

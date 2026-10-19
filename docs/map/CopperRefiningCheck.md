@@ -58,7 +58,7 @@
 >      the bit.
 > 
 >   7. THE WIRE & CABLE WORKS' ESTIMATE (Manufacturing): the maker's less its
->      insulation at the exchange factor and its lorries; the sector's older
+>      insulation at the exchange factor and its freight; the sector's older
 >      rows the maker's to the bit.
 
 **Uses:** [Good](Good.md) (92), [OldMetal](OldMetal.md) (29), [Sectors](Sectors.md) (23), [CopperRefining](CopperRefining.md) (22), [SpreadPlanner](SpreadPlanner.md) (18), [BuildingManager](BuildingManager.md) (15), [Sector](Sector.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (10), [Manufacturing](Manufacturing.md) (7), [CopperMiningCheck](CopperMiningCheck.md) (7), [Game](Game.md) (7), [JobType](JobType.md) (6), [ProcessingSector](ProcessingSector.md) (5), [MaterialsCheck](MaterialsCheck.md) (5), [BusinessInvestment](BusinessInvestment.md) (4), [Trade](Trade.md) (3), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [MoneyAudit](MoneyAudit.md) (2), [CopperMining](CopperMining.md) (2), [Markets](Markets.md) (1), [PayTier](PayTier.md) (1), [Statement](Statement.md) (1)
@@ -147,7 +147,7 @@
 |---:|---:|---|---|
 | 459 | 31 | `static void plannerWeighsOldCopper()` |  |
 | 492 | 10 | `static SpreadPlanner.Values oldValues(SpreadPlanner.Values plain, double spare, double price)` | The planner's values with `spare` t of old copper at `price` in front of the market's scrap (CopperRefining, THE OLD COPPER), built by hand. |
-| 504 | 5 | `static SpreadPlanner.Candidate weigh(CopperRefining cr, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, ...` | One works of `cr` weighed at `v`, as ProcessingSector weighs it: its lorries in its earnings and its cost. |
+| 504 | 5 | `static SpreadPlanner.Candidate weigh(CopperRefining cr, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, ...` | One works of `cr` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. |
 
 ### 7. the wire works' estimate (lines 510-533)
 

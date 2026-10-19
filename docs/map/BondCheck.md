@@ -1,4 +1,4 @@
-# BondCheck.java - 1,566 lines · 37 methods · 1 constants · harnesses
+# BondCheck.java - 1,574 lines · 37 methods · 1 constants · harnesses
 
 `ham/citybuildersim/BondCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      short of capital still covers a healthy sector's short month - the
 > ... (7 more lines in the source)
 
-**Uses:** [BusinessDebtManager](BusinessDebtManager.md) (71), [Bank](Bank.md) (56), [CorporateBond](CorporateBond.md) (50), [BondMarket](BondMarket.md) (47), [Game](Game.md) (30), [OrderBook](OrderBook.md) (18), [Sectors](Sectors.md) (11), [MoneyAudit](MoneyAudit.md) (10), [HouseholdBalance](HouseholdBalance.md) (10), [Sector](Sector.md) (9), [Household](Household.md) (8), [PayTier](PayTier.md) (7), [Good](Good.md) (6), [FamilyStructure](FamilyStructure.md) (5), [EconomyManager](EconomyManager.md) (3), [OutwardInvestment](OutwardInvestment.md) (3), [Statement](Statement.md) (3), [GameFiles](GameFiles.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [LongPlaytest](LongPlaytest.md) (1), [BankCheck](BankCheck.md) (1), [Retail](Retail.md) (1), [BusinessLoan](BusinessLoan.md) (1), [SupplierCredit](SupplierCredit.md) (1)
+**Uses:** [BusinessDebtManager](BusinessDebtManager.md) (71), [Bank](Bank.md) (56), [CorporateBond](CorporateBond.md) (50), [BondMarket](BondMarket.md) (47), [Game](Game.md) (30), [OrderBook](OrderBook.md) (18), [Sectors](Sectors.md) (11), [MoneyAudit](MoneyAudit.md) (10), [HouseholdBalance](HouseholdBalance.md) (10), [Sector](Sector.md) (9), [Household](Household.md) (8), [PayTier](PayTier.md) (7), [Good](Good.md) (6), [FamilyStructure](FamilyStructure.md) (5), [EconomyManager](EconomyManager.md) (3), [OutwardInvestment](OutwardInvestment.md) (3), [Statement](Statement.md) (3), [GameFiles](GameFiles.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [LongPlaytest](LongPlaytest.md) (1), [BankCheck](BankCheck.md) (1), [Retail](Retail.md) (1), [BusinessLoan](BusinessLoan.md) (1), [SupplierCredit](SupplierCredit.md) (1), [Haulage](Haulage.md) (1)
 
 **Used by (2):** [GroceryCheck](GroceryCheck.md), [SupplierCreditCheck](SupplierCreditCheck.md)
 
@@ -81,11 +81,11 @@
 | 443 | 7. THE PARTICIPANTS |
 | 648 | 5c. CAN'T PAY MEANS DEFAULT |
 | 810 | 5d. BUY ONLY WHAT IT CAN PAY FOR |
-| 1009 | 5. RECOVERIES BY INSTRUMENT |
-| 1171 | 6. CONCENTRATION |
-| 1278 | 8. SAVE AND LOAD |
-| 1446 | 9. EACH HOUSEHOLD TYPE TRADES |
-| 1542 | 1c. MATURITY |
+| 1017 | 5. RECOVERIES BY INSTRUMENT |
+| 1179 | 6. CONCENTRATION |
+| 1286 | 8. SAVE AND LOAD |
+| 1454 | 9. EACH HOUSEHOLD TYPE TRADES |
+| 1550 | 1c. MATURITY |
 
 ## Constants
 
@@ -102,16 +102,16 @@
 | 89 | `static PrintStream quiet` |  |
 | 90 | `static int closedMonths, brokenMonths` |  |
 | 808 | `static String interimSector` | The sector §5c lent an interim loan to, for the save's round trip (§8). |
-| 1457 | `final HouseholdBalance hb` |  |
-| 1458 | `final BondMarket bm` |  |
-| 1459 | `final Household poor, rich` |  |
-| 1460 | `final CorporateBond bond` |  |
+| 1465 | `final HouseholdBalance hb` |  |
+| 1466 | `final BondMarket bm` |  |
+| 1467 | `final Household poor, rich` |  |
+| 1468 | `final CorporateBond bond` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 1482 | **type** `public class BondCheck` | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for concentration, who buys and sells, and the save. |
+| 85 | 1490 | **type** `public class BondCheck` | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for concentration, who buys and sells, and the save. |
 | 92 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 97 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 104 | 5 | `static void cents(String label, double line, double figure)` | An audit line against the figure it declares: the audit's detail is written to the cent. |
@@ -175,49 +175,49 @@
 |---:|---:|---|---|
 | 659 | 147 | `static void cantPayInPlay(Game g)` | 0.7.12 round 4 (Jerus: "Can't pay means default"): a sector whose till the month leaves short first sells what it holds, by the households' waterfall rule - the other sectors' bonds, into the bids resting - then asks ... |
 
-### 5d. BUY ONLY WHAT IT CAN PAY FOR (lines 810-1008)
+### 5d. BUY ONLY WHAT IT CAN PAY FOR (lines 810-1016)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 821 | 166 | `static void buyOnlyWhatItCanPayFor(Path root)` | 0.7.12 round 6 (Jerus: "Buy only what it can pay for"; Kashyap, Lamont & Stein, QJE 109(3), 1994): a sector's orders for stock - the shops' shelves and every fleet - are limited to its cash plus the credit it can get ... |
-| 989 | 13 | `static double[] stockBought(Sector s)` | What a sector bought of its stock in the month just played: {its value, the units it asked for, the units it got}. |
-| 1003 | 5 | `static void check0(String label, double actual)` |  |
+| 821 | 174 | `static void buyOnlyWhatItCanPayFor(Path root)` | 0.7.12 round 6 (Jerus: "Buy only what it can pay for"; Kashyap, Lamont & Stein, QJE 109(3), 1994): a sector's orders for stock - the shops' shelves and every fleet - are limited to its cash plus the credit it can get ... |
+| 997 | 13 | `static double[] stockBought(Sector s)` | What a sector bought of its stock in the month just played: {its value, the units it asked for, the units it got}. |
+| 1011 | 5 | `static void check0(String label, double actual)` |  |
 
-### 5. RECOVERIES BY INSTRUMENT (lines 1009-1170)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1011 | 83 | `static void seniorityOnTheLender()` |  |
-| 1095 | 75 | `static void seniorityInPlay(Game g)` |  |
-
-### 6. CONCENTRATION (lines 1171-1277)
+### 5. RECOVERIES BY INSTRUMENT (lines 1017-1178)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1173 | 94 | `static void concentration(Game g)` |  |
-| 1268 | 9 | `static double concentrationAt(Bank b, double a, double b2, double c)` |  |
+| 1019 | 83 | `static void seniorityOnTheLender()` |  |
+| 1103 | 75 | `static void seniorityInPlay(Game g)` |  |
 
-### 8. SAVE AND LOAD (lines 1278-1445)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1280 | 125 | `static void saveAndLoad(Game g, Path root) throws Exception` |  |
-| 1406 | 5 | `static int resting(BondMarket bm)` |  |
-| 1412 | 12 | `static boolean sameBonds(BondMarket a, BondMarket b)` |  |
-| 1425 | 10 | `static boolean sameBooks(BondMarket a, BondMarket b)` |  |
-| 1436 | 9 | `static boolean sameOrders(List<OrderBook.Order> a, List<OrderBook.Order> b)` |  |
-
-### 9. EACH HOUSEHOLD TYPE TRADES (lines 1446-1541)
+### 6. CONCENTRATION (lines 1179-1285)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1456 | 43 | **type** `static final class TwoCells` | Two cells and one bond, on a market of their own: skilled couples with $88k each past their cushion and no bonds, and unskilled couples with nothing saved holding the households' face. |
-| 1462 | 36 | `TwoCells(double face, double poorHolds)` _(in BondCheck.TwoCells)_ |  |
-| 1500 | 41 | `static void eachTypeTrades()` |  |
+| 1181 | 94 | `static void concentration(Game g)` |  |
+| 1276 | 9 | `static double concentrationAt(Bank b, double a, double b2, double c)` |  |
 
-### 1c. MATURITY (lines 1542-1566)
+### 8. SAVE AND LOAD (lines 1286-1453)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1544 | 22 | `static void maturity(Game g)` |  |
+| 1288 | 125 | `static void saveAndLoad(Game g, Path root) throws Exception` |  |
+| 1414 | 5 | `static int resting(BondMarket bm)` |  |
+| 1420 | 12 | `static boolean sameBonds(BondMarket a, BondMarket b)` |  |
+| 1433 | 10 | `static boolean sameBooks(BondMarket a, BondMarket b)` |  |
+| 1444 | 9 | `static boolean sameOrders(List<OrderBook.Order> a, List<OrderBook.Order> b)` |  |
+
+### 9. EACH HOUSEHOLD TYPE TRADES (lines 1454-1549)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1464 | 43 | **type** `static final class TwoCells` | Two cells and one bond, on a market of their own: skilled couples with $88k each past their cushion and no bonds, and unskilled couples with nothing saved holding the households' face. |
+| 1470 | 36 | `TwoCells(double face, double poorHolds)` _(in BondCheck.TwoCells)_ |  |
+| 1508 | 41 | `static void eachTypeTrades()` |  |
+
+### 1c. MATURITY (lines 1550-1574)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1552 | 22 | `static void maturity(Game g)` |  |
 

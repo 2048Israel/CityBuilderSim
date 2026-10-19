@@ -32,7 +32,7 @@
 >     material's salvage share is - ConstructionControl.SALVAGE_SHARE);
 >   - a tonne of fabricated steel made, OFFCUTS_A_TONNE_FABRICATED, its
 >     maker's (Manufacturing);
->   - a wagon set worn out, STEEL_A_SET, the railway's (sectors.Rail).
+>   - a wagon set worn out, STEEL_A_SET, the railway's (sectors.Freight).
 > 
 > THE YARDS BUY IT (settle()), once a month, when Iron & Steel makes its
 > scrap (sectors.HeavyIndustry, THE OLD STEEL): as much as its Scrap Yards

@@ -27,11 +27,11 @@
 > a lorry's) is under the railway's quote takes its share first and the
 > railway hauls what it leaves; one whose sea freight is not takes only what
 > the railway leaves. The railway's quote never falls under its floor of .30
-> (sectors.Rail.RAIL_FLOOR) and no kind's sea freight reaches .30, so today
+> (sectors.Freight.RAIL_FLOOR) and no kind's sea freight reaches .30, so today
 > the berths always go first - the other order is written and checked
 > (PortCheck) for the day a constant moves.
 > 
-> THE BAND (sectors.Rail.haul() step 5). A good's band carries
+> THE BAND (sectors.Freight.haul() step 5). A good's band carries
 > 
 >     1 - rail - sea + sea x SEA_FREIGHT_SHARE        (factor())
 > 
@@ -57,9 +57,9 @@
 > never saved. This holds the shares in force and the month's tonnes, saved
 > under one key (DataSave.portMonth); it moves no money.
 
-**Uses:** [Good](Good.md) (17), [Traffic](Traffic.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [BuildingManager](BuildingManager.md) (2), [Refining](Refining.md) (2), [Rail](Rail.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
+**Uses:** [Good](Good.md) (17), [Traffic](Traffic.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [BuildingManager](BuildingManager.md) (2), [Refining](Refining.md) (2), [Freight](Freight.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
 
-**Used by (28):** [BoatSchedule](BoatSchedule.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [CityShore](CityShore.md), [CopperMiningCheck](CopperMiningCheck.md), [DataSave](DataSave.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [Good](Good.md), [InfrastructureCheck](InfrastructureCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [QuarryingCheck](QuarryingCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [ShipShapes](ShipShapes.md), [TrainSchedule](TrainSchedule.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (29):** [BoatSchedule](BoatSchedule.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [CityShore](CityShore.md), [CopperMiningCheck](CopperMiningCheck.md), [DataSave](DataSave.md), [ForestryCheck](ForestryCheck.md), [Freight](Freight.md), [Game](Game.md), [Good](Good.md), [HaulageCheck](HaulageCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [ShipShapes](ShipShapes.md), [TrainSchedule](TrainSchedule.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 
@@ -69,7 +69,7 @@
 | 167 | THE BERTHS, AND THE ROOM |
 | 238 | IN FORCE: THE MONTH RUNNING |
 | 317 | THE MONTH BILLED: WHAT CROSSED THE BOUNDARY, AND WHAT OF IT BY SEA |
-| 389 | THE NEXT MONTH'S SHARES (sectors.Rail.haul() step 3) |
+| 389 | THE NEXT MONTH'S SHARES (sectors.Freight.haul() step 3) |
 | 491 | THE SAVE (DataSave.portMonth) |
 
 ## Enum constants
@@ -101,7 +101,7 @@
 | 84 | `Ports.SEA_FREIGHT_SHARE_GENERAL` | `.20` | General cargo by sea against a lorry, at 5,000 km: .20, the 5,500 t ship's row. |
 | 112 | `Ports.TONNES_A_TEU` | `9` | A loaded TEU's cargo, in tonnes: 9 (the research's 8-10 [P43][P44][P45]; spec-oil 2.9). |
 | 115 | `Ports.FEEDER_TEU` | `3_000` | A feeder's boxes: 3,000 TEU, the top of [P43]'s feeder class ("under 3,000"), est. |
-| 160 | `Ports.WORTH_A_BERTH` | `ham.citybuildersim.sectors.Rail.MIN_LINE_UTILISATION` | The share of a berth's month the uncovered tonnes of its kind must reach before the test player orders one (spec-oil 5's O9 row): the railway's own line, Rail.MIN_LINE_UTILISATION. |
+| 160 | `Ports.WORTH_A_BERTH` | `ham.citybuildersim.sectors.Freight.MIN_LINE_UTILISATION` | The share of a berth's month the uncovered tonnes of its kind must reach before the test player orders one (spec-oil 5's O9 row): the railway's own line, Freight.MIN_LINE_UTILISATION. |
 | 163 | `Ports.KINDS` | `Cargo.values().length` | The kinds of cargo a terminal takes, the length of every by-kind array here. |
 | 165 | `Ports.STREAMS` | `Traffic.values().length` | The streams of traffic (Traffic), the length of every by-stream array here. |
 | 222 | `Ports.ROOM_TOLERANCE` | `1e-9` | How near a cargo may come to the free room and still fit: a billionth, a store's rounding (the refiners keep exactly an MR's cargo free since 0.7.105, sectors.Refining.CARGO_KEPT_FREE). |
@@ -180,7 +180,7 @@
 | 281 | 4 | `public static double seaFreightShareOf(Good g)` | What a tonne of this good costs by sea, of a lorry's; 0 for a good no ship carries. |
 | 287 | 7 | `public double seaShareOf(Good g, double carried)` | The share of a good's tonnes at sea, with the railway carrying `carried` of its stream's remainder. |
 | 300 | 6 | `public double railShareOf(Good g, double carried)` | The share of a good's tonnes on the railway: `carried` - its share of its stream's tonnes the berths before it leave - of what the berths do not take first. |
-| 308 | 5 | `public double[] railOfStream(double[] carried)` | The railway's share of each stream's tonnes, for the road: its share of the remainder (Rail.getCarried()) of what the berths do not take first. |
+| 308 | 5 | `public double[] railOfStream(double[] carried)` | The railway's share of each stream's tonnes, for the road: its share of the remainder (Freight.getCarried()) of what the berths do not take first. |
 | 315 | 1 | `public double[] seaOfStream()` | ...and the berths' share of each stream's tonnes. |
 
 ### THE MONTH BILLED: WHAT CROSSED THE BOUNDARY, AND WHAT OF IT BY SEA (lines 317-388)
@@ -200,7 +200,7 @@
 | 376 | 5 | `public double carriable(Cargo k)` | Tonnes of a kind that could go by sea, both ways, the month billed: crude left out while held back for room. |
 | 383 | 5 | `public double seaTonnes()` | All sea tonnes, both ways, the month billed. |
 
-### THE NEXT MONTH'S SHARES (sectors.Rail.haul() step 3) (lines 389-490)
+### THE NEXT MONTH'S SHARES (sectors.Freight.haul() step 3) (lines 389-490)
 
 | line | len | member | says |
 |---:|---:|---|---|

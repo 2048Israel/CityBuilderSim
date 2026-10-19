@@ -51,7 +51,7 @@
 > LandManager.extract(r, type, t), so E and W hold by type.
 > 
 > THE PLAN is ExtractionSector's: the best earnings on the whole cost among
-> the quarries that fit, their lorries in it - its estimate the quarry's
+> the quarries that fit, their freight in it - its estimate the quarry's
 > increment to the packing (madeBy()): one more on ANY makes limestone while
 > a limestone field has room, and its limestone past what the city buys of
 > it is valued as aggregate. Who buys: Iron & Steel's blast furnaces and

@@ -34,7 +34,7 @@
 
 **Uses:** [Bank](Bank.md) (101), [SectorBooks](SectorBooks.md) (32), [Debt](Debt.md) (10), [BusinessDebtManager](BusinessDebtManager.md) (8), [Equity](Equity.md) (3)
 
-**Used by (13):** [BankScreen](BankScreen.md), [BusinessServices](BusinessServices.md), [CentralBankCheck](CentralBankCheck.md), [Construction](Construction.md), [LuxuryRetail](LuxuryRetail.md), [Rail](Rail.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [StatementView](StatementView.md)
+**Used by (13):** [BankScreen](BankScreen.md), [BusinessServices](BusinessServices.md), [CentralBankCheck](CentralBankCheck.md), [Construction](Construction.md), [Freight](Freight.md), [LuxuryRetail](LuxuryRetail.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [StatementView](StatementView.md)
 
 ## Sections
 

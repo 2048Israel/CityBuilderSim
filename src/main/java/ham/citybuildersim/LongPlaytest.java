@@ -207,7 +207,7 @@ public class LongPlaytest {
      * depots' room at their most, and what the run billed for how many tonnes.
      * The end state is one month of a mechanic that bites while a city grows.
      */
-    static int haulShortMonths = 0, haulFirstShort = 0, haulWorstMonth = 0;
+    static int haulShortMonths = 0, haulFirstShort = 0, haulWorstMonth = 0, haulUnder90Months = 0;
     static double haulWorstShare = 1, haulTrucksPeak = 0, haulRoomPeak = 0, haulBilledRun = 0, haulCarriedRun = 0;
 
     /** How far from parity, as a multiple of it, a weak currency has to be to count as far from it. */
@@ -1499,6 +1499,7 @@ public class LongPlaytest {
         ham.citybuildersim.sectors.Haulage haul = g.getSectors().freight().haulage();
         double haulShare = haul.getShare();
         if (haulShare < 1 && haulShortMonths++ == 0) haulFirstShort = g.getMonth();
+        if (haulShare < .9) haulUnder90Months++;
         if (haulShare < haulWorstShare) { haulWorstShare = haulShare; haulWorstMonth = g.getMonth(); }
         haulTrucksPeak = Math.max(haulTrucksPeak, haul.trucks());
         haulRoomPeak = Math.max(haulRoomPeak, haul.depotRoom());
@@ -5529,10 +5530,10 @@ public class LongPlaytest {
                 (Math.pow(Math.max(1e-9, g.getPriceIndex().getIndex()), 12.0 / Math.max(1, g.getMonth())) - 1) * 100);
         // Freight's trucks over the run (FR2): see FREIGHT'S TRUCKS OVER THE RUN.
         ham.citybuildersim.sectors.Haulage haulEnd = g.getSectors().freight().haulage();
-        out.printf("  freight's trucks over the run: short of the city's legs %d month(s) (first m%d; at worst %.0f%% carried, m%d);"
+        out.printf("  freight's trucks over the run: short of the city's legs %d month(s), %d under 90%% (first m%d; at worst %.0f%% carried, m%d);"
                 + " %,.0f trucks and %,.0f depot places at the most; $%,.0fk billed for %,.0f t of city legs; now %,.0f trucks,"
                 + " a tonne's leg $%.2f against $%.2f estimated%n",
-                haulShortMonths, haulFirstShort, haulWorstShare * 100, haulWorstMonth, haulTrucksPeak, haulRoomPeak,
+                haulShortMonths, haulUnder90Months, haulFirstShort, haulWorstShare * 100, haulWorstMonth, haulTrucksPeak, haulRoomPeak,
                 haulBilledRun, haulCarriedRun, haulEnd.trucks(), haulEnd.getQuote() * 1000, haulEnd.estimate() * 1000);
         // The guard and the dial's path (0.7.2): see THE CURRENCY'S GUARD AND THE DIAL'S PATH.
         int pastOldStop = 0;

@@ -17,7 +17,7 @@
 > 
 > THE SPLIT. p is the share of the month's litres the drivers burned: their
 > litres (DataSave.householdFuel's third figure) over theirs and the
-> railway's (Rail's `hauled` tonnes at Rail.FUEL_LITRES_PER_TONNE); with
+> railway's (Freight's `hauled` tonnes at Freight.FUEL_LITRES_PER_TONNE); with
 > neither, p is 1. Every FUEL figure x becomes PETROL x p and DIESEL x less
 > that (split()), so each pair sums to x to the bit - the petrol an ulp off
 > x p where no diesel could close the sum (measured: m4000's tanks, whose
@@ -52,7 +52,7 @@
 > other length - so a later save handed an older format number by a harness
 > (SectorStatementCheck 6b) loads as it was written.
 
-**Uses:** [SectorState](SectorState.md) (7), [Markets](Markets.md) (6), [Good](Good.md) (6), [DataSave](DataSave.md) (4), [NationalAccounts](NationalAccounts.md) (3), [Sectors](Sectors.md) (2), [Rail](Rail.md) (1)
+**Uses:** [SectorState](SectorState.md) (7), [Markets](Markets.md) (6), [Good](Good.md) (6), [DataSave](DataSave.md) (4), [NationalAccounts](NationalAccounts.md) (3), [Sectors](Sectors.md) (2), [Freight](Freight.md) (1)
 
 **Used by (2):** [Game](Game.md), [OilCheck](OilCheck.md)
 

@@ -64,7 +64,7 @@
 >      no stream; a crude unit a hair under rule 6's FEED_GATE), the ground
 > ... (77 more lines in the source)
 
-**Uses:** [Refining](Refining.md) (187), [Good](Good.md) (132), [RefineryFlow](RefineryFlow.md) (86), [SpreadPlanner](SpreadPlanner.md) (79), [BuildingsTemplate](BuildingsTemplate.md) (38), [Game](Game.md) (25), [BusinessInvestment](BusinessInvestment.md) (20), [BuildingManager](BuildingManager.md) (15), [GoodsMarket](GoodsMarket.md) (14), [Sectors](Sectors.md) (13), [Sector](Sector.md) (10), [Deposit](Deposit.md) (9), [GameFiles](GameFiles.md) (9), [Rail](Rail.md) (5), [RefineryView](RefineryView.md) (5), [Founding](Founding.md) (3), [Trade](Trade.md) (3), [Ports](Ports.md) (3), [LandManager](LandManager.md) (2), [MoneyAudit](MoneyAudit.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (1), [Resource](Resource.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
+**Uses:** [Refining](Refining.md) (187), [Good](Good.md) (132), [RefineryFlow](RefineryFlow.md) (86), [SpreadPlanner](SpreadPlanner.md) (79), [BuildingsTemplate](BuildingsTemplate.md) (38), [Game](Game.md) (25), [BusinessInvestment](BusinessInvestment.md) (20), [BuildingManager](BuildingManager.md) (15), [GoodsMarket](GoodsMarket.md) (14), [Sectors](Sectors.md) (13), [Sector](Sector.md) (10), [Deposit](Deposit.md) (9), [GameFiles](GameFiles.md) (9), [Freight](Freight.md) (5), [RefineryView](RefineryView.md) (5), [Founding](Founding.md) (3), [Trade](Trade.md) (3), [Ports](Ports.md) (3), [LandManager](LandManager.md) (2), [MoneyAudit](MoneyAudit.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (1), [Resource](Resource.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
 
 ## Sections
 
@@ -170,7 +170,7 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 1192 | 1 | **type** `enum Way` | How the oil moves in a fixture: by lorry, all by rail at a quote, or by sea. |
-| 1195 | 8 | `static GoodsMarket moved(Good g, Way way, double quote)` | A good's market as it moves one way (exchange 1): the band's share of a lorry's freight and the railway's charge, as sectors.Rail.haul() sets them (Ports.factor()). |
+| 1195 | 8 | `static GoodsMarket moved(Good g, Way way, double quote)` | A good's market as it moves one way (exchange 1): the band's share of a lorry's freight and the railway's charge, as sectors.Freight.haul() sets them (Ports.factor()). |
 | 1205 | 14 | `static Refining.RunPrices movedPrices(Way way, double quote, double petrol, double diesel, double lubricants, double wells)` | The run's prices, every good moved one way: petrol and diesel's `petrol` and `diesel` litres at the net import price, the rest of every product at its net export price, the wells' `wells` tonnes at crude's export pric... |
 | 1221 | 1 | `static double crudeMiddle()` | Crude's world middle: what the study's margins are a share of. |
 | 1224 | 1 | `static double ofMiddle(double share, double crudeCost)` | A verdict's barrel - `share`, a share of what its crude cost - as a share of crude's world middle. |

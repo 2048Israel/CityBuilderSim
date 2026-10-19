@@ -21,7 +21,7 @@
 > rings have one back. The rail's Infrastructure tab opens
 > showInfrastructureMenu(); open() is every other door in (infraPage).
 
-**Uses:** [Palette](Palette.md) (272), [InfrastructureManager](InfrastructureManager.md) (47), [Traffic](Traffic.md) (31), [CityNeeds](CityNeeds.md) (29), [Icons](Icons.md) (23), [BuildAdvice](BuildAdvice.md) (17), [Rail](Rail.md) (15), [ServicesScreen](ServicesScreen.md) (11), [TaxPolicy](TaxPolicy.md) (10), [Sector](Sector.md) (9), [BuildScreen](BuildScreen.md) (8), [Pieces](Pieces.md) (6), [EconomyManager](EconomyManager.md) (5), [Money](Money.md) (5), [Good](Good.md) (4), [CareType](CareType.md) (3), [PolicyScreen](PolicyScreen.md) (3), [UserInterface](UserInterface.md) (2), [GoodsMarket](GoodsMarket.md) (2), [SummaryScreen](SummaryScreen.md) (1), [Ladder](Ladder.md) (1), [Levers](Levers.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Palette](Palette.md) (272), [InfrastructureManager](InfrastructureManager.md) (47), [Traffic](Traffic.md) (31), [CityNeeds](CityNeeds.md) (29), [Icons](Icons.md) (23), [BuildAdvice](BuildAdvice.md) (17), [Freight](Freight.md) (15), [ServicesScreen](ServicesScreen.md) (11), [TaxPolicy](TaxPolicy.md) (10), [Sector](Sector.md) (9), [BuildScreen](BuildScreen.md) (8), [Pieces](Pieces.md) (6), [EconomyManager](EconomyManager.md) (5), [Money](Money.md) (5), [Good](Good.md) (4), [CareType](CareType.md) (3), [PolicyScreen](PolicyScreen.md) (3), [UserInterface](UserInterface.md) (2), [GoodsMarket](GoodsMarket.md) (2), [SummaryScreen](SummaryScreen.md) (1), [Ladder](Ladder.md) (1), [Levers](Levers.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [PayTier](PayTier.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -161,11 +161,11 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 1137 | 46 | `void railwayPage(VBox page)` |  |
-| 1212 | 34 | `VBox freightBill(ham.citybuildersim.sectors.Rail rail)` | The month's freight bill, three ways: one bar as long as the lorry bill, its key with the figures, and the fuel. |
-| 1248 | 30 | `VBox trackCard(ham.citybuildersim.sectors.Rail rail)` | TRACK AND TRAINS: the track, the sets against what it needs, what it can carry, and the trains it is short or the ones it wears out. |
-| 1280 | 18 | `VBox haulsCard(ham.citybuildersim.sectors.Rail rail)` | WHAT IT HAULS: what crossed and what it took, each stream's share, and what that takes off the road. |
-| 1308 | 25 | `VBox businessCard(ham.citybuildersim.sectors.Rail rail)` | THE BUSINESS: billed against what the rule allows, the fuel, the net income, the capital - and the door to its books. |
-| 1342 | 40 | `VBox railwayStatement(ham.citybuildersim.sectors.Rail rail, InfrastructureManager roads)` | The old railway page, line by line, in its fold. |
+| 1212 | 34 | `VBox freightBill(ham.citybuildersim.sectors.Freight rail)` | The month's freight bill, three ways: one bar as long as the lorry bill, its key with the figures, and the fuel. |
+| 1248 | 30 | `VBox trackCard(ham.citybuildersim.sectors.Freight rail)` | TRACK AND TRAINS: the track, the sets against what it needs, what it can carry, and the trains it is short or the ones it wears out. |
+| 1280 | 18 | `VBox haulsCard(ham.citybuildersim.sectors.Freight rail)` | WHAT IT HAULS: what crossed and what it took, each stream's share, and what that takes off the road. |
+| 1308 | 25 | `VBox businessCard(ham.citybuildersim.sectors.Freight rail)` | THE BUSINESS: billed against what the rule allows, the fuel, the net income, the capital - and the door to its books. |
+| 1342 | 40 | `VBox railwayStatement(ham.citybuildersim.sectors.Freight rail, InfrastructureManager roads)` | The old railway page, line by line, in its fold. |
 
 ### FREIGHT - the band, the bill, and the lorries (0.7.29) (lines 1383-1633)
 

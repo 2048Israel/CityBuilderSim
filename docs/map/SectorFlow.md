@@ -46,7 +46,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 98 | `SectorFlow.THROTTLES` | `{ "staffed", "power", "water", "roads", "well", "vans" }` | The six throttles in getOperatingRate()'s order, as the screen names them. |
+| 98 | `SectorFlow.THROTTLES` | `{ "staffed", "power", "water", "roads", "well", "freight" }` | The six throttles in getOperatingRate()'s order, as the screen names them (the sixth, "freight", was "vans" until FR2). |
 
 ## Methods, in file order
 

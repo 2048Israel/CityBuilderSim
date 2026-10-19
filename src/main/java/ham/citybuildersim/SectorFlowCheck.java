@@ -172,7 +172,7 @@ public class SectorFlowCheck {
             double[] r = p.ratios();
             own &= r.length == SectorFlow.THROTTLES.length && r[0] == s.getAverageFill() && r[1] == s.getEnergyRatio()
                     && r[2] == s.getWaterRatio() && r[3] == s.getRoadRatio() && r[4] == s.getHealthRatio()
-                    && r[5] == s.getVanRatio();
+                    && r[5] == s.getFreightRatio();
             double run = r[0];
             steps &= p.cascade()[0] == run;
             for (int i = 1; i < r.length; i++) {
@@ -189,7 +189,7 @@ public class SectorFlowCheck {
         }
         assertTrue("fixture: " + standing + " sectors have something standing, " + below + " of them running below nameplate",
                 standing > 5 && below > 0);
-        assertTrue("the six throttles are the sector's own: the fill, power, water, the road, health and its vans", own);
+        assertTrue("the six throttles are the sector's own: the fill, power, water, the road, health and its freight (FR2: its vans for its goods, Freight's trucks for its bulk)", own);
         assertTrue("each step of the cascade is the product of the throttles up to it", steps);
         assertTrue("...the last is getOperatingRate() to the bit, the plant's rate is too, and the lowest is the lowest", rate);
     }

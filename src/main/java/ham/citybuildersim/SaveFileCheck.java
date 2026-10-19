@@ -2719,7 +2719,9 @@ public class SaveFileCheck {
      * newer build's. What has to hold:
      *   - the format before it loads as it did: a save of format 37 has no
      *     worldKind, stands on its seed's generated world, and saved again
-     *     writes its own bytes back but for the stamp of this build;
+     *     writes its own bytes back but for the stamp of this build. SINCE
+     *     0.8.5 (FR2) the floor is 40, past it: the same save stamped at the
+     *     floor is what loads on its generated world, and format 37 is refused;
      *   - a generated city writes none of the four;
      *   - an Earth city - Rotterdam's window of EarthCheck's fixture - saved
      *     carries its kind, spot and data, and reloaded is the city it was:
@@ -2735,7 +2737,8 @@ public class SaveFileCheck {
         com.google.gson.Gson gson = new com.google.gson.Gson();
         String[] earthKeys = { "worldKind", "earthLat", "earthLon", "earthData" };
 
-        // The format before: a generated city, its save written down to format 37 as 0.7.120 wrote it.
+        // The format before: a generated city, its save written down to format 37 as 0.7.120 wrote it - and since FR2 (0.8.5)
+        // stamped at the floor, GameVersion.OLDEST_LOADABLE_FORMAT, which is past 37: a save with no worldKind, at the oldest format read.
         GameFiles plainFiles = new GameFiles(root.resolve("format37"), root.resolve("no-legacy"));
         Game plain = new Game(plainFiles);
         quietly(() -> {
@@ -2753,8 +2756,8 @@ public class SaveFileCheck {
         for (String k : earthKeys) none &= !plainJson.has(k);
         assertTrue("a generated city writes none of the four Earth fields", none);
         com.google.gson.JsonObject format37 = plainJson.deepCopy();
-        format37.addProperty("saveFormat", 37);
-        format37.addProperty("gameVersion", "0.7.120");
+        format37.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT);
+        format37.addProperty("gameVersion", GameVersion.VERSION);
         Files.writeString(plainFiles.saveFile(2), gson.toJson(format37));
         Files.copy(plainFiles.historyFile(1), plainFiles.historyFile(2), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         if (Files.isRegularFile(plainFiles.mapFile(1))) {
@@ -2763,7 +2766,7 @@ public class SaveFileCheck {
         Game older = new Game(plainFiles);
         quietly(() -> older.loadGameSave(2));
         long seed = plainJson.get("worldSeed").getAsLong();
-        assertTrue("a format-37 save loads, on its seed's generated world",
+        assertTrue("a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)",
                 older.getLoadFailure() == null && !older.getFounding().isOnEarth()
                         && older.getFounding().getWorldKey().equals(World.Key.generated(seed)) && older.getWorld() == World.of(seed)
                         && older.getCityLand().key().equals(World.Key.generated(seed)) && older.getMonth() == plain.getMonth());
@@ -2775,8 +2778,10 @@ public class SaveFileCheck {
         assertTrue("...and writes its own bytes back, but for this build's stamp: its format, version and time", moved.isEmpty()
                 && again.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && again.get("gameVersion").getAsString().equals(GameVersion.VERSION));
         if (!moved.isEmpty()) System.out.println("     moved: " + moved);
-        assertTrue("a format-37 save is not refused: the floor stays below the format an Earth city is first written in",
-                !GameVersion.isNoLongerReadable(EarthSite.EARTH_FORMAT - 1) && GameVersion.SAVE_FORMAT >= EarthSite.EARTH_FORMAT);
+        assertTrue("a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in"
+                        + " (until then the floor stayed below it)",
+                GameVersion.isNoLongerReadable(EarthSite.EARTH_FORMAT - 1) && GameVersion.isNoLongerReadable(37)
+                        && !GameVersion.isNoLongerReadable(GameVersion.OLDEST_LOADABLE_FORMAT) && GameVersion.SAVE_FORMAT >= EarthSite.EARTH_FORMAT);
 
         // An Earth city: Rotterdam's window of EarthCheck's fixture.
         byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE);

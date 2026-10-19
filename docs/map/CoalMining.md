@@ -53,7 +53,7 @@
 > t), so W holds by type).
 > 
 > THE PLAN. A mine is ExtractionSector's: the best earnings on the whole cost
-> among the mines that fit a field of their type, their lorries in it. And
+> among the mines that fit a field of their type, their freight in it. And
 > the sector builds a preparation plant beside its coking mines (the study's
 > 3.4) - first, whenever raw coal standing or on site goes unwashed and the
 > plant would staff and pay (planWash()). What one more of any of the four

@@ -1,4 +1,4 @@
-# ScaleCheck.java - 1,118 lines · 31 methods · 13 constants · harnesses
+# ScaleCheck.java - 1,121 lines · 31 methods · 13 constants · harnesses
 
 `ham/citybuildersim/ScaleCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
 
@@ -96,9 +96,9 @@
 | 225 | `ScaleCheck.MONTH_MEDIAN_MS` | `1500` | The longest a free copy's median month may take, in milliseconds. |
 | 659 | `ScaleCheck.AFFORDABILITY_WITHIN` | `.01` | How far a free copy's affordability pull may stand from the city's in any month (0.7.55): the rents' multiplier on the migrants' target (Migration.affordabilityPull()). |
 | 968 | `ScaleCheck.INTENSIVE` | `Pattern.compile("(price\|Price\|rate\|Rate\|month\|Month\|Months\|share\|Share\|ratio\|...` | A name the scaler leaves alone wherever it meets one, unless EXTENSIVE names it: a price, a rate, a month, an id, a share, a ratio or a target, as scale_save.py's SKIP read them, and since 0.7.54 the seven ratios at i... |
-| 986 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMo...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
-| 990 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxC...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
-| 1005 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "secto...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
+| 989 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMo...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
+| 993 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxC...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
+| 1008 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "secto...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
 
 ## Fields (state)
 
@@ -122,7 +122,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 1034 | **type** `public class ScaleCheck` | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them all back. |
+| 85 | 1037 | **type** `public class ScaleCheck` | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them all back. |
 | 227 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 232 | 5 | `static void same(String label, long actual, long expected)` |  |
 | 238 | 5 | `static void quietly(Runnable r)` |  |
@@ -153,13 +153,13 @@
 | 932 | 3 | `static long last(List<Long> series)` |  |
 | 936 | 5 | `static boolean quietlyGet(java.util.function.BooleanSupplier s)` |  |
 
-### THE STUDY'S SCALING (scale_save.py, 2026-10-06), on a save's JSON (lines 942-1118)
+### THE STUDY'S SCALING (scale_save.py, 2026-10-06), on a save's JSON (lines 942-1121)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1008 | 71 | `static void scale(Path in, Path to, long k) throws Exception` |  |
-| 1080 | 17 | `static JsonElement sc(JsonElement v, String name, long k)` |  |
-| 1099 | 6 | `static JsonElement times(JsonElement v, long k)` | A number times K: a whole number stays whole and exact, a fraction is a double. |
-| 1106 | 4 | `static JsonElement over(JsonElement v, long k)` |  |
-| 1111 | 7 | `static void cleanUp(Path root)` |  |
+| 1011 | 71 | `static void scale(Path in, Path to, long k) throws Exception` |  |
+| 1083 | 17 | `static JsonElement sc(JsonElement v, String name, long k)` |  |
+| 1102 | 6 | `static JsonElement times(JsonElement v, long k)` | A number times K: a whole number stays whole and exact, a fraction is a double. |
+| 1109 | 4 | `static JsonElement over(JsonElement v, long k)` |  |
+| 1114 | 7 | `static void cleanUp(Path root)` |  |
 

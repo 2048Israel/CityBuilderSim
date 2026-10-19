@@ -14,7 +14,7 @@
 > into its tanks: petrol, diesel, jet fuel, naphtha, petroleum gas and fuel
 > oil - and since 0.7.80 its conversion units' lubricants, bitumen and coke.
 > The city's drivers (Motoring, at 6d; through the grocers' pumps since
-> 0.7.83) draw the petrol, and its railway (Rail.haul()) and since 0.7.83
+> 0.7.83) draw the petrol, and its railway (Freight.haul()) and since 0.7.83
 > its vans the diesel, off those tanks before the world, as the factories
 > do the lubricants and the builders the bitumen (0.7.83); the rest leaves
 > by the export-bound line until something here buys it - the lubricants
