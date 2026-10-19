@@ -66,7 +66,7 @@
 
 **Uses:** [Currency](Currency.md) (2)
 
-**Used by (3):** [DenominationCheck](DenominationCheck.md), [Game](Game.md), [PolicyScreen](PolicyScreen.md)
+**Used by (4):** [DenominationCheck](DenominationCheck.md), [Game](Game.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md)
 
 ## Sections
 

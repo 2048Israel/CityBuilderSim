@@ -271,6 +271,25 @@ public class Game {
         decisions = new DecisionLog(() -> month);
         decisions.hold();
 
+        /*
+         * THE CITY'S MONEY BACK AT THE FOUNDING UNIT FIRST (FX4, 2026-10-19).
+         * The denomination is a final field this method never rebuilt, and a
+         * load re-seeds the money constants only when its unit is not 1. So a
+         * city founded (or an unreformed save loaded) in a window that had
+         * loaded a reformed city kept that city's unit and its constants -
+         * ForeignAccounts' parityBase among them. Jerus loaded his thrice-
+         * reformed city (unit 10,000,000) and founded a new one on 0.8.8:
+         * parity read 0.0000 from its first month, the rate fell from 1.00 to
+         * 0.04 in 200 months pulled toward it, and the save carried the old
+         * city's unit. First, so whatever the founding sets below is set over
+         * it; the load path restores the saved unit after, and re-seeds. At a
+         * unit of 1 nothing was seeded away from it, and nothing runs.
+         */
+        if (denomination.getUnit() != 1) {
+            denomination.reset();
+            seedMoneyConstants(1);
+        }
+
         buildingManager = new BuildingManager();
         economyManager = new EconomyManager(buildingManager);
         // ...and the city's strategic reserve, its trader in crude's market (0.7.85).
@@ -15197,23 +15216,7 @@ public class Game {
              */
             denomination.restore(loaded.getDenomination());
             double unit = denomination.getUnit();
-            if (unit != 1) {
-                buildingManager.seedConstants(unit);
-                getSectors().retail().seedConstants(unit);
-                labourMarket.seedConstants(unit);
-                bank.seedConstants(unit);
-                landManager.seedConstants(unit);
-                healthcare.seedConstants(unit);
-                foreign.seedConstants(unit);
-                economyManager.getTaxPolicy().seedConstants(unit);
-                education.seedConstants(unit);
-                hotMoney.seedConstants(unit);
-                equity.seedConstants(unit);
-                exchange.seedConstants(unit);
-                outward.seedConstants(unit);
-                householdBalance.seedConstants(unit);
-                bondMarket.seedConstants(unit);
-            }
+            if (unit != 1) seedMoneyConstants(unit);
             // ...and the ones that price something, at the level the saved
             // month struck them at as well as the unit (0.7.42) - every month
             // does the same at its top - and what the anchor hands on.
@@ -16258,6 +16261,29 @@ public class Game {
        ===================================================================== */
 
     private final Denomination denomination = new Denomination();
+
+    /**
+     * Seeds every money constant struck in founding dollars at a unit: the
+     * load path's list since the reform, and since FX4 also buildWorld()'s at
+     * 1, so a new city does not keep the last loaded city's unit.
+     */
+    private void seedMoneyConstants(double unit) {
+        buildingManager.seedConstants(unit);
+        getSectors().retail().seedConstants(unit);
+        labourMarket.seedConstants(unit);
+        bank.seedConstants(unit);
+        landManager.seedConstants(unit);
+        healthcare.seedConstants(unit);
+        foreign.seedConstants(unit);
+        economyManager.getTaxPolicy().seedConstants(unit);
+        education.seedConstants(unit);
+        hotMoney.seedConstants(unit);
+        equity.seedConstants(unit);
+        exchange.seedConstants(unit);
+        outward.seedConstants(unit);
+        householdBalance.seedConstants(unit);
+        bondMarket.seedConstants(unit);
+    }
 
     public Denomination getDenomination() { return denomination; }
 

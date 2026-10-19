@@ -6889,8 +6889,20 @@ public final class GameVersion {
      *   - Harnesses: HomeRailCheck (new); HaulageCheck's bill, OilCheck's and
      *     RefineryViewCheck's diesel, TruckCheck's tallies; the playtests'
      *     "Home rail" line.
+     *
+     * 0.8.10 (2026-10-19) - FX4, A NEW CITY AFTER A REFORMED ONE. Jerus loaded
+     * his thrice-reformed city (unit 10,000,000) and founded a new one in the
+     * same window: it kept the old unit and the money constants the load had
+     * seeded at it, so parity read 0.0000 from month 2 and the rate ran from
+     * 1.00 to 0.04. Not FR2-FR6's: 0.8.4 does the same.
+     *   - Game.buildWorld() resets the denomination and re-seeds the money
+     *     constants at 1 when the unit is not 1 (seedMoneyConstants(), the
+     *     load path's list made one method). A city never reformed runs as
+     *     before; the trace is byte-identical.
+     *   - Harness: NewGameCheck 15 (a city reformed a hundredfold, then New
+     *     Game, against a city never reformed). Save format unchanged.
      */
-    public static final String VERSION = "0.8.9";
+    public static final String VERSION = "0.8.10";
 
     /**
      * The save shape.
