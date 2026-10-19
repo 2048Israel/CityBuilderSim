@@ -296,8 +296,9 @@ public class BuildCardCheck {
                         + " Concrete's \"Cement\" since 0.7.131, copper's \"Copper\" since 0.7.133, Forestry's \"Wood\" since 0.7.138 - and"
                         + " oil storage (0.7.85), the ports (0.7.86) and the oil at sea's platforms and pipelines (0.7.91): " + industry,
                 industry.equals(List.of("Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal",
-                        "Stone", "Cement", "Copper", "Wood", "Oil", "Oil platforms", "Oil pipelines", "Refining", "Oil storage", "Ports",
+                        "Stone", "Cement", "Copper", "Wood", "Oil", "Oil platforms", "Oil pipelines", "Refining", "Oil storage",
                         "Building materials", "Builders")));
+        // ...less the ports (0.7.86) since FR4 (2026-10-19): the sea terminals and the Strategic Reserve are Infrastructure's, below.
         // ...and the Coal group (0.7.126, batch I6; spec-materials 4: "+ Coal, Copper, Stone, Wood, Cement"): Coal Mining's four.
         List<String> coal = new ArrayList<>();
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) {
@@ -367,24 +368,62 @@ public class BuildCardCheck {
             stored.add(f.template().getName());
             tanks &= f.kind() == BuildCard.Kind.TANKS && f.market() == f.template().isOwnedBySector();
         }
-        assertTrue("...oil storage is the refiners' Tank Farm and the city's Strategic Reserve, measured in tank room, the"
-                + " reserve built by the city alone: " + stored, tanks && stored.equals(List.of("Tank Farm", "Strategic Reserve")));
-        // ...the ports the four sea terminals, the city's alone, measured in their berths' tonnes a year (0.7.86).
-        List<String> berthed = new ArrayList<>();
-        boolean ports = false;
-        for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) {
-            if (!gr.title().equals("Ports")) continue;
-            ports = true;
-            for (BuildCard.Figures f : gr.cards()) {
-                berthed.add(f.template().getName());
-                ports &= f.kind() == BuildCard.Kind.BERTHS && !f.market() && BuildCard.citys(f.template())
-                        && f.figure() == f.template().berthTonnesAYear();
+        assertTrue("...oil storage is the refiners' Tank Farm alone since FR4, measured in tank room: the Strategic Reserve is"
+                + " Infrastructure's, in its own group: " + stored, tanks && stored.equals(List.of("Tank Farm")));
+        // ...the ports the sea terminals, the city's alone, measured in their berths' tonnes a year (0.7.86) - Infrastructure's
+        // group since FR4 (2026-10-19), after the ring's, whichever ring is picked - and the Bulk Berth (FR3, 0.8.7) a fifth.
+        List<String> berthed = new ArrayList<>(), reserved = new ArrayList<>(), titles = new ArrayList<>();
+        boolean ports = false, reserve = false, inEveryRing = true;
+        for (BuildAdvice.Measure ring : BuildAdvice.measuresOf(BuildAdvice.ROADS)) {
+            List<String> ringTitles = new ArrayList<>();
+            for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.ROADS, ring)) ringTitles.add(gr.title());
+            inEveryRing &= ringTitles.equals(List.of(ring.label(), "Ports", "Reserve"));
+        }
+        for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.ROADS, null)) {
+            titles.add(gr.title());
+            if (gr.title().equals("Ports")) {
+                ports = true;
+                for (BuildCard.Figures f : gr.cards()) {
+                    berthed.add(f.template().getName());
+                    ports &= f.kind() == BuildCard.Kind.BERTHS && !f.market() && BuildCard.citys(f.template())
+                            && f.figure() == f.template().berthTonnesAYear();
+                }
+            }
+            if (gr.title().equals("Reserve")) {
+                reserve = true;
+                for (BuildCard.Figures f : gr.cards()) {
+                    reserved.add(f.template().getName());
+                    reserve &= f.kind() == BuildCard.Kind.TANKS && !f.market() && BuildCard.citys(f.template())
+                            && StrategicReserve.isReserve(f.template());
+                }
             }
         }
-        // ...and since FR3 (0.8.7) the Bulk Berth, the dry bulk berth for Handysize and Supramax calls, a fifth.
-        assertTrue("...the ports are the Tanker, Bulk, Container and General Cargo Terminals and the Bulk Berth, measured in their"
-                + " berths' tonnes a year, built by the city alone: " + berthed, ports && berthed.equals(List.of("Tanker Terminal",
-                "Bulk Terminal", "Container Terminal", "General Cargo Terminal", "Bulk Berth")));
+        assertTrue("Infrastructure's page is its ring's cards, then Ports, then Reserve - whichever of the three rings is picked: " + titles,
+                inEveryRing && titles.size() == 3 && titles.get(1).equals("Ports") && titles.get(2).equals("Reserve"));
+        assertTrue("...the ports are the Tanker Terminal, the Bulk Berth, the Bulk Terminal, the Container and General Cargo Terminals"
+                + " (by kind of cargo, then size), measured in their berths' tonnes a year, built by the city alone: " + berthed,
+                ports && berthed.equals(List.of("Tanker Terminal", "Bulk Berth", "Bulk Terminal", "Container Terminal",
+                "General Cargo Terminal")));
+        assertTrue("...the reserve the Strategic Reserve alone, measured in tank room, the city's: " + reserved,
+                reserve && reserved.equals(List.of("Strategic Reserve")));
+        // ...Freight's page (FR4; Rail until then): the rungs and the Rail Depot as Rail, the Truck Depot as Haulage (FR2's "Truck depots").
+        java.util.Map<String, List<String>> freightGroups = new java.util.LinkedHashMap<>();
+        boolean freightKinds = true;
+        for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.RAIL, null)) {
+            List<String> names = new ArrayList<>();
+            for (BuildCard.Figures f : gr.cards()) {
+                names.add(f.template().getName());
+                freightKinds &= f.market() && f.kind() == (gr.title().equals("Haulage") ? BuildCard.Kind.DEPOT : BuildCard.Kind.RAIL);
+            }
+            freightGroups.put(gr.title(), names);
+        }
+        assertTrue("Freight is Rail - the Rail Spur, the Freight Line, the Rail Terminal and the Rail Depot - and Haulage - the Truck"
+                + " Depot - the investors' both: " + freightGroups, freightKinds && new ArrayList<>(freightGroups.keySet()).equals(List.of("Rail", "Haulage"))
+                && freightGroups.get("Rail").equals(List.of("Rail Spur", "Freight Line", "Rail Terminal", "Rail Depot"))
+                && freightGroups.get("Haulage").equals(List.of("Truck Depot")));
+        List<String> vehicles = new ArrayList<>();
+        for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.VEHICLES, null)) for (BuildCard.Figures f : gr.cards()) vehicles.add(f.template().getName());
+        assertTrue("...and Vehicles holds the Heavy Truck Plant: " + vehicles, vehicles.contains("Heavy Truck Plant"));
         // ...and the grocers' filling stations their own group since 0.7.83 (batch O6), measured in litres.
         assertTrue("Shops is the groceries, the filling stations (0.7.83) and the bank's branches: " + shops,
                 shops.equals(List.of("Groceries", "Filling stations", "The bank's branches")));

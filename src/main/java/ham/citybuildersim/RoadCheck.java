@@ -781,7 +781,7 @@ public class RoadCheck {
 
     /* ============================ 8. OFFERED ============================ */
 
-    /** Every building in the Roads & transit category: what the advice's paving-only ranking leaves out, as automatic building walks past roads the ground cannot hold. */
+    /** Every road and line in the Infrastructure category (Roads & transit until FR4): what the advice's paving-only ranking leaves out, as automatic building walks past roads the ground cannot hold. */
     static java.util.Set<BuildingsTemplate> everyRoadAndLine(Game g) {
         java.util.Set<BuildingsTemplate> all = new java.util.HashSet<>();
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t.getCategory() == BuildingType.INFRASTRUCTURE) all.add(t);

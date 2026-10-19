@@ -61,10 +61,32 @@ public final class BuildAdvice {
        The Build strip's fourteen, in its order: the five only the city
        builds, then the nine investors build too. Five were renamed as Jerus
        chose ("Yes, rename them"): Residential is Homes, Commercial Shops,
-       Industrial Industry, Infrastructure Roads & transit, Services Offices -
+       Industrial Industry, Infrastructure Roads & transit (Infrastructure again since FR4, below), Services Offices -
        the Build category's label only; BuildingType, the sectors and the
        rail's Infrastructure tab keep theirs. Kept here, not in the window, so
        the harness can hold that every building sits in exactly one.
+
+       INFRASTRUCTURE AND FREIGHT (FR4, 2026-10-19; spec-freight-and-
+       infrastructure 5, board 4). The city's things on one strip, the
+       businesses' on theirs. "Roads & transit" is Infrastructure again (its
+       `was`), and gains what only the city builds and Industry held: the sea
+       terminals (BuildingType.PORTS) and the Strategic Reserve - a
+       HEAVY_INDUSTRY building by type, so it is filed by template
+       (Category.holds(), categoryOf(BuildingsTemplate)) and never by its type;
+       "Rail" is Freight (its `was`), still RAIL and HAULAGE: the rungs, the
+       Rail Depot and the Truck Depot. Industry keeps only what investors
+       build (the Tank Farm stays: it is Refining's), so its dot and its line
+       are honest again; Vehicles holds the Heavy Truck Plant, an AUTOMOTIVE
+       building, as it always did.
+
+       THE MODEL DOES NOT MOVE. The identifiers ROADS and RAIL stay - a dozen
+       files use them - and only their strings changed. Ports and the reserve
+       are in a category the city builds, but they are in no remit: they have
+       no ring (measuresOf() is what it was, the port measures stay on
+       portMeasures()), and AutoBuilder.inRemit() excludes them by name, as it
+       did by their being in a market category. Every other reader of
+       cityBuilds() or categoryOf(BuildingType) answers for every building what
+       it answered.
        ===================================================================== */
 
     /** The page Build opens on: the city's job, what would help most, and what the market builds. */
@@ -73,37 +95,55 @@ public final class BuildAdvice {
     /**
      * One category of the strip.
      *
-     * @param was        its label before 0.7.24, or null when it kept its own -
-     *                   a caller still holding an old label lands in the same place
+     * @param was        its label before 0.7.24 (before FR4 for the two renamed back
+     *                   and forth: Infrastructure's "Roads & transit", Freight's
+     *                   "Rail"), or null when it kept its own - a caller still
+     *                   holding an old label lands in the same place
      * @param cityBuilds true for the five nobody builds but the city
      */
     public record Category(String name, String was, EnumSet<BuildingType> types, boolean cityBuilds) {
         /** A fresh set every call: EnumSet is mutable, and screens should not share one. */
         @Override public EnumSet<BuildingType> types() { return EnumSet.copyOf(types); }
+
+        /**
+         * Whether this building is on the category's page: its type is among the category's - but for the
+         * Strategic Reserve, a HEAVY_INDUSTRY building the city alone builds, which is Infrastructure's and
+         * not Industry's (FR4). The one building filed by what it is, not by its type.
+         */
+        public boolean holds(BuildingsTemplate t) {
+            if (t == null) return false;
+            if (StrategicReserve.isReserve(t)) return name.equals(ROADS);
+            return types.contains(t.getCategory());
+        }
     }
 
     /** The fourteen categories' names, as the strip, the Overview and NEEDS YOU's doors say them. */
-    public static final String UTILITIES = "Utilities", ROADS = "Roads & transit", HEALTHCARE = "Healthcare",
+    public static final String UTILITIES = "Utilities", ROADS = "Infrastructure", HEALTHCARE = "Healthcare",
             EDUCATION = "Education", SAFETY = "Safety", HOMES = "Homes", SHOPS = "Shops", INDUSTRY = "Industry",
-            OFFICES = "Offices", FARMS = "Farms", RAIL = "Rail", VEHICLES = "Vehicles",
+            OFFICES = "Offices", FARMS = "Farms", RAIL = "Freight", VEHICLES = "Vehicles",
             LUXURY = "Luxury shops", RESTAURANTS = "Restaurants";
+    // ROADS and RAIL keep their identifiers (FR4, 2026-10-19: a dozen files use them) and changed their strings: the
+    // category of the roads, the transit lines, the ports and the reserve is "Infrastructure" (was "Roads & transit"), and
+    // Freight's, the rail and the haulage (was "Rail"). category() still answers to the old labels, through `was`.
 
     /** The strip, in its order: the city's five, then the market's nine. */
     public static List<Category> categories() {
         List<Category> out = new ArrayList<>();
         out.add(new Category(UTILITIES,   null, EnumSet.of(BuildingType.ELECTRICITY, BuildingType.WATER), true));
-        out.add(new Category(ROADS,       "Infrastructure", EnumSet.of(BuildingType.INFRASTRUCTURE), true));
+        // ...with the city's sea terminals, and its Strategic Reserve (Category.holds()), from Industry (FR4, spec-freight 5).
+        out.add(new Category(ROADS,       "Roads & transit", EnumSet.of(BuildingType.INFRASTRUCTURE, BuildingType.PORTS), true));
         out.add(new Category(HEALTHCARE,  null, EnumSet.of(BuildingType.HEALTHCARE), true));
         out.add(new Category(EDUCATION,   null, EnumSet.of(BuildingType.EDUCATION), true));
         out.add(new Category(SAFETY,      null, EnumSet.of(BuildingType.SAFETY), true));
         out.add(new Category(HOMES,       "Residential", EnumSet.of(BuildingType.RESIDENTIAL), false));
         out.add(new Category(SHOPS,       "Commercial", EnumSet.of(BuildingType.COMMERCIAL), false));
-        // ...and the city's sea terminals (0.7.86, batch O9), their own group beside oil storage (BuildCard, star O9-1).
+        // ...less the city's sea terminals (0.7.86 to FR4) and its Strategic Reserve, Infrastructure's now: Industry is what
+        // investors build, and the Tank Farm stays (it is Refining's). The reserve's type, HEAVY_INDUSTRY, is Industry's still.
         out.add(new Category(INDUSTRY,    "Industrial", EnumSet.of(BuildingType.INDUSTRIAL,
-                BuildingType.HEAVY_INDUSTRY, BuildingType.MINING, BuildingType.CONSTRUCTION, BuildingType.PORTS), false));
+                BuildingType.HEAVY_INDUSTRY, BuildingType.MINING, BuildingType.CONSTRUCTION), false));
         out.add(new Category(OFFICES,     "Services", EnumSet.of(BuildingType.BUSINESS_SERVICES), false));
         out.add(new Category(FARMS,       null, EnumSet.of(BuildingType.AGRICULTURE), false));
-        out.add(new Category(RAIL,        null, EnumSet.of(BuildingType.RAIL, BuildingType.HAULAGE), false));
+        out.add(new Category(RAIL,        "Rail", EnumSet.of(BuildingType.RAIL, BuildingType.HAULAGE), false));
         out.add(new Category(VEHICLES,    null, EnumSet.of(BuildingType.AUTOMOTIVE), false));
         out.add(new Category(LUXURY,      null, EnumSet.of(BuildingType.LUXURY), false));
         out.add(new Category(RESTAURANTS, null, EnumSet.of(BuildingType.HOSPITALITY), false));
@@ -119,10 +159,24 @@ public final class BuildAdvice {
         return null;
     }
 
-    /** The category a kind of building is in. */
+    /** The category a kind of building is in, by its type: the Strategic Reserve's is Industry's, whose it is not (categoryOf(BuildingsTemplate) knows). */
     public static Category categoryOf(BuildingType type) {
         for (Category c : categories()) if (c.types.contains(type)) return c;
         return null;
+    }
+
+    /** The category a building is on the page of (FR4): its type's, but for the Strategic Reserve, which is Infrastructure's (Category.holds()). */
+    public static Category categoryOf(BuildingsTemplate t) {
+        if (t == null) return null;
+        for (Category c : categories()) if (c.holds(t)) return c;
+        return null;
+    }
+
+    /** A category's buildings in catalogue order: those of its types it holds, and the reserve in Infrastructure's. */
+    public static List<BuildingsTemplate> templatesOf(Category c, BuildingManager buildings) {
+        List<BuildingsTemplate> out = new ArrayList<>();
+        for (BuildingsTemplate t : buildings.getTemplates()) if (c.holds(t)) out.add(t);
+        return out;
     }
 
     /** The category a NEEDS YOU row's fix is in, for the five the city builds and Homes; null for the rest. */
@@ -143,15 +197,15 @@ public final class BuildAdvice {
 
        What a city category's page opens on: one ring per measure the
        category serves. Healthcare: general care, childcare, senior care and
-       death care; Education: each level; Safety: police and cells; Roads &
-       transit: road capacity and transit; Utilities: power and water. PLOTS
+       death care; Education: each level; Safety: police and cells; Infrastructure:
+       road capacity and transit; Utilities: power and water. PLOTS
        has no ring - it is the burial plots' own NEEDS YOU row, which the
        death care ring's buildings answer. PORT (FR3) has none either: the
        berths of a kind of cargo, advised on their payback (A BERTH THAT PAYS
        BACK, at the end).
 
        STREETS AND HIGHWAYS, TWO MEASURES (FR7, 2026-10-18; Jerus's star 4).
-       Roads & transit has three rings now: the STREETS (Kind.ROADS: the
+       Infrastructure has three rings now: the STREETS (Kind.ROADS: the
        access road, the gravel and paved roads and the transit lines, judged
        on the streets' load over their capacity), the HIGHWAYS (Kind.HIGHWAYS:
        the Elevated Highway alone, judged on the through trips with no highway
@@ -216,7 +270,7 @@ public final class BuildAdvice {
                 case ROADS: case HIGHWAYS: case TRANSIT: return ROADS;
                 case CARE: case DEATH: case PLOTS: return HEALTHCARE;
                 case SCHOOL:                   return EDUCATION;
-                case PORT:                     return INDUSTRY;     // the category that holds BuildingType.PORTS
+                case PORT:                     return ROADS;        // the category that holds BuildingType.PORTS (Infrastructure since FR4)
                 default:                       return SAFETY;
             }
         }

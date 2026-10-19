@@ -141,9 +141,10 @@ final class BuildScreen {
 
     /**
      * The strip, since 0.7.24 in BuildAdvice's order: the five only the city
-     * builds - Utilities, Roads & transit, Healthcare, Education, Safety -
+     * builds - Utilities, Infrastructure (its roads and transit, its ports and
+     * its Strategic Reserve since FR4), Healthcare, Education, Safety -
      * then the nine investors build too - Homes, Shops, Industry, Offices,
-     * Farms, Rail, Vehicles, Luxury shops, Restaurants - under the names
+     * Farms, Freight (Rail until FR4), Vehicles, Luxury shops, Restaurants - under the names
      * Jerus chose ("Yes, rename them": Residential, Commercial, Industrial,
      * Infrastructure and Services until then). The list lives in the model
      * (BuildAdvice.categories()) so the harness can hold that every building
@@ -157,7 +158,7 @@ final class BuildScreen {
      * Several have a row of their own for a reason the old strip gave
      * beside each: Offices (business services) because its customer is not
      * in the city; Farms because a farm competes with the whole
-     * neighbourhood; Rail because its product is a price on every other
+     * neighbourhood; Freight because its product is a price on every other
      * screen; Vehicles because an assembly plant cannot run on imported
      * parts; Luxury shops and Restaurants because they exist so a rich city
      * has somewhere to spend (BuildingType's notes on each).
@@ -455,8 +456,11 @@ final class BuildScreen {
 
         boolean theirs = investorBuilt(categories);
 
+        // Freight's page (FR4, board 4) says whose: the Freight sector's investors build the rail and the Truck Depot, and the city may too.
+        boolean freight = categories.equals(EnumSet.of(BuildingType.RAIL, BuildingType.HAULAGE));
         HBox note = theirs
-                ? infoLine("Investors build these on their own. Building one yourself is optional.",
+                ? infoLine(freight ? "Freight's investors build these. You can build them too."
+                                : "Investors build these on their own. Building one yourself is optional.",
                         "Investors put these up whenever they pay. Building one yourself spends the "
                         + "city's cash and land on a business someone else runs and keeps the earnings "
                         + "from. Worth it when investors are too broke, too cautious or short of land.",
@@ -2169,20 +2173,20 @@ final class BuildScreen {
                 nearest == null ? "" : nearest.label().toLowerCase() + " · " + nearest.reading());
     }
 
-    /** Buildings on site in a category, for anybody's order. */
-    int onSiteIn(EnumSet<BuildingType> types) {
+    /** Buildings on site in a category, for anybody's order (the Strategic Reserve in Infrastructure's, not Industry's: Category.holds()). */
+    int onSiteIn(BuildAdvice.Category c) {
         int n = 0;
         for (BuildingsStacks s : ui.game.getBuildingManager().getStacksUnderConstruction()) {
-            if (types.contains(s.getBuilding().getCategory())) n += s.getUnderConstruction();
+            if (c.holds(s.getBuilding())) n += s.getUnderConstruction();
         }
         return n;
     }
 
     /** ...and standing. */
-    int standingIn(EnumSet<BuildingType> types) {
+    int standingIn(BuildAdvice.Category c) {
         BuildingManager bm = ui.game.getBuildingManager();
         int n = 0;
-        for (BuildingsTemplate t : bm.getTemplatesByCategory(types)) n += bm.getQuantity(t.getId());
+        for (BuildingsTemplate t : BuildAdvice.templatesOf(c, bm)) n += bm.getQuantity(t.getId());
         return n;
     }
 
@@ -2233,7 +2237,7 @@ final class BuildScreen {
         HBox middle = new HBox(10, ring(s.arc(), tone, JOB_RING, 6, s.figure(), 13), words);
         middle.setAlignment(Pos.CENTER_LEFT);
 
-        int onSite = onSiteIn(c.types());
+        int onSite = onSiteIn(c);
         VBox tile = new VBox(10, top, middle, onSiteLine(onSite, worst == null ? "nothing needed" : "nothing on site"));
         tile.setMaxWidth(Double.MAX_VALUE);
         tile.setMinHeight(150);
@@ -2830,9 +2834,9 @@ final class BuildScreen {
         name.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
         name.setWrapText(true);
         name.setMinWidth(0);
-        Label standing = new Label(formatter.format(standingIn(c.types())));
+        Label standing = new Label(formatter.format(standingIn(c)));
         standing.setStyle(Palette.figure(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        int onSite = onSiteIn(c.types());
+        int onSite = onSiteIn(c);
         Label under = new Label(onSite > 0 ? formatter.format(onSite) + " on site" : "standing");
         under.setStyle(wordsAt(9.5, onSite > 0 ? Palette.BUILDING : Palette.TEXT_MUTED));
         VBox words = new VBox(0, name, standing, under);
@@ -2855,7 +2859,7 @@ final class BuildScreen {
        A CITY CATEGORY, OPENED ON ITS NEEDS (0.7.24)
 
        Healthcare as the round-2 mockups draw it (BuildHealthB), and the same
-       shape for Utilities, Roads & transit, Education and Safety: a ring per
+       shape for Utilities, Infrastructure, Education and Safety: a ring per
        measure the category serves (BuildAdvice.measuresOf()) - its figure,
        how far short in people or places, and what is on site with its wait
        - the worst picked first, a click on another showing its buildings;
@@ -2878,6 +2882,17 @@ final class BuildScreen {
        got back what 0.7.24 had dropped - the (i) and its cover, "runs $X/mo",
        +100 and the share of the land free - and a ring with one building
        draws its bars' figures with no track.
+
+       INFRASTRUCTURE'S PORTS AND RESERVE (FR4, 2026-10-19; spec-freight 5).
+       The page opens on its three rings and shows the picked one's cards, as
+       the others do; the sea terminals and the Strategic Reserve have no
+       ring (BuildAdvice.measuresOf() is what it was), so BuildCard.groups()
+       gives them as two groups after the ring's, PORTS and RESERVE, which
+       stay on the page whichever ring is picked, each under the market's
+       group heading. The strip's dot says "only the city builds these" for
+       the tab - it is derived from the category's types (investorBuilt()),
+       which hold INFRASTRUCTURE and PORTS - and Industry's says "investors"
+       now that the ports have left it.
        ===================================================================== */
 
     /** Which ring each city category has picked, by name; none picks its worst. Forgotten on arriving (openCategory()). */
@@ -2945,7 +2960,8 @@ final class BuildScreen {
 
         // The picked measure's buildings, as BuildCard groups them: one group,
         // the ring's, its bars scaled and tagged within it (0.7.25).
-        BuildCard.Group group = BuildCard.groups(ui.game, c.name(), on).get(0);
+        List<BuildCard.Group> groups = BuildCard.groups(ui.game, c.name(), on);
+        BuildCard.Group group = groups.get(0);
         List<BuildingsTemplate> shown = new ArrayList<>();
         for (BuildCard.Figures f : group.cards()) shown.add(f.template());
         double[] fill = ui.game.getPopulationManager().getJobFillRate();
@@ -2955,6 +2971,18 @@ final class BuildScreen {
         cards.setAlignment(Pos.TOP_LEFT);
         cards.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
         for (BuildCard.Figures f : group.cards()) cards.getChildren().add(card(f, group, c, on));
+
+        // ...then the groups after the ring's (FR4): Infrastructure's Ports and Reserve, which have no ring, each under the
+        // market's group heading, on the page whichever ring is picked.
+        List<javafx.scene.Node> beyond = new ArrayList<>();
+        for (BuildCard.Group extra : groups.subList(1, groups.size())) {
+            beyond.add(groupHead(extra));
+            javafx.scene.layout.FlowPane more = new javafx.scene.layout.FlowPane(TILE_GAP, TILE_GAP);
+            more.setAlignment(Pos.TOP_LEFT);
+            more.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
+            for (BuildCard.Figures f : extra.cards()) more.getChildren().add(card(f, extra, c, null));
+            beyond.add(more);
+        }
 
         // The four limits every category page has shown (constraintsBar()):
         // the materials in the yard, their import price, the land free and the
@@ -2976,7 +3004,9 @@ final class BuildScreen {
         headRight.setAlignment(Pos.CENTER_RIGHT);
         page.getChildren().addAll(head, strip, limits, rings,
                 sectionHead(on.label().toUpperCase() + " · " + measureSubtitle(on), headRight),
-                cards, orderBar, pendingHint);
+                cards);
+        page.getChildren().addAll(beyond);
+        page.getChildren().addAll(orderBar, pendingHint);
         showPendingHint();
         refreshOrderBar();
         ui.rootMenu.getChildren().add(page);
@@ -3324,6 +3354,10 @@ final class BuildScreen {
         }
         showIf(orderBar, true);
         BuildAdvice.Measure m = orderMeasure;
+        // ...an order of Infrastructure's ports and reserve alone (FR4) moves no ring's figure: the market page's bar, with no measure.
+        boolean inARing = false;
+        for (BuildingsTemplate t : order.keySet()) if (BuildCard.kindOf(t) == BuildCard.Kind.CITY) inARing = true;
+        if (!inARing) m = null;
 
         int units = 0;
         StringBuilder names = new StringBuilder();
@@ -3546,7 +3580,7 @@ final class BuildScreen {
             case DEPOT:     return "where the city's trucks are kept";
             case POINTS:    return "the crews every site waits on";
             case PUMP:      return "the drivers' petrol, at the pump";
-            case TANKS:     return "crude and products in store";
+            case TANKS:     return StrategicReserve.isReserve(first.template()) ? "the city's crude, in store" : "crude and products in store";
             case BERTHS:    return "the city's trade by sea";
             case SLOTS:     return "the slots a platform's wells stand in";
             case PIPE:      return "the sea's crude, ashore by pipe";

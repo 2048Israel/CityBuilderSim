@@ -449,6 +449,7 @@ public final class Icons {
     public static String ofCategory(String name) {
         switch (name) {
             case "Utilities":       return UTILITIES;
+            case "Infrastructure":  return ROADS;     // ..."Roads & transit" until FR4
             case "Roads & transit": return ROADS;
             case "Healthcare":      return HEALTH;
             case "Education":       return EDUCATION;

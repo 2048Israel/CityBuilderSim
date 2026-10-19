@@ -271,9 +271,12 @@ public class BuildMenuCheck {
             check(pages.get(i + 1).equals(model.get(i).name()),
                     "the strip's place " + (i + 1) + " reads " + pages.get(i + 1) + ", the model's " + model.get(i).name());
         }
-        for (String old : new String[] {"Residential", "Commercial", "Industrial", "Infrastructure", "Services"}) {
+        for (String old : new String[] {"Residential", "Commercial", "Industrial", "Roads & transit", "Rail", "Services"}) {
             check(!pages.contains(old), "the strip still reads " + old);
         }
+        // ...and since FR4 (2026-10-19) the city's roads tab reads Infrastructure and the railway's Freight (BuildAdvice.ROADS and RAIL).
+        check(pages.contains(BuildAdvice.ROADS) && pages.contains(BuildAdvice.RAIL),
+                "the strip reads " + BuildAdvice.ROADS + " and " + BuildAdvice.RAIL + ": " + pages);
 
         System.out.println();
         if (failures == 0) {
