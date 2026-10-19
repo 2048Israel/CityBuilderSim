@@ -994,9 +994,26 @@ public class CarCheck {
             jam.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             jam.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
             for (int i = 0; i < 24; i++) jam.toggleNextMonth();
+            /* ...AND ON TO A MONTH THE LINE PAYS ITS CREW (FR7, 2026-10-19). The
+               player offers the buses only where a line pays its wages at the
+               month's output (LongPlaytest.linesThatPay(): the gain is the GDP
+               times the throughput it restores), and a town this size has a
+               lumpy GDP - 13,600 one month, 5,000 to 7,000 the next - so a line
+               paid in the 24th month or not by which side of a lump it fell
+               on. FR7's gravel repairs (2.2) moved the lump by a month: the
+               fixture stood at 6,957 where it had stood at 13,574, 734 against
+               a crew's 865, and the move was never offered. The fixture is a
+               town the player WOULD buy a line for, so it plays on, a year at
+               most, to the first month one pays. */
+            BuildingsTemplate line = b.getTemplateByName("Bus Network");
+            for (int i = 0; i < 12 && LongPlaytest.linesThatPay(jam, line, 25) < 1; i++) jam.toggleNextMonth();
         });
         InfrastructureManager jamRoads = jam.getInfrastructureManager();
         BuildingsTemplate bus = jam.getBuildingManager().getTemplateByName("Bus Network");
+        report("fixture: a Bus Network pays its crew at the town's output, so the player offers the move",
+                LongPlaytest.linesThatPay(jam, bus, 25) >= 1,
+                String.format("%d line(s) pay at a month's output of %,.0f", LongPlaytest.linesThatPay(jam, bus, 25),
+                        jam.getEconomyManager().getMonthGdp()));
         double jamRiders = Math.max(0, Math.min(jamRoads.getLoad(Traffic.COMMUTERS) * InfrastructureManager.TRANSIT_MAX_SHARE,
                 jamRoads.getCapacity() * InfrastructureManager.TRANSIT_NEEDS_ROAD) - jamRoads.getUsableTransit());
         int fill = (int) Math.ceil(jamRiders / bus.getTransitCapacity());

@@ -138,8 +138,8 @@ import java.util.List;
  *      strict ones, are the 0.7.52 rule to the bit; every step's weight is
  *      over one, and over the target the rate rises with each step; the
  *      words say what it aims at.
- *      Then a probe city - the playtest's founding and rhythm (its seed 5's
- *      shape since 0.7.139, seed 8's from 0.7.102, seed 11's from 0.7.67, seed 2's from 0.7.58, seed 5's before) to month STRICT_BRANCH at Standard - played on STRICT_HORIZON
+ *      Then a probe city - the playtest's founding and rhythm (its seed 7's
+ *      shape since FR7, seed 5's from 0.7.139, seed 8's from 0.7.102, seed 11's from 0.7.67, seed 2's from 0.7.58, seed 5's before) to month STRICT_BRANCH at Standard - played on STRICT_HORIZON
  *      months from one save at each end and at Standard: the Policy tab's
  *      preview (PolicyPreview.ruleAt()) at the step in force is the rule's
  *      own; very strict holds prices lower than Standard; the very loose
@@ -1805,8 +1805,9 @@ public class CentralBankCheck {
 
     /**
      * The probe city: the playtest's founding (LongPlaytest.founding()) in
-     * its seed 5's shape since 0.7.139 - 41 houses, then four months before
-     * the next 20 (seed 8's, 40 and five months, from 0.7.102) - and its
+     * its seed 7's shape since FR7 - 43 houses, then four months before
+     * the next 20 (seed 5's, 41 and four months, from 0.7.139; seed 8's, 40
+     * and five months, from 0.7.102) - and its
      * rhythm (LongPlaytest.main's skips, schools and advice) to
      * STRICT_BRANCH, on the rule at the default target and Standard.
      *
@@ -1869,6 +1870,27 @@ public class CentralBankCheck {
      * target in 17 months and its trust 0.776 against 0.925 (seed 10's twins
      * are as calm, 2,996 to 3,012, but the lean costs them 0.943 against
      * 0.944).
+     *
+     * SEED 7'S SINCE FR7 (the roads as two needs, gravel's repairs rising with
+     * its traffic, the railway's stations: the playtest's roads moved every
+     * city from its first look at them). Seed 5's city reached month 600 at
+     * 7,120 people - 4,600 before FR7 - after a hundred-odd months without a
+     * look, its roads at 72.5% and 18% out of work, and with nothing built
+     * in the twins it came apart on that: the twins ended 4,351 (Standard),
+     * 5,680 (very strict) and 6,402 (very loose) people, Standard's dearer
+     * prices the city's path and not the rule's, and "very strict holds
+     * prices lower than Standard" read 1.868% against 1.662%. The premise is
+     * not the city's: of the sixteen shapes probed on FR7's tree (this check
+     * with the shape changed, every assertion of the section read) fifteen
+     * hold it (very strict under Standard by 0.1 to 0.8 points), and seed
+     * 5's is the one that does not;
+     * fourteen hold every premise, seed 11's missing only a month the very
+     * loose twin read under its target in. The calmest that shows the lean
+     * plainly is seed 7's - its twins 3,292 to 3,301 people, 2.668% < 3.014%
+     * < 3.907% a year, the very loose twin under its target in 26 months of
+     * the 240, its trust 0.530 against 0.864 (seed 4's twins are as calm,
+     * 7,991 to 7,992, but its very loose twin reads under its target in five
+     * months).
      */
     static Game probeCity(GameFiles files) {
         Game g = new Game(files, LongPlaytest.founding());
@@ -1882,7 +1904,7 @@ public class CentralBankCheck {
                 g.setRolloverMode(LongPlaytest.ROLLOVER);
                 g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
                 g.setFundDial(LongPlaytest.FUND_DIAL);
-                LongPlaytest.villageBuild(g, "House", 41);
+                LongPlaytest.villageBuild(g, "House", 43);
                 LongPlaytest.villageBuild(g, "Convenience Store", 3);
                 LongPlaytest.villageBuild(g, "Mixed Farm", 2);
                 LongPlaytest.run(g, 4);

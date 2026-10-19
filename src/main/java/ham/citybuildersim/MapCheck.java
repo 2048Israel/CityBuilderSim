@@ -5568,6 +5568,9 @@ public class MapCheck {
         check("...and the card's loans from the vault are the dollar bond and note for its gap, or none while the window abroad is shut", dollars);
 
         // A month drops the picks; so does a load into the same Game, though its month and its offers are the same.
+        // ...from none: the picks above are left standing - the card steps' c3 and d4, less the offers the short card bought - and
+        // two more on top of one that survived stood as three (FR7: the played city's offers moved, and one of them did).
+        picks.clear();
         picks.add(g, g.nextLandParcels(2));
         List<Integer> beforeMonth = picks.live(g);
         System.setOut(QUIET);
