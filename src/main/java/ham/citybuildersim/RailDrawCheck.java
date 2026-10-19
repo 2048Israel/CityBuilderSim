@@ -63,6 +63,10 @@ import java.util.List;
  *      the fan closes on the line the yard stands on, not on the middle of
  *      all the track in the box; the crossing track is drawn from the box's
  *      edge to that line; no siding runs across it.
+ *  22. (batch FR7 2.3) gravel is drawn grey, not tan: a near-neutral light
+ *      grey, lighter than paved, told apart from the verge, the ballast, the
+ *      track's brown dashes, the desert and the Farms' and the mines' fills,
+ *      speckled at 8 px a plot, the legend's swatch the same grey.
  *
  * Numbering is the running order.
  *
@@ -295,6 +299,7 @@ public class RailDrawCheck {
         farSkeleton();
         legend();
         lineCrossingTheYard();
+        gravelGrey();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -817,6 +822,42 @@ public class RailDrawCheck {
         for (LandMap.Entry e : plane) railLine |= e.colour() == TileRaster.RAIL_LINE;
         check("...and no entry wears the old RAIL_LINE", !railLine);
         System.out.println("  ui.MapView.LEGEND_ROWS is package-private, so this harness cannot reach it; the layout is checked by eye");
+    }
+
+    /* ================= 22. gravel drawn grey (FR7 2.3) ================= */
+    static void gravelGrey() {
+        System.out.println("--- 22. gravel drawn grey, not tan, and told from its neighbours (FR7 2.3) ---");
+        int g = TileRaster.ROAD[BuildingVisual.GRAVEL];
+        int r = (g >> 16) & 255, gr = (g >> 8) & 255, b = g & 255;
+        int spread = Math.max(r, Math.max(gr, b)) - Math.min(r, Math.min(gr, b));
+        check("gravel is a near-neutral grey: its channels within 0x14 of each other (the tan's were 0x51 apart), " + spread, spread <= 0x14);
+        check("...the small view's gravel the same grey", TileRaster.ROAD_SMALL[BuildingVisual.GRAVEL] == g);
+        check("...lighter than paved: gravel reads apart from paved by lightness", luma(g) > luma(TileRaster.ROAD[BuildingVisual.PAVED]) + 8);
+        int[][] neighbours = {
+            { TileRaster.VERGE, 0 }, { TileRaster.ROAD[BuildingVisual.PAVED], 1 }, { TileRaster.BALLAST, 2 }, { TileRaster.TRACK_DASH, 3 },
+            { TileRaster.GROUND[TileRaster.GROUND.length - 1], 4 }, { BuildingVisual.FILL[BuildingVisual.FARM], 5 },
+            { BuildingVisual.FILL[BuildingVisual.MINE], 6 } };
+        String[] names = { "the verge", "paved", "the ballast", "the track's dashes", "the desert", "the Farms' fill", "the mines' fill" };
+        for (int[] n : neighbours) {
+            double d = distance(g, n[0]);
+            check("...told from " + names[n[1]] + " (" + String.format("#%06x", n[0] & 0xffffff) + "): " + String.format("%.0f", d) + " apart, at least 24", d >= 24);
+        }
+        check("the speckle is darker than the stone it lies on, and lies on a fifth of it or less",
+                luma(TileRaster.GRAVEL_GRAIN) < luma(g) && TileRaster.GRAVEL_GRAIN_SHARE > 0 && TileRaster.GRAVEL_GRAIN_SHARE <= .2);
+        boolean swatch = false;
+        for (LandMap.Entry e : LandMap.planeLegend()) swatch |= e.colour() == g && e.words().startsWith("Gravel");
+        check("the legend's gravel swatch is the new grey", swatch);
+    }
+
+    /** A colour's luma, 0 to 255 (Rec. 601). */
+    static double luma(int c) {
+        return .299 * ((c >> 16) & 255) + .587 * ((c >> 8) & 255) + .114 * (c & 255);
+    }
+
+    /** Two colours' distance in RGB. */
+    static double distance(int a, int c) {
+        double dr = ((a >> 16) & 255) - ((c >> 16) & 255), dg = ((a >> 8) & 255) - ((c >> 8) & 255), db = (a & 255) - (c & 255);
+        return Math.sqrt(dr * dr + dg * dg + db * db);
     }
 
     /** Whether pixel row y has a pixel of `colour` within `reach` pixels of column x. */

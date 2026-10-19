@@ -62,7 +62,7 @@ import java.util.Arrays;
  * STREETS AS VERGE AND SURFACE (0.7.88, batch RD2; the project's
  * spec-roads-and-ports.md 2.1 and 5, its prototype's render()). A street's
  * plot is its right of way: drawn as VERGE, with its surface down its middle
- * - gravel tan, paved grey, a band half the plot wide for a street of half
+ * - gravel a speckled light grey (tan until FR7), paved a smooth grey, a band half the plot wide for a street of half
  * width (15 m) and the whole plot for one of full width (30 m) - joined to
  * the street beside it each way it runs; a TRACK, a street the city has
  * bought no road for, a dashed brown line on the verge; an arterial and a
@@ -84,8 +84,22 @@ public final class TileRaster {
      */
     public static final int[] GROUND = { 0xffa8c47e, 0xff527c45, 0xff78b4dc, 0xff2f5d88, 0xffe6daaa, 0xffdfe7ee, 0xffd2b48c };
 
-    /** Each road kind's colour (gravel, paved, highway): the mockup's MAP. */
-    public static final int[] ROAD = { 0, 0xffcdb07c, 0xffa4aab0, 0xff3b4048 };
+    /**
+     * Each road kind's colour (gravel, paved, highway): the mockup's MAP, but
+     * gravel's. GRAVEL IS GREY (FR7 2.3, 2026-10-18; Jerus: "i think gravel isnt
+     * brown, it should be grey"): the mockup's tan #cdb07c read as earth, and
+     * 70% of US crushed stone is limestone or dolomite and 14% granite (USGS
+     * 2025), so a gravel road is a light warm grey of loose stone, #bdb8ae, told
+     * from paved's smooth #a4aab0 by its lightness and its speckle (GRAVEL_GRAIN).
+     * The browns stay for what is earth: the track's dashes and its ballast.
+     */
+    public static final int[] ROAD = { 0, 0xffbdb8ae, 0xffa4aab0, 0xff3b4048 };
+
+    /** The loose stone's speckle on a gravel street from 4 px a plot (the near view, L0): a shade darker than its grey. */
+    public static final int GRAVEL_GRAIN = 0xff9a958b;
+
+    /** The share of a gravel street's pixels speckled: 18%. */
+    public static final double GRAVEL_GRAIN_SHARE = .18;
 
     /** The railway's line, and its casing from 4 px a plot (0.7.72) until 0.8.1 drew the track as rail; since, a track plot's colour in raster() below LINES_FROM px a plot alone (plotColour()): openstreetmap-carto's rail grey, #707070 (the mockup drew no railway; star N3-9)... */
     public static final int RAIL_LINE = 0xff707070;
@@ -1261,6 +1275,12 @@ public final class TileRaster {
             int c = in.owned[i] ? ROAD[kind] : blend(ROAD[kind], VOID, UNOWNED_DIM);
             if (h) fillRect(img, w, x0, y0 + o, x0 + px, y0 + o + t, c);
             if (v) fillRect(img, w, x0 + o, y0, x0 + o + t, y0 + px, c);
+            // ...and gravel's loose stone, a fine speckle by each pixel's own hash (FR7 2.3).
+            if (kind == BuildingVisual.GRAVEL) {
+                int grain = in.owned[i] ? GRAVEL_GRAIN : blend(GRAVEL_GRAIN, VOID, UNOWNED_DIM);
+                if (h) grain(in, img, w, x0, y0 + o, x0 + px, y0 + o + t, grain);
+                if (v) grain(in, img, w, x0 + o, y0, x0 + o + t, y0 + px, grain);
+            }
         }
         // The railway's crossings: rails through a level crossing with its marks, an arterial or boulevard over the main line as a bridge.
         railCrossings(in, p, px, img);
@@ -2043,6 +2063,18 @@ public final class TileRaster {
        A RECTANGLE OF PIXELS, AND THE PLOTS' COLOURS
        ===================================================================== */
 
+    /** Speckles GRAVEL_GRAIN_SHARE of the box's pixels with c, each by a hash of its pixel in the tile and the tile's place, so the same street speckles the same at every paint. */
+    private static void grain(TilePainter.Input in, int[] img, int w, int x0, int y0, int x1, int y1, int c) {
+        for (int y = y0; y < y1; y++) {
+            int o = y * w;
+            for (int x = x0; x < x1; x++) {
+                double u = World.unit(World.mix((in.tx * 8191L + x) * 0x9E3779B97F4A7C15L
+                        ^ (in.ty * 8191L + y) * 0xC2B2AE3D27D4EB4FL ^ in.seed ^ 0x47524156L));
+                if (u < GRAVEL_GRAIN_SHARE) img[o + x] = c;
+            }
+        }
+    }
+
     private static void fillRect(int[] img, int w, int x0, int y0, int x1, int y1, int c) {
         for (int y = y0; y < y1; y++) {
             int o = y * w;
@@ -2074,7 +2106,7 @@ public final class TileRaster {
     }
 
     /** A road plot's colour below LINES_FROM px a plot, where it fills its plot, by kind: gravel's and the highway's own, a paved road's casing - its own grey is the grass's brightness, and a pixel of it vanishes among the homes. */
-    public static final int[] ROAD_SMALL = { 0, 0xffcdb07c, 0xff6a7077, 0xff3b4048 };
+    public static final int[] ROAD_SMALL = { 0, 0xffbdb8ae, 0xff6a7077, 0xff3b4048 };
 
     /** A plot's colour before its building: its ground, its site's tint or grey, its road's colour - a track's brown (0.7.88) - or (0.7.72) its track's, where no street crosses it - and dimmed when unowned. */
     static int plotColour(TilePainter.Input in, TilePainter.Painted p, int i) {
