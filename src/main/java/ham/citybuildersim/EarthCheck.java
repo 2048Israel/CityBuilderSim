@@ -111,7 +111,7 @@ public class EarthCheck {
 
     static void report(String label, boolean ok, String detail) {
         if (!ok) fails++;
-        out.printf("%-96s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
+        out.printf("%-96s %s  %s%n", label, Timing.verdict(ok), detail);
     }
 
     /** Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. */
@@ -696,7 +696,7 @@ public class EarthCheck {
         }
         Arrays.sort(us);
         double median = us[rounds / 2];
-        report("the fullest sea tile of the fixture inflates in under INFLATE_MS, the median of 31 rounds of 50", median <= INFLATE_MS * 1000,
+        report("the fullest sea tile of the fixture inflates in under INFLATE_MS, the median of 31 rounds of 50", Timing.within(median, INFLATE_MS * 1000, "us"),
                 String.format("tile %d, %,d bytes to %,d: median %.0f us, slowest round %.0f us (spec 126-130 us)", best, z.length, expect, median, us[rounds - 1]));
     }
 }

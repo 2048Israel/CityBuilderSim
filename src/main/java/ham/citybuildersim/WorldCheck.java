@@ -83,7 +83,7 @@ public class WorldCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        System.out.printf("%-62s %s%n", label, ok ? "OK" : "FAIL");
+        System.out.printf("%-62s %s%n", label, Timing.verdict(ok));
     }
 
     /** The default world, and two more: 77, and 2026, whose search hands on to a second cell. */
@@ -364,7 +364,7 @@ public class WorldCheck {
         System.out.printf("   FOREST   %.4g cubic metres, %.4g km2 of it: %.2f%% of the land; the pass took %.1f ms (best of 3)%n",
                 totals[Resource.FOREST.ordinal()], forestKm2, 100 * forestKm2 / landKm2, best);
         check("the totals pass gives the same totals every time", same);
-        check("...in at most 200 ms (measured 30)", best <= TOTALS_MS);
+        check("...in at most 200 ms (measured 30)", Timing.within(best, TOTALS_MS));
         check("each resource's total is its expectation within 3%", near);
         check("forest's timber is FOREST_M3_PER_KM2 over the forest drawn, within a point",
                 Math.abs(forestKm2 / landKm2 - (double) forestClass / land) <= .01);
@@ -388,7 +388,7 @@ public class WorldCheck {
         System.out.printf("   %,d plots of 36 tiles: %.3f%% agree; a tile in %.3f ms (best of 5 rounds of 400)%n",
                 plots, 100.0 * agree / plots, tileBest);
         check("a tile's terrain is the point function's on 99.5% of its plots", agree >= TILE_AGREES * plots);
-        check("...at no more than 0.5 ms a tile (measured 0.07)", tileBest <= TILE_MS);
+        check("...at no more than 0.5 ms a tile (measured 0.07)", Timing.within(tileBest, TILE_MS));
         int n = 64;
         byte[] region = new byte[n * n];
         long x0 = w.foundingX() - n / 2, y0 = w.foundingY() - n / 2;

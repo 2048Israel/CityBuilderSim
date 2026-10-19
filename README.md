@@ -78,8 +78,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **112 harnesses plus the
-4,000-odd-month playtest**, which it counts as 113 run (112 where
+`AllChecks` runs the lot, one JVM each — **113 harnesses plus the
+4,000-odd-month playtest**, which it counts as 114 run (113 where
 JavaFX is not on the classpath, which skips `BuildMenuCheck`), in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
@@ -95,6 +95,14 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   output kept in `target/checks/NAME.log`. `batch-check.sh` runs it with the
   build, the maps and Stale; `Batch check.bat` is the same on Windows, the
   maps only with `--maps`.
+- `--timing` runs only the harnesses that time something (`Timing.HARNESSES`):
+  what the ship gate runs, alone and hard, before it commits.
+- `-Dcbs.timing=soft` makes timing soft: a timing figure over its budget says
+  `SOFT`, with the figure and the budget, and is not counted; every other
+  assertion is as it was. `AllChecks` hands it to each harness, and `-f` says
+  how many went soft. The check scripts set it by themselves while another
+  batch's JVM or the game is running, so two batches' suites run side by side
+  (TM1, 2026-10-18); `TimingCheck` holds the mechanism.
 - Any other argument filters by substring: `AllChecks money bank` runs
   `MoneyCheck` and `BankCheck` and nothing else.
 - The exit status is the number of harnesses that failed, so a build script can

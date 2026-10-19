@@ -20,7 +20,10 @@
 #       merged tree, Stale, line endings - and the maps added to the merge;
 #       on a chatgpt/ or gemini/ branch, tools.Names too: the names its text
 #       uses that the tree does not declare, said and never a gate (a passage
-#       about the past may name a method that existed then);
+#       about the past may name a method that existed then); then the timing
+#       harnesses alone and hard (batch-check.sh --timing), once no other
+#       batch's JVM runs: the suite above times soft when one ran beside it
+#       (TM1), the gate never;
 #    5. the merge committed as "Merge batch/I12: <title>, <version>", the title
 #       QUEUE.md's on main unless -m gives one;
 #    6. tagged with GameVersion.VERSION unless that tag exists already (a batch
@@ -124,6 +127,10 @@ case "$BRANCH" in
             say "names: not run - no tools.Names in the build"
         fi ;;
 esac
+if [ "$CHECKED" = 0 ]; then   # TM1: timing is held hard here, and only here
+    ./batch-check.sh --timing
+    CHECKED=$?
+fi
 if [ "$CHECKED" != 0 ] || [ "$DRY" = 1 ]; then
     undo
     [ "$CHECKED" = 0 ] || die "the checks failed on the merge (above); main is where it was"

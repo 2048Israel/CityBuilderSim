@@ -124,7 +124,7 @@ public class GlobeCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        out.printf("%-110s %s%n", label, ok ? "OK" : "FAIL");
+        out.printf("%-110s %s%n", label, Timing.verdict(ok));
     }
 
     /** The planet's radius in metres (EarthProj.RADIUS_M), which the sections measure arcs and the disc by. */
@@ -797,6 +797,6 @@ public class GlobeCheck {
         out.printf("      a frame %d x %d: %.1f ms of %s (%.1f ms wall) on one thread, %.1f ms wall on two - the study 96 to 102 ms on one, 50 on two;"
                 + " the whole planet leaves %,d pixels to space%n", (int) w, (int) h, cpu, clock, wall, two, space);
         check("a frame from the planet's picture is drawn in no more than FRAME_MS of " + (MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock"),
-                cpu <= FRAME_MS && space > 0);
+                Timing.within(cpu, FRAME_MS) && space > 0);
     }
 }

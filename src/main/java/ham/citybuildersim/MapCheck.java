@@ -284,7 +284,7 @@ public class MapCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        out.printf("%-78s %s%n", label, ok ? "OK" : "FAIL");
+        out.printf("%-78s %s%n", label, Timing.verdict(ok));
     }
 
     /** Months the city of section 1 is played: 120 (the design's). */
@@ -2147,7 +2147,7 @@ public class MapCheck {
             out.printf("      x %,.0f: the screen's %d tiles - terrain, the plans' tiles, paint and raster at %d px - in %.1f ms (%.3f ms a tile),"
                     + " %,d buildings; %.2f x the 5B copy's; the first time, its plans made, %.0f ms%n", TIMES[i], SCREEN_TILES, PX, best[i],
                     best[i] / SCREEN_TILES, drawn[i], ratio, cold[i]);
-            under &= best[i] <= SCREEN_MS;
+            under &= Timing.within(best[i], SCREEN_MS);
             if (i != base) near &= ratio <= SCREEN_RATIO;
         }
         check("a 1,389 x 868 L0 screen paints and rasters from its districts' plans in no more than 80 ms, at every size", under);
@@ -2196,7 +2196,7 @@ public class MapCheck {
                     + " then -0.05%% in %.2f/%.2f; the bounded months' worst %.2f (its wall clock %.2f), the wall clock's worst %.2f%n",
                     TIMES[i], clock, firstMs, firstWall, months, downMs, downWall, worst, worstsWall, worstWall);
             check("at " + size + " billion a month's change takes no more than 5 ms of "
-                    + (CPU_TIMED ? "the main thread's CPU" : "the wall clock"), worst <= RECONCILE_MS);
+                    + (CPU_TIMED ? "the main thread's CPU" : "the wall clock"), Timing.within(worst, RECONCILE_MS));
             check("...and its districts still sum to the counts exactly", Arrays.equals(m.totals(), c));
         }
     }
@@ -2848,7 +2848,7 @@ public class MapCheck {
         out.printf("      the view's path (the ground kept, stamped, painted, rastered at %d px): x 1 %.1f ms, x %,.0f %.1f ms (%.2f x);"
                         + " section 5's path in turn %.1f and %.1f ms (%.2f x)%n", PX, view[0], TIMES[DENSE], view[1], view[1] / view[0],
                 modelMs[0], modelMs[1], modelMs[1] / modelMs[0]);
-        check("the view's own path for a 1,389 x 868 L0 screen takes no more than 80 ms, x 1 and x 10,000", view[0] <= SCREEN_MS && view[1] <= SCREEN_MS);
+        check("the view's own path for a 1,389 x 868 L0 screen takes no more than 80 ms, x 1 and x 10,000", Timing.within(view[0], SCREEN_MS) && Timing.within(view[1], SCREEN_MS));
         check("...and no more than section 5's at either size: the view adds nothing a tile", view[0] <= modelMs[0] && view[1] <= modelMs[1]);
         long kept = 0, plan = 0;
         for (int j = 0; j < SCREEN_DOWN; j++) for (int i = 0; i < SCREEN_ACROSS; i++) {
@@ -3184,7 +3184,7 @@ public class MapCheck {
                 + " of the prototype's 8 districts %.3f ms (%,d boats; it measured 0.38)%n", huge.callCount(), PROTO_LANES, best[0], seen[0], best[1],
                 seen[1], best[2], seen[2]);
         check("...at 10 billion a frame's boats take no more than BOAT_FRAME_MS (0.5 ms): an L0 screen, an L1 one and the prototype's 8 districts",
-                best[0] <= BOAT_FRAME_MS && best[1] <= BOAT_FRAME_MS && best[2] <= BOAT_FRAME_MS);
+                Timing.within(best[0], BOAT_FRAME_MS) && Timing.within(best[1], BOAT_FRAME_MS) && Timing.within(best[2], BOAT_FRAME_MS));
     }
 
     /** The design's bound on a frame's trains at 10 billion, in ms: the boats' (spec-freight 4.4, "the same structure is well inside budget"). */
@@ -3384,7 +3384,7 @@ public class MapCheck {
                 + " (%d vehicles), of an L1 screen %.3f ms (%d vehicles)%n", tonnes10B * 2, ten.callCount(), ten.stands(), many.size(),
                 best[0], seen[0], best[1], seen[1]);
         check("...at 10 billion a frame's trains take no more than TRAIN_FRAME_MS (0.5 ms): an L0 screen and an L1 one",
-                best[0] <= TRAIN_FRAME_MS && best[1] <= TRAIN_FRAME_MS && ten.callCount() <= TrainSchedule.MOST_A_MONTH + 2 * kinds);
+                Timing.within(best[0], TRAIN_FRAME_MS) && Timing.within(best[1], TRAIN_FRAME_MS) && ten.callCount() <= TrainSchedule.MOST_A_MONTH + 2 * kinds);
 
         // ---- THE STATION'S LOOK: a railway that moved no boxes draws its station as a bulk yard (RailCheck 7 holds the other way).
         ham.citybuildersim.sectors.Freight rail = city.getSectors().freight();
@@ -3662,7 +3662,7 @@ public class MapCheck {
             if (r >= WARM_ROUNDS) best = Math.min(best, ms);
         }
         out.printf("      Rotterdam's window as a far node (%d plots a pixel): %.1f ms (the study measured 1.4 to 3.7 ms for a 128-pixel node)%n", WINDOW_STRIDE, best);
-        check("...drawn in no more than SCREEN_MS (" + (int) SCREEN_MS + " ms), on the worker away from the screen", best <= SCREEN_MS);
+        check("...drawn in no more than SCREEN_MS (" + (int) SCREEN_MS + " ms), on the worker away from the screen", Timing.within(best, SCREEN_MS));
 
         // The 180th meridian: Fiji's window, nodes overlapping by half.
         EarthTerrainCheck.Spot fiji = spots.get("Fiji");
@@ -3949,7 +3949,7 @@ public class MapCheck {
                 e.farTerrain(x0, x0, s, n, g);
                 if (r >= WARM_ROUNDS) best = Math.min(best, (System.nanoTime() - t1) / 1e6);
             }
-            within &= best <= SCREEN_MS;
+            within &= Timing.within(best, SCREEN_MS);
             worst = Math.max(worst, best);
             times.append(String.format("%s%d: %.1f (%.0f)", times.length() == 0 ? "" : ", ", s, best, cold));
         }
@@ -4301,7 +4301,7 @@ public class MapCheck {
         out.printf("      a far node over x 10,000: %.1f ms at 16 plots a pixel (its pictures), %.1f at %d, %.1f at %d (its shares)%n",
                 nodeMs[0], nodeMs[1], at, nodeMs[2], far);
         check("a far node over the city - its pictures sampled, or its shares dithered - drawn in no more than SCREEN_MS ("
-                + (int) SCREEN_MS + " ms)", pictures > 0 && left16 == 0 && Math.max(nodeMs[0], Math.max(nodeMs[1], nodeMs[2])) <= SCREEN_MS);
+                + (int) SCREEN_MS + " ms)", pictures > 0 && left16 == 0 && Timing.within(Math.max(nodeMs[0], Math.max(nodeMs[1], nodeMs[2])), SCREEN_MS));
         MapFrame whole = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H), small = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
         LandGrid dg = dense.land().grid(), xg = x1.land().grid();
         whole.fit(dg.minX(), dg.minY(), dg.maxX(), dg.maxY());
@@ -4649,7 +4649,7 @@ public class MapCheck {
         out.printf("      the stamp, ms of the thread's %s:%s the worst %s%n", CPU_TIMED ? "CPU" : "wall clock (no fine thread CPU here)", costs, worstAt);
         check("fixture: the Earth's fixture is beside the classes, and x 1 stands on it", earth != null);
         check("the stamp - its frame and its node - drawn in no more than MiniMapFrame.STAMP_MS (" + (int) MiniMapFrame.STAMP_MS + " ms) of the "
-                + (CPU_TIMED ? "thread's CPU" : "wall clock"), worst > 0 && worst <= MiniMapFrame.STAMP_MS);
+                + (CPU_TIMED ? "thread's CPU" : "wall clock"), worst > 0 && Timing.within(worst, MiniMapFrame.STAMP_MS));
         check("...on Earth the city's plane round it: no pixel the void past the planet's rim", earth != null && noVoid);
 
         // ----- A click: the expanded map on the frame, where the land office's opening takes in the far block -----
@@ -5758,7 +5758,7 @@ public class MapCheck {
         out.printf("      the screen over its industry, district (%d, %d): %d tiles, %,d buildings, in %.1f ms of %s (%.3f ms a tile, its slowest %.2f)%n",
                 at.dx, at.dy, SCREEN_TILES, built, best, CPU_TIMED ? "the main thread's CPU" : "the wall clock", best / SCREEN_TILES, worstTile);
         check("a 1,389 x 868 L0 screen over the industry paints and rasters in no more than 80 ms of " + (CPU_TIMED ? "the main thread's CPU" : "the wall clock")
-                + " - every tile of it well within its 80 ms", best <= SCREEN_MS && worstTile <= SCREEN_MS);
+                + " - every tile of it well within its 80 ms", Timing.within(best, SCREEN_MS) && Timing.within(worstTile, SCREEN_MS));
     }
 
     /** How many districts a zone's tint takes. */
