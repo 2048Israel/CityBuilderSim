@@ -2334,11 +2334,21 @@ public final class CityRuns {
      * arm, or a plot on no arm.
      */
     public double[][] wayToPlot(long px, long py) {
-        int main = mainArm();
-        if (main < 0) return null;
-        int[] loc = locate(rail, px, py);
+        return wayOn(rail, mainArm(), px, py);
+    }
+
+    /**
+     * ...on any net, from the end of arm fromArm (FR5, slice B: the trucks'
+     * highway way is this walk on the highways net, from the arm its world
+     * line leaves from): wayToPlot() is wayOn(rail, mainArm(), px, py)
+     * exactly. Null with fromArm not an arm of n, a plot on no arm of n, or a
+     * chain that does not reach the hub.
+     */
+    public double[][] wayOn(Net n, int fromArm, long px, long py) {
+        if (fromArm < 0 || fromArm >= n.arms.size()) return null;
+        int[] loc = locate(n, px, py);
         if (loc == null) return null;
-        List<int[]> mc = chain(rail, main, rail.arms.get(main).steps), yc = chain(rail, loc[0], loc[1]);
+        List<int[]> mc = chain(n, fromArm, n.arms.get(fromArm).steps), yc = chain(n, loc[0], loc[1]);
         if (mc == null || yc == null) return null;
         // Where the chains meet: the first arm of the main arm's chain the yard's also runs along (none: at the hub).
         int i = mc.size(), j = yc.size();
@@ -2349,7 +2359,7 @@ public final class CityRuns {
         // In along the main arm's chain, each arm from its step back to its start...
         for (int m = 0; m < i; m++) {
             List<long[]> in = new ArrayList<>();
-            armPoints(rail.arms.get(mc.get(m)[0]), 0, mc.get(m)[1], in);
+            armPoints(n.arms.get(mc.get(m)[0]), 0, mc.get(m)[1], in);
             java.util.Collections.reverse(in);
             pts.addAll(in);
         }
@@ -2357,12 +2367,12 @@ public final class CityRuns {
         if (i < mc.size()) {
             int from = mc.get(i)[1], to = yc.get(j)[1];
             List<long[]> between = new ArrayList<>();
-            armPoints(rail.arms.get(mc.get(i)[0]), Math.min(from, to), Math.max(from, to), between);
+            armPoints(n.arms.get(mc.get(i)[0]), Math.min(from, to), Math.max(from, to), between);
             if (from > to) java.util.Collections.reverse(between);
             pts.addAll(between);
         }
         // ...and out along the yard's chain from there.
-        for (int y = j - 1; y >= 0; y--) armPoints(rail.arms.get(yc.get(y)[0]), 0, yc.get(y)[1], pts);
+        for (int y = j - 1; y >= 0; y--) armPoints(n.arms.get(yc.get(y)[0]), 0, yc.get(y)[1], pts);
         List<long[]> once = new ArrayList<>();
         for (long[] p : pts) {
             if (!once.isEmpty() && once.get(once.size() - 1)[0] == p[0] && once.get(once.size() - 1)[1] == p[1]) continue;
@@ -2371,6 +2381,33 @@ public final class CityRuns {
         double[] xs = new double[once.size()], ys = new double[once.size()];
         for (int k = 0; k < once.size(); k++) { xs[k] = once.get(k)[0] + 0.5; ys[k] = once.get(k)[1] + 0.5; }
         return new double[][] { xs, ys };
+    }
+
+    /**
+     * The highways' way from the end of arm fromArm (the arm their world
+     * line leaves the city's ground from) to a plot of the highways net, as
+     * wayToPlot() finds the railway's (FR5, slice B: the trucks' routes):
+     * wayOn(highways, fromArm, px, py). Null while the highways reach no
+     * street (highwaysReach(): the net is laid and not drawn), or as wayOn().
+     */
+    public double[][] highwayWayTo(int fromArm, long px, long py) {
+        return highwaysReach() ? wayOn(highways, fromArm, px, py) : null;
+    }
+
+    /**
+     * The highways' ramps at their arms' ends (fill() marks one at each arm
+     * that has steps): {x, y, the arm's index} in plots, in the arms' order;
+     * none while the highways reach no street (highwaysReach()). Where the
+     * trucks leave the highway for an access road (FR5, slice B).
+     */
+    public List<long[]> highwayRamps() {
+        List<long[]> out = new ArrayList<>();
+        if (!highwaysReach()) return out;
+        for (int i = 0; i < highways.arms.size(); i++) {
+            Arm a = highways.arms.get(i);
+            if (a.steps > 0) out.add(new long[] { a.x, a.y, i });
+        }
+        return out;
     }
 
     /** Adds to out arm a's plots at steps from and to (from <= to) and at every turn between, in the order of its steps. */
