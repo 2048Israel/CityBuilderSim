@@ -42,10 +42,13 @@ public final class CityNeeds {
 
     /** What a need is about - the measure the Build tab's advice and rings read. */
     public enum Kind {
+        /** ROADS is the STREETS need since FR7 (2026-10-18): the access road; HIGHWAYS, below, is the through need. */
         POWER, WATER, ROADS, CARE, DEAD, PLOTS, BASIC_SCHOOLS, HIGHER_SCHOOL, CRIME, CELLS,
         HOMES, GROUND, BUILDERS, TREASURY, BANK, BORROWING, FALLS_DUE, PENSIONS, WAGES, BUDGET,
         /** Whether the city still believes the central bank (0.7.45): the anchor's row. */
-        PRICES
+        PRICES,
+        /** The through trips with no highway to take them (FR7, 2026-10-18): the Elevated Highway's need, beside ROADS' streets. */
+        HIGHWAYS
     }
 
     /** Where a need's fix is: the screen its row opens. */
@@ -89,7 +92,7 @@ public final class CityNeeds {
         /** A need the city answers with a building of its own (BuildAdvice): roads, care, schools, police, cells, power and water. */
         public boolean cityBuilds() {
             switch (kind) {
-                case POWER: case WATER: case ROADS: case CARE: case DEAD: case PLOTS:
+                case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: case DEAD: case PLOTS:
                 case BASIC_SCHOOLS: case HIGHER_SCHOOL: case CRIME: case CELLS:
                     return true;
                 default:
@@ -109,6 +112,8 @@ public final class CityNeeds {
                     return verdict(kind, care, value);
                 case POWER: case WATER: case ROADS: case CARE: case HIGHER_SCHOOL:
                     return verdict(kind, care, servedShare(a, b));
+                case HIGHWAYS:
+                    return highwayVerdict(servedShare(a, b), value);
                 default:
                     return null;
             }
@@ -166,6 +171,19 @@ public final class CityNeeds {
 
     /** A network is listed from three-quarters of its capacity, red once it is over. */
     public static final double NETWORK_YELLOW = .75, NETWORK_RED = 1;
+
+    /**
+     * THE HIGHWAYS ARE LISTED (FR7, 2026-10-18) once the through trips with no
+     * highway to take them would fill this share of one more highway at free
+     * flow: a highway is not built to stand idle, the railway's rule
+     * (Freight.MIN_LINE_UTILISATION), so none is called for until it would
+     * carry six tenths of its capacity from the day it opens. No population
+     * gate is written: the need is the gate.
+     */
+    public static final double HIGHWAY_MIN_FILL = .60;
+
+    /** ...and red once those trips would fill a whole highway: a highway's worth of through traffic is on the streets. */
+    public static final double HIGHWAY_RED_FILL = 1.0;
 
     /** General care is watched hardest: it moves the sick rate. */
     public static final double GENERAL_YELLOW = .80, GENERAL_RED = .50;
@@ -342,7 +360,23 @@ public final class CityNeeds {
         }
     }
 
-    /** The one verdict on a served share of one of NEEDS YOU's served kinds (0.7.41); null for a kind that is not a supply against a demand. */
+    /**
+     * The through need's verdict (FR7, 2026-10-18), read from the row's own
+     * level: a highway is not built to stand idle, so the through trips the
+     * streets carry are enough while they would fill under HIGHWAY_MIN_FILL of
+     * one more highway - green, off NEEDS YOU's list, whatever share of them
+     * is on a highway - amber from there, red from HIGHWAY_RED_FILL. No line in
+     * served terms could say so, a small city's share being 0 and fine, so the
+     * gauge takes the row's fill (the through overflow over what one highway
+     * carries at free flow) beside the share it shows.
+     */
+    public static Served highwayVerdict(double share, double fill) {
+        if (Double.isNaN(share) || Double.isNaN(fill)) return new Served(share, -1, null);
+        int level = fill >= HIGHWAY_RED_FILL ? 2 : fill >= HIGHWAY_MIN_FILL ? 1 : 0;
+        return new Served(share, level, level == 0 ? ENOUGH : SHORT);
+    }
+
+    /** The one verdict on a served share of one of NEEDS YOU's served kinds (0.7.41); null for a kind that is not a supply against a demand (and for the highways, whose verdict is highwayVerdict()'s). */
     public static Served verdict(Kind kind, CareType care, double share) {
         double[] lines = servedLines(kind, care);
         return lines == null ? null : served(share, lines[0], lines[1]);
@@ -402,12 +436,30 @@ public final class CityNeeds {
         // the pair every screen writes the road in (0.7.29): how much of its
         // traffic it serves, and the flow that leaves - "62% served · 56% flow"
         // since 0.7.41 (it was how full, "162% full"); listed on the load still.
+        //
+        // TWO ROWS SINCE FR7 (2026-10-18): the STREETS, the streets' load over their capacity (the whole road's
+        // with no highway standing, to the bit), and the HIGHWAYS, the through trips with no highway to take
+        // them, each its own measure and its own door (InfrastructureManager, STREETS AND HIGHWAYS, TWO NEEDS).
         double traffic = roads.getUtilisation();
-        double served = servedShare(roads.getCapacity(), roads.getEffectiveLoad());
-        over(out, "ROADS", servedPct(served) + " " + SERVED + " · " + String.format("%.0f%% flow", roads.getThroughputRatio() * 100),
+        double served = servedShare(roads.getStreetCapacity(), roads.getStreetLoad());
+        over(out, "STREETS", servedPct(served) + " " + SERVED + " · " + String.format("%.0f%% flow", roads.getThroughputRatio() * 100),
                 traffic, InfrastructureManager.STRAINED, InfrastructureManager.FREE_FLOW,
-                Kind.ROADS, Go.ROADS, CareType.NONE, EducationType.NONE, roads.getCapacity(), roads.getEffectiveLoad());
-        onTheWay(game, w, out, t -> t.getCategory() == BuildingType.INFRASTRUCTURE);
+                Kind.ROADS, Go.ROADS, CareType.NONE, EducationType.NONE, roads.getStreetCapacity(), roads.getStreetLoad());
+        onTheWay(game, w, out, t -> t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway());
+
+        // Read as the through trips on highways ("40% of through traffic on highways"); listed on the overflow,
+        // in highways: from HIGHWAY_MIN_FILL of one at free flow, red from HIGHWAY_RED_FILL. No Elevated
+        // Highway in the catalogue, no row (nothing could answer it).
+        double oneHighway = BuildAdvice.highwayFlow(game);
+        if (oneHighway > 0) {
+            double fill = roads.getThroughOverflow() / oneHighway;
+            double through = roads.getThroughServed();
+            over(out, "HIGHWAYS", Double.isFinite(through) ? servedPct(Math.min(1, through)) + " of through traffic on highways" : "no through traffic",
+                    fill, HIGHWAY_MIN_FILL, HIGHWAY_RED_FILL,
+                    Kind.HIGHWAYS, Go.ROADS, CareType.NONE, EducationType.NONE,
+                    roads.getHighwayCapacity() * InfrastructureManager.FREE_FLOW, roads.getThroughLoad());
+            onTheWay(game, w, out, t -> t.getCategory() == BuildingType.INFRASTRUCTURE && t.isHighway());
+        }
 
         /* ------------------------------- the care ------------------------------- */
         // Listed on the cover as it always was; read as served (0.7.41), the

@@ -189,7 +189,9 @@ public class BuildAdviceCheck {
             for (String[] w : new String[][] {
                     { "Industrial Bakery", "2" }, { "Coal Power Plant", "1" }, { "Water Treatment Plant", "1" },
                     { "Commercial Bank", "1" }, { "Convenience Store", "4" }, { "House", "300" },
-                    { "Construction Depot", "2" }, { "Elevated Highway", "3" },
+                    // FR7: four Paved Roads for the streets (it was three Elevated Highways, whose capacity was the one pool's
+                    // and is not the streets' now - a highway gives no access), 5,200 trips against 4,900.
+                    { "Construction Depot", "2" }, { "Paved Road", "4" },
                     { "Community Health Centre", "1" }, { "Childcare Centre", "2" }, { "Home Care Service", "2" },
                     { "Elementary School", "1" }, { "Middle School", "1" }, { "High School", "1" },
                     { "Community College", "1" }, { "University", "1" }, { "Medical School", "1" },
@@ -556,6 +558,9 @@ public class BuildAdviceCheck {
             }
             case ROADS:
                 return twin.getInfrastructureManager().getUtilisation();
+            case HIGHWAYS:
+                // FR7: the through trips with no highway to take them, over what one highway carries at free flow.
+                return twin.getInfrastructureManager().getThroughOverflow() / BuildAdvice.highwayFlow(twin);
             case TRANSIT:
                 return twin.getInfrastructureManager().getTransitCover();
             case CARE:
@@ -829,42 +834,50 @@ public class BuildAdviceCheck {
         market.restoreOffers(base, nextId);
         BuildAdvice.Measure m = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
         Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, m);
-        BuildingsTemplate highway = template(g, "Elevated Highway");
-        // A road's price over its life since 0.7.70 (BuildAdvice.lifetime()): its quote and its running for its life.
+        /*
+         * FR7 (Jerus's star 4, 2026-10-18) RETIRED THIS BLOCK'S PREMISE: that the Elevated Highway is the cheapest road past
+         * a price of ground, and the gravel road at nothing. The highway is not a street (it gives no access), so it is not
+         * among the streets' candidates, and a gravel road's repairs rise with the traffic on its street, so on this city's
+         * busy streets the paved road is the least at nothing too (RoadCheck 2 holds the quiet side, where gravel wins).
+         * It asks now that the streets' card be the least over its life of the streets that keep the road ahead, the ground
+         * at nothing, at ten times and at a thousand times the land office's price a square foot - each recomputed here from the
+         * quote, the running and the ground a trip - and that the Paved Road be the leanest in ground.
+         */
+        BuildingsTemplate highway = template(g, "Elevated Highway"), lean = template(g, "Paved Road");
         double life = BuildAdvice.lifeFactor(g);
-        double hq = (g.quoteBuild(highway, 1).total + BuildAdvice.running(g, highway, site) * life) / BuildAdvice.unit(g, m, highway);
-        double ha = highway.getLandSqFt() / BuildAdvice.unit(g, m, highway);
-        double breakEven = 0;
-        boolean thriftiest = true;
-        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
-            if (t.getCategory() != BuildingType.INFRASTRUCTURE || t == highway) continue;
-            double u = BuildAdvice.unit(g, m, t);
-            if (!(u > 0)) continue;
-            int[] today = BuildAdvice.count(g, m, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
-            if (today[0] <= 0) continue;
-            if (BuildAdvice.count(g, m, site, t, BuildAdvice.opening(g, g.quoteBuild(t, today[0]).months))[1] != 1) continue;
-            double q = (g.quoteBuild(t, 1).total + BuildAdvice.running(g, t, site) * life) / u, ga = t.getLandSqFt() / u;
-            thriftiest &= ga > ha;
-            if (ga > ha) breakEven = Math.max(breakEven, (hq - q) / (ga - ha));
-        }
         double office = land.getOfficePricePerSqFt();
-        double factor = 10 * breakEven / office;
-        String[] dear = new String[2];
-        double[] at = {0, factor};
-        for (int f = 0; f < 2; f++) {
+        double[] at = {0, 10, 1000};
+        String[] cheapest = new String[at.length], card = new String[at.length];
+        boolean thriftiest = BuildAdvice.unit(g, m, highway) == 0;
+        double leanGround = lean.getLandSqFt() / BuildAdvice.unit(g, m, lean);
+        for (int f = 0; f < at.length; f++) {
+            double least = Double.POSITIVE_INFINITY;
+            for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+                if (t.getCategory() != BuildingType.INFRASTRUCTURE || t.isHighway()) continue;
+                double u = BuildAdvice.unit(g, m, t);
+                if (!(u > 0)) continue;
+                int[] today = BuildAdvice.count(g, m, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
+                if (today[0] <= 0) continue;
+                if (BuildAdvice.count(g, m, site, t, BuildAdvice.opening(g, g.quoteBuild(t, today[0]).months))[1] != 1) continue;
+                double ga = t.getLandSqFt() / u;
+                if (f == 0) thriftiest &= t == lean || ga > leanGround;
+                double per = (g.quoteBuild(t, 1).total + BuildAdvice.running(g, t, site) * life) / u + ga * at[f] * office;
+                if (per < least) { least = per; cheapest[f] = t.getName(); }
+            }
             market.restoreOffers(scaledOffers(base, at[f]), nextId);
-            for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g)) if (s.measure().kind() == BuildAdvice.Kind.ROADS) dear[f] = s.template().getName();
+            for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g)) if (s.measure().kind() == BuildAdvice.Kind.ROADS) card[f] = s.template().getName();
         }
         market.restoreOffers(base, nextId);
         land.setOwnedSqFt(owned);
-        out.printf("      no ground free: the highway is the cheapest road with its ground past %s a sq ft;"
-                + " the office's prices at x0 and x%,.1f: %s, %s%n", Formats.INSTANCE.amount(breakEven), factor, dear[0], dear[1]);
-        assertTrue("fixture: of the roads that keep it ahead, the Elevated Highway needs the least ground a trip", thriftiest
-                && breakEven > 0);
-        assertTrue("with the land office's prices at nothing, the roads card is the cheapest to build: Gravel Road (" + dear[0] + ")",
-                "Gravel Road".equals(dear[0]));
-        assertTrue("...and at ten times that price a square foot, the one that needs the least ground: Elevated Highway ("
-                + dear[1] + ")", "Elevated Highway".equals(dear[1]));
+        out.printf("      no ground free, the office's prices at x0, x10 and x1000: the streets' card %s, %s, %s; the least over its life, recomputed: %s, %s, %s%n",
+                card[0], card[1], card[2], cheapest[0], cheapest[1], cheapest[2]);
+        assertTrue("fixture: the Elevated Highway is no candidate for the streets, and of those that keep the road ahead the Paved"
+                + " Road needs the least ground a trip", thriftiest);
+        boolean agrees = true;
+        for (int f = 0; f < at.length; f++) agrees &= card[f] != null && card[f].equals(cheapest[f]);
+        assertTrue("the streets' card is the cheapest to build over its life at every price of ground, recomputed here from the quote,"
+                + " the running and the ground a trip: the Paved Road on these busy streets (" + card[0] + ", " + card[1] + ", "
+                + card[2] + ")", agrees && "Paved Road".equals(card[0]) && "Paved Road".equals(card[2]));
     }
 
     /**
@@ -890,8 +903,9 @@ public class BuildAdviceCheck {
         Map<BuildingsTemplate, Integer> with = new java.util.LinkedHashMap<>(site);
         if (s.paving()) {
             BuildingsTemplate from = template(g, ConstructionControl.PAVE_FROM), to = template(g, ConstructionControl.PAVE_TO);
+            // FR7 2.2: the gravel road it replaces stands, so it is repaired at the traffic on the streets as they are (not with one more added).
             life = g.quotePave(n).total - BuildAdvice.landValue(g, BuildAdvice.pavingFrees(g) * (double) n, landLeft)
-                    + n * (BuildAdvice.running(g, to, site) - BuildAdvice.running(g, from, site)) * factor;
+                    + n * (BuildAdvice.running(g, to, site) - BuildAdvice.running(g, from, site, false)) * factor;
             with.merge(to, n, Integer::sum);
             with.merge(from, -n, Integer::sum);
         } else {

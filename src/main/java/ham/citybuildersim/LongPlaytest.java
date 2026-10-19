@@ -3843,8 +3843,20 @@ public class LongPlaytest {
             order.remove(i);
             names.remove(i);
         }
-        java.util.List<BuildAdvice.Suggestion> roadAdvice = roadsKey > Double.NEGATIVE_INFINITY
-                ? roadsByNeed(g, roadM, free, roadLabels.keySet()) : java.util.List.of();
+        /*
+         * ...TWO NEEDS SINCE FR7 (2026-10-18; Jerus's star 4): the highways'
+         * card, for the through trips with no highway to take them
+         * (BuildAdvice.Kind.HIGHWAYS), and the streets' (Kind.ROADS), each by
+         * its own measure and its own count. The highways come first: they
+         * take the through trips off the streets, and the streets' card is
+         * then sized with the highways on site opening. A big city orders
+         * both, month after month, as both needs grow.
+         */
+        java.util.List<BuildAdvice.Suggestion> roadAdvice = new java.util.ArrayList<>();
+        if (roadsKey > Double.NEGATIVE_INFINITY) {
+            roadAdvice.addAll(roadsByNeed(g, BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS), free, roadLabels.keySet()));
+            roadAdvice.addAll(roadsByNeed(g, roadM, free, roadLabels.keySet()));
+        }
         // Best trips per dollar first. A plain insertion sort: the lines.
         for (int i = 1; i < order.size(); i++) {
             for (int k = i; k > 0 && order.get(k)[0] > order.get(k - 1)[0]; k--) {

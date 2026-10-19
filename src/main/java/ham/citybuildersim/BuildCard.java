@@ -152,7 +152,7 @@ public final class BuildCard {
         switch (m.kind()) {
             case POWER:   return new String[] {"generates ", KILOWATTS};
             case WATER:   return new String[] {"makes ", " units a month"};
-            case ROADS:   return new String[] {"carries ", " trips a month"};
+            case ROADS: case HIGHWAYS: return new String[] {"carries ", " trips a month"};
             case TRANSIT: return new String[] {"carries ", " riders"};
             case CARE:    return new String[] {"serves ", m.care() == CareType.CHILDCARE ? " children"
                                                         : m.care() == CareType.SENIOR ? " seniors" : " people"};
@@ -170,7 +170,7 @@ public final class BuildCard {
         switch (m.kind()) {
             case POWER:   return "kW";
             case WATER:   return "unit";
-            case ROADS:   return "trip";
+            case ROADS: case HIGHWAYS: return "trip";
             case TRANSIT: return "rider";
             case CARE:    return m.care() == CareType.CHILDCARE ? "child" : m.care() == CareType.SENIOR ? "senior" : "patient";
             case DEATH: case PLOTS: return "body";
@@ -185,7 +185,7 @@ public final class BuildCard {
         switch (m.kind()) {
             case POWER:   return "kW";
             case WATER:   return "units";
-            case ROADS:   return "trips";
+            case ROADS: case HIGHWAYS: return "trips";
             case TRANSIT: return "riders";
             case CARE:    return m.care() == CareType.CHILDCARE ? "children" : m.care() == CareType.SENIOR ? "seniors" : "patients";
             case DEATH: case PLOTS: return "bodies";
@@ -201,7 +201,7 @@ public final class BuildCard {
      * BuildAdvice.unit() is the advice's trips relieved.
      */
     public static double served(Game game, BuildAdvice.Measure m, BuildingsTemplate t) {
-        if (m.kind() == BuildAdvice.Kind.ROADS) return t.getCapacity();
+        if (BuildAdvice.roadKind(m)) return t.getCapacity();
         return BuildAdvice.unit(game, m, t);
     }
 
@@ -524,8 +524,8 @@ public final class BuildCard {
             double served = served(game, on, t);
             double[] fill = game.getPopulationManager().getJobFillRate();
             boolean posts = BuildAdvice.hasPosts(t);
-            if (on.kind() == BuildAdvice.Kind.ROADS) {
-                // A ROAD, OVER ITS LIFE (0.7.70): the advice's own figure - its
+            if (BuildAdvice.roadKind(on)) {
+                // A ROAD, OVER ITS LIFE (0.7.70; the streets' and the highways' since FR7): the advice's own figure - its
                 // cost over its life with its ground (BuildAdvice.lifetime()) a
                 // trip it takes off the road (BuildAdvice.unit(), its freight
                 // grade in it) - and its ground a trip, where a road's price a

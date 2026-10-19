@@ -490,9 +490,9 @@ public class InfrastructureManager {
     /** What the transit stock could carry, before the road under it is considered. */
     public double getTransitCapacity() { return transitCapacity; }
 
-    /** ...and what it can actually carry, which a city with no streets cannot raise. */
+    /** ...and what it can actually carry, which a city with no streets cannot raise: the transit runs on the streets, not the highways (FR7). */
     public double getUsableTransit() {
-        return Math.min(transitCapacity, capacity * TRANSIT_NEEDS_ROAD);
+        return Math.min(transitCapacity, getStreetCapacity() * TRANSIT_NEEDS_ROAD);
     }
 
     /* ----------------------------- the fare ----------------------------- */
@@ -693,7 +693,7 @@ public class InfrastructureManager {
      */
 
     /** The second ceiling: what the road under the transit lets it carry, TRANSIT_NEEDS_ROAD times the street capacity. */
-    public double getTransitRoadCeiling() { return capacity * TRANSIT_NEEDS_ROAD; }
+    public double getTransitRoadCeiling() { return getStreetCapacity() * TRANSIT_NEEDS_ROAD; }
 
     /** The third: TRANSIT_MAX_SHARE of the commuters, of each group - the most a city's lines reach. */
     public double getTransitShareCeiling() { return getLoad(Traffic.COMMUTERS) * TRANSIT_MAX_SHARE; }
@@ -855,6 +855,190 @@ public class InfrastructureManager {
         return total > 0 ? got / total : getThroughputRatio();
     }
 
+    /* =======================================================================
+       STREETS AND HIGHWAYS, TWO NEEDS (FR7, 2026-10-18)
+
+       Jerus's decision (FR7 star 4, 2026-10-18). The road was one pool of
+       capacity with one winner: gravel, paved and highway capacity summed,
+       and the advice named the one kind that was cheapest over its life for
+       the ground, so the kinds replaced one another and a highway came only
+       at the very top of the land price. It is two needs now, as a grown
+       city has them: the real thing keeps 67-76% of its urban road length in
+       local streets that carry 6-24% of the traffic, and 1-4% in freeways
+       that carry 20-48% of it (the FR7 brief, R1 and R2).
+
+       THE STREETS are the access need. Every built plot is reached by one;
+       they are the gravel and paved roads and the BASE_CAPACITY that was
+       always there, and they carry everything the highways do not. A
+       highway gives no access (it is a carriageway nothing fronts), so its
+       capacity is NOT street capacity: adding one leaves getStreetCapacity()
+       as it was.
+
+       THE HIGHWAYS are the through need: the long trips across the city and
+       the freight to and from its gates. getThroughShare() is the part of
+       the load that wants a highway, and it grows with the city's built-up
+       area, A, as THROUGH_MAX_SHARE x A^2 / (A^2 + THROUGH_HALF_AREA_KM2^2) -
+       about a quarter of the vehicle-km in a city of 300,000 and half in one
+       of a million and more (R2), the knee measured, not guessed. SQUARED,
+       the review's (FR7): a trip wants a highway when it is long, and in a
+       small town almost none is, so the share starts flat and not straight -
+       on the slice's straight hyperbola the first highway was called for at
+       21,000 people, against about 100,000 for the real thing (R4); squared,
+       the commutes alone call for one past about 45,000, the freight gates'
+       trucks sometimes sooner. The freight gates (the yards, the Truck Depots and the sea
+       terminals: RAIL, HAULAGE and PORTS) send their whole road load
+       through; it is not a share.
+
+       THROUGH TRIPS WITH NO HIGHWAY FALL BACK ONTO THE STREETS and strain
+       them, so a city without one still runs, only slower: the highways
+       carry the through load up to FREE_FLOW of their capacity and the rest
+       is driven on the streets with everybody else.
+
+       A CITY WITH NO HIGHWAY STANDING READS EXACTLY WHAT IT READ BEFORE, to
+       the bit. With none, every figure below (getUtilisation(),
+       getThroughputRatio(), getServed(), getSpareCapacity(), getHeadroom())
+       takes the old single-pool line unchanged and nothing is blended: an
+       ulp here is a different city (streamsDiffer()), and the traces of
+       every city that never built a highway are the proof.
+       ======================================================================= */
+
+    /**
+     * The most of a city's load that is through trips - long trips across it
+     * and the freight to its gates - in the largest cities, a share of the
+     * load past the gates'. Half the vehicle-km of a metro of millions
+     * (Los Angeles and Kansas City 50%, New York 42%: the FR7 brief, R2),
+     * a little over it as the city's area has no end.
+     */
+    public static final double THROUGH_MAX_SHARE = .55;
+
+    /**
+     * The built-up area, in km2, at which the through share is half of
+     * THROUGH_MAX_SHARE. MEASURED, FR7 2026-10-18: the long playtest's city
+     * (seed 0, the standard founding) stood on 76.1 km2 of built ground at
+     * 300,000 people (297,322 on 75.4 km2 at month 3282, 306,527 on 77.9 at
+     * month 3306), and 76.1 x sqrt(0.55 / 0.25 - 1) = 83.4 puts the through
+     * share at a quarter in a city of 300,000, 0.50 in one of a million (about
+     * 250 km2) and more past it (R2), and 0.05 at 100,000.
+     */
+    public static final double THROUGH_HALF_AREA_KM2 = 83.4;
+
+    /** The raw capacity of the highways standing (the sum of getCapacity() over the roads with a freight grade of 1: BuildingsTemplate.isHighway()); 0 until told. */
+    private double highwayRaw;
+    /** The land under every standing building, in square feet; 0 until told. */
+    private double builtUpSqFt;
+    /** The road load of the freight gates standing - the yards, the Truck Depots and the sea terminals; 0 until told. */
+    private double gateLoad;
+
+    /**
+     * What the streets-and-highways split reads off the stock, handed over
+     * beside setModes() by ServicesManager.updateInfrastructure(): all three
+     * are pure functions of what is standing, so none of them is saved.
+     *
+     * @param highwayCapacity the raw capacity of the standing roads that are
+     *                        highways (BuildingsTemplate.isHighway()), not
+     *                        weighted by their freight grade
+     * @param builtUpSqFt     the land under every standing building
+     * @param gateLoad        the road load of the standing buildings in the
+     *                        RAIL, HAULAGE and PORTS categories
+     */
+    public void setThrough(double highwayCapacity, double builtUpSqFt, double gateLoad) {
+        this.highwayRaw = Math.max(0, highwayCapacity);
+        this.builtUpSqFt = Math.max(0, builtUpSqFt);
+        this.gateLoad = Math.max(0, gateLoad);
+    }
+
+    /** Whether a highway stands: the one test that takes a city off the old single-pool line. */
+    private boolean hasHighway() { return highwayRaw > 0; }
+
+    /** The raw capacity of the highways standing: what carries the through trips, and nothing else. */
+    public double getHighwayCapacity() { return highwayRaw; }
+
+    /** The streets' capacity: all of it with no highway standing, else the pool less the highways - a highway gives no access. */
+    public double getStreetCapacity() { return hasHighway() ? Math.max(0, capacity - highwayRaw) : capacity; }
+
+    /** The land under the buildings standing, in km2. */
+    public double getBuiltUpKm2() { return builtUpSqFt / LandManager.SQ_FT_PER_KM2; }
+
+    /** The road load of the freight gates, which goes through whole. */
+    public double getGateLoad() { return gateLoad; }
+
+    /** The part of the load past the gates that is through trips, 0 to THROUGH_MAX_SHARE, by the built-up area. */
+    public double getThroughShare() {
+        double a = getBuiltUpKm2();
+        return a > 0 ? THROUGH_MAX_SHARE * a * a / (a * a + THROUGH_HALF_AREA_KM2 * THROUGH_HALF_AREA_KM2) : 0;
+    }
+
+    /** The through trips at an effective load e: the share of what is past the gates plus the gates, held to the load itself. */
+    private double throughAt(double e) {
+        double t = getThroughShare() * Math.max(0, e - gateLoad) + gateLoad;
+        return Math.max(0, Math.min(e, t));
+    }
+
+    /** The through trips the city makes, in trips a month - the load that wants a highway. */
+    public double getThroughLoad() { return throughAt(getEffectiveLoad()); }
+
+    /** What the highways carry of it: up to FREE_FLOW of their capacity, where they run at free flow by construction. */
+    private double carriedAt(double e) { return Math.min(throughAt(e), highwayRaw * FREE_FLOW); }
+
+    /** ...the trips on the highways. */
+    public double getThroughOnHighways() { return carriedAt(getEffectiveLoad()); }
+
+    /** The through trips with no highway to take them, driven on the streets instead. */
+    public double getThroughOverflow() {
+        double e = getEffectiveLoad();
+        return throughAt(e) - carriedAt(e);
+    }
+
+    /** The share of the through trips the highways carry, as the other gauges read served: capacity at free flow over the through load, unclamped (+∞ with no through trips). */
+    public double getThroughServed() {
+        return CityNeeds.servedShare(highwayRaw * FREE_FLOW, getThroughLoad());
+    }
+
+    /** The load on the streets: the effective load less what the highways carry; the effective load itself with no highway standing. */
+    public double getStreetLoad() {
+        double e = getEffectiveLoad();
+        return hasHighway() ? e - carriedAt(e) : e;
+    }
+
+    /* ----- REPAIRS BY TRAFFIC (FR7 2.2) -----
+       The Gravel Road's repairs rise with the load its street carries
+       (Minnesota's finding, the brief's R5: a gravel road's upkeep rises
+       sharply past about 200 vehicles a day, and paving paid past 150 in
+       South Dakota), so the life-cost ranking that already exists pays for
+       paving where streets are busy and keeps gravel at the quiet edge, with
+       no modifier on the advice. A street plot at the whole of its capacity
+       carries STREET_VEHICLES_A_DAY_AT_CAPACITY vehicles a day, so the quiet
+       line is a street utilisation of GRAVEL_QUIET_VEHICLES_A_DAY over it.
+       BuildingsTemplate.gravelRepairsAt() charges it; EconomyManager and
+       BuildAdvice.running() read it. */
+
+    /** Vehicles a day that cross a gravel or paved street plot when the streets are at their whole capacity (a utilisation of 1): this batch's scale, struck so that the quiet line, 200 a day, is a utilisation of 0.444 - and the strain line (STRAINED, 0.85) is 383 a day. */
+    public static final double STREET_VEHICLES_A_DAY_AT_CAPACITY = 450;
+
+    /** The load, in vehicles a day, under which a gravel road is repaired at its flat share (Minnesota, FR7 R5): 200. */
+    public static final double GRAVEL_QUIET_VEHICLES_A_DAY = 200;
+
+    /** The street utilisation at the quiet line: the load GRAVEL_QUIET_VEHICLES_A_DAY is of a street's whole capacity. */
+    public static final double GRAVEL_QUIET_UTILISATION = GRAVEL_QUIET_VEHICLES_A_DAY / STREET_VEHICLES_A_DAY_AT_CAPACITY;
+
+    /** Vehicles a day a street carries at a utilisation. */
+    public static double vehiclesADay(double streetUtilisation) {
+        return Math.max(0, streetUtilisation) * STREET_VEHICLES_A_DAY_AT_CAPACITY;
+    }
+
+    /**
+     * How many times the flat repairs a Gravel Road is charged at a street
+     * utilisation: 1, exactly, up to GRAVEL_QUIET_VEHICLES_A_DAY, and past
+     * it (vehiclesADay / GRAVEL_QUIET_VEHICLES_A_DAY) squared. A utilisation
+     * that is not a number is a quiet street.
+     */
+    public static double gravelWearAt(double streetUtilisation) {
+        double vehicles = vehiclesADay(streetUtilisation);
+        if (!(vehicles > GRAVEL_QUIET_VEHICLES_A_DAY)) return 1;
+        double ratio = vehicles / GRAVEL_QUIET_VEHICLES_A_DAY;
+        return ratio * ratio;
+    }
+
     /* ------------------------------- results ------------------------------- */
 
     public double getCapacity() { return capacity; }
@@ -865,12 +1049,25 @@ public class InfrastructureManager {
         return Math.max(0, capacity - BASE_CAPACITY);
     }
 
-    /** The load past which traffic starts to slow: FREE_FLOW of the capacity (0.7.29, the Roads page's line). */
-    public double getFreeFlowLoad() { return capacity * FREE_FLOW; }
+    /**
+     * The load past which traffic starts to slow: FREE_FLOW of the capacity
+     * (0.7.29, the Roads page's line). With a highway standing (FR7) it is
+     * the streets' FREE_FLOW of their capacity plus what the highways carry
+     * now, the effective load at which the streets slow.
+     */
+    public double getFreeFlowLoad() {
+        return hasHighway() ? getStreetCapacity() * FREE_FLOW + getThroughOnHighways() : capacity * FREE_FLOW;
+    }
 
-    /** Load over capacity. Above 1 the network is carrying more than it can. */
+    /**
+     * Load over capacity. Above 1 the network is carrying more than it can.
+     * With a highway standing (FR7) it is the STREETS' load over the streets'
+     * capacity: the highways run at free flow by construction.
+     */
     public double getUtilisation() {
-        return (capacity > 0) ? getEffectiveLoad() / capacity : 0;
+        if (!hasHighway()) return (capacity > 0) ? getEffectiveLoad() / capacity : 0;
+        double street = getStreetCapacity();
+        return street > 0 ? getStreetLoad() / street : 0;
     }
 
     /**
@@ -881,7 +1078,8 @@ public class InfrastructureManager {
      * on the road (CityNeeds.servedShare()).
      */
     public double getServed() {
-        return CityNeeds.servedShare(capacity, getEffectiveLoad());
+        if (!hasHighway()) return CityNeeds.servedShare(capacity, getEffectiveLoad());
+        return CityNeeds.servedShare(getStreetCapacity(), getStreetLoad());
     }
 
     /** The flow at a served share of the traffic (0.7.41): throughputAt() at its load, one over it - the curve as the Roads page draws it, against served. */
@@ -893,10 +1091,12 @@ public class InfrastructureManager {
      * What the network could still take before it is full: capacity less the
      * load the curve reads (0.7.29: it read the raw trips, which in a city
      * with cars sit well under what the road carries - a road 161% full
-     * read 1,525 spare). Never below zero.
+     * read 1,525 spare). Never below zero. With a highway standing (FR7) it
+     * is the streets' spare room.
      */
     public double getSpareCapacity() {
-        return Math.max(0, capacity - getEffectiveLoad());
+        if (!hasHighway()) return Math.max(0, capacity - getEffectiveLoad());
+        return Math.max(0, getStreetCapacity() - getStreetLoad());
     }
 
     /**
@@ -906,12 +1106,26 @@ public class InfrastructureManager {
      * on retail sales, industrial output and the rate construction can build -
      * because those are exactly the three things that stop working when nothing
      * can get anywhere.
+     *
+     * WITH A HIGHWAY STANDING (FR7) the through trips on the highways run at
+     * free flow and the rest of the load is on the streets, at the streets'
+     * own curve: the city's ratio is the trips' average,
+     * (carried + street load x throughputAt(street use)) / the effective
+     * load. With none it is throughputAt(getUtilisation()), unblended.
      */
     public double getThroughputRatio() {
 
         if (load <= 0 || capacity <= 0) return 1;
 
-        return throughputAt(getUtilisation());
+        if (!hasHighway()) return throughputAt(getUtilisation());
+
+        double effective = getEffectiveLoad();
+        if (!(effective > 0)) return 1;
+        double carried = carriedAt(effective);
+        double street = effective - carried;
+        double streets = getStreetCapacity();
+        double use = streets > 0 ? street / streets : (street > 0 ? Double.POSITIVE_INFINITY : 0);
+        return (carried + street * throughputAt(use)) / effective;
     }
 
     /**
@@ -948,10 +1162,12 @@ public class InfrastructureManager {
      * city whose cars double its commute read 585 trips of room on a road
      * 161% full - in green, on the Roads page. Equal to the old figure to the
      * bit in a city with no cars, transit, highway or rail, where the two
-     * loads are one number.
+     * loads are one number. With a highway standing (FR7) it is the
+     * streets' room.
      */
     public double getHeadroom() {
-        return Math.max(0, capacity * FREE_FLOW - getEffectiveLoad());
+        if (!hasHighway()) return Math.max(0, capacity * FREE_FLOW - getEffectiveLoad());
+        return Math.max(0, getStreetCapacity() * FREE_FLOW - getStreetLoad());
     }
 
     /** One line for the city panel. */
@@ -1051,7 +1267,25 @@ public class InfrastructureManager {
      */
     public InfrastructureManager with(double capacityAdded, double highwayAdded, double transitAdded,
                                       double loadAdded, double[] streamsAdded) {
+        return with(capacityAdded, highwayAdded, transitAdded, loadAdded, streamsAdded, 0, 0, 0);
+    }
+
+    /**
+     * ...and the streets-and-highways split's inputs too (FR7): the raw
+     * capacity of the highways added, the ground the added buildings stand
+     * on (less when a paving frees some, so it may be negative) and the road
+     * load of the freight gates added, so a what-if with a
+     * highway in it computes the split the city would have. The built-up
+     * area is NOT grown by the projection's k (BuildAdvice.roads()): the
+     * area follows the buildings, and the projection grows the trips.
+     */
+    public InfrastructureManager with(double capacityAdded, double highwayAdded, double transitAdded,
+                                      double loadAdded, double[] streamsAdded,
+                                      double highwayRawAdded, double sqFtAdded, double gateLoadAdded) {
         InfrastructureManager copy = new InfrastructureManager();
+        copy.highwayRaw = highwayRaw + Math.max(0, highwayRawAdded);
+        copy.builtUpSqFt = Math.max(0, builtUpSqFt + sqFtAdded);
+        copy.gateLoad = gateLoad + Math.max(0, gateLoadAdded);
         copy.capacity = capacity + Math.max(0, capacityAdded);
         copy.load = Math.max(0, load + loadAdded);
         for (int i = 0; i < byStream.length; i++) {

@@ -282,6 +282,8 @@ public class Game {
         ports = new Ports();
         populationManager = new PopulationManager();
         servicesManager = new ServicesManager(buildingManager);
+        // ...a Gravel Road's repairs rise with the traffic on the streets (FR7 2.2): read live off the road network, never kept.
+        economyManager.setStreetUtilisation(() -> getInfrastructureManager().getUtilisation());
         dataSave = new DataSave();
         historySave = new HistorySave();
         // Rebuilt here rather than reset, for the reason buildWorld exists: a
