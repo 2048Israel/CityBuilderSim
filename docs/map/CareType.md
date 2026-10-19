@@ -1,6 +1,6 @@
 # CareType.java - 170 lines · 7 methods · 3 constants · model
 
-`ham/citybuildersim/CareType.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CareType.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > What a healthcare building actually does.
 > 

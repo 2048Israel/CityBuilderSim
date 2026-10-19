@@ -1,6 +1,6 @@
-# CarCheck.java - 1,043 lines · 8 methods · 1 constants · harnesses
+# CarCheck.java - 1,060 lines · 8 methods · 1 constants · harnesses
 
-`ham/citybuildersim/CarCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CarCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The cars: who buys one, what it costs them, and what it does to the road.
 > 
@@ -62,7 +62,7 @@
 > See claude/the-fifth-link.md, HouseholdBalance's cars section and
 > InfrastructureManager's.
 
-**Uses:** [HouseholdBalance](HouseholdBalance.md) (43), [Good](Good.md) (31), [InfrastructureManager](InfrastructureManager.md) (29), [Game](Game.md) (13), [Household](Household.md) (13), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (12), [TaxPolicy](TaxPolicy.md) (9), [BuildingManager](BuildingManager.md) (8), [Sector](Sector.md) (7), [Motoring](Motoring.md) (7), [GameFiles](GameFiles.md) (6), [Traffic](Traffic.md) (5), [LongPlaytest](LongPlaytest.md) (5), [Founding](Founding.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Retail](Retail.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (43), [Good](Good.md) (31), [InfrastructureManager](InfrastructureManager.md) (29), [Game](Game.md) (13), [Household](Household.md) (13), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (12), [TaxPolicy](TaxPolicy.md) (9), [BuildingManager](BuildingManager.md) (8), [LongPlaytest](LongPlaytest.md) (8), [Sector](Sector.md) (7), [Motoring](Motoring.md) (7), [GameFiles](GameFiles.md) (6), [Traffic](Traffic.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Founding](Founding.md) (4), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Retail](Retail.md) (1)
 
 **Used by (2):** [RailCheck](RailCheck.md), [VanCheck](VanCheck.md)
 
@@ -98,18 +98,18 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 64 | 980 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
+| 64 | 997 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
 | 68 | 7 | `static void quietly(Runnable r)` |  |
 | 76 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 81 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 87 | 3 | `static boolean same(double a, double b)` | Bitwise. |
 | 91 | 8 | `static InfrastructureManager network()` |  |
 
-### THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.120, batch I3; Jerus's (lines 100-1043)
+### THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.120, batch I3; Jerus's (lines 100-1060)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 119 | 4 | `static double marginOf(BuildingsTemplate t, Good vehicle, double price, double fab, double mach)` | What a plant makes of one vehicle over the parts in it (pure): the vehicle at `price`, its fabricated steel at `fab` and its machinery at `mach`, a vehicle's worth of each off its template. |
 | 125 | 19 | `static boolean marginsHeld(BuildingManager bm, Good vehicle, double wasIn, double wasOut, java.util.List<String> lines)` | The section's assertions for one vehicle and its plants, at the ends the world quotes (CarCheck, VanCheck and RailCheck call it). |
-| 145 | 898 | `public static void main(String[] args)` |  |
+| 145 | 915 | `public static void main(String[] args)` |  |
 

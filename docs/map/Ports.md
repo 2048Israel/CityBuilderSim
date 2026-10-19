@@ -1,6 +1,6 @@
 # Ports.java - 546 lines · 46 methods · 10 constants · model
 
-`ham/citybuildersim/Ports.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Ports.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The city's ports: the berths its sea terminals stand, the share of each
 > kind of cargo they take off the lorries and the railway, and the tonnes
@@ -59,7 +59,7 @@
 
 **Uses:** [Good](Good.md) (17), [Traffic](Traffic.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [BuildingManager](BuildingManager.md) (2), [Refining](Refining.md) (2), [Freight](Freight.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
 
-**Used by (29):** [BoatSchedule](BoatSchedule.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [CityShore](CityShore.md), [CopperMiningCheck](CopperMiningCheck.md), [DataSave](DataSave.md), [ForestryCheck](ForestryCheck.md), [Freight](Freight.md), [Game](Game.md), [Good](Good.md), [HaulageCheck](HaulageCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [ShipShapes](ShipShapes.md), [TrainSchedule](TrainSchedule.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (30):** [BoatSchedule](BoatSchedule.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [CityShore](CityShore.md), [CopperMiningCheck](CopperMiningCheck.md), [DataSave](DataSave.md), [ForestryCheck](ForestryCheck.md), [Freight](Freight.md), [Game](Game.md), [Good](Good.md), [HaulageCheck](HaulageCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [LongPlaytest](LongPlaytest.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [ShipShapes](ShipShapes.md), [TrainSchedule](TrainSchedule.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 

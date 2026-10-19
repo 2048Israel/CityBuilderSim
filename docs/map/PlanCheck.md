@@ -1,6 +1,6 @@
 # PlanCheck.java - 1,254 lines · 38 methods · 24 constants · harnesses
 
-`ham/citybuildersim/PlanCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PlanCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway, and the model's road drawn exactly as the streets' surface - on the prototype's test district, MapCheck's fixture of Jerus's city, a city played as the playtest plays it, and any save named - with the prototype's own figures where they apply, how full a district it can draw, and what a plan costs.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [DistrictPlan](DistrictPlan.md) (197), [BuildingVisual](BuildingVisual.md) (36), [MapCheck](MapCheck.md) (25), [CityMap](CityMap.md) (25), [World](World.md) (24), [LongPlaytest](LongPlaytest.md) (16), [TilePainter](TilePainter.md) (8), [Founding](Founding.md) (6), [GameFiles](GameFiles.md) (5), [Game](Game.md) (4), [Timing](Timing.md) (3), [BuildingCatalog](BuildingCatalog.md) (2), [Mining](Mining.md) (2), [MiningCheck](MiningCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingType](BuildingType.md) (1), [Resource](Resource.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (1):** [EarthTerrainCheck](EarthTerrainCheck.md)
+**Used by (2):** [EarthTerrainCheck](EarthTerrainCheck.md), [JunctionCheck](JunctionCheck.md)
 
 ## Sections
 

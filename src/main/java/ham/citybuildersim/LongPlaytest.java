@@ -6494,7 +6494,7 @@ public class LongPlaytest {
     /**
      * The run's last city saved as slot 10 and copied into keep/data/saves
      * (FR7, 2026-10-18), for FR7's headless renders of a played city's map
-     * (docs/queue/FR7/RenderFr7.java). After the report, so the report is the
+     * (FR7's render tool, beside its notes in docs/queue/FR7/). After the report, so the report is the
      * run's to the byte; unset, nothing is written.
      */
     static void keepCity(Game g, Path root, Path keep) {

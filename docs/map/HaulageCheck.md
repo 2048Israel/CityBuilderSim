@@ -1,6 +1,6 @@
-# HaulageCheck.java - 1,226 lines · 33 methods · 4 constants · harnesses
+# HaulageCheck.java - 1,230 lines · 33 methods · 4 constants · harnesses
 
-`ham/citybuildersim/HaulageCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HaulageCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is
 > billed once, by Haulage, at a quote the trucks' own books set, and the vans
@@ -55,6 +55,8 @@
 
 **Uses:** [Good](Good.md) (147), [Sector](Sector.md) (45), [Haulage](Haulage.md) (34), [Game](Game.md) (34), [Freight](Freight.md) (30), [ProcessingSector](ProcessingSector.md) (24), [JobType](JobType.md) (22), [Sectors](Sectors.md) (18), [GameFiles](GameFiles.md) (13), [Traffic](Traffic.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildingManager](BuildingManager.md) (5), [Mining](Mining.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [SpreadPlanner](SpreadPlanner.md) (4), [HeavyIndustry](HeavyIndustry.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [Founding](Founding.md) (1), [Resource](Resource.md) (1), [Ports](Ports.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1)
 
+**Used by (1):** [RailDepotCheck](RailDepotCheck.md)
+
 ## Sections
 
 | line | section |
@@ -67,10 +69,10 @@
 | 617 | 5. VANS FOR GOODS |
 | 645 | 6. THE FREIGHT FACTOR |
 | 739 | 7. THE FLEET and 8. THE PRICE |
-| 847 | · 8. THE PRICE |
-| 928 | 4. THE SIDING |
-| 998 | 9. THE DEPOT |
-| 1115 | 10. THE WEIGHING |
+| 851 | · 8. THE PRICE |
+| 932 | 4. THE SIDING |
+| 1002 | 9. THE DEPOT |
+| 1119 | 10. THE WEIGHING |
 
 ## Constants
 
@@ -95,7 +97,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 66 | 1161 | **type** `public class HaulageCheck` | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the vans carry goods and nothing else. |
+| 66 | 1165 | **type** `public class HaulageCheck` | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the vans carry goods and nothing else. |
 | 70 | 5 | `static void quietly(Runnable r)` |  |
 | 76 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 81 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -151,28 +153,28 @@
 |---:|---:|---|---|
 | 649 | 89 | `static void factor(Game a)` |  |
 
-### 7. THE FLEET and 8. THE PRICE (lines 739-927)
+### 7. THE FLEET and 8. THE PRICE (lines 739-931)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 743 | 155 | `static void fleetAndPrice()` |  |
-| 900 | 27 | `static void seeding()` | The first fleet is given once, at the nameplate need, free; a city that is known to have run out is not given another. |
+| 743 | 159 | `static void fleetAndPrice()` |  |
+| 904 | 27 | `static void seeding()` | The first fleet is given once, at the nameplate need, free; a city that is known to have run out is not given another. |
 
-### 4. THE SIDING (lines 928-997)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 932 | 65 | `static void siding()` |  |
-
-### 9. THE DEPOT (lines 998-1114)
+### 4. THE SIDING (lines 932-1001)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1002 | 112 | `static void depot()` |  |
+| 936 | 65 | `static void siding()` |  |
 
-### 10. THE WEIGHING (lines 1115-1226)
+### 9. THE DEPOT (lines 1002-1118)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1119 | 107 | `static void weighing()` |  |
+| 1006 | 112 | `static void depot()` |  |
+
+### 10. THE WEIGHING (lines 1119-1230)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1123 | 107 | `static void weighing()` |  |
 

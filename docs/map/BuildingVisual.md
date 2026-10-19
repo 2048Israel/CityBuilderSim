@@ -1,6 +1,6 @@
-# BuildingVisual.java - 528 lines · 23 methods · 59 constants · model
+# BuildingVisual.java - 541 lines · 24 methods · 60 constants · model
 
-`ham/citybuildersim/BuildingVisual.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingVisual.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which kind, whether it stands on a resource's sites, and whether the map places it from the outside of the city in.
 > 
@@ -58,9 +58,9 @@
 > Utilities, in a slate between offices' blue and utilities' teal
 > (#5e7d8c, star FR0-6); a sea terminal keeps its own fill.
 
-**Uses:** [BuildingType](BuildingType.md) (15), [Resource](Resource.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (6), [Sectors](Sectors.md) (5), [Deposit](Deposit.md) (5), [Refining](Refining.md) (3), [TileRaster](TileRaster.md) (3), [DistrictPlan](DistrictPlan.md) (2), [World](World.md) (1), [LandManager](LandManager.md) (1), [StrategicReserve](StrategicReserve.md) (1)
+**Uses:** [BuildingType](BuildingType.md) (15), [Resource](Resource.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (6), [Sectors](Sectors.md) (5), [Deposit](Deposit.md) (5), [Refining](Refining.md) (3), [TileRaster](TileRaster.md) (3), [DistrictPlan](DistrictPlan.md) (2), [World](World.md) (1), [LandManager](LandManager.md) (1), [StrategicReserve](StrategicReserve.md) (1), [Freight](Freight.md) (1)
 
-**Used by (20):** [ChildcareCheck](ChildcareCheck.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CityShore](CityShore.md), [DistrictPicture](DistrictPicture.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md)
+**Used by (21):** [ChildcareCheck](ChildcareCheck.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CityShore](CityShore.md), [DistrictPicture](DistrictPicture.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md)
 
 ## Sections
 
@@ -69,8 +69,8 @@
 | 67 | THE ELEVEN CLASSES (the mockup's TYPES, in its order; TRANSPORT, 0.8.1's, last) |
 | 133 | · the materials' looks (0.8.0, batch I14) |
 | 196 | · road kinds |
-| 229 | ONE TYPE |
-| 423 | FOOTPRINTS: THE MODEL'S OWN LAND (0.7.64, batch L2) |
+| 237 | ONE TYPE |
+| 436 | FOOTPRINTS: THE MODEL'S OWN LAND (0.7.64, batch L2) |
 
 ## Constants
 
@@ -128,60 +128,62 @@
 | 203 | `BuildingVisual.PAVED` | `2` | A paved road: a freight grade under one. |
 | 205 | `BuildingVisual.HIGHWAY` | `3` | An elevated highway: a freight grade of one. |
 | 208 | `BuildingVisual.DRAWN_AS_HOMES` | `{ 22 }` | The permanent ids of the care types drawn in the homes' colour, because they are run from homes (spec-land star 10): Home Care Service (22) - still drawn, one for one, on its own land (0.7.64). |
-| 211 | `BuildingVisual.RAIL_TERMINALS` | `{ 64 }` | The permanent ids of the rail types drawn as a yard beside the track, not as track (0.7.72): the Rail Terminal (64). |
-| 214 | `BuildingVisual.FREIGHT_LINES` | `{ 63 }` | The permanent ids of the railway lines whose track makes the main line double (0.8.1, batch FR0; spec-freight 4.3): the Freight Line (63). |
-| 224 | `BuildingVisual.NOT_GATHERED` | `{ 11, 12 }` | The permanent ids of the works drawn in their group's colours but placed as any industry, not gathered into its campus (0.8.0, batch I14): Iron & Steel's Electric Arc Furnace (11) and Steel Mini-Mill (12), the scrap r... |
-| 227 | `BuildingVisual.SQ_FT_PER_PLOT` | `World.KM2_PER_PLOT * LandManager.SQ_FT_PER_KM2` | Square feet in a plot: 30 m squared in square feet, 9,687.5 - what a template's land is turned into plots by. |
-| 382 | `BuildingVisual.PIT_DUST` | `0xffb8a58a` | The dust a pit's benches are blended toward: dry spoil, #b8a58a. |
-| 385 | `BuildingVisual.PIT_SHADE` | `0xff2a2620` | ...and the shade its floor is: #2a2620. |
-| 486 | `BuildingVisual.ORDERS` | `java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>())` |  |
+| 211 | `BuildingVisual.RAIL_TERMINALS` | `{ 64, 141 }` | The permanent ids of the rail types drawn as a yard beside the track, not as track (0.7.72): the Rail Terminal (64), and since FR7 the Rail Depot (141), the small goods yard a railway starts with. |
+| 214 | `BuildingVisual.RAIL_DEPOT` | `141` | The permanent id of the Rail Depot (FR7 slice 3): the small yard of RAIL_TERMINALS, drawn at its own footprint with a few sidings, not a Rail Terminal's fan of eight. |
+| 222 | `BuildingVisual.FREIGHT_LINES` | `{ 63 }` | The permanent ids of the railway lines whose track makes the main line double (0.8.1, batch FR0; spec-freight 4.3): the Freight Line (63). |
+| 232 | `BuildingVisual.NOT_GATHERED` | `{ 11, 12 }` | The permanent ids of the works drawn in their group's colours but placed as any industry, not gathered into its campus (0.8.0, batch I14): Iron & Steel's Electric Arc Furnace (11) and Steel Mini-Mill (12), the scrap r... |
+| 235 | `BuildingVisual.SQ_FT_PER_PLOT` | `World.KM2_PER_PLOT * LandManager.SQ_FT_PER_KM2` | Square feet in a plot: 30 m squared in square feet, 9,687.5 - what a template's land is turned into plots by. |
+| 395 | `BuildingVisual.PIT_DUST` | `0xffb8a58a` | The dust a pit's benches are blended toward: dry spoil, #b8a58a. |
+| 398 | `BuildingVisual.PIT_SHADE` | `0xff2a2620` | ...and the shade its floor is: #2a2620. |
+| 499 | `BuildingVisual.ORDERS` | `java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>())` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 466 | **type** `public final class BuildingVisual` | How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which kind, whether it stands on a resource's sites, and whether the map pla... |
+| 63 | 479 | **type** `public final class BuildingVisual` | How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which kind, whether it stands on a resource's sites, and whether the map pla... |
 | 65 | 1 | `private BuildingVisual()` |  |
 
 ### THE ELEVEN CLASSES (the mockup's TYPES, in its order; TRANSPORT, 0.8.1's, last) (lines 67-132)
 
 ### the materials' looks (0.8.0, batch I14) (lines 133-195)
 
-### road kinds (lines 196-228)
+### road kinds (lines 196-236)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 217 | 5 | `static boolean freightLine(Type t)` | Whether the type is one of FREIGHT_LINES: a railway line whose presence doubles the main line. |
+| 217 | 3 | `static boolean depot(Type t)` | Whether the type is the Rail Depot, the railway's small first yard (FR7 slice 3). |
+| 225 | 5 | `static boolean freightLine(Type t)` | Whether the type is one of FREIGHT_LINES: a railway line whose presence doubles the main line. |
 
-### ONE TYPE (lines 229-422)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 275 | 26 | **type** `public record Type(int id, BuildingType category, int cls, boolean flats, int road, Resource site, boolean ...` | One building type as the map draws it. |
-| 281 | 1 | `public int campusGroup()` _(in BuildingVisual.Type)_ | The campus it is placed in (0.8.0): its group where it is gathered, else NO_GROUP - what the city map and the district plan place by. |
-| 284 | 1 | `public boolean drawn()` _(in BuildingVisual.Type)_ | Whether it is drawn as a building: not a road, nor a railway line (0.7.72), nor at sea (0.7.91). |
-| 287 | 4 | `public int fill()` _(in BuildingVisual.Type)_ | Its fill: its class's, the flats darker, and since 0.7.97 the refinery's units, a terminal and a tank farm their own (still of their class's in the blocks and the legend's eleven); since 0.8.0 a works its group's and ... |
-| 293 | 4 | `public int edge()` _(in BuildingVisual.Type)_ | Its edge. |
-| 299 | 1 | `public boolean materials()` _(in BuildingVisual.Type)_ | Whether it is one of the materials industries' own (0.8.0): drawn by a look of its own, not its class's box. |
-| 303 | 44 | `public static Type of(BuildingsTemplate t)` | A template as the map draws it. |
-| 358 | 10 | `static int lookOf(BuildingsTemplate t, Resource site, Deposit.FieldType field, int group)` | A type's look (0.8.0, batch I14), off the template as the house rule asks: on a resource's sites, iron's, coal's and copper's mines an open pit - but coking coal's, which is mined underground, a shaft, and copper's ox... |
-| 370 | 4 | `static int lookFill(Type t)` | A look's fill for a type: a pit's floor and a quarry's stone from its resource's colour, the rest the look's own. |
-| 376 | 4 | `static int lookEdge(Type t)` | ...and its edge: a pit's rim. |
-| 388 | 4 | `public static int[] pitColours(Resource r)` | A pit's colours from its resource's: {its floor, its benches, its rim} - the ore's colour darkened toward PIT_SHADE, blended halfway with PIT_DUST, and the dust - so an iron pit reads red, a coal pit black and a coppe... |
-| 394 | 16 | `public static int classOf(BuildingType c)` | A category's class (the mockup's ten, and since 0.8.1 TRANSPORT). |
-| 415 | 7 | `public static Type[] table(List<BuildingsTemplate> templates)` | Every type of a list of templates, indexed by id (null where no template has that id): the table the map is drawn from. |
-
-### FOOTPRINTS: THE MODEL'S OWN LAND (0.7.64, batch L2) (lines 423-528)
+### ONE TYPE (lines 237-435)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 449 | 6 | `public static int[] footprint(Type t)` | The whole plots a type is drawn on, {across, down}: its land in plots, round(sqrt(plots)) across and round(plots / across) down, at least one each way and never past a cell's interior (DistrictPlan.INTERIOR, 31; a til... |
-| 457 | 6 | `public static int cells(Type t)` | The whole plots a type is drawn on: its footprint's, or a road's or a railway line's own plots rounded (a Gravel Road 46, a Paved Road 26, an Elevated Highway 7; a Rail Spur 72, a Freight Line 248) - what a district's... |
-| 471 | 3 | `public static int[] rankedTypes(Type[] types)` | The order buildings are dealt to a district's tiles and placed on a tile: the largest footprint first (cells()), then by type id - every drawn type of the table by rank. |
-| 476 | 3 | `public static int[] cellsById(Type[] types)` | ...and each type's whole plots, by id (cells()): the table's order and plots worked out once a table, the painter's every tile. |
-| 481 | 4 | `public static int[][] footprintsById(Type[] types)` | ...and each type's footprint by id, {across[], down[]} (footprint()). |
-| 489 | 18 | `private static int[][] orderOf(Type[] types)` | A table's {order, ranks, cells, across, down}, kept by the table itself. |
-| 508 | 10 | `private static int[] rank(Type[] types)` |  |
-| 520 | 3 | `public static int[] placeRanks(Type[] types)` | ...and each type's rank in it, by id (-1 for a road or no type). |
-| 525 | 3 | `public static double plotSide(Type t)` | The side a one-plot building is drawn at, as a share of its plot: the square root of its land in plots, a House's 0.91 and a Convenience Store's 0.72, so its drawn area is its own; a whole plot at a plot or more. |
+| 287 | 27 | **type** `public record Type(int id, BuildingType category, int cls, boolean flats, int road, Resource site, boolean ...` | One building type as the map draws it. |
+| 294 | 1 | `public int campusGroup()` _(in BuildingVisual.Type)_ | The campus it is placed in (0.8.0): its group where it is gathered, else NO_GROUP - what the city map and the district plan place by. |
+| 297 | 1 | `public boolean drawn()` _(in BuildingVisual.Type)_ | Whether it is drawn as a building: not a road, nor a railway line (0.7.72), nor at sea (0.7.91). |
+| 300 | 4 | `public int fill()` _(in BuildingVisual.Type)_ | Its fill: its class's, the flats darker, and since 0.7.97 the refinery's units, a terminal and a tank farm their own (still of their class's in the blocks and the legend's eleven); since 0.8.0 a works its group's and ... |
+| 306 | 4 | `public int edge()` _(in BuildingVisual.Type)_ | Its edge. |
+| 312 | 1 | `public boolean materials()` _(in BuildingVisual.Type)_ | Whether it is one of the materials industries' own (0.8.0): drawn by a look of its own, not its class's box. |
+| 316 | 44 | `public static Type of(BuildingsTemplate t)` | A template as the map draws it. |
+| 371 | 10 | `static int lookOf(BuildingsTemplate t, Resource site, Deposit.FieldType field, int group)` | A type's look (0.8.0, batch I14), off the template as the house rule asks: on a resource's sites, iron's, coal's and copper's mines an open pit - but coking coal's, which is mined underground, a shaft, and copper's ox... |
+| 383 | 4 | `static int lookFill(Type t)` | A look's fill for a type: a pit's floor and a quarry's stone from its resource's colour, the rest the look's own. |
+| 389 | 4 | `static int lookEdge(Type t)` | ...and its edge: a pit's rim. |
+| 401 | 4 | `public static int[] pitColours(Resource r)` | A pit's colours from its resource's: {its floor, its benches, its rim} - the ore's colour darkened toward PIT_SHADE, blended halfway with PIT_DUST, and the dust - so an iron pit reads red, a coal pit black and a coppe... |
+| 407 | 16 | `public static int classOf(BuildingType c)` | A category's class (the mockup's ten, and since 0.8.1 TRANSPORT). |
+| 428 | 7 | `public static Type[] table(List<BuildingsTemplate> templates)` | Every type of a list of templates, indexed by id (null where no template has that id): the table the map is drawn from. |
+
+### FOOTPRINTS: THE MODEL'S OWN LAND (0.7.64, batch L2) (lines 436-541)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 462 | 6 | `public static int[] footprint(Type t)` | The whole plots a type is drawn on, {across, down}: its land in plots, round(sqrt(plots)) across and round(plots / across) down, at least one each way and never past a cell's interior (DistrictPlan.INTERIOR, 31; a til... |
+| 470 | 6 | `public static int cells(Type t)` | The whole plots a type is drawn on: its footprint's, or a road's or a railway line's own plots rounded (a Gravel Road 46, a Paved Road 26, an Elevated Highway 7; a Rail Spur 72, a Freight Line 248) - what a district's... |
+| 484 | 3 | `public static int[] rankedTypes(Type[] types)` | The order buildings are dealt to a district's tiles and placed on a tile: the largest footprint first (cells()), then by type id - every drawn type of the table by rank. |
+| 489 | 3 | `public static int[] cellsById(Type[] types)` | ...and each type's whole plots, by id (cells()): the table's order and plots worked out once a table, the painter's every tile. |
+| 494 | 4 | `public static int[][] footprintsById(Type[] types)` | ...and each type's footprint by id, {across[], down[]} (footprint()). |
+| 502 | 18 | `private static int[][] orderOf(Type[] types)` | A table's {order, ranks, cells, across, down}, kept by the table itself. |
+| 521 | 10 | `private static int[] rank(Type[] types)` |  |
+| 533 | 3 | `public static int[] placeRanks(Type[] types)` | ...and each type's rank in it, by id (-1 for a road or no type). |
+| 538 | 3 | `public static double plotSide(Type t)` | The side a one-plot building is drawn at, as a share of its plot: the square root of its land in plots, a House's 0.91 and a Convenience Store's 0.72, so its drawn area is its own; a whole plot at a plot or more. |
 

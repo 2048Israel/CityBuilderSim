@@ -1,6 +1,6 @@
 # FinancesScreen.java - 3,415 lines · 142 methods · 63 constants · interface
 
-`ham/citybuildersim/ui/FinancesScreen.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/FinancesScreen.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The Finances tab: what the city owes and when it falls due, what its paper
 > costs and who holds it, why its money costs what it does, every piece and
