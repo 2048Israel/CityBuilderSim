@@ -402,13 +402,27 @@ public final class Haulage {
 
         /* ---- the reprice: the railway's rule, on Haulage's books ---- */
 
+        /*
+         * THE TRUCKS BOUGHT, NOT THE TRUCKS WORN (FR2, the review). Freight's
+         * books expense a truck when it is bought, as every sector's expense
+         * their vans; priced at its wear, a growing fleet was a loss every
+         * month it grew, borrowed for, and a Freight with no depot yet had no
+         * plant to borrow on: the playtest's Freight was an empty company in
+         * debt from month 936, its fleet orders refused, its trucks down to a
+         * fifth and every bulk works at the floor - the city stalled at 30,000
+         * people for 3,000 months (FR2's notes). So the shippers pay for the
+         * fleet as it grows, as each paid for its own vans: the month's trucks
+         * bought (Freight.trucksBought()) are its running cost, and a city
+         * neither growing nor shrinking buys what wears out.
+         */
+
         double p = freight.truckPrice();
         double running = freight.haulagePayrollShare() * freight.getPayroll()
                 + freight.haulageShareOf(BuildingsTemplate::getElectricityConsumption) * freight.getElectricityCost()
                 + freight.haulageShareOf(BuildingsTemplate::getWaterConsumption) * freight.getWaterCost()
                 + freight.haulageShareOf(BuildingsTemplate::getCashCost)
                         * (freight.getMaintenanceExpense() + freight.getPropertyTaxExpense())
-                + Math.max(0, diesel) + worn * p;
+                + Math.max(0, diesel) + Math.max(0, freight.trucksBought());
         // ...the rate base on the balance sheet's own count, buildings on site included (Freight.haulageShareOfSites()).
         double rateBase = freight.haulageShareOfSites(BuildingsTemplate::getCashCost) * Math.max(0, freight.getBuildingsValue())
                 + freight.haulageShareOfSites(BuildingsTemplate::getLandSqFt) * Math.max(0, freight.getLandValue())
