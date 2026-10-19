@@ -1,4 +1,4 @@
-# SeaRoutes.java - 473 lines · 17 methods · 13 constants · model
+# SeaRoutes.java - 480 lines · 17 methods · 13 constants · model
 
 `ham/citybuildersim/SeaRoutes.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -76,7 +76,7 @@
 | 89 | `SeaRoutes.SPREAD_DEG` | `3` | The most a call's last leg is turned either way, in degrees: 3 - "a few degrees" (spec 4.1). |
 | 92 | `SeaRoutes.EXPANSIONS_MOST` | `250_000` | The most cells a route's A* looks at before it takes the straight lane: 250,000 - a way of about 1,000 km through open sea. |
 | 95 | `SeaRoutes.BLOCK` | `64` | Cells a side of a block of the grid read at once: 64, 1,024 plots (a block a World.regionTerrain() call). |
-| 302 | `SeaRoutes.OPEN_M` | `OFFING_M` | How far out a berth's water must reach for a terminal to stand on it, in metres: OFFING_M, the offing's own margin past the city (star O13-5). |
+| 309 | `SeaRoutes.OPEN_M` | `OFFING_M` | How far out a berth's water must reach for a terminal to stand on it, in metres: OFFING_M, the offing's own margin past the city (star O13-5). |
 
 ## Fields (state)
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 417 | **type** `public final class SeaRoutes` | Each sea terminal's route out to the world: found once on a grid of the sea at 480 m, pulled straight, sailed from the terminal's quay out to the offing - past the city's ground, on the bearing with the most open sea ... |
+| 57 | 424 | **type** `public final class SeaRoutes` | Each sea terminal's route out to the world: found once on a grid of the sea at 480 m, pulled straight, sailed from the terminal's quay out to the offing - past the city's ground, on the bearing with the most open sea ... |
 | 59 | 1 | `private SeaRoutes()` |  |
 | 98 | 7 | `public static List<BoatSchedule.Route> of(World world, List<BoatSchedule.Berth> berths, long siteX, long siteY, double radius)` | Each terminal's route, in the berths' order (pure in the world, the berths, the site and the radius). |
 
@@ -106,19 +106,19 @@
 | 145 | 12 | `boolean open(long ci, long cj)` _(in SeaRoutes.Grid)_ | Whether a sea cell is open water: every cell about it sea too; else it is the shore's. |
 | 159 | 8 | `boolean clear(double ai, double aj, double bi, double bj)` _(in SeaRoutes.Grid)_ | Whether the straight line between two cells' middles crosses only sea cells, looked at three times a cell along it (the prototype's clear()). |
 
-### A ROUTE (lines 169-473)
+### A ROUTE (lines 169-480)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 174 | 64 | `static BoatSchedule.Route route(Grid g, BoatSchedule.Berth b, long siteX, long siteY, double radius)` | A berth's route (SeaRoutes' rule). |
-| 249 | 51 | `static List<long[]> outOfTheBay(Grid g, long[] start, int reach, double away)` | The way out of a bay (star O13-5): Dijkstra over the sea's cells from `start` (eight ways, a shore cell SHORE_COST times an open one), no cell farther than `reach` cells from it in a straight line, at most EXPANSIONS_... |
-| 311 | 26 | `public static boolean opensToSea(Grid g, long x, long y, java.util.Set<Long> shut)` | Whether the water at world plot (x, y) opens to the sea (star O13-5): from its cell, or the nearest sea cell within NEAR_CELLS, the sea's cells reach OPEN_M away in a straight line, eight ways (a breadth-first flood, ... |
-| 344 | 5 | `static double abyssRun(Grid g, double x, double y, double ux, double uy)` | How far past the offing (x, y) the abyss runs on along (ux, uy), in plots: ABYSS_M, or the longest of its lengths a third of a cell shorter at a time whose leg keeps to the sea's cells (legOnSea()) - a third of a cell... |
-| 351 | 8 | `static boolean legOnSea(Grid g, double ax, double ay, double bx, double by)` | Whether the straight leg from (ax, ay) to (bx, by) keeps to the sea's cells, looked at three times a cell along it, both ends too. |
-| 361 | 13 | `static long[] nearestSea(Grid g, long ci, long cj)` | The berth's own cell when it is sea, else the nearest sea cell within NEAR_CELLS (the nearer, then the first in rows), or null. |
-| 376 | 12 | `static int run(Grid g, long[] from, int deg)` | The run of sea cells out from a cell on a bearing, in cells, up to RAY_CELLS; 1,000 more when it leaves the world at sea (the prototype's open water). |
-| 390 | 41 | `static List<long[]> astar(Grid g, long[] a, long[] b)` | The cheapest way over the sea's cells, eight ways, a shore cell SHORE_COST times an open one, Euclidean ahead (the prototype's astar()); null when none, or past EXPANSIONS_MOST. |
-| 432 | 1 | `private static long key(long i, long j)` |  |
-| 435 | 12 | `static List<long[]> pull(Grid g, List<long[]> path)` | String pulling (the prototype's pull()): from each point kept, on to the farthest point the straight line reaches over sea alone. |
-| 455 | 18 | `static boolean tailClear(Grid g, double[] xs, double[] ys, int pivot, double turn)` | Whether the route's last leg and abyss, turned by `turn` radians about the pivot, keep to sea cells: looked at three times a cell along them, past the pivot's own cell and the one beside it (the pivot is the berth whe... |
+| 174 | 71 | `static BoatSchedule.Route route(Grid g, BoatSchedule.Berth b, long siteX, long siteY, double radius)` | A berth's route (SeaRoutes' rule). |
+| 256 | 51 | `static List<long[]> outOfTheBay(Grid g, long[] start, int reach, double away)` | The way out of a bay (star O13-5): Dijkstra over the sea's cells from `start` (eight ways, a shore cell SHORE_COST times an open one), no cell farther than `reach` cells from it in a straight line, at most EXPANSIONS_... |
+| 318 | 26 | `public static boolean opensToSea(Grid g, long x, long y, java.util.Set<Long> shut)` | Whether the water at world plot (x, y) opens to the sea (star O13-5): from its cell, or the nearest sea cell within NEAR_CELLS, the sea's cells reach OPEN_M away in a straight line, eight ways (a breadth-first flood, ... |
+| 351 | 5 | `static double abyssRun(Grid g, double x, double y, double ux, double uy)` | How far past the offing (x, y) the abyss runs on along (ux, uy), in plots: ABYSS_M, or the longest of its lengths a third of a cell shorter at a time whose leg keeps to the sea's cells (legOnSea()) - a third of a cell... |
+| 358 | 8 | `static boolean legOnSea(Grid g, double ax, double ay, double bx, double by)` | Whether the straight leg from (ax, ay) to (bx, by) keeps to the sea's cells, looked at three times a cell along it, both ends too. |
+| 368 | 13 | `static long[] nearestSea(Grid g, long ci, long cj)` | The berth's own cell when it is sea, else the nearest sea cell within NEAR_CELLS (the nearer, then the first in rows), or null. |
+| 383 | 12 | `static int run(Grid g, long[] from, int deg)` | The run of sea cells out from a cell on a bearing, in cells, up to RAY_CELLS; 1,000 more when it leaves the world at sea (the prototype's open water). |
+| 397 | 41 | `static List<long[]> astar(Grid g, long[] a, long[] b)` | The cheapest way over the sea's cells, eight ways, a shore cell SHORE_COST times an open one, Euclidean ahead (the prototype's astar()); null when none, or past EXPANSIONS_MOST. |
+| 439 | 1 | `private static long key(long i, long j)` |  |
+| 442 | 12 | `static List<long[]> pull(Grid g, List<long[]> path)` | String pulling (the prototype's pull()): from each point kept, on to the farthest point the straight line reaches over sea alone. |
+| 462 | 18 | `static boolean tailClear(Grid g, double[] xs, double[] ys, int pivot, double turn)` | Whether the route's last leg and abyss, turned by `turn` radians about the pivot, keep to sea cells: looked at three times a cell along them, past the pivot's own cell and the one beside it (the pivot is the berth whe... |
 

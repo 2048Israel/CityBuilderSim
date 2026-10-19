@@ -6817,6 +6817,8 @@ public final class GameVersion {
      *     terminal whose dues would cover it.
      *   - EVERY ID CROSSES A SAVE: the buildings' save and load ran to the
      *     template count, and an id past a gap (142, before 141) was lost.
+     *     And a berth's sea route keeps its cell's middle where the berth's
+     *     own first leg would graze land (SeaRoutes.route()).
      *   - Harnesses: LandlordPortCheck (new); BuildAdviceCheck, PortCheck,
      *     SaveFileCheck; the playtests' "Ports division" line.
      */

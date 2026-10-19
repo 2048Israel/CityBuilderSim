@@ -1,4 +1,4 @@
-# Haulage.java - 782 lines · 48 methods · 10 constants · sectors
+# Haulage.java - 784 lines · 48 methods · 10 constants · sectors
 
 `ham/citybuildersim/sectors/Haulage.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -45,7 +45,7 @@
 
 **Uses:** [Good](Good.md) (41), [Sector](Sector.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (10), [Traffic](Traffic.md) (8), [Freight](Freight.md) (7), [Sectors](Sectors.md) (4), [InfrastructureManager](InfrastructureManager.md) (3), [BuildingManager](BuildingManager.md) (3), [JobType](JobType.md) (3), [Markets](Markets.md) (2), [GoodsMarket](GoodsMarket.md) (1)
 
-**Used by (10):** [BondCheck](BondCheck.md), [Freight](Freight.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [ProcessingSector](ProcessingSector.md), [RailCheck](RailCheck.md), [RefineryView](RefineryView.md), [Sector](Sector.md)
+**Used by (11):** [BondCheck](BondCheck.md), [Freight](Freight.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [ProcessingSector](ProcessingSector.md), [RailCheck](RailCheck.md), [RefineryView](RefineryView.md), [Sector](Sector.md)
 
 ## Sections
 
@@ -54,10 +54,10 @@
 | 181 | · the legs |
 | 202 | · the price of a leg |
 | 340 | · the month |
-| 500 | · the fleet |
-| 620 | · the price |
-| 648 | · what it is doing |
-| 693 | · save, reset, reform |
+| 501 | · the fleet |
+| 622 | · the price |
+| 650 | · what it is doing |
+| 695 | · save, reset, reform |
 
 ## Constants
 
@@ -99,7 +99,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 725 | **type** `public final class Haulage` | Freight's Haulage division: the trucks that carry the city leg of every bulk tonne (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 2, 3.2, 3.3). |
+| 58 | 727 | **type** `public final class Haulage` | Freight's Haulage division: the trucks that carry the city leg of every bulk tonne (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 2, 3.2, 3.3). |
 | 176 | 4 | `Haulage(Freight freight)` |  |
 
 ### the legs (lines 181-201)
@@ -125,63 +125,63 @@
 | 335 | 1 | `private static double unit(double x)` | x clamped to [0, 1]; 0 if it is not a number. |
 | 338 | 1 | `private static double clean(double x)` | x not below zero; 0 if it is not a number. |
 
-### the month (lines 340-499)
+### the month (lines 340-500)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 360 | 21 | `void billMonth(Map<Sector, Double> legs)` | Step 1 of the month: bills last month's city legs, sector by sector. |
-| 386 | 113 | `void closeMonth(Sectors sectors)` | Steps 2 to 5: the diesel, the wear, the coming month's need, and the reprice. |
+| 386 | 114 | `void closeMonth(Sectors sectors)` | Steps 2 to 5: the diesel, the wear, the coming month's need, and the reprice. |
 
-### the fleet (lines 500-619)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 503 | 1 | `public double trucks()` | Trucks owned: Freight's TRUCKS pantry. |
-| 506 | 1 | `public double trucksNeeded()` | ...and how many the coming month's need asks for. |
-| 509 | 4 | `public double depotRoom()` | Trucks the depots standing keep: the room of Freight's finished buildings. |
-| 515 | 1 | `public double onStreet()` | Trucks past the depots' room, parked on the street (D6): they run, unposted, at STREET_WEAR. |
-| 523 | 7 | `public double bid()` | What Freight asks the market for: the gap between the fleet the need asks for and the fleet it has, at most an eighth of the need a month (Sector.FLEET_DELIVERY_MONTHS, the vans' rule, so a fleet is built up and not c... |
-| 541 | 1 | `public double trucksAsked()` | The fleet the month's order is toward: the trucks the plant standing needs and the plant on site will (FR2, the review). |
-| 544 | 9 | `public double nameplateNeedOnSite(Sectors sectors)` | The legs at nameplate the city's works on site will ask when they stand: nameplateNeed()'s weights, over Freight's every other sector's buildings on site. |
-| 555 | 14 | `private double templateLegs(BuildingsTemplate b)` | One building's legs a month at nameplate, as nameplateNeed() weighs a sector's: its BULK inputs and outputs, VANS and TRUCKS aside. |
-| 578 | 15 | `public BuildingsTemplate depotToOrder()` | The Truck Depot to order, or null: the first of Freight's templates with room for trucks, when the fleet is known, none is on site, and the fleet has passed the depots' room by DEPOT_ORDER_MARGIN of a depot. |
-| 610 | 6 | `public void strikeDrivers()` | Strikes the month's drivers: Freight's DIPLOMA posts less a driver for each place in the depots no truck fills. |
-| 618 | 1 | `public double offeredShare(JobType type)` | The share of Freight's posts of a job type on offer this month: the drivers' tier's as struck, every other's whole. |
-
-### the price (lines 620-647)
+### the fleet (lines 501-621)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 631 | 16 | `public double estimate()` | What a tonne's city leg costs at today's prices with no history behind it: the quote before the first month's carriage has struck one. |
+| 504 | 1 | `public double trucks()` | Trucks owned: Freight's TRUCKS pantry. |
+| 507 | 1 | `public double trucksNeeded()` | ...and how many the coming month's need asks for. |
+| 510 | 4 | `public double depotRoom()` | Trucks the depots standing keep: the room of Freight's finished buildings. |
+| 516 | 1 | `public double onStreet()` | Trucks past the depots' room, parked on the street (D6): they run, unposted, at STREET_WEAR. |
+| 524 | 7 | `public double bid()` | What Freight asks the market for: the gap between the fleet the need asks for and the fleet it has, at most an eighth of the need a month (Sector.FLEET_DELIVERY_MONTHS, the vans' rule, so a fleet is built up and not c... |
+| 542 | 1 | `public double trucksAsked()` | The fleet the month's order is toward: the trucks the plant standing needs and the plant on site will (FR2, the review). |
+| 545 | 9 | `public double nameplateNeedOnSite(Sectors sectors)` | The legs at nameplate the city's works on site will ask when they stand: nameplateNeed()'s weights, over Freight's every other sector's buildings on site. |
+| 556 | 14 | `private double templateLegs(BuildingsTemplate b)` | One building's legs a month at nameplate, as nameplateNeed() weighs a sector's: its BULK inputs and outputs, VANS and TRUCKS aside. |
+| 579 | 15 | `public BuildingsTemplate depotToOrder()` | The Truck Depot to order, or null: the first of Freight's templates with room for trucks, when the fleet is known, none is on site, and the fleet has passed the depots' room by DEPOT_ORDER_MARGIN of a depot. |
+| 611 | 7 | `public void strikeDrivers()` | Strikes the month's drivers: Freight's DIPLOMA posts less a driver for each place in the depots no truck fills. |
+| 620 | 1 | `public double offeredShare(JobType type)` | The share of Freight's posts of a job type on offer this month: the drivers' tier's as struck, every other's whole. |
 
-### what it is doing (lines 648-692)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 651 | 1 | `public double getQuote()` | The quote in force; the estimate while no month has struck one. |
-| 654 | 1 | `public double getSteadyQuote()` | The steady price a planner weighs a works' legs at (legPrice()): the rule on the trucks worn, no scarcity; the estimate until struck. |
-| 655 | 1 | `public boolean isQuoteKnown()` |  |
-| 664 | 1 | `public double getShare()` | The share of the city-leg tonnes the trucks can carry: the trucks held now, at TONNES_A_TRUCK_MONTH each, over the need - a literal 1 when they suffice, and 1 with no need (a city that has never needed a truck runs at... |
-| 667 | 1 | `public double getNeed()` | The city-leg tonnes the share is read against, and the tonnes a month the trucks could carry when the month was billed. |
-| 670 | 1 | `public double getNeedOnSite()` | ...and the legs at nameplate of the works on site, struck with it: what trucksAsked() adds. |
-| 671 | 1 | `public double getCapacityInForce()` |  |
-| 674 | 1 | `public double getTonnes()` | the month billed |
-| 675 | 1 | `public double getCarried()` |  |
-| 676 | 1 | `public double getBill()` |  |
-| 677 | 1 | `public double getDiesel()` |  |
-| 678 | 1 | `public double getDieselImported()` |  |
-| 681 | 1 | `public double getDieselLitres()` | The litres of diesel the last haul drew: none after a load until the next, as the railway's. |
-| 684 | 1 | `public double getDieselLitresImported()` | ...and the litres of it the world sold (the refiners' tanks having none left): the refinery's pictogram's (RefineryView). |
-| 687 | 1 | `public double getWorn()` | The trucks worn out in the month billed. |
-| 690 | 1 | `public double getAllowed()` | What the month had to bring in (the rule's running cost plus the return on the rate base) and the scarcity it was priced at the end of. |
-| 691 | 1 | `public double getTightness()` |  |
-
-### save, reset, reform (lines 693-782)
+### the price (lines 622-649)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 696 | 28 | `public void save(Map<String, Double> extras)` | Haulage's state into Freight's extras (keys haul.*): the dieselLitres are not saved, as the railway's are not. |
-| 726 | 30 | `public void restore(Map<String, Double> extras)` | ...and back. |
-| 758 | 13 | `public void reset()` | Back to a city that has never needed a truck. |
-| 773 | 9 | `public void redenominate(double scale)` | Its money in the new unit (Denomination): the quote, the bill, the diesel and what the month was allowed. |
+| 633 | 16 | `public double estimate()` | What a tonne's city leg costs at today's prices with no history behind it: the quote before the first month's carriage has struck one. |
+
+### what it is doing (lines 650-694)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 653 | 1 | `public double getQuote()` | The quote in force; the estimate while no month has struck one. |
+| 656 | 1 | `public double getSteadyQuote()` | The steady price a planner weighs a works' legs at (legPrice()): the rule on the trucks worn, no scarcity; the estimate until struck. |
+| 657 | 1 | `public boolean isQuoteKnown()` |  |
+| 666 | 1 | `public double getShare()` | The share of the city-leg tonnes the trucks can carry: the trucks held now, at TONNES_A_TRUCK_MONTH each, over the need - a literal 1 when they suffice, and 1 with no need (a city that has never needed a truck runs at... |
+| 669 | 1 | `public double getNeed()` | The city-leg tonnes the share is read against, and the tonnes a month the trucks could carry when the month was billed. |
+| 672 | 1 | `public double getNeedOnSite()` | ...and the legs at nameplate of the works on site, struck with it: what trucksAsked() adds. |
+| 673 | 1 | `public double getCapacityInForce()` |  |
+| 676 | 1 | `public double getTonnes()` | the month billed |
+| 677 | 1 | `public double getCarried()` |  |
+| 678 | 1 | `public double getBill()` |  |
+| 679 | 1 | `public double getDiesel()` |  |
+| 680 | 1 | `public double getDieselImported()` |  |
+| 683 | 1 | `public double getDieselLitres()` | The litres of diesel the last haul drew: none after a load until the next, as the railway's. |
+| 686 | 1 | `public double getDieselLitresImported()` | ...and the litres of it the world sold (the refiners' tanks having none left): the refinery's pictogram's (RefineryView). |
+| 689 | 1 | `public double getWorn()` | The trucks worn out in the month billed. |
+| 692 | 1 | `public double getAllowed()` | What the month had to bring in (the rule's running cost plus the return on the rate base) and the scarcity it was priced at the end of. |
+| 693 | 1 | `public double getTightness()` |  |
+
+### save, reset, reform (lines 695-784)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 698 | 28 | `public void save(Map<String, Double> extras)` | Haulage's state into Freight's extras (keys haul.*): the dieselLitres are not saved, as the railway's are not. |
+| 728 | 30 | `public void restore(Map<String, Double> extras)` | ...and back. |
+| 760 | 13 | `public void reset()` | Back to a city that has never needed a truck. |
+| 775 | 9 | `public void redenominate(double scale)` | Its money in the new unit (Denomination): the quote, the bill, the diesel and what the month was allowed. |
 

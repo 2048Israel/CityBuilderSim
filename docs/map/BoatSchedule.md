@@ -1,4 +1,4 @@
-# BoatSchedule.java - 455 lines · 30 methods · 8 constants · model
+# BoatSchedule.java - 470 lines · 32 methods · 8 constants · model
 
 `ham/citybuildersim/BoatSchedule.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -49,7 +49,7 @@
 > a month, and its group - so a city of billions is a sorted array, not
 > millions of objects (spec-oil 6's scale).
 
-**Uses:** [Ports](Ports.md) (27), [World](World.md) (16)
+**Uses:** [Ports](Ports.md) (33), [World](World.md) (16)
 
 **Used by (11):** [CityMap](CityMap.md), [CityShore](CityShore.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [ReadPathCheck](ReadPathCheck.md), [SeaRoutes](SeaRoutes.md), [ShipShapes](ShipShapes.md), [TrainSchedule](TrainSchedule.md)
 
@@ -58,8 +58,8 @@
 | line | section |
 |---:|---|
 | 159 | THE MONTH'S CALLS |
-| 301 | WHERE A BOAT IS |
-| 428 | · reads |
+| 316 | WHERE A BOAT IS |
+| 443 | · reads |
 
 ## Constants
 
@@ -94,7 +94,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 402 | **type** `public final class BoatSchedule` | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7.86, batch O9; docs/studies/spec-oil.md 2.10, the research's 4.3-4.4 a... |
+| 54 | 417 | **type** `public final class BoatSchedule` | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7.86, batch O9; docs/studies/spec-oil.md 2.10, the research's 4.3-4.4 a... |
 | 79 | 1 | **type** `public record Berth(Ports.Cargo cargo, long x, long y)` | One terminal's quay: its kind and where on the map it stands, in plots. |
 | 89 | 23 | **type** `public record Route(Berth berth, long x1, long y1, double[] xs, double[] ys, double[] along, int offing, in...` | A berth's route: its quay, its far end (x1, y1) out at sea, and the way between as points in plots - the berth first, its turns, the offing (point `offing`), the abyss's end last - with each point's distance along it ... |
 | 92 | 4 | `public Route(Berth berth, long x1, long y1)` _(in BoatSchedule.Route)_ | A straight lane from its quay to (x1, y1): O9's. |
@@ -107,42 +107,44 @@
 | 148 | 8 | `private BoatSchedule(int month, List<Route> routes, List<Group> groups)` |  |
 | 157 | 1 | `private static long key(long cx, long cy)` |  |
 
-### THE MONTH'S CALLS (lines 159-300)
+### THE MONTH'S CALLS (lines 159-315)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 164 | 6 | `public static int callsFor(double tonnes, double cargo, long seed)` | The calls a month's tonnes make in a ship of this cargo: the whole calls, and one more in the share of months the fraction says. |
 | 172 | 3 | `static long seed(int month, Ports.Cargo cargo, boolean inbound, Ports.Ship ship)` | The seed of one (kind, direction, class) in one month. |
 | 177 | 5 | `static long arrivalTicks(long seed, int k)` | When a group's k-th call reaches its quay, in ticks of a month: hashed through the month, its whole visit inside it. |
-| 189 | 5 | `public static BoatSchedule of(int month, Ports ports, List<Berth> berths, long foundX, long foundY)` | The month's schedule from the ports' month billed: its calls, counted by kind, direction and class, each to go on a route of its kind's berths by a hash (none with no berth of its kind), and the routes, each quay's la... |
-| 196 | 31 | `public static BoatSchedule of(int month, Ports ports, List<Route> routes)` | ...on routes found already (0.7.97: the map's, SeaRoutes'), one a berth. |
-| 228 | 15 | `private static void add(List<Group> groups, int month, Ports.Cargo c, boolean inbound, Ports.Ship ship, double tonnes)` |  |
-| 245 | 5 | `public static Route lane(Berth b, long foundX, long foundY)` | A quay's lane: straight out to sea, away from the founding site, for LANE_PLOTS (north when the quay is the site itself). |
-| 252 | 40 | `private void build()` | The calls' keys, sorted by route, then arrival; built on the first ask. |
-| 294 | 6 | `private Call call(long key)` | A call out of its key. |
+| 189 | 3 | `public static BoatSchedule of(int month, Ports ports, List<Berth> berths, long foundX, long foundY)` | The month's schedule from the ports' month billed: its calls, counted by kind, direction and class, each to go on a route of its kind's berths by a hash (none with no berth of its kind), and the routes, each quay's la... |
+| 194 | 5 | `public static BoatSchedule of(int month, Ports ports, List<Berth> berths, long foundX, long foundY, List<Ports.Ship> bulkShips)` | ...with the dry bulk classes the city's berths take (FR3 call 6, Ports.bulkShipsStanding()). |
+| 201 | 3 | `public static BoatSchedule of(int month, Ports ports, List<Route> routes)` | ...on routes found already (0.7.97: the map's, SeaRoutes'), one a berth. |
+| 211 | 31 | `public static BoatSchedule of(int month, Ports ports, List<Route> routes, List<Ports.Ship> bulkShips)` | ...and the dry bulk classes the city's berths take (FR3 call 6, docs/queue/FR3.md 2: Ports.bulkShipsStanding(), a pure function of the buildings standing, so the schedule keeps no state of it). |
+| 243 | 15 | `private static void add(List<Group> groups, int month, Ports.Cargo c, boolean inbound, Ports.Ship ship, double tonnes)` |  |
+| 260 | 5 | `public static Route lane(Berth b, long foundX, long foundY)` | A quay's lane: straight out to sea, away from the founding site, for LANE_PLOTS (north when the quay is the site itself). |
+| 267 | 40 | `private void build()` | The calls' keys, sorted by route, then arrival; built on the first ask. |
+| 309 | 6 | `private Call call(long key)` | A call out of its key. |
 
-### WHERE A BOAT IS (lines 301-427)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 310 | 9 | `public static Boat position(Call call, Route route, double t)` | Where a call's boat is at t (month fractions), or null when it is not on the water: running in over its leg, at the quay, or running out. |
-| 326 | 20 | `static Boat along(Call call, Route route, double f, boolean coming, boolean loaded, boolean docked)` | A call's boat at a share f of its route from the quay (0 at the quay, lying there; 1 at the far end), coming in or going out: its place on the way, turned about the pivot by the call's spread past it, its heading, and... |
-| 348 | 4 | `static double turnOf(Call call, Route route)` | A call's turn of its route's last leg, in radians: within its route's spread either way, by the call's own hash (its arrival and its route). |
-| 359 | 31 | `public List<Boat> frame(long x0, long y0, long x1, long y1, double t)` | The boats on the water at t whose routes cross the rectangle [x0, x1) x [y0, y1) in plots: the routes indexed by the district cells the rectangle covers, and on each a binary search of its arrivals. |
-| 392 | 3 | `public static boolean crosses(Route rt, long x0, long y0, long x1, long y1)` | Whether a route meets the rectangle: one of its legs' boxes does (legBoxes()) - a lane's, its one box. |
-| 397 | 4 | `static boolean crosses(double[][] legs, long x0, long y0, long x1, long y1)` | ...by its legs' boxes, worked out already. |
-| 407 | 13 | `static double[][] legBoxes(Route rt)` | Each leg's box, {x0, y0, x1, y1} in plots, inclusive: its two points' - past the pivot widened by how far the call's spread can swing it (its far end's distance from the pivot x sin(spread), and a plot). |
-| 422 | 5 | `static int lower(long[] a, int from, int to, long v)` | The first index in [from, to) whose key is at least v. |
-
-### reads (lines 428-455)
+### WHERE A BOAT IS (lines 316-442)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 430 | 1 | `public int month()` |  |
-| 431 | 1 | `public List<Route> routes()` |  |
-| 434 | 6 | `public List<Call> calls()` | Every call of the month, by route and arrival (those with no route first). |
-| 442 | 1 | `public int callCount()` | The month's calls, all kinds: counted when the schedule is made, nothing built. |
-| 445 | 1 | `public int touched()` | The routes the last frame() looked at. |
-| 448 | 5 | `public int callsOf(Ports.Cargo c)` | The calls of one kind. |
-| 454 | 1 | `public String toString()` |  |
+| 325 | 9 | `public static Boat position(Call call, Route route, double t)` | Where a call's boat is at t (month fractions), or null when it is not on the water: running in over its leg, at the quay, or running out. |
+| 341 | 20 | `static Boat along(Call call, Route route, double f, boolean coming, boolean loaded, boolean docked)` | A call's boat at a share f of its route from the quay (0 at the quay, lying there; 1 at the far end), coming in or going out: its place on the way, turned about the pivot by the call's spread past it, its heading, and... |
+| 363 | 4 | `static double turnOf(Call call, Route route)` | A call's turn of its route's last leg, in radians: within its route's spread either way, by the call's own hash (its arrival and its route). |
+| 374 | 31 | `public List<Boat> frame(long x0, long y0, long x1, long y1, double t)` | The boats on the water at t whose routes cross the rectangle [x0, x1) x [y0, y1) in plots: the routes indexed by the district cells the rectangle covers, and on each a binary search of its arrivals. |
+| 407 | 3 | `public static boolean crosses(Route rt, long x0, long y0, long x1, long y1)` | Whether a route meets the rectangle: one of its legs' boxes does (legBoxes()) - a lane's, its one box. |
+| 412 | 4 | `static boolean crosses(double[][] legs, long x0, long y0, long x1, long y1)` | ...by its legs' boxes, worked out already. |
+| 422 | 13 | `static double[][] legBoxes(Route rt)` | Each leg's box, {x0, y0, x1, y1} in plots, inclusive: its two points' - past the pivot widened by how far the call's spread can swing it (its far end's distance from the pivot x sin(spread), and a plot). |
+| 437 | 5 | `static int lower(long[] a, int from, int to, long v)` | The first index in [from, to) whose key is at least v. |
+
+### reads (lines 443-470)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 445 | 1 | `public int month()` |  |
+| 446 | 1 | `public List<Route> routes()` |  |
+| 449 | 6 | `public List<Call> calls()` | Every call of the month, by route and arrival (those with no route first). |
+| 457 | 1 | `public int callCount()` | The month's calls, all kinds: counted when the schedule is made, nothing built. |
+| 460 | 1 | `public int touched()` | The routes the last frame() looked at. |
+| 463 | 5 | `public int callsOf(Ports.Cargo c)` | The calls of one kind. |
+| 469 | 1 | `public String toString()` |  |
 

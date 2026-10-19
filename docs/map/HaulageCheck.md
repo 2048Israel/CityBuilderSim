@@ -55,6 +55,8 @@
 
 **Uses:** [Good](Good.md) (147), [Sector](Sector.md) (45), [Haulage](Haulage.md) (35), [Game](Game.md) (34), [Freight](Freight.md) (30), [ProcessingSector](ProcessingSector.md) (24), [JobType](JobType.md) (22), [Sectors](Sectors.md) (18), [GameFiles](GameFiles.md) (13), [Traffic](Traffic.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildingManager](BuildingManager.md) (5), [Mining](Mining.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [SpreadPlanner](SpreadPlanner.md) (4), [HeavyIndustry](HeavyIndustry.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [Founding](Founding.md) (1), [Resource](Resource.md) (1), [Ports](Ports.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1)
 
+**Used by (1):** [LandlordPortCheck](LandlordPortCheck.md)
+
 ## Sections
 
 | line | section |

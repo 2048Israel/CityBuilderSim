@@ -13,6 +13,7 @@
 - **A berth pays back** (§9.5): `Ports.berthPaysBack()`, the dues' own break-even - the kind's uncovered tonnes reach `WORTH_A_BERTH / dial` of the berth's month - and `Ports.payingTerminal()`, the largest of a kind's terminals that pays back. The test player (`LongPlaytest.portsWhenNeeded()`), the advice (`BuildAdvice` `Kind.PORT`, one measure a cargo kind, `suggestFor()` alone, not the overview's list) and the auto-builder (`AutoBuilder.remit()`, last; held by the debt limit, the money, the ground and the coast) all choose by it.
 - **The save**: the division's quotes and month in Freight's extras (`port.*`); the ledger's `paidToCity`; the dial in the policy array (`STATE_SLOTS` one longer). New keys only, no format bump.
 - **The screens, as few as FR4 leaves**: Freight's page gains "Ports, the quay" (tonnes, quote, handling billed, dues paid by kind); the Government screen's "Port dues"; the build card's wording for a berth. Not the Policy screen's dial (FR4).
+- **Fixed on the way**: **every id crosses a save** - `Game.sendBuildingSave()` and `loadBuildings()` ran to the template count and read it as an id, so the Bulk Berth (142, before FR7's 141) was lost across a save (§3); and a berth's sea route keeps its cell's middle where its own first leg would graze land (`SeaRoutes.route()`, §6).
 - **Harnesses**: LandlordPortCheck (new, sections 3-9); BuildAdviceCheck's "a berth pays back"; PortCheck's ships; LongPlaytest's "Ports division" line.
 
 ## 2. ★ calls
@@ -58,12 +59,35 @@ Against main at efff4b9 (0.8.5, FR2's model), the model at 37806a8. Both runs: "
 
 ## 5. The ensemble
 
-ENSEMBLE_HERE
+The 16-seed x 5-policy ensemble (the workbench zip's runner through FR2's `runpc.sh`, outside the tree), scored by its own `score.py` against FR2's final (`fr2tip`, 1f573f6: main's model), on a class snapshot of 37806a8 (the model as shipped; the later route fix is drawing only). 80 runs, none missing or short, no LongPlaytest finding, no money-audit month, 64/64 runs their AUTO2 twin's before the switch.
+
+| criterion | FR2 (main) | FR3 |
+|---|---|---|
+| A1 inflation m240-end | 2.20%, pass | 2.23%, pass |
+| A2 longest yoy > 10% spell | 15 [6-20], FAIL | 15 [6-35], FAIL |
+| A3 deflation; final/peak population | pass | pass |
+| S1 0% from m1800 minus twin | 2.07%, spell 26, FAIL | 2.11%, spell 40, FAIL |
+| H1 a young city at 0% | FAIL | FAIL |
+| K1 / K2 SHOCK | 13.37% / 2.93%, pass | 13.38% / 2.81%, pass |
+| R1 / R2 HIGH | pass | pass |
+| R3 HIGH minus twin | 1 above +1, pass | **5 above +1, FAIL** |
+| T1 AUTO2 seeds to 40,000 | 16/16 at m1,420 | 16/16 at m1,448 |
+| T2 AUTO2 final population | 211,554 [154,065-300,861] | **189,814** [140,579-278,783], -10% (pass: >= 75%) |
+| T2 ZERO_SLACK / ZERO_HOT / SHOCK / HIGH | 135,596 / 4,440 / 12,166 / 4,244 | 121,988 / 3,602 / 11,106 / 4,175, all pass |
+| criteria | 11/14 (no baseline) | 10/14 of the same, 21/25 with the baseline's |
+
+**What moved, and why.** R3 is one of main's standing reds (4 seeds above on main at 7255f49, 4-5 on FR2's drafts, 1 on its final): back where it was. The cities end about a tenth smaller: before FR3 a tonne crossed a berth free and the city paid its dockers out of the transit bill; now the shipper pays a crew's handling and a berth's cost in dues, D$2-3 a tonne of bulk and D$12-16 of general cargo at founding prices, and nine tenths of it the dues - a charge on sea trade the treasury takes. The automatic builder also orders berths now (`Kind.PORT`), from the city's money. The playtest's default run ends 17% smaller and its Earth run 6.5% larger, so the ensemble's median is the measure: the landlord port makes the sea dearer, as a landlord port does. Whether the default dial (1, the berths' full cost recovered) is where Jerus wants it is FR3-C's.
 
 ## 6. The suite
 
-SUITE_HERE
+`Batch check.bat --maps` on the final tree: **116 harnesses run, 115 passed, 1 failed** - ScaleCheck's four lines, red on main to the line (rerun on efff4b9: the same worsts, 0.034 and 0.039; FR2-C). Stale: no firm finding; the maps regenerated. The first run (on 37806a8) had three reds of FR3's, fixed in 1026a94: **MapCheck 9**'s routes (its fixture stands two of every berth, so two Bulk Berths, and the one at the shore's end grazed a cell of land with its first leg: `SeaRoutes.route()` keeps the berth cell's middle where the berth's own leg would not keep to the sea; drawing only, GatewayCheck, PortCheck and ReadPathCheck green on it), **BuildCardCheck 1** (the Bulk Berth a fifth port) and **StaleCheck** (README's count). New or extended and green: LandlordPortCheck (sections 3-9), BuildAdviceCheck 13 ("a berth pays back"), SaveFileCheck ("every id crosses a save", red on the old loops), PortCheck's ships, OilCheck's slot. `--timing`, alone and hard: TIMING_HERE.
 
 ## 7. Not built, and what is left
 
-LEFT_HERE
+- **Not this batch's** (the spec's later rows): every screen of spec §6 - Freight's division strip, the Policy screen's port dues dial, the berths' cards with their payback (FR4); the port yard (D7, FR6); the island city's sea-only trade (§9.6, I1); a Handysize row in the freight rule.
+- **Not built, noticed**: a berth on site pays no dues until it opens, and a kind's dues rate falls a little when a second berth of it opens (its book value over more tonnes at design use); the advice's payback is a berth's own break-even, stricter for a second berth than the kind's berths together; the band's sea share is left whole (★7); the builders' handling line is checked as the remainder (their repairs are bought before the haul).
+- **For Jerus (Pending, FR3-C)**:
+  1. **The calls ★1-★8**, all as recommended; ★8 the review's.
+  2. **The general cargo quote**: D$12-16 a tonne at founding prices against the sources' US$7-9 - a landlord's dues and a stevedore's charge together, nine tenths of the bills dues. The dial (1, the berths' whole cost) and the design use (.60) are where it moves.
+  3. **The cities end about a tenth smaller** in the ensemble (§5): the sea is no longer free.
+- **The ids**: the Bulk Berth is 142, FR7's Rail Depot 141. With both on main the catalogue has no gap, and since 37806a8 the save no longer needs it not to.

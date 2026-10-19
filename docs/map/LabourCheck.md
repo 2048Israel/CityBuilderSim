@@ -25,6 +25,8 @@
 
 **Uses:** [WageBand](WageBand.md) (48), [JobType](JobType.md) (40), [LabourMarket](LabourMarket.md) (36), [Game](Game.md) (24), [GameFiles](GameFiles.md) (10), [PayTier](PayTier.md) (6), [Migration](Migration.md) (6), [LongPlaytest](LongPlaytest.md) (6), [Sector](Sector.md) (6), [BuildingType](BuildingType.md) (6), [PopulationManager](PopulationManager.md) (3), [BuildingManager](BuildingManager.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [RealEstate](RealEstate.md) (2), [Construction](Construction.md) (2), [AgeBand](AgeBand.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [PriceIndex](PriceIndex.md) (1), [EconomyManager](EconomyManager.md) (1)
 
+**Used by (1):** [LandlordPortCheck](LandlordPortCheck.md)
+
 ## Sections
 
 | line | section |
