@@ -484,7 +484,8 @@ public class OrderSearchCheck {
             if (cash >= cost) return new Mortgage.Decision(n, trimmedBy, false, ownForOne, coverageOfOne);
             double own = Mortgage.ownFundsFor(cost);
             if (n == 1) ownForOne = own;
-            if (!(cash > 0) || cash < own) {
+            // ...within the lender's rounding since FR2 (Mortgage.Slice.of(), as BusinessDebtManager.canFundMortgage()).
+            if (!(cash > 0) || cash < own * (1 - 1e-9)) {
                 if (n == 1) shortForOne = true;
                 if (trimmedBy == null) trimmedBy = Mortgage.Decision.DOWN_PAYMENT;
                 continue;

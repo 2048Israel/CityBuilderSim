@@ -449,11 +449,28 @@ public final class FundView {
             market.addAll(bonds);
             return market;
         }
+        /*
+         * ONE ISSUER'S BONDS TOGETHER, BY MATURITY, AND THE REST BY SIZE - as a
+         * total order (FR2, 2026-10-18). The comparator before ordered two bonds
+         * of one issuer by maturity and every other pair by size, which is no
+         * order at all once a list holds two issuers' bonds and a third thing
+         * between them in size: TimSort threw "Comparison method violates its
+         * general contract" on ReadPathCheck's city when FR2's economy gave it
+         * such a list. Each bond now ranks by its issuer's largest bond, then
+         * the issuer, then its maturity; anything else by its own size.
+         */
+        java.util.Map<String, Double> issuerSize = new java.util.HashMap<>();
+        for (Hit h : out) {
+            if (BOND.equals(h.kind()) && h.issuer() != null) issuerSize.merge(h.issuer(), h.size(), Math::max);
+        }
+        java.util.function.ToDoubleFunction<Hit> rank = h -> BOND.equals(h.kind()) && h.issuer() != null
+                ? issuerSize.get(h.issuer()) : h.size();
         out.sort(Comparator.<Hit>comparingInt(h -> startsWith(h, q) ? 0 : 1)
                 .thenComparingInt(h -> h.held() > 0 ? 0 : 1)
-                .thenComparing((a, b) -> BOND.equals(a.kind()) && BOND.equals(b.kind()) && a.issuer() != null
-                        && a.issuer().equals(b.issuer()) ? Integer.compare(a.maturity(), b.maturity())
-                        : Double.compare(b.size(), a.size())));
+                .thenComparing(Comparator.comparingDouble(rank).reversed())
+                .thenComparing(h -> BOND.equals(h.kind()) && h.issuer() != null ? h.issuer() : "")
+                .thenComparingInt(h -> BOND.equals(h.kind()) && h.issuer() != null ? h.maturity() : 0)
+                .thenComparing(Comparator.comparingDouble(Hit::size).reversed()));
         if ("All".equals(f) || "Bonds".equals(f)) {
             // ...and, named, the lots it closed on bonds no longer on any book, newest first.
             for (FundLedger.Lot l : closedLots(g)) {

@@ -325,7 +325,10 @@ public class Mortgage extends BusinessDebt {
             // Its own funds buy it outright: no lender to ask.
             if (cash >= cost) return new Slice(true, Double.NaN, false, Double.NaN, null);
             double own = ownFundsFor(cost);
-            if (!(cash > 0) || cash < own) return new Slice(false, own, true, Double.NaN, Decision.DOWN_PAYMENT);
+            // ...within the lender's own rounding (BusinessDebtManager.canFundMortgage(), 1 + 1e-9): a landlord raises equity to
+            // the down payment exactly, and without it a ten-trillionth decided the order - one city built, its reformed twin
+            // refused (DenominationCheck, FR2's notes).
+            if (!(cash > 0) || cash < own * (1 - 1e-9)) return new Slice(false, own, true, Double.NaN, Decision.DOWN_PAYMENT);
             double coverage = Mortgage.coverage(noiPerUnit * n, cost - cash, annualRate);
             return new Slice(false, own, false, coverage,
                     coverage >= MORTGAGE_DEBT_COVERAGE ? null : Decision.LENDERS_TEST);

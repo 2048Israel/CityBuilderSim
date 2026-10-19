@@ -2358,6 +2358,23 @@ public class BankCheck {
              * BusinessInvestment.holdSector().
              */
             city.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
+            /*
+             * FREIGHT IS FUNDED, FOR THE SAME REASON (FR2, 2026-10-19). Freight
+             * buys its trucks out of its revenue and its lender's credit, as a
+             * sector buys its vans, and a founded Freight in a town of three
+             * hundred houses earns almost nothing: it sat at no cash, owing
+             * D$4-7k against assets of D$2-5k (its tiny fleet bought on credit),
+             * and every time retail's defaults shook the town its leverage
+             * crossed the default point (1.5) - "Freight: 4.9 owed, 2.3 owned,
+             * 59% defaulted" in the months retail was NOT news. The quiet
+             * months this section needs went from five to two. Before FR2 it
+             * was luck again: one month in twelve showed Freight past the line.
+             * D$1M (HaulageCheck funds its Freight with D$1B for the same
+             * reason) pays for the whole fleet this town needs - 0.4 of a truck
+             * - out of its own cash, owing nothing, so the fixture causes its own
+             * condition: no sector but retail is ever past the line.
+             */
+            city.getSectors().freight().setCash(1_000);
             city.simulateMonths(72);
         } finally {
             System.setOut(out);
