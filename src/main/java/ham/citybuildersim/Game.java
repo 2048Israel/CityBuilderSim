@@ -15903,6 +15903,14 @@ public class Game {
             economyManager.setCentralBankLines(economyManager.getNationalAccounts().getCentralBankRemittance(),
                     economyManager.getNationalAccounts().getCentralBankInterest());
             economyManager.setFundTransfer(economyManager.getNationalAccounts().getFundTransfer());
+            // ...and the four lines 0.7.102 took inside the totals (A15), which only the block carries as well - set
+            // where the treasury pays them in the month (chargeBuildingMaintenance(), settleTreasury(), settleReserve()):
+            // the same refresh struck the loaded city's repairs as nothing, and its first pass read a resident as costing
+            // $0.90k a month where the city it was saved from read $1.12k (AutoBuildCheck 4 on FR7's path, 2026-10-19).
+            economyManager.setCityRepairsPaid(economyManager.getNationalAccounts().getCityRepairs());
+            economyManager.setArrearsPaidDown(economyManager.getNationalAccounts().getArrearsPaid());
+            economyManager.setReserveCrude(economyManager.getNationalAccounts().getReserveCrudeBought(),
+                    economyManager.getNationalAccounts().getReserveCrudeSold());
             loadedGovernmentMonth = null;
         }
 

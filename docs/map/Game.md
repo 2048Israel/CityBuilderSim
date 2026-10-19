@@ -1,4 +1,4 @@
-# Game.java - 16,481 lines · 661 methods · 19 constants · model
+# Game.java - 16,489 lines · 661 methods · 19 constants · model
 
 `ham/citybuildersim/Game.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -82,7 +82,7 @@
 | 14080 | BUYING YOUR OWN DEBT BACK |
 | 14207 | WHY LAND IS NOT IN THE RENT FLOOR |
 | 14588 | · · the three the monthly path sets and this did not |
-| 16226 | THE CURRENCY REFORM |
+| 16234 | THE CURRENCY REFORM |
 
 ## Enum constants
 
@@ -334,15 +334,15 @@
 | 13836 | `private double arrearsRefusedLifetime, arrearsPaidLifetime` | Refused and paid down since founding, for the playtest's record. |
 | 13844 | `private final java.util.Map<String, Double> arrearsPaidTo` | This month's arrears paid down, by the sector whose till they reached (0.7.55): what its statement's arrears line reads (SectorBooks, arrearsPaid), struck at the settle and read when the month is recorded, both inside... |
 | 14205 | `private long pendingWorkforce` | Set by loadGame() from the save, consumed by the next rebuildSimulationState(). |
-| 16181 | `private boolean bankAllowanceToOpen` | True between reading a save from before 0.7.8 and the end of its load: its bank's allowance is set up there. |
-| 16230 | `private final Denomination denomination` |  |
-| 16474 | `private boolean forcedReform` |  |
+| 16189 | `private boolean bankAllowanceToOpen` | True between reading a save from before 0.7.8 and the end of its load: its bank's allowance is set up there. |
+| 16238 | `private final Denomination denomination` |  |
+| 16482 | `private boolean forcedReform` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 16457 | **type** `public class Game` |  |
+| 20 | 16465 | **type** `public class Game` |  |
 | 69 | 1 | `public DecisionLog getDecisions()` | The player's decisions, oldest first (0.7.23): what the chart's flags are drawn from. |
 | 80 | 1 | `public AutoBuilder getAutoBuilder()` | Automatic building (0.7.73): its settings, its log and its last pass. |
 | 92 | 1 | `public StrategicReserve getReserve()` | The city's strategic reserve (0.7.85). |
@@ -1317,7 +1317,7 @@
 | 14101 | 4 | `public double repurchaseGain(Debt debt)` | What the city would book as a gain (positive) or loss (negative). |
 | 14126 | 72 | `public double repurchaseDebt(Debt debt)` | Buys one bond back and takes it off the books. |
 
-### WHY LAND IS NOT IN THE RENT FLOOR (lines 14207-16225)
+### WHY LAND IS NOT IN THE RENT FLOOR (lines 14207-16233)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -1327,16 +1327,16 @@
 | 14686 | 22 | `private void readTheMap(int slot, Long stamp)` | THE CITY MAP, READ BACK (0.7.60): from the slot's sidecar when the save's stamp is its stamp and it was drawn on this land in this month (CityMap.readSidecar()); a save that had a map whose sidecar is missing or stale... |
 | 14745 | 11 | `private void restoreOilPools(DataSave loaded)` | THE TWO OIL POOLS ON A LOAD (0.7.93, batch O10b; LandManager's THE TWO OIL POOLS): once the land is in place, the offshore pool's E as saved - or, on a save from before SAVE_FORMAT 35, the one pool's E charged to the ... |
 | 14757 | 60 | `private boolean restoreLandOnTheWorld(DataSave loaded, double owned)` |  |
-| 14819 | 1349 | `private void readTheSave(int slot)` | The load itself; see loadGame(). |
-| 16175 | 4 | `void seedFundLedger()` | THE FUND'S COST BASIS FOR A SAVE FROM BEFORE IT (0.7.39; the project's spec-fund-0739.md, 3.5): each market lot and bond at its market value this month, flagged as such, the rescue lot exact from the counters, one TRA... |
-| 16184 | 41 | `public void loadHistory(int slot)` |  |
+| 14819 | 1357 | `private void readTheSave(int slot)` | The load itself; see loadGame(). |
+| 16183 | 4 | `void seedFundLedger()` | THE FUND'S COST BASIS FOR A SAVE FROM BEFORE IT (0.7.39; the project's spec-fund-0739.md, 3.5): each market lot and bond at its market value this month, flagged as such, the rescue lot exact from the counters, one TRA... |
+| 16192 | 41 | `public void loadHistory(int slot)` |  |
 
-### THE CURRENCY REFORM (lines 16226-16481)
+### THE CURRENCY REFORM (lines 16234-16489)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 16232 | 1 | `public Denomination getDenomination()` |  |
-| 16235 | 3 | `public boolean canReformCurrency()` | Whether the reform button should be showing. |
-| 16266 | 192 | `public boolean reformCurrency(double factor)` | Lops zeros off the currency: one new dollar for `factor` old ones. |
-| 16469 | 4 | `boolean reformCurrencyForTest(double factor)` | The reform without the price-level gate, for a harness. |
+| 16240 | 1 | `public Denomination getDenomination()` |  |
+| 16243 | 3 | `public boolean canReformCurrency()` | Whether the reform button should be showing. |
+| 16274 | 192 | `public boolean reformCurrency(double factor)` | Lops zeros off the currency: one new dollar for `factor` old ones. |
+| 16477 | 4 | `boolean reformCurrencyForTest(double factor)` | The reform without the price-level gate, for a harness. |
 
