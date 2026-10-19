@@ -78,7 +78,7 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **116 harnesses plus the
+`AllChecks` runs the lot, one JVM each — **117 harnesses plus the
 4,000-odd-month playtest**, which it counts as 117 run (116 where
 JavaFX is not on the classpath, which skips `BuildMenuCheck`), in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
