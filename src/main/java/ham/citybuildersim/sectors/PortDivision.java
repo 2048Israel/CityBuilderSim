@@ -36,7 +36,13 @@ import java.util.Map;
  * the tonnes - the larger of the tonnes billed and DESIGN_USE of the kind's
  * berths' month, so an idle berth is carried by the division and not billed to
  * the few tonnes that use it - times the scarcity when the kind asks for more
- * than its berths, plus the dues a tonne pays the city. NO RETURN ON CAPITAL
+ * than its berths, plus the dues a tonne pays the city. THE DUES ARE PASSED
+ * THROUGH, AT THE MONTH'S OWN RATE: only the crew's part walks REPRICE_SPEED a
+ * month (crewQuote); the bill adds the dues rate the month pays the city. Walked
+ * with the crew, the dues lagged a growing city's rate and Freight paid the
+ * difference out of its railway (the review, 2026-10-19: on FR7's model the
+ * default playtest's Freight was written down 17 times and its trucks lost,
+ * the city held at 148,000 people for 1,500 months). NO RETURN ON CAPITAL
  * (call 3): the division has no rate base, the city owns the berths and
  * recovers them through the dues.
  *
@@ -72,7 +78,7 @@ public final class PortDivision {
 
     private final Freight freight;
 
-    /** The handling quote in force by kind, the city's money a tonne (D$ thousands a tonne); meaningful only when quoteKnown. */
+    /** The crew's part of the handling quote in force by kind (the dues are added at the month's own rate), the city's money a tonne (D$ thousands a tonne); meaningful only when quoteKnown. */
     private final double[] quote = new double[KINDS];
     private final boolean[] quoteKnown = new boolean[KINDS];
 
@@ -159,9 +165,13 @@ public final class PortDivision {
      */
     public static double targetOf(double crewWages, double handled, double berthMonth, double scarcity,
                                   double dueRate, double dial) {
+        return crewTargetOf(crewWages, handled, berthMonth, scarcity) + dueRate * dial;
+    }
+
+    /** ...its crew's part, the part the quote walks: crew / max(tonnes, berths x DESIGN_USE) x scarcity; nothing with no crew or no tonnes and no berth. */
+    public static double crewTargetOf(double crewWages, double handled, double berthMonth, double scarcity) {
         double base = Math.max(handled, berthMonth * DESIGN_USE);
-        double cost = base > 0 && crewWages > 0 ? crewWages / base * scarcity : 0;
-        return cost + dueRate * dial;
+        return base > 0 && crewWages > 0 ? crewWages / base * scarcity : 0;
     }
 
     /* ------------------------------------------------------------ the month */
@@ -173,8 +183,10 @@ public final class PortDivision {
      * Called by Freight.haul() beside the railway's bill and Haulage's, at the
      * shares that were in force while the cargo moved. A sector's bill is its
      * sea tonnes of each kind (landed and shipped, the loop's) at the kind's
-     * quote in force - the rule's own target while none has been struck yet
-     * (the opening quote, FR3.md 2: no tariff is written in).
+     * crew quote in force - the rule's own crew target while none has been
+     * struck yet (the opening quote, FR3.md 2: no tariff is written in) - plus
+     * the dues rate this month pays the city, so the handling carries the dues
+     * to the cent.
      *
      * @param seaOf each sector's sea tonnes of the month by kind (Ports.Cargo order), in the order of the loop that summed them
      */
@@ -198,8 +210,9 @@ public final class PortDivision {
         double[] price = new double[KINDS];
         for (Ports.Cargo kind : Ports.Cargo.values()) {
             int k = kind.ordinal();
-            price[k] = quoteKnown[k] ? quote[k]
-                    : targetOf(crew[k], tonnes[k], berths[k], scarcityOf(boundaryOf(ports, kind), berths[k]), duesRate[k], dial);
+            price[k] = (quoteKnown[k] ? quote[k]
+                    : crewTargetOf(crew[k], tonnes[k], berths[k], scarcityOf(boundaryOf(ports, kind), berths[k])))
+                    + duesRate[k] * dial;
             billed[k] = tonnes[k] * price[k];
             dues[k] = tonnes[k] * duesRate[k] * dial;
             if (!(billed[k] > 0) || !Double.isFinite(billed[k])) billed[k] = 0;
@@ -218,21 +231,20 @@ public final class PortDivision {
     }
 
     /**
-     * Straight after the bill: the rule, per kind. The target is crew / max(the
-     * tonnes, DESIGN_USE of the berths' month) x the scarcity + the due x the
-     * dial; the quote walks Freight.REPRICE_SPEED of the way to it, and is the
-     * target itself the first month a kind has a berth and a crew. A kind with
+     * Straight after the bill: the rule, per kind. The crew's target is crew /
+     * max(the tonnes, DESIGN_USE of the berths' month) x the scarcity; the crew
+     * quote walks Freight.REPRICE_SPEED of the way to it, and is the target
+     * itself the first month a kind has a berth and a crew. The dues are no part
+     * of the walk: the bill adds the month's own rate (billMonth()). A kind with
      * no berth keeps its quote and bills nothing; nor does one with no crew
      * strike its first.
      */
     void closeMonth(Ports ports) {
         double[] berths = Ports.berths(freight.buildingsOf());
-        double dial = dial();
         for (Ports.Cargo kind : Ports.Cargo.values()) {
             int k = kind.ordinal();
             if (!(berths[k] > 0) || !(crew[k] > 0)) continue;
-            double target = targetOf(crew[k], tonnes[k], berths[k], scarcityOf(boundaryOf(ports, kind), berths[k]),
-                    duesRate[k], dial);
+            double target = crewTargetOf(crew[k], tonnes[k], berths[k], scarcityOf(boundaryOf(ports, kind), berths[k]));
             if (!Double.isFinite(target)) continue;
             if (!quoteKnown[k]) {
                 quote[k] = target;
@@ -250,8 +262,11 @@ public final class PortDivision {
 
     /* ------------------------------------------------------------ what it is doing */
 
-    /** The handling quote in force for a kind, a tonne; 0 until one is struck (the bill meanwhile is the rule's target). */
-    public double getQuote(Ports.Cargo k) { return quoteKnown[k.ordinal()] ? quote[k.ordinal()] : 0; }
+    /** The handling quote for a kind, a tonne: its crew quote and the dues at the rate the month billed paid; 0 until one is struck (the bill meanwhile is the rule's target). */
+    public double getQuote(Ports.Cargo k) { return quoteKnown[k.ordinal()] ? quote[k.ordinal()] + duesRate[k.ordinal()] * dial() : 0; }
+
+    /** ...the crew's part alone, the part that walks REPRICE_SPEED a month; 0 until one is struck. */
+    public double getCrewQuote(Ports.Cargo k) { return quoteKnown[k.ordinal()] ? quote[k.ordinal()] : 0; }
 
     /** Whether the quote has been struck from a month with a berth and a crew. */
     public boolean isQuoteKnown(Ports.Cargo k) { return quoteKnown[k.ordinal()]; }

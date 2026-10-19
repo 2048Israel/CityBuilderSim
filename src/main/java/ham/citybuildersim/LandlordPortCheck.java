@@ -39,7 +39,7 @@ import java.util.Map;
  *   6. THE DUES' DEFAULT. duesRateOf() is the annuity worked here by hand (the kind's terminals at cash cost
  *      and materials at market, the city's own rate over PORT_LIFE_MONTHS, over the berths' month at
  *      DESIGN_USE), and a city owing more pays a dearer due.
- *   7. THE PRICE. The first quote is the target itself, the next walks REPRICE_SPEED of the way; the
+ *   7. THE PRICE. The first crew quote is the target itself, the next walks REPRICE_SPEED of the way, the dues passed through at the month's rate; the
  *      scarcity is 1 to the berths' month and the cap at twice; a berth below DESIGN_USE bills less than
  *      its crew and its dues.
  *   8. THE MONEY. The money audit closes every month of a city working a port that pays dues.
@@ -391,7 +391,7 @@ public class LandlordPortCheck {
         PortDivision pd = fr.portDivision();
         for (Ports.Cargo kind : Ports.Cargo.values()) {
             p.known[kind.ordinal()] = pd.isQuoteKnown(kind);
-            p.quote[kind.ordinal()] = pd.getQuote(kind);
+            p.quote[kind.ordinal()] = pd.getCrewQuote(kind);
         }
         return p;
     }
@@ -406,9 +406,20 @@ public class LandlordPortCheck {
                 PortDivision.scarcityOf(g.getPorts().carriable(kind), berths), pd.getDuesRate(kind), dial(g));
     }
 
-    /** The quote a kind was billed at in the month just run: the one in force before it, or the rule's own target while none was struck. */
+    /** ...and its crew's part alone, the part the quote walks (PortDivision.crewTargetOf()). */
+    static double crewTarget(Game g, Ports.Cargo kind) {
+        PortDivision pd = g.getSectors().freight().portDivision();
+        double berths = Ports.berths(g.getBuildingManager())[kind.ordinal()];
+        return PortDivision.crewTargetOf(pd.getCrew(kind), pd.getTonnes(kind), berths, PortDivision.scarcityOf(g.getPorts().carriable(kind), berths));
+    }
+
+    /**
+     * The price a kind was billed at in the month just run: the crew quote in force before it (or the rule's own crew target
+     * while none was struck), and the dues at the rate that month paid the city - the dues passed through (PortDivision).
+     */
     static double billedAt(Game g, Plan p, Ports.Cargo kind) {
-        return p.known[kind.ordinal()] ? p.quote[kind.ordinal()] : target(g, kind);
+        PortDivision pd = g.getSectors().freight().portDivision();
+        return (p.known[kind.ordinal()] ? p.quote[kind.ordinal()] : crewTarget(g, kind)) + pd.getDuesRate(kind) * dial(g);
     }
 
     static double sumOf(double[] a) {
@@ -538,8 +549,10 @@ public class LandlordPortCheck {
                 String.format("treasury D$%,.4fk, accounts %,.4fk", one.getEconomyManager().getPortDues(), one.getEconomyManager().getNationalAccounts().getPortDues()));
         Freight f0r = zero.getSectors().freight(), f2r = two.getSectors().freight();
         double dues0 = f0r.portDivision().getDuesPaid(), dues2 = f2r.portDivision().getDuesPaid();
-        assertTrue("fixture: the twins are alike but for the dial: the same sea tonnes were billed, and the dial-1 twin paid dues",
-                toTheCent(f0r.portDivision().getHandlingBilled(), pd.getHandlingBilled()) && toTheCent(f2r.portDivision().getHandlingBilled(), pd.getHandlingBilled())
+        // The handling carries the dues at the dial (passed through), so the twins' crew's part is what they share.
+        double crewPart = pd.getHandlingBilled() - pd.getDuesPaid();
+        assertTrue("fixture: the twins are alike but for the dial: the same sea tonnes were billed at the same crew's part, and the dial-1 twin paid dues",
+                toTheCent(f0r.portDivision().getHandlingBilled() - dues0, crewPart) && toTheCent(f2r.portDivision().getHandlingBilled() - dues2, crewPart)
                         && f0r.portDivision().getTonnes(Ports.Cargo.DRY_BULK) == pd.getTonnes(Ports.Cargo.DRY_BULK)
                         && f2r.portDivision().getTonnes(Ports.Cargo.DRY_BULK) == pd.getTonnes(Ports.Cargo.DRY_BULK) && pd.getDuesPaid() > 0);
         report("AT THE DIAL 0 NO DUES ARE PAID: no \"Port dues\" line in Freight's inputs, and nothing in the treasury's or the accounts'",
@@ -617,15 +630,19 @@ public class LandlordPortCheck {
             quietly(g::toggleNextMonth);
             months++;
         }
-        double first = pd.getQuote(kind), want = target(g, kind);
-        report("THE FIRST QUOTE A KIND STRIKES, the month it has a berth and a crew, IS THE RULE'S TARGET from the month's own figures",
+        double first = pd.getCrewQuote(kind), want = crewTarget(g, kind);
+        report("THE FIRST QUOTE A KIND STRIKES, the month it has a berth and a crew, IS THE RULE'S TARGET from the month's own figures (its crew's part)",
                 pd.isQuoteKnown(kind) && pd.getCrew(kind) > 0 && Math.abs(first - want) <= 1e-12 * Math.max(1e-9, want) && first > 0,
                 String.format("D$%.6fk a tonne after %d month(s) against the target %.6fk (crew D$%,.4fk on %,.0f t)", first, months, want, pd.getCrew(kind), pd.getTonnes(kind)));
         quietly(g::toggleNextMonth);
-        double second = pd.getQuote(kind), target2 = target(g, kind);
+        double second = pd.getCrewQuote(kind), target2 = crewTarget(g, kind);
         report("...AND THE NEXT WALKS REPRICE_SPEED OF THE WAY to the new target",
                 Math.abs(second - (first + (target2 - first) * Freight.REPRICE_SPEED)) <= 1e-12 * Math.max(1e-9, Math.abs(second)),
                 String.format("D$%.6fk -> %.6fk, the target %.6fk, a quarter of the way", first, second, target2));
+        report("THE DUES ARE PASSED THROUGH AT THE MONTH'S OWN RATE: the kind's bill less its dues is its tonnes x the crew quote it was billed at, to the cent",
+                toTheCent(pd.getBilled(kind) - pd.getDues(kind), pd.getTonnes(kind) * first) && pd.getDues(kind) > 0
+                        && Math.abs(pd.getQuote(kind) - (second + pd.getDuesRate(kind) * dial(g))) <= 1e-12 * Math.max(1e-9, pd.getQuote(kind)),
+                String.format("billed D$%,.4fk, dues %,.4fk, the crew's part %,.4fk on %,.0f t", pd.getBilled(kind), pd.getDues(kind), pd.getTonnes(kind) * first, pd.getTonnes(kind)));
         double tonnes = pd.getTonnes(kind), design = pd.getDesignTonnes(kind), berths = Ports.berths(g.getBuildingManager())[kind.ordinal()];
         assertTrue("fixture: the berth is worked below DESIGN_USE (the design tonnes are the berths' month x DESIGN_USE)",
                 tonnes > 0 && tonnes < design && Math.abs(design - berths * PortDivision.DESIGN_USE) <= 1e-9 * design);
