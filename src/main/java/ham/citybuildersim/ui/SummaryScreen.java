@@ -1312,7 +1312,7 @@ final class SummaryScreen {
            once every few months and can be read in full on the build screens.
            ============================================================= */
         int kinds = 0, structures = 0;
-        for (int i = 0; i < buildings.getTemplateCount(); i++) {
+        for (int i = 0; i <= buildings.getMaxTemplateId(); i++) {
             int q = buildings.getQuantity(i);
             if (q > 0) { kinds++; structures += q; }
         }
@@ -1328,7 +1328,7 @@ final class SummaryScreen {
                         return b;
                     }
                     b.getChildren().add(panelNote(builtKinds + " kinds standing"));
-                    for (int i = 0; i < buildings.getTemplateCount(); i++) {
+                    for (int i = 0; i <= buildings.getMaxTemplateId(); i++) {
                         BuildingsTemplate template = buildings.getTemplate(i);
                         if (template == null) continue;
                         int quantity = buildings.getQuantity(i);

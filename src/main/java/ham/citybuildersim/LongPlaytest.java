@@ -6413,7 +6413,8 @@ public class LongPlaytest {
         for (Ports.Cargo k : Ports.Cargo.values()) {
             divisionKinds.append(String.format("%s: billed %d month(s), %,.0f t, %s; ", k.label(), portBilledMonths[k.ordinal()],
                     portTonnesRun[k.ordinal()], portLastQuote[k.ordinal()] > 0
-                            ? String.format("last quote $%.2f a tonne", portLastQuote[k.ordinal()] * 1000) : "no quote"));
+                            ? String.format("last quote $%.2f a tonne ($%.2f at founding prices)", portLastQuote[k.ordinal()] * 1000,
+                                    portLastQuote[k.ordinal()] * 1000 / Math.max(1e-9, g.getPriceIndex().getIndex())) : "no quote"));
         }
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             int n = Ports.isPort(t) ? g.getBuildingManager().getQuantity(t.getId()) : 0;

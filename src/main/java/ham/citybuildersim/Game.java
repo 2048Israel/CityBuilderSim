@@ -12745,11 +12745,21 @@ public class Game {
         };
     }
     
+    /*
+     * EVERY ID TO THE HIGHEST, NOT AS MANY AS THERE ARE (FR3, 2026-10-19). Both
+     * loops here ran to getTemplateCount() and read the index as an id, which
+     * holds only while the ids number 0..n-1 with none missing. FR3's Bulk Berth
+     * took 142 while FR7's 141 was not yet on the branch: 142 templates, the
+     * loops stopped at 141, and every Bulk Berth vanished across a save
+     * (LongPlaytest's "next-month income across a save", the crews' posts gone;
+     * SaveFileCheck, "every id crosses a save"). The array was already sized by
+     * the highest id (the founding's setBuildingNum()); the loops are now too.
+     */
     public void sendBuildingSave() {
 
-    int totalTemplates = buildingManager.getTemplateCount();
+    int lastId = buildingManager.getMaxTemplateId();
 
-    for (int i = 0; i < totalTemplates; i++) {
+    for (int i = 0; i <= lastId; i++) {
 
         BuildingsTemplate template = buildingManager.getTemplate(i);
 
@@ -12768,18 +12778,19 @@ public class Game {
     
     public void loadBuildings() {
 
-        int totalTemplates = buildingManager.getTemplateCount();
+        int lastId = buildingManager.getMaxTemplateId();
 
-        for (int i = 0; i < totalTemplates; i++) {
+        for (int i = 0; i <= lastId; i++) {
+            BuildingsTemplate template = buildingManager.getTemplate(i);
+            // ...an id no template has (a gap, sendBuildingSave()'s note) holds nothing.
+            if (template == null) continue;
             int quantity = 0;
 
             if (i < dataSave.getBuildingsLength()) {
                 quantity = dataSave.getBuildingQuantity(i);
             }
 
-            buildingManager.addStack(
-                    buildingManager.getTemplate(i),
-                    quantity, true);
+            buildingManager.addStack(template, quantity, true);
         }
     }
 
