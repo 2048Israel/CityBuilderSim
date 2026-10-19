@@ -87,7 +87,7 @@ findings, once README's count of harnesses said 120 (FreightViewCheck is
 new). The maps are regenerated. FreightViewCheck runs in about 2 s on
 three cities (none, a full one with rail, the port yard, three kinds of
 berth, a depot and dues, and one railed with no berth); PolicyPreviewCheck
-gained its section 10 (two played berth cities). TIMING_PLACEHOLDER
+gained its section 10 (two played berth cities). Last and alone,`nBatch check.bat --timing`: 8 timing harnesses hard, 7 passed; the eighth is`nScaleCheck's "...and it builds" again, main's red, as FX4 found it.
 
 ## What Jerus checks by eye (FR4-C)
 
