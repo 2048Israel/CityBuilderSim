@@ -6796,8 +6796,33 @@ public final class GameVersion {
      *   - Harnesses: HaulageCheck (new); RailCheck, VanCheck and the
      *     weighing, books, oil and save harnesses on the new rules.
      *   - THE PLAYTESTS MOVE from month 3: both pass every audit and reload.
+     *
+     * 0.8.6 (2026-10-19) - FR7, TRACK THAT GOES SOMEWHERE, AND ROADS FOR
+     * TWO NEEDS. Jerus's Halifax city, 0.8.3: track running out to dead ends,
+     * gravel everywhere, highways nearly never (docs/queue/FR7.md, its
+     * decisions of 2026-10-18; FR7-notes.md). Slices by Sonnet 5.5 subagents,
+     * reviewed by Claude. No save format change (40).
+     *   - A STATION FIRST (sectors.Freight, THE STATIONS): the Rail Depot (id
+     *     141), a small goods yard of 50,000 t, is a railway's first order;
+     *     what is railed is capped by the stations but for bulk at a works'
+     *     own siding, and a Rail Spur is laid only for a bulk works with none.
+     *     The overbuild while the wagon sets lagged was real and is gone.
+     *   - STREETS AND HIGHWAYS, TWO NEEDS (InfrastructureManager): the
+     *     highways carry the through trips, a share growing with the built-up
+     *     area, and the freight gates' trucks; the rest is on the streets. Two
+     *     measures and two NEEDS YOU rows, so a big city builds both; with no
+     *     highway every road figure is the old one to the bit.
+     *   - PAVING BY TRAFFIC: a gravel road's repairs rise past 200 vehicles a
+     *     day on its street, so busy streets are paved.
+     *   - THE MAP: gravel drawn grey; SLICE3_VERSION; the interchanges' ground,
+     *     access roads from the yards, sea terminals and Truck Depots, kerb
+     *     corners (FR0-L).
+     *   - Harnesses: RailDepotCheck (new); RoadCheck, RailDrawCheck,
+     *     JunctionCheck, MapCheck, MainLineCheck sections; three fixtures the
+     *     model moved, re-made.
+     *   - THE PLAYTESTS MOVE: both pass every audit and reload.
      */
-    public static final String VERSION = "0.8.5";
+    public static final String VERSION = "0.8.6";
 
     /**
      * The save shape.
