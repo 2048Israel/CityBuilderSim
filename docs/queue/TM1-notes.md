@@ -117,6 +117,35 @@ went to Agent subagents on Sonnet at extra effort (Jerus, 2026-10-18), as
   property is restored in a `finally`, the child JVM's `JDK_JAVA_OPTIONS` is
   removed so the parent's property is its only source.
 
+## What the runs showed
+
+- **The baseline**, `main` at 5dcc1f0 in a temp clone, alone but for another
+  batch's suite that started beside it: 113 harnesses green in 761 s, Stale
+  0 firm findings. Nothing was red before.
+- **Soft, under load** (2026-10-18, 20:46): FR2's ensemble running, plus a
+  40-thread CPU burner in a JVM the scripts count as another batch's (a
+  scratch class, not in the tree), `Batch check.bat GridCheck WorldCheck
+  EarthTerrainCheck` printed `timing soft - 2 other batch JVM(s) running`
+  and `3 timing assertions SOFT, not counted (-Dcbs.timing=soft):
+  EarthTerrainCheck 3`, and passed. The three: Rotterdam's tile 0.457 ms and
+  Paris's 0.348 ms against `TILE_MS` 0.3, and the cells pass 1019 ms of the
+  wall clock against `CELLS_PASS_MS` 1000 (this JVM cannot read a thread's
+  CPU finely enough, so section 9 times the wall). Beside the ensemble alone
+  the same harnesses had missed nothing: one other run is light load.
+- **Counting runs:** every `java` started from the PATH is two `java.exe`
+  processes on the PC (the Oracle javapath shim, and the JVM it starts under
+  itself), and a suite's harness a third, so `jvms.ps1` counts a matching
+  process only when its parent does not match: runs, not processes.
+
 ## Left undone
 
-TODO
+Under Pending as TM1-C, for Jerus's review:
+
+- The first two batches whose suites run at once on the PC are the next
+  ones; whether either reports a SOFT line that a hard run alone does not
+  clear is the mechanism's real test.
+- The cloud workbench keeps its one-JVM lock: it has two cores
+  (`workbench/HANDOVER.md`), so the machine is short there, not only the
+  timing. Lifting it is his call.
+- DeepSeek's `agent.py` runs a harness hard, with no look at the machine;
+  `docs/deepseek.md` says to rerun a timing red through the check scripts.
