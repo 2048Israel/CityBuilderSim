@@ -510,7 +510,7 @@ public class CopperRefiningCheck {
     /* ============================ 7. the wire works' estimate ============================ */
 
     static void wireWorksEstimate() {
-        out.println("\n--- 7. the Wire & Cable Works weighed with its insulation and its freight; Manufacturing's older rows as they were ---");
+        out.println("\n--- 7. the Wire & Cable Works weighed with its insulation and its freight; Manufacturing's older rows with their legs, as every maker ---");
         Game g = CopperMiningCheck.copperTown("copperrefiningcheck-wire", 0);
         Manufacturing man = g.getSectors().manufacturing();
         BuildingManager b = g.getBuildingManager();
@@ -527,7 +527,11 @@ public class CopperRefiningCheck {
                         + " bit - what the plan and Game.consider() read",
                 got == expect && SpreadPlanner.ownCosts(wire, rate, factor, tariff) > 0,
                 String.format("D$%,.1fk a month; the maker's alone D$%,.1fk", got, plans.estimatedMakerProfit(man, wire)));
-        assertTrue("...and a Fabrication Shop's, which buys no consumables, the maker's estimate to the bit",
-                shop.getConsumables() == 0 && man.estimatedMonthlyProfit(shop, plans) == plans.estimatedMakerProfit(man, shop));
+        // ...weighed with its city legs as every maker is since FR2's gate round (Sector.estimatedMonthlyProfit()).
+        double legs = ProcessingSector.cityLegs(shop, rate, man.legPrice());
+        report("...and a Fabrication Shop's, which buys no consumables, the maker's estimate less its city legs, to the bit",
+                shop.getConsumables() == 0 && legs > 0
+                        && man.estimatedMonthlyProfit(shop, plans) == plans.estimatedMakerProfit(man, shop) - legs,
+                String.format("D$%,.1fk a month; its legs D$%,.1fk", man.estimatedMonthlyProfit(shop, plans), legs));
     }
 }
