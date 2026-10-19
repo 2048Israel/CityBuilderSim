@@ -1565,7 +1565,9 @@ public class EconomyManager {
                 + contributions + eiPremiums + healthcareFees + educationFees
                 + transitFares + totalBankTax + healthPremiums
                 // ...and the fuel duty the drivers paid at the pump (0.7.103), as the fares are taken in.
-                + getFuelDuty();
+                + getFuelDuty()
+                // ...and the port dues Freight paid on its berths' tonnes (FR3): a pool paying a pool.
+                + getPortDues();
     }
 
     /**
@@ -1577,6 +1579,22 @@ public class EconomyManager {
      */
     public double getFuelDuty() {
         double d = sectors.retail().getFuelDuty();
+        return Double.isFinite(d) && d > 0 ? d : 0;
+    }
+
+    /**
+     * THE PORT DUES (FR3, docs/queue/FR3.md 1 and 3; D9): what Freight's Ports
+     * division paid the city this month on the tonnes that crossed its berths
+     * (sectors.PortDivision.getDuesPaid()), struck in Freight.haul() before the
+     * sectors strike - so Freight's cash falls by them at its strike (an input
+     * named "Port dues", Sector.payTheCity()) and the treasury takes them here
+     * the same month, with the tax take, as the fuel duty is. Saved among
+     * Freight's extras, so the tax take, the budget's line and the audit read
+     * one figure on both paths. Nothing with no berth or the dial at 0.
+     */
+    public double getPortDues() {
+        ham.citybuildersim.sectors.Freight f = sectors.freight();
+        double d = f == null ? 0 : f.portDivision().getDuesPaid();
         return Double.isFinite(d) && d > 0 ? d : 0;
     }
 
@@ -2027,6 +2045,7 @@ public class EconomyManager {
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
         nationalAccounts.setFuelDuty(getFuelDuty());
+        nationalAccounts.setPortDues(getPortDues());
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
         nationalAccounts.setFundTransfer(fundTransfer);
         nationalAccounts.setFoodAssistance(foodAssistance);
@@ -2074,6 +2093,7 @@ public class EconomyManager {
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
         nationalAccounts.setFuelDuty(getFuelDuty());
+        nationalAccounts.setPortDues(getPortDues());
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
         nationalAccounts.setFundTransfer(fundTransfer);
         nationalAccounts.setFoodAssistance(foodAssistance);

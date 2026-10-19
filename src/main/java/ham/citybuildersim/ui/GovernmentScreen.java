@@ -626,6 +626,7 @@ final class GovernmentScreen {
             case "Arrears paid down"                 -> Icons.BANK;
             case "Crude for the reserve", "Crude sold from the reserve" -> Icons.TANK;
             case "Fuel duty"                         -> Icons.DROP;
+            case "Port dues"                         -> Icons.CRANE;
             default                                  -> Icons.COIN;
         };
     }
@@ -1166,7 +1167,7 @@ final class GovernmentScreen {
                 "Property tax", "Pension contributions", "EI premiums", "Utility income",
                 "Healthcare fees", "School fees", "Land sold", "Health premiums",
                 "Student loan interest", "Central bank remittance", "Mortgage insurance premiums",
-                "Transfer from the fund", "Transit fares", "Crude sold from the reserve", "Fuel duty");
+                "Transfer from the fund", "Transit fares", "Crude sold from the reserve", "Fuel duty", "Port dues");
     }
 
     List<Double> revenueAmounts(NationalAccounts na) {
@@ -1202,7 +1203,9 @@ final class GovernmentScreen {
                 // ...and what the strategic reserve's crude sold for (0.7.102, A15), journalled until then.
                 na.getReserveCrudeSold(),
                 // ...and the fuel duty on the drivers' petrol (0.7.103, Jerus's A7), its own line.
-                na.getFuelDuty());
+                na.getFuelDuty(),
+                // ...and the port dues Freight paid on its berths' tonnes (FR3), its own line; the dial's door is FR4's.
+                na.getPortDues());
     }
 
     /*

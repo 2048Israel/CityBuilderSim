@@ -6658,6 +6658,8 @@ public class Game {
                 || (t.getCare() != null && t.getCare() != CareType.NONE)
                 || (t.getSafety() != null && t.getSafety() != SafetyType.NONE)
                 ? t.getCapacity() * (double) n : 0;
+        // A berth's crews are Freight's since FR3 (docs/queue/FR3.md 3; portsBill()): the city saves its upkeep alone.
+        if (Ports.isPort(t)) wages = 0;
         return new DemolitionQuote(t, n, points, price, units, unitPrice, affordable,
                 t.getLandSqFt() * n, months, homes, homes * occupancy, places, posts,
                 t.isOwnedBySector() ? 0 : wages + t.getUpkeep() * n);

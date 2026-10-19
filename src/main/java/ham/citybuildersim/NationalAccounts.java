@@ -973,6 +973,21 @@ public class NationalAccounts {
 
     /** The fuel duty the drivers paid on their petrol this month - a revenue line (0.7.103). */
     public double getFuelDuty() { return fuelDuty; }
+
+    /**
+     * THE PORT DUES (FR3, docs/queue/FR3.md; D9): what Freight's Ports
+     * division paid the city on the tonnes across its berths, a revenue line
+     * of its own - in the cash through the tax take, as the fuel duty is, from
+     * the division's month (sectors.PortDivision.getDuesPaid(), saved among
+     * Freight's extras), so a reloaded city reads the month's without a slot
+     * in the block below.
+     */
+    private double portDues;
+
+    public void setPortDues(double dues) { this.portDues = Double.isFinite(dues) ? Math.max(0, dues) : 0; }
+
+    /** The port dues Freight paid on its berths' tonnes this month - a revenue line (FR3). */
+    public double getPortDues() { return portDues; }
     /** What the city's insurance paid the bank this month on insured mortgages written down - a spending line. */
     public double getMortgageClaims()   { return mortgageClaims; }
 
@@ -1275,7 +1290,9 @@ public class NationalAccounts {
                 // ...and what the strategic reserve's crude sold for (0.7.102, A15).
                 + reserveCrudeSold
                 // ...and the fuel duty (0.7.103), in the cash as the fares are.
-                + fuelDuty;
+                + fuelDuty
+                // ...and the port dues (FR3), in the cash as the fuel duty is.
+                + portDues;
     }
 
     public double getInterestExpense() { return interestExpense; }
@@ -1377,7 +1394,7 @@ public class NationalAccounts {
         foodAssistance *= scale;
         cityRepairs *= scale;  arrearsPaid *= scale;
         reserveCrudeBought *= scale;  reserveCrudeSold *= scale;
-        fuelDuty *= scale;
+        fuelDuty *= scale;  portDues *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;

@@ -44,7 +44,7 @@ import java.util.Map;
  * (their cash cost and materials at market, BuildingManager
  * .getPortBookValueByCargo()) at the city's monthly borrowing rate over
  * PORT_LIFE_MONTHS, over the kind's berths' month at DESIGN_USE; times the
- * dial. The city's rate is what its last issue cleared at (cityRate()).
+ * dial. The city's rate is its own paper's at the berth's life (cityRate()).
  *
  * THE MONTH, which Freight.haul() runs: billMonth() in step 1, beside the
  * railway's and the trucks' bills, at the shares in force while the cargo
@@ -103,19 +103,18 @@ public final class PortDivision {
     }
 
     /**
-     * THE CITY'S BORROWING RATE, a year's (D9): what its last issue cleared at
-     * (BondMarket.getLastIssueLoanRate(), an annual rate), the bank's lending
-     * rate at the policy rate while it has issued nothing; nothing without a
-     * game.
+     * THE CITY'S BORROWING RATE, a year's (D9): what the city's own paper of
+     * PORT_LIFE_MONTHS is worth to a lender today (DebtManager.curveRate()),
+     * the rate a berth's thirty years are funded at; nothing without a game.
+     *
+     * WHY NOT THE BRIEF'S BondMarket.getLastIssueLoanRate(): BondMarket is the
+     * businesses' market, so its last issue is a sector's bond and its loan
+     * rate the bank's to that sector - not the city's rate (FR3's review).
      */
     public double cityRate() {
         Game game = freight.gameOf();
-        if (game == null) return 0;
-        double r = game.getBondMarket() == null ? 0 : game.getBondMarket().getLastIssueLoanRate();
-        if (!(r > 0) || !Double.isFinite(r)) {
-            r = game.getBank() == null || game.getDebtManager() == null
-                    ? 0 : game.getBank().lendingRate(game.getDebtManager().getPolicyRate());
-        }
+        if (game == null || game.getDebtManager() == null) return 0;
+        double r = game.getDebtManager().curveRate((int) PORT_LIFE_MONTHS);
         return Double.isFinite(r) ? Math.max(0, r) : 0;
     }
 

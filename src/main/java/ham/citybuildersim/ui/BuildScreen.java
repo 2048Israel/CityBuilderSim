@@ -2357,6 +2357,7 @@ final class BuildScreen {
             case PLOTS:  return f >= 1e6 ? "plenty" : String.format("%.0f mo", f);
             case POLICE: return String.format("%.1f×", f);
             case CELLS:  return people(f) + " not held";
+            case PORT:   return people(f) + " t a month";
             case SCHOOL:
                 if (!m.school().isBasic()) return pct(f > 0 ? Math.min(1, 1 / f) : 1);
                 return pct(f);
@@ -2387,6 +2388,7 @@ final class BuildScreen {
             case SCHOOL: line = m.school().getLabel().toLowerCase() + " from " + from + " to " + to + " " + CityNeeds.SERVED; break;
             case POLICE: line = "crime from " + from + " to " + to + " Canada's"; break;
             case CELLS:  line = "the caught not held: " + from.replace(" not held", "") + " to " + to; break;
+            case PORT:   line = "the tonnes no berth takes: " + from + " to " + to; break;
             default:     line = from + " to " + to;
         }
         if (s.onSite() > 0) line += ", once the " + formatter.format(s.onSite()) + " on site open";
