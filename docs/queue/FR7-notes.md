@@ -12,7 +12,7 @@
 - **Two measures, two NEEDS YOU rows** (`BuildAdvice.Kind.HIGHWAYS`, `CityNeeds.Kind.HIGHWAYS`): the streets (gravel, paved, the lines) on the streets' load; the highways on the through trips with no highway to take them, listed from `HIGHWAY_MIN_FILL` (.60) of one highway at free flow - the railway's rule, no highway built to stand idle. The auto-builder and the playtest's player serve both.
 - **Paving by traffic** (`InfrastructureManager.gravelWearAt()`): a Gravel Road's repairs are its flat 3% a year up to 200 vehicles a day on its street (Minnesota, R5) and rise as the square of the load past it; `STREET_VEHICLES_A_DAY_AT_CAPACITY` 450 is the batch's scale (a street at its whole capacity), so 200 a day is a streets' utilisation of 0.444. The life cost that ranks the streets does the rest.
 - **Gravel drawn grey** (`TileRaster.ROAD`, `GRAVEL_GRAIN`): #bdb8ae with an 18% speckle at the near view; the browns stay for the track.
-- SLICE3_SHIPPED
+- **Track only on a train's way** (`CityRuns.layRail()`, the map's): the rail net grows its main line from the hub to the gateway (and, where that arm waits at the city's own water, the next spine arm to the edge, so a coast city keeps its world line), then a siding for each Rail Spur into the largest bulk mined site within a district of the line that has none, ending at a loading shed, then a branch to a further yard. No other arm. The model's track plots past what these use are the legend's "N plots of track more than the line uses" (`trackSurplus()`, which replaces `railShort()`). A further yard goes beside the largest group of bulk works more than a district from every yard. Each yard keeps its own size: a Rail Depot is 8 x 7 with 3 sidings (`TileRaster.DEPOT_TRACKS`). A bulk unit train runs from the world line along the main line straight into each siding (`TrainSchedule.Route.toWorks()`); mixed and container trains still run to the yards. The sidecar's FORMAT is unchanged.
 - **FR0-L** (§3): the interchanges' ground (`InterchangeGround`: a 19 x 19 cloverleaf reserve on a highway crossing, an 11 x 11 trumpet's beside a T, a stack where the ground is short), laid as a pure function of the runs and kept clear of every plan's lots; access roads (`DistrictPlan.access()`, role ACCESS) from every yard, sea terminal and Truck Depot to a ramp with a street under it, else an arterial, paved first; kerb corners and estate T's from 6 px a plot.
 - **The playtest counts** the roads and the rail rungs by thousandth month and reads NEEDS YOU once a year (`LongPlaytest`, THE ROADS AND THE RAILS BY YEAR); `-Dplaytest.keep=<folder>` keeps its last city for a render.
 - **Harnesses**: RailDepotCheck (new, eight sections), RoadCheck 1b, 2 (rewritten), 10-12, RailDrawCheck 22, JunctionCheck 12-15, MapCheck 8's reserves and access roads, MAINLINE_SECTIONS.
@@ -23,7 +23,7 @@ Jerus's six (§4 of the brief), and the review's:
 
 1. **★1 A small station first** (Jerus): the Rail Depot, then the terminal as the tonnes outgrow the depots.
 2. **★2 A spur is a siding into one bulk works** (Jerus, "rec").
-3. **★3 No track on no train's way** (Jerus, "rec"). SLICE3_STAR
+3. **★3 No track on no train's way** (Jerus, "rec"). The sea exception (the slice's): where the main line's arm waits at water the city owns, the next spine arm is grown to the edge too; that arm's stub toward the sea stays as it is today.
 4. **★4 Streets and highways as two needs** (Jerus, "rec").
 5. **★5 Gravel's repairs rise with its traffic** (Jerus, "rec").
 6. **★6 Gravel drawn grey** (Jerus, "rec").
@@ -37,7 +37,7 @@ Jerus's six (§4 of the brief), and the review's:
 - **The dark lines in Jerus's far view are all track** (`FR7/1-far-dead-end-lines.png`): the north-south line at x = 315 and the east-west lines at y = 637-643, 692, 789 and 888 are `TileRaster.RAIL_DARK` (#3a3632) to the pixel; a highway is drawn lightened in the far view (#898c91). None is a highway arm, so the brief's question for highways does not arise there.
 - **FR2's tip moved the default playtest** (16d3e37, its two latent bugs and ScaleCheck's scaler): the default run that ended at 526,648 people on 2552755 stalls at 21,000-30,000 from month 1,765 and ends at 30,614 (GDP $488.5B a month); the Earth run is unchanged to the byte (534,821). FR7's default run on the same tree ends at 589,431. The orchestrator should see FR2's own final trace.
 - **Copying Jerus's save to a scratch path was refused** by the PC's permission classifier, so the renders are of a played city (§6), not his Halifax city, and the surplus figures of the brief's 2.4 were not measured on his city.
-- SLICE3_FOUND
+- **A siding into a works the plans place would move the plans' ground**: the plans are drawn round the runs, so a siding laid after them changes what they stand on. The sidings go to the mined sites, which the world fixes before any plan (§8).
 
 ## 4. What moved in the trace
 
@@ -79,7 +79,7 @@ SLICE3_RENDERS
 | 1, the railway (12 files) | the Rail Depot, `stationTonnes` and `siding`, `deal()`, `Shortfalls`, a station first, spurs for bulk works, the last station kept; RailDepotCheck; the overbuild measured on the old `plan()` before the fix | Freight's `bulkOffered` saved beside its tonnes (the slice left it unsaved; the card reads plan()'s shortfalls between months); the depot drawn as a yard (`BuildingVisual.RAIL_TERMINALS`). Its two deviations kept as ★7 and ★8 |
 | 2, the roads (13 files) | the two needs, the two measures and rows, gravel's wear, the auto-builder's and the player's two cards; RoadCheck rewritten and extended; A measured at 300,000 people (76.1 km2) | the through share squared (★9); the repairs' utilisation read live (★10); BuildCardCheck taught the highway's card and the through row's words (the slice had not run it) |
 | 4, FR0-L (10 files) | `InterchangeGround`, F_RESERVE and FIXED_RESERVE, the loops; ROLE_ACCESS and `DistrictPlan.access()`; the kerbs; JunctionCheck 12-15, MapCheck 8 | nothing. Its own deviations, kept and named under §8: the access road is routed inside its work's district plan, so "within two districts" cannot bind; it ends on the ramps the highway has and adds none |
-| 3, the railway's map | SLICE3_ROW | SLICE3_REVIEW |
+| 3, the railway's map | `CityRuns.layRail()`, the sidings, branches and per-yard sizes, `trackSurplus()`, the depot's yard, the works' routes; MainLineCheck 13, RailDrawCheck 23-24; MainLineCheck 3, 4, 11, 12 on a `layOldArms()` helper (their premise was the opposite arm and later corridors) | nothing in the code; one conflict with slice 4 in `CityRuns.layTo()` resolved by hand (the reserves kept, the yards laid in `layRail()`). Its deviations kept and named: the sea exception (★3), the sidings to mined sites only, and `CityMap.WAYS_WORKS_DISTRICTS` (1,000): past it the map lays no siding or group yard, as before FR7, for MapCheck's 5-ms month at 5 billion people |
 | the three model reds | CarCheck's bus town, CentralBankCheck 21's probe city, MapCheck 14's picks: each a fixture FR7's model moved | nothing: no model code changed. CentralBankCheck 21's re-pick follows the file's precedent with the evidence written in (strict under Standard in 15 of 16 shapes on FR7's tree) |
 
 ## 8. Not built, and what is left
@@ -87,5 +87,5 @@ SLICE3_RENDERS
 - **The access road's reach and ramp** (FR0-L, D17): routed inside its work's district plan, it cannot see a ramp in the next district, and it ends on a ramp the highway already has rather than one of its own; a district whose cells have not opened gives its works none (2 of 8 sea terminals in MapCheck's coast). Its hover is "access road", not the spec's "to the highway at ..., 2.1 km".
 - **The legend's surplus measured on Jerus's city** (the brief's 2.4) and the renders of his city: his save could not be copied here (§3).
 - **The gates' share of the through need** (★9): Jerus's call.
-- SLICE3_LEFT
+- **Sidings into the works the plans place** (smelters, mills, cement): only the mined sites get them (§3); a spur with no mined works in reach leaves its plots to the surplus. Past `WAYS_WORKS_DISTRICTS` districts the map lays no sidings or group yards. A yard's branch is re-derived from its box, so a nearer crossing laid later may move it. A loaded old save's extra arms go at its first month, not at the load.
 - **To check by eye (FR7-C)**: the renders in `FR7/`, then in the game: a young city's first Rail Depot on the map, a works' siding, grey gravel beside paved at the near view, a cloverleaf's loops and an access road, and both NEEDS YOU rows in a big city.

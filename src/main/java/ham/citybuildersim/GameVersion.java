@@ -6814,9 +6814,12 @@ public final class GameVersion {
      *     highway every road figure is the old one to the bit.
      *   - PAVING BY TRAFFIC: a gravel road's repairs rise past 200 vehicles a
      *     day on its street, so busy streets are paved.
-     *   - THE MAP: gravel drawn grey; SLICE3_VERSION; the interchanges' ground,
-     *     access roads from the yards, sea terminals and Truck Depots, kerb
-     *     corners (FR0-L).
+     *   - THE MAP: gravel drawn grey; track only on a train's way (CityRuns
+     *     .layRail(): the main line, a siding into each spur's mined works,
+     *     a branch to a further yard; the rest the legend's surplus), the Rail
+     *     Depot a small yard, bulk trains into the sidings; the interchanges'
+     *     ground, access roads from the yards, sea terminals and Truck
+     *     Depots, kerb corners (FR0-L).
      *   - Harnesses: RailDepotCheck (new); RoadCheck, RailDrawCheck,
      *     JunctionCheck, MapCheck, MainLineCheck sections; three fixtures the
      *     model moved, re-made.
