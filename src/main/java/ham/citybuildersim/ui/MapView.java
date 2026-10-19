@@ -120,6 +120,15 @@ import static ham.citybuildersim.ui.Pieces.*;
  * train's colour at the middle view, each vehicle's body and mark
  * (TrainShapes) at the near view.
  *
+ * THE TRUCKS (0.8.8, batch FR5; spec-freight 4.7): the same on the roads, at
+ * the near view alone and while the player's setting is on (Settings,
+ * "Trucks on the map", on by default) - the month's trucks
+ * (TruckSchedule, from Haulage's loads) on the highways' routes from the
+ * world line to the gateways (CityMap.truckRoutes()) and on the access roads
+ * of the districts in view (CityMap.accessRoutesIn()), each one standing for
+ * the schedule's N loads, which the legend gives (TRUCK_WORDS); the body and
+ * colour are TruckShapes'.
+ *
  * THE GLOBE (0.7.135, batch E9; docs/studies/spec-globe.md 3, Jerus's
  * answers of 2026-10-11, "yes"): on an Earth world the expanded map is a
  * view of the planet (GlobeFrame) drawn in one of three tiers by its scale
@@ -459,6 +468,11 @@ final class MapView {
         trainSchedule = null;
         trainRoutes = null;
         trainMonth = trainGameMonth = Integer.MIN_VALUE;
+        truckSchedule = null;
+        truckRoutes = null;
+        truckMonth = truckGameMonth = Integer.MIN_VALUE;
+        districtTrucks.clear();
+        trucksStand = 0;
         boatsLive = false;
     }
 
@@ -519,6 +533,7 @@ final class MapView {
             if (expanded) {
                 legendNote();
                 legendFor(shownTier());
+                legendTrucks();
             }
         }
         // A globe drawn on the move at half resolution is drawn again at its own the frame after it holds still; a piece or a
@@ -823,6 +838,7 @@ final class MapView {
         gc.setFill(colour(TileRaster.VOID));
         gc.fillRect(0, 0, w, h);
         boatsLive = false;
+        trucksStand = 0;
         if (tiles != null) {
             int level = f.level();
             if (level == MapFrame.FAR) drawNodes(gc, f);
@@ -830,6 +846,7 @@ final class MapView {
                 drawTiles(gc, f, level);
                 boats(gc, f, level);
                 trains(gc, f, level);
+                trucks(gc, f, level);
             }
         }
         // The swap (0.7.135): a notch inside the handoff the globe's picture of the plane's own nodes is laid over them, whole at
@@ -1068,6 +1085,83 @@ final class MapView {
                 if (mark != null) fillShape(gc, f, mark, colour(mc, car.alpha()));
             }
         }
+    }
+
+    /* ----- the trucks (0.8.8, batch FR5; spec-freight 4.7, D21) ----- */
+
+    /** The highways' schedule's salt: apart from every district's, which is its key (CityMap.DistrictRoutes.key()), so two schedules of one month do not hash alike. */
+    static final long HIGHWAYS_SALT = 0x7472_7563_6b73_0001L;
+
+    /** The highways' trucks' schedule drawn from: its boat-month, the routes and the game month it was made on. */
+    private TruckSchedule truckSchedule;
+    private int truckMonth = Integer.MIN_VALUE, truckGameMonth = Integer.MIN_VALUE;
+    private List<TruckSchedule.Route> truckRoutes;
+
+    /** An access road's trucks' schedule, with the routes it was made on: made again when its district's routes are another list. */
+    private record DistrictTrucks(List<TruckSchedule.Route> routes, TruckSchedule schedule) { }
+
+    /** The districts' schedules by CityMap.DistrictRoutes.key(): thrown out with the highways' when the month, the game month or the map turns. */
+    private final Map<Long, DistrictTrucks> districtTrucks = new HashMap<>();
+
+    /** Loads each truck drawn this frame stands for (the legend's N), or 0 when none is drawn: the highways' schedule's, else the largest of the districts' drawn. */
+    private int trucksStand;
+
+    /**
+     * The trucks over the tiles, at the near view alone and while the setting
+     * is on (TruckSchedule.drawnAt()): the month's schedule on the highways
+     * (CityMap.truckRoutes()) and, for each district in view, on its access
+     * roads (CityMap.accessRoutesIn()), a district's schedule taking its
+     * routes' share of the city's access roads (CityMap.accessRoadCount()).
+     * Each truck is one body of TruckShapes in its colour; while any route
+     * crosses the view the frame goes on, as the trains'. Each schedule is
+     * made once a month and kept.
+     */
+    private void trucks(GraphicsContext gc, MapFrame f, int level) {
+        if (shownMap == null || !TruckSchedule.drawnAt(level, ui.prefs.isTrucksOnMap())) return;
+        double clock = boatClock();
+        int m = (int) Math.floor(clock);
+        double t = clock - m;
+        Game g = ui.game;
+        List<TruckSchedule.Route> routes = shownMap.truckRoutes();
+        if (truckMonth != m || truckGameMonth != g.getMonth() || truckRoutes != routes) {
+            truckSchedule = null;
+            districtTrucks.clear();
+            truckMonth = m;
+            truckGameMonth = g.getMonth();
+            truckRoutes = routes;
+        }
+        double margin = TruckShapes.LENGTH;
+        long x0 = (long) Math.floor(f.plotX(0) - margin), y0 = (long) Math.floor(f.plotY(0) - margin);
+        long x1 = (long) Math.ceil(f.plotX(f.width()) + margin), y1 = (long) Math.ceil(f.plotY(f.height()) + margin);
+        int highways = 0;
+        if (!routes.isEmpty()) {
+            if (truckSchedule == null) truckSchedule = TruckSchedule.of(m, g.getSectors().freight(), routes, 1, HIGHWAYS_SALT);
+            highways = fillTrucks(gc, f, truckSchedule, x0, y0, x1, y1, t);
+        }
+        int districts = 0;
+        for (CityMap.DistrictRoutes dr : shownMap.accessRoutesIn(x0, y0, x1, y1)) {
+            DistrictTrucks dt = districtTrucks.get(dr.key());
+            if (dt == null || dt.routes() != dr.routes()) {
+                double share = dr.routes().size() / (double) shownMap.accessRoadCount();
+                dt = new DistrictTrucks(dr.routes(), TruckSchedule.of(m, g.getSectors().freight(), dr.routes(), share, dr.key()));
+                districtTrucks.put(dr.key(), dt);
+            }
+            districts = Math.max(districts, fillTrucks(gc, f, dt.schedule(), x0, y0, x1, y1, t));
+        }
+        trucksStand = highways > 0 ? highways : districts;
+        if (trucksStand > 0) {
+            drawnClock = clock;
+            boatsLive = true;
+        }
+    }
+
+    /** One schedule's trucks in the box filled in their colours, or nothing when it has none or no route of it crosses the view; the loads a truck of it stands for, or 0 when none was drawn. */
+    private int fillTrucks(GraphicsContext gc, MapFrame f, TruckSchedule schedule, long x0, long y0, long x1, long y1, double t) {
+        if (schedule.callCount() == 0 || !schedule.crosses(x0, y0, x1, y1)) return 0;
+        for (TruckSchedule.Truck tk : schedule.frame(x0, y0, x1, y1, t)) {
+            fillShape(gc, f, TruckShapes.body(tk), colour(TruckShapes.colour(tk), tk.alpha()));
+        }
+        return Math.max(1, schedule.stands());
     }
 
     /** A shape in plots filled on the screen. */
@@ -1782,6 +1876,7 @@ final class MapView {
         gc.setFill(colour(TileRaster.VOID));
         gc.fillRect(0, 0, w, h);
         boatsLive = false;
+        trucksStand = 0;
         int tier = globe.tier();
         composeGlobe(tier == GlobeFrame.PICTURE ? MODE_PICTURE : MODE_GROUND);
         drawGlobeImage(gc);
@@ -2778,6 +2873,14 @@ final class MapView {
     /** The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). */
     static final String SHIP_SIZE_WORDS = "Ships are drawn 1.6\u00d7 their size until 6 px a plot";
 
+    /** The legend's line for the trucks (0.8.8, batch FR5; spec-freight 4.7): "Trucks: one per 12 loads", the unit's words filled in by trucksWords(). */
+    static final String TRUCK_WORDS = "Trucks: one per %s";
+
+    /** ...and its words for N loads a truck: "Trucks: one per load" for one, "Trucks: one per 1,200 loads" for more. */
+    static String trucksWords(int loads) {
+        return String.format(TRUCK_WORDS, loads <= 1 ? "load" : String.format("%,d loads", loads));
+    }
+
     /** The legend's tracks (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. */
     static final String TRACK_ENTRY = LandMap.TRACK_ENTRY;
 
@@ -2804,6 +2907,8 @@ final class MapView {
     private String legendZones = "";
     private final GridPane legendGrid = new GridPane();
     private final Label shipsLine = new Label(SHIP_SIZE_WORDS);
+    /** The legend's trucks line: shown while trucks are drawn this frame (legendTrucks()). */
+    private final Label trucksLine = new Label();
 
     private VBox legend() {
         legendGrid.setHgap(Palette.GAP_LOOSE);
@@ -2815,7 +2920,9 @@ final class MapView {
         legendNote.setMaxWidth(LEGEND_NOTE_WIDTH);
         showIf(legendNote, false);
         shipsLine.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        VBox box = new VBox(6, legendGrid, shipsLine, legendNote);
+        trucksLine.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        showIf(trucksLine, false);
+        VBox box = new VBox(6, legendGrid, shipsLine, trucksLine, legendNote);
         box.setStyle("-fx-background-color: #0b1118d9; -fx-background-radius: 6; -fx-padding: 8 10 8 10;");
         box.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         box.setMouseTransparent(true);
@@ -2841,6 +2948,13 @@ final class MapView {
 
     /** The tier the expanded map shows: the globe's on Earth, the plane at every scale on a generated world. */
     private int shownTier() { return globe != null ? globe.tier() : GlobeFrame.PLANE; }
+
+    /** The trucks' line: how many loads a truck stands for while any is drawn this frame, on the plane; hidden otherwise. */
+    private void legendTrucks() {
+        boolean on = trucksStand > 0 && shownTier() == GlobeFrame.PLANE;
+        if (on) trucksLine.setText(trucksWords(trucksStand));
+        showIf(trucksLine, on);
+    }
 
     /** The legend's note, from the map's packing at the city's edge once it is drawn (never planned here): what the city has no room for - on the plane. */
     private void legendNote() {
