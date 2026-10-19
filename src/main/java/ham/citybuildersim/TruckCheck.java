@@ -34,7 +34,8 @@ import java.util.Set;
  *   2. the counts: the trucks drawn, times what each stands for, come to the
  *      month's loads within one truck a load group; a world route takes no
  *      home load; stands() is 1 up to MOST_A_MONTH loads and then the
- *      smallest 1-2-5 number that brings the trucks to MOST_A_MONTH or fewer;
+ *      smallest 1-2-5 number that brings the trucks to MOST_A_MONTH or fewer,
+ *      the city's N, which a district's part (a share under 1) keeps;
  *   3. a pure function: the same month, freight and routes give the same
  *      calls and the same frames, a salt gives others, no visit crosses the
  *      month's turn, frame() is exactly the trucks position() says are in
@@ -224,7 +225,7 @@ public class TruckCheck {
                 routesOf(q, Load.IMPORT).toString());
         check("home loads spread over both access roads and no more", routesOf(q, Load.HOME).equals(Set.of(1, 2)), routesOf(q, Load.HOME).toString());
 
-        // The boundary of the rule, by the share that scales the loads.
+        // The boundary of the rule, by the city's loads (N is the city's, from every load before `share`: the review).
         int most = TruckSchedule.MOST_A_MONTH;
         double[] edge = new double[Load.values().length];
         edge[Load.IMPORT.ordinal()] = most / 2.0; edge[Load.EXPORT.ordinal()] = most / 2.0;
@@ -234,7 +235,9 @@ public class TruckCheck {
         boolean rule = true, round = true, few = true, minimal = true, accounted = true;
         String bad = "";
         for (double share : new double[] { 1.1, 2, 3, 5, 7.5, 11, 25, 50, 123, 400, 1000, 2500, 33_333 }) {
-            TruckSchedule big = TruckSchedule.of(3, quiet, routes, share, 0);
+            double[] scaled = new double[quiet.length];
+            for (int k = 0; k < quiet.length; k++) scaled[k] = quiet[k] * share;
+            TruckSchedule big = TruckSchedule.of(3, scaled, routes, 1, 0);
             double loads = 900 * share;
             long n = big.stands();
             long expected = walkedStands(loads);
@@ -244,16 +247,23 @@ public class TruckCheck {
             // The step below would not do: the N is the smallest, not just one that fits.
             minimal &= n == 1 || loads / stepBelow(n) > most;
             accounted &= Math.abs((double) big.callCount() * n - loads) <= 3.0 * n;
-            if (n != expected || big.callCount() > most + 3) bad += " share " + share + ": N " + n + " expected " + expected + " trucks " + big.callCount();
+            if (n != expected || big.callCount() > most + 3) bad += " x" + share + ": N " + n + " expected " + expected + " trucks " + big.callCount();
         }
-        check("past MOST_A_MONTH loads, stands() is the smallest 1-2-5 step that fits (13 shares from 1.1 to 33,333)", rule, bad);
+        check("past MOST_A_MONTH loads, stands() is the smallest 1-2-5 step that fits (13 cities from 1.1 to 33,333 times 900 loads)", rule, bad);
         check("...it reads as a round N: 1, 2 or 5 and noughts", round);
         check("...the trucks drawn are MOST_A_MONTH or fewer, a truck a load group over", few, bad);
         check("...the step below would have drawn more than MOST_A_MONTH", minimal);
         check("...and the trucks, each for N loads, still come to the loads within one a group", accounted);
-        TruckSchedule fifty = TruckSchedule.of(3, quiet, routes, 50, 0);
-        check("share 50 on 900 loads: stands() is the 1-2-5 rule's, " + walkedStands(900 * 50.0), fifty.stands() == walkedStands(900 * 50.0) && fifty.stands() > 1,
+        double[] fiftyLoads = new double[quiet.length];
+        for (int k = 0; k < quiet.length; k++) fiftyLoads[k] = quiet[k] * 50;
+        TruckSchedule fifty = TruckSchedule.of(3, fiftyLoads, routes, 1, 0);
+        check("45,000 loads: stands() is the 1-2-5 rule's, " + walkedStands(900 * 50.0), fifty.stands() == walkedStands(900 * 50.0) && fifty.stands() > 1,
                 "stands " + fifty.stands() + ", " + fifty.callCount() + " trucks");
+        // A district's part of the city (share under 1) draws its trucks at the city's N, the legend's, and fewer of them.
+        TruckSchedule part = TruckSchedule.of(3, fiftyLoads, roadsOnly, 0.05, 17);
+        check("a district's part (share .05) keeps the city's N, and draws about its share of the trucks",
+                part.stands() == fifty.stands() && Math.abs(part.callCount() * (double) part.stands() - 900 * 50.0 * 0.05) <= 3.0 * part.stands(),
+                "N " + part.stands() + " against " + fifty.stands() + ", " + part.callCount() + " trucks");
 
         /* ================================================================
            3. A PURE FUNCTION

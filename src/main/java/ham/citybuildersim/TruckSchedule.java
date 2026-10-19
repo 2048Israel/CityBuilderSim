@@ -32,7 +32,9 @@ import java.util.List;
  * ground) and `share` (1 for the highways' routes, an access road's part of
  * the city's for a district's), over a truck's load, Haulage.TONNES_A_LOAD.
  * A fraction of a load is a whole truck in the share of months its fraction
- * says (BoatSchedule.callsFor()). Past MOST_A_MONTH loads a month each truck
+ * says (BoatSchedule.callsFor()). Past MOST_A_MONTH loads a month (the
+ * city's, every load before `share`, so the highways' trucks and each
+ * district's stand for one N) each truck
  * drawn stands for stands() of them, every load alike, N a round 1, 2, 5, 10,
  * 20, 50... so the legend reads "trucks: one per N loads" and a big city's
  * roads read as busy and not as a blur.
@@ -184,14 +186,15 @@ public final class TruckSchedule {
         routes = routes == null ? new ArrayList<>() : new ArrayList<>(routes);
         double part = Double.isFinite(share) && share > 0 ? share : 0;
         double[] loads = new double[Load.values().length];
+        double city = 0;
         for (Load l : Load.values()) {
-            double v = loadsIn == null || l.ordinal() >= loadsIn.length ? 0 : loadsIn[l.ordinal()];
-            loads[l.ordinal()] = tonnesOf(v) * part;
+            double v = loadsIn == null || l.ordinal() >= loadsIn.length ? 0 : tonnesOf(loadsIn[l.ordinal()]);
+            city += v;
+            loads[l.ordinal()] = v * part;
         }
-        // The loads that have a route to go on are the ones the legend counts: a load no route takes is never drawn.
-        double drawn = 0;
-        for (Load l : Load.values()) if (takenBy(routes, l)) drawn += loads[l.ordinal()];
-        int stands = standsFor(drawn);
+        // N is the city's, from every load before `share` (the review, FR5): the highways' schedule and each district's
+        // part then draw a truck for the same N loads, the one the legend gives.
+        int stands = standsFor(city);
         List<Group> groups = new ArrayList<>();
         for (Load l : Load.values()) {
             if (!takenBy(routes, l)) continue;
