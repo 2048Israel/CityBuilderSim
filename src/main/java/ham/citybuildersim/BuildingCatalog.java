@@ -317,7 +317,11 @@ public class BuildingCatalog {
      * A sea terminal's berth (0.7.86, batch O9): "port": {"cargo": "LIQUID",
      * "tonnes": 3250000} - the kind of cargo it handles (Ports.Cargo) and its
      * tonnes a year. Absent, no berth; an unknown kind is reported and the
-     * line ignored, as an unknown refinery unit is.
+     * line ignored, as an unknown refinery unit is. An optional "ships":
+     * ["HANDYSIZE", "SUPRAMAX"] limits the classes that call at it (FR3
+     * 2026-10-19, docs/queue/FR3.md call 6); absent, it takes every class of
+     * its kind, and a class unknown or of another cargo is reported and
+     * leaves the berth open to its whole kind.
      */
     private void readPort(JsonObject o, BuildingsTemplate template, String name) {
 
@@ -329,7 +333,20 @@ public class BuildingCatalog {
         } catch (Exception e) {
             System.out.println(FILE_NAME + ": \"" + name + "\" has unknown cargo \""
                     + cargo + "\"; that line ignored.");
+            return;
         }
+        if (!p.has("ships") || !p.get("ships").isJsonArray()) return;
+        List<Ports.Ship> ships = new ArrayList<>();
+        for (JsonElement e : p.getAsJsonArray("ships")) {
+            Ports.Ship s = e.isJsonPrimitive() ? Ports.Ship.byName(e.getAsString()) : null;
+            if (s == null || s.cargo() != template.berthCargo()) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" has a ship class \"" + e
+                        + "\" that is not one of its cargo's; its \"ships\" line ignored.");
+                return;
+            }
+            ships.add(s);
+        }
+        template.setBerthShips(ships);
     }
 
     /**

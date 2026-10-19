@@ -116,9 +116,14 @@ public final class Ports {
 
     /**
      * The ships, by the cargo one carries [P30][P40][P42][P46] (spec-oil
-     * 2.9): six tankers, two bulk carriers, a feeder and a general cargo
+     * 2.9): six tankers, four bulk carriers, a feeder and a general cargo
      * ship, each kind's smallest first. Depth does not set the class - the
-     * research has no drafts.
+     * research has no drafts. The Handysize and the Supramax (FR3 2026-10-19,
+     * docs/queue/FR3.md 2, [P37]) are the Bulk Berth's classes, a Handysize
+     * 30,000-35,000 t and a Supramax 55,000-60,000 t, the middle of each; the
+     * Panamax and the Capesize stay the Bulk Terminal's. Only the name is
+     * saved (byName()); the ordinal seeds BoatSchedule's hashes and is kept
+     * nowhere, so a class lands in its kind's order.
      */
     public enum Ship {
         MR(Cargo.LIQUID, "MR tanker", 37_500),
@@ -127,6 +132,8 @@ public final class Ports {
         LR2(Cargo.LIQUID, "LR2 tanker", 82_500),
         SUEZMAX(Cargo.LIQUID, "Suezmax", 137_500),
         VLCC(Cargo.LIQUID, "VLCC", 265_000),
+        HANDYSIZE(Cargo.DRY_BULK, "Handysize", 32_500),
+        SUPRAMAX(Cargo.DRY_BULK, "Supramax", 57_500),
         PANAMAX(Cargo.DRY_BULK, "Panamax", 66_000),
         CAPESIZE(Cargo.DRY_BULK, "Capesize", 165_000),
         FEEDER(Cargo.CONTAINER, "feeder", FEEDER_TEU * TONNES_A_TEU),
@@ -221,9 +228,61 @@ public final class Ports {
     /** How near a cargo may come to the free room and still fit: a billionth, a store's rounding (the refiners keep exactly an MR's cargo free since 0.7.105, sectors.Refining.CARGO_KEPT_FREE). */
     public static final double ROOM_TOLERANCE = 1e-9;
 
-    /** The bulk carrier a month's tonnes one way go in: a Capesize when they fill one, else a Panamax (star). */
+    /**
+     * The classes the Bulk Terminal takes, and the dry bulk fleet while no dry
+     * bulk berth stands: Panamax and Capesize (FR3 call 6, docs/queue/FR3.md
+     * 2; the rule before FR3). The Bulk Terminal's own "ships" line says the
+     * same (PortCheck).
+     */
+    public static final java.util.List<Ship> BULK_TERMINAL_SHIPS = java.util.List.of(Ship.PANAMAX, Ship.CAPESIZE);
+
+    /** The classes a terminal takes (FR3): its own list, else every class of its cargo's kind; none for a building that is not a berth. */
+    public static java.util.List<Ship> shipsOf(BuildingsTemplate t) {
+        if (!isPort(t)) return java.util.List.of();
+        if (!t.berthShips().isEmpty()) return t.berthShips();
+        java.util.List<Ship> out = new java.util.ArrayList<>();
+        for (Ship s : Ship.values()) if (s.cargo() == t.berthCargo()) out.add(s);
+        return out;
+    }
+
+    /**
+     * The classes the month's dry bulk calls are made in (FR3 call 6): those
+     * of the LARGEST dry bulk berth standing, by its tonnes a year, so a
+     * Bulk Terminal beside Bulk Berths draws Panamax and Capesize; with none
+     * standing, the Bulk Terminal's (today's rule). A pure function of the
+     * buildings, so no state is saved. The first of two berths equally large
+     * (a template order) decides.
+     */
+    public static java.util.List<Ship> bulkShipsStanding(BuildingManager buildings) {
+        BuildingsTemplate largest = null;
+        if (buildings != null) {
+            for (BuildingsTemplate t : buildings.getTemplates()) {
+                if (!isPort(t) || t.berthCargo() != Cargo.DRY_BULK || buildings.getQuantity(t.getId()) <= 0) continue;
+                if (largest == null || t.berthTonnesAYear() > largest.berthTonnesAYear()) largest = t;
+            }
+        }
+        return largest == null ? BULK_TERMINAL_SHIPS : shipsOf(largest);
+    }
+
+    /** The bulk carrier a month's tonnes one way go in, with the Bulk Terminal's classes: a Capesize when they fill one, else a Panamax (star). */
     public static Ship bulkShipFor(double tonnes) {
-        return tonnes >= Ship.CAPESIZE.tonnes() ? Ship.CAPESIZE : Ship.PANAMAX;
+        return bulkShipFor(tonnes, BULK_TERMINAL_SHIPS);
+    }
+
+    /**
+     * ...in these classes (FR3 call 6): the largest whose cargo is at most the
+     * tonnes, else the smallest of them. With the Bulk Terminal's two it is the
+     * one rule it always was, tonnes >= a Capesize's -> Capesize, else Panamax.
+     * An empty or null list is the Bulk Terminal's.
+     */
+    public static Ship bulkShipFor(double tonnes, java.util.List<Ship> allowed) {
+        java.util.List<Ship> classes = allowed == null || allowed.isEmpty() ? BULK_TERMINAL_SHIPS : allowed;
+        Ship smallest = null, best = null;
+        for (Ship s : classes) {
+            if (smallest == null || s.tonnes() < smallest.tonnes()) smallest = s;
+            if (s.tonnes() <= tonnes && (best == null || s.tonnes() > best.tonnes())) best = s;
+        }
+        return best != null ? best : smallest;
     }
 
     /**

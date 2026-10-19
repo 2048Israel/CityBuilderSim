@@ -158,6 +158,11 @@ public class BuildingDataCheck {
                 System.out.println("  FAIL " + who + ": berth " + actual.berthCargo() + " != " + expected.berthCargo());
             }
             check(who + " berth tonnes", actual.berthTonnesAYear(), expected.berthTonnesAYear());
+            // ...and the classes that call at it (FR3): a Bulk Berth that lost its line would take a Capesize.
+            if (!actual.berthShips().equals(expected.berthShips())) {
+                fails++;
+                System.out.println("  FAIL " + who + ": berth ships " + actual.berthShips() + " != " + expected.berthShips());
+            }
             // ...and the oil at sea (0.7.91): a platform that lost its line would stand on the land and hold no well.
             if (actual.offshore() != expected.offshore()) {
                 fails++;
@@ -409,12 +414,12 @@ public class BuildingDataCheck {
         assertTrue("the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated"
                         + " Highway 1.25% - and no other building has: " + repairs,
                 repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125)));
-        assertTrue("...and 141 buildings in all (FR2: the Truck Depot and the Heavy Truck Plant; 139 from 0.7.140, Wood Products' six; 133 from 0.7.138, Forestry's two crews and two planted"
+        assertTrue("...and 142 buildings in all (FR3: the Bulk Berth, id 142; FR2: the Truck Depot and the Heavy Truck Plant; 139 from 0.7.140, Wood Products' six; 133 from 0.7.138, Forestry's two crews and two planted"
                         + " stands; 129 from 0.7.133, Copper"
                         + " Mining's three, Copper Refining's four and Manufacturing's Wire & Cable Works; 121 from 0.7.131, Quarrying's three and Cement & Concrete's three; 115 from 0.7.126, Coal Mining's four;"
                         + " 111 from 0.7.124, Iron Mining's three; 108 from 0.7.123, the integrated route's seven; 101 from 0.7.91, 98 from"
                         + " 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76 until then)",
-                data.size() == 141);
+                data.size() == 142);
 
         /* ---------- the oil storage (0.7.85, batch O8; spec-oil 2.8) ----------
 
@@ -469,7 +474,7 @@ public class BuildingDataCheck {
         for (BuildingsTemplate t : data) if (t.isPort()) berths++;
         assertTrue("ids 94-97 are the Tanker, Bulk, Container and General Cargo Terminals: the city's, PORTS, a berth each of its"
                 + " kind, material a sixtieth of the capital and points a half", ports);
-        assertTrue("...and the only buildings with a berth", berths == 4);
+        assertTrue("...and the only buildings with a berth, bar FR3's Bulk Berth (id 142, a fifth)", berths == 5);
 
         /* ---------- the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11) ----------
 

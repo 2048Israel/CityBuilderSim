@@ -206,7 +206,7 @@ public abstract class Sector {
         averageFill = total == 0 ? 1 : filled / total;
     }
 
-    /** Posts per tier, off its own buildings. */
+    /** Posts per tier, off the buildings it operates: its own and, for Freight, the city's sea terminals (BuildingsTemplate.getOperator(), FR3). */
     public long[] postsPerTier() {
         return buildings == null ? new long[11] : buildings.getJobArrayBySector(key);
     }

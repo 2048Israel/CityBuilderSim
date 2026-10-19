@@ -955,7 +955,7 @@ final class MapView {
         double t = clock - m;
         Game g = ui.game;
         if (schedule == null || scheduleMonth != m || scheduleRoutes != routes || scheduleGameMonth != g.getMonth()) {
-            schedule = BoatSchedule.of(m, g.getPorts(), routes);
+            schedule = BoatSchedule.of(m, g.getPorts(), routes, Ports.bulkShipsStanding(g.getBuildingManager()));
             scheduleMonth = m;
             scheduleRoutes = routes;
             scheduleGameMonth = g.getMonth();

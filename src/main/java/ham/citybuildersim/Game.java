@@ -124,7 +124,7 @@ public class Game {
      */
     public BoatSchedule boats(java.util.List<BoatSchedule.Berth> quays) {
         World w = getWorld();
-        return BoatSchedule.of(month, ports, quays, w.foundingX(), w.foundingY());
+        return BoatSchedule.of(month, ports, quays, w.foundingX(), w.foundingY(), Ports.bulkShipsStanding(buildingManager));
     }
 
     /** A harness's look at the city either side of automatic building's pass (AutoBuildCheck): false before, true after. Null in play. */
@@ -5680,10 +5680,19 @@ public class Game {
         getInfrastructureManager().setSeaShare(ports.seaOfStream());
     }
 
-    /** The sea terminals' crews at these fill rates and their upkeep, a month (0.7.86): paid with transit's bill (TreasuryLine.TRANSIT); nothing with no terminal. */
-    double portsBill(double[] fill) {
-        return buildingManager.getCategoryPayroll(BuildingType.PORTS, populationManager.getWagesPerType(), fill)
-                + buildingManager.getUpkeepByCategory(BuildingType.PORTS);
+    /**
+     * The sea terminals' repairs, a month: their upkeep, the berths the city
+     * keeps as landlord, paid with transit's bill (TreasuryLine.TRANSIT);
+     * nothing with no terminal. Their crews left it with FR3 (docs/queue/FR3.md
+     * 3): Freight's Ports division works the berths and pays the dockers
+     * (Freight.portsPayroll()), so the fill rates no longer enter it.
+     *
+     * WHY: it was the crews' payroll at the month's fill rates plus the upkeep
+     * (0.7.86, batch O9, when a terminal was the city's end to end); the same
+     * posts paid on two bills would be paid twice.
+     */
+    double portsBill() {
+        return buildingManager.getUpkeepByCategory(BuildingType.PORTS);
     }
 
     /**
@@ -11290,14 +11299,14 @@ public class Game {
                 Motoring.journeyFuel(this));
         servicesManager.updateTransitFare(economyManager.getTaxPolicy().getTransitFare());
         motoring.drawFuel(this, getInfrastructureManager().getDrivers() * TaxPolicy.JOURNEYS_A_MONTH);
-        // ...AND THE PORTS' CREWS (0.7.86, batch O9): a terminal's dockers are
-        // the city's, paid with transit's - its wages and upkeep added to the
-        // bill, nothing with no terminal (star O9-2).
+        // ...AND THE PORTS' REPAIRS (0.7.86, batch O9; the dockers left it in FR3
+        // for Freight's payroll): a terminal's upkeep added to the bill, nothing
+        // with no terminal (star O9-2).
         economyManager.setTransit(
                 buildingManager.getCategoryPayroll(BuildingType.INFRASTRUCTURE,
                         populationManager.getWagesPerType(), fill)
                         + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE)
-                        + portsBill(fill),
+                        + portsBill(),
                 getInfrastructureManager().getTransitRiders()
                         * economyManager.getTaxPolicy().monthlyFare());
 
@@ -14546,7 +14555,7 @@ public class Game {
             buildingManager.getCategoryPayroll(BuildingType.INFRASTRUCTURE,
                     populationManager.getWagesPerType(), populationManager.getJobFillRate())
                     + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE)
-                    + portsBill(populationManager.getJobFillRate()),
+                    + portsBill(),
             getInfrastructureManager().getTransitRiders()
                     * economyManager.getTaxPolicy().monthlyFare());
 
