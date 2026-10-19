@@ -193,6 +193,18 @@ public final class Ports {
         return out;
     }
 
+    /** How many terminals stand, by kind (Cargo order): the count behind berths()' tonnes, for the Freight screens (FR4, FreightView). */
+    public static int[] berthCounts(BuildingManager buildings) {
+        int[] out = new int[KINDS];
+        if (buildings == null) return out;
+        for (BuildingsTemplate t : buildings.getTemplates()) {
+            if (!isPort(t)) continue;
+            int n = buildings.getQuantity(t.getId());
+            if (n > 0) out[t.berthCargo().ordinal()] += n;
+        }
+        return out;
+    }
+
     /** ...and the terminals on site, by kind, for anyone's order. */
     public static double[] berthsOnSite(BuildingManager buildings) {
         double[] out = new double[KINDS];

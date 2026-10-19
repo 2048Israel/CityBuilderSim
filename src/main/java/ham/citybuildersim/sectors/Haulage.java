@@ -515,7 +515,7 @@ public final class Haulage {
          * two are the same figure whenever the trucks were full.
          */
         if (carried > 0 && capacityInForce > 0) {
-            double target = allowed / capacityInForce * (1 + tightness * (Freight.MAX_SCARCITY_MULTIPLE - 1));
+            double target = rawTarget();
             if (Double.isFinite(target)) {
                 target = Math.max(0, target);
                 if (!quoteKnown) {
@@ -731,6 +731,26 @@ public final class Haulage {
     /** What the month had to bring in (the rule's running cost plus the return on the rate base) and the scarcity it was priced at the end of. */
     public double getAllowed()         { return allowed; }
     public double getTightness()       { return tightness; }
+
+    /**
+     * The rule's target for a tonne's city leg, as the last reprice walked the
+     * quote toward it (FR4, for the Freight screen's quote strip): what the
+     * month had to bring in (getAllowed()) over what the trucks could carry
+     * (getCapacityInForce()), at the scarcity the tightness set. Read, never
+     * stored: closeMonth()'s own rawTarget() on the same kept figures, so the
+     * two cannot drift. Zero while no month has carried anything, when the
+     * quote is the estimate.
+     */
+    public double getTarget() {
+        if (!(carried > 0) || !(capacityInForce > 0)) return 0;
+        double t = rawTarget();
+        return Double.isFinite(t) ? Math.max(0, t) : 0;
+    }
+
+    /** The rule's target a tonne before its guards: what the month had to bring in over the trucks' capacity, at the scarcity (closeMonth(), getTarget()). */
+    private double rawTarget() {
+        return allowed / capacityInForce * (1 + tightness * (Freight.MAX_SCARCITY_MULTIPLE - 1));
+    }
 
     /* ------------------------------------------------------------ save, reset, reform */
 
