@@ -233,7 +233,7 @@ final class BuildScreen {
      */
     void why(BuildAdvice.Measure m) {
         switch (m.kind()) {
-            case ROADS:   ui.infrastructureScreen.open("Roads");   return;
+            case ROADS: case HIGHWAYS: ui.infrastructureScreen.open("Roads");   return;
             case TRANSIT: ui.infrastructureScreen.open("Transit"); return;
             default: {
                 String[] at = ServicesScreen.pageFor(m);
@@ -2093,6 +2093,10 @@ final class BuildScreen {
                 return new Shown(CityNeeds.servedPct(s.share()), arc(s),
                         said + " · " + pct(ui.game.getInfrastructureManager().getThroughputRatio()) + " flow",
                         shortNumber(sd[1]) + " trips on " + shortNumber(sd[0]) + " of road");
+            case HIGHWAYS:
+                // The through need's (FR7): the share of the through trips the highways carry, a whole ring when they all do.
+                return new Shown(CityNeeds.servedPct(Math.min(1, s.share())), arc(s), said,
+                        shortNumber(sd[1]) + " through trips on " + shortNumber(sd[0]) + " of highway");
             case CARE: {
                 // The places are the beds less the priced out since 0.7.106 (Jerus's A20): say how many of
                 // those without are the fee's.
@@ -2379,7 +2383,8 @@ final class BuildScreen {
         switch (m.kind()) {
             case POWER:  line = "brings power from " + from + " to " + to + " " + CityNeeds.SERVED; break;
             case WATER:  line = "brings water from " + from + " to " + to + " " + CityNeeds.SERVED; break;
-            case ROADS:  line = "takes the road from " + from + " to " + to + " " + CityNeeds.SERVED; break;
+            case ROADS:  line = "takes the streets from " + from + " to " + to + " " + CityNeeds.SERVED; break;
+            case HIGHWAYS: line = "puts through traffic on highways: " + from + " to " + to + " " + CityNeeds.SERVED; break;
             case CARE:   line = careHeading(m.care()).split("  -  ")[0].toLowerCase() + " from " + from + " to " + to
                     + " " + CityNeeds.SERVED; break;
             case DEATH:  line = "plots and ovens for the dead: " + from + " to " + to; break;
@@ -2958,7 +2963,7 @@ final class BuildScreen {
         // for the road and transit, Infrastructure's, said for what it shows (0.7.29). A road has no
         // posts, so its "these need no staff" gives way to the door.
         HBox headRight = new HBox(Palette.GAP_LOOSE);
-        if (on.kind() == BuildAdvice.Kind.ROADS) {
+        if (BuildAdvice.roadKind(on)) {
             headRight.getChildren().add(door("what is on the road: Infrastructure", Palette.PEOPLE, () -> why(on)));
         } else if (on.kind() == BuildAdvice.Kind.TRANSIT) {
             headRight.getChildren().addAll(scarceNote(shown, fill),
@@ -2980,7 +2985,8 @@ final class BuildScreen {
         switch (m.kind()) {
             case POWER:   return "generation for every building and home";
             case WATER:   return "treatment for every tap";
-            case ROADS:   return "the trips the city's buildings make";
+            case ROADS:   return "the trips to every building, on the streets";
+            case HIGHWAYS: return "the long trips across the city and the freight to its gates";
             case TRANSIT: return "commuters off the road";
             case CARE:    return m.care() == CareType.GENERAL ? "somewhere to see a doctor"
                                : m.care() == CareType.CHILDCARE ? "babies and children" : "the over-seventies";
@@ -3039,7 +3045,7 @@ final class BuildScreen {
         switch (m.kind()) {
             case POWER:   return "kW";
             case WATER:   return "units a month";
-            case ROADS:   return "trips a month";
+            case ROADS: case HIGHWAYS: return "trips a month";
             case TRANSIT: return "riders";
             case CARE:    return m.care() == CareType.CHILDCARE ? "children" : m.care() == CareType.SENIOR ? "seniors" : "people";
             case DEATH:   return "of the dead";
@@ -3092,6 +3098,14 @@ final class BuildScreen {
                 // ...with the flow beside it (0.7.29): the ring is what it serves, the flow what it costs.
                 shortLine = says + pct(game.getInfrastructureManager().getThroughputRatio()) + " flow · "
                         + (gap > 0 ? shortNumber(gap) + " trips over capacity" : shortNumber(-gap) + " trips spare");
+                break;
+            }
+            case HIGHWAYS: {
+                // The through need (FR7): the share of the through trips the highways carry, a whole ring when they all do.
+                figure = CityNeeds.servedPct(Math.min(1, served.share()));
+                arc = arc(served);
+                shortLine = says + (gap > 0 ? shortNumber(gap) + " through trips on the streets"
+                        : shortNumber(-gap) + " trips of highway spare");
                 break;
             }
             case TRANSIT:

@@ -3,7 +3,7 @@
 `ham/citybuildersim/BuildCard.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > One build card's figures, for every one of the buildings in buildings.json
-> (0.7.25; 139 of them since 0.7.140): what
+> (0.7.25; 142 of them since FR7, the Rail Depot): what
 > it gives the city and in what unit, its price per unit of that, the scarce
 > resource it takes, the group it is compared within and where in that group
 > it stands, what one costs to run, the verdict on an order of it - and, for
@@ -133,7 +133,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 1698 | **type** `public final class BuildCard` | One build card's figures, for every one of the buildings in buildings.json (0.7.25; 139 of them since 0.7.140): what it gives the city and in what unit, its price per unit of that, the scarce resource it takes, the gr... |
+| 37 | 1698 | **type** `public final class BuildCard` | One build card's figures, for every one of the buildings in buildings.json (0.7.25; 142 of them since FR7, the Rail Depot): what it gives the city and in what unit, its price per unit of that, the scarce resource it t... |
 | 39 | 1 | `private BuildCard()` |  |
 
 ### WHAT KIND OF CARD (lines 41-128)

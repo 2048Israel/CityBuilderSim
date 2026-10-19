@@ -210,6 +210,22 @@ public class LongPlaytest {
     static int haulShortMonths = 0, haulFirstShort = 0, haulWorstMonth = 0, haulUnder90Months = 0;
     static double haulWorstShare = 1, haulTrucksPeak = 0, haulRoomPeak = 0, haulBilledRun = 0, haulCarriedRun = 0;
 
+    /**
+     * THE ROADS AND THE RAILS BY YEAR (FR7, 2026-10-18; its brief's 5: "count
+     * in a real run how many highways, paved and gravel roads a long playtest
+     * builds, and in which years; the same for the rail rungs"): for each of
+     * these kinds the first month one stood, and how many stood at each
+     * thousandth month and at the end.
+     */
+    static final String[] BY_YEAR = { "Gravel Road", "Paved Road", "Elevated Highway",
+            "Rail Depot", "Rail Terminal", "Rail Spur", "Freight Line" };
+    /** ...the first month each stood, 0 for never. */
+    static final int[] byYearFirst = new int[BY_YEAR.length];
+    /** ...and how many stood at months 1,000, 2,000 and 3,000. */
+    static final int[][] byYearAt = new int[BY_YEAR.length][3];
+    /** ...and NEEDS YOU read once a year: the looks, those listing the streets, the highways, and both (FR7 2.1). */
+    static int needsLooks = 0, needsStreets = 0, needsHighways = 0, needsBoth = 0, needsBothFirst = 0;
+
     /** How far from parity, as a multiple of it, a weak currency has to be to count as far from it. */
     static final double FAR_FROM_PARITY = 2.0;
 
@@ -1505,6 +1521,24 @@ public class LongPlaytest {
         haulRoomPeak = Math.max(haulRoomPeak, haul.depotRoom());
         haulBilledRun += haul.getBill();
         haulCarriedRun += haul.getCarried();
+        // The roads and the rails by year (FR7): see THE ROADS AND THE RAILS BY YEAR.
+        for (int k = 0; k < BY_YEAR.length; k++) {
+            int n = qty(g, BY_YEAR[k]);
+            if (n > 0 && byYearFirst[k] == 0) byYearFirst[k] = g.getMonth();
+            int at = g.getMonth() / 1000 - 1;
+            if (g.getMonth() % 1000 == 0 && at >= 0 && at < 3) byYearAt[k][at] = n;
+        }
+        if (g.getMonth() % 12 == 0) {
+            boolean streets = false, highways = false;
+            for (CityNeeds.Need need : CityNeeds.needsYou(g)) {
+                streets |= need.kind() == CityNeeds.Kind.ROADS;
+                highways |= need.kind() == CityNeeds.Kind.HIGHWAYS;
+            }
+            needsLooks++;
+            if (streets) needsStreets++;
+            if (highways) needsHighways++;
+            if (streets && highways && needsBoth++ == 0) needsBothFirst = g.getMonth();
+        }
 
         crimeMonths++;
         crimeVsSum += crime.getRateVsCanada();
@@ -3822,8 +3856,20 @@ public class LongPlaytest {
             order.remove(i);
             names.remove(i);
         }
-        java.util.List<BuildAdvice.Suggestion> roadAdvice = roadsKey > Double.NEGATIVE_INFINITY
-                ? roadsByNeed(g, roadM, free, roadLabels.keySet()) : java.util.List.of();
+        /*
+         * ...TWO NEEDS SINCE FR7 (2026-10-18; Jerus's star 4): the highways'
+         * card, for the through trips with no highway to take them
+         * (BuildAdvice.Kind.HIGHWAYS), and the streets' (Kind.ROADS), each by
+         * its own measure and its own count. The highways come first: they
+         * take the through trips off the streets, and the streets' card is
+         * then sized with the highways on site opening. A big city orders
+         * both, month after month, as both needs grow.
+         */
+        java.util.List<BuildAdvice.Suggestion> roadAdvice = new java.util.ArrayList<>();
+        if (roadsKey > Double.NEGATIVE_INFINITY) {
+            roadAdvice.addAll(roadsByNeed(g, BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS), free, roadLabels.keySet()));
+            roadAdvice.addAll(roadsByNeed(g, roadM, free, roadLabels.keySet()));
+        }
         // Best trips per dollar first. A plain insertion sort: the lines.
         for (int i = 1; i < order.size(); i++) {
             for (int k = i; k > 0 && order.get(k)[0] > order.get(k - 1)[0]; k--) {
@@ -5535,6 +5581,16 @@ public class LongPlaytest {
                 + " a tonne's leg $%.2f against $%.2f estimated%n",
                 haulShortMonths, haulUnder90Months, haulFirstShort, haulWorstShare * 100, haulWorstMonth, haulTrucksPeak, haulRoomPeak,
                 haulBilledRun, haulCarriedRun, haulEnd.trucks(), haulEnd.getQuote() * 1000, haulEnd.estimate() * 1000);
+        // The roads and the rails by year (FR7): see THE ROADS AND THE RAILS BY YEAR.
+        StringBuilder byYear = new StringBuilder();
+        for (int k = 0; k < BY_YEAR.length; k++) {
+            byYear.append(k == 0 ? "" : "; ").append(BY_YEAR[k]).append(byYearFirst[k] == 0 ? " never"
+                    : String.format(" from m%d: %,d at m1000, %,d at m2000, %,d at m3000, %,d at the end", byYearFirst[k],
+                            byYearAt[k][0], byYearAt[k][1], byYearAt[k][2], qty(g, BY_YEAR[k])));
+        }
+        out.printf("  the roads and the rails by year (FR7): %s%n", byYear);
+        out.printf("  ...NEEDS YOU once a year (FR7): the streets listed in %,d of %,d looks, the highways in %,d, both in %,d (first m%d)%n",
+                needsStreets, needsLooks, needsHighways, needsBoth, needsBothFirst);
         // The guard and the dial's path (0.7.2): see THE CURRENCY'S GUARD AND THE DIAL'S PATH.
         int pastOldStop = 0;
         for (double d : dialPath) if (d > OLD_DIAL_STOP + 1e-9) pastOldStop++;
@@ -6428,8 +6484,38 @@ public class LongPlaytest {
             }
         }
 
+        // -Dplaytest.keep=<folder> (FR7, 2026-10-18): the run's last city kept for a headless render of its map; see keepCity().
+        String keep = System.getProperty("playtest.keep");
+        if (keep != null) keepCity(g, root, Path.of(keep));
         cleanUp(root);
         System.exit(findings.isEmpty() ? 0 : 1);
+    }
+
+    /**
+     * The run's last city saved as slot 10 and copied into keep/data/saves
+     * (FR7, 2026-10-18), for FR7's headless renders of a played city's map
+     * (FR7's render tool, beside its notes in docs/queue/FR7/). After the report, so the report is the
+     * run's to the byte; unset, nothing is written.
+     */
+    static void keepCity(Game g, Path root, Path keep) {
+        PrintStream real = System.out;
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+        try {
+            if (!g.saveGame(10, "playtest kept").ok) return;
+            Path from = root.resolve("data").resolve(GameFiles.SAVES_FOLDER), to = keep.resolve("data").resolve(GameFiles.SAVES_FOLDER);
+            Files.createDirectories(to);
+            try (var files = Files.list(from)) {
+                for (Path p : (Iterable<Path>) files::iterator) {
+                    if (p.getFileName().toString().startsWith("slot-10")) {
+                        Files.copy(p, to.resolve(p.getFileName().toString()), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            }
+        } catch (java.io.IOException e) {
+            real.println("  (could not keep the city: " + e.getMessage() + ")");
+        } finally {
+            System.setOut(real);
+        }
     }
 
     /**

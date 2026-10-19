@@ -147,9 +147,33 @@ public final class BuildAdvice {
        transit: road capacity and transit; Utilities: power and water. PLOTS
        has no ring - it is the burial plots' own NEEDS YOU row, which the
        death care ring's buildings answer.
+
+       STREETS AND HIGHWAYS, TWO MEASURES (FR7, 2026-10-18; Jerus's star 4).
+       Roads & transit has three rings now: the STREETS (Kind.ROADS: the
+       access road, the gravel and paved roads and the transit lines, judged
+       on the streets' load over their capacity), the HIGHWAYS (Kind.HIGHWAYS:
+       the Elevated Highway alone, judged on the through trips with no highway
+       to take them, over what one highway carries at free flow - listed from
+       CityNeeds.HIGHWAY_MIN_FILL of one, a highway not being built to stand
+       idle) and transit. It was one ring and one winner: the roads replaced
+       one another, never built side by side, and a highway came only at the
+       top of the land price. Each need has its own row on NEEDS YOU
+       (MAX_SUGGESTIONS already gives one card per need), so in a big city both
+       come up, month after month, because both grow. RoadCheck's old section
+       2, the one-pool ladder, is retired by his decision and not moved to let
+       a change through. See InfrastructureManager, STREETS AND HIGHWAYS, TWO
+       NEEDS.
        ===================================================================== */
 
-    public enum Kind { POWER, WATER, ROADS, TRANSIT, CARE, DEATH, PLOTS, SCHOOL, POLICE, CELLS }
+    /**
+     * The measures. ROADS is the STREETS need since FR7 (2026-10-18): the
+     * access road, served by the gravel and paved roads and the transit
+     * lines; HIGHWAYS, added on the end, is the through need, served by the
+     * Elevated Highway alone (InfrastructureManager, STREETS AND HIGHWAYS,
+     * TWO NEEDS). Each is judged on its own measure and has its own line on
+     * NEEDS YOU (CityNeeds.Kind.ROADS and CityNeeds.Kind.HIGHWAYS).
+     */
+    public enum Kind { POWER, WATER, ROADS, TRANSIT, CARE, DEATH, PLOTS, SCHOOL, POLICE, CELLS, HIGHWAYS }
 
     /** One measure: a kind, and the care type or the school it is about. */
     public record Measure(Kind kind, CareType care, EducationType school) {
@@ -164,7 +188,9 @@ public final class BuildAdvice {
             switch (kind) {
                 case POWER:   return t.getCategory() == BuildingType.ELECTRICITY;
                 case WATER:   return t.getCategory() == BuildingType.WATER;
-                case ROADS:   return t.getCategory() == BuildingType.INFRASTRUCTURE && t.getCapacity() > 0;
+                // The streets' roads: a highway gives no access and is the through need's (FR7).
+                case ROADS:   return t.getCategory() == BuildingType.INFRASTRUCTURE && t.getCapacity() > 0 && !t.isHighway();
+                case HIGHWAYS: return t.getCategory() == BuildingType.INFRASTRUCTURE && t.isHighway();
                 case TRANSIT: return t.getCategory() == BuildingType.INFRASTRUCTURE && t.getTransitCapacity() > 0;
                 case CARE:    return t.getCare() == care;
                 case DEATH:   return t.getCare() == CareType.BURIAL || t.getCare() == CareType.CREMATION;
@@ -180,7 +206,7 @@ public final class BuildAdvice {
         public String category() {
             switch (kind) {
                 case POWER: case WATER:        return UTILITIES;
-                case ROADS: case TRANSIT:      return ROADS;
+                case ROADS: case HIGHWAYS: case TRANSIT: return ROADS;
                 case CARE: case DEATH: case PLOTS: return HEALTHCARE;
                 case SCHOOL:                   return EDUCATION;
                 default:                       return SAFETY;
@@ -192,7 +218,8 @@ public final class BuildAdvice {
             switch (kind) {
                 case POWER:   return "Power";
                 case WATER:   return "Water";
-                case ROADS:   return "Road capacity";
+                case ROADS:   return "Streets";
+                case HIGHWAYS: return "Through traffic";
                 case TRANSIT: return "Transit";
                 case CARE:    return care == CareType.GENERAL ? "General care"
                                    : care == CareType.CHILDCARE ? "Childcare" : "Senior care";
@@ -220,6 +247,7 @@ public final class BuildAdvice {
                 break;
             case ROADS:
                 out.add(Measure.of(Kind.ROADS));
+                out.add(Measure.of(Kind.HIGHWAYS));
                 out.add(Measure.of(Kind.TRANSIT));
                 break;
             case HEALTHCARE:
@@ -245,6 +273,7 @@ public final class BuildAdvice {
             case POWER:         return Measure.of(Kind.POWER);
             case WATER:         return Measure.of(Kind.WATER);
             case ROADS:         return Measure.of(Kind.ROADS);
+            case HIGHWAYS:      return Measure.of(Kind.HIGHWAYS);
             case CARE:          return Measure.care(need.care());
             case DEAD:          return Measure.of(Kind.DEATH);
             case PLOTS:         return Measure.of(Kind.PLOTS);
@@ -332,7 +361,8 @@ public final class BuildAdvice {
      * getCareCapacity() is the plots the model counts); a crematorium is.
      */
     public static double unit(Game game, Measure m, BuildingsTemplate t) {
-        if (!m.serves(t) && !(m.kind() == Kind.ROADS && t.getCategory() == BuildingType.INFRASTRUCTURE)) return 0;
+        // The streets' candidates are every road and line but a highway, which gives no access (FR7).
+        if (!m.serves(t) && !(m.kind() == Kind.ROADS && t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway())) return 0;
         double[] fill = game.getPopulationManager().getJobFillRate();
         switch (m.kind()) {
             case POWER:
@@ -353,6 +383,11 @@ public final class BuildAdvice {
                 Map<BuildingsTemplate, Integer> base = onSite(game, m);
                 return roadsOver(game, base) - roadsOver(game, plus(base, t, 1));
             }
+            case HIGHWAYS: {
+                // The through trips one more highway takes off the streets: its capacity at free flow, or what overflows if that is less.
+                Map<BuildingsTemplate, Integer> base = onSite(game, m);
+                return Math.min(t.getCapacity() * InfrastructureManager.FREE_FLOW, roads(game, base).getThroughOverflow());
+            }
             case TRANSIT:
                 return t.getTransitCapacity();
             case DEATH: case PLOTS:
@@ -366,7 +401,7 @@ public final class BuildAdvice {
     public static double built(Game game, Measure m, BuildingsTemplate t) {
         switch (m.kind()) {
             case POWER: case WATER: return t.getProduction1();
-            case ROADS:             return t.getCapacity();
+            case ROADS: case HIGHWAYS: return t.getCapacity();
             case TRANSIT:           return t.getTransitCapacity();
             default:                return t.getCapacity();
         }
@@ -389,12 +424,15 @@ public final class BuildAdvice {
        it stands.
        ===================================================================== */
 
+    /** Whether a measure is one of the two road needs (FR7): the streets or the highways, which read the same network, so each counts every road on site. */
+    public static boolean roadKind(Measure m) { return m.kind() == Kind.ROADS || m.kind() == Kind.HIGHWAYS; }
+
     /** Every unit on site of the buildings that serve a measure, for anybody's order. */
     public static Map<BuildingsTemplate, Integer> onSite(Game game, Measure m) {
         Map<BuildingsTemplate, Integer> out = new LinkedHashMap<>();
         for (BuildingsStacks site : game.getBuildingManager().getStacksUnderConstruction()) {
             BuildingsTemplate t = site.getBuilding();
-            boolean counts = m.kind() == Kind.ROADS
+            boolean counts = roadKind(m)
                     ? t.getCategory() == BuildingType.INFRASTRUCTURE : m.serves(t);
             if (counts && site.getUnderConstruction() > 0) out.merge(t, site.getUnderConstruction(), Integer::sum);
         }
@@ -402,7 +440,7 @@ public final class BuildAdvice {
         // F): each goes as its Paved Road on site opens, so the road once
         // what is on site opens is without them.
         int paving = game.pavingNow();
-        BuildingsTemplate gravel = paving > 0 && m.kind() == Kind.ROADS
+        BuildingsTemplate gravel = paving > 0 && roadKind(m)
                 ? game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_FROM) : null;
         if (gravel != null) out.merge(gravel, -paving, Integer::sum);
         return out;
@@ -484,6 +522,8 @@ public final class BuildAdvice {
             }
             case ROADS:
                 return roads(game, added, k).getUtilisation();
+            case HIGHWAYS:
+                return highwayFill(game, roads(game, added, k));
             case TRANSIT:
                 return roads(game, added, k).getTransitCover();
             case CARE:
@@ -550,8 +590,14 @@ public final class BuildAdvice {
                 return new double[] {load > 0 ? demand / load : 0, demand};
             }
             case ROADS: {
+                // The streets' capacity against the streets' load; the whole road's with no highway standing.
                 InfrastructureManager r = roads(game, added, k);
-                return new double[] {r.getCapacity(), r.getEffectiveLoad()};
+                return new double[] {r.getStreetCapacity(), r.getStreetLoad()};
+            }
+            case HIGHWAYS: {
+                // The highways at free flow against the through trips (FR7).
+                InfrastructureManager r = roads(game, added, k);
+                return new double[] {r.getHighwayCapacity() * InfrastructureManager.FREE_FLOW, r.getThroughLoad()};
             }
             case TRANSIT: {
                 InfrastructureManager r = roads(game, added, k);
@@ -645,7 +691,7 @@ public final class BuildAdvice {
     /** Whether a measure's gauge reads as served (0.7.41): power, water, the road, transit, care and the schools. */
     public static boolean isServed(Measure m) {
         switch (m.kind()) {
-            case POWER: case WATER: case ROADS: case TRANSIT: case CARE: case SCHOOL: return true;
+            case POWER: case WATER: case ROADS: case HIGHWAYS: case TRANSIT: case CARE: case SCHOOL: return true;
             default: return false;
         }
     }
@@ -672,6 +718,7 @@ public final class BuildAdvice {
             case POWER:   return CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, share);
             case WATER:   return CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, share);
             case ROADS:   return CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, share);
+            case HIGHWAYS: return CityNeeds.highwayVerdict(share, figure(game, m, added));
             case CARE:    return CityNeeds.verdict(CityNeeds.Kind.CARE, m.care(), share);
             case SCHOOL:
                 if (m.school().isBasic()) return CityNeeds.verdict(CityNeeds.Kind.BASIC_SCHOOLS, CareType.NONE, share);
@@ -682,7 +729,7 @@ public final class BuildAdvice {
         }
     }
 
-    /** A served measure's two lines in served terms (0.7.41), {off NEEDS YOU's list past this, red at or under this}; null for transit and a measure not served. */
+    /** A served measure's two lines in served terms (0.7.41), {off NEEDS YOU's list past this, red at or under this}; null for transit, for the highways (their verdict is the row's own level: CityNeeds.highwayVerdict()) and a measure not served. */
     public static double[] servedLines(Measure m) {
         switch (m.kind()) {
             case POWER:  return CityNeeds.servedLines(CityNeeds.Kind.POWER, CareType.NONE);
@@ -715,6 +762,9 @@ public final class BuildAdvice {
     static InfrastructureManager roads(Game game, Map<BuildingsTemplate, Integer> added, double k) {
         InfrastructureManager now = game.getInfrastructureManager();
         double capacity = 0, highway = 0, transit = 0, load = (k - 1) * now.getLoad();
+        // ...and the streets-and-highways split's inputs (FR7): the raw highway capacity added, the ground
+        // the added buildings stand on, and the freight gates' load - grown with the trips, as the load is.
+        double highwayRaw = 0, sqFt = 0, gates = (k - 1) * now.getGateLoad();
         double[] streams = new double[Traffic.values().length];
         for (Traffic s : Traffic.values()) streams[s.ordinal()] = (k - 1) * now.getLoad(s);
         for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
@@ -724,11 +774,36 @@ public final class BuildAdvice {
                 capacity += n * (double) t.getCapacity();
                 highway += n * (long) t.getCapacity() * t.getFreightGrade();
                 transit += n * t.getTransitCapacity();
+                if (t.isHighway()) highwayRaw += n * (double) t.getCapacity();
             }
+            if (t.getCategory() == BuildingType.RAIL || t.getCategory() == BuildingType.HAULAGE
+                    || t.getCategory() == BuildingType.PORTS) gates += n * t.getRoadLoad();
             load += n * t.getRoadLoad();
+            sqFt += n * t.getLandSqFt();
             for (Traffic s : Traffic.values()) streams[s.ordinal()] += n * t.loadOf(s);
         }
-        return now.with(capacity, highway, transit, load, streams);
+        return now.with(capacity, highway, transit, load, streams, highwayRaw, sqFt, gates);
+    }
+
+    /**
+     * The trips a month one more highway carries at free flow (FR7): the
+     * Elevated Highway's capacity at FREE_FLOW - the unit the through need
+     * is read in, so a share of one is a share of a highway worth building.
+     * 0 with no highway in the catalogue.
+     */
+    public static double highwayFlow(Game game) {
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            if (t.getCategory() == BuildingType.INFRASTRUCTURE && t.isHighway()) {
+                return t.getCapacity() * InfrastructureManager.FREE_FLOW;
+            }
+        }
+        return 0;
+    }
+
+    /** The through need's figure (FR7): the through trips with no highway to take them, over what one more highway carries (CityNeeds.HIGHWAY_MIN_FILL of one bites); 0 with no highway to build. */
+    static double highwayFill(Game game, InfrastructureManager r) {
+        double one = highwayFlow(game);
+        return one > 0 ? r.getThroughOverflow() / one : 0;
     }
 
     /**
@@ -741,7 +816,8 @@ public final class BuildAdvice {
      */
     static double roadsOver(Game game, Map<BuildingsTemplate, Integer> added) {
         InfrastructureManager r = roads(game, added);
-        return r.getEffectiveLoad() - InfrastructureManager.STRAINED * r.getCapacity();
+        // The streets' (FR7): their load past STRAINED of their capacity - the road's own with no highway standing.
+        return r.getStreetLoad() - InfrastructureManager.STRAINED * r.getStreetCapacity();
     }
 
     /** The dead next month at today's deaths: those waiting and those dying, less what the free plots and the ovens take (Healthcare.settleDeaths()'s arithmetic). */
@@ -816,6 +892,7 @@ public final class BuildAdvice {
         switch (m.kind()) {
             case POWER: case WATER: return figure < CityNeeds.NETWORK_YELLOW;
             case ROADS:   return figure < InfrastructureManager.STRAINED;
+            case HIGHWAYS: return figure < CityNeeds.HIGHWAY_MIN_FILL;
             case CARE:    return figure > (m.care() == CareType.GENERAL ? CityNeeds.GENERAL_YELLOW : CityNeeds.OTHER_CARE_YELLOW);
             case DEATH:   return !(figure > 0);
             case PLOTS:   return figure > CityNeeds.PLOTS_YELLOW;
@@ -953,10 +1030,18 @@ public final class BuildAdvice {
      * NEEDS YOU's list there (clear()), and a served measure - not transit,
      * which has no line - at 100% of it or more. With SLACK in p that is
      * green, not just off the list.
+     *
+     * THE HIGHWAYS (FR7) ARE HELD TO THEIR LINE AND NOT TO 100%: a highway is
+     * not built to stand idle (CityNeeds.HIGHWAY_MIN_FILL), so the through
+     * trips with no highway to take them are the streets' to carry until they
+     * would fill six tenths of one - the line the measure is off NEEDS YOU's
+     * list at, and the line an order is sized to. Held to every through trip
+     * on a highway, a city with the smallest through traffic would be told to
+     * build one.
      */
     public static boolean ahead(Game game, Measure m, Map<BuildingsTemplate, Integer> added, Ahead p) {
         if (!clear(m, figure(game, m, added, p))) return false;
-        if (!isServed(m) || m.kind() == Kind.TRANSIT) return true;
+        if (!isServed(m) || m.kind() == Kind.TRANSIT || m.kind() == Kind.HIGHWAYS) return true;
         double[] sd = supplyDemand(game, m, added, p);
         return CityNeeds.servedShare(sd[0], sd[1]) >= 1;
     }
@@ -1109,8 +1194,9 @@ public final class BuildAdvice {
 
         List<Weighed> weighed = new ArrayList<>();
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            // The streets' candidates: every road and line but a highway, which gives no access (FR7); the highways' the Elevated Highway alone.
             boolean candidate = m.kind() == Kind.ROADS
-                    ? t.getCategory() == BuildingType.INFRASTRUCTURE : m.serves(t);
+                    ? t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway() : m.serves(t);
             if (!candidate || skip.contains(t)) continue;
             double unit = unit(game, m, t);
             // A building the city cannot staff at all, or one that does not
@@ -1320,6 +1406,18 @@ public final class BuildAdvice {
        the cheaper to keep a trip it carries (its 900 trips are three
        quarters of a paved road's, where real gravel carries far less), but
        the gap is a seventh where it was nearly a half.
+
+       PAVING BY TRAFFIC (FR7 2.2, 2026-10-18; Jerus's star 5). A gravel
+       road's repairs rise with the traffic on its street (Minnesota's
+       finding: its upkeep climbs sharply past about 200 vehicles a day;
+       InfrastructureManager, REPAIRS BY TRAFFIC), and running() charges it so,
+       at the street utilisation the city would have with the road added
+       (BuildingsTemplate.gravelRepairsAt()); a gravel road already standing,
+       as a paving replaces one, is charged at the city as it is. So the same
+       life-cost ranking that stood picks paved where the streets are busy and
+       gravel at the quiet edge, and weighPaving()/pavingBeatsPaved() offer
+       the paving by the load and not by a land price - no modifier anywhere.
+       The paved road's and the highway's repairs stay flat.
        ===================================================================== */
 
     /** Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". */
@@ -1340,11 +1438,27 @@ public final class BuildAdvice {
      * a line's, and a road's only where the lines wait for road under them.
      */
     public static double running(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Integer> site) {
+        return running(game, t, site, true);
+    }
+
+    /**
+     * ...and, for a Gravel Road, at the traffic on the streets it is repaired
+     * at (FR7 2.2, BuildingsTemplate.gravelRepairsAt()): the streets'
+     * utilisation of the city with what is on site and, when `added`, the
+     * road itself too - the what-if of ordering it; a gravel road already
+     * standing (a paving's, pavingOrderLife()) is repaired at the city as it
+     * is with what is on site. Every other building's repairs are flat, and
+     * on quiet streets a gravel road's are, to the bit.
+     */
+    public static double running(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Integer> site, boolean added) {
         BuildingManager bm = game.getBuildingManager();
         EconomyManager econ = game.getEconomyManager();
         double materials = Math.max(0, bm.getConstructionMaterialPrice());
+        double share = ConstructionControl.paves(t)
+                ? t.gravelRepairsAt(roads(game, added ? plus(site, t, 1) : site).getUtilisation())
+                : t.repairsPerYear();
         double repairs = econ.withBuildersTax(bm.nonMaterialCost(t) + t.getConstructionMaterials() * materials)
-                * t.repairsPerYear() / 12;
+                * share / 12;
         double utilities = t.getElectricityConsumption() * econ.getPricePerWatt()
                 + t.getWaterConsumption() * econ.getPricePerWaterUnit();
         double riders = roads(game, plus(site, t, 1)).getTransitRiders() - roads(game, site).getTransitRiders();
@@ -1414,8 +1528,9 @@ public final class BuildAdvice {
         if (q == null) return Double.NaN;
         BuildingsTemplate from = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_FROM);
         BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
+        // The gravel road it replaces is repaired at the traffic on the streets as they are (FR7 2.2): the busier, the more paving saves.
         return q.total - landValue(game, pavingFrees(game), landLeft)
-                + (running(game, to, site) - running(game, from, site)) * lifeFactor(game);
+                + (running(game, to, site) - running(game, from, site, false)) * lifeFactor(game);
     }
 
     /**
@@ -1559,7 +1674,7 @@ public final class BuildAdvice {
         BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
         if (q == null || from == null || to == null) return Double.NaN;
         return q.total - landValue(game, pavingFrees(game) * (double) count, landLeft)
-                + count * (running(game, to, site) - running(game, from, site)) * lifeFactor(game);
+                + count * (running(game, to, site) - running(game, from, site, false)) * lifeFactor(game);
     }
 
     /**
@@ -1579,8 +1694,11 @@ public final class BuildAdvice {
             }
             case ROADS: {
                 InfrastructureManager r = roads(game, added, p.scale());
-                return r.getEffectiveLoad() - InfrastructureManager.STRAINED * r.getCapacity();
+                return r.getStreetLoad() - InfrastructureManager.STRAINED * r.getStreetCapacity();
             }
+            case HIGHWAYS:
+                // The through trips with no highway to take them (FR7), the unit a highway's unit() is in.
+                return roads(game, added, p.scale()).getThroughOverflow();
             case CARE: {
                 double[] sd = supplyDemand(game, m, added, p);
                 return sd[1] - sd[0];
@@ -1590,10 +1708,10 @@ public final class BuildAdvice {
         }
     }
 
-    /** Whether a measure's candidates are weighed for what they will serve over their lives (shortfall()): power, water, the roads and care. */
+    /** Whether a measure's candidates are weighed for what they will serve over their lives (shortfall()): power, water, the roads (streets and highways) and care. */
     public static boolean weighsServed(Measure m) {
         switch (m.kind()) {
-            case POWER: case WATER: case ROADS: case CARE: return true;
+            case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: return true;
             default: return false;
         }
     }
@@ -1834,7 +1952,7 @@ public final class BuildAdvice {
     /** Which way is worse for a measure's figure. */
     public static boolean higherWorse(Measure m) {
         switch (m.kind()) {
-            case POWER: case WATER: case ROADS: case DEATH: case POLICE: case CELLS: return true;
+            case POWER: case WATER: case ROADS: case HIGHWAYS: case DEATH: case POLICE: case CELLS: return true;
             case SCHOOL: return !m.school().isBasic();
             default: return false;
         }

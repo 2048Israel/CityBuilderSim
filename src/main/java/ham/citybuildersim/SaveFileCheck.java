@@ -2126,15 +2126,19 @@ public class SaveFileCheck {
          * kept from deciding.
          */
         hauls.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
-        // ...and two spurs, paid for: the town above leaves the treasury short of
+        // ...and a spur and a depot, paid for: the town above leaves the treasury short of
         // them, and an order refused for funding would leave a city with no track.
-        // Two carry its steel and its groceries both, so a first haul that read
-        // nothing would move the groceries' freight, and the shelves with it.
-        BuildingsTemplate spur = template(hauls, "Rail Spur");
-        hauls.setCashForTest(hauls.getCash() + 2 * spur.getCashCost());
-        assertTrue("fixture: the town laid two spurs of its own",
-                hauls.buildStack(spur, 2, true) == Game.BuildResult.SUCCESS
-                        && hauls.getBuildingManager().countByName("Rail Spur") == 2);
+        // They carry its steel and its groceries both - the depot is a station, and since FR7
+        // goods ride a station only; two spurs, as this laid before, rail the steel and no
+        // groceries - so a first haul that read nothing would move the groceries' freight,
+        // and the shelves with it.
+        BuildingsTemplate spur = template(hauls, "Rail Spur"), railDepot = template(hauls, "Rail Depot");
+        hauls.setCashForTest(hauls.getCash() + spur.getCashCost() + railDepot.getCashCost());
+        assertTrue("fixture: the town laid a spur and a depot of its own",
+                hauls.buildStack(spur, 1, true) == Game.BuildResult.SUCCESS
+                        && hauls.buildStack(railDepot, 1, true) == Game.BuildResult.SUCCESS
+                        && hauls.getBuildingManager().countByName("Rail Spur") == 1
+                        && hauls.getBuildingManager().countByName("Rail Depot") == 1);
         // ...played until the trains run AND the price index is based: an index
         // still settling reads 1 whatever the shelves did, and could not part.
         for (int m = 0; m < 120 && (hauls.getSectors().freight().getHauledTonnes() <= 0

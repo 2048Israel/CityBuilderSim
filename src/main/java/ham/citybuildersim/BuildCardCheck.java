@@ -26,7 +26,7 @@ import java.util.Set;
 
 /**
  * The build card (0.7.25): BuildCard's figures for every building in
- * buildings.json (139 since 0.7.140) held to
+ * buildings.json (142 since FR7, the Rail Depot) held to
  * the model's own reads - the quote, the land, the staffing tests, the
  * markets, the investors' words and their gates - in a played city.
  *
@@ -438,7 +438,7 @@ public class BuildCardCheck {
                             ? t.feedPerMonth() : t.getWash() > 0 ? t.getWash() : t.makes(f.good()); break;
                     default: {
                         BuildAdvice.Measure m = measureOf(gr);
-                        expectFigure = m.kind() == BuildAdvice.Kind.ROADS ? t.getCapacity() : BuildAdvice.unit(g, m, t);
+                        expectFigure = BuildAdvice.roadKind(m) ? t.getCapacity() : BuildAdvice.unit(g, m, t);   // a street's or (FR7) a highway's: its capacity
                     }
                 }
                 if (f.figure() != expectFigure) { hero = false; out.println("      hero: " + t.getName()); }
@@ -481,7 +481,7 @@ public class BuildCardCheck {
                 // Bar 1: the quote at one over the unit, to the bit - and a road's (0.7.70), its life
                 // (BuildAdvice.lifetime()) over the trips it takes off the road (BuildAdvice.unit()).
                 BuildAdvice.Measure ring = f.kind() == BuildCard.Kind.CITY ? measureOf(gr) : null;
-                boolean road = ring != null && ring.kind() == BuildAdvice.Kind.ROADS;
+                boolean road = ring != null && BuildAdvice.roadKind(ring);   // the streets' cards and (FR7) the highway's
                 double off = road ? BuildAdvice.unit(g, ring, t) : Double.NaN;
                 double expect1 = road
                         ? (off > 0 ? BuildAdvice.lifetime(g, t, f.landFree(), BuildAdvice.onSite(g, ring)) / off : Double.POSITIVE_INFINITY)
@@ -1206,6 +1206,9 @@ public class BuildCardCheck {
                     : n.level() == 0 ? v.level() < 2 : v.level() >= n.level();
             rows &= n.reading().startsWith(n.kind() == CityNeeds.Kind.BASIC_SCHOOLS ? n.school().getLabel().toLowerCase() + " "
                     + CityNeeds.servedPct(v.share()) + " served" : n.kind() == CityNeeds.Kind.HIGHER_SCHOOL ? ""
+                    // ...the through need (FR7) reads the through trips on highways, its share held to 100%
+                    : n.kind() == CityNeeds.Kind.HIGHWAYS ? (Double.isFinite(v.share())
+                            ? CityNeeds.servedPct(Math.min(1, v.share())) + " of through traffic on highways" : "no through traffic")
                     : CityNeeds.servedPct(v.share()) + " served") || n.reading().startsWith("nothing supplying");
         }
         assertTrue("every served NEEDS YOU row (" + servedRows + " in the town, " + listedRows + " listed) reads its owner's "

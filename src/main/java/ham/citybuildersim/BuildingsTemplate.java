@@ -294,6 +294,31 @@ public class BuildingsTemplate {
         return repairsPerYear > 0 ? repairsPerYear : ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR;
     }
 
+    /**
+     * A GRAVEL ROAD'S REPAIRS AT THE TRAFFIC ON ITS STREET (FR7 2.2, Jerus's
+     * star 5, 2026-10-18): its share a year, repairsPerYear(), up to the
+     * load of InfrastructureManager.GRAVEL_QUIET_VEHICLES_A_DAY, and past it
+     * that share times the square of the load over it
+     * (InfrastructureManager.gravelWearAt()) - so paving follows the traffic
+     * and not the price of land. Exactly repairsPerYear() on a quiet street.
+     *
+     * @param streetUtilisation the streets' load over their capacity
+     *                          (InfrastructureManager.getUtilisation())
+     */
+    public double gravelRepairsAt(double streetUtilisation) {
+        double wear = InfrastructureManager.gravelWearAt(streetUtilisation);
+        return wear > 1 ? repairsPerYear() * wear : repairsPerYear();
+    }
+
+    /**
+     * ...and any building's repairs a year at the traffic on the streets: the
+     * Gravel Road's rise with it (gravelRepairsAt()), the Paved Road's, the
+     * highway's and every other building's are flat (repairsPerYear()).
+     */
+    public double repairsPerYearAt(double streetUtilisation) {
+        return ConstructionControl.paves(this) ? gravelRepairsAt(streetUtilisation) : repairsPerYear();
+    }
+
     /* ----- A SEA TERMINAL'S BERTH (0.7.86, batch O9; docs/studies/spec-oil.md 2.9) -----
        A terminal is one berth of one kind of cargo (Ports.Cargo) and handles
        its berth's tonnes a year ("port": {"cargo": "LIQUID", "tonnes":
@@ -819,6 +844,15 @@ public class BuildingsTemplate {
     public double getFreightGrade() { return freightGrade; }
 
     /**
+     * Whether this is a highway (FR7, 2026-10-18): a road that is fully
+     * grade-separated, a freight grade of 1. It carries the city's through
+     * trips and gives no access, so its capacity is not the streets'
+     * (InfrastructureManager, STREETS AND HIGHWAYS, TWO NEEDS). Only the
+     * Elevated Highway is one; the Paved Road's 0.35 is a street.
+     */
+    public boolean isHighway() { return freightGrade >= 1; }
+
+    /**
      * Commuter journeys a month this carries OFF the road, if it is transit.
      *
      * Zero for everything that is not, which is everything that existed before
@@ -852,6 +886,45 @@ public class BuildingsTemplate {
     }
 
     public double getRailCapacity() { return railCapacity; }
+
+    private double stationTonnes;
+
+    /**
+     * Tonnes a month a station sorts (FR7, 2026-10-18): the Rail Depot's
+     * 50,000 and the Rail Terminal's 500,000; none for every other building.
+     *
+     * WHY IT IS ITS OWN FIELD AND NOT railCapacity READ TWICE. railCapacity
+     * is the track, and a station's own is still track - its connection to
+     * the main line - but track alone carries nothing: cars from a siding are
+     * sorted into trains at a yard, so what a city rails past its works' own
+     * sidings is capped by the stations it has (sectors.Freight, THE
+     * STATIONS). Before FR7 the three rail rungs were one ladder of tonnes
+     * and nothing tied a spur or a line to a yard.
+     */
+    public BuildingsTemplate setStationTonnes(double tonnes) {
+        this.stationTonnes = Math.max(0, tonnes);
+        return this;
+    }
+
+    public double getStationTonnes() { return stationTonnes; }
+
+    /** True for a building that is a station: it sorts tonnes (getStationTonnes() &gt; 0). */
+    public boolean isStation() { return stationTonnes > 0; }
+
+    private boolean siding;
+
+    /**
+     * Whether this track is a siding into one works (FR7): the Rail Spur, and
+     * no other. A siding's tonnes are loaded at the works' own loop and run
+     * as a unit train that needs no yard, so bulk may be railed up to the
+     * spurs' capacity without a station (sectors.Freight, THE STATIONS).
+     */
+    public BuildingsTemplate setSiding(boolean siding) {
+        this.siding = siding;
+        return this;
+    }
+
+    public boolean isSiding() { return siding; }
 
     private double truckRoom;
 

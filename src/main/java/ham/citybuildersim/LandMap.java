@@ -716,6 +716,18 @@ public final class LandMap {
     /** The legend's tracks (0.7.88; spec 5): a street the city has bought no road for. */
     public static final String TRACK_ENTRY = "Track";
 
+    /**
+     * The legend's note when the model has track the railway's ways do not use
+     * (FR7 2026-10-18, slice 3): how much, in plots. It said "with no ground left
+     * for the railway's lines" while the railway's arms ran out into the
+     * country until the ground stopped them; now the railway is its main line,
+     * its sidings and its branches (CityRuns THE RAILWAY'S WAYS), and the
+     * rest is not drawn - as the road's surplus is not (MapView.surplusWords()).
+     */
+    public static String trackSurplusWords(long plots) {
+        return String.format("%,d plots of track more than the line uses", plots);
+    }
+
     /** The hover past the planet's rim, where the map's square runs on beyond the antipode (spec-earth 2: the far node draws it as the void). */
     public static final String OFF_PLANET_WORDS = "Off the planet: the map runs on past the antipode, the point opposite the city";
 
@@ -828,9 +840,10 @@ public final class LandMap {
             return w;
         }
         if (road) {
-            String role = p.role[plot] == TilePainter.BOULEVARD ? " · boulevard" : p.role[plot] == TilePainter.ARTERIAL ? " · arterial" : "";
+            String role = p.role[plot] == TilePainter.BOULEVARD ? " · boulevard" : p.role[plot] == TilePainter.ARTERIAL ? " · arterial"
+                    : p.role[plot] == TilePainter.ACCESS ? ACCESS_WORDS : "";
             boolean mainBridge = p.use[plot] == TilePainter.RAIL && (in.marks[plot] & TilePainter.M_MAIN) != 0
-                    && (p.role[plot] == TilePainter.ARTERIAL || p.role[plot] == TilePainter.BOULEVARD);
+                    && (p.role[plot] == TilePainter.ARTERIAL || p.role[plot] == TilePainter.BOULEVARD || p.role[plot] == TilePainter.ACCESS);
             String railWords = p.use[plot] == TilePainter.RAIL ? (mainBridge ? " · bridging the railway" : " · crossing the railway") : "";
             String more = (p.bridge[plot] ? " · a bridge" : "") + railWords;
             if (p.road[plot] == TilePainter.TRACK) return TRACK_WORDS + role + more;
@@ -866,6 +879,9 @@ public final class LandMap {
 
     /** ...a crude pipeline, buried (spec-roads-and-ports.md 2.8). */
     public static final String PIPE_WORDS = "Crude pipeline, buried: the platforms' crude ashore without tankers";
+
+    /** An access road in the hover (batch FR7, D17): the street from a port's, a yard's or a depot's gate to the highway's ramp or the arterial grid. The spec's "to the highway at the Harbour interchange, 2.1 km" needs the road's end, which a plot's hover does not hold, and is not said. */
+    public static final String ACCESS_WORDS = " · access road";
 
     /** A highway's ramp in the hover (0.7.89; spec 2.7). */
     public static final String RAMP_WORDS = " · a ramp";

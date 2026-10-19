@@ -193,7 +193,8 @@ public class RailCheck {
             sums &= same(sum, t.getRoadLoad());
             bulky &= t.loadOf(Traffic.BULK) > t.getRoadLoad() * .6;
         }
-        report("the catalogue has rail in it", rails == 3, rails + " templates");
+        // ...four since FR7: the Rail Depot (id 141) joined the spur, the line and the terminal. RailDepotCheck holds what it is.
+        report("the catalogue has rail in it", rails == 4, rails + " templates");
         assertTrue("...whose three loads still add to the one, to the bit", sums);
         report("...and whose road load is mostly the drayage, not the staff", bulky,
                 String.format("%.0f%% bulk on a spur",
@@ -325,7 +326,7 @@ public class RailCheck {
                      1 - rail.getCarried()[Traffic.BULK.ordinal()]),
                 String.format("%,.0f tonnes of track on %d line(s)", rail.getCapacityTonnes(),
                         live.countByName("Rail Spur") + live.countByName("Freight Line")
-                                + live.countByName("Rail Terminal")));
+                                + live.countByName("Rail Terminal") + live.countByName("Rail Depot")));
 
         /*
          * THE INVOICE AND THE CHARGE ARE ONE CALL, so they cannot disagree.
@@ -345,7 +346,13 @@ public class RailCheck {
          * the end of that month and runs from the next one.
          */
         quietly(() -> {
-            lay(game, "Rail Spur", 2);
+            /*
+             * A SPUR AND A DEPOT, where it was two spurs (FR7, 2026-10-18): the same hundred thousand tonnes of track, but the
+             * stations cap what is railed (sectors.Freight, THE STATIONS) and the goods this town ships - its boxes, below -
+             * ride a station only. Two spurs alone rail the town's bulk and none of its goods.
+             */
+            lay(game, "Rail Spur", 1);
+            lay(game, "Rail Depot", 1);
             game.toggleNextMonth();
         });
         report("track laid and no trains bought yet carries nothing",

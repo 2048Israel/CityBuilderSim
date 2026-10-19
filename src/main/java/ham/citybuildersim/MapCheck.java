@@ -597,7 +597,7 @@ public class MapCheck {
         /** The streets' surface in plots by kind [0, gravel, paved, highway] - a highway's own plots among the highway's - and what the plans have no street for (CityMap.leftoverByKind()). */
         final double[] surface = new double[4], leftover = new double[4];
         /** The railway's track laid, in plots (0.7.72), and (0.7.89) what the runs could not lay; buildings packed at the city's edge (R7); tiles painted; districts. */
-        long rail, railShort, packed, tiles, districts;
+        long rail, trackSurplus, packed, tiles, districts;
 
         long total() { return Arrays.stream(buildings).sum(); }
         int kinds() { int n = 0; for (long b : buildings) if (b > 0) n++; return n; }
@@ -617,7 +617,7 @@ public class MapCheck {
             }
             long track = 0;
             for (int t = 0; t < types.length && t < model.length; t++) if (types[t] != null && types[t].track()) track += model[t] * BuildingVisual.cells(types[t]);
-            return same && rail + railShort == track;
+            return same && rail + trackSurplus == track;
         }
     }
 
@@ -667,7 +667,7 @@ public class MapCheck {
         }
         double[] left = m.leftoverByKind();
         System.arraycopy(left, 0, d.leftover, 0, 4);
-        d.railShort = m.runs().railShort();
+        d.trackSurplus = m.runs().trackSurplus();
         return d;
     }
 
@@ -1106,7 +1106,7 @@ public class MapCheck {
         final boolean[] owned, sea, wet, bridge, beneath, mined;
         /** Each building: {x0, y0, w, h, type, site (or -1), packed (1 or 0)} in the box's plots. */
         final List<int[]> boxes = new ArrayList<>();
-        long rail, crossings, packed;
+        long rail, crossings, packed, siding;
         final double[] surface = new double[4];
         final long[] buildings;
         final java.util.Set<Long> sites = new java.util.HashSet<>();
@@ -1137,6 +1137,7 @@ public class MapCheck {
                     TilePainter.paint(in, p);
                     crossings += p.crossings;
                     rail += p.railLaid;
+                    siding += p.sidingLaid;
                     packed += p.packed;
                     for (int k = 1; k < 4; k++) surface[k] += p.halves[k] / 2.0;
                     surface[BuildingVisual.HIGHWAY] += p.highwayPlots;
@@ -1489,6 +1490,261 @@ public class MapCheck {
         rail(yn, "...with " + YARDS_ADDED + " Rail Terminals and " + FREIGHT_ADDED + " Freight Line added");
         yardsNearMines(yards, yn);
         riverCrossed(sq);
+        interchangesAndAccess(sq);
+        sidingsDealt(sq);
+    }
+
+    /* =====================================================================
+       8b. THE INTERCHANGES' GROUND AND THE ACCESS ROADS (batch FR7, slice 4;
+       spec-freight 4.5, 4.6 and 7's MapCheck 8 items: "access roads reach a
+       ramp or arterial, interchange reserves clear of buildings")
+       ===================================================================== */
+
+    /** The access fixture's added highways and Truck Depots: enough highways to cross, three depots to place. */
+    static final int ACCESS_HIGHWAYS_ADDED = 200, ACCESS_DEPOTS_ADDED = 3;
+
+    /** The type id of the Truck Depot, the one building of the category HAULAGE. */
+    static int depotType(BuildingVisual.Type[] types) {
+        int id = -1;
+        for (BuildingVisual.Type t : types) if (t != null && t.category() == BuildingType.HAULAGE) id = t.id();
+        return id;
+    }
+
+    /**
+     * The yard city (his city x 1 where its square holds iron, with two Rail Terminals and a freight line) with highways added to cross and
+     * Truck Depots to place; with `highways` false his own highways taken out too: none, so no ramp for a road to end on.
+     */
+    static CityMap accessCity(Squares sq, boolean highways) {
+        return accessCity(sq, highways, null);
+    }
+
+    /** ...with `extra` counts added (batch FR7 slice 5: spurs and bulk works for the sidings' deal): a track type's to the railway, any other's to the buildings. */
+    static CityMap accessCity(Squares sq, boolean highways, long[] extra) {
+        long[] c = sq.ironCounts.clone();
+        int yard = -1, freight = -1, mine = -1, hw = -1;
+        for (BuildingVisual.Type t : sq.types) {
+            if (t == null) continue;
+            if (t.terminal()) yard = t.id();
+            else if (t.track() && t.plots() > 100) freight = t.id();
+            if (t.id() == Mining.IRON_MINE) mine = t.id();
+            if (t.road() == BuildingVisual.HIGHWAY) hw = t.id();
+        }
+        long[] rail = new long[c.length];
+        for (int t = 0; t < c.length; t++) if (sq.types[t] != null && (sq.types[t].track() || sq.types[t].terminal())) { rail[t] = c[t]; c[t] = 0; }
+        rail[yard] += YARDS_ADDED;
+        rail[freight] += FREIGHT_ADDED;
+        if (extra != null) {
+            for (int t = 0; t < c.length && t < extra.length; t++) {
+                if (sq.types[t] != null && (sq.types[t].track() || sq.types[t].terminal())) rail[t] += extra[t];
+                else c[t] += extra[t];
+            }
+        }
+        c[hw] = highways ? c[hw] + ACCESS_HIGHWAYS_ADDED : 0;
+        c[depotType(sq.types)] += ACCESS_DEPOTS_ADDED;
+        long wantMines = c[mine];
+        c[mine] = 0;
+        int capacity = (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
+        int side = (int) Math.ceil(Math.sqrt(groundKm2(sq.types) / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
+        CityMap m = CityMap.square(sq.seed, sq.ironX, sq.ironY, sq.types, side, capacity, c);
+        c[mine] = Math.min(wantMines, mineSites(m, mine));
+        m.reconcile(c);
+        for (int t = 0; t < c.length; t++) c[t] += rail[t];
+        m.reconcile(c);
+        return m;
+    }
+
+    /**
+     * What a map's plans gave its works' access roads: {roads, on a ramp, on an arterial, already on one, gates not beside their box, ends neither a
+     * ramp's street nor an arterial, the map's works (yards and sea terminals) given a road, the map's works}.
+     */
+    static int[] accessFigures(CityMap m) {
+        int[] f = new int[8];
+        for (CityMap.District d : m.districts()) {
+            DistrictPlan p = m.plan(d);
+            List<int[]> works = m.planInputHere(d).works;
+            f[7] += works.size();
+            for (int[] r : p.accessRoads) {
+                f[0]++;
+                for (int[] wk : works) if (wk[0] == r[0] && wk[1] == r[1] && wk[2] == r[2] && wk[3] == r[3]) f[6]++;
+                if (r[8] == DistrictPlan.ACCESS_HAD) { f[3]++; continue; }
+                if (r[8] == DistrictPlan.ACCESS_RAMP) f[1]++; else f[2]++;
+                if (!JunctionCheck.beside(new int[] { r[0], r[1], r[2], r[3] }, r[4], r[5])) f[4]++;
+                int end = r[7] * DistrictPlan.FRAME + r[6];
+                boolean onRamp = r[8] == DistrictPlan.ACCESS_RAMP && p.kindAt(end) == DistrictPlan.UNDER;
+                boolean onArterial = r[8] == DistrictPlan.ACCESS_ARTERIAL && (r[9] == DistrictPlan.ROLE_ARTERIAL || r[9] == DistrictPlan.ROLE_BOULEVARD || r[9] == DistrictPlan.ROLE_ACCESS);
+                if (!onRamp && !onArterial) f[5]++;
+            }
+        }
+        return f;
+    }
+
+    static void interchangesAndAccess(Squares sq) {
+        out.println("      the interchanges' ground and the access roads (batch FR7): his city x 1 where its square holds iron, " + ACCESS_HIGHWAYS_ADDED
+                + " highways, " + YARDS_ADDED + " Rail Terminals and " + ACCESS_DEPOTS_ADDED + " Truck Depots added:");
+        CityMap m = accessCity(sq, true);
+        CityRuns runs = m.runs();
+        Raster r = Raster.of(m);
+        List<InterchangeGround.Site> sites = runs.reserves(), laid = runs.reservesLaid();
+        out.printf("      %d interchange sites, %d with their reserve (%d cloverleaf, %d trumpet), the rest stacks%n", sites.size(), laid.size(),
+                laid.stream().filter(s -> s.kind() == InterchangeGround.CLOVERLEAF).count(), laid.stream().filter(s -> s.kind() == InterchangeGround.TRUMPET).count());
+        check("fixture: its highways cross, and some of its interchanges have their reserve", runs.highways().interchanges() > 0 && !sites.isEmpty() && !laid.isEmpty());
+        boolean sizes = true, clear = true, owned = true;
+        for (InterchangeGround.Site s : laid) {
+            int side = s.kind() == InterchangeGround.CLOVERLEAF ? InterchangeGround.CLOVERLEAF_SIDE : InterchangeGround.TRUMPET_SIDE;
+            sizes &= s.w() == side && s.h() == side && (s.kind() != InterchangeGround.CLOVERLEAF || (s.x0() + side / 2 == s.x() && s.y0() + side / 2 == s.y()));
+            for (long y = s.y0(); y < s.y0() + s.h(); y++) {
+                for (long x = s.x0(); x < s.x0() + s.w(); x++) {
+                    if (CityRuns.covered(runs.highways(), x, y)) continue;
+                    long gx = x - r.px0, gy = y - r.py0;
+                    if (gx < 0 || gy < 0 || gx >= r.w || gy >= r.h) { clear = false; continue; }
+                    int g = (int) (gy * r.w + gx);
+                    clear &= r.use[g] != TilePainter.BUILDING && r.use[g] != TilePainter.ROAD && r.use[g] != TilePainter.RAIL;
+                    owned &= r.owned[g] && !r.wet[g];
+                }
+            }
+        }
+        check("every reserve laid is CLOVERLEAF_SIDE plots square, centred on its crossing, or TRUMPET_SIDE plots square beside its T", sizes);
+        check("...holds no building, street or track on any plot but the highways' own, as the map draws it", clear);
+        check("...and is owned dry ground throughout", owned);
+        boolean justified = true;
+        List<long[]> mined = m.minedSites();
+        for (InterchangeGround.Site s : sites) {
+            if (s.got()) continue;
+            boolean shortOf = false;
+            for (long y = s.y0(); y < s.y0() + s.h() && !shortOf; y++) {
+                for (long x = s.x0(); x < s.x0() + s.w() && !shortOf; x++) {
+                    if (CityRuns.covered(runs.highways(), x, y)) continue;
+                    long gx = x - r.px0, gy = y - r.py0;
+                    boolean off = gx < 0 || gy < 0 || gx >= r.w || gy >= r.h;
+                    int g = off ? 0 : (int) (gy * r.w + gx);
+                    shortOf |= off || !r.owned[g] || r.wet[g] || CityRuns.covered(runs.rail(), x, y) || Math.floorMod(x, CityRuns.CELL) == 0 || Math.floorMod(y, CityRuns.CELL) == 0;
+                }
+            }
+            for (long[] yd : runs.yards()) shortOf |= yd[0] < s.x0() + s.w() && yd[1] < s.y0() + s.h() && yd[0] + yd[2] > s.x0() && yd[1] + yd[3] > s.y0();
+            for (long[] ms : mined) shortOf |= ms[0] < s.x0() + s.w() && ms[1] < s.y0() + s.h() && ms[2] >= s.x0() && ms[3] >= s.y0();
+            justified &= shortOf;
+        }
+        check("...and a crossing that got none is short of ground: unowned or wet, track, a cell's line, a yard or a mine in its box (a stack)", justified);
+
+        int depot = depotType(sq.types);
+        int works = runs.yards().size() + (int) m.totals()[depot];
+        for (CityShore.Work w : m.shore().works()) if (w.berthed()) works++;
+        int[] a = accessFigures(m);
+        long drawn = 0;
+        for (int g = 0; g < r.w * r.h; g++) if (r.role[g] == TilePainter.ACCESS && r.use[g] == TilePainter.ROAD) drawn++;
+        out.printf("      %d works (%d yards, %d depots), %d access roads: %d to a ramp, %d to an arterial, %d beside another's; %,d plots of it drawn%n",
+                works, runs.yards().size(), m.totals()[depot], a[0], a[1], a[2], a[3], drawn);
+        check("every yard and every Truck Depot has an access road, or stands on another's", works > 0 && a[0] == works);
+        check("...each starts beside its work's box and ends on a highway ramp's street or on an arterial", a[4] == 0 && a[5] == 0);
+        check("...with highways in the frame, some end on a ramp", a[1] > 0);
+        check("...and the painter draws the access role on road plots", drawn > 0);
+
+        CityMap bare = accessCity(sq, false);
+        int[] b = accessFigures(bare);
+        int bareWorks = bare.runs().yards().size() + (int) bare.totals()[depot];
+        check("the same city with no highway: every road ends on an arterial of the grid, none on a ramp",
+                !bare.runs().highways().started && b[0] == bareWorks && b[1] == 0 && b[4] == 0 && b[5] == 0 && b[2] + b[3] == b[0]);
+
+        // A sea terminal is a work too: the coast's, with highways and depots, each given its road.
+        World w = World.of(sq.seed);
+        long[] counts = shoreCounts(sq.types);
+        int hw = -1;
+        for (BuildingVisual.Type t : sq.types) if (t != null && t.road() == BuildingVisual.HIGHWAY) hw = t.id();
+        counts[hw] = 150;
+        counts[depot] = ACCESS_DEPOTS_ADDED;
+        CityMap coast = coastal(sq.seed, w.foundingX() - CityMap.DISTRICT, w.foundingY(), sq.types, SHORE_SIDE, counts);
+        int terminals = 0;
+        for (CityShore.Work k : coast.shore().works()) if (k.berthed()) terminals++;
+        int[] c = accessFigures(coast);
+        out.printf("      the coast: %d sea terminals (%d given a road) and %d depots, %d access roads (%d to a ramp, %d to an arterial)%n", terminals, c[6],
+                ACCESS_DEPOTS_ADDED, c[0], c[1], c[2]);
+        check("the sea terminals on the shore are works that get an access road where their district has a grid to go to: some do, each beside its box and ending on a ramp's street or an arterial",
+                terminals > 0 && c[7] == terminals && c[6] > 0 && c[4] == 0 && c[5] == 0);
+    }
+
+    /* =====================================================================
+       8c. THE SPURS DEALT TO THE PLANS' SIDINGS (batch FR7, slice 5; spec-
+       freight 4.3, D14: "one siding for each spur, into its works' estate
+       cell")
+       ===================================================================== */
+
+    /** The sidings fixture's added Rail Spurs and bulk works (JunctionCheck's two bulk types, two in three the larger). */
+    static final int SPURS_ADDED = 12, BULK_WORKS_ADDED = 90;
+
+    /** The spurs the runs' sidings left, as the map deals them: each dealt district is one the main line crosses with bulk works of its own, no more than it holds, and the plans lay at most their share, drawn on the raster; the legend's surplus falls by a dealt spur's plots; the deal is the same from the same counts. */
+    static void sidingsDealt(Squares sq) {
+        out.println("      the sidings the plans lay (batch FR7 slice 5, D14): the iron city with " + SPURS_ADDED + " Rail Spurs and " + BULK_WORKS_ADDED + " bulk works added:");
+        BuildingVisual.Type[] types = sq.types;
+        int spur = -1;
+        for (BuildingVisual.Type t : types) if (t != null && t.siding()) spur = t.id();
+        long[] extra = new long[types.length];
+        extra[spur] = SPURS_ADDED;
+        extra[JunctionCheck.BIG] = BULK_WORKS_ADDED * 2 / 3;
+        extra[JunctionCheck.SMALL] = BULK_WORKS_ADDED / 3;
+        CityMap m = accessCity(sq, true, extra);
+        CityRuns runs = m.runs();
+        int f = DistrictPlan.FRAME, left = m.spursLeft();
+        long dealt = m.sidingsDealt();
+        java.util.Set<Long> line = runs.mainLineCells(CityMap.DISTRICT);
+        long sum = 0, planned = 0, planPlots = 0, noRail = 0;
+        boolean crossed = true, rail = true, holds = true, within = true, undealt = true;
+        List<long[]> plots = new ArrayList<>();
+        for (CityMap.District d : m.districts()) {
+            int share = m.sidingsOf(d);
+            // The plan the painter draws (with what the districts before it carried to it), not a standalone one.
+            CityMap.Drawn dr = m.drawnOf(d);
+            DistrictPlan.Input in = m.planInputHere(d);
+            if (share == 0) {
+                undealt &= dr.siding == null;
+                continue;
+            }
+            DistrictPlan p = m.plan(d);
+            sum += share;
+            crossed &= line.contains((Math.floorDiv(in.x0, CityMap.DISTRICT) << 32) ^ (Math.floorDiv(in.y0, CityMap.DISTRICT) & 0xffffffffL));
+            boolean any = false;
+            for (int q = 0; q < f * f && !any; q++) any = in.fixed[q] == DistrictPlan.FIXED_RAIL && q % f >= 1 && q / f >= 1 && q % f < DistrictPlan.SIDE && q / f < DistrictPlan.SIDE;
+            rail &= any;
+            long bulk = 0;
+            for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].bulk() && types[t].drawn() && !types[t].terminal() && t < in.counts.length) bulk += in.counts[t];
+            holds &= share <= bulk;
+            int sidings = 0;
+            if (dr.siding != null) {
+                for (int e : dr.siding) {
+                    int q = e & (CityMap.SIDING_END_BIT - 1);
+                    if ((e & CityMap.SIDING_END_BIT) != 0) sidings++;
+                    planPlots++;
+                    plots.add(new long[] { in.x0 + q % f, in.y0 + q / f });
+                }
+            }
+            within &= sidings <= share;
+            planned += sidings;
+            noRail += p.sidingsNoRail;
+        }
+        out.printf("      %d Rail Spurs, %d laid by the runs into mined sites, %d left; %d dealt to %d district(s) the main line crosses; the plans lay %d sidings of %,d plots%n",
+                m.runs().sidingsLaid() + left, m.runs().sidingsLaid(), left, dealt, m.districts().stream().filter(d -> m.sidingsOf(d) > 0).count(), planned, planPlots);
+        check("fixture: spurs are left to deal, and the main line crosses districts holding bulk works to deal them to", left > 0 && dealt > 0);
+        check("the spurs dealt never exceed the spurs the runs' sidings left, and the districts' shares make them", sum == dealt && dealt <= left);
+        check("every district dealt a share is one the main line crosses (so within a district of it), with a plot of the runs' railway in its frame", crossed && rail);
+        check("...holds at least that many bulk works of its own for its plan to place, and its plan lays no more sidings than its share", holds && within);
+        check("...and a district with no share lays none, nor any track", undealt);
+        check("the plans lay some of them, and none is for want of a railway in the frame", planned > 0 && noRail == 0);
+        Raster r = Raster.of(m);
+        boolean drawn = true;
+        for (long[] pl : plots) {
+            long gx = pl[0] - r.px0, gy = pl[1] - r.py0;
+            drawn &= gx >= 0 && gy >= 0 && gx < r.w && gy < r.h && r.use[(int) (gy * r.w + gx)] == TilePainter.RAIL;
+        }
+        out.printf("      %,d plots of siding painted on the raster of %,d the plans laid; the runs' track %,d plots%n", r.siding, planPlots, r.rail);
+        check("every plot of every siding the plans laid is painted as track, each once, counted apart from the runs' track", drawn && r.siding == planPlots);
+        long per = BuildingVisual.cells(types[spur]), want = Math.max(0, runs.trackSurplus() - dealt * per);
+        long[] legend = m.legendFiguresIfDrawn();
+        out.printf("      the legend's \"plots of track more than the line uses\": %,d (the runs' %,d less %d spurs of %d plots)%n", legend == null ? -1 : legend[2], runs.trackSurplus(), dealt, per);
+        check("the legend's surplus of track falls by a dealt spur's plots: the runs' less the dealt spurs' track, to no less than none", legend != null && legend[2] == want && m.dealtSpurTrack() == dealt * per);
+        check("...and a city whose spurs were all taken by the runs' sidings or no district can take loses none of it", runs.trackSurplus() == 0 || dealt == 0 || legend[2] < runs.trackSurplus());
+        CityMap again = accessCity(sq, true, extra);
+        boolean same = again.sidingsDealt() == dealt && again.districts().size() == m.districts().size();
+        for (int i = 0; i < m.districts().size() && same; i++) same &= again.sidingsOf(again.districts().get(i)) == m.sidingsOf(m.districts().get(i));
+        check("the deal is a pure function of the counts and the runs: the same city built again deals the same share to each district", same);
     }
 
     /** A save's autosave copied into a temporary folder and loaded (its map drawn from its sidecar or canonically): saves named on the command line, never written. */
@@ -1858,7 +2114,7 @@ public class MapCheck {
         for (int t = 0; t < totals.length; t++) if (net.map.types()[t] != null && net.map.types()[t].track()) model += totals[t] * BuildingVisual.cells(net.map.types()[t]);
         long plots = net.count(net::isRunRail), over = 0;
         for (int g = 0; g < W * net.h; g++) if (net.run[g] == TilePainter.RAIL_OVER) over++;
-        long shortBy = net.map.runs().railShort();
+        long shortBy = net.map.runs().trackSurplus();
         out.printf("      %s: %,d plots of track drawn of the model's %,d (%,d the runs could not lay), %d piece(s), %d crossed by streets, %d bridging a highway%n",
                 what, net.rail, model, shortBy, pieces[0], net.crossings, over);
         check(what + ": fixture: the city has a railway", model > 0);
@@ -3218,12 +3474,19 @@ public class MapCheck {
         long t0 = System.nanoTime();
         List<TrainSchedule.Route> routes = m.trainRoutes();
         double routesMs = (System.nanoTime() - t0) / 1e6;
-        int reached = 0;
-        for (long[] y : runs.yards()) if (runs.wayTo(y) != null) reached++;
+        // FR7 slice 3: a Rail Depot's yard has TileRaster.DEPOT_TRACKS sidings, a Terminal's YARD_TRACKS (the yard city's yards are
+        // depots: the last terminal type), and each of the works' sidings has one more route, a bulk unit train's (its own rule: MainLineCheck 13).
+        int reached = 0, expectedRoutes = 0, worksRoutes = 0;
+        for (int i = 0; i < runs.yards().size(); i++) {
+            if (runs.wayTo(runs.yards().get(i)) == null) continue;
+            reached++;
+            expectedRoutes += TileRaster.tracksOf(m.types()[m.yardTypeOf(i)]);
+        }
         boolean starts = true, onTrack = true, intoYard = true, sidings = true, stationOnes = true;
         double r = Math.toRadians(line.way());
         java.util.Map<Integer, java.util.Set<Integer>> sidingsOf = new java.util.HashMap<>();
         for (TrainSchedule.Route rt : routes) {
+            if (rt.works()) { worksRoutes++; continue; }
             double[] xs = rt.xs(), ys = rt.ys();
             long[] yard = runs.yards().get(rt.yard());
             starts &= Math.abs(xs[0] - (line.x() + Math.cos(r) * TrainSchedule.WORLD_PLOTS)) < 1e-9
@@ -3247,11 +3510,13 @@ public class MapCheck {
             sidingsOf.computeIfAbsent(rt.yard(), k -> new java.util.HashSet<>()).add(rt.siding());
             stationOnes &= rt.station() == java.util.Arrays.equals(yard, station);
         }
-        for (java.util.Set<Integer> s : sidingsOf.values()) sidings &= s.size() == TileRaster.YARD_TRACKS;
-        out.printf("      %d of %d yards reached, %d routes found in %.1f ms, the longest %.0f plots%n", reached, runs.yards().size(),
-                routes.size(), routesMs, routes.stream().mapToDouble(TrainSchedule.Route::length).max().orElse(0));
-        check("THE TRAINS' ROUTES: one a yard the railway's way reaches and a siding, every yard reached",
-                reached == runs.yards().size() && sidingsOf.size() == reached && routes.size() == reached * TileRaster.YARD_TRACKS && sidings);
+        for (java.util.Map.Entry<Integer, java.util.Set<Integer>> e : sidingsOf.entrySet()) {
+            sidings &= e.getValue().size() == TileRaster.tracksOf(m.types()[m.yardTypeOf(e.getKey())]);
+        }
+        out.printf("      %d of %d yards reached, %d routes found in %.1f ms (%d to a works' siding), the longest %.0f plots%n", reached, runs.yards().size(),
+                routes.size(), routesMs, worksRoutes, routes.stream().mapToDouble(TrainSchedule.Route::length).max().orElse(0));
+        check("THE TRAINS' ROUTES: one a yard the railway's way reaches and a siding of its own (a depot's, a terminal's), every yard reached",
+                reached == runs.yards().size() && sidingsOf.size() == reached && routes.size() == expectedRoutes + worksRoutes && sidings);
         check("...each from WORLD_PLOTS out along the world line, faded in to where the line leaves the city's ground",
                 starts && !routes.isEmpty());
         check("...then on track every quarter plot, from the gate arm's end to its yard's box (CityRuns.wayTo())", onTrack);
@@ -5410,6 +5675,9 @@ public class MapCheck {
         check("...and the card's loans from the vault are the dollar bond and note for its gap, or none while the window abroad is shut", dollars);
 
         // A month drops the picks; so does a load into the same Game, though its month and its offers are the same.
+        // ...from none: the picks above are left standing - the card steps' c3 and d4, less the offers the short card bought - and
+        // two more on top of one that survived stood as three (FR7: the played city's offers moved, and one of them did).
+        picks.clear();
         picks.add(g, g.nextLandParcels(2));
         List<Integer> beforeMonth = picks.live(g);
         System.setOut(QUIET);

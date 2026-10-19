@@ -42,7 +42,11 @@ import java.util.List;
  * onto a siding: one route a yard and siding. Boxes and general cargo go to
  * the freight station; bulk to the other yards when the station is a
  * container yard (boxesByRail()), to every yard when it is not. A train
- * fades in over the world line's part.
+ * fades in over the world line's part. Since FR7 (slice 3, 2026-10-18) a
+ * route may also run straight along the main line into a works' siding, no
+ * yard (Route.toWorks()): real unit trains skip the yard, so only a dry bulk
+ * hopper train goes there, one with the yards' routes; mixed and container
+ * trains still run to the yards.
  *
  * A TRAIN. A locomotive at each end - distributed power, as a unit train
  * has - so it leaves the way it came with no run-round, and its wagons
@@ -145,15 +149,31 @@ public final class TrainSchedule {
      * yard is the freight station, its siding (0 to TileRaster.YARD_TRACKS
      * - 1, -1 with none), and the way as points in plots - the world line's
      * far end first, the siding's end last - with each point's distance
-     * along it; the first fadeTo plots are the world line's, faded in.
+     * along it; the first fadeTo plots are the world line's, faded in. Since
+     * FR7 (slice 3) a route may instead be to a works' siding: `works` true,
+     * yard and siding -1 and not the station (toWorks()).
      */
-    public record Route(int yard, boolean station, int siding, double[] xs, double[] ys, double[] along, double fadeTo) {
+    public record Route(int yard, boolean station, int siding, boolean works, double[] xs, double[] ys, double[] along, double fadeTo) {
 
         /** A route through points: their distances along it worked out. */
         public static Route through(int yard, boolean station, int siding, double[] xs, double[] ys, double fadeTo) {
+            return through(yard, station, siding, false, xs, ys, fadeTo);
+        }
+
+        /**
+         * A route to a works' siding (FR7 slice 3, 2026-10-18): no yard (-1), not
+         * the station, no siding of a yard's fan (-1), `works` true - a bulk
+         * unit train's alone, from the world line along the main line straight in
+         * to the siding's end, as real unit trains skip the yard.
+         */
+        public static Route toWorks(double[] xs, double[] ys, double fadeTo) {
+            return through(-1, false, -1, true, xs, ys, fadeTo);
+        }
+
+        private static Route through(int yard, boolean station, int siding, boolean works, double[] xs, double[] ys, double fadeTo) {
             double[] along = new double[xs.length];
             for (int i = 1; i < xs.length; i++) along[i] = along[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]);
-            return new Route(yard, station, siding, xs.clone(), ys.clone(), along, Math.max(0, fadeTo));
+            return new Route(yard, station, siding, works, xs.clone(), ys.clone(), along, Math.max(0, fadeTo));
         }
 
         /** Its length, the world line's far end to the siding's, in plots. */
@@ -270,16 +290,20 @@ public final class TrainSchedule {
     /**
      * The routes a kind goes on: boxes and general cargo the freight
      * station's; bulk the other yards' when the station is a container yard,
-     * every yard's when it is not; every route when none is its kind's.
+     * every yard's when it is not - and (FR7 slice 3) a dry bulk unit train
+     * the works' sidings' too, which run straight in with no yard, while
+     * no other kind goes to a siding; every yard's route when none is its
+     * kind's (a siding's only for a hopper train).
      */
     private int[] routesFor(Kind k) {
         int n = Math.min(routes.size(), (int) ROUTE_MASK - 1);
         List<Integer> mine = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             Route r = routes.get(i);
-            if (k.toStation() ? r.station() : !(boxes && r.station())) mine.add(i);
+            if (r.works()) { if (k == Kind.HOPPER) mine.add(i); }
+            else if (k.toStation() ? r.station() : !(boxes && r.station())) mine.add(i);
         }
-        if (mine.isEmpty()) for (int i = 0; i < n; i++) mine.add(i);
+        if (mine.isEmpty()) for (int i = 0; i < n; i++) if (!routes.get(i).works() || k == Kind.HOPPER) mine.add(i);
         return mine.stream().mapToInt(Integer::intValue).toArray();
     }
 

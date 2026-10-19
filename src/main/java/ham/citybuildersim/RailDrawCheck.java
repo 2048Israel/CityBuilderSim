@@ -63,6 +63,17 @@ import java.util.List;
  *      the fan closes on the line the yard stands on, not on the middle of
  *      all the track in the box; the crossing track is drawn from the box's
  *      edge to that line; no siding runs across it.
+ *  22. (batch FR7 2.3) gravel is drawn grey, not tan: a near-neutral light
+ *      grey, lighter than paved, told apart from the verge, the ballast, the
+ *      track's brown dashes, the desert and the Farms' and the mines' fills,
+ *      speckled at 8 px a plot, the legend's swatch the same grey.
+ *  23. (batch FR7 slice 3) the Rail Depot is a small yard: its own footprint,
+ *      smaller than a Rail Terminal's, in TRANSPORT's colours; drawn with
+ *      DEPOT_TRACKS sidings (2 or 3) and a shed, a Terminal's with YARD_TRACKS
+ *      as before; the trains' routes to it are DEPOT_TRACKS, one a siding.
+ *  24. (batch FR7 slice 3) a siding's loading shed: a plot marked M_SHED beside
+ *      a works is drawn with a block in TRANSPORT's fill over the track's end;
+ *      an unmarked track plot is not.
  *
  * Numbering is the running order.
  *
@@ -295,6 +306,9 @@ public class RailDrawCheck {
         farSkeleton();
         legend();
         lineCrossingTheYard();
+        gravelGrey();
+        railDepotYard();
+        sidingShed();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -819,10 +833,119 @@ public class RailDrawCheck {
         System.out.println("  ui.MapView.LEGEND_ROWS is package-private, so this harness cannot reach it; the layout is checked by eye");
     }
 
+    /* ================= 22. gravel drawn grey (FR7 2.3) ================= */
+    static void gravelGrey() {
+        System.out.println("--- 22. gravel drawn grey, not tan, and told from its neighbours (FR7 2.3) ---");
+        int g = TileRaster.ROAD[BuildingVisual.GRAVEL];
+        int r = (g >> 16) & 255, gr = (g >> 8) & 255, b = g & 255;
+        int spread = Math.max(r, Math.max(gr, b)) - Math.min(r, Math.min(gr, b));
+        check("gravel is a near-neutral grey: its channels within 0x14 of each other (the tan's were 0x51 apart), " + spread, spread <= 0x14);
+        check("...the small view's gravel the same grey", TileRaster.ROAD_SMALL[BuildingVisual.GRAVEL] == g);
+        check("...lighter than paved: gravel reads apart from paved by lightness", luma(g) > luma(TileRaster.ROAD[BuildingVisual.PAVED]) + 8);
+        int[][] neighbours = {
+            { TileRaster.VERGE, 0 }, { TileRaster.ROAD[BuildingVisual.PAVED], 1 }, { TileRaster.BALLAST, 2 }, { TileRaster.TRACK_DASH, 3 },
+            { TileRaster.GROUND[TileRaster.GROUND.length - 1], 4 }, { BuildingVisual.FILL[BuildingVisual.FARM], 5 },
+            { BuildingVisual.FILL[BuildingVisual.MINE], 6 } };
+        String[] names = { "the verge", "paved", "the ballast", "the track's dashes", "the desert", "the Farms' fill", "the mines' fill" };
+        for (int[] n : neighbours) {
+            double d = distance(g, n[0]);
+            check("...told from " + names[n[1]] + " (" + String.format("#%06x", n[0] & 0xffffff) + "): " + String.format("%.0f", d) + " apart, at least 24", d >= 24);
+        }
+        check("the speckle is darker than the stone it lies on, and lies on a fifth of it or less",
+                luma(TileRaster.GRAVEL_GRAIN) < luma(g) && TileRaster.GRAVEL_GRAIN_SHARE > 0 && TileRaster.GRAVEL_GRAIN_SHARE <= .2);
+        boolean swatch = false;
+        for (LandMap.Entry e : LandMap.planeLegend()) swatch |= e.colour() == g && e.words().startsWith("Gravel");
+        check("the legend's gravel swatch is the new grey", swatch);
+    }
+
+    /** A colour's luma, 0 to 255 (Rec. 601). */
+    static double luma(int c) {
+        return .299 * ((c >> 16) & 255) + .587 * ((c >> 8) & 255) + .114 * (c & 255);
+    }
+
+    /** Two colours' distance in RGB. */
+    static double distance(int a, int c) {
+        double dr = ((a >> 16) & 255) - ((c >> 16) & 255), dg = ((a >> 8) & 255) - ((c >> 8) & 255), db = (a & 255) - (c & 255);
+        return Math.sqrt(dr * dr + dg * dg + db * db);
+    }
+
     /** Whether pixel row y has a pixel of `colour` within `reach` pixels of column x. */
     static boolean nearInRow(int[] img, int w, int y, int x, int reach, int colour) {
         for (int xx = Math.max(0, x - reach); xx <= Math.min(w - 1, x + reach); xx++) if (img[y * w + xx] == colour) return true;
         return false;
+    }
+
+    /* ================= 23. the Rail Depot: a small yard (FR7 slice 3) ================= */
+
+    /** The Rail Depot type: the yard FR7 added as the railway's small first rung. */
+    static BuildingVisual.Type depot() {
+        for (BuildingVisual.Type t : TYPES) if (BuildingVisual.depot(t)) return t;
+        throw new IllegalStateException("no Rail Depot type");
+    }
+
+    static void railDepotYard() {
+        System.out.println("--- 23. the Rail Depot is a small yard: its own footprint, a few sidings and a shed; trains route to each ---");
+        BuildingVisual.Type depot = depot(), terminal = terminal();
+        int[] fd = BuildingVisual.footprint(depot), ft = BuildingVisual.footprint(terminal);
+        check("its footprint is smaller than a Rail Terminal's, in whole plots: " + fd[0] + " x " + fd[1] + " against " + ft[0] + " x " + ft[1],
+                fd[0] * fd[1] < ft[0] * ft[1] && fd[0] <= ft[0] && fd[1] <= ft[1]);
+        check("...it is a yard of TRANSPORT's colours, as the Terminal is",
+                depot.terminal() && depot.fill() == BuildingVisual.FILL[BuildingVisual.TRANSPORT] && depot.fill() == terminal.fill());
+        check("DEPOT_TRACKS is 2 or 3, fewer than YARD_TRACKS; tracksOf() gives the depot its own and a Terminal YARD_TRACKS",
+                TileRaster.DEPOT_TRACKS >= 2 && TileRaster.DEPOT_TRACKS <= 3 && TileRaster.DEPOT_TRACKS < TileRaster.YARD_TRACKS
+                        && TileRaster.tracksOf(depot) == TileRaster.DEPOT_TRACKS && TileRaster.tracksOf(terminal) == TileRaster.YARD_TRACKS);
+        // Drawn at 8 px, its box across an east-west line as CityRuns.spotsIn() lays it: ending on the line, its last row.
+        int px = 8, boxX = 6, boxY = 10, w = T * px, boxW = fd[0], boxH = fd[1], railY = boxY + boxH - 1;
+        TilePainter.Input in = yardAt(depot, boxX, boxY, boxW, boxH);
+        railRow(in, railY, 0);
+        TilePainter.Painted p = paint(in);
+        int[] img = raster(in, p, px);
+        check("the depot is drawn as a yard: YARD_GROUND inside its box", hasInBox(img, w, boxX, boxY, boxW, boxH, px, TileRaster.YARD_GROUND));
+        int[] bands = bedBands(rowsWith(img, w, boxX, boxY, boxW, boxH, px, TileRaster.BALLAST));
+        check("...with DEPOT_TRACKS ballast bands (sidings), not a Terminal's YARD_TRACKS: " + bands.length / 2, bands.length / 2 == TileRaster.DEPOT_TRACKS);
+        check("...and a shed in TRANSPORT's fill", hasInBox(img, w, boxX, boxY, boxW, boxH, px, BuildingVisual.FILL[BuildingVisual.TRANSPORT]));
+        // The control: a Terminal's box over a line keeps its fan of eight.
+        TilePainter.Input tin = yardAt(terminal, 4, 4, ft[0], ft[1]);
+        railRow(tin, 16, 0);
+        TilePainter.Painted tp = paint(tin);
+        int[] tbands = bedBands(rowsWith(raster(tin, tp, px), w, 4, 4, ft[0], ft[1], px, TileRaster.BALLAST));
+        check("control: a Rail Terminal's yard still has YARD_TRACKS ballast bands", tbands.length / 2 == TileRaster.YARD_TRACKS);
+        // The trains' routes to the depot: one to each of its sidings.
+        long[] yard = { 100, 100, boxW, boxH };
+        boolean[] rail = new boolean[boxW * boxH];
+        for (int x = 0; x < boxW; x++) rail[(boxH - 1) * boxW + x] = true;
+        double ly = 100 + boxH - 0.5;
+        double[][] way = { { 80.5, 100 + boxW / 2.0 }, { ly, ly } };
+        java.util.List<TrainSchedule.Route> routes = new java.util.ArrayList<>();
+        CityMap.trainRoutesInto(routes, 0, false, yard, way, 16.5, ly, 80.5, ly, rail, TileRaster.tracksOf(depot));
+        java.util.Set<Integer> sidings = new java.util.HashSet<>();
+        for (TrainSchedule.Route r : routes) sidings.add(r.siding());
+        check("the trains' routes to it are DEPOT_TRACKS, one a siding: " + routes.size() + " routes",
+                routes.size() == TileRaster.DEPOT_TRACKS && sidings.size() == TileRaster.DEPOT_TRACKS && sidings.contains(0) && sidings.contains(TileRaster.DEPOT_TRACKS - 1));
+    }
+
+    /* ================= 24. a siding's loading shed (FR7 slice 3) ================= */
+
+    static void sidingShed() {
+        System.out.println("--- 24. a siding's loading shed: a block in TRANSPORT's fill on the plot marked M_SHED, none on the track beside it ---");
+        int px = 8, plotX = 10, plotY = 12, w = T * px, fill = BuildingVisual.FILL[BuildingVisual.TRANSPORT];
+        TilePainter.Input in = owned();
+        railRow(in, plotY, 0);
+        in.marks[plotY * T + plotX] = (byte) TilePainter.M_SHED;
+        TilePainter.Painted p = paint(in);
+        int[] img = raster(in, p, px);
+        check("the marked plot's middle pixel is TRANSPORT's fill", pixel(img, w, plotX, plotY, px / 2, px / 2, px) == fill);
+        boolean beside = false;
+        for (int dy = 0; dy < px; dy++) for (int dx = 0; dx < px; dx++) beside |= pixel(img, w, plotX - 1, plotY, dx, dy, px) == fill || pixel(img, w, plotX + 1, plotY, dx, dy, px) == fill;
+        check("...and the track plots beside it have none", !beside);
+        int pad = (int) Math.round(px * (1 - TileRaster.SIDING_SHED) / 2.0);
+        check("...the shed is a small block: a corner of the plot is still track, not shed", pixel(img, w, plotX, plotY, 0, 0, px) != fill && pad > 0);
+        TilePainter.Input plain = owned();
+        railRow(plain, plotY, 0);
+        int[] pimg = raster(plain, paint(plain), px);
+        boolean any = false;
+        for (int dy = 0; dy < px; dy++) for (int dx = 0; dx < px; dx++) any |= pixel(pimg, w, plotX, plotY, dx, dy, px) == fill;
+        check("control: the same track with no mark has no TRANSPORT fill on it", !any);
     }
 
     /* ================= 21. a line crossing the yard's box ================= */
