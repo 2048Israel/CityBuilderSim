@@ -66,6 +66,8 @@
 
 **Uses:** [CityRuns](CityRuns.md) (70), [CityMap](CityMap.md) (59), [Gateways](Gateways.md) (52), [World](World.md) (27), [MapCheck](MapCheck.md) (20), [BuildingVisual](BuildingVisual.md) (19), [LandMap](LandMap.md) (10), [Founding](Founding.md) (9), [EarthData](EarthData.md) (7), [TrainSchedule](TrainSchedule.md) (6), [BuildingCatalog](BuildingCatalog.md) (2), [SeaRoutes](SeaRoutes.md) (1), [EarthTerrainCheck](EarthTerrainCheck.md) (1), [EarthTerrain](EarthTerrain.md) (1), [Mining](Mining.md) (1)
 
+**Used by (1):** [TruckRouteCheck](TruckRouteCheck.md)
+
 ## Sections
 
 | line | section |

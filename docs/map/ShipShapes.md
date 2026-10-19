@@ -26,7 +26,7 @@
 
 **Uses:** [BoatSchedule](BoatSchedule.md) (7), [Ports](Ports.md) (2), [World](World.md) (2), [MapFrame](MapFrame.md) (1)
 
-**Used by (3):** [LandMap](LandMap.md), [MapView](MapView.md), [TrainShapes](TrainShapes.md)
+**Used by (4):** [LandMap](LandMap.md), [MapView](MapView.md), [TrainShapes](TrainShapes.md), [TruckShapes](TruckShapes.md)
 
 ## Constants
 

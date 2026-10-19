@@ -54,7 +54,7 @@
 
 **Uses:** [Ports](Ports.md) (14), [World](World.md) (4), [BoatSchedule](BoatSchedule.md) (3), [Freight](Freight.md) (2), [TileRaster](TileRaster.md) (1)
 
-**Used by (10):** [CityMap](CityMap.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [RailCheck](RailCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [TrainShapes](TrainShapes.md)
+**Used by (12):** [CityMap](CityMap.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [RailCheck](RailCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [TrainShapes](TrainShapes.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 

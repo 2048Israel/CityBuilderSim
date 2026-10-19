@@ -3876,6 +3876,19 @@ public class UserInterface extends Application {
                     showSettingsMenu();
                 }));
 
+        // The map (0.8.8, batch FR5): Haulage's trucks on the roads, at the near view alone; the next frame of an open map picks it up.
+        column.getChildren().add(statementHead("The map"));
+        column.getChildren().add(toggleRow("Trucks on the map",
+                prefs.isTrucksOnMap(),
+                "Haulage's trucks on the highways and the access roads, drawn at the "
+                + "near view only: each one stands for a number of loads, which the "
+                + "legend gives.",
+                () -> {
+                    prefs.setTrucksOnMap(!prefs.isTrucksOnMap());
+                    prefs.save(game.getGameFiles());
+                    showSettingsMenu();
+                }));
+
         column.getChildren().add(statementHead("What the city prints"));
         column.getChildren().add(toggleRow("Graphs", game.isGraphsEnabled(),
                 "The month-by-month charts under City History.",
@@ -3885,8 +3898,8 @@ public class UserInterface extends Application {
                 () -> { game.toggleReports(); showSettingsMenu(); }));
         column.getChildren().add(statementNote(
                 "These two are kept with the city and travel in its save file. "
-                + "Full screen is kept with the game and is the same for every city "
-                + "on this machine."));
+                + "Full screen and the map's trucks are kept with the game and are "
+                + "the same for every city on this machine."));
 
         /*
          * THE WORLD THE NEXT CITY IS FOUNDED INTO was a block here until
