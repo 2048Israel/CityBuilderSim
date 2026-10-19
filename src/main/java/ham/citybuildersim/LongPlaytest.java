@@ -3400,6 +3400,14 @@ public class LongPlaytest {
        iron is, not a scored move:
        what a terminal is worth is the band it narrows, which no move here
        prices.
+
+       FR3 (docs/queue/FR3.md 5.1): the berth is now paid for by port dues,
+       so "worth a berth" is the dues' own break-even, Ports.berthPaysBack()
+       - the same WORTH_A_BERTH of a berth's month at the default dial, the
+       threshold over the dial otherwise - and of a kind's terminals the
+       LARGEST that pays back is the one ordered (the Bulk Terminal, else the
+       Bulk Berth). The advice and the auto-builder choose by the same rule
+       (BuildAdvice, Kind.PORT).
        ===================================================================== */
 
     /** Terminals the test player ordered, by name; the looks that found a berth's worth with no coast; the first terminal's month. */
@@ -3418,11 +3426,11 @@ public class LongPlaytest {
         Ports ports = g.getPorts();
         BuildingManager b = g.getBuildingManager();
         double[] standing = Ports.berths(b), onSite = Ports.berthsOnSite(b);
+        // The port dues dial (FR3): a berth pays back at WORTH_A_BERTH / dial of its month (Ports.berthPaysBack()).
+        double dial = g.getEconomyManager().getTaxPolicy().getPortDues();
         for (Ports.Cargo k : Ports.Cargo.values()) {
-            BuildingsTemplate t = terminalFor(g, k);
+            BuildingsTemplate t = terminalFor(g, k, ports.uncovered(k, standing, onSite), dial);
             if (t == null) continue;
-            double uncovered = ports.carriable(k) - standing[k.ordinal()] - onSite[k.ordinal()];
-            if (!(uncovered >= Ports.WORTH_A_BERTH * Ports.berthMonth(t))) continue;
             if (!g.hasCoastFor(t, 1)) {
                 portsNoCoast++;
                 return;
@@ -3441,10 +3449,18 @@ public class LongPlaytest {
         return n;
     }
 
-    /** The catalogue's terminal for a kind of cargo, or null. */
-    static BuildingsTemplate terminalFor(Game g, Ports.Cargo k) {
-        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (Ports.isPort(t) && t.berthCargo() == k) return t;
-        return null;
+    /**
+     * The catalogue's terminal to order for a kind of cargo, or null (FR3,
+     * docs/queue/FR3.md 5.1): the LARGEST of the kind's terminals that pays
+     * back (Ports.berthPaysBack()) at `uncovered` tonnes a month and the port
+     * dues dial - the Bulk Terminal when the dry bulk would pay it back, else
+     * the Bulk Berth when it would pay that back. It returned the first
+     * template of the kind, the only terminal each kind had until the Bulk
+     * Berth; for the tanker, container and general kinds (one each) at the
+     * default dial it orders what it ordered, the same .60 of the berth's month.
+     */
+    static BuildingsTemplate terminalFor(Game g, Ports.Cargo k, double uncovered, double dial) {
+        return Ports.payingTerminal(k, g.getBuildingManager().getTemplates(), uncovered, dial, null);
     }
 
     /** The month's boats and sea tonnes, counted (the calls without their quays: the map places them, since 0.7.97 on its sea routes). */

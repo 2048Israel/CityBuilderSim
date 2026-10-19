@@ -205,6 +205,62 @@ public final class Ports {
     }
 
     /**
+     * Whether a berth PAYS BACK (FR3, docs/queue/FR3.md 1 and 3; the finding
+     * of spec-freight-and-infrastructure 9.5, "ports earn nothing and are
+     * never advised"): the kind's uncovered tonnes a month - what could go by
+     * sea and no berth standing or on site takes (uncovered()) - reach
+     * WORTH_A_BERTH / dial of that berth's month. This is the port dues' own
+     * break-even and nothing else: the dues are struck at the rate that
+     * recovers a kind's berths over PORT_LIFE_MONTHS when they work at
+     * DESIGN_USE of their month (sectors.PortDivision, the same .60 as
+     * WORTH_A_BERTH), times the dial TaxPolicy.portDues - so a berth's dues
+     * at the dial cover its cost exactly when its tonnes fill DESIGN_USE /
+     * dial of its month: the default dial at .60, the dial at 2 (dues twice
+     * the cost-recovering rate) at .30, and at 0 (no dues) never. Written
+     * here once, for the test player (LongPlaytest.portsWhenNeeded()), the
+     * advice (BuildAdvice, Kind.PORT) and the auto-builder that reads it.
+     *
+     * @param uncovered the kind's tonnes a month no berth takes
+     * @param berthMonth the berth's tonnes a month (berthMonth())
+     * @param dial       the port dues dial, 1 the default (TaxPolicy.getPortDues())
+     */
+    public static boolean berthPaysBack(double uncovered, double berthMonth, double dial) {
+        if (!(dial > 0) || !(berthMonth > 0)) return false;
+        return uncovered >= WORTH_A_BERTH / dial * berthMonth;
+    }
+
+    /**
+     * A kind's tonnes a month that could go by sea and no berth takes (FR3):
+     * carriable() less the kind's berths standing and on site (berths() and
+     * berthsOnSite(), by Cargo order), never below nothing - what
+     * berthPaysBack() reads.
+     */
+    public double uncovered(Cargo k, double[] standing, double[] onSite) {
+        int i = k.ordinal();
+        double have = (standing != null && i < standing.length ? standing[i] : 0) + (onSite != null && i < onSite.length ? onSite[i] : 0);
+        return Math.max(0, carriable(k) - have);
+    }
+
+    /**
+     * The terminal of a kind to order (FR3, docs/queue/FR3.md 5.4): among the
+     * catalogue's terminals of the kind but those in `skip`, the LARGEST (by
+     * tonnes a year) that pays back (berthPaysBack()) - the Bulk Terminal when
+     * the dry bulk would pay it back, else the Bulk Berth when it would pay
+     * that back - or null for none. Of two as large the first in the
+     * catalogue's order. The test player and the advice both choose by this.
+     */
+    public static BuildingsTemplate payingTerminal(Cargo k, Iterable<BuildingsTemplate> catalogue, double uncovered, double dial,
+                                                   java.util.Set<BuildingsTemplate> skip) {
+        BuildingsTemplate best = null;
+        for (BuildingsTemplate t : catalogue) {
+            if (!isPort(t) || t.berthCargo() != k || (skip != null && skip.contains(t))) continue;
+            if (!berthPaysBack(uncovered, berthMonth(t), dial)) continue;
+            if (best == null || t.berthTonnesAYear() > best.berthTonnesAYear()) best = t;
+        }
+        return best;
+    }
+
+    /**
      * Tonnes of crude a tanker could land in the refiners' tanks: their Tank
      * Farms' room (sectors.Refining.tankFarmRoom(), litres at a tonne of
      * crude's) less the crude on hand, never below nothing.

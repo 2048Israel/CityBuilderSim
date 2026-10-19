@@ -78,7 +78,15 @@ import java.util.Set;
  *     it (kept()); a first school down the ladder, police station or prison
  *     wherever the figure is short, however far past the need one goes, paid
  *     from the cash alone, once it pays back (0.7.104; once the budget ran
- *     it from 0.7.101; it waited for half its worth until then).
+ *     it from 0.7.101; it waited for half its worth until then). And, last
+ *     (FR3, 2026-10-19; docs/queue/FR3.md 5.4), the berths of each kind of
+ *     cargo (BuildAdvice.portMeasures()): the one measure that is not a
+ *     service of the city's five categories. A berth is ordered one at a
+ *     time, the terminal of its kind that pays back on the port dues
+ *     (Ports.berthPaysBack(): the uncovered tonnes reach the dues'
+ *     break-even share of its month), and it is held by the debt limit, the
+ *     money, the ground and the coast alone - its crews are Freight's, not
+ *     the treasury's, so no payback of its own weighs it (orderable()).
  *   - THE ORDER: the advice's own card for the measure at the player's
  *     margin (BuildAdvice.suggestFor(..., slack)) - nothing while what
  *     stands and what is on site keep it ahead of the demand it will have
@@ -400,7 +408,20 @@ public final class AutoBuilder {
         return waited && serving(game, m) == 0;
     }
 
-    /** Every measure the pass keeps this month, in its order: NEEDS YOU's listed ones first, in its order, then the rest in the rings' order. */
+    /**
+     * A building the pass may order (FR3): a remit building (inRemit()) or a
+     * sea terminal, a berth of a port measure. A berth is the city's but its
+     * crews are Freight's (docs/queue/FR3.md 3), so it is not a staffed
+     * building the treasury runs (staffedBuilding()): no payback holds it, as
+     * none holds a road - the debt limit, the money, the ground and the coast
+     * do, and its own payback is the advice's (BuildAdvice, A BERTH THAT PAYS
+     * BACK).
+     */
+    public static boolean orderable(BuildingsTemplate t) {
+        return inRemit(t) || Ports.isPort(t);
+    }
+
+    /** Every measure the pass keeps this month, in its order: NEEDS YOU's listed ones first, in its order, then the rest in the rings' order - and last (FR3) the berths of each kind of cargo, which NEEDS YOU has no row for. */
     public static List<BuildAdvice.Measure> remit(Game game, List<CityNeeds.Need> all) {
         List<BuildAdvice.Measure> rings = new ArrayList<>();
         for (BuildAdvice.Category c : BuildAdvice.categories()) {
@@ -416,6 +437,7 @@ public final class AutoBuilder {
             if (m != null && rings.contains(m) && !out.contains(m) && kept(game, m, all)) out.add(m);
         }
         for (BuildAdvice.Measure m : rings) if (!out.contains(m) && kept(game, m, all)) out.add(m);
+        for (BuildAdvice.Measure m : BuildAdvice.portMeasures()) if (!out.contains(m) && kept(game, m, all)) out.add(m);
         return out;
     }
 
@@ -966,7 +988,7 @@ public final class AutoBuilder {
         while (true) {
             BuildAdvice.Suggestion s = BuildAdvice.suggestFor(game, rowFor(all, m), m, game.getCash(),
                     game.getLandManager().getAvailableSqFt(), slack, skip, noPaving);
-            if (s == null || s.count() < 1 || !inRemit(s.template())) {
+            if (s == null || s.count() < 1 || !orderable(s.template())) {
                 if (first != null) {
                     hold(m, first.s(), first.cut(), first.wanted(), first.line(), first.payback());
                     return;
@@ -1417,6 +1439,7 @@ public final class AutoBuilder {
             case PLOTS:  return String.format("%,.0f months of plots", f);
             case POLICE: return String.format("crime %.2f× Canada's", f);
             case CELLS:  return String.format("%,.0f caught with no cell", f);
+            case PORT:   return String.format("%,.0f t a month with no berth", f);
             default:     return String.format("%.2f", f);
         }
     }

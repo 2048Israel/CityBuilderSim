@@ -161,6 +161,7 @@ public final class BuildCard {
                                                       : new String[] {"cremates ", " a month"};
             case SCHOOL:  return new String[] {"seats ", m.school().isBasic() ? " children" : " students"};
             case POLICE:  return new String[] {"puts ", " officers on the street"};
+            case PORT:    return new String[] {"handles ", " t a month"};
             default:      return new String[] {"holds ", " prisoners"};
         }
     }
@@ -176,6 +177,7 @@ public final class BuildCard {
             case DEATH: case PLOTS: return "body";
             case SCHOOL:  return m.school().isBasic() ? "child" : "student";
             case POLICE:  return "officer";
+            case PORT:    return "tonne";
             default:      return "prisoner";
         }
     }
@@ -191,6 +193,7 @@ public final class BuildCard {
             case DEATH: case PLOTS: return "bodies";
             case SCHOOL:  return m.school().isBasic() ? "children" : "students";
             case POLICE:  return "officers";
+            case PORT:    return "tonnes";
             default:      return "prisoners";
         }
     }

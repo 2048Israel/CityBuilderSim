@@ -7293,6 +7293,23 @@ public class BuildingManager {
     }
 
     /**
+     * What the terminals of one kind of cargo standing are worth on the books
+     * (FR3, docs/queue/FR3.md 2, port dues): each PORTS building with a berth
+     * of this kind at its cash cost plus its materials at market, as
+     * getBookValueByCategory() values it, but only that kind's. The capital the
+     * kind's port dues recover over PORT_LIFE_MONTHS (sectors.PortDivision).
+     */
+    public double getPortBookValueByCargo(Ports.Cargo kind) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.isPort() || t.berthCargo() != kind) continue;
+            total += stack.getQuantity() * (t.getCashCost() + t.getConstructionMaterials() * materialsCost);
+        }
+        return total;
+    }
+
+    /**
      * What a category has PAID FOR and not yet got: buildings on site, at the
      * same valuation the finished ones carry.
      *
