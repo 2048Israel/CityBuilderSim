@@ -88,6 +88,9 @@ public final class Haulage {
      */
     public static final double FLEET_RECOVERY_MONTHS = 24;
 
+    /** The fewest trucks a month's order is capped at (bid()): one - a haulier can always buy a truck, however small its fleet. */
+    public static final double MIN_TRUCKS_A_MONTH = 1;
+
     /** Drivers a truck the depots keep needs: one, on one shift (spec 3.2; US fleets run 0.93 a truck, the spec's R2). */
     public static final double DRIVERS_A_TRUCK = 1;
 
@@ -520,7 +523,9 @@ public final class Haulage {
     public double bid() {
         if (!trucksKnown) return 0;
         double asked = trucksAsked();
-        return Math.max(0, Math.min(asked - trucks(), asked / Sector.FLEET_DELIVERY_MONTHS));
+        // ...an eighth of it a month, and never less than a truck: a haulier can always buy one, and a young town's
+        // eighth of two trucks is a quarter of one - its every new works short of trucks for a year (FR2's notes).
+        return Math.max(0, Math.min(asked - trucks(), Math.max(MIN_TRUCKS_A_MONTH, asked / Sector.FLEET_DELIVERY_MONTHS)));
     }
 
     /**
