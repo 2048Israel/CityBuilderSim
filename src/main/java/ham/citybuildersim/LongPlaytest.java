@@ -223,6 +223,8 @@ public class LongPlaytest {
     static final int[] byYearFirst = new int[BY_YEAR.length];
     /** ...and how many stood at months 1,000, 2,000 and 3,000. */
     static final int[][] byYearAt = new int[BY_YEAR.length][3];
+    /** ...and NEEDS YOU read once a year: the looks, those listing the streets, the highways, and both (FR7 2.1). */
+    static int needsLooks = 0, needsStreets = 0, needsHighways = 0, needsBoth = 0, needsBothFirst = 0;
 
     /** How far from parity, as a multiple of it, a weak currency has to be to count as far from it. */
     static final double FAR_FROM_PARITY = 2.0;
@@ -1525,6 +1527,17 @@ public class LongPlaytest {
             if (n > 0 && byYearFirst[k] == 0) byYearFirst[k] = g.getMonth();
             int at = g.getMonth() / 1000 - 1;
             if (g.getMonth() % 1000 == 0 && at >= 0 && at < 3) byYearAt[k][at] = n;
+        }
+        if (g.getMonth() % 12 == 0) {
+            boolean streets = false, highways = false;
+            for (CityNeeds.Need need : CityNeeds.needsYou(g)) {
+                streets |= need.kind() == CityNeeds.Kind.ROADS;
+                highways |= need.kind() == CityNeeds.Kind.HIGHWAYS;
+            }
+            needsLooks++;
+            if (streets) needsStreets++;
+            if (highways) needsHighways++;
+            if (streets && highways && needsBoth++ == 0) needsBothFirst = g.getMonth();
         }
 
         crimeMonths++;
@@ -5576,6 +5589,8 @@ public class LongPlaytest {
                             byYearAt[k][0], byYearAt[k][1], byYearAt[k][2], qty(g, BY_YEAR[k])));
         }
         out.printf("  the roads and the rails by year (FR7): %s%n", byYear);
+        out.printf("  ...NEEDS YOU once a year (FR7): the streets listed in %,d of %,d looks, the highways in %,d, both in %,d (first m%d)%n",
+                needsStreets, needsLooks, needsHighways, needsBoth, needsBothFirst);
         // The guard and the dial's path (0.7.2): see THE CURRENCY'S GUARD AND THE DIAL'S PATH.
         int pastOldStop = 0;
         for (double d : dialPath) if (d > OLD_DIAL_STOP + 1e-9) pastOldStop++;
