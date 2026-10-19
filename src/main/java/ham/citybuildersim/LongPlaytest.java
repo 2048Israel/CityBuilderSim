@@ -210,6 +210,20 @@ public class LongPlaytest {
     static int haulShortMonths = 0, haulFirstShort = 0, haulWorstMonth = 0, haulUnder90Months = 0;
     static double haulWorstShare = 1, haulTrucksPeak = 0, haulRoomPeak = 0, haulBilledRun = 0, haulCarriedRun = 0;
 
+    /**
+     * THE ROADS AND THE RAILS BY YEAR (FR7, 2026-10-18; its brief's 5: "count
+     * in a real run how many highways, paved and gravel roads a long playtest
+     * builds, and in which years; the same for the rail rungs"): for each of
+     * these kinds the first month one stood, and how many stood at each
+     * thousandth month and at the end.
+     */
+    static final String[] BY_YEAR = { "Gravel Road", "Paved Road", "Elevated Highway",
+            "Rail Depot", "Rail Terminal", "Rail Spur", "Freight Line" };
+    /** ...the first month each stood, 0 for never. */
+    static final int[] byYearFirst = new int[BY_YEAR.length];
+    /** ...and how many stood at months 1,000, 2,000 and 3,000. */
+    static final int[][] byYearAt = new int[BY_YEAR.length][3];
+
     /** How far from parity, as a multiple of it, a weak currency has to be to count as far from it. */
     static final double FAR_FROM_PARITY = 2.0;
 
@@ -1505,6 +1519,13 @@ public class LongPlaytest {
         haulRoomPeak = Math.max(haulRoomPeak, haul.depotRoom());
         haulBilledRun += haul.getBill();
         haulCarriedRun += haul.getCarried();
+        // The roads and the rails by year (FR7): see THE ROADS AND THE RAILS BY YEAR.
+        for (int k = 0; k < BY_YEAR.length; k++) {
+            int n = qty(g, BY_YEAR[k]);
+            if (n > 0 && byYearFirst[k] == 0) byYearFirst[k] = g.getMonth();
+            int at = g.getMonth() / 1000 - 1;
+            if (g.getMonth() % 1000 == 0 && at >= 0 && at < 3) byYearAt[k][at] = n;
+        }
 
         crimeMonths++;
         crimeVsSum += crime.getRateVsCanada();
@@ -5535,6 +5556,14 @@ public class LongPlaytest {
                 + " a tonne's leg $%.2f against $%.2f estimated%n",
                 haulShortMonths, haulUnder90Months, haulFirstShort, haulWorstShare * 100, haulWorstMonth, haulTrucksPeak, haulRoomPeak,
                 haulBilledRun, haulCarriedRun, haulEnd.trucks(), haulEnd.getQuote() * 1000, haulEnd.estimate() * 1000);
+        // The roads and the rails by year (FR7): see THE ROADS AND THE RAILS BY YEAR.
+        StringBuilder byYear = new StringBuilder();
+        for (int k = 0; k < BY_YEAR.length; k++) {
+            byYear.append(k == 0 ? "" : "; ").append(BY_YEAR[k]).append(byYearFirst[k] == 0 ? " never"
+                    : String.format(" from m%d: %,d at m1000, %,d at m2000, %,d at m3000, %,d at the end", byYearFirst[k],
+                            byYearAt[k][0], byYearAt[k][1], byYearAt[k][2], qty(g, BY_YEAR[k])));
+        }
+        out.printf("  the roads and the rails by year (FR7): %s%n", byYear);
         // The guard and the dial's path (0.7.2): see THE CURRENCY'S GUARD AND THE DIAL'S PATH.
         int pastOldStop = 0;
         for (double d : dialPath) if (d > OLD_DIAL_STOP + 1e-9) pastOldStop++;
