@@ -332,6 +332,15 @@ public final class Freight extends Sector {
     private final double[] railIn = new double[ham.citybuildersim.Ports.Cargo.values().length],
             railOut = new double[ham.citybuildersim.Ports.Cargo.values().length];
 
+    /**
+     * The month billed's city-leg truck tonnes by load, for the map's trucks
+     * (0.8.8, batch FR5; spec-freight 4.7): the bulk tonnes landed, shipped
+     * and bought at home, each at the railway's share in force as
+     * Haulage.legTonnes() takes them - the three come to Haulage.getTonnes().
+     * Read by nothing in the model; saved, so a reload's trucks are the month's.
+     */
+    private double truckIn, truckOut, truckHome;
+
     /** The part of the month's fuel the world sold it (0.7.62). */
     private double rFuelImported;
 
@@ -475,6 +484,7 @@ public final class Freight extends Sector {
         if (ports != null) ports.beginMonth();
         java.util.Arrays.fill(railIn, 0);
         java.util.Arrays.fill(railOut, 0);
+        truckIn = truckOut = truckHome = 0;
         double haulage = 0, abroad = 0;
         // ...and each sector's city-leg tonnes for Haulage (FR2), at the same railway shares: the railed part of what crossed is a quarter truck.
         Map<Sector, Double> legsOf = new LinkedHashMap<>();
@@ -493,7 +503,14 @@ public final class Freight extends Sector {
                 // The railway's part and the ships' (0.7.86): carried[i] and nothing with no berth.
                 double rail = ports == null ? carried[i] : ports.railShareOf(g, carried[i]);
                 // ...a bulk tonne bought at home has a city leg too, and crossed nothing (FR2).
-                if (stream == Traffic.BULK) legs += Haulage.legTonnes(s, g, rail);
+                if (stream == Traffic.BULK) {
+                    legs += Haulage.legTonnes(s, g, rail);
+                    // ...and the same tonnes by load, for the map's trucks (FR5): read, never billed.
+                    double relief = 1 - ham.citybuildersim.InfrastructureManager.RAIL_ROAD_RELIEF * (Double.isFinite(rail) ? Math.max(0, Math.min(1, rail)) : 0);
+                    truckIn += g.tonnesPerUnit() * s.unitsImported(g) * relief;
+                    truckOut += g.tonnesPerUnit() * s.unitsExported(g) * relief;
+                    truckHome += g.tonnesPerUnit() * s.unitsBoughtLocal(g);
+                }
                 if (units <= 0) continue;
                 double weighs = units * g.tonnesPerUnit();
                 tonnes[i] += weighs;
@@ -1182,6 +1199,13 @@ public final class Freight extends Sector {
     public double railedIn(ham.citybuildersim.Ports.Cargo k)  { return railIn[k.ordinal()]; }
     /** ...and shipped. Every kind's both ways come to getHauledTonnes(). */
     public double railedOut(ham.citybuildersim.Ports.Cargo k) { return railOut[k.ordinal()]; }
+
+    /** Tonnes the city's trucks carried from the gates to their buyers, the month billed (0.8.8, batch FR5): imports less the siding's relief, the map's trucks' to count, read by nothing in the model. */
+    public double truckedIn()   { return truckIn; }
+    /** ...and from their makers to the gates, less the same relief. */
+    public double truckedOut()  { return truckOut; }
+    /** ...and between two firms of the city, bought at home: they cross no edge. truckedIn() + truckedOut() + truckedHome() come to Haulage.getTonnes(). */
+    public double truckedHome() { return truckHome; }
     public double getTightness()        { return rTightness; }
     public double getTruckBill()        { return rTruckBill; }
     public double getHaulageBilled()    { return rHaulage; }
@@ -1707,6 +1731,10 @@ public final class Freight extends Sector {
             extras.put("railIn." + k.name(), railIn[k.ordinal()]);
             extras.put("railOut." + k.name(), railOut[k.ordinal()]);
         }
+        // The trucks' tonnes by load (0.8.8): a save from before them has none, and draws no truck until its next month.
+        extras.put("truckIn", truckIn);
+        extras.put("truckOut", truckOut);
+        extras.put("truckHome", truckHome);
         // The screens' two (0.7.29), only when they are figures (see allowedKnown): an
         // older save has neither, and loads with them unknown, so no format bump.
         if (allowedKnown) extras.put("allowed", rAllowed);
@@ -1745,6 +1773,9 @@ public final class Freight extends Sector {
             railIn[k.ordinal()] = extras.getOrDefault("railIn." + k.name(), 0.0);
             railOut[k.ordinal()] = extras.getOrDefault("railOut." + k.name(), 0.0);
         }
+        truckIn = extras.getOrDefault("truckIn", 0.0);
+        truckOut = extras.getOrDefault("truckOut", 0.0);
+        truckHome = extras.getOrDefault("truckHome", 0.0);
         rAllowed = extras.getOrDefault("allowed", 0.0);
         rRunning = extras.getOrDefault("running", 0.0);
         allowedKnown = extras.containsKey("allowed");
@@ -1764,6 +1795,7 @@ public final class Freight extends Sector {
         rFuelLitres = rFuelLitresImported = 0;
         java.util.Arrays.fill(railIn, 0);
         java.util.Arrays.fill(railOut, 0);
+        truckIn = truckOut = truckHome = 0;
         rAllowed = rRunning = rPaidAbroad = 0;
         allowedKnown = abroadKnown = true;
         // The payroll's three (FR3), struck again with the next month's wages.
