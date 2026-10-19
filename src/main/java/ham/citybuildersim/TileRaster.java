@@ -139,8 +139,8 @@ public final class TileRaster {
     public static final int ISLAND = 0xff6f9a4f;
     /** Plots: a diamond's slip road along the verge each side of its street. */
     public static final double SLIP_LENGTH = 2;
-    /** Plots: the least run of junction streets through a plot along an axis for a road to cross there (FX3): a road two plots wide is one road, not a junction on every plot. */
-    static final int JUNCTION_RUN = 3;
+    /** Plots: the least run of junction streets through a plot along an axis for a road to cross there (FX3): a road up to three plots wide - a cell's boulevard, two deep, beside the next cell's road, as a tile sees it one plot past its edge - is one road, not a junction on every plot. */
+    static final int JUNCTION_RUN = 4;
 
     /** Pixels a plot from which the blocks' view draws the track's cross-ticks (the L1 raster). */
     public static final int TICKS_FROM = 2;

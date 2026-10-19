@@ -54,7 +54,8 @@ import java.util.Arrays;
  *  11. (batch FX3, red until the fix) a road two plots wide is one road: two
  *      arterials side by side have a zebra crossing and a junction box only
  *      where a street crosses them, two boulevards side by side a roundabout
- *      only where one crosses them.
+ *      only where one crosses them; and three boulevards side by side, as his
+ *      city's are across a cell line.
  *
  * Numbering is the running order.
  *
@@ -569,6 +570,19 @@ public class JunctionCheck {
         System.out.println("  of the 42 plots of rows 10 and 11 in columns 2..12 and 20..29, " + islands + " hold ISLAND pixels");
         check("...the crossing keeps its roundabout: ISLAND pixels within the plots (15..17, 9..12)",
                 anyPlotHas(imgB, w, 15, 17, 9, 12, px, TileRaster.ISLAND));
+
+        // Three wide, as his city's boulevards are across a cell line: a cell's boulevard two deep beside the next cell's road row.
+        TilePainter.Input three = owned();
+        streetRow(three, 10, BOULEVARD);
+        streetRow(three, 11, BOULEVARD);
+        streetRow(three, 12, BOULEVARD);
+        streetColumn(three, 16, BOULEVARD);
+        int[] imgC = raster(three, paint(three), px);
+        check("a boulevard three plots wide has no ISLAND on its plots away from the crossing street",
+                !anyPlotHas(imgC, w, 2, 12, 10, 12, px, TileRaster.ISLAND)
+                        && !anyPlotHas(imgC, w, 20, 29, 10, 12, px, TileRaster.ISLAND));
+        check("...the crossing keeps its roundabout: ISLAND pixels within the plots (15..17, 9..13)",
+                anyPlotHas(imgC, w, 15, 17, 9, 13, px, TileRaster.ISLAND));
     }
 
 }
