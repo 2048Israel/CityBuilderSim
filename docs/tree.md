@@ -472,8 +472,12 @@ adds its line here, not in `CLAUDE.md`.
                                    stamp of the city at the rail's foot above Menu, its preview on hover,
                                    the land office's map over the window on a click; MiniMapFrame's
                                    arithmetic). The model never imports it.
-        *Check.java                112 harnesses, each a main() with static helpers
-        AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
+        *Check.java                113 harnesses, each a main() with static helpers
+        AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
+                                   since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones
+        Timing.java                the one helper every timing assertion goes through (TM1, 2026-10-18): under
+                                   -Dcbs.timing=soft a figure over its budget says SOFT and is not counted, so
+                                   two batches' suites check side by side; TimingCheck holds it
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103);
                                    since 0.7.139 it says what childcare it stands at m1,000 to m4,000, and
@@ -493,3 +497,6 @@ adds its line here, not in `CLAUDE.md`.
     tools/deepseek/                      agent.py, the DeepSeek coding agent a batch's Claude session hands a slice
                                          to, and system.md, its standing instructions (Python, outside the game;
                                          2026-10-17, after the FR0 test in 6fd8dda); docs/deepseek.md is the how
+    tools/jvms.ps1                       counts the other batches' JVMs and the game's processes on the PC, for
+                                         Batch check.bat, batch-check.sh and ship.sh, which time soft while either
+                                         runs and wait for the batches before the gate's hard timing (TM1)

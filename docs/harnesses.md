@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**113 harness files, 10,511 labelled assertions.** AllChecks runs 113 of them.
+**114 harness files, 10,585 labelled assertions.** AllChecks runs 114 of them.
 
 ## Which harnesses read which class
 
@@ -190,6 +190,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck |
 | [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MapCheck, RailDrawCheck, ReadPathCheck |
 | [TimeSkipReport](map/TimeSkipReport.md) | HealthCheck, SkipReportCheck |
+| [Timing](map/Timing.md) | EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, MapCheck, PlanCheck, ScaleCheck, TimingCheck, WorldCheck |
 | [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
 | [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, InfrastructureCheck, LongPlaytest, OilCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, WoodProductsCheck |
 | [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MapCheck, RailCheck, ReadPathCheck |
@@ -12910,6 +12911,104 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L337 every sector's cash flow still adds up
   - L338 the month closes
   - L339 every month this harness played closed the audit (
+
+## TimingCheck.java - 74 labelled assertions
+
+> The harness for soft timing (batch TM1): a timing assertion fails hard, goes SOFT and uncounted under -Dcbs.timing=soft, and nothing else in the suite moves.
+> 
+> WHY THIS EXISTS (batch TM1, 2026-10-18). Batches on the PC took turns under
+> "one JVM at a time on the machine" because only the timing assertions
+> clashed under another JVM's load (EarthTerrainCheck 8: 116 ms against 80
+> with Jerus's game running, 27.8 without). The property lets two suites
+> check side by side; a property that could soften anything but a clock would
+> let a real failure through unseen, so this holds, with a fixture that cannot
+> but miss its budget, that the property touches only a clock - and holds the
+> suite to the one helper (Timing) that reads it.
+> 
+> What it has to prove:
+> ...
+
+  - L155 a measured figure against a zero budget
+- **L213 1. hard: a timing miss fails**
+  - L217 a measured figure against a zero budget
+  - L223 a figure within a budget it can meet
+  - L224 a figure within a budget it can meet prints OK
+  - L225 and the fixture counts nothing
+- **L233 2. soft: a timing miss is told, not counted**
+  - L236 a measured figure against a zero budget
+  - L238 the missed assertion's line says SOFT
+  - L239 it matches Timing.SOFT_LINE
+  - L240 it carries the figure, in ms
+  - L241 it carries the budget
+  - L242 and the fixture counts nothing
+  - L244 a known figure against a zero budget
+  - L245 a figure of 1.5 is told as 1.5 ms, budget 0 ms
+  - L247 a figure in nanoseconds against zero
+  - L248 the unit it names is the line's: 1.5 ns, budget 0 ns
+  - L249 and no milliseconds are told
+  - L252 below, with a figure equal to its budget
+  - L253 below(f, f), a strict miss, goes SOFT
+  - L254 and the fixture still counts nothing
+  - L258 below, with a figure equal to its budget
+  - L259 below(f, f) hard fails
+  - L260 and the fixture counts it
+  - L261 within, with a figure equal to its budget
+  - L262 within(f, f) hard holds: at most is not below
+- **L270 3. only a clock is soft**
+  - L276 a plain false assertion
+  - L277 soft: a false non-timing assertion still fails
+  - L278 and counted
+  - L280 false and a missed timing figure
+  - L281 soft: false && a miss fails
+  - L282 and counted
+  - L284 a missed timing figure and false
+  - L285 soft: a miss && false fails
+  - L286 and counted
+  - L288 an assertion after a FAIL that held a miss
+  - L289 it prints OK: the miss a failure swallowed is cleared
+  - L291 a missed timing figure alone
+  - L292 a miss alone is SOFT
+  - L293 and not counted
+  - L294 an assertion after a told SOFT line
+  - L295 it prints OK: the misses are cleared
+  - L297 a figure that is not a number
+  - L298 soft: a NaN figure fails, never measured
+  - L299 and counted
+  - L301 two missed figures in one condition
+  - L303 one SOFT line
+  - L304 it carries both figures and budgets
+  - L306 and the fixture counts nothing more
+- **L314 4. the property's values: soft is exactly \"soft\"**
+  - L316 soft() is true for soft
+  - L319 soft() is false for
+- **L344 5. across the JVM boundary: AllChecks forwards the property**
+  - L350 soft here: forwarded() is -D
+  - L352 soft here: the child's command carries it
+  - L354 soft here: the child JVM exits 0
+  - L355 soft here: and prints a SOFT line
+  - L359 unset here: forwarded() is null
+  - L360 unset here: the child's command carries no -D
+  - L363 unset here: the child JVM exits 1
+  - L364 unset here: and its line fails
+  - L368 a line that held
+  - L369 a line that went soft
+  - L370 a line that failed
+  - L374 AllChecks.softLines counts one in a log of a held, a soft and a failed line
+  - L378 and the temp log is removed
+- **L386 6. the suite goes through Timing**
+  - L388 the sources are at
+  - L397 the *Check sources are found
+  - L411 no *Check compares a figure against a *_MS or *_NS dial but through Timing
+  - L412 the one allowance still matches exactly one line (a stale one is a finding)
+  - L427 the harnesses that call Timing.within or below are exactly Timing.HARNESSES
+  - L435 each of them prints its assertion lines through Timing.verdict
+  - L446 no source but Timing.java holds the property's string literal
+  - L447 and Timing.java holds it, so that rule is not vacuous
+  - L453 AllChecks.HARNESSES holds every name in Timing.HARNESSES
+  - L454 and holds TimingCheck
+- **L462 7. with no miss held, the verdict is the old one**
+  - L466 verdict(true) is exactly OK,
+  - L467 verdict(false) is exactly the old failing word,
 
 ## TradeCostCheck.java - 30 labelled assertions
 

@@ -4,9 +4,9 @@ Generated 2026-10-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 354 files, 358,852 lines, 15,169 methods, 3,400 constants. `GameVersion.VERSION` is "0.8.3", `SAVE_FORMAT` 39.
+**The tree:** 356 files, 359,479 lines, 15,204 methods, 3,413 constants. `GameVersion.VERSION` is "0.8.3", `SAVE_FORMAT` 39.
 
-## model (170 files)
+## model (171 files)
 
 | file | lines | methods | what it is | used by |
 |---|---:|---:|---|---:|
@@ -163,6 +163,7 @@ Generated 2026-10-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [TilePainter.java](TilePainter.md) | 581 | 20 | Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, widt... | 14 |
 | [TileRaster.java](TileRaster.md) | 1,873 | 65 | A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixe... | 19 |
 | [TimeSkipReport.java](TimeSkipReport.md) | 538 | 63 | What happened while you were not watching. | 4 |
+| [Timing.java](Timing.md) | 119 | 9 | The one helper every timing assertion in the suite goes through: a figure on a clock against its budget, hard as the harness wrote it, or soft whil... | 10 |
 | [Trade.java](Trade.md) | 40 | 4 | One fill: somebody sold somebody some units of a good at a price. | 30 |
 | [Traffic.java](Traffic.md) | 60 | 3 | The three things that move, which used to be one number. | 22 |
 | [TrainSchedule.java](TrainSchedule.md) | 446 | 36 | The month's trains, as a pure function of time: which trains the city's railed tonnes make, when each reaches its yard, and where each one is at an... | 8 |
@@ -249,12 +250,12 @@ Generated 2026-10-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [UserInterface.java](UserInterface.md) | 6,225 | 142 | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating a... | 23 |
 | [ZoningScreen.java](ZoningScreen.md) | 1,087 | 71 | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial c... | 2 |
 
-## harnesses (114 files)
+## harnesses (115 files)
 
 | file | lines | methods | what it is | used by |
 |---|---:|---:|---|---:|
 | [AgricultureCheck.java](AgricultureCheck.md) | 414 | 7 | The ground under the loaf. | 0 |
-| [AllChecks.java](AllChecks.md) | 164 | 2 | Runs every harness, one JVM each, and says which failed. | 0 |
+| [AllChecks.java](AllChecks.md) | 202 | 4 | Runs every harness, one JVM each, and says which failed. | 1 |
 | [AutoBuildCheck.java](AutoBuildCheck.md) | 1,469 | 32 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 0 |
 | [BankCheck.java](BankCheck.md) | 4,303 | 22 | The commercial bank, and the families it discharges. | 1 |
 | [BondCheck.java](BondCheck.md) | 1,566 | 37 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
@@ -357,6 +358,7 @@ Generated 2026-10-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [SkipReportCheck.java](SkipReportCheck.md) | 323 | 5 | Verifies the fast-forward summary. | 0 |
 | [StaleCheck.java](StaleCheck.md) | 331 | 6 | The prose still describes the code: the firm half of `tools.Stale`, asserted, and `tools.Names` proved on a fixture. | 0 |
 | [SupplierCreditCheck.java](SupplierCreditCheck.md) | 341 | 10 | The grocers' supplier credit (0.7.44): stock bought on the suppliers' credit when the till cannot pay for it, owed for a month, repaid out of the s... | 0 |
+| [TimingCheck.java](TimingCheck.md) | 470 | 24 | The harness for soft timing (batch TM1): a timing assertion fails hard, goes SOFT and uncounted under -Dcbs.timing=soft, and nothing else in the su... | 0 |
 | [TradeCostCheck.java](TradeCostCheck.md) | 614 | 6 | The wedge between what the world charges and what it pays, and what it is made of. | 0 |
 | [TreasuryCheck.java](TreasuryCheck.md) | 984 | 17 | Plays a city and audits what the screens say the treasury did. | 1 |
 | [VanCheck.java](VanCheck.md) | 387 | 5 | The vans: what a sector needs, what it costs it, and what happens while it waits for them. | 0 |
