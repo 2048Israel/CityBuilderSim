@@ -2,7 +2,7 @@
 
 Generated 2026-10-19 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**116 harness files, 10,949 labelled assertions.** AllChecks runs 116 of them.
+**117 harness files, 11,042 labelled assertions.** AllChecks runs 117 of them.
 
 ## Which harnesses read which class
 
@@ -23,11 +23,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildLog](map/BuildLog.md) | CalendarCheck |
 | [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck, EarthTerrainCheck, GatewayCheck, JunctionCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GdpCheck, HaulageCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
-| [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, SaveFileCheck, ScaleCheck, WoodProductsCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GdpCheck, HaulageCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, SaveFileCheck, ScaleCheck, WoodProductsCheck |
 | [BuildingVisual](map/BuildingVisual.md) | ChildcareCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LongPlaytest, RefineryCheck, RoadCheck, SaveFileCheck |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FundCheck, FundLedgerCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FundCheck, FundLedgerCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | BankCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck |
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, CopperMiningCheck, CopperRefiningCheck, FoodProcessingCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RestaurantsCheck, ScaleCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
@@ -82,13 +82,13 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, LabourCheck, LandCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, SaveFileCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DenominationCheck, EarthFoundingCheck, EarthTerrainCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LandCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TreasuryCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
-| [Freight](map/Freight.md) | BuildCardCheck, GdpCheck, HaulageCheck, HealthCheck, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck |
+| [Founding](map/Founding.md) | AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DenominationCheck, EarthFoundingCheck, EarthTerrainCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TreasuryCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [Freight](map/Freight.md) | BuildCardCheck, GdpCheck, HaulageCheck, HealthCheck, LandlordPortCheck, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck |
 | [FuelSplit](map/FuelSplit.md) | OilCheck |
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck |
-| [Game](map/Game.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | **none** |
 | [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthTerrainCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -96,11 +96,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Geology](map/Geology.md) | CoalMiningCheck, EarthTerrainCheck |
 | [GlobeFrame](map/GlobeFrame.md) | GlobeCheck, MapCheck |
 | [GlobePicture](map/GlobePicture.md) | GlobeCheck, MapCheck |
-| [Good](map/Good.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, GdpCheck, HaulageCheck, HealthCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LandCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WellCheck, WoodProductsCheck |
+| [Good](map/Good.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, GdpCheck, HaulageCheck, HealthCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, FoodProcessingCheck, ForeignCheck, GdpCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RoadCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GridConversion](map/GridConversion.md) | ConversionCheck, EarthTerrainCheck, LandCheck |
 | [GridOffers](map/GridOffers.md) | BuildCardCheck, ConversionCheck, GridCheck, LandCheck, MapCheck |
-| [Haulage](map/Haulage.md) | BondCheck, HaulageCheck, HealthCheck, LongPlaytest, MaterialsCheck, RailCheck |
+| [Haulage](map/Haulage.md) | BondCheck, HaulageCheck, HealthCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, RailCheck |
 | [Health](map/Health.md) | BuildAdviceCheck, ChartCheck, ChildcareCheck, DeathCareFirstCheck, HealthCheck, LongPlaytest, OutsideCheck, SicknessCheck, YearBookCheck |
 | [Healthcare](map/Healthcare.md) | BuildAdviceCheck, ChildcareCheck, DeathCareFirstCheck, ExpectationsCheck, HealthCheck, LongPlaytest, OutsideCheck, PopulationCheck, SaveFileCheck, SicknessCheck |
 | [HeavyIndustry](map/HeavyIndustry.md) | AgricultureCheck, BuildCardCheck, BuildingDataCheck, CementConcreteCheck, CopperRefiningCheck, DenominationCheck, GdpCheck, HaulageCheck, IndustryViewCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, PolicyPreviewCheck, PortCheck, RailCheck, ReadPathCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
@@ -116,7 +116,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [InterchangeGround](map/InterchangeGround.md) | JunctionCheck, MapCheck |
 | [InterimLoan](map/InterimLoan.md) | CreditCheck, LongPlaytest |
 | [Investor](map/Investor.md) | CreditCheck |
-| [JobType](map/JobType.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, EducationCheck, FoodProcessingCheck, ForestryCheck, FundCheck, HaulageCheck, HealthCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, WellCheck, WoodProductsCheck |
+| [JobType](map/JobType.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, EducationCheck, FoodProcessingCheck, ForestryCheck, FundCheck, HaulageCheck, HealthCheck, HouseholdCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, WellCheck, WoodProductsCheck |
 | [LabourMarket](map/LabourMarket.md) | ExpectationsCheck, LabourCheck, LongPlaytest, PolicyPreviewCheck |
 | [LandConversion](map/LandConversion.md) | ConversionCheck, LandCheck, ScaleCheck, WaterCheck |
 | [LandGrid](map/LandGrid.md) | ConversionCheck, GridCheck, LandCheck, MapCheck |
@@ -152,8 +152,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, TradeCostCheck, WoodProductsCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, GroceryCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PopulationCohorts](map/PopulationCohorts.md) | ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LongPlaytest, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SicknessCheck |
-| [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, HealthCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, OutsideCheck, PopulationCheck, SaveFileCheck, ScaleCheck, YearBookCheck, ZoningCheck |
-| [Ports](map/Ports.md) | BuildingDataCheck, CopperMiningCheck, ForestryCheck, HaulageCheck, InfrastructureCheck, LongPlaytest, MainLineCheck, MapCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, WoodProductsCheck |
+| [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, OutsideCheck, PopulationCheck, SaveFileCheck, ScaleCheck, YearBookCheck, ZoningCheck |
+| [PortDivision](map/PortDivision.md) | LandlordPortCheck, LongPlaytest |
+| [Ports](map/Ports.md) | BuildAdviceCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, HaulageCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MainLineCheck, MapCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, WoodProductsCheck |
 | [PriceIndex](map/PriceIndex.md) | CurrencyCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, ReadPathCheck, SaveFileCheck |
 | [PrisonerHousehold](map/PrisonerHousehold.md) | CrimeCheck, EducationCheck |
 | [ProcessingSector](map/ProcessingSector.md) | BuildCardCheck, CementConcreteCheck, CopperRefiningCheck, HaulageCheck, IndustryViewCheck, MaterialsCheck, WoodProductsCheck |
@@ -171,12 +172,12 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SalesTaxLedger](map/SalesTaxLedger.md) | PolicyCheck |
 | [SaveHeader](map/SaveHeader.md) | SaveFileCheck, SaveSlotCheck, ScaleCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck |
-| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, GdpCheck, HaulageCheck, HistoryCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, GdpCheck, HaulageCheck, HistoryCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, ReadPathCheck, SectorFlowCheck |
 | [SectorState](map/SectorState.md) | BooksCheck, RailCheck, SectorBooksCheck, VanCheck |
 | [SectorStatements](map/SectorStatements.md) | CentralBankCheck, SectorStatementCheck |
-| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CapitalFlowCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, ForeignCheck, ForestryCheck, FundCheck, GdpCheck, HaulageCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
+| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CapitalFlowCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, ForeignCheck, ForestryCheck, FundCheck, GdpCheck, HaulageCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
 | [ShipShapes](map/ShipShapes.md) | **none** |
@@ -188,13 +189,13 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [StrategicReserve](map/StrategicReserve.md) | BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, SaveFileCheck |
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
-| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
+| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck |
 | [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck |
 | [TimeSkipReport](map/TimeSkipReport.md) | HealthCheck, SkipReportCheck |
 | [Timing](map/Timing.md) | EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, MapCheck, PlanCheck, ScaleCheck, TimingCheck, WorldCheck |
 | [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
-| [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, HaulageCheck, InfrastructureCheck, LongPlaytest, MaterialsCheck, OilCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
+| [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, HaulageCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, OilCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
 | [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MainLineCheck, MapCheck, RailCheck, RailDrawCheck, ReadPathCheck |
 | [TrainShapes](map/TrainShapes.md) | ReadPathCheck |
 | [TreasuryFund](map/TreasuryFund.md) | AutoBuildCheck, CentralBankCheck, ChartCheck, FundCheck, FundLedgerCheck, LongPlaytest, MapCheck, OrderSearchCheck, PlanCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, SectorStatementCheck |
@@ -1264,7 +1265,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L291 ...nor expensed again the month after
   - L294 ...and the reloaded one expenses the same next month
 
-## BuildAdviceCheck.java - 74 labelled assertions
+## BuildAdviceCheck.java - 93 labelled assertions
 
 > The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS
 > YOU's list, to the quote, and to the model's own figures, in a played
@@ -1280,88 +1281,108 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 > 
 > ...
 
-- **L254 1. the categories: fourteen, each once; every building in exactly one**
-  - L256 the strip has fourteen categories
-  - L259 ...each named once
-  - L262 five only the city builds, and they come first
-  - L268 \"
-  - L271 the Overview is no category
-  - L279 every BuildingType is in exactly one category
-  - L289 every building in the catalogue (
-  - L290 investors build the market's nine, by BusinessInvestment's own list - the city's sea terminals (PORTS,
-- **L316 2. NEEDS YOU's needs, in its order: at most three, one per need**
-  - L320 fixture: NEEDS YOU lists more than three needs a city-built building answers (
-  - L322 fixture: and something on site answers one of them
-  - L323 the advice is three suggestions
-  - L335 every suggestion is a need NEEDS YOU lists
-  - L336 ...one a city-built building answers
-  - L337 ...in NEEDS YOU's order, reds first
-  - L338 ...one per need
-  - L354 a need passed over before the last taken is one on site answers, or none can help
-  - L394 fixture: at least one suggestion counted what is on site
-  - L398 fixture: more than one suggestion to add up
-  - L399 the suggestions' quotes, added, are each one's Game.quoteBuild() in their order
-  - L471 fixture: more than one suggestion (
-  - L476 with the cash for the first and half the second, every card is the same building and count as with plenty
-  - L478 fixture: so the first is not on credit and the second is
-  - L488 ...a card is on credit exactly when its quote is more than the cash the ones before left
-  - L489 ...and what is on credit is its quote less that cash, to the bit
-  - L496 with no cash, every card is on credit for its whole quote, its count unchanged
-- **L630 4. before and after: the order built in a twin, the figure the model reads**
-  - L634 fixture: the twin stands where the city does for
-- **L644 4b. every measure: an order of its first building, the twin's figure**
-  - L665 Healthcare, burial plots: 3 Memorial Cemetery - the months of plots left are the model's
-- **L677 5. the staffing weighting: short of a job, the building with fewer of those posts**
-  - L689 fixture: the city fills one of the clinic's job types short
-  - L690 fixture: and one job type whole
-  - L695 fixture: the two have the same posts in all
-  - L696 fixture: and the same price
-  - L711 the one with fewer of the short posts serves more at today's staffing
-  - L713 general care is suggested
-  - L714 ...and with the clinic needing fewer of them
-- **L742 6. nothing needed, nothing suggested**
-  - L753 fixture: NEEDS YOU lists no need a city-built building answers
-  - L754 ...and the advice suggests nothing
-  - L821 fixture: cards at nothing, as the listing stands and at ten times
-  - L822 every card's figure is its order over its life - its quote for the count, its ground at landValue() and
-  - L825 ...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit
-  - L874 fixture: the Elevated Highway is no candidate for the streets, and of those that keep the road ahead the Paved
-  - L878 the streets' card is the cheapest to build over its life at every price of ground, recomputed here from the quote,
-  - L973 fixture: the slack and the projection add buildings to at least one card
-  - L1002 fixture: with no university and its fees paid, more would come than a first one wants
-  - L1003 fixture: ...and its graduates' posts would not fill one
-  - L1005 no UNIVERSITY row
-  - L1006 ...and no university card
-  - L1018 fixture: the offices' posts bring the hires to a first university's
-  - L1020 ...and the UNIVERSITY row is there
-  - L1022 fixture: the rows above held a school with seats and one with none
-  - L1031 fixture: month 9 of a Standard founding, at least a class would come to a university
-  - L1034 no university row there
-  - L1035 ...and no university card
-- **L1105 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
-  - L1119 fixture: the rising history is a trend the businesses read
-  - L1134 fixture: every card grows with the trend (k over 1)
-  - L1135 fixture: a card of the same building in both
-  - L1136 fixture: and the projection raises one count
-  - L1156 the run is the cards' orders in their order, two of one building added together
-  - L1160 fixture: the short city has the ground for every card
-  - L1161 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
-  - L1174 fixture: the run placed in turn in a twin
-  - L1175 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
-  - L1187 fixture: with the ground for the first card alone, a card after it is short of land
-  - L1188 fixture: ...and no two cards are one building, so the run's orders are the cards
-  - L1189 ...and the run stops at the first short card, for land
-- **L1207 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
-  - L1217 fixture: a kind of care whose staffed beds are short of its people
-  - L1228 fixture: the fee turned away half of those the beds could take
-  - L1233 fixture: NEEDS YOU has its row
-  - L1235 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
-  - L1236 ...and reads them served over its people
-  - L1238 ...lower than the beds alone read
-  - L1240 ...the share the month itself applies with the beds short: their cover times the share who could pay
-  - L1242 BUILD'S RING READS THE SAME
-  - L1247 AN ORDER'S AFTER: its staffed places added, the month's priced out held
-  - L1253 NOBODY PRICED OUT, THE BEDS, AS BEFORE
+- **L255 1. the categories: fourteen, each once; every building in exactly one**
+  - L257 the strip has fourteen categories
+  - L260 ...each named once
+  - L263 five only the city builds, and they come first
+  - L269 \"
+  - L272 the Overview is no category
+  - L280 every BuildingType is in exactly one category
+  - L290 every building in the catalogue (
+  - L291 investors build the market's nine, by BusinessInvestment's own list - the city's sea terminals (PORTS,
+- **L317 2. NEEDS YOU's needs, in its order: at most three, one per need**
+  - L321 fixture: NEEDS YOU lists more than three needs a city-built building answers (
+  - L323 fixture: and something on site answers one of them
+  - L324 the advice is three suggestions
+  - L336 every suggestion is a need NEEDS YOU lists
+  - L337 ...one a city-built building answers
+  - L338 ...in NEEDS YOU's order, reds first
+  - L339 ...one per need
+  - L355 a need passed over before the last taken is one on site answers, or none can help
+  - L395 fixture: at least one suggestion counted what is on site
+  - L399 fixture: more than one suggestion to add up
+  - L400 the suggestions' quotes, added, are each one's Game.quoteBuild() in their order
+  - L472 fixture: more than one suggestion (
+  - L477 with the cash for the first and half the second, every card is the same building and count as with plenty
+  - L479 fixture: so the first is not on credit and the second is
+  - L489 ...a card is on credit exactly when its quote is more than the cash the ones before left
+  - L490 ...and what is on credit is its quote less that cash, to the bit
+  - L497 with no cash, every card is on credit for its whole quote, its count unchanged
+- **L631 4. before and after: the order built in a twin, the figure the model reads**
+  - L635 fixture: the twin stands where the city does for
+- **L645 4b. every measure: an order of its first building, the twin's figure**
+  - L666 Healthcare, burial plots: 3 Memorial Cemetery - the months of plots left are the model's
+- **L678 5. the staffing weighting: short of a job, the building with fewer of those posts**
+  - L690 fixture: the city fills one of the clinic's job types short
+  - L691 fixture: and one job type whole
+  - L696 fixture: the two have the same posts in all
+  - L697 fixture: and the same price
+  - L712 the one with fewer of the short posts serves more at today's staffing
+  - L714 general care is suggested
+  - L715 ...and with the clinic needing fewer of them
+- **L743 6. nothing needed, nothing suggested**
+  - L754 fixture: NEEDS YOU lists no need a city-built building answers
+  - L755 ...and the advice suggests nothing
+  - L822 fixture: cards at nothing, as the listing stands and at ten times
+  - L823 every card's figure is its order over its life - its quote for the count, its ground at landValue() and
+  - L826 ...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit
+  - L875 fixture: the Elevated Highway is no candidate for the streets, and of those that keep the road ahead the Paved
+  - L879 the streets' card is the cheapest to build over its life at every price of ground, recomputed here from the quote,
+  - L974 fixture: the slack and the projection add buildings to at least one card
+  - L1003 fixture: with no university and its fees paid, more would come than a first one wants
+  - L1004 fixture: ...and its graduates' posts would not fill one
+  - L1006 no UNIVERSITY row
+  - L1007 ...and no university card
+  - L1019 fixture: the offices' posts bring the hires to a first university's
+  - L1021 ...and the UNIVERSITY row is there
+  - L1023 fixture: the rows above held a school with seats and one with none
+  - L1032 fixture: month 9 of a Standard founding, at least a class would come to a university
+  - L1035 no university row there
+  - L1036 ...and no university card
+- **L1106 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
+  - L1120 fixture: the rising history is a trend the businesses read
+  - L1135 fixture: every card grows with the trend (k over 1)
+  - L1136 fixture: a card of the same building in both
+  - L1137 fixture: and the projection raises one count
+  - L1157 the run is the cards' orders in their order, two of one building added together
+  - L1161 fixture: the short city has the ground for every card
+  - L1162 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
+  - L1175 fixture: the run placed in turn in a twin
+  - L1176 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
+  - L1188 fixture: with the ground for the first card alone, a card after it is short of land
+  - L1189 fixture: ...and no two cards are one building, so the run's orders are the cards
+  - L1190 ...and the run stops at the first short card, for land
+- **L1208 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
+  - L1218 fixture: a kind of care whose staffed beds are short of its people
+  - L1229 fixture: the fee turned away half of those the beds could take
+  - L1234 fixture: NEEDS YOU has its row
+  - L1236 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
+  - L1237 ...and reads them served over its people
+  - L1239 ...lower than the beds alone read
+  - L1241 ...the share the month itself applies with the beds short: their cover times the share who could pay
+  - L1243 BUILD'S RING READS THE SAME
+  - L1248 AN ORDER'S AFTER: its staffed places added, the month's priced out held
+  - L1254 NOBODY PRICED OUT, THE BEDS, AS BEFORE
+- **L1270 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast**
+  - L1283 fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller
+  - L1286 fixture: no berth stands or is on site, and the dues dial is at its default
+  - L1292 fixture: the city owns no sea
+  - L1293 fixture: the uncovered dry bulk is the tonnes told
+  - L1295 A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes
+  - L1300 fixture: the city buys an offer that runs out to the sea
+  - L1306 A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one
+  - L1308 ...its card reads the uncovered tonnes now
+  - L1309 ...and the tonnes left with the berth standing
+  - L1310 ...at the price the Build button charges
+  - L1313 JUST UNDER IT: no berth is advised
+  - L1316 PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal
+  - L1320 ...a hair under it, the Bulk Berth again
+  - L1322 ...with the Bulk Terminal passed over, the Bulk Berth
+  - L1328 fixture: half the threshold is no berth's worth at the default dial
+  - L1331 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth
+  - L1333 ...a hair under half, none
+  - L1336 THE DIAL AT 0 - no dues, no payback - NONE however many tonnes
+  - L1339 ...and back at the default the same tonnes advise the Bulk Terminal
 
 ## BuildCardCheck.java - 147 labelled assertions
 
@@ -1391,153 +1412,153 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L338 ...the Wood group is Forestry's four (0.7.138) and Wood Products' six (0.7.140), in the catalogue's order:
   - L357 ...the wells' group is the Oil Well and the Platform Well, makers both; the platforms' the Offshore Platform
   - L370 ...oil storage is the refiners' Tank Farm and the city's Strategic Reserve, measured in tank room, the
-  - L384 ...the ports are the Tanker, Bulk, Container and General Cargo Terminals, measured in their berths' tonnes
-  - L388 Shops is the groceries, the filling stations (0.7.83) and the bank's branches:
-- **L395 2. the hero and the bars are the model's: the quote, the land, the staffing, the markets**
-  - L537 every card's price and sticker are Game.quoteBuild(t, 1)'s
-  - L538 ...its head the count standing, what is on site and its wait, and the land free the city's own
-  - L539 the hero's figure is the template's own (capacity, coverage, rail, points, its first good, a crude unit's crude,
-  - L542 value added is what one makes less what it uses at the markets' prices, an office's at
-  - L546 bar 1 is the quote at one over the unit, to the bit, on every card but a road's, whose is its life
-  - L548 bar 2 is land per unit on the market's cards and per trip off on a road's, unstaffable posts of 100
-  - L550 the running cost is the upkeep and the posts at today's wages
-- **L569 3. the tags: only the strict best on a bar, only in a group of two or more**
-  - L598 a tag is on the lowest figure of a bar, strictly below the highest, and on no other
-  - L599 a group of one has no tag and draws no track (
-- **L605 4. the notes: each group's note reads the sector's own figures**
-  - L630 homes' doors, the shops' coverage, the counters', the kitchens', the rail's and each maker
-- **L637 5. the investors' line: on site only for an investor's order; the word is the month's**
-  - L656 every market card's word is Game.getLastInvestment() under its sector, the branch's under
-  - L659 ...and the bank has a word of its own, filed under \"Bank\":
-  - L665 fixture: no department store and no grocery store on site before the orders
-  - L673 fixture: Luxury Retail's order of three department stores went on site
-  - L676 the department store reads \"Investors are building\", with the three on site and their wait
-  - L679 ...and says no \"this one:\" while they are, whatever its gate
-  - L680 the city's own two grocery stores on site are not an investors' order
-  - L682 a department store of the city's beside theirs reads \"yours among them\"
-  - L701 fixture: the town's market cards had words before the save (
-  - L702 loaded, every market card has the word it had: the words are saved (0.7.102)
-  - L704 ...while no month has run since the load (Game.hasMonthRun()), as the month's flows are not saved
-  - L708 loaded, the customers who came and the meals wanted are not counted yet, not zero (the save
-  - L713 loaded, the bank's planner sees the bank: not \"no bank\" (
-  - L716 ...and a month later they are counted:
-  - L718 ...and the month after the load files a word for the bank that is not \"no bank\":
-- **L726 6. the gates: each \"this one:\" caused by a fixture, in buildStack()'s order**
-  - L735 with no deposit, the mine's gate is the deposit, with what the city owns and has committed
-  - L743 fixture: the town has no spare
-  - L745 the engineering office's gate is the licence: what one needs and what the city has
-  - L753 fixture: the town could staff
-  - L755 its gate is the staffing test, in the test's own words:
-  - L763 with half a house's ground free, the house's gate is the land, with what it needs and what is free
-  - L774 another spur's gate is a loss, what the investors' estimate says it would lose:
-  - L778 ...worded as a loss, not as no feed: the spur is no refinery's unit (0.7.103)
-  - L784 an Oil Well with no oil site free: its gate is the deposit, its count the dry sites (Game.sitesFor()),
-  - L788 ...every gate's report the same, and its card's count says \"dry\" where no other building's does
-  - L798 fixture: no crude unit stands in the town
-  - L799 a Small Lube Plant with nothing to feed it: its gate says no feed where it read a loss of
-  - L803 ...and every gate's report the same
-  - L821 a market building that passes every gate - the interest on its whole cost the last - has no \"this
-- **L828 7. the verdict: in buildStack()'s order, and buildStack()'s own answer**
-  - L836 no deposit: the verdict is NO_DEPOSIT, and buildStack() says NO_DEPOSIT
-  - L842 nobody licensed: NO_LICENCE, with the licences it needs, and buildStack() says NO_LICENCE
-  - L850 short of land for three houses: NO_LAND by the quote's shortfall, and buildStack() says NO_LAND
-  - L859 short of cash: BILL by the quote less the cash, and buildStack() says NEEDS_FUNDING
-  - L865 with all of it: MONTHS, the quote's own wait at today's queue
-  - L871 with neither ore nor land, the mine's verdict is the deposit, as buildStack() checks ore first
-- **L956 8. the word's kind: none of the town's words is OTHER; every phrase, whole words, in order**
-  - L968 every sector's word in the town has a kind, none OTHER (
-  - L981 every example of
-  - L983 whole words: \"more\", \"before\" and \"Convenience Store\" are not ore, \"banks\" is not a bank
-  - L986 an order on site is BUILDING whatever the word, and the land-blocked list is LAND
-  - L1007 a sector's investors are its own market buildings' lines and its word - Retail's with the bank's branch
-  - L1011 fixture (section 5): Luxury Retail's three department stores are still on site
-  - L1019 ...so its investors read BUILDING, with what is on site of what they are building (
-  - L1026 ...and a sector with nothing on site does not:
-- **L1038 9. a run of orders: priced and checked as placing them in turn would be, and charged that**
-  - L1049 fixture: the yard holds all of the first order's material and half the second's (
-  - L1055 ...so the run's invoice is more than its orders quoted alone, which each count the same yard free
-  - L1057 the run's first order is quoted as it is alone: a run of one is its quote
-  - L1061 short of cash: the run's gap is its invoice less the cash
-  - L1063 overdrawn: the gap counts the overdraft in full, as buildFundingGap() for one order does
-  - L1065 ...and what the treasury is overdrawn by is the cash below nothing
-  - L1067 with the cash to cover it, the gap is nothing
-  - L1068 every order of it passes the checks money cannot fix: buildRunAhead() is all three, buildRunStop() SUCCESS
-  - L1080 fixture: the three orders were placed
-  - L1081 ...and what they were charged, added in turn, is the run's invoice to the bit
-  - L1087 fixture: the free ground holds either of the first two orders alone and not both (
-  - L1091 ...so the run goes one order ahead and stops at the second for ground
-  - L1099 ...and placed in turn, buildStack() places the first and says NO_LAND to the second
-  - L1108 a run whose second order is two mines, with one deposit free, goes one order ahead and stops for the deposit
-  - L1113 a run with an office nobody is licensed for stops there for licences, as buildStack() would
-  - L1116 a run whose first order is refused goes nowhere
-- **L1131 10. served: every gauge is supply over demand, and one verdict, NEEDS YOU's lines turned over (0.7.41)**
-  - L1162 a network's verdict on what it serves is NEEDS YOU's level on its load, at every load from 25% to 300%
-  - L1163 ...the road's, on STRAINED and FREE_FLOW
-  - L1164 ...a school's seats, on who would come and be hired over them - and a crowd off the list but over its seats is amber
-  - L1165 ...care and the basic ladder, listed, the row's level; off the list, green only at 100% and amber under it
-  - L1166 ...and every word is the verdict's: enough only green and at 100% or more, short under 100%, tight from it
-  - L1169 general care at 90%, past GENERAL_YELLOW and off the list, is amber and short - no tick (Jerus's case)
-  - L1172 a network serving 120%, a fifth in hand, is tight: amber, though over 100%
-  - L1175 the road 180% full serves 56%: red, short
-  - L1177 nothing asked is all of it met, and nothing supplying an ask is nothing; not a number has no verdict
-  - L1181 a share just under 100% never prints as 100% (the word would say short beside it)
-  - L1214 every served NEEDS YOU row (
-  - L1236 every Build ring of power, water, the road, transit, care and the schools (
-  - L1240 ...power's ring is the grid's own figure (to 1e-9) and the road's the road's, to the bit; transit has no verdict
-  - L1246 the curve the Roads page draws against served is the road's flow at what it serves
-  - L1256 fixture: with general care at 90% off the list, NEEDS YOU lists nothing for Healthcare, and the tile shows
-- **L1277 11. the interest on its whole cost: consider()'s brake, the card's last gate**
-  - L1323 ...and consider() would build it
-  - L1336 fixture: it still earns over nothing, the same estimate, and its interest bar is over that
-  - L1339 A BAKERY THAT PAYS BUT NOT ITS INTEREST ON ITS WHOLE COST FAILS THE CARD'S INTEREST GATE, the last
-  - L1341 ...with what one would earn and what it must: PROFIT_OVER_INTEREST times a month's interest
-  - L1344 ...its interest struck on its whole cost though the till pays it all, at the real rate the test reads
-  - L1347 ...the rate it is judged at the bakers' own, the till paying (projectRate() of nothing)
-  - L1350 ...and every gate's report the same: it pays, it fails the interest, and that is its first failure
-  - L1355 THE CARD AGREES WITH consider(): the same order of one is refused
-  - L1359 at today's prime again the card passes it and consider() builds the same order
-  - L1371 fixture: the bakers are under a borrowing ban, and their till holds half a Bakery
-  - L1373 under a ban the gate is the interest's, in consider()'s words: \"
-  - L1378 ...and consider() refuses the same order
-  - L1386 ...and the bakers' till, prime and record put back
-  - L1391 a spur that would lose money fails the interest too, behind the loss, which stays its first
-- **L1419 12. the materials' cards: where it stands, how its sector weighs it, its power, old metal, buyers, E**
-  - L1475 fixture: the catalogue's materials buildings - the nine industries' - and the rest
-  - L1478 only a materials building is one (its owner a ProcessingSector or an ExtractionSector), and only it is weighed
-  - L1480 a works is weighed as its sector's appraisal weighs it: what it earns, its whole cost with its vans, the
-  - L1482 ...a mine, a quarry and the washing plant as their plan weighs one - ExtractionSector's estimate on its cost
-  - L1484 ...a crew under E, and a planted stand not at all (Forestry plants it, nothing orders it)
-  - L1508 fixture: the town holds three iron sites by fiat, all hematite (the first type)
-  - L1512 an Iron Mine's card: one hematite site, the city's three by type, its own and those spoken for, what is left -
-  - L1517 a Large Open-Pit Mine's: twenty sites of one hematite field, which three do not hold - it does not fit
-  - L1522 ...a magnetite works on a city of hematite: none of its type, in its words:
-  - L1526 ...and how its sector weighs it: the field its feed, refused first in the same words
-  - L1534 the words name each resource by its type: hematite ore, coking coal, sulphide copper ore, limestone - and
-  - L1543 an Underground Coal Mine on a town with no coking coal says so in coal's words, read as the ground (ORE):
-  - L1556 fixture: two stone sites by fiat, limestone; a Quarry's row makes aggregate
-  - L1558 a Quarry's card: either type, and one more stands on limestone - it makes the row's tonnes of limestone,
-  - L1564 ...and where it goes is limestone's buyers
-  - L1581 fixture: a Pelletising Plant in a town that digs no ore - its feed imported - fails only the money gate
-  - L1586 its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost - the plant
-  - L1593 the card's \"this one:\" is it - the planner asks before consider() - unless the sector's word already
-  - L1612 ...an Oxygen Steel Shop makes less than it draws, and buys the rest; a Pulp Mill draws none and sells it all;
-  - L1619 fixture: a Scrap Yard standing in the town
-  - L1621 its card buys the city's old steel: its intake (oldMetal()), Iron & Steel's price - PAY_SHARE of scrap's
-  - L1630 ...and with less old steel arising past the yards standing than one more takes, its sector's feed gate
-  - L1636 a Scrap Copper Refinery's buys the city's old copper the same way: Copper Refining's price and spare
-  - L1661 every good's buyers are the sectors whose buildings use it, each taking its standing buildings' need at
-  - L1670 a Copper Smelter's acid goes to Copper Mining's leach plants, its take theirs at nameplate; its anode to its
-  - L1675 a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's
-  - L1696 each of the nine industries' pages says who here buys each good it makes, or that it ships
-  - L1709 fixture: a forest town with 10 km2 cuttable - its plan holds in E's words
-  - L1712 a Logging Camp's card: no room under E, none more, and its refusal the plan's own words, to the letter
-  - L1719 the whole forest cuttable: room for N more Logging Camps exactly where E allows N and not N + 1, and it carries
-  - L1746 every offer standing: its fields of each resource by type add up to its sites (CityLand.fieldsOn()), as
-  - L1755 an offer on the
-  - L1770 fixture: offers on the nearest hematite field under twenty sites and the nearest magnetite field
-  - L1776 the magnetite field is filled with magnetite works, never an Iron Mine, no more sites than it holds
-  - L1778 the hematite field under twenty sites takes Iron Mines alone, and its earnings are the old rule's for its
-  - L1783 Build's payback on the magnetite offer is its by-type earnings
+  - L385 ...the ports are the Tanker, Bulk, Container and General Cargo Terminals and the Bulk Berth, measured in their
+  - L389 Shops is the groceries, the filling stations (0.7.83) and the bank's branches:
+- **L396 2. the hero and the bars are the model's: the quote, the land, the staffing, the markets**
+  - L538 every card's price and sticker are Game.quoteBuild(t, 1)'s
+  - L539 ...its head the count standing, what is on site and its wait, and the land free the city's own
+  - L540 the hero's figure is the template's own (capacity, coverage, rail, points, its first good, a crude unit's crude,
+  - L543 value added is what one makes less what it uses at the markets' prices, an office's at
+  - L547 bar 1 is the quote at one over the unit, to the bit, on every card but a road's, whose is its life
+  - L549 bar 2 is land per unit on the market's cards and per trip off on a road's, unstaffable posts of 100
+  - L551 the running cost is the upkeep and the posts at today's wages
+- **L570 3. the tags: only the strict best on a bar, only in a group of two or more**
+  - L599 a tag is on the lowest figure of a bar, strictly below the highest, and on no other
+  - L600 a group of one has no tag and draws no track (
+- **L606 4. the notes: each group's note reads the sector's own figures**
+  - L631 homes' doors, the shops' coverage, the counters', the kitchens', the rail's and each maker
+- **L638 5. the investors' line: on site only for an investor's order; the word is the month's**
+  - L657 every market card's word is Game.getLastInvestment() under its sector, the branch's under
+  - L660 ...and the bank has a word of its own, filed under \"Bank\":
+  - L666 fixture: no department store and no grocery store on site before the orders
+  - L674 fixture: Luxury Retail's order of three department stores went on site
+  - L677 the department store reads \"Investors are building\", with the three on site and their wait
+  - L680 ...and says no \"this one:\" while they are, whatever its gate
+  - L681 the city's own two grocery stores on site are not an investors' order
+  - L683 a department store of the city's beside theirs reads \"yours among them\"
+  - L702 fixture: the town's market cards had words before the save (
+  - L703 loaded, every market card has the word it had: the words are saved (0.7.102)
+  - L705 ...while no month has run since the load (Game.hasMonthRun()), as the month's flows are not saved
+  - L709 loaded, the customers who came and the meals wanted are not counted yet, not zero (the save
+  - L714 loaded, the bank's planner sees the bank: not \"no bank\" (
+  - L717 ...and a month later they are counted:
+  - L719 ...and the month after the load files a word for the bank that is not \"no bank\":
+- **L727 6. the gates: each \"this one:\" caused by a fixture, in buildStack()'s order**
+  - L736 with no deposit, the mine's gate is the deposit, with what the city owns and has committed
+  - L744 fixture: the town has no spare
+  - L746 the engineering office's gate is the licence: what one needs and what the city has
+  - L754 fixture: the town could staff
+  - L756 its gate is the staffing test, in the test's own words:
+  - L764 with half a house's ground free, the house's gate is the land, with what it needs and what is free
+  - L775 another spur's gate is a loss, what the investors' estimate says it would lose:
+  - L779 ...worded as a loss, not as no feed: the spur is no refinery's unit (0.7.103)
+  - L785 an Oil Well with no oil site free: its gate is the deposit, its count the dry sites (Game.sitesFor()),
+  - L789 ...every gate's report the same, and its card's count says \"dry\" where no other building's does
+  - L799 fixture: no crude unit stands in the town
+  - L800 a Small Lube Plant with nothing to feed it: its gate says no feed where it read a loss of
+  - L804 ...and every gate's report the same
+  - L822 a market building that passes every gate - the interest on its whole cost the last - has no \"this
+- **L829 7. the verdict: in buildStack()'s order, and buildStack()'s own answer**
+  - L837 no deposit: the verdict is NO_DEPOSIT, and buildStack() says NO_DEPOSIT
+  - L843 nobody licensed: NO_LICENCE, with the licences it needs, and buildStack() says NO_LICENCE
+  - L851 short of land for three houses: NO_LAND by the quote's shortfall, and buildStack() says NO_LAND
+  - L860 short of cash: BILL by the quote less the cash, and buildStack() says NEEDS_FUNDING
+  - L866 with all of it: MONTHS, the quote's own wait at today's queue
+  - L872 with neither ore nor land, the mine's verdict is the deposit, as buildStack() checks ore first
+- **L957 8. the word's kind: none of the town's words is OTHER; every phrase, whole words, in order**
+  - L969 every sector's word in the town has a kind, none OTHER (
+  - L982 every example of
+  - L984 whole words: \"more\", \"before\" and \"Convenience Store\" are not ore, \"banks\" is not a bank
+  - L987 an order on site is BUILDING whatever the word, and the land-blocked list is LAND
+  - L1008 a sector's investors are its own market buildings' lines and its word - Retail's with the bank's branch
+  - L1012 fixture (section 5): Luxury Retail's three department stores are still on site
+  - L1020 ...so its investors read BUILDING, with what is on site of what they are building (
+  - L1027 ...and a sector with nothing on site does not:
+- **L1039 9. a run of orders: priced and checked as placing them in turn would be, and charged that**
+  - L1050 fixture: the yard holds all of the first order's material and half the second's (
+  - L1056 ...so the run's invoice is more than its orders quoted alone, which each count the same yard free
+  - L1058 the run's first order is quoted as it is alone: a run of one is its quote
+  - L1062 short of cash: the run's gap is its invoice less the cash
+  - L1064 overdrawn: the gap counts the overdraft in full, as buildFundingGap() for one order does
+  - L1066 ...and what the treasury is overdrawn by is the cash below nothing
+  - L1068 with the cash to cover it, the gap is nothing
+  - L1069 every order of it passes the checks money cannot fix: buildRunAhead() is all three, buildRunStop() SUCCESS
+  - L1081 fixture: the three orders were placed
+  - L1082 ...and what they were charged, added in turn, is the run's invoice to the bit
+  - L1088 fixture: the free ground holds either of the first two orders alone and not both (
+  - L1092 ...so the run goes one order ahead and stops at the second for ground
+  - L1100 ...and placed in turn, buildStack() places the first and says NO_LAND to the second
+  - L1109 a run whose second order is two mines, with one deposit free, goes one order ahead and stops for the deposit
+  - L1114 a run with an office nobody is licensed for stops there for licences, as buildStack() would
+  - L1117 a run whose first order is refused goes nowhere
+- **L1132 10. served: every gauge is supply over demand, and one verdict, NEEDS YOU's lines turned over (0.7.41)**
+  - L1163 a network's verdict on what it serves is NEEDS YOU's level on its load, at every load from 25% to 300%
+  - L1164 ...the road's, on STRAINED and FREE_FLOW
+  - L1165 ...a school's seats, on who would come and be hired over them - and a crowd off the list but over its seats is amber
+  - L1166 ...care and the basic ladder, listed, the row's level; off the list, green only at 100% and amber under it
+  - L1167 ...and every word is the verdict's: enough only green and at 100% or more, short under 100%, tight from it
+  - L1170 general care at 90%, past GENERAL_YELLOW and off the list, is amber and short - no tick (Jerus's case)
+  - L1173 a network serving 120%, a fifth in hand, is tight: amber, though over 100%
+  - L1176 the road 180% full serves 56%: red, short
+  - L1178 nothing asked is all of it met, and nothing supplying an ask is nothing; not a number has no verdict
+  - L1182 a share just under 100% never prints as 100% (the word would say short beside it)
+  - L1215 every served NEEDS YOU row (
+  - L1237 every Build ring of power, water, the road, transit, care and the schools (
+  - L1241 ...power's ring is the grid's own figure (to 1e-9) and the road's the road's, to the bit; transit has no verdict
+  - L1247 the curve the Roads page draws against served is the road's flow at what it serves
+  - L1257 fixture: with general care at 90% off the list, NEEDS YOU lists nothing for Healthcare, and the tile shows
+- **L1278 11. the interest on its whole cost: consider()'s brake, the card's last gate**
+  - L1324 ...and consider() would build it
+  - L1337 fixture: it still earns over nothing, the same estimate, and its interest bar is over that
+  - L1340 A BAKERY THAT PAYS BUT NOT ITS INTEREST ON ITS WHOLE COST FAILS THE CARD'S INTEREST GATE, the last
+  - L1342 ...with what one would earn and what it must: PROFIT_OVER_INTEREST times a month's interest
+  - L1345 ...its interest struck on its whole cost though the till pays it all, at the real rate the test reads
+  - L1348 ...the rate it is judged at the bakers' own, the till paying (projectRate() of nothing)
+  - L1351 ...and every gate's report the same: it pays, it fails the interest, and that is its first failure
+  - L1356 THE CARD AGREES WITH consider(): the same order of one is refused
+  - L1360 at today's prime again the card passes it and consider() builds the same order
+  - L1372 fixture: the bakers are under a borrowing ban, and their till holds half a Bakery
+  - L1374 under a ban the gate is the interest's, in consider()'s words: \"
+  - L1379 ...and consider() refuses the same order
+  - L1387 ...and the bakers' till, prime and record put back
+  - L1392 a spur that would lose money fails the interest too, behind the loss, which stays its first
+- **L1420 12. the materials' cards: where it stands, how its sector weighs it, its power, old metal, buyers, E**
+  - L1476 fixture: the catalogue's materials buildings - the nine industries' - and the rest
+  - L1479 only a materials building is one (its owner a ProcessingSector or an ExtractionSector), and only it is weighed
+  - L1481 a works is weighed as its sector's appraisal weighs it: what it earns, its whole cost with its vans, the
+  - L1483 ...a mine, a quarry and the washing plant as their plan weighs one - ExtractionSector's estimate on its cost
+  - L1485 ...a crew under E, and a planted stand not at all (Forestry plants it, nothing orders it)
+  - L1509 fixture: the town holds three iron sites by fiat, all hematite (the first type)
+  - L1513 an Iron Mine's card: one hematite site, the city's three by type, its own and those spoken for, what is left -
+  - L1518 a Large Open-Pit Mine's: twenty sites of one hematite field, which three do not hold - it does not fit
+  - L1523 ...a magnetite works on a city of hematite: none of its type, in its words:
+  - L1527 ...and how its sector weighs it: the field its feed, refused first in the same words
+  - L1535 the words name each resource by its type: hematite ore, coking coal, sulphide copper ore, limestone - and
+  - L1544 an Underground Coal Mine on a town with no coking coal says so in coal's words, read as the ground (ORE):
+  - L1557 fixture: two stone sites by fiat, limestone; a Quarry's row makes aggregate
+  - L1559 a Quarry's card: either type, and one more stands on limestone - it makes the row's tonnes of limestone,
+  - L1565 ...and where it goes is limestone's buyers
+  - L1582 fixture: a Pelletising Plant in a town that digs no ore - its feed imported - fails only the money gate
+  - L1587 its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost - the plant
+  - L1594 the card's \"this one:\" is it - the planner asks before consider() - unless the sector's word already
+  - L1613 ...an Oxygen Steel Shop makes less than it draws, and buys the rest; a Pulp Mill draws none and sells it all;
+  - L1620 fixture: a Scrap Yard standing in the town
+  - L1622 its card buys the city's old steel: its intake (oldMetal()), Iron & Steel's price - PAY_SHARE of scrap's
+  - L1631 ...and with less old steel arising past the yards standing than one more takes, its sector's feed gate
+  - L1637 a Scrap Copper Refinery's buys the city's old copper the same way: Copper Refining's price and spare
+  - L1662 every good's buyers are the sectors whose buildings use it, each taking its standing buildings' need at
+  - L1671 a Copper Smelter's acid goes to Copper Mining's leach plants, its take theirs at nameplate; its anode to its
+  - L1676 a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's
+  - L1697 each of the nine industries' pages says who here buys each good it makes, or that it ships
+  - L1710 fixture: a forest town with 10 km2 cuttable - its plan holds in E's words
+  - L1713 a Logging Camp's card: no room under E, none more, and its refusal the plan's own words, to the letter
+  - L1720 the whole forest cuttable: room for N more Logging Camps exactly where E allows N and not N + 1, and it carries
+  - L1747 every offer standing: its fields of each resource by type add up to its sites (CityLand.fieldsOn()), as
+  - L1756 an offer on the
+  - L1771 fixture: offers on the nearest hematite field under twenty sites and the nearest magnetite field
+  - L1777 the magnetite field is filled with magnetite works, never an Iron Mine, no more sites than it holds
+  - L1779 the hematite field under twenty sites takes Iron Mines alone, and its earnings are the old rule's for its
+  - L1784 Build's payback on the magnetite offer is its by-type earnings
 
 ## BuildMenuCheck.java - 0 labelled assertions
 
@@ -1684,83 +1705,83 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L57 coverage**
   - L58 same number of buildings (
 - **L60 every field of every building**
-- **L201 care types line up with the category**
-- **L208 care types**
-  - L219 healthcare declares a care type, nothing else does
-  - L233 education declares what it teaches, nothing else does
-  - L250 safety declares police or prison, nothing else does
-  - L252 two police buildings and two prisons
-- **L254 the sea is drawn by water works, and one of them (0.7.59)**
-- **L261 water sources**
-  - L272 only a water works draws the sea
-  - L273 one water plant on fresh water and one on the sea (
-  - L278 id 73 is the Desalination Plant
-- **L281 fuel (0.7.62, batch K; spec-land 2.7)**
-- **L294 fuel**
-  - L300 id 74 is the Oil Well: MINING, the Oil sector's, 415 t of crude a month and nothing else
-  - L304 id 75 is the Oil Refinery: HEAVY_INDUSTRY, Refining's, a crude unit taking 8,300 t of crude and making
-  - L312 ...holding more than the months of its run a maker keeps (STOCK_MONTHS) in its tanks
-- **L315 the refinery's units (0.7.80, batch O4; spec-oil 2.3)**
-- **L324 the refinery's units**
-  - L327 id 76 is the Crude Unit: HEAVY_INDUSTRY, Refining's, a crude unit of 50 Oil Refineries' crude, road load and tanks
-  - L360 ids 77 to 90 are the conversion units, a small and a large of each kind in RefineryFlow.Kind's order:
-  - L362 ...each pair named for its kind, the small taking less feed for less money and more money a litre
-- **L364 the phase-1 buyers and the forecourt (0.7.83, batch O6)**
-- **L375 the phase-1 buyers and the forecourt**
-  - L392 lubricants on every car, van, truck, machinery and fabrication plant at the spec's rate a unit made, and on
-  - L396 id 91 is the Filling Station: COMMERCIAL, Retail's, 350,000 L a month at the pump, buying and making
-  - L402 ...US$0.5M all in at founding prices (cash and 18 a unit of material), three posts, an acre's 4,000 m2
-  - L407 ...the only building with a pump
-  - L411 the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated
-  - L414 ...and 142 buildings in all (FR7: the Rail Depot; 141 from FR2, the Truck Depot and the Heavy Truck Plant; 139 from 0.7.140, Wood Products' six; 133 from 0.7...
-- **L421 the oil storage (0.7.85, batch O8; spec-oil 2.8)**
-- **L427 the oil storage**
-  - L433 id 92 is the Tank Farm, the refiners': 500,000 m3 of tanks, refining nothing, buying nothing
-  - L438 ...D$190M of capital (US$60 a barrel of room, star), material a sixtieth of it and points a half; ten
-  - L445 id 93 is the Strategic Reserve, the city's: the farm's tanks, ground and price, and no posts (star O8-2)
-- **L454 the ports (0.7.86, batch O9; spec-oil 2.9)**
-- **L459 the ports**
-  - L472 ids 94-97 are the Tanker, Bulk, Container and General Cargo Terminals: the city's, PORTS, a berth each of its
-  - L474 ...and the only buildings with a berth
-- **L476 the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11)**
-- **L485 the oil at sea**
-  - L502 ids 98-100 are the oil at sea, the Oil sector's MINING, on no dry ground and with no power or water;
-  - L504 id 98 is the Offshore Platform: a jacket of 12 slots, D$18M, 12 posts 6/4/2, lifting nothing itself
-  - L510 id 99 is the Platform Well: D$14M, 415 t of crude a month, one diploma's post, on oil, and no land well
-  - L515 id 100 is the Crude Pipeline, a kilometre: D$4.5M at sea and D$3M on land, no posts, on no site
-  - L518 ...and the only buildings at sea
-- **L520 the site each stands on (0.7.110, batch I1)**
-- **L550 the site each building stands on (0.7.110; iron's by type and size, 0.7.124; coal's, 0.7.126; stone's, 0.7.131; copper's, 0.7.133)**
-  - L591 every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109) - but the Dimension Stone
-  - L594 ...sixteen stand on sites - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three
-  - L597 ...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none
-  - L603 ...iron's on a type, its sites and its dig (0.7.124): the Iron Mine one hematite site and the open pit twenty, ore as
-  - L609 ...coal's on a type, its sites and its dig (0.7.126): the surface mines one and four thermal sites at 1/.95 t of
-  - L616 ...stone's, its sites and its dig (0.7.131): the Quarry one site and the Large Quarry three, on ANY, a tonne a tonne;
-  - L630 ...copper's, its sites and its dig (0.7.133): the Copper Mine & Mill one sulphide site and the Large Copper Mine
-- **L634 a works' own power and its consumables (0.7.112, batch I2)**
-- **L648 a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.120; the gen, 0.7.123)**
-  - L660 four works make power, the study's 1.6: the Coke Ovens 8,000 kW, the Blast Furnace 60,000, the Oxygen Steel Shop
-  - L664 ...so the ovens sell the grid 5,800 kW and the furnace 8,600, buying none, and the shop buys 26,600 and sells none
-  - L669 ...and the pulp mill draws nothing from the grid - its boiler meets its own draw - and sells it all 13,500 kW (0.7.140)
-  - L671 ...and every other building buys its whole draw and sells the grid none, to the bit
-  - L682 forty-one buy consumables, the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and
-- **L690 the old steel a yard takes, and the year each row first existed (0.7.123, batch I4)**
-- **L699 the old steel a yard takes, and the year each new row first existed (0.7.123)**
-  - L709 one building takes the city's old steel, the Scrap Yard: 10,500 t a month into 10,000 t of scrap (the study's 2.4):
-  - L713 ...and one its old copper (0.7.133), the Scrap Copper Refinery: 4,400 t a month at nameplate, its whole feed - its
-  - L749 the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the
-- **L762 the raw coal a preparation plant washes (0.7.126, batch I6)**
-- **L769 the raw coal a preparation plant washes (0.7.126)**
-  - L773 one building washes raw coal, the Coal Preparation Plant: 500,000 t a month (the study's 3.3), buying and making no
-- **L779 and every profession has exactly one school**
-  - L796 every gated profession has exactly one school
-- **L798 ids are unique, which the saves depend on**
-  - L809 every id is unique
-- **L811 the manager actually uses the file**
-  - L815 initializeTemplates() produced the same count
-  - L817 lookup by id still works
-  - L820 lookup by name still works
+- **L206 care types line up with the category**
+- **L213 care types**
+  - L224 healthcare declares a care type, nothing else does
+  - L238 education declares what it teaches, nothing else does
+  - L255 safety declares police or prison, nothing else does
+  - L257 two police buildings and two prisons
+- **L259 the sea is drawn by water works, and one of them (0.7.59)**
+- **L266 water sources**
+  - L277 only a water works draws the sea
+  - L278 one water plant on fresh water and one on the sea (
+  - L283 id 73 is the Desalination Plant
+- **L286 fuel (0.7.62, batch K; spec-land 2.7)**
+- **L299 fuel**
+  - L305 id 74 is the Oil Well: MINING, the Oil sector's, 415 t of crude a month and nothing else
+  - L309 id 75 is the Oil Refinery: HEAVY_INDUSTRY, Refining's, a crude unit taking 8,300 t of crude and making
+  - L317 ...holding more than the months of its run a maker keeps (STOCK_MONTHS) in its tanks
+- **L320 the refinery's units (0.7.80, batch O4; spec-oil 2.3)**
+- **L329 the refinery's units**
+  - L332 id 76 is the Crude Unit: HEAVY_INDUSTRY, Refining's, a crude unit of 50 Oil Refineries' crude, road load and tanks
+  - L365 ids 77 to 90 are the conversion units, a small and a large of each kind in RefineryFlow.Kind's order:
+  - L367 ...each pair named for its kind, the small taking less feed for less money and more money a litre
+- **L369 the phase-1 buyers and the forecourt (0.7.83, batch O6)**
+- **L380 the phase-1 buyers and the forecourt**
+  - L397 lubricants on every car, van, truck, machinery and fabrication plant at the spec's rate a unit made, and on
+  - L401 id 91 is the Filling Station: COMMERCIAL, Retail's, 350,000 L a month at the pump, buying and making
+  - L407 ...US$0.5M all in at founding prices (cash and 18 a unit of material), three posts, an acre's 4,000 m2
+  - L412 ...the only building with a pump
+  - L416 the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated
+  - L419 ...and 143 buildings in all (FR3: the Bulk Berth, id 142; 142 from FR7, the Rail Depot; 141 from FR2, the Truck Depot and the Heavy Truck Plant; 139 from 0.7...
+- **L426 the oil storage (0.7.85, batch O8; spec-oil 2.8)**
+- **L432 the oil storage**
+  - L438 id 92 is the Tank Farm, the refiners': 500,000 m3 of tanks, refining nothing, buying nothing
+  - L443 ...D$190M of capital (US$60 a barrel of room, star), material a sixtieth of it and points a half; ten
+  - L450 id 93 is the Strategic Reserve, the city's: the farm's tanks, ground and price, and no posts (star O8-2)
+- **L459 the ports (0.7.86, batch O9; spec-oil 2.9)**
+- **L464 the ports**
+  - L477 ids 94-97 are the Tanker, Bulk, Container and General Cargo Terminals: the city's, PORTS, a berth each of its
+  - L479 ...and the only buildings with a berth, bar FR3's Bulk Berth (id 142, a fifth)
+- **L481 the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11)**
+- **L490 the oil at sea**
+  - L507 ids 98-100 are the oil at sea, the Oil sector's MINING, on no dry ground and with no power or water;
+  - L509 id 98 is the Offshore Platform: a jacket of 12 slots, D$18M, 12 posts 6/4/2, lifting nothing itself
+  - L515 id 99 is the Platform Well: D$14M, 415 t of crude a month, one diploma's post, on oil, and no land well
+  - L520 id 100 is the Crude Pipeline, a kilometre: D$4.5M at sea and D$3M on land, no posts, on no site
+  - L523 ...and the only buildings at sea
+- **L525 the site each stands on (0.7.110, batch I1)**
+- **L555 the site each building stands on (0.7.110; iron's by type and size, 0.7.124; coal's, 0.7.126; stone's, 0.7.131; copper's, 0.7.133)**
+  - L596 every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109) - but the Dimension Stone
+  - L599 ...sixteen stand on sites - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three
+  - L602 ...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none
+  - L608 ...iron's on a type, its sites and its dig (0.7.124): the Iron Mine one hematite site and the open pit twenty, ore as
+  - L614 ...coal's on a type, its sites and its dig (0.7.126): the surface mines one and four thermal sites at 1/.95 t of
+  - L621 ...stone's, its sites and its dig (0.7.131): the Quarry one site and the Large Quarry three, on ANY, a tonne a tonne;
+  - L635 ...copper's, its sites and its dig (0.7.133): the Copper Mine & Mill one sulphide site and the Large Copper Mine
+- **L639 a works' own power and its consumables (0.7.112, batch I2)**
+- **L653 a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.120; the gen, 0.7.123)**
+  - L665 four works make power, the study's 1.6: the Coke Ovens 8,000 kW, the Blast Furnace 60,000, the Oxygen Steel Shop
+  - L669 ...so the ovens sell the grid 5,800 kW and the furnace 8,600, buying none, and the shop buys 26,600 and sells none
+  - L674 ...and the pulp mill draws nothing from the grid - its boiler meets its own draw - and sells it all 13,500 kW (0.7.140)
+  - L676 ...and every other building buys its whole draw and sells the grid none, to the bit
+  - L687 forty-one buy consumables, the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and
+- **L695 the old steel a yard takes, and the year each row first existed (0.7.123, batch I4)**
+- **L704 the old steel a yard takes, and the year each new row first existed (0.7.123)**
+  - L714 one building takes the city's old steel, the Scrap Yard: 10,500 t a month into 10,000 t of scrap (the study's 2.4):
+  - L718 ...and one its old copper (0.7.133), the Scrap Copper Refinery: 4,400 t a month at nameplate, its whole feed - its
+  - L754 the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the
+- **L767 the raw coal a preparation plant washes (0.7.126, batch I6)**
+- **L774 the raw coal a preparation plant washes (0.7.126)**
+  - L778 one building washes raw coal, the Coal Preparation Plant: 500,000 t a month (the study's 3.3), buying and making no
+- **L784 and every profession has exactly one school**
+  - L801 every gated profession has exactly one school
+- **L803 ids are unique, which the saves depend on**
+  - L814 every id is unique
+- **L816 the manager actually uses the file**
+  - L820 initializeTemplates() produced the same count
+  - L822 lookup by id still works
+  - L825 lookup by name still works
 
 ## BusinessServicesCheck.java - 40 labelled assertions
 
@@ -8711,6 +8732,83 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2805 the crews cut again and stands growing past it bring E to nothing: the forest full again but for the cleared ground
   - L2807 ...which never grows back: C still the three square kilometres' wood, W exact
 
+## LandlordPortCheck.java - 52 labelled assertions
+
+> The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds
+> and keeps the sea terminals and Freight's Ports division works them.
+> 
+> WHY THIS HARNESS EXISTS. Until FR3 the four terminals (and the Bulk Berth) were
+> the city's end to end: no sector, their dockers paid with the transit bill,
+> the handling of a tonne nobody's. FR3 splits the two as a landlord port does:
+> the city keeps the berths and their repairs, Freight works them, pays the
+> crews, bills the shippers for the handling and pays the city dues. It was
+> written in slices by agents from the brief and is held here from the brief's
+> rules and the model's own getters and constants: no figure below is typed in
+> that a getter or a constant could give. Eleven claims, numbered as FR3.md
+> section 6 numbers them (the save is 9 here, so its advice is 10 and its real run, LongPlaytest's, 11):
+> ...
+
+- **L166 3. the crews: the city's berths, Freight's payroll**
+  - L205 fixture: a depot standing with fewer trucks than its room (drivers laid off), and no terminal yet
+  - L207 ...and with no terminal the Ports crews' payroll and its share are nothing
+  - L218 fixture: the terminal(s) stand, with crews at a wage and a fill
+  - L223 (a) THE CITY KEEPS THE BERTHS' REPAIRS: portsBill() is the terminals' upkeep, and not their crew
+  - L229 (b) FREIGHT PAYS THE CREW: its wage bill grows by the terminals' posts x wage x fill, to the cent
+  - L232 ...and the bill at full staffing grows by their posts at the wage of each tier
+  - L235 ...the two together are what portsBill() was: the upkeep it keeps and the crew it lost
+  - L239 ...the Ports division's share of the payroll is its crew over the whole, in (0, 1)
+  - L243 THE BERTHS STAY THE CITY'S: Freight's buildings' value, ground and own posts are what they were, and its operated posts grew by the crew
+  - L248 ...and no sector owns a terminal: the building's owner is nobody's, its operator Freight's
+  - L260 (c) THE CITY'S POSTS ARE THE SUM OVER ITS BUILDINGS: the terminals add exactly their posts, counted once, in every tier
+  - L269 ...and every post has one payer: the city's own posts and the sectors' offered posts come to the city's total, in every tier
+  - L273 THE DRIVERS' LAY-OFF NEVER TOUCHES A TERMINAL'S POSTS: the drivers' share is what it was, and the DIPLOMA posts offered are the owned ones less the idle driv...
+  - L279 ...the city withholds the same drivers it did, and no docker, and Freight's wage bill pays the posts offered
+  - L285 (d) THE RAILWAY'S AND HAULAGE'S PAYROLL ARE WHAT THEY WERE, TO THE BIT: ownPayroll(), the share and each division's line
+  - L289 ...and the three together are the sector's whole payroll: rail + haulage + ports
+  - L301 (e) THE CREW BY KIND SUMS TO THE PAYROLL MOVED: each kind's terminals' posts x wage x fill, and no crew on a kind with no berth
+- **L314 ...and a played month: the transit bill, and the households' pay**
+  - L324 fixture: two months played with the terminals standing, no transit line to pay, and crews at a wage
+  - L326 THE TRANSIT BILL'S PORTS PART IS THE BERTHS' UPKEEP ONLY: the month's bill is that and nothing for the crew
+  - L329 ...and Freight's month pays the crew at the fill the city counted: its payroll is a crew's more than its own posts'
+  - L334 THE HOUSEHOLDS ARE PAID WHAT THE EMPLOYERS PAID: the sectors' payrolls, the dockers in Freight's, and the city's own, once
+- **L434 4. handling, each leg once: a shipper pays its sea tonnes at the quote, Freight bills the sum**
+  - L458 fixture: a Bulk Terminal stands, dry bulk goes by sea in a share in force, and shippers both land and ship by sea
+  - L461 fixture: kinds with no berth cross the boundary too (their tonnes are never billed handling), and the plant buys ore at home as well
+  - L489 EACH SHIPPER'S \"Port handling\" IS ITS SEA TONNES OF EACH KIND x THE QUOTE IT WAS BILLED AT, to the cent
+  - L500 ...the tonnes billed are the shippers' and the builders' only, and the builders' line is the remainder at the quote
+  - L509 FREIGHT BILLS THE SHIPPERS' LINES SUMMED: getHandlingBilled(), its \"Port handling billed\" part and the kinds' bills, to the cent
+  - L513 ...on the tonnes the ports' own tally counted: the sea tonnes the division billed are the berths' tally of them
+  - L517 A KIND WITH NO BERTH PAYS NO HANDLING: its tonnes billed and its bill are nothing, whatever crossed
+  - L523 A TONNE BOUGHT AT HOME PAYS NO HANDLING: the plant's line is its landed and shipped tonnes only, and not those it bought at home as well
+- **L529 5. the dues: tonnes x each kind's rate x the dial, to the treasury**
+  - L544 FREIGHT'S \"Port dues\" ARE THE SUM OVER KINDS OF TONNES x THE KIND'S DUES RATE x THE DIAL, to the cent
+  - L547 ...and the treasury's line and the national accounts' are those dues, in the tax take
+  - L554 fixture: the twins are alike but for the dial: the same sea tonnes were billed at the same crew's part, and the dial-1 twin paid dues
+  - L558 AT THE DIAL 0 NO DUES ARE PAID: no \"Port dues\" line in Freight's inputs, and nothing in the treasury's or the accounts'
+  - L562 ...AND AT 2 EXACTLY TWICE THE DIAL-1 TWIN'S, in Freight's line, the treasury's and the accounts'
+- **L570 6. the dues' default: the annuity of the berths at the city's rate, over their month at DESIGN_USE**
+  - L588 the
+  - L593 ...and at no interest it is V / n, and a rate r the annuity
+  - L598 THE CITY'S RATE IS ITS OWN PAPER'S AT THE BERTH'S LIFE: DebtManager.curveRate(PORT_LIFE_MONTHS), and not below nothing
+  - L608 A CITY OWING MORE PAYS A DEARER DUE: the same berths, a heavier debt, a dearer paper and a dearer due a tonne
+- **L614 7. the price: the first quote is the target, then a quarter of the way; the scarcity; the idle crew**
+  - L616 the scarcity is 1 at or under the berths' month, the cap at twice and above, linear between
+  - L627 fixture: a berth standing and no quote struck yet
+  - L634 THE FIRST QUOTE A KIND STRIKES, the month it has a berth and a crew, IS THE RULE'S TARGET from the month's own figures (its crew's part)
+  - L639 ...AND THE NEXT WALKS REPRICE_SPEED OF THE WAY to the new target
+  - L642 THE DUES ARE PASSED THROUGH AT THE MONTH'S OWN RATE: the kind's bill less its dues is its tonnes x the crew quote it was billed at, to the cent
+  - L647 fixture: the berth is worked below DESIGN_USE (the design tonnes are the berths' month x DESIGN_USE)
+  - L649 A BERTH BELOW DESIGN USE IS CARRIED BY THE DIVISION: the month's handling billed is less than its crew plus its dues
+- **L655 8. the money: the audit closes every month of a city working a port that pays dues**
+  - L667 fixture: a terminal stands and dues and handling were paid in every one of the months checked
+  - L668 THE MONEY AUDIT'S RESIDUAL IS WITHIN ITS TOLERANCE every month: no dollar made or lost between shipper, Freight, the households and the treasury
+- **L673 9. the save: the dial in the policy state; the quotes, the month and the treasury's lines across a reload**
+  - L680 the dial at 1.5 crosses getPolicyState() and restorePolicyState()
+  - L684 ...and an array cut where the dial was added restores the default
+  - L693 fixture: the month paid dues at the dial 1.5 and struck a quote
+  - L704 A CITY SAVED AND RELOADED READS THE SAME QUOTES, TONNES AND BILLS, to the bit
+  - L706 ...the same dues paid and handling billed, the treasury's tax take line and the national accounts' line, and the dial
+
 ## LongPlaytest.java - 0 labelled assertions
 
 > A city played for four thousand months, the way a person plays.
@@ -8729,17 +8827,17 @@ _(this harness does not label its checks through a helper - it prints its findin
 
 _(this harness does not label its checks through a helper - it prints its findings; read its header and its sections)_
 
-- **L1172 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
-- **L2788 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
-- **L2843 AND EVERYTHING THAT IS A PURCHASE.**
-- **L3188 AND THE BEST OF THEM WINS.**
-- **L4994 founding: a few months at a time, by hand**
-- **L5089 then the real rhythm**
-- **L5237 the report**
-- **L5251 ==**
-- **L5337 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L6467 what the advisor tried, and what happened**
-- **L6473 findings**
+- **L1188 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
+- **L2820 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
+- **L2875 AND EVERYTHING THAT IS A PURCHASE.**
+- **L3220 AND THE BEST OF THEM WINS.**
+- **L5042 founding: a few months at a time, by hand**
+- **L5137 then the real rhythm**
+- **L5285 the report**
+- **L5299 ==**
+- **L5385 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L6532 what the advisor tried, and what happened**
+- **L6538 findings**
 
 ## MainLineCheck.java - 112 labelled assertions
 
@@ -10136,7 +10234,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L733 ...the grocers' statement the sale without it
   - L739 ...and the audit closes every month for a year with it
   - L747 the dial and the month's duty cross a save, the budget's line reading the same
-  - L757 ...and a policy from before 0.7.103, one slot shorter, loads with no duty
+  - L757 ...and a policy from before 0.7.103, cut before the duty's slot, loads with no duty
   - L805 a Paved Road ordered draws its bitumen as it is placed: 64.25 t, bought by the builders
   - L825 fixture: the town has no refinery, so its four fuels and oils come from the world
   - L829 the vans' and the trucks' diesel is DIESEL bought abroad, by the sectors that run vans and by Freight's trucks
@@ -11093,7 +11191,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1377 ...and it put somebody in the ring
   - L1380 a ring is refused whole when the width does not match its names
 
-## PortCheck.java - 73 labelled assertions
+## PortCheck.java - 90 labelled assertions
 
 > The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md
 > 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5).
@@ -11109,87 +11207,105 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      writes it; the ships' cargoes [P30][P40][P42][P46]; a tanker the
 > ...
 
-- **L218 1. the freight rule: each kind's sea freight against a lorry's, at 5,000 km, from the research's rows**
-  - L228 each kind's constant is its own: liquid .08, dry bulk .07, containers .16, general cargo .20
-  - L235 SEA IS USED ONLY WHERE IT IS CHEAPER: every kind's sea freight is under the railway's floor, so the
-- **L242 2. the cargo, the ships and the terminals**
-  - L258 liquid is crude, the eight litre goods and bitumen; dry bulk iron, crops, grains, materials and coke;
-  - L260 ...containers the rest of what the goods stream carries
-  - L261 ...and no kind for a good that never crosses the boundary as freight
-  - L262 the ships carry the research's cargoes: MR 37,500 t, LR1 60,000, Aframax 75,000, LR2 82,500, Suezmax
-  - L276 THE CLASS FITS THE FREE ROOM: a tanker is the largest whose cargo the room takes, none under an MR's
-  - L279 ...and a bulk carrier a Capesize when the month's tonnes fill one, a Panamax when not
-  - L300 four terminals, ids 94-97, the city's, a berth each - liquid 3.25 Mt, dry bulk 27.5 Mt, boxes 0.75M TEU,
-  - L302 ...a berth's month is its year over twelve
-  - L303 WORTH_A_BERTH, the test player's line, is the railway's own MIN_LINE_UTILISATION
-- **L310 3. the factor equals its formula, and nothing at sea is the railway's band, to the bit**
-  - L323 THE FACTOR EQUALS ITS FORMULA EXACTLY: 1 - rail - sea + sea x SEA_FREIGHT_SHARE, every share on a grid
-  - L324 ...and with nothing at sea it is the railway's own 1 - rail, to the bit
-  - L335 WITH NO PORT the railway's share of every good is its carried share and the ships' nothing, to the bit
-  - L337 ...and the road's rail share is its carried share, the ships' nothing
-- **L350 4. the shares: berths shared by tonnes; before the railway, or after it; crude and its room**
-  - L369 A KIND'S BERTHS ARE SHARED AMONG ITS GOODS BY THEIR TONNES: steel and machinery each go by sea in the
-  - L372 ...under the quote, before the railway: the railway hauls its carried share of what the berths leave
-  - L374 ...and the tonnes they take come off what the railway is offered, by stream, with their lorry freight
-  - L376 a kind with no berth goes nowhere by sea, and the railway's share of it is its carried share
-  - L380 CRUDE WITH NO TANK ROOM IS HELD BACK: the tanker berth takes the other liquids, all of the petrol, and the
-  - L387 ...and the road's two shares are what the berths take of each stream, before the railway and in all
-  - L396 WITH ROOM FOR A CARGO crude goes by sea in the largest class the room takes, an LR2 in 100,000 t, the
-  - L408 A KIND NOT UNDER THE QUOTE GOES AFTER THE RAILWAY: it takes nothing off what the railway is offered
-  - L410 ...its berths shared over what the railway leaves, and the railway's share its carried share, whole
-- **L419 5. no port gives a bit-identical band: a town with a railway and no terminal**
-  - L428 fixture: two steel foundries and a rail spur stood
-  - L443 fixture: the railway carries the town's freight, and no terminal stands
-  - L446 EVERY GOOD'S BAND IS 0.7.85'S: 1 - carried and carried x the quote, to the bit
-  - L450 ...the road's rail share the railway's carried share and the ships' nothing
-  - L452 ...and nothing went by sea, and no boat called
-- **L461 6. a port on a town: the coast, the band, the road, the crews, the calls, the audit**
-  - L471 fixture: the town's two foundries ship steel and land iron, and it owns no sea
-  - L475 A TERMINAL WITH NO SEA IS REFUSED NO_COAST, before land and money
-  - L477 ...the card's verdict says so before the click
-  - L481 ...and a run stops at it
-  - L483 fixture: the city buys an offer that runs out to the sea
-  - L485 WITH SEA THE ORDER PASSES THE COAST
-  - L491 fixture: the terminal stood
-  - L506 ITS KIND GOES BY SEA IN ITS SHARE: the berth's month over the general cargo that crossed the boundary
-  - L524 EACH GOOD'S BAND IS ITS FORMULA: Ports.factor() of its rail and sea shares, to the bit
-  - L525 ...narrower than the lorries': it lands cheaper and ships dearer than the world's delivered prices
-  - L527 ...and a kind with no berth keeps the lorries' band
-  - L530 THE ROAD IS TOLD THE SHIPS' SHARE of each stream, relieved at the railway's RAIL_ROAD_RELIEF
-  - L540 ITS CREWS ARE PAID WITH TRANSIT'S: a town with no line pays its terminal's posts at their fill, and its twin
-  - L552 CALLS = TONNES ÷ CARGO: the month's general cargo by sea, each way, over a 5,500 t ship, whole
-  - L556 ...the month's sea tonnes are the share that was in force while it moved, of what crossed
-  - L563 ...and the audit closes every month of a year with the port: its residual within MoneyAudit.tolerance() of
-- **L571 7. crude needs room: held back without a Tank Farm, in the largest class the room takes with one**
-  - L584 fixture: a refinery on imported crude, a tanker berth, and no Tank Farm
-  - L589 ITS CRUDE IS HELD BACK FOR ROOM: none by sea, what the berth would take held back
-  - L596 ...and the refiners' page says so
-  - L606 A TANK FARM IS WEIGHED while a port holds the refiners' crude back for room: their part of it, at the freight a
-  - L616 ...and the refiners order it only when it passes every gate and earns more on its cost than any unit
-  - L630 ...a Crude Unit's crude held back pays for one where an Oil Refinery's does not (a fixture's gates); nothing
-  - L640 fixture: a Tank Farm stood beside it
-  - L643 WITH A TANK FARM ITS CRUDE GOES BY SEA, in the largest class the free room takes
-  - L647 ...its calls in that class
-  - L660 fixture: one Crude Unit's month beside one Tank Farm's room: kept as far as the room held it (until 0.7.105) it
-  - L669 THE ROOM AN MR'S CARGO NEEDS IS KEPT FREE (Refining.CARGO_KEPT_FREE): the refiners keep the rest of the room,
-  - L678 ...and a month on, the store kept, its crude goes by sea in an MR, none held back for room
-  - L698 A FRACTION OF A CALL IS A WHOLE ONE in the share of months it says: 12,345 t in 5,500 t ships is 2 or 3
-  - L701 ...no tonnes, no call
-  - L713 the schedule is pure in the month and the trade: built twice, the same calls
-  - L715 ...each call's whole visit inside its month, on a quay of its own kind
-  - L717 ...and another month hashes its arrivals afresh
-  - L719 A LANE RUNS STRAIGHT OUT TO SEA AWAY FROM THE SITE, LANE_PLOTS long
-  - L736 A BOAT IS PURE IN (CALL, t): asked twice, the same place; on the water only from a leg before it berths to
-  - L738 ...halfway in, halfway along its lane; at the quay while it berths; halfway out on the way back
-  - L749 ...an import comes in loaded and leaves empty, an export the other way, a box ship loaded both ways
-  - L771 A FRAME TOUCHES ONLY THE ROUTES ON SCREEN, and finds every boat on them, a district and eight by eight
-- **L822 9. the shares and the month cross a save; a save from before them has nothing at sea**
-  - L836 the shares in force and the month's tonnes cross a save, to the bit
-  - L847 ...the band put back on every market, and the road's two shares, to the bit
-  - L848 ...the month's boats the same
-  - L852 ...and a month on the city and its reload ship the same tonnes by sea and strike the same shares, to the bit
-  - L866 A SAVE FROM BEFORE 0.7.86 (no portMonth) loads with nothing at sea
-  - L869 ...and its terminal takes its share the first month it plays, the audit closing
+- **L222 1. the freight rule: each kind's sea freight against a lorry's, at 5,000 km, from the research's rows**
+  - L232 each kind's constant is its own: liquid .08, dry bulk .07, containers .16, general cargo .20
+  - L239 SEA IS USED ONLY WHERE IT IS CHEAPER: every kind's sea freight is under the railway's floor, so the
+- **L246 2. the cargo, the ships and the terminals**
+  - L262 liquid is crude, the eight litre goods and bitumen; dry bulk iron, crops, grains, materials and coke;
+  - L264 ...containers the rest of what the goods stream carries
+  - L265 ...and no kind for a good that never crosses the boundary as freight
+  - L266 the ships carry the research's cargoes: MR 37,500 t, LR1 60,000, Aframax 75,000, LR2 82,500, Suezmax
+  - L280 THE CLASS FITS THE FREE ROOM: a tanker is the largest whose cargo the room takes, none under an MR's
+  - L283 ...and a bulk carrier a Capesize when the month's tonnes fill one, a Panamax when not (the Bulk Terminal's classes)
+  - L288 the Bulk Berth's ships are dry bulk carriers [P37]: a Handysize 32,500 t and a Supramax 57,500, the middles of
+  - L294 ...with the Bulk Berth's classes a month's tonnes one way go in a Supramax when they fill one, else a Handysize
+  - L299 ...with the Bulk Terminal's, a Capesize at its cargo and a Panamax under it, as before FR3
+  - L307 THE BULK TERMINAL'S CLASSES ARE TODAY'S RULE EXACTLY: tonnes >= a Capesize's cargo is a Capesize, else a Panamax,
+  - L312 THE LARGEST DRY BULK BERTH STANDING DECIDES: with none, the Bulk Terminal's classes (today's rule)
+  - L316 ...a tanker or a general cargo berth is not a dry bulk berth, and decides nothing
+  - L319 ...a Bulk Berth alone: Handysize and Supramax
+  - L321 ...a Bulk Terminal beside it, the larger berth: Panamax and Capesize
+  - L327 ...and a Bulk Terminal alone, the same
+  - L347 four terminals, ids 94-97, the city's, a berth each - liquid 3.25 Mt, dry bulk 27.5 Mt, boxes 0.75M TEU,
+  - L349 ...a berth's month is its year over twelve
+  - L350 WORTH_A_BERTH, the test player's line, is the railway's own MIN_LINE_UTILISATION
+- **L357 the Bulk Berth (FR3)**
+  - L376 id 142 is the Bulk Berth, in the code and in the file alike: the city's, PORTS, a DRY_BULK berth of 2.5 Mt a year,
+  - L379 ...the Bulk Terminal's \"ships\" line is Panamax and Capesize, in the code and in the file
+  - L389 ...a terminal with no list takes every class of its kind: the tanker, container and general terminals, unchanged
+  - L390 ...and a building that is not a berth takes none
+  - L402 ONE BULK BERTH STANDING ADDS 2,500,000 / 12 TONNES A MONTH to the dry bulk berths and nothing to any other kind
+  - L405 ...two add twice that, and the same beside a Bulk Terminal's 27,500,000 / 12
+  - L419 THE SCHEDULE CALLS IN THE CLASSES IT IS GIVEN: three Supramaxes' tonnes in with a Bulk Berth standing are three calls
+  - L421 ...a schedule given no classes is the Bulk Terminal's, as before FR3
+- **L428 3. the factor equals its formula, and nothing at sea is the railway's band, to the bit**
+  - L441 THE FACTOR EQUALS ITS FORMULA EXACTLY: 1 - rail - sea + sea x SEA_FREIGHT_SHARE, every share on a grid
+  - L442 ...and with nothing at sea it is the railway's own 1 - rail, to the bit
+  - L453 WITH NO PORT the railway's share of every good is its carried share and the ships' nothing, to the bit
+  - L455 ...and the road's rail share is its carried share, the ships' nothing
+- **L468 4. the shares: berths shared by tonnes; before the railway, or after it; crude and its room**
+  - L487 A KIND'S BERTHS ARE SHARED AMONG ITS GOODS BY THEIR TONNES: steel and machinery each go by sea in the
+  - L490 ...under the quote, before the railway: the railway hauls its carried share of what the berths leave
+  - L492 ...and the tonnes they take come off what the railway is offered, by stream, with their lorry freight
+  - L494 a kind with no berth goes nowhere by sea, and the railway's share of it is its carried share
+  - L498 CRUDE WITH NO TANK ROOM IS HELD BACK: the tanker berth takes the other liquids, all of the petrol, and the
+  - L505 ...and the road's two shares are what the berths take of each stream, before the railway and in all
+  - L514 WITH ROOM FOR A CARGO crude goes by sea in the largest class the room takes, an LR2 in 100,000 t, the
+  - L526 A KIND NOT UNDER THE QUOTE GOES AFTER THE RAILWAY: it takes nothing off what the railway is offered
+  - L528 ...its berths shared over what the railway leaves, and the railway's share its carried share, whole
+- **L537 5. no port gives a bit-identical band: a town with a railway and no terminal**
+  - L546 fixture: two steel foundries and a rail spur stood
+  - L561 fixture: the railway carries the town's freight, and no terminal stands
+  - L564 EVERY GOOD'S BAND IS 0.7.85'S: 1 - carried and carried x the quote, to the bit
+  - L568 ...the road's rail share the railway's carried share and the ships' nothing
+  - L570 ...and nothing went by sea, and no boat called
+- **L579 6. a port on a town: the coast, the band, the road, the crews, the calls, the audit**
+  - L589 fixture: the town's two foundries ship steel and land iron, and it owns no sea
+  - L593 A TERMINAL WITH NO SEA IS REFUSED NO_COAST, before land and money
+  - L595 ...the card's verdict says so before the click
+  - L599 ...and a run stops at it
+  - L601 fixture: the city buys an offer that runs out to the sea
+  - L603 WITH SEA THE ORDER PASSES THE COAST
+  - L609 fixture: the terminal stood
+  - L624 ITS KIND GOES BY SEA IN ITS SHARE: the berth's month over the general cargo that crossed the boundary
+  - L642 EACH GOOD'S BAND IS ITS FORMULA: Ports.factor() of its rail and sea shares, to the bit
+  - L643 ...narrower than the lorries': it lands cheaper and ships dearer than the world's delivered prices
+  - L645 ...and a kind with no berth keeps the lorries' band
+  - L648 THE ROAD IS TOLD THE SHIPS' SHARE of each stream, relieved at the railway's RAIL_ROAD_RELIEF
+  - L663 ITS CREWS ARE PAID BY FREIGHT: a town with no line pays only its terminal's upkeep with transit's, Freight's wage bill
+  - L677 CALLS = TONNES ÷ CARGO: the month's general cargo by sea, each way, over a 5,500 t ship, whole
+  - L681 ...the month's sea tonnes are the share that was in force while it moved, of what crossed
+  - L688 ...and the audit closes every month of a year with the port: its residual within MoneyAudit.tolerance() of
+- **L696 7. crude needs room: held back without a Tank Farm, in the largest class the room takes with one**
+  - L709 fixture: a refinery on imported crude, a tanker berth, and no Tank Farm
+  - L714 ITS CRUDE IS HELD BACK FOR ROOM: none by sea, what the berth would take held back
+  - L721 ...and the refiners' page says so
+  - L731 A TANK FARM IS WEIGHED while a port holds the refiners' crude back for room: their part of it, at the freight a
+  - L741 ...and the refiners order it only when it passes every gate and earns more on its cost than any unit
+  - L755 ...a Crude Unit's crude held back pays for one where an Oil Refinery's does not (a fixture's gates); nothing
+  - L765 fixture: a Tank Farm stood beside it
+  - L768 WITH A TANK FARM ITS CRUDE GOES BY SEA, in the largest class the free room takes
+  - L772 ...its calls in that class
+  - L785 fixture: one Crude Unit's month beside one Tank Farm's room: kept as far as the room held it (until 0.7.105) it
+  - L794 THE ROOM AN MR'S CARGO NEEDS IS KEPT FREE (Refining.CARGO_KEPT_FREE): the refiners keep the rest of the room,
+  - L803 ...and a month on, the store kept, its crude goes by sea in an MR, none held back for room
+  - L823 A FRACTION OF A CALL IS A WHOLE ONE in the share of months it says: 12,345 t in 5,500 t ships is 2 or 3
+  - L826 ...no tonnes, no call
+  - L838 the schedule is pure in the month and the trade: built twice, the same calls
+  - L840 ...each call's whole visit inside its month, on a quay of its own kind
+  - L842 ...and another month hashes its arrivals afresh
+  - L844 A LANE RUNS STRAIGHT OUT TO SEA AWAY FROM THE SITE, LANE_PLOTS long
+  - L861 A BOAT IS PURE IN (CALL, t): asked twice, the same place; on the water only from a leg before it berths to
+  - L863 ...halfway in, halfway along its lane; at the quay while it berths; halfway out on the way back
+  - L874 ...an import comes in loaded and leaves empty, an export the other way, a box ship loaded both ways
+  - L896 A FRAME TOUCHES ONLY THE ROUTES ON SCREEN, and finds every boat on them, a district and eight by eight
+- **L947 9. the shares and the month cross a save; a save from before them has nothing at sea**
+  - L961 the shares in force and the month's tonnes cross a save, to the bit
+  - L972 ...the band put back on every market, and the road's two shares, to the bit
+  - L973 ...the month's boats the same
+  - L977 ...and a month on the city and its reload ship the same tonnes by sea and strike the same shares, to the bit
+  - L991 A SAVE FROM BEFORE 0.7.86 (no portMonth) loads with nothing at sea
+  - L994 ...and its terminal takes its share the first month it plays, the audit closing
 
 ## QuarryingCheck.java - 47 labelled assertions
 
@@ -12206,7 +12322,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L411 ...and no more than GameLog.FAILURE_BYTES of failures go in past the cap
   - L416 ...after which the file takes nothing more
 
-## SaveFileCheck.java - 509 labelled assertions
+## SaveFileCheck.java - 514 labelled assertions
 
 > Verifies where saves go and how they are written.
 > 
@@ -12731,28 +12847,34 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2690 every refused save byte for byte as it was, and nothing written beside it
   - L2696 a save at the floor is loadable
   - L2700 ...and loads, at the month it was saved
-- **L2740 and a city on the real Earth, saved and read back; a format-37 save on its generated world**
-  - L2757 fixture: a generated city saved
-  - L2761 a generated city writes none of the four Earth fields
-  - L2773 a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)
-  - L2777 ...its land and map the city's that wrote it
-  - L2779 saved again
-  - L2782 ...and writes its own bytes back, but for this build's stamp: its format, version and time
-  - L2785 a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in
-  - L2792 fixture: EarthCheck's fixture is beside the classes
-  - L2808 fixture: a city founded on the real Earth, played four months
-  - L2810 saved
-  - L2812 the save carries its kind, its spot and its data, and its seed (0.7.121)
-  - L2817 ...read back as the same key
-  - L2821 an Earth city reloaded stands on the same Earth world, its land the same, its map read back
-  - L2824 saved again
-  - L2827 ...and writes the same bytes but its time
-  - L2830 two months on: the treasury
-  - L2831 ...the households' savings
-  - L2834 ...and every sector's till
-  - L2835 a map sidecar names its world's whole key: an Earth map is not this seed's generated world's
-  - L2858 a save with
-  - L2860 ...nothing of it applied, and every file as it was
+- **L2751 every id crosses a save, the highest past a gap in the ids too**
+  - L2769 fixture: the highest id,
+  - L2771 fixture: two of it stand
+  - L2774 fixture: the city saved
+  - L2779 the highest id's buildings came back
+  - L2784 ...and every id's count is the one saved
+- **L2788 and a city on the real Earth, saved and read back; a format-37 save on its generated world**
+  - L2805 fixture: a generated city saved
+  - L2809 a generated city writes none of the four Earth fields
+  - L2821 a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)
+  - L2825 ...its land and map the city's that wrote it
+  - L2827 saved again
+  - L2830 ...and writes its own bytes back, but for this build's stamp: its format, version and time
+  - L2833 a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in
+  - L2840 fixture: EarthCheck's fixture is beside the classes
+  - L2856 fixture: a city founded on the real Earth, played four months
+  - L2858 saved
+  - L2860 the save carries its kind, its spot and its data, and its seed (0.7.121)
+  - L2865 ...read back as the same key
+  - L2869 an Earth city reloaded stands on the same Earth world, its land the same, its map read back
+  - L2872 saved again
+  - L2875 ...and writes the same bytes but its time
+  - L2878 two months on: the treasury
+  - L2879 ...the households' savings
+  - L2882 ...and every sector's till
+  - L2883 a map sidecar names its world's whole key: an Earth map is not this seed's generated world's
+  - L2906 a save with
+  - L2908 ...nothing of it applied, and every file as it was
 
 ## SaveSlotCheck.java - 54 labelled assertions
 

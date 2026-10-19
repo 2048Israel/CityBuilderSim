@@ -1,4 +1,4 @@
-# LandlordPortCheck.java - 722 lines · 28 methods · 2 constants · harnesses
+# LandlordPortCheck.java - 739 lines · 29 methods · 2 constants · harnesses
 
 `ham/citybuildersim/LandlordPortCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -33,7 +33,7 @@
 >   6. THE DUES' DEFAULT. duesRateOf() is the annuity worked here by hand (the kind's terminals at cash cost
 >      and materials at market, the city's own rate over PORT_LIFE_MONTHS, over the berths' month at
 >      DESIGN_USE), and a city owing more pays a dearer due.
->   7. THE PRICE. The first quote is the target itself, the next walks REPRICE_SPEED of the way; the
+>   7. THE PRICE. The first crew quote is the target itself, the next walks REPRICE_SPEED of the way, the dues passed through at the month's rate; the
 >      scarcity is 1 to the berths' month and the cap at twice; a berth below DESIGN_USE bills less than
 >      its crew and its dues.
 >   8. THE MONEY. The money audit closes every month of a city working a port that pays dues.
@@ -46,7 +46,7 @@
 > nothing in it; where the code and the brief disagree it says FAIL and the
 > line says where. Every fixture is a city of its own in GameFiles.scratch().
 
-**Uses:** [Ports](Ports.md) (44), [PortDivision](PortDivision.md) (36), [Game](Game.md) (21), [JobType](JobType.md) (17), [GameFiles](GameFiles.md) (13), [Freight](Freight.md) (13), [HaulageCheck](HaulageCheck.md) (12), [Sector](Sector.md) (10), [TaxPolicy](TaxPolicy.md) (10), [BuildingType](BuildingType.md) (9), [Good](Good.md) (7), [BuildingManager](BuildingManager.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [Sectors](Sectors.md) (3), [Haulage](Haulage.md) (2), [Traffic](Traffic.md) (2), [Founding](Founding.md) (1), [PopulationManager](PopulationManager.md) (1), [LabourCheck](LabourCheck.md) (1), [PortCheck](PortCheck.md) (1)
+**Uses:** [Ports](Ports.md) (46), [PortDivision](PortDivision.md) (40), [Game](Game.md) (22), [JobType](JobType.md) (17), [GameFiles](GameFiles.md) (13), [Freight](Freight.md) (13), [HaulageCheck](HaulageCheck.md) (12), [Sector](Sector.md) (10), [TaxPolicy](TaxPolicy.md) (10), [BuildingType](BuildingType.md) (9), [Good](Good.md) (7), [BuildingManager](BuildingManager.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [Sectors](Sectors.md) (3), [Haulage](Haulage.md) (2), [Traffic](Traffic.md) (2), [Founding](Founding.md) (1), [PopulationManager](PopulationManager.md) (1), [LabourCheck](LabourCheck.md) (1), [PortCheck](PortCheck.md) (1)
 
 ## Sections
 
@@ -55,7 +55,7 @@
 | 87 | THE FIXTURES |
 | 161 | 3. THE CREWS |
 | 339 | 4-9. THE PORT DIVISION: THE HANDLING, THE DUES, THE PRICE, THE MONEY, THE SAVE |
-| 697 | THE REST OF THE BRIEF, FOR THE SLICES THAT BUILD IT |
+| 714 | THE REST OF THE BRIEF, FOR THE SLICES THAT BUILD IT |
 
 ## Constants
 
@@ -78,7 +78,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 668 | **type** `public class LandlordPortCheck` | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. |
+| 55 | 685 | **type** `public class LandlordPortCheck` | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. |
 | 59 | 5 | `static void quietly(Runnable r)` |  |
 | 65 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 70 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -104,7 +104,7 @@
 | 173 | 135 | `static void crewsOf(boolean tanker)` | One General Cargo Terminal stood in a city that had none (and a Tanker Terminal besides, when `tanker`): what moves from the city's bill to Freight's payroll. |
 | 313 | 25 | `static void transitBill()` | A played city with its terminals: the transit bill has the berths' repairs and no crew, and the households are paid what the employers paid, the dockers in Freight's bill and nobody else's. |
 
-### 4-9. THE PORT DIVISION: THE HANDLING, THE DUES, THE PRICE, THE MONEY, THE SAVE (lines 339-696)
+### 4-9. THE PORT DIVISION: THE HANDLING, THE DUES, THE PRICE, THE MONEY, THE SAVE (lines 339-713)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -113,19 +113,20 @@
 | 373 | 25 | `static Plan plan(Game g)` | Last month's rows, at the berths' share in force while they moved (Ports.seaShareOf() at the railway's carried share): units in + units out, x the good's tonnes a unit, x that share, by the good's kind of cargo. |
 | 399 | 1 | `static double dial(Game g)` |  |
 | 402 | 6 | `static double target(Game g, Ports.Cargo kind)` | The rule's target for a kind from the figures of the month just billed (the division's getters, the berths standing, the tally's boundary tonnes, the dial). |
-| 410 | 3 | `static double billedAt(Game g, Plan p, Ports.Cargo kind)` | The quote a kind was billed at in the month just run: the one in force before it, or the rule's own target while none was struck. |
-| 414 | 5 | `static double sumOf(double[] a)` |  |
-| 420 | 1 | `static double lineOf(Sector s, String what)` |  |
-| 422 | 94 | `static void handling()` |  |
-| 517 | 38 | `static void dues()` |  |
-| 556 | 43 | `static void duesDefault()` |  |
-| 600 | 36 | `static void price()` |  |
-| 637 | 17 | `static void money()` |  |
-| 655 | 41 | `static void save() throws Exception` |  |
+| 410 | 5 | `static double crewTarget(Game g, Ports.Cargo kind)` | ...and its crew's part alone, the part the quote walks (PortDivision.crewTargetOf()). |
+| 420 | 4 | `static double billedAt(Game g, Plan p, Ports.Cargo kind)` | The price a kind was billed at in the month just run: the crew quote in force before it (or the rule's own crew target while none was struck), and the dues at the rate that month paid the city - the dues passed throug... |
+| 425 | 5 | `static double sumOf(double[] a)` |  |
+| 431 | 1 | `static double lineOf(Sector s, String what)` |  |
+| 433 | 94 | `static void handling()` |  |
+| 528 | 40 | `static void dues()` |  |
+| 569 | 43 | `static void duesDefault()` |  |
+| 613 | 40 | `static void price()` |  |
+| 654 | 17 | `static void money()` |  |
+| 672 | 41 | `static void save() throws Exception` |  |
 
-### THE REST OF THE BRIEF, FOR THE SLICES THAT BUILD IT (lines 697-722)
+### THE REST OF THE BRIEF, FOR THE SLICES THAT BUILD IT (lines 714-739)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 706 | 16 | `public static void main(String[] args) throws Exception` | 1. |
+| 723 | 16 | `public static void main(String[] args) throws Exception` | 1. |
 

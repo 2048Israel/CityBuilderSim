@@ -1,4 +1,4 @@
-# BuildingDataCheck.java - 828 lines · 4 methods · 0 constants · harnesses
+# BuildingDataCheck.java - 833 lines · 4 methods · 0 constants · harnesses
 
 `ham/citybuildersim/BuildingDataCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -20,21 +20,21 @@
 | 40 | · · what the code says |
 | 45 | · · what the file says |
 | 60 | · · every field of every building |
-| 201 | · · care types line up with the category |
-| 254 | · · the sea is drawn by water works, and one of them (0.7.59) |
-| 281 | · · fuel (0.7.62, batch K; spec-land 2.7) |
-| 315 | · · the refinery's units (0.7.80, batch O4; spec-oil 2.3) |
-| 364 | · · the phase-1 buyers and the forecourt (0.7.83, batch O6) |
-| 421 | · · the oil storage (0.7.85, batch O8; spec-oil 2.8) |
-| 454 | · · the ports (0.7.86, batch O9; spec-oil 2.9) |
-| 476 | · · the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11) |
-| 520 | · · the site each stands on (0.7.110, batch I1) |
-| 634 | · · a works' own power and its consumables (0.7.112, batch I2) |
-| 690 | · · the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) |
-| 762 | · · the raw coal a preparation plant washes (0.7.126, batch I6) |
-| 779 | · · and every profession has exactly one school |
-| 798 | · · ids are unique, which the saves depend on |
-| 811 | · · the manager actually uses the file |
+| 206 | · · care types line up with the category |
+| 259 | · · the sea is drawn by water works, and one of them (0.7.59) |
+| 286 | · · fuel (0.7.62, batch K; spec-land 2.7) |
+| 320 | · · the refinery's units (0.7.80, batch O4; spec-oil 2.3) |
+| 369 | · · the phase-1 buyers and the forecourt (0.7.83, batch O6) |
+| 426 | · · the oil storage (0.7.85, batch O8; spec-oil 2.8) |
+| 459 | · · the ports (0.7.86, batch O9; spec-oil 2.9) |
+| 481 | · · the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11) |
+| 525 | · · the site each stands on (0.7.110, batch I1) |
+| 639 | · · a works' own power and its consumables (0.7.112, batch I2) |
+| 695 | · · the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) |
+| 767 | · · the raw coal a preparation plant washes (0.7.126, batch I6) |
+| 784 | · · and every profession has exactly one school |
+| 803 | · · ids are unique, which the saves depend on |
+| 816 | · · the manager actually uses the file |
 
 ## Fields (state)
 
@@ -46,9 +46,9 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 814 | **type** `public class BuildingDataCheck` | The migration's safety net: buildings.json must produce exactly the templates the hardcoded definitions did. |
+| 15 | 819 | **type** `public class BuildingDataCheck` | The migration's safety net: buildings.json must produce exactly the templates the hardcoded definitions did. |
 | 19 | 7 | `static void check(String label, double actual, double expected)` |  |
 | 28 | 4 | `static BuildingsTemplate byId(List<BuildingsTemplate> data, int id)` | The building with this id in a list of templates, or null. |
 | 33 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 38 | 790 | `public static void main(String[] args)` |  |
+| 38 | 795 | `public static void main(String[] args)` |  |
 

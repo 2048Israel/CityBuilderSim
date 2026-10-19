@@ -6836,9 +6836,10 @@ public final class GameVersion {
      *   - THE CITY OWNS THE BERTHS, FREIGHT WORKS THEM: the crews leave the
      *     transit bill for Freight's payroll (BuildingsTemplate.getOperator()).
      *   - THE PORTS DIVISION (sectors.PortDivision): every tonne across a
-     *     berth billed "Port handling" at the kind's quote (crew over the
-     *     larger of the tonnes and .6 of the berths' month, the scarcity, the
-     *     dues), and port dues paid the city on it - the berths' cost over
+     *     berth billed "Port handling" at the kind's quote (the crew over the
+     *     larger of the tonnes and .6 of the berths' month, the scarcity,
+     *     walked; the dues passed through at the month's own rate), and port
+     *     dues paid the city on it - the berths' cost over
      *     30 years at the city's own rate, times the dial TaxPolicy.portDues.
      *     A treasury revenue line, "Port dues".
      *   - A BERTH PAYS BACK (Ports.berthPaysBack()): the test player, the
