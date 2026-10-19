@@ -207,8 +207,8 @@ public final class BuildingVisual {
     /** The permanent ids of the care types drawn in the homes' colour, because they are run from homes (spec-land star 10): Home Care Service (22) - still drawn, one for one, on its own land (0.7.64). Home Daycare (15) was the other until 0.7.71 made id 15 an 80-place centre. */
     static final int[] DRAWN_AS_HOMES = { 22 };
 
-    /** The permanent ids of the rail types drawn as a yard beside the track, not as track (0.7.72): the Rail Terminal (64). Every other RAIL type - the Rail Spur (62), the Freight Line (63) - is a line, laid plot by plot. */
-    static final int[] RAIL_TERMINALS = { 64 };
+    /** The permanent ids of the rail types drawn as a yard beside the track, not as track (0.7.72): the Rail Terminal (64), and since FR7 the Rail Depot (141), the small goods yard a railway starts with. Every other RAIL type - the Rail Spur (62), the Freight Line (63) - is a line, laid plot by plot. */
+    static final int[] RAIL_TERMINALS = { 64, 141 };
 
     /** The permanent ids of the railway lines whose track makes the main line double (0.8.1, batch FR0; spec-freight 4.3): the Freight Line (63). */
     static final int[] FREIGHT_LINES = { 63 };

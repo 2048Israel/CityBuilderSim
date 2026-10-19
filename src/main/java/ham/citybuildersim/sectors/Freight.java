@@ -125,6 +125,17 @@ import java.util.function.ToDoubleFunction;
  * of their own on top of that. A city that rails everything still has its
  * commuters on the street, and in the played city commuters are 64% of the
  * load before any of this.
+ *
+ * =======================================================================
+ * AND STATIONS FIRST (FR7, 2026-10-18)
+ * =======================================================================
+ *
+ * The railway starts with a station, and track goes where a train runs: the
+ * tonnes it carries are capped by its Rail Depots and Rail Terminals (cars
+ * from a siding are sorted at a yard), except the bulk loaded at a works' own
+ * Rail Spur, which runs as a unit train and needs none. plan() orders a Rail
+ * Depot first, then a terminal, a line or a spur each against its own
+ * shortfall. See THE STATIONS below.
  */
 public final class Freight extends Sector {
 
@@ -284,6 +295,19 @@ public final class Freight extends Sector {
 
     /* the month just billed, for the screens */
     private double rTonnes, rHauled, rTruckBill, rHaulage, rFuel;
+
+    /**
+     * The BULK stream's part of rTonnes (FR7): the bulk the railway was offered,
+     * the berths' first share taken off, as rTonnes is. plan() needs it apart
+     * because bulk at a works' siding rides without a station and goods do not
+     * (THE STATIONS). Saved beside "tonnes" as "bulkOffered", because the
+     * Build tab's card reads plan()'s shortfalls between months: unsaved, a
+     * reloaded city read none until its next haul and its card's estimate ran
+     * high for that month (the slice's coder found it; the review saved it -
+     * a flow is not rebuilt from the state a month ended in). A save without
+     * it reads none, as before the railway's first haul.
+     */
+    private double rBulkOffered;
 
     /**
      * Every tonne of freight that crossed the boundary in the month (0.7.86):
@@ -553,17 +577,21 @@ public final class Freight extends Sector {
             seaFirstLorry = first[1];
         }
 
-        double capacity = Math.min(trackTonnes(), fleet() * TONNES_PER_SET);
-        double left = capacity;
+        /*
+         * ...AND THE STATIONS (FR7, 2026-10-18): the track and the sets are
+         * still the limit, and what is railed past a works' own siding must
+         * also be sorted at a yard. A city with neither a station nor a spur
+         * rails nothing - next[] stays zero and the band is the lorries' to
+         * the bit, as it is with no track at all.
+         */
+        double stations = stationTonnes(), sidings = sidingTonnes();
+        double capacity = capacityOf(trackTonnes(), fleet(), stations, sidings);
         double[] next = new double[n];
-        for (Traffic stream : new Traffic[] { Traffic.BULK, Traffic.GOODS }) {
-            int i = stream.ordinal();
-            double want = tonnes[i] - seaFirst[i];
-            if (want <= 0) continue;
-            double take = Math.min(left, want);
-            next[i] = take / want;
-            left -= take;
-        }
+        int iBulk = Traffic.BULK.ordinal(), iGoods = Traffic.GOODS.ordinal();
+        double bulkWant = tonnes[iBulk] - seaFirst[iBulk], goodsWant = tonnes[iGoods] - seaFirst[iGoods];
+        double[] dealt = deal(Math.min(trackTonnes(), fleet() * TONNES_PER_SET), stations, sidings, bulkWant, goodsWant);
+        if (bulkWant > 0) next[iBulk] = dealt[0] / bulkWant;
+        if (goodsWant > 0) next[iGoods] = dealt[1] / goodsWant;
         // ...and the kinds that go after it take what it leaves; then all of it is in force (0.7.86).
         if (ports != null) {
             ports.planAfter(goodTonnes, next);
@@ -572,10 +600,13 @@ public final class Freight extends Sector {
 
         double offered = (tonnes[Traffic.BULK.ordinal()] - seaFirst[Traffic.BULK.ordinal()])
                 + (tonnes[Traffic.GOODS.ordinal()] - seaFirst[Traffic.GOODS.ordinal()]);
+        // ...the freight it could not carry, as the dealing left it: with the stations in the way a network can have the tonnes
+        // of capacity and still leave the goods on the road (a siding and no yard), so this is no longer offered less capacity (FR7).
         double tightness = offered > 0
-                ? Math.max(0, Math.min(1, (offered - capacity) / offered)) : 0;
+                ? Math.max(0, Math.min(1, (offered - (dealt[0] + dealt[1])) / offered)) : 0;
 
         rTonnes = offered;
+        rBulkOffered = Math.max(0, bulkWant);
         rCrossed = tonnes[Traffic.BULK.ordinal()] + tonnes[Traffic.GOODS.ordinal()];
         rTruckBill = truck[Traffic.BULK.ordinal()] + truck[Traffic.GOODS.ordinal()];
         rOfferedBill = (truck[Traffic.BULK.ordinal()] - seaFirstLorry[Traffic.BULK.ordinal()])
@@ -721,6 +752,158 @@ public final class Freight extends Sector {
         if (g == Good.TRUCKS) return haulage.bid();
         if (g != Good.ROLLING_STOCK) return super.bid(g);
         return Math.max(0, setsNeeded() - fleet());
+    }
+
+    /* ------------------------------------------ the stations (FR7) ----- */
+
+    /*
+     * THE STATIONS (FR7, 2026-10-18; docs/queue/FR7.md 1.1). Jerus, from his
+     * Halifax city: "there is a bunch [of rail lines] but its redudant, cause
+     * the only two rail terminals are just in one corner bundled together...
+     * shouldnt it be sometrhing like needs one terminal and then splurs...
+     * otherwise you have rails that somehow bring trains but no trains."
+     *
+     * WHAT THIS REPLACED. The three rail rungs were one ladder of tonnes: a
+     * spur alone carried its 50,000, a terminal alone its 500,000, capacity
+     * was the least of the track and the wagon sets, and plan() bought the
+     * best profit per cost whose tonnes the unserved freight filled to
+     * MIN_LINE_UTILISATION - so a young city bought spurs and lines and a
+     * terminal late, if ever, and nothing tied any of them to a yard. That is
+     * the track Jerus saw, running out into the country to nothing.
+     *
+     * THE RULES NOW. Cars from a siding are sorted at a yard, so what the
+     * railway carries is capped by the STATIONS (a Rail Depot, a Rail
+     * Terminal: BuildingsTemplate.getStationTonnes()) as well as by the track
+     * and the sets. The one exception is BULK loaded at a works' own siding
+     * (a Rail Spur: isSiding()), which runs as a unit train and needs no yard
+     * - it rides up to the spurs' tonnes whether or not a station stands.
+     * Goods go through a station only. A railway therefore starts with a
+     * station: plan() orders no spur or line before it has one, its first
+     * order is the smallest station, and a spur is laid only for a bulk works
+     * that has none (bulkWorks()).
+     */
+
+    /** Tonnes a month the stations standing sort (FR7): the Rail Depots' and the Rail Terminals'. */
+    public double stationTonnes() {
+        return buildings == null ? 0 : buildings.totalBySector(key(), BuildingsTemplate::getStationTonnes);
+    }
+
+    /** Tonnes a month of siding standing (FR7): the Rail Spurs' track, each into one works. */
+    public double sidingTonnes() {
+        return buildings == null ? 0 : buildings.totalBySector(key(), t -> t.isSiding() ? t.getRailCapacity() : 0);
+    }
+
+    /**
+     * What the railway can carry in a month (FR7): the track or the wagon sets,
+     * whichever is less, and no more than the stations and the sidings handle
+     * together. Zero with neither a station nor a spur, whatever else stands.
+     */
+    public static double capacityOf(double track, double sets, double stations, double sidings) {
+        return Math.min(Math.min(track, sets * TONNES_PER_SET), stations + sidings);
+    }
+
+    /**
+     * The tonnes the railway takes of a month's offer, {bulk, goods}, as haul()
+     * deals them (FR7). `capacity` is the track or the sets, before the
+     * stations. BULK first, at most what is offered, what is left of the
+     * capacity and what the stations and sidings handle together; then GOODS,
+     * at most what is offered, what is left, and what the stations have left
+     * after the bulk that did not ride a siding - goods go through a station
+     * only. A nothing-offered stream takes nothing, and with no station and no
+     * spur both are exactly zero, which is what keeps a city with no railway
+     * the city it was, to the bit.
+     */
+    public static double[] deal(double capacity, double stations, double sidings, double bulkWant, double goodsWant) {
+        double left = Math.max(0, capacity);
+        double bulk = bulkWant > 0 ? Math.max(0, Math.min(Math.min(left, bulkWant), stations + sidings)) : 0;
+        left -= bulk;
+        double throughStations = Math.max(0, stations - Math.max(0, bulk - sidings));
+        double goods = goodsWant > 0 ? Math.max(0, Math.min(Math.min(left, goodsWant), throughStations)) : 0;
+        return new double[] { bulk, goods };
+    }
+
+    /**
+     * The bulk a building has to make and use between them, tonnes a month at
+     * nameplate, to be a bulk works (FR7): MIN_LINE_UTILISATION of a wagon set's
+     * month, as a line is not laid below that share of its nameplate. A works
+     * that moves less cannot fill a set, and a siding into it would be track
+     * to a door with nothing to load. Found by listing the catalogue: every
+     * shop, diner and restaurant "uses" grain, a BULK good, but moves one to
+     * five tonnes a month, and the bakeries and the wells a few hundred; the
+     * smallest mine, the Copper Mine & Mill, moves 2,200 and the smallest
+     * camp 1,800.
+     */
+    public static final double BULK_WORKS_MIN_TONNES = TONNES_PER_SET * MIN_LINE_UTILISATION;
+
+    /** The tonnes a month of BULK goods a template makes and uses at nameplate (FR7); zero for a building that touches none. */
+    public static double bulkTonnesOf(BuildingsTemplate t) {
+        if (t == null) return 0;
+        double tonnes = 0;
+        for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+            if (e.getKey().traffic() == Traffic.BULK) tonnes += e.getValue() * e.getKey().tonnesPerUnit();
+        }
+        for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+            if (e.getKey().traffic() == Traffic.BULK) tonnes += e.getValue() * e.getKey().tonnesPerUnit();
+        }
+        return tonnes;
+    }
+
+    /**
+     * Whether a template is a bulk works (FR7): a building, in any sector but
+     * Freight's own, that makes and uses BULK goods (Good.traffic()) in tonnes
+     * enough to fill a wagon set a month (BULK_WORKS_MIN_TONNES) - a mine, a
+     * quarry, a mill, a smelter, a fabricator, a farm that ships grain. It is
+     * the works a siding could be laid into, and the map will place a spur
+     * beside one; a shop that uses a few tonnes of grain is not.
+     */
+    public static boolean isBulkWorks(BuildingsTemplate t) {
+        if (t == null || !t.isOwnedBySector() || Sectors.FREIGHT.equals(t.getSector())) return false;
+        return bulkTonnesOf(t) >= BULK_WORKS_MIN_TONNES;
+    }
+
+    /** How many bulk works stand in the city (FR7; isBulkWorks()): the most spurs worth laying, a siding to each. */
+    public int bulkWorks() {
+        return buildings == null ? 0 : buildings.standingWhere(Freight::isBulkWorks);
+    }
+
+    /**
+     * The three shortfalls plan() orders against, tonnes a month (FR7), from the
+     * month's figures and what stands now. A negative one is a surplus.
+     *
+     * TRACK is the tonnes offered less the track standing - not less the
+     * capacity, which the wagon sets limit, so while the sets lag it still
+     * reads the track the city has and orders none it does not need (the
+     * suspected overbuild, measured: a fixture with 800,000 tonnes of track,
+     * 120,000 tonnes offered and one wagon set made the old plan() order a
+     * Rail Spur). STATION is what the stations and the sidings leave of it:
+     * the offer less the bulk the sidings serve, less the stations. SIDING is
+     * the bulk offered less the spurs' tonnes.
+     */
+    public record Shortfalls(double track, double station, double siding) { }
+
+    /** The month's shortfalls against what stands now (Shortfalls). */
+    public Shortfalls shortfalls() {
+        double sidings = sidingTonnes();
+        double sidingServed = Math.min(sidings, rBulkOffered);
+        return new Shortfalls(rTonnes - trackTonnes(), (rTonnes - sidingServed) - stationTonnes(), rBulkOffered - sidings);
+    }
+
+    /** The bulk the railway was offered in the month billed (FR7): rTonnes less the goods; none after a load until the next haul. */
+    public double getBulkOffered() { return rBulkOffered; }
+
+    /**
+     * Hands the planner a month it did not run (FR7's harness): the bulk and the
+     * goods offered the railway, and what a lorry charges for a tonne of them.
+     * The capacity is what the track, the wagon sets and the stations standing
+     * make of it (capacityOf()), as haul() would leave it. The plan reads
+     * these figures and nothing else it cannot see in the city.
+     */
+    public void setMonthForTest(double bulkOffered, double goodsOffered, double lorryPerTonne) {
+        rBulkOffered = Math.max(0, bulkOffered);
+        rTonnes = rBulkOffered + Math.max(0, goodsOffered);
+        rCrossed = rTonnes;
+        rOfferedBill = rTonnes * lorryPerTonne;
+        rCapacity = capacityOf(trackTonnes(), fleet(), stationTonnes(), sidingTonnes());
     }
 
     /* ------------------------------------------ the Haulage division's seam (FR2) ----- */
@@ -978,8 +1161,20 @@ public final class Freight extends Sector {
          * included.
          */
         if (t.getTruckRoom() > 0) return TARGET_RETURN * plans.getCostOf(t, 1);
-        double spare = Math.max(0, rTonnes - rCapacity);
-        double picked = Math.min(t.getRailCapacity(), spare);
+        /*
+         * THE TONNES IT WOULD PICK UP ARE ITS OWN SHORTFALL'S (FR7), where they
+         * were rTonnes less the capacity for every rung alike: a station's are
+         * what the stations leave, a siding's the bulk its works would load
+         * (and no more than the track is short), a line's the track that is
+         * short. The capacity was limited by the wagon sets, so while the sets
+         * lagged every rung looked as though it had a city's freight to
+         * carry, whatever track stood.
+         */
+        Shortfalls gap = shortfalls();
+        double size = t.isStation() ? t.getStationTonnes() : t.getRailCapacity();
+        double measure = t.isStation() ? gap.station()
+                : t.isSiding() ? Math.min(gap.siding(), gap.track()) : gap.track();
+        double picked = Math.min(size, Math.max(0, measure));
         double revenue = picked * lorryRatePerTonne() * quote;
         // ...its fuel at what a litre costs to bring in today (0.7.62): the refiners' price or the world's - diesel's (0.7.76).
         double litre = markets == null ? Good.DIESEL.worldImportPrice() : markets.get(Good.DIESEL).landedPrice();
@@ -1026,25 +1221,77 @@ public final class Freight extends Sector {
         if (rTonnes <= 0) {
             return BusinessInvestment.Decision.no(sector, "nothing crosses the city boundary to carry");
         }
-        if (rTonnes <= rCapacity) {
-            return BusinessInvestment.Decision.no(sector, String.format(
-                    "the network already covers all %s tonnes a month the city trades",
+
+        /*
+         * WHAT IS SHORT, THREE WAYS (FR7), where it was one number, the tonnes
+         * offered less the capacity: the track, the stations and the sidings
+         * (Shortfalls). Nothing is ordered for want of capacity the wagon sets
+         * limit, because the track and the stations are what plan() builds and
+         * the sets are bought by the railway itself (bid()); with the old
+         * measure a fleet that lagged the track made the planner order track
+         * the city already had.
+         */
+        Shortfalls gap = shortfalls();
+        if (gap.track() <= 0 && gap.station() <= 0) {
+            return BusinessInvestment.Decision.no(sector, String.format(rTonnes <= rCapacity
+                            ? "the network already covers all %s tonnes a month the city trades"
+                            : "the track and the stations already carry the %s tonnes a month the city trades; the wagon sets are what lag",
                     Formats.INSTANCE.count(rTonnes)));
         }
+
+        /*
+         * A STATION FIRST (FR7). Until the city has one, standing or on site,
+         * the only thing the railway orders is its smallest station - never a
+         * terminal first, however many tonnes there are, and never a spur or a
+         * line, which would be track that brings trains to no yard. With a
+         * station, the rungs are each measured against their own shortfall:
+         * a station against what the stations leave, a line against the track
+         * that is short, and a spur against the bulk the sidings leave AND the
+         * track that is short, but only while a bulk works stands that has no
+         * siding yet.
+         */
+        double inPlay = buildings.totalBySector(sector, t -> t.isStation() ? 1 : 0)
+                + buildings.underConstructionBySector(sector, t -> t.isStation() ? 1 : 0);
+        boolean haveStation = inPlay > 0;
+        double spurs = buildings.totalBySector(sector, t -> t.isSiding() ? 1 : 0)
+                + buildings.underConstructionBySector(sector, t -> t.isSiding() ? 1 : 0);
+        int works = bulkWorks();
 
         BuildingsTemplate best = null;
         double bestScore = 0;
         Staffing staffingHold = null;
         String staffingHoldName = null;
 
-        BuildingsTemplate smallest = null;
-        double unserved = rTonnes - rCapacity;
+        BuildingsTemplate bestSiding = null;
+        double bestSidingScore = 0;
+        BuildingsTemplate firstStation = null;
+        double smallestRung = Double.MAX_VALUE;
+        boolean spurWithoutWorks = false;
+        int eligible = 0;
+        for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
+            if (t.isStation() && (firstStation == null || t.getStationTonnes() < firstStation.getStationTonnes())) firstStation = t;
+        }
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
-            if (t.getRailCapacity() <= 0) continue;
-            if (smallest == null || t.getRailCapacity() < smallest.getRailCapacity()) smallest = t;
-            // Nothing is laid to stand idle - see MIN_LINE_UTILISATION.
-            if (unserved < t.getRailCapacity() * MIN_LINE_UTILISATION) continue;
+            if (t.getRailCapacity() <= 0 && !t.isStation()) continue;
+            double size = t.isStation() ? t.getStationTonnes() : t.getRailCapacity();
+            smallestRung = Math.min(smallestRung, size);
+            // Nothing is laid to stand idle - see MIN_LINE_UTILISATION - and nothing before its station.
+            if (t.isStation()) {
+                if (!haveStation && t != firstStation) continue;
+                if (gap.station() < size * MIN_LINE_UTILISATION) continue;
+            } else if (!haveStation) {
+                continue;
+            } else if (t.isSiding()) {
+                if (gap.siding() < size * MIN_LINE_UTILISATION || gap.track() < size * MIN_LINE_UTILISATION) continue;
+                if (spurs >= works) {
+                    spurWithoutWorks = true;
+                    continue;
+                }
+            } else {
+                if (gap.track() < size * MIN_LINE_UTILISATION) continue;
+            }
+            eligible++;
 
             // Every post fillable at MIN_STAFFABLE_TO_ORDER, and none in a band
             // nobody could fill (0.7.18; see Sector.staffing()).
@@ -1061,21 +1308,57 @@ public final class Freight extends Sector {
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             double score = estimatedMonthlyProfit(t, plans) * staffable / cost;
-            if (score > bestScore) {
+            if (t.isSiding()) {
+                if (score > bestSidingScore) {
+                    bestSidingScore = score;
+                    bestSiding = t;
+                }
+            } else if (score > bestScore) {
                 bestScore = score;
                 best = t;
             }
         }
 
+        /*
+         * A WORKS' SIDING BEFORE ANOTHER YARD (FR7), by kind and not by score.
+         * Scored by profit per cost a Rail Depot beats a Rail Spur every time
+         * they are both on the list: the same cash and the same tonnes, less
+         * ground, fewer posts and so less to run (measured: a spur's 173 posts
+         * to the depot's 148, 700,000 sq ft to 550,000), and a spur is on the
+         * list only while the sidings are short and the track is, which makes
+         * the stations short by at least as much. A spur would never be laid.
+         * It is the order Jerus asked for ("one terminal and then spurs") and
+         * the real one (a shipper with traffic gets its siding; the yard
+         * serves what the sidings do not), so a spur that qualifies - a bulk
+         * works with none, the track short - goes first, and tonnes past what
+         * the sidings serve go to the yards and the lines by score.
+         */
+        if (bestSiding != null) best = bestSiding;
+
         if (best == null) {
             if (staffingHold != null) {
                 return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
             }
-            if (smallest != null && unserved < smallest.getRailCapacity() * MIN_LINE_UTILISATION) {
+            // ...the reasons it ordered nothing, the clearest first (FR7): no yard, then no works without a siding, then too little freight.
+            // Worded in the words BuildCard.wordKind() reads an advisor's word by ("not enough for a first", "already"): ENOUGH, not OTHER.
+            if (!haveStation && firstStation != null && eligible == 0) {
+                return BusinessInvestment.Decision.no(sector, String.format(
+                        "no station yet: the first order is a %s, and %s tonnes a month of freight is not enough for a first (it wants %s to be worth laying)",
+                        firstStation.getName(),
+                        Formats.INSTANCE.count(Math.max(0, gap.station())),
+                        Formats.INSTANCE.count(firstStation.getStationTonnes() * MIN_LINE_UTILISATION)));
+            }
+            if (spurWithoutWorks && eligible == 0) {
+                return BusinessInvestment.Decision.no(sector, works == 0
+                        ? "no bulk works stands, so none lacks a siding already"
+                        : String.format("every bulk works already has a siding (%d works, %s spurs)",
+                                works, Formats.INSTANCE.count(spurs)));
+            }
+            if (eligible == 0 && smallestRung < Double.MAX_VALUE) {
                 return BusinessInvestment.Decision.no(sector, String.format(
                         "%s tonnes a month go by lorry; the smallest line wants %s to be worth laying",
-                        Formats.INSTANCE.count(Math.max(0, unserved)),
-                        Formats.INSTANCE.count(smallest.getRailCapacity() * MIN_LINE_UTILISATION)));
+                        Formats.INSTANCE.count(Math.max(0, Math.max(gap.track(), gap.station()))),
+                        Formats.INSTANCE.count(smallestRung * MIN_LINE_UTILISATION)));
             }
             return BusinessInvestment.Decision.no(sector, String.format(
                     "haulage at %.0f%% of the lorry rate does not pay for track", quote * 100));
@@ -1104,10 +1387,21 @@ public final class Freight extends Sector {
      * A Truck Depot is never retired by the railway's measure (FR2): the
      * retirement rule weighs track against the tonnes offered it, and a depot
      * has no track to weigh. Its own measure is its trucks past its room.
+     *
+     * ...and the LAST STATION standing is not sold while a spur or a line stands
+     * (FR7): without it the railway would carry nothing past its sidings and
+     * every line left would be track to no yard, the very thing the stations
+     * were made to end. With a second station standing either may go.
      */
     @Override
     public boolean mayRetire(BuildingsTemplate t) {
-        return t != null && t.getTruckRoom() <= 0 && super.mayRetire(t);
+        if (t == null || t.getTruckRoom() > 0) return false;
+        if (t.isStation() && buildings != null
+                && buildings.totalBySector(key(), s -> s.isStation() ? 1 : 0) <= 1
+                && buildings.totalBySector(key(), s -> s.getRailCapacity() > 0 && !s.isStation() ? 1 : 0) > 0) {
+            return false;
+        }
+        return super.mayRetire(t);
     }
 
     /* ------------------------------------------------------------ the books */
@@ -1226,6 +1520,7 @@ public final class Freight extends Sector {
             extras.put("carried." + stream.name(), carried[stream.ordinal()]);
         }
         extras.put("tonnes", rTonnes);
+        extras.put("bulkOffered", rBulkOffered);
         extras.put("crossed", rCrossed);
         extras.put("hauled", rHauled);
         extras.put("capacity", rCapacity);
@@ -1258,6 +1553,8 @@ public final class Freight extends Sector {
             carried[stream.ordinal()] = extras.getOrDefault("carried." + stream.name(), 0.0);
         }
         rTonnes = extras.getOrDefault("tonnes", 0.0);
+        // ...and its bulk part (FR7), which plan()'s shortfalls read: none in a save from before it.
+        rBulkOffered = extras.getOrDefault("bulkOffered", 0.0);
         // A save from before 0.7.86 had no ports: all it crossed was offered the railway.
         rCrossed = extras.getOrDefault("crossed", rTonnes);
         rHauled = extras.getOrDefault("hauled", 0.0);
@@ -1288,7 +1585,7 @@ public final class Freight extends Sector {
         quote = OPENING_QUOTE;
         fleetKnown = false;
         java.util.Arrays.fill(carried, 0);
-        rTonnes = rCrossed = rHauled = rCapacity = rTightness = rTruckBill = rOfferedBill = rHaulage = rFuel = rFuelImported = 0;
+        rTonnes = rBulkOffered = rCrossed = rHauled = rCapacity = rTightness = rTruckBill = rOfferedBill = rHaulage = rFuel = rFuelImported = 0;
         rFuelLitres = rFuelLitresImported = 0;
         java.util.Arrays.fill(railIn, 0);
         java.util.Arrays.fill(railOut, 0);

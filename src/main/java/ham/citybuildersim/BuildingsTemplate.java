@@ -853,6 +853,45 @@ public class BuildingsTemplate {
 
     public double getRailCapacity() { return railCapacity; }
 
+    private double stationTonnes;
+
+    /**
+     * Tonnes a month a station sorts (FR7, 2026-10-18): the Rail Depot's
+     * 50,000 and the Rail Terminal's 500,000; none for every other building.
+     *
+     * WHY IT IS ITS OWN FIELD AND NOT railCapacity READ TWICE. railCapacity
+     * is the track, and a station's own is still track - its connection to
+     * the main line - but track alone carries nothing: cars from a siding are
+     * sorted into trains at a yard, so what a city rails past its works' own
+     * sidings is capped by the stations it has (sectors.Freight, THE
+     * STATIONS). Before FR7 the three rail rungs were one ladder of tonnes
+     * and nothing tied a spur or a line to a yard.
+     */
+    public BuildingsTemplate setStationTonnes(double tonnes) {
+        this.stationTonnes = Math.max(0, tonnes);
+        return this;
+    }
+
+    public double getStationTonnes() { return stationTonnes; }
+
+    /** True for a building that is a station: it sorts tonnes (getStationTonnes() &gt; 0). */
+    public boolean isStation() { return stationTonnes > 0; }
+
+    private boolean siding;
+
+    /**
+     * Whether this track is a siding into one works (FR7): the Rail Spur, and
+     * no other. A siding's tonnes are loaded at the works' own loop and run
+     * as a unit train that needs no yard, so bulk may be railed up to the
+     * spurs' capacity without a station (sectors.Freight, THE STATIONS).
+     */
+    public BuildingsTemplate setSiding(boolean siding) {
+        this.siding = siding;
+        return this;
+    }
+
+    public boolean isSiding() { return siding; }
+
     private double truckRoom;
 
     /**

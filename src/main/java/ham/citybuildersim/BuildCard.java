@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * One build card's figures, for every one of the buildings in buildings.json
- * (0.7.25; 139 of them since 0.7.140): what
+ * (0.7.25; 142 of them since FR7, the Rail Depot): what
  * it gives the city and in what unit, its price per unit of that, the scarce
  * resource it takes, the group it is compared within and where in that group
  * it stands, what one costs to run, the verdict on an order of it - and, for
