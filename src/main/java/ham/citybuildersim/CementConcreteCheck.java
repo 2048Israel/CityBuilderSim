@@ -302,11 +302,11 @@ public class CementConcreteCheck {
                 before.limeIn > 0);
     }
 
-    /** One works of `c` weighed at `v`, as ProcessingSector weighs it: its lorries in its earnings and its cost. */
+    /** One works of `c` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. */
     static SpreadPlanner.Candidate weigh(CementConcrete c, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, Game g) {
         SpreadPlanner.City city = c.planner().city(c, plans, g);
         return ProcessingSector.estimate(t, v, city, c.exchangeFactor(), c.tariff(), null, 1,
-                ProcessingSector.fleetRunning(t, v, city.rate()), ProcessingSector.fleetCapital(t, v));
+                ProcessingSector.freightRunning(t, v, city.rate(), c.legPrice()), ProcessingSector.fleetCapital(t, v));
     }
 
     /** What a tonne of limestone used costs the city now (the values' in()). */

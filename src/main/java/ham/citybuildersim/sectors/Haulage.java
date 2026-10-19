@@ -144,6 +144,81 @@ public final class Haulage {
                 + (s.unitsImported(g) + s.unitsExported(g)) * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * rail));
     }
 
+    /* ------------------------------------------------------------ the price of a leg */
+
+    /**
+     * What the city leg of one tonne costs a works the planner weighs (FR2,
+     * spec 3.5): the price a works is weighed with in place of its lorries.
+     * Only a BULK good has a leg; the GOODS stream is the works' vans'.
+     *
+     * in(g): the leg of one tonne of g the works receives, at Haulage's quote,
+     * the railed part of what is imported a quarter of a truck tonne
+     * (InfrastructureManager.RAIL_ROAD_RELIEF by siding); a tonne bought at
+     * home is a full leg, paid by its buyer.
+     *
+     * out(g): the leg of one tonne of g the works makes, on average. Only the
+     * share shipped abroad pays it, the tonne sold at home being its buyer's
+     * leg; and that share is the share the city exported of the good at the
+     * last clearing.
+     */
+    public interface LegPrice {
+        /** D$ the city leg of one tonne of `g` received costs. */
+        double in(Good g);
+
+        /** D$ the city leg of one tonne of `g` made costs on average. */
+        double out(Good g);
+
+        /** No quote and no legs: every price 0 (a works with no city to weigh it in). */
+        LegPrice NONE = new LegPrice() {
+            @Override public double in(Good g)  { return 0; }
+            @Override public double out(Good g) { return 0; }
+        };
+    }
+
+    /**
+     * Haulage's quote as a works is weighed with it, live from the city: the
+     * quote in force (getQuote(), the estimate before the first month's
+     * carriage), the railway's share in force for each good
+     * (Freight.railShareInForce()), and the shares the city exported and
+     * imported of it at the last clearing. Each price finite and not below zero.
+     */
+    public LegPrice legPrice() {
+        final double q = getQuote();
+        return new LegPrice() {
+            @Override public double in(Good g) {
+                if (g == null || g.traffic() != Traffic.BULK) return 0;
+                return clean(q * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * unit(freight.railShareInForce(g)) * importShare(g)));
+            }
+
+            @Override public double out(Good g) {
+                if (g == null || g.traffic() != Traffic.BULK) return 0;
+                return clean(q * exportShare(g) * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * unit(freight.railShareInForce(g))));
+            }
+        };
+    }
+
+    /** The share of `g` the city sold abroad at the last clearing: exported over exported and sold at home; with nothing traded, 1 for a good the world buys and 0 for one it does not. */
+    private double exportShare(Good g) {
+        GoodsMarket m = freight.markets() == null ? null : freight.markets().get(g);
+        double out = m == null ? 0 : m.getExported(), home = m == null ? 0 : m.getLocalFilled();
+        double all = out + home;
+        return all > 0 ? unit(out / all) : g.exportable() ? 1 : 0;
+    }
+
+    /** ...and bought abroad: imported over imported and bought at home; with nothing traded, 1 for a good the world sells and 0 for one it does not. */
+    private double importShare(Good g) {
+        GoodsMarket m = freight.markets() == null ? null : freight.markets().get(g);
+        double in = m == null ? 0 : m.getImported(), home = m == null ? 0 : m.getLocalFilled();
+        double all = in + home;
+        return all > 0 ? unit(in / all) : g.importable() ? 1 : 0;
+    }
+
+    /** x clamped to [0, 1]; 0 if it is not a number. */
+    private static double unit(double x) { return Double.isFinite(x) ? Math.max(0, Math.min(1, x)) : 0; }
+
+    /** x not below zero; 0 if it is not a number. */
+    private static double clean(double x) { return Double.isFinite(x) ? Math.max(0, x) : 0; }
+
     /* ------------------------------------------------------------ the month */
 
     /**

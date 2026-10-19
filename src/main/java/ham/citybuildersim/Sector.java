@@ -873,6 +873,17 @@ public abstract class Sector {
 
     public double vansNeeded() { return tonnesMoved() / TONNES_PER_VAN; }
 
+    /**
+     * What the city leg of a bulk tonne costs one more works of this sector, at Haulage's
+     * quote in force and the city's trade (FR2; sectors.Haulage.legPrice()). A works's
+     * planner weighs it with this and its vans, in place of its lorries (ProcessingSector,
+     * ExtractionSector); LegPrice.NONE with no city to ask.
+     */
+    public ham.citybuildersim.sectors.Haulage.LegPrice legPrice() {
+        return game == null || game.getSectors() == null ? ham.citybuildersim.sectors.Haulage.LegPrice.NONE
+                : game.getSectors().freight().haulage().legPrice();
+    }
+
     /** The vehicles it owns. A pantry good, so it accumulates instead of being consumed. */
     public double vanFleet() { return getPantry(Good.VANS); }
 

@@ -545,7 +545,7 @@ public class CoalMiningCheck {
         double rate = BusinessInvestment.operatingRateOf(coal.getOperatingRate());
         double expect = plans.estimatedMakerProfit(coal, plant, Map.of(Good.COKING_COAL, 137_500.0))
                 - coal.lostValue(Good.THERMAL_COAL, 200_000, plans) * rate
-                - SpreadPlanner.ownCosts(plant, rate, coal.exchangeFactor(), g.getEconomyManager().getPricePerWatt()) - coal.fleetRunning(plant, rate);
+                - SpreadPlanner.ownCosts(plant, rate, coal.exchangeFactor(), g.getEconomyManager().getPricePerWatt()) - coal.freightRunning(plant, rate);
         double earns = coal.estimatedMonthlyProfit(plant, plans);
         report("...its estimate the flow's increment: the coking coal at the makers' rule, less the thermal at what it was selling for,"
                         + " less its costs, to the bit",

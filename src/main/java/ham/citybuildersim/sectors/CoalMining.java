@@ -70,7 +70,7 @@ import java.util.Map;
  * t), so W holds by type).
  *
  * THE PLAN. A mine is ExtractionSector's: the best earnings on the whole cost
- * among the mines that fit a field of their type, their lorries in it. And
+ * among the mines that fit a field of their type, their freight in it. And
  * the sector builds a preparation plant beside its coking mines (the study's
  * 3.4) - first, whenever raw coal standing or on site goes unwashed and the
  * plant would staff and pay (planWash()). What one more of any of the four
@@ -308,7 +308,7 @@ public final class CoalMining extends ExtractionSector {
      * estimate on what it adds to the flow (madeBy()), not its template's
      * makes - its gains through BusinessInvestment.estimatedMakerProfit(),
      * the thermal coal a plant stops selling raw valued as it would have
-     * sold (lostValue()) - less its consumables and its lorries. A surface
+     * sold (lostValue()) - less its consumables and its freight. A surface
      * mine adds its own makes, so its figure is the maker's on them.
      */
     @Override
@@ -322,7 +322,7 @@ public final class CoalMining extends ExtractionSector {
             else lost += lostValue(e.getKey(), -e.getValue(), plans);
         }
         double maker = plans.estimatedMakerProfit(this, t, gains) - lost * rate;
-        return maker - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), pricePerWatt) - fleetRunning(t, rate);
+        return maker - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), pricePerWatt) - freightRunning(t, rate);
     }
 
     /**

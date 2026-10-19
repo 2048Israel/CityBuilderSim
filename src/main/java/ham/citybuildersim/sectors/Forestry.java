@@ -59,7 +59,7 @@ import java.util.Map;
  * every crew standing, on site and the one ordered (roomFor()). A Logging
  * Camp then needs 17.5 km2 of cuttable forest and a Harvesting Operation 109
  * km2; a 10 km2 forest gets none. Past it the plan is ExtractionSector's:
- * the best earnings on the whole cost, its lorries in both, through the
+ * the best earnings on the whole cost, its freight in both, through the
  * money gate, one crew in flight.
  *
  * REGROWTH (Jerus's Q13: keep the rule, and show where it settles): what was
@@ -387,7 +387,7 @@ public final class Forestry extends ExtractionSector {
      * flight (a stand being planted holds none back); the cuttable forest
      * lasting FOREST_CREW_MONTHS of every crew's cut with it (roomFor()); of
      * the crews that do and the city could staff, the best earnings on the
-     * whole cost - its lorries in both - through the money gate
+     * whole cost - its freight in both - through the money gate
      * (ExtractionSector's, decision A); then ground for it.
      */
     @Override

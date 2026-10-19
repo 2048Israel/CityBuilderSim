@@ -898,6 +898,19 @@ public final class Freight extends Sector {
     public double[] getCarried() { return carried.clone(); }
 
     /**
+     * The railway's share of one good's crossing tonnes in force now (FR2): its
+     * stream's carried share, less what the city's berths take first
+     * (Ports.railShareOf()); 0 for a good with no freight stream. Read live by
+     * Haulage.legPrice(), which weighs a works at the siding's relief.
+     */
+    public double railShareInForce(Good g) {
+        Traffic stream = g == null ? null : g.traffic();
+        if (stream == null || !stream.isFreight()) return 0;
+        ham.citybuildersim.Ports ports = game == null ? null : game.getPorts();
+        return ports == null ? carried[stream.ordinal()] : ports.railShareOf(g, carried[stream.ordinal()]);
+    }
+
+    /**
      * Puts the band back where the saved month left it.
      *
      * A RELOAD HAS THE TRACK BUT NOT THE PRICE. The freight factor and the

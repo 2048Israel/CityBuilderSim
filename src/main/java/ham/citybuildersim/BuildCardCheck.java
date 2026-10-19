@@ -99,7 +99,7 @@ import java.util.Set;
  *   12. THE MATERIALS' CARDS (0.7.142): every materials building - the nine
  *       industries' - is weighed by the rule its sector orders by, to the
  *       bit: a works by its sector's own appraisal (its whole cost with its
- *       lorries, the planner's bar, its first gate and its words), a mine,
+ *       vans, the planner's bar, its first gate and its words), a mine,
  *       quarry or washing plant as its plan weighs one, a crew under E, a
  *       planted stand not at all; on three hematite sites by fiat an Iron
  *       Mine fits and a Large Open-Pit Mine and a magnetite works do not, in
@@ -1474,10 +1474,10 @@ public class BuildCardCheck {
                 + " %d washing plant; %d other buildings", works, mines, crews, stands, washers, others));
         assertTrue("only a materials building is one (its owner a ProcessingSector or an ExtractionSector), and only it is weighed",
                 onlyThem);
-        assertTrue("a works is weighed as its sector's appraisal weighs it: what it earns, its whole cost with its lorries, the"
+        assertTrue("a works is weighed as its sector's appraisal weighs it: what it earns, its whole cost with its vans, the"
                 + " planner's bar, its first gate and its words, to the bit", worksSame);
         assertTrue("...a mine, a quarry and the washing plant as their plan weighs one - ExtractionSector's estimate on its cost"
-                + " and lorries, its field (or the raw coal it washes) the feed", minesSame);
+                + " and vans, its field (or the raw coal it washes) the feed", minesSame);
         assertTrue("...a crew under E, and a planted stand not at all (Forestry plants it, nothing orders it)", crewsSame);
         if (!off.isEmpty()) out.println("      off: " + off);
 
@@ -1580,10 +1580,12 @@ public class BuildCardCheck {
                 String.format("earns %s on %s, the bar %s; %s", Formats.INSTANCE.amount(w.earns()), Formats.INSTANCE.amount(w.cost()),
                         Formats.INSTANCE.amount(w.hurdle()), w.why()));
         SpreadPlanner.Candidate c = steel.appraise(pellets, plans);
-        assertTrue("its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost"
-                + " with its lorries", w.why().equals(c.refusal(SpreadPlanner.Gate.MONEY))
-                && w.why().equals(steel.planner().city(steel, plans, g).money(w.earns(), w.cost())) && w.fleet() > 0
-                && w.cost() > plans.getCostOf(pellets, 1));
+        assertTrue("its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost - the plant"
+                + " alone, no van and no truck in it, since the pellets and their feed are bulk and go by Haulage's trucks (FR2) - with"
+                + " its city legs at the quote in what it earns", w.why().equals(c.refusal(SpreadPlanner.Gate.MONEY))
+                && w.why().equals(steel.planner().city(steel, plans, g).money(w.earns(), w.cost())) && w.fleet() == 0 && w.vans() == 0
+                && Math.abs(w.cost() - plans.getCostOf(pellets, 1)) <= 1e-9 * w.cost()
+                && ProcessingSector.cityLegs(pellets, 1, steel.legPrice()) > 0);
         BuildCard.Investors inv = BuildCard.investors(g, pellets);
         assertTrue("the card's \"this one:\" is it - the planner asks before consider() - unless the sector's word already"
                 + " names it or investors are building one: " + inv.word(), inv.planned() != null

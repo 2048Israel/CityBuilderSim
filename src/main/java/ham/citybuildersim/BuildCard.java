@@ -1282,9 +1282,10 @@ public final class BuildCard {
     /**
      * A materials building weighed by the rule its sector orders by
      * (0.7.142): what one more would earn a month at the city's values, its
-     * lorries' wear and diesel in it; its whole cost, its ground and its
-     * lorries with it; its lorries (ProcessingSector.vansFor()) and what they
-     * cost of that whole (fleetCapital()); what the money gate asks it to
+     * freight in it (FR2: its vans' wear and diesel and its bulk's city legs
+     * at Haulage's quote); its whole cost, its ground and its vans with it; its
+     * vans (ProcessingSector.vansFor(), its goods') and what they cost of that
+     * whole (fleetCapital()); what the money gate asks it to
      * earn a month on that cost (SpreadPlanner.hurdle()); and the first gate
      * it fails in SpreadPlanner.Gate's order - FEED (a works' feed, a mine's
      * field, a crew's forest under E, a washing plant's raw coal), LAND,
@@ -1308,7 +1309,7 @@ public final class BuildCard {
      * ...a works by its sector's own appraisal (ProcessingSector.appraise():
      * the candidate the plan weighs, to the bit); a mine, a crew or a washing
      * plant as its sector's plan weighs one - ExtractionSector
-     * .estimatedMonthlyProfit() on plans.getCostOf() and its lorries
+     * .estimatedMonthlyProfit() on plans.getCostOf() and its vans
      * (fleetCapital()), asked SpreadPlanner.judge()'s gates with its feed:
      * the field it lacks (ExtractionSector.fieldWanting()), E's refusal
      * (crewRule(), eWords()), or NOTHING_TO_WASH. Null for any other

@@ -70,8 +70,8 @@ import java.util.Map;
  *     (Game.claimsOn(), LandManager.fits()) - a Large Open-Pit Mine twenty
  *     free sites of one hematite field - the best earnings on the whole cost
  *     winning; the size is the free sites' (Jerus's Q19);
- *   - THE ESTIMATE and the plan's cost with the mine's lorries (★, as I4
- *     weighs every works: ProcessingSector.fleetRunning(), fleetCapital());
+ *   - THE ESTIMATE and the plan's cost with the mine's freight (★, as I4
+ *     weighs every works: ProcessingSector.freightRunning(), fleetCapital());
  *   - THE RETIREMENT by type: a mine whose type is worked out is spare while
  *     the other type still has ore, and only it may be sold.
  *
@@ -202,7 +202,7 @@ public abstract class ExtractionSector extends Sector {
         double maker = super.estimatedMonthlyProfit(t, plans);
         if (t == null) return maker;
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
-        return maker - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), pricePerWatt) - fleetRunning(t, rate);
+        return maker - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), pricePerWatt) - freightRunning(t, rate);
     }
 
     /*
@@ -217,14 +217,25 @@ public abstract class ExtractionSector extends Sector {
      * so in Game.consider() and the build card), and the vans in what the
      * plan weighs it on (fleetCapital()). Not in SpreadPlanner.caseEarns():
      * the study's cases are the study's.
+     *
+     * ...AND ITS FREIGHT, SINCE FR2 (2026-10-18; spec-freight-and-infrastructure
+     * 3.5). A mine's vans carry its GOODS only, and the city leg of its BULK
+     * is a bill at Haulage's quote (sectors.Haulage.legPrice()): the pellet
+     * plant's 2,538 vans become about 102 of Haulage's trucks, none in its
+     * cost. So one more mine is weighed with its freight: its vans' wear and
+     * diesel and their capital, and its city legs at the quote (freightRunning(),
+     * ProcessingSector's) - the railed part relieved by the siding, the
+     * output's leg at the share the city exported of that good at the last
+     * clearing.
      */
 
-    /** What one of `t`'s lorries cost a month at `rate`: ProcessingSector.fleetRunning() at what a van and a litre cost here; none with no markets. */
-    public double fleetRunning(BuildingsTemplate t, double rate) {
-        return markets == null || t == null ? 0 : ProcessingSector.fleetRunning(t, SpreadPlanner.values(markets), rate);
+    /** What the freight of one of `t` costs a month at `rate`: ProcessingSector.freightRunning() at what a van and a litre cost here and at Haulage's quote (legPrice()); none with no markets. */
+    public double freightRunning(BuildingsTemplate t, double rate) {
+        return markets == null || t == null ? 0
+                : ProcessingSector.freightRunning(t, SpreadPlanner.values(markets), rate, legPrice());
     }
 
-    /** ...and buying them: ProcessingSector.fleetCapital(); none with no markets. */
+    /** ...and buying its vans: ProcessingSector.fleetCapital() (no truck is in a mine's cost: FR2); none with no markets. */
     public double fleetCapital(BuildingsTemplate t) {
         return markets == null || t == null ? 0 : ProcessingSector.fleetCapital(t, SpreadPlanner.values(markets));
     }
