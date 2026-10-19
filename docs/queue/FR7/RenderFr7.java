@@ -19,8 +19,8 @@ import java.util.List;
  * game's own TileRaster through MapTiles, the world lines and the trains
  * drawn over it as ui/MapView draws them. args: saveRoot slot outDir, then
  * windows "name cx cy w h px t": cx cy plots, or "site 0", "station 0",
- * "hub 0" for the founding site, the freight station's box and the rail
- * net's hub, offset by the second figure in plots east (cx) and south (cy)
+ * "hub 0", "siding 0" for the founding site, the freight station's box, the rail
+ * net's hub and the first district dealt a plan's siding, offset by the second figure in plots east (cx) and south (cy)
  * when it is "site 300" and so on; t a month fraction, or -1 for the busiest
  * moment. It prints the city's yards and hub to choose windows by.
  *
@@ -71,6 +71,15 @@ public class RenderFr7 {
             case "site": return m.site()[k];
             case "hub": { long[] h = runs.rail().hub(); return h == null ? m.site()[k] : h[k]; }
             case "station": { long[] y = runs.freightStation(); return y == null ? m.site()[k] : y[k] + y[k + 2] / 2; }
+            case "siding": {
+                // The middle of the first district, in the map's order, the plans' sidings are dealt to (FR7 slice 5).
+                for (CityMap.District d : m.districts()) {
+                    if (m.sidingsOf(d) > 0) {
+                        return ((k == 0 ? m.baseDX() + d.dx : m.baseDY() + d.dy)) * CityMap.DISTRICT + CityMap.DISTRICT / 2;
+                    }
+                }
+                return m.site()[k];
+            }
             default: return Long.parseLong(what);
         }
     }
