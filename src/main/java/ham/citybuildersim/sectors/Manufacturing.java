@@ -287,8 +287,9 @@ public final class Manufacturing extends Sector {
      */
     @Override
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        double maker = super.estimatedMonthlyProfit(t, plans);
-        if (t == null || t.getId() != WIRE_CABLE_WORKS || markets == null) return maker;
+        // The wire works subtracts its own freight below; every other works of its is weighed with its legs (Sector's).
+        if (t == null || t.getId() != WIRE_CABLE_WORKS || markets == null) return super.estimatedMonthlyProfit(t, plans);
+        double maker = plans.estimatedMakerProfit(this, t);
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
         return maker - SpreadPlanner.ownCosts(t, rate, markets.getExchangeRate(), pricePerWatt)
                 - ProcessingSector.freightRunning(t, SpreadPlanner.values(markets), rate, legPrice());

@@ -1673,7 +1673,9 @@ public class HealthCheck {
      * shelf) against the 5 allowed for the price of care. A real city's carriers are not the thing this section
      * tests, and its twins differ in when their fleets catch up, not in the fee; so here the fleet is held at twice
      * what the last haul said the plant needs, the share is exactly 1 in every month of both runs, and the fee is
-     * what differs (3.5 points, with the assertion's tolerance untouched at 5). The trucks are given, as the first
+     * what differs (3.5 points, with the assertion's tolerance untouched at 5). Since the order's floor of a truck a
+     * month (FR2's gate round) the twins without it read 4.8 points (3.7 priced out, 1.1 on the shelf): inside the 5
+     * by a hair, and still a point of it the fleets' timing. The trucks are given, as the first
      * fleet is (Haulage: the trucks a city that "was moving its steel somehow" had).
      */
     static void trucksKeepUp(Game town) {

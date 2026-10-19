@@ -2656,7 +2656,21 @@ public abstract class Sector {
 
     /** What one of its templates would clear a month, for the interest test. See BusinessInvestment. */
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        return plans.estimatedMakerProfit(this, t);
+        double maker = plans.estimatedMakerProfit(this, t);
+        /*
+         * ...WEIGHED WITH ITS FREIGHT (FR2, 2026-10-19): its BULK legs at the
+         * steady quote, every maker that weighs on this estimate - a farm, a
+         * food works, a vehicle plant - as ProcessingSector and ExtractionSector
+         * weigh theirs (which subtract theirs in their own estimates and do not
+         * come through here). FR2 took a bulk works' vans off its books and its
+         * legs onto Haulage's bill; weighed without them, a farm looked as if its
+         * crops moved for nothing, and AutoBuildCheck's village spent its last
+         * ground on a third Mixed Farm and stopped at 1,571 people (13,608 on
+         * main).
+         */
+        if (t == null) return maker;
+        double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
+        return maker - ham.citybuildersim.sectors.ProcessingSector.cityLegs(t, rate, legPrice());
     }
 
     /**
