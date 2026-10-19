@@ -23,7 +23,10 @@ import java.util.List;
  *   2. THE CARGO, THE SHIPS AND THE TERMINALS: Good.cargo() as spec-oil 2.1
  *      writes it; the ships' cargoes [P30][P40][P42][P46]; a tanker the
  *      largest the free room takes, none under an MR; the four terminals'
- *      berths, the city's, on the coast.
+ *      berths, the city's, on the coast. And (FR3, docs/queue/FR3.md 2) the
+ *      Bulk Berth, id 142, and the Handysize and Supramax it takes: the
+ *      month's dry bulk calls in the classes of the largest dry bulk berth
+ *      standing, the Bulk Terminal's Panamax and Capesize as before.
  *
  *   3. THE FACTOR equals its formula exactly, and with nothing at sea it is
  *      the railway's own 1 - rail, the railway's share its own, to the bit.
@@ -41,7 +44,7 @@ import java.util.List;
  *   6. A PORT ON A TOWN: refused NO_COAST without owned sea, allowed with it;
  *      its kind's goods then go by sea in its share, each good's band its
  *      formula, narrower than the lorries'; the road told the ships' share;
- *      its crews paid with transit's; the calls tonnes over the ship's cargo;
+ *      its crews paid by Freight (FR3) and its upkeep with transit's; the calls tonnes over the ship's cargo;
  *      the audit closing.
  *
  *   7. CRUDE NEEDS ROOM: a refinery's crude with a tanker berth and no Tank
@@ -194,6 +197,7 @@ public class PortCheck {
 
         theRule();
         cargoShipsAndTerminals();
+        theBulkBerth();
         theFactor();
         theShares();
         noPortTheSameBand();
@@ -276,8 +280,51 @@ public class PortCheck {
         assertTrue("THE CLASS FITS THE FREE ROOM: a tanker is the largest whose cargo the room takes, none under an MR's",
                 fits && Ports.crudeShipFor(37_499) == null && Ports.crudeShipFor(37_500) == Ports.Ship.MR
                         && Ports.crudeShipFor(100_000) == Ports.Ship.LR2 && Ports.crudeShipFor(1e9) == Ports.Ship.VLCC);
-        assertTrue("...and a bulk carrier a Capesize when the month's tonnes fill one, a Panamax when not",
+        assertTrue("...and a bulk carrier a Capesize when the month's tonnes fill one, a Panamax when not (the Bulk Terminal's classes)",
                 Ports.bulkShipFor(164_999) == Ports.Ship.PANAMAX && Ports.bulkShipFor(165_000) == Ports.Ship.CAPESIZE);
+
+        // FR3 (docs/queue/FR3.md 2, call 6): the Bulk Berth's two classes, and which classes the month's dry bulk calls in.
+        java.util.List<Ports.Ship> berthClasses = java.util.List.of(Ports.Ship.HANDYSIZE, Ports.Ship.SUPRAMAX);
+        assertTrue("the Bulk Berth's ships are dry bulk carriers [P37]: a Handysize 32,500 t and a Supramax 57,500, the middles of"
+                        + " 30-35,000 and 55-60,000, each below a Panamax and saved by name",
+                Ports.Ship.HANDYSIZE.cargo() == Ports.Cargo.DRY_BULK && Ports.Ship.HANDYSIZE.tonnes() == 32_500
+                        && Ports.Ship.SUPRAMAX.cargo() == Ports.Cargo.DRY_BULK && Ports.Ship.SUPRAMAX.tonnes() == 57_500
+                        && Ports.Ship.SUPRAMAX.tonnes() < Ports.Ship.PANAMAX.tonnes()
+                        && Ports.Ship.byName("HANDYSIZE") == Ports.Ship.HANDYSIZE && Ports.Ship.byName("SUPRAMAX") == Ports.Ship.SUPRAMAX);
+        assertTrue("...with the Bulk Berth's classes a month's tonnes one way go in a Supramax when they fill one, else a Handysize",
+                Ports.bulkShipFor(Ports.Ship.SUPRAMAX.tonnes() - 1, berthClasses) == Ports.Ship.HANDYSIZE
+                        && Ports.bulkShipFor(Ports.Ship.SUPRAMAX.tonnes(), berthClasses) == Ports.Ship.SUPRAMAX
+                        && Ports.bulkShipFor(Ports.Ship.HANDYSIZE.tonnes() - 1, berthClasses) == Ports.Ship.HANDYSIZE
+                        && Ports.bulkShipFor(Ports.Ship.CAPESIZE.tonnes() * 10, berthClasses) == Ports.Ship.SUPRAMAX);
+        assertTrue("...with the Bulk Terminal's, a Capesize at its cargo and a Panamax under it, as before FR3",
+                Ports.bulkShipFor(Ports.Ship.CAPESIZE.tonnes() - 1, Ports.BULK_TERMINAL_SHIPS) == Ports.Ship.PANAMAX
+                        && Ports.bulkShipFor(Ports.Ship.CAPESIZE.tonnes(), Ports.BULK_TERMINAL_SHIPS) == Ports.Ship.CAPESIZE
+                        && Ports.bulkShipFor(1, Ports.BULK_TERMINAL_SHIPS) == Ports.Ship.PANAMAX);
+        boolean old = true;
+        double[] grid = { Double.NaN, -5, 0, 1, 32_500, 57_500, 65_999, 66_000, 100_000, 164_999.5, 165_000, 165_001, 1e7 };
+        for (double t : grid) old &= Ports.bulkShipFor(t, Ports.BULK_TERMINAL_SHIPS) == (t >= Ports.Ship.CAPESIZE.tonnes() ? Ports.Ship.CAPESIZE : Ports.Ship.PANAMAX)
+                && Ports.bulkShipFor(t) == Ports.bulkShipFor(t, Ports.BULK_TERMINAL_SHIPS) && Ports.bulkShipFor(t, null) == Ports.bulkShipFor(t);
+        assertTrue("THE BULK TERMINAL'S CLASSES ARE TODAY'S RULE EXACTLY: tonnes >= a Capesize's cargo is a Capesize, else a Panamax,"
+                + " on a grid with nothing, a negative and a NaN", old);
+
+        BuildingManager fleet = new BuildingManager();
+        fleet.initializeBuiltInTemplates();
+        assertTrue("THE LARGEST DRY BULK BERTH STANDING DECIDES: with none, the Bulk Terminal's classes (today's rule)",
+                Ports.bulkShipsStanding(fleet).equals(Ports.BULK_TERMINAL_SHIPS) && Ports.bulkShipsStanding(null).equals(Ports.BULK_TERMINAL_SHIPS));
+        fleet.addStack(fleet.getTemplateByName("Tanker Terminal"), 1, true);
+        fleet.addStack(fleet.getTemplateByName("General Cargo Terminal"), 3, true);
+        assertTrue("...a tanker or a general cargo berth is not a dry bulk berth, and decides nothing",
+                Ports.bulkShipsStanding(fleet).equals(Ports.BULK_TERMINAL_SHIPS));
+        fleet.addStack(fleet.getTemplateByName("Bulk Berth"), 2, true);
+        assertTrue("...a Bulk Berth alone: Handysize and Supramax", Ports.bulkShipsStanding(fleet).equals(berthClasses));
+        fleet.addStack(fleet.getTemplateByName("Bulk Terminal"), 1, true);
+        assertTrue("...a Bulk Terminal beside it, the larger berth: Panamax and Capesize",
+                Ports.bulkShipsStanding(fleet).equals(Ports.BULK_TERMINAL_SHIPS)
+                        && fleet.getTemplateByName("Bulk Terminal").berthTonnesAYear() > fleet.getTemplateByName("Bulk Berth").berthTonnesAYear());
+        BuildingManager terminalAlone = new BuildingManager();
+        terminalAlone.initializeBuiltInTemplates();
+        terminalAlone.addStack(terminalAlone.getTemplateByName("Bulk Terminal"), 1, true);
+        assertTrue("...and a Bulk Terminal alone, the same", Ports.bulkShipsStanding(terminalAlone).equals(Ports.BULK_TERMINAL_SHIPS));
 
         BuildingManager bm = new BuildingManager();
         bm.initializeBuiltInTemplates();
@@ -302,6 +349,77 @@ public class PortCheck {
         assertTrue("...a berth's month is its year over twelve", Ports.berthMonth(bm.getTemplateByName("Tanker Terminal")) == 3_250_000 / 12.0);
         assertTrue("WORTH_A_BERTH, the test player's line, is the railway's own MIN_LINE_UTILISATION",
                 Ports.WORTH_A_BERTH == ham.citybuildersim.sectors.Freight.MIN_LINE_UTILISATION);
+    }
+
+    /* ============================ 2b. THE BULK BERTH (FR3) ============================ */
+
+    static void theBulkBerth() {
+        out.println("\n--- the Bulk Berth (FR3) ---");
+        BuildingManager bm = new BuildingManager();
+        bm.initializeBuiltInTemplates();
+        List<BuildingsTemplate> file = new BuildingCatalog().load();
+        BuildingsTemplate fileBerth = null, fileTerminal = null;
+        for (BuildingsTemplate x : file) {
+            if (x.getName().equals("Bulk Berth")) fileBerth = x;
+            if (x.getName().equals("Bulk Terminal")) fileTerminal = x;
+        }
+        java.util.List<Ports.Ship> berthClasses = java.util.List.of(Ports.Ship.HANDYSIZE, Ports.Ship.SUPRAMAX);
+        boolean berth = true;
+        for (BuildingsTemplate x : new BuildingsTemplate[] { bm.getTemplateByName("Bulk Berth"), fileBerth }) {
+            berth &= x != null && x.getId() == 142 && x.getCategory() == BuildingType.PORTS && !x.isOwnedBySector()
+                    && x.isPort() && x.needsCoast() && x.berthCargo() == Ports.Cargo.DRY_BULK && x.berthTonnesAYear() == 2_500_000
+                    && x.getCashCost() == 60_000 && x.getConstructionPoints() == 30_000 && x.getConstructionMaterials() == 1_000
+                    && x.getElectricityConsumption() == 0 && x.getWaterConsumption() == 0 && x.getLandSqFt() == 215_000
+                    && x.getJobs(JobType.NO_DIPLOMA) == 19 && x.getJobs(JobType.DIPLOMA) == 7 && x.getJobs(JobType.COLLEGE_ENGINEERING) == 1
+                    && x.getTotalJobs() == 27 && x.berthShips().equals(berthClasses) && Ports.shipsOf(x).equals(berthClasses);
+        }
+        assertTrue("id 142 is the Bulk Berth, in the code and in the file alike: the city's, PORTS, a DRY_BULK berth of 2.5 Mt a year,"
+                + " D$60M, 27 posts (19, 7, 1), 2 ha, no power or water, taking Handysize and Supramax", berth);
+        BuildingsTemplate terminal = bm.getTemplateByName("Bulk Terminal");
+        assertTrue("...the Bulk Terminal's \"ships\" line is Panamax and Capesize, in the code and in the file",
+                terminal.berthShips().equals(Ports.BULK_TERMINAL_SHIPS) && fileTerminal != null
+                        && fileTerminal.berthShips().equals(Ports.BULK_TERMINAL_SHIPS) && Ports.shipsOf(terminal).equals(Ports.BULK_TERMINAL_SHIPS));
+        boolean open = true;
+        for (String name : new String[] { "Tanker Terminal", "Container Terminal", "General Cargo Terminal" }) {
+            BuildingsTemplate t = bm.getTemplateByName(name);
+            java.util.List<Ports.Ship> kind = new ArrayList<>();
+            for (Ports.Ship s : Ports.Ship.values()) if (s.cargo() == t.berthCargo()) kind.add(s);
+            open &= t.berthShips().isEmpty() && Ports.shipsOf(t).equals(kind) && !kind.isEmpty();
+        }
+        assertTrue("...a terminal with no list takes every class of its kind: the tanker, container and general terminals, unchanged", open);
+        assertTrue("...and a building that is not a berth takes none", Ports.shipsOf(bm.getTemplateByName("House")).isEmpty()
+                && Ports.shipsOf(null).isEmpty());
+
+        BuildingManager one = new BuildingManager(), two = new BuildingManager(), none = new BuildingManager(), both = new BuildingManager();
+        for (BuildingManager b : new BuildingManager[] { one, two, none, both }) b.initializeBuiltInTemplates();
+        one.addStack(one.getTemplateByName("Bulk Berth"), 1, true);
+        two.addStack(two.getTemplateByName("Bulk Berth"), 2, true);
+        both.addStack(both.getTemplateByName("Bulk Berth"), 1, true);
+        both.addStack(both.getTemplateByName("Bulk Terminal"), 1, true);
+        double[] standing = Ports.berths(one);
+        boolean others = true;
+        for (Ports.Cargo c : Ports.Cargo.values()) if (c != Ports.Cargo.DRY_BULK) others &= standing[c.ordinal()] == 0;
+        assertTrue("ONE BULK BERTH STANDING ADDS 2,500,000 / 12 TONNES A MONTH to the dry bulk berths and nothing to any other kind",
+                standing[Ports.Cargo.DRY_BULK.ordinal()] == 2_500_000 / 12.0 && Ports.berthMonth(one.getTemplateByName("Bulk Berth")) == 2_500_000 / 12.0
+                        && others && Ports.berths(none)[Ports.Cargo.DRY_BULK.ordinal()] == 0);
+        assertTrue("...two add twice that, and the same beside a Bulk Terminal's 27,500,000 / 12",
+                Ports.berths(two)[Ports.Cargo.DRY_BULK.ordinal()] == 2 * (2_500_000 / 12.0)
+                        && Ports.berths(both)[Ports.Cargo.DRY_BULK.ordinal()] == 27_500_000 / 12.0 + 2_500_000 / 12.0);
+
+        // The month's boats in those classes: 3 Supramaxes' tonnes call in three Supramaxes, and in a Bulk Terminal's classes in Capesizes.
+        Ports month = new Ports();
+        month.tally(Good.IRON, 3 * Ports.Ship.SUPRAMAX.tonnes(), 0, 1);
+        List<BoatSchedule.Berth> quay = List.of(new BoatSchedule.Berth(Ports.Cargo.DRY_BULK, 0, 0));
+        BoatSchedule inBerth = BoatSchedule.of(4000, month, quay, 0, 0, Ports.bulkShipsStanding(one));
+        BoatSchedule inTerminal = BoatSchedule.of(4000, month, quay, 0, 0, Ports.BULK_TERMINAL_SHIPS);
+        BoatSchedule before = BoatSchedule.of(4000, month, quay, 0, 0);
+        boolean supramaxes = inBerth.callCount() == 3, capes = inTerminal.callCount() > 0;
+        for (BoatSchedule.Call c : inBerth.calls()) supramaxes &= c.ship() == Ports.Ship.SUPRAMAX && c.cargo() == Ports.Cargo.DRY_BULK;
+        for (BoatSchedule.Call c : inTerminal.calls()) capes &= c.ship() == Ports.Ship.CAPESIZE;
+        assertTrue("THE SCHEDULE CALLS IN THE CLASSES IT IS GIVEN: three Supramaxes' tonnes in with a Bulk Berth standing are three calls"
+                + " in a Supramax each, and in the Bulk Terminal's classes Capesizes", supramaxes && capes);
+        assertTrue("...a schedule given no classes is the Bulk Terminal's, as before FR3", before.calls().equals(inTerminal.calls())
+                && BoatSchedule.of(4000, month, quay.stream().map(q -> BoatSchedule.lane(q, 0, 0)).toList()).calls().equals(inTerminal.calls()));
     }
 
     /* ============================ 3. THE FACTOR ============================ */
@@ -537,10 +655,17 @@ public class PortCheck {
         double[] wages = g.getPopulationManager().getWagesPerType();
         for (JobType j : JobType.values()) posts += terminal.getJobs(j) * wages[j.ordinal()];
         double bill = g.getEconomyManager().getTransitBill(), twinBill = twin.getEconomyManager().getTransitBill();
-        report("ITS CREWS ARE PAID WITH TRANSIT'S: a town with no line pays its terminal's posts at their fill, and its twin"
-                        + " with none pays nothing",
-                bill > 0 && bill <= posts * (1 + 1e-12) && twinBill == 0,
-                String.format("$%,.2fk of $%,.2fk fully staffed", bill, posts));
+        // ...THE LANDLORD PORT (FR3, D8; docs/queue/FR3.md 3): the crews left transit's bill for Freight's payroll,
+        // and the city keeps the berths' upkeep. Its fixture is unchanged: a town with no line, so transit's bill
+        // is the ports' part alone, and its twin with no terminal pays nothing and has no crew.
+        ham.citybuildersim.sectors.Freight freight = g.getSectors().freight();
+        double crew = g.getBuildingManager().getCategoryPayroll(BuildingType.PORTS, wages, g.getPopulationManager().getJobFillRate());
+        report("ITS CREWS ARE PAID BY FREIGHT: a town with no line pays only its terminal's upkeep with transit's, Freight's wage bill"
+                        + " carries the crew at the same fill, and its twin with none pays nothing",
+                Math.abs(bill - g.getBuildingManager().getUpkeepByCategory(BuildingType.PORTS)) <= 1e-9 && bill < crew
+                        && crew > 0 && crew <= posts * (1 + 1e-12) && Math.abs(freight.portsPayroll() - crew) <= 1e-9 * Math.max(1, crew)
+                        && twinBill == 0 && twin.getSectors().freight().portsPayroll() == 0,
+                String.format("$%,.2fk of upkeep with transit's; $%,.2fk of crew in Freight's payroll, of $%,.2fk fully staffed", bill, freight.portsPayroll(), posts));
 
         double inForce = ports.share(Ports.Cargo.GENERAL);
         quietly(() -> g.simulateMonths(1));

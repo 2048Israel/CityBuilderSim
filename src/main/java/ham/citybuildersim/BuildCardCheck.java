@@ -381,9 +381,10 @@ public class BuildCardCheck {
                         && f.figure() == f.template().berthTonnesAYear();
             }
         }
-        assertTrue("...the ports are the Tanker, Bulk, Container and General Cargo Terminals, measured in their berths' tonnes"
-                + " a year, built by the city alone: " + berthed, ports && berthed.equals(List.of("Tanker Terminal", "Bulk Terminal",
-                "Container Terminal", "General Cargo Terminal")));
+        // ...and since FR3 (0.8.7) the Bulk Berth, the dry bulk berth for Handysize and Supramax calls, a fifth.
+        assertTrue("...the ports are the Tanker, Bulk, Container and General Cargo Terminals and the Bulk Berth, measured in their"
+                + " berths' tonnes a year, built by the city alone: " + berthed, ports && berthed.equals(List.of("Tanker Terminal",
+                "Bulk Terminal", "Container Terminal", "General Cargo Terminal", "Bulk Berth")));
         // ...and the grocers' filling stations their own group since 0.7.83 (batch O6), measured in litres.
         assertTrue("Shops is the groceries, the filling stations (0.7.83) and the bank's branches: " + shops,
                 shops.equals(List.of("Groceries", "Filling stations", "The bank's branches")));

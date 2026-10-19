@@ -2361,6 +2361,7 @@ final class BuildScreen {
             case PLOTS:  return f >= 1e6 ? "plenty" : String.format("%.0f mo", f);
             case POLICE: return String.format("%.1f×", f);
             case CELLS:  return people(f) + " not held";
+            case PORT:   return people(f) + " t a month";
             case SCHOOL:
                 if (!m.school().isBasic()) return pct(f > 0 ? Math.min(1, 1 / f) : 1);
                 return pct(f);
@@ -2392,6 +2393,7 @@ final class BuildScreen {
             case SCHOOL: line = m.school().getLabel().toLowerCase() + " from " + from + " to " + to + " " + CityNeeds.SERVED; break;
             case POLICE: line = "crime from " + from + " to " + to + " Canada's"; break;
             case CELLS:  line = "the caught not held: " + from.replace(" not held", "") + " to " + to; break;
+            case PORT:   line = "the tonnes no berth takes: " + from + " to " + to; break;
             default:     line = from + " to " + to;
         }
         if (s.onSite() > 0) line += ", once the " + formatter.format(s.onSite()) + " on site open";
@@ -2996,6 +2998,7 @@ final class BuildScreen {
                 return head.length > 1 ? head[1] : m.school().getLabel().toLowerCase();
             }
             case POLICE:  return "officers on the street";
+            case PORT:    return "a quay for the tonnes that go by sea";
             default:      return "somewhere to hold the caught";
         }
     }
@@ -3051,6 +3054,7 @@ final class BuildScreen {
             case DEATH:   return "of the dead";
             case SCHOOL:  return "places";
             case POLICE:  return "officers";
+            case PORT:    return "t a month";
             default:      return "cells";
         }
     }
@@ -3152,6 +3156,13 @@ final class BuildScreen {
                 figure = pct(arc);
                 double unheld = game.getCrime().getNotHeld();
                 shortLine = unheld >= 1 ? people(unheld) + " caught, not held" : "a cell for everyone caught";
+                break;
+            }
+            case PORT: {
+                // A berth (FR3): the share of the tonnes that could go by sea that a berth takes (supplyDemand()'s pair), not a place for everyone.
+                arc = sd[1] > 0 ? Math.max(0, Math.min(1, sd[0] / sd[1])) : 1;
+                figure = pct(arc);
+                shortLine = gap >= .5 ? people(gap) + " t a month no berth takes" : "a berth for every tonne";
                 break;
             }
             default: {

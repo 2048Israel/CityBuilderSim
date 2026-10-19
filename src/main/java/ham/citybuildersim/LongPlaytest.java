@@ -45,7 +45,8 @@ public class LongPlaytest {
     /** Where the report goes. The game's own console output is discarded. */
     static PrintStream out;
 
-    static final int TARGET_MONTHS = 4000;
+    /** The run's length: 4,000 months, or -Dplaytest.months=N for a short look at one mechanic (a trace of its own, not the baseline). */
+    static final int TARGET_MONTHS = Integer.getInteger("playtest.months", 4000);
 
     /* ===================================================================
        FINDINGS
@@ -209,6 +210,21 @@ public class LongPlaytest {
      */
     static int haulShortMonths = 0, haulFirstShort = 0, haulWorstMonth = 0, haulUnder90Months = 0;
     static double haulWorstShare = 1, haulTrucksPeak = 0, haulRoomPeak = 0, haulBilledRun = 0, haulCarriedRun = 0;
+
+    /**
+     * THE PORTS DIVISION OVER THE RUN (FR3, docs/queue/FR3.md 6 item 10): by
+     * kind of cargo, the months the division billed handling, the tonnes it
+     * handled and the last quote it struck; the handling billed and the port
+     * dues paid over the run; and for dry bulk the run's best month of
+     * uncovered tonnes as a share of a Bulk Berth's month, against
+     * Ports.WORTH_A_BERTH, with the month it fell in. The end state alone is
+     * one month of a mechanic that bites while a city grows.
+     */
+    static final int[] portBilledMonths = new int[Ports.Cargo.values().length];
+    static final double[] portTonnesRun = new double[Ports.Cargo.values().length];
+    static final double[] portLastQuote = new double[Ports.Cargo.values().length];
+    static double portHandlingRun = 0, portDuesRun = 0, portBestUncoveredShare = 0;
+    static int portBestUncoveredMonth = 0;
 
     /**
      * THE ROADS AND THE RAILS BY YEAR (FR7, 2026-10-18; its brief's 5: "count
@@ -1521,6 +1537,22 @@ public class LongPlaytest {
         haulRoomPeak = Math.max(haulRoomPeak, haul.depotRoom());
         haulBilledRun += haul.getBill();
         haulCarriedRun += haul.getCarried();
+        // The Ports division's month (FR3): see THE PORTS DIVISION OVER THE RUN.
+        ham.citybuildersim.sectors.PortDivision division = g.getSectors().freight().portDivision();
+        for (Ports.Cargo k : Ports.Cargo.values()) {
+            if (division.getBilled(k) > 0) portBilledMonths[k.ordinal()]++;
+            portTonnesRun[k.ordinal()] += division.getTonnes(k);
+            if (division.isQuoteKnown(k)) portLastQuote[k.ordinal()] = division.getQuote(k);
+        }
+        portHandlingRun += division.getHandlingBilled();
+        portDuesRun += division.getDuesPaid();
+        BuildingsTemplate bulkBerth = g.getBuildingManager().getTemplateByName("Bulk Berth");
+        if (bulkBerth != null && Ports.berthMonth(bulkBerth) > 0) {
+            double bulkUncovered = g.getPorts().uncovered(Ports.Cargo.DRY_BULK, Ports.berths(g.getBuildingManager()),
+                    Ports.berthsOnSite(g.getBuildingManager()));
+            double bulkShare = bulkUncovered / Ports.berthMonth(bulkBerth);
+            if (bulkShare > portBestUncoveredShare) { portBestUncoveredShare = bulkShare; portBestUncoveredMonth = g.getMonth(); }
+        }
         // The roads and the rails by year (FR7): see THE ROADS AND THE RAILS BY YEAR.
         for (int k = 0; k < BY_YEAR.length; k++) {
             int n = qty(g, BY_YEAR[k]);
@@ -3434,6 +3466,14 @@ public class LongPlaytest {
        iron is, not a scored move:
        what a terminal is worth is the band it narrows, which no move here
        prices.
+
+       FR3 (docs/queue/FR3.md 5.1): the berth is now paid for by port dues,
+       so "worth a berth" is the dues' own break-even, Ports.berthPaysBack()
+       - the same WORTH_A_BERTH of a berth's month at the default dial, the
+       threshold over the dial otherwise - and of a kind's terminals the
+       LARGEST that pays back is the one ordered (the Bulk Terminal, else the
+       Bulk Berth). The advice and the auto-builder choose by the same rule
+       (BuildAdvice, Kind.PORT).
        ===================================================================== */
 
     /** Terminals the test player ordered, by name; the looks that found a berth's worth with no coast; the first terminal's month. */
@@ -3452,11 +3492,11 @@ public class LongPlaytest {
         Ports ports = g.getPorts();
         BuildingManager b = g.getBuildingManager();
         double[] standing = Ports.berths(b), onSite = Ports.berthsOnSite(b);
+        // The port dues dial (FR3): a berth pays back at WORTH_A_BERTH / dial of its month (Ports.berthPaysBack()).
+        double dial = g.getEconomyManager().getTaxPolicy().getPortDues();
         for (Ports.Cargo k : Ports.Cargo.values()) {
-            BuildingsTemplate t = terminalFor(g, k);
+            BuildingsTemplate t = terminalFor(g, k, ports.uncovered(k, standing, onSite), dial);
             if (t == null) continue;
-            double uncovered = ports.carriable(k) - standing[k.ordinal()] - onSite[k.ordinal()];
-            if (!(uncovered >= Ports.WORTH_A_BERTH * Ports.berthMonth(t))) continue;
             if (!g.hasCoastFor(t, 1)) {
                 portsNoCoast++;
                 return;
@@ -3475,10 +3515,18 @@ public class LongPlaytest {
         return n;
     }
 
-    /** The catalogue's terminal for a kind of cargo, or null. */
-    static BuildingsTemplate terminalFor(Game g, Ports.Cargo k) {
-        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (Ports.isPort(t) && t.berthCargo() == k) return t;
-        return null;
+    /**
+     * The catalogue's terminal to order for a kind of cargo, or null (FR3,
+     * docs/queue/FR3.md 5.1): the LARGEST of the kind's terminals that pays
+     * back (Ports.berthPaysBack()) at `uncovered` tonnes a month and the port
+     * dues dial - the Bulk Terminal when the dry bulk would pay it back, else
+     * the Bulk Berth when it would pay that back. It returned the first
+     * template of the kind, the only terminal each kind had until the Bulk
+     * Berth; for the tanker, container and general kinds (one each) at the
+     * default dial it orders what it ordered, the same .60 of the berth's month.
+     */
+    static BuildingsTemplate terminalFor(Game g, Ports.Cargo k, double uncovered, double dial) {
+        return Ports.payingTerminal(k, g.getBuildingManager().getTemplates(), uncovered, dial, null);
     }
 
     /** The month's boats and sea tonnes, counted (the calls without their quays: the map places them, since 0.7.97 on its sea routes). */
@@ -6416,6 +6464,23 @@ public class LongPlaytest {
                 firstTerminalMonth > 0 ? "m" + firstTerminalMonth : "never", terminalsStanding(g), portsNoCoast,
                 seaTonnesRun, boundaryTonnesRun > 0 ? seaTonnesRun / boundaryTonnesRun * 100 : 0, boundaryTonnesRun,
                 callsRun, mostCalls, mostCallsMonth > 0 ? "m" + mostCallsMonth : "never", lastCalls, heldBackMonths);
+        // The Ports division over the run (FR3): see THE PORTS DIVISION OVER THE RUN.
+        StringBuilder divisionKinds = new StringBuilder(), berthsStanding = new StringBuilder();
+        for (Ports.Cargo k : Ports.Cargo.values()) {
+            divisionKinds.append(String.format("%s: billed %d month(s), %,.0f t, %s; ", k.label(), portBilledMonths[k.ordinal()],
+                    portTonnesRun[k.ordinal()], portLastQuote[k.ordinal()] > 0
+                            ? String.format("last quote $%.2f a tonne ($%.2f at founding prices)", portLastQuote[k.ordinal()] * 1000,
+                                    portLastQuote[k.ordinal()] * 1000 / Math.max(1e-9, g.getPriceIndex().getIndex())) : "no quote"));
+        }
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            int n = Ports.isPort(t) ? g.getBuildingManager().getQuantity(t.getId()) : 0;
+            if (n > 0) berthsStanding.append(t.getName()).append(" x").append(n).append(", ");
+        }
+        out.printf("  Ports division: %shandling billed $%,.0fk and port dues paid $%,.0fk over the run; the best month of"
+                        + " uncovered dry bulk %.0f%% of a Bulk Berth's month (m%d) against the %.0f%% a berth is worth; berths standing: %s%n",
+                divisionKinds, portHandlingRun, portDuesRun, portBestUncoveredShare * 100,
+                portBestUncoveredMonth, Ports.WORTH_A_BERTH * 100,
+                berthsStanding.length() > 0 ? berthsStanding.substring(0, berthsStanding.length() - 2) : "none");
         out.printf("  ...the vault at its lowest US$%,.0fk (m%d); half the founders' dollars gone %s; all but a"
                 + " hundredth gone %s%n", vaultLow == Double.MAX_VALUE ? 0 : vaultLow, vaultLowMonth,
                 halfGoneMonth > 0 ? "by month " + halfGoneMonth : "never",

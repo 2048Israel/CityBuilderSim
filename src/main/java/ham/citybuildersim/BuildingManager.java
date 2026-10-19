@@ -2391,6 +2391,12 @@ public class BuildingManager {
            sixtieth and points a half. The posts in a Rail Terminal's mix (a
            freight terminal: 1,020 / 390 / 72), by largest remainder (O4-4).
            No power, water or road load: the research gives none (star).
+           FR3 (2026-10-19, docs/queue/FR3.md 2): a fifth, the BULK BERTH (id
+           142, after FR2's 139-140; FR7 takes 141), a small grab-worked dry
+           bulk quay, 2.5 Mt a year, D$60M, 27 posts, 2 ha, that takes
+           Handysize and Supramax only; the Bulk Terminal takes Panamax and
+           Capesize ("ships" in its port line), and the dry bulk calls are
+           made in the classes of the largest berth standing.
            ------------------------------------------------------------------------------ */
         templates.add(new BuildingsTemplate("Tanker Terminal", BuildingType.PORTS)
                 .setCashCost(96000)
@@ -2414,6 +2420,7 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 62)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 11)
                 .setBerth(Ports.Cargo.DRY_BULK, 27500000)
+                .setBerthShips(Ports.BULK_TERMINAL_SHIPS)
                 .setId(95));
         templates.add(new BuildingsTemplate("Container Terminal", BuildingType.PORTS)
                 .setCashCost(461000)
@@ -2438,6 +2445,19 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 3)
                 .setBerth(Ports.Cargo.GENERAL, 450000)
                 .setId(97));
+        templates.add(new BuildingsTemplate("Bulk Berth", BuildingType.PORTS)
+                .setCashCost(60000)
+                .setConstructionPoints(30000)
+                .setConstructionMaterials(1000)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setLandSqFt(215000)
+                .setJobs(JobType.NO_DIPLOMA, 19)
+                .setJobs(JobType.DIPLOMA, 7)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                .setBerth(Ports.Cargo.DRY_BULK, 2500000)
+                .setBerthShips(java.util.List.of(Ports.Ship.HANDYSIZE, Ports.Ship.SUPRAMAX))
+                .setId(142));
 
         /* ------------------------- THE OIL AT SEA (0.7.91) -------------------------
            Batch O10 (docs/studies/spec-oil.md 2.7, 2.11; the research's 3.1-3.2
@@ -6260,11 +6280,19 @@ public class BuildingManager {
         return share >= 0 ? Math.min(1, share) : 1;
     }
 
-    /** The posts a sector offers this month, per job type - its buildings' posts at its share of each. */
+    /**
+     * The posts a sector offers this month, per job type - the posts of the
+     * buildings it owns at its share of each, and the crews it works for the
+     * city (the ports', FR3) whole: a lay-off is struck on a sector's own
+     * buildings, as getPostsWithheld() counts it.
+     */
     public long[] getPostsOfferedBySector(String sector) {
         long[] posts = getJobArrayBySector(sector);
+        long[] crews = getCrewArrayBySector(sector);
         JobType[] types = JobType.values();
-        for (int i = 0; i < posts.length; i++) posts[i] = postsOffered(posts[i], offeredShareOf(sector, types[i]));
+        for (int i = 0; i < posts.length; i++) {
+            posts[i] = postsOffered(posts[i] - crews[i], offeredShareOf(sector, types[i])) + crews[i];
+        }
         return posts;
     }
 
@@ -6547,6 +6575,13 @@ public class BuildingManager {
      * the landlords' jobs (sectors.RealEstate), the staff a new building could
      * find (Sector.staffableShare()) - is every post, these included; only
      * the labour market and the wage bills take the posts offered.
+     *
+     * KEYED BY THE OWNER, NOT THE OPERATOR (FR3): a sector lays off the posts
+     * of the buildings it owns (the builders' crews, Freight's drivers on its
+     * depots), and the crews it works for the city (the berths') are offered
+     * whole - so a terminal's posts, which have no owner, are never withheld
+     * and the count agrees with Freight's wage bill (Freight.updateWages()).
+     * A post is counted once, whoever pays it.
      */
     public long getPostsWithheld(JobType type) {
         if (offeredShare == null) return 0;
@@ -6798,12 +6833,51 @@ public class BuildingManager {
         return total;
     }
 
-    /** The posts a sector's finished buildings offer, per tier. */
+    /**
+     * The posts a sector's finished buildings offer, per tier: the buildings
+     * it OPERATES (BuildingsTemplate.getOperator()), which are its own and,
+     * for Freight, the city's sea terminals (FR3, the landlord port, docs/queue
+     * /FR3.md 3). A post is counted for whoever pays it; the owner's land,
+     * value, repairs, power and tax stay on totalBySector() and the rest.
+     */
     public long[] getJobArrayBySector(String sector) {
         long[] out = new long[JobType.values().length];
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
+            if (!t.getOperator().equals(sector)) continue;
+            for (JobType j : JobType.values()) out[j.ordinal()] += (long) stack.getQuantity() * t.getJobs(j);
+        }
+        return out;
+    }
+
+    /** ...the posts of the buildings the sector OWNS (the old reading, before the ports' crews moved): its depots' and its track's, not the berths' crews it works for the city (FR3). */
+    public long[] getOwnedJobArrayBySector(String sector) {
+        long[] out = new long[JobType.values().length];
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
             if (!t.getSector().equals(sector)) continue;
+            for (JobType j : JobType.values()) out[j.ordinal()] += (long) stack.getQuantity() * t.getJobs(j);
+        }
+        return out;
+    }
+
+    /** ...and the posts it works but does not own, per tier: the crews of the city's berths for Freight (FR3), none for any other sector. Its operated posts less its owned. */
+    public long[] getCrewArrayBySector(String sector) {
+        long[] out = new long[JobType.values().length];
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getOperator().equals(sector) || t.getSector().equals(sector)) continue;
+            for (JobType j : JobType.values()) out[j.ordinal()] += (long) stack.getQuantity() * t.getJobs(j);
+        }
+        return out;
+    }
+
+    /** The posts of the city's sea terminals that handle one kind of cargo, per tier (FR3): the crews of that kind's berths, for the Ports division's per-kind figures. */
+    public long[] getCrewArrayByCargo(Ports.Cargo kind) {
+        long[] out = new long[JobType.values().length];
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.isPort() || t.berthCargo() != kind) continue;
             for (JobType j : JobType.values()) out[j.ordinal()] += (long) stack.getQuantity() * t.getJobs(j);
         }
         return out;
@@ -7277,6 +7351,23 @@ public class BuildingManager {
     public double getBookValueBySector(String sector) {
         return totalBySector(sector,
                 t -> t.getCashCost() + t.getConstructionMaterials() * materialsCost);
+    }
+
+    /**
+     * What the terminals of one kind of cargo standing are worth on the books
+     * (FR3, docs/queue/FR3.md 2, port dues): each PORTS building with a berth
+     * of this kind at its cash cost plus its materials at market, as
+     * getBookValueByCategory() values it, but only that kind's. The capital the
+     * kind's port dues recover over PORT_LIFE_MONTHS (sectors.PortDivision).
+     */
+    public double getPortBookValueByCargo(Ports.Cargo kind) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.isPort() || t.berthCargo() != kind) continue;
+            total += stack.getQuantity() * (t.getCashCost() + t.getConstructionMaterials() * materialsCost);
+        }
+        return total;
     }
 
     /**

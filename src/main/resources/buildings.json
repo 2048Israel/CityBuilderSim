@@ -167,7 +167,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 139,
+ "nextId": 143,
  "buildings": [
   {
    "id": 0,
@@ -2304,7 +2304,8 @@
    "land": 2368060,
    "port": {
     "cargo": "DRY_BULK",
-    "tonnes": 27500000
+    "tonnes": 27500000,
+    "ships": ["PANAMAX", "CAPESIZE"]
    }
   },
   {
@@ -3563,6 +3564,27 @@
    },
    "land": 550000,
    "roadLoad": 490
+  },
+  {
+   "id": 142,
+   "name": "Bulk Berth",
+   "category": "PORTS",
+   "cashCost": 60000,
+   "constructionPoints": 30000,
+   "constructionMaterials": 1000,
+   "electricity": 0,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 19,
+    "DIPLOMA": 7,
+    "COLLEGE_ENGINEERING": 1
+   },
+   "land": 215000,
+   "port": {
+    "cargo": "DRY_BULK",
+    "tonnes": 2500000,
+    "ships": ["HANDYSIZE", "SUPRAMAX"]
+   }
   }
  ]
 }

@@ -381,6 +381,25 @@ public final class Freight extends Sector {
     /** The Haulage division (FR2): the trucks that carry the city leg. Its state rides in this sector's extras (haul.*). */
     private final Haulage haulage = new Haulage(this);
 
+    /** The Ports division (FR3): the crews of the city's berths, who bill the handling and pay the city its dues. Its state rides in this sector's extras (port.*). */
+    private final PortDivision portDivision = new PortDivision(this);
+
+    /*
+     * THE PAYROLL, SPLIT THREE WAYS (FR3, the landlord port, docs/queue/FR3.md
+     * 3): the posts of the buildings this sector owns (the track, the depots)
+     * and the crews it works for the city (the sea terminals', BuildingsTemplate
+     * .getOperator()). Wage bills at the tiers' wages, struck with the sector's
+     * own in updateWages(), and not saved, as the sector's are (wages[]).
+     * WHY: the railway's and Haulage's rules read what they read before the
+     * crews came, to the bit, so they take their shares of the first and not of
+     * the sector's whole payroll; the Ports division takes the second.
+     */
+    private final double[] ownWages = new double[11];
+    private final double[] crewWages = new double[11];
+    /** The wage of a post of each tier as last struck, and the crews' posts of each kind of cargo's berths: the Ports division's per-kind figures (portsCrewByKind()). */
+    private final double[] wageRates = new double[11];
+    private final long[][] crewPostsByKind = new long[ham.citybuildersim.Ports.Cargo.values().length][11];
+
     public Freight() {
         super("Freight", "Freight", BuildingType.RAIL);
         /*
@@ -459,9 +478,12 @@ public final class Freight extends Sector {
         double haulage = 0, abroad = 0;
         // ...and each sector's city-leg tonnes for Haulage (FR2), at the same railway shares: the railed part of what crossed is a quarter truck.
         Map<Sector, Double> legsOf = new LinkedHashMap<>();
+        // ...and each sector's sea tonnes by kind of cargo for the Ports division (FR3): landed and shipped, at the berths' share in force.
+        Map<Sector, double[]> seaOf = new LinkedHashMap<>();
         for (Sector s : sectors.all()) {
             if (s == this) continue;
             double bill = 0, legs = 0;
+            double[] sea = null;
             for (Good g : Good.values()) {
                 Traffic stream = g.traffic();
                 if (stream == null || !stream.isFreight()) continue;
@@ -486,6 +508,11 @@ public final class Freight extends Sector {
                 goodLorry[g.ordinal()] += lorry;
                 railTonnes[i] += weighs * rail;
                 if (ports != null) ports.tally(g, in * g.tonnesPerUnit(), out * g.tonnesPerUnit(), ship);
+                // ...a tonne that crosses a berth pays the Ports division's handling, the buyer for what it lands and the exporter for what it ships (FR3).
+                if (ship > 0 && g.cargo() != null) {
+                    if (sea == null) sea = new double[ham.citybuildersim.Ports.Cargo.values().length];
+                    sea[g.cargo().ordinal()] += (in + out) * g.tonnesPerUnit() * ship;
+                }
                 // ...and its kind's railed tonnes each way, for the map's trains (0.8.2): read, never billed.
                 ham.citybuildersim.Ports.Cargo kind = g.cargo();
                 if (kind != null && rail > 0) {
@@ -498,6 +525,7 @@ public final class Freight extends Sector {
                 haulage += bill;
             }
             if (legs > 0) legsOf.put(s, legs);
+            if (sea != null) seaOf.put(s, sea);
         }
 
         /*
@@ -508,6 +536,16 @@ public final class Freight extends Sector {
          * need and price) is closed at the bottom of this method.
          */
         haulage().billMonth(legsOf);
+
+        /*
+         * ...AND THE QUAY (FR3): the Ports division bills the sea tonnes at the
+         * quotes in force and pays the city its dues on them, then reprices
+         * while the month billed's tally is still the month's (step 3's
+         * commit() moves the class crude goes in). Its bill and its dues are
+         * its own; the railway's and the trucks' rules read neither.
+         */
+        portDivision.billMonth(seaOf, ports);
+        portDivision.closeMonth(ports);
 
         /* ---- 2. the invoice, and the fuel it took to earn it ---- */
 
@@ -677,9 +715,14 @@ public final class Freight extends Sector {
      * (haulageShareOf(), by posts, draws and cost). With no depot standing the
      * share is 0, (1 - 0) leaves each line as it was to the bit, and the rule
      * is the railway's alone.
+     *
+     * ...AND THE PAYROLL IT SHARES IS WHAT IS LEFT (FR3): the posts of the
+     * buildings this sector owns, ownPayroll(), not the dockers it works for
+     * the city (portsPayroll(), the Ports division's). With no terminal the two
+     * are the same figure to the bit.
      */
     private double monthlyCost(double fuelBill) {
-        return (1 - haulagePayrollShare()) * getPayroll()
+        return railPayroll()
                 + (1 - haulageShareOf(BuildingsTemplate::getElectricityConsumption)) * getElectricityCost()
                 + (1 - haulageShareOf(BuildingsTemplate::getWaterConsumption)) * getWaterCost()
                 + (1 - haulageShareOf(BuildingsTemplate::getCashCost)) * getMaintenanceExpense()
@@ -919,16 +962,94 @@ public final class Freight extends Sector {
     /** The Haulage division: the trucks that carry the city leg (FR2). */
     public Haulage haulage() { return haulage; }
 
-    /** The wage bill on the posts it offers: its depots' drivers for the trucks they keep (Haulage.strikeDrivers()), every other post whole - the same whole numbers the city counts (BuildingManager.getPostsOfferedBySector()). */
+    /**
+     * The wage bill on the posts it offers: its depots' drivers for the trucks they keep (Haulage.strikeDrivers()), every other post whole - the same whole numbers the city counts (BuildingManager.getPostsOfferedBySector()).
+     *
+     * AND THE CITY'S BERTHS' CREWS, WHOLE (FR3, the landlord port): the posts it
+     * is handed include the dockers (BuildingManager.getJobArrayBySector()
+     * counts what a sector operates), and the drivers' lay-off is struck on the
+     * posts of the buildings it owns alone - a terminal's diploma posts are
+     * neither drivers nor depot posts. The bill is struck in three: the whole
+     * (the sector's, Sector.updateWages()), the owned posts' (ownPayroll()) and
+     * the crews' (portsPayroll(), and by kind, portsCrewByKind()).
+     */
     @Override
     public void updateWages(double[] wagePerType, long[] posts) {
         if (posts == null) { super.updateWages(wagePerType, null); return; }
         JobType[] types = JobType.values();
+        long[] crews = buildings == null ? new long[posts.length] : buildings.getCrewArrayBySector(key());
+        long[] own = new long[posts.length];
         long[] offered = new long[posts.length];
         for (int i = 0; i < posts.length; i++) {
-            offered[i] = i < types.length ? ham.citybuildersim.BuildingManager.postsOffered(posts[i], haulage.offeredShare(types[i])) : posts[i];
+            long crew = i < crews.length ? Math.max(0, Math.min(crews[i], posts[i])) : 0;
+            long mine = posts[i] - crew;
+            own[i] = i < types.length ? ham.citybuildersim.BuildingManager.postsOffered(mine, haulage.offeredShare(types[i])) : mine;
+            offered[i] = own[i] + crew;
         }
         super.updateWages(wagePerType, offered);
+        if (wagePerType == null) return;
+        int n = Math.min(Math.min(wagePerType.length, posts.length), ownWages.length);
+        for (int i = 0; i < n; i++) {
+            ownWages[i] = wagePerType[i] * own[i];
+            crewWages[i] = wagePerType[i] * (offered[i] - own[i]);
+            wageRates[i] = wagePerType[i];
+        }
+        for (ham.citybuildersim.Ports.Cargo kind : ham.citybuildersim.Ports.Cargo.values()) {
+            long[] byKind = buildings == null ? new long[crewPostsByKind[kind.ordinal()].length] : buildings.getCrewArrayByCargo(kind);
+            System.arraycopy(byKind, 0, crewPostsByKind[kind.ordinal()], 0, Math.min(byKind.length, crewPostsByKind[kind.ordinal()].length));
+        }
+    }
+
+    /**
+     * The payroll of the posts on the buildings it owns - the track's and the
+     * depots' - at the fill rates (FR3): what getPayroll() was before the
+     * berths' crews came to this sector, struck on the same operands in the
+     * same order, so the railway's and Haulage's rules read the same figure to
+     * the bit with a terminal standing as without it.
+     */
+    public double ownPayroll() {
+        double total = 0;
+        for (int i = 0; i < ownWages.length; i++) total += ownWages[i] * fill[i];
+        return total;
+    }
+
+    /** The Rail division's payroll line (FR3): its share of ownPayroll(), what is left of the sector's payroll after the Ports division's crews and Haulage's depots; what the railway's rule reads (monthlyCost()). */
+    public double railPayroll() { return (1 - haulagePayrollShare()) * ownPayroll(); }
+
+    /** ...and Haulage's (FR3): its share of ownPayroll(), the depots' posts less the drivers laid off; what its rule reads (Haulage.closeMonth()). */
+    public double haulagePayroll() { return haulagePayrollShare() * ownPayroll(); }
+
+    /** ...and the payroll of the crews it works for the city, the sea terminals' dockers, at the fill rates (FR3): what the city's transit bill paid for them before; 0 with no terminal. */
+    public double portsPayroll() {
+        double total = 0;
+        for (int i = 0; i < crewWages.length; i++) total += crewWages[i] * fill[i];
+        return total;
+    }
+
+    /** The berths' crews' share of the payroll it pays (FR3): portsPayroll() over getPayroll(); 0 with no terminal or no payroll. */
+    public double portsPayrollShare() {
+        double all = getPayroll();
+        double ports = portsPayroll();
+        if (!(all > 0) || !(ports > 0)) return 0;
+        return Math.min(1, ports / all);
+    }
+
+    /**
+     * The month's crew wages by kind of cargo, in Ports.Cargo order (FR3): each
+     * kind's terminals' posts at the wage of each tier and its fill - what the
+     * city paid for them before the crews moved - for the Ports division to
+     * price a kind's handling by. They sum to portsPayroll().
+     */
+    public double[] portsCrewByKind() {
+        ham.citybuildersim.Ports.Cargo[] kinds = ham.citybuildersim.Ports.Cargo.values();
+        double[] out = new double[kinds.length];
+        for (ham.citybuildersim.Ports.Cargo kind : kinds) {
+            long[] posts = crewPostsByKind[kind.ordinal()];
+            double total = 0;
+            for (int i = 0; i < posts.length; i++) total += posts[i] * wageRates[i] * fill[i];
+            out[kind.ordinal()] = total;
+        }
+        return out;
     }
 
     /** Trucks owned: the TRUCKS pantry. */
@@ -959,6 +1080,23 @@ public final class Freight extends Sector {
 
     /** Haulage's bill, as this sector's other revenue; named "Haulage billed" (nameOtherRevenue()). */
     void bookHaulage(double amount) { bookOtherRevenue(amount); }
+
+    /* ------------------------------------------ the Ports division's seam (FR3) ----- */
+
+    /** The Ports division: the crews of the city's berths, who bill the handling and pay the city its dues (FR3). */
+    public PortDivision portDivision() { return portDivision; }
+
+    /** The game this sector plays in, for the division's rate and dial; null in a bare fixture. */
+    Game gameOf() { return game; }
+
+    /** The city's buildings, for the division's berths and their book value. */
+    ham.citybuildersim.BuildingManager buildingsOf() { return buildings; }
+
+    /** The Ports division's handling bill, as this sector's other revenue; named "Port handling billed" (nameOtherRevenue()). */
+    void bookPortHandling(double amount) { bookOtherRevenue(amount); }
+
+    /** ...and the dues it pays the city, an operating cost named "Port dues": its cash falls by them at the strike and the treasury takes them in the same month (Sector.payTheCity()). */
+    void payPortDues(double amount) { payTheCity(PortDivision.DUES_NAME, amount); }
 
     /** What a post on the DIPLOMA tier costs a month, the drivers' tier; nothing with no game to ask. */
     double diplomaWage() {
@@ -993,12 +1131,18 @@ public final class Freight extends Sector {
      * drivers for the places no truck fills are laid off and paid by nobody
      * (Haulage.strikeDrivers()), so they are in neither side of the ratio.
      * With every depot full, or none, it is haulageShareOf() by posts.
+     *
+     * OF THE POSTS IT OWNS (FR3): the dockers of the city's berths are in
+     * neither side of the ratio - they are neither drivers nor depot posts,
+     * and the Ports division has them (portsPayroll()) - so the share is of
+     * ownPayroll() and the drivers' lay-off is read off the owned diploma
+     * posts alone.
      */
-    double haulagePayrollShare() {
+    public double haulagePayrollShare() {
         if (buildings == null) return 0;
         double all = buildings.totalBySector(key(), BuildingsTemplate::getTotalJobs);
         double depots = buildings.totalBySector(key(), t -> t.getTruckRoom() > 0 ? t.getTotalJobs() : 0);
-        long diploma = buildings.getJobArrayBySector(key())[JobType.DIPLOMA.ordinal()];
+        long diploma = buildings.getOwnedJobArrayBySector(key())[JobType.DIPLOMA.ordinal()];
         double idle = diploma - ham.citybuildersim.BuildingManager.postsOffered(diploma, haulage.offeredShare(JobType.DIPLOMA));
         if (!(all - idle > 0)) return 0;
         return Math.max(0, Math.min(1, (depots - idle) / (all - idle)));
@@ -1428,10 +1572,13 @@ public final class Freight extends Sector {
          * a part is shown only when it is more than that.
          */
         double all = statement().otherRevenue, trucks = haulage.getBill();
-        double rail = all - trucks;
+        // ...and a third since FR3: the handling the Ports division billed the shippers at the quay.
+        double quay = portDivision.getHandlingBilled();
+        double rail = all - trucks - quay;
         if (Math.abs(rail) <= 1e-9 * Math.max(1, Math.abs(all))) rail = 0;
         if (rail != 0) parts.put("Rail freight billed", rail);
         if (trucks != 0) parts.put("Haulage billed", trucks);
+        if (quay != 0) parts.put(PortDivision.REVENUE_NAME, quay);
         return parts;
     }
 
@@ -1513,6 +1660,25 @@ public final class Freight extends Sector {
             lines.add(Line.note(String.format("The trucks carry %.0f%% of the city's bulk; every works that moves bulk "
                     + "runs slower for the rest, collecting its own, until more trucks arrive.", h.getShare() * 100)));
         }
+
+        /*
+         * ...AND ITS QUAY (FR3): the Ports division's figures, a block for each
+         * kind of cargo the city has a berth for. Read off the division's
+         * getters, never worked here. The screens' division strip is FR4's.
+         */
+        PortDivision pd = portDivision;
+        double[] berths = ham.citybuildersim.Ports.berths(buildings);
+        boolean head = false;
+        for (ham.citybuildersim.Ports.Cargo kind : ham.citybuildersim.Ports.Cargo.values()) {
+            if (!(berths[kind.ordinal()] > 0)) continue;
+            if (!head) { lines.add(Line.head("Ports, the quay")); head = true; }
+            lines.add(Line.of(kind.label() + ", handled", f.count(pd.getTonnes(kind)) + " tonnes of the "
+                    + f.count(berths[kind.ordinal()]) + " the berths could"));
+            lines.add(Line.of(kind.label() + ", a tonne", pd.isQuoteKnown(kind)
+                    ? f.amount(pd.getQuote(kind)) : "not yet struck"));
+            lines.add(Line.of(kind.label() + ", handling billed", f.amount(pd.getBilled(kind))));
+            lines.add(Line.of(kind.label() + ", port dues paid", f.amount(pd.getDues(kind)), Line.Tone.MUTED));
+        }
         return lines;
     }
 
@@ -1548,6 +1714,8 @@ public final class Freight extends Sector {
         if (abroadKnown) extras.put("paidAbroad", rPaidAbroad);
         // Haulage's own (FR2), under haul.*: a save from before it has none and loads a city that has not yet needed a truck.
         haulage.save(extras);
+        // The Ports division's (FR3), under port.*: a save from before it has none and loads no quote known.
+        portDivision.save(extras);
     }
 
     @Override
@@ -1584,6 +1752,7 @@ public final class Freight extends Sector {
         rPaidAbroad = extras.getOrDefault("paidAbroad", rHaulage <= 0 ? rTruckBill : 0.0);
         abroadKnown = extras.containsKey("paidAbroad") || rHaulage <= 0;
         haulage.restore(extras);
+        portDivision.restore(extras);
     }
 
     @Override
@@ -1597,7 +1766,13 @@ public final class Freight extends Sector {
         java.util.Arrays.fill(railOut, 0);
         rAllowed = rRunning = rPaidAbroad = 0;
         allowedKnown = abroadKnown = true;
+        // The payroll's three (FR3), struck again with the next month's wages.
+        java.util.Arrays.fill(ownWages, 0);
+        java.util.Arrays.fill(crewWages, 0);
+        java.util.Arrays.fill(wageRates, 0);
+        for (long[] posts : crewPostsByKind) java.util.Arrays.fill(posts, 0);
         haulage.reset();
+        portDivision.reset();
     }
 
     /**
@@ -1618,7 +1793,10 @@ public final class Freight extends Sector {
         rAllowed *= scale;
         rRunning *= scale;
         rPaidAbroad *= scale;
+        // ...and the payroll's three, wage bills like the sector's own (wages[]) and the wages they are struck at (FR3).
+        for (int i = 0; i < ownWages.length; i++) { ownWages[i] *= scale; crewWages[i] *= scale; wageRates[i] *= scale; }
         // ...and Haulage's: its quote is a price in the city's money, unlike the railway's share of the lorry rate (FR2).
         haulage.redenominate(scale);
+        portDivision.redenominate(scale);
     }
 }

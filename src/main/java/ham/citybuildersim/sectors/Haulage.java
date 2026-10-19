@@ -450,7 +450,8 @@ public final class Haulage {
         fleetOwed += Math.max(0, freight.trucksBought()) - worn * p;
         double recover = Double.isFinite(fleetOwed) ? fleetOwed / FLEET_RECOVERY_MONTHS : 0;
         fleetOwed -= recover;
-        double running = freight.haulagePayrollShare() * freight.getPayroll()
+        // ...its payroll share of the payroll of the posts Freight owns, not of the dockers' (FR3: Freight.haulagePayroll()).
+        double running = freight.haulagePayroll()
                 + freight.haulageShareOf(BuildingsTemplate::getElectricityConsumption) * freight.getElectricityCost()
                 + freight.haulageShareOf(BuildingsTemplate::getWaterConsumption) * freight.getWaterCost()
                 + freight.haulageShareOf(BuildingsTemplate::getCashCost)
@@ -609,7 +610,8 @@ public final class Haulage {
     /** Strikes the month's drivers: Freight's DIPLOMA posts less a driver for each place in the depots no truck fills. */
     public void strikeDrivers() {
         BuildingManager b = freight.buildings();
-        long diploma = b == null ? 0 : b.getJobArrayBySector(freight.key())[JobType.DIPLOMA.ordinal()];
+        // ...the DIPLOMA posts of the buildings it owns: the berths' dockers (FR3) are not drivers and are never laid off.
+        long diploma = b == null ? 0 : b.getOwnedJobArrayBySector(freight.key())[JobType.DIPLOMA.ordinal()];
         double idle = Math.floor(Math.max(0, depotRoom() - trucks())) * DRIVERS_A_TRUCK;
         diplomaOffered = diploma > 0 ? Math.max(0, Math.min(1, (diploma - idle) / diploma)) : 1;
     }

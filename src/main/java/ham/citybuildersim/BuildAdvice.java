@@ -146,7 +146,9 @@ public final class BuildAdvice {
        death care; Education: each level; Safety: police and cells; Roads &
        transit: road capacity and transit; Utilities: power and water. PLOTS
        has no ring - it is the burial plots' own NEEDS YOU row, which the
-       death care ring's buildings answer.
+       death care ring's buildings answer. PORT (FR3) has none either: the
+       berths of a kind of cargo, advised on their payback (A BERTH THAT PAYS
+       BACK, at the end).
 
        STREETS AND HIGHWAYS, TWO MEASURES (FR7, 2026-10-18; Jerus's star 4).
        Roads & transit has three rings now: the STREETS (Kind.ROADS: the
@@ -171,16 +173,20 @@ public final class BuildAdvice {
      * lines; HIGHWAYS, added on the end, is the through need, served by the
      * Elevated Highway alone (InfrastructureManager, STREETS AND HIGHWAYS,
      * TWO NEEDS). Each is judged on its own measure and has its own line on
-     * NEEDS YOU (CityNeeds.Kind.ROADS and CityNeeds.Kind.HIGHWAYS).
+     * NEEDS YOU (CityNeeds.Kind.ROADS and CityNeeds.Kind.HIGHWAYS). PORT (FR3,
+     * docs/queue/FR3.md 5.4), last: the berths of one kind of cargo (A BERTH
+     * THAT PAYS BACK, below).
      */
-    public enum Kind { POWER, WATER, ROADS, TRANSIT, CARE, DEATH, PLOTS, SCHOOL, POLICE, CELLS, HIGHWAYS }
+    public enum Kind { POWER, WATER, ROADS, TRANSIT, CARE, DEATH, PLOTS, SCHOOL, POLICE, CELLS, HIGHWAYS, PORT }
 
-    /** One measure: a kind, and the care type or the school it is about. */
-    public record Measure(Kind kind, CareType care, EducationType school) {
+    /** One measure: a kind, and the care type or the school it is about - or, for PORT, the cargo (null for every other kind). */
+    public record Measure(Kind kind, CareType care, EducationType school, Ports.Cargo cargo) {
 
-        public static Measure of(Kind kind) { return new Measure(kind, CareType.NONE, EducationType.NONE); }
-        public static Measure care(CareType care) { return new Measure(Kind.CARE, care, EducationType.NONE); }
-        public static Measure school(EducationType school) { return new Measure(Kind.SCHOOL, CareType.NONE, school); }
+        public static Measure of(Kind kind) { return new Measure(kind, CareType.NONE, EducationType.NONE, null); }
+        public static Measure care(CareType care) { return new Measure(Kind.CARE, care, EducationType.NONE, null); }
+        public static Measure school(EducationType school) { return new Measure(Kind.SCHOOL, CareType.NONE, school, null); }
+        /** The berths of a kind of cargo (FR3): the sea terminals that handle it. */
+        public static Measure port(Ports.Cargo cargo) { return new Measure(Kind.PORT, CareType.NONE, EducationType.NONE, cargo); }
 
         /** Whether this building serves the measure - the buildings its ring shows. */
         public boolean serves(BuildingsTemplate t) {
@@ -198,6 +204,7 @@ public final class BuildAdvice {
                 case SCHOOL:  return t.getTeaches() == school;
                 case POLICE:  return t.getSafety() == SafetyType.POLICE;
                 case CELLS:   return t.getSafety() == SafetyType.PRISON;
+                case PORT:    return cargo != null && Ports.isPort(t) && t.berthCargo() == cargo;
                 default:      return false;
             }
         }
@@ -209,6 +216,7 @@ public final class BuildAdvice {
                 case ROADS: case HIGHWAYS: case TRANSIT: return ROADS;
                 case CARE: case DEATH: case PLOTS: return HEALTHCARE;
                 case SCHOOL:                   return EDUCATION;
+                case PORT:                     return INDUSTRY;     // the category that holds BuildingType.PORTS
                 default:                       return SAFETY;
             }
         }
@@ -227,6 +235,7 @@ public final class BuildAdvice {
                 case PLOTS:   return "Burial plots";
                 case SCHOOL:  return school.getLabel();
                 case POLICE:  return "Police";
+                case PORT:    return cargo.label() + " berths";
                 default:      return "Cells";
             }
         }
@@ -392,6 +401,9 @@ public final class BuildAdvice {
                 return t.getTransitCapacity();
             case DEATH: case PLOTS:
                 return t.getCare() == CareType.BURIAL ? t.getCapacity() : t.getCapacity() * staffing(t, fill);
+            case PORT:
+                // A berth's crews are Freight's (FR3), not the city's staff: its tonnes a month, fully worked.
+                return Ports.berthMonth(t);
             default:
                 return t.getCapacity() * staffing(t, fill);
         }
@@ -403,6 +415,7 @@ public final class BuildAdvice {
             case POWER: case WATER: return t.getProduction1();
             case ROADS: case HIGHWAYS: return t.getCapacity();
             case TRANSIT:           return t.getTransitCapacity();
+            case PORT:              return Ports.berthMonth(t);
             default:                return t.getCapacity();
         }
     }
@@ -552,6 +565,9 @@ public final class BuildAdvice {
                 double caught = k * game.getCrime().getCaught();
                 return Math.max(0, caught - cells(game, added) / Crime.SENTENCE_MONTHS);
             }
+            case PORT:
+                // Tonnes a month of the kind no berth takes, today's: a berth is judged on what crosses the boundary now (A BERTH THAT PAYS BACK).
+                return portUncovered(game, m, added);
             default:
                 return 0;
         }
@@ -632,6 +648,11 @@ public final class BuildAdvice {
                         k * game.getCrime().getPopulation() * Crime.FULL_OFFICERS_PER_100K / 100_000.0};
             case CELLS:
                 return new double[] {cells(game, added), k * game.getCrime().getCaught() * Crime.SENTENCE_MONTHS};
+            case PORT: {
+                // The tonnes the berths take against the tonnes that could go by sea.
+                double carriable = game.getPorts().carriable(m.cargo());
+                return new double[] {carriable - portUncovered(game, m, added), carriable};
+            }
             default:
                 return new double[] {0, 0};
         }
@@ -899,6 +920,7 @@ public final class BuildAdvice {
             case SCHOOL:  return m.school().isBasic() ? figure > CityNeeds.SCHOOLS_YELLOW : figure < CityNeeds.SEATS_YELLOW;
             case POLICE:  return figure < CityNeeds.CRIME_YELLOW;
             case CELLS:   return figure < CityNeeds.CELLS_YELLOW;
+            case PORT:    return !(figure > 0);        // no tonne left uncovered; whether a berth PAYS BACK is portTerminal()'s
             default:      return true;
         }
     }
@@ -1040,6 +1062,8 @@ public final class BuildAdvice {
      * build one.
      */
     public static boolean ahead(Game game, Measure m, Map<BuildingsTemplate, Integer> added, Ahead p) {
+        // A berth (FR3): ahead while no terminal of its kind pays back, on today's tonnes - no projection, no slack - or the city owns no coast.
+        if (m.kind() == Kind.PORT) return portTerminal(game, m, added, java.util.Collections.emptySet()) == null;
         if (!clear(m, figure(game, m, added, p))) return false;
         if (!isServed(m) || m.kind() == Kind.TRANSIT || m.kind() == Kind.HIGHWAYS) return true;
         double[] sd = supplyDemand(game, m, added, p);
@@ -1186,6 +1210,8 @@ public final class BuildAdvice {
     /** ...and with the city's gravel roads paved left out too when `noPaving` (0.7.101): a paving the money cannot pay for, passed over the same way (and the test player's paving once offered, since 0.7.103). */
     public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                         double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving) {
+        // A berth (FR3): the terminal that pays back, if any (A BERTH THAT PAYS BACK, below) - not ranked like a service.
+        if (m.kind() == Kind.PORT) return portSuggestion(game, m, cashLeft, landLeft, skip);
         Map<BuildingsTemplate, Integer> site = onSite(game, m);
         double whenOnSite = figure(game, m, site);
         // JUDGEMENT: what is on site already keeps it ahead, sized as an order placed now would be - nothing to add.
@@ -1952,9 +1978,89 @@ public final class BuildAdvice {
     /** Which way is worse for a measure's figure. */
     public static boolean higherWorse(Measure m) {
         switch (m.kind()) {
-            case POWER: case WATER: case ROADS: case HIGHWAYS: case DEATH: case POLICE: case CELLS: return true;
+            case POWER: case WATER: case ROADS: case HIGHWAYS: case DEATH: case POLICE: case CELLS: case PORT: return true;
             case SCHOOL: return !m.school().isBasic();
             default: return false;
         }
+    }
+
+    /* =====================================================================
+       A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the
+       finding of spec-freight-and-infrastructure 9.5)
+
+       "Ports earn nothing and are never advised": a berth was a pure cost,
+       so the advice never offered one and automatic building never ordered
+       one; only the test player (LongPlaytest.portsWhenNeeded(), its own
+       rule) and the player did. The Ports division now charges the shippers
+       and pays the city port dues (sectors.PortDivision), so a berth has a
+       payback, and Ports.berthPaysBack() is it - the dues' own break-even,
+       written once: the kind's uncovered tonnes (what could go by sea and no
+       berth standing or on site takes) reach WORTH_A_BERTH / the dues dial of
+       that berth's month.
+
+       WHAT THE MEASURE IS. One Kind.PORT measure a kind of cargo
+       (portMeasures()): it serves the PORTS terminals of its kind, its
+       figure is the kind's uncovered tonnes a month, and its advice is the
+       LARGEST terminal of the kind that pays back (Ports.payingTerminal(),
+       the test player's own choice): the Bulk Terminal when the dry bulk
+       would pay it back, else the Bulk Berth when it would pay that back,
+       one at a time - the berths on site counted against the next. It has no
+       NEEDS YOU row and no category ring: a berth is judged on the tonnes
+       that cross the boundary now, not on a projection with slack, because
+       the dues' break-even is the margin; and only where the city owns coast
+       (Game.hasCoastFor()). It is NOT in suggest(), the overview's WHAT
+       WOULD HELP MOST (a need-ranked list whose cards the screen reads a
+       row from; FR4 has the screens): it is asked by suggestFor(), which the
+       auto-builder (AutoBuilder.remit()) and the harness use.
+       ===================================================================== */
+
+    /** The port measures, one a kind of cargo, in Cargo order (FR3). */
+    public static List<Measure> portMeasures() {
+        List<Measure> out = new ArrayList<>();
+        for (Ports.Cargo k : Ports.Cargo.values()) out.add(Measure.port(k));
+        return out;
+    }
+
+    /** A port measure's uncovered tonnes a month with these buildings standing as well: the kind's carriable() less its berths standing and the berths in `added` (Ports.uncovered()). */
+    static double portUncovered(Game game, Measure m, Map<BuildingsTemplate, Integer> added) {
+        Ports.Cargo k = m.cargo();
+        double[] extra = new double[Ports.Cargo.values().length];
+        for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
+            if (m.serves(e.getKey())) extra[k.ordinal()] += e.getValue() * Ports.berthMonth(e.getKey());
+        }
+        return game.getPorts().uncovered(k, Ports.berths(game.getBuildingManager()), extra);
+    }
+
+    /**
+     * The terminal to order for a port measure, or null (FR3): the largest of
+     * the kind's terminals but those in `skip` that pays back at the kind's
+     * uncovered tonnes with `added` standing too and the port dues dial
+     * (Ports.payingTerminal()), and only where the city owns coast for it
+     * (Game.hasCoastFor()).
+     */
+    public static BuildingsTemplate portTerminal(Game game, Measure m, Map<BuildingsTemplate, Integer> added,
+                                                 java.util.Set<BuildingsTemplate> skip) {
+        double dial = game.getEconomyManager().getTaxPolicy().getPortDues();
+        BuildingsTemplate t = Ports.payingTerminal(m.cargo(), game.getBuildingManager().getTemplates(),
+                portUncovered(game, m, added), dial, skip);
+        return t != null && game.hasCoastFor(t, 1) ? t : null;
+    }
+
+    /** A port measure's card: one terminal of the kind that pays back, or null for none (portTerminal()); the Suggestion's need is null, the NEEDS YOU having no row for a berth. */
+    static Suggestion portSuggestion(Game game, Measure m, double cashLeft, double landLeft,
+                                     java.util.Set<BuildingsTemplate> skip) {
+        Map<BuildingsTemplate, Integer> site = onSite(game, m);
+        BuildingsTemplate t = portTerminal(game, m, site, skip);
+        if (t == null) return null;
+        Game.BuildQuote q = game.quoteBuild(t, 1);
+        Map<BuildingsTemplate, Integer> order = plus(site, t, 1);
+        double after = figure(game, m, order);
+        double unit = Ports.berthMonth(t), sq = t.getLandSqFt();
+        boolean credit = q.total > cashLeft;
+        return new Suggestion(null, m, t, 1, q.total, figure(game, m, new LinkedHashMap<>()), figure(game, m, site), after,
+                after, portTerminal(game, m, order, java.util.Collections.emptySet()) == null, credit, units(site),
+                unit, unit > 0 ? q.total / unit : Double.NaN, NOW, q.months, sq, landValue(game, sq, landLeft),
+                Math.max(0, sq - Math.max(0, landLeft)), null, Double.NaN, null,
+                credit ? q.total - Math.max(0, cashLeft) : 0, false);
     }
 }

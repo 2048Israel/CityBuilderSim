@@ -196,6 +196,23 @@ public class BuildingsTemplate {
     public boolean isOwnedBySector() { return !sector.isEmpty(); }
 
     /**
+     * The key of the sector that WORKS the building and pays its posts: Freight
+     * for a sea terminal (BuildingType.PORTS), getSector() for every other
+     * building. The owner (getSector()) keeps the land, the building's value,
+     * its repairs, power, water and tax; the operator keeps the crew.
+     *
+     * WHY (FR3, the landlord port, docs/queue/FR3.md 3): the four terminals
+     * were the city's end to end, their dockers paid with the transit bill.
+     * A landlord port splits the two: the city builds and keeps the berths,
+     * Freight's Ports division works them. A terminal has no owning sector, so
+     * "" would be its operator too and nobody would pay the crew; this is the
+     * one place that says who does. "" for a city building nobody operates.
+     */
+    public String getOperator() {
+        return category == BuildingType.PORTS ? ham.citybuildersim.Sectors.FREIGHT : sector;
+    }
+
+    /**
      * Whether a building's power and water are invoiced to anybody: the
      * business buildings a sector owns. A home is not - the tenants are not
      * charged for utilities in this model and the landlords never were - and
@@ -340,6 +357,24 @@ public class BuildingsTemplate {
 
     /** Tonnes a year a terminal's berth handles; 0 for every other building. */
     public double berthTonnesAYear() { return berthTonnesAYear; }
+
+    /*  Which classes call (FR3 2026-10-19, docs/queue/FR3.md 2 and call 6): a
+        berth may take only some of the classes of its kind ("port": {... ,
+        "ships": ["HANDYSIZE", "SUPRAMAX"]} in buildings.json). WHY: the Bulk
+        Berth is a grab-worked quay for small carriers and the Bulk Terminal
+        the deep-water one for Panamax and Capesize; with no list a terminal
+        takes every class of its kind, as the tanker, container and general
+        terminals do. Read by Ports.shipsOf(); never saved. */
+    private java.util.List<Ports.Ship> berthShips = java.util.List.of();
+
+    /** Limits this berth to these classes of its cargo; an empty list lifts the limit. */
+    public BuildingsTemplate setBerthShips(java.util.List<Ports.Ship> ships) {
+        this.berthShips = ships == null ? java.util.List.of() : java.util.List.copyOf(ships);
+        return this;
+    }
+
+    /** The classes this berth takes, smallest first as the list gives them; empty when it takes every class of its kind (Ports.shipsOf() answers either way). */
+    public java.util.List<Ports.Ship> berthShips() { return berthShips; }
 
     /** Whether this is a sea terminal (0.7.86): a PORTS building with a berth. */
     public boolean isPort() { return category == BuildingType.PORTS && berthCargo != null && berthTonnesAYear > 0; }

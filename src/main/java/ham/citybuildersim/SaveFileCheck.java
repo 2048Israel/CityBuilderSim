@@ -2701,6 +2701,7 @@ public class SaveFileCheck {
                 atFloor.getLoadFailure() == null && atFloor.getMonth() == savedMonth && savedMonth > 1);
 
         onEarth(root);
+        everyIdCrossesASave(root);
 
         cleanUp(root);
 
@@ -2736,6 +2737,53 @@ public class SaveFileCheck {
      *     not know, or an Earth with no spot, is refused in words that say so,
      *     nothing of it applied and its file as it was.
      */
+    /**
+     * EVERY ID CROSSES A SAVE, THE HIGHEST PAST A GAP TOO (FR3, 2026-10-19).
+     * Game.sendBuildingSave() and loadBuildings() ran to getTemplateCount() and
+     * read the index as an id: FR3's Bulk Berth took 142 while FR7's 141 was
+     * not yet on the branch, and every Bulk Berth vanished across a save (the
+     * playtest's "next-month income across a save", three berths' crews short).
+     * The fixture causes the gap whatever the catalogue: a template nothing
+     * stands is dropped from the saving city's catalogue, so the highest id
+     * lies past the count, and the city stands two of the highest id.
+     */
+    static void everyIdCrossesASave(Path root) {
+        System.out.println("\n--- every id crosses a save, the highest past a gap in the ids too ---");
+        GameFiles files = new GameFiles(root.resolve("ids"), root.resolve("no-legacy"));
+        Game city = new Game(files);
+        quietly(() -> {
+            city.newGame(Founding.defaults().withWorldSeed(2_026_101_9L));
+            city.setCashForTest(Founding.WEALTHY_CASH);
+            city.buildStack(template(city, "House"), 40, true);
+        });
+        BuildingManager bm = city.getBuildingManager();
+        BuildingsTemplate highest = bm.getTemplate(bm.getMaxTemplateId());
+        bm.addStack(highest, 2, true);
+        city.getLandManager().allocate(highest.getLandSqFt() * 2);
+        BuildingsTemplate dropped = null;
+        for (int id = bm.getMaxTemplateId() - 1; id >= 0 && dropped == null; id--) {
+            BuildingsTemplate t = bm.getTemplate(id);
+            if (t != null && bm.getQuantity(id) == 0 && bm.getUnderConstructionById()[id] == 0) dropped = t;
+        }
+        bm.getTemplates().remove(dropped);
+        assertTrue("fixture: the highest id, " + highest.getName() + "'s, lies past the template count",
+                bm.getMaxTemplateId() >= bm.getTemplateCount());
+        assertEquals("fixture: two of it stand", bm.getQuantity(highest.getId()), 2);
+        int[] before = new int[bm.getMaxTemplateId() + 1];
+        for (int id = 0; id < before.length; id++) before[id] = bm.getTemplate(id) == null ? 0 : bm.getQuantity(id);
+        assertTrue("fixture: the city saved", quietlyGet(() -> city.saveGame(1, "ids")).ok);
+
+        Game back = new Game(files);
+        quietly(() -> back.loadGameSave(1));
+        BuildingManager after = back.getBuildingManager();
+        assertEquals("the highest id's buildings came back", after.getQuantity(highest.getId()), 2);
+        boolean all = true;
+        for (int id = 0; id < before.length; id++) {
+            if (after.getTemplate(id) != null && after.getQuantity(id) != before[id]) all = false;
+        }
+        assertTrue("...and every id's count is the one saved", all);
+    }
+
     static void onEarth(Path root) throws IOException {
         System.out.println("\n--- and a city on the real Earth, saved and read back; a format-37 save on its generated world ---");
         com.google.gson.Gson gson = new com.google.gson.Gson();

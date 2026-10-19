@@ -6825,8 +6825,34 @@ public final class GameVersion {
      *     JunctionCheck, MapCheck, MainLineCheck sections; three fixtures the
      *     model moved, re-made.
      *   - THE PLAYTESTS MOVE: both pass every audit and reload.
+     *
+     * 0.8.7 (2026-10-19) - FR3, THE LANDLORD PORT AND THE BULK BERTH.
+     * (docs/studies/spec-freight-and-infrastructure.md 3.4 and 7, D8-D10;
+     * docs/queue/FR3.md, FR3-notes.md.) Slices by Sonnet 5.5 subagents,
+     * reviewed by Claude. Save format unchanged: new keys only.
+     *   - THE BULK BERTH (id 142): 2.5 Mt of dry bulk a year for D$60M, its
+     *     Handysize and Supramax calls; the classes are the largest dry bulk
+     *     berth's.
+     *   - THE CITY OWNS THE BERTHS, FREIGHT WORKS THEM: the crews leave the
+     *     transit bill for Freight's payroll (BuildingsTemplate.getOperator()).
+     *   - THE PORTS DIVISION (sectors.PortDivision): every tonne across a
+     *     berth billed "Port handling" at the kind's quote (the crew over the
+     *     larger of the tonnes and .6 of the berths' month, the scarcity,
+     *     walked; the dues passed through at the month's own rate), and port
+     *     dues paid the city on it - the berths' cost over
+     *     30 years at the city's own rate, times the dial TaxPolicy.portDues.
+     *     A treasury revenue line, "Port dues".
+     *   - A BERTH PAYS BACK (Ports.berthPaysBack()): the test player, the
+     *     advice (Kind.PORT) and automatic building order the largest
+     *     terminal whose dues would cover it.
+     *   - EVERY ID CROSSES A SAVE: the buildings' save and load ran to the
+     *     template count, and an id past a gap (142, before 141) was lost.
+     *     And a berth's sea route keeps its cell's middle where the berth's
+     *     own first leg would graze land (SeaRoutes.route()).
+     *   - Harnesses: LandlordPortCheck (new); BuildAdviceCheck, PortCheck,
+     *     SaveFileCheck; the playtests' "Ports division" line.
      */
-    public static final String VERSION = "0.8.6";
+    public static final String VERSION = "0.8.7";
 
     /**
      * The save shape.

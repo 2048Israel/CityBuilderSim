@@ -124,7 +124,7 @@ public class Game {
      */
     public BoatSchedule boats(java.util.List<BoatSchedule.Berth> quays) {
         World w = getWorld();
-        return BoatSchedule.of(month, ports, quays, w.foundingX(), w.foundingY());
+        return BoatSchedule.of(month, ports, quays, w.foundingX(), w.foundingY(), Ports.bulkShipsStanding(buildingManager));
     }
 
     /** A harness's look at the city either side of automatic building's pass (AutoBuildCheck): false before, true after. Null in play. */
@@ -5682,10 +5682,19 @@ public class Game {
         getInfrastructureManager().setSeaShare(ports.seaOfStream());
     }
 
-    /** The sea terminals' crews at these fill rates and their upkeep, a month (0.7.86): paid with transit's bill (TreasuryLine.TRANSIT); nothing with no terminal. */
-    double portsBill(double[] fill) {
-        return buildingManager.getCategoryPayroll(BuildingType.PORTS, populationManager.getWagesPerType(), fill)
-                + buildingManager.getUpkeepByCategory(BuildingType.PORTS);
+    /**
+     * The sea terminals' repairs, a month: their upkeep, the berths the city
+     * keeps as landlord, paid with transit's bill (TreasuryLine.TRANSIT);
+     * nothing with no terminal. Their crews left it with FR3 (docs/queue/FR3.md
+     * 3): Freight's Ports division works the berths and pays the dockers
+     * (Freight.portsPayroll()), so the fill rates no longer enter it.
+     *
+     * WHY: it was the crews' payroll at the month's fill rates plus the upkeep
+     * (0.7.86, batch O9, when a terminal was the city's end to end); the same
+     * posts paid on two bills would be paid twice.
+     */
+    double portsBill() {
+        return buildingManager.getUpkeepByCategory(BuildingType.PORTS);
     }
 
     /**
@@ -6651,6 +6660,8 @@ public class Game {
                 || (t.getCare() != null && t.getCare() != CareType.NONE)
                 || (t.getSafety() != null && t.getSafety() != SafetyType.NONE)
                 ? t.getCapacity() * (double) n : 0;
+        // A berth's crews are Freight's since FR3 (docs/queue/FR3.md 3; portsBill()): the city saves its upkeep alone.
+        if (Ports.isPort(t)) wages = 0;
         return new DemolitionQuote(t, n, points, price, units, unitPrice, affordable,
                 t.getLandSqFt() * n, months, homes, homes * occupancy, places, posts,
                 t.isOwnedBySector() ? 0 : wages + t.getUpkeep() * n);
@@ -11292,14 +11303,14 @@ public class Game {
                 Motoring.journeyFuel(this));
         servicesManager.updateTransitFare(economyManager.getTaxPolicy().getTransitFare());
         motoring.drawFuel(this, getInfrastructureManager().getDrivers() * TaxPolicy.JOURNEYS_A_MONTH);
-        // ...AND THE PORTS' CREWS (0.7.86, batch O9): a terminal's dockers are
-        // the city's, paid with transit's - its wages and upkeep added to the
-        // bill, nothing with no terminal (star O9-2).
+        // ...AND THE PORTS' REPAIRS (0.7.86, batch O9; the dockers left it in FR3
+        // for Freight's payroll): a terminal's upkeep added to the bill, nothing
+        // with no terminal (star O9-2).
         economyManager.setTransit(
                 buildingManager.getCategoryPayroll(BuildingType.INFRASTRUCTURE,
                         populationManager.getWagesPerType(), fill)
                         + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE)
-                        + portsBill(fill),
+                        + portsBill(),
                 getInfrastructureManager().getTransitRiders()
                         * economyManager.getTaxPolicy().monthlyFare());
 
@@ -12736,11 +12747,21 @@ public class Game {
         };
     }
     
+    /*
+     * EVERY ID TO THE HIGHEST, NOT AS MANY AS THERE ARE (FR3, 2026-10-19). Both
+     * loops here ran to getTemplateCount() and read the index as an id, which
+     * holds only while the ids number 0..n-1 with none missing. FR3's Bulk Berth
+     * took 142 while FR7's 141 was not yet on the branch: 142 templates, the
+     * loops stopped at 141, and every Bulk Berth vanished across a save
+     * (LongPlaytest's "next-month income across a save", the crews' posts gone;
+     * SaveFileCheck, "every id crosses a save"). The array was already sized by
+     * the highest id (the founding's setBuildingNum()); the loops are now too.
+     */
     public void sendBuildingSave() {
 
-    int totalTemplates = buildingManager.getTemplateCount();
+    int lastId = buildingManager.getMaxTemplateId();
 
-    for (int i = 0; i < totalTemplates; i++) {
+    for (int i = 0; i <= lastId; i++) {
 
         BuildingsTemplate template = buildingManager.getTemplate(i);
 
@@ -12759,18 +12780,19 @@ public class Game {
     
     public void loadBuildings() {
 
-        int totalTemplates = buildingManager.getTemplateCount();
+        int lastId = buildingManager.getMaxTemplateId();
 
-        for (int i = 0; i < totalTemplates; i++) {
+        for (int i = 0; i <= lastId; i++) {
+            BuildingsTemplate template = buildingManager.getTemplate(i);
+            // ...an id no template has (a gap, sendBuildingSave()'s note) holds nothing.
+            if (template == null) continue;
             int quantity = 0;
 
             if (i < dataSave.getBuildingsLength()) {
                 quantity = dataSave.getBuildingQuantity(i);
             }
 
-            buildingManager.addStack(
-                    buildingManager.getTemplate(i),
-                    quantity, true);
+            buildingManager.addStack(template, quantity, true);
         }
     }
 
@@ -14548,7 +14570,7 @@ public class Game {
             buildingManager.getCategoryPayroll(BuildingType.INFRASTRUCTURE,
                     populationManager.getWagesPerType(), populationManager.getJobFillRate())
                     + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE)
-                    + portsBill(populationManager.getJobFillRate()),
+                    + portsBill(),
             getInfrastructureManager().getTransitRiders()
                     * economyManager.getTaxPolicy().monthlyFare());
 

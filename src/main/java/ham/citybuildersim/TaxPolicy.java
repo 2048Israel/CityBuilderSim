@@ -836,6 +836,7 @@ public class TaxPolicy {
         if (grantBasis == GrantBasis.FIXED) grantAmount *= scale;
         // ...AND THE FUEL DUTY (0.7.103), for the fare's reason: dollars a litre, not a share.
         fuelDuty *= scale;
+        // ...the port dues dial is a ratio (FR3), and a ratio is not rescaled.
     }
 
     /* =======================================================================
@@ -1049,6 +1050,41 @@ public class TaxPolicy {
         if (DecisionLog.moved(was, fuelDuty)) {
             decided(DecisionLog.TAX, String.format(java.util.Locale.ROOT, "Fuel duty to $%.2f a litre at founding prices",
                     fuelDuty * 1000));
+        }
+    }
+
+    /* =======================================================================
+       PORT DUES (FR3, 2026-10-19; docs/queue/FR3.md 2, D9)
+
+       The city's own price for a berth, as the fare is for a ride: Freight's
+       Ports division pays the city a due on every tonne that crosses a berth
+       (PortDivision), and the dial scales the due the division works out from
+       the berths' cost. WHY: ports earned nothing, so no city built one
+       (the spec's finding 9.5); a due recovers a berth over its life.
+
+       A RATIO, NOT MONEY: 1.0 charges the default (the annuity on the berths
+       standing at the city's borrowing rate, over their month at design
+       use), 0 charges nothing, 2 twice. A ratio is never rescaled with the
+       money unit (redenominate() leaves it alone), and a save without the
+       slot reads 1.0, not 0 (restorePolicyState()).
+       ======================================================================= */
+
+    /** The default due: the berths' cost recovered over their life at the city's rate (D9). */
+    public static final double DEFAULT_PORT_DUES = 1.0;
+
+    /** The dial's top: twice the default. */
+    public static final double MAX_PORT_DUES = 2.0;
+
+    private double portDues = DEFAULT_PORT_DUES;
+
+    /** The port dues dial: the multiple of the default due Freight pays the city a tonne across a berth, 0 to MAX_PORT_DUES (FR3). */
+    public double getPortDues() { return portDues; }
+
+    public void setPortDues(double multiple) {
+        double was = portDues;
+        portDues = Double.isFinite(multiple) ? Math.max(0, Math.min(MAX_PORT_DUES, multiple)) : DEFAULT_PORT_DUES;
+        if (DecisionLog.moved(was, portDues)) {
+            decided(DecisionLog.TAX, String.format(java.util.Locale.ROOT, "Port dues to %.2f times the berths' cost recovered over their life", portDues));
         }
     }
 
@@ -1386,6 +1422,7 @@ public class TaxPolicy {
         c.transitFare = transitFare;
         c.foodAssistance = foodAssistance;
         c.fuelDuty = fuelDuty;
+        c.portDues = portDues;
         c.expectedLevel = expectedLevel;
         c.moneyUnit = moneyUnit;
         c.fareNominal = fareNominal;
@@ -1427,8 +1464,11 @@ public class TaxPolicy {
     /** ...and one from before the fuel duty (0.7.103): the food assistance dial on top (0.7.43). */
     public static final int STATE_BEFORE_FUEL_DUTY = STATE_BEFORE_FOOD_ASSISTANCE + 1;
 
-    /** This build's array: the fuel duty dial on top (0.7.103). */
-    public static final int STATE_SLOTS = STATE_BEFORE_FUEL_DUTY + 1;
+    /** ...and one from before the port dues dial (FR3): the fuel duty on top (0.7.103). */
+    public static final int STATE_BEFORE_PORT_DUES = STATE_BEFORE_FUEL_DUTY + 1;
+
+    /** This build's array: the port dues dial on top (FR3). */
+    public static final int STATE_SLOTS = STATE_BEFORE_PORT_DUES + 1;
 
     /**
      * The city rates and the wage-band offsets as one array, city rates
@@ -1517,6 +1557,9 @@ public class TaxPolicy {
         // The fuel duty of 0.7.103, on the end, for the same reason: an older
         // save reads no duty, which is the city it was.
         state[i++] = fuelDuty;
+        // The port dues dial of FR3, on the end: an older save is one slot
+        // shorter and reads 1.0, the default due, which is the city it was.
+        state[i++] = portDues;
         return state;
     }
 
@@ -1559,6 +1602,7 @@ public class TaxPolicy {
         studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
         foodAssistance = DEFAULT_FOOD_ASSISTANCE;
         fuelDuty = DEFAULT_FUEL_DUTY;
+        portDues = DEFAULT_PORT_DUES;
         setTuitionScale(DEFAULT_TUITION_SCALE);
         if (i < state.length) setEiPremiumRate(state[i++]);
         if (i < state.length) setEiBenefitRate(state[i++]);
@@ -1594,6 +1638,7 @@ public class TaxPolicy {
         fareNominal = !fareReal;
         if (i < state.length) setFoodAssistance(state[i++]);
         if (i < state.length) setFuelDuty(state[i++]);
+        if (i < state.length) setPortDues(state[i++]);
         return true;
     }
 
@@ -1671,6 +1716,7 @@ public class TaxPolicy {
         healthPremiumRate = DEFAULT_HEALTH_PREMIUM;
         foodAssistance = DEFAULT_FOOD_ASSISTANCE;
         fuelDuty = DEFAULT_FUEL_DUTY;
+        portDues = DEFAULT_PORT_DUES;
         java.util.Arrays.fill(wageOffset, 0);
         profitOffset.clear();
         salesOffset.clear();

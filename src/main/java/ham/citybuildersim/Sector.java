@@ -206,7 +206,7 @@ public abstract class Sector {
         averageFill = total == 0 ? 1 : filled / total;
     }
 
-    /** Posts per tier, off its own buildings. */
+    /** Posts per tier, off the buildings it operates: its own and, for Freight, the city's sea terminals (BuildingsTemplate.getOperator(), FR3). */
     public long[] postsPerTier() {
         return buildings == null ? new long[11] : buildings.getJobArrayBySector(key);
     }
@@ -1509,6 +1509,14 @@ public abstract class Sector {
         public double salesToHouseholds;
         /** The part of otherRevenue that is its old steel sold to the Scrap Yards (0.7.123, batch I4; sellOldMetal()), named apart at the strike. */
         public double oldMetalSold;
+        /**
+         * What it pays the city this month for a service the city sells and
+         * no business does (FR3, payTheCity()): the port dues. In inputs and
+         * named in otherInputs, so the opened cost line adds up; in no
+         * purchasesBySupplier, because the city is no supplier whose rate the
+         * input credit is taken at.
+         */
+        public double paidToCity;
 
         public double purchases() {
             double total = imports;
@@ -1521,6 +1529,7 @@ public abstract class Sector {
         void clear() {
             localSales = exports = otherRevenue = imports = salesToHouseholds = paidEarlier = 0;
             oldMetalSold = 0;
+            paidToCity = 0;
             purchasesBySupplier.clear();
             capitalBySupplier.clear();
             unitsSold.clear();
@@ -1540,6 +1549,7 @@ public abstract class Sector {
             localSales *= s; exports *= s; otherRevenue *= s; imports *= s; salesToHouseholds *= s;
             paidEarlier *= s;
             oldMetalSold *= s;
+            paidToCity *= s;
             purchasesBySupplier.replaceAll((k, v) -> v * s);
             capitalBySupplier.replaceAll((k, v) -> v * s);
             for (Split x : sold.values())   { x.atHome *= s; x.abroad *= s; }
@@ -1882,6 +1892,24 @@ public abstract class Sector {
     }
 
     /**
+     * A DUE PAID TO THE CITY (FR3, docs/queue/FR3.md 3; the port dues): an
+     * operating cost on the input line, named, whose cash goes to the treasury
+     * and not to a business. No cash moves here: bank() settles the month at
+     * net income, so this sector's cash falls by it at the strike and the
+     * treasury takes it in the same month's tax income
+     * (EconomyManager.getPortDues()) - a pool paying a pool, and the money
+     * audit sees both. NOT billForService(): the city is no supplier in
+     * purchasesBySupplier, so no input credit is taken at its rate; NOT the
+     * property tax: that is struck below the operating line and is the
+     * sector's whole assessed roll.
+     */
+    protected final void payTheCity(String what, double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        pending.paidToCity += amount;
+        pending.otherInputs.merge(what == null ? "Dues" : what, amount, Double::sum);
+    }
+
+    /**
      * A building bought from another business in the city (0.7.19): the
      * builders' work on this sector's own premises, billed as they do it, and
      * any escalation on it - negative for a refund. Recorded only so the
@@ -2045,6 +2073,8 @@ public abstract class Sector {
         s.otherInputs = new LinkedHashMap<>(pending.otherInputs);
         s.paidEarlier = pending.paidEarlier;
         s.inputs = pending.purchases() + pending.paidEarlier;
+        // ...and what it paid the city (FR3), added only when there is some: a zero added is not always nothing.
+        if (pending.paidToCity != 0) s.inputs += pending.paidToCity;
         // LAST, because nameOtherRevenue() reads s.otherRevenue above it.
         if (pending.oldMetalSold != 0) {
             // ...its old steel sold named apart (0.7.123, sellOldMetal()): the

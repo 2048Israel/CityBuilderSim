@@ -187,13 +187,28 @@ public final class BoatSchedule {
      * quay's lane run straight out away from the founding site.
      */
     public static BoatSchedule of(int month, Ports ports, List<Berth> berths, long foundX, long foundY) {
+        return of(month, ports, berths, foundX, foundY, Ports.BULK_TERMINAL_SHIPS);
+    }
+
+    /** ...with the dry bulk classes the city's berths take (FR3 call 6, Ports.bulkShipsStanding()). */
+    public static BoatSchedule of(int month, Ports ports, List<Berth> berths, long foundX, long foundY, List<Ports.Ship> bulkShips) {
         List<Route> routes = new ArrayList<>();
         if (berths != null) for (Berth b : berths) routes.add(lane(b, foundX, foundY));
-        return of(month, ports, routes);
+        return of(month, ports, routes, bulkShips);
     }
 
     /** ...on routes found already (0.7.97: the map's, SeaRoutes'), one a berth. */
     public static BoatSchedule of(int month, Ports ports, List<Route> routes) {
+        return of(month, ports, routes, Ports.BULK_TERMINAL_SHIPS);
+    }
+
+    /**
+     * ...and the dry bulk classes the city's berths take (FR3 call 6,
+     * docs/queue/FR3.md 2: Ports.bulkShipsStanding(), a pure function of the
+     * buildings standing, so the schedule keeps no state of it). The two
+     * shorter forms use the Bulk Terminal's, Panamax and Capesize.
+     */
+    public static BoatSchedule of(int month, Ports ports, List<Route> routes, List<Ports.Ship> bulkShips) {
         routes = routes == null ? new ArrayList<>() : new ArrayList<>(routes);
         List<Group> groups = new ArrayList<>();
         if (ports != null) {
@@ -209,8 +224,8 @@ public final class BoatSchedule {
                         break;
                     }
                     case DRY_BULK:
-                        add(groups, month, c, true, Ports.bulkShipFor(in), in);
-                        add(groups, month, c, false, Ports.bulkShipFor(out), out);
+                        add(groups, month, c, true, Ports.bulkShipFor(in, bulkShips), in);
+                        add(groups, month, c, false, Ports.bulkShipFor(out, bulkShips), out);
                         break;
                     case CONTAINER:
                         // One call carries both ways: the larger direction counts, and the ship is loaded both legs.

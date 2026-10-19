@@ -754,8 +754,8 @@ public class OilCheck {
         TaxPolicy older = new TaxPolicy();
         older.setFuelDuty(DUTY);
         boolean restored = older.restorePolicyState(java.util.Arrays.copyOf(state, TaxPolicy.STATE_BEFORE_FUEL_DUTY));
-        assertTrue("...and a policy from before 0.7.103, one slot shorter, loads with no duty",
-                state.length == TaxPolicy.STATE_SLOTS && state[TaxPolicy.STATE_SLOTS - 1] == DUTY && restored
+        assertTrue("...and a policy from before 0.7.103, cut before the duty's slot, loads with no duty",
+                state.length == TaxPolicy.STATE_SLOTS && state[TaxPolicy.STATE_BEFORE_FUEL_DUTY] == DUTY && restored
                         && older.getFuelDuty() == 0);
     }
 
