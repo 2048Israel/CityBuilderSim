@@ -48,7 +48,8 @@ import java.util.Arrays;
  * colours are a map's convention (star N3-9, spec-freight 4.3).
  *
  * YARDS AND JUNCTIONS (0.8.1, batch FR0; spec-freight 4.2, 4.3 and 4.6,
- * D15 and D19). From 4 px a plot a Rail Terminal is drawn as a yard
+ * D15 and D19). From 4 px a plot a Rail Terminal (and since FR7 a Rail
+ * Depot, with fewer sidings) is drawn as a yard
  * (drawYard()): a fan of sidings closing to the line at each end, a freight
  * shed, the freight it handles - ore stockpiles, or at the freight station
  * of a railway carrying goods rows of boxes and two gantries - and wagons
@@ -141,7 +142,7 @@ public final class TileRaster {
 
     /* ===== JUNCTIONS DRAWN BY RULE (0.8.1, batch FR0; spec-freight 4.6, D19) ===== */
 
-    /** Pixels a plot from which junctions are drawn (the 8-px raster): signals, roundabouts, diamonds and stacks; a highway's end comes down to the ground wherever the ways are drawn, from LINES_FROM. */
+    /** Pixels a plot from which junctions are drawn (the 8-px raster): signals, roundabouts, diamonds and stacks, and since FR7 kerb corners and interchanges' loops; a highway's end comes down to the ground wherever the ways are drawn, from LINES_FROM. */
     public static final int JUNCTIONS_FROM = 6;
     /** A signalled junction's box, a shade darker than paved. */
     public static final int JUNCTION_BOX = 0xff8e949a;
@@ -430,8 +431,9 @@ public final class TileRaster {
 
     /**
      * A Rail Terminal's yard as a yard, not its class's plain box (0.8.1,
-     * batch FR0; spec-freight 4.2 and 4.3, D15): ballast ground, a fan of
-     * YARD_TRACKS sidings closing to the line at each end over YARD_LADDER
+     * batch FR0; spec-freight 4.2 and 4.3, D15), and since FR7 (slice 3) a
+     * Rail Depot's: ballast ground, a fan of tracksOf() sidings (a Terminal's
+     * YARD_TRACKS, a Depot's DEPOT_TRACKS) closing to the line at each end over YARD_LADDER
      * plots, a freight shed on one side of the fan, and on the other the
      * freight it handles - a container yard's boxes and gantry cranes where
      * the freight station carries goods, every other yard's ore stockpiles -
@@ -1223,9 +1225,10 @@ public final class TileRaster {
      * each way it runs - half the plot for a half-width street, all of it
      * for a full one - in its kind's colour, or a track's dashes; (0.8.1)
      * the railway's crossings (railCrossings()) and from JUNCTIONS_FROM the
-     * signals, roundabouts and diamonds; then the highways over all, cased,
-     * their open ends brought down to the ground (highwayEnds()) and from
-     * JUNCTIONS_FROM their stacks; the railway bridging a highway; the
+     * signals, roundabouts and diamonds, and (FR7) the kerb corners (kerbs());
+     * then the highways over all, cased, their open ends brought down to the
+     * ground (highwayEnds()) and from JUNCTIONS_FROM their stacks and (FR7)
+     * the reserves' loops (loops()); the railway bridging a highway; the
      * ramps below JUNCTIONS_FROM; and a dashed centre line from 6 px. A
      * 45-degree stretch is one carriageway along its line (FX3, Jerus's eye
      * check of 0.8.3): never a stack, its band filled in on the open plot

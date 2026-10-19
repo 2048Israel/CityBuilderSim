@@ -389,7 +389,7 @@ public final class DistrictPlan {
         public final byte[] terrain = new byte[AREA];
         /** Which plots the city owns. */
         public final boolean[] owned = new boolean[AREA];
-        /** The city's highway and railway plots: FIXED_HIGHWAY, FIXED_RAIL or a yard's FIXED_YARD, laid before the plan (the city's runs since 0.7.89, CityRuns; CityMap's network's plan's until 0.7.88). */
+        /** The city's highway and railway plots: FIXED_HIGHWAY, FIXED_RAIL or a yard's FIXED_YARD, and (batch FR7) an interchange's reserve FIXED_RESERVE, laid before the plan (the city's runs since 0.7.89, CityRuns; CityMap's network's plan's until 0.7.88). */
         public final byte[] fixed = new byte[AREA];
         /** The resource sites: SITE_FIELD, or SITE_MINED where a mine or well stands. */
         public final byte[] site = new byte[AREA];

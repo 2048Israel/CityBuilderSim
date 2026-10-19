@@ -177,7 +177,7 @@ public final class CityRuns {
     public static final byte M_DIAG = 2;
     /** ...the bit that heading's two bits start at: bits 2 and 3, between M_DIAG and M_CORNER... */
     public static final int M_DIAG_SHIFT = 2;
-    /** ...and of those, a staircase's corner: the plot beside the stretch's line, (x + dx, y) of a step from (x, y). */
+    /** ...and of those, a staircase's corner: the plot beside the stretch's line, (x + dx, y) of a step from (x, y). (Since FR7 the marks also carry TilePainter.M_SHED, a siding's loading shed.) */
     public static final byte M_CORNER = 16;
 
     /* =====================================================================
@@ -1120,8 +1120,8 @@ public final class CityRuns {
      * map's, {w, h} a yard, Rail Terminals first and Rail Depots after them,
      * so a depot added never moves a terminal's yard. The newest of the rest
      * is taken first (as the single-size yards were before). Those the model has
-     * and the ground has no place for are counted (yardsShort), and their
-     * districts' plans draw them.
+     * and the ground has no place for are counted once the rest are laid
+     * (yardsShort, zeroed here), and their districts' plans draw them.
      */
     private void keepYards(List<int[]> sizes) {
         int keep = 0;

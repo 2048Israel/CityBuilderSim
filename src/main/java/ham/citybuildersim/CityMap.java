@@ -118,7 +118,9 @@ import java.util.zip.InflaterInputStream;
  * SEA draws the platforms and pipes the game hands it, and THE SEA ROUTES
  * finds each terminal's way out to the world (SeaRoutes) for the boats.
  * THE TRAINS' ROUTES (0.8.2, batch FR1; spec-freight 4.4) lay the trains'
- * way from the railway's world line onto each yard's sidings.
+ * way from the railway's world line onto each yard's sidings, and THE
+ * TRUCKS' ROUTES (0.8.8, batch FR5; spec-freight 4.7) the trucks' along the
+ * highways to their ramps and along each district's access roads to a gate.
  *
  * THE MATERIALS (0.8.0, batch I14; spec-materials 5's I14 row): THE WORKS
  * ON THEIR SITES BY TYPE stands every mine, quarry and leach plant on its
@@ -2372,7 +2374,7 @@ public final class CityMap {
                 }
             }
         }
-        // The city's runs over its frame (0.7.89), and its Rail Terminals the runs draw as yards.
+        // The city's runs over its frame (0.7.89), and its Rail Terminals (and since FR7 Rail Depots) the runs draw as yards.
         h = World.mix(h ^ runs.frameHash(x0, y0, DistrictPlan.FRAME, DistrictPlan.FRAME));
         h = World.mix(h ^ yardsOf(d));
         // ...and its share of the Rail Spurs the runs' sidings left (batch FR7 slice 5, D14); nothing with none.
@@ -4167,7 +4169,7 @@ public final class CityMap {
 
     /**
      * The works of the city that need an access road and stand in district d's
-     * frame (batch FR7, D17): each Rail Terminal the runs draw as a yard, each
+     * frame (batch FR7, D17): each Rail Terminal and Rail Depot the runs draw as a yard, each
      * sea terminal on the shore (a tank farm has no berth and none), as {x, y,
      * w, h} in the frame's plots - those whose box lies wholly inside it, off
      * the edge row and column the districts share, which is every one: a
