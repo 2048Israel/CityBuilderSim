@@ -643,6 +643,9 @@ public class MainLineCheck {
         return new double[] { r.xs()[k], r.ys()[k] };
     }
 
+    /** Plots: a yard's box a side in the fixture, his Rail Terminals' (CityRuns.spotsIn() lays one at either end of its cell: at 1, or CELL - side). */
+    static final int YARD_SIDE = 24;
+
     /**
      * Section 12. Jerus's second yard: it stands over the interchange of a
      * north-south corridor with the spine, so the spine crosses its box, and a
@@ -653,9 +656,6 @@ public class MainLineCheck {
      * the interchange (24 x 24, the interchange 7 plots in from its north-west
      * corner), yard A's lies directly above it, a plot's gap between.
      */
-    /** Plots: a yard's box a side in the fixture, his Rail Terminals' (CityRuns.spotsIn() lays one at either end of its cell: at 1, or CELL - side). */
-    static final int YARD_SIDE = 24;
-
     static void stackedOnACorridor(long siteX, long siteY) {
         System.out.println("\n--- two yards stacked on a corridor (FX3) ---");
         BoxGround g = ground(siteX - 700, siteY - 700, siteX + 700, siteY + 700);
