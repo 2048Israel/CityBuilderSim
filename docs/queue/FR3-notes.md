@@ -28,6 +28,7 @@ The brief's (FR3.md §4), as Jerus's "rec" left them, and the review's:
 6. **★6 The classes by the largest dry bulk berth standing.**
 7. **★7 The band's sea share left whole**: the double count is at most the sea share itself (.07-.20 of a lorry's).
 8. **★8 (review) The city's rate is its own 30-year paper** (`DebtManager.curveRate(PORT_LIFE_MONTHS)`), not the brief's `BondMarket.getLastIssueLoanRate()`: BondMarket is the businesses' market, so its last issue is a sector's bond and its rate the bank's to that sector.
+9. **★9 (review) The dues passed through at the month's own rate**, only the crew's part walked `REPRICE_SPEED` a month (§3): the brief's "with the dues passed through". Walked inside the quote they lagged a growing city's rate and drained Freight.
 
 ## 3. The slices, and what the review changed
 
@@ -60,24 +61,23 @@ Against main at 74d0bc1 (0.8.6: FR2 and FR7), the model at d42c009. Both runs: "
 
 ## 5. The ensemble
 
-The 16-seed x 5-policy ensemble (the workbench zip's runner through FR2's `runpc.sh`, outside the tree), scored by its own `score.py` against FR2's final (`fr2tip`, 1f573f6: main's model), on a class snapshot of 37806a8 (the model as shipped; the later route fix is drawing only). 80 runs, none missing or short, no LongPlaytest finding, no money-audit month, 64/64 runs their AUTO2 twin's before the switch.
+The 16-seed x 5-policy ensemble (the workbench zip's runner through FR2's `runpc.sh`, outside the tree), scored by its own `score.py` against FR7's final (`fr7b`, f99a38d: main's model at 74d0bc1), on a class snapshot of d42c009. 80 runs, none missing or short, no LongPlaytest finding, no money-audit month, 64/64 runs their AUTO2 twin's before the switch.
 
-| criterion | FR2 (main) | FR3 |
+| criterion | main (FR7's fr7b) | FR3 (d42c009) |
 |---|---|---|
-| A1 inflation m240-end | 2.20%, pass | 2.23%, pass |
-| A2 longest yoy > 10% spell | 15 [6-20], FAIL | 15 [6-35], FAIL |
-| A3 deflation; final/peak population | pass | pass |
-| S1 0% from m1800 minus twin | 2.07%, spell 26, FAIL | 2.11%, spell 40, FAIL |
-| H1 a young city at 0% | FAIL | FAIL |
-| K1 / K2 SHOCK | 13.37% / 2.93%, pass | 13.38% / 2.81%, pass |
-| R1 / R2 HIGH | pass | pass |
-| R3 HIGH minus twin | 1 above +1, pass | **5 above +1, FAIL** |
-| T1 AUTO2 seeds to 40,000 | 16/16 at m1,420 | 16/16 at m1,448 |
-| T2 AUTO2 final population | 211,554 [154,065-300,861] | **189,814** [140,579-278,783], -10% (pass: >= 75%) |
-| T2 ZERO_SLACK / ZERO_HOT / SHOCK / HIGH | 135,596 / 4,440 / 12,166 / 4,244 | 121,988 / 3,602 / 11,106 / 4,175, all pass |
-| criteria | 11/14 (no baseline) | 10/14 of the same, 21/25 with the baseline's |
+| A1 inflation m240-end | 2.25%, pass | 2.26%, pass |
+| A2 longest yoy > 10% spell | 15 [2-19], FAIL | 15 [6-19], FAIL |
+| A3 deflation; final/peak population | 3 [0-8], pass | 2 [0-8], pass |
+| S1 0% from m1800 minus twin | 1.89%, spell 27, FAIL | 2.27%, spell 26, FAIL |
+| H1 / H2 ZERO_HOT | pass / FAIL (9/16 below) | the same, to the digit |
+| K1 / K2 SHOCK, R1 / R2 / R3 HIGH | pass, pass; pass, pass, FAIL (5 above +1) | the same, to the digit |
+| T1 AUTO2 seeds to 40,000 | 16/16 at m1,428 | 16/16 at m1,429 |
+| T2 AUTO2 final population | 214,510 [134,685-303,023] | 214,456 [171,367-299,656] |
+| T2 ZERO_SLACK | 142,244 [85,921-177,175] | 143,922 [89,444-199,570] |
+| T2 ZERO_HOT / SHOCK / HIGH | 3,616 / 11,804 / 3,911 | the same |
+| criteria | 22/26 | 22/26 |
 
-**What moved, and why.** R3 is one of main's standing reds (4 seeds above on main at 7255f49, 4-5 on FR2's drafts, 1 on its final): back where it was. The cities end about a tenth smaller: before FR3 a tonne crossed a berth free and the city paid its dockers out of the transit bill; now the shipper pays a crew's handling and a berth's cost in dues, D$2-3 a tonne of bulk and D$12-16 of general cargo at founding prices, and nine tenths of it the dues - a charge on sea trade the treasury takes. The automatic builder also orders berths now (`Kind.PORT`), from the city's money. The playtest's default run ends 17% smaller and its Earth run 6.5% larger, so the ensemble's median is the measure: the landlord port makes the sea dearer, as a landlord port does. Whether the default dial (1, the berths' full cost recovered) is where Jerus wants it is FR3-C's.
+**What moved, and why.** Nothing in the three 720-month policies: their young cities never stand a berth, and FR3 moves nothing while none stands (§4), so H1-H2, K1-K2 and R1-R3 are FR7's to the digit. The two 2,400-month policies build berths from about m1,100 on and end where main does at the median - AUTO2 214,456 against 214,510 - with the smallest of the sixteen larger (171,367 against 134,685); S1 moves within its spread. The first draft of the price (dues walked with the crew, on FR2's model, 37806a8) ended the AUTO2 cities a tenth smaller (189,814 against 211,554) and R3 at 5 seeds above against FR2's 1: the dues lagging a growing city were a drain on Freight, and the pass-through (§3) is what takes it out.
 
 ## 6. The suite
 
@@ -88,7 +88,7 @@ The 16-seed x 5-policy ensemble (the workbench zip's runner through FR2's `runpc
 - **Not this batch's** (the spec's later rows): every screen of spec §6 - Freight's division strip, the Policy screen's port dues dial, the berths' cards with their payback (FR4); the port yard (D7, FR6); the island city's sea-only trade (§9.6, I1); a Handysize row in the freight rule.
 - **Not built, noticed**: a berth on site pays no dues until it opens, and a kind's dues rate falls a little when a second berth of it opens (its book value over more tonnes at design use); the advice's payback is a berth's own break-even, stricter for a second berth than the kind's berths together; the band's sea share is left whole (★7); the builders' handling line is checked as the remainder (their repairs are bought before the haul).
 - **For Jerus (Pending, FR3-C)**:
-  1. **The calls ★1-★8**, all as recommended; ★8 the review's.
+  1. **The calls ★1-★9**, all as recommended; ★8 and ★9 the review's.
   2. **The general cargo quote**: D$12-14 a tonne at founding prices against the sources' US$7-9 - a landlord's dues and a stevedore's charge together, nine tenths of the bills dues. The dial (1, the berths' whole cost) and the design use (.60) are where it moves.
-  3. **The cities end about a tenth smaller** in the ensemble (§5): the sea is no longer free.
+  3. **The review's pass-through** (§3): the dues billed at the month's own rate and only the crew's part walked, the brief's "with the dues passed through" read literally. Walked with the crew, the dues drained Freight in a growing city; on FR7's model the default playtest stalled at 148,000 people. With it the ensemble ends where main does (§5).
 - **The ids**: the Bulk Berth is 142, FR7's Rail Depot 141. With both on main the catalogue has no gap, and since 37806a8 the save no longer needs it not to.
