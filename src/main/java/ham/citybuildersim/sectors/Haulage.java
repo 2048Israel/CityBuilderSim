@@ -81,6 +81,13 @@ public final class Haulage {
      */
     public static final double DEPOT_ORDER_MARGIN = .5;
 
+    /**
+     * Months over which the trucks' cost past their wear is recovered (FR2's
+     * ★10, the review): the time a city takes to grow into a new works, so a
+     * month's purchases are not one month's bill.
+     */
+    public static final double FLEET_RECOVERY_MONTHS = 24;
+
     /** Drivers a truck the depots keep needs: one, on one shift (spec 3.2; US fleets run 0.93 a truck, the spec's R2). */
     public static final double DRIVERS_A_TRUCK = 1;
 
@@ -94,6 +101,34 @@ public final class Haulage {
 
     /** Whether quote has been struck from a month's carriage; until then getQuote() is estimate(), the price at today's prices with no history. */
     private boolean quoteKnown;
+
+    /**
+     * THE STEADY PRICE A PLANNER WEIGHS A WORKS AT (FR2, the review): the
+     * same rule with the trucks worn in place of the trucks bought, and no
+     * scarcity - what a tonne's city leg costs a city that is not growing its
+     * fleet this month. The quote charged carries the fleet's growth (★10), as
+     * each sector's vans' purchases once came out of its own month; weighed at
+     * it, a young town's refinery or kiln paid the whole fleet's growth in its
+     * estimate and was never ordered (RefineryCheck, FR2's notes). Moves as the
+     * quote does; the estimate until struck.
+     */
+    private double steadyQuote;
+    private boolean steadyKnown;
+
+    /**
+     * THE FLEET ACCOUNT (★10, the review): what the trucks bought have cost
+     * past the trucks worn, not yet recovered - money, the city's. Freight's
+     * books expense a truck when it is bought; priced at its wear alone, a
+     * growing fleet was a loss every month it grew, borrowed for with no plant
+     * to borrow on before a depot stood, and on one path the playtest's
+     * Freight was an empty company in debt from month 936, its fleet orders
+     * refused and the city stalled at 30,000 people for 3,000 months. Priced at
+     * the month's purchases, the bill was lumpy: a shop paid a month of a
+     * future works' trucks. So the price carries the wear and recovers this
+     * account over FLEET_RECOVERY_MONTHS: over a city's life the shippers pay
+     * what the trucks cost, as each once paid for its own vans.
+     */
+    private double fleetOwed;
 
     /** The tonnes a month the trucks could carry when the month was billed (trucks x TONNES_A_TRUCK_MONTH): the most that bill charged for, and what the price is struck over. */
     private double capacityInForce;
@@ -193,14 +228,14 @@ public final class Haulage {
     }
 
     /**
-     * Haulage's quote as a works is weighed with it, live from the city: the
-     * quote in force (getQuote(), the estimate before the first month's
-     * carriage), the railway's share in force for each good
+     * Haulage's price as a works is weighed with it, live from the city: the
+     * steady quote (getSteadyQuote(): the rule on the trucks worn, the estimate
+     * before the first month's carriage), the railway's share in force for each good
      * (Freight.railShareInForce()), and the shares the city exported and
      * imported of it at the last clearing. Each price finite and not below zero.
      */
     public LegPrice legPrice() {
-        final double q = getQuote();
+        final double q = getSteadyQuote();
         return new LegPrice() {
             @Override public double in(Good g)  { return clean(q * inWeight(g)); }
             @Override public double out(Good g) { return clean(q * outWeight(g)); }
@@ -402,18 +437,28 @@ public final class Haulage {
 
         /* ---- the reprice: the railway's rule, on Haulage's books ---- */
 
+        /*
+         * THE TRUCKS' COST, RECOVERED: their wear and the fleet account
+         * (fleetOwed above), so a growing fleet is paid for by its shippers
+         * over FLEET_RECOVERY_MONTHS and not borrowed for without end.
+         */
+
         double p = freight.truckPrice();
+        fleetOwed += Math.max(0, freight.trucksBought()) - worn * p;
+        double recover = Double.isFinite(fleetOwed) ? fleetOwed / FLEET_RECOVERY_MONTHS : 0;
+        fleetOwed -= recover;
         double running = freight.haulagePayrollShare() * freight.getPayroll()
                 + freight.haulageShareOf(BuildingsTemplate::getElectricityConsumption) * freight.getElectricityCost()
                 + freight.haulageShareOf(BuildingsTemplate::getWaterConsumption) * freight.getWaterCost()
                 + freight.haulageShareOf(BuildingsTemplate::getCashCost)
                         * (freight.getMaintenanceExpense() + freight.getPropertyTaxExpense())
-                + Math.max(0, diesel) + worn * p;
+                + Math.max(0, diesel) + worn * p + recover;
         // ...the rate base on the balance sheet's own count, buildings on site included (Freight.haulageShareOfSites()).
         double rateBase = freight.haulageShareOfSites(BuildingsTemplate::getCashCost) * Math.max(0, freight.getBuildingsValue())
                 + freight.haulageShareOfSites(BuildingsTemplate::getLandSqFt) * Math.max(0, freight.getLandValue())
                 + trucks() * p;
         allowed = running + Freight.TARGET_RETURN * rateBase;
+        double steadyAllowed = allowed - recover;
 
         /*
          * OVER WHAT THE TRUCKS COULD CARRY, NOT WHAT THEY DID. Over the tonnes
@@ -434,6 +479,16 @@ public final class Haulage {
                     quoteKnown = true;
                 } else {
                     quote += (target - quote) * Freight.REPRICE_SPEED;
+                }
+            }
+            double steady = steadyAllowed / capacityInForce;
+            if (Double.isFinite(steady)) {
+                steady = Math.max(0, steady);
+                if (!steadyKnown) {
+                    steadyQuote = steady;
+                    steadyKnown = true;
+                } else {
+                    steadyQuote += (steady - steadyQuote) * Freight.REPRICE_SPEED;
                 }
             }
         }
@@ -589,6 +644,9 @@ public final class Haulage {
 
     /** The quote in force; the estimate while no month has struck one. */
     public double getQuote()           { return quoteKnown ? quote : estimate(); }
+
+    /** The steady price a planner weighs a works' legs at (legPrice()): the rule on the trucks worn, no scarcity; the estimate until struck. */
+    public double getSteadyQuote()     { return steadyKnown ? steadyQuote : estimate(); }
     public boolean isQuoteKnown()      { return quoteKnown; }
 
     /**
@@ -633,6 +691,9 @@ public final class Haulage {
     public void save(Map<String, Double> extras) {
         extras.put("haul.quote", quote);
         extras.put("haul.share", share);
+        extras.put("haul.steady.quote", steadyQuote);
+        extras.put("haul.fleetOwed", fleetOwed);
+        extras.put("haul.steadyKnown", steadyKnown ? 1.0 : 0.0);
         // The trade's shares, under names a scaler reads as intensive (ScaleCheck): only the goods struck from trade.
         for (Good g : Good.values()) {
             if (!traded[g.ordinal()]) continue;
@@ -660,6 +721,9 @@ public final class Haulage {
     public void restore(Map<String, Double> extras) {
         quote = extras.getOrDefault("haul.quote", 0.0);
         share = extras.getOrDefault("haul.share", 1.0);
+        steadyQuote = extras.getOrDefault("haul.steady.quote", 0.0);
+        fleetOwed = extras.getOrDefault("haul.fleetOwed", 0.0);
+        steadyKnown = extras.getOrDefault("haul.steadyKnown", 0.0) > 0;
         strikeTrade(null);
         for (Good g : Good.values()) {
             Double ex = extras.get("haul.exportShare." + g.name()), im = extras.get("haul.importShare." + g.name());
@@ -689,6 +753,9 @@ public final class Haulage {
     public void reset() {
         quote = 0;
         quoteKnown = false;
+        steadyQuote = 0;
+        steadyKnown = false;
+        fleetOwed = 0;
         capacityInForce = need = needOnSite = 0;
         share = 1;
         strikeTrade(null);
@@ -700,6 +767,8 @@ public final class Haulage {
     /** Its money in the new unit (Denomination): the quote, the bill, the diesel and what the month was allowed. Tonnes, trucks and shares are not money. */
     public void redenominate(double scale) {
         quote *= scale;
+        steadyQuote *= scale;
+        fleetOwed *= scale;
         bill *= scale;
         diesel *= scale;
         dieselImported *= scale;

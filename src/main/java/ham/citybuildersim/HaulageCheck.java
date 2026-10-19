@@ -306,6 +306,14 @@ public class HaulageCheck {
         h.restore(ex);
     }
 
+    /** Trucks a fixture hands over (setPantry) were bought by nobody: Haulage's fleet account (★10) kept at nought for them, or their wear comes back to the shippers as a refund. */
+    static void offTheBooks(Haulage h) {
+        Map<String, Double> ex = new HashMap<>();
+        h.save(ex);
+        ex.put("haul.fleetOwed", 0.0);
+        h.restore(ex);
+    }
+
     /**
      * A good's shares of the city's trade, from the sectors' own month: the units shipped abroad over those and the units bought at
      * home, and the units landed over those and the units bought at home - or, with nothing traded, 1 for a good the world buys (sells)
@@ -876,6 +884,7 @@ public class HaulageCheck {
 
         // Plenty of trucks: no scarcity, and the divisor is the capacity, not the tonnes carried.
         pf.setPantry(Good.TRUCKS, nameplate * 3 / T);
+        offTheBooks(ph);
         old = ph.getQuote();
         haul(pg);
         target = ph.getAllowed() / ph.getCapacityInForce() * (1 + ph.getTightness() * (Freight.MAX_SCARCITY_MULTIPLE - 1));
@@ -891,6 +900,7 @@ public class HaulageCheck {
                 ph.getQuote() < stepOverCarried, String.format("%.8f against %.8f", ph.getQuote(), stepOverCarried));
         // Almost no trucks: the scarcity is at its multiple.
         pf.setPantry(Good.TRUCKS, nameplate / T * .0001);
+        offTheBooks(ph);
         old = ph.getQuote();
         haul(pg);
         double scarce = 1 + ph.getTightness() * (Freight.MAX_SCARCITY_MULTIPLE - 1);
@@ -1140,7 +1150,9 @@ public class HaulageCheck {
                 String.format("need %,.0f t railed against %,.0f t on roads alone (r %.3f)", h.getNeed(), unrailedNeed, fr.railShareInForce(Good.IRON)));
         SpreadPlanner.Values v = SpreadPlanner.values(markets);
         Haulage.LegPrice p = h.legPrice();
-        double q = h.getQuote(), rate = .8;
+        // The steady quote (the rule on the trucks worn), which a planner weighs a works at since the review: the quote charged
+        // carries the fleet's growth (Haulage.getSteadyQuote()).
+        double q = h.getSteadyQuote(), rate = .8;
 
         report("the Pelletising Plant keeps no vans and buys none: all its tonnes are bulk, vansFor() and fleetCapital() are zero",
                 same(ProcessingSector.vansFor(pt), 0) && same(ProcessingSector.fleetCapital(pt, v), 0)
@@ -1208,7 +1220,7 @@ public class HaulageCheck {
                         shippedTonnes * shipped.f * shipped.quote, line(miners)));
         haul(mg);   // strikes the shares from the rows the toggled month left
         Haulage.LegPrice pm = mh.legPrice();
-        double qm = mh.getQuote();
+        double qm = mh.getSteadyQuote();   // the steady quote a planner weighs at (Haulage.getSteadyQuote())
         double exportedShare = tradeShares(mg, Good.IRON)[1];
         double oreLeg = im.makes(Good.IRON) * Good.IRON.tonnesPerUnit() * pm.out(Good.IRON);
         SpreadPlanner.Values vm = SpreadPlanner.values(mg.getMarkets());

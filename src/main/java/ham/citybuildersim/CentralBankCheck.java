@@ -144,9 +144,11 @@ import java.util.List;
  *      preview (PolicyPreview.ruleAt()) at the step in force is the rule's
  *      own; very strict holds prices lower than Standard; the very loose
  *      twin, reading inflation under its target in some months and over it
- *      in others, set Standard's rate to the bit in every month under it
- *      and money cheaper than Standard's rule in every month over it
- *      (0.7.81; until then very loose was held to lie on the side of
+ *      in others (a fourth game, the same twin met by a fall in the world's
+ *      prices, causes both - the city's path alone gave it only one side
+ *      once FR2 moved it, 0.8.5), set Standard's rate to the bit in every
+ *      month under it and money cheaper than Standard's rule in every month
+ *      over it (0.7.81; until then very loose was held to lie on the side of
  *      Standard its band put it - over the target dearer prices, under it
  *      lower, where it held the neutral rate and Standard eased);
  *      neither end's rate reaches the dial's stop or leaves
@@ -1367,7 +1369,10 @@ public class CentralBankCheck {
         double wHeld = w.getCentralBank().getPaperHeld();
         Rollover.Plan wPlan = w.rolloverPlan();
         close("the plan rolls all of what falls due as its own", wPlan.centralBankPar(), allPar, 1e-9);
-        assertTrue("...so there is nothing for the market to be sold", wPlan.issues().isEmpty() && wPlan.toRoll() == 0);
+        // Nothing to roll is nothing to a rounding's width, the section's 1e-9 as on the lines above: on FR2's path the plan's
+        // sum of what falls due less the central bank's par left 1.8e-12 of $10,000k, one step of a double there, and an exact
+        // zero asserted the arithmetic's luck and not the plan.
+        assertTrue("...so there is nothing for the market to be sold", wPlan.issues().isEmpty() && Math.abs(wPlan.toRoll()) < 1e-9);
         play(w);
         java.util.List<Debt> alone = soldAtTheLastPress(w);
         assertTrue("the rollover issues it one serial like the one falling due",
@@ -1570,6 +1575,58 @@ public class CentralBankCheck {
     /** How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. */
     static final int STRICT_HORIZON = 240;
 
+    /**
+     * How far the world's prices fall, in the first month of the fourth game's twenty years (worldPricesFall): the
+     * cause of the very loose twin's months under its target, which the probe city's own path gave it in some builds
+     * and not in others (howStrict(), THE FOURTH GAME). A tenth, a fifth and two-fifths each put the twin under its
+     * target for months in both of the builds the fall was tried on (the one before and the one after Freight's
+     * trucks were priced as bought); a fifth is the size used, and put it under in eight and in nine of the first
+     * STRICT_FALL_WINDOW months in those two builds.
+     */
+    static final double STRICT_WORLD_FALL = .20;
+
+    /** The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. */
+    static final int STRICT_FALL_WINDOW = 24;
+
+    /**
+     * A fall in the world's price level by `fall` (a fraction of it), at once: the level and the newest of the
+     * thirteen months it keeps (WorldEconomy.toSaveArray(), the level first, the ring oldest first and the mean
+     * last), the headline rate and the mean as they were. The harnesses' way to a world price level
+     * (OilCheck.noRefinery() sets one through restore() as well); what follows is the model's own - imports
+     * cheaper at once, then the currency answering the new parity.
+     */
+    static void worldPricesFall(Game g, double fall) {
+        WorldEconomy world = g.getWorldEconomy();
+        double[] saved = world.toSaveArray();
+        saved[0] *= 1 - fall;
+        saved[saved.length - 2] = saved[0];
+        world.restore(saved);
+    }
+
+    /**
+     * The very loose twin's months by the side of its target the rule read (0.7.81): in a month under it the rate
+     * is Standard's, to the bit; in one over it, money cheaper than Standard's rule at that reading - inside the
+     * band the neutral rate. One game's tally; howStrict() keeps one for the twin of the three and one for the
+     * fourth game, met by a fall in the world's prices.
+     */
+    static final class LooseMonths {
+        int under, underSoon, underAsStandard, over, overCheaper, past;
+
+        /** One month taken: `read` is what the autopilot read at the top of it (Game.nextMonth(), THE AUTOPILOT), the dial what the rule set. */
+        void take(Game g, double read, double target, int month) {
+            double set = g.getDebtManager().getPolicyRate(), holding = g.getDebtManager().holdingRate(read);
+            if (read < target) {
+                under++;
+                if (month <= STRICT_FALL_WINDOW) underSoon++;
+                if (bits(set, holding)) underAsStandard++;
+            } else if (read > target) {
+                over++;
+                if (set < holding) overCheaper++;
+                if (read > target + DebtManager.Strictness.VERY_LOOSE.band()) past++;
+            }
+        }
+    }
+
     static void howStrict() throws Exception {
         out.println("\n--- 21. how strict: Standard is the old rule to the bit, loose minds low inflation as Standard does, and neither end spirals ---");
         DebtManager.Strictness standard = DebtManager.Strictness.STANDARD;
@@ -1703,7 +1760,7 @@ public class CentralBankCheck {
         boolean previewIsTheRule = true;
         // The very loose twin's months by the side of its target the rule read (0.7.81): under it Standard's rate, to the
         // bit; over it money cheaper than Standard's rule at that reading - inside the band the neutral rate.
-        int looseUnder = 0, looseUnderAsStandard = 0, looseOver = 0, looseOverCheaper = 0, loosePast = 0;
+        LooseMonths plain = new LooseMonths(), fall = new LooseMonths();
         for (int e = 0; e < ends.length; e++) {
             final int i = e;
             quietly(() -> {
@@ -1718,17 +1775,7 @@ public class CentralBankCheck {
                 // What the autopilot reads at the top of the month (Game.nextMonth(), THE AUTOPILOT).
                 double read = g.getPriceIndex().inflation();
                 strictMonth(g);
-                if (ends[i] == loosest) {
-                    double set = g.getDebtManager().getPolicyRate(), holding = g.getDebtManager().holdingRate(read);
-                    if (read < target) {
-                        looseUnder++;
-                        if (bits(set, holding)) looseUnderAsStandard++;
-                    } else if (read > target) {
-                        looseOver++;
-                        if (set < holding) looseOverCheaper++;
-                        if (read > target + loosest.band()) loosePast++;
-                    }
-                }
+                if (ends[i] == loosest) plain.take(g, read, target, m);
                 topRate[i] = Math.max(topRate[i], g.getDebtManager().getPolicyRate());
                 meanRate[i] += g.getDebtManager().getPolicyRate() / STRICT_HORIZON;
                 trust[i] += g.getExpectations().getCredibility() / STRICT_HORIZON;
@@ -1744,6 +1791,38 @@ public class CentralBankCheck {
                     inflation[i] * 100, STRICT_HORIZON, lastYear[i] * 100, topRate[i] * 100, meanRate[i] * 100, trust[i],
                     g.getPopulationManager().getPopulation());
         }
+        /*
+         * THE FOURTH GAME: the very loose twin met in its first month by a fall in the world's prices (0.8.5, batch FR2).
+         * Which side of its target the three twins read is the city's path, and the path moves with every change to the
+         * model: with FR2's trucks (the Freight sector) the very loose twin read over its target in all 240 months and
+         * under it in none, so "it minds low inflation as Standard does" had no month to be read in; with the next
+         * commit, Freight's trucks priced as they are bought, it read under it in 48 and over it in 192. A fixture that
+         * rests on that cannot say it has seen the rule on both sides, so the fixture causes it: the same save, loaded
+         * again at the very loose step, with the world's prices down STRICT_WORLD_FALL at once. Imports are cheaper from
+         * that month, and the year-on-year reading is under the target from the second month for eight or nine, as low as
+         * -5%; then the currency answers the new parity and the reading goes past the band, and it comes back under the
+         * target in later months of the path. The three twins above are left on their own path, so what they compare - the
+         * order of the ends' prices, their last years and their trust - is as it was; this game only adds its months to
+         * the rule's two assertions below, which are about the rule and not about a path.
+         */
+        Game[] fallen = new Game[1];
+        quietly(() -> {
+            fallen[0] = new Game(files);
+            fallen[0].loadGameSave(9);
+            fallen[0].getDebtManager().setStrictness(loosest);
+        });
+        double fallTop = 0;
+        worldPricesFall(fallen[0], STRICT_WORLD_FALL);
+        for (int m = 1; m <= STRICT_HORIZON; m++) {
+            double read = fallen[0].getPriceIndex().inflation();
+            strictMonth(fallen[0]);
+            fall.take(fallen[0], read, target, m);
+            fallTop = Math.max(fallTop, fallen[0].getDebtManager().getPolicyRate());
+        }
+        out.printf("   %-11s after a %.0f%% fall in the world's prices: under its target in %d months of %d (%d of them in the first %d)"
+                + " and over it in %d (past its band in %d), the dial at most %.2f%%; the twin without the fall, %d and %d (%d)%n",
+                loosest.words, STRICT_WORLD_FALL * 100, fall.under, STRICT_HORIZON, fall.underSoon, STRICT_FALL_WINDOW, fall.over,
+                fall.past, fallTop * 100, plain.under, plain.over, plain.past);
         assertTrue("the Policy tab's preview at the step in force is the rule's own, to the bit", previewIsTheRule);
         assertTrue("very strict holds prices lower than Standard over the horizon", inflation[0] < inflation[1]);
         /*
@@ -1753,17 +1832,23 @@ public class CentralBankCheck {
          * lower; under it - where the probe city has run since 0.7.78 (Standard 1.590% a year) - Standard eased while very
          * loose held, and very loose held them lower (1.501%). Under the target very loose now cuts as Standard does,
          * so that order is gone with the rule that made it. What the rule now says is asserted in the run itself, month
-         * by month, on the very loose twin: the twins part from the first month (the branch reads 2.45%, over the
-         * target), so which of them ends the twenty years with the dearer prices is the city's path - on 0.7.81 a
-         * grocery price shock in the very loose twin's fifth year (its fifth-year reading 9.96%, Standard's 0.67%),
-         * met past the band and followed by a fall (runs/fixN6-notes.md) - and not the rule's.
+         * by month, on the very loose twin (and on the fourth game's, which causes both of its sides): the twins part
+         * from the first month (the branch reads 2.45%, over the target), so which of them ends the twenty years with
+         * the dearer prices is the city's path - on 0.7.81 a grocery price shock in the very loose twin's fifth year
+         * (its fifth-year reading 9.96%, Standard's 0.67%), met past the band and followed by a fall
+         * (runs/fixN6-notes.md) - and not the rule's.
          */
-        assertTrue(String.format("fixture: the very loose twin read inflation under its target in %d months and over it in %d"
-                + " (past its band in %d)", looseUnder, looseOver, loosePast), looseUnder > 0 && looseOver > 0);
-        assertTrue(String.format("...and in every month under its target it set Standard's rate, to the bit (%d of %d): it minds low"
-                + " inflation as Standard does", looseUnderAsStandard, looseUnder), looseUnderAsStandard == looseUnder);
+        assertTrue(String.format("fixture: the very loose twin met by a %.0f%% fall in the world's prices read inflation under its target"
+                + " in %d months (%d in the first %d, the fall's own) and over it in %d (past its band in %d)", STRICT_WORLD_FALL * 100,
+                fall.under, fall.underSoon, STRICT_FALL_WINDOW, fall.over, fall.past),
+                fall.underSoon > 0 && fall.under > 0 && fall.over > 0);
+        int under = plain.under + fall.under, over = plain.over + fall.over;
+        int underAsStandard = plain.underAsStandard + fall.underAsStandard, overCheaper = plain.overCheaper + fall.overCheaper;
+        assertTrue(String.format("...and in every month under its target, in it and in the twin without the fall, it set Standard's rate,"
+                + " to the bit (%d of %d): it minds low inflation as Standard does", underAsStandard, under),
+                underAsStandard == under);
         assertTrue(String.format("...and in every month over it, money cheaper than Standard's rule at that reading (%d of %d): it"
-                + " minds high inflation less", looseOverCheaper, looseOver), looseOverCheaper == looseOver);
+                + " minds high inflation less", overCheaper, over), overCheaper == over);
         double fullMiss = Expectations.TOLERANCE + Expectations.MISS_SCALE;
         for (int i : new int[] { 0, 2 }) {
             assertTrue(ends[i].words + ": the dial never reaches its stop", topRate[i] < DebtManager.MAX_POLICY_RATE);

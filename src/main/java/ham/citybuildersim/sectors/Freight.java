@@ -937,6 +937,12 @@ public final class Freight extends Sector {
     /** The first fleet, free, the month there is a city leg to carry (Haulage.closeMonth(); Sector.vansKnown's reason). */
     void seedTrucks(double trucks) { setPantry(Good.TRUCKS, trucks); }
 
+    /** What the month's trucks cost it, bought at home and abroad: the statement in progress's TRUCKS, before the strike banks it (Haulage's running cost). */
+    double trucksBought() {
+        Sector.Split x = pending().bought.get(Good.TRUCKS);
+        return x == null ? 0 : x.total();
+    }
+
     /** A month of the trucks' wear, out of the pantry. */
     void wearTrucks(double trucks) { usePantry(Good.TRUCKS, trucks); }
 
