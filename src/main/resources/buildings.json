@@ -167,7 +167,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 139,
+ "nextId": 143,
  "buildings": [
   {
    "id": 0,
@@ -1537,6 +1537,7 @@
    "category": "RAIL",
    "sector": "Freight",
    "railCapacity": 50000,
+   "siding": true,
    "cashCost": 140000,
    "constructionPoints": 21000,
    "constructionMaterials": 4500,
@@ -1575,6 +1576,7 @@
    "category": "RAIL",
    "sector": "Freight",
    "railCapacity": 500000,
+   "stationTonnes": 500000,
    "cashCost": 1240000,
    "constructionPoints": 186000,
    "constructionMaterials": 39000,
@@ -3542,6 +3544,26 @@
     "LUBRICANTS": 240
    },
    "stock": 18
+  },
+  {
+   "id": 141,
+   "name": "Rail Depot",
+   "category": "RAIL",
+   "sector": "Freight",
+   "railCapacity": 50000,
+   "stationTonnes": 50000,
+   "cashCost": 140000,
+   "constructionPoints": 18600,
+   "constructionMaterials": 3900,
+   "electricity": 560,
+   "water": 26,
+   "jobs": {
+    "NO_DIPLOMA": 102,
+    "DIPLOMA": 39,
+    "COLLEGE_ENGINEERING": 7
+   },
+   "land": 550000,
+   "roadLoad": 490
   },
   {
    "id": 142,

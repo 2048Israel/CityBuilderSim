@@ -848,7 +848,7 @@ public final class AutoBuilder {
 
     /** Whether t is one of the measure's own buildings (0.7.104): a road's or a line's, any of the Roads & transit category's; otherwise those that serve it. */
     static boolean ownMeasure(BuildAdvice.Measure m, BuildingsTemplate t) {
-        return m.kind() == BuildAdvice.Kind.ROADS ? t.getCategory() == BuildingType.INFRASTRUCTURE : m.serves(t);
+        return BuildAdvice.roadKind(m) ? t.getCategory() == BuildingType.INFRASTRUCTURE : m.serves(t);
     }
 
     /**
@@ -864,8 +864,14 @@ public final class AutoBuilder {
      */
     static double[] need(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> added, BuildAdvice.Ahead at) {
         if (m.kind() == BuildAdvice.Kind.ROADS) {
+            // The streets' (FR7): their load, and what is past STRAINED of their capacity - the whole road's with no highway standing.
             InfrastructureManager r = BuildAdvice.roads(game, added, at.scale());
-            return new double[] { r.getEffectiveLoad(), r.getEffectiveLoad() - InfrastructureManager.STRAINED * r.getCapacity() };
+            return new double[] { r.getStreetLoad(), r.getStreetLoad() - InfrastructureManager.STRAINED * r.getStreetCapacity() };
+        }
+        if (m.kind() == BuildAdvice.Kind.HIGHWAYS) {
+            // The through need's (FR7): the through trips, and those with no highway to take them.
+            InfrastructureManager r = BuildAdvice.roads(game, added, at.scale());
+            return new double[] { r.getThroughLoad(), r.getThroughOverflow() };
         }
         double[] sd = BuildAdvice.supplyDemand(game, m, added, at);
         return new double[] { sd[1], sd[1] - sd[0] };

@@ -83,6 +83,20 @@ import java.util.PriorityQueue;
  *             ARM: the arm the railway's world line leaves the city's ground
  *             from, which is the gate arm unless that arm waits at the sea.
  *
+ *   WAYS      (FR7 2026-10-18, slice 3) the RAILWAY is no longer grown as
+ *             above beyond its gate arm. Its track was laid as arms from the hub
+ *             - the opposite arm, the perpendicular pair, new corridors - that
+ *             no yard or works lay on, so no train ran there (Jerus: "why all
+ *             the other rails they are dead ends"). Now it is the main line (the
+ *             gate arm alone), a siding for each Rail Spur into the largest bulk
+ *             works within a district of it, a branch to a further yard beside
+ *             the largest group of works, and nothing else; the track plots the
+ *             model has past those are the legend's surplus (THE RAILWAY'S
+ *             WAYS; the spurs left over, a siding the district plans lay to the
+ *             works they place, are not - slice 5, FR7 2026-10-19, CityMap
+ *             sidingsOf()). Each Rail Terminal and Rail Depot keeps a yard of its own
+ *             size, a depot's smaller. The highways are grown as before.
+ *
  * A net is kept as its arms' straight STRETCHES, not its plots: a city of ten
  * billion has some fifteen million plots of track on a few hundred arms.
  * Pure: the same ground, counts and history give the same runs on any
@@ -154,6 +168,8 @@ public final class CityRuns {
     public static final byte F_RAIL_OVER = 6;
     /** ...a yard's ground, its track among it (DistrictPlan.FIXED_YARD): no street crosses it, no other building stands on it. */
     public static final byte F_YARD = 7;
+    /** ...and (batch FR7, D19) an interchange's reserve, a plan's ground only (fill() with yardsOver; InterchangeGround): street ground the plan keeps clear of lots, buildings and streets (DistrictPlan.FIXED_RESERVE) - never in a tile's fixed, where the highway's loops are drawn from InterchangeGround's sites. */
+    public static final byte F_RESERVE = 8;
 
     /** A plot's marks (fill()'s second array): a highway's ramp (spec 2.7)... */
     public static final byte M_RAMP = 1;
@@ -204,6 +220,8 @@ public final class CityRuns {
         /** Steps known clear ahead along `head`, read at the ground's version knownAt; and the version it waits at (transient). */
         int known;
         long knownAt = Long.MIN_VALUE, waitAt = Long.MIN_VALUE;
+        /** What stopped it the last time it waited with no way along (transient): OPEN (nothing, or another reason), EDGE or SEA. The railway's main line goes on to the next arm only where this is SEA (growMainLine()). */
+        int stoppedBy;
 
         Arm(int corridor, int home, long sx, long sy) {
             this.corridor = corridor; this.home = home; this.sx = sx; this.sy = sy;
@@ -298,9 +316,90 @@ public final class CityRuns {
     /** The railway's yards: each {x0, y0, w, h} in world plots, in the order laid. */
     final List<long[]> yards = new ArrayList<>();
 
-    /** What the model has that the runs could not lay: highway plots, track plots, yards (counted: the legend says so; a yard with no place is drawn by its district's plan). */
-    long highwayShort, railShort;
+    /**
+     * What the model has that the runs could not lay: highway plots, yards
+     * (counted: the legend says so; a yard with no place is drawn by its
+     * district's plan) - and (FR7 2026-10-18, batch FR7 slice 3) the track
+     * plots the model has past what the railway's ways use: the main line, the
+     * sidings and the branches (THE RAILWAY'S WAYS). Those were laid as arms
+     * out into the country until then, dead ends no train ran to (Jerus:
+     * "why all the other rails they are dead ends"); now they are not drawn,
+     * and the legend says "more than the line uses".
+     */
+    long highwayShort, trackSurplus;
     int yardsShort;
+
+    /** The ground the interchanges' reserves are found over, and the works they keep clear of (batch FR7, InterchangeGround): bound by layTo() and the map, never saved. */
+    private Ground reserveGround;
+    private InterchangeGround.Guard reserveGuard;
+
+    /** The sites found, by the region asked about, against the stamp they were found at: the runs, the ground's and the works' versions - none kept past a change of any. */
+    private final Map<List<Long>, List<InterchangeGround.Site>> reserveKept = new HashMap<>();
+    private long reserveStamp;
+
+    /** The most regions' sites kept at once: 8,192 - a screen's tiles and the plans' frames, many times over. */
+    static final int RESERVES_KEPT = 8192;
+
+    /** Sets the works a reserve may not take (the map's mines and shore works). */
+    public void setReserveGuard(InterchangeGround.Guard guard) {
+        reserveGuard = guard;
+        reserveKept.clear();
+    }
+
+    /**
+     * Binds the ground the interchanges' reserves are found over and forgets
+     * the sites kept: called by layTo() every month, and by the map when it
+     * has read its runs back. Nothing is found until it is asked for.
+     */
+    public void layReserves(Ground g) {
+        reserveGround = g;
+        reserveKept.clear();
+    }
+
+    /**
+     * The interchange sites whose box meets the w x h plots from (x0, y0),
+     * each with whether it got its reserve (InterchangeGround): found when
+     * asked, over the region and a margin, and kept against the runs, the
+     * ground and the works. Empty with no ground bound, or while the
+     * highways are not drawn.
+     */
+    public List<InterchangeGround.Site> reservesIn(long x0, long y0, int w, int h) {
+        if (reserveGround == null) return List.of();
+        long stamp = World.mix(version ^ World.mix(reserveGround.version() + 0x5245L) ^ (reserveGuard == null ? 0 : World.mix(reserveGuard.version() + 0x47L)));
+        if (stamp != reserveStamp || reserveKept.size() >= RESERVES_KEPT) {
+            reserveKept.clear();
+            reserveStamp = stamp;
+        }
+        List<Long> key = List.of(x0, y0, (long) w, (long) h);
+        List<InterchangeGround.Site> sites = reserveKept.get(key);
+        if (sites == null) {
+            sites = InterchangeGround.sitesIn(this, reserveGround, reserveGuard, x0, y0, w, h);
+            reserveKept.put(key, sites);
+        }
+        return sites;
+    }
+
+    /** Every interchange site of the highways, over the box their plots lie in: a harness's, for a city a screen's size - a city of billions asks reservesIn() of a plan or a tile. */
+    public List<InterchangeGround.Site> reserves() {
+        if (!highways.started) return List.of();
+        long x0 = Long.MAX_VALUE, y0 = Long.MAX_VALUE, x1 = Long.MIN_VALUE, y1 = Long.MIN_VALUE;
+        for (Arm a : highways.arms) {
+            for (int s = 0; s < a.segs; s++) {
+                long ex = a.segX[s] + (long) DX[a.segHead[s]] * a.segSteps[s], ey = a.segY[s] + (long) DY[a.segHead[s]] * a.segSteps[s];
+                x0 = Math.min(x0, Math.min(a.segX[s], ex)); x1 = Math.max(x1, Math.max(a.segX[s], ex));
+                y0 = Math.min(y0, Math.min(a.segY[s], ey)); y1 = Math.max(y1, Math.max(a.segY[s], ey));
+            }
+        }
+        if (x0 > x1) return List.of();
+        return reservesIn(x0 - 1, y0 - 1, (int) (x1 - x0 + 3), (int) (y1 - y0 + 3));
+    }
+
+    /** The reserves that were laid (Site.got()), of reserves(). */
+    public List<InterchangeGround.Site> reservesLaid() {
+        List<InterchangeGround.Site> out = new ArrayList<>();
+        for (InterchangeGround.Site s : reserves()) if (s.got()) out.add(s);
+        return out;
+    }
 
     /** A stamp of everything laid: what the map's plans and views are kept against. */
     long version;
@@ -327,7 +426,8 @@ public final class CityRuns {
 
     /** The highway plots the model has that the map draws nowhere: those the runs could not lay (highwayShort()), and (FX2) all the net's while it reaches no street (highwaysReach()), laid but not drawn - the legend's. */
     public long highwayUndrawn() { return highwayShort + (highways.started && !highwaysReach() ? highways.plots : 0); }
-    public long railShort() { return railShort; }
+    /** The track plots the model has that the railway's ways do not use and the map does not draw (FR7): the model's less the main line's, the sidings' and the branches' - the legend's "plots of track more than the line uses". */
+    public long trackSurplus() { return trackSurplus; }
     public int yardsShort() { return yardsShort; }
     public long version() { return version; }
 
@@ -343,6 +443,7 @@ public final class CityRuns {
     /** Sets the gateway's bearing (the map's, once it has looked). */
     void setGateway(int bearing) {
         gateway = bearing;
+        railStampSet = false;
         mainLineCacheAt = Long.MIN_VALUE;
     }
 
@@ -675,6 +776,66 @@ public final class CityRuns {
     }
 
     /**
+     * The spine's arms in the order the railway's main line is grown (FR7,
+     * batch FR7 slice 3): the gate arm, then the other arm of its corridor,
+     * then the other corridor's by index. Empty with no gateway or before the
+     * net has started.
+     */
+    static List<Integer> spineOrder(Net n, int gate) {
+        List<Integer> out = new ArrayList<>();
+        if (gate < 0 || !n.started) return out;
+        out.add(gate);
+        int corridor = n.arms.get(gate).corridor;
+        for (int pass = 0; pass < 2; pass++) {
+            for (int i = 0; i < n.arms.size(); i++) {
+                Arm a = n.arms.get(i);
+                if (i != gate && a.corridor <= 1 && (a.corridor == corridor) == (pass == 0)) out.add(i);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Grows the railway's main line toward `target` plots (FR7, batch FR7
+     * slice 3): its hub laid first, then the gate arm alone, until it waits -
+     * at the city's edge, where the world line takes it on. No other arm, no
+     * corridor, is grown for the railway: they ran to no yard and no works,
+     * and no train ever saw them. The one exception is the sea (Jerus's
+     * Halifax, FX2): a gate arm that waits at water the city owns reaches no
+     * world, so the next arm in spineOrder() is grown after it, and so on to
+     * the first that waits anywhere else. With no gateway there is no gate arm
+     * and the net is its hub alone. True when it laid any.
+     */
+    static boolean growMainLine(Net n, Net other, long target, Ground g, long ax, long ay, int gateway) {
+        if (target <= n.plots) return false;
+        if (!n.started && !start(n, g, ax, ay, gateway)) return false;
+        long before = n.plots;
+        if (!n.hubLaid) {
+            boolean was = coverer(n, n.hubX, n.hubY, -1) != -1;
+            n.hubLaid = true;
+            if (!was) n.plots++;
+        }
+        long ver = g.version();
+        if (n.stuckAt == ver || n.plots >= target) return n.plots != before;
+        int[] why = new int[1];
+        long guard = 50 * (target - n.plots) + 1000;
+        boolean ended = false;
+        for (int i : spineOrder(n, gateArm(n, gateway))) {
+            Arm a = n.arms.get(i);
+            if (a.joined) { ended = true; break; }
+            if (a.waitAt != ver) {
+                int r = STEPPED;
+                while (n.plots < target && guard-- > 0 && (r = step(n, other, i, a, g, target, why)) == STEPPED) { /* on */ }
+                if (r == WAITS) a.waitAt = ver;
+                if (n.plots >= target || r == HELD || guard <= 0) return n.plots != before;
+            }
+            if (a.stoppedBy != SEA) { ended = true; break; }
+        }
+        if (ended || n.plots < target) n.stuckAt = ver;
+        return n.plots != before;
+    }
+
+    /**
      * One step of arm i (hw.py's _step, with the cost rule): STEPPED; WAITS
      * (the city's edge, the sea with no way along it, a T it does not cross,
      * the other net's run along its way); JOINED (it met the net running its
@@ -685,6 +846,7 @@ public final class CityRuns {
         long x = a.x, y = a.y;
         int home = a.home;
         long ver = g.version();
+        a.stoppedBy = OPEN;
         if (a.knownAt != ver) { a.known = 0; a.knownAt = ver; }
         // Back onto its heading where the way home runs clear for TURN_COST plots.
         if (a.head != home && clear(n, g, x, y, home, TURN_COST, why) >= TURN_COST) { a.head = home; a.known = 0; }
@@ -701,7 +863,10 @@ public final class CityRuns {
                 int run = clear(n, g, x, y, d2, look, why);
                 if (run >= need && run > bestRun) { bestRun = run; best = d2; }
             }
-            if (best < 0) return WAITS;
+            if (best < 0) {
+                a.stoppedBy = stop;
+                return WAITS;
+            }
             a.head = best;
             a.known = bestRun;
         }
@@ -941,37 +1106,66 @@ public final class CityRuns {
        ===================================================================== */
 
     /**
-     * The yards toward `target` (spec 2.8): each on the track, in the cell
-     * along it nearest a mine (`mines`, the city's mined sites, each {x0, y0,
-     * x1, y1} inclusive), its w x h box across the track's line inside the
-     * cell - owned dry ground, no other yard's, off the highways and their
-     * verges (H5) and the mines' sites; with no track yet, the railway's hub's
-     * cell. The newest is taken first. Those with no place are counted
-     * (yardsShort), and their districts' plans draw them.
+     * Takes the yards back to the longest run, from the first, whose boxes
+     * are the sizes the model now has (FR7 slice 3, 2026-10-18): a Rail
+     * Terminal's box and a Rail Depot's are not one size, and until now every
+     * yard was laid at the size of whichever type came last. `sizes` is the
+     * map's, {w, h} a yard, Rail Terminals first and Rail Depots after them,
+     * so a depot added never moves a terminal's yard. The newest of the rest
+     * is taken first (as the single-size yards were before). Those the model has
+     * and the ground has no place for are counted (yardsShort), and their
+     * districts' plans draw them.
      */
-    void layYards(int target, int w, int h, Ground g, List<long[]> mines) {
-        while (yards.size() > target) yards.remove(yards.size() - 1);
+    private void keepYards(List<int[]> sizes) {
+        int keep = 0;
+        while (keep < yards.size() && keep < sizes.size() && yards.get(keep)[2] == sizes.get(keep)[0] && yards.get(keep)[3] == sizes.get(keep)[1]) keep++;
+        while (yards.size() > keep) yards.remove(yards.size() - 1);
         yardsShort = 0;
-        if (yards.size() == target) return;
-        List<long[]> spots = yardSpots(w, h, mines);
-        int at = 0;
-        while (yards.size() < target) {
-            long[] got = null;
-            while (at < spots.size() && got == null) {
-                long[] s = spots.get(at++);
-                if (yardFits(s, g, mines, yards)) got = s;
-            }
-            if (got == null) { yardsShort = target - yards.size(); break; }
-            yards.add(got);
-        }
     }
 
     /** Every box a yard could take, the nearest a mine first: two a cell the track runs straight through on its line, one at either end of it. */
     List<long[]> yardSpots(int w, int h, List<long[]> mines) {
-        List<long[]> out = new ArrayList<>();
-        if (!rail.started) return out;
+        List<long[]> out = spotsOnTrack(w, h);
+        double[] key = new double[out.size()];
+        for (int i = 0; i < out.size(); i++) {
+            long[] b = out.get(i);
+            double bx = b[0] + b[2] / 2.0, by = b[1] + b[3] / 2.0, best = Double.MAX_VALUE;
+            for (long[] m : mines) best = Math.min(best, Math.hypot(bx - (m[0] + m[2] + 1) / 2.0, by - (m[1] + m[3] + 1) / 2.0));
+            if (mines.isEmpty()) best = Math.hypot(bx - rail.hubX, by - rail.hubY);
+            key[i] = best;
+        }
+        return sortedBy(out, key);
+    }
+
+    /** ...the nearest the point (gx, gy) first (FR7 slice 3: a further yard goes beside a group of works, not beside the mine nearest the hub). */
+    List<long[]> yardSpotsNear(int w, int h, double gx, double gy) {
+        List<long[]> out = spotsOnTrack(w, h);
+        double[] key = new double[out.size()];
+        for (int i = 0; i < out.size(); i++) {
+            long[] b = out.get(i);
+            key[i] = Math.hypot(b[0] + b[2] / 2.0 - gx, b[1] + b[3] / 2.0 - gy);
+        }
+        return sortedBy(out, key);
+    }
+
+    /** The boxes by key, the least first; on a tie the northern, then the western. */
+    private static List<long[]> sortedBy(List<long[]> out, double[] key) {
+        Integer[] idx = new Integer[out.size()];
+        for (int i = 0; i < idx.length; i++) idx[i] = i;
+        Arrays.sort(idx, (p, q) -> key[p] != key[q] ? Double.compare(key[p], key[q])
+                : out.get(p)[1] != out.get(q)[1] ? Long.compare(out.get(p)[1], out.get(q)[1]) : Long.compare(out.get(p)[0], out.get(q)[0]));
+        List<long[]> sorted = new ArrayList<>(out.size());
+        for (int i : idx) sorted.add(out.get(i));
+        return sorted;
+    }
+
+    /** Every box a yard of w x h could take on the track, unsorted: two a cell the track runs straight through on its line, one at either end of it; a siding is no line for a yard. */
+    private List<long[]> spotsOnTrack(int w, int h) {
+        List<long[]> whole = new ArrayList<>(), part = new ArrayList<>();
+        if (!rail.started) return whole;
         java.util.Set<Long> seen = new java.util.HashSet<>();
         for (Arm a : rail.arms) {
+            if (a.corridor >= SIDING) continue;
             for (int s = 0; s < a.segs; s++) {
                 int hd = a.segHead[s], dx = DX[hd], dy = DY[hd];
                 if (dx != 0 && dy != 0) continue;
@@ -982,26 +1176,22 @@ public final class CityRuns {
                     long px = a.segX[s] + (long) dx * k, py = a.segY[s] + (long) dy * k;
                     long cx = Math.floorDiv(px, CELL), cy = Math.floorDiv(py, CELL);
                     if (!seen.add((cx << 33) ^ (cy << 1) ^ (row ? 1 : 0))) continue;
-                    spotsIn(out, cx, cy, row, w, h);
+                    List<long[]> cell = new ArrayList<>(2);
+                    spotsIn(cell, cx, cy, row, w, h);
+                    // A cell's two ends: only a box the track runs through is a spot (FR7 slice 3). With the opposite arm gone,
+                    // the cell the hub stands in has an end beyond the hub where no track runs.
+                    for (long[] b : cell) {
+                        int on = 0, len = row ? w : h;
+                        for (int i = 0; i < len; i++) if (row ? covered(rail, b[0] + i, cy * CELL + RAIL_AT) : covered(rail, cx * CELL + RAIL_AT, b[1] + i)) on++;
+                        if (on == len) whole.add(b);
+                        else if (on > 0) part.add(b);
+                    }
                 }
             }
         }
+        List<long[]> out = !whole.isEmpty() ? whole : part;
         if (out.isEmpty()) spotsIn(out, Math.floorDiv(rail.hubX, CELL), Math.floorDiv(rail.hubY, CELL), true, w, h);
-        double[] key = new double[out.size()];
-        for (int i = 0; i < out.size(); i++) {
-            long[] b = out.get(i);
-            double bx = b[0] + b[2] / 2.0, by = b[1] + b[3] / 2.0, best = Double.MAX_VALUE;
-            for (long[] m : mines) best = Math.min(best, Math.hypot(bx - (m[0] + m[2] + 1) / 2.0, by - (m[1] + m[3] + 1) / 2.0));
-            if (mines.isEmpty()) best = Math.hypot(bx - rail.hubX, by - rail.hubY);
-            key[i] = best;
-        }
-        Integer[] idx = new Integer[out.size()];
-        for (int i = 0; i < idx.length; i++) idx[i] = i;
-        Arrays.sort(idx, (p, q) -> key[p] != key[q] ? Double.compare(key[p], key[q])
-                : out.get(p)[1] != out.get(q)[1] ? Long.compare(out.get(p)[1], out.get(q)[1]) : Long.compare(out.get(p)[0], out.get(q)[0]));
-        List<long[]> sorted = new ArrayList<>(out.size());
-        for (int i : idx) sorted.add(out.get(i));
-        return sorted;
+        return out;
     }
 
     /** A cell's yard boxes across its quarter line (a row's, or a column's): inside the cell's interior, covering the line, at either end of the cell. */
@@ -1018,7 +1208,7 @@ public final class CityRuns {
         }
     }
 
-    /** Whether a yard's box is free, the yards `laid` before it: owned dry ground, off the highways and their verges, no other yard's, no mine's site. */
+    /** Whether a yard's box is free, the yards `laid` before it: owned dry ground, off the highways and their verges, no other yard's, no mine's site, and (FR7) no siding laid across it. */
     boolean yardFits(long[] b, Ground g, List<long[]> mines, List<long[]> laid) {
         for (long[] y : laid) if (b[0] < y[0] + y[2] && y[0] < b[0] + b[2] && b[1] < y[1] + y[3] && y[1] < b[1] + b[3]) return false;
         for (long[] m : mines) if (b[0] <= m[2] && m[0] < b[0] + b[2] && b[1] <= m[3] && m[1] < b[1] + b[3]) return false;
@@ -1027,9 +1217,863 @@ public final class CityRuns {
                 if (covered(highways, x, y)) return false;
                 boolean inside = x >= b[0] && y >= b[1] && x < b[0] + b[2] && y < b[1] + b[3];
                 if (inside && !dry(g.at(x, y, -1))) return false;
+                if (inside) {
+                    int c = coverer(rail, x, y, -1);
+                    if (c >= 0 && rail.arms.get(c).corridor == SIDING) return false;
+                }
             }
         }
         return true;
+    }
+
+    /* =====================================================================
+       THE RAILWAY'S WAYS: THE MAIN LINE, ITS SIDINGS AND ITS BRANCHES
+       (FR7 2026-10-18, batch FR7 slice 3)
+
+       WHY. From 0.7.89 the railway's track plots - 72 a Rail Spur, 248 a
+       Freight Line - were laid as arms from the hub: the gateway's first, then
+       the opposite arm, the perpendicular pair, new corridors a district apart,
+       each growing until the ground stopped it. Most of it ran to no yard and
+       no works, so a train never saw it (Jerus, 2026-10-18: "there is a bunch
+       but its redudant ... why all the other rails they are dead ends ...
+       shouldnt it be something like needs one terminal and then spurs ...
+       otherwise you have rails that somehow bring trains but no trains"; his
+       decision 3: "no track is laid on no train's way; leftover plots go to
+       the legend's surplus"). Now the track is laid in this order, and only
+       there:
+
+         (a) THE MAIN LINE   the gate arm alone, from the hub out toward the
+                             gateway until it waits at the city's ground, where
+                             the world line takes it on (a gate arm that waits
+                             at water the city owns reaches no world, and the
+                             arm after it is grown too - FX2's Halifax - so on
+                             to the first that waits anywhere else); with no
+                             gateway, the hub alone;
+         (b) A SIDING        for each Rail Spur, a track from the main line into
+                             the largest bulk works within a district of it that
+                             has none, ending in a loading shed beside its box;
+         (c) A BRANCH        a further yard beside the largest group of works a
+                             district from every yard laid gets one straight
+                             arm off the main line, as long as it needs;
+         (d) THE SECOND TRACK of the main line is a mark, not plots (as before).
+
+       The plots the model has past these are not drawn: trackSurplus(), the
+       legend's "plots of track more than the line uses". A siding and a branch
+       are arms of their own corridors (SIDING, BRANCH) laid afresh each time
+       the track's inputs move - each a pure function of the main line, the
+       yards, the works and the ground - so a sidecar written with them reads
+       back as it was, and a net read back from before FR7 has its dead-end
+       arms taken off at its first month (dropWays()).
+
+       WHICH WORKS. The works a siding is laid to and a further yard is placed
+       beside are the map's BULK mined sites (Freight.isBulkWorks(): a mine, a
+       quarry), merged where their boxes touch. A works the district plans
+       place - a mill, a smelter - stands in a box that only the plans fix, and
+       the plans are drawn round the runs; a siding laid after them would move
+       the plans' own ground. So the runs lay no siding to them. (FR7 2026-10-19,
+       slice 5: the spurs these sidings did not take - sidingsLaid() says how
+       many they did - are dealt by the map to the districts the main line
+       crosses that hold such works, and each plan lays its own siding inside
+       its frame, over the ground it left, after its buildings and streets stand
+       (DistrictPlan.sidings(), CityMap.sidingsOf()); the plan's ground does not
+       move for it, and the legend counts a dealt spur as used.)
+       ===================================================================== */
+
+    /** The corridors of the arms laid for a train's way: a branch to a further yard (2) and a siding into a works (3). They follow the spine's corridors 0 and 1 and are not grown; dropWays() takes them off before the main line grows. */
+    static final int BRANCH = 2, SIDING = 3;
+
+    /** A siding serves a works within this of the main line, in plots: one district (CityMap.DISTRICT, 256; spec-freight 4.3, "the largest BULK works within one district of the line"). */
+    public static final int SIDING_REACH = CityMap.DISTRICT;
+
+    /** A works the main line touches or runs beside, within this many plots, has the railway at its door and needs no siding: 1. */
+    static final int SERVED_WITHIN = 1;
+
+    /** A group of rail-served works is the works whose box middles lie within this of each other, link by link: half a district, 128 plots. */
+    public static final int GROUP_LINK = CityMap.DISTRICT / 2;
+
+    /** A further yard goes beside a group of works that lies more than this from every yard laid: a district, 256 plots (FR7: "more than one district from every yard laid"). */
+    public static final int YARD_APART = CityMap.DISTRICT;
+
+    /** A group of works farther than this from the track is reached by a branch off the main line, else the yard sits on the track nearest it: a district, 256 plots. */
+    public static final int BRANCH_FROM = CityMap.DISTRICT;
+
+    /** A way laid for a train: its start plot on the net, its legs {heading, steps}, and the plots it lays. */
+    private record Way(long sx, long sy, int[][] legs, int plots) { }
+
+    /** A branch to a yard: where it leaves the main line, its heading, its steps, and the yard's box. */
+    private record Branch(long px, long py, int heading, int steps, long[] box) { }
+
+    /** layRail()'s last stamp, and whether it has one: everything it reads, so it lays nothing twice for the same inputs. */
+    private long railStamp;
+    private boolean railStampSet;
+
+    /**
+     * What one layRail() run builds on demand and its steps share: the bulk
+     * works merged where they touch, a grid of every box a way must keep clear
+     * of (a city of billions has some two hundred thousand mined sites), the
+     * main line's plots, the works' groups, and the yard spots by size.
+     */
+    private final class Ctx {
+        final List<long[]> mines, works;
+        private List<long[]> bulk, line;
+        private BoxGrid blocked;
+        private Groups groups;
+        private final Map<Long, List<long[]>> spots = new HashMap<>();
+        private final Map<Long, Integer> spotAt = new HashMap<>();
+
+        Ctx(List<long[]> mines, List<long[]> works) {
+            this.mines = mines;
+            this.works = works;
+        }
+
+        /** The bulk works' boxes, merged where they touch (mergeTouching()). */
+        List<long[]> bulk() {
+            if (bulk == null) bulk = mergeTouching(works);
+            return bulk;
+        }
+
+        /** Every mine's and works' box, in a grid. */
+        BoxGrid blocked() {
+            if (blocked == null) blocked = new BoxGrid(mines, works);
+            return blocked;
+        }
+
+        /** The main line's plots a siding or a branch may leave from (linePlots()), as the yards stand now. */
+        List<long[]> line() {
+            if (line == null) line = linePlots();
+            return line;
+        }
+
+        /** The works' groups, served as the yards laid are. */
+        Groups groups() {
+            if (groups == null) {
+                groups = new Groups(bulk());
+                for (long[] y : yards) groups.serve(y[0] + y[2] / 2.0, y[1] + y[3] / 2.0);
+            }
+            return groups;
+        }
+
+        /** Another yard laid: the line has a box on it, and the groups beside it are served. */
+        void yardLaid(long[] y) {
+            line = null;
+            if (groups != null) groups.serve(y[0] + y[2] / 2.0, y[1] + y[3] / 2.0);
+        }
+
+        /** The next yard box of w x h on the track nearest a mine that fits (yardSpots(), kept for the run: the old rule, each size's list gone through once); null for none. */
+        long[] nearestMineSpot(int w, int h, Ground g) {
+            long key = ((long) w << 32) ^ h;
+            List<long[]> list = spots.computeIfAbsent(key, k -> yardSpots(w, h, mines));
+            int at = spotAt.getOrDefault(key, 0);
+            while (at < list.size()) {
+                long[] s = list.get(at++);
+                if (yardFits(s, g, mines, yards)) { spotAt.put(key, at); return s; }
+            }
+            spotAt.put(key, at);
+            return null;
+        }
+    }
+
+    /**
+     * Lays the railway to the model's track plots, yards and spurs (layTo()'s
+     * rail half): the derived arms off, the main line grown or taken back, the
+     * first yard, the sidings, then the branches and the further yards, each
+     * out of what the track plots leave. Pure in its inputs; skipped when the
+     * stamp of them is the last run's.
+     */
+    private void layRail(long trackPlots, List<int[]> sizes, int spurs, Ground g, long rx, long ry,
+                         List<long[]> mines, List<long[]> works) {
+        long stamp = railStampOf(trackPlots, sizes, spurs, g, rx, ry, mines, works);
+        if (railStampSet && stamp == railStamp) return;
+        dropWays();
+        if (trackPlots < rail.plots) trim(rail, trackPlots, gateway);
+        else growMainLine(rail, highways, trackPlots, g, rx, ry, gateway);
+        if (!sizes.isEmpty() && !rail.started) start(rail, g, rx, ry, gateway);
+        if (trackPlots == 0 && sizes.isEmpty() && rail.plots == 0 && rail.started) rail.reset();
+        keepYards(sizes);
+        long[] budget = { Math.max(0, trackPlots - rail.plots) };
+        if (rail.started) {
+            Ctx ctx = new Ctx(mines, works);
+            if (!sizes.isEmpty() && yards.isEmpty()) {
+                long[] first = ctx.nearestMineSpot(sizes.get(0)[0], sizes.get(0)[1], g);
+                if (first != null) yards.add(first);
+            }
+            laySidings(spurs, ctx, g, budget);
+            // A yard laid beside a group of works has a branch to be laid with the rest; with no works there is no such yard
+            // (and a city of thousands of yards does not weigh every one each month).
+            for (int i = ctx.works.isEmpty() ? yards.size() : 1; i < sizes.size() && !yards.isEmpty(); i++) {
+                if (i < yards.size()) reachYard(yards.get(i), g, ctx, budget);
+                else if (!placeFurther(sizes.get(i), g, ctx, budget)) break;
+            }
+        }
+        yardsShort = Math.max(0, sizes.size() - yards.size());
+        railStamp = stamp;
+        railStampSet = true;
+    }
+
+    /** A hash of everything layRail() reads: the track plots, the yards' sizes, the spurs, the ground's version, the gateway, the hub's seed, the mines and works, and the highways laid. */
+    private long railStampOf(long trackPlots, List<int[]> sizes, int spurs, Ground g, long rx, long ry, List<long[]> mines, List<long[]> works) {
+        long h = World.mix(0x5241494CL ^ trackPlots);
+        h = World.mix(h ^ spurs ^ ((long) gateway << 32) ^ g.version() * 31 ^ rx * 0x9E3779B97F4A7C15L ^ ry);
+        for (int[] s : sizes) h = World.mix(h ^ ((long) s[0] << 20) ^ s[1]);
+        h = World.mix(h ^ mines.size());
+        for (long[] m : mines) h = h * 0x100000001B3L ^ (m[0] * 31 + m[1]);
+        h = World.mix(h ^ works.size());
+        for (long[] w : works) h = h * 0x100000001B3L ^ (w[0] * 37 + w[1] ^ 0x57);
+        h = World.mix(h ^ highways.plots ^ (highways.started ? highways.hubX * 31 + highways.hubY : 7));
+        for (Arm a : highways.arms) h = World.mix(h ^ a.steps ^ ((long) a.head << 40) ^ (a.x << 20) ^ a.y);
+        return h;
+    }
+
+    /**
+     * Takes off what an earlier run laid beyond the main line: the arms of the
+     * BRANCH and SIDING corridors and any corridor past the spine's (a net
+     * grown before FR7 has them as dead ends), and then the spine's arms
+     * past the main line's last (cleanSpine()). Files the rest again and
+     * counts its plots.
+     */
+    private void dropWays() {
+        boolean any = false;
+        for (int i = rail.arms.size() - 1; i >= 0; i--) {
+            if (rail.arms.get(i).corridor >= BRANCH) { rail.arms.remove(i); any = true; }
+        }
+        while (rail.corridors.size() > 2) { rail.corridors.remove(rail.corridors.size() - 1); any = true; }
+        if (rail.interchanges.removeIf(c -> c.corridor() >= BRANCH)) any = true;
+        any |= cleanSpine();
+        if (!any) return;
+        rebuildBuckets(rail);
+        rail.plots = countPlots(rail);
+        rail.stuckAt = Long.MIN_VALUE;
+    }
+
+    /**
+     * Takes the spine's arms past the main line's end back to nothing: the
+     * main line is the gate arm and, where the gate arm waits at the sea,
+     * the arms after it as far as the first that waits anywhere else
+     * (spineOrder(), growMainLine()); the opposite and perpendicular arms a
+     * net grown before FR7 has laid past that are dead ends no train ran to.
+     * An arm not known to wait at the sea (a net read back, or one still
+     * growing) ends the line. True when it took any back.
+     */
+    private boolean cleanSpine() {
+        boolean any = false, ended = false;
+        List<Integer> order = spineOrder(rail, gateArm(rail, gateway));
+        for (int i : order) {
+            Arm a = rail.arms.get(i);
+            if (ended && a.steps > 0) { rail.arms.set(i, new Arm(a.corridor, a.home, a.sx, a.sy)); any = true; }
+            if (a.stoppedBy != SEA) ended = true;
+        }
+        if (order.isEmpty()) {
+            // No gateway: the hub alone.
+            for (int i = 0; i < rail.arms.size(); i++) {
+                Arm a = rail.arms.get(i);
+                if (a.corridor <= 1 && a.steps > 0) { rail.arms.set(i, new Arm(a.corridor, a.home, a.sx, a.sy)); any = true; }
+            }
+        }
+        return any;
+    }
+
+    /** The plots of net n: its hub's, if laid, and the union of its arms' (each 45-degree step's corner too). */
+    static long countPlots(Net n) {
+        java.util.Set<Long> seen = new java.util.HashSet<>();
+        if (n.hubLaid) seen.add((n.hubX << 32) ^ (n.hubY & 0xffffffffL));
+        for (Arm a : n.arms) {
+            for (int s = 0; s < a.segs; s++) {
+                int h = a.segHead[s], dx = DX[h], dy = DY[h];
+                for (int k = 1; k <= a.segSteps[s]; k++) {
+                    long px = a.segX[s] + (long) dx * k, py = a.segY[s] + (long) dy * k;
+                    seen.add((px << 32) ^ (py & 0xffffffffL));
+                    if (dx != 0 && dy != 0) seen.add((px << 32) ^ ((py - dy) & 0xffffffffL));
+                }
+            }
+        }
+        return seen.size();
+    }
+
+    /** The corridors a branch and a siding belong to, there once a way is laid: placeholders after the spine's two (they run along no line of their own). */
+    private void wayCorridors() {
+        while (rail.corridors.size() < 4) rail.corridors.add(new long[] { 0, 0 });
+    }
+
+    /** Lays a way from the net's plot (sx, sy) as an arm of `corridor`: each leg's plots, one by one, counted where nothing else of the net has them; the arm's index. */
+    private int layWay(int corridor, long sx, long sy, int[][] legs) {
+        wayCorridors();
+        int ai = rail.arms.size();
+        Arm a = new Arm(corridor, legs[0][0], sx, sy);
+        rail.arms.add(a);
+        for (int[] leg : legs) {
+            for (int k = 0; k < leg[1]; k++) {
+                long nx = a.x + DX[leg[0]], ny = a.y + DY[leg[0]];
+                a.push(leg[0]);
+                a.steps++;
+                lay(rail, ai, a.segs - 1, nx, ny);
+                a.x = nx;
+                a.y = ny;
+            }
+            a.head = leg[0];
+        }
+        return ai;
+    }
+
+    /* ----- boxes: a grid of them, the works merged where they touch, the works in groups ----- */
+
+    /** The boxes' grid: 64 plots a side. */
+    static final int BOX_GRID = 64;
+
+    /** A grid of boxes {x0, y0, x1, y1} (inclusive) BOX_GRID plots a side: whether one covers a plot, or meets another box. */
+    private static final class BoxGrid {
+        private final Map<Long, List<long[]>> cells = new HashMap<>();
+
+        @SafeVarargs
+        BoxGrid(List<long[]>... lists) {
+            for (List<long[]> l : lists) for (long[] b : l) add(b);
+        }
+
+        private static long key(long gx, long gy) {
+            return (gx << 32) ^ (gy & 0xffffffffL);
+        }
+
+        void add(long[] b) {
+            for (long gx = Math.floorDiv(b[0], BOX_GRID); gx <= Math.floorDiv(b[2], BOX_GRID); gx++) {
+                for (long gy = Math.floorDiv(b[1], BOX_GRID); gy <= Math.floorDiv(b[3], BOX_GRID); gy++) {
+                    cells.computeIfAbsent(key(gx, gy), k -> new ArrayList<>(2)).add(b);
+                }
+            }
+        }
+
+        boolean covers(long x, long y) {
+            List<long[]> l = cells.get(key(Math.floorDiv(x, BOX_GRID), Math.floorDiv(y, BOX_GRID)));
+            if (l == null) return false;
+            for (long[] b : l) if (x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]) return true;
+            return false;
+        }
+
+        /** Whether any box meets the plots x0..x1, y0..y1. */
+        boolean meets(long x0, long y0, long x1, long y1) {
+            for (long gx = Math.floorDiv(x0, BOX_GRID); gx <= Math.floorDiv(x1, BOX_GRID); gx++) {
+                for (long gy = Math.floorDiv(y0, BOX_GRID); gy <= Math.floorDiv(y1, BOX_GRID); gy++) {
+                    List<long[]> l = cells.get(key(gx, gy));
+                    if (l == null) continue;
+                    for (long[] b : l) if (b[0] <= x1 && x0 <= b[2] && b[1] <= y1 && y0 <= b[3]) return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
+     * The works boxes {x0, y0, x1, y1} with those that touch (a gap of at most
+     * one plot between them) merged, transitively, into their bounding box - a
+     * large pit on twenty sites is one works. In the order of the first of
+     * each. Boxes are found through a grid, so a city of thousands of sites
+     * merges in a pass.
+     */
+    static List<long[]> mergeTouching(List<long[]> boxes) {
+        int n = boxes.size();
+        int[] parent = new int[n];
+        for (int i = 0; i < n; i++) parent[i] = i;
+        Map<Long, List<Integer>> grid = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            long[] b = boxes.get(i);
+            for (long gx = Math.floorDiv(b[0] - 2, BOX_GRID); gx <= Math.floorDiv(b[2] + 2, BOX_GRID); gx++) {
+                for (long gy = Math.floorDiv(b[1] - 2, BOX_GRID); gy <= Math.floorDiv(b[3] + 2, BOX_GRID); gy++) {
+                    grid.computeIfAbsent((gx << 32) ^ (gy & 0xffffffffL), k -> new ArrayList<>(2)).add(i);
+                }
+            }
+        }
+        for (List<Integer> cell : grid.values()) {
+            for (int a = 0; a < cell.size(); a++) {
+                for (int b = a + 1; b < cell.size(); b++) {
+                    long[] p = boxes.get(cell.get(a)), q = boxes.get(cell.get(b));
+                    if (q[0] > p[2] + 2 || p[0] > q[2] + 2 || q[1] > p[3] + 2 || p[1] > q[3] + 2) continue;
+                    int ra = cell.get(a), rb = cell.get(b);
+                    while (parent[ra] != ra) ra = parent[ra];
+                    while (parent[rb] != rb) rb = parent[rb];
+                    if (ra != rb) parent[Math.max(ra, rb)] = Math.min(ra, rb);
+                }
+            }
+        }
+        List<long[]> out = new ArrayList<>();
+        int[] at = new int[n];
+        for (int i = 0; i < n; i++) {
+            int r = i;
+            while (parent[r] != r) r = parent[r];
+            long[] b = boxes.get(i);
+            if (r == i) {
+                at[i] = out.size();
+                out.add(b.clone());
+            } else {
+                long[] m = out.get(at[r]);
+                m[0] = Math.min(m[0], b[0]);
+                m[1] = Math.min(m[1], b[1]);
+                m[2] = Math.max(m[2], b[2]);
+                m[3] = Math.max(m[3], b[3]);
+            }
+        }
+        return out;
+    }
+
+    /** A works box's plots. */
+    private static long areaOf(long[] w) {
+        return (w[2] - w[0] + 1) * (w[3] - w[1] + 1);
+    }
+
+    /**
+     * The works' groups (FR7 slice 3): works are one group while their box
+     * middles lie within GROUP_LINK of each other, link by link; a group is as
+     * large as its boxes' plots, its middle their plots' mean. Sorted the
+     * largest first (the more northern, then the more western, on a tie); a
+     * group is served once a yard stands within YARD_APART of its middle.
+     */
+    private static final class Groups {
+        final double[][] g;
+        final boolean[] served;
+        private final Map<Long, List<Integer>> cells = new HashMap<>();
+        private int next;
+
+        Groups(List<long[]> works) {
+            int n = works.size();
+            int[] root = new int[n];
+            double[] mx = new double[n], my = new double[n];
+            Map<Long, List<Integer>> grid = new HashMap<>();
+            for (int i = 0; i < n; i++) {
+                root[i] = i;
+                long[] w = works.get(i);
+                mx[i] = (w[0] + w[2] + 1) / 2.0;
+                my[i] = (w[1] + w[3] + 1) / 2.0;
+                grid.computeIfAbsent(((long) Math.floor(mx[i] / GROUP_LINK) << 32) ^ ((long) Math.floor(my[i] / GROUP_LINK) & 0xffffffffL), k -> new ArrayList<>(2)).add(i);
+            }
+            for (int i = 0; i < n; i++) {
+                long cx = (long) Math.floor(mx[i] / GROUP_LINK), cy = (long) Math.floor(my[i] / GROUP_LINK);
+                for (long dx = -1; dx <= 1; dx++) {
+                    for (long dy = -1; dy <= 1; dy++) {
+                        List<Integer> l = grid.get(((cx + dx) << 32) ^ ((cy + dy) & 0xffffffffL));
+                        if (l == null) continue;
+                        for (int j : l) {
+                            if (j >= i || Math.hypot(mx[i] - mx[j], my[i] - my[j]) > GROUP_LINK) continue;
+                            int a = i, b = j;
+                            while (root[a] != a) a = root[a];
+                            while (root[b] != b) b = root[b];
+                            if (a != b) root[Math.max(a, b)] = Math.min(a, b);
+                        }
+                    }
+                }
+            }
+            Map<Integer, double[]> sums = new HashMap<>();
+            for (int i = 0; i < n; i++) {
+                int r = i;
+                while (root[r] != r) r = root[r];
+                long a = areaOf(works.get(i));
+                double[] s = sums.computeIfAbsent(r, k -> new double[3]);
+                s[0] += mx[i] * a;
+                s[1] += my[i] * a;
+                s[2] += a;
+            }
+            List<double[]> list = new ArrayList<>();
+            for (double[] s : sums.values()) list.add(new double[] { s[0] / s[2], s[1] / s[2], s[2] });
+            list.sort((p, q) -> p[2] != q[2] ? Double.compare(q[2], p[2]) : p[1] != q[1] ? Double.compare(p[1], q[1]) : Double.compare(p[0], q[0]));
+            g = list.toArray(new double[0][]);
+            served = new boolean[g.length];
+            for (int i = 0; i < g.length; i++) {
+                cells.computeIfAbsent(((long) Math.floor(g[i][0] / YARD_APART) << 32) ^ ((long) Math.floor(g[i][1] / YARD_APART) & 0xffffffffL), k -> new ArrayList<>(2)).add(i);
+            }
+        }
+
+        /** Marks every group within YARD_APART of (x, y) served. */
+        void serve(double x, double y) {
+            long cx = (long) Math.floor(x / YARD_APART), cy = (long) Math.floor(y / YARD_APART);
+            for (long dx = -1; dx <= 1; dx++) {
+                for (long dy = -1; dy <= 1; dy++) {
+                    List<Integer> l = cells.get(((cx + dx) << 32) ^ ((cy + dy) & 0xffffffffL));
+                    if (l == null) continue;
+                    for (int i : l) if (Math.hypot(g[i][0] - x, g[i][1] - y) <= YARD_APART) served[i] = true;
+                }
+            }
+        }
+
+        /** The largest group no yard serves, its middle {x, y}; null for none. */
+        double[] largest() {
+            while (next < g.length && served[next]) next++;
+            return next < g.length ? new double[] { g[next][0], g[next][1] } : null;
+        }
+    }
+
+    /* ----- the sidings ----- */
+
+    /**
+     * Lays a siding for each of `wanted` Rail Spurs (FR7, D14): the largest bulk
+     * works (by its box's plots) within SIDING_REACH of the main line that has
+     * none and that the line does not already touch, a track from the nearest
+     * plot of the line to the works' box edge - straight, or with one 90-degree
+     * turn - and a loading shed on its last plot (M_SHED). It runs
+     * through no highway's plot or verge, no yard, no works' or mine's box and
+     * no track; a works it cannot reach is passed over for the next largest. Each
+     * is paid for out of `budget` (its plots; the spur's 72 are the model's, a
+     * shorter siding leaves the rest to the surplus), one it cannot pay for
+     * passed over too. A spur with no works to serve lays nothing. At most
+     * SIDING_TRIES works are tried.
+     */
+    private void laySidings(int wanted, Ctx ctx, Ground g, long[] budget) {
+        List<long[]> works = ctx.bulk();
+        if (wanted <= 0 || works.isEmpty() || !rail.started) return;
+        List<long[]> line = ctx.line();
+        if (line.isEmpty()) return;
+        // The works in the cells within reach of the line, the largest first.
+        java.util.Set<Long> near = new java.util.HashSet<>();
+        int reach = SIDING_REACH / BOX_GRID + 1;
+        for (int i = 0; i < line.size(); i += BOX_GRID / 4) {
+            long cx = Math.floorDiv(line.get(i)[0], BOX_GRID), cy = Math.floorDiv(line.get(i)[1], BOX_GRID);
+            for (long dx = -reach; dx <= reach; dx++) for (long dy = -reach; dy <= reach; dy++) near.add(((cx + dx) << 32) ^ ((cy + dy) & 0xffffffffL));
+        }
+        List<long[]> order = new ArrayList<>();
+        for (long[] w : works) {
+            boolean in = false;
+            for (long gx = Math.floorDiv(w[0], BOX_GRID); gx <= Math.floorDiv(w[2], BOX_GRID) && !in; gx++) {
+                for (long gy = Math.floorDiv(w[1], BOX_GRID); gy <= Math.floorDiv(w[3], BOX_GRID) && !in; gy++) in = near.contains((gx << 32) ^ (gy & 0xffffffffL));
+            }
+            if (in) order.add(w);
+        }
+        order.sort((p, q) -> areaOf(p) != areaOf(q) ? Long.compare(areaOf(q), areaOf(p)) : p[1] != q[1] ? Long.compare(p[1], q[1]) : Long.compare(p[0], q[0]));
+        int laid = 0, tried = 0, looked = 0;
+        for (long[] w : order) {
+            if (laid >= wanted || tried >= SIDING_TRIES || looked++ >= 5 * SIDING_TRIES) break;
+            double nearest = Double.MAX_VALUE;
+            for (long[] p : line) nearest = Math.min(nearest, distanceTo(w, p[0], p[1]));
+            if (nearest <= SERVED_WITHIN || nearest > SIDING_REACH) continue;
+            tried++;
+            Way way = sidingTo(w, line, g, ctx);
+            if (way == null || way.plots() > budget[0]) continue;
+            long before = rail.plots;
+            layWay(SIDING, way.sx(), way.sy(), way.legs());
+            budget[0] -= rail.plots - before;
+            laid++;
+        }
+    }
+
+    /** The most works laySidings() tries in one run: 200. */
+    static final int SIDING_TRIES = 200;
+
+    /** The plots of the main line a siding or a branch may leave from, {x, y, axis (0 east-west, 1 north-south)}: the spine's arms past their start plots, on a stretch running straight east-west or north-south, and not inside a yard. */
+    private List<long[]> linePlots() {
+        List<long[]> out = new ArrayList<>();
+        for (Arm a : rail.arms) {
+            if (a.corridor > 1) continue;
+            for (int s = 0; s < a.segs; s++) {
+                int h = a.segHead[s], dx = DX[h], dy = DY[h];
+                if (dx != 0 && dy != 0) continue;
+                for (int k = 1; k <= a.segSteps[s]; k++) {
+                    long px = a.segX[s] + (long) dx * k, py = a.segY[s] + (long) dy * k;
+                    if (!inAYard(px, py)) out.add(new long[] { px, py, dy == 0 ? 0 : 1 });
+                }
+            }
+        }
+        return out;
+    }
+
+    private boolean inAYard(long x, long y) {
+        for (long[] yd : yards) if (x >= yd[0] && y >= yd[1] && x < yd[0] + yd[2] && y < yd[1] + yd[3]) return true;
+        return false;
+    }
+
+    /** The distance from plot (x, y) to a works box {x0, y0, x1, y1}: 0 inside it, else along the axes or the corner. */
+    private static double distanceTo(long[] w, long x, long y) {
+        double dx = Math.max(0, Math.max(w[0] - x, x - w[2])), dy = Math.max(0, Math.max(w[1] - y, y - w[3]));
+        return Math.hypot(dx, dy);
+    }
+
+    /**
+     * The shortest siding from the line to works w, or null: every plot of the
+     * line, its nearest plot beside the box, and the two ways of one turn, in
+     * order of length (then straight before turned, then the line's order), the
+     * first that is clear.
+     */
+    private Way sidingTo(long[] w, List<long[]> line, Ground g, Ctx ctx) {
+        List<long[]> cands = new ArrayList<>();   // {length, shape (0 straight, 1 east-west first, 2 north-south first), line index, end x, end y}
+        for (int i = 0; i < line.size(); i++) {
+            long px = line.get(i)[0], py = line.get(i)[1];
+            if (distanceTo(w, px, py) > SIDING_REACH) continue;
+            long qx = Math.max(w[0], Math.min(w[2], px)), qy = Math.max(w[1], Math.min(w[3], py));
+            List<long[]> ends = new ArrayList<>(2);
+            if (px < w[0]) ends.add(new long[] { w[0] - 1, qy });
+            else if (px > w[2]) ends.add(new long[] { w[2] + 1, qy });
+            if (py < w[1]) ends.add(new long[] { qx, w[1] - 1 });
+            else if (py > w[3]) ends.add(new long[] { qx, w[3] + 1 });
+            for (long[] e : ends) {
+                long len = Math.abs(e[0] - px) + Math.abs(e[1] - py);
+                if (len < 1) continue;
+                if (e[0] == px || e[1] == py) cands.add(new long[] { len, 0, i, e[0], e[1] });
+                else {
+                    cands.add(new long[] { len, 1, i, e[0], e[1] });
+                    cands.add(new long[] { len, 2, i, e[0], e[1] });
+                }
+            }
+        }
+        cands.sort((p, q) -> p[0] != q[0] ? Long.compare(p[0], q[0]) : p[1] != q[1] ? Long.compare(p[1], q[1]) : Long.compare(p[2], q[2]));
+        for (long[] c : cands) {
+            long px = line.get((int) c[2])[0], py = line.get((int) c[2])[1];
+            int[][] legs = legsOf(px, py, c[3], c[4], c[1] == 2);
+            if (wayClear(px, py, legs, g, ctx.blocked())) return new Way(px, py, legs, (int) c[0]);
+        }
+        return null;
+    }
+
+    /** The legs from (px, py) to (ex, ey): east-west then north-south, or (`northSouthFirst`) the other way; a leg of no length left out. */
+    private static int[][] legsOf(long px, long py, long ex, long ey, boolean northSouthFirst) {
+        int[] ew = ex == px ? null : new int[] { ex > px ? 0 : 4, (int) Math.abs(ex - px) };
+        int[] ns = ey == py ? null : new int[] { ey > py ? 2 : 6, (int) Math.abs(ey - py) };
+        List<int[]> out = new ArrayList<>(2);
+        if (northSouthFirst) { if (ns != null) out.add(ns); if (ew != null) out.add(ew); }
+        else { if (ew != null) out.add(ew); if (ns != null) out.add(ns); }
+        return out.toArray(new int[0][]);
+    }
+
+    /**
+     * Whether a way's plots, after its start, are all free: owned dry ground, in
+     * no works' or mine's box, no yard, off every highway's plot and its verge
+     * (the plots beside it), and on no track of the net.
+     */
+    private boolean wayClear(long px, long py, int[][] legs, Ground g, BoxGrid blocked) {
+        long x = px, y = py;
+        for (int[] leg : legs) {
+            for (int k = 0; k < leg[1]; k++) {
+                x += DX[leg[0]];
+                y += DY[leg[0]];
+                if (!dry(g.at(x, y, -1)) || covered(rail, x, y) || inAYard(x, y) || blocked.covers(x, y)) return false;
+                for (long dy = -1; dy <= 1; dy++) for (long dx = -1; dx <= 1; dx++) if (covered(highways, x + dx, y + dy)) return false;
+            }
+        }
+        return true;
+    }
+
+    /** The sidings laid, each {arm index, start x, start y, end x, end y, plots}, in the order laid: the arms of the SIDING corridor with steps. */
+    public List<long[]> sidings() {
+        List<long[]> out = new ArrayList<>();
+        for (int i = 0; i < rail.arms.size(); i++) {
+            Arm a = rail.arms.get(i);
+            if (a.corridor == SIDING && a.steps > 0) out.add(new long[] { i, a.sx, a.sy, a.x, a.y, a.steps });
+        }
+        return out;
+    }
+
+    /** How many sidings the runs have laid, into mined sites: the Rail Spurs they took (batch FR7 slice 5; the map deals the rest of the spurs to the plans' works, CityMap.sidingsOf()). */
+    public int sidingsLaid() {
+        int n = 0;
+        for (Arm a : rail.arms) if (a.corridor == SIDING && a.steps > 0) n++;
+        return n;
+    }
+
+    /**
+     * The cells of a grid of `side` plots a side, each as (cx << 32) ^ (cy &
+     * 0xffffffff), whose own plots (not their first row or column, which the
+     * districts share) hold a plot of the main line - the spine arms of the
+     * corridors 0 and 1, from their start plot - as a plan reads it in its frame
+     * (batch FR7 slice 5, D14): where a plan can lay a siding to the line. Empty
+     * with no railway.
+     */
+    public java.util.Set<Long> mainLineCells(int side) {
+        java.util.Set<Long> out = new java.util.HashSet<>();
+        for (Arm a : rail.arms) {
+            if (a.corridor > 1) continue;
+            for (int s = 0; s < a.segs; s++) {
+                int h = a.segHead[s], dx = DX[h], dy = DY[h];
+                for (int k = s == 0 ? 0 : 1; k <= a.segSteps[s]; k++) {
+                    long px = a.segX[s] + (long) dx * k, py = a.segY[s] + (long) dy * k;
+                    if (Math.floorMod(px, side) == 0 || Math.floorMod(py, side) == 0) continue;
+                    out.add((Math.floorDiv(px, side) << 32) ^ (Math.floorDiv(py, side) & 0xffffffffL));
+                }
+            }
+        }
+        return out;
+    }
+
+    /** The branches laid, each {arm index, start x, start y, end x, end y, plots}, in the order laid: the arms of the BRANCH corridor with steps. */
+    public List<long[]> branches() {
+        List<long[]> out = new ArrayList<>();
+        for (int i = 0; i < rail.arms.size(); i++) {
+            Arm a = rail.arms.get(i);
+            if (a.corridor == BRANCH && a.steps > 0) out.add(new long[] { i, a.sx, a.sy, a.x, a.y, a.steps });
+        }
+        return out;
+    }
+
+    /* ----- a further yard, and its branch ----- */
+
+    /** The distance from the point (x, y) to the railway laid (its hub and its spine's and branches' stretches), the segment each stretch is. */
+    private double distanceToNet(double x, double y) {
+        double best = rail.hubLaid ? Math.hypot(x - rail.hubX, y - rail.hubY) : Double.MAX_VALUE;
+        for (Arm a : rail.arms) {
+            if (a.corridor >= SIDING) continue;
+            for (int s = 0; s < a.segs; s++) {
+                double x0 = a.segX[s], y0 = a.segY[s], x1 = x0 + (double) DX[a.segHead[s]] * a.segSteps[s], y1 = y0 + (double) DY[a.segHead[s]] * a.segSteps[s];
+                double vx = x1 - x0, vy = y1 - y0, len2 = vx * vx + vy * vy;
+                double t = len2 == 0 ? 0 : Math.max(0, Math.min(1, ((x - x0) * vx + (y - y0) * vy) / len2));
+                best = Math.min(best, Math.hypot(x - (x0 + t * vx), y - (y0 + t * vy)));
+            }
+        }
+        return best;
+    }
+
+    /**
+     * A further yard (FR7): beside the largest group of works a district from
+     * every yard laid (Groups.largest()), not beside the mine nearest the hub. A
+     * group farther than BRANCH_FROM from the track is reached by a branch -
+     * one straight arm off the main line, as long as it needs and paid for out
+     * of `budget` - and the yard stands at its end; a nearer one has the yard
+     * on the track nearest it. With no such group - the works are bundled, and
+     * so are the yards - the yard goes where the first did, nearest a mine.
+     * False where nothing fits.
+     */
+    private boolean placeFurther(int[] size, Ground g, Ctx ctx, long[] budget) {
+        int w = size[0], h = size[1];
+        double[] grp = ctx.works.isEmpty() ? null : ctx.groups().largest();
+        if (grp != null) {
+            if (distanceToNet(grp[0], grp[1]) > BRANCH_FROM) {
+                Branch b = bestBranch(w, h, grp[0], grp[1], g, ctx, budget[0]);
+                if (b != null) {
+                    long before = rail.plots;
+                    layWay(BRANCH, b.px(), b.py(), new int[][] { { b.heading(), b.steps() } });
+                    budget[0] -= rail.plots - before;
+                    yards.add(b.box());
+                    ctx.yardLaid(b.box());
+                    return true;
+                }
+            }
+            for (long[] s : yardSpotsNear(w, h, grp[0], grp[1])) {
+                if (yardFree(s, g, ctx)) { yards.add(s); ctx.yardLaid(s); return true; }
+            }
+            return false;
+        }
+        long[] s = ctx.nearestMineSpot(w, h, g);
+        if (s == null) return false;
+        yards.add(s);
+        ctx.yardLaid(s);
+        return true;
+    }
+
+    /** yardFits() with the mines' boxes in the run's grid, for the many boxes a further yard weighs. */
+    private boolean yardFree(long[] b, Ground g, Ctx ctx) {
+        for (long[] y : yards) if (b[0] < y[0] + y[2] && y[0] < b[0] + b[2] && b[1] < y[1] + y[3] && y[1] < b[1] + b[3]) return false;
+        if (ctx.blocked().meets(b[0], b[1], b[0] + b[2] - 1, b[1] + b[3] - 1)) return false;
+        for (long y = b[1] - 1; y <= b[1] + b[3]; y++) {
+            for (long x = b[0] - 1; x <= b[0] + b[2]; x++) {
+                if (covered(highways, x, y)) return false;
+                boolean inside = x >= b[0] && y >= b[1] && x < b[0] + b[2] && y < b[1] + b[3];
+                if (inside && !dry(g.at(x, y, -1))) return false;
+                if (inside) {
+                    int c = coverer(rail, x, y, -1);
+                    if (c >= 0 && rail.arms.get(c).corridor == SIDING) return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The branch for a yard laid already that the track does not reach (the
+     * branches are laid afresh with the rest): the shortest straight arm off
+     * the main line to its box, paid for out of `budget`; none if the yard
+     * has track in its box, or no branch reaches it, or the budget is short.
+     */
+    private void reachYard(long[] yard, Ground g, Ctx ctx, long[] budget) {
+        if (anchorInYard(yard) != null) return;
+        Branch b = branchTo(yard, g, ctx);
+        if (b == null || b.steps() > budget[0]) return;
+        long before = rail.plots;
+        layWay(BRANCH, b.px(), b.py(), new int[][] { { b.heading(), b.steps() } });
+        budget[0] -= rail.plots - before;
+    }
+
+    /**
+     * The best branch to a new yard of w x h beside the point (gx, gy): from
+     * each plot of the main line whose cross line is a railway line (RAIL_AT),
+     * along that line toward the point, to a yard box in the cells beside the
+     * point's own; the yard whose middle is nearest the point wins, then the
+     * shorter branch. Null where none is free and within `budget`.
+     */
+    private Branch bestBranch(int w, int h, double gx, double gy, Ground g, Ctx ctx, long budget) {
+        Branch best = null;
+        double bestD = Double.MAX_VALUE;
+        for (long[] p : ctx.line()) {
+            boolean ew = p[2] == 0;
+            long px = p[0], py = p[1], across = ew ? px : py;
+            if (Math.floorMod(across, CELL) != RAIL_AT) continue;
+            int heading = ew ? (gy >= py ? 2 : 6) : (gx >= px ? 0 : 4);
+            long cg = Math.floorDiv((long) Math.floor(ew ? gy : gx), CELL);
+            for (long c = cg - 1; c <= cg + 1; c++) {
+                List<long[]> boxes = new ArrayList<>(2);
+                spotsIn(boxes, ew ? Math.floorDiv(px, CELL) : c, ew ? c : Math.floorDiv(py, CELL), !ew, w, h);
+                for (long[] box : boxes) {
+                    double d = Math.hypot(box[0] + box[2] / 2.0 - gx, box[1] + box[3] / 2.0 - gy);
+                    if (d > bestD) continue;
+                    int steps = branchSteps(px, py, heading, box, g, ctx.blocked());
+                    if (steps < 1 || steps > budget || !yardFree(box, g, ctx) || trackIn(box)) continue;
+                    boolean better = best == null || d < bestD || d == bestD && (steps < best.steps()
+                            || steps == best.steps() && (px < best.px() || px == best.px() && py < best.py()));
+                    if (better) { best = new Branch(px, py, heading, steps, box); bestD = d; }
+                }
+            }
+        }
+        return best;
+    }
+
+    /** The shortest branch to a yard's box from the main line, or null: from a plot of the line on a railway line through the box, along it, as branchSteps() clears. */
+    private Branch branchTo(long[] box, Ground g, Ctx ctx) {
+        Branch best = null;
+        for (long[] p : ctx.line()) {
+            boolean ew = p[2] == 0;
+            long px = p[0], py = p[1];
+            int heading;
+            if (ew) {
+                if (px < box[0] || px >= box[0] + box[2] || Math.floorMod(px, CELL) != RAIL_AT || py >= box[1] && py < box[1] + box[3]) continue;
+                heading = py < box[1] ? 2 : 6;
+            } else {
+                if (py < box[1] || py >= box[1] + box[3] || Math.floorMod(py, CELL) != RAIL_AT || px >= box[0] && px < box[0] + box[2]) continue;
+                heading = px < box[0] ? 0 : 4;
+            }
+            int steps = branchSteps(px, py, heading, box, g, ctx.blocked());
+            if (steps < 1) continue;
+            if (best == null || steps < best.steps() || steps == best.steps() && (px < best.px() || px == best.px() && py < best.py())) {
+                best = new Branch(px, py, heading, steps, box);
+            }
+        }
+        return best;
+    }
+
+    /**
+     * The steps of a branch from (px, py) along `heading` to the far edge of
+     * a yard's box, or -1: the box wholly beyond the plot, its line through
+     * it, and every plot owned dry ground, in no mine's or works' box nor
+     * another yard, off the track already laid, and not running along a
+     * highway (a crossing is a bridge).
+     */
+    private int branchSteps(long px, long py, int heading, long[] box, Ground g, BoxGrid blocked) {
+        int dx = DX[heading], dy = DY[heading];
+        long near, far;
+        if (dx != 0) {
+            if (py < box[1] || py >= box[1] + box[3]) return -1;
+            near = dx > 0 ? box[0] - px : px - (box[0] + box[2] - 1);
+            far = dx > 0 ? box[0] + box[2] - 1 - px : px - box[0];
+        } else {
+            if (px < box[0] || px >= box[0] + box[2]) return -1;
+            near = dy > 0 ? box[1] - py : py - (box[1] + box[3] - 1);
+            far = dy > 0 ? box[1] + box[3] - 1 - py : py - box[1];
+        }
+        if (near < 1) return -1;
+        for (int k = 1; k <= far; k++) {
+            long x = px + (long) dx * k, y = py + (long) dy * k;
+            if (!dry(g.at(x, y, -1)) || covered(rail, x, y) || blocked.covers(x, y)) return -1;
+            if (covered(highways, x, y) && (covered(highways, x - dx, y - dy) || covered(highways, x + dx, y + dy))) return -1;
+            for (long[] yd : yards) {
+                if (Arrays.equals(yd, box)) continue;
+                if (x >= yd[0] && y >= yd[1] && x < yd[0] + yd[2] && y < yd[1] + yd[3]) return -1;
+            }
+        }
+        return (int) far;
+    }
+
+    /** Whether any plot of the box holds track of the net. */
+    private boolean trackIn(long[] box) {
+        for (long y = box[1]; y < box[1] + box[3]; y++) for (long x = box[0]; x < box[0] + box[2]; x++) if (covered(rail, x, y)) return true;
+        return false;
     }
 
     /* =====================================================================
@@ -1278,11 +2322,21 @@ public final class CityRuns {
      * trains on.
      */
     public double[][] wayTo(long[] yard) {
-        int main = mainArm();
-        if (main < 0 || yard == null) return null;
+        if (mainArm() < 0 || yard == null) return null;
         long[] anchor = anchorInYard(yard);
-        if (anchor == null) return null;
-        int[] loc = locate(rail, anchor[0], anchor[1]);
+        return anchor == null ? null : wayToPlot(anchor[0], anchor[1]);
+    }
+
+    /**
+     * ...to a plot of the net (FR7 slice 3): the way wayTo() finds to a yard's
+     * anchor, to any plot - the end of a siding, where a bulk unit train
+     * runs straight in from the world line without a yard. Null with no main
+     * arm, or a plot on no arm.
+     */
+    public double[][] wayToPlot(long px, long py) {
+        int main = mainArm();
+        if (main < 0) return null;
+        int[] loc = locate(rail, px, py);
         if (loc == null) return null;
         List<int[]> mc = chain(rail, main, rail.arms.get(main).steps), yc = chain(rail, loc[0], loc[1]);
         if (mc == null || yc == null) return null;
@@ -1352,24 +2406,35 @@ public final class CityRuns {
 
     /**
      * Lays the runs to the model's plots of highway and of track, and its
-     * yards (w x h each), over the ground: each net grown, or taken back from
-     * its newest end - the highways from the founding site (fx, fy), the
-     * railway from (rx, ry), the map's mine nearest it (or the founding site).
+     * yards (w x h each), over the ground: the highways grown, or taken back
+     * from their newest end, from the founding site (fx, fy); the railway laid
+     * from (rx, ry), the map's mine nearest it (or the founding site), by
+     * layRail(): the main line, sidings and branches (FR7 slice 3), no sidings
+     * and no works here - the form every harness before FR7 laid its nets by.
      * What could not be laid is counted. True when anything moved.
      */
     public boolean layTo(long highwayPlots, long trackPlots, int yardCount, int yardW, int yardH, Ground g,
                          long fx, long fy, long rx, long ry, List<long[]> mines) {
+        return layTo(highwayPlots, trackPlots, java.util.Collections.nCopies(Math.max(0, yardCount), new int[] { yardW, yardH }), 0,
+                g, fx, fy, rx, ry, mines, new ArrayList<>());
+    }
+
+    /**
+     * ...with a yard of its own size each (`yardSizes`, {w, h} in the order the
+     * map lays them: Rail Terminals, then Rail Depots), `spurs` Rail Spurs, each
+     * a siding into a bulk works, and the bulk works' boxes `works`, each {x0,
+     * y0, x1, y1} inclusive (FR7 slice 3).
+     */
+    public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, int spurs, Ground g,
+                         long fx, long fy, long rx, long ry, List<long[]> mines, List<long[]> works) {
         long v0 = signature();
         if (highwayPlots < highways.plots) trim(highways, highwayPlots, gateway);
         else grow(highways, rail, highwayPlots, g, fx, fy, gateway);
-        if (trackPlots < rail.plots) trim(rail, trackPlots, gateway);
-        else grow(rail, highways, trackPlots, g, rx, ry, gateway);
-        if (yardCount > 0 && !rail.started) start(rail, g, rx, ry, gateway);
-        if (trackPlots == 0 && yardCount == 0 && rail.plots == 0 && rail.started) rail.reset();
+        layRail(trackPlots, yardSizes, spurs, g, rx, ry, mines, works);
         if (highwayPlots == 0 && highways.plots == 0 && highways.started) highways.reset();
-        layYards(yardCount, yardW, yardH, g, mines);
+        layReserves(g);
         highwayShort = Math.max(0, highwayPlots - highways.plots);
-        railShort = Math.max(0, trackPlots - rail.plots);
+        trackSurplus = Math.max(0, trackPlots - rail.plots);
         long v1 = signature();
         version = v1;
         return v1 != v0;
@@ -1444,6 +2509,12 @@ public final class CityRuns {
                 long mh = mainInto(rail.arms.get(r[0]), r[1], r[2], x0, y0, w, h, marks, doubleMain);
                 if (mh != 0) hash = World.mix(hash ^ mh);
             }
+            // A siding's last plot carries its loading shed (FR7 slice 3).
+            for (Arm a : rail.arms) {
+                if (a.corridor != SIDING || a.steps == 0 || a.x < x0 || a.y < y0 || a.x >= x0 + w || a.y >= y0 + h) continue;
+                marks[(int) ((a.y - y0) * w + (a.x - x0))] |= (byte) TilePainter.M_SHED;
+                hash = World.mix(hash ^ a.x * 31 ^ a.y ^ 0x53484544L);
+            }
         }
         for (long[] y : yards) {
             if (y[0] >= x0 + w || y[1] >= y0 + h || y[0] + y[2] <= x0 || y[1] + y[3] <= y0) continue;
@@ -1452,6 +2523,20 @@ public final class CityRuns {
                     for (long px = Math.max(y[0], x0); px < Math.min(y[0] + y[2], x0 + w); px++) fixed[(int) ((py - y0) * w + (px - x0))] = F_YARD;
             }
             hash = World.mix(hash ^ y[0] * 31 ^ y[1] ^ (y[2] << 40));
+        }
+        if (yardsOver && reach) {
+            // The interchanges' reserves (batch FR7, D19): street ground over every plot of a box the runs left open - a plan's
+            // ground alone; a tile's loops are drawn from reservesIn().
+            for (InterchangeGround.Site s : reservesIn(x0, y0, w, h)) {
+                if (!s.got()) continue;
+                for (long py = Math.max(s.y0(), y0); py < Math.min(s.y0() + s.h(), y0 + h); py++) {
+                    for (long px = Math.max(s.x0(), x0); px < Math.min(s.x0() + s.w(), x0 + w); px++) {
+                        int i = (int) ((py - y0) * w + (px - x0));
+                        if (fixed[i] == 0) fixed[i] = F_RESERVE;
+                    }
+                }
+                hash = World.mix(hash ^ s.x0() * 0x9E3779B97F4A7C15L ^ s.y0() ^ ((long) s.w() << 40) ^ 0x52455345L);
+            }
         }
         return hash;
     }
@@ -1491,6 +2576,8 @@ public final class CityRuns {
             if (n.kind == HIGHWAYS) for (Arm a : n.arms) if (a.steps > 0 && a.x >= x0 && a.y >= y0 && a.x < x0 + w && a.y < y0 + h) hash = World.mix(hash ^ a.x * 31 ^ a.y);
         }
         for (long[] y : yards) if (!(y[0] >= x0 + w || y[1] >= y0 + h || y[0] + y[2] <= x0 || y[1] + y[3] <= y0)) hash = World.mix(hash ^ y[0] * 31 ^ y[1] ^ (y[2] << 40));
+        // ...and the interchanges' reserves over it (batch FR7): a plan is drawn round them.
+        if (reach) for (InterchangeGround.Site s : reservesIn(x0, y0, w, h)) if (s.got()) hash = World.mix(hash ^ s.x0() * 0x9E3779B97F4A7C15L ^ s.y0() ^ ((long) s.w() << 40) ^ 0x52455345L);
         return hash;
     }
 
@@ -1603,7 +2690,7 @@ public final class CityRuns {
         out.writeInt(yards.size());
         for (long[] y : yards) for (int k = 0; k < 4; k++) out.writeLong(y[k]);
         out.writeLong(highwayShort);
-        out.writeLong(railShort);
+        out.writeLong(trackSurplus);
         out.writeInt(yardsShort);
     }
 
@@ -1653,7 +2740,7 @@ public final class CityRuns {
         if (ny < 0 || ny > 1 << 20) return null;
         for (int i = 0; i < ny; i++) r.yards.add(new long[] { in.readLong(), in.readLong(), in.readLong(), in.readLong() });
         r.highwayShort = in.readLong();
-        r.railShort = in.readLong();
+        r.trackSurplus = in.readLong();
         r.yardsShort = in.readInt();
         r.version = r.signature();
         return r;
@@ -1678,6 +2765,6 @@ public final class CityRuns {
         }
         if (yards.size() != o.yards.size()) return false;
         for (int i = 0; i < yards.size(); i++) if (!Arrays.equals(yards.get(i), o.yards.get(i))) return false;
-        return highwayShort == o.highwayShort && railShort == o.railShort;
+        return highwayShort == o.highwayShort && trackSurplus == o.trackSurplus;
     }
 }

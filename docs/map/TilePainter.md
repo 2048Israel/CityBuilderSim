@@ -1,4 +1,4 @@
-# TilePainter.java - 581 lines · 20 methods · 38 constants · model
+# TilePainter.java - 618 lines · 22 methods · 42 constants · model
 
 `ham/citybuildersim/TilePainter.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -62,14 +62,14 @@
 | line | section |
 |---:|---|
 | 67 | · what a plot is |
-| 91 | · the works at sea (0.7.97) |
-| 115 | · a site's state |
-| 126 | · a street's code (0.7.88) |
-| 146 | THE NETWORK'S RULES, IN PLOTS (0.7.72, batch N3; the plan's since |
-| 180 | THE INPUTS AND THE PICTURE |
-| 404 | THE PAINT |
-| 485 | AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the research's |
-| 558 | · the mines on their sites |
+| 96 | · the works at sea (0.7.97) |
+| 120 | · a site's state |
+| 131 | · a street's code (0.7.88) |
+| 153 | THE NETWORK'S RULES, IN PLOTS (0.7.72, batch N3; the plan's since |
+| 190 | THE INPUTS AND THE PICTURE |
+| 434 | THE PAINT |
+| 522 | AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the research's |
+| 595 | · the mines on their sites |
 
 ## Constants
 
@@ -85,139 +85,149 @@
 | 81 | `TilePainter.RAIL_OVER` | `CityRuns.F_RAIL_OVER` | A plot of the runs where the railway bridges a highway (0.7.89, CityRuns.F_RAIL_OVER; spec 2.8): Input.fixed's code, the highway's plot with the track over it. |
 | 84 | `TilePainter.M_MAIN` | `32` | A plot of the main line, from the rail gateway to the freight station: drawn as the main line, and an arterial or boulevard crossing it on a bridge (spec 4.3, D18). |
 | 86 | `TilePainter.M_DOUBLE` | `64` | A main-line plot drawn as double track: the city has a Freight Line (spec 4.3). |
-| 89 | `TilePainter.TRACK` | `4` | A road plot's kind past BuildingVisual's GRAVEL, PAVED and HIGHWAY (Painted.road, 0.7.88): a TRACK, a street the city has bought no road for (spec 2.5, R4). |
-| 94 | `TilePainter.QUAY` | `1` | A plot's work at sea (Input.sea, Painted.sea's low two bits): a terminal's quay, out over the water from its box (CityShore)... |
-| 96 | `TilePainter.JACKET` | `2` | ...an offshore platform's jacket... |
-| 98 | `TilePainter.WELL` | `3` | ...a platform well, on the middle of its sea site. |
-| 100 | `TilePainter.SEA_WORK` | `3` | The low two bits of Painted.sea. |
-| 102 | `TilePainter.SEA_RING` | `4` | Painted.sea's bit for a plot a platform's safety ring crosses... |
-| 104 | `TilePainter.SEA_PIPE` | `8` | ...and for one a crude pipeline crosses (buried: it takes no plot, and is drawn over what stands there). |
-| 107 | `TilePainter.PLATFORM_ZONE_M` | `500` | A platform's safety zone, drawn as a faint ring about its jacket: 500 m (the research's 3.3 [W32]). |
-| 110 | `TilePainter.RING_PLOTS` | `PLATFORM_ZONE_M / World.PLOT_M` | ...its radius in plots: 16.7. |
-| 113 | `TilePainter.JACKET_PLOTS` | `2` | A jacket's side, in plots: 2, 60 m - mockup 3's platform, 12 px at 6 m a pixel (72 m), in whole plots (star O13-6). |
-| 118 | `TilePainter.UNOWNED` | `0` | A site on ground the city does not own. |
-| 120 | `TilePainter.UNWORKED` | `1` | ...on the city's ground, its holding not yet worked. |
-| 122 | `TilePainter.WORKING` | `2` | ...in the holding being worked: drawn half grey. |
-| 124 | `TilePainter.WORKED_OUT` | `3` | ...in a holding worked out: drawn grey (the mockup's star 7). |
-| 129 | `TilePainter.S_KIND` | `7` | A plot's street as its district's plan gives it the painter (CityMap.Drawn, Input.street), a byte: its kind in the low three bits - DistrictPlan's NONE to UNDER... |
-| 131 | `TilePainter.S_WIDTH_SHIFT` | `3` | ...its surface's width in bits 3 and 4: 1 half (15 m), 2 full (30 m), 0 none... |
-| 133 | `TilePainter.S_ROLE_SHIFT` | `5` | ...its role in bits 5 and 6: 0 a cell's street (or one along a cut, or the join's), S_ARTERIAL, S_BOULEVARD... |
-| 135 | `TilePainter.S_ARTERIAL` | `1, S_BOULEVARD = 2` | ...those two roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD)... |
-| 137 | `TilePainter.S_BRIDGE` | `0x80` | ...and a bridge over fresh water in bit 7. |
-| 140 | `TilePainter.STREET` | `1` | A painted street plot's role (Painted.role): a cell's street... |
-| 142 | `TilePainter.ARTERIAL` | `2` | ...an arterial, on a cell's ring (every 32 plots, 960 m)... |
-| 144 | `TilePainter.BOULEVARD` | `3` | ...a boulevard's, either row of a boulevard cell's arterials. |
-| 158 | `TilePainter.JUNCTION_APART` | `8` | The + junction floor: 8 plots - eight House footprints (a House's 8,000 sq ft is drawn on one whole plot, BuildingVisual.footprint()), Jerus's "about 8 houses' length" from one + junction to the next (star N3-1). |
-| 161 | `TilePainter.REACH` | `JUNCTION_APART / 2` | A building is near a road when one lies within this many plots of it, across corners: 4, half the junction floor - a block between streets at the floor is 7 plots across, and its middle plot 4 from them (star N3-2). |
-| 169 | `TilePainter.STREET_BRIDGE` | `6` | A street's longest crossing of fresh water, gravel or paved: 6 plots (180 m), the mockup's paved bridge (its star 1); gravel's too since 0.7.77 (batch N5; Jerus, 2026-10-08: "gravel road bridge rivers sure"). |
-| 172 | `TilePainter.MAX_BRIDGE` | `{ 0, STREET_BRIDGE, STREET_BRIDGE, 14 }` | The longest crossing of fresh water, in plots, by road kind: gravel and paved STREET_BRIDGE, a highway 14 (the mockup's star 1) - an arterial's since 0.7.87 (DistrictPlan.ARTERIAL_BRIDGE). |
-| 175 | `TilePainter.RAIL_BRIDGE` | `14` | The longest crossing of fresh water a railway's track makes: 14, as a highway's (star N3-6). |
-| 178 | `TilePainter.DX` | `{ 0, 1, 0, - 1 }, DY = { - 1, 0, 1, 0 }` | North, east, south, west. |
+| 88 | `TilePainter.SIDING_PLOT` | `1, SIDING_END = 2` | A plot of a siding laid inside a district's plan (Input.siding; batch FR7 slice 5, D14), and (SIDING_END) its first plot, beside the works' box, which carries the loading shed. |
+| 91 | `TilePainter.M_SHED` | `128` | A siding's last plot, beside the works' box: drawn with the siding's loading shed, a small mark in TRANSPORT's colours (FR7 2026-10-18, CityRuns.SIDING). |
+| 94 | `TilePainter.TRACK` | `4` | A road plot's kind past BuildingVisual's GRAVEL, PAVED and HIGHWAY (Painted.road, 0.7.88): a TRACK, a street the city has bought no road for (spec 2.5, R4). |
+| 99 | `TilePainter.QUAY` | `1` | A plot's work at sea (Input.sea, Painted.sea's low two bits): a terminal's quay, out over the water from its box (CityShore)... |
+| 101 | `TilePainter.JACKET` | `2` | ...an offshore platform's jacket... |
+| 103 | `TilePainter.WELL` | `3` | ...a platform well, on the middle of its sea site. |
+| 105 | `TilePainter.SEA_WORK` | `3` | The low two bits of Painted.sea. |
+| 107 | `TilePainter.SEA_RING` | `4` | Painted.sea's bit for a plot a platform's safety ring crosses... |
+| 109 | `TilePainter.SEA_PIPE` | `8` | ...and for one a crude pipeline crosses (buried: it takes no plot, and is drawn over what stands there). |
+| 112 | `TilePainter.PLATFORM_ZONE_M` | `500` | A platform's safety zone, drawn as a faint ring about its jacket: 500 m (the research's 3.3 [W32]). |
+| 115 | `TilePainter.RING_PLOTS` | `PLATFORM_ZONE_M / World.PLOT_M` | ...its radius in plots: 16.7. |
+| 118 | `TilePainter.JACKET_PLOTS` | `2` | A jacket's side, in plots: 2, 60 m - mockup 3's platform, 12 px at 6 m a pixel (72 m), in whole plots (star O13-6). |
+| 123 | `TilePainter.UNOWNED` | `0` | A site on ground the city does not own. |
+| 125 | `TilePainter.UNWORKED` | `1` | ...on the city's ground, its holding not yet worked. |
+| 127 | `TilePainter.WORKING` | `2` | ...in the holding being worked: drawn half grey. |
+| 129 | `TilePainter.WORKED_OUT` | `3` | ...in a holding worked out: drawn grey (the mockup's star 7). |
+| 134 | `TilePainter.S_KIND` | `7` | A plot's street as its district's plan gives it the painter (CityMap.Drawn, Input.street), a byte: its kind in the low three bits - DistrictPlan's NONE to UNDER... |
+| 136 | `TilePainter.S_WIDTH_SHIFT` | `3` | ...its surface's width in bits 3 and 4: 1 half (15 m), 2 full (30 m), 0 none... |
+| 138 | `TilePainter.S_ROLE_SHIFT` | `5` | ...its role in bits 5 and 6: 0 a cell's street (or one along a cut, or the join's), S_ARTERIAL, S_BOULEVARD... |
+| 140 | `TilePainter.S_ARTERIAL` | `1, S_BOULEVARD = 2, S_ACCESS = 3` | ...those two roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD), and (batch FR7) an access road's 3 (ROLE_ACCESS)... |
+| 142 | `TilePainter.S_BRIDGE` | `0x80` | ...and a bridge over fresh water in bit 7. |
+| 145 | `TilePainter.STREET` | `1` | A painted street plot's role (Painted.role): a cell's street... |
+| 147 | `TilePainter.ARTERIAL` | `2` | ...an arterial, on a cell's ring (every 32 plots, 960 m)... |
+| 149 | `TilePainter.BOULEVARD` | `3` | ...a boulevard's, either row of a boulevard cell's arterials... |
+| 151 | `TilePainter.ACCESS` | `4` | ...and (batch FR7, D17) an access road, the street from a port's, a yard's or a depot's gate to the highway's ramp or the arterial grid: an arterial for the junctions it makes. |
+| 165 | `TilePainter.JUNCTION_APART` | `8` | The + junction floor: 8 plots - eight House footprints (a House's 8,000 sq ft is drawn on one whole plot, BuildingVisual.footprint()), Jerus's "about 8 houses' length" from one + junction to the next (star N3-1). |
+| 168 | `TilePainter.REACH` | `JUNCTION_APART / 2` | A building is near a road when one lies within this many plots of it, across corners: 4, half the junction floor - a block between streets at the floor is 7 plots across, and its middle plot 4 from them (star N3-2). |
+| 176 | `TilePainter.STREET_BRIDGE` | `6` | A street's longest crossing of fresh water, gravel or paved: 6 plots (180 m), the mockup's paved bridge (its star 1); gravel's too since 0.7.77 (batch N5; Jerus, 2026-10-08: "gravel road bridge rivers sure"). |
+| 179 | `TilePainter.MAX_BRIDGE` | `{ 0, STREET_BRIDGE, STREET_BRIDGE, 14 }` | The longest crossing of fresh water, in plots, by road kind: gravel and paved STREET_BRIDGE, a highway 14 (the mockup's star 1) - an arterial's since 0.7.87 (DistrictPlan.ARTERIAL_BRIDGE). |
+| 182 | `TilePainter.RAIL_BRIDGE` | `14` | The longest crossing of fresh water a railway's track makes: 14, as a highway's (star N3-6). |
+| 185 | `TilePainter.DX` | `{ 0, 1, 0, - 1 }, DY = { - 1, 0, 1, 0 }` | North, east, south, west. |
+| 188 | `TilePainter.RESERVE_INTS` | `8` | The ints Input.reserve holds a reserve in: kind, stub, junction x and y, box x0, y0, w, h. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 187 | `public long seed` | The world's seed. |
-| 189 | `public long tx, ty` | The tile's column and row: plots / TILE. |
-| 191 | `public final byte[] terrain` | Its ground, a World class a plot, in rows. |
-| 193 | `public final boolean[] owned` | Whether the city owns each plot. |
-| 195 | `public final byte[] street` | Each plot's street from its district's plan, in the S_ codes (0.7.88): the district's own, and on its first column and row the street the district west or north of it lays there where it lays it (CityMap.tileInput());... |
-| 197 | `public final byte[] beyond` | ...and the street on each plot just outside the tile, north, east, south and west (TILE each, along the edge): what a street at the edge joins to, as the plans have it. |
-| 199 | `public final byte[] fixed` | Each plot of the city's runs (CityRuns.fill(); CityMap's network's until 0.7.88): a highway's (BuildingVisual.HIGHWAY), the railway's track (RAIL) or the track bridging a highway (RAIL_OVER), 0 for none... |
-| 201 | `public final byte[] fixedBeyond` | ...and those just outside the tile, as beyond. |
-| 203 | `public final byte[] marks` | Each plot's marks from the runs (0.7.89): a highway's ramp (CityRuns.M_RAMP), a 45-degree stretch's (M_DIAG and its heading), (0.8.1) the main line's and its double track's (M_MAIN, M_DOUBLE)... |
-| 205 | `public final byte[] marksBeyond` | ...and those just outside the tile, as beyond. |
-| 207 | `public long stationX` | The freight station's yard, its box's first plot in the world: the yard nearest the rail gateway, spec 4.2; MIN_VALUE for none. |
-| 209 | `public boolean goodsByRail` | The railway carries goods, so the freight station is a container yard, spec 4.3. |
-| 211 | `public int wagonTracks` | How many of a yard's tracks have wagons standing, 0 to YARD_TRACKS. |
-| 213 | `public BuildingVisual.Type[] types` | The types, by id (BuildingVisual.table()). |
-| 216 | `public int buildings` | The plan's buildings on it (0.7.88): how many, and each one's box as CityMap.box() packs it (x, y, w - 1, h - 1 at five bits each, PACKED_BIT when packed without a street) and its type id, two ints a building. |
-| 217 | `public int[] boxes` |  |
-| 219 | `public int[] counts` | ...its buildings by type id (a mine or well standing on a site is the site's, not counted): what a hover and a harness read. |
-| 222 | `public int sites` | How many sites lie on it. |
-| 224 | `public int[] siteX0` | Each site's square, in plots of the tile (clipped to it): its first column and row, its last. |
-| 226 | `public int[] siteKind` | ...its resource's ordinal, its state (UNOWNED to WORKED_OUT), and the type id of the mine or well on it, or -1. |
-| 228 | `public long[] siteKey` | ...and the site itself, its square's first plot in the world packed (x << 32 \| y), unclipped: one site seen from the tiles it spans (0.7.64). |
-| 230 | `public int[] siteFX0` | ...and its whole square in plots of the tile, unclipped (0.8.0, batch I14): what a pit's benches step down to the middle of, whichever tiles it spans. |
-| 233 | `public final byte[] sea` | Each plot's work at sea (0.7.97): a terminal's QUAY, a platform's JACKET, a platform WELL; 0 for none. |
-| 235 | `public int rings` | The platforms whose safety ring (RING_PLOTS about its jacket's middle) may cross the tile: how many, and each one's middle in the tile's plots (it may lie off the tile). |
-| 236 | `public double[] ringX` |  |
-| 238 | `public int pipes` | The crude pipelines that may cross it: how many, and each one's ends in the tile's plots, {from, to}. |
-| 239 | `public double[] pipeAX` |  |
-| 317 | `public final byte[] use` | Each plot's use: EMPTY, ROAD, BUILDING, FIELD or RAIL. |
-| 319 | `public final byte[] road` | A road plot's kind: BuildingVisual's GRAVEL, PAVED or HIGHWAY, or TRACK (0.7.88); on a RAIL plot the kind of the street crossing the track there, or 0. |
-| 321 | `public final byte[] width` | A street plot's surface (0.7.88): 1 half width (15 m), 2 full (30 m), 0 for a track, a highway's own plot or none. |
-| 323 | `public final byte[] role` | A street plot's role (0.7.88): STREET, ARTERIAL or BOULEVARD; 0 for a highway's own plot or none. |
-| 325 | `public final boolean[] beneath` | A highway's plot a street passes beneath (0.7.88; spec 2.7: elevated). |
-| 327 | `public final byte[] run` | What the city's runs lay on each plot, as Input.fixed (0.7.89): their track and highways under a building too - a yard over its track, a mine on its site beneath a highway or across a track. |
-| 329 | `public final boolean[] bridge` | A road plot (or the track) that bridges fresh water. |
-| 331 | `public final short[] bld` | The building on a plot, its index + 1; 0 for none. |
-| 333 | `public final short[] site` | The site a plot lies in, its index + 1; 0 for none. |
-| 335 | `public int[] bx` | The buildings: each one's box in plots and type id. |
-| 337 | `public int[] bsite` | The site a mine or well stands on, or -1. |
-| 339 | `public boolean[] bpacked` | Whether it was packed without a street, the city having no room for it in any district's plan (R7). |
-| 341 | `public int buildings, packed` | How many buildings were drawn, and how many of them packed (R7). |
-| 343 | `public final int[] streets` | Street plots laid by kind [0, gravel, paved, highway, track] - a crossing of the track among them - and their surface in half plots by kind [0, gravel, paved, highway]. |
-| 345 | `public int highwayPlots, railLaid, crossings` | A highway's own plots laid, the railway's track laid (since 0.7.89 under a building too: a yard, a mine), and the plots where a street crosses the track. |
-| 347 | `public final byte[] sea` | What each plot carries at sea (0.7.97): its work (SEA_WORK's QUAY, JACKET or WELL), and SEA_RING and SEA_PIPE where a platform's ring or a pipe crosses it. |
-| 349 | `public int quayPlots, jacketPlots, wellPlots, ringPlots, pipePlots` | The plots of quay, of jacket and of platform well drawn, and those a ring or a pipe crosses: what MapCheck sums over the tiles to see each drawn once. |
+| 197 | `public long seed` | The world's seed. |
+| 199 | `public long tx, ty` | The tile's column and row: plots / TILE. |
+| 201 | `public final byte[] terrain` | Its ground, a World class a plot, in rows. |
+| 203 | `public final boolean[] owned` | Whether the city owns each plot. |
+| 205 | `public final byte[] street` | Each plot's street from its district's plan, in the S_ codes (0.7.88): the district's own, and on its first column and row the street the district west or north of it lays there where it lays it (CityMap.tileInput());... |
+| 207 | `public final byte[] beyond` | ...and the street on each plot just outside the tile, north, east, south and west (TILE each, along the edge): what a street at the edge joins to, as the plans have it. |
+| 209 | `public final byte[] fixed` | Each plot of the city's runs (CityRuns.fill(); CityMap's network's until 0.7.88): a highway's (BuildingVisual.HIGHWAY), the railway's track (RAIL) or the track bridging a highway (RAIL_OVER), 0 for none... |
+| 211 | `public final byte[] fixedBeyond` | ...and those just outside the tile, as beyond. |
+| 213 | `public final byte[] marks` | Each plot's marks from the runs (0.7.89): a highway's ramp (CityRuns.M_RAMP), a 45-degree stretch's (M_DIAG and its heading), (0.8.1) the main line's and its double track's (M_MAIN, M_DOUBLE)... |
+| 215 | `public final byte[] marksBeyond` | ...and those just outside the tile, as beyond. |
+| 217 | `public final byte[] siding` | Each plot's siding from its district's plan (batch FR7 slice 5, D14): SIDING_PLOT where a siding the plan laid runs, SIDING_END at its first plot, beside the works' box, which carries the loading shed; 0 for none. |
+| 219 | `public long stationX` | The freight station's yard, its box's first plot in the world: the yard nearest the rail gateway, spec 4.2; MIN_VALUE for none. |
+| 221 | `public boolean goodsByRail` | The railway carries goods, so the freight station is a container yard, spec 4.3. |
+| 223 | `public int wagonTracks` | How many of a yard's tracks have wagons standing, 0 to YARD_TRACKS. |
+| 225 | `public BuildingVisual.Type[] types` | The types, by id (BuildingVisual.table()). |
+| 228 | `public int buildings` | The plan's buildings on it (0.7.88): how many, and each one's box as CityMap.box() packs it (x, y, w - 1, h - 1 at five bits each, PACKED_BIT when packed without a street) and its type id, two ints a building. |
+| 229 | `public int[] boxes` |  |
+| 231 | `public int[] counts` | ...its buildings by type id (a mine or well standing on a site is the site's, not counted): what a hover and a harness read. |
+| 234 | `public int sites` | How many sites lie on it. |
+| 236 | `public int[] siteX0` | Each site's square, in plots of the tile (clipped to it): its first column and row, its last. |
+| 238 | `public int[] siteKind` | ...its resource's ordinal, its state (UNOWNED to WORKED_OUT), and the type id of the mine or well on it, or -1. |
+| 240 | `public long[] siteKey` | ...and the site itself, its square's first plot in the world packed (x << 32 \| y), unclipped: one site seen from the tiles it spans (0.7.64). |
+| 242 | `public int[] siteFX0` | ...and its whole square in plots of the tile, unclipped (0.8.0, batch I14): what a pit's benches step down to the middle of, whichever tiles it spans. |
+| 245 | `public final byte[] sea` | Each plot's work at sea (0.7.97): a terminal's QUAY, a platform's JACKET, a platform WELL; 0 for none. |
+| 247 | `public int rings` | The platforms whose safety ring (RING_PLOTS about its jacket's middle) may cross the tile: how many, and each one's middle in the tile's plots (it may lie off the tile). |
+| 248 | `public double[] ringX` |  |
+| 250 | `public int pipes` | The crude pipelines that may cross it: how many, and each one's ends in the tile's plots, {from, to}. |
+| 251 | `public double[] pipeAX` |  |
+| 254 | `public int reserves` | The interchanges' reserves whose box reaches the tile (batch FR7, InterchangeGround.Site, the ones that got their ground): how many, and each as RESERVE_INTS ints - its kind, its stub's side, its junction plot (x, y) ... |
+| 255 | `public int[] reserve` |  |
+| 345 | `public final byte[] use` | Each plot's use: EMPTY, ROAD, BUILDING, FIELD or RAIL. |
+| 347 | `public final byte[] road` | A road plot's kind: BuildingVisual's GRAVEL, PAVED or HIGHWAY, or TRACK (0.7.88); on a RAIL plot the kind of the street crossing the track there, or 0. |
+| 349 | `public final byte[] width` | A street plot's surface (0.7.88): 1 half width (15 m), 2 full (30 m), 0 for a track, a highway's own plot or none. |
+| 351 | `public final byte[] role` | A street plot's role (0.7.88): STREET, ARTERIAL or BOULEVARD; 0 for a highway's own plot or none. |
+| 353 | `public final boolean[] beneath` | A highway's plot a street passes beneath (0.7.88; spec 2.7: elevated). |
+| 355 | `public final byte[] run` | What the city's runs lay on each plot, as Input.fixed (0.7.89): their track and highways under a building too - a yard over its track, a mine on its site beneath a highway or across a track. |
+| 357 | `public final boolean[] bridge` | A road plot (or the track) that bridges fresh water. |
+| 359 | `public final short[] bld` | The building on a plot, its index + 1; 0 for none. |
+| 361 | `public final short[] site` | The site a plot lies in, its index + 1; 0 for none. |
+| 363 | `public int[] bx` | The buildings: each one's box in plots and type id. |
+| 365 | `public int[] bsite` | The site a mine or well stands on, or -1. |
+| 367 | `public boolean[] bpacked` | Whether it was packed without a street, the city having no room for it in any district's plan (R7). |
+| 369 | `public int buildings, packed` | How many buildings were drawn, and how many of them packed (R7). |
+| 371 | `public final int[] streets` | Street plots laid by kind [0, gravel, paved, highway, track] - a crossing of the track among them - and their surface in half plots by kind [0, gravel, paved, highway]. |
+| 373 | `public int highwayPlots, railLaid, crossings` | A highway's own plots laid, the railway's track laid (since 0.7.89 under a building too: a yard, a mine), and the plots where a street crosses the track. |
+| 375 | `public int sidingLaid` | The plots of siding the district plans lay on the tile (Input.siding; batch FR7 slice 5): track drawn beside the runs', and not among them. |
+| 377 | `public final byte[] sea` | What each plot carries at sea (0.7.97): its work (SEA_WORK's QUAY, JACKET or WELL), and SEA_RING and SEA_PIPE where a platform's ring or a pipe crosses it. |
+| 379 | `public int quayPlots, jacketPlots, wellPlots, ringPlots, pipePlots` | The plots of quay, of jacket and of platform well drawn, and those a ring or a pipe crosses: what MapCheck sums over the tiles to see each drawn once. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 525 | **type** `public final class TilePainter` | Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, width and role, and every building's box - the city's highways and railway... |
+| 57 | 562 | **type** `public final class TilePainter` | Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, width and role, and every building's box - the city's highways and railway... |
 | 59 | 1 | `private TilePainter()` |  |
 
-### what a plot is (lines 67-90)
+### what a plot is (lines 67-95)
 
-### the works at sea (0.7.97) (lines 91-114)
+### the works at sea (0.7.97) (lines 96-119)
 
-### a site's state (lines 115-125)
+### a site's state (lines 120-130)
 
-### a street's code (0.7.88) (lines 126-145)
+### a street's code (0.7.88) (lines 131-152)
 
-### THE NETWORK'S RULES, IN PLOTS (0.7.72, batch N3; the plan's since (lines 146-179)
+### THE NETWORK'S RULES, IN PLOTS (0.7.72, batch N3; the plan's since (lines 153-189)
 
-### THE INPUTS AND THE PICTURE (lines 180-403)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 185 | 128 | **type** `public static final class Input` | What a tile is painted from: filled by CityMap (tileInput()), or by hand in a harness. |
-| 242 | 5 | `public void clearSea()` _(in TilePainter.Input)_ | Clears the works at sea; the arrays are reused. |
-| 249 | 6 | `public void addRing(double x, double y)` _(in TilePainter.Input)_ | Adds a platform's ring about (x, y), in the tile's plots. |
-| 257 | 8 | `public void addPipe(double ax, double ay, double bx, double by)` _(in TilePainter.Input)_ | Adds a pipe from (ax, ay) to (bx, by), in the tile's plots. |
-| 267 | 4 | `public void clearBuildings()` _(in TilePainter.Input)_ | Clears the buildings; the arrays are reused. |
-| 273 | 7 | `public void addBuilding(int box, int type)` _(in TilePainter.Input)_ | Adds a building: its packed box and type id. |
-| 282 | 1 | `public void clearSites()` _(in TilePainter.Input)_ | Clears the sites; the arrays are reused. |
-| 285 | 3 | `public void addSite(int x0, int y0, int x1, int y1, int kind, int state, int mine)` _(in TilePainter.Input)_ | Adds a site: its square (clipped to the tile, and since 0.8.0 kept unclipped too), resource, state and the mine on it (-1 for none). |
-| 290 | 16 | `public void addSite(int x0, int y0, int x1, int y1, int kind, int state, int mine, long key)` _(in TilePainter.Input)_ | ...with the site's own key (siteKey). |
-| 308 | 4 | `public boolean anyOwned()` _(in TilePainter.Input)_ | Whether any of its plots is owned. |
-| 315 | 70 | **type** `public static final class Painted` | A painted tile: what each plot is, and every building on it. |
-| 351 | 16 | `void reset()` _(in TilePainter.Painted)_ |  |
-| 368 | 11 | `int add(int x0, int y0, int w, int h, int type, int siteIndex, boolean packedOne)` _(in TilePainter.Painted)_ |  |
-| 381 | 3 | `public boolean isRoad(int i)` _(in TilePainter.Painted)_ | Whether plot i holds a street or a highway: a road plot, or the track where a street crosses it. |
-| 387 | 10 | `public static int kindOf(int code)` | A street code's painted kind: GRAVEL, PAVED, HIGHWAY (a highway's plots laid as a street) or TRACK - a seam no district surfaced is a track - and 0 for none or a street beneath a highway. |
-| 399 | 4 | `public static byte roleOf(int code)` | A street code's role as painted: STREET, ARTERIAL or BOULEVARD. |
-
-### THE PAINT (lines 404-484)
+### THE INPUTS AND THE PICTURE (lines 190-433)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 409 | 75 | `public static void paint(Input in, Painted p)` | Paints a tile from its inputs into p. |
+| 195 | 146 | **type** `public static final class Input` | What a tile is painted from: filled by CityMap (tileInput()), or by hand in a harness. |
+| 258 | 1 | `public void clearReserves()` _(in TilePainter.Input)_ | Clears the reserves; the array is reused. |
+| 261 | 7 | `public void addReserve(int kind, int stub, int x, int y, int x0, int y0, int w, int h)` _(in TilePainter.Input)_ | Adds a reserve: its kind (InterchangeGround.CLOVERLEAF or TRUMPET), its stub's side (-1 for none), its junction plot and its box, in the tile's plots. |
+| 270 | 5 | `public void clearSea()` _(in TilePainter.Input)_ | Clears the works at sea; the arrays are reused. |
+| 277 | 6 | `public void addRing(double x, double y)` _(in TilePainter.Input)_ | Adds a platform's ring about (x, y), in the tile's plots. |
+| 285 | 8 | `public void addPipe(double ax, double ay, double bx, double by)` _(in TilePainter.Input)_ | Adds a pipe from (ax, ay) to (bx, by), in the tile's plots. |
+| 295 | 4 | `public void clearBuildings()` _(in TilePainter.Input)_ | Clears the buildings; the arrays are reused. |
+| 301 | 7 | `public void addBuilding(int box, int type)` _(in TilePainter.Input)_ | Adds a building: its packed box and type id. |
+| 310 | 1 | `public void clearSites()` _(in TilePainter.Input)_ | Clears the sites; the arrays are reused. |
+| 313 | 3 | `public void addSite(int x0, int y0, int x1, int y1, int kind, int state, int mine)` _(in TilePainter.Input)_ | Adds a site: its square (clipped to the tile, and since 0.8.0 kept unclipped too), resource, state and the mine on it (-1 for none). |
+| 318 | 16 | `public void addSite(int x0, int y0, int x1, int y1, int kind, int state, int mine, long key)` _(in TilePainter.Input)_ | ...with the site's own key (siteKey). |
+| 336 | 4 | `public boolean anyOwned()` _(in TilePainter.Input)_ | Whether any of its plots is owned. |
+| 343 | 72 | **type** `public static final class Painted` | A painted tile: what each plot is, and every building on it. |
+| 381 | 16 | `void reset()` _(in TilePainter.Painted)_ |  |
+| 398 | 11 | `int add(int x0, int y0, int w, int h, int type, int siteIndex, boolean packedOne)` _(in TilePainter.Painted)_ |  |
+| 411 | 3 | `public boolean isRoad(int i)` _(in TilePainter.Painted)_ | Whether plot i holds a street or a highway: a road plot, or the track where a street crosses it. |
+| 417 | 10 | `public static int kindOf(int code)` | A street code's painted kind: GRAVEL, PAVED, HIGHWAY (a highway's plots laid as a street) or TRACK - a seam no district surfaced is a track - and 0 for none or a street beneath a highway. |
+| 429 | 4 | `public static byte roleOf(int code)` | A street code's role as painted: STREET, ARTERIAL or BOULEVARD. |
 
-### AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the research's (lines 485-557)
+### THE PAINT (lines 434-521)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 501 | 34 | `static void atSea(Input in, Painted p)` | The works at sea on the tile, into p.sea and its counts. |
-| 537 | 5 | `public static boolean ringCrosses(double cx, double cy, double x, double y)` | Whether a ring of RING_PLOTS about (cx, cy) crosses the plot whose corner is (x, y): it passes between the plot's nearest point and its farthest corner. |
-| 544 | 13 | `public static boolean segmentCrosses(double ax, double ay, double bx, double by, double x, double y)` | Whether the segment from (ax, ay) to (bx, by) runs through the plot whose corner is (x, y): some length of it inside the plot (Liang-Barsky). |
+| 439 | 82 | `public static void paint(Input in, Painted p)` | Paints a tile from its inputs into p. |
 
-### the mines on their sites (lines 558-581)
+### AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the research's (lines 522-594)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 561 | 20 | `private static void standMines(Input in, Painted p)` | Each site with a mine or well on it: the mine on the whole of the site's plots here, whoever owns the ground and whatever it is - the field is the city's (0.7.64: an offshore well stands on its water, and a site of a ... |
+| 538 | 34 | `static void atSea(Input in, Painted p)` | The works at sea on the tile, into p.sea and its counts. |
+| 574 | 5 | `public static boolean ringCrosses(double cx, double cy, double x, double y)` | Whether a ring of RING_PLOTS about (cx, cy) crosses the plot whose corner is (x, y): it passes between the plot's nearest point and its farthest corner. |
+| 581 | 13 | `public static boolean segmentCrosses(double ax, double ay, double bx, double by, double x, double y)` | Whether the segment from (ax, ay) to (bx, by) runs through the plot whose corner is (x, y): some length of it inside the plot (Liang-Barsky). |
+
+### the mines on their sites (lines 595-618)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 598 | 20 | `private static void standMines(Input in, Painted p)` | Each site with a mine or well on it: the mine on the whole of the site's plots here, whoever owns the ground and whatever it is - the field is the city's (0.7.64: an offshore well stands on its water, and a site of a ... |
 

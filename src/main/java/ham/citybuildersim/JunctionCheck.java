@@ -1,5 +1,6 @@
 package ham.citybuildersim;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -56,6 +57,44 @@ import java.util.Arrays;
  *      where a street crosses them, two boulevards side by side a roundabout
  *      only where one crosses them; and three boulevards side by side, as his
  *      city's are across a cell line.
+ *  12. (batch FR7, slice 4: FR0-L's D19) THE INTERCHANGES' GROUND: in a city
+ *      of highways laid over owned dry ground the spine's hub, where four arms
+ *      cross, is a cloverleaf site with a CLOVERLEAF_SIDE reserve centred on
+ *      it, and an arm laid to end beside the spine a trumpet site with a
+ *      TRUMPET_SIDE one beside the junction on its stub's side; the plan's
+ *      ground (fill with yardsOver) holds F_RESERVE on every open plot of each
+ *      box and nowhere else, a tile's fill none; each way the rule names - a
+ *      plot of salt water, ground not the city's, a work the map has placed, a
+ *      yard - leaves the site with no reserve (a stack); a district planned
+ *      round the reserves places no building and lays no street on them, and
+ *      the same plan without them stands buildings there;
+ *  13. a reserve's loops are drawn from 6 px a plot: a cloverleaf's four, each
+ *      with its slips, a trumpet's one on its stub's side, in the highway's
+ *      colours on the reserve's own open plots only; the stack's corner slips
+ *      give way to them; nothing at 4 px;
+ *  14. ACCESS ROADS (D17): in a plan with a yard, a sea terminal's box and a
+ *      Truck Depot, each is given a road from a gate beside its box to a
+ *      highway ramp's street in reach, or - with no highway - to an arterial
+ *      that was there; the road is one unbroken street of the access role on
+ *      no building, yard, reserve, mine or highway (but beneath it); a frame
+ *      with no opened cell gives none; a city with road enough paves it before
+ *      any other street, and one short of road makes it gravel and the rest
+ *      tracks;
+ *  15. KERB CORNERS: a + of two streets has its four corners rounded from 6 px
+ *      a plot, a street's T on an arterial likewise, wider in an estate;
+ *  16. SIDINGS (D14, slice 5): a plan given a share of the city's Rail Spurs
+ *      lays a siding to each of that many of the largest bulk works it placed,
+ *      from open ground beside the works' box (its loading shed) to the
+ *      nearest plot of the runs' railway in its frame, met from the side, one
+ *      unbroken track on no building, yard, reserve, highway, mine, other
+ *      track or the frame's edge, a street crossed level (kept, marked
+ *      CROSSING); a share of 0, a frame with no railway, a works the line
+ *      already touches and a works past a spur's length get none, and the
+ *      plan says why; nothing else of the plan moves; the painter draws it
+ *      as track counted apart from the runs'.
+ *
+ * The ground and the access roads are held on the map's own cities by MapCheck
+ * section 8.
  *
  * Numbering is the running order.
  *
@@ -169,6 +208,11 @@ public class JunctionCheck {
         rampMidHighway();
         diagonalStretch();
         twoPlotsWide();
+        interchangeGround();
+        loopsDrawn();
+        accessRoads();
+        kerbCorners();
+        sidings();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -583,6 +627,709 @@ public class JunctionCheck {
                         && !anyPlotHas(imgC, w, 20, 29, 10, 12, px, TileRaster.ISLAND));
         check("...the crossing keeps its roundabout: ISLAND pixels within the plots (15..17, 9..13)",
                 anyPlotHas(imgC, w, 15, 17, 9, 13, px, TileRaster.ISLAND));
+    }
+
+    /* ================= 12. the interchanges' ground (batch FR7, slice 4) ================= */
+
+    static BuildingVisual.Type[] types;
+
+    /** The game's building types, by id (read once). */
+    static BuildingVisual.Type[] types() {
+        if (types == null) types = BuildingVisual.table(new BuildingCatalog().load());
+        return types;
+    }
+
+    /** The founding site the fixture cities lie round: a line crossing of the highways' (16 plots into a cell), so the hub is here. */
+    static final long SITE = 112;
+
+    /** Dry owned ground with some plots of another class or none, to make the ground short: -1 (unowned) or a World class at the named plots. */
+    static class PatchGround extends MainLineCheck.BoxGround {
+        final java.util.Map<Long, Integer> patch = new java.util.HashMap<>();
+
+        PatchGround(long x0, long y0, long x1, long y1) { super(x0, y0, x1, y1); }
+
+        PatchGround with(long x, long y, int cls) {
+            patch.put((x << 32) ^ (y & 0xffffffffL), cls);
+            return this;
+        }
+
+        @Override public int at(long x, long y, int dir) {
+            Integer c = patch.get((x << 32) ^ (y & 0xffffffffL));
+            return c != null ? c : super.at(x, y, dir);
+        }
+    }
+
+    /** A fixture city: highways laid to `plots` over the ground g from the founding site, no railway; its gateway none. */
+    static CityRuns highwayCity(CityRuns.Ground g, long plots) {
+        CityRuns runs = new CityRuns();
+        runs.setGateway(CityRuns.NO_GATEWAY);
+        runs.layTo(plots, 0, 0, 0, 0, g, SITE, SITE, SITE, SITE, new ArrayList<>());
+        return runs;
+    }
+
+    /** The interchange site at (x, y) among the runs' sites, or null. */
+    static InterchangeGround.Site siteAt(CityRuns runs, long x, long y) {
+        for (InterchangeGround.Site s : runs.reserves()) if (s.x() == x && s.y() == y) return s;
+        return null;
+    }
+
+    /** A highway arm laid by hand: from (fromX, fromY) `steps` plots along heading h (0 east, 2 south, 4 west, 6 north), as step() lays one. */
+    static void addArm(CityRuns runs, long fromX, long fromY, int h, int steps) {
+        CityRuns.Net n = runs.highways;
+        int ci = n.corridors.size();
+        n.corridors.add(new long[] { h % 4 == 0 ? 0 : 1, h % 4 == 0 ? fromY : fromX });
+        CityRuns.Arm a = new CityRuns.Arm(ci, h, fromX, fromY);
+        n.arms.add(a);
+        int idx = n.arms.size() - 1;
+        for (int k = 0; k < steps; k++) {
+            a.push(h);
+            a.steps++;
+            long nx = a.x + CityRuns.DX[h], ny = a.y + CityRuns.DY[h];
+            CityRuns.lay(n, idx, a.segs - 1, nx, ny);
+            a.x = nx;
+            a.y = ny;
+        }
+    }
+
+    /** The plots of the runs' fill over the w x h box from (x0, y0), as a plan is given them (yardsOver). */
+    static byte[] planGround(CityRuns runs, long x0, long y0, int w, int h) {
+        byte[] fixed = new byte[w * h];
+        runs.fill(x0, y0, w, h, fixed, null, true);
+        return fixed;
+    }
+
+    static void interchangeGround() {
+        System.out.println("--- 12. (batch FR7, D19) a highway crossing keeps its ground: a cloverleaf's 19 x 19, a trumpet's 11 x 11; short ground leaves a stack ---");
+        PatchGround g = new PatchGround(SITE - 150, SITE - 150, SITE + 150, SITE + 150);
+        CityRuns runs = highwayCity(g, 500);
+        long[] hub = runs.highways().hub();
+        int cl = InterchangeGround.CLOVERLEAF_SIDE;
+        InterchangeGround.Site hubSite = siteAt(runs, hub[0], hub[1]);
+        check("the spine's hub, where four arms cross, is a cloverleaf site", hubSite != null && hubSite.kind() == InterchangeGround.CLOVERLEAF);
+        check("...which got its reserve on this ground", hubSite != null && hubSite.got());
+        check("...CLOVERLEAF_SIDE plots square, centred on the crossing",
+                hubSite != null && hubSite.w() == cl && hubSite.h() == cl && hubSite.x0() == hub[0] - cl / 2 && hubSite.y0() == hub[1] - cl / 2);
+        System.out.println("  the hub at (" + hub[0] + ", " + hub[1] + "): " + runs.reserves().size() + " site(s), " + runs.reservesLaid().size() + " laid");
+
+        int fw = 60, fh = 60;
+        long fx = hub[0] - fw / 2, fy = hub[1] - fh / 2;
+        byte[] fixed = planGround(runs, fx, fy, fw, fh);
+        int inBox = 0, wrong = 0, outside = 0;
+        for (int j = 0; j < fh; j++) {
+            for (int i = 0; i < fw; i++) {
+                long px = fx + i, py = fy + j;
+                boolean box = hubSite != null && hubSite.holds(px, py);
+                byte f = fixed[j * fw + i];
+                if (box) {
+                    inBox++;
+                    boolean highway = CityRuns.covered(runs.highways(), px, py);
+                    if (highway ? f != CityRuns.F_HIGHWAY && f != CityRuns.F_RAIL_OVER : f != CityRuns.F_RESERVE) wrong++;
+                } else if (f == CityRuns.F_RESERVE) {
+                    outside++;
+                }
+            }
+        }
+        check("every plot of the box that is not a highway's is F_RESERVE in the plan's ground, and every highway plot stays the highway's", inBox == cl * cl && wrong == 0);
+        check("...and no plot outside the box is", outside == 0);
+        byte[] seen = new byte[fw * fh];
+        runs.fill(fx, fy, fw, fh, seen, null, false);
+        boolean any = false;
+        for (byte b : seen) any |= b == CityRuns.F_RESERVE;
+        check("a tile's fill (yardsOver false) has none: the painter takes the reserve from reserves(), not from the highways' codes", !any);
+
+        // A trumpet: an arm laid by hand to end beside the spine's row, 64 plots east of the hub.
+        long jx = hub[0] + 64, jy = hub[1];
+        addArm(runs, jx, jy - 40, 2, 39);
+        runs.layReserves(g);
+        InterchangeGround.Site t = siteAt(runs, jx, jy);
+        int tr = InterchangeGround.TRUMPET_SIDE;
+        check("an arm that ends beside another highway makes a trumpet site at the junction, its stub to the north",
+                t != null && t.kind() == InterchangeGround.TRUMPET && t.stub() == 0);
+        check("...which got its reserve, TRUMPET_SIDE plots square, beside the junction on the stub's side with the stub along its middle",
+                t != null && t.got() && t.w() == tr && t.h() == tr && t.y0() + t.h() == jy && t.x0() == jx - tr / 2);
+        byte[] fixedT = planGround(runs, jx - 20, jy - 30, 41, 40);
+        int trBad = 0, trIn = 0;
+        for (int j = 0; j < 40; j++) {
+            for (int i = 0; i < 41; i++) {
+                long px = jx - 20 + i, py = jy - 30 + j;
+                byte f = fixedT[j * 41 + i];
+                if (t != null && t.holds(px, py)) {
+                    trIn++;
+                    if (CityRuns.covered(runs.highways(), px, py) ? f != CityRuns.F_HIGHWAY : f != CityRuns.F_RESERVE) trBad++;
+                }
+            }
+        }
+        check("...every open plot of its box is F_RESERVE and the stub's own plots stay the highway's", trIn == tr * tr && trBad == 0);
+
+        // Ground short: each way the rule names leaves the crossing a stack, with its site kept and marked.
+        PatchGround wet = new PatchGround(SITE - 150, SITE - 150, SITE + 150, SITE + 150).with(SITE + 4, SITE + 4, World.SALT);
+        CityRuns wetRuns = highwayCity(wet, 500);
+        InterchangeGround.Site wetHub = siteAt(wetRuns, SITE, SITE);
+        check("a plot of salt water in the box: the crossing is still a site, but got no reserve", wetHub != null && !wetHub.got());
+        check("...and the plan's ground has no F_RESERVE anywhere", noReserve(planGround(wetRuns, SITE - 30, SITE - 30, 60, 60)));
+        PatchGround edge = new PatchGround(SITE - 150, SITE - 150, SITE + 150, SITE + 150);
+        for (int dy = 5; dy <= 9; dy++) for (int dx = 5; dx <= 9; dx++) edge.with(SITE + dx, SITE + dy, -1);
+        InterchangeGround.Site edgeHub = siteAt(highwayCity(edge, 500), SITE, SITE);
+        check("a corner of the box not the city's (unowned): a stack", edgeHub != null && !edgeHub.got());
+        CityRuns guarded = highwayCity(g, 500);
+        guarded.setReserveGuard(guard((x0, y0, x1, y1) -> x0 <= SITE + 3 && x1 >= SITE + 3 && y0 <= SITE - 3 && y1 >= SITE - 3));
+        guarded.layReserves(g);
+        InterchangeGround.Site guardedHub = siteAt(guarded, SITE, SITE);
+        check("a work the map has already placed in the box (a mine on its site): a stack", guardedHub != null && !guardedHub.got());
+        guarded.setReserveGuard(guard((x0, y0, x1, y1) -> x0 <= SITE + 100 && x1 >= SITE + 100));
+        guarded.layReserves(g);
+        guardedHub = siteAt(guarded, SITE, SITE);
+        check("...and a work elsewhere does not take it", guardedHub != null && guardedHub.got());
+        CityRuns yarded = highwayCity(g, 500);
+        yarded.yards.add(new long[] { SITE + 3, SITE + 3, 4, 4 });
+        yarded.layReserves(g);
+        InterchangeGround.Site yardedHub = siteAt(yarded, SITE, SITE);
+        check("a yard in the box: a stack", yardedHub != null && !yardedHub.got());
+
+        // The plan: no lot, no building and no street in the reserve - and without it, buildings stand there.
+        planRound(runs);
+    }
+
+    /** A box test as the works the map has placed (version 1: the harness changes it by setting another). */
+    interface Blocked { boolean in(long x0, long y0, long x1, long y1); }
+
+    static InterchangeGround.Guard guard(Blocked b) {
+        return new InterchangeGround.Guard() {
+            @Override public boolean blocked(long x0, long y0, long x1, long y1) { return b.in(x0, y0, x1, y1); }
+
+            @Override public long version() { return 1; }
+        };
+    }
+
+    static boolean noReserve(byte[] fixed) {
+        for (byte b : fixed) if (b == CityRuns.F_RESERVE) return false;
+        return true;
+    }
+
+    /** Plans a district round the fixture city's reserve, and again without it. */
+    static void planRound(CityRuns runs) {
+        int f = DistrictPlan.FRAME;
+        DistrictPlan.Input with = planInput(runs);
+        DistrictPlan p = DistrictPlan.make(with);
+        int onReserve = 0, streetsOn = 0;
+        for (int b = 0; b < p.buildings; b++) {
+            for (int y = p.by[b]; y < p.by[b] + p.bh[b]; y++)
+                for (int x = p.bx[b]; x < p.bx[b] + p.bw[b]; x++) if (with.fixed[y * f + x] == DistrictPlan.FIXED_RESERVE) onReserve++;
+        }
+        int reservePlots = 0;
+        for (int q = 0; q < f * f; q++) {
+            if (with.fixed[q] != DistrictPlan.FIXED_RESERVE) continue;
+            reservePlots++;
+            if (p.isStreet(q)) streetsOn++;
+        }
+        System.out.println("  the plan: " + p.buildings + " buildings, " + reservePlots + " reserve plots, " + onReserve + " building plots and " + streetsOn + " street plots on them");
+        check("the plan is given every open plot of every reserve laid", reservePlots == reserveCapacity(runs) && reservePlots > 0);
+        check("...places no building on a plot of the reserve, and lays no street across it", onReserve == 0 && streetsOn == 0);
+        DistrictPlan.Input without = planInput(runs);
+        for (int q = 0; q < f * f; q++) if (without.fixed[q] == DistrictPlan.FIXED_RESERVE) without.fixed[q] = 0;
+        DistrictPlan bare = DistrictPlan.make(without);
+        int would = 0;
+        for (int b = 0; b < bare.buildings; b++) {
+            for (int y = bare.by[b]; y < bare.by[b] + bare.bh[b]; y++)
+                for (int x = bare.bx[b]; x < bare.bx[b] + bare.bw[b]; x++) if (with.fixed[y * f + x] == DistrictPlan.FIXED_RESERVE) would++;
+        }
+        check("...which the fixture causes: without the reserve the same plan stands buildings on those plots", would > 0);
+        System.out.println("  without the reserve, " + would + " building plots would stand on them");
+    }
+
+    /** The plots every laid reserve's box holds that are not a highway's: what a plan is given. */
+    static int reserveCapacity(CityRuns runs) {
+        int n = 0;
+        for (InterchangeGround.Site s : runs.reservesLaid()) {
+            for (long y = s.y0(); y < s.y0() + s.h(); y++) {
+                for (long x = s.x0(); x < s.x0() + s.w(); x++) if (!CityRuns.covered(runs.highways(), x, y)) n++;
+            }
+        }
+        return n;
+    }
+
+    /** A plan's input over the district whose frame starts at the world's origin: owned grass, the PlanCheck test district's buildings and road, the hub the founding site, the runs' plots and reserves as a plan is given them. */
+    static DistrictPlan.Input planInput(CityRuns runs) {
+        DistrictPlan.Input in = new DistrictPlan.Input();
+        int f = DistrictPlan.FRAME;
+        Arrays.fill(in.terrain, World.GRASS);
+        Arrays.fill(in.owned, true);
+        in.types = types();
+        in.counts = new int[in.types.length];
+        for (int i = 0; i < PlanCheck.TEST_TYPES.length; i++) in.counts[PlanCheck.TEST_TYPES[i]] = PlanCheck.TEST_COUNTS[i];
+        in.seed = Founding.DEFAULT_WORLD_SEED;
+        in.hubX = SITE;
+        in.hubY = SITE;
+        in.gravel = PlanCheck.TEST_GRAVEL;
+        in.paved = PlanCheck.TEST_PAVED;
+        runs.fill(0, 0, f, f, in.fixed, null, true);
+        for (int q = 0; q < f * f; q++) if (in.fixed[q] == CityRuns.F_RAIL_OVER) in.fixed[q] = DistrictPlan.FIXED_HIGHWAY;
+        return in;
+    }
+
+    /* ================= 14. access roads (batch FR7, slice 4) ================= */
+
+    /** The yard, sea terminal and depot the access fixtures use: a Rail Terminal's box east of the hub's cell row, a terminal's west of it. */
+    static final int[] YARD = { 163, 131, 20, 20 }, PORT = { 40, 100, 12, 10 };
+
+    /** Marks a work's ground in the plan's input, as the map does (FIXED_YARD) and lists it as a work needing a road. */
+    static void work(DistrictPlan.Input in, int[] box) {
+        for (int j = box[1]; j < box[1] + box[3]; j++) for (int i = box[0]; i < box[0] + box[2]; i++) in.fixed[j * DistrictPlan.FRAME + i] = DistrictPlan.FIXED_YARD;
+        in.works.add(box);
+    }
+
+    /** The type id of the Truck Depot (the one building of the category HAULAGE). */
+    static int depotType() {
+        int id = -1;
+        for (BuildingVisual.Type t : types()) if (t != null && t.category() == BuildingType.HAULAGE) id = t.id();
+        return id;
+    }
+
+    /** A plan's input with a yard, a sea terminal and a Truck Depot to place, and (with highways) their ramps given as the map gives them. */
+    static DistrictPlan.Input accessInput(CityRuns runs) {
+        DistrictPlan.Input in = planInput(runs);
+        int f = DistrictPlan.FRAME;
+        if (runs.highways().started) {
+            in.ramp = new boolean[f * f];
+            byte[] fixed = new byte[f * f], marks = new byte[f * f];
+            runs.fill(0, 0, f, f, fixed, marks, true);
+            for (int q = 0; q < f * f; q++) in.ramp[q] = (marks[q] & CityRuns.M_RAMP) != 0 && fixed[q] == CityRuns.F_HIGHWAY;
+        }
+        work(in, YARD);
+        work(in, PORT);
+        in.counts[depotType()] = 1;
+        return in;
+    }
+
+    /** Whether plot (x, y) is beside the box {bx, by, w, h}, across one of its sides. */
+    static boolean beside(int[] box, int x, int y) {
+        boolean ew = (x == box[0] - 1 || x == box[0] + box[2]) && y >= box[1] && y < box[1] + box[3];
+        boolean ns = (y == box[1] - 1 || y == box[1] + box[3]) && x >= box[0] && x < box[0] + box[2];
+        return ew || ns;
+    }
+
+    /** Whether plot q of the plan is one an access road runs over. */
+    static boolean access(DistrictPlan p, int q) { return p.accessAt != null && p.accessAt[q]; }
+
+    /** The plots the access roads run over that are streets with a surface to pay (not the ramp's, beneath a highway). */
+    static int accessPlots(DistrictPlan p) {
+        int n = 0;
+        for (int q = 0; q < DistrictPlan.AREA; q++) if (access(p, q) && p.kindAt(q) != DistrictPlan.UNDER) n++;
+        return n;
+    }
+
+    /** Whether the access road runs unbroken from (gx, gy) to (ex, ey): a chain of plots of the access role, side to side. */
+    static boolean chained(DistrictPlan p, int gx, int gy, int ex, int ey) {
+        int f = DistrictPlan.FRAME;
+        boolean[] seen = new boolean[f * f];
+        java.util.ArrayDeque<Integer> q = new java.util.ArrayDeque<>();
+        if (!access(p, gy * f + gx)) return false;
+        q.add(gy * f + gx);
+        seen[gy * f + gx] = true;
+        while (!q.isEmpty()) {
+            int a = q.poll(), x = a % f, y = a / f;
+            if (x == ex && y == ey) return true;
+            int[] nb = { x > 0 ? a - 1 : -1, x + 1 < f ? a + 1 : -1, y > 0 ? a - f : -1, y + 1 < f ? a + f : -1 };
+            for (int b : nb) if (b >= 0 && !seen[b] && access(p, b)) { seen[b] = true; q.add(b); }
+        }
+        return false;
+    }
+
+    static void accessRoads() {
+        System.out.println("--- 14. (batch FR7, D17) a sea terminal, a yard and a Truck Depot each get an access road, to a highway ramp in reach, else to the arterial grid; paved first ---");
+        int f = DistrictPlan.FRAME, side = DistrictPlan.SIDE;
+        PatchGround g = new PatchGround(SITE - 150, SITE - 150, SITE + 150, SITE + 150);
+        CityRuns runs = highwayCity(g, 500);
+        DistrictPlan.Input in = accessInput(runs);
+        DistrictPlan p = DistrictPlan.make(in);
+        int depot = depotType();
+        int[] depotBox = null;
+        for (int b = 0; b < p.buildings; b++) if (p.btype[b] == depot) depotBox = new int[] { p.bx[b], p.by[b], p.bw[b], p.bh[b] };
+        check("the fixture places its Truck Depot", depotBox != null);
+        check("each of the three works - the yard, the terminal and the depot - is given an access road", p.accessRoads.size() == 3 && depotBox != null);
+        boolean gates = true, ramps = true, chain = true, reach = true;
+        for (int[] r : p.accessRoads) {
+            int[] box = { r[0], r[1], r[2], r[3] };
+            gates &= beside(box, r[4], r[5]);
+            ramps &= r[8] == DistrictPlan.ACCESS_RAMP && in.ramp[r[7] * f + r[6]] && p.kindAt(r[7] * f + r[6]) == DistrictPlan.UNDER;
+            reach &= Math.max(Math.abs(r[6] - (r[0] + r[2] / 2)), Math.abs(r[7] - (r[1] + r[3] / 2))) <= DistrictPlan.ACCESS_RAMP_DISTRICTS * side;
+            chain &= chained(p, r[4], r[5], r[6], r[7]);
+            System.out.println("  work " + Arrays.toString(box) + ": gate (" + r[4] + ", " + r[5] + "), ends " + (r[8] == DistrictPlan.ACCESS_RAMP ? "on a ramp" : "on an arterial") + " at (" + r[6] + ", " + r[7] + ")");
+        }
+        check("every road starts at its work's gate: its first plot is beside the work's box", gates && p.accessRoads.size() == 3);
+        check("with a highway ramp in reach every road ends on it: a street beneath a highway plot that carries a ramp", ramps);
+        check("...within ACCESS_RAMP_DISTRICTS districts of its work", reach);
+        check("...and is one unbroken street of the access role from gate to ramp", chain);
+        boolean clear = true;
+        for (int q = 0; q < f * f; q++) {
+            if (!access(p, q)) continue;
+            int x = q % f, y = q / f;
+            clear &= x >= 1 && y >= 1 && x < side && y < side && !DistrictPlan.works(in.fixed[q]) && in.site[q] != DistrictPlan.SITE_MINED
+                    && (in.fixed[q] != DistrictPlan.FIXED_HIGHWAY || p.kindAt(q) == DistrictPlan.UNDER);
+        }
+        for (int b = 0; b < p.buildings; b++) {
+            for (int y = p.by[b]; y < p.by[b] + p.bh[b]; y++) for (int x = p.bx[b]; x < p.bx[b] + p.bw[b]; x++) clear &= !access(p, y * f + x);
+        }
+        check("no road takes a plot of a building, a yard, a reserve or a mine, or the frame's edge, or crosses a highway but beneath it", clear);
+
+        // The same city with no highways: every road ends on an arterial that was there.
+        DistrictPlan.Input inA = accessInput(new CityRuns());
+        DistrictPlan pa = DistrictPlan.make(inA);
+        boolean arterial = pa.accessRoads.size() == 3, chainA = true;
+        for (int[] r : pa.accessRoads) {
+            arterial &= r[8] == DistrictPlan.ACCESS_ARTERIAL && (r[9] == DistrictPlan.ROLE_ARTERIAL || r[9] == DistrictPlan.ROLE_BOULEVARD);
+            chainA &= chained(pa, r[4], r[5], r[6], r[7]);
+        }
+        check("with no highway, every road ends on an arterial of the grid (a cell's ring) that was there", arterial);
+        check("...and is one unbroken street of the access role from gate to arterial", chainA);
+
+        // No grid: nothing opened round the yard, so there is no street to go to.
+        DistrictPlan.Input empty = accessInput(new CityRuns());
+        Arrays.fill(empty.counts, 0);
+        DistrictPlan pe = DistrictPlan.make(empty);
+        check("a frame whose cells have not opened has no arterial to go to: the works get no road", pe.cellsOpen == 0 && pe.accessRoads.isEmpty() && pe.accessAt == null);
+
+        // Surface: paved first.
+        DistrictPlan.Input tight = accessInput(runs);
+        tight.paved = 5;
+        tight.gravel = 0;
+        int a = accessPlots(DistrictPlan.make(tight));
+        DistrictPlan.Input paved = accessInput(runs);
+        paved.paved = 0.5 * (a + 30);
+        paved.gravel = 0;
+        DistrictPlan pp = DistrictPlan.make(paved);
+        boolean allPaved = true, otherTrack = false;
+        for (int q = 0; q < f * f; q++) {
+            boolean acc = access(pp, q);
+            if (acc && pp.kindAt(q) != DistrictPlan.PAVED && pp.kindAt(q) != DistrictPlan.UNDER) allPaved = false;
+            if (!acc && pp.kindAt(q) == DistrictPlan.TRACK) otherTrack = true;
+        }
+        System.out.println("  " + a + " plots of access road; a budget of " + paved.paved + " paved");
+        check("a city with road for the access roads and a little over: every plot of every road is paved, before any other street", a > 0 && accessPlots(pp) == a && allPaved);
+        check("...and the road is short, so some other street is a track", otherTrack);
+        DistrictPlan.Input gravel = accessInput(runs);
+        gravel.paved = 0;
+        gravel.gravel = 0.5 * a;
+        DistrictPlan pg = DistrictPlan.make(gravel);
+        boolean allGravel = true, restTrack = true;
+        for (int q = 0; q < f * f; q++) {
+            if (pg.kindAt(q) == DistrictPlan.NONE || pg.kindAt(q) == DistrictPlan.UNDER || pg.kindAt(q) == DistrictPlan.SEAM) continue;
+            if (access(pg, q)) allGravel &= pg.kindAt(q) == DistrictPlan.GRAVEL;
+            else restTrack &= pg.kindAt(q) == DistrictPlan.TRACK;
+        }
+        check("a city short of road gets a gravel access road: with gravel for exactly the roads, each is gravel and every other street is a track", accessPlots(pg) == a && allGravel && restTrack);
+    }
+
+    /* ================= 15. kerb corners and estate T's (batch FR7, slice 4) ================= */
+
+    /** A one-plot building of the type at (x, y). */
+    static void buildingOf(TilePainter.Input in, int x, int y, int type) {
+        building(in, x, y);
+        in.boxes[2 * (in.buildings - 1) + 1] = type;
+    }
+
+    /** The id of a type of the given class. */
+    static int typeOfClass(int cls) {
+        for (BuildingVisual.Type t : types()) if (t != null && t.cls() == cls && t.drawn()) return t.id();
+        return -1;
+    }
+
+    static void kerbCorners() {
+        System.out.println("--- 15. (batch FR7, spec 4.6) a + of streets has kerb corners; a street's T on an arterial has them, wide in an estate; from 6 px a plot ---");
+        int px = 8, jx = 10, jy = 10, w = T * px;
+        int paved = TileRaster.ROAD[BuildingVisual.PAVED], verge = TileRaster.VERGE;
+        // A + of two streets.
+        TilePainter.Input plus = owned();
+        streetColumn(plus, jx, STREET);
+        streetRow(plus, jy, STREET);
+        int[] img = raster(plus, paint(plus), px);
+        // The inner corners are (o, o), (o + t, o), (o, o + t) and (o + t, o + t) of the junction plot; the surface's half width is t = 4, o = 2 px.
+        int t = Math.max(1, (int) Math.round(TileRaster.SURFACE[1] * px)), o = (px - t) / 2;
+        int r = Math.max(1, (int) Math.round(TileRaster.KERB_RADIUS * px));
+        boolean rounded = true;
+        for (int sy = -1; sy <= 1; sy += 2) {
+            for (int sx = -1; sx <= 1; sx += 2) {
+                // The pixel of the corner's square farthest from the circle's middle: diagonal to the corner point, one pixel out.
+                int cx = sx < 0 ? o : o + t, cy = sy < 0 ? o : o + t;
+                int fx = sx < 0 ? cx - 1 : cx, fy = sy < 0 ? cy - 1 : cy;
+                rounded &= pixel(img, w, jx, jy, fx, fy, px) == paved;
+            }
+        }
+        check("a + of two streets: each of its four inner corners is rounded - the surface's colour on the pixel the circle leaves out", rounded && r >= 1);
+        TilePainter.Input straight = owned();
+        streetRow(straight, jy, STREET);
+        int[] straightImg = raster(straight, paint(straight), px);
+        check("...and a street with no street across it is not: the same pixel is the verge", pixel(straightImg, w, jx, jy, o - 1, o - 1, px) == verge);
+        int px4 = 4;
+        int[] img4 = raster(plus, paint(plus), px4);
+        check("at 4 px a plot a + has no kerb corner: the corner pixel is the verge", pixel(img4, T * px4, jx, jy, 0, 0, px4) == verge);
+
+        // A street's T on an arterial: in a homes cell the kerb radius, in an estate the wide one.
+        TilePainter.Input homes = owned();
+        homes.types = types();
+        streetRow(homes, jy, ARTERIAL);
+        for (int y = 0; y < jy; y++) homes.street[y * T + jx] = (byte) STREET;
+        int[] homesImg = raster(homes, paint(homes), px);
+        TilePainter.Input estate = owned();
+        estate.types = types();
+        streetRow(estate, jy, ARTERIAL);
+        for (int y = 0; y < jy; y++) estate.street[y * T + jx] = (byte) STREET;
+        buildingOf(estate, jx + 2, jy - 2, typeOfClass(BuildingVisual.INDUSTRY));
+        int[] estateImg = raster(estate, paint(estate), px);
+        // The stem runs north; its bar's west edge is at o and the arterial's north edge at o: the corner point (o, o), out to the north-west.
+        check("a street's T on an arterial in a homes cell is rounded by the kerb radius: the corner pixel is the surface, the pixel beside it the verge",
+                pixel(homesImg, w, jx, jy, o - 1, o - 1, px) == paved && pixel(homesImg, w, jx, jy, o - 2, o - 1, px) == verge);
+        check("...in an estate (an industry's building beside it) the radius is wide: the pixels the wider circle leaves out are the surface too",
+                pixel(estateImg, w, jx, jy, o - 1, o - 1, px) == paved && pixel(estateImg, w, jx, jy, o - 2, o - 1, px) == paved
+                        && pixel(estateImg, w, jx, jy, o - 1, o - 2, px) == paved);
+        int homesPaved = 0, estatePaved = 0;
+        for (int y = jy - 1; y <= jy + 1; y++) {
+            for (int x = jx - 1; x <= jx + 1; x++) {
+                for (int dy = 0; dy < px; dy++) {
+                    for (int dx = 0; dx < px; dx++) {
+                        if (pixel(homesImg, w, x, y, dx, dy, px) == paved) homesPaved++;
+                        if (pixel(estateImg, w, x, y, dx, dy, px) == paved) estatePaved++;
+                    }
+                }
+            }
+        }
+        System.out.println("  surface-coloured pixels in the 3 x 3 plots about the T: " + homesPaved + " in a homes cell, " + estatePaved + " in an estate");
+        check("...the wide corners put more surface on the verge than the kerb ones do", TileRaster.ESTATE_T_RADIUS > TileRaster.KERB_RADIUS && estatePaved > homesPaved);
+        // The east corner of the T is rounded the same: the corner point (o + t, o), out to the north-east.
+        check("...and the T's other corner is rounded as its first: the pixel diagonal to the corner point, to the north-east",
+                pixel(homesImg, w, jx, jy, o + t, o - 1, px) == paved && pixel(estateImg, w, jx, jy, o + t, o - 1, px) == paved);
+        // A street ending on a street is no T of this kind.
+        TilePainter.Input onStreet = owned();
+        streetRow(onStreet, jy, STREET);
+        for (int y = 0; y < jy; y++) onStreet.street[y * T + jx] = (byte) STREET;
+        int[] onStreetImg = raster(onStreet, paint(onStreet), px);
+        check("a T of streets with no arterial has no rounded corner here: the pixel is the verge", pixel(onStreetImg, w, jx, jy, o - 1, o - 1, px) == verge);
+    }
+
+    /* ================= 16. sidings into the bulk works the plans place (batch FR7, slice 5) ================= */
+
+    /** The two bulk works the siding fixtures place: Machine Works-sized 11 x 11 (id 51) and the smaller 6 x 7 (id 12) - ids in buildings.json are permanent. */
+    static final int BIG = 51, SMALL = 12;
+
+    /** The main line's row in the siding fixtures: 125, 16 plots below the first works' box, with a street between. */
+    static final int LINE_ROW = 125;
+
+    /** A plan's input with `bigs` and `smalls` bulk works to place and nothing else, an east-west main line along `row` (none for a negative row) of the runs' railway, and `share` sidings to lay. */
+    static DistrictPlan.Input sidingInput(int row, int share, int bigs, int smalls) {
+        DistrictPlan.Input in = planInput(new CityRuns());
+        int f = DistrictPlan.FRAME;
+        Arrays.fill(in.counts, 0);
+        in.counts[BIG] = bigs;
+        in.counts[SMALL] = smalls;
+        if (row >= 0) for (int x = 1; x < DistrictPlan.SIDE; x++) in.fixed[row * f + x] = DistrictPlan.FIXED_RAIL;
+        in.sidings = share;
+        return in;
+    }
+
+    /** Whether plot q of the plan is one a siding runs over. */
+    static boolean siding(DistrictPlan p, int q) { return p.siding != null && p.siding[q] != 0; }
+
+    /** Whether the siding runs unbroken from (sx, sy) to (ex, ey): a chain of siding plots, side to side. */
+    static boolean sidingChained(DistrictPlan p, int sx, int sy, int ex, int ey) {
+        int f = DistrictPlan.FRAME;
+        boolean[] seen = new boolean[f * f];
+        java.util.ArrayDeque<Integer> q = new java.util.ArrayDeque<>();
+        if (!siding(p, sy * f + sx)) return false;
+        q.add(sy * f + sx);
+        seen[sy * f + sx] = true;
+        while (!q.isEmpty()) {
+            int a = q.poll(), x = a % f, y = a / f;
+            if (x == ex && y == ey) return true;
+            int[] nb = { x > 0 ? a - 1 : -1, x + 1 < f ? a + 1 : -1, y > 0 ? a - f : -1, y + 1 < f ? a + f : -1 };
+            for (int b : nb) if (b >= 0 && !seen[b] && siding(p, b)) { seen[b] = true; q.add(b); }
+        }
+        return false;
+    }
+
+    static void sidings() {
+        System.out.println("--- 16. (batch FR7, slice 5, D14) a plan lays a siding from each of its largest bulk works' box edge to the runs' railway in its frame, as its share of the spurs says ---");
+        int f = DistrictPlan.FRAME, side = DistrictPlan.SIDE;
+        BuildingVisual.Type[] types = types();
+        check("fixture: the two works are bulk works of different size", types[BIG].bulk() && types[SMALL].bulk() && BuildingVisual.cells(types[BIG]) > BuildingVisual.cells(types[SMALL]));
+        DistrictPlan.Input in = sidingInput(LINE_ROW, 1, 2, 1);
+        DistrictPlan p = DistrictPlan.make(in);
+        int bigs = 0, smalls = 0;
+        for (int b = 0; b < p.buildings; b++) {
+            if (p.btype[b] == BIG) bigs++;
+            if (p.btype[b] == SMALL) smalls++;
+        }
+        System.out.println("  the plan places " + bigs + " large works and " + smalls + " small; a siding to " + p.sidings.size() + " of " + p.sidingsAsked + " asked");
+        check("fixture: the plan places both large works and the small one", bigs == 2 && smalls == 1);
+        check("a share of 1 lays one siding, to the larger works: the 11 x 11, not the 6 x 7 beside it", p.sidings.size() == 1 && p.sidingsAsked == 1
+                && p.sidings.get(0)[2] * p.sidings.get(0)[3] == BuildingVisual.footprint(types[BIG])[0] * BuildingVisual.footprint(types[BIG])[1]);
+        int[] r = p.sidings.get(0);
+        int[] box = { r[0], r[1], r[2], r[3] };
+        int sx = r[4], sy = r[5], ex = r[6], ey = r[7], rx = r[8], ry = r[9], plots = r[10];
+        check("it starts beside the works' box, on its shed's plot (SIDING_END), the only plot so marked", beside(box, sx, sy) && p.siding[sy * f + sx] == DistrictPlan.SIDING_END);
+        int ends = 0, count = 0;
+        for (int q = 0; q < f * f; q++) {
+            if (p.siding != null && p.siding[q] == DistrictPlan.SIDING_END) ends++;
+            if (siding(p, q)) count++;
+        }
+        check("...every plot of the siding is a plot of its route: " + plots + " of them, one shed", count == plots && ends == 1);
+        check("it ends beside a plot of the runs' railway (FIXED_RAIL) in the frame, and reaches it from the side: the line runs east-west, the last step north or south",
+                in.fixed[ry * f + rx] == DistrictPlan.FIXED_RAIL && ry == LINE_ROW && Math.abs(ex - rx) + Math.abs(ey - ry) == 1 && ex == rx);
+        check("...and is one unbroken track from its shed to the line", sidingChained(p, sx, sy, ex, ey));
+        check("...no longer than a Rail Spur's plots (Input.sidingPlots)", plots <= in.sidingPlots);
+        boolean clear = true;
+        for (int q = 0; q < f * f; q++) {
+            if (!siding(p, q)) continue;
+            int x = q % f, y = q / f;
+            clear &= x >= DistrictPlan.SIDING_EDGE && y >= DistrictPlan.SIDING_EDGE && x <= side - DistrictPlan.SIDING_EDGE && y <= side - DistrictPlan.SIDING_EDGE && in.fixed[q] == 0 && in.site[q] != DistrictPlan.SITE_MINED;
+        }
+        for (int b = 0; b < p.buildings; b++) {
+            for (int y = p.by[b]; y < p.by[b] + p.bh[b]; y++) for (int x = p.bx[b]; x < p.bx[b] + p.bw[b]; x++) clear &= !siding(p, y * f + x);
+        }
+        check("no plot of it is a building's, a yard's, a reserve's, a highway's, a mine's or the line's, or within the frame's edge", clear);
+        // The street it crosses.
+        int crossed = 0;
+        boolean level = true;
+        for (int q = 0; q < f * f; q++) {
+            if (!siding(p, q) || p.kindAt(q) == DistrictPlan.NONE) continue;
+            crossed++;
+            level &= (p.street[q] & DistrictPlan.CROSSING) != 0 && p.kindAt(q) != DistrictPlan.UNDER && p.kindAt(q) != DistrictPlan.SEAM;
+        }
+        System.out.println("  " + crossed + " plot(s) of the siding are on a street");
+        check("fixture: a street lies between the works and the line, so the siding must cross one", crossed >= 1);
+        check("...each such plot keeps its street and is marked a level crossing (CROSSING)", level);
+        // Nothing else of the plan moved.
+        DistrictPlan.Input in0 = sidingInput(LINE_ROW, 0, 2, 1);
+        DistrictPlan p0 = DistrictPlan.make(in0);
+        boolean same = p0.buildings == p.buildings && Arrays.equals(p0.bx, p.bx) && Arrays.equals(p0.by, p.by) && Arrays.equals(p0.btype, p.btype);
+        for (int q = 0; q < f * f && same; q++) same &= (p0.street[q] & ~DistrictPlan.CROSSING) == (p.street[q] & ~DistrictPlan.CROSSING);
+        check("the siding takes nothing from the plan: the same buildings, the same streets and surface as the plan with no share (but for the crossings' mark)", same && p0.surplus == p.surplus);
+        // A share of 0.
+        check("a share of 0 lays none: no siding, no track", p0.sidings.isEmpty() && p0.siding == null && p0.sidingsAsked == 0);
+        // The share's size: the two largest.
+        DistrictPlan p2 = DistrictPlan.make(sidingInput(LINE_ROW, 2, 2, 1));
+        boolean twoBig = p2.sidings.size() == 2;
+        for (int[] s : p2.sidings) twoBig &= s[2] * s[3] == BuildingVisual.footprint(types[BIG])[0] * BuildingVisual.footprint(types[BIG])[1];
+        check("a share of 2 lays two, to the two largest of three works", twoBig);
+        DistrictPlan p3 = DistrictPlan.make(sidingInput(LINE_ROW, 3, 2, 1));
+        check("a share of 3 lays three, the small works' too; a share past the works lays no more than there are", p3.sidings.size() == 3 && DistrictPlan.make(sidingInput(LINE_ROW, 9, 2, 1)).sidings.size() == 3);
+        // No railway in the frame.
+        DistrictPlan pn = DistrictPlan.make(sidingInput(-1, 1, 2, 1));
+        check("a frame with no plot of the railway gives none, and says so (sidingsNoRail)", pn.sidings.isEmpty() && pn.siding == null && pn.sidingsNoRail >= 1);
+        DistrictPlan.Input inEdge = sidingInput(-1, 1, 2, 1);
+        for (int x = 0; x < f; x++) inEdge.fixed[x] = DistrictPlan.FIXED_RAIL;
+        DistrictPlan pe = DistrictPlan.make(inEdge);
+        check("...a railway on the frame's edge row alone is the next district's: none", pe.sidings.isEmpty() && pe.sidingsNoRail >= 1);
+        // No bulk works at all.
+        DistrictPlan pw = DistrictPlan.make(sidingInput(LINE_ROW, 1, 0, 0));
+        check("a plan that places no bulk works lays none, and says so (sidingsNoWorks)", pw.sidings.isEmpty() && pw.sidingsNoWorks == 1);
+        // A works the line already touches.
+        int doorRow = r[1] + r[3];
+        DistrictPlan pd = DistrictPlan.make(sidingInput(doorRow, 1, 2, 1));
+        boolean touching = false;
+        for (int[] s : pd.sidings) touching |= s[1] + s[3] == doorRow || s[1] - 1 == doorRow;
+        System.out.println("  the line along row " + doorRow + ": " + pd.sidings.size() + " siding(s), " + pd.sidingsAtDoor + " work(s) at the door");
+        check("a works the line runs beside has the railway at its door: it takes no siding, and the plan counts it (sidingsAtDoor)", pd.sidingsAtDoor >= 1 && !touching);
+        // Too far: a siding may have no more plots than a Rail Spur's.
+        DistrictPlan.Input far = sidingInput(LINE_ROW, 1, 2, 1);
+        far.sidingPlots = 5;
+        DistrictPlan pf = DistrictPlan.make(far);
+        check("a works farther from the line than a siding may be long gets none, and the plan counts the way it lacked (sidingsNoWay)", pf.sidings.isEmpty() && pf.sidingsNoWay >= 1);
+        // The painter: track over the open ground, a level crossing under a street, the shed - and not among the runs' track.
+        TilePainter.Input pin = owned();
+        streetColumn(pin, 12, ARTERIAL);
+        for (int x = 4; x <= 20; x++) pin.siding[10 * T + x] = x == 4 ? TilePainter.SIDING_END : TilePainter.SIDING_PLOT;
+        pin.marks[10 * T + 4] |= (byte) TilePainter.M_SHED;
+        TilePainter.Painted pp = paint(pin);
+        boolean rail = true;
+        for (int x = 4; x <= 20; x++) rail &= pp.use[10 * T + x] == TilePainter.RAIL;
+        check("the painter draws a siding's plots as track, 17 of them counted apart from the runs' (sidingLaid, not railLaid)", rail && pp.sidingLaid == 17 && pp.railLaid == 0);
+        check("...a street under it a level crossing: that plot is track that carries the street's kind and role", pp.use[10 * T + 12] == TilePainter.RAIL && pp.road[10 * T + 12] == BuildingVisual.PAVED && pp.crossings == 1);
+        int px = 8, w = T * px;
+        int[] img = raster(pin, pp, px);
+        int shed = BuildingVisual.FILL[BuildingVisual.TRANSPORT];
+        check("...and at 8 px a plot the shed's block stands on the first plot (TRANSPORT's colour at its middle), not on the others", img[(10 * px + px / 2) * w + 4 * px + px / 2] == shed && img[(10 * px + px / 2) * w + 8 * px + px / 2] != shed);
+    }
+
+    /* ================= 13. the loops (batch FR7, slice 4) ================= */
+
+    /** The pixel of the tile at plot (junction x + u, junction y + v) in plots from the junction plot's middle, at px pixels a plot. */
+    static int atOffset(int[] img, int w, int jx, int jy, double u, double v, int px) {
+        int X = (int) Math.floor((jx + 0.5 + u) * px), Y = (int) Math.floor((jy + 0.5 + v) * px);
+        return img[Y * w + X];
+    }
+
+    static void loopsDrawn() {
+        System.out.println("--- 13. (batch FR7, D19) a reserve's loops: four on a cloverleaf, one on a trumpet, in the highway's colours, on the reserve's own plots, from 6 px a plot ---");
+        int px = 8, jx = 16, jy = 16, w = T * px, side = InterchangeGround.CLOVERLEAF_SIDE;
+        int road = TileRaster.ROAD[BuildingVisual.HIGHWAY];
+        TilePainter.Input in = owned();
+        highwayRow(in, jy);
+        highwayColumn(in, jx);
+        in.addReserve(InterchangeGround.CLOVERLEAF, -1, jx, jy, jx - side / 2, jy - side / 2, side, side);
+        TilePainter.Painted p = paint(in);
+        int[] img = raster(in, p, px);
+        TilePainter.Input bare = owned();
+        highwayRow(bare, jy);
+        highwayColumn(bare, jx);
+        int[] bareImg = raster(bare, paint(bare), px);
+
+        boolean four = true;
+        for (int sy = -1; sy <= 1; sy += 2) {
+            for (int sx = -1; sx <= 1; sx += 2) {
+                // The ring's farthest point from the crossing along each axis, and its nearest: on the road.
+                double cx = sx * TileRaster.LOOP_AT, cy = sy * TileRaster.LOOP_AT, r = TileRaster.LOOP_RADIUS;
+                four &= atOffset(img, w, jx, jy, cx + sx * r, cy, px) == road && atOffset(img, w, jx, jy, cx, cy + sy * r, px) == road
+                        && atOffset(img, w, jx, jy, cx - sx * r, cy, px) == road;
+                // ...and its middle is the ground between, not the road.
+                four &= atOffset(img, w, jx, jy, cx, cy, px) != road;
+            }
+        }
+        check("each of the four quadrants has a loop: highway-coloured pixels on its ring, none at its middle", four);
+        check("...and the same tile without the reserve has none of them", atOffset(bareImg, w, jx, jy, 5 + TileRaster.LOOP_RADIUS, 5, px) != road);
+        // A slip joins each loop to a highway: pixels between the highway's edge and the ring.
+        double sx0 = TileRaster.SLIP_OUT - 1.0;
+        check("a slip leaves the east highway toward the south-east loop: highway-coloured pixels on the open plot between them",
+                hasColour(img, w, (int) Math.floor(jx + 0.5 + sx0), jy + 1, px, road));
+        // Outside the box nothing is drawn.
+        boolean outside = true;
+        for (int y = 0; y < T; y++) {
+            for (int x = 0; x < T; x++) {
+                if (x >= jx - side / 2 && x < jx - side / 2 + side && y >= jy - side / 2 && y < jy - side / 2 + side) continue;
+                for (int dy = 0; dy < px; dy++) for (int dx = 0; dx < px; dx++)
+                    outside &= pixel(img, w, x, y, dx, dy, px) == pixel(bareImg, w, x, y, dx, dy, px);
+            }
+        }
+        check("no pixel outside the reserve's box differs from the tile without it", outside);
+        // The stack's corner slips give way to the loops: the plots diagonal to the crossing hold no highway colour.
+        check("the stack's four corner slips are not drawn where a cloverleaf's loops are",
+                !hasColour(img, w, jx - 1, jy - 1, px, road) && !hasColour(img, w, jx + 1, jy + 1, px, road)
+                        && hasColour(bareImg, w, jx - 1, jy - 1, px, road));
+        // A building on a plot of the reserve: no loop pixel there.
+        TilePainter.Input built = owned();
+        highwayRow(built, jy);
+        highwayColumn(built, jx);
+        built.addReserve(InterchangeGround.CLOVERLEAF, -1, jx, jy, jx - side / 2, jy - side / 2, side, side);
+        int bx = jx + (int) Math.floor(TileRaster.LOOP_AT + TileRaster.LOOP_RADIUS), by = jy + (int) Math.floor(TileRaster.LOOP_AT);
+        building(built, bx, by);
+        int[] builtImg = raster(built, paint(built), px);
+        check("a building on a plot of the ring: no loop pixel on its plot", !hasColour(builtImg, w, bx, by, px, road));
+        // Below JUNCTIONS_FROM nothing of it is drawn.
+        int[] img4 = raster(in, p, 4);
+        int[] bare4 = raster(bare, paint(bare), 4);
+        check("at 4 px a plot the reserve changes nothing", Arrays.equals(img4, bare4));
+
+        // A trumpet: one loop, on the stub's side.
+        TilePainter.Input t = owned();
+        highwayRow(t, jy);
+        for (int y = 0; y < jy; y++) t.fixed[y * T + jx] = BuildingVisual.HIGHWAY;
+        int tr = InterchangeGround.TRUMPET_SIDE;
+        t.addReserve(InterchangeGround.TRUMPET, 0, jx, jy, jx - tr / 2, jy - tr, tr, tr);
+        int[] tImg = raster(t, paint(t), px);
+        double ac = TileRaster.TRUMPET_OUT, bc = TileRaster.TRUMPET_ACROSS, rr = TileRaster.TRUMPET_RADIUS;
+        // The stub runs north, so a is -v, and b (to its right) is +u.
+        check("a trumpet has its loop on the stub's side: highway-coloured pixels on the ring, none at its middle",
+                atOffset(tImg, w, jx, jy, bc + rr, -ac, px) == road && atOffset(tImg, w, jx, jy, bc - rr, -ac, px) == road && atOffset(tImg, w, jx, jy, bc, -ac, px) != road);
+        check("...and none on the other side of the stub", atOffset(tImg, w, jx, jy, -(bc + rr), -ac, px) != road);
     }
 
 }

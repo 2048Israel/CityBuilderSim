@@ -84,6 +84,11 @@ public final class TilePainter {
     public static final int M_MAIN = 32;
     /** A main-line plot drawn as double track: the city has a Freight Line (spec 4.3). */
     public static final int M_DOUBLE = 64;
+    /** A plot of a siding laid inside a district's plan (Input.siding; batch FR7 slice 5, D14), and (SIDING_END) its first plot, beside the works' box, which carries the loading shed. */
+    public static final byte SIDING_PLOT = 1, SIDING_END = 2;
+
+    /** A siding's last plot, beside the works' box: drawn with the siding's loading shed, a small mark in TRANSPORT's colours (FR7 2026-10-18, CityRuns.SIDING). The marks' last bit, 128 (a mark byte is read with & 0xff). */
+    public static final int M_SHED = 128;
 
     /** A road plot's kind past BuildingVisual's GRAVEL, PAVED and HIGHWAY (Painted.road, 0.7.88): a TRACK, a street the city has bought no road for (spec 2.5, R4). */
     public static final byte TRACK = 4;
@@ -131,8 +136,8 @@ public final class TilePainter {
     public static final int S_WIDTH_SHIFT = 3;
     /** ...its role in bits 5 and 6: 0 a cell's street (or one along a cut, or the join's), S_ARTERIAL, S_BOULEVARD... */
     public static final int S_ROLE_SHIFT = 5;
-    /** ...those two roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD)... */
-    public static final int S_ARTERIAL = 1, S_BOULEVARD = 2;
+    /** ...those two roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD), and (batch FR7) an access road's 3 (ROLE_ACCESS)... */
+    public static final int S_ARTERIAL = 1, S_BOULEVARD = 2, S_ACCESS = 3;
     /** ...and a bridge over fresh water in bit 7. */
     public static final int S_BRIDGE = 0x80;
 
@@ -140,8 +145,10 @@ public final class TilePainter {
     public static final byte STREET = 1;
     /** ...an arterial, on a cell's ring (every 32 plots, 960 m)... */
     public static final byte ARTERIAL = 2;
-    /** ...a boulevard's, either row of a boulevard cell's arterials. */
+    /** ...a boulevard's, either row of a boulevard cell's arterials... */
     public static final byte BOULEVARD = 3;
+    /** ...and (batch FR7, D17) an access road, the street from a port's, a yard's or a depot's gate to the highway's ramp or the arterial grid: an arterial for the junctions it makes. */
+    public static final byte ACCESS = 4;
 
     /* =====================================================================
        THE NETWORK'S RULES, IN PLOTS (0.7.72, batch N3; the plan's since
@@ -177,6 +184,9 @@ public final class TilePainter {
     /** North, east, south, west. */
     static final int[] DX = { 0, 1, 0, -1 }, DY = { -1, 0, 1, 0 };
 
+    /** The ints Input.reserve holds a reserve in: kind, stub, junction x and y, box x0, y0, w, h. */
+    public static final int RESERVE_INTS = 8;
+
     /* =====================================================================
        THE INPUTS AND THE PICTURE
        ===================================================================== */
@@ -203,6 +213,8 @@ public final class TilePainter {
         public final byte[] marks = new byte[PLOTS];
         /** ...and those just outside the tile, as beyond. */
         public final byte[] marksBeyond = new byte[4 * TILE];
+        /** Each plot's siding from its district's plan (batch FR7 slice 5, D14): SIDING_PLOT where a siding the plan laid runs, SIDING_END at its first plot, beside the works' box, which carries the loading shed; 0 for none. The plan's own track over the ground the runs left: drawn as track (RAIL) but counted apart from the runs' (Painted.sidingLaid); the siding just outside the tile is in fixedBeyond. */
+        public final byte[] siding = new byte[PLOTS];
         /** The freight station's yard, its box's first plot in the world: the yard nearest the rail gateway, spec 4.2; MIN_VALUE for none. */
         public long stationX = Long.MIN_VALUE, stationY = Long.MIN_VALUE;
         /** The railway carries goods, so the freight station is a container yard, spec 4.3. */
@@ -237,6 +249,22 @@ public final class TilePainter {
         /** The crude pipelines that may cross it: how many, and each one's ends in the tile's plots, {from, to}. */
         public int pipes;
         public double[] pipeAX = new double[4], pipeAY = new double[4], pipeBX = new double[4], pipeBY = new double[4];
+
+        /** The interchanges' reserves whose box reaches the tile (batch FR7, InterchangeGround.Site, the ones that got their ground): how many, and each as RESERVE_INTS ints - its kind, its stub's side, its junction plot (x, y) and its box (x0, y0, w, h), all in the tile's plots (they may lie off the tile). The raster draws the loops within them. */
+        public int reserves;
+        public int[] reserve = new int[4 * RESERVE_INTS];
+
+        /** Clears the reserves; the array is reused. */
+        public void clearReserves() { reserves = 0; }
+
+        /** Adds a reserve: its kind (InterchangeGround.CLOVERLEAF or TRUMPET), its stub's side (-1 for none), its junction plot and its box, in the tile's plots. */
+        public void addReserve(int kind, int stub, int x, int y, int x0, int y0, int w, int h) {
+            if ((reserves + 1) * RESERVE_INTS > reserve.length) reserve = Arrays.copyOf(reserve, reserve.length * 2);
+            int o = reserves * RESERVE_INTS;
+            reserve[o] = kind; reserve[o + 1] = stub; reserve[o + 2] = x; reserve[o + 3] = y;
+            reserve[o + 4] = x0; reserve[o + 5] = y0; reserve[o + 6] = w; reserve[o + 7] = h;
+            reserves++;
+        }
 
         /** Clears the works at sea; the arrays are reused. */
         public void clearSea() {
@@ -343,6 +371,8 @@ public final class TilePainter {
         public final int[] streets = new int[5], halves = new int[4];
         /** A highway's own plots laid, the railway's track laid (since 0.7.89 under a building too: a yard, a mine), and the plots where a street crosses the track. */
         public int highwayPlots, railLaid, crossings;
+        /** The plots of siding the district plans lay on the tile (Input.siding; batch FR7 slice 5): track drawn beside the runs', and not among them. */
+        public int sidingLaid;
         /** What each plot carries at sea (0.7.97): its work (SEA_WORK's QUAY, JACKET or WELL), and SEA_RING and SEA_PIPE where a platform's ring or a pipe crosses it. */
         public final byte[] sea = new byte[PLOTS];
         /** The plots of quay, of jacket and of platform well drawn, and those a ring or a pipe crosses: what MapCheck sums over the tiles to see each drawn once. */
@@ -361,7 +391,7 @@ public final class TilePainter {
             Arrays.fill(streets, 0);
             Arrays.fill(halves, 0);
             Arrays.fill(sea, (byte) 0);
-            buildings = packed = highwayPlots = railLaid = crossings = 0;
+            buildings = packed = highwayPlots = railLaid = crossings = sidingLaid = 0;
             quayPlots = jacketPlots = wellPlots = ringPlots = pipePlots = 0;
         }
 
@@ -398,7 +428,7 @@ public final class TilePainter {
     /** A street code's role as painted: STREET, ARTERIAL or BOULEVARD. */
     public static byte roleOf(int code) {
         int r = (code >> S_ROLE_SHIFT) & 3;
-        return r == S_BOULEVARD ? BOULEVARD : r == S_ARTERIAL ? ARTERIAL : STREET;
+        return r == S_BOULEVARD ? BOULEVARD : r == S_ARTERIAL ? ARTERIAL : r == S_ACCESS ? ACCESS : STREET;
     }
 
     /* =====================================================================
@@ -439,6 +469,13 @@ public final class TilePainter {
                 p.road[i] = (byte) BuildingVisual.HIGHWAY;
             }
             p.bridge[i] = wet;
+        }
+        // The sidings the district's plan laid (batch FR7 slice 5, D14): track over the open ground it chose, and under a street a level
+        // crossing (the street loop below); the runs' own plots and a building keep theirs.
+        for (int i = 0; i < PLOTS; i++) {
+            if (in.siding[i] == 0 || in.fixed[i] != 0 || p.use[i] == BUILDING) continue;
+            p.use[i] = RAIL;
+            p.sidingLaid++;
         }
         // The plan's streets: each plot's surface, width and role; across the track a level crossing, beneath a highway a street passing under.
         for (int i = 0; i < PLOTS; i++) {

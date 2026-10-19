@@ -66,8 +66,21 @@ import java.util.List;
  *   FIXED   no building touches a highway plot, corners included (H5);
  *           streets pass beneath a highway and cross a railway, never along;
  *           a rail yard the city's runs draw (FIXED_YARD, since 0.7.89) is
- *           theirs: no building or street on it;
- *   SITES   a resource's sites are fields, taken by a building with no other
+ *           theirs: no building or street on it; so is an interchange's
+ *           reserve (FIXED_RESERVE, batch FR7), the ground of its loops;
+ *   ACCESS  (batch FR7, D17) after the join, before the surface: each sea
+ *           terminal and yard the map gives (Input.works) and each Truck Depot
+ *           the plan placed gets a street of the role ROLE_ACCESS from its
+ *           gate to the nearest highway ramp in the frame (a street beneath a
+ *           highway at a ramp), else the nearest arterial - over the ground
+ *           the plan left, no building moved for it, an arterial of the
+ *           surface ladder and laid first (access());
+ *   SIDINGS (batch FR7 slice 5, D14) straight after, over the same ground: a
+ *           track from each of the Input.sidings largest bulk works the plan
+ *           placed to the nearest plot of the runs' railway in the frame,
+ *           beside the works' box to the line, a street crossed level and
+ *           nothing else taken (sidings());
+ *   SITES  a resource's sites are fields, taken by a building with no other
  *           place, at its turn; a mine or well stands on its own;
  *   WHOLE   a building wider than an estate's strip both ways takes a whole
  *           estate cell, its spine closed (2.3);
@@ -266,6 +279,12 @@ public final class DistrictPlan {
     /** ...a railway yard's ground, a Rail Terminal the city's runs drew on its track (0.7.89, CityRuns.F_YARD): no street crosses it, no building stands on it. */
     public static final byte FIXED_YARD = CityRuns.F_YARD;
 
+    /** ...an interchange's reserve (batch FR7, D19, CityRuns.F_RESERVE): a cloverleaf's 19 x 19 plots or a trumpet's 11 x 11, street ground - no lot, no building, no street across it but the highways and their slips, which the painter draws. A plan keeps it as it keeps a yard's ground. */
+    public static final byte FIXED_RESERVE = CityRuns.F_RESERVE;
+
+    /** Whether a fixed code is a works' own ground (a yard's, an interchange's reserve): no building and no street on it. */
+    static boolean works(byte f) { return f == FIXED_YARD || f == FIXED_RESERVE; }
+
     /** A site with nothing on it: a field, built on last. */
     public static final byte SITE_FIELD = 1;
 
@@ -311,6 +330,34 @@ public final class DistrictPlan {
     public static final int ROLE_SHORE = 4;
     /** ...a street the join laid along the lattice. */
     public static final int ROLE_JOIN = 5;
+    /** ...an access road (batch FR7, D17): the street from a sea terminal's, a yard's or a Truck Depot's gate to the nearest highway ramp or, failing one, the arterial grid - an arterial in all but its name, paved first. */
+    public static final int ROLE_ACCESS = 6;
+
+    /** The cost of laying a plot of access road where there is no street, against 1 for a plot that already is one: 3 - so a road follows the streets there are, and crosses open ground only where that is a good deal shorter. */
+    static final int ACCESS_NEW = 3;
+
+    /** How far from the work it serves a highway ramp may lie, in districts, for its access road to go there and not to the arterial grid: 2 (spec-freight 4.5: "the nearest highway ramp if one lies within two districts"). A plan reads its own frame alone, so in the map it is the frame's ramps that count; see access(). */
+    public static final int ACCESS_RAMP_DISTRICTS = 2;
+
+    /** A plot of a siding the plan laid (batch FR7 slice 5, D14), by plot in DistrictPlan.siding... */
+    public static final byte SIDING_PLOT = TilePainter.SIDING_PLOT;
+    /** ...and the first plot of a siding, beside the works' box, where its loading shed stands. */
+    public static final byte SIDING_END = TilePainter.SIDING_END;
+
+    /** The plots a siding may have when its input does not say (Input.sidingPlots): 72, a Rail Spur's track in buildings.json. */
+    static final int DEFAULT_SIDING_PLOTS = 72;
+
+    /** What a siding pays to cross a street at grade, over the 1 of a plot of open ground: 3 - a level crossing is a cost, so a siding takes the open ground beside a street where that is not much longer. */
+    static final int SIDING_CROSSING = 3;
+
+    /** ...to run along a street plot after street plot, over a plot's own cost: 8 - a siding never takes a street's place, so it crosses and leaves it (the search also never turns on a street). */
+    static final int SIDING_ALONG = 8;
+
+    /** ...and what a turn costs it, so a siding is straight or turns few times, not a staircase: 2. */
+    static final int SIDING_TURN = 2;
+
+    /** The room a siding's plots keep from the frame's edge, in plots: 2, so no siding plot lies on the edge row or column the districts share or beside it, and the tile beside a district's never needs the siding of the district over the edge (CityMap.fillInput()). */
+    static final int SIDING_EDGE = 2;
     /** A bridge over fresh water, bit 8. */
     public static final int BRIDGE = 1 << 8;
     /** A level crossing of a railway, bit 9. */
@@ -348,6 +395,14 @@ public final class DistrictPlan {
         public final byte[] site = new byte[AREA];
         /** The mines and wells of the district standing on their sites, each {x0, y0, x1, y1} inclusive in the frame's plots: counted apart from the reach (PlanCheck), as MapCheck 8 counted them. */
         public final List<int[]> mines = new ArrayList<>();
+        /** The works that need an access road (batch FR7, D17), each box {x, y, w, h} in the frame's plots: the railway's yards and the shore's sea terminals (the map's; they stand on FIXED_YARD ground). A Truck Depot is the plan's own building and is found among them. */
+        public final List<int[]> works = new ArrayList<>();
+        /** A highway's plot of the frame that carries a ramp (CityRuns.M_RAMP), by plot; null for none: where a street beneath it makes a ramp an access road can end at. */
+        public boolean[] ramp;
+        /** How many sidings this district's share of the city's Rail Spurs lays (batch FR7 slice 5, D14; CityMap.sidingsOf()): the plan lays one to each of this many of the largest bulk works it placed, to the runs' railway in its frame (FIXED_RAIL). 0 for none. */
+        public int sidings;
+        /** ...and the plots one may have: a Rail Spur's own track (CityMap: the model's spur track over its spurs, 72), as the runs' sidings are paid for out of the spurs' plots - a works whose siding would be longer is passed over for the next largest. */
+        public int sidingPlots = DEFAULT_SIDING_PLOTS;
         /** The types, by id (BuildingVisual.table()). */
         public BuildingVisual.Type[] types = new BuildingVisual.Type[0];
         /** The buildings to place, by type id: every drawn type the district holds but its mines and wells on sites. */
@@ -435,6 +490,33 @@ public final class DistrictPlan {
 
     /** What the plan could not place, by type id (R7: the map carries it to the next district with room since 0.7.88, and packs what none holds at the city's edge). */
     public int[] overflow = new int[0];
+
+    /**
+     * The access roads laid (batch FR7, D17), one for each work that had none: its box {x, y, w, h}, the gate (the road's first plot, beside the box), the
+     * road's end plot, and what it ends on - ACCESS_RAMP (a ramp's plot, a street beneath a highway at a ramp), ACCESS_ARTERIAL (an arterial of the grid),
+     * ACCESS_HAD (the work already stood on an access road) - and the role the end plot had before the road took it (a ROLE_ code), as
+     * {x, y, w, h, gateX, gateY, endX, endY, ends, endRole}, in the frame's plots.
+     */
+    public final List<int[]> accessRoads = new ArrayList<>();
+    public static final int ACCESS_RAMP = 1, ACCESS_ARTERIAL = 2, ACCESS_HAD = 3;
+
+    /** The plots the access roads run over, by plot (a boulevard's among them, which keeps its own role); null when none was laid. */
+    public boolean[] accessAt;
+
+    /**
+     * The sidings laid (batch FR7 slice 5, D14), one for each works that was
+     * given one: its box {x, y, w, h}, the siding's first plot (beside the
+     * box, where its shed stands), its last (beside the railway), the railway
+     * plot it meets, and its plots, as {x, y, w, h, shedX, shedY, endX, endY,
+     * railX, railY, plots}, in the frame's plots.
+     */
+    public final List<int[]> sidings = new ArrayList<>();
+
+    /** The plots the sidings run over, by plot: SIDING_PLOT, SIDING_END at each shed's; null when none was laid. A street under a siding keeps its code (a level crossing). */
+    public byte[] siding;
+
+    /** The sidings the plan was asked for and the bulk works that got none, by why (batch FR7 slice 5): the plan placed no bulk works to serve, there is no railway plot in its frame, the works has the railway at its door, no open ground beside its box, or no way to the line. */
+    public int sidingsAsked, sidingsNoWorks, sidingsNoRail, sidingsAtDoor, sidingsNoGate, sidingsNoWay;
 
     /** The surface left over when every step of the ladder is taken: road the plan has no street for (0 where the ladder holds it). */
     public double surplus;
@@ -857,7 +939,7 @@ public final class DistrictPlan {
                     for (int y = y0; y < y0 + INTERIOR; y++) {
                         for (int x = x0; x < x0 + INTERIOR; x++) {
                             int p = y * FRAME + x;
-                            if (dry[p] && in.fixed[p] != FIXED_HIGHWAY && in.fixed[p] != FIXED_YARD && in.site[p] != SITE_MINED) room++;
+                            if (dry[p] && in.fixed[p] != FIXED_HIGHWAY && !works(in.fixed[p]) && in.site[p] != SITE_MINED) room++;
                         }
                     }
                     usable[c] = room >= CELL_ROOM_LEAST;
@@ -1122,6 +1204,10 @@ public final class DistrictPlan {
             out.btype = Arrays.copyOf(placedT, placed);
             out.overflow = over;
             out.mixedSlots = mixedSlots;
+            // ACCESS ROADS (batch FR7): over what the plan has laid and left, after every building stands - none moves for one.
+            access(out, placed);
+            // SIDINGS (batch FR7 slice 5): the same ground, the streets and the access roads as they stand, nothing taken from the plan.
+            sidings(out, placed);
             surface(out);
             markParted(out);
             return let(out);
@@ -2130,7 +2216,7 @@ public final class DistrictPlan {
                 int code = layCode[p];
                 if (code == LAY_REFUSED) continue;
                 byte f = in.fixed[p];
-                if (f == FIXED_YARD) { layCode[p] = LAY_REFUSED; continue; }
+                if (works(f)) { layCode[p] = LAY_REFUSED; continue; }
                 if (along(in.fixed, p, true)) code |= H_STREET | H_ARTERIAL;
                 if (along(in.fixed, p, false)) code |= V_STREET | V_ARTERIAL;
                 if (f == FIXED_HIGHWAY) code |= LAY_UNDER;
@@ -2641,7 +2727,7 @@ public final class DistrictPlan {
             if (in.site[a] == SITE_MINED) return false;
             boolean arterial = horizontal ? y % CELL == 0 : x % CELL == 0;
             if (in.terrain[a] == World.FRESH && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
-            return f == 0 || (f != FIXED_YARD && !along(in.fixed, a, horizontal));
+            return f == 0 || (!works(f) && !along(in.fixed, a, horizontal));
         }
 
         /** Whether a step onto plot a going horizontally (or not) may be laid off the lattice, where the join's lattice finds no way: as joinable(), on any plot (H2: a street follows the ground where it must). */
@@ -2650,7 +2736,7 @@ public final class DistrictPlan {
             if (!in.owned[a] || in.terrain[a] == World.SALT || occ[a] > 0 || in.site[a] == SITE_MINED) return false;
             boolean arterial = horizontal ? y % CELL == 0 : x % CELL == 0;
             if (in.terrain[a] == World.FRESH && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
-            return in.fixed[a] == 0 || (in.fixed[a] != FIXED_YARD && !along(in.fixed, a, horizontal));
+            return in.fixed[a] == 0 || (!works(in.fixed[a]) && !along(in.fixed, a, horizontal));
         }
 
         /** Lays a plot the join or the mines' reach took: a street, or beneath a highway. */
@@ -2658,6 +2744,397 @@ public final class DistrictPlan {
             if (in.fixed[a] == FIXED_HIGHWAY && !proto) under[a] = true;
             else setStr(a, true);
             if (role[a] == 0) role[a] = (byte) ROLE_JOIN;
+        }
+
+        /* ------------------------------------------------ access roads (batch FR7, slice 4; spec-freight 4.5, D17) */
+
+        /** access()'s search: each plot's distance from the work and the plot it was reached from, stamped (accSeen) so none is cleared; the queue by distance modulo 4 (an edge costs 1 to ACCESS_NEW, so four buckets are a Dial's whole circle). */
+        int[] accDist, accPrev, accSeen;
+        int accStamp;
+        int[][] accQ;
+        int[] accN;
+
+        /**
+         * ACCESS ROADS. Every sea terminal and yard the map gives the plan
+         * (Input.works) and every Truck Depot among the buildings it placed
+         * gets a street of the role ROLE_ACCESS, from its gate to the nearest
+         * highway ramp - a highway plot of the frame carrying a ramp with a
+         * street already beneath it, within ACCESS_RAMP_DISTRICTS of the work -
+         * or, where there is none or it cannot be reached, to the nearest
+         * arterial. It is routed here, after the join and before the surface,
+         * over what the plan has laid and left: a plot already a street costs 1,
+         * open ground ACCESS_NEW, a plot a building, a work, a reserve, a mine
+         * or the water holds nothing, a highway only where a street already
+         * passes beneath it (the road meets a highway at a ramp the plan has,
+         * never across it), a railway only across; a building never moves for
+         * a road. Its plots are arterials of the surface ladder, laid first.
+         *
+         * WHERE IT IS ROUTED. Spec 4.5 reaches a ramp within two districts, but
+         * a plan reads one district's frame and the streets of the districts
+         * before it only at its edge, so the road is made inside the work's own
+         * frame: the ramps and arterials it can end on are this frame's (a
+         * ramp or an arterial in the district beside is not seen), and no plot
+         * of its own is laid on the frame's edge row or column, which the
+         * districts share. A frame with no ramp and no arterial of its own, a
+         * city whose cells have not opened round the work, gets none: there is
+         * no grid to go to. The spec's hover words ("to the highway at ... ,
+         * 2.1 km") and a ramp of the road's own where it meets a highway
+         * unbidden are not made: the road ends at the ramps the highway has.
+         */
+        void access(DistrictPlan out, int placed) {
+            if (proto) return;
+            List<int[]> works = new ArrayList<>(in.works);
+            for (int b = 0; b < placed; b++) {
+                int t = placedT[b];
+                if (t >= 0 && t < in.types.length && in.types[t] != null && in.types[t].category() == BuildingType.HAULAGE) {
+                    works.add(new int[] { placedX[b], placedY[b], placedW[b], placedH[b] });
+                }
+            }
+            if (works.isEmpty()) return;
+            if (accDist == null) {
+                accDist = new int[AREA];
+                accPrev = new int[AREA];
+                accSeen = new int[AREA];
+                accQ = new int[4][];
+                accN = new int[4];
+            }
+            boolean ramps = false;
+            if (in.ramp != null) for (int k = 0; k < nHighway && !ramps; k++) ramps = in.ramp[hwList[k]] && under[hwList[k]];
+            int[] gates = new int[2 * (FRAME + FRAME)];
+            for (int[] w : works) {
+                int bx = w[0], by = w[1], bw = w[2], bh = w[3], n = 0;
+                boolean had = false;
+                for (int x = bx; x < bx + bw; x++) {
+                    n = gate(gates, n, x, by - 1);
+                    n = gate(gates, n, x, by + bh);
+                }
+                for (int y = by; y < by + bh; y++) {
+                    n = gate(gates, n, bx - 1, y);
+                    n = gate(gates, n, bx + bw, y);
+                }
+                for (int k = 0; k < n; k++) had |= str[gates[k]] && role[gates[k]] == ROLE_ACCESS;
+                if (had) {
+                    out.accessRoads.add(new int[] { bx, by, bw, bh, -1, -1, -1, -1, ACCESS_HAD, 0 });
+                    continue;
+                }
+                int cx = bx + bw / 2, cy = by + bh / 2;
+                int end = ramps ? accessSearch(gates, n, true, cx, cy) : -1;
+                int ends = ACCESS_RAMP;
+                if (end < 0) { end = accessSearch(gates, n, false, cx, cy); ends = ACCESS_ARTERIAL; }
+                if (end < 0) continue;
+                // Laid from its end back to its gate, each plot an arterial of the access role (a boulevard's stays one: its second row is the cell's).
+                int endRole = blvd[end] ? ROLE_BOULEVARD : role[end], p = end, first = end;
+                while (p >= 0) {
+                    first = p;
+                    if (in.fixed[p] != FIXED_HIGHWAY && !str[p]) { setStr(p, true); occ[p] = -1; }
+                    art[p] = true;
+                    role[p] = (byte) ROLE_ACCESS;
+                    if (out.accessAt == null) out.accessAt = new boolean[AREA];
+                    out.accessAt[p] = true;
+                    p = accPrev[p];
+                }
+                out.accessRoads.add(new int[] { bx, by, bw, bh, first % FRAME, first / FRAME, end % FRAME, end / FRAME, ends, endRole });
+            }
+        }
+
+        /** Adds plot (x, y) to the gates if it is one the road may use (inside the frame's own plots, ground a street may take either way); the count. */
+        int gate(int[] gates, int n, int x, int y) {
+            if (x < 1 || y < 1 || x >= SIDE || y >= SIDE) return n;
+            int a = y * FRAME + x;
+            if (!accessible(a, true) && !accessible(a, false)) return n;
+            gates[n] = a;
+            return n + 1;
+        }
+
+        /** Whether the access road may enter plot a going horizontally (or not): a plot of the frame's own, the ground a street may take, and a highway's only where a street passes beneath it already. */
+        boolean accessible(int a, boolean horizontal) {
+            int x = a % FRAME, y = a / FRAME;
+            if (x < 1 || y < 1 || x >= SIDE || y >= SIDE) return false;
+            if (!groundJoinable(a, horizontal)) return false;
+            return in.fixed[a] != FIXED_HIGHWAY || under[a];
+        }
+
+        /** Whether plot a is where a road ends: a ramp's (a highway plot carrying a ramp with a street beneath, within reach of the work at (cx, cy)), or an arterial street. */
+        boolean accessEnd(int a, boolean ramps, int cx, int cy) {
+            if (!ramps) return str[a] && art[a];
+            if (!in.ramp[a] || !under[a]) return false;
+            return Math.max(Math.abs(a % FRAME - cx), Math.abs(a / FRAME - cy)) <= ACCESS_RAMP_DISTRICTS * SIDE;
+        }
+
+        /**
+         * The nearest end from the gates, by plot cost (Dial's algorithm: costs
+         * 1 and ACCESS_NEW), as the plot it ends on with accPrev leading back
+         * to a gate (its own accPrev -1); -1 for none.
+         */
+        int accessSearch(int[] gates, int n, boolean ramps, int cx, int cy) {
+            accStamp++;
+            Arrays.fill(accN, 0);
+            int pending = 0;
+            for (int k = 0; k < n; k++) {
+                int a = gates[k], d = accCost(a);
+                if (accSeen[a] == accStamp && accDist[a] <= d) continue;
+                accSeen[a] = accStamp;
+                accDist[a] = d;
+                accPrev[a] = -1;
+                accPush(d, a);
+                pending++;
+            }
+            for (int d = 0; pending > 0; d++) {
+                int q = d & 3;
+                for (int i = 0; i < accN[q]; i++) {
+                    int a = accQ[q][i];
+                    pending--;
+                    if (accDist[a] != d) continue;
+                    if (accessEnd(a, ramps, cx, cy)) { accN[q] = 0; return a; }
+                    int x = a % FRAME, y = a / FRAME;
+                    for (int dir = 0; dir < 4; dir++) {
+                        int b = dir == 0 ? a - FRAME : dir == 1 ? a + 1 : dir == 2 ? a + FRAME : a - 1;
+                        boolean horizontal = dir == 1 || dir == 3;
+                        if (dir == 0 && y < 2 || dir == 1 && x >= SIDE - 1 || dir == 2 && y >= SIDE - 1 || dir == 3 && x < 2) continue;
+                        if (!accessible(b, horizontal)) continue;
+                        int nd = d + accCost(b);
+                        if (accSeen[b] == accStamp && accDist[b] <= nd) continue;
+                        accSeen[b] = accStamp;
+                        accDist[b] = nd;
+                        accPrev[b] = a;
+                        accPush(nd, b);
+                        pending++;
+                    }
+                }
+                accN[q] = 0;
+            }
+            return -1;
+        }
+
+        /** What entering plot a costs the access road: 1 where a street (or one beneath a highway) already is, ACCESS_NEW where it would be laid. */
+        int accCost(int a) { return str[a] || under[a] ? 1 : ACCESS_NEW; }
+
+        void accPush(int d, int a) {
+            int q = d & 3;
+            if (accQ[q] == null) accQ[q] = new int[256];
+            else if (accN[q] == accQ[q].length) accQ[q] = Arrays.copyOf(accQ[q], accN[q] * 2);
+            accQ[q][accN[q]++] = a;
+        }
+
+        /* ------------------------------------------------ sidings (batch FR7, slice 5; spec-freight 4.3, D14) */
+
+        /** sidings()'s search: the cost to each state (a plot and the heading it was entered going, plot x 4 + heading) and the state it was reached from, stamped (sdSeen) so none is cleared; the queue by cost modulo SD_BUCKETS (Dial's algorithm: a step costs at most 1 + SIDING_CROSSING + SIDING_ALONG + SIDING_TURN, 14). */
+        int[] sdDist, sdPrev, sdSeen;
+        int sdStamp;
+        int[][] sdQ;
+        int[] sdN;
+        static final int SD_BUCKETS = 16;
+        /** The siding being laid, a byte a plot as DistrictPlan.siding. */
+        byte[] sdLaid;
+        /** A search's end: the last plot of the way before the railway, the state it was entered in, and the railway plot it meets. */
+        int sdLast, sdState, sdRail;
+
+        /**
+         * SIDINGS (D14). The plan's Input.sidings is the district's share of
+         * the city's Rail Spurs (CityMap.sidingsOf()): for each of that many of
+         * the largest BULK works the plan placed (BuildingVisual.Type.bulk(),
+         * by plots, then north, then west) it lays a siding, a track from the
+         * open ground beside the works' box - where its loading shed stands -
+         * to the nearest plot of the runs' railway in this frame (FIXED_RAIL:
+         * the main line, a mined works' siding, a branch), by the cheapest way
+         * over the ground the plan left: a plot of open ground 1, a street
+         * crossed at grade SIDING_CROSSING more (a level crossing; the street
+         * keeps its plot and its code), never along one (SIDING_ALONG, and no
+         * turn on one), a turn SIDING_TURN, so a siding is straight or turns
+         * few times. It takes no building's, yard's, reserve's, mine's, highway's
+         * or other track's plot, nor one beside a highway (its verge, H5), nor
+         * wet ground, and keeps SIDING_EDGE from the frame's edge; it meets the
+         * line from the side, not along it. A works the railway already touches
+         * is served and takes no share; one with no open ground beside its box
+         * or no way to the line gets none, and the next largest takes its share:
+         * the plan counts why (sidingsNoRail and the others). Nothing the plan
+         * laid moves, and the sidings are not streets: a plan with none is
+         * what it was.
+         *
+         * WHERE IT IS ROUTED. As the access roads' (access()): inside the
+         * works' own district plan, which reads one frame - a works whose frame
+         * holds no plot of the railway gets none, however near the line lies in
+         * the next district; the map deals the share to the districts the line
+         * crosses (CityMap.sidingsOf()).
+         */
+        void sidings(DistrictPlan out, int placed) {
+            if (proto || in.sidings <= 0) return;
+            out.sidingsAsked = in.sidings;
+            int[] cand = new int[placed];
+            int nc = 0;
+            for (int b = 0; b < placed; b++) {
+                int t = placedT[b];
+                if (t >= 0 && t < in.types.length && in.types[t] != null && in.types[t].bulk()) cand[nc++] = b;
+            }
+            if (nc == 0) { out.sidingsNoWorks = in.sidings; return; }
+            // The largest first: by plots, then the northmost, then the westmost (an insertion sort: a plan places few).
+            for (int i = 1; i < nc; i++) {
+                int v = cand[i], j = i - 1;
+                while (j >= 0 && sidingBefore(v, cand[j])) { cand[j + 1] = cand[j]; j--; }
+                cand[j + 1] = v;
+            }
+            boolean rail = false;
+            for (int k = 0; k < nFixed && !rail; k++) {
+                int p = fixedList[k], x = p % FRAME, y = p / FRAME;
+                rail = in.fixed[p] == FIXED_RAIL && x >= 1 && y >= 1 && x < SIDE && y < SIDE;
+            }
+            if (!rail) { out.sidingsNoRail = Math.min(in.sidings, nc); return; }
+            if (sdDist == null) {
+                sdDist = new int[4 * AREA];
+                sdPrev = new int[4 * AREA];
+                sdSeen = new int[4 * AREA];
+                sdQ = new int[SD_BUCKETS][];
+                sdN = new int[SD_BUCKETS];
+            }
+            out.siding = new byte[AREA];
+            sdLaid = out.siding;
+            int[] gates = new int[2 * (FRAME + FRAME)], heads = new int[gates.length];
+            int laid = 0;
+            for (int i = 0; i < nc && laid < in.sidings; i++) {
+                int b = cand[i], bx = placedX[b], by = placedY[b], bw = placedW[b], bh = placedH[b];
+                int n = 0;
+                boolean door = false;
+                for (int x = bx; x < bx + bw; x++) {
+                    door |= railAt(x, by - 1) | railAt(x, by + bh);
+                    n = sidingGate(gates, heads, n, x, by - 1, 0);
+                    n = sidingGate(gates, heads, n, x, by + bh, 2);
+                }
+                for (int y = by; y < by + bh; y++) {
+                    door |= railAt(bx - 1, y) | railAt(bx + bw, y);
+                    n = sidingGate(gates, heads, n, bx - 1, y, 3);
+                    n = sidingGate(gates, heads, n, bx + bw, y, 1);
+                }
+                if (door) { out.sidingsAtDoor++; continue; }
+                if (n == 0) { out.sidingsNoGate++; continue; }
+                if (!sidingSearch(gates, heads, n)) { out.sidingsNoWay++; continue; }
+                // Laid from the line back to the works: the state chain ends at a gate (its own sdPrev -1).
+                int plots = 0, first = sdLast;
+                for (int s = sdState; s >= 0; s = sdPrev[s]) {
+                    int p = s >> 2;
+                    out.siding[p] = SIDING_PLOT;
+                    first = p;
+                    plots++;
+                }
+                out.siding[first] = SIDING_END;
+                out.sidings.add(new int[] { bx, by, bw, bh, first % FRAME, first / FRAME, sdLast % FRAME, sdLast / FRAME, sdRail % FRAME, sdRail / FRAME, plots });
+                laid++;
+            }
+            if (laid == 0) out.siding = null;
+            sdLaid = null;
+        }
+
+        /** Whether the work at plot index `a` comes before the one at `b` in the sidings' order: more plots, then further north, then further west. */
+        boolean sidingBefore(int a, int b) {
+            int sa = placedW[a] * placedH[a], sb = placedW[b] * placedH[b];
+            if (sa != sb) return sa > sb;
+            if (placedY[a] != placedY[b]) return placedY[a] < placedY[b];
+            return placedX[a] < placedX[b];
+        }
+
+        /** Whether plot (x, y) of the frame is a plot of the runs' railway (FIXED_RAIL). */
+        boolean railAt(int x, int y) {
+            return x >= 0 && y >= 0 && x < FRAME && y < FRAME && in.fixed[y * FRAME + x] == FIXED_RAIL;
+        }
+
+        /** Adds plot (x, y) to the gates, entered going `heading` (0 north, 1 east, 2 south, 3 west: away from the box), if the siding may start there: open ground, not a street. The count. */
+        int sidingGate(int[] gates, int[] heads, int n, int x, int y, int heading) {
+            if (x < 0 || y < 0 || x >= FRAME || y >= FRAME) return n;
+            int a = y * FRAME + x;
+            if (!sidingOpen(a) || str[a]) return n;
+            gates[n] = a;
+            heads[n] = heading;
+            return n + 1;
+        }
+
+        /**
+         * Whether a siding may take plot a: SIDING_EDGE inside the frame's
+         * edge, dry owned ground, no building's, no runs' plot (track, yard,
+         * reserve, highway), no mine's site, no other siding's, and no plot
+         * beside a highway (its verge). A street's plot may be crossed.
+         */
+        boolean sidingOpen(int a) {
+            int x = a % FRAME, y = a / FRAME;
+            if (x < SIDING_EDGE || y < SIDING_EDGE || x > SIDE - SIDING_EDGE || y > SIDE - SIDING_EDGE) return false;
+            if (!dry[a] || occ[a] > 0 || in.fixed[a] != 0 || in.site[a] == SITE_MINED || sdLaid[a] != 0) return false;
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dx = -1; dx <= 1; dx++) if (in.fixed[a + dy * FRAME + dx] == FIXED_HIGHWAY) return false;
+            }
+            return true;
+        }
+
+        /** Whether the street at plot b goes across a siding moving `heading` (a street at right angles to it beside b), so that the siding crosses it and does not run along it. */
+        boolean crossesStreet(int b, int heading) {
+            return (heading & 1) == 1 ? str[b - FRAME] || str[b + FRAME] : str[b - 1] || str[b + 1];
+        }
+
+        /**
+         * The cheapest way from the gates to the railway, by Dial's algorithm
+         * over states (plot, heading): true with sdState the state of the way's
+         * last plot (the railway beside it at sdRail), sdLast its plot, and
+         * sdPrev leading back to a gate; false for none. It reaches a plot of the
+         * railway only from the side - a line running east-west is met going
+         * north or south - and never turns on a street.
+         */
+        boolean sidingSearch(int[] gates, int[] heads, int n) {
+            sdStamp++;
+            Arrays.fill(sdN, 0);
+            int pending = 0;
+            for (int k = 0; k < n; k++) {
+                int s = gates[k] * 4 + heads[k];
+                if (sdSeen[s] == sdStamp && sdDist[s] <= 1) continue;
+                sdSeen[s] = sdStamp;
+                sdDist[s] = 1;
+                sdPrev[s] = -1;
+                sdPush(1, s);
+                pending++;
+            }
+            // A way costs at least its plots, so none dearer than the plots a siding may have can be laid: the search stops there.
+            for (int d = 1; pending > 0 && d <= in.sidingPlots; d++) {
+                int q = d & (SD_BUCKETS - 1);
+                for (int i = 0; i < sdN[q]; i++) {
+                    int s = sdQ[q][i];
+                    pending--;
+                    if (sdDist[s] != d) continue;
+                    int a = s >> 2, h = s & 3;
+                    for (int nh = 0; nh < 4; nh++) {
+                        if (nh == (h ^ 2) || nh != h && str[a]) continue;
+                        int b = nh == 0 ? a - FRAME : nh == 1 ? a + 1 : nh == 2 ? a + FRAME : a - 1;
+                        if (sidingEnd(b, nh)) {
+                            sdLast = a;
+                            sdState = s;
+                            sdRail = b;
+                            sdN[q] = 0;
+                            return true;
+                        }
+                        if (!sidingOpen(b)) continue;
+                        int nd = d + 1 + (str[b] ? SIDING_CROSSING : 0) + (str[a] && str[b] && !crossesStreet(b, nh) ? SIDING_ALONG : 0) + (nh != h ? SIDING_TURN : 0);
+                        int ns = b * 4 + nh;
+                        if (sdSeen[ns] == sdStamp && sdDist[ns] <= nd) continue;
+                        sdSeen[ns] = sdStamp;
+                        sdDist[ns] = nd;
+                        sdPrev[ns] = s;
+                        sdPush(nd, ns);
+                        pending++;
+                    }
+                }
+                sdN[q] = 0;
+            }
+            return false;
+        }
+
+        /** Whether plot b, entered going `heading`, is a plot of the railway the siding may meet: one the frame's own (not its edge row or column), met from the side. */
+        boolean sidingEnd(int b, int heading) {
+            int x = b % FRAME, y = b / FRAME;
+            if (x < 1 || y < 1 || x >= SIDE || y >= SIDE || in.fixed[b] != FIXED_RAIL) return false;
+            return (heading & 1) == 1 ? in.fixed[b - 1] != FIXED_RAIL && in.fixed[b + 1] != FIXED_RAIL
+                    : in.fixed[b - FRAME] != FIXED_RAIL && in.fixed[b + FRAME] != FIXED_RAIL;
+        }
+
+        void sdPush(int d, int s) {
+            int q = d & (SD_BUCKETS - 1);
+            if (sdQ[q] == null) sdQ[q] = new int[256];
+            else if (sdN[q] == sdQ[q].length) sdQ[q] = Arrays.copyOf(sdQ[q], sdN[q] * 2);
+            sdQ[q][sdN[q]++] = s;
         }
 
         /**
@@ -3037,7 +3514,8 @@ public final class DistrictPlan {
         void surface(DistrictPlan out) {
             // The order: arterials first, then by the rank of the cell a plot is in (or west and north of), none last; row by
             // row within each - bucketed, each bucket filled in plot order.
-            int buckets = 2 * (CELLS + 1);
+            // Bucket 0 is the access roads' (batch FR7: paved first), then the arterials' by cell rank, then the rest's.
+            int buckets = 2 * (CELLS + 1) + 1;
             int[] start = new int[buckets + 1];
             // The streets read from their bits in plot order (THE STREETS IN ORDER, 0.7.94): each with its bucket, every one
             // (allStr), and the one-sided seams (openAt).
@@ -3116,7 +3594,7 @@ public final class DistrictPlan {
                     int ci = Math.floorDiv(x - 1, CELL), cj = Math.floorDiv(y - 1, CELL);
                     int rank = ci >= 0 && cj >= 0 && ci < CELLS_A_SIDE && cj < CELLS_A_SIDE && out.cellRank[ci + cj * CELLS_A_SIDE] >= 0
                             ? out.cellRank[ci + cj * CELLS_A_SIDE] : CELLS;
-                    int bk = (art[p] ? 0 : CELLS + 1) + rank;
+                    int bk = art[p] && role[p] == ROLE_ACCESS ? 0 : 1 + (art[p] ? 0 : CELLS + 1) + rank;
                     surfP[sN] = p;
                     surfB[sN] = bk;
                     start[bk + 1]++;
@@ -3136,7 +3614,7 @@ public final class DistrictPlan {
             if (blvd[p]) r = ROLE_BOULEVARD;
             code |= r << ROLE_SHIFT;
             if (in.terrain[p] == World.FRESH) code |= BRIDGE;
-            if (in.fixed[p] == FIXED_RAIL) code |= CROSSING;
+            if (in.fixed[p] == FIXED_RAIL || out.siding != null && out.siding[p] != 0) code |= CROSSING;
             out.street[p] = (short) code;
         }
     }

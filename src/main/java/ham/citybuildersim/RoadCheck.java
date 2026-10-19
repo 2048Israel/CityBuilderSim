@@ -47,17 +47,22 @@ import java.util.Map;
  *      highway 1.25%; a line the house's 1%), so gravel's share of its
  *      price is the dearest and the highway's the least, and gravel's lead
  *      a trip it carries over paved shrinks from nearly half to a seventh.
- *   2. THE ADVICE TAKES THE LEAST OVER ITS LIFE, AND GRAVEL CAN STILL WIN:
- *      with no ground free, the road the advice suggests is the candidate
- *      whose order costs least over its life for the trips it will take off
- *      over that life (0.7.101, Jerus's A4 and A19; its life a trip until
- *      then), every candidate's figure recomputed; by their lives a trip,
- *      with the land office's prices at nothing the gravel road is the
- *      least, past the crossover the model's figures give the paved road,
- *      and past the next the highway.
+ *  1b. (FR7 2.2, Jerus's star 5, 2026-10-18) A GRAVEL ROAD'S REPAIRS RISE WITH
+ *      THE TRAFFIC ON ITS STREET: its flat share up to 200 vehicles a day,
+ *      then that share times (vehicles / 200) squared - struck from the dials,
+ *      the paved road's and the highway's flat, the month's bill the same
+ *      on a quiet street and up by the wear on a busy one.
+ *   2. WITHIN THE STREETS, THE KIND FOLLOWS THE LIFE COST AND THE LOAD (FR7,
+ *      Jerus's star 4; this section's one-pool ladder - gravel, then paved,
+ *      then a highway by land price - is retired by his decision): on a
+ *      quiet street the gravel road is the least over its life where ground
+ *      is cheap and the paved road where it is dear; on a busy one the paved
+ *      road is the least on the same ground and is the advice's card, every
+ *      candidate's figure recomputed (0.7.101, Jerus's A4 and A19).
  *   3. THE ROAD CARDS SAY THE SAME: bar 1 is the road's life a trip off the
  *      road and bar 2 its ground a trip, to the bit, and the card tagged
- *      cheapest is the road the advice ranks first among the three.
+ *      cheapest is the street the advice ranks first (the highway has a
+ *      group of its own since FR7).
  *   4. THE PAVING'S PRICE: a Paved Road's work and the take-up at
  *      DEMOLITION_SHARE of the gravel road's, the material of a Paved Road
  *      less a gravel road's, no ground, a Paved Road's wait; a gravel road
@@ -77,18 +82,33 @@ import java.util.Map;
  *   7. A SAVE AND A LOAD, TO THE CENT: a paving in progress reads back, its
  *      ground and the ledger to the bit, and the two cities play its
  *      months alike; an older save, with no pavings, loads with none.
- *   8. THE ADVICE OFFERS THE PAVING WHEN IT BEATS A NEW PAVED ROAD, and not
- *      before: at the crossover the model's figures give, the suggestion is
- *      the paving - its quote, its gravel roads gone, the ground it frees,
- *      its figure the order's over its life (0.7.101) - and the Gravel Road
+ *   8. THE ADVICE OFFERS THE PAVING WHERE THE STREETS ARE BUSY, and not where
+ *      they are quiet (FR7 2.2; it was where it beat a new Paved Road past a
+ *      crossover of the land price): on a busy street the suggestion is the
+ *      paving - its quote, its gravel roads gone, the ground it frees, its
+ *      figure the order's over its life (0.7.101) - and the Gravel Road
  *      card's paving says so, a trip under a new Paved Road's; "Build all
- *      three" leaves it out.
+ *      three" leaves it out; on a quiet one nothing is offered.
  *   9. THE TEST PLAYER ASKS THE ADVICE: its first road move is the road the
  *      advice ranks first, and the paving where it beats a new Paved Road
  *      and the roads - a move that paves; and since 0.7.103 how many: the
  *      move paves the advice's card's count, a paved town with its ground
  *      free orders the advice's road and count, and a town whose roads are
  *      well ahead makes no road move.
+ *  10. (FR7 2.1) A CITY WITH NO HIGHWAY CARRIES ITS THROUGH TRIPS ON THE
+ *      STREETS, AT A STRAIN: a fixture whose through trips alone put the
+ *      streets past their free-flow line, and every figure the old single
+ *      pool's to the bit with no highway standing; the gates' load goes
+ *      through whole; with a highway its capacity at free flow carries the
+ *      through trips and the streets the rest, at their own curve.
+ *  11. A LARGE CITY'S NEEDS YOU LISTS BOTH THE STREETS AND THE HIGHWAYS: past
+ *      the through-need threshold (CityNeeds.HIGHWAY_MIN_FILL of a highway)
+ *      both rows are listed, the advice suggests a street road and an
+ *      Elevated Highway, and the test player orders both; below it, only the
+ *      streets are listed.
+ *  12. A HIGHWAY GIVES NO ACCESS: adding one leaves getStreetCapacity() as it
+ *      was, in the advice's what-if and in a played city, and the streets'
+ *      ranking never names it.
  *
  * Every fixture causes its condition.
  */
@@ -208,6 +228,7 @@ public class RoadCheck {
         Path root = Files.createTempDirectory("roadcheck");
 
         life(root);
+        gravelWear(root);
         advice(root);
         cards(root);
         pavePrice(root);
@@ -216,6 +237,9 @@ public class RoadCheck {
         saveAndLoad(root);
         offered(root);
         player(root);
+        throughStrain();
+        bothNeeds(root);
+        noAccess(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -245,8 +269,13 @@ public class RoadCheck {
         for (BuildingsTemplate t : bm.getTemplates()) {
             if (t.getCategory() != BuildingType.INFRASTRUCTURE) continue;
             double materials = Math.max(0, bm.getConstructionMaterialPrice());
+            // FR7 2.2: a Gravel Road is repaired at the traffic on the streets the city would have with it (BuildingsTemplate
+            // .gravelRepairsAt()); every other road and line at its flat share.
+            double share = ConstructionControl.paves(t)
+                    ? t.gravelRepairsAt(BuildAdvice.roads(g, BuildAdvice.plus(site, t, 1)).getUtilisation())
+                    : t.repairsPerYear();
             double repairs = econ.withBuildersTax(bm.nonMaterialCost(t) + t.getConstructionMaterials() * materials)
-                    * t.repairsPerYear() / 12;
+                    * share / 12;
             double utilities = t.getElectricityConsumption() * econ.getPricePerWatt()
                     + t.getWaterConsumption() * econ.getPricePerWaterUnit();
             double riders = BuildAdvice.roads(g, BuildAdvice.plus(site, t, 1)).getTransitRiders()
@@ -296,6 +325,9 @@ public class RoadCheck {
         // The repairs are the month's own bill: one more gravel road standing adds exactly them.
         BuildingsTemplate gravel = template(g, GRAVEL);
         double price = Math.max(0, bm.getConstructionMaterialPrice());
+        // ...at the street utilisation the month is charged at (FR7 2.2): the one running() reads for the road added.
+        double withRoad = BuildAdvice.roads(g, BuildAdvice.plus(site, gravel, 1)).getUtilisation();
+        econ.setStreetUtilisation(() -> withRoad);
         double before = econ.maintenanceBillFor(BuildingType.INFRASTRUCTURE, price);
         double repairs = BuildAdvice.running(g, gravel, site) - gravel.getElectricityConsumption() * econ.getPricePerWatt()
                 - gravel.getWaterConsumption() * econ.getPricePerWaterUnit() - BuildCard.runningCost(g, gravel);
@@ -303,6 +335,53 @@ public class RoadCheck {
         double after = econ.maintenanceBillFor(BuildingType.INFRASTRUCTURE, price);
         close("...and the repairs are what the month's maintenance bill charges the city for one more gravel road, at its"
                 + " own share", after - before, repairs, 1e-9);
+    }
+
+    /* ======================= 1b. GRAVEL'S REPAIRS RISE WITH ITS TRAFFIC ======================= */
+
+    /**
+     * FR7 2.2 (Jerus's star 5, 2026-10-18): a Gravel Road's repairs rise with
+     * the load on its street. Every figure here is struck from the dials
+     * (InfrastructureManager.STREET_VEHICLES_A_DAY_AT_CAPACITY and
+     * GRAVEL_QUIET_VEHICLES_A_DAY), and the bill is the month's own.
+     */
+    static void gravelWear(Path root) {
+        out.println("\n--- 1b. a gravel road's repairs rise with the traffic on its street (200 vehicles a day, Minnesota) ---");
+        Game g = town(root, "wear");
+        BuildingManager bm = g.getBuildingManager();
+        EconomyManager econ = g.getEconomyManager();
+        BuildingsTemplate gravelT = template(g, GRAVEL), pavedT = template(g, PAVED), highwayT = template(g, HIGHWAY);
+        double quiet = InfrastructureManager.GRAVEL_QUIET_UTILISATION;
+        bits("the quiet line is the quiet load over a street's whole capacity: 200 / 450 vehicles a day",
+                quiet, InfrastructureManager.GRAVEL_QUIET_VEHICLES_A_DAY / InfrastructureManager.STREET_VEHICLES_A_DAY_AT_CAPACITY);
+        bits("...a street at its whole capacity carries the dial's vehicles a day",
+                InfrastructureManager.vehiclesADay(1), InfrastructureManager.STREET_VEHICLES_A_DAY_AT_CAPACITY);
+        bits("at the quiet line and under it a gravel road is repaired at its flat share (repairsPerYear()), exactly",
+                gravelT.gravelRepairsAt(quiet), gravelT.repairsPerYear());
+        bits("...and on an empty street too", gravelT.gravelRepairsAt(0), gravelT.repairsPerYear());
+        double busy = 3 * quiet;
+        close("past it the share is the flat share times (vehicles a day / 200) squared: three times the load, nine times the repairs",
+                gravelT.gravelRepairsAt(busy), gravelT.repairsPerYear() * 9, 1e-12);
+        assertTrue("...rising with the load, and only the Gravel Road's: the paved road's and the highway's stay flat",
+                gravelT.gravelRepairsAt(busy) > gravelT.gravelRepairsAt(2 * quiet) && gravelT.gravelRepairsAt(2 * quiet) > gravelT.repairsPerYear()
+                        && pavedT.repairsPerYearAt(busy) == pavedT.repairsPerYear()
+                        && highwayT.repairsPerYearAt(busy) == highwayT.repairsPerYear()
+                        && gravelT.repairsPerYearAt(busy) == gravelT.gravelRepairsAt(busy));
+        // The month's bill: quiet streets charge what they always did, busy ones the gravel roads' wear on top.
+        double price = Math.max(0, bm.getConstructionMaterialPrice());
+        econ.setStreetUtilisation(() -> 0);
+        double flat = econ.maintenanceBillFor(BuildingType.INFRASTRUCTURE, price);
+        econ.setStreetUtilisation(() -> quiet);
+        bits("the bill on a quiet street is the bill with no utilisation told: to the bit, as it was",
+                econ.maintenanceBillFor(BuildingType.INFRASTRUCTURE, price), flat);
+        econ.setStreetUtilisation(() -> busy);
+        double worn = econ.maintenanceBillFor(BuildingType.INFRASTRUCTURE, price);
+        int roads = bm.getQuantity(gravelT.getId());
+        double perRoad = econ.withBuildersTax(bm.nonMaterialCost(gravelT) + gravelT.getConstructionMaterials() * price)
+                * gravelT.repairsPerYear() / 12;
+        close("...and at three times the quiet load each of the " + roads + " gravel roads costs nine times its flat repairs: the bill"
+                + " is up by eight of them, no other building's moved", worn - flat, roads * perRoad * 8, 1e-9);
+        assertTrue("fixture: the town has gravel roads standing to wear", roads == 4);
     }
 
     /* ============================ 2. THE ADVICE ============================ */
@@ -362,44 +441,65 @@ public class RoadCheck {
         return (ua * kb - ub * ka) / (ub * a.getLandSqFt() - ua * b.getLandSqFt());
     }
 
+    /**
+     * FR7 (Jerus's stars 4 and 5, 2026-10-18) RETIRED THIS SECTION'S LADDER, by his decision and not to let a change through:
+     * the road was one pool with one winner, and the advice named gravel below the gravel-to-paved crossover of the land price,
+     * paved between, and a highway only past the paved-to-highway one. A highway is not a street now (it gives no access: its
+     * need is the through trips', section 11), and gravel's repairs rise with the traffic on its street (1b), so the streets'
+     * kind follows the life cost AND the load: gravel on a quiet street where ground is cheap, paved on a busy one on the same
+     * ground. The fixture causes each side of the 200-vehicle line from the dials: ten Paved Roads carry the town's trips at
+     * 154 vehicles a day (under GRAVEL_QUIET_VEHICLES_A_DAY), three at 460 (over it).
+     */
     static void advice(Path root) {
-        out.println("\n--- 2. the advice takes the least over its life; gravel wins where ground is cheap ---");
-        // On paved roads: no gravel road to pave, so the new roads alone are weighed (8 weighs the paving).
-        Game g = town(root, "advice", PAVED, 3);
-        CityNeeds.Need need = roadNeed(g);
-        assertTrue("fixture: the road is past NEEDS YOU's line, and no gravel road to pave", need != null
-                && need.level() > 0 && g.paveable() == 0);
-        double[][] base = noGroundFree(g);
+        out.println("\n--- 2. within the streets, the kind follows the life cost and the load: gravel where quiet, paved where busy ---");
+        Game quiet = town(root, "advice-quiet", PAVED, 10);
+        Game busy = town(root, "advice-busy", PAVED, 3);
+        CityNeeds.Need need = roadNeed(busy);
+        assertTrue("fixture: the busy town's streets are past NEEDS YOU's line, and no gravel road to pave", need != null
+                && need.level() > 0 && busy.paveable() == 0 && roadNeed(quiet).level() == 0);
+        double[][] quietBase = noGroundFree(quiet), busyBase = noGroundFree(busy);
         assertTrue("fixture: no ground free, so every road's ground is bought at the land office's price",
-                g.getLandManager().getAvailableSqFt() == 0);
-        BuildingsTemplate gravel = template(g, GRAVEL), paved = template(g, PAVED), highway = template(g, HIGHWAY);
-        scale(g, base, 1);
-        double office = g.getLandManager().getOfficePricePerSqFt();
-        double gp = crossover(g, gravel, paved), ph = crossover(g, paved, highway);
-        out.printf("      the land office at %.6g a sq ft; a paved road beats a gravel road over its life past %.6g (x%.1f),"
-                + " a highway a paved road past %.6g (x%.1f)%n", office, gp, gp / office, ph, ph / office);
-        assertTrue("fixture: the crossovers are past today's price and the paved road's comes first", gp > office && ph > gp);
-        double[] at = { 0, .9 * gp / office, 1.1 * gp / office, 1.1 * ph / office };
-        String[] want = { GRAVEL, GRAVEL, PAVED, HIGHWAY };
-        boolean agrees = true, roads = true;
-        for (int k = 0; k < at.length; k++) {
-            scale(g, base, at[k]);
-            BuildAdvice.Suggestion s = BuildAdvice.suggestFor(g, need, ROADS, g.getCash(), g.getLandManager().getAvailableSqFt());
-            String[] all = least(g, false), three = least(g, true);
-            out.printf("      x%-7.2f the advice: %s %s (%,.4f a trip over its life); the least of the six %s, of the roads %s%n",
-                    at[k], s == null ? "-" : s.count() + " x", s == null ? "nothing" : s.template().getName(),
-                    s == null ? Double.NaN : s.pricePerUnit(), all[0], three[0]);
-            // Since 0.7.101 (Jerus's A4 and A19) the advice's figure is the order's over its life for the trips it will take
-            // off over that life: its own candidates, walked as the ranking lists them, each recomputed here.
-            agrees &= s != null && !s.paving() && leastOrder(g, need, s);
-            roads &= want[k].equals(three[0]);
-        }
-        scale(g, base, 1);
-        assertTrue("the advice's road is the candidate whose order costs least over its life for the trips it will take off over"
-                + " that life, every candidate's figure recomputed here to the bit, at every price (0.7.101; its life a trip,"
-                + " count and need aside, until then)", agrees);
-        assertTrue("...the gravel road at nothing and under the crossover, the paved road past it, the highway past the next",
-                roads);
+                quiet.getLandManager().getAvailableSqFt() == 0 && busy.getLandManager().getAvailableSqFt() == 0);
+        // The load each town's streets would carry with one more gravel road on them, from the dials.
+        BuildingsTemplate gravelQ = template(quiet, GRAVEL), gravelB = template(busy, GRAVEL);
+        double uQuiet = BuildAdvice.roads(quiet, BuildAdvice.plus(BuildAdvice.onSite(quiet, ROADS), gravelQ, 1)).getUtilisation();
+        double uBusy = BuildAdvice.roads(busy, BuildAdvice.plus(BuildAdvice.onSite(busy, ROADS), gravelB, 1)).getUtilisation();
+        out.printf("      the quiet town's street: %.0f vehicles a day with a gravel road more; the busy town's: %.0f; the line: %.0f%n",
+                InfrastructureManager.vehiclesADay(uQuiet), InfrastructureManager.vehiclesADay(uBusy),
+                InfrastructureManager.GRAVEL_QUIET_VEHICLES_A_DAY);
+        assertTrue("fixture: the two towns' streets fall either side of the quiet line, GRAVEL_QUIET_VEHICLES_A_DAY of"
+                + " STREET_VEHICLES_A_DAY_AT_CAPACITY", uQuiet < InfrastructureManager.GRAVEL_QUIET_UTILISATION
+                && uBusy > InfrastructureManager.GRAVEL_QUIET_UTILISATION);
+
+        // 1. QUIET: ground at nothing, the street carries under the line, the gravel road is the least over its life.
+        scale(quiet, quietBase, 1);
+        double office = quiet.getLandManager().getOfficePricePerSqFt();
+        scale(quiet, quietBase, 0);
+        String[] atNothing = least(quiet, true);
+        // ...and past the gravel-to-paved crossover of the land price the paved road still wins on a quiet street: ground counts.
+        double gp = crossover(quiet, gravelQ, template(quiet, PAVED));
+        scale(quiet, quietBase, 1.1 * gp / office);
+        String[] dear = least(quiet, true);
+        scale(quiet, quietBase, 1);
+        out.printf("      quiet street, ground at nothing: the least over its life is the %s; with ground dear (past the %.6g a sq ft"
+                + " crossover): the %s%n", atNothing[0], gp, dear[0]);
+        assertTrue("on a quiet street (under 200 vehicles a day) the gravel road is the least of the streets' roads over its life"
+                + " where ground is cheap - and the paved road past the crossover of the land price", GRAVEL.equals(atNothing[0])
+                && PAVED.equals(dear[0]) && gp > 0);
+
+        // 2. BUSY: the same ground at nothing, the street carries over the line, the paved road is the least, and the advice's card.
+        scale(busy, busyBase, 0);
+        String[] busyLeast = least(busy, true);
+        BuildAdvice.Suggestion s = BuildAdvice.suggestFor(busy, need, ROADS, busy.getCash(), busy.getLandManager().getAvailableSqFt());
+        out.printf("      busy street, the same ground: the least over its life is the %s; the advice: %s%n", busyLeast[0],
+                s == null ? "nothing" : s.count() + " x " + s.template().getName() + " (" + String.format("%,.4f", s.pricePerUnit())
+                        + " a trip over its life)");
+        // The advice's figure is the order's over its life for the trips it will take off, each candidate recomputed.
+        boolean agrees = s != null && !s.paving() && leastOrder(busy, need, s);
+        scale(busy, busyBase, 1);
+        assertTrue("on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and"
+                + " it is the advice's card, every candidate's figure recomputed here to the bit", PAVED.equals(busyLeast[0])
+                && agrees && s.template() == template(busy, PAVED));
     }
 
     /* ============================ 3. THE CARDS ============================ */
@@ -408,13 +508,13 @@ public class RoadCheck {
         out.println("\n--- 3. the road cards say the same: their life and their ground a trip off the road ---");
         Game g = town(root, "cards", PAVED, 3);
         double[][] base = noGroundFree(g);
-        BuildingsTemplate gravel = template(g, GRAVEL), paved = template(g, PAVED), highway = template(g, HIGHWAY);
         scale(g, base, 1);
-        double gp = crossover(g, gravel, paved), ph = crossover(g, paved, highway);
-        double office = g.getLandManager().getOfficePricePerSqFt();
         boolean bars = true, tagged = true;
         int seen = 0;
-        for (double f : new double[] { 0, .9 * gp / office, 1.1 * gp / office, 1.1 * ph / office }) {
+        // FR7: the streets' cards are the gravel and the paved road (the highway is the through need's, its own group:
+        // section 11), so four land prices - nothing, today's, ten and a hundred times it - make eight cards, not twelve.
+        // The prices were the crossovers of the one-pool ladder this section's second fixture retired.
+        for (double f : new double[] { 0, 1, 10, 100 }) {
             scale(g, base, f);
             Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS);
             double free = g.getLandManager().getAvailableSqFt();
@@ -435,7 +535,7 @@ public class RoadCheck {
         }
         scale(g, base, 1);
         assertTrue("bar 1 is the road's life over the trips it takes off, bar 2 its ground over them, its hero its capacity,"
-                + " to the bit (" + seen + " cards)", bars && seen == 12);
+                + " to the bit (" + seen + " cards)", bars && seen == 8);
         assertTrue("...and the card tagged cheapest is the advice's first road, at every price", tagged);
     }
 
@@ -681,52 +781,69 @@ public class RoadCheck {
 
     /* ============================ 8. OFFERED ============================ */
 
+    /** Every building in the Roads & transit category: what the advice's paving-only ranking leaves out, as automatic building walks past roads the ground cannot hold. */
+    static java.util.Set<BuildingsTemplate> everyRoadAndLine(Game g) {
+        java.util.Set<BuildingsTemplate> all = new java.util.HashSet<>();
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t.getCategory() == BuildingType.INFRASTRUCTURE) all.add(t);
+        return all;
+    }
+
+    /**
+     * FR7 2.2 (Jerus's star 5, 2026-10-18) retired the premise of the old section 8: that paving beats a new Paved Road only
+     * past a CROSSOVER OF THE LAND PRICE above today's. Gravel's repairs rise with the traffic on its street now, so the
+     * paving is offered by the load, at the same ground: a busy gravel network is paved and a quiet one stays gravel. The
+     * fixtures are the same town on four gravel roads (460 vehicles a day on them) and on fourteen (147), each at the land
+     * office's price; the suggestion is read with the new roads left out of the ranking, as automatic building walks past the
+     * roads the ground cannot hold, so the paving's own card is what is asserted (BuildAdvice.weighPaving()'s).
+     */
     static void offered(Path root) {
-        out.println("\n--- 8. the advice offers the paving when it beats a new Paved Road, and not before ---");
+        out.println("\n--- 8. the advice offers the paving where the streets are busy, and not where they are quiet ---");
         Game g = town(root, "offered");
+        Game calm = town(root, "offered-quiet", GRAVEL, 14);
         CityNeeds.Need need = roadNeed(g);
-        double[][] base = noGroundFree(g);
+        double[][] base = noGroundFree(g), calmBase = noGroundFree(calm);
         BuildingsTemplate gravel = template(g, GRAVEL), paved = template(g, PAVED);
         scale(g, base, 1);
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS);
-        // The crossover the model's figures give, all ground at the office's price: the paving's life a trip,
-        // its freed ground taken off, against a new Paved Road's.
-        double f = BuildAdvice.lifeFactor(g);
-        double ku = g.quotePave(1).total + (BuildAdvice.running(g, paved, site) - BuildAdvice.running(g, gravel, site)) * f;
-        double kp = g.quoteBuild(paved, 1).total + BuildAdvice.running(g, paved, site) * f;
-        double uu = BuildAdvice.pavingUnit(g, site), up = BuildAdvice.unit(g, ROADS, paved);
-        double x = (ku * up - kp * uu) / (BuildAdvice.pavingFrees(g) * up + paved.getLandSqFt() * uu);
-        double office = g.getLandManager().getOfficePricePerSqFt();
-        out.printf("      paving beats a new Paved Road past %.6g a sq ft, x%.1f the land office's %.6g%n", x, x / office, office);
-        assertTrue("fixture: the road past its line, four gravel roads to pave, and the crossover past today's price",
-                need != null && need.level() > 0 && g.paveable() == 4 && x > office);
-        scale(g, base, .9 * x / office);
-        BuildAdvice.Suggestion under = BuildAdvice.suggestFor(g, need, ROADS, g.getCash(), 0);
-        BuildCard.Paving cardUnder = BuildCard.paving(g, gravel);
-        assertTrue("under the crossover: no paving suggested, and the Gravel Road card does not recommend it",
-                under != null && !under.paving() && !BuildAdvice.pavingBeatsPaved(g, 0, site) && !cardUnder.beatsPaved());
-        scale(g, base, 1.1 * x / office);
-        BuildAdvice.Suggestion s = BuildAdvice.suggestFor(g, need, ROADS, g.getCash(), 0);
+        scale(calm, calmBase, 1);
+        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS), calmSite = BuildAdvice.onSite(calm, ROADS);
+        double line = InfrastructureManager.GRAVEL_QUIET_UTILISATION;
+        out.printf("      the busy town: %.0f vehicles a day on %d gravel roads to pave; the quiet one: %.0f on %d; the line: %.0f%n",
+                InfrastructureManager.vehiclesADay(g.getInfrastructureManager().getUtilisation()), g.paveable(),
+                InfrastructureManager.vehiclesADay(calm.getInfrastructureManager().getUtilisation()), calm.paveable(),
+                InfrastructureManager.GRAVEL_QUIET_VEHICLES_A_DAY);
+        assertTrue("fixture: the busy town's streets are past NEEDS YOU's line and over the quiet line with four gravel roads to"
+                + " pave; the quiet town's under it, with fourteen", need != null && need.level() > 0 && g.paveable() == 4
+                && g.getInfrastructureManager().getUtilisation() > line
+                && calm.paveable() == 14 && calm.getInfrastructureManager().getUtilisation() < line);
+        java.util.Set<BuildingsTemplate> noNew = everyRoadAndLine(g);
+        BuildAdvice.Suggestion offer = BuildAdvice.suggestFor(g, need, ROADS, g.getCash(), 0, BuildAdvice.SLACK, noNew, false);
+        BuildAdvice.Suggestion calmOffer = BuildAdvice.suggestFor(calm, roadNeed(calm), ROADS, calm.getCash(), 0, BuildAdvice.SLACK,
+                everyRoadAndLine(calm), false);
+        BuildCard.Paving calmCard = BuildCard.paving(calm, template(calm, GRAVEL));
+        assertTrue("on a quiet street: no paving beats a new Paved Road, the Gravel Road card does not recommend it, and nothing"
+                + " is offered", !BuildAdvice.pavingBeatsPaved(calm, 0, calmSite) && !calmCard.beatsPaved() && calmOffer == null);
         BuildCard.Paving card = BuildCard.paving(g, gravel);
-        assertTrue("past it: the suggestion is the paving, its gravel roads to Paved Roads, no more than there are to pave",
-                s != null && s.paving() && s.template() == paved && s.count() >= 1 && s.count() <= g.paveable());
-        if (s == null || !s.paving()) return;
-        out.printf("      past it: pave %d, %,.1f all in, %,.4f a trip over its life against a new Paved Road's %,.4f%n",
-                s.count(), s.price(), s.pricePerUnit(), card.pavedPerTrip());
-        bits("...its price the paving's quote for its count", s.price(), g.quotePave(s.count()).total);
-        bits("...the ground it frees, taken off the land the cards after it see", s.landSqFt(),
-                -BuildAdvice.pavingFrees(g) * s.count());
-        Map<BuildingsTemplate, Integer> done = BuildAdvice.plus(site, BuildAdvice.added(g, s));
-        bits("...and the road it leaves, with its gravel roads gone", s.after(), BuildAdvice.figure(g, ROADS, done));
-        assertTrue("...which keeps the road ahead", s.closes() && BuildAdvice.ahead(g, ROADS, done, s.ahead()));
+        assertTrue("on a busy street, at the same ground: the paving beats a new Paved Road over its life a trip, the suggestion"
+                + " is the paving, its gravel roads to Paved Roads, no more than there are to pave",
+                BuildAdvice.pavingBeatsPaved(g, 0, site) && offer != null && offer.paving() && offer.template() == paved
+                        && offer.count() >= 1 && offer.count() <= g.paveable());
+        if (offer == null || !offer.paving()) return;
+        out.printf("      busy: pave %d, %,.1f all in, %,.4f a trip over its life against a new Paved Road's %,.4f%n",
+                offer.count(), offer.price(), offer.pricePerUnit(), card.pavedPerTrip());
+        bits("...its price the paving's quote for its count", offer.price(), g.quotePave(offer.count()).total);
+        bits("...the ground it frees, taken off the land the cards after it see", offer.landSqFt(),
+                -BuildAdvice.pavingFrees(g) * offer.count());
+        Map<BuildingsTemplate, Integer> done = BuildAdvice.plus(site, BuildAdvice.added(g, offer));
+        bits("...and the road it leaves, with its gravel roads gone", offer.after(), BuildAdvice.figure(g, ROADS, done));
+        assertTrue("...which takes load off the streets: the figure it leaves is under the figure before", offer.after() < offer.before());
         // The card's figure is a paving's life a trip (pavingLifetime() over pavingUnit()); since 0.7.101 the suggestion's is
         // the pavings' order over its life for the trips it will take off (BuildAdvice, A BUILDING OVER ITS LIFE).
         assertTrue("the Gravel Road card recommends it too: a paving's life a trip under a new Paved Road's (until 0.7.101 the"
                 + " suggestion's own figure; since then the suggestion's is the order's for the trips it will take off, recomputed"
                 + " here to the bit)",
                 card.beatsPaved() && card.perTrip() < card.pavedPerTrip()
-                        && Double.doubleToLongBits(BuildAdviceCheck.lifeFigure(g, s, 0)) == Double.doubleToLongBits(s.pricePerUnit()));
-        List<BuildAdvice.Suggestion> one = new ArrayList<>(List.of(s));
+                        && Double.doubleToLongBits(BuildAdviceCheck.lifeFigure(g, offer, 0)) == Double.doubleToLongBits(offer.pricePerUnit()));
+        List<BuildAdvice.Suggestion> one = new ArrayList<>(List.of(offer));
         assertTrue("\"Build all three\" leaves the paving out: it is not a build order",
                 BuildAdvice.run(one).isEmpty() && BuildAdvice.builds(one).isEmpty());
         scale(g, base, 1);
@@ -736,39 +853,31 @@ public class RoadCheck {
 
     static void player(Path root) {
         out.println("\n--- 9. the test player asks the advice which road and how many, and paves where it beats a new Paved Road ---");
-        // New roads, on the paved town: gravel at nothing, the paved road past the crossover.
+        // FR7 (Jerus's stars 4 and 5, 2026-10-18) retired two premises of this section's first fixtures, which he decided and
+        // which were not moved to let a change through. A busy street's gravel is repaired at its traffic, so on the paved
+        // town (460 vehicles a day on it) the advice's road is the paved road even with the ground at nothing - it was the
+        // gravel road there - and past the gravel-to-paved crossover of the land price, as before. And the paving is offered
+        // by the load and not by a land price above today's, so the gravel town is one the paving can close: five gravel
+        // roads (four left the paving short of the projection, and the player rightly orders the new paved road then).
         Game a = town(root, "player-new", PAVED, 3);
         double[][] baseA = noGroundFree(a);
         scale(a, baseA, 1);
-        double officeA = a.getLandManager().getOfficePricePerSqFt();
-        double gp = crossover(a, template(a, GRAVEL), template(a, PAVED));
         boolean first = true;
-        first &= firstRoad(a, baseA, 0, "gravel road");
-        first &= firstRoad(a, baseA, 1.1 * gp / officeA, "roads");
-        // Paving, on the gravel town: past where it beats a new Paved Road and a new Gravel Road.
-        Game g = town(root, "player-pave");
+        first &= firstRoad(a, baseA, 0, "roads");
+        first &= firstRoad(a, baseA, 10, "roads");
+        // Paving, on a gravel town whose busy street it closes.
+        Game g = town(root, "player-pave", GRAVEL, 5);
         double[][] base = noGroundFree(g);
-        BuildingsTemplate gravel = template(g, GRAVEL), paved = template(g, PAVED);
         scale(g, base, 1);
-        double office = g.getLandManager().getOfficePricePerSqFt();
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS);
-        double f = BuildAdvice.lifeFactor(g);
-        double ku = g.quotePave(1).total + (BuildAdvice.running(g, paved, site) - BuildAdvice.running(g, gravel, site)) * f;
-        double kp = g.quoteBuild(paved, 1).total + BuildAdvice.running(g, paved, site) * f;
-        double kg = g.quoteBuild(gravel, 1).total + BuildAdvice.running(g, gravel, site) * f;
-        double uu = BuildAdvice.pavingUnit(g, site), up = BuildAdvice.unit(g, ROADS, paved), ug = BuildAdvice.unit(g, ROADS, gravel);
-        double frees = BuildAdvice.pavingFrees(g);
-        double overPaved = (ku * up - kp * uu) / (frees * up + paved.getLandSqFt() * uu);
-        double overGravel = (ku * ug - kg * uu) / (frees * ug + gravel.getLandSqFt() * uu);
-        out.printf("      paving beats a new paved road past %.6g a sq ft and a new gravel road past %.6g (today %.6g)%n",
-                overPaved, overGravel, office);
-        first &= firstRoad(g, base, 1.5 * Math.max(overPaved, overGravel) / office, "paved gravel");
-        assertTrue("its first road move is the advice's: the gravel road at nothing, the paved road past the crossover,"
-                + " paving past paving's", first);
+        out.printf("      the gravel town: %.0f vehicles a day on %d gravel roads%n",
+                InfrastructureManager.vehiclesADay(g.getInfrastructureManager().getUtilisation()), g.paveable());
+        first &= firstRoad(g, base, 1, "paved gravel");
+        assertTrue("its first road move is the advice's: the paved road on a busy street at nothing and when ground is dear,"
+                + " paving where it beats a new Paved Road and closes the road", first);
         // ...and the move paves as many as the advice's card says (0.7.103; Jerus, 2026-10-10: "Fix the test player too"):
         // its count, the least that keeps the road ahead at its projection - until then as many as a road order at its gap,
         // ceil(25 x the share of output the road costs), and no more than there are.
-        scale(g, base, 1.5 * Math.max(overPaved, overGravel) / office);
+        scale(g, base, 1);
         BuildAdvice.Suggestion paveCard = roadCard(g);
         List<LongPlaytest.Move> moves = new ArrayList<>();
         LongPlaytest.addRoadThrottle(moves, g, Math.max(1, g.getEconomyManager().getMonthGdp()) * .1);
@@ -793,17 +902,19 @@ public class RoadCheck {
          */
         scale(a, baseA, 0);
         BuildAdvice.Suggestion newCard = roadCard(a);
-        BuildingsTemplate gravelA = template(a, GRAVEL);
+        // ...the advice's road is the paved road on this busy street (FR7), where the gravel road was the least on it before.
+        BuildingsTemplate cardRoad = newCard == null ? template(a, PAVED) : newCard.template();
         List<LongPlaytest.Move> roadMoves = new ArrayList<>();
         LongPlaytest.addRoadThrottle(roadMoves, a, Math.max(1, a.getEconomyManager().getMonthGdp()) * .1);
-        int beforeA = standingAndOnSite(a, gravelA);
+        int beforeA = standingAndOnSite(a, cardRoad);
         final boolean[] built = { false };
         if (!roadMoves.isEmpty()) quietly(() -> built[0] = roadMoves.get(0).act().getAsBoolean());
-        int ordered = standingAndOnSite(a, gravelA) - beforeA;
-        out.printf("      the paved town, its ground free: the move ordered %d Gravel Road(s), the advice's card %d; the old"
-                + " rule's %d%n", ordered, newCard == null ? 0 : newCard.count(), (int) Math.ceil(.1 * 25));
+        int ordered = standingAndOnSite(a, cardRoad) - beforeA;
+        out.printf("      the paved town, its ground free: the move ordered %d %s(s), the advice's card %d; the old"
+                + " rule's %d%n", ordered, cardRoad.getName(), newCard == null ? 0 : newCard.count(), (int) Math.ceil(.1 * 25));
         assertTrue("the test player's road move orders the advice's road and the advice's count, by need (0.7.103)",
-                newCard != null && !newCard.paving() && newCard.template() == gravelA && built[0] && ordered == newCard.count());
+                newCard != null && !newCard.paving() && newCard.template() == template(a, PAVED) && built[0]
+                        && ordered == newCard.count());
         scale(a, baseA, 1);
         Game ahead = town(root, "player-ahead", PAVED, 60);
         List<LongPlaytest.Move> aheadMoves = new ArrayList<>();
@@ -851,5 +962,228 @@ public class RoadCheck {
         out.printf("      x%-8.2f the player's first road move: %s; the advice's: %s%n", f, label, advised);
         scale(g, base, 1);
         return advised.equals(label) && want.equals(label);
+    }
+
+    /* ======================= 10. THE THROUGH TRIPS, WITH NO HIGHWAY ======================= */
+
+    /** A built-up area, in square feet, whose through share is the dials' halfway: THROUGH_HALF_AREA_KM2 times `halves`. */
+    static double areaOf(double halves) { return halves * InfrastructureManager.THROUGH_HALF_AREA_KM2 * LandManager.SQ_FT_PER_KM2; }
+
+    /**
+     * FR7 2.1 (Jerus's star 4, 2026-10-18): a city with no highway carries its
+     * through trips on the streets, and strains them. The fixture is a bare
+     * network struck from the dials: built-up ground at the through share's
+     * halfway (so the share is THROUGH_MAX_SHARE / 2), and a load that leaves
+     * the streets clear without the through trips and over their free-flow
+     * line with them. With no highway the figures are the old single pool's
+     * to the bit - the same inputs without the split's told, and the curve
+     * itself.
+     */
+    static void throughStrain() {
+        out.println("\n--- 10. a city with no highway carries its through trips on the streets, at a strain ---");
+        double built = 6000, area = areaOf(1);
+        double share = InfrastructureManager.THROUGH_MAX_SHARE / 2;
+        double capacity = InfrastructureManager.BASE_CAPACITY + built;
+        double load = 1.05 * capacity;
+        InfrastructureManager split = new InfrastructureManager(), pool = new InfrastructureManager();
+        for (InfrastructureManager r : new InfrastructureManager[] { split, pool }) {
+            r.setBuiltCapacity(built);
+            r.setLoad(load);
+        }
+        split.setThrough(0, area, 0);           // the split's inputs told; the pool is the single pool of before
+        close("the through share is THROUGH_MAX_SHARE x A^2 / (A^2 + THROUGH_HALF_AREA_KM2^2): half the maximum at the halfway area",
+                split.getThroughShare(), share, 1e-12);
+        InfrastructureManager small = new InfrastructureManager(), large = new InfrastructureManager();
+        small.setThrough(0, areaOf(.25), 0);
+        large.setThrough(0, areaOf(4), 0);
+        assertTrue("...flat in a small town and steep through the knee (the review's square): a quarter of the halfway area"
+                        + " has a seventeenth of the maximum, four times it sixteen seventeenths",
+                Math.abs(small.getThroughShare() - InfrastructureManager.THROUGH_MAX_SHARE / 17) < 1e-12
+                        && Math.abs(large.getThroughShare() - InfrastructureManager.THROUGH_MAX_SHARE * 16 / 17) < 1e-12);
+        close("...so the through trips are that share of the load (no gates)", split.getThroughLoad(), share * load, 1e-12);
+        assertTrue("with no highway standing none of them is on one: the whole of the through load overflows onto the streets,"
+                + " and none is served", split.getThroughOnHighways() == 0 && split.getThroughOverflow() == split.getThroughLoad()
+                && split.getThroughServed() == 0 && split.getHighwayCapacity() == 0);
+        assertTrue("fixture: without its through trips the streets would be clear (under STRAINED), and with them they are past"
+                + " the free-flow line",
+                (load - split.getThroughLoad()) / capacity < InfrastructureManager.STRAINED
+                        && split.getUtilisation() > InfrastructureManager.FREE_FLOW);
+        assertTrue("the through trips strain the streets: the network is congested, and its flow is under 1",
+                split.isCongested() && split.getThroughputRatio() < 1 && split.getStreetLoad() == split.getEffectiveLoad());
+        bits("with no highway getThroughputRatio() is the old single pool's, to the bit", split.getThroughputRatio(), pool.getThroughputRatio());
+        bits("...and the curve at the road's own use", split.getThroughputRatio(),
+                InfrastructureManager.throughputAt(load / capacity));
+        assertTrue("...as are its utilisation, served, spare room, headroom, free-flow line and the street capacity under the"
+                + " transit - each to the bit",
+                bitsEqual(split.getUtilisation(), pool.getUtilisation()) && bitsEqual(split.getServed(), pool.getServed())
+                        && bitsEqual(split.getSpareCapacity(), pool.getSpareCapacity())
+                        && bitsEqual(split.getHeadroom(), pool.getHeadroom())
+                        && bitsEqual(split.getFreeFlowLoad(), pool.getFreeFlowLoad())
+                        && bitsEqual(split.getStreetCapacity(), pool.getCapacity())
+                        && bitsEqual(split.getTransitRoadCeiling(), pool.getTransitRoadCeiling())
+                        && bitsEqual(split.getStreetLoad(), pool.getEffectiveLoad()));
+
+        // The gates' load goes through whole: it is not a share of anything.
+        InfrastructureManager gated = new InfrastructureManager();
+        gated.setBuiltCapacity(built);
+        gated.setLoad(load);
+        double gates = 900;
+        gated.setThrough(0, area, gates);
+        close("the freight gates' road load goes through whole: gates plus the share of what is past them",
+                gated.getThroughLoad(), gates + share * (load - gates), 1e-12);
+        InfrastructureManager lonely = new InfrastructureManager();
+        lonely.setBuiltCapacity(built);
+        lonely.setLoad(300);
+        lonely.setThrough(0, areaOf(1), 1000);
+        assertTrue("...and never more than the load itself", lonely.getThroughLoad() == 300 && lonely.getThroughLoad() <= lonely.getEffectiveLoad());
+
+        // WITH A HIGHWAY standing: its capacity at free flow carries the through trips, the streets the rest.
+        // ...at a heavier load, so the streets are past their free-flow line even with the highway, and the curve has work to do.
+        double highway = 1500, heavy = 1.3 * capacity;
+        InfrastructureManager without = new InfrastructureManager(), with = new InfrastructureManager();
+        without.setBuiltCapacity(built);
+        without.setLoad(heavy);
+        without.setThrough(0, area, 0);
+        with.setBuiltCapacity(built + highway);
+        with.setLoad(heavy);
+        with.setThrough(highway, area, 0);
+        double carried = Math.min(with.getThroughLoad(), highway * InfrastructureManager.FREE_FLOW);
+        close("with a highway the through trips it carries are its capacity at free flow, or the through load if that is less",
+                with.getThroughOnHighways(), carried, 1e-12);
+        close("...the streets carry the rest of the load, with the through trips past the highway on them", with.getStreetLoad(),
+                heavy - carried, 1e-12);
+        double streets = with.getStreetLoad() / capacity;
+        close("...at the streets' utilisation: their load over their capacity, the highway's not counted", with.getUtilisation(),
+                streets, 1e-12);
+        double ratio = (carried + with.getStreetLoad() * InfrastructureManager.throughputAt(streets)) / heavy;
+        close("...and the city's flow the trips' average: the highway at free flow, the streets at their own curve",
+                with.getThroughputRatio(), ratio, 1e-12);
+        assertTrue("fixture: the streets are past their free-flow line with the highway standing, so the flow is under 1",
+                streets > InfrastructureManager.FREE_FLOW && with.getThroughputRatio() < 1);
+        assertTrue("a highway relieves the streets that had its through trips: the flow is better than with none, the streets less used",
+                with.getThroughputRatio() > without.getThroughputRatio() && with.getUtilisation() < without.getUtilisation());
+    }
+
+    static boolean bitsEqual(double a, double b) { return Double.doubleToLongBits(a) == Double.doubleToLongBits(b); }
+
+    /* ======================= 11. A LARGE CITY'S NEEDS YOU LISTS BOTH ======================= */
+
+    /**
+     * FR7 2.1: the streets and the highways are two needs, each its own
+     * measure and line on NEEDS YOU, and in a large city both come up. The
+     * town is the busy paved one with the through share of a metro told to its
+     * network (the same seam ServicesManager.updateInfrastructure() tells it
+     * at: the built-up ground), four times the halfway area; small ground
+     * leaves the through need below its line, HIGHWAY_MIN_FILL of a highway.
+     */
+    static void bothNeeds(Path root) {
+        out.println("\n--- 11. a large city's NEEDS YOU lists both the streets and the highways; below the line, only the streets ---");
+        Game g = town(root, "both", PAVED, 3);
+        InfrastructureManager r = g.getInfrastructureManager();
+        double townArea = r.getBuiltUpKm2() * LandManager.SQ_FT_PER_KM2;
+        double one = BuildAdvice.highwayFlow(g);
+        // BELOW the line: the town's own small ground.
+        double smallFill = r.getThroughOverflow() / one;
+        List<CityNeeds.Need> small = CityNeeds.measure(g, CityNeeds.PLAIN);
+        boolean smallLists = false;
+        for (CityNeeds.Need n : CityNeeds.biting(small)) smallLists |= n.kind() == CityNeeds.Kind.HIGHWAYS;
+        boolean streetsListed = false;
+        for (CityNeeds.Need n : CityNeeds.biting(small)) streetsListed |= n.kind() == CityNeeds.Kind.ROADS;
+        out.printf("      the town: through overflow %.0f trips = %.2f of a highway (the line: %.2f); its streets %.0f%% used%n",
+                r.getThroughOverflow(), smallFill, CityNeeds.HIGHWAY_MIN_FILL, r.getUtilisation() * 100);
+        assertTrue("below the through-need threshold the streets are listed and the highways are not",
+                smallFill < CityNeeds.HIGHWAY_MIN_FILL && streetsListed && !smallLists);
+        // PAST it: the metro's ground, the town's own trips.
+        r.setThrough(0, 4 * areaOf(1), 0);
+        double fill = r.getThroughOverflow() / one;
+        List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
+        CityNeeds.Need streetNeed = null, highwayNeed = null;
+        for (CityNeeds.Need n : CityNeeds.biting(all)) {
+            if (n.kind() == CityNeeds.Kind.ROADS) streetNeed = n;
+            if (n.kind() == CityNeeds.Kind.HIGHWAYS) highwayNeed = n;
+        }
+        out.printf("      a metro's ground: through share %.0f%%, overflow %.0f trips = %.2f of a highway, %s of the through trips on highways%n",
+                r.getThroughShare() * 100, r.getThroughOverflow(), fill,
+                highwayNeed == null ? "-" : CityNeeds.servedPct(Math.min(1, r.getThroughServed())));
+        assertTrue("past the threshold NEEDS YOU lists both: the STREETS row and the HIGHWAYS row, each its own measure and door",
+                fill >= CityNeeds.HIGHWAY_MIN_FILL && streetNeed != null && highwayNeed != null
+                        && BuildAdvice.measureOf(streetNeed).kind() == BuildAdvice.Kind.ROADS
+                        && BuildAdvice.measureOf(highwayNeed).kind() == BuildAdvice.Kind.HIGHWAYS
+                        && streetNeed.go() == CityNeeds.Go.ROADS && highwayNeed.go() == CityNeeds.Go.ROADS);
+        bits("the HIGHWAYS row's figure is the through overflow over what one highway carries at free flow, to the bit",
+                highwayNeed.value(), r.getThroughOverflow() / (g.getBuildingManager().getTemplateByName(HIGHWAY).getCapacity()
+                        * InfrastructureManager.FREE_FLOW));
+        List<BuildAdvice.Suggestion> advice = BuildAdvice.suggest(g, all);
+        BuildAdvice.Suggestion streetCard = null, highwayCard = null;
+        for (BuildAdvice.Suggestion s : advice) {
+            if (s.measure().kind() == BuildAdvice.Kind.ROADS) streetCard = s;
+            if (s.measure().kind() == BuildAdvice.Kind.HIGHWAYS) highwayCard = s;
+        }
+        out.printf("      the advice: %s; %s%n",
+                streetCard == null ? "no street card" : streetCard.count() + " x " + streetCard.template().getName(),
+                highwayCard == null ? "no highway card" : highwayCard.count() + " x " + highwayCard.template().getName());
+        assertTrue("...and the advice suggests a street road for the one and an Elevated Highway for the other",
+                streetCard != null && !streetCard.template().isHighway() && streetCard.template().getCapacity() > 0
+                        && highwayCard != null && highwayCard.template() == template(g, HIGHWAY) && highwayCard.count() >= 1);
+        // The highway card takes the through overflow off the streets: what one more highway takes off is its unit.
+        double unit = BuildAdvice.unit(g, BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS), template(g, HIGHWAY));
+        bits("one more highway takes off the through trips that overflow, up to its capacity at free flow (its unit)", unit,
+                Math.min(one, r.getThroughOverflow()));
+        // ...and its order, sized to the line: the fill the highways leave is under HIGHWAY_MIN_FILL at the demand it opens to.
+        Map<BuildingsTemplate, Integer> done = BuildAdvice.plus(BuildAdvice.onSite(g, BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS)),
+                BuildAdvice.added(g, highwayCard));
+        assertTrue("...the order keeps the through need ahead: off NEEDS YOU's list at the demand it is sized to",
+                BuildAdvice.ahead(g, BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS), done, highwayCard.ahead()));
+        // The test player orders both, each by its own measure.
+        List<LongPlaytest.Move> moves = new ArrayList<>();
+        LongPlaytest.addRoadThrottle(moves, g, Math.max(1, g.getEconomyManager().getMonthGdp()) * .1);
+        boolean highwayMove = false, streetMove = false;
+        for (LongPlaytest.Move m : moves) {
+            highwayMove |= m.label().equals("highway");
+            streetMove |= m.label().equals("roads") || m.label().equals("gravel road");
+        }
+        assertTrue("the test player's road moves hold both: the highways' card and the streets'", highwayMove && streetMove);
+    }
+
+    /* ======================= 12. A HIGHWAY GIVES NO ACCESS ======================= */
+
+    /**
+     * FR7 2.1: a highway is a carriageway nothing fronts, so its capacity is
+     * not the streets'. Adding one leaves the street capacity as it was, in
+     * the advice's what-if and in a played city's network.
+     */
+    static void noAccess(Path root) {
+        out.println("\n--- 12. a highway gives no access: its capacity is not the streets' ---");
+        Game g = town(root, "access", PAVED, 3);
+        BuildingsTemplate highway = template(g, HIGHWAY);
+        InfrastructureManager now = g.getInfrastructureManager();
+        double streets = now.getStreetCapacity(), all = now.getCapacity();
+        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS);
+        InfrastructureManager what = BuildAdvice.roads(g, BuildAdvice.plus(site, highway, 2));
+        assertTrue("in the advice's what-if, two highways added leave getStreetCapacity() as it was and raise getCapacity()",
+                bitsEqual(what.getStreetCapacity(), streets) && what.getCapacity() == all + 2 * highway.getCapacity()
+                        && what.getHighwayCapacity() == 2 * highway.getCapacity());
+        assertTrue("the streets' measure does not serve a highway, and the highways' serves only one",
+                !ROADS.serves(highway) && BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS).serves(highway)
+                        && !BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS).serves(template(g, PAVED))
+                        && !BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS).serves(template(g, GRAVEL))
+                        && BuildAdvice.unit(g, ROADS, highway) == 0);
+        // ...and in the played city's own network once one stands.
+        quietly(() -> g.getBuildingManager().addStack(highway, 1, true));
+        g.getServicesManager().updateInfrastructure();
+        assertTrue("in the network once one stands: the street capacity is what it was, the pool is up by the highway, and the"
+                + " highway capacity is its own", bitsEqual(now.getStreetCapacity(), streets) && now.getCapacity() == all + highway.getCapacity()
+                && now.getHighwayCapacity() == highway.getCapacity());
+        // The streets' candidates never name a highway, however far down the ranking is walked.
+        java.util.Set<BuildingsTemplate> skip = new java.util.HashSet<>();
+        boolean named = false;
+        for (int guard = 0; guard < 8; guard++) {
+            BuildAdvice.Suggestion c = BuildAdvice.suggestFor(g, null, ROADS, g.getCash(), g.getLandManager().getAvailableSqFt(),
+                    BuildAdvice.SLACK, skip, true);
+            if (c == null) break;
+            named |= c.template().isHighway();
+            skip.add(c.template());
+        }
+        assertTrue("the streets' ranking never names the Elevated Highway", !named);
     }
 }

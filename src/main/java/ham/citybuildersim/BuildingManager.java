@@ -1513,6 +1513,14 @@ public class BuildingManager {
            largest thing here before today. That is the trade Jerus asked for:
            rail takes bulk freight off the road and hands back a lot of the land
            it saved, so a city buys track with ground as well as money.
+
+           AND THE LADDER HAS A STATION IN IT SINCE FR7 (2026-10-18). The three
+           rungs were once one ladder of tonnes with nothing tying a spur or a
+           line to a yard. The Rail Terminal is now a STATION (stationTonnes), a
+           fourth building, the Rail Depot (id 141, at the end of this catalogue
+           because ids are permanent), is the small one, and the Rail Spur is a
+           SIDING into one works: tonnes are railed through stations, except
+           bulk at a siding (sectors.Freight, THE STATIONS).
            ------------------------------------------------------------------ */
 
         /*
@@ -1523,6 +1531,7 @@ public class BuildingManager {
         BuildingsTemplate railSpur = new BuildingsTemplate("Rail Spur", BuildingType.RAIL)
                 .setSector("Freight")
                 .setRailCapacity(50000)         // tonnes across the boundary a month
+                .setSiding(true)                // a siding into one works (FR7): bulk rides it without a station
                 .setCashCost(140000)
                 .setConstructionPoints(21000)
                 .setConstructionMaterials(4500)
@@ -1570,6 +1579,7 @@ public class BuildingManager {
         BuildingsTemplate railTerminal = new BuildingsTemplate("Rail Terminal", BuildingType.RAIL)
                 .setSector("Freight")
                 .setRailCapacity(500000)
+                .setStationTonnes(500000)       // a station (FR7): the yard where cars from sidings are sorted
                 .setCashCost(1240000)
                 .setConstructionPoints(186000)
                 .setConstructionMaterials(39000)
@@ -3528,6 +3538,45 @@ public class BuildingManager {
                 .setJobs(JobType.COLLEGE_ENGINEERING, 3)
                 .setJobs(JobType.UNIV_SCIENCE, 1)
                 .setId(140));
+
+        /* ----------------------- THE RAIL DEPOT (FR7, 2026-10-18) -----------------------
+           The railway's first station: a small goods yard, a few sidings, a
+           shed and a team track, where the cars from a city's sidings are
+           sorted into trains. Jerus, 2026-10-18: "a small freight station
+           first". Every figure and its reasoning is in docs/queue/FR7.md,
+           section 1.1; (est.) below is derived from the Rail Terminal's.
+
+           IT IS A TENTH OF A TERMINAL, which is 50,000 of the terminal's
+           500,000 tonnes (est.): its construction points and materials, its
+           power and water, its ground, its road load and its posts are the
+           terminal's x 0.1, rounded to whole numbers (the 72 college posts
+           are 7). Its CASH is not: the rail ladder is per tonne and the
+           smaller rung is dearer (the spur 2.8 a tonne, the line 2.6, the
+           terminal 2.48), so the depot, the smallest station, prices at the
+           spur's 2.8 a tonne - 140,000 for 50,000 - and the terminal stays
+           the cheapest tonne of station there is.
+
+           IT IS TRACK AS WELL (railCapacity 50,000): a station's own is its
+           connection to the main line, so it counts in Freight.trackTonnes()
+           and in the wagon sets the track needs. What makes it a station is
+           stationTonnes, the tonnes a month it sorts (Freight, THE STATIONS).
+           It is appended at the end because ids are permanent (141), where
+           its neighbours the spur, the line and the terminal are 62 to 64. */
+        templates.add(new BuildingsTemplate("Rail Depot", BuildingType.RAIL)   // a small goods yard: sidings, a shed, a team track
+                .setSector("Freight")
+                .setRailCapacity(50000)         // a station's own track, its connection to the main line
+                .setStationTonnes(50000)        // tonnes a month it sorts: a tenth of the terminal's
+                .setCashCost(140000)            // the spur's 2.8 a tonne - the ladder is per tonne
+                .setConstructionPoints(18600)   // the terminal's x 0.1
+                .setConstructionMaterials(3900)
+                .setElectricityConsumption(560)
+                .setWaterConsumption(26)
+                .setLandSqFt(550000)
+                .setRoadLoad(490)
+                .setJobs(JobType.NO_DIPLOMA, 102)
+                .setJobs(JobType.DIPLOMA, 39)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 7)
+                .setId(141));
 
         /* ---------------------------- EDUCATION ----------------------------
            The other half of the labour market.
@@ -6748,6 +6797,18 @@ public class BuildingManager {
             BuildingsTemplate t = stack.getBuilding();
             if (!t.getSector().equals(sector)) continue;
             total += stack.getQuantity() * getter.applyAsDouble(t);
+        }
+        return total;
+    }
+
+    /**
+     * How many finished buildings, in every sector, have a template this accepts
+     * (FR7): Freight counts the bulk works a spur could be laid into.
+     */
+    public int standingWhere(java.util.function.Predicate<BuildingsTemplate> which) {
+        int total = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (which.test(stack.getBuilding())) total += stack.getQuantity();
         }
         return total;
     }

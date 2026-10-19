@@ -2791,9 +2791,9 @@ final class MapView {
         return String.format("%,d plots of road more than its streets carry", plots);
     }
 
-    /** ...and (0.7.89) when the railway's runs found no ground for some of its track: how much, in plots. */
+    /** ...and (FR7 slice 3) when the model has track the railway's ways do not use - its main line, its sidings and its branches - how much, in plots; the model's words (LandMap.trackSurplusWords()). */
     static String trackWords(long plots) {
-        return String.format("%,d plots of track with no ground left for the railway's lines", plots);
+        return LandMap.trackSurplusWords(plots);
     }
 
     /** The legend's note's widest, in pixels: the legend's own width at most, so it wraps under the entries. */

@@ -66,7 +66,7 @@
 
 **Uses:** [DistrictPlan](DistrictPlan.md) (197), [BuildingVisual](BuildingVisual.md) (36), [MapCheck](MapCheck.md) (25), [CityMap](CityMap.md) (25), [World](World.md) (24), [LongPlaytest](LongPlaytest.md) (16), [TilePainter](TilePainter.md) (8), [Founding](Founding.md) (6), [GameFiles](GameFiles.md) (5), [Game](Game.md) (4), [Timing](Timing.md) (3), [BuildingCatalog](BuildingCatalog.md) (2), [Mining](Mining.md) (2), [MiningCheck](MiningCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingType](BuildingType.md) (1), [Resource](Resource.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (1):** [EarthTerrainCheck](EarthTerrainCheck.md)
+**Used by (2):** [EarthTerrainCheck](EarthTerrainCheck.md), [JunctionCheck](JunctionCheck.md)
 
 ## Sections
 

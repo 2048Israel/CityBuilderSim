@@ -64,7 +64,7 @@
 > MapCheck holds it; the edge and each offer's cut-outs are found once a
 > ... (66 more lines in the source)
 
-**Uses:** [Palette](Palette.md) (71), [MapFrame](MapFrame.md) (68), [LandMap](LandMap.md) (51), [GlobeFrame](GlobeFrame.md) (35), [World](World.md) (24), [Game](Game.md) (20), [CityMap](CityMap.md) (19), [LandParcel](LandParcel.md) (19), [GlobePicture](GlobePicture.md) (16), [MapTiles](MapTiles.md) (15), [ShipShapes](ShipShapes.md) (14), [CityLand](CityLand.md) (13), [LandMarket](LandMarket.md) (11), [TrainSchedule](TrainSchedule.md) (10), [BoatSchedule](BoatSchedule.md) (8), [TrainShapes](TrainShapes.md) (8), [TilePainter](TilePainter.md) (6), [Deposit](Deposit.md) (4), [TileRaster](TileRaster.md) (4), [UserInterface](UserInterface.md) (3), [HistoryScreen](HistoryScreen.md) (3), [Ports](Ports.md) (3), [Icons](Icons.md) (2), [LandGrid](LandGrid.md) (2), [Resource](Resource.md) (2), [LandScreen](LandScreen.md) (2), [MiniMapFrame](MiniMapFrame.md) (2), [EarthData](EarthData.md) (1), [CityRuns](CityRuns.md) (1), [BuildingVisual](BuildingVisual.md) (1)... and 2 more
+**Uses:** [Palette](Palette.md) (71), [MapFrame](MapFrame.md) (68), [LandMap](LandMap.md) (52), [GlobeFrame](GlobeFrame.md) (35), [World](World.md) (24), [Game](Game.md) (20), [CityMap](CityMap.md) (19), [LandParcel](LandParcel.md) (19), [GlobePicture](GlobePicture.md) (16), [MapTiles](MapTiles.md) (15), [ShipShapes](ShipShapes.md) (14), [CityLand](CityLand.md) (13), [LandMarket](LandMarket.md) (11), [TrainSchedule](TrainSchedule.md) (10), [BoatSchedule](BoatSchedule.md) (8), [TrainShapes](TrainShapes.md) (8), [TilePainter](TilePainter.md) (6), [Deposit](Deposit.md) (4), [TileRaster](TileRaster.md) (4), [UserInterface](UserInterface.md) (3), [HistoryScreen](HistoryScreen.md) (3), [Icons](Icons.md) (2), [Ports](Ports.md) (2), [LandGrid](LandGrid.md) (2), [Resource](Resource.md) (2), [LandScreen](LandScreen.md) (2), [MiniMapFrame](MiniMapFrame.md) (2), [EarthData](EarthData.md) (1), [CityRuns](CityRuns.md) (1), [BuildingVisual](BuildingVisual.md) (1)... and 2 more
 
 **Used by (3):** [LandScreen](LandScreen.md), [MiniMap](MiniMap.md), [UserInterface](UserInterface.md)
 
@@ -442,7 +442,7 @@
 | 2773 | 1 | `static List<String[]> legendEntries()` | ...the plane's, at every scale on a generated world. |
 | 2785 | 3 | `static String packedWords(int packed)` | The legend's note under its entries, when the city has buildings its plans hold none of (R7; spec 5): how many are packed without a street. |
 | 2790 | 3 | `static String surplusWords(long plots)` | ...and when the city has road its streets have no room for (star RD2-4): how much, in plots. |
-| 2795 | 3 | `static String trackWords(long plots)` | ...and (0.7.89) when the railway's runs found no ground for some of its track: how much, in plots. |
+| 2795 | 3 | `static String trackWords(long plots)` | ...and (FR7 slice 3) when the model has track the railway's ways do not use - its main line, its sidings and its branches - how much, in plots; the model's words (LandMap.trackSurplusWords()). |
 | 2808 | 16 | `private VBox legend()` |  |
 | 2826 | 15 | `private void legendFor(int tier)` | The legend laid out for a tier (0.7.135, spec-globe 3.7): its entries (legendEntries()), and the ships' line on the plane alone. |
 | 2843 | 1 | `private int shownTier()` | The tier the expanded map shows: the globe's on Earth, the plane at every scale on a generated world. |

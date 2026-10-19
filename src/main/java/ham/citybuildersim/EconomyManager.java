@@ -692,11 +692,38 @@ public class EconomyManager {
      * with no road in it is what it was to the bit (repaired()).
      */
 
+    /*
+     * GRAVEL'S REPAIRS RISE WITH ITS TRAFFIC (FR7 2.2, Jerus's star 5,
+     * 2026-10-18): a Gravel Road is charged at the share of
+     * BuildingsTemplate.gravelRepairsAt() at the streets' utilisation as it
+     * stands (InfrastructureManager.getUtilisation(), read live through the
+     * supplier Game hands over when it is made). READ LIVE, NOT TOLD AT THE
+     * CHARGE: the slice told it at Game.chargeBuildingMaintenance() and kept
+     * it, so every repair bill read before the charge (the auto-builder's
+     * budget, the builders' materials) read last month's street in a city
+     * played on and none in one loaded - AutoBuildCheck 4's saved city
+     * ordered differently from its twin at its 604th month (the review).
+     * Quiet streets, or no supplier, charge the flat share exactly as before.
+     */
+    private java.util.function.DoubleSupplier streetUtilisation = () -> 0;
+
+    /** Where the streets' utilisation the road repairs are charged at is read from (FR7 2.2): Game's InfrastructureManager, live. */
+    public void setStreetUtilisation(java.util.function.DoubleSupplier utilisation) {
+        streetUtilisation = utilisation == null ? () -> 0 : utilisation;
+    }
+
+    /** The streets' utilisation as the repairs read it: 0 when it is not a number. */
+    private double streetUtilisation() {
+        double u = streetUtilisation.getAsDouble();
+        return Double.isFinite(u) ? Math.max(0, u) : 0;
+    }
+
     /** A month's repairs of `cost` over the buildings `total` sums: the house rate on those without a share of their own, and each with one at its own over twelve. */
-    private static double repaired(java.util.function.ToDoubleFunction<java.util.function.ToDoubleFunction<BuildingsTemplate>> total,
-                                   java.util.function.ToDoubleFunction<BuildingsTemplate> cost) {
+    private double repaired(java.util.function.ToDoubleFunction<java.util.function.ToDoubleFunction<BuildingsTemplate>> total,
+                            java.util.function.ToDoubleFunction<BuildingsTemplate> cost) {
         double house = total.applyAsDouble(t -> t.hasOwnRepairs() ? 0 : cost.applyAsDouble(t)) * MAINTENANCE_RATE;
-        double own = total.applyAsDouble(t -> t.hasOwnRepairs() ? cost.applyAsDouble(t) * t.repairsPerYear() / 12 : 0);
+        double own = total.applyAsDouble(t -> t.hasOwnRepairs()
+                ? cost.applyAsDouble(t) * t.repairsPerYearAt(streetUtilisation()) / 12 : 0);
         return house + own;
     }
 

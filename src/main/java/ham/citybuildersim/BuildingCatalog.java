@@ -199,6 +199,9 @@ public class BuildingCatalog {
                 .setFreightGrade(number(o, "freightGrade"))
                 .setTransitCapacity(number(o, "transitCapacity"))
                 .setRailCapacity(number(o, "railCapacity"))
+                // ...and the tonnes a station sorts, and whether the track is a works' siding (FR7): absent, none and no.
+                .setStationTonnes(number(o, "stationTonnes"))
+                .setSiding(flag(o, "siding"))
                 // ...and a Truck Depot's room for trucks (FR2): absent, none.
                 .setTruckRoom(number(o, "truckRoom"))
                 .setProduction1(number(o, "production1"))
@@ -523,6 +526,15 @@ public class BuildingCatalog {
             return (o.has(key) && !o.get(key).isJsonNull()) ? o.get(key).getAsDouble() : 0;
         } catch (Exception e) {
             return 0;
+        }
+    }
+
+    /** A true/false key (FR7's "siding"): absent, null or not a boolean, false. */
+    private boolean flag(JsonObject o, String key) {
+        try {
+            return o.has(key) && !o.get(key).isJsonNull() && o.get(key).getAsBoolean();
+        } catch (Exception e) {
+            return false;
         }
     }
 

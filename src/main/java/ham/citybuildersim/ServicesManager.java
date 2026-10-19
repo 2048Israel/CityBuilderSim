@@ -198,6 +198,22 @@ public class ServicesManager {
         infrastructureManager.setModes(
                 buildingManager.getTotalDouble(t -> t.getCapacity() * t.getFreightGrade()),
                 buildingManager.getTotalDouble(BuildingsTemplate::getTransitCapacity));
+
+        /*
+         * ...AND WHAT SPLITS IT INTO STREETS AND HIGHWAYS (FR7, 2026-10-18):
+         * the raw capacity of the highways standing (not weighted by grade,
+         * which is the freight relief's), the ground under every standing
+         * building, and the road load of the freight gates - the yards, the
+         * Truck Depots and the sea terminals send their trips through whole.
+         * All pure functions of the stock, so none is saved. See
+         * InfrastructureManager, STREETS AND HIGHWAYS, TWO NEEDS.
+         */
+        infrastructureManager.setThrough(
+                buildingManager.getTotalDouble(t -> t.isHighway() ? t.getCapacity() : 0),
+                buildingManager.getTotalDouble(BuildingsTemplate::getLandSqFt),
+                buildingManager.getTotalByCategoryDouble(BuildingType.RAIL, BuildingsTemplate::getRoadLoad)
+                        + buildingManager.getTotalByCategoryDouble(BuildingType.HAULAGE, BuildingsTemplate::getRoadLoad)
+                        + buildingManager.getTotalByCategoryDouble(BuildingType.PORTS, BuildingsTemplate::getRoadLoad));
     }
 
     /** The fare the player set, which decides how many of them ride. See TaxPolicy. */
