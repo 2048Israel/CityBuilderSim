@@ -46,6 +46,10 @@ import java.util.List;
  *   6. accessRoadCount() is the works that need an access road: the yards
  *      the runs draw, the shore's sea terminals, the Truck Depots - at
  *      least 1.
+ *
+ * They run in the order 1, 2, 5, 3, 4, 6: section 5, like 1 and 2, plays on
+ * GatewayCheck's cities, and 3, 4 and 6 share one access city built after
+ * them.
  */
 public class TruckRouteCheck {
 
