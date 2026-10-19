@@ -1,4 +1,4 @@
-# HealthCheck.java - 1,692 lines · 6 methods · 0 constants · harnesses
+# HealthCheck.java - 1,698 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/HealthCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -69,11 +69,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 1652 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
+| 41 | 1658 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
 | 45 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 52 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 57 | 1595 | `public static void main(String[] args) throws Exception` |  |
 | 1654 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
-| 1679 | 5 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
-| 1685 | 7 | `static void cleanUp(Path root)` |  |
+| 1679 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
+| 1691 | 7 | `static void cleanUp(Path root)` |  |
 

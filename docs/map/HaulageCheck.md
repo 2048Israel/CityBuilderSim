@@ -1,4 +1,4 @@
-# HaulageCheck.java - 1,230 lines · 33 methods · 4 constants · harnesses
+# HaulageCheck.java - 1,242 lines · 34 methods · 4 constants · harnesses
 
 `ham/citybuildersim/HaulageCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -53,7 +53,7 @@
 > line says where. The sections run in the order 1, 2, 3 (with the reload), 5, 6, 7, 8, 4, 9, 10, because 5 and 6 read section 3's city
 > (6 changes it with hauls run by hand) and every later section plays a city of its own.
 
-**Uses:** [Good](Good.md) (147), [Sector](Sector.md) (45), [Haulage](Haulage.md) (34), [Game](Game.md) (34), [Freight](Freight.md) (30), [ProcessingSector](ProcessingSector.md) (24), [JobType](JobType.md) (22), [Sectors](Sectors.md) (18), [GameFiles](GameFiles.md) (13), [Traffic](Traffic.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildingManager](BuildingManager.md) (5), [Mining](Mining.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [SpreadPlanner](SpreadPlanner.md) (4), [HeavyIndustry](HeavyIndustry.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [Founding](Founding.md) (1), [Resource](Resource.md) (1), [Ports](Ports.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1)
+**Uses:** [Good](Good.md) (147), [Sector](Sector.md) (45), [Haulage](Haulage.md) (35), [Game](Game.md) (34), [Freight](Freight.md) (30), [ProcessingSector](ProcessingSector.md) (24), [JobType](JobType.md) (22), [Sectors](Sectors.md) (18), [GameFiles](GameFiles.md) (13), [Traffic](Traffic.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildingManager](BuildingManager.md) (5), [Mining](Mining.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [SpreadPlanner](SpreadPlanner.md) (4), [HeavyIndustry](HeavyIndustry.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [Founding](Founding.md) (1), [Resource](Resource.md) (1), [Ports](Ports.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1)
 
 **Used by (1):** [RailDepotCheck](RailDepotCheck.md)
 
@@ -62,17 +62,17 @@
 | line | section |
 |---:|---|
 | 109 | THE FIXTURES |
-| 360 | · 3. EACH LEG ONCE - and A RELOAD, on the same city |
-| 454 | · · the reload |
-| 537 | 1. THE SLOT |
-| 570 | 2. TRUCKS |
-| 617 | 5. VANS FOR GOODS |
-| 645 | 6. THE FREIGHT FACTOR |
-| 739 | 7. THE FLEET and 8. THE PRICE |
-| 851 | · 8. THE PRICE |
-| 932 | 4. THE SIDING |
-| 1002 | 9. THE DEPOT |
-| 1119 | 10. THE WEIGHING |
+| 368 | · 3. EACH LEG ONCE - and A RELOAD, on the same city |
+| 462 | · · the reload |
+| 545 | 1. THE SLOT |
+| 578 | 2. TRUCKS |
+| 625 | 5. VANS FOR GOODS |
+| 653 | 6. THE FREIGHT FACTOR |
+| 747 | 7. THE FLEET and 8. THE PRICE |
+| 859 | · 8. THE PRICE |
+| 942 | 4. THE SIDING |
+| 1012 | 9. THE DEPOT |
+| 1129 | 10. THE WEIGHING |
 
 ## Constants
 
@@ -97,14 +97,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 66 | 1165 | **type** `public class HaulageCheck` | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the vans carry goods and nothing else. |
+| 66 | 1177 | **type** `public class HaulageCheck` | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the vans carry goods and nothing else. |
 | 70 | 5 | `static void quietly(Runnable r)` |  |
 | 76 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 81 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 87 | 3 | `static boolean same(double a, double b)` | Bitwise, not near. |
 | 91 | 3 | `static boolean near(double a, double b, double tol)` |  |
 
-### THE FIXTURES (lines 109-536)
+### THE FIXTURES (lines 109-544)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -124,57 +124,58 @@
 | 287 | 9 | `static double bulkTonnes(Sector s)` | The BULK tonnes a sector's plant moves at nameplate. |
 | 298 | 1 | `static void haul(Game game)` | One haul, run by hand: the month's rows billed at the state in force, as Game.chargeFreight() runs it. |
 | 301 | 7 | `static void setState(Haulage h, double need, double share)` | Haulage's need and share put where a fixture wants them, through its own save and restore (the share is struck at a haul, so a fixture cannot reach it by moving the pantry). |
-| 315 | 11 | `static double[] tradeShares(Game game, Good g)` | A good's shares of the city's trade, from the sectors' own month: the units shipped abroad over those and the units bought at home, and the units landed over those and the units bought at home - or, with nothing trade... |
-| 332 | 16 | `static double nameplate(Game game, boolean railed)` | The city-leg tonnes the plant standing asks for at nameplate, from the brief's weights (the FR2 review): every sector's but Freight's BULK inputs at capacity x tpu x (1 - RELIEF x rail x import share), plus its BULK o... |
-| 350 | 4 | `static void strike(Game game, double fleet)` | The trucks set to `fleet` and a haul run by hand: the share is struck then, over the fleet held at its start (Haulage.getShare()). |
-| 355 | 181 | `public static void main(String[] args)` |  |
+| 310 | 6 | `static void offTheBooks(Haulage h)` | Trucks a fixture hands over (setPantry) were bought by nobody: Haulage's fleet account (★10) kept at nought for them, or their wear comes back to the shippers as a refund. |
+| 323 | 11 | `static double[] tradeShares(Game game, Good g)` | A good's shares of the city's trade, from the sectors' own month: the units shipped abroad over those and the units bought at home, and the units landed over those and the units bought at home - or, with nothing trade... |
+| 340 | 16 | `static double nameplate(Game game, boolean railed)` | The city-leg tonnes the plant standing asks for at nameplate, from the brief's weights (the FR2 review): every sector's but Freight's BULK inputs at capacity x tpu x (1 - RELIEF x rail x import share), plus its BULK o... |
+| 358 | 4 | `static void strike(Game game, double fleet)` | The trucks set to `fleet` and a haul run by hand: the share is struck then, over the fleet held at its start (Haulage.getShare()). |
+| 363 | 181 | `public static void main(String[] args)` |  |
 
-### 1. THE SLOT (lines 537-569)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 541 | 28 | `static void slot()` |  |
-
-### 2. TRUCKS (lines 570-616)
+### 1. THE SLOT (lines 545-577)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 574 | 42 | `static void trucks()` |  |
+| 549 | 28 | `static void slot()` |  |
 
-### 5. VANS FOR GOODS (lines 617-644)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 621 | 23 | `static void vans(Game a)` |  |
-
-### 6. THE FREIGHT FACTOR (lines 645-738)
+### 2. TRUCKS (lines 578-624)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 649 | 89 | `static void factor(Game a)` |  |
+| 582 | 42 | `static void trucks()` |  |
 
-### 7. THE FLEET and 8. THE PRICE (lines 739-931)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 743 | 159 | `static void fleetAndPrice()` |  |
-| 904 | 27 | `static void seeding()` | The first fleet is given once, at the nameplate need, free; a city that is known to have run out is not given another. |
-
-### 4. THE SIDING (lines 932-1001)
+### 5. VANS FOR GOODS (lines 625-652)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 936 | 65 | `static void siding()` |  |
+| 629 | 23 | `static void vans(Game a)` |  |
 
-### 9. THE DEPOT (lines 1002-1118)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1006 | 112 | `static void depot()` |  |
-
-### 10. THE WEIGHING (lines 1119-1230)
+### 6. THE FREIGHT FACTOR (lines 653-746)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1123 | 107 | `static void weighing()` |  |
+| 657 | 89 | `static void factor(Game a)` |  |
+
+### 7. THE FLEET and 8. THE PRICE (lines 747-941)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 751 | 161 | `static void fleetAndPrice()` |  |
+| 914 | 27 | `static void seeding()` | The first fleet is given once, at the nameplate need, free; a city that is known to have run out is not given another. |
+
+### 4. THE SIDING (lines 942-1011)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 946 | 65 | `static void siding()` |  |
+
+### 9. THE DEPOT (lines 1012-1128)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1016 | 112 | `static void depot()` |  |
+
+### 10. THE WEIGHING (lines 1129-1242)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1133 | 109 | `static void weighing()` |  |
 

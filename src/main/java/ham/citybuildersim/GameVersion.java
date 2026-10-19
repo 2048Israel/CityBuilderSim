@@ -6815,8 +6815,9 @@ public final class GameVersion {
      *   - PAVING BY TRAFFIC: a gravel road's repairs rise past 200 vehicles a
      *     day on its street, so busy streets are paved.
      *   - THE MAP: gravel drawn grey; track only on a train's way (CityRuns
-     *     .layRail(): the main line, a siding into each spur's mined works,
-     *     a branch to a further yard; the rest the legend's surplus), the Rail
+     *     .layRail(): the main line, a siding into each spur's mined works or
+     *     routed by its district's plan into a works it places, a branch to a
+     *     further yard; the rest the legend's surplus), the Rail
      *     Depot a small yard, bulk trains into the sidings; the interchanges'
      *     ground, access roads from the yards, sea terminals and Truck
      *     Depots, kerb corners (FR0-L).
