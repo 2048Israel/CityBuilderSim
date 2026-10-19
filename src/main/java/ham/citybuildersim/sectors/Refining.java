@@ -901,9 +901,9 @@ public final class Refining extends Sector {
                 Sector.Line l = lines.get(i);
                 if (l.kind() == Line.Kind.NOTE && l.label() != null && l.label().startsWith("Staffed ")) {
                     lines.set(i, Line.note(String.format("Staffed %s \u00d7 power %s \u00d7 water %s \u00d7 roads %s \u00d7 well %s"
-                                    + " \u00d7 vans %s \u00d7 the run %s \u2014 all seven multiply: the six are the plant's, the run"
+                                    + " \u00d7 freight %s \u00d7 the run %s \u2014 all seven multiply: the six are the plant's, the run"
                                     + " is the share of its crude whose barrels pay.", f.pct(getAverageFill()), f.pct(getEnergyRatio()),
-                            f.pct(getWaterRatio()), f.pct(getRoadRatio()), f.pct(getHealthRatio()), f.pct(getVanRatio()),
+                            f.pct(getWaterRatio()), f.pct(getRoadRatio()), f.pct(getHealthRatio()), f.pct(getFreightRatio()),
                             f.pct(runShare))));
                 }
             }

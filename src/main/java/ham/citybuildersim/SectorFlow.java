@@ -94,8 +94,8 @@ public final class SectorFlow {
         public boolean underwater() { return Double.isFinite(cost) && Double.isFinite(price) && cost > price; }
     }
 
-    /** The six throttles in getOperatingRate()'s order, as the screen names them. */
-    public static final String[] THROTTLES = { "staffed", "power", "water", "roads", "well", "vans" };
+    /** The six throttles in getOperatingRate()'s order, as the screen names them (the sixth, "freight", was "vans" until FR2). */
+    public static final String[] THROTTLES = { "staffed", "power", "water", "roads", "well", "freight" };
 
     /**
      * The plant.
@@ -104,7 +104,7 @@ public final class SectorFlow {
      * @param onSite    on site, for anyone's order (Sector.buildingsOnSite())
      * @param posts     the posts it offers (getPostsOffered())
      * @param workers   the posts filled (getWorkers())
-     * @param ratios    the six throttles, THROTTLES' order: the fill, power, water, the road, health, its vans
+     * @param ratios    the six throttles, THROTTLES' order: the fill, power, water, the road, health, its freight (FR2: the lesser of its vans' ratio and Haulage's, Sector.getFreightRatio())
      * @param cascade   the running product after each - the last is the rate, to the bit
      * @param rate      getOperatingRate(); NaN with nothing standing (no plant has a rate)
      * @param let       the landlords' homes let over the homes they own; NaN for everyone else
@@ -224,7 +224,7 @@ public final class SectorFlow {
     /** The plant alone (the Sectors list's cards and every page's RUNNING AT). */
     public static Plant plant(Sector sector) {
         double[] ratios = { sector.getAverageFill(), sector.getEnergyRatio(), sector.getWaterRatio(),
-                sector.getRoadRatio(), sector.getHealthRatio(), sector.getVanRatio() };
+                sector.getRoadRatio(), sector.getHealthRatio(), sector.getFreightRatio() };
         // The running product in getOperatingRate()'s own order, so its last
         // step is the rate to the bit.
         double[] cascade = new double[ratios.length];

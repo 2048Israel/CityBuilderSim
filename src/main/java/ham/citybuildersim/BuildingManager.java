@@ -6177,12 +6177,24 @@ public class BuildingManager {
        job type through postsOffered(), or the households would be paid for
        posts no employer pays for. A sector the hook says nothing about
        offers every post.
+
+       ...AND BY JOB TYPE SINCE FR2 (2026-10-18): Freight's Truck Depots offer
+       a driver's post for each truck they keep, not for each place in the
+       yard (sectors.Haulage.strikeDrivers()), and the drivers are one tier of
+       the sector's posts, so its share is a job type's. The builders' share
+       is every type's, as it was.
        --------------------------------------------------------------------- */
 
-    /** The share of a sector's posts it offers this month; null offers every post. */
-    private java.util.function.ToDoubleFunction<String> offeredShare;
+    /** The share of a sector's posts of a job type it offers this month; null offers every post. */
+    private java.util.function.ToDoubleBiFunction<String, JobType> offeredShare;
 
+    /** A share for every job type of a sector alike (the builders'). */
     public void setOfferedShare(java.util.function.ToDoubleFunction<String> offeredShare) {
+        this.offeredShare = offeredShare == null ? null : (sector, type) -> offeredShare.applyAsDouble(sector);
+    }
+
+    /** ...and one a job type at a time (FR2: Freight's drivers). */
+    public void setOfferedShareByType(java.util.function.ToDoubleBiFunction<String, JobType> offeredShare) {
         this.offeredShare = offeredShare;
     }
 
@@ -6192,18 +6204,18 @@ public class BuildingManager {
         return Math.round(posts * Math.max(0, share));
     }
 
-    /** A sector's share of its posts on offer: 1 without the hook. */
-    public double offeredShareOf(String sector) {
+    /** A sector's share of its posts of a job type on offer: 1 without the hook. */
+    public double offeredShareOf(String sector, JobType type) {
         if (offeredShare == null || sector == null) return 1;
-        double share = offeredShare.applyAsDouble(sector);
+        double share = offeredShare.applyAsDouble(sector, type);
         return share >= 0 ? Math.min(1, share) : 1;
     }
 
-    /** The posts a sector offers this month, per job type - its buildings' posts at its share. */
+    /** The posts a sector offers this month, per job type - its buildings' posts at its share of each. */
     public long[] getPostsOfferedBySector(String sector) {
         long[] posts = getJobArrayBySector(sector);
-        double share = offeredShareOf(sector);
-        for (int i = 0; i < posts.length; i++) posts[i] = postsOffered(posts[i], share);
+        JobType[] types = JobType.values();
+        for (int i = 0; i < posts.length; i++) posts[i] = postsOffered(posts[i], offeredShareOf(sector, types[i]));
         return posts;
     }
 
@@ -6496,7 +6508,7 @@ public class BuildingManager {
         }
         long withheld = 0;
         for (java.util.Map.Entry<String, Long> e : bySector.entrySet()) {
-            withheld += e.getValue() - postsOffered(e.getValue(), offeredShareOf(e.getKey()));
+            withheld += e.getValue() - postsOffered(e.getValue(), offeredShareOf(e.getKey(), type));
         }
         return withheld;
     }

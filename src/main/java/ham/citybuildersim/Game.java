@@ -313,7 +313,10 @@ public class Game {
         // the posts they lay off are nobody's (sectors.Construction, THE
         // CREWS THE WORK NEEDS; BuildingManager, THE POSTS A SECTOR OFFERS).
         ham.citybuildersim.sectors.Construction builders = economyManager.getSectors().construction();
-        buildingManager.setOfferedShare(key -> key.equals(builders.key()) ? builders.getPostsOfferedShare() : 1);
+        // ...and Freight's depots a driver for each truck they keep, not for each place in the yard (FR2; sectors.Haulage.strikeDrivers()).
+        ham.citybuildersim.sectors.Freight carrier = economyManager.getSectors().freight();
+        buildingManager.setOfferedShareByType((key, type) -> key.equals(builders.key()) ? builders.getPostsOfferedShare()
+                : key.equals(carrier.key()) ? carrier.haulage().offeredShare(type) : 1);
         // ...and what their crews cost a point, today and at founding, which
         // the labour in every price follows (0.7.19; BuildingManager, THE
         // LABOUR IN A PRICE KEEPS UP WITH WAGES).
@@ -5578,6 +5581,8 @@ public class Game {
                 getMaintenancePoints() + buildingManager.getRemainingConstructionPoints(),
                 (capacity - depots) * atFullStaffing,
                 depots * atFullStaffing);
+        // ...and Freight's drivers, a post for each truck a depot keeps (FR2), at the same moment and for the same reason.
+        getSectors().freight().haulage().strikeDrivers();
     }
 
     /**

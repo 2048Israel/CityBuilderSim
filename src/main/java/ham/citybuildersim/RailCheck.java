@@ -360,15 +360,21 @@ public class RailCheck {
 
         quietly(() -> { for (int i = 0; i < 28; i++) game.toggleNextMonth(); });
 
-        double billed = rail.statement().otherRevenue;
-        double paidOut = 0;
+        // Since FR2 the sector's other revenue is the railway's bill and Haulage's (the trucks' city leg): the railway's is the rest.
+        double trucksBilled = rail.haulage().getBill();
+        double billed = rail.statement().otherRevenue - trucksBilled;
+        double paidOut = 0, trucksPaid = 0;
         for (Sector s : game.getSectors().all()) {
             if (s == rail) continue;
             paidOut += s.otherInputParts().getOrDefault("Rail freight", 0.0);
+            trucksPaid += s.otherInputParts().getOrDefault(ham.citybuildersim.sectors.Haulage.BILLED_AS, 0.0);
         }
         report("every dollar the railway billed is on a shipper's cost line",
                 billed > 0 && near(billed, paidOut, 1e-9),
                 String.format("billed %,.2fk, charged %,.2fk", billed, paidOut));
+        report("...and every dollar its trucks billed (FR2), on the shippers' Haulage line",
+                near(trucksBilled, trucksPaid, 1e-9),
+                String.format("billed %,.2fk, charged %,.2fk", trucksBilled, trucksPaid));
 
         report("...and the shippers' opened cost line still adds to the closed one",
                 allInputsAddUp(game),
@@ -396,11 +402,13 @@ public class RailCheck {
         double fuelBill = rail.statement().bought.getOrDefault(Good.DIESEL, new Sector.Split()).abroad;
         double trainBill = rail.statement().bought
                 .getOrDefault(Good.ROLLING_STOCK, new Sector.Split()).abroad;
-        report("the railway's fuel and its locomotives are both imports",
+        // ...and since FR2 the trucks its Haulage division buys, which the world sells a town with no Heavy Truck Plant.
+        double truckBill = rail.statement().bought.getOrDefault(Good.TRUCKS, new Sector.Split()).abroad;
+        report("the railway's fuel and its locomotives are both imports, and with the trucks they are all of them",
                 fuelBill > 0 && trainBill > 0
-                        && near(rail.statement().imports, fuelBill + trainBill, 1e-9),
-                String.format("fuel %,.0fk + trains %,.0fk = %,.0fk on the trade balance",
-                        fuelBill, trainBill, rail.statement().imports));
+                        && near(rail.statement().imports, fuelBill + trainBill + truckBill, 1e-9),
+                String.format("fuel %,.0fk + trains %,.0fk + trucks %,.0fk = %,.0fk on the trade balance",
+                        fuelBill, trainBill, truckBill, rail.statement().imports));
 
         /*
          * ...AND THE TRADE TAB NAMES THE FUEL (0.7.35). It draws the month good
@@ -469,7 +477,8 @@ public class RailCheck {
         double sizedQuote = rail.getQuote();
         double sizedBilled = rail.getHaulageBilled();
         double sizedAllowed = rail.getAllowedRevenue();
-        double sizedNet = rail.statement().netIncome;
+        // What the railway earned: its bill less its running cost (FR2: the sector's net income holds the trucks' too).
+        double sizedNet = rail.getHaulageBilled() - rail.getRunningCost();
         double sizedCapital = rail.getBuildingsValue() + rail.getLandValue();
 
         report("a railway sized to its city bills about what the rule allows it",
@@ -494,10 +503,11 @@ public class RailCheck {
         report("...so it pins at the lorries' price, which is its ceiling",
                 rail.getQuote() > sizedQuote && rail.getQuote() <= 1 + 1e-12,
                 String.format("%.1f%% against %.1f%%", rail.getQuote() * 100, sizedQuote * 100));
+        double railNet = rail.getHaulageBilled() - rail.getRunningCost();
         report("...and earns LESS on four times the capital",
-                rail.statement().netIncome < sizedNet,
+                railNet < sizedNet,
                 String.format("%,.0fk on %,.0fk of track against %,.0fk on %,.0fk",
-                        rail.statement().netIncome,
+                        railNet,
                         rail.getBuildingsValue() + rail.getLandValue(), sizedNet, sizedCapital));
         report("...but never quotes below its floor, because freight needs profit",
                 rail.getQuote() >= Freight.RAIL_FLOOR - 1e-12,

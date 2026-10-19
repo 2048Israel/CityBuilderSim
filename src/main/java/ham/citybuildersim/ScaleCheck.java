@@ -967,7 +967,7 @@ public class ScaleCheck {
      */
     static final Pattern INTENSIVE = Pattern.compile("(price|Price|rate|Rate|month|Month|Months|share|Share|ratio|Ratio|target|Target|"
             + "renewals|duration|Left$|^id$|Id$|factor|Factor|insured|key|sector|good|type|building|known|Known|"
-            + "^leverage$|Margin$|^quote$|^tightness$|^utilisation$|Multiple$|StruckOn$)");
+            + "^leverage$|Margin$|(^|\\.)quote$|(^|\\.)tightness$|^utilisation$|Multiple$|StruckOn$)");
 
     /*
      * THE NAMES THE PATTERN READ WRONG (0.7.54). The scaled copy's first month
@@ -981,7 +981,10 @@ public class ScaleCheck {
      * (EXTENSIVE), and the ratios whose names did not look it are left alone
      * (the pattern's last seven: a book's leverage, a margin, the railway's
      * quote and tightness, the builders' utilisation and the fill they
-     * struck on, the shops' scarcity multiple).
+     * struck on, the shops' scarcity multiple). Since FR2 the quote and the
+     * tightness under a division's prefix too (Haulage's haul.quote, a price
+     * a tonne, and haul.tightness): the copy's trucks billed K times the
+     * city's price until they were.
      */
     static final java.util.Set<String> EXTENSIVE = java.util.Set.of("recognisedThisMonth", "escalationThisMonth",
             "repairsThisMonth", "lastMonthSales", "demandAtPrice", "buildings", "sharesBoughtBack", "zeroRated");
