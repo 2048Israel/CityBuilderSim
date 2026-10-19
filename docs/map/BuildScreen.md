@@ -1,6 +1,6 @@
 # BuildScreen.java - 5,039 lines · 171 methods · 16 constants · interface
 
-`ham/citybuildersim/ui/BuildScreen.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BuildScreen.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The build tab: the Overview it opens on and the city's five categories
 > opened on their needs (both 0.7.24), the market's nine in their groups

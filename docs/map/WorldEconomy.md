@@ -1,6 +1,6 @@
 # WorldEconomy.java - 422 lines · 18 methods · 12 constants · model
 
-`ham/citybuildersim/WorldEconomy.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldEconomy.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The rest of the world, which has its own inflation and did not use to.
 > 
@@ -32,7 +32,7 @@
 > ForeignCheck asserts that two runs of the same city come out identical and a
 > world with real randomness in it would end that.
 
-**Used by (12):** [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SkipReportCheck](SkipReportCheck.md), [TradeScreen](TradeScreen.md)
+**Used by (13):** [CentralBankCheck](CentralBankCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SkipReportCheck](SkipReportCheck.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

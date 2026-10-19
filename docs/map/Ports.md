@@ -1,6 +1,6 @@
 # Ports.java - 546 lines · 46 methods · 10 constants · model
 
-`ham/citybuildersim/Ports.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Ports.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The city's ports: the berths its sea terminals stand, the share of each
 > kind of cargo they take off the lorries and the railway, and the tonnes

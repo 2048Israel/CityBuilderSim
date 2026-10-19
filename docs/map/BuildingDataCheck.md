@@ -1,6 +1,6 @@
 # BuildingDataCheck.java - 826 lines · 4 methods · 0 constants · harnesses
 
-`ham/citybuildersim/BuildingDataCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingDataCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The migration's safety net: buildings.json must produce exactly the templates
 > the hardcoded definitions did.

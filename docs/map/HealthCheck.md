@@ -1,6 +1,6 @@
-# HealthCheck.java - 1,666 lines · 5 methods · 0 constants · harnesses
+# HealthCheck.java - 1,698 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HealthCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HealthCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > Sickness: what it moves, and - much more importantly - what it does not.
 > 
@@ -36,7 +36,7 @@
 > the households' statement, and fees 0 with a premium serves the same people
 > as fees 1x without one; (16) both dials survive a save and a reform.
 
-**Uses:** [Healthcare](Healthcare.md) (97), [CareType](CareType.md) (94), [Health](Health.md) (47), [AgeBand](AgeBand.md) (41), [TaxPolicy](TaxPolicy.md) (24), [Game](Game.md) (21), [PopulationCohorts](PopulationCohorts.md) (16), [BuildingManager](BuildingManager.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [Migration](Migration.md) (7), [JobType](JobType.md) (5), [Good](Good.md) (4), [TimeSkipReport](TimeSkipReport.md) (4), [Household](Household.md) (4), [EconomyManager](EconomyManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [GameFiles](GameFiles.md) (2), [Retail](Retail.md) (2), [Founding](Founding.md) (2), [FamilyModel](FamilyModel.md) (2), [PayTier](PayTier.md) (2), [NationalAccounts](NationalAccounts.md) (2), [PopulationManager](PopulationManager.md) (1), [LandManager](LandManager.md) (1), [FamilyStructure](FamilyStructure.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1)
+**Uses:** [Healthcare](Healthcare.md) (97), [CareType](CareType.md) (94), [Health](Health.md) (47), [AgeBand](AgeBand.md) (41), [TaxPolicy](TaxPolicy.md) (24), [Game](Game.md) (22), [PopulationCohorts](PopulationCohorts.md) (16), [BuildingManager](BuildingManager.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [Migration](Migration.md) (7), [Good](Good.md) (5), [JobType](JobType.md) (5), [TimeSkipReport](TimeSkipReport.md) (4), [Household](Household.md) (4), [EconomyManager](EconomyManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [GameFiles](GameFiles.md) (2), [Retail](Retail.md) (2), [Founding](Founding.md) (2), [FamilyModel](FamilyModel.md) (2), [PayTier](PayTier.md) (2), [NationalAccounts](NationalAccounts.md) (2), [PopulationManager](PopulationManager.md) (1), [LandManager](LandManager.md) (1), [FamilyStructure](FamilyStructure.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Freight](Freight.md) (1), [Haulage](Haulage.md) (1)
 
 ## Sections
 
@@ -55,9 +55,9 @@
 | 933 | · 11. a skip cannot hide an epidemic |
 | 970 | · 12. the fee has a dial, and the funerals do not |
 | 1080 | · 13. who can afford the clinic |
-| 1456 | · 14. the unchanged case, at zero tolerance |
-| 1495 | · 15. the premium |
-| 1584 | · 16. both dials survive a save, and a reform |
+| 1461 | · 14. the unchanged case, at zero tolerance |
+| 1500 | · 15. the premium |
+| 1589 | · 16. both dials survive a save, and a reform |
 
 ## Fields (state)
 
@@ -69,10 +69,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 1626 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
+| 41 | 1658 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
 | 45 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 52 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 57 | 1590 | `public static void main(String[] args) throws Exception` |  |
-| 1649 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
-| 1659 | 7 | `static void cleanUp(Path root)` |  |
+| 57 | 1595 | `public static void main(String[] args) throws Exception` |  |
+| 1654 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
+| 1679 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
+| 1691 | 7 | `static void cleanUp(Path root)` |  |
 

@@ -1,6 +1,6 @@
-# EarthTerrainCheck.java - 1,544 lines · 41 methods · 31 constants · harnesses
+# EarthTerrainCheck.java - 1,547 lines · 41 methods · 31 constants · harnesses
 
-`ham/citybuildersim/EarthTerrainCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthTerrainCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key holding the generated world as it was, and the game's founding, land and screen standing on an Earth world - and since 0.7.117 (batch E3) its deposits on the Earth's geology (Geology), and since 0.7.127 (batch E7) its ice and desert.
 > 
@@ -64,7 +64,7 @@
 >      within EarthTerrain.WATER_PAD_DEG.
 > ... (58 more lines in the source)
 
-**Uses:** [World](World.md) (314), [Geology](Geology.md) (96), [Resource](Resource.md) (77), [EarthData](EarthData.md) (51), [EarthTerrain](EarthTerrain.md) (33), [CityLand](CityLand.md) (29), [MapCheck](MapCheck.md) (22), [Deposit](Deposit.md) (21), [EarthSite](EarthSite.md) (20), [DistrictPlan](DistrictPlan.md) (12), [EarthProj](EarthProj.md) (11), [CityMap](CityMap.md) (6), [GridConversion](GridConversion.md) (6), [EarthCheck](EarthCheck.md) (5), [LandManager](LandManager.md) (5), [BuildingVisual](BuildingVisual.md) (5), [TilePainter](TilePainter.md) (5), [LandMap](LandMap.md) (5), [CityRuns](CityRuns.md) (5), [DataSave](DataSave.md) (5), [GameVersion](GameVersion.md) (5), [Timing](Timing.md) (4), [PlanCheck](PlanCheck.md) (3), [Founding](Founding.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [TileRaster](TileRaster.md) (2), [WorldCheck](WorldCheck.md) (1), [MapFrame](MapFrame.md) (1), [MapTiles](MapTiles.md) (1)
+**Uses:** [World](World.md) (314), [Geology](Geology.md) (96), [Resource](Resource.md) (77), [EarthData](EarthData.md) (51), [EarthTerrain](EarthTerrain.md) (33), [CityLand](CityLand.md) (29), [MapCheck](MapCheck.md) (22), [Deposit](Deposit.md) (21), [EarthSite](EarthSite.md) (21), [DistrictPlan](DistrictPlan.md) (12), [EarthProj](EarthProj.md) (11), [CityMap](CityMap.md) (6), [GridConversion](GridConversion.md) (6), [GameVersion](GameVersion.md) (6), [EarthCheck](EarthCheck.md) (5), [LandManager](LandManager.md) (5), [BuildingVisual](BuildingVisual.md) (5), [TilePainter](TilePainter.md) (5), [LandMap](LandMap.md) (5), [CityRuns](CityRuns.md) (5), [DataSave](DataSave.md) (5), [Timing](Timing.md) (4), [PlanCheck](PlanCheck.md) (3), [Founding](Founding.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [TileRaster](TileRaster.md) (2), [WorldCheck](WorldCheck.md) (1), [MapFrame](MapFrame.md) (1), [MapTiles](MapTiles.md) (1)
 
 **Used by (3):** [GatewayCheck](GatewayCheck.md), [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md)
 
@@ -136,15 +136,15 @@
 | 264 | `final int cells` |  |
 | 265 | `final double seaPoints, dataSea, dataLake, dataForest` |  |
 | 266 | `final long dryForestData` |  |
-| 1511 | `final EarthData d` |  |
-| 1512 | `final int cpd` |  |
-| 1513 | `final Map<Integer, byte[]> grids` |  |
+| 1514 | `final EarthData d` |  |
+| 1515 | `final int cpd` |  |
+| 1516 | `final Map<Integer, byte[]> grids` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 133 | 1412 | **type** `public class EarthTerrainCheck` | The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key h... |
+| 133 | 1415 | **type** `public class EarthTerrainCheck` | The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key h... |
 | 175 | 4 | `static void check(String label, boolean ok)` |  |
 | 180 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 186 | 1 | **type** `record Spot(String name, double lat, double lon)` | The fixture's windows: name, latitude, longitude. |
@@ -229,20 +229,20 @@
 | 1052 | 61 | `static void planet(EarthData file, Spot rotterdam)` | Section 13, on the full file: Z and the odds are its own to their rounding, and the study's figures on the rules' classes; section 12 on the whole planet. |
 | 1115 | 123 | `static void types(String id, Map<String, Spot> spots)` | Section 14: the totals exact on Earth and every field typed by the class under it. |
 
-### 15. ICE AND DESERT AS KINDS OF GROUND (0.7.127, batch E7; the (lines 1239-1544)
+### 15. ICE AND DESERT AS KINDS OF GROUND (0.7.127, batch E7; the (lines 1239-1547)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1262 | 112 | `static void iceAndDesert(EarthData file, Map<String, Window> windows, String id)` |  |
-| 1376 | 5 | `static long[] only(byte cls, long n)` | A count of n plots of one class, World.CLASSES long. |
-| 1383 | 3 | `static boolean adds(EarthSite.Card c)` | A card's plots add up: dry, fresh, sea and ice. |
-| 1388 | 5 | `static int westOf(DistrictPlan p)` | How many of a plan's buildings stand west of its district's middle. |
-| 1395 | 16 | `static long[] tileOf(World w, CityLand land, byte cls)` | The nearest whole tile to a city's founding site, ring by ring of tiles out to 48 (46 km), that the city owns no plot of and whose every plot is of one class: its north-west plot, or null. |
-| 1413 | 16 | `static boolean far(World.Key key, byte cls, String[] words)` | Whether the far nodes about a world's spot draw a class: every pixel of it at WATER_STRIDE and FAR_STRIDE / 4 (61 and 246 km a node), and at FAR_STRIDE (983 km, which reaches past the sheet's coast) more of it than of... |
-| 1440 | 68 | `static void cover(EarthData d, boolean ice, int lat0, int lon0)` | One kind's 1-degree cell on the full file, on a world centred there: every plot whose centre lies in the cell drawn, and among those the kind could take (ice any ground not water; the desert grass or desert, which for... |
-| 1510 | 34 | **type** `static final class Cover` | Land cover's 2' cells read from the file's grids, kept by tile: a cell's value, and a bit's share between the cells' centres as EarthTerrain reads it. |
-| 1515 | 4 | `Cover(EarthData d)` _(in EarthTerrainCheck.Cover)_ |  |
-| 1521 | 7 | `int cell(long r, long c)` _(in EarthTerrainCheck.Cover)_ | The value of the cell in global row r (from 90 N) and column c (from 180 W). |
-| 1530 | 3 | `int at(double lat, double lon)` _(in EarthTerrainCheck.Cover)_ | The value of the cell a point lies in. |
-| 1535 | 8 | `double share(double lat, double lon, int bit)` _(in EarthTerrainCheck.Cover)_ | A bit read 0 or 1 at each cell and interpolated between the four cells' centres about a point. |
+| 1262 | 115 | `static void iceAndDesert(EarthData file, Map<String, Window> windows, String id)` |  |
+| 1379 | 5 | `static long[] only(byte cls, long n)` | A count of n plots of one class, World.CLASSES long. |
+| 1386 | 3 | `static boolean adds(EarthSite.Card c)` | A card's plots add up: dry, fresh, sea and ice. |
+| 1391 | 5 | `static int westOf(DistrictPlan p)` | How many of a plan's buildings stand west of its district's middle. |
+| 1398 | 16 | `static long[] tileOf(World w, CityLand land, byte cls)` | The nearest whole tile to a city's founding site, ring by ring of tiles out to 48 (46 km), that the city owns no plot of and whose every plot is of one class: its north-west plot, or null. |
+| 1416 | 16 | `static boolean far(World.Key key, byte cls, String[] words)` | Whether the far nodes about a world's spot draw a class: every pixel of it at WATER_STRIDE and FAR_STRIDE / 4 (61 and 246 km a node), and at FAR_STRIDE (983 km, which reaches past the sheet's coast) more of it than of... |
+| 1443 | 68 | `static void cover(EarthData d, boolean ice, int lat0, int lon0)` | One kind's 1-degree cell on the full file, on a world centred there: every plot whose centre lies in the cell drawn, and among those the kind could take (ice any ground not water; the desert grass or desert, which for... |
+| 1513 | 34 | **type** `static final class Cover` | Land cover's 2' cells read from the file's grids, kept by tile: a cell's value, and a bit's share between the cells' centres as EarthTerrain reads it. |
+| 1518 | 4 | `Cover(EarthData d)` _(in EarthTerrainCheck.Cover)_ |  |
+| 1524 | 7 | `int cell(long r, long c)` _(in EarthTerrainCheck.Cover)_ | The value of the cell in global row r (from 90 N) and column c (from 180 W). |
+| 1533 | 3 | `int at(double lat, double lon)` _(in EarthTerrainCheck.Cover)_ | The value of the cell a point lies in. |
+| 1538 | 8 | `double share(double lat, double lon, int bit)` _(in EarthTerrainCheck.Cover)_ | A bit read 0 or 1 at each cell and interpolated between the four cells' centres about a point. |
 

@@ -1,6 +1,6 @@
 # OilCheck.java - 2,095 lines · 40 methods · 10 constants · harnesses
 
-`ham/citybuildersim/OilCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OilCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > Fuel, from the oil in the ground to the drivers' tanks (0.7.62, batch K;
 > the project's spec-land.md 2.7 and section 3's K entry).

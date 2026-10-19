@@ -1,6 +1,6 @@
 # BuildingType.java - 251 lines · 0 methods · 0 constants · model
 
-`ham/citybuildersim/BuildingType.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingType.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
