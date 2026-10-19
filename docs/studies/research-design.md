@@ -413,6 +413,8 @@ Two things order discoveries, both real:
 
 ## 8. Questions for Jerus
 
+**Answered (Jerus, 2026-10-18, "rec all"):** every question below as its recommendation, where a later decision has not replaced it (the 1900 start of 2026-10-10 replaces Q1's 1950 economy). After 2060: nothing; the catalogue ends with the near-future projections to 2060.
+
 **The three that matter most:**
 
 1. **The 1950 economy.** With today's wages, 1950's buildings lose money and every labour-saving machine pays at once, and with 1950's, the game's whole calibration moves. Real 1950 wages were about 45% of today's in Canada (est., [SC-E]) and income per head about 22% [WB-GDP]. **Recommendation:** a separate study of the world in 1950 before research is built: the city's founding wages at 1950's level, the world's wages and prices following history in constant founding dollars, and wages that rise because discoveries raise what a worker makes. Until then research can't be balanced.

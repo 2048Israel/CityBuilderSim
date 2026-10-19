@@ -32,6 +32,8 @@ release that finishes industry. No save format change (39); the map's sidecar is
 
 ## ★ Calls
 
+All confirmed as built (Jerus, 2026-10-18, "rec all"). The map's zone palette and Zoning's become one: ZT1.
+
 - ★1 SITES FROM THE TEMPLATE. `t.site()` decides, not "makes its resource's good": the Dimension Stone Quarry
   (DIMENSION_STONE) and the two copper concentrators (COPPER_CONC) stand on sites now; the Coal Preparation Plant,
   the crews and the stands stand on none.

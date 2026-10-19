@@ -39,6 +39,8 @@ Each fixture causes the fault on FR0's build before it checks the fix on this on
 
 ## 3. Calls taken where the brief left room (★)
 
+All confirmed as built (Jerus, 2026-10-18, "rec all").
+
 1. **★1 A line starts only where the track has reached the city's edge**, within `WORLD_GAP` (12 plots, twice the arm's `LOOK`) of the first unowned plot. FR0 walked up to a district on, so an arm still growing showed a line, and trains ran up to 7.7 km past the track's end over the city's own ground. Now an arm short of the edge has none until it gets there.
 2. **★2 Any arm of the net, not only the gate arm.** The one whose way out lies nearest the gateway's bearing wins, the gate arm first on a tie. His gate arm waits at the sea for good: no purchase moves the bay.
 3. **★3 The way out is the bearing when it lies within 90 degrees of the arm's heading**, which keeps FR0's look: the line bends at the edge toward the world. Otherwise it is the arm's own heading, so the track runs on straight. Either way it needs `WORLD_PLOTS` (64) plots of dry ground, the trains' fade-in.

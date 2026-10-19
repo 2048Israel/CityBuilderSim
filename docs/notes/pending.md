@@ -5,6 +5,16 @@ session moves them over and empties this file. Newest at the top. It holds
 changelog and todo lines for the claude.ai project, which the sessions that
 write them cannot reach.
 
+## Jerus's answers of 2026-10-18 - for `claude/todo.md`
+
+- CONFIRMs closed ("rec all"): FR0's, FR1's and FX2's stars, all as built; I14 ★3, ★4, ★6, ★7 as built; I12 ★2
+  (copper in tonnes of the good) as built. Left: whether I12 ★5's three lines read well, with his eye check.
+- CONFIRM, the zone palettes: one, the map's per sector, and Zoning reads it - batch ZT1, queued (docs/queue/ZT1.md).
+- CD1's design call: the curve of spec-city-debt §3.2 (§8.1 records it). research-1900 §11 and research-design §8: all rec.
+- Queued: CC1-M (the map lost on a save) as its own batch, and I2b (the whole-cost test on every order). Settled: the
+  plantation's size (the Woodlot), a 10B city's books (sampled), spec-scale ★3 (batch I's crowding premium).
+- QUEUE.md's FX1-2 row removed: `batch/FX1-with-preflight` (e821d7f) was already in main.
+
 ## 0.8.1 (batch FR0, 2026-10-18) - for `claude/changelog.md`
 
 **0.8.1 - the map's network (FR0), the first freight batch.** The land's gateway: the bearing with the longest run of

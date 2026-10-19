@@ -70,6 +70,8 @@
   by month 12 the works town had shed them (its towns stop the old steel arising after the check's three months).
 
 ## 6. ★ calls
+
+★2 confirmed as built (Jerus, 2026-10-18, "rec all"); whether ★5's three lines read well is his eye check's.
 - ★1 A sibling class, `IndustryPicture`, not `IndustryView.picture()`: I11's view is figures (883 lines) and the picture is
   a model of its own - the trace that splits each good over the kinds, and the layout - about 1,550 lines; RefineryView
   holds both in one file, but here keeping them apart leaves I11's view and its check's premises untouched.

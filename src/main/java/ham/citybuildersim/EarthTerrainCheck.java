@@ -179,7 +179,7 @@ public class EarthTerrainCheck {
 
     static void report(String label, boolean ok, String detail) {
         if (!ok) fails++;
-        out.printf("%-100s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
+        out.printf("%-100s %s  %s%n", label, Timing.verdict(ok), detail);
     }
 
     /** The fixture's windows: name, latitude, longitude. */
@@ -496,7 +496,7 @@ public class EarthTerrainCheck {
             }
             Arrays.sort(ms);
             double median = ms[TILE_ROUNDS / 2];
-            report(s.name() + ": a tile's ground in no more than TILE_MS", median <= TILE_MS,
+            report(s.name() + ": a tile's ground in no more than TILE_MS", Timing.within(median, TILE_MS),
                     String.format("%.3f ms a tile (rounds %.3f to %.3f; the study %s)", median, ms[0], ms[TILE_ROUNDS - 1],
                             s.name().equals("Rotterdam") ? "0.152-0.202" : "0.090-0.125"));
         }
@@ -712,7 +712,7 @@ public class EarthTerrainCheck {
         }
         long all = Arrays.stream(classes).sum();
         report("the Earth screen: " + MapCheck.SCREEN_TILES + " tiles at Rotterdam's site - ground, plans, paint and raster - in no more than MapCheck.SCREEN_MS",
-                best <= MapCheck.SCREEN_MS,
+                Timing.within(best, MapCheck.SCREEN_MS),
                 String.format("%.1f ms (%.3f a tile), %,d buildings; the first time, its plans made, %.0f ms; the square city %d districts a side, laid in %.0f ms;"
                                 + " the screen %.0f%% sea, %.0f%% fresh", best, best / MapCheck.SCREEN_TILES, drawn, cold, side, built,
                         100.0 * classes[World.SALT] / all, 100.0 * classes[World.FRESH] / all));
@@ -773,7 +773,7 @@ public class EarthTerrainCheck {
         double warm = (passClock() - c0) / 1e6, warmWall = (System.nanoTime() - w0) / 1e6;
         String clock = MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock (this JVM cannot read a thread's CPU finely enough)";
         report("the cells pass in no more than CELLS_PASS_MS of " + (MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock")
-                        + ", its tiles read from the file the first time", cold <= CELLS_PASS_MS,
+                        + ", its tiles read from the file the first time", Timing.within(cold, CELLS_PASS_MS),
                 String.format("%.0f ms of %s the first time (%.0f on the wall clock), %.0f again (%.0f on the wall clock); the study 370-450 on the wall clock",
                         cold, clock, coldWall, warm, warmWall));
         double land = 0;

@@ -51,7 +51,7 @@ public class GridCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        System.out.printf("%-66s %s%n", label, ok ? "OK" : "FAIL");
+        System.out.printf("%-66s %s%n", label, Timing.verdict(ok));
     }
 
     /** Fixtures of fills checked against a raster: 200 (spec-grid 3, M1). */
@@ -614,6 +614,6 @@ public class GridCheck {
         Arrays.sort(ns);
         System.out.printf("owner() of random plots in the city's box: median %.1f ns (least %.1f, most %.1f) over %d runs [%d]%n",
                 ns[TIMING_RUNS / 2], ns[0], ns[TIMING_RUNS - 1], TIMING_RUNS, sink & 1);
-        check("owner() answers within OWNER_NS (" + (int) OWNER_NS + " ns), the median of " + TIMING_RUNS + " runs", ns[TIMING_RUNS / 2] <= OWNER_NS);
+        check("owner() answers within OWNER_NS (" + (int) OWNER_NS + " ns), the median of " + TIMING_RUNS + " runs", Timing.within(ns[TIMING_RUNS / 2], OWNER_NS, "ns"));
     }
 }

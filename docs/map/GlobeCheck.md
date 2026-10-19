@@ -61,7 +61,7 @@
 > cross three continents' coasts. The full file's sections run where it is
 > named (-Dcbs.earth) and say so in one line where it is not.
 
-**Uses:** [GlobeFrame](GlobeFrame.md) (77), [World](World.md) (45), [EarthData](EarthData.md) (22), [GlobePicture](GlobePicture.md) (20), [EarthProj](EarthProj.md) (15), [EarthTerrainCheck](EarthTerrainCheck.md) (13), [MapTiles](MapTiles.md) (12), [EarthTerrain](EarthTerrain.md) (9), [TileRaster](TileRaster.md) (7), [EarthCheck](EarthCheck.md) (5), [MapCheck](MapCheck.md) (4), [MapFrame](MapFrame.md) (3)
+**Uses:** [GlobeFrame](GlobeFrame.md) (77), [World](World.md) (45), [EarthData](EarthData.md) (22), [GlobePicture](GlobePicture.md) (20), [EarthProj](EarthProj.md) (15), [EarthTerrainCheck](EarthTerrainCheck.md) (13), [MapTiles](MapTiles.md) (12), [EarthTerrain](EarthTerrain.md) (9), [TileRaster](TileRaster.md) (7), [EarthCheck](EarthCheck.md) (5), [MapCheck](MapCheck.md) (4), [MapFrame](MapFrame.md) (3), [Timing](Timing.md) (2)
 
 ## Sections
 

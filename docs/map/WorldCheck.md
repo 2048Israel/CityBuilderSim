@@ -64,7 +64,7 @@
 >      conversion's search, which still asks it, goes on); and the site
 > ... (12 more lines in the source)
 
-**Uses:** [World](World.md) (162), [Resource](Resource.md) (56), [Deposit](Deposit.md) (40), [Founding](Founding.md) (2), [CityLand](CityLand.md) (2)
+**Uses:** [World](World.md) (162), [Resource](Resource.md) (56), [Deposit](Deposit.md) (40), [Timing](Timing.md) (3), [Founding](Founding.md) (2), [CityLand](CityLand.md) (2)
 
 **Used by (1):** [EarthTerrainCheck](EarthTerrainCheck.md)
 

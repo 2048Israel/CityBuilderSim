@@ -17,13 +17,15 @@ re-reads the whole conversation so far, so a long tool output costs again on
 every call after it.
 
 - **Checks:** `./batch-check.sh [harness names]` - compile, suite, maps,
-  Stale, tree, in about ten lines (`--fast` skips the suite). Logs go to
-  `target/checks/`; grep them, never cat them. On the PC: `Batch check.bat`.
+  Stale, tree, in about ten lines (`--fast` skips the suite, `--timing`
+  runs the timing harnesses alone and hard). Logs go to `target/checks/`;
+  grep them, never cat them. On the PC: `Batch check.bat`, or the same
+  script in Git Bash.
 - **The suite alone:** `AllChecks -f` prints only the failing assertions,
   under their sections. Run it in the background and wait for it; never
   poll it, and never rerun a red harness in full to find its assertion.
 - **Ship:** `./ship.sh batch/<id>` is the orchestrator's merge, checks,
-  tag and push (`--dry-run` gates alone).
+  timing harnesses hard, tag and push (`--dry-run` gates alone).
 - **Source:** `Where Name -print` prints one method. Never open `Game.java`
   or a large screen whole.
 - **The big indexes:** `docs/harnesses.md` (800 KB) and `docs/dials.md`
@@ -187,8 +189,13 @@ Conventions the code is written to, which the indexes rely on:
 
 **From a cloud session (the git era, since 2026-10-10):** each batch runs in
 a worktree of the orchestrator's clone, on a branch of its own from `main`
-(`batch/<id>`); at most two at once, on files of their own, and one JVM at a
-time on the machine, under the shared lock (`batch-check.sh` takes it).
+(`batch/<id>`); at most two at once, on files of their own. **Batches check
+side by side** (TM1, 2026-10-18): timing is soft while another batch's JVM or
+Jerus's game runs - a timing figure over its budget says SOFT and is not
+counted (`Timing`, `-Dcbs.timing=soft`, which the check scripts set by
+themselves) - and hard only at the ship gate, which runs the timing harnesses
+alone. The cloud workbench, with two cores, still runs one JVM at a time
+under the shared lock (`batch-check.sh` takes it).
 
 1. Read `docs/map/README.md`, then the map of each file the change touches;
    `docs/harnesses.md` (grep it) says what already checks the area.
@@ -219,7 +226,15 @@ time on the machine, under the shared lock (`batch-check.sh` takes it).
 **On the PC (Claude Code, NetBeans beside it):** the same steps; build with
 NetBeans *Clean and Build* or `mvn -q compile`, check with `Batch check.bat`
 (`--maps` to regenerate the maps too; without it it writes nothing git
-tracks, because the PC's copy pulls `main` and must stay clean). The full suite is
+tracks, because the PC's copy pulls `main` and must stay clean). Batches check
+side by side here, and alongside Jerus's game, which nobody waits on him to
+close: the script times soft by itself when another batch's JVM or the game
+runs, and says so in a line; `--timing` waits for the other batches' JVMs and
+runs the timing harnesses hard. `batch-check.sh` and `ship.sh` run in Git Bash
+too. A batch shipped from the PC ships from a temp clone of `origin`, never
+this folder: `%TEMP%\cbs-<id>` (the scratchpad's path is past Windows' 260
+characters), `./ship.sh batch/<id>` in Git Bash there, with `JDK_JAVA_OPTIONS`
+naming the PC's earth-1.bin. The full suite is
 `java -cp "target/classes;%USERPROFILE%\.m2\repository\com\google\code\gson\gson\2.10.1\gson-2.10.1.jar" ham.citybuildersim.AllChecks -f`
 (about nine minutes; `AllChecks money bank` runs two).
 

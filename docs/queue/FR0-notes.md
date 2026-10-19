@@ -28,6 +28,8 @@
 
 ## 2. Calls taken where the spec left room (★)
 
+All confirmed as built (Jerus, 2026-10-18, "rec all").
+
 1. **★1 The gateway is found from the founding site alone**: a radius of none, so the land must run 10 km from the site. It is found once, at the first highway, track or yard. A map drawn canonically at today's size therefore finds the gateway the month-by-month map found. Found with the city's radius, a canonical draw of a large city could find none where the young city had one.
 2. **★2 Ties go by the site's hash, not by loop order.** On a continent every bearing runs the full 192 km, and the first bearing would have sent every inland city's gateway due east. With the hash, 24 all-land sites give 20 bearings.
 3. **★3 The gateway's arm grows first, strictly**, until it waits at the city's edge. Jerus's city x 1 now has one highway of 41 plots (1.2 km) toward its gateway where it had two stubs of half that, and its first track is the main line out. The weaker reading of the spec ("first" as a tie-break only) would keep the two stubs.

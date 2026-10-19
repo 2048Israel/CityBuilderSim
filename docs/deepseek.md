@@ -118,5 +118,8 @@ What the gate sent back in the test, and what DeepSeek cannot do itself:
   any level. DeepSeek's own helpers (`ask_deepseek`) nest to `--depth`; in the
   test it delegated only when told to, and two of its four helpers ran out of
   turns: do not count on them.
-- **One JVM at a time:** the script's compile and harness wait on the lock
-  `batch-check.sh` takes (`$CBS_JVM_LOCK`).
+- **One JVM at a time on the cloud workbench:** there the script's compile
+  and harness wait on the lock `batch-check.sh` takes (`$CBS_JVM_LOCK`). The
+  PC has no lock: batches check side by side (TM1), and a harness the script
+  runs times hard, so a timing red it reports while another batch or the game
+  runs is rerun through `batch-check.sh` or `Batch check.bat`, which time soft.

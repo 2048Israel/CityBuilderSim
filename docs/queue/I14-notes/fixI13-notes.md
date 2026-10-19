@@ -77,7 +77,7 @@ tools.Stale 0 firm, 467 soft; playtests byte-identical, default 8/8 against pt07
 ## 7. For the next batch
 - I14: the map's pits by sites can read BuildCard.stands()/Game.claimsOn(); fieldSitesOn() gives an offer's fields.
 - The land office's Ore card ("ore that nothing is digging", the mines count) is still iron's alone (I6's note), and
-  the landlords' card does not ask the mortgage lender (C1's note): QUEUE.md Pending I13-L.
+  the landlords' card does not ask the mortgage lender (C1's note): batch I13-L, queued 2026-10-18 (docs/queue/I13-L.md).
 - SectorScreen's investor report (R4) can show Appraisal.planned() (the planner's view) - not drawn here.
 - Docs pass: maps (BuildCard, BuildScreen, CityLand, BuildAdvice, ExtractionSector, the nine), dials (NOTHING_TO_WASH),
   harnesses.md (BuildCardCheck 12); ExtractionSector's header "THE PAGE" line.
