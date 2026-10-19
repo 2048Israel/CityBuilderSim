@@ -70,7 +70,7 @@ ENSEMBLE_TABLE
 
 SUITE_LINE
 
-SLICE3_RENDERS
+**The renders** (`FR7/before-*.png`, `FR7/after-*.png`) are `FR7/RenderFr7.java` (FX2's tool, windows by name) over the Earth playtest's last month, kept with `-Dplaytest.keep`: before on FR2's tip (534,821 people, its 11 spurs drawn as arms from the hub, no yard), after on FR7 (619,719, two Rail Depots on the main line at the hub, its track the main line alone). Each a far view (1 px a plot), the rail hub or freight station at 4 px, and the founding site's streets at 8 px. Neither city has a mine standing at its end (`mines 0/0`), so the after city's nine spurs serve plan-placed works and draw no siding: their plots are the legend's surplus (§8). Its two depots stand side by side because no works group lies more than a district from the first. Jerus's own city could not be rendered (§3).
 
 ## 7. The Sonnet slices
 
