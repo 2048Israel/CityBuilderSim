@@ -1680,6 +1680,12 @@ public class HealthCheck {
         ham.citybuildersim.sectors.Freight freight = town.getSectors().freight();
         double want = 2 * freight.haulage().getNeed() / ham.citybuildersim.sectors.Haulage.TONNES_A_TRUCK_MONTH;
         if (freight.haulage().trucks() < want) freight.setPantry(Good.TRUCKS, want);
+        // ...and outside Freight's books: trucks the fixture hands over were bought by nobody, so its fleet account
+        // (Haulage, ★10) is kept at nought, or their wear would come back to the shippers as a refund.
+        java.util.Map<String, Double> ex = new java.util.HashMap<>();
+        freight.haulage().save(ex);
+        ex.put("haul.fleetOwed", 0.0);
+        freight.haulage().restore(ex);
     }
 
     static void cleanUp(Path root) {
