@@ -1,6 +1,6 @@
 # FR5 - trucks on the map: notes
 
-*0.8.8, 2026-10-19. Trucks drawn on the map (`docs/studies/spec-freight-and-infrastructure.md` §4.7 and §7's FR5 row; D21, Jerus 2026-10-12: "for drawn trucks yes just only when zoomed in, and a toggle in settings with defualt on"). The map's alone: the model gains one read-only tally that nothing in it reads, and the playtest's trace is @@TRACE@@. `DEEPSEEK_API_KEY` was not set on the PC, so each slice went to a Sonnet 5.5 subagent at extra effort, briefed as `docs/deepseek.md` briefs DeepSeek and reviewed by Claude (§7).*
+*0.8.8, 2026-10-19. Trucks drawn on the map (`docs/studies/spec-freight-and-infrastructure.md` §4.7 and §7's FR5 row; D21, Jerus 2026-10-12: "for drawn trucks yes just only when zoomed in, and a toggle in settings with defualt on"). The map's alone: the model gains one read-only tally that nothing in it reads, and the playtest's trace is byte-identical to main's (aa37699) but for its line of run time (123 s, and 164 s beside the suite). `DEEPSEEK_API_KEY` was not set on the PC, so each slice went to a Sonnet 5.5 subagent at extra effort, briefed as `docs/deepseek.md` briefs DeepSeek and reviewed by Claude (§7).*
 
 ## 1. What was built
 
@@ -33,7 +33,7 @@
   4. The railway's way is `wayOn()` of the rail net from its main arm, for every yard's anchor and siding end.
   5. Each access road is a route from its end to its gate over the drawn plan's access streets.
   6. `accessRoadCount()` counts the yards, sea terminals and Truck Depots: 5 in the fixture, its 5 roads.
-- **The suite**: @@SUITE@@
+- **The suite**: 119 run in 1,025 s beside FR6's checks (timing soft): 117 passed. Red: ScaleCheck's "...and it builds", main's own (FR7-C), and StaleCheck's README count of harnesses, which this batch's two moved and which is put right (StaleCheck green after).
 - **Timing, alone and hard**: @@TIMING@@
 
 ## 3. Calls taken where the brief left room (★)
@@ -46,12 +46,17 @@
 6. **★6 The highways' trucks run to each arm's end**, the ramps the highways draw, not to each ramp along an arm. At most 40 routes.
 7. **★7 The trucks keep the trains' pace**: 6 s along a route whatever its length, 2 s at the gate.
 8. **★8 An access road carries trucks once its district has been drawn** (the painter's plans), never by drawing a plan for them. A district not yet drawn has none until it is.
+9. **★9 Trucks keep to the right** (the review, after the renders): each drives `TruckShapes.LANE` (0.2 plots) right of the road's middle, so trucks going in and coming out pass side by side.
 
 ## 4. Found on the way
 
 - **N per schedule would have split the legend.** As the slice wrote it, each schedule took N from its own loads. A district's part (a twentieth of the city's) then drew one truck a load while the highways drew one per 50, under one legend line. The review made N the city's (§7).
 - **Packing a plan with access roads allocates two arrays of 257 x 257 ints** for the trace, on the painter's worker, once a plan. @@TIMINGNOTE@@
-@@RENDERFOUND@@
+- **The world line meets the highway 6 plots short of its arm's end** in the fixture: the line leaves at (359408.5, 371455.5) and arm 0 ends at (359408, 371461). The route's leg between them crosses the boundary street and five plots of grass, and a truck can be drawn there (one in `fr5-gateway.png`). The trains' routes have the same leg. TruckRouteCheck checks the highway part from the arm's end on.
+- **Trucks standing at a gate stand on one point**, so a busy gate's trucks draw as one mark (21 trucks at two gates at one moment in `fr5-access.png`).
+- **Trucks passing on one road overlapped on its centre line** in the renders' first draft. The review keeps each to its right-hand lane (`TruckShapes.LANE`, 0.2 plots), inside a road one plot wide.
+- **A big month draws no denser than an ordinary one.** Past 1,000 loads the trucks stay about 1,000 and N grows, so the picture of 50,000 loads (N = 50) is the picture of 1,000. Only the legend's N says the difference (★3).
+- **At 8 px a plot a truck is a dash** about 4 by 2 px: its colour reads, its cab does not. The cab shows from about 16 px a plot.
 
 ## 5. Not built
 
@@ -63,14 +68,19 @@
 
 ## 6. To check by eye (FR5-C)
 
-- **The renders** in `FR5/`, drawn by `RenderTrucks.java` beside them from the shapes MapView fills, on TruckRouteCheck's fixture city: @@RENDERS@@
+- **The renders** in `FR5/`, drawn by `RenderTrucks.java` beside them from the shapes MapView fills, on TruckRouteCheck's fixture city: five districts, five highway routes and five access roads. Each caption gives its scale, t, the trucks in view by load and by direction, and N.
+  - `fr5-highway.png`: the east arm near its ramp at 8 px a plot, an ordinary month (500 import, 250 export, 250 home loads, N = 1). Trucks run both ways, blue, orange and grey, and the access road north of it carries its own.
+  - `fr5-access.png`: an 84-plot access road from the spine to its gate at 8 px, violet home loads among the rest.
+  - `fr5-gateway.png`: where the highway leaves the city, at 8 px; trucks fade in along the world line.
+  - `fr5-near-far.png`: the near view's far end, 3.2 px a plot; trucks drawn 4 px long (★4) on the highway and the access streets.
+  - `fr5-busy.png`: a big city's month, 60,000 loads, N = 100, "Trucks: one per 100 loads".
 - **In the game**, the expanded map on a city whose Haulage carries (any city past its first works):
   - at the near view, trucks on the highways and the access roads, blue in, orange out, grey empty, violet home;
   - the legend's line, "Trucks: one per N loads";
   - zoom out one level: no trucks;
   - Settings, "Trucks on the map" off: none at the near view either, and on again after a restart;
   - **the frame rate at the near view in a big city**, panning: the drawing was not timed on the PC's game.
-- **His calls on ★1 to ★8.**
+- **His calls on ★1 to ★9.**
 
 ## 7. The Sonnet slices
 
@@ -81,6 +91,6 @@
 | A, the schedule | `TruckSchedule`'s bodies, Freight's tally (summed, saved, reset), TruckCheck (173k tokens, 54 tool calls, 12 min) | N made the city's, from every load before the share, where each schedule had taken its own. TruckCheck 2's big cities built by their loads, not by the share, and a line added holding a district's part to the city's N |
 | B, the routes | `CityRuns.wayOn()`, `highwayWayTo()`, `highwayRamps()`; `CityMap.truckRoutes()`, `accessRoutesIn()`, `accessRoadCount()`, `Drawn.access` and `accessWays()`; TruckRouteCheck (263k tokens, 115 tool calls, 25 min) | Its placeholder for the world line's 64 plots replaced by `TruckSchedule.WORLD_PLOTS`, and TruckRouteCheck's typed 64s by the constant |
 | C, the drawing | `TruckShapes`; `MapView.trucks()` and its caches, the legend's line; the Settings toggle (137k tokens, 37 tool calls, 7 min) | `TruckShapes.LENGTH` made `TruckSchedule.TRUCK_PLOTS`; the 4 px floor (`MIN_PX`, ★4) and the view's margin widened to the truck as drawn |
-| D, the renders | `FR5/RenderTrucks.java` and its PNGs @@DSTATS@@ | @@DREVIEW@@ |
+| D, the renders | `FR5/RenderTrucks.java` and its PNGs (202k tokens, 63 tool calls, 9 min), on TruckRouteCheck's access city, from a snapshot of the classes so the suite could run | Its ordinary month kept at 1,000 loads (N = 1) where the brief's 1,300 would have made N 2. Its findings (§4) led to the lane (`TruckShapes.LANE`); the renders were drawn again with it |
 
 Each slice compiled first time and touched only its files. Its own harnesses were green before the review.

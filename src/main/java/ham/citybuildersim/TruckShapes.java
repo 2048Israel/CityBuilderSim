@@ -50,6 +50,14 @@ public final class TruckShapes {
     /** The cab's width over the trailer's: 0.80, so the silhouette steps in where the tractor starts and reads as a tractor and a trailer. */
     public static final double CAB_NARROW = 0.80;
 
+    /**
+     * How far right of the road's middle a truck drives, in plots: 0.2 (the
+     * review, FR5), so the trucks going in and those coming out pass side by
+     * side and do not draw over each other on the centre line (the renders'
+     * first draft); inside a road one plot wide with the truck's width.
+     */
+    public static final double LANE = 0.2;
+
     /** A tonne bought at home (works to works, loaded), neither an import nor an export: Palette.BUSINESS, the business area's violet, #a78bfa - the works' own colour, and no other mark on the map's freight. */
     public static final int HOME = 0xffa78bfa;
 
@@ -75,10 +83,12 @@ public final class TruckShapes {
         double[] us = { -h, step, step, h, h, step, step, -h };
         double[] vs = { -w, -w, -cw, -cw, cw, cw, w, w };
         double ax = Math.cos(t.heading()), ay = Math.sin(t.heading()), nx = -ay, ny = ax;
+        // Its lane: LANE to the right of its heading (y runs south, so the right of east is south: (nx, ny)).
+        double cx = t.x() + nx * LANE, cy = t.y() + ny * LANE;
         double[] xs = new double[us.length], ys = new double[us.length];
         for (int i = 0; i < us.length; i++) {
-            xs[i] = t.x() + ax * us[i] + nx * vs[i];
-            ys[i] = t.y() + ay * us[i] + ny * vs[i];
+            xs[i] = cx + ax * us[i] + nx * vs[i];
+            ys[i] = cy + ay * us[i] + ny * vs[i];
         }
         return new double[][] { xs, ys };
     }
