@@ -139,6 +139,8 @@ public final class TileRaster {
     public static final int ISLAND = 0xff6f9a4f;
     /** Plots: a diamond's slip road along the verge each side of its street. */
     public static final double SLIP_LENGTH = 2;
+    /** Plots: the least run of junction streets through a plot along an axis for a road to cross there (FX3): a road two plots wide is one road, not a junction on every plot. */
+    static final int JUNCTION_RUN = 3;
 
     /** Pixels a plot from which the blocks' view draws the track's cross-ticks (the L1 raster). */
     public static final int TICKS_FROM = 2;
@@ -1074,6 +1076,20 @@ public final class TileRaster {
         return f == BuildingVisual.HIGHWAY || f == TilePainter.RAIL_OVER;
     }
 
+    /** ...and a straight highway's, a step from plot i: not a 45-degree stretch's plot, whose marks (across the tile's edge too: marksBeyond) say it is no highway beside a straight one for a stack's test. */
+    private static boolean straightHighwayAt(TilePainter.Input in, TilePainter.Painted p, int i, int dir) {
+        if (!highwayAt(in, p, i, dir)) return false;
+        int tile = TilePainter.TILE, x = i % tile + TilePainter.DX[dir], y = i / tile + TilePainter.DY[dir];
+        byte mark;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) {
+            mark = in.marks[y * tile + x];
+        } else {
+            int along = dir == 0 || dir == 2 ? i % tile : i / tile;
+            mark = in.marksBeyond[dir * tile + along];
+        }
+        return (mark & CityRuns.M_DIAG) == 0;
+    }
+
     /** ...and the railway's track (since 0.7.89 where it bridges a highway too: the runs' RAIL_OVER). */
     private static boolean railAt(TilePainter.Input in, TilePainter.Painted p, int i, int dir) {
         int tile = TilePainter.TILE, x = i % tile + TilePainter.DX[dir], y = i / tile + TilePainter.DY[dir];
@@ -1093,18 +1109,79 @@ public final class TileRaster {
      * smooth; in plots it is a staircase"): the pixels within `half` pixels
      * of the stretch's line - through the plot's middle, or for a
      * staircase's corner (CityRuns.M_CORNER) the middle of the plot before it
-     * - in colour c; and with `centre`, every other plot's run of the line
-     * itself in it instead (the dashes).
+     * - in colour c.
      */
     static void diagBand(int[] img, int w, int i, int px, byte mark, double half, int c) {
-        int tile = TilePainter.TILE, x0 = (i % tile) * px, y0 = (i / tile) * px;
         int code = (mark >> CityRuns.M_DIAG_SHIFT) & 3;
-        int dx = code == 0 || code == 3 ? 1 : -1, dy = code == 0 || code == 1 ? 1 : -1;
+        int dx = code == 0 || code == 3 ? 1 : -1;
         double pxl = (mark & CityRuns.M_CORNER) != 0 ? (0.5 - dx) * px : 0.5 * px, pyl = 0.5 * px;
+        diagLine(img, w, i, px, code, pxl, pyl, half, Double.POSITIVE_INFINITY, c);
+    }
+
+    /**
+     * The pixels of plot i within `half` pixels of a line at a 45-degree
+     * heading's code through the point (pxl, pyl) of the plot's pixels, and
+     * no farther along the line than `along` pixels either side of that
+     * point (FX3: diagBand() for a line that passes through another plot's
+     * middle, and for the dashes), in colour c.
+     */
+    private static void diagLine(int[] img, int w, int i, int px, int code, double pxl, double pyl, double half, double along, int c) {
+        int tile = TilePainter.TILE, x0 = (i % tile) * px, y0 = (i / tile) * px;
+        int dx = code == 0 || code == 3 ? 1 : -1, dy = code == 0 || code == 1 ? 1 : -1;
         for (int v = 0; v < px; v++) {
             for (int u = 0; u < px; u++) {
                 double qx = u + 0.5 - pxl, qy = v + 0.5 - pyl;
-                if (Math.abs(qx * dy - qy * dx) / Math.sqrt(2) <= half) img[(y0 + v) * w + x0 + u] = c;
+                if (Math.abs(qx * dy - qy * dx) / Math.sqrt(2) > half) continue;
+                if (Math.abs(qx * dx + qy * dy) / Math.sqrt(2) > along) continue;
+                img[(y0 + v) * w + x0 + u] = c;
+            }
+        }
+    }
+
+    /** The marks of the 45-degree stretch's step plot at (x, y) - in the tile, or just across one of its edges (marksBeyond) - or -1 where that plot is no step: a corner, a straight highway, other ground. */
+    private static int stepMarkAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int tile = TilePainter.TILE, mark;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) {
+            int j = y * tile + x;
+            if (!isHighway(p, j)) return -1;
+            mark = in.marks[j];
+        } else {
+            if ((x < 0 || x >= tile) && (y < 0 || y >= tile)) return -1;
+            int dir = y < 0 ? 0 : y >= tile ? 2 : x < 0 ? 3 : 1, along = dir == 0 || dir == 2 ? x : y;
+            byte f = in.fixedBeyond[dir * tile + along];
+            if (f != BuildingVisual.HIGHWAY && f != TilePainter.RAIL_OVER) return -1;
+            mark = in.marksBeyond[dir * tile + along];
+        }
+        return (mark & CityRuns.M_DIAG) != 0 && (mark & CityRuns.M_CORNER) == 0 ? mark & 0xff : -1;
+    }
+
+    /**
+     * Where a 45-degree stretch passes between two of its steps the line
+     * clips the corner of the plot that is not the run's - the staircase's
+     * corners are on the other side of it - and the band would leave a notch
+     * there (FX3, Jerus's eye check of 0.8.3). Plot i, when it is open
+     * ground (not a highway, not a building), has a step on one axis and the
+     * next step of the same stretch on the other: the band of the stretch's
+     * line, through the step's middle, over plot i's pixels, `half` out in
+     * colour c. A stretch's end adds nothing: there is no next step.
+     */
+    private static void diagOpen(TilePainter.Input in, TilePainter.Painted p, int i, int px, double half, int c, int[] img) {
+        if (p.use[i] == TilePainter.BUILDING || diagonal(in, i)) return;
+        int tile = TilePainter.TILE, x = i % tile, y = i / tile;
+        int west = stepMarkAt(in, p, x - 1, y), east = stepMarkAt(in, p, x + 1, y);
+        if (west < 0 && east < 0) return;
+        int north = stepMarkAt(in, p, x, y - 1), south = stepMarkAt(in, p, x, y + 1);
+        if (north < 0 && south < 0) return;
+        for (int ex = -1; ex <= 1; ex += 2) {
+            for (int ey = -1; ey <= 1; ey += 2) {
+                int a = ex < 0 ? west : east, b = ey < 0 ? north : south;
+                if (a < 0 || b < 0) continue;
+                int code = (a >> CityRuns.M_DIAG_SHIFT) & 3;
+                if (((b >> CityRuns.M_DIAG_SHIFT) & 3) != code) continue;
+                int dx = code == 0 || code == 3 ? 1 : -1, dy = code == 0 || code == 1 ? 1 : -1;
+                // The two steps are diagonal neighbours of each other along the heading: b - a = (-ex, ey) = +-(dx, dy).
+                if (!(ex == -dx && ey == dy) && !(ex == dx && ey == -dy)) continue;
+                diagLine(img, tile * px, i, px, code, (0.5 + ex) * px, 0.5 * px, half, Double.POSITIVE_INFINITY, c);
             }
         }
     }
@@ -1123,7 +1200,10 @@ public final class TileRaster {
      * signals, roundabouts and diamonds; then the highways over all, cased,
      * their open ends brought down to the ground (highwayEnds()) and from
      * JUNCTIONS_FROM their stacks; the railway bridging a highway; the
-     * ramps below JUNCTIONS_FROM; and a dashed centre line from 6 px.
+     * ramps below JUNCTIONS_FROM; and a dashed centre line from 6 px. A
+     * 45-degree stretch is one carriageway along its line (FX3, Jerus's eye
+     * check of 0.8.3): never a stack, its band filled in on the open plot
+     * between two steps, and a dash on every step.
      */
     private static void ways(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
@@ -1196,10 +1276,14 @@ public final class TileRaster {
         for (int pass = cas > 0 ? 0 : 1; pass < 2; pass++) {
             int in0 = pass == 0 ? 0 : cas;
             for (int i = 0; i < TilePainter.PLOTS; i++) {
-                if (!isHighway(p, i)) continue;
                 int x0 = (i % tile) * px, y0 = (i / tile) * px;
                 int c = pass == 0 ? HIGHWAY_CASE : ROAD[BuildingVisual.HIGHWAY];
                 if (!in.owned[i]) c = blend(c, VOID, UNOWNED_DIM);
+                if (!isHighway(p, i)) {
+                    // Open ground between two steps of a 45-degree stretch: the band the corners leave out (FX3).
+                    diagOpen(in, p, i, px, (width - 2 * in0) / 2.0, c, img);
+                    continue;
+                }
                 if (diagonal(in, i)) {
                     diagBand(img, w, i, px, in.marks[i], (width - 2 * in0) / 2.0, c);
                     continue;
@@ -1240,7 +1324,11 @@ public final class TileRaster {
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             int c = in.owned[i] ? CENTRE_LINE : blend(CENTRE_LINE, VOID, UNOWNED_DIM);
             if (diagonal(in, i)) {
-                if (((i % tile) + (i / tile)) % 2 == 0) diagBand(img, w, i, px, in.marks[i], 0.5, c);
+                // A dash on every step, over the middle 55% of its diagonal, as the straight highway has one a plot (FX3: the old every-other-plot rule gave a stretch, whose steps all share a parity, all or none).
+                if ((in.marks[i] & CityRuns.M_CORNER) == 0) {
+                    int code = (in.marks[i] >> CityRuns.M_DIAG_SHIFT) & 3;
+                    diagLine(img, w, i, px, code, 0.5 * px, 0.5 * px, 0.5, 0.275 * Math.sqrt(2) * px, c);
+                }
                 continue;
             }
             boolean ns = highwayAt(in, p, i, 0) || highwayAt(in, p, i, 2);
@@ -1355,21 +1443,39 @@ public final class TileRaster {
         return role == TilePainter.ARTERIAL || role == TilePainter.BOULEVARD;
     }
 
-    /** Whether the street at plot (x, y) is a signalled junction: itself an arterial or boulevard, with one across it on each axis, and not a roundabout. */
+    /**
+     * The plots in a run of streets through plot (x, y) along (dx, dy), itself
+     * counted: its neighbours each way while their role is a junction's
+     * (boulevards alone with `boulevards`; FX3, Jerus's eye check of 0.8.3). It
+     * reads at most one plot past the tile's edge (streetRoleAt() answers any
+     * x or y beyond with that one plot), so it stops at -1 and at TILE.
+     */
+    private static int junctionRun(TilePainter.Input in, TilePainter.Painted p, int x, int y, int dx, int dy, boolean boulevards) {
+        int tile = TilePainter.TILE, n = 1;
+        for (int s = -1; s <= 1; s += 2) {
+            int cx = x + s * dx, cy = y + s * dy;
+            while (cx >= -1 && cy >= -1 && cx <= tile && cy <= tile) {
+                byte role = streetRoleAt(in, p, cx, cy);
+                if (boulevards ? role != TilePainter.BOULEVARD : !junctionRole(role)) break;
+                n++;
+                cx += s * dx;
+                cy += s * dy;
+            }
+        }
+        return n;
+    }
+
+    /** Whether the street at plot (x, y) is a signalled junction: itself an arterial or boulevard, with a run of JUNCTION_RUN or more of them through it on each axis (a road two plots wide is one road), and not a roundabout. */
     private static boolean signalAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
         byte role = streetRoleAt(in, p, x, y);
         if (!junctionRole(role) || roundaboutAt(in, p, x, y)) return false;
-        boolean across = junctionRole(streetRoleAt(in, p, x - 1, y)) || junctionRole(streetRoleAt(in, p, x + 1, y));
-        boolean along = junctionRole(streetRoleAt(in, p, x, y - 1)) || junctionRole(streetRoleAt(in, p, x, y + 1));
-        return across && along;
+        return junctionRun(in, p, x, y, 1, 0, false) >= JUNCTION_RUN && junctionRun(in, p, x, y, 0, 1, false) >= JUNCTION_RUN;
     }
 
-    /** Whether the street at plot (x, y) is a roundabout: boulevards on both axes and itself a boulevard. */
+    /** Whether the street at plot (x, y) is a roundabout: itself a boulevard, with a run of JUNCTION_RUN or more boulevards through it on each axis. */
     private static boolean roundaboutAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
         if (streetRoleAt(in, p, x, y) != TilePainter.BOULEVARD) return false;
-        boolean across = streetRoleAt(in, p, x - 1, y) == TilePainter.BOULEVARD || streetRoleAt(in, p, x + 1, y) == TilePainter.BOULEVARD;
-        boolean along = streetRoleAt(in, p, x, y - 1) == TilePainter.BOULEVARD || streetRoleAt(in, p, x, y + 1) == TilePainter.BOULEVARD;
-        return across && along;
+        return junctionRun(in, p, x, y, 1, 0, true) >= JUNCTION_RUN && junctionRun(in, p, x, y, 0, 1, true) >= JUNCTION_RUN;
     }
 
     /** A street's surface across its plot at px pixels a plot: {its width, its offset from the plot's edge}. */
@@ -1609,14 +1715,22 @@ public final class TileRaster {
 
     /* ----- 5. a stack: highways cross ----- */
 
+    /**
+     * A stack where two straight highways cross: a highway plot with another
+     * beside it on both axes. A 45-degree stretch's plot is never a stack,
+     * nor does it count as the highway beside a straight one: its steps and
+     * corners have a neighbour on both axes by the staircase's shape, and were
+     * taken for crossings - Jerus's "staircase of separate dark blocks" (FX3,
+     * his eye check of 0.8.3).
+     */
     private static void stack(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
         int[] cs = crossSection(BuildingVisual.HIGHWAY, px);
         int width = cs[0], cas = cs[1], o = (px - width) / 2;
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!isHighway(p, i)) continue;
-            boolean ns = highwayAt(in, p, i, 0) || highwayAt(in, p, i, 2);
-            boolean ew = highwayAt(in, p, i, 1) || highwayAt(in, p, i, 3);
+            if (!isHighway(p, i) || diagonal(in, i)) continue;
+            boolean ns = straightHighwayAt(in, p, i, 0) || straightHighwayAt(in, p, i, 2);
+            boolean ew = straightHighwayAt(in, p, i, 1) || straightHighwayAt(in, p, i, 3);
             if (!ns || !ew) continue;
             int hx = i % tile, hy = i / tile;
             int x0 = hx * px, y0 = hy * px;

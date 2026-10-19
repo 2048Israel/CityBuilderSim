@@ -382,7 +382,10 @@ public class JunctionCheck {
         System.out.println("--- 7. the next tile draws its half of a roundabout whose centre is the tile's last column ---");
         int px = 8, centreX = T - 1, centreY = 10, w = T * px;
         TilePainter.Input next = owned();
-        streetColumn(next, 0, BOULEVARD);
+        // Its boulevard row runs on into this tile (FX3: until 0.8.4 the fixture laid a boulevard down this tile's first
+        // column instead, beside the west tile's: a boulevard two plots wide on the seam with no road crossing it, which
+        // 0.8.3 drew as a roundabout on every plot - the fault JunctionCheck 11 holds - and so passed here).
+        streetRow(next, centreY, BOULEVARD);
         // The tile west of this one holds the roundabout's centre on its last column:
         // its boulevard column and row reach this tile's beyond.
         for (int y = 0; y < T; y++) next.beyond[3 * T + y] = (byte) BOULEVARD; // west edge
