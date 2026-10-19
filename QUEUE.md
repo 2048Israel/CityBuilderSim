@@ -23,7 +23,6 @@ stuff".
 |---|---|---|
 | FR4 | The freight screens, and Build's Infrastructure and Freight tabs | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR5 | Trucks drawn on the map, near zoom only, with a Settings toggle on by default (Jerus, 2026-10-12) | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
-| FR6 | The railway carries the city's own bulk (D4), measured after FR2, with the port yard (D7) | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | CD1 | The city's debt: the curve from the dial the market expects, every payment priced on its month | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |

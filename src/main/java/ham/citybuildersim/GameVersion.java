@@ -6851,8 +6851,25 @@ public final class GameVersion {
      *     own first leg would graze land (SeaRoutes.route()).
      *   - Harnesses: LandlordPortCheck (new); BuildAdviceCheck, PortCheck,
      *     SaveFileCheck; the playtests' "Ports division" line.
+     *
+     * 0.8.8 (2026-10-19) - FR6, THE RAILWAY CARRIES THE CITY'S OWN BULK, AND
+     * THE PORT YARD. (docs/studies/spec-freight-and-infrastructure.md 3.3 and
+     * 7, D4 and D7; docs/queue/FR6.md, FR6-notes.md.) Slices by Sonnet 5.5
+     * subagents, reviewed by Claude. Save format unchanged: new keys only.
+     *   - THE CITY'S OWN BULK ON RAILS: the siding's part (RAIL_ROAD_RELIEF)
+     *     of every BULK tonne bought at home is offered the railway after the
+     *     boundary's tonnes, on the room the track, the sets, the stations and
+     *     the sidings leave (Freight.dealHome()), billed "Rail freight" at the
+     *     railway's quote on Haulage's; the trucks carry the rest.
+     *   - THE PORT YARD: with a station and a sea terminal standing,
+     *     Freight.PORT_YARD_SHARE of the bulk across the berths joins that
+     *     offer, quay to door by rail.
+     *   - The city tonnes burn CITY_LITRES_A_TONNE, join the revenue the
+     *     railway's quote is struck over, and order no track.
+     *   - Harnesses: HomeRailCheck (new); HaulageCheck's bill; the playtests'
+     *     "Home rail" line.
      */
-    public static final String VERSION = "0.8.7";
+    public static final String VERSION = "0.8.8";
 
     /**
      * The save shape.
