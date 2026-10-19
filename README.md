@@ -221,8 +221,9 @@ src/main/java/ham/citybuildersim/     over 300 files
     CityCalendar.java                 the date, and the days the clock runs through
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
-    sectors/                          the twenty-four sector classes, the refinery's flow and spread planner, and
-                                      the materials chains' two bases (ProcessingSector, ExtractionSector)
+    sectors/                          the twenty-four sector classes, the refinery's flow and spread planner,
+                                      the materials chains' two bases (ProcessingSector, ExtractionSector), and
+                                      Freight's Haulage and Ports divisions (Haulage, PortDivision)
     BondMarket.java, CorporateBond.java, OrderBook.java
                                       the businesses' bonds, and the order book they and the shares trade on
     tools/                            the index generators (see below); not part of the game

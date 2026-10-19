@@ -20,8 +20,8 @@
 > or by lorry pays no handling: each leg is paid once (spec 2).
 > 
 > NOT A SECTOR, A DIVISION OF ONE, as Haulage is: it holds its own figures and
-> its own price rule, and books through Freight (the package-private seam at
-> the end of Freight's "Haulage division's seam"): its bill is Freight's other
+> its own price rule, and books through Freight (the package-private seam
+> under Freight's "Ports division's seam"): its bill is Freight's other
 > revenue named "Port handling billed", its dues Freight's operating expense
 > "Port dues", its crews the posts of the berths Freight operates
 > (BuildingsTemplate.getOperator(); Freight.portsCrewByKind()).

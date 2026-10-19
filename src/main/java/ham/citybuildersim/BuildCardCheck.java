@@ -26,7 +26,7 @@ import java.util.Set;
 
 /**
  * The build card (0.7.25): BuildCard's figures for every building in
- * buildings.json (142 since FR7, the Rail Depot) held to
+ * buildings.json (143 since FR3, the Bulk Berth) held to
  * the model's own reads - the quote, the land, the staffing tests, the
  * markets, the investors' words and their gates - in a played city.
  *

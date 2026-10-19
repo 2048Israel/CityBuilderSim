@@ -56,8 +56,8 @@ import java.util.List;
  *
  * TRANSPORT (0.8.1, batch FR0; spec-freight 4.2, D15). An eleventh class
  * takes the railway's yards, the sea terminals and the transit networks -
- * the RAIL, PORTS and INFRASTRUCTURE categories - out of Industry and
- * Utilities, in a slate between offices' blue and utilities' teal
+ * the RAIL, PORTS and INFRASTRUCTURE categories, and since FR2 HAULAGE's
+ * Truck Depot - out of Industry and Utilities, in a slate between offices' blue and utilities' teal
  * (#5e7d8c, star FR0-6); a sea terminal keeps its own fill.
  */
 public final class BuildingVisual {
@@ -247,7 +247,7 @@ public final class BuildingVisual {
      * @param flats     a home of more than one dwelling, drawn darker
      * @param road      its road kind, NOT_A_ROAD to HIGHWAY
      * @param site      the resource whose sites it stands on, or null
-     * @param outer     placed from the outside of the city in: farms, utilities, mines and wells, rail and car plants (spec-land 2.5)
+     * @param outer     placed from the outside of the city in: farms, utilities, mines and wells, rail and car plants (spec-land 2.5), and (FR2) the Truck Depot
      * @param plots     its land in plots: its footprint (footprint()), and a road's plots
      * @param transit   a transit network: its depots and yards, drawn as transport (a utility until 0.8.1) on its own land
      * @param sqFt      its land in whole square feet: the ground used a district and the pyramid sum, exactly

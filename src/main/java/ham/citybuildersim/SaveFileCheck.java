@@ -2716,27 +2716,6 @@ public class SaveFileCheck {
         throw new IllegalStateException("no template named " + name);
     }
 
-    /*
-     * A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6). The save
-     * gains four fields on a city founded on the Earth - worldKind, earthLat,
-     * earthLon and earthData - and SAVE_FORMAT 38, so a build before it, which
-     * would put such a city on its seed's generated ground, refuses it as a
-     * newer build's. What has to hold:
-     *   - the format before it loads as it did: a save of format 37 has no
-     *     worldKind, stands on its seed's generated world, and saved again
-     *     writes its own bytes back but for the stamp of this build. SINCE
-     *     0.8.5 (FR2) the floor is 40, past it: the same save stamped at the
-     *     floor is what loads on its generated world, and format 37 is refused;
-     *   - a generated city writes none of the four;
-     *   - an Earth city - Rotterdam's window of EarthCheck's fixture - saved
-     *     carries its kind, spot and data, and reloaded is the city it was:
-     *     the same Earth world, the same land, its map read back from the
-     *     sidecar, saved again the same bytes, and two months on the same
-     *     treasury, savings and tills;
-     *   - a save naming other data than any here, a world kind this build does
-     *     not know, or an Earth with no spot, is refused in words that say so,
-     *     nothing of it applied and its file as it was.
-     */
     /**
      * EVERY ID CROSSES A SAVE, THE HIGHEST PAST A GAP TOO (FR3, 2026-10-19).
      * Game.sendBuildingSave() and loadBuildings() ran to getTemplateCount() and
@@ -2784,6 +2763,27 @@ public class SaveFileCheck {
         assertTrue("...and every id's count is the one saved", all);
     }
 
+    /*
+     * A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6). The save
+     * gains four fields on a city founded on the Earth - worldKind, earthLat,
+     * earthLon and earthData - and SAVE_FORMAT 38, so a build before it, which
+     * would put such a city on its seed's generated ground, refuses it as a
+     * newer build's. What has to hold:
+     *   - the format before it loads as it did: a save of format 37 has no
+     *     worldKind, stands on its seed's generated world, and saved again
+     *     writes its own bytes back but for the stamp of this build. SINCE
+     *     0.8.5 (FR2) the floor is 40, past it: the same save stamped at the
+     *     floor is what loads on its generated world, and format 37 is refused;
+     *   - a generated city writes none of the four;
+     *   - an Earth city - Rotterdam's window of EarthCheck's fixture - saved
+     *     carries its kind, spot and data, and reloaded is the city it was:
+     *     the same Earth world, the same land, its map read back from the
+     *     sidecar, saved again the same bytes, and two months on the same
+     *     treasury, savings and tills;
+     *   - a save naming other data than any here, a world kind this build does
+     *     not know, or an Earth with no spot, is refused in words that say so,
+     *     nothing of it applied and its file as it was.
+     */
     static void onEarth(Path root) throws IOException {
         System.out.println("\n--- and a city on the real Earth, saved and read back; a format-37 save on its generated world ---");
         com.google.gson.Gson gson = new com.google.gson.Gson();

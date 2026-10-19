@@ -210,7 +210,7 @@ public final class Icons {
           + "M12 19c-2.4-.6-4-2.2-4.5-4.4 2.3.1 4 1.8 4.5 4.4z"
           + "M12 19c2.4-.6 4-2.2 4.5-4.4-2.3.1-4 1.8-4.5 4.4z";
 
-    /** A train's face: Rail. */
+    /** A train's face: Rail, and the Freight sector whose railway it is. */
     public static final String RAIL = "M7 3h10a2 2 0 0 1 2 2v9a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V5a2 2 0 0 1 2-2z"
           + "M5 10h14 M9 21l1.5-4 M15 21l-1.5-4 M8.5 13.5h.01 M15.5 13.5h.01";
 

@@ -54,8 +54,8 @@
 > 
 > TRANSPORT (0.8.1, batch FR0; spec-freight 4.2, D15). An eleventh class
 > takes the railway's yards, the sea terminals and the transit networks -
-> the RAIL, PORTS and INFRASTRUCTURE categories - out of Industry and
-> Utilities, in a slate between offices' blue and utilities' teal
+> the RAIL, PORTS and INFRASTRUCTURE categories, and since FR2 HAULAGE's
+> Truck Depot - out of Industry and Utilities, in a slate between offices' blue and utilities' teal
 > (#5e7d8c, star FR0-6); a sea terminal keeps its own fill.
 
 **Uses:** [BuildingType](BuildingType.md) (15), [Resource](Resource.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (6), [Sectors](Sectors.md) (5), [Deposit](Deposit.md) (5), [Refining](Refining.md) (3), [TileRaster](TileRaster.md) (3), [DistrictPlan](DistrictPlan.md) (2), [World](World.md) (1), [LandManager](LandManager.md) (1), [StrategicReserve](StrategicReserve.md) (1), [Freight](Freight.md) (1)

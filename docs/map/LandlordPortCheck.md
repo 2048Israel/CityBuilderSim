@@ -15,8 +15,8 @@
 > that a getter or a constant could give. Eleven claims, numbered as FR3.md
 > section 6 numbers them (the save is 9 here, so its advice is 10 and its real run, LongPlaytest's, 11):
 > 
->   1. THE BULK BERTH. (a placeholder: slice 1's, PortCheck holds it now)
->   2. THE SHIPS. (a placeholder: slice 1's, PortCheck holds it now)
+>   1. THE BULK BERTH. (slice 1's: PortCheck holds it)
+>   2. THE SHIPS. (slice 1's: PortCheck holds them)
 >   3. THE CREWS. A city with a terminal: the transit bill carries its upkeep
 >      and not its crew; Freight's wage bill carries the crew at the same fill;
 >      the two together are what portsBill() was, to the cent; the city's posts
@@ -39,7 +39,7 @@
 >   8. THE MONEY. The money audit closes every month of a city working a port that pays dues.
 >   9. THE SAVE. The dial crosses the policy state (and a short array reads the default); the quotes, the
 >      month's dues and handling and the treasury's lines cross a save and a reload, to the bit.
->  10. THE ADVICE. (a placeholder: slice 4's)
+>  10. THE ADVICE. (BuildAdviceCheck 13, "a berth pays back", holds it)
 >  11. A REAL RUN. (LongPlaytest's)
 > 
 > It tests the model through its public getters and constants and changes
@@ -55,7 +55,7 @@
 | 87 | THE FIXTURES |
 | 161 | 3. THE CREWS |
 | 339 | 4-9. THE PORT DIVISION: THE HANDLING, THE DUES, THE PRICE, THE MONEY, THE SAVE |
-| 714 | THE REST OF THE BRIEF, FOR THE SLICES THAT BUILD IT |
+| 714 | THE REST OF THE BRIEF, HELD ELSEWHERE |
 
 ## Constants
 
@@ -124,7 +124,7 @@
 | 654 | 17 | `static void money()` |  |
 | 672 | 41 | `static void save() throws Exception` |  |
 
-### THE REST OF THE BRIEF, FOR THE SLICES THAT BUILD IT (lines 714-739)
+### THE REST OF THE BRIEF, HELD ELSEWHERE (lines 714-739)
 
 | line | len | member | says |
 |---:|---:|---|---|

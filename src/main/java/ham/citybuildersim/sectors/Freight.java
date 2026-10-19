@@ -27,7 +27,8 @@ import java.util.function.ToDoubleFunction;
  * Its Haulage division (Haulage, from FR2) is the trucks that carry the city leg
  * of every bulk tonne; it keeps its own figures and price rule and books through
  * this sector, and the two divisions share these buildings' costs by whose they
- * are (haulageShareOf()).
+ * are (haulageShareOf()). Its Ports division (PortDivision, from FR3) is the
+ * crews of the city's berths, who bill the handling and pay the city its dues.
  *
  * Every price in this game has always had freight inside it. A tonne of steel
  * lands at $1,284 and leaves at $847, and three quarters of that $437 wedge is
@@ -121,7 +122,8 @@ import java.util.function.ToDoubleFunction;
  *
  * So the share it carries is handed to InfrastructureManager as a relief on
  * the BULK and GOODS streams, exactly the way a highway's grade and a tram's
- * riders already are - and it is a relief of 70%, not of 100%, because the
+ * riders already are - and it is a relief of 75% (InfrastructureManager
+ * .RAIL_ROAD_RELIEF), not of 100%, because the
  * last mile off the end of a siding is a lorry. The terminals have a road load
  * of their own on top of that. A city that rails everything still has its
  * commuters on the street, and in the played city commuters are 64% of the
@@ -1395,6 +1397,11 @@ public final class Freight extends Sector {
      * railway's quote under the lorry rate, on what it carried (getKept()).
      * The Freight page printed truck bill less billed as "paid abroad", which
      * with the railway carrying everything was the saving and not a payment.
+     *
+     * TODO(docs): since FR6 getHaulageBilled() also holds the city's own bulk
+     * billed (getHomeBill()), which is not in getTruckBill()'s cross-border
+     * tonnes, so "exactly three things" holds only while that is zero, and
+     * getKept() subtracts it too - intended, or should it be left out there?
      */
     public double getPaidAbroad()       { return abroadKnown ? rPaidAbroad : Double.NaN; }
 
@@ -1527,6 +1534,8 @@ public final class Freight extends Sector {
      * staffing. A rail terminal is fourteen hundred posts, which is the largest
      * single hiring commitment in the game, so the eighty-per-cent staffing
      * wall matters here more than anywhere - see Sector.MIN_STAFFABLE_TO_ORDER.
+     * By kind before that score since FR2 and FR7: Haulage's Truck Depot,
+     * then a station before any track, then a bulk works' siding (below).
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {

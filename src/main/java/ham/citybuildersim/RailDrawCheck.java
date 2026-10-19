@@ -58,8 +58,9 @@ import java.util.List;
  *      highways, track and yards draws the lightened highway colour and
  *      RAIL_DARK, never RAIL_LINE, and a 2 x 2 TRANSPORT dot at each yard;
  *  20. the legend: planeLegend() has the transport class, the railway's four
- *      and the gateway, and no RAIL_LINE entry;
- *  21. (batch FX3, red until the fix) a second line crossing the yard's box:
+ *      and the gateway, and (0.8.2) the train's entry, LandMap.TRAIN_WORDS,
+ *      and no RAIL_LINE entry;
+ *  21. (batch FX3, 0.8.4; red on 0.8.3) a second line crossing the yard's box:
  *      the fan closes on the line the yard stands on, not on the middle of
  *      all the track in the box; the crossing track is drawn from the box's
  *      edge to that line; no siding runs across it.
@@ -959,7 +960,8 @@ public class RailDrawCheck {
         TilePainter.Painted p = paint(in);
         int[] img = raster(in, p, px);
 
-        // Today drawYard() takes the middle of ALL the track in the box (box column 12, pixel 128) for the line the fan closes to.
+        // On 0.8.3 drawYard() took the middle of ALL the track in the box (box column 12, pixel 128) for the line the fan closes to;
+        // since FX3 (0.8.4) the fan takes TileRaster.yardLayout()'s stretch of the yard's own line.
         int apexY = (boxY + boxH) * px - 2, lineMid = lineX * px + px / 2, boxMid = (boxX + boxW / 2) * px;
         check("the fan's south apex is on the line: STEEL within 1 px of the line's middle column in the box's last row",
                 nearInRow(img, w, apexY, lineMid, 1, TileRaster.STEEL));

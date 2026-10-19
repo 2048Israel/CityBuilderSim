@@ -146,8 +146,8 @@ public final class TrainSchedule {
 
     /**
      * A train's way: its yard (an index in CityRuns.yards()), whether that
-     * yard is the freight station, its siding (0 to TileRaster.YARD_TRACKS
-     * - 1, -1 with none), and the way as points in plots - the world line's
+     * yard is the freight station, its siding (0 to the yard's
+     * TileRaster.tracksOf() - 1, -1 with none), and the way as points in plots - the world line's
      * far end first, the siding's end last - with each point's distance
      * along it; the first fadeTo plots are the world line's, faded in. Since
      * FR7 (slice 3) a route may instead be to a works' siding: `works` true,
