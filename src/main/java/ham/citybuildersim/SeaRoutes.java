@@ -209,11 +209,18 @@ public final class SeaRoutes {
         if (path == null) {
             pts.add(new double[] { oi * CELL + CELL / 2.0, oj * CELL + CELL / 2.0 });
         } else {
-            for (long[] c : pull(g, path)) {
+            List<long[]> pulled = pull(g, path);
+            for (int k = 0; k < pulled.size(); k++) {
+                long[] c = pulled.get(k);
                 double cx = c[0] * CELL + CELL / 2.0, cy = c[1] * CELL + CELL / 2.0;
                 if (pts.size() == 1 && c[0] == start[0] && c[1] == start[1] && path.size() > 1) {
-                    // The berth's own cell's middle is passed through only when it is not on the way.
-                    if (Math.hypot(cx - bx, cy - by) < CELL / 2.0) continue;
+                    // The berth's own cell's middle is passed through only when it is not on the way - and only when the
+                    // berth's own straight leg to the next keeps to the sea (FR3, 2026-10-19): pull() clears the line from
+                    // the cell's middle, and the leg from the berth beside it can graze a headland further out (MapCheck 9,
+                    // a Bulk Berth at the shore's end, a cell of land 30 cells out).
+                    long[] next = k + 1 < pulled.size() ? pulled.get(k + 1) : null;
+                    if (Math.hypot(cx - bx, cy - by) < CELL / 2.0
+                            && (next == null || legOnSea(g, bx, by, next[0] * CELL + CELL / 2.0, next[1] * CELL + CELL / 2.0))) continue;
                 }
                 pts.add(new double[] { cx, cy });
             }

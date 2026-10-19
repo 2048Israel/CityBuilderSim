@@ -1,6 +1,6 @@
 # FR3 - ports as a landlord port, and the Bulk Berth: notes
 
-*VERSION_HERE, 2026-10-19. The batch is `docs/studies/spec-freight-and-infrastructure.md` §7's FR3 row: §3.4's design, §2's rule, D8-D10 (Jerus, 2026-10-12: "all the freighting just do rec"). The brief, with every number and its source, is [FR3.md](FR3.md). The slices were Sonnet 5.5 subagents' (DeepSeek's key not being set on the PC), each reviewed by Claude; slices 3 and 4 were cut off half-written by the PC's 04:09 reboot (a Windows update), committed as found (15c94e4) and finished by a second session.*
+*0.8.7, 2026-10-19. The batch is `docs/studies/spec-freight-and-infrastructure.md` §7's FR3 row: §3.4's design, §2's rule, D8-D10 (Jerus, 2026-10-12: "all the freighting just do rec"). The brief, with every number and its source, is [FR3.md](FR3.md). The slices were Sonnet 5.5 subagents' (DeepSeek's key not being set on the PC), each reviewed by Claude; slices 3 and 4 were cut off half-written by the PC's 04:09 reboot (a Windows update), committed as found (15c94e4) and finished by a second session.*
 
 ## 1. What shipped
 
@@ -30,11 +30,31 @@ The brief's (FR3.md §4), as Jerus's "rec" left them, and the review's:
 
 ## 3. The slices, and what the review changed
 
-SLICES_TABLE_HERE
+| slice | by | what the review changed |
+|---|---|---|
+| 1, the Bulk Berth and the ships (9 files) | Sonnet | nothing; its classes before PANAMAX kept (only the name is saved; BoatSchedule's hashes move, the map's boats call at other minutes - drawing only). Its id, 142 before FR7's 141, reached a latent fault in the buildings' save (the last row) |
+| 2, the crews (Freight, Haulage, BuildingManager, Game, LandlordPortCheck 3) | Sonnet | nothing; PortCheck's O9 line "its crews are paid with transit's" moved to D8 at the orchestrator's word |
+| 3, the division (cut off by the 04:09 reboot) | Sonnet | **the dues never reached the treasury**: Freight's cash fell by them at its strike and nobody's rose - `EconomyManager.getPortDues()` in the tax take, `NationalAccounts`' line, the Government screen's. **`cityRate()` read `BondMarket.getLastIssueLoanRate()`**, a business's bond: the city's own 30-year paper now (★8). `Game.quoteDemolition()` still saved a berth's crew. OilCheck's index followed the policy array and names the duty's slot now (`STATE_BEFORE_FUEL_DUTY`, the same slot before and after: the premise did not move) |
+| 3b, LandlordPortCheck 4-9 | Sonnet, a second session | nothing; the builders' line is checked as the remainder at the quote (their repairs are bought before the haul, in no row between two months) |
+| 4, the advice (cut off) | Sonnet | its harness and the run's count were never written (4b); the build card's wording for a berth |
+| 4b, BuildAdviceCheck 13, LongPlaytest's line | Sonnet, a second session | the quote at founding prices beside the nominal; it gave three more BuildScreen switches a PORT case and LongPlaytest `-Dplaytest.months` |
+| the playtests' reload | Claude | **every id crosses a save.** `Game.sendBuildingSave()` and `loadBuildings()` ran to `getTemplateCount()` and read the index as an id; with 142 templates and no 141 every Bulk Berth was lost across a save (both playtests' "next-month income across a save", three Bulk Berths' crews short on Freight at m3648). Main plus slices 1-2 is clean only because its test player never orders a Bulk Berth: ordered, it fails the same way. Both loops and the Summary screen's two run to `getMaxTemplateId()` now; SaveFileCheck's new section drops a template to cause the gap whatever the catalogue, and fails on the old loops |
 
 ## 4. What moved in the trace
 
-TRACE_HERE
+Against main at efff4b9 (0.8.5, FR2's model), the model at 37806a8. Both runs: "Nothing. Every month passed the audit and every reload matched." The trace is main's to the month until the first terminal opens - default row 1,447 (the test player's first order m1438, a General Cargo Terminal, as on main), Earth row 2,031 (m2017) - because nothing in FR3 moves while no berth stands.
+
+| | main | FR3 (37806a8) |
+|---|---|---|
+| default, end | m4000: 721,948 people, GDP $15.4T a month at a price index of 3,506 | 596,492, $22.5T at 5,559 (real GDP -8%) |
+| default, m1071 / m2022 | 7,987 / 86,720 | 7,987 / 73,634 |
+| Earth (Rotterdam), end | m4005: 675,857, $4.5T at 983 | 719,893, $6.7T at 1,273 (real GDP +15%) |
+| Earth, m1071 / m2022 | 18,259 / 122,291 | 18,259 / 122,291 |
+| the berths | default: General Cargo 46; 73% of the boundary's tonnes by sea. Earth: General Cargo 42; 66% | default: Bulk Berth 7, General Cargo 36; 85%. Earth: Bulk Berth 19, General Cargo 44; 84% |
+
+**The Ports division over the run** (LongPlaytest's line): default - dry bulk billed in 704 months, 469 Mt, the last quote **D$2.76 a tonne at founding prices** (the sources' check US$2.50-4.00); general cargo in 2,552 months, 1.25 Gt, **D$15.67** (the check US$7-9); $43.5T billed and $39.7T of dues paid over the run, nominal across a price index from 1 to 5,559. Earth - dry bulk 1,755 months, 2.14 Gt, D$2.19; general cargo 1,973 months, 1.34 Gt, D$12.29; $15.2T and $13.6T. **The 60% rule fires**: dry bulk's best month is 161% of a Bulk Berth's month on the default run (m3705), 362% on the Earth (m3576); the overnight agent's 27% was the spec's young city's 57k t a month, and the playtest's own 600 months reach 5%.
+
+**Why.** Each berth's crew leaves the transit bill for Freight's payroll and comes back on the shippers' bills; the bills are nine tenths dues, a new revenue of the treasury's; and the Bulk Berths put dry bulk at sea (85% of the boundary's tonnes against 73%), whose band narrows the landed price of coal and ore. The general cargo quote is about twice the sources' handling because the dues recover a General Cargo Terminal (D$15 a tonne at .60 of its month, FR3.md 2) on top of the crew: a landlord port's dues and a stevedore's charge together, where the sources quote the stevedore's. A single run swings a long way with the city's path (FR2-notes §4), so the ensemble (§5) is the measure.
 
 ## 5. The ensemble
 
