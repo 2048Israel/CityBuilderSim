@@ -139,6 +139,9 @@ public final class MapTiles {
         }
         // The interchanges' reserves that reach it (batch FR7) - nothing with none.
         for (int r = 0; r < in.reserves * TilePainter.RESERVE_INTS; r++) h = World.mix(h ^ in.reserve[r] * 0x9E3779B97F4A7C15L ^ r);
+        // The sidings its district's plan laid over it (batch FR7 slice 5) - nothing with none.
+        long sidings = packed(in.siding);
+        if (sidings != 0) h = World.mix(h ^ sidings);
         // The works at sea (0.7.97): the quays', jackets' and wells' plots, the rings and the pipes - nothing with none.
         long sea = packed(in.sea);
         if (sea != 0) h = World.mix(h ^ sea);
@@ -210,6 +213,7 @@ public final class MapTiles {
         // ...and the runs' marks, the ramps and 45-degree stretches (0.7.98, batch O14: until then the kept copy the raster
         // reads had none, so no ramp or smooth band was ever drawn).
         System.arraycopy(a.marks, 0, b.marks, 0, TilePainter.PLOTS);
+        System.arraycopy(a.siding, 0, b.siding, 0, TilePainter.PLOTS);
         System.arraycopy(a.marksBeyond, 0, b.marksBeyond, 0, a.marksBeyond.length);
         b.stationX = a.stationX;
         b.stationY = a.stationY;

@@ -84,6 +84,9 @@ public final class TilePainter {
     public static final int M_MAIN = 32;
     /** A main-line plot drawn as double track: the city has a Freight Line (spec 4.3). */
     public static final int M_DOUBLE = 64;
+    /** A plot of a siding laid inside a district's plan (Input.siding; batch FR7 slice 5, D14), and (SIDING_END) its first plot, beside the works' box, which carries the loading shed. */
+    public static final byte SIDING_PLOT = 1, SIDING_END = 2;
+
     /** A siding's last plot, beside the works' box: drawn with the siding's loading shed, a small mark in TRANSPORT's colours (FR7 2026-10-18, CityRuns.SIDING). The marks' last bit, 128 (a mark byte is read with & 0xff). */
     public static final int M_SHED = 128;
 
@@ -210,6 +213,8 @@ public final class TilePainter {
         public final byte[] marks = new byte[PLOTS];
         /** ...and those just outside the tile, as beyond. */
         public final byte[] marksBeyond = new byte[4 * TILE];
+        /** Each plot's siding from its district's plan (batch FR7 slice 5, D14): SIDING_PLOT where a siding the plan laid runs, SIDING_END at its first plot, beside the works' box, which carries the loading shed; 0 for none. The plan's own track over the ground the runs left: drawn as track (RAIL) but counted apart from the runs' (Painted.sidingLaid); the siding just outside the tile is in fixedBeyond. */
+        public final byte[] siding = new byte[PLOTS];
         /** The freight station's yard, its box's first plot in the world: the yard nearest the rail gateway, spec 4.2; MIN_VALUE for none. */
         public long stationX = Long.MIN_VALUE, stationY = Long.MIN_VALUE;
         /** The railway carries goods, so the freight station is a container yard, spec 4.3. */
@@ -366,6 +371,8 @@ public final class TilePainter {
         public final int[] streets = new int[5], halves = new int[4];
         /** A highway's own plots laid, the railway's track laid (since 0.7.89 under a building too: a yard, a mine), and the plots where a street crosses the track. */
         public int highwayPlots, railLaid, crossings;
+        /** The plots of siding the district plans lay on the tile (Input.siding; batch FR7 slice 5): track drawn beside the runs', and not among them. */
+        public int sidingLaid;
         /** What each plot carries at sea (0.7.97): its work (SEA_WORK's QUAY, JACKET or WELL), and SEA_RING and SEA_PIPE where a platform's ring or a pipe crosses it. */
         public final byte[] sea = new byte[PLOTS];
         /** The plots of quay, of jacket and of platform well drawn, and those a ring or a pipe crosses: what MapCheck sums over the tiles to see each drawn once. */
@@ -384,7 +391,7 @@ public final class TilePainter {
             Arrays.fill(streets, 0);
             Arrays.fill(halves, 0);
             Arrays.fill(sea, (byte) 0);
-            buildings = packed = highwayPlots = railLaid = crossings = 0;
+            buildings = packed = highwayPlots = railLaid = crossings = sidingLaid = 0;
             quayPlots = jacketPlots = wellPlots = ringPlots = pipePlots = 0;
         }
 
@@ -462,6 +469,13 @@ public final class TilePainter {
                 p.road[i] = (byte) BuildingVisual.HIGHWAY;
             }
             p.bridge[i] = wet;
+        }
+        // The sidings the district's plan laid (batch FR7 slice 5, D14): track over the open ground it chose, and under a street a level
+        // crossing (the street loop below); the runs' own plots and a building keep theirs.
+        for (int i = 0; i < PLOTS; i++) {
+            if (in.siding[i] == 0 || in.fixed[i] != 0 || p.use[i] == BUILDING) continue;
+            p.use[i] = RAIL;
+            p.sidingLaid++;
         }
         // The plan's streets: each plot's surface, width and role; across the track a level crossing, beneath a highway a street passing under.
         for (int i = 0; i < PLOTS; i++) {

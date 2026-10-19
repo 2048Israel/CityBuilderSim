@@ -81,7 +81,17 @@ import java.util.Arrays;
  *      any other street, and one short of road makes it gravel and the rest
  *      tracks;
  *  15. KERB CORNERS: a + of two streets has its four corners rounded from 6 px
- *      a plot, a street's T on an arterial likewise, wider in an estate.
+ *      a plot, a street's T on an arterial likewise, wider in an estate;
+ *  16. SIDINGS (D14, slice 5): a plan given a share of the city's Rail Spurs
+ *      lays a siding to each of that many of the largest bulk works it placed,
+ *      from open ground beside the works' box (its loading shed) to the
+ *      nearest plot of the runs' railway in its frame, met from the side, one
+ *      unbroken track on no building, yard, reserve, highway, mine, other
+ *      track or the frame's edge, a street crossed level (kept, marked
+ *      CROSSING); a share of 0, a frame with no railway, a works the line
+ *      already touches and a works past a spur's length get none, and the
+ *      plan says why; nothing else of the plan moves; the painter draws it
+ *      as track counted apart from the runs'.
  *
  * The ground and the access roads are held on the map's own cities by MapCheck
  * section 8.
@@ -202,6 +212,7 @@ public class JunctionCheck {
         loopsDrawn();
         accessRoads();
         kerbCorners();
+        sidings();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -1093,6 +1104,150 @@ public class JunctionCheck {
         for (int y = 0; y < jy; y++) onStreet.street[y * T + jx] = (byte) STREET;
         int[] onStreetImg = raster(onStreet, paint(onStreet), px);
         check("a T of streets with no arterial has no rounded corner here: the pixel is the verge", pixel(onStreetImg, w, jx, jy, o - 1, o - 1, px) == verge);
+    }
+
+    /* ================= 16. sidings into the bulk works the plans place (batch FR7, slice 5) ================= */
+
+    /** The two bulk works the siding fixtures place: Machine Works-sized 11 x 11 (id 51) and the smaller 6 x 7 (id 12) - ids in buildings.json are permanent. */
+    static final int BIG = 51, SMALL = 12;
+
+    /** The main line's row in the siding fixtures: 125, 16 plots below the first works' box, with a street between. */
+    static final int LINE_ROW = 125;
+
+    /** A plan's input with `bigs` and `smalls` bulk works to place and nothing else, an east-west main line along `row` (none for a negative row) of the runs' railway, and `share` sidings to lay. */
+    static DistrictPlan.Input sidingInput(int row, int share, int bigs, int smalls) {
+        DistrictPlan.Input in = planInput(new CityRuns());
+        int f = DistrictPlan.FRAME;
+        Arrays.fill(in.counts, 0);
+        in.counts[BIG] = bigs;
+        in.counts[SMALL] = smalls;
+        if (row >= 0) for (int x = 1; x < DistrictPlan.SIDE; x++) in.fixed[row * f + x] = DistrictPlan.FIXED_RAIL;
+        in.sidings = share;
+        return in;
+    }
+
+    /** Whether plot q of the plan is one a siding runs over. */
+    static boolean siding(DistrictPlan p, int q) { return p.siding != null && p.siding[q] != 0; }
+
+    /** Whether the siding runs unbroken from (sx, sy) to (ex, ey): a chain of siding plots, side to side. */
+    static boolean sidingChained(DistrictPlan p, int sx, int sy, int ex, int ey) {
+        int f = DistrictPlan.FRAME;
+        boolean[] seen = new boolean[f * f];
+        java.util.ArrayDeque<Integer> q = new java.util.ArrayDeque<>();
+        if (!siding(p, sy * f + sx)) return false;
+        q.add(sy * f + sx);
+        seen[sy * f + sx] = true;
+        while (!q.isEmpty()) {
+            int a = q.poll(), x = a % f, y = a / f;
+            if (x == ex && y == ey) return true;
+            int[] nb = { x > 0 ? a - 1 : -1, x + 1 < f ? a + 1 : -1, y > 0 ? a - f : -1, y + 1 < f ? a + f : -1 };
+            for (int b : nb) if (b >= 0 && !seen[b] && siding(p, b)) { seen[b] = true; q.add(b); }
+        }
+        return false;
+    }
+
+    static void sidings() {
+        System.out.println("--- 16. (batch FR7, slice 5, D14) a plan lays a siding from each of its largest bulk works' box edge to the runs' railway in its frame, as its share of the spurs says ---");
+        int f = DistrictPlan.FRAME, side = DistrictPlan.SIDE;
+        BuildingVisual.Type[] types = types();
+        check("fixture: the two works are bulk works of different size", types[BIG].bulk() && types[SMALL].bulk() && BuildingVisual.cells(types[BIG]) > BuildingVisual.cells(types[SMALL]));
+        DistrictPlan.Input in = sidingInput(LINE_ROW, 1, 2, 1);
+        DistrictPlan p = DistrictPlan.make(in);
+        int bigs = 0, smalls = 0;
+        for (int b = 0; b < p.buildings; b++) {
+            if (p.btype[b] == BIG) bigs++;
+            if (p.btype[b] == SMALL) smalls++;
+        }
+        System.out.println("  the plan places " + bigs + " large works and " + smalls + " small; a siding to " + p.sidings.size() + " of " + p.sidingsAsked + " asked");
+        check("fixture: the plan places both large works and the small one", bigs == 2 && smalls == 1);
+        check("a share of 1 lays one siding, to the larger works: the 11 x 11, not the 6 x 7 beside it", p.sidings.size() == 1 && p.sidingsAsked == 1
+                && p.sidings.get(0)[2] * p.sidings.get(0)[3] == BuildingVisual.footprint(types[BIG])[0] * BuildingVisual.footprint(types[BIG])[1]);
+        int[] r = p.sidings.get(0);
+        int[] box = { r[0], r[1], r[2], r[3] };
+        int sx = r[4], sy = r[5], ex = r[6], ey = r[7], rx = r[8], ry = r[9], plots = r[10];
+        check("it starts beside the works' box, on its shed's plot (SIDING_END), the only plot so marked", beside(box, sx, sy) && p.siding[sy * f + sx] == DistrictPlan.SIDING_END);
+        int ends = 0, count = 0;
+        for (int q = 0; q < f * f; q++) {
+            if (p.siding != null && p.siding[q] == DistrictPlan.SIDING_END) ends++;
+            if (siding(p, q)) count++;
+        }
+        check("...every plot of the siding is a plot of its route: " + plots + " of them, one shed", count == plots && ends == 1);
+        check("it ends beside a plot of the runs' railway (FIXED_RAIL) in the frame, and reaches it from the side: the line runs east-west, the last step north or south",
+                in.fixed[ry * f + rx] == DistrictPlan.FIXED_RAIL && ry == LINE_ROW && Math.abs(ex - rx) + Math.abs(ey - ry) == 1 && ex == rx);
+        check("...and is one unbroken track from its shed to the line", sidingChained(p, sx, sy, ex, ey));
+        check("...no longer than a Rail Spur's plots (Input.sidingPlots)", plots <= in.sidingPlots);
+        boolean clear = true;
+        for (int q = 0; q < f * f; q++) {
+            if (!siding(p, q)) continue;
+            int x = q % f, y = q / f;
+            clear &= x >= DistrictPlan.SIDING_EDGE && y >= DistrictPlan.SIDING_EDGE && x <= side - DistrictPlan.SIDING_EDGE && y <= side - DistrictPlan.SIDING_EDGE && in.fixed[q] == 0 && in.site[q] != DistrictPlan.SITE_MINED;
+        }
+        for (int b = 0; b < p.buildings; b++) {
+            for (int y = p.by[b]; y < p.by[b] + p.bh[b]; y++) for (int x = p.bx[b]; x < p.bx[b] + p.bw[b]; x++) clear &= !siding(p, y * f + x);
+        }
+        check("no plot of it is a building's, a yard's, a reserve's, a highway's, a mine's or the line's, or within the frame's edge", clear);
+        // The street it crosses.
+        int crossed = 0;
+        boolean level = true;
+        for (int q = 0; q < f * f; q++) {
+            if (!siding(p, q) || p.kindAt(q) == DistrictPlan.NONE) continue;
+            crossed++;
+            level &= (p.street[q] & DistrictPlan.CROSSING) != 0 && p.kindAt(q) != DistrictPlan.UNDER && p.kindAt(q) != DistrictPlan.SEAM;
+        }
+        System.out.println("  " + crossed + " plot(s) of the siding are on a street");
+        check("fixture: a street lies between the works and the line, so the siding must cross one", crossed >= 1);
+        check("...each such plot keeps its street and is marked a level crossing (CROSSING)", level);
+        // Nothing else of the plan moved.
+        DistrictPlan.Input in0 = sidingInput(LINE_ROW, 0, 2, 1);
+        DistrictPlan p0 = DistrictPlan.make(in0);
+        boolean same = p0.buildings == p.buildings && Arrays.equals(p0.bx, p.bx) && Arrays.equals(p0.by, p.by) && Arrays.equals(p0.btype, p.btype);
+        for (int q = 0; q < f * f && same; q++) same &= (p0.street[q] & ~DistrictPlan.CROSSING) == (p.street[q] & ~DistrictPlan.CROSSING);
+        check("the siding takes nothing from the plan: the same buildings, the same streets and surface as the plan with no share (but for the crossings' mark)", same && p0.surplus == p.surplus);
+        // A share of 0.
+        check("a share of 0 lays none: no siding, no track", p0.sidings.isEmpty() && p0.siding == null && p0.sidingsAsked == 0);
+        // The share's size: the two largest.
+        DistrictPlan p2 = DistrictPlan.make(sidingInput(LINE_ROW, 2, 2, 1));
+        boolean twoBig = p2.sidings.size() == 2;
+        for (int[] s : p2.sidings) twoBig &= s[2] * s[3] == BuildingVisual.footprint(types[BIG])[0] * BuildingVisual.footprint(types[BIG])[1];
+        check("a share of 2 lays two, to the two largest of three works", twoBig);
+        DistrictPlan p3 = DistrictPlan.make(sidingInput(LINE_ROW, 3, 2, 1));
+        check("a share of 3 lays three, the small works' too; a share past the works lays no more than there are", p3.sidings.size() == 3 && DistrictPlan.make(sidingInput(LINE_ROW, 9, 2, 1)).sidings.size() == 3);
+        // No railway in the frame.
+        DistrictPlan pn = DistrictPlan.make(sidingInput(-1, 1, 2, 1));
+        check("a frame with no plot of the railway gives none, and says so (sidingsNoRail)", pn.sidings.isEmpty() && pn.siding == null && pn.sidingsNoRail >= 1);
+        DistrictPlan.Input inEdge = sidingInput(-1, 1, 2, 1);
+        for (int x = 0; x < f; x++) inEdge.fixed[x] = DistrictPlan.FIXED_RAIL;
+        DistrictPlan pe = DistrictPlan.make(inEdge);
+        check("...a railway on the frame's edge row alone is the next district's: none", pe.sidings.isEmpty() && pe.sidingsNoRail >= 1);
+        // No bulk works at all.
+        DistrictPlan pw = DistrictPlan.make(sidingInput(LINE_ROW, 1, 0, 0));
+        check("a plan that places no bulk works lays none, and says so (sidingsNoWorks)", pw.sidings.isEmpty() && pw.sidingsNoWorks == 1);
+        // A works the line already touches.
+        int doorRow = r[1] + r[3];
+        DistrictPlan pd = DistrictPlan.make(sidingInput(doorRow, 1, 2, 1));
+        boolean touching = false;
+        for (int[] s : pd.sidings) touching |= s[1] + s[3] == doorRow || s[1] - 1 == doorRow;
+        System.out.println("  the line along row " + doorRow + ": " + pd.sidings.size() + " siding(s), " + pd.sidingsAtDoor + " work(s) at the door");
+        check("a works the line runs beside has the railway at its door: it takes no siding, and the plan counts it (sidingsAtDoor)", pd.sidingsAtDoor >= 1 && !touching);
+        // Too far: a siding may have no more plots than a Rail Spur's.
+        DistrictPlan.Input far = sidingInput(LINE_ROW, 1, 2, 1);
+        far.sidingPlots = 5;
+        DistrictPlan pf = DistrictPlan.make(far);
+        check("a works farther from the line than a siding may be long gets none, and the plan counts the way it lacked (sidingsNoWay)", pf.sidings.isEmpty() && pf.sidingsNoWay >= 1);
+        // The painter: track over the open ground, a level crossing under a street, the shed - and not among the runs' track.
+        TilePainter.Input pin = owned();
+        streetColumn(pin, 12, ARTERIAL);
+        for (int x = 4; x <= 20; x++) pin.siding[10 * T + x] = x == 4 ? TilePainter.SIDING_END : TilePainter.SIDING_PLOT;
+        pin.marks[10 * T + 4] |= (byte) TilePainter.M_SHED;
+        TilePainter.Painted pp = paint(pin);
+        boolean rail = true;
+        for (int x = 4; x <= 20; x++) rail &= pp.use[10 * T + x] == TilePainter.RAIL;
+        check("the painter draws a siding's plots as track, 17 of them counted apart from the runs' (sidingLaid, not railLaid)", rail && pp.sidingLaid == 17 && pp.railLaid == 0);
+        check("...a street under it a level crossing: that plot is track that carries the street's kind and role", pp.use[10 * T + 12] == TilePainter.RAIL && pp.road[10 * T + 12] == BuildingVisual.PAVED && pp.crossings == 1);
+        int px = 8, w = T * px;
+        int[] img = raster(pin, pp, px);
+        int shed = BuildingVisual.FILL[BuildingVisual.TRANSPORT];
+        check("...and at 8 px a plot the shed's block stands on the first plot (TRANSPORT's colour at its middle), not on the others", img[(10 * px + px / 2) * w + 4 * px + px / 2] == shed && img[(10 * px + px / 2) * w + 8 * px + px / 2] != shed);
     }
 
     /* ================= 13. the loops (batch FR7, slice 4) ================= */

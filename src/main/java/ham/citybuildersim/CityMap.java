@@ -1905,6 +1905,9 @@ public final class CityMap {
     /** A packed box's flag (Drawn.boxes): drawn without a street, R7's packing at the city's edge. */
     public static final int PACKED_BIT = 1 << 20;
 
+    /** A siding plot of a Drawn (Drawn.siding) whose bit this is: the siding's first, beside the works' box, where its loading shed stands (batch FR7 slice 5). The plot is below it: a frame has 66,049 of them. */
+    static final int SIDING_END_BIT = 1 << 24;
+
     /** Where a Drawn box's type id starts: above the box's 20 bits and PACKED_BIT, eleven bits for ids under 2,048 (buildings.json's ids are under 128). */
     public static final int BOX_TYPE_SHIFT = 21;
 
@@ -1918,6 +1921,8 @@ public final class CityMap {
         byte[] east, south;
         /** Each tile's buildings, an int each: the box - x, y, w - 1 and h - 1 in the tile's plots, five bits each, PACKED_BIT when packed without a street - and the type id from BOX_TYPE_SHIFT. */
         final int[][] boxes = new int[TILES][];
+        /** The plots its plan's sidings run over (batch FR7 slice 5, D14), each a plot of its frame (y x FRAME + x) with SIDING_END_BIT set on the first of a siding, the loading shed's; null for none. */
+        int[] siding;
         /** Buildings its plan placed, and what it could not hold (carried on, R7). */
         int placed, refused;
         /** Its streets' surface in half plots by kind, [0, gravel, paved, highway], the plots of street it lays and how many of them are tracks: what its own road is drawn as. */
@@ -1938,6 +1943,7 @@ public final class CityMap {
             long b = 64 + 2L * DistrictPlan.FRAME;
             for (byte[] t : tiles) if (t != null) b += 16 + t.length;
             for (int[] x : boxes) if (x != null) b += 16 + 4L * x.length;
+            if (siding != null) b += 16 + 4L * siding.length;
             return b;
         }
 
@@ -2048,6 +2054,13 @@ public final class CityMap {
         for (int b = 0; b < p.buildings; b++) {
             int k = (p.by[b] / World.TILE) * TILES_A_SIDE + p.bx[b] / World.TILE;
             out.boxes[k][n[k]++] = box(p.bx[b] % World.TILE, p.by[b] % World.TILE, p.bw[b], p.bh[b], false) | (p.btype[b] << BOX_TYPE_SHIFT);
+        }
+        if (p.siding != null) {
+            int count = 0;
+            for (byte s : p.siding) if (s != 0) count++;
+            out.siding = new int[count];
+            count = 0;
+            for (int q = 0; q < p.siding.length; q++) if (p.siding[q] != 0) out.siding[count++] = q | (p.siding[q] == DistrictPlan.SIDING_END ? SIDING_END_BIT : 0);
         }
         out.placed = p.buildings;
         out.refused = p.overflowCount();
@@ -2310,6 +2323,9 @@ public final class CityMap {
         // The city's runs over its frame (0.7.89), and its Rail Terminals the runs draw as yards.
         h = World.mix(h ^ runs.frameHash(x0, y0, DistrictPlan.FRAME, DistrictPlan.FRAME));
         h = World.mix(h ^ yardsOf(d));
+        // ...and its share of the Rail Spurs the runs' sidings left (batch FR7 slice 5, D14); nothing with none.
+        int sidings = sidingsOf(d);
+        if (sidings != 0) h = World.mix(h ^ 0x53494449L ^ ((long) sidings << 40));
         // ...and the works on the shore over its frame and those of its own the shore holds (0.7.97); nothing with none.
         if (!shore.isEmpty()) {
             h = World.mix(h ^ shore.frameHash(x0, y0, DistrictPlan.FRAME, DistrictPlan.FRAME));
@@ -2755,13 +2771,19 @@ public final class CityMap {
         return packSums();
     }
 
-    /** The legend's figures once every plan and the packing are drawn (never planned here: the screen's thread): {buildings packed at the city's edge, plots of road its streets do not carry (star RD2-4) - since 0.7.89 with the highway plots the runs could not lay -, plots of track more than the line uses (FR7 slice 3: the model's track the main line, its sidings and its branches do not take)}; null until they are. */
+    /** The legend's figures once every plan and the packing are drawn (never planned here: the screen's thread): {buildings packed at the city's edge, plots of road its streets do not carry (star RD2-4) - since 0.7.89 with the highway plots the runs could not lay -, plots of track more than the line uses (FR7 slice 3: the model's track the main line, its sidings and its branches do not take; slice 5: less a dealt spur's plots each, dealtSpurTrack(), which the plans' sidings use)}; null until they are. */
     public long[] legendFiguresIfDrawn() {
         int[] p = packSums();
         if (p == null) return null;
         double surplus = runs.highwayUndrawn();
         for (District d : districts) surplus += links.get(d).surplus;
-        return new long[] { p[0], Math.round(surplus), runs.trackSurplus() };
+        return new long[] { p[0], Math.round(surplus), Math.max(0, runs.trackSurplus() - dealtSpurTrack()) };
+    }
+
+    /** The track plots of the Rail Spurs dealt to the plans' works (sidingsOf()), a spur's share of the model's spur track each: used by a siding the plans lay, so no longer the legend's "track more than the line uses" (batch FR7 slice 5). */
+    long dealtSpurTrack() {
+        long dealt = sidingsDealt();
+        return spurCount <= 0 ? 0 : dealt * spurTrack / spurCount;
     }
 
     /** The road the plans have no street for, by kind [0, gravel, paved, highway], over every district (made now if need be), and (0.7.89) the Elevated Highway plots the runs could not lay: a harness's - with the surface drawn, the model's road kind by kind. */
@@ -2819,7 +2841,7 @@ public final class CityMap {
             for (int x = 0; x < DISTRICT; x++) {
                 int q = y * f + x;
                 if (!in.owned[q] || !World.dry(in.terrain[q])) continue;
-                if (taken[q] || p.street[q] != 0 || in.fixed[q] != 0 || in.site[q] == DistrictPlan.SITE_MINED) continue;
+                if (taken[q] || p.street[q] != 0 || in.fixed[q] != 0 || in.site[q] == DistrictPlan.SITE_MINED || p.siding != null && p.siding[q] != 0) continue;
                 boolean verge = false;
                 for (int dy = -1; dy <= 1 && !verge; dy++) {
                     for (int dx = -1; dx <= 1 && !verge; dx++) {
@@ -3080,8 +3102,14 @@ public final class CityMap {
        RAILWAY'S WAYS; Jerus: "why all the other rails they are dead ends").
        A Rail Depot is a small yard of its own size and sidings; trainRoutes()
        runs a bulk unit train straight to each siding. Works the district
-       plans place are not served by a siding: the plans are drawn round the
+       plans place are not served by the runs: the plans are drawn round the
        runs, and a siding laid after them would move the plans' own ground.
+       Since FR7 slice 5 (2026-10-19) they are served inside the plans: the
+       spurs the runs' sidings left are dealt (sidingsOf()) to the districts
+       the main line crosses that hold bulk works, and each plan lays a
+       siding to its largest, after its buildings stand (DistrictPlan
+       sidings()); the trains of those sidings are not drawn (trainRoutes()
+       needs the plans' geometry, which it does not draw).
        ===================================================================== */
 
     /** Bumped whenever free ground is measured again (a purchase): what a run waiting on the ground is tried again on. */
@@ -3584,16 +3612,21 @@ public final class CityMap {
      * with none). True, and the map's changes bumped, when they moved.
      */
     boolean layRuns(long[] model) {
-        long highway = 0, track = 0;
+        long highway = 0, track = 0, spurTrackNow = 0;
         int spurs = 0;
         for (int t = 0; t < types.length && t < model.length; t++) {
             if (types[t] == null || model[t] <= 0) continue;
             if (types[t].road() == BuildingVisual.HIGHWAY) highway += model[t] * BuildingVisual.cells(types[t]);
             else if (types[t].track()) {
                 track += model[t] * BuildingVisual.cells(types[t]);
-                if (types[t].siding()) spurs += (int) Math.min(Integer.MAX_VALUE - spurs, model[t]);
+                if (types[t].siding()) {
+                    spurs += (int) Math.min(Integer.MAX_VALUE - spurs, model[t]);
+                    spurTrackNow += model[t] * BuildingVisual.cells(types[t]);
+                }
             }
         }
+        spurCount = spurs;
+        spurTrack = spurTrackNow;
         int[] seq = yardSequenceOf(model);
         List<int[]> yardSizes = new java.util.AbstractList<>() {
             @Override public int[] get(int i) { return footprintOf(seq[i]); }
@@ -3795,6 +3828,79 @@ public final class CityMap {
         int n = 0;
         for (int t : terminalTypes()) n += yardsOf(d, t);
         return n;
+    }
+
+    /* ----- the Rail Spurs the runs' sidings left: dealt to the plans' works (batch FR7 slice 5, D14) ----- */
+
+    /** The Rail Spurs the model has and the track plots they are, as layRuns() last saw them: the runs lay a siding into a mined site for each spur they can; the rest are dealt (sidingsOf()). */
+    private int spurCount;
+    private long spurTrack;
+
+    /** Each district's share of the spurs, by its index, how many are dealt in all, and what they were kept against (the runs' version, the map's changes and the spurs). */
+    private int[] sidingShare;
+    private long sidingsDealt;
+    private long sidingShareAt = Long.MIN_VALUE;
+
+    /** The Rail Spurs the runs' sidings did not take: the model's less the sidings the runs laid into mined sites. */
+    int spursLeft() {
+        return Math.max(0, spurCount - runs.sidingsLaid());
+    }
+
+    /** How many Rail Spurs are dealt to the districts' plans in all (sidingsOf()). */
+    long sidingsDealt() {
+        sidingsOf(null);
+        return sidingsDealt;
+    }
+
+    /**
+     * How many sidings district d's plan lays (batch FR7 slice 5, D14): its
+     * share of the Rail Spurs the runs' sidings left (spursLeft()). They are
+     * dealt to the districts whose frames the main line crosses - a plan reads
+     * its own frame alone, so a district the line only comes within a district
+     * of could not draw one (CityRuns.mainLineCells()) - that hold bulk works
+     * their plans place (BuildingVisual.Type.bulk(), a mine standing on its
+     * site apart), the type of the largest footprint first (cells()), each in
+     * the districts' order, as yardsOf() deals the yards: a district added
+     * after never reorders the rest. A pure function of the counts and the runs,
+     * kept against the runs' version and the map's changes; nothing is saved.
+     * Past WAYS_WORKS_DISTRICTS districts none, as the runs lay none.
+     */
+    int sidingsOf(District d) {
+        long at = World.mix(runs.version() ^ changes ^ ((long) spurCount << 20) ^ 0x53494449L);
+        if (sidingShare == null || sidingShareAt != at || sidingShare.length != districts.size()) {
+            sidingShare = new int[districts.size()];
+            sidingsDealt = 0;
+            sidingShareAt = at;
+            dealSidings(sidingShare);
+        }
+        return d == null || d.index >= sidingShare.length ? 0 : sidingShare[d.index];
+    }
+
+    private void dealSidings(int[] share) {
+        if (districts.size() > WAYS_WORKS_DISTRICTS || !runs.rail().started) return;
+        int left = spursLeft();
+        if (left == 0) return;
+        java.util.Set<Long> line = runs.mainLineCells(DISTRICT);
+        if (line.isEmpty()) return;
+        List<Integer> bulk = new ArrayList<>();
+        for (int t = 0; t < types.length; t++) {
+            BuildingVisual.Type ty = types[t];
+            if (ty != null && ty.bulk() && ty.drawn() && !ty.terminal() && !ty.shore()) bulk.add(t);
+        }
+        bulk.sort((a, b) -> BuildingVisual.cells(types[a]) != BuildingVisual.cells(types[b])
+                ? Integer.compare(BuildingVisual.cells(types[b]), BuildingVisual.cells(types[a])) : Integer.compare(a, b));
+        for (int t : bulk) {
+            for (District d : districts) {
+                if (left == 0) return;
+                if (!line.contains(((long) (baseDX + d.dx) << 32) ^ ((baseDY + d.dy) & 0xffffffffL))) continue;
+                int n = t < d.counts.length ? d.counts[t] - (d.sited == null ? 0 : d.sited[t]) : 0;
+                if (n <= 0) continue;
+                int take = Math.min(n, left);
+                share[d.index] += take;
+                sidingsDealt += take;
+                left -= take;
+            }
+        }
     }
 
     /** The runs' frame for district d's plan: their plots over its 257 x 257 (DistrictPlan's codes), a hash of them returned. */
@@ -4394,6 +4500,7 @@ public final class CityMap {
         in.clearBuildings();
         java.util.Arrays.fill(in.street, (byte) 0);
         java.util.Arrays.fill(in.fixed, (byte) 0);
+        java.util.Arrays.fill(in.siding, (byte) 0);
         District d = districtOfTile(tx, ty);
         int k = tileIn(tx, ty);
         long px0 = tx * World.TILE, py0 = ty * World.TILE;
@@ -4441,6 +4548,23 @@ public final class CityMap {
                 in.marksBeyond[World.TILE + m] = ringMarks[(m + 1) * rw + rw - 1];
                 in.marksBeyond[2 * World.TILE + m] = ringMarks[(rw - 1) * rw + m + 1];
                 in.marksBeyond[3 * World.TILE + m] = ringMarks[(m + 1) * rw];
+            }
+        }
+        // The sidings its district's plan laid (batch FR7 slice 5, D14): on the tile, and as the runs' track is, just beyond its edges. A
+        // siding keeps SIDING_EDGE plots from its frame's edge, so the tile's own district has every one the tile and its ring can see.
+        if (own != null && own.siding != null) {
+            int t = World.TILE, f = DistrictPlan.FRAME;
+            int lx0 = (int) Math.floorMod(tx, TILES_A_SIDE) * t, ly0 = (int) Math.floorMod(ty, TILES_A_SIDE) * t;
+            for (int e : own.siding) {
+                int q = e & (SIDING_END_BIT - 1), x = q % f - lx0, y = q / f - ly0;
+                boolean end = (e & SIDING_END_BIT) != 0;
+                if (x >= 0 && y >= 0 && x < t && y < t) {
+                    in.siding[y * t + x] = end ? TilePainter.SIDING_END : TilePainter.SIDING_PLOT;
+                    if (end) in.marks[y * t + x] |= (byte) TilePainter.M_SHED;
+                    continue;
+                }
+                int at = y == -1 && x >= 0 && x < t ? x : x == t && y >= 0 && y < t ? t + y : y == t && x >= 0 && x < t ? 2 * t + x : x == -1 && y >= 0 && y < t ? 3 * t + y : -1;
+                if (at >= 0 && in.fixedBeyond[at] == 0) in.fixedBeyond[at] = TilePainter.RAIL;
             }
         }
         // The interchanges' reserves that reach it (batch FR7): the ground their loops are drawn on, once the highways are drawn at all.
@@ -4678,6 +4802,9 @@ public final class CityMap {
         runsInto(d, in.fixed, in.ramp);
         // The works that need an access road (batch FR7): its yards and sea terminals.
         worksInto(d, in);
+        // ...and its share of the Rail Spurs the runs' sidings left: a siding to each of that many of the bulk works its plan places (batch FR7 slice 5, D14).
+        in.sidings = sidingsOf(d);
+        if (spurCount > 0) in.sidingPlots = (int) Math.min(Integer.MAX_VALUE, spurTrack / spurCount);
         // The works on the shore over its frame (0.7.97): fixed as a yard's ground is - no street across, no building on it.
         if (!shore.isEmpty()) shore.fill(x0, y0, f, f, in.fixed, DistrictPlan.FIXED_YARD);
         in.gravel = kind[BuildingVisual.GRAVEL];

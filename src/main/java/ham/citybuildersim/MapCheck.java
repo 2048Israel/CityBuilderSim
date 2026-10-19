@@ -1106,7 +1106,7 @@ public class MapCheck {
         final boolean[] owned, sea, wet, bridge, beneath, mined;
         /** Each building: {x0, y0, w, h, type, site (or -1), packed (1 or 0)} in the box's plots. */
         final List<int[]> boxes = new ArrayList<>();
-        long rail, crossings, packed;
+        long rail, crossings, packed, siding;
         final double[] surface = new double[4];
         final long[] buildings;
         final java.util.Set<Long> sites = new java.util.HashSet<>();
@@ -1137,6 +1137,7 @@ public class MapCheck {
                     TilePainter.paint(in, p);
                     crossings += p.crossings;
                     rail += p.railLaid;
+                    siding += p.sidingLaid;
                     packed += p.packed;
                     for (int k = 1; k < 4; k++) surface[k] += p.halves[k] / 2.0;
                     surface[BuildingVisual.HIGHWAY] += p.highwayPlots;
@@ -1490,6 +1491,7 @@ public class MapCheck {
         yardsNearMines(yards, yn);
         riverCrossed(sq);
         interchangesAndAccess(sq);
+        sidingsDealt(sq);
     }
 
     /* =====================================================================
@@ -1513,6 +1515,11 @@ public class MapCheck {
      * Truck Depots to place; with `highways` false his own highways taken out too: none, so no ramp for a road to end on.
      */
     static CityMap accessCity(Squares sq, boolean highways) {
+        return accessCity(sq, highways, null);
+    }
+
+    /** ...with `extra` counts added (batch FR7 slice 5: spurs and bulk works for the sidings' deal): a track type's to the railway, any other's to the buildings. */
+    static CityMap accessCity(Squares sq, boolean highways, long[] extra) {
         long[] c = sq.ironCounts.clone();
         int yard = -1, freight = -1, mine = -1, hw = -1;
         for (BuildingVisual.Type t : sq.types) {
@@ -1526,6 +1533,12 @@ public class MapCheck {
         for (int t = 0; t < c.length; t++) if (sq.types[t] != null && (sq.types[t].track() || sq.types[t].terminal())) { rail[t] = c[t]; c[t] = 0; }
         rail[yard] += YARDS_ADDED;
         rail[freight] += FREIGHT_ADDED;
+        if (extra != null) {
+            for (int t = 0; t < c.length && t < extra.length; t++) {
+                if (sq.types[t] != null && (sq.types[t].track() || sq.types[t].terminal())) rail[t] += extra[t];
+                else c[t] += extra[t];
+            }
+        }
         c[hw] = highways ? c[hw] + ACCESS_HIGHWAYS_ADDED : 0;
         c[depotType(sq.types)] += ACCESS_DEPOTS_ADDED;
         long wantMines = c[mine];
@@ -1647,6 +1660,91 @@ public class MapCheck {
                 ACCESS_DEPOTS_ADDED, c[0], c[1], c[2]);
         check("the sea terminals on the shore are works that get an access road where their district has a grid to go to: some do, each beside its box and ending on a ramp's street or an arterial",
                 terminals > 0 && c[7] == terminals && c[6] > 0 && c[4] == 0 && c[5] == 0);
+    }
+
+    /* =====================================================================
+       8c. THE SPURS DEALT TO THE PLANS' SIDINGS (batch FR7, slice 5; spec-
+       freight 4.3, D14: "one siding for each spur, into its works' estate
+       cell")
+       ===================================================================== */
+
+    /** The sidings fixture's added Rail Spurs and bulk works (JunctionCheck's two bulk types, two in three the larger). */
+    static final int SPURS_ADDED = 12, BULK_WORKS_ADDED = 90;
+
+    /** The spurs the runs' sidings left, as the map deals them: each dealt district is one the main line crosses with bulk works of its own, no more than it holds, and the plans lay at most their share, drawn on the raster; the legend's surplus falls by a dealt spur's plots; the deal is the same from the same counts. */
+    static void sidingsDealt(Squares sq) {
+        out.println("      the sidings the plans lay (batch FR7 slice 5, D14): the iron city with " + SPURS_ADDED + " Rail Spurs and " + BULK_WORKS_ADDED + " bulk works added:");
+        BuildingVisual.Type[] types = sq.types;
+        int spur = -1;
+        for (BuildingVisual.Type t : types) if (t != null && t.siding()) spur = t.id();
+        long[] extra = new long[types.length];
+        extra[spur] = SPURS_ADDED;
+        extra[JunctionCheck.BIG] = BULK_WORKS_ADDED * 2 / 3;
+        extra[JunctionCheck.SMALL] = BULK_WORKS_ADDED / 3;
+        CityMap m = accessCity(sq, true, extra);
+        CityRuns runs = m.runs();
+        int f = DistrictPlan.FRAME, left = m.spursLeft();
+        long dealt = m.sidingsDealt();
+        java.util.Set<Long> line = runs.mainLineCells(CityMap.DISTRICT);
+        long sum = 0, planned = 0, planPlots = 0, noRail = 0;
+        boolean crossed = true, rail = true, holds = true, within = true, undealt = true;
+        List<long[]> plots = new ArrayList<>();
+        for (CityMap.District d : m.districts()) {
+            int share = m.sidingsOf(d);
+            // The plan the painter draws (with what the districts before it carried to it), not a standalone one.
+            CityMap.Drawn dr = m.drawnOf(d);
+            DistrictPlan.Input in = m.planInputHere(d);
+            if (share == 0) {
+                undealt &= dr.siding == null;
+                continue;
+            }
+            DistrictPlan p = m.plan(d);
+            sum += share;
+            crossed &= line.contains((Math.floorDiv(in.x0, CityMap.DISTRICT) << 32) ^ (Math.floorDiv(in.y0, CityMap.DISTRICT) & 0xffffffffL));
+            boolean any = false;
+            for (int q = 0; q < f * f && !any; q++) any = in.fixed[q] == DistrictPlan.FIXED_RAIL && q % f >= 1 && q / f >= 1 && q % f < DistrictPlan.SIDE && q / f < DistrictPlan.SIDE;
+            rail &= any;
+            long bulk = 0;
+            for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].bulk() && types[t].drawn() && !types[t].terminal() && t < in.counts.length) bulk += in.counts[t];
+            holds &= share <= bulk;
+            int sidings = 0;
+            if (dr.siding != null) {
+                for (int e : dr.siding) {
+                    int q = e & (CityMap.SIDING_END_BIT - 1);
+                    if ((e & CityMap.SIDING_END_BIT) != 0) sidings++;
+                    planPlots++;
+                    plots.add(new long[] { in.x0 + q % f, in.y0 + q / f });
+                }
+            }
+            within &= sidings <= share;
+            planned += sidings;
+            noRail += p.sidingsNoRail;
+        }
+        out.printf("      %d Rail Spurs, %d laid by the runs into mined sites, %d left; %d dealt to %d district(s) the main line crosses; the plans lay %d sidings of %,d plots%n",
+                m.runs().sidingsLaid() + left, m.runs().sidingsLaid(), left, dealt, m.districts().stream().filter(d -> m.sidingsOf(d) > 0).count(), planned, planPlots);
+        check("fixture: spurs are left to deal, and the main line crosses districts holding bulk works to deal them to", left > 0 && dealt > 0);
+        check("the spurs dealt never exceed the spurs the runs' sidings left, and the districts' shares make them", sum == dealt && dealt <= left);
+        check("every district dealt a share is one the main line crosses (so within a district of it), with a plot of the runs' railway in its frame", crossed && rail);
+        check("...holds at least that many bulk works of its own for its plan to place, and its plan lays no more sidings than its share", holds && within);
+        check("...and a district with no share lays none, nor any track", undealt);
+        check("the plans lay some of them, and none is for want of a railway in the frame", planned > 0 && noRail == 0);
+        Raster r = Raster.of(m);
+        boolean drawn = true;
+        for (long[] pl : plots) {
+            long gx = pl[0] - r.px0, gy = pl[1] - r.py0;
+            drawn &= gx >= 0 && gy >= 0 && gx < r.w && gy < r.h && r.use[(int) (gy * r.w + gx)] == TilePainter.RAIL;
+        }
+        out.printf("      %,d plots of siding painted on the raster of %,d the plans laid; the runs' track %,d plots%n", r.siding, planPlots, r.rail);
+        check("every plot of every siding the plans laid is painted as track, each once, counted apart from the runs' track", drawn && r.siding == planPlots);
+        long per = BuildingVisual.cells(types[spur]), want = Math.max(0, runs.trackSurplus() - dealt * per);
+        long[] legend = m.legendFiguresIfDrawn();
+        out.printf("      the legend's \"plots of track more than the line uses\": %,d (the runs' %,d less %d spurs of %d plots)%n", legend == null ? -1 : legend[2], runs.trackSurplus(), dealt, per);
+        check("the legend's surplus of track falls by a dealt spur's plots: the runs' less the dealt spurs' track, to no less than none", legend != null && legend[2] == want && m.dealtSpurTrack() == dealt * per);
+        check("...and a city whose spurs were all taken by the runs' sidings or no district can take loses none of it", runs.trackSurplus() == 0 || dealt == 0 || legend[2] < runs.trackSurplus());
+        CityMap again = accessCity(sq, true, extra);
+        boolean same = again.sidingsDealt() == dealt && again.districts().size() == m.districts().size();
+        for (int i = 0; i < m.districts().size() && same; i++) same &= again.sidingsOf(again.districts().get(i)) == m.sidingsOf(m.districts().get(i));
+        check("the deal is a pure function of the counts and the runs: the same city built again deals the same share to each district", same);
     }
 
     /** A save's autosave copied into a temporary folder and loaded (its map drawn from its sidecar or canonically): saves named on the command line, never written. */

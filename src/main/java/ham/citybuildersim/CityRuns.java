@@ -92,7 +92,9 @@ import java.util.PriorityQueue;
  *             works within a district of it, a branch to a further yard beside
  *             the largest group of works, and nothing else; the track plots the
  *             model has past those are the legend's surplus (THE RAILWAY'S
- *             WAYS). Each Rail Terminal and Rail Depot keeps a yard of its own
+ *             WAYS; the spurs left over, a siding the district plans lay to the
+ *             works they place, are not - slice 5, FR7 2026-10-19, CityMap
+ *             sidingsOf()). Each Rail Terminal and Rail Depot keeps a yard of its own
  *             size, a depot's smaller. The highways are grown as before.
  *
  * A net is kept as its arms' straight STRETCHES, not its plots: a city of ten
@@ -1268,7 +1270,13 @@ public final class CityRuns {
        quarry), merged where their boxes touch. A works the district plans
        place - a mill, a smelter - stands in a box that only the plans fix, and
        the plans are drawn round the runs; a siding laid after them would move
-       the plans' own ground. So they are not served by a siding in this batch.
+       the plans' own ground. So the runs lay no siding to them. (FR7 2026-10-19,
+       slice 5: the spurs these sidings did not take - sidingsLaid() says how
+       many they did - are dealt by the map to the districts the main line
+       crosses that hold such works, and each plan lays its own siding inside
+       its frame, over the ground it left, after its buildings and streets stand
+       (DistrictPlan.sidings(), CityMap.sidingsOf()); the plan's ground does not
+       move for it, and the legend counts a dealt spur as used.)
        ===================================================================== */
 
     /** The corridors of the arms laid for a train's way: a branch to a further yard (2) and a siding into a works (3). They follow the spine's corridors 0 and 1 and are not grown; dropWays() takes them off before the main line grows. */
@@ -1842,6 +1850,37 @@ public final class CityRuns {
         for (int i = 0; i < rail.arms.size(); i++) {
             Arm a = rail.arms.get(i);
             if (a.corridor == SIDING && a.steps > 0) out.add(new long[] { i, a.sx, a.sy, a.x, a.y, a.steps });
+        }
+        return out;
+    }
+
+    /** How many sidings the runs have laid, into mined sites: the Rail Spurs they took (batch FR7 slice 5; the map deals the rest of the spurs to the plans' works, CityMap.sidingsOf()). */
+    public int sidingsLaid() {
+        int n = 0;
+        for (Arm a : rail.arms) if (a.corridor == SIDING && a.steps > 0) n++;
+        return n;
+    }
+
+    /**
+     * The cells of a grid of `side` plots a side, each as (cx << 32) ^ (cy &
+     * 0xffffffff), whose own plots (not their first row or column, which the
+     * districts share) hold a plot of the main line - the spine arms of the
+     * corridors 0 and 1, from their start plot - as a plan reads it in its frame
+     * (batch FR7 slice 5, D14): where a plan can lay a siding to the line. Empty
+     * with no railway.
+     */
+    public java.util.Set<Long> mainLineCells(int side) {
+        java.util.Set<Long> out = new java.util.HashSet<>();
+        for (Arm a : rail.arms) {
+            if (a.corridor > 1) continue;
+            for (int s = 0; s < a.segs; s++) {
+                int h = a.segHead[s], dx = DX[h], dy = DY[h];
+                for (int k = s == 0 ? 0 : 1; k <= a.segSteps[s]; k++) {
+                    long px = a.segX[s] + (long) dx * k, py = a.segY[s] + (long) dy * k;
+                    if (Math.floorMod(px, side) == 0 || Math.floorMod(py, side) == 0) continue;
+                    out.add((Math.floorDiv(px, side) << 32) ^ (Math.floorDiv(py, side) & 0xffffffffL));
+                }
+            }
         }
         return out;
     }
