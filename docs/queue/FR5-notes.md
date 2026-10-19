@@ -34,7 +34,7 @@
   5. Each access road is a route from its end to its gate over the drawn plan's access streets.
   6. `accessRoadCount()` counts the yards, sea terminals and Truck Depots: 5 in the fixture, its 5 roads.
 - **The suite**: 119 run in 1,025 s beside FR6's checks (timing soft): 117 passed. Red: ScaleCheck's "...and it builds", main's own (FR7-C), and StaleCheck's README count of harnesses, which this batch's two moved and which is put right (StaleCheck green after).
-- **Timing, alone and hard**: @@TIMING@@
+- **Timing, alone and hard**: the eight timing harnesses (PlanCheck, MapCheck, ScaleCheck, GlobeCheck, EarthTerrainCheck, EarthCheck, GridCheck, WorldCheck) alone, in 152 s. Seven passed. ScaleCheck is red on its "...and it builds" alone, main's own, and every time it takes is within budget.
 
 ## 3. Calls taken where the brief left room (★)
 
@@ -51,7 +51,7 @@
 ## 4. Found on the way
 
 - **N per schedule would have split the legend.** As the slice wrote it, each schedule took N from its own loads. A district's part (a twentieth of the city's) then drew one truck a load while the highways drew one per 50, under one legend line. The review made N the city's (§7).
-- **Packing a plan with access roads allocates two arrays of 257 x 257 ints** for the trace, on the painter's worker, once a plan. @@TIMINGNOTE@@
+- **Packing a plan with access roads allocates two arrays of 257 x 257 ints** for the trace, on the painter's worker, once a plan. MapCheck and PlanCheck, which time the painter, are within their budgets with it, alone and hard.
 - **The world line meets the highway 6 plots short of its arm's end** in the fixture: the line leaves at (359408.5, 371455.5) and arm 0 ends at (359408, 371461). The route's leg between them crosses the boundary street and five plots of grass, and a truck can be drawn there (one in `fr5-gateway.png`). The trains' routes have the same leg. TruckRouteCheck checks the highway part from the arm's end on.
 - **Trucks standing at a gate stand on one point**, so a busy gate's trucks draw as one mark (21 trucks at two gates at one moment in `fr5-access.png`).
 - **Trucks passing on one road overlapped on its centre line** in the renders' first draft. The review keeps each to its right-hand lane (`TruckShapes.LANE`, 0.2 plots), inside a road one plot wide.
