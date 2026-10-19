@@ -22,7 +22,7 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | FR7 | Track that goes somewhere and roads for two needs: a small Rail Depot first and spurs as sidings into works, no track on no train's way; streets and highways measured as two needs so a big city builds both; paving by traffic; gravel drawn grey; with FR0-L folded in (access roads, sidings, interchange ground, kerbs) (Jerus, 2026-10-18) | [FR7](docs/queue/FR7.md) |
-| FR3 | Ports as a landlord port, and the Bulk Berth | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
+| FR3 | Ports as a landlord port, and the Bulk Berth (in progress, branch batch/FR3) | [FR3 brief](docs/queue/FR3.md), [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR4 | The freight screens, and Build's Infrastructure and Freight tabs | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR5 | Trucks drawn on the map, near zoom only, with a Settings toggle on by default (Jerus, 2026-10-12) | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | FR6 | The railway carries the city's own bulk (D4), measured after FR2, with the port yard (D7) | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
