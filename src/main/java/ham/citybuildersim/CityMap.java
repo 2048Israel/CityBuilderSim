@@ -3220,9 +3220,13 @@ public final class CityMap {
      * yard's box,
      * then through its ladder onto each of its TileRaster.YARD_TRACKS sidings
      * to the fan's far end, as TileRaster.drawYard() lays the fan: one route a
-     * yard and siding. A yard the way enters on a 45-degree stretch has one
-     * route, to its anchor. None without the railway's world line. The map's
-     * alone: nothing in the model reads it. Kept against changes().
+     * yard and siding. Since FX3 (0.8.4) the fan is TileRaster.yardLayout()'s,
+     * read from the box's track (yardRail()), so a way that crosses a yard
+     * along another line than its fan's is brought along it to the fan's
+     * throat, and no siding is laid across a drawn one. A yard the way enters
+     * on a 45-degree stretch has one route, to its anchor. None without the
+     * railway's world line. The map's alone: nothing in the model reads it.
+     * Kept against changes().
      */
     public List<TrainSchedule.Route> trainRoutes() {
         if (trainRoutesCache != null && trainRoutesAt == changes) return trainRoutesCache;
@@ -3239,7 +3243,7 @@ public final class CityMap {
                 double[][] way = runs.wayTo(yard);
                 if (way == null) continue;
                 boolean isStation = station != null && Arrays.equals(station, yard);
-                trainRoutesInto(out, i, isStation, yard, way, fx, fy, line.x(), line.y());
+                trainRoutesInto(out, i, isStation, yard, way, fx, fy, line.x(), line.y(), yardRail(runs, yard));
             }
         }
         trainRoutesCache = out;
@@ -3247,9 +3251,32 @@ public final class CityMap {
         return out;
     }
 
-    /** Adds one yard's routes to out: the world line's part (far end, then where it leaves the city's ground), the way to the box's edge, and the ladder onto each siding. */
+    /** The track in a yard's box, plot by plot (row by row, yard[2] across and yard[3] down): where the runs lay the railway, as the tile the yard is drawn on carries it (TileRaster.yardLayout()'s input; FX3, 0.8.4). */
+    static boolean[] yardRail(CityRuns runs, long[] yard) {
+        int w = (int) yard[2], h = (int) yard[3];
+        byte[] fixed = new byte[w * h];
+        runs.fill(yard[0], yard[1], w, h, fixed, null, false);
+        boolean[] rail = new boolean[w * h];
+        for (int k = 0; k < rail.length; k++) rail[k] = fixed[k] == CityRuns.F_RAIL;
+        return rail;
+    }
+
+    /**
+     * Adds one yard's routes to out: the world line's part (far end, then
+     * where it leaves the city's ground), the way to the box's edge, and the
+     * ladder onto each siding. Since FX3 (0.8.4) the fan is laid from
+     * TileRaster.yardLayout() of the box's track (rail, as yardRail() reads
+     * it), as drawYard() lays it: the way is followed from the box's edge to
+     * where it first stands on the fan's line (the interchange, where another
+     * line crosses the box; a way that ends short of it, its anchor on the
+     * crossing track, is carried straight on over the track to it), along the
+     * line to the nearer end of the fan's span, and up the ladder onto each
+     * siding. Without rail (null) the fan lies along the leg the way enters
+     * the box on, as before; a way that never reaches the line has one route,
+     * to its anchor.
+     */
     static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way,
-                                        double fx, double fy, double wx, double wy) {
+                                        double fx, double fy, double wx, double wy, boolean[] rail) {
         double[] xs = way[0], ys = way[1];
         int n = xs.length;
         double bx0 = yard[0], by0 = yard[1], bx1 = yard[0] + yard[2], by1 = yard[1] + yard[3];
@@ -3268,31 +3295,92 @@ public final class CityMap {
             out.add(route(yardAt, station, -1, pts));
             return;
         }
-        boolean ew = ux != 0;
-        // Where it crosses the box's edge, and the line the fan closes to.
-        double line = ew ? ys[j] : xs[j];
-        double ex = ew ? (ux > 0 ? bx0 : bx1) : line, ey = ew ? line : (uy > 0 ? by0 : by1);
-        double extent = ew ? yard[2] : yard[3], across0 = ew ? by0 : bx0, across1 = ew ? by1 : bx1;
+        // Where the way crosses the box's edge.
+        double ex = ux != 0 ? (ux > 0 ? bx0 : bx1) : xs[j], ey = ux != 0 ? ys[j] : (uy > 0 ? by0 : by1);
+        // The fan: the yard's layout from its track (FX3), else along the leg the way comes in on. Its line in world plots, and its span along the line.
+        int[] layout = rail == null ? null : TileRaster.yardLayout(rail, (int) yard[2], (int) yard[3]);
+        if (layout != null && layout[1] < 0) layout = null;
+        boolean ew = layout != null ? layout[0] == 1 : ux != 0;
+        double lineAt = layout != null ? (ew ? by0 : bx0) + layout[1] + 0.5 : ux != 0 ? ys[j] : xs[j];
+        double s0 = ew ? bx0 : by0, s1 = ew ? bx1 : by1;
+        if (layout != null) {
+            s1 = s0 + layout[3];
+            s0 += layout[2];
+        }
+        double across0 = ew ? by0 : bx0, across1 = ew ? by1 : bx1;
+        // On from the box's edge along the way to where it first stands on the line: at a point of it, or where one of its legs crosses.
+        pts.add(new double[] { ex, ey });
+        double[] q = null;
+        double[] prev = { ex, ey };
+        List<double[]> inside = new ArrayList<>();
+        for (int i = j + 1; i < n && q == null; i++) {
+            double[] cur = { xs[i], ys[i] };
+            double pa = (ew ? prev[1] : prev[0]) - lineAt, pb = (ew ? cur[1] : cur[0]) - lineAt;
+            if (Math.abs(pa) < 1e-9) q = prev;
+            else if (Math.abs(pb) < 1e-9) q = cur;
+            else if (pa * pb < 0) {
+                double t = pa / (pa - pb);
+                q = new double[] { prev[0] + t * (cur[0] - prev[0]), prev[1] + t * (cur[1] - prev[1]) };
+            } else {
+                inside.add(cur);
+                prev = cur;
+            }
+        }
+        if (q == null && layout != null) {
+            // The way ends short of the line (its anchor stands on the crossing track, beside the line): carried straight on over the box's track to the line, if the track reaches it.
+            double[] last = { xs[n - 1], ys[n - 1] };
+            double dx = Math.signum(last[0] - xs[n - 2]), dy = Math.signum(last[1] - ys[n - 2]);
+            double gap = ew ? lineAt - last[1] : lineAt - last[0];
+            if ((ew ? dx == 0 && dy != 0 : dy == 0 && dx != 0) && gap * (ew ? dy : dx) > 0) {
+                long px = (long) Math.floor(last[0]), py = (long) Math.floor(last[1]);
+                long toX = ew ? px : (long) Math.floor(lineAt), toY = ew ? (long) Math.floor(lineAt) : py;
+                boolean track = true;
+                while (track && (px != toX || py != toY)) {
+                    px += (long) dx;
+                    py += (long) dy;
+                    long cx = px - (long) bx0, cy = py - (long) by0;
+                    track = cx >= 0 && cy >= 0 && cx < yard[2] && cy < yard[3] && rail[(int) (cy * yard[2] + cx)];
+                }
+                if (track) q = ew ? new double[] { last[0], lineAt } : new double[] { lineAt, last[1] };
+            }
+        }
+        if (q == null) {
+            // The way never stands on the fan's line: on to the anchor, no siding.
+            for (int i = j + 1; i < n; i++) pts.add(new double[] { xs[i], ys[i] });
+            out.add(route(yardAt, station, -1, pts));
+            return;
+        }
+        pts.addAll(inside);
+        addNew(pts, q[0], q[1]);
+        // Along the line to the nearer end of the span: the fan's apex, where the ladder begins.
+        boolean fromStart = (ew ? q[0] : q[1]) <= (s0 + s1) / 2.0;
+        double apex = fromStart ? s0 : s1, u = fromStart ? 1 : -1;
+        addNew(pts, ew ? apex : lineAt, ew ? lineAt : apex);
         int k = TileRaster.YARD_TRACKS;
         double[] at = new double[k];
-        for (int i = 0; i < k; i++) at[i] = line + (i - (k - 1) / 2.0) * TileRaster.YARD_TRACK_APART;
+        for (int i = 0; i < k; i++) at[i] = lineAt + (i - (k - 1) / 2.0) * TileRaster.YARD_TRACK_APART;
         // The fan's whole bed inside the box, as the painter keeps it.
         double lo = at[0] - TileRaster.BED / 2, hi = at[k - 1] + TileRaster.BED / 2, shift = lo < across0 ? across0 - lo : hi > across1 ? across1 - hi : 0;
-        double u = ew ? ux : uy;
+        double a = apex + u * TileRaster.YARD_LADDER, b = (fromStart ? s1 : s0) - u * TileRaster.YARD_LADDER;
         for (int s = 0; s < k; s++) {
             List<double[]> mine = new ArrayList<>(pts);
-            mine.add(new double[] { ex, ey });
             double off = at[s] + shift;
-            double a = TileRaster.YARD_LADDER, b = extent - TileRaster.YARD_LADDER;
             if (ew) {
-                mine.add(new double[] { ex + u * a, off });
-                mine.add(new double[] { ex + u * b, off });
+                mine.add(new double[] { a, off });
+                mine.add(new double[] { b, off });
             } else {
-                mine.add(new double[] { off, ey + u * a });
-                mine.add(new double[] { off, ey + u * b });
+                mine.add(new double[] { off, a });
+                mine.add(new double[] { off, b });
             }
             out.add(route(yardAt, station, s, mine));
         }
+    }
+
+    /** Adds the point (x, y) to pts unless the last one is there (no leg of no length). */
+    private static void addNew(List<double[]> pts, double x, double y) {
+        double[] last = pts.get(pts.size() - 1);
+        if (Math.abs(last[0] - x) < 1e-9 && Math.abs(last[1] - y) < 1e-9) return;
+        pts.add(new double[] { x, y });
     }
 
     /** A route through points, the world line's part its first leg. */

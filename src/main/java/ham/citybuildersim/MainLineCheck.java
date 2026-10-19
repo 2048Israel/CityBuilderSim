@@ -709,7 +709,7 @@ public class MainLineCheck {
             check("wayTo() reaches yard " + names[y], way != null);
             if (way == null) return;
             int before = routes.size();
-            CityMap.trainRoutesInto(routes, y, false, yards[y], way, fx, fy, wx, wy);
+            CityMap.trainRoutesInto(routes, y, false, yards[y], way, fx, fy, wx, wy, CityMap.yardRail(runs, yards[y]));
             made[y] = routes.size() - before;
         }
         check("each yard has a route to every one of its TileRaster.YARD_TRACKS sidings", made[0] == TileRaster.YARD_TRACKS && made[1] == TileRaster.YARD_TRACKS);

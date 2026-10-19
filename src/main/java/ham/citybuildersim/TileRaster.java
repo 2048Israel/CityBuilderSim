@@ -330,6 +330,78 @@ public final class TileRaster {
     }
 
     /**
+     * Where a yard's fan lies in its box, from the box's track (FX3, 0.8.4):
+     * rail[y * w + x] is whether the box's plot (x, y) holds track, the box w
+     * plots across and h down. Returns {ew, line, a, b}: ew is 1 for an
+     * east-west fan and 0 for a north-south one, line the plot row (east-west)
+     * or column (north-south) it closes to, in plots from the box's north-west
+     * corner, and [a, b) its span along the line, in plots from the box's
+     * west edge (east-west) or north edge. No track in the box: {1, -1, 0, w},
+     * east-west on the box's middle. WHY: drawYard() took the line as the
+     * middle of all the box's track, which put the fan off its line when
+     * another line crossed the box (Jerus's second yard, stacked on a
+     * corridor with the spine across its head: the fan closed 4.5 plots east
+     * of the corridor). Now each column holding track is a north-south
+     * candidate and each row an east-west one; a row (for a column) is blocked
+     * when it holds track in any other column, and the candidate's runs are
+     * the stretches of rows left clear, each scoring the rows of it where the
+     * candidate is track. The best run wins: the most track, then the longest,
+     * then north-south, then the lowest line, then the earliest. A run shorter
+     * than 2 * YARD_LADDER + 2 plots has no room for a fan between crossings:
+     * its line and direction stand and the span is the whole box. One straight
+     * line through the box wins with the whole box, as it always was. Both
+     * drawYard() and CityMap.trainRoutesInto() lay the fan from this, so a
+     * route's ladder starts where the drawing's does.
+     */
+    static int[] yardLayout(boolean[] rail, int w, int h) {
+        int[] colN = new int[w], rowN = new int[h];
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if (!rail[y * w + x]) continue;
+                colN[x]++;
+                rowN[y]++;
+            }
+        }
+        int bestScore = -1, bestLen = 0, bestEw = 1, bestLine = -1, bestA = 0, bestB = 0;
+        // North-south first, then east-west; each by index and run in order, so a tie keeps the earlier.
+        for (int pass = 0; pass < 2; pass++) {
+            boolean ns = pass == 0;
+            int lines = ns ? w : h, along = ns ? h : w;
+            for (int c = 0; c < lines; c++) {
+                if ((ns ? colN[c] : rowN[c]) == 0) continue;
+                int start = 0;
+                while (start <= along) {
+                    int score = 0;
+                    int pos = start;
+                    while (pos < along) {
+                        boolean on = ns ? rail[pos * w + c] : rail[c * w + pos];
+                        int others = ns ? rowN[pos] : colN[pos];
+                        if (others - (on ? 1 : 0) > 0) break;
+                        if (on) score++;
+                        pos++;
+                    }
+                    int len = pos - start;
+                    if (len > 0 && (score > bestScore || score == bestScore && len > bestLen)) {
+                        bestScore = score;
+                        bestLen = len;
+                        bestEw = ns ? 0 : 1;
+                        bestLine = c;
+                        bestA = start;
+                        bestB = pos;
+                    }
+                    start = pos + 1;
+                }
+            }
+        }
+        if (bestLine < 0) return new int[] { 1, -1, 0, w };
+        if (bestLen < 2 * YARD_LADDER + 2) {
+            bestA = 0;
+            bestB = bestEw == 1 ? w : h;
+        }
+        return new int[] { bestEw, bestLine, bestA, bestB };
+    }
+
+    /**
      * A Rail Terminal's yard as a yard, not its class's plain box (0.8.1,
      * batch FR0; spec-freight 4.2 and 4.3, D15): ballast ground, a fan of
      * YARD_TRACKS sidings closing to the line at each end over YARD_LADDER
@@ -337,31 +409,36 @@ public final class TileRaster {
      * freight it handles - a container yard's boxes and gantry cranes where
      * the freight station carries goods, every other yard's ore stockpiles -
      * with wagons standing on the first wagonTracks tracks from the shed.
+     * Since FX3 (0.8.4) the fan lies where yardLayout() puts it: on the line
+     * with the longest stretch clear of crossing track, the shed, the heaps
+     * and the boxes kept to that stretch, and the track that crosses the
+     * line drawn over the yard's ground through the head the stretch leaves,
+     * so a line crossing the yard meets the fan at its throat.
      */
     private static void drawYard(TilePainter.Input in, TilePainter.Painted p, int b, BuildingVisual.Type t, int px,
                                  int[] img, int w, int x0, int y0, int x1, int y1) {
         int tile = TilePainter.TILE;
         int bx = p.bx[b], by = p.by[b], bw = p.bw[b], bh = p.bh[b];
         fillRect(img, w, x0, y0, x1, y1, YARD_GROUND);
-        int railY0 = Integer.MAX_VALUE, railY1 = Integer.MIN_VALUE, railX0 = Integer.MAX_VALUE, railX1 = Integer.MIN_VALUE;
-        int cols = 0, rows = 0;
-        boolean[] railCol = new boolean[tile], railRow = new boolean[tile];
-        for (int y = by; y < Math.min(tile, by + bh); y++) {
-            for (int x = bx; x < Math.min(tile, bx + bw); x++) {
-                if (p.run[y * tile + x] != TilePainter.RAIL) continue;
-                if (!railCol[x]) { railCol[x] = true; cols++; }
-                if (!railRow[y]) { railRow[y] = true; rows++; }
-                railX0 = Math.min(railX0, x); railX1 = Math.max(railX1, x);
-                railY0 = Math.min(railY0, y); railY1 = Math.max(railY1, y);
-            }
+        int boxW = Math.min(tile, bx + bw) - bx, boxH = Math.min(tile, by + bh) - by;
+        boolean[] rail = new boolean[boxW * boxH];
+        for (int y = 0; y < boxH; y++) {
+            for (int x = 0; x < boxW; x++) rail[y * boxW + x] = p.run[(by + y) * tile + bx + x] == TilePainter.RAIL;
         }
-        boolean ew = rows == 0 ? cols == 0 || cols > rows : cols > rows;
+        int[] layout = yardLayout(rail, boxW, boxH);
+        boolean ew = layout[0] == 1;
+        int spanA = layout[2], spanB = layout[3], boxLong = ew ? boxW : boxH;
         int bed = bedWidth(px, false);
         int off = px >= RAILS_FROM ? Math.max(1, (int) Math.round(GAUGE / 2.0 * px)) : 0;
-        // The line the fan closes to: the middle of the track under the yard, else the box's middle.
-        double line = ew
-                ? (rows == 0 ? (by + bh / 2.0) * px : (railY0 + railY1 + 1) / 2.0 * px)
-                : (cols == 0 ? (bx + bw / 2.0) * px : (railX0 + railX1 + 1) / 2.0 * px);
+        // The line the fan closes to: the yard's own line, else the box's middle.
+        double line = layout[1] < 0
+                ? (ew ? (by + bh / 2.0) * px : (bx + bw / 2.0) * px)
+                : ((ew ? by : bx) + layout[1] + 0.5) * px;
+        // The fan's span along, in pixels: the stretch of the line clear of crossing track, else the box's whole length.
+        int start = spanA == 0 ? (ew ? x0 : y0) : ((ew ? bx : by) + spanA) * px;
+        int end = spanB >= boxLong ? (ew ? x1 : y1) : ((ew ? bx : by) + spanB) * px;
+        // The box as the shed, the heaps and the boxes see it: the span along, the box across.
+        int sx0 = ew ? start : x0, sx1 = ew ? end : x1, sy0 = ew ? y0 : start, sy1 = ew ? y1 : end;
         int n = YARD_TRACKS;
         double[] at = new double[n];
         double apart = YARD_TRACK_APART * px;
@@ -378,8 +455,8 @@ public final class TileRaster {
             else if (hi > x1) { double shift = x1 - hi; for (int i = 0; i < n; i++) at[i] += shift; }
         }
         min = at[0]; max = at[n - 1];
-        int fanA = (ew ? x0 : y0) + (int) Math.round(YARD_LADDER * px);
-        int fanB = (ew ? x1 : y1) - (int) Math.round(YARD_LADDER * px);
+        int fanA = start + (int) Math.round(YARD_LADDER * px);
+        int fanB = end - (int) Math.round(YARD_LADDER * px);
         int linePx = (int) Math.round(line);
         int steel = STEEL;
         for (int i = 0; i < n; i++) {
@@ -392,8 +469,8 @@ public final class TileRaster {
                     fillRect(img, w, fanA, mid - off, fanB, mid - off + 1, steel);
                     fillRect(img, w, fanA, mid + off, fanB, mid + off + 1, steel);
                 }
-                line(img, w, fanA, mid, x0, linePx, steel);
-                line(img, w, fanB - 1, mid, x1 - 1, linePx, steel);
+                line(img, w, fanA, mid, start, linePx, steel);
+                line(img, w, fanB - 1, mid, end - 1, linePx, steel);
             } else {
                 fillRect(img, w, a, fanA, z, fanB, BALLAST);
                 if (off == 0) fillRect(img, w, mid, fanA, mid + 1, fanB, steel);
@@ -401,8 +478,8 @@ public final class TileRaster {
                     fillRect(img, w, mid - off, fanA, mid - off + 1, fanB, steel);
                     fillRect(img, w, mid + off, fanA, mid + off + 1, fanB, steel);
                 }
-                line(img, w, mid, fanA, linePx, y0, steel);
-                line(img, w, mid, fanB - 1, linePx, y1 - 1, steel);
+                line(img, w, mid, fanA, linePx, start, steel);
+                line(img, w, mid, fanB - 1, linePx, end - 1, steel);
             }
         }
         // The freight shed, between the fan and the box's edge.
@@ -416,7 +493,7 @@ public final class TileRaster {
             int along = (fanA + fanB) / 2;
             int s0 = along - len / 2, s1 = s0 + len;
             if (ew) {
-                s0 = Math.max(x0, s0); s1 = Math.min(x1, s1);
+                s0 = Math.max(sx0, s0); s1 = Math.min(sx1, s1);
                 int shedTop = fanNear - depth;
                 fillRect(img, w, s0, shedTop, s1, fanNear, t.fill());
                 if (px >= EDGE_FROM) {
@@ -424,7 +501,7 @@ public final class TileRaster {
                     for (int y = shedTop; y < fanNear; y++) { img[y * w + s0] = t.edge(); img[y * w + s1 - 1] = t.edge(); }
                 }
             } else {
-                s0 = Math.max(y0, s0); s1 = Math.min(y1, s1);
+                s0 = Math.max(sy0, s0); s1 = Math.min(sy1, s1);
                 int shedLeft = fanNear - depth;
                 fillRect(img, w, shedLeft, s0, fanNear, s1, t.fill());
                 if (px >= EDGE_FROM) {
@@ -436,8 +513,8 @@ public final class TileRaster {
         boolean station = in.tx * tile + bx == in.stationX && in.ty * tile + by == in.stationY;
         boolean container = station && in.goodsByRail;
         // What it handles, on the other side of the fan from the shed.
-        if (container) containers(in, p, px, img, w, x0, y0, x1, y1, ew, fanA, fanB, fanNear, fanFar);
-        else stockpiles(px, img, w, x0, y0, x1, y1, ew, fanA, fanB, fanFar);
+        if (container) containers(in, p, px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanNear, fanFar);
+        else stockpiles(px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanFar);
         // Wagons standing on the first wagonTracks tracks from the shed's side.
         for (int k = 0; k < in.wagonTracks && k < n; k++) {
             int mid = (int) Math.round(at[k]);
@@ -460,6 +537,34 @@ public final class TileRaster {
                 }
             }
         }
+        // The track the span leaves out, over the yard's ground: a line crossing the box runs through the head and meets the fan at its throat (FX3).
+        if (spanA > 0 || spanB < boxLong) {
+            for (int y = 0; y < boxH; y++) {
+                for (int x = 0; x < boxW; x++) {
+                    if (!rail[y * boxW + x]) continue;
+                    int along = ew ? x : y;
+                    if (along >= spanA && along < spanB) continue;
+                    yardTrack(in, p, (by + y) * tile + bx + x, px, img);
+                }
+            }
+        }
+    }
+
+    /**
+     * One plot of the track that crosses a yard's head, drawn over the yard's
+     * ground (FX3, 0.8.4): drawTrackLook()'s look, with the track beside it
+     * read from the runs (p.run), because a building stands on every plot of
+     * the yard's box and p.use does not say RAIL there.
+     */
+    private static void yardTrack(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img) {
+        int tile = TilePainter.TILE, arms = 0;
+        for (int d = 0; d < 4; d++) {
+            int x = i % tile + TilePainter.DX[d], y = i / tile + TilePainter.DY[d];
+            byte f = x >= 0 && y >= 0 && x < tile && y < tile ? p.run[y * tile + x]
+                    : in.fixedBeyond[d * tile + (d == 0 || d == 2 ? i % tile : i / tile)];
+            if (f == TilePainter.RAIL || f == TilePainter.RAIL_OVER) arms |= 1 << d;
+        }
+        drawTrackLook(in, p, i, px, img, arms);
     }
 
     /** A container yard's boxes, in rows, and its two gantry cranes across the fan. */
@@ -1569,6 +1674,13 @@ public final class TileRaster {
 
     /** The track's look on one plot that carries rail: its ballast bed, sleepers and rails (a 45-degree stretch's just a bed and one rail). */
     private static void drawTrackLook(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img) {
+        // The track beside it, north, east, south and west, read once: bit d for direction d.
+        int arms = (railAt(in, p, i, 0) ? 1 : 0) | (railAt(in, p, i, 1) ? 2 : 0) | (railAt(in, p, i, 2) ? 4 : 0) | (railAt(in, p, i, 3) ? 8 : 0);
+        drawTrackLook(in, p, i, px, img, arms);
+    }
+
+    /** ...with the track beside it given, bit d for direction d (a yard's head reads it from the runs: yardTrack()). */
+    private static void drawTrackLook(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int arms) {
         boolean doubled = (in.marks[i] & TilePainter.M_DOUBLE) != 0;
         int bed = bedWidth(px, doubled);
         if (diagonal(in, i)) {
@@ -1578,10 +1690,6 @@ public final class TileRaster {
             diagBand(img, TilePainter.TILE * px, i, px, in.marks[i], 0.5, steel);
             return;
         }
-        int x = i % TilePainter.TILE, y = i / TilePainter.TILE;
-        int x0 = x * px, y0 = y * px, w = TilePainter.TILE * px;
-        // The track beside it, north, east, south and west, read once: bit d for direction d.
-        int arms = (railAt(in, p, i, 0) ? 1 : 0) | (railAt(in, p, i, 1) ? 2 : 0) | (railAt(in, p, i, 2) ? 4 : 0) | (railAt(in, p, i, 3) ? 8 : 0);
         boolean ns = (arms & 5) != 0;
         boolean ew = (arms & 10) != 0;
         if (!ns && !ew) ew = true;
