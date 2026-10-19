@@ -1,6 +1,6 @@
 # Zoning.java - 280 lines · 29 methods · 2 constants · model
 
-`ham/citybuildersim/Zoning.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Zoning.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The city's zoning (0.7.107, batch Z1): ground held for one sector's
 > buildings - a share of the city's dry ground or a size in square

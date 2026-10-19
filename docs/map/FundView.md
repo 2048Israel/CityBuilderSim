@@ -1,6 +1,6 @@
-# FundView.java - 846 lines · 38 methods · 8 constants · model
+# FundView.java - 863 lines · 38 methods · 8 constants · model
 
-`ham/citybuildersim/FundView.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FundView.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, its return over a chart's window, the market to search, a hand order's quote on today's book, and its record - pure, and the screens' only door to the fund's cost basis.
 > 
@@ -36,8 +36,8 @@
 | 269 | the return over a window |
 | 320 | a security's history |
 | 393 | search |
-| 567 | the quote |
-| 779 | the record |
+| 584 | the quote |
+| 796 | the record |
 
 ## Constants
 
@@ -50,13 +50,13 @@
 | 48 | `FundView.SHARE` | `"share", RESCUE = "rescue", BOND = "bond", PREFERRED = "preferred", WARRANTS ...` | What a holding is. |
 | 51 | `FundView.CLOSED` | `"closed"` | A search hit that is a lot the fund closed on a bond no longer on any book: found only when named (the spec's D1). |
 | 396 | `FundView.HELD` | `"YOUR HOLDINGS", SHARES_SECTION = "SHARES", BONDS_SECTION = "BONDS"` | What a search hit is for: the market's sections when the box is empty. |
-| 782 | `FundView.TRADES` | `"Trades", INCOME = "Income", MONEY = "Money in and out", EVENTS = "Events"` | The activity page's chips: what each kind of row is filed under. |
+| 799 | `FundView.TRADES` | `"Trades", INCOME = "Income", MONEY = "Money in and out", EVENTS = "Events"` | The activity page's chips: what each kind of row is filed under. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 818 | **type** `public final class FundView` | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, its return over a chart's window, the market to search, a hand order's q... |
+| 29 | 835 | **type** `public final class FundView` | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, its return over a chart's window, the market to search, a hand order's q... |
 | 31 | 1 | `private FundView()` |  |
 
 ### the dials (lines 33-52)
@@ -109,36 +109,36 @@
 | 360 | 19 | `public static List<YearFlow> bondCashFlows(Game g, CorporateBond b)` | WHAT A BOND STILL PAYS, a calendar year at a time (the spec's D9: no bond's price is kept month by month, so its chart is its cash): a twelfth of its coupon on its face every month it has left, and the face in its las... |
 | 381 | 11 | `public static List<ChartModel.Flag> flagsFor(Game g, String words)` | The FUND decisions that name a company or a bond - its own orders - as flags on its chart; the founding month's on the axis. |
 
-### search (lines 393-566)
+### search (lines 393-583)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 408 | 3 | **type** `public record Hit(String key, String name, String kind, int company, int bondId, double price, int priceMon...` | One hit: its key and name, what it is, the company or bond, its price a unit and the month of it, its move over MOVE_MONTHS (a share's, per founding share so a split is no move; NaN when its record is shorter or not p... |
-| 424 | 47 | `public static List<Hit> search(Game g, String query, String filter)` | The market, searched (the spec's D1): every listed company, every bond outstanding, and the preferred and warrants while the fund holds them. |
-| 472 | 4 | `private static Hit withSection(Hit h, String section)` |  |
-| 477 | 5 | `private static boolean startsWith(Hit h, String q)` |  |
-| 484 | 16 | `static boolean matches(Hit h, String q)` | Whether a hit answers a query: its name or issuer, "#id", a coupon, a maturity year, or a kind word. |
-| 502 | 29 | `public static List<Hit> market(Game g)` | Every instrument the fund could look at: the listed companies, the bonds outstanding, and its own preferred and warrants while it holds them. |
-| 538 | 7 | `public static double move(HistorySave h, String company, int months)` | A share's move over the last `months` months, per founding share (the history's), so a split is no move: NaN when either end was not recorded or was recorded under MIN_RECORDED_PRICE (four places of a consolidated sha... |
-| 553 | 6 | `public static boolean recordShort(HistorySave h, String company, int months)` | ...and why there is none, when the reason is that the record does not reach back `months` months: a city younger than that (its history has fewer months), or a price whose series began since (an end not recorded at all). |
-| 561 | 5 | `public static double[] spark(HistorySave h, String company, int months)` | ...and its last `months` + 1 recorded prices, for a sparkline (NaN where not recorded). |
+| 424 | 64 | `public static List<Hit> search(Game g, String query, String filter)` | The market, searched (the spec's D1): every listed company, every bond outstanding, and the preferred and warrants while the fund holds them. |
+| 489 | 4 | `private static Hit withSection(Hit h, String section)` |  |
+| 494 | 5 | `private static boolean startsWith(Hit h, String q)` |  |
+| 501 | 16 | `static boolean matches(Hit h, String q)` | Whether a hit answers a query: its name or issuer, "#id", a coupon, a maturity year, or a kind word. |
+| 519 | 29 | `public static List<Hit> market(Game g)` | Every instrument the fund could look at: the listed companies, the bonds outstanding, and its own preferred and warrants while it holds them. |
+| 555 | 7 | `public static double move(HistorySave h, String company, int months)` | A share's move over the last `months` months, per founding share (the history's), so a split is no move: NaN when either end was not recorded or was recorded under MIN_RECORDED_PRICE (four places of a consolidated sha... |
+| 570 | 6 | `public static boolean recordShort(HistorySave h, String company, int months)` | ...and why there is none, when the reason is that the record does not reach back `months` months: a city younger than that (its history has fewer months), or a price whose series began since (an end not recorded at all). |
+| 578 | 5 | `public static double[] spark(HistorySave h, String company, int months)` | ...and its last `months` + 1 recorded prices, for a sparkline (NaN where not recorded). |
 
-### the quote (lines 567-778)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 575 | 1 | **type** `public record Order(String key, boolean buy, boolean byAmount, double figure, double limit)` | An order the ticket would place: the lot's key, buy or sell, the figure - money on a buy by amount, units (shares or face) otherwise - and the price a unit it is to post at (0: fair value, what the rule asks at; a bon... |
-| 604 | 7 | **type** `public record Quote(boolean buy, double price, double fair, double units, double money, double offeredUnits...` | WHAT THE ORDER WOULD DO, NOW, ON TODAY'S BOOK (the spec's 4.4). |
-| 612 | 92 | `public static Quote quote(Game g, Order o)` |  |
-| 706 | 72 | `static Quote bondQuote(Game g, Order o)` | ...a bond's: at its value a unit of face, or the price named; no cap (the rule's 30% is of its book, not of the bond). |
-
-### the record (lines 779-846)
+### the quote (lines 584-795)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 789 | 4 | **type** `public record Line(int month, String kind, String group, FundLedger.Activity row, DecisionLog.Entry entry, ...` | One line of the record, newest first: a ledger row, or before the ledger began one of the save's own dated records - a resolution, a FUND or BANK decision - marked `fromLog`. |
-| 791 | 1 | `public boolean fromLog()` _(in FundView.Line)_ |  |
-| 795 | 8 | `public static String groupOf(String kind)` | The group a ledger row is filed under. |
-| 810 | 28 | `public static List<Line> activity(Game g, String group, String key)` | The record, newest first, filtered by group ("All" for every one) and, when `key` is not null, to one lot's rows (a share's market and rescue books together). |
-| 840 | 6 | `public static boolean sameLot(String key, String rowKey)` | Whether a row's key is the lot a security page shows: a share's books together. |
+| 592 | 1 | **type** `public record Order(String key, boolean buy, boolean byAmount, double figure, double limit)` | An order the ticket would place: the lot's key, buy or sell, the figure - money on a buy by amount, units (shares or face) otherwise - and the price a unit it is to post at (0: fair value, what the rule asks at; a bon... |
+| 621 | 7 | **type** `public record Quote(boolean buy, double price, double fair, double units, double money, double offeredUnits...` | WHAT THE ORDER WOULD DO, NOW, ON TODAY'S BOOK (the spec's 4.4). |
+| 629 | 92 | `public static Quote quote(Game g, Order o)` |  |
+| 723 | 72 | `static Quote bondQuote(Game g, Order o)` | ...a bond's: at its value a unit of face, or the price named; no cap (the rule's 30% is of its book, not of the bond). |
+
+### the record (lines 796-863)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 806 | 4 | **type** `public record Line(int month, String kind, String group, FundLedger.Activity row, DecisionLog.Entry entry, ...` | One line of the record, newest first: a ledger row, or before the ledger began one of the save's own dated records - a resolution, a FUND or BANK decision - marked `fromLog`. |
+| 808 | 1 | `public boolean fromLog()` _(in FundView.Line)_ |  |
+| 812 | 8 | `public static String groupOf(String kind)` | The group a ledger row is filed under. |
+| 827 | 28 | `public static List<Line> activity(Game g, String group, String key)` | The record, newest first, filtered by group ("All" for every one) and, when `key` is not null, to one lot's rows (a share's market and rescue books together). |
+| 857 | 6 | `public static boolean sameLot(String key, String rowKey)` | Whether a row's key is the lot a security page shows: a share's books together. |
 

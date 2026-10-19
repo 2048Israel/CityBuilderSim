@@ -1,6 +1,6 @@
 # SectorScreen.java - 5,274 lines · 202 methods · 56 constants · interface
 
-`ham/citybuildersim/ui/SectorScreen.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/SectorScreen.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The sector economy: every business in the city as a card, and each one's
 > five pages - what goes in and what comes out, the income statement with
@@ -21,7 +21,7 @@
 > one line with each building's first gate. The statements stay, whole, and
 > still open into their parts; every paragraph is behind an (i).
 
-**Uses:** [Palette](Palette.md) (692), [SectorStatements](SectorStatements.md) (135), [Sector](Sector.md) (119), [OilView](OilView.md) (101), [Icons](Icons.md) (85), [SectorBooks](SectorBooks.md) (70), [BuildCard](BuildCard.md) (59), [StatementView](StatementView.md) (52), [BuildScreen](BuildScreen.md) (51), [RefineryView](RefineryView.md) (45), [SectorFlow](SectorFlow.md) (41), [IndustryPicture](IndustryPicture.md) (23), [BusinessInvestment](BusinessInvestment.md) (20), [BusinessDebtManager](BusinessDebtManager.md) (19), [Equity](Equity.md) (13), [Retail](Retail.md) (11), [CityCalendar](CityCalendar.md) (11), [Formats](Formats.md) (11), [Good](Good.md) (9), [BuildAdvice](BuildAdvice.md) (8), [OrderBook](OrderBook.md) (7), [Debt](Debt.md) (7), [Restaurants](Restaurants.md) (7), [LuxuryRetail](LuxuryRetail.md) (7), [Game](Game.md) (6), [Bank](Bank.md) (6), [Mortgage](Mortgage.md) (6), [IndustryView](IndustryView.md) (6), [Sectors](Sectors.md) (6), [HistorySave](HistorySave.md) (4)... and 19 more
+**Uses:** [Palette](Palette.md) (692), [SectorStatements](SectorStatements.md) (135), [Sector](Sector.md) (119), [OilView](OilView.md) (101), [Icons](Icons.md) (85), [SectorBooks](SectorBooks.md) (70), [BuildCard](BuildCard.md) (59), [StatementView](StatementView.md) (52), [BuildScreen](BuildScreen.md) (51), [RefineryView](RefineryView.md) (45), [SectorFlow](SectorFlow.md) (41), [IndustryPicture](IndustryPicture.md) (23), [BusinessInvestment](BusinessInvestment.md) (20), [BusinessDebtManager](BusinessDebtManager.md) (19), [Equity](Equity.md) (13), [Retail](Retail.md) (11), [CityCalendar](CityCalendar.md) (11), [Formats](Formats.md) (11), [Good](Good.md) (10), [BuildAdvice](BuildAdvice.md) (8), [OrderBook](OrderBook.md) (7), [Debt](Debt.md) (7), [Restaurants](Restaurants.md) (7), [LuxuryRetail](LuxuryRetail.md) (7), [Game](Game.md) (6), [Bank](Bank.md) (6), [Mortgage](Mortgage.md) (6), [IndustryView](IndustryView.md) (6), [Sectors](Sectors.md) (6), [HistorySave](HistorySave.md) (4)... and 19 more
 
 **Used by (6):** [BankScreen](BankScreen.md), [FundScreen](FundScreen.md), [HistoryScreen](HistoryScreen.md), [StatementView](StatementView.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 

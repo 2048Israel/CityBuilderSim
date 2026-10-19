@@ -1,6 +1,6 @@
 # IndustryView.java - 883 lines · 64 methods · 6 constants · model
 
-`ham/citybuildersim/IndustryView.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/IndustryView.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > Each materials industry's month as a picture (0.7.141, batch I11;
 > docs/studies/spec-materials.md 2.13): where what it worked came from - its
@@ -45,7 +45,7 @@
 > Pure: it reads the city and changes nothing; the rows are read without
 > making any (Sector.outputRow(), inputRow()).
 
-**Uses:** [Good](Good.md) (33), [Sectors](Sectors.md) (19), [Resource](Resource.md) (11), [Sector](Sector.md) (10), [Forestry](Forestry.md) (10), [SpreadPlanner](SpreadPlanner.md) (8), [RefineryView](RefineryView.md) (8), [Deposit](Deposit.md) (7), [OldMetal](OldMetal.md) (7), [Game](Game.md) (7), [Trade](Trade.md) (5), [CoalMining](CoalMining.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LandManager](LandManager.md) (3), [ExtractionSector](ExtractionSector.md) (3), [BuildingManager](BuildingManager.md) (2), [Markets](Markets.md) (2), [ProcessingSector](ProcessingSector.md) (2), [CopperRefining](CopperRefining.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [Quarrying](Quarrying.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Formats](Formats.md) (1)
+**Uses:** [Good](Good.md) (34), [Sectors](Sectors.md) (19), [Resource](Resource.md) (11), [Sector](Sector.md) (10), [Forestry](Forestry.md) (10), [SpreadPlanner](SpreadPlanner.md) (8), [RefineryView](RefineryView.md) (8), [Deposit](Deposit.md) (7), [OldMetal](OldMetal.md) (7), [Game](Game.md) (7), [Trade](Trade.md) (5), [CoalMining](CoalMining.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LandManager](LandManager.md) (3), [ExtractionSector](ExtractionSector.md) (3), [BuildingManager](BuildingManager.md) (2), [Markets](Markets.md) (2), [ProcessingSector](ProcessingSector.md) (2), [CopperRefining](CopperRefining.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [Quarrying](Quarrying.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Formats](Formats.md) (1)
 
 **Used by (3):** [IndustryPicture](IndustryPicture.md), [IndustryViewCheck](IndustryViewCheck.md), [SectorScreen](SectorScreen.md)
 

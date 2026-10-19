@@ -1191,7 +1191,7 @@ public class RefineryCheck {
     /** How the oil moves in a fixture: by lorry, all by rail at a quote, or by sea. */
     enum Way { LORRY, RAIL, SEA }
 
-    /** A good's market as it moves one way (exchange 1): the band's share of a lorry's freight and the railway's charge, as sectors.Rail.haul() sets them (Ports.factor()). */
+    /** A good's market as it moves one way (exchange 1): the band's share of a lorry's freight and the railway's charge, as sectors.Freight.haul() sets them (Ports.factor()). */
     static GoodsMarket moved(Good g, Way way, double quote) {
         GoodsMarket m = new GoodsMarket(g);
         m.setExchangeRate(1);
@@ -1230,11 +1230,11 @@ public class RefineryCheck {
         double crudeImport = moved(Good.CRUDE, Way.LORRY, 0).netImportPrice();
         Refining.RunVerdict lorry = Refining.runRule(topping, movedPrices(Way.LORRY, 0, 0, 0, 0, 0)),
                 rail = Refining.runRule(topping, movedPrices(Way.RAIL, STUDY_QUOTE, 0, 0, 0, 0)),
-                floor = Refining.runRule(topping, movedPrices(Way.RAIL, ham.citybuildersim.sectors.Rail.RAIL_FLOOR, 0, 0, 0, 0)),
+                floor = Refining.runRule(topping, movedPrices(Way.RAIL, ham.citybuildersim.sectors.Freight.RAIL_FLOOR, 0, 0, 0, 0)),
                 sea = Refining.runRule(topping, movedPrices(Way.SEA, 0, 0, 0, 0, 0));
         double mLorry = ofMiddle(lorry.first(), crudeImport),
                 mRail = ofMiddle(rail.first(), moved(Good.CRUDE, Way.RAIL, STUDY_QUOTE).netImportPrice()),
-                mFloor = ofMiddle(floor.first(), moved(Good.CRUDE, Way.RAIL, ham.citybuildersim.sectors.Rail.RAIL_FLOOR).netImportPrice()),
+                mFloor = ofMiddle(floor.first(), moved(Good.CRUDE, Way.RAIL, ham.citybuildersim.sectors.Freight.RAIL_FLOOR).netImportPrice()),
                 mSea = ofMiddle(sea.first(), moved(Good.CRUDE, Way.SEA, 0).netImportPrice());
         report("THE STUDY'S MARGINS, from the model's own prices and freight: a topping barrel of medium crude on imported crude,"
                         + " all exported - by lorry -10.0%, by rail at .60 -4.7%, at the floor -0.7%, by tanker +2.3% of crude's"
@@ -1273,9 +1273,9 @@ public class RefineryCheck {
         // THE HOME MARKET: the city takes a third of the run's petrol and two thirds of its diesel; at .60 none pays.
         double third = HIS_CRUDE / 3;
         double petrolTake = topping.of(Good.PETROL) / HIS_CRUDE * third, dieselTake = topping.of(Good.DIESEL) / HIS_CRUDE * third;
-        Refining.RunVerdict home = Refining.runRule(topping, movedPrices(Way.RAIL, ham.citybuildersim.sectors.Rail.RAIL_FLOOR,
+        Refining.RunVerdict home = Refining.runRule(topping, movedPrices(Way.RAIL, ham.citybuildersim.sectors.Freight.RAIL_FLOOR,
                 petrolTake, 2 * dieselTake, 0, 0));
-        double floorCrude = moved(Good.CRUDE, Way.RAIL, ham.citybuildersim.sectors.Rail.RAIL_FLOOR).netImportPrice();
+        double floorCrude = moved(Good.CRUDE, Way.RAIL, ham.citybuildersim.sectors.Freight.RAIL_FLOOR).netImportPrice();
         double mHome = ofMiddle(home.first(), floorCrude);
         report("THE HOME MARKET AT THE FLOOR: the barrels whose petrol and diesel the city takes, at the net import price, pay"
                         + " (+1.4%, the study's); the run takes them, and the barrels past the city's diesel - at the export"
@@ -1306,7 +1306,7 @@ public class RefineryCheck {
         RefineryFlow.Flow lf = RefineryFlow.solve(lube, 8300, Refining.MEDIUM_MIX, worldMid());
         double perTonne = lf.of(Good.LUBRICANTS) / 8300, world = Refining.lubricantsWorldTakes(Refining.CRUDE_LITRES_PER_TONNE);
         double homeLubes = (perTonne - world) * 8300 / 2;
-        Refining.RunVerdict lv = Refining.runRule(lf, movedPrices(Way.RAIL, ham.citybuildersim.sectors.Rail.RAIL_FLOOR, 0, 0, homeLubes, 0));
+        Refining.RunVerdict lv = Refining.runRule(lf, movedPrices(Way.RAIL, ham.citybuildersim.sectors.Freight.RAIL_FLOOR, 0, 0, homeLubes, 0));
         report("THE WORLD'S LUBRICANTS: past what the world and the city take a lube plant's lubricants fetch nothing, and the run"
                         + " stops there", perTonne > world && lv.stop() == Refining.RunStop.LUBRICANTS
                         && Math.abs(lv.share() - .5) <= 1e-9 && lv.last() > 0 && lv.next() < 0,

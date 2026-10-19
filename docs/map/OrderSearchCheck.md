@@ -1,6 +1,6 @@
-# OrderSearchCheck.java - 540 lines · 19 methods · 6 constants · harnesses
+# OrderSearchCheck.java - 541 lines · 19 methods · 6 constants · harnesses
 
-`ham/citybuildersim/OrderSearchCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OrderSearchCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The three order searches against the countdowns they replaced (0.7.54).
 > 
@@ -85,7 +85,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 491 | **type** `public class OrderSearchCheck` | The three order searches against the countdowns they replaced (0.7.54). |
+| 50 | 492 | **type** `public class OrderSearchCheck` | The three order searches against the countdowns they replaced (0.7.54). |
 | 80 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 85 | 5 | `static void same(String label, long actual, long expected)` |  |
 | 91 | 5 | `static void quietly(Runnable r)` |  |
@@ -119,11 +119,11 @@
 | 440 | 9 | `void report(String what)` _(in OrderSearchCheck.Watch)_ |  |
 | 450 | 6 | `void verdicts(String what)` _(in OrderSearchCheck.Watch)_ |  |
 
-### THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (lines 458-540)
+### THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (lines 458-541)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 463 | 12 | `static int sizedByCount(BusinessInvestment plans, BuildingsTemplate template, int needed, double siteOutput)` | BusinessInvestment.orderSize()'s count: up from one until the wait passes MAX_ORDER_MONTHS. |
-| 477 | 22 | `static Mortgage.Decision decidedByCount(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate)` | Mortgage.decide()'s count: down from what was asked. |
-| 508 | 32 | `static Game.Afford investedByCount(Game g, BusinessInvestment.Decision decision, double cash, double perUnitProfit)` | Game.consider()'s countdown: down from the whole order, the bond desk asked for every slice that borrows - and since 0.7.113 each slice asked the test on what the game's rule tests (Game.orderGate()): its whole cost, ... |
+| 477 | 23 | `static Mortgage.Decision decidedByCount(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate)` | Mortgage.decide()'s count: down from what was asked. |
+| 509 | 32 | `static Game.Afford investedByCount(Game g, BusinessInvestment.Decision decision, double cash, double perUnitProfit)` | Game.consider()'s countdown: down from the whole order, the bond desk asked for every slice that borrows - and since 0.7.113 each slice asked the test on what the game's rule tests (Game.orderGate()): its whole cost, ... |
 

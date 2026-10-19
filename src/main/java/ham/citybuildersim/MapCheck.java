@@ -3277,7 +3277,7 @@ public class MapCheck {
         check("...1,000,000 t is 125 trains, so each of the 25 drawn stands for 5 (MOST_A_MONTH 30)",
                 busy.stands() == 5 && busy.callCount() == 25);
         check("...and a city that rails nothing has no trains", TrainSchedule.of(7, new double[kinds], new double[kinds], routes).callCount() == 0
-                && TrainSchedule.of(7, (ham.citybuildersim.sectors.Rail) null, routes).callCount() == 0);
+                && TrainSchedule.of(7, (ham.citybuildersim.sectors.Freight) null, routes).callCount() == 0);
 
         // ---- WHERE THEY GO: boxes and general cargo to the station; bulk elsewhere while the station handles boxes.
         double[] mixIn = new double[kinds], mixOut = new double[kinds];
@@ -3387,7 +3387,7 @@ public class MapCheck {
                 Timing.within(best[0], TRAIN_FRAME_MS) && Timing.within(best[1], TRAIN_FRAME_MS) && ten.callCount() <= TrainSchedule.MOST_A_MONTH + 2 * kinds);
 
         // ---- THE STATION'S LOOK: a railway that moved no boxes draws its station as a bulk yard (RailCheck 7 holds the other way).
-        ham.citybuildersim.sectors.Rail rail = city.getSectors().rail();
+        ham.citybuildersim.sectors.Freight rail = city.getSectors().freight();
         double boxes = rail.railedIn(Ports.Cargo.CONTAINER) + rail.railedOut(Ports.Cargo.CONTAINER);
         double railed = 0;
         for (Ports.Cargo c : Ports.Cargo.values()) railed += rail.railedIn(c) + rail.railedOut(c);

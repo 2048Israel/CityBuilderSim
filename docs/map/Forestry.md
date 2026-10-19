@@ -1,6 +1,6 @@
 # Forestry.java - 632 lines · 35 methods · 9 constants · sectors
 
-`ham/citybuildersim/sectors/Forestry.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Forestry.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The crews that cut the city's forest, and the plantations they plant -
 > Forestry (0.7.138, batch I9; docs/studies/spec-materials.md 2.1, 2.11 and
@@ -44,7 +44,7 @@
 > every crew standing, on site and the one ordered (roomFor()). A Logging
 > Camp then needs 17.5 km2 of cuttable forest and a Harvesting Operation 109
 > km2; a 10 km2 forest gets none. Past it the plan is ExtractionSector's:
-> the best earnings on the whole cost, its lorries in both, through the
+> the best earnings on the whole cost, its freight in both, through the
 > money gate, one crew in flight.
 > 
 > REGROWTH (Jerus's Q13: keep the rule, and show where it settles): what was

@@ -82,6 +82,15 @@ public final class SectorState {
     public Map<String, Double> exported, imported;
 
     /**
+     * ...and the units of each good it bought at home in that month (FR2,
+     * 2026-10-18): the third of a bulk tonne's city-leg tonnes, which
+     * Freight's Haulage bills at the top of the next month with the two above
+     * (Sector.unitsBoughtLocal()). Null in an older save, which carries none:
+     * its first Haulage bill is short of its home purchases for one month.
+     */
+    public Map<String, Double> boughtLocal;
+
+    /**
      * ...and the units of each good written off in that month (0.7.133, batch
      * I8): stock a yard sold back or demolished could not hold, which the
      * national accounts add back at the next strike - see Sector, WHAT A

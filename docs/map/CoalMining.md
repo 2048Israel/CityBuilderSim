@@ -1,6 +1,6 @@
 # CoalMining.java - 445 lines · 23 methods · 7 constants · sectors
 
-`ham/citybuildersim/sectors/CoalMining.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CoalMining.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > Coal mines and the plants that wash their coal - Coal Mining (0.7.126,
 > batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the
@@ -53,7 +53,7 @@
 > t), so W holds by type).
 > 
 > THE PLAN. A mine is ExtractionSector's: the best earnings on the whole cost
-> among the mines that fit a field of their type, their lorries in it. And
+> among the mines that fit a field of their type, their freight in it. And
 > the sector builds a preparation plant beside its coking mines (the study's
 > 3.4) - first, whenever raw coal standing or on site goes unwashed and the
 > plant would staff and pay (planWash()). What one more of any of the four

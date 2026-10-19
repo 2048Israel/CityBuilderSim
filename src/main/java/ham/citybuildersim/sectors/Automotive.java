@@ -118,10 +118,20 @@ public final class Automotive extends Sector {
      */
     public static final double LUBRICANT_LITRES_A_VEHICLE = 8;
 
+    /**
+     * Lubricants a heavy truck built takes (FR2, 2026-10-18; docs/queue/FR2.md
+     * section 2, est.): forty litres of engine, gearbox and axle oils for its
+     * fifteen tonnes of tractor and trailer, on the Heavy Truck Plant's `uses`.
+     * A van's eight would be the oil of a 3 t body; the truck is five times
+     * the tare, so five times the fill.
+     */
+    public static final double LUBRICANT_LITRES_A_TRUCK = 40;
+
     public Automotive() {
         super("Automotive", "Automotive", BuildingType.AUTOMOTIVE);
         makes(Good.CARS);
         makes(Good.VANS);
+        makes(Good.TRUCKS);
         makes(Good.ROLLING_STOCK);
 
         uses(Good.FABRICATED_STEEL);
@@ -263,7 +273,7 @@ public final class Automotive extends Sector {
         // at the month's rate. The full-rate order is the note's. Made is the
         // default page's Made: into the shed plus the export-bound share,
         // which leaves from the line (Sector.produceStock()).
-        for (Good g : new Good[] { Good.CARS, Good.VANS, Good.ROLLING_STOCK }) {
+        for (Good g : new Good[] { Good.CARS, Good.VANS, Good.TRUCKS, Good.ROLLING_STOCK }) {
             double cap = getCapacity(g);
             if (cap <= 0) continue;
             Output o = output(g);

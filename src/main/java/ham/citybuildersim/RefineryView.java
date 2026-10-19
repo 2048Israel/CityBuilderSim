@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.Oil;
-import ham.citybuildersim.sectors.Rail;
+import ham.citybuildersim.sectors.Freight;
 import ham.citybuildersim.sectors.RefineryFlow;
 import ham.citybuildersim.sectors.RefineryFlow.Kind;
 import ham.citybuildersim.sectors.RefineryFlow.Stream;
@@ -46,7 +46,7 @@ import java.util.Map;
  * product since the month's strike - the forecourts' petrol (Retail), the
  * vans' diesel, the lubricants, the builders' bitumen - and the railway's
  * diesel, drawn at the top of the month before the strike clears its row,
- * from its own record of the haul (Rail.getFuelLitres()). The crude is the
+ * from its own record of the haul (Freight.getFuelLitres()). The crude is the
  * month's run, credited to where the month's crude was bought (crude's
  * clearing, GoodsMarket.getTrades()). After a load nothing is counted until
  * a month runs: the rows are not saved (SectorFlow's rule), and nor is the
@@ -327,14 +327,24 @@ public final class RefineryView {
                 v[1] += Math.max(0, in.imported);
             }
         }
-        // ...and the railway's diesel, drawn at the top of the month before the strike cleared its row (Rail.haul()).
-        Rail rail = game.getSectors().rail();
+        // ...and the railway's diesel, drawn at the top of the month before the strike cleared its row (Freight.haul()).
+        Freight rail = game.getSectors().freight();
         if (rail != null && rail.getFuelLitres() > 0) {
             kinds.putIfAbsent(BuyerKind.RAIL.name(), BuyerKind.RAIL);
             double[] v = took.computeIfAbsent(BuyerKind.RAIL.name(), x -> new EnumMap<>(Good.class))
                     .computeIfAbsent(Good.DIESEL, x -> new double[2]);
             double imported = Math.max(0, Math.min(rail.getFuelLitres(), rail.getFuelLitresImported()));
             v[0] += rail.getFuelLitres() - imported;
+            v[1] += imported;
+        }
+        // ...and its trucks' (FR2), drawn at the same moment for the same reason (Haulage.closeMonth()): lorries, beside the vans.
+        ham.citybuildersim.sectors.Haulage trucks = rail == null ? null : rail.haulage();
+        if (trucks != null && trucks.getDieselLitres() > 0) {
+            kinds.putIfAbsent(BuyerKind.VANS.name(), BuyerKind.VANS);
+            double[] v = took.computeIfAbsent(BuyerKind.VANS.name(), x -> new EnumMap<>(Good.class))
+                    .computeIfAbsent(Good.DIESEL, x -> new double[2]);
+            double imported = Math.max(0, Math.min(trucks.getDieselLitres(), trucks.getDieselLitresImported()));
+            v[0] += trucks.getDieselLitres() - imported;
             v[1] += imported;
         }
 
@@ -415,7 +425,7 @@ public final class RefineryView {
     /** What a sector's purchase of a product is, as a taker: the forecourts' petrol the cars', diesel the vans' (the railway's its own), lubricants the factories', bitumen the roads'. */
     static BuyerKind kindOf(Sector s, Good g) {
         if (g == Good.PETROL && s instanceof Retail) return BuyerKind.CARS;
-        if (g == Good.DIESEL) return s instanceof Rail ? BuyerKind.RAIL : BuyerKind.VANS;
+        if (g == Good.DIESEL) return s instanceof Freight ? BuyerKind.RAIL : BuyerKind.VANS;
         if (g == Good.LUBRICANTS) return BuyerKind.FACTORIES;
         if (g == Good.BITUMEN) return BuyerKind.ROADS;
         return BuyerKind.SECTOR;
@@ -1496,7 +1506,7 @@ public final class RefineryView {
         return switch (b.kind()) {
             case CARS -> "petrol at the pump";
             case VANS -> "diesel, every business's vans";
-            case RAIL -> "diesel · " + (int) Rail.FUEL_LITRES_PER_TONNE + " L a tonne hauled";
+            case RAIL -> "diesel · " + (int) Freight.FUEL_LITRES_PER_TONNE + " L a tonne hauled";
             case FACTORIES -> "lubricants";
             case ROADS -> "bitumen for paving";
             case TANKS -> "kept for next month";

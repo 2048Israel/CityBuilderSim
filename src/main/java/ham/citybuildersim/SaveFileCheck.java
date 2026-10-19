@@ -1346,7 +1346,7 @@ public class SaveFileCheck {
         OldMetal.State oldState = new OldMetal.State();
         oldState.pending.put(Trade.HOUSEHOLDS, 1_234.5);
         oldState.pending.put(Sectors.MANUFACTURING, 678.25);
-        oldState.pending.put(Sectors.RAIL, 255.0);
+        oldState.pending.put(Sectors.FREIGHT, 255.0);
         oldState.pendingBySource = new double[] { 1_234.5, 0, 678.25, 255.0 };
         oldState.lastBySource = new double[] { 900.5, 30.25, 400.125, 0 };
         oldState.lastArisen = 1_330.875; oldState.lastBought = 1_000; oldState.lastLandfill = 330.875; oldState.lastPrice = .2105;
@@ -2108,7 +2108,7 @@ public class SaveFileCheck {
         Game hauls = new Game(new GameFiles(root.resolve("railway"), root.resolve("no-legacy")));
         hauls.run();
         hauls.setCashForTest(Founding.WEALTHY_CASH);
-        hauls.getBusinessInvestment().holdSector(Sectors.RAIL);
+        hauls.getBusinessInvestment().holdSector(Sectors.FREIGHT);
         hauls.getLandManager().setOwnedSqFt(hauls.getLandManager().getOwnedSqFt() + 400_000_000L);
         for (String[] order : new String[][] {
                 {"House", "900"}, {"Convenience Store", "20"}, {"Small Grocery Store", "6"},
@@ -2137,17 +2137,17 @@ public class SaveFileCheck {
                         && hauls.getBuildingManager().countByName("Rail Spur") == 2);
         // ...played until the trains run AND the price index is based: an index
         // still settling reads 1 whatever the shelves did, and could not part.
-        for (int m = 0; m < 120 && (hauls.getSectors().rail().getHauledTonnes() <= 0
+        for (int m = 0; m < 120 && (hauls.getSectors().freight().getHauledTonnes() <= 0
                 || !hauls.getPriceIndex().isBased()); m++) hauls.simulateMonths(1);
         hauls.simulateMonths(1);
         assertTrue("fixture: the railway hauled in the month the city was saved",
-                hauls.getSectors().rail().getHauledTonnes() > 0 && hauls.getSectors().rail().getHaulageBilled() > 0);
+                hauls.getSectors().freight().getHauledTonnes() > 0 && hauls.getSectors().freight().getHaulageBilled() > 0);
         assertTrue("fixture: ...its groceries among the freight, and its price index based",
-                hauls.getSectors().rail().getCarried()[Traffic.GOODS.ordinal()] > 0 && hauls.getPriceIndex().isBased());
+                hauls.getSectors().freight().getCarried()[Traffic.GOODS.ordinal()] > 0 && hauls.getPriceIndex().isBased());
         assertTrue("saved a city whose railway hauls", hauls.saveGame(1, "railway").ok);
         Game twin = new Game(hauls.getGameFiles());
         twin.loadGameSave(1);
-        twin.getBusinessInvestment().holdSector(Sectors.RAIL);
+        twin.getBusinessInvestment().holdSector(Sectors.FREIGHT);
         twin.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         /*
          * ...AND THE SAME SAVE AS A BUILD FROM BEFORE THE UNITS WROTE IT
@@ -2173,7 +2173,7 @@ public class SaveFileCheck {
         Files.copy(hauls.getGameFiles().historyFile(1), hauls.getGameFiles().historyFile(4));
         Game unitlessTwin = new Game(hauls.getGameFiles());
         unitlessTwin.loadGameSave(4);
-        unitlessTwin.getBusinessInvestment().holdSector(Sectors.RAIL);
+        unitlessTwin.getBusinessInvestment().holdSector(Sectors.FREIGHT);
         unitlessTwin.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         hauls.simulateMonths(1);
         twin.simulateMonths(1);
@@ -2187,7 +2187,7 @@ public class SaveFileCheck {
                 twin.getPopulationManager().getPopulation(), hauls.getPopulationManager().getPopulation(),
                 twin.getMigration().getLastArrivals(), hauls.getMigration().getLastArrivals(),
                 twin.getPriceIndex().getIndex(), hauls.getPriceIndex().getIndex());
-        ham.citybuildersim.sectors.Rail liveRail = hauls.getSectors().rail(), unitlessRail = unitlessTwin.getSectors().rail();
+        ham.citybuildersim.sectors.Freight liveRail = hauls.getSectors().freight(), unitlessRail = unitlessTwin.getSectors().freight();
         System.out.printf("   the first haul from a save without its units: %,.6f t, %,.6fk billed; the live city's %,.6f t, %,.6fk%n",
                 unitlessRail.getTradeTonnes(), unitlessRail.getHaulageBilled(), liveRail.getTradeTonnes(), liveRail.getHaulageBilled());
         assertTrue("...and from its save without the month's units, the first haul is the month's: its tonnes and its bill",
@@ -2719,7 +2719,9 @@ public class SaveFileCheck {
      * newer build's. What has to hold:
      *   - the format before it loads as it did: a save of format 37 has no
      *     worldKind, stands on its seed's generated world, and saved again
-     *     writes its own bytes back but for the stamp of this build;
+     *     writes its own bytes back but for the stamp of this build. SINCE
+     *     0.8.5 (FR2) the floor is 40, past it: the same save stamped at the
+     *     floor is what loads on its generated world, and format 37 is refused;
      *   - a generated city writes none of the four;
      *   - an Earth city - Rotterdam's window of EarthCheck's fixture - saved
      *     carries its kind, spot and data, and reloaded is the city it was:
@@ -2735,7 +2737,8 @@ public class SaveFileCheck {
         com.google.gson.Gson gson = new com.google.gson.Gson();
         String[] earthKeys = { "worldKind", "earthLat", "earthLon", "earthData" };
 
-        // The format before: a generated city, its save written down to format 37 as 0.7.120 wrote it.
+        // The format before: a generated city, its save written down to format 37 as 0.7.120 wrote it - and since FR2 (0.8.5)
+        // stamped at the floor, GameVersion.OLDEST_LOADABLE_FORMAT, which is past 37: a save with no worldKind, at the oldest format read.
         GameFiles plainFiles = new GameFiles(root.resolve("format37"), root.resolve("no-legacy"));
         Game plain = new Game(plainFiles);
         quietly(() -> {
@@ -2753,8 +2756,8 @@ public class SaveFileCheck {
         for (String k : earthKeys) none &= !plainJson.has(k);
         assertTrue("a generated city writes none of the four Earth fields", none);
         com.google.gson.JsonObject format37 = plainJson.deepCopy();
-        format37.addProperty("saveFormat", 37);
-        format37.addProperty("gameVersion", "0.7.120");
+        format37.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT);
+        format37.addProperty("gameVersion", GameVersion.VERSION);
         Files.writeString(plainFiles.saveFile(2), gson.toJson(format37));
         Files.copy(plainFiles.historyFile(1), plainFiles.historyFile(2), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         if (Files.isRegularFile(plainFiles.mapFile(1))) {
@@ -2763,7 +2766,7 @@ public class SaveFileCheck {
         Game older = new Game(plainFiles);
         quietly(() -> older.loadGameSave(2));
         long seed = plainJson.get("worldSeed").getAsLong();
-        assertTrue("a format-37 save loads, on its seed's generated world",
+        assertTrue("a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)",
                 older.getLoadFailure() == null && !older.getFounding().isOnEarth()
                         && older.getFounding().getWorldKey().equals(World.Key.generated(seed)) && older.getWorld() == World.of(seed)
                         && older.getCityLand().key().equals(World.Key.generated(seed)) && older.getMonth() == plain.getMonth());
@@ -2775,8 +2778,10 @@ public class SaveFileCheck {
         assertTrue("...and writes its own bytes back, but for this build's stamp: its format, version and time", moved.isEmpty()
                 && again.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && again.get("gameVersion").getAsString().equals(GameVersion.VERSION));
         if (!moved.isEmpty()) System.out.println("     moved: " + moved);
-        assertTrue("a format-37 save is not refused: the floor stays below the format an Earth city is first written in",
-                !GameVersion.isNoLongerReadable(EarthSite.EARTH_FORMAT - 1) && GameVersion.SAVE_FORMAT >= EarthSite.EARTH_FORMAT);
+        assertTrue("a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in"
+                        + " (until then the floor stayed below it)",
+                GameVersion.isNoLongerReadable(EarthSite.EARTH_FORMAT - 1) && GameVersion.isNoLongerReadable(37)
+                        && !GameVersion.isNoLongerReadable(GameVersion.OLDEST_LOADABLE_FORMAT) && GameVersion.SAVE_FORMAT >= EarthSite.EARTH_FORMAT);
 
         // An Earth city: Rotterdam's window of EarthCheck's fixture.
         byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE);

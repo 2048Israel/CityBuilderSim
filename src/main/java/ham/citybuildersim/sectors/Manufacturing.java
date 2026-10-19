@@ -272,10 +272,11 @@ public final class Manufacturing extends Sector {
      * the maker's estimate (Sector's) - and for the Wire & Cable Works, the
      * materials chains' row, less what it buys abroad that is not a good, its
      * insulation at the exchange factor (SpreadPlanner.ownCosts()), and its
-     * lorries' wear and diesel (★, as every works and mine of the materials
-     * chains is weighed: ProcessingSector.fleetRunning()). The figure the
+     * freight - its vans' wear and diesel and its bulk's city legs at
+     * Haulage's quote (★, as every works and mine of the materials chains is
+     * weighed: ProcessingSector.freightRunning()). The figure the
      * plan and Game.consider() read. The sector's older rows buy no
-     * consumables and were never weighed with their lorries, so theirs is
+     * consumables and were never weighed with their freight, so theirs is
      * the maker's estimate to the bit.
      *
      * WHY. Without them the works' D$3.2M of insulation a month at parity was
@@ -286,11 +287,12 @@ public final class Manufacturing extends Sector {
      */
     @Override
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        double maker = super.estimatedMonthlyProfit(t, plans);
-        if (t == null || t.getId() != WIRE_CABLE_WORKS || markets == null) return maker;
+        // The wire works subtracts its own freight below; every other works of its is weighed with its legs (Sector's).
+        if (t == null || t.getId() != WIRE_CABLE_WORKS || markets == null) return super.estimatedMonthlyProfit(t, plans);
+        double maker = plans.estimatedMakerProfit(this, t);
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
         return maker - SpreadPlanner.ownCosts(t, rate, markets.getExchangeRate(), pricePerWatt)
-                - ProcessingSector.fleetRunning(t, SpreadPlanner.values(markets), rate);
+                - ProcessingSector.freightRunning(t, SpreadPlanner.values(markets), rate, legPrice());
     }
 
     /** The vans one of `t` must buy, at what a van costs here (ProcessingSector.fleetCapital()); none with no markets. */

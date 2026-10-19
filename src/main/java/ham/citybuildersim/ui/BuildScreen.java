@@ -104,7 +104,7 @@ final class BuildScreen {
                 BuildingType.MINING, BuildingType.CONSTRUCTION,
                 BuildingType.BUSINESS_SERVICES, BuildingType.AGRICULTURE,
                 BuildingType.RAIL, BuildingType.AUTOMOTIVE,
-                BuildingType.LUXURY, BuildingType.HOSPITALITY);
+                BuildingType.LUXURY, BuildingType.HOSPITALITY, BuildingType.HAULAGE);
     }
 
     /** True when everything in this category is something investors put up. */
@@ -3518,6 +3518,7 @@ final class BuildScreen {
             case MEALS:     return "the city's food, cooked";
             case BRANCH:    return "the city's bank, a counter at a time";
             case RAIL:      return "freight across the city's boundary";
+            case DEPOT:     return "where the city's trucks are kept";
             case POINTS:    return "the crews every site waits on";
             case PUMP:      return "the drivers' petrol, at the pump";
             case TANKS:     return "crude and products in store";
@@ -3612,7 +3613,7 @@ final class BuildScreen {
             case LIQUID:    return "crude, petrol, diesel and the refinery's other products";
             case DRY_BULK:  return "iron ore, crops, grain, building materials and coke";
             case CONTAINER: return "the shelf's goods, drinks and watches, in boxes";
-            default:        return "steel, machinery, wagon sets, cars and vans";
+            default:        return "steel, machinery, wagon sets, cars, vans and trucks";
         }
     }
 
@@ -3872,7 +3873,7 @@ final class BuildScreen {
                  * what the freight costs today and what the railway charges,
                  * and leaves the tonnage as the second sentence.
                  */
-                ham.citybuildersim.sectors.Rail rail = ui.game.getSectors().rail();
+                ham.citybuildersim.sectors.Freight rail = ui.game.getSectors().freight();
                 out.add(String.format("Hauls up to %s tonnes a month of the city's trade "
                         + "to and from the world. Everything it does not carry goes by "
                         + "lorry, at the price the world charges.",
@@ -3893,6 +3894,12 @@ final class BuildScreen {
                         + "and the works are still on the road.");
                 break;
             }
+
+            case HAULAGE:
+                out.add(String.format("Keeps up to %s of Freight's trucks, with a driver for each and the mechanics who"
+                        + " keep them running. Trucks past the depots' room park on the street and wear out a tenth faster.",
+                        formatter.format(t.getTruckRoom())));
+                break;
 
             case HEALTHCARE:
                 out.addAll(whatCareItGives(t));

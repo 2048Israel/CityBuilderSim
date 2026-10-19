@@ -170,10 +170,13 @@ public class WoodProductsCheck {
                         + " metre at 0.5, 0.62 and 0.9 t, the rest by the tonne; all but the residues stockable",
                 prices, got.toString().trim());
         int n = NationalAccounts.HELD.length;
-        assertTrue("...the five stockable on HELD's end in Good's order, after copper's cathode, so a save's held slots keep their places",
-                n >= 6 && NationalAccounts.HELD[n - 6] == Good.COPPER && NationalAccounts.HELD[n - 5] == Good.LUMBER
-                        && NationalAccounts.HELD[n - 4] == Good.PANELS && NationalAccounts.HELD[n - 3] == Good.PULP
-                        && NationalAccounts.HELD[n - 2] == Good.PAPER && NationalAccounts.HELD[n - 1] == Good.WOOD_PELLETS);
+        // ...and since FR2 (2026-10-18) the trucks after them, HELD's last: the five keep their places, one from the end.
+        assertTrue("...the five stockable on HELD's end in Good's order, after copper's cathode and before FR2's trucks, so a save's"
+                        + " held slots keep their places",
+                n >= 7 && NationalAccounts.HELD[n - 7] == Good.COPPER && NationalAccounts.HELD[n - 6] == Good.LUMBER
+                        && NationalAccounts.HELD[n - 5] == Good.PANELS && NationalAccounts.HELD[n - 4] == Good.PULP
+                        && NationalAccounts.HELD[n - 3] == Good.PAPER && NationalAccounts.HELD[n - 2] == Good.WOOD_PELLETS
+                        && NationalAccounts.HELD[n - 1] == Good.TRUCKS);
         assertTrue("...lumber, panels and paper by the goods stream and, by sea, in containers; residues, pulp and pellets by the bulk"
                         + " stream - chips and pellets dry bulk, pulp's bales general cargo",
                 Good.LUMBER.traffic() == Traffic.GOODS && Good.PANELS.traffic() == Traffic.GOODS && Good.PAPER.traffic() == Traffic.GOODS
@@ -589,12 +592,13 @@ public class WoodProductsCheck {
         for (int i = 0; i < five.length; i++) yards[i] = wp.getStock(five[i]);
         quietly(() -> g.simulateMonths(1));
         double[] state = g.getEconomyManager().getNationalAccountsState();
-        int n = NationalAccounts.HELD.length, at = 15;
-        boolean held = state.length >= at + n;
+        // The five's slots where HELD keeps them (FR2's trucks come after).
+        int n = NationalAccounts.HELD.length, at = 15, first = java.util.Arrays.asList(NationalAccounts.HELD).indexOf(Good.LUMBER);
+        boolean held = state.length >= at + n && first >= 0;
         StringBuilder got = new StringBuilder();
         for (int i = 0; i < five.length && held; i++) {
-            held &= state[at + n - 5 + i] == yards[i];
-            got.append(String.format("%s %,.1f/%,.1f; ", five[i].name(), state[at + n - 5 + i], yards[i]));
+            held &= state[at + first + i] == yards[i];
+            got.append(String.format("%s %,.1f/%,.1f; ", five[i].name(), state[at + first + i], yards[i]));
         }
         report("fixture: a large sawmill, a panel mill, a pulp mill and a pellet mill, three months on: the next month's accounts hold"
                         + " wood's five as the sector's yards stood - lumber, panels, pulp and pellets in them, no paper",

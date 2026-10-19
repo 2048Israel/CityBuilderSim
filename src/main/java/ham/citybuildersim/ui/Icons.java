@@ -408,7 +408,7 @@ public final class Icons {
             case BITUMEN:                     return ROADS;
             case COKE:                        return ORE;
             case STEEL: case FABRICATED_STEEL: case MACHINERY: return INDUSTRY;
-            case CARS: case VANS:             return VEHICLES;
+            case CARS: case VANS: case TRUCKS: return VEHICLES;
             case ROLLING_STOCK:               return RAIL;
             case MATERIALS: case BUILDING_WORK: return CRANE;
             case LUXURIES:                    return LUXURY;
@@ -434,7 +434,7 @@ public final class Icons {
             case ham.citybuildersim.Sectors.MANUFACTURING:     return GEAR;
             case ham.citybuildersim.Sectors.AGRICULTURE:       return FARMS;
             case ham.citybuildersim.Sectors.FOOD_PROCESSING:   return CAN;
-            case ham.citybuildersim.Sectors.RAIL:              return RAIL;
+            case ham.citybuildersim.Sectors.FREIGHT:           return RAIL;
             case ham.citybuildersim.Sectors.AUTOMOTIVE:        return VEHICLES;
             case ham.citybuildersim.Sectors.LUXURY_RETAIL:     return LUXURY;
             case ham.citybuildersim.Sectors.RESTAURANTS:       return FOOD;
@@ -459,6 +459,7 @@ public final class Icons {
             case "Offices":         return OFFICES;
             case "Farms":           return FARMS;
             case "Rail":            return RAIL;
+            case "Freight":         return RAIL;
             case "Vehicles":        return VEHICLES;
             case "Luxury shops":    return LUXURY;
             case "Restaurants":     return FOOD;

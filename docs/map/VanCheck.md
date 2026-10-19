@@ -1,6 +1,6 @@
-# VanCheck.java - 387 lines · 5 methods · 0 constants · harnesses
+# VanCheck.java - 476 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/VanCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/VanCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The vans: what a sector needs, what it costs it, and what happens while it
 > waits for them.
@@ -21,9 +21,12 @@
 >      arithmetic, because have/need is 1 to within an ulp and not 1, and an
 >      ulp in an operating rate is a different city.
 > 
->   2. THE FLEET IS SIZED BY WHAT THE PLANT MOVES - everything it makes and
->      everything it buys, by weight, at NAMEPLATE rather than at this month's
->      rate, which would be a circle.
+>   2. THE FLEET IS SIZED BY WHAT THE PLANT MOVES - the GOODS it makes and the
+>      GOODS it buys, by weight, at NAMEPLATE rather than at this month's
+>      rate, which would be a circle. Since FR2 (2026-10-18) the vans carry the
+>      goods stream only: a bulk works keeps no vans, its tonnes go by
+>      Freight's trucks (sectors.Haulage), and the fifth throttle is the lesser
+>      of the vans' ratio and Haulage's (Sector.getFreightRatio()).
 > 
 >   3. IT IS A STOCK. It wears out at VAN_LIFE_MONTHS whether or not anything
 >      can replace it, so a Commercial Vehicle Plant has a customer next year
@@ -42,34 +45,34 @@
 > 
 > See claude/the-sixth-link.md and Sector's THE FLEET.
 
-**Uses:** [Sector](Sector.md) (33), [Good](Good.md) (33), [Game](Game.md) (4), [BuildingManager](BuildingManager.md) (3), [GameFiles](GameFiles.md) (2), [SectorState](SectorState.md) (2), [GoodsMarket](GoodsMarket.md) (2), [CarCheck](CarCheck.md) (2), [Founding](Founding.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [Sectors](Sectors.md) (1)
+**Uses:** [Good](Good.md) (40), [Sector](Sector.md) (37), [Game](Game.md) (4), [Traffic](Traffic.md) (4), [BuildingManager](BuildingManager.md) (3), [Sectors](Sectors.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [SectorState](SectorState.md) (2), [GoodsMarket](GoodsMarket.md) (2), [CarCheck](CarCheck.md) (2), [HeavyIndustry](HeavyIndustry.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 115 | · 1. WHAT A FLEET IS FOR |
-| 157 | · 2. THE FLOOR AND THE CEILING OF THE RATIO |
-| 187 | · 3. YOU CANNOT PUT A FLEET ON THE ROAD IN A MONTH |
-| 208 | · 4. IT WEARS OUT |
-| 243 | · 5. A SAVE FROM BEFORE VANS HAD VANS |
-| 273 | · 6. IN A CITY THAT RUNS |
-| 312 | · 7. AND THE VANS BURN DIESEL (0.7.83, batch O6; spec-oil 2.5) |
+| 134 | · 1. WHAT A FLEET IS FOR |
+| 224 | · 2. THE FLOOR AND THE CEILING OF THE RATIO |
+| 262 | · 3. YOU CANNOT PUT A FLEET ON THE ROAD IN A MONTH |
+| 283 | · 4. IT WEARS OUT |
+| 325 | · 5. A SAVE FROM BEFORE VANS HAD VANS |
+| 362 | · 6. IN A CITY THAT RUNS |
+| 401 | · 7. AND THE VANS BURN DIESEL (0.7.83, batch O6; spec-oil 2.5) |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 48 | `static int fails` |  |
+| 51 | `static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 342 | **type** `public class VanCheck` | The vans: what a sector needs, what it costs it, and what happens while it waits for them. |
-| 50 | 5 | `static void quietly(Runnable r)` |  |
-| 56 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 61 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 67 | 3 | `static boolean same(double a, double b)` | Bitwise. |
-| 71 | 316 | `public static void main(String[] args)` |  |
+| 49 | 428 | **type** `public class VanCheck` | The vans: what a sector needs, what it costs it, and what happens while it waits for them. |
+| 53 | 5 | `static void quietly(Runnable r)` |  |
+| 59 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 64 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 70 | 3 | `static boolean same(double a, double b)` | Bitwise. |
+| 74 | 402 | `public static void main(String[] args)` |  |
 

@@ -1,6 +1,6 @@
-# SectorBooksCheck.java - 335 lines · 5 methods · 1 constants · harnesses
+# SectorBooksCheck.java - 340 lines · 5 methods · 1 constants · harnesses
 
-`ham/citybuildersim/SectorBooksCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorBooksCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > Plays a city and audits every sector's statements, every month. Not part of
 > the game.
@@ -47,9 +47,9 @@
 | 127 | · · the sheet |
 | 132 | · · the income statement |
 | 145 | · · the cash flow |
-| 221 | · AND IT HAS TO SURVIVE A SAVE. |
-| 253 | · · and the month after |
-| 259 | · 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46) |
+| 226 | · AND IT HAS TO SURVIVE A SAVE. |
+| 258 | · · and the month after |
+| 264 | · 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46) |
 
 ## Constants
 
@@ -70,9 +70,9 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 297 | **type** `public class SectorBooksCheck` | Plays a city and audits every sector's statements, every month. |
+| 39 | 302 | **type** `public class SectorBooksCheck` | Plays a city and audits every sector's statements, every month. |
 
-### 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16) (lines 46-335)
+### 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16) (lines 46-340)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -80,5 +80,5 @@
 | 73 | 14 | `static void pageIsReadable(Game game)` |  |
 | 92 | 4 | `static void check(String label, boolean ok, String detail)` | One labelled assertion, printed either way (0.7.46): the rest of this harness speaks only when it fails. |
 | 97 | 9 | `static void near(String what, String sector, int month, double actual, double expected)` |  |
-| 107 | 228 | `public static void main(String[] args)` |  |
+| 107 | 233 | `public static void main(String[] args)` |  |
 

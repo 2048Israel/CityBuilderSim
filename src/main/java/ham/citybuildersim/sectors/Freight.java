@@ -7,6 +7,7 @@ import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
+import ham.citybuildersim.JobType;
 import ham.citybuildersim.Markets;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.Sectors;
@@ -16,9 +17,16 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.ToDoubleFunction;
 
 /**
- * The railway. THE TWELFTH SECTOR (2026-09-16, Jerus's call).
+ * The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18;
+ * docs/studies/spec-freight-and-infrastructure.md 3.1, D1). Its Rail division is the
+ * railway, THE TWELFTH SECTOR (2026-09-16, Jerus's call), whose design follows.
+ * Its Haulage division (Haulage, from FR2) is the trucks that carry the city leg
+ * of every bulk tonne; it keeps its own figures and price rule and books through
+ * this sector, and the two divisions share these buildings' costs by whose they
+ * are (haulageShareOf()).
  *
  * Every price in this game has always had freight inside it. A tonne of steel
  * lands at $1,284 and leaves at $847, and three quarters of that $437 wedge is
@@ -118,7 +126,7 @@ import java.util.Map;
  * commuters on the street, and in the played city commuters are 64% of the
  * load before any of this.
  */
-public final class Rail extends Sector {
+public final class Freight extends Sector {
 
     /**
      * The cheapest the railway will ever quote, as a share of the lorry rate.
@@ -307,6 +315,9 @@ public final class Rail extends Sector {
     private double rFuelLitres, rFuelLitresImported;
     private double rCapacity, rTightness, rFx = 1, rAllowed;
 
+    /** ...and the part of rAllowed that is the railway's running cost (FR2): what it earned is its bill less this, now that the sector's income is the trucks' too. */
+    private double rRunning;
+
     /**
      * The part of the month's lorry bill that went abroad with the cargo
      * (0.7.29): what the lorries were paid for the tonnes the railway did not
@@ -343,8 +354,11 @@ public final class Rail extends Sector {
      */
     private boolean fleetKnown;
 
-    public Rail() {
-        super("Rail", "Rail", BuildingType.RAIL);
+    /** The Haulage division (FR2): the trucks that carry the city leg. Its state rides in this sector's extras (haul.*). */
+    private final Haulage haulage = new Haulage(this);
+
+    public Freight() {
+        super("Freight", "Freight", BuildingType.RAIL);
         /*
          * A PANTRY AND NOT AN ORDINARY INPUT, because a locomotive is not
          * consumed by being used. Sector.receiveInput() keeps only what a
@@ -355,10 +369,13 @@ public final class Rail extends Sector {
          * decides how many trains a railway needs.
          */
         pantry(Good.ROLLING_STOCK, 0);
+        // ...and the trucks, the same way (FR2): Haulage's bid() sizes the fleet by the city leg it was asked to carry.
+        pantry(Good.TRUCKS, 0);
 
-        blurb("Hauls the city's trade to and from the world for less than the "
-                + "lorries charge, and bills the shippers for it. What it cannot "
-                + "carry still goes by road, at the world's price.");
+        blurb("Carries the city's freight. Its railway hauls the city's trade to "
+                + "and from the world for less than the lorries charge, and bills "
+                + "the shippers for it. What it cannot carry still goes by road, "
+                + "at the world's price.");
     }
 
     /* =====================================================================
@@ -416,22 +433,26 @@ public final class Rail extends Sector {
         java.util.Arrays.fill(railIn, 0);
         java.util.Arrays.fill(railOut, 0);
         double haulage = 0, abroad = 0;
+        // ...and each sector's city-leg tonnes for Haulage (FR2), at the same railway shares: the railed part of what crossed is a quarter truck.
+        Map<Sector, Double> legsOf = new LinkedHashMap<>();
         for (Sector s : sectors.all()) {
             if (s == this) continue;
-            double bill = 0;
+            double bill = 0, legs = 0;
             for (Good g : Good.values()) {
                 Traffic stream = g.traffic();
                 if (stream == null || !stream.isFreight()) continue;
                 double out = s.unitsExported(g), in = s.unitsImported(g);
                 double units = out + in;
-                if (units <= 0) continue;
                 int i = stream.ordinal();
+                // The railway's part and the ships' (0.7.86): carried[i] and nothing with no berth.
+                double rail = ports == null ? carried[i] : ports.railShareOf(g, carried[i]);
+                // ...a bulk tonne bought at home has a city leg too, and crossed nothing (FR2).
+                if (stream == Traffic.BULK) legs += Haulage.legTonnes(s, g, rail);
+                if (units <= 0) continue;
                 double weighs = units * g.tonnesPerUnit();
                 tonnes[i] += weighs;
                 double lorry = units * g.baseFreight() * fx;
                 truck[i] += lorry;
-                // The railway's part and the ships' (0.7.86): carried[i] and nothing with no berth.
-                double rail = ports == null ? carried[i] : ports.railShareOf(g, carried[i]);
                 double ship = ports == null ? 0 : ports.seaShareOf(g, carried[i]);
                 bill += lorry * rail * quote;
                 // ...and what still went by lorry, paid abroad (0.7.29): read, never billed - and by sea (0.7.86).
@@ -449,10 +470,20 @@ public final class Rail extends Sector {
                 }
             }
             if (bill > 0) {
-                s.billForService(key(), "Haulage", bill);
+                s.billForService(key(), "Rail freight", bill);
                 haulage += bill;
             }
+            if (legs > 0) legsOf.put(s, legs);
         }
+
+        /*
+         * ...AND THE CITY LEG, BILLED BY THE TRUCKS (FR2). Haulage joins the
+         * railway's step 1 because both bill last month's cargo at the shares
+         * that were in force while it moved, and the railway's shares are
+         * overwritten in step 5. The rest of Haulage's month (its diesel, wear,
+         * need and price) is closed at the bottom of this method.
+         */
+        haulage().billMonth(legsOf);
 
         /* ---- 2. the invoice, and the fuel it took to earn it ---- */
 
@@ -555,7 +586,8 @@ public final class Rail extends Sector {
         /* ---- 4. what it charges for it ---- */
 
         rFx = fx;
-        rAllowed = monthlyCost(fuel) + TARGET_RETURN * rateBase();
+        rRunning = monthlyCost(fuel);
+        rAllowed = rRunning + TARGET_RETURN * rateBase();
 
         if (capacity > 0) {
             double atLorryRate = 0;
@@ -598,16 +630,29 @@ public final class Rail extends Sector {
             m.setRailCharge(rail * quote);
         }
         System.arraycopy(next, 0, carried, 0, n);
+
+        /* ---- 6. and the trucks' month (FR2): their diesel, wear, need, share and price ---- */
+
+        haulage().closeMonth(sectors);
     }
 
     /**
      * What a month of railway costs to RUN. Wages, power, water, the repairs,
      * the taxman and the fuel - everything except the money, which TARGET_RETURN
      * is there to pay for. The fuel is what the month's draw came to (0.7.62).
+     *
+     * THE RAIL DIVISION'S SHARE OF EACH LINE since FR2: Freight's cost lines are
+     * one sector's, and the Truck Depots' part of them is Haulage's to price
+     * (haulageShareOf(), by posts, draws and cost). With no depot standing the
+     * share is 0, (1 - 0) leaves each line as it was to the bit, and the rule
+     * is the railway's alone.
      */
     private double monthlyCost(double fuelBill) {
-        return getPayroll() + getElectricityCost() + getWaterCost()
-                + getMaintenanceExpense() + getPropertyTaxExpense()
+        return (1 - haulagePayrollShare()) * getPayroll()
+                + (1 - haulageShareOf(BuildingsTemplate::getElectricityConsumption)) * getElectricityCost()
+                + (1 - haulageShareOf(BuildingsTemplate::getWaterConsumption)) * getWaterCost()
+                + (1 - haulageShareOf(BuildingsTemplate::getCashCost)) * getMaintenanceExpense()
+                + (1 - haulageShareOf(BuildingsTemplate::getCashCost)) * getPropertyTaxExpense()
                 + Math.max(0, fuelBill);
     }
 
@@ -629,9 +674,17 @@ public final class Rail extends Sector {
          * its locomotives were free would be pricing as though it had not spent
          * the money. getInventoryValue() is exactly the fleet for this sector,
          * because rolling stock is the only thing it holds.
+         *
+         * ...AND SINCE FR2 IT HOLDS THE TRUCKS TOO, which are Haulage's rate
+         * base and not the railway's, as are the depots' buildings and their
+         * ground (haulageShareOf()). With no depot and no truck the share is 0
+         * and the trucks' value is 0, and this is what it was to the bit.
          */
-        return Math.max(0, getBuildingsValue()) + Math.max(0, getLandValue())
-                + Math.max(0, getInventoryValue());
+        double trucks = trucksHeld();
+        double trucksValue = trucks > 0 ? trucks * truckPrice() : 0;
+        return (1 - haulageShareOfSites(BuildingsTemplate::getCashCost)) * Math.max(0, getBuildingsValue())
+                + (1 - haulageShareOfSites(BuildingsTemplate::getLandSqFt)) * Math.max(0, getLandValue())
+                + Math.max(0, getInventoryValue() - trucksValue);
     }
 
     /* ------------------------------------------------------ the fleet ------ */
@@ -664,8 +717,127 @@ public final class Rail extends Sector {
      */
     @Override
     public double bid(Good g) {
+        // The trucks are Haulage's, sized on the city leg it was asked to carry (FR2).
+        if (g == Good.TRUCKS) return haulage.bid();
         if (g != Good.ROLLING_STOCK) return super.bid(g);
         return Math.max(0, setsNeeded() - fleet());
+    }
+
+    /* ------------------------------------------ the Haulage division's seam (FR2) ----- */
+
+    /*
+     * Haulage is not a sector, so it books through this one. Its state is its
+     * own (Haulage); what it needs of this sector's protected machinery is
+     * here, in the package, and nowhere else: the pantry (the trucks), the
+     * other revenue (its bill), the markets (its diesel and the price of a
+     * truck), and the shares of this sector's cost lines that belong to it.
+     */
+
+    /** The Haulage division: the trucks that carry the city leg (FR2). */
+    public Haulage haulage() { return haulage; }
+
+    /** The wage bill on the posts it offers: its depots' drivers for the trucks they keep (Haulage.strikeDrivers()), every other post whole - the same whole numbers the city counts (BuildingManager.getPostsOfferedBySector()). */
+    @Override
+    public void updateWages(double[] wagePerType, long[] posts) {
+        if (posts == null) { super.updateWages(wagePerType, null); return; }
+        JobType[] types = JobType.values();
+        long[] offered = new long[posts.length];
+        for (int i = 0; i < posts.length; i++) {
+            offered[i] = i < types.length ? ham.citybuildersim.BuildingManager.postsOffered(posts[i], haulage.offeredShare(types[i])) : posts[i];
+        }
+        super.updateWages(wagePerType, offered);
+    }
+
+    /** Trucks owned: the TRUCKS pantry. */
+    double trucksHeld() { return getPantry(Good.TRUCKS); }
+
+    /** The first fleet, free, the month there is a city leg to carry (Haulage.closeMonth(); Sector.vansKnown's reason). */
+    void seedTrucks(double trucks) { setPantry(Good.TRUCKS, trucks); }
+
+    /** What the month's trucks cost it, bought at home and abroad: the statement in progress's TRUCKS, before the strike banks it (Haulage's running cost). */
+    double trucksBought() {
+        Sector.Split x = pending().bought.get(Good.TRUCKS);
+        return x == null ? 0 : x.total();
+    }
+
+    /** A month of the trucks' wear, out of the pantry. */
+    void wearTrucks(double trucks) { usePantry(Good.TRUCKS, trucks); }
+
+    /** What a truck is worth on this sector's books: the market's price as getInventoryValue() reads it. */
+    double truckPrice() {
+        double p = priceOf(Good.TRUCKS);
+        return Double.isFinite(p) ? Math.max(0, p) : 0;
+    }
+
+    /** The trucks' diesel, drawn as a buyer as the railway's is: the refiners' shelf first, the world for the rest. */
+    Markets.Draw drawDiesel(double litres, Sectors sectors) {
+        return markets.draw(Good.DIESEL, this, key(), litres, sectors);
+    }
+
+    /** Haulage's bill, as this sector's other revenue; named "Haulage billed" (nameOtherRevenue()). */
+    void bookHaulage(double amount) { bookOtherRevenue(amount); }
+
+    /** What a post on the DIPLOMA tier costs a month, the drivers' tier; nothing with no game to ask. */
+    double diplomaWage() {
+        if (game == null || game.getEconomyManager() == null) return 0;
+        double[] wages = game.getEconomyManager().getWageRates();
+        int k = JobType.DIPLOMA.ordinal();
+        return wages == null || k >= wages.length || !Double.isFinite(wages[k]) ? 0 : Math.max(0, wages[k]);
+    }
+
+    /**
+     * The Truck Depots' share of one of this sector's cost lines, by a figure of
+     * their buildings: the finished depots' sum of it over every finished
+     * building's, or 0 when there is none to share (no buildings, or none that
+     * has the figure). The Rail division takes (1 - share) of the line and
+     * Haulage the share; the railway's rule is what it was while no depot
+     * stands.
+     *
+     * Payroll is shared by posts, the power and water by the buildings' draws,
+     * and the repairs and the property tax by what the buildings cost. The
+     * buildings' value and the ground under them are the balance sheet's, and
+     * take haulageShareOfSites() below instead.
+     */
+    double haulageShareOf(ToDoubleFunction<BuildingsTemplate> f) {
+        if (buildings == null) return 0;
+        double all = buildings.totalBySector(key(), f);
+        if (!(all > 0)) return 0;
+        return buildings.totalBySector(key(), t -> t.getTruckRoom() > 0 ? f.applyAsDouble(t) : 0) / all;
+    }
+
+    /**
+     * ...and its payroll's share by the posts OFFERED (FR2, ★2): a depot's
+     * drivers for the places no truck fills are laid off and paid by nobody
+     * (Haulage.strikeDrivers()), so they are in neither side of the ratio.
+     * With every depot full, or none, it is haulageShareOf() by posts.
+     */
+    double haulagePayrollShare() {
+        if (buildings == null) return 0;
+        double all = buildings.totalBySector(key(), BuildingsTemplate::getTotalJobs);
+        double depots = buildings.totalBySector(key(), t -> t.getTruckRoom() > 0 ? t.getTotalJobs() : 0);
+        long diploma = buildings.getJobArrayBySector(key())[JobType.DIPLOMA.ordinal()];
+        double idle = diploma - ham.citybuildersim.BuildingManager.postsOffered(diploma, haulage.offeredShare(JobType.DIPLOMA));
+        if (!(all - idle > 0)) return 0;
+        return Math.max(0, Math.min(1, (depots - idle) / (all - idle)));
+    }
+
+    /**
+     * ...and the same share for the BALANCE SHEET's lines, the buildings' value
+     * and the ground under them, which count the buildings on site as well as
+     * the finished (EconomyManager.pushBalanceSheetInputs(): "Buildings
+     * finished AND on site"). The finished-only share above, applied to those,
+     * charged Haulage the whole of a rail terminal still being laid: found by
+     * running a city, where a terminal took 25 months to build and Haulage's
+     * quote rose from D$10 to D$43 a tonne for its whole construction, and
+     * fell back the month it opened. Posts, power, water, repairs and tax run
+     * on the finished buildings alone, and use the share above.
+     */
+    double haulageShareOfSites(ToDoubleFunction<BuildingsTemplate> f) {
+        if (buildings == null) return 0;
+        double all = buildings.totalBySector(key(), f) + buildings.underConstructionBySector(key(), f);
+        if (!(all > 0)) return 0;
+        ToDoubleFunction<BuildingsTemplate> depots = t -> t.getTruckRoom() > 0 ? f.applyAsDouble(t) : 0;
+        return (buildings.totalBySector(key(), depots) + buildings.underConstructionBySector(key(), depots)) / all;
     }
 
     /* ------------------------------ what it is doing, for everyone else ----- */
@@ -706,6 +878,9 @@ public final class Rail extends Sector {
      */
     public double getAllowedRevenue()   { return allowedKnown ? rAllowed : Double.NaN; }
 
+    /** The railway's running cost in the month billed (FR2): the Rail division's share of the sector's lines and its fuel - what its bill is measured against now that the sector's net income holds the trucks' as well. NaN while the allowed revenue is. */
+    public double getRunningCost()      { return allowedKnown ? rRunning : Double.NaN; }
+
     /**
      * THE MONTH'S LORRY BILL, THREE WAYS (0.7.29). getTruckBill() is what the
      * month's cross-border tonnes would have cost entirely by lorry, and it is
@@ -727,6 +902,19 @@ public final class Rail extends Sector {
 
     /** The share of each stream the railway is carrying, for the road relief. */
     public double[] getCarried() { return carried.clone(); }
+
+    /**
+     * The railway's share of one good's crossing tonnes in force now (FR2): its
+     * stream's carried share, less what the city's berths take first
+     * (Ports.railShareOf()); 0 for a good with no freight stream. Read live by
+     * Haulage.legPrice(), which weighs a works at the siding's relief.
+     */
+    public double railShareInForce(Good g) {
+        Traffic stream = g == null ? null : g.traffic();
+        if (stream == null || !stream.isFreight()) return 0;
+        ham.citybuildersim.Ports ports = game == null ? null : game.getPorts();
+        return ports == null ? carried[stream.ordinal()] : ports.railShareOf(g, carried[stream.ordinal()]);
+    }
 
     /**
      * Puts the band back where the saved month left it.
@@ -784,6 +972,18 @@ public final class Rail extends Sector {
     @Override
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
         if (t == null || plans == null) return 0;
+        /*
+         * A TRUCK DEPOT (FR2) carries no track and picks up no tonnes, so the
+         * rail line's sum below would value it at minus its wage bill and the
+         * order would be declined for want of a profit to cover its interest
+         * (found by running it: "Declined Truck Depot - not even one would
+         * cover its interest"). What it earns is what Haulage's rule allows
+         * on it: the quote already recovers its running and standing costs
+         * (Haulage.closeMonth() prices on the depots' share of both), so what
+         * is left to it is TARGET_RETURN a month on what it cost, ground
+         * included.
+         */
+        if (t.getTruckRoom() > 0) return TARGET_RETURN * plans.getCostOf(t, 1);
         double spare = Math.max(0, rTonnes - rCapacity);
         double picked = Math.min(t.getRailCapacity(), spare);
         double revenue = picked * lorryRatePerTonne() * quote;
@@ -803,6 +1003,29 @@ public final class Rail extends Sector {
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
+
+        /*
+         * THE TRUCKS' DEPOT FIRST (FR2, D6; spec 3.2's planner), before the
+         * "already building" test, because it is not a rail line: a Truck Depot
+         * on site is Haulage's own test (depotToOrder() orders one at a time),
+         * and a terminal being laid must not keep the trucks on the street.
+         * Gated as the lines are, on the staff and the ground. The trucks a
+         * depot keeps are crewed by its posts; the ones past the room still
+         * run, unposted, at Haulage.STREET_WEAR.
+         */
+        BuildingsTemplate depot = haulage.depotToOrder();
+        if (depot != null) {
+            Staffing staffing = staffing(depot);
+            if (!staffing.passes()) {
+                return BusinessInvestment.Decision.no(sector, staffing.why(depot.getName()));
+            }
+            if (plans.plotsAvailableFor(depot) < 1) {
+                return BusinessInvestment.Decision.noLand(sector, plans.landReason(depot));
+            }
+            return new BusinessInvestment.Decision(sector, depot, 1,
+                    "its trucks past the depots' room park on the street", true);
+        }
+
         if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
             return BusinessInvestment.Decision.no(sector, "already building");
         }
@@ -883,6 +1106,16 @@ public final class Rail extends Sector {
     @Override
     public double unitsOf(BuildingsTemplate t) { return t == null ? 0 : t.getRailCapacity(); }
 
+    /**
+     * A Truck Depot is never retired by the railway's measure (FR2): the
+     * retirement rule weighs track against the tonnes offered it, and a depot
+     * has no track to weigh. Its own measure is its trucks past its room.
+     */
+    @Override
+    public boolean mayRetire(BuildingsTemplate t) {
+        return t != null && t.getTruckRoom() <= 0 && super.mayRetire(t);
+    }
+
     /* ------------------------------------------------------------ the books */
 
     /**
@@ -893,9 +1126,18 @@ public final class Rail extends Sector {
     @Override
     protected Map<String, Double> nameOtherRevenue() {
         Map<String, Double> parts = new LinkedHashMap<>();
-        if (Math.abs(statement().otherRevenue) > 0) {
-            parts.put("Haulage billed", statement().otherRevenue);
-        }
+        /*
+         * TWO OF THEM SINCE FR2: the trucks' bill (Haulage's, the month the
+         * statement is struck on) and the railway's, which is the rest. The
+         * railway's is the difference of two sums made in different orders, so
+         * a month with no railway reads a dust of rounding and not a zero:
+         * a part is shown only when it is more than that.
+         */
+        double all = statement().otherRevenue, trucks = haulage.getBill();
+        double rail = all - trucks;
+        if (Math.abs(rail) <= 1e-9 * Math.max(1, Math.abs(all))) rail = 0;
+        if (rail != 0) parts.put("Rail freight billed", rail);
+        if (trucks != 0) parts.put("Haulage billed", trucks);
         return parts;
     }
 
@@ -935,7 +1177,7 @@ public final class Rail extends Sector {
         lines.add(Line.of("Charged", String.format("%.0f%% of the lorry rate", quote * 100),
                 quote < .5 ? Line.Tone.GOOD : quote > .85 ? Line.Tone.WARN : Line.Tone.NONE));
         lines.add(Line.of("A lorry charges", f.amount(lorryRatePerTonne()) + " a tonne"));
-        lines.add(Line.of("Haulage billed", f.amount(rHaulage)));
+        lines.add(Line.of("Rail freight billed", f.amount(rHaulage)));
         lines.add(Line.of("Diesel", f.amount(rFuel), Line.Tone.MUTED));
 
         if (rCapacity <= 0) {
@@ -953,6 +1195,29 @@ public final class Rail extends Sector {
             lines.add(Line.note("The railway reaches all of the city's trade, so it competes "
                     + "with nothing but its own cost. Every tonne it takes off the world's "
                     + "lorries is freight money that stays in the city."));
+        }
+
+        /*
+         * ...AND ITS TRUCKS (FR2): Haulage's figures, the division's own. The
+         * screens' division strip is FR4's (spec-freight 6); until then the
+         * trucks are read here, under the railway.
+         */
+        Haulage h = haulage;
+        lines.add(Line.head("Haulage, the trucks"));
+        lines.add(Line.of("Trucks", String.format("%s of the %s the city's legs need",
+                        f.count(h.trucks()), f.count(h.trucksNeeded())),
+                h.getShare() < 1 ? Line.Tone.WARN : Line.Tone.NONE));
+        lines.add(Line.of("Kept at its depots", String.format("%s places, %s on the street",
+                f.count(h.depotRoom()), f.count(h.onStreet())),
+                h.onStreet() > 0 ? Line.Tone.MUTED : Line.Tone.NONE));
+        lines.add(Line.of("Carried", String.format("%s of %s tonnes of city legs", f.count(h.getCarried()),
+                f.count(h.getTonnes()))));
+        lines.add(Line.of("A tonne's city leg", f.amount(h.getQuote()) + (h.isQuoteKnown() ? "" : " (estimated)")));
+        lines.add(Line.of("Haulage billed", f.amount(h.getBill())));
+        lines.add(Line.of("Diesel", f.amount(h.getDiesel()), Line.Tone.MUTED));
+        if (h.getShare() < 1) {
+            lines.add(Line.note(String.format("The trucks carry %.0f%% of the city's bulk; every works that moves bulk "
+                    + "runs slower for the rest, collecting its own, until more trucks arrive.", h.getShare() * 100)));
         }
         return lines;
     }
@@ -984,7 +1249,10 @@ public final class Rail extends Sector {
         // The screens' two (0.7.29), only when they are figures (see allowedKnown): an
         // older save has neither, and loads with them unknown, so no format bump.
         if (allowedKnown) extras.put("allowed", rAllowed);
+        if (allowedKnown) extras.put("running", rRunning);
         if (abroadKnown) extras.put("paidAbroad", rPaidAbroad);
+        // Haulage's own (FR2), under haul.*: a save from before it has none and loads a city that has not yet needed a truck.
+        haulage.save(extras);
     }
 
     @Override
@@ -1013,10 +1281,12 @@ public final class Rail extends Sector {
             railOut[k.ordinal()] = extras.getOrDefault("railOut." + k.name(), 0.0);
         }
         rAllowed = extras.getOrDefault("allowed", 0.0);
+        rRunning = extras.getOrDefault("running", 0.0);
         allowedKnown = extras.containsKey("allowed");
         // Nothing billed at home: nothing was carried, so the whole lorry bill went abroad.
         rPaidAbroad = extras.getOrDefault("paidAbroad", rHaulage <= 0 ? rTruckBill : 0.0);
         abroadKnown = extras.containsKey("paidAbroad") || rHaulage <= 0;
+        haulage.restore(extras);
     }
 
     @Override
@@ -1028,8 +1298,9 @@ public final class Rail extends Sector {
         rFuelLitres = rFuelLitresImported = 0;
         java.util.Arrays.fill(railIn, 0);
         java.util.Arrays.fill(railOut, 0);
-        rAllowed = rPaidAbroad = 0;
+        rAllowed = rRunning = rPaidAbroad = 0;
         allowedKnown = abroadKnown = true;
+        haulage.reset();
     }
 
     /**
@@ -1048,6 +1319,9 @@ public final class Rail extends Sector {
         rFuel *= scale;
         rFuelImported *= scale;
         rAllowed *= scale;
+        rRunning *= scale;
         rPaidAbroad *= scale;
+        // ...and Haulage's: its quote is a price in the city's money, unlike the railway's share of the lorry rate (FR2).
+        haulage.redenominate(scale);
     }
 }

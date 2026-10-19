@@ -936,7 +936,8 @@ public final class IndustryPicture {
                 h += n.h;
             }
             boxes.add(new Box(xTank, sy, TANK_W, h, null, 1, RefineryView.FRAME, true, false, 0, null));
-            words.add(new Words("OUT OF THE WAREHOUSE", xTank, sy + h + 13, Face.SANS_STRONG, 9.5, RefineryView.TEXT_3, Align.START,
+            // "FROM STOCK" since FR2: "OUT OF THE WAREHOUSE" ran 137 px in its 98 when a mine first sold out of its yard (IndustryViewCheck 12).
+            words.add(new Words("FROM STOCK", xTank, sy + h + 13, Face.SANS_STRONG, 9.5, RefineryView.TEXT_3, Align.START,
                     TANK_W - FIGURE_IN_BAND, false));
             words.add(new Words(figureOf(unit, total), xTank + TANK_W, sy + h + 13, Face.MONO, 10, RefineryView.TEXT_2, Align.END,
                     FIGURE_IN_BAND, false));

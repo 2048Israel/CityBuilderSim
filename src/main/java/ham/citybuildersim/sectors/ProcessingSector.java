@@ -6,6 +6,7 @@ import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.Sector;
+import ham.citybuildersim.Traffic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +42,9 @@ import java.util.Map;
  *   - its consumables at the exchange factor, + its own power at the tariff
  *       (SpreadPlanner.ownCosts())
  *   - since 0.7.123 (batch I4) a feed no market sells (offMarketFeed(): the
- *       Scrap Yard's old steel) and its lorries' wear and diesel
- *       (fleetRunning()), on its cost with the vans it must buy
+ *       Scrap Yard's old steel) and, since FR2, its freight: its vans' wear
+ *       and diesel and its bulk's city legs at Haulage's quote
+ *       (freightRunning()), on its cost with the vans it must buy
  *       (fleetCapital()) - and at the share of nameplate its feed fills
  *       (feedShare())
  *
@@ -185,8 +187,8 @@ public abstract class ProcessingSector extends Sector {
     /**
      * ...run at `share` of the sector's rate for want of a feed no market
      * sells, paying `other` a month past its running, standing and own costs
-     * - that feed (offMarketFeed()) and its lorries (fleetRunning()) - and
-     * costing `extraCost` past what the city prices its order at, the lorries
+     * - that feed (offMarketFeed()) and its freight (freightRunning()) - and
+     * costing `extraCost` past what the city prices its order at, the vans
      * it must buy (fleetCapital()) (0.7.123, batch I4): the same estimate, at
      * the rate times the share, less the other costs, on the whole cost. At a
      * share of 1 and none of either, the estimate above.
@@ -236,38 +238,86 @@ public abstract class ProcessingSector extends Sector {
      * them (captive, Sector.tonnesMoved()), which one more of it cannot count
      * on. Not in SpreadPlanner.caseEarns(): the study's four cases are the
      * study's arithmetic.
+     *
+     * ...AND ITS FREIGHT, SINCE FR2 (2026-10-18; spec-freight-and-infrastructure
+     * 3.5). A works keeps vans for its GOODS only, and the city leg of its BULK
+     * is a bill at Haulage's quote (sectors.Haulage.legPrice()): the pellet
+     * plant's 2,538 vans become about 102 of Haulage's trucks, none in its
+     * cost. So one more works is weighed with its freight (freightRunning()):
+     * its vans' wear and diesel and their capital (fleetRunning(),
+     * fleetCapital(), on its goods tonnes alone), and its city legs at the
+     * quote (cityLegs()) - every bulk tonne it receives, the railed part of an
+     * import relieved by the siding, and the share of every bulk tonne it makes
+     * that the city exported of that good at the last clearing (a tonne sold
+     * at home is its buyer's leg). No truck is in its capital.
      */
 
-    /** Vans one of `t` keeps: the tonnes it moves in and out at nameplate over Sector.TONNES_PER_VAN (pure). */
+    /**
+     * Vans one of `t` keeps: the GOODS tonnes it moves in and out at nameplate over Sector.TONNES_PER_VAN
+     * (pure; Sector.tonnesMoved()'s count, template by template). Its BULK goes by Haulage's trucks (FR2),
+     * and the fleet does not haul itself: not the vans, and not the trucks.
+     */
     public static double vansFor(BuildingsTemplate t) {
         if (t == null) return 0;
         double tonnes = 0;
-        for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) tonnes += e.getValue() * e.getKey().tonnesPerUnit();
+        for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+            if (e.getKey().traffic() == Traffic.GOODS) tonnes += e.getValue() * e.getKey().tonnesPerUnit();
+        }
         for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
-            if (e.getKey() != Good.VANS) tonnes += e.getValue() * e.getKey().tonnesPerUnit();
+            if (e.getKey() != Good.VANS && e.getKey() != Good.TRUCKS && e.getKey().traffic() == Traffic.GOODS) {
+                tonnes += e.getValue() * e.getKey().tonnesPerUnit();
+            }
         }
         return tonnes / Sector.TONNES_PER_VAN;
     }
 
-    /** What one of `t`'s lorries cost a month at `rate` (pure): a Sector.VAN_LIFE_MONTHS-th of its vans worn out, and the diesel its vans burn at the rate, each at what it costs here. */
+    /** What one of `t`'s vans cost a month at `rate` (pure): a Sector.VAN_LIFE_MONTHS-th of its vans worn out, and the diesel its vans burn at the rate, each at what it costs here. */
     public static double fleetRunning(BuildingsTemplate t, SpreadPlanner.Values v, double rate) {
         double vans = vansFor(t);
         if (!(vans > 0)) return 0;
         return v.in(Good.VANS, vans / Sector.VAN_LIFE_MONTHS) + v.in(Good.DIESEL, vans * rate * Sector.DIESEL_LITRES_A_VAN_MONTH);
     }
 
-    /** ...and buying them (pure): its vans at what a van costs here. */
+    /** ...and buying them (pure): its vans at what a van costs here. The only fleet in a works' capital: no truck is (FR2). */
     public static double fleetCapital(BuildingsTemplate t, SpreadPlanner.Values v) {
         double vans = vansFor(t);
         return vans > 0 ? v.in(Good.VANS, vans) : 0;
     }
 
-    /** One of `t` weighed by this sector at the city's values: its feed's share and price, and its lorries, with it. */
+    /**
+     * What the city legs of `t`'s bulk cost a month at `rate` (pure; FR2): `rate` times every bulk
+     * unit it uses at nameplate, in tonnes, at what a received tonne's leg costs (p.in()) plus every
+     * bulk unit it makes, in tonnes, at what a made tonne's leg costs on average (p.out(): only the
+     * share exported pays it). Its GOODS are its vans', and the fleet's own goods (vans, trucks) are
+     * no leg. 0 for no template or a rate that is not above zero.
+     */
+    public static double cityLegs(BuildingsTemplate t, double rate, Haulage.LegPrice p) {
+        if (t == null || p == null || !(rate > 0)) return 0;
+        double legs = 0;
+        for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+            Good g = e.getKey();
+            if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
+            legs += e.getValue() * g.tonnesPerUnit() * p.in(g);
+        }
+        for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+            Good g = e.getKey();
+            if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
+            legs += e.getValue() * g.tonnesPerUnit() * p.out(g);
+        }
+        return legs * rate;
+    }
+
+    /** What one more of `t` pays for its freight a month at `rate` (pure; FR2): its vans' wear and diesel, and its bulk's city legs at the quote. */
+    public static double freightRunning(BuildingsTemplate t, SpreadPlanner.Values v, double rate, Haulage.LegPrice p) {
+        return fleetRunning(t, v, rate) + cityLegs(t, rate, p);
+    }
+
+    /** One of `t` weighed by this sector at the city's values: its feed's share and price, and its freight, with it. */
     private SpreadPlanner.Candidate weigh(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city) {
         double share = feedShare(t);
         double rate = share == 1 ? city.rate() : city.rate() * share;
         return estimate(t, v, city, exchangeFactor(), tariff(), feedRefusal(t), share,
-                offMarketFeed(t, rate) + fleetRunning(t, v, rate), fleetCapital(t, v));
+                offMarketFeed(t, rate) + freightRunning(t, v, rate, legPrice()), fleetCapital(t, v));
     }
 
     /*
@@ -456,7 +506,7 @@ public abstract class ProcessingSector extends Sector {
     private double lastOneEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city) {
         double share = feedShareStanding(t);
         double rate = share == 1 ? city.rate() : city.rate() * share;
-        return lastEarns(t, v, city, exchangeFactor(), tariff(), share, offMarketFeed(t, rate) + fleetRunning(t, v, rate));
+        return lastEarns(t, v, city, exchangeFactor(), tariff(), share, offMarketFeed(t, rate) + freightRunning(t, v, rate, legPrice()));
     }
 
     /** Whether the plan weighs a building of its, and the idle book counts its kind (weighs()): one that makes something. */

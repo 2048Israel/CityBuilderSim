@@ -1307,8 +1307,11 @@ public class EarthTerrainCheck {
         check("the save: an Earth city saved before ice was a kind of ground (EarthSite.ICE_FORMAT) is refused in words saying so, one saved at it is not",
                 EarthSite.BEFORE_ICE_WORDS.equals(before.earthProblem()) && after.earthProblem() == null && GameVersion.SAVE_FORMAT >= EarthSite.ICE_FORMAT
                         && EarthSite.ICE_FORMAT > EarthSite.EARTH_FORMAT);
-        check("...and a generated city's save, its ground as it was, still loads: no Earth problem, and the floor below it",
-                generated.earthProblem() == null && !GameVersion.isNoLongerReadable(GameVersion.OLDEST_LOADABLE_FORMAT) && GameVersion.OLDEST_LOADABLE_FORMAT < EarthSite.ICE_FORMAT);
+        // Since 0.8.5 (FR2) the floor, 40, is past the ice format: an Earth save from before ice is refused by the floor as well.
+        check("...and a generated city's save at the floor, its ground as it was, still loads: no Earth problem; and an Earth save"
+                        + " before ice is refused, by its words below the floor or by the floor past it",
+                generated.earthProblem() == null && !GameVersion.isNoLongerReadable(GameVersion.OLDEST_LOADABLE_FORMAT)
+                        && (GameVersion.OLDEST_LOADABLE_FORMAT < EarthSite.ICE_FORMAT || GameVersion.isNoLongerReadable(EarthSite.ICE_FORMAT - 1)));
         long fixtureIce = 0, fixtureDesert = 0;
         for (Window w : windows.values()) { fixtureIce += w.classes[World.ICE]; fixtureDesert += w.classes[World.DESERT]; }
         out.printf("      the fixture's three windows: %,d plots of ice and %,d of desert%n", fixtureIce, fixtureDesert);

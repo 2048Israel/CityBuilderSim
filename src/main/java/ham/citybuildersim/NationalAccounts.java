@@ -222,11 +222,17 @@ public class NationalAccounts {
      * pulp, the paper mill's paper and the pellet mill's pellets, each in its
      * maker's yard (Wood Products). A save from before carries five slots
      * fewer and reads them as none, which is what that city held.
+     *
+     * ...AND SINCE FR2 (2026-10-18) TRUCKS, on the end: the Heavy Truck
+     * Plant's yard (Automotive) and, from the next slice, the trucks
+     * Freight's Haulage division keeps. A save from before carries one slot
+     * fewer and reads trucks as none, which is what that city held.
      */
     public static final Good[] HELD = { Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL,
             Good.LPG, Good.NAPHTHA, Good.JET, Good.LUBRICANTS, Good.FUEL_OIL, Good.BITUMEN, Good.COKE, Good.CRUDE,
             Good.MET_COKE, Good.THERMAL_COAL, Good.COKING_COAL, Good.CEMENT, Good.COPPER,
-            Good.LUMBER, Good.PANELS, Good.PULP, Good.PAPER, Good.WOOD_PELLETS };
+            Good.LUMBER, Good.PANELS, Good.PULP, Good.PAPER, Good.WOOD_PELLETS,
+            Good.TRUCKS };
 
     /** ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. */
     public static final int HELD_BEFORE_FUEL = 3;

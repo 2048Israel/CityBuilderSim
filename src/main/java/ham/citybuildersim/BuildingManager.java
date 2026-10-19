@@ -1491,7 +1491,7 @@ public class BuildingManager {
            profits", and "no at first, rail doesnt even build, everything is
            exported by truck, which is obviously more expensive and road
            demanding." So these are financed by the investor against a business
-           case like a steel mill, they are owned by sectors.Rail, and a city
+           case like a steel mill, they are owned by sectors.Freight, and a city
            that never builds one trades exactly as it always did.
 
            WHAT ONE IS WORTH, AT THE PLAYTEST'S OWN NUMBERS. The 4,000-month
@@ -1521,7 +1521,7 @@ public class BuildingManager {
          * charging the world's price to move it.
          */
         BuildingsTemplate railSpur = new BuildingsTemplate("Rail Spur", BuildingType.RAIL)
-                .setSector("Rail")
+                .setSector("Freight")
                 .setRailCapacity(50000)         // tonnes across the boundary a month
                 .setCashCost(140000)
                 .setConstructionPoints(21000)
@@ -1530,7 +1530,7 @@ public class BuildingManager {
                 .setWaterConsumption(30)
                 .setLandSqFt(700000)
                 // Mostly the drayage between the siding and the works, which is
-                // still a lorry - see Rail's header and BuildingsTemplate.loadOf.
+                // still a lorry - see Freight's header and BuildingsTemplate.loadOf.
                 .setRoadLoad(500)
                 .setJobs(JobType.NO_DIPLOMA, 120)
                 .setJobs(JobType.DIPLOMA, 45)
@@ -1545,7 +1545,7 @@ public class BuildingManager {
          * on.
          */
         BuildingsTemplate freightLine = new BuildingsTemplate("Freight Line", BuildingType.RAIL)
-                .setSector("Rail")
+                .setSector("Freight")
                 .setRailCapacity(200000)
                 .setCashCost(520000)
                 .setConstructionPoints(78000)
@@ -1568,7 +1568,7 @@ public class BuildingManager {
          * biggest single decision in the game.
          */
         BuildingsTemplate railTerminal = new BuildingsTemplate("Rail Terminal", BuildingType.RAIL)
-                .setSector("Rail")
+                .setSector("Freight")
                 .setRailCapacity(500000)
                 .setCashCost(1240000)
                 .setConstructionPoints(186000)
@@ -3448,6 +3448,66 @@ public class BuildingManager {
                 .setJobs(JobType.UNIV_SCIENCE, 1)
                 .setSince(1970)
                 .setId(138));
+
+        /* ----------------------- HAULAGE (FR2, 2026-10-18) -----------------------
+           The trucks that carry the city leg of every bulk tonne, and the plant
+           that makes them. Every figure and its source is in docs/queue/FR2.md,
+           section 2 (the spec's R# are its Sources list); (est.) below is a
+           figure derived or estimated, from what the line says.
+
+           THE TRUCK DEPOT (id 139, Freight's, the new category HAULAGE). Keeps
+           100 trucks (D6, est.), with a driver to each - 100 on the DIPLOMA tier,
+           a licence and a school, not a degree - and about 25 mechanics, three
+           of them the fleet's engineers (est.). D$12M and about 4 ha (430,000
+           sq ft, est.); a workshop and a wash bay's 150 kW and 10 units of
+           water (est.). Its construction points and materials are the
+           Commercial Vehicle Plant's .11 and .024 of its cash, the game's own
+           ratios. Its road load is its posts at the vehicle plants' ratio,
+           about .9 a post (290 for 330 posts): the trucks' own load is the bulk
+           stream's, as now.
+
+           THE HEAVY TRUCK PLANT (id 140, Automotive's). The spec gives no
+           figures: they are the Commercial Vehicle Plant's, scaled by the value
+           of what it makes - 6 trucks at D$215k is D$1.29M a month against 150
+           vans at D$68.1k, D$10.2M: 0.126 of the van plant (est.). Six a month
+           is 55-70% of a mature city's replacement trucks (400-500 trucks, 120
+           months' life, so 3.3-4.2 a month), as the Locomotive Works runs at
+           about half: a larger plant would never be built, and the world sells
+           trucks to a city without one. Its inputs are a truck's own weight in
+           parts: 10 t of fabricated steel, 2 t of machinery (engine, gearbox,
+           axles) and 40 L of lubricants, 15 t of tare in all (est.). */
+        templates.add(new BuildingsTemplate("Truck Depot", BuildingType.HAULAGE)   // where the city's trucks are kept
+                .setSector("Freight")
+                .setTruckRoom(100)
+                .setCashCost(12000)
+                .setConstructionPoints(1320)
+                .setConstructionMaterials(290)
+                .setElectricityConsumption(150)
+                .setWaterConsumption(10)
+                .setLandSqFt(430000)
+                .setRoadLoad(110)
+                .setJobs(JobType.DIPLOMA, 122)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 3)
+                .setId(139));
+        templates.add(new BuildingsTemplate("Heavy Truck Plant", BuildingType.AUTOMOTIVE)   // the Commercial Vehicle Plant's, 0.126 of it
+                .setSector("Automotive")
+                .makes(Good.TRUCKS, 6)
+                .uses(Good.FABRICATED_STEEL, 60)        // 10 t a truck
+                .uses(Good.MACHINERY, 12)               // 2 t a truck: engine, gearbox, axles
+                .uses(Good.LUBRICANTS, 6 * ham.citybuildersim.sectors.Automotive.LUBRICANT_LITRES_A_TRUCK)   // 40 L a truck
+                .setCashCost(16600)
+                .setConstructionPoints(1830)
+                .setConstructionMaterials(400)
+                .setElectricityConsumption(150)
+                .setWaterConsumption(11)
+                .setLandSqFt(120000)
+                .setRoadLoad(37)
+                .setStock(18)                            // three months
+                .setJobs(JobType.NO_DIPLOMA, 25)
+                .setJobs(JobType.DIPLOMA, 13)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 3)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setId(140));
 
         /* ---------------------------- EDUCATION ----------------------------
            The other half of the labour market.
@@ -6117,12 +6177,24 @@ public class BuildingManager {
        job type through postsOffered(), or the households would be paid for
        posts no employer pays for. A sector the hook says nothing about
        offers every post.
+
+       ...AND BY JOB TYPE SINCE FR2 (2026-10-18): Freight's Truck Depots offer
+       a driver's post for each truck they keep, not for each place in the
+       yard (sectors.Haulage.strikeDrivers()), and the drivers are one tier of
+       the sector's posts, so its share is a job type's. The builders' share
+       is every type's, as it was.
        --------------------------------------------------------------------- */
 
-    /** The share of a sector's posts it offers this month; null offers every post. */
-    private java.util.function.ToDoubleFunction<String> offeredShare;
+    /** The share of a sector's posts of a job type it offers this month; null offers every post. */
+    private java.util.function.ToDoubleBiFunction<String, JobType> offeredShare;
 
+    /** A share for every job type of a sector alike (the builders'). */
     public void setOfferedShare(java.util.function.ToDoubleFunction<String> offeredShare) {
+        this.offeredShare = offeredShare == null ? null : (sector, type) -> offeredShare.applyAsDouble(sector);
+    }
+
+    /** ...and one a job type at a time (FR2: Freight's drivers). */
+    public void setOfferedShareByType(java.util.function.ToDoubleBiFunction<String, JobType> offeredShare) {
         this.offeredShare = offeredShare;
     }
 
@@ -6132,18 +6204,18 @@ public class BuildingManager {
         return Math.round(posts * Math.max(0, share));
     }
 
-    /** A sector's share of its posts on offer: 1 without the hook. */
-    public double offeredShareOf(String sector) {
+    /** A sector's share of its posts of a job type on offer: 1 without the hook. */
+    public double offeredShareOf(String sector, JobType type) {
         if (offeredShare == null || sector == null) return 1;
-        double share = offeredShare.applyAsDouble(sector);
+        double share = offeredShare.applyAsDouble(sector, type);
         return share >= 0 ? Math.min(1, share) : 1;
     }
 
-    /** The posts a sector offers this month, per job type - its buildings' posts at its share. */
+    /** The posts a sector offers this month, per job type - its buildings' posts at its share of each. */
     public long[] getPostsOfferedBySector(String sector) {
         long[] posts = getJobArrayBySector(sector);
-        double share = offeredShareOf(sector);
-        for (int i = 0; i < posts.length; i++) posts[i] = postsOffered(posts[i], share);
+        JobType[] types = JobType.values();
+        for (int i = 0; i < posts.length; i++) posts[i] = postsOffered(posts[i], offeredShareOf(sector, types[i]));
         return posts;
     }
 
@@ -6436,7 +6508,7 @@ public class BuildingManager {
         }
         long withheld = 0;
         for (java.util.Map.Entry<String, Long> e : bySector.entrySet()) {
-            withheld += e.getValue() - postsOffered(e.getValue(), offeredShareOf(e.getKey()));
+            withheld += e.getValue() - postsOffered(e.getValue(), offeredShareOf(e.getKey(), type));
         }
         return withheld;
     }

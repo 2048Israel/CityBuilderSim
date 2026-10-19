@@ -1032,7 +1032,7 @@ final class MapView {
         double t = clock - m;
         Game g = ui.game;
         if (trainSchedule == null || trainMonth != m || trainRoutes != routes || trainGameMonth != g.getMonth()) {
-            trainSchedule = TrainSchedule.of(m, g.getSectors().rail(), routes);
+            trainSchedule = TrainSchedule.of(m, g.getSectors().freight(), routes);
             trainMonth = m;
             trainRoutes = routes;
             trainGameMonth = g.getMonth();

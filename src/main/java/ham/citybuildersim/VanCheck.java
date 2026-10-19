@@ -22,9 +22,12 @@ import ham.citybuildersim.sectors.HeavyIndustry;
  *      arithmetic, because have/need is 1 to within an ulp and not 1, and an
  *      ulp in an operating rate is a different city.
  *
- *   2. THE FLEET IS SIZED BY WHAT THE PLANT MOVES - everything it makes and
- *      everything it buys, by weight, at NAMEPLATE rather than at this month's
- *      rate, which would be a circle.
+ *   2. THE FLEET IS SIZED BY WHAT THE PLANT MOVES - the GOODS it makes and the
+ *      GOODS it buys, by weight, at NAMEPLATE rather than at this month's
+ *      rate, which would be a circle. Since FR2 (2026-10-18) the vans carry the
+ *      goods stream only: a bulk works keeps no vans, its tonnes go by
+ *      Freight's trucks (sectors.Haulage), and the fifth throttle is the lesser
+ *      of the vans' ratio and Haulage's (Sector.getFreightRatio()).
  *
  *   3. IT IS A STOCK. It wears out at VAN_LIFE_MONTHS whether or not anything
  *      can replace it, so a Commercial Vehicle Plant has a customer next year
@@ -91,14 +94,27 @@ public class VanCheck {
             game.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             game.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
             /*
-             * AND SOMETHING HEAVY, because a fleet is about tonnage and a town
-             * of shops barely has any: twenty convenience stores move two
-             * hundred and eighty-eight tonnes a month between them and want
-             * two and a half vehicles. A foundry buys scrap by the thousand
-             * tonnes and ships steel by the thousand, which is where lorries
-             * actually go.
+             * AND SOMETHING HEAVY, to be the one that keeps no vans (FR2,
+             * 2026-10-18). Until FR2 a foundry was where the lorries went: it
+             * buys scrap by the thousand tonnes and ships steel by the thousand,
+             * and a van was kept for every 120 t of it. Steel is BULK now, and
+             * its tonnes go by Freight's trucks, so the furnaces stand here to
+             * show a works with fifteen thousand tonnes a month and no fleet.
              */
             game.buildStack(b.getTemplate(HeavyIndustry.ARC_FURNACE), 6, true);
+            /*
+             * ...AND WHAT DOES NEED VANS, because a fleet is about GOODS
+             * tonnage and a town of shops barely has any: twenty convenience
+             * stores move a few hundred tonnes a month between them and
+             * want two or three vehicles. A department store's luxuries are
+             * goods and nothing else (no bulk leg, so Haulage's half of the
+             * fifth throttle is a literal one and the vans' is the whole of
+             * it): the bench for the fleet's arithmetic. A meat works makes
+             * goods and buys goods AND a little grain, which goes by truck:
+             * the sector with both sides of the door.
+             */
+            game.buildStack(b.getTemplateByName("Department Store"), 6, true);
+            game.buildStack(b.getTemplateByName("Meat Works"), 6, true);
             /*
              * ...AND THE MILLS ARE HELD (0.7.120, batch I3): at steel's world
              * price a furnace on imported scrap shipping its steel loses money
@@ -109,6 +125,9 @@ public class VanCheck {
              * about the planner.
              */
             game.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
+            // ...and the two stood up for their goods are held for the same reason: their tonnage is the subject.
+            game.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
+            game.getBusinessInvestment().holdSector(Sectors.FOOD_PROCESSING);
             for (int i = 0; i < 24; i++) game.toggleNextMonth();
         });
 
@@ -120,6 +139,9 @@ public class VanCheck {
 
         Sector shops = game.getSectors().retail();
         Sector services = game.getSectors().businessServices();
+        Sector luxury = game.getSectors().luxuryRetail();
+        Sector works = game.getSectors().foodProcessing();
+        Sector mills = game.getSectors().heavyIndustry();
 
         report("a sector that moves nothing needs no vehicles, and its ratio is one exactly",
                 same(services.tonnesMoved(), 0) && same(services.vansNeeded(), 0)
@@ -127,32 +149,77 @@ public class VanCheck {
                 String.format("%.0f tonnes, %.0f vans, ratio %s",
                         services.tonnesMoved(), services.vansNeeded(), services.getVanRatio()));
 
-        report("...and one that moves something needs vehicles in proportion",
+        report("...and one that moves goods needs vehicles in proportion",
                 shops.tonnesMoved() > 0
                         && same(shops.vansNeeded(), shops.tonnesMoved() / Sector.TONNES_PER_VAN),
                 String.format("%,.0f tonnes a month, %,.1f vehicles",
                         shops.tonnesMoved(), shops.vansNeeded()));
 
+        /*
+         * "...AND A SECTOR WITH VEHICLES ENOUGH MULTIPLIES ITS RATE BY ONE, to
+         * the bit" is asked of a sector whose whole freight is goods. A shop
+         * also buys grain (BULK), and since FR2 the fifth factor is the lesser
+         * of the vans' ratio and Haulage's, so a shop's rate carries Haulage's
+         * half whatever its vans are doing - this city has no truck depot, and
+         * a shop runs a share below one. A department store buys luxuries and
+         * nothing else, so it has no bulk leg and Haulage's half is a literal
+         * one; the fleet is set to exactly its need, the first fleet that is
+         * enough, where have/need is one to within an ulp and not one.
+         */
+        double luxuryNeed = luxury.vansNeeded();
+        double luxuryHad = luxury.vanFleet();
+        luxury.setPantry(Good.VANS, luxuryNeed);
         report("...and a sector with vehicles enough multiplies its rate by one, to the bit",
-                same(shops.getVanRatio(), 1)
-                        && same(shops.getOperatingRate(),
-                                shops.getAverageFill() * shops.getEnergyRatio() * shops.getWaterRatio()
-                                        * shops.getRoadRatio() * shops.getHealthRatio()),
-                String.format("fleet %,.1f against %,.1f needed", shops.vanFleet(), shops.vansNeeded()));
+                luxuryNeed > 0 && !luxury.hasBulkLegs() && same(luxury.getHaulageRatio(), 1)
+                        && same(luxury.getVanRatio(), 1) && same(luxury.getFreightRatio(), 1)
+                        && same(luxury.getOperatingRate(),
+                                luxury.getAverageFill() * luxury.getEnergyRatio() * luxury.getWaterRatio()
+                                        * luxury.getRoadRatio() * luxury.getHealthRatio()),
+                String.format("fleet %,.2f against %,.2f needed", luxury.vanFleet(), luxury.vansNeeded()));
+        luxury.setPantry(Good.VANS, luxuryHad);
 
         /*
-         * THE TONNAGE IS BOTH SIDES OF THE DOOR. A mill that buys a hundred
-         * tonnes of ore and ships eighty of steel runs a hundred and eighty
-         * tonnes of lorry movements, not eighty - and a fixture that only
-         * counted output would have sized every fleet at half.
+         * THE TONNAGE IS BOTH SIDES OF THE DOOR, but only the goods side. A
+         * meat works that buys nine tonnes of meat and vegetables and ships
+         * twelve and a half of ready meals and processed meat runs twenty-one
+         * and a half tonnes of van movements, not twelve and a half - and a
+         * fixture that only counted output would have sized every fleet short. The grain it also buys is BULK and goes by
+         * Freight's trucks: counted in the works' bulk, not in its vans.
          */
-        Sector mills = game.getSectors().heavyIndustry();
-        double out = 0, in = 0;
-        for (Good g : mills.goodsMade()) out += mills.getCapacity(g) * g.tonnesPerUnit();
-        for (Good g : mills.goodsUsed()) if (g != Good.VANS) in += mills.getInputAtCapacity(g) * g.tonnesPerUnit();
-        report("what goes in is a lorry movement as much as what comes out",
-                same(mills.tonnesMoved(), out + in),
-                String.format("%,.0f out + %,.0f in", out, in));
+        double out = 0, in = 0, bulk = 0;
+        for (Good g : works.goodsMade()) {
+            double t = works.getCapacity(g) * g.tonnesPerUnit();
+            if (g.traffic() == Traffic.GOODS) out += t; else bulk += t;
+        }
+        for (Good g : works.goodsUsed()) {
+            if (g == Good.VANS || g == Good.TRUCKS) continue;
+            double t = works.getInputAtCapacity(g) * g.tonnesPerUnit();
+            if (g.traffic() == Traffic.GOODS) in += t; else bulk += t;
+        }
+        report("what goes in is a van movement as much as what comes out, and its bulk is neither",
+                out > 0 && in > 0 && bulk > 0
+                        && Math.abs(works.tonnesMoved() - (out + in)) <= 1e-9 * (out + in),
+                String.format("%,.1f out + %,.1f in, and %,.1f t of bulk it leaves to the trucks", out, in, bulk));
+
+        /*
+         * AND THE WORKS THAT HAD THE VANS BEFORE FR2 HAS NONE. Six arc
+         * furnaces stand in this city, fifteen thousand tonnes a month of scrap
+         * and steel, and every tonne of it is BULK: it keeps no vans, because
+         * its tonnes go by Freight's trucks. The premise is caused (the bulk
+         * is counted from the works' capacities) and not assumed.
+         */
+        double bulkTonnes = 0;
+        for (Good g : mills.goodsMade()) if (g.traffic() == Traffic.BULK) bulkTonnes += mills.getCapacity(g) * g.tonnesPerUnit();
+        for (Good g : mills.goodsUsed()) {
+            if (g == Good.VANS || g == Good.TRUCKS) continue;
+            if (g.traffic() == Traffic.BULK) bulkTonnes += mills.getInputAtCapacity(g) * g.tonnesPerUnit();
+        }
+        report("a bulk works keeps no vans: its tonnes go by Freight's trucks",
+                bulkTonnes > 0 && mills.hasBulkLegs()
+                        && same(mills.tonnesMoved(), 0) && same(mills.vansNeeded(), 0)
+                        && same(mills.getVanRatio(), 1),
+                String.format("%,.0f t of bulk a month, %.0f counted for vans, %.0f vans", bulkTonnes,
+                        mills.tonnesMoved(), mills.vansNeeded()));
 
         /* ================================================================
            2. THE FLOOR AND THE CEILING OF THE RATIO
@@ -160,7 +227,8 @@ public class VanCheck {
 
         System.out.println("\n--- and what being short of them does ---");
 
-        Sector bench = game.getSectors().heavyIndustry();
+        // The bench for the fleet's arithmetic: goods and nothing else, so the vans are the whole of its freight.
+        Sector bench = luxury;
         double need = bench.vansNeeded();
         double had = bench.vanFleet();
 
@@ -169,6 +237,13 @@ public class VanCheck {
             report("a sector with no lorries at all is slowed to the floor, not stopped",
                     same(bench.getVanRatio(), Sector.MIN_VAN_RATE),
                     String.format("%.0f%% of nameplate", bench.getVanRatio() * 100));
+
+            report("...and it is the vans that bind, so the sector's rate is cut by the floor and no more",
+                    !bench.hasBulkLegs() && same(bench.getFreightRatio(), Sector.MIN_VAN_RATE)
+                            && same(bench.getOperatingRate(),
+                                    bench.getAverageFill() * bench.getEnergyRatio() * bench.getWaterRatio()
+                                            * bench.getRoadRatio() * bench.getHealthRatio() * Sector.MIN_VAN_RATE),
+                    String.format("rate %.1f%%", bench.getOperatingRate() * 100));
 
             bench.setPantry(Good.VANS, need / 2);
             report("...and half a fleet is half way up from the floor",
@@ -180,7 +255,7 @@ public class VanCheck {
             report("...and a sector with more than it needs gets no bonus for them",
                     same(bench.getVanRatio(), 1), String.valueOf(bench.getVanRatio()));
         } else {
-            report("fixture: the mills move something, or this proves nothing", false, "no tonnage");
+            report("fixture: the department stores move goods, or this proves nothing", false, "no tonnage");
         }
         bench.setPantry(Good.VANS, had);
 
@@ -211,12 +286,19 @@ public class VanCheck {
 
         System.out.println("\n--- and a fleet is a stock, not a flow ---");
 
-        bench.setPantry(Good.VANS, 1200);
+        /*
+         * TEN TIMES WHAT THE BENCH NEEDS, so the tail the wear leaves is a
+         * fixed share of the need whatever the bench is: a fleet of twelve
+         * hundred would outlast a department store's few vans for ever and
+         * prove nothing about the floor.
+         */
+        double stock = need * 10;
+        bench.setPantry(Good.VANS, stock);
         double before = bench.vanFleet();
         bench.runFleet();
         report("a fleet wears out at one part in VAN_LIFE_MONTHS a month",
-                Math.abs((before - bench.vanFleet()) - 1200 / Sector.VAN_LIFE_MONTHS) < 1e-9,
-                String.format("%.2f of 1,200 scrapped", before - bench.vanFleet()));
+                stock > 0 && Math.abs((before - bench.vanFleet()) - stock / Sector.VAN_LIFE_MONTHS) < 1e-9,
+                String.format("%.3f of %,.2f scrapped", before - bench.vanFleet(), stock));
 
         /*
          * AND A SECTOR THAT CANNOT REPLACE THEM LOSES THEM. Ten years of wear
@@ -224,14 +306,14 @@ public class VanCheck {
          */
         for (int i = 0; i < 600; i++) bench.runFleet();
         report("...and ten years of it with nothing bought is a fleet gone",
-                bench.vanFleet() < 1200 * .01,
-                String.format("%,.2f left of 1,200", bench.vanFleet()));
+                bench.vanFleet() < stock * .01,
+                String.format("%,.3f left of %,.2f", bench.vanFleet(), stock));
         /*
          * NEAR the floor and not ON it: wear is exponential, so six hundred
-         * months leaves a tail of about eight vehicles out of twelve hundred
-         * and the ratio sits a couple of points above MIN_VAN_RATE. A harness
-         * that demanded the last lorry would be asserting on the exponential
-         * rather than on the rule.
+         * months leaves a tail of two thirds of one percent of the stock, which
+         * is a fifteenth of the need, and the ratio sits a couple of points
+         * above MIN_VAN_RATE. A harness that demanded the last lorry would be
+         * asserting on the exponential rather than on the rule.
          */
         report("...which leaves the sector down at its floor",
                 bench.getVanRatio() < Sector.MIN_VAN_RATE + .05
@@ -247,24 +329,31 @@ public class VanCheck {
         System.out.println("\n--- and every city that exists already owns a fleet ---");
 
         /*
-         * The one that matters most. A city saved yesterday has mills and no
+         * The one that matters most. A city saved yesterday has stores and no
          * lorries - not because it scrapped them but because the game had none
-         * - and a ratio of zero would stop every factory in it dead on the
-         * first tick after a load. It WAS moving steel, so it HAD lorries.
+         * - and a ratio of zero would stop every business in it dead on the
+         * first tick after a load. It WAS moving goods, so it HAD lorries.
          */
-        SectorState old = mills.toState();
+        SectorState old = bench.toState();
         old.vansKnown = false;
         old.pantry.remove(Good.VANS.name());
         Game reloaded = new Game(files);
-        quietly(reloaded::run);
-        Sector fresh = reloaded.getSectors().heavyIndustry();
+        quietly(() -> {
+            reloaded.run();
+            // The stores the save carries, standing again: a sector with nothing to move would run at one either way.
+            reloaded.setCashForTest(Founding.WEALTHY_CASH);
+            reloaded.getLandManager().setOwnedSqFt(400_000_000L);
+            reloaded.buildStack(reloaded.getBuildingManager().getTemplateByName("Department Store"), 6, true);
+        });
+        Sector fresh = reloaded.getSectors().luxuryRetail();
         fresh.restore(old);
         report("a save from before vans reads as a sector that has never been asked",
                 !fresh.isFleetKnown() && same(fresh.vanFleet(), 0), "");
         report("...and is not stopped by it, because an unasked sector runs at one",
-                same(fresh.getVanRatio(), 1), String.valueOf(fresh.getVanRatio()));
+                fresh.vansNeeded() > 0 && same(fresh.getVanRatio(), 1),
+                String.format("%s against a need of %,.2f", fresh.getVanRatio(), fresh.vansNeeded()));
 
-        SectorState carried = mills.toState();
+        SectorState carried = bench.toState();
         report("...while a save from this build carries the fleet it had",
                 carried.vansKnown
                         && Math.abs(carried.pantry.getOrDefault(Good.VANS.name(), 0.0) - had) < 1e-9,
@@ -323,7 +412,7 @@ public class VanCheck {
                 String.format("%.0f loads x %.0f km x %.0f L/100 km", Sector.LOADS_A_VAN_MONTH, Sector.KM_A_LOAD,
                         Sector.DIESEL_LITRES_PER_100_KM));
 
-        // The mills' month of driving, drawn by hand on the running city: no refinery, so every litre is the world's.
+        // The department stores' month of driving, drawn by hand on the running city: no refinery, so every litre is the world's.
         Sector.Split dieselBefore = new Sector.Split();
         Sector.Split was = bench.pending().boughtOf(Good.DIESEL);
         dieselBefore.atHome = was.atHome;

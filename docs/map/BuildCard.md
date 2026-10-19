@@ -1,6 +1,6 @@
-# BuildCard.java - 1,725 lines · 85 methods · 14 constants · model
+# BuildCard.java - 1,734 lines · 85 methods · 14 constants · model
 
-`ham/citybuildersim/BuildCard.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildCard.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > One build card's figures, for every one of the buildings in buildings.json
 > (0.7.25; 139 of them since 0.7.140): what
@@ -41,15 +41,15 @@
 | 41 | WHAT KIND OF CARD |
 | 129 | THE CITY'S WORDS (0.7.24, moved here from the screen in 0.7.25) |
 | 216 | THE MARKET'S GROUPS |
-| 352 | VALUE ADDED |
-| 445 | ONE CARD |
-| 701 | A GROUP OF CARDS, SCALED AND TAGGED |
-| 857 | THE INVESTORS' LINE (market cards) |
-| 1074 | EVERY GATE (0.7.75, the sector statements' R4) |
-| 1190 | THE MATERIALS' CARDS (0.7.142, batch I13; docs/studies/spec-materials.md |
-| 1554 | THE WORD'S KIND (0.7.30) |
-| 1646 | ONE SECTOR'S INVESTORS (0.7.30) |
-| 1700 | THE VERDICT ON AN ORDER |
+| 356 | VALUE ADDED |
+| 449 | ONE CARD |
+| 709 | A GROUP OF CARDS, SCALED AND TAGGED |
+| 865 | THE INVESTORS' LINE (market cards) |
+| 1082 | EVERY GATE (0.7.75, the sector statements' R4) |
+| 1198 | THE MATERIALS' CARDS (0.7.142, batch I13; docs/studies/spec-materials.md |
+| 1563 | THE WORD'S KIND (0.7.30) |
+| 1655 | ONE SECTOR'S INVESTORS (0.7.30) |
+| 1709 | THE VERDICT ON AN ORDER |
 
 ## Enum constants
 
@@ -69,45 +69,46 @@
 | 68 | `BuildCard.Kind.BERTHS` |  |
 | 68 | `BuildCard.Kind.SLOTS` |  |
 | 68 | `BuildCard.Kind.PIPE` |  |
+| 68 | `BuildCard.Kind.DEPOT` |  |
 | 76 | `BuildCard.Bar2.LAND` |  |
 | 76 | `BuildCard.Bar2.UNFILLED` |  |
 | 76 | `BuildCard.Bar2.UNSTAFFABLE` |  |
 | 76 | `BuildCard.Bar2.NONE` |  |
-| 727 | `BuildCard.NoteKind.DOORS` |  |
-| 727 | `BuildCard.NoteKind.SHOPS` |  |
-| 727 | `BuildCard.NoteKind.MADE` |  |
-| 727 | `BuildCard.NoteKind.RAIL` |  |
-| 727 | `BuildCard.NoteKind.LUXURY` |  |
-| 727 | `BuildCard.NoteKind.MEALS` |  |
-| 727 | `BuildCard.NoteKind.PUMP` |  |
-| 727 | `BuildCard.NoteKind.NONE` |  |
-| 897 | `BuildCard.GateKind.DEPOSIT` |  |
-| 897 | `BuildCard.GateKind.LICENCE` |  |
-| 897 | `BuildCard.GateKind.STAFFING` |  |
-| 897 | `BuildCard.GateKind.LAND` |  |
-| 897 | `BuildCard.GateKind.LOSS` |  |
-| 897 | `BuildCard.GateKind.INTEREST` |  |
-| 1094 | `BuildCard.Mark.PASS` |  |
-| 1094 | `BuildCard.Mark.FAIL` |  |
-| 1094 | `BuildCard.Mark.NONE` |  |
-| 1586 | `BuildCard.WordKind.BUILDING` |  |
-| 1586 | `BuildCard.WordKind.SELLING` |  |
-| 1586 | `BuildCard.WordKind.LAND` |  |
-| 1586 | `BuildCard.WordKind.STAFF` |  |
-| 1586 | `BuildCard.WordKind.LICENCE` |  |
-| 1586 | `BuildCard.WordKind.ORE` |  |
-| 1586 | `BuildCard.WordKind.SUPPLY` |  |
-| 1586 | `BuildCard.WordKind.CREDIT` |  |
-| 1586 | `BuildCard.WordKind.MONEY` |  |
-| 1586 | `BuildCard.WordKind.ENOUGH` |  |
-| 1586 | `BuildCard.WordKind.NONE` |  |
-| 1586 | `BuildCard.WordKind.OTHER` |  |
-| 1709 | `BuildCard.VerdictKind.NO_DEPOSIT` |  |
-| 1709 | `BuildCard.VerdictKind.NO_LICENCE` |  |
-| 1709 | `BuildCard.VerdictKind.NO_LAND` |  |
-| 1709 | `BuildCard.VerdictKind.BILL` |  |
-| 1709 | `BuildCard.VerdictKind.MONTHS` |  |
-| 1709 | `BuildCard.VerdictKind.NO_COAST` |  |
+| 735 | `BuildCard.NoteKind.DOORS` |  |
+| 735 | `BuildCard.NoteKind.SHOPS` |  |
+| 735 | `BuildCard.NoteKind.MADE` |  |
+| 735 | `BuildCard.NoteKind.RAIL` |  |
+| 735 | `BuildCard.NoteKind.LUXURY` |  |
+| 735 | `BuildCard.NoteKind.MEALS` |  |
+| 735 | `BuildCard.NoteKind.PUMP` |  |
+| 735 | `BuildCard.NoteKind.NONE` |  |
+| 905 | `BuildCard.GateKind.DEPOSIT` |  |
+| 905 | `BuildCard.GateKind.LICENCE` |  |
+| 905 | `BuildCard.GateKind.STAFFING` |  |
+| 905 | `BuildCard.GateKind.LAND` |  |
+| 905 | `BuildCard.GateKind.LOSS` |  |
+| 905 | `BuildCard.GateKind.INTEREST` |  |
+| 1102 | `BuildCard.Mark.PASS` |  |
+| 1102 | `BuildCard.Mark.FAIL` |  |
+| 1102 | `BuildCard.Mark.NONE` |  |
+| 1595 | `BuildCard.WordKind.BUILDING` |  |
+| 1595 | `BuildCard.WordKind.SELLING` |  |
+| 1595 | `BuildCard.WordKind.LAND` |  |
+| 1595 | `BuildCard.WordKind.STAFF` |  |
+| 1595 | `BuildCard.WordKind.LICENCE` |  |
+| 1595 | `BuildCard.WordKind.ORE` |  |
+| 1595 | `BuildCard.WordKind.SUPPLY` |  |
+| 1595 | `BuildCard.WordKind.CREDIT` |  |
+| 1595 | `BuildCard.WordKind.MONEY` |  |
+| 1595 | `BuildCard.WordKind.ENOUGH` |  |
+| 1595 | `BuildCard.WordKind.NONE` |  |
+| 1595 | `BuildCard.WordKind.OTHER` |  |
+| 1718 | `BuildCard.VerdictKind.NO_DEPOSIT` |  |
+| 1718 | `BuildCard.VerdictKind.NO_LICENCE` |  |
+| 1718 | `BuildCard.VerdictKind.NO_LAND` |  |
+| 1718 | `BuildCard.VerdictKind.BILL` |  |
+| 1718 | `BuildCard.VerdictKind.MONTHS` |  |
+| 1718 | `BuildCard.VerdictKind.NO_COAST` |  |
 
 ## Constants
 
@@ -115,24 +116,24 @@
 |---:|---|---|---|
 | 148 | `BuildCard.KILOWATTS` | `" kW"` | The words after a power plant's figure (0.7.28): kilowatts, the model's unit and a rate - "units a month" until then, which was neither. |
 | 242 | `BuildCard.GROUP_ORDER` | `{ "Homes", "Groceries", "Filling stations", "The bank's branches", "Food mill...` | The market groups, in the order a page lays them out. |
-| 450 | `BuildCard.ROAD_PER` | `"trip over " + BuildAdvice.LIFE_MONTHS / 12 + " years, with its land"` | What a road card's first bar is per (0.7.70): a trip it takes off the road, over its life, its ground in it - BuildAdvice.lifetime() over BuildAdvice.unit(); the bar's (i) says the rest. |
-| 915 | `BuildCard.DRY_OIL` | `"dry oil"` | A DEPOSIT gate's word for a land Oil Well (0.7.103): its count is of dry sites (Game.sitesFor()). |
-| 918 | `BuildCard.NO_FEED` | `"no feed: no crude unit stands to run its stream"` | What a conversion unit's card says in place of a loss with no crude unit standing to feed it (0.7.103). |
-| 1297 | `BuildCard.NOTHING_TO_WASH` | `"no raw coal goes unwashed"` | What a washing plant's feed gate says while its sector's coking mines make no raw coal its plants do not wash (CoalMining.unwashed()). |
-| 1589 | `BuildCard.LAND_WORDS` | `{ "no land", "short of homes" }` | The phrases each kind is read by, in lower case; a word starting "Could not build" is LAND as well, and one starting "Declined" is MONEY unless CREDIT took it. |
-| 1591 | `BuildCard.STAFF_WORDS` | `{ "could staff" }` | ...STAFF's. |
-| 1593 | `BuildCard.LICENCE_WORDS` | `{ "licence", "licences" }` | ...LICENCE's: whole words, so the plural as well. |
-| 1595 | `BuildCard.ORE_WORDS` | `{ "deposit", "ore", "forest", "field", "fields", "worked out" }` | ...ORE's: the ground has none - and since 0.7.138 Forestry's, the forest it may cut (none, or too little for E); since 0.7.142 a field of its type and a resource worked out, named as itself ("no coking coal left in th... |
-| 1597 | `BuildCard.SUPPLY_WORDS` | `{ "fabricates", "will not sell" }` | ...SUPPLY's. |
-| 1599 | `BuildCard.CREDIT_WORDS` | `{ "borrowing ban", "bank", "default point", "down payment", "lender", "mortga...` | ...CREDIT's. |
-| 1601 | `BuildCard.MONEY_WORDS` | `{ "below cost", "no margin", "worth sinking", "worth building", "cost more th...` | ...MONEY's. |
-| 1605 | `BuildCard.ENOUGH_WORDS` | `{ "ahead of", "already", "covers all", "months of work queued", "months of wo...` | ...ENOUGH's. |
+| 454 | `BuildCard.ROAD_PER` | `"trip over " + BuildAdvice.LIFE_MONTHS / 12 + " years, with its land"` | What a road card's first bar is per (0.7.70): a trip it takes off the road, over its life, its ground in it - BuildAdvice.lifetime() over BuildAdvice.unit(); the bar's (i) says the rest. |
+| 923 | `BuildCard.DRY_OIL` | `"dry oil"` | A DEPOSIT gate's word for a land Oil Well (0.7.103): its count is of dry sites (Game.sitesFor()). |
+| 926 | `BuildCard.NO_FEED` | `"no feed: no crude unit stands to run its stream"` | What a conversion unit's card says in place of a loss with no crude unit standing to feed it (0.7.103). |
+| 1306 | `BuildCard.NOTHING_TO_WASH` | `"no raw coal goes unwashed"` | What a washing plant's feed gate says while its sector's coking mines make no raw coal its plants do not wash (CoalMining.unwashed()). |
+| 1598 | `BuildCard.LAND_WORDS` | `{ "no land", "short of homes" }` | The phrases each kind is read by, in lower case; a word starting "Could not build" is LAND as well, and one starting "Declined" is MONEY unless CREDIT took it. |
+| 1600 | `BuildCard.STAFF_WORDS` | `{ "could staff" }` | ...STAFF's. |
+| 1602 | `BuildCard.LICENCE_WORDS` | `{ "licence", "licences" }` | ...LICENCE's: whole words, so the plural as well. |
+| 1604 | `BuildCard.ORE_WORDS` | `{ "deposit", "ore", "forest", "field", "fields", "worked out" }` | ...ORE's: the ground has none - and since 0.7.138 Forestry's, the forest it may cut (none, or too little for E); since 0.7.142 a field of its type and a resource worked out, named as itself ("no coking coal left in th... |
+| 1606 | `BuildCard.SUPPLY_WORDS` | `{ "fabricates", "will not sell" }` | ...SUPPLY's. |
+| 1608 | `BuildCard.CREDIT_WORDS` | `{ "borrowing ban", "bank", "default point", "down payment", "lender", "mortga...` | ...CREDIT's. |
+| 1610 | `BuildCard.MONEY_WORDS` | `{ "below cost", "no margin", "worth sinking", "worth building", "cost more th...` | ...MONEY's. |
+| 1614 | `BuildCard.ENOUGH_WORDS` | `{ "ahead of", "already", "covers all", "months of work queued", "months of wo...` | ...ENOUGH's. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 1689 | **type** `public final class BuildCard` | One build card's figures, for every one of the buildings in buildings.json (0.7.25; 139 of them since 0.7.140): what it gives the city and in what unit, its price per unit of that, the scarce resource it takes, the gr... |
+| 37 | 1698 | **type** `public final class BuildCard` | One build card's figures, for every one of the buildings in buildings.json (0.7.25; 139 of them since 0.7.140): what it gives the city and in what unit, its price per unit of that, the scarce resource it takes, the gr... |
 | 39 | 1 | `private BuildCard()` |  |
 
 ### WHAT KIND OF CARD (lines 41-128)
@@ -156,150 +157,150 @@
 | 203 | 4 | `public static double served(Game game, BuildAdvice.Measure m, BuildingsTemplate t)` | What one serves at today's staffing, in the measure's own unit (BuildAdvice.unit()); for road capacity the road's own capacity, since BuildAdvice.unit() is the advice's trips relieved. |
 | 209 | 6 | `public static BuildAdvice.Measure cityMeasure(BuildingsTemplate t)` | The first ring of its category a city building serves - its group on a page that has none picked. |
 
-### THE MARKET'S GROUPS (lines 216-351)
+### THE MARKET'S GROUPS (lines 216-355)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 255 | 43 | `public static String group(BuildingsTemplate t)` | The heading a building is compared under: a market building's group by its owning sector, or, for a city building, the first ring of its category it serves. |
-| 305 | 6 | `public static String groupOf(Game game, Sector sector)` | The group a sector's own buildings are compared under on Build (0.7.30): its first own building's - "Food mills" for the sector called Industry, which bakes. |
-| 313 | 3 | `public static boolean citys(BuildingsTemplate t)` | A building only the city builds and nobody's investors weigh: a city category's, and the city's Strategic Reserve (0.7.85) and sea terminals (0.7.86) on a market page. |
-| 318 | 8 | `public static String categoryOf(Game game, Sector sector)` | ...and the Build category that group is on: "Industry"; null with none. |
-| 328 | 4 | `public static int groupRank(String group)` | Where a market group sits in Build's order (GROUP_ORDER); after them all for one not in it. |
-| 334 | 17 | `public static Kind kindOf(BuildingsTemplate t)` | What a building is measured in (see Kind). |
+| 255 | 45 | `public static String group(BuildingsTemplate t)` | The heading a building is compared under: a market building's group by its owning sector, or, for a city building, the first ring of its category it serves. |
+| 307 | 6 | `public static String groupOf(Game game, Sector sector)` | The group a sector's own buildings are compared under on Build (0.7.30): its first own building's - "Food mills" for the sector called Industry, which bakes. |
+| 315 | 3 | `public static boolean citys(BuildingsTemplate t)` | A building only the city builds and nobody's investors weigh: a city category's, and the city's Strategic Reserve (0.7.85) and sea terminals (0.7.86) on a market page. |
+| 320 | 8 | `public static String categoryOf(Game game, Sector sector)` | ...and the Build category that group is on: "Industry"; null with none. |
+| 330 | 4 | `public static int groupRank(String group)` | Where a market group sits in Build's order (GROUP_ORDER); after them all for one not in it. |
+| 336 | 19 | `public static Kind kindOf(BuildingsTemplate t)` | What a building is measured in (see Kind). |
 
-### VALUE ADDED (lines 352-444)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 373 | 5 | `public static double priceOf(Game game, Good g)` | The price a good is valued at for value added, or NaN for one with no market price. |
-| 388 | 24 | `public static double valueAdded(Game game, BuildingsTemplate t)` | What one makes less what it uses a month, at today's prices - what it makes being a crude unit's slate since 0.7.76 (sectors.Refining.madeBy()), its template naming only the crude. |
-| 414 | 3 | `public static String feedWords(BuildingsTemplate t)` | A conversion unit's feed in words, after its figure (0.7.80): " litres of heavy naphtha a month". |
-| 424 | 7 | `public static String goodWords(Good g)` | A good after its count: " t of steel", " kg of bread", " units of building materials", " seat-months of support work" - and for a good counted in itself, " cars", " vans and trucks", " wagon sets of rolling stock". |
-| 433 | 5 | `static String makerVerb(BuildingsTemplate t)` | The verb a maker's hero opens on: a farm grows, a mine lifts, the rest make. |
-| 440 | 4 | `static Good firstGood(BuildingsTemplate t)` | The good a maker's or an office's hero names: the first it makes. |
-
-### ONE CARD (lines 445-700)
+### VALUE ADDED (lines 356-448)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 462 | 2 | **type** `public record Paving(int paveable, int paving, Game.BuildQuote one, double unit, double frees, double perTr...` | PAVING, ON THE GRAVEL ROAD'S CARD (0.7.70; ConstructionControl, F): the gravel roads the city could pave and those being paved, the quote for one (Game.quotePave()), the trips one paving takes off the road (BuildAdvic... |
-| 465 | 14 | `public static Paving paving(Game game, BuildingsTemplate t)` |  |
-| 481 | 10 | `public static double runningCost(Game game, BuildingsTemplate t)` | What one costs to keep a month, which is not what it costs to buy: its upkeep and its posts at today's wages (PopulationManager.getWagesPerType()). |
-| 493 | 4 | `public static Sector ownerOf(Game game, BuildingsTemplate t)` | The sector whose money and staffing test a market building is judged by: its owner, or retail for the bank's branch (planBank() asks retail). |
-| 502 | 198 | `public static Figures of(Game game, BuildingsTemplate t, BuildAdvice.Measure m)` | One card's figures. |
+| 377 | 5 | `public static double priceOf(Game game, Good g)` | The price a good is valued at for value added, or NaN for one with no market price. |
+| 392 | 24 | `public static double valueAdded(Game game, BuildingsTemplate t)` | What one makes less what it uses a month, at today's prices - what it makes being a crude unit's slate since 0.7.76 (sectors.Refining.madeBy()), its template naming only the crude. |
+| 418 | 3 | `public static String feedWords(BuildingsTemplate t)` | A conversion unit's feed in words, after its figure (0.7.80): " litres of heavy naphtha a month". |
+| 428 | 7 | `public static String goodWords(Good g)` | A good after its count: " t of steel", " kg of bread", " units of building materials", " seat-months of support work" - and for a good counted in itself, " cars", " vans and trucks", " wagon sets of rolling stock". |
+| 437 | 5 | `static String makerVerb(BuildingsTemplate t)` | The verb a maker's hero opens on: a farm grows, a mine lifts, the rest make. |
+| 444 | 4 | `static Good firstGood(BuildingsTemplate t)` | The good a maker's or an office's hero names: the first it makes. |
 
-### A GROUP OF CARDS, SCALED AND TAGGED (lines 701-856)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 727 | 1 | **type** `public enum NoteKind` | A note under a group's heading, by kind: DOORS {studios' households without a door, families'} (RealEstate.doorShortfall(); a negative is doors to spare); SHOPS {the shops' coverage a month, the people}; MADE {the cit... |
-| 729 | 1 | **type** `public record Note(NoteKind kind, double a, double b, Good good)` |  |
-| 732 | 38 | **type** `public record Group(String title, List<Figures> cards, Note note)` | One group: its heading, its cards in catalogue order, and its note. |
-| 735 | 1 | `public boolean track()` _(in BuildCard.Group)_ | More than one card, so the bars have something to compare and draw a track. |
-| 737 | 1 | `public double most1()` _(in BuildCard.Group)_ |  |
-| 738 | 1 | `public double least1()` _(in BuildCard.Group)_ |  |
-| 739 | 1 | `public double most2()` _(in BuildCard.Group)_ |  |
-| 740 | 1 | `public double least2()` _(in BuildCard.Group)_ |  |
-| 742 | 9 | `private double extreme(boolean first, boolean most)` _(in BuildCard.Group)_ |  |
-| 753 | 1 | `public double share1(Figures f)` _(in BuildCard.Group)_ | How much of the track a card's first bar fills: its figure over the group's largest; full for an infinite one, none for one with none. |
-| 754 | 1 | `public double share2(Figures f)` _(in BuildCard.Group)_ |  |
-| 756 | 5 | `private static double share(double v, double most)` _(in BuildCard.Group)_ |  |
-| 763 | 1 | `public boolean best1(Figures f)` _(in BuildCard.Group)_ | The tag on bar 1: the strict best of two or more. |
-| 764 | 1 | `public boolean best2(Figures f)` _(in BuildCard.Group)_ |  |
-| 766 | 3 | `private boolean best(double v, double least, double most)` _(in BuildCard.Group)_ |  |
-| 776 | 21 | `public static List<Group> groups(Game game, String category, BuildAdvice.Measure m)` | A page's groups. |
-| 799 | 36 | `static Note note(Game game, List<Figures> cards)` | The note under a market group's heading (see NoteKind). |
-| 844 | 7 | `public static Note noteOf(Game game, Sector sector)` | The note of the group a sector's own buildings are compared under on Build (0.7.30): the Sectors screen's flow reads a seller-priced good's capacity off it - the shops' coverage, the counters', the kitchens' seats, th... |
-| 853 | 3 | `static double counted(Game game, Sector sector, double flow)` | A month's flow the save does not carry, or NaN while no month has run since the load (Game.hasMonthRun(); until 0.7.102, while the sector had no word for the month - the word is saved since). |
-
-### THE INVESTORS' LINE (market cards) (lines 857-1073)
+### ONE CARD (lines 449-708)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 890 | 5 | `public static String slot(BuildingsTemplate t)` | Where Game files a building's word: the branch under "Bank" (Game.consider()'s label), every other under its sector. |
-| 897 | 1 | **type** `public enum GateKind` | The first gate a building fails for investors now: the last, INTEREST, is consider()'s brake on its whole cost (0.7.122). |
-| 900 | 3 | `public static String depositWord(Resource r)` | The resource a deposit refusal names (0.7.62): "iron" for an Iron Mine (and for none), "oil" for an Oil Well. |
-| 921 | 3 | `public static String siteCountWord(BuildingsTemplate t)` | The word a building's site count carries (0.7.103): " dry" for a land Oil Well, whose count is the dry sites alone; "" for any other. |
-| 926 | 3 | `static String depositWordFor(BuildingsTemplate t, Resource r)` | A DEPOSIT gate's word: depositWord(), or DRY_OIL for a land Oil Well (0.7.103). |
-| 931 | 5 | `public static boolean unfed(Game game, BuildingsTemplate t)` | Whether a building is a refinery's conversion unit with no crude unit standing to feed it (0.7.103): its estimate is a loss only for want of a stream. |
-| 944 | 5 | `static Gate landGate(LandManager ground, BuildingsTemplate t, double free)` | The LAND gate (0.7.109, batch Z2): the ground one needs against the ground its sector may build on (LandManager.freeFor(): free for anyone, and its zone's), and in `why` what the other sectors' zones hold (BusinessInv... |
-| 951 | 3 | `static Gate lossGate(Game game, BuildingsTemplate t, double estimate)` | The LOSS gate: what it would lose, worded NO_FEED for a conversion unit nothing feeds (0.7.103). |
-| 956 | 3 | `static boolean asksInterest(Game game, BuildingsTemplate t, Sector owner)` | Whether investors ask a building the INTEREST gate (0.7.122): every order but a landlord's home, which the mortgage lender's test decides. |
-| 971 | 6 | `static Gate interestGate(Game game, BuildingsTemplate t, Sector owner, double estimate)` | The INTEREST gate (0.7.122, batch C1): consider()'s test of an order of one, asked through the model's door - Game.interestTest(), whose answer is carriesItsWholeCost()'s - with its figures {what one would earn a mont... |
-| 979 | 4 | `static String banWords(Game game, Sector owner)` | What an INTEREST gate says under a borrowing ban, in consider()'s words: "borrowing ban, 7 more months - it would need credit". |
-| 997 | 5 | **type** `public record Gate(GateKind kind, double a, double b, JobType licence, String why, Game.InterestTest test)` | One gate: DEPOSIT {deposits the city owns, mines committed} with the resource's word in `why` (depositWord(); DRY_OIL for a land Oil Well since 0.7.103); LICENCE {licences one needs, spare licences} with the licence; ... |
-| 1000 | 1 | `public Gate(GateKind kind, double a, double b, JobType licence, String why)` _(in BuildCard.Gate)_ | Every gate but INTEREST: no test of its own. |
-| 1018 | 14 | **type** `public record Investors(String building, String slot, Sector owner, boolean theirs, boolean yoursToo, int o...` | The investors' line's figures. |
-| 1022 | 1 | `public boolean showOwn()` _(in BuildCard.Investors)_ | "this one:" is said when there is a gate, no investor is already building it, and the word does not already name it. |
-| 1030 | 1 | `public boolean showPlanned()` _(in BuildCard.Investors)_ | ...and for a materials building the planner's gate is said in its place (0.7.142): the first its sector asks, in SpreadPlanner's words, on the same terms - when it fails one, no investor is building it and the word do... |
-| 1033 | 18 | `public static Investors investors(Game game, BuildingsTemplate t)` |  |
-| 1053 | 20 | `static Gate gate(Game game, BuildingsTemplate t, Sector owner, double estimate)` | The first gate investors would stop this building at now, in buildStack()'s order and then the planners': null when it passes them all. |
+| 466 | 2 | **type** `public record Paving(int paveable, int paving, Game.BuildQuote one, double unit, double frees, double perTr...` | PAVING, ON THE GRAVEL ROAD'S CARD (0.7.70; ConstructionControl, F): the gravel roads the city could pave and those being paved, the quote for one (Game.quotePave()), the trips one paving takes off the road (BuildAdvic... |
+| 469 | 14 | `public static Paving paving(Game game, BuildingsTemplate t)` |  |
+| 485 | 10 | `public static double runningCost(Game game, BuildingsTemplate t)` | What one costs to keep a month, which is not what it costs to buy: its upkeep and its posts at today's wages (PopulationManager.getWagesPerType()). |
+| 497 | 4 | `public static Sector ownerOf(Game game, BuildingsTemplate t)` | The sector whose money and staffing test a market building is judged by: its owner, or retail for the bank's branch (planBank() asks retail). |
+| 506 | 202 | `public static Figures of(Game game, BuildingsTemplate t, BuildAdvice.Measure m)` | One card's figures. |
 
-### EVERY GATE (0.7.75, the sector statements' R4) (lines 1074-1189)
+### A GROUP OF CARDS, SCALED AND TAGGED (lines 709-864)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1094 | 1 | **type** `public enum Mark` | A gate's answer for one building: it passes, it fails, or it is not a gate this building has. |
-| 1097 | 1 | **type** `public record GateMark(GateKind kind, Mark mark, Gate failure)` | One gate's answer: its kind (LOSS is "it pays", INTEREST "it carries its interest on its whole cost"), the mark, and gate()'s figures when it fails. |
-| 1112 | 22 | **type** `public record Appraisal(BuildingsTemplate template, Sector owner, List<GateMark> gates, double estimate, do...` | One building at every gate (R4). |
-| 1116 | 4 | `public Gate first()` _(in BuildCard.Appraisal)_ | The first gate it fails - gate()'s answer - or null when it passes them all. |
-| 1122 | 5 | `public List<GateMark> failures()` _(in BuildCard.Appraisal)_ | Every gate it fails, in order. |
-| 1129 | 4 | `public Mark at(GateKind kind)` _(in BuildCard.Appraisal)_ | Its mark at one gate. |
-| 1136 | 43 | `public static Appraisal appraise(Game game, BuildingsTemplate t)` | Every gate investors would ask this building at now, and what one would earn, cost and be paid for with. |
-| 1181 | 8 | `public static List<Appraisal> appraiseAll(Game game, Sector sector)` | Every market building one sector owns, appraised at every gate, in the catalogue's order: the investor report's (R4). |
+| 735 | 1 | **type** `public enum NoteKind` | A note under a group's heading, by kind: DOORS {studios' households without a door, families'} (RealEstate.doorShortfall(); a negative is doors to spare); SHOPS {the shops' coverage a month, the people}; MADE {the cit... |
+| 737 | 1 | **type** `public record Note(NoteKind kind, double a, double b, Good good)` |  |
+| 740 | 38 | **type** `public record Group(String title, List<Figures> cards, Note note)` | One group: its heading, its cards in catalogue order, and its note. |
+| 743 | 1 | `public boolean track()` _(in BuildCard.Group)_ | More than one card, so the bars have something to compare and draw a track. |
+| 745 | 1 | `public double most1()` _(in BuildCard.Group)_ |  |
+| 746 | 1 | `public double least1()` _(in BuildCard.Group)_ |  |
+| 747 | 1 | `public double most2()` _(in BuildCard.Group)_ |  |
+| 748 | 1 | `public double least2()` _(in BuildCard.Group)_ |  |
+| 750 | 9 | `private double extreme(boolean first, boolean most)` _(in BuildCard.Group)_ |  |
+| 761 | 1 | `public double share1(Figures f)` _(in BuildCard.Group)_ | How much of the track a card's first bar fills: its figure over the group's largest; full for an infinite one, none for one with none. |
+| 762 | 1 | `public double share2(Figures f)` _(in BuildCard.Group)_ |  |
+| 764 | 5 | `private static double share(double v, double most)` _(in BuildCard.Group)_ |  |
+| 771 | 1 | `public boolean best1(Figures f)` _(in BuildCard.Group)_ | The tag on bar 1: the strict best of two or more. |
+| 772 | 1 | `public boolean best2(Figures f)` _(in BuildCard.Group)_ |  |
+| 774 | 3 | `private boolean best(double v, double least, double most)` _(in BuildCard.Group)_ |  |
+| 784 | 21 | `public static List<Group> groups(Game game, String category, BuildAdvice.Measure m)` | A page's groups. |
+| 807 | 36 | `static Note note(Game game, List<Figures> cards)` | The note under a market group's heading (see NoteKind). |
+| 852 | 7 | `public static Note noteOf(Game game, Sector sector)` | The note of the group a sector's own buildings are compared under on Build (0.7.30): the Sectors screen's flow reads a seller-priced good's capacity off it - the shops' coverage, the counters', the kitchens' seats, th... |
+| 861 | 3 | `static double counted(Game game, Sector sector, double flow)` | A month's flow the save does not carry, or NaN while no month has run since the load (Game.hasMonthRun(); until 0.7.102, while the sector had no word for the month - the word is saved since). |
 
-### THE MATERIALS' CARDS (0.7.142, batch I13; docs/studies/spec-materials.md (lines 1190-1553)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1229 | 5 | `public static boolean materials(Game game, BuildingsTemplate t)` | Whether a building is one of the nine materials industries' (0.7.142): its owner a ProcessingSector or an ExtractionSector. |
-| 1250 | 6 | **type** `public record Stands(Resource resource, Deposit.FieldType type, int sites, int owned, int committed, double...` | Where a building on a typed resource's sites stands (0.7.142): its resource and the type of field it needs (null for ANY - a quarry), the sites one takes, the city's sites of its type and those spoken for (Game.sitesF... |
-| 1254 | 1 | `public boolean anyType()` _(in BuildCard.Stands)_ | Whether it stands on its resource's fields of either type (a Quarry, a Large Quarry). |
-| 1258 | 15 | `public static Stands stands(Game game, BuildingsTemplate t)` | ...for a building on a typed resource's sites (iron, coal, copper, stone); null for any other. |
-| 1286 | 9 | **type** `public record Weighed(double earns, double cost, double vans, double fleet, double hurdle, ham.citybuilders...` | A materials building weighed by the rule its sector orders by (0.7.142): what one more would earn a month at the city's values, its lorries' wear and diesel in it; its whole cost, its ground and its lorries with it; i... |
-| 1290 | 1 | `public double score()` _(in BuildCard.Weighed)_ | What it earns a month on its whole cost; 0 with no cost (SpreadPlanner.Candidate.score()). |
-| 1293 | 1 | `public boolean passes()` _(in BuildCard.Weighed)_ | Whether it passes every gate its sector asks. |
-| 1310 | 31 | `public static Weighed weighed(Game game, BuildingsTemplate t)` | ...a works by its sector's own appraisal (ProcessingSector.appraise(): the candidate the plan weighs, to the bit); a mine, a crew or a washing plant as its sector's plan weighs one - ExtractionSector .estimatedMonthly... |
-| 1350 | 1 | **type** `public record Power(double gen, double draw, double bought, double sold, double soldValue)` | A works' own power (0.7.142): the kW it makes (BuildingsTemplate .getGen()), its draw, what it buys past what it makes and what it sells the grid past its draw (powerBought(), powerSold()), and what that sells for a m... |
-| 1352 | 6 | `public static Power power(Game game, BuildingsTemplate t)` |  |
-| 1371 | 1 | **type** `public record OldMetalBought(Good metal, double intake, double price, double arisen, double standingTake, d...` | The city's old metal a yard buys (0.7.142; OldMetal, the spec's 2.9): the metal (STEEL for a Scrap Yard, COPPER for a Scrap Copper Refinery), what one takes a month at nameplate (BuildingsTemplate .oldMetal()), what i... |
-| 1373 | 20 | `public static OldMetalBought oldMetal(Game game, BuildingsTemplate t)` |  |
-| 1395 | 1 | **type** `public record Buyer(Sector sector, double takes)` | One sector here that buys a good (0.7.142): what its standing buildings take of it a month at nameplate (Sector.getInputAtCapacity()) - none while none stands. |
-| 1406 | 12 | `public static List<Buyer> buyers(Game game, Good g)` | Every sector here whose catalogue holds a building that uses `g`, in Sectors' order, with what its standing buildings take a month at nameplate (0.7.142): who could buy the good in this city. |
-| 1429 | 5 | **type** `public record Outlet(Good good, double made, boolean captive, double ownTakes, List<Buyer> others)` | What one of a materials building makes of a good, and where it goes (0.7.142): its tonnes a month at nameplate (Stands.makes() for a building on sites, its row's for any other), whether its owner's own works take it f... |
-| 1432 | 1 | `public boolean ships()` _(in BuildCard.Outlet)_ | Whether nothing here buys it: no other sector, and its owner does not take it first. |
-| 1436 | 16 | `public static List<Outlet> outlets(Game game, BuildingsTemplate t)` | ...each good one makes, in its makes' order; empty for a building that is not a materials one. |
-| 1466 | 28 | `public static List<Sector.Line> chainLines(Game game, Sector sector)` | A materials sector's chain as its Sectors page's lines (0.7.142; each of the nine industries' ownLines() ends on them): its works' own power, when any standing makes some - what they make (BuildingsTemplate .getGen())... |
-| 1505 | 2 | **type** `public record CrewRule(double cuttable, double committed, double cut, double months, double monthsWith, boo...` | E, the crew rule (0.7.142; sectors.Forestry, E AND THE PLAN; spec-zoning 3 and board 3): the forest Forestry may cut (LandManager .cuttableForest()), every crew's cut a month standing and on site (Forestry.crewsCut(tr... |
-| 1508 | 16 | `public static CrewRule crewRule(Game game, BuildingsTemplate t)` |  |
-| 1526 | 4 | `public static CrewRule crewRule(Game game)` | ...the rule as the forest law's page says it: for the smallest crew in the catalogue (the one E refuses last); null with none. |
-| 1532 | 8 | `public static BuildingsTemplate smallestCrew(Game game)` | The crew in the catalogue that cuts least a month (Forestry.cutOf()), the first on a tie; null with none. |
-| 1542 | 6 | `static String eWords(CrewRule rule, BuildingsTemplate t)` | E's refusal in Forestry's plan's words (Forestry.eWords(), which BuildCardCheck 12 holds this to): the forest it may cut, and the months it would last with one more. |
-| 1550 | 3 | `static String a(String name)` | "a Logging Camp", "an Iron Mine": ProcessingSector.a()'s article. |
-
-### THE WORD'S KIND (0.7.30) (lines 1554-1645)
+### THE INVESTORS' LINE (market cards) (lines 865-1081)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1586 | 1 | **type** `public enum WordKind` | What a sector's word is about. |
-| 1610 | 1 | `public static WordKind wordKind(String word)` | The kind of a word on its text alone. |
-| 1617 | 15 | `public static WordKind wordKind(String word, boolean building, boolean landBlocked)` | ...with what the text cannot say: whether investors have an order on site of one of the sector's buildings (`building`), and whether the month put it on Game.getLandBlockedSectors() (`landBlocked`). |
-| 1634 | 11 | `static boolean says(String text, String[] phrases)` | Whether any of the phrases is in the text as whole words: no letter or digit either side of it. |
+| 898 | 5 | `public static String slot(BuildingsTemplate t)` | Where Game files a building's word: the branch under "Bank" (Game.consider()'s label), every other under its sector. |
+| 905 | 1 | **type** `public enum GateKind` | The first gate a building fails for investors now: the last, INTEREST, is consider()'s brake on its whole cost (0.7.122). |
+| 908 | 3 | `public static String depositWord(Resource r)` | The resource a deposit refusal names (0.7.62): "iron" for an Iron Mine (and for none), "oil" for an Oil Well. |
+| 929 | 3 | `public static String siteCountWord(BuildingsTemplate t)` | The word a building's site count carries (0.7.103): " dry" for a land Oil Well, whose count is the dry sites alone; "" for any other. |
+| 934 | 3 | `static String depositWordFor(BuildingsTemplate t, Resource r)` | A DEPOSIT gate's word: depositWord(), or DRY_OIL for a land Oil Well (0.7.103). |
+| 939 | 5 | `public static boolean unfed(Game game, BuildingsTemplate t)` | Whether a building is a refinery's conversion unit with no crude unit standing to feed it (0.7.103): its estimate is a loss only for want of a stream. |
+| 952 | 5 | `static Gate landGate(LandManager ground, BuildingsTemplate t, double free)` | The LAND gate (0.7.109, batch Z2): the ground one needs against the ground its sector may build on (LandManager.freeFor(): free for anyone, and its zone's), and in `why` what the other sectors' zones hold (BusinessInv... |
+| 959 | 3 | `static Gate lossGate(Game game, BuildingsTemplate t, double estimate)` | The LOSS gate: what it would lose, worded NO_FEED for a conversion unit nothing feeds (0.7.103). |
+| 964 | 3 | `static boolean asksInterest(Game game, BuildingsTemplate t, Sector owner)` | Whether investors ask a building the INTEREST gate (0.7.122): every order but a landlord's home, which the mortgage lender's test decides. |
+| 979 | 6 | `static Gate interestGate(Game game, BuildingsTemplate t, Sector owner, double estimate)` | The INTEREST gate (0.7.122, batch C1): consider()'s test of an order of one, asked through the model's door - Game.interestTest(), whose answer is carriesItsWholeCost()'s - with its figures {what one would earn a mont... |
+| 987 | 4 | `static String banWords(Game game, Sector owner)` | What an INTEREST gate says under a borrowing ban, in consider()'s words: "borrowing ban, 7 more months - it would need credit". |
+| 1005 | 5 | **type** `public record Gate(GateKind kind, double a, double b, JobType licence, String why, Game.InterestTest test)` | One gate: DEPOSIT {deposits the city owns, mines committed} with the resource's word in `why` (depositWord(); DRY_OIL for a land Oil Well since 0.7.103); LICENCE {licences one needs, spare licences} with the licence; ... |
+| 1008 | 1 | `public Gate(GateKind kind, double a, double b, JobType licence, String why)` _(in BuildCard.Gate)_ | Every gate but INTEREST: no test of its own. |
+| 1026 | 14 | **type** `public record Investors(String building, String slot, Sector owner, boolean theirs, boolean yoursToo, int o...` | The investors' line's figures. |
+| 1030 | 1 | `public boolean showOwn()` _(in BuildCard.Investors)_ | "this one:" is said when there is a gate, no investor is already building it, and the word does not already name it. |
+| 1038 | 1 | `public boolean showPlanned()` _(in BuildCard.Investors)_ | ...and for a materials building the planner's gate is said in its place (0.7.142): the first its sector asks, in SpreadPlanner's words, on the same terms - when it fails one, no investor is building it and the word do... |
+| 1041 | 18 | `public static Investors investors(Game game, BuildingsTemplate t)` |  |
+| 1061 | 20 | `static Gate gate(Game game, BuildingsTemplate t, Sector owner, double estimate)` | The first gate investors would stop this building at now, in buildStack()'s order and then the planners': null when it passes them all. |
 
-### ONE SECTOR'S INVESTORS (0.7.30) (lines 1646-1699)
+### EVERY GATE (0.7.75, the sector statements' R4) (lines 1082-1197)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1669 | 8 | **type** `public record SectorInvestors(Sector owner, String word, WordKind kind, List<Investors> buildings, boolean ...` | One sector's investors. |
-| 1673 | 3 | `public Investors line()` _(in BuildCard.SectorInvestors)_ | The sector's line as a build card's line is worded: its own name, its word, no gate of its own. |
-| 1678 | 21 | `public static SectorInvestors sectorInvestors(Game game, Sector sector)` |  |
+| 1102 | 1 | **type** `public enum Mark` | A gate's answer for one building: it passes, it fails, or it is not a gate this building has. |
+| 1105 | 1 | **type** `public record GateMark(GateKind kind, Mark mark, Gate failure)` | One gate's answer: its kind (LOSS is "it pays", INTEREST "it carries its interest on its whole cost"), the mark, and gate()'s figures when it fails. |
+| 1120 | 22 | **type** `public record Appraisal(BuildingsTemplate template, Sector owner, List<GateMark> gates, double estimate, do...` | One building at every gate (R4). |
+| 1124 | 4 | `public Gate first()` _(in BuildCard.Appraisal)_ | The first gate it fails - gate()'s answer - or null when it passes them all. |
+| 1130 | 5 | `public List<GateMark> failures()` _(in BuildCard.Appraisal)_ | Every gate it fails, in order. |
+| 1137 | 4 | `public Mark at(GateKind kind)` _(in BuildCard.Appraisal)_ | Its mark at one gate. |
+| 1144 | 43 | `public static Appraisal appraise(Game game, BuildingsTemplate t)` | Every gate investors would ask this building at now, and what one would earn, cost and be paid for with. |
+| 1189 | 8 | `public static List<Appraisal> appraiseAll(Game game, Sector sector)` | Every market building one sector owns, appraised at every gate, in the catalogue's order: the investor report's (R4). |
 
-### THE VERDICT ON AN ORDER (lines 1700-1725)
+### THE MATERIALS' CARDS (0.7.142, batch I13; docs/studies/spec-materials.md (lines 1198-1562)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1709 | 1 | **type** `public enum VerdictKind` |  |
-| 1712 | 3 | **type** `public record Verdict(VerdictKind kind, Game.BuildQuote quote, double figure, Resource site)` | The verdict, the quote it is on, and how short: sq ft of land, cash, or the months to wait - and, refused for a deposit, whose sites it needs (0.7.62; null otherwise). |
-| 1713 | 1 | `public Verdict(VerdictKind kind, Game.BuildQuote quote, double figure)` _(in BuildCard.Verdict)_ |  |
-| 1716 | 9 | `public static Verdict verdict(Game game, BuildingsTemplate t, int n)` |  |
+| 1237 | 5 | `public static boolean materials(Game game, BuildingsTemplate t)` | Whether a building is one of the nine materials industries' (0.7.142): its owner a ProcessingSector or an ExtractionSector. |
+| 1258 | 6 | **type** `public record Stands(Resource resource, Deposit.FieldType type, int sites, int owned, int committed, double...` | Where a building on a typed resource's sites stands (0.7.142): its resource and the type of field it needs (null for ANY - a quarry), the sites one takes, the city's sites of its type and those spoken for (Game.sitesF... |
+| 1262 | 1 | `public boolean anyType()` _(in BuildCard.Stands)_ | Whether it stands on its resource's fields of either type (a Quarry, a Large Quarry). |
+| 1266 | 15 | `public static Stands stands(Game game, BuildingsTemplate t)` | ...for a building on a typed resource's sites (iron, coal, copper, stone); null for any other. |
+| 1295 | 9 | **type** `public record Weighed(double earns, double cost, double vans, double fleet, double hurdle, ham.citybuilders...` | A materials building weighed by the rule its sector orders by (0.7.142): what one more would earn a month at the city's values, its freight in it (FR2: its vans' wear and diesel and its bulk's city legs at Haulage's q... |
+| 1299 | 1 | `public double score()` _(in BuildCard.Weighed)_ | What it earns a month on its whole cost; 0 with no cost (SpreadPlanner.Candidate.score()). |
+| 1302 | 1 | `public boolean passes()` _(in BuildCard.Weighed)_ | Whether it passes every gate its sector asks. |
+| 1319 | 31 | `public static Weighed weighed(Game game, BuildingsTemplate t)` | ...a works by its sector's own appraisal (ProcessingSector.appraise(): the candidate the plan weighs, to the bit); a mine, a crew or a washing plant as its sector's plan weighs one - ExtractionSector .estimatedMonthly... |
+| 1359 | 1 | **type** `public record Power(double gen, double draw, double bought, double sold, double soldValue)` | A works' own power (0.7.142): the kW it makes (BuildingsTemplate .getGen()), its draw, what it buys past what it makes and what it sells the grid past its draw (powerBought(), powerSold()), and what that sells for a m... |
+| 1361 | 6 | `public static Power power(Game game, BuildingsTemplate t)` |  |
+| 1380 | 1 | **type** `public record OldMetalBought(Good metal, double intake, double price, double arisen, double standingTake, d...` | The city's old metal a yard buys (0.7.142; OldMetal, the spec's 2.9): the metal (STEEL for a Scrap Yard, COPPER for a Scrap Copper Refinery), what one takes a month at nameplate (BuildingsTemplate .oldMetal()), what i... |
+| 1382 | 20 | `public static OldMetalBought oldMetal(Game game, BuildingsTemplate t)` |  |
+| 1404 | 1 | **type** `public record Buyer(Sector sector, double takes)` | One sector here that buys a good (0.7.142): what its standing buildings take of it a month at nameplate (Sector.getInputAtCapacity()) - none while none stands. |
+| 1415 | 12 | `public static List<Buyer> buyers(Game game, Good g)` | Every sector here whose catalogue holds a building that uses `g`, in Sectors' order, with what its standing buildings take a month at nameplate (0.7.142): who could buy the good in this city. |
+| 1438 | 5 | **type** `public record Outlet(Good good, double made, boolean captive, double ownTakes, List<Buyer> others)` | What one of a materials building makes of a good, and where it goes (0.7.142): its tonnes a month at nameplate (Stands.makes() for a building on sites, its row's for any other), whether its owner's own works take it f... |
+| 1441 | 1 | `public boolean ships()` _(in BuildCard.Outlet)_ | Whether nothing here buys it: no other sector, and its owner does not take it first. |
+| 1445 | 16 | `public static List<Outlet> outlets(Game game, BuildingsTemplate t)` | ...each good one makes, in its makes' order; empty for a building that is not a materials one. |
+| 1475 | 28 | `public static List<Sector.Line> chainLines(Game game, Sector sector)` | A materials sector's chain as its Sectors page's lines (0.7.142; each of the nine industries' ownLines() ends on them): its works' own power, when any standing makes some - what they make (BuildingsTemplate .getGen())... |
+| 1514 | 2 | **type** `public record CrewRule(double cuttable, double committed, double cut, double months, double monthsWith, boo...` | E, the crew rule (0.7.142; sectors.Forestry, E AND THE PLAN; spec-zoning 3 and board 3): the forest Forestry may cut (LandManager .cuttableForest()), every crew's cut a month standing and on site (Forestry.crewsCut(tr... |
+| 1517 | 16 | `public static CrewRule crewRule(Game game, BuildingsTemplate t)` |  |
+| 1535 | 4 | `public static CrewRule crewRule(Game game)` | ...the rule as the forest law's page says it: for the smallest crew in the catalogue (the one E refuses last); null with none. |
+| 1541 | 8 | `public static BuildingsTemplate smallestCrew(Game game)` | The crew in the catalogue that cuts least a month (Forestry.cutOf()), the first on a tie; null with none. |
+| 1551 | 6 | `static String eWords(CrewRule rule, BuildingsTemplate t)` | E's refusal in Forestry's plan's words (Forestry.eWords(), which BuildCardCheck 12 holds this to): the forest it may cut, and the months it would last with one more. |
+| 1559 | 3 | `static String a(String name)` | "a Logging Camp", "an Iron Mine": ProcessingSector.a()'s article. |
+
+### THE WORD'S KIND (0.7.30) (lines 1563-1654)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1595 | 1 | **type** `public enum WordKind` | What a sector's word is about. |
+| 1619 | 1 | `public static WordKind wordKind(String word)` | The kind of a word on its text alone. |
+| 1626 | 15 | `public static WordKind wordKind(String word, boolean building, boolean landBlocked)` | ...with what the text cannot say: whether investors have an order on site of one of the sector's buildings (`building`), and whether the month put it on Game.getLandBlockedSectors() (`landBlocked`). |
+| 1643 | 11 | `static boolean says(String text, String[] phrases)` | Whether any of the phrases is in the text as whole words: no letter or digit either side of it. |
+
+### ONE SECTOR'S INVESTORS (0.7.30) (lines 1655-1708)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1678 | 8 | **type** `public record SectorInvestors(Sector owner, String word, WordKind kind, List<Investors> buildings, boolean ...` | One sector's investors. |
+| 1682 | 3 | `public Investors line()` _(in BuildCard.SectorInvestors)_ | The sector's line as a build card's line is worded: its own name, its word, no gate of its own. |
+| 1687 | 21 | `public static SectorInvestors sectorInvestors(Game game, Sector sector)` |  |
+
+### THE VERDICT ON AN ORDER (lines 1709-1734)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1718 | 1 | **type** `public enum VerdictKind` |  |
+| 1721 | 3 | **type** `public record Verdict(VerdictKind kind, Game.BuildQuote quote, double figure, Resource site)` | The verdict, the quote it is on, and how short: sq ft of land, cash, or the months to wait - and, refused for a deposit, whose sites it needs (0.7.62; null otherwise). |
+| 1722 | 1 | `public Verdict(VerdictKind kind, Game.BuildQuote quote, double figure)` _(in BuildCard.Verdict)_ |  |
+| 1725 | 9 | `public static Verdict verdict(Game game, BuildingsTemplate t, int n)` |  |
 

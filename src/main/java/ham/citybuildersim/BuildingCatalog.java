@@ -199,6 +199,8 @@ public class BuildingCatalog {
                 .setFreightGrade(number(o, "freightGrade"))
                 .setTransitCapacity(number(o, "transitCapacity"))
                 .setRailCapacity(number(o, "railCapacity"))
+                // ...and a Truck Depot's room for trucks (FR2): absent, none.
+                .setTruckRoom(number(o, "truckRoom"))
                 .setProduction1(number(o, "production1"))
                 .setProduction2(number(o, "production2"))
                 .setProductionModifier1(number(o, "productionModifier1"))

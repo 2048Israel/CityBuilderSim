@@ -111,7 +111,7 @@ public abstract class Sector {
          * and the ones that move none ask for zero of them. Cover of zero
          * months: the pantry rule sizes a shelf by recent USE and is right for
          * a mill's crop bill and wrong for capital - bid() below decides this
-         * one, the way sectors.Rail decides its locomotives.
+         * one, the way sectors.Freight decides its locomotives.
          */
         pantry(Good.VANS, 0);
     }
@@ -291,7 +291,7 @@ public abstract class Sector {
        sectors already use), and the 20% it allows can't be jobs nobody can
        fill."
 
-       WHY. Only Manufacturing, Automotive, Rail and Business Services asked
+       WHY. Only Manufacturing, Automotive, Freight and Business Services asked
        (and Construction since 0.7.17); the shops, the kitchens, the luxury
        counters and every maker built posts without looking. And the question
        the four asked let a fifth of a building be posts NO band could fill:
@@ -561,9 +561,10 @@ public abstract class Sector {
        the staff are on the books whether they came in or not (see Health).
 
        FOUR OF THEM ARRIVE AND ONE IS BOUGHT. Energy, water, road and health
-       are handed to a sector by the city around it; the fifth is its own
-       lorries, and it is the only one a business can do something about with
-       its own money. See THE FLEET below.
+       are handed to a sector by the city around it; the fifth is its freight:
+       its own vans for its goods, Freight's trucks for its bulk, whichever
+       binds (FR2), and it is the only one a business can do something about
+       with its own money. See THE FLEET below.
        =================================================================== */
 
     protected double energyRatio = 1, waterRatio = 1, roadRatio = 1, healthRatio = 1;
@@ -595,9 +596,9 @@ public abstract class Sector {
         return buildings == null ? 0 : buildings.getUnderConstructionBySector(key);
     }
 
-    /** How much of nameplate actually runs: staffing times the five ratios. */
+    /** How much of nameplate actually runs: staffing times the five ratios, the fifth being its freight (getFreightRatio()). */
     public double getOperatingRate() {
-        return averageFill * energyRatio * waterRatio * roadRatio * healthRatio * getVanRatio();
+        return averageFill * energyRatio * waterRatio * roadRatio * healthRatio * getFreightRatio();
     }
 
     /** Charged for what was DELIVERED, not asked for - the utility books the same slice. */
@@ -710,6 +711,15 @@ public abstract class Sector {
        of them, bought at the IMPORT ceiling by a city with no plant of its own,
        is not - and neither is a sector that builds its factory this year and
        cannot buy vehicles for it until next.
+
+       AND SINCE FR2 (2026-10-18) THE VANS CARRY GOODS ONLY. The measurement
+       above is history: 96% of that tonnage was steel, ore and fabrication in
+       artics, and a van is not an artic. A sector's BULK tonnes now go by
+       Freight's trucks (sectors.Haulage), the city leg of each billed once, to
+       the buyer or the exporter, and its vans keep the GOODS stream
+       (Good.traffic()): the shelf, the loaf, the crate. tonnesMoved() counts
+       those and no more, and the fifth throttle is the lesser of the vans'
+       ratio and Haulage's (getFreightRatio()).
        =================================================================== */
 
     /**
@@ -808,7 +818,7 @@ public abstract class Sector {
      * Whether this sector's fleet is a fact about the sector rather than a fact
      * about the version it was saved from.
      *
-     * FALSE IN A SAVE FROM BEFORE VANS EXISTED, and the same flag sectors.Rail
+     * FALSE IN A SAVE FROM BEFORE VANS EXISTED, and the same flag sectors.Freight
      * carries for its locomotives, for the same reason and with the same
      * answer: a city saved this morning has mills and no lorries - not because
      * it scrapped them but because the game had none - and a ratio of zero
@@ -822,28 +832,39 @@ public abstract class Sector {
     public boolean isFleetKnown() { return vansKnown; }
 
     /**
-     * Tonnes a month this sector's standing plant moves, in and out.
+     * Tonnes a month of GOODS this sector's standing plant moves, in and out: what its vans carry
+     * (FR2: since then a sector's BULK goes by Freight's trucks, its city leg billed by Haulage).
      *
      * AT NAMEPLATE, NOT AT THE OPERATING RATE, and that is not laziness: the
      * rate is what this figure is about to decide, so reading it here would be
      * a circle. It is also the truer statement - a firm buys lorries for the
      * factory it has, not for the month it is having.
+     *
+     * THE GOODS STREAM ONLY (FR2, 2026-10-18; spec-freight-and-infrastructure
+     * 3.5). Until then it counted every tonne, so an ore mill kept a van for
+     * every 120 t of ore and the city leg of a bulk tonne was paid in vans on
+     * both sides of every door; see THE FLEET's banner for what replaced it.
      */
     public double tonnesMoved() {
         double t = 0;
-        for (Good g : makes) t += getCapacity(g) * g.tonnesPerUnit();
-        // The fleet does not haul itself.
-        for (Good g : uses) if (g != Good.VANS) t += getInputAtCapacity(g) * g.tonnesPerUnit();
+        for (Good g : makes) if (g.traffic() == Traffic.GOODS) t += getCapacity(g) * g.tonnesPerUnit();
+        // The fleet does not haul itself: not the vans, and not the trucks.
+        for (Good g : uses) {
+            if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.GOODS) continue;
+            t += getInputAtCapacity(g) * g.tonnesPerUnit();
+        }
         /*
          * ...NOR WHAT A WORKS HANDS ITSELF (0.7.123, batch I4; CAPTIVE USE): the
          * coke from its ovens to its furnaces, the pig iron from its furnaces to
          * its oxygen shop, moved on the works' own rails and ladles, not by
          * lorry - counted neither out nor in, at nameplate, as far as what it
          * makes covers what it uses. Nothing for a sector with no captive good,
-         * which is every sector but Iron & Steel.
+         * which is every sector but Iron & Steel, and since FR2 nothing for a
+         * captive good that is not GOODS either: its tonnes are not counted
+         * above, so there is nothing to take off.
          */
         for (Good g : makes) {
-            if (!captive(g)) continue;
+            if (!captive(g) || g.traffic() != Traffic.GOODS) continue;
             double inside = Math.min(getCapacity(g), getInputAtCapacity(g));
             if (inside > 0) t -= 2 * inside * g.tonnesPerUnit();
         }
@@ -851,6 +872,17 @@ public abstract class Sector {
     }
 
     public double vansNeeded() { return tonnesMoved() / TONNES_PER_VAN; }
+
+    /**
+     * What the city leg of a bulk tonne costs one more works of this sector, at Haulage's
+     * quote in force and the city's trade (FR2; sectors.Haulage.legPrice()). A works's
+     * planner weighs it with this and its vans, in place of its lorries (ProcessingSector,
+     * ExtractionSector); LegPrice.NONE with no city to ask.
+     */
+    public ham.citybuildersim.sectors.Haulage.LegPrice legPrice() {
+        return game == null || game.getSectors() == null ? ham.citybuildersim.sectors.Haulage.LegPrice.NONE
+                : game.getSectors().freight().haulage().legPrice();
+    }
 
     /** The vehicles it owns. A pantry good, so it accumulates instead of being consumed. */
     public double vanFleet() { return getPantry(Good.VANS); }
@@ -873,6 +905,58 @@ public abstract class Sector {
         double have = vanFleet();
         if (have >= need) return 1;
         return MIN_VAN_RATE + (1 - MIN_VAN_RATE) * Math.max(0, have / need);
+    }
+
+    /**
+     * Whether any good this sector makes or uses at its standing plant travels
+     * in the BULK stream (FR2): the test for whether Haulage's trucks are part
+     * of its freight at all. The vans and the trucks are left out of its uses,
+     * as tonnesMoved() leaves them out - the fleet does not haul itself.
+     */
+    public boolean hasBulkLegs() {
+        for (Good g : makes) {
+            if (g.traffic() == Traffic.BULK && getCapacity(g) > 0) return true;
+        }
+        for (Good g : uses) {
+            if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
+            if (getInputAtCapacity(g) > 0) return true;
+        }
+        return false;
+    }
+
+    /**
+     * The haulage half of the fifth ratio (FR2, 2026-10-18; spec-freight-and-
+     * infrastructure 3.2): the van rule moved across to the trucks. A sector
+     * with bulk to move and a city whose trucks carry only a share of the
+     * city's city-leg tonnes runs at MIN_VAN_RATE + (1 - MIN_VAN_RATE) x that
+     * share: slower, since it collects what Haulage could not carry, and not
+     * stopped.
+     *
+     * ONE EXACTLY, as getVanRatio() is, and by the same early returns: Freight
+     * itself (it is the carrier), no game to ask, no bulk to move, or a share
+     * of a literal 1 (Haulage sets exactly 1 when its trucks suffice). The share
+     * is asked first because it is almost always 1 and hasBulkLegs() walks the
+     * buildings; the answer is the same in either order.
+     */
+    public double getHaulageRatio() {
+        if (game == null || this instanceof ham.citybuildersim.sectors.Freight) return 1;
+        Sectors all = game.getSectors();
+        ham.citybuildersim.sectors.Freight freight = all == null ? null : all.freight();
+        if (freight == null) return 1;
+        double share = freight.haulage().getShare();
+        if (!(share < 1)) return 1;
+        if (!hasBulkLegs()) return 1;
+        return MIN_VAN_RATE + (1 - MIN_VAN_RATE) * Math.max(0, share);
+    }
+
+    /**
+     * The fifth throttle (FR2): its freight, the lesser of the vans' ratio (its
+     * own vans for its goods) and Haulage's (Freight's trucks for its bulk),
+     * whichever binds. Each is a literal 1 when nothing binds, so a sector
+     * with neither short runs at exactly what it ran at.
+     */
+    public double getFreightRatio() {
+        return Math.min(getVanRatio(), getHaulageRatio());
     }
 
     /**
@@ -1195,12 +1279,26 @@ public abstract class Sector {
         return carried == null ? row : row + carried;
     }
 
+    /**
+     * ...and what it bought AT HOME in the month, in units, by good (FR2,
+     * 2026-10-18): the Input row's boughtLocal, and in a city just loaded what
+     * the save carried, as the two above are. The third of a bulk tonne's
+     * city-leg tonnes (sectors.Haulage.legTonnes()): the buyer pays the leg of
+     * what it receives from a works in the city, and the seller of it pays none.
+     */
+    public double unitsBoughtLocal(Good g) {
+        Input i = inputs.get(g);
+        double row = i == null ? 0 : i.boughtLocal;
+        Double carried = carriedBoughtLocal.get(g);
+        return carried == null ? row : row + carried;
+    }
+
     /* ===================================================================
        THE MONTH'S TRADE ACROSS A SAVE (A1, 2026-10-05)
 
        What crossed the boundary in the month a save was taken, in units by
        good, carried into the loaded city until its first strike. The railway
-       bills a month's trade at the top of the next one (Rail.haul(), from
+       bills a month's trade at the top of the next one (Freight.haul(), from
        Game.chargeFreight()), before strikeSectors() banks the month and
        clears the rows; the rows were never saved, so the first haul after
        any load read nothing, billed almost nothing, carried nothing the
@@ -1218,6 +1316,9 @@ public abstract class Sector {
 
     /** ...and units landed, read by unitsImported(). */
     private final Map<Good, Double> carriedImports = new EnumMap<>(Good.class);
+
+    /** ...and units bought at home (FR2), read by unitsBoughtLocal(): the city-leg tonnes Haulage bills at the top of the next month. */
+    private final Map<Good, Double> carriedBoughtLocal = new EnumMap<>(Good.class);
 
     /** A save's units by good name into a carried map; a good this build does not know, or nothing, is left out. */
     private static void carry(Map<String, Double> saved, Map<Good, Double> into) {
@@ -1282,7 +1383,7 @@ public abstract class Sector {
      * one division: read against the units every later save carries - Jerus's
      * city as 0.7.49 saved it, and all three research cities a month on -
      * the two agree to two ulps, every good. Game's load path calls it last;
-     * nothing reads the carried maps before Rail.haul() at the top of the
+     * nothing reads the carried maps before Freight.haul() at the top of the
      * first month.
      */
     public void deriveCarriedTrade() {
@@ -1371,8 +1472,8 @@ public abstract class Sector {
          * NAMED WHERE IT IS CHARGED rather than worked out later, which is the
          * lesson otherRevenue taught the hard way (see nameOtherRevenue): a
          * figure reconstructed by subtraction is a figure nobody can label, and
-         * the label is the whole point of opening the line. Rail's haulage
-         * charge names itself "Haulage" on the shipper's ledger as it is
+         * the label is the whole point of opening the line. Freight's rail
+         * charge names itself "Rail freight" on the shipper's ledger as it is
          * raised. See billForService().
          */
         public final Map<String, Double> otherInputs = new LinkedHashMap<>();
@@ -1752,7 +1853,7 @@ public abstract class Sector {
 
     /**
      * A SERVICE BOUGHT FROM ANOTHER BUSINESS IN THE CITY, billed by the
-     * business that performed it. Haulage, today - see sectors.Rail.
+     * business that performed it. Haulage, today - see sectors.Freight.
      *
      * PUBLIC, AND ON THE PAYER, because the biller raises it: the railway walks
      * the shippers whose goods it moved and puts a line on each of their
@@ -1811,7 +1912,7 @@ public abstract class Sector {
      * basic structure for oil cost even tho its not currently in place." Its
      * comment said the day OIL existed the same number would become a good
      * bought on an ordinary market and the call would go away; it went in
-     * 0.7.62 (batch K), when the railway began drawing FUEL (Rail.haul()).
+     * 0.7.62 (batch K), when the railway began drawing FUEL (Freight.haul()).
      */
 
     /**
@@ -2023,6 +2124,7 @@ public abstract class Sector {
         }
         carriedExports.clear();
         carriedImports.clear();
+        carriedBoughtLocal.clear();
         afterBank();
     }
 
@@ -2251,7 +2353,7 @@ public abstract class Sector {
          * has enough asks for nothing, one that has just built a factory asks
          * for a fleet, and the wear in runFleet() turns the difference into a
          * standing order rather than a single purchase. Same shape as
-         * sectors.Rail's rolling stock and for the same reason.
+         * sectors.Freight's rolling stock and for the same reason.
          */
         if (g == Good.VANS) {
             double need = vansNeeded();
@@ -2524,7 +2626,21 @@ public abstract class Sector {
 
     /** What one of its templates would clear a month, for the interest test. See BusinessInvestment. */
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        return plans.estimatedMakerProfit(this, t);
+        double maker = plans.estimatedMakerProfit(this, t);
+        /*
+         * ...WEIGHED WITH ITS FREIGHT (FR2, 2026-10-19): its BULK legs at the
+         * steady quote, every maker that weighs on this estimate - a farm, a
+         * food works, a vehicle plant - as ProcessingSector and ExtractionSector
+         * weigh theirs (which subtract theirs in their own estimates and do not
+         * come through here). FR2 took a bulk works' vans off its books and its
+         * legs onto Haulage's bill; weighed without them, a farm looked as if its
+         * crops moved for nothing, and AutoBuildCheck's village spent its last
+         * ground on a third Mixed Farm and stopped at 1,571 people (13,608 on
+         * main).
+         */
+        if (t == null) return maker;
+        double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
+        return maker - ham.citybuildersim.sectors.ProcessingSector.cityLegs(t, rate, legPrice());
     }
 
     /**
@@ -2665,8 +2781,8 @@ public abstract class Sector {
      * sector's own lines under it, so it has to be able to tell the two apart.
      * The five sectors that added to the block (Agriculture, Business
      * Services, Food Processing, Manufacturing, Mining) add in ownLines() now;
-     * the seven that replaced it (Automotive, Construction, Luxury Retail,
-     * Rail, Real Estate, Restaurants, Retail) say so in hasPlantBlock() and
+     * the seven that replaced it (Automotive, Construction, Freight, Luxury
+     * Retail, Real Estate, Restaurants, Retail) say so in hasPlantBlock() and
      * return their whole page from ownLines(). This is still the one list the
      * console prints and SectorBooksCheck audits.
      */
@@ -2710,12 +2826,14 @@ public abstract class Sector {
                     rate < .5 ? Line.Tone.BAD : rate < .9 ? Line.Tone.WARN : Line.Tone.GOOD));
             // The six MULTIPLY (getOperatingRate()): it said "cut by whichever is
             // thinnest" and left the vans out, beside a rate well under the
-            // thinnest of them (B3).
+            // thinnest of them (B3). The sixth is its freight since FR2: the
+            // lesser of its vans' ratio and Haulage's (getFreightRatio()).
             lines.add(Line.note(String.format(
-                    "Staffed %s \u00d7 power %s \u00d7 water %s \u00d7 roads %s \u00d7 well %s \u00d7 vans %s"
+                    "Staffed %s \u00d7 power %s \u00d7 water %s \u00d7 roads %s \u00d7 well %s \u00d7 freight %s"
+                    + " (its vans for its goods, Freight's trucks for its bulk)"
                     + " \u2014 all six multiply, so every thin one cuts the output, not only the thinnest.",
                     f.pct(averageFill), f.pct(energyRatio), f.pct(waterRatio), f.pct(roadRatio), f.pct(healthRatio),
-                    f.pct(getVanRatio()))));
+                    f.pct(getFreightRatio()))));
         }
         for (Good g : makes) {
             if (!g.traded()) continue;
@@ -2814,10 +2932,14 @@ public abstract class Sector {
         // written even when empty, which a save from before it is not (0.7.63).
         s.exported = new LinkedHashMap<>();
         s.imported = new LinkedHashMap<>();
+        s.boughtLocal = new LinkedHashMap<>();
         for (Good g : Good.values()) {
             double shipped = unitsExported(g), landed = unitsImported(g);
             if (shipped > 0) s.exported.put(g.name(), shipped);
             if (landed > 0) s.imported.put(g.name(), landed);
+            // ...and what it bought at home (FR2): Haulage bills the city leg of it.
+            double home = unitsBoughtLocal(g);
+            if (home > 0) s.boughtLocal.put(g.name(), home);
         }
         // ...and what the month wrote off (0.7.133), through its getter: WHAT A MONTH WROTE OFF, PAST ITS STRIKE.
         s.writtenOff = new LinkedHashMap<>();
@@ -2888,6 +3010,8 @@ public abstract class Sector {
         // from before it has no map, which is the zero it always read.
         carry(s.exported, carriedExports);
         carry(s.imported, carriedImports);
+        // ...and what it bought at home (FR2); a save without the map carries none.
+        carry(s.boughtLocal, carriedBoughtLocal);
         // ...and its write-offs (0.7.133); an older save has none, which is what its accounts added back.
         carry(s.writtenOff, carriedWrittenOff);
         struckWrittenOff.clear();
@@ -2932,6 +3056,7 @@ public abstract class Sector {
         inputs.clear();
         carriedExports.clear();
         carriedImports.clear();
+        carriedBoughtLocal.clear();
         carriedWrittenOff.clear();
         struckWrittenOff.clear();
         restoreStatement(new Statement());

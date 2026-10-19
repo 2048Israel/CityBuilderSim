@@ -1,6 +1,6 @@
-# CopperMiningCheck.java - 524 lines · 13 methods · 21 constants · harnesses
+# CopperMiningCheck.java - 525 lines · 13 methods · 21 constants · harnesses
 
-`ham/citybuildersim/CopperMiningCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CopperMiningCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
 > 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.md -
@@ -50,7 +50,7 @@
 >      running short holds it to what is left, and worked out it is spare.
 > 
 >   6. THE PLAN: ExtractionSector's - the best earnings on the whole cost of
->      the buildings that fit, their lorries in it.
+>      the buildings that fit, their freight in it.
 > 
 >   7. A PLAYED MONTH: a mine and mill and a leach plant standing, a month
 >      on - concentrate shipped, cathode made, acid bought, the ground given
@@ -60,7 +60,7 @@
 > nearest the default site (oxide the rarer type), its sulphide ground by
 > fiat (the first type), the buildings placed by hand.
 
-**Uses:** [Good](Good.md) (60), [CopperMining](CopperMining.md) (31), [World](World.md) (14), [Deposit](Deposit.md) (13), [Sectors](Sectors.md) (11), [BuildingManager](BuildingManager.md) (10), [Game](Game.md) (8), [Traffic](Traffic.md) (7), [Ports](Ports.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [LandManager](LandManager.md) (7), [Equity](Equity.md) (5), [CityLand](CityLand.md) (5), [LandCheck](LandCheck.md) (5), [MoneyAudit](MoneyAudit.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Resource](Resource.md) (3), [Sector](Sector.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [Markets](Markets.md) (1), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1), [NationalAccounts](NationalAccounts.md) (1)... and 3 more
+**Uses:** [Good](Good.md) (61), [CopperMining](CopperMining.md) (31), [World](World.md) (14), [Deposit](Deposit.md) (13), [Sectors](Sectors.md) (11), [BuildingManager](BuildingManager.md) (10), [Game](Game.md) (8), [Traffic](Traffic.md) (7), [Ports](Ports.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [LandManager](LandManager.md) (7), [Equity](Equity.md) (5), [CityLand](CityLand.md) (5), [LandCheck](LandCheck.md) (5), [MoneyAudit](MoneyAudit.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Resource](Resource.md) (3), [Sector](Sector.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [Markets](Markets.md) (1), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1), [NationalAccounts](NationalAccounts.md) (1)... and 3 more
 
 **Used by (2):** [CopperRefiningCheck](CopperRefiningCheck.md), [IndustryViewCheck](IndustryViewCheck.md)
 
@@ -69,12 +69,12 @@
 | line | section |
 |---:|---|
 | 112 | 1. the sector on the registry |
-| 189 | 2. the three rows against the study |
-| 285 | 3. the types and the fit |
-| 385 | 4. a sulphide mine makes concentrate |
-| 423 | 5. an oxide field's leach plant makes cathode |
-| 457 | 6. the plan |
-| 487 | 7. a played month |
+| 190 | 2. the three rows against the study |
+| 286 | 3. the types and the fit |
+| 386 | 4. a sulphide mine makes concentrate |
+| 424 | 5. an oxide field's leach plant makes cathode |
+| 458 | 6. the plan |
+| 488 | 7. a played month |
 
 ## Constants
 
@@ -88,78 +88,78 @@
 | 117 | `CopperMiningCheck.STUDY_IMPORT` | `{ 2.800, 10.150, 10.500, 8.700, 10.750,.160, 17.000 }` | ...each one's import price, D$ thousands a tonne (the study's 4.2)... |
 | 119 | `CopperMiningCheck.STUDY_EXPORT` | `{ 2.575, 9.650, 10.000, 7.300, 10.250,.070, 13.000 }` | ...and its export price. |
 | 122 | `CopperMiningCheck.FREIGHT_SHARE` | `.375` | Good.java's rule: freight three eighths of the wedge. |
-| 192 | `CopperMiningCheck.ROWS` | `{ CopperMining.MINE_AND_MILL, CopperMining.LARGE_MINE, CopperMining.LEACH_PLA...` | Copper Mining's rows, by their permanent ids, in the study's 4.3 order. |
-| 195 | `CopperMiningCheck.STUDY_COSTS` | `{ 160_000, 2_000_000, 250_000 }` | The study's 4.3: each one's cost, D$ thousands all in. |
-| 198 | `CopperMiningCheck.STUDY_POSTS` | `{ 120, 450, 150 }` | ...its posts. |
-| 201 | `CopperMiningCheck.STUDY_KW` | `{ 5_500, 60_000, 6_000 }` | ...its draw, kW. |
-| 204 | `CopperMiningCheck.STUDY_MAKES` | `{ 2_200, 26_400, 1_000 }` | ...what it makes a month, t: concentrate, concentrate, cathode. |
-| 207 | `CopperMiningCheck.STUDY_ACID` | `3_500` | ...the acid the leach plant takes, t a month. |
-| 210 | `CopperMiningCheck.STUDY_SITES` | `{ 1, 8, 1 }` | ...the sites each stands on, and of which type (its 4.3 and 1.3: "an oxide copper field takes a leach plant"). |
-| 212 | `CopperMiningCheck.STUDY_TYPES` | `{ SULPHIDE, SULPHIDE, OXIDE }` | ...and the type of field each stands on. |
-| 215 | `CopperMiningCheck.STUDY_TABLE` | `{ { 2.6, 2.6, 2.9, 2.9 }, { 2.8, 2.8, 3.1, 3.1 }, { 3.1, 3.2, 3.4, 3.3 } }` | The study's 4.4 table, % of the cost a month, cases A to D. |
-| 218 | `CopperMiningCheck.STUDY_RUNS` | `{ 1_512.5, 11_950, 1_722.5 }` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table. |
-| 221 | `CopperMiningCheck.SINCE` | `{ 1900, 1906, 1968 }` | The year each first existed: 1900 - standing before the start - but the Large Copper Mine, the open-pit porphyry mine at Bingham Canyon in 1906 (research-1900.md 1.2, PE8), and the leach plant, SX-EW at Bluebird in 19... |
-| 224 | `CopperMiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
-| 288 | `CopperMiningCheck.TYPE_WITHIN` | `.02` | How far copper's sulphide share of the fields may sit from Deposit.TYPE_SHARES (spec-materials 4: two points, WorldCheck 8's). |
+| 193 | `CopperMiningCheck.ROWS` | `{ CopperMining.MINE_AND_MILL, CopperMining.LARGE_MINE, CopperMining.LEACH_PLA...` | Copper Mining's rows, by their permanent ids, in the study's 4.3 order. |
+| 196 | `CopperMiningCheck.STUDY_COSTS` | `{ 160_000, 2_000_000, 250_000 }` | The study's 4.3: each one's cost, D$ thousands all in. |
+| 199 | `CopperMiningCheck.STUDY_POSTS` | `{ 120, 450, 150 }` | ...its posts. |
+| 202 | `CopperMiningCheck.STUDY_KW` | `{ 5_500, 60_000, 6_000 }` | ...its draw, kW. |
+| 205 | `CopperMiningCheck.STUDY_MAKES` | `{ 2_200, 26_400, 1_000 }` | ...what it makes a month, t: concentrate, concentrate, cathode. |
+| 208 | `CopperMiningCheck.STUDY_ACID` | `3_500` | ...the acid the leach plant takes, t a month. |
+| 211 | `CopperMiningCheck.STUDY_SITES` | `{ 1, 8, 1 }` | ...the sites each stands on, and of which type (its 4.3 and 1.3: "an oxide copper field takes a leach plant"). |
+| 213 | `CopperMiningCheck.STUDY_TYPES` | `{ SULPHIDE, SULPHIDE, OXIDE }` | ...and the type of field each stands on. |
+| 216 | `CopperMiningCheck.STUDY_TABLE` | `{ { 2.6, 2.6, 2.9, 2.9 }, { 2.8, 2.8, 3.1, 3.1 }, { 3.1, 3.2, 3.4, 3.3 } }` | The study's 4.4 table, % of the cost a month, cases A to D. |
+| 219 | `CopperMiningCheck.STUDY_RUNS` | `{ 1_512.5, 11_950, 1_722.5 }` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table. |
+| 222 | `CopperMiningCheck.SINCE` | `{ 1900, 1906, 1968 }` | The year each first existed: 1900 - standing before the start - but the Large Copper Mine, the open-pit porphyry mine at Bingham Canyon in 1906 (research-1900.md 1.2, PE8), and the leach plant, SX-EW at Bluebird in 19... |
+| 225 | `CopperMiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
+| 289 | `CopperMiningCheck.TYPE_WITHIN` | `.02` | How far copper's sulphide share of the fields may sit from Deposit.TYPE_SHARES (spec-materials 4: two points, WorldCheck 8's). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 72 | `static int fails` |  |
-| 360 | `static String lastSearch` | The last town's field, for its report. |
+| 361 | `static String lastSearch` | The last town's field, for its report. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 70 | 455 | **type** `public class CopperMiningCheck` | Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.3, 1.4, 4 and 8): the fourth materials chain's digging industry... |
+| 70 | 456 | **type** `public class CopperMiningCheck` | Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.3, 1.4, 4 and 8): the fourth materials chain's digging industry... |
 | 78 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 83 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 88 | 5 | `static void quietly(Runnable r)` |  |
 | 94 | 12 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. the sector on the registry (lines 112-188)
+### 1. the sector on the registry (lines 112-189)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 124 | 64 | `static void sector()` |  |
+| 124 | 65 | `static void sector()` |  |
 
-### 2. the three rows against the study (lines 189-284)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 226 | 58 | `static void rows()` |  |
-
-### 3. the types and the fit (lines 285-384)
+### 2. the three rows against the study (lines 190-285)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 290 | 33 | `static void typesAndFit()` |  |
-| 332 | 26 | `static Game copperTown(String label, int sulphideSites)` | A town to dig copper in: the Wealthy preset's cash and the founding default's works, founded on the oxide field nearest the default site whose centre plot is dry ground - so it holds an oxide field whole (CityLand.fou... |
-| 363 | 21 | `static Deposit nearest(World w, Deposit.FieldType type)` | The copper field of a type nearest a world's founding site whose centre plot is dry ground, cell ring by cell ring. |
+| 227 | 58 | `static void rows()` |  |
 
-### 4. a sulphide mine makes concentrate (lines 385-422)
+### 3. the types and the fit (lines 286-385)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 387 | 35 | `static void sulphide()` |  |
+| 291 | 33 | `static void typesAndFit()` |  |
+| 333 | 26 | `static Game copperTown(String label, int sulphideSites)` | A town to dig copper in: the Wealthy preset's cash and the founding default's works, founded on the oxide field nearest the default site whose centre plot is dry ground - so it holds an oxide field whole (CityLand.fou... |
+| 364 | 21 | `static Deposit nearest(World w, Deposit.FieldType type)` | The copper field of a type nearest a world's founding site whose centre plot is dry ground, cell ring by cell ring. |
 
-### 5. an oxide field's leach plant makes cathode (lines 423-456)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 425 | 31 | `static void oxide()` |  |
-
-### 6. the plan (lines 457-486)
+### 4. a sulphide mine makes concentrate (lines 386-423)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 459 | 27 | `static void plan()` |  |
+| 388 | 35 | `static void sulphide()` |  |
 
-### 7. a played month (lines 487-524)
+### 5. an oxide field's leach plant makes cathode (lines 424-457)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 489 | 35 | `static void playedMonth()` |  |
+| 426 | 31 | `static void oxide()` |  |
+
+### 6. the plan (lines 458-487)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 460 | 27 | `static void plan()` |  |
+
+### 7. a played month (lines 488-525)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 490 | 35 | `static void playedMonth()` |  |
 

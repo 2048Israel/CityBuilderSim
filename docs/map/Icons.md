@@ -1,6 +1,6 @@
-# Icons.java - 539 lines · 6 methods · 69 constants · interface
+# Icons.java - 540 lines · 6 methods · 69 constants · interface
 
-`ham/citybuildersim/ui/Icons.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Icons.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The rail's icons, as vector outlines - and since 0.7.24 the Build tab's, one
 > per category, and the few the frame draws (the money block, the "Needs you"
@@ -118,27 +118,27 @@
 | 383 | `Icons.TANK` | `"M4 9l8-4 8 4 M4 9v11h16V9 M4 14h16"` | A storage tank, its roof a shallow cone: what goes into the refiners' tanks, and a Tank Farm's crude. |
 | 386 | `Icons.FLAME` | `"M12 3c3 4 5 6.5 5 10a5 5 0 0 1 -10 0c0-2 1-3.5 2.5-5.5 2 1.5 3 2.5 3 -1-3 -....` | A flame: the furnaces, where residue no diesel can cut is burned. |
 | 389 | `Icons.EXCHANGE` | `"M8 3L4 7l4 4 M4 7h16 M16 21l4-4-4-4 M20 17H4"` | Two arrows passing, one each way (Lucide's arrow-left-right): money changed from one currency to the other - the Trade tab's exchange (0.7.35). |
-| 512 | `Icons.DICE` | `"M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z"...` | A die showing five (Lucide "dice-5"): the founding screen's roll of a new world (0.7.56). |
-| 516 | `Icons.MAP` | `"M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15 M15 6v15"` | A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's shortcut, "Buy the best: North 3 · ..." (0.7.61; "Buy the best land" until 0.7.69). |
-| 519 | `Icons.ZONING` | `"M12 8l6-3-6-3v10" + " M8 11.99l-5.5 3.14a1 1 0 0 0 0 1.74l8.5 4.86a2 2 0 0 0...` | A flag on a plot (Lucide "land-plot", its relative moves written absolute): Policy's Zoning area, its chip, its card and a zoning decision's flag (0.7.109, batch Z2). |
-| 524 | `Icons.TREES` | `"M10 10v.2A3 3 0 0 1 8.9 16H5a3 3 0 0 1-1-5.8V10a3 3 0 0 1 6 0Z M7 16v6 M13 1...` | Two trees (Lucide "trees"): the forest law - its tab, its card and its page (0.7.109, batch Z2). |
-| 528 | `Icons.EXPAND` | `"M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7"` | Two arrows out to the corners (Lucide "maximize-2"): the land office's Expand (0.7.61). |
-| 531 | `Icons.SETTINGS` | `"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915" + "a2.34 2...` | A gear. |
+| 513 | `Icons.DICE` | `"M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z"...` | A die showing five (Lucide "dice-5"): the founding screen's roll of a new world (0.7.56). |
+| 517 | `Icons.MAP` | `"M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15 M15 6v15"` | A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's shortcut, "Buy the best: North 3 · ..." (0.7.61; "Buy the best land" until 0.7.69). |
+| 520 | `Icons.ZONING` | `"M12 8l6-3-6-3v10" + " M8 11.99l-5.5 3.14a1 1 0 0 0 0 1.74l8.5 4.86a2 2 0 0 0...` | A flag on a plot (Lucide "land-plot", its relative moves written absolute): Policy's Zoning area, its chip, its card and a zoning decision's flag (0.7.109, batch Z2). |
+| 525 | `Icons.TREES` | `"M10 10v.2A3 3 0 0 1 8.9 16H5a3 3 0 0 1-1-5.8V10a3 3 0 0 1 6 0Z M7 16v6 M13 1...` | Two trees (Lucide "trees"): the forest law - its tab, its card and its page (0.7.109, batch Z2). |
+| 529 | `Icons.EXPAND` | `"M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7"` | Two arrows out to the corners (Lucide "maximize-2"): the land office's Expand (0.7.61). |
+| 532 | `Icons.SETTINGS` | `"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915" + "a2.34 2...` | A gear. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 495 | **type** `public final class Icons` | The rail's icons, as vector outlines - and since 0.7.24 the Build tab's, one per category, and the few the frame draws (the money block, the "Needs you" chip, the construction tab). |
+| 45 | 496 | **type** `public final class Icons` | The rail's icons, as vector outlines - and since 0.7.24 the Build tab's, one per category, and the few the frame draws (the money block, the "Needs you" chip, the construction tab). |
 | 47 | 1 | `private Icons()` |  |
 
-### THE BUILD TAB'S AND THE FRAME'S (0.7.24) (lines 162-539)
+### THE BUILD TAB'S AND THE FRAME'S (0.7.24) (lines 162-540)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 400 | 21 | `public static String ofGood(ham.citybuildersim.Good good)` | The icon of a good (0.7.35, the Trade tab's rows): its family's - FOOD for the fourteen foods and the restaurants' meals, ORE for iron ore, INDUSTRY for steel, fabricated steel and machinery, VEHICLES for cars and van... |
 | 423 | 24 | `public static String ofSector(ham.citybuildersim.Sector sector)` | The icon of a sector (0.7.30): its Build category's, or one of the five above where the category is shared. |
-| 449 | 19 | `public static String ofCategory(String name)` | The icon of a Build category, by its name (BuildAdvice's). |
-| 476 | 11 | `public static String ofEpisode(String kind)` | The icon of a named episode's kind (0.7.37, City History's hard times): a recession or a depression the History chart's own line, a slump the out of work, an epidemic the cross, a financial crisis the bank, the money'... |
-| 495 | 15 | `public static String ofDecision(String kind)` | The icon of a decision's kind (0.7.37, City History's decisions), as its flag is coloured by the area it is about: a tax the government's, a promise the policy scales, the central bank and the bank the bank's, the mon... |
+| 449 | 20 | `public static String ofCategory(String name)` | The icon of a Build category, by its name (BuildAdvice's). |
+| 477 | 11 | `public static String ofEpisode(String kind)` | The icon of a named episode's kind (0.7.37, City History's hard times): a recession or a depression the History chart's own line, a slump the out of work, an epidemic the cross, a financial crisis the bank, the money'... |
+| 496 | 15 | `public static String ofDecision(String kind)` | The icon of a decision's kind (0.7.37, City History's decisions), as its flag is coloured by the area it is about: a tax the government's, a promise the policy scales, the central bank and the bank the bank's, the mon... |
 

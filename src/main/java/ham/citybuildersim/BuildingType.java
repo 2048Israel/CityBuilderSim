@@ -174,7 +174,7 @@ public enum BuildingType {
      * build, everything is exported by truck, which is obviously more
      * expensive and road demanding." A founding city trades on lorries at the
      * price the world has always charged; rail is what makes that cheaper. See
-     * sectors.Rail and GoodsMarket.setFreightFactor.
+     * sectors.Freight and GoodsMarket.setFreightFactor.
      *
      * ON THE END, for the seventh time, and the reason has not changed since
      * INFRASTRUCTURE: the saved per-sector property tax and interest arrays
@@ -234,6 +234,18 @@ public enum BuildingType {
      * a narrower freight wedge on the city's seaborne trade (Ports). The
      * treasury pays its crews with transit's and its repairs with the roads'.
      */
-    PORTS
+    PORTS,
+
+    /**
+     * ...and for the twelfth time, on the end. See above.
+     *
+     * Freight's Haulage division's buildings (FR2, 2026-10-18): the Truck
+     * Depot, where the city's trucks are kept. An investor builds it, as
+     * the railway's lines are built (BuildScreen.investorTypes()), and it
+     * sits in the Rail group of the build menu beside the railway it
+     * feeds (BuildAdvice.categories()). The Heavy Truck Plant that makes the
+     * trucks is Automotive's.
+     */
+    HAULAGE
 
 }

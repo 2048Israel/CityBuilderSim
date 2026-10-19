@@ -201,6 +201,15 @@ public class LongPlaytest {
     static double peakRate = 0;
     static int peakRateMonth = 0, monthsFarFromParity = 0;
 
+    /**
+     * FREIGHT'S TRUCKS OVER THE RUN (FR2): the months Haulage's trucks carried
+     * less than the city's legs and how short at worst, the fleet and the
+     * depots' room at their most, and what the run billed for how many tonnes.
+     * The end state is one month of a mechanic that bites while a city grows.
+     */
+    static int haulShortMonths = 0, haulFirstShort = 0, haulWorstMonth = 0, haulUnder90Months = 0;
+    static double haulWorstShare = 1, haulTrucksPeak = 0, haulRoomPeak = 0, haulBilledRun = 0, haulCarriedRun = 0;
+
     /** How far from parity, as a multiple of it, a weak currency has to be to count as far from it. */
     static final double FAR_FROM_PARITY = 2.0;
 
@@ -713,7 +722,7 @@ public class LongPlaytest {
                 for (Good gd : Good.values()) {
                     double v = s.getPurchasesForgone(gd);
                     if (!(v > 0)) continue;
-                    if (gd == Good.VANS || gd == Good.ROLLING_STOCK) f[2] += v;
+                    if (gd == Good.VANS || gd == Good.TRUCKS || gd == Good.ROLLING_STOCK) f[2] += v;
                     else if (RETAILERS.contains(k)) f[0] += v;
                     else f[1] += v;
                 }
@@ -1487,6 +1496,15 @@ public class LongPlaytest {
         if (seatsNow > peakSeats) { peakSeats = seatsNow; peakSeatsMonth = g.getMonth(); }
         if (seatsNow > 0) { monthsWithSeats++; lastSeatMonth = g.getMonth(); }
         serviceExportsRun += bsm.statement().exports;
+        ham.citybuildersim.sectors.Haulage haul = g.getSectors().freight().haulage();
+        double haulShare = haul.getShare();
+        if (haulShare < 1 && haulShortMonths++ == 0) haulFirstShort = g.getMonth();
+        if (haulShare < .9) haulUnder90Months++;
+        if (haulShare < haulWorstShare) { haulWorstShare = haulShare; haulWorstMonth = g.getMonth(); }
+        haulTrucksPeak = Math.max(haulTrucksPeak, haul.trucks());
+        haulRoomPeak = Math.max(haulRoomPeak, haul.depotRoom());
+        haulBilledRun += haul.getBill();
+        haulCarriedRun += haul.getCarried();
 
         crimeMonths++;
         crimeVsSum += crime.getRateVsCanada();
@@ -3278,7 +3296,7 @@ public class LongPlaytest {
 
     /**
      * The fuel the world sold the city last month (0.7.62): its drivers'
-     * (Game.getHouseholdFuelImports()) and its railway's (Rail.getFuelImported())
+     * (Game.getHouseholdFuelImports()) and its railway's (Freight.getFuelImported())
      * - their petrol and its diesel since 0.7.76 - and since 0.7.83 (batch O6)
      * the drivers' petrol the grocers' forecourts imported for them
      * (Retail.getFuelImported(); the households' own is nothing from then on)
@@ -3288,7 +3306,7 @@ public class LongPlaytest {
     static double fuelBoughtAbroad(Game g) {
         double vans = 0;
         for (Sector s : g.getSectors().all()) vans += s.getFleetDieselImported();
-        return g.getHouseholdFuelImports() + g.getSectors().rail().getFuelImported()
+        return g.getHouseholdFuelImports() + g.getSectors().freight().getFuelImported()
                 + g.getSectors().retail().getFuelImported() + vans;
     }
 
@@ -3323,7 +3341,7 @@ public class LongPlaytest {
         ham.citybuildersim.sectors.Retail pump = g.getSectors().retail();
         double drivers = Double.isFinite(pump.getWholesaleLitre())
                 ? pump.getWholesaleLitre() * (pump.getPumpLitres() + pump.getQueueLitres()) : g.getHouseholdFuel();
-        fuelBillRun += drivers + g.getSectors().rail().getFuelBill();
+        fuelBillRun += drivers + g.getSectors().freight().getFuelBill();
         fuelAbroadRun += fuelBoughtAbroad(g);
         for (Sector s : g.getSectors().all()) {
             vanDieselRun += s.getFleetDieselCost();
@@ -5510,6 +5528,13 @@ public class LongPlaytest {
                 + " %.0fx parity; prices averaged %+.2f%%/yr%n",
                 peakRate, peakRateMonth, monthsFarFromParity, FAR_FROM_PARITY,
                 (Math.pow(Math.max(1e-9, g.getPriceIndex().getIndex()), 12.0 / Math.max(1, g.getMonth())) - 1) * 100);
+        // Freight's trucks over the run (FR2): see FREIGHT'S TRUCKS OVER THE RUN.
+        ham.citybuildersim.sectors.Haulage haulEnd = g.getSectors().freight().haulage();
+        out.printf("  freight's trucks over the run: short of the city's legs %d month(s), %d under 90%% (first m%d; at worst %.0f%% carried, m%d);"
+                + " %,.0f trucks and %,.0f depot places at the most; $%,.0fk billed for %,.0f t of city legs; now %,.0f trucks,"
+                + " a tonne's leg $%.2f against $%.2f estimated%n",
+                haulShortMonths, haulUnder90Months, haulFirstShort, haulWorstShare * 100, haulWorstMonth, haulTrucksPeak, haulRoomPeak,
+                haulBilledRun, haulCarriedRun, haulEnd.trucks(), haulEnd.getQuote() * 1000, haulEnd.estimate() * 1000);
         // The guard and the dial's path (0.7.2): see THE CURRENCY'S GUARD AND THE DIAL'S PATH.
         int pastOldStop = 0;
         for (double d : dialPath) if (d > OLD_DIAL_STOP + 1e-9) pastOldStop++;

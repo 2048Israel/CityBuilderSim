@@ -203,7 +203,7 @@ final class InfrastructureScreen {
     HBox vitals(List<CityNeeds.Need> all) {
 
         InfrastructureManager roads = ui.game.getInfrastructureManager();
-        ham.citybuildersim.sectors.Rail rail = ui.game.getSectors().rail();
+        ham.citybuildersim.sectors.Freight rail = ui.game.getSectors().freight();
         CityNeeds.Served served = roadServed(roads);
         String tone = BuildScreen.servedTone(served);
 
@@ -1136,7 +1136,7 @@ final class InfrastructureScreen {
 
     void railwayPage(VBox page) {
 
-        ham.citybuildersim.sectors.Rail rail = ui.game.getSectors().rail();
+        ham.citybuildersim.sectors.Freight rail = ui.game.getSectors().freight();
         InfrastructureManager roads = ui.game.getInfrastructureManager();
         double track = rail.trackTonnes();
 
@@ -1149,8 +1149,8 @@ final class InfrastructureScreen {
         } else {
             double quote = rail.getQuote();
             SegmentBar gauge = segmentBar(List.of(Segment.of(Math.min(1, quote), Palette.BUSINESS)), 1,
-                    List.of(new Tick(ham.citybuildersim.sectors.Rail.RAIL_FLOOR, Palette.TEXT_MUTED, 1,
-                                    "its floor " + pct(ham.citybuildersim.sectors.Rail.RAIL_FLOOR),
+                    List.of(new Tick(ham.citybuildersim.sectors.Freight.RAIL_FLOOR, Palette.TEXT_MUTED, 1,
+                                    "its floor " + pct(ham.citybuildersim.sectors.Freight.RAIL_FLOOR),
                                     "It never quotes under this: freight needs profit"),
                             new Tick(1, Palette.TEXT_HEAD, 2, "a lorry", "It can never charge more than a lorry")),
                     260, 10);
@@ -1158,7 +1158,7 @@ final class InfrastructureScreen {
                     pairLine(pct(quote), Palette.TEXT_HEAD, "of a lorry", null, null, null),
                     gauge,
                     infoLine(String.format("set monthly from its costs + %.1f%% on its track",
-                                    ham.citybuildersim.sectors.Rail.TARGET_RETURN * 100),
+                                    ham.citybuildersim.sectors.Freight.TARGET_RETURN * 100),
                             QUOTE_INFO, true, Palette.SIZE_BODY, Palette.TEXT_LABEL, 300));
         }
         page.getChildren().add(heroCard(left, 300, freightBill(rail)));
@@ -1172,7 +1172,7 @@ final class InfrastructureScreen {
         }
         HBox rule = new HBox(Palette.GAP_LOOSE, infoLine(String.format("It will not lay a line it cannot fill to %.0f%%, "
                                 + "which is why a town does not get a spur.",
-                        ham.citybuildersim.sectors.Rail.MIN_LINE_UTILISATION * 100),
+                        ham.citybuildersim.sectors.Freight.MIN_LINE_UTILISATION * 100),
                 LINE_RULE_INFO, true, Palette.SIZE_LABEL, Palette.TEXT_MUTED, 600),
                 doorPill("Rail on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.RAIL)));
         rule.setAlignment(Pos.CENTER_LEFT);
@@ -1197,7 +1197,7 @@ final class InfrastructureScreen {
     static final String LINE_RULE_INFO = String.format(
             "It will not lay a line it cannot fill to %.0f%%, which is why a town does "
             + "not get a spur. The full set of books is on the Sector economy tab, where "
-            + "every sector's are.", ham.citybuildersim.sectors.Rail.MIN_LINE_UTILISATION * 100);
+            + "every sector's are.", ham.citybuildersim.sectors.Freight.MIN_LINE_UTILISATION * 100);
 
     /** The bill three ways (P21, rewritten: what neither is paid is kept, not paid abroad). */
     static final String BILL_INFO = "The month's lorry bill is what the tonnes that crossed the city's boundary "
@@ -1209,7 +1209,7 @@ final class InfrastructureScreen {
             + "trade balance, before it makes any difference to the road.";
 
     /** The month's freight bill, three ways: one bar as long as the lorry bill, its key with the figures, and the fuel. */
-    VBox freightBill(ham.citybuildersim.sectors.Rail rail) {
+    VBox freightBill(ham.citybuildersim.sectors.Freight rail) {
         double truck = rail.getTruckBill(), home = rail.getHaulageBilled(), abroad = rail.getPaidAbroad(), kept = rail.getKept();
         boolean split = Double.isFinite(abroad);
         List<Segment> parts = new ArrayList<>();
@@ -1245,7 +1245,7 @@ final class InfrastructureScreen {
     }
 
     /** TRACK AND TRAINS: the track, the sets against what it needs, what it can carry, and the trains it is short or the ones it wears out. */
-    VBox trackCard(ham.citybuildersim.sectors.Rail rail) {
+    VBox trackCard(ham.citybuildersim.sectors.Freight rail) {
         double fleet = rail.fleet(), needs = rail.setsNeeded(), shortBy = rail.bid(Good.ROLLING_STOCK);
         VBox card = ServicesScreen.card(cardHead(Icons.RAIL, Palette.BUSINESS, "Track and trains", null),
                 figureLine(String.format("%,.0f t", rail.trackTonnes()), "a month of track"),
@@ -1262,7 +1262,7 @@ final class InfrastructureScreen {
                             + "other capital good - from a Locomotive Works if the city has one, "
                             + "and from the world if it does not.",
                             rail.trackTonnes() - rail.getCapacityTonnes(),
-                            ham.citybuildersim.sectors.Rail.TONNES_PER_SET, shortBy), true));
+                            ham.citybuildersim.sectors.Freight.TONNES_PER_SET, shortBy), true));
             line.setAlignment(Pos.CENTER_LEFT);
             card.getChildren().add(line);
         } else {
@@ -1270,14 +1270,14 @@ final class InfrastructureScreen {
                     String.format("A set lasts %.0f years, so this fleet asks for about %,.2f replacement "
                             + "sets a month for ever - which is what makes a Locomotive Works a "
                             + "business rather than a single sale.",
-                            ham.citybuildersim.sectors.Rail.SET_LIFE_MONTHS / 12, rail.replacementSets()),
+                            ham.citybuildersim.sectors.Freight.SET_LIFE_MONTHS / 12, rail.replacementSets()),
                     true, Palette.SIZE_LABEL, Palette.TEXT_LABEL, 360));
         }
         return card;
     }
 
     /** WHAT IT HAULS: what crossed and what it took, each stream's share, and what that takes off the road. */
-    VBox haulsCard(ham.citybuildersim.sectors.Rail rail) {
+    VBox haulsCard(ham.citybuildersim.sectors.Freight rail) {
         double crossed = rail.getTradeTonnes(), hauled = rail.getHauledTonnes();
         double[] carried = rail.getCarried();
         SegmentBar bar = supplyBar(crossed, crossed, hauled, Palette.BUSINESS, null, null,
@@ -1305,7 +1305,7 @@ final class InfrastructureScreen {
             InfrastructureManager.RAIL_ROAD_RELIEF * 100);
 
     /** THE BUSINESS: billed against what the rule allows, the fuel, the net income, the capital - and the door to its books. */
-    VBox businessCard(ham.citybuildersim.sectors.Rail rail) {
+    VBox businessCard(ham.citybuildersim.sectors.Freight rail) {
         double billed = rail.getHaulageBilled(), allowed = rail.getAllowedRevenue();
         double net = rail.statement().netIncome;
         // Red only below zero, as Sectors colours it: a business losing money (D20).
@@ -1339,7 +1339,7 @@ final class InfrastructureScreen {
             + "cheaper; it makes a railway that cannot pay for itself.";
 
     /** The old railway page, line by line, in its fold. */
-    VBox railwayStatement(ham.citybuildersim.sectors.Rail rail, InfrastructureManager roads) {
+    VBox railwayStatement(ham.citybuildersim.sectors.Freight rail, InfrastructureManager roads) {
         double track = rail.trackTonnes(), fleet = rail.fleet(), needs = rail.setsNeeded(), capacity = rail.getCapacityTonnes();
         VBox c = column(statementHead("Track, and the trains to run on it"),
                 statementLine("Track standing", String.format("%,.0f tonnes a month", track)),
@@ -1393,7 +1393,7 @@ final class InfrastructureScreen {
 
     void freightPage(VBox page) {
 
-        ham.citybuildersim.sectors.Rail rail = ui.game.getSectors().rail();
+        ham.citybuildersim.sectors.Freight rail = ui.game.getSectors().freight();
 
         page.getChildren().add(heroCard(new VBox(8, caption("WHAT MOVING IT ADDS TO EACH GOOD'S PRICE", null),
                         infoLine("A railway takes freight out of the band and bills it at home.", BAND_INFO, true,

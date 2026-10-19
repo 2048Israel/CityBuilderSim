@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.HeavyIndustry;
-import ham.citybuildersim.sectors.Rail;
+import ham.citybuildersim.sectors.Freight;
 
 /**
  * The railway: what it charges, who pays it, and what it does to the band.
@@ -32,7 +32,7 @@ import ham.citybuildersim.sectors.Rail;
  *      costs to run plus a return on the track. A haulage rate that did not
  *      respond to either would make this a subsidy rather than a sector.
  *
- * See claude/transport-and-the-freight-band.md and sectors.Rail.
+ * See claude/transport-and-the-freight-band.md and sectors.Freight.
  */
 public class RailCheck {
 
@@ -125,7 +125,7 @@ public class RailCheck {
         boolean blends = true;
         StringBuilder worst = new StringBuilder();
         for (double s : new double[] { 0, .17, .5, .83, 1 }) {
-            for (double q : new double[] { Rail.RAIL_FLOOR, .45, .6, .88, 1 }) {
+            for (double q : new double[] { Freight.RAIL_FLOOR, .45, .6, .88, 1 }) {
                 Markets mk = new Markets();
                 mk.setExchangeRate(fx);
                 GoodsMarket m = mk.get(steel);
@@ -164,7 +164,7 @@ public class RailCheck {
                 String.format("%.6f-%.6f against %.6f-%.6f", fm.netExportPrice(),
                         fm.netImportPrice(), steel.worldExportPrice(), steel.worldImportPrice()));
 
-        fm.setRailCharge(Rail.RAIL_FLOOR);
+        fm.setRailCharge(Freight.RAIL_FLOOR);
         double wedgeNow = fm.netImportPrice() - fm.netExportPrice();
         double wedgeWas = steel.worldImportPrice() - steel.worldExportPrice();
         report("...and at its floor the wedge is the world's margin plus a real freight",
@@ -262,7 +262,7 @@ public class RailCheck {
              * sector shifted the fixture city. An assertion whose subject is
              * decided by a planner is an assertion about the planner.
              */
-            game.getBusinessInvestment().holdSector(Sectors.RAIL);
+            game.getBusinessInvestment().holdSector(Sectors.FREIGHT);
             game.getLandManager().setOwnedSqFt(400_000_000L);
             BuildingManager b = game.getBuildingManager();
             game.buildStack(b.getTemplateByName("House"), 900, true);
@@ -302,7 +302,7 @@ public class RailCheck {
             for (int i = 0; i < 36; i++) game.toggleNextMonth();
         });
 
-        Rail rail = game.getSectors().rail();
+        Freight rail = game.getSectors().freight();
         BuildingManager live = game.getBuildingManager();
 
         report("a city that trades steel has freight to move",
@@ -360,15 +360,21 @@ public class RailCheck {
 
         quietly(() -> { for (int i = 0; i < 28; i++) game.toggleNextMonth(); });
 
-        double billed = rail.statement().otherRevenue;
-        double paidOut = 0;
+        // Since FR2 the sector's other revenue is the railway's bill and Haulage's (the trucks' city leg): the railway's is the rest.
+        double trucksBilled = rail.haulage().getBill();
+        double billed = rail.statement().otherRevenue - trucksBilled;
+        double paidOut = 0, trucksPaid = 0;
         for (Sector s : game.getSectors().all()) {
             if (s == rail) continue;
-            paidOut += s.otherInputParts().getOrDefault("Haulage", 0.0);
+            paidOut += s.otherInputParts().getOrDefault("Rail freight", 0.0);
+            trucksPaid += s.otherInputParts().getOrDefault(ham.citybuildersim.sectors.Haulage.BILLED_AS, 0.0);
         }
         report("every dollar the railway billed is on a shipper's cost line",
                 billed > 0 && near(billed, paidOut, 1e-9),
                 String.format("billed %,.2fk, charged %,.2fk", billed, paidOut));
+        report("...and every dollar its trucks billed (FR2), on the shippers' Haulage line",
+                near(trucksBilled, trucksPaid, 1e-9),
+                String.format("billed %,.2fk, charged %,.2fk", trucksBilled, trucksPaid));
 
         report("...and the shippers' opened cost line still adds to the closed one",
                 allInputsAddUp(game),
@@ -396,11 +402,13 @@ public class RailCheck {
         double fuelBill = rail.statement().bought.getOrDefault(Good.DIESEL, new Sector.Split()).abroad;
         double trainBill = rail.statement().bought
                 .getOrDefault(Good.ROLLING_STOCK, new Sector.Split()).abroad;
-        report("the railway's fuel and its locomotives are both imports",
+        // ...and since FR2 the trucks its Haulage division buys, which the world sells a town with no Heavy Truck Plant.
+        double truckBill = rail.statement().bought.getOrDefault(Good.TRUCKS, new Sector.Split()).abroad;
+        report("the railway's fuel and its locomotives are both imports, and with the trucks they are all of them",
                 fuelBill > 0 && trainBill > 0
-                        && near(rail.statement().imports, fuelBill + trainBill, 1e-9),
-                String.format("fuel %,.0fk + trains %,.0fk = %,.0fk on the trade balance",
-                        fuelBill, trainBill, rail.statement().imports));
+                        && near(rail.statement().imports, fuelBill + trainBill + truckBill, 1e-9),
+                String.format("fuel %,.0fk + trains %,.0fk + trucks %,.0fk = %,.0fk on the trade balance",
+                        fuelBill, trainBill, truckBill, rail.statement().imports));
 
         /*
          * ...AND THE TRADE TAB NAMES THE FUEL (0.7.35). It draws the month good
@@ -415,9 +423,9 @@ public class RailCheck {
         // ...the fuel among FUEL's buyers since 0.7.62, where it was the railway's line of imports with no good - DIESEL's since 0.7.76.
         Sectors.GoodTrade fuelGood = goods.goods().get(Good.DIESEL);
         report("...and the Trade tab's goods name the fuel as the railway's, the trains as rolling stock",
-                fuelGood != null && near(fuelGood.buyers().getOrDefault(Sectors.RAIL, 0.0), fuelBill, 1e-9)
-                        && !goods.services().containsKey(Sectors.RAIL)
-                        && wagons != null && near(wagons.buyers().getOrDefault(Sectors.RAIL, 0.0), trainBill, 1e-9),
+                fuelGood != null && near(fuelGood.buyers().getOrDefault(Sectors.FREIGHT, 0.0), fuelBill, 1e-9)
+                        && !goods.services().containsKey(Sectors.FREIGHT)
+                        && wagons != null && near(wagons.buyers().getOrDefault(Sectors.FREIGHT, 0.0), trainBill, 1e-9),
                 String.format("fuel %,.0fk, rolling stock %,.0fk", fuelGood == null ? 0 : fuelGood.bought(),
                         wagons == null ? 0 : wagons.bought()));
         report("...with every other good bought, the city's imports",
@@ -452,7 +460,7 @@ public class RailCheck {
          *
          * THIS IS THE MECHANIC AND NOT AN EDGE CASE. Over-building a railway
          * does not make freight cheaper; it makes a railway that cannot pay for
-         * itself. See Rail.TARGET_RETURN for the four-thousand-month run that
+         * itself. See Freight.TARGET_RETURN for the four-thousand-month run that
          * chose this rule over a shop's cost-plus.
          *
          * A NOTE ON THE LEVELS HERE. This fixture is a steel town, and a tonne
@@ -469,7 +477,8 @@ public class RailCheck {
         double sizedQuote = rail.getQuote();
         double sizedBilled = rail.getHaulageBilled();
         double sizedAllowed = rail.getAllowedRevenue();
-        double sizedNet = rail.statement().netIncome;
+        // What the railway earned: its bill less its running cost (FR2: the sector's net income holds the trucks' too).
+        double sizedNet = rail.getHaulageBilled() - rail.getRunningCost();
         double sizedCapital = rail.getBuildingsValue() + rail.getLandValue();
 
         report("a railway sized to its city bills about what the rule allows it",
@@ -477,8 +486,8 @@ public class RailCheck {
                 String.format("billed %,.0fk against %,.0fk allowed, at %.0f%% of the lorry rate",
                         sizedBilled, sizedAllowed, sizedQuote * 100));
         report("...and is inside its own bounds while it does",
-                sizedQuote > Rail.RAIL_FLOOR && sizedQuote <= 1 + 1e-12,
-                String.format("%.1f%%, floor %.0f%%", sizedQuote * 100, Rail.RAIL_FLOOR * 100));
+                sizedQuote > Freight.RAIL_FLOOR && sizedQuote <= 1 + 1e-12,
+                String.format("%.1f%%, floor %.0f%%", sizedQuote * 100, Freight.RAIL_FLOOR * 100));
 
         quietly(() -> {
             lay(game, "Rail Spur", 6);
@@ -494,15 +503,16 @@ public class RailCheck {
         report("...so it pins at the lorries' price, which is its ceiling",
                 rail.getQuote() > sizedQuote && rail.getQuote() <= 1 + 1e-12,
                 String.format("%.1f%% against %.1f%%", rail.getQuote() * 100, sizedQuote * 100));
+        double railNet = rail.getHaulageBilled() - rail.getRunningCost();
         report("...and earns LESS on four times the capital",
-                rail.statement().netIncome < sizedNet,
+                railNet < sizedNet,
                 String.format("%,.0fk on %,.0fk of track against %,.0fk on %,.0fk",
-                        rail.statement().netIncome,
+                        railNet,
                         rail.getBuildingsValue() + rail.getLandValue(), sizedNet, sizedCapital));
         report("...but never quotes below its floor, because freight needs profit",
-                rail.getQuote() >= Rail.RAIL_FLOOR - 1e-12,
+                rail.getQuote() >= Freight.RAIL_FLOOR - 1e-12,
                 String.format("%.1f%% against a floor of %.0f%%",
-                        rail.getQuote() * 100, Rail.RAIL_FLOOR * 100));
+                        rail.getQuote() * 100, Freight.RAIL_FLOOR * 100));
 
         /* ================================================================
            5. AND IT SURVIVES A RELOAD
@@ -531,7 +541,7 @@ public class RailCheck {
          * tonnes. loadGameSave() rebuilds the world first, as the game does.
          */
         quietly(() -> reloaded.loadGameSave(10));
-        Rail back = reloaded.getSectors().rail();
+        Freight back = reloaded.getSectors().freight();
         report("the quote came back",
                 same(back.getQuote(), quoteWas),
                 String.format("%.6f against %.6f", back.getQuote(), quoteWas));
@@ -559,7 +569,7 @@ public class RailCheck {
         SectorState older = back.toState();
         older.extras.remove("allowed");
         older.extras.remove("paidAbroad");
-        Rail old = new Rail();
+        Freight old = new Freight();
         old.restore(older);
         report("a save from before them loads them as not known, not as nothing",
                 back.getHaulageBilled() > 0 && Double.isNaN(old.getAllowedRevenue())
@@ -570,7 +580,7 @@ public class RailCheck {
                 !resaved.extras.containsKey("allowed") && !resaved.extras.containsKey("paidAbroad"),
                 resaved.extras.keySet().toString());
         older.extras.put("haulage", 0.0);
-        Rail idle = new Rail();
+        Freight idle = new Freight();
         idle.restore(older);
         report("...but with nothing billed at home, the whole lorry bill went abroad",
                 older.extras.getOrDefault("truckBill", 0.0) > 0
@@ -614,7 +624,7 @@ public class RailCheck {
         assertTrue("fixture: the railway hauled in the month the city was saved",
                 rail.getHauledTonnes() > 0 && rail.getHaulageBilled() > 0);
         quietly(() -> { game.toggleNextMonth(); reloaded.toggleNextMonth(); });
-        Rail onward = reloaded.getSectors().rail();
+        Freight onward = reloaded.getSectors().freight();
         report("a reloaded railway bills the month the live one bills",
                 rail.getTradeTonnes() > 0 && same(onward.getTradeTonnes(), rail.getTradeTonnes())
                         && same(onward.getHaulageBilled(), rail.getHaulageBilled())

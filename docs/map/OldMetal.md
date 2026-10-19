@@ -1,6 +1,6 @@
 # OldMetal.java - 418 lines · 40 methods · 10 constants · model
 
-`ham/citybuildersim/OldMetal.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OldMetal.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The city's old steel: what it throws out each month that a Scrap Yard can
 > buy and sort into scrap - its scrapped cars, its demolitions, its
@@ -32,7 +32,7 @@
 >     material's salvage share is - ConstructionControl.SALVAGE_SHARE);
 >   - a tonne of fabricated steel made, OFFCUTS_A_TONNE_FABRICATED, its
 >     maker's (Manufacturing);
->   - a wagon set worn out, STEEL_A_SET, the railway's (sectors.Rail).
+>   - a wagon set worn out, STEEL_A_SET, the railway's (sectors.Freight).
 > 
 > THE YARDS BUY IT (settle()), once a month, when Iron & Steel makes its
 > scrap (sectors.HeavyIndustry, THE OLD STEEL): as much as its Scrap Yards

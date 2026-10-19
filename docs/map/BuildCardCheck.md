@@ -1,6 +1,6 @@
-# BuildCardCheck.java - 1,802 lines · 33 methods · 1 constants · harnesses
+# BuildCardCheck.java - 1,806 lines · 33 methods · 1 constants · harnesses
 
-`ham/citybuildersim/BuildCardCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildCardCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The build card (0.7.25): BuildCard's figures for every building in
 > buildings.json (139 since 0.7.140) held to
@@ -64,7 +64,7 @@
 >   11. THE INTEREST ON ITS WHOLE COST (0.7.122): the gate after the loss
 > ... (35 more lines in the source)
 
-**Uses:** [BuildCard](BuildCard.md) (332), [CityNeeds](CityNeeds.md) (89), [BuildAdvice](BuildAdvice.md) (79), [Game](Game.md) (51), [BuildingsTemplate](BuildingsTemplate.md) (43), [Resource](Resource.md) (31), [Good](Good.md) (30), [Deposit](Deposit.md) (27), [CareType](CareType.md) (16), [Formats](Formats.md) (14), [SpreadPlanner](SpreadPlanner.md) (13), [ExtractionSector](ExtractionSector.md) (11), [World](World.md) (11), [Forestry](Forestry.md) (10), [Sector](Sector.md) (9), [Mining](Mining.md) (9), [BusinessInvestment](BusinessInvestment.md) (9), [BuildingManager](BuildingManager.md) (7), [Sectors](Sectors.md) (6), [HeavyIndustry](HeavyIndustry.md) (6), [Refining](Refining.md) (5), [LandManager](LandManager.md) (5), [GameFiles](GameFiles.md) (4), [Founding](Founding.md) (4), [InfrastructureManager](InfrastructureManager.md) (4), [ProcessingSector](ProcessingSector.md) (4), [ForestryCheck](ForestryCheck.md) (4), [CityLand](CityLand.md) (4), [LandParcel](LandParcel.md) (4), [WoodProducts](WoodProducts.md) (3)... and 17 more
+**Uses:** [BuildCard](BuildCard.md) (332), [CityNeeds](CityNeeds.md) (89), [BuildAdvice](BuildAdvice.md) (79), [Game](Game.md) (51), [BuildingsTemplate](BuildingsTemplate.md) (43), [Resource](Resource.md) (31), [Good](Good.md) (30), [Deposit](Deposit.md) (27), [CareType](CareType.md) (16), [Formats](Formats.md) (14), [SpreadPlanner](SpreadPlanner.md) (13), [ExtractionSector](ExtractionSector.md) (11), [World](World.md) (11), [Forestry](Forestry.md) (10), [Sector](Sector.md) (9), [Mining](Mining.md) (9), [BusinessInvestment](BusinessInvestment.md) (9), [BuildingManager](BuildingManager.md) (7), [Sectors](Sectors.md) (6), [HeavyIndustry](HeavyIndustry.md) (6), [Refining](Refining.md) (5), [LandManager](LandManager.md) (5), [ProcessingSector](ProcessingSector.md) (5), [GameFiles](GameFiles.md) (4), [Founding](Founding.md) (4), [InfrastructureManager](InfrastructureManager.md) (4), [ForestryCheck](ForestryCheck.md) (4), [CityLand](CityLand.md) (4), [LandParcel](LandParcel.md) (4), [WoodProducts](WoodProducts.md) (3)... and 17 more
 
 ## Sections
 
@@ -72,22 +72,22 @@
 |---:|---|
 | 253 | 1. EVERY BUILDING HAS A CARD |
 | 392 | 2. THE HERO AND THE BARS |
-| 564 | 3. THE TAGS |
-| 600 | 4. THE NOTES |
-| 632 | 5. THE INVESTORS' LINE |
-| 721 | 6. THE GATES |
-| 823 | 7. THE VERDICT |
-| 876 | 8. THE WORD'S KIND |
-| 1027 | 9. A RUN OF ORDERS |
-| 1118 | · 10. SERVED (0.7.41). Jerus, playing 0.7.39: the roads read "180%" and |
-| 1259 | 11. THE INTEREST ON ITS WHOLE COST |
-| 1397 | 12. THE MATERIALS' CARDS |
+| 566 | 3. THE TAGS |
+| 602 | 4. THE NOTES |
+| 634 | 5. THE INVESTORS' LINE |
+| 723 | 6. THE GATES |
+| 825 | 7. THE VERDICT |
+| 878 | 8. THE WORD'S KIND |
+| 1029 | 9. A RUN OF ORDERS |
+| 1120 | · 10. SERVED (0.7.41). Jerus, playing 0.7.39: the roads read "180%" and |
+| 1261 | 11. THE INTEREST ON ITS WHOLE COST |
+| 1399 | 12. THE MATERIALS' CARDS |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 879 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind....` | The examples: a word shaped as the model files it, and the kind it must read as. |
+| 881 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind....` | The examples: a word shaped as the model files it, and the kind it must read as. |
 
 ## Fields (state)
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 124 | 1679 | **type** `public class BuildCardCheck` | The build card (0.7.25): BuildCard's figures for every building in buildings.json (139 since 0.7.140) held to the model's own reads - the quote, the land, the staffing tests, the markets, the investors' words and thei... |
+| 124 | 1683 | **type** `public class BuildCardCheck` | The build card (0.7.25): BuildCard's figures for every building in buildings.json (139 since 0.7.140) held to the model's own reads - the quote, the land, the staffing tests, the markets, the investors' words and thei... |
 | 130 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 135 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 140 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -118,81 +118,81 @@
 |---:|---:|---|---|
 | 255 | 136 | `static void everyBuilding(Game g)` |  |
 
-### 2. THE HERO AND THE BARS (lines 392-563)
+### 2. THE HERO AND THE BARS (lines 392-565)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 394 | 156 | `static void heroAndBars(Game g)` |  |
-| 551 | 4 | `static int onSite(BuildingManager bm, BuildingsTemplate t)` |  |
-| 557 | 6 | `static BuildAdvice.Measure measureOf(BuildCard.Group gr)` | The measure a city group was drawn for: the ring whose label is its title. |
+| 394 | 158 | `static void heroAndBars(Game g)` |  |
+| 553 | 4 | `static int onSite(BuildingManager bm, BuildingsTemplate t)` |  |
+| 559 | 6 | `static BuildAdvice.Measure measureOf(BuildCard.Group gr)` | The measure a city group was drawn for: the ring whose label is its title. |
 
-### 3. THE TAGS (lines 564-599)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 566 | 33 | `static void theTags(Game g)` |  |
-
-### 4. THE NOTES (lines 600-631)
+### 3. THE TAGS (lines 566-601)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 602 | 29 | `static void theNotes(Game g)` |  |
+| 568 | 33 | `static void theTags(Game g)` |  |
 
-### 5. THE INVESTORS' LINE (lines 632-720)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 634 | 86 | `static void theInvestors(Path root, Game g)` |  |
-
-### 6. THE GATES (lines 721-822)
+### 4. THE NOTES (lines 602-633)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 723 | 99 | `static void theGates(Game g)` |  |
+| 604 | 29 | `static void theNotes(Game g)` |  |
 
-### 7. THE VERDICT (lines 823-875)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 825 | 50 | `static void theVerdict(Game g)` |  |
-
-### 8. THE WORD'S KIND (lines 876-1026)
+### 5. THE INVESTORS' LINE (lines 634-722)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 953 | 74 | `static void theKinds(Game g)` |  |
+| 636 | 86 | `static void theInvestors(Path root, Game g)` |  |
 
-### 9. A RUN OF ORDERS (lines 1027-1117)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1029 | 5 | `static Map<BuildingsTemplate, Integer> run(Object...pairs)` |  |
-| 1035 | 82 | `static void theRun(Game g)` |  |
-
-### 10. SERVED (0.7.41). Jerus, playing 0.7.39: the roads read "180%" and (lines 1118-1258)
+### 6. THE GATES (lines 723-824)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1128 | 130 | `static void theServed(Game g)` |  |
+| 725 | 99 | `static void theGates(Game g)` |  |
 
-### 11. THE INTEREST ON ITS WHOLE COST (lines 1259-1396)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1271 | 120 | `static void theInterest(Game g)` | consider()'s brake on the card (0.7.122, batch C1). |
-| 1393 | 3 | `static double tillOf(Game g, String sector)` | What the card's test counts as the sector's till: its cash and what it holds abroad (Game.interestTest()). |
-
-### 12. THE MATERIALS' CARDS (lines 1397-1802)
+### 7. THE VERDICT (lines 825-877)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1413 | 77 | `static void theMaterials(Game g, Path root)` | The materials buildings' cards (0.7.142, batch I13; spec-materials 2.13): each line a fixture causes, each figure against the model's own. |
-| 1492 | 70 | `static void typedField(Game g)` | b. |
-| 1564 | 28 | `static void moneyGate(Game g)` | c. |
-| 1594 | 41 | `static void ownPowerAndOldMetal(Game g)` | d. |
-| 1637 | 54 | `static void whoBuys(Game g)` | e. |
-| 1693 | 27 | `static void crewRule(Path root)` | f. |
-| 1722 | 31 | `static void hoverByType(Game g)` | g. |
-| 1755 | 23 | `static void paybackByType(Game g)` | h. |
-| 1780 | 22 | `static Deposit unownedNearest(Game g, World w, Resource r, Deposit.FieldType type, int maxSites)` | The field of a type nearest the town's founding site whose centre plot nobody owns, of at most `maxSites` sites. |
+| 827 | 50 | `static void theVerdict(Game g)` |  |
+
+### 8. THE WORD'S KIND (lines 878-1028)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 955 | 74 | `static void theKinds(Game g)` |  |
+
+### 9. A RUN OF ORDERS (lines 1029-1119)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1031 | 5 | `static Map<BuildingsTemplate, Integer> run(Object...pairs)` |  |
+| 1037 | 82 | `static void theRun(Game g)` |  |
+
+### 10. SERVED (0.7.41). Jerus, playing 0.7.39: the roads read "180%" and (lines 1120-1260)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1130 | 130 | `static void theServed(Game g)` |  |
+
+### 11. THE INTEREST ON ITS WHOLE COST (lines 1261-1398)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1273 | 120 | `static void theInterest(Game g)` | consider()'s brake on the card (0.7.122, batch C1). |
+| 1395 | 3 | `static double tillOf(Game g, String sector)` | What the card's test counts as the sector's till: its cash and what it holds abroad (Game.interestTest()). |
+
+### 12. THE MATERIALS' CARDS (lines 1399-1806)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1415 | 77 | `static void theMaterials(Game g, Path root)` | The materials buildings' cards (0.7.142, batch I13; spec-materials 2.13): each line a fixture causes, each figure against the model's own. |
+| 1494 | 70 | `static void typedField(Game g)` | b. |
+| 1566 | 30 | `static void moneyGate(Game g)` | c. |
+| 1598 | 41 | `static void ownPowerAndOldMetal(Game g)` | d. |
+| 1641 | 54 | `static void whoBuys(Game g)` | e. |
+| 1697 | 27 | `static void crewRule(Path root)` | f. |
+| 1726 | 31 | `static void hoverByType(Game g)` | g. |
+| 1759 | 23 | `static void paybackByType(Game g)` | h. |
+| 1784 | 22 | `static Deposit unownedNearest(Game g, World w, Resource r, Deposit.FieldType type, int maxSites)` | The field of a type nearest the town's founding site whose centre plot nobody owns, of at most `maxSites` sites. |
 

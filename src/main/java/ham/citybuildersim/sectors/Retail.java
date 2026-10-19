@@ -860,7 +860,7 @@ public final class Retail extends Sector {
        THE VANS AND THE RAILWAY DO NOT COME HERE (star O6): a fleet buys its
        diesel at commercial cardlock prices near wholesale, and a railway at
        its depot - both draw it straight off the market (Sector.runFleet(),
-       Rail.haul()). No driver in the model burns diesel, so a station sells
+       Freight.haul()). No driver in the model burns diesel, so a station sells
        petrol.
 
        AND RETAIL BUILDS THEM AS IT BUILDS SHOPS: the drivers' litres, grown

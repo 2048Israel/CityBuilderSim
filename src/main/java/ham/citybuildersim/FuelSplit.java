@@ -1,6 +1,6 @@
 package ham.citybuildersim;
 
-import ham.citybuildersim.sectors.Rail;
+import ham.citybuildersim.sectors.Freight;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * THE SPLIT. p is the share of the month's litres the drivers burned: their
  * litres (DataSave.householdFuel's third figure) over theirs and the
- * railway's (Rail's `hauled` tonnes at Rail.FUEL_LITRES_PER_TONNE); with
+ * railway's (Freight's `hauled` tonnes at Freight.FUEL_LITRES_PER_TONNE); with
  * neither, p is 1. Every FUEL figure x becomes PETROL x p and DIESEL x less
  * that (split()), so each pair sums to x to the bit - the petrol an ulp off
  * x p where no diesel could close the sum (measured: m4000's tanks, whose
@@ -92,9 +92,9 @@ public final class FuelSplit {
     static double railwayLitres(DataSave s) {
         if (s == null || s.getSectors() == null) return 0;
         for (SectorState st : s.getSectors()) {
-            if (st == null || !Sectors.RAIL.equals(st.key) || st.extras == null) continue;
+            if (st == null || !Sectors.FREIGHT.equals(st.key) || st.extras == null) continue;
             Double hauled = st.extras.get("hauled");
-            return hauled != null && Double.isFinite(hauled) ? Math.max(0, hauled) * Rail.FUEL_LITRES_PER_TONNE : 0;
+            return hauled != null && Double.isFinite(hauled) ? Math.max(0, hauled) * Freight.FUEL_LITRES_PER_TONNE : 0;
         }
         return 0;
     }
@@ -161,7 +161,7 @@ public final class FuelSplit {
         if (s.getSectors() != null) {
             for (SectorState st : s.getSectors()) {
                 if (st == null) continue;
-                double share = Sectors.RAIL.equals(st.key) ? 0 : p;
+                double share = Sectors.FREIGHT.equals(st.key) ? 0 : p;
                 n[0] += units(st.stock, share) + units(st.pantry, share) + units(st.pantryUsed, share)
                         + units(st.exported, share) + units(st.imported, share);
                 if (st.ledger != null) {

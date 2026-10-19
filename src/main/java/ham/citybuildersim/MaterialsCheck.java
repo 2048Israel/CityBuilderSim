@@ -1,6 +1,7 @@
 package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.ExtractionSector;
+import ham.citybuildersim.sectors.Haulage;
 import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.Mining;
 import ham.citybuildersim.sectors.ProcessingSector;
@@ -131,7 +132,7 @@ import java.util.Map;
  *  13. CAPTIVE COKE AND PIG IRON: in a works of the route's real rows, the
  *      ovens' coke goes to the furnaces first and the furnaces' pig iron to
  *      the shop, no sale or purchase booked for either, the market bid only
- *      the rest; and the lorries do not count what the works hands itself.
+ *      the rest; and the vans count its goods only (FR2), none of it bulk it hands itself.
  *
  *  14. THE WORKS' OWN POWER SOLD: in a town with the ovens, the furnace and
  *      the shop standing, Iron & Steel sells the grid what the ovens and the
@@ -158,7 +159,7 @@ import java.util.Map;
  *  17. THE DIG AND THE RETIREMENT BY TYPE: on real fields of both types,
  *      as many twenty-site works fit as the fields of their type hold twenty
  *      sites, and the plan's order is the best earnings on the whole cost -
- *      the lorries in it - of the mines that fit; with hematite and magnetite
+ *      its freight in it - of the mines that fit; with hematite and magnetite
  *      mines standing, a month's dig takes each type's share of the ask from
  *      its own ground, the magnetite works three tonnes of rock a tonne, and
  *      W holds by type to the tonne; once the hematite is out its mines alone
@@ -797,9 +798,10 @@ public class MaterialsCheck {
 
     static void olderSave() throws Exception {
         out.println("\n--- 10. a save from before the split is refused, in P7's words and its file untouched; this build's loads ---");
-        // (Since 0.7.121 the floor is the split's format, no longer this build's: E4's format 38 left it, a format-37 save loading rightly.)
-        report("the floor is the split's format (GameVersion): a save one format older - IRON holding scrap and ore as one - is"
-                        + " no longer readable", GameVersion.OLDEST_LOADABLE_FORMAT <= GameVersion.SAVE_FORMAT
+        // (Since 0.7.121 the floor was the split's format, no longer this build's: E4's format 38 left it, a format-37 save loading
+        // rightly; since 0.8.5 it is FR2's 40, past the split, so a save from before the split is refused with every older one.)
+        report("the floor is at or past the split's format (GameVersion): a save one format older is no longer readable, and one"
+                        + " from before the split - IRON holding scrap and ore as one - with it", GameVersion.OLDEST_LOADABLE_FORMAT <= GameVersion.SAVE_FORMAT
                         && GameVersion.isNoLongerReadable(GameVersion.OLDEST_LOADABLE_FORMAT - 1) && !GameVersion.isNoLongerReadable(GameVersion.OLDEST_LOADABLE_FORMAT),
                 String.format("formats %d to %d", GameVersion.OLDEST_LOADABLE_FORMAT, GameVersion.SAVE_FORMAT));
         GameFiles files = GameFiles.scratch("materialscheck-split");
@@ -961,7 +963,7 @@ public class MaterialsCheck {
         pool.carsScrapped(100);
         pool.demolished(house, 2, Sectors.REAL_ESTATE);
         pool.fabricated(Sectors.MANUFACTURING, 1000);
-        pool.setsRetired(Sectors.RAIL, 2);
+        pool.setsRetired(Sectors.FREIGHT, 2);
         double cars = 100 * OldMetal.STEEL_A_CAR * OldMetal.RECOVERY, demol = 2 * house.getConstructionMaterials() * OldMetal.STEEL_A_MATERIALS_UNIT
                 * OldMetal.RECOVERY, offcuts = 1000 * OldMetal.OFFCUTS_A_TONNE_FABRICATED * OldMetal.RECOVERY,
                 sets = 2 * OldMetal.STEEL_A_SET * OldMetal.RECOVERY;
@@ -969,7 +971,7 @@ public class MaterialsCheck {
                         + " at 0.3 t a unit of material the landlords', 1,000 t of fabricated steel's 5% offcuts its maker's, two worn sets at"
                         + " 300 t the railway's",
                 near(pool.availableFrom(Trade.HOUSEHOLDS), cars) && near(pool.availableFrom(Sectors.REAL_ESTATE), demol)
-                        && near(pool.availableFrom(Sectors.MANUFACTURING), offcuts) && near(pool.availableFrom(Sectors.RAIL), sets)
+                        && near(pool.availableFrom(Sectors.MANUFACTURING), offcuts) && near(pool.availableFrom(Sectors.FREIGHT), sets)
                         && near(pool.available(OldMetal.Source.CARS), cars) && near(pool.available(OldMetal.Source.DEMOLITIONS), demol)
                         && near(pool.available(OldMetal.Source.OFFCUTS), offcuts) && near(pool.available(OldMetal.Source.ROLLING_STOCK), sets)
                         && near(pool.available(), cars + demol + offcuts + sets),
@@ -1075,18 +1077,21 @@ public class MaterialsCheck {
         SpreadPlanner.Values here = SpreadPlanner.values(g.getMarkets());
         double byHand = ProcessingSector.gross(yardT, here, at) - frame.running(yardT) - frame.standing(yardT)
                 - SpreadPlanner.ownCosts(yardT, at, heavy.exchangeFactor(), heavy.tariff())
-                - (yardT.oldMetal(Good.STEEL) * at * p70 + ProcessingSector.fleetRunning(yardT, here, at));
+                - (yardT.oldMetal(Good.STEEL) * at * p70 + ProcessingSector.freightRunning(yardT, here, at, heavy.legPrice()));
         report("...with 30,000 t arising it is fed, weighed on the share of nameplate the pool fills, paying 70% for its old steel and"
-                        + " running its lorries, on its whole cost with them (ProcessingSector.feedShare(), offMarketFeed(), fleetRunning(),"
+                        + " paying its freight, on its whole cost with its vans (ProcessingSector.feedShare(), offMarketFeed(), freightRunning(),"
                         + " fleetCapital())",
                 fed.refusal(SpreadPlanner.Gate.FEED) == null && share == 1 && Math.abs(fed.earns() - byHand) <= 1e-9 * Math.max(1, Math.abs(byHand))
                         && fed.cost() == frame.cost(yardT) + ProcessingSector.fleetCapital(yardT, here),
                 String.format("%,.1fk a month, %.2f%% of its cost", fed.earns(), 100 * fed.score()));
         double vans = ProcessingSector.vansFor(yardT);
-        assertTrue("a yard keeps a van for each 120 t a month it moves (Sector.TONNES_PER_VAN), its 10,000 t of scrap: 83.3 vans,"
-                        + " their wear a 120th of them a month and their diesel 240 L a van-month at the rate",
-                Math.abs(vans - 10_000 / Sector.TONNES_PER_VAN) < 1e-9 && Math.abs(ProcessingSector.fleetRunning(yardT, here, at)
-                        - (here.in(Good.VANS, vans / Sector.VAN_LIFE_MONTHS) + here.in(Good.DIESEL, vans * at * Sector.DIESEL_LITRES_A_VAN_MONTH))) < 1e-9);
+        Haulage.LegPrice legs = heavy.legPrice();
+        double legBill = ProcessingSector.cityLegs(yardT, at, legs), scrapLeg = legs.out(Good.SCRAP);
+        assertTrue("a yard keeps no van for its 10,000 t of scrap, which is bulk and goes by Haulage's trucks (FR2): no van, no van's capital"
+                        + " or wear, and its freight is its city leg alone - the scrap at the rate, at the leg Haulage's quote prices a made tonne",
+                vans == 0 && ProcessingSector.fleetRunning(yardT, here, at) == 0 && ProcessingSector.fleetCapital(yardT, here) == 0
+                        && scrapLeg > 0 && Math.abs(legBill - at * 10_000 * Good.SCRAP.tonnesPerUnit() * scrapLeg) <= 1e-9 * Math.max(1, legBill)
+                        && ProcessingSector.freightRunning(yardT, here, at, legs) == legBill);
 
         // In a played town: old steel handed in each month, the yard buying it, and the audit closing with the households' part declared.
         GameFiles playFiles = GameFiles.scratch("materialscheck-oldsteel-play");
@@ -1122,7 +1127,7 @@ public class MaterialsCheck {
                 String.format("worst residual %.3g of what moved; the yard bought D$%,.1fk", worst, yst.otherInputs.getOrDefault(OldMetal.LINE, 0.0)));
         // ...and across a save: the pool, its record, and a seller's sale still to strike.
         play.getOldMetal().carsScrapped(500);
-        play.getSectors().byKey(Sectors.RAIL).sellOldMetal(12.5);
+        play.getSectors().byKey(Sectors.FREIGHT).sellOldMetal(12.5);
         quietly(() -> play.saveGame(10, "oldsteel"));
         Game back = new Game(playFiles);
         quietly(() -> back.loadGameSave(10));
@@ -1134,7 +1139,7 @@ public class MaterialsCheck {
                         && now.lastArisen() == then.lastArisen() && now.lastBought() == then.lastBought()
                         && now.lastLandfill() == then.lastLandfill() && now.lastPrice() == then.lastPrice()
                         && now.lastPaid().equals(then.lastPaid())
-                        && back.getSectors().byKey(Sectors.RAIL).pending().oldMetalSold == play.getSectors().byKey(Sectors.RAIL).pending().oldMetalSold);
+                        && back.getSectors().byKey(Sectors.FREIGHT).pending().oldMetalSold == play.getSectors().byKey(Sectors.FREIGHT).pending().oldMetalSold);
     }
 
     /* ============================ 13. captive coke and pig iron ============================ */
@@ -1174,14 +1179,26 @@ public class MaterialsCheck {
         Sector.Ledger l = w.pending();
         assertTrue("...no sale and no purchase booked for what it handed itself: no pig iron sold or bought, no coke bought",
                 !l.unitsSold.containsKey(Good.PIG_IRON) && !l.unitsBought.containsKey(Good.PIG_IRON) && !l.unitsBought.containsKey(Good.MET_COKE));
-        double gross = 0;
-        for (Good g : w.goodsMade()) gross += w.getCapacity(g) * g.tonnesPerUnit();
-        for (Good g : w.goodsUsed()) if (g != Good.VANS) gross += w.getInputAtCapacity(g) * g.tonnesPerUnit();
+        double goodsGross = 0, bulkGross = 0, insideGoods = 0;
+        for (Good g : w.goodsMade()) {
+            double tonnes = w.getCapacity(g) * g.tonnesPerUnit();
+            if (g.traffic() == Traffic.GOODS) goodsGross += tonnes; else bulkGross += tonnes;
+        }
+        for (Good g : w.goodsUsed()) {
+            if (g == Good.VANS || g == Good.TRUCKS) continue;
+            double tonnes = w.getInputAtCapacity(g) * g.tonnesPerUnit();
+            if (g.traffic() == Traffic.GOODS) goodsGross += tonnes; else bulkGross += tonnes;
+        }
+        for (Good g : new Good[] {Good.MET_COKE, Good.PIG_IRON}) {
+            if (g.traffic() == Traffic.GOODS) insideGoods += 2 * Math.min(w.getCapacity(g), w.getInputAtCapacity(g));
+        }
         double inside = 2 * Math.min(w.getCapacity(Good.MET_COKE), w.getInputAtCapacity(Good.MET_COKE))
                 + 2 * Math.min(w.getCapacity(Good.PIG_IRON), w.getInputAtCapacity(Good.PIG_IRON));
-        report("its lorries move its plant's tonnes less what the works hands itself, out and in (Sector.tonnesMoved()): its own rails,"
-                        + " not the fleet", Math.abs(w.tonnesMoved() - (gross - inside)) < 1e-6 && inside == 2 * (13_500 + 30_000),
-                String.format("%,.0f t a month, %,.0f t less", w.tonnesMoved(), inside));
+        report("its vans move its GOODS tonnes less what the works hands itself (Sector.tonnesMoved(), FR2): the route's coke, pig iron, ore,"
+                        + " scrap and steel are bulk and go by Haulage's trucks, so none is a van's tonne and its own rails take none off",
+                Math.abs(w.tonnesMoved() - (goodsGross - insideGoods)) < 1e-6 && insideGoods == 0 && bulkGross > inside
+                        && inside == 2 * (13_500 + 30_000),
+                String.format("%,.0f t a month for the vans, %,.0f t of bulk for the trucks, %,.0f t of it handed itself", w.tonnesMoved(), bulkGross, inside));
     }
 
     /* ============================ 14. the works' own power sold ============================ */
@@ -1353,7 +1370,7 @@ public class MaterialsCheck {
         double pitScore = mining.estimatedMonthlyProfit(pit, plans) / (plans.getCostOf(pit, 1) + mining.fleetCapital(pit));
         double mineScore = mining.estimatedMonthlyProfit(mine, plans) / (plans.getCostOf(mine, 1) + mining.fleetCapital(mine));
         BusinessInvestment.Decision both = mining.plan(plans, g);
-        report("...and the plan orders the one of the two that earns more on its whole cost, its lorries in it",
+        report("...and the plan orders the one of the two that earns more on its whole cost, its freight in it",
                 both.build && both.template == (pitScore > mineScore ? pit : mine),
                 String.format("%s; the pit %.3f%%, the Iron Mine %.3f%% a month", both.reason, 100 * pitScore, 100 * mineScore));
         Map<BuildingsTemplate, Integer> run = new LinkedHashMap<>();
@@ -1441,7 +1458,7 @@ public class MaterialsCheck {
                 g.hasDepositFor(mine, hemSites) && !g.hasDepositFor(mine, hemSites + 1)
                         && g.hasDepositFor(magnetite, magSites) && !g.hasDepositFor(magnetite, magSites + 1));
 
-        // The plan: the best earnings on the whole cost, its lorries in both, among the mines that fit, staff and pay.
+        // The plan: the best earnings on the whole cost, its freight in both, among the mines that fit, staff and pay.
         handWorkers(g);
         BusinessInvestment plans = g.getBusinessInvestment();
         BuildingsTemplate expected = null;
@@ -1459,13 +1476,17 @@ public class MaterialsCheck {
             }
         }
         BusinessInvestment.Decision d = mining.plan(plans, g);
-        report("the plan's order is the best earnings on the whole cost, lorries in, of the mines that fit, staff and pay",
+        report("the plan's order is the best earnings on the whole cost, freight in, of the mines that fit, staff and pay",
                 expected != null && d.build && d.template == expected, d.reason + seen);
         double vans = ProcessingSector.vansFor(pit);
-        assertTrue("...its lorries in what it earns and costs: the open pit's vans, its tonnes over a van's",
-                Math.abs(vans * Sector.TONNES_PER_VAN - (pit.makes(Good.IRON) * Good.IRON.tonnesPerUnit()
-                        + pit.uses(Good.DIESEL) * Good.DIESEL.tonnesPerUnit())) < 1e-6
-                        && mining.fleetCapital(pit) > 0 && mining.fleetRunning(pit, 1) > 0);
+        SpreadPlanner.Values here = SpreadPlanner.values(g.getMarkets());
+        assertTrue("...its freight in what it earns and costs: the open pit's vans carry its goods alone, the diesel it burns and not its ore"
+                        + " (bulk, Haulage's trucks'), and are all of its capital; its freight is their running and the ore's city leg at the quote",
+                Math.abs(vans * Sector.TONNES_PER_VAN - pit.uses(Good.DIESEL) * Good.DIESEL.tonnesPerUnit()) < 1e-6
+                        && mining.fleetCapital(pit) > 0 && mining.fleetCapital(pit) == ProcessingSector.fleetCapital(pit, here)
+                        && ProcessingSector.cityLegs(pit, 1, mining.legPrice()) > 0
+                        && mining.freightRunning(pit, 1) == ProcessingSector.fleetRunning(pit, here, 1)
+                        + ProcessingSector.cityLegs(pit, 1, mining.legPrice()));
 
         // The dig by type: two Iron Mines and two magnetite works standing.
         quietly(() -> {

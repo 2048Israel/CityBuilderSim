@@ -1,6 +1,6 @@
 # CityMap.java - 4,914 lines · 267 methods · 39 constants · model
 
-`ham/citybuildersim/CityMap.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityMap.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, each district's street plan kept for the painter with what it cannot hold carried to the next, the city's highways and railway laid on corridors across it, one drawn building for each the model has, summed up a pyramid, each built district's picture drawn with its plan for the far view (0.7.128), and written beside the save as a sidecar - what the tile painter paints the city from.
 > 

@@ -1,6 +1,6 @@
 # InfrastructureManager.java - 1,084 lines · 84 methods · 13 constants · model
 
-`ham/citybuildersim/InfrastructureManager.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InfrastructureManager.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The road network: what the city's buildings demand of it, what it can carry,
 > and what happens when the first number passes the second.
@@ -41,7 +41,7 @@
 
 **Uses:** [Traffic](Traffic.md) (40), [TaxPolicy](TaxPolicy.md) (3), [CityNeeds](CityNeeds.md) (2)
 
-**Used by (19):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [CarCheck](CarCheck.md), [CityNeeds](CityNeeds.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [Motoring](Motoring.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md)
+**Used by (21):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [CarCheck](CarCheck.md), [CityNeeds](CityNeeds.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [Motoring](Motoring.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md)
 
 ## Sections
 

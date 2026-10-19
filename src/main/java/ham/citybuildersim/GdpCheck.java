@@ -216,12 +216,12 @@ public class GdpCheck {
          *
          * The next month the railway hauls a mill's steel out: the mill ships
          * 2,940 and pays the railway 300 for the haulage, and the railway's
-         * fleet wears a 240th of itself (sectors.Rail.SET_LIFE_MONTHS). The
+         * fleet wears a 240th of itself (sectors.Freight.SET_LIFE_MONTHS). The
          * mill adds 2,940 - 300; the railway adds its 300 less the wear it
          * used; the expenditure side is the export and the fall in stock held.
          */
         double[] worn = twenty.clone();
-        double wear = 20 / ham.citybuildersim.sectors.Rail.SET_LIFE_MONTHS;
+        double wear = 20 / ham.citybuildersim.sectors.Freight.SET_LIFE_MONTHS;
         worn[rs] = 20 - wear;
         fleet.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2_940, worn, heldPrice);
         double haulage = 300;
@@ -619,20 +619,21 @@ public class GdpCheck {
         // ...and the integrated route's three stockable goods (0.7.123, batch I4; spec-materials 2.3) on HELD's end, in Good's
         // order - the steelworks' coke in the Coke Ovens' yard and the two coals - after crude, so a save's held slots keep their places.
         // ...and since 0.7.131 (batch I7) cement after them, the cement plants' silos, and since 0.7.133 (batch I8) cathode, copper's yards;
-        // and since 0.7.140 (batch I10) wood's five after cathode, the mills' yards.
+        // and since 0.7.140 (batch I10) wood's five after cathode, the mills' yards;
+        // and since FR2 (2026-10-18) trucks on the very end, the Heavy Truck Plant's yard.
         int n = NationalAccounts.HELD.length;
         assertTrue("HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), cement after them (0.7.131),"
-                        + " cathode after it (0.7.133) and wood's five after that (0.7.140) - lumber, panels, pulp, paper and pellets -"
-                        + " each stockable",
-                n >= 11 && NationalAccounts.HELD[n - 11] == Good.CRUDE && NationalAccounts.HELD[n - 10] == Good.MET_COKE
-                        && NationalAccounts.HELD[n - 9] == Good.THERMAL_COAL && NationalAccounts.HELD[n - 8] == Good.COKING_COAL
-                        && NationalAccounts.HELD[n - 7] == Good.CEMENT && NationalAccounts.HELD[n - 6] == Good.COPPER
-                        && NationalAccounts.HELD[n - 5] == Good.LUMBER && NationalAccounts.HELD[n - 4] == Good.PANELS
-                        && NationalAccounts.HELD[n - 3] == Good.PULP && NationalAccounts.HELD[n - 2] == Good.PAPER
-                        && NationalAccounts.HELD[n - 1] == Good.WOOD_PELLETS
+                        + " cathode after it (0.7.133), wood's five after that (0.7.140) - lumber, panels, pulp, paper and pellets -"
+                        + " and trucks last (FR2), each stockable",
+                n >= 12 && NationalAccounts.HELD[n - 12] == Good.CRUDE && NationalAccounts.HELD[n - 11] == Good.MET_COKE
+                        && NationalAccounts.HELD[n - 10] == Good.THERMAL_COAL && NationalAccounts.HELD[n - 9] == Good.COKING_COAL
+                        && NationalAccounts.HELD[n - 8] == Good.CEMENT && NationalAccounts.HELD[n - 7] == Good.COPPER
+                        && NationalAccounts.HELD[n - 6] == Good.LUMBER && NationalAccounts.HELD[n - 5] == Good.PANELS
+                        && NationalAccounts.HELD[n - 4] == Good.PULP && NationalAccounts.HELD[n - 3] == Good.PAPER
+                        && NationalAccounts.HELD[n - 2] == Good.WOOD_PELLETS && NationalAccounts.HELD[n - 1] == Good.TRUCKS
                         && Good.MET_COKE.stockable() && Good.THERMAL_COAL.stockable() && Good.COKING_COAL.stockable()
                         && Good.CEMENT.stockable() && Good.COPPER.stockable() && Good.LUMBER.stockable() && Good.PANELS.stockable()
-                        && Good.PULP.stockable() && Good.PAPER.stockable() && Good.WOOD_PELLETS.stockable());
+                        && Good.PULP.stockable() && Good.PAPER.stockable() && Good.WOOD_PELLETS.stockable() && Good.TRUCKS.stockable());
         boolean ovensHold = served.getSectors().heavyIndustry().isMaker(Good.MET_COKE) && Good.MET_COKE.stockable();
         assertTrue("...and Iron & Steel, which keeps a yard of coke, is counted by it", ovensHold && counted.contains(Good.MET_COKE));
         boolean silos = served.getSectors().cementConcrete().isMaker(Good.CEMENT) && Good.CEMENT.stockable();
@@ -666,7 +667,7 @@ public class GdpCheck {
         try {
             railTown.newGame();
             railTown.setCashForTest(Founding.WEALTHY_CASH);
-            railTown.getBusinessInvestment().holdSector(Sectors.RAIL);
+            railTown.getBusinessInvestment().holdSector(Sectors.FREIGHT);
             railTown.getLandManager().setOwnedSqFt(400_000_000L);
             BuildingManager b = railTown.getBuildingManager();
             railTown.buildStack(b.getTemplateByName("House"), 900, true);
@@ -681,7 +682,7 @@ public class GdpCheck {
             RailCheck.lay(railTown, "Rail Spur", 2);
             railTown.simulateMonths(1);
         } finally { System.setOut(out); }
-        ham.citybuildersim.sectors.Rail rail = railTown.getSectors().rail();
+        ham.citybuildersim.sectors.Freight rail = railTown.getSectors().freight();
         GoodsMarket sets = railTown.getMarkets().get(Good.ROLLING_STOCK);
         double bought = rail.fleet(), landedThen = EconomyManager.heldPrice(sets);
         System.setOut(quiet);
@@ -694,7 +695,7 @@ public class GdpCheck {
         // wear, before the month's clearing bought the wear back - against
         // none the month before, when the track stood with no trains.
         double held = town.getLastHeldUnits()[rs] * landedNow;
-        double slack = (bought / ham.citybuildersim.sectors.Rail.SET_LIFE_MONTHS) * landedNow + bought * Math.abs(landedNow - landedThen);
+        double slack = (bought / ham.citybuildersim.sectors.Freight.SET_LIFE_MONTHS) * landedNow + bought * Math.abs(landedNow - landedThen);
         System.out.printf("   %.1f sets bought abroad for %,.2f; held %,.2f at %,.2f a set; GDP %,.2f (held stock %,.2f, NX %,.2f)%n",
                 bought, imported, held, landedNow, town.getGdp(), town.getInventoryHeld(), town.getNetExports());
         assertTrue("fixture: the railway bought its fleet abroad", bought > 0 && imported > 0);

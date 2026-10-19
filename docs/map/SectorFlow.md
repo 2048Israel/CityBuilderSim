@@ -1,6 +1,6 @@
 # SectorFlow.java - 261 lines · 17 methods · 1 constants · model
 
-`ham/citybuildersim/SectorFlow.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorFlow.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > One business's month as a flow (0.7.30): what went in, what its plant made
 > of it and what held the plant back, and what came out - each good's units
@@ -46,7 +46,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 98 | `SectorFlow.THROTTLES` | `{ "staffed", "power", "water", "roads", "well", "vans" }` | The six throttles in getOperatingRate()'s order, as the screen names them. |
+| 98 | `SectorFlow.THROTTLES` | `{ "staffed", "power", "water", "roads", "well", "freight" }` | The six throttles in getOperatingRate()'s order, as the screen names them (the sixth, "freight", was "vans" until FR2). |
 
 ## Methods, in file order
 

@@ -1001,12 +1001,35 @@ public class CreditCheck {
             for (int mm = 0; mm < 30; mm++) {
                 econ.setSectorCash(sector, 10);
                 ledger.setAssets(sector, -1);
+                /*
+                 * THE BAN IS RENEWED BY OWING, NOT BY ASKING (FR2, 2026-10-19).
+                 * restructure() writes down what the sector owes and counts the
+                 * default that re-arms the ban only if there is something to
+                 * write down or an overdraft to forgive; the loan above is
+                 * written off whole, and a sector held at D$10k owes nothing, so
+                 * the call each month was a no-op unless the shop's own month
+                 * happened to leave it short (an interim loan for the unpaid
+                 * rest). It did, in month 16 on the tree before FR2's last
+                 * commit (trucks bought toward the works on site) moved the
+                 * economy a little: a D$6k interim loan, the second default, a
+                 * ban of 24 months that carried the fixture to its end. On the
+                 * next tree the shop's cash ended every month above nothing
+                 * (D$1.3k at the lowest), the first 12-month ban lapsed after
+                 * month 11, and "retail is under a borrowing ban" failed.
+                 * Standing next to its condition, again. So when the ban has
+                 * lapsed the sector owes a lot against nothing, as at the
+                 * start, and the restructure fires - the exclusion doubling
+                 * to 24 months, as it does for a firm that defaults twice.
+                 */
+                if (!ledger.isBorrowingBlocked(sector)) ledger.issueLoan(sector, 5_000_000, banned.getMonth());
                 ledger.restructure(sector);
                 banned.simulateMonths(1);
                 econ.setSectorCash(sector, 10);
             }
         });
         ledger.setAssets(sector, -1);
+        // ...and once more at the end, so a ban that lapsed in the last month is not the one the assertion meets.
+        if (!ledger.isBorrowingBlocked(sector)) ledger.issueLoan(sector, 5_000_000, banned.getMonth());
         ledger.restructure(sector);
         assertTrue("fixture: retail is under a borrowing ban", ledger.isBorrowingBlocked(sector));
 
@@ -1411,12 +1434,12 @@ public class CreditCheck {
              * below is handed over by hand, as it always was.
              */
             town.getBusinessInvestment().holdSector(Sectors.RESTAURANTS);
-            town.getBusinessInvestment().holdSector(Sectors.RAIL);
+            town.getBusinessInvestment().holdSector(Sectors.FREIGHT);
             town.simulateMonths(3);
         });
         BusinessDebtManager lender = town.getEconomyManager().getBusinessDebtManager();
         BuildingManager plant = town.getBuildingManager();
-        String[] firsts = { Sectors.RESTAURANTS, Sectors.RAIL };
+        String[] firsts = { Sectors.RESTAURANTS, Sectors.FREIGHT };
         for (String k : firsts) {
             assertTrue("fixture: " + k + " has owned nothing, owed nothing and filed no reading",
                     lender.getStatementCount(k) == 0 && lender.getPrincipal(k) == 0

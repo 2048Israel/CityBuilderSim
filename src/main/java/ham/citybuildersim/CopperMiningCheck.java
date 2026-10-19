@@ -57,7 +57,7 @@ import java.util.Locale;
  *      running short holds it to what is left, and worked out it is spare.
  *
  *   6. THE PLAN: ExtractionSector's - the best earnings on the whole cost of
- *      the buildings that fit, their lorries in it.
+ *      the buildings that fit, their freight in it.
  *
  *   7. A PLAYED MONTH: a mine and mill and a leach plant standing, a month
  *      on - concentrate shipped, cathode made, acid bought, the ground given
@@ -180,10 +180,11 @@ public class CopperMiningCheck {
                         && Good.ANODE.cargo() == Ports.Cargo.GENERAL && Good.COPPER.cargo() == Ports.Cargo.GENERAL
                         && Good.COPPER_ROD.cargo() == Ports.Cargo.CONTAINER && Good.WIRE_CABLE.cargo() == Ports.Cargo.CONTAINER);
         Good[] held = NationalAccounts.HELD;
-        // ...wood's five after it since 0.7.140 (batch I10).
+        // ...wood's five after it since 0.7.140 (batch I10), and trucks, the last, since FR2.
         int cathode = java.util.Arrays.asList(held).indexOf(Good.COPPER);
-        assertTrue("...and cathode joins NationalAccounts.HELD after cement, its end until wood's five followed it (0.7.140)",
-                cathode > 0 && held[cathode - 1] == Good.CEMENT && held[cathode + 1] == Good.LUMBER && held.length == cathode + 6);
+        assertTrue("...and cathode joins NationalAccounts.HELD after cement, its end until wood's five (0.7.140) and then trucks (FR2) followed it",
+                cathode > 0 && held[cathode - 1] == Good.CEMENT && held[cathode + 1] == Good.LUMBER && held.length == cathode + 7
+                        && held[held.length - 1] == Good.TRUCKS);
     }
 
     /* ============================ 2. the three rows against the study ============================ */
@@ -457,7 +458,7 @@ public class CopperMiningCheck {
     /* ============================ 6. the plan ============================ */
 
     static void plan() {
-        out.println("\n--- 6. the plan: the best earnings on the whole cost of the buildings that fit, their lorries in it ---");
+        out.println("\n--- 6. the plan: the best earnings on the whole cost of the buildings that fit, their freight in it ---");
         Game g = copperTown("copperminingcheck-plan", 3);
         CopperMining cm = g.getSectors().copperMining();
         BuildingManager b = g.getBuildingManager();
@@ -479,8 +480,8 @@ public class CopperMiningCheck {
         BuildingsTemplate leach = b.getTemplate(CopperMining.LEACH_PLANT);
         double rate = BusinessInvestment.operatingRateOf(cm.getOperatingRate());
         double expect = plans.estimatedMakerProfit(cm, leach)
-                - SpreadPlanner.ownCosts(leach, rate, cm.exchangeFactor(), g.getEconomyManager().getPricePerWatt()) - cm.fleetRunning(leach, rate);
-        assertTrue("...each one's estimate the maker's, less its consumables and its lorries (ExtractionSector), to the bit",
+                - SpreadPlanner.ownCosts(leach, rate, cm.exchangeFactor(), g.getEconomyManager().getPricePerWatt()) - cm.freightRunning(leach, rate);
+        assertTrue("...each one's estimate the maker's, less its consumables and its freight (ExtractionSector), to the bit",
                 cm.estimatedMonthlyProfit(leach, plans) == expect);
     }
 

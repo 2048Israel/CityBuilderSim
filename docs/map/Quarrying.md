@@ -1,6 +1,6 @@
 # Quarrying.java - 400 lines · 19 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Quarrying.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Quarrying.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md
 > 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's
@@ -51,7 +51,7 @@
 > LandManager.extract(r, type, t), so E and W hold by type.
 > 
 > THE PLAN is ExtractionSector's: the best earnings on the whole cost among
-> the quarries that fit, their lorries in it - its estimate the quarry's
+> the quarries that fit, their freight in it - its estimate the quarry's
 > increment to the packing (madeBy()): one more on ANY makes limestone while
 > a limestone field has room, and its limestone past what the city buys of
 > it is valued as aggregate. Who buys: Iron & Steel's blast furnaces and

@@ -19,7 +19,7 @@ import ham.citybuildersim.sectors.Materials;
 import ham.citybuildersim.sectors.Mining;
 import ham.citybuildersim.sectors.Oil;
 import ham.citybuildersim.sectors.Quarrying;
-import ham.citybuildersim.sectors.Rail;
+import ham.citybuildersim.sectors.Freight;
 import ham.citybuildersim.sectors.RealEstate;
 import ham.citybuildersim.sectors.Refining;
 import ham.citybuildersim.sectors.Retail;
@@ -68,7 +68,7 @@ public final class Sectors {
             CONSTRUCTION = "Construction", HEAVY_INDUSTRY = "Heavy Industry", MINING = "Mining",
             MATERIALS = "Materials", BUSINESS_SERVICES = "Business Services",
             MANUFACTURING = "Manufacturing", AGRICULTURE = "Agriculture",
-            FOOD_PROCESSING = "Food Processing", RAIL = "Rail",
+            FOOD_PROCESSING = "Food Processing", FREIGHT = "Freight",
             AUTOMOTIVE = "Automotive", LUXURY_RETAIL = "Luxury Retail",
             RESTAURANTS = "Restaurants", OIL = "Oil", REFINING = "Refining",
             // ...and the materials chains' new industries (0.7.126, batch I6; Jerus's Q21, 2026-10-08: iron, coal, stone, copper, wood).
@@ -94,7 +94,7 @@ public final class Sectors {
      */
     public static final String[] KEYS = {
         RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY, MINING, MATERIALS,
-        BUSINESS_SERVICES, MANUFACTURING, AGRICULTURE, FOOD_PROCESSING, RAIL, AUTOMOTIVE,
+        BUSINESS_SERVICES, MANUFACTURING, AGRICULTURE, FOOD_PROCESSING, FREIGHT, AUTOMOTIVE,
         LUXURY_RETAIL, RESTAURANTS,
         // ...and fuel (0.7.62, batch K; spec-land 2.7): the wells, then the refinery.
         OIL, REFINING,
@@ -123,7 +123,7 @@ public final class Sectors {
     private final Manufacturing manufacturing;
     private final Agriculture agriculture;
     private final FoodProcessing foodProcessing;
-    private final Rail rail;
+    private final Freight freight;
     private final Automotive automotive;
     private final LuxuryRetail luxuryRetail;
     private final Restaurants restaurants;
@@ -149,7 +149,7 @@ public final class Sectors {
         manufacturing = add(new Manufacturing(), buildings, markets);
         agriculture = add(new Agriculture(), buildings, markets);
         foodProcessing = add(new FoodProcessing(), buildings, markets);
-        rail = add(new Rail(), buildings, markets);
+        freight = add(new Freight(), buildings, markets);
         automotive = add(new Automotive(), buildings, markets);
         luxuryRetail = add(new LuxuryRetail(), buildings, markets);
         restaurants = add(new Restaurants(), buildings, markets);
@@ -239,13 +239,14 @@ public final class Sectors {
     public FoodProcessing foodProcessing() { return foodProcessing; }
 
     /**
-     * Typed, and for a reason none of the others have: it is the only sector
-     * whose price is a fact about every OTHER sector's trade. Game hands it the
-     * month at the top of the month, the income statements are billed from it,
-     * the road network is relieved by it and the import and export bands move
-     * with it. See sectors.Rail.
+     * The Freight sector, the railway's slot (FR2, 2026-10-18). Typed, and for
+     * a reason none of the others have: it is the only sector whose price is a
+     * fact about every OTHER sector's trade. Game hands it the month at the top
+     * of the month, the income statements are billed from it, the road network
+     * is relieved by it and the import and export bands move with it. See
+     * sectors.Freight.
      */
-    public Rail rail() { return rail; }
+    public Freight freight() { return freight; }
 
     /**
      * Typed, because it is the only sector that buys what Manufacturing makes,

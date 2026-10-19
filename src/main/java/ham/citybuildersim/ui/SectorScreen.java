@@ -1416,7 +1416,7 @@ final class SectorScreen {
             box.getChildren().add(bookDetailRow(e.getKey(), -e.getValue(), false));
             services += e.getValue();
         }
-        if (services != 0 && sector != ui.game.getSectors().rail()) {
+        if (services != 0 && sector != ui.game.getSectors().freight()) {
             box.getChildren().add(bookDetailNote("Freight. The railway carries what it can "
                     + "of this business's trade and bills for it here; the rest is inside "
                     + "the import and export prices, paid to whoever moved it."));
@@ -4955,7 +4955,7 @@ final class SectorScreen {
         VBox col = new VBox(6, head("IN", null, figure(m(flow.inputsMoney()), Palette.SIZE_BODY + 2, Palette.TEXT_HEAD)));
         List<SectorFlow.In> goods = new ArrayList<>(), others = new ArrayList<>();
         for (SectorFlow.In i : flow.inputs()) {
-            if (i.service() || i.good() == Good.VANS) others.add(i); else goods.add(i);
+            if (i.service() || i.good() == Good.VANS || i.good() == Good.TRUCKS) others.add(i); else goods.add(i);
         }
         goods.sort((a, b) -> Double.compare(b.money(), a.money()));
         if (goods.isEmpty() && others.isEmpty()) {

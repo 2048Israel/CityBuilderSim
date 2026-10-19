@@ -1,6 +1,6 @@
-# ScaleCheck.java - 1,118 lines · 31 methods · 13 constants · harnesses
+# ScaleCheck.java - 1,135 lines · 31 methods · 13 constants · harnesses
 
-`ham/citybuildersim/ScaleCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ScaleCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > A city past 2^31 people (0.7.53): its counts read back whole, its posts,
 > doors and household places add up to the last one, and a save gives them
@@ -64,7 +64,7 @@
 >   8. the audit's floor at size (0.7.63; 64 steps since 0.7.64): a floor of
 > ... (5 more lines in the source)
 
-**Uses:** [MoneyAudit](MoneyAudit.md) (26), [Game](Game.md) (21), [LongPlaytest](LongPlaytest.md) (19), [CityLand](CityLand.md) (10), [GameFiles](GameFiles.md) (9), [TreasuryCheck](TreasuryCheck.md) (7), [JobType](JobType.md) (6), [PopulationManager](PopulationManager.md) (5), [Sector](Sector.md) (4), [HistorySave](HistorySave.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [LandManager](LandManager.md) (3), [Formats](Formats.md) (3), [Timing](Timing.md) (2), [SaveHeader](SaveHeader.md) (2), [BuildingManager](BuildingManager.md) (2), [BuildingType](BuildingType.md) (2), [Bank](Bank.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [LandConversion](LandConversion.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1), [CentralBank](CentralBank.md) (1), [SectorBooks](SectorBooks.md) (1), [NationalAccounts](NationalAccounts.md) (1), [YearBook](YearBook.md) (1), [Mortgage](Mortgage.md) (1), [Resource](Resource.md) (1), [LandParcel](LandParcel.md) (1)
+**Uses:** [MoneyAudit](MoneyAudit.md) (26), [Game](Game.md) (21), [LongPlaytest](LongPlaytest.md) (19), [CityLand](CityLand.md) (10), [GameFiles](GameFiles.md) (9), [TreasuryCheck](TreasuryCheck.md) (7), [JobType](JobType.md) (6), [PopulationManager](PopulationManager.md) (5), [Sector](Sector.md) (4), [HistorySave](HistorySave.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [LandManager](LandManager.md) (3), [Formats](Formats.md) (3), [Timing](Timing.md) (2), [SaveHeader](SaveHeader.md) (2), [BuildingManager](BuildingManager.md) (2), [BuildingType](BuildingType.md) (2), [Bank](Bank.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [LandConversion](LandConversion.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1), [CentralBank](CentralBank.md) (1), [SectorBooks](SectorBooks.md) (1), [NationalAccounts](NationalAccounts.md) (1), [YearBook](YearBook.md) (1), [Mortgage](Mortgage.md) (1), [Resource](Resource.md) (1), [LandParcel](LandParcel.md) (1), [Unemployment](Unemployment.md) (1)
 
 **Used by (1):** [OrderSearchCheck](OrderSearchCheck.md)
 
@@ -96,9 +96,9 @@
 | 225 | `ScaleCheck.MONTH_MEDIAN_MS` | `1500` | The longest a free copy's median month may take, in milliseconds. |
 | 659 | `ScaleCheck.AFFORDABILITY_WITHIN` | `.01` | How far a free copy's affordability pull may stand from the city's in any month (0.7.55): the rents' multiplier on the migrants' target (Migration.affordabilityPull()). |
 | 968 | `ScaleCheck.INTENSIVE` | `Pattern.compile("(price\|Price\|rate\|Rate\|month\|Month\|Months\|share\|Share\|ratio\|...` | A name the scaler leaves alone wherever it meets one, unless EXTENSIVE names it: a price, a rate, a month, an id, a share, a ratio or a target, as scale_save.py's SKIP read them, and since 0.7.54 the seven ratios at i... |
-| 986 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMo...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
-| 990 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxC...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
-| 1005 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "secto...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
+| 989 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMo...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
+| 993 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxC...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
+| 1008 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "secto...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
 
 ## Fields (state)
 
@@ -122,7 +122,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 1034 | **type** `public class ScaleCheck` | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them all back. |
+| 85 | 1051 | **type** `public class ScaleCheck` | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them all back. |
 | 227 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 232 | 5 | `static void same(String label, long actual, long expected)` |  |
 | 238 | 5 | `static void quietly(Runnable r)` |  |
@@ -153,13 +153,13 @@
 | 932 | 3 | `static long last(List<Long> series)` |  |
 | 936 | 5 | `static boolean quietlyGet(java.util.function.BooleanSupplier s)` |  |
 
-### THE STUDY'S SCALING (scale_save.py, 2026-10-06), on a save's JSON (lines 942-1118)
+### THE STUDY'S SCALING (scale_save.py, 2026-10-06), on a save's JSON (lines 942-1135)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1008 | 71 | `static void scale(Path in, Path to, long k) throws Exception` |  |
-| 1080 | 17 | `static JsonElement sc(JsonElement v, String name, long k)` |  |
-| 1099 | 6 | `static JsonElement times(JsonElement v, long k)` | A number times K: a whole number stays whole and exact, a fraction is a double. |
-| 1106 | 4 | `static JsonElement over(JsonElement v, long k)` |  |
-| 1111 | 7 | `static void cleanUp(Path root)` |  |
+| 1011 | 85 | `static void scale(Path in, Path to, long k) throws Exception` |  |
+| 1097 | 17 | `static JsonElement sc(JsonElement v, String name, long k)` |  |
+| 1116 | 6 | `static JsonElement times(JsonElement v, long k)` | A number times K: a whole number stays whole and exact, a fraction is a double. |
+| 1123 | 4 | `static JsonElement over(JsonElement v, long k)` |  |
+| 1128 | 7 | `static void cleanUp(Path root)` |  |
 

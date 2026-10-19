@@ -17,9 +17,10 @@
   "For INFRASTRUCTURE, capacity is the road capacity the building provides;",
   "and transitCapacity is commuter journeys a month a bus, tram or metro can carry.",
   "For RAIL, railCapacity is tonnes a month the network can move across the city",
-  "boundary. Rail is a SECTOR (\"sector\": \"Rail\"), so the investor builds it, not the city.",
+  "boundary. Rail belongs to a SECTOR (\"sector\": \"Freight\"), so the investor builds it, not the city.",
   "the city starts with 400 of it for free. Traffic flows freely up to 90% of",
   "capacity and then degrades, so headroom is what matters, not the raw total.",
+  "For HAULAGE, truckRoom is the trucks a Truck Depot keeps (FR2); Freight's, so an investor builds it.",
   "WHO OWNS IT, AND WHAT IT MAKES. 'sector' is the owning business by its saved name -",
   "Retail, Real Estate, Industry, Construction, Heavy Industry, Mining, Materials - and",
   "a building with no sector is the city's (roads, plants, schools, clinics) or the",
@@ -1534,7 +1535,7 @@
    "id": 62,
    "name": "Rail Spur",
    "category": "RAIL",
-   "sector": "Rail",
+   "sector": "Freight",
    "railCapacity": 50000,
    "cashCost": 140000,
    "constructionPoints": 21000,
@@ -1553,7 +1554,7 @@
    "id": 63,
    "name": "Freight Line",
    "category": "RAIL",
-   "sector": "Rail",
+   "sector": "Freight",
    "railCapacity": 200000,
    "cashCost": 520000,
    "constructionPoints": 78000,
@@ -1572,7 +1573,7 @@
    "id": 64,
    "name": "Rail Terminal",
    "category": "RAIL",
-   "sector": "Rail",
+   "sector": "Freight",
    "railCapacity": 500000,
    "cashCost": 1240000,
    "constructionPoints": 186000,
@@ -3494,6 +3495,52 @@
     "RESIDUES": 13200
    },
    "since": 1970
+  },
+  {
+   "id": 139,
+   "name": "Truck Depot",
+   "category": "HAULAGE",
+   "sector": "Freight",
+   "truckRoom": 100,
+   "cashCost": 12000,
+   "constructionPoints": 1320,
+   "constructionMaterials": 290,
+   "electricity": 150,
+   "water": 10,
+   "jobs": {
+    "DIPLOMA": 122,
+    "COLLEGE_ENGINEERING": 3
+   },
+   "land": 430000,
+   "roadLoad": 110
+  },
+  {
+   "id": 140,
+   "name": "Heavy Truck Plant",
+   "category": "AUTOMOTIVE",
+   "sector": "Automotive",
+   "cashCost": 16600,
+   "constructionPoints": 1830,
+   "constructionMaterials": 400,
+   "electricity": 150,
+   "water": 11,
+   "jobs": {
+    "NO_DIPLOMA": 25,
+    "DIPLOMA": 13,
+    "COLLEGE_ENGINEERING": 3,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 120000,
+   "roadLoad": 37,
+   "makes": {
+    "TRUCKS": 6
+   },
+   "uses": {
+    "FABRICATED_STEEL": 60,
+    "MACHINERY": 12,
+    "LUBRICANTS": 240
+   },
+   "stock": 18
   }
  ]
 }

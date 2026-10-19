@@ -535,10 +535,10 @@ public class QuarryingCheck {
         if (40_000 > home) valued.put(Good.AGGREGATE, 40_000 - home);
         double rate = BusinessInvestment.operatingRateOf(q.getOperatingRate());
         double expect = plans.estimatedMakerProfit(q, quarry, valued)
-                - SpreadPlanner.ownCosts(quarry, rate, q.exchangeFactor(), g.getEconomyManager().getPricePerWatt()) - q.fleetRunning(quarry, rate);
+                - SpreadPlanner.ownCosts(quarry, rate, q.exchangeFactor(), g.getEconomyManager().getPricePerWatt()) - q.freightRunning(quarry, rate);
         double earns = q.estimatedMonthlyProfit(quarry, plans);
         report("one more Quarry on a limestone town adds 40,000 t of limestone; its estimate the city's room for limestone at the"
-                        + " makers' rule, the rest as aggregate, less its consumables and its lorries, to the bit",
+                        + " makers' rule, the rest as aggregate, less its consumables and its freight, to the bit",
                 adds.equals(Map.of(Good.LIMESTONE, 40_000.0)) && earns == expect,
                 String.format("room %,.0f t; D$%,.1fk a month on D$%,.0fk", room, earns, plans.getCostOf(quarry, 1) + q.fleetCapital(quarry)));
         BusinessInvestment.Decision d = q.plan(plans, g);

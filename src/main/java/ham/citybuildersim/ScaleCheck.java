@@ -967,7 +967,7 @@ public class ScaleCheck {
      */
     static final Pattern INTENSIVE = Pattern.compile("(price|Price|rate|Rate|month|Month|Months|share|Share|ratio|Ratio|target|Target|"
             + "renewals|duration|Left$|^id$|Id$|factor|Factor|insured|key|sector|good|type|building|known|Known|"
-            + "^leverage$|Margin$|^quote$|^tightness$|^utilisation$|Multiple$|StruckOn$)");
+            + "^leverage$|Margin$|(^|\\.)quote$|(^|\\.)tightness$|^utilisation$|Multiple$|StruckOn$)");
 
     /*
      * THE NAMES THE PATTERN READ WRONG (0.7.54). The scaled copy's first month
@@ -981,7 +981,10 @@ public class ScaleCheck {
      * (EXTENSIVE), and the ratios whose names did not look it are left alone
      * (the pattern's last seven: a book's leverage, a margin, the railway's
      * quote and tightness, the builders' utilisation and the fill they
-     * struck on, the shops' scarcity multiple).
+     * struck on, the shops' scarcity multiple). Since FR2 the quote and the
+     * tightness under a division's prefix too (Haulage's haul.quote, a price
+     * a tonne, and haul.tightness): the copy's trucks billed K times the
+     * city's price until they were.
      */
     static final java.util.Set<String> EXTENSIVE = java.util.Set.of("recognisedThisMonth", "escalationThisMonth",
             "repairsThisMonth", "lastMonthSales", "demandAtPrice", "buildings", "sharesBoughtBack", "zeroRated");
@@ -1064,6 +1067,20 @@ public class ScaleCheck {
                     21, 22, 23, 24, 25, 26, 27));
             for (int i = 31; i < a.size(); i++) money.add(i);
             for (int i = 0; i < a.size(); i++) if (money.contains(i)) a.set(i, times(a.get(i), k));
+        }
+        // The unemployment's people (FR2, 2026-10-18; the batch's notes): its claimant cohorts, those off EI, the unhoused, the
+        // pool, the arrivals looking and the evicted, the posts filled and offered by tier, the month's flows of people and the
+        // benefits paid, K times over - the cohorts' wages, the started flag and the insured cap are per head. Left out of TOP
+        // the copy kept its city's claimants among K times its people, reconcile() put the rest off EI, and its households lost
+        // their benefits: a rent burden 9-15% over its city's, hidden while the city sat well under the target.
+        if (d.has("unemployment")) {
+            JsonArray a = d.getAsJsonArray("unemployment");
+            int months = Unemployment.EI_MONTHS;
+            java.util.Set<Integer> perHead = new java.util.HashSet<>();
+            for (int i = months; i < 2 * months; i++) perHead.add(i);
+            perHead.add(2 * months + 3);
+            perHead.add(a.size() - 1);
+            for (int i = 0; i < a.size(); i++) if (!perHead.contains(i)) a.set(i, times(a.get(i), k));
         }
         // The central bank's money, not its revenue cursor or its target.
         if (d.has("centralBank")) {

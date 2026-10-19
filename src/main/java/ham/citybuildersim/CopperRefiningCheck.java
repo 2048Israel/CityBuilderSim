@@ -67,7 +67,7 @@ import java.util.Locale;
  *      the bit.
  *
  *   7. THE WIRE & CABLE WORKS' ESTIMATE (Manufacturing): the maker's less its
- *      insulation at the exchange factor and its lorries; the sector's older
+ *      insulation at the exchange factor and its freight; the sector's older
  *      rows the maker's to the bit.
  */
 public class CopperRefiningCheck {
@@ -500,17 +500,17 @@ public class CopperRefiningCheck {
         };
     }
 
-    /** One works of `cr` weighed at `v`, as ProcessingSector weighs it: its lorries in its earnings and its cost. */
+    /** One works of `cr` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. */
     static SpreadPlanner.Candidate weigh(CopperRefining cr, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, Game g) {
         SpreadPlanner.City city = cr.planner().city(cr, plans, g);
         return ProcessingSector.estimate(t, v, city, cr.exchangeFactor(), cr.tariff(), null, 1,
-                ProcessingSector.fleetRunning(t, v, city.rate()), ProcessingSector.fleetCapital(t, v));
+                ProcessingSector.freightRunning(t, v, city.rate(), cr.legPrice()), ProcessingSector.fleetCapital(t, v));
     }
 
     /* ============================ 7. the wire works' estimate ============================ */
 
     static void wireWorksEstimate() {
-        out.println("\n--- 7. the Wire & Cable Works weighed with its insulation and its lorries; Manufacturing's older rows as they were ---");
+        out.println("\n--- 7. the Wire & Cable Works weighed with its insulation and its freight; Manufacturing's older rows with their legs, as every maker ---");
         Game g = CopperMiningCheck.copperTown("copperrefiningcheck-wire", 0);
         Manufacturing man = g.getSectors().manufacturing();
         BuildingManager b = g.getBuildingManager();
@@ -521,13 +521,17 @@ public class CopperRefiningCheck {
         double rate = BusinessInvestment.operatingRateOf(man.getOperatingRate());
         double factor = g.getMarkets().getExchangeRate(), tariff = g.getEconomyManager().getPricePerWatt();
         double expect = plans.estimatedMakerProfit(man, wire) - SpreadPlanner.ownCosts(wire, rate, factor, tariff)
-                - ProcessingSector.fleetRunning(wire, SpreadPlanner.values(g.getMarkets()), rate);
+                - ProcessingSector.freightRunning(wire, SpreadPlanner.values(g.getMarkets()), rate, man.legPrice());
         double got = man.estimatedMonthlyProfit(wire, plans);
-        report("the wire works' estimate: the maker's, less its insulation (its consumables) at the exchange factor and its lorries, to the"
+        report("the wire works' estimate: the maker's, less its insulation (its consumables) at the exchange factor and its freight, to the"
                         + " bit - what the plan and Game.consider() read",
                 got == expect && SpreadPlanner.ownCosts(wire, rate, factor, tariff) > 0,
                 String.format("D$%,.1fk a month; the maker's alone D$%,.1fk", got, plans.estimatedMakerProfit(man, wire)));
-        assertTrue("...and a Fabrication Shop's, which buys no consumables, the maker's estimate to the bit",
-                shop.getConsumables() == 0 && man.estimatedMonthlyProfit(shop, plans) == plans.estimatedMakerProfit(man, shop));
+        // ...weighed with its city legs as every maker is since FR2's gate round (Sector.estimatedMonthlyProfit()).
+        double legs = ProcessingSector.cityLegs(shop, rate, man.legPrice());
+        report("...and a Fabrication Shop's, which buys no consumables, the maker's estimate less its city legs, to the bit",
+                shop.getConsumables() == 0 && legs > 0
+                        && man.estimatedMonthlyProfit(shop, plans) == plans.estimatedMakerProfit(man, shop) - legs,
+                String.format("D$%,.1fk a month; its legs D$%,.1fk", man.estimatedMonthlyProfit(shop, plans), legs));
     }
 }

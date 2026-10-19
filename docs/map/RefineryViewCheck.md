@@ -1,6 +1,6 @@
-# RefineryViewCheck.java - 628 lines · 23 methods · 6 constants · harnesses
+# RefineryViewCheck.java - 630 lines · 23 methods · 6 constants · harnesses
 
-`ham/citybuildersim/RefineryViewCheck.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RefineryViewCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > The refinery's pictogram (0.7.95, batch O11; docs/studies/spec-oil.md 2.12):
 > RefineryView's figures and its picture, held to the model's own reads in
@@ -49,7 +49,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [RefineryView](RefineryView.md) (126), [Good](Good.md) (25), [Game](Game.md) (16), [Refining](Refining.md) (11), [RefineryFlow](RefineryFlow.md) (10), [GameFiles](GameFiles.md) (6), [Sector](Sector.md) (6), [BuildingManager](BuildingManager.md) (4), [Deposit](Deposit.md) (4), [Sectors](Sectors.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [SpreadPlanner](SpreadPlanner.md) (2), [Rail](Rail.md) (2), [Founding](Founding.md) (1), [LandManager](LandManager.md) (1), [Resource](Resource.md) (1), [LongPlaytest](LongPlaytest.md) (1), [Oil](Oil.md) (1), [Trade](Trade.md) (1), [Retail](Retail.md) (1)
+**Uses:** [RefineryView](RefineryView.md) (126), [Good](Good.md) (25), [Game](Game.md) (16), [Refining](Refining.md) (11), [RefineryFlow](RefineryFlow.md) (10), [GameFiles](GameFiles.md) (6), [Sector](Sector.md) (6), [BuildingManager](BuildingManager.md) (4), [Deposit](Deposit.md) (4), [Sectors](Sectors.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [SpreadPlanner](SpreadPlanner.md) (2), [Freight](Freight.md) (2), [Founding](Founding.md) (1), [LandManager](LandManager.md) (1), [Resource](Resource.md) (1), [LongPlaytest](LongPlaytest.md) (1), [Oil](Oil.md) (1), [Trade](Trade.md) (1), [Retail](Retail.md) (1)
 
 **Used by (1):** [OilViewCheck](OilViewCheck.md)
 
@@ -61,10 +61,10 @@
 | 279 | 2. THE MONTH |
 | 327 | 3. THE CRUDE |
 | 363 | 4. THE TAKERS |
-| 429 | 5. THE SCALE |
-| 540 | 6. THE FURNACES |
-| 565 | 7. NOTHING TO DRAW |
-| 602 | 8. PURE |
+| 431 | 5. THE SCALE |
+| 542 | 6. THE FURNACES |
+| 567 | 7. NOTHING TO DRAW |
+| 604 | 8. PURE |
 
 ## Constants
 
@@ -89,7 +89,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 562 | **type** `public class RefineryViewCheck` | The refinery's pictogram (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): RefineryView's figures and its picture, held to the model's own reads in played towns. |
+| 67 | 564 | **type** `public class RefineryViewCheck` | The refinery's pictogram (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): RefineryView's figures and its picture, held to the model's own reads in played towns. |
 | 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 78 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 83 | 5 | `static void quietly(Runnable r)` |  |
@@ -121,36 +121,36 @@
 |---:|---:|---|---|
 | 329 | 33 | `static void theCrude(Game g, RefineryView.View v)` |  |
 
-### 4. THE TAKERS (lines 363-428)
+### 4. THE TAKERS (lines 363-430)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 365 | 58 | `static void theTakers(Game g, RefineryView.View v, double[] stockBefore)` |  |
-| 424 | 4 | `static RefineryView.Buyer buyer(RefineryView.View v, RefineryView.BuyerKind k)` |  |
+| 365 | 60 | `static void theTakers(Game g, RefineryView.View v, double[] stockBefore)` |  |
+| 426 | 4 | `static RefineryView.Buyer buyer(RefineryView.View v, RefineryView.BuyerKind k)` |  |
 
-### 5. THE SCALE (lines 429-539)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 431 | 102 | `static void theScale(RefineryView.View v, RefineryView.Picture p, String which)` |  |
-| 534 | 5 | `static void check(List<String> wrong, Map<String, double[]> sides, String key, int side, double want)` |  |
-
-### 6. THE FURNACES (lines 540-564)
+### 5. THE SCALE (lines 431-541)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 542 | 22 | `static void theFurnaces(RefineryView.View medium)` |  |
+| 433 | 102 | `static void theScale(RefineryView.View v, RefineryView.Picture p, String which)` |  |
+| 536 | 5 | `static void check(List<String> wrong, Map<String, double[]> sides, String key, int side, double want)` |  |
 
-### 7. NOTHING TO DRAW (lines 565-601)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 567 | 34 | `static void nothingToDraw(Game g, RefineryView.View v)` |  |
-
-### 8. PURE (lines 602-628)
+### 6. THE FURNACES (lines 542-566)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 604 | 10 | `static void pure(Game g)` |  |
-| 616 | 12 | `static String words(RefineryView.View v)` | A view and its picture as text: every figure and every word. |
+| 544 | 22 | `static void theFurnaces(RefineryView.View medium)` |  |
+
+### 7. NOTHING TO DRAW (lines 567-603)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 569 | 34 | `static void nothingToDraw(Game g, RefineryView.View v)` |  |
+
+### 8. PURE (lines 604-630)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 606 | 10 | `static void pure(Game g)` |  |
+| 618 | 12 | `static String words(RefineryView.View v)` | A view and its picture as text: every figure and every word. |
 

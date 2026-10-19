@@ -1,6 +1,6 @@
 # CopperMining.java - 256 lines · 12 methods · 5 constants · sectors
 
-`ham/citybuildersim/sectors/CopperMining.java` - generated 2026-10-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CopperMining.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
 > Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133,
 > batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the
@@ -40,7 +40,7 @@
 > LandManager.extract(r, type, t), so E and W hold by type.
 > 
 > THE PLAN is ExtractionSector's: the best earnings on the whole cost among
-> the mines that fit a field of their type, their lorries in it. What it pays
+> the mines that fit a field of their type, their freight in it. What it pays
 > (the study's 4.4, at parity): the Copper Mine & Mill 2.6% of its cost a
 > month exporting its concentrate and 2.9% replacing imported concentrate,
 > the Large Copper Mine 2.8% and 3.1%, the leach plant 3.1-3.4% - copper is a

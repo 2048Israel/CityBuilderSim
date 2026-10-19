@@ -232,7 +232,7 @@ public final class Construction extends Sector {
      * LOADING A SAVE FROM BEFORE THEY WERE KEPT, until its first strike - the
      * row they come from was never saved. The getters read NaN meanwhile and
      * the page says "not counted yet"; the save leaves the keys out rather
-     * than writing a guess (Rail's allowedKnown, the same pattern).
+     * than writing a guess (Freight's allowedKnown, the same pattern).
      */
     private boolean drawnKnown = true;
 
@@ -600,7 +600,7 @@ public final class Construction extends Sector {
      * - crews laid off for want of work would be hired back for a queue), and a depot is ordered only
      * if the city could staff it: its staffable share at
      * MIN_STAFFABLE_TO_ORDER, floored and weighted exactly as Manufacturing,
-     * Automotive, Rail and Business Services use it - since 0.7.18 through
+     * Automotive, Freight and Business Services use it - since 0.7.18 through
      * Sector.staffing(), the one test every planner that builds posts asks.
      *
      * ONE DEPOT AT A TIME, BUILT FIRST (0.7.130). The plan still orders one

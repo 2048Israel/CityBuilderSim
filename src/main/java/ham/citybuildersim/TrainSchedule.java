@@ -19,7 +19,7 @@ import java.util.List;
  * back shows the same train in the same place, and a city that rails
  * nothing has no trains.
  *
- * CALLS. The month billed's railed tonnes by kind (sectors.Rail.railedIn()
+ * CALLS. The month billed's railed tonnes by kind (sectors.Freight.railedIn()
  * and railedOut()) over a train's payload: dry bulk in unit trains of
  * hoppers and liquids in unit trains of tank wagons, UNIT_TONNES each;
  * general cargo in mixed trains of MIXED_TONNES; boxes in intermodal trains
@@ -199,12 +199,12 @@ public final class TrainSchedule {
        ===================================================================== */
 
     /** Whether the freight station is a container yard: the railway landed or shipped any boxes the month billed (the map's yard and these trains read the same). */
-    public static boolean boxesByRail(ham.citybuildersim.sectors.Rail rail) {
+    public static boolean boxesByRail(ham.citybuildersim.sectors.Freight rail) {
         return rail != null && rail.railedIn(Ports.Cargo.CONTAINER) + rail.railedOut(Ports.Cargo.CONTAINER) > 0;
     }
 
-    /** The month's schedule from the railway's month billed (sectors.Rail.railedIn() and railedOut()), on the map's routes; none with no railway. */
-    public static TrainSchedule of(int month, ham.citybuildersim.sectors.Rail rail, List<Route> routes) {
+    /** The month's schedule from the railway's month billed (sectors.Freight.railedIn() and railedOut()), on the map's routes; none with no railway. */
+    public static TrainSchedule of(int month, ham.citybuildersim.sectors.Freight rail, List<Route> routes) {
         int n = Ports.Cargo.values().length;
         double[] in = new double[n], out = new double[n];
         if (rail != null) {
