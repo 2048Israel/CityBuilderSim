@@ -460,6 +460,9 @@ public class NewGameCheck {
         /* ============ 14. THE REAL EARTH (0.7.121) ============ */
         theRealEarth(files);
 
+        /* ============ 15. A NEW CITY AFTER A REFORMED ONE (FX4) ============ */
+        aNewCityAfterAReform(files);
+
         cleanUp(root);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -1213,6 +1216,44 @@ public class NewGameCheck {
     static void quietly(Runnable work) {
         System.setOut(QUIET);
         try { work.run(); } finally { System.setOut(REAL_OUT); }
+    }
+
+    /* =====================================================================
+       15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19)
+
+       Jerus loaded his thrice-reformed city (unit 10,000,000) and founded a
+       new one in the same window, on 0.8.8. The new city kept the old unit
+       and the money constants the load had seeded at it, ForeignAccounts'
+       parityBase among them: parity read 0.0000 from its first month and
+       the rate fell from 1.00 to 0.04 in 200 months, pulled toward it.
+
+       The fixture causes it: a city reformed a hundredfold, then New Game
+       in the same Game, run two years beside a city never reformed. The
+       new city has to found at unit 1 and read the same parity and rate.
+       ===================================================================== */
+    static final int AFTER_REFORM_MONTHS = 24;
+    /** How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. */
+    static final double AFTER_REFORM_BAND = 0.05;
+
+    static void aNewCityAfterAReform(GameFiles files) {
+        System.out.println("\n--- 15. a new city after a reformed one founds at the founding unit (FX4) ---");
+        Game plain = quietly(() -> { Game g = new Game(files); g.run(); g.simulateMonths(AFTER_REFORM_MONTHS); return g; });
+        Game g = quietly(() -> { Game c = new Game(files); c.run(); c.simulateMonths(3); return c; });
+        boolean[] lopped = { false };
+        quietly(() -> lopped[0] = g.reformCurrencyForTest(Denomination.FACTORS[1]));
+        assertTrue("the fixture: the first city is reformed, its unit no longer 1",
+                lopped[0] && g.getDenomination().getUnit() == Denomination.FACTORS[1]);
+        quietly(() -> { g.newGame(); g.simulateMonths(AFTER_REFORM_MONTHS); });
+        assertTrue("the new city founds at the founding unit",
+                g.getDenomination().getUnit() == 1 && g.getDenomination().toSaveArray()[1] == 0);
+        double parity = g.getForeignAccounts().getParity(), plainParity = plain.getForeignAccounts().getParity();
+        double rate = g.getForeignAccounts().getRate(), plainRate = plain.getForeignAccounts().getRate();
+        System.out.printf("  after %d months: parity %.4f against %.4f, rate %.4f against %.4f%n",
+                AFTER_REFORM_MONTHS, parity, plainParity, rate, plainRate);
+        assertTrue("...and reads the parity a city never reformed reads",
+                Math.abs(parity / plainParity - 1) < AFTER_REFORM_BAND);
+        assertTrue("...and its rate is not pulled away from that city's",
+                Math.abs(rate / plainRate - 1) < AFTER_REFORM_BAND);
     }
 
     static void cleanUp(Path root) {
