@@ -62,3 +62,7 @@ ten million fold. With the fix, the two cities read the same to four places:
 
 The diagnosis and the fix were written by Opus, not handed to a Sonnet
 subagent: the PC was going off at 12:45, and the change is about twenty lines.
+
+## The checks
+
+On the merged tree (FR6 in), `Batch check.bat --maps`: 120 harnesses, 119 passed. The one red is ScaleCheck's "...and it builds", which is red on main too. Stale: 0 firm findings. The playtest's trace is byte-identical to main's (896f3f5) except its run-time line (93 s against 94 s), and every month passes the audit, so there is no re-baseline. `--timing` was not run: the PC went off at 12:45.
