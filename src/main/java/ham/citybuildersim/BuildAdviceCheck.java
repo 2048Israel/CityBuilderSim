@@ -226,6 +226,7 @@ public class BuildAdviceCheck {
         sizedToTheProjection(root);
         theRun(root, g, advice);
         thePricedOut(g);
+        aBerthPaysBack(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1237,5 +1238,101 @@ public class BuildAdviceCheck {
         hc.advanceMonth(0, 0, offered, half, 0, 0, bm.getCareCapacity(CareType.BURIAL),
                 bm.getStaffedCareCapacity(CareType.CREMATION, fill));
         close("NOBODY PRICED OUT, THE BEDS, AS BEFORE", BuildAdvice.supplyDemand(g, m, Map.of())[0], beds, 0);
+    }
+
+    /* ============================ 13. A BERTH PAYS BACK (FR3) ============================ */
+
+    /**
+     * A BERTH PAYS BACK (FR3, docs/queue/FR3.md 6 item 9): the advice offers
+     * a berth on its payback, Ports.berthPaysBack() - the kind's uncovered
+     * tonnes a month reaching WORTH_A_BERTH / the port dues dial of that
+     * berth's month - and of a kind's terminals the largest that pays back.
+     * The fixture CAUSES the uncovered dry bulk: a scratch city whose Ports
+     * month is begun and told that many tonnes of iron ore crossed the
+     * boundary (Ports.tally(), as PortCheck tells it), no berth standing or
+     * on site; every threshold is from the constants and Ports.berthMonth().
+     */
+    static void aBerthPaysBack(Path root) {
+        out.println("\n--- 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast ---");
+        GameFiles files = new GameFiles(root.resolve("berth"), root.resolve("berth-no-legacy"));
+        Game g = new Game(files);
+        quietly(() -> {
+            g.newGame();
+            g.setCashForTest(Founding.WEALTHY_CASH * 100);
+        });
+        BuildingsTemplate berth = template(g, "Bulk Berth"), terminal = template(g, "Bulk Terminal");
+        Ports.Cargo kind = Ports.Cargo.DRY_BULK;
+        BuildAdvice.Measure m = BuildAdvice.Measure.port(kind);
+        double berthMonth = Ports.berthMonth(berth), terminalMonth = Ports.berthMonth(terminal);
+        double atBerth = Ports.WORTH_A_BERTH * berthMonth, atTerminal = Ports.WORTH_A_BERTH * terminalMonth;
+        TaxPolicy dues = g.getEconomyManager().getTaxPolicy();
+        assertTrue("fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller",
+                Ports.isPort(berth) && Ports.isPort(terminal) && berth.berthCargo() == kind && terminal.berthCargo() == kind
+                        && berthMonth > 0 && berthMonth < terminalMonth);
+        assertTrue("fixture: no berth stands or is on site, and the dues dial is at its default",
+                Ports.berths(g.getBuildingManager())[kind.ordinal()] == 0 && Ports.berthsOnSite(g.getBuildingManager())[kind.ordinal()] == 0
+                        && dues.getPortDues() == TaxPolicy.DEFAULT_PORT_DUES);
+
+        // No coast: the tonnes that would fill the Bulk Terminal four times over, and no sea to build on.
+        causeDryBulk(g, atTerminal * 4);
+        assertTrue("fixture: the city owns no sea", g.getLandManager().getSeaKm2() == 0 && !g.hasCoastFor(berth, 1));
+        assertTrue("fixture: the uncovered dry bulk is the tonnes told",
+                g.getPorts().uncovered(kind, Ports.berths(g.getBuildingManager()), null) == atTerminal * 4);
+        assertTrue("A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes", ask(g, m) == null);
+
+        // The coast, bought the way PortCheck buys it.
+        PortCheck.quiet = quiet;
+        boolean coast = PortCheck.buyCoast(g);
+        assertTrue("fixture: the city buys an offer that runs out to the sea", coast && g.hasCoastFor(berth, 1));
+        if (!coast) return;
+        quietly(() -> g.setCashForTest(Founding.WEALTHY_CASH * 100));
+
+        causeDryBulk(g, atBerth);
+        BuildAdvice.Suggestion s = ask(g, m);
+        assertTrue("A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one", s != null && s.template() == berth && s.count() == 1);
+        if (s != null) {
+            bits("...its card reads the uncovered tonnes now", s.before(), atBerth);
+            bits("...and the tonnes left with the berth standing", s.after(), Math.max(0, atBerth - berthMonth));
+            bits("...at the price the Build button charges", s.price(), g.quoteBuild(berth, 1).total);
+        }
+        causeDryBulk(g, Math.nextDown(atBerth));
+        assertTrue("JUST UNDER IT: no berth is advised", ask(g, m) == null);
+        causeDryBulk(g, atTerminal);
+        s = ask(g, m);
+        assertTrue("PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal",
+                s != null && s.template() == terminal);
+        causeDryBulk(g, Math.nextDown(atTerminal));
+        s = ask(g, m);
+        assertTrue("...a hair under it, the Bulk Berth again", s != null && s.template() == berth);
+        causeDryBulk(g, atTerminal);
+        assertTrue("...with the Bulk Terminal passed over, the Bulk Berth",
+                BuildAdvice.portTerminal(g, m, Map.of(), Set.of(terminal)) == berth);
+
+        // The dial: dues at twice the cost-recovering rate pay a berth back at half the tonnes.
+        double half = Ports.WORTH_A_BERTH / 2 * berthMonth;
+        causeDryBulk(g, half);
+        assertTrue("fixture: half the threshold is no berth's worth at the default dial", ask(g, m) == null);
+        dues.setPortDues(2);
+        s = ask(g, m);
+        assertTrue("THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth", s != null && s.template() == berth);
+        causeDryBulk(g, Math.nextDown(half));
+        assertTrue("...a hair under half, none", ask(g, m) == null);
+        dues.setPortDues(0);
+        causeDryBulk(g, atTerminal * 4);
+        assertTrue("THE DIAL AT 0 - no dues, no payback - NONE however many tonnes", ask(g, m) == null);
+        dues.setPortDues(TaxPolicy.DEFAULT_PORT_DUES);
+        s = ask(g, m);
+        assertTrue("...and back at the default the same tonnes advise the Bulk Terminal", s != null && s.template() == terminal);
+    }
+
+    /** Begins the city's Ports month and tells it `tonnes` of iron ore (dry bulk) crossed the boundary inbound, none by sea. */
+    static void causeDryBulk(Game g, double tonnes) {
+        g.getPorts().beginMonth();
+        g.getPorts().tally(Good.IRON, tonnes, 0, 0);
+    }
+
+    /** What the advice offers for a port measure, cash and land to spare. */
+    static BuildAdvice.Suggestion ask(Game g, BuildAdvice.Measure m) {
+        return BuildAdvice.suggestFor(g, null, m, g.getCash(), g.getLandManager().getAvailableSqFt());
     }
 }

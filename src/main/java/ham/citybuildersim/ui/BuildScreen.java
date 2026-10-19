@@ -2992,6 +2992,7 @@ final class BuildScreen {
                 return head.length > 1 ? head[1] : m.school().getLabel().toLowerCase();
             }
             case POLICE:  return "officers on the street";
+            case PORT:    return "a quay for the tonnes that go by sea";
             default:      return "somewhere to hold the caught";
         }
     }
@@ -3047,6 +3048,7 @@ final class BuildScreen {
             case DEATH:   return "of the dead";
             case SCHOOL:  return "places";
             case POLICE:  return "officers";
+            case PORT:    return "t a month";
             default:      return "cells";
         }
     }
@@ -3140,6 +3142,13 @@ final class BuildScreen {
                 figure = pct(arc);
                 double unheld = game.getCrime().getNotHeld();
                 shortLine = unheld >= 1 ? people(unheld) + " caught, not held" : "a cell for everyone caught";
+                break;
+            }
+            case PORT: {
+                // A berth (FR3): the share of the tonnes that could go by sea that a berth takes (supplyDemand()'s pair), not a place for everyone.
+                arc = sd[1] > 0 ? Math.max(0, Math.min(1, sd[0] / sd[1])) : 1;
+                figure = pct(arc);
+                shortLine = gap >= .5 ? people(gap) + " t a month no berth takes" : "a berth for every tonne";
                 break;
             }
             default: {
