@@ -62,6 +62,14 @@ RailDrawCheck 21, MainLineCheck 12 and JunctionCheck 10 and 11. See docs/queue/F
 the check scripts set it while another batch's JVM or the game runs (`tools/jvms.ps1`), and `--timing` runs the
 timing harnesses alone and hard, as the ship gate does. TimingCheck new. No game change. See docs/queue/TM1-notes.md.
 
+## 0.8.4 to 0.8.10 - for `claude/todo.md`
+
+- Section 0, under the manual's entry: its headline numbers moved - the build 0.8.10, SAVE_FORMAT 40 (FR2, the
+  oldest loadable 40), 143 buildings (the Truck Depot 139, the Heavy Truck Plant 140, the Rail Depot 141, the Bulk
+  Berth 142), 119 harnesses; the sectors still twenty-four, Freight in Rail's place, with its Haulage and Ports
+  divisions; a new dial, the port dues (`TaxPolicy.portDues`, FR3).
+- What each batch left open is under Pending in QUEUE.md (FR2-C, FR7-C, FR3-C, FR5-C, FR6-C, FX3-C, TM1-C).
+
 ## Jerus's answers of 2026-10-18 - for `claude/todo.md`
 
 - CONFIRMs closed ("rec all"): FR0's, FR1's and FX2's stars, all as built; I14 ★3, ★4, ★6, ★7 as built; I12 ★2
