@@ -45,8 +45,8 @@ import java.util.Map;
  *      force, for the share Haulage said it would carry and never more than the
  *      trucks it had could (a firm short of haulage collected the rest itself).
  *   2. closeMonth(): the trucks' diesel on what they carried; their wear; the
- *      coming month's need (the legs demanded, carried or not, which spec 3.2
- *      calls "carried and refused"); and the reprice.
+ *      coming month's need (the city legs of the plant standing, at
+ *      nameplate: nameplateNeed()); and the reprice.
  *
  * The share is pushed to nobody, and it is not struck: every sector reads it
  * when it is asked for its operating rate (Sector.getHaulageRatio()), off the
@@ -98,7 +98,20 @@ public final class Haulage {
     /** The tonnes a month the trucks could carry when the month was billed (trucks x TONNES_A_TRUCK_MONTH): the most that bill charged for, and what the price is struck over. */
     private double capacityInForce;
 
-    /** The city-leg tonnes the share is read against: last month's legs, carried or not. */
+    /**
+     * The share of the need the trucks can carry, in force for the month
+     * (getShare()): struck at the haul, once, as the need is - over the fleet
+     * held before the month's wear, which the month's order replaces, or the
+     * fleet seeded, whichever is more. Read live it moved inside a month: the
+     * sectors that produced before Freight's trucks were bought ran at one
+     * rate and the ones after at another, and a refinery bought its crude at
+     * the first and made its products at the second (RefineryCheck, PortCheck,
+     * IndustryViewCheck). Struck over the fleet after its wear it read a fleet
+     * kept to its need at 99% every month (a 600-month city, FR2's notes).
+     */
+    private double share = 1;
+
+    /** The city-leg tonnes the share is read against: the plant standing at the last haul, at nameplate (nameplateNeed()). */
     private double need;
 
     /**
@@ -117,10 +130,11 @@ public final class Haulage {
     private double diplomaOffered = 1;
 
     /* The month billed, for the screens and the checks. Not saved but dieselLitres. */
-    private double tonnes, carried, bill, diesel, dieselImported, dieselLitres, worn, allowed, tightness;
+    private double tonnes, carried, bill, diesel, dieselImported, dieselLitres, dieselLitresImported, worn, allowed, tightness;
 
     Haulage(Freight freight) {
         this.freight = freight;
+        strikeTrade(null);
     }
 
     /* ------------------------------------------------------------ the legs */
@@ -185,33 +199,96 @@ public final class Haulage {
     public LegPrice legPrice() {
         final double q = getQuote();
         return new LegPrice() {
-            @Override public double in(Good g) {
-                if (g == null || g.traffic() != Traffic.BULK) return 0;
-                return clean(q * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * unit(freight.railShareInForce(g)) * importShare(g)));
-            }
-
-            @Override public double out(Good g) {
-                if (g == null || g.traffic() != Traffic.BULK) return 0;
-                return clean(q * exportShare(g) * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * unit(freight.railShareInForce(g))));
-            }
+            @Override public double in(Good g)  { return clean(q * inWeight(g)); }
+            @Override public double out(Good g) { return clean(q * outWeight(g)); }
         };
     }
 
-    /** The share of `g` the city sold abroad at the last clearing: exported over exported and sold at home; with nothing traded, 1 for a good the world buys and 0 for one it does not. */
-    private double exportShare(Good g) {
-        GoodsMarket m = freight.markets() == null ? null : freight.markets().get(g);
-        double out = m == null ? 0 : m.getExported(), home = m == null ? 0 : m.getLocalFilled();
-        double all = out + home;
-        return all > 0 ? unit(out / all) : g.exportable() ? 1 : 0;
+    /** The city leg of a received tonne of `g`, in truck tonnes: 1 less the siding's share of its imported, railed part; 0 for anything but BULK. */
+    private double inWeight(Good g) {
+        if (g == null || g.traffic() != Traffic.BULK) return 0;
+        return 1 - InfrastructureManager.RAIL_ROAD_RELIEF * unit(freight.railShareInForce(g)) * importShare(g);
     }
 
-    /** ...and bought abroad: imported over imported and bought at home; with nothing traded, 1 for a good the world sells and 0 for one it does not. */
-    private double importShare(Good g) {
-        GoodsMarket m = freight.markets() == null ? null : freight.markets().get(g);
-        double in = m == null ? 0 : m.getImported(), home = m == null ? 0 : m.getLocalFilled();
-        double all = in + home;
-        return all > 0 ? unit(in / all) : g.importable() ? 1 : 0;
+    /** ...and of a made tonne, on average: the share the city exported, less the siding's share of its railed part. */
+    private double outWeight(Good g) {
+        if (g == null || g.traffic() != Traffic.BULK) return 0;
+        return exportShare(g) * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * unit(freight.railShareInForce(g)));
     }
+
+    /**
+     * The city-leg tonnes a month the city's standing plant asks for at
+     * nameplate (FR2; closeMonth()): every sector's but Freight's BULK inputs
+     * and outputs at capacity, less what a works hands itself (captive goods,
+     * Sector.tonnesMoved()), weighted as the leg price weights a tonne
+     * (inWeight(), outWeight()). VANS and TRUCKS drive themselves.
+     */
+    public double nameplateNeed(Sectors sectors) {
+        if (sectors == null) return 0;
+        double t = 0;
+        for (Sector s : sectors.all()) {
+            if (s == freight) continue;
+            for (Good g : s.goodsUsed()) {
+                if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
+                double units = s.getInputAtCapacity(g) - (s.captive(g) ? Math.min(s.getCapacity(g), s.getInputAtCapacity(g)) : 0);
+                if (units > 0) t += units * g.tonnesPerUnit() * inWeight(g);
+            }
+            for (Good g : s.goodsMade()) {
+                if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
+                double units = s.getCapacity(g) - (s.captive(g) ? Math.min(s.getCapacity(g), s.getInputAtCapacity(g)) : 0);
+                if (units > 0) t += units * g.tonnesPerUnit() * outWeight(g);
+            }
+        }
+        return Double.isFinite(t) ? Math.max(0, t) : 0;
+    }
+
+    /*
+     * THE TRADE'S SHARES, STRUCK AT THE HAUL (FR2). What a good's city leg
+     * weighs (inWeight(), outWeight()) turns on how much of it the city ships
+     * and how much it lands, and those were read off the markets' last
+     * clearing - which a load does not give back, so a reloaded city struck
+     * another need and ran its wells at another rate than the city it was
+     * saved from (WellCheck, OilCheck). They are struck at each haul from the
+     * sectors' own month - the units each shipped, landed and bought at home,
+     * which a save carries (Sector, THE MONTH'S TRADE ACROSS A SAVE) - and
+     * saved; a good no sector traded reads 1 when the world buys (or sells)
+     * it and 0 when it does not.
+     */
+
+    /** Each good's share of the city's units shipped abroad, and of its units bought landed from abroad, struck at the last haul (strikeTrade()). */
+    private final double[] exportShares = new double[Good.values().length], importShares = new double[Good.values().length];
+
+    /** ...and whether each was struck from trade, or is the no-trade default. */
+    private final boolean[] traded = new boolean[Good.values().length];
+
+    /** Strikes the trade's shares from the sectors' month (above): called at the haul, before the need. */
+    void strikeTrade(Sectors sectors) {
+        int n = Good.values().length;
+        double[] ex = new double[n], im = new double[n], home = new double[n];
+        if (sectors != null) {
+            for (Sector s : sectors.all()) {
+                for (Good g : Good.values()) {
+                    if (g.traffic() != Traffic.BULK) continue;
+                    int i = g.ordinal();
+                    ex[i] += Math.max(0, s.unitsExported(g));
+                    im[i] += Math.max(0, s.unitsImported(g));
+                    home[i] += Math.max(0, s.unitsBoughtLocal(g));
+                }
+            }
+        }
+        for (Good g : Good.values()) {
+            int i = g.ordinal();
+            traded[i] = ex[i] + home[i] > 0 || im[i] + home[i] > 0;
+            exportShares[i] = ex[i] + home[i] > 0 ? unit(ex[i] / (ex[i] + home[i])) : g.exportable() ? 1 : 0;
+            importShares[i] = im[i] + home[i] > 0 ? unit(im[i] / (im[i] + home[i])) : g.importable() ? 1 : 0;
+        }
+    }
+
+    /** Made here and shipped abroad, struck at the last haul: what share of a made tonne's leg its maker pays. */
+    private double exportShare(Good g) { return exportShares[g.ordinal()]; }
+
+    /** ...and landed from abroad: what share of a received tonne's leg the railway's siding may relieve. */
+    private double importShare(Good g) { return importShares[g.ordinal()]; }
 
     /** x clamped to [0, 1]; 0 if it is not a number. */
     private static double unit(double x) { return Double.isFinite(x) ? Math.max(0, Math.min(1, x)) : 0; }
@@ -240,11 +317,12 @@ public final class Haulage {
      * @param legs each sector's city-leg tonnes of the month, in the order of the loop that summed them
      */
     void billMonth(Map<Sector, Double> legs) {
-        tonnes = carried = bill = diesel = dieselImported = dieselLitres = worn = 0;
+        tonnes = carried = bill = diesel = dieselImported = dieselLitres = dieselLitresImported = worn = 0;
+        // The fleet the month was carried by: held now, before the month's wear (closeMonth()).
+        capacityInForce = trucks() * TONNES_A_TRUCK_MONTH;
         for (double t : legs.values()) tonnes += t;
         if (!(tonnes > 0)) return;
 
-        capacityInForce = trucks() * TONNES_A_TRUCK_MONTH;
         double f = getShare();
         if (tonnes * f > capacityInForce) f = capacityInForce / tonnes;
         if (!(f > 0)) return;
@@ -274,6 +352,7 @@ public final class Haulage {
             diesel = took.cost();
             dieselImported = took.importCost();
             dieselLitres = took.units();
+            dieselLitresImported = took.imported();
         }
 
         /* ---- the wear: a tenth faster past the depots' room ---- */
@@ -293,18 +372,28 @@ public final class Haulage {
         /* ---- the coming month: what the trucks can carry of what is asked ---- */
 
         /*
-         * THE NEED IS WHAT WAS ASKED, carried or not. A firm short of haulage
-         * collects its own, and its tonnes are no less a city's for it: the
-         * need the fleet is sized on is the legs demanded, not the legs billed,
-         * or a fleet that fell short would size itself to what it carried and
-         * never catch up (spec 3.2, "carried and refused").
+         * THE NEED IS THE PLANT STANDING, AT NAMEPLATE, as a sector's vans are
+         * (Sector.tonnesMoved(): "a firm buys lorries for the factory it has,
+         * not for the month it is having"). FR2's brief took last month's legs,
+         * carried or not (its star 4, spec 3.2's "carried and refused"), and
+         * the suite measured why not: a town whose works stand before its first
+         * month seeded its fleet on that month's few hundred tonnes, then bought
+         * an eighth of a need it read a month late, and its wells, kilns and
+         * refineries ran at the floor for the fixtures' whole run - fourteen
+         * harnesses' premises moved at once (FR2's notes). The legs a works'
+         * plant asks for are its BULK inputs and outputs at nameplate, weighted
+         * as the leg price weights them (nameplateNeed()): a received tonne's
+         * leg less the siding's share of its imported part, a made tonne's at
+         * the share the city exported. The bill is still the month's own legs.
          */
-        need = tonnes;
+        strikeTrade(sectors);
+        need = nameplateNeed(sectors);
         if (!trucksKnown && need > 0) {
             freight.seedTrucks(need / TONNES_A_TRUCK_MONTH);
             trucksKnown = true;
         }
-        double capacity = trucks() * TONNES_A_TRUCK_MONTH;
+        double capacity = Math.max(capacityInForce, trucks() * TONNES_A_TRUCK_MONTH);
+        share = !(need > 0) || capacity >= need ? 1 : Math.max(0, capacity / need);
         tightness = need > 0 ? Math.max(0, Math.min(1, (need - capacity) / need)) : 0;
 
         /* ---- the reprice: the railway's rule, on Haulage's books ---- */
@@ -466,11 +555,7 @@ public final class Haulage {
      * at nameplate). Read live by every sector's operating rate
      * (Sector.getHaulageRatio()) and by the bill.
      */
-    public double getShare() {
-        if (!(need > 0)) return 1;
-        double capacity = trucks() * TONNES_A_TRUCK_MONTH;
-        return capacity >= need ? 1 : Math.max(0, capacity / need);
-    }
+    public double getShare() { return share; }
 
     /** The city-leg tonnes the share is read against, and the tonnes a month the trucks could carry when the month was billed. */
     public double getNeed()            { return need; }
@@ -486,6 +571,9 @@ public final class Haulage {
     /** The litres of diesel the last haul drew: none after a load until the next, as the railway's. */
     public double getDieselLitres()    { return dieselLitres; }
 
+    /** ...and the litres of it the world sold (the refiners' tanks having none left): the refinery's pictogram's (RefineryView). */
+    public double getDieselLitresImported() { return dieselLitresImported; }
+
     /** The trucks worn out in the month billed. */
     public double getWorn()            { return worn; }
 
@@ -498,6 +586,13 @@ public final class Haulage {
     /** Haulage's state into Freight's extras (keys haul.*): the dieselLitres are not saved, as the railway's are not. */
     public void save(Map<String, Double> extras) {
         extras.put("haul.quote", quote);
+        extras.put("haul.share", share);
+        // The trade's shares, under names a scaler reads as intensive (ScaleCheck): only the goods struck from trade.
+        for (Good g : Good.values()) {
+            if (!traded[g.ordinal()]) continue;
+            extras.put("haul.exportShare." + g.name(), exportShares[g.ordinal()]);
+            extras.put("haul.importShare." + g.name(), importShares[g.ordinal()]);
+        }
         extras.put("haul.quoteKnown", quoteKnown ? 1.0 : 0.0);
         extras.put("haul.capacity", capacityInForce);
         extras.put("haul.need", need);
@@ -517,6 +612,15 @@ public final class Haulage {
     /** ...and back. A key that is missing is a save from before Haulage: a share of 1 and nothing known, which is a city that has not yet needed a truck. */
     public void restore(Map<String, Double> extras) {
         quote = extras.getOrDefault("haul.quote", 0.0);
+        share = extras.getOrDefault("haul.share", 1.0);
+        strikeTrade(null);
+        for (Good g : Good.values()) {
+            Double ex = extras.get("haul.exportShare." + g.name()), im = extras.get("haul.importShare." + g.name());
+            if (ex == null || im == null) continue;
+            traded[g.ordinal()] = true;
+            exportShares[g.ordinal()] = ex;
+            importShares[g.ordinal()] = im;
+        }
         quoteKnown = extras.getOrDefault("haul.quoteKnown", 0.0) > 0;
         capacityInForce = extras.getOrDefault("haul.capacity", 0.0);
         need = extras.getOrDefault("haul.need", 0.0);
@@ -526,7 +630,7 @@ public final class Haulage {
         bill = extras.getOrDefault("haul.bill", 0.0);
         diesel = extras.getOrDefault("haul.diesel", 0.0);
         dieselImported = extras.getOrDefault("haul.dieselImported", 0.0);
-        dieselLitres = 0;
+        dieselLitres = dieselLitresImported = 0;
         worn = extras.getOrDefault("haul.worn", 0.0);
         allowed = extras.getOrDefault("haul.allowed", 0.0);
         tightness = extras.getOrDefault("haul.tightness", 0.0);
@@ -538,9 +642,11 @@ public final class Haulage {
         quote = 0;
         quoteKnown = false;
         capacityInForce = need = 0;
+        share = 1;
+        strikeTrade(null);
         diplomaOffered = 1;
         trucksKnown = false;
-        tonnes = carried = bill = diesel = dieselImported = dieselLitres = worn = allowed = tightness = 0;
+        tonnes = carried = bill = diesel = dieselImported = dieselLitres = dieselLitresImported = worn = allowed = tightness = 0;
     }
 
     /** Its money in the new unit (Denomination): the quote, the bill, the diesel and what the month was allowed. Tonnes, trucks and shares are not money. */

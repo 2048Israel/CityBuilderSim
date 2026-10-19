@@ -824,8 +824,10 @@ public class OilCheck {
         }
         report("fixture: the town has no refinery, so its four fuels and oils come from the world",
                 g.getSectors().refining().buildingsStanding() == 0, "");
-        report("the vans' diesel is DIESEL bought abroad, by the sectors that run fleets", diesel > 0
-                        && dieselBuyers.contains(Sectors.MANUFACTURING) && dieselBuyers.contains(Sectors.RETAIL),
+        // Since FR2 a works' bulk goes by Freight's trucks and its vans carry its goods: Manufacturing's fabrication and machinery
+        // are bulk, so its diesel is the trucks' now, bought by Freight, and the shops' vans still buy theirs.
+        report("the vans' and the trucks' diesel is DIESEL bought abroad, by the sectors that run vans and by Freight's trucks",
+                diesel > 0 && dieselBuyers.contains(Sectors.FREIGHT) && dieselBuyers.contains(Sectors.RETAIL),
                 String.format("$%,.1fk over %d months, by %s", diesel, months, dieselBuyers));
         report("...the factories' lubricants LUBRICANTS', by Manufacturing and Automotive and nobody else", lubricants > 0
                         && lubricantBuyers.equals(new java.util.TreeSet<>(java.util.List.of(Sectors.MANUFACTURING, Sectors.AUTOMOTIVE))),
@@ -1333,7 +1335,9 @@ public class OilCheck {
         close("the railway imported none of its diesel", rail.getFuelImported(), 0, 1e-12);
         Sector.Split bought = rail.statement().bought.getOrDefault(Good.DIESEL, new Sector.Split());
         assertTrue("...and bought no petrol", !rail.statement().bought.containsKey(Good.PETROL));
-        close("...it bought it at home, on its books", bought.atHome, rail.getFuelBill(), 1e-9);
+        // ...with its trucks' since FR2: the sector's diesel is the railway's and Haulage's, each drawn as a buyer.
+        close("...it bought it at home, on its books, with its trucks'", bought.atHome,
+                rail.getFuelBill() + rail.haulage().getDiesel() - rail.haulage().getDieselImported(), 1e-9);
         close("...eighteen litres a tonne hauled, at the litre's price when it drew them", rail.getFuelBill(),
                 rail.getHauledTonnes() * Freight.FUEL_LITRES_PER_TONNE * atDraw, 1e-9);
     }

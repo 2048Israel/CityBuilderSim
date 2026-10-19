@@ -7445,8 +7445,24 @@ public final class GameVersion {
      *     generated world draws neither kind, its ground and books byte for
      *     byte as before (the playtest's traces), so its save from format 37
      *     or 38 reads as it did. Only an Earth save below 39 is refused.
+     *
+     * 40 - THE FREIGHT SECTOR (0.8.5, batch FR2; spec-freight-and-
+     *     infrastructure 3.1): the railway's sector is keyed "Freight" in
+     *     Rail's slot, and a save's sectors are keyed by name (SectorState),
+     *     so a format-39 save's railway - its track's company, its quote, its
+     *     wagon sets, its bonds and its loans - would load into nobody and
+     *     Freight would open empty beside a city full of track: WRONGLY, not
+     *     merely incompletely. With it come Haulage's figures (Freight's
+     *     extras, haul.*), each sector's units bought at home for the first
+     *     bill after a load (SectorState.boughtLocal), the good TRUCKS and the
+     *     buildings 139 and 140; Gson leaves a missing key alone, so none of
+     *     those would have needed a bump on its own.
+     *
+     *     THE FLOOR RISES TO 40 WITH IT (the rule): a save of format 39 or
+     *     older is refused, naming the build that still opens it. Jerus,
+     *     2026-10-18: "my saves never matter".
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 39;
+    public static final int SAVE_FORMAT = 40;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -7456,7 +7472,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 37 since 0.7.120 (batch I3, built as 0.7.116: SCRAP SPLIT FROM ORE
+     * 40 since 0.8.5 (batch FR2, THE FREIGHT SECTOR above: a format-39
+     * save's railway is keyed "Rail" and would load into nobody). 37 from
+     * 0.7.120 (batch I3, built as 0.7.116: SCRAP SPLIT FROM ORE
      * above), and still at format 38 (0.7.121, A CITY ON THE REAL EARTH: a
      * format-37 save is a generated city and loads rightly) and at format 39
      * (0.7.127, ICE AND DESERT ON THE REAL EARTH: a generated city loads
@@ -7474,7 +7492,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 37;
+    public static final int OLDEST_LOADABLE_FORMAT = 40;
 
     public static final String NAME = "CityBuilderSim";
 

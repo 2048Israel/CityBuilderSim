@@ -170,7 +170,12 @@ public class SectorBooksCheck {
                     for (Sector.Split x : st.sold.values())   sold += x.total();
                     for (Sector.Split x : st.bought.values()) bought += x.total();
                     near("revenue by good", sector, m.month(), sold + st.otherRevenue, st.revenue);
-                    near("cost of sales by good", sector, m.month(), bought, st.inputs);
+                    // ...and the named lines beside the goods (FR2): since Freight's trucks bill every buyer of bulk its
+                    // city leg (Sector.billForService(), "Haulage"), the opened cost line is the goods and the named
+                    // services and stock together, as RailCheck.allInputsAddUp() reads it in a city with a railway.
+                    double namedIn = 0;
+                    for (double v : st.otherInputs.values()) namedIn += v;
+                    near("cost of sales by good and named line", sector, m.month(), bought + namedIn, st.inputs);
 
                     /*
                      * AND THE HOME/ABROAD SPLIT IS THE SAME SPLIT THE

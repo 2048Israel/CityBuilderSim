@@ -1190,6 +1190,29 @@ public final class Freight extends Sector {
                     + "with nothing but its own cost. Every tonne it takes off the world's "
                     + "lorries is freight money that stays in the city."));
         }
+
+        /*
+         * ...AND ITS TRUCKS (FR2): Haulage's figures, the division's own. The
+         * screens' division strip is FR4's (spec-freight 6); until then the
+         * trucks are read here, under the railway.
+         */
+        Haulage h = haulage;
+        lines.add(Line.head("Haulage, the trucks"));
+        lines.add(Line.of("Trucks", String.format("%s of the %s the city's legs need",
+                        f.count(h.trucks()), f.count(h.trucksNeeded())),
+                h.getShare() < 1 ? Line.Tone.WARN : Line.Tone.NONE));
+        lines.add(Line.of("Kept at its depots", String.format("%s places, %s on the street",
+                f.count(h.depotRoom()), f.count(h.onStreet())),
+                h.onStreet() > 0 ? Line.Tone.MUTED : Line.Tone.NONE));
+        lines.add(Line.of("Carried", String.format("%s of %s tonnes of city legs", f.count(h.getCarried()),
+                f.count(h.getTonnes()))));
+        lines.add(Line.of("A tonne's city leg", f.amount(h.getQuote()) + (h.isQuoteKnown() ? "" : " (estimated)")));
+        lines.add(Line.of("Haulage billed", f.amount(h.getBill())));
+        lines.add(Line.of("Diesel", f.amount(h.getDiesel()), Line.Tone.MUTED));
+        if (h.getShare() < 1) {
+            lines.add(Line.note(String.format("The trucks carry %.0f%% of the city's bulk; every works that moves bulk "
+                    + "runs slower for the rest, collecting its own, until more trucks arrive.", h.getShare() * 100)));
+        }
         return lines;
     }
 

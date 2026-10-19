@@ -367,7 +367,9 @@ public class RefineryViewCheck {
         Refining r = g.getSectors().refining();
         Freight rail = g.getSectors().freight();
         Retail shops = g.getSectors().retail();
-        double railLocal = rail.getFuelLitres() - rail.getFuelLitresImported();
+        // ...and its trucks' (FR2), drawn at the haul as the railway's is, so apart from the month's sales as the railway's is.
+        double railLocal = rail.getFuelLitres() - rail.getFuelLitresImported()
+                + rail.haulage().getDieselLitres() - rail.haulage().getDieselLitresImported();
         boolean sold = true;
         String detail = "";
         for (Good p : RefineryView.TANK_ORDER) {
@@ -381,11 +383,11 @@ public class RefineryViewCheck {
             }
             double want = rowSold + (p == Good.DIESEL ? railLocal : 0);
             sold &= near(viewLocal, want);
-            if (p == Good.DIESEL) detail = String.format("diesel: %s to the vans and the railway, %s of it the railway's haul",
+            if (p == Good.DIESEL) detail = String.format("diesel: %s to the vans, the trucks and the railway, %s of it the haul's",
                     RefineryView.litres(viewLocal), RefineryView.litres(railLocal));
         }
         report("what the refinery sold at home, product by product, is its takers' - its own vans' among them, the railway's"
-                + " haul apart", sold, detail);
+                + " and its trucks' haul apart", sold, detail);
         RefineryView.Buyer cars = buyer(v, RefineryView.BuyerKind.CARS), railway = buyer(v, RefineryView.BuyerKind.RAIL);
         report("fixture: the households drive and the railway hauls", cars != null && railway != null,
                 String.format("cars %s, railway %s", cars == null ? "none" : RefineryView.buyerFigure(cars),

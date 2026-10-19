@@ -337,6 +337,16 @@ public final class RefineryView {
             v[0] += rail.getFuelLitres() - imported;
             v[1] += imported;
         }
+        // ...and its trucks' (FR2), drawn at the same moment for the same reason (Haulage.closeMonth()): lorries, beside the vans.
+        ham.citybuildersim.sectors.Haulage trucks = rail == null ? null : rail.haulage();
+        if (trucks != null && trucks.getDieselLitres() > 0) {
+            kinds.putIfAbsent(BuyerKind.VANS.name(), BuyerKind.VANS);
+            double[] v = took.computeIfAbsent(BuyerKind.VANS.name(), x -> new EnumMap<>(Good.class))
+                    .computeIfAbsent(Good.DIESEL, x -> new double[2]);
+            double imported = Math.max(0, Math.min(trucks.getDieselLitres(), trucks.getDieselLitresImported()));
+            v[0] += trucks.getDieselLitres() - imported;
+            v[1] += imported;
+        }
 
         /* ----- each product's month ----- */
         List<Product> products = new ArrayList<>();

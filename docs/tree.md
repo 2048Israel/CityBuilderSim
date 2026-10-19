@@ -472,7 +472,7 @@ adds its line here, not in `CLAUDE.md`.
                                    stamp of the city at the rail's foot above Menu, its preview on hover,
                                    the land office's map over the window on a click; MiniMapFrame's
                                    arithmetic). The model never imports it.
-        *Check.java                113 harnesses, each a main() with static helpers
+        *Check.java                114 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones
         Timing.java                the one helper every timing assertion goes through (TM1, 2026-10-18): under
