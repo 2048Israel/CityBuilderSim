@@ -1489,6 +1489,164 @@ public class MapCheck {
         rail(yn, "...with " + YARDS_ADDED + " Rail Terminals and " + FREIGHT_ADDED + " Freight Line added");
         yardsNearMines(yards, yn);
         riverCrossed(sq);
+        interchangesAndAccess(sq);
+    }
+
+    /* =====================================================================
+       8b. THE INTERCHANGES' GROUND AND THE ACCESS ROADS (batch FR7, slice 4;
+       spec-freight 4.5, 4.6 and 7's MapCheck 8 items: "access roads reach a
+       ramp or arterial, interchange reserves clear of buildings")
+       ===================================================================== */
+
+    /** The access fixture's added highways and Truck Depots: enough highways to cross, three depots to place. */
+    static final int ACCESS_HIGHWAYS_ADDED = 200, ACCESS_DEPOTS_ADDED = 3;
+
+    /** The type id of the Truck Depot, the one building of the category HAULAGE. */
+    static int depotType(BuildingVisual.Type[] types) {
+        int id = -1;
+        for (BuildingVisual.Type t : types) if (t != null && t.category() == BuildingType.HAULAGE) id = t.id();
+        return id;
+    }
+
+    /**
+     * The yard city (his city x 1 where its square holds iron, with two Rail Terminals and a freight line) with highways added to cross and
+     * Truck Depots to place; with `highways` false his own highways taken out too: none, so no ramp for a road to end on.
+     */
+    static CityMap accessCity(Squares sq, boolean highways) {
+        long[] c = sq.ironCounts.clone();
+        int yard = -1, freight = -1, mine = -1, hw = -1;
+        for (BuildingVisual.Type t : sq.types) {
+            if (t == null) continue;
+            if (t.terminal()) yard = t.id();
+            else if (t.track() && t.plots() > 100) freight = t.id();
+            if (t.id() == Mining.IRON_MINE) mine = t.id();
+            if (t.road() == BuildingVisual.HIGHWAY) hw = t.id();
+        }
+        long[] rail = new long[c.length];
+        for (int t = 0; t < c.length; t++) if (sq.types[t] != null && (sq.types[t].track() || sq.types[t].terminal())) { rail[t] = c[t]; c[t] = 0; }
+        rail[yard] += YARDS_ADDED;
+        rail[freight] += FREIGHT_ADDED;
+        c[hw] = highways ? c[hw] + ACCESS_HIGHWAYS_ADDED : 0;
+        c[depotType(sq.types)] += ACCESS_DEPOTS_ADDED;
+        long wantMines = c[mine];
+        c[mine] = 0;
+        int capacity = (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
+        int side = (int) Math.ceil(Math.sqrt(groundKm2(sq.types) / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
+        CityMap m = CityMap.square(sq.seed, sq.ironX, sq.ironY, sq.types, side, capacity, c);
+        c[mine] = Math.min(wantMines, mineSites(m, mine));
+        m.reconcile(c);
+        for (int t = 0; t < c.length; t++) c[t] += rail[t];
+        m.reconcile(c);
+        return m;
+    }
+
+    /**
+     * What a map's plans gave its works' access roads: {roads, on a ramp, on an arterial, already on one, gates not beside their box, ends neither a
+     * ramp's street nor an arterial, the map's works (yards and sea terminals) given a road, the map's works}.
+     */
+    static int[] accessFigures(CityMap m) {
+        int[] f = new int[8];
+        for (CityMap.District d : m.districts()) {
+            DistrictPlan p = m.plan(d);
+            List<int[]> works = m.planInputHere(d).works;
+            f[7] += works.size();
+            for (int[] r : p.accessRoads) {
+                f[0]++;
+                for (int[] wk : works) if (wk[0] == r[0] && wk[1] == r[1] && wk[2] == r[2] && wk[3] == r[3]) f[6]++;
+                if (r[8] == DistrictPlan.ACCESS_HAD) { f[3]++; continue; }
+                if (r[8] == DistrictPlan.ACCESS_RAMP) f[1]++; else f[2]++;
+                if (!JunctionCheck.beside(new int[] { r[0], r[1], r[2], r[3] }, r[4], r[5])) f[4]++;
+                int end = r[7] * DistrictPlan.FRAME + r[6];
+                boolean onRamp = r[8] == DistrictPlan.ACCESS_RAMP && p.kindAt(end) == DistrictPlan.UNDER;
+                boolean onArterial = r[8] == DistrictPlan.ACCESS_ARTERIAL && (r[9] == DistrictPlan.ROLE_ARTERIAL || r[9] == DistrictPlan.ROLE_BOULEVARD || r[9] == DistrictPlan.ROLE_ACCESS);
+                if (!onRamp && !onArterial) f[5]++;
+            }
+        }
+        return f;
+    }
+
+    static void interchangesAndAccess(Squares sq) {
+        out.println("      the interchanges' ground and the access roads (batch FR7): his city x 1 where its square holds iron, " + ACCESS_HIGHWAYS_ADDED
+                + " highways, " + YARDS_ADDED + " Rail Terminals and " + ACCESS_DEPOTS_ADDED + " Truck Depots added:");
+        CityMap m = accessCity(sq, true);
+        CityRuns runs = m.runs();
+        Raster r = Raster.of(m);
+        List<InterchangeGround.Site> sites = runs.reserves(), laid = runs.reservesLaid();
+        out.printf("      %d interchange sites, %d with their reserve (%d cloverleaf, %d trumpet), the rest stacks%n", sites.size(), laid.size(),
+                laid.stream().filter(s -> s.kind() == InterchangeGround.CLOVERLEAF).count(), laid.stream().filter(s -> s.kind() == InterchangeGround.TRUMPET).count());
+        check("fixture: its highways cross, and some of its interchanges have their reserve", runs.highways().interchanges() > 0 && !sites.isEmpty() && !laid.isEmpty());
+        boolean sizes = true, clear = true, owned = true;
+        for (InterchangeGround.Site s : laid) {
+            int side = s.kind() == InterchangeGround.CLOVERLEAF ? InterchangeGround.CLOVERLEAF_SIDE : InterchangeGround.TRUMPET_SIDE;
+            sizes &= s.w() == side && s.h() == side && (s.kind() != InterchangeGround.CLOVERLEAF || (s.x0() + side / 2 == s.x() && s.y0() + side / 2 == s.y()));
+            for (long y = s.y0(); y < s.y0() + s.h(); y++) {
+                for (long x = s.x0(); x < s.x0() + s.w(); x++) {
+                    if (CityRuns.covered(runs.highways(), x, y)) continue;
+                    long gx = x - r.px0, gy = y - r.py0;
+                    if (gx < 0 || gy < 0 || gx >= r.w || gy >= r.h) { clear = false; continue; }
+                    int g = (int) (gy * r.w + gx);
+                    clear &= r.use[g] != TilePainter.BUILDING && r.use[g] != TilePainter.ROAD && r.use[g] != TilePainter.RAIL;
+                    owned &= r.owned[g] && !r.wet[g];
+                }
+            }
+        }
+        check("every reserve laid is CLOVERLEAF_SIDE plots square, centred on its crossing, or TRUMPET_SIDE plots square beside its T", sizes);
+        check("...holds no building, street or track on any plot but the highways' own, as the map draws it", clear);
+        check("...and is owned dry ground throughout", owned);
+        boolean justified = true;
+        List<long[]> mined = m.minedSites();
+        for (InterchangeGround.Site s : sites) {
+            if (s.got()) continue;
+            boolean shortOf = false;
+            for (long y = s.y0(); y < s.y0() + s.h() && !shortOf; y++) {
+                for (long x = s.x0(); x < s.x0() + s.w() && !shortOf; x++) {
+                    if (CityRuns.covered(runs.highways(), x, y)) continue;
+                    long gx = x - r.px0, gy = y - r.py0;
+                    boolean off = gx < 0 || gy < 0 || gx >= r.w || gy >= r.h;
+                    int g = off ? 0 : (int) (gy * r.w + gx);
+                    shortOf |= off || !r.owned[g] || r.wet[g] || CityRuns.covered(runs.rail(), x, y) || Math.floorMod(x, CityRuns.CELL) == 0 || Math.floorMod(y, CityRuns.CELL) == 0;
+                }
+            }
+            for (long[] yd : runs.yards()) shortOf |= yd[0] < s.x0() + s.w() && yd[1] < s.y0() + s.h() && yd[0] + yd[2] > s.x0() && yd[1] + yd[3] > s.y0();
+            for (long[] ms : mined) shortOf |= ms[0] < s.x0() + s.w() && ms[1] < s.y0() + s.h() && ms[2] >= s.x0() && ms[3] >= s.y0();
+            justified &= shortOf;
+        }
+        check("...and a crossing that got none is short of ground: unowned or wet, track, a cell's line, a yard or a mine in its box (a stack)", justified);
+
+        int depot = depotType(sq.types);
+        int works = runs.yards().size() + (int) m.totals()[depot];
+        for (CityShore.Work w : m.shore().works()) if (w.berthed()) works++;
+        int[] a = accessFigures(m);
+        long drawn = 0;
+        for (int g = 0; g < r.w * r.h; g++) if (r.role[g] == TilePainter.ACCESS && r.use[g] == TilePainter.ROAD) drawn++;
+        out.printf("      %d works (%d yards, %d depots), %d access roads: %d to a ramp, %d to an arterial, %d beside another's; %,d plots of it drawn%n",
+                works, runs.yards().size(), m.totals()[depot], a[0], a[1], a[2], a[3], drawn);
+        check("every yard and every Truck Depot has an access road, or stands on another's", works > 0 && a[0] == works);
+        check("...each starts beside its work's box and ends on a highway ramp's street or on an arterial", a[4] == 0 && a[5] == 0);
+        check("...with highways in the frame, some end on a ramp", a[1] > 0);
+        check("...and the painter draws the access role on road plots", drawn > 0);
+
+        CityMap bare = accessCity(sq, false);
+        int[] b = accessFigures(bare);
+        int bareWorks = bare.runs().yards().size() + (int) bare.totals()[depot];
+        check("the same city with no highway: every road ends on an arterial of the grid, none on a ramp",
+                !bare.runs().highways().started && b[0] == bareWorks && b[1] == 0 && b[4] == 0 && b[5] == 0 && b[2] + b[3] == b[0]);
+
+        // A sea terminal is a work too: the coast's, with highways and depots, each given its road.
+        World w = World.of(sq.seed);
+        long[] counts = shoreCounts(sq.types);
+        int hw = -1;
+        for (BuildingVisual.Type t : sq.types) if (t != null && t.road() == BuildingVisual.HIGHWAY) hw = t.id();
+        counts[hw] = 150;
+        counts[depot] = ACCESS_DEPOTS_ADDED;
+        CityMap coast = coastal(sq.seed, w.foundingX() - CityMap.DISTRICT, w.foundingY(), sq.types, SHORE_SIDE, counts);
+        int terminals = 0;
+        for (CityShore.Work k : coast.shore().works()) if (k.berthed()) terminals++;
+        int[] c = accessFigures(coast);
+        out.printf("      the coast: %d sea terminals (%d given a road) and %d depots, %d access roads (%d to a ramp, %d to an arterial)%n", terminals, c[6],
+                ACCESS_DEPOTS_ADDED, c[0], c[1], c[2]);
+        check("the sea terminals on the shore are works that get an access road where their district has a grid to go to: some do, each beside its box and ending on a ramp's street or an arterial",
+                terminals > 0 && c[7] == terminals && c[6] > 0 && c[4] == 0 && c[5] == 0);
     }
 
     /** A save's autosave copied into a temporary folder and loaded (its map drawn from its sidecar or canonically): saves named on the command line, never written. */

@@ -154,6 +154,8 @@ public final class CityRuns {
     public static final byte F_RAIL_OVER = 6;
     /** ...a yard's ground, its track among it (DistrictPlan.FIXED_YARD): no street crosses it, no other building stands on it. */
     public static final byte F_YARD = 7;
+    /** ...and (batch FR7, D19) an interchange's reserve, a plan's ground only (fill() with yardsOver; InterchangeGround): street ground the plan keeps clear of lots, buildings and streets (DistrictPlan.FIXED_RESERVE) - never in a tile's fixed, where the highway's loops are drawn from InterchangeGround's sites. */
+    public static final byte F_RESERVE = 8;
 
     /** A plot's marks (fill()'s second array): a highway's ramp (spec 2.7)... */
     public static final byte M_RAMP = 1;
@@ -301,6 +303,78 @@ public final class CityRuns {
     /** What the model has that the runs could not lay: highway plots, track plots, yards (counted: the legend says so; a yard with no place is drawn by its district's plan). */
     long highwayShort, railShort;
     int yardsShort;
+
+    /** The ground the interchanges' reserves are found over, and the works they keep clear of (batch FR7, InterchangeGround): bound by layTo() and the map, never saved. */
+    private Ground reserveGround;
+    private InterchangeGround.Guard reserveGuard;
+
+    /** The sites found, by the region asked about, against the stamp they were found at: the runs, the ground's and the works' versions - none kept past a change of any. */
+    private final Map<List<Long>, List<InterchangeGround.Site>> reserveKept = new HashMap<>();
+    private long reserveStamp;
+
+    /** The most regions' sites kept at once: 8,192 - a screen's tiles and the plans' frames, many times over. */
+    static final int RESERVES_KEPT = 8192;
+
+    /** Sets the works a reserve may not take (the map's mines and shore works). */
+    public void setReserveGuard(InterchangeGround.Guard guard) {
+        reserveGuard = guard;
+        reserveKept.clear();
+    }
+
+    /**
+     * Binds the ground the interchanges' reserves are found over and forgets
+     * the sites kept: called by layTo() every month, and by the map when it
+     * has read its runs back. Nothing is found until it is asked for.
+     */
+    public void layReserves(Ground g) {
+        reserveGround = g;
+        reserveKept.clear();
+    }
+
+    /**
+     * The interchange sites whose box meets the w x h plots from (x0, y0),
+     * each with whether it got its reserve (InterchangeGround): found when
+     * asked, over the region and a margin, and kept against the runs, the
+     * ground and the works. Empty with no ground bound, or while the
+     * highways are not drawn.
+     */
+    public List<InterchangeGround.Site> reservesIn(long x0, long y0, int w, int h) {
+        if (reserveGround == null) return List.of();
+        long stamp = World.mix(version ^ World.mix(reserveGround.version() + 0x5245L) ^ (reserveGuard == null ? 0 : World.mix(reserveGuard.version() + 0x47L)));
+        if (stamp != reserveStamp || reserveKept.size() >= RESERVES_KEPT) {
+            reserveKept.clear();
+            reserveStamp = stamp;
+        }
+        List<Long> key = List.of(x0, y0, (long) w, (long) h);
+        List<InterchangeGround.Site> sites = reserveKept.get(key);
+        if (sites == null) {
+            sites = InterchangeGround.sitesIn(this, reserveGround, reserveGuard, x0, y0, w, h);
+            reserveKept.put(key, sites);
+        }
+        return sites;
+    }
+
+    /** Every interchange site of the highways, over the box their plots lie in: a harness's, for a city a screen's size - a city of billions asks reservesIn() of a plan or a tile. */
+    public List<InterchangeGround.Site> reserves() {
+        if (!highways.started) return List.of();
+        long x0 = Long.MAX_VALUE, y0 = Long.MAX_VALUE, x1 = Long.MIN_VALUE, y1 = Long.MIN_VALUE;
+        for (Arm a : highways.arms) {
+            for (int s = 0; s < a.segs; s++) {
+                long ex = a.segX[s] + (long) DX[a.segHead[s]] * a.segSteps[s], ey = a.segY[s] + (long) DY[a.segHead[s]] * a.segSteps[s];
+                x0 = Math.min(x0, Math.min(a.segX[s], ex)); x1 = Math.max(x1, Math.max(a.segX[s], ex));
+                y0 = Math.min(y0, Math.min(a.segY[s], ey)); y1 = Math.max(y1, Math.max(a.segY[s], ey));
+            }
+        }
+        if (x0 > x1) return List.of();
+        return reservesIn(x0 - 1, y0 - 1, (int) (x1 - x0 + 3), (int) (y1 - y0 + 3));
+    }
+
+    /** The reserves that were laid (Site.got()), of reserves(). */
+    public List<InterchangeGround.Site> reservesLaid() {
+        List<InterchangeGround.Site> out = new ArrayList<>();
+        for (InterchangeGround.Site s : reserves()) if (s.got()) out.add(s);
+        return out;
+    }
 
     /** A stamp of everything laid: what the map's plans and views are kept against. */
     long version;
@@ -1368,6 +1442,7 @@ public final class CityRuns {
         if (trackPlots == 0 && yardCount == 0 && rail.plots == 0 && rail.started) rail.reset();
         if (highwayPlots == 0 && highways.plots == 0 && highways.started) highways.reset();
         layYards(yardCount, yardW, yardH, g, mines);
+        layReserves(g);
         highwayShort = Math.max(0, highwayPlots - highways.plots);
         railShort = Math.max(0, trackPlots - rail.plots);
         long v1 = signature();
@@ -1453,6 +1528,20 @@ public final class CityRuns {
             }
             hash = World.mix(hash ^ y[0] * 31 ^ y[1] ^ (y[2] << 40));
         }
+        if (yardsOver && reach) {
+            // The interchanges' reserves (batch FR7, D19): street ground over every plot of a box the runs left open - a plan's
+            // ground alone; a tile's loops are drawn from reservesIn().
+            for (InterchangeGround.Site s : reservesIn(x0, y0, w, h)) {
+                if (!s.got()) continue;
+                for (long py = Math.max(s.y0(), y0); py < Math.min(s.y0() + s.h(), y0 + h); py++) {
+                    for (long px = Math.max(s.x0(), x0); px < Math.min(s.x0() + s.w(), x0 + w); px++) {
+                        int i = (int) ((py - y0) * w + (px - x0));
+                        if (fixed[i] == 0) fixed[i] = F_RESERVE;
+                    }
+                }
+                hash = World.mix(hash ^ s.x0() * 0x9E3779B97F4A7C15L ^ s.y0() ^ ((long) s.w() << 40) ^ 0x52455345L);
+            }
+        }
         return hash;
     }
 
@@ -1491,6 +1580,8 @@ public final class CityRuns {
             if (n.kind == HIGHWAYS) for (Arm a : n.arms) if (a.steps > 0 && a.x >= x0 && a.y >= y0 && a.x < x0 + w && a.y < y0 + h) hash = World.mix(hash ^ a.x * 31 ^ a.y);
         }
         for (long[] y : yards) if (!(y[0] >= x0 + w || y[1] >= y0 + h || y[0] + y[2] <= x0 || y[1] + y[3] <= y0)) hash = World.mix(hash ^ y[0] * 31 ^ y[1] ^ (y[2] << 40));
+        // ...and the interchanges' reserves over it (batch FR7): a plan is drawn round them.
+        if (reach) for (InterchangeGround.Site s : reservesIn(x0, y0, w, h)) if (s.got()) hash = World.mix(hash ^ s.x0() * 0x9E3779B97F4A7C15L ^ s.y0() ^ ((long) s.w() << 40) ^ 0x52455345L);
         return hash;
     }
 

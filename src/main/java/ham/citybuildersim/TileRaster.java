@@ -57,7 +57,11 @@ import java.util.Arrays;
  * building: signals where arterials cross, roundabouts where boulevards
  * cross, diamonds where a street passes beneath a ramp, stacks where
  * highways cross; and from 4 px a highway's open end comes down to the
- * ground.
+ * ground. (Batch FR7, slice 4) Where a crossing has kept its ground
+ * (InterchangeGround: a 19-plot reserve for a cloverleaf, an 11-plot one for a
+ * trumpet) the stack gives way to the loops drawn on it (loops()); and a +
+ * of streets, a street's T on an arterial, are drawn with kerb corners, wide
+ * where an estate's trucks turn (kerbs()).
  *
  * STREETS AS VERGE AND SURFACE (0.7.88, batch RD2; the project's
  * spec-roads-and-ports.md 2.1 and 5, its prototype's render()). A street's
@@ -1289,6 +1293,7 @@ public final class TileRaster {
             signals(in, p, px, img);
             roundabouts(in, p, px, img);
             diamonds(in, p, px, img);
+            kerbs(in, p, px, img);
         }
         // The highways: cased, their middles and their arms to the highway beside them, across the tile's edge too.
         int[] cs = crossSection(BuildingVisual.HIGHWAY, px);
@@ -1319,7 +1324,10 @@ public final class TileRaster {
         // A highway arm's end, from 4 px a plot as every way is (spec 2.7's ramp at an arm's end, which no street need pass
         // beneath), and a stack, drawn over the highways.
         highwayEnds(in, p, px, img);
-        if (px >= JUNCTIONS_FROM) stack(in, p, px, img);
+        if (px >= JUNCTIONS_FROM) {
+            stack(in, p, px, img);
+            loops(in, p, px, img);
+        }
         // The railway bridging a highway (0.7.89; spec 2.8): its deck and, drawn as rail (0.8.1), the track across the highway.
         int[] rs = crossSection(BuildingVisual.PAVED, px);
         for (int i = 0; i < TilePainter.PLOTS; i++) {
@@ -1460,7 +1468,7 @@ public final class TileRaster {
 
     /** Whether a street role is one a junction is drawn for. */
     private static boolean junctionRole(byte role) {
-        return role == TilePainter.ARTERIAL || role == TilePainter.BOULEVARD;
+        return role == TilePainter.ARTERIAL || role == TilePainter.BOULEVARD || role == TilePainter.ACCESS;
     }
 
     /**
@@ -1762,7 +1770,8 @@ public final class TileRaster {
                 fillRect(img, w, x0 + o, y0 + o, x0 + o + width, y0 + o + cas, caseC);
                 fillRect(img, w, x0 + o, y0 + o + width - cas, x0 + o + width, y0 + o + width, caseC);
             }
-            // The four corner slips, when the diagonal plot is open ground.
+            // The four corner slips, when the diagonal plot is open ground - and no reserve's loops replace them (batch FR7).
+            if (reserveJunction(in, hx, hy)) continue;
             for (int dy = -1; dy <= 1; dy += 2) {
                 for (int dx = -1; dx <= 1; dx += 2) drawStackSlip(in, p, px, img, hx + dx, hy + dy, dx, dy);
             }
@@ -1780,6 +1789,213 @@ public final class TileRaster {
         int c = in.owned[i] ? ROAD[BuildingVisual.HIGHWAY] : blend(ROAD[BuildingVisual.HIGHWAY], VOID, UNOWNED_DIM);
         double ax = dx < 0 ? px : 0, ay = px / 2.0, bx = px / 2.0, by = dy < 0 ? px : 0;
         segment(img, w, x0, y0, px, ax, ay, bx, by, half, c);
+    }
+
+    /* ----- 6. interchanges' loops: a cloverleaf's and a trumpet's reserve (batch FR7; spec-freight 4.6, D19) ----- */
+
+    /** A loop's radius, in plots, and how far from the crossing's middle along each axis a cloverleaf's loop is centred (batch FR7): 2.5 and 5.0, so a loop fills its quadrant of the 19-plot reserve. */
+    public static final double LOOP_RADIUS = 2.5, LOOP_AT = 5.0;
+
+    /** A trumpet's loop: its radius and how far out along its stub and across it its centre lies, in plots - 2.0, and 5.5 and 3.0, inside the 11-plot reserve. */
+    public static final double TRUMPET_RADIUS = 2.0, TRUMPET_OUT = 5.5, TRUMPET_ACROSS = 3.0;
+
+    /** A loop's and a slip's road across, as a share of a plot: 0.34, a pixel or two wider than a gravel street's, so it reads as a ramp at 8 px a plot and not as a street. */
+    public static final double LOOP_WIDTH = 0.34;
+
+    /** Where a slip leaves its highway, in plots from the junction's middle: just off the highway's band (0.45) and (along it) 9.0 out for a cloverleaf, 10.0 for a trumpet's stub. */
+    public static final double SLIP_OFF = 0.45, SLIP_OUT = 9.0, TRUMPET_SLIP_OUT = 10.0;
+
+    /**
+     * The loops of every reserve that reaches the tile, from JUNCTIONS_FROM px
+     * a plot: a cloverleaf's four loops, each with a slip to either highway; a
+     * trumpet's one loop with a slip to its stub and to the highway it ends
+     * at - all in the highway's colour and casing, only on the reserve's own
+     * open plots (never over a highway, a street, a building or a field's
+     * plot of the tile that is not the reserve's).
+     */
+    private static void loops(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int tile = TilePainter.TILE, w = tile * px, ri = TilePainter.RESERVE_INTS;
+        for (int r = 0; r < in.reserves; r++) {
+            int o = r * ri, kind = in.reserve[o], stub = in.reserve[o + 1], jx = in.reserve[o + 2], jy = in.reserve[o + 3];
+            int bx0 = in.reserve[o + 4], by0 = in.reserve[o + 5], bw = in.reserve[o + 6], bh = in.reserve[o + 7];
+            double[][] circles = new double[kind == InterchangeGround.CLOVERLEAF ? 4 : 1][];
+            double[][] slips = new double[kind == InterchangeGround.CLOVERLEAF ? 8 : 2][];
+            if (kind == InterchangeGround.CLOVERLEAF) {
+                int k = 0;
+                for (int sy = -1; sy <= 1; sy += 2) {
+                    for (int sx = -1; sx <= 1; sx += 2) {
+                        circles[k] = new double[] { sx * LOOP_AT, sy * LOOP_AT, LOOP_RADIUS };
+                        slips[2 * k] = spoke(sx * SLIP_OUT, sy * SLIP_OFF, sx * LOOP_AT, sy * LOOP_AT, LOOP_RADIUS);
+                        slips[2 * k + 1] = spoke(sx * SLIP_OFF, sy * SLIP_OUT, sx * LOOP_AT, sy * LOOP_AT, LOOP_RADIUS);
+                        k++;
+                    }
+                }
+            } else {
+                // The stub's way out is the axis a; across it, to its right, b.
+                double ax = TilePainter.DX[stub], ay = TilePainter.DY[stub], bx = -ay, by = ax;
+                double cx = TRUMPET_OUT * ax + TRUMPET_ACROSS * bx, cy = TRUMPET_OUT * ay + TRUMPET_ACROSS * by;
+                circles[0] = new double[] { cx, cy, TRUMPET_RADIUS };
+                slips[0] = spoke(TRUMPET_SLIP_OUT * ax + SLIP_OFF * bx, TRUMPET_SLIP_OUT * ay + SLIP_OFF * by, cx, cy, TRUMPET_RADIUS);
+                slips[1] = spoke(SLIP_OFF * ax + (TRUMPET_ACROSS + TRUMPET_RADIUS) * bx, SLIP_OFF * ay + (TRUMPET_ACROSS + TRUMPET_RADIUS) * by, cx, cy, TRUMPET_RADIUS);
+            }
+            double half = LOOP_WIDTH / 2;
+            int cas = px >= 6 ? 1 : 0;
+            for (int y = Math.max(0, by0); y < Math.min(tile, by0 + bh); y++) {
+                for (int x = Math.max(0, bx0); x < Math.min(tile, bx0 + bw); x++) {
+                    int i = y * tile + x;
+                    if (p.run[i] != 0 || (p.use[i] != TilePainter.EMPTY && p.use[i] != TilePainter.FIELD)) continue;
+                    int fill = in.owned[i] ? ROAD[BuildingVisual.HIGHWAY] : blend(ROAD[BuildingVisual.HIGHWAY], VOID, UNOWNED_DIM);
+                    int caseC = in.owned[i] ? HIGHWAY_CASE : blend(HIGHWAY_CASE, VOID, UNOWNED_DIM);
+                    for (int dy = 0; dy < px; dy++) {
+                        for (int dx = 0; dx < px; dx++) {
+                            // The pixel's middle, in plots from the junction plot's middle.
+                            double u = x + (dx + 0.5) / px - (jx + 0.5), v = y + (dy + 0.5) / px - (jy + 0.5);
+                            double d = Double.MAX_VALUE;
+                            for (double[] c : circles) d = Math.min(d, Math.abs(Math.hypot(u - c[0], v - c[1]) - c[2]));
+                            for (double[] s : slips) d = Math.min(d, segmentDistance(u, v, s[0], s[1], s[2], s[3]));
+                            if (d <= half) img[(y * px + dy) * w + x * px + dx] = fill;
+                            else if (cas > 0 && d <= half + (double) cas / px) img[(y * px + dy) * w + x * px + dx] = caseC;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** A slip from (ax, ay) to the ring about (cx, cy) of radius r: the straight line toward the ring's middle, ending on it. */
+    private static double[] spoke(double ax, double ay, double cx, double cy, double r) {
+        double dx = cx - ax, dy = cy - ay, d = Math.hypot(dx, dy);
+        return new double[] { ax, ay, cx - dx / d * r, cy - dy / d * r };
+    }
+
+    /** The distance from (x, y) to the segment from (ax, ay) to (bx, by). */
+    private static double segmentDistance(double x, double y, double ax, double ay, double bx, double by) {
+        double dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+        double t = l2 == 0 ? 0 : Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l2));
+        return Math.hypot(x - (ax + t * dx), y - (ay + t * dy));
+    }
+
+    /** Whether plot (x, y) of the tile is the junction of a reserve that reaches it: where loops replace a stack's corner slips. */
+    private static boolean reserveJunction(TilePainter.Input in, int x, int y) {
+        for (int r = 0; r < in.reserves; r++) {
+            int o = r * TilePainter.RESERVE_INTS;
+            if (in.reserve[o + 2] == x && in.reserve[o + 3] == y) return true;
+        }
+        return false;
+    }
+
+    /* ----- 7. kerb corners and estate T's (batch FR7; spec-freight 4.6's table) ----- */
+
+    /** A kerb corner's radius, in plots: 0.25 (7.5 m), the corner of a + of two streets in a homes cell - and of a street's T on an arterial there. */
+    public static final double KERB_RADIUS = 0.25;
+
+    /** An estate T's corner radius, in plots: 0.5 (15 m) - wide, where trucks turn (spec-freight 4.6: "a T with wide radius corners"). */
+    public static final double ESTATE_T_RADIUS = 0.5;
+
+    /**
+     * Kerb corners and estate T's, from JUNCTIONS_FROM px a plot, over the
+     * streets' surfaces and their verges: at a + of two streets (a cell's
+     * streets, role STREET, on all four sides) each of its four inner corners
+     * is rounded by KERB_RADIUS; at a T where a street ends on an arterial,
+     * boulevard or access road that runs on both sides of it, the two corners
+     * beside the street are rounded by KERB_RADIUS in a homes cell and
+     * ESTATE_T_RADIUS in an estate, which the painter reads from what stands
+     * beside the T - a building of an estate's classes within two plots
+     * (estateAt()). A rounding is the road's surface over the verge in the corner
+     * between the two bars, outside the circle of the radius tangent to both
+     * (fillet()), on street plots alone.
+     */
+    private static void kerbs(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int tile = TilePainter.TILE;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (!isStreet(p, i) || p.beneath[i] || p.bridge[i] || p.use[i] != TilePainter.ROAD) continue;
+            int kind = p.road[i];
+            if (kind != BuildingVisual.GRAVEL && kind != BuildingVisual.PAVED) continue;
+            int x = i % tile, y = i / tile;
+            byte role = p.role[i];
+            int t = Math.max(1, (int) Math.round(SURFACE[Math.max(1, Math.min(2, (int) p.width[i]))] * px)), o = (px - t) / 2;
+            if (role == TilePainter.STREET) {
+                boolean plus = true;
+                for (int d = 0; d < 4; d++) plus &= streetRoleAt(in, p, x + TilePainter.DX[d], y + TilePainter.DY[d]) == TilePainter.STREET;
+                if (!plus) continue;
+                int r = Math.max(1, (int) Math.round(KERB_RADIUS * px));
+                for (int sy = -1; sy <= 1; sy += 2) {
+                    for (int sx = -1; sx <= 1; sx += 2) fillet(in, p, px, img, x, y, sx < 0 ? o : o + t, sy < 0 ? o : o + t, sx, sy, r);
+                }
+            } else if (junctionRole(role)) {
+                int stem = -1, stems = 0;
+                for (int d = 0; d < 4; d++) {
+                    if (streetRoleAt(in, p, x + TilePainter.DX[d], y + TilePainter.DY[d]) != TilePainter.STREET) continue;
+                    stem = d;
+                    stems++;
+                }
+                if (stems != 1) continue;
+                int back = (stem + 2) % 4, left = (stem + 3) % 4, right = (stem + 1) % 4;
+                if (streetRoleAt(in, p, x + TilePainter.DX[back], y + TilePainter.DY[back]) != 0) continue;
+                if (!junctionRole(streetRoleAt(in, p, x + TilePainter.DX[left], y + TilePainter.DY[left]))
+                        || !junctionRole(streetRoleAt(in, p, x + TilePainter.DX[right], y + TilePainter.DY[right]))) continue;
+                // The stem's own bar, from the plot it stands on beside this one: its edges across, in this plot's pixels.
+                int sx0 = x + TilePainter.DX[stem], sy0 = y + TilePainter.DY[stem];
+                int stemT = t, stemO = o;
+                if (sx0 >= 0 && sy0 >= 0 && sx0 < tile && sy0 < tile && isStreet(p, sy0 * tile + sx0)) {
+                    stemT = Math.max(1, (int) Math.round(SURFACE[Math.max(1, Math.min(2, (int) p.width[sy0 * tile + sx0]))] * px));
+                    stemO = (px - stemT) / 2;
+                }
+                int r = Math.max(1, (int) Math.round((estateAt(in, p, x, y) ? ESTATE_T_RADIUS : KERB_RADIUS) * px));
+                boolean ns = stem == 0 || stem == 2;
+                // The arterial's near edge: the side of its bar the stem is on.
+                int near = stem == 0 || stem == 3 ? o : o + t;
+                for (int side = -1; side <= 1; side += 2) {
+                    int across = side < 0 ? stemO : stemO + stemT;
+                    if (ns) fillet(in, p, px, img, x, y, across, near, side, stem == 0 ? -1 : 1, r);
+                    else fillet(in, p, px, img, x, y, near, across, stem == 3 ? -1 : 1, side, r);
+                }
+            }
+        }
+    }
+
+    /** Whether a building of an estate's classes - industry, farms, utilities, mines and wells, transport; a homes cell holds the rest - stands within two plots of plot (x, y): the painter's reading of an estate. */
+    private static boolean estateAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int tile = TilePainter.TILE;
+        for (int yy = Math.max(0, y - 2); yy <= Math.min(tile - 1, y + 2); yy++) {
+            for (int xx = Math.max(0, x - 2); xx <= Math.min(tile - 1, x + 2); xx++) {
+                int i = yy * tile + xx;
+                if (p.use[i] != TilePainter.BUILDING) continue;
+                int b = p.bld[i] - 1, t = b >= 0 && b < p.buildings ? p.btype[b] : -1;
+                if (t < 0 || t >= in.types.length || in.types[t] == null) continue;
+                int cls = in.types[t].cls();
+                if (cls == BuildingVisual.INDUSTRY || cls == BuildingVisual.FARM || cls == BuildingVisual.UTILITY || cls == BuildingVisual.MINE || cls == BuildingVisual.TRANSPORT) return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * One rounded corner: the corner point (cx, cy), in pixels from plot
+     * (jx, jy)'s corner, where two bars meet; (sx, sy) the way out of it,
+     * toward the verge. The pixels of the square of `r` a side out from it,
+     * outside the circle of radius r centred r out along both axes, are set to
+     * their plot's road colour - on a street plot of the tile alone, and only
+     * where the verge is (nothing already drawn over it).
+     */
+    private static void fillet(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int jx, int jy, int cx, int cy, int sx, int sy, int r) {
+        int tile = TilePainter.TILE, w = tile * px;
+        double dcx = cx + sx * (double) r, dcy = cy + sy * (double) r;
+        for (int dv = 0; dv < r; dv++) {
+            for (int du = 0; du < r; du++) {
+                double u = cx + sx * (du + 0.5), v = cy + sy * (dv + 0.5);
+                if (Math.hypot(u - dcx, v - dcy) <= r) continue;
+                int X = jx * px + (int) Math.floor(u), Y = jy * px + (int) Math.floor(v);
+                if (X < 0 || Y < 0 || X >= w || Y >= w) continue;
+                int i = (Y / px) * tile + X / px;
+                if (!isStreet(p, i) || p.beneath[i] || p.use[i] != TilePainter.ROAD) continue;
+                int kind = p.road[i];
+                if (kind != BuildingVisual.GRAVEL && kind != BuildingVisual.PAVED) continue;
+                int verge = in.owned[i] ? VERGE : blend(VERGE, VOID, UNOWNED_DIM);
+                if (img[Y * w + X] != verge) continue;
+                img[Y * w + X] = in.owned[i] ? ROAD[kind] : blend(ROAD[kind], VOID, UNOWNED_DIM);
+            }
+        }
     }
 
     /* ----- the track as rail, and its crossings (0.8.1, batch FR0; spec-freight 4.3) ----- */
@@ -1985,7 +2201,7 @@ public final class TileRaster {
             int t = Math.max(1, (int) Math.round(SURFACE[Math.max(1, Math.min(2, (int) p.width[i]))] * px));
             int o = (px - t) / 2;
             boolean main = (in.marks[i] & TilePainter.M_MAIN) != 0;
-            boolean arterial = p.role[i] == TilePainter.ARTERIAL || p.role[i] == TilePainter.BOULEVARD;
+            boolean arterial = p.role[i] == TilePainter.ARTERIAL || p.role[i] == TilePainter.BOULEVARD || p.role[i] == TilePainter.ACCESS;
             if (main && arterial) {
                 // An arterial or boulevard over the main line: a road bridge, never a level crossing (D18).
                 int deck = in.owned[i] ? DECK : blend(DECK, VOID, UNOWNED_DIM);

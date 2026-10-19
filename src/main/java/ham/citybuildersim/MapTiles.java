@@ -137,6 +137,8 @@ public final class MapTiles {
             h = World.mix(h ^ ((long) in.siteX0[s] << 40 ^ (long) in.siteY0[s] << 30 ^ (long) in.siteX1[s] << 20 ^ (long) in.siteY1[s] << 10));
             h = World.mix(h ^ ((long) in.siteKind[s] << 40 ^ (long) in.siteState[s] << 32 ^ (in.siteMine[s] + 1)));
         }
+        // The interchanges' reserves that reach it (batch FR7) - nothing with none.
+        for (int r = 0; r < in.reserves * TilePainter.RESERVE_INTS; r++) h = World.mix(h ^ in.reserve[r] * 0x9E3779B97F4A7C15L ^ r);
         // The works at sea (0.7.97): the quays', jackets' and wells' plots, the rings and the pipes - nothing with none.
         long sea = packed(in.sea);
         if (sea != 0) h = World.mix(h ^ sea);

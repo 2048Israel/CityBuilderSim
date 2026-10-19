@@ -1997,7 +1997,8 @@ public final class CityMap {
     static byte paintCode(short code) {
         if (code == 0) return 0;
         int kind = code & DistrictPlan.KIND_MASK, width = (code >> DistrictPlan.WIDTH_SHIFT) & 3, role = (code >> DistrictPlan.ROLE_SHIFT) & 7;
-        int r = role == DistrictPlan.ROLE_ARTERIAL ? TilePainter.S_ARTERIAL : role == DistrictPlan.ROLE_BOULEVARD ? TilePainter.S_BOULEVARD : 0;
+        int r = role == DistrictPlan.ROLE_ARTERIAL ? TilePainter.S_ARTERIAL : role == DistrictPlan.ROLE_BOULEVARD ? TilePainter.S_BOULEVARD
+                : role == DistrictPlan.ROLE_ACCESS ? TilePainter.S_ACCESS : 0;
         int b = kind | (width << TilePainter.S_WIDTH_SHIFT) | (r << TilePainter.S_ROLE_SHIFT);
         if ((code & DistrictPlan.BRIDGE) != 0) b |= TilePainter.S_BRIDGE;
         return (byte) b;
@@ -3076,7 +3077,27 @@ public final class CityMap {
     private long landVersion;
 
     /** The city's highways and railway (spec 2.7, 2.8). */
-    private CityRuns runs = new CityRuns();
+    private CityRuns runs = guarded(new CityRuns());
+
+    /** The runs given the works an interchange's reserve may not take (batch FR7, InterchangeGround.Guard): the mines on their sites and the shore's works. */
+    private CityRuns guarded(CityRuns r) {
+        r.setReserveGuard(new InterchangeGround.Guard() {
+            @Override public boolean blocked(long x0, long y0, long x1, long y1) { return reserveBlocked(x0, y0, x1, y1); }
+
+            // Any change of the map - a building placed, a site worked, a work laid on the shore - may move a mine or a terminal.
+            @Override public long version() { return changes; }
+        });
+        return r;
+    }
+
+    /** Whether a mine on its site or a work on the shore stands in the box (x0, y0) to (x1, y1), inclusive: ground an interchange's reserve may not take. */
+    private boolean reserveBlocked(long x0, long y0, long x1, long y1) {
+        for (CityShore.Work w : shore.works()) {
+            if (w.x0() <= x1 && w.y0() <= y1 && w.x0() + w.w() > x0 && w.y0() + w.h() > y0) return true;
+        }
+        for (long[] s : minedSites()) if (s[0] <= x1 && s[1] <= y1 && s[2] >= x0 && s[3] >= y0) return true;
+        return false;
+    }
 
     /** The city's runs. */
     public CityRuns runs() { return runs; }
@@ -3590,15 +3611,41 @@ public final class CityMap {
 
     /** The runs' frame for district d's plan: their plots over its 257 x 257 (DistrictPlan's codes), a hash of them returned. */
     long runsInto(District d, byte[] fixed) {
+        return runsInto(d, fixed, null);
+    }
+
+    /** ...and (batch FR7) the frame's highway plots that carry a ramp into `ramp` (null to leave them): where an access road may end. */
+    long runsInto(District d, byte[] fixed, boolean[] ramp) {
         long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
         int f = DistrictPlan.FRAME;
-        long h = runs.fill(x0, y0, f, f, fixed, null, true);
+        byte[] marks = ramp == null ? null : new byte[f * f];
+        long h = runs.fill(x0, y0, f, f, fixed, marks, true);
         for (int i = 0; i < f * f; i++) {
             byte b = fixed[i];
+            if (marks != null && (marks[i] & CityRuns.M_RAMP) != 0 && (b == CityRuns.F_HIGHWAY || b == CityRuns.F_RAIL_OVER)) ramp[i] = true;
             if (b == CityRuns.F_RAIL_OVER) fixed[i] = DistrictPlan.FIXED_HIGHWAY;
             else if (b == CityRuns.F_YARD) fixed[i] = DistrictPlan.FIXED_YARD;
+            else if (b == CityRuns.F_RESERVE) fixed[i] = DistrictPlan.FIXED_RESERVE;
         }
         return h;
+    }
+
+    /**
+     * The works of the city that need an access road and stand in district d's
+     * frame (batch FR7, D17): each Rail Terminal the runs draw as a yard, each
+     * sea terminal on the shore (a tank farm has no berth and none), as {x, y,
+     * w, h} in the frame's plots - those whose box lies wholly inside it, off
+     * the edge row and column the districts share, which is every one: a
+     * work stands inside one cell's interior.
+     */
+    void worksInto(District d, DistrictPlan.Input in) {
+        long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
+        for (long[] yd : runs.yards()) addWork(in, yd[0] - x0, yd[1] - y0, yd[2], yd[3]);
+        for (CityShore.Work wk : shore.works()) if (wk.berthed()) addWork(in, wk.x0() - x0, wk.y0() - y0, wk.w(), wk.h());
+    }
+
+    private static void addWork(DistrictPlan.Input in, long x, long y, long w, long h) {
+        if (x >= 1 && y >= 1 && x + w <= DISTRICT && y + h <= DISTRICT) in.works.add(new int[] { (int) x, (int) y, (int) w, (int) h });
     }
 
     /* =====================================================================
@@ -4208,6 +4255,14 @@ public final class CityMap {
                 in.marksBeyond[3 * World.TILE + m] = ringMarks[(m + 1) * rw];
             }
         }
+        // The interchanges' reserves that reach it (batch FR7): the ground their loops are drawn on, once the highways are drawn at all.
+        in.clearReserves();
+        if (runs.highwaysReach()) {
+            for (InterchangeGround.Site s : runs.reservesIn(px0, py0, World.TILE, World.TILE)) {
+                if (!s.got()) continue;
+                in.addReserve(s.kind(), s.stub(), (int) (s.x() - px0), (int) (s.y() - py0), (int) (s.x0() - px0), (int) (s.y0() - py0), s.w(), s.h());
+            }
+        }
         // The railway's picture over the tile: the freight station's yard, and whether its tracks have wagons standing.
         long[] station = freightStation();
         in.stationX = station == null ? Long.MIN_VALUE : station[0];
@@ -4432,7 +4487,10 @@ public final class CityMap {
         // The city's highways and railway through its frame (0.7.89: the city's runs; THE NETWORK's plan's until 0.7.88), its yards
         // among them. The model's Elevated Highways are the runs' plots, none a street's surface: what the runs could not lay the
         // map counts (THE RUNS).
-        runsInto(d, in.fixed);
+        if (runs.highways().started) in.ramp = new boolean[f * f];
+        runsInto(d, in.fixed, in.ramp);
+        // The works that need an access road (batch FR7): its yards and sea terminals.
+        worksInto(d, in);
         // The works on the shore over its frame (0.7.97): fixed as a yard's ground is - no street across, no building on it.
         if (!shore.isEmpty()) shore.fill(x0, y0, f, f, in.fixed, DistrictPlan.FIXED_YARD);
         in.gravel = kind[BuildingVisual.GRAVEL];
@@ -4869,7 +4927,7 @@ public final class CityMap {
             if (nRuns > 0) {
                 CityRuns r = CityRuns.read(in);
                 if (r == null) return null;
-                m.runs = r;
+                m.runs = m.guarded(r);
             }
             // The works on the shore: read back since FORMAT 6 (0.7.97); a FORMAT 5 map's laid now from its counts.
             if (format >= 6) {
@@ -4884,6 +4942,8 @@ public final class CityMap {
             m.centreSeen = land.centreStamp();
             m.sortDistricts();
             m.pyramid = new Pyramid(m);
+            // The interchanges' reserves are the runs and the ground's, found when asked and not saved (batch FR7).
+            m.runs.layReserves(m.runGround);
             if (nRuns == 0) m.layRuns(m.have);
             if (format < 6) {
                 // 0.7.96's map and before (0.7.97): the refinery gathered into its campus once, the shore laid from the counts.

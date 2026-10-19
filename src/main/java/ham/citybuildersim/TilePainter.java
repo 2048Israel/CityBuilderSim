@@ -131,8 +131,8 @@ public final class TilePainter {
     public static final int S_WIDTH_SHIFT = 3;
     /** ...its role in bits 5 and 6: 0 a cell's street (or one along a cut, or the join's), S_ARTERIAL, S_BOULEVARD... */
     public static final int S_ROLE_SHIFT = 5;
-    /** ...those two roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD)... */
-    public static final int S_ARTERIAL = 1, S_BOULEVARD = 2;
+    /** ...those two roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD), and (batch FR7) an access road's 3 (ROLE_ACCESS)... */
+    public static final int S_ARTERIAL = 1, S_BOULEVARD = 2, S_ACCESS = 3;
     /** ...and a bridge over fresh water in bit 7. */
     public static final int S_BRIDGE = 0x80;
 
@@ -140,8 +140,10 @@ public final class TilePainter {
     public static final byte STREET = 1;
     /** ...an arterial, on a cell's ring (every 32 plots, 960 m)... */
     public static final byte ARTERIAL = 2;
-    /** ...a boulevard's, either row of a boulevard cell's arterials. */
+    /** ...a boulevard's, either row of a boulevard cell's arterials... */
     public static final byte BOULEVARD = 3;
+    /** ...and (batch FR7, D17) an access road, the street from a port's, a yard's or a depot's gate to the highway's ramp or the arterial grid: an arterial for the junctions it makes. */
+    public static final byte ACCESS = 4;
 
     /* =====================================================================
        THE NETWORK'S RULES, IN PLOTS (0.7.72, batch N3; the plan's since
@@ -176,6 +178,9 @@ public final class TilePainter {
 
     /** North, east, south, west. */
     static final int[] DX = { 0, 1, 0, -1 }, DY = { -1, 0, 1, 0 };
+
+    /** The ints Input.reserve holds a reserve in: kind, stub, junction x and y, box x0, y0, w, h. */
+    public static final int RESERVE_INTS = 8;
 
     /* =====================================================================
        THE INPUTS AND THE PICTURE
@@ -237,6 +242,22 @@ public final class TilePainter {
         /** The crude pipelines that may cross it: how many, and each one's ends in the tile's plots, {from, to}. */
         public int pipes;
         public double[] pipeAX = new double[4], pipeAY = new double[4], pipeBX = new double[4], pipeBY = new double[4];
+
+        /** The interchanges' reserves whose box reaches the tile (batch FR7, InterchangeGround.Site, the ones that got their ground): how many, and each as RESERVE_INTS ints - its kind, its stub's side, its junction plot (x, y) and its box (x0, y0, w, h), all in the tile's plots (they may lie off the tile). The raster draws the loops within them. */
+        public int reserves;
+        public int[] reserve = new int[4 * RESERVE_INTS];
+
+        /** Clears the reserves; the array is reused. */
+        public void clearReserves() { reserves = 0; }
+
+        /** Adds a reserve: its kind (InterchangeGround.CLOVERLEAF or TRUMPET), its stub's side (-1 for none), its junction plot and its box, in the tile's plots. */
+        public void addReserve(int kind, int stub, int x, int y, int x0, int y0, int w, int h) {
+            if ((reserves + 1) * RESERVE_INTS > reserve.length) reserve = Arrays.copyOf(reserve, reserve.length * 2);
+            int o = reserves * RESERVE_INTS;
+            reserve[o] = kind; reserve[o + 1] = stub; reserve[o + 2] = x; reserve[o + 3] = y;
+            reserve[o + 4] = x0; reserve[o + 5] = y0; reserve[o + 6] = w; reserve[o + 7] = h;
+            reserves++;
+        }
 
         /** Clears the works at sea; the arrays are reused. */
         public void clearSea() {
@@ -398,7 +419,7 @@ public final class TilePainter {
     /** A street code's role as painted: STREET, ARTERIAL or BOULEVARD. */
     public static byte roleOf(int code) {
         int r = (code >> S_ROLE_SHIFT) & 3;
-        return r == S_BOULEVARD ? BOULEVARD : r == S_ARTERIAL ? ARTERIAL : STREET;
+        return r == S_BOULEVARD ? BOULEVARD : r == S_ARTERIAL ? ARTERIAL : r == S_ACCESS ? ACCESS : STREET;
     }
 
     /* =====================================================================
