@@ -6749,8 +6749,34 @@ public final class GameVersion {
      *     highway); MainLineCheck 11 (the main arm); JunctionCheck 9; MapCheck
      *     1's played city month by month.
      *   - THE PLAYTESTS do not move: byte-identical.
+     *
+     * 0.8.4 (2026-10-18) - FX3, THE FREIGHT MAP'S FAULTS, AGAIN.
+     * What Jerus's eye check of 0.8.3 found on his Halifax city
+     * (docs/queue/FX3.md, its screenshots; docs/queue/FX3-notes.md), the map's
+     * alone. The slices by Sonnet 5.5 subagents, reviewed by Claude. No save
+     * format change (39).
+     *   - A LINE THAT CROSSES A YARD MEETS IT AT THE THROAT
+     *     (TileRaster.yardLayout()): his main line crosses his second yard's
+     *     box where its corridor starts. The drawing closed the fans on the
+     *     middle of all the box's track, 4.5 plots off the corridor, and hid
+     *     the main line under the yard's ground; the trains' routes took the
+     *     yard's sidings from the main line's way in, east-west across the
+     *     drawn ones. One layout now serves both: the fan lies along the line
+     *     with the longest stretch clear of crossing track and takes that
+     *     stretch, the crossing is drawn as track through the yard's head,
+     *     and the trains come in along the line and up the ladder.
+     *   - A 45-DEGREE HIGHWAY IS ONE CARRIAGEWAY (TileRaster.stack(), ways()):
+     *     every plot of its staircase was taken for two highways crossing and
+     *     drawn as a stack's deck with corner slips; its band now fills the
+     *     open corner between two steps, and its centre line is dashed.
+     *   - A ROAD TWO PLOTS WIDE IS ONE ROAD (TileRaster.JUNCTION_RUN): two
+     *     plans' arterials or boulevards side by side drew a signal or a
+     *     roundabout on every plot; a junction needs a road crossing it.
+     *   - Harnesses: RailDrawCheck 21, MainLineCheck 12, JunctionCheck 10
+     *     and 11.
+     *   - THE PLAYTESTS do not move: byte-identical.
      */
-    public static final String VERSION = "0.8.3";
+    public static final String VERSION = "0.8.4";
 
     /**
      * The save shape.

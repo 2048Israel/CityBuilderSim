@@ -2,7 +2,7 @@
 
 Generated 2026-10-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**114 harness files, 10,585 labelled assertions.** AllChecks runs 114 of them.
+**114 harness files, 10,605 labelled assertions.** AllChecks runs 114 of them.
 
 ## Which harnesses read which class
 
@@ -188,12 +188,12 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck |
-| [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MapCheck, RailDrawCheck, ReadPathCheck |
+| [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck |
 | [TimeSkipReport](map/TimeSkipReport.md) | HealthCheck, SkipReportCheck |
 | [Timing](map/Timing.md) | EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, MapCheck, PlanCheck, ScaleCheck, TimingCheck, WorldCheck |
 | [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
 | [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, InfrastructureCheck, LongPlaytest, OilCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, WoodProductsCheck |
-| [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MapCheck, RailCheck, ReadPathCheck |
+| [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MainLineCheck, MapCheck, RailCheck, ReadPathCheck |
 | [TrainShapes](map/TrainShapes.md) | ReadPathCheck |
 | [TreasuryFund](map/TreasuryFund.md) | AutoBuildCheck, CentralBankCheck, ChartCheck, FundCheck, FundLedgerCheck, LongPlaytest, MapCheck, OrderSearchCheck, PlanCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, SectorStatementCheck |
 | [TreasuryJournal](map/TreasuryJournal.md) | CentralBankCheck, ConstructionControlCheck, EducationCheck, FundCheck, LandCheck, OilCheck, SaveFileCheck, TreasuryCheck |
@@ -7773,7 +7773,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1600 an order of three, the till paying for one, earning each its share of the bar on all three's cost is
   - L1603 ...and earning half the lower bar, none of it - the slice the till pays for included
 
-## JunctionCheck.java - 25 labelled assertions
+## JunctionCheck.java - 34 labelled assertions
 
 > Proves that the junctions and interchanges of spec-freight 4.6 are drawn
 > by rule from what crosses what, not as buildings (0.8.1, batch FR0; D19).
@@ -7789,40 +7789,51 @@ _(this harness does not label its checks through a helper - it prints its findin
 > condition by hand:
 > ...
 
-- **L166 1. an arterial crossing an arterial: a dark box and four zebra arms; a plain + keeps the paved colour**
-  - L175 the junction plot's surface has JUNCTION_BOX pixels
-  - L193 each of the four arms has a ZEBRA stripe at the edge facing the junction, alternating with the surface
-  - L199 each arm has a stop line across the right-hand half, just beyond the zebra
-  - L206 a plain street crossing keeps the paved colour, not JUNCTION_BOX
-- **L212 2. a boulevard crossing a boulevard: a planted middle, a ring on the four arms, none on a diagonal building**
-  - L220 the roundabout's middle has ISLAND pixels
-  - L225 the ring has paved pixels on the four neighbouring street plots
-  - L241 no ring pixel is drawn on a building placed diagonally beside it
-- **L246 3. a diamond: paved slips on the verge rows both sides of the street, SLIP_LENGTH out; a building stops one**
-  - L257 the north verge row has paved slip pixels on both sides of the street, SLIP_LENGTH plots out
-  - L262 the south verge row has paved slip pixels on both sides of the street, SLIP_LENGTH plots out
-  - L275 no slip pixel is drawn past a building standing on the verge row
-  - L278 the building on the verge row does not stop the other three slips
-- **L286 4. an arm's last plot with M_RAMP and no street beneath: its raster changes, and the open end narrows**
-  - L298 the marked plot rasters differently from the same tile without the mark
-  - L309 at the open end the band is no wider than the paved road's width
-- **L318 5. a stack: the row's deck over the column's, and corner slips where the corners are open**
-  - L328 HIGHWAY_CASE pixels lie across the column's highway on the row's deck
-  - L331 the four corner plots have slip pixels in the highway's colour
-  - L343 no corner slip is drawn in a corner plot holding a building
-- **L349 6. at 4 px, below JUNCTIONS_FROM, no junction colour appears**
-  - L365 no JUNCTION_BOX, ZEBRA or ISLAND pixel is drawn at 4 px
-- **L371 7. the next tile draws its half of a roundabout whose centre is the tile's last column**
-  - L383 the ring's pixels are drawn on this tile's first column
-- **L389 8. a diamond whose street is the tile's first row: each tile draws its own side's slips**
-  - L398 the tile holding the ramp draws its side's slips, on the verge columns, SLIP_LENGTH plots down
-  - L409 the tile across the edge draws the other side's slips from the ramp beyond its edge
-  - L416 ...and without the ramp beyond it, none
-- **L421 9. a ramp mid-highway with no street beneath: drawn as the plain highway, at 8 px and 4 px, along a row and a column**
-  - L430 a mid-highway ramp along a row with no street beneath rasters as the plain highway at 8 px
-  - L432 a mid-highway ramp along a row with no street beneath rasters as the plain highway at 4 px
-  - L441 a mid-highway ramp down a column with no street beneath rasters as the plain highway at 8 px
-  - L443 a mid-highway ramp down a column with no street beneath rasters as the plain highway at 4 px
+- **L178 1. an arterial crossing an arterial: a dark box and four zebra arms; a plain + keeps the paved colour**
+  - L187 the junction plot's surface has JUNCTION_BOX pixels
+  - L205 each of the four arms has a ZEBRA stripe at the edge facing the junction, alternating with the surface
+  - L211 each arm has a stop line across the right-hand half, just beyond the zebra
+  - L218 a plain street crossing keeps the paved colour, not JUNCTION_BOX
+- **L224 2. a boulevard crossing a boulevard: a planted middle, a ring on the four arms, none on a diagonal building**
+  - L232 the roundabout's middle has ISLAND pixels
+  - L237 the ring has paved pixels on the four neighbouring street plots
+  - L253 no ring pixel is drawn on a building placed diagonally beside it
+- **L258 3. a diamond: paved slips on the verge rows both sides of the street, SLIP_LENGTH out; a building stops one**
+  - L269 the north verge row has paved slip pixels on both sides of the street, SLIP_LENGTH plots out
+  - L274 the south verge row has paved slip pixels on both sides of the street, SLIP_LENGTH plots out
+  - L287 no slip pixel is drawn past a building standing on the verge row
+  - L290 the building on the verge row does not stop the other three slips
+- **L298 4. an arm's last plot with M_RAMP and no street beneath: its raster changes, and the open end narrows**
+  - L310 the marked plot rasters differently from the same tile without the mark
+  - L321 at the open end the band is no wider than the paved road's width
+- **L330 5. a stack: the row's deck over the column's, and corner slips where the corners are open**
+  - L340 HIGHWAY_CASE pixels lie across the column's highway on the row's deck
+  - L343 the four corner plots have slip pixels in the highway's colour
+  - L355 no corner slip is drawn in a corner plot holding a building
+- **L361 6. at 4 px, below JUNCTIONS_FROM, no junction colour appears**
+  - L377 no JUNCTION_BOX, ZEBRA or ISLAND pixel is drawn at 4 px
+- **L383 7. the next tile draws its half of a roundabout whose centre is the tile's last column**
+  - L398 the ring's pixels are drawn on this tile's first column
+- **L404 8. a diamond whose street is the tile's first row: each tile draws its own side's slips**
+  - L413 the tile holding the ramp draws its side's slips, on the verge columns, SLIP_LENGTH plots down
+  - L424 the tile across the edge draws the other side's slips from the ramp beyond its edge
+  - L431 ...and without the ramp beyond it, none
+- **L436 9. a ramp mid-highway with no street beneath: drawn as the plain highway, at 8 px and 4 px, along a row and a column**
+  - L445 a mid-highway ramp along a row with no street beneath rasters as the plain highway at 8 px
+  - L447 a mid-highway ramp along a row with no street beneath rasters as the plain highway at 4 px
+  - L456 a mid-highway ramp down a column with no street beneath rasters as the plain highway at 8 px
+  - L458 a mid-highway ramp down a column with no street beneath rasters as the plain highway at 4 px
+- **L464 10. a 45-degree highway stretch rasters as one carriageway along its line (FX3)**
+  - L509 no highway pixel lies off the carriageway: none farther than half + 1.5 px from the line is HIGHWAY_CASE or road
+  - L513 one carriageway: every pixel within half - 1.5 px of the line, between steps 2 and 11, is road or centre line
+  - L518 its centre line: CENTRE_LINE pixels lie on at least 4 of steps 2..11's plots
+- **L532 11. a road two plots wide is one road: a crossing street gives the junction, nothing else does (FX3)**
+  - L540 an arterial two plots wide has no ZEBRA or JUNCTION_BOX on its plots away from the crossing street
+  - L552 ...the crossing keeps its junction: JUNCTION_BOX pixels on plots (10, 16) and (11, 16)
+  - L561 a boulevard two plots wide has no ISLAND on its plots away from the crossing street
+  - L571 ...the crossing keeps its roundabout: ISLAND pixels within the plots (15..17, 9..12)
+  - L581 a boulevard three plots wide has no ISLAND on its plots away from the crossing street
+  - L584 ...the crossing keeps its roundabout: ISLAND pixels within the plots (15..17, 9..13)
 
 ## LabourCheck.java - 94 labelled assertions
 
@@ -8521,7 +8532,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L6386 what the advisor tried, and what happened**
 - **L6392 findings**
 
-## MainLineCheck.java - 67 labelled assertions
+## MainLineCheck.java - 73 labelled assertions
 
 > The main line is the railway's run from its gateway to the freight station,
 > the yard nearest the gate arm's end, and it is drawn double where the city
@@ -8537,84 +8548,91 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      arm's end, not between the hub and the yard.
 > ...
 
-- **L133 1. no yard**
-  - L141 the fixture lays a railway with an east gate arm
-  - L142 ...and no yard, so freightStation() is null
-  - L163 every plot of the gate arm (the hub and the row east of it) is M_MAIN
-  - L164 ...and no other plot of the track is M_MAIN
-- **L166 2. a yard on the gate arm**
-  - L176 the gate arm is long enough for a yard part way out
-  - L195 M_MAIN runs from the yard's anchor out to the gate arm's end
-  - L196 ...and not between the hub and the yard
-- **L198 3. a yard on the opposite arm**
-  - L207 the fixture lays the opposite (west) arm
-  - L209 ...far enough to put a yard before its end
-  - L235 the whole gate arm and the hub are M_MAIN
-  - L236 ...the opposite arm from the hub to the yard is M_MAIN
-  - L237 ...the opposite arm beyond the yard is not
-  - L238 ...and no other arm is M_MAIN
-- **L240 4. a yard on a later corridor**
-  - L254 a third corridor opens and one of its arms has steps
-  - L259 ...its interchange lies on an earlier arm
-  - L269 ...the earlier arm's plot at the interchange is M_MAIN
-  - L278 ...the later arm from its start to the yard is M_MAIN
-  - L279 ...the later arm beyond the yard is not
-- **L282 5. two yards**
-  - L295 of two yards on the gate arm, the one nearer its end is the freight station
-- **L298 6. no gateway**
-  - L309 with NO_GATEWAY nothing is marked M_MAIN
-  - L310 ...and freightStation() is null
-- **L312 7. double track**
-  - L329 setDoubleMain(true) marks M_DOUBLE on exactly the M_MAIN plots
-  - L336 ...false marks no M_DOUBLE
-  - L337 ...and signature() differs between the two
-- **L339 8. the hashes**
-  - L358 a nearer yard moving the station changes fill()'s hash with marks
-  - L359 ...with marks == null it does not
-  - L360 ...and frameHash() does not
-- **L362 9. on a real map**
-  - L366 yardCity's runs have a Freight Line, so the main line is double
-  - L370 ...with no gateway its freight station is null
-  - L371 ...and no tile's marks carry M_MAIN \| M_DOUBLE
-  - L373 ...its freight station is not null
-  - L374 ...and some tile's marks carry M_MAIN \| M_DOUBLE
-- **L377 10. a gate arm that bends**
-  - L382 the fixture starts a railway whose gate arm heads east
-  - L393 ...and bends it by hand into three stretches
-  - L407 every step of the bent gate arm, past its first stretch too, is M_MAIN
-  - L408 ...and each 45-degree step's corner with it
-  - L409 ...and no other plot: as many marked as the arm's steps, its start and its corners
-- **L506 the main arm (FX2)**
-  - L513 the fixture lays a railway with an east gate arm and the arm opposite it, both with track
-  - L519 the gate arm waits at the sea the city owns: its end is fewer than LOOK plots short of it
-  - L520 ...and the arm opposite it runs to the box's west edge, within LOOK plots of it
-  - L525 with no main arm set, mainArm() is the gate arm
-  - L526 ...mainLine() is the gate arm whole, from its start to its end
-  - L527 ...and fill() marks M_MAIN on every step of the gate arm and on no plot of any other arm
-  - L535 fixture: both arms are long enough for a yard part way along them
-  - L540 with no main arm set, the freight station is the yard nearest the gate arm's end: the gate arm's
-  - L542 setMainArm(west): mainArm() is the west arm
-  - L543 ...the freight station is the yard nearest the west arm's end: the west arm's, with a yard on the gate arm too
-  - L547 ...fill() marks M_MAIN from that yard's anchor out to the west arm's end
-  - L548 ...on no plot of the gate arm past the hub
-  - L549 ...and on no plot of any other arm, or off the arms
-  - L551 ...wayTo(the station) starts at the west arm's end plot's middle
-  - L556 ...runs along the west arm to the yard and goes no nearer the hub than it
-  - L565 fixture: a shorter railway has track on its gate and west arms and an arm with no steps
-  - L568 an arm with steps set as the main arm is the main arm
-  - L570 setMainArm(-1): the main arm is the gate arm
-  - L572 setMainArm(an arm with no steps): the main arm is the gate arm
-  - L574 ...and so is an index past the net's arms
-  - L576 ...and the main line is the gate arm whole
-  - L591 a corridor opens on the west arm, and its arm has track
-  - L602 ...the yard on it is the freight station, with the west arm the main arm
-  - L604 ...fill() marks M_MAIN on the west arm whole and on the corridor's arm to the yard
-  - L605 ...and on no plot of the gate arm, nor anywhere else but the hub
-  - L607 wayTo() reaches the corridor's yard
-  - L614 ...it starts at the west arm's end plot's middle
-  - L615 ...it turns at the corridor's start and never comes in to the hub's column
-  - L616 ...it has no plot twice: no doubling back
-  - L617 ...and every quarter plot of it is a plot the railway covers
+- **L140 1. no yard**
+  - L148 the fixture lays a railway with an east gate arm
+  - L149 ...and no yard, so freightStation() is null
+  - L170 every plot of the gate arm (the hub and the row east of it) is M_MAIN
+  - L171 ...and no other plot of the track is M_MAIN
+- **L173 2. a yard on the gate arm**
+  - L183 the gate arm is long enough for a yard part way out
+  - L202 M_MAIN runs from the yard's anchor out to the gate arm's end
+  - L203 ...and not between the hub and the yard
+- **L205 3. a yard on the opposite arm**
+  - L214 the fixture lays the opposite (west) arm
+  - L216 ...far enough to put a yard before its end
+  - L242 the whole gate arm and the hub are M_MAIN
+  - L243 ...the opposite arm from the hub to the yard is M_MAIN
+  - L244 ...the opposite arm beyond the yard is not
+  - L245 ...and no other arm is M_MAIN
+- **L247 4. a yard on a later corridor**
+  - L261 a third corridor opens and one of its arms has steps
+  - L266 ...its interchange lies on an earlier arm
+  - L276 ...the earlier arm's plot at the interchange is M_MAIN
+  - L285 ...the later arm from its start to the yard is M_MAIN
+  - L286 ...the later arm beyond the yard is not
+- **L289 5. two yards**
+  - L302 of two yards on the gate arm, the one nearer its end is the freight station
+- **L305 6. no gateway**
+  - L316 with NO_GATEWAY nothing is marked M_MAIN
+  - L317 ...and freightStation() is null
+- **L319 7. double track**
+  - L336 setDoubleMain(true) marks M_DOUBLE on exactly the M_MAIN plots
+  - L343 ...false marks no M_DOUBLE
+  - L344 ...and signature() differs between the two
+- **L346 8. the hashes**
+  - L365 a nearer yard moving the station changes fill()'s hash with marks
+  - L366 ...with marks == null it does not
+  - L367 ...and frameHash() does not
+- **L369 9. on a real map**
+  - L373 yardCity's runs have a Freight Line, so the main line is double
+  - L377 ...with no gateway its freight station is null
+  - L378 ...and no tile's marks carry M_MAIN \| M_DOUBLE
+  - L380 ...its freight station is not null
+  - L381 ...and some tile's marks carry M_MAIN \| M_DOUBLE
+- **L384 10. a gate arm that bends**
+  - L389 the fixture starts a railway whose gate arm heads east
+  - L400 ...and bends it by hand into three stretches
+  - L414 every step of the bent gate arm, past its first stretch too, is M_MAIN
+  - L415 ...and each 45-degree step's corner with it
+  - L416 ...and no other plot: as many marked as the arm's steps, its start and its corners
+- **L514 the main arm (FX2)**
+  - L521 the fixture lays a railway with an east gate arm and the arm opposite it, both with track
+  - L527 the gate arm waits at the sea the city owns: its end is fewer than LOOK plots short of it
+  - L528 ...and the arm opposite it runs to the box's west edge, within LOOK plots of it
+  - L533 with no main arm set, mainArm() is the gate arm
+  - L534 ...mainLine() is the gate arm whole, from its start to its end
+  - L535 ...and fill() marks M_MAIN on every step of the gate arm and on no plot of any other arm
+  - L543 fixture: both arms are long enough for a yard part way along them
+  - L548 with no main arm set, the freight station is the yard nearest the gate arm's end: the gate arm's
+  - L550 setMainArm(west): mainArm() is the west arm
+  - L551 ...the freight station is the yard nearest the west arm's end: the west arm's, with a yard on the gate arm too
+  - L555 ...fill() marks M_MAIN from that yard's anchor out to the west arm's end
+  - L556 ...on no plot of the gate arm past the hub
+  - L557 ...and on no plot of any other arm, or off the arms
+  - L559 ...wayTo(the station) starts at the west arm's end plot's middle
+  - L564 ...runs along the west arm to the yard and goes no nearer the hub than it
+  - L573 fixture: a shorter railway has track on its gate and west arms and an arm with no steps
+  - L576 an arm with steps set as the main arm is the main arm
+  - L578 setMainArm(-1): the main arm is the gate arm
+  - L580 setMainArm(an arm with no steps): the main arm is the gate arm
+  - L582 ...and so is an index past the net's arms
+  - L584 ...and the main line is the gate arm whole
+  - L599 a corridor opens on the west arm, and its arm has track
+  - L610 ...the yard on it is the freight station, with the west arm the main arm
+  - L612 ...fill() marks M_MAIN on the west arm whole and on the corridor's arm to the yard
+  - L613 ...and on no plot of the gate arm, nor anywhere else but the hub
+  - L615 wayTo() reaches the corridor's yard
+  - L622 ...it starts at the west arm's end plot's middle
+  - L623 ...it turns at the corridor's start and never comes in to the hub's column
+  - L624 ...it has no plot twice: no doubling back
+  - L625 ...and every quarter plot of it is a plot the railway covers
+- **L660 two yards stacked on a corridor (FX3)**
+  - L688 the fixture lays a north-south corridor whose interchange is on the spine and whose track runs clear through both boxes
+  - L709 wayTo() reaches yard
+  - L715 each yard has a route to every one of its TileRaster.YARD_TRACKS sidings
+  - L740 each yard's every route ends on a north-south siding: its last leg has the same x at both ends
+  - L741 ...and enters the fan at an apex on the corridor's column: the point before its last two has x = ix + 0.5
+  - L763 no train runs across a siding: no leg of any route crosses another route's siding strictly inside both
 
 ## ManufacturingCheck.java - 60 labelled assertions
 
@@ -11057,7 +11075,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L665 ...and no kind rails more than crossed of it, either way
   - L668 ...and having moved boxes, its freight station is drawn a container yard (TrainSchedule.boxesByRail())
 
-## RailDrawCheck.java - 79 labelled assertions
+## RailDrawCheck.java - 84 labelled assertions
 
 > Proves that the railway is drawn as rail, not as a cased road band (0.8.1,
 > batch FR0; docs/studies/spec-freight-and-infrastructure.md 4.3, D15, D18).
@@ -11073,105 +11091,111 @@ _(this harness does not label its checks through a helper - it prints its findin
 > condition by hand:
 > ...
 
-- **L299 1. a straight east-west single track at 8 px: ballast, two rails, sleepers every quarter plot**
-  - L309 exactly two pixel rows are STEEL, at middle +/- round(GAUGE/2*px)
-  - L310 a bed pixel is BALLAST
-  - L315 SLEEPER columns repeat every max(2, round(SLEEPERS_EVERY*px))
-  - L316 a column between sleepers is not a sleeper
-- **L321 2. M_MAIN \| M_DOUBLE at 8 px: four rails and a double bed; M_MAIN alone is single**
-  - L332 four pixel rows are STEEL, at the two tracks' rails
-  - L334 the bed's first and last pixel rows are BALLAST, as wide as BED_DOUBLE
-  - L343 M_MAIN alone has two STEEL rows, as single track
-- **L349 3. a north-south track at 8 px: the same, by columns**
-  - L359 exactly two pixel columns are STEEL, at middle +/- round(GAUGE/2*px)
-  - L360 a bed pixel is BALLAST
-  - L365 SLEEPER rows repeat every max(2, round(SLEEPERS_EVERY*px))
-- **L370 4. at 4 px: a ballast bed, one steel centre line, one sleeper tick a plot**
-  - L380 one pixel row is STEEL down the bed's middle
-  - L381 a bed pixel is BALLAST
-  - L382 one SLEEPER tick at the start of the plot
-- **L387 5. L1 blocks at 2 px a plot: RAIL_DARK, with a tick beside the line every block**
-  - L403 every track pixel is RAIL_DARK
-  - L404 no track pixel is RAIL_LINE
-  - L414 a tick pixel lies beside the line at every block boundary
-  - L415 no tick pixel lies beside the line between block boundaries
-- **L420 6. L2 blocks at 1 px a plot: RAIL_DARK, no ticks**
-  - L433 every track pixel is RAIL_DARK
-  - L434 no pixel beside the line is a tick
-- **L439 7. a paved street crossing a single track at level: crossbucks, barriers, rails showing**
-  - L448 a CROSSBUCK pixel in the north-west corner
-  - L449 a CROSSBUCK pixel in the south-east corner
-  - L450 a BARRIER pixel at the street's north edge
-  - L451 a BARRIER pixel at the street's south edge
-  - L452 a STEEL pixel on the street's surface
-- **L457 8. an arterial over the main line is a bridge; a level crossing is named as one**
-  - L467 a DECK edge along each side of the street's surface
-  - L478 no CROSSBUCK and no BARRIER on the plot
-  - L479 no STEEL on the street's surface
-  - L481 LandMap.plotWords says \"bridging the railway\" there
-  - L488 LandMap.plotWords says \"crossing the railway\" at a level crossing
-- **L493 9. an unowned track's bed pixel is dimmed toward VOID**
-  - L502 a bed pixel is blend(BALLAST, VOID, UNOWNED_DIM)
-- **L507 10. a diagonal track at 8 px: ballast and steel, no sleepers**
-  - L524 the plot has BALLAST pixels
-  - L525 the plot has STEEL pixels
-  - L526 the plot has no SLEEPER pixels
-- **L531 11. the eleventh class: TRANSPORT, eleven tables, a Rail Terminal's fill**
-  - L533 classOf(RAIL) is TRANSPORT
-  - L534 classOf(PORTS) is TRANSPORT
-  - L535 classOf(INFRASTRUCTURE) is TRANSPORT
-  - L537 CLASSES, CLASS_NAMES, FILL, EDGE and LandMap.CLASS_ONE all have one length
-  - L542 that length is eleven
-  - L543 a Rail Terminal has TRANSPORT's fill
-- **L548 12. a bulk yard at 8 px over an east-west track: ground, fan, shed and stockpiles**
-  - L555 YARD_GROUND pixels inside the box
-  - L556 STEEL on at least YARD_TRACKS distinct pixel rows inside the box
-  - L559 TRANSPORT's fill (the shed) on the north side of the line
-  - L561 ORE_HEAP stockpiles on the south side
-  - L563 no CONTAINER pixels
-- **L568 13. the freight station with goods is a container yard; other yards stay bulk**
-  - L577 the freight station with goods has CONTAINER pixels
-  - L579 ...and GANTRY pixels
-  - L580 ...and no ORE_HEAP
-  - L587 the same yard not the station stays bulk
-  - L597 the station without goods stays bulk
-- **L604 14. wagonTracks: none, every track, then half the tracks**
-  - L611 the yard's fan has YARD_TRACKS ballast bands
-  - L612 wagonTracks 0 has no WAGON pixels
-  - L623 YARD_TRACKS wagons stand on every track's bed
-  - L636 half of YARD_TRACKS wagons stand on that many tracks and none on the rest
-- **L641 15. a north-south line through the yard: the fan runs north-south**
-  - L647 STEEL on at least YARD_TRACKS distinct pixel columns inside the box
-- **L653 16. at 4 px the yard still draws as a yard; below LINES_FROM it is a plain TRANSPORT box**
-  - L660 at 4 px the yard has YARD_GROUND pixels
-  - L662 ...STEEL pixels
-  - L663 ...and TRANSPORT's fill (the shed)
-  - L671 below LINES_FROM the yard is a plain box of TRANSPORT's fill
-- **L678 17. MapTiles.stamp changes when the yard's inputs change, and not otherwise**
-  - L683 the stamp changes when goodsByRail changes
-  - L686 the stamp changes when wagonTracks changes
-  - L689 the stamp changes when stationX changes
-  - L692 the stamp changes when stationY changes
-  - L695 the stamp does not change otherwise
-- **L707 18. CityMap.railPicture repaints on goods or a whole track, not a share less than one**
-  - L711 goodsByRail true repaints
-  - L714 a share change under a track's worth does not repaint
-  - L716 a share change of a whole track repaints
-- **L751 19. the far skeleton: lightened highways, dark track, and TRANSPORT yard dots on the node**
-  - L761 the node has pixels in the lightened highway colour
-  - L762 ...and pixels in RAIL_DARK
-  - L763 ...and no pixel in the old RAIL_LINE
-  - L775 a 2 x 2 TRANSPORT dot sits at each yard's middle
-  - L788 ...and a 2 x 2 TRANSPORT dot sits at each sea terminal's middle
-- **L801 20. the legend: the transport class, the railway's four and the gateway, and (0.8.2) the train**
-  - L803 planeLegend() has the TRANSPORT class's entry
-  - L805 ...has \"Railway\"
-  - L806 ...has \"Freight yard\"
-  - L807 ...has \"Level crossing\"
-  - L808 ...has \"Main line, double with a Freight Line\"
-  - L809 ...has \"Gateway: to the world\"
-  - L810 ...has the train's entry (0.8.2): \"
-  - L813 ...and no entry wears the old RAIL_LINE
+- **L304 1. a straight east-west single track at 8 px: ballast, two rails, sleepers every quarter plot**
+  - L314 exactly two pixel rows are STEEL, at middle +/- round(GAUGE/2*px)
+  - L315 a bed pixel is BALLAST
+  - L320 SLEEPER columns repeat every max(2, round(SLEEPERS_EVERY*px))
+  - L321 a column between sleepers is not a sleeper
+- **L326 2. M_MAIN \| M_DOUBLE at 8 px: four rails and a double bed; M_MAIN alone is single**
+  - L337 four pixel rows are STEEL, at the two tracks' rails
+  - L339 the bed's first and last pixel rows are BALLAST, as wide as BED_DOUBLE
+  - L348 M_MAIN alone has two STEEL rows, as single track
+- **L354 3. a north-south track at 8 px: the same, by columns**
+  - L364 exactly two pixel columns are STEEL, at middle +/- round(GAUGE/2*px)
+  - L365 a bed pixel is BALLAST
+  - L370 SLEEPER rows repeat every max(2, round(SLEEPERS_EVERY*px))
+- **L375 4. at 4 px: a ballast bed, one steel centre line, one sleeper tick a plot**
+  - L385 one pixel row is STEEL down the bed's middle
+  - L386 a bed pixel is BALLAST
+  - L387 one SLEEPER tick at the start of the plot
+- **L392 5. L1 blocks at 2 px a plot: RAIL_DARK, with a tick beside the line every block**
+  - L408 every track pixel is RAIL_DARK
+  - L409 no track pixel is RAIL_LINE
+  - L419 a tick pixel lies beside the line at every block boundary
+  - L420 no tick pixel lies beside the line between block boundaries
+- **L425 6. L2 blocks at 1 px a plot: RAIL_DARK, no ticks**
+  - L438 every track pixel is RAIL_DARK
+  - L439 no pixel beside the line is a tick
+- **L444 7. a paved street crossing a single track at level: crossbucks, barriers, rails showing**
+  - L453 a CROSSBUCK pixel in the north-west corner
+  - L454 a CROSSBUCK pixel in the south-east corner
+  - L455 a BARRIER pixel at the street's north edge
+  - L456 a BARRIER pixel at the street's south edge
+  - L457 a STEEL pixel on the street's surface
+- **L462 8. an arterial over the main line is a bridge; a level crossing is named as one**
+  - L472 a DECK edge along each side of the street's surface
+  - L483 no CROSSBUCK and no BARRIER on the plot
+  - L484 no STEEL on the street's surface
+  - L486 LandMap.plotWords says \"bridging the railway\" there
+  - L493 LandMap.plotWords says \"crossing the railway\" at a level crossing
+- **L498 9. an unowned track's bed pixel is dimmed toward VOID**
+  - L507 a bed pixel is blend(BALLAST, VOID, UNOWNED_DIM)
+- **L512 10. a diagonal track at 8 px: ballast and steel, no sleepers**
+  - L529 the plot has BALLAST pixels
+  - L530 the plot has STEEL pixels
+  - L531 the plot has no SLEEPER pixels
+- **L536 11. the eleventh class: TRANSPORT, eleven tables, a Rail Terminal's fill**
+  - L538 classOf(RAIL) is TRANSPORT
+  - L539 classOf(PORTS) is TRANSPORT
+  - L540 classOf(INFRASTRUCTURE) is TRANSPORT
+  - L542 CLASSES, CLASS_NAMES, FILL, EDGE and LandMap.CLASS_ONE all have one length
+  - L547 that length is eleven
+  - L548 a Rail Terminal has TRANSPORT's fill
+- **L553 12. a bulk yard at 8 px over an east-west track: ground, fan, shed and stockpiles**
+  - L560 YARD_GROUND pixels inside the box
+  - L561 STEEL on at least YARD_TRACKS distinct pixel rows inside the box
+  - L564 TRANSPORT's fill (the shed) on the north side of the line
+  - L566 ORE_HEAP stockpiles on the south side
+  - L568 no CONTAINER pixels
+- **L573 13. the freight station with goods is a container yard; other yards stay bulk**
+  - L582 the freight station with goods has CONTAINER pixels
+  - L584 ...and GANTRY pixels
+  - L585 ...and no ORE_HEAP
+  - L592 the same yard not the station stays bulk
+  - L602 the station without goods stays bulk
+- **L609 14. wagonTracks: none, every track, then half the tracks**
+  - L616 the yard's fan has YARD_TRACKS ballast bands
+  - L617 wagonTracks 0 has no WAGON pixels
+  - L628 YARD_TRACKS wagons stand on every track's bed
+  - L641 half of YARD_TRACKS wagons stand on that many tracks and none on the rest
+- **L646 15. a north-south line through the yard: the fan runs north-south**
+  - L652 STEEL on at least YARD_TRACKS distinct pixel columns inside the box
+- **L658 16. at 4 px the yard still draws as a yard; below LINES_FROM it is a plain TRANSPORT box**
+  - L665 at 4 px the yard has YARD_GROUND pixels
+  - L667 ...STEEL pixels
+  - L668 ...and TRANSPORT's fill (the shed)
+  - L676 below LINES_FROM the yard is a plain box of TRANSPORT's fill
+- **L683 17. MapTiles.stamp changes when the yard's inputs change, and not otherwise**
+  - L688 the stamp changes when goodsByRail changes
+  - L691 the stamp changes when wagonTracks changes
+  - L694 the stamp changes when stationX changes
+  - L697 the stamp changes when stationY changes
+  - L700 the stamp does not change otherwise
+- **L712 18. CityMap.railPicture repaints on goods or a whole track, not a share less than one**
+  - L716 goodsByRail true repaints
+  - L719 a share change under a track's worth does not repaint
+  - L721 a share change of a whole track repaints
+- **L756 19. the far skeleton: lightened highways, dark track, and TRANSPORT yard dots on the node**
+  - L766 the node has pixels in the lightened highway colour
+  - L767 ...and pixels in RAIL_DARK
+  - L768 ...and no pixel in the old RAIL_LINE
+  - L780 a 2 x 2 TRANSPORT dot sits at each yard's middle
+  - L793 ...and a 2 x 2 TRANSPORT dot sits at each sea terminal's middle
+- **L806 20. the legend: the transport class, the railway's four and the gateway, and (0.8.2) the train**
+  - L808 planeLegend() has the TRANSPORT class's entry
+  - L810 ...has \"Railway\"
+  - L811 ...has \"Freight yard\"
+  - L812 ...has \"Level crossing\"
+  - L813 ...has \"Main line, double with a Freight Line\"
+  - L814 ...has \"Gateway: to the world\"
+  - L815 ...has the train's entry (0.8.2): \"
+  - L818 ...and no entry wears the old RAIL_LINE
+- **L830 21. a line crossing a yard's box: the fan closes on the yard's own line, the cross track is drawn, no siding runs across it**
+  - L841 the fan's south apex is on the line: STEEL within 1 px of the line's middle column in the box's last row
+  - L843 ...and no STEEL within 2 px of the box's middle column in that row
+  - L855 the east-west track is drawn from the box's east edge to the line: BALLAST in every plot's middle row, columns
+  - L867 no siding runs across the crossing: no pixel column outside the line's own plot has STEEL on more than 2 of row
+  - L877 control: with only the north-south column the south apex STEEL is within 1 px of x =
 
 ## ReadPathCheck.java - 25 labelled assertions
 

@@ -139,6 +139,8 @@ public final class TileRaster {
     public static final int ISLAND = 0xff6f9a4f;
     /** Plots: a diamond's slip road along the verge each side of its street. */
     public static final double SLIP_LENGTH = 2;
+    /** Plots: the least run of junction streets through a plot along an axis for a road to cross there (FX3): a road up to three plots wide - a cell's boulevard, two deep, beside the next cell's road, as a tile sees it one plot past its edge - is one road, not a junction on every plot. */
+    static final int JUNCTION_RUN = 4;
 
     /** Pixels a plot from which the blocks' view draws the track's cross-ticks (the L1 raster). */
     public static final int TICKS_FROM = 2;
@@ -330,6 +332,78 @@ public final class TileRaster {
     }
 
     /**
+     * Where a yard's fan lies in its box, from the box's track (FX3, 0.8.4):
+     * rail[y * w + x] is whether the box's plot (x, y) holds track, the box w
+     * plots across and h down. Returns {ew, line, a, b}: ew is 1 for an
+     * east-west fan and 0 for a north-south one, line the plot row (east-west)
+     * or column (north-south) it closes to, in plots from the box's north-west
+     * corner, and [a, b) its span along the line, in plots from the box's
+     * west edge (east-west) or north edge. No track in the box: {1, -1, 0, w},
+     * east-west on the box's middle. WHY: drawYard() took the line as the
+     * middle of all the box's track, which put the fan off its line when
+     * another line crossed the box (Jerus's second yard, stacked on a
+     * corridor with the spine across its head: the fan closed 4.5 plots east
+     * of the corridor). Now each column holding track is a north-south
+     * candidate and each row an east-west one; a row (for a column) is blocked
+     * when it holds track in any other column, and the candidate's runs are
+     * the stretches of rows left clear, each scoring the rows of it where the
+     * candidate is track. The best run wins: the most track, then the longest,
+     * then north-south, then the lowest line, then the earliest. A run shorter
+     * than 2 * YARD_LADDER + 2 plots has no room for a fan between crossings:
+     * its line and direction stand and the span is the whole box. One straight
+     * line through the box wins with the whole box, as it always was. Both
+     * drawYard() and CityMap.trainRoutesInto() lay the fan from this, so a
+     * route's ladder starts where the drawing's does.
+     */
+    static int[] yardLayout(boolean[] rail, int w, int h) {
+        int[] colN = new int[w], rowN = new int[h];
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if (!rail[y * w + x]) continue;
+                colN[x]++;
+                rowN[y]++;
+            }
+        }
+        int bestScore = -1, bestLen = 0, bestEw = 1, bestLine = -1, bestA = 0, bestB = 0;
+        // North-south first, then east-west; each by index and run in order, so a tie keeps the earlier.
+        for (int pass = 0; pass < 2; pass++) {
+            boolean ns = pass == 0;
+            int lines = ns ? w : h, along = ns ? h : w;
+            for (int c = 0; c < lines; c++) {
+                if ((ns ? colN[c] : rowN[c]) == 0) continue;
+                int start = 0;
+                while (start <= along) {
+                    int score = 0;
+                    int pos = start;
+                    while (pos < along) {
+                        boolean on = ns ? rail[pos * w + c] : rail[c * w + pos];
+                        int others = ns ? rowN[pos] : colN[pos];
+                        if (others - (on ? 1 : 0) > 0) break;
+                        if (on) score++;
+                        pos++;
+                    }
+                    int len = pos - start;
+                    if (len > 0 && (score > bestScore || score == bestScore && len > bestLen)) {
+                        bestScore = score;
+                        bestLen = len;
+                        bestEw = ns ? 0 : 1;
+                        bestLine = c;
+                        bestA = start;
+                        bestB = pos;
+                    }
+                    start = pos + 1;
+                }
+            }
+        }
+        if (bestLine < 0) return new int[] { 1, -1, 0, w };
+        if (bestLen < 2 * YARD_LADDER + 2) {
+            bestA = 0;
+            bestB = bestEw == 1 ? w : h;
+        }
+        return new int[] { bestEw, bestLine, bestA, bestB };
+    }
+
+    /**
      * A Rail Terminal's yard as a yard, not its class's plain box (0.8.1,
      * batch FR0; spec-freight 4.2 and 4.3, D15): ballast ground, a fan of
      * YARD_TRACKS sidings closing to the line at each end over YARD_LADDER
@@ -337,31 +411,36 @@ public final class TileRaster {
      * freight it handles - a container yard's boxes and gantry cranes where
      * the freight station carries goods, every other yard's ore stockpiles -
      * with wagons standing on the first wagonTracks tracks from the shed.
+     * Since FX3 (0.8.4) the fan lies where yardLayout() puts it: on the line
+     * with the longest stretch clear of crossing track, the shed, the heaps
+     * and the boxes kept to that stretch, and the track that crosses the
+     * line drawn over the yard's ground through the head the stretch leaves,
+     * so a line crossing the yard meets the fan at its throat.
      */
     private static void drawYard(TilePainter.Input in, TilePainter.Painted p, int b, BuildingVisual.Type t, int px,
                                  int[] img, int w, int x0, int y0, int x1, int y1) {
         int tile = TilePainter.TILE;
         int bx = p.bx[b], by = p.by[b], bw = p.bw[b], bh = p.bh[b];
         fillRect(img, w, x0, y0, x1, y1, YARD_GROUND);
-        int railY0 = Integer.MAX_VALUE, railY1 = Integer.MIN_VALUE, railX0 = Integer.MAX_VALUE, railX1 = Integer.MIN_VALUE;
-        int cols = 0, rows = 0;
-        boolean[] railCol = new boolean[tile], railRow = new boolean[tile];
-        for (int y = by; y < Math.min(tile, by + bh); y++) {
-            for (int x = bx; x < Math.min(tile, bx + bw); x++) {
-                if (p.run[y * tile + x] != TilePainter.RAIL) continue;
-                if (!railCol[x]) { railCol[x] = true; cols++; }
-                if (!railRow[y]) { railRow[y] = true; rows++; }
-                railX0 = Math.min(railX0, x); railX1 = Math.max(railX1, x);
-                railY0 = Math.min(railY0, y); railY1 = Math.max(railY1, y);
-            }
+        int boxW = Math.min(tile, bx + bw) - bx, boxH = Math.min(tile, by + bh) - by;
+        boolean[] rail = new boolean[boxW * boxH];
+        for (int y = 0; y < boxH; y++) {
+            for (int x = 0; x < boxW; x++) rail[y * boxW + x] = p.run[(by + y) * tile + bx + x] == TilePainter.RAIL;
         }
-        boolean ew = rows == 0 ? cols == 0 || cols > rows : cols > rows;
+        int[] layout = yardLayout(rail, boxW, boxH);
+        boolean ew = layout[0] == 1;
+        int spanA = layout[2], spanB = layout[3], boxLong = ew ? boxW : boxH;
         int bed = bedWidth(px, false);
         int off = px >= RAILS_FROM ? Math.max(1, (int) Math.round(GAUGE / 2.0 * px)) : 0;
-        // The line the fan closes to: the middle of the track under the yard, else the box's middle.
-        double line = ew
-                ? (rows == 0 ? (by + bh / 2.0) * px : (railY0 + railY1 + 1) / 2.0 * px)
-                : (cols == 0 ? (bx + bw / 2.0) * px : (railX0 + railX1 + 1) / 2.0 * px);
+        // The line the fan closes to: the yard's own line, else the box's middle.
+        double line = layout[1] < 0
+                ? (ew ? (by + bh / 2.0) * px : (bx + bw / 2.0) * px)
+                : ((ew ? by : bx) + layout[1] + 0.5) * px;
+        // The fan's span along, in pixels: the stretch of the line clear of crossing track, else the box's whole length.
+        int start = spanA == 0 ? (ew ? x0 : y0) : ((ew ? bx : by) + spanA) * px;
+        int end = spanB >= boxLong ? (ew ? x1 : y1) : ((ew ? bx : by) + spanB) * px;
+        // The box as the shed, the heaps and the boxes see it: the span along, the box across.
+        int sx0 = ew ? start : x0, sx1 = ew ? end : x1, sy0 = ew ? y0 : start, sy1 = ew ? y1 : end;
         int n = YARD_TRACKS;
         double[] at = new double[n];
         double apart = YARD_TRACK_APART * px;
@@ -378,8 +457,8 @@ public final class TileRaster {
             else if (hi > x1) { double shift = x1 - hi; for (int i = 0; i < n; i++) at[i] += shift; }
         }
         min = at[0]; max = at[n - 1];
-        int fanA = (ew ? x0 : y0) + (int) Math.round(YARD_LADDER * px);
-        int fanB = (ew ? x1 : y1) - (int) Math.round(YARD_LADDER * px);
+        int fanA = start + (int) Math.round(YARD_LADDER * px);
+        int fanB = end - (int) Math.round(YARD_LADDER * px);
         int linePx = (int) Math.round(line);
         int steel = STEEL;
         for (int i = 0; i < n; i++) {
@@ -392,8 +471,8 @@ public final class TileRaster {
                     fillRect(img, w, fanA, mid - off, fanB, mid - off + 1, steel);
                     fillRect(img, w, fanA, mid + off, fanB, mid + off + 1, steel);
                 }
-                line(img, w, fanA, mid, x0, linePx, steel);
-                line(img, w, fanB - 1, mid, x1 - 1, linePx, steel);
+                line(img, w, fanA, mid, start, linePx, steel);
+                line(img, w, fanB - 1, mid, end - 1, linePx, steel);
             } else {
                 fillRect(img, w, a, fanA, z, fanB, BALLAST);
                 if (off == 0) fillRect(img, w, mid, fanA, mid + 1, fanB, steel);
@@ -401,8 +480,8 @@ public final class TileRaster {
                     fillRect(img, w, mid - off, fanA, mid - off + 1, fanB, steel);
                     fillRect(img, w, mid + off, fanA, mid + off + 1, fanB, steel);
                 }
-                line(img, w, mid, fanA, linePx, y0, steel);
-                line(img, w, mid, fanB - 1, linePx, y1 - 1, steel);
+                line(img, w, mid, fanA, linePx, start, steel);
+                line(img, w, mid, fanB - 1, linePx, end - 1, steel);
             }
         }
         // The freight shed, between the fan and the box's edge.
@@ -416,7 +495,7 @@ public final class TileRaster {
             int along = (fanA + fanB) / 2;
             int s0 = along - len / 2, s1 = s0 + len;
             if (ew) {
-                s0 = Math.max(x0, s0); s1 = Math.min(x1, s1);
+                s0 = Math.max(sx0, s0); s1 = Math.min(sx1, s1);
                 int shedTop = fanNear - depth;
                 fillRect(img, w, s0, shedTop, s1, fanNear, t.fill());
                 if (px >= EDGE_FROM) {
@@ -424,7 +503,7 @@ public final class TileRaster {
                     for (int y = shedTop; y < fanNear; y++) { img[y * w + s0] = t.edge(); img[y * w + s1 - 1] = t.edge(); }
                 }
             } else {
-                s0 = Math.max(y0, s0); s1 = Math.min(y1, s1);
+                s0 = Math.max(sy0, s0); s1 = Math.min(sy1, s1);
                 int shedLeft = fanNear - depth;
                 fillRect(img, w, shedLeft, s0, fanNear, s1, t.fill());
                 if (px >= EDGE_FROM) {
@@ -436,8 +515,8 @@ public final class TileRaster {
         boolean station = in.tx * tile + bx == in.stationX && in.ty * tile + by == in.stationY;
         boolean container = station && in.goodsByRail;
         // What it handles, on the other side of the fan from the shed.
-        if (container) containers(in, p, px, img, w, x0, y0, x1, y1, ew, fanA, fanB, fanNear, fanFar);
-        else stockpiles(px, img, w, x0, y0, x1, y1, ew, fanA, fanB, fanFar);
+        if (container) containers(in, p, px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanNear, fanFar);
+        else stockpiles(px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanFar);
         // Wagons standing on the first wagonTracks tracks from the shed's side.
         for (int k = 0; k < in.wagonTracks && k < n; k++) {
             int mid = (int) Math.round(at[k]);
@@ -460,6 +539,34 @@ public final class TileRaster {
                 }
             }
         }
+        // The track the span leaves out, over the yard's ground: a line crossing the box runs through the head and meets the fan at its throat (FX3).
+        if (spanA > 0 || spanB < boxLong) {
+            for (int y = 0; y < boxH; y++) {
+                for (int x = 0; x < boxW; x++) {
+                    if (!rail[y * boxW + x]) continue;
+                    int along = ew ? x : y;
+                    if (along >= spanA && along < spanB) continue;
+                    yardTrack(in, p, (by + y) * tile + bx + x, px, img);
+                }
+            }
+        }
+    }
+
+    /**
+     * One plot of the track that crosses a yard's head, drawn over the yard's
+     * ground (FX3, 0.8.4): drawTrackLook()'s look, with the track beside it
+     * read from the runs (p.run), because a building stands on every plot of
+     * the yard's box and p.use does not say RAIL there.
+     */
+    private static void yardTrack(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img) {
+        int tile = TilePainter.TILE, arms = 0;
+        for (int d = 0; d < 4; d++) {
+            int x = i % tile + TilePainter.DX[d], y = i / tile + TilePainter.DY[d];
+            byte f = x >= 0 && y >= 0 && x < tile && y < tile ? p.run[y * tile + x]
+                    : in.fixedBeyond[d * tile + (d == 0 || d == 2 ? i % tile : i / tile)];
+            if (f == TilePainter.RAIL || f == TilePainter.RAIL_OVER) arms |= 1 << d;
+        }
+        drawTrackLook(in, p, i, px, img, arms);
     }
 
     /** A container yard's boxes, in rows, and its two gantry cranes across the fan. */
@@ -969,6 +1076,20 @@ public final class TileRaster {
         return f == BuildingVisual.HIGHWAY || f == TilePainter.RAIL_OVER;
     }
 
+    /** ...and a straight highway's, a step from plot i: not a 45-degree stretch's plot, whose marks (across the tile's edge too: marksBeyond) say it is no highway beside a straight one for a stack's test. */
+    private static boolean straightHighwayAt(TilePainter.Input in, TilePainter.Painted p, int i, int dir) {
+        if (!highwayAt(in, p, i, dir)) return false;
+        int tile = TilePainter.TILE, x = i % tile + TilePainter.DX[dir], y = i / tile + TilePainter.DY[dir];
+        byte mark;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) {
+            mark = in.marks[y * tile + x];
+        } else {
+            int along = dir == 0 || dir == 2 ? i % tile : i / tile;
+            mark = in.marksBeyond[dir * tile + along];
+        }
+        return (mark & CityRuns.M_DIAG) == 0;
+    }
+
     /** ...and the railway's track (since 0.7.89 where it bridges a highway too: the runs' RAIL_OVER). */
     private static boolean railAt(TilePainter.Input in, TilePainter.Painted p, int i, int dir) {
         int tile = TilePainter.TILE, x = i % tile + TilePainter.DX[dir], y = i / tile + TilePainter.DY[dir];
@@ -988,18 +1109,79 @@ public final class TileRaster {
      * smooth; in plots it is a staircase"): the pixels within `half` pixels
      * of the stretch's line - through the plot's middle, or for a
      * staircase's corner (CityRuns.M_CORNER) the middle of the plot before it
-     * - in colour c; and with `centre`, every other plot's run of the line
-     * itself in it instead (the dashes).
+     * - in colour c.
      */
     static void diagBand(int[] img, int w, int i, int px, byte mark, double half, int c) {
-        int tile = TilePainter.TILE, x0 = (i % tile) * px, y0 = (i / tile) * px;
         int code = (mark >> CityRuns.M_DIAG_SHIFT) & 3;
-        int dx = code == 0 || code == 3 ? 1 : -1, dy = code == 0 || code == 1 ? 1 : -1;
+        int dx = code == 0 || code == 3 ? 1 : -1;
         double pxl = (mark & CityRuns.M_CORNER) != 0 ? (0.5 - dx) * px : 0.5 * px, pyl = 0.5 * px;
+        diagLine(img, w, i, px, code, pxl, pyl, half, Double.POSITIVE_INFINITY, c);
+    }
+
+    /**
+     * The pixels of plot i within `half` pixels of a line at a 45-degree
+     * heading's code through the point (pxl, pyl) of the plot's pixels, and
+     * no farther along the line than `along` pixels either side of that
+     * point (FX3: diagBand() for a line that passes through another plot's
+     * middle, and for the dashes), in colour c.
+     */
+    private static void diagLine(int[] img, int w, int i, int px, int code, double pxl, double pyl, double half, double along, int c) {
+        int tile = TilePainter.TILE, x0 = (i % tile) * px, y0 = (i / tile) * px;
+        int dx = code == 0 || code == 3 ? 1 : -1, dy = code == 0 || code == 1 ? 1 : -1;
         for (int v = 0; v < px; v++) {
             for (int u = 0; u < px; u++) {
                 double qx = u + 0.5 - pxl, qy = v + 0.5 - pyl;
-                if (Math.abs(qx * dy - qy * dx) / Math.sqrt(2) <= half) img[(y0 + v) * w + x0 + u] = c;
+                if (Math.abs(qx * dy - qy * dx) / Math.sqrt(2) > half) continue;
+                if (Math.abs(qx * dx + qy * dy) / Math.sqrt(2) > along) continue;
+                img[(y0 + v) * w + x0 + u] = c;
+            }
+        }
+    }
+
+    /** The marks of the 45-degree stretch's step plot at (x, y) - in the tile, or just across one of its edges (marksBeyond) - or -1 where that plot is no step: a corner, a straight highway, other ground. */
+    private static int stepMarkAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int tile = TilePainter.TILE, mark;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) {
+            int j = y * tile + x;
+            if (!isHighway(p, j)) return -1;
+            mark = in.marks[j];
+        } else {
+            if ((x < 0 || x >= tile) && (y < 0 || y >= tile)) return -1;
+            int dir = y < 0 ? 0 : y >= tile ? 2 : x < 0 ? 3 : 1, along = dir == 0 || dir == 2 ? x : y;
+            byte f = in.fixedBeyond[dir * tile + along];
+            if (f != BuildingVisual.HIGHWAY && f != TilePainter.RAIL_OVER) return -1;
+            mark = in.marksBeyond[dir * tile + along];
+        }
+        return (mark & CityRuns.M_DIAG) != 0 && (mark & CityRuns.M_CORNER) == 0 ? mark & 0xff : -1;
+    }
+
+    /**
+     * Where a 45-degree stretch passes between two of its steps the line
+     * clips the corner of the plot that is not the run's - the staircase's
+     * corners are on the other side of it - and the band would leave a notch
+     * there (FX3, Jerus's eye check of 0.8.3). Plot i, when it is open
+     * ground (not a highway, not a building), has a step on one axis and the
+     * next step of the same stretch on the other: the band of the stretch's
+     * line, through the step's middle, over plot i's pixels, `half` out in
+     * colour c. A stretch's end adds nothing: there is no next step.
+     */
+    private static void diagOpen(TilePainter.Input in, TilePainter.Painted p, int i, int px, double half, int c, int[] img) {
+        if (p.use[i] == TilePainter.BUILDING || diagonal(in, i)) return;
+        int tile = TilePainter.TILE, x = i % tile, y = i / tile;
+        int west = stepMarkAt(in, p, x - 1, y), east = stepMarkAt(in, p, x + 1, y);
+        if (west < 0 && east < 0) return;
+        int north = stepMarkAt(in, p, x, y - 1), south = stepMarkAt(in, p, x, y + 1);
+        if (north < 0 && south < 0) return;
+        for (int ex = -1; ex <= 1; ex += 2) {
+            for (int ey = -1; ey <= 1; ey += 2) {
+                int a = ex < 0 ? west : east, b = ey < 0 ? north : south;
+                if (a < 0 || b < 0) continue;
+                int code = (a >> CityRuns.M_DIAG_SHIFT) & 3;
+                if (((b >> CityRuns.M_DIAG_SHIFT) & 3) != code) continue;
+                int dx = code == 0 || code == 3 ? 1 : -1, dy = code == 0 || code == 1 ? 1 : -1;
+                // The two steps are diagonal neighbours of each other along the heading: b - a = (-ex, ey) = +-(dx, dy).
+                if (!(ex == -dx && ey == dy) && !(ex == dx && ey == -dy)) continue;
+                diagLine(img, tile * px, i, px, code, (0.5 + ex) * px, 0.5 * px, half, Double.POSITIVE_INFINITY, c);
             }
         }
     }
@@ -1018,7 +1200,10 @@ public final class TileRaster {
      * signals, roundabouts and diamonds; then the highways over all, cased,
      * their open ends brought down to the ground (highwayEnds()) and from
      * JUNCTIONS_FROM their stacks; the railway bridging a highway; the
-     * ramps below JUNCTIONS_FROM; and a dashed centre line from 6 px.
+     * ramps below JUNCTIONS_FROM; and a dashed centre line from 6 px. A
+     * 45-degree stretch is one carriageway along its line (FX3, Jerus's eye
+     * check of 0.8.3): never a stack, its band filled in on the open plot
+     * between two steps, and a dash on every step.
      */
     private static void ways(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
@@ -1091,10 +1276,14 @@ public final class TileRaster {
         for (int pass = cas > 0 ? 0 : 1; pass < 2; pass++) {
             int in0 = pass == 0 ? 0 : cas;
             for (int i = 0; i < TilePainter.PLOTS; i++) {
-                if (!isHighway(p, i)) continue;
                 int x0 = (i % tile) * px, y0 = (i / tile) * px;
                 int c = pass == 0 ? HIGHWAY_CASE : ROAD[BuildingVisual.HIGHWAY];
                 if (!in.owned[i]) c = blend(c, VOID, UNOWNED_DIM);
+                if (!isHighway(p, i)) {
+                    // Open ground between two steps of a 45-degree stretch: the band the corners leave out (FX3).
+                    diagOpen(in, p, i, px, (width - 2 * in0) / 2.0, c, img);
+                    continue;
+                }
                 if (diagonal(in, i)) {
                     diagBand(img, w, i, px, in.marks[i], (width - 2 * in0) / 2.0, c);
                     continue;
@@ -1135,7 +1324,11 @@ public final class TileRaster {
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             int c = in.owned[i] ? CENTRE_LINE : blend(CENTRE_LINE, VOID, UNOWNED_DIM);
             if (diagonal(in, i)) {
-                if (((i % tile) + (i / tile)) % 2 == 0) diagBand(img, w, i, px, in.marks[i], 0.5, c);
+                // A dash on every step, over the middle 55% of its diagonal, as the straight highway has one a plot (FX3: the old every-other-plot rule gave a stretch, whose steps all share a parity, all or none).
+                if ((in.marks[i] & CityRuns.M_CORNER) == 0) {
+                    int code = (in.marks[i] >> CityRuns.M_DIAG_SHIFT) & 3;
+                    diagLine(img, w, i, px, code, 0.5 * px, 0.5 * px, 0.5, 0.275 * Math.sqrt(2) * px, c);
+                }
                 continue;
             }
             boolean ns = highwayAt(in, p, i, 0) || highwayAt(in, p, i, 2);
@@ -1250,21 +1443,39 @@ public final class TileRaster {
         return role == TilePainter.ARTERIAL || role == TilePainter.BOULEVARD;
     }
 
-    /** Whether the street at plot (x, y) is a signalled junction: itself an arterial or boulevard, with one across it on each axis, and not a roundabout. */
+    /**
+     * The plots in a run of streets through plot (x, y) along (dx, dy), itself
+     * counted: its neighbours each way while their role is a junction's
+     * (boulevards alone with `boulevards`; FX3, Jerus's eye check of 0.8.3). It
+     * reads at most one plot past the tile's edge (streetRoleAt() answers any
+     * x or y beyond with that one plot), so it stops at -1 and at TILE.
+     */
+    private static int junctionRun(TilePainter.Input in, TilePainter.Painted p, int x, int y, int dx, int dy, boolean boulevards) {
+        int tile = TilePainter.TILE, n = 1;
+        for (int s = -1; s <= 1; s += 2) {
+            int cx = x + s * dx, cy = y + s * dy;
+            while (cx >= -1 && cy >= -1 && cx <= tile && cy <= tile) {
+                byte role = streetRoleAt(in, p, cx, cy);
+                if (boulevards ? role != TilePainter.BOULEVARD : !junctionRole(role)) break;
+                n++;
+                cx += s * dx;
+                cy += s * dy;
+            }
+        }
+        return n;
+    }
+
+    /** Whether the street at plot (x, y) is a signalled junction: itself an arterial or boulevard, with a run of JUNCTION_RUN or more of them through it on each axis (a road two plots wide is one road), and not a roundabout. */
     private static boolean signalAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
         byte role = streetRoleAt(in, p, x, y);
         if (!junctionRole(role) || roundaboutAt(in, p, x, y)) return false;
-        boolean across = junctionRole(streetRoleAt(in, p, x - 1, y)) || junctionRole(streetRoleAt(in, p, x + 1, y));
-        boolean along = junctionRole(streetRoleAt(in, p, x, y - 1)) || junctionRole(streetRoleAt(in, p, x, y + 1));
-        return across && along;
+        return junctionRun(in, p, x, y, 1, 0, false) >= JUNCTION_RUN && junctionRun(in, p, x, y, 0, 1, false) >= JUNCTION_RUN;
     }
 
-    /** Whether the street at plot (x, y) is a roundabout: boulevards on both axes and itself a boulevard. */
+    /** Whether the street at plot (x, y) is a roundabout: itself a boulevard, with a run of JUNCTION_RUN or more boulevards through it on each axis. */
     private static boolean roundaboutAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
         if (streetRoleAt(in, p, x, y) != TilePainter.BOULEVARD) return false;
-        boolean across = streetRoleAt(in, p, x - 1, y) == TilePainter.BOULEVARD || streetRoleAt(in, p, x + 1, y) == TilePainter.BOULEVARD;
-        boolean along = streetRoleAt(in, p, x, y - 1) == TilePainter.BOULEVARD || streetRoleAt(in, p, x, y + 1) == TilePainter.BOULEVARD;
-        return across && along;
+        return junctionRun(in, p, x, y, 1, 0, true) >= JUNCTION_RUN && junctionRun(in, p, x, y, 0, 1, true) >= JUNCTION_RUN;
     }
 
     /** A street's surface across its plot at px pixels a plot: {its width, its offset from the plot's edge}. */
@@ -1504,14 +1715,22 @@ public final class TileRaster {
 
     /* ----- 5. a stack: highways cross ----- */
 
+    /**
+     * A stack where two straight highways cross: a highway plot with another
+     * beside it on both axes. A 45-degree stretch's plot is never a stack,
+     * nor does it count as the highway beside a straight one: its steps and
+     * corners have a neighbour on both axes by the staircase's shape, and were
+     * taken for crossings - Jerus's "staircase of separate dark blocks" (FX3,
+     * his eye check of 0.8.3).
+     */
     private static void stack(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
         int[] cs = crossSection(BuildingVisual.HIGHWAY, px);
         int width = cs[0], cas = cs[1], o = (px - width) / 2;
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!isHighway(p, i)) continue;
-            boolean ns = highwayAt(in, p, i, 0) || highwayAt(in, p, i, 2);
-            boolean ew = highwayAt(in, p, i, 1) || highwayAt(in, p, i, 3);
+            if (!isHighway(p, i) || diagonal(in, i)) continue;
+            boolean ns = straightHighwayAt(in, p, i, 0) || straightHighwayAt(in, p, i, 2);
+            boolean ew = straightHighwayAt(in, p, i, 1) || straightHighwayAt(in, p, i, 3);
             if (!ns || !ew) continue;
             int hx = i % tile, hy = i / tile;
             int x0 = hx * px, y0 = hy * px;
@@ -1569,6 +1788,13 @@ public final class TileRaster {
 
     /** The track's look on one plot that carries rail: its ballast bed, sleepers and rails (a 45-degree stretch's just a bed and one rail). */
     private static void drawTrackLook(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img) {
+        // The track beside it, north, east, south and west, read once: bit d for direction d.
+        int arms = (railAt(in, p, i, 0) ? 1 : 0) | (railAt(in, p, i, 1) ? 2 : 0) | (railAt(in, p, i, 2) ? 4 : 0) | (railAt(in, p, i, 3) ? 8 : 0);
+        drawTrackLook(in, p, i, px, img, arms);
+    }
+
+    /** ...with the track beside it given, bit d for direction d (a yard's head reads it from the runs: yardTrack()). */
+    private static void drawTrackLook(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int arms) {
         boolean doubled = (in.marks[i] & TilePainter.M_DOUBLE) != 0;
         int bed = bedWidth(px, doubled);
         if (diagonal(in, i)) {
@@ -1578,10 +1804,6 @@ public final class TileRaster {
             diagBand(img, TilePainter.TILE * px, i, px, in.marks[i], 0.5, steel);
             return;
         }
-        int x = i % TilePainter.TILE, y = i / TilePainter.TILE;
-        int x0 = x * px, y0 = y * px, w = TilePainter.TILE * px;
-        // The track beside it, north, east, south and west, read once: bit d for direction d.
-        int arms = (railAt(in, p, i, 0) ? 1 : 0) | (railAt(in, p, i, 1) ? 2 : 0) | (railAt(in, p, i, 2) ? 4 : 0) | (railAt(in, p, i, 3) ? 8 : 0);
         boolean ns = (arms & 5) != 0;
         boolean ew = (arms & 10) != 0;
         if (!ns && !ew) ew = true;

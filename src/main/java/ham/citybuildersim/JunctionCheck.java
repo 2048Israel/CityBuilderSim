@@ -46,6 +46,16 @@ import java.util.Arrays;
  *      4 px the tile rasters exactly as the same tile without the mark,
  *      along a row and down a column; and an arm's last plot still narrows
  *      (section 4) - Jerus's eye check of 0.8.2 (FX2).
+ *  10. (batch FX3, red until the fix) a 45-degree highway stretch laid as a
+ *      staircase rasters as one carriageway along its line: no deck on a step
+ *      and no slip beside it, nothing highway-coloured off the carriageway,
+ *      every pixel inside it road or centre line, and a centre line on the
+ *      steps;
+ *  11. (batch FX3, red until the fix) a road two plots wide is one road: two
+ *      arterials side by side have a zebra crossing and a junction box only
+ *      where a street crosses them, two boulevards side by side a roundabout
+ *      only where one crosses them; and three boulevards side by side, as his
+ *      city's are across a cell line.
  *
  * Numbering is the running order.
  *
@@ -157,6 +167,8 @@ public class JunctionCheck {
         roundaboutAcrossEdge();
         diamondAcrossEdge();
         rampMidHighway();
+        diagonalStretch();
+        twoPlotsWide();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -371,7 +383,10 @@ public class JunctionCheck {
         System.out.println("--- 7. the next tile draws its half of a roundabout whose centre is the tile's last column ---");
         int px = 8, centreX = T - 1, centreY = 10, w = T * px;
         TilePainter.Input next = owned();
-        streetColumn(next, 0, BOULEVARD);
+        // Its boulevard row runs on into this tile (FX3: until 0.8.4 the fixture laid a boulevard down this tile's first
+        // column instead, beside the west tile's: a boulevard two plots wide on the seam with no road crossing it, which
+        // 0.8.3 drew as a roundabout on every plot - the fault JunctionCheck 11 holds - and so passed here).
+        streetRow(next, centreY, BOULEVARD);
         // The tile west of this one holds the roundabout's centre on its last column:
         // its boulevard column and row reach this tile's beyond.
         for (int y = 0; y < T; y++) next.beyond[3 * T + y] = (byte) BOULEVARD; // west edge
@@ -442,6 +457,132 @@ public class JunctionCheck {
                 Arrays.equals(raster(colMarked, colMarkedP, 8), raster(colPlain, colPlainP, 8)));
         check("a mid-highway ramp down a column with no street beneath rasters as the plain highway at 4 px",
                 Arrays.equals(raster(colMarked, colMarkedP, 4), raster(colPlain, colPlainP, 4)));
+    }
+
+    /* ================= 10. a 45-degree highway stretch ================= */
+    static void diagonalStretch() {
+        System.out.println("--- 10. a 45-degree highway stretch rasters as one carriageway along its line (FX3) ---");
+        // The stretch starts where x + y is odd, as his does: its steps all share that parity (FX3: the centre line went on even plots alone).
+        int px = 8, x0 = 8, y0 = 9, steps = 12, w = T * px;
+        TilePainter.Input in = owned();
+        // Straight highway before the stretch (plot (x0, y0) is its start, step 0, unmarked) and after it (step 12 is (x0 + 12, y0 + 12)).
+        for (int x = 4; x <= x0; x++) in.fixed[y0 * T + x] = BuildingVisual.HIGHWAY;
+        for (int x = x0 + steps + 1; x <= 27; x++) in.fixed[(y0 + steps) * T + x] = BuildingVisual.HIGHWAY;
+        // The stretch south-east, as CityRuns.stretchInto() lays it: step k's plot and its corner, the plot before it up.
+        int diag = CityRuns.M_DIAG | (0 << CityRuns.M_DIAG_SHIFT);
+        for (int k = 1; k <= steps; k++) {
+            int step = (y0 + k) * T + x0 + k, corner = (y0 + k - 1) * T + x0 + k;
+            in.fixed[step] = BuildingVisual.HIGHWAY;
+            in.marks[step] = (byte) diag;
+            in.fixed[corner] = BuildingVisual.HIGHWAY;
+            in.marks[corner] = (byte) (diag | CityRuns.M_CORNER);
+        }
+        int[] img = raster(in, paint(in), px);
+
+        // The line runs through the steps' middles, (x0 + k + 0.5, y0 + k + 0.5) plots; a pixel's distance from it is |(u - cx) - (v - cy)| / sqrt 2.
+        double half = TileRaster.crossSection(BuildingVisual.HIGHWAY, px)[0] / 2.0;
+        int road = TileRaster.ROAD[BuildingVisual.HIGHWAY];
+        double cx2 = (x0 + 2 + 0.5) * px, cy2 = (y0 + 2 + 0.5) * px, span = (11 - 2) * px;
+        int off = 0, offFirstX = -1, offFirstY = -1, inside = 0, broken = 0, brokenFirstX = -1, brokenFirstY = -1;
+        // The plots of steps 2..11 and their 8 neighbours: plots x0 + 1 .. x0 + 12 on both axes.
+        for (int plotY = y0 + 1; plotY <= y0 + steps; plotY++) {
+            for (int plotX = x0 + 1; plotX <= x0 + steps; plotX++) {
+                for (int dy = 0; dy < px; dy++) {
+                    for (int dx = 0; dx < px; dx++) {
+                        int X = plotX * px + dx, Y = plotY * px + dy, c = img[Y * w + X];
+                        double u = X + 0.5, v = Y + 0.5, d = Math.abs((u - cx2) - (v - cy2)) / Math.sqrt(2), along = ((u - cx2) + (v - cy2)) / 2;
+                        if (d > half + 1.5 && (c == TileRaster.HIGHWAY_CASE || c == road)) {
+                            off++;
+                            if (offFirstX < 0) { offFirstX = X; offFirstY = Y; }
+                        }
+                        if (d <= half - 1.5 && along >= 0 && along <= span) {
+                            inside++;
+                            if (c != road && c != TileRaster.CENTRE_LINE) {
+                                broken++;
+                                if (brokenFirstX < 0) { brokenFirstX = X; brokenFirstY = Y; }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        check("no highway pixel lies off the carriageway: none farther than half + 1.5 px from the line is HIGHWAY_CASE or road", off == 0);
+        System.out.printf("  the carriageway is %d px wide (half %.1f); %d pixels farther than %.1f px from the line are highway-coloured%s%n",
+                TileRaster.crossSection(BuildingVisual.HIGHWAY, px)[0], half, off, half + 1.5,
+                off == 0 ? "" : ", the first at pixel (" + offFirstX + ", " + offFirstY + ")");
+        check("one carriageway: every pixel within half - 1.5 px of the line, between steps 2 and 11, is road or centre line", broken == 0 && inside > 0);
+        System.out.printf("  %d pixels within %.1f px of the line between steps 2 and 11, %d of them neither road nor centre line%s%n",
+                inside, half - 1.5, broken, broken == 0 ? "" : ", the first at pixel (" + brokenFirstX + ", " + brokenFirstY + ")");
+        int centred = 0;
+        for (int k = 2; k <= 11; k++) if (hasColour(img, w, x0 + k, y0 + k, px, TileRaster.CENTRE_LINE)) centred++;
+        check("its centre line: CENTRE_LINE pixels lie on at least 4 of steps 2..11's plots", centred >= 4);
+        System.out.println("  CENTRE_LINE on " + centred + " of the 10 step plots");
+    }
+
+    /** Whether any plot (x, y) with x in x0..x1 and y in y0..y1 has a pixel of one of the colours. */
+    static boolean anyPlotHas(int[] img, int w, int x0, int x1, int y0, int y1, int px, int... colours) {
+        for (int y = y0; y <= y1; y++)
+            for (int x = x0; x <= x1; x++)
+                for (int c : colours) if (hasColour(img, w, x, y, px, c)) return true;
+        return false;
+    }
+
+    /* ================= 11. a road two plots wide ================= */
+    static void twoPlotsWide() {
+        System.out.println("--- 11. a road two plots wide is one road: a crossing street gives the junction, nothing else does (FX3) ---");
+        int px = 8, w = T * px;
+        // Two plans' arterials side by side (a district's edge): columns 10 and 11, crossed by a row.
+        TilePainter.Input arterials = owned();
+        streetColumn(arterials, 10, ARTERIAL);
+        streetColumn(arterials, 11, ARTERIAL);
+        streetRow(arterials, 16, ARTERIAL);
+        int[] imgA = raster(arterials, paint(arterials), px);
+        check("an arterial two plots wide has no ZEBRA or JUNCTION_BOX on its plots away from the crossing street",
+                !anyPlotHas(imgA, w, 10, 11, 2, 12, px, TileRaster.ZEBRA, TileRaster.JUNCTION_BOX)
+                        && !anyPlotHas(imgA, w, 10, 11, 20, 29, px, TileRaster.ZEBRA, TileRaster.JUNCTION_BOX));
+        int boxed = 0, zebras = 0;
+        for (int y = 2; y <= 29; y++) {
+            if (y > 12 && y < 20) continue;
+            for (int x = 10; x <= 11; x++) {
+                if (hasColour(imgA, w, x, y, px, TileRaster.JUNCTION_BOX)) boxed++;
+                if (hasColour(imgA, w, x, y, px, TileRaster.ZEBRA)) zebras++;
+            }
+        }
+        System.out.println("  of the 42 plots of columns 10 and 11 in rows 2..12 and 20..29, " + boxed + " hold JUNCTION_BOX pixels and " + zebras + " hold ZEBRA pixels");
+        check("...the crossing keeps its junction: JUNCTION_BOX pixels on plots (10, 16) and (11, 16)",
+                hasColour(imgA, w, 10, 16, px, TileRaster.JUNCTION_BOX) && hasColour(imgA, w, 11, 16, px, TileRaster.JUNCTION_BOX));
+
+        // The same along a boulevard two plots wide: rows 10 and 11, crossed by a column.
+        TilePainter.Input boulevards = owned();
+        streetRow(boulevards, 10, BOULEVARD);
+        streetRow(boulevards, 11, BOULEVARD);
+        streetColumn(boulevards, 16, BOULEVARD);
+        int[] imgB = raster(boulevards, paint(boulevards), px);
+        check("a boulevard two plots wide has no ISLAND on its plots away from the crossing street",
+                !anyPlotHas(imgB, w, 2, 12, 10, 11, px, TileRaster.ISLAND)
+                        && !anyPlotHas(imgB, w, 20, 29, 10, 11, px, TileRaster.ISLAND));
+        int islands = 0;
+        for (int y = 10; y <= 11; y++)
+            for (int x = 2; x <= 29; x++) {
+                if (x > 12 && x < 20) continue;
+                if (hasColour(imgB, w, x, y, px, TileRaster.ISLAND)) islands++;
+            }
+        System.out.println("  of the 42 plots of rows 10 and 11 in columns 2..12 and 20..29, " + islands + " hold ISLAND pixels");
+        check("...the crossing keeps its roundabout: ISLAND pixels within the plots (15..17, 9..12)",
+                anyPlotHas(imgB, w, 15, 17, 9, 12, px, TileRaster.ISLAND));
+
+        // Three wide, as his city's boulevards are across a cell line: a cell's boulevard two deep beside the next cell's road row.
+        TilePainter.Input three = owned();
+        streetRow(three, 10, BOULEVARD);
+        streetRow(three, 11, BOULEVARD);
+        streetRow(three, 12, BOULEVARD);
+        streetColumn(three, 16, BOULEVARD);
+        int[] imgC = raster(three, paint(three), px);
+        check("a boulevard three plots wide has no ISLAND on its plots away from the crossing street",
+                !anyPlotHas(imgC, w, 2, 12, 10, 12, px, TileRaster.ISLAND)
+                        && !anyPlotHas(imgC, w, 20, 29, 10, 12, px, TileRaster.ISLAND));
+        check("...the crossing keeps its roundabout: ISLAND pixels within the plots (15..17, 9..13)",
+                anyPlotHas(imgC, w, 15, 17, 9, 13, px, TileRaster.ISLAND));
     }
 
 }
