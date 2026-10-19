@@ -306,51 +306,51 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L250 fixture: ...a building the payback does not hold (0.7.104: an essential service, or one the treasury does
   - L261 the pass's first order is the card
 - **L287 3. a city on it for decades**
-  - L393 fixture: it ran a pass every month and placed orders for at least three services
-  - L395 fixture: it borrowed, on the funding page's bond, at least once
-  - L396 after every pass every service it keeps is at the margin's target, has works under way, or the
-  - L398 ...and every reason it gave was true: no ground for one, a bond for one past the limit, one that would not
-  - L404 it builds nothing outside its remit (
-  - L407 fixture: it bought ground for its orders
-  - L412 ...and bare ground only: no field bought for its ore (
-  - L420 ...nor spends the cash under a month's tax, the reserve (
-  - L421 fixture: it ordered a building the payback holds, in the decades or in the copy given room
-- **L669 4. a saved city plays on as the one it was saved from**
-  - L673 fixture: the decades' city, auto-build on, saved
-  - L678 it loads on, at the same margin, limit and Build from cash anyway, with the same log, totals and holds
-  - L683 ...what a resident pays the city, as the payback reads it (0.7.104; the revenue it read the budget against until
-  - L685 ...the debt it reads the limit against (0.7.81)
-  - L686 ...and the year of GDP it sets the debt against
-  - L726 fixture: ...and it placed orders in those months (
-  - L741 its state through the save's own Gson: the same settings, log and totals, the ground it bought among them,
-  - L770 fixture: the town with no ground free, auto-build on, saved and loaded on, with the same ground
-  - L800 fixture: ...and it bought ground in those months (
-- **L807 5. what holds it back, caused**
-  - L824 fixture: the town short of road, its cash at a month's tax
-  - L826 a debt limit of 0%: it holds and borrows nothing
-  - L880 a first police station is a service it keeps where there is none, however far past the need one goes
-  - L919 ...and the inbox says it would not pay back, with its figure: what each resident it would cover pays the city
-  - L952 ...but only from the cash: with the cash at a month's tax and the limit at its most, the first school is held
-  - L1037 fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card one
-  - L1060 ...and its log says the first was more than the money would pay for
-  - L1096 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
-  - L1101 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
-  - L1134 fixture: the town short of a service, with no ground free
-  - L1149 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
-  - L1155 ...its log's order carries the ground: its square feet, price and places
-  - L1174 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
-  - L1175 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
-  - L1198 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
-  - L1232 over the limit it buys no ground and places nothing, and borrows nothing
-  - L1272 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
-  - L1274 it buys none of them - no field for its ore - and holds the order for want of ground
-  - L1277 ...and the inbox says so, naming the land office
-  - L1280 ...settled the month it is switched off
-  - L1348 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
-  - L1402 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
-  - L1427 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
-  - L1432 ...and the inbox says the city is over the limit, and names Build from cash anyway
-  - L1463 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
+  - L382 fixture: it ran a pass every month and placed orders for at least three services
+  - L384 fixture: it borrowed, on the funding page's bond, at least once
+  - L385 after every pass every service it keeps is at the margin's target, has works under way, or the
+  - L387 ...and every reason it gave was true: no ground for one, a bond for one past the limit, one that would not
+  - L393 it builds nothing outside its remit (
+  - L396 fixture: it bought ground for its orders
+  - L401 ...and bare ground only: no field bought for its ore (
+  - L409 ...nor spends the cash under a month's tax, the reserve (
+  - L410 fixture: it ordered a building the payback holds, in the decades or in the copy given room
+- **L658 4. a saved city plays on as the one it was saved from**
+  - L662 fixture: the decades' city, auto-build on, saved
+  - L667 it loads on, at the same margin, limit and Build from cash anyway, with the same log, totals and holds
+  - L672 ...what a resident pays the city, as the payback reads it (0.7.104; the revenue it read the budget against until
+  - L674 ...the debt it reads the limit against (0.7.81)
+  - L675 ...and the year of GDP it sets the debt against
+  - L715 fixture: ...and it placed orders in those months (
+  - L730 its state through the save's own Gson: the same settings, log and totals, the ground it bought among them,
+  - L759 fixture: the town with no ground free, auto-build on, saved and loaded on, with the same ground
+  - L789 fixture: ...and it bought ground in those months (
+- **L796 5. what holds it back, caused**
+  - L813 fixture: the town short of road, its cash at a month's tax
+  - L815 a debt limit of 0%: it holds and borrows nothing
+  - L869 a first police station is a service it keeps where there is none, however far past the need one goes
+  - L908 ...and the inbox says it would not pay back, with its figure: what each resident it would cover pays the city
+  - L941 ...but only from the cash: with the cash at a month's tax and the limit at its most, the first school is held
+  - L1026 fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card one
+  - L1049 ...and its log says the first was more than the money would pay for
+  - L1085 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
+  - L1090 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
+  - L1123 fixture: the town short of a service, with no ground free
+  - L1138 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
+  - L1144 ...its log's order carries the ground: its square feet, price and places
+  - L1163 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
+  - L1164 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
+  - L1187 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
+  - L1221 over the limit it buys no ground and places nothing, and borrows nothing
+  - L1261 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
+  - L1263 it buys none of them - no field for its ore - and holds the order for want of ground
+  - L1266 ...and the inbox says so, naming the land office
+  - L1269 ...settled the month it is switched off
+  - L1337 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
+  - L1391 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
+  - L1416 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
+  - L1421 ...and the inbox says the city is over the limit, and names Build from cash anyway
+  - L1452 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
 
 ## BankCheck.java - 513 labelled assertions
 
@@ -3282,9 +3282,9 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L470 fixture: a town, its own few cars' old copper: one more refinery weighed on it and the market's scrap
   - L480 3,000 t of old copper arisen, no refinery standing: one more weighs it at PAY_SHARE of scrap's export price and the rest
   - L485 ...with one standing it takes its 4,400 t first: one more is weighed on what is left past them, the last on what
-- **L513 7. the Wire & Cable Works weighed with its insulation and its freight; Manufacturing's older rows as they were**
+- **L513 7. the Wire & Cable Works weighed with its insulation and its freight; Manufacturing's older rows with their legs, as every maker**
   - L526 the wire works' estimate: the maker's, less its insulation (its consumables) at the exchange factor and its freight, to the
-  - L530 ...and a Fabrication Shop's, which buys no consumables, the maker's estimate to the bit
+  - L532 ...and a Fabrication Shop's, which buys no consumables, the maker's estimate less its city legs, to the bit
 
 ## CreditCheck.java - 263 labelled assertions
 
