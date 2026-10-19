@@ -6851,8 +6851,26 @@ public final class GameVersion {
      *     own first leg would graze land (SeaRoutes.route()).
      *   - Harnesses: LandlordPortCheck (new); BuildAdviceCheck, PortCheck,
      *     SaveFileCheck; the playtests' "Ports division" line.
+     *
+     * 0.8.8 (2026-10-19) - FR5, TRUCKS ON THE MAP. Haulage's loads drawn on
+     * the highways and the access roads at the near view, with a Settings
+     * toggle, on by default (Jerus, 2026-10-12, D21;
+     * docs/studies/spec-freight-and-infrastructure.md 4.7; FR5-notes.md).
+     * Slices by Sonnet 5.5 subagents, reviewed by Claude. The map's alone:
+     * the playtest's trace is byte-identical. Save format unchanged: new
+     * keys only.
+     *   - TruckSchedule, a pure function of time as the trains' is: the
+     *     month's loads by import, export and home (Freight's new read-only
+     *     tally of the city-leg truck tonnes, saved) at Haulage's carried
+     *     share, one truck drawn per N loads past MOST_A_MONTH.
+     *   - The routes (CityMap.truckRoutes(), accessRoutesIn()): from the
+     *     highways' world line along the highways, and each drawn district's
+     *     access roads from the street grid to their gates.
+     *   - The setting (GamePrefs.isTrucksOnMap()): kept with the game, never
+     *     a save; the legend's line says what a truck stands for.
+     *   - Harnesses: TruckCheck, TruckRouteCheck (new).
      */
-    public static final String VERSION = "0.8.7";
+    public static final String VERSION = "0.8.8";
 
     /**
      * The save shape.

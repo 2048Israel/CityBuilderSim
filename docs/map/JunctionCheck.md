@@ -66,7 +66,7 @@
 
 **Uses:** [DistrictPlan](DistrictPlan.md) (117), [TilePainter](TilePainter.md) (76), [TileRaster](TileRaster.md) (75), [CityRuns](CityRuns.md) (52), [BuildingVisual](BuildingVisual.md) (38), [InterchangeGround](InterchangeGround.md) (20), [PlanCheck](PlanCheck.md) (5), [World](World.md) (2), [BuildingCatalog](BuildingCatalog.md) (1), [MainLineCheck](MainLineCheck.md) (1), [Founding](Founding.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (1):** [MapCheck](MapCheck.md)
+**Used by (2):** [MapCheck](MapCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
 
 ## Sections
 

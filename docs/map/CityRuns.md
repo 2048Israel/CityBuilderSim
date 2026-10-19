@@ -1,4 +1,4 @@
-# CityRuns.java - 2,770 lines · 133 methods · 37 constants · model
+# CityRuns.java - 2,807 lines · 136 methods · 37 constants · model
 
 `ham/citybuildersim/CityRuns.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -66,7 +66,7 @@
 
 **Uses:** [World](World.md) (41), [CityMap](CityMap.md) (16), [InterchangeGround](InterchangeGround.md) (12), [TilePainter](TilePainter.md) (6), [DistrictPlan](DistrictPlan.md) (4), [BuildingVisual](BuildingVisual.md) (2)
 
-**Used by (14):** [CityMap](CityMap.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [InterchangeGround](InterchangeGround.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [RailDrawCheck](RailDrawCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md)
+**Used by (15):** [CityMap](CityMap.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [InterchangeGround](InterchangeGround.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [RailDrawCheck](RailDrawCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md), [TruckRouteCheck](TruckRouteCheck.md)
 
 ## Sections
 
@@ -85,9 +85,9 @@
 | 1898 | · a further yard, and its branch |
 | 2079 | THE MAIN LINE (0.8.1, batch FR0; spec-freight 4.2, D14) |
 | 2307 | · the trains' way (0.8.2, batch FR1; spec-freight 4.4) |
-| 2403 | THE MONTH: TO THE MODEL'S COUNTS |
-| 2456 | READING THEM: A BOX OF PLOTS |
-| 2655 | THE SIDECAR |
+| 2440 | THE MONTH: TO THE MODEL'S COUNTS |
+| 2493 | READING THEM: A BOX OF PLOTS |
+| 2692 | THE SIDECAR |
 
 ## Constants
 
@@ -198,7 +198,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 106 | 2665 | **type** `public final class CityRuns` | The city's highways and railway as runs on corridors: each laid month by month from its hub's lines out, straight by preference, never moved, with the railway's yards on its track nearest the mines - what the city map... |
+| 106 | 2702 | **type** `public final class CityRuns` | The city's highways and railway as runs on corridors: each laid month by month from its hub's lines out, straight by preference, never moved, with the railway's yards on its track nearest the mines - what the city map... |
 
 ### THE DIALS (lines 108-182)
 
@@ -381,41 +381,44 @@
 | 2211 | 45 | `public List<int[]> mainLine()` | The main line as ranges of steps, each {arm, from, to} inclusive (step 0 an arm's start plot). |
 | 2262 | 44 | `private static long mainInto(Arm a, int from, int to, long x0, long y0, int w, int h, byte[] marks, boolean doubleMain)` | Marks one main-line range's plots inside the box with M_MAIN, and with M_DOUBLE where doubleMain; returns a hash of the range when any of it lies in the box, else 0. |
 
-### the trains' way (0.8.2, batch FR1; spec-freight 4.4) (lines 2307-2402)
+### the trains' way (0.8.2, batch FR1; spec-freight 4.4) (lines 2307-2439)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 2324 | 5 | `public double[][] wayTo(long[] yard)` | The railway's way from its main arm's end (mainArm(): the arm the railway's world line leaves from, else the gate arm) to a yard, as points in plots, each a plot's middle, at the ends and every turn: in along the main... |
-| 2336 | 39 | `public double[][] wayToPlot(long px, long py)` | ...to a plot of the net (FR7 slice 3): the way wayTo() finds to a yard's anchor, to any plot - the end of a siding, where a bulk unit train runs straight in from the world line without a yard. |
-| 2377 | 10 | `static void armPoints(Arm a, int from, int to, List<long[]> out)` | Adds to out arm a's plots at steps from and to (from <= to) and at every turn between, in the order of its steps. |
-| 2389 | 13 | `static long[] plotAt(Arm a, int k)` | The plot at step k of arm a: its start at 0, its end at a.steps and past. |
+| 2336 | 3 | `public double[][] wayToPlot(long px, long py)` | ...to a plot of the net (FR7 slice 3): the way wayTo() finds to a yard's anchor, to any plot - the end of a siding, where a bulk unit train runs straight in from the world line without a yard. |
+| 2347 | 38 | `public double[][] wayOn(Net n, int fromArm, long px, long py)` | ...on any net, from the end of arm fromArm (FR5, slice B: the trucks' highway way is this walk on the highways net, from the arm its world line leaves from): wayToPlot() is wayOn(rail, mainArm(), px, py) exactly. |
+| 2393 | 3 | `public double[][] highwayWayTo(int fromArm, long px, long py)` | The highways' way from the end of arm fromArm (the arm their world line leaves the city's ground from) to a plot of the highways net, as wayToPlot() finds the railway's (FR5, slice B: the trucks' routes): wayOn(highwa... |
+| 2403 | 9 | `public List<long[]> highwayRamps()` | The highways' ramps at their arms' ends (fill() marks one at each arm that has steps): {x, y, the arm's index} in plots, in the arms' order; none while the highways reach no street (highwaysReach()). |
+| 2414 | 10 | `static void armPoints(Arm a, int from, int to, List<long[]> out)` | Adds to out arm a's plots at steps from and to (from <= to) and at every turn between, in the order of its steps. |
+| 2426 | 13 | `static long[] plotAt(Arm a, int k)` | The plot at step k of arm a: its start at 0, its end at a.steps and past. |
 
-### THE MONTH: TO THE MODEL'S COUNTS (lines 2403-2455)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2416 | 5 | `public boolean layTo(long highwayPlots, long trackPlots, int yardCount, int yardW, int yardH, Ground g, long fx, long fy, long ...` | Lays the runs to the model's plots of highway and of track, and its yards (w x h each), over the ground: the highways grown, or taken back from their newest end, from the founding site (fx, fy); the railway laid from ... |
-| 2428 | 14 | `public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, int spurs, Ground g, long fx, long fy, long rx,...` | ...with a yard of its own size each (`yardSizes`, {w, h} in the order the map lays them: Rail Terminals, then Rail Depots), `spurs` Rail Spurs, each a siding into a bulk works, and the bulk works' boxes `works`, each ... |
-| 2444 | 11 | `long signature()` | A hash of everything laid. |
-
-### READING THEM: A BOX OF PLOTS (lines 2456-2654)
+### THE MONTH: TO THE MODEL'S COUNTS (lines 2440-2492)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2470 | 73 | `public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver)` | What the runs lay on the w x h plots from world plot (x0, y0), row by row: into fixed, F_HIGHWAY, F_RAIL, F_RAIL_OVER (the railway over a highway) and, `yardsOver`, F_YARD over every plot of a yard (a plan's ground: n... |
-| 2551 | 32 | `public long frameHash(long x0, long y0, int w, int h)` | A hash of what the runs lay on the w x h plots from (x0, y0) - each stretch's steps there, the hub, the arms' ends (their ramps), the yards - without drawing them: what a district's plan is kept against (CityMap.ownSt... |
-| 2585 | 14 | `static long[] range(Arm a, int s, long x0, long y0, int w, int h)` | The steps of stretch s of arm a whose plots (or corners) may fall in the box: {first, last}; first > last for none. |
-| 2600 | 6 | `private static void put(byte[] fixed, int w, long x, long y, byte code)` |  |
-| 2608 | 34 | `private static long stretchInto(Net n, Arm a, int s, long x0, long y0, int w, int h, byte[] fixed, byte[] marks, byte code)` | One stretch's plots inside the box, into fixed and marks; a hash of its part there. |
-| 2644 | 3 | `static int diagCode(int h)` | A 45-degree heading's two bits: south-east 0, south-west 1, north-west 2, north-east 3. |
-| 2649 | 5 | `public byte at(long x, long y)` | What the runs carry at world plot (x, y): F_YARD, F_RAIL_OVER, F_HIGHWAY, F_RAIL, or 0 - no highway while the net reaches no street (highwaysReach(), FX2). |
+| 2453 | 5 | `public boolean layTo(long highwayPlots, long trackPlots, int yardCount, int yardW, int yardH, Ground g, long fx, long fy, long ...` | Lays the runs to the model's plots of highway and of track, and its yards (w x h each), over the ground: the highways grown, or taken back from their newest end, from the founding site (fx, fy); the railway laid from ... |
+| 2465 | 14 | `public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, int spurs, Ground g, long fx, long fy, long rx,...` | ...with a yard of its own size each (`yardSizes`, {w, h} in the order the map lays them: Rail Terminals, then Rail Depots), `spurs` Rail Spurs, each a siding into a bulk works, and the bulk works' boxes `works`, each ... |
+| 2481 | 11 | `long signature()` | A hash of everything laid. |
 
-### THE SIDECAR (lines 2655-2770)
+### READING THEM: A BOX OF PLOTS (lines 2493-2691)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2660 | 3 | `public int runs()` | The sidecar's count of runs: the arms of both nets, and one for the yards (0: none laid). |
-| 2665 | 31 | `void write(DataOutputStream out) throws IOException` | Writes the runs after their count (CityMap's FORMAT 5): each net's hub, corridors, arms stretch by stretch and interchanges; the yards; what was short. |
-| 2698 | 50 | `static CityRuns read(DataInputStream in) throws IOException` | The runs write() wrote, read back; null when they do not add up. |
-| 2750 | 20 | `public boolean same(CityRuns o)` | Whether two cities' runs are the same: the gateway, each net's hub, plots, corridors and arms stretch for stretch, and the yards. |
+| 2507 | 73 | `public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver)` | What the runs lay on the w x h plots from world plot (x0, y0), row by row: into fixed, F_HIGHWAY, F_RAIL, F_RAIL_OVER (the railway over a highway) and, `yardsOver`, F_YARD over every plot of a yard (a plan's ground: n... |
+| 2588 | 32 | `public long frameHash(long x0, long y0, int w, int h)` | A hash of what the runs lay on the w x h plots from (x0, y0) - each stretch's steps there, the hub, the arms' ends (their ramps), the yards - without drawing them: what a district's plan is kept against (CityMap.ownSt... |
+| 2622 | 14 | `static long[] range(Arm a, int s, long x0, long y0, int w, int h)` | The steps of stretch s of arm a whose plots (or corners) may fall in the box: {first, last}; first > last for none. |
+| 2637 | 6 | `private static void put(byte[] fixed, int w, long x, long y, byte code)` |  |
+| 2645 | 34 | `private static long stretchInto(Net n, Arm a, int s, long x0, long y0, int w, int h, byte[] fixed, byte[] marks, byte code)` | One stretch's plots inside the box, into fixed and marks; a hash of its part there. |
+| 2681 | 3 | `static int diagCode(int h)` | A 45-degree heading's two bits: south-east 0, south-west 1, north-west 2, north-east 3. |
+| 2686 | 5 | `public byte at(long x, long y)` | What the runs carry at world plot (x, y): F_YARD, F_RAIL_OVER, F_HIGHWAY, F_RAIL, or 0 - no highway while the net reaches no street (highwaysReach(), FX2). |
+
+### THE SIDECAR (lines 2692-2807)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2697 | 3 | `public int runs()` | The sidecar's count of runs: the arms of both nets, and one for the yards (0: none laid). |
+| 2702 | 31 | `void write(DataOutputStream out) throws IOException` | Writes the runs after their count (CityMap's FORMAT 5): each net's hub, corridors, arms stretch by stretch and interchanges; the yards; what was short. |
+| 2735 | 50 | `static CityRuns read(DataInputStream in) throws IOException` | The runs write() wrote, read back; null when they do not add up. |
+| 2787 | 20 | `public boolean same(CityRuns o)` | Whether two cities' runs are the same: the gateway, each net's hub, plots, corridors and arms stretch for stretch, and the yards. |
 

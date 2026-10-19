@@ -42,7 +42,7 @@
 
 **Uses:** [World](World.md) (4), [BoatSchedule](BoatSchedule.md) (3), [BuildingVisual](BuildingVisual.md) (1), [Ports](Ports.md) (1)
 
-**Used by (4):** [CityMap](CityMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [RailDrawCheck](RailDrawCheck.md)
+**Used by (5):** [CityMap](CityMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [RailDrawCheck](RailDrawCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
 
 ## Sections
 

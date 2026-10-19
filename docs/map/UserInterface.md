@@ -1,4 +1,4 @@
-# UserInterface.java - 6,225 lines · 142 methods · 42 constants · interface
+# UserInterface.java - 6,238 lines · 142 methods · 42 constants · interface
 
 `ham/citybuildersim/ui/UserInterface.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -60,30 +60,30 @@
 | 3729 | A CONFIRMATION, WITH THE MONEY IN IT (0.7.22) |
 | 3799 | EVERY TOOLTIP, DRESSED ONCE (0.7.20) |
 | 3842 | SETTINGS. |
-| 3956 | THE MAIN SCREEN IS GONE, AND THAT IS THE POINT. |
-| 3979 | ECONOMY IS GONE, AND IT SPLIT IN TWO. |
-| 3996 | THE SCROLLER |
-| 4067 | · WHAT THE HARNESS READS. BuildMenuCheck sits in the model package and |
-| 4091 | SIMULATE MULTIPLE MONTHS |
-| 4202 | · · headlines |
-| 4218 | · · deltas |
-| 4268 | · · land |
-| 4276 | · · buildings |
-| 4292 | · · demolitions |
-| 4316 | · · health |
-| 4360 | · · households |
-| 4520 | THE FRAME FOLDS AWAY (0.7.24) |
-| 4729 | CONSTRUCTION PANEL |
-| 5065 | THE RAIL |
-| 5344 | THE RAIL GOES TO THE TOP OF ITS SECTION, NOT TO WHERE YOU LEFT OFF |
-| 5528 | THE INBOX |
-| 5568 | · · what an urgent notice gets |
-| 5578 | · · the list |
-| 5625 | · the envelope |
-| 5826 | TOASTS (0.7.20) |
-| 5909 | TIME, AND WHAT THE MONTH IS WORTH |
-| 6061 | THE CHART OVER THE WHOLE WINDOW (0.7.23) |
-| 6193 | TWELVE PIPS, AND ONE OF THEM MOVED. |
+| 3969 | THE MAIN SCREEN IS GONE, AND THAT IS THE POINT. |
+| 3992 | ECONOMY IS GONE, AND IT SPLIT IN TWO. |
+| 4009 | THE SCROLLER |
+| 4080 | · WHAT THE HARNESS READS. BuildMenuCheck sits in the model package and |
+| 4104 | SIMULATE MULTIPLE MONTHS |
+| 4215 | · · headlines |
+| 4231 | · · deltas |
+| 4281 | · · land |
+| 4289 | · · buildings |
+| 4305 | · · demolitions |
+| 4329 | · · health |
+| 4373 | · · households |
+| 4533 | THE FRAME FOLDS AWAY (0.7.24) |
+| 4742 | CONSTRUCTION PANEL |
+| 5078 | THE RAIL |
+| 5357 | THE RAIL GOES TO THE TOP OF ITS SECTION, NOT TO WHERE YOU LEFT OFF |
+| 5541 | THE INBOX |
+| 5581 | · · what an urgent notice gets |
+| 5591 | · · the list |
+| 5638 | · the envelope |
+| 5839 | TOASTS (0.7.20) |
+| 5922 | TIME, AND WHAT THE MONTH IS WORTH |
+| 6074 | THE CHART OVER THE WHOLE WINDOW (0.7.23) |
+| 6206 | TWELVE PIPS, AND ONE OF THEM MOVED. |
 
 ## Constants
 
@@ -120,17 +120,17 @@
 | 3313 | `UserInterface.CITY_CARD` | `250` | A city card's width, as the mockups draw it. |
 | 3362 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
 | 3819 | `UserInterface.TIP_WIDTH` | `420` | The width a tooltip's text wraps at, unless it asked for its own. |
-| 4006 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
-| 4682 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
-| 4940 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
-| 5085 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
-| 5088 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
-| 5089 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
-| 5092 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
-| 5552 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
-| 5849 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
-| 5852 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
-| 5855 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
+| 4019 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
+| 4695 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
+| 4953 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
+| 5098 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
+| 5101 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
+| 5102 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
+| 5105 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
+| 5565 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
+| 5862 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
+| 5865 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
+| 5868 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
 
 ## Fields (state)
 
@@ -218,24 +218,24 @@
 | 2986 | `private Runnable placeMenu` | How the menu's column is placed for the window's height; run again when it changes. |
 | 3071 | `private final java.util.Map<Integer, KnownSave> knownSaves` |  |
 | 3654 | `GamePrefs prefs` | How the player likes the window. |
-| 4552 | `private Region needsChipNode` | The chip, kept so a click outside the drawer can repaint it without rebuilding the header under the pointer. |
-| 4553 | `private Runnable restyleNeedsChip` |  |
-| 4561 | `private HBox drawerBarBox` | The drawer's own bar: the pin and the close, refilled as the pin changes. |
-| 5448 | `private boolean railJump` | Set for exactly one clearMenu, by goHome(). |
-| 5555 | `private boolean inboxOpen` | Whether the list is dropped down. |
-| 5558 | `private String inboxExpanded` | Which notice's body is unfolded, by key. |
-| 5858 | `private final java.util.Set<String> toasted` | The notices already toasted, as key@raised. |
-| 6077 | `private javafx.scene.Node chartFull` | The chart's pane while it has the window, its clock line, and what closes it; null otherwise. |
-| 6078 | `private Label chartFullClock` |  |
-| 6079 | `private java.util.function.Consumer<Boolean> chartFullLeave` |  |
-| 6082 | `private String chartFullOwner` | The screen that laid the pane (a clearMenu() name): its own redraws keep it, any other screen closes it (0.7.61: City History's chart, the land office's map). |
-| 6085 | `private MapView panKeys` | The map W, A, S and D pan while it is over the window (0.7.135, batch E9): MapView's expand() sets it, its collapse() clears it. |
+| 4565 | `private Region needsChipNode` | The chip, kept so a click outside the drawer can repaint it without rebuilding the header under the pointer. |
+| 4566 | `private Runnable restyleNeedsChip` |  |
+| 4574 | `private HBox drawerBarBox` | The drawer's own bar: the pin and the close, refilled as the pin changes. |
+| 5461 | `private boolean railJump` | Set for exactly one clearMenu, by goHome(). |
+| 5568 | `private boolean inboxOpen` | Whether the list is dropped down. |
+| 5571 | `private String inboxExpanded` | Which notice's body is unfolded, by key. |
+| 5871 | `private final java.util.Set<String> toasted` | The notices already toasted, as key@raised. |
+| 6090 | `private javafx.scene.Node chartFull` | The chart's pane while it has the window, its clock line, and what closes it; null otherwise. |
+| 6091 | `private Label chartFullClock` |  |
+| 6092 | `private java.util.function.Consumer<Boolean> chartFullLeave` |  |
+| 6095 | `private String chartFullOwner` | The screen that laid the pane (a clearMenu() name): its own redraws keep it, any other screen closes it (0.7.61: City History's chart, the land office's map). |
+| 6098 | `private MapView panKeys` | The map W, A, S and D pan while it is over the window (0.7.135, batch E9): MapView's expand() sets it, its collapse() clears it. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 6173 | **type** `public class UserInterface extends Application` | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox - the rail down the left, the City overview's drawer and ... |
+| 53 | 6186 | **type** `public class UserInterface extends Application` | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox - the rail down the left, the City overview's drawer and ... |
 
 ### THE SCREENS, one class each since 2026-09-18, in the order the rail (lines 57-79)
 
@@ -385,141 +385,141 @@
 | 3821 | 13 | `private void dressTooltips()` |  |
 | 3836 | 5 | `private static void hideTooltips()` | Every tooltip showing, put away - so one is not left hanging over the menu Esc opens. |
 
-### SETTINGS. (lines 3842-3955)
+### SETTINGS. (lines 3842-3968)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3850 | 65 | `private void showSettingsMenu()` |  |
-| 3926 | 29 | `private VBox toggleRow(String label, boolean on, String what, Runnable flip)` | A setting: what it is, what it does, and a switch that says which way it is set without having to read the word next to it. |
+| 3850 | 78 | `private void showSettingsMenu()` |  |
+| 3939 | 29 | `private VBox toggleRow(String label, boolean on, String what, Runnable flip)` | A setting: what it is, what it does, and a switch that says which way it is set without having to read the word next to it. |
 
-### THE MAIN SCREEN IS GONE, AND THAT IS THE POINT. (lines 3956-3978)
+### THE MAIN SCREEN IS GONE, AND THAT IS THE POINT. (lines 3969-3991)
 
-### ECONOMY IS GONE, AND IT SPLIT IN TWO. (lines 3979-3995)
+### ECONOMY IS GONE, AND IT SPLIT IN TWO. (lines 3992-4008)
 
-### THE SCROLLER (lines 3996-4066)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4009 | 3 | `javafx.scene.control.ScrollPane scrolled(VBox column)` | A left-aligned column inside a scroll pane, which these screens all want. |
-| 4020 | 3 | `javafx.scene.control.ScrollPane scrolled(VBox column, double chrome)` | this scroller - a title alone is about 150; a title with a vitals bar and two strips pinned over it is a good deal more, and getting it wrong is a scrollbar that appears when there is nothing to scroll. |
-| 4029 | 37 | `javafx.scene.control.ScrollPane scrolled(VBox column, double chrome, boolean fromBottom)` | The same, with the position kept from the bottom of the page instead of as a fraction (fromBottom) - for a page that grows and shrinks ABOVE the controls the player is using; see keptScrollerFromBottom. |
-
-### WHAT THE HARNESS READS. BuildMenuCheck sits in the model package and (lines 4067-4090)
+### THE SCROLLER (lines 4009-4079)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4075 | 1 | `public List<String> whatItDoes(BuildingsTemplate t)` |  |
-| 4076 | 1 | `public List<String> whatCareItGives(BuildingsTemplate t)` |  |
-| 4077 | 1 | `public String jobLabel(JobType job)` |  |
-| 4080 | 6 | `public List<String> buildPages()` | Build's pages as the window names them: where it opens (BuildScreen.BUILD_HOME), then the strip's categories in order. |
-| 4088 | 1 | `public String buildOpensOn()` | The page Build opens on in this window now: the Overview, until the player opens a category (0.7.24). |
+| 4022 | 3 | `javafx.scene.control.ScrollPane scrolled(VBox column)` | A left-aligned column inside a scroll pane, which these screens all want. |
+| 4033 | 3 | `javafx.scene.control.ScrollPane scrolled(VBox column, double chrome)` | this scroller - a title alone is about 150; a title with a vitals bar and two strips pinned over it is a good deal more, and getting it wrong is a scrollbar that appears when there is nothing to scroll. |
+| 4042 | 37 | `javafx.scene.control.ScrollPane scrolled(VBox column, double chrome, boolean fromBottom)` | The same, with the position kept from the bottom of the page instead of as a fraction (fromBottom) - for a page that grows and shrinks ABOVE the controls the player is using; see keptScrollerFromBottom. |
 
-### SIMULATE MULTIPLE MONTHS (lines 4091-4519)
+### WHAT THE HARNESS READS. BuildMenuCheck sits in the model package and (lines 4080-4103)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4099 | 53 | `private void showSimulateMonthsMenu()` |  |
-| 4164 | 222 | `private void showSimulateResultMenu(int requested, int completed)` | What happened while the player was not watching. |
-| 4388 | 10 | `private void addSkipLine(VBox section, String label, double start, double end, double change, boolean isMoney)` | "Population  192 -> 664  (+472)", coloured by direction. |
-| 4407 | 22 | `private void addChangeLine(VBox section, String label, double change, boolean isMoney, boolean higherIsBetter)` | A signed change, coloured by whether it is good news. |
-| 4431 | 3 | `void showSectorReport(String title, VBox column, Runnable back)` | Shared scaffolding for the sector report screens - of which none is left: Household money, the last, became a page of its own in 0.7.27, and nothing calls this now. |
-| 4441 | 77 | `void showSectorReport(String title, VBox column, Runnable back, Button extra)` | somewhere else - e.g. the industrial report linking to its financial statements. |
+| 4088 | 1 | `public List<String> whatItDoes(BuildingsTemplate t)` |  |
+| 4089 | 1 | `public List<String> whatCareItGives(BuildingsTemplate t)` |  |
+| 4090 | 1 | `public String jobLabel(JobType job)` |  |
+| 4093 | 6 | `public List<String> buildPages()` | Build's pages as the window names them: where it opens (BuildScreen.BUILD_HOME), then the strip's categories in order. |
+| 4101 | 1 | `public String buildOpensOn()` | The page Build opens on in this window now: the Overview, until the player opens a category (0.7.24). |
 
-### THE FRAME FOLDS AWAY (0.7.24) (lines 4520-4728)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4564 | 49 | `private Region needsChip()` | "Needs you" and the count, or "Nothing needs you": the drawer's door. |
-| 4621 | 6 | `private void openOnNeeds()` | The drawer as the chip opens it: on NEEDS YOU, the list the chip counts - Summary whatever mode is stored (SummaryScreen.needsView, the stored mode untouched), at the top of its scroller, where NEEDS YOU is under the ... |
-| 4629 | 6 | `private HBox drawerBar()` | The drawer's bar: pin it open across screens, or close it. |
-| 4636 | 26 | `private void refreshDrawerBar()` |  |
-| 4664 | 10 | `private void placeFrame()` | The drawer, the construction panel and its tab, shown as the player left them - and none of it on the menus. |
-| 4676 | 4 | `private static boolean inside(javafx.scene.Node node, javafx.scene.Node in)` | Whether a node is this one or inside it. |
-| 4685 | 43 | `private void refreshConstructionTab(boolean inCity, boolean open)` | The tab the construction panel folds to: a crane, how many sites, and the words down it. |
-
-### CONSTRUCTION PANEL (lines 4729-5064)
+### SIMULATE MULTIPLE MONTHS (lines 4104-4532)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4749 | 179 | `private void refreshConstructionPanel()` |  |
-| 4930 | 8 | `static Region areaSwatch(String colour, double size)` | A small square in an area's colour, before a heading (0.7.21): the pages' titles' swatch, smaller. |
-| 4952 | 54 | `private void addDemolitionLog()` | What the city has lost lately, under what it is building. |
-| 5019 | 44 | `private void addBuildLog()` | What the city has GAINED lately, above what it has lost. |
+| 4112 | 53 | `private void showSimulateMonthsMenu()` |  |
+| 4177 | 222 | `private void showSimulateResultMenu(int requested, int completed)` | What happened while the player was not watching. |
+| 4401 | 10 | `private void addSkipLine(VBox section, String label, double start, double end, double change, boolean isMoney)` | "Population  192 -> 664  (+472)", coloured by direction. |
+| 4420 | 22 | `private void addChangeLine(VBox section, String label, double change, boolean isMoney, boolean higherIsBetter)` | A signed change, coloured by whether it is good news. |
+| 4444 | 3 | `void showSectorReport(String title, VBox column, Runnable back)` | Shared scaffolding for the sector report screens - of which none is left: Household money, the last, became a page of its own in 0.7.27, and nothing calls this now. |
+| 4454 | 77 | `void showSectorReport(String title, VBox column, Runnable back, Button extra)` | somewhere else - e.g. the industrial report linking to its financial statements. |
 
-### THE RAIL (lines 5065-5343)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5104 | 1 | **type** `private record Tab(String key, String svg, String label, String name, Runnable go)` | One destination. |
-| 5111 | 14 | `static String areaOf(String key)` | Which of the four areas a rail key is in (0.7.21): building and land, people and services, business and trade, money and policy. |
-| 5132 | 15 | `Label pageTitle(String text)` | A page's title, with its area's swatch before it (0.7.21): a small square in the colour of the rail tab that owns the screen showing, as the mockups set the title. |
-| 5178 | 54 | `private Tab[] tabs()` | The rail, in the order a city is actually run. |
-| 5243 | 56 | `private String tabFor(String screen)` | Which tab owns the screen that is showing. |
-| 5300 | 32 | `private void refreshTabRail()` |  |
-| 5339 | 4 | `void openMapOn(MiniMapFrame.Box frame)` | The minimap's click (0.7.134): the land office, as its rail button opens it, and its map over the window on the minimap's frame - the city's built-up ground (MiniMapFrame.frame(); none yet, as Expand opens it). |
-
-### THE RAIL GOES TO THE TOP OF ITS SECTION, NOT TO WHERE YOU LEFT OFF (lines 5344-5527)
+### THE FRAME FOLDS AWAY (0.7.24) (lines 4533-4741)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5392 | 5 | `private void goHome(Tab tab)` | Press a tab: forget where you were inside it - Build's category apart, since 0.7.20 - and land at the top. |
-| 5419 | 20 | `private void resetSection(String key)` | A section's own idea of where you were, forgotten. |
-| 5465 | 62 | `private VBox railButton(String svg, String label, String name, String area, boolean active, Runnable go)` | One button on the rail: its icon over its name (0.7.21). |
+| 4577 | 49 | `private Region needsChip()` | "Needs you" and the count, or "Nothing needs you": the drawer's door. |
+| 4634 | 6 | `private void openOnNeeds()` | The drawer as the chip opens it: on NEEDS YOU, the list the chip counts - Summary whatever mode is stored (SummaryScreen.needsView, the stored mode untouched), at the top of its scroller, where NEEDS YOU is under the ... |
+| 4642 | 6 | `private HBox drawerBar()` | The drawer's bar: pin it open across screens, or close it. |
+| 4649 | 26 | `private void refreshDrawerBar()` |  |
+| 4677 | 10 | `private void placeFrame()` | The drawer, the construction panel and its tab, shown as the player left them - and none of it on the menus. |
+| 4689 | 4 | `private static boolean inside(javafx.scene.Node node, javafx.scene.Node in)` | Whether a node is this one or inside it. |
+| 4698 | 43 | `private void refreshConstructionTab(boolean inCity, boolean open)` | The tab the construction panel folds to: a crane, how many sites, and the words down it. |
 
-### THE INBOX (lines 5528-5624)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5560 | 64 | `private void refreshInbox()` |  |
-
-### the envelope (lines 5625-5825)
+### CONSTRUCTION PANEL (lines 4742-5077)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5632 | 48 | `private void refreshInboxButton()` |  |
-| 5694 | 58 | `private VBox noticeRow(Notice notice)` | One notice: its title, and its body when it is unfolded. |
-| 5753 | 16 | `private String dealLabel(String key)` |  |
-| 5779 | 46 | `private void deal(Notice notice)` | Take the player to the control that answers it. |
+| 4762 | 179 | `private void refreshConstructionPanel()` |  |
+| 4943 | 8 | `static Region areaSwatch(String colour, double size)` | A small square in an area's colour, before a heading (0.7.21): the pages' titles' swatch, smaller. |
+| 4965 | 54 | `private void addDemolitionLog()` | What the city has lost lately, under what it is building. |
+| 5032 | 44 | `private void addBuildLog()` | What the city has GAINED lately, above what it has lost. |
 
-### TOASTS (0.7.20) (lines 5826-5908)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5861 | 13 | `private void refreshToasts()` | New urgent notices become toasts; read or settled ones leave the stack. |
-| 5876 | 32 | `private Label toast(Notice notice)` | One toast: the notice's title, a timer, and a door to the inbox. |
-
-### TIME, AND WHAT THE MONTH IS WORTH (lines 5909-6060)
+### THE RAIL (lines 5078-5356)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5928 | 64 | `private void startClock()` | Starts the frame loop. |
-| 6002 | 15 | `private void holdPresses()` | A PRESS IS NEVER REBUILT AWAY (0.7.40; see the clock's fields): a press anywhere in the window holds the clock's redraw, and the release lets it go once the release - and the click the scene makes of it - has been del... |
-| 6019 | 4 | `private void letAllGo()` | No button is down after all: a move without one, or the window gone from under the pointer. |
-| 6025 | 5 | `private void setPressHeld(boolean held)` | Holds the redraw, or lets it go - and says so on the scene, for TimeChart. |
-| 6037 | 4 | `void redrawSoon()` | The open screen redrawn on the next frame no button is held on (0.7.40): for a change made as a press takes the focus - Finances' ask, set as its box is left - which a redraw at once would take from under the release. |
-| 6043 | 4 | `static boolean pressHeld(javafx.scene.Node node)` | Whether a mouse button is down in the scene a node is in (0.7.40): what a redraw on a timer waits for. |
-| 6055 | 5 | `private void paintDay()` | The day, repainted in place. |
+| 5117 | 1 | **type** `private record Tab(String key, String svg, String label, String name, Runnable go)` | One destination. |
+| 5124 | 14 | `static String areaOf(String key)` | Which of the four areas a rail key is in (0.7.21): building and land, people and services, business and trade, money and policy. |
+| 5145 | 15 | `Label pageTitle(String text)` | A page's title, with its area's swatch before it (0.7.21): a small square in the colour of the rail tab that owns the screen showing, as the mockups set the title. |
+| 5191 | 54 | `private Tab[] tabs()` | The rail, in the order a city is actually run. |
+| 5256 | 56 | `private String tabFor(String screen)` | Which tab owns the screen that is showing. |
+| 5313 | 32 | `private void refreshTabRail()` |  |
+| 5352 | 4 | `void openMapOn(MiniMapFrame.Box frame)` | The minimap's click (0.7.134): the land office, as its rail button opens it, and its map over the window on the minimap's frame - the city's built-up ground (MiniMapFrame.frame(); none yet, as Expand opens it). |
 
-### THE CHART OVER THE WHOLE WINDOW (0.7.23) (lines 6061-6192)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6088 | 1 | `void panKeysTo(MapView map)` | ...set, or cleared with null. |
-| 6096 | 10 | `void showChartFullScreen(Region pane, Label clockLine, java.util.function.Consumer<Boolean> leave)` | Lays the chart's pane over the whole window. |
-| 6108 | 7 | `void closeChartFullScreen()` | Takes the pane off the window; the screen redraws its page. |
-| 6117 | 4 | `private void leaveChartFullScreen(boolean redraw)` | Esc, P or another screen: the screen's own way back, which calls closeChartFullScreen(). |
-| 6123 | 1 | `boolean isChartFullScreen()` | Whether a chart has the whole window. |
-| 6126 | 1 | `boolean isShowing(String screen)` | Whether this screen - a clearMenu() name, "showHistoryMenu" - is the one on show: a late redraw asks before it draws. |
-| 6133 | 3 | `double clockMonths()` | The game's clock in months (0.7.97, batch O13): the month and the share of the next the clock has run - what the map's boats sail on (MapView.BOAT_GAME_MONTHS). |
-| 6138 | 4 | `String clockWords()` | The date and what the clock is doing, for a line that stands in for the header: "14 February 2151 · paused". |
-| 6144 | 8 | `private static boolean overAChart(Object target)` | Whether a wheel event's target is inside a chart that takes the wheel (TimeChart.WHEEL_OWNER). |
-| 6166 | 11 | `private boolean stopIfSomethingHappened()` | Stops the clock when the city has something to say, if the player wants that. |
-| 6179 | 7 | `private void setClockRunning(boolean run)` | Play, or pause. |
-| 6188 | 4 | `private static String speedLabel(int index)` | "0.25×", "1×", "10×" - no trailing zeros on the round ones; the header's speed reads it (0.7.21: "×", the mockups', for "x"). |
-
-### TWELVE PIPS, AND ONE OF THEM MOVED. (lines 6193-6225)
+### THE RAIL GOES TO THE TOP OF ITS SECTION, NOT TO WHERE YOU LEFT OFF (lines 5357-5540)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6214 | 11 | `static void popPip(Region pip)` | A quarter second of "that landed", on the figure the month just changed - and since 0.7.26 on the land office's figures the month moved. |
+| 5405 | 5 | `private void goHome(Tab tab)` | Press a tab: forget where you were inside it - Build's category apart, since 0.7.20 - and land at the top. |
+| 5432 | 20 | `private void resetSection(String key)` | A section's own idea of where you were, forgotten. |
+| 5478 | 62 | `private VBox railButton(String svg, String label, String name, String area, boolean active, Runnable go)` | One button on the rail: its icon over its name (0.7.21). |
+
+### THE INBOX (lines 5541-5637)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5573 | 64 | `private void refreshInbox()` |  |
+
+### the envelope (lines 5638-5838)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5645 | 48 | `private void refreshInboxButton()` |  |
+| 5707 | 58 | `private VBox noticeRow(Notice notice)` | One notice: its title, and its body when it is unfolded. |
+| 5766 | 16 | `private String dealLabel(String key)` |  |
+| 5792 | 46 | `private void deal(Notice notice)` | Take the player to the control that answers it. |
+
+### TOASTS (0.7.20) (lines 5839-5921)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5874 | 13 | `private void refreshToasts()` | New urgent notices become toasts; read or settled ones leave the stack. |
+| 5889 | 32 | `private Label toast(Notice notice)` | One toast: the notice's title, a timer, and a door to the inbox. |
+
+### TIME, AND WHAT THE MONTH IS WORTH (lines 5922-6073)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5941 | 64 | `private void startClock()` | Starts the frame loop. |
+| 6015 | 15 | `private void holdPresses()` | A PRESS IS NEVER REBUILT AWAY (0.7.40; see the clock's fields): a press anywhere in the window holds the clock's redraw, and the release lets it go once the release - and the click the scene makes of it - has been del... |
+| 6032 | 4 | `private void letAllGo()` | No button is down after all: a move without one, or the window gone from under the pointer. |
+| 6038 | 5 | `private void setPressHeld(boolean held)` | Holds the redraw, or lets it go - and says so on the scene, for TimeChart. |
+| 6050 | 4 | `void redrawSoon()` | The open screen redrawn on the next frame no button is held on (0.7.40): for a change made as a press takes the focus - Finances' ask, set as its box is left - which a redraw at once would take from under the release. |
+| 6056 | 4 | `static boolean pressHeld(javafx.scene.Node node)` | Whether a mouse button is down in the scene a node is in (0.7.40): what a redraw on a timer waits for. |
+| 6068 | 5 | `private void paintDay()` | The day, repainted in place. |
+
+### THE CHART OVER THE WHOLE WINDOW (0.7.23) (lines 6074-6205)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6101 | 1 | `void panKeysTo(MapView map)` | ...set, or cleared with null. |
+| 6109 | 10 | `void showChartFullScreen(Region pane, Label clockLine, java.util.function.Consumer<Boolean> leave)` | Lays the chart's pane over the whole window. |
+| 6121 | 7 | `void closeChartFullScreen()` | Takes the pane off the window; the screen redraws its page. |
+| 6130 | 4 | `private void leaveChartFullScreen(boolean redraw)` | Esc, P or another screen: the screen's own way back, which calls closeChartFullScreen(). |
+| 6136 | 1 | `boolean isChartFullScreen()` | Whether a chart has the whole window. |
+| 6139 | 1 | `boolean isShowing(String screen)` | Whether this screen - a clearMenu() name, "showHistoryMenu" - is the one on show: a late redraw asks before it draws. |
+| 6146 | 3 | `double clockMonths()` | The game's clock in months (0.7.97, batch O13): the month and the share of the next the clock has run - what the map's boats sail on (MapView.BOAT_GAME_MONTHS). |
+| 6151 | 4 | `String clockWords()` | The date and what the clock is doing, for a line that stands in for the header: "14 February 2151 · paused". |
+| 6157 | 8 | `private static boolean overAChart(Object target)` | Whether a wheel event's target is inside a chart that takes the wheel (TimeChart.WHEEL_OWNER). |
+| 6179 | 11 | `private boolean stopIfSomethingHappened()` | Stops the clock when the city has something to say, if the player wants that. |
+| 6192 | 7 | `private void setClockRunning(boolean run)` | Play, or pause. |
+| 6201 | 4 | `private static String speedLabel(int index)` | "0.25×", "1×", "10×" - no trailing zeros on the round ones; the header's speed reads it (0.7.21: "×", the mockups', for "x"). |
+
+### TWELVE PIPS, AND ONE OF THEM MOVED. (lines 6206-6238)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6227 | 11 | `static void popPip(Region pip)` | A quarter second of "that landed", on the figure the month just changed - and since 0.7.26 on the land office's figures the month moved. |
 

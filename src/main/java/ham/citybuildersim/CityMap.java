@@ -1923,6 +1923,8 @@ public final class CityMap {
         final int[][] boxes = new int[TILES][];
         /** The plots its plan's sidings run over (batch FR7 slice 5, D14), each a plot of its frame (y x FRAME + x) with SIDING_END_BIT set on the first of a siding, the loading shed's; null for none. */
         int[] siding;
+        /** Its plan's access roads (batch FR7, D17) as the trucks drive them (FR5, slice B): each a way of plots of its frame (y x FRAME + x), the road's end first and its gate last, 4-connected over the plots the roads run over (DistrictPlan.accessAt); null for none. A road the plan laid but that cannot be traced, or that already stood on one (ACCESS_HAD), has none. */
+        int[][] access;
         /** Buildings its plan placed, and what it could not hold (carried on, R7). */
         int placed, refused;
         /** Its streets' surface in half plots by kind, [0, gravel, paved, highway], the plots of street it lays and how many of them are tracks: what its own road is drawn as. */
@@ -1944,6 +1946,10 @@ public final class CityMap {
             for (byte[] t : tiles) if (t != null) b += 16 + t.length;
             for (int[] x : boxes) if (x != null) b += 16 + 4L * x.length;
             if (siding != null) b += 16 + 4L * siding.length;
+            if (access != null) {
+                b += 16;
+                for (int[] a : access) b += 16 + 4L * a.length;
+            }
             return b;
         }
 
@@ -2062,6 +2068,7 @@ public final class CityMap {
             count = 0;
             for (int q = 0; q < p.siding.length; q++) if (p.siding[q] != 0) out.siding[count++] = q | (p.siding[q] == DistrictPlan.SIDING_END ? SIDING_END_BIT : 0);
         }
+        out.access = accessWays(p);
         out.placed = p.buildings;
         out.refused = p.overflowCount();
         out.surplus = p.surplus;
@@ -2070,6 +2077,51 @@ public final class CityMap {
         out.partedOut = p.partedOut;
         out.seamsSurfaced = p.seamsSurfaced;
         return out;
+    }
+
+    /**
+     * A plan's access roads as ways of plots (FR5, slice B; Drawn.access):
+     * for each road the plan laid (DistrictPlan.accessRoads, those that have
+     * a gate and an end - a work that already stood on one has neither) the
+     * shortest 4-connected way over the plots the roads run over
+     * (accessAt) from its end plot to its gate plot, as frame indices (y x
+     * FRAME + x), the end first and the gate last. A road no way joins is
+     * left out. Null when the plan laid none.
+     */
+    static int[][] accessWays(DistrictPlan p) {
+        if (p.accessAt == null || p.accessRoads.isEmpty()) return null;
+        int f = DistrictPlan.FRAME;
+        List<int[]> out = new ArrayList<>();
+        int[] prev = null, queue = null;
+        for (int[] r : p.accessRoads) {
+            if (r[4] < 0 || r[5] < 0 || r[6] < 0 || r[7] < 0) continue;
+            int gate = r[5] * f + r[4], end = r[7] * f + r[6];
+            if (gate < 0 || gate >= f * f || end < 0 || end >= f * f || !p.accessAt[gate] || !p.accessAt[end]) continue;
+            if (prev == null) { prev = new int[f * f]; queue = new int[f * f]; }
+            Arrays.fill(prev, -2);
+            // Breadth first from the gate, each plot remembering the one it was reached from: read from the end, prev leads back to the gate.
+            int head = 0, tail = 0;
+            queue[tail++] = gate;
+            prev[gate] = -1;
+            while (head < tail && prev[end] == -2) {
+                int a = queue[head++], x = a % f, y = a / f;
+                for (int dir = 0; dir < 4; dir++) {
+                    if (dir == 0 && y == 0 || dir == 1 && x == f - 1 || dir == 2 && y == f - 1 || dir == 3 && x == 0) continue;
+                    int b = dir == 0 ? a - f : dir == 1 ? a + 1 : dir == 2 ? a + f : a - 1;
+                    if (!p.accessAt[b] || prev[b] != -2) continue;
+                    prev[b] = a;
+                    queue[tail++] = b;
+                }
+            }
+            if (prev[end] == -2) continue;
+            int n = 0;
+            for (int a = end; a >= 0; a = prev[a]) n++;
+            int[] way = new int[n];
+            int k = 0;
+            for (int a = end; a >= 0; a = prev[a]) way[k++] = a;
+            out.add(way);
+        }
+        return out.isEmpty() ? null : out.toArray(new int[0][]);
     }
 
     /** A box packed into an int: x, y, w - 1 and h - 1 at five bits each, PACKED_BIT when packed without a street. */
@@ -3481,6 +3533,195 @@ public final class CityMap {
         for (int i = 0; i < pts.size(); i++) { xs[i] = pts.get(i)[0]; ys[i] = pts.get(i)[1]; }
         return TrainSchedule.Route.toWorks(xs, ys, Math.hypot(xs[1] - xs[0], ys[1] - ys[0]));
     }
+
+    /* =====================================================================
+       THE TRUCKS' ROUTES (0.8.8, batch FR5; spec-freight 4.7, D21)
+
+       Marks run between the depots, yards, ports and works along the
+       highway and the access roads. A truck is a schedule entry, as a train
+       and a boat are (TruckSchedule): this finds the ways it drives and
+       nothing else. Two kinds: the highways' (truckRoutes()), from the world
+       line out at the city's edge in along the highways to each of their
+       ramps, found as the trains' are (CityRuns.wayOn() on the highways net);
+       and each drawn district's access roads (accessRoutesIn()), from the
+       road's end on the street grid to the gate of the work it serves,
+       traced when the plan is packed (accessWays(), Drawn.access) and never
+       by drawing a plan here. Nothing in the model reads them.
+       ===================================================================== */
+
+
+    /** The least a highway route runs along the highways, in plots, past the world line's own: shorter is the arm the line leaves from, where the trucks have no road to drive. */
+    public static final double TRUCK_ROUTE_LEAST = 4;
+
+    /** The most highway routes kept, 40: one to each ramp, the arms' order, a city of many arms is cut here (a route is a lane of trucks, and the legend would not read more). */
+    public static final int TRUCK_ROUTES_MOST = 40;
+
+    /** How far an access road's trucks fade in off the street grid, in plots: 3. */
+    public static final double TRUCK_ACCESS_FADE = 3;
+
+    /** truckRoutes()'s last answer, kept against the map's changes. */
+    private List<TruckSchedule.Route> truckRoutesCache;
+    private long truckRoutesAt = Long.MIN_VALUE;
+
+    /**
+     * The trucks' highway routes (TruckSchedule.Route, world true): for each
+     * ramp the highways have (CityRuns.highwayRamps(): their arms' ends),
+     * from TruckSchedule.WORLD_PLOTS out along the highways' world line (along
+     * line.way(), over dry ground), in to where the line leaves the city's
+     * ground, to the end of the arm it leaves from and along the highways to
+     * the ramp (CityRuns.highwayWayTo(): wayOn() on the highways net, as the
+     * railway's wayToPlot() is), points in plots, each a plot's middle; fadeTo
+     * is the world part's length. A ramp the way does not reach, one that runs
+     * under TRUCK_ROUTE_LEAST plots along the highways (the arm the line leaves
+     * from) and a second route to the same plot are left out, and no more than
+     * TRUCK_ROUTES_MOST are kept. None without the highways' world line, which
+     * exists only while they reach a street (CityRuns.highwaysReach()). The
+     * map's alone: nothing in the model reads it. Kept against changes().
+     */
+    public List<TruckSchedule.Route> truckRoutes() {
+        if (truckRoutesCache != null && truckRoutesAt == changes) return truckRoutesCache;
+        List<TruckSchedule.Route> out = new ArrayList<>();
+        WorldLine line = null;
+        for (WorldLine l : worldLines()) if (l.net() == CityRuns.HIGHWAYS) line = l;
+        if (line != null) {
+            double r = Math.toRadians(line.way());
+            double fx = line.x() + Math.cos(r) * TruckSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(r) * TruckSchedule.WORLD_PLOTS;
+            java.util.Set<String> ends = new java.util.HashSet<>();
+            for (long[] ramp : runs.highwayRamps()) {
+                if (out.size() >= TRUCK_ROUTES_MOST) break;
+                double[][] way = runs.highwayWayTo(line.arm(), ramp[0], ramp[1]);
+                if (way == null || way[0].length == 0) continue;
+                double along = 0;
+                for (int k = 1; k < way[0].length; k++) along += Math.hypot(way[0][k] - way[0][k - 1], way[1][k] - way[1][k - 1]);
+                if (along < TRUCK_ROUTE_LEAST || !ends.add(ramp[0] + "," + ramp[1])) continue;
+                List<double[]> pts = new ArrayList<>();
+                pts.add(new double[] { fx, fy });
+                pts.add(new double[] { line.x(), line.y() });
+                for (int k = 0; k < way[0].length; k++) addNew(pts, way[0][k], way[1][k]);
+                out.add(truckRoute(true, pts, Math.hypot(line.x() - fx, line.y() - fy)));
+            }
+        }
+        truckRoutesCache = out;
+        truckRoutesAt = changes;
+        return out;
+    }
+
+    /** A truck route through points, fadeTo plots faded in. */
+    private static TruckSchedule.Route truckRoute(boolean world, List<double[]> pts, double fadeTo) {
+        double[] xs = new double[pts.size()], ys = new double[pts.size()];
+        for (int i = 0; i < pts.size(); i++) { xs[i] = pts.get(i)[0]; ys[i] = pts.get(i)[1]; }
+        return TruckSchedule.Route.through(world, xs, ys, fadeTo);
+    }
+
+    /** One district's access roads' routes, with the stable key it is told apart by: the district's own, the same every call. */
+    public record DistrictRoutes(long key, List<TruckSchedule.Route> routes) { }
+
+    /** A district's routes as last made, and what they were made against: its Drawn's stamp and its frame's origin in world plots. */
+    private static final class AccessRoutes {
+        long stamp, x0, y0;
+        DistrictRoutes routes;
+    }
+
+    private final Map<Long, AccessRoutes> accessRoutesCache = new LinkedHashMap<>(PLANS_KEPT * 4, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<Long, AccessRoutes> e) { return size() > 2 * PLANS_KEPT; }
+    };
+
+    /**
+     * The access roads' routes (TruckSchedule.Route, world false) of the
+     * districts already drawn whose frame meets the box (x0, y0) to (x1, y1),
+     * in world plots, the corners inclusive: for each district its roads,
+     * each from the road's end on the street grid through the corners of its
+     * plots (a straight run kept to its ends) to the gate of the work it
+     * serves, fadeTo TRUCK_ACCESS_FADE; a district with no road, or whose
+     * plan is not drawn and current, is left out. A plan is never drawn here
+     * (the screen's thread): the roads were traced when it was packed
+     * (Drawn.access). Each district's routes are kept against its Drawn's
+     * stamp, so a call with no change answers the same lists. The key is the
+     * district's own, the same every call.
+     */
+    public List<DistrictRoutes> accessRoutesIn(long x0, long y0, long x1, long y1) {
+        List<DistrictRoutes> out = new ArrayList<>();
+        if (x1 < x0 || y1 < y0 || districts.isEmpty()) return out;
+        // The frames reach DISTRICT plots past their origin (257 plots): a box meets the frame of every district from the one before its corner.
+        long cx0 = Math.floorDiv(x0 - 1, DISTRICT) - baseDX, cx1 = Math.floorDiv(x1, DISTRICT) - baseDX;
+        long cy0 = Math.floorDiv(y0 - 1, DISTRICT) - baseDY, cy1 = Math.floorDiv(y1, DISTRICT) - baseDY;
+        if ((cx1 - cx0 + 1) * (cy1 - cy0 + 1) <= districts.size()) {
+            for (long dy = cy0; dy <= cy1; dy++) {
+                for (long dx = cx0; dx <= cx1; dx++) {
+                    District d = byKey.get(key((int) dx, (int) dy));
+                    if (d != null) accessRoutesOf(d, out);
+                }
+            }
+        } else {
+            for (District d : districts) if (d.dx >= cx0 && d.dx <= cx1 && d.dy >= cy0 && d.dy <= cy1) accessRoutesOf(d, out);
+        }
+        return out;
+    }
+
+    /** Adds district d's access routes to out when its plan is drawn and current and it has any. */
+    private void accessRoutesOf(District d, List<DistrictRoutes> out) {
+        int b = band(d.index);
+        checkBand(b);
+        if (d.index >= bandValidTo[b]) return;
+        Drawn got = drawn.get(d);
+        Link l = links.get(d);
+        if (got == null || l == null || got.stamp != l.stamp()) return;
+        long ox = (baseDX + d.dx) * DISTRICT, oy = (baseDY + d.dy) * DISTRICT;
+        AccessRoutes ar = accessRoutesCache.get(d.key);
+        if (ar == null || ar.stamp != got.stamp || ar.x0 != ox || ar.y0 != oy) {
+            ar = new AccessRoutes();
+            ar.stamp = got.stamp;
+            ar.x0 = ox;
+            ar.y0 = oy;
+            List<TruckSchedule.Route> routes = new ArrayList<>();
+            if (got.access != null) for (int[] way : got.access) accessRouteInto(routes, way, ox, oy);
+            ar.routes = routes.isEmpty() ? null : new DistrictRoutes(d.key, java.util.Collections.unmodifiableList(routes));
+            accessRoutesCache.put(d.key, ar);
+        }
+        if (ar.routes != null) out.add(ar.routes);
+    }
+
+    /** Adds the route of one access road (Drawn.access: frame indices, the end first) to out: its plots' middles in world plots from the frame's origin (ox, oy), a straight run kept to its two ends. A way of one plot makes none. */
+    private static void accessRouteInto(List<TruckSchedule.Route> out, int[] way, long ox, long oy) {
+        if (way.length < 2) return;
+        int f = DistrictPlan.FRAME;
+        List<double[]> pts = new ArrayList<>();
+        for (int i = 0; i < way.length; i++) {
+            if (i > 0 && i < way.length - 1) {
+                // Dropped when it lies on the straight line between its neighbours.
+                int a = way[i - 1], b = way[i], c = way[i + 1];
+                if ((b % f) - (a % f) == (c % f) - (b % f) && (b / f) - (a / f) == (c / f) - (b / f)) continue;
+            }
+            pts.add(new double[] { ox + way[i] % f + 0.5, oy + way[i] / f + 0.5 });
+        }
+        out.add(truckRoute(false, pts, TRUCK_ACCESS_FADE));
+    }
+
+    /**
+     * How many works the city has that need an access road (batch FR7, D17):
+     * the railway's yards the runs draw, the shore's berthed works (sea
+     * terminals) and the Truck Depots among its buildings - read from what the
+     * map holds, no plan drawn - and at least 1. The painter gives each drawn
+     * district's roads their part of the city's trucks as its roads over this
+     * count. A work whose plan finds it no road still counts; the count is
+     * the works the plans are told of, not the roads laid.
+     */
+    public int accessRoadCount() {
+        if (accessRoadCountAt == changes) return accessRoadCountCache;
+        long n = runs.yards().size();
+        for (CityShore.Work w : shore.works()) if (w.berthed()) n++;
+        for (int t = 0; t < types.length; t++) {
+            if (types[t] == null || types[t].category() != BuildingType.HAULAGE) continue;
+            for (District d : districts) n += Math.max(0, d.counts[t]);
+        }
+        accessRoadCountCache = (int) Math.max(1, Math.min(Integer.MAX_VALUE, n));
+        accessRoadCountAt = changes;
+        return accessRoadCountCache;
+    }
+
+    /** accessRoadCount()'s last answer, kept against the map's changes. */
+    private int accessRoadCountCache;
+    private long accessRoadCountAt = Long.MIN_VALUE;
 
     /** Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. */
     static final int RUN_LINES_KEPT = 4096;

@@ -45,7 +45,7 @@
 
 **Uses:** [Good](Good.md) (41), [Sector](Sector.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (10), [Traffic](Traffic.md) (8), [Freight](Freight.md) (7), [Sectors](Sectors.md) (4), [InfrastructureManager](InfrastructureManager.md) (3), [BuildingManager](BuildingManager.md) (3), [JobType](JobType.md) (3), [Markets](Markets.md) (2), [GoodsMarket](GoodsMarket.md) (1)
 
-**Used by (11):** [BondCheck](BondCheck.md), [Freight](Freight.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [ProcessingSector](ProcessingSector.md), [RailCheck](RailCheck.md), [RefineryView](RefineryView.md), [Sector](Sector.md)
+**Used by (13):** [BondCheck](BondCheck.md), [Freight](Freight.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [ProcessingSector](ProcessingSector.md), [RailCheck](RailCheck.md), [RefineryView](RefineryView.md), [Sector](Sector.md), [TruckCheck](TruckCheck.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 

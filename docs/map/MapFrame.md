@@ -30,7 +30,7 @@
 
 **Uses:** [World](World.md) (15), [TileRaster](TileRaster.md) (2)
 
-**Used by (13):** [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [RailDrawCheck](RailDrawCheck.md), [ShipShapes](ShipShapes.md), [TrainShapes](TrainShapes.md)
+**Used by (15):** [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [RailDrawCheck](RailDrawCheck.md), [ShipShapes](ShipShapes.md), [TrainShapes](TrainShapes.md), [TruckCheck](TruckCheck.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 
