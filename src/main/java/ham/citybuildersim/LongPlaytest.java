@@ -6484,8 +6484,38 @@ public class LongPlaytest {
             }
         }
 
+        // -Dplaytest.keep=<folder> (FR7, 2026-10-18): the run's last city kept for a headless render of its map; see keepCity().
+        String keep = System.getProperty("playtest.keep");
+        if (keep != null) keepCity(g, root, Path.of(keep));
         cleanUp(root);
         System.exit(findings.isEmpty() ? 0 : 1);
+    }
+
+    /**
+     * The run's last city saved as slot 10 and copied into keep/data/saves
+     * (FR7, 2026-10-18), for FR7's headless renders of a played city's map
+     * (docs/queue/FR7/RenderFr7.java). After the report, so the report is the
+     * run's to the byte; unset, nothing is written.
+     */
+    static void keepCity(Game g, Path root, Path keep) {
+        PrintStream real = System.out;
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+        try {
+            if (!g.saveGame(10, "playtest kept").ok) return;
+            Path from = root.resolve("data").resolve(GameFiles.SAVES_FOLDER), to = keep.resolve("data").resolve(GameFiles.SAVES_FOLDER);
+            Files.createDirectories(to);
+            try (var files = Files.list(from)) {
+                for (Path p : (Iterable<Path>) files::iterator) {
+                    if (p.getFileName().toString().startsWith("slot-10")) {
+                        Files.copy(p, to.resolve(p.getFileName().toString()), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            }
+        } catch (java.io.IOException e) {
+            real.println("  (could not keep the city: " + e.getMessage() + ")");
+        } finally {
+            System.setOut(real);
+        }
     }
 
     /**
