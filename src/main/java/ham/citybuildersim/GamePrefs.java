@@ -158,6 +158,20 @@ public final class GamePrefs {
     public boolean isConstructionOpen()            { return constructionOpen; }
     public void setConstructionOpen(boolean value) { this.constructionOpen = value; }
 
+    /**
+     * Whether Haulage's trucks are drawn on the map's roads at the near view
+     * (0.8.8, batch FR5). Jerus, 2026-10-12: "for drawn trucks yes just only
+     * when zoomed in, and a toggle in settings with defualt on". ON BY
+     * DEFAULT, and an older settings.json, which has no key for it, reads
+     * on: Gson keeps the field's initial value for a missing key. How the
+     * player likes the map drawn, not something true about a city, so it is
+     * kept here and never in a save.
+     */
+    private boolean trucksOnMap = true;
+
+    public boolean isTrucksOnMap()            { return trucksOnMap; }
+    public void setTrucksOnMap(boolean value) { this.trucksOnMap = value; }
+
     /* ===================================================================
        THE FILE
        =================================================================== */
