@@ -294,7 +294,7 @@ public class BuildAdviceCheck {
         EnumSet<BuildingType> theirs = EnumSet.of(BuildingType.RESIDENTIAL, BuildingType.COMMERCIAL,
                 BuildingType.INDUSTRIAL, BuildingType.HEAVY_INDUSTRY, BuildingType.MINING, BuildingType.CONSTRUCTION,
                 BuildingType.BUSINESS_SERVICES, BuildingType.AGRICULTURE, BuildingType.RAIL, BuildingType.AUTOMOTIVE,
-                BuildingType.LUXURY, BuildingType.HOSPITALITY);
+                BuildingType.LUXURY, BuildingType.HOSPITALITY, BuildingType.HAULAGE);   // FR2: the Truck Depot, filed with the railway
         for (BuildAdvice.Category c : cats) {
             // The city's sea terminals are filed in Industry as their own group (0.7.86, BuildCard's "Ports"), as
             // its Strategic Reserve is among the heavy industry: city buildings on a market page, which only the

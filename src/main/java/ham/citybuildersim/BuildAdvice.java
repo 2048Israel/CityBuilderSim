@@ -103,7 +103,7 @@ public final class BuildAdvice {
                 BuildingType.HEAVY_INDUSTRY, BuildingType.MINING, BuildingType.CONSTRUCTION, BuildingType.PORTS), false));
         out.add(new Category(OFFICES,     "Services", EnumSet.of(BuildingType.BUSINESS_SERVICES), false));
         out.add(new Category(FARMS,       null, EnumSet.of(BuildingType.AGRICULTURE), false));
-        out.add(new Category(RAIL,        null, EnumSet.of(BuildingType.RAIL), false));
+        out.add(new Category(RAIL,        null, EnumSet.of(BuildingType.RAIL, BuildingType.HAULAGE), false));
         out.add(new Category(VEHICLES,    null, EnumSet.of(BuildingType.AUTOMOTIVE), false));
         out.add(new Category(LUXURY,      null, EnumSet.of(BuildingType.LUXURY), false));
         out.add(new Category(RESTAURANTS, null, EnumSet.of(BuildingType.HOSPITALITY), false));

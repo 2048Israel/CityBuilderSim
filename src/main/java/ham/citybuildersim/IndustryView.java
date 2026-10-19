@@ -456,7 +456,7 @@ public final class IndustryView {
         /* ----- the feeds ----- */
         List<Feed> feeds = new ArrayList<>();
         for (Good g : sector.goodsUsed()) {
-            if (g == Good.VANS) continue;
+            if (g == Good.VANS || g == Good.TRUCKS) continue;
             Sector.Input in = sector.inputRow(g);
             Sector.Output own = sector.captive(g) ? sector.outputRow(g) : null;
             double needed = in == null ? 0 : in.needed, captive = own == null ? 0 : own.captive;

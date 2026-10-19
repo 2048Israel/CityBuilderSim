@@ -244,7 +244,7 @@ public class PortCheck {
                 Good.DIESEL, Good.LUBRICANTS, Good.FUEL_OIL, Good.BITUMEN);
         java.util.EnumSet<Good> dry = java.util.EnumSet.of(Good.IRON, Good.CROPS, Good.GRAINS, Good.MATERIALS, Good.COKE);
         java.util.EnumSet<Good> general = java.util.EnumSet.of(Good.STEEL, Good.FABRICATED_STEEL, Good.MACHINERY,
-                Good.ROLLING_STOCK, Good.CARS, Good.VANS);
+                Good.ROLLING_STOCK, Good.CARS, Good.VANS, Good.TRUCKS);
         boolean kinds = true, boxes = true, none = true;
         int boxed = 0;
         for (Good g : Good.values()) {
@@ -256,7 +256,7 @@ public class PortCheck {
             none &= (c == null) == (g.traffic() == null || !g.traffic().isFreight());
         }
         assertTrue("liquid is crude, the eight litre goods and bitumen; dry bulk iron, crops, grains, materials and coke;"
-                + " general steel, fabricated steel, machinery, wagon sets, cars and vans", kinds);
+                + " general steel, fabricated steel, machinery, wagon sets, cars, vans and trucks (FR2)", kinds);
         report("...containers the rest of what the goods stream carries", boxes && boxed > 0, boxed + " goods");
         assertTrue("...and no kind for a good that never crosses the boundary as freight", none);
         assertTrue("the ships carry the research's cargoes: MR 37,500 t, LR1 60,000, Aframax 75,000, LR2 82,500, Suezmax"

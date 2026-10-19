@@ -853,6 +853,19 @@ public class BuildingsTemplate {
 
     public double getRailCapacity() { return railCapacity; }
 
+    private double truckRoom;
+
+    /**
+     * Trucks a Truck Depot keeps (FR2): Freight's Haulage division's room;
+     * none for every other building.
+     */
+    public BuildingsTemplate setTruckRoom(double trucks) {
+        this.truckRoom = Math.max(0, trucks);
+        return this;
+    }
+
+    public double getTruckRoom() { return truckRoom; }
+
     /* =======================================================================
        WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16)
 

@@ -1092,7 +1092,27 @@ public enum Good {
     PAPER("Paper", "tonne", 1.050, .880, .06375, true, Pricing.BAND, false),
 
     /** Wood pellets, by the tonne: the Wood Pellet Mill's, of residues. Exported until the electricity run brings a buyer (spec 2.12). Stockable. */
-    WOOD_PELLETS("Wood pellets", "tonne", .220, .150, .02625, true, Pricing.BAND, false);
+    WOOD_PELLETS("Wood pellets", "tonne", .220, .150, .02625, true, Pricing.BAND, false),
+
+    /* =======================================================================
+       TRUCKS - THE HEAVY TRACTOR AND SEMITRAILER (FR2, 2026-10-18)
+
+       A truck here is a tractor and its semitrailer, 25 tonnes a load: the
+       good Freight's Haulage division keeps to carry the city leg of every
+       bulk tonne, and the Heavy Truck Plant (Automotive's) makes. Added LAST
+       in the enum, as the order is load-bearing.
+
+       D$215k AT PARITY: a tractor is US$158k-195k and a trailer US$45k-60k
+       (the spec's R12, R19, R21). IMPORTS AND DOES NOT EXPORT, for VANS'
+       reason: an unbounded export market at a fixed floor builds the plant
+       for ever. Freight is 6.25% of its price, the share VANS (4.5 of 72)
+       and ROLLING_STOCK (150 of 2,400) carry. Its tare is 15 t (40 t gross
+       less the 25 t payload): tonnesPerUnit(), "truck". Freight buys it
+       for Haulage (sectors.Haulage), as the railway its wagon sets.
+       ======================================================================= */
+
+    /** A heavy truck - tractor and semitrailer, 25 t a load - by the unit: the Heavy Truck Plant's; Freight's Haulage division's fleet. Imported, never exported. Stockable. */
+    TRUCKS("Trucks", "truck", 215.0, Double.NaN, 13.4375, true, Pricing.BAND, false);
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -1271,6 +1291,8 @@ public enum Good {
             case "meal":      return 0;
             case "car":       return 1.5;
             case "van":       return 3;
+            // A truck's tare: 40 t gross less its 25 t payload (FR2).
+            case "truck":     return 15;
             case "wagon set": return 300;
             default:      return 0;
         }
@@ -1371,7 +1393,7 @@ public enum Good {
             // ...and wood's chips and pellets (0.7.140), by grab out of a bulker's hold.
             case RESIDUES: case WOOD_PELLETS:
                 return Ports.Cargo.DRY_BULK;
-            case STEEL: case FABRICATED_STEEL: case MACHINERY: case ROLLING_STOCK: case CARS: case VANS:
+            case STEEL: case FABRICATED_STEEL: case MACHINERY: case ROLLING_STOCK: case CARS: case VANS: case TRUCKS:
             // ...and copper's anode and cathode (0.7.133), lifted in bundles as steel is.
             case ANODE: case COPPER:
             // ...and wood's logs (0.7.138), slung aboard a log carrier by its own cranes; and (0.7.140) pulp, its

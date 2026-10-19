@@ -408,7 +408,7 @@ public final class Icons {
             case BITUMEN:                     return ROADS;
             case COKE:                        return ORE;
             case STEEL: case FABRICATED_STEEL: case MACHINERY: return INDUSTRY;
-            case CARS: case VANS:             return VEHICLES;
+            case CARS: case VANS: case TRUCKS: return VEHICLES;
             case ROLLING_STOCK:               return RAIL;
             case MATERIALS: case BUILDING_WORK: return CRANE;
             case LUXURIES:                    return LUXURY;

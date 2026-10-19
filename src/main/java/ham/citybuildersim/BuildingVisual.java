@@ -326,7 +326,8 @@ public final class BuildingVisual {
         int cls = classOf(c);
         for (int h : DRAWN_AS_HOMES) if (h == id) cls = HOME;
         boolean outer = c == BuildingType.AGRICULTURE || c == BuildingType.ELECTRICITY || c == BuildingType.WATER
-                || c == BuildingType.MINING || c == BuildingType.RAIL || c == BuildingType.AUTOMOTIVE;
+                || c == BuildingType.MINING || c == BuildingType.RAIL || c == BuildingType.AUTOMOTIVE
+                || c == BuildingType.HAULAGE;
         int people = c == BuildingType.RESIDENTIAL ? Math.max(0, t.getCapacity()) : 0;
         boolean terminal = false;
         for (int r : RAIL_TERMINALS) if (r == id) terminal = true;
@@ -398,7 +399,7 @@ public final class BuildingVisual {
             case BUSINESS_SERVICES:                             return OFFICE;
             case AGRICULTURE:                                   return FARM;
             case ELECTRICITY: case WATER:                       return UTILITY;
-            case INFRASTRUCTURE: case RAIL: case PORTS:         return TRANSPORT;
+            case INFRASTRUCTURE: case RAIL: case PORTS: case HAULAGE: return TRANSPORT;
             case EDUCATION:                                     return SCHOOL;
             case HEALTHCARE:                                    return HEALTH;
             case SAFETY:                                        return SAFETY;

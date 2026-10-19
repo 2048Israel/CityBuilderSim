@@ -143,6 +143,7 @@ public class BuildingDataCheck {
             check(who + " freightGrade", actual.getFreightGrade(), expected.getFreightGrade());
             check(who + " transitCapacity", actual.getTransitCapacity(), expected.getTransitCapacity());
             check(who + " railCapacity", actual.getRailCapacity(), expected.getRailCapacity());
+            check(who + " truckRoom", actual.getTruckRoom(), expected.getTruckRoom());
             check(who + " production1", actual.getProduction1(), expected.getProduction1());
             check(who + " production2", actual.getProduction2(), expected.getProduction2());
             check(who + " stock", actual.getStock(), expected.getStock());
@@ -375,6 +376,7 @@ public class BuildingDataCheck {
         for (BuildingsTemplate t : data) {
             double rate = Sectors.AUTOMOTIVE.equals(t.getSector())
                     ? (t.makes(Good.CARS) + t.makes(Good.VANS)) * ham.citybuildersim.sectors.Automotive.LUBRICANT_LITRES_A_VEHICLE
+                            + t.makes(Good.TRUCKS) * ham.citybuildersim.sectors.Automotive.LUBRICANT_LITRES_A_TRUCK   // FR2: a truck's own fill
                     : Sectors.MANUFACTURING.equals(t.getSector())
                     ? t.makes(Good.MACHINERY) * ham.citybuildersim.sectors.Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY
                             + t.makes(Good.FABRICATED_STEEL) * ham.citybuildersim.sectors.Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED
@@ -385,8 +387,8 @@ public class BuildingDataCheck {
             }
             if (rate > 0) oiled++;
         }
-        assertTrue("lubricants on every car, van, machinery and fabrication plant at the spec's rate a unit made, and on"
-                + " nothing else (" + oiled + " plants)", lubricated && oiled == 6);
+        assertTrue("lubricants on every car, van, truck, machinery and fabrication plant at the spec's rate a unit made, and on"
+                + " nothing else (" + oiled + " plants; the Heavy Truck Plant, FR2, the seventh)", lubricated && oiled == 7);
         BuildingsTemplate station = null;
         for (BuildingsTemplate t : data) if (t.getId() == 91) station = t;
         assertTrue("id 91 is the Filling Station: COMMERCIAL, Retail's, 350,000 L a month at the pump, buying and making"
@@ -407,12 +409,12 @@ public class BuildingDataCheck {
         assertTrue("the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated"
                         + " Highway 1.25% - and no other building has: " + repairs,
                 repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125)));
-        assertTrue("...and 139 buildings in all (0.7.140: Wood Products' six; 133 from 0.7.138, Forestry's two crews and two planted"
+        assertTrue("...and 141 buildings in all (FR2: the Truck Depot and the Heavy Truck Plant; 139 from 0.7.140, Wood Products' six; 133 from 0.7.138, Forestry's two crews and two planted"
                         + " stands; 129 from 0.7.133, Copper"
                         + " Mining's three, Copper Refining's four and Manufacturing's Wire & Cable Works; 121 from 0.7.131, Quarrying's three and Cement & Concrete's three; 115 from 0.7.126, Coal Mining's four;"
                         + " 111 from 0.7.124, Iron Mining's three; 108 from 0.7.123, the integrated route's seven; 101 from 0.7.91, 98 from"
                         + " 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76 until then)",
-                data.size() == 139);
+                data.size() == 141);
 
         /* ---------- the oil storage (0.7.85, batch O8; spec-oil 2.8) ----------
 

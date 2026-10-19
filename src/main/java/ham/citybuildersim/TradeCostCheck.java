@@ -164,6 +164,8 @@ public class TradeCostCheck {
         { Good.PULP,                     .760,       .600  },
         { Good.PAPER,                   1.050,       .880  },
         { Good.WOOD_PELLETS,             .220,       .150  },
+        // ...and FR2's trucks (2026-10-18), imported and never exported, as vans and wagon sets are.
+        { Good.TRUCKS,                 215.0,      Double.NaN  },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */

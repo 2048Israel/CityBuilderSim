@@ -418,6 +418,8 @@ public class BuildCardCheck {
                     case CUSTOMERS: case MEALS: expectFigure = t.getCoverage(); break;
                     case BRANCH:    expectFigure = Bank.CUSTOMERS_PER_BRANCH; break;
                     case RAIL:      expectFigure = t.getRailCapacity(); break;
+                    // ...a Truck Depot's trucks kept (FR2).
+                    case DEPOT:     expectFigure = t.getTruckRoom(); break;
                     // ...a filling station's litres a month at its typical throughput (0.7.83).
                     case PUMP:      expectFigure = t.pumpLitres(); break;
                     // ...oil storage's tank room, in litres (0.7.85).

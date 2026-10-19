@@ -63,9 +63,9 @@ public final class BuildCard {
      * and the city's Strategic Reserve. BERTHS (0.7.86): a sea terminal's
      * tonnes a year of its kind of cargo - the city's. SLOTS (0.7.91): an
      * offshore platform's wells' slots. PIPE (0.7.91): a kilometre of crude
-     * pipeline.
+     * pipeline. DEPOT (FR2): the trucks a Truck Depot keeps.
      */
-    public enum Kind { CITY, HOMES, CUSTOMERS, MEALS, BRANCH, RAIL, POINTS, MAKER, OFFICE, PUMP, TANKS, BERTHS, SLOTS, PIPE }
+    public enum Kind { CITY, HOMES, CUSTOMERS, MEALS, BRANCH, RAIL, POINTS, MAKER, OFFICE, PUMP, TANKS, BERTHS, SLOTS, PIPE, DEPOT }
 
     /**
      * What bar 2 measures: LAND per unit (the market's scarce resource),
@@ -245,7 +245,7 @@ public final class BuildCard {
             "Oil platforms",
             "Oil pipelines", "Refining",
             "Oil storage", "Ports", "Building materials", "Builders",
-            "Offices", "Farms", "Rail", "Vehicles", "Luxury shops", "Restaurants" };
+            "Offices", "Farms", "Rail", "Truck depots", "Vehicles", "Luxury shops", "Restaurants" };
 
     /**
      * The heading a building is compared under: a market building's group by
@@ -262,6 +262,8 @@ public final class BuildCard {
         // ...and the oil at sea's platforms, in their wells' slots, and pipelines, in kilometres (0.7.91): the wells stay with the land's.
         if (kindOf(t) == Kind.SLOTS) return "Oil platforms";
         if (kindOf(t) == Kind.PIPE) return "Oil pipelines";
+        // ...and Freight's Truck Depot, measured in the trucks it keeps, apart from the railway's tonnes (FR2).
+        if (kindOf(t) == Kind.DEPOT) return "Truck depots";
         if (c.cityBuilds()) {
             BuildAdvice.Measure m = cityMeasure(t);
             return m == null ? c.name() : m.label();
@@ -342,6 +344,8 @@ public final class BuildCard {
         if (Ports.isPort(t)) return Kind.BERTHS;
         if (t.isPlatform()) return Kind.SLOTS;
         if (t.isPipeline()) return Kind.PIPE;
+        // ...and Freight's Truck Depot (FR2), measured in the trucks it keeps.
+        if (t.getTruckRoom() > 0) return Kind.DEPOT;
         if (t.getRailCapacity() > 0) return Kind.RAIL;
         if (t.makes(Good.MEALS) > 0) return Kind.MEALS;
         if (t.makes(Good.GROCERIES) > 0 || t.makes(Good.LUXURY_TRADE) > 0) return Kind.CUSTOMERS;
@@ -582,6 +586,10 @@ public final class BuildCard {
                 detail = new double[] { grocers.pumpPriceToday(game), Double.isFinite(litre) ? litre : 0 };
                 break;
             }
+            case DEPOT:
+                verb = "keeps up to "; words = " trucks"; figure = unit = t.getTruckRoom();
+                per = perTag = "truck kept";
+                break;
             case RAIL:
                 verb = "hauls up to "; words = " t a month across the boundary"; figure = unit = t.getRailCapacity();
                 per = perTag = "tonne a month";

@@ -713,7 +713,7 @@ public class LongPlaytest {
                 for (Good gd : Good.values()) {
                     double v = s.getPurchasesForgone(gd);
                     if (!(v > 0)) continue;
-                    if (gd == Good.VANS || gd == Good.ROLLING_STOCK) f[2] += v;
+                    if (gd == Good.VANS || gd == Good.TRUCKS || gd == Good.ROLLING_STOCK) f[2] += v;
                     else if (RETAILERS.contains(k)) f[0] += v;
                     else f[1] += v;
                 }
