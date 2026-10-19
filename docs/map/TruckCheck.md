@@ -1,4 +1,4 @@
-# TruckCheck.java - 439 lines · 10 methods · 0 constants · harnesses
+# TruckCheck.java - 441 lines · 10 methods · 0 constants · harnesses
 
 `ham/citybuildersim/TruckCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
 
@@ -37,18 +37,18 @@
 >   6. never saved: the tallies ride in Freight's save and come back, and no
 >      save class mentions a TruckSchedule.
 
-**Uses:** [TruckSchedule](TruckSchedule.md) (65), [GamePrefs](GamePrefs.md) (11), [GameFiles](GameFiles.md) (6), [Game](Game.md) (5), [MapFrame](MapFrame.md) (5), [Freight](Freight.md) (4), [Good](Good.md) (4), [Haulage](Haulage.md) (3), [SectorState](SectorState.md) (3), [HaulageCheck](HaulageCheck.md) (2), [Sector](Sector.md) (2), [Traffic](Traffic.md) (1), [InfrastructureManager](InfrastructureManager.md) (1)
+**Uses:** [TruckSchedule](TruckSchedule.md) (65), [GamePrefs](GamePrefs.md) (11), [GameFiles](GameFiles.md) (6), [Game](Game.md) (5), [Freight](Freight.md) (5), [MapFrame](MapFrame.md) (5), [Good](Good.md) (4), [Haulage](Haulage.md) (3), [SectorState](SectorState.md) (3), [HaulageCheck](HaulageCheck.md) (2), [Sector](Sector.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [Traffic](Traffic.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 125 | · 1. THE TALLY |
-| 181 | · 2. THE COUNTS |
-| 268 | · 3. A PURE FUNCTION |
-| 354 | · 4. THE NEAR-ZOOM GATE |
-| 366 | · 5. THE SETTING |
-| 388 | · 6. NEVER SAVED |
+| 183 | · 2. THE COUNTS |
+| 270 | · 3. A PURE FUNCTION |
+| 356 | · 4. THE NEAR-ZOOM GATE |
+| 368 | · 5. THE SETTING |
+| 390 | · 6. NEVER SAVED |
 
 ## Fields (state)
 
@@ -60,7 +60,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 390 | **type** `public class TruckCheck` | Proves that Haulage's loads are drawn as trucks on the map's roads, as a pure function of time, and that drawing them changes nothing in the game (0.8.8, batch FR5, slice A; docs/studies/spec-freight-and-infrastructur... |
+| 50 | 392 | **type** `public class TruckCheck` | Proves that Haulage's loads are drawn as trucks on the map's roads, as a pure function of time, and that drawing them changes nothing in the game (0.8.8, batch FR5, slice A; docs/studies/spec-freight-and-infrastructur... |
 | 54 | 4 | `static void check(String label, boolean ok)` |  |
 | 59 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 64 | 3 | `static boolean near(double a, double b, double rel)` |  |
@@ -70,5 +70,5 @@
 | 96 | 7 | `static long walkedStands(double loads)` | The N the rule gives for a month of `loads`, by a plain walk of the sequence 1, 2, 5, 10, 20, 50...: the first that brings loads / N to MOST_A_MONTH or under. |
 | 105 | 8 | `static long stepBelow(long n)` | The step of 1, 2, 5, 10, 20, 50... |
 | 114 | 5 | `static void quietly(Runnable r)` |  |
-| 120 | 319 | `public static void main(String[] args)` |  |
+| 120 | 321 | `public static void main(String[] args)` |  |
 

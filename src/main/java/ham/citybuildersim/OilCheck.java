@@ -1338,8 +1338,9 @@ public class OilCheck {
         // ...with its trucks' since FR2: the sector's diesel is the railway's and Haulage's, each drawn as a buyer.
         close("...it bought it at home, on its books, with its trucks'", bought.atHome,
                 rail.getFuelBill() + rail.haulage().getDiesel() - rail.haulage().getDieselImported(), 1e-9);
-        close("...eighteen litres a tonne hauled, at the litre's price when it drew them", rail.getFuelBill(),
-                rail.getHauledTonnes() * Freight.FUEL_LITRES_PER_TONNE * atDraw, 1e-9);
+        // ...and since FR6 the city tonnes it carries at CITY_LITRES_A_TONNE each (getCityLitres()), none with no room past the boundary's.
+        close("...eighteen litres a tonne hauled, and the city tonnes' litres, at the litre's price when it drew them", rail.getFuelBill(),
+                (rail.getHauledTonnes() * Freight.FUEL_LITRES_PER_TONNE + rail.getCityLitres()) * atDraw, 1e-9);
     }
 
     /* ============================ 6. THE AUDIT ============================ */

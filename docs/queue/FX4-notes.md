@@ -1,12 +1,12 @@
 # FX4 - notes
 
-*0.8.9, 2026-10-19. [The brief](FX4.md). Diagnosed on scratch copies of
+*0.8.10, 2026-10-19. [The brief](FX4.md). Diagnosed on scratch copies of
 Jerus's autosave of 12:12 (a new Earth city, month 205, 0.8.8) and of slot 2
 (0.8.6, month 10,572), read and never written.*
 
 ## The cause
 
-It is not a regression in FR2, FR7, FR3 or FR5. The code is the same on 0.8.4.
+It is not a regression in FR2, FR7, FR3, FR5 or FR6. The code is the same on 0.8.4.
 
 - His new city's history reads `fxParity` 0.0000 from **month 2**, with the
   price index at 1.000 and the rate at 0.996. The rate then falls steadily

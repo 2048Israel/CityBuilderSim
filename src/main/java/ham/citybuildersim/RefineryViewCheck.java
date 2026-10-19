@@ -394,10 +394,11 @@ public class RefineryViewCheck {
                         railway == null ? "none" : RefineryView.buyerFigure(railway)));
         assertTrue("the cars' petrol is the forecourts' month (Retail's pump and queue)", cars != null
                 && near(cars.of(Good.PETROL), shops.getPumpLitres() + shops.getQueueLitres()));
-        double haul = rail.getHauledTonnes() * Freight.FUEL_LITRES_PER_TONNE;
+        // ...and the city tonnes it carries since FR6, at CITY_LITRES_A_TONNE each (getCityLitres()).
+        double haul = rail.getHauledTonnes() * Freight.FUEL_LITRES_PER_TONNE + rail.getCityLitres();
         Sector.Input fleet = rail.inputRow(Good.DIESEL);
         double railFleet = fleet == null ? 0 : fleet.boughtLocal + fleet.imported;
-        report("the railway's diesel is its haul's tonnes at FUEL_LITRES_PER_TONNE (and its own vans')", railway != null && haul > 0
+        report("the railway's diesel is its haul's tonnes at FUEL_LITRES_PER_TONNE and its city tonnes' litres (and its own vans')", railway != null && haul > 0
                         && near(rail.getFuelLitres(), haul) && near(railway.of(Good.DIESEL), haul + railFleet),
                 String.format("%,.0f t hauled, %s", rail.getHauledTonnes(), RefineryView.litres(haul)));
         boolean tanks = true;

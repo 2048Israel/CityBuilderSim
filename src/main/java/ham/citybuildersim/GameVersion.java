@@ -6870,11 +6870,31 @@ public final class GameVersion {
      *     a save; the legend's line says what a truck stands for.
      *   - Harnesses: TruckCheck, TruckRouteCheck (new).
      *
-     * 0.8.9 (2026-10-19) - FX4, A NEW CITY AFTER A REFORMED ONE. Jerus loaded
+     * 0.8.9 (2026-10-19) - FR6, THE RAILWAY CARRIES THE CITY'S OWN BULK, AND
+     * THE PORT YARD. (docs/studies/spec-freight-and-infrastructure.md 3.3 and
+     * 7, D4 and D7; docs/queue/FR6.md, FR6-notes.md.) Slices by Sonnet 5.5
+     * subagents, reviewed by Claude. Save format unchanged: new keys only.
+     *   - THE CITY'S OWN BULK ON RAILS: the siding's part (RAIL_ROAD_RELIEF)
+     *     of every BULK tonne bought at home is offered the railway after the
+     *     boundary's tonnes, on the room the track, the sets, the stations and
+     *     the sidings leave (Freight.dealHome()), billed "Rail freight" at the
+     *     railway's quote on Haulage's; the trucks carry the rest.
+     *   - THE PORT YARD: with a station and a sea terminal standing,
+     *     Freight.PORT_YARD_SHARE of the bulk across the berths joins that
+     *     offer, quay to door by rail.
+     *   - The city tonnes burn CITY_LITRES_A_TONNE, join the revenue the
+     *     railway's quote is struck over, and order no track.
+     *   - FR5's truck tallies are the trucks' part of the legs, FR6's railed
+     *     home and quay tonnes off.
+     *   - Harnesses: HomeRailCheck (new); HaulageCheck's bill, OilCheck's and
+     *     RefineryViewCheck's diesel, TruckCheck's tallies; the playtests'
+     *     "Home rail" line.
+     *
+     * 0.8.10 (2026-10-19) - FX4, A NEW CITY AFTER A REFORMED ONE. Jerus loaded
      * his thrice-reformed city (unit 10,000,000) and founded a new one in the
      * same window: it kept the old unit and the money constants the load had
      * seeded at it, so parity read 0.0000 from month 2 and the rate ran from
-     * 1.00 to 0.04. Not FR2-FR5's: 0.8.4 does the same.
+     * 1.00 to 0.04. Not FR2-FR6's: 0.8.4 does the same.
      *   - Game.buildWorld() resets the denomination and re-seeds the money
      *     constants at 1 when the unit is not 1 (seedMoneyConstants(), the
      *     load path's list made one method). A city never reformed runs as
@@ -6882,7 +6902,7 @@ public final class GameVersion {
      *   - Harness: NewGameCheck 15 (a city reformed a hundredfold, then New
      *     Game, against a city never reformed). Save format unchanged.
      */
-    public static final String VERSION = "0.8.9";
+    public static final String VERSION = "0.8.10";
 
     /**
      * The save shape.
