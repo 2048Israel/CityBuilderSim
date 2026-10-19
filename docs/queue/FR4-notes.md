@@ -3,7 +3,11 @@
 *0.8.11, 2026-10-19. The spec is `docs/studies/spec-freight-and-infrastructure.md`
 §5, §6 and §7's FR4 row; the mock-ups are `docs/studies/freight/`. Jerus took
 every freight call as recommended ("all the freighting just do rec"). Started
-at 15:58 with the PC going off at 17:10, so this is work in progress: everything below is built and checked, and "Left" is what is not.*
+at 15:58 with the PC going off at 17:10.*
+
+**Work in progress.** Everything under "What it does" is built and checked
+(the suite, the trace, the timing harnesses), and can ship as it is; "Left"
+is the part of §6 not built.
 
 ## What it does
 
@@ -87,7 +91,9 @@ findings, once README's count of harnesses said 120 (FreightViewCheck is
 new). The maps are regenerated. FreightViewCheck runs in about 2 s on
 three cities (none, a full one with rail, the port yard, three kinds of
 berth, a depot and dues, and one railed with no berth); PolicyPreviewCheck
-gained its section 10 (two played berth cities). Last and alone,`nBatch check.bat --timing`: 8 timing harnesses hard, 7 passed; the eighth is`nScaleCheck's "...and it builds" again, main's red, as FX4 found it.
+gained its section 10 (two played berth cities). Last and alone,
+`Batch check.bat --timing`: 8 timing harnesses hard, 7 passed; the eighth is
+ScaleCheck's "...and it builds" again, main's red, as FX4 found it.
 
 ## What Jerus checks by eye (FR4-C)
 
