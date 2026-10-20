@@ -71,10 +71,13 @@ with it. The look-up tools:
 
 ## The record
 
+- **The changelog** is `docs/notes/changelog.md` since 2026-10-20 (Jerus: the
+  record "in GitHub"): what shipped, newest first; a batch adds its block at
+  the top in its own merge. A session that has been away reads its top and
+  the todo's section 0 first.
 - **The project** (claude.ai, "Civic Ledger: Java Game"): `claude/todo.md` is
-  what is open, `claude/changelog.md` what shipped (newest first),
-  `claude/index.md` the design notes by subsystem. A session that has been
-  away reads the changelog's top and the todo's section 0 first.
+  what is open, `claude/index.md` the design notes by subsystem; its
+  `claude/changelog.md` is the older record, up to 0.7.142.
 - **The manual** is the published artifact "CityBuilderSim"
   (https://claude.ai/artifact/BkBAN1RDiQTpCj79WPbpCp). `docs/manual.md` and
   `docs/manual.html` are GENERATED from it by `tools.ManualToMarkdown` at

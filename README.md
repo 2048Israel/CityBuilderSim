@@ -317,8 +317,9 @@ moving does not mean editing the README:
   `docs/manual.html`, the page itself, which opens from a clone. Both are
   generated from the published page at every publish by
   `tools.ManualToMarkdown`; do not edit them.
-- Per-batch design notes, the running to-do list and the changelog live
-  alongside it, in the claude.ai project.
+- Per-batch design notes and the running to-do list live alongside it, in
+  the claude.ai project; the changelog is `docs/notes/changelog.md` since
+  2026-10-20.
 - **The queue** is in the repository: `QUEUE.md` at the root lists the batches
   waiting to be done, in order, a line and a link each (a brief with no other
   home is in `docs/queue/`). The design studies are in `docs/studies/`, and
