@@ -23,6 +23,7 @@ stuff".
 |---|---|---|
 | FR4 | The freight screens, and Build's Infrastructure and Freight tabs | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | EG1 | Deposits where the geology says: oil by known petroleum, iron on shields and recorded deposits, fewer and bigger fields, the Sydney coalfield and the Scotian Shelf by hand rows (Jerus, 2026-10-20: "Queue it next after FR4", ahead of the industrial review it waited on) | [spec-earth2-terrain §8.5](docs/studies/spec-earth2-terrain.md#85-the-recommendation-eg1-deposits-where-the-geology-says-d20-your-call) |
+| CL1 | Study: the city's layout - streets not a grid, buildings that stay where they were put, uses that do not ring; its batches queued next when it finishes (Jerus, 2026-10-20: "study, and then add teh batch") | [CL1](docs/queue/CL1.md) |
 | CD1 | The city's debt: the curve from the dial the market expects, every payment priced on its month | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
