@@ -1,6 +1,6 @@
 # PortCheck.java - 998 lines · 22 methods · 7 constants · harnesses
 
-`ham/citybuildersim/PortCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PortCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md
 > 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5).
@@ -61,7 +61,7 @@
 
 **Uses:** [Ports](Ports.md) (255), [Good](Good.md) (90), [BoatSchedule](BoatSchedule.md) (54), [Game](Game.md) (35), [Traffic](Traffic.md) (32), [BuildingsTemplate](BuildingsTemplate.md) (23), [BuildingManager](BuildingManager.md) (16), [World](World.md) (11), [Founding](Founding.md) (8), [Refining](Refining.md) (7), [SpreadPlanner](SpreadPlanner.md) (7), [GameFiles](GameFiles.md) (5), [JobType](JobType.md) (5), [GoodsMarket](GoodsMarket.md) (5), [Freight](Freight.md) (4), [BuildingType](BuildingType.md) (4), [InfrastructureManager](InfrastructureManager.md) (4), [BuildCard](BuildCard.md) (4), [HeavyIndustry](HeavyIndustry.md) (3), [MoneyAudit](MoneyAudit.md) (2), [LandManager](LandManager.md) (2), [LandParcel](LandParcel.md) (2), [MiningCheck](MiningCheck.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [Sector](Sector.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [CityLand](CityLand.md) (1), [LongPlaytest](LongPlaytest.md) (1), [Sectors](Sectors.md) (1)
 
-**Used by (2):** [BuildAdviceCheck](BuildAdviceCheck.md), [LandlordPortCheck](LandlordPortCheck.md)
+**Used by (3):** [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [LandlordPortCheck](LandlordPortCheck.md)
 
 ## Sections
 

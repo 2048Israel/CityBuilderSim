@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.11 — FR4, the freight screens — 2026-10-20, shipped, see docs/queue/FR4-notes.md
+
+The last freight batch draws what FR2-FR7 built. Build's "Roads & transit" is Infrastructure again and holds the
+ports and the Strategic Reserve, out of Industry; "Rail" is Freight (the rungs, the Rail Depot, the Truck Depot);
+a berth's card says when it pays back, from the advice's own verdict. Sectors › Freight opens on a division strip
+(All in legs, Haulage, Rail, Ports) and its Income page lists the shippers by division; every works' Operations
+page shows How its tonnes move (each good's legs by mode, the bill by division, what a siding would save; Iron &
+Steel's pellet plant by truck and with a siding). Infrastructure's railway and freight pages are one Freight page,
+with a Ports page beside it; Policy has the port dues dial with its preview; Trade draws its band in legs. The
+manual's freight pages are brought to 0.8.11. New pure models FreightView and TradeBand with their harnesses; one
+saved tally (each sector's moves, read by nothing in the model). The trace is byte-identical to 0.8.10's.
+
 ### Docs pass 2026-10-19 — over FX3, TM1, FR2, FR7, FR3, FR5, FR6 and FX4 — shipped, no tag
 
 The daily docs pass by a fresh session over the eight batches since the 2026-10-18 pass (71cf051..4b27f49).

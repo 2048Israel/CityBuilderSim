@@ -1,6 +1,6 @@
 # TileRaster.java - 2,384 lines · 83 methods · 90 constants · model
 
-`ham/citybuildersim/TileRaster.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TileRaster.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixels() for a tile's image.
 > 

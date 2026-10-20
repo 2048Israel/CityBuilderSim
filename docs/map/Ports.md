@@ -1,6 +1,6 @@
-# Ports.java - 673 lines · 53 methods · 11 constants · model
+# Ports.java - 678 lines · 54 methods · 11 constants · model
 
-`ham/citybuildersim/Ports.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Ports.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The city's ports: the berths its sea terminals stand, the share of each
 > kind of cargo they take off the lorries and the railway, and the tonnes
@@ -59,7 +59,7 @@
 
 **Uses:** [Good](Good.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (13), [Traffic](Traffic.md) (4), [BuildingManager](BuildingManager.md) (4), [Refining](Refining.md) (2), [Freight](Freight.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
 
-**Used by (42):** [AutoBuilder](AutoBuilder.md), [BoatSchedule](BoatSchedule.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [CityShore](CityShore.md), [CopperMiningCheck](CopperMiningCheck.md), [DataSave](DataSave.md), [ForestryCheck](ForestryCheck.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [Game](Game.md), [Good](Good.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PortCheck](PortCheck.md), [PortDivision](PortDivision.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [ShipShapes](ShipShapes.md), [TrainSchedule](TrainSchedule.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (45):** [AutoBuilder](AutoBuilder.md), [BoatSchedule](BoatSchedule.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [CityShore](CityShore.md), [CopperMiningCheck](CopperMiningCheck.md), [DataSave](DataSave.md), [ForestryCheck](ForestryCheck.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [Game](Game.md), [Good](Good.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PortCheck](PortCheck.md), [PortDivision](PortDivision.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [ShipShapes](ShipShapes.md), [TradeBand](TradeBand.md), [TradeBandCheck](TradeBandCheck.md), [TrainSchedule](TrainSchedule.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 
@@ -67,10 +67,10 @@
 |---:|---|
 | 61 | THE FREIGHT RULE (runs/research-freight.md 5) |
 | 174 | THE BERTHS, AND THE ROOM |
-| 365 | IN FORCE: THE MONTH RUNNING |
-| 444 | THE MONTH BILLED: WHAT CROSSED THE BOUNDARY, AND WHAT OF IT BY SEA |
-| 516 | THE NEXT MONTH'S SHARES (sectors.Freight.haul() step 3) |
-| 618 | THE SAVE (DataSave.portMonth) |
+| 370 | IN FORCE: THE MONTH RUNNING |
+| 449 | THE MONTH BILLED: WHAT CROSSED THE BOUNDARY, AND WHAT OF IT BY SEA |
+| 521 | THE NEXT MONTH'S SHARES (sectors.Freight.haul() step 3) |
+| 623 | THE SAVE (DataSave.portMonth) |
 
 ## Enum constants
 
@@ -118,30 +118,30 @@
 | 142 | `private final Cargo cargo` |  |
 | 143 | `private final String label` |  |
 | 144 | `private final double tonnes` |  |
-| 374 | `private final double[] share` | Each kind's share of its goods' tonnes at sea (or, for a kind after the railway, of what the railway leaves). |
-| 377 | `private final boolean[] first` | Whether each kind goes by sea before the railway. |
-| 380 | `private Ship crudeShip` | The class crude goes in; null while no tanker berth stands or the refiners' tanks have no room for one. |
-| 383 | `private final double[] firstOfStream` | The share of each stream's tonnes the berths take before the railway, and all the berths take. |
-| 384 | `private final double[] seaOfStream` |  |
-| 387 | `private double heldBack` | Crude tonnes a month a tanker berth would carry if the refiners had room for a cargo: held back for room. |
-| 453 | `private final double[] seaIn` |  |
-| 454 | `private final double[] tradeIn` |  |
-| 455 | `private double crudeSeaIn, crudeSeaOut, crudeTrade` |  |
-| 458 | `private Ship billedCrudeShip` | The class the month billed's crude went in. |
-| 527 | `private final double[] nextShare` |  |
-| 528 | `private final boolean[] nextFirst` |  |
-| 529 | `private Ship nextCrudeShip` |  |
-| 530 | `private double nextHeld` |  |
-| 624 | `public double[] share, firstOfStream, seaOfStream, seaIn, seaOut, tradeIn, tradeOut` |  |
-| 625 | `public boolean[] first` |  |
-| 626 | `public String crudeShip, billedCrudeShip` |  |
-| 627 | `public double heldBack, crudeSeaIn, crudeSeaOut, crudeTrade` |  |
+| 379 | `private final double[] share` | Each kind's share of its goods' tonnes at sea (or, for a kind after the railway, of what the railway leaves). |
+| 382 | `private final boolean[] first` | Whether each kind goes by sea before the railway. |
+| 385 | `private Ship crudeShip` | The class crude goes in; null while no tanker berth stands or the refiners' tanks have no room for one. |
+| 388 | `private final double[] firstOfStream` | The share of each stream's tonnes the berths take before the railway, and all the berths take. |
+| 389 | `private final double[] seaOfStream` |  |
+| 392 | `private double heldBack` | Crude tonnes a month a tanker berth would carry if the refiners had room for a cargo: held back for room. |
+| 458 | `private final double[] seaIn` |  |
+| 459 | `private final double[] tradeIn` |  |
+| 460 | `private double crudeSeaIn, crudeSeaOut, crudeTrade` |  |
+| 463 | `private Ship billedCrudeShip` | The class the month billed's crude went in. |
+| 532 | `private final double[] nextShare` |  |
+| 533 | `private final boolean[] nextFirst` |  |
+| 534 | `private Ship nextCrudeShip` |  |
+| 535 | `private double nextHeld` |  |
+| 629 | `public double[] share, firstOfStream, seaOfStream, seaIn, seaOut, tradeIn, tradeOut` |  |
+| 630 | `public boolean[] first` |  |
+| 631 | `public String crudeShip, billedCrudeShip` |  |
+| 632 | `public double heldBack, crudeSeaIn, crudeSeaOut, crudeTrade` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 615 | **type** `public final class Ports` | The city's ports: the berths its sea terminals stand, the share of each kind of cargo they take off the lorries and the railway, and the tonnes that went by sea in the month (0.7.86, batch O9; docs/studies/spec-oil.md... |
+| 59 | 620 | **type** `public final class Ports` | The city's ports: the berths its sea terminals stand, the share of each kind of cargo they take off the lorries and the railway, and the tonnes that went by sea in the month (0.7.86, batch O9; docs/studies/spec-oil.md... |
 
 ### THE FREIGHT RULE (runs/research-freight.md 5) (lines 61-173)
 
@@ -158,7 +158,7 @@
 | 156 | 1 | `public double tonnes()` _(in Ports.Ship)_ | Its cargo a voyage, in tonnes. |
 | 159 | 5 | `public static Ship byName(String name)` _(in Ports.Ship)_ | The one of this name, or null - a save written by a build without it loses the class, not the load. |
 
-### THE BERTHS, AND THE ROOM (lines 174-364)
+### THE BERTHS, AND THE ROOM (lines 174-369)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -177,55 +177,56 @@
 | 336 | 3 | `public static Ship bulkShipFor(double tonnes)` | The bulk carrier a month's tonnes one way go in, with the Bulk Terminal's classes: a Capesize when they fill one, else a Panamax (star). |
 | 346 | 9 | `public static Ship bulkShipFor(double tonnes, java.util.List<Ship> allowed)` | ...in these classes (FR3 call 6): the largest whose cargo is at most the tonnes, else the smallest of them. |
 | 361 | 3 | `public static double factor(double rail, double sea, double seaFreightShare)` | The share of a good's lorry freight its band still carries, with these shares by rail and by sea: 1 - rail - sea + sea x seaFreightShare. |
+| 366 | 3 | `public static double seaFactor(double sea, double seaFreightShare)` | ...the ships' part of that factor (FR4): what Trade's band in legs draws as the sea leg (TradeBand). |
 
-### IN FORCE: THE MONTH RUNNING (lines 365-443)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 390 | 1 | `public double share(Cargo k)` | Each kind's share in force. |
-| 393 | 1 | `public boolean seaFirst(Cargo k)` | Whether a kind goes by sea before the railway, in force. |
-| 396 | 1 | `public Ship crudeShip()` | The class crude goes in, in force; null when none goes by sea. |
-| 399 | 1 | `public double getHeldBack()` | Crude tonnes a month held back for room (spec-oil 2.9): what a tanker berth standing would carry if the refiners' tanks had room for a cargo. |
-| 402 | 4 | `public boolean anyAtSea()` | True while anything goes by sea. |
-| 408 | 4 | `public static double seaFreightShareOf(Good g)` | What a tonne of this good costs by sea, of a lorry's; 0 for a good no ship carries. |
-| 414 | 7 | `public double seaShareOf(Good g, double carried)` | The share of a good's tonnes at sea, with the railway carrying `carried` of its stream's remainder. |
-| 427 | 6 | `public double railShareOf(Good g, double carried)` | The share of a good's tonnes on the railway: `carried` - its share of its stream's tonnes the berths before it leave - of what the berths do not take first. |
-| 435 | 5 | `public double[] railOfStream(double[] carried)` | The railway's share of each stream's tonnes, for the road: its share of the remainder (Freight.getCarried()) of what the berths do not take first. |
-| 442 | 1 | `public double[] seaOfStream()` | ...and the berths' share of each stream's tonnes. |
-
-### THE MONTH BILLED: WHAT CROSSED THE BOUNDARY, AND WHAT OF IT BY SEA (lines 444-515)
+### IN FORCE: THE MONTH RUNNING (lines 370-448)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 461 | 8 | `public void beginMonth()` | Starts the month's tally, at the class in force while it moved. |
-| 471 | 14 | `public void tally(Good g, double tonnesIn, double tonnesOut, double sea)` | One owner's tonnes of a good each way across the boundary, `sea` of them by ship. |
-| 487 | 1 | `public double seaIn(Cargo k)` | Tonnes of a kind landed by sea, the month billed. |
-| 489 | 1 | `public double seaOut(Cargo k)` | ...and shipped by sea. |
-| 491 | 1 | `public double tradeIn(Cargo k)` | Tonnes of a kind that crossed the boundary inbound, by any mode, the month billed. |
-| 493 | 1 | `public double tradeOut(Cargo k)` | ...and outbound. |
-| 495 | 1 | `public double crudeSeaIn()` | Crude's own part of liquid bulk's sea tonnes: landed, and shipped. |
-| 496 | 1 | `public double crudeSeaOut()` |  |
-| 498 | 1 | `public double crudeTrade()` | Crude's tonnes across the boundary, both ways, by any mode. |
-| 500 | 1 | `public Ship billedCrudeShip()` | The class the month billed's crude went in, or null. |
-| 503 | 5 | `public double carriable(Cargo k)` | Tonnes of a kind that could go by sea, both ways, the month billed: crude left out while held back for room. |
-| 510 | 5 | `public double seaTonnes()` | All sea tonnes, both ways, the month billed. |
+| 395 | 1 | `public double share(Cargo k)` | Each kind's share in force. |
+| 398 | 1 | `public boolean seaFirst(Cargo k)` | Whether a kind goes by sea before the railway, in force. |
+| 401 | 1 | `public Ship crudeShip()` | The class crude goes in, in force; null when none goes by sea. |
+| 404 | 1 | `public double getHeldBack()` | Crude tonnes a month held back for room (spec-oil 2.9): what a tanker berth standing would carry if the refiners' tanks had room for a cargo. |
+| 407 | 4 | `public boolean anyAtSea()` | True while anything goes by sea. |
+| 413 | 4 | `public static double seaFreightShareOf(Good g)` | What a tonne of this good costs by sea, of a lorry's; 0 for a good no ship carries. |
+| 419 | 7 | `public double seaShareOf(Good g, double carried)` | The share of a good's tonnes at sea, with the railway carrying `carried` of its stream's remainder. |
+| 432 | 6 | `public double railShareOf(Good g, double carried)` | The share of a good's tonnes on the railway: `carried` - its share of its stream's tonnes the berths before it leave - of what the berths do not take first. |
+| 440 | 5 | `public double[] railOfStream(double[] carried)` | The railway's share of each stream's tonnes, for the road: its share of the remainder (Freight.getCarried()) of what the berths do not take first. |
+| 447 | 1 | `public double[] seaOfStream()` | ...and the berths' share of each stream's tonnes. |
 
-### THE NEXT MONTH'S SHARES (sectors.Freight.haul() step 3) (lines 516-617)
+### THE MONTH BILLED: WHAT CROSSED THE BOUNDARY, AND WHAT OF IT BY SEA (lines 449-520)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 537 | 28 | `public double[][] planFirst(double[] tonnes, double[] lorry, double quote, double[] berths, double freeCrudeRoom)` | The berths' shares for next month of the kinds that go before the railway, at the railway's quote in force. |
-| 567 | 8 | `public void planAfter(double[] tonnes, double[] next)` | The berths' shares for next month of the kinds that go after the railway: of what it leaves, its share of each stream's remainder `next`. |
-| 577 | 22 | `public void commit(double[] tonnes, double[] streamTonnes, double[] next)` | Puts next month's shares in force, and the road's two shares of each stream with them (`streamTonnes`, the railway's by stream). |
-| 601 | 16 | `private double[] kindTonnes(double[] tonnes, double[] next)` | A month's tonnes by kind; with `next`, only what the railway leaves of each good's stream, and crude out while next month holds it back. |
+| 466 | 8 | `public void beginMonth()` | Starts the month's tally, at the class in force while it moved. |
+| 476 | 14 | `public void tally(Good g, double tonnesIn, double tonnesOut, double sea)` | One owner's tonnes of a good each way across the boundary, `sea` of them by ship. |
+| 492 | 1 | `public double seaIn(Cargo k)` | Tonnes of a kind landed by sea, the month billed. |
+| 494 | 1 | `public double seaOut(Cargo k)` | ...and shipped by sea. |
+| 496 | 1 | `public double tradeIn(Cargo k)` | Tonnes of a kind that crossed the boundary inbound, by any mode, the month billed. |
+| 498 | 1 | `public double tradeOut(Cargo k)` | ...and outbound. |
+| 500 | 1 | `public double crudeSeaIn()` | Crude's own part of liquid bulk's sea tonnes: landed, and shipped. |
+| 501 | 1 | `public double crudeSeaOut()` |  |
+| 503 | 1 | `public double crudeTrade()` | Crude's tonnes across the boundary, both ways, by any mode. |
+| 505 | 1 | `public Ship billedCrudeShip()` | The class the month billed's crude went in, or null. |
+| 508 | 5 | `public double carriable(Cargo k)` | Tonnes of a kind that could go by sea, both ways, the month billed: crude left out while held back for room. |
+| 515 | 5 | `public double seaTonnes()` | All sea tonnes, both ways, the month billed. |
 
-### THE SAVE (DataSave.portMonth) (lines 618-673)
+### THE NEXT MONTH'S SHARES (sectors.Freight.haul() step 3) (lines 521-622)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 623 | 6 | **type** `public static final class State` | The shares in force and the month billed, as the save holds them. |
-| 630 | 18 | `public State toState()` |  |
-| 650 | 17 | `public void restore(State s)` | A save's ports; null - a save from before 0.7.86 - none: nothing at sea, which is what that city had. |
-| 668 | 3 | `private static void copy(double[] from, double[] to)` |  |
-| 672 | 1 | `private static double finite(double v)` |  |
+| 542 | 28 | `public double[][] planFirst(double[] tonnes, double[] lorry, double quote, double[] berths, double freeCrudeRoom)` | The berths' shares for next month of the kinds that go before the railway, at the railway's quote in force. |
+| 572 | 8 | `public void planAfter(double[] tonnes, double[] next)` | The berths' shares for next month of the kinds that go after the railway: of what it leaves, its share of each stream's remainder `next`. |
+| 582 | 22 | `public void commit(double[] tonnes, double[] streamTonnes, double[] next)` | Puts next month's shares in force, and the road's two shares of each stream with them (`streamTonnes`, the railway's by stream). |
+| 606 | 16 | `private double[] kindTonnes(double[] tonnes, double[] next)` | A month's tonnes by kind; with `next`, only what the railway leaves of each good's stream, and crude out while next month holds it back. |
+
+### THE SAVE (DataSave.portMonth) (lines 623-678)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 628 | 6 | **type** `public static final class State` | The shares in force and the month billed, as the save holds them. |
+| 635 | 18 | `public State toState()` |  |
+| 655 | 17 | `public void restore(State s)` | A save's ports; null - a save from before 0.7.86 - none: nothing at sea, which is what that city had. |
+| 673 | 3 | `private static void copy(double[] from, double[] to)` |  |
+| 677 | 1 | `private static double finite(double v)` |  |
 

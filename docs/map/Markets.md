@@ -1,6 +1,6 @@
 # Markets.java - 513 lines · 26 methods · 0 constants · model
 
-`ham/citybuildersim/Markets.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Markets.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > Every goods market in the city, and the month they clear in.
 > 
@@ -50,7 +50,7 @@
 
 **Uses:** [Good](Good.md) (24), [Sector](Sector.md) (24), [GoodsMarket](GoodsMarket.md) (16), [Trade](Trade.md) (14), [Sectors](Sectors.md) (5), [Game](Game.md) (1), [SupplierCredit](SupplierCredit.md) (1)
 
-**Used by (37):** [BooksCheck](BooksCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessInvestment](BusinessInvestment.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForestryCheck](ForestryCheck.md), [Freight](Freight.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [IndustryView](IndustryView.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LuxuryRetail](LuxuryRetail.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [Sectors](Sectors.md), [SpreadPlanner](SpreadPlanner.md), [StrategicReserve](StrategicReserve.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (38):** [BooksCheck](BooksCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessInvestment](BusinessInvestment.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForestryCheck](ForestryCheck.md), [Freight](Freight.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [IndustryView](IndustryView.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LuxuryRetail](LuxuryRetail.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [Sectors](Sectors.md), [SpreadPlanner](SpreadPlanner.md), [StrategicReserve](StrategicReserve.md), [TradeBand](TradeBand.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 

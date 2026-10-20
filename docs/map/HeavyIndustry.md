@@ -1,6 +1,6 @@
 # HeavyIndustry.java - 278 lines · 13 methods · 9 constants · sectors
 
-`ham/citybuildersim/sectors/HeavyIndustry.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/HeavyIndustry.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The mills - Iron & Steel since 0.7.120, under the key it was saved by,
 > "Heavy Industry": the arc furnaces, which melt scrap into steel, and since
@@ -66,7 +66,7 @@
 
 **Uses:** [Good](Good.md) (25), [OldMetal](OldMetal.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (4), [Formats](Formats.md) (2), [Trade](Trade.md) (2), [ProcessingSector](ProcessingSector.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [BuildCard](BuildCard.md) (1), [Sector](Sector.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
 
-**Used by (28):** [AgricultureCheck](AgricultureCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DenominationCheck](DenominationCheck.md), [GdpCheck](GdpCheck.md), [HaulageCheck](HaulageCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [Sectors](Sectors.md), [TradeCostCheck](TradeCostCheck.md), [VanCheck](VanCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (30):** [AgricultureCheck](AgricultureCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DenominationCheck](DenominationCheck.md), [FreightViewCheck](FreightViewCheck.md), [GdpCheck](GdpCheck.md), [HaulageCheck](HaulageCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [TradeCostCheck](TradeCostCheck.md), [VanCheck](VanCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
 # BankCheck.java - 4,320 lines · 22 methods · 0 constants · harnesses
 
-`ham/citybuildersim/BankCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BankCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The commercial bank, and the families it discharges.
 > 
