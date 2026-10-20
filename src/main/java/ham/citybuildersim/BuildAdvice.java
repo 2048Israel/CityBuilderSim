@@ -2118,4 +2118,80 @@ public final class BuildAdvice {
                 Math.max(0, sq - Math.max(0, landLeft)), null, Double.NaN, null,
                 credit ? q.total - Math.max(0, cashLeft) : 0, false);
     }
+
+    /* ----- A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) ----- */
+
+    /**
+     * Where a berth stands on its payback (FR4): PAYS - the dues at the dial
+     * cover its cost and more than its upkeep; SHORT - cargo of its kind
+     * crosses and no berth takes it, but not enough of it (Ports.berthPaysBack());
+     * COVERED - the berths standing and on site already take every tonne;
+     * NO_DUES - the dial is at nothing, so no dues, so no payback; UPKEEP - the
+     * uncovered tonnes reach the dues' break-even and the dues still do not
+     * cover its upkeep; NO_CARGO - no cargo of its kind crosses the boundary
+     * yet (Ports.carriable()).
+     */
+    public enum BerthState { PAYS, SHORT, COVERED, NO_DUES, UPKEEP, NO_CARGO }
+
+    /**
+     * One more of a terminal, weighed as the advice weighs one (FR4): the
+     * kind's carriable and uncovered tonnes a month, the tonnes a month the
+     * advice needs uncovered before the terminal pays back (needed; NaN with
+     * no dues), the terminal's own month, the tonnes it would carry
+     * (carried: the lesser of its month and the uncovered tonnes), the
+     * dues a tonne it would pay the city at the dial and the dues a month on
+     * the tonnes it carries, its upkeep (a berth's crews are Freight's, so
+     * the city's running cost is its upkeep alone), its price at one and,
+     * when it PAYS, the years it takes the dues over its upkeep to pay that
+     * price back (NaN otherwise).
+     */
+    public record BerthPayback(BuildingsTemplate terminal, BerthState state, double carriable, double uncovered,
+                               double needed, double berthMonth, double carried, double duesRate, double dues,
+                               double upkeep, double price, double years) {
+
+        /** Whether it pays back (state PAYS). */
+        public boolean pays() { return state == BerthState.PAYS; }
+
+        /** The tonnes a year it would carry. */
+        public double carriedAYear() { return carried * 12; }
+    }
+
+    /**
+     * A sea terminal's payback, as its card says it (FR4; null for any other
+     * building). The verdict is the advice's own: the kind's uncovered tonnes
+     * with the berths standing and on site counted (portUncovered()) against
+     * Ports.berthPaysBack() at the dial in force, which portTerminal() asks.
+     * The money is the port dues' own arithmetic for a berth that does not
+     * stand yet: the dues rate that recovers its book value (cash and
+     * materials) over PortDivision.PORT_LIFE_MONTHS at the city's rate, over
+     * its month at PortDivision.DESIGN_USE (PortDivision.duesRateFor(), the
+     * sum duesRateOf() strikes on the kind's berths standing), times the dial,
+     * on the tonnes it would carry. Reads; changes nothing.
+     */
+    public static BerthPayback berthPayback(Game game, BuildingsTemplate t) {
+        if (!Ports.isPort(t)) return null;
+        Ports.Cargo k = t.berthCargo();
+        Measure m = Measure.port(k);
+        double carriable = game.getPorts().carriable(k);
+        double uncovered = portUncovered(game, m, onSite(game, m));
+        double dial = game.getEconomyManager().getTaxPolicy().getPortDues();
+        double month = Ports.berthMonth(t);
+        double needed = dial > 0 ? Ports.WORTH_A_BERTH / dial * month : Double.NaN;
+        double carried = Math.min(month, uncovered);
+        ham.citybuildersim.sectors.PortDivision port = game.getSectors().freight().portDivision();
+        double book = t.getCashCost() + t.getConstructionMaterials() * game.getBuildingManager().getConstructionMaterialPrice();
+        double rate = port.duesRateFor(book, month);
+        double dues = carried * rate * dial;
+        double upkeep = t.getUpkeep();
+        double price = game.quoteBuild(t, 1).total;
+        BerthState state;
+        if (!(carriable > 0)) state = BerthState.NO_CARGO;
+        else if (!(dial > 0)) state = BerthState.NO_DUES;
+        else if (!(uncovered > 0)) state = BerthState.COVERED;
+        else if (!Ports.berthPaysBack(uncovered, month, dial)) state = BerthState.SHORT;
+        else if (!(dues - upkeep > 0)) state = BerthState.UPKEEP;
+        else state = BerthState.PAYS;
+        double years = state == BerthState.PAYS ? price / ((dues - upkeep) * 12) : Double.NaN;
+        return new BerthPayback(t, state, carriable, uncovered, needed, month, carried, rate * dial, dues, upkeep, price, years);
+    }
 }

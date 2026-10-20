@@ -685,7 +685,9 @@ final class BuildScreen {
            resource: land on the market's cards, the posts the city cannot
            fill on the city's, the posts it could not staff on an office's -
            scaled within its group, with no track in a group of one;
-         the investors' line, on the market's cards;
+         the investors' line, on the market's cards - the Truck Depot's in Freight's
+           own words (depotWords(), FR4);
+         a sea terminal's payback line (paybackLine(), FR4), the advice's own read;
          what it needs - its posts, the staffing, the land and how much of
            what is free, what it costs to run;
          the stepper and Build, and the quote with its verdict, which warns
@@ -725,6 +727,8 @@ final class BuildScreen {
         if (!tags.getChildren().isEmpty()) face.getChildren().add(tags);
         face.getChildren().addAll(heroRow(f), priceRow(f, afford));
         face.getChildren().addAll(cardBars(f, group, m));
+        // ...a sea terminal's payback, which ports never had (FR4; the advice's own read, BuildAdvice.berthPayback()).
+        if (f.kind() == BuildCard.Kind.BERTHS) face.getChildren().add(paybackLine(BuildCard.payback(ui.game, template)));
         if (f.market()) face.getChildren().add(investorsLine(template));
         // ...and a materials building's own lines (0.7.142, batch I13): where it stands, how its sector weighs it, its power,
         // its old metal and who buys what it makes (THE MATERIALS' LINES).
@@ -1249,9 +1253,13 @@ final class BuildScreen {
         BuildCard.Investors inv = BuildCard.investors(ui.game, t);
         String word = inv.word();
         String[] said = investorsWords(inv);
+        // ...the Truck Depot's line is Freight's own (FR4): "Freight would build one: 18 trucks over its depots' room".
+        BuildCard.Depot depot = BuildCard.depot(ui.game, t);
+        String who = depot == null ? "Investors" : inv.owner().key();
+        if (depot != null) said = new String[] {depotWords(depot, inv), said[1]};
         double size = 9.5;
         javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(
-                textRun("Investors", Palette.Fonts.sansSemiBold(), size, Palette.BUSINESS),
+                textRun(who, Palette.Fonts.sansSemiBold(), size, Palette.BUSINESS),
                 textRun(said[0], null, size, Palette.TEXT_MUTED));
         if (said[1] != null) line.getChildren().add(textRun(said[1], null, size, Palette.WARN));
         line.setMinWidth(0);
@@ -1268,6 +1276,105 @@ final class BuildScreen {
         Tooltip.install(row, tip);
         row.setOnMouseClicked(e -> ui.sectorScreen.openSectorBooks(inv.owner(), "Investors"));
         return row;
+    }
+
+    /**
+     * The Truck Depot's line after "Freight" (FR4, the study's board 4): while a depot of it is on site for investors
+     * it is building (investorsWords()' own count and wait); else whether Freight would build one now - the trucks
+     * past its depots' room, the order's own test (BuildCard.depot(), Haulage.depotToOrder()) - or what it waits for.
+     */
+    String depotWords(BuildCard.Depot d, BuildCard.Investors inv) {
+        if (inv.theirs()) {
+            return " is building · " + formatter.format(inv.onSite()) + " on site · " + atTodaysQueue(inv.months())
+                    + (inv.yoursToo() ? ", yours among them" : "");
+        }
+        String over = formatter.format(Math.round(d.onStreet())) + " trucks over its depots' room";
+        if (d.wouldBuild()) return " would build one: " + over;
+        if (!(d.trucks() > 0)) return " has no trucks yet: no depot to build";
+        if (d.onStreet() > 0) return " would not build one yet: " + over + ", it waits for " + formatter.format(Math.round(d.waitsFor()));
+        return " would not build one: its depots keep every truck";
+    }
+
+    /** Tonnes a year as the berth cards say them: "2.4 Mt a year", "310 kt a year", "850 t a year". */
+    static String tonnesAYear(double tonnes) {
+        if (!Double.isFinite(tonnes) || tonnes <= 0) return "0 t a year";
+        if (tonnes >= 1_000_000) return String.format("%.1f Mt a year", tonnes / 1_000_000);
+        if (tonnes >= 1_000) return String.format("%.0f kt a year", tonnes / 1_000);
+        return String.format("%.0f t a year", tonnes);
+    }
+
+    /**
+     * A SEA TERMINAL'S PAYBACK LINE (FR4; the study's board 4: "a line ports
+     * never had"). With the port dues (FR3) a berth has one, and the advice
+     * judges it (BuildAdvice.berthPayback(), which BuildCard.payback() hands
+     * over): "pays back in 11 years: dues D$0.5M a month on 2.4 Mt a year"
+     * in green when one more would, else why not in amber - too few tonnes
+     * with no berth, the dues at nothing, the dues under its upkeep - or in
+     * grey: the berths already take every tonne, or no cargo of its kind
+     * crosses the boundary yet. The tooltip has the dues a tonne, the tonnes
+     * the advice waits for and the price.
+     */
+    HBox paybackLine(BuildAdvice.BerthPayback p) {
+        String kind = p.terminal().berthCargo().label().toLowerCase();
+        String lead, rest, tone = Palette.TEXT_MUTED;
+        switch (p.state()) {
+            case PAYS:
+                lead = "pays back in " + yearsWords(p.years());
+                rest = ": dues " + money(p.dues()) + " a month on " + tonnesAYear(p.carriedAYear())
+                        + (p.upkeep() > 0 ? ", " + money(p.upkeep()) + " a month to keep" : "");
+                tone = Palette.GOOD;
+                break;
+            case SHORT:
+                lead = "would not pay back";
+                rest = ": " + tonnesAYear(p.uncovered() * 12) + " of " + kind + " has no berth; it wants "
+                        + tonnesAYear(p.needed() * 12) + " at the dues in force";
+                tone = Palette.WARN;
+                break;
+            case COVERED:
+                lead = "would not pay back";
+                rest = ": the berths standing or on site take all the " + kind + " that crosses";
+                break;
+            case NO_DUES:
+                lead = "would not pay back";
+                rest = ": the port dues are at nothing";
+                tone = Palette.WARN;
+                break;
+            case UPKEEP:
+                lead = "would not pay back";
+                rest = ": its dues, " + money(p.dues()) + " a month, do not cover its " + money(p.upkeep()) + " upkeep";
+                tone = Palette.WARN;
+                break;
+            default:
+                lead = "no payback yet";
+                rest = ": no cargo of this kind (" + kind + ") crosses the boundary yet";
+                break;
+        }
+        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(
+                textRun(lead, Palette.Fonts.sansSemiBold(), 9.5, tone), textRun(rest, null, 9.5, Palette.TEXT_MUTED));
+        line.setMinWidth(0);
+        HBox.setHgrow(line, Priority.ALWAYS);
+        HBox row = new HBox(5, icon(Icons.COIN, tone, 12), line);
+        row.setAlignment(Pos.TOP_LEFT);
+        Tooltip tip = new Tooltip(String.format("What one more %s would earn the city as landlord: %s a tonne in dues at the dial in"
+                + " force, on the %s it would carry of the %s with no berth, against a price of %s%s. The advice orders it at %s"
+                + " with no berth (Policy > Taxes > Port dues sets the dial).",
+                p.terminal().getName(), money(p.duesRate()), tonnesAYear(p.carriedAYear()), tonnesAYear(p.uncovered() * 12),
+                money(p.price()), p.upkeep() > 0 ? " and " + money(p.upkeep()) + " a month to keep" : "",
+                Double.isFinite(p.needed()) ? tonnesAYear(p.needed() * 12) : "never"));
+        tip.setWrapText(true);
+        tip.setMaxWidth(420);
+        tip.setShowDelay(Duration.millis(300));
+        Tooltip.install(row, tip);
+        return row;
+    }
+
+    /** Years as a payback says them: "11 years", "1.5 years", "over 100 years". */
+    static String yearsWords(double years) {
+        if (!Double.isFinite(years)) return "no years";
+        if (years >= 100) return "over 100 years";
+        if (years >= 9.5) return Math.round(years) + " years";
+        String one = String.format("%.1f", years);
+        return one + (one.equals("1.0") ? " year" : " years");
     }
 
     /**
@@ -3948,7 +4055,8 @@ final class BuildScreen {
                         + "can reach %s of them.",
                         formatter.format(rail.getTradeTonnes()),
                         formatter.format(Math.min(rail.getTradeTonnes(), rail.getCapacityTonnes()))));
-                out.add("Owned by the rail sector, which builds it out of its own money "
+                // ...Freight's, since FR2 (the card said "the rail sector" until the docs pass of 2026-10-20 found it).
+                out.add("Owned by " + BuildCard.ownerOf(ui.game, t).key() + ", which builds it out of its own money "
                         + "when the freight pays for it. The lorries between the siding "
                         + "and the works are still on the road.");
                 break;
@@ -3958,6 +4066,10 @@ final class BuildScreen {
                 out.add(String.format("Keeps up to %s of Freight's trucks, with a driver for each and the mechanics who"
                         + " keep them running. Trucks past the depots' room park on the street and wear out a tenth faster.",
                         formatter.format(t.getTruckRoom())));
+                // ...and whose it is: Freight orders one when its trucks pass its depots' room by half a depot (FR4).
+                out.add(String.format("Owned by %s, which builds it out of its own money when its trucks pass its depots' room"
+                        + " by %.0f%% of a depot's.", BuildCard.ownerOf(ui.game, t).key(),
+                        ham.citybuildersim.sectors.Haulage.DEPOT_ORDER_MARGIN * 100));
                 break;
 
             case HEALTHCARE:

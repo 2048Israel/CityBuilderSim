@@ -724,6 +724,43 @@ public final class BuildCard {
     }
 
     /* =====================================================================
+       A BERTH'S PAYBACK AND THE DEPOT'S LINE (FR4, 2026-10-20; the study's
+       board 4, docs/studies/freight/4-build-infrastructure.html)
+
+       Ports never had a measure: a berth was a cost, and its card said what
+       it handles and nothing of what it earns. With the port dues (FR3) it
+       has a payback, and the advice judges it (BuildAdvice, A BERTH THAT PAYS
+       BACK); the card says the same, from the advice's own read
+       (BuildAdvice.berthPayback()): the years the dues on the tonnes one more
+       would carry take to pay its price back, or why it would not. The Truck
+       Depot is Freight's, built by its investors, and its line says when
+       Freight would build one: the trucks past its depots' room
+       (sectors.Haulage), the order's own test (depotToOrder()).
+       ===================================================================== */
+
+    /** A sea terminal's payback for its card: BuildAdvice.berthPayback(), the advice's own read; null for any building but a terminal. */
+    public static BuildAdvice.BerthPayback payback(Game game, BuildingsTemplate t) {
+        return kindOf(t) == Kind.BERTHS ? BuildAdvice.berthPayback(game, t) : null;
+    }
+
+    /**
+     * The Truck Depot's investors' line (FR4): Freight's trucks, the room its
+     * depots keep (Haulage.depotRoom()), the trucks past it on the street
+     * (Haulage.onStreet()), whether Freight would order this depot now
+     * (Haulage.depotToOrder()) and how many trucks past the room it waits for,
+     * a fraction (Haulage.DEPOT_ORDER_MARGIN) of the depot's own room.
+     */
+    public record Depot(double trucks, double room, double onStreet, boolean wouldBuild, double waitsFor) { }
+
+    /** The Truck Depot's line figures (FR4), or null for any other building. */
+    public static Depot depot(Game game, BuildingsTemplate t) {
+        if (kindOf(t) != Kind.DEPOT) return null;
+        ham.citybuildersim.sectors.Haulage haulage = game.getSectors().freight().haulage();
+        return new Depot(haulage.trucks(), haulage.depotRoom(), haulage.onStreet(), haulage.depotToOrder() == t,
+                ham.citybuildersim.sectors.Haulage.DEPOT_ORDER_MARGIN * t.getTruckRoom());
+    }
+
+    /* =====================================================================
        A GROUP OF CARDS, SCALED AND TAGGED
 
        The bars are scaled to the longest in the group, and a group of one

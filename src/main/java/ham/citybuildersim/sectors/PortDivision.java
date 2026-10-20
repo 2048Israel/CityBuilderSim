@@ -143,7 +143,17 @@ public final class PortDivision {
         BuildingManager buildings = freight.buildingsOf();
         double over = berthMonth * DESIGN_USE;
         if (buildings == null || !(over > 0)) return 0;
-        double value = buildings.getPortBookValueByCargo(kind);
+        return duesRateFor(buildings.getPortBookValueByCargo(kind), berthMonth);
+    }
+
+    /**
+     * ...the same due a tonne for any book value over any berths' month (FR4):
+     * duesRateOf()'s own sum, which Build's berth card reads for a berth that
+     * does not stand yet (BuildAdvice.berthPayback()), so the two cannot drift.
+     */
+    public double duesRateFor(double value, double berthMonth) {
+        double over = berthMonth * DESIGN_USE;
+        if (!(over > 0)) return 0;
         return monthlyRecovery(value, cityRate() / 12, PORT_LIFE_MONTHS) / over;
     }
 

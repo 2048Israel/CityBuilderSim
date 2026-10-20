@@ -119,6 +119,20 @@ import java.util.Set;
  *       a hematite field under twenty sites with Iron Mines at the old
  *       rule's figure to the bit.
  *
+ *   13. A BERTH'S PAYBACK, THE OWNER AND THE DEPOT'S LINE (FR4): a sea
+ *       terminal's card has a payback and no other building's does, and it
+ *       is the advice's own - the card says it pays back exactly when
+ *       BuildAdvice.portTerminal() would order it, on the same uncovered
+ *       tonnes (a berth on site counted), through the dues' break-even, the
+ *       dial and the berths standing; its dues rate is the port dues' own
+ *       (PortDivision.duesRateOf() once the berth stands), its years the
+ *       price over a year's dues less its upkeep, and more tonnes carried
+ *       mean fewer years; a kind with no cargo says no payback with no
+ *       NaN in any figure it prints; Freight's rail and depot cards are
+ *       owned by Freight, and the Truck Depot's line is Haulage's own - the
+ *       trucks, the room, the trucks past it, and whether Freight would
+ *       order one now.
+ *
  * Every fixture causes its condition.
  */
 public class BuildCardCheck {
@@ -217,6 +231,7 @@ public class BuildCardCheck {
         theServed(g);
         theInterest(g);
         theMaterials(g, root);
+        theBerthAndTheDepot(root, g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1845,5 +1860,216 @@ public class BuildCardCheck {
             if (best != null) return best;
         }
         throw new IllegalStateException("no unowned " + type + " field on " + w);
+    }
+
+    /* =====================================================================
+       13. A BERTH'S PAYBACK, THE OWNER AND THE DEPOT'S LINE (FR4, 2026-10-20)
+       ===================================================================== */
+
+    static void theBerthAndTheDepot(Path root, Game town) {
+        out.println("\n--- 13. a berth's payback, the owner and the depot's line (FR4) ---");
+        berthPayback(root);
+        freightsCards(town);
+    }
+
+    /** Whether the card's payback for every terminal of the measure's kind says what the advice would do: it pays back (PAYS, or UPKEEP, which the break-even does not see) exactly when portTerminal() orders that terminal, with the others passed over, on the same uncovered tonnes. */
+    static boolean agreesWithAdvice(Game g, List<BuildingsTemplate> ports, BuildAdvice.Measure m) {
+        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, m);
+        double uncovered = BuildAdvice.portUncovered(g, m, site);
+        boolean ok = true;
+        for (BuildingsTemplate t : ports) {
+            if (t.berthCargo() != m.cargo()) continue;
+            Set<BuildingsTemplate> others = new HashSet<>(ports);
+            others.remove(t);
+            boolean advised = BuildAdvice.portTerminal(g, m, site, others) == t;
+            BuildAdvice.BerthPayback p = BuildCard.payback(g, t);
+            boolean says = p.state() == BuildAdvice.BerthState.PAYS || p.state() == BuildAdvice.BerthState.UPKEEP;
+            ok &= advised == says && Double.doubleToLongBits(p.uncovered()) == Double.doubleToLongBits(uncovered);
+        }
+        return ok;
+    }
+
+    static boolean finite(double... v) {
+        for (double d : v) if (!Double.isFinite(d)) return false;
+        return true;
+    }
+
+    static void berthPayback(Path root) {
+        GameFiles files = new GameFiles(root.resolve("berthcard"), root.resolve("berthcard-no-legacy"));
+        Game g = new Game(files);
+        quietly(() -> {
+            g.newGame();
+            g.setCashForTest(Founding.WEALTHY_CASH * 100);
+        });
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate berth = template(g, "Bulk Berth"), terminal = template(g, "Bulk Terminal");
+        List<BuildingsTemplate> ports = new ArrayList<>();
+        for (BuildingsTemplate t : bm.getTemplates()) if (Ports.isPort(t)) ports.add(t);
+        Ports.Cargo kind = Ports.Cargo.DRY_BULK;
+        BuildAdvice.Measure m = BuildAdvice.Measure.port(kind);
+        double berthMonth = Ports.berthMonth(berth), terminalMonth = Ports.berthMonth(terminal);
+        double atBerth = Ports.WORTH_A_BERTH * berthMonth, atTerminal = Ports.WORTH_A_BERTH * terminalMonth;
+        TaxPolicy dues = g.getEconomyManager().getTaxPolicy();
+
+        // ---- only a terminal's card has one ----
+        boolean only = ports.contains(berth) && ports.contains(terminal);
+        for (BuildingsTemplate t : bm.getTemplates()) only &= (BuildCard.payback(g, t) != null) == Ports.isPort(t);
+        assertTrue("A SEA TERMINAL'S CARD HAS A PAYBACK AND NO OTHER BUILDING'S - the Strategic Reserve's, the Tank Farm's and a"
+                + " Paved Road's have none", only && BuildCard.payback(g, template(g, "Strategic Reserve")) == null
+                && BuildCard.payback(g, template(g, "Paved Road")) == null);
+
+        // ---- a kind with no cargo: no payback, and no NaN in what the card prints ----
+        boolean none = true;
+        for (Ports.Cargo k : Ports.Cargo.values()) none &= g.getPorts().carriable(k) == 0;
+        assertTrue("fixture: no cargo of any kind has crossed the boundary (a new city), the dues dial at its default",
+                none && dues.getPortDues() == TaxPolicy.DEFAULT_PORT_DUES);
+        boolean noCargo = true, printable = true;
+        for (BuildingsTemplate t : ports) {
+            BuildAdvice.BerthPayback p = BuildCard.payback(g, t);
+            noCargo &= p.state() == BuildAdvice.BerthState.NO_CARGO && !p.pays() && Double.isNaN(p.years()) && p.carried() == 0
+                    && p.dues() == 0 && p.uncovered() == 0 && p.terminal() == t;
+            printable &= finite(p.carriable(), p.uncovered(), p.needed(), p.berthMonth(), p.carried(), p.duesRate(), p.dues(),
+                    p.upkeep(), p.price(), p.carriedAYear());
+        }
+        assertTrue("A KIND WITH NO CARGO READS NO PAYBACK: NO_CARGO, no years, no tonnes carried and no dues, for every terminal", noCargo);
+        assertTrue("...and not a NaN or an infinity in any other figure the card prints (the years alone are NaN, the sentinel for none)", printable);
+        bits("...the price is the one the Build button charges", BuildCard.payback(g, berth).price(), g.quoteBuild(berth, 1).total);
+
+        // ---- the coast, then dry bulk crossing with no berth ----
+        PortCheck.quiet = quiet;
+        boolean coast = PortCheck.buyCoast(g);
+        assertTrue("fixture: the city buys an offer that runs out to the sea", coast && g.hasCoastFor(berth, 1));
+        if (!coast) return;
+        quietly(() -> g.setCashForTest(Founding.WEALTHY_CASH * 100));
+
+        BuildAdviceCheck.causeDryBulk(g, atBerth);
+        BuildAdvice.BerthPayback b = BuildCard.payback(g, berth), tm = BuildCard.payback(g, terminal);
+        assertTrue("AT A BERTH'S WORTH_A_BERTH OF TONNES: the Bulk Berth's card PAYS BACK, and the Bulk Terminal's is SHORT of tonnes",
+                b.state() == BuildAdvice.BerthState.PAYS && b.pays() && tm.state() == BuildAdvice.BerthState.SHORT && !tm.pays());
+        assertTrue("...and the card says what the advice does (portTerminal() orders the Bulk Berth, not the Terminal)",
+                agreesWithAdvice(g, ports, m) && BuildAdvice.portTerminal(g, m, Map.of(), Set.of(terminal)) == berth);
+        bits("...it carries the tonnes uncovered, all of them, a month", b.carried(), Math.min(berthMonth, atBerth));
+        bits("...at the advice's uncovered tonnes", b.uncovered(), BuildAdvice.portUncovered(g, m, BuildAdvice.onSite(g, m)));
+        bits("...the tonnes the advice waits for are WORTH_A_BERTH over the dial of its month", b.needed(), Ports.WORTH_A_BERTH / dues.getPortDues() * berthMonth);
+        bits("...its dues are the tonnes it carries at the rate struck a tonne", b.dues(), b.carried() * b.duesRate());
+        bits("...its years are its price over a year's dues less its upkeep", b.years(), b.price() / ((b.dues() - b.upkeep()) * 12));
+        assertTrue("...a payback of years above nothing", b.years() > 0 && Double.isFinite(b.years()) && b.dues() > 0);
+        assertTrue("...the shortfall's figures: the Terminal's tonnes needed are the Berth's scaled by their months, its years NaN",
+                Math.abs(tm.needed() / b.needed() - terminalMonth / berthMonth) < 1e-9 && Double.isNaN(tm.years()));
+
+        BuildAdviceCheck.causeDryBulk(g, Math.nextDown(atBerth));
+        assertTrue("A HAIR UNDER IT: the Bulk Berth is SHORT too, and the card agrees with the advice",
+                BuildCard.payback(g, berth).state() == BuildAdvice.BerthState.SHORT && agreesWithAdvice(g, ports, m));
+
+        BuildAdviceCheck.causeDryBulk(g, atTerminal);
+        BuildAdvice.BerthPayback b2 = BuildCard.payback(g, berth), tm2 = BuildCard.payback(g, terminal);
+        assertTrue("AT THE TERMINAL'S WORTH_A_BERTH: both cards pay back, each judged alone, as portTerminal() asks them with the other"
+                + " passed over", b2.pays() && tm2.pays() && agreesWithAdvice(g, ports, m));
+        bits("...the Bulk Berth carries its whole month (the tonnes uncovered are more)", b2.carried(), berthMonth);
+        assertTrue("...MORE TONNES CARRIED, FEWER YEARS: the Berth at its full month pays back in fewer years than at 60% of it",
+                b2.years() < b.years());
+
+        // ---- the dial ----
+        double half = Ports.WORTH_A_BERTH / 2 * berthMonth;
+        BuildAdviceCheck.causeDryBulk(g, half);
+        assertTrue("fixture: half the threshold is no berth's worth at the default dial",
+                BuildCard.payback(g, berth).state() == BuildAdvice.BerthState.SHORT);
+        dues.setPortDues(2);
+        assertTrue("THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth pays back, and the card agrees with the advice",
+                BuildCard.payback(g, berth).pays() && agreesWithAdvice(g, ports, m));
+        dues.setPortDues(0);
+        BuildAdviceCheck.causeDryBulk(g, atTerminal * 4);
+        BuildAdvice.BerthPayback off = BuildCard.payback(g, berth);
+        assertTrue("THE DIAL AT 0 - NO DUES, NO PAYBACK: NO_DUES for every terminal however many tonnes, no NaN but the years",
+                off.state() == BuildAdvice.BerthState.NO_DUES && Double.isNaN(off.years()) && off.dues() == 0
+                        && Double.isNaN(off.needed()) && agreesWithAdvice(g, ports, m));
+        dues.setPortDues(TaxPolicy.DEFAULT_PORT_DUES);
+
+        // ---- upkeep ----
+        BuildAdviceCheck.causeDryBulk(g, atBerth);
+        double kept = berth.getUpkeep();
+        berth.setUpkeep(BuildCard.payback(g, berth).dues() * 2);
+        BuildAdvice.BerthPayback eaten = BuildCard.payback(g, berth);
+        berth.setUpkeep(kept);
+        assertTrue("A BERTH WHOSE UPKEEP IS MORE THAN ITS DUES is UPKEEP, no years - the break-even does not see its upkeep, the card does",
+                eaten.state() == BuildAdvice.BerthState.UPKEEP && Double.isNaN(eaten.years()) && eaten.upkeep() > eaten.dues());
+
+        // ---- the dues rate is the port dues' own, and a berth standing covers what crosses ----
+        double rate = BuildCard.payback(g, berth).duesRate() / dues.getPortDues();
+        quietly(() -> {
+            bm.addStack(berth, 1, true);
+            g.getLandManager().allocate(berth.getLandSqFt());
+        });
+        double model = g.getSectors().freight().portDivision().duesRateOf(kind, berthMonth);
+        assertTrue("THE DUES RATE IS THE PORT DUES' OWN: PortDivision.duesRateOf() with the berth standing is the rate the card struck for"
+                + " it before it stood", model > 0 && Math.abs(model - rate) <= 1e-9 * model);
+        BuildAdviceCheck.causeDryBulk(g, berthMonth / 2);
+        BuildAdvice.BerthPayback covered = BuildCard.payback(g, berth);
+        assertTrue("ONE BERTH STANDING FOR TONNES THAT FILL HALF OF IT: COVERED for the Berth and the Terminal - cargo crosses, none is"
+                + " left uncovered - and the card agrees with the advice",
+                covered.state() == BuildAdvice.BerthState.COVERED && BuildCard.payback(g, terminal).state() == BuildAdvice.BerthState.COVERED
+                        && covered.uncovered() == 0 && covered.carriable() > 0 && Double.isNaN(covered.years()) && agreesWithAdvice(g, ports, m));
+    }
+
+    /** Freight's cards: owned by Freight (the Rail cards no longer say "the rail sector"), and the Truck Depot's line is Haulage's own. */
+    static void freightsCards(Game g) {
+        ham.citybuildersim.sectors.Freight fr = g.getSectors().freight();
+        ham.citybuildersim.sectors.Haulage h = fr.haulage();
+        BuildingManager bm = g.getBuildingManager();
+
+        boolean owned = true, slotted = true;
+        List<String> names = new ArrayList<>();
+        for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.RAIL, null)) {
+            for (BuildCard.Figures f : gr.cards()) {
+                names.add(f.template().getName());
+                owned &= BuildCard.ownerOf(g, f.template()).key().equals(Sectors.FREIGHT)
+                        && BuildCard.investors(g, f.template()).owner().key().equals(Sectors.FREIGHT);
+                slotted &= BuildCard.slot(f.template()).equals(Sectors.FREIGHT);
+            }
+        }
+        assertTrue("THE RAIL AND DEPOT CARDS ARE OWNED BY FREIGHT - the owner the card names, its investors' line's and the slot the"
+                + " month files its word under - " + names, owned && slotted && names.contains("Rail Depot") && names.contains("Truck Depot")
+                && names.contains("Rail Spur"));
+        // ...the screen words it from the owner, not from a name of its own: the old "the rail sector" is gone from its source.
+        Path screen = Path.of("src/main/java/ham/citybuildersim/ui/BuildScreen.java");
+        if (Files.exists(screen)) {
+            try {
+                String source = Files.readString(screen);
+                assertTrue("...and Build's source no longer says \"Owned by the rail sector\" (the card's owner line reads the owner's key)",
+                        !source.contains("Owned by the rail sector") && source.contains("BuildCard.ownerOf(ui.game, t).key()"));
+            } catch (java.io.IOException e) {
+                assertTrue("could not read Build's source: " + e, false);
+            }
+        } else {
+            out.println("      (Build's source is not under the working folder: its owner line is not read)");
+        }
+
+        // ---- the Truck Depot's line ----
+        BuildingsTemplate depot = template(g, "Truck Depot");
+        assertTrue("only the Truck Depot has the line: a Rail Spur, a House and the Strategic Reserve have none",
+                BuildCard.depot(g, depot) != null && BuildCard.depot(g, template(g, "Rail Spur")) == null
+                        && BuildCard.depot(g, template(g, "House")) == null && BuildCard.depot(g, template(g, "Strategic Reserve")) == null);
+        double room = depot.getTruckRoom(), margin = ham.citybuildersim.sectors.Haulage.DEPOT_ORDER_MARGIN * room;
+        assertTrue("fixture: no Truck Depot stands or is on site, and the margin is a fraction of a depot's room",
+                bm.countByName("Truck Depot") == 0 && h.depotRoom() == 0 && margin > 0 && margin < room);
+        BuildCard.Depot d = BuildCard.depot(g, depot);
+        bits("the line's trucks are Haulage's", d.trucks(), h.trucks());
+        bits("...its depots' room", d.room(), h.depotRoom());
+        bits("...the trucks past the room, on the street", d.onStreet(), h.onStreet());
+        bits("...what it waits for is DEPOT_ORDER_MARGIN of the depot's room", d.waitsFor(), margin);
+        assertTrue("...and it would build one exactly when Haulage would order this depot (depotToOrder())", d.wouldBuild() == (h.depotToOrder() == depot));
+
+        double was = h.trucks();
+        fr.setPantry(Good.TRUCKS, margin + room + 18);
+        d = BuildCard.depot(g, depot);
+        bits("with the fleet raised past the margin and no depot standing, every truck is on the street", d.onStreet(), margin + room + 18);
+        report("...and the line says Freight would build one exactly when the order's own test does, and here that test says yes",
+                d.wouldBuild() == (h.depotToOrder() == depot) && h.depotToOrder() == depot && d.wouldBuild(),
+                "depotToOrder " + (h.depotToOrder() == null ? "none" : h.depotToOrder().getName()));
+        fr.setPantry(Good.TRUCKS, 4);
+        d = BuildCard.depot(g, depot);
+        assertTrue("with four trucks and no depot: four over the room, and short of the margin Freight would not build one yet",
+                d.onStreet() == 4 && !d.wouldBuild() && h.depotToOrder() == null && d.trucks() < d.waitsFor());
+        fr.setPantry(Good.TRUCKS, was);
     }
 }
