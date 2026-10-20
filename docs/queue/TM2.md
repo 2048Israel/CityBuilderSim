@@ -1,6 +1,7 @@
 # TM2 - the ship gate's timing waits for a quiet minute
 
-Jerus, 2026-10-20, at the review desk: "Queue a small fix" (TM1-C). Tooling:
+Jerus, 2026-10-20, at the review desk: "Queue a small fix" (TM1-C), and
+DeepSeek's script with it. Tooling:
 no game change, no version bump, shipped untagged.
 
 ## The gap (TM1-notes, Left undone; QUEUE.md's TM1-C)
@@ -21,7 +22,12 @@ It was green, but a hard red so placed may be load.
   look that counts a JVM starts the count again. The 30-minute cap stays,
   and its line says it ran without the quiet minute.
 - The line they print while waiting says how many quiet looks it has.
-- `ship.sh` calls `--timing` as it does; nothing else changes.
+- `ship.sh` calls `--timing` as it does.
+- **DeepSeek's `tools/deepseek/agent.py`** (Jerus, 2026-10-20: "Add it to
+  TM2"): its harness runs time hard with no look at the machine. It runs
+  them as the check scripts do, soft while `tools/jvms.ps1` (or `ps`
+  elsewhere) counts another batch's JVM or the game, and says so in its
+  output; a Sonnet subagent's runs are told the same in its brief.
 
 ## Done when
 
