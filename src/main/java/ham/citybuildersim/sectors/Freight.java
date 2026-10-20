@@ -524,6 +524,8 @@ public final class Freight extends Sector {
         java.util.Arrays.fill(railIn, 0);
         java.util.Arrays.fill(railOut, 0);
         truckIn = truckOut = truckHome = 0;
+        // ...and each sector's moves by good, way and mode, for "How its tonnes move" (FR4): tallied below, read by nothing in the model.
+        haulage().beginMoves();
         double haulage = 0, abroad = 0;
         // ...and the city's own bulk (FR6): the month's offer to the railway of the home tonnes' siding part and the quay's yard part, and what the shares in force carried and billed.
         double homeOfferMonth = 0, quayOfferMonth = 0, homeRailedMonth = 0, quayRailedMonth = 0, cityBillMonth = 0;
@@ -586,6 +588,10 @@ public final class Freight extends Sector {
                     truckOut += g.tonnesPerUnit() * s.unitsExported(g) * relief;
                     truckHome += g.tonnesPerUnit() * s.unitsBoughtLocal(g) * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * homeShare);
                 }
+                // ...and the sector's tonnes of this good by way and mode, at the same shares (FR4): read, never billed.
+                boolean bulkStream = stream == Traffic.BULK;
+                double boughtHome = bulkStream ? s.unitsBoughtLocal(g) : 0;
+                if (units > 0 || boughtHome > 0) haulage().tallyMoves(s.key(), g, bulkStream, in, out, boughtHome, rail, ship, homeShare, quayShare);
                 if (units <= 0) continue;
                 double weighs = units * g.tonnesPerUnit();
                 tonnes[i] += weighs;

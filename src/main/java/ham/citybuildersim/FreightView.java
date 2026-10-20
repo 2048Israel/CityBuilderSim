@@ -35,14 +35,24 @@ import java.util.OptionalDouble;
  * figure the model has not struck (Freight.getAllowedRevenue() is NaN until a
  * haul) reads 0 beside a "known" flag.
  *
- * WHAT IS LEFT OUT, because the model keeps no such figure and no tally was
- * added for the screen: the vans' tonnes (the "distribution" leg: a van's load
- * is a nameplate fleet size, Sector.vansNeeded(), not a month's flow), the
- * siding's relief on the tonnes that crossed the boundary (only FR6's railed
- * city tonnes are kept), a per-shipper count of tonnes (the bills are kept,
- * not the tonnes billed), Haulage's rule floor (its running cost is a local of
- * the reprice), a history of the trucks against the need, and the month's
- * calls by ship class (BoatSchedule keeps them by kind).
+ * WHAT IS LEFT OUT, because the model keeps no such figure: the vans' tonnes
+ * (the "distribution" leg: a van's load is a nameplate fleet size,
+ * Sector.vansNeeded(), not a month's flow), Haulage's rule floor (its running
+ * cost is a local of the reprice), a history of the trucks against the need,
+ * and the month's calls by ship class (BoatSchedule keeps them by kind).
+ *
+ * THE WORKS' STRIP (tonnesOf(), plantOf(); board 3, "How its tonnes move").
+ * The legs above are the city's. A works' page draws its own: each good it
+ * moved, by way (landed, shipped, bought in the city) and by mode on the long
+ * haul and the city leg, the month's bill by division and what a siding saves.
+ * The tonnes are Haulage's tally (Haulage.movesOf(), struck in Freight.haul()
+ * at the shares in force while they moved and saved with the extras): the
+ * sectors' own units are cleared at the strike and hold the NEXT month's trade
+ * when a screen asks, so working them out here would draw one month's tonnes
+ * beside another month's bill. The bill is the statement's own lines. The
+ * siding's saving is a counterfactual and says so: the share of a tonne's city
+ * leg a siding carries (InfrastructureManager.RAIL_ROAD_RELIEF) of the tonnes
+ * the trucks carried, at Haulage's quote in force.
  *
  * Pure: it reads the city and changes nothing.
  */
@@ -333,6 +343,124 @@ public final class FreightView {
         }
         out.sort(Comparator.comparingDouble(Shipper::total).reversed());
         return out;
+    }
+
+    /* =====================================================================
+       THE WORKS' STRIP: HOW ITS TONNES MOVE (board 3)
+       ===================================================================== */
+
+    /**
+     * One sector's tonnes in the month billed, as its Operations page draws them under the flow card.
+     * LINES are the tally, by good (the Good order) and way (landed, shipped, home): each holds the long haul
+     * by mode (rail + sea + lorry = tonnes on a line that crossed) and the city leg by mode (truck + siding +
+     * yard = tonnes on a BULK line); the figures below are their sums. A sector that moved no freight reads
+     * zeros and no lines (moved = false).
+     */
+    public record Tonnes(
+            String sector,
+            boolean moved,        // whether it moved any freight tonnes in the month billed
+            List<Haulage.Move> lines, // by good, then way; each with its long haul and city leg by mode
+            double crossed,       // the long haul: tonnes that crossed the boundary, landed and shipped
+            double rail,          // ...by the railway
+            double sea,           // ...by ship (paid abroad, handling billed here)
+            double lorry,         // ...by the world's lorries (paid abroad)
+            double home,          // tonnes bought from a works of the city: a city leg and no long haul
+            double cityLeg,       // the city leg, all the sector's BULK tonnes: truck + siding + yard
+            double truck,         // ...by Haulage's trucks (the tonnes Haulage billed for the sector)
+            double siding,        // ...by siding, door to door: the railway's share of what it carried, and FR6's home tonnes
+            double yard,          // ...by the port yard, from the quay
+            double haulageBill,   // the statement's "Haulage" line
+            double railBill,      // ...its "Rail freight" line (the long haul and FR6's city tonnes)
+            double handlingBill,  // ...its "Port handling" line
+            double bill,          // the three together: the month's freight bill
+            double haulageRate,   // D$ a tonne Haulage billed it (bill over the truck tonnes billed); 0 with none
+            double quote,         // Haulage's quote in force now, what the siding's saving is struck at
+            boolean hasSiding,    // whether a siding carried any of its tonnes door to door this month
+            double homeShare,     // FR6: the share of the siding's part of the city's own bulk the railway carries, in force
+            double sidingStanding,// tonnes a month of siding standing in the city
+            double relief,        // the share of a railed tonne's city leg a siding carries: InfrastructureManager.RAIL_ROAD_RELIEF
+            double sidingSaves,   // what the siding already saves: its tonnes at the quote, the trucks' haulage not charged
+            double sidingWouldCarry, // the counterfactual: relief of the tonnes the trucks carried...
+            double sidingWouldSave) { } // ...at the quote: a month less haulage
+
+    /** The all-zero strip: no sector, Freight itself (it bills, it is not billed), or a sector that moved nothing. */
+    private static Tonnes none(String sector, double quote, double homeShare, double standing) {
+        return new Tonnes(sector, false, List.of(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, quote, false, homeShare, standing,
+                InfrastructureManager.RAIL_ROAD_RELIEF, 0, 0, 0);
+    }
+
+    /**
+     * A sector's tonnes of the month billed: the tally Haulage struck at the haul, the statement's freight lines
+     * and the siding's saving. Finite whatever the city; a sector with no freight (or none, or Freight itself) reads zeros.
+     */
+    public static Tonnes tonnesOf(Game game, Sector sector) {
+        Freight fr = game.getSectors().freight();
+        Haulage h = fr.haulage();
+        double quote = fin(h.getQuote()), homeShare = fin(fr.getHomeShare()), standing = fin(fr.sidingTonnes());
+        if (sector == null) return none("", quote, homeShare, standing);
+        List<Haulage.Move> lines = sector == fr ? List.of() : h.movesOf(sector.key());
+        double rail = 0, sea = 0, lorry = 0, home = 0, truck = 0, siding = 0, yard = 0;
+        for (Haulage.Move m : lines) {
+            rail += fin(m.rail());
+            sea += fin(m.sea());
+            lorry += fin(m.lorry());
+            if (!m.way().crossed()) home += fin(m.tonnes());
+            truck += fin(m.truck());
+            siding += fin(m.siding());
+            yard += fin(m.yard());
+        }
+        java.util.Map<String, Double> in = sector == fr ? null : sector.otherInputParts();
+        double haulageBill = in == null ? 0 : fin(in.getOrDefault(Haulage.BILLED_AS, 0.0));
+        double railBill = in == null ? 0 : fin(in.getOrDefault(RAIL_BILLED_AS, 0.0));
+        double handlingBill = in == null ? 0 : fin(in.getOrDefault(PortDivision.BILLED_AS, 0.0));
+        // The share of the trucks' tonnes the month was billed for (Haulage.billMonth(): the share in force, never more than the fleet could carry).
+        double billedShare = fin(h.getTonnes()) > 0 ? fin(h.getCarried()) / h.getTonnes() : 0;
+        double rate = truck * billedShare > 0 ? haulageBill / (truck * billedShare) : 0;
+        double relief = InfrastructureManager.RAIL_ROAD_RELIEF;
+        double wouldCarry = relief * truck;
+        return new Tonnes(sector.key(), !lines.isEmpty(), lines, rail + sea + lorry, rail, sea, lorry, home,
+                truck + siding + yard, truck, siding, yard, haulageBill, railBill, handlingBill,
+                haulageBill + railBill + handlingBill, fin(rate), quote, siding > 0, homeShare, standing, relief,
+                siding * quote, wouldCarry, wouldCarry * quote);
+    }
+
+    /** One BULK good a building makes or uses, tonnes a month at nameplate. */
+    public record PlantLine(Good good, boolean made, double tonnes) { }
+
+    /** One way of moving a building's tonnes: those the trucks carry and the siding does, the trucks and drivers that takes (Haulage.TONNES_A_TRUCK_MONTH, DRIVERS_A_TRUCK), and a month of haulage at the quote. */
+    public record Plan(double truckTonnes, double sidingTonnes, double trucks, double drivers, double haulage) { }
+
+    /**
+     * A building's city legs at nameplate, before and after a siding (spec 3.6, the Pelletising Plant): every
+     * tonne of the BULK goods it makes and uses (Freight.bulkTonnesOf()) a city leg, carried all by truck, or with
+     * a siding taking InfrastructureManager.RAIL_ROAD_RELIEF of each. The counterfactual is the building's own
+     * nameplate, not a month's flow: what its freight would cost with the railway reaching its door.
+     */
+    public record Plant(String building, List<PlantLine> lines, double tonnes, double quote, double relief,
+                        Plan byTruck, Plan withSiding, double saves) { }
+
+    /** A building's legs at nameplate, at Haulage's quote in force (the estimate before a month struck one): all by truck, and with a siding. */
+    public static Plant plantOf(Game game, BuildingsTemplate t) {
+        double quote = fin(game.getSectors().freight().haulage().getQuote());
+        double relief = InfrastructureManager.RAIL_ROAD_RELIEF;
+        List<PlantLine> lines = new ArrayList<>();
+        if (t != null) {
+            for (java.util.Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+                if (e.getKey().traffic() == Traffic.BULK) lines.add(new PlantLine(e.getKey(), false, fin(e.getValue() * e.getKey().tonnesPerUnit())));
+            }
+            for (java.util.Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+                if (e.getKey().traffic() == Traffic.BULK) lines.add(new PlantLine(e.getKey(), true, fin(e.getValue() * e.getKey().tonnesPerUnit())));
+            }
+        }
+        double tonnes = fin(Freight.bulkTonnesOf(t));
+        Plan truck = plan(tonnes, 0, quote);
+        Plan siding = plan(tonnes * (1 - relief), tonnes * relief, quote);
+        return new Plant(t == null ? "" : t.getName(), lines, tonnes, quote, relief, truck, siding, truck.haulage() - siding.haulage());
+    }
+
+    private static Plan plan(double truckTonnes, double sidingTonnes, double quote) {
+        double trucks = truckTonnes / Haulage.TONNES_A_TRUCK_MONTH;
+        return new Plan(truckTonnes, sidingTonnes, trucks, trucks * Haulage.DRIVERS_A_TRUCK, truckTonnes * quote);
     }
 
     /** A finite figure: NaN and infinity read 0, so no page ever draws or divides by one. */
