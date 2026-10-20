@@ -53,11 +53,16 @@ frame: every part is drawing; keep MapCheck's screen budgets and MapCheck
    line ends, or meets the grid, a clean join (a bend onto the grid's axis,
    or the carriageway's end squared) instead of the stub his city shows.
 8. **The legend's "Track" becomes "Railway"** (FX3's ★5).
+9. **The world lines' labels apart** (Jerus, 2026-10-20: "Add to FX5"):
+   in FR7's `after-streets.png` the railway's and the highway's "to the
+   world" labels are drawn on one spot and read "tetohe wodld"
+   (`LandMap.worldLabelAt()`, ui/MapView). Two lines leaving close
+   together get labels that do not overlap, or one label naming both.
 
 ## Harnesses
 
 RailDrawCheck and JunctionCheck sections whose fixtures cause each case on
-main first (a bend, a 3 x 3 crossing, five roads meeting, a diagonal's end);
+main first (a bend, a 3 x 3 crossing, five roads meeting, a diagonal's end, two world lines leaving side by side);
 MapCheck 9: every car on track at every sampled moment, no train longer
 than its siding, no train on a siding with standing wagons, the frame bound.
 
