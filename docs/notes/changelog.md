@@ -1,12 +1,16 @@
-# The changelog's paragraphs for 0.8.1 to 0.8.10 - to paste into the project
+# The changelog - what shipped, newest first
 
-For the claude.ai project "Civic Ledger: Java Game", file `claude/changelog.md`.
-Paste everything below the line at the very top of that file, above its
-newest block, as it stands: newest first, one block per version, TM1 and the
-two docs passes (no version) in the order they shipped. Drafted 2026-10-20 by
-the review desk from `GameVersion.java`'s entries, the notes in `docs/queue/`
-and the docs passes' drafts in `docs/notes/pending.md`, whose changelog
-blocks for 0.8.1 and 0.8.4-0.8.10 these replace.
+The live changelog since 2026-10-20 (Jerus: the record "in GitHub", so no
+session has to paste into the claude.ai project). One block per version, at
+most 12 lines (CLAUDE.md, "Each batch is told once"), in the house shape:
+`### version - batch, title - date, state, see notes`, then one paragraph.
+A batch or a docs pass adds its block at the top in its own merge.
+
+The older record: the project's `claude/changelog.md` ("Civic Ledger: Java
+Game") holds the blocks from 2026-09-11 up to the batch before I12, and
+`changelog-archive.md` beside this file the blocks before 2026-09-11. The
+blocks from 0.7.143 to 0.8.10 below waited in `pending.md` for a paste that
+never came, and were moved here on 2026-10-20.
 
 ---
 
@@ -136,3 +140,38 @@ level crossings; an arterial over the main line a bridge); yards as fans of eigh
 and wagons, in an eleventh class, TRANSPORT; junctions by rule (signals, roundabouts, diamonds, stacks). Slices by
 DeepSeek V4 Pro through tools/deepseek, reviewed by Claude. Found: half of twelve generated worlds' default sites
 have no gateway. Map sidecar FORMAT 8; no save change (39); playtests byte-identical. Gate: 113 of 113 on the PC.
+
+### 0.8.0 — the merges after I14: the other assistants and the tools — 2026-10-13 to 2026-10-17, no version bump
+
+MapCheck's bounds read on the wall clock where the thread's CPU clock is too coarse (Windows); AllChecks -f writes
+and reads its logs in UTF-8; ship.sh takes its merge back when main moved on origin during the checks. ChatGPT and
+Gemini given briefs of their own (openai-dontread.md, gemini-notes.md), their work on branches, never main:
+ChatGPT's current-code handoffs for R0 (docs/studies/research-1900.md) and CD1-H (spec-city-debt.md 8.1); Gemini's
+GS1, ten of Stale's soft findings, six corrected in review, and the Prose fixes rules it taught. RV1: tools.Names
+(the names a branch's new text uses that the tree does not declare, run by ship.sh on their branches) and the
+assistant-review subagent. DeepSeek as the batch's coder (Jerus, 2026-10-17): tools/deepseek/agent.py and
+docs/deepseek.md, CLAUDE.md's step 3; tried on an FR0 slice (6fd8dda, reverted, then restored as FR0's slice G).
+
+### 0.8.0 — I14, the release that finishes industry: the materials on the map — 2026-10-13, shipped, see docs/queue/I14-notes/fixI14-notes.md
+
+The oil chain (0.7.76-0.7.98) and the five materials chains (0.7.110-0.7.143) are whole, and now drawn as
+themselves: every type of iron, oil, coal, stone and copper stands on its resource's sites by its type of field, on
+as many as it takes (a Large Open-Pit Mine on twenty hematite sites, counted once) - coal's, stone's and copper's
+first types had been placed nowhere. Each kind has a look of its own (open pits in the ore's colour, a shaft,
+quarries, a leach plant, the wash plant, camps, planted forest), each processing industry's works one campus in its
+colours (the arc furnaces keep their places), and a zone's districts are tinted in its sector's colour. Found: a
+footprint of a tile's 32 plots threw the district's plan; capped at a cell's 31. MapCheck 15 holds it. Sidecar
+FORMAT 7; no save change; playtests byte-identical. Gate: BuildMenuCheck 139, Stale 0 firm, MapCheck and PlanCheck
+green; EarthTerrainCheck 8's Earth screen bound red, as on main on the same machine.
+
+### 0.7.143 — I12, the materials pictograms drawn — 2026-10-13, shipped, see docs/queue/I12-notes/fixI12-notes.md
+
+The nine materials industries' Operations pages open on their month as a picture, the refinery's pictogram made
+general (spec-materials 2.13): a mine's fields as vessels filled to what is left, or a works' feeds by where they
+came from, imports hatched; the works in ranks, each with its run and in a word the gate one more would fail; the
+tank of what left the works under the industry's roof; who took it; the power and the month's note - every ribbon
+one scale, in tonnes, the forest's in cubic metres. New model class IndustryPicture (pure), painted by
+ui/SectorScreen with the refinery's painter. IndustryViewCheck 12 holds it: ribbons to scale, every label's figure
+the view's, nothing off the frame at 1,389 x 868. A words probe and nine headless renders are in
+docs/queue/I12-notes/. No save change. Gate: suite 109 of 109, BuildMenuCheck 139, Stale 0 firm, playtests
+byte-identical.
