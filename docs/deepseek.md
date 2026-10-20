@@ -9,6 +9,22 @@ remember to use deepseek". DeepSeek is not an assistant like ChatGPT or Gemini:
 it has no branch and no brief of its own, and nothing it writes is committed
 until a Claude session has read it.
 
+**Sonnet first, for now** (Jerus, 2026-10-20): "for a long while there will
+be no deepseek so its sonnet". DeepSeek is billed by the token on top of his
+20x subscription, and Sonnet runs inside it, so until he has the budget for
+more agents every slice goes to an Agent subagent with model "sonnet"
+(Sonnet 5.5) and effort "xhigh", handled as this page handles DeepSeek: the
+same brief, the subagent edits the worktree and commits nothing, runs only
+the harness its brief names, and Claude reviews the diff as a stranger's and
+commits. The trial ran from FR1 to FX4 (2026-10-18/19), about forty slices
+in eight batches, each batch's notes keeping a table of what the review
+changed: about half needed nothing; the map, drawing and harness slices
+were nearly always right, and the slices sometimes corrected the brief; the
+model slices needed real fixes (FR3's dues never reaching the treasury,
+FR2's Haulage rules, every id across a save). So a model slice's review is
+the careful one. When DeepSeek returns, Sonnet is its fallback whenever
+`DEEPSEEK_API_KEY` is unset or the API fails.
+
 ## What to hand it, and what to keep
 
 **Hand it** what a brief can settle: a pure model class and its harness; a
