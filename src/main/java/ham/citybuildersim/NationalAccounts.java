@@ -224,8 +224,8 @@ public class NationalAccounts {
      * fewer and reads them as none, which is what that city held.
      *
      * ...AND SINCE FR2 (2026-10-18) TRUCKS, on the end: the Heavy Truck
-     * Plant's yard (Automotive) and, from the next slice, the trucks
-     * Freight's Haulage division keeps. A save from before carries one slot
+     * Plant's yard (Automotive) and the trucks Freight's Haulage division
+     * keeps (Freight's TRUCKS pantry). A save from before carries one slot
      * fewer and reads trucks as none, which is what that city held.
      */
     public static final Good[] HELD = { Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL,

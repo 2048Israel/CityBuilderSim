@@ -71,10 +71,11 @@ import java.util.Set;
  *   - THE MEASURES (remit()): every one the city's five Build categories
  *     open on (BuildAdvice.measuresOf()) and the burial plots, NEEDS YOU's
  *     listed ones first in its order, the rest in the rings' order. Transit
- *     is not one of its own - it has no line, and the road's candidates are
- *     the three roads and the three lines alike (BuildAdvice, A ROAD OVER
- *     ITS LIFE), so a bus is built where it keeps the road ahead for less
- *     over its life. A school above the ladder only where NEEDS YOU lists
+ *     is not one of its own - it has no line, and the streets' candidates
+ *     are the gravel and paved roads and the three lines alike (BuildAdvice,
+ *     A ROAD OVER ITS LIFE), so a bus is built where it keeps the road ahead
+ *     for less over its life; the Elevated Highway is the HIGHWAYS measure's
+ *     alone since FR7. A school above the ladder only where NEEDS YOU lists
  *     it (kept()); a first school down the ladder, police station or prison
  *     wherever the figure is short, however far past the need one goes, paid
  *     from the cash alone, once it pays back (0.7.104; once the budget ran

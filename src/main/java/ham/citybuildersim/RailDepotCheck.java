@@ -57,7 +57,7 @@ public class RailDepotCheck {
 
     static int fails = 0;
 
-    /** What a lorry charges for a tonne in the model's money: Freight's header measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. */
+    /** What a lorry charges for a tonne in the model's money: BuildingManager's RAIL banner measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. */
     static final double LORRY_A_TONNE = .319;
 
     static void quietly(Runnable r) {

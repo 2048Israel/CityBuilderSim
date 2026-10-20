@@ -118,8 +118,8 @@ import java.nio.file.Path;
  *      slate is struck on it, and it crosses a save (a save without it
  *      reads medium).
  *
- *  13. THE PHASE-1 BUYERS (0.7.83, batch O6; spec-oil 2.5): the vans burn
- *      diesel and the factories lubricants, the paved roads take bitumen,
+ *  13. THE PHASE-1 BUYERS (0.7.83, batch O6; spec-oil 2.5): the vans (and
+ *      since FR2 Freight's trucks) burn diesel and the factories lubricants, the paved roads take bitumen,
  *      the drivers' petrol comes from the forecourts - each drawn or bought
  *      off the refiners' tanks first and the world for the rest - and the
  *      goods, the four among them, foot to the balance of payments' imports

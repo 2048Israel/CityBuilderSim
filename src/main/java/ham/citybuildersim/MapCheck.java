@@ -126,14 +126,25 @@ import java.util.Map;
  *      their junctions few; spec 2.7's table on the design's square city,
  *      each stage straight but where the sea, water past its bridge or the
  *      city's edge stopped it, and grown month by month without a plot
- *      moving (H4); every plot of the model's track drawn or counted short,
+ *      moving (H4); every plot of the model's track drawn or counted short
+ *      (since FR7 slice 3, in the surplus no train's way uses),
  *      one railway network; and its Rail Terminals as yards on the track
  *      in the cells nearest the mines - and (0.7.98, batch O14) the runs'
  *      ramps and 45-degree bands reach the screen: every tile they mark
  *      rastered through the view's own path as the model rasters it. On
  *      0.7.86's painter the network's checks fail on Jerus's save and the
  *      playtest (runs/fixRD2-notes.md): N3's passed because they measured
- *      the deal's x 1 fixture;
+ *      the deal's x 1 fixture. And (batch FR7, 8b and 8c) on his city x 1
+ *      where its square holds iron: with highways and Truck Depots added,
+ *      every interchange reserve laid is its side's square, clear of
+ *      buildings, streets and track, on owned dry ground, a crossing with
+ *      none short of ground; every yard, Truck Depot and sea terminal with a
+ *      grid to go to has an access road from beside its box to a ramp's
+ *      street or an arterial, and with no highway to an arterial; with Rail
+ *      Spurs and bulk works added, the spurs the runs' sidings left are dealt
+ *      to districts the main line crosses, no more than their bulk works,
+ *      the plans' sidings painted as track counted apart from the runs', the
+ *      legend's surplus less them, the deal the same from the same counts;
  *   9. at sea and on the shore (0.7.97, batch O13; docs/studies/spec-oil.md
  *      2.12 and 5's O13 row, spec-roads-and-ports.md 2.8 and 4), on a square
  *      city on the default world's coast, a district west of its founding site:
@@ -596,7 +607,7 @@ public class MapCheck {
         long partWorks;
         /** The streets' surface in plots by kind [0, gravel, paved, highway] - a highway's own plots among the highway's - and what the plans have no street for (CityMap.leftoverByKind()). */
         final double[] surface = new double[4], leftover = new double[4];
-        /** The railway's track laid, in plots (0.7.72), and (0.7.89) what the runs could not lay; buildings packed at the city's edge (R7); tiles painted; districts. */
+        /** The railway's track laid, in plots (0.7.72), and (0.7.89) what the runs could not lay - since FR7 slice 3 the plots no train's way uses (CityRuns.trackSurplus()); buildings packed at the city's edge (R7); tiles painted; districts. */
         long rail, trackSurplus, packed, tiles, districts;
 
         long total() { return Arrays.stream(buildings).sum(); }
@@ -2105,7 +2116,7 @@ public class MapCheck {
         return bad;
     }
 
-    /** The railway on the drawn raster (0.7.89; spec 2.8): one network, every plot of the model's track drawn - under its yards and mines too - or counted as what the runs could not lay, its streets crossing it level. */
+    /** The railway on the drawn raster (0.7.89; spec 2.8): one network, every plot of the model's track drawn - under its yards and mines too - or counted as what the runs could not lay (since FR7 slice 3 the surplus no train's way uses, CityRuns.trackSurplus()), its streets crossing it level. */
     static void rail(Raster net, String what) {
         int W = net.w;
         int[] pieces = net.pieces(net::isRunRail);

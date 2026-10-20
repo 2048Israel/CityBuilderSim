@@ -21,8 +21,8 @@ import java.util.Map;
  * that a getter or a constant could give. Eleven claims, numbered as FR3.md
  * section 6 numbers them (the save is 9 here, so its advice is 10 and its real run, LongPlaytest's, 11):
  *
- *   1. THE BULK BERTH. (a placeholder: slice 1's, PortCheck holds it now)
- *   2. THE SHIPS. (a placeholder: slice 1's, PortCheck holds it now)
+ *   1. THE BULK BERTH. (slice 1's: PortCheck holds it)
+ *   2. THE SHIPS. (slice 1's: PortCheck holds them)
  *   3. THE CREWS. A city with a terminal: the transit bill carries its upkeep
  *      and not its crew; Freight's wage bill carries the crew at the same fill;
  *      the two together are what portsBill() was, to the cent; the city's posts
@@ -45,7 +45,7 @@ import java.util.Map;
  *   8. THE MONEY. The money audit closes every month of a city working a port that pays dues.
  *   9. THE SAVE. The dial crosses the policy state (and a short array reads the default); the quotes, the
  *      month's dues and handling and the treasury's lines cross a save and a reload, to the bit.
- *  10. THE ADVICE. (a placeholder: slice 4's)
+ *  10. THE ADVICE. (BuildAdviceCheck 13, "a berth pays back", holds it)
  *  11. A REAL RUN. (LongPlaytest's)
  *
  * It tests the model through its public getters and constants and changes
@@ -345,7 +345,7 @@ public class LandlordPortCheck {
     /**
      * A city with the Haulage fixture's bulk chain (three iron mines and a pelletising plant that lands its coal and
      * ore and ships its pellets, HaulageCheck.base()), played fourteen months, then given a Bulk Terminal and played
-     * three more so the ore, the coal and the pellets go by sea in the berths' share. The fixture is the lorries' and
+     * three more so the ore, the coal and the pellets go by sea in the berths' share. The fixture is the trucks' and
      * the ships' trade, with the berth the only new thing in it.
      */
     static Game seaBase(GameFiles files) {
@@ -712,12 +712,12 @@ public class LandlordPortCheck {
     }
 
     /* ================================================================
-       THE REST OF THE BRIEF, FOR THE SLICES THAT BUILD IT
+       THE REST OF THE BRIEF, HELD ELSEWHERE
        ================================================================ */
 
-    // 1. THE BULK BERTH: slice 1's (PortCheck holds it; this harness takes it over in FR3's last slice).
-    // 2. THE SHIPS: slice 1's (the same).
-    // 10. THE ADVICE: slice 4's.
+    // 1. THE BULK BERTH: slice 1's; PortCheck holds it.
+    // 2. THE SHIPS: slice 1's; PortCheck holds them.
+    // 10. THE ADVICE: slice 4's; BuildAdviceCheck 13, "a berth pays back", holds it.
     // 11. A REAL RUN: LongPlaytest's.
 
     public static void main(String[] args) throws Exception {
@@ -730,7 +730,7 @@ public class LandlordPortCheck {
         save();
         System.out.println();
         if (fails == 0) {
-            System.out.println("LandlordPortCheck: the berths worked by Freight - the crews, the handling, the dues, the price, the money and the save (sections 1-2 and 10-11 are the other slices'): all passed");
+            System.out.println("LandlordPortCheck: the berths worked by Freight - the crews, the handling, the dues, the price, the money and the save (sections 1-2 are PortCheck's, 10 BuildAdviceCheck 13's, 11 LongPlaytest's): all passed");
         } else {
             System.out.println(fails + " FAILED");
         }

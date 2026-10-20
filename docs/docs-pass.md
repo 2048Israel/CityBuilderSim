@@ -65,7 +65,8 @@ from the code.
    one gets one, written from the design note — not from a guess.
 
 4. **The record.** In the project (`Civic Ledger: Java Game`):
-   - `claude/changelog.md`: a block at the top in the house shape —
+   - `docs/notes/changelog.md` (in the repository since 2026-10-20, not
+     the project): a block at the top in the house shape —
      `### TITLE — date, state, see doc.md` then one paragraph: what shipped,
      what it found, the verification (compile, `BuildMenuCheck`, the suite's
      count against its baseline, files verified on the PC). Newest first.
@@ -77,8 +78,7 @@ from the code.
      record: a batch's row leaves it in the merge that ships it, and what
      was not done goes under Pending there (its first lines are its rules).
    If you cannot reach the project — a headless run on the PC cannot — write
-   the changelog block and the todo lines to `docs/notes/pending.md` in the
-   repository instead, newest at the top, and the next Cowork session moves
+   the todo lines to `docs/notes/pending.md` in the repository instead, newest at the top, and the next Cowork session moves
    them over and empties the file.
 
 5. **The two front doors.** `README.md` and `CLAUDE.md` state counts and

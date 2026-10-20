@@ -68,7 +68,8 @@ import java.util.Locale;
  *
  *   7. THE WIRE & CABLE WORKS' ESTIMATE (Manufacturing): the maker's less its
  *      insulation at the exchange factor and its freight; the sector's older
- *      rows the maker's to the bit.
+ *      rows the maker's less their city legs (since FR2, as every maker's), to
+ *      the bit.
  */
 public class CopperRefiningCheck {
 

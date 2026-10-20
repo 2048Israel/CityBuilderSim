@@ -732,6 +732,10 @@ public abstract class Sector {
      * vehicle - two a working day - and it is the figure that makes the fleet
      * come out at a believable size for the city rather than a statement about
      * any one lorry.
+     *
+     * SINCE FR2 the fleet is vans for the GOODS stream alone - the bulk's
+     * trucks are Good.TRUCKS, Haulage's - and the figure was kept. TODO(docs):
+     * whether 120 t still stands for a goods-only van, or was left for now.
      */
     public static final double TONNES_PER_VAN = 120;
 
@@ -1863,7 +1867,9 @@ public abstract class Sector {
 
     /**
      * A SERVICE BOUGHT FROM ANOTHER BUSINESS IN THE CITY, billed by the
-     * business that performed it. Haulage, today - see sectors.Freight.
+     * business that performed it. Today: Freight's rail freight, haulage and
+     * port handling (sectors.Freight, sectors.Haulage, sectors.PortDivision),
+     * old metal (OldMetal.LINE) and the builders' salvage cut (sectors.Forestry).
      *
      * PUBLIC, AND ON THE PAYER, because the biller raises it: the railway walks
      * the shippers whose goods it moved and puts a line on each of their

@@ -14,7 +14,8 @@ import java.util.List;
  * near view alone (drawnAt()) and only while the player's setting is on
  * (GamePrefs.isTrucksOnMap(), on by default).
  *
- * WHY. Haulage (FR2) carries every bulk tonne's city leg and the highways
+ * WHY. Haulage (FR2) carries every bulk tonne's city leg (since FR6 less
+ * the railway's share of the city's own and the quay's bulk) and the highways
  * and access roads (FR7) are drawn, but the roads stood empty while the sea
  * had its boats and the railway its trains. So A TRUCK IS A SCHEDULE ENTRY,
  * NOT AN OBJECT, as a boat and a train are: a load, a route and an arrival

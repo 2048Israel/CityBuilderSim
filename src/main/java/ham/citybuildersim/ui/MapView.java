@@ -320,7 +320,7 @@ final class MapView {
     private TrainSchedule trainSchedule;
     private int trainMonth = Integer.MIN_VALUE, trainGameMonth = Integer.MIN_VALUE;
     private List<TrainSchedule.Route> trainRoutes;
-    /** Whether boats - or since 0.8.2 trains - are in view (the frame goes on), and the clock they were last drawn at. */
+    /** Whether boats - or since 0.8.2 trains, and since 0.8.8 trucks - are in view (the frame goes on), and the clock they were last drawn at. */
     private boolean boatsLive;
     private double drawnClock = Double.NaN;
     private final AnimationTimer pump = new AnimationTimer() {
@@ -522,7 +522,7 @@ final class MapView {
             hover(hoverAt[0], hoverAt[1]);
             hoverAt = null;
         }
-        // The boats (0.7.97): while any is in view the frame goes on, and draws again whenever the clock moves them.
+        // The boats (0.7.97), and the trains and trucks: while any is in view the frame goes on, and draws again whenever the clock moves them.
         if (boatsLive) {
             more = true;
             if (boatClock() != drawnClock) dirty = true;
@@ -2868,7 +2868,7 @@ final class MapView {
     /** ...the plane's, at every scale on a generated world. */
     static List<String[]> legendEntries() { return legendEntries(GlobeFrame.PLANE); }
 
-    /** Rows a column of the legend holds: 17, its 51 entries in three columns and the zones set after them (since 0.8.1 the transport class, the railway's four and the gateway, 46 in three columns of 16 before; since 0.8.0 the four industries' works and the seven looks of the materials, 35 in three columns of 12 before; since 0.7.127 ice and the desert, 33 before; since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
+    /** Rows a column of the legend holds: 17, its 52 entries in three columns and the first row of a fourth, and the zones set after them (since 0.8.2 the train, 51 in three columns before; since 0.8.1 the transport class, the railway's four and the gateway, 46 in three columns of 16 before; since 0.8.0 the four industries' works and the seven looks of the materials, 35 in three columns of 12 before; since 0.7.127 ice and the desert, 33 before; since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
     static final int LEGEND_ROWS = 17;
 
     /** The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). */

@@ -87,7 +87,7 @@ public final class TilePainter {
     /** A plot of a siding laid inside a district's plan (Input.siding; batch FR7 slice 5, D14), and (SIDING_END) its first plot, beside the works' box, which carries the loading shed. */
     public static final byte SIDING_PLOT = 1, SIDING_END = 2;
 
-    /** A siding's last plot, beside the works' box: drawn with the siding's loading shed, a small mark in TRANSPORT's colours (FR7 2026-10-18, CityRuns.SIDING). The marks' last bit, 128 (a mark byte is read with & 0xff). */
+    /** A siding's last plot, beside the works' box: drawn with the siding's loading shed, a small mark in TRANSPORT's colours (FR7 2026-10-18, CityRuns.SIDING; and a district plan's siding's SIDING_END, slice 5, set by CityMap). The marks' last bit, 128 (a mark byte is read with & 0xff). */
     public static final int M_SHED = 128;
 
     /** A road plot's kind past BuildingVisual's GRAVEL, PAVED and HIGHWAY (Painted.road, 0.7.88): a TRACK, a street the city has bought no road for (spec 2.5, R4). */
@@ -134,9 +134,9 @@ public final class TilePainter {
     public static final int S_KIND = 7;
     /** ...its surface's width in bits 3 and 4: 1 half (15 m), 2 full (30 m), 0 none... */
     public static final int S_WIDTH_SHIFT = 3;
-    /** ...its role in bits 5 and 6: 0 a cell's street (or one along a cut, or the join's), S_ARTERIAL, S_BOULEVARD... */
+    /** ...its role in bits 5 and 6: 0 a cell's street (or one along a cut, or the join's), S_ARTERIAL, S_BOULEVARD, S_ACCESS... */
     public static final int S_ROLE_SHIFT = 5;
-    /** ...those two roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD), and (batch FR7) an access road's 3 (ROLE_ACCESS)... */
+    /** ...those roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD), and (batch FR7) an access road's 3 (ROLE_ACCESS)... */
     public static final int S_ARTERIAL = 1, S_BOULEVARD = 2, S_ACCESS = 3;
     /** ...and a bridge over fresh water in bit 7. */
     public static final int S_BRIDGE = 0x80;

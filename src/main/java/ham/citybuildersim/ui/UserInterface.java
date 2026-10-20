@@ -3842,7 +3842,7 @@ public class UserInterface extends Application {
     /* =====================================================================
        SETTINGS.
 
-       Four toggles, the keys and a way back, and it had been three raw grey
+       Five toggles, the keys and a way back, and it had been three raw grey
        buttons since before the palette existed - which mattered less when it
        was buried behind a menu and matters now, because the menu at the foot
        of the rail is a click from here, from anywhere.

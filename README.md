@@ -221,8 +221,9 @@ src/main/java/ham/citybuildersim/     over 300 files
     CityCalendar.java                 the date, and the days the clock runs through
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
-    sectors/                          the twenty-four sector classes, the refinery's flow and spread planner, and
-                                      the materials chains' two bases (ProcessingSector, ExtractionSector)
+    sectors/                          the twenty-four sector classes, the refinery's flow and spread planner,
+                                      the materials chains' two bases (ProcessingSector, ExtractionSector), and
+                                      Freight's Haulage and Ports divisions (Haulage, PortDivision)
     BondMarket.java, CorporateBond.java, OrderBook.java
                                       the businesses' bonds, and the order book they and the shares trade on
     tools/                            the index generators (see below); not part of the game
@@ -316,8 +317,9 @@ moving does not mean editing the README:
   `docs/manual.html`, the page itself, which opens from a clone. Both are
   generated from the published page at every publish by
   `tools.ManualToMarkdown`; do not edit them.
-- Per-batch design notes, the running to-do list and the changelog live
-  alongside it, in the claude.ai project.
+- Per-batch design notes and the running to-do list live alongside it, in
+  the claude.ai project; the changelog is `docs/notes/changelog.md` since
+  2026-10-20.
 - **The queue** is in the repository: `QUEUE.md` at the root lists the batches
   waiting to be done, in order, a line and a link each (a brief with no other
   home is in `docs/queue/`). The design studies are in `docs/studies/`, and

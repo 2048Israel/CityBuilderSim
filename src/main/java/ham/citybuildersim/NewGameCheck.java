@@ -46,6 +46,11 @@ import java.util.Map;
  * carried into the city's World and land, kept by a save; a spot the founding
  * card refuses is a problem the game will not found; Start New Game after an
  * Earth city founds on the default generated world.
+ *
+ * AND A NEW CITY AFTER A REFORMED ONE (0.8.10, batch FX4), section 15: New
+ * Game in the window of a city whose currency was reformed founds at unit 1,
+ * and over two years reads the parity and the rate a city never reformed
+ * reads.
  */
 public class NewGameCheck {
 

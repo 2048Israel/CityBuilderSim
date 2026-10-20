@@ -67,8 +67,8 @@
 | 58 | 3 | `static String flat(Path p)` | Forward slashes, so the assertions read the same on any host. |
 | 62 | 2649 | `public static void main(String[] args) throws Exception` |  |
 | 2712 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 2750 | 36 | `static void everyIdCrossesASave(Path root)` | EVERY ID CROSSES A SAVE, THE HIGHEST PAST A GAP TOO (FR3, 2026-10-19). |
-| 2787 | 125 | `static void onEarth(Path root) throws IOException` |  |
+| 2729 | 36 | `static void everyIdCrossesASave(Path root)` | EVERY ID CROSSES A SAVE, THE HIGHEST PAST A GAP TOO (FR3, 2026-10-19). |
+| 2787 | 125 | `static void onEarth(Path root) throws IOException` | A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6). |
 | 2914 | 10 | `static java.util.List<String> jsonDiff(com.google.gson.JsonObject a, com.google.gson.JsonObject b, java.util.Set<String> except)` | The keys two saves differ on, by name and value, but those left out. |
 | 2929 | 4 | `static void quietly(Runnable r)` | Runs a piece of the city with the game's narration off. |
 | 2934 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
