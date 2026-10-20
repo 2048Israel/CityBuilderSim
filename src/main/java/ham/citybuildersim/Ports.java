@@ -359,7 +359,12 @@ public final class Ports {
      * With nothing at sea it is the railway's own 1 - rail, to the bit.
      */
     public static double factor(double rail, double sea, double seaFreightShare) {
-        return sea > 0 ? 1 - rail - sea + sea * seaFreightShare : 1 - rail;
+        return sea > 0 ? 1 - rail - sea + seaFactor(sea, seaFreightShare) : 1 - rail;
+    }
+
+    /** ...the ships' part of that factor (FR4): what Trade's band in legs draws as the sea leg (TradeBand). */
+    public static double seaFactor(double sea, double seaFreightShare) {
+        return sea > 0 ? sea * seaFreightShare : 0;
     }
 
     /* =====================================================================
