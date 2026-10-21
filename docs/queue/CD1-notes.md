@@ -1,12 +1,14 @@
 # CD1 - notes
 
-*0.8.14, 2026-10-20 and 21, overnight (Jerus's chain: CL2, then CD1 after EG1,
+*0.8.15, 2026-10-20 and 21, overnight (Jerus's chain: CL2, then CD1 after EG1,
 then CL3, CD2, FX5). The spec is `docs/studies/spec-city-debt.md` §3 (the
 curve; Jerus on §3.2, 2026-10-18: "if it is realistic then yes"), §8's CD1
 row, §8.1 (the current-code handoff) and §9 (D9, D15, D31). Planned while EG1
-shipped, built from main 0f6e1b6 (0.8.12) and merged with CL2's 0.8.13 (9f1b328).*
+shipped, built from main 0f6e1b6 (0.8.12) and merged with CL2's 0.8.13 (9f1b328)
+and CL3's 0.8.14 (ef3677c).*
 
-**Ready but for Jerus's word on H1 and A2** (the top of §3).
+**Jerus, 2026-10-21 morning:** "Keep D9 as decided: H1's premise is retired, A2 ships as noise at its threshold. Ship CD1." H1 is retired in
+the scorer and A2 ships red at its threshold (§3).
 
 ## 1. What it does
 
@@ -97,12 +99,13 @@ how they measured):
 
 ## 3. What moved in the trace, and why
 
-**For Jerus: two ensemble checks went red. CD1 ships when you say which way.**
+**Two ensemble checks went red, and Jerus decided both** (2026-10-21 morning):
+"Keep D9 as decided: H1's premise is retired, A2 ships as noise at its threshold. Ship CD1."
 
-| check | what it asks | main 0.8.12 | CD1 | your call |
+| check | what it asks | main 0.8.12 | CD1 | his call |
 |---|---|---|---|---|
-| H1 | a city whose dial is held at 0% by hand gets at least a point more inflation than its autopilot twin in its first ten years | +2.37 points | +0.27 points | **keep D9 (recommended)**, or let the market believe a hand on the dial more the longer it stays |
-| A2 | on the autopilot, no stretch of 12 months or more with prices rising over 10% a year, in any of the 16 cities | longest 11 months (middle 8) | longest 12 months, one city (middle 7) | **ship it as noise at the threshold (recommended)**, or look into that one city first |
+| H1 | a city whose dial is held at 0% by hand gets at least a point more inflation than its autopilot twin in its first ten years | +2.37 points | +0.27 points | **keep D9: H1's premise retired** (`tools/ensemble/score.py`, THE PREMISES RETIRED: measured and printed, neither scored nor counted) |
+| A2 | on the autopilot, no stretch of 12 months or more with prices rising over 10% a year, in any of the 16 cities | longest 11 months (middle 8) | longest 12 months, one city (middle 7) | **ships as noise at its threshold**: still scored as written, red on 0.8.15's stored score |
 
 - **H1 is the design doing its job.** You decided (D9) that the market expects
   the dial to go back to what the rule would set, whoever holds it. So holding
@@ -149,17 +152,20 @@ autopilot: inflation running over where credibility says it settles makes
 the rule expected to fall, by more than the half-point term premium at ten
 years. A curve that never changed shape would be a curve nobody tested.
 
-**The ensemble** (label cd1, against `docs/ensemble/0.8.12.md`): 80 of 80 runs, 11 minutes, **22/26**
-(one vacuous) against 0.8.12's 25/27; stored as `docs/ensemble/0.8.14.md`.
+**The ensemble** (label cd1, against `docs/ensemble/0.8.12.md`): 80 of 80 runs, 11 minutes, 22/26
+(one vacuous) against 0.8.12's 25/27 as first scored; rescored from the same
+runs by the scorer that retires H1, **22/25** (one vacuous, one retired),
+stored as `docs/ensemble/0.8.15.md`.
 S1 and R3 stay red, both nearer their lines (S1's longest spell 12 months
 against 21; R3 4 seeds over a point against 5). **H1 is red by the design**:
 a dial held at 0% by hand no longer buys cheap long money, because the market
 expects it back at the rule, so the first decade's inflation over the
 autopilot twin is 0.27 points against 2.37 (the second 3.02 against 3.63) -
-§3.3's "behind" city in the ensemble's words, and Jerus's call (★9). H2 goes
+§3.3's "behind" city in the ensemble's words; retired by Jerus's word (★9). H2 goes
 vacuous with it (no first-decade burst to stop). **A2** is red on one seed's
 12-month spell over 10% against "under 12" (median 7 months against 8):
-read as the chaos of a moved trace at the threshold, not a mechanism.
+read as the chaos of a moved trace at the threshold, not a mechanism, and
+shipped as noise at its threshold by his word.
 
 ## 4. Who wrote what, and what review changed
 
@@ -194,6 +200,7 @@ read as the chaos of a moved trace at the threshold, not a mechanism.
    decision, and the realistic reading of a market that does not believe a
    hand on the dial), or let the expected drift slow the longer a gap has stood
    (a market that learns the hand stays) - a new dial, a batch of its own.
+   **Answered, 2026-10-21: keep D9; H1's premise is retired.**
 
 ## 6. What Jerus checks by eye (CD1-C)
 

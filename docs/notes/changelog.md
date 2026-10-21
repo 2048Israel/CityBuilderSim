@@ -25,7 +25,7 @@ piece's yield is solved from its price; every issue is priced the same way (the 
 the term loan's face on its factors), at home and abroad, and no round trip makes money. The short end is unchanged.
 Your rate shows the thirty-year rate in its new parts and where the market expects the dial. No save-format bump.
 The traces move (default 619,699 people against 677,355; Rotterdam 834,678 against 711,024); the ensemble scores
-22/26, H1 red for the cheap long money gone (Jerus's call, CD1-C). Harness: CurveCheck.
+22/25, H1 retired and A2 shipped as noise at its threshold, by Jerus's word (2026-10-21). Harness: CurveCheck.
 
 ### 0.8.14 — CL3, buildings that stay where they were put — 2026-10-21, shipped, see docs/queue/CL3-notes.md
 

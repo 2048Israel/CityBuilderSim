@@ -51,7 +51,10 @@ Use a new label (or `RESUME=0`) for a fresh run.
 
 ## What it writes, under `$ENSEMBLE_OUT/<label>/`
 
-- `score.md`: the table and the line `criteria passed: n/m`.
+- `score.md`: the table and the line `criteria passed: n/m`. A criterion with
+  nothing to judge says VACUOUS, and one Jerus retired says RETIRED with his
+  words (`score.py`'s THE PREMISES RETIRED; H1 since CD1, 2026-10-21): both
+  are printed with their numbers and left out of n and m.
 - `baseline.md`: that table in the form `docs/ensemble/<version>.md` keeps, with
   a paragraph naming the version, commit, date and label, and the `summary.json`.
 - `summary.json`: what `--baseline` reads (T1, T2 and F1 compare with it).
