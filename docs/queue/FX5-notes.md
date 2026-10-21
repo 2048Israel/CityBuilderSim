@@ -1,348 +1,183 @@
 # FX5 - the map's rail and roads, finished: notes
 
-*DRAFT, the plan, 2026-10-20 22:30, written while FX5 waits for the GO (the
-overnight chain runs CL2, CD1, CL3 and CD2 first). Nothing is built yet. [The
-brief](FX5.md) holds Jerus's words and the ten items; this file is the plan
-and becomes the batch's notes when it ships. The map's alone: nothing in the
-model reads it, so the playtest's trace must stay byte-identical (its
-"the city map" line counts reloads read back the same, so the map's sidecar
-must round-trip every new yard), and no ensemble is needed.*
+*0.8.18, 2026-10-21. The ten items of [the brief](FX5.md), Jerus's on FX3's
+and FR7's renders and his new Halifax city (2026-10-20). The map's alone:
+nothing in the model reads it, and the default playtest's trace is
+byte-identical to main's (0.8.17) but for its two lines of run time; no
+ensemble. Each slice went to a Sonnet 5.5 subagent at xhigh, one at a time,
+briefed as `docs/deepseek.md` says (the briefs in `target/sonnet/`), and was
+reviewed and committed by Claude (§7). His saves cannot be loaded by this
+build (0.8.12 moved the Earth's fields), so the renders are the Earth
+playtest's city (`--earth rotterdam`, kept by `-Dplaytest.keep`), drawn by
+`FX5/RenderFx5.java` (FR7's tool; `-Drender.months=1` plays a month after the
+load so the map is laid by the build drawing it).*
 
-## 0. The order of work
+## 1. The faults, their causes and the fixes
 
-Six slices, each a Sonnet 5.5 subagent at xhigh in a worktree of its own,
-handed back as a patch and reviewed as a stranger's (`docs/deepseek.md`).
-They are ordered by value against the time left before 07:45; what does not
-land tonight is pushed as work in progress, with this section saying where it
-stopped.
+### 1.1 A railway that is a station alone draws no main line (item 10; slice A)
 
-| # | slice | brief items | files (the slice's own) | runs beside |
-|---|---|---|---|---|
-| A | the lone station's main line; the labels apart; the legend's word | 10, 9, 8 | CityRuns (layRail), LandMap, ui/MapView, MainLineCheck, RailDrawCheck 20 | B |
-| B | one junction a crossing, mostly signals | 5, 6 | TileRaster (junctions), TilePainter.Input, CityMap.fillInput, JunctionCheck, spec-freight 4.6 and D19 | A |
-| C | curved rail, and trains on the curves | 1 | new TrackCurves, TileRaster (track, blocks' track), TilePainter.Input, CityMap (bends, routes rounded), RailDrawCheck, MapCheck 9 | D |
-| D | tidy diagonal ends | 7 | TileRaster (highway's 45-degree band, ends), JunctionCheck | C |
-| Y1 | the yards laid as long as a unit train | 3 | CityRuns (yards, sidecar), CityMap.layRuns (sizes), MainLineCheck, MapCheck 8 | Y2, T |
-| Y2 | a yard drawn whole across tiles | 3 | TilePainter.Input (yards), CityMap.fillInput, TileRaster.drawYard, MapTiles.stamp, RailDrawCheck 12-24 | Y1, T |
-| T | real-length trains, clear sidings, the pace | 2, 4 | TrainSchedule, CityMap.trainRoutes(Into), TileRaster's wagon cap, MapCheck 9, RailDrawCheck 14 | Y1, Y2 |
+**Cause.** `CityRuns.layRail()` grew the main line only to the model's track
+plots, and a Rail Depot or Terminal is a yard, not track: with a depot and no
+spur or line the net was its hub, so no world line, no routes, no trains (his
+city at m477; the Earth playtest from its first depot). **Fix.** While a
+station stands the main line is grown until it waits at the city's ground
+(`MAIN_LINE_REACH` keeps `growMainLine()`'s guard finite); the sidings' budget
+and the legend's surplus keep their formula. `before-depot.png` (0.8.14, m825:
+the yard, no rail) against `after-depot-trains.png`.
 
-Wave 1: A, B and C at once (A holds the one fault in his city; C's arcs are
-the geometry D and the ladders reuse). Wave 2: D, Y1, Y2 and T once C is in
-(Y1 and Y2 land together: a long yard is drawn wrongly without Y2; T's
-`Route.holds` follows Y's geometry by itself). Every slice begins with its
-harness sections, run red on main's classes, as FX3 did. The briefs are
-written ahead, in the session's scratchpad (`briefs/brief-*.md`), and copied
-to `target/sonnet/` at the GO.
+### 1.2 The world lines' labels on one spot (item 9; slice A)
 
-## WHERE IT STOPPED (2026-10-21 07:45, work in progress)
+**Cause.** `ui/MapView` placed each label by `LandMap.worldLabelAt()` from its
+own line alone; two lines leaving together drew "tetohe wodld". **Fix.**
+`LandMap.worldLabels()`: each label slides back along its own line until
+clear, or the two share one, "road and rail to the world ›" (★8).
+`after-far.png`: the playtest's two world lines, their labels one above the
+other.
 
-Built: **A** (af79858f: a station alone lays its main line; the world
-lines' labels apart; "Unmade street"; MainLineCheck 14, GatewayCheck 20; the
-default playtest's trace byte-identical to main's but for its run time) and
-**C** (this commit, uncorrected: `TrackCurves`, the routes rounded, the bends
-drawn, S ladders; RailDrawCheck 25-26, MapCheck 9's `trainsOnTheCurves()`).
-C's Sonnet slice took 4.5 hours, so no review fixes went in. **Red on the
-branch, to fix next** (each a premise the rounding moves, or my bound):
-- MapCheck ~3840 `starts`: `xs[1] == line.x()` and `fadeTo == 64` (the
-  world line's 35-degree join is now rounded: fadeTo 63.05) - assert within
-  `TrackCurves.RADIUS` of both instead;
-- MapCheck ~3842, the on-track loop from point 2: arc samples cut corner
-  plots - assert on a rail plot or within the bed of a drawn bend;
-- GatewayCheck 664-665 (second point the line's, third the arm's end): as
-  the first;
-- MainLineCheck ~783 ("the point before its last two" is the apex): the
-  ladder is sampled now - find the apex as the last point on the fan's line;
-- MapCheck 9 (a), 30 degrees between neighbouring vehicles: 39.9 on a
-  depot's 3-plot ladder (13.1 off the ladders). Split it: off the ladders 30
-  (red on main at the world line's 35-degree kink), on the ladders a looser
-  guard until Y lengthens the yards and their ladders.
-Not built: B, D, Y1, Y2, T (briefs ready in `target/sonnet/`, copies in the
-session's scratchpad). His saves cannot load on this build (0.8.12 moved the
-Earth's fields), so the renders are the Earth playtest's city: `before-depot`
-(m825, no line) and `after-depot` (m826 on A: the line, the world line, 11
-trains). Timings (soft, C's): a tile 0.101 to 0.089 ms at 4 px; trains at 10
-billion 0.003 ms, unchanged.
+### 1.3 The legend's "Track" (item 8; slice A)
 
-## 1. The faults, read in the code, and the fixes
+The legend already calls the railway "Railway"; "Track" was a street the
+city has bought no road for. It is now **"Unmade street"** (★7).
 
-### 1.1 A railway that is a station alone draws no main line (item 10; certain)
+### 1.4 Nine roundabouts at a wide crossing, roundabouts everywhere (items 5, 6; slice B)
 
-**The cause.** `CityMap.layRuns()` counts no track plots for a Rail Depot or a
-Rail Terminal (they are `BuildingVisual.RAIL_TERMINALS`, laid as yards), and
-`CityRuns.layRail()` grows the main line only to the model's track plots
-(`growMainLine(rail, highways, trackPlots, ...)`). With a depot and no Rail
-Spur or Freight Line, `trackPlots` is 0: the net is started at the hub
-(`start()`), the yard is laid on the hub's cell (`spotsOnTrack()` falls back
-to `spotsIn()` at the hub), and no arm grows. No arm reaches the city's edge,
-so `CityMap.worldLine()` finds none, `trainRoutes()` is empty, and no train
-is drawn. The model meanwhile rails through the depot alone
-(`Freight.trackTonnes()` counts its `railCapacity`; RailDepotCheck 1: "its
-own track is its connection to the main line").
+**Cause.** Every plot with a run of junction streets on both axes was a
+junction of its own: a 3 x 3 boulevard crossing drew nine rings and zebras
+inside itself, and boulevard x boulevard was always a ring. A tile read one
+plot past its edge, and the wide crossings straddle tile corners. **Fix.** A
+crossing is its 4-connected group of junction plots (`TileRaster.Crossings`):
+one box, zebras only where roads leave it; signals at every crossing of
+arterials and boulevards; one ring about its middle only where
+`ROUNDABOUT_ROADS` (5) roads leave it (★6). Each tile reads a margin of
+`REACH` (4) plots of streets (`Input.ring`). spec-freight 4.6 and D19 amended.
+On MapCheck's dense city: 158 crossings, 155 of four roads, no roundabout.
 
-**The fix.** Whenever a station stands, the main line is grown until it
-waits at the city's ground, whatever the model's track: `layRail()` grows and
-trims to `max(trackPlots, the full line)` while `sizes` is not empty (a
-finite bound, since `growMainLine()`'s guard is `50 * (target - plots)`).
-The sidings' budget and `trackSurplus()` keep their formula,
-`max(0, trackPlots - rail.plots)`: a city whose track is short of the line
-lays no siding, as before, and shows no surplus. The yard is then laid on the
-main line, the world line found, the routes and trains drawn.
+### 1.5 Trains turn 90 degrees on the spot (item 1; slice C)
 
-**Fixture (MainLineCheck 14, red on main):** a city with a gateway, one Rail
-Depot and no track. Asserts the gate arm waits at the city's ground, the yard
-covers the main line, the railway has a world line, and `trainRoutes()` has a
-route to each of the depot's sidings. MainLineCheck sections whose premise is
-"the line is as long as the track" are read first; where a fixture has a
-station and less track than the line, the slice reports it, and the section
-moves with the decision, saying why.
+**Cause.** Track drawn plot by plot (a corner an L), routes as polylines
+through plot middles, each car headed along its stretch; ladders one straight
+pixel line. **Fix.** `TrackCurves`, one geometry for both: each turn of a
+route an arc of `RADIUS` 3 plots (less where a leg is short), the routes
+rounded and sampled every `STEP`, the turns on the railway's own plots drawn
+by the tiles (`Input.bends`; a plot whose only track is the bend's legs is
+drawn as the arc), the ladders S curves (`ladder()`). On MapCheck's yard city
+the sharpest turn between neighbouring vehicles off the ladders is 13.1
+degrees (35 on 0.8.14 at the world line's join, 90 at a corner), 39.9 on a
+ladder; every one of 6,690 vehicles sampled is on a drawn rail pixel.
+`after-curves-depot.png`.
 
-### 1.2 The world lines' labels on one spot (item 9; certain)
+### 1.6 Yards too short for their trains (items 2, 3; slices Y1, Y2)
 
-**The cause.** `ui/MapView.worldLines()` places each line's label by
-`LandMap.worldLabelAt()` alone, from its own part in view. The highway's and
-the railway's lines leave his Halifax city a few pixels apart along one
-bearing, so both labels land on one spot ("tetohe wodld", FR7's
-`after-streets.png`).
+**Cause.** A yard's box was its footprint (a Terminal 24 x 24, a Depot 8 x 7)
+inside one cell, so less two ladders a Terminal's sidings were 18 plots and a
+Depot's 2; and a yard reached a tile only as a building packed five bits a
+side. **Fix (Y1).** A yard is laid along its line at the longest of
+`TIER_LENGTHS` the ground allows - the length that holds a unit train
+(`YARD_LONG`, 48), an intermodal (33), the cell's interior (31), a mixed
+train (15) - else its footprint, across its footprint's least side; it may
+cross a cell's ring street, which stops at it (★3). A box may start at the
+hub, so no stub of main line is left. Each yard keeps the footprint it was
+asked for (`yardAsked()`, in the sidecar: `CityMap.FORMAT` 10). **Fix (Y2).**
+Every tile a yard reaches gets it whole (`Input.yards`, with the routes' own
+layout) and draws its part of it (`drawWholeYard()`); on MapCheck's yard city
+3,068 of 5,766 vehicles stood off the drawn rail before, none after.
 
-**The fix.** `LandMap.worldLabels(parts, tw, th, w, h)`, pure: each label in
-turn at `worldLabelAt()`'s place; one that would overlap a label placed
-before it (its box, padded by `WORLD_LABEL_PAD`) slides back along its own
-line until clear; where nothing clears, the two lines share one label,
-`WORLD_BOTH_WORDS` ("road and rail to the world ›"), at the first's place.
-MapView draws what it returns.
+### 1.7 Real-length trains, clear sidings, the pace (items 2, 4; slice T)
 
-**Fixture (MapCheck or RailDrawCheck, red on main):** two parts three pixels
-apart on one bearing, as his are: on main the two boxes overlap; after, they
-are disjoint, or one label names both. A control: two lines on opposite sides
-of the view keep `worldLabelAt()`'s places to the pixel.
+**Cause.** Every train was drawn at most `MOST_WAGONS` (40) long, sent by a
+hash to any siding of its kind - over the yard's standing wagons, onto another
+train - at one pace that stopped dead. **Fix.** A train is its payload's
+wagons (a unit train 80, 41.4 plots, 1.24 km; intermodal 50; mixed 15; the
+sources in `Kind.length()`'s sentence). A route says what its siding holds
+(`Route.holds`) and a train goes only where it fits (★5); a yard keeps one
+siding clear of standing wagons (★4) and the routes skip those that hold
+them; one train a siding at a time (★9). The pace: `TRAIN_PLOTS_A_SECOND`
+(50) over a leg of `LEG_SECONDS` (6) to `LEG_MOST` (10), easing into the stand
+and out of it, standing `DWELL_SECONDS` plus `DWELL_A_WAGON` a wagon (a unit
+train 5 s). `MOST_A_MONTH` stays 30 (★2). `after-depot-close.png`: the Earth
+city's depot at m1005, 15 plots along its line (the longest its ground
+allows), wagons on two sidings and a train standing whole on the third.
 
-### 1.3 The legend's "Track" (item 8)
+### 1.8 Diagonal ends (item 7; slice D)
 
-`LandMap.TRACK_ENTRY` "Track" is a street the city has bought no road for
-(brown dashes on its verge), beside the railway's own entry, already
-"Railway" (`TileRaster.BALLAST`). Jerus: "railway or whatever you think is
-best". Read literally, the brief's "Track becomes Railway" would put two
-"Railway" entries in the legend, one of them a street. So the street's entry
-becomes **"Unmade street"** and its hover `TRACK_WORDS` "Unmade street: the
-city has bought no road here" (★7); the railway keeps "Railway". RailDrawCheck
-20 asserts the legend's words against the constants.
-
-### 1.4 Nine roundabouts at a wide crossing, and roundabouts everywhere (items 5, 6; certain)
-
-**The cause.** `TileRaster.roundaboutAt()` and `signalAt()` decide plot by
-plot: every plot with a run of `JUNCTION_RUN` junction streets through it on
-both axes is a junction of its own. Where boulevards three plots wide cross,
-all nine plots qualify: `roundabouts()` draws nine rings, each centred on its
-own plot (FX3's `after-boulevards.png`), and `signals()` draws zebra arms
-between neighbouring junction plots inside the crossing. Boulevard crosses
-boulevard is a roundabout by FR0's rule (spec-freight 4.6's table, D19), so
-every crossing of two boulevards has one.
-
-**The fix ("Mostly signals").**
-- A crossing is the 4-connected group of junction plots, and its rectangle.
-  Reading it needs more than the one plot past the tile's edge that
-  `Input.beyond` holds (a 3 x 3 crossing straddles a tile's corner, since a
-  cell is a tile and the wide roads meet on its ring), so `TilePainter.Input`
-  gains a margin of `TilePainter.REACH` (4) plots of street codes round the
-  tile, corners included, filled by `CityMap.fillInput()` through
-  `streetAt()`; `junctionRun()` reads it, so `JUNCTION_RUN` holds exactly at
-  a seam too.
-- Every crossing of arterials, boulevards and access roads is signalled: one
-  box over the crossing's streets, zebras and stop lines only on the plots
-  just outside its rectangle where a road leaves it.
-- A roundabout only where five or more roads leave the crossing (each
-  maximal run of street plots along a side is one road): one ring centred on
-  the rectangle's middle, its radius the rectangle's half-diagonal plus a
-  lane. Today's grid gives none; CL4's slanted avenues will.
-- spec-freight 4.6's table and D19 amended in the same commit: "signals
-  wherever arterials or boulevards cross; a roundabout only where five or
-  more roads meet (Jerus, 2026-10-20, 'Mostly signals')".
-
-**Fixtures (JunctionCheck 17, red on main):** (a) two boulevards three wide
-crossing: one box, no island pixel, no zebra inside the rectangle; (b)
-boulevard crossing boulevard one wide: a signal, not a ring; (c) five roads
-meeting: one ring, centred on the crossing; (d) a 3 x 3 crossing on a tile's
-corner: the four tiles' pixels join into the one junction (each tile drawn
-alone). JunctionCheck 2's premise (boulevards make a ring) moves with the
-decision and says so; JunctionCheck 7 (a ring's halves across a seam) becomes
-(c)'s seam case.
-
-### 1.5 Trains turn 90 degrees on the spot (item 1; certain)
-
-**The cause.** The track is drawn plot by plot (`drawTrackLook()`: a plot's
-middle and its arms), so a corner is an L; the routes are polylines through
-plot middles "at the ends and every turn" (`CityRuns.wayTo()`), and
-`TrainSchedule.cars()` heads each car along its stretch, so a train's cars
-swing 90 degrees one after another at the corner. The yard's ladder is a
-straight one-pixel line (`line()`), 60 degrees off the line for the outer
-sidings, and the route runs along it.
-
-**The fix: one geometry, read by both** (`TrackCurves`, new, pure):
-- `bends(xs, ys, r)`: each turn of a polyline as an arc of radius r tangent
-  to both legs, r shrunk where a leg is short (the tangent length at most half
-  of each leg next to it); `round(xs, ys, r, step)` the polyline with those
-  arcs, sampled every `step` plots.
-- The routes are rounded (`CityMap.trainRoutes()`, `RADIUS` 3 plots, 90 m;
-  a dial). The turns the routes make on the city's track, outside the yards'
-  boxes, deduplicated, are the bends the tiles draw: `Input.bends`, as
-  `Input.reserves` carries the loops. A plot inside a bend's tangent points
-  whose only track is the bend's two legs is drawn as the arc (ballast, two
-  rails, radial sleepers; double where marked), not as its L; a plot with a
-  third arm keeps its straights and the arc is drawn over it (a junction's
-  curve). The blocks' views (L1, L2) draw the arc in `RAIL_DARK`.
-- The yard's ladders are the same: the route's apex, its ladder and its
-  siding rounded with the radius the legs allow (a reverse curve), and
-  `drawYard()` draws each ladder from the same points.
-- Track with no route (no world line) draws as today.
-
-**Fixtures, red on main:** RailDrawCheck 25, an L of track at 8 px: a pixel
-on the arc's middle is ballast or steel, and the L's outer corner is ground.
-MapCheck 9: no two neighbouring vehicles of a train differ in heading by
-more than 30 degrees at any sampled moment (on main they differ by 90 at a
-corner), and every vehicle's middle lies on a track pixel of the rendered
-tiles.
-
-### 1.6 Diagonal ends (item 7)
-
-**The cause** (to be confirmed on his city's render first): where a
-45-degree highway stretch meets straight highway, the straight plot's band
-stops square at its edge and the diagonal band starts at the plot's corner
-(`diagBand()`, `diagOpen()`), leaving a notch of ground at the joint, and a
-stretch that ends on the diagonal stops on its staircase.
-
-**The fix.** The joint is a bend: the highways' turns (each arm's polyline,
-its segments' headings) go in `Input.bends` with the highway's net, drawn as
-the carriageway along `TrackCurves`' arc - its casing, its surface, its
-dashed centre line - from the straight's last plot to the diagonal's first;
-an arm that ends on a diagonal has its end squared across its heading. The
-slanted rail's joints are C's bends already.
-
-**Fixture (JunctionCheck 18, red on main):** a highway east, then 45 degrees
-south-east for eight steps, then south, at 8 px: no ground pixel inside the
-carriageway's outline at either joint, and its centre line unbroken through
-them.
-
-### 1.7 Real-length trains, and yards that hold them (items 2, 3; certain)
-
-**The cause.** `TrainSchedule.MOST_WAGONS` (40) caps every unit train at 40
-wagons drawn, half its 80; the yards are their footprints, so a Rail
-Terminal's 24 plots less two `YARD_LADDER`s (3) leave 18-plot sidings, and a
-40-wagon train (21.4 plots) stands with its tail on the ladder and the main
-line; a Rail Depot's yard is 8 plots long, and holds no train at all.
-
-**The fix, the trains.** Each kind is drawn with what its payload says:
-`wagons = payload / WAGON_TONNES` - unit trains (hoppers, tanks) 80 wagons,
-41.4 plots with their two locomotives, about 1.24 km; intermodal 50, 26.4
-plots (790 m, [R46]'s 750 m train); mixed 15, 8.9 plots. `MOST_WAGONS` goes,
-sources in the dials' sentences (a North American unit coal train of 100 to
-135 cars runs 1.8 to 2.3 km; Europe's limit is 740 m). `MOST_A_MONTH` stays
-30, the spec's worked example (25 a month "reads as a busy line, not a
-blur"): past it, as now, each real-length train drawn stands for several,
-never more short ones (★2). The line's look at 1x is Jerus's to judge
-(FX5-C).
-
-**The fix, the yards** (★3). A yard's box is laid along its line as long as a
-unit train and its two ladders need, `YARD_LONG` = ceil(41.4) + 2 x
-`YARD_LADDER`, across its footprint's width: a Terminal `YARD_LONG` x 24, a
-Depot `YARD_LONG` x 7 with its three sidings. That is longer than a cell's
-interior (31), so the box may run on into the next cell along the line,
-across the cell's ring street, which ends at the yard on both sides (a real
-yard cuts the grid; the plans already join dead ends, H2's CUTS rule). Where
-the ground does not allow the length (water, ground not owned, a highway, a
-mine, another yard), the longest box it allows, down to the footprint's
-length; each yard keeps the size it was asked for, so `keepYards()` does not
-re-lay one laid short (the sidecar keeps the asked size, so a reload reads
-back the same). A long yard spans tiles, so a tile is given every yard that
-reaches it, its whole box and its layout (`yardLayout()` of `yardRail()`, as
-the routes lay it) rather than the clipped box `Input.boxes` packs in five
-bits, and `drawYard()` draws its part of the whole. Each route says how much
-train its siding holds (`Route.holds`, from the ladder's end to the siding's
-far end; a works' siding its own length), and a train goes only on a route
-that holds it.
-
-**Fixtures, red on main:** RailDrawCheck 23 moved with the decision (a
-depot's box is `YARD_LONG` along its line, not its footprint; the old
-premise "its own footprint" said so); MapCheck 9: no train's length exceeds
-its route's `holds`, and a standing train's rear vehicle lies on its siding;
-MainLineCheck: a yard on a line through two cells covers the ring plot
-between them and the plan lays no street across it.
-
-### 1.8 Trains over the standing wagons, and the pace (item 4; FX3's ★6)
-
-**The cause.** `drawYard()` stands wagons on the first `wagonTracks` sidings
-from the shed's side; `trainRoutesInto()` lays a route to every siding, and
-`TrainSchedule.build()` hashes each train onto any route of its kind, so a
-train stands over the standing wagons, and two trains can share a siding.
-Every train runs its whole route in `LEG_SECONDS` (6) at an even pace and
-stops dead, whatever its length or its route's.
-
-**The fix.**
-- A yard keeps one siding clear of standing wagons (the drawing caps them at
-  tracks - 1, ★4); the routes skip the sidings that hold wagons
-  (`trainRoutes()` reads the same `wagonTracksOf()` the tiles do, and its
-  cache keys on it).
-- `build()` assigns the trains in arrival order to a siding that no other
-  train is on during its time there; one with none free arrives later, to the
-  first free moment that keeps its visit inside the month, or is not drawn.
-- The pace: a train runs at `TRAIN_PLOTS_A_SECOND` (50) over its route, its
-  leg between `LEG_SECONDS` (6, today's) and `LEG_MOST` (10) seconds by the
-  route's length, easing to a stop on its siding and away from it (the front
-  at len x (1 - (1 - u)^2) in, len x (1 - u^2) out, so it is slowest where
-  the view looks closest); it stands `DWELL_SECONDS` (3) plus
-  `DWELL_A_WAGON` (0.025 s) a wagon, a unit train 5 s. A train enters and
-  leaves its siding whole, since its siding holds it. Its visit stays about
-  today's 15 s, so the line holds about as many trains at once as now.
-- MapCheck 9 moves with the decision ("one route a yard and siding" becomes
-  "one a yard and clear siding"), saying why.
-
-**Fixtures, red on main:** MapCheck 9: no train stands on a siding the
-yard's wagons stand on; no two trains on one siding at once; the frame's
-0.5 ms at 10 billion kept (twice the vehicles a train).
+**Cause.** A straight highway plot drew its middle and an arm to every highway plot beside it, the 45-degree stretch a band within its own plot (diagBand()): at the joint the straight arm ran square into the staircase while the band left at 45 degrees, a stub on one side and a notch of ground on the other, and a stretch ending on its diagonal stopped on its staircase (FX3's fter-diagonal-close.png). **Fix.** The highways' turns are bends of TrackCurves too (net HIGHWAY, HIGHWAY_RADIUS 4, so a 45-degree joint's tangent is 1.66 plots; CityRuns.highwayPolylines(), CityMap.highwayBendsIn()), drawn as the carriageway along the arc - casing, surface, dashed centre line - over the plots they replace; an arm's last diagonal step is squared across its heading (diagEndOpen(), ★11). JunctionCheck 18: on main 17 and 7 ground pixels inside the outline at the two joints and 14 and 11 stub pixels; none now. A bend over a bridge keeps its staircase (no arc over a deck).
 
 ## 2. Calls taken where the brief left room (★)
 
-1. **★1 The curve's radius is 3 plots (90 m)**, a dial (`TrackCurves.RADIUS`),
-   less where the legs are short; real freight curves are 150 to 300 m, too
-   wide for a corridor's corner on this map.
-2. **★2 `MOST_A_MONTH` stays 30**: the trains are twice as long, the cap the
-   spec's; a lower cap, if the line reads as a ribbon at 1x, is his call.
-3. **★3 A yard is as long as a unit train along its line**, its width its
-   footprint's, and may cross a cell's ring street, which ends at it; no
-   bridge is drawn over a yard.
-4. **★4 A yard keeps one siding clear** of standing wagons, so a train always
-   has one; RailDrawCheck 14's "every track" becomes "every track but one".
-5. **★5 A train no siding holds is not drawn** (a city whose only yard the
-   ground kept short); `TrainSchedule.unfit()` counts them.
-6. **★6 Mostly signals**: every crossing of arterials and boulevards is
-   signalled; a roundabout only where five or more roads leave a crossing.
+1. **★1 The curve's radius is 3 plots** (90 m), less where a leg is short.
+2. **★2 `MOST_A_MONTH` stays 30**, the spec's worked example; a lower cap,
+   if the line reads as a ribbon at 1x, is Jerus's call.
+3. **★3 A yard is laid as long as the longest train its ground allows**, and
+   may cut a cell's ring street, which stops at it; no bridge is drawn.
+4. **★4 A yard keeps one siding clear** of standing wagons (RailDrawCheck 14:
+   "every track but one").
+5. **★5 A train no siding holds is not drawn** (`TrainSchedule.unfit()`
+   counts them). In the Earth run the young depot (15 plots) draws mixed
+   trains; its unit trains are not drawn until the spurs' sidings take them.
+6. **★6 Mostly signals**: a roundabout only where five or more roads leave a
+   crossing; today's grid has none, CL4's slanted avenues will.
 7. **★7 "Track" becomes "Unmade street"**, not "Railway", which the railway
    already is.
-8. **★8 Two world lines that leave together share one label**, "road and
-   rail to the world ›", when sliding apart along their lines finds no room.
+8. **★8 Two world lines that leave together** get labels apart, or one label
+   naming both.
+9. **★9 (the slice) A train whose siding is taken** takes the siding of its
+   yard free soonest, its own first; on the strict rule one of the yard city's
+   18 trains went undrawn.
+10. **★10 A yard's ladder turns its vehicles up to 45 degrees**
+    (`MapCheck.LADDER_TURN_DEG`): an S over `YARD_LADDER` (3) plots; a longer
+    ladder would shorten every siding.
+11. **★11 (the slice) A highway arm ending on its diagonal is squared off**, with no ramp's apron: the apron narrowed across the staircase, which was the stub. A straight end keeps its apron.
 
-## 3. The checks, the renders, the record
+## 3. The harnesses
 
-- `Batch check.bat --maps --no-pause` at the start (main's one red is
-  ScaleCheck's "...and it builds", SC1) and after each slice lands; the
-  trace byte-identical but for its run time; `--timing` last and alone.
-- Renders before and after with FX2's `RenderFx2.java` on a read-only copy of
-  his slot 3 or autosave (his new Halifax city, 20:59) in the scratchpad,
-  never his folder; if the copy is refused, MapCheck's yard city and the
-  playtest's kept city (`-Dplaytest.keep`), as FR7 did. Windows: a corner of
-  the main line, the depot with a train standing, a wide crossing, the
-  diagonal's two joints, the world lines' labels.
-- `GameVersion.VERSION` after main's; the changelog's block; FX5's row out
-  of `QUEUE.md`; FX5-C under Pending (his eye check: the curves and the
-  trains on them at 1x, the long depot in his city, the signals, the joints,
-  the labels, ★1-8).
+Each new section's fixture causes its fault on main (run red before each fix,
+the counts in §7): MainLineCheck 14 (a station alone), 15 (the long yards),
+GatewayCheck 20 (the labels), JunctionCheck 17 (one junction a crossing), 18 (the diagonal's joints),
+RailDrawCheck 25-26 (curves, S ladders), 27 (a yard across tiles), MapCheck 9
+`trainsOnTheCurves()`, `trainsByLength()`, `trainsAndTheWagons()`. **Moved
+with Jerus's decisions, each said so in a comment:** MainLineCheck 13 (a
+station's line reaches the edge; its no-station twin added) and its two "its
+own footprint" clauses; JunctionCheck 2, 7 and two asserts of 11 (no ring
+where boulevards cross); GatewayCheck's second and third route points,
+MapCheck 9's route start and on-track walk, MainLineCheck 12's apex (the
+routes are rounded); MapCheck 9 "one route a yard and siding" (clear sidings)
+and its visit windows (each train's own leg and stand); RailDrawCheck 14;
+MainLineCheck 15's watery fixture (the tiers by train).
 
-## 4. Risks
+## 4. Found on the way
 
-- **Y moves the plans' ground**: a long yard takes ground a district's
-  buildings stood on; the model's counts still add up (the plans place
-  round it, and pack at the edge what has no place), but MapCheck's and
-  PlanCheck's played fixtures may move. Read each red before touching it.
-- **The sidecar**: a yard's asked size must round-trip, or the playtest's
-  "reloads read back the same" count moves and the trace with it.
-- **Time**: Y and T are the largest; if they do not land by 07:45 they are
-  pushed as work in progress on the branch, A to D on it green.
+- **His saves do not load on this build**: 0.8.12 moved the Earth's fields,
+  and both his slot 3 and his autosave (20:59) are refused. The renders are
+  the playtest's.
+- **The default playtest's generated world has no gateway**, so its railway
+  draws no line and no train (FR1's ★3); the Earth run is the one with trains.
+- **A sidecar from before FORMAT 10** reads its yards' footprints as their
+  boxes, so a loaded old city keeps its 8 x 7 depot (which holds no train)
+  until the model's yards change; a new city lays them long.
+- **Slice C took 4.5 hours overnight** and was stopped at the 07:45 deadline
+  with five reds; they were premises the rounding moves, closed the next
+  morning (527e8f5e).
+
+## 5. Not built
+
+Nothing of the ten items. Left in the code: a curve on a bridge's deck keeps its staircase; the ladders stay YARD_LADDER (3) plots, the tightest curve (★10); a loaded city from before FORMAT 10 keeps its short yards (§4).
+
+## 6. To check by eye (FX5-C)
+
+The renders in `FX5/`, then in the game on a new city with a gateway: the
+curves and the trains on them at 1x (the pace, the easing, no swing on the
+spot); a young city's depot laid along its line with a train standing whole
+on its clear siding; the signals at wide crossings; the diagonal highway's
+joints; the two world lines' labels; his calls on ★1 to ★10.
+
+## 7. The Sonnet slices
+
+| slice | what it did | what the review changed |
+|---|---|---|
+| A (193k tokens, 13 min) | the lone station's main line, the labels, the legend's word; MainLineCheck 14 (5 red on main), GatewayCheck 20 | MainLineCheck 13's short-track clause moved with the decision, a no-station twin added |
+| C (576k, 4.5 h) | `TrackCurves`, the rounded routes, the drawn bends, S ladders; RailDrawCheck 25-26 (16 red on main), MapCheck 9 (a)/(b) | five premises the rounding moves rewritten (Claude); MapCheck 9 (a) split at the ladders |
+| B (257k, 22 min) | crossings, signals, five-road roundabouts, the tile's ring; JunctionCheck 17 (16 red on main) | nothing; its move of two asserts of section 11 kept (no ring where boulevards cross) |
+| Y1 (322k, 21 min) | the long yards, `yardAsked()`, FORMAT 10, a long yard's district; MainLineCheck 15 (11 red on main) | a box from the hub (no stub of main line), the two "own footprint" clauses moved, MapCheck 9 (a) finds a ladder by its siding |
+| Y2 (331k, 22 min) | a yard drawn whole across tiles; RailDrawCheck 27 (13 red on main) | nothing; its count of a yard's part once in MapCheck's Raster kept |
+| T (320k, 35 min) | real lengths, `holds`, clear sidings, one train a siding, the pace; MapCheck 9 (15 red on main) | MapCheck 9's visit windows per train; the yards' lengths by the trains they hold (TIER_LENGTHS, Claude's) |
+| D (318k, 37 min) | the highways' bends, the squared diagonal end; JunctionCheck 18 (7 red on main) | nothing; its squared end with no apron kept as ★11 |

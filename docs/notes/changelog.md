@@ -14,6 +14,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.18 — FX5, the map's rail and roads finished — 2026-10-21, ready, see docs/queue/FX5-notes.md
+
+Rail curves at its corners and the trains follow them: a new `TrackCurves` rounds every route's turn (3 plots) and
+the tiles draw the same arcs, with the yard ladders as S curves, so no car swings on the spot. Trains are their real
+length (a unit train 80 wagons, 1.24 km), only onto a siding that holds them and no yard's standing wagons, one a
+siding, easing in and out; yards are laid along their line as long as the longest train the ground allows (48 plots
+for a unit train, 33, 31, 15), across a cell's ring street, and drawn whole across tiles. A station alone now lays its
+main line (his Halifax depot had no rails). One junction a crossing, mostly signals (a roundabout only where five
+roads meet); the diagonal highway joins the grid as one carriageway; the world lines' labels apart; "Track" is
+"Unmade street". The map's alone: the trace is 0.8.17's, no ensemble; the map's sidecar FORMAT 10, no save change.
+★ for Jerus: eleven calls (FX5-notes §2), above all ★3, ★5 and ★2.
 ### 0.8.17 — CD2, the lineup and the auction — 2026-10-21, ready, see docs/queue/CD2-notes.md
 
 The city sells bills (1-12 months), bonds (2-50 years, the coupon the clearing yield rounded down to an eighth, in
