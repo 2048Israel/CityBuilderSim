@@ -1550,6 +1550,24 @@ public class DataSave {
     public double[] getRolloverRecord()              { return rolloverRecord; }
 
     /**
+     * ...and the cap its auctions take (CD2, D28), the mode by name and the
+     * tail or yield beside it, two plain fields because a cap's Fill it
+     * carries no number and Gson writes no NaN (CapSetting). Null and 0 on a
+     * save without them, which read as the default: fair plus a point.
+     */
+    private String rolloverCapMode;
+    private double rolloverCapValue;
+
+    public void setRolloverCap(Auction.Cap cap) {
+        CapSetting.Saved saved = CapSetting.save(cap);
+        this.rolloverCapMode = saved.mode;
+        this.rolloverCapValue = saved.value;
+    }
+    public Auction.Cap getRolloverCap() {
+        return CapSetting.restore(rolloverCapMode == null ? null : new CapSetting.Saved(rolloverCapMode, rolloverCapValue));
+    }
+
+    /**
      * How the land office pays (0.7.6) - Game.isLandPaidFromVault(): true out
      * of the vault's dollars, false converting cash. The player's choice, under
      * its own key. Null on an older save, which reads as converting - the

@@ -34,6 +34,14 @@ import java.util.Map;
  *   city that starves for fifty months and recovers looks identical at both
  *   ends to one that never had a problem.
  *
+ * AND THE SALES NOBODY PRESSED (CD2, slice 6; D28 to D30). The rollover and
+ * automatic building sell the city's paper month after month inside a skip, each
+ * at its own cap, and a short one pays the maturity from the cash and the
+ * central bank's advances or keeps an ask open - none of which either end of
+ * the skip shows. sampleSales() takes each month's sales (AutoSale), and the
+ * report lists every one, its stop, its tail and where the rest of a short
+ * one came from (getAutoSaleLines()), with a line or two of headlines.
+ *
  * Nothing here computes anything the simulation does not already know. It reads
  * finished figures and remembers them, so no screen built on it can move a
  * single number in the game.
@@ -119,6 +127,7 @@ public class TimeSkipReport {
         monthsAtCeiling = 0;
         advancedDuringSkip = 0;
         advancesOwedAtEnd = 0;
+        autoSales.clear();
         worstEnergyRatio = 1;
         worstRoadRatio = 1;
         peakPopulation = 0;
@@ -262,6 +271,124 @@ public class TimeSkipReport {
         sampleTreasury(onAdvances, atCeiling);
         if (advanced > 0) advancedDuringSkip += advanced;
         advancesOwedAtEnd = Math.max(0, owed);
+    }
+
+    /* ----------------------- the automatic sales (CD2, slice 6) ----------------------- */
+
+    /**
+     * One sale the player did not press (D28 to D30): a rollover issue or an
+     * automatic-building bond, sold at auction at the setting's own cap.
+     *
+     * @param by           "The rollover" or "Automatic building"
+     * @param month        the month it ran in
+     * @param paper        what was sold, in words: "10-year bond", "6-month bill"
+     * @param asked        the face offered
+     * @param sold         the face sold: less than asked when the sale was short
+     * @param raised       the cash it brought
+     * @param stop         the clearing yield
+     * @param tail         the stop over fair
+     * @param cover        what was bid at the cap, over the issue
+     * @param shortSale    the bids did not reach the issue at the setting's cap
+     * @param ceiling      that cap, as a yield
+     * @param fromCash     the rollover's maturity the sale did not raise, paid from the treasury's cash
+     * @param fromAdvances ...and from the central bank's advances
+     * @param heldOpen     what automatic building's ask still has to raise after the sale, kept open (D30)
+     */
+    public record AutoSale(String by, int month, String paper, double asked, double sold, double raised,
+                           double stop, double tail, double cover, boolean shortSale, double ceiling,
+                           double fromCash, double fromAdvances, double heldOpen) {
+
+        /** The sale as a line of the report: when, who, what, the stop and the tail, and where the rest of a short one came from. */
+        public String line() {
+            StringBuilder s = new StringBuilder();
+            s.append(CityCalendar.formatShort(month)).append(": ").append(by).append(" sold a ").append(paper)
+                    .append(" at ").append(String.format(java.util.Locale.ROOT, "%.2f%%", stop * 100))
+                    .append(", a tail of ").append(String.format(java.util.Locale.ROOT, "%.0f", tail * 10_000))
+                    .append(" basis points, ").append(DecisionLog.money(sold)).append(" of ").append(DecisionLog.money(asked))
+                    .append(" of face for ").append(DecisionLog.money(raised));
+            if (shortSale) {
+                s.append(String.format(java.util.Locale.ROOT, ", short at its cap of %.2f%%", ceiling * 100));
+                if (fromAdvances > 0) {
+                    s.append("; ").append(DecisionLog.money(fromAdvances)).append(" of the maturity paid by the central bank's advances");
+                    if (fromCash > 0) s.append(" and ").append(DecisionLog.money(fromCash)).append(" from the treasury's cash");
+                } else if (fromCash > 0) {
+                    s.append("; ").append(DecisionLog.money(fromCash)).append(" of the maturity paid from the treasury's cash");
+                }
+                if (heldOpen > 0) s.append("; ").append(DecisionLog.money(heldOpen)).append(" of the ask left open");
+            }
+            return s.append('.').toString();
+        }
+    }
+
+    private final List<AutoSale> autoSales = new ArrayList<>();
+
+    /** The most automatic sales a report keeps: a skip of centuries is not a ledger of them. */
+    private static final int AUTO_SALES_MOST = 5000;
+
+    /**
+     * ...the month's automatic sales (Game.getAutoSalesThisMonth()), sampled
+     * beside sampleMonth(): the rollover and automatic building sell month
+     * after month inside a skip with nobody at the button, and none of it can
+     * be read off the two ends.
+     */
+    public void sampleSales(List<AutoSale> sales) {
+        if (sales == null) return;
+        for (AutoSale s : sales) if (autoSales.size() < AUTO_SALES_MOST) autoSales.add(s);
+    }
+
+    /** Every automatic sale over the skip, in the order made. */
+    public List<AutoSale> getAutoSales() { return java.util.Collections.unmodifiableList(autoSales); }
+
+    /** ...as lines, one a sale: the stop, the tail, anything short and where the rest came from. */
+    public List<String> getAutoSaleLines() {
+        List<String> lines = new ArrayList<>();
+        for (AutoSale s : autoSales) lines.add(s.line());
+        return lines;
+    }
+
+    /**
+     * What one seller sold over the skip, for the headlines: with worry, only
+     * the line for the sales that came up short and where the rest came from
+     * (the headlines' worrying lines, before "nothing went wrong" is decided);
+     * without, the line saying how many it made and at what stops, which is
+     * news but no worry. Nothing if it sold nothing.
+     */
+    private List<String> autoSaleHeadlines(String by, boolean worry) {
+        List<String> lines = new ArrayList<>();
+        int n = 0, shorts = 0;
+        double lo = Double.POSITIVE_INFINITY, hi = 0, widest = 0, sold = 0, fromCash = 0, fromAdvances = 0, held = 0;
+        for (AutoSale s : autoSales) {
+            if (!s.by().equals(by)) continue;
+            n++;
+            lo = Math.min(lo, s.stop());
+            hi = Math.max(hi, s.stop());
+            widest = Math.max(widest, s.tail());
+            sold += s.sold();
+            if (s.shortSale()) {
+                shorts++;
+                fromCash += s.fromCash();
+                fromAdvances += s.fromAdvances();
+                held += s.heldOpen();
+            }
+        }
+        if (n == 0) return lines;
+        if (!worry) {
+            lines.add(String.format(java.util.Locale.ROOT,
+                    "%s sold %d time%s on its own (%s of face); the stops ran from %.2f%% to %.2f%%, the widest tail %.0f basis points.",
+                    by, n, n == 1 ? "" : "s", DecisionLog.money(sold), lo * 100, hi * 100, widest * 10_000));
+        }
+        if (worry && shorts > 0) {
+            StringBuilder s = new StringBuilder(String.format(java.util.Locale.ROOT,
+                    "%s came up short at its cap %d time%s", by, shorts, shorts == 1 ? "" : "s"));
+            if (fromAdvances > 0 || fromCash > 0) {
+                s.append(": ").append(DecisionLog.money(fromCash)).append(" of maturities paid from the treasury's cash and ")
+                        .append(DecisionLog.money(fromAdvances)).append(" by the central bank's advances");
+            }
+            if (held > 0) s.append(held > 0 && (fromAdvances > 0 || fromCash > 0) ? ", " : ": ")
+                    .append(DecisionLog.money(held)).append(" of asks left open");
+            lines.add(s.append('.').toString());
+        }
+        return lines;
     }
 
     public int getMonthsOnAdvances() { return monthsOnAdvances; }
@@ -479,6 +606,11 @@ public class TimeSkipReport {
                     monthsAtCeiling > 0 ? String.format(", %d of them at the ceiling", monthsAtCeiling) : ""));
         }
 
+        // The sales nobody pressed (D28 to D30): the rollover's and automatic building's.
+        // ...those that came up short are a worry, said here; how many were made at what stops, below.
+        lines.addAll(autoSaleHeadlines("The rollover", true));
+        lines.addAll(autoSaleHeadlines("Automatic building", true));
+
         if (monthsOutOfLand > 0) {
             lines.add("No land to build on for " + monthsOutOfLand
                     + (monthsOutOfLand == 1 ? " month." : " months."));
@@ -532,6 +664,10 @@ public class TimeSkipReport {
         if (lines.isEmpty()) {
             lines.add("Nothing went wrong. The city grew without interruption.");
         }
+
+        // The sales nobody pressed, each seller's count and stops (D28 to D30): news, not a worry.
+        lines.addAll(autoSaleHeadlines("The rollover", false));
+        lines.addAll(autoSaleHeadlines("Automatic building", false));
 
         return lines;
     }
