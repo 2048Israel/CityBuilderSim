@@ -1897,6 +1897,12 @@ final class FinancesScreen {
        it and a door to it. THE CURVE by maturity, home and abroad, and how
        much each measure has left to say.
 
+       THE CURVE'S THIRTY-YEAR POINT IS THE NEW PARTS (2026-10-20, CD1): the
+       dial the market expects over thirty years, what the city's debt adds,
+       the term premium, less what the central bank holds - the four getters
+       that add up to curveRate(360) - and a line on where the market expects
+       the dial in a year and in five, against today.
+
        THE FLOOR IS NOT THE DIAL (the spec's B13, this page's T23): it is
        the dial or what the bank's money costs it, whichever is higher, on
        the part of the paper the central bank does not hold.
@@ -1986,12 +1992,14 @@ final class FinancesScreen {
     /** ...and how they are written under it. */
     static final String[] CURVE_NAMES = {"3m", "6m", "1y", "2y", "5y", "10y", "20y", "30y", "40y", "50y"};
 
-    /** THE CURVE's (i): the spec's T24, and the world's curve. */
-    static final String CURVE_INFO = "The note is the floor - the dial, or what the bank's money costs it, whichever "
-            + "is higher - plus what the city's own debt adds. Longer money carries a term premium on top - half a "
-            + "point at ten years, a point and a half at fifty - less whatever the central bank's holdings of term "
-            + "paper take off it. The world lends at its own base and the city's premium abroad, on the same shape. "
-            + "The dashed line is the dial.";
+    /** THE CURVE's (i): the spec's T24, and the world's curve - CD1 priced it on the dial the market expects. */
+    static final String CURVE_INFO = "The short end is the floor - the dial, or what the bank's money costs it, "
+            + "whichever is higher - plus what the city's own debt adds. Further out, each month is priced at where the "
+            + "market expects the dial to be then: the rule's rate at the inflation it expects, with the dial drifting "
+            + String.format("there over about %d months whoever holds it", YieldCurve.DRIFT_MONTHS)
+            + " - plus the debt's spread. Longer money adds a term premium on top, less whatever the central bank's "
+            + "holdings of term paper take off it. The world lends at its own base and the same premium abroad. "
+            + "The dashed line is the dial today.";
 
     /** THE CURVE: the city's rate by maturity at home and, while the window is open, abroad, with the dial dashed and the thirty-year point taken apart. */
     VBox curveCard() {
@@ -2002,15 +2010,20 @@ final class FinancesScreen {
             home[i] = ledger.curveRate(CURVE_MONTHS[i]);
             if (world) abroad[i] = ledger.foreignCurveRate(CURVE_MONTHS[i]);
         }
+        double expected = ledger.expectedDialOver(360), credit = ledger.creditSpread();
         double premium = DebtManager.termPremium(360), comp = ledger.compression(360);
         VBox card = card(caption("THE CURVE", CURVE_INFO),
                 new CurveChart(home, abroad, ledger.getPolicyRate(), 7,
-                        String.format("+%.2f term premium − %.2f the central bank", premium * 100, comp * 100)),
+                        String.format("%.2f the dial expected + %.2f credit + %.2f term − %.2f the central bank",
+                                expected * 100, credit * 100, premium * 100, comp * 100)),
                 keyRow(keySwatch(Palette.MONEY, "at home"), world ? keySwatch(Palette.BUSINESS, "abroad, in dollars") : null,
                         keySwatch(Palette.TEXT_MUTED, "the dial, dashed")),
-                line(String.format("Thirty-year money costs %s: the short end, %s the term premium and %s for what the "
-                                + "central bank holds.", pct2(ledger.curveRate(360)), pts(premium),
-                        comp > 0 ? pts(-comp) : "nothing off")));
+                line(String.format("Thirty-year money costs %s: the dial the market expects over thirty years, %s; "
+                                + "what the city's debt adds, %s; the term premium, %s; and %s.",
+                        pct2(ledger.curveRate(360)), pct2(expected), pts(credit), pts(premium),
+                        comp > 0 ? String.format("%.2f pts off for what the central bank holds", comp * 100) : "nothing off")),
+                line(String.format("The market expects the dial at %s in a year and %s in five, against %s today.",
+                        pct2(ledger.expectedDialIn(12)), pct2(ledger.expectedDialIn(60)), pct2(ledger.getPolicyRate()))));
         return card;
     }
 
@@ -2057,7 +2070,7 @@ final class FinancesScreen {
             if (marked >= 0 && marked < n) {
                 Label at = new Label(pct2(home[marked]) + "  " + note);
                 at.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-                double ax = Math.min(x.applyAsDouble(marked) - 40, W - 260);
+                double ax = Math.min(x.applyAsDouble(marked) - 40, W - 420);
                 at.relocate(Math.max(LEFT, ax), Math.max(0, y.applyAsDouble(home[marked]) - 22));
                 getChildren().add(at);
             }
@@ -2247,11 +2260,10 @@ final class FinancesScreen {
                     p > 0 ? p : 1, null, 0, 6);
         }
 
-        double rate = ledger.valuationRate(debt);
         double worth = ledger.marketValue(debt);
         double under = ledger.underFace(debt);
         String price = String.format("worth today %s · %.1f of par · yields %s", d(worth),
-                debt.getPriceAsPercentOfPar(rate), pct2(debt.getCurrentYield(rate)));
+                ledger.priceOfPar(debt), pct2(ledger.yieldOf(debt)));
         String against = Math.abs(under) < .5 ? "at its face" : under > 0 ? d(under) + " under face" : "a premium of " + d(-under);
         boolean affordable = worth > 0 && worth <= g.getCash();
         Button buy = new Button(affordable ? "Buy back" : "Too dear");
