@@ -53,4 +53,7 @@ Their sources and the tools:
 
   `-Drule=nations` takes Jerus's "10 nearest" as nations rather than makers.
 
+- `research-notes.md`: the research behind the study, every figure with its
+  URL and its licence: WN0's starting point.
+
 Nothing in the game or the harnesses reads this folder.
