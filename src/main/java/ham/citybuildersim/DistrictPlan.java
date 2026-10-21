@@ -44,8 +44,10 @@ import java.util.List;
  *   LAYOUT  (batch CL2) a homes cell's streets are one of three layouts, by
  *           a hash of the world's seed and the cell's place: the comb (a
  *           squared cell: the whole square) as before, DROPPED crossings, or
- *           BRICK (see a homes cell's layout, in the builder); a merge in one
- *           of the last two takes up the dead ends it leaves, or is undone;
+ *           BRICK (see a homes cell's layout, in the builder); a cell a
+ *           highway, railway, yard or reserve crosses keeps the comb; a merge
+ *           in one of the last two takes up the dead ends it leaves, or is
+ *           undone;
  *   JOIN    the street pieces joined to the largest along the lattice, and
  *           (0.7.88, ACROSS DISTRICTS) to the streets of the districts
  *           before it in the map's order where they meet its frame's edge;
