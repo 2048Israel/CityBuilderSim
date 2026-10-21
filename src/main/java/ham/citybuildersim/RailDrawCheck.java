@@ -91,6 +91,22 @@ import java.util.List;
  *      with its bends.
  *  26. (batch FX5) a yard's ladders are S curves: tangent to the line at the
  *      apex and to the siding at its start, two rails from RAILS_FROM px.
+ *  27. (batch FX5 Y2; red before the yard is drawn whole) a yard longer than
+ *      a tile is drawn as one: a Rail Terminal's box CityRuns.YARD_LONG along
+ *      its line and 24 across, east-west, starting a plot into a tile and so
+ *      running on into the next across the ring (and, from plot 24, into a
+ *      third, each seam more than a ladder from the box's ends), its tiles' inputs built as CityMap.fillInput() builds them
+ *      (each tile given the yard whole in Input.yards and its clipped part as
+ *      a building), each tile rastered alone at 8 px and laid side by side:
+ *      each siding's ballast band lies at the same rows on both sides of a
+ *      seam and runs across it, no ladder (no steel off the sidings' rails)
+ *      within YARD_LADDER plots of a seam but one at each end of the box,
+ *      one shed and three stockpiles, not one set a tile; the second tile's
+ *      part is yard ground; a 24 x 24 yard inside one tile draws to the pixel
+ *      as it does with no entry (section 12's); the stamp folds the yards; and
+ *      on the skeleton city the map gives every tile a yard reaches the yard
+ *      whole, in the layout the trains' routes lay, counted once, and its
+ *      part on every tile is the yard's class in the blocks' views.
  *
  * Numbering is the running order.
  *
@@ -328,6 +344,7 @@ public class RailDrawCheck {
         sidingShed();
         curvedCorner();
         yardLadders();
+        yardAcrossTiles();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -1326,5 +1343,236 @@ public class RailDrawCheck {
             if (oimg[(oline - 1) * w + x] != TileRaster.STEEL || oimg[(oline + 1) * w + x] != TileRaster.STEEL) bare++;
         }
         check("the middle siding of a depot's three, on the line, has its two rails the whole length of its ladder: " + bare + " columns without", bare == 0);
+    }
+
+    /* ================= 27. a yard longer than a tile, drawn whole (FX5 Y2) ================= */
+
+    /** Which rows of pixel column `col` hold `colour`, in an image `width` across and `height` down. */
+    static boolean[] colRows(int[] img, int width, int height, int col, int colour) {
+        boolean[] rows = new boolean[height];
+        for (int y = 0; y < height; y++) rows[y] = img[y * width + col] == colour;
+        return rows;
+    }
+
+    /**
+     * The tiles an east-west yard reaches, as CityMap.fillInput() builds them
+     * (FX5 Y2): the yard's box starts at plot (boxX, boxY) of tile 0 and is
+     * `along` plots along and `across` across, its line the plot row
+     * `lineRow`. Every tile it reaches holds the yard whole (Input.yards: its
+     * layout from yardLayout() of the box's track, as the routes lay it) and
+     * its clipped part as a building, counted on the first tile only, with
+     * the line's track on its row. `entries` false leaves the yards out: the
+     * clipped parts alone, as a hand-built yard has always been.
+     */
+    static TilePainter.Input[] yardTiles(BuildingVisual.Type terminal, int boxX, int boxY, int along, int across, int lineRow, boolean entries) {
+        boolean[] rail = new boolean[along * across];
+        for (int x = 0; x < along; x++) rail[(lineRow - boxY) * along + x] = true;
+        int[] layout = TileRaster.yardLayout(rail, along, across);
+        int n = (boxX + along + T - 1) / T;
+        TilePainter.Input[] tiles = new TilePainter.Input[n];
+        for (int i = 0; i < n; i++) {
+            TilePainter.Input in = owned();
+            in.tx = i;
+            in.types = new BuildingVisual.Type[terminal.id() + 1];
+            in.types[terminal.id()] = terminal;
+            in.counts = new int[terminal.id() + 1];
+            int x0 = boxX - i * T, cx0 = Math.max(0, x0), cx1 = Math.min(T, x0 + along);
+            int box = CityMap.box(cx0, boxY, cx1 - cx0, across, false);
+            if (i == 0) in.addBuilding(box, terminal.id());
+            else in.addBuildingPart(box, terminal.id());
+            if (entries) in.addYard(x0, boxY, along, across, terminal.id(), layout, false);
+            railRow(in, lineRow, 0);
+            tiles[i] = in;
+        }
+        return tiles;
+    }
+
+    /** The tiles rastered alone at px and laid side by side: tiles.length * T * px across, T * px down. */
+    static int[] sideBySide(TilePainter.Input[] tiles, int px) {
+        int w = T * px, n = tiles.length;
+        int[] all = new int[n * w * w];
+        for (int i = 0; i < n; i++) {
+            int[] img = raster(tiles[i], paint(tiles[i]), px);
+            for (int y = 0; y < w; y++) System.arraycopy(img, y * w, all, y * n * w + i * w, w);
+        }
+        return all;
+    }
+
+    /** How many 4-connected pieces the pixels of colours a and b make in an image `width` across. */
+    static int pieces(int[] img, int width, int a, int b) {
+        int height = img.length / width, n = 0;
+        boolean[] seen = new boolean[img.length];
+        int[] stack = new int[img.length];
+        for (int s = 0; s < img.length; s++) {
+            if (seen[s] || img[s] != a && img[s] != b) continue;
+            n++;
+            int top = 0;
+            stack[top++] = s;
+            seen[s] = true;
+            while (top > 0) {
+                int at = stack[--top], x = at % width, y = at / width;
+                int[] next = { x > 0 ? at - 1 : -1, x < width - 1 ? at + 1 : -1, y > 0 ? at - width : -1, y < height - 1 ? at + width : -1 };
+                for (int q : next) {
+                    if (q < 0 || seen[q] || img[q] != a && img[q] != b) continue;
+                    seen[q] = true;
+                    stack[top++] = q;
+                }
+            }
+        }
+        return n;
+    }
+
+    /** A track's bed in a pixel column: its ballast rows and the steel rows among them. */
+    static boolean[] bedRows(int[] img, int width, int height, int col) {
+        boolean[] ballast = colRows(img, width, height, col, TileRaster.BALLAST), steel = colRows(img, width, height, col, TileRaster.STEEL);
+        for (int y = 0; y < height; y++) ballast[y] |= steel[y];
+        return ballast;
+    }
+
+    /** How many runs of true the column of rows has. */
+    static int runs(boolean[] rows) {
+        int n = 0;
+        for (int y = 0; y < rows.length; y++) if (rows[y] && (y == 0 || !rows[y - 1])) n++;
+        return n;
+    }
+
+    static void yardAcrossTiles() {
+        System.out.println("--- 27. (FX5 Y2) a yard longer than a tile is drawn as one: one fan, ladders at its two ends, one shed ---");
+        BuildingVisual.Type terminal = terminal();
+        int px = 8, w = T * px, along = CityRuns.YARD_LONG, across = 24, boxY = 4, lineRow = 16, ladder = TileRaster.YARD_LADDER * px;
+        check("the fixture's yard is longer than a tile: YARD_LONG " + along + " plots against a tile's " + T, along > T);
+        for (int boxX : new int[] { 1, 24 }) {
+            TilePainter.Input[] tiles = yardTiles(terminal, boxX, boxY, along, across, lineRow, true);
+            int n = tiles.length, width = n * w;
+            int[] all = sideBySide(tiles, px);
+            String where = "a yard from plot " + boxX;
+            check(where + " reaches " + (boxX == 1 ? 2 : 3) + " tiles, each holding its part as a building: " + n, n == (boxX == 1 ? 2 : 3));
+            // The fan's straight middle is the reference: YARD_TRACKS ballast bands, and the rows of steel the sidings' rails make.
+            int midCol = boxX * px + along * px / 2;
+            boolean[] ballast = colRows(all, width, w, midCol, TileRaster.BALLAST), steel = colRows(all, width, w, midCol, TileRaster.STEEL);
+            int bands = runs(bedRows(all, width, w, midCol));
+            check(where + ": the fan's middle has YARD_TRACKS ballast bands: " + bands, bands == TileRaster.YARD_TRACKS);
+            for (int s = 1; s < n; s++) {
+                int seam = s * w, bad = 0, badSteel = 0, cut = 0;
+                for (int col = seam - ladder; col < seam + ladder; col++) {
+                    if (!Arrays.equals(colRows(all, width, w, col, TileRaster.BALLAST), ballast)) bad++;
+                    if (!Arrays.equals(colRows(all, width, w, col, TileRaster.STEEL), steel)) badSteel++;
+                }
+                for (int y = 0; y < w; y++) {
+                    if (ballast[y] != (all[y * width + seam - 1] == TileRaster.BALLAST) || ballast[y] != (all[y * width + seam] == TileRaster.BALLAST)) cut++;
+                }
+                check(where + ", seam " + s + ": every siding's ballast band lies at the same rows on both sides and runs across it: "
+                        + bad + " of " + 2 * ladder + " columns off, " + cut + " rows cut", bad == 0 && cut == 0);
+                check("...and no steel but the sidings' rails within YARD_LADDER plots of it, no ladder at a seam: "
+                        + badSteel + " of " + 2 * ladder + " columns off", badSteel == 0);
+            }
+            // The two ends: a ladder at the box's west end and at its east end, one ballast band by the apex, not the fan's eight.
+            int west = boxX * px + 1 + 2, east = (boxX + along) * px - 1 - 2;
+            check(where + ": a ladder at the box's west end (fewer ballast bands by the apex than the fan's)",
+                    runs(bedRows(all, width, w, west)) < TileRaster.YARD_TRACKS);
+            check("...and at its east end", runs(bedRows(all, width, w, east)) < TileRaster.YARD_TRACKS);
+            // One shed and one set of stockpiles, not a set a tile.
+            int shed = pieces(all, width, terminal.fill(), terminal.edge());
+            int heaps = pieces(all, width, TileRaster.ORE_HEAP, TileRaster.blend(TileRaster.ORE_HEAP, 0xff000000, 0.25));
+            check(where + ": one shed, not one a tile: " + shed, shed == 1);
+            check("...and three stockpiles, not three a tile: " + heaps, heaps == 3);
+            // The part on a later tile is yard ground, not the plain track the tile alone would show.
+            boolean groundOnLater = true;
+            for (int i = 1; i < n; i++) {
+                int[] tileImg = raster(tiles[i], paint(tiles[i]), px);
+                int x0 = Math.max(0, boxX - i * T), x1 = Math.min(T, boxX + along - i * T);
+                groundOnLater &= hasInBox(tileImg, w, x0, boxY, x1 - x0, across, px, TileRaster.YARD_GROUND);
+            }
+            check(where + ": the part on each later tile is yard ground", groundOnLater);
+        }
+
+        // The control: a 24 x 24 yard inside one tile draws to the pixel as it does with no entry, and as section 12 asserts.
+        int boxX = 4, railY = 16;
+        TilePainter.Input[] one = yardTiles(terminal, boxX, boxY, 24, 24, railY, true), bare = yardTiles(terminal, boxX, boxY, 24, 24, railY, false);
+        int[] with = sideBySide(one, px), without = sideBySide(bare, px);
+        check("control: a 24 x 24 yard inside one tile is drawn to the pixel as with no entry", one.length == 1 && Arrays.equals(with, without));
+        check("...with YARD_GROUND, STEEL on YARD_TRACKS rows and the shed, as section 12 asserts",
+                hasInBox(with, w, boxX, boxY, 24, 24, px, TileRaster.YARD_GROUND)
+                        && distinctRows(with, w, boxX, boxY, 24, 24, px, TileRaster.STEEL) >= TileRaster.YARD_TRACKS
+                        && hasInBox(with, w, boxX, boxY, 24, 24, px, terminal.fill()));
+
+        // The line that runs into the yard is drawn to its box, not left a dead end short of it: the plot before the box (the box from plot 1, the line along its row)
+        // has its bed and rails to the edge it shares with the box, where the yard's ground begins (a gap there is where the trains' vehicles would run off the rail).
+        TilePainter.Input[] into = yardTiles(terminal, 1, boxY, along, across, lineRow, true);
+        int[] intoImg = raster(into[0], paint(into[0]), px);
+        boolean reachesBox = false;
+        for (int dy = 0; dy < px; dy++) {
+            int c = pixel(intoImg, w, 0, lineRow, px - 1, dy, px);
+            reachesBox |= c == TileRaster.BALLAST || c == TileRaster.STEEL;
+        }
+        check("the line meets the yard's box: the plot before the box has its bed to the edge it shares with it", reachesBox);
+
+        // The stamp folds the yards: a tile repaints when its yard's layout moves.
+        TilePainter.Input a = yardTiles(terminal, 1, boxY, along, across, lineRow, true)[1], b = yardTiles(terminal, 1, boxY, along, across, lineRow, true)[1];
+        check("the stamp: the same yards, the same stamp", MapTiles.stamp(a) == MapTiles.stamp(b));
+        b.yard[6] += 1;
+        check("...a yard's line moved, another stamp", MapTiles.stamp(a) != MapTiles.stamp(b));
+        b.yard[6] -= 1;
+        b.yard[2] += 1;
+        check("...a yard's box longer, another stamp", MapTiles.stamp(a) != MapTiles.stamp(b));
+        b.yard[2] -= 1;
+        b.yard[9] = 1;
+        check("...the yard the freight station, another stamp", MapTiles.stamp(a) != MapTiles.stamp(b));
+        b.yard[9] = 0;
+        TilePainter.Input copy = new TilePainter.Input();
+        MapTiles.copy(a, copy);
+        check("...and a kept copy of the tile has its yards and buildings as the tile had them, counted as it counted them",
+                MapTiles.stamp(copy) == MapTiles.stamp(a) && copy.yards == a.yards && copy.buildings == a.buildings && Arrays.equals(copy.counts, a.counts));
+
+        // The map: every tile a yard of the skeleton city reaches is given the yard whole, in the layout the routes lay, counted on the tile holding its first plot only.
+        CityMap m = skeletonCity();
+        List<long[]> yards = m.runs().yards();
+        int longer = 0, wholeOn = 0, reached = 0, layouts = 0, counted = 0, parts = 0, blockPlots = 0, blockDrawn = 0;
+        for (int yi = 0; yi < yards.size(); yi++) {
+            long[] yd = yards.get(yi);
+            int type = m.yardTypeOf(yi);
+            if (type < 0) continue;
+            int[] layout = TileRaster.yardLayout(CityMap.yardRail(m.runs(), yd), (int) yd[2], (int) yd[3]);
+            long tx0 = Math.floorDiv(yd[0], T), tx1 = Math.floorDiv(yd[0] + yd[2] - 1, T), ty0 = Math.floorDiv(yd[1], T), ty1 = Math.floorDiv(yd[1] + yd[3] - 1, T);
+            if (tx1 > tx0 || ty1 > ty0) longer++;
+            for (long ty = ty0; ty <= ty1; ty++) {
+                for (long tx = tx0; tx <= tx1; tx++) {
+                    TilePainter.Input in = new TilePainter.Input();
+                    m.tileInput(tx, ty, in);
+                    reached++;
+                    boolean found = false;
+                    for (int k = 0; k < in.yards; k++) {
+                        int o = k * TilePainter.Input.YARD_INTS;
+                        if (in.yard[o] != yd[0] - tx * T || in.yard[o + 1] != yd[1] - ty * T || in.yard[o + 2] != yd[2] || in.yard[o + 3] != yd[3] || in.yard[o + 4] != type) continue;
+                        found = true;
+                        if (in.yard[o + 5] == layout[0] && in.yard[o + 6] == layout[1] && in.yard[o + 7] == layout[2] && in.yard[o + 8] == layout[3]) layouts++;
+                    }
+                    if (found) wholeOn++;
+                    TilePainter.Painted p = paint(in);
+                    int cx0 = (int) Math.max(0, yd[0] - tx * T), cy0 = (int) Math.max(0, yd[1] - ty * T);
+                    int cx1 = (int) Math.min(T, yd[0] + yd[2] - tx * T), cy1 = (int) Math.min(T, yd[1] + yd[3] - ty * T);
+                    boolean every = true;
+                    for (int y = cy0; y < cy1; y++) {
+                        for (int x = cx0; x < cx1; x++) every &= p.use[y * T + x] == TilePainter.BUILDING && p.bld[y * T + x] > 0 && p.btype[p.bld[y * T + x] - 1] == type;
+                    }
+                    if (every) parts++;
+                    // ...and the blocks' views draw it there as the yard's class: a tile's part not under ground colour alone (L1, 2 px a plot, 4-plot blocks).
+                    int[] blk = blocks(in, p, 2, 4);
+                    for (int y = cy0; y < cy1; y++) {
+                        for (int x = cx0; x < cx1; x++) {
+                            blockPlots++;
+                            if (blk[(y * 2) * T * 2 + x * 2] != TileRaster.groundColour(in, p, y * T + x)) blockDrawn++;
+                        }
+                    }
+                    if (yd[0] >= tx * T && yd[1] >= ty * T && yd[0] < (tx + 1) * T && yd[1] < (ty + 1) * T && in.counts[type] > 0) counted++;
+                }
+            }
+        }
+        check("the skeleton city has a yard that reaches more than one tile, so the fixture causes the condition: " + longer + " of " + yards.size(), longer > 0);
+        check("the map gives every tile a yard reaches the yard whole, its box in the tile's plots: " + wholeOn + " of " + reached, reached > 0 && wholeOn == reached);
+        check("...in the layout the trains' routes lay (yardLayout() of yardRail()): " + layouts + " of " + reached, reached > 0 && layouts == reached);
+        check("...with its part there a building on every plot: " + parts + " of " + reached, reached > 0 && parts == reached);
+        check("...drawn in the blocks' views as the yard's class on every plot of every part: " + blockDrawn + " of " + blockPlots + " plots", blockPlots > 0 && blockDrawn == blockPlots);
+        check("...and counted on the tile holding its first plot: " + counted + " of " + yards.size(), counted == yards.size());
     }
 }

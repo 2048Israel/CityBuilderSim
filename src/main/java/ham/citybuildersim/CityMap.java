@@ -3644,6 +3644,32 @@ public final class CityMap {
         return false;
     }
 
+    /** The yard layouts (TileRaster.yardLayout() of yardRail()) as the map's changes left them: valid at `at`, one per yard of the runs, made when first asked. */
+    private record YardLayouts(long at, int[][] by) { }
+
+    private volatile YardLayouts yardLayouts;
+
+    /**
+     * Where yard yi's fan lies in its box (FX5 Y2): TileRaster.yardLayout() of the box's track as the runs lay it (yardRail()), the layout
+     * trainRoutesInto() lays the routes on and the tiles draw the yard from. Kept per yard against the map's changes, so a tile paints
+     * without running the runs over the yard's box again.
+     */
+    int[] yardLayoutOf(int yi) {
+        List<long[]> yards = runs.yards();
+        YardLayouts c = yardLayouts;
+        if (c == null || c.at() != changes || c.by().length != yards.size()) {
+            c = new YardLayouts(changes, new int[yards.size()][]);
+            yardLayouts = c;
+        }
+        int[] got = c.by()[yi];
+        if (got == null) {
+            long[] yd = yards.get(yi);
+            got = TileRaster.yardLayout(yardRail(runs, yd), (int) yd[2], (int) yd[3]);
+            c.by()[yi] = got;
+        }
+        return got;
+    }
+
     /** The track in a yard's box, plot by plot (row by row, yard[2] across and yard[3] down): where the runs lay the railway, as the tile the yard is drawn on carries it (TileRaster.yardLayout()'s input; FX3, 0.8.4). */
     static boolean[] yardRail(CityRuns runs, long[] yard) {
         int w = (int) yard[2], h = (int) yard[3];
@@ -5180,15 +5206,25 @@ public final class CityMap {
         in.stationY = station == null ? Long.MIN_VALUE : station[1];
         in.goodsByRail = railPicture.goodsByRail();
         in.wagonTracks = wagonTracksOf(railPicture.wagonShare());
-        // Its buildings: its yards (0.7.89), its plan's boxes, and those packed at the city's edge (R7).
+        // Its buildings: its yards (0.7.89), its plan's boxes, and those packed at the city's edge (R7). (FX5 Y2) A yard is a building on
+        // every tile its box reaches, its part there (the box clipped to the tile: a yard a unit train long spans two or three), counted
+        // once, on the tile holding its first plot; and the tile is given the yard whole, its box in the tile's plots and the layout the
+        // routes lay (yardLayoutOf()), which the raster draws clipped to the tile.
         int boxBits = (1 << BOX_TYPE_SHIFT) - 1;
         List<long[]> laidYards = runs.yards();
+        in.clearYards();
         for (int yi = 0; yi < laidYards.size(); yi++) {
             long[] yd = laidYards.get(yi);
-            if (yd[0] < px0 || yd[1] < py0 || yd[0] >= px0 + World.TILE || yd[1] >= py0 + World.TILE) continue;
+            if (yd[0] >= px0 + World.TILE || yd[1] >= py0 + World.TILE || yd[0] + yd[2] <= px0 || yd[1] + yd[3] <= py0) continue;
             int terminal = yardTypeOf(yi);
             if (terminal < 0) continue;
-            in.addBuilding(box((int) (yd[0] - px0), (int) (yd[1] - py0), (int) yd[2], (int) yd[3], false), terminal);
+            int cx0 = (int) Math.max(0, yd[0] - px0), cy0 = (int) Math.max(0, yd[1] - py0);
+            int cx1 = (int) Math.min(World.TILE, yd[0] + yd[2] - px0), cy1 = (int) Math.min(World.TILE, yd[1] + yd[3] - py0);
+            int part = box(cx0, cy0, cx1 - cx0, cy1 - cy0, false);
+            if (yd[0] >= px0 && yd[1] >= py0) in.addBuilding(part, terminal);
+            else in.addBuildingPart(part, terminal);
+            in.addYard((int) (yd[0] - px0), (int) (yd[1] - py0), (int) yd[2], (int) yd[3], terminal, yardLayoutOf(yi),
+                    station != null && yd[0] == station[0] && yd[1] == station[1]);
         }
         if (own != null && own.boxes[k] != null) for (int b : own.boxes[k]) in.addBuilding(b & boxBits, b >>> BOX_TYPE_SHIFT);
         int[][] pk = packedIn(d);

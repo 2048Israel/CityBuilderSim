@@ -60,6 +60,8 @@ import java.util.Arrays;
  * shed, the freight it handles - ore stockpiles, or at the freight station
  * of a railway carrying goods rows of boxes and two gantries - and wagons
  * standing on as many sidings as the fleet's share of its wagon sets gives.
+ * Since FX5 (Y2) a yard as long as a unit train, which spans two or three
+ * tiles, is drawn whole across them (drawWholeYard(): Input.yards).
  * From JUNCTIONS_FROM the junctions are drawn by rule, none of them a
  * building: signals where arterials or boulevards cross - since FX5 (Jerus,
  * 2026-10-20, "Mostly signals") one box over the whole crossing and zebras
@@ -220,7 +222,18 @@ public final class TileRaster {
     /** Pixels a plot from which a road is drawn as a line of its own width on its ground - a street as verge and surface (0.7.88) - and below, the whole plot in its colour: 4, the near view's image. */
     public static final int LINES_FROM = 4;
 
-    /* ===== YARDS DRAWN AS YARDS (0.8.1, batch FR0; spec-freight 4.3, D15) ===== */
+    /* ===== YARDS DRAWN AS YARDS (0.8.1, batch FR0; spec-freight 4.3, D15) =====
+       Since FX5 (Y2) a yard is drawn whole, however many tiles its box spans:
+       CityRuns lays a yard YARD_LONG (48) plots along its line, a unit train
+       and its two ladders, and a tile is 32 plots, so most yards run on into
+       the next tile or two. A tile is given every yard its box reaches, each
+       whole - its box in the tile's plots and the layout of its fan, the very
+       one the trains' routes lay (Input.yards, CityMap.fillInput()) - and
+       drawWholeYard() paints the part of the one picture that falls on it, so
+       the fan has its two ladders at the box's own ends and never at a seam,
+       and one shed and one set of heaps stand where they stand, not one a tile.
+       A yard with no entry (a hand-built one) is drawn as before, from the box
+       it has on the tile (drawYard()). ===== */
 
     /** A yard's ground, light ballast (spec-freight 4.3's yard). */
     public static final int YARD_GROUND = 0xff8c8478;
@@ -281,7 +294,8 @@ public final class TileRaster {
      * (ways()). A one-plot building is drawn the mockup's size, hugging the
      * street it faces; a larger one inset a pixel from 3 px a plot; all
      * edged from 6; one packed without a street a shade darker; and from
-     * LINES_FROM a Rail Terminal as its yard (drawYard(), 0.8.1).
+     * LINES_FROM a Rail Terminal as its yard (drawYard(), 0.8.1; whole across
+     * the tiles it spans since FX5, drawWholeYard()).
      */
     public static void raster(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
@@ -306,7 +320,9 @@ public final class TileRaster {
             }
             int x0, y0, x1, y1;
             int site = p.bsite[b];
-            if (p.bw[b] == 1 && p.bh[b] == 1 && site < 0) {
+            // A yard the tile is given whole (FX5 Y2): its entry in Input.yards, else -1 (a hand-built yard, drawn from its box here).
+            int whole = t != null && t.terminal() && !p.bpacked[b] ? yardOf(in, p, b) : -1;
+            if (whole < 0 && p.bw[b] == 1 && p.bh[b] == 1 && site < 0) {
                 // One plot: its own land's side (BuildingVisual.plotSide(), 0.7.64), hugging the street it faces.
                 int i = p.by[b] * tile + p.bx[b];
                 int sw = Math.max(1, Math.min(px, (int) Math.round(px * Math.min(SMALL_MOST, BuildingVisual.plotSide(t)))));
@@ -331,9 +347,18 @@ public final class TileRaster {
                 y0 = p.by[b] * px + it;
                 x1 = Math.min(tile, p.bx[b] + p.bw[b]) * px - ir;
                 y1 = Math.min(tile, p.by[b] + p.bh[b]) * px - ib;
+                if (whole >= 0) {
+                    // ...a yard across a seam is inset only where its box ends, not where the tile cuts it (FX5 Y2).
+                    int o = whole * TilePainter.Input.YARD_INTS, ex0 = in.yard[o], ey0 = in.yard[o + 1];
+                    x0 = Math.max(0, ex0) * px + (ex0 < 0 ? 0 : inset);
+                    y0 = Math.max(0, ey0) * px + (ey0 < 0 ? 0 : inset);
+                    x1 = Math.min(tile, ex0 + in.yard[o + 2]) * px - (ex0 + in.yard[o + 2] > tile ? 0 : inset);
+                    y1 = Math.min(tile, ey0 + in.yard[o + 3]) * px - (ey0 + in.yard[o + 3] > tile ? 0 : inset);
+                }
             }
             if (px >= LINES_FROM && t != null && t.terminal() && !p.bpacked[b]) {
-                drawYard(in, p, b, t, px, img, w, x0, y0, x1, y1);
+                if (whole >= 0) drawWholeYard(in, p, whole, t, px, img, w, x0, y0, x1, y1);
+                else drawYard(in, p, b, t, px, img, w, x0, y0, x1, y1);
                 // The bends of the track in the yard's head, over its ground (FX5).
                 bends(in, p, px, img, x0, y0, x1, y1, false);
                 continue;
@@ -459,18 +484,93 @@ public final class TileRaster {
      * (0.8.15) each ladder from the fan's apex to its siding's start is
      * TrackCurves.ladder()'s S, tangent to the line and to the siding, drawn
      * as the siding's rails (ladderRails()) - the points the routes run on.
+     * Since FX5 Y2 a yard longer than a tile (CityRuns.YARD_LONG, a unit
+     * train's length, spans two or three) is drawn whole across the tiles it
+     * reaches (drawWholeYard()): the tile is given every such yard, its box and
+     * its layout (Input.yards), and paints the part that falls on it of one
+     * picture, so the fan has one pair of ladders at the box's own ends, one
+     * shed and one set of heaps, never a set a tile. This is the drawing of a
+     * yard with no entry in Input.yards - a hand-built one, or one that lies
+     * inside its tile - from the box on the tile and the track on it alone.
      */
     private static void drawYard(TilePainter.Input in, TilePainter.Painted p, int b, BuildingVisual.Type t, int px,
                                  int[] img, int w, int x0, int y0, int x1, int y1) {
         int tile = TilePainter.TILE;
         int bx = p.bx[b], by = p.by[b], bw = p.bw[b], bh = p.bh[b];
-        fillRect(img, w, x0, y0, x1, y1, YARD_GROUND);
         int boxW = Math.min(tile, bx + bw) - bx, boxH = Math.min(tile, by + bh) - by;
         boolean[] rail = new boolean[boxW * boxH];
         for (int y = 0; y < boxH; y++) {
             for (int x = 0; x < boxW; x++) rail[y * boxW + x] = p.run[(by + y) * tile + bx + x] == TilePainter.RAIL;
         }
         int[] layout = yardLayout(rail, boxW, boxH);
+        boolean station = in.tx * tile + bx == in.stationX && in.ty * tile + by == in.stationY;
+        yardPicture(in, t, px, img, w, x0, y0, x1, y1, bx, by, bw, bh, boxW, boxH, layout, station);
+        headTrack(in, p, px, img, bx, by, boxW, boxH, layout);
+    }
+
+    /**
+     * A yard the tile is given whole (FX5 Y2), drawn clipped to the tile: its
+     * picture - ground, fan, ladders, shed, heaps or boxes and cranes, wagons -
+     * is laid from the entry's whole box and layout (Input.yards, the very
+     * layout CityMap.trainRoutesInto() lays the routes on) on a canvas of the
+     * whole box, and the rectangle [x0, x1) x [y0, y1) of the tile's pixels,
+     * the box's part on the tile, is copied from it; so a pixel is the same
+     * from whichever tile it is painted and the yard has no seam. The track
+     * that crosses its head is the tile's own (headTrack()).
+     */
+    private static void drawWholeYard(TilePainter.Input in, TilePainter.Painted p, int e, BuildingVisual.Type t, int px,
+                                      int[] img, int w, int x0, int y0, int x1, int y1) {
+        int o = e * TilePainter.Input.YARD_INTS;
+        int ex = in.yard[o], ey = in.yard[o + 1], ew = in.yard[o + 2], eh = in.yard[o + 3];
+        int[] layout = { in.yard[o + 5], in.yard[o + 6], in.yard[o + 7], in.yard[o + 8] };
+        int cw = ew * px, ch = eh * px, inset = px >= INSET_FROM ? 1 : 0;
+        int[] canvas = yardCanvas(cw * ch);
+        yardPicture(in, t, px, canvas, cw, inset, inset, cw - inset, ch - inset, 0, 0, ew, eh, ew, eh, layout, in.yard[o + 9] != 0);
+        for (int y = y0; y < y1; y++) System.arraycopy(canvas, (y - ey * px) * cw + (x0 - ex * px), img, y * w + x0, x1 - x0);
+        headTrack(in, p, px, img, ex, ey, ew, eh, layout);
+    }
+
+    /** The canvas a whole yard is drawn on: this thread's, at least `size` pixels (the raster runs on the map's workers and the screen's thread alike). */
+    private static int[] yardCanvas(int size) {
+        int[] got = YARD_CANVAS.get();
+        if (got.length < size) {
+            got = new int[size];
+            YARD_CANVAS.set(got);
+        }
+        return got;
+    }
+
+    private static final ThreadLocal<int[]> YARD_CANVAS = ThreadLocal.withInitial(() -> new int[0]);
+
+    /**
+     * The entry of Input.yards that is the yard of building b (FX5 Y2): the
+     * building's part on the tile is the entry's whole box clipped to it,
+     * of the entry's type; -1 for none (a yard with no entry is a hand-built
+     * one, drawn by drawYard()).
+     */
+    static int yardOf(TilePainter.Input in, TilePainter.Painted p, int b) {
+        int tile = TilePainter.TILE;
+        for (int e = 0; e < in.yards; e++) {
+            int o = e * TilePainter.Input.YARD_INTS;
+            int x0 = Math.max(0, in.yard[o]), y0 = Math.max(0, in.yard[o + 1]);
+            int x1 = Math.min(tile, in.yard[o] + in.yard[o + 2]), y1 = Math.min(tile, in.yard[o + 1] + in.yard[o + 3]);
+            if (p.bx[b] == x0 && p.by[b] == y0 && p.bw[b] == x1 - x0 && p.bh[b] == y1 - y0 && p.btype[b] == in.yard[o + 4]) return e;
+        }
+        return -1;
+    }
+
+    /**
+     * A yard's picture into img (w pixels across) inside [x0, x1) x [y0, y1):
+     * the box at plots (bx, by), bw across and bh down, in img's plots, its
+     * layout (yardLayout()) laid for a box of boxW x boxH plots - the part of
+     * the box the layout was made from. The ground, the fan's sidings and
+     * their two ladders at the ends of the span, the shed, the heaps or the
+     * boxes and cranes, and the wagons standing.
+     */
+    private static void yardPicture(TilePainter.Input in, BuildingVisual.Type t, int px, int[] img, int w,
+                                    int x0, int y0, int x1, int y1, int bx, int by, int bw, int bh, int boxW, int boxH,
+                                    int[] layout, boolean station) {
+        fillRect(img, w, x0, y0, x1, y1, YARD_GROUND);
         boolean ew = layout[0] == 1;
         int spanA = layout[2], spanB = layout[3], boxLong = ew ? boxW : boxH;
         int bed = bedWidth(px, false);
@@ -555,10 +655,9 @@ public final class TileRaster {
                 }
             }
         }
-        boolean station = in.tx * tile + bx == in.stationX && in.ty * tile + by == in.stationY;
         boolean container = station && in.goodsByRail;
         // What it handles, on the other side of the fan from the shed.
-        if (container) containers(in, p, px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanNear, fanFar);
+        if (container) containers(px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanNear, fanFar);
         else stockpiles(px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanFar);
         // Wagons standing on the first wagonTracks tracks from the shed's side.
         int wagonTracks = n == YARD_TRACKS ? in.wagonTracks : (int) Math.round(in.wagonTracks * (double) n / YARD_TRACKS);
@@ -583,16 +682,28 @@ public final class TileRaster {
                 }
             }
         }
-        // The track the span leaves out, over the yard's ground: a line crossing the box runs through the head and meets the fan at its throat (FX3).
-        if (spanA > 0 || spanB < boxLong) {
-            for (int y = 0; y < boxH; y++) {
-                for (int x = 0; x < boxW; x++) {
-                    if (!rail[y * boxW + x]) continue;
-                    int along = ew ? x : y;
-                    if (along >= spanA && along < spanB) continue;
-                    if (in.curved[(by + y) * tile + bx + x]) continue;
-                    yardTrack(in, p, (by + y) * tile + bx + x, px, img);
-                }
+    }
+
+    /**
+     * The track the fan's span leaves out, over the yard's ground (FX3): a
+     * line crossing the box runs through the head and meets the fan at its
+     * throat. The tile's plots of the yard's box, which starts at plot
+     * (boxX, boxY) of the tile (it may lie off it) and is boxW x boxH plots,
+     * that hold track (p.run) and lie outside the layout's span along the
+     * fan, a plot a bend replaces left to its arc.
+     */
+    private static void headTrack(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int boxX, int boxY, int boxW, int boxH, int[] layout) {
+        int tile = TilePainter.TILE;
+        boolean ew = layout[0] == 1;
+        int spanA = layout[2], spanB = layout[3], boxLong = ew ? boxW : boxH;
+        if (spanA <= 0 && spanB >= boxLong) return;
+        for (int y = Math.max(0, boxY); y < Math.min(tile, boxY + boxH); y++) {
+            for (int x = Math.max(0, boxX); x < Math.min(tile, boxX + boxW); x++) {
+                if (p.run[y * tile + x] != TilePainter.RAIL) continue;
+                int along = ew ? x - boxX : y - boxY;
+                if (along >= spanA && along < spanB) continue;
+                if (in.curved[y * tile + x]) continue;
+                yardTrack(in, p, y * tile + x, px, img);
             }
         }
     }
@@ -615,7 +726,7 @@ public final class TileRaster {
     }
 
     /** A container yard's boxes, in rows, and its two gantry cranes across the fan. */
-    private static void containers(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int w,
+    private static void containers(int px, int[] img, int w,
                                    int x0, int y0, int x1, int y1, boolean ew, int fanA, int fanB, int fanNear, int fanFar) {
         int boxLong = px, boxDeep = Math.max(1, (int) Math.round(0.4 * px));
         int left = ew ? x0 : fanFar, right = ew ? x1 : x1;
@@ -1131,6 +1242,29 @@ public final class TileRaster {
         int along = dir == 0 || dir == 2 ? i % tile : i / tile;
         byte f = in.fixedBeyond[dir * tile + along];
         return f == TilePainter.RAIL || f == TilePainter.RAIL_OVER;
+    }
+
+    /**
+     * Whether the plot a step from plot i, on this tile, is a plot of a yard's
+     * box that carries the runs' track (FX5 Y2): the line the yard stands on,
+     * which runs on under its ground into the fan. The track outside the box
+     * that meets it is not a dead end, so it is drawn to the box's edge and the
+     * vehicles that run the line into the yard are on the rail.
+     */
+    private static boolean yardLineAt(TilePainter.Input in, TilePainter.Painted p, int i, int dir) {
+        int tile = TilePainter.TILE, x = i % tile + TilePainter.DX[dir], y = i / tile + TilePainter.DY[dir];
+        if (x < 0 || y < 0 || x >= tile || y >= tile) return false;
+        int at = y * tile + x;
+        if (p.use[at] != TilePainter.BUILDING || p.run[at] != TilePainter.RAIL || p.bld[at] == 0) return false;
+        int type = p.btype[p.bld[at] - 1];
+        return type >= 0 && type < in.types.length && in.types[type] != null && in.types[type].terminal();
+    }
+
+    /** The track beside plot i, north, east, south and west, one bit each (bit d for direction d): its neighbours' track, and a yard's line running on under the yard's ground. */
+    private static int armsOf(TilePainter.Input in, TilePainter.Painted p, int i) {
+        int arms = 0;
+        for (int d = 0; d < 4; d++) if (railAt(in, p, i, d) || yardLineAt(in, p, i, d)) arms |= 1 << d;
+        return arms;
     }
 
     /** Whether plot i is a 45-degree stretch's (the runs' M_DIAG): drawn as a band along its line. */
@@ -2232,8 +2366,7 @@ public final class TileRaster {
     /** The track's look on one plot that carries rail: its ballast bed, sleepers and rails (a 45-degree stretch's just a bed and one rail). */
     private static void drawTrackLook(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img) {
         // The track beside it, north, east, south and west, read once: bit d for direction d.
-        int arms = (railAt(in, p, i, 0) ? 1 : 0) | (railAt(in, p, i, 1) ? 2 : 0) | (railAt(in, p, i, 2) ? 4 : 0) | (railAt(in, p, i, 3) ? 8 : 0);
-        drawTrackLook(in, p, i, px, img, arms);
+        drawTrackLook(in, p, i, px, img, armsOf(in, p, i));
     }
 
     /** ...with the track beside it given, bit d for direction d (a yard's head reads it from the runs: yardTrack()). */
@@ -2617,7 +2750,7 @@ public final class TileRaster {
             } else {
                 int bed = bedWidth(px, doubled);
                 int a = (px - bed) / 2, z = a + bed;
-                int arms = (railAt(in, p, i, 0) ? 1 : 0) | (railAt(in, p, i, 1) ? 2 : 0) | (railAt(in, p, i, 2) ? 4 : 0) | (railAt(in, p, i, 3) ? 8 : 0);
+                int arms = armsOf(in, p, i);
                 boolean ns = (arms & 5) != 0;
                 boolean ew = (arms & 10) != 0;
                 if (!ns && !ew) ew = true;

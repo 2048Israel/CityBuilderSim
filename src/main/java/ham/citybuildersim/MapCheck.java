@@ -1602,6 +1602,9 @@ public class MapCheck {
                         run[g] = p.run[k];
                     }
                     for (int b = 0; b < p.buildings; b++) {
+                        // (FX5 Y2) A yard longer than a tile is a building on every tile its box reaches, counted on the tile holding its
+                        // first plot: its part on another tile (Painted.bpart) is the same building, as a site's mine is by its key below.
+                        if (p.bpart[b]) continue;
                         boxes.add(new int[] { ox + p.bx[b], oy + p.by[b], p.bw[b], p.bh[b], p.btype[b], p.bsite[b], p.bpacked[b] ? 1 : 0 });
                         if (p.bsite[b] >= 0) {
                             if (sites.add(in.siteKey[p.bsite[b]])) buildings[p.btype[b]]++;
