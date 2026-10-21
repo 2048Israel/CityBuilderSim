@@ -1,6 +1,6 @@
 # WorldCheck.java - 782 lines · 8 methods · 18 constants · harnesses
 
-`ham/citybuildersim/WorldCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > The world a city is founded on: the same seed makes the same world, and the world is the one the design describes - its sea, lakes and forest, its founding site, its fields and its totals, and the terrain a tile and a region at a time.
 > 

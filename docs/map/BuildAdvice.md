@@ -1,6 +1,6 @@
 # BuildAdvice.java - 2,197 lines · 110 methods · 9 constants · model
 
-`ham/citybuildersim/BuildAdvice.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildAdvice.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > What the city should build next, and why: the Build tab's categories and
 > the measures its five city categories open on, each measure's figure
@@ -48,7 +48,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (145), [Game](Game.md) (73), [CityNeeds](CityNeeds.md) (59), [BuildingType](BuildingType.md) (42), [CareType](CareType.md) (33), [Ports](Ports.md) (18), [JobType](JobType.md) (15), [InfrastructureManager](InfrastructureManager.md) (15), [EducationType](EducationType.md) (13), [ConstructionControl](ConstructionControl.md) (12), [Good](Good.md) (10), [BusinessInvestment](BusinessInvestment.md) (8), [Healthcare](Healthcare.md) (7), [SafetyType](SafetyType.md) (6), [Crime](Crime.md) (6), [Traffic](Traffic.md) (6), [Sectors](Sectors.md) (6), [BuildingManager](BuildingManager.md) (5), [LandParcel](LandParcel.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (3), [Deposit](Deposit.md) (3), [Resource](Resource.md) (3), [AgeBand](AgeBand.md) (2), [Education](Education.md) (2), [ExtractionSector](ExtractionSector.md) (2), [Sector](Sector.md) (2), [GoodsMarket](GoodsMarket.md) (2), [StrategicReserve](StrategicReserve.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Health](Health.md) (1)... and 7 more
 
-**Used by (24):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [InfrastructureScreen](InfrastructureScreen.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [WaterCheck](WaterCheck.md)
+**Used by (25):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [InfrastructureScreen](InfrastructureScreen.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [WaterCheck](WaterCheck.md)
 
 ## Sections
 

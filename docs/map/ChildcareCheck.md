@@ -1,6 +1,6 @@
 # ChildcareCheck.java - 553 lines · 20 methods · 4 constants · harnesses
 
-`ham/citybuildersim/ChildcareCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ChildcareCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > Childcare resized (0.7.71, batch N2): the three childcare centres, the
 > build advice's size that fits the need (BuildAdvice, THE SIZE THAT FITS
@@ -64,7 +64,7 @@
 
 **Uses:** [BuildAdvice](BuildAdvice.md) (53), [CareType](CareType.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (23), [Game](Game.md) (22), [CityNeeds](CityNeeds.md) (15), [AgeBand](AgeBand.md) (12), [GameFiles](GameFiles.md) (7), [JobType](JobType.md) (6), [BuildingManager](BuildingManager.md) (6), [BuildingVisual](BuildingVisual.md) (6), [PopulationCohorts](PopulationCohorts.md) (6), [LongPlaytest](LongPlaytest.md) (5), [BuildingType](BuildingType.md) (4), [Health](Health.md) (4), [Founding](Founding.md) (3), [BuildCard](BuildCard.md) (3), [Healthcare](Healthcare.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [Sector](Sector.md) (1)
 
-**Used by (1):** [AutoBuildCheck](AutoBuildCheck.md)
+**Used by (2):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md)
 
 ## Sections
 

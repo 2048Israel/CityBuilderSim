@@ -1,6 +1,6 @@
-# YieldCurve.java - 251 lines · 17 methods · 2 constants · model
+# YieldCurve.java - 266 lines · 18 methods · 2 constants · model
 
-`ham/citybuildersim/YieldCurve.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/YieldCurve.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > The city's curve: a discount factor for every month to fifty years, built
 > from the dial the market expects, the credit spreads, and the shape the term
@@ -31,7 +31,7 @@
 
 **Uses:** [DebtManager](DebtManager.md) (2), [Expectations](Expectations.md) (1)
 
-**Used by (5):** [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md)
+**Used by (6):** [AuctionCheck](AuctionCheck.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md)
 
 ## Sections
 
@@ -66,7 +66,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 216 | **type** `public final class YieldCurve` | The city's curve: a discount factor for every month to fifty years, built from the dial the market expects, the credit spreads, and the shape the term premium and the central bank's holdings give the long end (CD1, do... |
+| 36 | 231 | **type** `public final class YieldCurve` | The city's curve: a discount factor for every month to fifty years, built from the dial the market expects, the credit spreads, and the shape the term premium and the central bank's holdings give the long end (CD1, do... |
 
 ### the paths (lines 61-93)
 
@@ -84,7 +84,7 @@
 | 166 | 4 | `public static YieldCurve of(double[] path, double spreads, double ceilingGap, IntToDoubleFunction shape)` | A curve from a path, one number for the credit spreads and the room between the path's first month and the ceiling - the fixture's way in; DebtManager hands the two spreads and the ceiling to the constructor. |
 | 172 | 5 | `private static double discount(double z, int m)` | (1 + z/12)^(-m); a rate that discounts nothing (as Debt.presentValue treats one) gives 1. |
 
-### reads (lines 178-251)
+### reads (lines 178-266)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -95,8 +95,9 @@
 | 201 | 3 | `public double shape(int m)` | The shape at m months: the term premium less the compression the caller gave (0 up to a year and at 0). |
 | 206 | 5 | `public double factor(int m)` | The factor a payment m months away is discounted by: (1 + z(m)/12)^(-m); 1 now; past fifty years at the last zero rate. |
 | 213 | 6 | `public double pv(double[] flows)` | The present value of flows paid at months 1, 2, ...: each at its own month's factor. |
-| 221 | 3 | `public double effectiveSpread()` | The spread the forward actually carries this month: the two credit spreads, or the room under the ceiling if less. |
-| 231 | 3 | `public double expectedDialOver(int m)` | The dial the market expects, averaged over m months, and nothing else in the rate: z0(m) less the spread. |
-| 240 | 6 | `public double parYield(int months)` | The annual coupon a monthly-paying bullet of this term needs to price at par on this curve: (1 - d(n)) / (the sum of d(1..n) / 12). |
-| 248 | 3 | `public boolean isFlat()` | True when every forward is the same number: the path is flat (a city on target with the dial at the rule, or one nobody struck), and the curve is the old parallel one. |
+| 228 | 6 | `public double pvAtSpread(double[] flows, double spread)` | The present value of flows paid at months 1, 2, ... |
+| 236 | 3 | `public double effectiveSpread()` | The spread the forward actually carries this month: the two credit spreads, or the room under the ceiling if less. |
+| 246 | 3 | `public double expectedDialOver(int m)` | The dial the market expects, averaged over m months, and nothing else in the rate: z0(m) less the spread. |
+| 255 | 6 | `public double parYield(int months)` | The annual coupon a monthly-paying bullet of this term needs to price at par on this curve: (1 - d(n)) / (the sum of d(1..n) / 12). |
+| 263 | 3 | `public boolean isFlat()` | True when every forward is the same number: the path is flat (a city on target with the dial at the rule, or one nobody struck), and the curve is the old parallel one. |
 

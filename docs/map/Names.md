@@ -1,6 +1,6 @@
 # Names.java - 436 lines · 26 methods · 13 constants · tools
 
-`ham/citybuildersim/tools/Names.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/Names.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > Lists the names a branch's new prose uses that the tree does not declare.
 > 

@@ -1,6 +1,6 @@
 # ChartCheck.java - 914 lines · 27 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ChartCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ChartCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > The charts (0.7.23): the player's decisions as the model records them,
 > and the arithmetic City History's charts are drawn by - the window, the
