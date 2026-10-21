@@ -194,6 +194,14 @@ New: `AuctionCheck`. On the new API, premises unchanged: `CreditCheck`,
    households' savings thin together.
 5. **★5 The study's firms hold D$1.5B idle**, the study's own figure; the
    tails above hold at nothing.
+6. **★6 A city with no room at its bank** (no branch, so `Bank.capacity()`
+   is 0, or a bank in resolution): the auction has no bank in it, and sells
+   what the households, the firms and the world bid. Today the bank took the
+   rest by construction, funded at the central bank's window. To be measured
+   at GO on a fresh city and the playtest's first years before it is
+   settled; if a young city cannot borrow for its first works on it, the
+   proposal is that the window stands behind a branchless bank's bid at fair
+   for a capped amount, said on the card.
 
 ## 6. The risk to tonight
 
