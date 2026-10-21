@@ -418,7 +418,8 @@ public class RatesModel {
         StringBuilder b = new StringBuilder("month,basketParity,tradedParity,today,fair,p10,p90,typicalSeed\n");
         for (int t = 0; t < n; t++) {
             double[] at = new double[seeds]; for (int k = 0; k < seeds; k++) at[k] = paths[k][t]; Arrays.sort(at);
-            b.append(String.format(Locale.ROOT, "%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f%n", t, basket[t], traded[t], r[t],
+            b.append(String.format(Locale.ROOT, "%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f
+", t, basket[t], traded[t], r[t],
                     calm[t], at[seeds / 10], at[seeds * 9 / 10], paths[typical][t]));
         }
         Files.writeString(Path.of("board-1-path.csv"), b);
