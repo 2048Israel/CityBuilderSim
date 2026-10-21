@@ -115,6 +115,15 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
 before.** A batch has more than once landed in the Java and not in
 `buildings.json`, and `BuildingDataCheck` exists to catch exactly that.
 
+**The ensemble is not in the suite.** Sixteen seeds under five monetary
+policies, 80 runs of up to 2,400 months, scored against the inflation
+roadmap's criteria: `tools/ensemble/ensemble.sh <label>`, about twenty
+minutes five at a time (`tools/ensemble/README.md`). It runs only for a
+batch whose playtest trace moves (EN1, 2026-10-20), once, on the batch's
+final model, against the newest stored score in `docs/ensemble/`, and that
+batch commits its own score there. `EnsembleCheck` keeps the driver
+compiling against the tree and the stored score readable.
+
 Three rules the harnesses are written to, and worth keeping:
 
 1. **A fixture must cause the condition under test, not stand next to it.** The
