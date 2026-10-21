@@ -102,7 +102,7 @@ public class StaleCheck {
         /* ==================== 1. the tool sees a defect ==================== */
         System.out.println("--- a planted defect comes back ---");
 
-        Path root = Files.createTempDirectory("stale");
+        Path root = TempDirs.create("stale");
         Path src = root.resolve("src");
         Files.createDirectories(src.resolve("ham/citybuildersim"));
         Files.writeString(src.resolve("ham/citybuildersim/Planted.java"), PLANTED, StandardCharsets.UTF_8);
@@ -161,7 +161,7 @@ public class StaleCheck {
     static void names() throws IOException {
         System.out.println("\n--- tools.Names: a real name resolves, a made-up one and a member on the wrong class do not ---");
 
-        Path root = Files.createTempDirectory("names");
+        Path root = TempDirs.create("names");
         Path src = root.resolve("src");
         Files.createDirectories(src.resolve("ham/citybuildersim"));
         Files.writeString(src.resolve("ham/citybuildersim/Alpha.java"), ALPHA, StandardCharsets.UTF_8);

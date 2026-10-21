@@ -225,7 +225,7 @@ public class RoadCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("roadcheck");
+        Path root = TempDirs.create("roadcheck");
 
         life(root);
         gravelWear(root);

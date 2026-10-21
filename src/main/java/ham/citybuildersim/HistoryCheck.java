@@ -65,7 +65,7 @@ public class HistoryCheck {
 
     public static void main(String[] args) throws Exception {
 
-        Path root = Files.createTempDirectory("history");
+        Path root = TempDirs.create("history");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         /* ============ 1. every series is recorded, every month ============ */

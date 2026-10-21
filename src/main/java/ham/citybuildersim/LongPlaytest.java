@@ -5487,7 +5487,7 @@ public class LongPlaytest {
         out = System.out;
         for (int i = 0; i + 1 < args.length; i++) if (args[i].equals("--earth")) EARTH = args[i + 1];
 
-        Path root = Files.createTempDirectory("playtest");
+        Path root = TempDirs.create("playtest");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         // The game narrates every month. Four thousand months of it is neither

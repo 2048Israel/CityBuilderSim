@@ -254,7 +254,7 @@ public class MiningCheck {
         /* ================= 2. a mine needs ground with ore in it ================= */
         out.println("\n--- a mine needs a deposit ---");
 
-        Path root = Files.createTempDirectory("mining");
+        Path root = TempDirs.create("mining");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         // On IRON_SEED's world, whose founding site has an iron field a kilometre out (0.7.99: the default world's is twelve).

@@ -78,7 +78,7 @@ public class DeathRecordCheck {
 
         /* ============ 3. a city whose employer closes ============ */
         System.out.println("\n--- a played city, and a closing that orphans children ---");
-        java.nio.file.Path root = java.nio.file.Files.createTempDirectory("deathrecord");
+        java.nio.file.Path root = TempDirs.create("deathrecord");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game g = new Game(files);
         quietly(() -> {

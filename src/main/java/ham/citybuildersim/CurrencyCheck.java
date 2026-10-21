@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -406,7 +405,7 @@ public class CurrencyCheck {
         close("...this month", bare.getDefendedThisMonth(), fetched, 1e-12);
 
         /* ...AND IN A REAL CITY, month by month, with the audit watching. */
-        Path root = Files.createTempDirectory("currencycheck");
+        Path root = TempDirs.create("currencycheck");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
         System.setOut(quiet);
         try {
@@ -604,7 +603,7 @@ public class CurrencyCheck {
          * prices read as 45% inflation - the index's own history, restored,
          * the way a save carries it - so the month opens on a rule of 67.5%.
          */
-        Path root = Files.createTempDirectory("currencycheck-rule");
+        Path root = TempDirs.create("currencycheck-rule");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
         System.setOut(quiet);
         try {

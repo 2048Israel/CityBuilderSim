@@ -861,7 +861,7 @@ public class PopulationCheck {
         /* ---- and the whole thing, played ---- */
         System.out.println("\n--- a city, played ---");
 
-        Path root = Files.createTempDirectory("popcheck");
+        Path root = TempDirs.create("popcheck");
         double[] oneMonth  = play(root, "m1", 1);
         double[] settled   = play(root, "m120", 120);
 

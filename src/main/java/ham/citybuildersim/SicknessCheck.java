@@ -1,6 +1,5 @@
 package ham.citybuildersim;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -215,7 +214,7 @@ public class SicknessCheck {
 
         /* ============ 6. a city ============ */
         System.out.println("\n--- a city, with and without clinics ---");
-        Path root = Files.createTempDirectory("sicknesscheck");
+        Path root = TempDirs.create("sicknesscheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game bareCity = new Game(files);
         Game clinicCity = new Game(files);

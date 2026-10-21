@@ -226,7 +226,7 @@ public class ChildcareCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("childcarecheck");
+        Path root = TempDirs.create("childcarecheck");
 
         threeCentres(root);
         sizeThatFits(root);

@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -122,7 +121,7 @@ public class AutoBuildCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("autobuildcheck");
+        Path root = TempDirs.create("autobuildcheck");
         // ChildcareCheck's town is the fixture for sections 2 and 5: its quiet stream too.
         ChildcareCheck.out = quiet;
         ChildcareCheck.quiet = quiet;

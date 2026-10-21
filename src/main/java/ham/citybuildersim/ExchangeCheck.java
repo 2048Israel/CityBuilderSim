@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -880,7 +879,7 @@ public class ExchangeCheck {
         /* ================= 10. a live city ================= */
         out.println("\n--- 10. and a city with a market in it still adds up, prices at its last trades, and comes back from a save ---");
 
-        Path root = Files.createTempDirectory("exchangecheck");
+        Path root = TempDirs.create("exchangecheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game city = new Game(files);
         System.setOut(quiet);

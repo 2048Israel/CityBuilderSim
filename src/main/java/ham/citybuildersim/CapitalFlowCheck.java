@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -270,7 +269,7 @@ public class CapitalFlowCheck {
         /* ================= 7. in a real city, and across a reload ================= */
         out.println("\n--- and it survives a city, and a reload ---");
 
-        Path root = Files.createTempDirectory("hotmoney");
+        Path root = TempDirs.create("hotmoney");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
 
         double worst = 0;
@@ -385,7 +384,7 @@ public class CapitalFlowCheck {
          * CAUSED: the till is filled by hand, the bank's rate is handed in,
          * the borrower is given its loan directly.
          */
-        Path outRoot = Files.createTempDirectory("outward");
+        Path outRoot = TempDirs.create("outward");
         Game rich = new Game(new GameFiles(outRoot.resolve("data"), outRoot.resolve("no-legacy")));
         System.setOut(quiet);
         try { rich.run(); } finally { System.setOut(out); }

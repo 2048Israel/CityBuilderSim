@@ -215,7 +215,7 @@ public class CrimeCheck {
 
         /* ============ 6. a played city ============ */
         System.out.println("\n--- a played city: the reasons, the thefts, the prisons ---");
-        java.nio.file.Path root = java.nio.file.Files.createTempDirectory("crimecheck");
+        java.nio.file.Path root = TempDirs.create("crimecheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game bare = new Game(files);
         Game policed = new Game(files);

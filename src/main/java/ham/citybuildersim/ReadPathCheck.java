@@ -1433,7 +1433,7 @@ public class ReadPathCheck {
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
 
-        Path root = Files.createTempDirectory("readpath");
+        Path root = TempDirs.create("readpath");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         /* ============ a city with money moving in every sector ============ */

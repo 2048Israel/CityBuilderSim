@@ -454,7 +454,7 @@ public class EducationCheck {
            ================================================================= */
         System.out.println("\n--- through a save ---");
 
-        Path root = Files.createTempDirectory("education");
+        Path root = TempDirs.create("education");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         Game lived = city(files);

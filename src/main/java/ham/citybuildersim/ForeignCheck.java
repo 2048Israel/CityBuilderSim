@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -100,7 +99,7 @@ public class ForeignCheck {
         /* ================= 2. a city that trades ================= */
         out.println("\n--- a city with something to sell ---");
 
-        Path root = Files.createTempDirectory("foreigncheck");
+        Path root = TempDirs.create("foreigncheck");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
 
         double worstSplit = 0, worstStock = 0;
@@ -394,7 +393,7 @@ public class ForeignCheck {
          * into the simulation, they would have to have reached through some
          * state, and two runs would diverge.
          */
-        Path twin = Files.createTempDirectory("foreigncheck-twin");
+        Path twin = TempDirs.create("foreigncheck-twin");
         long popA, popB;
         double cashA, cashB;
         System.setOut(quiet);
@@ -440,7 +439,7 @@ public class ForeignCheck {
          * code and the new agree exactly, so a fixture that is not short of
          * something proves nothing at all.
          */
-        Path shelfRoot = Files.createTempDirectory("foreigncheck-shelf");
+        Path shelfRoot = TempDirs.create("foreigncheck-shelf");
         Game jammed = new Game(new GameFiles(shelfRoot.resolve("data"), shelfRoot.resolve("no-legacy")));
 
         double soldUnits = 0, paidUnits = 0, boughtUnits = 0, soldKg = 0;
@@ -757,7 +756,7 @@ public class ForeignCheck {
          * only difference between them; a floating pair would each find their
          * own rate and the comparison would measure nothing.
          */
-        Path ml = Files.createTempDirectory("foreigncheck-ml");
+        Path ml = TempDirs.create("foreigncheck-ml");
         double lifeCaPar, lifeCaWeak, lifeImpPar, lifeImpWeak, lifeExpPar, lifeExpWeak;
         double salvagePar, salvageWeak;
         double[] foodPar, foodWeak;
@@ -1033,7 +1032,7 @@ public class ForeignCheck {
          * under a full vault must still reconcile to the cent, with the move
          * nowhere in it.
          */
-        Path dir = Files.createTempDirectory("foreigncheck-vault");
+        Path dir = TempDirs.create("foreigncheck-vault");
         Game city = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
         double bought, dollarsBefore, rateBefore, rateAfter;
         System.setOut(quiet);
@@ -1549,7 +1548,7 @@ public class ForeignCheck {
 
     /** What a foreign basket costs in local money at a given rate. */
     static double worldFoodPrice(double rate) throws Exception {
-        Path dir = Files.createTempDirectory("foreigncheck-px" + (int) (rate * 100));
+        Path dir = TempDirs.create("foreigncheck-px" + (int) (rate * 100));
         Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
         System.setOut(quiet);
         try {

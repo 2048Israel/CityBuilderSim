@@ -569,7 +569,7 @@ public class OutsideCheck {
         /* ============ 8. a city with a college: the students' money, and a save ============ */
         System.out.println("\n--- a city with a college: grants, loans, tuition, and a save ---");
         try {
-            java.nio.file.Path root = java.nio.file.Files.createTempDirectory("outsidecheck");
+            java.nio.file.Path root = TempDirs.create("outsidecheck");
             GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
             Game g = new Game(files);
             double[] worstAudit = new double[1];

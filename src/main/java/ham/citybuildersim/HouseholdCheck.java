@@ -1604,7 +1604,7 @@ public class HouseholdCheck {
         Game city;
         double worstAudit = 0;
         try {
-            java.nio.file.Path root = java.nio.file.Files.createTempDirectory("householdcheck-rate");
+            java.nio.file.Path root = TempDirs.create("householdcheck-rate");
             System.setOut(hushed);
             city = MonetaryCheck.founding(root, "saving-pays");
             for (int m = 0; m < 12; m++) {

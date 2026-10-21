@@ -103,8 +103,10 @@ These are Jerus's, and they do not move.
 
 - **Save slots 1-9 are his cities. Never write them.** Slot 10 is the
   assistant's playtest slot. A harness city uses `GameFiles.scratch(label)` or
-  an explicit temp path, never `new Game()`, which points at the real save
-  folder.
+  a folder from `TempDirs.create(prefix)`, never `new Game()`, which points at
+  the real save folder. Never `Files.createTempDirectory` either: nothing
+  deleted its folders, and they held 37 GB of the PC's disk by 2026-10-21
+  (TD1); `TempDirs` deletes its own when the JVM exits.
 - **Ship fixes without asking** ("yes, always"), through GitHub, the one
   source of truth (`2048Israel/CityBuilderSim`): a batch is done in a
   worktree and a branch of its own, the orchestrator alone merges it into
@@ -249,7 +251,10 @@ runs the timing harnesses hard. `batch-check.sh` and `ship.sh` run in Git Bash
 too. A batch shipped from the PC ships from a temp clone of `origin`, never
 this folder: `%TEMP%\cbs-<id>` (the scratchpad's path is past Windows' 260
 characters), `./ship.sh batch/<id>` in Git Bash there, with `JDK_JAVA_OPTIONS`
-naming the PC's earth-1.bin. The full suite is
+naming the PC's earth-1.bin. Once it has shipped, the session deletes the
+clone and every other `%TEMP%\cbs-<id>*` folder it made (`rm -rf
+"$TEMP"/cbs-<id>*`, run from outside them): 24 left behind held 5 GB by
+2026-10-21 (TD1). The full suite is
 `java -cp "target/classes;%USERPROFILE%\.m2\repository\com\google\code\gson\gson\2.10.1\gson-2.10.1.jar" ham.citybuildersim.AllChecks -f`
 (about nine minutes; `AllChecks money bank` runs two).
 

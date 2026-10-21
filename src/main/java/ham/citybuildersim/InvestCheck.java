@@ -76,7 +76,7 @@ public class InvestCheck {
 
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("invest");
+        Path root = TempDirs.create("invest");
 
         BuildingManager bm = new BuildingManager();
         bm.initializeTemplates();

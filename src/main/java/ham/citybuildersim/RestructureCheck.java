@@ -108,7 +108,7 @@ public class RestructureCheck {
         /* ============ 3. a real city buying real paper back ============ */
         System.out.println("\n--- a city actually doing it ---");
 
-        Path root = Files.createTempDirectory("restructure");
+        Path root = TempDirs.create("restructure");
         Game g = founded(root, "city");
 
         System.setOut(quiet);
@@ -416,7 +416,7 @@ public class RestructureCheck {
          * that came back after a reload would be the most expensive possible
          * version of "nothing to save here".
          */
-        Path saveRoot = Files.createTempDirectory("restructure-save");
+        Path saveRoot = TempDirs.create("restructure-save");
         GameFiles files = new GameFiles(saveRoot.resolve("data"), saveRoot.resolve("no-legacy"));
         Game city = new Game(files);
         System.setOut(quiet);
@@ -463,7 +463,7 @@ public class RestructureCheck {
          * So: one of each, saved, reloaded, counted. Anything that renames an
          * instrument again fails here.
          */
-        Path allRoot = Files.createTempDirectory("all-instruments");
+        Path allRoot = TempDirs.create("all-instruments");
         GameFiles allFiles = new GameFiles(allRoot.resolve("data"), allRoot.resolve("no-legacy"));
         Game every = new Game(allFiles);
         System.setOut(quiet);

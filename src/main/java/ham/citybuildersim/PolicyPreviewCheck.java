@@ -4,7 +4,6 @@ import ham.citybuildersim.sectors.HeavyIndustry;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
@@ -148,7 +147,7 @@ public class PolicyPreviewCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("policypreviewcheck");
+        Path root = TempDirs.create("policypreviewcheck");
 
         Game g = city(root);
         printCity(g);

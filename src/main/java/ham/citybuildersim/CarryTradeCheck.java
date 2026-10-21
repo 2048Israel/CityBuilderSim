@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -203,7 +202,7 @@ public class CarryTradeCheck {
          * proves nothing on its own. What proves it is that the audit's
          * FINANCIAL out-leg moves when the carry does, and by the same amount.
          */
-        Path root = Files.createTempDirectory("carrytrade");
+        Path root = TempDirs.create("carrytrade");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
 
         double worstResidual = 0, movedOut = 0, lentTotal = 0;

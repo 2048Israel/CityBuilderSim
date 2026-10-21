@@ -257,7 +257,7 @@ public class NewGameCheck {
 
     public static void main(String[] args) throws Exception {
 
-        Path root = Files.createTempDirectory("newgamecheck");
+        Path root = TempDirs.create("newgamecheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         /* ============ 1. what a city that never existed looks like ============ */
