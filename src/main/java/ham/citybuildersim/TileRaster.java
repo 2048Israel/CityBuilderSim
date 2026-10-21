@@ -783,7 +783,12 @@ public final class TileRaster {
         }
     }
 
-    /** A bulk yard's three stockpiles, side by side along the fan. */
+    /**
+     * A bulk yard's three stockpiles, side by side along the fan. A heap whose share of the ground past the fan is under
+     * HEAP_LEAST pixels either way is not drawn, and none is drawn outside its share (CL4: a depot drawn at its own 8 x 7
+     * footprint at 8 px has its fan reaching the box's far side, and FX5's heaps, their radius held to at least a pixel,
+     * were drawn past the yard's picture - the near view threw on the default playtest's city).
+     */
     private static void stockpiles(int px, int[] img, int w, int x0, int y0, int x1, int y1,
                                    boolean ew, int fanA, int fanB, int fanFar) {
         int edge = blend(ORE_HEAP, 0xff000000, 0.25);
@@ -793,21 +798,27 @@ public final class TileRaster {
                 int a0 = x0 + k * (x1 - x0) / 3, a1 = x0 + (k + 1) * (x1 - x0) / 3;
                 int b0 = fanFar, b1 = y1;
                 cx = (a0 + a1) / 2; cy = (b0 + b1) / 2;
+                if (a1 - a0 < HEAP_LEAST || b1 - b0 < HEAP_LEAST) continue;
                 rx = Math.max(1, (a1 - a0) / 2 - 1); ry = Math.max(1, (b1 - b0) / 2 - 1);
+                fillEllipse(img, w, cx, cy, rx, ry, ORE_HEAP, edge, a0, b0, a1, b1);
             } else {
                 int a0 = fanFar, a1 = x1;
                 int b0 = y0 + k * (y1 - y0) / 3, b1 = y0 + (k + 1) * (y1 - y0) / 3;
                 cx = (a0 + a1) / 2; cy = (b0 + b1) / 2;
+                if (a1 - a0 < HEAP_LEAST || b1 - b0 < HEAP_LEAST) continue;
                 rx = Math.max(1, (a1 - a0) / 2 - 1); ry = Math.max(1, (b1 - b0) / 2 - 1);
+                fillEllipse(img, w, cx, cy, rx, ry, ORE_HEAP, edge, a0, b0, a1, b1);
             }
-            fillEllipse(img, w, cx, cy, rx, ry, ORE_HEAP, edge);
         }
     }
 
-    /** A filled ellipse, its edge a pixel darker. */
-    private static void fillEllipse(int[] img, int w, int cx, int cy, int rx, int ry, int fill, int edge) {
-        for (int y = cy - ry; y <= cy + ry; y++) {
-            for (int x = cx - rx; x <= cx + rx; x++) {
+    /** The least share of the ground past a bulk yard's fan, in pixels either way, a heap is drawn on: 2. */
+    static final int HEAP_LEAST = 2;
+
+    /** A filled ellipse, its edge a pixel darker, kept to [clipX0, clipX1) x [clipY0, clipY1). */
+    private static void fillEllipse(int[] img, int w, int cx, int cy, int rx, int ry, int fill, int edge, int clipX0, int clipY0, int clipX1, int clipY1) {
+        for (int y = Math.max(cy - ry, clipY0); y <= Math.min(cy + ry, clipY1 - 1); y++) {
+            for (int x = Math.max(cx - rx, clipX0); x <= Math.min(cx + rx, clipX1 - 1); x++) {
                 double dx = (x - cx) / (double) rx, dy = (y - cy) / (double) ry;
                 if (dx * dx + dy * dy > 1) continue;
                 boolean rim = outside(x - 1, y, cx, cy, rx, ry) || outside(x + 1, y, cx, cy, rx, ry)

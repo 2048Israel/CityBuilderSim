@@ -108,6 +108,12 @@ import java.util.List;
  *      on the skeleton city the map gives every tile a yard reaches the yard
  *      whole, in the layout the trains' routes lay, counted once, and its
  *      part on every tile is the yard's class in the blocks' views.
+ *  28. (batch CL4; threw on 0.8.18) a Rail Depot drawn whole at its own
+ *      8 x 7 footprint, laid east-west on its line at its last row with no
+ *      track yet, as a world with no gateway keeps it: drawn at LINES_FROM,
+ *      JUNCTIONS_FROM and 8 px without throwing, as a yard - no heap drawn
+ *      where its share past the fan is under TileRaster.HEAP_LEAST; on 0.8.18
+ *      the heaps were drawn past the yard's picture and the near view threw.
  *
  * Numbering is the running order.
  *
@@ -346,6 +352,7 @@ public class RailDrawCheck {
         curvedCorner();
         yardLadders();
         yardAcrossTiles();
+        depotWithNoLine();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -1441,6 +1448,51 @@ public class RailDrawCheck {
         int n = 0;
         for (int y = 0; y < rows.length; y++) if (rows[y] && (y == 0 || !rows[y - 1])) n++;
         return n;
+    }
+
+    /* ================= 28. a depot drawn whole at its own footprint, on its line with no track yet (CL4; threw on 0.8.18) ================= */
+
+    static void depotWithNoLine() {
+        System.out.println("--- 28. (CL4; threw on 0.8.18) a Rail Depot drawn whole at its own footprint on its line, no track yet: its heaps stay in its picture ---");
+        BuildingVisual.Type depot = depot();
+        int[] fd = BuildingVisual.footprint(depot);
+        int boxX = 6, boxY = 10;
+        // As CityMap.fillInput() handed the default playtest's depot (m4003) to its tile: the box whole in Input.yards, laid on its line
+        // at its last row (as CityRuns lays a depot, section 23) - the layout yardLayout() gives that line - and no track drawn yet.
+        boolean[] line = new boolean[fd[0] * fd[1]];
+        for (int x = 0; x < fd[0]; x++) line[(fd[1] - 1) * fd[0] + x] = true;
+        int[] layout = TileRaster.yardLayout(line, fd[0], fd[1]);
+        for (int px : new int[] { TileRaster.LINES_FROM, TileRaster.JUNCTIONS_FROM, 8 }) depotAt(depot, fd, boxX, boxY, layout, px);
+    }
+
+    /** Section 28's depot drawn at px, on a thread that drew no yard before. */
+    static void depotAt(BuildingVisual.Type depot, int[] fd, int boxX, int boxY, int[] layout, int px) {
+        int w = T * px;
+        TilePainter.Input in = yardAt(depot, boxX, boxY, fd[0], fd[1]);
+        in.addYard(boxX, boxY, fd[0], fd[1], depot.id(), layout, false);
+        // On a thread of its own: a thread's yard canvas (TileRaster.yardCanvas()) is only as large as the largest yard it drew, so
+        // this one's is exactly the depot's picture, as on a worker that draws it first - where 0.8.18 threw.
+        int[][] got = new int[1][];
+        String[] threwOn = new String[1];
+        Thread t = new Thread(() -> {
+            try {
+                got[0] = raster(in, paint(in), px);
+            } catch (RuntimeException e) {
+                threwOn[0] = e.toString();
+            }
+        });
+        t.start();
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e);
+        }
+        int[] img = got[0];
+        String threw = threwOn[0];
+        check("the fixture at " + px + " px: the depot's own footprint " + fd[0] + " x " + fd[1] + ", east-west on its line at its last row (layout "
+                + Arrays.toString(layout) + "), drawn whole on a thread that drew no yard before", layout[0] == 1 && layout[1] == fd[1] - 1 && in.yards == 1);
+        check("...it is drawn without throwing" + (threw == null ? "" : " (" + threw + ")"), threw == null);
+        check("...as a yard: YARD_GROUND inside its box", img != null && hasInBox(img, w, boxX, boxY, fd[0], fd[1], px, TileRaster.YARD_GROUND));
     }
 
     static void yardAcrossTiles() {
