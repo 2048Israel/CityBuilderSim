@@ -353,6 +353,9 @@ public class Ensemble {
             g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
             g.setFundDial(LongPlaytest.FUND_DIAL);
 
+            // ...and the D$'s market of the seed's own (XR1), as LongPlaytest.main reads its seed.
+            LongPlaytest.seedMarket(g, seed);
+
             if (LongPlaytest.FOUNDING == Founding.Preset.INSANE) LongPlaytest.borrowForTheVillage(g);
             LongPlaytest.villageBuild(g, "House", 40 + seed % 4);
             LongPlaytest.villageBuild(g, "Convenience Store", 3);

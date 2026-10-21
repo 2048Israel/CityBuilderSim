@@ -1443,8 +1443,12 @@ public class LongPlaytest {
             ForeignAccounts fa = g.getForeignAccounts(); OutwardInvestment oi = g.getOutwardInvestment();
             double tills = 0;
             for (String s : Sectors.KEYS) tills += Math.max(0, g.getEconomyManager().getSectorCash(s));
-            out.printf("FX m%-4d rate %.3f parity %.3f move %+.2f%% fair %.3f openness %.2f | current %,.0f financial %,.0f | tills %,.0f abroad US$%,.0f ($%,.0f) share %.0f%% | deposit %.2f%% world %.2f%% | pop %d GDP %,.0f%n",
-                g.getMonth(), fa.getRate(), fa.getParity(), fa.getLastMove() * 100, fa.getFairLevel(), fa.getOpenness(),
+            // THE FLOAT's pieces (XR1): the levels reached as the rate shows them (gate() of each), the interventions still felt ungated.
+            out.printf("FX m%-4d rate %.3f parity %.3f move %+.2f%% fair %.3f trend %.3f gap %+.1f%% bal %+.1f%% cover %+.1f%% mkt %+.1f%% felt %+.1f%% gate %.2f openness %.2f | current %,.0f financial %,.0f | tills %,.0f abroad US$%,.0f ($%,.0f) share %.0f%% | deposit %.2f%% world %.2f%% | pop %d GDP %,.0f%n",
+                g.getMonth(), fa.getRate(), fa.getParity(), fa.getLastMove() * 100, fa.getFairLevel(), fa.getParityTrend(),
+                fa.gate() * fa.getGapReached() * 100, fa.gate() * fa.getBalanceReached() * 100,
+                fa.gate() * fa.getCoverReached() * 100, fa.gate() * fa.getMarket() * 100,
+                fa.getInterventionFelt() * 100, fa.gate(), fa.getOpenness(),
                 fa.monthlyCurrentAccount(), fa.monthlyFinancialAccount(),
                 tills, oi.totalUsd(), oi.totalLocalValue(), oi.getTargetShare() * 100,
                 g.getBank().depositRate() * 100, DebtManager.WORLD_BASE_RATE * 100,
@@ -1639,6 +1643,7 @@ public class LongPlaytest {
             defendedUsdRun += soldUsd;
             if (soldUsd > peakDefenceUsd) { peakDefenceUsd = soldUsd; peakDefenceMonth = g.getMonth(); }
         }
+        countTheFloat(g);
         dialPath.add(g.getDebtManager().getPolicyRate());
         double spendNow = g.getHouseholdBalance().getSpendFactor();
         if (spendNow < spendLow) { spendLow = spendNow; spendLowMonth = g.getMonth(); }
@@ -2584,6 +2589,75 @@ public class LongPlaytest {
      */
     static int monthsDefended, peakDefenceMonth;
     static double defendedUsdRun, peakDefenceUsd;
+
+    /*
+     * THE D$ OVER THE RUN (XR1, 2026-10-21): how the float behaved in this
+     * city, counted a month at a time (countTheFloat()) and printed as one
+     * line beside the currency's (docs/studies/spec-exchange-rates.md, 1.1:
+     * "volatility 1.2% a year, a longest run of 78 months" was what the old
+     * rule measured). The month's move is ForeignAccounts.getLastMove(), the
+     * six forces added. The volatility is the standard deviation of the
+     * monthly move times the root of twelve, from FLOAT_FROM_MONTH on - the
+     * first years are a founding's, not a float's; the run one way is the most
+     * months in a row the rate moved the same side (a move under a billionth
+     * is none); far from parity is more than 25% either side in logs, as the
+     * study counted it. The treasury dealt in a month when it had dealt since
+     * the last reprice as the month began (the player's moves between months)
+     * or bought or sold in the month itself.
+     */
+    static final int FLOAT_FROM_MONTH = 60;
+    static int floatMonths, floatRun, floatRunLongest, floatSign, floatFarFromParity, floatDealt, floatMarketOver2;
+    static double floatSum, floatSum2, floatBiggest;
+    /** What the treasury had dealt since the last reprice when the month began: run() reads it before the month runs. */
+    static double floatDealtBefore;
+
+    /** Clears THE D$ OVER THE RUN: a run's counts start from nothing (main() at its start; a harness before it plays a city of its own). */
+    static void resetTheFloat() {
+        floatMonths = floatRun = floatRunLongest = floatSign = floatFarFromParity = floatDealt = floatMarketOver2 = 0;
+        floatSum = floatSum2 = floatBiggest = floatDealtBefore = 0;
+    }
+
+    /** The D$'s month, for THE D$ OVER THE RUN: called once a month from audit(), after the defence is counted. */
+    static void countTheFloat(Game g) {
+        ForeignAccounts fa = g.getForeignAccounts();
+        double move = fa.getLastMove();
+        if (!Double.isFinite(move)) return;
+        if (g.getMonth() >= FLOAT_FROM_MONTH) {
+            floatMonths++;
+            floatSum += move;
+            floatSum2 += move * move;
+        }
+        int sign = move > 1e-9 ? 1 : move < -1e-9 ? -1 : 0;
+        floatRun = sign != 0 && sign == floatSign ? floatRun + 1 : sign != 0 ? 1 : 0;
+        floatSign = sign;
+        floatRunLongest = Math.max(floatRunLongest, floatRun);
+        if (fa.getParity() > 0 && fa.getRate() > 0
+                && Math.abs(Math.log(fa.getRate() / fa.getParity())) > Math.log(1.25)) floatFarFromParity++;
+        if (floatDealtBefore != 0 || fa.getBoughtThisMonth() + fa.getSoldThisMonth() > 0) floatDealt++;
+        if (Math.abs(fa.getMoveMarket()) > .02) floatMarketOver2++;
+        if (Math.abs(move) > Math.abs(floatBiggest)) floatBiggest = move;
+    }
+
+    /** The D$'s volatility a year over the run from FLOAT_FROM_MONTH: the standard deviation of the monthly log move times the root of twelve; 0 before it has months. */
+    static double floatVolatility() {
+        if (floatMonths < 2) return 0;
+        double mean = floatSum / floatMonths;
+        return Math.sqrt(Math.max(0, floatSum2 / floatMonths - mean * mean)) * Math.sqrt(12);
+    }
+
+    /**
+     * Seeds the D$'s market from the ensemble seed (XR1): Game founds every city's
+     * market from its world seed (Game.marketSeedFor()), which is the same for the
+     * ensemble's sixteen cities, so each takes a market of its own - the world's
+     * market seed mixed with the seed. Seed 0 is the default run, untouched.
+     * Called at the founding, before the first month, by main() and the ensemble.
+     */
+    public static void seedMarket(Game g, int seed) {
+        if (seed == 0) return;
+        ForeignAccounts fa = g.getForeignAccounts();
+        fa.setMarketSeed(World.mix(fa.getMarketSeed() ^ (seed * 0x9E3779B97F4A7C15L)));
+    }
+
     /**
      * THE LAND OFFICE OVER THE RUN (0.7.6): months the city bought land abroad
      * and what it cost in local money at the day's rates - against the dollars
@@ -4868,6 +4942,7 @@ public class LongPlaytest {
             }
             double indexHanded = g.getPriceIndex().getIndex();
             if (WAGES && Double.isNaN(lagImplied)) lagImplied = g.getLabourMarket().getCostOfLiving();
+            floatDealtBefore = g.getForeignAccounts().getDealtSinceReprice();
             g.simulateMonths(1);
             if (g.hasCityMap()) {
                 mapMonths++;
@@ -5488,6 +5563,7 @@ public class LongPlaytest {
     public static void main(String[] args) throws Exception {
 
         out = System.out;
+        resetTheFloat();
         for (int i = 0; i + 1 < args.length; i++) if (args[i].equals("--earth")) EARTH = args[i + 1];
 
         Path root = Files.createTempDirectory("playtest");
@@ -5547,6 +5623,8 @@ public class LongPlaytest {
              * Seed 0 (the default) is the run as it has always been.
              */
             int seed = Integer.getInteger("playtest.seed", 0);
+            // ...and its D$ a market of its own (XR1): seed 0 keeps the world's.
+            seedMarket(g, seed);
             /*
              * THE HEALTH DIALS, FOR THE ENSEMBLE (2026-09-19):
              * -Dplaytest.healthFee=<scale> and -Dplaytest.healthPremium=<rate>
@@ -6215,6 +6293,13 @@ public class LongPlaytest {
                 fx.importCover() == Double.MAX_VALUE ? "inf"
                         : String.format("%.1f mo", fx.importCover()),
                 (g.getLabourMarket().getCostOfLiving() - 1) * 100);
+        // THE D$ OVER THE RUN (XR1): the float's behaviour in this city, against the old rule's 1.2% a year and 78 months one way.
+        out.printf("  the D$: volatility %.1f%% a year (from month %d), longest run one way %d months,"
+                + " %d months over 25%% from parity, the defence sold in %d months (US$%,.0fk),"
+                + " the treasury dealt in %d months, the market moved it over 2%% in %d months,"
+                + " the biggest month %+.1f%%%n",
+                floatVolatility() * 100, FLOAT_FROM_MONTH, floatRunLongest, floatFarFromParity,
+                monthsDefended, defendedUsdRun, floatDealt, floatMarketOver2, floatBiggest * 100);
         out.printf("  abroad: exports $%,.0fk/mo, imports $%,.0fk/mo,"
                 + " foreign interest $%,.0fk/mo%n",
                 fx.getExports(), fx.tradeImports(), fx.getForeignInterest());
