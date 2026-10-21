@@ -74,7 +74,9 @@ import java.util.Arrays;
  *  13. a reserve's loops are drawn from 6 px a plot: a cloverleaf's four, each
  *      with its slips, a trumpet's one on its stub's side, in the highway's
  *      colours on the reserve's own open plots only; the stack's corner slips
- *      give way to them; nothing at 4 px;
+ *      give way to them; nothing at 4 px; (CL4; red on 0.8.18) the kept copy
+ *      the game's view rasters a kept tile from (MapTiles.copy()) draws the
+ *      same pixels, the loops among them;
  *  14. ACCESS ROADS (D17): in a plan with a yard, a sea terminal's box and a
  *      Truck Depot, each is given a road from a gate beside its box to a
  *      highway ramp's street in reach, or - with no highway - to an arterial
@@ -1310,6 +1312,12 @@ public class JunctionCheck {
         highwayRow(bare, jy);
         highwayColumn(bare, jx);
         int[] bareImg = raster(bare, paint(bare), px);
+        // The kept copy the game's view rasters a kept tile from (MapTiles.copy(), MapTiles.pixels()): the same pixels, the loops among
+        // them (CL4: until 0.8.19 copy() left the reserves behind, and the view drew no loop).
+        TilePainter.Input kept = new TilePainter.Input();
+        MapTiles.copy(in, kept);
+        check("the kept copy the view rasters a kept tile from holds the reserve and draws the same pixels, the loops among them",
+                kept.reserves == in.reserves && java.util.Arrays.equals(raster(kept, paint(kept), px), img));
 
         boolean four = true;
         for (int sy = -1; sy <= 1; sy += 2) {

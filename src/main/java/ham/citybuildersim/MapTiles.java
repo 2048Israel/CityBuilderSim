@@ -258,6 +258,13 @@ public final class MapTiles {
         }
         // The railway's bends and the plots they replace (FX5).
         b.copyBends(a);
+        // The interchanges' reserves that reach it (batch FR7), whose loops the raster draws from the kept copy too (CL4: left behind
+        // until 0.8.19, so the view, which rasters a kept tile from this copy, drew no loop though the stamp folded them).
+        b.clearReserves();
+        for (int r = 0; r < a.reserves; r++) {
+            int o = r * TilePainter.RESERVE_INTS;
+            b.addReserve(a.reserve[o], a.reserve[o + 1], a.reserve[o + 2], a.reserve[o + 3], a.reserve[o + 4], a.reserve[o + 5], a.reserve[o + 6], a.reserve[o + 7]);
+        }
         // The works at sea (0.7.97).
         b.clearSea();
         System.arraycopy(a.sea, 0, b.sea, 0, TilePainter.PLOTS);
