@@ -84,7 +84,13 @@ import java.util.List;
  *      after; the dense screen's districts, their counts dealt in forty
  *      batches, cover at least 95% of the ground today's plans cover, every
  *      check holding; and a plan is a pure function of its input, a carry
- *      merged by month and a leftover given back with its month.
+ *      merged by month and a leftover given back with its month;
+ *  12. the ground bought (batch FX6; DistrictPlan's THE GROUND BOUGHT): a
+ *      full district that buys whole cells nearer the hub than its farthest
+ *      keeps every box where it stands and places the arrivals after the
+ *      purchase, some on the new cells, where the same ground owned from the
+ *      start moves boxes; a purchase dated at or before the first batch's
+ *      month, or no dates at all, is ground from the start.
  *
  * THE CHECKS, after every plan (spec 2.4; the prototype's, and H5):
  *   - one network: its streets one piece, four-connected (a street beneath a
@@ -274,6 +280,7 @@ public class PlanCheck {
         sharedEstates(types);
         streetLayouts(types);
         arrivals(types);
+        groundBought(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -2199,6 +2206,119 @@ public class PlanCheck {
             if (k == 0) l.batch();
         }
         return l;
+    }
+
+    /* =====================================================================
+       12. THE GROUND BOUGHT (batch FX6)
+       ===================================================================== */
+
+    /** A flat district that owns whole cells ci0 to ci1 across and cj0 to cj1 down, their rings too, the hub at its middle: the ground bought's fixture. */
+    static DistrictPlan.Input cellsOwned(BuildingVisual.Type[] types, int ci0, int ci1, int cj0, int cj1) {
+        DistrictPlan.Input in = flat(types);
+        Arrays.fill(in.owned, false);
+        for (int y = cj0 * DistrictPlan.CELL; y <= (cj1 + 1) * DistrictPlan.CELL; y++) {
+            for (int x = ci0 * DistrictPlan.CELL; x <= (ci1 + 1) * DistrictPlan.CELL; x++) in.owned[y * DistrictPlan.FRAME + x] = true;
+        }
+        return in;
+    }
+
+    /** The houses each month from the first to the fifth brings: with the shops, works and farms beside them, enough to fill the old ground. */
+    static final int HOUSES_A_MONTH = 1000;
+
+    /** The plots an input owns. */
+    static int countOwned(DistrictPlan.Input in) {
+        int n = 0;
+        for (boolean o : in.owned) if (o) n++;
+        return n;
+    }
+
+    /** The input with the ground east of plot column x not owned. */
+    static DistrictPlan.Input westOf(DistrictPlan.Input in, int x) {
+        for (int p = 0; p < DistrictPlan.AREA; p++) if (p % DistrictPlan.FRAME > x) in.owned[p] = false;
+        return in;
+    }
+
+    /** The months the ground of `grown` was bought in: `month` for each plot it owns that `old` does not, 0 for the rest. */
+    static int[] boughtOn(DistrictPlan.Input grown, DistrictPlan.Input old, int month) {
+        int[] at = new int[DistrictPlan.AREA];
+        for (int p = 0; p < DistrictPlan.AREA; p++) if (grown.owned[p] && !old.owned[p]) at[p] = month;
+        return at;
+    }
+
+    /** Whether two plans are the same plan: every box in the order placed, every street, what was left out. */
+    static boolean samePlan(DistrictPlan a, DistrictPlan b) {
+        return placedDigest(a) == placedDigest(b) && streetDigest(a) == streetDigest(b) && a.buildings == b.buildings && Arrays.equals(a.overflow, b.overflow)
+                && Arrays.equals(a.cellKind, b.cellKind);
+    }
+
+    /** How many of a plan's boxes lie wholly east of plot column x (the cells bought are east of the old ground). */
+    static int boxesEastOf(DistrictPlan p, int x) {
+        int n = 0;
+        for (int i = 0; i < p.buildings; i++) if (p.bx[i] > x) n++;
+        return n;
+    }
+
+    static void groundBought(BuildingVisual.Type[] types) {
+        out.println("\n--- 12. the ground bought: a district that buys land keeps its buildings where they stand (batch FX6) ---");
+        final int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        final int shop = pick(types, 1, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+        final int works = pick(types, 9, t -> t.cls() == BuildingVisual.INDUSTRY && !t.outer() && t.site() == null && t.campusGroup() == BuildingVisual.NO_GROUP);
+        final int farm = pick(types, 1, t -> t.category() == BuildingType.AGRICULTURE && t.outer() && t.site() == null);
+        final int paved = pavedRoad(types);
+        // The old ground: cells 0 to 3 across, 3 and 4 down, the hub on its east edge; the ground bought: cells 4 and 5 beside it,
+        // two of them as near the hub as the old ground's nearest and all nearer than its farthest.
+        DistrictPlan.Input oldGround = cellsOwned(types, 0, 3, 3, 4), wholeGround = cellsOwned(types, 0, 5, 3, 4);
+        final int east = 4 * DistrictPlan.CELL;
+        final int bought = 5, first = 0;
+        // The log: a first batch in month 0, then every month to the fifth fills the old ground; the purchase comes after the
+        // fifth month's arrivals (bought between months), and the sixth month's arrivals come after it.
+        Log log = new Log();
+        log.add(first, house, 150).add(first, shop, 20).add(first, works, 2).add(first, paved, 3).batch();
+        for (int m = 1; m <= bought; m++) log.add(m, house, HOUSES_A_MONTH).add(m, shop, 15).add(m, works, 1 + m % 2).add(m, paved, 2).add(m, farm, 1);
+        log.add(bought + 1, house, 120).add(bought + 1, shop, 15).add(bought + 1, works, 2).add(bought + 1, paved, 2);
+        Log until = log.until(bought);
+        DistrictPlan before = DistrictPlan.make(until.into(cellsOwned(types, 0, 3, 3, 4)));
+        DistrictPlan.Input grownIn = log.into(cellsOwned(types, 0, 5, 3, 4));
+        grownIn.boughtAt = boughtOn(wholeGround, oldGround, bought);
+        DistrictPlan after = DistrictPlan.make(grownIn);
+        DistrictPlan sameLand = DistrictPlan.make(log.into(cellsOwned(types, 0, 5, 3, 4)));
+        out.printf("      the old ground (%d plots): %,d buildings placed in %d cells, %d without a place; the land bought in month %d (%,d plots): %,d placed, %d without a place,"
+                + " %,d east of the old ground; the same ground owned from the start: %,d placed, %d of month %d's plan moved%n", countOwned(oldGround), before.buildings,
+                cellsOpened(before), before.overflowCount(), bought, countOwned(wholeGround) - countOwned(oldGround), after.buildings, after.overflowCount(),
+                boxesEastOf(after, east), sameLand.buildings, missing(before, sameLand), bought);
+        check("the fixture: the district is full - the old ground leaves buildings without a place - and none of its boxes lies on the cells bought", before.overflowCount() > 0
+                && boxesEastOf(before, east) == 0);
+        check("land bought after a month's arrivals keeps what stands where it stands: every box of that month's plan stands in the next, the purchase between", missing(before, after) == 0);
+        check("...and the arrivals after the purchase are placed, some on the cells bought", after.buildings > before.buildings && boxesEastOf(after, east) > 0);
+        check("...the streets are joined on today's ground, every check holding", figures(after, grownIn).holds(after, grownIn));
+        check("...where the same ground owned from the start moves boxes (the fault this section stands against)", missing(before, sameLand) > 0);
+        // ---- land bought inside cells already open: the old ground ends in the middle of the cell beside the hub
+        final int cut = east - DistrictPlan.CELL / 2;
+        DistrictPlan.Input halfOld = westOf(cellsOwned(types, 0, 3, 3, 4), cut);
+        DistrictPlan beforeHalf = DistrictPlan.make(until.into(westOf(cellsOwned(types, 0, 3, 3, 4), cut)));
+        DistrictPlan.Input halfIn = log.into(cellsOwned(types, 0, 5, 3, 4));
+        halfIn.boughtAt = boughtOn(wholeGround, halfOld, bought);
+        DistrictPlan afterHalf = DistrictPlan.make(halfIn);
+        int inside = 0;
+        for (int i = 0; i < afterHalf.buildings; i++) if (afterHalf.bx[i] > cut && afterHalf.bx[i] < east) inside++;
+        out.printf("      the old ground cut in the middle of the cell beside the hub: %,d placed, %d without a place; with its other half and the cells beside bought in month %d: %,d placed,"
+                + " %d of them in the cell's other half%n", beforeHalf.buildings, beforeHalf.overflowCount(), bought, afterHalf.buildings, inside);
+        check("land bought inside a cell already open adds room there and moves nothing: the district is full, every box stands, the arrivals after the purchase are placed, some in the cell's new half",
+                beforeHalf.overflowCount() > 0 && missing(beforeHalf, afterHalf) == 0 && afterHalf.buildings > beforeHalf.buildings && inside > 0);
+        // ---- dates that change nothing
+        DistrictPlan.Input zeros = log.into(cellsOwned(types, 0, 5, 3, 4));
+        zeros.boughtAt = new int[DistrictPlan.AREA];
+        check("a plan whose ground was all there at the start (every plot bought in month 0) is the plan with no dates, box for box and street for street", samePlan(DistrictPlan.make(zeros), sameLand));
+        Log late = log.copy();
+        late.firstBatch = 0;
+        for (int[] r : late.rec) if (r[0] <= bought) late.firstBatch++;
+        DistrictPlan.Input standing = late.into(cellsOwned(types, 0, 5, 3, 4)), standingNone = late.into(cellsOwned(types, 0, 5, 3, 4));
+        standing.boughtAt = boughtOn(wholeGround, oldGround, bought);
+        DistrictPlan lateDated = DistrictPlan.make(standing), lateNone = DistrictPlan.make(standingNone);
+        check("land bought at or before the month the first batch stands on is ground from the start: the plan is the plan with no dates", samePlan(lateDated, lateNone)
+                && lateDated.buildings == lateNone.buildings);
+        DistrictPlan again = DistrictPlan.make(grownIn);
+        check("a plan is a pure function of its input: the plan with the land bought, made twice, is the same plan box for box and street for street", samePlan(after, again));
     }
 
     static void packing(BuildingVisual.Type[] types) {

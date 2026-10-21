@@ -131,6 +131,12 @@ import java.util.List;
  * batch: the ladder's step is built again without its finish, the events are
  * placed on it, and the finish runs once on the whole.
  *
+ * THE GROUND BOUGHT (batch FX6). The ground is dated too (Input.boughtAt): the
+ * plan starts on the ground the first batch stands on and each month's arrivals
+ * find the land the city bought before that month added (Builder.growGround()),
+ * so land bought inside a district, full or not, adds room and re-places nothing
+ * that stands.
+ *
  * ESTATE LINES (0.7.90, batch RD5). The prototype's estate cell has one
  * spine across its middle and two strips 15 plots deep. Rows 4 to 10 and
  * 20 to 26 of it are more than REACH from any street, so only a building
@@ -467,6 +473,8 @@ public final class DistrictPlan {
         public final byte[] terrain = new byte[AREA];
         /** Which plots the city owns. */
         public final boolean[] owned = new boolean[AREA];
+        /** Per plot of the frame (AREA, row by row), the month the city bought it (0 for the centre's ground, and for any plot it does not own), or null when it bought none of the frame's ground (or for a harness's input): with it the plan's ground grows month by month (THE GROUND BOUGHT, batch FX6); without it every owned plot is ground from the start, as before. */
+        public int[] boughtAt;
         /** The city's highway and railway plots: FIXED_HIGHWAY, FIXED_RAIL or a yard's FIXED_YARD, and (batch FR7) an interchange's reserve FIXED_RESERVE, laid before the plan (the city's runs since 0.7.89, CityRuns; CityMap's network's plan's until 0.7.88). */
         public final byte[] fixed = new byte[AREA];
         /** The resource sites: SITE_FIELD, or SITE_MINED where a mine or well stands. */
@@ -902,6 +910,8 @@ public final class DistrictPlan {
         Hashes hash;
         /** Whether a plan is being made on it: a make() within a make() is given a builder of its own. */
         boolean busy;
+        /** The plots the plan has as ground so far: Input.owned, less what the city bought after the month the plan stands on (THE GROUND BOUGHT, FX6), which growGround() adds as the events reach its month; every read of the city's ground in a build is of this. */
+        final boolean[] owns = new boolean[AREA];
         /** Dry owned ground: grass, forest or sand. */
         final boolean[] dry = new boolean[AREA];
         /** Plots no building may take: not dry, a highway, its verge (H5), track, a mine's site; and a field, until the last pass. */
@@ -1041,11 +1051,28 @@ public final class DistrictPlan {
                 Arrays.fill(free[c], 0);
                 Arrays.fill(freeF[c], 0);
             }
-            // THE GROUND, A ROW AT A TIME (0.7.94, batch RD7): dry, barred, the highways' and the parted streets' plots as bits
-            // a row, and the plots of the city's runs; then H5's verges from the highways' bits (VERGES), the fresh water's runs,
-            // each plot's lay code, the fields and the cells' rows - the same arrays 0.7.93 made plot by plot, made in fewer
-            // passes, with no look about each plot for the verge, and each pass a row (or a cell) a call: a method called
-            // hundreds of times a plan is compiled, and compiled again after a new input's turn, far sooner than one long loop.
+            groundAtStart();
+            ground();
+            order = growthOrder();
+            ev = false;
+            placedGone = null;
+            batchAt = null;
+            readLog();
+            bands();
+            mapBatch();
+        }
+
+        /**
+         * THE GROUND, A ROW AT A TIME (0.7.94, batch RD7): dry, barred, the highways' and the parted streets' plots as bits
+         * a row, and the plots of the city's runs; then H5's verges from the highways' bits (VERGES), the fresh water's runs,
+         * each plot's lay code, the fields and the cells' rows - the same arrays 0.7.93 made plot by plot, made in fewer
+         * passes, with no look about each plot for the verge, and each pass a row (or a cell) a call: a method called
+         * hundreds of times a plan is compiled, and compiled again after a new input's turn, far sooner than one long loop.
+         * Of the plots the plan has ground so far (owns); worked out afresh whenever that grows (growGround(), FX6), so it
+         * resets what it accumulates, and touches nothing a build holds (occ, the streets, the free rows, the memos).
+         */
+        void ground() {
+            Arrays.fill(cellField, false);
             Arrays.fill(hwRows, 0L);
             Arrays.fill(paRows, 0L);
             nHighway = 0;
@@ -1068,13 +1095,6 @@ public final class DistrictPlan {
             Arrays.fill(fieldBits, 0L);
             for (int y = 0; y < FRAME; y++) fieldRow(y);
             for (int c = 0; c < CELLS; c++) cellRows(c);
-            order = growthOrder();
-            ev = false;
-            placedGone = null;
-            batchAt = null;
-            readLog();
-            bands();
-            mapBatch();
         }
 
         /** The plan made: what it held of its input let go (KEPT). */
@@ -1629,6 +1649,8 @@ public final class DistrictPlan {
                 int id = evInst[e];
                 if (evGone[e]) { leave(id, evMonth[e]); continue; }
                 if (iExcl[id]) continue;
+                // The ground the city had bought by this arrival's month (THE GROUND BOUGHT).
+                growGround(evMonth[e]);
                 int t = iType[id], g = bandOf(types[t]), i = bandN[g]++;
                 bandType[g][i] = t;
                 bandW[g][i] = fpW[t];
@@ -1667,6 +1689,8 @@ public final class DistrictPlan {
                 }
             }
             ev = false;
+            // Today's whole ground, for the streets to be joined on (THE GROUND BOUGHT).
+            growGround(Integer.MAX_VALUE);
             // The boxes that remain, in the order placed.
             int placed = 0;
             for (int k = 0; k < bPlaced; k++) {
@@ -1684,6 +1708,118 @@ public final class DistrictPlan {
                 if (out.cellBoulevard[c]) boulevards++;
             }
             return complete(out, squares, boulevards);
+        }
+
+        /* ------------------------------------------------ the ground bought (batch FX6) */
+
+        /*
+         * THE GROUND BOUGHT (batch FX6). The plan read the district's owned ground as of today, so when the city bought
+         * land inside a district every arrival was replayed on the larger ground: the growth order changed (new cells
+         * usable), the first fits changed, and most buildings moved (2,069 of 2,946 on the playtest's city at month 3,998).
+         * Now the ground is dated (Input.boughtAt): the plan starts on the ground the first batch stands on, and the events
+         * of each month find the land the city bought before that month added to it (growGround(): the free rows of the
+         * cells already open, the cells no pointer has taken re-ranked), so what stands never moves and only new arrivals
+         * go on the new ground. The last growth, after the events, is today's whole ground, for the streets to be joined on.
+         */
+
+        /** The smallest Input.boughtAt among the owned plots the plan does not have as ground yet (Integer.MAX_VALUE for none): growGround() has nothing to add for a month no later than it. */
+        int dueMonth = Integer.MAX_VALUE;
+        /** growGround()'s plots added, kept between calls. */
+        int[] grown;
+
+        /** owns filled for a new plan (start()): the input's owned ground, less the plots bought after the month the first batch stands on, which the events add; dueMonth set. */
+        void groundAtStart() {
+            System.arraycopy(in.owned, 0, owns, 0, AREA);
+            dueMonth = Integer.MAX_VALUE;
+            if (in.boughtAt == null || proto || in.logMonth == null || in.logType == null || in.logChange == null) return;
+            int n = Math.min(in.logMonth.length, Math.min(in.logType.length, in.logChange.length));
+            int fb = Math.max(0, Math.min(in.firstBatch, n));
+            // The month the first batch stands on: its last record's; with no first batch, the month before the first event (never
+            // before month 0, whose ground is the centre's: it is there for an arrival in month 0).
+            int m0;
+            if (fb > 0) {
+                m0 = in.logMonth[fb - 1];
+            } else {
+                int first = Integer.MAX_VALUE;
+                if (n > 0) first = in.logMonth[0];
+                if (in.carry != null && in.carry.length > 1) first = Math.min(first, in.carry[0]);
+                if (first == Integer.MAX_VALUE) return;
+                m0 = Math.max(0, first - 1);
+            }
+            int[] at = in.boughtAt;
+            int due = Integer.MAX_VALUE;
+            for (int p = 0; p < AREA; p++) {
+                if (!owns[p] || at[p] <= m0) continue;
+                owns[p] = false;
+                due = Math.min(due, at[p]);
+            }
+            dueMonth = due;
+        }
+
+        /**
+         * The plan's ground grown to the month an arrival comes in (Integer.MAX_VALUE: to all of Input.owned): the plots
+         * bought before it added, the ground worked out again, the free rows of the open cells given the new plots, the
+         * cells no pointer has taken ranked again. Nothing when no plot is due: the events are thousands a plan.
+         */
+        void growGround(int month) {
+            if (month <= dueMonth) return;
+            if (grown == null) grown = new int[AREA];
+            int[] at = in.boughtAt;
+            int n = 0, due = Integer.MAX_VALUE;
+            for (int p = 0; p < AREA; p++) {
+                if (!in.owned[p] || owns[p]) continue;
+                if (month == Integer.MAX_VALUE || at[p] < month) {
+                    owns[p] = true;
+                    grown[n++] = p;
+                } else {
+                    due = Math.min(due, at[p]);
+                }
+            }
+            dueMonth = due;
+            if (n == 0) return;
+            ground();
+            // Each new plot is as a build begins; in the interior of a cell that is open it is room (freshCell()'s rule, less
+            // streets: a plot just bought holds none), and that cell looks again.
+            boolean[] roomed = new boolean[CELLS];
+            for (int k = 0; k < n; k++) {
+                int p = grown[k], x = p % FRAME, y = p / FRAME;
+                occ[p] = occStart[p];
+                if (x < 1 || y < 1 || x > SIDE || y > SIDE) continue;
+                int lx = (x - 1) % CELL, ly = (y - 1) % CELL;
+                if (lx >= INTERIOR || ly >= INTERIOR) continue;
+                int c = cellOfPlot(x, y);
+                if (bOut.cellKind[c] == CLOSED) continue;
+                int bit = 1 << lx;
+                if ((openRows[c][ly] & bit) != 0) free[c][ly] |= bit;
+                if (((openRows[c][ly] | fieldRows[c][ly]) & bit) != 0) freeF[c][ly] |= bit;
+                roomed[c] = true;
+            }
+            for (int c = 0; c < CELLS; c++) {
+                if (!roomed[c]) continue;
+                rescan(c);
+                forgetFails(c);
+                mergeFails[c] = 0;
+            }
+            cutLines.clear();
+            // The order: the cells either pointer has taken keep their places; between them the cells of the grown ground in
+            // its growth order, then any that stood between and the new order lacks, in their old order.
+            int[] fresh = growthOrder();
+            boolean[] taken = new boolean[CELLS], kept = new boolean[CELLS];
+            for (int k = 0; k < bNext; k++) taken[order[k]] = true;
+            for (int k = bFar + 1; k < order.length; k++) taken[order[k]] = true;
+            int[] next = new int[CELLS];
+            int m = 0;
+            for (int k = 0; k < bNext; k++) next[m++] = order[k];
+            for (int c : fresh) {
+                if (taken[c]) continue;
+                kept[c] = true;
+                next[m++] = c;
+            }
+            for (int k = bNext; k <= bFar; k++) if (!kept[order[k]]) next[m++] = order[k];
+            int far = m - 1;
+            for (int k = bFar + 1; k < order.length; k++) next[m++] = order[k];
+            order = Arrays.copyOf(next, m);
+            bFar = far;
         }
 
         /* ------------------------------------------------ the growth order (spec 2.4) */
@@ -2994,7 +3130,7 @@ public final class DistrictPlan {
         boolean cutAt(int x, int y) {
             if (x < 0 || y < 0 || x >= FRAME || y >= FRAME) return true;
             int p = y * FRAME + x;
-            if (!in.owned[p]) return true;
+            if (!owns[p]) return true;
             byte t = in.terrain[p];
             return t == World.SALT || (t == World.FRESH && !str[p]);
         }
@@ -3131,7 +3267,7 @@ public final class DistrictPlan {
         /** Row y of the ground (THE GROUND, A ROW AT A TIME): dry, barred, its lay code from the ground, the runs' plots, the highways' and the parted streets' bits, an anchor. */
         void groundRow(int y) {
             byte[] terrain = in.terrain, fixed = in.fixed, site = in.site;
-            boolean[] owned = in.owned, partedAnchor = in.partedAnchor, anchor = in.anchor;
+            boolean[] owned = owns, partedAnchor = in.partedAnchor, anchor = in.anchor;
             int base = y * WORDS;
             boolean anchors = false;
             for (int x = 0, p = y * FRAME; x < FRAME; x++, p++) {
@@ -3957,7 +4093,7 @@ public final class DistrictPlan {
         boolean joinable(int a, boolean horizontal) {
             int x = a % FRAME, y = a / FRAME;
             if (x % LATTICE != 0 && y % LATTICE != 0) return false;
-            if (!in.owned[a] || in.terrain[a] == World.SALT || occ[a] > 0) return false;
+            if (!owns[a] || in.terrain[a] == World.SALT || occ[a] > 0) return false;
             byte f = in.fixed[a];
             if (proto) return f != FIXED_HIGHWAY;
             if (in.site[a] == SITE_MINED) return false;
@@ -3969,7 +4105,7 @@ public final class DistrictPlan {
         /** Whether a step onto plot a going horizontally (or not) may be laid off the lattice, where the join's lattice finds no way: as joinable(), on any plot (H2: a street follows the ground where it must). */
         boolean groundJoinable(int a, boolean horizontal) {
             int x = a % FRAME, y = a / FRAME;
-            if (!in.owned[a] || in.terrain[a] == World.SALT || occ[a] > 0 || in.site[a] == SITE_MINED) return false;
+            if (!owns[a] || in.terrain[a] == World.SALT || occ[a] > 0 || in.site[a] == SITE_MINED) return false;
             boolean arterial = horizontal ? y % CELL == 0 : x % CELL == 0;
             if (in.terrain[a] == World.FRESH && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
             return in.fixed[a] == 0 || (!works(in.fixed[a]) && !along(in.fixed, a, horizontal));
