@@ -1238,18 +1238,21 @@ public final class CityRuns {
     /** Every box a yard could take, the nearest a mine first: the YARD_LONG boxes, then (where none fits, in the order of the tiers) the cell's interior's, then the footprint's own; two a cell the track runs straight through on its line, one at either end of it. */
     List<long[]> yardSpots(int w, int h, List<long[]> mines) {
         List<long[]> all = new ArrayList<>();
-        for (List<long[]> tier : spotsOnTrack(w, h)) {
-            double[] key = new double[tier.size()];
-            for (int i = 0; i < tier.size(); i++) {
-                long[] b = tier.get(i);
-                double bx = b[0] + b[2] / 2.0, by = b[1] + b[3] / 2.0, best = Double.MAX_VALUE;
-                for (long[] m : mines) best = Math.min(best, Math.hypot(bx - (m[0] + m[2] + 1) / 2.0, by - (m[1] + m[3] + 1) / 2.0));
-                if (mines.isEmpty()) best = Math.hypot(bx - rail.hubX, by - rail.hubY);
-                key[i] = best;
-            }
-            all.addAll(sortedBy(tier, key));
-        }
+        for (List<long[]> tier : spotsOnTrack(w, h)) all.addAll(nearestMineFirst(tier, mines));
         return all;
+    }
+
+    /** One tier's boxes, the nearest a mine first (the hub with no mine): yardSpots()'s order within a tier. */
+    private List<long[]> nearestMineFirst(List<long[]> tier, List<long[]> mines) {
+        double[] key = new double[tier.size()];
+        for (int i = 0; i < tier.size(); i++) {
+            long[] b = tier.get(i);
+            double bx = b[0] + b[2] / 2.0, by = b[1] + b[3] / 2.0, best = Double.MAX_VALUE;
+            for (long[] m : mines) best = Math.min(best, Math.hypot(bx - (m[0] + m[2] + 1) / 2.0, by - (m[1] + m[3] + 1) / 2.0));
+            if (mines.isEmpty()) best = Math.hypot(bx - rail.hubX, by - rail.hubY);
+            key[i] = best;
+        }
+        return sortedBy(tier, key);
     }
 
     /** ...the nearest the point (gx, gy) first (FR7 slice 3: a further yard goes beside a group of works, not beside the mine nearest the hub), the tiers in order as above. */
@@ -1494,6 +1497,9 @@ public final class CityRuns {
         private Groups groups;
         private final Map<Long, List<long[]>> spots = new HashMap<>();
         private final Map<Long, Integer> spotAt = new HashMap<>();
+        /** Each size's boxes by tier, unsorted (spotsOnTrack()), and how many tiers are sorted into `spots` so far: a tier is sorted - each box weighed against every mine - only once every box before it failed to fit (FX5: five tiers weighed at once cost a city of billions its month, MapCheck 5). */
+        private final Map<Long, List<List<long[]>>> spotTiers = new HashMap<>();
+        private final Map<Long, Integer> tiersSorted = new HashMap<>();
 
         Ctx(List<long[]> mines, List<long[]> works) {
             this.mines = mines;
@@ -1536,13 +1542,20 @@ public final class CityRuns {
         /** The next yard box of w x h on the track nearest a mine that fits (yardSpots(), kept for the run: the old rule, each size's list gone through once); null for none. */
         long[] nearestMineSpot(int w, int h, Ground g) {
             long key = ((long) w << 32) ^ h;
-            List<long[]> list = spots.computeIfAbsent(key, k -> yardSpots(w, h, mines));
-            int at = spotAt.getOrDefault(key, 0);
-            while (at < list.size()) {
-                long[] s = list.get(at++);
-                if (yardFits(s, g, mines, yards)) { spotAt.put(key, at); return s; }
+            List<long[]> list = spots.computeIfAbsent(key, k -> new ArrayList<>());
+            List<List<long[]>> tiers = spotTiers.computeIfAbsent(key, k -> spotsOnTrack(w, h));
+            int at = spotAt.getOrDefault(key, 0), sorted = tiersSorted.getOrDefault(key, 0);
+            while (true) {
+                while (at < list.size()) {
+                    long[] s = list.get(at++);
+                    if (yardFits(s, g, mines, yards)) { spotAt.put(key, at); tiersSorted.put(key, sorted); return s; }
+                }
+                // The tiers so far are gone through: the next is weighed and sorted (yardSpots()'s order, a tier at a time).
+                if (sorted >= tiers.size()) break;
+                list.addAll(nearestMineFirst(tiers.get(sorted++), mines));
             }
             spotAt.put(key, at);
+            tiersSorted.put(key, sorted);
             return null;
         }
     }
