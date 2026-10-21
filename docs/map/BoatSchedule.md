@@ -1,6 +1,6 @@
 # BoatSchedule.java - 470 lines · 32 methods · 8 constants · model
 
-`ham/citybuildersim/BoatSchedule.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BoatSchedule.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The month's ships, as a pure function of time: which calls the city's sea
 > trade makes, when each arrives, and where each boat is at any moment
@@ -51,7 +51,7 @@
 
 **Uses:** [Ports](Ports.md) (33), [World](World.md) (16)
 
-**Used by (12):** [CityMap](CityMap.md), [CityShore](CityShore.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [ReadPathCheck](ReadPathCheck.md), [SeaRoutes](SeaRoutes.md), [ShipShapes](ShipShapes.md), [TrainSchedule](TrainSchedule.md), [TruckSchedule](TruckSchedule.md)
+**Used by (15):** [CityMap](CityMap.md), [CityShore](CityShore.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [Game](Game.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [ReadPathCheck](ReadPathCheck.md), [SeaRoutes](SeaRoutes.md), [ShipShapes](ShipShapes.md), [TrainSchedule](TrainSchedule.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 

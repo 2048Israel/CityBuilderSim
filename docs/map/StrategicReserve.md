@@ -1,6 +1,6 @@
 # StrategicReserve.java - 238 lines · 32 methods · 0 constants · model
 
-`ham/citybuildersim/StrategicReserve.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/StrategicReserve.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The city's strategic reserve of crude oil: what it holds, what it paid for
 > it, and what the player has told it to fill and release (0.7.85, batch O8;
@@ -45,7 +45,7 @@
 
 **Uses:** [Good](Good.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (2), [Trade](Trade.md) (2), [Markets](Markets.md) (1), [BuildingType](BuildingType.md) (1), [BuildingManager](BuildingManager.md) (1), [Refining](Refining.md) (1)
 
-**Used by (11):** [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingVisual](BuildingVisual.md), [DataSave](DataSave.md), [Game](Game.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (15):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingVisual](BuildingVisual.md), [DataSave](DataSave.md), [Game](Game.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

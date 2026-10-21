@@ -1,6 +1,6 @@
 # MiniMapFrame.java - 302 lines · 30 methods · 6 constants · model
 
-`ham/citybuildersim/MiniMapFrame.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MiniMapFrame.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The minimap's arithmetic without the toolkit: what the stamp at the rail's foot and its hover preview frame - the city's built-up ground, the ground it owns in its districts with buildings, with its centre and a margin round it - at how many whole plots a pixel, the far nodes that draw them from the district pictures, and what a click opens the expanded map on: what ui/MiniMap draws by and MapCheck holds.
 > 
@@ -37,7 +37,7 @@
 
 **Uses:** [MapFrame](MapFrame.md) (13), [CityMap](CityMap.md) (8), [World](World.md) (5), [LandGrid](LandGrid.md) (4), [CityLand](CityLand.md) (3), [MapTiles](MapTiles.md) (3)
 
-**Used by (5):** [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [UserInterface](UserInterface.md)
+**Used by (6):** [InfrastructureScreen](InfrastructureScreen.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

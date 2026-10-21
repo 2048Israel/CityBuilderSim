@@ -247,8 +247,11 @@ public final class BuildCard {
             "Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal", "Stone", "Cement", "Copper", "Wood", "Oil",
             "Oil platforms",
             "Oil pipelines", "Refining",
-            "Oil storage", "Ports", "Building materials", "Builders",
-            "Offices", "Farms", "Rail", "Truck depots", "Vehicles", "Luxury shops", "Restaurants" };
+            "Oil storage", "Building materials", "Builders",
+            "Offices", "Farms", "Rail", "Haulage", "Vehicles", "Luxury shops", "Restaurants" };
+
+    // FR4 (2026-10-19): "Ports" left the market's order with the sea terminals, to Infrastructure's page beside the Strategic Reserve's
+    // "Reserve" (see groups()); Freight's page is "Rail" and "Haulage" ("Truck depots" until then).
 
     /**
      * The heading a building is compared under: a market building's group by
@@ -258,15 +261,17 @@ public final class BuildCard {
     public static String group(BuildingsTemplate t) {
         BuildAdvice.Category c = BuildAdvice.categoryOf(t.getCategory());
         if (c == null) return t.getCategory().name();
-        // ...the refiners' Tank Farm and the city's Strategic Reserve together, measured in tank room (0.7.85).
+        // ...the refiners' Tank Farm in Industry's oil storage, measured in tank room (0.7.85), and the city's Strategic Reserve apart
+        // from it, in Infrastructure's "Reserve" (FR4).
+        if (StrategicReserve.isReserve(t)) return "Reserve";
         if (kindOf(t) == Kind.TANKS) return "Oil storage";
         // ...and the city's sea terminals, measured in their berths' tonnes (0.7.86).
         if (kindOf(t) == Kind.BERTHS) return "Ports";
         // ...and the oil at sea's platforms, in their wells' slots, and pipelines, in kilometres (0.7.91): the wells stay with the land's.
         if (kindOf(t) == Kind.SLOTS) return "Oil platforms";
         if (kindOf(t) == Kind.PIPE) return "Oil pipelines";
-        // ...and Freight's Truck Depot, measured in the trucks it keeps, apart from the railway's tonnes (FR2).
-        if (kindOf(t) == Kind.DEPOT) return "Truck depots";
+        // ...and Freight's Truck Depot, measured in the trucks it keeps, apart from the railway's tonnes (FR2): "Haulage" since FR4.
+        if (kindOf(t) == Kind.DEPOT) return "Haulage";
         if (c.cityBuilds()) {
             BuildAdvice.Measure m = cityMeasure(t);
             return m == null ? c.name() : m.label();
@@ -296,6 +301,9 @@ public final class BuildCard {
                     case Sectors.CONSTRUCTION:    return "Builders";
                     default:                      return t.getSector();
                 }
+            // ...the railway's rungs and the Rail Depot: "Rail" on the Freight page, whose category is Freight since FR4.
+            case BuildAdvice.RAIL:
+                return "Rail";
             default:
                 return c.name();
         }
@@ -335,8 +343,14 @@ public final class BuildCard {
         return GROUP_ORDER.length;
     }
 
-    /** What a building is measured in (see Kind). */
+    /**
+     * What a building is measured in (see Kind). The sea terminals and the Strategic Reserve come first (FR4): they are on
+     * Infrastructure's page, a category the city builds, but they are measured in berths and in tank room, not in a ring's unit.
+     * They were in market categories before, where none of the market kinds above them could take them, so the order moved nothing.
+     */
     public static Kind kindOf(BuildingsTemplate t) {
+        if (Ports.isPort(t)) return Kind.BERTHS;
+        if (StrategicReserve.isReserve(t)) return Kind.TANKS;
         BuildAdvice.Category c = BuildAdvice.categoryOf(t.getCategory());
         if (c == null || c.cityBuilds()) return Kind.CITY;
         if (t.getCategory() == BuildingType.RESIDENTIAL) return Kind.HOMES;
@@ -710,6 +724,43 @@ public final class BuildCard {
     }
 
     /* =====================================================================
+       A BERTH'S PAYBACK AND THE DEPOT'S LINE (FR4, 2026-10-20; the study's
+       board 4, docs/studies/freight/4-build-infrastructure.html)
+
+       Ports never had a measure: a berth was a cost, and its card said what
+       it handles and nothing of what it earns. With the port dues (FR3) it
+       has a payback, and the advice judges it (BuildAdvice, A BERTH THAT PAYS
+       BACK); the card says the same, from the advice's own read
+       (BuildAdvice.berthPayback()): the years the dues on the tonnes one more
+       would carry take to pay its price back, or why it would not. The Truck
+       Depot is Freight's, built by its investors, and its line says when
+       Freight would build one: the trucks past its depots' room
+       (sectors.Haulage), the order's own test (depotToOrder()).
+       ===================================================================== */
+
+    /** A sea terminal's payback for its card: BuildAdvice.berthPayback(), the advice's own read; null for any building but a terminal. */
+    public static BuildAdvice.BerthPayback payback(Game game, BuildingsTemplate t) {
+        return kindOf(t) == Kind.BERTHS ? BuildAdvice.berthPayback(game, t) : null;
+    }
+
+    /**
+     * The Truck Depot's investors' line (FR4): Freight's trucks, the room its
+     * depots keep (Haulage.depotRoom()), the trucks past it on the street
+     * (Haulage.onStreet()), whether Freight would order this depot now
+     * (Haulage.depotToOrder()) and how many trucks past the room it waits for,
+     * a fraction (Haulage.DEPOT_ORDER_MARGIN) of the depot's own room.
+     */
+    public record Depot(double trucks, double room, double onStreet, boolean wouldBuild, double waitsFor) { }
+
+    /** The Truck Depot's line figures (FR4), or null for any other building. */
+    public static Depot depot(Game game, BuildingsTemplate t) {
+        if (kindOf(t) != Kind.DEPOT) return null;
+        ham.citybuildersim.sectors.Haulage haulage = game.getSectors().freight().haulage();
+        return new Depot(haulage.trucks(), haulage.depotRoom(), haulage.onStreet(), haulage.depotToOrder() == t,
+                ham.citybuildersim.sectors.Haulage.DEPOT_ORDER_MARGIN * t.getTruckRoom());
+    }
+
+    /* =====================================================================
        A GROUP OF CARDS, SCALED AND TAGGED
 
        The bars are scaled to the longest in the group, and a group of one
@@ -780,20 +831,37 @@ public final class BuildCard {
     }
 
     /**
-     * A page's groups. A city category is one group, the picked ring's
-     * buildings (m); a market category (m null) is its owning sectors' groups
-     * in GROUP_ORDER, each with its cards in catalogue order and its note.
+     * A page's groups. A city category is the picked ring's buildings (m) as
+     * the first group - and, on Infrastructure's page since FR4, its Ports
+     * (the sea terminals, by cargo and size) and its Reserve (the Strategic
+     * Reserve) after it, which have no ring and show whichever ring is
+     * picked; a market category (m null) is its owning sectors' groups in
+     * GROUP_ORDER, each with its cards in catalogue order and its note.
      */
     public static List<Group> groups(Game game, String category, BuildAdvice.Measure m) {
         BuildAdvice.Category c = BuildAdvice.category(category);
         List<Group> out = new ArrayList<>();
         if (c == null) return out;
-        List<BuildingsTemplate> all = game.getBuildingManager().getTemplatesByCategory(c.types());
+        List<BuildingsTemplate> all = BuildAdvice.templatesOf(c, game.getBuildingManager());
         if (c.cityBuilds()) {
             BuildAdvice.Measure on = m != null ? m : BuildAdvice.measuresOf(c.name()).get(0);
             List<Figures> cards = new ArrayList<>();
             for (BuildingsTemplate t : all) if (on.serves(t)) cards.add(of(game, t, on));
             out.add(new Group(on.label(), cards, new Note(NoteKind.NONE, 0, 0, null)));
+            // ...and Infrastructure's ports and reserve (FR4): the city's alone, measured in berths and in tank room, in no ring.
+            List<BuildingsTemplate> berths = new ArrayList<>();
+            List<Figures> reserve = new ArrayList<>();
+            for (BuildingsTemplate t : all) {
+                if (Ports.isPort(t)) berths.add(t);
+                else if (StrategicReserve.isReserve(t)) reserve.add(of(game, t, null));
+            }
+            // By kind of cargo, then by size: the Tanker Terminal, the Bulk Berth and the Bulk Terminal, the Container and the General Cargo Terminal.
+            berths.sort(java.util.Comparator.comparingInt((BuildingsTemplate t) -> t.berthCargo().ordinal())
+                    .thenComparingDouble(BuildingsTemplate::berthTonnesAYear));
+            List<Figures> ports = new ArrayList<>();
+            for (BuildingsTemplate t : berths) ports.add(of(game, t, null));
+            if (!ports.isEmpty()) out.add(new Group("Ports", ports, new Note(NoteKind.NONE, 0, 0, null)));
+            if (!reserve.isEmpty()) out.add(new Group("Reserve", reserve, new Note(NoteKind.NONE, 0, 0, null)));
             return out;
         }
         Map<String, List<Figures>> by = new LinkedHashMap<>();

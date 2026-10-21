@@ -233,6 +233,9 @@ public enum BuildingType {
      * of capital, so no investor would build one, and what a port is for is
      * a narrower freight wedge on the city's seaborne trade (Ports). The
      * treasury pays its crews with transit's and its repairs with the roads'.
+     * On the Build strip they are Infrastructure's since FR4 (2026-10-19),
+     * beside the roads and the Strategic Reserve - Industry held them from
+     * 0.7.86 - the city's things on one strip (BuildAdvice.categories()).
      */
     PORTS,
 
@@ -242,8 +245,9 @@ public enum BuildingType {
      * Freight's Haulage division's buildings (FR2, 2026-10-18): the Truck
      * Depot, where the city's trucks are kept. An investor builds it, as
      * the railway's lines are built (BuildScreen.investorTypes()), and it
-     * sits in the Rail group of the build menu beside the railway it
-     * feeds (BuildAdvice.categories()). The Heavy Truck Plant that makes the
+     * sits on the Freight tab of the build menu (Rail until FR4), in its
+     * Haulage group beside the Rail group of the railway it feeds
+     * (BuildAdvice.categories()). The Heavy Truck Plant that makes the
      * trucks is Automotive's.
      */
     HAULAGE

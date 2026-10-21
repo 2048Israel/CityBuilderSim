@@ -1,6 +1,6 @@
-# BuildMenuCheck.java - 285 lines · 2 methods · 0 constants · harnesses
+# BuildMenuCheck.java - 288 lines · 2 methods · 0 constants · harnesses
 
-`ham/citybuildersim/BuildMenuCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildMenuCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > Verifies that every building in the game can describe itself. Not part of the
 > game.
@@ -25,7 +25,7 @@
 > add a JobType and the card silently falls back to printing the enum constant
 > at a player.
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (4), [TaxPolicy](TaxPolicy.md) (4), [BuildAdvice](BuildAdvice.md) (4), [Game](Game.md) (2), [UserInterface](UserInterface.md) (2), [CareType](CareType.md) (2), [JobType](JobType.md) (2), [Markets](Markets.md) (2), [Good](Good.md) (2), [GameFiles](GameFiles.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (4), [TaxPolicy](TaxPolicy.md) (4), [Game](Game.md) (2), [UserInterface](UserInterface.md) (2), [CareType](CareType.md) (2), [JobType](JobType.md) (2), [Markets](Markets.md) (2), [Good](Good.md) (2), [GameFiles](GameFiles.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingType](BuildingType.md) (1)
 
 ## Sections
 
@@ -46,7 +46,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 255 | **type** `public class BuildMenuCheck` | Verifies that every building in the game can describe itself. |
+| 31 | 258 | **type** `public class BuildMenuCheck` | Verifies that every building in the game can describe itself. |
 | 35 | 6 | `private static void check(boolean condition, String what)` |  |
-| 42 | 243 | `public static void main(String[] args)` |  |
+| 42 | 246 | `public static void main(String[] args)` |  |
 

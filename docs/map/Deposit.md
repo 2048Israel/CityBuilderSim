@@ -1,6 +1,6 @@
 # Deposit.java - 252 lines · 13 methods · 7 constants · model
 
-`ham/citybuildersim/Deposit.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Deposit.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, (0.7.79) an oil field's grade and (0.7.110) its type, which on Earth (0.7.117) leans on the geology under it.
 > 

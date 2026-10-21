@@ -141,9 +141,10 @@ final class BuildScreen {
 
     /**
      * The strip, since 0.7.24 in BuildAdvice's order: the five only the city
-     * builds - Utilities, Roads & transit, Healthcare, Education, Safety -
+     * builds - Utilities, Infrastructure (its roads and transit, its ports and
+     * its Strategic Reserve since FR4), Healthcare, Education, Safety -
      * then the nine investors build too - Homes, Shops, Industry, Offices,
-     * Farms, Rail, Vehicles, Luxury shops, Restaurants - under the names
+     * Farms, Freight (Rail until FR4), Vehicles, Luxury shops, Restaurants - under the names
      * Jerus chose ("Yes, rename them": Residential, Commercial, Industrial,
      * Infrastructure and Services until then). The list lives in the model
      * (BuildAdvice.categories()) so the harness can hold that every building
@@ -157,7 +158,7 @@ final class BuildScreen {
      * Several have a row of their own for a reason the old strip gave
      * beside each: Offices (business services) because its customer is not
      * in the city; Farms because a farm competes with the whole
-     * neighbourhood; Rail because its product is a price on every other
+     * neighbourhood; Freight because its product is a price on every other
      * screen; Vehicles because an assembly plant cannot run on imported
      * parts; Luxury shops and Restaurants because they exist so a rich city
      * has somewhere to spend (BuildingType's notes on each).
@@ -455,8 +456,11 @@ final class BuildScreen {
 
         boolean theirs = investorBuilt(categories);
 
+        // Freight's page (FR4, board 4) says whose: the Freight sector's investors build the rail and the Truck Depot, and the city may too.
+        boolean freight = categories.equals(EnumSet.of(BuildingType.RAIL, BuildingType.HAULAGE));
         HBox note = theirs
-                ? infoLine("Investors build these on their own. Building one yourself is optional.",
+                ? infoLine(freight ? "Freight's investors build these. You can build them too."
+                                : "Investors build these on their own. Building one yourself is optional.",
                         "Investors put these up whenever they pay. Building one yourself spends the "
                         + "city's cash and land on a business someone else runs and keeps the earnings "
                         + "from. Worth it when investors are too broke, too cautious or short of land.",
@@ -681,7 +685,9 @@ final class BuildScreen {
            resource: land on the market's cards, the posts the city cannot
            fill on the city's, the posts it could not staff on an office's -
            scaled within its group, with no track in a group of one;
-         the investors' line, on the market's cards;
+         the investors' line, on the market's cards - the Truck Depot's in Freight's
+           own words (depotWords(), FR4);
+         a sea terminal's payback line (paybackLine(), FR4), the advice's own read;
          what it needs - its posts, the staffing, the land and how much of
            what is free, what it costs to run;
          the stepper and Build, and the quote with its verdict, which warns
@@ -721,6 +727,8 @@ final class BuildScreen {
         if (!tags.getChildren().isEmpty()) face.getChildren().add(tags);
         face.getChildren().addAll(heroRow(f), priceRow(f, afford));
         face.getChildren().addAll(cardBars(f, group, m));
+        // ...a sea terminal's payback, which ports never had (FR4; the advice's own read, BuildAdvice.berthPayback()).
+        if (f.kind() == BuildCard.Kind.BERTHS) face.getChildren().add(paybackLine(BuildCard.payback(ui.game, template)));
         if (f.market()) face.getChildren().add(investorsLine(template));
         // ...and a materials building's own lines (0.7.142, batch I13): where it stands, how its sector weighs it, its power,
         // its old metal and who buys what it makes (THE MATERIALS' LINES).
@@ -1245,9 +1253,13 @@ final class BuildScreen {
         BuildCard.Investors inv = BuildCard.investors(ui.game, t);
         String word = inv.word();
         String[] said = investorsWords(inv);
+        // ...the Truck Depot's line is Freight's own (FR4): "Freight would build one: 18 trucks over its depots' room".
+        BuildCard.Depot depot = BuildCard.depot(ui.game, t);
+        String who = depot == null ? "Investors" : inv.owner().key();
+        if (depot != null) said = new String[] {depotWords(depot, inv), said[1]};
         double size = 9.5;
         javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(
-                textRun("Investors", Palette.Fonts.sansSemiBold(), size, Palette.BUSINESS),
+                textRun(who, Palette.Fonts.sansSemiBold(), size, Palette.BUSINESS),
                 textRun(said[0], null, size, Palette.TEXT_MUTED));
         if (said[1] != null) line.getChildren().add(textRun(said[1], null, size, Palette.WARN));
         line.setMinWidth(0);
@@ -1264,6 +1276,105 @@ final class BuildScreen {
         Tooltip.install(row, tip);
         row.setOnMouseClicked(e -> ui.sectorScreen.openSectorBooks(inv.owner(), "Investors"));
         return row;
+    }
+
+    /**
+     * The Truck Depot's line after "Freight" (FR4, the study's board 4): while a depot of it is on site for investors
+     * it is building (investorsWords()' own count and wait); else whether Freight would build one now - the trucks
+     * past its depots' room, the order's own test (BuildCard.depot(), Haulage.depotToOrder()) - or what it waits for.
+     */
+    String depotWords(BuildCard.Depot d, BuildCard.Investors inv) {
+        if (inv.theirs()) {
+            return " is building · " + formatter.format(inv.onSite()) + " on site · " + atTodaysQueue(inv.months())
+                    + (inv.yoursToo() ? ", yours among them" : "");
+        }
+        String over = formatter.format(Math.round(d.onStreet())) + " trucks over its depots' room";
+        if (d.wouldBuild()) return " would build one: " + over;
+        if (!(d.trucks() > 0)) return " has no trucks yet: no depot to build";
+        if (d.onStreet() > 0) return " would not build one yet: " + over + ", it waits for " + formatter.format(Math.round(d.waitsFor()));
+        return " would not build one: its depots keep every truck";
+    }
+
+    /** Tonnes a year as the berth cards say them: "2.4 Mt a year", "310 kt a year", "850 t a year". */
+    static String tonnesAYear(double tonnes) {
+        if (!Double.isFinite(tonnes) || tonnes <= 0) return "0 t a year";
+        if (tonnes >= 1_000_000) return String.format("%.1f Mt a year", tonnes / 1_000_000);
+        if (tonnes >= 1_000) return String.format("%.0f kt a year", tonnes / 1_000);
+        return String.format("%.0f t a year", tonnes);
+    }
+
+    /**
+     * A SEA TERMINAL'S PAYBACK LINE (FR4; the study's board 4: "a line ports
+     * never had"). With the port dues (FR3) a berth has one, and the advice
+     * judges it (BuildAdvice.berthPayback(), which BuildCard.payback() hands
+     * over): "pays back in 11 years: dues D$0.5M a month on 2.4 Mt a year"
+     * in green when one more would, else why not in amber - too few tonnes
+     * with no berth, the dues at nothing, the dues under its upkeep - or in
+     * grey: the berths already take every tonne, or no cargo of its kind
+     * crosses the boundary yet. The tooltip has the dues a tonne, the tonnes
+     * the advice waits for and the price.
+     */
+    HBox paybackLine(BuildAdvice.BerthPayback p) {
+        String kind = p.terminal().berthCargo().label().toLowerCase();
+        String lead, rest, tone = Palette.TEXT_MUTED;
+        switch (p.state()) {
+            case PAYS:
+                lead = "pays back in " + yearsWords(p.years());
+                rest = ": dues " + money(p.dues()) + " a month on " + tonnesAYear(p.carriedAYear())
+                        + (p.upkeep() > 0 ? ", " + money(p.upkeep()) + " a month to keep" : "");
+                tone = Palette.GOOD;
+                break;
+            case SHORT:
+                lead = "would not pay back";
+                rest = ": " + tonnesAYear(p.uncovered() * 12) + " of " + kind + " has no berth; it wants "
+                        + tonnesAYear(p.needed() * 12) + " at the dues in force";
+                tone = Palette.WARN;
+                break;
+            case COVERED:
+                lead = "would not pay back";
+                rest = ": the berths standing or on site take all the " + kind + " that crosses";
+                break;
+            case NO_DUES:
+                lead = "would not pay back";
+                rest = ": the port dues are at nothing";
+                tone = Palette.WARN;
+                break;
+            case UPKEEP:
+                lead = "would not pay back";
+                rest = ": its dues, " + money(p.dues()) + " a month, do not cover its " + money(p.upkeep()) + " upkeep";
+                tone = Palette.WARN;
+                break;
+            default:
+                lead = "no payback yet";
+                rest = ": no cargo of this kind (" + kind + ") crosses the boundary yet";
+                break;
+        }
+        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(
+                textRun(lead, Palette.Fonts.sansSemiBold(), 9.5, tone), textRun(rest, null, 9.5, Palette.TEXT_MUTED));
+        line.setMinWidth(0);
+        HBox.setHgrow(line, Priority.ALWAYS);
+        HBox row = new HBox(5, icon(Icons.COIN, tone, 12), line);
+        row.setAlignment(Pos.TOP_LEFT);
+        Tooltip tip = new Tooltip(String.format("What one more %s would earn the city as landlord: %s a tonne in dues at the dial in"
+                + " force, on the %s it would carry of the %s with no berth, against a price of %s%s. The advice orders it at %s"
+                + " with no berth (Policy > Taxes > Port dues sets the dial).",
+                p.terminal().getName(), money(p.duesRate()), tonnesAYear(p.carriedAYear()), tonnesAYear(p.uncovered() * 12),
+                money(p.price()), p.upkeep() > 0 ? " and " + money(p.upkeep()) + " a month to keep" : "",
+                Double.isFinite(p.needed()) ? tonnesAYear(p.needed() * 12) : "never"));
+        tip.setWrapText(true);
+        tip.setMaxWidth(420);
+        tip.setShowDelay(Duration.millis(300));
+        Tooltip.install(row, tip);
+        return row;
+    }
+
+    /** Years as a payback says them: "11 years", "1.5 years", "over 100 years". */
+    static String yearsWords(double years) {
+        if (!Double.isFinite(years)) return "no years";
+        if (years >= 100) return "over 100 years";
+        if (years >= 9.5) return Math.round(years) + " years";
+        String one = String.format("%.1f", years);
+        return one + (one.equals("1.0") ? " year" : " years");
     }
 
     /**
@@ -2169,20 +2280,20 @@ final class BuildScreen {
                 nearest == null ? "" : nearest.label().toLowerCase() + " · " + nearest.reading());
     }
 
-    /** Buildings on site in a category, for anybody's order. */
-    int onSiteIn(EnumSet<BuildingType> types) {
+    /** Buildings on site in a category, for anybody's order (the Strategic Reserve in Infrastructure's, not Industry's: Category.holds()). */
+    int onSiteIn(BuildAdvice.Category c) {
         int n = 0;
         for (BuildingsStacks s : ui.game.getBuildingManager().getStacksUnderConstruction()) {
-            if (types.contains(s.getBuilding().getCategory())) n += s.getUnderConstruction();
+            if (c.holds(s.getBuilding())) n += s.getUnderConstruction();
         }
         return n;
     }
 
     /** ...and standing. */
-    int standingIn(EnumSet<BuildingType> types) {
+    int standingIn(BuildAdvice.Category c) {
         BuildingManager bm = ui.game.getBuildingManager();
         int n = 0;
-        for (BuildingsTemplate t : bm.getTemplatesByCategory(types)) n += bm.getQuantity(t.getId());
+        for (BuildingsTemplate t : BuildAdvice.templatesOf(c, bm)) n += bm.getQuantity(t.getId());
         return n;
     }
 
@@ -2233,7 +2344,7 @@ final class BuildScreen {
         HBox middle = new HBox(10, ring(s.arc(), tone, JOB_RING, 6, s.figure(), 13), words);
         middle.setAlignment(Pos.CENTER_LEFT);
 
-        int onSite = onSiteIn(c.types());
+        int onSite = onSiteIn(c);
         VBox tile = new VBox(10, top, middle, onSiteLine(onSite, worst == null ? "nothing needed" : "nothing on site"));
         tile.setMaxWidth(Double.MAX_VALUE);
         tile.setMinHeight(150);
@@ -2830,9 +2941,9 @@ final class BuildScreen {
         name.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
         name.setWrapText(true);
         name.setMinWidth(0);
-        Label standing = new Label(formatter.format(standingIn(c.types())));
+        Label standing = new Label(formatter.format(standingIn(c)));
         standing.setStyle(Palette.figure(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        int onSite = onSiteIn(c.types());
+        int onSite = onSiteIn(c);
         Label under = new Label(onSite > 0 ? formatter.format(onSite) + " on site" : "standing");
         under.setStyle(wordsAt(9.5, onSite > 0 ? Palette.BUILDING : Palette.TEXT_MUTED));
         VBox words = new VBox(0, name, standing, under);
@@ -2855,7 +2966,7 @@ final class BuildScreen {
        A CITY CATEGORY, OPENED ON ITS NEEDS (0.7.24)
 
        Healthcare as the round-2 mockups draw it (BuildHealthB), and the same
-       shape for Utilities, Roads & transit, Education and Safety: a ring per
+       shape for Utilities, Infrastructure, Education and Safety: a ring per
        measure the category serves (BuildAdvice.measuresOf()) - its figure,
        how far short in people or places, and what is on site with its wait
        - the worst picked first, a click on another showing its buildings;
@@ -2878,6 +2989,17 @@ final class BuildScreen {
        got back what 0.7.24 had dropped - the (i) and its cover, "runs $X/mo",
        +100 and the share of the land free - and a ring with one building
        draws its bars' figures with no track.
+
+       INFRASTRUCTURE'S PORTS AND RESERVE (FR4, 2026-10-19; spec-freight 5).
+       The page opens on its three rings and shows the picked one's cards, as
+       the others do; the sea terminals and the Strategic Reserve have no
+       ring (BuildAdvice.measuresOf() is what it was), so BuildCard.groups()
+       gives them as two groups after the ring's, PORTS and RESERVE, which
+       stay on the page whichever ring is picked, each under the market's
+       group heading. The strip's dot says "only the city builds these" for
+       the tab - it is derived from the category's types (investorBuilt()),
+       which hold INFRASTRUCTURE and PORTS - and Industry's says "investors"
+       now that the ports have left it.
        ===================================================================== */
 
     /** Which ring each city category has picked, by name; none picks its worst. Forgotten on arriving (openCategory()). */
@@ -2945,7 +3067,8 @@ final class BuildScreen {
 
         // The picked measure's buildings, as BuildCard groups them: one group,
         // the ring's, its bars scaled and tagged within it (0.7.25).
-        BuildCard.Group group = BuildCard.groups(ui.game, c.name(), on).get(0);
+        List<BuildCard.Group> groups = BuildCard.groups(ui.game, c.name(), on);
+        BuildCard.Group group = groups.get(0);
         List<BuildingsTemplate> shown = new ArrayList<>();
         for (BuildCard.Figures f : group.cards()) shown.add(f.template());
         double[] fill = ui.game.getPopulationManager().getJobFillRate();
@@ -2955,6 +3078,18 @@ final class BuildScreen {
         cards.setAlignment(Pos.TOP_LEFT);
         cards.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
         for (BuildCard.Figures f : group.cards()) cards.getChildren().add(card(f, group, c, on));
+
+        // ...then the groups after the ring's (FR4): Infrastructure's Ports and Reserve, which have no ring, each under the
+        // market's group heading, on the page whichever ring is picked.
+        List<javafx.scene.Node> beyond = new ArrayList<>();
+        for (BuildCard.Group extra : groups.subList(1, groups.size())) {
+            beyond.add(groupHead(extra));
+            javafx.scene.layout.FlowPane more = new javafx.scene.layout.FlowPane(TILE_GAP, TILE_GAP);
+            more.setAlignment(Pos.TOP_LEFT);
+            more.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
+            for (BuildCard.Figures f : extra.cards()) more.getChildren().add(card(f, extra, c, null));
+            beyond.add(more);
+        }
 
         // The four limits every category page has shown (constraintsBar()):
         // the materials in the yard, their import price, the land free and the
@@ -2976,7 +3111,9 @@ final class BuildScreen {
         headRight.setAlignment(Pos.CENTER_RIGHT);
         page.getChildren().addAll(head, strip, limits, rings,
                 sectionHead(on.label().toUpperCase() + " · " + measureSubtitle(on), headRight),
-                cards, orderBar, pendingHint);
+                cards);
+        page.getChildren().addAll(beyond);
+        page.getChildren().addAll(orderBar, pendingHint);
         showPendingHint();
         refreshOrderBar();
         ui.rootMenu.getChildren().add(page);
@@ -3324,6 +3461,10 @@ final class BuildScreen {
         }
         showIf(orderBar, true);
         BuildAdvice.Measure m = orderMeasure;
+        // ...an order of Infrastructure's ports and reserve alone (FR4) moves no ring's figure: the market page's bar, with no measure.
+        boolean inARing = false;
+        for (BuildingsTemplate t : order.keySet()) if (BuildCard.kindOf(t) == BuildCard.Kind.CITY) inARing = true;
+        if (!inARing) m = null;
 
         int units = 0;
         StringBuilder names = new StringBuilder();
@@ -3546,7 +3687,7 @@ final class BuildScreen {
             case DEPOT:     return "where the city's trucks are kept";
             case POINTS:    return "the crews every site waits on";
             case PUMP:      return "the drivers' petrol, at the pump";
-            case TANKS:     return "crude and products in store";
+            case TANKS:     return StrategicReserve.isReserve(first.template()) ? "the city's crude, in store" : "crude and products in store";
             case BERTHS:    return "the city's trade by sea";
             case SLOTS:     return "the slots a platform's wells stand in";
             case PIPE:      return "the sea's crude, ashore by pipe";
@@ -3914,7 +4055,8 @@ final class BuildScreen {
                         + "can reach %s of them.",
                         formatter.format(rail.getTradeTonnes()),
                         formatter.format(Math.min(rail.getTradeTonnes(), rail.getCapacityTonnes()))));
-                out.add("Owned by the rail sector, which builds it out of its own money "
+                // ...Freight's, since FR2 (the card said "the rail sector" until the docs pass of 2026-10-20 found it).
+                out.add("Owned by " + BuildCard.ownerOf(ui.game, t).key() + ", which builds it out of its own money "
                         + "when the freight pays for it. The lorries between the siding "
                         + "and the works are still on the road.");
                 break;
@@ -3924,6 +4066,10 @@ final class BuildScreen {
                 out.add(String.format("Keeps up to %s of Freight's trucks, with a driver for each and the mechanics who"
                         + " keep them running. Trucks past the depots' room park on the street and wear out a tenth faster.",
                         formatter.format(t.getTruckRoom())));
+                // ...and whose it is: Freight orders one when its trucks pass its depots' room by half a depot (FR4).
+                out.add(String.format("Owned by %s, which builds it out of its own money when its trucks pass its depots' room"
+                        + " by %.0f%% of a depot's.", BuildCard.ownerOf(ui.game, t).key(),
+                        ham.citybuildersim.sectors.Haulage.DEPOT_ORDER_MARGIN * 100));
                 break;
 
             case HEALTHCARE:

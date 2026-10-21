@@ -138,7 +138,8 @@ public final class PolicyPreview {
      * students' grant; the interest on the graduates' loans; (0.7.45, the
      * UI spec's B19) the food vouchers at the last sale, foodAssistanceAt();
      * and (0.7.103, Jerus's A7) the fuel duty on the month's litres at the
-     * pump, fuelDutyAt().
+     * pump, fuelDutyAt(); and (FR4) the port dues on the month's tonnes across
+     * the berths, portDuesAt().
      */
     public static double change(Game g, TaxPolicy live, TaxPolicy after, double shareNow, double shareThen) {
         EconomyManager em = g.getEconomyManager();
@@ -165,6 +166,7 @@ public final class PolicyPreview {
 
         moved -= foodAssistanceAt(g, after.getFoodAssistance()) - foodAssistanceAt(g, live.getFoodAssistance());
         moved += fuelDutyAt(g, after) - fuelDutyAt(g, live);
+        moved += portDuesAt(g, after) - portDuesAt(g, live);
         return moved;
     }
 
@@ -197,6 +199,61 @@ public final class PolicyPreview {
         double today = r.pumpPriceToday(g);
         if (!(today > 0)) return 0;
         return today - g.getEconomyManager().getTaxPolicy().chargedFuelDuty() + p.chargedFuelDuty();
+    }
+
+    /* =====================================================================
+       THE PORT DUES (FR4; the dial is FR3's)
+       ===================================================================== */
+
+    /** The tonnes that crossed the city's berths last month and were billed, all kinds: what the dues are struck on (sectors.PortDivision). */
+    public static double portTonnes(Game g) {
+        ham.citybuildersim.sectors.Freight f = g.getSectors().freight();
+        if (f == null) return 0;
+        double t = 0;
+        for (Ports.Cargo kind : Ports.Cargo.values()) t += Math.max(0, f.portDivision().getTonnes(kind));
+        return t;
+    }
+
+    /**
+     * What the port dues would raise a month under a policy: the month's
+     * tonnes across the berths, kind by kind, at the kind's default due a
+     * tonne (the dial not in it, as the month was billed) times the policy's
+     * dial - the division's own sum in its own order
+     * (PortDivision.billMonth()), so at the city's dial it is what the month
+     * took, to the bit (EconomyManager.getPortDues()). The tonnes and the
+     * rates held: the handling carries a dearer due to the shippers, whose
+     * profit tax falls by their share of it, which this does not know (the
+     * tab's CAVEAT).
+     */
+    public static double portDuesAt(Game g, TaxPolicy p) {
+        ham.citybuildersim.sectors.Freight f = g.getSectors().freight();
+        if (f == null) return 0;
+        ham.citybuildersim.sectors.PortDivision pd = f.portDivision();
+        double dial = p.getPortDues(), total = 0;
+        for (Ports.Cargo kind : Ports.Cargo.values()) {
+            double dues = pd.getTonnes(kind) * pd.getDuesRate(kind) * dial;
+            if (dues > 0 && Double.isFinite(dues)) total += dues;
+        }
+        return total;
+    }
+
+    /**
+     * ...and what a tonne of a kind pays to cross a berth under it: the crew's
+     * quote in force and the kind's due at the policy's dial (PortDivision
+     * .getQuote()'s own sum, so at the city's dial it is the quote to the
+     * bit); nothing until a quote has been struck for the kind.
+     */
+    public static double handlingQuoteAt(Game g, Ports.Cargo kind, TaxPolicy p) {
+        ham.citybuildersim.sectors.Freight f = g.getSectors().freight();
+        if (f == null || !f.portDivision().isQuoteKnown(kind)) return 0;
+        ham.citybuildersim.sectors.PortDivision pd = f.portDivision();
+        return pd.getCrewQuote(kind) + pd.getDuesRate(kind) * p.getPortDues();
+    }
+
+    /** Whether a kind has a berth to charge on: the division billed it a default due last month (PortDivision.getDuesRate()). */
+    public static boolean hasBerth(Game g, Ports.Cargo kind) {
+        ham.citybuildersim.sectors.Freight f = g.getSectors().freight();
+        return f != null && f.portDivision().getDuesRate(kind) > 0;
     }
 
     /** THE BUDGET under `after` with the city's share of tuition at `shareThen`: last month's balance, and that plus change(). */

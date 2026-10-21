@@ -1,6 +1,6 @@
 # TrainSchedule.java - 470 lines · 38 methods · 17 constants · model
 
-`ham/citybuildersim/TrainSchedule.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TrainSchedule.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The month's trains, as a pure function of time: which trains the city's
 > railed tonnes make, when each reaches its yard, and where each one is at

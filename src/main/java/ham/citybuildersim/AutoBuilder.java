@@ -348,9 +348,15 @@ public final class AutoBuilder {
        THE MEASURES
        ===================================================================== */
 
-    /** A remit building: one of the city's five Build categories - utilities, roads and transit, healthcare, education, safety. */
+    /**
+     * A remit building: one of the city's five Build categories - utilities, infrastructure, healthcare, education, safety.
+     * Not a sea terminal nor the Strategic Reserve (FR4): Infrastructure's page holds them now, as the city's alone to build, but
+     * they are in no ring and no remit - the terminals are orderable() on their payback (portMeasures()), the reserve is ordered by
+     * nobody - so Infrastructure's gaining them changes no building's answer here.
+     */
     public static boolean inRemit(BuildingsTemplate t) {
         if (t == null) return false;
+        if (Ports.isPort(t) || StrategicReserve.isReserve(t)) return false;
         BuildAdvice.Category c = BuildAdvice.categoryOf(t.getCategory());
         return c != null && c.cityBuilds();
     }
@@ -847,7 +853,7 @@ public final class AutoBuilder {
         return runningNow.computeIfAbsent(t, x -> Math.max(0, BuildAdvice.running(game, x, new LinkedHashMap<>())));
     }
 
-    /** Whether t is one of the measure's own buildings (0.7.104): a road's or a line's, any of the Roads & transit category's; otherwise those that serve it. */
+    /** Whether t is one of the measure's own buildings (0.7.104): a road's or a line's, any of the Infrastructure category's roads and lines; otherwise those that serve it. */
     static boolean ownMeasure(BuildAdvice.Measure m, BuildingsTemplate t) {
         return BuildAdvice.roadKind(m) ? t.getCategory() == BuildingType.INFRASTRUCTURE : m.serves(t);
     }

@@ -566,6 +566,8 @@ final class GovernmentScreen {
             case "Subsidies"                        -> new String[] {"Promises", "Subsidies"};
             case "Food assistance"                  -> new String[] {"Promises", "Food"};
             case "Fuel duty"                        -> new String[] {"Taxes", "Fuel"};
+            // ...and the port dues (FR4), FR3's dial on a page of its own beside the fuel duty.
+            case "Port dues"                        -> new String[] {"Taxes", "Port dues"};
             case "Central bank remittance", "Interest to the central bank"
                                                     -> new String[] {"Money", "The policy rate"};
             // ...and the arrears paid down (0.7.102): owed because the ceiling on the advances bound, set there,

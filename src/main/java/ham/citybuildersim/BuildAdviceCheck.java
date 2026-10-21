@@ -267,8 +267,10 @@ public class BuildAdviceCheck {
         for (BuildAdvice.Category c : cats) if (c.cityBuilds()) city++;
         assertTrue("five only the city builds, and they come first", city == 5
                 && cats.get(0).cityBuilds() && cats.get(4).cityBuilds() && !cats.get(5).cityBuilds());
+        // ...and, since FR4 (2026-10-19), the two renamed back and forth: Roads & transit is Infrastructure again (the constant ROADS
+        // holds the string) and Rail is Freight (RAIL); both old labels still land where they did.
         String[][] renamed = { {"Residential", "Homes"}, {"Commercial", "Shops"}, {"Industrial", "Industry"},
-                {"Infrastructure", "Roads & transit"}, {"Services", "Offices"} };
+                {"Roads & transit", BuildAdvice.ROADS}, {"Rail", BuildAdvice.RAIL}, {"Services", "Offices"} };
         for (String[] r : renamed) {
             BuildAdvice.Category c = BuildAdvice.category(r[0]);
             assertTrue("\"" + r[0] + "\" lands on \"" + r[1] + "\", and is no name of its own",
@@ -289,13 +291,88 @@ public class BuildAdviceCheck {
         boolean every = !bm.getTemplates().isEmpty();
         for (BuildingsTemplate t : bm.getTemplates()) {
             int in = 0;
-            for (BuildAdvice.Category c : cats) if (c.types().contains(t.getCategory())) in++;
+            for (BuildAdvice.Category c : cats) if (c.holds(t)) in++;
             every &= in == 1;
         }
-        assertTrue("every building in the catalogue (" + bm.getTemplates().size() + ") sits in exactly one", every);
-        assertTrue("investors build the market's nine, by BusinessInvestment's own list - the city's sea terminals (PORTS,"
-                        + " 0.7.86) filed beside them in Industry - and none of the city's five",
+        assertTrue("every building in the catalogue (" + bm.getTemplates().size() + ") sits in exactly one (Category.holds(): the"
+                + " Strategic Reserve, a HEAVY_INDUSTRY building by type, in Infrastructure's alone)", every);
+        assertTrue("investors build the market's nine, by BusinessInvestment's own list, and none of the city's five - whose"
+                        + " Infrastructure holds the sea terminals (PORTS) since FR4, Industry no longer",
                 checkInvestors(cats));
+        infrastructureAndFreight(bm, cats);
+    }
+
+    /**
+     * FR4 (2026-10-19; spec-freight-and-infrastructure 5, board 4): the city's things on one strip - Infrastructure holds the
+     * sea terminals and the Strategic Reserve - and the businesses' on theirs: Freight the rail rungs and both depots, Vehicles the
+     * Heavy Truck Plant, Industry what investors build. And the model does not move: no port nor reserve is in a remit.
+     */
+    static void infrastructureAndFreight(BuildingManager bm, List<BuildAdvice.Category> cats) {
+        BuildAdvice.Category infra = BuildAdvice.category(BuildAdvice.ROADS), freight = BuildAdvice.category(BuildAdvice.RAIL),
+                industry = BuildAdvice.category(BuildAdvice.INDUSTRY), vehicles = BuildAdvice.category(BuildAdvice.VEHICLES);
+        assertTrue("the tabs are named as the spec has them: Infrastructure and Freight, the Java names ROADS and RAIL kept",
+                BuildAdvice.ROADS.equals("Infrastructure") && BuildAdvice.RAIL.equals("Freight")
+                        && infra != null && freight != null && "Roads & transit".equals(infra.was()) && "Rail".equals(freight.was()));
+        assertTrue("...Infrastructure is the city's, Freight the investors' (the rail's own tab, as Rail was)",
+                infra.cityBuilds() && !freight.cityBuilds() && infra.types().contains(BuildingType.INFRASTRUCTURE)
+                        && infra.types().contains(BuildingType.PORTS)
+                        && freight.types().equals(EnumSet.of(BuildingType.RAIL, BuildingType.HAULAGE)));
+        java.util.Set<String> berths = new HashSet<>();
+        boolean portsHome = true, reserveHome = true, tankFarmStays = false;
+        int reserves = 0;
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            if (Ports.isPort(t)) {
+                berths.add(t.getName());
+                portsHome &= infra.holds(t) && infra.equals(BuildAdvice.categoryOf(t)) && !industry.holds(t);
+            }
+            if (StrategicReserve.isReserve(t)) {
+                reserves++;
+                reserveHome &= infra.holds(t) && infra.equals(BuildAdvice.categoryOf(t)) && !industry.holds(t)
+                        && BuildAdvice.templatesOf(infra, bm).contains(t) && !BuildAdvice.templatesOf(industry, bm).contains(t);
+            }
+            if (ham.citybuildersim.sectors.Refining.isTankFarm(t)) tankFarmStays = industry.holds(t) && !infra.holds(t);
+        }
+        assertTrue("Infrastructure holds the five sea terminals - the Tanker Terminal, the Bulk Berth, the Bulk, Container and"
+                        + " General Cargo Terminals - and Industry none: " + berths,
+                portsHome && berths.equals(Set.of("Tanker Terminal", "Bulk Berth", "Bulk Terminal", "Container Terminal",
+                        "General Cargo Terminal")));
+        assertTrue("...and the Strategic Reserve (" + reserves + "), not Industry; the Tank Farm, Refining's, stays in Industry",
+                reserves == 1 && reserveHome && tankFarmStays);
+        boolean industryPorts = industry.types().contains(BuildingType.PORTS) || industry.cityBuilds();
+        for (BuildingsTemplate t : BuildAdvice.templatesOf(industry, bm)) industryPorts |= Ports.isPort(t) || StrategicReserve.isReserve(t);
+        assertTrue("Industry holds no PORTS and no reserve: what investors build is all it holds", !industryPorts);
+        boolean freightHolds = true, truckPlant = false;
+        for (String name : new String[] {"Rail Spur", "Freight Line", "Rail Terminal", "Rail Depot", "Truck Depot"}) {
+            BuildingsTemplate t = bm.getTemplateByName(name);
+            freightHolds &= t != null && freight.holds(t) && freight.equals(BuildAdvice.categoryOf(t));
+        }
+        BuildingsTemplate plant = bm.getTemplateByName("Heavy Truck Plant");
+        truckPlant = plant != null && vehicles.holds(plant) && vehicles.equals(BuildAdvice.categoryOf(plant));
+        assertTrue("Freight holds the rail rungs, the Rail Depot and the Truck Depot", freightHolds);
+        assertTrue("...and Vehicles holds the Heavy Truck Plant, Automotive's", truckPlant);
+
+        // THE MODEL DOES NOT MOVE: no port nor reserve is in the auto-builder's remit, and the remit is what it was for every building.
+        EnumSet<BuildingType> remitTypes = EnumSet.of(BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE,
+                BuildingType.HEALTHCARE, BuildingType.EDUCATION, BuildingType.SAFETY);
+        boolean remitKept = true, noPortInRemit = true, portsOrderable = true;
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            remitKept &= AutoBuilder.inRemit(t) == remitTypes.contains(t.getCategory());
+            if (Ports.isPort(t) || StrategicReserve.isReserve(t)) noPortInRemit &= !AutoBuilder.inRemit(t);
+            if (Ports.isPort(t)) portsOrderable &= AutoBuilder.orderable(t);
+        }
+        assertTrue("inRemit() is false for every sea terminal and for the Strategic Reserve, though Infrastructure holds them now",
+                noPortInRemit);
+        assertTrue("...and for every building it answers what it answered: the city's five types, by type", remitKept);
+        assertTrue("...the terminals still orderable() on their payback, as they were", portsOrderable);
+        List<BuildAdvice.Kind> rings = new ArrayList<>();
+        for (BuildAdvice.Measure m : BuildAdvice.measuresOf(BuildAdvice.ROADS)) rings.add(m.kind());
+        assertTrue("measuresOf(ROADS) is the streets, the through traffic and transit, in that order, as it was: " + rings,
+                rings.equals(List.of(BuildAdvice.Kind.ROADS, BuildAdvice.Kind.HIGHWAYS, BuildAdvice.Kind.TRANSIT))
+                        && BuildAdvice.measuresOf("Roads & transit").equals(BuildAdvice.measuresOf(BuildAdvice.ROADS)));
+        boolean portRing = false;
+        for (BuildAdvice.Category c : cats) for (BuildAdvice.Measure m : BuildAdvice.measuresOf(c.name())) portRing |= m.kind() == BuildAdvice.Kind.PORT;
+        assertTrue("...the ports stay on portMeasures(), in no ring", !portRing && BuildAdvice.measuresOf(BuildAdvice.RAIL).isEmpty()
+                && BuildAdvice.portMeasures().get(0).category().equals(BuildAdvice.ROADS));
     }
 
     static boolean checkInvestors(List<BuildAdvice.Category> cats) {
@@ -304,14 +381,12 @@ public class BuildAdviceCheck {
                 BuildingType.BUSINESS_SERVICES, BuildingType.AGRICULTURE, BuildingType.RAIL, BuildingType.AUTOMOTIVE,
                 BuildingType.LUXURY, BuildingType.HOSPITALITY, BuildingType.HAULAGE);   // FR2: the Truck Depot, filed with the railway
         for (BuildAdvice.Category c : cats) {
-            // The city's sea terminals are filed in Industry as their own group (0.7.86, BuildCard's "Ports"), as
-            // its Strategic Reserve is among the heavy industry: city buildings on a market page, which only the
-            // city builds (BuildCard.citys()). Every other type on a market page is one investors build.
-            EnumSet<BuildingType> types = c.types();
-            types.remove(BuildingType.PORTS);
-            boolean market = theirs.containsAll(types);
+            // The city's sea terminals were filed in Industry as their own group (0.7.86 to FR4); they are Infrastructure's now,
+            // a category the city builds, so every market category's types are all ones investors build and no city
+            // category's are. (The Strategic Reserve is a HEAVY_INDUSTRY building by type, filed by Category.holds().)
+            boolean market = theirs.containsAll(c.types());
             if (market == c.cityBuilds()) return false;
-            if (c.types().contains(BuildingType.PORTS) && !c.name().equals(BuildAdvice.INDUSTRY)) return false;
+            if (c.types().contains(BuildingType.PORTS) && !c.name().equals(BuildAdvice.ROADS)) return false;
         }
         return true;
     }

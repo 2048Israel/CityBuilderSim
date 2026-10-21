@@ -1,6 +1,6 @@
 # EarthFoundingCheck.java - 559 lines · 14 methods · 5 constants · harnesses
 
-`ham/citybuildersim/EarthFoundingCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthFoundingCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > Founding a city on the real Earth (0.7.121, batch E4; the project's spec-earth.md 2, 6 and 8): the founding card's figures against the plots they are counted on, the place search and Random spot, the sea's depth on Earth, and an Earth city founded, played and drilling at sea.
 > 

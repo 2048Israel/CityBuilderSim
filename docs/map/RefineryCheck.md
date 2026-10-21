@@ -1,6 +1,6 @@
 # RefineryCheck.java - 1,503 lines · 35 methods · 18 constants · harnesses
 
-`ham/citybuildersim/RefineryCheck.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RefineryCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The refinery's units and the flow through them (0.7.80, batch O4;
 > docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the

@@ -1750,6 +1750,8 @@ final class TradeScreen {
        shows the month it was saved in. A good's click opens who sold and
        who bought it, and what the world pays and charges for one. Under
        them, the last ten years and the record since founding; then the
+       band in legs (FR4: the gap between what the world pays and charges,
+       split into the world's margin, the long haul and the city leg); then the
        world's prices in one line, and the market's price of every good
        under "details" - read off the markets, the railway's freight in them
        (B5: the old table worked them out and missed it).
@@ -1760,6 +1762,7 @@ final class TradeScreen {
         targets.put(GOODS_CARD, hero);
         page.getChildren().add(hero);
         page.getChildren().add(row(tenYearsCard(), sinceFoundingCard()));
+        page.getChildren().add(bandInLegsCard());
         page.getChildren().add(worldPrices());
     }
 
@@ -1957,6 +1960,244 @@ final class TradeScreen {
                 + "in the world's money."));
         if (!fx.isMonthCounted()) box.getChildren().add(statementNote(FREIGHT_AFTER_LOAD));
         return box;
+    }
+
+    /* ----- THE BAND IN LEGS (FR4, 2026-10-20) -----
+
+       The world's prices above carry a band: what the world pays for a good
+       and what it charges to bring one in. Since FR2 and FR3 a tonne that
+       crosses the edge moves in legs, each paid once and to somebody (the
+       freight study's section 2), and the study asks Trade to say so (section
+       6, last bullet). So this card splits the band into the world's margin,
+       the long haul by mode - the world's lorries and ships, paid abroad, the
+       city's railway and the quay's handling, paid at home - and the city
+       leg from the gateway to the door, billed at home by Freight's trucks
+       and sidings. The first bar is the month's trade in those pieces; under
+       "details" each good's own gap a unit, on one scale, the share of what
+       the world charges to bring one in. The legs paid abroad are hatched,
+       as the Freight page hatches the world's lorries and ships. Every figure
+       is TradeBand's (pure, held to the model's getters by TradeBandCheck);
+       this only paints them. */
+
+    /** The card's (i): the legs, who each is paid to, and the two readings. */
+    static final String BAND_LEGS_INFO = "Between what the world pays for a good and what it charges to bring one in "
+            + "there is a band, and the band is made of legs, each paid once. The world's own margin is the world's, and "
+            + "nothing the city builds touches it. The long haul brings a tonne to the city's gate: by the world's lorries "
+            + "or the world's ships, paid abroad, or by the city's railway, billed at home; and where it crosses a berth "
+            + "the quay's handling is billed at home too. The city leg takes it from the gate to the door, billed at "
+            + "home to Freight's trucks and sidings, and the buyer pays the leg of what it receives, the seller the leg "
+            + "of what it ships.\n\nHatched is what leaves with the cargo: the world's margin, its lorries and its "
+            + "ships. The bar is the month's trade in these pieces at today's prices; under details, each good's own gap a "
+            + "unit as a share of what the world charges to bring one in.";
+
+    /** The card's line while no good has a band: the world will not both buy and sell anything the city makes. */
+    static final String NO_BAND = "No good the city trades has both a world buyer and a world seller yet, so there is no "
+            + "band to show.";
+
+    /** ...and while the books have no trade to weigh it by (a city just founded, or a month with nothing across the edge). */
+    static final String NO_BAND_TRADE = "Nothing has crossed the edge in the month the books last struck, so there is no "
+            + "trade to weigh the band by; the goods' own gaps are under details.";
+
+    /** The colour of a leg's bar: the Freight page's mode colours where it has one, and a grey of its own for the world's margin. */
+    static String legColour(TradeBand.Part part) {
+        return switch (part) {
+            case MARGIN -> Palette.TEXT_3;
+            case WORLD_LORRY -> SectorScreen.modeColour(FreightView.Mode.WORLD_LORRY);
+            case RAIL -> SectorScreen.modeColour(FreightView.Mode.RAIL);
+            case SEA, PORT -> SectorScreen.modeColour(FreightView.Mode.SEA);
+            case CITY_LEG -> SectorScreen.modeColour(FreightView.Mode.TRUCK);
+        };
+    }
+
+    /** THE BAND IN LEGS: the month's trade in the legs as one bar with its key, and under details each good's own gap. */
+    VBox bandInLegsCard() {
+        TradeBand.Band band = TradeBand.of(ui.game);
+        TradeBand.Whole whole = band.whole();
+        VBox c = card(cardHead(Icons.LORRY, Palette.ORE, "THE BAND IN LEGS", BAND_LEGS_INFO, null));
+        if (band.rows().isEmpty()) {
+            c.getChildren().add(muted(NO_BAND));
+            return c;
+        }
+        if (whole.crossed() > 0 && whole.total() > 0) {
+            c.getChildren().add(figure(d(whole.total()) + " · " + BuildScreen.pct1(whole.shareOfTrade()) + " of the "
+                    + d(whole.crossed()) + " that crossed", Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+            List<String> tips = new ArrayList<>();
+            for (TradeBand.Piece p : whole.pieces()) tips.add(wholeTip(whole, p));
+            BandBar bar = new BandBar(whole.pieces(), tips, 0, true);
+            c.getChildren().add(bar);
+            c.getChildren().add(bandKey(whole));
+            c.getChildren().add(muted("What the world's margin, the long haul and the city leg came to on the month's trade, at "
+                    + "today's prices. Hatched: paid abroad, with the cargo."));
+        } else {
+            c.getChildren().add(muted(NO_BAND_TRADE));
+        }
+        if (!ui.game.getForeignAccounts().isMonthCounted()) c.getChildren().add(muted(FREIGHT_AFTER_LOAD));
+        c.getChildren().add(fold("goods:band", "each good's gap in legs", () -> bandGoods(band)));
+        return c;
+    }
+
+    /** One leg's tooltip on the whole's bar: its name, its money, its share of the gap, and who is paid. */
+    String wholeTip(TradeBand.Whole whole, TradeBand.Piece p) {
+        return p.part().label() + " · " + d(p.amount()) + " · " + BuildScreen.pct1(whole.shareOfGap(p.part())) + " of the band"
+                + "\n" + p.part().leg() + ": " + p.part().paidTo() + (p.part().abroad() ? " · paid abroad" : "");
+    }
+
+    /** The bar's key: a swatch a leg - hatched where it is paid abroad - with its name, its money and its share of the band. */
+    FlowPane bandKey(TradeBand.Whole whole) {
+        FlowPane key = new FlowPane(16, 6);
+        for (TradeBand.Piece p : whole.pieces()) {
+            Label name = new Label(p.part().label());
+            name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            HBox item = new HBox(6, legSwatch(p.part()), name, figure(d(p.amount()), Palette.SIZE_LABEL, Palette.TEXT_HEAD),
+                    muted(BuildScreen.pct1(whole.shareOfGap(p.part()))));
+            item.setAlignment(Pos.CENTER_LEFT);
+            Tooltip tip = new Tooltip(p.part().leg() + ": " + p.part().paidTo());
+            tip.setShowDelay(javafx.util.Duration.millis(200));
+            Tooltip.install(item, tip);
+            key.getChildren().add(item);
+        }
+        return key;
+    }
+
+    /** A leg's key swatch: its colour, hatched over where the money is paid abroad (the Freight page's key). */
+    static javafx.scene.layout.StackPane legSwatch(TradeBand.Part part) {
+        javafx.scene.layout.StackPane swatch = new javafx.scene.layout.StackPane();
+        swatch.getChildren().add(new javafx.scene.shape.Rectangle(14, 10, javafx.scene.paint.Color.web(legColour(part))));
+        if (part.abroad()) swatch.getChildren().add(new javafx.scene.shape.Rectangle(14, 10, SectorScreen.hatch(Palette.STAGE, .6)));
+        return swatch;
+    }
+
+    /** Under details: a row a good - those that crossed first - its gap in legs as a share of what the world charges to bring one in, all on one scale. */
+    Node bandGoods(TradeBand.Band band) {
+        VBox box = new VBox(6);
+        boolean all = openLines.contains("band:all");
+        List<TradeBand.Row> rows = band.rows();
+        List<TradeBand.Row> shown = all || rows.size() <= PAGE_GOODS + 1 ? rows : rows.subList(0, PAGE_GOODS);
+        double scale = 0;
+        for (TradeBand.Row r : shown) scale = Math.max(scale, r.shareToTheDoor());
+        for (TradeBand.Row r : shown) {
+            Good g = r.good();
+            Label name = words(g.label() + " · a " + g.unit(), Palette.SIZE_CAPTION, Palette.TEXT_BODY);
+            name.setMinWidth(170);
+            name.setPrefWidth(170);
+            name.setMaxWidth(170);
+            List<TradeBand.Piece> shares = new ArrayList<>();
+            List<String> tips = new ArrayList<>();
+            for (TradeBand.Piece p : r.pieces()) {
+                shares.add(new TradeBand.Piece(p.part(), r.share(p.part())));
+                tips.add(g.label() + " · " + p.part().label() + " " + unitD(p.amount()) + " a " + g.unit() + " · "
+                        + BuildScreen.pct1(r.share(p.part())) + " of the " + unitD(r.importPrice()) + " it costs to bring one in"
+                        + "\n" + p.part().leg() + ": " + p.part().paidTo() + (p.part().abroad() ? " · paid abroad" : ""));
+            }
+            BandBar bar = new BandBar(shares, tips, scale, false);
+            HBox.setHgrow(bar, Priority.ALWAYS);
+            Label at = figure(BuildScreen.pct1(r.shareToTheDoor()) + " · " + unitD(r.toTheDoor()), Palette.SIZE_CAPTION,
+                    r.crossed() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED);
+            at.setMinWidth(110);
+            at.setAlignment(Pos.CENTER_RIGHT);
+            HBox line = new HBox(Palette.GAP, name, bar, at);
+            line.setAlignment(Pos.CENTER_LEFT);
+            box.getChildren().add(line);
+        }
+        if (shown.size() < rows.size()) {
+            box.getChildren().add(door("+" + (rows.size() - shown.size()) + " more", Palette.ACCENT, () -> {
+                openLines.add("band:all");
+                showForeignMenu();
+            }));
+        } else if (all && rows.size() > PAGE_GOODS + 1) {
+            box.getChildren().add(door("the first " + PAGE_GOODS + " only", Palette.ACCENT, () -> {
+                openLines.remove("band:all");
+                showForeignMenu();
+            }));
+        }
+        box.getChildren().add(statementNote("A row is one good's gap to the door a unit, as a share of what the world charges to "
+                + "bring one in and in the city's money: the goods that crossed in the month first, then the widest. It is "
+                + "the prices and shares in force, not the month's bill."));
+        return box;
+    }
+
+    /**
+     * A band's bar: its pieces laid end to end to a scale (0 or less: their
+     * sum), each in its leg's colour and hatched where the money is paid
+     * abroad, each with a tooltip and, when asked, its name inside where it
+     * fits - the Freight page's LegBar, for money.
+     */
+    static final class BandBar extends javafx.scene.layout.Pane {
+        static final double BAND = 26;
+        private final List<TradeBand.Piece> pieces;
+        private final double scale;
+        private final Region track = new Region();
+        private final List<javafx.scene.shape.Rectangle> blocks = new ArrayList<>(), stripes = new ArrayList<>();
+        private final List<Label> labels = new ArrayList<>();
+
+        BandBar(List<TradeBand.Piece> pieces, List<String> tips, double scale, boolean named) {
+            this.pieces = pieces;
+            double sum = 0;
+            for (TradeBand.Piece p : pieces) sum += Math.max(0, p.amount());
+            this.scale = scale > 0 ? scale : sum;
+            track.setStyle("-fx-background-color: " + Palette.CONTROL + ";");
+            getChildren().add(track);
+            for (int i = 0; i < pieces.size(); i++) {
+                TradeBand.Piece p = pieces.get(i);
+                javafx.scene.shape.Rectangle block = new javafx.scene.shape.Rectangle();
+                block.setFill(javafx.scene.paint.Color.web(legColour(p.part())));
+                Tooltip tip = new Tooltip(tips.get(i));
+                tip.setShowDelay(javafx.util.Duration.millis(200));
+                Tooltip.install(block, tip);
+                blocks.add(block);
+                getChildren().add(block);
+                javafx.scene.shape.Rectangle stripe = new javafx.scene.shape.Rectangle();
+                stripe.setMouseTransparent(true);
+                stripe.setVisible(p.part().abroad());
+                stripe.setFill(SectorScreen.hatch(Palette.STAGE, .6));
+                stripes.add(stripe);
+                getChildren().add(stripe);
+                Label label = new Label(p.part().label());
+                label.setMouseTransparent(true);
+                label.setVisible(false);
+                label.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_HEAD) + " -fx-background-color: "
+                        + tint(Palette.STAGE, .55) + "; -fx-background-radius: 2; -fx-padding: 1 4 1 4;");
+                if (named) {
+                    labels.add(label);
+                    getChildren().add(label);
+                } else {
+                    labels.add(null);
+                }
+            }
+            setMinHeight(BAND);
+            setPrefHeight(BAND);
+            setMaxHeight(BAND);
+            setMinWidth(0);
+            setPrefWidth(200);
+            setMaxWidth(Double.MAX_VALUE);
+        }
+
+        @Override protected void layoutChildren() {
+            double w = getWidth(), x = 0;
+            track.resizeRelocate(0, 0, w, BAND);
+            int n = pieces.size();
+            for (int i = 0; i < n; i++) {
+                double wide = scale > 0 ? w * Math.max(0, pieces.get(i).amount()) / scale : 0;
+                double shown = wide > 0 ? Math.max(1, Math.min(w - x, wide - (i < n - 1 ? 1 : 0))) : 0;
+                javafx.scene.shape.Rectangle block = blocks.get(i), stripe = stripes.get(i);
+                block.setVisible(shown > 0);
+                stripe.setVisible(shown > 0 && pieces.get(i).part().abroad());
+                for (javafx.scene.shape.Rectangle s : List.of(block, stripe)) {
+                    s.setX(x);
+                    s.setY(0);
+                    s.setWidth(shown);
+                    s.setHeight(BAND);
+                }
+                Label label = labels.get(i);
+                if (label != null) {
+                    label.applyCss();
+                    double lw = label.prefWidth(-1), lh = label.prefHeight(-1);
+                    label.setVisible(shown > lw + 8);
+                    label.resizeRelocate(x + 4, Math.max(0, (BAND - lh) / 2), lw, lh);
+                }
+                x += wide;
+            }
+        }
     }
 
     /* =====================================================================

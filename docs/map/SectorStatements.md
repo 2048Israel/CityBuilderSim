@@ -1,6 +1,6 @@
 # SectorStatements.java - 1,024 lines · 64 methods · 18 constants · model
 
-`ham/citybuildersim/SectorStatements.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorStatements.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > A business's month as formal statements (0.7.74): the income statement
 > classified down through gross and operating profit, the balance sheet in

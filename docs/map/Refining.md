@@ -1,6 +1,6 @@
 # Refining.java - 1,918 lines · 108 methods · 19 constants · sectors
 
-`ham/citybuildersim/sectors/Refining.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Refining.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The refinery. THE SEVENTEENTH SECTOR (0.7.62, batch K; the project's
 > spec-land.md 2.7), and since 0.7.76 a crude unit that cuts a barrel into
@@ -48,7 +48,7 @@
 
 **Uses:** [Good](Good.md) (112), [RefineryFlow](RefineryFlow.md) (64), [SpreadPlanner](SpreadPlanner.md) (52), [BuildingsTemplate](BuildingsTemplate.md) (33), [BusinessInvestment](BusinessInvestment.md) (18), [Deposit](Deposit.md) (15), [GoodsMarket](GoodsMarket.md) (11), [Sector](Sector.md) (7), [Ports](Ports.md) (6), [Game](Game.md) (5), [Sectors](Sectors.md) (3), [Oil](Oil.md) (3), [BuildingsStacks](BuildingsStacks.md) (2), [Formats](Formats.md) (2), [BuildingType](BuildingType.md) (1), [Trade](Trade.md) (1), [LandManager](LandManager.md) (1)
 
-**Used by (20):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingVisual](BuildingVisual.md), [LongPlaytest](LongPlaytest.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [PortCheck](PortCheck.md), [Ports](Ports.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryFlow](RefineryFlow.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [SpreadPlanner](SpreadPlanner.md), [StrategicReserve](StrategicReserve.md)
+**Used by (21):** [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingVisual](BuildingVisual.md), [LongPlaytest](LongPlaytest.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [PortCheck](PortCheck.md), [Ports](Ports.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryFlow](RefineryFlow.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [SpreadPlanner](SpreadPlanner.md), [StrategicReserve](StrategicReserve.md)
 
 ## Sections
 

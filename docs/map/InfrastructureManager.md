@@ -1,6 +1,6 @@
 # InfrastructureManager.java - 1,318 lines · 101 methods · 18 constants · model
 
-`ham/citybuildersim/InfrastructureManager.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InfrastructureManager.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The road network: what the city's buildings demand of it, what it can carry,
 > and what happens when the first number passes the second.
@@ -41,7 +41,7 @@
 
 **Uses:** [Traffic](Traffic.md) (40), [CityNeeds](CityNeeds.md) (4), [TaxPolicy](TaxPolicy.md) (3), [LandManager](LandManager.md) (1)
 
-**Used by (26):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [CarCheck](CarCheck.md), [CityNeeds](CityNeeds.md), [EconomyManager](EconomyManager.md), [Freight](Freight.md), [Game](Game.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [Motoring](Motoring.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md), [TruckCheck](TruckCheck.md)
+**Used by (28):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [CarCheck](CarCheck.md), [CityNeeds](CityNeeds.md), [EconomyManager](EconomyManager.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [Game](Game.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [Motoring](Motoring.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md), [TruckCheck](TruckCheck.md)
 
 ## Sections
 

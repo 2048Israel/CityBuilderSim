@@ -1,6 +1,6 @@
-# PortDivision.java - 353 lines · 26 methods · 6 constants · sectors
+# PortDivision.java - 363 lines · 27 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/PortDivision.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/PortDivision.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > Freight's Ports division: the crews that work the city's berths, paid by the
 > shippers who use them and paying the city for the quay (FR3, 2026-10-19;
@@ -53,16 +53,16 @@
 
 **Uses:** [Ports](Ports.md) (28), [Freight](Freight.md) (4), [Game](Game.md) (2), [Sector](Sector.md) (2), [TaxPolicy](TaxPolicy.md) (1), [BuildingManager](BuildingManager.md) (1)
 
-**Used by (3):** [Freight](Freight.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md)
+**Used by (11):** [BuildAdvice](BuildAdvice.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [TradeBand](TradeBand.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 99 | · the arithmetic |
-| 177 | · the month |
-| 263 | · what it is doing |
-| 290 | · save, reset, reform |
+| 187 | · the month |
+| 273 | · what it is doing |
+| 300 | · save, reset, reform |
 
 ## Constants
 
@@ -94,51 +94,52 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 294 | **type** `public final class PortDivision` | Freight's Ports division: the crews that work the city's berths, paid by the shippers who use them and paying the city for the quay (FR3, 2026-10-19; docs/queue/FR3.md; docs/studies/spec-freight-and-infrastructure.md ... |
+| 60 | 304 | **type** `public final class PortDivision` | Freight's Ports division: the crews that work the city's berths, paid by the shippers who use them and paying the city for the quay (FR3, 2026-10-19; docs/queue/FR3.md; docs/studies/spec-freight-and-infrastructure.md ... |
 | 95 | 3 | `PortDivision(Freight freight)` |  |
 
-### the arithmetic (lines 99-176)
+### the arithmetic (lines 99-186)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 105 | 5 | `public static double monthlyRecovery(double value, double monthlyRate, double months)` | What a sum of capital costs a month to recover over its life: the annuity V x r / (1 - (1 + r)^-n), and V / n at no interest. |
 | 120 | 6 | `public double cityRate()` | THE CITY'S BORROWING RATE, a year's (D9): what the city's own paper of PORT_LIFE_MONTHS is worth to a lender today (DebtManager.curveRate()), the rate a berth's thirty years are funded at; nothing without a game. |
 | 128 | 7 | `public double dial()` | The dial: the multiple of the default due the city asks (TaxPolicy.getPortDues()); 1 with no game. |
-| 142 | 7 | `public double duesRateOf(Ports.Cargo kind, double berthMonth)` | The default due a tonne of a kind pays the city (dial 1), the city's money: the kind's terminals' book value recovered over PORT_LIFE_MONTHS at the city's monthly rate, over its berths' month at DESIGN_USE. |
-| 155 | 5 | `public static double scarcityOf(double boundaryTonnes, double berthMonth)` | The scarcity multiple on a kind's crew cost: 1 while what crossed of the kind is at most its berths' month, rising linearly to Freight .MAX_SCARCITY_MULTIPLE at twice the berths' month, capped there. |
-| 166 | 4 | `public static double targetOf(double crewWages, double handled, double berthMonth, double scarcity, double dueRate, double dial)` | The rule's target for a kind: crew / max(tonnes, berths x DESIGN_USE) x scarcity + the due x the dial. |
-| 172 | 4 | `public static double crewTargetOf(double crewWages, double handled, double berthMonth, double scarcity)` | ...its crew's part, the part the quote walks: crew / max(tonnes, berths x DESIGN_USE) x scarcity; nothing with no crew or no tonnes and no berth. |
+| 142 | 6 | `public double duesRateOf(Ports.Cargo kind, double berthMonth)` | The default due a tonne of a kind pays the city (dial 1), the city's money: the kind's terminals' book value recovered over PORT_LIFE_MONTHS at the city's monthly rate, over its berths' month at DESIGN_USE. |
+| 154 | 5 | `public double duesRateFor(double value, double berthMonth)` | ...the same due a tonne for any book value over any berths' month (FR4): duesRateOf()'s own sum, which Build's berth card reads for a berth that does not stand yet (BuildAdvice.berthPayback()), so the two cannot drift. |
+| 165 | 5 | `public static double scarcityOf(double boundaryTonnes, double berthMonth)` | The scarcity multiple on a kind's crew cost: 1 while what crossed of the kind is at most its berths' month, rising linearly to Freight .MAX_SCARCITY_MULTIPLE at twice the berths' month, capped there. |
+| 176 | 4 | `public static double targetOf(double crewWages, double handled, double berthMonth, double scarcity, double dueRate, double dial)` | The rule's target for a kind: crew / max(tonnes, berths x DESIGN_USE) x scarcity + the due x the dial. |
+| 182 | 4 | `public static double crewTargetOf(double crewWages, double handled, double berthMonth, double scarcity)` | ...its crew's part, the part the quote walks: crew / max(tonnes, berths x DESIGN_USE) x scarcity; nothing with no crew or no tonnes and no berth. |
 
-### the month (lines 177-262)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 193 | 39 | `void billMonth(Map<Sector, double[]> seaOf, Ports ports)` | Step 1 of the month: bills last month's sea tonnes, sector by sector, and pays the city its dues on them. |
-| 242 | 15 | `void closeMonth(Ports ports)` | Straight after the bill: the rule, per kind. |
-| 259 | 3 | `private static double boundaryOf(Ports ports, Ports.Cargo kind)` | What crossed of a kind that could go by sea, the month billed: the tightness the berths are measured against (Ports.carriable()). |
-
-### what it is doing (lines 263-289)
+### the month (lines 187-272)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 266 | 1 | `public double getQuote(Ports.Cargo k)` | The handling quote for a kind, a tonne: its crew quote and the dues at the rate the month billed paid; 0 until one is struck (the bill meanwhile is the rule's target). |
-| 269 | 1 | `public double getCrewQuote(Ports.Cargo k)` | ...the crew's part alone, the part that walks REPRICE_SPEED a month; 0 until one is struck. |
-| 272 | 1 | `public boolean isQuoteKnown(Ports.Cargo k)` | Whether the quote has been struck from a month with a berth and a crew. |
-| 275 | 1 | `public double getTonnes(Ports.Cargo k)` | the month billed, by kind |
-| 276 | 1 | `public double getBilled(Ports.Cargo k)` |  |
-| 277 | 1 | `public double getDues(Ports.Cargo k)` |  |
-| 278 | 1 | `public double getCrew(Ports.Cargo k)` |  |
-| 280 | 1 | `public double getDesignTonnes(Ports.Cargo k)` | The kind's berths' month at DESIGN_USE, as the month was billed. |
-| 282 | 1 | `public double getDuesRate(Ports.Cargo k)` | The default due a tonne of the kind paid (the dial not in it), as the month was billed. |
-| 285 | 1 | `public double getHandlingBilled()` | The handling billed to the shippers in the month billed: the sum of their lines, Freight's "Port handling billed". |
-| 288 | 1 | `public double getDuesPaid()` | The dues Freight paid the city in the month billed: its "Port dues", and the treasury's. |
+| 203 | 39 | `void billMonth(Map<Sector, double[]> seaOf, Ports ports)` | Step 1 of the month: bills last month's sea tonnes, sector by sector, and pays the city its dues on them. |
+| 252 | 15 | `void closeMonth(Ports ports)` | Straight after the bill: the rule, per kind. |
+| 269 | 3 | `private static double boundaryOf(Ports ports, Ports.Cargo kind)` | What crossed of a kind that could go by sea, the month billed: the tightness the berths are measured against (Ports.carriable()). |
 
-### save, reset, reform (lines 290-353)
+### what it is doing (lines 273-299)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 293 | 16 | `public void save(Map<String, Double> extras)` | The division's state into Freight's extras (keys port.<KIND>.*; a total for the dues the treasury reads back after a load). |
-| 311 | 16 | `public void restore(Map<String, Double> extras)` | ...and back. |
-| 329 | 11 | `public void reset()` | Back to a city that has never worked a berth. |
-| 342 | 11 | `public void redenominate(double scale)` | Its money in the new unit (Denomination): the quote, the dues rate, the bill, the dues and the crews' wages. |
+| 276 | 1 | `public double getQuote(Ports.Cargo k)` | The handling quote for a kind, a tonne: its crew quote and the dues at the rate the month billed paid; 0 until one is struck (the bill meanwhile is the rule's target). |
+| 279 | 1 | `public double getCrewQuote(Ports.Cargo k)` | ...the crew's part alone, the part that walks REPRICE_SPEED a month; 0 until one is struck. |
+| 282 | 1 | `public boolean isQuoteKnown(Ports.Cargo k)` | Whether the quote has been struck from a month with a berth and a crew. |
+| 285 | 1 | `public double getTonnes(Ports.Cargo k)` | the month billed, by kind |
+| 286 | 1 | `public double getBilled(Ports.Cargo k)` |  |
+| 287 | 1 | `public double getDues(Ports.Cargo k)` |  |
+| 288 | 1 | `public double getCrew(Ports.Cargo k)` |  |
+| 290 | 1 | `public double getDesignTonnes(Ports.Cargo k)` | The kind's berths' month at DESIGN_USE, as the month was billed. |
+| 292 | 1 | `public double getDuesRate(Ports.Cargo k)` | The default due a tonne of the kind paid (the dial not in it), as the month was billed. |
+| 295 | 1 | `public double getHandlingBilled()` | The handling billed to the shippers in the month billed: the sum of their lines, Freight's "Port handling billed". |
+| 298 | 1 | `public double getDuesPaid()` | The dues Freight paid the city in the month billed: its "Port dues", and the treasury's. |
+
+### save, reset, reform (lines 300-363)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 303 | 16 | `public void save(Map<String, Double> extras)` | The division's state into Freight's extras (keys port.<KIND>.*; a total for the dues the treasury reads back after a load). |
+| 321 | 16 | `public void restore(Map<String, Double> extras)` | ...and back. |
+| 339 | 11 | `public void reset()` | Back to a city that has never worked a berth. |
+| 352 | 11 | `public void redenominate(double scale)` | Its money in the new unit (Denomination): the quote, the dues rate, the bill, the dues and the crews' wages. |
 

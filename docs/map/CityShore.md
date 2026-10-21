@@ -1,6 +1,6 @@
 # CityShore.java - 244 lines · 21 methods · 4 constants · model
 
-`ham/citybuildersim/CityShore.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityShore.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The city's works on its shore as the map draws them: each sea terminal's box on owned dry ground at the water with its quay run straight out over owned sea, and each tank farm's box at the water, laid city-wide in the order the city builds them - never moved, the newest of a type taken first - what CityMap fixes in its districts' plans, the tile painter draws and the boats come alongside; kept in the map's sidecar.
 > 
@@ -42,7 +42,7 @@
 
 **Uses:** [World](World.md) (4), [BoatSchedule](BoatSchedule.md) (3), [BuildingVisual](BuildingVisual.md) (1), [Ports](Ports.md) (1)
 
-**Used by (5):** [CityMap](CityMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [RailDrawCheck](RailDrawCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
+**Used by (6):** [CityMap](CityMap.md), [InfrastructureScreen](InfrastructureScreen.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [RailDrawCheck](RailDrawCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
 
 ## Sections
 

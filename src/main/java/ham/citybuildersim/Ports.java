@@ -193,6 +193,18 @@ public final class Ports {
         return out;
     }
 
+    /** How many terminals stand, by kind (Cargo order): the count behind berths()' tonnes, for the Freight screens (FR4, FreightView). */
+    public static int[] berthCounts(BuildingManager buildings) {
+        int[] out = new int[KINDS];
+        if (buildings == null) return out;
+        for (BuildingsTemplate t : buildings.getTemplates()) {
+            if (!isPort(t)) continue;
+            int n = buildings.getQuantity(t.getId());
+            if (n > 0) out[t.berthCargo().ordinal()] += n;
+        }
+        return out;
+    }
+
     /** ...and the terminals on site, by kind, for anyone's order. */
     public static double[] berthsOnSite(BuildingManager buildings) {
         double[] out = new double[KINDS];
@@ -347,7 +359,12 @@ public final class Ports {
      * With nothing at sea it is the railway's own 1 - rail, to the bit.
      */
     public static double factor(double rail, double sea, double seaFreightShare) {
-        return sea > 0 ? 1 - rail - sea + sea * seaFreightShare : 1 - rail;
+        return sea > 0 ? 1 - rail - sea + seaFactor(sea, seaFreightShare) : 1 - rail;
+    }
+
+    /** ...the ships' part of that factor (FR4): what Trade's band in legs draws as the sea leg (TradeBand). */
+    public static double seaFactor(double sea, double seaFreightShare) {
+        return sea > 0 ? sea * seaFreightShare : 0;
     }
 
     /* =====================================================================

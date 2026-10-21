@@ -1,6 +1,6 @@
 # Money.java - 384 lines · 30 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/Money.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Money.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > Every figure the interface prints as money, in one place.
 > 
@@ -13,7 +13,7 @@
 
 **Uses:** [Currency](Currency.md) (2), [LandManager](LandManager.md) (1), [Formats](Formats.md) (1)
 
-**Used by (10):** [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [ZoningScreen](ZoningScreen.md)
+**Used by (11):** [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TradeBandCheck](TradeBandCheck.md), [ZoningScreen](ZoningScreen.md)
 
 ## Sections
 

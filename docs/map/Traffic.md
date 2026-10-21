@@ -1,6 +1,6 @@
 # Traffic.java - 60 lines · 3 methods · 0 constants · model
 
-`ham/citybuildersim/Traffic.java` - generated 2026-10-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Traffic.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
 > The three things that move, which used to be one number.
 > 
@@ -39,7 +39,7 @@
 > all without moving the save format. If that ever stops being true, new
 > constants go on the END, for the reason BuildingType's header gives.
 
-**Used by (32):** [BuildAdvice](BuildAdvice.md), [BuildingsTemplate](BuildingsTemplate.md), [CarCheck](CarCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [EconomyManager](EconomyManager.md), [ForestryCheck](ForestryCheck.md), [Freight](Freight.md), [Good](Good.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [OilCheck](OilCheck.md), [PortCheck](PortCheck.md), [Ports](Ports.md), [ProcessingSector](ProcessingSector.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [ServicesManager](ServicesManager.md), [TradeCostCheck](TradeCostCheck.md), [TruckCheck](TruckCheck.md), [VanCheck](VanCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (34):** [BuildAdvice](BuildAdvice.md), [BuildingsTemplate](BuildingsTemplate.md), [CarCheck](CarCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [EconomyManager](EconomyManager.md), [ForestryCheck](ForestryCheck.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [Good](Good.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [OilCheck](OilCheck.md), [PortCheck](PortCheck.md), [Ports](Ports.md), [ProcessingSector](ProcessingSector.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [ServicesManager](ServicesManager.md), [TradeCostCheck](TradeCostCheck.md), [TruckCheck](TruckCheck.md), [VanCheck](VanCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Enum constants
 

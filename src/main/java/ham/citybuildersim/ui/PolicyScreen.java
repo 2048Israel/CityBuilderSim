@@ -137,13 +137,13 @@ final class PolicyScreen {
      * shows the controls to change property tax and so on."
      */
     static final String[] POLICY_TAX_PAGES =
-            {"Everything", "Profit", "Sales", "Wage", "Property", "Fuel"};
+            {"Everything", "Profit", "Sales", "Wage", "Property", "Fuel", "Port dues"};
     static final String[] POLICY_WAGE_PAGES    = {"The floor"};
     static final String[] POLICY_MONEY_PAGES   = {"The policy rate", "Currency reform"};
     static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Out of work", "Food", "Health", "Schools", "Subsidies"};
 
-    /** Each page's icon on its tab, in the pages' order. */
-    static final String[] TAX_ICONS = {Icons.OVERVIEW, Icons.SECTOR, Icons.SHOPS, Icons.STAFF, Icons.HOMES, Icons.DROP};
+    /** Each page's icon on its tab, in the pages' order (the crane for the port dues, FR4). */
+    static final String[] TAX_ICONS = {Icons.OVERVIEW, Icons.SECTOR, Icons.SHOPS, Icons.STAFF, Icons.HOMES, Icons.DROP, Icons.CRANE};
     /** ...Wages' one, the staff. */
     static final String[] WAGE_ICONS = {Icons.STAFF};
     /** ...Money's: the bank for the policy rate, the banknote for the currency reform. */
@@ -241,6 +241,7 @@ final class PolicyScreen {
                     switch (policyPage) {
                         case "Profit", "Sales", "Wage", "Property" -> taxPage(page, policyPage);
                         case "Fuel" -> fuelPage(page);
+                        case PORT_DUES_PAGE -> portDuesPage(page);
                         default -> everythingPage(page);
                     }
                 }
@@ -614,6 +615,7 @@ final class PolicyScreen {
             case "eiBenefit"     -> p.setEiBenefitRate(v);
             case "foodAssistance" -> p.setFoodAssistance(v);
             case FUEL_DUTY       -> p.setFuelDuty(v);
+            case PORT_DUES       -> p.setPortDues(v);
             case "healthFee"     -> p.setHealthFeeScale(v);
             case "healthPremium" -> p.setHealthPremiumRate(v);
             default -> { }
@@ -1580,6 +1582,82 @@ final class PolicyScreen {
                     Effect.of("A litre at the pump", PolicyPreview.pumpPriceAt(ui.game, live), PolicyPreview.pumpPriceAt(ui.game, after),
                             Money::unitPrice),
                     budgetEffect(after, stagedShare()));
+        };
+    }
+
+    /* ------------------------------ PORT DUES (FR4) ------------------------------ */
+
+    /** The Taxes area's page of the port dues dial (FR4; the dial and its collection are FR3's, TaxPolicy.getPortDues() and sectors.PortDivision). */
+    static final String PORT_DUES_PAGE = "Port dues";
+
+    /** The staged key of the port dues dial (FR4). */
+    static final String PORT_DUES = "portDues";
+
+    /** One step of the port dues' ladder: a fortieth of the dial's top, so the default (1) and the top are both on a step. */
+    static final double PORT_DUES_STEP = TaxPolicy.MAX_PORT_DUES / 40;
+
+    /** The port dues' (i): what the dues are, who pays and who they pass to, what the default is and what the dial does. */
+    static String portDuesInfo() {
+        return "A charge per tonne the city levies on the cargo that crosses its berths. Freight, which works them, pays it"
+                + " to the treasury as a line of the budget of its own, and passes it on to the businesses that ship, in the"
+                + " handling charge they pay a tonne. At the default (x1) a kind's dues recover what its terminals cost over "
+                + (int) (ham.citybuildersim.sectors.PortDivision.PORT_LIFE_MONTHS / 12) + " years at the city's borrowing rate,"
+                + " reckoned as if its berths handled " + pct0(ham.citybuildersim.sectors.PortDivision.DESIGN_USE)
+                + " of what they can in a month. None leaves the berths' cost to the treasury alone; the top asks "
+                + times(TaxPolicy.MAX_PORT_DUES) + ". Struck on last month's tonnes, kind by kind: a kind with no berth pays none.";
+    }
+
+    /** The port dues' caveat, whole. */
+    static final String PORT_DUES_CAVEAT = "Struck on last month's tonnes across the berths. The handling charge carries a dearer due"
+            + " to the shippers, and their profit tax falls by their share of it: that arrives in the month's own books rather"
+            + " than here.";
+
+    /** THE PORT DUES (FR4): last month's, and the dial, staged into the tray with the taxes. */
+    void portDuesPage(VBox page) {
+        TaxPolicy live = policy();
+        double tonnes = PolicyPreview.portTonnes(ui.game), took = ui.game.getEconomyManager().getPortDues();
+        page.getChildren().add(sectionHead("THE PORT DUES", portDuesInfo(), quiet(tonnes > 0
+                ? money(took) + " last month on " + shortNumber(tonnes) + " t across the berths"
+                : "no cargo crossed a berth last month")));
+        page.getChildren().add(portDuesCard(live));
+    }
+
+    /** The port dues' dial card: the multiple of the default due, what the month's tonnes would pay, the handling charge a tonne by kind and THE BUDGET. */
+    VBox portDuesCard(TaxPolicy live) {
+        double current = live.getPortDues();
+        java.util.function.DoubleFunction<String> reads = v -> v <= 0 ? "none" : times(v) + " the default due";
+        Lever lever = new Lever(PORT_DUES, "The port dues", current, 0, TaxPolicy.MAX_PORT_DUES, PORT_DUES_STEP, reads,
+                live::setPortDues);
+        Ladder ladder = ladderOf(lever).marks(new double[] {TaxPolicy.DEFAULT_PORT_DUES}, new String[] {"the default"});
+        DoubleFunction<List<Effect>> effects = portDuesEffects(live);
+        String status = current <= 0 ? "None: cargo crosses the berths free of dues, and their cost falls on the treasury alone."
+                : Math.abs(current - TaxPolicy.DEFAULT_PORT_DUES) <= 1e-9
+                  ? "The default: a kind's dues recover its terminals' cost over its life at the city's borrowing rate."
+                  : times(current) + " the default due a tonne: " + (current < TaxPolicy.DEFAULT_PORT_DUES
+                        ? "short of recovering the berths' cost over their life." : "past recovering the berths' cost over their life.");
+        return dialCard(new DialCard(Icons.CRANE, Palette.MONEY, "THE PORT DUES", portDuesInfo(), null, status, null, ladder,
+                staged(PORT_DUES, current), effects, CAVEAT_LINE, PORT_DUES_CAVEAT + " " + CAVEAT, null), 520, false);
+    }
+
+    /** The port dues' effects at any value of its thumb (pure: the probe reads them): the dues a month, the handling a tonne of each kind with a berth, THE BUDGET. */
+    DoubleFunction<List<Effect>> portDuesEffects(TaxPolicy live) {
+        double current = live.getPortDues();
+        List<Ports.Cargo> kinds = new ArrayList<>();
+        for (Ports.Cargo kind : Ports.Cargo.values()) {
+            if (PolicyPreview.hasBerth(ui.game, kind) && PolicyPreview.handlingQuoteAt(ui.game, kind, live) > 0) kinds.add(kind);
+        }
+        return v -> {
+            TaxPolicy after = previewFor(PORT_DUES, v, current, PORT_DUES_STEP);
+            List<Effect> rows = new ArrayList<>();
+            rows.add(Effect.of("Port dues, a month", PolicyPreview.portDuesAt(ui.game, live), PolicyPreview.portDuesAt(ui.game, after),
+                    PolicyScreen::amount).delta(PolicyScreen::moneyMove));
+            for (Ports.Cargo kind : kinds) {
+                rows.add(Effect.of("Handling a tonne, " + kind.label().toLowerCase(java.util.Locale.ROOT),
+                        PolicyPreview.handlingQuoteAt(ui.game, kind, live), PolicyPreview.handlingQuoteAt(ui.game, kind, after),
+                        Money::unitPrice));
+            }
+            rows.add(budgetEffect(after, stagedShare()));
+            return rows;
         };
     }
 

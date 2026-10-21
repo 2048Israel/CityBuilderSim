@@ -1,6 +1,8 @@
 package ham.citybuildersim.ui;
 
 import ham.citybuildersim.*;
+import ham.citybuildersim.sectors.Haulage;
+import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.LuxuryRetail;
 import ham.citybuildersim.sectors.Restaurants;
 import ham.citybuildersim.sectors.Retail;
@@ -365,7 +367,7 @@ final class SectorScreen {
         // D13: the door goes to the Build category that relieves the thinnest of power, the road and health.
         String go = null;
         double least = Double.POSITIVE_INFINITY;
-        String[][] doors = { { "1", "Utilities" }, { "3", "Roads & transit" }, { "4", "Healthcare" } };
+        String[][] doors = { { "1", "Utilities" }, { "3", BuildAdvice.ROADS }, { "4", "Healthcare" } };
         for (String[] d : doors) {
             double r = thin[Integer.parseInt(d[0])];
             if (Double.isFinite(r) && r < least && r < .995) { least = r; go = d[1]; }
@@ -1322,6 +1324,9 @@ final class SectorScreen {
             box.getChildren().add(bookDetailRow(part.getKey(), part.getValue(), false));
             named++;
         }
+        // ...and Freight's revenue is its shippers' bills, by division (FR4): INCOME · THE SHIPPERS BY DIVISION.
+        Node shippers = sector instanceof ham.citybuildersim.sectors.Freight ? shippersByDivision() : null;
+        if (shippers != null) box.getChildren().add(shippers);
 
         /*
          * AND A DISCLOSURE THAT DISCLOSES NOTHING DOES NOT GET DRAWN.
@@ -1339,7 +1344,7 @@ final class SectorScreen {
          * already on the line above. A rule about how many rows there are has
          * to count the rows.
          */
-        if (named <= 1 && abroad == 0) {
+        if (named <= 1 && abroad == 0 && shippers == null) {
             box.getChildren().clear();
             return box;
         }
@@ -1350,6 +1355,131 @@ final class SectorScreen {
                     + "rather than the city's.", abroad / st.revenue * 100)));
         }
         return box;
+    }
+
+    /* ----- INCOME · THE SHIPPERS BY DIVISION (FR4, 2026-10-20) -----
+       Batch FR4 (docs/studies/spec-freight-and-infrastructure.md 6, "Sectors >
+       Freight", board 2: "Shippers billed"). Freight's revenue is not goods
+       sold: it is the bills of its three divisions - Haulage's trucks, the
+       railway and the quay - to the sectors whose tonnes they moved, and the
+       generic revenue note had only the three totals as named lines. Opened,
+       its Revenue now also lists the SHIPPERS BILLED, largest bill first, a
+       column a division (Haulage, Rail freight, Port handling - the names the
+       bills carry on the shipper's own input rows) and a total. Each name and
+       each figure is a door: it opens that sector's Income page with its cost
+       of sales (note 3) opened, where the same line is. Nothing is worked
+       out: the rows and the footer's totals are FreightView's
+       (View.shippers(), the pages' own bills), and a division that billed a
+       shipper nothing prints a dash that opens nothing. Shown only on the
+       Freight sector's income, and only once a haul has billed someone. */
+
+    /** The width of one figure column of the shippers table. */
+    static final double SHIPPER_COLUMN = 80;
+
+    /** The shippers table's column heads: the lines the bills are raised under, then the sum. */
+    static final String[] SHIPPER_HEADS = { ham.citybuildersim.sectors.Haulage.BILLED_AS, FreightView.RAIL_BILLED_AS,
+            ham.citybuildersim.sectors.PortDivision.BILLED_AS, "Total" };
+
+    /** The shippers billed this month, a column a division, or null when no haul has billed anyone yet. */
+    Node shippersByDivision() {
+        FreightView.View v = FreightView.of(ui.game);
+        if (v.shippers().isEmpty()) return null;
+        VBox box = new VBox(0);
+        Label title = new Label("Shippers billed, by division");
+        title.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
+        title.setPadding(new javafx.geometry.Insets(4, 0, 2, 0));
+        box.getChildren().add(title);
+
+        Label shipper = new Label("Shipper");
+        shipper.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        Node[] heads = new Node[SHIPPER_HEADS.length];
+        for (int i = 0; i < heads.length; i++) {
+            Label h = new Label(SHIPPER_HEADS[i]);
+            h.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            heads[i] = h;
+        }
+        box.getChildren().add(shipperRow(shipper, heads, "-fx-padding: 1 0 2 0; -fx-border-color: " + Palette.HAIRLINE
+                + "; -fx-border-width: 0 0 1 0;"));
+
+        for (FreightView.Shipper s : v.shippers()) {
+            Sector sector = ui.game.getSectors().byKey(s.sector());
+            Label name = new Label((sector != null ? sector.label() : s.sector()) + (sector != null ? " ›" : ""));
+            name.setMinWidth(0);
+            Node[] cells = {
+                    shipperFigure(s.haulage(), sector, Palette.TEXT_BODY, SHIPPER_HEADS[0]),
+                    shipperFigure(s.rail(), sector, Palette.TEXT_BODY, SHIPPER_HEADS[1]),
+                    shipperFigure(s.handling(), sector, Palette.TEXT_BODY, SHIPPER_HEADS[2]),
+                    shipperFigure(s.total(), sector, Palette.TEXT_HEAD, "all that Freight billed it")};
+            name.setStyle(Palette.words(Palette.SIZE_CAPTION, sector != null ? Palette.ACCENT : Palette.TEXT_BODY)
+                    + (sector != null ? " -fx-cursor: hand;" : ""));
+            if (sector != null) {
+                name.setOnMouseClicked(e -> openInputLine(sector));
+                Tooltip.install(name, new Tooltip("Open " + sector.label() + "'s cost of sales: the lines Freight billed it."));
+            }
+            box.getChildren().add(shipperRow(name, cells, "-fx-padding: 1 0 1 0;"));
+        }
+
+        // The footer is the pages' own totals (FreightView's), which the rows above add up to.
+        Label all = new Label("Billed in all");
+        all.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_HEAD));
+        box.getChildren().add(shipperRow(all, new Node[]{
+                shipperTotal(v.haulage().bill()), shipperTotal(v.rail().billed()),
+                shipperTotal(v.ports().handlingBilled()), shipperTotal(v.billed())},
+                "-fx-padding: 2 0 1 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;"));
+        box.getChildren().add(bookDetailNote("Largest bill first. Each name and figure opens that business's own Income "
+                + "page with its cost of sales open, where the same bill is a line. A dash is a division that "
+                + "billed it nothing."));
+        return box;
+    }
+
+    /** One row of the shippers table: its first column, then the figure columns at their width. */
+    HBox shipperRow(Node first, Node[] cells, String style) {
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox row = new HBox(Palette.GAP, first, gap);
+        for (Node cell : cells) {
+            if (cell instanceof Label l) {
+                l.setPrefWidth(SHIPPER_COLUMN);
+                l.setMinWidth(SHIPPER_COLUMN);
+                l.setMaxWidth(SHIPPER_COLUMN);
+                l.setAlignment(Pos.CENTER_RIGHT);
+            }
+            row.getChildren().add(cell);
+        }
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMaxWidth(STATEMENT);
+        row.setPrefWidth(STATEMENT);
+        row.setStyle(style);
+        return row;
+    }
+
+    /** A footer figure of the shippers table. */
+    Label shipperTotal(double amount) {
+        Label l = new Label(tightMoney(toDollars(amount), false));
+        l.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_HEAD));
+        return l;
+    }
+
+    /** A shipper's figure for a division: a door to its input line, or a dash that opens nothing where the division billed it nothing. */
+    Label shipperFigure(double amount, Sector sector, String tone, String word) {
+        boolean billed = amount > 0;
+        Label l = new Label(billed ? tightMoney(toDollars(amount), false) : "—");
+        l.setStyle(Palette.figure(Palette.SIZE_CAPTION, billed ? tone : Palette.TEXT_MUTED)
+                + (billed && sector != null ? " -fx-cursor: hand;" : ""));
+        if (billed && sector != null) {
+            l.setOnMouseClicked(e -> openInputLine(sector));
+            l.setOnMouseEntered(e -> l.setUnderline(true));
+            l.setOnMouseExited(e -> l.setUnderline(false));
+            Tooltip.install(l, new Tooltip(sector.label() + ": " + word + ". Click for the line on its Income page."));
+        }
+        return l;
+    }
+
+    /** A shipper's input line: its Income page, the Statement view, the cost of sales opened. */
+    void openInputLine(Sector shipper) {
+        openSector = shipper;
+        sectorPage = "Income";
+        openNote(shipper, INCOME, 3);
     }
 
     /**
@@ -3764,8 +3894,12 @@ final class SectorScreen {
         if (sector instanceof ham.citybuildersim.sectors.Oil) page.getChildren().addAll(oilPanels(OilView.of(ui.game)));
         // ...and the nine materials industries' pictures (0.7.143): OPERATIONS · THE MATERIALS INDUSTRIES.
         if (IndustryView.covers(sector)) page.getChildren().add(industryCard(IndustryView.of(ui.game, sector)));
+        // ...and Freight's divisions on its page (FR4): OPERATIONS · FREIGHT.
+        if (sector instanceof ham.citybuildersim.sectors.Freight) page.getChildren().addAll(freightPanels(FreightView.of(ui.game)));
         SectorFlow.Flow flow = SectorFlow.of(ui.game, sector);
         page.getChildren().add(flowCard(sector, flow, animate));
+        // ...and how its tonnes move, under the flow card (FR4): OPERATIONS · HOW ITS TONNES MOVE.
+        page.getChildren().addAll(tonnesPanels(sector));
         // The new price model, read (0.7.45): the grocers' shelf, the kitchens' and the counters' margin.
         if (sector instanceof Retail shops) page.getChildren().add(shelfCard(shops));
         if (sector instanceof Restaurants kitchens) page.getChildren().add(marginCard(chargesWords(kitchens)));
@@ -3778,6 +3912,318 @@ final class SectorScreen {
         }
         page.getChildren().add(details(sector.key() + ":every", "every line, as the page listed them before 0.7.30",
                 detailsOpen, ui::redraw, () -> everyLine(sector)));
+    }
+
+    /* ----- OPERATIONS · HOW ITS TONNES MOVE (FR4, 2026-10-20) -----
+       Batch FR4 (docs/studies/spec-freight-and-infrastructure.md 6, "A works'
+       page: How its tonnes move", board 3 of docs/studies/freight/). Freight's
+       own page draws the CITY's freight in legs; this is the same freight from
+       the other side, on EVERY sector's Operations page under the flow card: the
+       tonnes THAT business moved this month, good by good, and what the move
+       cost it. One card, for a business with freight (tonnes or a bill; not
+       Offices, not Freight itself, which bills and is not billed):
+
+       - a line a good and way - bought abroad, sold abroad, bought in the city
+         - with its two legs side by side in the order the tonnes travel (landed:
+         long haul then city leg; shipped: city leg then long haul; bought in
+         the city: the city leg alone), each leg a LegBar of its modes to the
+         line's own tonnes, so the split reads as a share: the railway, the
+         ships and the world's lorries on the long haul, Haulage's trucks and
+         the sidings on the city leg. A bar is a door to its division on
+         Freight's page. A good that moves in the sector's own vans has no city
+         leg in the model and says so rather than drawing one;
+       - the key, the modes it used and their tonnes, the paid-abroad hatching;
+       - THE MONTH'S FREIGHT BILL by division: a bar of the three lines the
+         statement carries (Haulage, Rail freight, Port handling), and under it
+         a row each with what it was for;
+       - and what a siding saves: said as "already" where the sector has one
+         carrying its tonnes door to door, otherwise as the COUNTERFACTUAL it is
+         ("a siding would carry 75% of 150,000 t: about $0.4M a month less
+         haulage"), the share a siding takes off a railed tonne's city leg of
+         the tonnes the trucks carried, at Haulage's quote in force.
+
+       ON IRON & STEEL (HeavyIndustry) a second card follows: its Pelletising
+       Plant's city legs AT NAMEPLATE, before and after a siding (spec 3.6) -
+       every tonne of its bulk goods all by truck, then with a siding taking its
+       share: the trucks, the drivers and a month of haulage in each.
+
+       NOTHING HERE IS WORKED OUT: the tonnes by good, way and mode are Haulage's
+       tally (Haulage.Move), the aggregates, the bills, the rate and the siding's
+       figures are FreightView.Tonnes, the plant's FreightView.Plant (tonnesOf()
+       and plantOf(), held by FreightViewCheck). The screen sums only what it
+       draws as one: a line's siding tonnes and its port yard's go in one SIDING
+       bar, as FreightView's own legs count them. */
+
+    /** What the strip's (i) says. */
+    static final String TONNES_INFO = "How this business's freight went in the month billed, good by good. Tonnes it "
+            + "bought abroad come in on the long haul (the railway, the ships or the world's lorries) and then take a "
+            + "city leg to its door; tonnes it sold abroad take the city leg first; tonnes bought from a works in the "
+            + "city have a city leg alone. The city leg is Haulage's trucks, or the railway's sidings door to door "
+            + "(the port yard's part of the quay's tonnes is drawn with them). A hatched bar is paid abroad, inside "
+            + "the price of the good; a bar with a division behind it opens that division on Freight's page. A good "
+            + "carried in the business's own vans has no city leg here: a van's load is the size of a fleet, not a "
+            + "month's flow. The bill is the three lines on its Income page.";
+
+    /** The siding line's (i) is its own sentence; the plant card's. */
+    static final String PELLET_INFO = "The Pelletising Plant's city legs at nameplate - every tonne of the bulk goods it uses "
+            + "and makes, the ore in and the pellets out, plus its coal, as the card lists them - not a month's flow. On the "
+            + "left they all go by truck; on the right a siding takes its share off the trucks' city leg (the share a "
+            + "siding relieves a railed tonne of). Haulage is billed at its quote in force. The trucks are Haulage's: "
+            + "the plant owns none and needs no vans.";
+
+    /** The width of a line's name column. */
+    static final double MOVE_NAME = 150;
+
+    /** The strip's cards for a business: none for one with no freight. */
+    List<Node> tonnesPanels(Sector sector) {
+        List<Node> out = new ArrayList<>();
+        if (ui.game == null || sector == null) return out;
+        FreightView.Tonnes t = FreightView.tonnesOf(ui.game, sector);
+        if (t.moved() || t.bill() > 0) out.add(tonnesCard(t));
+        if (sector instanceof HeavyIndustry) {
+            BuildingsTemplate works = ui.game.getBuildingManager().getTemplate(HeavyIndustry.PELLETISING_PLANT);
+            FreightView.Plant plant = works == null ? null : FreightView.plantOf(ui.game, works);
+            if (plant != null && plant.tonnes() > 0) out.add(pelletCard(plant));
+        }
+        return out;
+    }
+
+    /** A division on Freight's page, from another business's: its books open on the division chosen. */
+    void openFreightAt(FreightView.Division division) {
+        openSector = ui.game.getSectors().freight();
+        sectorPage = SECTOR_HOME;
+        openFreightDivision(division);
+    }
+
+    /** A door to a division on Freight's page, in the accent: "Haulage ›". */
+    Label worksDoor(String words, FreightView.Division division) {
+        Label l = new Label(words);
+        l.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.ACCENT) + " -fx-cursor: hand;");
+        l.setMinWidth(Region.USE_PREF_SIZE);
+        l.setOnMouseClicked(e -> openFreightAt(division));
+        return l;
+    }
+
+    /** HOW ITS TONNES MOVE: a line a good and way, the key, the month's bill by division, and what a siding saves. */
+    VBox tonnesCard(FreightView.Tonnes t) {
+        VBox lines = new VBox(Palette.GAP_LOOSE);
+        for (Haulage.Move move : t.lines()) lines.getChildren().add(moveRow(move));
+        VBox card = card(head("HOW ITS TONNES MOVE", TONNES_INFO, hint("each good, its legs and their modes · the month billed")),
+                lines);
+        if (t.lines().isEmpty()) {
+            card.getChildren().add(caption("No tonnes are on record for it this month: its freight shows after the first haul "
+                    + "that bills it.", Palette.TEXT_MUTED));
+        } else {
+            card.getChildren().add(tonnesKey(t));
+        }
+        Node bill = freightBill(t);
+        if (bill != null) card.getChildren().add(bill);
+        Node siding = sidingLine(t);
+        if (siding != null) card.getChildren().add(siding);
+        return card;
+    }
+
+    /** One good's way: its name and tonnes, then its legs in the order the tonnes travel. */
+    HBox moveRow(Haulage.Move move) {
+        Label good = new Label(move.good().label());
+        good.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        VBox name = new VBox(2, good,
+                figure(RefineryView.tonnes(move.tonnes()) + " " + move.way().direction(), Palette.SIZE_CAPTION, Palette.TEXT_HEAD),
+                figure(move.way().label(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        name.setMinWidth(MOVE_NAME);
+        name.setPrefWidth(MOVE_NAME);
+        name.setMaxWidth(MOVE_NAME);
+        double scale = move.tonnes();
+        boolean landed = move.way() == Haulage.Way.LANDED;
+        Node longHaul = null;
+        if (move.way().crossed()) {
+            longHaul = legCell(landed ? "LONG HAUL, IN" : "LONG HAUL, OUT", List.of(
+                    tonnesRow(FreightView.Leg.LONG_HAUL, FreightView.Mode.RAIL, move.rail()),
+                    tonnesRow(FreightView.Leg.LONG_HAUL, FreightView.Mode.SEA, move.sea()),
+                    tonnesRow(FreightView.Leg.LONG_HAUL, FreightView.Mode.WORLD_LORRY, move.lorry())), scale);
+        }
+        Node city;
+        if (move.truck() + move.siding() + move.yard() > 0) {
+            city = legCell(move.way().crossed() ? (landed ? "CITY LEG, TO THE DOOR" : "CITY LEG, FROM THE DOOR")
+                            : "CITY LEG, FROM THE WORKS", List.of(
+                    tonnesRow(FreightView.Leg.CITY_LEG, FreightView.Mode.TRUCK, move.truck()),
+                    tonnesRow(FreightView.Leg.CITY_LEG, FreightView.Mode.SIDING, move.siding() + move.yard())), scale);
+        } else {
+            // A good in vans has no city leg in the model: said, not drawn.
+            Label cap = new Label("CITY LEG");
+            cap.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            VBox vans = new VBox(3, cap, caption("in the business's own vans: not a month's flow, so not counted",
+                    Palette.TEXT_MUTED));
+            HBox.setHgrow(vans, Priority.ALWAYS);
+            vans.setMinWidth(0);
+            city = vans;
+        }
+        HBox row = new HBox(Palette.GAP_LOOSE, name);
+        row.setAlignment(Pos.CENTER_LEFT);
+        Label then = new Label("›");
+        then.setStyle(Palette.words(Palette.SIZE_LEAD, Palette.TEXT_MUTED));
+        if (longHaul != null && landed) row.getChildren().addAll(longHaul, then, city);
+        else if (longHaul != null) row.getChildren().addAll(city, then, longHaul);
+        else row.getChildren().add(city);
+        return row;
+    }
+
+    /** A leg's bar under its caption, to a line's own tonnes, each mode a door to its division on Freight's page. */
+    VBox legCell(String caption, List<FreightView.Row> rows, double scale) {
+        Label cap = new Label(caption);
+        cap.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        LegBar bar = new LegBar(rows, scale, this::openFreightAt);
+        VBox cell = new VBox(3, cap, bar);
+        cell.setMinWidth(0);
+        HBox.setHgrow(cell, Priority.ALWAYS);
+        return cell;
+    }
+
+    /** One bar of a leg: a mode's tonnes, paid abroad where the mode is, and the division it opens. */
+    static FreightView.Row tonnesRow(FreightView.Leg leg, FreightView.Mode mode, double tonnes) {
+        return new FreightView.Row(leg, mode, tonnes, mode.abroad(), mode.door());
+    }
+
+    /** The key under the lines: a swatch a mode it used, with its tonnes in the month, and the hatching. */
+    javafx.scene.layout.FlowPane tonnesKey(FreightView.Tonnes t) {
+        javafx.scene.layout.FlowPane key = new javafx.scene.layout.FlowPane(16, 6);
+        FreightView.Mode[] modes = { FreightView.Mode.RAIL, FreightView.Mode.SEA, FreightView.Mode.WORLD_LORRY,
+                FreightView.Mode.TRUCK, FreightView.Mode.SIDING };
+        double[] tonnes = { t.rail(), t.sea(), t.lorry(), t.truck(), t.siding() + t.yard() };
+        boolean abroad = false;
+        for (int i = 0; i < modes.length; i++) {
+            if (!(tonnes[i] > 0)) continue;
+            key.getChildren().add(modeKey(modes[i], tonnes[i]));
+            abroad |= modes[i].abroad();
+        }
+        if (abroad) key.getChildren().add(figure("hatched: paid abroad, inside the price", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        return key;
+    }
+
+    /** One item of a key: a mode's swatch (hatched where paid abroad), its name and its tonnes. */
+    HBox modeKey(FreightView.Mode mode, double tonnes) {
+        javafx.scene.layout.StackPane swatch = new javafx.scene.layout.StackPane();
+        swatch.getChildren().add(new javafx.scene.shape.Rectangle(14, 10, javafx.scene.paint.Color.web(modeColour(mode))));
+        if (mode.abroad()) swatch.getChildren().add(new javafx.scene.shape.Rectangle(14, 10, hatch(Palette.STAGE, .6)));
+        Label name = new Label(mode.label());
+        name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        HBox item = new HBox(6, swatch, name, figure(tShort(tonnes), Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+        item.setAlignment(Pos.CENTER_LEFT);
+        return item;
+    }
+
+    /** THE MONTH'S FREIGHT BILL, by division: a bar of the three statement lines, a row each, and the sum; null with no bill. */
+    Node freightBill(FreightView.Tonnes t) {
+        Label cap = new Label("THE MONTH'S FREIGHT BILL");
+        cap.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        Label sub = hint("paid to Freight, by division");
+        HBox top = new HBox(Palette.GAP, cap, sub);
+        top.setAlignment(Pos.CENTER_LEFT);
+        VBox box = new VBox(6, top);
+        if (!(t.bill() > 0)) {
+            box.getChildren().add(caption("Freight billed it nothing this month.", Palette.TEXT_MUTED));
+            return box;
+        }
+        box.getChildren().add(segmentBar(List.of(
+                Segment.of(t.haulageBill(), divisionColour(FreightView.Division.HAULAGE)),
+                Segment.of(t.railBill(), divisionColour(FreightView.Division.RAIL)),
+                Segment.of(t.handlingBill(), divisionColour(FreightView.Division.PORTS))), t.bill(), List.of(), 0, 10));
+        box.getChildren().add(billRow(FreightView.Division.HAULAGE, t.haulageBill(), t.haulageBill() > 0 && t.truck() > 0
+                ? RefineryView.tonnes(t.truck()) + " by truck on the city leg, billed at " + unitPrice(t.haulageRate()) + " a tonne"
+                : "the city leg"));
+        box.getChildren().add(billRow(FreightView.Division.RAIL, t.railBill(), RefineryView.tonnes(t.rail()) + " by rail on the long haul"
+                + (t.siding() > 0 ? ", " + RefineryView.tonnes(t.siding()) + " door to door" : "")));
+        box.getChildren().add(billRow(FreightView.Division.PORTS, t.handlingBill(), RefineryView.tonnes(t.sea())
+                + " by ship, handled at the quay"));
+        Label all = new Label("All");
+        all.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox sum = new HBox(Palette.GAP, all, gap, figure(m(t.bill()), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+        sum.setAlignment(Pos.CENTER_LEFT);
+        sum.setStyle("-fx-padding: 4 0 0 0;");
+        box.getChildren().add(sum);
+        return box;
+    }
+
+    /** A division's row of the bill: its dot and door, what it was for, and the money; a dash where it billed nothing. */
+    HBox billRow(FreightView.Division division, double bill, String why) {
+        javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(3.5, javafx.scene.paint.Color.web(divisionColour(division)));
+        Label door = worksDoor(division.label() + " ›", division);
+        door.setMinWidth(70);
+        Label what = caption(bill > 0 ? why : "", Palette.TEXT_MUTED);
+        what.setMinWidth(0);
+        HBox.setHgrow(what, Priority.ALWAYS);
+        Label money = figure(bill > 0 ? m(bill) : "—", Palette.SIZE_LABEL + 1, bill > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED);
+        money.setMinWidth(70);
+        money.setAlignment(Pos.CENTER_RIGHT);
+        HBox row = new HBox(Palette.GAP, dot, door, what, money);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 2 0 2 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;");
+        return row;
+    }
+
+    /** What a siding saves: what the one it has already carries, or - said to be a "would" - what one would; null where the trucks carry nothing. */
+    Node sidingLine(FreightView.Tonnes t) {
+        String words;
+        if (t.hasSiding()) {
+            words = "Its siding carries " + RefineryView.tonnes(t.siding()) + " door to door: about " + m(t.sidingSaves())
+                    + " a month less haulage, at Haulage's quote of " + unitPrice(t.quote()) + " a tonne.";
+        } else if (t.sidingWouldSave() > 0) {
+            words = "A siding would carry " + BuildScreen.pct(t.relief()) + " of " + RefineryView.tonnes(t.truck()) + ": about "
+                    + m(t.sidingWouldSave()) + " a month less haulage, at Haulage's quote of " + unitPrice(t.quote())
+                    + " a tonne. An estimate, not a bill.";
+        } else {
+            return null;
+        }
+        javafx.scene.shape.Rectangle swatch = new javafx.scene.shape.Rectangle(4, 28,
+                javafx.scene.paint.Color.web(modeColour(FreightView.Mode.SIDING)));
+        Label l = new Label(words);
+        l.setWrapText(true);
+        l.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        HBox.setHgrow(l, Priority.ALWAYS);
+        HBox row = new HBox(Palette.GAP_LOOSE, swatch, l);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 6 0 0 0;");
+        return row;
+    }
+
+    /* ----- ...and Iron & Steel's Pelletising Plant, before and after a siding ----- */
+
+    /** THE PELLETISING PLANT'S CITY LEGS, at nameplate: all by truck, and with a siding, side by side. */
+    VBox pelletCard(FreightView.Plant plant) {
+        List<String> goods = new ArrayList<>();
+        for (FreightView.PlantLine line : plant.lines()) {
+            goods.add(line.good().label() + " " + RefineryView.tonnes(line.tonnes()) + (line.made() ? " out" : " in"));
+        }
+        GridPane pair = equalColumns(2, Palette.GAP_LOOSE);
+        pair.add(planHalf("TODAY · ALL BY TRUCK", plant.byTruck(), plant.tonnes()), 0, 0);
+        pair.add(planHalf("WITH A SIDING · " + BuildScreen.pct(plant.relief()) + " OFF THE TRUCKS", plant.withSiding(),
+                plant.tonnes()), 1, 0);
+        VBox card = card(head(plant.building().toUpperCase() + "'S CITY LEGS", PELLET_INFO,
+                hint("at nameplate · before and after a siding")),
+                caption(String.join(" · ", goods), Palette.TEXT_MUTED), pair);
+        card.getChildren().add(caption("A siding saves about " + m(plant.saves()) + " a month of haulage here, at Haulage's quote of "
+                + unitPrice(plant.quote()) + " a tonne.", Palette.TEXT_HEAD));
+        return card;
+    }
+
+    /** One way of moving the plant's tonnes: its tag, the trucks it takes, the tonnes by mode and what a month of haulage costs. */
+    VBox planHalf(String tag, FreightView.Plan plan, double tonnes) {
+        Label tagLabel = new Label(tag);
+        tagLabel.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        Label hero = figure(n0(plan.trucks()) + (Math.round(plan.trucks()) == 1 ? " truck" : " trucks"), Palette.SIZE_LEAD, Palette.TEXT_HEAD);
+        SegmentBar bar = segmentBar(List.of(
+                Segment.of(plan.truckTonnes(), modeColour(FreightView.Mode.TRUCK)),
+                Segment.of(plan.sidingTonnes(), modeColour(FreightView.Mode.SIDING))), tonnes, List.of(), 0, 10);
+        List<Sector.Line> lines = new ArrayList<>();
+        lines.add(Sector.Line.of("By truck", RefineryView.tonnes(plan.truckTonnes())));
+        lines.add(Sector.Line.of("By siding", RefineryView.tonnes(plan.sidingTonnes())));
+        lines.add(Sector.Line.of("Drivers", n0(plan.drivers())));
+        lines.add(Sector.Line.of("A month of haulage", m(plan.haulage())));
+        VBox half = new VBox(Palette.GAP, tagLabel, hero, bar, factGrid(lines, 1, SectorScreen::toneColour));
+        half.setMinWidth(0);
+        return half;
     }
 
     /* ------------------- OPERATIONS · THE REFINERY (0.7.95) -------------------
@@ -4695,6 +5141,580 @@ final class SectorScreen {
         };
     }
 
+    /* ------------------- OPERATIONS · FREIGHT (FR4, 2026-10-19) -------------------
+       Batch FR4 (docs/studies/spec-freight-and-infrastructure.md 6, "Sectors >
+       Freight", board 2 of docs/studies/freight/): since FR2, FR3, FR6 and FR7
+       Freight is three businesses in one set of books - Haulage's trucks, the
+       railway and the quay - and its page showed them as one list of lines under
+       the railway's. It opens now on a DIVISION STRIP, All · Haulage · Rail ·
+       Ports, and the chosen division's cards above the generic flow card:
+
+       - ALL is the city's freight this month in legs: one bar for the long haul
+         (the world's lorries, the railway, the ships) and one for the city leg
+         (Haulage's trucks, the railway's sidings), to one scale, the paid-abroad
+         bars hatched, each bar a door to its division; under it a card a
+         division with its three or four figures.
+       - HAULAGE is the trucks against the trucks the plant standing asks for,
+         the depots and their places, the quote against the rule's target, the
+         shippers it billed and its figures.
+       - RAIL is the wagon sets against what the track needs, the track, what it
+         carried and what the sidings carried door to door, the quote as a share
+         of the lorry rate against its floor, and the shippers billed.
+       - PORTS is the berths by kind, the tonnes against their room with a fill
+         bar, what a tonne costs to handle, the dues paid to the city, and the
+         shippers billed for handling.
+
+       NOTHING HERE IS WORKED OUT: every figure, flag and door is FreightView's
+       (the model's, pure, held by FreightViewCheck); this draws it - the legs
+       as LegBar, the fleets and quotes as Pieces' segment bars, the figures as
+       the statement's fact grid. WHICH DIVISION is a field kept while the game
+       runs and not saved, like detailsOpen: a chip or a bar sets it and the
+       page is drawn again from the top, and the clock's redraws keep it and the
+       page's scroll, as for every sector. What FreightView leaves out is left
+       out here: the vans' tonnes (the distribution leg, said in a line) and
+       Haulage's rule floor (shown as a dash). */
+
+    /** What the division strip's (i) says. */
+    static final String FREIGHT_STRIP_INFO = "Freight is three businesses in one set of books: Haulage's trucks, the "
+            + "railway and the quay. All is the month's tonnes in legs, with a card a division. Each division is its "
+            + "fleet against what it needs, its quote with the rule's floor and target where the model keeps them, "
+            + "and the shippers it billed this month.";
+
+    /** The legs card's (i). */
+    static final String FREIGHT_LEGS_INFO = "Every tonne that crossed the city's boundary went the long haul by the "
+            + "world's lorries, the railway or a ship; the tonnes inside the city went the city leg by Haulage's trucks "
+            + "or the railway's sidings (the home tonnes railed door to door and the port yard's). Both bars are to "
+            + "one scale. A hatched bar is paid abroad - the world's lorries and the ships. A bar with a division "
+            + "behind it opens that division. The distribution leg - the sectors' own vans - is not a month's flow in "
+            + "the model (a van's load is the size of a fleet), so it is not drawn.";
+
+    /** The shippers card's (i). */
+    static final String FREIGHT_SHIPPERS_INFO = "The sectors billed by this division this month, largest bill first: the "
+            + "line each carries on its own input page. A name opens that sector's operations.";
+
+    /** The division the Freight sector's Operations page is open on - kept while the game runs, not saved (FR4); InfrastructureScreen's doors may set it before opening the page. */
+    FreightView.Division freightDivision = FreightView.Division.ALL;
+
+    /** The colour a mode's bar is drawn in: the world's lorries slate, the railway steel, the ships blue, Haulage's trucks sand, the sidings a step darker than the railway. */
+    static String modeColour(FreightView.Mode mode) {
+        return switch (mode) {
+            case WORLD_LORRY -> Palette.TEXT_SPENT;
+            case RAIL -> Palette.TEXT_2;
+            case SEA -> Palette.ACCENT_FILL;
+            case TRUCK -> Palette.ORE;
+            case SIDING -> Palette.TEXT_3;
+        };
+    }
+
+    /** The dot a division's chip wears: the mode it is mostly about, and steel for All. */
+    static String divisionColour(FreightView.Division division) {
+        return switch (division) {
+            case ALL -> Palette.TEXT_2;
+            case HAULAGE -> modeColour(FreightView.Mode.TRUCK);
+            case RAIL -> modeColour(FreightView.Mode.RAIL);
+            case PORTS -> modeColour(FreightView.Mode.SEA);
+        };
+    }
+
+    /** A whole number with its thousands grouped. */
+    static String n0(double v) { return String.format("%,.0f", v); }
+
+    /** Tonnes in the short form: "412k t". */
+    static String tShort(double t) { return shortNumber(t) + " t"; }
+
+    /** Freight's cards, in the page's order: the division strip, then the chosen division. */
+    List<Node> freightPanels(FreightView.View v) {
+        List<Node> out = new ArrayList<>();
+        out.add(freightStrip());
+        switch (freightDivision) {
+            case HAULAGE -> out.addAll(haulagePanels(v));
+            case RAIL -> out.addAll(railPanels(v));
+            case PORTS -> out.addAll(portsPanels(v));
+            default -> out.addAll(freightAll(v));
+        }
+        return out;
+    }
+
+    /** One of the divisions, from the top of the page. */
+    void openFreightDivision(FreightView.Division division) {
+        freightDivision = division;
+        ui.innerScrollAt.remove("showSectorMenu:body");
+        showSectorMenu();
+    }
+
+    /** DIVISION, and its four chips: All, Haulage, Rail, Ports, each with the dot of its mode. */
+    HBox freightStrip() {
+        FreightView.Division[] all = FreightView.Division.values();
+        String[] names = new String[all.length];
+        for (int i = 0; i < all.length; i++) names[i] = all[i].label();
+        javafx.scene.layout.FlowPane chips = chipStrip(names, freightDivision.label(), Palette.SIZE_LABEL + 1, pick -> {
+            for (FreightView.Division d : all) if (d.label().equals(pick)) openFreightDivision(d);
+        });
+        chips.setAlignment(Pos.CENTER_LEFT);
+        for (int i = 0; i < all.length && i < chips.getChildren().size(); i++) {
+            javafx.scene.control.Button chip = (javafx.scene.control.Button) chips.getChildren().get(i);
+            chip.setGraphic(new javafx.scene.shape.Circle(3.5, javafx.scene.paint.Color.web(divisionColour(all[i]))));
+            chip.setGraphicTextGap(6);
+        }
+        Label cap = new Label("DIVISION");
+        cap.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        cap.setMinWidth(Region.USE_PREF_SIZE);
+        HBox row = new HBox(Palette.GAP, cap, infoButton(FREIGHT_STRIP_INFO, false), chips);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /** A door to a division in the accent: "Haulage ›". */
+    Label freightDoor(String words, FreightView.Division division) {
+        Label l = new Label(words);
+        l.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;");
+        l.setMinWidth(Region.USE_PREF_SIZE);
+        l.setOnMouseClicked(e -> openFreightDivision(division));
+        return l;
+    }
+
+    /* ----------------------------------- ALL ----------------------------------- */
+
+    /** The legs card, then a card a division. */
+    List<Node> freightAll(FreightView.View v) {
+        FreightView.HaulagePage h = v.haulage();
+        FreightView.RailPage r = v.rail();
+        FreightView.PortsPage p = v.ports();
+        List<Sector.Line> haul = new ArrayList<>();
+        haul.add(Sector.Line.of("Trucks", n0(h.trucks()) + " of " + n0(h.needed()) + " needed",
+                h.shortBy() > 0 ? Sector.Line.Tone.WARN : Sector.Line.Tone.NONE));
+        haul.add(Sector.Line.of("Depots", h.depots() + " · " + n0(h.depotRoom()) + " places"));
+        haul.add(Sector.Line.of("Quote", quoteWords(h.quote())));
+        List<Sector.Line> rail = new ArrayList<>();
+        rail.add(Sector.Line.of("Wagon sets", n0(r.sets()) + " of " + n0(r.setsNeeded()),
+                r.sets() < r.setsNeeded() ? Sector.Line.Tone.WARN : Sector.Line.Tone.NONE));
+        rail.add(Sector.Line.of("Track", tShort(r.track()) + " a month"));
+        rail.add(Sector.Line.of("Carried", tShort(r.carried()) + " + " + tShort(legTonnes(v.legs(), FreightView.Mode.SIDING)) + " siding"));
+        rail.add(Sector.Line.of("Quote", quoteWords(r.quote())));
+        List<Sector.Line> port = new ArrayList<>();
+        for (FreightView.Berth b : p.kinds()) {
+            port.add(Sector.Line.of(b.kind().label(), b.berths() == 0 ? "none standing"
+                    : b.berths() + " · " + BuildScreen.pct(b.use())));
+        }
+        port.add(Sector.Line.of("Dues to the city", m(p.duesPaid()) + " a month"));
+        GridPane trio = equalColumns(3, Palette.GAP_LOOSE);
+        trio.add(divisionCard("HAULAGE", FreightView.Division.HAULAGE, haul), 0, 0);
+        trio.add(divisionCard("RAIL", FreightView.Division.RAIL, rail), 1, 0);
+        trio.add(divisionCard("PORTS", FreightView.Division.PORTS, port), 2, 0);
+        return List.of(freightLegs(v.legs()), trio);
+    }
+
+    /** A division's summary: its name, a door into it, and its few figures. */
+    VBox divisionCard(String title, FreightView.Division division, List<Sector.Line> lines) {
+        return card(head(title, null, freightDoor(division.label() + " ›", division)),
+                factGrid(lines, 1, SectorScreen::toneColour));
+    }
+
+    /** The tonnes the legs chart keeps for a mode. */
+    static double legTonnes(FreightView.Legs legs, FreightView.Mode mode) {
+        for (FreightView.Row r : legs.rows()) if (r.mode() == mode) return r.tonnes();
+        return 0;
+    }
+
+    /** A quote as the division states it: a price a tonne, or a share of what a lorry charges; "estimated" until a month has struck it. */
+    static String quoteWords(FreightView.Quote q) {
+        String say = say(q, q.quote());
+        return q.known() ? say : say + " (estimated)";
+    }
+
+    /** One figure of a quote in its unit. */
+    static String say(FreightView.Quote q, double value) {
+        return q.unit() == FreightView.Unit.SHARE_OF_LORRY ? BuildScreen.pct(value) + " of the lorry rate"
+                : unitPrice(value) + " a tonne";
+    }
+
+    /** THE CITY'S FREIGHT THIS MONTH, IN LEGS: a bar a leg, its modes in segments, and the key. */
+    VBox freightLegs(FreightView.Legs legs) {
+        double scale = Math.max(legs.longHaul(), legs.cityLeg());
+        VBox rows = new VBox(Palette.GAP_LOOSE,
+                legRow(FreightView.Leg.LONG_HAUL, legs.longHaul(), legs.of(FreightView.Leg.LONG_HAUL), scale),
+                legRow(FreightView.Leg.CITY_LEG, legs.cityLeg(), legs.of(FreightView.Leg.CITY_LEG), scale));
+        // The distribution leg: named, and why it has no bar.
+        Label dist = new Label("Distribution");
+        dist.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        VBox distName = new VBox(2, dist, figure("the sectors' own vans", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        distName.setMinWidth(LEG_NAME);
+        distName.setPrefWidth(LEG_NAME);
+        distName.setMaxWidth(LEG_NAME);
+        Label why = caption("not counted: a van's load is the size of a fleet, not a month's flow", Palette.TEXT_MUTED);
+        HBox.setHgrow(why, Priority.ALWAYS);
+        HBox distRow = new HBox(Palette.GAP_LOOSE, distName, why);
+        distRow.setAlignment(Pos.CENTER_LEFT);
+        rows.getChildren().add(distRow);
+        // The key: a swatch a mode, with its tonnes.
+        javafx.scene.layout.FlowPane key = new javafx.scene.layout.FlowPane(16, 6);
+        for (FreightView.Row r : legs.rows()) {
+            javafx.scene.layout.StackPane swatch = new javafx.scene.layout.StackPane();
+            javafx.scene.shape.Rectangle fill = new javafx.scene.shape.Rectangle(14, 10, javafx.scene.paint.Color.web(modeColour(r.mode())));
+            swatch.getChildren().add(fill);
+            if (r.abroad()) swatch.getChildren().add(new javafx.scene.shape.Rectangle(14, 10, hatch(Palette.STAGE, .6)));
+            Label name = new Label(r.mode().label());
+            name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            HBox item = new HBox(6, swatch, name, figure(tShort(r.tonnes()), Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+            item.setAlignment(Pos.CENTER_LEFT);
+            key.getChildren().add(item);
+        }
+        key.getChildren().add(figure("hatched: paid abroad", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        VBox card = card(head("THE CITY'S FREIGHT THIS MONTH, IN LEGS", FREIGHT_LEGS_INFO,
+                hint("tonnes a month, by leg and mode")), rows, key);
+        if (!(scale > 0)) card.getChildren().add(caption("No freight has been hauled yet: the bars fill after the first month.", Palette.TEXT_MUTED));
+        return card;
+    }
+
+    /** The width of a leg's name column. */
+    static final double LEG_NAME = 120;
+
+    /** A leg: its name and tonnes, and its bar. */
+    HBox legRow(FreightView.Leg leg, double total, List<FreightView.Row> rows, double scale) {
+        Label name = new Label(leg.label());
+        name.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        VBox left = new VBox(2, name, figure(RefineryView.tonnes(total), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        left.setMinWidth(LEG_NAME);
+        left.setPrefWidth(LEG_NAME);
+        left.setMaxWidth(LEG_NAME);
+        LegBar bar = new LegBar(rows, scale, this::openFreightDivision);
+        HBox.setHgrow(bar, Priority.ALWAYS);
+        HBox row = new HBox(Palette.GAP_LOOSE, left, bar);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /**
+     * A leg's bar: its modes' tonnes end to end to the scale given, each in its
+     * mode's colour, hatched where the tonnes are paid abroad, named when the
+     * name fits and always in a tooltip, and a door to its division where it
+     * has one (the world's lorries have none).
+     */
+    static final class LegBar extends javafx.scene.layout.Pane {
+        static final double BAND = 26;
+        private final List<FreightView.Row> rows;
+        private final double scale;
+        private final Region track = new Region();
+        private final List<javafx.scene.shape.Rectangle> blocks = new ArrayList<>(), stripes = new ArrayList<>();
+        private final List<Label> labels = new ArrayList<>();
+
+        LegBar(List<FreightView.Row> rows, double scale, java.util.function.Consumer<FreightView.Division> door) {
+            this.rows = rows;
+            this.scale = scale;
+            track.setStyle("-fx-background-color: " + Palette.CONTROL + ";");
+            getChildren().add(track);
+            for (FreightView.Row r : rows) {
+                javafx.scene.shape.Rectangle block = new javafx.scene.shape.Rectangle();
+                block.setFill(javafx.scene.paint.Color.web(modeColour(r.mode())));
+                Tooltip tip = new Tooltip(r.mode().label() + " · " + RefineryView.tonnes(r.tonnes())
+                        + (r.abroad() ? " · paid abroad" : "")
+                        + (r.door() == FreightView.Division.ALL ? "" : "\n" + r.door().label() + " ›"));
+                tip.setShowDelay(Duration.millis(200));
+                Tooltip.install(block, tip);
+                if (r.door() != FreightView.Division.ALL) {
+                    block.setCursor(javafx.scene.Cursor.HAND);
+                    block.setOnMouseClicked(e -> door.accept(r.door()));
+                }
+                blocks.add(block);
+                getChildren().add(block);
+                javafx.scene.shape.Rectangle stripe = new javafx.scene.shape.Rectangle();
+                stripe.setMouseTransparent(true);
+                stripe.setVisible(r.abroad());
+                stripe.setFill(hatch(Palette.STAGE, .6));
+                stripes.add(stripe);
+                getChildren().add(stripe);
+                Label label = new Label(r.mode().label() + " " + shortNumber(r.tonnes()));
+                label.setMouseTransparent(true);
+                label.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_HEAD) + " -fx-background-color: "
+                        + tint(Palette.STAGE, .55) + "; -fx-background-radius: 2; -fx-padding: 1 4 1 4;");
+                labels.add(label);
+                getChildren().add(label);
+            }
+            setMinHeight(BAND);
+            setPrefHeight(BAND);
+            setMaxHeight(BAND);
+            setMinWidth(0);
+            setPrefWidth(200);
+            setMaxWidth(Double.MAX_VALUE);
+        }
+
+        @Override protected void layoutChildren() {
+            double w = getWidth(), x = 0;
+            track.resizeRelocate(0, 0, w, BAND);
+            int n = rows.size();
+            for (int i = 0; i < n; i++) {
+                double wide = scale > 0 ? w * Math.max(0, rows.get(i).tonnes()) / scale : 0;
+                double shown = wide > 0 ? Math.max(1, Math.min(w - x, wide - (i < n - 1 ? 1 : 0))) : 0;
+                javafx.scene.shape.Rectangle block = blocks.get(i), stripe = stripes.get(i);
+                block.setVisible(shown > 0);
+                stripe.setVisible(shown > 0 && rows.get(i).abroad());
+                for (javafx.scene.shape.Rectangle s : List.of(block, stripe)) {
+                    s.setX(x);
+                    s.setY(0);
+                    s.setWidth(shown);
+                    s.setHeight(BAND);
+                }
+                Label label = labels.get(i);
+                label.applyCss();
+                double lw = label.prefWidth(-1), lh = label.prefHeight(-1);
+                label.setVisible(shown > lw + 8);
+                label.resizeRelocate(x + 4, Math.max(0, (BAND - lh) / 2), lw, lh);
+                x += wide;
+            }
+        }
+    }
+
+    /* ---------------------------------- HAULAGE ---------------------------------- */
+
+    /** Haulage: its fleet, its price, its shippers. */
+    List<Node> haulagePanels(FreightView.View v) {
+        FreightView.HaulagePage h = v.haulage();
+        List<Sector.Line> lines = new ArrayList<>();
+        lines.add(Sector.Line.head("The fleet"));
+        lines.add(Sector.Line.of("Trucks", n0(h.trucks())));
+        lines.add(Sector.Line.of("Needed by the plant standing", n0(h.needed())));
+        lines.add(Sector.Line.of("Bought toward", n0(h.asked())));
+        if (h.shortBy() > 0) lines.add(Sector.Line.of("Short by", n0(h.shortBy()), Sector.Line.Tone.WARN));
+        lines.add(Sector.Line.of("Worn out this month", n0(h.worn())));
+        lines.add(Sector.Line.of("Truck depots", String.valueOf(h.depots())));
+        lines.add(Sector.Line.of("Depot places", n0(h.depotRoom())));
+        lines.add(Sector.Line.of("Spare places", n0(h.spareRoom())));
+        if (h.onStreet() > 0) lines.add(Sector.Line.of("Parked on the street", n0(h.onStreet()), Sector.Line.Tone.WARN));
+        lines.add(Sector.Line.head("The month"));
+        lines.add(Sector.Line.of("City-leg tonnes", RefineryView.tonnes(h.legTonnes())));
+        lines.add(Sector.Line.of("Carried by the trucks", RefineryView.tonnes(h.carried())));
+        lines.add(Sector.Line.of("Loads", n0(h.loads()) + " of " + n0(ham.citybuildersim.sectors.Haulage.TONNES_A_LOAD) + " t"));
+        lines.add(Sector.Line.of("Share of the need the trucks can carry", BuildScreen.pct(h.share())));
+        lines.add(Sector.Line.of("Share the fleet could not reach", BuildScreen.pct(h.tightness()),
+                h.tightness() > 0 ? Sector.Line.Tone.WARN : Sector.Line.Tone.NONE));
+        lines.add(Sector.Line.of("Diesel burned", m(h.diesel())));
+        lines.add(Sector.Line.of("What the month had to bring in", m(h.allowed())));
+        lines.add(Sector.Line.of("Billed to the shippers", m(h.bill())));
+        String fleetWords = n0(h.trucks()) + " of " + n0(h.needed()) + " needed";
+        String fleetNote = h.shortBy() > 0 ? n0(h.shortBy()) + " short" : "enough for the plant standing";
+        return List.of(
+                fleetCard("TRUCKS AGAINST WHAT THE CITY SHIPS", FREIGHT_TRUCKS_INFO, "the city leg",
+                        h.trucks(), h.needed(), h.asked(), modeColour(FreightView.Mode.TRUCK), fleetWords, fleetNote,
+                        h.shortBy() > 0 ? Palette.WARN : Palette.GOOD, lines),
+                quoteCard("ITS PRICE", FREIGHT_HAULAGE_QUOTE_INFO, "a tonne, on the city leg", h.quote(), "running cost",
+                        "cost + return"),
+                shippersCard(v, FreightView.Shipper::haulage, h.bill()));
+    }
+
+    /** Haulage's fleet card's (i). */
+    static final String FREIGHT_TRUCKS_INFO = "The trucks Haulage owns against the trucks the plant standing asks for to "
+            + "carry the city leg. Trucks past the depots' places park on the street. The bar stands the fleet against "
+            + "what the plant needs, marked.";
+
+    /** Haulage's price card's (i). */
+    static final String FREIGHT_HAULAGE_QUOTE_INFO = "What a tonne's city leg costs the shipper. The rule: Haulage's running "
+            + "cost plus a return on its trucks, depots and ground, more when the fleet is short of what is asked; the "
+            + "quote moves part of the way to the target each month. The model keeps the target, not the floor (the "
+            + "running cost alone), which reads as a dash.";
+
+    /** A fleet card: its words, a bar against what is needed, and the fact grid under. */
+    VBox fleetCard(String title, String info, String sub, double have, double need, double asked, String colour,
+                   String words, String note, String noteColour, List<Sector.Line> lines) {
+        double top = Math.max(have, Math.max(need, asked));
+        List<Tick> ticks = need > 0 ? List.of(new Tick(need, Palette.TEXT_HEAD, 2, "needed " + n0(need), null)) : List.of();
+        SegmentBar bar = segmentBar(List.of(Segment.of(have, colour)), top > 0 ? top * 1.1 : 1, ticks, 0, 10);
+        HBox say = new HBox(Palette.GAP_LOOSE, figure(words, Palette.SIZE_LEAD, Palette.TEXT_HEAD),
+                figure(note, Palette.SIZE_BODY, noteColour));
+        say.setAlignment(Pos.BASELINE_LEFT);
+        return card(head(title, info, hint(sub)), say, bar, factGrid(lines, 2, SectorScreen::toneColour));
+    }
+
+    /**
+     * A division's price: its bar against the rule's floor and target where the
+     * model keeps them, and the three figures under it - FLOOR, TARGET, QUOTE -
+     * a dash for the one it does not keep, "estimated" until a month has struck
+     * the quote.
+     */
+    VBox quoteCard(String title, String info, String sub, FreightView.Quote q, String floorIs, String targetIs) {
+        double floor = q.floor().orElse(0), target = q.target().orElse(0);
+        double top = Math.max(q.quote(), Math.max(floor, target));
+        List<Tick> ticks = new ArrayList<>();
+        if (q.floor().isPresent() && floor > 0) ticks.add(new Tick(floor, Palette.TEXT_2, 2, "floor", null));
+        if (q.target().isPresent() && target > 0) ticks.add(new Tick(target, Palette.TEXT_HEAD, 2, "target", null));
+        SegmentBar bar = segmentBar(List.of(Segment.of(q.quote(), Palette.ACCENT)), top > 0 ? top * 1.25 : 1, ticks, 0, 8);
+        HBox tiles = new HBox(Palette.GAP_SECTION,
+                quoteTile("FLOOR", floorIs, q.floor().isPresent() ? say(q, floor) : "—"),
+                quoteTile("TARGET", targetIs, q.target().isPresent() ? say(q, target) : "—"),
+                quoteTile("QUOTE", q.known() ? "in force" : "estimated: no month has struck it", say(q, q.quote())));
+        return card(head(title, info, hint(sub)), bar, tiles);
+    }
+
+    /** One of a quote's three figures: its name, the figure, what it is. */
+    static VBox quoteTile(String name, String is, String figure) {
+        Label cap = new Label(name);
+        cap.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        return new VBox(2, cap, figure(figure, Palette.SIZE_LEAD, Palette.TEXT_HEAD),
+                figure(is, Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+    }
+
+    /** SHIPPERS BILLED: the sectors this division billed, largest first, each a door to that sector's operations, with the total. */
+    VBox shippersCard(FreightView.View v, java.util.function.ToDoubleFunction<FreightView.Shipper> part, double total) {
+        List<FreightView.Shipper> rows = new ArrayList<>();
+        double sum = 0, top = 0;
+        for (FreightView.Shipper s : v.shippers()) {
+            double b = part.applyAsDouble(s);
+            if (!(b > 0)) continue;
+            rows.add(s);
+            sum += b;
+            top = Math.max(top, b);
+        }
+        rows.sort((a, b) -> Double.compare(part.applyAsDouble(b), part.applyAsDouble(a)));
+        VBox list = new VBox(3);
+        final double widest = top;
+        for (FreightView.Shipper s : rows) {
+            Sector sector = ui.game.getSectors().byKey(s.sector());
+            Label name = new Label((sector != null ? sector.label() : s.sector()) + " ›");
+            name.setStyle(Palette.words(Palette.SIZE_LABEL + 1, sector != null ? Palette.ACCENT : Palette.TEXT_LABEL)
+                    + (sector != null ? " -fx-cursor: hand;" : ""));
+            name.setMinWidth(0);
+            if (sector != null) name.setOnMouseClicked(e -> openSectorBooks(sector, SECTOR_HOME));
+            Region gap = new Region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            double bill = part.applyAsDouble(s);
+            Label money = figure(m(bill), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD);
+            money.setMinWidth(70);
+            money.setAlignment(Pos.CENTER_RIGHT);
+            HBox row = new HBox(Palette.GAP, name, gap, bar(bill / widest, Palette.BUSINESS, 120, 6), money);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setStyle("-fx-padding: 2 0 2 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;");
+            list.getChildren().add(row);
+        }
+        if (rows.isEmpty()) list.getChildren().add(caption("nothing billed to a sector this month", Palette.TEXT_MUTED));
+        else {
+            Label what = new Label("These " + rows.size());
+            what.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+            Region gap = new Region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            HBox foot = new HBox(Palette.GAP, what, gap, figure(m(sum), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+            foot.setAlignment(Pos.CENTER_LEFT);
+            foot.setStyle("-fx-padding: 4 0 0 0;");
+            list.getChildren().add(foot);
+        }
+        return card(head("SHIPPERS BILLED", FREIGHT_SHIPPERS_INFO, hint("this month · " + m(total) + " in all")), list);
+    }
+
+    /* ------------------------------------ RAIL ------------------------------------ */
+
+    /** Rail: its wagon sets, its quote, its shippers. */
+    List<Node> railPanels(FreightView.View v) {
+        FreightView.RailPage r = v.rail();
+        List<Sector.Line> lines = new ArrayList<>();
+        lines.add(Sector.Line.head("The track"));
+        lines.add(Sector.Line.of("Track laid", tShort(r.track()) + " a month"));
+        lines.add(Sector.Line.of("Stations sort", tShort(r.stations()) + " a month"));
+        lines.add(Sector.Line.of("Sidings standing", tShort(r.sidings()) + " a month"));
+        lines.add(Sector.Line.of("Could carry", tShort(r.capacity())));
+        lines.add(Sector.Line.of("Posts filled", BuildScreen.pct(r.staffed()),
+                r.staffed() < .9 ? Sector.Line.Tone.WARN : Sector.Line.Tone.NONE));
+        lines.add(Sector.Line.of("A lorry charges", unitPrice(r.lorryRate()) + " a tonne"));
+        lines.add(Sector.Line.head("The month"));
+        lines.add(Sector.Line.of("The city traded", RefineryView.tonnes(r.traded())));
+        lines.add(Sector.Line.of("Offered to the railway", RefineryView.tonnes(r.offered())));
+        lines.add(Sector.Line.of("Went by sea", RefineryView.tonnes(r.bySea())));
+        lines.add(Sector.Line.of("Carried", RefineryView.tonnes(r.carried())));
+        lines.add(Sector.Line.of("Offer it could not carry", BuildScreen.pct(r.tightness()),
+                r.tightness() > 0 ? Sector.Line.Tone.WARN : Sector.Line.Tone.NONE));
+        lines.add(Sector.Line.of("City tonnes offered the sidings", RefineryView.tonnes(r.homeOffered())));
+        lines.add(Sector.Line.of("Sidings carried door to door", RefineryView.tonnes(r.homeRailed())
+                + " · " + BuildScreen.pct(r.homeShare())));
+        lines.add(Sector.Line.of("Port yard carried", r.portYard() ? RefineryView.tonnes(r.quayRailed())
+                + " · " + BuildScreen.pct(r.quayShare()) : "no yard standing"));
+        lines.add(Sector.Line.of("Diesel burned", m(r.fuel())));
+        if (r.moneyKnown()) {
+            lines.add(Sector.Line.of("Running cost", m(r.runningCost())));
+            lines.add(Sector.Line.of("What the month had to bring in", m(r.allowedRevenue())));
+        }
+        lines.add(Sector.Line.of("Billed to the shippers", m(r.billed())));
+        lines.add(Sector.Line.of("...of it on home and quay tonnes", m(r.homeBill())));
+        String words = n0(r.sets()) + " of " + n0(r.setsNeeded());
+        boolean short_ = r.sets() < r.setsNeeded();
+        return List.of(
+                fleetCard("WAGON SETS AGAINST WHAT THE TRACK NEEDS", FREIGHT_RAIL_INFO, "today's railway, with its sidings",
+                        r.sets(), r.setsNeeded(), r.setsNeeded(), modeColour(FreightView.Mode.RAIL), words,
+                        short_ ? "short of what the track needs" : "enough for the track",
+                        short_ ? Palette.WARN : Palette.GOOD, lines),
+                quoteCard("ITS PRICE", FREIGHT_RAIL_QUOTE_INFO, "a share of the lorry rate", r.quote(),
+                        "the least it charges", "not kept"),
+                shippersCard(v, FreightView.Shipper::rail, r.billed()));
+    }
+
+    /** The railway's fleet card's (i). */
+    static final String FREIGHT_RAIL_INFO = "The wagon sets the railway owns against the sets its track standing needs. "
+            + "The track, the stations and the sidings set what it could carry; the posts filled set how much of that "
+            + "it does. Of the tonnes the city traded, the berths that go first take theirs, the railway is offered the "
+            + "rest, and what it cannot carry goes by lorry. The sidings carry the city's own bulk door to door, and "
+            + "the port yard the quay's.";
+
+    /** The railway's price card's (i). */
+    static final String FREIGHT_RAIL_QUOTE_INFO = "What the railway charges a tonne, as a share of what a lorry charges the "
+            + "same tonne. The rule sets it from what the month has to bring in (the running cost and the return on the "
+            + "track) over what it carries, never under its floor.";
+
+    /* ----------------------------------- PORTS ----------------------------------- */
+
+    /** Ports: the berths by kind, and the shippers billed for handling. */
+    List<Node> portsPanels(FreightView.View v) {
+        FreightView.PortsPage p = v.ports();
+        List<Sector.Line> lines = new ArrayList<>();
+        lines.add(Sector.Line.head("The quay"));
+        lines.add(Sector.Line.of("Berths standing", String.valueOf(p.berths())));
+        lines.add(Sector.Line.of("Could handle", tShort(p.capacity()) + " a month"));
+        lines.add(Sector.Line.of("Handled", RefineryView.tonnes(p.tonnes())));
+        lines.add(Sector.Line.of("Ship calls", n0(p.calls())));
+        lines.add(Sector.Line.head("The money"));
+        lines.add(Sector.Line.of("Handling billed to the shippers", m(p.handlingBilled())));
+        lines.add(Sector.Line.of("Dues paid to the city", m(p.duesPaid())));
+        lines.add(Sector.Line.of("The dues dial", String.format("%.2f× the default", p.dial())));
+        VBox rows = new VBox(Palette.GAP_LOOSE);
+        for (FreightView.Berth b : p.kinds()) rows.getChildren().add(berthRow(b));
+        VBox berths = card(head("BERTHS BY KIND", FREIGHT_PORTS_INFO, hint("the city's quays, worked by Freight")), rows,
+                factGrid(lines, 2, SectorScreen::toneColour));
+        return List.of(berths, shippersCard(v, FreightView.Shipper::handling, p.handlingBilled()));
+    }
+
+    /** The berths card's (i). */
+    static final String FREIGHT_PORTS_INFO = "The terminals standing by kind, the tonnes each kind handled this month "
+            + "against what its berths can handle (a bar, amber over nine tenths), the handling a tonne costs the "
+            + "shipper and the due a tonne pays the city, which the Policy dial scales. Dues are the floor of the "
+            + "handling; the target is what the rule would charge.";
+
+    /** One kind of berth: its name, the berths, the fill bar with its tonnes, and the handling quote. */
+    HBox berthRow(FreightView.Berth b) {
+        Label name = new Label(b.kind().label());
+        name.setStyle(Palette.words(Palette.SIZE_LABEL + 1, b.berths() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
+        name.setMinWidth(120);
+        name.setPrefWidth(120);
+        Label count = figure(String.valueOf(b.berths()), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD);
+        count.setMinWidth(28);
+        count.setAlignment(Pos.CENTER_RIGHT);
+        VBox fill = new VBox(2);
+        if (b.berths() > 0) {
+            fill.getChildren().addAll(
+                    segmentBar(List.of(Segment.of(Math.min(1, b.use()), b.use() >= .9 ? Palette.WARN : modeColour(FreightView.Mode.SEA))),
+                            1, List.of(), 0, 8),
+                    caption(tShort(b.tonnes()) + " of " + tShort(b.capacity()) + " · " + BuildScreen.pct(b.use()), Palette.TEXT_MUTED));
+        } else {
+            fill.getChildren().add(caption("no berth standing", Palette.TEXT_MUTED));
+        }
+        HBox.setHgrow(fill, Priority.ALWAYS);
+        FreightView.Quote q = b.quote();
+        VBox quote = new VBox(2, figure(b.berths() > 0 && q.known() ? unitPrice(q.quote()) + " a tonne" : "—",
+                Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
+                caption(b.berths() > 0 ? "due " + unitPrice(b.dueRate()) + (q.target().isPresent() ? " · target " + unitPrice(q.target().getAsDouble()) : "")
+                        : "", Palette.TEXT_MUTED));
+        quote.setMinWidth(170);
+        quote.setPrefWidth(170);
+        quote.setAlignment(Pos.CENTER_RIGHT);
+        HBox row = new HBox(Palette.GAP, name, count, fill, quote);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
     /* ---------------------------- THE SHELF (0.7.45) ----------------------------
        The UI spec's 2.5: what a basket costs - the shelf against its floor, its
        cap and the price that would clear the sale, which is a price only above
@@ -4783,7 +5803,7 @@ final class SectorScreen {
     static String throttleCategory(SectorFlow.Plant plant) {
         String go = null;
         double least = Double.POSITIVE_INFINITY;
-        String[][] doors = { { "1", "Utilities" }, { "3", "Roads & transit" }, { "4", "Healthcare" } };
+        String[][] doors = { { "1", "Utilities" }, { "3", BuildAdvice.ROADS }, { "4", "Healthcare" } };
         for (String[] d : doors) {
             double r = plant.ratios()[Integer.parseInt(d[0])];
             if (Double.isFinite(r) && r < least && r < .995) { least = r; go = d[1]; }

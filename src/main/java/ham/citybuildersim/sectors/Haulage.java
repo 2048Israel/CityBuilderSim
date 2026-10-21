@@ -11,6 +11,9 @@ import ham.citybuildersim.Sector;
 import ham.citybuildersim.Sectors;
 import ham.citybuildersim.Traffic;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -515,7 +518,7 @@ public final class Haulage {
          * two are the same figure whenever the trucks were full.
          */
         if (carried > 0 && capacityInForce > 0) {
-            double target = allowed / capacityInForce * (1 + tightness * (Freight.MAX_SCARCITY_MULTIPLE - 1));
+            double target = rawTarget();
             if (Double.isFinite(target)) {
                 target = Math.max(0, target);
                 if (!quoteKnown) {
@@ -732,6 +735,153 @@ public final class Haulage {
     public double getAllowed()         { return allowed; }
     public double getTightness()       { return tightness; }
 
+    /**
+     * The rule's target for a tonne's city leg, as the last reprice walked the
+     * quote toward it (FR4, for the Freight screen's quote strip): what the
+     * month had to bring in (getAllowed()) over what the trucks could carry
+     * (getCapacityInForce()), at the scarcity the tightness set. Read, never
+     * stored: closeMonth()'s own rawTarget() on the same kept figures, so the
+     * two cannot drift. Zero while no month has carried anything, when the
+     * quote is the estimate.
+     */
+    public double getTarget() {
+        if (!(carried > 0) || !(capacityInForce > 0)) return 0;
+        double t = rawTarget();
+        return Double.isFinite(t) ? Math.max(0, t) : 0;
+    }
+
+    /** The rule's target a tonne before its guards: what the month had to bring in over the trucks' capacity, at the scarcity (closeMonth(), getTarget()). */
+    private double rawTarget() {
+        return allowed / capacityInForce * (1 + tightness * (Freight.MAX_SCARCITY_MULTIPLE - 1));
+    }
+
+    /* ------------------------------------------------------------ the month's moves */
+
+    /*
+     * THE MONTH'S MOVES, BY SECTOR (FR4, "How its tonnes move"; spec-freight 6,
+     * board 3). The works' page draws, under its flow card, how each tonne of
+     * the sector's month went: the long haul by mode and the city leg by mode,
+     * good by good. That is a flow the model did not keep. It is worked out in
+     * Freight.haul() at the shares in force while the cargo moved, the shares
+     * are overwritten before the month ends, and the sectors' own rows (the
+     * units landed, shipped and bought at home) are cleared at the strike and
+     * hold the NEXT month's trade by the time a screen asks - so a screen that
+     * recomputed them would draw one month's tonnes beside another month's
+     * bill. So the haul tallies them, as the map's trucks are tallied
+     * (Freight.truckedIn()): in the same breath, from the same variables, and
+     * saved with the extras (haul.move.*), because a screen needs them next
+     * month. READ BY NOTHING IN THE MODEL: no price, share or order depends on
+     * them, and the sums of the tally are held to the model's own counts (the
+     * trucks' tonnes to getTonnes(), the sidings' to Freight.getHomeRailed(),
+     * the yard's to getQuayRailed(), the railway's to getHauledTonnes()) by
+     * FreightViewCheck.
+     */
+
+    /** Which way a sector's tonnes of a good went: landed from the world, shipped to it, or bought from a works of the city (no edge crossed). */
+    public enum Way {
+        LANDED("in", "bought abroad"), SHIPPED("out", "sold abroad"), HOME("in", "bought in the city");
+
+        private final String direction, label;
+
+        Way(String direction, String label) {
+            this.direction = direction;
+            this.label = label;
+        }
+
+        /** "in" or "out": which side of the works the tonnes were on. */
+        public String direction() { return direction; }
+
+        /** How the page says it: "bought abroad", "sold abroad", "bought in the city". */
+        public String label() { return label; }
+
+        /** Whether the tonnes crossed the city boundary (they have a long haul). */
+        public boolean crossed() { return this != HOME; }
+    }
+
+    /**
+     * One good a sector moved in one way in the month billed, in tonnes. The
+     * long haul (rail + sea + lorry = tonnes) is the boundary's, so a HOME line
+     * has none; the city leg (truck + siding + yard = tonnes) is a BULK good's,
+     * so a GOODS-stream line has none (its leg is the sector's vans'). The
+     * siding is the railway's door-to-door part (InfrastructureManager.RAIL_ROAD_RELIEF
+     * of the tonnes the railway carried, and FR6's home tonnes), the yard the
+     * port yard's part of the quay's tonnes (Freight.PORT_YARD_SHARE).
+     */
+    public record Move(Way way, Good good, double tonnes, double rail, double sea, double lorry,
+                       double truck, double siding, double yard) { }
+
+    /** The seven figures of a move, in the order a save keeps them. */
+    private static final String[] MOVE_FIELDS = { "tonnes", "rail", "sea", "lorry", "truck", "siding", "yard" };
+
+    /** The save keys' prefix (Freight's extras); the figure names avoid the scaler's intensive words (ScaleCheck), so a scaled copy's tonnes are scaled. */
+    private static final String MOVE_PREFIX = "haul.move.";
+
+    /** The month billed's moves: sector key, then "GOOD.WAY", then the seven figures. */
+    private final Map<String, Map<String, double[]>> moves = new LinkedHashMap<>();
+
+    /** Starts the month's tally (Freight.haul(), where truckIn and its kin are cleared). */
+    void beginMoves() {
+        moves.clear();
+    }
+
+    /**
+     * Tallies one sector's one good of the month being billed, from the very
+     * numbers Freight.haul() weighs it with (legTonnes()'s own expression, per
+     * direction): `landed`, `shipped` and `bought` are units, `rail` the
+     * railway's share of the good's crossing tonnes, `sea` the berths', `home`
+     * and `quay` the shares of the city's own bulk and of the quay's yard part
+     * (each clamped to 0..1 as legTonnes() clamps them). Only a BULK good has
+     * a city leg and a home line.
+     */
+    void tallyMoves(String sector, Good g, boolean bulk, double landed, double shipped, double bought,
+                    double railShare, double seaShare, double homeShare, double quayShare) {
+        if (sector == null || g == null) return;
+        double rail = unit(railShare), sea = unit(seaShare), home = unit(homeShare), quay = unit(quayShare);
+        double yardPart = Freight.PORT_YARD_SHARE * quay * sea;
+        double truckPart = Math.max(0, 1 - InfrastructureManager.RAIL_ROAD_RELIEF * rail - yardPart);
+        double perUnit = g.tonnesPerUnit();
+        for (Way way : Way.values()) {
+            if (way == Way.HOME) {
+                double t = bulk ? clean(bought) * perUnit : 0;
+                if (t > 0) {
+                    double truck = t * (1 - InfrastructureManager.RAIL_ROAD_RELIEF * home);
+                    addMove(sector, g, way, t, 0, 0, 0, truck, Math.max(0, t - truck), 0);
+                }
+                continue;
+            }
+            double t = clean(way == Way.LANDED ? landed : shipped) * perUnit;
+            if (!(t > 0)) continue;
+            double byRail = t * rail, bySea = t * sea;
+            double lorry = Math.max(0, t - byRail - bySea);
+            if (!bulk) {
+                addMove(sector, g, way, t, byRail, bySea, lorry, 0, 0, 0);
+                continue;
+            }
+            double truck = t * truckPart, yard = t * yardPart;
+            addMove(sector, g, way, t, byRail, bySea, lorry, truck, Math.max(0, t - truck - yard), yard);
+        }
+    }
+
+    private void addMove(String sector, Good g, Way way, double... figures) {
+        double[] row = moves.computeIfAbsent(sector, k -> new LinkedHashMap<>())
+                .computeIfAbsent(g.name() + "." + way.name(), k -> new double[MOVE_FIELDS.length]);
+        for (int i = 0; i < row.length; i++) row[i] += figures[i];
+    }
+
+    /** A sector's moves of the month billed, by good (the Good order) and then way (landed, shipped, home); empty for a sector that moved no freight, and for one this haulage does not know. */
+    public List<Move> movesOf(String sector) {
+        Map<String, double[]> mine = sector == null ? null : moves.get(sector);
+        List<Move> out = new ArrayList<>();
+        if (mine == null) return out;
+        for (Good g : Good.values()) {
+            for (Way way : Way.values()) {
+                double[] f = mine.get(g.name() + "." + way.name());
+                if (f != null) out.add(new Move(way, g, f[0], f[1], f[2], f[3], f[4], f[5], f[6]));
+            }
+        }
+        return out;
+    }
+
     /* ------------------------------------------------------------ save, reset, reform */
 
     /** Haulage's state into Freight's extras (keys haul.*): the dieselLitres are not saved, as the railway's are not. */
@@ -762,6 +912,14 @@ public final class Haulage {
         extras.put("haul.tightness", tightness);
         // The drivers on offer, so a reloaded city offers the posts the live one did (as the builders' share is saved).
         extras.put("haul.driversShare", diplomaOffered);
+        // The month's moves (FR4), a figure a key, the zeros left out: haul.move.<sector>.<GOOD>.<WAY>.<figure>.
+        for (Map.Entry<String, Map<String, double[]>> bySector : moves.entrySet()) {
+            for (Map.Entry<String, double[]> row : bySector.getValue().entrySet()) {
+                for (int i = 0; i < MOVE_FIELDS.length; i++) {
+                    if (row.getValue()[i] != 0) extras.put(MOVE_PREFIX + bySector.getKey() + "." + row.getKey() + "." + MOVE_FIELDS[i], row.getValue()[i]);
+                }
+            }
+        }
     }
 
     /** ...and back. A key that is missing is a save from before Haulage: a share of 1 and nothing known, which is a city that has not yet needed a truck. */
@@ -794,6 +952,37 @@ public final class Haulage {
         allowed = extras.getOrDefault("haul.allowed", 0.0);
         tightness = extras.getOrDefault("haul.tightness", 0.0);
         diplomaOffered = extras.getOrDefault("haul.driversShare", 1.0);
+        restoreMoves(extras);
+    }
+
+    /** The month's moves back from their keys, read from the right (figure, WAY, GOOD; what is left is the sector, whose name may hold a dot); a key this build cannot place is left out. */
+    private void restoreMoves(Map<String, Double> extras) {
+        moves.clear();
+        for (Map.Entry<String, Double> e : extras.entrySet()) {
+            String rest = e.getKey();
+            if (!rest.startsWith(MOVE_PREFIX) || e.getValue() == null) continue;
+            rest = rest.substring(MOVE_PREFIX.length());
+            String[] part = new String[3];
+            for (int i = 2; i >= 0 && rest != null; i--) {
+                int dot = rest.lastIndexOf('.');
+                if (dot < 0) { rest = null; break; }
+                part[i] = rest.substring(dot + 1);
+                rest = rest.substring(0, dot);
+            }
+            if (rest == null || rest.isEmpty()) continue;
+            int figure = java.util.Arrays.asList(MOVE_FIELDS).indexOf(part[2]);
+            Way way;
+            Good good;
+            try {
+                way = Way.valueOf(part[1]);
+                good = Good.valueOf(part[0]);
+            } catch (IllegalArgumentException unknown) {
+                continue;
+            }
+            if (figure < 0) continue;
+            moves.computeIfAbsent(rest, x -> new LinkedHashMap<>())
+                    .computeIfAbsent(good.name() + "." + way.name(), x -> new double[MOVE_FIELDS.length])[figure] = e.getValue();
+        }
     }
 
     /** Back to a city that has never needed a truck. */
@@ -809,6 +998,7 @@ public final class Haulage {
         diplomaOffered = 1;
         trucksKnown = false;
         tonnes = carried = bill = diesel = dieselImported = dieselLitres = dieselLitresImported = worn = allowed = tightness = 0;
+        moves.clear();
     }
 
     /** Its money in the new unit (Denomination): the quote, the bill, the diesel and what the month was allowed. Tonnes, trucks and shares are not money. */
