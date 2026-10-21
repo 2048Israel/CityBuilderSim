@@ -28,18 +28,41 @@ import java.util.List;
  * share of months its fraction says (BoatSchedule.callsFor()). Past
  * MOST_A_MONTH trains a month each train drawn stands for stands() of them,
  * every kind alike, so a big city's line reads as busy and not as a blur.
+ * Since FX5 (slice T) a train is drawn at its real length - its payload over
+ * WAGON_TONNES, no cap: a unit train is 80 wagons and 41.4 plots, 1.24 km -
+ * so a big city shows fewer, longer trains, never more short ones.
  *
  * TIME. The boats' month, MONTH_SECONDS. A train runs its whole route, from
- * the world line's far end to its siding's, over LEG_SECONDS, stands there
- * DWELL_SECONDS and runs back out; its arrival is spread through the month
- * by its hash, its whole visit inside it, so a train never appears or
- * vanishes at the month's turn. An import arrives full and leaves empty, an
- * export arrives empty and leaves full, and boxes are loaded both ways.
+ * the world line's far end to its siding's, over a leg of its length over
+ * TRAIN_PLOTS_A_SECOND seconds (between LEG_SECONDS and LEG_MOST), easing
+ * in to a stop at the siding's end, stands there DWELL_SECONDS and so much a
+ * wagon (DWELL_A_WAGON) and runs back out, easing away from the stand; its
+ * arrival is spread through the month by its hash, its whole visit inside it,
+ * so a train never appears or vanishes at the month's turn. An import arrives
+ * full and leaves empty, an export arrives empty and leaves full, and boxes
+ * are loaded both ways.
+ *
+ * SIDINGS (FX5, slice T; Jerus, 2026-10-20: "real trains are really long",
+ * "the rail depots would have to be redesigned to accomdoate such large
+ * trains, as well as teh animation for them", "Queue the fix" for a train
+ * standing over the yard's own wagons). A route says what its siding holds
+ * (Route.holds()), and a train goes only on a route whose siding holds its
+ * whole length; a kind none holds is not drawn (unfit()). Trains are seated
+ * in the order they arrive, one on a siding at a time: from its front
+ * reaching the siding's ladder in to its rear leaving it out, no other train
+ * is on it. A train that finds its siding busy takes the next free route of
+ * its kind to the same yard, else waits for the siding of that yard (its own
+ * first) that is free soonest, if its whole visit still fits inside the
+ * month, else it is not drawn. All of it pure in the month, the tonnes and
+ * the routes, so panning away and back shows the same trains in the same
+ * places.
  *
  * ROUTES (CityMap.trainRoutes(); the map's, never the model's). From
  * WORLD_PLOTS out along the railway's world line, in to its gate arm's end,
  * along the main line and the corridors to a yard, through its ladder and
- * onto a siding: one route a yard and siding. Boxes and general cargo go to
+ * onto a siding: one route a yard and clear siding (one the yard's standing
+ * wagons are not on: the routes skip those, and a yard keeps one clear).
+ * Boxes and general cargo go to
  * the freight station; bulk to the other yards when the station is a
  * container yard (boxesByRail()), to every yard when it is not. A train
  * fades in over the world line's part. Since FR7 (slice 3, 2026-10-18) a
@@ -52,18 +75,28 @@ import java.util.List;
  * has - so it leaves the way it came with no run-round, and its wagons
  * between: each vehicle's place is its distance along the route behind the
  * train's front (cars()). A frame looks only at the trains on the line now,
- * found by a binary search of the month's arrivals.
+ * found by a binary search of the month's arrivals (the longest leg and
+ * stand back from now: a train's own visit is checked after).
  */
 public final class TrainSchedule {
 
     /** Seconds of trains a game month: the boats' (spec-freight 4.4, "the clock is the boats'"). */
     public static final double MONTH_SECONDS = BoatSchedule.MONTH_SECONDS;
 
-    /** Seconds a train takes to run its route, in or out: 6 (spec-freight 4.4, a visual pace). */
+    /** A train's mean pace along its route, in plots a second: 50 (a visual pace; its easing doubles it at the world line's end, a plot and a half a frame at 8 px and 60 frames a second). */
+    public static final double TRAIN_PLOTS_A_SECOND = 50;
+
+    /** The shortest leg, in or out, in seconds: 6 (spec-freight 4.4, a visual pace), for a route of 300 plots or less. */
     public static final double LEG_SECONDS = 6;
 
-    /** Seconds a train stands on its siding: 3 (spec-freight 4.4). */
+    /** The longest leg, in seconds: 10, for a route of 500 plots or more, so a long way stays inside the 60 s month (a visit is two legs and a stand). */
+    public static final double LEG_MOST = 10;
+
+    /** Seconds a train stands on its siding before its wagons are counted: 3 (spec-freight 4.4). */
     public static final double DWELL_SECONDS = 3;
+
+    /** ...and the seconds a wagon adds to its stand: 0.025, so a unit train of 80 stands 5 s and a mixed train of 15 3.375 s - the longer the train, the longer it takes to load or empty. */
+    public static final double DWELL_A_WAGON = 0.025;
 
     /** A route's part along the world line, past the city's ground, in plots: 64, about 1.9 km, over which a train fades in. */
     public static final double WORLD_PLOTS = 64;
@@ -82,9 +115,6 @@ public final class TrainSchedule {
 
     /** Boxes a flat wagon carries: 2, so an intermodal train is 50 wagons, as [R46]'s. */
     public static final int BOXES_A_WAGON = 2;
-
-    /** The most wagons a train is drawn with: 40 (spec-freight 4.4). */
-    public static final int MOST_WAGONS = 40;
 
     /** A wagon's length in plots: TileRaster.WAGON_LENGTH, about 15 m. */
     public static final double CAR_PLOTS = TileRaster.WAGON_LENGTH;
@@ -105,12 +135,17 @@ public final class TrainSchedule {
     /** A month's arrival ticks, 2^36: an arrival in ticks over this is its share of the month. */
     private static final double TICKS = (double) (1L << ARRIVAL_BITS);
 
-    /** The kinds of train, one a kind of cargo (Ports.Cargo): its words, its payload in tonnes and the wagons it is drawn with. */
+    /**
+     * The kinds of train, one a kind of cargo (Ports.Cargo): its words, its payload in tonnes and the wagons it is drawn with - its real
+     * count since FX5 (slice T), its payload over WAGON_TONNES with no cap: a unit train of 80 wagons and two locomotives is 41.4 plots,
+     * about 1.24 km (a North American coal unit train runs 115 cars [R39], Class I trains 2 to 3 km [R40]); an intermodal train of 50
+     * wagons 26.4 plots, 790 m ([R46]'s 750 m train; Europe's limit is 740 m [R45]); a mixed train of 15 wagons 8.9 plots.
+     */
     public enum Kind {
         TANK(Ports.Cargo.LIQUID, "unit train of tank wagons", UNIT_TONNES, wagonsOf(UNIT_TONNES)),
         HOPPER(Ports.Cargo.DRY_BULK, "unit train of hoppers", UNIT_TONNES, wagonsOf(UNIT_TONNES)),
         INTERMODAL(Ports.Cargo.CONTAINER, "intermodal train", INTERMODAL_BOXES * Ports.TONNES_A_TEU,
-                Math.min(MOST_WAGONS, (INTERMODAL_BOXES + BOXES_A_WAGON - 1) / BOXES_A_WAGON)),
+                (INTERMODAL_BOXES + BOXES_A_WAGON - 1) / BOXES_A_WAGON),
         MIXED(Ports.Cargo.GENERAL, "mixed train", MIXED_TONNES, wagonsOf(MIXED_TONNES));
 
         private final Ports.Cargo cargo;
@@ -130,6 +165,8 @@ public final class TrainSchedule {
         public int wagons()        { return wagons; }
         /** Its length, both locomotives and its wagons, in plots. */
         public double length()     { return 2 * LOCO_PLOTS + wagons * CAR_PLOTS; }
+        /** Seconds it stands on its siding: DWELL_SECONDS and DWELL_A_WAGON a wagon. */
+        public double standSeconds() { return DWELL_SECONDS + DWELL_A_WAGON * wagons; }
         /** Whether it goes to the freight station: boxes and general cargo. */
         public boolean toStation() { return this == INTERMODAL || this == MIXED; }
 
@@ -140,8 +177,15 @@ public final class TrainSchedule {
         }
 
         private static int wagonsOf(double tonnes) {
-            return (int) Math.min(MOST_WAGONS, Math.ceil(tonnes / WAGON_TONNES));
+            return (int) Math.ceil(tonnes / WAGON_TONNES);
         }
+    }
+
+    /** The longest stand of any kind, in seconds (a unit train's): arrivals are spread so that this and the longest leg still end inside the month. */
+    private static double longestStand() {
+        double most = 0;
+        for (Kind k : Kind.values()) most = Math.max(most, k.standSeconds());
+        return most;
     }
 
     /**
@@ -151,33 +195,64 @@ public final class TrainSchedule {
      * far end first, the siding's end last - with each point's distance
      * along it; the first fadeTo plots are the world line's, faded in. Since
      * FR7 (slice 3) a route may instead be to a works' siding: `works` true,
-     * yard and siding -1 and not the station (toWorks()).
+     * yard and siding -1 and not the station (toWorks()). Since FX5 (slice T)
+     * it says what its siding holds: `holds`, the plots of train the siding
+     * takes, from where it starts (the end of its yard's ladder, or where a
+     * works' siding leaves the main line) to the route's end - 0 for a route
+     * to an anchor with no siding - and `enters`, how far along the route the
+     * siding begins to be a train's own, the start of the yard's ladder (a
+     * works' siding's start): a train is on the siding from its front reaching
+     * `enters` in to its rear leaving it out, and no other is there then.
+     * A hand-built route that says nothing of its siding (the factories
+     * without holds) holds a train as long as itself and is the siding's own
+     * from its end alone, which only a standing train occupies.
      */
-    public record Route(int yard, boolean station, int siding, boolean works, double[] xs, double[] ys, double[] along, double fadeTo) {
+    public record Route(int yard, boolean station, int siding, boolean works, double[] xs, double[] ys, double[] along, double fadeTo,
+                        double holds, double enters) {
 
-        /** A route through points: their distances along it worked out. */
+        /** A hand-built route through points: their distances along it worked out; it holds any train (a siding's, 0 with none). */
         public static Route through(int yard, boolean station, int siding, double[] xs, double[] ys, double fadeTo) {
-            return through(yard, station, siding, false, xs, ys, fadeTo);
+            return through(yard, station, siding, false, xs, ys, fadeTo, Double.NaN, Double.NaN);
+        }
+
+        /** ...saying what its siding holds and where it begins (FX5, slice T): `holds` plots of train, from `enters` plots along the route. */
+        public static Route through(int yard, boolean station, int siding, double[] xs, double[] ys, double fadeTo, double holds, double enters) {
+            return through(yard, station, siding, false, xs, ys, fadeTo, holds, enters);
         }
 
         /**
          * A route to a works' siding (FR7 slice 3, 2026-10-18): no yard (-1), not
          * the station, no siding of a yard's fan (-1), `works` true - a bulk
          * unit train's alone, from the world line along the main line straight in
-         * to the siding's end, as real unit trains skip the yard.
+         * to the siding's end, as real unit trains skip the yard. Hand-built, it
+         * holds any train.
          */
         public static Route toWorks(double[] xs, double[] ys, double fadeTo) {
-            return through(-1, false, -1, true, xs, ys, fadeTo);
+            return through(-1, false, -1, true, xs, ys, fadeTo, Double.NaN, Double.NaN);
         }
 
-        private static Route through(int yard, boolean station, int siding, boolean works, double[] xs, double[] ys, double fadeTo) {
+        /** ...whose siding holds `holds` plots of train, from where it leaves the main line to its end (FX5, slice T). */
+        public static Route toWorks(double[] xs, double[] ys, double fadeTo, double holds) {
+            double length = 0;
+            for (int i = 1; i < xs.length; i++) length += Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]);
+            return through(-1, false, -1, true, xs, ys, fadeTo, holds, length - holds);
+        }
+
+        private static Route through(int yard, boolean station, int siding, boolean works, double[] xs, double[] ys, double fadeTo,
+                                     double holds, double enters) {
             double[] along = new double[xs.length];
             for (int i = 1; i < xs.length; i++) along[i] = along[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]);
-            return new Route(yard, station, siding, works, xs.clone(), ys.clone(), along, Math.max(0, fadeTo));
+            double length = along[along.length - 1];
+            if (Double.isNaN(holds)) holds = siding >= 0 || works ? length : 0;
+            if (Double.isNaN(enters)) enters = length;
+            return new Route(yard, station, siding, works, xs.clone(), ys.clone(), along, Math.max(0, fadeTo), Math.max(0, holds), Math.max(0, Math.min(length, enters)));
         }
 
         /** Its length, the world line's far end to the siding's, in plots. */
         public double length() { return along[along.length - 1]; }
+
+        /** Seconds a train takes to run it, in or out: its length over TRAIN_PLOTS_A_SECOND, no less than LEG_SECONDS and no more than LEG_MOST. */
+        public double legSeconds() { return Math.max(LEG_SECONDS, Math.min(LEG_MOST, length() / TRAIN_PLOTS_A_SECOND)); }
     }
 
     /** One train: its kind, whether it lands cargo (an import, or boxes, which go both ways) or comes to load it, its route among the schedule's (-1 with none), and when it reaches its siding's end, in month fractions. */
@@ -198,10 +273,10 @@ public final class TrainSchedule {
     private final int count, stands;
     private final boolean boxes;
 
-    /* Built on the first ask: the trains' keys, sorted by arrival; and each route's box, {x0, y0, x1, y1} in plots. */
+    /* Built on the first ask: the trains' keys, sorted by arrival; each route's box, {x0, y0, x1, y1} in plots; and the trains given no route. */
     private long[] keys;
     private double[][] boxesOf;
-    private int touched;
+    private int touched, unfit;
 
     private TrainSchedule(int month, List<Route> routes, List<Group> groups, int stands, boolean boxes) {
         this.month = month;
@@ -280,9 +355,13 @@ public final class TrainSchedule {
         return ((long) month << 32) ^ ((long) k.ordinal() << 16) ^ ((long) (inbound ? 1 : 0) << 12) ^ SALT;
     }
 
-    /** When a group's k-th train reaches its siding's end, in ticks of a month: hashed through the month, its whole visit inside it. */
+    /**
+     * When a group's k-th train reaches its siding's end by its hash, in ticks of a month: spread through the month with the longest leg
+     * (LEG_MOST) and the longest stand either side, so any train's whole visit is inside it whatever its route and kind (build() may
+     * move it later, to a moment its siding is free, keeping its own visit inside the month).
+     */
     static long arrivalTicks(long seed, int k) {
-        double leg = LEG_SECONDS / MONTH_SECONDS, dwell = DWELL_SECONDS / MONTH_SECONDS;
+        double leg = LEG_MOST / MONTH_SECONDS, dwell = longestStand() / MONTH_SECONDS;
         double a = leg + World.unit(World.mix(World.mix(seed) ^ ((long) k * 0x9E37_79B9L) ^ 0x7A1L)) * (1 - 2 * leg - dwell);
         return (long) Math.floor(a * TICKS);
     }
@@ -293,7 +372,9 @@ public final class TrainSchedule {
      * every yard's when it is not - and (FR7 slice 3) a dry bulk unit train
      * the works' sidings' too, which run straight in with no yard, while
      * no other kind goes to a siding; every yard's route when none is its
-     * kind's (a siding's only for a hopper train).
+     * kind's (a siding's only for a hopper train). Since FX5 (slice T) of
+     * those only the routes whose siding holds the whole train (Route.holds()
+     * against Kind.length()): a kind none holds has none, and is not drawn.
      */
     private int[] routesFor(Kind k) {
         int n = Math.min(routes.size(), (int) ROUTE_MASK - 1);
@@ -304,28 +385,122 @@ public final class TrainSchedule {
             else if (k.toStation() ? r.station() : !(boxes && r.station())) mine.add(i);
         }
         if (mine.isEmpty()) for (int i = 0; i < n; i++) if (!routes.get(i).works() || k == Kind.HOPPER) mine.add(i);
+        mine.removeIf(i -> routes.get(i).holds() + 1e-9 < k.length());
         return mine.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    /** The trains' keys, sorted by arrival, and the routes' boxes; built on the first ask. */
+    /**
+     * The span of the month, in fractions, a train of a kind that reaches its siding's end at `a` is on the siding: from its front
+     * reaching the route's `enters` in (the front is at len x (1 - (1 - u)^2) in the leg, u from 0 to 1) to its rear leaving it out
+     * (the front at len x (1 - u^2) out). The same figures position() runs on.
+     */
+    static double[] zone(Kind kind, Route r, double a) {
+        double leg = r.legSeconds() / MONTH_SECONDS, dwell = kind.standSeconds() / MONTH_SECONDS, len = r.length();
+        if (!(len > 0)) return new double[] { a, a + dwell };
+        double enters = Math.min(len, r.enters());
+        double in = Math.sqrt(1 - enters / len), out = Math.sqrt(Math.max(0, 1 - (enters + kind.length()) / len));
+        return new double[] { a - leg * in, a + dwell + leg * out };
+    }
+
+    /** Whether a train of a kind arriving at `ticks` on a route has its whole visit, its leg in, its stand and its leg out, inside the month. */
+    private static boolean fits(Kind kind, Route r, long ticks) {
+        double a = ticks / TICKS, leg = r.legSeconds() / MONTH_SECONDS, dwell = kind.standSeconds() / MONTH_SECONDS;
+        return ticks >= 0 && ticks < (1L << ARRIVAL_BITS) && a - leg >= 0 && a + dwell + leg <= 1;
+    }
+
+    /** When the earliest-ending of the visits already `taken` on a siding that a train arriving at `ticks` would share it with ends, in month fractions; -1 when the siding is free for it then. */
+    private static double busyUntil(Kind kind, Route r, long ticks, List<double[]> taken) {
+        if (taken == null) return -1;
+        double[] z = zone(kind, r, ticks / TICKS);
+        double end = -1;
+        for (double[] b : taken) if (z[0] < b[1] && b[0] < z[1] && (end < 0 || b[1] < end)) end = b[1];
+        return end;
+    }
+
+    /**
+     * Seats one train: route index and arrival ticks, or null when it cannot be (FX5, slice T). Its hashed route (the rs[p]) at its
+     * hashed arrival if the siding is free then; else the next route of its kind to the same yard that is, at that arrival; else the
+     * siding of that yard, its own first, that is free soonest after that arrival, if its whole visit still fits inside the month.
+     * `taken` is each route's visits seated.
+     */
+    private long[] seat(Kind kind, int[] rs, int p, long arrival, java.util.Map<Integer, List<double[]>> taken) {
+        int home = rs[p];
+        Route homeRoute = routes.get(home);
+        for (int j = 0; j < rs.length; j++) {
+            int at = rs[(p + j) % rs.length];
+            Route r = routes.get(at);
+            if (j > 0 && r.yard() != homeRoute.yard()) continue;
+            if (busyUntil(kind, r, arrival, taken.get(at)) < 0) {
+                taken.computeIfAbsent(at, x -> new ArrayList<>()).add(zone(kind, r, arrival / TICKS));
+                return new long[] { at, arrival };
+            }
+        }
+        // Every siding of the yard busy at that moment: the one that is free soonest after it, its own first, if the visit then fits the month.
+        int best = -1;
+        long bestAt = -1;
+        for (int j = 0; j < rs.length; j++) {
+            int at = rs[(p + j) % rs.length];
+            Route r = routes.get(at);
+            if (j > 0 && r.yard() != homeRoute.yard()) continue;
+            long free = firstFree(kind, r, arrival, taken.get(at));
+            if (free >= 0 && (best < 0 || free < bestAt)) { best = at; bestAt = free; }
+        }
+        if (best < 0) return null;
+        taken.computeIfAbsent(best, x -> new ArrayList<>()).add(zone(kind, routes.get(best), bestAt / TICKS));
+        return new long[] { best, bestAt };
+    }
+
+    /** The first moment, in ticks from `arrival` on, a train of a kind can arrive at a route with every visit `taken` clear of it and its whole visit inside the month; -1 when there is none. */
+    private static long firstFree(Kind kind, Route r, long arrival, List<double[]> taken) {
+        long t = arrival;
+        for (int tries = 0; tries <= (taken == null ? 0 : taken.size()) + 1; tries++) {
+            if (!fits(kind, r, t)) return -1;
+            double end = busyUntil(kind, r, t, taken);
+            if (end < 0) return t;
+            // On to the moment this train's span starts where the visit that holds it ends.
+            t += (long) Math.ceil((end - zone(kind, r, t / TICKS)[0]) * TICKS) + 1;
+        }
+        return -1;
+    }
+
+    /**
+     * The trains' keys, sorted by arrival, and the routes' boxes; built on the first ask. The trains are taken in the order their hashes
+     * make them arrive and each seated (seat()): a train none of its kind's routes holds, or that finds no moment inside the month a
+     * siding is free, is given no route and counted (unfit()).
+     */
     private void build() {
         if (keys != null) return;
         int[][] mine = new int[Kind.values().length][];
         for (Kind k : Kind.values()) mine[k.ordinal()] = routesFor(k);
-        keys = new long[count];
+        double[][] boxes = new double[routes.size()][];
+        for (int i = 0; i < routes.size(); i++) boxes[i] = box(routes.get(i));
+        long[][] order = new long[count][];
         int at = 0;
         for (int gi = 0; gi < groups.size(); gi++) {
             Group g = groups.get(gi);
-            int[] rs = mine[g.kind().ordinal()];
-            for (int k = 0; k < g.calls(); k++) {
-                long route = rs.length == 0 ? 0
-                        : 1 + rs[(int) Long.remainderUnsigned(World.mix(g.seed() ^ ((long) k << 24) ^ 0x7A15L), rs.length)];
-                keys[at++] = (arrivalTicks(g.seed(), k) << ARRIVAL_SHIFT) | (route << GROUP_BITS) | gi;
-            }
+            for (int k = 0; k < g.calls(); k++) order[at++] = new long[] { arrivalTicks(g.seed(), k), gi, k };
         }
-        java.util.Arrays.sort(keys);
-        boxesOf = new double[routes.size()][];
-        for (int i = 0; i < routes.size(); i++) boxesOf[i] = box(routes.get(i));
+        java.util.Arrays.sort(order, (p, q) -> p[0] != q[0] ? Long.compare(p[0], q[0]) : p[1] != q[1] ? Long.compare(p[1], q[1]) : Long.compare(p[2], q[2]));
+        java.util.Map<Integer, List<double[]>> taken = new java.util.HashMap<>();
+        long[] built = new long[count];
+        int none = 0;
+        for (int i = 0; i < count; i++) {
+            Group g = groups.get((int) order[i][1]);
+            int k = (int) order[i][2];
+            int[] rs = mine[g.kind().ordinal()];
+            long route = 0, arrival = order[i][0];
+            if (rs.length > 0) {
+                int p = (int) Long.remainderUnsigned(World.mix(g.seed() ^ ((long) k << 24) ^ 0x7A15L), rs.length);
+                long[] seat = seat(g.kind(), rs, p, arrival, taken);
+                if (seat != null) { route = 1 + seat[0]; arrival = seat[1]; }
+            }
+            if (route == 0) none++;
+            built[i] = (arrival << ARRIVAL_SHIFT) | (route << GROUP_BITS) | order[i][1];
+        }
+        java.util.Arrays.sort(built);
+        unfit = none;
+        boxesOf = boxes;
+        keys = built;
     }
 
     /** A call out of its key. */
@@ -343,15 +518,29 @@ public final class TrainSchedule {
     /**
      * Where a call's train is at t (month fractions), or null when it is not
      * on the line: running in over its leg, standing on its siding, or
-     * running back out. Pure in (call, t) and the route.
+     * running back out. Pure in (call, route, t). Since FX5 (slice T) the leg
+     * is the route's (Route.legSeconds(): its length over TRAIN_PLOTS_A_SECOND
+     * between LEG_SECONDS and LEG_MOST), the stand the kind's
+     * (Kind.standSeconds(): DWELL_SECONDS and DWELL_A_WAGON a wagon), and the
+     * train eases: with u from 0 to 1 over the leg, in the front is at
+     * len x (1 - (1 - u)^2) - fastest at the world line's far end, easing to
+     * a stop at the siding's end, where the view looks closest - and out at
+     * len x (1 - u^2), away from the stand and quickening as it goes (it ran
+     * at one speed over LEG_SECONDS and stopped dead before).
      */
     public static Train position(Call call, Route route, double t) {
         if (call == null || route == null) return null;
-        double leg = LEG_SECONDS / MONTH_SECONDS, dwell = DWELL_SECONDS / MONTH_SECONDS, a = call.arrives(), len = route.length();
+        double leg = route.legSeconds() / MONTH_SECONDS, dwell = call.kind().standSeconds() / MONTH_SECONDS, a = call.arrives(), len = route.length();
         boolean both = call.kind() == Kind.INTERMODAL;
-        if (t >= a - leg && t < a) return new Train(call, len * (1 - (a - t) / leg), both || call.inbound(), false);
+        if (t >= a - leg && t < a) {
+            double rest = (a - t) / leg;
+            return new Train(call, len * (1 - rest * rest), both || call.inbound(), false);
+        }
         if (t >= a && t <= a + dwell) return new Train(call, len, both || call.inbound(), true);
-        if (t > a + dwell && t <= a + dwell + leg) return new Train(call, len * (1 - (t - a - dwell) / leg), both || !call.inbound(), false);
+        if (t > a + dwell && t <= a + dwell + leg) {
+            double u = (t - a - dwell) / leg;
+            return new Train(call, len * (1 - u * u), both || !call.inbound(), false);
+        }
         return null;
     }
 
@@ -395,15 +584,18 @@ public final class TrainSchedule {
         build();
         touched = 0;
         List<Train> out = new ArrayList<>();
-        double leg = LEG_SECONDS / MONTH_SECONDS, dwell = DWELL_SECONDS / MONTH_SECONDS, w = LOCO_PLOTS;
-        long low = (long) Math.max(0, Math.floor((t - dwell - leg) * TICKS)) << ARRIVAL_SHIFT;
+        double most = LEG_MOST / MONTH_SECONDS, longest = longestStand() / MONTH_SECONDS, w = LOCO_PLOTS;
+        long low = (long) Math.max(0, Math.floor((t - longest - most) * TICKS)) << ARRIVAL_SHIFT;
         for (int i = BoatSchedule.lower(keys, 0, keys.length, low); i < keys.length; i++) {
             Call c = call(keys[i]);
-            if (c.arrives() > t + leg) break;
+            if (c.arrives() > t + most) break;
             if (c.route() < 0) continue;
             Route r = routes.get(c.route());
             double[] b = boxesOf[c.route()];
             if (b[2] + w < x0 || b[0] - w >= x1 || b[3] + w < y0 || b[1] - w >= y1) continue;
+            // Its own visit, its route's leg and its kind's stand: the search above is the longest of either.
+            double leg = r.legSeconds() / MONTH_SECONDS, dwell = c.kind().standSeconds() / MONTH_SECONDS;
+            if (t < c.arrives() - leg || t > c.arrives() + dwell + leg) continue;
             touched++;
             Train tr = position(c, r, t);
             if (tr == null) continue;
@@ -458,6 +650,12 @@ public final class TrainSchedule {
 
     /** The trains the last frame() looked at. */
     public int touched()          { return touched; }
+
+    /** The month's trains given no route (FX5, slice T): no route's siding held them, or none was free at a moment their visit fitted inside the month - counted, not drawn. Built on the first ask. */
+    public int unfit() {
+        build();
+        return unfit;
+    }
 
     /** The trains drawn of one kind. */
     public int callsOf(Kind k) {

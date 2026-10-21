@@ -3518,9 +3518,10 @@ public final class CityMap {
        THE TRAINS' ROUTES (0.8.2, batch FR1; spec-freight 4.4, D16)
        ===================================================================== */
 
-    /** trainRoutes()'s last answer, kept against the map's changes. */
+    /** trainRoutes()'s last answer, kept against the map's changes and the wagon tracks the railway's picture gave (FX5, slice T). */
     private List<TrainSchedule.Route> trainRoutesCache;
     private long trainRoutesAt = Long.MIN_VALUE;
+    private int trainRoutesWagons = -1;
 
     /** A bend of the routes the tiles draw (FX5), with whether it lies on double track (its corner plot's M_DOUBLE). */
     private record DrawnBend(TrackCurves.Bend bend, boolean doubled) { }
@@ -3555,11 +3556,18 @@ public final class CityMap {
      * straight) and each siding's ladder is TrackCurves.ladder()'s S, so no
      * train swings on the spot; the turns found, those on the railway's own
      * plots, are the bends the tiles draw (Input.bends), kept with the routes.
+     * Since FX5 (slice T; FX3's star 6) no route is laid to a siding the yard's
+     * wagons stand on - the first TileRaster.wagonTracksOn() sidings from the
+     * shed's side, the very count the tiles draw them on, so a yard always keeps
+     * one clear - and each route says what its siding holds (Route.holds(): from
+     * the ladder's end to the siding's far end, a works' siding its own length
+     * from the main line) for TrainSchedule to seat only the trains it takes.
      * The map's alone: nothing in the model reads it.
-     * Kept against changes().
+     * Kept against changes() and the wagon tracks the railway's picture gives.
      */
     public List<TrainSchedule.Route> trainRoutes() {
-        if (trainRoutesCache != null && trainRoutesAt == changes) return trainRoutesCache;
+        int wagons = wagonTracksOf(railPicture.wagonShare());
+        if (trainRoutesCache != null && trainRoutesAt == changes && trainRoutesWagons == wagons) return trainRoutesCache;
         List<TrainSchedule.Route> out = new ArrayList<>();
         List<TrackCurves.Bend> found = new ArrayList<>();
         WorldLine line = null;
@@ -3575,8 +3583,9 @@ public final class CityMap {
                 if (way == null) continue;
                 boolean isStation = station != null && Arrays.equals(station, yard);
                 int ty = yardTypeOf(i);
-                trainRoutesInto(out, i, isStation, yard, way, fx, fy, line.x(), line.y(), yardRail(runs, yard),
-                        ty < 0 ? TileRaster.YARD_TRACKS : TileRaster.tracksOf(types[ty]), found);
+                int tracks = ty < 0 ? TileRaster.YARD_TRACKS : TileRaster.tracksOf(types[ty]);
+                trainRoutesInto(out, i, isStation, yard, way, fx, fy, line.x(), line.y(), yardRail(runs, yard), tracks, found,
+                        TileRaster.wagonTracksOn(wagons, tracks));
             }
             // A bulk unit train runs from the world line along the main line straight into a works' siding, no yard (FR7 slice 3).
             for (long[] siding : runs.sidings()) {
@@ -3586,12 +3595,14 @@ public final class CityMap {
                 pts.add(new double[] { fx, fy });
                 pts.add(new double[] { line.x(), line.y() });
                 for (int k = 0; k < way[0].length; k++) addNew(pts, way[0][k], way[1][k]);
-                out.add(routeToWorks(pts, found));
+                // The siding holds what it is long, from where it leaves the main line to its end (siding[5] plots, FX5 slice T).
+                out.add(routeToWorks(pts, found, siding[5]));
             }
         }
         trainBends = drawnBends(found);
         trainRoutesCache = out;
         trainRoutesAt = changes;
+        trainRoutesWagons = wagons;
         return out;
     }
 
@@ -3715,6 +3726,16 @@ public final class CityMap {
     static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way,
                                         double fx, double fy, double wx, double wy, boolean[] rail, int tracks,
                                         List<TrackCurves.Bend> bendsOut) {
+        trainRoutesInto(out, yardAt, station, yard, way, fx, fy, wx, wy, rail, tracks, bendsOut, 0);
+    }
+
+    /**
+     * ...and (FX5, slice T) with the yard's first `standing` sidings from the shed's side left without a route, the wagons standing on
+     * them (TileRaster.wagonTracksOn()): the routes are those of the sidings after, each with the plots of train its siding holds.
+     */
+    static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way,
+                                        double fx, double fy, double wx, double wy, boolean[] rail, int tracks,
+                                        List<TrackCurves.Bend> bendsOut, int standing) {
         double[] xs = way[0], ys = way[1];
         int n = xs.length;
         double bx0 = yard[0], by0 = yard[1], bx1 = yard[0] + yard[2], by1 = yard[1] + yard[3];
@@ -3802,7 +3823,10 @@ public final class CityMap {
         double b = (fromStart ? s1 : s0) - u * TileRaster.YARD_LADDER;
         // The way up to the fan's apex is rounded once for all the sidings; each siding's ladder is TrackCurves.ladder()'s S, as the yard is drawn (FX5).
         Rounded base = rounded(pts, bendsOut);
-        for (int s = 0; s < k; s++) {
+        // How far along the routes the apex lies, where each siding's ladder begins (FX5, slice T).
+        double apexAt = 0;
+        for (int i = 1; i < base.xs().length; i++) apexAt += Math.hypot(base.xs()[i] - base.xs()[i - 1], base.ys()[i] - base.ys()[i - 1]);
+        for (int s = Math.max(0, standing); s < k; s++) {
             double off = at[s] + shift - lineAt;
             double[][] lad = TrackCurves.ladder(ew ? apex : lineAt, ew ? lineAt : apex, ew ? u : 0, ew ? 0 : u, ew ? 0 : 1, ew ? 1 : 0, TileRaster.YARD_LADDER, off);
             int m = base.xs().length, l = lad[0].length;
@@ -3816,7 +3840,8 @@ public final class CityMap {
             ry = Arrays.copyOf(ry, w + 1);
             rx[w] = ew ? b : lineAt + off;
             ry[w] = ew ? lineAt + off : b;
-            out.add(TrainSchedule.Route.through(yardAt, station, s, rx, ry, base.fadeTo()));
+            // The siding holds what lies between its start, the ladder's end, and its far end.
+            out.add(TrainSchedule.Route.through(yardAt, station, s, rx, ry, base.fadeTo(), Math.hypot(rx[w] - rx[w - 1], ry[w] - ry[w - 1]), apexAt));
         }
     }
 
@@ -3856,9 +3881,9 @@ public final class CityMap {
     }
 
     /** ...to a works' siding (FR7 slice 3): through the points, rounded, the world line's part its first leg's straight, no yard; a bulk unit train's alone. */
-    private static TrainSchedule.Route routeToWorks(List<double[]> pts, List<TrackCurves.Bend> bendsOut) {
+    private static TrainSchedule.Route routeToWorks(List<double[]> pts, List<TrackCurves.Bend> bendsOut, double holds) {
         Rounded r = rounded(pts, bendsOut);
-        return TrainSchedule.Route.toWorks(r.xs(), r.ys(), r.fadeTo());
+        return TrainSchedule.Route.toWorks(r.xs(), r.ys(), r.fadeTo(), holds);
     }
 
     /* =====================================================================

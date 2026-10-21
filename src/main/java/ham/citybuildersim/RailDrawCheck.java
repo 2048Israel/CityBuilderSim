@@ -46,7 +46,8 @@ import java.util.List;
  *  13. the freight station with goods is a container yard; the same yard not
  *      the station, and the station without goods, stay bulk;
  *  14. wagonTracks 0 draws no WAGON, YARD_TRACKS draws a wagon on every
- *      track's bed, and half of YARD_TRACKS on that many tracks only;
+ *      track's bed but one (FX5: a yard keeps a siding clear for a train),
+ *      and half of YARD_TRACKS on that many tracks only;
  *  15. a north-south line through the yard gives a north-south fan;
  *  16. at 4 px the yard still draws as a yard; below LINES_FROM it is a plain
  *      TRANSPORT box;
@@ -656,7 +657,7 @@ public class RailDrawCheck {
 
     /* ================= 14. wagons standing ================= */
     static void wagonsStanding() {
-        System.out.println("--- 14. wagonTracks: none, every track, then half the tracks ---");
+        System.out.println("--- 14. wagonTracks: none, every track but one, then half the tracks ---");
         int px = 8, boxX = 4, boxY = 4, boxW = 24, boxH = 24, railY = 16, w = T * px;
         TilePainter.Input none = yardAt(terminal(), boxX, boxY, boxW, boxH);
         railRow(none, railY, 0);
@@ -671,11 +672,17 @@ public class RailDrawCheck {
         full.wagonTracks = TileRaster.YARD_TRACKS;
         TilePainter.Painted pf = paint(full);
         int[] imgf = raster(full, pf, px);
-        boolean allWagons = true;
-        for (int b = 0; b < bands.length / 2; b++) {
-            allWagons &= bandHas(imgf, w, boxX, boxY, boxW, boxH, px, TileRaster.WAGON, bands[2 * b], bands[2 * b + 1]);
+        // FX5, Jerus 2026-10-20 ("Queue the fix" for a train standing over the yard's own wagons): a yard keeps one siding clear of standing
+        // wagons, so a train always has one (TileRaster.wagonTracksOn(); CityMap.trainRoutes() lays no route to the others): YARD_TRACKS
+        // wagon tracks stand on every track's bed but one, the last from the shed's side. It was "every track's bed".
+        boolean allWagons = true, lastClear = true;
+        int tracksDrawn = bands.length / 2;
+        for (int b = 0; b < tracksDrawn; b++) {
+            boolean has = bandHas(imgf, w, boxX, boxY, boxW, boxH, px, TileRaster.WAGON, bands[2 * b], bands[2 * b + 1]);
+            if (b < tracksDrawn - 1) allWagons &= has;
+            else lastClear &= !has;
         }
-        check("YARD_TRACKS wagons stand on every track's bed", allWagons);
+        check("YARD_TRACKS wagons stand on every track's bed but one, which stays clear for a train", allWagons && lastClear);
 
         TilePainter.Input half = yardAt(terminal(), boxX, boxY, boxW, boxH);
         railRow(half, railY, 0);

@@ -1433,7 +1433,12 @@ public class MainLineCheck {
             long[] y = own.yards().get(i);
             int[] ln = lineOf(own, y);
             System.out.printf("  %s with water in the cells too: box %s%n", names[i], Arrays.toString(y));
-            check(names[i] + " is laid at the footprint's own length along its row, " + fps[i][0] + " plots", ln != null && ln[2] == 1 && ln[0] == fps[i][0] && ln[1] == fps[i][1]);
+            // FX5 (the tiers by train): the dry stretch is the 27 plots between the two waters, so a yard takes the longest tier
+            // that fits in it - a Terminal its own 24, a Depot a mixed train's 15 (TIER_LENGTHS), not its 8-plot footprint, which holds none.
+            int fits = fps[i][0];
+            for (int t = 0; t < CityRuns.TIERS; t++) if (CityRuns.tierAlong(fps[i][0], t) <= 27) fits = Math.max(fits, CityRuns.tierAlong(fps[i][0], t));
+            check(names[i] + " is laid at the longest tier the 27 dry plots allow, " + fits + " plots along its row", ln != null && ln[2] == 1 && ln[0] == fits
+                    && ln[1] == (fits == fps[i][0] ? fps[i][1] : Math.min(fps[i][0], fps[i][1])));
         }
 
         // Each yard keeps the size it was asked for: laid again the next month, it is the same box, not laid anew.

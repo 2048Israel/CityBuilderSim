@@ -246,6 +246,17 @@ public final class TileRaster {
     public static int tracksOf(BuildingVisual.Type t) {
         return BuildingVisual.depot(t) ? DEPOT_TRACKS : YARD_TRACKS;
     }
+
+    /**
+     * The sidings of a yard of `tracks` that wagons stand on, from the shed's side, when the railway's picture gives `wagonTracks` of a
+     * Terminal's YARD_TRACKS (CityMap.wagonTracksOf()): scaled to the yard's own sidings, and never all of them - a yard keeps one siding
+     * clear of standing wagons (FX5, slice T; FX3's star 6), which the routes lay no train past (CityMap.trainRoutes() reads this, as the
+     * tiles do) and the trains go to.
+     */
+    public static int wagonTracksOn(int wagonTracks, int tracks) {
+        int scaled = tracks == YARD_TRACKS ? wagonTracks : (int) Math.round(wagonTracks * (double) tracks / YARD_TRACKS);
+        return Math.max(0, Math.min(tracks - 1, scaled));
+    }
     /** Plots between the fan's tracks, middle to middle. */
     public static final double YARD_TRACK_APART = 1.5;
     /** Plots at each end over which the fan closes to the line. */
@@ -475,7 +486,8 @@ public final class TileRaster {
      * plots, a freight shed on one side of the fan, and on the other the
      * freight it handles - a container yard's boxes and gantry cranes where
      * the freight station carries goods, every other yard's ore stockpiles -
-     * with wagons standing on the first wagonTracks tracks from the shed.
+     * with wagons standing on the first wagonTracks tracks from the shed
+     * (never on all of them: wagonTracksOn() keeps one siding clear, FX5 T).
      * Since FX3 (0.8.4) the fan lies where yardLayout() puts it: on the line
      * with the longest stretch clear of crossing track, the shed, the heaps
      * and the boxes kept to that stretch, and the track that crosses the
@@ -659,8 +671,8 @@ public final class TileRaster {
         // What it handles, on the other side of the fan from the shed.
         if (container) containers(px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanNear, fanFar);
         else stockpiles(px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanFar);
-        // Wagons standing on the first wagonTracks tracks from the shed's side.
-        int wagonTracks = n == YARD_TRACKS ? in.wagonTracks : (int) Math.round(in.wagonTracks * (double) n / YARD_TRACKS);
+        // Wagons standing on the first wagonTracks tracks from the shed's side, never on all of them (a siding stays clear for a train).
+        int wagonTracks = wagonTracksOn(in.wagonTracks, n);
         for (int k = 0; k < wagonTracks && k < n; k++) {
             int mid = (int) Math.round(at[k]);
             int wide = px >= RAILS_FROM ? bed : 1;

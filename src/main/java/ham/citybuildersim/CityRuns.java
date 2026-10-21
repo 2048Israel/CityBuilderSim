@@ -1133,7 +1133,9 @@ public final class CityRuns {
        district's edge is one district's work (CityMap.workIn()). Where no
        box of that length fits (water, ground not owned, a highway or its
        verge, a mine, a siding, another yard), the next shorter along
-       length: the cell's interior, then the footprint's own - the first
+       length: the one that holds the next shorter train (TIER_LENGTHS: an
+       intermodal's 33, the cell's interior, a mixed train's 15), then the
+       footprint's own - the first
        that fits wins, over the nearest-a-mine order, the branches' and the
        further yards' alike. Each yard keeps the footprint it was asked for
        (yardAsked(), in the sidecar from CityMap FORMAT 10), so a yard laid
@@ -1141,17 +1143,37 @@ public final class CityRuns {
        ===================================================================== */
 
     /**
-     * How long a yard is laid along its line (FX5 Y1; Jerus, 2026-10-20: "a long train will be out of the depot", "the rail depots would have to be redesigned to accomdoate such large trains"): a unit train's length rounded up, its two locomotives and 80 wagons of UNIT_TONNES at WAGON_TONNES, 41.4 plots, and the two ladders that close a yard's sidings to its line, 3 each: 48 plots, 1.44 km. A yard is laid so long where the ground allows, else at the cell's interior, else at the length of its type's footprint.
+     * How long a yard is laid along its line (FX5 Y1; Jerus, 2026-10-20: "a long train will be out of the depot", "the rail depots would have to be redesigned to accomdoate such large trains"): a unit train's length rounded up, its two locomotives and 80 wagons of UNIT_TONNES at WAGON_TONNES, 41.4 plots, and the two ladders that close a yard's sidings to its line, 3 each: 48 plots, 1.44 km. A yard is laid so long where the ground allows, else at the length that holds the next shorter train (TIER_LENGTHS), else at the length of its type's footprint.
      */
     public static final int YARD_LONG = (int) Math.ceil(2 * TrainSchedule.LOCO_PLOTS + Math.ceil(TrainSchedule.UNIT_TONNES / TrainSchedule.WAGON_TONNES) * TrainSchedule.CAR_PLOTS)
             + 2 * TileRaster.YARD_LADDER;
 
-    /** The lengths, longest first, a yard of footprint {w, h} is laid at along a row (w along) or a column (h along): YARD_LONG, the cell's interior, the footprint's own (FX5 Y1). Three tiers; tierAlong() repeats a length two tiers share. */
-    static final int TIERS = 3;
+    /**
+     * The lengths, longest first, a yard of footprint {w, h} is laid at along a row (w along) or a column (h along): each kind of
+     * train's length rounded up and its two ladders - a unit train's YARD_LONG (48), an intermodal train's 33, a mixed train's 15 -
+     * with the cell's interior (31) among them, then the footprint's own (FX5). The longest the ground allows wins, so a young city
+     * whose ground runs a few hundred metres past its hub still lays a yard that holds the longest train it can, not its 8-plot
+     * footprint, which holds none. tierAlong() repeats a length two tiers share.
+     */
+    static final int[] TIER_LENGTHS = tierLengths();
 
-    /** The footprint's own length along the line, `own`, at tier t: YARD_LONG (never less than the footprint's), the cell's interior, the footprint's own. */
+    /** ...how many: one for each length and one for the footprint's own. */
+    static final int TIERS = TIER_LENGTHS.length + 1;
+
+    private static int[] tierLengths() {
+        java.util.TreeSet<Integer> lengths = new java.util.TreeSet<>(java.util.Collections.reverseOrder());
+        for (TrainSchedule.Kind k : TrainSchedule.Kind.values()) lengths.add((int) Math.ceil(k.length()) + 2 * TileRaster.YARD_LADDER);
+        lengths.add(YARD_LONG);
+        lengths.add(DistrictPlan.INTERIOR);
+        int[] out = new int[lengths.size()];
+        int i = 0;
+        for (int l : lengths) out[i++] = l;
+        return out;
+    }
+
+    /** The footprint's own length along the line, `own`, at tier t: TIER_LENGTHS[t] (never less than the footprint's), the footprint's own at the last. */
     static int tierAlong(int own, int t) {
-        return t == 0 ? Math.max(own, YARD_LONG) : t == 1 ? Math.max(own, DistrictPlan.INTERIOR) : own;
+        return t < TIER_LENGTHS.length ? Math.max(own, TIER_LENGTHS[t]) : own;
     }
 
     /** Whether tier t is a length the tier before it already is (so it adds no boxes): a yard whose footprint is already as long as the interior has two tiers. */
