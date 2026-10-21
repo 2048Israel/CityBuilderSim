@@ -569,7 +569,9 @@ public class DataSave {
      * Why this save's world cannot be read here, or null (0.7.121): a kind
      * this build does not know, or an Earth city whose spot is missing or
      * whose data is not this build's or not here, or (0.7.127) that was saved
-     * before ice was a kind of ground (EarthSite.loadProblem(), ICE_FORMAT).
+     * before ice was a kind of ground (EarthSite.loadProblem(), ICE_FORMAT),
+     * or (0.8.12) before its fields were drawn on the geology
+     * (DEPOSITS_FORMAT).
      * Null on a generated world. Game's load refuses it with these words.
      */
     public String earthProblem() {
