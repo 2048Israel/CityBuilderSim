@@ -32,7 +32,7 @@
 - **The packing at the edge.** In the same city, the ones turned away are now the newest, mostly houses, where today they are the works and the farms (they come last in the bands): 3,570 by count at month 4,000 against 450, while each full district's boxes cover more of its ground (the median 0.54 of its owned plots against 0.40). The study predicted it ("the same ground, smaller ones"; its prototype 1,331). Two tries to bring it down were measured and dropped: a ladder that squares only in a district less than half full (no change: no cell was being squared there), and the excess past `PLAN_FILL` everywhere sent to the district with the most ground left rather than the founding district's (3,538, and the ring half back). His cities have ground to spare: his 1.7M city's packing is 0 both ways.
 - **`PLAN_FILL` measured again**: on his 1.7M city the three fullest districts' boxes cover 0.682, 0.681 and 0.678 of their owned plots; on the playtest's, a full plan holds 0.63 to 0.67 of its owned plots in the map's own measure (its buildings' plots and its road's). 0.68 stands.
 - **The sidecar**: the 10B copy's log is the canonical deal, about 50 records a district, 0.27 bytes a record deflated; a played city's grows by the month (the study: 5,053 records in the playtest's 4,000 months, 7.6 KB deflated). MapCheck holds it under 500,000 bytes and 500 ms to write and to read.
-- **The plans' time**: PlanCheck's dense screen's slowest district 24.5 ms in the suite, soft beside other JVMs (`PLAN_MS` 40), and with the forty batches' logs the slowest 5.4 ms against 5.1 packed from the counts; his city's 115 plans 2.8 s on the map's worker against 3.0.
+- **The plans' time**: PlanCheck's dense screen's slowest district 16.2 ms, hard and alone (`PLAN_MS` 40), and with the forty batches' logs the slowest 6.3 ms against 3.3 packed from the counts (§3); his city's 115 plans 2.8 s on the map's worker against 3.0.
 
 ## 3. The checks
 
@@ -44,7 +44,7 @@
   - MapCheck 8, the played city's fixture "has streets and + junctions": its few cells each opened while its road was short, and a cell's squares are decided as it opens, so its junctions are T's. The + rule bites on Jerus's city x 1 (150 + junctions), said in a line.
   - MapCheck 4, a FORMAT 4 and 5 sidecar "into the same districts": counts and figures compared, not logs (an old sidecar's log begins at its month by design).
 - **The suite**: `Batch check.bat --maps`, beside other batches' JVMs (timing soft): 124 harnesses, 123 passed; the one red is ScaleCheck's "...and it builds", red on main too (SC1). Stale: 0 firm findings. The maps regenerated.
-- **`--timing`, alone**: __TIMING__
+- **`--timing`, alone and hard**: 8 harnesses, 7 passed; the red is ScaleCheck's "...and it builds" again (SC1), no timing figure. The dense screen's slowest district 16.2 ms (`PLAN_MS` 40); with the forty batches' logs 6.3 ms against 3.3 packed from the counts (the one build more); the screen at 10B 21.3 ms (`SCREEN_MS` 80).
 
 ## 4. What is saved
 
