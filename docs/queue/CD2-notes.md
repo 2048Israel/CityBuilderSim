@@ -9,7 +9,7 @@ study's model run again with the firms (D33). Planned while CD1 was built;
 built on CD1's branch (unshipped, waiting for Jerus on H1 and A2) merged with
 main at 9f1b328 (CL2, 0.8.13); merged with main at 9ff6489 after CD1 shipped as 0.8.15 (CL3 took 0.8.14), so it is 0.8.16.*
 
-**Work in progress, not ready to ship**: it carries CD1's unshipped commits, and `--timing` was not run (07:45 came first). Built, checked and recorded otherwise: see §3.
+**Ready.** Merged with main after CD1 shipped (9ff6489, then e6c8e74); the checks, the playtests and the ensemble rerun on the merged tree; `--timing` 7 of 8, its one red MapCheck's wall clock, which main fails alone too (§3).
 
 ## 1. What it does
 
@@ -123,7 +123,7 @@ at every step.
 AuctionCheck, fixed. Main's red, ScaleCheck's "...and it builds" (SC1),
 passes here as it did on CD1. On the final model (9e828b81's model, before
 the words and the maps): **126 harnesses run in 792 s, all passed**, Stale 0
-firm findings. The final check with the maps (`Batch check.bat --maps`, at 89610f6c): **126 harnesses, all passed**, the maps regenerated, Stale 0 firm findings - in 14,046 s, the PC loaded past its memory beside CL3 and the night's other work. **`--timing` not run**: it is the first thing left.
+firm findings. On the tree merged with main after CD1 shipped (7bbe4cd4, `Batch check.bat --maps`, beside the ensemble and the Rotterdam playtest): **126 harnesses, 124 passed**, the maps regenerated, Stale 0 firm findings; the two reds wall-clock lines only (MapCheck's sidecar and a month's change at 10 billion, EarthTerrainCheck's cell pass), timed hard under the run's own load. **`--timing`, alone and hard:** 8 run in 262 s, **7 passed**; EarthTerrainCheck green; **MapCheck red on two wall-clock lines** (the sidecar at 10 billion in 500 ms, a month's change at 10 billion in 5 ms). **Main fails it too**: MapCheck alone on origin/main (e6c8e74) fails "a month's change ... in 5 ms" at 5 and 10 billion. CL3's sidecar and its month's change are the map's; CD2 touches neither. The default playtest on the merged tree: 573,349 people, nothing found; Rotterdam 761,080, its one finding CL3's layout watch, the red main ships with (FX6).
 
 **D33's count.** No tail over a point anywhere it was counted: AuctionCheck
 11's 1,200 months of the automatic builder's city booked 82 sales, D$40.0B
@@ -154,17 +154,17 @@ the audit and every reload matched, on both.
 A single run swings a long way with its path (FR2-notes §4); the ensemble is
 the measure.
 
-**The ensemble** (label cd2, 2 runners at once, 80 of 80 runs in 13.9
-minutes, against CD1's `docs/ensemble/0.8.13.md`, to become 0.8.14.md when
-CD1 rebases): **23/26** (one vacuous) against CD1's 22/26; stored as
-`docs/ensemble/0.8.15.md`. **A2 passes** again (the longest spell over 10%
-from m240 a median 7 months [1 to 10], against CD1's 7 [3 to 12]). **S1**
-stays red, its median nearer the line (1.85% over the twin against 2.36%)
-but one seed's spell over 10% 17 months against 12. **R3** stays red, 3
-seeds over a point against 4. **H1** stays red by CD1's design (★9 there: a
-dial held at 0% no longer buys cheap long money); H2 vacuous with it. AUTO2's
-final population is 217,480 against 235,932 (92%, T2 passes); every run's
-audit closed and no run had a LongPlaytest finding.
+**The ensemble** (label cd2b, on the tree merged with main after CD1
+shipped, 4 runners at once, 80 of 80 runs in 19.4 minutes, against CD1's
+`docs/ensemble/0.8.15.md`): **23/25** (one vacuous, H1 retired by Jerus)
+against CD1's 22/25; stored as `docs/ensemble/0.8.16.md`. The night's run
+on the unmerged tree (cd2) gave the same figures. **A2 passes** (the longest
+spell over 10% from m240 a median 7 months [1 to 10], against CD1's 7 [3 to
+12]). **S1** stays red, its median nearer the line (1.85% over the twin
+against 2.36%) but one seed's spell over 10% 17 months against 12. **R3**
+stays red, 3 seeds over a point against 4. AUTO2's final population is
+217,480 against 235,932 (92%, T2 passes); every run's audit closed and no
+run had a LongPlaytest finding.
 
 ## 4. Who wrote what, and what review changed
 

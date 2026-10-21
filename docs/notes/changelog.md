@@ -14,7 +14,7 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
-### 0.8.16 — CD2, the lineup and the auction — 2026-10-21, built on CD1 (0.8.15), see docs/queue/CD2-notes.md
+### 0.8.16 — CD2, the lineup and the auction — 2026-10-21, ready, see docs/queue/CD2-notes.md
 
 The city sells bills (1-12 months), bonds (2-50 years, the coupon the clearing yield rounded down to an eighth, in
 lines that reopen) and the amortizing bond at auction (spec-city-debt §2, §4); the term loan and the 0.75% spread
@@ -24,7 +24,7 @@ priced on the curve so no round trip makes money. The firms and the world hold w
 automatic building each sell at their own cap: a short rollover is paid from cash and the advances, a short build
 sale keeps its ask open. Borrow is the auction's screen. The study's model, rerun with the firms first: the tight
 city's tail 28 bp, not 503. Save format 42. Traces move (default 573,349 people against 619,699, Rotterdam 761,080
-against 834,678; one domestic sale between them, at fair); ensemble 23/26 against 22/26, A2 green. AuctionCheck.
+against 834,678; one domestic sale between them, at fair); ensemble 23/25 against 22/25, A2 green. AuctionCheck.
 
 
 ---
