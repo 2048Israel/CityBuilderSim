@@ -194,14 +194,19 @@ New: `AuctionCheck`. On the new API, premises unchanged: `CreditCheck`,
    households' savings thin together.
 5. **★5 The study's firms hold D$1.5B idle**, the study's own figure; the
    tails above hold at nothing.
-6. **★6 A city with no room at its bank** (no branch, so `Bank.capacity()`
-   is 0, or a bank in resolution): the auction has no bank in it, and sells
-   what the households, the firms and the world bid. Today the bank took the
-   rest by construction, funded at the central bank's window. To be measured
-   at GO on a fresh city and the playtest's first years before it is
-   settled; if a young city cannot borrow for its first works on it, the
-   proposal is that the window stands behind a branchless bank's bid at fair
-   for a capped amount, said on the card.
+6. **★6 The bank's room is its risk capital, and a bank not yet capitalised
+   takes the rest.** Measured at GO on `NewGameCheck`'s city: `Bank.capacity()`
+   (the tighter of capital and funding) and even `capitalLimit()` (the
+   leverage ratio binds while a young bank's own cash is its exposure) left
+   it 173k of room against a D$70M first bond until month 13, and at the
+   founding the bank has no equity at all. So the bank bids
+   equity / `CAPITAL_RATIO` less its weighted book, over `RISK_CITY` (D20 in
+   Jerus's words: "its room is its capital"), funded at the window where its
+   deposits fall short, as the residual buyer always was; a bank with no
+   equity yet (the founding months) takes the rest at fair as before CD2;
+   a bank in resolution bids nothing. The leverage ratio still binds its
+   lending. The alternative is the leverage ratio applied here too, and
+   young cities borrowing only from their households for a year.
 
 ## 6. The risk to tonight
 

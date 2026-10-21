@@ -2772,7 +2772,7 @@ final class FinancesScreen {
     /** WHO BUYS IT: the households, then the bank, its room used as a bar with this issue as a ghost; the bank's three alarms make the card red. */
     VBox whoBuysCard(DebtQuote quote) {
         Bank bank = ui.game.getBank();
-        double room = bank.isInsolvent() ? 0 : bank.capitalLimit();   // D20: its room is its capital (CD2)
+        double room = bank.isInsolvent() ? 0 : bank.equity() / Bank.CAPITAL_RATIO;   // D20: its room is its capital (CD2)
         String info = String.format(BUYERS_INFO, pc(Bank.RISK_CITY));
         VBox card = card(caption("WHO BUYS IT", info));
         if (bank.isInsolvent()) {
@@ -2784,9 +2784,10 @@ final class FinancesScreen {
         }
         if (room <= 0) {
             card.setStyle(cardStyle(Palette.BAD));
-            card.getChildren().add(words("There is no bank to buy this. The households bid for what pays them better "
-                    + "than a deposit would, and the auction sells what they bid at the highest yield the city allows; "
-                    + "the rest is not sold. One branch changes that.",
+            card.getChildren().add(words("The bank has no capital room to buy this. The households bid for what pays them "
+                    + "better than a deposit would, and the auction sells what they bid at the highest yield the city "
+                    + "allows; the rest is not sold - unless the bank has no capital at all yet, in its first months, "
+                    + "when it stands behind the sale at fair, funded at the central bank's window.",
                     Palette.SIZE_BODY + 1, Palette.BAD_TEXT));
             return card;
         }

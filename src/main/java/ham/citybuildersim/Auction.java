@@ -155,6 +155,25 @@ public final class Auction {
             this(kind, months, face, fair, lineCoupon, fee, null);
         }
 
+        /**
+         * Two asks are the same ask when they offer the same paper at the same
+         * fair yield and fee. The pricer is HOW it is priced, a fresh function
+         * each time the game builds an ask, so it is left out: a DebtQuote
+         * quoted twice on the same city is equal to itself (MapCheck 14 holds
+         * the land office's card to that).
+         */
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof Ask x && kind == x.kind && months == x.months
+                    && Double.compare(face, x.face) == 0 && Double.compare(fair, x.fair) == 0
+                    && Double.compare(lineCoupon, x.lineCoupon) == 0 && Double.compare(fee, x.fee) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return java.util.Objects.hash(kind, months, face, fair, lineCoupon, fee);
+        }
+
         /** True when this opens a line rather than reopens one. */
         public boolean isNewLine() {
             return Double.isNaN(lineCoupon);

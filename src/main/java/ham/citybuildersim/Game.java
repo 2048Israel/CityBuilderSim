@@ -8003,17 +8003,30 @@ public class Game {
      *    (panicking) - until the businesses' paper book and the world's are
      *    built they have nowhere to hold city paper (CD2 slices 4 and 5);
      *  - a month of output, as CapitalFlows reads it;
-     *  - the bank's room as a face: its CAPITAL's room (capitalLimit(), D20:
-     *    "its room is its capital") less its weighted book, over Bank.RISK_CITY
-     *    (city paper weighs a fifth), less the face the sales since the last
-     *    settle have left for it. Nothing for a bank in resolution or with no
-     *    equity;
+     *  - the bank's room as a face (docs/queue/CD2-notes.md, star 6): its RISK
+     *    capital, equity over Bank.CAPITAL_RATIO, less its weighted book, over
+     *    Bank.RISK_CITY (city paper weighs a fifth), less the face the sales
+     *    since the last settle have left for it. Nothing for a bank in
+     *    resolution or insolvent; and for a bank with no equity yet (the
+     *    founding months, before its capital arrives) the whole face of the
+     *    sale, as it was the residual buyer before CD2 and funded at the
+     *    window;
      *  - and what the bank needs over fair: its funding past the floor the
      *    curve already carries, fading as the dial's gap does
      *    (YieldCurve.DRIFT_MONTHS) - the mean of the fade over the paper's
      *    months, as debt-model.py's funding_strain() has it. Nothing usually.
      */
     public Auction.Bidders auctionBidders(int months) {
+        return auctionBidders(months, 0);
+    }
+
+    /**
+     * ...for a sale of this face, which only matters to a bank not yet
+     * capitalised: it then stands as the residual buyer for the whole of the
+     * face (below). A reader that sells nothing - the screen's chart of the
+     * bids - passes none, and such a bank reads as having no room.
+     */
+    public Auction.Bidders auctionBidders(int months, double face) {
         double pendingHouseholds = 0, pendingBank = 0;
         for (Debt d : debtManager.getDebt()) {
             if (d.isForeign() || !(d.getSettleDue() > 0)) continue;
@@ -8022,14 +8035,21 @@ public class Game {
                     - d.allotFirmsFace() - d.allotWorldFace());
         }
         double spare = Math.max(0, householdBalance.spareForPaper() - pendingHouseholds);
-        // D20: the bank's room for the city's paper is its CAPITAL, not capacity() - city paper is the
-        // window's collateral, so what its deposits do not fund it borrows at the central bank's window
-        // (Bank.lend() takes the cash below nothing, which the settle advances), as the residual buyer
-        // always did. A young bank with equity and no deposits yet has room; one in resolution or
-        // insolvent has none.
-        double room = bank.isInsolvent() ? 0
-                : Math.max(0, bank.capitalLimit() - bank.getWeightedBook()) / Bank.RISK_CITY;
-        double bankRoom = Math.max(0, room - pendingBank);
+        // D20, "its room is its capital" (docs/queue/CD2-notes.md, star 6): the bank's bid for the city's
+        // paper is limited by its RISK-weighted capital, equity over CAPITAL_RATIO - not by capacity(),
+        // which its deposits can hold down, since city paper is the window's collateral: what the deposits do
+        // not fund it borrows at the central bank's window (Bank.lend() takes the cash below nothing, which
+        // the settle advances), as the residual buyer always did. The leverage ratio is NOT applied to this
+        // bid - capitalLimit() would, and from month 2 to 12 of a young city it reads 36k to 95k of room on
+        // 32M of equity - it binds the bank's lending, not its bid for treasury paper (D33's open question,
+        // for Jerus). A bank with no equity yet (before its capital arrives) stands as the residual buyer
+        // for the whole face at fair, funded at the window, as it did before CD2; the face stands in for
+        // an unlimited room, which the arithmetic (cover, pro rata) cannot take.
+        double bankRoom;
+        if (bank.isInsolvent()) bankRoom = 0;
+        else if (bank.equity() <= 0) bankRoom = Math.max(0, face);
+        else bankRoom = Math.max(0, Math.max(0, bank.equity() / Bank.CAPITAL_RATIO - bank.getWeightedBook())
+                / Bank.RISK_CITY - pendingBank);
         double extra = Math.max(0, debtManager.bankFloorRate() - debtManager.floorRate());
         if (extra > 0 && months > 1) {
             double r = Math.exp(-1.0 / YieldCurve.DRIFT_MONTHS);
@@ -8054,7 +8074,7 @@ public class Game {
         YieldCurve curve = debtManager.quoteCurve(Math.max(0, face));
         Auction.Ask ask = new Auction.Ask(kind, months, face,
                 DebtManager.fairYieldOn(curve, kind, months), lineCoupon, issuanceFee(), curve::pvAtSpread);
-        return Auction.run(ask, auctionBidders(months), cap == null ? Auction.Cap.DEFAULT : cap);
+        return Auction.run(ask, auctionBidders(months, face), cap == null ? Auction.Cap.DEFAULT : cap);
     }
 
     /** A quote of nothing: the standing rate before and after, no face. */
@@ -8068,13 +8088,19 @@ public class Game {
     }
 
     /**
-     * The face whose proceeds cover `cash`, found by the existing shape: a
-     * first face at par and the fee, then as many granules more as the
-     * shortfall needs at what a unit of that sale banked, until it covers -
-     * hard bounded (64 turns), because the stop rises with the face and the
-     * proceeds are rounded to the cent. A sale that is short at its cap is
-     * not chased: more face cannot raise what the bids at the ceiling do not
-     * cover, so the quote that raised most comes back, short.
+     * The smallest face whose proceeds cover `cash`: a first face at par and
+     * the fee, then as many granules more as the shortfall needs at what a
+     * unit of that sale banked, until it covers - hard bounded (64 turns),
+     * because the stop rises with the face and the proceeds are rounded to the
+     * cent - and then the face brought down to the smallest granule that
+     * still covers. A new line's coupon is the stop rounded down to an eighth
+     * (D2), so proceeds are a sawtooth in face and the climb can step over the
+     * face where the coupon steps up; the descent is a bisection between the
+     * last face that did not cover and the first that did, which ends with a
+     * face that covers and the granule below it not (CD2; NewGameCheck 11
+     * asserts it). A sale that is short at its cap is not chased: more face
+     * cannot raise what the bids at the ceiling do not cover, so the quote
+     * that raised most comes back, short.
      *
      * @param at the quote for a face
      */
@@ -8082,8 +8108,10 @@ public class Game {
         double granule = rounding > 0 ? rounding : 1;
         double face = Math.ceil((cash + issuanceFee()) / granule) * granule;
         DebtQuote quote = at.apply(face);
+        double notCovering = 0;     // the largest face known not to cover; 0 for none yet
         for (int guard = 0; guard < 64 && !quote.isEmpty() && quote.cashReceived() < cash; guard++) {
             if (quote.isShort()) return quote;
+            notCovering = face;
             double perFace = Math.max(.05, (quote.cashReceived() + issuanceFee()) / quote.faceValue());
             face += granule * Math.max(1, Math.ceil((cash - quote.cashReceived()) / (granule * perFace)));
             DebtQuote more = at.apply(face);
@@ -8092,7 +8120,27 @@ public class Game {
             }
             quote = more;
         }
+        if (quote.isEmpty() || quote.cashReceived() < cash) return quote;
+
+        // It covers at `face`. Down to the smallest granule that still does: first a descent by doubling
+        // steps if the first face covered, then a bisection between the last face that did not and this.
+        double step = granule;
+        while (notCovering == 0 && face - step >= granule) {
+            double probe = face - step;
+            DebtQuote q = at.apply(probe);
+            if (covers(q, cash)) { face = probe; quote = q; step *= 2; } else notCovering = probe;
+        }
+        while (face - notCovering > granule * 1.5) {
+            double mid = notCovering + granule * Math.floor((face - notCovering) / granule / 2);
+            DebtQuote q = at.apply(mid);
+            if (covers(q, cash)) { face = mid; quote = q; } else notCovering = mid;
+        }
         return quote;
+    }
+
+    /** A quote that raises the cash and sold what it was asked to: the test the solver's descent keeps. */
+    private static boolean covers(DebtQuote q, double cash) {
+        return !q.isEmpty() && !q.isShort() && q.cashReceived() >= cash;
     }
 
     /**
