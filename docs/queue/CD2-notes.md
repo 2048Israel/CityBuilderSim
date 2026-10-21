@@ -64,7 +64,7 @@ main at 9f1b328 (CL2, 0.8.13), so it is the version after CD1's 0.8.14.*
   amortizing as tiles, the terms as columns of fair yield (a bond term says
   which line it reopens), the cap as three chips, the four bids against yield
   drawn, the result line by line, the red card for a sale that would not
-  cover. {{SLICE9}}
+  cover. The rollover's card and automatic building's panel carry the same cap chips (one `CapChips` piece for all four places); the panel lists the open asks with Withdraw; the build screen's funding card is the auction's preview at the builder's cap and a short one offers a higher cap, Fill it, or not borrowing.
 - **The save.** `SAVE_FORMAT` 42 and `OLDEST_LOADABLE_FORMAT` 42: an old
   term loan's coupon would read wrongly (the standing rule; saves never matter
   before publication).
@@ -106,7 +106,65 @@ main at 9f1b328 (CL2, 0.8.13), so it is the version after CD1's 0.8.14.*
 
 ## 3. The checks, the trace and the ensemble
 
-{{CHECKS}}
+**AuctionCheck** (new, 11 sections, 350 assertions, about 20 s): each
+bidder's rule against its own constants; one clearing yield; cover and tail;
+capped and filled; the coupon and the price; priced on the curve; the lineup
+in a city (a line opens, reopens, and past nine tenths does not); the quote
+is the deal and the settle pays the allotment; the rollover's own cap and its
+short sale paid in full (D28, D29); the builder's own cap and the open ask
+(D28, D30); and a real run (D33). Five mutations of `Auction` each went red.
+`HoldersCheck` 10 and 11 (new) hold the firms' and the world's books: the
+settle, coupons, principal, the desk, a run, save and load, the central bank
+reaching them last, and each book equal to its holder's share of the paper
+at every step.
+
+**The suite** (`Batch check.bat`, the baseline on the merge of CD1 and main):
+125 run, 124 passed, the one red StaleCheck's harness count for the new
+AuctionCheck, fixed. Main's red, ScaleCheck's "...and it builds" (SC1),
+passes here as it did on CD1. On the final model (9e828b81's model, before
+the words and the maps): **126 harnesses run in 792 s, all passed**, Stale 0
+firm findings. {{FINALSUITE}}
+
+**D33's count.** No tail over a point anywhere it was counted: AuctionCheck
+11's 1,200 months of the automatic builder's city booked 82 sales, D$40.0B
+of D$40.0B asked, every one at fair (largest tail 0 bp, none short); the
+default playtest books one domestic sale in 4,000 months (D$2.77B, at fair)
+and Rotterdam none (both borrow abroad). The bank's room (★4) is not where a
+played city's sales stall: they clear at fair. The tail is the player's,
+when Borrow asks for more than the households, the firms and the bank's
+capital will take near fair.
+
+**The trace.** Both playtests are CD1's to the month through their m769 /
+m765 checkpoints, then move with the playtest's own borrowing: the default
+city's one domestic sale (a 20-year bond at the market's coupon where CD1
+booked a term loan's grossed-up face at a third of it) and both cities'
+dollar bonds at m1092/m1088, m2177/m2173 and m3298/m3294 (now a bond at the
+world's coupon, near par, where they were term loans). Every month passed
+the audit and every reload matched, on both.
+
+| | CD1 (0.8.14) | CD2 |
+|---|---|---|
+| default: final population | 619,699 | 573,349 |
+| default: GDP a month at the end | $7.6T | $3.7T |
+| default: auctions | - | 1 sale, D$2.77B, at fair |
+| Rotterdam: final population | 834,678 | 761,080 |
+| Rotterdam: GDP a month at the end | $12.8T | $11.3T |
+| Rotterdam: auctions | - | none |
+
+A single run swings a long way with its path (FR2-notes §4); the ensemble is
+the measure.
+
+**The ensemble** (label cd2, 2 runners at once, 80 of 80 runs in 13.9
+minutes, against CD1's `docs/ensemble/0.8.13.md`, to become 0.8.14.md when
+CD1 rebases): **23/26** (one vacuous) against CD1's 22/26; stored as
+`docs/ensemble/0.8.15.md`. **A2 passes** again (the longest spell over 10%
+from m240 a median 7 months [1 to 10], against CD1's 7 [3 to 12]). **S1**
+stays red, its median nearer the line (1.85% over the twin against 2.36%)
+but one seed's spell over 10% 17 months against 12. **R3** stays red, 3
+seeds over a point against 4. **H1** stays red by CD1's design (★9 there: a
+dial held at 0% no longer buys cheap long money); H2 vacuous with it. AUTO2's
+final population is 217,480 against 235,932 (92%, T2 passes); every run's
+audit closed and no run had a LongPlaytest finding.
 
 ## 4. Who wrote what, and what review changed
 
@@ -123,7 +181,7 @@ wrote the study rerun, the briefs, the merges, the record and these notes.
 | 6 | the caps, D29, D30, the time skip | its fixtures re-tuned after the merge with 7's tiny-sale rule; a tiny sale recorded as nothing sold |
 | 7 | the tally, the tiny sale, `AuctionCheck` 7, 8, 11 | the tiny-sale rule kept to short sales |
 | 8 | Borrow as an auction | the bank's room bar on the ★6 rule at the merge |
-| 9 | the caps and the open asks on the screens | {{S9REVIEW}} |
+| 9 | the caps and the open asks on the screens | nothing; the rollover's and the Bank tab's words for the new lineup by Claude after it |
 
 ## 5. The night's conditions
 
@@ -146,7 +204,8 @@ two runners.
   dollars abroad and not its city paper (`Game` ~4622, 5034, 5143).
 - A premium at a reopening is not amortised (the discount clamps at
   nothing): CD3's effective interest replaces it.
-- {{LEFT}}
+- The build screen offers no "keep the ask open" for a player's own order (`AutoBuilder` opens asks for its own orders only).
+- The decision log still says "note" for a bill (ChartCheck reads its text).
 - **CD2-C** (Pending, Jerus by eye): the Borrow page in a played city (a
   short sale's red card, Fill it, a reopening's column), the rollover's and
   automatic building's cap chips and the open asks, and the seven calls.

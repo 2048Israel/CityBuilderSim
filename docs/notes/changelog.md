@@ -14,6 +14,20 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.15 — CD2, the lineup and the auction — 2026-10-21, built on CD1, see docs/queue/CD2-notes.md
+
+The city sells bills (1-12 months), bonds (2-50 years, the coupon the clearing yield rounded down to an eighth, in
+lines that reopen) and the amortizing bond at auction (spec-city-debt §2, §4); the term loan and the 0.75% spread
+go. The households bid first at the auction's yield out of their savings (D32), the firms by their own rule (D33),
+the world as hot money, the bank its risk capital (★6); one clearing yield, capped at fair + a point or Fill it,
+priced on the curve so no round trip makes money. The firms and the world hold what they buy. The rollover and
+automatic building each sell at their own cap: a short rollover is paid from cash and the advances, a short build
+sale keeps its ask open. Borrow is the auction's screen. The study's model, rerun with the firms first: the tight
+city's tail 28 bp, not 503. Save format 42. Traces move (default 573,349 people against 619,699, Rotterdam 761,080
+against 834,678; one domestic sale between them, at fair); ensemble 23/26 against 22/26, A2 green. AuctionCheck.
+
+---
+
 ### 0.8.14 — CD1, the curve from the dial the market expects — 2026-10-21, shipped, see docs/queue/CD1-notes.md
 
 The city's curve no longer sits on the dial in parallel (spec-city-debt §3, D9). The market expects the dial to drift
