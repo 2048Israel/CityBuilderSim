@@ -120,7 +120,13 @@ maps are regenerated. The new harnesses and sections: FreightViewCheck (1-6,
 and 7 for How its tonnes move, its tally's save round-trip among it),
 TradeBandCheck (6 sections, 41 assertions), BuildCardCheck 13 (the berth's
 payback against the advice's verdict, the Freight cards), PolicyPreviewCheck
-10 (the dues dial). TIMING_PLACEHOLDER
+10 (the dues dial). Last, `Batch check.bat --timing`: 8 timing harnesses
+hard, 6 passed: ScaleCheck's
+red again, and EarthTerrainCheck's Earth screen at 80.7 ms against
+`MapCheck.SCREEN_MS` 80, with Jerus's game open and another batch's JVM just
+before it; run again alone it read 38.3 ms, green, and FR4 changes nothing
+the map draws. The final tree's trace is byte-identical to main's, its
+run-time line included.
 
 ## What Jerus checks by eye (FR4-C)
 
