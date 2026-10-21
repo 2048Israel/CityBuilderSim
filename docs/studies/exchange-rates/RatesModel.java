@@ -273,16 +273,16 @@ public class RatesModel {
     record Money(String name, double dollar, double riskOff, double sigma, double inflationGap, double carry) {}
 
     static final Money[] MONEYS = {
-        new Money("euro",            1.0,  .03, .018, .000, -.010),
+        new Money("euro",            1.0,  .03, .020, .000, -.010),
         new Money("yen",             1.0, -.08, .022, -.015, -.025),
         new Money("pound",           1.0,  .06, .018, .005, .005),
         new Money("Swiss franc",     1.0, -.05, .020, -.010, -.015),
-        new Money("Canadian dollar", 0.6,  .07, .014, .000, .000),
-        new Money("Australian $",    1.0,  .14, .024, .005, .015),
-        new Money("EM float",        1.0,  .20, .032, .040, .040),
+        new Money("Canadian dollar", 0.6,  .07, .020, .000, .000),
+        new Money("Australian $",    1.0,  .14, .028, .005, .015),
+        new Money("EM float",        1.0,  .20, .040, .040, .040),
     };
-    /** The world's dollar cycle: its half-life in months and its monthly draw. */
-    static final double DOLLAR_HALF_LIFE = 48, DOLLAR_SIGMA = .011;
+    /** The world's dollar cycle: its half-life in months and its monthly draw (swings of 35-50% over 6-11 years, BIS broad dollar). */
+    static final double DOLLAR_HALF_LIFE = 60, DOLLAR_SIGMA = .016;
     /** A risk-off begins about once in eight years and fades with this half-life, in months. */
     static final double RISK_OFF_A_YEAR = 1 / 8.0, RISK_OFF_HALF_LIFE = 3;
 
@@ -456,13 +456,13 @@ public class RatesModel {
         int nations = 196; Random rnd = new Random(1);
         double[] own = new double[nations], load = new double[nations], gap = new double[nations];
         for (int i = 0; i < nations; i++) { load[i] = rnd.nextDouble(); gap[i] = rnd.nextGaussian() * .01; }
-        double rhoM = Math.pow(.5, 1 / MARKET_HALF_LIFE), dollar = 0, risk = 0, sink = 0;
+        double rhoM = Math.pow(.5, 1 / MARKET_HALF_LIFE), rhoD = Math.pow(.5, 1 / DOLLAR_HALF_LIFE), dollar = 0, risk = 0, sink = 0;
         Float city = new Float(9);
         long best = Long.MAX_VALUE;
         for (int rep = 0; rep < 20; rep++) {
             long t0 = System.nanoTime();
             for (int m = 0; m < 12_000; m++) {
-                dollar = .9857 * dollar + DOLLAR_SIGMA * rnd.nextGaussian();
+                dollar = rhoD * dollar + DOLLAR_SIGMA * rnd.nextGaussian();
                 risk *= .79;
                 for (int i = 0; i < nations; i++) {
                     own[i] = rhoM * own[i] + .02 * rnd.nextGaussian();
