@@ -120,7 +120,12 @@ import java.util.List;
  * being placed near mines"), and a cell's squares and boulevard are decided
  * once, when it opens, from the road at that month of the log, never after.
  * What the district before it could not place arrives with its month
- * (Input.carry) and is merged in by month. With no log the plan is today's,
+ * (Input.carry) and is merged in by month - and the carry only grows at its
+ * end: a departure of a building the district passed on is a pair of its own
+ * ({month, ~k}), never an arrival taken out of the list, so the district after
+ * it replays the same arrivals and nothing it placed moves (taking the pair
+ * out of the list's middle, as was done, shifted every box the next district
+ * placed after that point). With no log the plan is today's,
  * from its counts; a log that is one batch draws today's plan box for box.
  * One build more than before for a district whose log goes on past its first
  * batch: the ladder's step is built again without its finish, the events are
@@ -508,7 +513,14 @@ public final class DistrictPlan {
         public int[] logMonth, logType, logChange;
         /** ...how many of its first records are one batch, placed in today's order (the bands, largest first, the ladder): a canonical map's deal, or a sidecar's from before FORMAT 9 - so its first plan is today's, box for box. */
         public int firstBatch;
-        /** What the district before it in the map's order could not place (R7), as {month, type} pairs in the order they came - the month each came in, so the spill keeps its time; null for none. */
+        /**
+         * What the district before it in the map's order could not place (R7), as {month, code} pairs in the order they
+         * came - the month each came in, so the spill keeps its time; null for none. APPEND-ONLY (CL3): code >= 0 is an
+         * arrival of that type id; code < 0 a departure, ~k, of the building the k-th pair of this same list brought (k
+         * counts pairs from 0), at that month - so a building that went on from the district before it and then left
+         * it leaves here too, and no pair is ever taken out of the middle of the list: next month's list is this one
+         * with pairs added at its end.
+         */
         public int[] carry;
     }
 
@@ -590,9 +602,16 @@ public final class DistrictPlan {
     public int[] overflow = new int[0];
 
     /**
-     * ...and the same buildings as {month, type} pairs (batch CL3), by month and then in the order they were left out - each
-     * with the month it came in (a building of the first batch its record's, a carried one its pair's; 0 for a plan with no
-     * log): what the map carries on to the next district (Input.carry); null for none.
+     * ...and what leaves this district for the next as {month, code} pairs (batch CL3): what the map carries on
+     * (Input.carry); null for none. APPEND-ONLY and in the order of the events. First the first batch's buildings left
+     * without a place, by month and then in the order they were left out - each with the month it came in (a building of
+     * the first batch its record's, a carried one its pair's; 0 for a plan with no log) - then, as the events are placed,
+     * an arrival that finds no place appends {its month, its type}, and the departure of a building that has a pair
+     * appends {the departure's month, ~k}, k the pair's place in this list (code >= 0 an arrival of that type, code < 0 a
+     * departure: Input.carry). No pair is rewritten or taken out, so the list next month - the same log with records
+     * added at its end - is this one up to its end and grows only there (unless squaring the log with the plan's own
+     * counts, Input.counts, changes which buildings are the plan's, which is rare). The buildings left out still
+     * standing are `overflow`.
      */
     public int[] overflowLog;
 
@@ -1067,6 +1086,9 @@ public final class DistrictPlan {
             iType = iMonth = iG = iI = iAt = evInst = null;
             iCarried = iBatch = iGone = iExcl = evGone = null;
             evRoad = null;
+            evMonth = null;
+            iOver = null;
+            ofl = null;
             bcount = null;
             evType = null;
             bandInst = null;
@@ -1080,14 +1102,17 @@ public final class DistrictPlan {
         /*
          * THE ORDER OF ARRIVAL (batch CL3; the header says why). The log (Input.logMonth, logType, logChange) is read
          * once, by readLog(), into INSTANCES - a building each, its type, the month it came in, whether the district
-         * before it carried it here (a carried one never leaves) - and EVENTS, the arrivals and departures after the
-         * first batch in the order they happen:
+         * before it carried it here (a carried one leaves only when the carry says so: a departure pair) - and EVENTS, the
+         * arrivals and departures after the first batch in the order they happen:
          *   - a record of change + n is n instances of its type at its month, one of change - n takes the n newest
          *     live ones of the type (a stack for each type); a road type is no building but road, by kind;
          *   - the first batch (the first Input.firstBatch records, and the carry of its months) is the buildings
          *     standing when the log begins: placed in today's order, its ladder climbed on its own road;
          *   - then month by month: the month's departures in record order, its arrivals dealt one of each type in turn
-         *     from a hashed start, then the carry of that month in the order it came;
+         *     from a hashed start, then the carry of that month in the order it came - an arrival, or the departure
+         *     of a carried one (Input.carry: a pair whose code is ~k leaves the building the k-th pair brought; one
+         *     whose arrival is missing or has gone is ignored, and a carried building that comes and goes within the
+         *     first batch's months never stands);
          *   - at the end the log is squared with the plan's own counts (Input.counts: the district's less the mines on
          *     their sites, the yards the runs draw and the shore's works): of a type the log holds more of, the newest
          *     survivors are not the plan's (never placed, so nothing placed before them moves), of one it holds fewer
@@ -1114,11 +1139,17 @@ public final class DistrictPlan {
         int[] iType, iMonth, iG, iI, iAt;
         /** ...whether carried here, in the first batch, gone within it, or the plan's newest beyond its counts (never placed). */
         boolean[] iCarried, iBatch, iGone, iExcl;
-        /** The events: the instance, whether it leaves (else it comes), and the road at its month, in all. */
+        /** The events: the instance, whether it leaves (else it comes), the road at its month and the month, in all. */
         int nEv;
-        int[] evInst;
+        int[] evInst, evMonth;
         boolean[] evGone;
         double[] evRoad;
+        /**
+         * The overflow log being built (OVERFLOW LOG below): its {month, code} pairs, nOfl of them, or null when it is
+         * made from the first batch alone; and each instance's pair in it (-1 for none), while the events are placed.
+         */
+        int[] ofl, iOver;
+        int nOfl;
         /** Each type's live instances of its own, the newest last; and readLog()'s tally of a month's arrivals by type and the types it has. */
         int[][] live;
         int[] nLive, want, dealTypes;
@@ -1182,17 +1213,19 @@ public final class DistrictPlan {
             return nLive[t] == 0 ? -1 : live[t][--nLive[t]];
         }
 
-        /** An event: instance id coming or (gone) leaving, at a month whose road is `road`. */
-        void addEvent(int id, boolean gone, double road) {
+        /** An event: instance id coming or (gone) leaving, at `month`, whose road is `road`. */
+        void addEvent(int id, boolean gone, double road, int month) {
             if (nEv == evInst.length) {
                 int n = Math.max(64, 2 * nEv);
                 evInst = Arrays.copyOf(evInst, n);
                 evGone = Arrays.copyOf(evGone, n);
                 evRoad = Arrays.copyOf(evRoad, n);
+                evMonth = Arrays.copyOf(evMonth, n);
             }
             evInst[nEv] = id;
             evGone[nEv] = gone;
             evRoad[nEv] = road;
+            evMonth[nEv] = month;
             nEv++;
         }
 
@@ -1222,7 +1255,7 @@ public final class DistrictPlan {
                 if (want[t] > 0) {
                     int id = newInst(t, month, false, false);
                     push(t, id);
-                    addEvent(id, false, road);
+                    addEvent(id, false, road, month);
                     want[t]--;
                     total--;
                 }
@@ -1248,8 +1281,10 @@ public final class DistrictPlan {
             spendInput();
             if (!logged) {
                 if (in.carry != null && in.carry.length > 1) {
+                    // The carry's arrivals less its departures (a departure takes back the arrival it names).
                     bcount = in.counts.clone();
-                    for (int k = 0; k + 1 < in.carry.length; k += 2) if (in.carry[k + 1] >= 0 && in.carry[k + 1] < bcount.length) bcount[in.carry[k + 1]]++;
+                    int[] carried = CityMap.countsOf(in.carry, bcount.length);
+                    for (int t = 0; t < bcount.length; t++) bcount[t] += carried[t];
                 }
                 return;
             }
@@ -1262,7 +1297,9 @@ public final class DistrictPlan {
             int cap = (int) Math.min(guess, 1 << 20);
             iType = new int[cap]; iMonth = new int[cap]; iG = new int[cap]; iI = new int[cap]; iAt = new int[cap];
             iCarried = new boolean[cap]; iBatch = new boolean[cap]; iGone = new boolean[cap]; iExcl = new boolean[cap];
-            evInst = new int[cap]; evGone = new boolean[cap]; evRoad = new double[cap];
+            evInst = new int[cap]; evGone = new boolean[cap]; evRoad = new double[cap]; evMonth = new int[cap];
+            ofl = null;
+            iOver = null;
             live = new int[T][];
             nLive = new int[T];
             want = new int[T];
@@ -1279,7 +1316,20 @@ public final class DistrictPlan {
             }
             int batchLast = fb > 0 ? in.logMonth[fb - 1] : Integer.MIN_VALUE;
             int c = 0;
-            for (; c < nc && carry[2 * c] <= batchLast; c++) if (placeable(carry[2 * c + 1])) newInst(carry[2 * c + 1], carry[2 * c], true, true);
+            // The instance each arrival pair of the carry brought, by the pair's place (a departure pair names it): -1 for none,
+            // or once it has left (a second departure of it, or one of a pair that is no arrival, is ignored).
+            int[] carryInst = new int[nc];
+            Arrays.fill(carryInst, -1);
+            for (; c < nc && carry[2 * c] <= batchLast; c++) {
+                int code = carry[2 * c + 1];
+                if (code >= 0) {
+                    if (placeable(code)) carryInst[c] = newInst(code, carry[2 * c], true, true);
+                } else {
+                    // Arrival and departure both within the first batch's months: it never stands.
+                    int from = ~code;
+                    if (from < c && carryInst[from] >= 0) { iGone[carryInst[from]] = true; carryInst[from] = -1; }
+                }
+            }
             // The first batch's road: its records', or the input's where the log is the batch and no more.
             double bg = fb == n ? in.gravel : Math.max(0, road[BuildingVisual.GRAVEL]);
             double bp = fb == n ? in.paved : Math.max(0, road[BuildingVisual.PAVED]);
@@ -1302,7 +1352,7 @@ public final class DistrictPlan {
                 for (int q = r; q < r2; q++) {
                     int t = in.logType[q], ch = in.logChange[q];
                     if (!placeable(t) || ch >= 0) continue;
-                    for (int j = 0; j < -ch; j++) { int id = pop(t); if (id >= 0) addEvent(id, true, now); }
+                    for (int j = 0; j < -ch; j++) { int id = pop(t); if (id >= 0) addEvent(id, true, now, month); }
                 }
                 int k = 0;
                 for (int q = r; q < r2; q++) {
@@ -1312,9 +1362,19 @@ public final class DistrictPlan {
                     want[t] += ch;
                 }
                 if (k > 0) deal(month, k, now);
+                // ...and the carry's pairs of the month in the order they came: an arrival, or the departure of one that came.
                 for (; c < nc && carry[2 * c] <= month; c++) {
-                    if (!placeable(carry[2 * c + 1])) continue;
-                    addEvent(newInst(carry[2 * c + 1], carry[2 * c], true, false), false, now);
+                    int code = carry[2 * c + 1];
+                    if (code >= 0) {
+                        if (!placeable(code)) continue;
+                        carryInst[c] = newInst(code, carry[2 * c], true, false);
+                        addEvent(carryInst[c], false, now, carry[2 * c]);
+                    } else {
+                        int from = ~code;
+                        if (from >= c || carryInst[from] < 0) continue;
+                        addEvent(carryInst[from], true, now, carry[2 * c]);
+                        carryInst[from] = -1;
+                    }
                 }
                 r = r2;
             }
@@ -1370,8 +1430,20 @@ public final class DistrictPlan {
             }
         }
 
-        /** The buildings left out as {month, type} pairs, by month and then in the order they were left out: each its instance's month (the first batch's record's, a carried one's pair's), 0 for a plan with no log; null for none. */
-        int[] overflowLog() {
+        /*
+         * THE OVERFLOW LOG (CL3: append-only, so a departure travels with the carry). What the district sends on is a
+         * list of {month, code} pairs that is never rewritten: the first batch's buildings left without a place (by month,
+         * then in the order left out), then, as the events are placed, an arrival that finds no place appends {its month,
+         * its type} - its instance remembers the pair (iOver) - and the departure of an instance that has a pair appends
+         * {the departure's month, ~pair}. Before, a departure of a building the district had passed on took its pair out
+         * of the list's middle, the next district replayed one arrival fewer from there, and the boxes it placed after
+         * that point could move (first fit). The list is still changed in its middle when the districts before this one
+         * change - a district that joins the map's order ahead of it, the squaring of the log with the plan's counts -
+         * as no pair of this district's can say what an input of another did.
+         */
+
+        /** The buildings left out of the first batch as {month, type} pairs, by month and then in the order they were left out: each its instance's month (the first batch's record's, a carried one's pair's), 0 for a plan with no log; null for none. With `mark` (the events follow) each building's instance remembers its pair's place in iOver. */
+        int[] firstBatchLog(boolean mark) {
             int n = bUnplaced.size();
             if (n == 0) return null;
             long[] key = new long[n];
@@ -1385,8 +1457,32 @@ public final class DistrictPlan {
                 int[] e = bUnplaced.get((int) (key[k] & 0xffffffffL));
                 log[2 * k] = (int) (key[k] >> 32);
                 log[2 * k + 1] = bandType[e[0]][e[1]];
+                if (mark) iOver[bandInst[e[0]][e[1]]] = k;
             }
             return log;
+        }
+
+        /** The overflow log begun from the first batch's, for the events to add to (buildArrivals()). */
+        void beginOverflow() {
+            iOver = new int[Math.max(1, nInst)];
+            Arrays.fill(iOver, -1);
+            int[] first = firstBatchLog(true);
+            nOfl = first == null ? 0 : first.length / 2;
+            ofl = first == null ? new int[32] : Arrays.copyOf(first, Math.max(32, 2 * first.length));
+        }
+
+        /** A pair appended to the overflow log; its place in the list. */
+        int appendOverflow(int month, int code) {
+            if (2 * nOfl + 2 > ofl.length) ofl = Arrays.copyOf(ofl, 2 * ofl.length);
+            ofl[2 * nOfl] = month;
+            ofl[2 * nOfl + 1] = code;
+            return nOfl++;
+        }
+
+        /** What the district sends on as {month, code} pairs (DistrictPlan.overflowLog); null for none. */
+        int[] overflowLog() {
+            if (ofl == null) return firstBatchLog(false);
+            return nOfl == 0 ? null : Arrays.copyOf(ofl, 2 * nOfl);
         }
 
         /** The street plots laid so far that this district surfaces (the seams it does not are the other district's). */
@@ -1459,14 +1555,18 @@ public final class DistrictPlan {
             campusGen++;
         }
 
-        /** Instance id leaving: its box freed, or it taken off the list of those without a place. */
-        void leave(int id) {
+        /** Instance id leaving at `month`: its box freed, or it taken off the list of those without a place - and, if the overflow log has a pair for it, the departure appended there (the next district's carry), the pair itself left where it is. */
+        void leave(int id, int month) {
             if (iAt[id] >= 0) {
                 vacate(iAt[id]);
             } else {
                 for (int u = 0; u < bUnplaced.size(); u++) {
                     int[] e = bUnplaced.get(u);
                     if (e[0] == iG[id] && e[1] == iI[id]) { bUnplaced.remove(u); break; }
+                }
+                if (iOver != null && iOver[id] >= 0) {
+                    appendOverflow(month, ~iOver[id]);
+                    iOver[id] = -1;
                 }
             }
             iAt[id] = -2;
@@ -1491,6 +1591,8 @@ public final class DistrictPlan {
                 }
             }
             batchAt = null;
+            // The overflow log begun from the first batch's buildings left without a place; the events add to it.
+            beginOverflow();
             // Room for the events in the bands and the placed arrays.
             int[] base = new int[3], extra = new int[3];
             int total = 0;
@@ -1525,7 +1627,7 @@ public final class DistrictPlan {
             int[] bandN = base.clone();
             for (int e = 0; e < nEv; e++) {
                 int id = evInst[e];
-                if (evGone[e]) { leave(id); continue; }
+                if (evGone[e]) { leave(id, evMonth[e]); continue; }
                 if (iExcl[id]) continue;
                 int t = iType[id], g = bandOf(types[t]), i = bandN[g]++;
                 bandType[g][i] = t;
@@ -1559,6 +1661,9 @@ public final class DistrictPlan {
                 if (bPlaced > before) {
                     iAt[id] = before;
                     if (types[t].site() != null) mineAt[cellOfPlot(placedX[before], placedY[before])] = true;
+                } else {
+                    // No place: it goes on to the next district, the pair added at the end of the log.
+                    iOver[id] = appendOverflow(iMonth[id], t);
                 }
             }
             ev = false;

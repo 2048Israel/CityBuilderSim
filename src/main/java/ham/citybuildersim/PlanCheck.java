@@ -2059,6 +2059,80 @@ public class PlanCheck {
         out.printf("      a district full of the largest farm: %d without a place, their months %s%n", over.overflowCount(), lg == null ? "none" : monthsOf(lg));
         check("what a plan cannot place goes on as {month, type} pairs by month, each with the month it came in (an own building's record's, a carried one's pair's)", ascending && has5 && has3);
 
+        // ---- (j2) the carry only grows: the departure of a building passed on travels with it, and the district after keeps its boxes
+        // The first district is given more than it can draw, over several months, so its carry has pairs from several months; a
+        // later month then takes the newest house - one it passed on, with a shop and a farm still to come after it in the list.
+        // Taking its pair out of the list's middle (as it was done) moved what the second district placed after it.
+        final int upFirstOver = 2, upFarms = DistrictPlan.CELLS + upFirstOver, upFarmMonth = 3, upHomeMonth = 4, upPassedMonth = 5, upShopMonth = 6, upLastMonth = 7, upLeaveMonth = 8, upReachMonth = 9, monthsLeast = 4;
+        Log upstream = new Log().add(1, bigFarm, upFarms).batch().add(upFarmMonth, bigFarm, 2).add(upHomeMonth, house, 3).add(upPassedMonth, house, 1)
+                .add(upShopMonth, shop, 2).add(upLastMonth, bigFarm, 1);
+        DistrictPlan firstWas = plan(input(types, upstream, true)), firstNow = plan(input(types, upstream.copy().add(upLeaveMonth, house, -1), true));
+        int[] listWas = firstWas.overflowLog, listNow = firstNow.overflowLog;
+        int listPairs = listWas == null ? 0 : listWas.length / 2, passedAt = -1;
+        java.util.TreeSet<Integer> listMonths = new java.util.TreeSet<>();
+        for (int k = 0; k < listPairs; k++) {
+            listMonths.add(listWas[2 * k]);
+            if (listWas[2 * k] == upPassedMonth && listWas[2 * k + 1] == house) passedAt = k;
+        }
+        out.printf("      the first district: %d buildings left out in months %s; the house of month %d is pair %d of %d%n", firstWas.overflowCount(), listWas == null ? "none" : monthsOf(listWas),
+                upPassedMonth, passedAt, listPairs);
+        check("a district given more than it can draw (a farm in each of its cells, and farms, houses and shops of five months more) passes on pairs from several months, the house that is to leave among them with pairs after it",
+                listMonths.size() >= monthsLeast && passedAt >= 0 && passedAt < listPairs - 1 && listPairs == firstWas.overflowCount() && boxesOfType(firstWas, bigFarm) == DistrictPlan.CELLS && home2 != house);
+        boolean grew = listWas != null && listNow != null && listNow.length == listWas.length + 2 && Arrays.equals(listWas, Arrays.copyOf(listNow, listWas.length));
+        check("...its departure is a pair added at the end of the carry, {month, ~k} for the k-th pair, the list as it was up to its old end and nothing taken out of its middle",
+                grew && listNow[listNow.length - 2] == upLeaveMonth && listNow[listNow.length - 1] == ~passedAt && firstNow.overflowCount() == firstWas.overflowCount() - 1);
+        int[] wasCounts = CityMap.countsOf(listWas, types.length), nowCounts = CityMap.countsOf(listNow, types.length);
+        check("...the carry counted by type is its arrivals less its departures: the house less, and the plan's own count of those left out the same",
+                wasCounts != null && nowCounts != null && nowCounts[house] == wasCounts[house] - 1 && Arrays.equals(wasCounts, firstWas.overflow) && Arrays.equals(nowCounts, firstNow.overflow));
+        final int countTypeA = house, countTypeB = shop;
+        int[] oddList = { 1, countTypeA, 2, ~0, 3, ~0, 4, ~5, 5, countTypeB, 6, ~2, 7, ~3 };
+        int[] oddCounts = CityMap.countsOf(oddList, types.length);
+        check("...a departure whose arrival is missing, comes after it, is itself a departure or has gone already counts for nothing: one arrival and its departure, a second departure of it, then three of those",
+                oddCounts != null && oddCounts[countTypeA] == 0 && oddCounts[countTypeB] == 1 && CityMap.countsOf(null, types.length) == null);
+
+        // The second district: homes in every month of its own, the first's list carried in, before and after the departure.
+        int secondHomes = perCell;
+        Log second = new Log().add(1, home2, secondHomes).batch();
+        for (int mo = 2; mo <= upLastMonth; mo++) second.add(mo, home2, secondHomes);
+        DistrictPlan carriedWas = plan(input(types, chained(second, listWas), true)), carriedNow = plan(input(types, chained(second, listNow), true));
+        out.printf("      the second district: %,d buildings with the carry (%d houses, %d farms of the largest), %d left out; with the departure %,d (%d houses)%n", carriedWas.buildings,
+                boxesOfType(carriedWas, house), boxesOfType(carriedWas, bigFarm), carriedWas.overflowCount(), carriedNow.buildings, boxesOfType(carriedNow, house));
+        check("the district after it places all it is sent, the house among them: no box left out, and a house in it for each pair of that type in the carry", carriedWas.overflowCount() == 0
+                && boxesOfType(carriedWas, house) == wasCounts[house] && boxesOfType(carriedWas, bigFarm) == wasCounts[bigFarm]);
+        check("...the carry with the departure added moves none of its boxes: the plan has the one box of the house that left less and every other where it stood",
+                missing(carriedWas, carriedNow) == 1 && missing(carriedNow, carriedWas) == 0 && carriedWas.buildings - carriedNow.buildings == 1 && boxesOfType(carriedNow, house) == boxesOfType(carriedWas, house) - 1);
+        // ...and with months of its own after the departure's: the house freed, every box placed before it still where it was.
+        Log secondOn = second.copy().add(upLeaveMonth, home2, secondHomes).add(upReachMonth, home2, secondHomes);
+        DistrictPlan onWas = plan(input(types, chained(secondOn, listWas), true)), onNow = plan(input(types, chained(secondOn, listNow), true));
+        DistrictPlan onDropped = plan(input(types, chained(secondOn, withoutPair(listWas, passedAt)), true));
+        int movedByDrop = missing(carriedWas, onDropped) - 1, movedByLeave = missing(carriedWas, onNow) - 1;
+        out.printf("      the second district with its months %d and %d: the house's pair taken out of the list's middle (as before) moves %,d of the %,d boxes it had placed; the departure added, %,d%n",
+                upLeaveMonth, upReachMonth, movedByDrop, carriedWas.buildings, movedByLeave);
+        check("...with months of its own after the departure's, every box placed before it still stands but the house's, freed, and its plan takes the new months' homes", missing(carriedWas, onNow) == 1 && onNow.overflowCount() == 0
+                && missing(carriedWas, onWas) == 0 && onNow.buildings == carriedNow.buildings + 2 * secondHomes && boxesOfType(onNow, house) == boxesOfType(onWas, house) - 1);
+        check("...whereas the same list with the house's pair taken out of its middle moves some of them, the fault this fixture causes", movedByDrop > 0);
+        // A district that cannot place the house either passes the departure on, as a pair of its own list.
+        Log fullToo = new Log().add(1, bigFarm, upFarms).batch();
+        DistrictPlan fullWas = plan(input(types, chained(fullToo, listWas), true)), fullNow = plan(input(types, chained(fullToo, listNow), true));
+        int[] middleWas = fullWas.overflowLog, middleNow = fullNow.overflowLog;
+        int middleAt = -1;
+        for (int k = 0; middleWas != null && k < middleWas.length / 2; k++) if (middleWas[2 * k] == upPassedMonth && middleWas[2 * k + 1] == house) middleAt = k;
+        boolean middleGrew = middleWas != null && middleNow != null && middleNow.length == middleWas.length + 2 && Arrays.equals(middleWas, Arrays.copyOf(middleNow, middleWas.length));
+        check("a district full of the largest farm that is sent the house and cannot place it passes the departure on at the end of its own list, for the house's pair in that list",
+                middleAt >= 0 && middleGrew && middleNow[middleNow.length - 2] == upLeaveMonth && middleNow[middleNow.length - 1] == ~middleAt && fullNow.overflowCount() == fullWas.overflowCount() - 1
+                        && missing(fullWas, fullNow) == 0 && fullWas.buildings == fullNow.buildings);
+        // A carried building that comes and goes within the first batch's months never stands; one that goes after is freed.
+        Log lone = new Log().add(upLastMonth, home2, secondHomes).batch();
+        DistrictPlan loneNone = plan(input(types, lone, true));
+        Log withNever = lone.copy(), withLater = lone.copy();
+        withNever.carry = new int[] { upFarmMonth, bigFarm, upHomeMonth, ~0 };
+        withLater.carry = new int[] { upFarmMonth, bigFarm, upLeaveMonth, ~0 };
+        DistrictPlan neverStood = plan(input(types, withNever, true)), freedLater = plan(input(types, withLater, true));
+        check("a carried building that comes and goes within the first batch's months never stands: the plan is the plan without it, box for box", placedDigest(neverStood) == placedDigest(loneNone) && neverStood.buildings == loneNone.buildings
+                && neverStood.overflowLog == null);
+        check("...one that goes after the first batch is placed with it and freed: the plan without it again, no farm standing", freedLater.buildings == loneNone.buildings && missing(loneNone, freedLater) == 0
+                && boxesOfType(freedLater, bigFarm) == 0);
+
         // ---- (k) the log squared with the plan's own counts (the map takes out its mines on sites, the yards the runs draw and the shore's works)
         Log old = new Log().add(5, house, 30).add(5, shop, 5).add(5, works, 2).batch();
         DistrictPlan.Input fewer = old.into(flat(types)), fewerToday = input(types, old, false);
@@ -2079,6 +2153,28 @@ public class PlanCheck {
         check("...of a type the log holds fewer of, the missing arrive last: five more than the log's, and every box of the plan without them stands", wantedPlan.buildings == exact.buildings + 5
                 && missing(exact, wantedPlan) == 0);
         check("...every plan of this section, " + arrivalPlans + " of them, keeps every check", arrivalRules);
+    }
+
+    /** A copy of a log with the carry `carry` in. */
+    static Log chained(Log own, int[] carry) {
+        Log l = own.copy();
+        l.carry = carry;
+        return l;
+    }
+
+    /** A carry with its k-th pair taken out of the list's middle, as a departure of a building passed on once did (before the carry was append-only). */
+    static int[] withoutPair(int[] list, int k) {
+        int[] r = new int[list.length - 2];
+        System.arraycopy(list, 0, r, 0, 2 * k);
+        System.arraycopy(list, 2 * k + 2, r, 2 * k, list.length - 2 * k - 2);
+        return r;
+    }
+
+    /** How many of a plan's boxes are of type t. */
+    static int boxesOfType(DistrictPlan p, int t) {
+        int n = 0;
+        for (int i = 0; i < p.buildings; i++) if (p.btype[i] == t) n++;
+        return n;
     }
 
     /** The months of an overflow log, as counts: "month x count, ...". */

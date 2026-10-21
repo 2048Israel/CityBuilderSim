@@ -2289,7 +2289,7 @@ public final class CityMap {
         return x | (y << 5) | ((w - 1) << 10) | ((h - 1) << 15) | (packed ? PACKED_BIT : 0);
     }
 
-    /** A district's link in the chain (R7): the stamp of its own inputs, what was carried to it and what it carried on ({month, type} pairs in the order they came, since CL3 - the month each came in, so the spill keeps its time; null for none); for an edge district, its plan's free ground (a bit a plot of the district), where the city's packed buildings may stand; its frame's edges' street codes (margins), which tell the districts after it which of their seams it leaves unlaid and where their streets join its; and the districts about it before it in the map's order, with the stamps of their links its plan read (readNeighbours()). Kept for every district planned, never dropped. */
+    /** A district's link in the chain (R7): the stamp of its own inputs, what was carried to it and what it carried on ({month, code} pairs in the order they came, since CL3 - the month each came in, so the spill keeps its time; code >= 0 an arrival of that type id, code < 0 a departure, ~k, of the building the k-th pair of the same list brought: the list only grows at its end; null for none); for an edge district, its plan's free ground (a bit a plot of the district), where the city's packed buildings may stand; its frame's edges' street codes (margins), which tell the districts after it which of their seams it leaves unlaid and where their streets join its; and the districts about it before it in the map's order, with the stamps of their links its plan read (readNeighbours()). Kept for every district planned, never dropped. */
     static final class Link {
         final long own, serial;
         final int[] in, out;
@@ -2310,7 +2310,7 @@ public final class CityMap {
         long stamp() { return stampOf(own, in); }
     }
 
-    /** A plan's stamp: its own inputs' and the carry in's, {month, type} pairs (CL3): the list's length and every entry folded, zeros included, in order - so two different lists never stamp alike, a list of none and no list neither. */
+    /** A plan's stamp: its own inputs' and the carry in's, {month, code} pairs (CL3): the list's length and every entry folded, zeros included, in order - so two different lists never stamp alike, a list of none and no list neither. */
     static long stampOf(long own, int[] in) {
         long h = World.mix(own ^ 0x4C494E4BL);
         if (in != null) {
@@ -2320,11 +2320,30 @@ public final class CityMap {
         return h;
     }
 
-    /** A carry's {month, type} pairs as counts by type (CL3): what the packing at the edge and the legend count by; null for none. */
+    /**
+     * A carry's {month, code} pairs as counts by type (CL3): the arrivals (code >= 0, a type id) less the departures (code
+     * < 0, ~k: the building the k-th pair brought, so the type of that pair) - what the packing at the edge and the legend
+     * count by; null for none. A departure whose arrival is missing, comes later or has gone already is ignored.
+     */
     static int[] countsOf(int[] pairs, int types) {
         if (pairs == null) return null;
         int[] out = new int[types];
-        for (int k = 0; k + 1 < pairs.length; k += 2) if (pairs[k + 1] >= 0 && pairs[k + 1] < types) out[pairs[k + 1]]++;
+        boolean[] gone = null;
+        for (int k = 0; 2 * k + 1 < pairs.length; k++) {
+            int code = pairs[2 * k + 1];
+            if (code >= 0) {
+                if (code < types) out[code]++;
+                continue;
+            }
+            int a = ~code;
+            if (a >= k) continue;
+            int t = pairs[2 * a + 1];
+            if (t < 0 || t >= types) continue;
+            if (gone == null) gone = new boolean[pairs.length / 2];
+            if (gone[a]) continue;
+            gone[a] = true;
+            out[t]--;
+        }
         return out;
     }
 
@@ -2697,7 +2716,7 @@ public final class CityMap {
         /** The districts about it before it in the map's order (earlierOf()), and each one's link or job: whose frames' edges it reads (readNeighbours()). */
         final District[] earlier;
         final Object[] sources;
-        /** What was carried to it and what it carries on: {month, type} pairs in the order they came (CL3), null for none. */
+        /** What was carried to it and what it carries on: {month, code} pairs in the order they came (CL3; an arrival, or the departure ~k of the k-th pair's, DistrictPlan.Input.carry), null for none. */
         int[] carryIn, carryOut;
         Drawn result;
         long[] free, read;
@@ -2725,7 +2744,7 @@ public final class CityMap {
             if (after != null) after.run();
             int[] c = after != null ? after.carryOut : given;
             readGround(in, map.worldKey);
-            // What the district before it could not place, as {month, type} pairs: the plan merges it into its own events by month (CL3; counts added into its own before).
+            // What the district before it could not place, as {month, code} pairs, arrivals and departures: the plan merges it into its own events by month (CL3; counts added into its own before).
             in.carry = c;
             // What it reads of the districts before it about it (readNeighbours()), and the stamps of the plans it read.
             byte[][][] m = new byte[AROUND.length][][];
@@ -3034,7 +3053,7 @@ public final class CityMap {
     /** District d's plan as drawn (made now if need be): a harness's and a probe's. */
     public Drawn drawn(District d) { return drawnOf(d); }
 
-    /** What was carried to district d and what it carried on (R7), counted by type id, null for none - its link's, once planned. (The link holds {month, type} pairs since CL3; countsOf() counts them.) */
+    /** What was carried to district d and what it carried on (R7), counted by type id, null for none - its link's, once planned. (The link holds {month, code} pairs since CL3; countsOf() counts the arrivals less the departures.) */
     public int[][] carried(District d) {
         drawnOf(d);
         Link l = links.get(d);
