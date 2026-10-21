@@ -469,6 +469,16 @@ public final class DistrictPlan {
         public boolean combOnly;
         /** The hashes, or null for the world's. */
         public Hashes hashes;
+        /**
+         * THE LOG (batch CL3): the district's count changes in the order they came, a record each - its month, the type id
+         * and the change (+ come, - gone) - months never falling, every type the district counts (its roads among them);
+         * null for a plan from its counts alone, today's (a harness's fixture). CityMap.District's log, copied.
+         */
+        public int[] logMonth, logType, logChange;
+        /** ...how many of its first records are one batch, placed in today's order (the bands, largest first, the ladder): a canonical map's deal, or a sidecar's from before FORMAT 9 - so its first plan is today's, box for box. */
+        public int firstBatch;
+        /** What the district before it in the map's order could not place (R7), as {month, type} pairs in the order they came - the month each came in, so the spill keeps its time; null for none. */
+        public int[] carry;
     }
 
     /** The world's hashes for a district: its cells' by their place in the world, its types' by the district. */
@@ -547,6 +557,9 @@ public final class DistrictPlan {
 
     /** What the plan could not place, by type id (R7: the map carries it to the next district with room since 0.7.88, and packs what none holds at the city's edge). */
     public int[] overflow = new int[0];
+
+    /** ...and the same buildings as {month, type} pairs in the order they came (batch CL3): what the map carries on to the next district (Input.carry); null for none. */
+    public int[] overflowLog;
 
     /**
      * The access roads laid (batch FR7, D17), one for each work that had none: its box {x, y, w, h}, the gate (the road's first plot, beside the box), the
@@ -652,9 +665,18 @@ public final class DistrictPlan {
             if (b == null || !b.busy) BUILDERS.set(new java.lang.ref.SoftReference<>(fresh));
             b = fresh;
         }
+        // CL3 SHIM (replaced by slice B): the carry joins the counts, as R7 did, and what is left over goes on as {month, type} pairs.
+        if (in.carry != null) for (int k = 0; k + 1 < in.carry.length; k += 2) if (in.carry[k + 1] < in.counts.length) in.counts[in.carry[k + 1]]++;
         b.start(in);
         try {
-            return ladder(b);
+            DistrictPlan p = ladder(b);
+            int n = p.overflowCount(), last = in.logMonth == null || in.logMonth.length == 0 ? 0 : in.logMonth[in.logMonth.length - 1];
+            if (n > 0) {
+                p.overflowLog = new int[2 * n];
+                int k = 0;
+                for (int t = 0; t < p.overflow.length; t++) for (int j = 0; j < p.overflow[t]; j++) { p.overflowLog[k++] = last; p.overflowLog[k++] = t; }
+            }
+            return p;
         } finally {
             b.finish();
         }
