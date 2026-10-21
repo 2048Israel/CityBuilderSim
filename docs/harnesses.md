@@ -2,7 +2,7 @@
 
 Generated 2026-10-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**123 harness files, 11,441 labelled assertions.** AllChecks runs 123 of them.
+**123 harness files, 11,438 labelled assertions.** AllChecks runs 123 of them.
 
 ## Which harnesses read which class
 
@@ -61,13 +61,13 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, LongPlaytest, OilCheck, ReadPathCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
 | [DemolitionLog](map/DemolitionLog.md) | CalendarCheck, HouseholdCheck, MortgageCheck |
 | [Denomination](map/Denomination.md) | DenominationCheck, NewGameCheck |
-| [Deposit](map/Deposit.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, IndustryViewCheck, LandCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, WellCheck, WorldCheck |
+| [Deposit](map/Deposit.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, IndustryViewCheck, LandCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, WellCheck, WorldCheck |
 | [DistrictPicture](map/DistrictPicture.md) | MapCheck |
 | [DistrictPlan](map/DistrictPlan.md) | EarthTerrainCheck, JunctionCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
-| [EarthData](map/EarthData.md) | EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LongPlaytest, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck |
-| [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GlobeCheck, MapCheck |
-| [EarthSite](map/EarthSite.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck |
-| [EarthTerrain](map/EarthTerrain.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck |
+| [EarthData](map/EarthData.md) | EarthCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LongPlaytest, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck |
+| [EarthProj](map/EarthProj.md) | EarthCheck, EarthFoundingCheck, EarthTerrainCheck, GlobeCheck, MapCheck |
+| [EarthSite](map/EarthSite.md) | EarthFoundingCheck, EarthTerrainCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck |
+| [EarthTerrain](map/EarthTerrain.md) | EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck |
@@ -82,7 +82,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, LabourCheck, LandCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, SaveFileCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DenominationCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [Founding](map/Founding.md) | AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DenominationCheck, EarthFoundingCheck, EarthTerrainCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Freight](map/Freight.md) | BuildCardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckCheck |
 | [FreightView](map/FreightView.md) | FreightViewCheck, TradeBandCheck |
 | [FuelSplit](map/FuelSplit.md) | OilCheck |
@@ -92,9 +92,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GameFiles](map/GameFiles.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
-| [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
+| [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthTerrainCheck, EnsembleCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
 | [Gateways](map/Gateways.md) | GatewayCheck |
-| [Geology](map/Geology.md) | CoalMiningCheck, EarthDepositsCheck, EarthTerrainCheck |
+| [Geology](map/Geology.md) | CoalMiningCheck, EarthTerrainCheck |
 | [GlobeFrame](map/GlobeFrame.md) | GlobeCheck, MapCheck |
 | [GlobePicture](map/GlobePicture.md) | GlobeCheck, MapCheck |
 | [Good](map/Good.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckCheck, VanCheck, WellCheck, WoodProductsCheck |
@@ -164,7 +164,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck |
 | [RefineryView](map/RefineryView.md) | IndustryViewCheck, OilViewCheck, RefineryCheck, RefineryViewCheck |
 | [Refining](map/Refining.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, LongPlaytest, OilCheck, OilViewCheck, PortCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck |
-| [Resource](map/Resource.md) | AutoBuildCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [Resource](map/Resource.md) | AutoBuildCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Restaurants](map/Restaurants.md) | LongPlaytest, RestaurantsCheck |
 | [Retail](map/Retail.md) | BondCheck, BuildCardCheck, BuildingDataCheck, CarCheck, ExpectationsCheck, ForeignCheck, GdpCheck, GroceryCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SupplierCreditCheck, WaterCheck |
 | [RetiredHousehold](map/RetiredHousehold.md) | HouseholdCheck |
@@ -211,7 +211,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck, ZoningCheck |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
-| [World](map/World.md) | BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, JunctionCheck, LandCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
+| [World](map/World.md) | BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, JunctionCheck, LandCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SkipReportCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, HistoryCheck, ReadPathCheck, ScaleCheck, YearBookCheck |
 | [Zoning](map/Zoning.md) | ForestryCheck, LandCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
@@ -4182,69 +4182,6 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L684 the fixture has a sea tile to inflate
   - L699 the fullest sea tile of the fixture inflates in under INFLATE_MS, the median of 31 rounds of 50
 
-## EarthDepositsCheck.java - 37 labelled assertions
-
-> Deposits where the geology says (0.8.12, batch EG1; docs/studies/spec-earth2-terrain.md 8.5): oil by a province's known petroleum, iron on shields and in recorded districts, the Sydney coalfield in its own basin, fields a third as many and three times wider, and every cluster on its own province's ground - and, counted in a real run, how often each rule fires.
-> 
-> WHY. Jerus's Nova Scotia cities found oil and iron all round them (the
-> study, 8.1 and 8.3): within 150 km of Halifax the world drew 417 iron
-> fields and 155 oil fields, 102 of them at sea off a fold belt that holds
-> neither (the shelf's sea weight carried into its nearshore water). The study found the code had not changed and
-> the table was applied as designed: the weights only rescaled the generated
-> world's densities within a narrow range (a fold belt's oil weight was one,
-> iron was nought only on a shelf), known petroleum could only raise oil, and
-> a cluster's centre fell anywhere in its 61 km cell (8.4). EG1 changed the
-> weights, the placement and the size of a field; this is the proof that it
-> did what the study said it would, with Nova Scotia as its natural fixture,
-> ...
-
-- **L147 the fixture**
-  - L149 EarthCheck's fixture is beside the classes (
-- **L169 5 and 6, and 7's second half: the full file**
-- **L177 7. a cluster stays on its province's ground: no field on ground that holds none of its resource, beyond what World counted**
-  - L193 the file -Dcbs.earth names is there
-  - L199 the named file is the one this build reads: EarthData.EARTH_1
-- **L225 1. the hand tables stand on the data**
-  - L241 every KNOWN row's code is a province of the data
-  - L242 ...and its name is the data's name for it (every row of the code)
-  - L243 ...and the file's own figure for it is nought, so the table fills only what the file lacks
-  - L244 ...and the known petroleum Geology reads for the code is the row's
-  - L245 ...and no code is in the table twice
-  - L248 every patch's code is a province of the data
-  - L259 every district is at least 20 km in radius, on the planet, and named once
-- **L283 2. oil follows known petroleum: each code's area and the mean by brute force, and each province's multiplier**
-  - L307 every code's area on the sphere is the brute force's over the geology grid (the patches in) to AREA_REL
-  - L309 the Earth's known petroleum a km2 is the brute force's to AREA_REL
-  - L329 each province's oil multiplier is (OIL_ALLOWANCE x W_OIL[class] + known a km2 over the mean) x Z_OIL to MULT_REL
-  - L331 a province whose code holds no known petroleum has exactly the allowance's, OIL_ALLOWANCE x W_OIL[class] x Z_OIL
-  - L350 the Appalachian Foldbelt (5219), with no known petroleum, is a fold belt's allowance and not a Zagros
-- **L369 3. iron on shields and in recorded districts**
-  - L384 a shield's iron multiplier is W_IRON[shield] x Z_IRON and every other class's IRON_ALLOWANCE x its weight x Z_IRON
-  - L387 ...so a shield's iron is forty times a fold belt's (4 against a tenth)
-  - L409 at each district's centre the point's iron is the greater of its province's and IRON_DISTRICT_WEIGHT x Z_IRON
-  - L410 a point 1 km inside a district's radius due east is the district's, and raises the province's iron
-  - L411 a point 1 km outside it is the province's, no district's
-  - L424 the districts take in some of the geology grid's 0.25 degree cells by their centres, and land
-- **L437 4. the Sydney coalfield is in its own basin**
-  - L447 ...and its coal multiplier is W_COAL[basin] x Z_COAL, twice the Appalachian Foldbelt's
-  - L469 the patch moves some of the grid's cells (by their centres) out of the province the raster put them in
-- **L525 5. Nova Scotia as the study found it: the full file, the fields within 50, 150 and 300 km of Jerus's two sites**
-  - L551 Halifax: the oil on land within 150 km is at most a tenth of the study's
-  - L555 the Scotian Shelf's oil multiplier is above its allowance alone: the hand row for its petroleum fires
-  - L569 Mesabi's iron within 50 km is more than the shield spot's outside every district
-  - L570 Tom Price's iron within 50 km is at least a tenth of Mesabi's
-  - L573 Calgary holds oil within 50 km
-  - L671 Halifax's world: on at least MIN_POOLS pools with fields a pool holds its old count over FIELD_SCALE x EARTH_FIELD_SCALE, and as many fields as its list
-  - L673 ...every field holds at least FIELD_SCALE x EARTH_FIELD_SCALE sites, and none more than MAX_SITES
-  - L676 ...and their mean sites is FIELD_SCALE x EARTH_FIELD_SCALE x MEAN_SITES within SIGMAS standard errors of the sample
-  - L680 a generated world, for the contrast: its pools hold their old count over FIELD_SCALE, as many fields as their lists
-  - L683 ...and the mean sites of its fields is FIELD_SCALE x MEAN_SITES within SIGMAS standard errors, none above FIELD_SCALE x LEGACY_MAX_SITES
-- **L779 8. the save: an Earth city saved before its fields were drawn on the geology is refused, in words**
-  - L782 an Earth save of the format before DEPOSITS_FORMAT is refused in BEFORE_DEPOSITS_WORDS
-  - L783 ...and one at DEPOSITS_FORMAT is not refused in those words
-  - L784 this build saves at DEPOSITS_FORMAT or later
-  - L785 a generated save of the format before still reads: the floor is Earth-only, as E7's ice
-
 ## EarthFoundingCheck.java - 39 labelled assertions
 
 > Founding a city on the real Earth (0.7.121, batch E4; the project's spec-earth.md 2, 6 and 8): the founding card's figures against the plots they are counted on, the place search and Random spot, the sea's depth on Earth, and an Earth city founded, played and drilling at sea.
@@ -4261,54 +4198,54 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L108 the fixture**
-  - L110 EarthCheck's fixture and its expected figures are beside the classes (
-  - L122 fixture: the windows Rotterdam, Perth and Paris
-- **L139 1. the data, or why not**
-  - L141 a reader made available is available (the fixture's), and an identity nothing holds is not
-  - L144 the words for a missing file say it is not here and where it goes
-  - L147 ...and how it gets there: in a copy of the repository the script, which Play CityBuilderSim.bat runs; in the built game its zip
-  - L153 ...for a file that is not this build's, the file, this build's identity and what replaces it: the script, or the zip
-  - L159 ...and a save on this build's Earth without it, the same ways to it, then load the city again
-  - L161 ...for a save on other data, both identities and the build that opens it
-  - L164 ...for a save that does not say where, that it does not
-  - L165 ...and nothing for a save whose data is here
-  - L166 an identity reads as a person reads it: its name and the hash's first eight
-  - L171 the file -Dcbs.earth names is there
-  - L176 no file named nor at
-  - L181 the game's Earth is here, the file named, EARTH_1
-- **L190 2. the card is the plots': the site, the ground within 5 km, the province and the nearest iron**
-- **L263 3. a spot in the sea, or on ice, is refused; a desert, or no water near, is warned of**
-  - L268 fixture: a spot in the North Sea - the card has no site, and says so
-  - L271 ...the founding's problem() says the same
-  - L283 ...and the game will not found it
-  - L286 fixture: Paris is neither ice nor desert, and has the Seine: no warning
-  - L292 the full file: the middle of Greenland's sheet is refused, on ice
-  - L295 ...the Sahara is foundable, warned that it is a desert and has no water near
-  - L298 ...and a spot by the sea with no river or lake within 5 km is warned it drinks the sea
-  - L302 ...and the middle of the Atlantic is refused
-- **L309 4. search, and the spot the seed picks**
-  - L311 fixture: the fixture carries the data's places whole
-  - L320 a place's own name, in capitals, finds a place of that name first (
-  - L327 fixture: a name with accents is found by its plain spelling and without them
-  - L340 the hits are ranked whole, begun, a word begun, within, each group in the data's order, at most SEARCH_HITS
-  - L341 ...and nothing typed finds nothing
-  - L351 Random spot: the same seed picks the same place, and it passes the site test
-  - L352 ...and eight seeds pick more than one place
-- **L359 5. the sea's depth on Earth: the coast's distance for the elevation it lacks**
-  - L386 fixture: west of Rotterdam's site, nothing where the plot is not the sea's, and at sea SHELF_BREAK_M x the coast's distance
-  - L390 the rule's own arithmetic: SHELF_BREAK_M at SHELF_WIDTH_M from the coast, so a platform's 150 m within 58 km
-  - L396 ...and the elevation field's shelf, which Earth has none of, is still refused
-  - L404 the full file: the coast's distance is the brute force's at four points, the North Sea's to the mid-Atlantic's
-  - L408 ...and the shelf's width measured again over the Earth's sea is SHELF_WIDTH_M, to the metre it is rounded to
-- **L459 6. an Earth city founded, played, and drilling at sea**
-  - L462 fixture: Rotterdam's spot is a founding with no problem, on Earth
-  - L481 the game founds it: its World the Earth's of that key, its land the snap's site, two months played
-  - L503 fixture: an oil field in the North Sea near the site, shallow enough for a platform
-  - L536 the city buys the ground to it: its sites the sea's, the field on the sea's list at World's depth
-  - L561 a platform and its wells stand on it, the city plays two months more, the investors planning at sea, and the oil's page
+- **L100 the fixture**
+  - L102 EarthCheck's fixture and its expected figures are beside the classes (
+  - L114 fixture: the windows Rotterdam, Perth and Paris
+- **L131 1. the data, or why not**
+  - L133 a reader made available is available (the fixture's), and an identity nothing holds is not
+  - L136 the words for a missing file say it is not here and where it goes
+  - L139 ...and how it gets there: in a copy of the repository the script, which Play CityBuilderSim.bat runs; in the built game its zip
+  - L145 ...for a file that is not this build's, the file, this build's identity and what replaces it: the script, or the zip
+  - L151 ...and a save on this build's Earth without it, the same ways to it, then load the city again
+  - L153 ...for a save on other data, both identities and the build that opens it
+  - L156 ...for a save that does not say where, that it does not
+  - L157 ...and nothing for a save whose data is here
+  - L158 an identity reads as a person reads it: its name and the hash's first eight
+  - L163 the file -Dcbs.earth names is there
+  - L168 no file named nor at
+  - L173 the game's Earth is here, the file named, EARTH_1
+- **L182 2. the card is the plots': the site, the ground within 5 km, the province and the nearest iron**
+- **L255 3. a spot in the sea, or on ice, is refused; a desert, or no water near, is warned of**
+  - L260 fixture: a spot in the North Sea - the card has no site, and says so
+  - L263 ...the founding's problem() says the same
+  - L275 ...and the game will not found it
+  - L278 fixture: Paris is neither ice nor desert, and has the Seine: no warning
+  - L284 the full file: the middle of Greenland's sheet is refused, on ice
+  - L287 ...the Sahara is foundable, warned that it is a desert and has no water near
+  - L290 ...and a spot by the sea with no river or lake within 5 km is warned it drinks the sea
+  - L294 ...and the middle of the Atlantic is refused
+- **L301 4. search, and the spot the seed picks**
+  - L303 fixture: the fixture carries the data's places whole
+  - L312 a place's own name, in capitals, finds a place of that name first (
+  - L319 fixture: a name with accents is found by its plain spelling and without them
+  - L332 the hits are ranked whole, begun, a word begun, within, each group in the data's order, at most SEARCH_HITS
+  - L333 ...and nothing typed finds nothing
+  - L343 Random spot: the same seed picks the same place, and it passes the site test
+  - L344 ...and eight seeds pick more than one place
+- **L351 5. the sea's depth on Earth: the coast's distance for the elevation it lacks**
+  - L378 fixture: west of Rotterdam's site, nothing where the plot is not the sea's, and at sea SHELF_BREAK_M x the coast's distance
+  - L382 the rule's own arithmetic: SHELF_BREAK_M at SHELF_WIDTH_M from the coast, so a platform's 150 m within 58 km
+  - L388 ...and the elevation field's shelf, which Earth has none of, is still refused
+  - L396 the full file: the coast's distance is the brute force's at four points, the North Sea's to the mid-Atlantic's
+  - L400 ...and the shelf's width measured again over the Earth's sea is SHELF_WIDTH_M, to the metre it is rounded to
+- **L451 6. an Earth city founded, played, and drilling at sea**
+  - L454 fixture: Rotterdam's spot is a founding with no problem, on Earth
+  - L473 the game founds it: its World the Earth's of that key, its land the snap's site, two months played
+  - L495 fixture: an oil field in the North Sea near the site, shallow enough for a platform
+  - L521 the city buys the ground to it: its sites the sea's, the field on the sea's list at World's depth
+  - L546 a platform and its wells stand on it, the city plays two months more, the investors planning at sea, and the oil's page
 
-## EarthTerrainCheck.java - 62 labelled assertions
+## EarthTerrainCheck.java - 59 labelled assertions
 
 > The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key holding the generated world as it was, and the game's founding, land and screen standing on an Earth world - and since 0.7.117 (batch E3) its deposits on the Earth's geology (Geology), and since 0.7.127 (batch E7) its ice and desert.
 > 
@@ -4324,79 +4261,76 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L206 the fixture**
-  - L208 EarthCheck's fixture and its expected figures are beside the classes (
-  - L221 the fixture names the four windows: Rotterdam, Perth, Paris and Fiji
-- **L385 1. a generated world through its key is the world it was**
-  - L388 World.of(Key.generated(seed)) is World.of(seed), the same generated world, for the default world, 77 and 2026
-  - L392 a world made from the default seed's key has its site, river, sea's level and totals
-  - L409 ...and draws the 256 tiles about it, their lines and a far region byte for byte
-  - L412 an Earth key's world is kept apart: Earth's, its own key, not the seed's generated world
-  - L421 ...and with no heights, an Earth world refuses the elevation field's shelf rather than make one up, and gives the
-  - L460 two worlds made from one key draw
-  - L461 ...and a line drawn alone (lineTerrain()) and a plot (terrainAt()) are their tile's, byte for byte
-  - L462 ...and a region at a stride of one is every plot's own (96 x 96 plots)
-- **L527 6. no seam at 180 degrees: Fiji's window, centred on the meridian**
-  - L548 the window holds whole 15\" cells on both sides of the 180th meridian, beside it
-  - L551 ...and the cells beside the line are the data's within SHARE_POINTS on each side: no seam
-- **L560 7. the rule's pieces: rivers on their lines, small lakes round their points, beaches where the data has bare ground**
-  - L620 every river vertex in the windows lies on a fresh (or sea) plot: rivers on their lines
-  - L622 every small lake's point in the windows is a fresh (or sea) plot
-  - L624 the small lakes clear of other water draw their own area within LAKE_AREA
-  - L626 every beach is a dry plot beside the sea in a 2' cell with bare ground (LC_BEACH), and Perth has beaches
-- **L658 8. the game stands on it: the snap, the founding land and the screen**
-  - L731 the Earth screen:
-- **L768 9. the full file, when it is named: the cells pass and the planet's land**
-  - L772 the file -Dcbs.earth names is there
-  - L781 the named file is the one this build reads: EarthData.EARTH_1
-  - L792 the cells pass in no more than CELLS_PASS_MS of
-  - L819 the world's land, its cells' shares added, is the land inside its square within LAND_WITHIN
-  - L828 the widest river in the file is EarthTerrain.WIDEST_RIVER_M, and its half within WATER_PAD_DEG
-- **L887 10. the provinces' classes: geology.py's rules, and the hand-checked table over them**
-  - L891 the data's provinces are the study's, classed by the rules as the study counts them (STUDY_CLASSES)
-  - L921 every province the rules leave other is in the hand table, once
-  - L923 every row of it names the data's province - its row, USGS code and name - and the class the rules gave it
-  - L924 every row moves its province, or keeps an other no class fits, and says why; Geology reads the table's class over the rules'
-- **L978 11. the study's spots: Rotterdam, Perth, Paris and the Yilgarn shield 150 km east of Perth**
-  - L1021 each world reads its spot's province and class at its founding site (World.provinceAt(), geologyAt())
-  - L1060 the old world's iron fields a land km2 on pure shield cells against pure basin cells: the ratio of EG1's iron weights within SIGMAS
-  - L1075 ...and each class's density the resource's own times its iron weight (EG1) times Z_IRON within SIGMAS
-  - L1100 the fields a city sees, a thirtieth as many on Earth (FIELD_SCALE x EARTH_FIELD_SCALE), on pools all of pure shield or pure basin cells: the same ratio withi...
-- **L1133 13. the full file, when it is named: Z and the types' odds are its own, and the study's figures on the rules' classes**
-  - L1155 each resource's Z, the land over the land x its weight (EG1's: iron's by shield and district, oil's by known petroleum) north of ANTARCTIC_LAT, is Geology's ...
-  - L1157 E3's Z, replayed with E3's weights and petroleum factor (Measure.zOf(r, kinds, petroleum)), are E3's to E3_Z_WITHIN: the Sydney patch moves a little land
-  - L1162 the recorded iron districts hold land, which iron's weight and Z count at IRON_DISTRICT_WEIGHT
-  - L1167 the types' odds, each the one whose Earth-wide share is the generated world's, are Geology's to their rounding
-  - L1171 ...so at Geology's odds the Earth-wide shares are TYPE_SHARES': coking 15%, limestone 70%
-  - L1185 on the rules' classes, the land in each class, Antarctica left out, is the study's within SHARE_WITHIN
-  - L1188 ...and its odds put limestone in basins and on shields where the study did, within LIMESTONE_WITHIN
-- **L1202 14. on Earth the totals are exact, oil lies at sea in basins, and a field's type leans on the class under it**
-  - L1243 each world's totals are its cells' totals added, to the tonne, and every resource has some
-  - L1244 every pool's fields add up to its total exactly, and its fields of each type to it as well; oil's are NONE
-  - L1246 every field carries the class of the ground under its centre (World.geologyAt())
-  - L1271 Rotterdam's North Sea: cells with no land hold oil where they are a basin's, shelf's or rift's sea, and nothing else
-  - L1289 the draw on Earth gives each class its first type's share, Geology.firstShare(), within SIGMAS; iron and copper flat at TYPE_SHARES'
-  - L1308 the stone and coal fields drawn about the two sites: limestone and coking each class's share within SIGMAS
-  - L1322 a generated world has no geology: its fields carry none, draw their types flat, and its field land is its land
-- **L1349 15. ice and desert as kinds of ground: ice never dry, the desert dry as grass is, each kind's share the data's, its edge frayed, the card...**
-  - L1352 World.dry(): grass, forest, the beach and the desert are dry ground; fresh water, the sea and ice are not, nor what is not a class
-  - L1353 ...ICE and DESERT take the two bytes after the five, World.CLASSES in all, each with its colour and its own name on the hover
-  - L1359 the books: a desert's plots count as a grass's in all five areas, dry ground
-  - L1360 ...and ice's in the whole area only - never dry, fresh, sea or forest
-  - L1363 ...and a count of the five classes alone, as the generated world's are made, reads as it did
-  - L1365 the runs (CityRuns): the desert is dry ground where grass is, ice is not, and off the ground is not
-  - L1378 a district's plan: PlanCheck's test district with its grass made desert is the same plan, every building and street
-  - L1385 ...and with the grass of its west half ice, no building stands on a plot of ice
-  - L1395 the saves: an Earth city saved before ice was a kind of ground (EarthSite.ICE_FORMAT) is refused in words saying so; from there to before
-  - L1403 ...and a generated city's save at the floor, its ground as it was, still loads: no Earth problem; and an Earth save
-  - L1409 ...and the deposits floor is the Earth's alone: an Earth save at the general floor is refused in the deposits words while the floor is below
-  - L1428 the card: Greenland's sheet has no dry ground within 5 km, so no site; the card is the spot's own plot's, ice, refused on ice - its ice the plot's
-  - L1439 ...on south Greenland's margin, a site on grass in a 2' cell with the ice bit (the bit's rule refused it): not on ice, as its plot is not, and foundable
-  - L1446 ...and a spot on the ice there: the snap finds its site on dry ground off the ice, never on it, and the card agrees
-  - L1455 ...and a holding's books there: a tile of ice offered is its whole area and no dry ground, fresh, sea or forest
-  - L1467 the Sahara: the site a plot of desert, dry ground the snap founds on, the card warns of a desert, and a tile of it is all dry ground on the books
-  - L1472 the far view draws them: far nodes on Greenland's sheet ice, on the Sahara desert - all of it at WATER_STRIDE and FAR_STRIDE / 4, the most of it from the 4' ...
-  - L1604 ...its edge frayed both ways about the bit's half-contour, and never past the cells that agree
+- **L189 the fixture**
+  - L191 EarthCheck's fixture and its expected figures are beside the classes (
+  - L204 the fixture names the four windows: Rotterdam, Perth, Paris and Fiji
+- **L368 1. a generated world through its key is the world it was**
+  - L371 World.of(Key.generated(seed)) is World.of(seed), the same generated world, for the default world, 77 and 2026
+  - L375 a world made from the default seed's key has its site, river, sea's level and totals
+  - L392 ...and draws the 256 tiles about it, their lines and a far region byte for byte
+  - L395 an Earth key's world is kept apart: Earth's, its own key, not the seed's generated world
+  - L404 ...and with no heights, an Earth world refuses the elevation field's shelf rather than make one up, and gives the
+  - L443 two worlds made from one key draw
+  - L444 ...and a line drawn alone (lineTerrain()) and a plot (terrainAt()) are their tile's, byte for byte
+  - L445 ...and a region at a stride of one is every plot's own (96 x 96 plots)
+- **L510 6. no seam at 180 degrees: Fiji's window, centred on the meridian**
+  - L531 the window holds whole 15\" cells on both sides of the 180th meridian, beside it
+  - L534 ...and the cells beside the line are the data's within SHARE_POINTS on each side: no seam
+- **L543 7. the rule's pieces: rivers on their lines, small lakes round their points, beaches where the data has bare ground**
+  - L603 every river vertex in the windows lies on a fresh (or sea) plot: rivers on their lines
+  - L605 every small lake's point in the windows is a fresh (or sea) plot
+  - L607 the small lakes clear of other water draw their own area within LAKE_AREA
+  - L609 every beach is a dry plot beside the sea in a 2' cell with bare ground (LC_BEACH), and Perth has beaches
+- **L641 8. the game stands on it: the snap, the founding land and the screen**
+  - L714 the Earth screen:
+- **L751 9. the full file, when it is named: the cells pass and the planet's land**
+  - L755 the file -Dcbs.earth names is there
+  - L764 the named file is the one this build reads: EarthData.EARTH_1
+  - L775 the cells pass in no more than CELLS_PASS_MS of
+  - L802 the world's land, its cells' shares added, is the land inside its square within LAND_WITHIN
+  - L811 the widest river in the file is EarthTerrain.WIDEST_RIVER_M, and its half within WATER_PAD_DEG
+- **L864 10. the provinces' classes: geology.py's rules, and the hand-checked table over them**
+  - L868 the data's provinces are the study's, classed by the rules as the study counts them (STUDY_CLASSES)
+  - L898 every province the rules leave other is in the hand table, once
+  - L900 every row of it names the data's province - its row, USGS code and name - and the class the rules gave it
+  - L901 every row moves its province, or keeps an other no class fits, and says why; Geology reads the table's class over the rules'
+- **L932 11. the study's spots: Rotterdam, Perth, Paris and the Yilgarn shield 150 km east of Perth**
+  - L966 each world reads its spot's province and class at its founding site (World.provinceAt(), geologyAt())
+  - L997 the old world's iron fields a land km2 on pure shield cells against pure basin cells: W_IRON's ratio within SIGMAS
+  - L1011 ...and each class's density the resource's own times W_IRON times Z_IRON within SIGMAS
+  - L1036 the fields a city sees, a tenth as many, on pools all of pure shield or pure basin cells: the same ratio within SIGMAS
+- **L1053 13. the full file, when it is named: Z and the types' odds are its own, and the study's figures on the rules' classes**
+  - L1073 each resource's Z, the land over the land x w north of ANTARCTIC_LAT with the hand table, is Geology's to its rounding
+  - L1081 the types' odds, each the one whose Earth-wide share is the generated world's, are Geology's to their rounding
+  - L1085 ...so at Geology's odds the Earth-wide shares are TYPE_SHARES': coking 15%, limestone 70%
+  - L1099 on the rules' classes, the land in each class, Antarctica left out, is the study's within SHARE_WITHIN
+  - L1102 ...and its odds put limestone in basins and on shields where the study did, within LIMESTONE_WITHIN
+- **L1116 14. on Earth the totals are exact, oil lies at sea in basins, and a field's type leans on the class under it**
+  - L1157 each world's totals are its cells' totals added, to the tonne, and every resource has some
+  - L1158 every pool's fields add up to its total exactly, and its fields of each type to it as well; oil's are NONE
+  - L1160 every field carries the class of the ground under its centre (World.geologyAt())
+  - L1185 Rotterdam's North Sea: cells with no land hold oil where they are a basin's, shelf's or rift's sea, and nothing else
+  - L1203 the draw on Earth gives each class its first type's share, Geology.firstShare(), within SIGMAS; iron and copper flat at TYPE_SHARES'
+  - L1222 the stone and coal fields drawn about the two sites: limestone and coking each class's share within SIGMAS
+  - L1236 a generated world has no geology: its fields carry none, draw their types flat, and its field land is its land
+- **L1263 15. ice and desert as kinds of ground: ice never dry, the desert dry as grass is, each kind's share the data's, its edge frayed, the card...**
+  - L1266 World.dry(): grass, forest, the beach and the desert are dry ground; fresh water, the sea and ice are not, nor what is not a class
+  - L1267 ...ICE and DESERT take the two bytes after the five, World.CLASSES in all, each with its colour and its own name on the hover
+  - L1273 the books: a desert's plots count as a grass's in all five areas, dry ground
+  - L1274 ...and ice's in the whole area only - never dry, fresh, sea or forest
+  - L1277 ...and a count of the five classes alone, as the generated world's are made, reads as it did
+  - L1279 the runs (CityRuns): the desert is dry ground where grass is, ice is not, and off the ground is not
+  - L1292 a district's plan: PlanCheck's test district with its grass made desert is the same plan, every building and street
+  - L1299 ...and with the grass of its west half ice, no building stands on a plot of ice
+  - L1307 the save: an Earth city saved before ice was a kind of ground (EarthSite.ICE_FORMAT) is refused in words saying so, one saved at it is not
+  - L1311 ...and a generated city's save at the floor, its ground as it was, still loads: no Earth problem; and an Earth save
+  - L1330 the card: Greenland's sheet has no dry ground within 5 km, so no site; the card is the spot's own plot's, ice, refused on ice - its ice the plot's
+  - L1341 ...on south Greenland's margin, a site on grass in a 2' cell with the ice bit (the bit's rule refused it): not on ice, as its plot is not, and foundable
+  - L1348 ...and a spot on the ice there: the snap finds its site on dry ground off the ice, never on it, and the card agrees
+  - L1357 ...and a holding's books there: a tile of ice offered is its whole area and no dry ground, fresh, sea or forest
+  - L1369 the Sahara: the site a plot of desert, dry ground the snap founds on, the card warns of a desert, and a tile of it is all dry ground on the books
+  - L1374 the far view draws them: far nodes on Greenland's sheet ice, on the Sahara desert - all of it at WATER_STRIDE and FAR_STRIDE / 4, the most of it from the 4' ...
+  - L1506 ...its edge frayed both ways about the bit's half-contour, and never past the cells that agree
 
 ## EducationCheck.java - 164 labelled assertions
 
@@ -4614,6 +4548,65 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1417 the nine came back parted
   - L1420 ...and the load path told the schools the nine, not the one
   - L1425 ...and the month by kind came back with the save, not zero
+
+## EnsembleCheck.java - 37 labelled assertions
+
+> The inflation ensemble is in the tree and still runs: its driver compiles
+> against this tree, its two halves name the same policies, and the stored
+> baseline reads.
+> 
+> WHY (EN1, 2026-10-20). The ensemble - sixteen seeds under five monetary
+> policies - lived in a workbench zip, compiled at run time against a snapshot
+> of target/classes. Its driver calls LongPlaytest's code, so a refactor of the
+> model could break it and nobody would know until the next batch whose trace
+> moved came to run it (the ensemble runs only then, since EN1), on the day the
+> answer was wanted. It now lives in tools/ensemble, outside src/ (it is never
+> part of the build), and this harness is the only thing in the suite that
+> touches it.
+> ...
+
+- **L104 no source tree**
+- **L122 the runner is in the tree**
+  - L126 tools/ensemble/
+- **L134 the driver compiles against this tree**
+  - L150 a source calling a method no class has does not compile
+  - L151 ...and the compiler names the method it could not find
+  - L158 a source calling a real class of the tree compiles
+  - L164 the driver compiles against the classes this harness runs on
+  - L167 ...and leaves its class behind
+- **L273 the driver and the scorer name the same policies**
+  - L278 the driver's constants are read from an enum
+  - L280 the scorer's strings are read from its list
+  - L282 the same names in a different order are the same policies
+  - L284 a policy the scorer lacks is a problem and is named
+  - L286 a policy the driver lacks is a problem and is named
+  - L288 a driver with no enum is a problem
+  - L289 a scorer with no list is a problem
+  - L296 the driver names at least one policy
+  - L297 the scorer names at least one policy
+  - L299 the driver's policies are the scorer's
+- **L418 the baseline is there and reads**
+  - L422 a sound canned page is accepted
+  - L425 a page missing one policy is rejected, and the policy is named
+  - L427 a page with no json block is rejected
+  - L429 a page with no verdict line is rejected
+  - L431 a page whose json does not parse is rejected
+  - L433 a page with no seeds is rejected
+  - L435 a page with 0 seeds is rejected
+  - L437 a page with a fractional seed count is rejected
+  - L439 a page with no take-offs is rejected
+  - L441 a page whose median population is 0 is rejected
+  - L443 a page whose median population is text is rejected
+  - L445 a page with no findings count is rejected
+  - L447 a page with no audit count is rejected
+  - L449 a page held to no policies is rejected, not passed
+  - L452 0.8.9 is older than 0.8.11, though 9 sorts after 1
+  - L453 0.10.0 is newer than 0.9.9
+  - L454 the newest of several pages is the highest number
+  - L456 a folder with no page named x.y.z.md has no newest
+  - L467 docs/ensemble holds at least one page named x.y.z.md
+  - L471 the newest baseline is not newer than the game
+  - L473 the newest baseline reads, with every policy in it
 
 ## EquityCheck.java - 65 labelled assertions
 

@@ -10,6 +10,9 @@
 #      ./batch-check.sh --fast        compile, maps, Stale, git status: no suite
 #      ./batch-check.sh --timing      compile and the timing harnesses alone, hard: the ship gate's
 #
+#  Not here: the 80-run ensemble, tools/ensemble/ensemble.sh, run only for a
+#  batch whose playtest trace moves (EN1, 2026-10-20; tools/ensemble/README.md).
+#
 #  WHY (2026-10-13): a session paid for every line it read, and a batch's
 #  checks were a dozen calls - each re-reading the whole conversation - and
 #  their output: a line for every harness, a red one run again in full to find
