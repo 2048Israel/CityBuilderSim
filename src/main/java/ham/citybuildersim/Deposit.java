@@ -40,8 +40,10 @@ package ham.citybuildersim;
  * @param x      its centre's plot, east from the world's west edge
  * @param y      its centre's plot, south from the world's north edge
  * @param sites  how many mines or wells it takes: World.FIELD_SCALE to
- *               World.MAX_SITES since 0.7.99, 1 to World.LEGACY_MAX_SITES on
- *               the old world's
+ *               5,120 (FIELD_SCALE x World.LEGACY_MAX_SITES) since 0.7.99, and
+ *               on Earth since 0.8.12 (batch EG1) World.FIELD_SCALE x
+ *               World.EARTH_FIELD_SCALE to World.MAX_SITES, 15,360; 1 to
+ *               World.LEGACY_MAX_SITES on the old world's
  * @param amount what it holds, in its resource's unit, whole: the fields of a
  *               pool sum exactly to its cells' World.cellTotal() since 0.7.99,
  *               the old world's of a cell to the cell's
@@ -77,13 +79,22 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
      * west to east, the first World.MAX_SITES of them. The box is enough: the
      * k-th point lies about sqrt(k / pi) from the centre, so every ring the
      * table reaches is whole in it. To 0.7.98 the box was 14 for 512 sites;
-     * since 0.7.99 (World.FIELD_SCALE) it is 42 for 5,120, and its first 512
+     * since 0.7.99 (World.FIELD_SCALE) it was 42 for 5,120, and its first 512
      * points are the old table's, in its order - so the old world's fields'
-     * sites stand where they stood.
+     * sites stand where they stood. Since 0.8.12 (batch EG1,
+     * World.EARTH_FIELD_SCALE) it is 71 for 15,360, an Earth field being
+     * three times wider, and its first 5,120 points are the 0.7.99 table's,
+     * in its order, so a generated world's fields' sites stand where they
+     * stood: the order (squared distance, then row, then column) is a strict
+     * total order on the lattice, so a table's first k points are the same
+     * whatever the box, so long as the box holds every lattice point as near
+     * the centre as the k-th, and the 5,120th lies under 41 site widths out
+     * (sqrt(5120 / pi) = 40.4) with the old box 42 wide each way. WorldCheck
+     * holds the first 512 as the old table's; EG1's check of the first 5,120.
      */
     static final int[][] SITE_PLACES = places();
 
-    /** The box the site table is sorted in, in site widths each way: sqrt(World.MAX_SITES / pi) rounded up, and one more - 14 for the old world's 512 sites, 42 for 5,120. */
+    /** The box the site table is sorted in, in site widths each way: sqrt(World.MAX_SITES / pi) rounded up, and one more - 14 for the old world's 512 sites, 42 for 5,120, 71 for an Earth field's 15,360. */
     static final int PLACES_BOX = (int) Math.ceil(Math.sqrt(World.MAX_SITES / Math.PI)) + 1;
 
     /** How far, in site widths each way (L-infinity), the first k + 1 sites reach from the centre. */
@@ -155,7 +166,7 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
         return (PLACES_REACH[Math.max(0, Math.min(sites, World.MAX_SITES) - 1)] + 0.5) * siteWidth(kind);
     }
 
-    /** ...and the most any field of a resource reaches: World.MAX_SITES of its sites. */
+    /** ...and the most any field of a resource reaches on any world: World.MAX_SITES of its sites, an Earth field's (a generated world's widest, 5,120 sites, reaches less; the map and the conversion use it only as a pad round the cells they look in). */
     public static double mostReach(Resource r) {
         return (PLACES_REACH[World.MAX_SITES - 1] + 0.5) * siteWidth(r);
     }

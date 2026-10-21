@@ -1,0 +1,565 @@
+<title>Central Bank Study</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: the study's boards down one column, each a caption outside and the game's own window inside, drawn in the game's palette (ui/Palette.java), as the City Debt Study's boards are: one dark look on purpose, because it is the game's. Chart series: --s1 the proposal, --s2 its counterpart, both validated against --panel; today's figures are a dashed grey reference line, always labelled. */
+:root{
+  color-scheme:dark;
+  --stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;
+  --edge:#24354a;--control-edge:#33475f;
+  --text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;
+  --good:#3fb950;--warn:#e3b341;--bad:#f85149;
+  --accent:#5aa9ff;--accent-fill:#2f6fa8;--confirm:#2f7d52;
+  --money:#5aa9ff;--money-dark:#2f80d9;--money-light:#a9d1ff;--people:#2ec4b6;--ore:#c9b68f;
+  --s1:#3f8ee6;--s2:#b98a2e;--band:rgba(63,142,230,.20);--ghost:#8496ab;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--stage);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.45}
+.study{max-width:1180px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:56px}
+h1,h2,h3,h4,p{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{display:grid;gap:14px}
+.eyebrow{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)}
+.top h1{font-size:26px;font-weight:600;letter-spacing:-.005em;text-wrap:balance;max-width:40ch}
+.top .lead{font-size:15px;color:var(--text2);max-width:76ch}
+.answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.answer{background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:12px 14px;display:grid;gap:4px;min-width:0}
+.answer .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:600}
+.answer p{font-size:13px;color:var(--text2)}
+.answer b{color:var(--text);font-weight:500}
+.toc{display:flex;flex-wrap:wrap;gap:8px}
+.toc a{font-size:12px;color:var(--accent);text-decoration:none;border:1px solid var(--control-edge);border-radius:6px;padding:5px 10px;background:var(--panel)}
+.toc a:hover{background:var(--hover)}
+
+.board{display:grid;gap:14px;scroll-margin-top:16px}
+.board>header{display:grid;gap:6px;max-width:86ch}
+.board h2{font-size:20px;font-weight:600;text-wrap:balance}
+.board .says{font-size:14px;color:var(--text2)}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 22px;margin-top:4px}
+.notes p{font-size:12.5px;color:var(--text2);padding-left:22px;position:relative}
+.notes p i{position:absolute;left:0;top:1px;font-style:normal;font-family:var(--mono);font-size:10.5px;width:16px;height:16px;border-radius:50%;background:var(--accent-fill);color:var(--text);display:grid;place-items:center}
+.notes b{color:var(--text);font-weight:500}
+
+.frame{background:var(--stage);border:1px solid var(--edge);border-radius:10px;padding:18px;display:grid;gap:14px;overflow:hidden}
+.crumb{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.crumb .sw{width:12px;height:12px;border-radius:3px;background:var(--money)}
+.crumb h3{font-size:20px;font-weight:600}
+.crumb h3 span{color:var(--accent)}
+.crumb .when{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--text3)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.kpi .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:600}
+.kpi .v{font-family:var(--mono);font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi .n{font-size:11px;color:var(--text3)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:inherit;font-size:11.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--control-edge);color:var(--text2);background:var(--panel);cursor:pointer}
+.chip.on{background:var(--accent-fill);border-color:var(--accent);color:var(--text)}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:14px;display:grid;gap:10px;min-width:0;align-content:start}
+.card.raised{background:var(--raised)}
+.cap{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:600;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.cap .hint{letter-spacing:0;text-transform:none;font-weight:400;font-size:11px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px}
+.grid2e{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.muted{color:var(--text3)}
+.big{font-family:var(--mono);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.btn{font:inherit;font-size:12.5px;border-radius:6px;padding:7px 14px;border:1px solid var(--control-edge);background:var(--pinned);color:var(--text);cursor:pointer}
+.btn.go{background:var(--confirm);border-color:var(--confirm);color:#fff}
+.btn.ghost{background:transparent;color:var(--text2)}
+.line{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;padding:4px 0;border-bottom:1px solid rgba(36,53,74,.6)}
+.line:last-child{border-bottom:0}
+.line .mono{white-space:nowrap}
+.line.sub{padding-left:14px;color:var(--text2)}
+.line.total{border-top:1px solid var(--control-edge);border-bottom:0;padding-top:7px;font-weight:600}
+.line.neg .mono{color:var(--text2)}
+.scroll{overflow-x:auto}
+.flag{font-size:12px;padding:8px 10px;border-radius:6px;background:var(--raised);border:1px solid var(--edge);color:var(--text2)}
+.flag b{color:var(--text);font-weight:500}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text3)}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.legend i.dash{height:0;border-top:2px dashed var(--ghost);border-radius:0;vertical-align:3px}
+
+/* the range picker */
+.picker{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.step{font:inherit;font-family:var(--mono);font-size:18px;width:40px;height:40px;border-radius:8px;border:1px solid var(--control-edge);background:var(--pinned);color:var(--text);cursor:pointer}
+.rangeval{font-family:var(--mono);font-size:22px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+.rangeval small{display:block;font-family:var(--sans);font-size:11px;font-weight:400;color:var(--text3)}
+.toggle{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--text2)}
+.sw2{width:30px;height:16px;border-radius:999px;background:var(--accent-fill);position:relative;border:1px solid var(--accent)}
+.sw2::after{content:"";position:absolute;right:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--text)}
+table.log{border-collapse:collapse;width:100%;font-size:12px}
+.log th{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-weight:600;text-align:right;padding:5px 8px;border-bottom:1px solid var(--control-edge);white-space:nowrap}
+.log th:first-child,.log td:first-child{text-align:left}
+.log td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--edge);font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.log td .k{font-family:var(--sans);font-size:10.5px;color:var(--text3)}
+.pill{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;border:1px solid var(--control-edge);color:var(--text2)}
+.pill.u{border-color:var(--warn);color:var(--warn)}
+
+/* the corridor */
+.corridor{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px}
+.ladder{position:relative;height:250px;margin:6px 0 4px 0}
+.ladder .rail{position:absolute;left:96px;right:12px;top:18px;bottom:18px;border-radius:6px;background:var(--band);border:1px solid var(--s1)}
+.ladder .mark{position:absolute;left:0;right:12px;display:flex;align-items:center;gap:8px;transform:translateY(-50%)}
+.ladder .mark .t{width:88px;text-align:right;font-family:var(--mono);font-size:12px;color:var(--text)}
+.ladder .mark .r{flex:1;border-top:1px solid var(--text3)}
+.ladder .mark .w{font-size:11.5px;color:var(--text2);background:var(--stage);padding:0 6px;white-space:nowrap}
+.ladder .mark.on .r{border-top:2px solid var(--money-light)}
+.ladder .mark.on .t{color:var(--money-light);font-weight:600}
+table.readers{border-collapse:collapse;width:100%;font-size:12px}
+.readers th{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-weight:600;text-align:left;padding:5px 8px;border-bottom:1px solid var(--control-edge)}
+.readers td{padding:6px 8px;border-bottom:1px solid var(--edge);vertical-align:top}
+.readers td.r{font-family:var(--mono);font-size:11.5px;color:var(--money-light);white-space:nowrap}
+.readers td.t{color:var(--text3);font-family:var(--mono);font-size:11.5px;white-space:nowrap}
+
+/* the bars inside the This month card */
+.parts{display:flex;height:16px;border-radius:4px;overflow:hidden;gap:2px;background:var(--stage)}
+.parts span{display:block;height:100%}
+
+/* charts */
+.chart{position:relative}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--mono);font-size:10px;fill:var(--text3)}
+svg .axis{stroke:var(--edge);stroke-width:1}
+svg .grid{stroke:rgba(36,53,74,.55);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--raised);border:1px solid var(--control-edge);border-radius:6px;padding:6px 8px;font-size:11.5px;color:var(--text);min-width:150px;display:grid;gap:2px;z-index:2}
+.tip .h{font-family:var(--mono);color:var(--text3);font-size:10.5px}
+.tip .row{display:flex;justify-content:space-between;gap:10px}
+.tip .row span:last-child{font-family:var(--mono)}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+table.data{border-collapse:collapse;width:100%;font-size:12px}
+.data th{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-weight:600;text-align:right;padding:5px 8px;border-bottom:1px solid var(--control-edge);white-space:nowrap;vertical-align:bottom}
+.data th:first-child,.data td:first-child{text-align:left;white-space:normal}
+.data td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--edge);font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.data td:first-child{font-family:var(--sans)}
+.data tr.pick td{background:var(--pinned)}
+details summary{cursor:pointer;color:var(--accent);font-size:12px}
+.foot{display:grid;gap:6px;font-size:12px;color:var(--text3);max-width:96ch}
+.foot a{color:var(--accent)}
+
+@media (max-width:900px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid2,.grid2e,.corridor{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<main class="study">
+  <section class="top">
+    <div class="eyebrow">CityBuilderSim · design study · 2026-10-20 · read-only</div>
+    <h1>The central bank, decided in steps and kept as the Fed keeps its books</h1>
+    <p class="lead">Five boards for <span class="mono">docs/studies/spec-central-bank.md</span>. Every figure is from Jerus's own cities, read from the saves without writing them, or from copies of them played on in a scratch folder in 0.8.11. The rate moves in quarter points at scheduled decisions, a range a quarter point wide with an overnight rate trading inside it, and a central bank whose remittance is its income statement.</p>
+    <div class="answers">
+      <div class="answer"><div class="l">The remittance puzzle</div><p>With no paper held and cash in the till, the remittance is <b>the window's interest</b>: the commercial bank borrowing past its deposits at the dial plus 0.25. In Halifax it reached <b>14% of revenue</b>. The 37 months over a quarter, up to <b>44%</b>, were the treasury's own overdraft interest coming back to it. Neither shows on any screen.</p></div>
+      <div class="answer"><div class="l">The dial today</div><p>The autopilot sets the dial every month to the rule on year-on-year inflation. In a copy of Halifax played 20 years on it moved <b>230 times</b> and took <b>227 different values</b>, up to 3.26 points in a month.</p></div>
+      <div class="answer"><div class="l">The proposal</div><p>A range like <b>3.50-3.75%</b>, decided every <b>two months</b> in quarter points (at most ¾ at a decision, up to a point unscheduled when the rule is 3 points away). The overnight rate trades between reserves' rate and the window. The remittance is the bank's own income statement.</p></div>
+    </div>
+    <nav class="toc" aria-label="Boards">
+      <a href="#decide">1 · Your rate, in steps</a>
+      <a href="#overnight">2 · The overnight rate</a>
+      <a href="#books">3 · The central bank's books</a>
+      <a href="#puzzle">4 · Why it was half the revenue</a>
+      <a href="#expect">5 · What the market expects</a>
+    </nav>
+  </section>
+
+  <!-- ================================================================ 1 -->
+  <section class="board" id="decide">
+    <header>
+      <div class="eyebrow">Board 1 · Policy › Central bank · CB1</div>
+      <h2>Your rate, decided in steps</h2>
+      <p class="says">The rate is a range, set at decisions on a calendar. Between decisions it holds, and the rule's advice says what the next decision will do. Halifax twenty years on, from a copy played in the game on the proposed rule.</p>
+    </header>
+    <div class="frame">
+      <div class="crumb"><span class="sw"></span><h3>Policy <span>›</span> Central bank</h3><span class="when" id="d-when"></span></div>
+      <div class="kpis">
+        <div class="kpi"><span class="l">Target range</span><span class="v" id="d-range"></span><span class="n">decided in quarter points</span></div>
+        <div class="kpi"><span class="l">Overnight rate</span><span class="v" id="d-on"></span><span class="n">what money costs tonight</span></div>
+        <div class="kpi"><span class="l">Next decision</span><span class="v" id="d-next"></span><span class="n">every two months</span></div>
+        <div class="kpi"><span class="l">The rule says</span><span class="v" id="d-rule"></span><span class="n" id="d-rule-n"></span></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="cap">The rate since <span id="d-since"></span> <span class="hint">· hover for a month</span></div>
+          <div class="legend"><span><i style="background:var(--band)"></i>the range</span><span><i style="background:var(--s1)"></i>the overnight, in steps</span><span><i class="dash"></i>today's autopilot, on its own copy of the city</span></div>
+          <div class="chart" id="c-dial"></div>
+          <details><summary>The 240 months as a table</summary><div class="scroll" id="t-runs"></div></details>
+        </div>
+        <div class="card raised">
+          <div class="cap">The next decision</div>
+          <div class="toggle"><span class="sw2" aria-hidden="true"></span>The rule decides (autopilot)</div>
+          <div class="picker">
+            <button class="step" id="p-down" aria-label="A quarter point lower">−</button>
+            <div class="rangeval" id="p-val"></div>
+            <button class="step" id="p-up" aria-label="A quarter point higher">+</button>
+          </div>
+          <div class="flag" id="p-say"></div>
+          <div class="chips" style="gap:8px"><button class="btn">Set for the next decision</button><button class="btn ghost">Decide now (unscheduled)</button></div>
+          <div class="cap">Decisions</div>
+          <div class="scroll"><table class="log" id="d-log"></table></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <p><i>1</i><b>A range, not a number.</b> Moved only in quarter points. The rule's advice is the rate it wants the overnight at, and the range chosen is the one that puts the overnight nearest it.</p>
+      <p><i>2</i><b>Decisions on a calendar.</b> Every two months by default; Jerus's every three is the other setting. At a decision the autopilot moves toward the rule by at most ¾ of a point, and holds if the rule is within an eighth.</p>
+      <p><i>3</i><b>Unscheduled, rarely.</b> If the rule runs 3 points from the overnight between decisions, the autopilot decides at once, by up to a point. In the copy: 3 times in 20 years. The player's "Decide now" is the same thing, by hand.</p>
+      <p><i>4</i><b>The player's hand waits.</b> A range set by hand takes effect at the next decision, unless they decide now. Either way the decision log records it.</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ 2 -->
+  <section class="board" id="overnight">
+    <header>
+      <div class="eyebrow">Board 2 · Policy › Central bank, the corridor · CB2</div>
+      <h2>The overnight rate inside the range</h2>
+      <p class="says">Three rates the central bank sets, and one the market makes between them: the reverse repo at the bottom, interest on reserves ten points under the top, the window at the top. The overnight sits at reserves' rate while the bank holds spare cash and climbs to the window as it borrows there.</p>
+    </header>
+    <div class="frame">
+      <div class="crumb"><span class="sw"></span><h3>Policy <span>›</span> Central bank <span>›</span> The corridor</h3><span class="when" id="o-when"></span></div>
+      <div class="corridor">
+        <div class="card">
+          <div class="cap">The range, <span id="o-range"></span></div>
+          <div class="chips" id="o-chips" role="group" aria-label="The bank's funding"></div>
+          <div class="ladder" id="o-ladder"></div>
+          <div class="flag" id="o-say"></div>
+        </div>
+        <div class="card">
+          <div class="cap">What reads which rate</div>
+          <div class="scroll"><table class="readers" id="o-readers"></table></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <p><i>1</i><b>The Fed's arrangement.</b> On 17 September 2026 its range was 3.75-4.00%: overnight reverse repo 3.75%, reserves 3.90%, the window 4.00%. The study copies the shape: the bottom, ten under the top, the top.</p>
+      <p><i>2</i><b>No new dial for where the overnight trades.</b> It reads the bank's own funding position, the share of its marginal money that came from the window (<span class="mono">Bank.windowShare()</span>, already saved).</p>
+      <p><i>3</i><b>The reverse repo has no taker</b> in a one-bank city: a bank earns more on reserves. It is the floor nothing trades under, and stays that until somebody with cash and no account at the central bank exists.</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ 3 -->
+  <section class="board" id="books">
+    <header>
+      <div class="eyebrow">Board 3 · Finances › Money › The central bank · CB3</div>
+      <h2>The central bank's books, as the Fed keeps them</h2>
+      <p class="says">Its income less its costs is the remittance, paid to the treasury the month after; a loss is carried and recovered first, as the Fed carries its deferred asset. Four months from Jerus's cities, on today's arithmetic and on the proposed one.</p>
+    </header>
+    <div class="frame">
+      <div class="crumb"><span class="sw"></span><h3>Finances <span>›</span> Money <span>›</span> The central bank</h3><span class="when">this month</span></div>
+      <div class="chips" id="b-cases" role="group" aria-label="Which month"></div>
+      <div class="chips" id="b-books" role="group" aria-label="Which arithmetic"></div>
+      <div class="grid2e">
+        <div class="card">
+          <div class="cap">Income statement <span class="hint" id="b-hint"></span></div>
+          <div id="b-statement"></div>
+          <div class="flag" id="b-note"></div>
+        </div>
+        <div class="card">
+          <div class="cap">The Fed, 2025 <span class="hint">· combined Reserve Banks, audited</span></div>
+          <div class="line"><span>Interest earned, on securities and loans</span><span class="mono">$155.3B</span></div>
+          <div class="line neg"><span>Interest paid, mostly on reserves</span><span class="mono">−$167.4B</span></div>
+          <div class="line neg"><span>Operating costs and the rest</span><span class="mono">−$6.6B</span></div>
+          <div class="line total"><span>Net, carried as the deferred asset</span><span class="mono">−$18.7B</span></div>
+          <div class="line"><span>Deferred asset at the year's end</span><span class="mono">$243.5B</span></div>
+          <div class="line"><span>...at 30 June 2026, remittances restarting</span><span class="mono">$235.5B</span></div>
+          <p class="muted" style="font-size:11.5px">A central bank whose reserves cost more than its assets earn makes a loss and remits nothing until it has earned the loss back. The game's <span class="mono">lossCarried</span> already works this way; the screen should call it by name.</p>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <p><i>1</i><b>Every line on the screen.</b> Today no screen shows the window's interest or the overdraft's as the central bank's income, so its remittance looks like money from nowhere.</p>
+      <p><i>2</i><b>Paper at amortized cost.</b> Today a bond bought under face is profit the day it is bought, at face, and remitted the next month; the Fed earns the discount month by month until maturity.</p>
+      <p><i>3</i><b>"Reserves as a real central bank's"</b> is decision 12, not a CB batch: it pays reserves' rate on the money it made that sits in the city, which turns the paper month into a loss and the overdraft month into nothing, as at the Fed.</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ 4 -->
+  <section class="board" id="puzzle">
+    <header>
+      <div class="eyebrow">Board 4 · Finances › Money, This month · CB3</div>
+      <h2>Why the remittance was half the revenue</h2>
+      <p class="says">Halifax (slot 3), month by month: the remittance as a share of the treasury's revenue, by where it came from. Each bar is last month's interest on what the central bank had lent: to the treasury on its overdraft, or to the commercial bank at the window.</p>
+    </header>
+    <div class="frame">
+      <div class="crumb"><span class="sw"></span><h3>Halifax <span>›</span> the remittance</h3><span class="when">Feb 2019 - Sep 2039</span></div>
+      <div class="card">
+        <div class="legend"><span><i style="background:var(--s2)"></i>the treasury's overdraft (its own interest coming back)</span><span><i style="background:var(--s1)"></i>the bank at the window</span></div>
+        <div class="chart" id="c-share"></div>
+      </div>
+      <div class="grid2e">
+        <div class="card">
+          <div class="cap">This month <span class="hint">· today, Sep 2036, rebuilt from the saved history</span></div>
+          <div class="line"><span>Money destroyed</span><span class="mono" id="m-total"></span></div>
+          <div class="parts" id="m-today"></div>
+          <div class="legend"><span><i style="background:var(--ore)"></i>paper it sold</span><span><i style="background:var(--money-dark)"></i>coupons</span><span><i style="background:var(--money)"></i>principal</span><span><i style="background:var(--money-light)"></i>bought back</span></div>
+          <p class="muted" style="font-size:11.5px">All four segments are empty this month. The money destroyed was the window's interest and the bank's repayments, and the bar has no segment for either.</p>
+        </div>
+        <div class="card raised">
+          <div class="cap">This month <span class="hint">· proposed</span></div>
+          <div class="line"><span>Money destroyed</span><span class="mono" id="m-total2"></span></div>
+          <div class="parts" id="m-prop"></div>
+          <div class="legend"><span><i style="background:var(--s1)"></i>window interest</span><span><i style="background:var(--s2)"></i>the bank repaid the window</span></div>
+          <div class="line"><span>Remitted to the treasury, next month</span><span class="mono" id="m-rem"></span></div>
+          <div class="line sub"><span>of which the treasury's own interest</span><span class="mono">D$0</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ 5 -->
+  <section class="board" id="expect">
+    <header>
+      <div class="eyebrow">Board 5 · Finances › Your rate · CD1, amended</div>
+      <h2>What the market expects, in steps</h2>
+      <p class="says">CD1 prices the curve on the dial the market expects: a smooth drift to the rule. With decisions in steps, the expected path is flat until the next decision and moves at each, by at most ¾ of a point. The city behind the curve: 5% inflation, the dial held at 1% by hand, credibility 60%.</p>
+    </header>
+    <div class="frame">
+      <div class="crumb"><span class="sw"></span><h3>Finances <span>›</span> Your rate</h3><span class="when">the next five years</span></div>
+      <div class="grid2">
+        <div class="card">
+          <div class="legend"><span><i class="dash"></i>CD1 as specified: the smooth drift</span><span><i style="background:var(--s1)"></i>in steps, a decision every two months</span></div>
+          <div class="chart" id="c-cd1"></div>
+        </div>
+        <div class="card">
+          <div class="cap">The average expected short rate over the term</div>
+          <div class="scroll" id="t-cd1"></div>
+          <p class="muted" style="font-size:11.5px">Before the credit spread and term premium, which are the same in both. A calm city does not move; a hiking city moves under 3 points of a hundredth.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="eyebrow">Sources</div>
+    <p>Federal Reserve, implementation notes of 28 January to 16 September 2026 (<a href="https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a1.htm">16 Sept 2026</a>); the Reserve Banks' combined financial statements for 2025, as reported by Bloomberg Law; First Trust's commentary on the Fed's Q2 2026 financials (the deferred asset at $235.5B). The model is <span class="mono">docs/studies/central-bank/cb-model.py</span>; these boards are built by <span class="mono">build-boards.py</span>.</p>
+  </footer>
+</main>
+
+<script>
+const DATA = {"halifax_dial":{"month":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386,387,388,389,390,391,392,393,394,395,396,397,398,399,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,419,420,421,422,423,424,425,426,427,428,429,430,431,432,433,434,435,436,437,438,439,440,441,442,443,444,445,446,447,448,449,450,451,452,453,454,455,456,457,458,459,460,461,462,463,464,465,466,467,468,469,470,471,472,473,474,475,476,477],"today":[null,null,null,null,null,null,null,null,null,null,null,null,null,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,0.0,0.0,0.0,0.0,0.0,0.9,2.62,4.51,5.99,7.43,9.09,10.67,12.28,13.96,15.59,17.02,18.15,17.4,16.67,15.78,14.96,14.54,13.59,12.54,11.35,10.31,9.1,7.75,6.39,5.17,2.49,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.27,1.35,3.6,5.31,6.48,8.08,9.53,12.11,14.46,15.57,15.81,17.23,19.34,19.84,19.11,18.84,20.23,21.17,22.09,21.73,21.74,21.78,22.36,22.3,22.33,22.58,22.74,22.95,22.01,21.03,20.11,19.14,18.01,18.1,17.0,15.94,14.78,14.09,13.35,12.64,12.0,11.41,11.34,11.24,11.05,10.27,5.74,2.68,0.16,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.83,4.65,7.34,9.69,11.8,13.63,14.54,15.36,16.61,16.16,15.33,14.53,14.03,13.39,12.67,12.01,11.36,10.75,10.14,9.57,9.04,8.58,8.14,7.74,7.37,7.03,6.73,6.45,6.21,5.99,5.81,5.64,5.48,5.34,5.24,5.15,5.07,5.0,4.94,4.9,5.35,5.57,5.79,4.35,2.96,1.85,0.85,0.02,12.34,8.04,4.71,1.99,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.37,1.84,2.94,3.92,4.13,4.3,4.23,4.01,3.76,3.5,2.98,2.58,2.53,2.69,2.6,2.53,2.66,2.46,2.15,2.28,2.19,2.23,2.67,3.16,3.82,3.79,3.41,3.71,4.56,5.63,6.46,6.63,7.05,7.4,7.58,7.23,7.4,7.23,7.6,7.06,6.05,5.37,5.48,4.65,4.6,4.83,4.7,4.85,4.4,5.96,6.05,6.9,7.94,8.0,7.55,8.37,8.37,7.23,6.36,5.86,5.08,3.14,3.65,3.1,2.72,2.57,2.53,2.46,2.23,2.73,3.29,3.31,3.9,3.78,2.71,2.32,1.89,1.82,1.76,1.66,1.76,1.86,1.81,1.92,0.99,1.25,1.57,1.99,2.26,2.54,2.64,2.8,3.01,3.01,3.25,3.43,4.15,4.34,4.71,4.83,5.05,5.46,5.6,5.47,5.39,5.58,5.72,5.75,5.92,5.94,5.78,5.63,5.46,5.4,5.59,5.89,5.94,5.98,5.85,5.75,5.62,5.55,5.52,5.46,5.44,5.21,5.12,5.02,5.06,4.97,4.97,4.88,4.9,4.91,4.69,4.61,4.5,4.45,4.37,4.64,5.0,5.48,6.04,6.42,6.79,7.03,6.34,4.85,5.15],"rule":[null,null,null,null,null,null,null,null,null,null,null,null,null,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.89,2.625,4.514,5.996,7.434,9.089,10.671,12.27,13.955,15.578,17.006,18.164,17.406,16.667,15.784,14.959,14.541,13.588,12.534,11.356,10.311,9.106,7.76,6.384,5.172,2.482,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.269,1.347,3.598,5.295,6.494,8.093,9.513,12.109,14.473,15.569,15.802,17.22,19.347,19.852,19.115,18.841,20.231,21.152,22.092,21.723,21.74,21.773,22.363,22.303,22.321,22.579,22.735,22.952,22.016,21.032,20.116,19.136,18.007,18.096,17.013,15.949,14.779,14.103,13.356,12.641,11.997,11.41,11.332,11.249,11.053,10.275,5.733,2.679,0.163,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.84,4.65,7.343,9.685,11.798,13.627,14.553,15.362,16.604,16.16,15.325,14.525,14.028,13.39,12.671,12.021,11.36,10.751,10.142,9.582,9.044,8.578,8.145,7.742,7.369,7.038,6.735,6.447,6.211,5.989,5.817,5.635,5.478,5.345,5.237,5.152,5.069,4.997,4.937,4.89,5.354,5.571,5.787,4.351,2.967,1.852,0.852,0.022,12.339,8.035,4.715,1.996,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.365,1.836,2.937,3.922,4.13,4.291,4.23,4.008,3.751,3.497,2.976,2.586,2.525,2.682,2.596,2.522,2.654,2.468,2.139,2.279,2.189,2.231,2.667,3.151,3.828,3.801,3.413,3.705,4.561,5.63,6.466,6.638,7.053,7.4,7.573,7.236,7.392,7.225,7.59,7.064,6.051,5.364,5.476,4.649,4.604,4.834,4.704,4.842,4.404,5.959,6.052,6.896,7.938,8.008,7.552,8.37,8.366,7.228,6.358,5.871,5.082,3.141,3.65,3.11,2.719,2.572,2.529,2.457,2.233,2.73,3.296,3.312,3.902,3.777,2.717,2.315,1.896,1.82,1.761,1.664,1.755,1.865,1.807,1.917,0.988,1.247,1.561,1.994,2.25,2.545,2.634,2.804,3.01,3.015,3.251,3.428,4.154,4.332,4.707,4.82,5.051,5.458,5.611,5.47,5.389,5.578,5.719,5.747,5.916,5.946,5.787,5.632,5.458,5.406,5.591,5.896,5.949,5.984,5.845,5.75,5.614,5.556,5.512,5.462,5.436,5.209,5.121,5.019,5.053,4.972,4.978,4.883,4.907,4.904,4.691,4.605,4.501,4.447,4.375,4.638,5.01,5.482,6.041,6.415,6.786,7.027,6.337,4.842,5.157],"stepped":[null,null,null,null,null,null,null,null,null,null,null,null,null,2.9,2.15,2.15,1.4,1.4,0.65,0.65,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.9,1.9,2.9,3.9,4.9,5.9,6.9,7.9,8.9,9.9,10.9,11.9,12.9,12.9,13.65,13.65,13.65,13.65,12.9,12.9,11.9,10.9,9.9,8.9,7.9,6.9,5.9,4.9,3.9,2.9,2.15,2.15,1.4,1.4,0.65,0.65,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.9,0.9,1.9,2.9,3.9,4.9,5.9,6.9,7.9,8.9,9.9,10.9,11.9,12.9,13.9,14.9,15.9,16.9,17.9,18.9,19.65,19.65,20.4,20.4,21.15,21.15,21.9,21.9,21.15,21.15,20.4,20.4,19.65,19.65,18.65,17.65,16.65,15.65,14.65,14.65,13.65,13.65,12.9,12.9,12.15,11.15,10.15,9.15,8.15,7.15,6.15,5.15,4.15,3.15,2.15,2.15,1.4,1.4,0.65,0.65,0.15,0.15,0.15,0.15,1.15,2.15,3.15,4.15,5.15,6.15,7.15,8.15,9.15,10.15,11.15,11.15,11.9,11.9,11.9,11.9,11.15,11.15,10.4,10.4,9.65,9.65,8.9,8.9,8.15,8.15,7.4,7.4,6.65,6.65,5.9,5.9,5.4,5.4,5.15,5.15,4.9,4.9,4.9,4.9,5.65,5.65,4.9,4.9,3.9,2.9,2.15,3.15,4.15,4.15,3.4,2.4,1.65,1.65,0.9,0.9,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.9,0.9,1.9,1.9,2.65,2.65,3.4,3.4,3.4,3.4,2.65,2.65,2.65,2.65,2.4,2.4,2.4,2.4,2.4,2.4,2.15,2.15,2.9,2.9,3.65,3.65,3.65,3.65,4.4,4.4,5.15,5.15,5.9,5.9,6.65,6.65,7.15,7.15,7.15,7.15,6.4,6.4,5.65,5.65,4.9,4.9,4.9,4.9,5.65,5.65,6.4,6.4,7.15,7.15,7.9,7.9,7.15,7.15,6.4,6.4,5.4,5.4,4.65,4.65,3.9,3.9,3.15,3.15,2.65,2.65,3.4,3.4,3.9,3.9,3.15,3.15,2.4,2.4,1.65,1.65,1.9,1.9,1.9,1.9,1.15,1.15,1.9,1.9,2.65,2.65,2.9,2.9,2.9,2.9,3.4,3.4,4.15,4.15,4.9,4.9,5.4,5.4,5.4,5.4,5.65,5.65,5.65,5.65,5.9,5.9,5.65,5.65,5.4,5.4,5.9,5.9,5.9,5.9,5.65,5.65,5.65,5.65,5.4,5.4,5.15,5.15,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.65,4.65,4.4,4.4,4.65,4.65,5.4,5.4,6.15,6.15,6.9,6.9,6.15,6.15],"table":[{"label":"today: the dial as saved (monthly, any value)","unscheduled":0,"changes":277,"distinct":248,"biggest_move_pt":12.319999999999999,"mean_move_bp":42.67748917748918,"mean_gap_bp":38.4984826132546,"months_gap_over_1pt":59,"max_gap_pt":3.0,"months":463},{"label":"the rule itself, every month (what autopilot would set)","unscheduled":0,"changes":279,"distinct":277,"biggest_move_pt":12.31694558851607,"mean_move_bp":42.03660138234285,"mean_gap_bp":0.0,"months_gap_over_1pt":0,"max_gap_pt":0.0,"months":463},{"label":"every month, a quarter point at most","unscheduled":0,"changes":307,"distinct":45,"biggest_move_pt":0.2500000000000002,"mean_move_bp":16.612554112554122,"mean_gap_bp":251.26160643635643,"months_gap_over_1pt":196,"max_gap_pt":17.441836734693872,"months":463},{"label":"every 2 months, half a point at most","unscheduled":0,"changes":157,"distinct":37,"biggest_move_pt":0.5000000000000004,"mean_move_bp":15.963203463203463,"mean_gap_bp":253.11062138492528,"months_gap_over_1pt":193,"max_gap_pt":17.441836734693872,"months":463},{"label":"every 3 months, half a point at most","unscheduled":0,"changes":109,"distinct":29,"biggest_move_pt":0.5000000000000004,"mean_move_bp":11.147186147186147,"mean_gap_bp":282.1497347772263,"months_gap_over_1pt":217,"max_gap_pt":18.941836734693872,"months":463},{"label":"every 3 months, three quarters at most","unscheduled":0,"changes":109,"distinct":37,"biggest_move_pt":0.7500000000000007,"mean_move_bp":15.963203463203467,"mean_gap_bp":257.4536333472873,"months_gap_over_1pt":199,"max_gap_pt":17.441836734693872,"months":463},{"label":"every 3 months, a point at most","unscheduled":0,"changes":107,"distinct":39,"biggest_move_pt":1.0000000000000009,"mean_move_bp":19.696969696969695,"mean_gap_bp":234.18651692192603,"months_gap_over_1pt":187,"max_gap_pt":16.001868357901962,"months":463},{"label":"every 3 months, 3/4 at most, unscheduled past 3 points","unscheduled":51,"changes":159,"distinct":64,"biggest_move_pt":1.0000000000000009,"mean_move_bp":27.75974025974026,"mean_gap_bp":146.0737365366871,"months_gap_over_1pt":196,"max_gap_pt":9.236697094045711,"months":463},{"label":"every 2 months, 3/4 at most, unscheduled past 3 points (PROPOSED)","unscheduled":35,"changes":173,"distinct":58,"biggest_move_pt":1.0000000000000009,"mean_move_bp":29.707792207792206,"mean_gap_bp":123.99710016441503,"months_gap_over_1pt":151,"max_gap_pt":9.188744745615343,"months":463}]},"halifax_replay_dial":{"month":[478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,500,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520,521,522,523,524,525,526,527,528,529,530,531,532,533,534,535,536,537,538,539,540,541,542,543,544,545,546,547,548,549,550,551,552,553,554,555,556,557,558,559,560,561,562,563,564,565,566,567,568,569,570,571,572,573,574,575,576,577,578,579,580,581,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597],"dial":[5.34,5.46,5.15,4.61,4.19,3.75,3.46,3.11,2.69,3.18,4.46,4.33,4.27,4.12,4.11,4.44,4.77,5.12,5.49,5.89,6.47,7.01,7.05,6.4,5.73,4.88,4.44,3.83,2.98,2.06,1.15,0.44,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.22,0.45,0.57,0.8,1.51,1.77,2.12,2.45,3.02,3.28,3.65,3.88,4.14,4.11,4.18,4.13,4.11,4.01,3.84,3.63,3.36,3.17,2.96,2.75,2.64,2.58,2.54,2.42,2.21,2.17,2.05,1.98,2.01,2.1,2.14,2.22,2.2,2.35,2.39,2.45,2.55,2.61,2.67,2.92,3.1,3.15,3.26,3.37,3.46,3.45,3.54,3.69,3.79,3.83,3.9,3.78,3.69,3.64,3.56,3.51,3.47,3.49,3.46,3.38,3.29,3.28,3.34,4.4,6.46,6.57,5.58,6.11,8.29,7.8,7.7,7.68,6.67,4.7]},"runs":[{"label":"today: the autopilot as it is","moves":230,"values":227,"biggest":3.258,"dial_lo":0.0,"dial_hi":10.482,"infl":2.4846666666666666,"sd":1.4146203426675614,"miss":1.0868333333333335,"off3":19,"unemp":8.498583333333332,"gdp":493976.5125,"people":81746,"unscheduled":0,"month":[478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,500,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520,521,522,523,524,525,526,527,528,529,530,531,532,533,534,535,536,537,538,539,540,541,542,543,544,545,546,547,548,549,550,551,552,553,554,555,556,557,558,559,560,561,562,563,564,565,566,567,568,569,570,571,572,573,574,575,576,577,578,579,580,581,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597,598,599,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,621,622,623,624,625,626,627,628,629,630,631,632,633,634,635,636,637,638,639,640,641,642,643,644,645,646,647,648,649,650,651,652,653,654,655,656,657,658,659,660,661,662,663,664,665,666,667,668,669,670,671,672,673,674,675,676,677,678,679,680,681,682,683,684,685,686,687,688,689,690,691,692,693,694,695,696,697,698,699,700,701,702,703,704,705,706,707,708,709,710,711,712,713,714,715,716,717],"dial":[5.344,5.462,5.152,4.61,4.186,3.745,3.462,3.107,2.692,3.182,4.465,4.329,4.269,4.12,4.114,4.44,4.766,5.116,5.492,5.889,6.465,7.011,7.046,6.404,5.732,4.883,4.444,3.831,2.976,2.056,1.153,0.436,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.216,0.447,0.566,0.804,1.512,1.771,2.121,2.445,3.019,3.284,3.647,3.883,4.145,4.112,4.182,4.134,4.107,4.008,3.837,3.632,3.358,3.174,2.959,2.747,2.645,2.577,2.54,2.423,2.206,2.169,2.054,1.977,2.009,2.098,2.14,2.222,2.202,2.349,2.393,2.453,2.547,2.614,2.673,2.925,3.097,3.154,3.261,3.37,3.462,3.453,3.543,3.688,3.787,3.828,3.901,3.778,3.689,3.636,3.563,3.508,3.472,3.493,3.457,3.378,3.288,3.282,3.337,4.399,6.465,6.573,5.579,6.112,8.295,7.797,7.703,7.678,6.675,4.697,4.659,3.731,1.808,1.839,2.923,2.532,0.512,1.064,1.249,1.404,2.568,4.631,4.714,4.264,3.859,3.634,3.471,3.289,3.117,2.969,2.757,2.508,2.211,1.991,1.798,2.026,2.264,2.359,2.427,2.464,2.547,2.59,2.612,2.663,2.699,2.794,2.83,2.88,2.902,2.899,2.935,3.032,3.16,3.242,3.537,3.847,4.195,4.416,4.674,4.93,5.186,5.451,5.658,5.834,5.928,6.023,5.857,5.62,5.328,5.055,4.728,4.36,3.966,3.613,3.319,2.991,2.686,2.434,2.283,2.183,2.147,1.92,1.794,1.838,1.934,2.017,2.156,2.37,2.666,2.984,3.296,3.632,3.916,4.387,4.899,5.153,5.437,5.667,5.818,6.03,6.972,9.001,10.482,9.37,9.247,9.075,8.755,7.913,4.774,4.68,4.639,4.548,3.682,1.79,0.305,1.281,1.617,1.993,2.417,3.458,6.716,7.065,7.381,7.636,7.663,7.785,8.103,8.375,8.315,8.459],"inflation":[3.64,3.44,3.07,2.79,2.5,2.31,2.07,1.79,2.12,2.98,2.89,2.85,2.75,2.74,2.96,3.18,3.41,3.66,3.93,4.31,4.67,4.7,4.27,3.82,3.26,2.96,2.55,1.98,1.37,0.77,0.29,-0.16,-0.49,-0.8,-0.69,-0.54,-0.2,-0.27,-0.25,-0.16,-0.01,0.14,0.3,0.38,0.54,1.01,1.18,1.41,1.63,2.01,2.19,2.43,2.59,2.76,2.74,2.79,2.76,2.74,2.67,2.56,2.42,2.24,2.12,1.97,1.83,1.76,1.72,1.69,1.62,1.47,1.45,1.37,1.32,1.34,1.4,1.43,1.48,1.47,1.57,1.6,1.64,1.7,1.74,1.78,1.95,2.07,2.1,2.17,2.25,2.31,2.3,2.36,2.46,2.53,2.55,2.6,2.52,2.46,2.42,2.38,2.34,2.31,2.33,2.31,2.25,2.19,2.19,2.23,2.93,4.31,4.38,3.72,4.08,5.53,5.2,5.14,5.12,4.45,3.13,3.11,2.49,1.21,1.23,1.95,1.69,0.34,0.71,0.83,0.94,1.71,3.09,3.14,2.84,2.57,2.42,2.31,2.19,2.08,1.98,1.84,1.67,1.47,1.33,1.2,1.35,1.51,1.57,1.62,1.64,1.7,1.73,1.74,1.78,1.8,1.86,1.89,1.92,1.93,1.93,1.96,2.02,2.11,2.16,2.36,2.56,2.8,2.94,3.12,3.29,3.46,3.63,3.77,3.89,3.95,4.01,3.9,3.75,3.55,3.37,3.15,2.91,2.64,2.41,2.21,1.99,1.79,1.62,1.52,1.46,1.43,1.28,1.2,1.23,1.29,1.34,1.44,1.58,1.78,1.99,2.2,2.42,2.61,2.92,3.27,3.44,3.62,3.78,3.88,4.02,4.65,6.0,6.99,6.25,6.17,6.05,5.84,5.27,3.18,3.12,3.09,3.03,2.46,1.19,0.2,0.85,1.08,1.33,1.61,2.31,4.48,4.71,4.92,5.09,5.11,5.19,5.4,5.58,5.54,5.64,5.71]},{"label":"every 3 months, 3/4 at most, unscheduled past 3 points","moves":70,"values":26,"biggest":1.0000000000000002,"dial_lo":0.15,"dial_hi":8.4,"infl":2.637058333333333,"sd":1.5212247302520938,"miss":1.2620416666666665,"off3":29,"unemp":11.981291666666666,"gdp":542937.5833333334,"people":96792,"unscheduled":6,"month":[478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,500,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520,521,522,523,524,525,526,527,528,529,530,531,532,533,534,535,536,537,538,539,540,541,542,543,544,545,546,547,548,549,550,551,552,553,554,555,556,557,558,559,560,561,562,563,564,565,566,567,568,569,570,571,572,573,574,575,576,577,578,579,580,581,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597,598,599,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,621,622,623,624,625,626,627,628,629,630,631,632,633,634,635,636,637,638,639,640,641,642,643,644,645,646,647,648,649,650,651,652,653,654,655,656,657,658,659,660,661,662,663,664,665,666,667,668,669,670,671,672,673,674,675,676,677,678,679,680,681,682,683,684,685,686,687,688,689,690,691,692,693,694,695,696,697,698,699,700,701,702,703,704,705,706,707,708,709,710,711,712,713,714,715,716,717],"dial":[5.4,5.4,5.4,4.65,4.65,4.65,3.9,3.9,3.9,3.15,3.15,3.15,3.9,3.9,3.9,4.15,4.15,4.15,4.9,4.9,4.9,5.9,5.9,5.9,6.65,6.65,6.65,5.9,5.9,5.9,4.9,3.9,2.9,2.15,2.15,2.15,1.4,1.4,1.4,0.65,0.65,0.65,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.9,0.9,0.9,1.65,1.65,1.65,2.65,2.65,3.65,4.4,4.4,4.4,5.15,5.15,5.15,5.4,5.4,5.4,4.65,4.65,4.65,3.9,3.9,3.9,4.65,4.65,4.65,5.4,5.4,5.4,5.9,5.9,5.9,5.4,5.4,5.4,4.65,4.65,4.65,4.15,4.15,4.15,3.65,3.65,3.65,3.65,3.65,3.65,3.9,3.9,3.9,3.9,3.9,3.9,3.65,3.65,3.65,2.9,2.9,2.9,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,3.15,3.15,3.15,3.9,3.9,3.9,3.9,3.9,3.9,3.65,3.65,3.65,3.65,3.65,3.65,3.65,3.65,3.65,4.15,4.15,4.15,4.4,4.4,4.4,4.4,4.4,4.4,4.15,4.15,4.15,4.15,4.15,4.15,3.9,3.9,3.9,4.15,4.15,4.15,4.4,4.4,4.4,3.9,3.9,3.9,3.9,3.9,3.9,3.65,3.65,3.65,3.9,3.9,3.9,4.65,4.65,4.65,5.15,5.15,5.15,5.4,5.4,5.4,4.9,4.9,4.9,4.4,4.4,4.4,4.15,4.15,4.15,4.15,4.15,4.15,4.4,4.4,4.4,4.9,4.9,4.9,5.15,5.15,5.15,5.15,5.15,5.15,5.15,5.15,5.15,4.65,4.65,4.65,5.4,5.4,6.4,7.15,7.15,7.15,7.9,7.9,7.9,8.4,8.4,8.4,7.9,7.9,6.9,6.15,5.15,5.15,4.4,4.4,4.4,3.65,3.65,3.65,2.9,2.9,2.9],"inflation":[3.64,3.44,3.07,2.79,2.49,2.28,2.02,1.72,2.03,2.85,2.54,2.55,2.57,2.7,2.8,3.21,3.65,4.16,4.56,5.1,5.62,5.69,5.68,5.31,4.94,4.43,3.96,3.13,2.28,1.41,0.65,-0.18,-1.06,-1.59,-2.04,-2.17,-2.33,-2.39,-2.42,-2.31,-2.2,-2.04,-1.81,-1.52,-1.08,-0.53,-0.11,0.04,0.28,0.61,1.15,1.57,1.9,2.2,2.63,3.0,3.35,3.64,3.94,4.2,4.42,4.48,4.3,4.03,3.8,3.53,3.15,2.93,2.71,2.51,2.5,2.6,2.65,2.84,3.04,3.23,3.41,3.6,3.84,3.89,3.97,4.02,3.93,3.64,3.45,3.21,2.96,2.82,2.73,2.69,2.53,2.43,2.42,2.42,2.4,2.48,2.49,2.49,2.54,2.57,2.56,2.53,2.56,2.58,2.47,2.32,2.22,1.95,1.76,1.64,1.59,1.57,1.58,1.59,1.61,1.6,1.66,1.74,1.81,2.1,2.35,2.54,2.6,2.64,2.62,2.58,2.55,2.51,2.47,2.42,2.38,2.34,2.35,2.38,2.45,2.48,2.56,2.68,2.76,2.84,2.9,2.94,2.99,2.99,2.94,2.88,2.83,2.79,2.76,2.71,2.64,2.58,2.53,2.56,2.65,2.73,2.77,2.83,2.84,2.86,2.73,2.64,2.6,2.6,2.62,2.59,2.49,2.45,2.42,2.46,2.53,2.6,2.81,3.0,3.18,3.33,3.42,3.44,3.5,3.52,3.51,3.4,3.29,3.18,3.06,2.98,2.88,2.77,2.7,2.72,2.71,2.72,2.76,2.83,2.89,3.02,3.14,3.23,3.33,3.41,3.46,3.47,3.46,3.5,3.5,3.4,3.36,3.27,3.19,3.13,3.09,3.04,3.65,4.95,5.66,5.24,5.16,5.31,5.39,5.45,5.58,5.62,5.73,5.71,5.19,3.88,3.23,3.02,1.62,1.62,1.61,1.68,1.61,1.64,1.56,1.56,1.47,1.51,1.48,2.1]},{"label":"every 3 months, a point at most, never unscheduled","moves":68,"values":28,"biggest":1.0000000000000009,"dial_lo":0.15,"dial_hi":8.15,"infl":2.5757541666666666,"sd":1.63110225831061,"miss":1.3174124999999999,"off3":29,"unemp":11.753166666666665,"gdp":514514.4875,"people":91103,"unscheduled":0,"month":[478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,500,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520,521,522,523,524,525,526,527,528,529,530,531,532,533,534,535,536,537,538,539,540,541,542,543,544,545,546,547,548,549,550,551,552,553,554,555,556,557,558,559,560,561,562,563,564,565,566,567,568,569,570,571,572,573,574,575,576,577,578,579,580,581,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597,598,599,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,621,622,623,624,625,626,627,628,629,630,631,632,633,634,635,636,637,638,639,640,641,642,643,644,645,646,647,648,649,650,651,652,653,654,655,656,657,658,659,660,661,662,663,664,665,666,667,668,669,670,671,672,673,674,675,676,677,678,679,680,681,682,683,684,685,686,687,688,689,690,691,692,693,694,695,696,697,698,699,700,701,702,703,704,705,706,707,708,709,710,711,712,713,714,715,716,717],"dial":[5.4,5.4,5.4,4.65,4.65,4.65,3.65,3.65,3.65,3.15,3.15,3.15,3.9,3.9,3.9,4.4,4.4,4.4,5.4,5.4,5.4,6.4,6.4,6.4,7.4,7.4,7.4,6.4,6.4,6.4,5.4,5.4,5.4,4.4,4.4,4.4,3.4,3.4,3.4,2.4,2.4,2.4,1.4,1.4,1.4,0.4,0.4,0.4,0.15,0.15,0.15,1.15,1.15,1.15,2.15,2.15,2.15,3.15,3.15,3.15,4.15,4.15,4.15,5.15,5.15,5.15,4.65,4.65,4.65,4.15,4.15,4.15,3.9,3.9,3.9,3.9,3.9,3.9,4.65,4.65,4.65,5.15,5.15,5.15,5.15,5.15,5.15,5.15,5.15,5.15,5.15,5.15,5.15,4.65,4.65,4.65,4.15,4.15,4.15,3.9,3.9,3.9,4.15,4.15,4.15,4.15,4.15,4.15,4.4,4.4,4.4,3.9,3.9,3.9,2.9,2.9,2.9,2.15,2.15,2.15,2.15,2.15,2.15,2.65,2.65,2.65,3.65,3.65,3.65,4.15,4.15,4.15,3.9,3.9,3.9,3.65,3.65,3.65,3.4,3.4,3.4,3.4,3.4,3.4,4.4,4.4,4.4,4.65,4.65,4.65,5.65,5.65,5.65,6.15,6.15,6.15,5.15,5.15,5.15,4.15,4.15,4.15,3.15,3.15,3.15,3.4,3.4,3.4,4.4,4.4,4.4,4.9,4.9,4.9,4.4,4.4,4.4,3.65,3.65,3.65,3.65,3.65,3.65,3.65,3.65,3.65,3.65,3.65,3.65,3.65,3.65,3.65,3.9,3.9,3.9,4.4,4.4,4.4,4.9,4.9,4.9,5.15,5.15,5.15,5.65,5.65,5.65,6.65,6.65,6.65,7.65,7.65,7.65,8.15,8.15,8.15,7.9,7.9,7.9,6.9,6.9,6.9,5.9,5.9,5.9,4.9,4.9,4.9,3.9,3.9,3.9,3.15,3.15,3.15,4.15,4.15,4.15,5.15,5.15,5.15],"inflation":[3.64,3.44,3.07,2.79,2.49,2.28,2.02,1.74,2.05,2.88,2.57,2.58,2.6,2.73,2.83,3.23,3.67,4.17,4.56,5.09,5.59,5.64,5.63,5.24,4.84,4.31,3.82,2.98,2.13,1.25,0.49,-0.34,-1.27,-1.82,-2.29,-2.66,-2.86,-2.83,-2.84,-2.74,-2.6,-2.38,-2.15,-1.84,-1.37,-0.83,-0.33,0.15,0.49,0.71,1.06,1.45,1.75,1.97,2.32,2.5,2.83,3.05,3.24,3.37,3.55,3.62,3.65,3.43,3.26,3.12,2.87,2.81,2.73,2.69,2.61,2.6,2.54,2.55,2.6,2.78,2.95,3.08,3.29,3.35,3.35,3.43,3.49,3.45,3.47,3.48,3.46,3.43,3.4,3.35,3.23,3.19,3.07,2.92,2.75,2.69,2.6,2.65,2.67,2.69,2.7,2.71,2.71,2.71,2.73,2.76,2.81,2.87,2.91,2.84,2.57,2.27,2.02,1.84,1.7,1.59,1.5,1.39,1.43,1.48,1.49,1.54,1.8,2.04,2.23,2.38,2.5,2.58,2.69,2.78,2.73,2.63,2.57,2.52,2.48,2.41,2.36,2.32,2.29,2.27,2.25,2.27,2.89,3.42,2.56,2.52,3.07,4.35,4.64,4.68,4.54,4.17,4.13,3.66,2.32,1.89,2.83,2.94,2.44,1.28,1.1,1.25,1.54,2.06,2.25,2.87,3.58,3.49,3.38,3.3,3.25,3.17,3.07,2.91,2.76,2.61,2.47,2.28,2.28,2.34,2.37,2.37,2.36,2.36,2.37,2.35,2.36,2.37,2.4,2.46,2.5,2.56,2.62,2.72,2.84,2.97,3.07,3.19,3.31,3.41,3.5,3.55,3.6,3.69,3.71,3.75,4.37,5.7,6.28,5.72,5.65,5.51,5.43,5.35,5.33,5.22,5.22,5.14,3.87,0.96,0.37,0.91,0.96,1.08,1.15,1.33,1.33,1.37,1.37,1.41,2.05,3.65,3.69,3.76,3.84,3.91,3.96,3.88,3.92,3.83]},{"label":"every 2 months, 3/4 at most, unscheduled past 3 points","moves":99,"values":30,"biggest":1.0000000000000002,"dial_lo":0.15,"dial_hi":8.4,"infl":2.6829666666666663,"sd":1.3866080011628696,"miss":1.2705,"off3":18,"unemp":12.067666666666666,"gdp":549334.5916666667,"people":97195,"unscheduled":3,"month":[478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,500,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520,521,522,523,524,525,526,527,528,529,530,531,532,533,534,535,536,537,538,539,540,541,542,543,544,545,546,547,548,549,550,551,552,553,554,555,556,557,558,559,560,561,562,563,564,565,566,567,568,569,570,571,572,573,574,575,576,577,578,579,580,581,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597,598,599,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,621,622,623,624,625,626,627,628,629,630,631,632,633,634,635,636,637,638,639,640,641,642,643,644,645,646,647,648,649,650,651,652,653,654,655,656,657,658,659,660,661,662,663,664,665,666,667,668,669,670,671,672,673,674,675,676,677,678,679,680,681,682,683,684,685,686,687,688,689,690,691,692,693,694,695,696,697,698,699,700,701,702,703,704,705,706,707,708,709,710,711,712,713,714,715,716,717],"dial":[5.4,5.4,5.15,5.15,4.4,4.4,3.65,3.65,2.9,2.9,3.65,3.65,3.9,3.9,3.9,3.9,4.15,4.15,4.65,4.65,5.15,5.15,5.9,5.9,6.15,6.15,5.65,5.65,5.4,5.4,4.65,4.65,3.65,2.65,1.9,1.9,1.15,1.15,0.4,0.4,0.15,0.15,0.15,0.15,0.15,0.15,0.9,0.9,1.65,1.65,2.4,2.4,3.15,3.15,3.9,3.9,4.65,4.65,5.15,5.15,4.65,4.65,4.9,4.9,5.4,5.4,5.15,5.15,5.15,5.15,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,5.15,5.15,4.65,4.65,4.4,4.4,4.15,4.15,3.65,3.65,3.4,3.4,3.15,3.15,3.65,3.65,3.9,3.9,4.15,4.15,4.15,4.15,4.15,4.15,3.9,3.9,3.4,3.4,3.15,3.15,2.9,2.9,2.9,2.9,3.65,3.65,3.4,3.4,4.15,4.15,4.65,4.65,4.4,4.4,3.65,3.65,2.9,2.9,2.15,2.15,1.4,1.4,1.15,1.15,1.4,1.4,2.15,2.15,2.9,2.9,3.65,3.65,4.4,4.4,5.15,5.15,5.9,5.9,5.65,5.65,5.15,5.15,4.9,4.9,4.65,4.65,4.65,4.65,4.65,4.65,4.65,4.65,4.65,4.65,4.65,4.65,4.4,4.4,4.4,4.4,4.4,4.4,3.9,3.9,3.4,3.4,3.15,3.15,3.15,3.15,3.4,3.4,3.65,3.65,4.15,4.15,4.65,4.65,4.65,4.65,4.65,4.65,4.4,4.4,4.4,4.4,5.15,5.15,6.15,6.15,6.9,6.9,7.65,7.65,8.15,8.15,8.4,8.4,7.65,6.65,5.65,4.65,3.65,3.65,2.9,2.9,2.15,2.15,1.4,1.4,1.65,1.65,2.65,2.65,3.4,3.4,4.15,4.15,4.9,4.9,5.65,5.65,6.4,6.4,6.4,6.4,5.9,5.9,5.9,5.9,5.4,5.4],"inflation":[3.64,3.44,3.07,2.79,2.49,2.28,2.03,1.75,2.06,2.9,2.6,2.6,2.56,2.59,2.65,2.83,2.98,3.12,3.26,3.42,3.65,4.05,4.33,4.1,3.93,3.83,3.75,3.65,3.38,2.34,1.39,0.7,0.11,-0.67,-1.16,-1.41,-1.53,-1.68,-1.94,-2.39,-2.32,-1.47,-0.66,-0.24,0.37,1.05,1.55,1.93,2.16,2.32,2.53,2.84,2.79,2.89,2.9,3.25,3.3,3.35,3.22,3.14,3.22,3.31,3.42,3.5,3.43,3.37,3.34,3.47,3.33,3.19,3.14,3.25,3.23,3.26,3.3,3.27,3.36,3.33,3.31,3.06,3.01,2.96,2.86,2.68,2.57,2.39,2.26,2.21,2.18,2.11,2.25,2.4,2.51,2.56,2.65,2.71,2.72,2.75,2.75,2.7,2.66,2.65,2.46,2.26,2.15,2.04,1.98,1.95,1.91,1.89,1.91,2.54,2.49,2.29,3.21,3.1,3.01,3.0,3.0,2.97,2.98,2.4,1.15,0.64,0.78,1.07,0.25,0.47,0.67,0.78,0.86,0.95,1.09,1.85,3.28,3.38,3.49,3.61,3.73,3.76,3.79,3.83,3.87,3.88,3.8,3.68,3.54,3.42,3.34,3.23,3.19,3.16,3.14,3.1,3.08,3.07,3.07,3.06,3.06,3.07,3.1,3.09,3.02,2.97,2.94,2.93,2.88,2.86,2.71,2.57,2.45,2.3,2.16,2.09,2.1,2.1,2.14,2.17,2.27,2.35,2.54,2.71,2.88,3.02,3.09,3.12,3.08,3.08,3.03,2.99,2.9,2.83,2.82,3.42,4.6,5.5,5.1,5.27,5.38,5.4,5.47,5.49,5.4,5.65,5.52,4.88,3.08,0.7,1.17,0.98,0.88,0.85,0.83,0.83,0.98,0.8,1.0,1.09,1.79,3.44,3.52,3.72,3.89,4.06,4.14,4.3,4.33,4.36,4.35,4.35,4.29,4.2,4.08,4.0,3.91,3.84,3.72,3.53,3.44,3.33]}],"corridor":[{"bottom":0.0,"flush":0.0015,"half":0.002,"short":0.0025,"iorb":0.0015,"top":0.0025},{"bottom":0.0275,"flush":0.028999999999999998,"half":0.0295,"short":0.03,"iorb":0.028999999999999998,"top":0.03},{"bottom":0.035,"flush":0.036500000000000005,"half":0.037000000000000005,"short":0.037500000000000006,"iorb":0.036500000000000005,"top":0.037500000000000006},{"bottom":0.0525,"flush":0.054,"half":0.0545,"short":0.055,"iorb":0.054,"top":0.055},{"bottom":0.08,"flush":0.0815,"half":0.082,"short":0.0825,"iorb":0.0815,"top":0.0825}],"cases":[{"name":"Halifax, month 441: the bank at the window","note":"remitted in the game: D$3645; revenue that month D$25291","today":[["window interest, at the dial + 0.25",3667]],"l1":[["window interest, at the top of the range",3586],["operating costs",-62]],"l2":[["window interest, at the top of the range",3586],["interest on reserves (none: the bank is overdrawn)",0],["operating costs",-62]]},{"name":"Halifax, month 269: the treasury overdrawn","note":"remitted in the game: D$701, 41% of revenue, all of it the treasury's own interest coming back","today":[["the treasury's interest on its advances, at the dial",721]],"l1":[["the treasury's interest on its advances, at the top of the range",728],["operating costs",-5]],"l2":[["the treasury's interest on its advances, at the top of the range",728],["interest on the reserves the advance became, at IORB",-723],["operating costs",-5]]},{"name":"Slot 6, month 267: the city's paper held","note":"paper D$3.87M at face, dial 4.17%, the bank's cash -D$1.75M; remitted D$8,180 a month, 19-20% of revenue","today":[["coupons on its paper",8180],["interest on reserves (none: the bank's cash is negative)",0]],"l1":[["coupons on its paper (effective interest; no gain on the day it buys)",8180],["interest on reserves (none: the bank's cash is negative)",0],["operating costs",-322]],"l2":[["coupons on its paper",8180],["interest on the reserves its purchases made, at IORB",-13377],["operating costs",-322]]},{"name":"Bergen, month 3003: the bank flush with money from outside","note":"no assets earning; loss carried D$35.2B, all of it interest paid; the Fed's deferred asset was $243.5B at the end of 2025","today":[["interest on reserves, at the dial, on the bank's spare cash",-23283501]],"l1":[["interest on reserves, at IORB, on the bank's spare cash",-22320039]],"l2":[["interest on reserves, at IORB, on the bank's spare cash and its unlent deposits (more; not in the history)",-22320039]]}],"halifax_remittance":{"month":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386,387,388,389,390,391,392,393,394,395,396,397,398,399,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,419,420,421,422,423,424,425,426,427,428,429,430,431,432,433,434,435,436,437,438,439,440,441,442,443,444,445,446,447,448,449,450,451,452,453,454,455,456,457,458,459,460,461,462,463,464,465,466,467,468,469,470,471,472,473,474,475,476,477],"share":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.6,21.0,26.9,32.0,36.7,39.3,41.1,43.6,43.5,42.7,41.9,41.6,41.0,40.1,39.3,38.4,37.6,36.6,35.7,34.8,34.0,33.1,32.4,31.7,31.1,30.5,29.9,29.4,28.6,28.7,28.4,28.1,27.9,27.7,27.7,27.6,27.6,12.5,16.2,20.6,19.4,18.8,15.8,11.4,7.7,3.6,0.1,37.2,30.1,17.2,7.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.4,4.8,7.3,8.4,8.2,8.6,8.6,8.0,6.4,3.9,2.8,4.0,4.2,2.7,2.3,2.1,1.9,1.8,1.5,3.8,3.1,2.8,2.8,2.7,2.2,1.5,1.2,1.3,1.4,1.4,1.4,1.1,0.6,0.9,0.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.5,0.3,0.6,0.3,0.0,0.0,0.0,1.2,0.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2.8,3.8,3.0,3.2,2.5,1.4,11.6,14.4,12.9,11.7,10.8,10.1,9.7,9.2,8.3,9.9,8.9,7.4,7.0,5.5,4.9,3.5,2.4,1.9,0.8,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"advances":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,685,0,0,0,0,0,0,0,0,0,0,0,0,39,1545,3079,4524,6107,7573,9055,10545,12047,13560,15010,16568,18132,18875,20054,20958,22029,22116,23506,24761,26031,27528,29119,30450,32092,33646,35357,37101,38904,40342,41333,41673,42000,42440,43890,45391,46978,48632,50153,51692,53239,54780,56355,57973,59511,61031,62547,64075,65596,67111,68627,70138,71648,73153,74661,76169,77681,79194,80710,82228,83752,85278,86809,88345,89885,91428,92953,94507,96064,97620,99185,100751,102319,103888,105460,105231,105698,106554,107074,107428,107328,107959,108711,109826,110373,111491,112798,113757,114643,114601,115441,115440,115963,117004,118083,119229,120395,121716,122917,124222,124159,124608,125561,126238,126160,126352,125714,125171,124787,124294,123890,123628,123346,122083,117532,110983,107163,104943,99706,92861,86478,80071,74709,68839,63655,58191,51969,45594,40136,35893,31551,27040,23648,20344,17130,13467,8668,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"m0":[80,160,239,317,396,475,553,631,708,783,859,933,1007,1080,1152,1223,1293,1361,1428,1493,1556,1618,1667,1715,1762,1807,1850,1889,1926,1961,1993,2023,2051,2077,2101,2122,2138,2151,2161,2167,2173,2176,2179,2181,2182,2184,2185,2186,2186,2186,2186,2186,2186,2186,2186,2186,2186,2186,2192,2197,2201,2206,2209,2213,2216,2219,2222,2224,2225,2227,2229,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2230,2915,2218,2218,2218,2218,2218,2218,2218,2218,2218,2218,2218,2218,2257,3763,5272,6671,8186,9565,10947,12325,13703,15082,16389,17797,19204,19775,20778,21497,22389,22370,23711,24963,26232,27730,29320,30651,32293,33848,35558,37303,39106,40544,41535,41875,42201,42641,44092,45526,46937,48345,49760,51199,52652,54135,55654,57192,58730,60270,61808,63344,64881,66418,67955,69489,71019,72548,74078,75606,77137,78667,80199,81733,83270,84809,86351,87896,89444,90993,92524,94082,95643,97201,98766,100332,101899,103467,105036,104760,105210,106044,106688,107164,107162,107883,108709,108708,109638,111057,112613,113757,114643,114601,115441,115440,115963,117004,118083,119229,120395,121716,122917,124222,124159,124608,125561,162231,155074,146906,129119,124739,124338,123855,123474,123241,122986,121777,151866,131415,116177,122494,108664,92640,86288,79916,185153,165477,147801,130326,97100,60295,39991,35779,31440,26920,23521,20216,17017,13366,8585,-55,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,33666,51515,26396,51829,20059,0,0,0,82884,27227,0,0,0,0,0,0,0,0,0,148451,178572,142353,138309,106863,67978,610043,748353,686335,626287,566026,505065,477544,455724,435435,537715,508416,438234,430393,357558,318476,241042,180582,141471,65831,13032,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},"cd1":{"calm: 2%, the dial at 3%":{"smooth":[3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0],"stair":[3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0]},"hiking: 6%, the dial at 7%, credibility 65%":{"smooth":[7.0,6.995,6.968,6.924,6.868,6.802,6.73,6.654,6.575,6.496,6.417,6.34,6.264,6.191,6.121,6.053,5.989,5.928,5.871,5.816,5.765,5.717,5.672,5.63,5.591,5.555,5.521,5.489,5.459,5.432,5.407,5.383,5.361,5.341,5.322,5.305,5.289,5.274,5.261,5.248,5.237,5.226,5.216,5.207,5.198,5.191,5.183,5.177,5.171,5.165,5.16,5.155,5.151,5.147,5.143,5.14,5.136,5.134,5.131,5.128,5.126],"stair":[7.0,6.995,6.995,6.924,6.924,6.802,6.802,6.654,6.654,6.496,6.496,6.34,6.34,6.191,6.191,6.053,6.053,5.928,5.928,5.816,5.816,5.717,5.717,5.63,5.63,5.555,5.555,5.489,5.489,5.432,5.432,5.383,5.383,5.341,5.341,5.305,5.305,5.274,5.274,5.248,5.248,5.226,5.226,5.207,5.207,5.191,5.191,5.177,5.177,5.165,5.165,5.155,5.155,5.147,5.147,5.14,5.14,5.134,5.134,5.128,5.128]},"behind: 5%, the dial at 1% by hand, credibility 60%":{"smooth":[1.0,1.782,2.428,2.96,3.397,3.755,4.046,4.283,4.473,4.625,4.746,4.84,4.914,4.969,5.01,5.04,5.06,5.072,5.079,5.08,5.078,5.073,5.066,5.057,5.046,5.035,5.024,5.012,5.001,4.989,4.978,4.967,4.956,4.946,4.936,4.927,4.918,4.91,4.902,4.895,4.888,4.882,4.876,4.87,4.865,4.86,4.855,4.851,4.847,4.844,4.84,4.837,4.834,4.832,4.829,4.827,4.825,4.823,4.821,4.819,4.818],"stair":[1.0,1.75,1.75,2.5,2.5,3.25,3.25,4.0,4.0,4.625,4.625,4.84,4.84,4.969,4.969,5.04,5.04,5.072,5.072,5.08,5.08,5.073,5.073,5.057,5.057,5.035,5.035,5.012,5.012,4.989,4.989,4.967,4.967,4.946,4.946,4.927,4.927,4.91,4.91,4.895,4.895,4.882,4.882,4.87,4.87,4.86,4.86,4.851,4.851,4.844,4.844,4.837,4.837,4.832,4.832,4.827,4.827,4.823,4.823,4.819,4.819]}},"now":{"month":717,"when":"Sep 2059","dial":0.054,"inflation":0.03332,"next":"Oct 2059","decisions":[{"when":"Jun 2058","from":0.034,"to":0.0415,"kind":"scheduled","inflation":0.04137},{"when":"Aug 2058","from":0.0415,"to":0.049,"kind":"scheduled","inflation":0.0433},{"when":"Oct 2058","from":0.049,"to":0.0565,"kind":"scheduled","inflation":0.04351},{"when":"Dec 2058","from":0.0565,"to":0.064,"kind":"scheduled","inflation":0.04291},{"when":"Apr 2059","from":0.064,"to":0.059,"kind":"scheduled","inflation":0.03909},{"when":"Aug 2059","from":0.059,"to":0.054,"kind":"scheduled","inflation":0.03435}],"held":140},"whenOf":{"1":"Jan 2000","2":"Feb 2000","3":"Mar 2000","4":"Apr 2000","5":"May 2000","6":"Jun 2000","7":"Jul 2000","8":"Aug 2000","9":"Sep 2000","10":"Oct 2000","11":"Nov 2000","12":"Dec 2000","13":"Jan 2001","14":"Feb 2001","15":"Mar 2001","16":"Apr 2001","17":"May 2001","18":"Jun 2001","19":"Jul 2001","20":"Aug 2001","21":"Sep 2001","22":"Oct 2001","23":"Nov 2001","24":"Dec 2001","25":"Jan 2002","26":"Feb 2002","27":"Mar 2002","28":"Apr 2002","29":"May 2002","30":"Jun 2002","31":"Jul 2002","32":"Aug 2002","33":"Sep 2002","34":"Oct 2002","35":"Nov 2002","36":"Dec 2002","37":"Jan 2003","38":"Feb 2003","39":"Mar 2003","40":"Apr 2003","41":"May 2003","42":"Jun 2003","43":"Jul 2003","44":"Aug 2003","45":"Sep 2003","46":"Oct 2003","47":"Nov 2003","48":"Dec 2003","49":"Jan 2004","50":"Feb 2004","51":"Mar 2004","52":"Apr 2004","53":"May 2004","54":"Jun 2004","55":"Jul 2004","56":"Aug 2004","57":"Sep 2004","58":"Oct 2004","59":"Nov 2004","60":"Dec 2004","61":"Jan 2005","62":"Feb 2005","63":"Mar 2005","64":"Apr 2005","65":"May 2005","66":"Jun 2005","67":"Jul 2005","68":"Aug 2005","69":"Sep 2005","70":"Oct 2005","71":"Nov 2005","72":"Dec 2005","73":"Jan 2006","74":"Feb 2006","75":"Mar 2006","76":"Apr 2006","77":"May 2006","78":"Jun 2006","79":"Jul 2006","80":"Aug 2006","81":"Sep 2006","82":"Oct 2006","83":"Nov 2006","84":"Dec 2006","85":"Jan 2007","86":"Feb 2007","87":"Mar 2007","88":"Apr 2007","89":"May 2007","90":"Jun 2007","91":"Jul 2007","92":"Aug 2007","93":"Sep 2007","94":"Oct 2007","95":"Nov 2007","96":"Dec 2007","97":"Jan 2008","98":"Feb 2008","99":"Mar 2008","100":"Apr 2008","101":"May 2008","102":"Jun 2008","103":"Jul 2008","104":"Aug 2008","105":"Sep 2008","106":"Oct 2008","107":"Nov 2008","108":"Dec 2008","109":"Jan 2009","110":"Feb 2009","111":"Mar 2009","112":"Apr 2009","113":"May 2009","114":"Jun 2009","115":"Jul 2009","116":"Aug 2009","117":"Sep 2009","118":"Oct 2009","119":"Nov 2009","120":"Dec 2009","121":"Jan 2010","122":"Feb 2010","123":"Mar 2010","124":"Apr 2010","125":"May 2010","126":"Jun 2010","127":"Jul 2010","128":"Aug 2010","129":"Sep 2010","130":"Oct 2010","131":"Nov 2010","132":"Dec 2010","133":"Jan 2011","134":"Feb 2011","135":"Mar 2011","136":"Apr 2011","137":"May 2011","138":"Jun 2011","139":"Jul 2011","140":"Aug 2011","141":"Sep 2011","142":"Oct 2011","143":"Nov 2011","144":"Dec 2011","145":"Jan 2012","146":"Feb 2012","147":"Mar 2012","148":"Apr 2012","149":"May 2012","150":"Jun 2012","151":"Jul 2012","152":"Aug 2012","153":"Sep 2012","154":"Oct 2012","155":"Nov 2012","156":"Dec 2012","157":"Jan 2013","158":"Feb 2013","159":"Mar 2013","160":"Apr 2013","161":"May 2013","162":"Jun 2013","163":"Jul 2013","164":"Aug 2013","165":"Sep 2013","166":"Oct 2013","167":"Nov 2013","168":"Dec 2013","169":"Jan 2014","170":"Feb 2014","171":"Mar 2014","172":"Apr 2014","173":"May 2014","174":"Jun 2014","175":"Jul 2014","176":"Aug 2014","177":"Sep 2014","178":"Oct 2014","179":"Nov 2014","180":"Dec 2014","181":"Jan 2015","182":"Feb 2015","183":"Mar 2015","184":"Apr 2015","185":"May 2015","186":"Jun 2015","187":"Jul 2015","188":"Aug 2015","189":"Sep 2015","190":"Oct 2015","191":"Nov 2015","192":"Dec 2015","193":"Jan 2016","194":"Feb 2016","195":"Mar 2016","196":"Apr 2016","197":"May 2016","198":"Jun 2016","199":"Jul 2016","200":"Aug 2016","201":"Sep 2016","202":"Oct 2016","203":"Nov 2016","204":"Dec 2016","205":"Jan 2017","206":"Feb 2017","207":"Mar 2017","208":"Apr 2017","209":"May 2017","210":"Jun 2017","211":"Jul 2017","212":"Aug 2017","213":"Sep 2017","214":"Oct 2017","215":"Nov 2017","216":"Dec 2017","217":"Jan 2018","218":"Feb 2018","219":"Mar 2018","220":"Apr 2018","221":"May 2018","222":"Jun 2018","223":"Jul 2018","224":"Aug 2018","225":"Sep 2018","226":"Oct 2018","227":"Nov 2018","228":"Dec 2018","229":"Jan 2019","230":"Feb 2019","231":"Mar 2019","232":"Apr 2019","233":"May 2019","234":"Jun 2019","235":"Jul 2019","236":"Aug 2019","237":"Sep 2019","238":"Oct 2019","239":"Nov 2019","240":"Dec 2019","241":"Jan 2020","242":"Feb 2020","243":"Mar 2020","244":"Apr 2020","245":"May 2020","246":"Jun 2020","247":"Jul 2020","248":"Aug 2020","249":"Sep 2020","250":"Oct 2020","251":"Nov 2020","252":"Dec 2020","253":"Jan 2021","254":"Feb 2021","255":"Mar 2021","256":"Apr 2021","257":"May 2021","258":"Jun 2021","259":"Jul 2021","260":"Aug 2021","261":"Sep 2021","262":"Oct 2021","263":"Nov 2021","264":"Dec 2021","265":"Jan 2022","266":"Feb 2022","267":"Mar 2022","268":"Apr 2022","269":"May 2022","270":"Jun 2022","271":"Jul 2022","272":"Aug 2022","273":"Sep 2022","274":"Oct 2022","275":"Nov 2022","276":"Dec 2022","277":"Jan 2023","278":"Feb 2023","279":"Mar 2023","280":"Apr 2023","281":"May 2023","282":"Jun 2023","283":"Jul 2023","284":"Aug 2023","285":"Sep 2023","286":"Oct 2023","287":"Nov 2023","288":"Dec 2023","289":"Jan 2024","290":"Feb 2024","291":"Mar 2024","292":"Apr 2024","293":"May 2024","294":"Jun 2024","295":"Jul 2024","296":"Aug 2024","297":"Sep 2024","298":"Oct 2024","299":"Nov 2024","300":"Dec 2024","301":"Jan 2025","302":"Feb 2025","303":"Mar 2025","304":"Apr 2025","305":"May 2025","306":"Jun 2025","307":"Jul 2025","308":"Aug 2025","309":"Sep 2025","310":"Oct 2025","311":"Nov 2025","312":"Dec 2025","313":"Jan 2026","314":"Feb 2026","315":"Mar 2026","316":"Apr 2026","317":"May 2026","318":"Jun 2026","319":"Jul 2026","320":"Aug 2026","321":"Sep 2026","322":"Oct 2026","323":"Nov 2026","324":"Dec 2026","325":"Jan 2027","326":"Feb 2027","327":"Mar 2027","328":"Apr 2027","329":"May 2027","330":"Jun 2027","331":"Jul 2027","332":"Aug 2027","333":"Sep 2027","334":"Oct 2027","335":"Nov 2027","336":"Dec 2027","337":"Jan 2028","338":"Feb 2028","339":"Mar 2028","340":"Apr 2028","341":"May 2028","342":"Jun 2028","343":"Jul 2028","344":"Aug 2028","345":"Sep 2028","346":"Oct 2028","347":"Nov 2028","348":"Dec 2028","349":"Jan 2029","350":"Feb 2029","351":"Mar 2029","352":"Apr 2029","353":"May 2029","354":"Jun 2029","355":"Jul 2029","356":"Aug 2029","357":"Sep 2029","358":"Oct 2029","359":"Nov 2029","360":"Dec 2029","361":"Jan 2030","362":"Feb 2030","363":"Mar 2030","364":"Apr 2030","365":"May 2030","366":"Jun 2030","367":"Jul 2030","368":"Aug 2030","369":"Sep 2030","370":"Oct 2030","371":"Nov 2030","372":"Dec 2030","373":"Jan 2031","374":"Feb 2031","375":"Mar 2031","376":"Apr 2031","377":"May 2031","378":"Jun 2031","379":"Jul 2031","380":"Aug 2031","381":"Sep 2031","382":"Oct 2031","383":"Nov 2031","384":"Dec 2031","385":"Jan 2032","386":"Feb 2032","387":"Mar 2032","388":"Apr 2032","389":"May 2032","390":"Jun 2032","391":"Jul 2032","392":"Aug 2032","393":"Sep 2032","394":"Oct 2032","395":"Nov 2032","396":"Dec 2032","397":"Jan 2033","398":"Feb 2033","399":"Mar 2033","400":"Apr 2033","401":"May 2033","402":"Jun 2033","403":"Jul 2033","404":"Aug 2033","405":"Sep 2033","406":"Oct 2033","407":"Nov 2033","408":"Dec 2033","409":"Jan 2034","410":"Feb 2034","411":"Mar 2034","412":"Apr 2034","413":"May 2034","414":"Jun 2034","415":"Jul 2034","416":"Aug 2034","417":"Sep 2034","418":"Oct 2034","419":"Nov 2034","420":"Dec 2034","421":"Jan 2035","422":"Feb 2035","423":"Mar 2035","424":"Apr 2035","425":"May 2035","426":"Jun 2035","427":"Jul 2035","428":"Aug 2035","429":"Sep 2035","430":"Oct 2035","431":"Nov 2035","432":"Dec 2035","433":"Jan 2036","434":"Feb 2036","435":"Mar 2036","436":"Apr 2036","437":"May 2036","438":"Jun 2036","439":"Jul 2036","440":"Aug 2036","441":"Sep 2036","442":"Oct 2036","443":"Nov 2036","444":"Dec 2036","445":"Jan 2037","446":"Feb 2037","447":"Mar 2037","448":"Apr 2037","449":"May 2037","450":"Jun 2037","451":"Jul 2037","452":"Aug 2037","453":"Sep 2037","454":"Oct 2037","455":"Nov 2037","456":"Dec 2037","457":"Jan 2038","458":"Feb 2038","459":"Mar 2038","460":"Apr 2038","461":"May 2038","462":"Jun 2038","463":"Jul 2038","464":"Aug 2038","465":"Sep 2038","466":"Oct 2038","467":"Nov 2038","468":"Dec 2038","469":"Jan 2039","470":"Feb 2039","471":"Mar 2039","472":"Apr 2039","473":"May 2039","474":"Jun 2039","475":"Jul 2039","476":"Aug 2039","477":"Sep 2039","478":"Oct 2039","479":"Nov 2039","480":"Dec 2039","481":"Jan 2040","482":"Feb 2040","483":"Mar 2040","484":"Apr 2040","485":"May 2040","486":"Jun 2040","487":"Jul 2040","488":"Aug 2040","489":"Sep 2040","490":"Oct 2040","491":"Nov 2040","492":"Dec 2040","493":"Jan 2041","494":"Feb 2041","495":"Mar 2041","496":"Apr 2041","497":"May 2041","498":"Jun 2041","499":"Jul 2041","500":"Aug 2041","501":"Sep 2041","502":"Oct 2041","503":"Nov 2041","504":"Dec 2041","505":"Jan 2042","506":"Feb 2042","507":"Mar 2042","508":"Apr 2042","509":"May 2042","510":"Jun 2042","511":"Jul 2042","512":"Aug 2042","513":"Sep 2042","514":"Oct 2042","515":"Nov 2042","516":"Dec 2042","517":"Jan 2043","518":"Feb 2043","519":"Mar 2043","520":"Apr 2043","521":"May 2043","522":"Jun 2043","523":"Jul 2043","524":"Aug 2043","525":"Sep 2043","526":"Oct 2043","527":"Nov 2043","528":"Dec 2043","529":"Jan 2044","530":"Feb 2044","531":"Mar 2044","532":"Apr 2044","533":"May 2044","534":"Jun 2044","535":"Jul 2044","536":"Aug 2044","537":"Sep 2044","538":"Oct 2044","539":"Nov 2044","540":"Dec 2044","541":"Jan 2045","542":"Feb 2045","543":"Mar 2045","544":"Apr 2045","545":"May 2045","546":"Jun 2045","547":"Jul 2045","548":"Aug 2045","549":"Sep 2045","550":"Oct 2045","551":"Nov 2045","552":"Dec 2045","553":"Jan 2046","554":"Feb 2046","555":"Mar 2046","556":"Apr 2046","557":"May 2046","558":"Jun 2046","559":"Jul 2046","560":"Aug 2046","561":"Sep 2046","562":"Oct 2046","563":"Nov 2046","564":"Dec 2046","565":"Jan 2047","566":"Feb 2047","567":"Mar 2047","568":"Apr 2047","569":"May 2047","570":"Jun 2047","571":"Jul 2047","572":"Aug 2047","573":"Sep 2047","574":"Oct 2047","575":"Nov 2047","576":"Dec 2047","577":"Jan 2048","578":"Feb 2048","579":"Mar 2048","580":"Apr 2048","581":"May 2048","582":"Jun 2048","583":"Jul 2048","584":"Aug 2048","585":"Sep 2048","586":"Oct 2048","587":"Nov 2048","588":"Dec 2048","589":"Jan 2049","590":"Feb 2049","591":"Mar 2049","592":"Apr 2049","593":"May 2049","594":"Jun 2049","595":"Jul 2049","596":"Aug 2049","597":"Sep 2049","598":"Oct 2049","599":"Nov 2049","600":"Dec 2049","601":"Jan 2050","602":"Feb 2050","603":"Mar 2050","604":"Apr 2050","605":"May 2050","606":"Jun 2050","607":"Jul 2050","608":"Aug 2050","609":"Sep 2050","610":"Oct 2050","611":"Nov 2050","612":"Dec 2050","613":"Jan 2051","614":"Feb 2051","615":"Mar 2051","616":"Apr 2051","617":"May 2051","618":"Jun 2051","619":"Jul 2051","620":"Aug 2051","621":"Sep 2051","622":"Oct 2051","623":"Nov 2051","624":"Dec 2051","625":"Jan 2052","626":"Feb 2052","627":"Mar 2052","628":"Apr 2052","629":"May 2052","630":"Jun 2052","631":"Jul 2052","632":"Aug 2052","633":"Sep 2052","634":"Oct 2052","635":"Nov 2052","636":"Dec 2052","637":"Jan 2053","638":"Feb 2053","639":"Mar 2053","640":"Apr 2053","641":"May 2053","642":"Jun 2053","643":"Jul 2053","644":"Aug 2053","645":"Sep 2053","646":"Oct 2053","647":"Nov 2053","648":"Dec 2053","649":"Jan 2054","650":"Feb 2054","651":"Mar 2054","652":"Apr 2054","653":"May 2054","654":"Jun 2054","655":"Jul 2054","656":"Aug 2054","657":"Sep 2054","658":"Oct 2054","659":"Nov 2054","660":"Dec 2054","661":"Jan 2055","662":"Feb 2055","663":"Mar 2055","664":"Apr 2055","665":"May 2055","666":"Jun 2055","667":"Jul 2055","668":"Aug 2055","669":"Sep 2055","670":"Oct 2055","671":"Nov 2055","672":"Dec 2055","673":"Jan 2056","674":"Feb 2056","675":"Mar 2056","676":"Apr 2056","677":"May 2056","678":"Jun 2056","679":"Jul 2056","680":"Aug 2056","681":"Sep 2056","682":"Oct 2056","683":"Nov 2056","684":"Dec 2056","685":"Jan 2057","686":"Feb 2057","687":"Mar 2057","688":"Apr 2057","689":"May 2057","690":"Jun 2057","691":"Jul 2057","692":"Aug 2057","693":"Sep 2057","694":"Oct 2057","695":"Nov 2057","696":"Dec 2057","697":"Jan 2058","698":"Feb 2058","699":"Mar 2058","700":"Apr 2058","701":"May 2058","702":"Jun 2058","703":"Jul 2058","704":"Aug 2058","705":"Sep 2058","706":"Oct 2058","707":"Nov 2058","708":"Dec 2058","709":"Jan 2059","710":"Feb 2059","711":"Mar 2059","712":"Apr 2059","713":"May 2059","714":"Jun 2059","715":"Jul 2059","716":"Aug 2059","717":"Sep 2059","718":"Oct 2059","719":"Nov 2059","720":"Dec 2059","721":"Jan 2060","722":"Feb 2060","723":"Mar 2060","724":"Apr 2060","725":"May 2060","726":"Jun 2060","727":"Jul 2060","728":"Aug 2060","729":"Sep 2060","730":"Oct 2060","731":"Nov 2060","732":"Dec 2060","733":"Jan 2061","734":"Feb 2061","735":"Mar 2061","736":"Apr 2061","737":"May 2061","738":"Jun 2061","739":"Jul 2061","740":"Aug 2061","741":"Sep 2061","742":"Oct 2061","743":"Nov 2061","744":"Dec 2061","745":"Jan 2062","746":"Feb 2062","747":"Mar 2062","748":"Apr 2062","749":"May 2062","750":"Jun 2062","751":"Jul 2062","752":"Aug 2062","753":"Sep 2062","754":"Oct 2062","755":"Nov 2062","756":"Dec 2062","757":"Jan 2063","758":"Feb 2063","759":"Mar 2063","760":"Apr 2063","761":"May 2063","762":"Jun 2063","763":"Jul 2063","764":"Aug 2063","765":"Sep 2063","766":"Oct 2063","767":"Nov 2063","768":"Dec 2063","769":"Jan 2064","770":"Feb 2064","771":"Mar 2064","772":"Apr 2064","773":"May 2064","774":"Jun 2064","775":"Jul 2064","776":"Aug 2064","777":"Sep 2064","778":"Oct 2064","779":"Nov 2064","780":"Dec 2064","781":"Jan 2065","782":"Feb 2065","783":"Mar 2065","784":"Apr 2065","785":"May 2065","786":"Jun 2065","787":"Jul 2065","788":"Aug 2065","789":"Sep 2065","790":"Oct 2065","791":"Nov 2065","792":"Dec 2065","793":"Jan 2066","794":"Feb 2066","795":"Mar 2066","796":"Apr 2066","797":"May 2066","798":"Jun 2066","799":"Jul 2066"}};
+const NS = "http://www.w3.org/2000/svg";
+const $ = id => document.getElementById(id);
+const pct = (x, d = 2) => (x == null ? "—" : x.toFixed(d) + "%");
+const money = x => (x < 0 ? "−" : "") + "D$" + Math.round(Math.abs(x)).toLocaleString("en-CA");
+const whenOf = m => DATA.whenOf[String(m)] || ("month " + m);
+const STEP = .25, WIDTH = .25, IORB_UNDER_TOP = .10;
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function rangeOfIorb(iorb) { const b = Math.round((iorb - (WIDTH - IORB_UNDER_TOP)) / STEP) * STEP; return Math.max(0, b); }
+function ruleRate(infl) { return Math.max(0, Math.min(100, 3 + 1.5 * (infl - 2))); }
+
+/* ---------- a line chart with a crosshair ---------- */
+function lineChart(host, o) {
+  const W = 640, H = o.h || 260, L = 40, R = 12, T = 10, B = 26;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": o.label }, null);
+  host.appendChild(svg);
+  const xs = o.x, n = xs.length;
+  const x = i => L + (W - L - R) * i / (n - 1);
+  const y = v => T + (H - T - B) * (1 - (v - o.y0) / (o.y1 - o.y0));
+  for (let v = o.y0; v <= o.y1 + 1e-9; v += o.yStep) {
+    el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid" }, svg);
+    el("text", { x: L - 6, y: y(v) + 3, "text-anchor": "end" }, svg).textContent = v + "%";
+  }
+  el("line", { x1: L, x2: W - R, y1: y(o.y0), y2: y(o.y0), class: "axis" }, svg);
+  o.ticks.forEach(i => { el("text", { x: x(i), y: H - 8, "text-anchor": "middle" }, svg).textContent = o.tickLabel(i); });
+  if (o.band) {
+    let d = "";
+    for (let i = 0; i < n; i++) d += (i ? "L" : "M") + x(i) + " " + y(o.band.hi[i]);
+    for (let i = n - 1; i >= 0; i--) d += "L" + x(i) + " " + y(o.band.lo[i]);
+    el("path", { d: d + "Z", fill: "var(--band)", stroke: "none" }, svg);
+  }
+  o.series.forEach(s => {
+    let d = "";
+    s.v.forEach((v, i) => {
+      if (v == null) return;
+      if (s.step && i > 0 && s.v[i - 1] != null) d += "L" + x(i) + " " + y(s.v[i - 1]) + "L" + x(i) + " " + y(v);
+      else d += (d ? "L" : "M") + x(i) + " " + y(v);
+    });
+    el("path", { d, fill: "none", stroke: s.color, "stroke-width": s.width || 2, "stroke-dasharray": s.dash || "", "stroke-linejoin": "round" }, svg);
+  });
+  const cross = el("line", { y1: T, y2: H - B, stroke: "var(--text3)", "stroke-width": 1, visibility: "hidden" }, svg);
+  const dots = o.series.map(s => el("circle", { r: 4, fill: s.color, stroke: "var(--panel)", "stroke-width": 2, visibility: "hidden" }, svg));
+  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; host.appendChild(tip);
+  const hit = el("rect", { x: L, y: T, width: W - L - R, height: H - T - B, fill: "transparent" }, svg);
+  function show(evt) {
+    const r = svg.getBoundingClientRect();
+    const px = (evt.clientX - r.left) * W / r.width;
+    const i = Math.max(0, Math.min(n - 1, Math.round((px - L) / (W - L - R) * (n - 1))));
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+    o.series.forEach((s, k) => { const v = s.v[i]; if (v == null) { dots[k].setAttribute("visibility", "hidden"); return; } dots[k].setAttribute("cx", x(i)); dots[k].setAttribute("cy", y(v)); dots[k].setAttribute("visibility", "visible"); });
+    tip.innerHTML = `<span class="h">${o.tipHead(i)}</span>` + o.series.map(s => `<div class="row"><span><i style="background:${s.color}"></i>${s.name}</span><span>${s.v[i] == null ? "—" : pct(s.v[i])}</span></div>`).join("") + (o.tipExtra ? o.tipExtra(i) : "");
+    tip.hidden = false;
+    const left = (x(i) / W) * r.width;
+    tip.style.left = Math.min(r.width - 170, Math.max(0, left + 12)) + "px";
+    tip.style.top = "8px";
+  }
+  hit.addEventListener("mousemove", show);
+  hit.addEventListener("mouseleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); dots.forEach(d => d.setAttribute("visibility", "hidden")); });
+}
+
+/* ---------- board 1 ---------- */
+(function () {
+  const runs = DATA.runs, today = runs[0], every2 = runs[3], now = DATA.now;
+  $("d-when").textContent = now.when;
+  const bottom = rangeOfIorb(now.dial * 100);
+  $("d-range").textContent = bottom.toFixed(2) + "-" + (bottom + WIDTH).toFixed(2) + "%";
+  $("d-on").textContent = pct(now.dial * 100);
+  $("d-next").textContent = now.next;
+  const rule = ruleRate(now.inflation * 100);
+  $("d-rule").textContent = pct(rule);
+  const gap = rule - now.dial * 100;
+  const move = Math.abs(gap) <= STEP / 2 ? 0 : Math.min(Math.round(Math.abs(gap) / STEP) * STEP, .75) * Math.sign(gap);
+  const words = m => m === 0 ? "hold" : (m > 0 ? "up " : "down ") + ({ .25: "¼", .5: "½", .75: "¾", 1: "a point" }[Math.abs(m)] || Math.abs(m).toFixed(2));
+  $("d-rule-n").textContent = "on " + pct(now.inflation * 100, 1) + " inflation: " + words(move) + " next";
+  $("d-since").textContent = whenOf(every2.month[0]);
+  let pick = bottom + move;
+  function say() {
+    $("p-val").innerHTML = pick.toFixed(2) + "-" + (pick + WIDTH).toFixed(2) + "%<small>overnight about " + (pick + WIDTH - IORB_UNDER_TOP).toFixed(2) + "% in a flush city</small>";
+    const d = pick - bottom;
+    $("p-say").innerHTML = d === move ? `<b>The rule's choice for ${now.next}:</b> ${words(move)}, on inflation of ${pct(now.inflation * 100, 1)} against the 2% target.` : `<b>${words(d)} by hand.</b> It takes effect at the decision in ${now.next}, and takes the rate back from the rule.`;
+  }
+  $("p-down").addEventListener("click", () => { pick = Math.max(0, pick - STEP); say(); });
+  $("p-up").addEventListener("click", () => { pick = pick + STEP; say(); });
+  say();
+  const log = $("d-log");
+  log.innerHTML = "<tr><th>Decision</th><th>Range</th><th>Move</th><th>Inflation</th></tr>" + now.decisions.slice().reverse().map(d => {
+    const b = rangeOfIorb(d.to * 100), mv = (d.to - d.from) * 100;
+    return `<tr><td>${d.when} <span class="pill ${d.kind === "unscheduled" ? "u" : ""}">${d.kind === "unscheduled" ? "unscheduled" : "scheduled"}</span></td><td>${b.toFixed(2)}-${(b + WIDTH).toFixed(2)}%</td><td>${mv > 0 ? "+" : "−"}${Math.abs(mv).toFixed(2)}</td><td>${pct(d.inflation * 100, 1)}</td></tr>`;
+  }).join("");
+  const n = every2.month.length;
+  const ticks = []; for (let i = 0; i < n; i += 48) ticks.push(i);
+  const lo = every2.dial.map(v => rangeOfIorb(v)), hi = lo.map(b => b + WIDTH);
+  lineChart($("c-dial"), {
+    label: "The overnight rate in steps against today's autopilot, Halifax, 240 months", x: every2.month, y0: 0, y1: 12, yStep: 2, h: 270,
+    ticks, tickLabel: i => whenOf(every2.month[i]).slice(4),
+    band: { lo, hi },
+    series: [
+      { name: "today's autopilot", v: today.dial, color: "var(--ghost)", dash: "4 3", width: 1.5 },
+      { name: "in steps", v: every2.dial, color: "var(--s1)", step: true, width: 2 }],
+    tipHead: i => whenOf(every2.month[i]),
+    tipExtra: i => `<div class="row"><span class="muted">inflation, in steps</span><span>${pct(every2.inflation[i], 1)}</span></div><div class="row"><span class="muted">inflation, today's</span><span>${pct(today.inflation[i], 1)}</span></div>`
+  });
+  const rows = runs.map(r => `<tr${r === every2 ? ' class="pick"' : ""}><td>${r.label}</td><td>${r.moves}</td><td>${r.values}</td><td>${r.biggest.toFixed(2)}</td><td>${r.miss.toFixed(2)}</td><td>${r.off3}</td><td>${r.unemp.toFixed(1)}%</td><td>${r.people.toLocaleString("en-CA")}</td><td>${r.unscheduled}</td></tr>`).join("");
+  $("t-runs").innerHTML = `<table class="data"><tr><th>rule</th><th>moves</th><th>values</th><th>biggest move, points</th><th>inflation off 2%, points</th><th>months 3+ points off</th><th>unemployment</th><th>people at the end</th><th>unscheduled</th></tr>${rows}</table><p class="muted" style="font-size:11.5px;margin-top:6px">One path each from the same save; the game is deterministic, so this is not a distribution. Unemployment ran higher in every stepped run; CB1's ensemble has to say whether that is the dial or the faster growth.</p>`;
+})();
+
+/* ---------- board 2 ---------- */
+(function () {
+  const now = DATA.now;
+  const bottom = rangeOfIorb(now.dial * 100), top = bottom + WIDTH, iorb = top - IORB_UNDER_TOP;
+  $("o-when").textContent = now.when;
+  $("o-range").textContent = bottom.toFixed(2) + "-" + top.toFixed(2) + "%";
+  const states = [
+    { k: "flush", label: "Holding spare cash", share: 0, say: "The bank has cash it has not lent, earning reserves' rate. Nobody lends overnight for less, so the overnight is reserves' rate." },
+    { k: "half", label: "Half at the window", share: .5, say: "Half of the bank's marginal money comes from the window. The overnight sits halfway between reserves' rate and the window's." },
+    { k: "short", label: "At the window", share: 1, say: "The bank funds its next loan at the window. The overnight is the window's rate, the top of the range." }];
+  let at = 0;
+  const lo = bottom - .05, hi = top + .05;
+  const pos = v => (1 - (v - lo) / (hi - lo)) * 100;
+  function draw() {
+    const s = states[at], on = iorb + (top - iorb) * s.share;
+    $("o-chips").innerHTML = states.map((x, i) => `<button class="chip${i === at ? " on" : ""}" data-i="${i}">${x.label}</button>`).join("");
+    $("o-chips").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { at = +b.dataset.i; draw(); }));
+    const marks = [
+      { v: top, w: "the window: what the bank pays to borrow", c: "" },
+      { v: iorb, w: "interest on reserves", c: "" },
+      { v: bottom, w: "overnight reverse repo: the floor", c: "" },
+      { v: on, w: "the overnight rate", c: "on" }];
+    $("o-ladder").innerHTML = `<div class="rail" style="top:${pos(top)}%;bottom:${100 - pos(bottom)}%"></div>` + marks.map(m => `<div class="mark ${m.c}" style="top:${pos(m.v)}%"><span class="t">${m.v.toFixed(2)}%</span><span class="r"></span><span class="w">${m.w}</span></div>`).join("");
+    $("o-say").innerHTML = `<b>Overnight ${on.toFixed(2)}%.</b> ${s.say}`;
+  }
+  draw();
+  const readers = [
+    ["The bank's spare cash", "interest on reserves", "the dial"],
+    ["The bank's borrowing past its deposits", "the window (top)", "dial + 0.25"],
+    ["The treasury's overdraft", "the window (top)", "the dial"],
+    ["Prime, mortgages, household loans, car loans", "overnight + today's spreads", "dial + spreads"],
+    ["What savers are paid", "overnight × the bank's share", "dial × share"],
+    ["The carry trade and hot money", "overnight", "the dial"],
+    ["The city's short rate and the curve's floor", "overnight", "the dial"],
+    ["The real rate (the exchange rate's)", "overnight − expected inflation", "dial − expected"],
+    ["CD5's floating-rate notes", "the month's overnight + spread", "the policy rate"],
+    ["The advisor's \"the dial is under the rule\"", "the rule against the overnight", "rule − dial"]];
+  $("o-readers").innerHTML = "<tr><th>What</th><th>Reads</th><th>Today</th></tr>" + readers.map(r => `<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="t">${r[2]}</td></tr>`).join("");
+})();
+
+/* ---------- board 3 ---------- */
+(function () {
+  const cases = DATA.cases;
+  const shortName = ["Halifax: the window", "Halifax: the overdraft", "Slot 6: paper held", "Bergen: flush"];
+  const books = [["today", "Today"], ["l1", "Proposed (CB3)"], ["l2", "Reserves as a real central bank's (decision 12)"]];
+  let c = 0, b = 1;
+  function draw() {
+    $("b-cases").innerHTML = cases.map((k, i) => `<button class="chip${i === c ? " on" : ""}" data-i="${i}">${shortName[i]}</button>`).join("");
+    $("b-books").innerHTML = books.map((k, i) => `<button class="chip${i === b ? " on" : ""}" data-i="${i}">${k[1]}</button>`).join("");
+    $("b-cases").querySelectorAll("button").forEach(x => x.addEventListener("click", () => { c = +x.dataset.i; draw(); }));
+    $("b-books").querySelectorAll("button").forEach(x => x.addEventListener("click", () => { b = +x.dataset.i; draw(); }));
+    const k = cases[c], lines = k[books[b][0]];
+    const total = lines.reduce((s, l) => s + l[1], 0);
+    $("b-hint").textContent = "· " + k.name;
+    $("b-statement").innerHTML = lines.map(l => `<div class="line ${l[1] < 0 ? "neg" : ""}"><span>${l[0]}</span><span class="mono">${money(l[1])}</span></div>`).join("") +
+      `<div class="line total"><span>${total >= 0 ? "Profit, remitted next month" : "Loss, carried: nothing remitted"}</span><span class="mono">${money(total)}</span></div>`;
+    $("b-note").innerHTML = k.note;
+  }
+  draw();
+})();
+
+/* ---------- board 4 ---------- */
+(function () {
+  const h = DATA.halifax_remittance, from = h.month.indexOf(230);
+  const months = h.month.slice(from), share = h.share.slice(from);
+  const adv = h.advances, m0 = h.m0;
+  const W = 640, H = 230, L = 40, R = 12, T = 10, B = 26, n = months.length;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Halifax's remittance as a share of revenue, by source" }, null);
+  $("c-share").appendChild(svg);
+  const bw = (W - L - R) / n, x = i => L + i * bw, y = v => T + (H - T - B) * (1 - v / 50);
+  for (let v = 0; v <= 50; v += 10) { el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid" }, svg); el("text", { x: L - 6, y: y(v) + 3, "text-anchor": "end" }, svg).textContent = v + "%"; }
+  for (let i = 0; i < n; i += 36) el("text", { x: x(i) + bw / 2, y: H - 8, "text-anchor": "middle" }, svg).textContent = whenOf(months[i]).slice(4);
+  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; $("c-share").appendChild(tip);
+  for (let i = 0; i < n; i++) {
+    const v = share[i]; if (!(v > 0)) continue;
+    const j = from + i - 1, overdraft = adv[j] > 0;
+    const r = el("rect", { x: x(i) + .3, y: y(v), width: Math.max(.6, bw - .6), height: y(0) - y(v), fill: overdraft ? "var(--s2)" : "var(--s1)" }, svg);
+    r.addEventListener("mousemove", evt => {
+      const rr = svg.getBoundingClientRect();
+      tip.innerHTML = `<span class="h">${whenOf(months[i])}</span><div class="row"><span>remittance</span><span>${v.toFixed(0)}% of revenue</span></div><div class="row"><span>${overdraft ? "overdraft last month" : "window loans last month"}</span><span>${money(overdraft ? adv[j] : m0[j])}</span></div>`;
+      tip.hidden = false; tip.style.left = Math.min(rr.width - 190, (evt.clientX - rr.left) + 12) + "px"; tip.style.top = "8px";
+    });
+    r.addEventListener("mouseleave", () => { tip.hidden = true; });
+  }
+  el("line", { x1: L, x2: W - R, y1: y(0), y2: y(0), class: "axis" }, svg);
+  // the This month card, Sep 2036 (month 441): m0 fell from 748,353 to 686,335 with the window's interest paid
+  const k = DATA.cases[0];
+  const interest = k.today[0][1], repaid = 748353 - 686335;
+  $("m-total").textContent = money(interest + repaid);
+  $("m-total2").textContent = money(interest + repaid);
+  $("m-today").innerHTML = `<span style="flex:1;background:var(--hover)"></span>`;
+  $("m-prop").innerHTML = `<span style="flex:${interest};background:var(--s1)"></span><span style="flex:${repaid};background:var(--s2)"></span>`;
+  $("m-rem").textContent = money(k.l1.reduce((s, l) => s + l[1], 0));
+})();
+
+/* ---------- board 5 ---------- */
+(function () {
+  const p = DATA.cd1["behind: 5%, the dial at 1% by hand, credibility 60%"];
+  const n = p.smooth.length, months = [...Array(n).keys()];
+  lineChart($("c-cd1"), {
+    label: "The expected short rate, smooth and in steps, for a city behind the curve", x: months, y0: 0, y1: 6, yStep: 1, h: 240,
+    ticks: [0, 12, 24, 36, 48, 60], tickLabel: i => i === 0 ? "now" : (i / 12) + "y",
+    series: [
+      { name: "CD1, smooth", v: p.smooth, color: "var(--ghost)", dash: "4 3", width: 1.5 },
+      { name: "in steps", v: p.stair, color: "var(--s1)", step: true }],
+    tipHead: i => i === 0 ? "now" : "in " + i + " month" + (i === 1 ? "" : "s")
+  });
+  const avg = (a, m) => a.slice(0, m).reduce((s, v) => s + v, 0) / m;
+  const terms = [3, 6, 12, 24, 60];
+  const rows = Object.keys(DATA.cd1).map(name => {
+    const q = DATA.cd1[name];
+    const cells = terms.map(m => { const t = q.stair.length >= m ? m : q.stair.length; return Math.round(100 * (avg(q.stair, t) - avg(q.smooth, t))); });
+    return `<tr><td>${name.split(":")[0]}</td>${cells.map(c => `<td>${c > 0 ? "+" : ""}${c} bp</td>`).join("")}</tr>`;
+  }).join("");
+  $("t-cd1").innerHTML = `<table class="data"><tr><th>city: in steps less smooth</th>${terms.map(m => `<th>${m < 12 ? m + " months" : (m / 12) + (m === 12 ? " year" : " years")}</th>`).join("")}</tr>${rows}</table>`;
+})();
+</script>
