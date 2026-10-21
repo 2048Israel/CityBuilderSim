@@ -138,7 +138,7 @@ The log ends the ring by itself, because the order of arrival replaces the bands
 
 - **A cell takes the use of what opens it.** The cells still open outward from the founding site, one at a time as the district needs room, but the next cell is a homes cell if a house came for it and an estate cell if a works did. A month's arrivals are mixed, so the growth front is mixed: quarters of a cell (960 m) each, homes beside works beside homes, which is how a real city's edge grows.
 - **What is built stays.** The works the city had at month 500 stand where they stood at month 500, inside the city that grew round them; no house added later pushes them out, because nothing is packed again.
-- **The outer kinds from the far side.** Farms, power and water works, mines, rail yards, car plants and truck depots open their cells from the far end of the district's growth order (the prototype's `cl1.outer=far`), as `CityMap` already sends them to the farthest district: a city keeps its fields at its rim. Measured, it also gives the near side more room: 1,331 buildings drawn without a street at the playtest's last month against 2,100 with the outer kinds from the near side. ★4 asks Jerus which kinds stay at the edge.
+- **The outer kinds from the far side.** Farms, power and water works, mines, rail yards, car plants and truck depots open their cells from the far end of the district's growth order (the prototype's `cl1.outer=far`), as `CityMap` already sends them to the farthest district: a city keeps its fields at its rim. Measured, it also gives the near side more room: 1,331 buildings drawn without a street at the playtest's last month against 2,100 with the outer kinds from the near side. Jerus's ★4 takes mines out of it - they stand where their deposits are - and keeps homes away from them.
 - **Who spills.** In a district given more than its plan can draw, today the works and farms are turned away (they come last in the bands) and carried to the next district out - that is the ring moving outward. With the log the newest are turned away, whatever they are; with `PLAN_FILL` it happens only where the city has run out of ground.
 
 Measured on the playtest's city replayed from its founding (the counts month by month are the same both ways: nothing in the model reads the map):
@@ -176,23 +176,25 @@ All three keep within the budget Jerus set: no design adds work to the month tha
 7. **A district holds what its plan can draw**: `CityMap` counts a district full at `PLAN_FILL` of its free plots (0.68, measured on his densest districts), not 100%. Recommended.
 8. **A spill keeps its time**: what a district cannot hold goes on with each building's month and is merged by month into the next district's order. Recommended.
 9. **The ladder decides once**: squares and boulevards when a cell opens, from the road at that point of the log; a cell's streets never change once laid. Recommended.
-10. **The outer kinds open their cells from the far side** of a district's growth order (as the map already sends them to the farthest district). Recommended; which kinds is ★4.
+10. **The outer kinds open their cells from the far side** of a district's growth order (as the map already sends them to the farthest district): farms, power and water works, rail yards, car plants and truck depots; mines where their deposits are, and homes kept away from them (★4, Jerus).
 11. **An old save's log** starts with its counts as one batch in today's order, so its first load draws today's plan; no conversion code. Recommended.
 12. **The model is not touched.** Zoning stays a quantity the map tints; every rule here is the map's. Recommended.
 
 ## 7. ★ Jerus's calls
 
-★1 **How much of today's regular street pattern stays** inside the blocks. Recommended: about a third of the cells keep it, a third with dropped crossings, a third brick (the prototype's). Or almost none.
+Asked and answered on 2026-10-20, after the study shipped; each answer is in its batch's brief.
 
-★2 **Which slants and curves.** Recommended: the four diagonal avenues from the centre, the coast's streets drawn as curves, and crescents in the outer suburbs. Or avenues only, or curves only.
+★1 **How much of today's regular street pattern stays** inside the blocks. Recommended: about a third of the cells keep it, a third with dropped crossings, a third brick (the prototype's). Or almost none. **Jerus: a third stays** (the recommendation).
 
-★3 **FX5's place.** The slants and curves draw with FX5's curves (the rail batch at the end of the queue). Recommended: move FX5 and CL4 up, right after CL3, so the layout batches come together as asked. Or leave FX5 where it is and CL4 after it.
+★2 **Which slants and curves.** Recommended: the four diagonal avenues from the centre, the coast's streets drawn as curves, and crescents in the outer suburbs. Or avenues only, or curves only. **Jerus: all three.**
 
-★4 **Which kinds stay at the city's edge.** Today farms, power and water works, mines, the railway's yards, car plants and truck depots all go to the edge. Recommended: keep them there (the measured room is best that way, and a city keeps its fields at its rim). Or only farms and mines at the edge, the rest placed among the city as industry is.
+★3 **FX5's place.** The slants and curves draw with FX5's curves (the rail batch at the end of the queue). Recommended: move FX5 and CL4 up, right after CL3, so the layout batches come together as asked. Or leave FX5 where it is and CL4 after it. **Jerus: move both up** - the queue is now EG1, CL2, CL3, FX5, CL4.
+
+★4 **Which kinds stay at the city's edge.** Today farms, power and water works, mines, the railway's yards, car plants and truck depots all go to the edge. Recommended: keep them there (the measured room is best that way, and a city keeps its fields at its rim). Or only farms and mines at the edge, the rest placed among the city as industry is. **Jerus:** "except mines, more like homes dont like being placed near mines, and mines arent on edge... they are where deposits are. other than that your 7" - farms, power and water works, rail yards, car plants and truck depots open from the far side; a mine stands where its deposit is (as the map already puts every sited works on its sites), outside the far-side rule; and **homes keep away from mines**: a homes cell does not open in a cell that holds a mine or a mine's site, or touches one, while another cell can open (CL3's item 3).
 
 ## 8. Batches
 
-Queued right after FR4 and EG1, as Jerus asked; CL4 after FX5 until ★3 moves it.
+Queued right after FR4 and EG1, as Jerus asked (FR4 shipped the same day); FX5 and CL4 moved up after CL3 by his ★3.
 
 | batch | what | brief |
 |---|---|---|

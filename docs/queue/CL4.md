@@ -10,7 +10,7 @@ The map's alone: nothing in the model reads it, the playtest's trace stays byte-
 
 ## What to build
 
-The study's ★2 says which of the three Jerus wants; until he answers, all three.
+All three (the study's ★2; Jerus, 2026-10-20: "All three").
 
 1. **Avenues.** Diagonal avenues at 45 degrees from the founding site - four arms, north-east,
    north-west, south-east and south-west - laid by each district's plan where the arm's line
