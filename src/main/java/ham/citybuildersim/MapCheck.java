@@ -2260,7 +2260,7 @@ public class MapCheck {
         check("...and saved again, the sidecar is the same file byte for byte", Arrays.equals(first, second));
         check("...and the next month plays to the same map in both", nextSame);
         CityMap canonical = CityMap.canonical(stale.getCityLand(), stale.getLandManager()::remainingByHolding,
-                stale.getMapTypes(), stale.getMapCounts());
+                stale.getMapTypes(), stale.getMapCounts(), stale.getMonth());
         check("a stale sidecar is not read: the load draws the map again canonically", stale.hasCityMap()
                 && stale.getCityMap().same(canonical));
         check("a city never asked for its map saves no stamp, and loads with none", !plainJson.contains("\"mapStamp\"")
@@ -2281,8 +2281,8 @@ public class MapCheck {
                 CityMap.OLDEST_READ, old.length, CityMap.FORMAT, live.writeSidecar(back.getMonth()).length, live.runs().runs(),
                 live.runs().highways().plots(), live.runs().rail().plots());
         check("a FORMAT " + CityMap.OLDEST_READ + " sidecar (0.7.72 to 0.7.87) still loads, into the same districts, its runs laid from its counts",
-                fromOld != null && fromOld.sameDistricts(live) && fromOld.runs().same(afresh.runs()));
-        check("...and 0.7.88's FORMAT 5, which wrote no runs, likewise", fromNone != null && fromNone.sameDistricts(live)
+                fromOld != null && fromOld.sameDistricts(live, false) && fromOld.runs().same(afresh.runs()));
+        check("...and 0.7.88's FORMAT 5, which wrote no runs, likewise", fromNone != null && fromNone.sameDistricts(live, false)
                 && fromNone.runs().same(afresh.runs()));
         for (int i = 1; i < TIMES.length; i++) {
             if (TIMES[i] != 9_814 && TIMES[i] != 19_629) continue;
@@ -2977,7 +2977,7 @@ public class MapCheck {
             Thread t = new Thread(d::draw, "mapcheck-draft");
             t.start();
             t.join();
-            CityMap here = CityMap.canonical(g.getCityLand(), g.getLandManager()::remainingByHolding, g.getMapTypes(), g.getMapCounts());
+            CityMap here = CityMap.canonical(g.getCityLand(), g.getLandManager()::remainingByHolding, g.getMapTypes(), g.getMapCounts(), g.getMonth());
             same = g.adoptMap(d) && g.hasCityMap() && g.getCityMap().same(here);
             // Again with a month and a purchase between the draft and its keeping.
             Game g2 = new Game(files);
