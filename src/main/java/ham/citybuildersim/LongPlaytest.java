@@ -3879,6 +3879,8 @@ public class LongPlaytest {
     /** Over the run: months planned, month pairs compared, boxes compared, boxes that moved outside the spill's districts and inside them, and the nanoseconds the windows took. */
     static int layoutMonths, layoutPairs;
     static long layoutBoxes, layoutMoved, layoutMovedInSpill, layoutNanos;
+    /** The spill's moves by the month they were found in (the month pair ending there): how many pairs had any, and when. */
+    static final java.util.TreeMap<Integer, Long> layoutSpillByMonth = new java.util.TreeMap<>();
     /** The first window's first month: its month, each district's industry boxes (sorted keys) and its count of boxes by type. */
     static int layoutOldMonth;
     static final Map<Long, long[]> layoutOldBoxes = new java.util.HashMap<>();
@@ -4042,6 +4044,7 @@ public class LongPlaytest {
                         (int) (key >> 32), (int) key, month - 1, month, moved, a.boxes.length, which), moved);
             } else {
                 layoutMovedInSpill += moved;
+                layoutSpillByMonth.merge(month, (long) moved, Long::sum);
             }
         }
     }
@@ -4198,6 +4201,15 @@ public class LongPlaytest {
                 LAYOUT_STARTS.length, LAYOUT_WINDOW, starts, layoutMonths, layoutPairs, layoutBoxes, layoutMoved,
                 layoutBoxes > 0 ? layoutMoved * 100.0 / layoutBoxes : 0, perMonth, layoutMovedInSpill, perMonthSpill,
                 layoutNanos / 1e9, runSeconds));
+        if (!layoutSpillByMonth.isEmpty()) {
+            StringBuilder when = new StringBuilder();
+            int shown = 0;
+            for (Map.Entry<Integer, Long> e : layoutSpillByMonth.entrySet()) {
+                if (shown++ == 6) { when.append(", ..."); break; }
+                when.append(when.length() > 0 ? ", " : "").append(String.format("m%d to m%d %,d", e.getKey() - 1, e.getKey(), e.getValue()));
+            }
+            out.add(String.format("  ...the spill's moves in %d of the %d month pair(s): %s", layoutSpillByMonth.size(), layoutPairs, when));
+        }
         String ring = layoutRing == null ? "not reached"
                 : String.format("m%d, mean km from the founding site: homes' band %.2f (%,.0f boxes), industry %.2f (%,.0f), the outer kinds %.2f (%,.0f) - industry %s",
                 layoutRingMonth, layoutRing[0], layoutRing[1], layoutRing[2], layoutRing[3], layoutRing[4], layoutRing[5],
