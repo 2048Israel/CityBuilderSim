@@ -111,7 +111,8 @@ import static ham.citybuildersim.ui.Pieces.*;
  * leave its ground along their way out over dry ground, as far as the land
  * runs (at most CityMap.WORLD_REACH; CityMap.worldLines()), faded
  * (WORLD_LINE_ALPHA) and labelled LandMap.WORLD_WORDS, the label kept inside
- * the view.
+ * the view and, where two lines leave together, apart from the other's or
+ * shared with it (LandMap.worldLabels(), FX5).
  *
  * THE TRAINS (0.8.2, batch FR1; spec-freight 4.4): the boats' way, on land -
  * the month's trains (TrainSchedule, from the railway's tonnes by kind) on
@@ -871,9 +872,9 @@ final class MapView {
        THE WORLD LINE (0.8.1, batch FR0; spec-freight 4.1, D13)
        ===================================================================== */
 
-    /** The world line's label as measured: its font, its width and its height above the baseline, kept until the font changes (FX2). */
+    /** The world line's label as measured: its font, its width (and the shared label's) and its height above the baseline, kept until the font changes (FX2, FX5). */
     private javafx.scene.text.Font worldLabelFont;
-    private double worldLabelW, worldLabelH;
+    private double worldLabelW, worldLabelBothW, worldLabelH;
 
     /**
      * The highway's and the main line's faded runs past the city's ground
@@ -882,7 +883,10 @@ final class MapView {
      * CityMap.WORLD_REACH) and no farther, clipped to the canvas, the highway
      * in its road colour at WORLD_LINE_ALPHA, the railway dashed in RAIL_DARK;
      * labelled once near the far end of the part in view, the label kept
-     * inside the view (LandMap.worldLabelAt, FX2).
+     * inside the view (LandMap.worldLabelAt, FX2); the lines' labels are placed
+     * together (LandMap.worldLabels(), FX5), so two lines leaving side by side
+     * do not print over each other: one slides back along its line, or the
+     * two share a label.
      */
     private void worldLines(GraphicsContext gc, MapFrame f) {
         if (shownMap == null) return;
@@ -895,26 +899,33 @@ final class MapView {
             probe.setFont(labelFont);
             worldLabelW = probe.getLayoutBounds().getWidth();
             worldLabelH = probe.getBaselineOffset();
+            probe.setText(LandMap.WORLD_BOTH_WORDS);
+            worldLabelBothW = probe.getLayoutBounds().getWidth();
             worldLabelFont = labelFont;
         }
-        for (CityMap.WorldLine line : lines) {
+        double[][] parts = new double[lines.size()][];
+        for (int i = 0; i < lines.size(); i++) {
+            CityMap.WorldLine line = lines.get(i);
             boolean highway = line.net() == CityRuns.HIGHWAYS;
             double sx = f.screenX(line.x()), sy = f.screenY(line.y());
             double r = Math.toRadians(line.way());
             double dx = Math.cos(r), dy = Math.sin(r);
             double[] cut = rayRect(sx, sy, dx, dy, line.reach() * scale, w, h);
             if (cut == null) continue;
+            parts[i] = cut;
             gc.setStroke(colour(highway ? TileRaster.ROAD[BuildingVisual.HIGHWAY] : TileRaster.RAIL_DARK, WORLD_LINE_ALPHA));
             gc.setLineWidth(highway ? Math.max(2, 0.86 * scale) : Math.max(1.5, 0.52 * scale));
             if (highway) gc.setLineDashes((double[]) null);
             else gc.setLineDashes(6, 5);
             gc.strokeLine(cut[0], cut[1], cut[2], cut[3]);
             gc.setLineDashes((double[]) null);
-            double[] at = LandMap.worldLabelAt(cut[0], cut[1], cut[2], cut[3], worldLabelW, worldLabelH, w, h);
-            if (at == null) continue;
-            gc.setFont(labelFont);
-            gc.setFill(Color.rgb(255, 255, 255, WORLD_LINE_ALPHA));
-            gc.fillText(LandMap.WORLD_WORDS, at[0], at[1]);
+        }
+        // The labels once every line is cut, so that they are placed apart (FX5).
+        LandMap.WorldLabel[] labels = LandMap.worldLabels(parts, worldLabelW, worldLabelBothW, worldLabelH, w, h);
+        gc.setFont(labelFont);
+        gc.setFill(Color.rgb(255, 255, 255, WORLD_LINE_ALPHA));
+        for (LandMap.WorldLabel at : labels) {
+            if (at != null) gc.fillText(at.words(), at.x(), at.y());
         }
     }
 
@@ -2882,7 +2893,7 @@ final class MapView {
         return String.format(TRUCK_WORDS, loads <= 1 ? "load" : String.format("%,d loads", loads));
     }
 
-    /** The legend's tracks (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. */
+    /** The legend's unmade streets (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. */
     static final String TRACK_ENTRY = LandMap.TRACK_ENTRY;
 
     /** The legend's note under its entries, when the city has buildings its plans hold none of (R7; spec 5): how many are packed without a street. */

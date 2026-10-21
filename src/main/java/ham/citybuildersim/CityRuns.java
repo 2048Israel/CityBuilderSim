@@ -805,7 +805,11 @@ public final class CityRuns {
     /**
      * Grows the railway's main line toward `target` plots (FR7, batch FR7
      * slice 3): its hub laid first, then the gate arm alone, until it waits -
-     * at the city's edge, where the world line takes it on. No other arm, no
+     * at the city's edge, where the world line takes it on. With a station
+     * standing, layRail() gives it a target past any city's ground
+     * (MAIN_LINE_REACH), so a station's main line is laid to the city's edge
+     * whatever track the model has (FX5; Jerus, 2026-10-20: "there is a
+     * railwawy depot but no rails"). No other arm, no
      * corridor, is grown for the railway: they ran to no yard and no works,
      * and no train ever saw them. The one exception is the sea (Jerus's
      * Halifax, FX2): a gate arm that waits at water the city owns reaches no
@@ -1255,7 +1259,13 @@ public final class CityRuns {
                              at water the city owns reaches no world, and the
                              arm after it is grown too - FX2's Halifax - so on
                              to the first that waits anywhere else); with no
-                             gateway, the hub alone;
+                             gateway, the hub alone. A city with a station (a
+                             Rail Depot or Rail Terminal) has this line laid to
+                             the city's edge whatever track the model has - a
+                             yard is no track, and a depot alone is how the
+                             model rails freight (Jerus, 2026-10-20: "there is
+                             a railwawy depot but no rails", FX5); the model's
+                             track short of the line lays no siding, as before;
          (b) A SIDING        for each Rail Spur, a track from the main line into
                              the largest bulk works within a district of it that
                              has none, ending in a loading shed beside its box;
@@ -1291,6 +1301,9 @@ public final class CityRuns {
 
     /** A siding serves a works within this of the main line, in plots: one district (CityMap.DISTRICT, 256; spec-freight 4.3, "the largest BULK works within one district of the line"). */
     public static final int SIDING_REACH = CityMap.DISTRICT;
+
+    /** How far past the plots it has the main line of a city with a station is grown, at most, in plots: 1,048,576 (2^20) - some four thousand districts, past any city's ground, so the line waits at the city's edge and not at this; it only keeps growMainLine()'s guard (50 a plot) from overflowing (FX5). */
+    static final long MAIN_LINE_REACH = 1L << 20;
 
     /** A works the main line touches or runs beside, within this many plots, has the railway at its door and needs no siding: 1. */
     static final int SERVED_WITHIN = 1;
@@ -1382,9 +1395,11 @@ public final class CityRuns {
 
     /**
      * Lays the railway to the model's track plots, yards and spurs (layTo()'s
-     * rail half): the derived arms off, the main line grown or taken back, the
-     * first yard, the sidings, then the branches and the further yards, each
-     * out of what the track plots leave. Pure in its inputs; skipped when the
+     * rail half): the derived arms off, the main line grown or taken back (to
+     * the model's track plots, or - with a station standing - to the city's
+     * edge whatever the track, FX5), the first yard, the sidings, then the
+     * branches and the further yards, each out of what the track plots leave.
+     * Pure in its inputs; skipped when the
      * stamp of them is the last run's.
      */
     private void layRail(long trackPlots, List<int[]> sizes, int spurs, Ground g, long rx, long ry,
@@ -1392,8 +1407,10 @@ public final class CityRuns {
         long stamp = railStampOf(trackPlots, sizes, spurs, g, rx, ry, mines, works);
         if (railStampSet && stamp == railStamp) return;
         dropWays();
-        if (trackPlots < rail.plots) trim(rail, trackPlots, gateway);
-        else growMainLine(rail, highways, trackPlots, g, rx, ry, gateway);
+        // A station stands on the main line whatever track the model has (a yard is no track): the line is grown till it waits at the city's ground.
+        long lineTo = sizes.isEmpty() ? trackPlots : Math.max(trackPlots, rail.plots + MAIN_LINE_REACH);
+        if (lineTo < rail.plots) trim(rail, lineTo, gateway);
+        else growMainLine(rail, highways, lineTo, g, rx, ry, gateway);
         if (!sizes.isEmpty() && !rail.started) start(rail, g, rx, ry, gateway);
         if (trackPlots == 0 && sizes.isEmpty() && rail.plots == 0 && rail.started) rail.reset();
         keepYards(sizes);

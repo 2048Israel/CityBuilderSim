@@ -86,6 +86,14 @@ import java.util.Set;
  *      lay the same net, and it reads back from its sidecar; the trains: a
  *      route to every siding, a bulk unit train's alone, on a real map too.
  *
+ *  14. A STATION ALONE LAYS ITS MAIN LINE (batch FX5, Jerus 2026-10-20, his new
+ *      Halifax city: "there is a railwawy depot but no rails"): with a gateway,
+ *      one Rail Depot's yard and no track at all, the gate arm still runs to
+ *      the city's edge and the yard stands on it; the same ground with no
+ *      station and no track lays no line; with a station and a little track
+ *      the line still runs to the edge, the sidings' budget and the surplus
+ *      as before (none); the station gone, the line is taken back.
+ *
  * WHY THIS EXISTS: batch FR0 slice M sets the main-line marks that the painter
  * already draws. A fixture CAUSES each condition, and every assertion is
  * against the model's own constants, never a bare number.
@@ -450,6 +458,7 @@ public class MainLineCheck {
         theMainArm(siteX, siteY);
         stackedOnACorridor(siteX, siteY);
         railWays(siteX, siteY, m, sq);
+        stationAlone(siteX, siteY);
 
         System.out.println();
         System.out.println(fails == 0 ? "The main line runs to the freight station." : fails + " FAILED");
@@ -1019,8 +1028,18 @@ public class MainLineCheck {
         shortRun.setGateway(0);
         shortRun.layTo(0, 72, sizes.subList(0, 1), 2, g, siteX, siteY, siteX, siteY, mines, works);
         CityRuns.Arm shortGate = shortRun.rail.arms.get(CityRuns.gateArm(shortRun.rail, 0));
-        check("a short track (72 plots, a spur's) is all main line: it has not reached the city's edge, so no siding is laid yet",
-                shortRun.rail.plots() == 72 && g.x1 - shortGate.x > CityRuns.LOOK && shortRun.sidings().isEmpty() && shortRun.trackSurplus() == 0);
+        // FX5 (Jerus, 2026-10-20, "there is a railwawy depot but no rails"): with a station standing the main line runs to the
+        // city's edge whatever track the model has, so this fixture's line is no longer its 72 plots; the premise kept is that
+        // track short of the line lays no siding. The 72 plots as the whole line, short of the edge, is held with no station.
+        check("a short track (72 plots, a spur's) beside a station: the line runs to the city's edge anyway (FX5), so the 72 plots"
+                        + " are all main line and no siding is laid yet",
+                shortRun.rail.plots() > 72 && g.x1 - shortGate.x <= CityRuns.LOOK && shortRun.sidings().isEmpty() && shortRun.trackSurplus() == 0);
+        CityRuns noStation = new CityRuns();
+        noStation.setGateway(0);
+        noStation.layTo(0, 72, sizes.subList(0, 0), 2, g, siteX, siteY, siteX, siteY, mines, works);
+        CityRuns.Arm noStationGate = noStation.rail.arms.get(CityRuns.gateArm(noStation.rail, 0));
+        check("...and with no station the 72 plots are the whole line, short of the city's edge, and no siding is laid",
+                noStation.rail.plots() == 72 && g.x1 - noStationGate.x > CityRuns.LOOK && noStation.sidings().isEmpty());
 
         // No gateway: the main line is the hub alone.
         CityRuns island = new CityRuns();
@@ -1182,6 +1201,68 @@ public class MainLineCheck {
                 what, mapSidings.size(), reached, mapRoutes.size(), worksRoutes);
         check(what + ": one bulk route to every siding the trains' way reaches, each ending on its last plot", worksRoutes == reached && endsOnPlot && (maybeNone || reached > 0));
         check("...and every other route belongs to a yard, as before", yardRoutesAreYards);
+    }
+
+    /** The Rail Depot's yard size, {across, down}: BuildingVisual.footprint() of the catalogue's depot, the size CityMap.layRuns() gives the runs. */
+    static int[] depotYard() {
+        for (BuildingVisual.Type t : BuildingVisual.table(new BuildingCatalog().load())) if (BuildingVisual.depot(t)) return BuildingVisual.footprint(t);
+        throw new IllegalStateException("no Rail Depot type");
+    }
+
+    /** How many plots of the net's arm `gate` (its start and every step) lie inside the yard's box {x, y, w, h}. */
+    static int armInside(CityRuns.Arm gate, long[] yard) {
+        int in = 0;
+        for (int k = 0; k <= gate.steps; k++) {
+            long[] q = plotOnArm(gate, k);
+            if (q != null && q[0] >= yard[0] && q[0] < yard[0] + yard[2] && q[1] >= yard[1] && q[1] < yard[1] + yard[3]) in++;
+        }
+        return in;
+    }
+
+    /** Section 14: a station alone lays its main line (batch FX5). */
+    static void stationAlone(long siteX, long siteY) {
+        System.out.println("\n--- a station alone lays its main line (FX5) ---");
+        BoxGround g = ground(siteX - 300, siteY - 100, siteX + 600, siteY + 100);
+        int[] fp = depotYard();
+        List<int[]> oneDepot = new ArrayList<>(List.of(fp));
+        check("fixture: the Rail Depot's yard is smaller than the district's interior, so a spot on the line takes it",
+                fp[0] >= 1 && fp[1] >= 1 && fp[0] <= DistrictPlan.INTERIOR && fp[1] <= DistrictPlan.INTERIOR);
+
+        CityRuns alone = new CityRuns();
+        alone.setGateway(0);
+        alone.layTo(0, 0, oneDepot, 0, g, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        int gate = CityRuns.gateArm(alone.rail, 0);
+        CityRuns.Arm gateA = gate < 0 ? null : alone.rail.arms.get(gate);
+        System.out.printf("  a depot (%d x %d) and no track: the gate arm %s%n", fp[0], fp[1], gateA == null ? "does not exist" : gateA.steps + " steps to (" + gateA.x + ", " + gateA.y + ")");
+        check("a city with one Rail Depot and no track lays the main line: the gate arm has steps", gateA != null && gateA.steps > 0);
+        check("...and it waits at the city's ground, fewer than LOOK plots short of the box's east edge",
+                gateA != null && g.x1 - gateA.x >= 0 && g.x1 - gateA.x < CityRuns.LOOK);
+        check("...the model has no track, so none is a siding's or a branch's, and there is no surplus",
+                alone.sidings().isEmpty() && alone.branches().isEmpty() && alone.trackSurplus() == 0 && alone.rail.plots() == 1 + (gateA == null ? 0 : gateA.steps));
+        check("...the depot's yard is laid, of its own footprint", alone.yards().size() == 1 && alone.yards().get(0)[2] == fp[0] && alone.yards().get(0)[3] == fp[1]);
+        check("...and its box covers the main line: the yard's whole length along the east gate arm, " + fp[0] + " plots, is inside it",
+                gateA != null && !alone.yards().isEmpty() && armInside(gateA, alone.yards().get(0)) >= fp[0]);
+
+        CityRuns none = new CityRuns();
+        none.setGateway(0);
+        none.layTo(0, 0, new ArrayList<>(), 0, g, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        int noneGate = CityRuns.gateArm(none.rail, 0);
+        check("control: the same ground with no station and no track lays no line",
+                none.rail.plots() == 0 && (noneGate < 0 || none.rail.arms.get(noneGate).steps == 0) && none.yards().isEmpty());
+
+        // A little track with a station: the line still runs to the edge; no siding, no surplus, as before.
+        long little = 40;
+        CityRuns some = new CityRuns();
+        some.setGateway(0);
+        some.layTo(0, little, oneDepot, 1, g, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        CityRuns.Arm someGate = some.rail.arms.get(CityRuns.gateArm(some.rail, 0));
+        check("a station with " + little + " plots of track runs the main line to the city's edge, past the track the model has",
+                someGate.steps + 1 > little && g.x1 - someGate.x >= 0 && g.x1 - someGate.x < CityRuns.LOOK);
+        check("...and lays no siding (the track is short of the line) and shows no surplus", some.sidings().isEmpty() && some.trackSurplus() == 0);
+
+        // The station gone: the model's track alone sets the line again.
+        alone.layTo(0, 0, new ArrayList<>(), 0, g, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        check("with the station gone and no track, the line is taken back", alone.rail.plots() == 0 && alone.yards().isEmpty());
     }
 
     static boolean marksCarry(CityMap m, int bits) {

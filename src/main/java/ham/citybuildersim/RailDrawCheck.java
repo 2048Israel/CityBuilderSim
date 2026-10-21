@@ -59,7 +59,8 @@ import java.util.List;
  *      RAIL_DARK, never RAIL_LINE, and a 2 x 2 TRANSPORT dot at each yard;
  *  20. the legend: planeLegend() has the transport class, the railway's four
  *      and the gateway, and (0.8.2) the train's entry, LandMap.TRAIN_WORDS,
- *      and no RAIL_LINE entry;
+ *      and no RAIL_LINE entry, and (FX5) the street with no road bought named
+ *      "Unmade street", not a second "Track" beside "Railway";
  *  21. (batch FX3, 0.8.4; red on 0.8.3) a second line crossing the yard's box:
  *      the fan closes on the line the yard stands on, not on the middle of
  *      all the track in the box; the crossing track is drawn from the box's
@@ -831,6 +832,9 @@ public class RailDrawCheck {
         boolean railLine = false;
         for (LandMap.Entry e : plane) railLine |= e.colour() == TileRaster.RAIL_LINE;
         check("...and no entry wears the old RAIL_LINE", !railLine);
+        check("...a street with no road bought has \"" + LandMap.TRACK_ENTRY + "\" and the legend has no second \"Track\" beside \"Railway\" (FX5)",
+                legendHas(plane, LandMap.TRACK_ENTRY) && !legendHas(plane, "Track") && "Unmade street".equals(LandMap.TRACK_ENTRY));
+        check("...and its hover words begin with the entry's", LandMap.TRACK_WORDS.startsWith(LandMap.TRACK_ENTRY));
         System.out.println("  ui.MapView.LEGEND_ROWS is package-private, so this harness cannot reach it; the layout is checked by eye");
     }
 

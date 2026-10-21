@@ -569,6 +569,9 @@ public final class LandMap {
     /** The world line's label (spec-freight 4.1: "labelled 'to the world ›'"). */
     public static final String WORLD_WORDS = "to the world ›";
 
+    /** The label two world lines share where their labels would be drawn on one spot and nothing along either line clears them (FX5; the highway's and the railway's, which leave together): one label naming both, the same width in the monospaced font as WORLD_WORDS' twice. */
+    public static final String WORLD_BOTH_WORDS = "road and rail to the world ›";
+
     /** The world line's opacity (spec-freight 4.1: "faded, to the edge of the view"); ui/MapView's WORLD_LINE_ALPHA reads this one, so the line and its legend swatch are one dial. */
     public static final double WORLD_ALPHA = 0.45;
 
@@ -610,6 +613,90 @@ public final class LandMap {
         x = Math.max(WORLD_LABEL_PAD, Math.min(x, w - WORLD_LABEL_PAD - tw));
         y = Math.max(WORLD_LABEL_PAD + th, Math.min(y, h - WORLD_LABEL_PAD));
         return new double[] { x, y };
+    }
+
+    /** One world line's label as worldLabels() places it: the left end of its baseline {x, y}, and whether it names both lines (WORLD_BOTH_WORDS) or its own (WORLD_WORDS). */
+    public record WorldLabel(double x, double y, boolean both) {
+        /** The words to draw at (x, y). */
+        public String words() {
+            return both ? WORLD_BOTH_WORDS : WORLD_WORDS;
+        }
+    }
+
+    /**
+     * Every world line's label on a w x h view, apart (FX5; Jerus, 2026-10-20:
+     * the highway's and the railway's labels, their lines leaving a few pixels
+     * apart on one bearing, were drawn on one spot and read "tetohe wodld").
+     * parts[i] is the line's part in view, {x0, y0, x1, y1}, as worldLabelAt()
+     * takes it (null for a line with no part). Each label in turn goes where
+     * worldLabelAt() puts it; one whose box, padded by WORLD_LABEL_PAD, would
+     * overlap a label already placed slides back along its own part, a pixel
+     * at a time as worldLabelAt() does and inside the view, to the first place
+     * that is clear. Where none is, it has no label (null) and the label it
+     * collided with names both lines (WORLD_BOTH_WORDS, twBoth wide). The first
+     * label never moves; null too for a part of no length. Pure. tw is the
+     * width of WORLD_WORDS, twBoth of WORLD_BOTH_WORDS in the font drawn.
+     */
+    public static WorldLabel[] worldLabels(double[][] parts, double tw, double twBoth, double th, double w, double h) {
+        WorldLabel[] out = new WorldLabel[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            double[] p = parts[i];
+            if (p == null) continue;
+            double[] first = worldLabelAt(p[0], p[1], p[2], p[3], tw, th, w, h);
+            if (first == null) continue;
+            int hit = overlapping(out, first[0], first[1], tw, tw, twBoth, th, -1);
+            if (hit < 0) {
+                out[i] = new WorldLabel(first[0], first[1], false);
+                continue;
+            }
+            double[] clear = clearPlace(p, tw, tw, twBoth, th, w, h, out, -1);
+            if (clear != null) {
+                out[i] = new WorldLabel(clear[0], clear[1], false);
+                continue;
+            }
+            // Nowhere along its part is clear: it shares the label it collided with, which now names both and, being wider, may move.
+            WorldLabel j = out[hit];
+            double[] wide = clearPlace(parts[hit], twBoth, tw, twBoth, th, w, h, out, hit);
+            if (wide == null) wide = worldLabelAt(parts[hit][0], parts[hit][1], parts[hit][2], parts[hit][3], twBoth, th, w, h);
+            if (wide == null) wide = new double[] { j.x(), j.y() };
+            out[hit] = new WorldLabel(wide[0], wide[1], true);
+        }
+        return out;
+    }
+
+    /** ...with the shared label's width taken from the font being monospaced (as MapView draws it): WORLD_BOTH_WORDS is that many characters to WORLD_WORDS'. */
+    public static WorldLabel[] worldLabels(double[][] parts, double tw, double th, double w, double h) {
+        return worldLabels(parts, tw, tw * WORLD_BOTH_WORDS.length() / WORLD_WORDS.length(), th, w, h);
+    }
+
+    /** The first place from worldLabelAt()'s starting point back along the part, a pixel at a time, where a label `width` wide lies inside the view and clear of the labels placed (all but `skip`); null where there is none. */
+    private static double[] clearPlace(double[] p, double width, double tw, double twBoth, double th, double w, double h, WorldLabel[] placed, int skip) {
+        double x1 = p[2], y1 = p[3];
+        double len = Math.hypot(x1 - p[0], y1 - p[1]);
+        if (len <= 0 || w < width + 2 * WORLD_LABEL_PAD || h < th + 2 * WORLD_LABEL_PAD) return null;
+        double ux = (x1 - p[0]) / len, uy = (y1 - p[1]) / len;
+        double back = Math.min(WORLD_LABEL_BACK, len);
+        while (true) {
+            double x = x1 - ux * back, y = y1 - uy * back;
+            if (x >= WORLD_LABEL_PAD && x + width <= w - WORLD_LABEL_PAD && y - th >= WORLD_LABEL_PAD && y <= h - WORLD_LABEL_PAD
+                    && overlapping(placed, x, y, width, tw, twBoth, th, skip) < 0) {
+                return new double[] { x, y };
+            }
+            if (back >= len) return null;
+            back = Math.min(len, back + 1);
+        }
+    }
+
+    /** The index of the first label placed (not `skip`) whose box, padded by WORLD_LABEL_PAD, a label `width` wide with its baseline's left end at (x, y) would overlap; -1 for none. A placed label is tw wide, or twBoth where it names both. */
+    private static int overlapping(WorldLabel[] placed, double x, double y, double width, double tw, double twBoth, double th, int skip) {
+        for (int k = 0; k < placed.length; k++) {
+            WorldLabel b = placed[k];
+            if (b == null || k == skip) continue;
+            double bw = b.both() ? twBoth : tw;
+            if (x < b.x() + bw + WORLD_LABEL_PAD && b.x() < x + width + WORLD_LABEL_PAD
+                    && y - th < b.y() + WORLD_LABEL_PAD && b.y() - th < y + WORLD_LABEL_PAD) return k;
+        }
+        return -1;
     }
 
     /**
@@ -713,8 +800,8 @@ public final class LandMap {
         return out;
     }
 
-    /** The legend's tracks (0.7.88; spec 5): a street the city has bought no road for. */
-    public static final String TRACK_ENTRY = "Track";
+    /** The legend's unmade streets (0.7.88; spec 5): a street the city has bought no road for, brown dashes on its verge. Called "Track" until FX5 (Jerus, 2026-10-20: the railway's own entry is "Railway", and a street is not track). */
+    public static final String TRACK_ENTRY = "Unmade street";
 
     /**
      * The legend's note when the model has track the railway's ways do not use
@@ -889,8 +976,8 @@ public final class LandMap {
     /** ...and the railway bridging it (0.7.89; spec 2.8). */
     public static final String RAIL_OVER_WORDS = " · the railway over it";
 
-    /** A track's words in the hover (0.7.88; spec 5). */
-    public static final String TRACK_WORDS = "Track: the city has bought no road here";
+    /** An unmade street's words in the hover (0.7.88; spec 5; "Track: ..." until FX5, with TRACK_ENTRY). */
+    public static final String TRACK_WORDS = "Unmade street: the city has bought no road here";
 
     /** A street's widths in the hover: half (15 m) and full (30 m), a plot's 30 m right of way (spec 2.1). */
     public static final String HALF_WORDS = "15 m", FULL_WORDS = "30 m";
