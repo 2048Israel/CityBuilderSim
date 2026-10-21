@@ -489,7 +489,7 @@ public final class SectorStatements {
         b.line(LAND, "Land", now.land(), then.land(), 0);
         b.line(BUILDINGS, "Buildings, at cost", now.buildings(), then.buildings(), BUILDINGS_NOTE);
         b.line(ABROAD, "Held abroad", now.foreignAssets(), then.foreignAssets(), ABROAD_NOTE);
-        b.line(BONDS_HELD, "Other businesses' bonds", now.bondAssets(), then.bondAssets(), 0);
+        b.line(BONDS_HELD, "Bonds it holds: other businesses' and the city's", now.bondAssets(), then.bondAssets(), 0);
         if (now.borrowingCostsToExpense() != 0 || then.borrowingCostsToExpense() != 0) {
             b.line(BORROWING_TO_EXPENSE, "Borrowing costs still to expense", now.borrowingCostsToExpense(),
                     then.borrowingCostsToExpense(), 0);
@@ -584,7 +584,7 @@ public final class SectorStatements {
         b.line(PREMISES, premisesNow >= 0 ? "Its own premises" : "Buildings sold back", -premisesNow, -premisesThen, 0);
         b.line(SALVAGE, (now.salvage() != 0 ? now.salvage() : then.salvage()) > 0 ? "Material bought from scrapped plant"
                 : "Scrapped plant's material, sold", -now.salvage(), -then.salvage(), 0);
-        b.line(BONDS_BOUGHT, now.bondsBought() >= 0 ? "Other businesses' bonds bought" : "Other businesses' bonds sold",
+        b.line(BONDS_BOUGHT, now.bondsBought() >= 0 ? "Bonds bought: other businesses' and the city's" : "Bonds sold or repaid: other businesses' and the city's",
                 -now.bondsBought(), -then.bondsBought(), 0);
         b.line(SENT_ABROAD, now.investedAbroad() >= 0 ? "Sent abroad" : "Brought home from abroad",
                 -now.investedAbroad(), -then.investedAbroad(), 0);

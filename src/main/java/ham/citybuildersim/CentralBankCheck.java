@@ -839,6 +839,9 @@ public class CentralBankCheck {
         for (Debt d : ledger.getDebt()) if (DebtManager.isTermPaper(d)) bond = d;
         assertTrue("fixture: the treasury sold a twenty-year bond", bond != null);
         bond.markIssued(bond.getSettleDue(), 0);
+        // ...and the auction allotted them none (CD2: what the households take is
+        // their allotment now, not a share the issue yield gives).
+        bond.allotHouseholdsFace = bond.allotHouseholdsCash = 0;
         play(city);
         close("fixture: ...and the bank holds all of it", bond.bankPrincipal(),
                 bond.getOustandingPrincipal(), 1e-9);
@@ -1227,9 +1230,13 @@ public class CentralBankCheck {
         });
         city.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
         final int soldIn = city.getMonth();
-        quietly(() -> city.handleMediumBondLogic(20_000, 2, 100));
+        // A five-year amortizing bond, the shortest the lineup sells (CD2; the two-year serial was off it), and
+        // three times what the households can pay: they bid by their rule at the auction's yield and are held
+        // by their purse, not by half the issue (D32), so a smaller issue left the bank nothing to hold.
+        double purse = city.getHouseholdBalance().spareForPaper();
+        quietly(() -> city.handleMediumBondLogic(Math.max(20_000, purse * 3), 5, 100));
         Debt serial = fixtureSerial(city, soldIn);
-        assertTrue("fixture: the treasury sold a two-year serial", serial != null);
+        assertTrue("fixture: the treasury sold a five-year serial", serial != null);
         play(city);                                        // the settle: the households take their share
         /*
          * THE DIAL LEAVES THE BANK A PART WHATEVER THE HOUSEHOLDS TAKE (0.7.102). It was .5: the households take
@@ -1240,7 +1247,7 @@ public class CentralBankCheck {
          */
         double dial = (1 - HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE) * .8;
         city.getCentralBank().setTargetShare(dial);
-        while (serial.getRemainingMonths() > 16) play(city);
+        while (serial.getRemainingMonths() > 52) play(city);   // three months before its first slice (49 months left)
         assertTrue("fixture: the households, the bank and the central bank each hold part of it",
                 serial.householdPrincipal() > 0 && serial.bankPrincipal() > 0 && serial.centralBankPrincipal() > 0);
         close("fixture: ...the central bank its dial's share of the term paper, and no more",
@@ -1276,11 +1283,13 @@ public class CentralBankCheck {
         close("...paid at the issue's price on each unit of face", cba.getBoughtAtIssue(),
                 itsPar * issuePricePerFace(fresh), 1e-6);
         assertTrue("...under par, as the market paid", cba.getBoughtAtIssue() < itsPar);
-        close("the bank's book of the new issue excludes its par: the bank and the households hold the market's face",
-                fresh.bankPrincipal() + fresh.householdPrincipal(), fresh.getOustandingPrincipal() - itsPar, 1e-6);
+        close("the bank's book of the new issue excludes its par: the bank, the households, the businesses and the world hold the market's face",
+                fresh.bankPrincipal() + fresh.householdPrincipal() + fresh.firmPrincipal() + fresh.worldPrincipal(),
+                fresh.getOustandingPrincipal() - itsPar, 1e-6);
         assertTrue("...and the households took part of it", fresh.householdPrincipal() > 0);
-        close("...for which they and the bank paid what the rollover raised, and no more",
-                a.getCityPaperSettled() + a.getHouseholdsBoughtPaper(), a.getRollover().getLastRaised(), 1e-6);
+        close("...for which they, the businesses, the world and the bank paid what the rollover raised, and no more",
+                a.getCityPaperSettled() + a.getHouseholdsBoughtPaper() + a.getFirmsBoughtPaper() + a.getWorldBoughtPaper(),
+                a.getRollover().getLastRaised(), 1e-6);
         close("...which is what the bank's own book carries", a.getBank().getCityBook(),
                 a.getDebtManager().bankBook(), 1e-6);
         close("...and the households' cells hold what the paper says they do",

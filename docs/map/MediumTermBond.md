@@ -1,8 +1,10 @@
-# MediumTermBond.java - 203 lines · 14 methods · 0 constants · model
+# MediumTermBond.java - 226 lines · 16 methods · 1 constants · model
 
 `ham/citybuildersim/MediumTermBond.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
-> A serial bond: the workhorse of municipal finance.
+> The amortizing bond: the workhorse of municipal finance - at 5 to 30 years in
+> fives, one coupon, each sale its own line (CD2). It was the serial bond; the
+> class keeps its name (spec-city-debt.md, star 3).
 > 
 > A single issue is really a stack of maturities. A city raising $10M over ten
 > years does not sell one bond due in 2036; it sells a slice due each year, and
@@ -27,40 +29,54 @@
 > ANNUAL SLICES, MONTHLY COUPON, which is how these are actually structured -
 > principal on an anniversary, interest every period on whatever is still out.
 > 
+> ONE COUPON, THE STOP (CD2). The coupon used to be the curve's rate for the
+> final maturity, charged on every slice - 7 to 24 basis points too dear on a
+> rising curve. The auction sets it now: the clearing yield itself, which
+> prices the whole schedule at 100 (Auction.amortizingPer100()). An amortizing
+> line is never reopened, because its slices have already started to fall.
+> 
 > NOT A MORTGAGE. Level debt service - equal total payments, like a house - is
 > the other common municipal structure and deliberately not this one: it hides
 > how much principal is left behind a flat number, and Jerus asked for the
 > mechanics to stay legible.
 
-**Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
+**Uses:** [Debt](Debt.md) (1), [Auction](Auction.md) (1), [Game](Game.md) (1)
 
-**Used by (5):** [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [Game](Game.md), [RestructureCheck](RestructureCheck.md)
+**Used by (7):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [RestructureCheck](RestructureCheck.md)
+
+## Constants
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 45 | `MediumTermBond.YEARS` | `Auction.AMORTIZING_YEARS` | The terms an amortizing bond is sold at, in years (D3): Auction.AMORTIZING_YEARS. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 36 | `private double monthlyCouponRate` |  |
-| 39 | `private double principalPerSlice` | Principal repaid on each anniversary. |
-| 42 | `private int slicesRemaining` | Anniversaries left to pay, including the one at maturity. |
+| 54 | `private double monthlyCouponRate` |  |
+| 62 | `private double principalPerSlice` | Principal repaid on each anniversary. |
+| 65 | `private int slicesRemaining` | Anniversaries left to pay, including the one at maturity. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 170 | **type** `public class MediumTermBond extends Debt` | A serial bond: the workhorse of municipal finance. |
-| 44 | 3 | `public MediumTermBond(double faceValue, int months, int monthStarted, double couponRate)` |  |
-| 49 | 16 | `public MediumTermBond(double faceValue, int months, int monthStarted, double couponRate, boolean foreign)` |  |
-| 82 | 7 | `void repairAfterLoad()` | Rebuilds the amortisation schedule after a load. |
-| 98 | 20 | `public void processMonth(Game game)` | Coupon every month; principal on each anniversary. |
-| 120 | 3 | `public double getIssuePrice()` |  |
-| 125 | 3 | `protected double principalOwed()` |  |
-| 130 | 3 | `public int getMaturityMonth()` |  |
-| 135 | 3 | `public boolean isMatured()` |  |
-| 140 | 3 | `public String getType()` |  |
-| 146 | 3 | `protected double couponOwed()` | On what is still out, not on the original face. |
-| 151 | 3 | `public double getPrincipalPerSlice()` | How much principal is retired on each anniversary. |
-| 155 | 3 | `public int getSlicesRemaining()` |  |
-| 168 | 28 | `protected double[] scheduleOwed()` | Coupon on the declining balance, with a principal slice each anniversary. |
-| 199 | 3 | `protected void redenominateSchedule(double scale)` | The amortisation slice, in the new unit. |
+| 42 | 185 | **type** `public class MediumTermBond extends Debt` | The amortizing bond: the workhorse of municipal finance - at 5 to 30 years in fives, one coupon, each sale its own line (CD2). |
+| 48 | 5 | `public static int nearestYears(int years)` | The one of YEARS nearest this many years; the shorter on a tie. |
+| 57 | 3 | `public double couponRate()` | The one coupon, a year, that the auction set at issue (the stop itself): the screen's name for the bond, "20-year amortizing bond at 4.21%". |
+| 67 | 3 | `public MediumTermBond(double faceValue, int months, int monthStarted, double couponRate)` |  |
+| 72 | 16 | `public MediumTermBond(double faceValue, int months, int monthStarted, double couponRate, boolean foreign)` |  |
+| 105 | 7 | `void repairAfterLoad()` | Rebuilds the amortisation schedule after a load. |
+| 121 | 20 | `public void processMonth(Game game)` | Coupon every month; principal on each anniversary. |
+| 143 | 3 | `public double getIssuePrice()` |  |
+| 148 | 3 | `protected double principalOwed()` |  |
+| 153 | 3 | `public int getMaturityMonth()` |  |
+| 158 | 3 | `public boolean isMatured()` |  |
+| 163 | 3 | `public String getType()` |  |
+| 169 | 3 | `protected double couponOwed()` | On what is still out, not on the original face. |
+| 174 | 3 | `public double getPrincipalPerSlice()` | How much principal is retired on each anniversary. |
+| 178 | 3 | `public int getSlicesRemaining()` |  |
+| 191 | 28 | `protected double[] scheduleOwed()` | Coupon on the declining balance, with a principal slice each anniversary. |
+| 222 | 3 | `protected void redenominateSchedule(double scale)` | The amortisation slice, in the new unit. |
 

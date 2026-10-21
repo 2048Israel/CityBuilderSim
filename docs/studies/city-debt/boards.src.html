@@ -312,7 +312,7 @@ svg .grid{stroke:rgba(36,53,74,.55);stroke-width:1}
   <div class="notes">
     <p><i>A</i><b>Five kinds of paper.</b> Bills at a discount, bonds at par near the market, the amortizing bond on one coupon solved on the curve, the floating note on the policy rate, the linked bond on the price index.</p>
     <p><i>B</i><b>The coupon is the market's.</b> The clearing yield rounded down to an eighth of a point, so a new line sells just under 100. A reopening keeps its line's coupon and sells at whatever price that makes.</p>
-    <p><i>C</i><b>The bidders are the game's own.</b> Households non-competitive and first; the bank at fair while it has room; the world as hot money. The central bank never bids, except to roll its own paper.</p>
+    <p><i>C</i><b>The bidders are the game's own.</b> Households first, by their own rule at the auction's yield and out of their savings; the firms with idle cash, as they send it abroad; the bank at fair while it has room; the world as hot money. The central bank never bids, except to roll its own paper.</p>
     <p><i>D</i><b>Capped, or filled.</b> With a highest yield, bids that do not reach the issue there sell only what was bid. With Fill it, the yield rises until the bidders' own rules cover the issue, and the card says what that costs.</p>
   </div>
 </section>
@@ -667,11 +667,11 @@ function curveChart(host, opt) {
   for (let v = 0; v <= cap; v += 1e8) { s.append(S("line", {x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid"})); s.append(S("text", {x: L - 6, y: y(v) + 3, "text-anchor": "end"}, money(v, 0))); }
   for (let v = Math.ceil(lo * 400) / 400; v <= hi; v += .0025) s.append(S("text", {x: x(v), y: H - B + 16, "text-anchor": "middle"}, pct(v, 2)));
   s.append(S("line", {x1: L, x2: W - R, y1: H - B, y2: H - B, class: "axis"}));
-  const total = g => g.households + g["the world"] + g["the bank"];
+  const total = g => g.households + g["the firms"] + g["the world"] + g["the bank"];
   const tightRoom = 2e7 / .2;
   let d1 = "", d2 = "";
   D.auction_grid.forEach((g, i) => {
-    const v1 = total(g), v2 = g.households + g["the world"] + (g["the bank"] > 0 ? tightRoom : 0);
+    const v1 = total(g), v2 = g.households + g["the firms"] + g["the world"] + (g["the bank"] > 0 ? tightRoom : 0);
     d1 += (i ? "L" : "M") + x(g.y).toFixed(1) + " " + y(v1).toFixed(1);
     d2 += (i ? "L" : "M") + x(g.y).toFixed(1) + " " + y(v2).toFixed(1);
   });
@@ -685,7 +685,7 @@ function curveChart(host, opt) {
   s.append(S("line", {x1: x(a.fair + .01), x2: x(a.fair + .01), y1: T, y2: H - B, stroke: "#f85149", "stroke-dasharray": "2 3"}));
   s.append(S("text", {x: x(a.fair + .01) - 5, y: y(1.5e8), "text-anchor": "end", fill: "#f85149"}, "your highest yield"));
   s.append(S("circle", {cx: x(t.stop), cy: y(t.sold), r: 4, fill: "#e3b341"}));
-  s.append(S("text", {x: x(t.stop) - 6, y: y(t.sold) + 16, "text-anchor": "end", fill: "#e3b341"}, "sells " + money(t.sold) + " of " + money(a.offered, 0)));
+  s.append(S("text", {x: x(t.stop) - 6, y: y(t.sold) + 16, "text-anchor": "end", fill: "#e3b341"}, "covered even so, at " + pct(t.stop, 2) + ", a tail of " + bp(t.tail)));
   document.getElementById("bw-chart").append(s);
 
   const f = a.fills;
@@ -693,17 +693,18 @@ function curveChart(host, opt) {
     line("Stops at · tail", pct(a.stop, 3) + " · " + bp(a.tail) + " over fair"),
     line("Bids", a.cover.toFixed(2) + "× the issue, up to your highest yield"),
     line("Coupon · price", "6% (the line's) · " + px(a.price)),
-    line("Households, non-competitive, first", money(f.households)),
+    line("Households, first, at the auction's yield", money(f.households)),
+    line("The firms", money(f["the firms"])),
     line("The bank", money(f["the bank"])),
     line("The world", money(f["the world"])),
     line("The central bank", "none · it bids only to roll its own"),
     line("Effective rate", pct(a.eir, 3)),
     line("You raise", money(a.proceeds), "total"));
   document.getElementById("bw-go").textContent = "Hold the auction · raise " + money(a.proceeds);
-  const fl = D.filled;
-  document.getElementById("bw-tight").append(el("p", {class: "cap", style: "color:#ffd9d4"}, "The same auction, if the bank's room were nearly gone"),
-    el("p", {style: "color:#ffd9d4", html: `<b>Capped at fair + 1 pt:</b> the bids reach only <b>${money(t.sold)}</b>, ${t.cover.toFixed(2)}× the issue. It sells that at <b>${pct(t.stop, 2)}</b>, a tail of ${bp(t.tail)}, and <b>${money(a.offered - t.sold)}</b> of face is not sold. The city's month runs short by what that would have raised, onto the central bank's advances if it must.`}),
-    el("p", {style: "color:#ffd9d4", html: `<b>Fill it:</b> the yield rises until the world's hot money covers what the bank cannot hold. It stops at <b>${pct(fl.stop, 2)}</b>, a tail of ${bp(fl.tail)}, the world taking ${money(fl.fills["the world"])}. The 6% line sells at <b>${px(fl.price, 2)}</b>, so ${money(fl.sold, 0)} of face raises <b>${money(fl.proceeds)}</b>, at an effective ${pct(fl.eir, 2)} for the next ${Math.round(114 / 12 * 10) / 10} years.`}));
+  const fl = D.filled, sh = D.short;
+  document.getElementById("bw-tight").append(el("p", {class: "cap", style: "color:#ffd9d4"}, "Twice the size, " + money(sh.offered, 0) + ", if the bank's room were nearly gone"),
+    el("p", {style: "color:#ffd9d4", html: `<b>Capped at fair + 1 pt:</b> the bids reach only <b>${money(sh.sold)}</b>, ${sh.cover.toFixed(2)}× the issue. It sells that at <b>${pct(sh.stop, 2)}</b>, a tail of ${bp(sh.tail)}, and <b>${money(sh.offered - sh.sold)}</b> of face is not sold. The city's month runs short by what that would have raised, onto the central bank's advances if it must.`}),
+    el("p", {style: "color:#ffd9d4", html: `<b>Fill it:</b> the yield rises until the bidders' own rules cover the issue: the households take ${money(fl.fills.households)} of their savings, the firms ${money(fl.fills["the firms"])}, the world ${money(fl.fills["the world"])}. It stops at <b>${pct(fl.stop, 2)}</b>, a tail of ${bp(fl.tail)}. The 6% line sells at <b>${px(fl.price, 2)}</b>, so ${money(fl.sold, 0)} of face raises <b>${money(fl.proceeds)}</b>, at an effective ${pct(fl.eir, 2)} for the next ${Math.round(114 / 12 * 10) / 10} years.`}));
 })();
 
 /* ================= YOUR RATE ================= */

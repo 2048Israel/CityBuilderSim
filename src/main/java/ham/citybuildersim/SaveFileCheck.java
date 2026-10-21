@@ -2554,6 +2554,36 @@ public class SaveFileCheck {
                 fundCity.getDebtManager().getOverdraft());
 
         /*
+         * THE AUCTIONS COUNTED (CD2, D33). A sale the treasury books adds itself to the tally; a quote, which the screens
+         * draw every second, adds nothing; the tally crosses a save whole, the last sale's figures with it; and a save
+         * from before it loads an empty one over a city that had a count, rather than leaving the count where it was.
+         */
+        double askBill = rated.getEconomyManager().getMonthGdp() * .05;
+        int salesWas = rated.getDebtManager().auctionSales();
+        quietly(() -> { rated.quoteTBill(askBill, 6, 100); rated.quoteTBill(askBill, 6, 100); });
+        assertTrue("a quote is not a sale: previewed twice, the tally has not moved", rated.getDebtManager().auctionSales() == salesWas);
+        quietly(() -> rated.handleTBillLogic(askBill, 6, 100));
+        AuctionTally.Last booked = rated.getDebtManager().lastAuction();
+        assertTrue("fixture: a booked sale is counted, and is the last", rated.getDebtManager().auctionSales() == salesWas + 1
+                && booked != null && booked.kind() == Auction.Kind.BILL && booked.months() == 6 && booked.sold() > 0);
+        assertTrue("saved it with the sale counted", rated.saveGame(3, "tally").ok);
+        Game counted = new Game(fundCity.getGameFiles());
+        counted.loadGameSave(3);
+        assertTrue("the tally crosses a save, every slot of it",
+                java.util.Arrays.equals(counted.getDebtManager().getAuctionTally().toSave(), rated.getDebtManager().getAuctionTally().toSave()));
+        AuctionTally.Last again = counted.getDebtManager().lastAuction();
+        assertTrue("...the last sale's figures with it", again != null && again.equals(booked));
+        com.google.gson.JsonObject noTally = com.google.gson.JsonParser
+                .parseString(Files.readString(fundCity.getGameFiles().saveFile(3))).getAsJsonObject();
+        assertTrue("fixture: the save carries the tally", noTally.has("auctionTally"));
+        noTally.remove("auctionTally");
+        Files.writeString(fundCity.getGameFiles().saveFile(2), new com.google.gson.Gson().toJson(noTally));
+        counted.loadGameSave(2);
+        assertTrue("a save from before it loads an empty tally, over a city that had a count",
+                counted.getDebtManager().auctionSales() == 0 && counted.getDebtManager().lastAuction() == null
+                        && counted.getDebtManager().largestTail() == 0);
+
+        /*
          * AN OLDER SAVE: the city's first save above, with what 0.7.14 added
          * taken out - the fund, the preferred and its record, the register's
          * three city slots a company, and the city's face on each bond - and

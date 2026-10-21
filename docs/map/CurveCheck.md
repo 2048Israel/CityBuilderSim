@@ -1,4 +1,4 @@
-# CurveCheck.java - 728 lines · 36 methods · 11 constants · harnesses
+# CurveCheck.java - 731 lines · 36 methods · 11 constants · harnesses
 
 `ham/citybuildersim/CurveCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -72,10 +72,10 @@
 | 420 | 6. every payment on its month |
 | 475 | 7. the issue at the curve |
 | 544 | 8. no money pump |
-| 609 | 9. BondMarket reads it |
-| 623 | 10. the strike holds through the month and a save |
-| 673 | 11. the parts add up |
-| 689 | 12. how often it fires in a real run |
+| 612 | 9. BondMarket reads it |
+| 626 | 10. the strike holds through the month and a save |
+| 676 | 11. the parts add up |
+| 692 | 12. how often it fires in a real run |
 
 ## Constants
 
@@ -105,7 +105,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 660 | **type** `public class CurveCheck` | Proves the curve from the dial the market expects (CD1, spec-city-debt.md section 3): the expected dial's path, the zero rates it compounds to, the price of every payment at its own month's factor, and every issue and... |
+| 69 | 663 | **type** `public class CurveCheck` | Proves the curve from the dial the market expects (CD1, spec-city-debt.md section 3): the expected dial's path, the zero rates it compounds to, the price of every payment at its own month's factor, and every issue and... |
 | 75 | 4 | `static void check(String label, boolean ok)` |  |
 | 80 | 10 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 92 | 10 | `static void closeRel(String label, double actual, double expected, double relTol)` | ...for a figure in money, where the tolerance is a share of it. |
@@ -176,36 +176,36 @@
 | 487 | 8 | `static Game steepCity(Path root, String label)` | A founded city with the rule's hand on the dial to month 38, then the dial held two points under the rule by hand and one press on: the market expects the dial to rise to the rule, so the curve is steep. |
 | 496 | 47 | `static void issueAtTheCurve(Game g)` |  |
 
-### 8. no money pump (lines 544-608)
+### 8. no money pump (lines 544-611)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 549 | 7 | `static void noMoneyPump(Path root, Game steep) throws Exception` |  |
 | 557 | 9 | `static Game tradingCity(Path root) throws Exception` |  |
-| 568 | 18 | `static void roundTrips(String city, Game g)` | Issues each kind and buys it straight back: the city ends no richer, the piece is off the books. |
-| 587 | 21 | `static void roundTrip(String city, Game g, String kind, Runnable issue)` |  |
+| 568 | 21 | `static void roundTrips(String city, Game g)` | Issues each kind and buys it straight back: the city ends no richer, the piece is off the books. |
+| 590 | 21 | `static void roundTrip(String city, Game g, String kind, Runnable issue)` |  |
 
-### 9. BondMarket reads it (lines 609-622)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 610 | 12 | `static void bondMarket(Game g) throws Exception` |  |
-
-### 10. the strike holds through the month and a save (lines 623-672)
+### 9. BondMarket reads it (lines 612-625)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 624 | 48 | `static void theStrike(Path root, Game g) throws Exception` |  |
+| 613 | 12 | `static void bondMarket(Game g) throws Exception` |  |
 
-### 11. the parts add up (lines 673-688)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 674 | 14 | `static void theParts()` |  |
-
-### 12. how often it fires in a real run (lines 689-728)
+### 10. the strike holds through the month and a save (lines 626-675)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 690 | 38 | `static void howOften(Path root)` |  |
+| 627 | 48 | `static void theStrike(Path root, Game g) throws Exception` |  |
+
+### 11. the parts add up (lines 676-691)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 677 | 14 | `static void theParts()` |  |
+
+### 12. how often it fires in a real run (lines 692-731)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 693 | 38 | `static void howOften(Path root)` |  |
 

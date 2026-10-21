@@ -49,6 +49,9 @@ CF_MAX_SPREAD = .25                   # CapitalFlows.MAX_SPREAD
 CF_ARRIVAL_SPEED = .08                # CapitalFlows.ARRIVAL_SPEED
 RISK_CITY = .20                       # Bank.RISK_CITY
 MIN_MARGIN = .01                      # Bank.MIN_MARGIN
+OI_APPETITE = 40                      # OutwardInvestment.APPETITE: a sector's share of its wealth abroad per unit of spread
+OI_MAX_SHARE = .9                     # OutwardInvestment.MAX_SHARE
+OI_OUT_SPEED = .04                    # OutwardInvestment.OUT_SPEED: the share of the gap to its target moved in a month
 DESK_SPREAD = .02                     # Exchange.SPREAD: the desk's ask over its bid, a share of fair value
 
 # --------------------------------------------------------------------------
@@ -103,6 +106,8 @@ class City:
     bank_room: float = 1.0e9      # what the bank may still hold, risk-weighted
     world_stock: float = 1.5e8    # hot money in the city now
     depreciation: float = 0.0     # what the world expects the currency to lose, a year
+    firm_idle: float = 1.5e9      # the businesses' money with nothing owed against it: tills plus what is abroad (OutwardInvestment's wealth)
+    firm_paper: float = 0.0       # the city's paper the businesses already hold
 
     # ---- expectations -------------------------------------------------------
     def long_run_inflation(self):
@@ -362,29 +367,54 @@ class Bid:
     face: float
 
 
+def households_at(city: City, y, offered):
+    """
+    D32 (Jerus, 2026-10-20): HouseholdBalance's rule at the AUCTION'S yield -
+    a fifth of the issue for each point it pays over deposits - limited by
+    their savings past the cushion and by the issue itself, no longer by half
+    of it.
+    """
+    want = HOUSEHOLD_PAPER_APPETITE * max(0.0, y - city.deposit_rate) * offered
+    return min(want, city.hh_spare, offered)
+
+
+def firms_at(city: City, y):
+    """
+    D33: the businesses by OutwardInvestment's rule, the city's paper beside
+    the deposit and abroad - a share of their idle wealth, APPETITE per unit
+    of what the paper pays over the better of the two, never past MAX_SHARE,
+    less what they hold, moved at OUT_SPEED as their dollars are.
+    """
+    spread = max(0.0, y - max(city.deposit_rate, WORLD_BASE_RATE))
+    target = city.firm_idle * min(OI_MAX_SHARE, OI_APPETITE * spread)
+    return max(0.0, target - city.firm_paper) * OI_OUT_SPEED
+
+
 def demand(city: City, y, offered, fair=None, months=120):
     """
     What each bidder takes at a yield y, by its own rule in the game:
-      households - HouseholdBalance's rule, min(1/2, 20 x spread over the deposit rate) of the issue, out of savings past the cushion;
+      households - D32: their rule at this yield, out of savings past the cushion (households_at());
+      the firms  - D33: OutwardInvestment's rule with the paper beside the deposit and abroad (firms_at());
       the world  - CapitalFlows' rule, its target stock at this excess return less what is here, at ARRIVAL_SPEED;
       the bank   - the rest of its room, at fair plus what its funding needs over the curve (City.funding_strain()).
     """
-    hh = min(MAX_HOUSEHOLD_PAPER_SHARE, HOUSEHOLD_PAPER_APPETITE * max(0.0, y - city.deposit_rate)) * offered
-    hh = min(hh, city.hh_spare)
+    hh = households_at(city, y, offered)
+    firms = firms_at(city, y)
     excess = min(CF_MAX_SPREAD, max(0.0, y - WORLD_BASE_RATE - city.depreciation))
     world = max(0.0, CF_APPETITE * excess * city.gdp - city.world_stock) * CF_ARRIVAL_SPEED
     need = (fair if fair is not None else 0.0) + city.funding_strain(months)
     bank = city.bank_room / RISK_CITY if y >= need - 1e-12 else 0.0
-    return [Bid("households", hh), Bid("the world", world), Bid("the bank", bank)]
+    return [Bid("households", hh), Bid("the firms", firms), Bid("the world", world), Bid("the bank", bank)]
 
 
 def auction(city: City, kind, years, offered, max_tail=MAX_TAIL, line_coupon=None, months=None):
     """
     Sell `offered` of face. Fair is the curve's par yield for the paper with
-    the issue on the books. The households bid NON-COMPETITIVELY, as retail
-    does at a real treasury auction: what their rule takes at fair, filled
-    first and in full at whatever yield the auction stops at - which is
-    "the households first" the game has now. Everybody else bids
+    the issue on the books. The households are filled first, as retail is at
+    a real treasury auction (D13), but since D32 (Jerus, 2026-10-20) the
+    amount is their rule at the auction's own yield, out of savings past the
+    cushion, no longer what it takes at fair capped at half the issue. The
+    firms (D33, OutwardInvestment's rule), the world and the bank bid
     competitively, at fair or over it (nobody bids under what the paper
     trades at - it could buy it there). The stop-out is the lowest yield at
     which the bids cover the issue, never under fair and never over fair +
@@ -400,8 +430,8 @@ def auction(city: City, kind, years, offered, max_tail=MAX_TAIL, line_coupon=Non
     months = months or years * 12
     curve = Curve(city, extra_debt=offered)
     fair = curve.par_yield(months) if kind != "amortizing" else amortizing_coupon(curve, years)
-    first = {b.who: b.face for b in demand(city, fair, offered, fair, months)}
-    retail = min(first["households"], offered)
+    def retail_at(y):
+        return households_at(city, y, offered)
 
     def competitive(y):
         return [b for b in demand(city, y, offered, fair, months) if b.who != "households"]
@@ -410,17 +440,18 @@ def auction(city: City, kind, years, offered, max_tail=MAX_TAIL, line_coupon=Non
         max_tail = max(0.0, WORLD_BASE_RATE + city.depreciation + CF_MAX_SPREAD - fair)
     stop = None
     for y in np.arange(fair, fair + max_tail + 1e-9, .00005):
-        if retail + sum(b.face for b in competitive(y)) >= offered:
+        if retail_at(y) + sum(b.face for b in competitive(y)) >= offered:
             stop = float(y)
             break
     top = competitive(fair + max_tail)
     # the cover counts what was bid up to the highest yield taken, each bidder at most the whole issue
-    cover = (retail + sum(min(b.face, offered) for b in top)) / offered
+    cover = (retail_at(fair + max_tail) + sum(min(b.face, offered) for b in top)) / offered
     if stop is None:
         stop = fair + max_tail
-        sold = retail + sum(b.face for b in top)
+        sold = min(offered, retail_at(stop) + sum(b.face for b in top))
     else:
         sold = offered
+    retail = min(retail_at(stop), sold)
     comp = competitive(stop)
     total = sum(b.face for b in comp)
     fills = {"households": retail}
@@ -608,7 +639,7 @@ def main():
             out["callable"].append(dict(years=y, sigma=sigma, callable=cc, plain=plain))
 
     print("\n" + "=" * 78)
-    print("4. THE AUCTION - a 10-year line, D$300M, in three cities")
+    print("4. THE AUCTION - a 10-year line, D$300M, in three cities (D32 and the firms, D33)")
     print("=" * 78)
     out["auctions"] = {}
     for c in [CALM, HIKING, replace(CALM, name="calm, the bank's room nearly gone", bank_room=2e7)]:
@@ -621,9 +652,13 @@ def main():
         print("      filled: " + ", ".join(f"{k} {money(v)}" for k, v in a["fills"].items()))
         out["auctions"][c.name] = a
 
-    print("\n   ...the same, FILLED (no highest yield: the stop rises until the bids cover it)")
-    for c in [replace(CALM, name="calm, the bank's room nearly gone", bank_room=2e7)]:
-        a = auction(c, "bullet", 10, 3e8, max_tail=None)
+    print("\n   ...twice the size, D$600M, capped and then FILLED (no highest yield: the stop rises until the bids cover it)")
+    for c in [replace(CALM, name="calm, the bank's room nearly gone, D$600M", bank_room=2e7)]:
+        k = auction(c, "bullet", 10, 6e8)
+        print(f"   {c.name}, capped at fair + 1: stop-out {pct(k['stop'], 3)}  cover {k['cover']:.2f}x  "
+              f"sold {money(k['sold'])} of {money(k['offered'])}")
+        out["auctions"]["capped: " + c.name] = k
+        a = auction(c, "bullet", 10, 6e8, max_tail=None)
         fair_cost = a["sold"] * a["fair"]
         print(f"   {c.name}")
         print(f"      fair {pct(a['fair'], 3)}  stop-out {pct(a['stop'], 3)}  tail {a['tail'] * 1e4:.0f} bp  "
@@ -633,6 +668,20 @@ def main():
         print(f"      a year of interest at its effective rate {money(a['proceeds'] * a['eir'])} against "
               f"{money(a['proceeds'] * a['fair'])} at fair")
         out["auctions"]["filled: " + c.name] = a
+
+    print("\n   WHEN DOES A TAIL PASS A POINT? (D33) - the 10-year, capped at fair + 1, by the bank's room and the issue")
+    print(f"   {'':34}" + "".join(f"{f'D${f / 1e6:,.0f}M':>12}" for f in (3e8, 6e8, 1e9, 2e9)))
+    out["tails"] = {}
+    for room, label in [(1e9, "the bank's room ample"), (2e7, "the bank's room nearly gone"),
+                        (2e7, "...and no firms' idle cash")]:
+        c = replace(CALM, bank_room=room, firm_idle=CALM.firm_idle if "firms" not in label else 0.0)
+        cells = []
+        for f in (3e8, 6e8, 1e9, 2e9):
+            a = auction(c, "bullet", 10, f)
+            cells.append(f"{a['tail'] * 1e4:5.0f} bp{'*' if a['sold'] < f - 1 else ' '}")
+            out["tails"][f"{label} {f:.0f}"] = dict(tail=a["tail"], sold=a["sold"], offered=f)
+        print(f"   {label:34}" + "".join(f"{x:>12}" for x in cells))
+    print("   * short at the cap: sells what was bid")
 
     print("\n" + "=" * 78)
     print("5. ONE LINE'S LIFE - the 10-year sold in the calm city, then the bank hikes")

@@ -190,6 +190,90 @@ public class CapitalFlows {
     private double lifetimeArrived, lifetimeDeparted;
 
     /* =======================================================================
+       THE CITY'S PAPER THE WORLD HOLDS (CD2, slice 5, D7; star 2)
+
+       Jerus's brief for the auction: "the world bids as hot money". A bid
+       needs somewhere to put what it buys, and the class comment above says
+       why the hot money cannot be it: the city's bonds are bought BY ITS OWN
+       BANK, so a foreigner who wants the bond funds the bank's balance sheet
+       one step apart - and a bank at the limit of its room has no room for
+       another bond. So the world holds what it buys on a book of its own, OUTSIDE
+       the bank's room, beside the stock: the same foreign money in another
+       form, and it is counted with the stock when the auction asks how much of
+       its target the world already holds (Game.auctionBidders()). Star 2 of
+       the CD2 notes: Claude's call, for Jerus to confirm.
+
+       WHAT A FOREIGN HOLDER IS, against the households and the businesses
+       whose paper books this mirrors: it pays from abroad at the settle (a
+       financial inflow, the bank's settle shrinking by it), its coupon and its
+       principal leave the city (an income debit and a financial outflow), and
+       it LEAVES with the hot money - in a run, and as the spread narrows -
+       selling to the bank's desk at the curve's market value, whatever the
+       bank's room, as the desk buys the households'.
+
+       The book is face, in local money. DebtManager.worldPrincipal() is the
+       same figure from the paper's side, and HoldersCheck asserts the two
+       agree to the cent through every flow.
+       ======================================================================= */
+
+    /** The city's paper the world holds, at face, local money: DebtManager.worldPrincipal() from the other side. */
+    private double paper;
+    /** What the world has paid for the paper and been paid for it since founding: lifetime figures, for the run's line and the harness. */
+    private double lifetimePaperBought, lifetimePaperSold;
+
+    /** The city's paper the world holds, at face. */
+    public double getPaper() { return paper; }
+
+    public double getLifetimePaperBought() { return lifetimePaperBought; }
+    public double getLifetimePaperSold()   { return lifetimePaperSold; }
+
+    /** The world pays this cash at a settle for this face of the city's paper (Game.worldTakesItsShare()). */
+    public void takePaper(double cash, double face) {
+        if (!(face > 0)) return;
+        paper += face;
+        lifetimePaperBought += Math.max(0, cash);
+    }
+
+    /** Principal repaid, or a bond bought back: this much of its face is gone from the book, paid as the treasury pays it. */
+    public void paperRepaid(double face) {
+        if (!(face > 0)) return;
+        paper = Math.max(0, paper - face);
+    }
+
+    /** It sold this face to the bank's desk for this cash. */
+    public void sellPaper(double face, double cash) {
+        if (!(face > 0)) return;
+        paper = Math.max(0, paper - face);
+        lifetimePaperSold += Math.max(0, cash);
+    }
+
+    /**
+     * The face of its paper that leaves this month with the hot money, asked
+     * after takeMonth().
+     *
+     * IN A RUN (isStopped()) the same share of the paper as of the stock:
+     * PANIC_EXIT of it, whatever the stock is - a world that holds the city's
+     * paper and no deposits is still a world in a run. OTHERWISE what the
+     * stock's departure is of the whole of the world's position, the stock
+     * and the paper at its market value together, which is what the auction
+     * counts as the world's holding: departed over (the stock it had + the
+     * paper at market) of the face - so a spread that narrows sends some of
+     * the paper home with the money, and a month in which no money leaves
+     * sends none.
+     *
+     * @param stockBefore the hot money the month opened with
+     * @param paperRatio  what a unit of face of the paper is worth at the curve (DebtManager.worldBookRatio())
+     */
+    public double paperLeaving(double stockBefore, double paperRatio) {
+        if (!(paper > 0)) return 0;
+        if (isStopped()) return paper * PANIC_EXIT;
+        if (!(departed > 0)) return 0;
+        double ratio = paperRatio > 0 && Double.isFinite(paperRatio) ? paperRatio : 1;
+        double position = Math.max(0, stockBefore) + paper * ratio;
+        return position > 0 ? Math.min(paper, departed * paper / position) : 0;
+    }
+
+    /* =======================================================================
        THE OTHER DIRECTION (2026-09-12)
 
        Jerus: "the issue is trade surplus... aka supply v demand... we later
@@ -547,7 +631,9 @@ public class CapitalFlows {
         return new double[] { stock, panicUntil, depositShare,
                 lifetimeArrived, lifetimeDeparted, stopsSuffered, lastMonth,
                 carryStock, lifetimeCarryBorrowed, lifetimeCarryRepaid,
-                lifetimeCarryInterest, peakCarryStock };
+                lifetimeCarryInterest, peakCarryStock,
+                // CD2 slice 5: the city's paper the world holds, and what it paid and was paid for it.
+                paper, lifetimePaperBought, lifetimePaperSold };
     }
 
     public void restore(double[] saved) {
@@ -568,6 +654,11 @@ public class CapitalFlows {
             lifetimeCarryInterest = saved[10];
             peakCarryStock        = saved[11];
         }
+        if (saved.length > 14) {
+            paper = Math.max(0, saved[12]);
+            lifetimePaperBought = saved[13];
+            lifetimePaperSold = saved[14];
+        }
     }
 
     public void reset() {
@@ -582,6 +673,7 @@ public class CapitalFlows {
         carryStock = carryTarget = carrySpread = carryBorrowed = carryRepaid = 0;
         lifetimeCarryBorrowed = lifetimeCarryRepaid = lifetimeCarryInterest = 0;
         peakCarryStock = peakCarrySpread = 0;
+        paper = lifetimePaperBought = lifetimePaperSold = 0;
     }
 
     /** Hot money, in the new unit. The spread is a rate and does not move. */
@@ -604,6 +696,9 @@ public class CapitalFlows {
         lifetimeCarryRepaid   *= scale;
         lifetimeCarryInterest *= scale;
         peakCarryStock *= scale;
+        paper *= scale;
+        lifetimePaperBought *= scale;
+        lifetimePaperSold *= scale;
     }
 
 }

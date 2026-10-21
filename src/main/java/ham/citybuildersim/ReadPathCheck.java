@@ -191,6 +191,9 @@ public class ReadPathCheck {
         into.put("bank.repaymentRaised", b.getRepaymentRaisedLifetime());
         double[] market = g.getDebtManager().marketToSave();
         for (int i = 0; i < market.length; i++) into.put("debtMarket" + i, market[i]);
+        // ...and the auctions counted (CD2, D33): only a booking counts, so a quote read a dozen times adds nothing.
+        double[] tally = g.getDebtManager().getAuctionTally().toSave();
+        for (int i = 0; i < tally.length; i++) into.put("auctionTally" + i, tally[i]);
         into.put("budget.fundTransfer", g.getEconomyManager().getNationalAccounts().getFundTransfer());
         // ...and 0.7.12's: every bond and who holds it, every book and what
         // rests on it, the market's month and life, the cells' own bonds,
@@ -951,6 +954,30 @@ public class ReadPathCheck {
         debt.bankBook();
         debt.householdBookRatio();
         debt.householdBookYield();
+        // ...and the businesses' paper (CD2, slice 4): the piece's share, the book at the curve, and the sectors' side of it
+        debt.firmPrincipal();
+        debt.firmBookRatio();
+        debt.firmBookYield();
+        g.getOutwardInvestment().totalPaper();
+        g.getOutwardInvestment().paperOf(Sectors.RETAIL);
+        g.getOutwardInvestment().idleWealth(g.getEconomyManager());
+        g.getOutwardInvestment().getPaperRatio();
+        g.getOutwardInvestment().getPaperYield();
+        g.getOutwardInvestment().getLifetimePaperBought();
+        g.getOutwardInvestment().getLifetimePaperSold();
+        g.getFirmsBoughtPaper();
+        g.getCouponsToFirms();
+        g.getPrincipalToFirms();
+        // ...and the world's (CD2, slice 5): the piece's share, the book at the curve, CapitalFlows' side of it, the month's flows
+        debt.worldPrincipal();
+        debt.worldBookRatio();
+        g.getCapitalFlows().getPaper();
+        g.getCapitalFlows().getLifetimePaperBought();
+        g.getCapitalFlows().getLifetimePaperSold();
+        g.getWorldBoughtPaper();
+        g.getCouponsToWorld();
+        g.getPrincipalToWorld();
+        g.getPaperBoughtFromWorld();
         debt.bankUnearnedDiscount();
         debt.termPrincipal();
         debt.centralBankShareOfTerm();

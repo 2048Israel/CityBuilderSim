@@ -3141,7 +3141,10 @@ public class HouseholdBalance {
        bank pays savers - the shape investAbroad() gives the world's paper,
        with its own two dials below - and only what each cell's savings past
        the cushion can pay, pro rata. The COMMERCIAL BANK IS THE RESIDUAL
-       BUYER, at the quoted yield, as it always was.
+       BUYER, at the quoted yield, as it always was. (Since CD2 the rule is
+       the households' BID at the auction, at the yield that clears it
+       (Auction.householdsAt(), D32), they are allotted what they bid, and
+       the settle collects what they can pay of that allotment: Game.)
 
        ON THE WAY BACK. The bank's desk buys it back at the month's market
        value - one ratio, the households' book at the curve over its face
@@ -3164,10 +3167,10 @@ public class HouseholdBalance {
        face, and HoldersCheck and LongPlaytest assert it.
        ===================================================================== */
 
-    /** The share of an issue the households take, per unit of spread between its yield and the deposit rate: 20 - a fifth of an issue for each point - so two and a half points of spread would take half an issue. */
+    /** The share of an issue the households take, per unit of spread between its yield and the deposit rate: 20 - a fifth of an issue for each point. The city's auction bids it at its own clearing yield (Auction.householdsAt(), D32); the businesses' bonds at theirs (BondMarket). */
     public static final double HOUSEHOLD_PAPER_APPETITE = 20;
 
-    /** ...and never more than this share of one issue: half, because a bond market with no bank in it is no longer the city's bank's market. */
+    /** ...and, for a BUSINESS issue, never more than this share of one: half, because a bond market with no bank in it is no longer the bank's market (BondMarket). The city's own paper has no such cap since CD2 (D32): the households bid by their rule at the auction's yield, out of savings past the cushion, up to the issue. */
     public static final double MAX_HOUSEHOLD_PAPER_SHARE = .5;
 
     /**
@@ -3247,12 +3250,6 @@ public class HouseholdBalance {
 
     private double spareFor(Household c) {
         return Math.max(0, c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable));
-    }
-
-    /** The share of an issue yielding this much the households would take, before asking whether they can pay. */
-    public static double paperShareAt(double yield, double depositRate) {
-        double spread = Math.max(0, yield - Math.max(0, depositRate));
-        return Math.min(MAX_HOUSEHOLD_PAPER_SHARE, spread * HOUSEHOLD_PAPER_APPETITE);
     }
 
     /** What every eligible household could put into paper: savings past the cushion, in total. */

@@ -899,15 +899,30 @@ public class NewGameCheck {
         assertTrue("...by no more than one issue granule plus the fees", over <= bound);
         // ...and not by the luck of one size: the cent the note's proceeds
         // were rounded short by (CreditCheck section 9) is met here too.
-        int missed = 0;
+        // CD2: a quote can be short - the bids at the cap do not reach it (the 5,000,000 asks are over the bank's
+        // capital room) - and is asserted as such; and a new line's coupon is the stop rounded down to an eighth
+        // (D2), so proceeds are a sawtooth in face and "within a granule" gives way to what the solver promises:
+        // the smallest face that covers the ask.
+        int missed = 0, shortOnes = 0, sized = 0;
         for (int years : LongTermBond.MATURITIES) {
             for (double ask : new double[]{50, 1_000, 20_000, gap, 205_000, 5_000_000}) {
                 DebtQuote q = v.quoteLongBondForCash(ask, years, Game.BUILD_BOND_GRANULE);
-                double by = q.cashReceived() - ask;
-                if (by < 0 || by > Game.BUILD_BOND_GRANULE + v.costOfIssuance(q.faceValue())) missed++;
+                if (q.isShort()) {
+                    shortOnes++;
+                    Auction.Result r = q.auction();
+                    if (!(r.sold() < r.ask().face() && r.shortSale() && q.faceValue() == r.sold()
+                            && q.cashReceived() < ask)) missed++;
+                    continue;
+                }
+                sized++;
+                DebtQuote smaller = v.quoteLongBond(q.faceValue() - Game.BUILD_BOND_GRANULE, years, Game.BUILD_BOND_GRANULE);
+                if (q.cashReceived() < ask || smaller.cashReceived() >= ask) missed++;
             }
         }
-        assertTrue("...and so at every maturity and size, not this one alone", missed == 0);
+        System.out.printf("   %d of the quotes sized to their cash (each the smallest face that covers it), %d short at the cap%n",
+                sized, shortOnes);
+        assertTrue("...and so at every maturity and size, not this one alone: a short quote is asserted short, and any other covers its"
+                + " ask with the smallest face that does", missed == 0 && shortOnes > 0 && sized > 0);
 
         int paperBefore = v.getDebtManager().getDebt().size();
         double cashBefore = v.getCash();

@@ -24,7 +24,7 @@
 **The pieces:**
 - **The curve (§3).** The short rate the market expects each month is the dial drifting to what the rule would set at the inflation it expects; the long rate compounds that path, adds the term premium and the credit spread, and takes off what QE compresses. A calm city prices exactly as today. A hiking city's curve inverts. A dial held low by hand gets a steep curve.
 - **The lineup (§2).** Bills at a discount (1, 3, 6, 12 months); bonds at 2, 5, 10, 20, 30 and 50 years with the market's coupon, near par; an amortizing bond with one coupon solved on the curve; floating-rate notes on the policy rate; inflation-linked bonds on the price index; any bond of ten years or more may be sold callable. The low-coupon term loan goes.
-- **The auction (§4).** The bidders are the game's own rules: households non-competitive and first, the bank at fair while it has room, the world as hot money. One clearing yield; the cover and the tail say how it went. The player caps the yield, or tells it to fill: then the yield rises until the bidders' own rules cover the issue, and the card says what that costs. The central bank bids only to roll its own paper. The rollover and automatic building run the same auction on their own settings: a short rollover is paid from cash and then the central bank's advances, and a short building sale keeps its ask open until the money is there (§4.5).
+- **The auction (§4).** The bidders are the game's own rules: households first, by their rule at the auction's yield; firms with idle cash; the bank at fair while it has room; the world as hot money. One clearing yield; the cover and the tail say how it went. The player caps the yield, or tells it to fill: then the yield rises until the bidders' own rules cover the issue, and the card says what that costs. The central bank bids only to roll its own paper. The rollover and automatic building run the same auction on their own settings: a short rollover is paid from cash and then the central bank's advances, and a short building sale keeps its ask open until the money is there (§4.5).
 - **The books (§5).** Amortised cost by effective interest: each line's carrying value, its interest expense, and a gain or loss on retirement against carrying value, on the statements.
 - **Closing early (§6).** A reverse auction: holders offer, each at the price where its own buying rule stops wanting the bond, never under fair; the city takes the cheapest and pays each its own price. A callable line can be called at 100 from its first call date; the card says when calling is worth it.
 - **The screens (§7).** The book as a desk, a line's own page, the buyback and the call, Borrow as an auction, and Your rate as the curve the central bank sets.
@@ -191,10 +191,10 @@ Borrow › At home: the kind of paper, the term (each column showing today's fai
 
 ### 4.2 The bidders, each by its own rule in the game
 
-- **Households, non-competitive and first.** What `HouseholdBalance`'s rule takes at fair (½ of the issue at most, 20 × its spread over the deposit rate, out of savings past the cushion), filled in full at the clearing yield before anyone else. A real treasury fills retail's non-competitive bids first [R1]; it is "the households first" the game has now. (D13.) **Changed by D32 (2026-10-20):** they bid by this rule at the auction's yield, not at fair, and their cap is their savings past the cushion, not half the issue; §4.3's table predates it.
+- **Households, first, by their own rule at the auction's yield** (D32). `HouseholdBalance`'s appetite, a fifth of the issue for each point the auction's yield pays over the deposit rate (`HOUSEHOLD_PAPER_APPETITE`), out of their savings past the cushion and never more than the issue, filled in full at the clearing yield before anyone else: a real treasury fills retail's bids first [R1], and it is "the households first" the game had (D13's priority). Until D32 the amount was what the rule took at fair, capped at half the issue. The households stand for every home saver, the pension funds and insurers among them.
 - **The bank, competitive, at fair while it has room.** It bids its room (`Bank.capacity()` less its weighted book, over `RISK_CITY`) at fair, plus whatever its funding costs past the floor the curve already carries (its cost of funds plus `MIN_MARGIN` over the dial, fading as the dial's gap does). That extra is nothing in the usual case.
 - **The world, as hot money** (**Jerus's call**). `CapitalFlows`' rule: its target stock at the auction's yield over the world's rate, less what is already here, at `ARRIVAL_SPEED`.
-- **Firms with idle cash**, by `OutwardInvestment`'s rule, the city's paper beside the deposit and abroad (left out of the study's figures; CD2 adds it beside the others). CD2 runs the model again with them before it builds (D33).
+- **Firms with idle cash**, by `OutwardInvestment`'s rule with the city's paper beside the deposit and abroad (D33): a share of their idle money (tills and what is abroad, for a sector that owes nothing), `APPETITE` per unit of what the paper pays over the better of the two, never past `MAX_SHARE`, less what they hold, moved at `OUT_SPEED` as their dollars are. Near fair they are a small bidder; past the world's rate their share climbs fast.
 - **The central bank: never**, except its non-competitive add-on rolling its own maturing paper, as today (**Jerus's call**: arm's length). The Bank of Canada buys at Government of Canada auctions the same way and for the same reason [R6].
 
 **Nobody bids under fair**, because the paper trades at fair the next month and any bidder could buy it there.
@@ -205,16 +205,29 @@ Single price (**Jerus's call**: "one clearing yield"): the stop-out is the lowes
 - **The tail** is the stop-out over fair.
 - **The cover** is what was bid up to the highest yield taken, each bidder counted at most the issue, over the issue.
 - **Capped:** when the bids do not reach the issue at the highest yield taken, it sells only what was bid. The rest is not raised; if the month needed it, it lands on the central bank's advances as any shortfall does today.
-- **Fill it** (**Jerus's call, 2026-10-12**: "increased yield if you allow for it to get fully filled"): the stop-out rises until the bids cover the issue. Nothing new decides how far: every bidder's own rule already wants more at a higher yield (the world's target stock grows with the excess return, up to `CapitalFlows.MAX_SPREAD`), and the bank's room and the households' half do not. Past the world's ceiling no rule adds anything, so only an issue bigger than every rule takes at any yield still sells short, and the card says so before the button.
+- **Fill it** (**Jerus's call, 2026-10-12**: "increased yield if you allow for it to get fully filled"): the stop-out rises until the bids cover the issue. Nothing new decides how far: every bidder's rule but the bank's already wants more at a higher yield (the households' share grows with the spread until their savings run out, the firms' until `OutwardInvestment.MAX_SHARE`, the world's target stock with the excess return up to `CapitalFlows.MAX_SPREAD`); the bank's room does not. Past the world's ceiling no rule adds anything, so only an issue bigger than every rule takes at any yield still sells short, and the card says so before the button.
 
-| 10-year, D$300M | fair | stop | tail | cover | coupon | price | raised | households | bank | world |
-|---|---|---|---|---|---|---|---|---|---|---|
-| calm | 3.602% | 3.602% | 0 | 1.49× | 3½% | 99.148 | D$297.4M | 126.1M | 173.6M | 0.3M |
-| hiking | 6.049% | 6.049% | 0 | 1.49× | 6% | 99.630 | D$298.9M | 93.0M | 205.4M | 1.7M |
-| calm, the bank's room nearly gone, capped at fair + 1 | 3.602% | 4.602% | 100 bp | 0.83× | 4½% | 99.187 | D$245.8M of D$300M | 126.1M | 100.0M | 21.7M |
-| the same, **filled** | 3.602% | 8.632% | 503 bp | - | 8⅝% | 99.956 | D$299.9M | 126.1M | 100.0M | 73.9M |
+Run again for CD2 with the firms and D32 (D33, 2026-10-21; the study's city holds D$1.5B of the firms' idle money, a quarter of a year's output, `firm_idle` in the model):
 
-Filling it in that city costs D$25.9M a year of interest at its effective rate, against D$10.8M at fair: D$15.1M a year for ten years, paid to the hot money that was pulled in to cover what the bank could not hold. On the boards' hiking city a filled reopening of the 6% line stops at 11.23% (a tail of 519 bp) and raises D$208.6M for D$300M of face.
+| 10-year | fair | stop | tail | cover | coupon | price | raised | households | firms | bank | world |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| calm, D$300M | 3.602% | 3.602% | 0 | 1.87× | 3½% | 99.148 | D$297.4M | 126.1M | 1.3M | 172.3M | 0.3M |
+| hiking, D$300M | 6.049% | 6.049% | 0 | 1.87× | 6% | 99.630 | D$298.9M | 93.0M | 1.5M | 203.9M | 1.7M |
+| calm, the bank's room nearly gone, D$300M | 3.602% | 3.882% | 28 bp | 1.21× | 3⅞% | 99.945 | D$299.8M | 142.9M | 45.0M | 99.7M | 12.4M |
+| the same, **D$600M**, capped at fair + 1 | 3.612% | 4.612% | 100 bp | 0.92× | 4½% | 99.101 | D$544.4M of D$600M | 373.5M | 54.0M | 100.0M | 21.9M |
+| the same D$600M, **filled** | 3.612% | 4.997% | 139 bp | - | 4⅞% | 99.038 | D$594.2M | 419.7M | 53.8M | 99.7M | 26.8M |
+
+Before D32 and the firms, the D$300M sale with the bank's room nearly gone stopped at 4.602% capped, selling D$247.8M, and filled at 8.632%, a 5-point tail: the households' share was taken at fair and capped at half, so hot money had to cover what the bank could not hold. Bid at the auction's yield out of their savings, the households take 48% of it at 3.88%, the firms 15%; without the firms it stops at 4.50%, a tail of 90 bp, which is what D32's interpolation said. A tail over a point now needs the bank's room gone *and* an issue past what the households' savings and the firms' cash will take near fair: twice the size, D$600M, sells short at the cap and fills at 5.00%, D$29.7M a year of interest at its effective rate against D$21.5M at fair. On the boards' hiking city a filled D$600M reopening of the 6% line stops at 7.70% (a tail of 165 bp) and raises D$531.3M for D$600M of face; D$300M there covers at 6.36%, a tail of 31 bp.
+
+**When a tail passes a point** (the 10-year, capped at fair + 1; `debt-model.py` §4):
+
+| the calm city | D$300M | D$600M | D$1B | D$2B |
+|---|---|---|---|---|
+| the bank's room ample | 0 | 0 | 0 | 0 |
+| the bank's room nearly gone | 28 bp | short | short | short |
+| ...and no firms' idle cash | 90 bp | short | short | short |
+
+The game's own count, over a long playtest, is CD2's `AuctionCheck` (D33).
 
 ### 4.4 Fees
 
@@ -413,7 +426,7 @@ In `QUEUE.md` before R0, the research batches (Jerus, 2026-10-12: "add it before
 **Answered, 2026-10-20** (a question-and-answer session on the CD batches)
 31. **D31. Each CD batch ships with its own screen.** **Jerus's call:** "Yes: each CD batch ships with its own screen (Borrow as an auction with CD2, Close it now and the call with CD4, the floating and linked choices with CD5). CD6 keeps the book as a desk, a line's page, Your rate and the manual." Why it came up: CD2 removes the term loan and the serial bond, and with the screens all in CD6 the old Borrow would have offered paper that no longer exists, and CD4's and CD5's mechanisms would have had no button, for three batches.
 32. **D32. Households bid by their own rule at the auction's yield,** a fifth of the issue for each point it pays over deposits (`HOUSEHOLD_PAPER_APPETITE`), limited by their savings past the cushion instead of half the issue. **Jerus's call:** "yes take all three as you listed". Why: §4.3's calm city with the bank's room nearly gone, filled, clears its 10-year at 8.63%, a 5-point tail, because the households' amount was taken at fair and capped at half. Bid at the auction's yield and capped only by savings, about 4.5% and a tail under a point (Claude's interpolation of §4.3's table, not the model's output; D33 settles it). The households stand for every home saver, the pension funds and insurers that buy most of a real auction among them.
-33. **D33. CD2 first runs the study's model again** with the firms' bids (`OutwardInvestment`'s rule) and D32, so §4.3's figures and the boards match what ships, and its harness counts how often a tail over one point happens in a long playtest. **Jerus's call** (the same words). If it still fires often, the bank's room is the next question (city paper weighs 20% against its capital, `Bank.RISK_CITY`; a real bank holds its own government's paper at 0%); not decided.
+33. **D33. CD2 first runs the study's model again** with the firms' bids (`OutwardInvestment`'s rule) and D32, so §4.3's figures and the boards match what ships, and its harness counts how often a tail over one point happens in a long playtest. **Jerus's call** (the same words). If it still fires often, the bank's room is the next question (city paper weighs 20% against its capital, `Bank.RISK_CITY`; a real bank holds its own government's paper at 0%); not decided. **Run 2026-10-21 (CD2):** §4.3's table above; the tight city's tail falls from 503 bp filled to 28 bp, and the board's red card is now a D$600M sale.
 34. **D34. In a buyback the bank offers at fair,** as it bids at fair at the auction; D17's fair plus half `Exchange.SPREAD` was the share desk's number, a point per 100 whatever the term. **Jerus's call** (the same words). No money pump still: the city never sells over fair. §6.2's calm example falls from 101.055 to about 100.054.
 
 ---

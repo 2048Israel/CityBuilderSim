@@ -1441,9 +1441,14 @@ public class EconomyManager {
     public void setBondMarket(BondMarket market) { this.bondMarket = market; }
     public BondMarket getBondMarket() { return bondMarket; }
 
-    /** What one sector holds of the other sectors' bonds, at face - an asset beside its cash and what it holds abroad (0.7.12). */
+    /**
+     * What one sector holds of the other sectors' bonds, at face - an asset beside its cash and what it holds abroad (0.7.12)
+     * - and, since CD2 (slice 4), of the city's own paper, at face: the books carry both as bonds it holds
+     * (OutwardInvestment, THE CITY'S PAPER), and the lender and the sector's budget count them among what it could raise.
+     */
     public double getBondAssets(String sector) {
-        return bondMarket == null ? 0 : bondMarket.faceHeldBy(sector);
+        return (bondMarket == null ? 0 : bondMarket.faceHeldBy(sector))
+                + (outward == null ? 0 : outward.paperOf(sector));
     }
 
     private Equity equity;

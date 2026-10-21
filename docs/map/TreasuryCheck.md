@@ -1,4 +1,4 @@
-# TreasuryCheck.java - 984 lines · 17 methods · 1 constants · harnesses
+# TreasuryCheck.java - 987 lines · 17 methods · 1 constants · harnesses
 
 `ham/citybuildersim/TreasuryCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -80,11 +80,11 @@
 | 305 | · AND IT HAS TO SURVIVE A SAVE. |
 | 349 | · · and the first month back still has no gap |
 | 354 | · AND THE ROW OPENS. |
-| 521 | · 7. ROLLING WHAT FALLS DUE (0.7.13) |
-| 524 | · 8. FROM EARNED TO THE BUDGET (0.7.31) |
-| 527 | · THE REPORT. |
-| 546 | 7. ROLLING WHAT FALLS DUE (0.7.13). |
-| 575 | 8. FROM EARNED TO THE BUDGET (0.7.31). |
+| 522 | · 7. ROLLING WHAT FALLS DUE (0.7.13) |
+| 525 | · 8. FROM EARNED TO THE BUDGET (0.7.31) |
+| 528 | · THE REPORT. |
+| 547 | 7. ROLLING WHAT FALLS DUE (0.7.13). |
+| 576 | 8. FROM EARNED TO THE BUDGET (0.7.31). |
 
 ## Constants
 
@@ -102,7 +102,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 94 | 891 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
+| 94 | 894 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
 | 101 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
 | 120 | 8 | `static void near(String what, int month, double actual, double expected, double size)` | ...and the journal's reconciliation, which subtracts one cash balance from another (0.7.54): MoneyAudit.tolerance(TOLERANCE, the treasury's size) - TOLERANCE exactly below 2^27 units (1.3e8), from there 64 of a double... |
 | 130 | 3 | `static double treasurySize(Game g)` | The treasury's size this month, for the journal's reconciliation: the larger of its opening and closing balances. |
@@ -112,19 +112,19 @@
 | 172 | 4 | `static TreasuryJournal.Entry line(java.util.List<TreasuryJournal.Entry> journal, String label)` | The journal line with this label, or null when the month has none. |
 | 178 | 4 | `static double amount(java.util.List<TreasuryJournal.Entry> journal, String label)` | The amount on the journal line with this label, or 0 when there is none. |
 | 183 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 190 | 355 | `public static void main(String[] args)` |  |
+| 190 | 356 | `public static void main(String[] args)` |  |
 
-### 7. ROLLING WHAT FALLS DUE (0.7.13). (lines 546-574)
+### 7. ROLLING WHAT FALLS DUE (0.7.13). (lines 547-575)
 
-### 8. FROM EARNED TO THE BUDGET (0.7.31). (lines 575-984)
+### 8. FROM EARNED TO THE BUDGET (0.7.31). (lines 576-987)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 587 | 116 | `static void earned()` |  |
-| 705 | 5 | `static Game founded(String label)` | A city founded as a player founds one: newGame(), so it rolls in the same structure. |
-| 712 | 7 | `static String press(Game g)` | One press, its printing kept - the log is where a rollover says what it did. |
-| 721 | 5 | `static void quietly(Runnable work)` | Some quiet work: an issue's receipt, a save. |
-| 728 | 7 | `static Debt paper(Game g, String type, int months, int started, boolean foreign)` | The piece of paper of this type, term and currency issued in this month, or null. |
-| 737 | 3 | `static boolean audited(Game g)` | The press closed its audit, and nothing moved after it struck. |
-| 741 | 243 | `static void rolling()` |  |
+| 588 | 116 | `static void earned()` |  |
+| 706 | 5 | `static Game founded(String label)` | A city founded as a player founds one: newGame(), so it rolls in the same structure. |
+| 713 | 7 | `static String press(Game g)` | One press, its printing kept - the log is where a rollover says what it did. |
+| 722 | 5 | `static void quietly(Runnable work)` | Some quiet work: an issue's receipt, a save. |
+| 729 | 7 | `static Debt paper(Game g, String type, int months, int started, boolean foreign)` | The piece of paper of this type, term and currency issued in this month, or null. |
+| 738 | 3 | `static boolean audited(Game g)` | The press closed its audit, and nothing moved after it struck. |
+| 742 | 245 | `static void rolling()` |  |
 
