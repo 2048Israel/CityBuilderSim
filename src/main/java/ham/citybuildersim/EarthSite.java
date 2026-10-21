@@ -33,7 +33,8 @@ import java.util.Locale;
  * its snap (EarthTerrain.siteNear(), the founding's test 1 within 5 km of
  * the spot), the ground within CARD_PLOTS of the site counted plot by plot
  * as the land office will sell it, the province the geology under the site
- * (E3's multipliers, w x Z, oil's with its petroleum), and the nearest iron
+ * (E3's multipliers, w x Z, since EG1 oil's by its known petroleum and iron's
+ * lifted in a recorded district), and the nearest iron
  * field's centre among the world's own fields. Nothing here is a model
  * change: the city founded is the one the card describes. Since 0.7.127
  * (batch E7) ice is a kind of ground, never dry: the card's ice is the
@@ -73,6 +74,16 @@ public final class EarthSite {
      * generated city's ground is as it was, and its save loads.
      */
     public static final int ICE_FORMAT = 39;
+
+    /**
+     * The save format the real Earth's fields are first drawn on its geology
+     * in: 41 (0.8.12, batch EG1; GameVersion's DEPOSITS WHERE THE GEOLOGY
+     * SAYS). An Earth city saved before it names fields - by their cell and
+     * their place in its list - that now lie elsewhere or hold other tonnes,
+     * so its save is refused (loadProblem()); a generated city's fields are as
+     * they were, and its save loads.
+     */
+    public static final int DEPOSITS_FORMAT = 41;
 
     /** The stream Random spot draws its order from. */
     private static final long RANDOM_SALT = 0x5B07A11DL;
@@ -193,19 +204,21 @@ public final class EarthSite {
      * its own): its data is not this build's, or this build's is not here -
      * and then, since 0.7.125, how the file gets there (missingWords()) - or,
      * since 0.7.127, it was saved before ice was a kind of ground
-     * (ICE_FORMAT). Game's load refuses it with these words, nothing of it
-     * applied. This one asks of a save in this build's format.
+     * (ICE_FORMAT), or, since 0.8.12, before its fields were drawn on the
+     * geology (DEPOSITS_FORMAT). Game's load refuses it with these words,
+     * nothing of it applied. This one asks of a save in this build's format.
      */
     public static String loadProblem(String identity, Double lat, Double lon) {
         return loadProblem(identity, lat, lon, GameVersion.SAVE_FORMAT);
     }
 
-    /** ...and of a save in a given format: one before ICE_FORMAT is refused first (0.7.127), whatever its data (DataSave.earthProblem() passes the save's). */
+    /** ...and of a save in a given format: one before ICE_FORMAT is refused first (0.7.127), then one before DEPOSITS_FORMAT (0.8.12), whatever its data (DataSave.earthProblem() passes the save's). */
     public static String loadProblem(String identity, Double lat, Double lon, int format) {
         if (identity == null || identity.isBlank() || lat == null || lon == null || !(lat >= -90 && lat <= 90) || !Double.isFinite(lon)) {
             return "This city stands on the real Earth, and its save does not say where.";
         }
         if (format < ICE_FORMAT) return BEFORE_ICE_WORDS;
+        if (format < DEPOSITS_FORMAT) return BEFORE_DEPOSITS_WORDS;
         if (available(identity)) return null;
         if (identity.equals(EarthData.EARTH_1)) return missingWords(EarthData.locate(), fromRepository());
         return otherDataWords(identity);
@@ -224,6 +237,11 @@ public final class EarthSite {
     /** The load's words for a city on the real Earth saved before ice was a kind of ground (ICE_FORMAT). */
     public static final String BEFORE_ICE_WORDS = "This city was founded on the real Earth before ice was a kind of ground (0.7.127): its books may count"
             + " ice it holds as dry ground, so this build does not load it. The build that saved it still opens it.";
+
+    /** The load's words for a city on the real Earth saved before its fields were drawn on the geology (DEPOSITS_FORMAT). */
+    public static final String BEFORE_DEPOSITS_WORDS = "This city was founded on the real Earth before its oil, iron and other fields were drawn where the geology"
+            + " says (0.8.12): its holdings and mines name fields that now lie elsewhere, so this build does not load it."
+            + " The build that saved it still opens it.";
 
     /** The load's words for a city on other data than this build's. */
     private static String otherDataWords(String identity) {
@@ -387,7 +405,7 @@ public final class EarthSite {
         /** Ice's share of the disc (0.7.127). */
         public double iceShare()   { return plots == 0 ? 0 : icePlots / (double) plots; }
 
-        /** A resource's deposit multiplier under the site (Geology.multiplier()), NaN for one not in fields. */
+        /** A resource's deposit multiplier under the site (Geology.multiplierAt(), at the site's point: an iron district's shows, EG1), NaN for one not in fields. */
         public double multiplier(Resource r) { return multipliers[r.ordinal()]; }
     }
 
@@ -476,10 +494,10 @@ public final class EarthSite {
         double freshKm = fresh2 == Long.MAX_VALUE ? Double.NaN : Math.sqrt(fresh2) * World.PLOT_M / 1000;
         double seaKm = sea2 == Long.MAX_VALUE ? Double.NaN : Math.sqrt(sea2) * World.PLOT_M / 1000;
 
-        // The province under the site and its multipliers (E3).
+        // The province under the site and its multipliers (E3), at the site's point so an iron district shows (EG1).
         Geology geo = w.geology();
         int row = w.provinceAt(sx, sy);
-        for (Resource res : Resource.values()) if (res.inFields()) multipliers[res.ordinal()] = geo.multiplier(res, row);
+        for (Resource res : Resource.values()) if (res.inFields()) multipliers[res.ordinal()] = geo.multiplierAt(res, row, ll[0], ll[1]);
         EarthData.Province prov = row > 0 ? d.province(row) : null;
 
         boolean ice = onIce(e, sx, sy), desert = inDesert(e, sx, sy);

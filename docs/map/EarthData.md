@@ -50,7 +50,7 @@
 > founds a city on one, the game's file found by locate(). EarthCheck holds it,
 > on a fixture of the file and, when it is named, on the file itself.
 
-**Used by (20):** [EarthCheck](EarthCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (21):** [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 
@@ -215,7 +215,7 @@
 |---:|---:|---|---|
 | 697 | 1 | **type** `public record Province(int row, String code, String name, String kind, double knownMmboe)` | One USGS geologic province (WEP_PRVG): its row in the table, its code, name and class by the name rules (ocean, shield, fold belt, rift, shelf, basin, other - the game reads Geology's class, its hand-checked table ove... |
 | 700 | 1 | **type** `public record Place(String name, String ascii, String country, double lat, double lon, long population)` | One of Natural Earth's places, for search: its name, its ASCII name (the name when they are the same), country, position and population (Natural Earth's pop_max). |
-| 703 | 9 | `public int provinceAt(double lat, double lon)` | The province at a point: its row in provinces(), 0 for none. |
+| 703 | 9 | `public int provinceAt(double lat, double lon)` | The province at a point in the raw grid: its row in provinces(), 0 for none. |
 | 714 | 12 | `public synchronized List<Province> provinces()` | The provinces, in their rows' order (row 1 first). |
 | 728 | 6 | `public Province province(int row)` | A province by its row, null for 0 or a row the table does not hold. |
 | 736 | 12 | `public synchronized List<Place> places()` | The places, most populous first. |

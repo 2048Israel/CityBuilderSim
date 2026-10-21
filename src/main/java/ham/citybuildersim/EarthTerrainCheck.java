@@ -81,20 +81,34 @@ import java.util.Map;
  *  11. THE SPOTS: Rotterdam, Perth, Paris and the Yilgarn 150 km east of
  *      Perth lie in the study's provinces and classes; at the study's Z the
  *      table's weights and the petroleum factor give the study's multipliers
- *      to its rounding; the model's are the weight x Z (x the factor); each
- *      world reads its spot's province at its founding site.
+ *      to its rounding; each world reads its spot's province at its founding
+ *      site. Since 0.8.12 (batch EG1) the model's multipliers are EG1's, no
+ *      longer the weight x Z x the factor: oil's weight is OIL_ALLOWANCE x its
+ *      class's W_OIL plus its code's known petroleum a km2 over the Earth's
+ *      mean, iron's a shield's four or IRON_ALLOWANCE of the class's (a
+ *      recorded district's at its point), each x Z - worked out in the check
+ *      from the constants and the code's known petroleum and area; E3's
+ *      lines at the study's Z stay as the study's history.
  *  12. FIELDS BY CLASS: on a world's pure cells, iron's old-world fields a
- *      land km2 on shields against basins are W_IRON's ratio within SIGMAS,
- *      each class's density the resource's x w x Z, and the fields a city
- *      sees, on pools of pure cells, the same ratio - Perth's world on the
- *      fixture, Rotterdam's on the full file.
- *  13. THE FULL FILE, when named: each Z, measured as Geology defines it, is
- *      Geology's to its rounding, and the types' odds; at them the Earth-wide
- *      type shares are the generated world's; on the rules' classes the land
- *      in each class is the study's within SHARE_WITHIN and limestone in
- *      basins and on shields the study's within LIMESTONE_WITHIN (its Z is
- *      printed against the study's: three of six do not follow from its own
- *      table); then 12 on the whole planet.
+ *      land km2 on shields against basins are the ratio of iron's weights
+ *      within SIGMAS, each class's density the resource's x its iron weight x
+ *      Z, and the fields a city sees, on pools of pure cells, the same ratio
+ *      - Perth's world on the fixture, Rotterdam's on the full file. Since
+ *      0.8.12 (batch EG1) iron's weight is a shield's W_IRON, else
+ *      IRON_ALLOWANCE of the class's (Geology.ironWeight()), so the ratio is
+ *      80, not E3's 8; the cells with a point in a recorded district are
+ *      left out of the pure ones, counted and printed; the city's fields are
+ *      a thirtieth as many (FIELD_SCALE x EARTH_FIELD_SCALE), not a tenth.
+ *  13. THE FULL FILE, when named: each Z, measured as Geology defines it
+ *      (since EG1 Measure.zOf(r, g): iron's by shield and district, oil's by
+ *      known petroleum), is Geology's to its rounding, and the types' odds;
+ *      E3's Z replayed with E3's weights and petroleum factor are E3's
+ *      (E3_Z) to E3_Z_WITHIN; the land in the districts is printed; at the
+ *      odds the Earth-wide type shares are the generated world's; on the
+ *      rules' classes the land in each class is the study's within
+ *      SHARE_WITHIN and limestone in basins and on shields the study's
+ *      within LIMESTONE_WITHIN (its Z is printed against the study's: three
+ *      of six do not follow from its own table); then 12 on the whole planet.
  *  14. TOTALS AND TYPES: each Earth world's totals are its cells', to the
  *      tonne; every pool's fields add up to its total, and by type; every
  *      field carries the class under it; cells with no land hold oil where a
@@ -111,8 +125,11 @@ import java.util.Map;
  *      area only, and a count of the five alone as before; the runs, and a
  *      district's plan - PlanCheck's test district with its grass made
  *      desert is the same plan, with half its grass ice no building stands
- *      on the ice; an Earth save from before ICE_FORMAT is refused, a
- *      generated one loads. On the full file, each kind's share of two
+ *      on the ice; an Earth save from before ICE_FORMAT is refused in the ice
+ *      words, since 0.8.12 (batch EG1) one from ICE_FORMAT to before
+ *      DEPOSITS_FORMAT in the deposits words, one at DEPOSITS_FORMAT not
+ *      (the general floor stays below it, so a generated save of the floor's
+ *      format loads and an Earth one is refused), a generated one loads. On the full file, each kind's share of two
  *      1-degree cells' ground (ICE_CELLS, DESERT_CELLS) is the data's within
  *      COVER_POINTS, and its edge frayed both ways about the bit's
  *      half-contour and never past the cells that agree; the founding card's
@@ -844,6 +861,12 @@ public class EarthTerrainCheck {
     /** A Z on the full file is Geology's constant to its rounding, four decimals: half the last place. */
     static final double Z_ROUNDING = 0.00005;
 
+    /** E3's Z on the hand table (0.7.117, before EG1), in Resource's order for the six in fields: iron 0.7219, oil 0.6033, stone 0.6915, coal 0.7884, copper 0.7322, uranium 0.7518. */
+    static final double[] E3_Z = { 0.7219, 0.6033, 0.6915, 0.7884, 0.7322, 0.7518 };
+
+    /** ...replayed on today's measure within this: a place and a half of the last (the Sydney patch, EG1, moves a little land, and copper's 0.73226 is E3's 0.7322 and a bit). */
+    static final double E3_Z_WITHIN = 0.0001;
+
     /** An odds on the full file is Geology's constant to its rounding, six figures: half the last place, relative. */
     static final double ODDS_ROUNDING = 0.000005;
 
@@ -927,6 +950,29 @@ public class EarthTerrainCheck {
                 new GeoSpot("150 km east of Perth", ll[0], ll[1], "Yilgarn Block", Geology.Kind.SHIELD, 0, Map.of(Resource.IRON, 3.55, Resource.OIL, 0.04)));
     }
 
+    /**
+     * A resource's multiplier for a province by EG1's rules (0.8.12; spec-earth2-terrain 8.5), worked out here from Geology's constants and
+     * the province's USGS code, not by asking Geology's tables: oil's weight is OIL_ALLOWANCE x its class's W_OIL plus the code's known
+     * petroleum a km2 (Geology.known() over Geology.area()) over the Earth's mean (Geology.knownMean()); iron's a shield's W_IRON, else
+     * IRON_ALLOWANCE x its class's; every other field's its class's; each x Z. With a finite point, iron inside a recorded district is the
+     * greater of that and IRON_DISTRICT_WEIGHT x Z_IRON (Geology.districtAt()); NaN for the province's alone.
+     */
+    static double eg1Multiplier(Geology g, EarthData.Province p, Resource r, double lat, double lon) {
+        Geology.Kind k = g.kindOf(p.row());
+        double w;
+        if (r == Resource.OIL) {
+            double area = g.area(p.code()), mean = g.knownMean();
+            w = Geology.OIL_ALLOWANCE * Geology.W_OIL[k.ordinal()] + (area > 0 && mean > 0 ? g.known(p.code()) / area / mean : 0);
+        } else if (r == Resource.IRON) {
+            w = k == Geology.Kind.SHIELD ? Geology.W_IRON[k.ordinal()] : Geology.IRON_ALLOWANCE * Geology.W_IRON[k.ordinal()];
+        } else {
+            w = Geology.weight(r, k);
+        }
+        double m = w * Geology.z(r);
+        if (r == Resource.IRON && !Double.isNaN(lat) && g.districtAt(lat, lon) >= 0) m = Math.max(m, Geology.IRON_DISTRICT_WEIGHT * Geology.Z_IRON);
+        return m;
+    }
+
     /** Section 11: the study's spots - their provinces and classes, the study's multipliers at its Z, and the model's at its own. */
     static void spots(EarthData data, String id, Map<String, Spot> spots) {
         out.println("\n--- 11. the study's spots: Rotterdam, Perth, Paris and the Yilgarn shield 150 km east of Perth ---");
@@ -938,12 +984,17 @@ public class EarthTerrainCheck {
             report(s.name() + ": the province is the study's, of its class" + (s.knownMmboe() > 0 ? ", with its known petroleum" : ""),
                     p != null && p.name().trim().equals(s.province()) && g.kindOf(row) == s.kind() && (s.knownMmboe() == 0 || p.knownMmboe() == s.knownMmboe()),
                     String.format("(%.4f, %.4f): row %d, %s, %s, %,.0f MMBOE", s.lat(), s.lon(), row, p == null ? "none" : p.name(), g.kindOf(row).label(), p == null ? 0 : p.knownMmboe()));
+            if (p == null) continue;
             boolean study = true, model = true;
             StringBuilder ours = new StringBuilder(), theirs = new StringBuilder();
             for (Resource r : six) {
+                // E3's formula, the study's: the class's weight x the petroleum factor (E3's, Geology.petroleumOf(): the file's own known petroleum) x the study's Z.
                 double pf = r == Resource.OIL ? g.petroleumOf(row) : 1;
                 double m = g.multiplier(r, row);
-                model &= Math.abs(m - Geology.weight(r, g.kindOf(row)) * Geology.z(r) * pf) <= 1e-12 * Math.max(1, m);
+                // EG1's (0.8.12): worked out here from the constants and the code's known petroleum and area, at the spot's point.
+                double here = eg1Multiplier(g, p, r, s.lat(), s.lon());
+                model &= Math.abs(m - eg1Multiplier(g, p, r, Double.NaN, Double.NaN)) <= 1e-12 * Math.max(1, m)
+                        && Math.abs(g.multiplierAt(r, row, s.lat(), s.lon()) - here) <= 1e-12 * Math.max(1, here);
                 ours.append(String.format(" %s x%.2f", r.label().toLowerCase(), m));
                 Double fig = s.study().get(r);
                 if (fig == null) continue;
@@ -952,7 +1003,11 @@ public class EarthTerrainCheck {
                 theirs.append(String.format(" %s x%.2f (x%.3f at its Z)", r.label().toLowerCase(), fig, atStudyZ));
             }
             report(s.name() + ": at the study's Z the table's weights and the petroleum factor give the study's multipliers to its rounding", study, theirs.toString().trim());
-            report(s.name() + ": the model's multipliers are the weight x Z (x the petroleum factor), Geology's constants", model, "here:" + ours);
+            double known = g.known(p.code()), area = g.area(p.code());
+            report(s.name() + ": the model's multipliers are EG1's: the weight x Z, oil's by its code's known petroleum a km2 over the Earth's plus the allowance, iron's a shield's or an allowance, at the point",
+                    model && (s.knownMmboe() == 0 || known == p.knownMmboe()) && area > 0,
+                    String.format("here:%s; oil's code %s: %,.0f MMBOE over %,.0f km2, the Earth's %.5f a km2; %s", ours, p.code(), known, area, g.knownMean(),
+                            g.districtAt(s.lat(), s.lon()) >= 0 ? "in an iron district" : "in no iron district"));
         }
         boolean same = true;
         StringBuilder where = new StringBuilder();
@@ -968,10 +1023,15 @@ public class EarthTerrainCheck {
 
     /**
      * Section 12: iron's fields per land km2 by class, on a world's PURE cells
-     * - those whose field land is their land x the weight x Z of the class at
-     * their centre for iron and copper both, so all their land is of that class
-     * - the old world's counts (what a cell's total is drawn from) and the
-     * fields of pools whose cells are all pure of one class.
+     * - those with no point in a recorded iron district (EG1) whose field land
+     * is their land x the weight x Z of the class at their centre for iron
+     * and copper both, so all their land is of that class - the old world's
+     * counts (what a cell's total is drawn from) and the fields of pools
+     * whose cells are all pure of one class. Since 0.8.12 (batch EG1) iron's
+     * weight is Geology.ironWeight(): a shield's four, else IRON_ALLOWANCE of
+     * the class's, so shields against basins is 80, not E3's 8; a cell with a
+     * point in a district is left out and counted, because its iron is more
+     * than its class's.
      */
     static void byClass(World w, String where) {
         out.println("\n--- 12. iron's fields per land km2, shields against basins, by the weight ratio within " + (int) SIGMAS + " standard deviations: " + where + " ---");
@@ -980,11 +1040,14 @@ public class EarthTerrainCheck {
         long[] count = new long[nk];
         double[] km2 = new double[nk];
         int[] pureCells = new int[nk];
+        int landCells = 0, districtCells = 0;
         for (int c = 0; c < cells; c++) {
             double land = w.cellLandShare(c);
             if (!(land > 0)) continue;
+            landCells++;
             long cx = (long) (c % World.CELLS) * World.CELL + World.CELL / 2, cy = (long) (c / World.CELLS) * World.CELL + World.CELL / 2;
             Geology.Kind k = w.geologyAt(cx, cy);
+            if (districtPointIn(w, c)) { districtCells++; continue; }
             if (!pureIn(w, c, land, k)) continue;
             pure[c] = k;
             count[k.ordinal()] += w.legacyCellFieldCount(c, Resource.IRON);
@@ -992,23 +1055,24 @@ public class EarthTerrainCheck {
             pureCells[k.ordinal()]++;
         }
         int s = Geology.Kind.SHIELD.ordinal(), b = Geology.Kind.BASIN.ordinal();
-        double ratio = (count[s] / km2[s]) / (count[b] / km2[b]), want = Geology.W_IRON[s] / Geology.W_IRON[b];
+        double ratio = (count[s] / km2[s]) / (count[b] / km2[b]), want = Geology.ironWeight(Geology.Kind.SHIELD) / Geology.ironWeight(Geology.Kind.BASIN);
         double sigma = Math.sqrt(1.0 / count[s] + 1.0 / count[b]);
-        report("the old world's iron fields a land km2 on pure shield cells against pure basin cells: W_IRON's ratio within SIGMAS",
+        report("the old world's iron fields a land km2 on pure shield cells against pure basin cells: the ratio of EG1's iron weights within SIGMAS",
                 count[s] > 0 && count[b] > 0 && Math.abs(ratio / want - 1) <= SIGMAS * sigma,
-                String.format("%.3f for %.1f (%+.2f%%, sigma %.2f%%): shields %,d fields on %,.0f km2 in %d cells, basins %,d on %,.0f km2 in %d", ratio, want,
-                        100 * (ratio / want - 1), 100 * sigma, count[s], km2[s], pureCells[s], count[b], km2[b], pureCells[b]));
+                String.format("%.3f for %.1f (%+.2f%%, sigma %.2f%%): shields %,d fields on %,.0f km2 in %d cells, basins %,d on %,.0f km2 in %d;"
+                                + " %,d of the %,d land cells hold a point in a recorded iron district and are left out", ratio, want,
+                        100 * (ratio / want - 1), 100 * sigma, count[s], km2[s], pureCells[s], count[b], km2[b], pureCells[b], districtCells, landCells));
         boolean each = true;
         StringBuilder dens = new StringBuilder();
         for (Geology.Kind k : Geology.Kind.values()) {
             int i = k.ordinal();
             if (count[i] == 0 && km2[i] == 0) continue;
-            double expect = Resource.IRON.fieldsPerKm2() * Geology.W_IRON[i] * Geology.Z_IRON, got = count[i] / km2[i];
+            double expect = Resource.IRON.fieldsPerKm2() * Geology.ironWeight(k) * Geology.Z_IRON, got = count[i] / km2[i];
             boolean ok = expect == 0 ? count[i] == 0 : Math.abs(got / expect - 1) <= SIGMAS / Math.sqrt(Math.max(1, expect * km2[i]));
             each &= ok;
             dens.append(String.format(" %s %.4f for %.4f;", k.label(), got, expect));
         }
-        report("...and each class's density the resource's own times W_IRON times Z_IRON within SIGMAS", each, dens.toString().trim());
+        report("...and each class's density the resource's own times its iron weight (EG1) times Z_IRON within SIGMAS", each, dens.toString().trim());
         // The fields a city sees: pools whose cells are all pure of one class.
         long[] fields = new long[nk];
         double[] poolKm2 = new double[nk];
@@ -1033,19 +1097,35 @@ public class EarthTerrainCheck {
             }
         }
         double fr = (fields[s] / poolKm2[s]) / (fields[b] / poolKm2[b]), fsig = Math.sqrt(1.0 / fields[s] + 1.0 / fields[b]);
-        report("the fields a city sees, a tenth as many, on pools all of pure shield or pure basin cells: the same ratio within SIGMAS",
+        report("the fields a city sees, a thirtieth as many on Earth (FIELD_SCALE x EARTH_FIELD_SCALE), on pools all of pure shield or pure basin cells: the same ratio within SIGMAS",
                 fields[s] > 0 && fields[b] > 0 && Math.abs(fr / want - 1) <= SIGMAS * fsig,
                 String.format("%.3f for %.1f (%+.1f%%, sigma %.1f%%): shields %,d fields on %,.0f km2, basins %,d on %,.0f km2", fr, want, 100 * (fr / want - 1), 100 * fsig,
                         fields[s], poolKm2[s], fields[b], poolKm2[b]));
     }
 
-    /** Whether a cell's land is all of class k: its field land for iron and for copper each its land x the weight x Z there (Geology's constants; the field land is kept as a float). */
+    /** Whether a cell's land is all of class k: its field land for iron and for copper each its land x the weight x Z there (Geology's constants, iron's the EG1 weight; the field land is kept as a float). */
     static boolean pureIn(World w, int c, double land, Geology.Kind k) {
         for (Resource r : new Resource[] { Resource.IRON, Resource.COPPER }) {
-            double want = land * Geology.weight(r, k) * Geology.z(r), got = w.cellFieldShare(c, r);
+            double want = land * (r == Resource.IRON ? Geology.ironWeight(k) : Geology.weight(r, k)) * Geology.z(r), got = w.cellFieldShare(c, r);
             if (Math.abs(got - want) > 1e-6 * Math.max(want, 1e-3)) return false;
         }
         return true;
+    }
+
+    /** Whether any of a cell's CELL_SAMPLES x CELL_SAMPLES points - the ones the cells pass reads - lies in a recorded iron district (Geology.districtAt(), EG1). */
+    static boolean districtPointIn(World w, int c) {
+        EarthTerrain e = w.earthTerrain();
+        Geology g = e.geology();
+        int m = EarthTerrain.CELL_SAMPLES;
+        long x0 = (long) (c % World.CELLS) * World.CELL, y0 = (long) (c / World.CELLS) * World.CELL;
+        EarthProj.Blend b = e.projection().blend(x0, y0, World.CELL);
+        double[] ll = new double[2];
+        for (int j = 0; j < m; j++) {
+            for (int i = 0; i < m; i++) {
+                if (b.latLon(x0 + (i + 0.5) * World.CELL / m, y0 + (j + 0.5) * World.CELL / m, ll) && g.districtAt(ll[0], ll[1]) >= 0) return true;
+            }
+        }
+        return false;
     }
 
     /** Section 13, on the full file: Z and the odds are its own to their rounding, and the study's figures on the rules' classes; section 12 on the whole planet. */
@@ -1062,19 +1142,25 @@ public class EarthTerrainCheck {
         Geology.Kind[] hand = g.kinds(), rules = g.rulesKinds();
         double[] pf = g.petroleum();
         Resource[] six = { Resource.IRON, Resource.OIL, Resource.STONE, Resource.COAL, Resource.COPPER, Resource.URANIUM };
-        boolean zs = true;
-        StringBuilder z = new StringBuilder(), zr = new StringBuilder();
+        boolean zs = true, e3 = true;
+        StringBuilder z = new StringBuilder(), zr = new StringBuilder(), z3 = new StringBuilder();
         for (Resource r : six) {
-            double here = m.zOf(r, hand, pf), byRules = m.zOf(r, rules, pf);
+            double here = m.zOf(r, g), byRules = m.zOf(r, rules, pf), replay = m.zOf(r, hand, pf);
             zs &= Math.abs(here - Geology.z(r)) <= Z_ROUNDING;
+            e3 &= Math.abs(replay - E3_Z[r.ordinal()]) <= E3_Z_WITHIN;
             z.append(String.format(" %s %.5f (%.4f);", r.label().toLowerCase(), here, Geology.z(r)));
             zr.append(String.format(" %s %.4f (the study %.3f);", r.label().toLowerCase(), byRules, STUDY_Z[r.ordinal()]));
+            z3.append(String.format(" %s %.5f (E3 %.4f);", r.label().toLowerCase(), replay, E3_Z[r.ordinal()]));
         }
-        report("each resource's Z, the land over the land x w north of ANTARCTIC_LAT with the hand table, is Geology's to its rounding", zs,
+        report("each resource's Z, the land over the land x its weight (EG1's: iron's by shield and district, oil's by known petroleum) north of ANTARCTIC_LAT, is Geology's to its rounding", zs,
                 z.toString().trim() + String.format(" measured in %.0f ms", ms));
+        report("E3's Z, replayed with E3's weights and petroleum factor (Measure.zOf(r, kinds, petroleum)), are E3's to E3_Z_WITHIN: the Sydney patch moves a little land", e3, z3.toString().trim());
         out.println("      on the rules' classes alone:" + zr + " - iron, copper and uranium's do not follow from the study's own table (fixE3-notes 6)");
-        out.printf("      oil's offshore sea - shelves', basins' and rifts' - adds %.1f%% to its land's count (on the rules' classes %.1f%%)%n",
-                100 * m.offshoreOil(hand, pf), 100 * m.offshoreOil(rules, pf));
+        out.printf("      oil's offshore sea - shelves', basins' and rifts' - adds %.1f%% to its land's count with EG1's weights (E3's on the hand table %.1f%%, on the rules' classes %.1f%%)%n",
+                100 * m.offshoreOil(g), 100 * m.offshoreOil(hand, pf), 100 * m.offshoreOil(rules, pf));
+        double districts = m.districtLand();
+        report("the recorded iron districts hold land, which iron's weight and Z count at IRON_DISTRICT_WEIGHT", districts > 0 && !Geology.DISTRICTS.isEmpty(),
+                String.format("%,.0f km2 of land in %d districts, %.3f%% of the %,.0f km2 north of ANTARCTIC_LAT", districts, Geology.DISTRICTS.size(), 100 * districts / m.totalLand(), m.totalLand()));
         double[] coalShares = m.fieldShares(Resource.COAL, hand), stoneShares = m.fieldShares(Resource.STONE, hand);
         double coking = Geology.Measure.oddsFor(coalShares, Geology.COKING_RATIO, Deposit.TYPE_SHARES[Deposit.FieldType.COKING.ordinal()]);
         double lime = Geology.Measure.oddsFor(stoneShares, Geology.LIMESTONE_RATIO, Deposit.TYPE_SHARES[Deposit.FieldType.LIMESTONE.ordinal()]);
@@ -1303,15 +1389,27 @@ public class EarthTerrainCheck {
         com.google.gson.Gson gson = new com.google.gson.Gson();
         String earthSave = "{\"worldKind\":\"EARTH\",\"earthLat\":" + r.lat() + ",\"earthLon\":" + r.lon() + ",\"earthData\":\"" + id + "\",\"saveFormat\":";
         DataSave before = gson.fromJson(earthSave + (EarthSite.ICE_FORMAT - 1) + "}", DataSave.class), after = gson.fromJson(earthSave + EarthSite.ICE_FORMAT + "}", DataSave.class);
+        DataSave beforeDeposits = gson.fromJson(earthSave + (EarthSite.DEPOSITS_FORMAT - 1) + "}", DataSave.class), atDeposits = gson.fromJson(earthSave + EarthSite.DEPOSITS_FORMAT + "}", DataSave.class);
         DataSave generated = gson.fromJson("{\"saveFormat\":" + GameVersion.OLDEST_LOADABLE_FORMAT + "}", DataSave.class);
-        check("the save: an Earth city saved before ice was a kind of ground (EarthSite.ICE_FORMAT) is refused in words saying so, one saved at it is not",
-                EarthSite.BEFORE_ICE_WORDS.equals(before.earthProblem()) && after.earthProblem() == null && GameVersion.SAVE_FORMAT >= EarthSite.ICE_FORMAT
+        // Two floors for an Earth save since 0.8.12 (batch EG1): below ICE_FORMAT the ice words; from ICE_FORMAT to below DEPOSITS_FORMAT the deposits words; at DEPOSITS_FORMAT neither.
+        check("the saves: an Earth city saved before ice was a kind of ground (EarthSite.ICE_FORMAT) is refused in words saying so; from there to before"
+                        + " its fields were drawn on the geology (DEPOSITS_FORMAT, EG1) in the deposits words; one saved at DEPOSITS_FORMAT is not refused",
+                EarthSite.BEFORE_ICE_WORDS.equals(before.earthProblem())
+                        && EarthSite.BEFORE_DEPOSITS_WORDS.equals(after.earthProblem()) && EarthSite.BEFORE_DEPOSITS_WORDS.equals(beforeDeposits.earthProblem())
+                        && atDeposits.earthProblem() == null && !EarthSite.BEFORE_ICE_WORDS.equals(EarthSite.BEFORE_DEPOSITS_WORDS)
+                        && GameVersion.SAVE_FORMAT >= EarthSite.DEPOSITS_FORMAT && EarthSite.DEPOSITS_FORMAT > EarthSite.ICE_FORMAT
                         && EarthSite.ICE_FORMAT > EarthSite.EARTH_FORMAT);
         // Since 0.8.5 (FR2) the floor, 40, is past the ice format: an Earth save from before ice is refused by the floor as well.
         check("...and a generated city's save at the floor, its ground as it was, still loads: no Earth problem; and an Earth save"
                         + " before ice is refused, by its words below the floor or by the floor past it",
                 generated.earthProblem() == null && !GameVersion.isNoLongerReadable(GameVersion.OLDEST_LOADABLE_FORMAT)
                         && (GameVersion.OLDEST_LOADABLE_FORMAT < EarthSite.ICE_FORMAT || GameVersion.isNoLongerReadable(EarthSite.ICE_FORMAT - 1)));
+        // EG1's floor is Earth-only: the general floor stays below it, so an Earth save of the floor's format is refused in the deposits words while a generated one loads.
+        DataSave earthAtFloor = gson.fromJson(earthSave + GameVersion.OLDEST_LOADABLE_FORMAT + "}", DataSave.class);
+        check("...and the deposits floor is the Earth's alone: an Earth save at the general floor is refused in the deposits words while the floor is below"
+                        + " DEPOSITS_FORMAT, a generated save of that format loads",
+                generated.earthProblem() == null && (GameVersion.OLDEST_LOADABLE_FORMAT >= EarthSite.DEPOSITS_FORMAT
+                        ? earthAtFloor.earthProblem() == null : EarthSite.BEFORE_DEPOSITS_WORDS.equals(earthAtFloor.earthProblem())));
         long fixtureIce = 0, fixtureDesert = 0;
         for (Window w : windows.values()) { fixtureIce += w.classes[World.ICE]; fixtureDesert += w.classes[World.DESERT]; }
         out.printf("      the fixture's three windows: %,d plots of ice and %,d of desert%n", fixtureIce, fixtureDesert);

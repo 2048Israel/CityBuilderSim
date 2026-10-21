@@ -6922,8 +6922,26 @@ public final class GameVersion {
      *     the Freight Income page's shippers by division, a berth card's
      *     payback line on Build, Trade's band in legs, and the manual's
      *     freight pages.
+     *
+     * 0.8.12 (2026-10-20) - EG1, DEPOSITS WHERE THE GEOLOGY SAYS
+     * (docs/queue/EG1-notes.md; docs/studies/spec-earth2-terrain.md 8.5).
+     * Only the real Earth moves; a generated world draws its fields to the
+     * bit as before, and the default trace is byte-identical to 0.8.11's.
+     *   - Geology: oil by each province's known petroleum a km2 (E3's
+     *     petroleum factor gone; OIL_ALLOWANCE for a province with none),
+     *     the KNOWN hand rows for the US provinces and the Scotian Shelf;
+     *     iron on shields, IRON_ALLOWANCE elsewhere, IRON_DISTRICT_WEIGHT in
+     *     the 96 recorded iron districts (DISTRICTS); the Sydney coalfield in
+     *     the Sidney Basin (PATCHES); Z and the odds measured again.
+     *   - World: an Earth field is EARTH_FIELD_SCALE (3) times wider, a third
+     *     as many; a cluster's centre is drawn by its cell's points' weights,
+     *     and a centre or a field again while on ground holding none.
+     *   - Save format 41: an Earth save before it is refused
+     *     (EarthSite.DEPOSITS_FORMAT); a generated save of 40 still loads.
+     *   - Harness: EarthDepositsCheck (new); EarthTerrainCheck 11-13 and 15
+     *     and EarthFoundingCheck 2 and 6 moved onto it (6's fixture remade).
      */
-    public static final String VERSION = "0.8.11";
+    public static final String VERSION = "0.8.12";
 
     /**
      * The save shape.
@@ -7608,8 +7626,27 @@ public final class GameVersion {
      *     THE FLOOR RISES TO 40 WITH IT (the rule): a save of format 39 or
      *     older is refused, naming the build that still opens it. Jerus,
      *     2026-10-18: "my saves never matter".
+     *
+     * 41 - DEPOSITS WHERE THE GEOLOGY SAYS (0.8.12, batch EG1; docs/studies/
+     *     spec-earth2-terrain.md 8.5): no field of the save moves. An Earth
+     *     city's fields are never saved - a holding names its fields by their
+     *     cell and their place in its list, drawn again from the world on
+     *     load - and since 0.8.12 an Earth world draws them on its geology
+     *     (oil by known petroleum, iron on shields and in recorded districts,
+     *     a third as many and three times wider, each cluster on its own
+     *     province's ground), so an Earth city saved before would load
+     *     WRONGLY: its holdings and its mines would name fields that now lie
+     *     elsewhere or hold other tonnes. Here so that save can be told apart
+     *     and refused, in words saying why (EarthSite.DEPOSITS_FORMAT,
+     *     BEFORE_DEPOSITS_WORDS, DataSave.earthProblem()), and a build before
+     *     it refuses this build's saves as a newer build's.
+     *
+     *     A GENERATED CITY LOADS RIGHTLY, SO THE FLOOR STAYS AT 40 (as E7's
+     *     ice did): a generated world reads no geology and draws its fields to
+     *     the bit as before (the default playtest's trace), so its format-40
+     *     save reads as it did. Only an Earth save below 41 is refused.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 40;
+    public static final int SAVE_FORMAT = 41;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -7620,7 +7657,10 @@ public final class GameVersion {
      * old saves matter"), when old saves must load again.
      *
      * 40 since 0.8.5 (batch FR2, THE FREIGHT SECTOR above: a format-39
-     * save's railway is keyed "Rail" and would load into nobody). 37 from
+     * save's railway is keyed "Rail" and would load into nobody), and still
+     * at format 41 (0.8.12, DEPOSITS WHERE THE GEOLOGY SAYS: a generated city
+     * loads rightly, and an Earth city before 41 is refused on its own,
+     * EarthSite.DEPOSITS_FORMAT). 37 from
      * 0.7.120 (batch I3, built as 0.7.116: SCRAP SPLIT FROM ORE
      * above), and still at format 38 (0.7.121, A CITY ON THE REAL EARTH: a
      * format-37 save is a generated city and loads rightly) and at format 39
