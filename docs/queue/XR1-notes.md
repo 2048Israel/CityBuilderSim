@@ -46,7 +46,11 @@ The D$ is now a level, struck every month:
 
 | slice | by | what | the review changed |
 |---|---|---|---|
-| 1 the model | Sonnet 5.5 xhigh | PriceIndex's capped parity, the float, Game's wiring and seed, every caller restated | (to fill) |
+| 1 the model | Sonnet 5.5 xhigh | PriceIndex's capped parity, the float, Game's wiring and seed, every caller made to compile and its harness restated | The defence's size, twice (§4): "as today" fed a held 3% dial 45% a year. The treasury's dealing kept since the last reprice (`dealtSinceReprice`, slot 70; the slice had found the gap and reported it), the founders' dollars forgotten (`forgetDealing()`). A local in `PriceIndex.relink()` named like a method, renamed. |
+| 1b the restatement | Sonnet 5.5 xhigh | CurrencyCheck and ForeignCheck restated to the lean and the pending dealing, under the gate's two kinds; the table of §6 | CurrencyCheck 4's sale: the slice kept main's label over a changed measurement; restored as on main and left red, a call (XR1-C ★1). |
+| 2 the harness | Sonnet 5.5 xhigh | ExchangeRateCheck 0-9, HistorySave's fxFair and fxMarket, the playtest's D$ line, the ensemble's market seed | Nothing: the half-life pooled over five seeds (one path's sampling error is about 10%) is right, and each path is printed. |
+| 3 the screen | Sonnet 5.5 xhigh | Trade › The currency as board 1; SaveFileCheck's fund fixture re-caused | (to fill) |
+| mine | Opus | the design, the month's order, the save format, the version, the notes | - |
 
 ## 3. Found on the way: the float spirals
 
@@ -106,7 +110,23 @@ the reprice. They are now kept since the last reprice (slot 70).
 
 ## 4. The defence, redesigned in review
 
-(to fill)
+The study's §3.6 says the default regime leans against falls "as today", and
+§3.6's last point puts the defence's sale through INTERVENTION_IMPACT. The
+two together, built literally (the vault sells absorption() x the month's
+deficit, and the sale lifts the D$ at 2% per 1% of a year's GDP), are far too
+strong in a young city, whose monthly deficit is a large share of a small
+output. Measured on MonetaryCheck's town at a held 3% (`XrProbe`, a scratch
+probe, not in the tree):
+
+| the lean | the D$ against its fair level | the vault | prices months 25-60 |
+|---|---|---|---|
+| "as today": absorption() x the deficit | 26% over by month 26 | empty by month 42 | 45.6% a year |
+| what takes back absorption() of the month's fall against parity's trend | 25% over by month 36 (it re-sells to replace its own fading support: a peg) | 1.3 months by month 60, then the D$ 80% weaker in two years | 10.8% a year |
+| as built: absorption() of the month's NEW fall (the market and the fundamentals; neither parity's trend nor the interventions' fading), at most absorption() x the deficit and the vault | 8-14% over, fading | 7 months at month 60 | 10.2% a year |
+
+So the lean as built smooths a fall and lets the fundamentals have the last
+word; it never buys. It is XR1-C ★1 for Jerus, because it moves "as today"'s
+amount (CurrencyCheck 4 is red on it, §6).
 
 ## 5. The checks
 
