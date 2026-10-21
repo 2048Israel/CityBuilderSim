@@ -1197,6 +1197,13 @@ public class LongPlaytest {
             flag(month, "the central bank's paper and the paper disagree",
                     String.format("balance sheet $%,.4f, paper $%,.4f", cb.getPaperHeld(), cbSays));
         }
+        // ...and the businesses' (CD2, slice 4): the sectors' paper and the paper's firm share.
+        double sectorsHold = g.getOutwardInvestment().totalPaper();
+        double firmSays = g.getDebtManager().firmPrincipal();
+        if (Math.abs(sectorsHold - firmSays) > 1e-6 * Math.max(1, firmSays)) {
+            flag(month, "the businesses' paper and the paper disagree",
+                    String.format("sectors $%,.4f, paper $%,.4f", sectorsHold, firmSays));
+        }
 
         /* -------------------------------------------------------------------
            AND NOTHING MOVED AFTER THE AUDIT STRUCK.
@@ -4338,6 +4345,9 @@ public class LongPlaytest {
      */
     static int monthsHouseholdsBought, monthsDeskBought, monthsCentralBankTraded;
     static double householdsBoughtRun, deskBoughtRun, couponsToHouseholdsRun;
+    // ...and the businesses' (CD2, slice 4).
+    static int monthsFirmsBought;
+    static double couponsToFirmsRun;
 
     /*
      * The most the central bank's holdings took off the long end, and when:
@@ -4357,6 +4367,8 @@ public class LongPlaytest {
         CentralBank cb = g.getCentralBank();
         if (cb.getBoughtPaper() > 0 || cb.getSoldPaper() > 0) monthsCentralBankTraded++;
         couponsToHouseholdsRun += g.getCouponsToHouseholds();
+        if (g.getFirmsBoughtPaper() > 0) monthsFirmsBought++;
+        couponsToFirmsRun += g.getCouponsToFirms();
         DebtManager dm = g.getDebtManager();
         double off = dm.compression(600);
         if (off > peakCompression) {
@@ -6368,6 +6380,12 @@ public class LongPlaytest {
                 dm.getForeignPrincipal(), householdsBoughtRun, monthsHouseholdsBought,
                 deskBoughtRun, monthsDeskBought, couponsToHouseholdsRun, monthsCentralBankTraded,
                 holder.getBoughtPaperLifetime(), holder.getSoldPaperLifetime());
+        // ...and the businesses (CD2, slice 4), a line of their own: face held at the end, what
+        // they paid for it over the run and what the desk paid them back.
+        out.printf("  the businesses hold $%,.0fk of it (face); they paid $%,.0fk at %d settle(s), sold"
+                + " $%,.0fk back to the desk and were paid $%,.0fk of coupons%n",
+                dm.firmPrincipal(), g.getOutwardInvestment().getLifetimePaperBought(), monthsFirmsBought,
+                g.getOutwardInvestment().getLifetimePaperSold(), couponsToFirmsRun);
         out.printf("  the curve at the end: note %.2f%%, 10-year %.2f%%, 50-year %.2f%%;"
                 + " the central bank's holdings take %.3f points off the 50-year (dial %.0f%%,"
                 + " holding %.1f%% of the term paper)%n",

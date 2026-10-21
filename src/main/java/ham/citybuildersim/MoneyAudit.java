@@ -947,6 +947,22 @@ public final class MoneyAudit {
         out += debit.apply("- city PrincipalToHouseholds", g.getPrincipalToHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- city BuybackToHouseholds", g.getBuybackToHouseholds(), Scope.DOMESTIC);
         /*
+         * THE BUSINESSES HOLD THE CITY'S PAPER TOO (CD2, slice 4, D33), and
+         * have no line here, on purpose. A sector's till is a pool, like the
+         * bank and the treasury: what the businesses pay at the settle leaves
+         * their pool for the bank's (the bank's settle shrinks by it), the
+         * coupon, the principal and a buyback's price arrive in their pools
+         * from the treasury's, what the desk pays them for paper they sell is
+         * the bank's pool paying theirs - and the central bank's purchase from
+         * them arrives in "+ centralbank BoughtPaper" with its other money
+         * made. A pool paying a pool cancels, as a bond changing hands between
+         * two companies does (the businesses' bonds, above); what would show
+         * is a leak, as a residual, which is the audit doing its work.
+         * Game.getFirmsBoughtPaper(), getCouponsToFirms() and
+         * getPrincipalToFirms() are the month's figures for the harness and
+         * the playtest; HoldersCheck asserts the audit closes on each.
+         */
+        /*
          * ...AND OUT FOR THE BONDS (0.7.12): the pools paying the households
          * for bonds they sold the bank and the companies, and their coupons
          * and principal; paying the world for bonds it sold them, a financial

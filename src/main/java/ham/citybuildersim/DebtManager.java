@@ -1884,7 +1884,14 @@ public class DebtManager {
         return total;
     }
 
-    /** ...and the commercial bank: the domestic principal less the other two. What its book carries. */
+    /** ...the businesses, at face (CD2, slice 4). OutwardInvestment.totalPaper() is the same figure from the other side; HoldersCheck asserts it. */
+    public double firmPrincipal() {
+        double total = 0;
+        for (Debt d : debts) total += d.firmPrincipal();
+        return total;
+    }
+
+    /** ...and the commercial bank: the domestic principal less the other three. What its book carries. */
     public double bankPrincipal() {
         double total = 0;
         for (Debt d : debts) total += d.bankPrincipal();
@@ -1904,9 +1911,9 @@ public class DebtManager {
         return total;
     }
 
-    /** Each holder's book at the curve: 0 the households, 1 the central bank, 2 the bank. */
+    /** Each holder's book at the curve: 0 the households, 1 the central bank, 2 the bank, 3 the businesses. */
     public double[] bookValues() {
-        double[] out = new double[3];
+        double[] out = new double[4];
         for (Debt d : debts) {
             if (d.isForeign()) continue;
             double face = d.getOustandingPrincipal();
@@ -1915,6 +1922,7 @@ public class DebtManager {
             out[0] += d.householdPrincipal() * perFace;
             out[1] += d.centralBankPrincipal() * perFace;
             out[2] += d.bankPrincipal() * perFace;
+            out[3] += d.firmPrincipal() * perFace;
         }
         return out;
     }
@@ -1927,6 +1935,29 @@ public class DebtManager {
     public double householdBookRatio() {
         double face = householdPrincipal();
         return face > 0 ? bookValues()[0] / face : 1;
+    }
+
+    /**
+     * The businesses' book at market over its face (CD2, slice 4): the
+     * households' twin, ONE RATIO A MONTH - what a dollar of face of their
+     * paper is worth, what the desk pays them for it. At face - 1 - when they
+     * hold none.
+     */
+    public double firmBookRatio() {
+        double face = firmPrincipal();
+        return face > 0 ? bookValues()[3] / face : 1;
+    }
+
+    /** What the businesses' paper yields at today's curve: the households' twin, weighted by what the businesses hold of each piece; the short rate when they hold none. */
+    public double firmBookYield() {
+        double face = 0, weighted = 0;
+        for (Debt d : debts) {
+            double held = d.firmPrincipal();
+            if (held <= 0) continue;
+            face += held;
+            weighted += held * yieldOf(d);
+        }
+        return face > 0 ? weighted / face : getRate();
     }
 
     /** What the households' paper yields at today's curve (each piece's yieldOf(), its yield to maturity on the price a buyback pays), weighted by what they hold of each piece; the short rate when they hold none. */

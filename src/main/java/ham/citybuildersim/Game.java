@@ -376,6 +376,8 @@ public class Game {
         exchange.attach(equity, householdBalance, bank, exchangeCompanies, 0);
         // ...and the bank's desk for their city paper (0.7.1).
         householdBalance.setPaperDesk(this::desksBuysHouseholdPaper);
+        // ...and for the businesses' (CD2, slice 4).
+        outward.setPaperDesk(this::desksBuysFirmPaper);
         // ...and the businesses' bonds (0.7.12): the market reads the city
         // through bondReadings, and the lender, the households and the
         // economy each read the market. See BondMarket.
@@ -444,6 +446,7 @@ public class Game {
         buybackToHouseholdsUnsettled = buybackAbroadUnsettled = 0;
         buybackToHouseholds = buybackAbroad = 0;
         couponsToHouseholds = principalToHouseholds = householdsBoughtPaper = 0;
+        couponsToFirms = principalToFirms = firmsBoughtPaper = 0;
         bankPrincipalRepaidThisMonth = 0;
         bank.reset();
         foreign.reset();
@@ -2455,6 +2458,8 @@ public class Game {
             // it counts for and what the desk pays for it. Saved, because the
             // plan reads it and the load path re-strikes the plan.
             householdBalance.setPaperRatio(debtManager.householdBookRatio());
+            // ...and the businesses' twin (CD2, slice 4), saved with them.
+            outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());
             /*
              * ...AND THE TREATMENT BILLS, BY ROW (2026-09-19): what the row
              * was billed and what it would have been billed had all of its
@@ -7999,9 +8004,13 @@ public class Game {
      *  - the households' savings past their cushion (spareForPaper()), less
      *    what the sales since the last settle have already been allotted
      *    to them, because the settle collects those first;
-     *  - the businesses and the world: nothing, and the world's bid off
-     *    (panicking) - until the businesses' paper book and the world's are
-     *    built they have nowhere to hold city paper (CD2 slices 4 and 5);
+     *  - the businesses: the tills and the dollars abroad of every sector
+     *    that may hold the city's paper (OutwardInvestment.idleWealth()),
+     *    less what the sales since the last settle have been allotted to them,
+     *    and what they hold, with what is allotted and not yet settled
+     *    (CD2, slice 4);
+     *  - the world: nothing, and its bid off (panicking) - until its paper
+     *    book is built it has nowhere to hold city paper (CD2, slice 5);
      *  - a month of output, as CapitalFlows reads it;
      *  - the bank's room as a face (docs/queue/CD2-notes.md, star 6): its RISK
      *    capital, equity over Bank.CAPITAL_RATIO, less its weighted book, over
@@ -8027,14 +8036,18 @@ public class Game {
      * bids - passes none, and such a bank reads as having no room.
      */
     public Auction.Bidders auctionBidders(int months, double face) {
-        double pendingHouseholds = 0, pendingBank = 0;
+        double pendingHouseholds = 0, pendingBank = 0, pendingFirmsCash = 0, pendingFirmsFace = 0;
         for (Debt d : debtManager.getDebt()) {
             if (d.isForeign() || !(d.getSettleDue() > 0)) continue;
             pendingHouseholds += d.allotHouseholdsCash();
+            pendingFirmsCash += d.allotFirmsCash();
+            pendingFirmsFace += d.allotFirmsFace();
             pendingBank += Math.max(0, d.unsettledFace() - d.allotHouseholdsFace()
                     - d.allotFirmsFace() - d.allotWorldFace());
         }
         double spare = Math.max(0, householdBalance.spareForPaper() - pendingHouseholds);
+        double firmsIdle = Math.max(0, outward.idleWealth(economyManager) - pendingFirmsCash);
+        double firmsHeld = outward.totalPaper() + pendingFirmsFace;
         // D20, "its room is its capital" (docs/queue/CD2-notes.md, star 6): the bank's bid for the city's
         // paper is limited by its RISK-weighted capital, equity over CAPITAL_RATIO - not by capacity(),
         // which its deposits can hold down, since city paper is the window's collateral: what the deposits do
@@ -8056,7 +8069,7 @@ public class Game {
             extra *= (1 - Math.pow(r, months)) / (months * (1 - r));
         }
         return new Auction.Bidders(bank.depositRate(), DebtManager.WORLD_BASE_RATE,
-                debtManager.countryPremium(), spare, 0, 0, hotMoney.getStock(), true,
+                debtManager.countryPremium(), spare, firmsIdle, firmsHeld, hotMoney.getStock(), true,
                 economyManager.getMonthGdp(), bankRoom, extra);
     }
 
@@ -9364,6 +9377,8 @@ public class Game {
         // The holders' month (0.7.1): what the households were paid on their
         // paper and paid for it. See THE HOLDERS ARE PAID.
         couponsToHouseholds = principalToHouseholds = householdsBoughtPaper = 0;
+        couponsToFirms = principalToFirms = firmsBoughtPaper = 0;
+        outward.startMonth();
         foreignDebtRaisedThisMonth = 0;
         foreignPrincipalRepaidThisMonth = 0;
         foreignInterestPaidThisMonth = 0;
@@ -9513,9 +9528,9 @@ public class Game {
          * disagree about a month.
          */
         BusinessDebtManager lender = economyManager.getBusinessDebtManager();
-        // The residual buyer (0.7.1): what the households did not pay for.
-        cityPaperSettled = cityDebtRaisedForBank - householdsBoughtPaper;
-        bank.lend(lender.getLentThisMonth() + cityDebtRaisedForBank - householdsBoughtPaper);
+        // The residual buyer (0.7.1): what the households and the businesses did not pay for.
+        cityPaperSettled = cityDebtRaisedForBank - householdsBoughtPaper - firmsBoughtPaper;
+        bank.lend(lender.getLentThisMonth() + cityDebtRaisedForBank - householdsBoughtPaper - firmsBoughtPaper);
         // ...and the fee on what it lent the businesses, which they were
         // handed their loans net of (0.7.7): pool to pool, so it cancels.
         bank.takeLoanFees(lender.getFeesThisMonth());
@@ -9779,6 +9794,10 @@ public class Game {
         bondMarket.takeMonth(month, exchange.cityMarketValue(equity));
         strikeBankBonds();
 
+        // The businesses' paper at today's curve, struck here as the households' book yield is a few
+        // lines below, so paper bought at this month's settle is read at its own yield and not at the
+        // short rate it was struck at while they held none (CD2, slice 4).
+        outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());
         outward.takeMonth(bank.depositRate(), DebtManager.WORLD_BASE_RATE,
                 foreign.getRate(), economyManager);
         // ...and the households, by the same rule, with what the owners were
@@ -13036,7 +13055,11 @@ public class Game {
            coupon is, the principal with their paper down by the same - and
            declared to the audit, because households are outside its pools;
          - the CENTRAL BANK's share is paid now too, and destroyed: its income,
-           remitted back to the treasury the month after - "debt to itself".
+           remitted back to the treasury the month after - "debt to itself";
+         - the BUSINESSES' share (CD2, slice 4) is paid now into the sector
+           tills, pro rata to the paper each holds, the principal with its
+           paper down by the same - and declared to nobody, because a till is
+           inside the pools and the treasury it comes from is too.
 
        THE TREASURY'S BILL IS THE WHOLE BILL. The government's books are
        struck on cityInterestPaid, which carries every holder's coupon, the
@@ -13047,52 +13070,71 @@ public class Game {
     /** Coupons and principal paid to the households on their paper, and what they paid for it at issue - this month's, for MoneyAudit. */
     private double couponsToHouseholds, principalToHouseholds, householdsBoughtPaper;
 
+    /**
+     * ...and the businesses' (CD2, slice 4): the same three figures, for the
+     * playtest and the harness. They are NOT declared to MoneyAudit - the
+     * tills are inside its pools, so what the treasury pays them and what they
+     * pay the bank is a pool paying a pool and cancels (OutwardInvestment, THE
+     * CITY'S PAPER) - which is why the audit's closing is the proof of them.
+     */
+    private double couponsToFirms, principalToFirms, firmsBoughtPaper;
+
     public double getCouponsToHouseholds()   { return couponsToHouseholds; }
     public double getPrincipalToHouseholds() { return principalToHouseholds; }
     public double getHouseholdsBoughtPaper() { return householdsBoughtPaper; }
+    public double getCouponsToFirms()        { return couponsToFirms; }
+    public double getPrincipalToFirms()      { return principalToFirms; }
+    public double getFirmsBoughtPaper()      { return firmsBoughtPaper; }
 
     /**
-     * Of a payment on this paper, the households' and the central bank's
-     * shares, struck before it: each holder's principal over what is
-     * outstanding, times the payment. One line since 0.7.3 - there were two
-     * branches, for a payment at or past the principal and one under it, and
-     * they were the same product (a floating-point multiply commutes, so
-     * hh x owed and owed x hh are the same double) under a test that chose
-     * between them.
+     * Of a payment on this paper, the households', the central bank's and
+     * (CD2, slice 4) the businesses' shares, struck before it: each holder's
+     * principal over what is outstanding, times the payment. One line since
+     * 0.7.3 - there were two branches, for a payment at or past the principal
+     * and one under it, and they were the same product (a floating-point
+     * multiply commutes, so hh x owed and owed x hh are the same double) under
+     * a test that chose between them.
      */
     private double[] holderShares(Debt paper, double owed) {
         double out = paper.getOustandingPrincipal();
-        double hh = paper.householdPrincipal(), cb = paper.centralBankPrincipal();
-        if (!(out > 0) || !(owed > 0) || hh + cb <= 0) return new double[] { 0, 0 };
-        return new double[] { owed * hh / out, owed * cb / out };
+        double hh = paper.householdPrincipal(), cb = paper.centralBankPrincipal(), fm = paper.firmPrincipal();
+        if (!(out > 0) || !(owed > 0) || hh + cb + fm <= 0) return new double[] { 0, 0, 0 };
+        return new double[] { owed * hh / out, owed * cb / out, owed * fm / out };
     }
 
     /** A coupon on the city's own paper, split by holder. See THE HOLDERS ARE PAID. */
     public void payDomesticCoupon(Debt paper, double owed) {
         double[] s = holderShares(paper, owed);
-        InterestExpense(owed - s[0] - s[1]);
-        double outside = s[0] + s[1];
+        InterestExpense(owed - s[0] - s[1] - s[2]);
+        double outside = s[0] + s[1] + s[2];
         if (!(outside > 0)) return;
         double paid = treasuryPays(TreasuryLine.INTEREST, outside);
         cityInterestPaid += paid;
         householdBalance.creditPaperCoupon(s[0]);
         couponsToHouseholds += s[0];
         centralBank.takeCoupon(s[1]);
+        // ...and the businesses' into their tills, pro rata to the paper each holds.
+        outward.creditPaperCoupon(s[2], economyManager);
+        couponsToFirms += s[2];
     }
 
     /** Principal on the city's own paper, split by holder: the bank's through subtractCash(), the rest paid now and taken off their holdings. */
     public void payDomesticPrincipal(Debt paper, double owed) {
         double[] s = holderShares(paper, owed);
-        subtractCash(owed - s[0] - s[1]);
-        double outside = s[0] + s[1];
+        subtractCash(owed - s[0] - s[1] - s[2]);
+        double outside = s[0] + s[1] + s[2];
         if (!(outside > 0)) return;
         treasuryPays(TreasuryLine.PRINCIPAL, outside);
         cityPrincipalRepaidThisMonth += outside;
         paper.moveToHouseholds(-s[0]);
         paper.moveToCentralBank(-s[1]);
+        paper.moveToFirms(-s[2]);
         householdBalance.creditPaperPrincipal(s[0]);
         principalToHouseholds += s[0];
         centralBank.takePrincipal(s[1]);
+        // ...and the businesses' into their tills with their paper down by the same.
+        outward.creditPaperPrincipal(s[2], economyManager);
+        principalToFirms += s[2];
     }
 
     /* ----------------------- the desk, for the households ----------------------- */
@@ -13119,6 +13161,30 @@ public class Game {
             d.moveToHouseholds(-off);
         }
         bank.buyPaperFromHouseholds(cash, take, unearned);
+    }
+
+    /**
+     * THE BANK BUYS THE BUSINESSES' PAPER (CD2, slice 4), for the spread gone,
+     * a sector that borrows, or one that wants the money: this much face for
+     * this much cash, off every piece's businesses' share pro rata, onto the
+     * bank's book with the unearned discount riding on it - the households'
+     * desk with the businesses' share in their place. The cash moves from the
+     * bank's pool to a sector's till, so MoneyAudit declares nothing.
+     */
+    private void desksBuysFirmPaper(double face, double cash) {
+        double held = debtManager.firmPrincipal();
+        if (!(face > 0) || held <= 0) return;
+        double take = Math.min(face, held);
+        double unearned = 0;
+        for (Debt d : debtManager.getDebt()) {
+            double mine = d.firmPrincipal();
+            if (mine <= 0) continue;
+            double off = mine >= held ? take : take * mine / held;
+            off = Math.min(off, mine);
+            unearned += d.unaccretedOn(off);
+            d.moveToFirms(-off);
+        }
+        bank.buyPaperFromFirms(cash, take, unearned);
     }
 
     /* -------------------- THE HOUSEHOLDS TAKE THEIR SHARE (0.7.1) --------------------
@@ -13165,8 +13231,61 @@ public class Game {
                 for (Debt d : settling) d.moveToHouseholds(d.allotHouseholdsFace() * take / wanted * scale);
             }
         }
+        // ...and the businesses, from their tills, before the allotment is cleared.
+        firmsTakeTheirShare(settling);
         for (Debt d : settling) d.settled();
         householdsBoughtPaper += paid;
+        return paid;
+    }
+
+    /**
+     * THE BUSINESSES TAKE THEIR SHARE (CD2, slice 4, D33), at the same settle
+     * and from the same allotment (Debt.allotFirmsCash(), the auction's fill
+     * for them at the clearing yield). Each piece's allotment is shared among
+     * the sectors by their own bids at that piece's issue yield
+     * (OutwardInvestment.allotmentWeights(), the firms' rule at the stop);
+     * each sector pays out of its till, never past it - what it cannot pay is
+     * cut pro rata across its pieces, and the bank takes the rest as it takes
+     * the households' shortfall. The face each sector holds is the face it was
+     * allotted for the cash it paid, so the discount is its to earn at
+     * maturity. The tills are inside the audit's pools, as the bank is, so
+     * the money moving from one to the other declares nothing; the bank's
+     * settle shrinks by it (cityPaperSettled).
+     *
+     * @return the cash the businesses paid
+     */
+    private double firmsTakeTheirShare(java.util.List<Debt> settling) {
+        double wanted = 0;
+        for (Debt d : settling) wanted += d.allotFirmsCash();
+        if (!(wanted > 0)) return 0;
+        String[] keys = Sectors.KEYS;
+        double[][] weights = new double[settling.size()][];
+        double[] asked = new double[keys.length];
+        for (int i = 0; i < settling.size(); i++) {
+            Debt d = settling.get(i);
+            weights[i] = d.allotFirmsCash() > 0
+                    ? outward.allotmentWeights(d.getIssueYield(), bank.depositRate(), DebtManager.WORLD_BASE_RATE, economyManager)
+                    : new double[keys.length];
+            for (int k = 0; k < keys.length; k++) asked[k] += d.allotFirmsCash() * weights[i][k];
+        }
+        double[] cut = new double[keys.length];
+        for (int k = 0; k < keys.length; k++) {
+            double till = Math.max(0, economyManager.getSectorCash(keys[k]));
+            cut[k] = asked[k] > 0 ? Math.min(1, till / asked[k]) : 0;
+        }
+        double paid = 0;
+        for (int i = 0; i < settling.size(); i++) {
+            Debt d = settling.get(i);
+            for (int k = 0; k < keys.length; k++) {
+                double w = weights[i][k] * cut[k];
+                if (!(w > 0)) continue;
+                double cash = d.allotFirmsCash() * w, face = d.allotFirmsFace() * w;
+                outward.takeAllotment(keys[k], cash, face, economyManager);
+                d.moveToFirms(face);
+                paid += cash;
+            }
+        }
+        firmsBoughtPaper += paid;
         return paid;
     }
 
@@ -13223,6 +13342,15 @@ public class Game {
        it, as for the bank's: MoneyAudit sees it made (+ centralbank
        BoughtPaper) and paid out to the households (- centralbank
        BoughtFromHouseholds). SELLING stays as it was: to the bank only.
+
+       ...AND FROM THE BUSINESSES, LAST (CD2, slice 4). The businesses hold
+       city paper too, and a dial at the whole of it is not reached while they
+       hold some. What the step still wants once the bank's term paper and the
+       households' are gone it buys from the businesses', pro rata across the
+       pieces, at the same market value, and their sectors give up the paper
+       and take the price into their tills pro rata. The money is made for it
+       (+ centralbank BoughtPaper) and arrives in the tills, which are pools:
+       nothing else to declare.
        ====================================================================== */
     private void openMarketOperation() {
         // Nothing to aim at and nothing held: no move, as it always read.
@@ -13278,7 +13406,15 @@ public class Game {
                 bank.buyPaperFromCentralBank(price, face, unearned);
             }
         }
-        if (move > 0 && face < move) buyPaperFromHouseholds(move - Math.max(0, face));
+        if (move > 0 && face < move) {
+            double want = move - Math.max(0, face);
+            // ...and the businesses' after the households' (CD2, slice 4): the
+            // dial is the whole of the paper (CentralBank.MAX_QE_SHARE), and
+            // the businesses are a holder by choice, so they are the last it
+            // reaches - and the households are not asked for more than the step.
+            want -= buyPaperFromHouseholds(want);
+            if (want > 0) buyPaperFromFirms(want);
+        }
     }
 
     /**
@@ -13287,8 +13423,10 @@ public class Game {
      * pro rata across the pieces they hold that are settled and pay no
      * principal this month (round 2), at the curve's market value, off their
      * cells pro rata into their savings.
+     *
+     * @return the face it bought, which is less than wanted when they hold less
      */
-    private void buyPaperFromHouseholds(double wanted) {
+    private double buyPaperFromHouseholds(double wanted) {
         java.util.List<Debt> pieces = new java.util.ArrayList<>();
         double pool = 0;
         for (Debt d : debtManager.getDebt()) {
@@ -13299,7 +13437,7 @@ public class Game {
             pool += available;
         }
         double face = Math.min(wanted, pool);
-        if (!(face > 0)) return;
+        if (!(face > 0)) return 0;
         double price = 0;
         double[] faceOf = new double[pieces.size()];
         for (int i = 0; i < pieces.size(); i++) {
@@ -13315,6 +13453,48 @@ public class Game {
         }
         centralBank.buyPaperFromHouseholds(price, face);
         householdBalance.creditPaperBuyback(face, price);
+        return face;
+    }
+
+    /**
+     * The rest of a purchase the bank and the households could not fill, from
+     * the businesses' term paper (CD2, slice 4): the households' path with the
+     * businesses' share in its place - pro rata across the pieces they hold
+     * that are settled and pay no principal this month, at the curve's market
+     * value, off their sectors pro rata into their tills. The money is made
+     * for it, as for the others (MoneyAudit's "+ centralbank BoughtPaper"),
+     * and arrives in the tills, which are pools, so nothing more is declared.
+     * WHY AT ALL: the dial reaches the whole of the paper (Jerus, 0.7.15), and
+     * a business that holds some would otherwise stand between it and its
+     * target for good.
+     */
+    private void buyPaperFromFirms(double wanted) {
+        java.util.List<Debt> pieces = new java.util.ArrayList<>();
+        double pool = 0;
+        for (Debt d : debtManager.getDebt()) {
+            if (!DebtManager.isTermPaper(d) || d.getSettleDue() > 0 || d.principalDueNextMonth() > 0) continue;
+            double available = d.firmPrincipal();
+            if (available <= 0) continue;
+            pieces.add(d);
+            pool += available;
+        }
+        double face = Math.min(wanted, pool);
+        if (!(face > 0)) return;
+        double price = 0;
+        double[] faceOf = new double[pieces.size()];
+        for (int i = 0; i < pieces.size(); i++) {
+            Debt d = pieces.get(i);
+            double available = d.firmPrincipal();
+            double f = face >= pool ? available : face * available / pool;
+            faceOf[i] = f;
+            price += debtManager.marketValue(d) * f / d.getOustandingPrincipal();
+        }
+        for (int i = 0; i < pieces.size(); i++) {
+            pieces.get(i).moveToFirms(-faceOf[i]);
+            pieces.get(i).moveToCentralBank(faceOf[i]);
+        }
+        centralBank.buyPaper(price, face);
+        outward.creditPaperBuyback(face, price, economyManager);
     }
 
     /* ------------- THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) -------------
@@ -14221,6 +14401,7 @@ public class Game {
         double principal = debt.getOustandingPrincipal();
         // Who holds it, struck before it comes off the list (0.7.1).
         double hhFace = debt.householdPrincipal(), cbFace = debt.centralBankPrincipal();
+        double firmFace = debt.firmPrincipal();
         double bankFace = debt.bankPrincipal();
         double bankUnearned = debt.unaccretedOn(bankFace);
         if (!debtManager.retire(debt)) {
@@ -14245,6 +14426,9 @@ public class Game {
          *     difference is its gain or loss (Bank.sellPaperBack());
          *   - the HOUSEHOLDS' share goes to their savings with their paper
          *     down by their face;
+         *   - the BUSINESSES' share goes to their tills with their paper
+         *     down by their face (CD2, slice 4), at once: the tills are
+         *     inside the pools, so nothing waits to be declared;
          *   - the CENTRAL BANK's share comes off its book at face, and the
          *     price - money destroyed, the treasury having paid the boundary -
          *     settles at the top of next month with its gain against face;
@@ -14265,12 +14449,16 @@ public class Game {
         } else {
             double hhPrice = principal > 0 ? price * hhFace / principal : 0;
             double cbPrice = principal > 0 ? price * cbFace / principal : 0;
-            bank.sellPaperBack(price - hhPrice - cbPrice, bankFace, bankUnearned);
+            double firmPrice = principal > 0 ? price * firmFace / principal : 0;
+            bank.sellPaperBack(price - hhPrice - cbPrice - firmPrice, bankFace, bankUnearned);
             if (hhFace > 0) {
                 householdBalance.creditPaperBuyback(hhFace, hhPrice);
                 buybackToHouseholdsUnsettled += hhPrice;
             }
             if (cbFace > 0) centralBank.paperBoughtBack(cbPrice, cbFace);
+            // The businesses' share goes straight into their tills: a pool paid by a pool,
+            // so nothing is carried to the next month's window.
+            if (firmFace > 0) outward.creditPaperBuyback(firmFace, firmPrice, economyManager);
         }
 
         // Both sides moved - one bond fewer, and less cash - so the market has
@@ -16422,6 +16610,9 @@ public class Game {
         couponsToHouseholds *= scale;
         principalToHouseholds *= scale;
         householdsBoughtPaper *= scale;
+        couponsToFirms *= scale;
+        principalToFirms *= scale;
+        firmsBoughtPaper *= scale;
         bankPrincipalRepaidThisMonth *= scale;
         treasuryRaisedSoFar *= scale;
         treasuryJournal.redenominate(scale);

@@ -1860,8 +1860,11 @@ final class FinancesScreen {
             + "it crosses the city's edge; foreign paper is bought by somebody else, is repaid in their money, and every "
             + "payment genuinely leaves. The households buy their share when an issue settles and it pays them better "
             + "than a deposit, and sell to the bank's desk when they are short. The central bank buys the bank's term "
-            + "paper with money it makes, then the households' once the bank has none left, and sells to the bank - "
-            + "the holdings dial on the Policy tab. It replaces what it holds of a maturing piece with the same par "
+            + "paper with money it makes, then the households' once the bank has none left, then the businesses' - "
+            + "the holdings dial on the Policy tab. Businesses with idle money buy a share of an issue out of their "
+            + "tills when it pays them more than the deposit and the world, are paid its coupons, and sell to the bank's "
+            + "desk when the spread has gone, when they borrow or when they need the money. The central bank sells "
+            + "to the bank only. It replaces what it holds of a maturing piece with the same par "
             + "of the new paper, at issue, less what it holds past its dial and what last year's surplus pays off. The "
             + "bank holds the rest. Dollar paper is held abroad.";
 
@@ -1885,13 +1888,13 @@ final class FinancesScreen {
         }
     }
 
-    /** WHO HOLDS IT: the households, the bank, the central bank and the world, one bar, each with its amount and share. */
+    /** WHO HOLDS IT: the households, the bank, the central bank, the businesses (CD2, slice 4) and the world, one bar, each with its amount and share. */
     VBox holdersCard(double all) {
         DebtManager ledger = ui.game.getDebtManager();
         double[] held = {ledger.householdPrincipal(), ledger.bankPrincipal(), ledger.centralBankPrincipal(),
-                         ledger.getForeignPrincipal()};
-        String[] who = {"households", "the bank", "the central bank", "abroad"};
-        String[] colour = {Palette.PEOPLE, Palette.MONEY, Palette.MONEY_DARK, Palette.BUSINESS};
+                         ledger.firmPrincipal(), ledger.getForeignPrincipal()};
+        String[] who = {"households", "the bank", "the central bank", "businesses", "abroad"};
+        String[] colour = {Palette.PEOPLE, Palette.MONEY, Palette.MONEY_DARK, Palette.BUSINESS_DARK, Palette.BUSINESS};
         List<Segment> parts = new ArrayList<>();
         javafx.scene.layout.FlowPane key = keyRow();
         for (int i = 0; i < held.length; i++) {
@@ -2344,7 +2347,8 @@ final class FinancesScreen {
             holders = segmentBar(List.of(
                     seg(debt.householdPrincipal(), Palette.PEOPLE, "households " + d(debt.householdPrincipal())),
                     seg(debt.bankPrincipal(), Palette.MONEY, "the bank " + d(debt.bankPrincipal())),
-                    seg(debt.centralBankPrincipal(), Palette.MONEY_DARK, "the central bank " + d(debt.centralBankPrincipal()))),
+                    seg(debt.centralBankPrincipal(), Palette.MONEY_DARK, "the central bank " + d(debt.centralBankPrincipal())),
+                    seg(debt.firmPrincipal(), Palette.BUSINESS_DARK, "the businesses " + d(debt.firmPrincipal()))),
                     p > 0 ? p : 1, null, 0, 6);
         }
 

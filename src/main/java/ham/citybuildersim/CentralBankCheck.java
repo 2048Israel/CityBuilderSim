@@ -1283,11 +1283,13 @@ public class CentralBankCheck {
         close("...paid at the issue's price on each unit of face", cba.getBoughtAtIssue(),
                 itsPar * issuePricePerFace(fresh), 1e-6);
         assertTrue("...under par, as the market paid", cba.getBoughtAtIssue() < itsPar);
-        close("the bank's book of the new issue excludes its par: the bank and the households hold the market's face",
-                fresh.bankPrincipal() + fresh.householdPrincipal(), fresh.getOustandingPrincipal() - itsPar, 1e-6);
+        close("the bank's book of the new issue excludes its par: the bank, the households and the businesses hold the market's face",
+                fresh.bankPrincipal() + fresh.householdPrincipal() + fresh.firmPrincipal(),
+                fresh.getOustandingPrincipal() - itsPar, 1e-6);
         assertTrue("...and the households took part of it", fresh.householdPrincipal() > 0);
-        close("...for which they and the bank paid what the rollover raised, and no more",
-                a.getCityPaperSettled() + a.getHouseholdsBoughtPaper(), a.getRollover().getLastRaised(), 1e-6);
+        close("...for which they, the businesses and the bank paid what the rollover raised, and no more",
+                a.getCityPaperSettled() + a.getHouseholdsBoughtPaper() + a.getFirmsBoughtPaper(),
+                a.getRollover().getLastRaised(), 1e-6);
         close("...which is what the bank's own book carries", a.getBank().getCityBook(),
                 a.getDebtManager().bankBook(), 1e-6);
         close("...and the households' cells hold what the paper says they do",

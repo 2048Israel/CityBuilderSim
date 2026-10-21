@@ -4061,7 +4061,9 @@ public class BankCheck {
         // discount in this month's net income, which is the paper's.
         double accreted = city.getDebtManager().getAccretedForBank();
         double householdsPaid = city.getHouseholdsBoughtPaper();
-        double bankPaid = received - householdsPaid;
+        // ...and the businesses' tills, a holder since CD2 (slice 4): what they cannot pay the bank takes.
+        double firmsPaid = city.getFirmsBoughtPaper();
+        double bankPaid = received - householdsPaid - firmsPaid;
         double ordinary = (explained - accreted)
                 - (bank.getSectorBook() - sectorBefore)
                 - (bank.getHouseholdBook() - householdBefore)
@@ -4082,7 +4084,7 @@ public class BankCheck {
                 + " paid, less the ordinary month", cashMoved - ordinary, -bankPaid, 1e-6);
         close("...which is the figure the settle reports", city.getCityPaperSettled(), bankPaid, 1e-9);
         close("...and between them the holders paid every dollar the treasury received",
-                city.getCityPaperSettled() + householdsPaid, received, 1e-9);
+                city.getCityPaperSettled() + householdsPaid + firmsPaid, received, 1e-9);
         double bankFace = city.getDebtManager().bankPrincipal();
         close("...its book rose by its own face, less what the city repaid it this month",
                 bank.getCityBook() - cityBefore, bankFace, 1e-6);
@@ -4098,6 +4100,7 @@ public class BankCheck {
         close("the reloaded city's bank paid the same, at its settle",
                 twin.getCityPaperSettled(), bankPaid, 1e-9);
         close("...and its households the same", twin.getHouseholdsBoughtPaper(), householdsPaid, 1e-9);
+        close("...and its businesses", twin.getFirmsBoughtPaper(), firmsPaid, 1e-9);
         assertTrue("...and its month closes too", Math.abs(twin.getLastMoneyAudit().residual)
                 < MoneyAudit.tolerance(twin.getLastMoneyAudit().moved()));
 

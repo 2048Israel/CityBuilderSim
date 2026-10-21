@@ -954,6 +954,20 @@ public class ReadPathCheck {
         debt.bankBook();
         debt.householdBookRatio();
         debt.householdBookYield();
+        // ...and the businesses' paper (CD2, slice 4): the piece's share, the book at the curve, and the sectors' side of it
+        debt.firmPrincipal();
+        debt.firmBookRatio();
+        debt.firmBookYield();
+        g.getOutwardInvestment().totalPaper();
+        g.getOutwardInvestment().paperOf(Sectors.RETAIL);
+        g.getOutwardInvestment().idleWealth(g.getEconomyManager());
+        g.getOutwardInvestment().getPaperRatio();
+        g.getOutwardInvestment().getPaperYield();
+        g.getOutwardInvestment().getLifetimePaperBought();
+        g.getOutwardInvestment().getLifetimePaperSold();
+        g.getFirmsBoughtPaper();
+        g.getCouponsToFirms();
+        g.getPrincipalToFirms();
         debt.bankUnearnedDiscount();
         debt.termPrincipal();
         debt.centralBankShareOfTerm();
