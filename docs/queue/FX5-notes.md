@@ -144,6 +144,21 @@ routes are rounded); MapCheck 9 "one route a yard and siding" (clear sidings)
 and its visit windows (each train's own leg and stand); RailDrawCheck 14;
 MainLineCheck 15's watery fixture (the tiers by train).
 
+**The checks.** `Batch check.bat --maps` on a036f62b (0.8.18): 126 harnesses
+in 1,356 s, 125 passed, 0 firm Stale findings. The one red was FX5's:
+MapCheck 5's month at 5 and 10 billion people, 8.65 and 16.8 ms against 5,
+because Y1's tiers had every box of every tier weighed against all 280,000
+mined sites at once. Fixed at 597b330b (a tier is sorted only once every
+box before it failed; the yard chosen is the same): MapCheck, hard and
+alone, green at 3.98 and 6.02 ms. Then `--fast --maps` all clear, the maps
+regenerated (27fde20f); the full suite was not run again after that one
+fix. `--timing`, alone and hard: 8 harnesses in 146 s, all clear. **The
+trace**: the default playtest on the final tree is byte-identical to main's
+0.8.17 (44718427; main since is docs only) but for its two lines of run
+time - 69 s on main this morning, 110 and 144 s on the branch this
+afternoon, while Y2's own snapshot, 71 s this morning, took 138 s beside
+them: the PC after its battery died, not the code. No ensemble.
+
 ## 4. Found on the way
 
 - **His saves do not load on this build**: 0.8.12 moved the Earth's fields,
