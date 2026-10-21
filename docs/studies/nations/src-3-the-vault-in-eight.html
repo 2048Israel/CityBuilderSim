@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nations: the vault in eight</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;--edge:#24354a;--control-edge:#33475f;--text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;--good:#3fb950;--warn:#e3b341;--bad:#f85149;--accent:#5aa9ff;--accent-light:#8cc4ff;--people:#2ec4b6;--money:#5aa9ff;--business:#a78bfa;--building:#f17cb0;--ore:#c9b68f;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--stage);color:var(--text);font-family:var(--sans);font-size:12.5px;line-height:1.45}
+.board{max-width:1240px;margin:0 auto;padding:22px 16px 40px}
+.bd-kicker{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.bd-title{font-size:23px;font-weight:600;margin:2px 0 4px}
+.bd-lead{font-size:14.5px;color:var(--text2);max-width:920px;margin:0 0 6px}
+.bd-est{font-size:11px;color:var(--text3);max-width:920px;margin:0 0 14px}
+.scroll{overflow-x:auto}
+.frame{display:flex;width:1200px;background:var(--panel);border:1px solid var(--edge);border-radius:6px;overflow:hidden}
+.rail{width:44px;background:var(--stage);display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:14px;color:var(--text3);font-size:14px}
+.rail i{font-style:normal;width:30px;height:30px;display:grid;place-items:center;border-radius:6px}
+.rail i.on{background:var(--pinned);color:var(--business);box-shadow:inset 3px 0 0 var(--building)}
+.page{flex:1;padding:16px 20px 22px}
+.head{display:flex;align-items:center;gap:10px}
+.swatch{width:12px;height:12px;border-radius:3px;background:var(--business)}
+.name{font-size:22px;font-weight:600}
+.info{width:16px;height:16px;border-radius:50%;border:1px solid var(--control-edge);color:var(--text3);font-size:10px;display:grid;place-items:center}
+.pages{display:flex;gap:6px;margin:12px 0}
+.pg{padding:5px 11px;border-radius:6px;background:var(--raised);border:1px solid var(--edge);color:var(--text2);font-size:11px}
+.pg.on{background:var(--pinned);border-color:var(--business);color:var(--text)}
+.row{display:grid;gap:12px;margin-bottom:12px}
+.r1{grid-template-columns:600px 1fr}.r2{grid-template-columns:1fr 1fr}
+.card{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:12px 14px}
+.ch{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ch .ic{width:22px;height:22px;border-radius:5px;background:rgba(201,182,143,.16);color:var(--ore);display:grid;place-items:center;font-size:12px}
+.ch h4{margin:0;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+.ch .sub{font-size:10.5px;color:var(--text3);margin-left:4px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{font-weight:500;color:var(--text3);text-align:right;padding:3px 6px;border-bottom:1px solid var(--edge);font-size:10px}
+th:first-child,td:first-child{text-align:left}
+td{padding:4px 6px;text-align:right;border-bottom:1px solid #1c2a3b;font-family:var(--mono);white-space:nowrap}
+td:first-child{font-family:var(--sans);color:var(--text2)}
+td .b{display:inline-block;height:7px;border-radius:2px;vertical-align:0;background:var(--ore)}
+.dn{color:var(--bad)}.up{color:var(--good)}
+.tot td{border-bottom:0;color:var(--text);font-weight:600}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 8px}
+.chip{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:4px 10px;font-size:10.5px;color:var(--text2)}
+.chip.lit{background:var(--pinned);border-color:var(--money);color:var(--text)}
+.para{font-size:11px;color:var(--text2);margin:6px 0 0}.para b{color:var(--text)}
+.cmp{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;font-size:10.5px;align-items:center;margin-top:6px}
+.cmp .t{display:flex;height:12px;border-radius:3px;overflow:hidden}
+.cmp .t i{display:block;height:100%}
+.leg{display:flex;gap:10px;flex-wrap:wrap;font-size:9.5px;color:var(--text3);margin-top:6px}
+.leg span{display:flex;align-items:center;gap:4px}.leg i{width:9px;height:9px;border-radius:2px;display:block}
+.fx{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}
+.fx div{background:var(--panel);border:1px solid var(--edge);border-radius:6px;padding:5px 8px;font-family:var(--mono);font-size:11px}
+.fx div span{display:block;font-family:var(--sans);font-size:9.5px;color:var(--text3)}
+.ex{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;color:var(--text2)}
+.ex input{font-family:var(--mono);background:var(--stage);border:1px solid var(--control-edge);border-radius:4px;color:var(--text);padding:4px 8px;width:110px}
+.btn{background:var(--panel);border:1px solid var(--control-edge);border-radius:4px;padding:4px 12px;font-size:11px;color:var(--text)}
+.btn.go{background:var(--accent-fill,#2f6fa8);border-color:var(--accent)}
+.offer{display:grid;grid-template-columns:330px 1fr;gap:14px}
+.mini{position:relative;height:220px;border-radius:6px;overflow:hidden;background:#2f5d88}
+.note2{font-size:10px;color:var(--text3);margin-top:4px}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;max-width:1200px}
+.note{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:10px 13px;font-size:11.5px;color:var(--text2)}
+.note b{color:var(--text)}
+</style></head>
+<body><div class="board">
+<div class="bd-kicker">Nations study · board 3 of 4 · Trade &amp; the world &rsaquo; The reserves, and the land office</div>
+<div class="bd-title">The vault in eight moneys, and an offer across a border</div>
+<p class="bd-lead">Jerus: "if you buy land you are buying from the nation who has it, so basically there are mutliple currencies... and fx reserves is for each". The vault keeps the eight moneys central banks keep; every nation prices in its own; land is paid to the nation that sells it, in its money. Above, the reserves page; below, the land office's card for a city founded at Windsor, Ontario, across the river from Detroit.</p>
+<p class="bd-est">Balances, rates and the city are invented for the board. The world's mix is the IMF's COFER shares for 2026Q2 over the eight. The land prices are today's formula times each seller's land factor against Canada's (spec-nations 6.3): the US's from the USDA's cropland average, Canada's an estimate.</p>
+<div class="scroll"><div class="frame">
+ <div class="rail"><i>&#9776;</i><i>&#9881;</i><i class="on">&#8644;</i><i>&#9733;</i><i>&#9638;</i></div>
+ <div class="page">
+  <div class="head"><span class="swatch"></span><span class="name">Trade &amp; the world</span><span class="info">i</span></div>
+  <div class="pages"><span class="pg">Overview</span><span class="pg">The month</span><span class="pg">What we trade</span><span class="pg">Partners</span><span class="pg">The currency</span><span class="pg on">The reserves</span></div>
+  <div class="row r1">
+   <div class="card">
+    <div class="ch"><span class="ic">&#9673;</span><h4>In the vault, in eight moneys</h4><span class="sub">worth US$411.8M &middot; D$485.9M</span><span class="info" style="margin-left:auto">i</span></div>
+    <table>
+     <tr><th>money</th><th>held</th><th>worth, US$</th><th>share</th><th></th><th>this month</th></tr>
+     <tr><td>US dollar</td><td>US$238.9M</td><td>238.9M</td><td>58.0%</td><td><span class="b" style="width:116px"></span></td><td>&ndash;</td></tr>
+     <tr><td>Euro</td><td>&euro;73.4M</td><td>85.6M</td><td>20.8%</td><td><span class="b" style="width:42px"></span></td><td class="dn">&minus;0.9%</td></tr>
+     <tr><td>Canadian dollar</td><td>C$52.0M</td><td>38.0M</td><td>9.2%</td><td><span class="b" style="width:18px"></span></td><td class="up">+0.4%</td></tr>
+     <tr><td>Japanese yen</td><td>&yen;2.66B</td><td>17.7M</td><td>4.3%</td><td><span class="b" style="width:9px"></span></td><td class="up">+0.3%</td></tr>
+     <tr><td>Pound sterling</td><td>&pound;11.6M</td><td>15.5M</td><td>3.8%</td><td><span class="b" style="width:8px"></span></td><td class="dn">&minus;0.2%</td></tr>
+     <tr><td>Chinese yuan</td><td>CN&yen;61M</td><td>8.5M</td><td>2.1%</td><td><span class="b" style="width:4px"></span></td><td>0.0%</td></tr>
+     <tr><td>Australian dollar</td><td>A$9.1M</td><td>5.9M</td><td>1.4%</td><td><span class="b" style="width:3px"></span></td><td class="dn">&minus;0.5%</td></tr>
+     <tr><td>Swiss franc</td><td>CHF1.4M</td><td>1.7M</td><td>0.4%</td><td><span class="b" style="width:1px"></span></td><td class="up">+0.1%</td></tr>
+     <tr class="tot"><td>All eight</td><td></td><td>411.8M</td><td>100%</td><td></td><td class="dn">&minus;US$0.6M</td></tr>
+    </table>
+    <p class="para">This month the vault's worth moved <b>&minus;US$0.6M</b>: the euro fell 0.9% against the dollar (&minus;US$0.8M), the Canadian dollar rose 0.4% (+US$0.2M). Nothing was spent or earned: it is a revaluation, booked as one.</p>
+   </div>
+   <div class="card">
+    <div class="ch"><span class="ic">&#9878;</span><h4>How the vault holds what the treasury buys</h4></div>
+    <div class="chips"><span class="chip">All US$ &middot; as before</span><span class="chip lit">Match our trade</span><span class="chip">The world's mix</span><span class="chip">Choose&hellip;</span></div>
+    <div class="para" style="margin-top:0">Each dollar the treasury buys is split by our trade with the nations that use the eight: what we sell to and buy from the US, the eurozone, Canada and the rest. A money we neither earn nor pay in is not bought.</div>
+    <div class="cmp">
+     <span>our trade</span><span class="t"><i style="width:52%;background:#5aa9ff"></i><i style="width:21%;background:#a78bfa"></i><i style="width:17%;background:#f17cb0"></i><i style="width:4%;background:#2ec4b6"></i><i style="width:3%;background:#c9b68f"></i><i style="width:3%;background:#5f7189"></i></span>
+     <span>the world's mix</span><span class="t"><i style="width:60%;background:#5aa9ff"></i><i style="width:22%;background:#a78bfa"></i><i style="width:3%;background:#f17cb0"></i><i style="width:5%;background:#2ec4b6"></i><i style="width:5%;background:#c9b68f"></i><i style="width:5%;background:#5f7189"></i></span>
+     <span>in the vault</span><span class="t"><i style="width:58%;background:#5aa9ff"></i><i style="width:20.8%;background:#a78bfa"></i><i style="width:9.2%;background:#f17cb0"></i><i style="width:4.3%;background:#2ec4b6"></i><i style="width:3.8%;background:#c9b68f"></i><i style="width:3.9%;background:#5f7189"></i></span>
+    </div>
+    <div class="leg"><span><i style="background:#5aa9ff"></i>US$</span><span><i style="background:#a78bfa"></i>euro</span><span><i style="background:#f17cb0"></i>C$</span><span><i style="background:#2ec4b6"></i>yen</span><span><i style="background:#c9b68f"></i>pound</span><span><i style="background:#5f7189"></i>the other three</span></div>
+    <div class="ch" style="margin-top:12px"><span class="ic">&#8644;</span><h4>Buy or sell foreign money</h4></div>
+    <div class="chips"><span class="chip">US$</span><span class="chip lit">&euro;</span><span class="chip">&yen;</span><span class="chip">&pound;</span><span class="chip">CN&yen;</span><span class="chip">C$</span><span class="chip">A$</span><span class="chip">CHF</span></div>
+    <div class="fx"><div><span>D$1 buys</span>&euro;0.781</div><div><span>US$1 is</span>D$1.180</div><div><span>&euro;1 is</span>D$1.280</div><div><span>the spread</span>0.10%</div></div>
+    <div class="ex">Buy <input value="&euro;10,000,000"> for <b style="font-family:var(--mono)">D$12.81M</b><span class="btn go">Buy euros</span><span class="btn">Sell</span></div>
+   </div>
+  </div>
+  <div class="row r2">
+   <div class="card" style="grid-column:1 / span 2">
+    <div class="ch"><span class="ic" style="background:rgba(241,124,176,.16);color:var(--building)">&#9638;</span><h4>Land office &rsaquo; Offer 4 &middot; west side &middot; 1.44 km&sup2;</h4><span class="sub">a city founded at Windsor, Ontario, across the river from Detroit</span></div>
+    <div class="offer">
+     <svg class="mini" width="330" height="220" viewBox="0 0 330 220">
+      <rect width="330" height="220" fill="#4f6b45"/>
+      <path d="M330,0 L330,220 L0,220 L0,205 C70,170 120,128 165,100 C215,68 265,40 300,0Z" fill="#56744b"/>
+      <path d="M0,205 C70,170 120,128 165,100 C215,68 265,40 300,0" fill="none" stroke="#78b4dc" stroke-width="16"/>
+      <path d="M0,205 C70,170 120,128 165,100 C215,68 265,40 300,0" fill="none" stroke="#fff" stroke-width="1.6" stroke-dasharray="4 4"/>
+      <rect x="190" y="120" width="120" height="86" fill="#8cc4ff" fill-opacity=".18" stroke="#8cc4ff" stroke-width="1.5"/>
+      <text x="250" y="168" fill="#e6edf3" font-family="IBM Plex Sans" font-size="11" text-anchor="middle">the city</text>
+      <rect x="112" y="72" width="108" height="64" fill="#f6a6c9" fill-opacity=".28" stroke="#f6a6c9" stroke-width="1.6" stroke-dasharray="5 3"/>
+      <text x="166" y="66" fill="#f6a6c9" font-family="IBM Plex Mono" font-size="10" text-anchor="middle">offer 4</text>
+      <text x="22" y="40" fill="#e6edf3" font-family="IBM Plex Sans" font-size="11" font-weight="600">United States</text>
+      <text x="22" y="54" fill="#a9b8c9" font-family="IBM Plex Sans" font-size="9.5">Detroit</text>
+      <text x="238" y="210" fill="#e6edf3" font-family="IBM Plex Sans" font-size="11" font-weight="600">Canada</text>
+      <text x="40" y="178" fill="#a9b8c9" font-family="IBM Plex Sans" font-size="9.5" transform="rotate(-33 40 178)">the Detroit River</text>
+     </svg>
+     <div>
+      <table>
+       <tr><th>part</th><th>its seller</th><th>a hectare</th><th>its price</th><th>in D$</th><th>paid from</th></tr>
+       <tr><td>0.89 km&sup2; north-west, with half the river</td><td>United States</td><td>US$128,000</td><td>US$11.4M</td><td>D$13.4M</td><td>the vault's US$</td></tr>
+       <tr><td>0.55 km&sup2; south-east, with half the river</td><td>Canada</td><td>C$103,200</td><td>C$5.7M</td><td>D$4.9M</td><td>the vault's C$</td></tr>
+       <tr class="tot"><td>Offer 4</td><td>two nations</td><td></td><td></td><td>D$18.3M</td><td></td></tr>
+      </table>
+      <p class="para">Each part is bought from the nation it lies in, at that nation's land price, in its money. Canada is the reference, its factor 1, so its part costs what any offer costs today. The US part costs <b>1.7 times</b> as much a hectare: US cropland averages US$14,880 a hectare (USDA, 2026) against about C$12,000 in Canada (est.).</p>
+      <div class="chips" style="margin-top:8px"><span class="chip">Pay in cash, converted</span><span class="chip lit">Pay from the vault where it holds the money</span></div>
+      <div class="note2">The vault holds both moneys, so both parts come from it. One factor a nation does not see that southwest Ontario's farmland is several times Saskatchewan's (spec-nations 11).</div>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+</div></div>
+<div class="notes">
+ <div class="note"><b>The eight.</b> US dollar, euro, yen, pound, yuan, the Canadian and Australian dollars and the Swiss franc: the moneys the IMF's survey of reserves names, about 94% of what central banks hold (2026Q2). The vault's cover and backing read their sum in US$, as today's do. The mix defaults to <b>All US$</b>, so a city that never opens this card holds what it holds today (spec-nations D20).</div>
+ <div class="note"><b>The land.</b> Today's formula (US$75,000 a hectare at the world's price level, times the crowding premium) times the seller's land factor: its farmland's price over Canada's, from Eurostat, the USDA and FCC, a fit on output a head and density elsewhere. The border is the world file's raster at 240 cells a degree, so an offer's parts are counted cell by cell, and the river is split at the line (WN5).</div>
+</div>
+</div>
+</body></html>
