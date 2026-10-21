@@ -96,7 +96,12 @@ adds its line here, not in `CLAUDE.md`.
         Rollover.java              the treasury's rollover of what falls due next month (0.7.13): the setting,
                                    the ledger of the surplus it has netted and the record; Game's ROLLING WHAT
                                    FALLS DUE reads the city and books the issues (the project's
-                                   rolling-what-falls-due.md)
+                                   rolling-what-falls-due.md); since 0.8.15 (batch CD2) its own cap
+        Auction.java, AuctionTally.java, CapSetting.java
+                                   the city's paper sold at auction (0.8.15, batch CD2): the bidders, each by
+                                   its own rule (the households, the firms, the world, the bank), the one
+                                   clearing yield, capped or Fill it; the tally of the sales booked (D33);
+                                   a cap as the save keeps it (docs/studies/spec-city-debt.md 4; AuctionCheck)
         TreasuryFund.java          the city's fund (0.7.14): its cash, its two dials (what goes in, and since
                                    0.7.48 what it withdraws), its rule's statics, the
                                    rescues and the bank's preferred offer as a record; the books themselves

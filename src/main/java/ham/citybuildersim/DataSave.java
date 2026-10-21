@@ -1430,6 +1430,12 @@ public class DataSave {
     public void setDebtMarket(double[] market) { this.debtMarket = market; }
     public double[] getDebtMarket()            { return debtMarket; }
 
+    /** The city's auctions counted (CD2, D33): AuctionTally.toSave(), fourteen slots. Null on a save from before the tally, which loads an empty one. */
+    private double[] auctionTally;
+
+    public void setAuctionTally(double[] tally) { this.auctionTally = tally; }
+    public double[] getAuctionTally()           { return auctionTally; }
+
     /**
      * The price basket, its weights, and a year of readings.
      *
@@ -1548,6 +1554,24 @@ public class DataSave {
     public double[] getRolloverLedger()              { return rolloverLedger; }
     public void setRolloverRecord(double[] record)  { this.rolloverRecord = record; }
     public double[] getRolloverRecord()              { return rolloverRecord; }
+
+    /**
+     * ...and the cap its auctions take (CD2, D28), the mode by name and the
+     * tail or yield beside it, two plain fields because a cap's Fill it
+     * carries no number and Gson writes no NaN (CapSetting). Null and 0 on a
+     * save without them, which read as the default: fair plus a point.
+     */
+    private String rolloverCapMode;
+    private double rolloverCapValue;
+
+    public void setRolloverCap(Auction.Cap cap) {
+        CapSetting.Saved saved = CapSetting.save(cap);
+        this.rolloverCapMode = saved.mode;
+        this.rolloverCapValue = saved.value;
+    }
+    public Auction.Cap getRolloverCap() {
+        return CapSetting.restore(rolloverCapMode == null ? null : new CapSetting.Saved(rolloverCapMode, rolloverCapValue));
+    }
 
     /**
      * How the land office pays (0.7.6) - Game.isLandPaidFromVault(): true out

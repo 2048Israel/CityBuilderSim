@@ -4,7 +4,8 @@ The boards, each one self-contained, drawn in the game's palette (`ui/Palette`,
 as the nations boards); open them in a browser:
 
 - `1-the-currency.html`: Trade & the world > The currency under XR1: the rate,
-  parity on traded goods and the fair level, the chart of his slot 3 replayed,
+  parity (the basket with rent held to a third, Jerus's ★2) and the fair level,
+  the chart of his slot 3 replayed,
   what moved it this month in five lines, where the fundamentals hold it.
 - `2-the-regime.html`: Policy > The currency under XR2: float, lean, band or
   peg; a peg's shadow rate and cost, the vault's months to the floor; the band;

@@ -1454,6 +1454,28 @@ public final class Pieces {
         return card;
     }
 
+    /**
+     * A funding card's loan that came up short (CD2): the auction could not
+     * sell the paper that raises the cash this card is for at the highest
+     * yield the city takes. The card says so in red above its button and the
+     * button is disabled - an order the money does not cover is not placed,
+     * and the debt would be issued with nothing built. The answers (raise the
+     * cap, Fill it, or borrow nothing) are the build screen's, under its
+     * offers (BuildScreen.shortAnswers(), D30). Returns the card.
+     */
+    public static VBox coverCash(VBox card, DebtQuote quote) {
+        if (quote == null || !quote.isShort() || card.getChildren().size() < 2) return card;
+        Label short_ = new Label(String.format("Sells %s of the %s it needs at the highest yield the city takes (%s): "
+                + "not enough to pay for it.", Money.money(quote.cashReceived()),
+                Money.money(quote.requested()), String.format("%.2f%%", quote.auction().ceiling() * 100)));
+        short_.setWrapText(true);
+        short_.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.BAD_TEXT) + " -fx-font-weight: bold;");
+        int foot = card.getChildren().size() - 1;
+        card.getChildren().add(foot, short_);
+        card.getChildren().get(card.getChildren().size() - 1).setDisable(true);
+        return card;
+    }
+
     /** One figure on an offer card: what it is at the left, wrapping, and the figure at the right. */
     static HBox offerLine(String label, String value, String tone) {
         Label what = new Label(label);

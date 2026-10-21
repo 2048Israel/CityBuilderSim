@@ -1792,8 +1792,8 @@ final class LandScreen {
         List<Offer> loans = offers(ids);
         for (int i = 0; i < loans.size(); i++) {
             Offer o = loans.get(i);
-            offers.add(offerCard(o.name(), o.info(), o.quote(), o.rate(), o.tone(), o.ending(), o.action(),
-                    Icons.LAND, Palette.BUILDING, o.issue(), o.written()), i, 0);
+            offers.add(coverCash(offerCard(o.name(), o.info(), o.quote(), o.rate(), o.tone(), o.ending(), o.action(),
+                    Icons.LAND, Palette.BUILDING, o.issue(), o.written()), o.quote()), i, 0);
         }
         if (vaultPays) {
             if (!game.foreignWindowOpen()) {

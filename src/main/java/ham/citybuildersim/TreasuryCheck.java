@@ -471,7 +471,8 @@ public class TreasuryCheck {
          */
         near("...and what it left over is the first coupon's timing, to the cent: the bank's share of it", m,
                 opened.getTreasuryResidual(), books.getInterestExpense()
-                        - opened.getCouponsToHouseholds() - opened.getCentralBank().getPaperCoupons());
+                        - opened.getCouponsToHouseholds() - opened.getCouponsToFirms()
+                        - opened.getCentralBank().getPaperCoupons());
 
         /* ---- and a month that has no journal has no lines, so the row stays shut ---- */
         Game plain = new Game(GameFiles.scratch("treasury-plain"));
@@ -889,10 +890,12 @@ public class TreasuryCheck {
         quietly(() -> roads.handleForeignLogic("Note", 2_000, 6, Game.BUILD_NOTE_GRANULE, false));
         check("fixture: ...and shut once it owes dollars and sells nothing abroad", !roads.foreignWindowOpen());
         quietly(() -> roads.handleTBillLogic(5_000, 3, Game.BUILD_NOTE_GRANULE));
-        quietly(() -> roads.handleMediumBondLogic(10_000, 2, Game.BUILD_BOND_GRANULE));
+        // Five years, the shortest amortizing bond the lineup sells (CD2): a serial rolls into the nearest of
+        // 5 to 30, and a two-year one is off it. Its instalments fall due on the same anniversaries.
+        quietly(() -> roads.handleMediumBondLogic(10_000, 5, Game.BUILD_BOND_GRANULE));
         int issuedAt = roads.getMonth();
         Debt dollars = paper(roads, "NOTE", 6, issuedAt, true);
-        Debt serial = paper(roads, "SERIAL", 24, issuedAt, false);
+        Debt serial = paper(roads, "SERIAL", 60, issuedAt, false);
 
         int rolledMonths = 0;
         boolean allDeficit = true, allRolled = true, allAudited = true, dollarsAtHome = false, logSaid = false;
@@ -915,7 +918,7 @@ public class TreasuryCheck {
                         && roads.getDebtManager().getForeignPrincipalUsd() == 0;
                 logSaid = log.contains("the window abroad is shut");
             }
-            if (serialDue) serialRolled = paper(roads, "SERIAL", 24, now, false) != null;
+            if (serialDue) serialRolled = paper(roads, "SERIAL", 60, now, false) != null;
         }
         System.out.printf("   %d month(s) rolled; the year's surplus %,.2fk at the end%n",
                 rolledMonths, roads.surplusOverLastYear());

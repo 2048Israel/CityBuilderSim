@@ -30,6 +30,10 @@ public class RatesModel {
     static final double RISK_PREMIUM = .10, SAFE_COVER = 3;
     /** How much of a change in the fundamentals reaches the rate in its month. */
     static final double MARKET_SPEED = .5;
+    /** The share of a change in the real rate's level the rate shows at once: 1.5% of 2.5% a point, Kearns and Manners' surprise on the day [R16]. */
+    static final double GAP_IMPACT = .6;
+    /** ...and the rest builds with this half-life, in months, so the peak comes within one to three years: delayed overshooting [R15]. */
+    static final double GAP_BUILD_HALF_LIFE = 9;
     /** Parity's trend: a level and a slope (Holt), so the rate follows a moving parity with no lag. */
     static final double TREND_LEVEL = 1 / 6.0, TREND_SLOPE = 1 / 24.0;
 
@@ -73,6 +77,31 @@ public class RatesModel {
         return x;
     }
     static boolean basedSaid;
+
+    static final int LUXURY = 15, MEALS = 16, SERVICES = 17, W_GROCERIES = 18, W_LUXURY = 19, W_MEALS = 20, W_SERVICES = 21;
+    /** Rent's most in the basket parity is struck from: about its real share (Jerus, 2026-10-21, ★2: "Basket, rent capped"). */
+    static final double RENT_CAP = 1 / 3.0;
+
+    /**
+     * Parity on the whole basket with rent's weight held to RENT_CAP and the other four scaled up to
+     * fill it: today's parity times the capped basket's cost over the basket's, month by month.
+     */
+    static double[] cappedParity(double[][] s) {
+        double[] x = new double[s.length];
+        for (int t = 0; t < s.length; t++) {
+            double[] w = { s[t][W_GROCERIES], s[t][W_LUXURY], s[t][W_MEALS], s[t][RENT_WEIGHT], s[t][W_SERVICES] };
+            double[] i = { s[t][GROCERIES], s[t][LUXURY], s[t][MEALS], s[t][RENT], s[t][SERVICES] };
+            double rest = w[0] + w[1] + w[2] + w[4];
+            if (w[3] <= RENT_CAP || rest <= 0) { x[t] = s[t][PARITY]; continue; }
+            double scale = (1 - RENT_CAP) / rest, whole = 0, capped = 0;
+            for (int k = 0; k < 5; k++) {
+                whole += w[k] * i[k];
+                capped += (k == 3 ? RENT_CAP : w[k] * scale) * i[k];
+            }
+            x[t] = whole > 0 ? s[t][PARITY] * capped / whole : s[t][PARITY];
+        }
+        return x;
+    }
 
     static double[][] load(Path path) throws Exception {
         List<String> lines = Files.readAllLines(path);
@@ -202,16 +231,22 @@ public class RatesModel {
     static final class Float {
         final Trend trend = new Trend();
         final Random rnd; final double rho = Math.pow(.5, 1 / MARKET_HALF_LIFE);
-        double market, level, push;   // the market's swing, the fundamentals reached so far, a held intervention
+        double market, level, push;   // the market's swing, the other fundamentals reached so far, a held intervention
+        double gapTarget, gapReached; boolean gapStarted;   // the real rate's level, and how much of it the rate shows
         Float(long seed) { rnd = new Random(seed); }
         /** @return log of the rate. gap: the city's real rate less the world's, a year; cover: months of imports in the vault. */
         double step(double parity, double gap, double cover, boolean noise) {
-            double fundamentals = -GAP_CAP * Math.tanh(PERSISTENCE * gap / GAP_CAP)
-                    + RISK_PREMIUM * Math.max(0, 1 - cover / SAFE_COVER);
-            level += MARKET_SPEED * (fundamentals - level);
+            // The real rate (Jerus, ★8: "whatever real life does"): GAP_IMPACT of a change at once, the rest building.
+            double target = -GAP_CAP * Math.tanh(PERSISTENCE * gap / GAP_CAP);
+            if (!gapStarted) { gapReached = target; gapStarted = true; }
+            else gapReached += GAP_IMPACT * (target - gapTarget);
+            gapTarget = target;
+            gapReached += (1 - Math.pow(.5, 1 / GAP_BUILD_HALF_LIFE)) * (gapTarget - gapReached);
+            double others = RISK_PREMIUM * Math.max(0, 1 - cover / SAFE_COVER);
+            level += MARKET_SPEED * (others - level);
             market = rho * market + (noise ? MARKET_SIGMA * rnd.nextGaussian() : 0);
             push *= Math.pow(.5, 1 / 6.0);
-            return trend.step(Math.log(parity)) + level + market + push;
+            return trend.step(Math.log(parity)) + gapReached + level + market + push;
         }
     }
 
@@ -224,8 +259,15 @@ public class RatesModel {
         p("--- 3a. on today's parity, the whole basket ---");
         replayOn(s, col(s, PARITY));
         p("");
-        p("--- 3b. on parity from traded goods (groceries), the proposal ---");
+        p("--- 3b. on parity from traded goods (groceries) ---");
         replayOn(s, tradedParity(s));
+        p("");
+        p("--- 3c. on the whole basket with rent held to a third, the proposal (Jerus's ★2) ---");
+        double[] capped = cappedParity(s), basket = col(s, PARITY);
+        p("rent capped: parity at m192 %.3f, m240 %.3f (+%.0f%%; the whole basket's +%.0f%%), at the end %.3f against the whole basket's %.3f and groceries' %.3f",
+                capped[192], capped[240], 100 * (capped[240] / capped[192] - 1), 100 * (basket[240] / basket[192] - 1),
+                capped[s.length - 1], basket[s.length - 1], tradedParity(s)[s.length - 1]);
+        replayOn(s, capped);
     }
 
     static void replayOn(double[][] s, double[] par) {
@@ -394,10 +436,10 @@ public class RatesModel {
 
     /* ======================= THE BOARDS' DATA ======================= */
 
-    /** board-1-path.csv: his slot 3 under today's rule and the proposal (seed 1004); board-3-world.csv: one world, 2000-2040. */
+    /** board-1-path.csv: his slot 3 under today's rule and the proposal, on parity with rent held to a third (★2); board-3-world.csv: one world, 2000-2040. */
     static void boardData(double[][] s) throws Exception {
         int n = s.length;
-        double[] basket = col(s, PARITY), traded = tradedParity(s), r = col(s, RATE);
+        double[] basket = col(s, PARITY), groceries = tradedParity(s), traded = cappedParity(s), r = col(s, RATE);
         double[] gap = new double[n], cover = new double[n]; double imports = 0;
         for (int t = 0; t < n; t++) {
             double world = s[t][INDEX] / Math.max(1e-9, basket[t]);
@@ -415,10 +457,10 @@ public class RatesModel {
         }
         double[] sorted = dist.clone(); Arrays.sort(sorted);
         int typical = 0; for (int k = 0; k < seeds; k++) if (dist[k] == sorted[seeds / 2]) typical = k;
-        StringBuilder b = new StringBuilder("month,basketParity,tradedParity,today,fair,p10,p90,typicalSeed\n");
+        StringBuilder b = new StringBuilder("month,basketParity,cappedParity,groceriesParity,today,fair,p10,p90,typicalSeed\n");
         for (int t = 0; t < n; t++) {
             double[] at = new double[seeds]; for (int k = 0; k < seeds; k++) at[k] = paths[k][t]; Arrays.sort(at);
-            b.append(String.format(Locale.ROOT, "%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n", t, basket[t], traded[t], r[t],
+            b.append(String.format(Locale.ROOT, "%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n", t, basket[t], traded[t], groceries[t], r[t],
                     calm[t], at[seeds / 10], at[seeds * 9 / 10], paths[typical][t]));
         }
         Files.writeString(Path.of("board-1-path.csv"), b);

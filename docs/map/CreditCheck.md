@@ -1,10 +1,10 @@
-# CreditCheck.java - 2,045 lines · 18 methods · 1 constants · harnesses
+# CreditCheck.java - 2,054 lines · 18 methods · 1 constants · harnesses
 
 `ham/citybuildersim/CreditCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > Verifies private-sector credit: pricing, origination, rollover, cash conservation.
 
-**Uses:** [BusinessDebtManager](BusinessDebtManager.md) (133), [Game](Game.md) (19), [Sectors](Sectors.md) (16), [DebtManager](DebtManager.md) (16), [Bank](Bank.md) (13), [GameFiles](GameFiles.md) (7), [DebtQuote](DebtQuote.md) (7), [LongPlaytest](LongPlaytest.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (5), [BusinessLoan](BusinessLoan.md) (4), [MoneyAudit](MoneyAudit.md) (4), [InterimLoan](InterimLoan.md) (3), [Founding](Founding.md) (2), [BuildingManager](BuildingManager.md) (2), [Mortgage](Mortgage.md) (2), [LongTermBond](LongTermBond.md) (2), [Debt](Debt.md) (2), [Sector](Sector.md) (1), [FoodIndustry](FoodIndustry.md) (1), [Trade](Trade.md) (1), [Good](Good.md) (1), [BalanceSheet](BalanceSheet.md) (1), [EconomyManager](EconomyManager.md) (1), [Equity](Equity.md) (1), [BusinessDebt](BusinessDebt.md) (1), [SectorBooks](SectorBooks.md) (1), [Investor](Investor.md) (1)
+**Uses:** [BusinessDebtManager](BusinessDebtManager.md) (133), [Game](Game.md) (19), [Sectors](Sectors.md) (16), [DebtManager](DebtManager.md) (16), [Bank](Bank.md) (13), [GameFiles](GameFiles.md) (7), [DebtQuote](DebtQuote.md) (7), [LongPlaytest](LongPlaytest.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (5), [BusinessLoan](BusinessLoan.md) (4), [MoneyAudit](MoneyAudit.md) (4), [InterimLoan](InterimLoan.md) (3), [Debt](Debt.md) (3), [Founding](Founding.md) (2), [BuildingManager](BuildingManager.md) (2), [Mortgage](Mortgage.md) (2), [LongTermBond](LongTermBond.md) (2), [Sector](Sector.md) (1), [FoodIndustry](FoodIndustry.md) (1), [Trade](Trade.md) (1), [Good](Good.md) (1), [BalanceSheet](BalanceSheet.md) (1), [EconomyManager](EconomyManager.md) (1), [Equity](Equity.md) (1), [BusinessDebt](BusinessDebt.md) (1), [SectorBooks](SectorBooks.md) (1), [Investor](Investor.md) (1)
 
 ## Sections
 
@@ -52,7 +52,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4 | 2042 | **type** `public class CreditCheck` | Verifies private-sector credit: pricing, origination, rollover, cash conservation. |
+| 4 | 2051 | **type** `public class CreditCheck` | Verifies private-sector credit: pricing, origination, rollover, cash conservation. |
 | 8 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 15 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 23 | 9 | `static double priced(DebtManager m, double cash)` | The standing rate at a given cash position, leaving the market as it found it. |
@@ -86,14 +86,14 @@
 |---:|---:|---|---|
 | 1604 | 268 | `static void nothingPastTheDefaultPoint() throws Exception` |  |
 
-### 11. THE CURVE (0.7.1) (lines 1873-2045)
+### 11. THE CURVE (0.7.1) (lines 1873-2054)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1887 | 76 | `static void theCurve(Game city)` |  |
-| 1972 | 3 | `static boolean onCurve(DebtQuote q)` | True if this quote came off the sloped part of the curve. |
-| 1976 | 6 | `static boolean onCurve(double rate)` |  |
-| 1984 | 5 | `static void quietly(Runnable work)` | Runs a stretch of the game without its per-month console output. |
-| 1990 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 2006 | 39 | `static void bookAndCompare(Game g, String type, double amount, int duration, double rounding, boolean mustBeOnCurve)` | Takes a quote, books it, and checks the books say what the quote said. |
+| 1887 | 79 | `static void theCurve(Game city)` |  |
+| 1975 | 3 | `static boolean onCurve(DebtQuote q)` | True if this quote came off the sloped part of the curve. |
+| 1979 | 6 | `static boolean onCurve(double rate)` |  |
+| 1987 | 5 | `static void quietly(Runnable work)` | Runs a stretch of the game without its per-month console output. |
+| 1993 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 2009 | 45 | `static void bookAndCompare(Game g, String type, double amount, int duration, double rounding, boolean mustBeOnCurve)` | Takes a quote, books it, and checks the books say what the quote said. |
 

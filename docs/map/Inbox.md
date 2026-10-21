@@ -1,4 +1,4 @@
-# Inbox.java - 622 lines · 24 methods · 2 constants · model
+# Inbox.java - 649 lines · 24 methods · 2 constants · model
 
 `ham/citybuildersim/Inbox.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -37,16 +37,16 @@
 | line | section |
 |---:|---|
 | 47 | THE MONTH |
-| 240 | READING |
-| 293 | SAVE AND LOAD |
-| 314 | WHAT EACH ONE SAYS |
+| 267 | READING |
+| 320 | SAVE AND LOAD |
+| 341 | WHAT EACH ONE SAYS |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 39 | `Inbox.KEEP_MONTHS` | `24` | How long a resolved notice stays readable. |
-| 216 | `Inbox.BODY_COLUMNS` | `62` | A body line's most characters (0.7.73): the measure the bodies written by hand keep, inside the list's width in its mono face. |
+| 243 | `Inbox.BODY_COLUMNS` | `62` | A body line's most characters (0.7.73): the measure the bodies written by hand keep, inside the list's width in its mono face. |
 
 ## Fields (state)
 
@@ -58,49 +58,49 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 587 | **type** `public class Inbox` | Everything the city has had to say for itself, newest first. |
+| 36 | 614 | **type** `public class Inbox` | Everything the city has had to say for itself, newest first. |
 
-### THE MONTH (lines 47-239)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 58 | 96 | `public void takeMonth(Game game)` | Raise what is newly true, refresh what still is, resolve what is not. |
-| 160 | 16 | `private static List<String> overtimeBody(Game game)` | Every city's site on overtime whose next month is its third or later (ConstructionControl, B. |
-| 178 | 12 | `private static List<String> demolishedBody(Game game)` | The demolitions that finished this month: the material sold to the builders, the ground freed. |
-| 199 | 15 | `private void take(Game game, int month, String key, boolean nowTrue, String title, List<String> body)` | One condition, this month. |
-| 219 | 14 | `static List<String> wrapped(String text, int columns)` | A sentence broken at spaces into lines of at most `columns` characters (a longer word on a line of its own). |
-| 235 | 4 | `private void cull(int month)` | Drop what has been settled longer than anybody needs to remember. |
-
-### READING (lines 240-292)
+### THE MONTH (lines 47-266)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 245 | 5 | `public List<Notice> newestFirst()` | Newest first, which is the order the screen wants and nothing else does. |
-| 252 | 1 | `public List<Notice> all()` | In the order they happened. |
-| 254 | 1 | `public int size()` |  |
-| 266 | 6 | `public Notice urgent()` | The one that interrupts: newest unread notice whose condition still holds. |
-| 274 | 5 | `public int unread()` | What goes on the envelope. |
-| 281 | 7 | `public Notice live(String key)` | The live notice for a condition, or null if there is not one. |
-| 289 | 3 | `public void markRead(Notice notice, int month)` |  |
+| 58 | 123 | `public void takeMonth(Game game)` | Raise what is newly true, refresh what still is, resolve what is not. |
+| 187 | 16 | `private static List<String> overtimeBody(Game game)` | Every city's site on overtime whose next month is its third or later (ConstructionControl, B. |
+| 205 | 12 | `private static List<String> demolishedBody(Game game)` | The demolitions that finished this month: the material sold to the builders, the ground freed. |
+| 226 | 15 | `private void take(Game game, int month, String key, boolean nowTrue, String title, List<String> body)` | One condition, this month. |
+| 246 | 14 | `static List<String> wrapped(String text, int columns)` | A sentence broken at spaces into lines of at most `columns` characters (a longer word on a line of its own). |
+| 262 | 4 | `private void cull(int month)` | Drop what has been settled longer than anybody needs to remember. |
 
-### SAVE AND LOAD (lines 293-313)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 307 | 4 | `public void restoreFrom(List<Notice> loaded)` | Takes over a loaded inbox wholesale. |
-| 312 | 1 | `public void reset()` |  |
-
-### WHAT EACH ONE SAYS (lines 314-622)
+### READING (lines 267-319)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 323 | 21 | `private static List<String> sheddingBody(Game game)` |  |
-| 345 | 22 | `private static List<String> landLockBody(Game game)` |  |
-| 368 | 27 | `private static List<String> bankBody(Game game)` |  |
-| 397 | 20 | `private static List<String> resolvedBody(Game game, TreasuryFund.Resolution r)` | The month the city resolved the bank (0.7.14): the log's sentence, with its figures. |
-| 419 | 22 | `private static List<String> preferredBody(Game game)` | The bank's offer (0.7.14): the popup's sentence, TARP's terms. |
-| 450 | 37 | `private static List<String> defaultsBody(Game game)` | FIRMS GOING BUST (0.7.8). |
-| 489 | 8 | `private static String money(double thousands)` | Thousands - the unit the model counts in - as a player reads money: $1.3M, $450k. |
-| 504 | 33 | `private static List<String> crimeBody(Game game)` | Crime at one and a half times Canada's rate or worse, or people the police caught with no cell to hold them (2026-09-11). |
-| 550 | 72 | `private static List<String> healthcareBody(Game game)` | The three things healthcare is silently costing the city, when they apply. |
+| 272 | 5 | `public List<Notice> newestFirst()` | Newest first, which is the order the screen wants and nothing else does. |
+| 279 | 1 | `public List<Notice> all()` | In the order they happened. |
+| 281 | 1 | `public int size()` |  |
+| 293 | 6 | `public Notice urgent()` | The one that interrupts: newest unread notice whose condition still holds. |
+| 301 | 5 | `public int unread()` | What goes on the envelope. |
+| 308 | 7 | `public Notice live(String key)` | The live notice for a condition, or null if there is not one. |
+| 316 | 3 | `public void markRead(Notice notice, int month)` |  |
+
+### SAVE AND LOAD (lines 320-340)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 334 | 4 | `public void restoreFrom(List<Notice> loaded)` | Takes over a loaded inbox wholesale. |
+| 339 | 1 | `public void reset()` |  |
+
+### WHAT EACH ONE SAYS (lines 341-649)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 350 | 21 | `private static List<String> sheddingBody(Game game)` |  |
+| 372 | 22 | `private static List<String> landLockBody(Game game)` |  |
+| 395 | 27 | `private static List<String> bankBody(Game game)` |  |
+| 424 | 20 | `private static List<String> resolvedBody(Game game, TreasuryFund.Resolution r)` | The month the city resolved the bank (0.7.14): the log's sentence, with its figures. |
+| 446 | 22 | `private static List<String> preferredBody(Game game)` | The bank's offer (0.7.14): the popup's sentence, TARP's terms. |
+| 477 | 37 | `private static List<String> defaultsBody(Game game)` | FIRMS GOING BUST (0.7.8). |
+| 516 | 8 | `private static String money(double thousands)` | Thousands - the unit the model counts in - as a player reads money: $1.3M, $450k. |
+| 531 | 33 | `private static List<String> crimeBody(Game game)` | Crime at one and a half times Canada's rate or worse, or people the police caught with no cell to hold them (2026-09-11). |
+| 577 | 72 | `private static List<String> healthcareBody(Game game)` | The three things healthcare is silently costing the city, when they apply. |
 

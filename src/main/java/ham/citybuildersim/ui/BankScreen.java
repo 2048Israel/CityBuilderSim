@@ -4167,7 +4167,7 @@ final class BankScreen {
             DebtQuote bond = game.quoteLongBondForCash(shortBy, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
             DebtQuote note = game.quoteTBill(shortBy, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
             DebtManager market = game.getDebtManager();
-            VBox bondCard = offerCard(Game.BUILD_BOND_YEARS + "-year bond", null, bond,
+            VBox bondCard = coverCash(offerCard(Game.BUILD_BOND_YEARS + "-year bond", null, bond,
                     pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
                     rateColour(bond, market),
                     String.format("Paid over %d years: the coupon every month, then the whole %s at the end.",
@@ -4178,20 +4178,20 @@ final class BankScreen {
                                 Game.BUILD_BOND_GRANULE);
                         game.acceptPreferredOffer();
                         showBankMenu();
-                    }, written);
-            VBox noteCard = offerCard(Game.BUILD_NOTE_MONTHS + "-month note", null, note,
+                    }, written), bond);
+            VBox noteCard = coverCash(offerCard(Game.BUILD_NOTE_MONTHS + "-month bill", null, note,
                     pct2(note.marketRate()) + " a year, taken as a discount", rateColour(note, market),
                     String.format(game.getRollover().getMode() == Rollover.Mode.MANUAL
                                     ? "Falls due in %d months: the whole %s at once, out of the treasury."
                                     : "Falls due in %d months: the whole %s at once, refinanced then by the treasury's rollover.",
                             note.duration(), written.apply(note.faceValue())),
-                    "Issue the " + Game.BUILD_NOTE_MONTHS + "-month note and accept",
+                    "Issue the " + Game.BUILD_NOTE_MONTHS + "-month bill and accept",
                     () -> {
                         game.handleTBillLogic(game.preferredOfferShortBy(), Game.BUILD_NOTE_MONTHS,
                                 Game.BUILD_NOTE_GRANULE);
                         game.acceptPreferredOffer();
                         showBankMenu();
-                    }, written);
+                    }, written), note);
             GridPane two = row(bondCard, noteCard);
             two.setMaxWidth(820);
             c.getChildren().add(two);

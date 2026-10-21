@@ -659,8 +659,11 @@ public final class SectorBooks {
                 economy.getBondAssets(key),
                 game.getBondMarket().getProceeds(key),
                 game.getBondMarket().getRepaid(key),
-                game.getBondMarket().getBoughtNet(key),
-                game.getBondMarket().getCouponsTo(key),
+                // ...the city's own paper it holds is bonds it holds, bought net and paying a coupon (CD2, slice 4)
+                game.getBondMarket().getBoughtNet(key)
+                        + (economy.getOutwardInvestment() == null ? 0 : economy.getOutwardInvestment().getPaperSpentThisMonth(key)),
+                game.getBondMarket().getCouponsTo(key)
+                        + (economy.getOutwardInvestment() == null ? 0 : economy.getOutwardInvestment().getPaperCouponsThisMonth(key)),
                 sheet.getTradeReceivables(),
                 sheet.getTradePayables(),
                 sector.getTradeCreditCash(),

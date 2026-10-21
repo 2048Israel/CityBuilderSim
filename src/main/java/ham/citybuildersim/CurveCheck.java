@@ -570,7 +570,10 @@ public class CurveCheck {
         if (!tradingCity) {
             roundTrip(city, g, "Note", () -> g.handleTBillLogic(ASK, 12, 1000));
             roundTrip(city, g, "Serial", () -> g.handleMediumBondLogic(ASK, 5, 1000));
-            roundTrip(city, g, "Term", () -> g.handleLongBondLogic(ASK, 20, 1000));
+            // A bond sold while a line of its term is the benchmark goes into that line (CD2), and the round trip
+            // buys back the piece it sold - the whole line, the 20-year one section 7 left standing too. So the
+            // round trip sells the 30-year, a line of its own.
+            roundTrip(city, g, "Term", () -> g.handleLongBondLogic(ASK, 30, 1000));
         }
         // The dollar legs: on the home cities when the window is open, and always on ForeignDebtCheck's trading
         // city, the fixture RestructureCheck proves the world's pricing on.

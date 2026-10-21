@@ -1,53 +1,64 @@
-# LongTermBond.java - 137 lines · 12 methods · 2 constants · model
+# LongTermBond.java - 136 lines · 13 methods · 2 constants · model
 
 `ham/citybuildersim/LongTermBond.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
-> A term loan: a coupon every month on the whole face, and the whole face at
-> the end - issued only at the five maturities in MATURITIES (0.7.1).
+> A bond: a fixed coupon every month on the whole face, and the face at the
+> end - at 2, 5, 10, 20, 30 or 50 years, sold in lines that reopen (CD2).
+> 
+> WHY: until CD2 this was a deep-discount "term loan" - a coupon of about a
+> third of the market rate, the face grossed up until its payments were worth
+> the cash - which no treasury sells and which showed the player a coupon
+> that was not the price. A bond is sold at auction now (Auction): its coupon
+> is the clearing yield rounded down to an eighth of a point, set at issue
+> and never changed, so a new line sells just under 100, and a sale at the
+> same term while a line has nine tenths of it left goes into that line
+> (Debt.reopen(), DebtManager.benchmarkLine()). The class keeps its name
+> (spec-city-debt.md, star 3): it is any bond of 2 to 50 years.
 
 **Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
 
-**Used by (10):** [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [DebtManager](DebtManager.md), [FundCheck](FundCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md)
+**Used by (12):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 11 | FIVE MATURITIES (0.7.1) |
+| 21 | SIX MATURITIES (CD2; five from 0.7.1) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 24 | `LongTermBond.MATURITIES` | `{ 10, 20, 30, 40, 50 }` | The only terms a term loan is issued at, in years: five benchmark maturities, so the curve is five points a player can read. |
-| 27 | `LongTermBond.REFUSAL` | `"Term loans are issued at 10, 20, 30, 40 or 50 years."` | What the treasury is told when it asks for any other term. |
+| 32 | `LongTermBond.MATURITIES` | `{ 2, 5, 10, 20, 30, 50 }` | The only terms a bond is issued at, in years: six benchmark maturities, so each trades as a line. |
+| 35 | `LongTermBond.REFUSAL` | `"Bonds are issued at 2, 5, 10, 20, 30 or 50 years."` | What the treasury is told when it asks for any other term. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 35 | `private double monthlyCouponRate` |  |
+| 43 | `private double monthlyCouponRate` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9 | 129 | **type** `public class LongTermBond extends Debt` | A term loan: a coupon every month on the whole face, and the whole face at the end - issued only at the five maturities in MATURITIES (0.7.1). |
+| 19 | 118 | **type** `public class LongTermBond extends Debt` | A bond: a fixed coupon every month on the whole face, and the face at the end - at 2, 5, 10, 20, 30 or 50 years, sold in lines that reopen (CD2). |
 
-### FIVE MATURITIES (0.7.1) (lines 11-137)
+### SIX MATURITIES (CD2; five from 0.7.1) (lines 21-136)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 4 | `public static boolean isIssuable(int years)` | True for one of the five. |
-| 37 | 3 | `public LongTermBond(double faceValue, int months, int monthStarted, double couponRate)` |  |
-| 42 | 11 | `public LongTermBond(double faceValue, int months, int monthStarted, double couponRate, boolean foreign)` |  |
-| 69 | 9 | `public void processMonth(Game game)` | Long bonds are deliberately a combination instrument: a LOW monthly coupon plus a redemption premium (face value exceeds the cash received). |
-| 80 | 3 | `public double getIssuePrice()` |  |
-| 85 | 3 | `protected double principalOwed()` |  |
-| 90 | 3 | `public int getMaturityMonth()` |  |
-| 95 | 3 | `public boolean isMatured()` |  |
-| 100 | 3 | `public String getType()` |  |
-| 105 | 3 | `protected double couponOwed()` |  |
-| 109 | 3 | `public double getCouponRate()` |  |
-| 125 | 12 | `protected double[] scheduleOwed()` | Coupon every month, and the whole face at the end. |
+| 38 | 4 | `public static boolean isIssuable(int years)` | True for one of the six. |
+| 45 | 3 | `public LongTermBond(double faceValue, int months, int monthStarted, double couponRate)` |  |
+| 50 | 11 | `public LongTermBond(double faceValue, int months, int monthStarted, double couponRate, boolean foreign)` |  |
+| 64 | 9 | `public void processMonth(Game game)` | A coupon on the whole face, every month; the face in the last. |
+| 75 | 3 | `public double getIssuePrice()` |  |
+| 80 | 3 | `protected double principalOwed()` |  |
+| 85 | 3 | `public int getMaturityMonth()` |  |
+| 90 | 3 | `public boolean isMatured()` |  |
+| 95 | 3 | `public String getType()` |  |
+| 100 | 3 | `protected double couponOwed()` |  |
+| 104 | 3 | `public double getCouponRate()` |  |
+| 109 | 3 | `public double couponRate()` | The coupon, a year, as the auction set it at issue (Auction.COUPON_STEP): the same figure getCouponRate() gives. |
+| 124 | 12 | `protected double[] scheduleOwed()` | Coupon every month, and the whole face at the end. |
 

@@ -182,9 +182,10 @@ public class Game {
     /*
      * RETIRED. Long bonds used to be grossed up by this over an equivalent
      * medium bond, on a simple-interest relation that did not survive being
-     * discounted properly - see faceValueOfLongBond(). The instrument is priced
-     * at present value now and is still dearer all-in, because it runs longer
-     * at a real rate rather than because a constant said so.
+     * discounted properly (the term loan's face was solved from its present
+     * value until CD2 sold bonds at auction instead). The instrument is
+     * priced at present value now and is still dearer all-in, because it runs
+     * longer at a real rate rather than because a constant said so.
      *
      * private static final double LONG_BOND_COST_MULTIPLIER = 1.15;
      */
@@ -375,6 +376,8 @@ public class Game {
         exchange.attach(equity, householdBalance, bank, exchangeCompanies, 0);
         // ...and the bank's desk for their city paper (0.7.1).
         householdBalance.setPaperDesk(this::desksBuysHouseholdPaper);
+        // ...and for the businesses' (CD2, slice 4).
+        outward.setPaperDesk(this::desksBuysFirmPaper);
         // ...and the businesses' bonds (0.7.12): the market reads the city
         // through bondReadings, and the lender, the households and the
         // economy each read the market. See BondMarket.
@@ -443,6 +446,8 @@ public class Game {
         buybackToHouseholdsUnsettled = buybackAbroadUnsettled = 0;
         buybackToHouseholds = buybackAbroad = 0;
         couponsToHouseholds = principalToHouseholds = householdsBoughtPaper = 0;
+        couponsToFirms = principalToFirms = firmsBoughtPaper = 0;
+        couponsToWorld = principalToWorld = worldBoughtPaper = paperBoughtFromWorld = 0;
         bankPrincipalRepaidThisMonth = 0;
         bank.reset();
         foreign.reset();
@@ -2457,6 +2462,8 @@ public class Game {
             // it counts for and what the desk pays for it. Saved, because the
             // plan reads it and the load path re-strikes the plan.
             householdBalance.setPaperRatio(debtManager.householdBookRatio());
+            // ...and the businesses' twin (CD2, slice 4), saved with them.
+            outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());
             /*
              * ...AND THE TREATMENT BILLS, BY ROW (2026-09-19): what the row
              * was billed and what it would have been billed had all of its
@@ -3099,8 +3106,10 @@ public class Game {
         double cityWeighted = 0;
         for (Debt paper : debtManager.getDebt()) {
             if (paper.isForeign()) continue;   // held abroad - see the refresh above
-            if (paper.getSettleDue() > 0) continue;   // not paid for yet - see bankBook()
-            cityWeighted += paper.bankPrincipal()   // its own share (0.7.1)
+            // Its own share (0.7.1) of what it has paid for: a line reopened
+            // keeps its older part here and leaves the reopening out until the
+            // settle (Debt.bankPrincipalPaid(), bankBook()).
+            cityWeighted += paper.bankPrincipalPaid()
                     * Bank.RISK_CITY * Bank.maturityWeight(paper.getRemainingMonths());
         }
         bank.setWeightedBook(businessWeighted, cityWeighted,
@@ -5930,6 +5939,8 @@ public class Game {
                 skipReport.sampleTreasury(centralBank.getAdvancesToTreasury() > 0,
                         centralBank.ceilingBound(), centralBank.getAdvancedToTreasury(),
                         centralBank.getAdvancesToTreasury());
+                // ...and the sales nobody pressed (CD2, D28 to D30): the rollover's and automatic building's.
+                skipReport.sampleSales(autoSalesThisMonth);
             }
 
         } catch (RuntimeException e) {
@@ -7944,153 +7955,306 @@ public class Game {
     }
     
     
+    /* =======================================================================
+       THE CITY'S PAPER, SOLD AT AUCTION (CD2, spec-city-debt.md section 4)
+
+       Every quote below runs the auction (Auction) on the city as it stands,
+       with the issue priced into the credit spread (DebtManager.fairYield()),
+       and returns a DebtQuote carrying its result; every handle...() books
+       exactly the quote it is handed. Nothing else in the game computes a
+       clearing yield.
+
+       WHY. Until CD2 the households took a share at the quoted rate and the
+       bank took the rest by construction, whatever its room, and a term loan
+       was priced by a rule of its own that grossed the face up until its
+       payments were worth the cash. Here the bidders each bid by the rule the
+       game already follows for them, the sale clears at one yield, and the
+       gap between that yield and fair is the cost of selling - a figure the
+       screen can show before the button.
+
+       THE ASK. A bill's ask is the CASH (the face is solved so the proceeds
+       cover it, quoteTBill()); a bond's ask is the FACE, a treasury sells
+       face (quoteLongBond(), quoteMediumBond()); the ForCash quotes solve the
+       face whose proceeds cover a cash, as the build screen needs. The stop
+       depends on the face - a bigger issue is a worse credit and a bigger
+       ask of the bidders - so the solvers iterate to a fixed face, bounded.
+
+       A SHORT SALE (the bids do not reach the issue at the highest yield the
+       city took) quotes what it SOLD: its face is the face sold and its cash
+       is what that raised, so a ForCash quote can bring less than the cash it
+       was asked for (DebtQuote.isShort()). A caller that needs the cash
+       checks cashReceived(); AutoBuilder does, and the funding cards disable
+       their button.
+
+       THE CAP is the caller's: every quote keeps its old signature, reading
+       Auction.Cap.DEFAULT (fair plus a point), and gains one that takes a cap.
+       The Borrow screen's chips are slice 8's, the rollover's and automatic
+       building's own settings are slice 6's.
+       ======================================================================= */
+
     /**
-     * What a T-Bill of this size would cost. Books nothing.
+     * The bidders as they stand, for a sale of paper of any term: the figure
+     * the screen's chart of the bids reads. Its bankExtra is the full extra,
+     * unfaded; a sale of a term fades it over that term (auctionBidders(int)).
+     */
+    public Auction.Bidders auctionBidders() {
+        return auctionBidders(0);
+    }
+
+    /**
+     * The bidders as they stand for paper of this many months (0 for none in
+     * particular): each reading the model, none holding anything of its own.
      *
-     * Priced with itself included. A bill discounts by the rate, so its face
-     * value is request/(1-rate) - which means the face depends on the rate and,
-     * now, the rate depends on the face. quoteRate() walks that fixed point; the
-     * lambda is this instrument's half of it.
+     *  - the deposit rate, the world's rate and what it charges this city, as
+     *    CapitalFlows.takeMonth() is handed them each month;
+     *  - the households' savings past their cushion (spareForPaper()), less
+     *    what the sales since the last settle have already been allotted
+     *    to them, because the settle collects those first;
+     *  - the businesses: the tills and the dollars abroad of every sector
+     *    that may hold the city's paper (OutwardInvestment.idleWealth()),
+     *    less what the sales since the last settle have been allotted to them,
+     *    and what they hold, with what is allotted and not yet settled
+     *    (CD2, slice 4);
+     *  - the world (CD2, slice 5, D7): the hot money in the city beside the
+     *    city's paper it already holds, at the curve's market value - allotted
+     *    at a sale and not yet settled included - because the target the auction
+     *    counts is the whole of what the world holds here; and it bids nothing
+     *    while it is in a run (CapitalFlows.isStopped());
+     *  - a month of output, as CapitalFlows reads it;
+     *  - the bank's room as a face (docs/queue/CD2-notes.md, star 6): its RISK
+     *    capital, equity over Bank.CAPITAL_RATIO, less its weighted book, over
+     *    Bank.RISK_CITY (city paper weighs a fifth), less the face the sales
+     *    since the last settle have left for it. Nothing for a bank in
+     *    resolution or insolvent; and for a bank with no equity yet (the
+     *    founding months, before its capital arrives) the whole face of the
+     *    sale, as it was the residual buyer before CD2 and funded at the
+     *    window;
+     *  - and what the bank needs over fair: its funding past the floor the
+     *    curve already carries, fading as the dial's gap does
+     *    (YieldCurve.DRIFT_MONTHS) - the mean of the fade over the paper's
+     *    months, as debt-model.py's funding_strain() has it. Nothing usually.
+     */
+    public Auction.Bidders auctionBidders(int months) {
+        return auctionBidders(months, 0);
+    }
+
+    /**
+     * ...for a sale of this face, which only matters to a bank not yet
+     * capitalised: it then stands as the residual buyer for the whole of the
+     * face (below). A reader that sells nothing - the screen's chart of the
+     * bids - passes none, and such a bank reads as having no room.
+     */
+    public Auction.Bidders auctionBidders(int months, double face) {
+        double pendingHouseholds = 0, pendingBank = 0, pendingFirmsCash = 0, pendingFirmsFace = 0, pendingWorldFace = 0;
+        for (Debt d : debtManager.getDebt()) {
+            if (d.isForeign() || !(d.getSettleDue() > 0)) continue;
+            pendingHouseholds += d.allotHouseholdsCash();
+            pendingFirmsCash += d.allotFirmsCash();
+            pendingFirmsFace += d.allotFirmsFace();
+            pendingWorldFace += d.allotWorldFace();
+            pendingBank += Math.max(0, d.unsettledFace() - d.allotHouseholdsFace()
+                    - d.allotFirmsFace() - d.allotWorldFace());
+        }
+        double spare = Math.max(0, householdBalance.spareForPaper() - pendingHouseholds);
+        double firmsIdle = Math.max(0, outward.idleWealth(economyManager) - pendingFirmsCash);
+        double firmsHeld = outward.totalPaper() + pendingFirmsFace;
+        // The world's position as the auction counts it: its deposits and its paper at market, with what it has
+        // been allotted and has not yet paid for (CD2, slice 5).
+        double worldHeld = hotMoney.getStock() + (hotMoney.getPaper() + pendingWorldFace) * debtManager.worldBookRatio();
+        // D20, "its room is its capital" (docs/queue/CD2-notes.md, star 6): the bank's bid for the city's
+        // paper is limited by its RISK-weighted capital, equity over CAPITAL_RATIO - not by capacity(),
+        // which its deposits can hold down, since city paper is the window's collateral: what the deposits do
+        // not fund it borrows at the central bank's window (Bank.lend() takes the cash below nothing, which
+        // the settle advances), as the residual buyer always did. The leverage ratio is NOT applied to this
+        // bid - capitalLimit() would, and from month 2 to 12 of a young city it reads 36k to 95k of room on
+        // 32M of equity - it binds the bank's lending, not its bid for treasury paper (D33's open question,
+        // for Jerus). A bank with no equity yet (before its capital arrives) stands as the residual buyer
+        // for the whole face at fair, funded at the window, as it did before CD2; the face stands in for
+        // an unlimited room, which the arithmetic (cover, pro rata) cannot take.
+        double bankRoom;
+        if (bank.isInsolvent()) bankRoom = 0;
+        else if (bank.equity() <= 0) bankRoom = Math.max(0, face);
+        else bankRoom = Math.max(0, Math.max(0, bank.equity() / Bank.CAPITAL_RATIO - bank.getWeightedBook())
+                / Bank.RISK_CITY - pendingBank);
+        double extra = Math.max(0, debtManager.bankFloorRate() - debtManager.floorRate());
+        if (extra > 0 && months > 1) {
+            double r = Math.exp(-1.0 / YieldCurve.DRIFT_MONTHS);
+            extra *= (1 - Math.pow(r, months)) / (months * (1 - r));
+        }
+        return new Auction.Bidders(bank.depositRate(), DebtManager.WORLD_BASE_RATE,
+                debtManager.countryPremium(), spare, firmsIdle, firmsHeld, worldHeld, hotMoney.isStopped(),
+                economyManager.getMonthGdp(), bankRoom, extra);
+    }
+
+    /** The auction for this paper, now: fair with the issue on the books, the bidders as they stand, the cap given (the default if none). */
+    private Auction.Result runAuction(Auction.Kind kind, int months, double face, double lineCoupon, Auction.Cap cap) {
+        /*
+         * PRICED ON THE CURVE THE ISSUE STANDS ON (CD2, slice 3's finding): the
+         * same curve fair is read off, with the issue priced in, and the tail
+         * over fair a spread on every month's zero rate (YieldCurve
+         * .pvAtSpread()). A sale with no tail is worth exactly what the buyback
+         * will value the paper at (DebtManager.marketValue()), so the round trip
+         * loses the fee and the tail and nothing else; at one flat yield it
+         * gained on an upward curve, by the coupon's rounding down.
+         */
+        YieldCurve curve = debtManager.quoteCurve(Math.max(0, face));
+        Auction.Ask ask = new Auction.Ask(kind, months, face,
+                DebtManager.fairYieldOn(curve, kind, months), lineCoupon, issuanceFee(), curve::pvAtSpread);
+        return Auction.run(ask, auctionBidders(months, face), cap == null ? Auction.Cap.DEFAULT : cap);
+    }
+
+    /**
+     * A sale that is no sale (CD2): the bids fell short of the issue at the
+     * city's cap and what they did buy is under the smallest deal worth
+     * arranging (minimumIssueSize()), or the fixed fee eats all it raises. At
+     * a full bank the auction can sell 2.4k of a 10M ask; booked, that is a
+     * piece, an allotment and a fee of several times what it brought, negative
+     * cash for a debt the city then owes in full. The same rule the Finances
+     * tab holds an ask to, applied to what the auction sold. A sale that sold
+     * all it asked is the ask's to refuse (the tab, the rollover's minimum),
+     * not this: the build screen borrows what an order needs, large or small.
+     */
+    private boolean isTinySale(Auction.Result r) {
+        return r.sold() > 0 && (!(r.proceeds() > 0) || (r.shortSale() && r.sold() < minimumIssueSize()));
+    }
+
+    /**
+     * The quote of a tiny sale: empty - no face, no cash, nothing to book, which
+     * every caller already reads as nothing to be had - and carrying the
+     * auction's result, so its summary can say what the bids would have bought
+     * and why it is not done (DebtQuote.summary()), and isShort() still tells
+     * the screens the issue came up short.
+     */
+    private static DebtQuote tinySaleQuote(String instrument, int duration, double requested, double before, Auction.Result r) {
+        return new DebtQuote(instrument, duration, requested, r.stop(), before, 0, 0, 0, 0, r, 0);
+    }
+
+    /** A quote of nothing: the standing rate before and after, no face. */
+    private static DebtQuote emptyQuote(String instrument, int duration, double before) {
+        return new DebtQuote(instrument, duration, 0, before, before, 0, 0, 0, 0, null, 0);
+    }
+
+    /** Money to the cent, as every proceeds figure has been. */
+    private static double cents(double v) {
+        return Math.round(v * 100) / 100.0;
+    }
+
+    /**
+     * The smallest face whose proceeds cover `cash`: a first face at par and
+     * the fee, then as many granules more as the shortfall needs at what a
+     * unit of that sale banked, until it covers - hard bounded (64 turns),
+     * because the stop rises with the face and the proceeds are rounded to the
+     * cent - and then the face brought down to the smallest granule that
+     * still covers. A new line's coupon is the stop rounded down to an eighth
+     * (D2), so proceeds are a sawtooth in face and the climb can step over the
+     * face where the coupon steps up; the descent is a bisection between the
+     * last face that did not cover and the first that did, which ends with a
+     * face that covers and the granule below it not (CD2; NewGameCheck 11
+     * asserts it). A sale that is short at its cap is not chased: more face
+     * cannot raise what the bids at the ceiling do not cover, so the quote
+     * that raised most comes back, short.
+     *
+     * @param at the quote for a face
+     */
+    private DebtQuote solveForCash(double cash, double rounding, java.util.function.DoubleFunction<DebtQuote> at) {
+        double granule = rounding > 0 ? rounding : 1;
+        double face = Math.ceil((cash + issuanceFee()) / granule) * granule;
+        DebtQuote quote = at.apply(face);
+        double notCovering = 0;     // the largest face known not to cover; 0 for none yet
+        for (int guard = 0; guard < 64 && !quote.isEmpty() && quote.cashReceived() < cash; guard++) {
+            if (quote.isShort()) return quote;
+            notCovering = face;
+            double perFace = Math.max(.05, (quote.cashReceived() + issuanceFee()) / quote.faceValue());
+            face += granule * Math.max(1, Math.ceil((cash - quote.cashReceived()) / (granule * perFace)));
+            DebtQuote more = at.apply(face);
+            if (more.isEmpty() || more.cashReceived() <= quote.cashReceived() + 1e-9) {
+                return more.cashReceived() > quote.cashReceived() ? more : quote;
+            }
+            quote = more;
+        }
+        if (quote.isEmpty() || quote.cashReceived() < cash) return quote;
+
+        // It covers at `face`. Down to the smallest granule that still does: first a descent by doubling
+        // steps if the first face covered, then a bisection between the last face that did not and this.
+        double step = granule;
+        while (notCovering == 0 && face - step >= granule) {
+            double probe = face - step;
+            DebtQuote q = at.apply(probe);
+            if (covers(q, cash)) { face = probe; quote = q; step *= 2; } else notCovering = probe;
+        }
+        while (face - notCovering > granule * 1.5) {
+            double mid = notCovering + granule * Math.floor((face - notCovering) / granule / 2);
+            DebtQuote q = at.apply(mid);
+            if (covers(q, cash)) { face = mid; quote = q; } else notCovering = mid;
+        }
+        return quote;
+    }
+
+    /** A quote that raises the cash and sold what it was asked to: the test the solver's descent keeps. */
+    private static boolean covers(DebtQuote q, double cash) {
+        return !q.isEmpty() && !q.isShort() && q.cashReceived() >= cash;
+    }
+
+    /**
+     * What a bill, sold at auction for this much cash, would cost. Books
+     * nothing. The ask is the cash, as a bill's always was: the face is solved
+     * so the proceeds - the face discounted at the stop, monthly, less the
+     * fee - cover it, in lots of `rounding`. The stop is a flat yield for the
+     * bill's months, the sum DebtManager.marketValue() reads back.
      */
     public DebtQuote quoteTBill(double amount, int duration, double rounding) {
+        return quoteTBill(amount, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...with the highest yield the city will take, a cap of the caller's. */
+    public DebtQuote quoteTBill(double amount, int duration, double rounding, Auction.Cap cap) {
 
         priceTheDebtMarket();
         double before = debtManager.getRate();
 
-        if (amount <= 0) {
-            return new DebtQuote("Note", duration, 0, before, before, 0, 0, 0, 0);
-        }
+        if (amount <= 0 || duration <= 0) return emptyQuote("Note", duration, before);
 
-        final double requested = amount;
-        final int months = duration;
+        return solveForCash(amount, rounding, face -> billQuote(amount, duration, face, before, cap));
+    }
 
-        /*
-         * DISCOUNTED ON ITS OWN TERM, which it was not.
-         *
-         * The face used to be requested/(1 - rate) with the full ANNUAL rate
-         * applied whatever the duration, so a three-month note and a two-year
-         * note were priced identically. A quarter's borrowing was charged a
-         * year of interest and two years' borrowing was charged one.
-         *
-         * ShortTermTBill.faceFor() owns the convention now, so the quote, the
-         * rate fixed point and the build screen's note (the emergency path in
-         * nextMonth(), until 0.7.0) cannot each have their own version of it -
-         * which is exactly what they had.
-         */
-        /*
-         * SIZED SO THE CITY ACTUALLY RECEIVES WHAT IT ASKED FOR.
-         *
-         * ShortTermTBill.faceFor() inverts the DISCOUNT and nothing else, so the
-         * face it returns raises `requested` gross - and then the underwriter
-         * and bond counsel are paid out of the proceeds, and the city banks
-         * less than it asked for. Rounding the face up to the next granule
-         * covered the fee often enough to look like it worked, which is what
-         * made this so hard to see: the slack from rounding is at most one
-         * granule and the fee grows with the face, so the shortfall appeared
-         * and disappeared with the size of the ask and always arrived for good
-         * once the face passed about $130,000.
-         *
-         * Jerus found it from the far end - "the tbill is inacted but the roads
-         * are not built and you are just left with the cash unspent". Roads are
-         * simply the first thing expensive enough to land in the failing range:
-         * the build screen's note borrows the exact shortfall, receives a few
-         * hundred less than that, and buildStack() re-tests the price against
-         * cash and refuses. Debt issued, nothing built.
-         *
-         * THE BONDS ARE NOT THE SAME BUG and are deliberately left alone. For a
-         * serial bond the face value IS the request - the player asks for an
-         * amount of paper and receives par less fees, which is what issuing at
-         * par means. For a term bond the request is what the face is WORTH at
-         * issue (faceValueOfLongBond() solves the face from it), and the city
-         * receives that less fees. Either way the fees come out of what was
-         * asked for, and that is what those quotes say. It is only the note
-         * whose whole job is "how much paper do I need to RAISE this cash", and
-         * only the note that was answering it wrong.
-         *
-         * ...until the build screen offered a term bond beside the note
-         * (0.7.10), which asks the note's question of the long instrument. That
-         * has its own solver, quoteLongBondForCash(), and quoteLongBond() is
-         * still what the finance screen's term loan is.
-         */
-        // On the curve at its own months (0.7.1) - which, for a note of a
-        // year or less, is the short end: no term premium, the T-bill rate.
-        double rate = debtManager.quoteRate(requested,
-                r -> Math.ceil(faceForNetProceeds(requested, r, months) / rounding) * rounding,
-                months);
-
-        double faceValue = Math.ceil(
-                faceForNetProceeds(requested, rate, months) / rounding) * rounding;
-
-        double received = netProceeds(faceValue, rate, months);
-
-        /*
-         * ...and the proceeds are rounded to the cent, which can still land a
-         * fraction under the ask when the face lands exactly on a granule. A
-         * quote that does not cover what was asked for is not a quote for it,
-         * so it buys more granules until it does.
-         *
-         * IT COULD SPIN, AND IT DID. The old body added ONE granule a turn on
-         * the argument that "each one adds at least rounding x 4.25% to the
-         * proceeds, so this cannot spin". Both halves of that are wrong once
-         * the city has real prices in it:
-         *
-         *   - netProceeds() rounds to the cent. If a granule is worth less
-         *     than about 0.24 then 4.25% of it is under a cent, the rounding
-         *     swallows the whole increment, and `received` never moves. That
-         *     is not slow convergence, it is a loop with no exit.
-         *   - and when the ask is large against the granule - which is what
-         *     inflation does to every nominal figure in the game - it is
-         *     ask/(granule x 4.25%) turns. Found when an experimental price
-         *     index first reached 37x founding and a 4,002-month playtest
-         *     stopped finishing: the JVM would not even answer a thread dump,
-         *     because a counted loop like this never reaches a safepoint.
-         *
-         * So it jumps by however many granules the shortfall needs at the
-         * worst-case yield, which lands in one or two turns, and it is hard
-         * bounded regardless. MIN_PROCEEDS_PER_FACE is the 4.25% floor the
-         * comment on faceForNetProceeds() derives: the discount is capped at
-         * 95% and the spread is 0.75%.
-         */
-        for (int guard = 0; received < requested && guard < 64; guard++) {
-            double shortfall = requested - received;
-            double steps = Math.max(1,
-                    Math.ceil(shortfall / (rounding * MIN_PROCEEDS_PER_FACE)));
-            faceValue += rounding * steps;
-            received = netProceeds(faceValue, rate, months);
-        }
-
-        // A note pays no coupon; the discount IS the whole cost of the credit.
-        return new DebtQuote("Note", duration, requested, rate, before,
-                faceValue, received, 0, faceValue - received);
+    /** The bill's quote at a face: the auction run on it, what it sold and raised. */
+    private DebtQuote billQuote(double requested, int months, double face, double before, Auction.Cap cap) {
+        Auction.Result r = runAuction(Auction.Kind.BILL, months, face, Double.NaN, cap);
+        if (isTinySale(r)) return tinySaleQuote("Note", months, requested, before, r);
+        double received = cents(r.proceeds());
+        // A bill pays no coupon; the discount IS the whole cost of the credit.
+        return new DebtQuote("Note", months, requested, r.stop(), before,
+                r.sold(), received, 0, r.sold() - received, r, 0);
     }
 
     /**
-     * Books a T-Bill on exactly the terms quoted.
+     * Books a bill on exactly the terms quoted.
      *
      * Every figure comes off the quote. Nothing is recalculated here, because a
      * booking that does its own arithmetic is free to disagree with the screen
      * that promised it.
      */
     public String handleTBillLogic(double amount, int duration, double rounding) {
+        return handleTBillLogic(amount, duration, rounding, Auction.Cap.DEFAULT);
+    }
 
-        DebtQuote quote = quoteTBill(amount, duration, rounding);
+    /** ...at a cap of the caller's. */
+    public String handleTBillLogic(double amount, int duration, double rounding, Auction.Cap cap) {
+
+        DebtQuote quote = quoteTBill(amount, duration, rounding, cap);
         if (quote.isEmpty()) return "Nothing issued.";
         return issueNote(quote);
     }
 
     /**
-     * The booking every note shares - handleTBillLogic()'s, and since 0.7.13
-     * the rollover's, which books the quote it sized (issueForRollover()).
-     * Every figure comes off the quote, its term in months.
+     * The booking every bill shares - handleTBillLogic()'s, and the rollover's
+     * (issueForRollover()). Every figure comes off the quote, its term in
+     * months; the treasury is paid what the sale raised and the piece carries
+     * who the auction allotted it to until the settle.
      */
     private String issueNote(DebtQuote quote) {
-        debtManager.addShortTermTBill(quote.faceValue(), quote.duration(), month)
-                .markIssued(quote.cashReceived(), quote.marketRate());
-        this.cash += quote.cashReceived();
-       cityDebtRaisedThisMonth += quote.cashReceived();
-       cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
-        treasuryRaisedSoFar += quote.cashReceived();
-
+        Debt bill = debtManager.addShortTermTBill(quote.faceValue(), quote.duration(), month);
+        bookNewPiece(bill, quote);
         debtManager.updateInterest();
         decisions.record(DecisionLog.BORROWING, "Borrowed " + DecisionLog.money(quote.faceValue())
                 + ": " + quote.duration() + "-month note");
@@ -8098,393 +8262,222 @@ public class Game {
     }
 
     /**
-     * What a medium-term bond of this size would cost. Books nothing.
-     *
-     * Face value is the request here, so there is no fixed point to walk - but
-     * the loan still has to be priced with itself on the books
-     * (DebtManager.quoteCurve()).
-     *
-     * THE COUPON IS THE ONE THAT PRICES THE SCHEDULE AT PAR ON THAT CURVE
-     * (CD1, spec-city-debt section 1.1). Until CD1 it was the curve's rate at
-     * the FINAL maturity (0.7.1: the last slice is the longest money in it),
-     * charged on every slice - 7 to 24 basis points too dear on a rising
-     * curve, and on an inverted one a coupon under what the early slices are
-     * worth, so a new serial priced under par, the wrong side for a round
-     * trip. The buyback values every remaining payment at its own month's
-     * factor (DebtManager.marketValue()); the issue now sells the schedule at
-     * the same sum, so a serial bought straight back costs its face, which is
-     * more than it raised by the fees and never less. At par the yield is the
-     * coupon, so the quote's rate is the coupon.
+     * The treasury is paid what a sale at home raised, and the market owes it
+     * until the settle: the counters the settle and the audit read. The one
+     * place a domestic auction reaches the treasury, so the one place it is
+     * counted (AuctionTally): a quote that is only previewed is not a sale.
+     */
+    private void bookProceeds(DebtQuote quote) {
+        debtManager.getAuctionTally().record(quote.auction());
+        this.cash += quote.cashReceived();
+        cityDebtRaisedThisMonth += quote.cashReceived();
+        cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
+        treasuryRaisedSoFar += quote.cashReceived();
+    }
+
+    /** A new piece, sold: told what it raised and at what yield, given its allotment, and the treasury paid. */
+    private void bookNewPiece(Debt paper, DebtQuote quote) {
+        paper.markIssued(quote.cashReceived(), quote.marketRate());
+        if (quote.auction() != null) paper.allot(quote.auction().fills(), quote.faceValue(), quote.cashReceived());
+        bookProceeds(quote);
+    }
+
+    /**
+     * What an amortizing bond, sold at auction for this face, would cost.
+     * Books nothing. The ask is the face (a treasury sells face), in lots of
+     * `rounding`; the coupon is the stop itself, the one coupon that prices
+     * the whole schedule at 100 (Auction), so it sells at par less nothing but
+     * the fee. Each sale is its own line.
      */
     public DebtQuote quoteMediumBond(double requestedAmount, int duration, double rounding) {
+        return quoteMediumBond(requestedAmount, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's. */
+    public DebtQuote quoteMediumBond(double requestedAmount, int duration, double rounding, Auction.Cap cap) {
 
         priceTheDebtMarket();
         double before = debtManager.getRate();
 
-        if (requestedAmount <= 0) {
-            return new DebtQuote("Serial", duration, 0, before, before, 0, 0, 0, 0);
-        }
+        if (requestedAmount <= 0 || duration <= 0) return emptyQuote("Serial", duration, before);
 
-        double faceValue = Math.ceil(requestedAmount / rounding) * rounding;
-        double annualRate = serialParCoupon(debtManager.quoteCurve(faceValue), faceValue, duration * 12);
-        double monthlyInterest = faceValue * (annualRate / 12.0);
-        double received = Math.round((faceValue - costOfIssuance(faceValue)) * 100) / 100.0;
+        double face = Math.ceil(requestedAmount / (rounding > 0 ? rounding : 1)) * (rounding > 0 ? rounding : 1);
+        return mediumQuote(requestedAmount, face, duration, before, cap);
+    }
 
-        /*
-         * Issued at par, so the face IS the principal - but the city receives
-         * less, because the underwriter and bond counsel are paid first.
-         *
-         * The all-in cost is now the fees plus every coupon the SERIAL schedule
-         * actually charges, which is materially less than face x rate x years:
-         * principal amortises, so the coupon falls each year and roughly half
-         * the old bullet's interest simply never accrues. That is the trade
-         * against the term bond, and it should show on the quote.
-         */
+    /** The amortizing bond's quote at a face: the auction run on it, the coupon its stop sets, the cost of the credit over the schedule. */
+    private DebtQuote mediumQuote(double requested, double face, int years, double before, Auction.Cap cap) {
+        Auction.Result r = runAuction(Auction.Kind.AMORTIZING, years * 12, face, Double.NaN, cap);
+        if (isTinySale(r)) return tinySaleQuote("Serial", years, requested, before, r);
+        double sold = r.sold();
+        double received = cents(r.proceeds());
         double coupons = 0;
-        MediumTermBond shape = new MediumTermBond(
-                faceValue, duration * 12, month, annualRate);
-        for (double cf : shape.remainingCashFlows()) coupons += cf;
-        coupons -= faceValue;   // strip the principal back out
-
-        return new DebtQuote("Serial", duration, requestedAmount, annualRate, before,
-                faceValue, received, monthlyInterest,
-                (faceValue - received) + coupons);
+        for (double cf : Auction.amortizingPer100(r.coupon(), years)) coupons += cf;
+        // Per 100 of face: strip the principal back out and scale to what was sold.
+        coupons = (coupons - 100) * sold / 100;
+        return new DebtQuote("Serial", years, requested, r.stop(), before,
+                sold, received, sold * (r.coupon() / 12.0), (sold - received) + coupons, r, r.coupon());
     }
 
     /**
-     * The coupon at which a serial bond of this face and term is worth
-     * exactly its face on this curve: every payment of its schedule at its
-     * own month's factor. The schedule is linear in the coupon (a month's
-     * interest is the balance times coupon / 12, and the principal slices do
-     * not depend on it), so two evaluations give the line: P at a coupon of
-     * nothing is the principal alone, Q at a coupon of 1.0 adds a year's
-     * interest on every balance, and the coupon that prices it at par is
-     * (face - P) / (Q - P). Face and flows are in the same money, so it
-     * prices a dollar serial on the world's curve just as well. The curve's
-     * own rate at the term if the line is flat (it cannot be, bar a
-     * fixture's zero face).
+     * Books an amortizing bond on exactly the terms quoted. (Until CD2 the
+     * quote's face and rate were this method's own to reread; the booking is
+     * issueMediumBond() now, shared with the rollover.)
      */
-    private double serialParCoupon(YieldCurve curve, double face, int months) {
-        double p = curve.pv(new MediumTermBond(face, months, month, 0).remainingCashFlows());
-        double q = curve.pv(new MediumTermBond(face, months, month, 1.0).remainingCashFlows());
-        if (!(q - p > 1e-12 * face)) return curve.zero(months);
-        return (face - p) / (q - p);
+    public String handleMediumBondLogic(double requestedAmount, int duration, double rounding) {
+        return handleMediumBondLogic(requestedAmount, duration, rounding, Auction.Cap.DEFAULT);
     }
 
-    /** Books a medium-term bond on exactly the terms quoted. */
-    public String handleMediumBondLogic(double requestedAmount, int duration, double rounding) {
+    /** ...at a cap of the caller's. */
+    public String handleMediumBondLogic(double requestedAmount, int duration, double rounding, Auction.Cap cap) {
 
-        DebtQuote quote = quoteMediumBond(requestedAmount, duration, rounding);
+        DebtQuote quote = quoteMediumBond(requestedAmount, duration, rounding, cap);
         if (quote.isEmpty()) return "Nothing issued.";
+        return issueMediumBond(quote);
+    }
 
-        debtManager.addMediumTermBond(quote.faceValue(), duration * 12, month, quote.marketRate())
-                .markIssued(quote.cashReceived(), quote.marketRate());
-        this.cash += quote.cashReceived();
-       cityDebtRaisedThisMonth += quote.cashReceived();
-       cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
-        treasuryRaisedSoFar += quote.cashReceived();
-
+    /** The booking an amortizing bond shares: a new line at the quote's coupon. */
+    private String issueMediumBond(DebtQuote quote) {
+        Debt bond = debtManager.addMediumTermBond(quote.faceValue(), quote.duration() * 12, month, quote.couponRate());
+        bookNewPiece(bond, quote);
         debtManager.updateInterest();
         decisions.record(DecisionLog.BORROWING, "Borrowed " + DecisionLog.money(quote.faceValue())
-                + ": " + duration + "-year serial bond");
+                + ": " + quote.duration() + "-year serial bond");
         return "Serial bond issued.\n" + quote.summary();
     }
 
     /**
-     * Long bonds pair a LOW monthly coupon with a redemption premium: you repay
-     * more than you borrowed, but your monthly payment is well below a medium
-     * bond's. The premium is what that cash-flow relief costs.
-     *
-     * PRICED AS A PRESENT VALUE, WHICH IT WAS NOT BEFORE.
-     *
-     * The old premium solved a SIMPLE-interest relation over the bond's life:
-     *
-     *     premium + (1 + premium) * couponYield * duration
-     *         = LONG_BOND_COST_MULTIPLIER * marketRate * duration
-     *
-     * That is fine as a balance knob and wrong as a price. Over twenty-five
-     * years simple and compound interest are not close - 7.6% simple is 2.9x,
-     * compound is 6.4x - so the face it produced was far too small for the cash
-     * it handed over. Discounted properly, a 25-year bond that raised $200,000
-     * was a promise worth only $174,548.
-     *
-     * Nobody noticed while debt could only be issued. The moment it could also
-     * be BOUGHT BACK at market value, the gap became an infinite money button:
-     * issue, repurchase, pocket $25,453, repeat. Measured at every duration -
-     * $2,145 at ten years rising to $28,059 at thirty - and caught by
-     * RestructureCheck section 5, which exists for exactly this.
-     *
-     * So the face value is now SOLVED from the present value instead. With
-     * n = duration * 12 months, r = marketRate / 12 and d = (1 + r)^-n:
-     *
-     *     PV = F * [ (couponYield / 12) * (1 - d) / r  +  d ]
-     *
-     * and the face is whatever makes that PV equal the cash the player asked
-     * for. Issue price and repurchase price are now the same function of the
-     * same inputs, so a round trip is neutral BY CONSTRUCTION rather than by a
-     * rule bolted on to forbid it - the same reason DebtQuote exists at all.
-     *
-     * LONG_BOND_COST_MULTIPLIER is retired with it. The instrument is still
-     * dearer all-in than a medium bond, but now because it runs for longer at a
-     * real rate rather than because a constant said so.
-     *
-     * The coupon curve is untouched: long money still carries a low coupon
-     * (about a third of the medium-term rate), which is the whole point of the
-     * instrument. Only what the city receives for it has changed.
-     */
-    private static double longBondCouponYield(double marketRate, int duration) {
-        return (marketRate / 3) + (.00667 * duration) / (duration + 30);
-    }
-
-    /**
-     * The present value of one dollar of long-bond face, on a curve (CD1):
-     * the coupon a month, for every month of the term, each at its own
-     * month's factor, and the face at the last.
-     *
-     * Shared by the face solver and the quote so they cannot drift, and it is
-     * deliberately the SAME sum as DebtManager.marketValue() - every payment
-     * of the schedule at its own month's factor - because it has to be: that
-     * method is what will price this bond back. The coupon is
-     * longBondCouponYield() on the curve's zero rate at the term, the figure a
-     * calm city has always been quoted. Until CD1 the whole schedule was
-     * priced at that one rate, flat.
-     */
-    private double longBondPvPerFace(YieldCurve curve, int duration) {
-
-        int n = duration * 12;
-        double monthlyCoupon = longBondCouponYield(curve.zero(n), duration) / 12.0;
-
-        double annuity = 0;
-        for (int t = 1; t <= n; t++) annuity += curve.factor(t);
-        return monthlyCoupon * annuity + curve.factor(n);
-    }
-
-    /**
-     * What a long bond of this size would put on the books on a curve.
-     *
-     * Extracted so quoteCurve() and the issuance below run the SAME arithmetic.
-     * A quote that is computed differently from the deal it quotes is just a
-     * second definition waiting to drift from the first.
-     */
-    private double faceValueOfLongBond(double amount, int duration,
-                                       double rounding, YieldCurve curve) {
-
-        double pvPerFace = longBondPvPerFace(curve, duration);
-
-        // A coupon at or above the market rate would price at or over par and
-        // the instrument would stop being a discount bond. The curve puts the
-        // coupon at about a third of market so this cannot happen in play, but
-        // a fixture is free to hand in anything and dividing by ~0 is not a
-        // failure mode worth leaving open.
-        if (pvPerFace <= 1e-9) {
-            return Math.ceil(amount / rounding) * rounding;
-        }
-
-        return Math.ceil((amount / pvPerFace) / rounding) * rounding;
-    }
-
-    /**
-     * What a long bond of this size would cost. Books nothing.
-     *
-     * Priced with itself included, and this is the instrument where that bites
-     * hardest: the redemption premium grosses the face value up, and the premium
-     * is a function of the market rate. So a long bond taken at a stretched rate
-     * puts far more debt on the books than the cash it hands over, and the rate
-     * has to know that before it is struck.
-     *
-     * The lambda calls faceValueOfLongBond(), which is also what sizes the deal
-     * below - one definition, so the quote and the booking cannot disagree.
+     * What a bond, sold at auction for this face, would cost. Books nothing.
+     * The ask is the face, in lots of `rounding`. If a line of this term is
+     * still the benchmark (DebtManager.benchmarkLine(): nine tenths of the
+     * term left) the sale REOPENS it - at its coupon and its date, priced for
+     * the months it has left - and otherwise opens a new line at the term, its
+     * coupon the stop rounded down to an eighth (Auction.COUPON_STEP), so it
+     * sells just under 100. Priced with itself on the books: the curve it is
+     * struck on carries the issue (DebtManager.fairYield()).
      */
     public DebtQuote quoteLongBond(double amount, int duration, double rounding) {
+        return quoteLongBond(amount, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's. */
+    public DebtQuote quoteLongBond(double amount, int duration, double rounding, Auction.Cap cap) {
 
         priceTheDebtMarket();
         double before = debtManager.getRate();
 
-        // Only the five (0.7.1): any other term is quoted nothing, and
+        // Only the six: any other term is quoted nothing, and
         // handleLongBondLogic() says why. See LongTermBond.MATURITIES.
-        if (amount <= 0 || !LongTermBond.isIssuable(duration)) {
-            return new DebtQuote("Term", duration, 0, before, before, 0, 0, 0, 0);
-        }
+        if (amount <= 0 || !LongTermBond.isIssuable(duration)) return emptyQuote("Term", duration, before);
 
-        /*
-         * ON THE CURVE THE LOAN WILL STAND ON (0.7.1, CD1). The face is
-         * solved on the whole curve with the loan priced in
-         * (DebtManager.quoteCurve(): the dial the market expects, the credit
-         * spread, the term premium less what the central bank's holdings
-         * compress of it), every payment of the schedule at its own month's
-         * factor (longBondPvPerFace()) - the sum the buyback values the same
-         * paper at for the months it has left (DebtManager.marketValue()),
-         * which is what keeps RestructureCheck's round trip neutral by
-         * construction. The coupon is the figure a calm city has always been
-         * quoted, longBondCouponYield() on the zero rate at the term; the
-         * quote's rate is the yield that price makes of it (longBondQuote()).
-         */
-        final double requested = amount;
-        YieldCurve curve = debtManager.quoteCurve(requested,
-                c -> faceValueOfLongBond(requested, duration, rounding, c));
-
-        double faceValue = faceValueOfLongBond(requested, duration, rounding, curve);
-
-        // What that face is actually worth today, less the underwriter and
-        // bond counsel. The worth is the request before rounding; a little
-        // above it after, because the face rounds UP to the instrument's
-        // granularity and the proceeds follow the face.
-        double received = longBondNetProceeds(faceValue, curve, duration);
-
-        return longBondQuote(requested, duration, curve, before, faceValue, received);
+        double granule = rounding > 0 ? rounding : 1;
+        return bondQuote(amount, Math.ceil(amount / granule) * granule, duration, before, cap);
     }
 
-    /**
-     * What the city actually banks for a long bond of this face: its worth on
-     * the curve, less the fees, to the cent. The long bond's netProceeds(),
-     * shared by both quotes so they cannot drift.
-     */
-    private double longBondNetProceeds(double faceValue, YieldCurve curve, int duration) {
-        return Math.round(
-                (faceValue * longBondPvPerFace(curve, duration)
-                        - costOfIssuance(faceValue)) * 100) / 100.0;
+    /** The bond's quote at a face: the benchmark line it reopens, or the new line it opens, and what the auction made of it. */
+    private DebtQuote bondQuote(double requested, double face, int years, double before, Auction.Cap cap) {
+        Debt line = debtManager.benchmarkLine(years);
+        int months = line != null ? line.getRemainingMonths() : years * 12;
+        double lineCoupon = line instanceof LongTermBond bond ? bond.couponRate() : Double.NaN;
+        Auction.Result r = runAuction(Auction.Kind.BOND, months, face, lineCoupon, cap);
+        if (isTinySale(r)) return tinySaleQuote("Term", years, requested, before, r);
+        double sold = r.sold();
+        double received = cents(r.proceeds());
+        double monthly = sold * (r.coupon() / 12.0);
+        return new DebtQuote("Term", years, requested, r.stop(), before,
+                sold, received, monthly, (sold - received) + monthly * months, r, r.coupon());
     }
 
-    /**
-     * A long bond's quote, once its face and proceeds are known: the coupon,
-     * the monthly bill and the cost of the credit, for both quotes.
-     *
-     * The coupon and the quote's rate are two numbers since CD1. The coupon
-     * is longBondCouponYield() on the curve's zero rate at the term, and the
-     * monthly bill is face x coupon / 12, so the booking's couponRate() is
-     * exactly the quoted coupon. The rate on the quote is the YIELD the price
-     * makes of that schedule - the face's worth on the curve (before the
-     * fees) solved on the schedule, as a buyer reads it - because a rate
-     * handed in and a rate read back are the same thing on a flat curve and
-     * not otherwise (the book prints the second, YieldCurve's WHY).
-     */
-    private DebtQuote longBondQuote(double requested, int duration, YieldCurve curve,
-                                    double before, double faceValue, double received) {
-
-        int n = duration * 12;
-        // Yield curve: long money carries a lower coupon than the medium-term
-        // market rate. Small monthly payments are the point of the instrument.
-        double couponYield = longBondCouponYield(curve.zero(n), duration);
-
-        double monthlyInterest = (faceValue * couponYield) / 12;
-        double totalCost = (faceValue - received) + (monthlyInterest * n);
-        double yield = new LongTermBond(faceValue, n, month, couponYield)
-                .getYieldToMaturity(faceValue * longBondPvPerFace(curve, duration));
-
-        return new DebtQuote("Term", duration, requested, yield, before,
-                faceValue, received, monthlyInterest, totalCost);
-    }
-
-    /** Books a long bond on exactly the terms quoted. */
+    /** Books a bond on exactly the terms quoted. */
     public String handleLongBondLogic(double amount, int duration, double rounding) {
+        return handleLongBondLogic(amount, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's. */
+    public String handleLongBondLogic(double amount, int duration, double rounding, Auction.Cap cap) {
 
         if (!LongTermBond.isIssuable(duration)) return LongTermBond.REFUSAL;
-        DebtQuote quote = quoteLongBond(amount, duration, rounding);
+        DebtQuote quote = quoteLongBond(amount, duration, rounding, cap);
         if (quote.isEmpty()) return "Nothing issued.";
         return issueLongBond(quote);
     }
 
     /**
-     * The booking both long-bond issues share. Every figure comes off the
-     * quote, as handleTBillLogic()'s do.
+     * The booking both bond issues share. Every figure comes off the quote,
+     * as handleTBillLogic()'s do. A quote that reopened a line goes into that
+     * line (Debt.reopen()) and the treasury is paid what the sale raised; a
+     * quote that opened one adds the piece at the coupon the auction set.
      */
     private String issueLongBond(DebtQuote quote) {
 
-        // The coupon, not the market rate - a long bond's whole shape is a low
-        // monthly payment bought with a redemption premium.
-        debtManager.addLongTermBond(quote.faceValue(), quote.duration() * 12, month, quote.couponRate())
-                .markIssued(quote.cashReceived(), quote.marketRate());
-        this.cash += quote.cashReceived();
-       cityDebtRaisedThisMonth += quote.cashReceived();
-       cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
-        treasuryRaisedSoFar += quote.cashReceived();
+        int years = quote.duration();
+        Auction.Result r = quote.auction();
+        Debt line = r != null && !r.ask().isNewLine() ? debtManager.benchmarkLine(years) : null;
+        if (line instanceof LongTermBond bond && Math.abs(bond.couponRate() - r.ask().lineCoupon()) < 1e-12) {
+            line.reopen(quote.faceValue(), quote.cashReceived(), quote.marketRate());
+            line.allot(r.fills(), quote.faceValue(), quote.cashReceived());
+            bookProceeds(quote);
+        } else {
+            bookNewPiece(debtManager.addLongTermBond(quote.faceValue(), years * 12, month, quote.couponRate()), quote);
+        }
 
         debtManager.updateInterest();
         decisions.record(DecisionLog.BORROWING, "Borrowed " + DecisionLog.money(quote.faceValue())
-                + ": " + quote.duration() + "-year term bond");
+                + ": " + years + "-year term bond");
         return "Term bond issued.\n" + quote.summary();
     }
 
     /* -----------------------------------------------------------------------
-       A TERM BOND SIZED TO THE CASH IT BRINGS (0.7.10)
+       A BOND SIZED TO THE CASH IT BRINGS (0.7.10, CD2)
 
-       The build screen's second offer, beside its note. quoteLongBond()
-       answers "what does this much paper cost": its amount is what the face
-       is WORTH at issue, and the city banks that less the underwriter and
-       bond counsel - right for the finance screen, where the player picks
-       the size. The build screen asks the question the note answers
-       (faceForNetProceeds()): how much paper must be sold for the cash that
-       ARRIVES to pay for the order. Guessed - NewGameCheck's water plant
-       asked for the gap and five per cent - it either falls short, and the
-       order is refused with the debt already issued, or it overshoots and
-       borrows money nobody needed.
+       The build screen's second offer, beside its bill. quoteLongBond()
+       answers "what does this much face cost": the player picks the size,
+       right for the finance screen. The build screen asks the question the
+       bill answers: how much paper must be sold for the cash that ARRIVES to
+       pay for the order. Guessed it either falls short, and the order is
+       refused with the debt already issued, or it overshoots and borrows
+       money nobody needed.
 
-       So the face is solved, the note's shape at the long bond's price:
-
-           face x pvPerFace - FIXED - face x SPREAD  >=  cashNeeded
-
-       pvPerFace is longBondPvPerFace(), the one the quote and the curve's
-       fixed point price with. It is never below a third, because the coupon
-       is never below a third of the market rate (longBondCouponYield()), so
-       the denominator cannot reach zero in play; the guards are for
-       fixtures. The coupon, the monthly bill, the cost of the credit and the
-       booking are the finance screen's term loan's, through the same two
-       helpers.
+       So the face is solved - solveForCash(): the auction's proceeds are
+       price x sold less the fee, the price and the stop depend on the face,
+       and the face is iterated until the proceeds cover the cash. The
+       coupon, the monthly bill, the cost of the credit and the booking are
+       quoteLongBond()'s, through the same two helpers.
        ----------------------------------------------------------------------- */
 
-    /** Face value whose net proceeds cover cashNeeded on this curve, fees included, rounded up to the granule. */
-    private double longBondFaceForProceeds(double cashNeeded, int duration,
-                                           double rounding, YieldCurve curve) {
-        double perFace = longBondPvPerFace(curve, duration) - UNDERWRITING_SPREAD;
-        if (perFace <= 1e-9) {
-            return faceValueOfLongBond(cashNeeded + issuanceFee(), duration, rounding, curve);
-        }
-        return Math.ceil(((cashNeeded + issuanceFee()) / perFace) / rounding) * rounding;
-    }
-
     /**
-     * What a term bond whose CASH covers cashNeeded would cost. Books nothing.
+     * What a bond whose CASH covers cashNeeded would cost. Books nothing.
      *
      * The quote's `requested` is the cash asked for, which is what the record
      * says that field is; its face is what the city will owe. Priced with
-     * itself included, on the curve at its duration, exactly as
-     * quoteLongBond() is - only the face each rate implies differs.
+     * itself included, exactly as quoteLongBond() is - only the face each
+     * stop implies differs. A short sale comes back short: check cashReceived().
      */
     public DebtQuote quoteLongBondForCash(double cashNeeded, int duration, double rounding) {
+        return quoteLongBondForCash(cashNeeded, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's. */
+    public DebtQuote quoteLongBondForCash(double cashNeeded, int duration, double rounding, Auction.Cap cap) {
 
         priceTheDebtMarket();
         double before = debtManager.getRate();
 
-        if (cashNeeded <= 0 || !LongTermBond.isIssuable(duration)) {
-            return new DebtQuote("Term", duration, 0, before, before, 0, 0, 0, 0);
-        }
+        if (cashNeeded <= 0 || !LongTermBond.isIssuable(duration)) return emptyQuote("Term", duration, before);
 
-        final double needed = cashNeeded;
-        YieldCurve curve = debtManager.quoteCurve(needed,
-                c -> longBondFaceForProceeds(needed, duration, rounding, c));
-
-        double faceValue = longBondFaceForProceeds(needed, duration, rounding, curve);
-        double received = longBondNetProceeds(faceValue, curve, duration);
-
-        // The proceeds are rounded to the cent, so a face that lands exactly on
-        // its solution can bank a fraction under the ask - the note's case,
-        // met the note's way (quoteTBill()): as many granules as the shortfall
-        // needs at what a granule of this face banks, and hard bounded.
-        double perFace = longBondPvPerFace(curve, duration) - UNDERWRITING_SPREAD;
-        for (int guard = 0; received < needed && perFace > 1e-9 && guard < 64; guard++) {
-            faceValue += rounding * Math.max(1,
-                    Math.ceil((needed - received) / (rounding * perFace)));
-            received = longBondNetProceeds(faceValue, curve, duration);
-        }
-
-        return longBondQuote(needed, duration, curve, before, faceValue, received);
+        return solveForCash(cashNeeded, rounding, face -> bondQuote(cashNeeded, face, duration, before, cap));
     }
 
-    /** Books a term bond sized to the cash, on exactly the terms quoted - the build screen's bond. */
+    /** Books a bond sized to the cash, on exactly the terms quoted - the build screen's bond. */
     public String handleLongBondForCash(double cashNeeded, int duration, double rounding) {
+        return handleLongBondForCash(cashNeeded, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's. */
+    public String handleLongBondForCash(double cashNeeded, int duration, double rounding, Auction.Cap cap) {
 
         if (!LongTermBond.isIssuable(duration)) return LongTermBond.REFUSAL;
-        DebtQuote quote = quoteLongBondForCash(cashNeeded, duration, rounding);
+        DebtQuote quote = quoteLongBondForCash(cashNeeded, duration, rounding, cap);
         if (quote.isEmpty()) return "Nothing issued.";
         return issueLongBond(quote);
     }
@@ -8493,8 +8486,11 @@ public class Game {
        BORROWING IN SOMEBODY ELSE'S MONEY
        =======================================================================
 
-       Three instruments, the same three shapes, written in USD. What differs
-       from the domestic pair above is small in code and enormous in play:
+       Two instruments written in USD since CD2 - the bill and the bond; the
+       dollar serial went with the lineup (spec-city-debt.md section 2.7) - sold
+       to the world, not at auction: the world's lending is priced already by
+       country risk and closes by its window. What differs from the domestic
+       pair above is small in code and enormous in play:
 
          - the rate comes off DebtManager.foreignRate(), which is the world's
            base plus what the world charges THIS city - and starts below the
@@ -8637,97 +8633,71 @@ public class Game {
     public String foreignWindowReason() { return debtManager.foreignWindowReason(); }
 
     /**
-     * What a USD bond of this size would cost. Books nothing.
+     * What a USD bill or bond of this size would cost. Books nothing.
      *
+     * Not an auction: the world's price is its curve at the paper's months
+     * (worldCurveAt(), with the paper priced into the country premium,
+     * selfPricedWorldCurve()). A bill sells at the curve's discount factor
+     * for its months; a bond's coupon is the curve's par yield at its term
+     * rounded DOWN to an eighth of a point (Auction.COUPON_STEP) as at home,
+     * and it sells for what its schedule is worth on the curve.
+     *
+     * @param type "Note" or "Term"; there is no dollar serial since CD2
      * @param requestedUsd what the city wants to raise, in dollars
      */
     public DebtQuote quoteForeign(String type, double requestedUsd, int duration, double rounding) {
 
         double before = debtManager.foreignRate();
 
-        // A dollar term loan is held to the same five maturities (0.7.1).
+        // A dollar bond is held to the same six maturities.
         if (requestedUsd <= 0 || !debtManager.foreignWindowOpen()
                 || ("Term".equals(type) && !LongTermBond.isIssuable(duration))) {
-            return new DebtQuote(type, duration, 0, before, before, 0, 0, 0, 0);
+            return new DebtQuote(type, duration, 0, before, before, 0, 0, 0, 0, null, 0);
         }
 
         return switch (type) {
             case "Note" -> {
                 double face = Math.ceil(requestedUsd / rounding) * rounding;
-                double rate = selfPricedForeignRate(face, duration, r ->
+                YieldCurve world = selfPricedWorldCurve(face, duration, c ->
                         new ShortTermTBill(face, duration, month, true));
-                double gross = face * (1 - ShortTermTBill.discountFraction(rate, duration));
+                double gross = face * world.factor(duration);
                 double received = Math.round((gross - costOfIssuance(face)) * 100) / 100.0;
-                yield new DebtQuote("Note", duration, requestedUsd, rate, before,
-                        face, received, 0, face - received);
-            }
-            case "Serial" -> {
-                double face = Math.ceil(requestedUsd / rounding) * rounding;
-                // On the world's curve (0.7.2, CD1), as the domestic serial is
-                // on the city's: the coupon that prices its schedule at par,
-                // payment by payment, which is also its yield.
-                int n = duration * 12;
-                YieldCurve world = selfPricedWorldCurve(face, n, c ->
-                        new MediumTermBond(face, n, month, serialParCoupon(c, face, n), true));
-                double rate = serialParCoupon(world, face, n);
-                double received = Math.round((face - costOfIssuance(face)) * 100) / 100.0;
-                double coupons = 0;
-                MediumTermBond shape = new MediumTermBond(face, duration * 12, month, rate);
-                for (double cf : shape.remainingCashFlows()) coupons += cf;
-                coupons -= face;
-                yield new DebtQuote("Serial", duration, requestedUsd, rate, before,
-                        face, received, face * (rate / 12.0),
-                        (face - received) + coupons);
+                yield new DebtQuote("Note", duration, requestedUsd, world.zero(duration), before,
+                        face, received, 0, face - received, null, 0);
             }
             case "Term" -> {
                 double face = Math.ceil(requestedUsd / rounding) * rounding;
                 // On the world's curve, every payment at its own month's factor
                 // (0.7.2, CD1) - what the buyback reads back for the months it
                 // has left (DebtManager.marketValue()), so a round trip is
-                // neutral by construction. The quote's rate is the yield the
-                // price makes of the schedule, as at home (longBondQuote()).
+                // neutral by construction. The coupon is the curve's par yield
+                // at the term, rounded down (CD2); the quote's rate is the
+                // yield the price makes of the schedule, as at home.
                 int n = duration * 12;
                 YieldCurve world = selfPricedWorldCurve(face, n, c ->
-                        new LongTermBond(face, n, month, longBondCouponYield(c.zero(n), duration), true));
-                double coupon = longBondCouponYield(world.zero(n), duration);
-                double gross = face * longBondPvPerFace(world, duration);
+                        new LongTermBond(face, n, month, dollarCoupon(c, n), true));
+                double coupon = dollarCoupon(world, n);
+                double gross = face * world.pv(Auction.bulletPer100(coupon, n)) / 100;
                 double rate = new LongTermBond(face, n, month, coupon).getYieldToMaturity(gross);
                 double received = Math.round((gross - costOfIssuance(face)) * 100) / 100.0;
                 double monthly = (face * coupon) / 12;
                 yield new DebtQuote("Term", duration, requestedUsd, rate, before,
                         face, received, monthly,
-                        (face - received) + monthly * duration * 12);
+                        (face - received) + monthly * duration * 12, null, coupon);
             }
             default -> throw new IllegalArgumentException("No such instrument: " + type);
         };
     }
 
-    /**
-     * THE DOLLAR QUOTE'S FIXED POINT (0.7.2): the rate at which the world's
-     * curve, with this paper booked at that rate's coupon, reads that rate
-     * back - DebtManager.quoteForeignRate(Debt, months), walked from the
-     * principal-only quote until it stops moving. The service term reads the
-     * coupon and the coupon is struck on the rate, so it is a fixed point, and
-     * a contraction: a point of rate moves the premium by a small share of a
-     * point.
-     *
-     * @param shape the paper as it would be booked at a given rate
-     */
-    private double selfPricedForeignRate(double face, int months,
-                                         java.util.function.DoubleFunction<Debt> shape) {
-        double rate = debtManager.quoteForeignRate(face, months);
-        for (int i = 0; i < FOREIGN_QUOTE_ITERATIONS; i++) {
-            double next = debtManager.quoteForeignRate(shape.apply(rate), months);
-            if (Math.abs(next - rate) < 1e-13) return next;
-            rate = next;
-        }
-        return rate;
+    /** A dollar bond's coupon on a world curve: its par yield at the term, rounded down to Auction.COUPON_STEP. */
+    private static double dollarCoupon(YieldCurve world, int months) {
+        return Math.floor((world.parYield(months) + 1e-12) / Auction.COUPON_STEP) * Auction.COUPON_STEP;
     }
 
     /**
-     * THE DOLLAR QUOTE'S FIXED POINT ON THE WORLD'S CURVE (CD1): the
-     * selfPricedForeignRate() walk, for the paper that is priced payment
-     * by payment. The unknown is the world's SHORT rate, because the curve
+     * THE DOLLAR QUOTE'S FIXED POINT ON THE WORLD'S CURVE (CD1; the walk
+     * of 0.7.2 on a single rate before it): the world's price of paper that is
+     * priced payment by payment. The unknown is the world's SHORT rate, because the curve
      * the paper will be valued on once it is booked is worldCurveAt(
      * foreignRate()) and the term premium is a table that does not move:
      * start from the principal-only quote's short rate, build the world's
@@ -8775,8 +8745,6 @@ public class Game {
         switch (type) {
             case "Note"   -> debtManager.addShortTermTBill(
                     quote.faceValue(), duration, month, true);
-            case "Serial" -> debtManager.addMediumTermBond(
-                    quote.faceValue(), duration * 12, month, quote.marketRate(), true);
             case "Term"   -> debtManager.addLongTermBond(
                     quote.faceValue(), duration * 12, month, quote.couponRate(), true);
             default -> throw new IllegalArgumentException("No such instrument: " + type);
@@ -8832,8 +8800,7 @@ public class Game {
 
         debtManager.updateInterest();
         decisions.record(DecisionLog.BORROWING, "Borrowed US" + DecisionLog.money(quote.faceValue()) + " abroad: "
-                + ("Note".equals(type) ? duration + "-month note"
-                   : duration + "-year " + ("Serial".equals(type) ? "serial" : "term") + " bond")
+                + ("Note".equals(type) ? duration + "-month note" : duration + "-year term bond")
                 + (holdAsReserves ? ", held as reserves" : ""));
         return (holdAsReserves
                 ? "Issued abroad; the dollars are in reserve.\n"
@@ -8847,10 +8814,15 @@ public class Game {
      * would this cost" without knowing which instrument it is looking at.
      */
     public DebtQuote quoteDebt(String type, double amount, int duration, double rounding) {
+        return quoteDebt(type, amount, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's (CD2). */
+    public DebtQuote quoteDebt(String type, double amount, int duration, double rounding, Auction.Cap cap) {
         return switch (type) {
-            case "Note" -> quoteTBill(amount, duration, rounding);
-            case "Serial" -> quoteMediumBond(amount, duration, rounding);
-            case "Term" -> quoteLongBond(amount, duration, rounding);
+            case "Note" -> quoteTBill(amount, duration, rounding, cap);
+            case "Serial" -> quoteMediumBond(amount, duration, rounding, cap);
+            case "Term" -> quoteLongBond(amount, duration, rounding, cap);
             // Loudly, rather than handing a screen a null to dereference three
             // frames later where the cause is invisible.
             default -> throw new IllegalArgumentException("No such instrument: " + type);
@@ -8858,71 +8830,52 @@ public class Game {
     }
 
     /* -----------------------------------------------------------------------
-       THE SERIAL AND THE DOLLAR PAPER, SIZED TO THE CASH THEY BRING (0.7.13)
+       THE AMORTIZING BOND AND THE DOLLAR PAPER, SIZED TO THE CASH THEY BRING (0.7.13)
 
        The build screen's offers are sized so the cash they bring covers a
-       gap: the note by quoteTBill(), whose ask IS the cash, and the bond by
+       gap: the bill by quoteTBill(), whose ask IS the cash, and the bond by
        quoteLongBondForCash(). The land office's dollar offers and the
-       treasury's rollover ask the same question of the serial bond and of
-       the three dollar instruments, whose quotes take a FACE
-       (quoteMediumBond(), quoteForeign()). So the face is searched: estimated
-       from what a unit of face banks at today's rate for its maturity, less
-       the fixed fee, then as many granules more as the existing quote says
-       it is still short - quoteLongBondForCash()'s shape, hard bounded. What
-       comes back IS the existing quote at that face, so handleMediumBondLogic()
-       and handleForeignLogic() on its requested() book exactly what it says:
-       the price and the costs are the existing ones.
+       treasury's rollover ask the same question of the amortizing bond and of
+       the two dollar instruments, whose quotes take a FACE
+       (quoteMediumBond(), quoteForeign()). So the face is searched, by the
+       one solver the others use (solveForCash(), CD2): a first face at par and
+       the fee, then as many granules more as the existing quote says it is
+       still short, hard bounded. What comes back IS the existing quote at that
+       face, so the booking of the quote books what it says: the price and the
+       costs are the existing ones.
        ----------------------------------------------------------------------- */
 
     /** The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). */
     public static final double BUILD_NOTE_GRANULE = 1000;
 
-    /** A serial bond whose CASH covers cashNeeded: quoteMediumBond() at the face that brings it. Books nothing. */
+    /**
+     * An amortizing bond whose CASH covers cashNeeded: the quote at the face
+     * that brings it. Books nothing. The quote's `requested` is the cash, as
+     * quoteLongBondForCash()'s is; a short sale comes back short.
+     */
     public DebtQuote quoteMediumBondForCash(double cashNeeded, int duration, double rounding) {
-        if (!(cashNeeded > 0) || !(rounding > 0)) return quoteMediumBond(0, duration, rounding);
-        double perFace = 1 - UNDERWRITING_SPREAD;
-        double face = Math.ceil(((cashNeeded + issuanceFee()) / perFace) / rounding) * rounding;
-        DebtQuote quote = quoteMediumBond(face, duration, rounding);
-        for (int guard = 0; quote.cashReceived() < cashNeeded && guard < 64; guard++) {
-            face += rounding * Math.max(1,
-                    Math.ceil((cashNeeded - quote.cashReceived()) / (rounding * perFace)));
-            quote = quoteMediumBond(face, duration, rounding);
-        }
-        return quote;
+        return quoteMediumBondForCash(cashNeeded, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's. */
+    public DebtQuote quoteMediumBondForCash(double cashNeeded, int duration, double rounding, Auction.Cap cap) {
+
+        priceTheDebtMarket();
+        double before = debtManager.getRate();
+
+        if (!(cashNeeded > 0) || !(rounding > 0) || duration <= 0) return emptyQuote("Serial", duration, before);
+
+        return solveForCash(cashNeeded, rounding, face -> mediumQuote(cashNeeded, face, duration, before, cap));
     }
 
     /**
-     * A dollar note, serial or term loan whose CASH covers cashNeededUsd:
-     * quoteForeign() at the face that brings it, on the world's curve at its
-     * maturity. Books nothing, and is empty with the window shut.
+     * A dollar note or bond whose CASH covers cashNeededUsd: quoteForeign() at
+     * the face that brings it, on the world's curve at its maturity. Books
+     * nothing, and is empty with the window shut.
      */
     public DebtQuote quoteForeignForCash(String type, double cashNeededUsd, int duration, double rounding) {
         if (!(cashNeededUsd > 0) || !(rounding > 0)) return quoteForeign(type, 0, duration, rounding);
-        int months = "Note".equals(type) ? duration : duration * 12;
-        double perFace = foreignProceedsPerFace(type, debtManager.worldCurveAt(debtManager.foreignRate()), duration);
-        double face = Math.ceil(((cashNeededUsd + issuanceFee()) / perFace) / rounding) * rounding;
-        DebtQuote quote = quoteForeign(type, face, duration, rounding);
-        for (int guard = 0; !quote.isEmpty() && quote.cashReceived() < cashNeededUsd && guard < 64; guard++) {
-            // What a unit of this quote's face banked, net of the spread: the fee
-            // is the only fixed part of what it cost, and the curve it was struck
-            // on is not the quote's to hand back (its rate is a yield).
-            double atQuote = Math.max(MIN_PROCEEDS_PER_FACE,
-                    (quote.cashReceived() + issuanceFee()) / quote.faceValue());
-            face += rounding * Math.max(1,
-                    Math.ceil((cashNeededUsd - quote.cashReceived()) / (rounding * atQuote)));
-            quote = quoteForeign(type, face, duration, rounding);
-        }
-        return quote;
-    }
-
-    /** What a unit of a dollar instrument's face banks on this world curve, net of the spread - never under MIN_PROCEEDS_PER_FACE, so the search above always moves. An estimate to start the search from; the quote's own figures decide. */
-    private double foreignProceedsPerFace(String type, YieldCurve world, int duration) {
-        double perFace = switch (type) {
-            case "Note" -> 1 - ShortTermTBill.discountFraction(world.zero(duration), duration);
-            case "Term" -> longBondPvPerFace(world, duration);
-            default     -> 1;
-        };
-        return Math.max(MIN_PROCEEDS_PER_FACE, perFace - UNDERWRITING_SPREAD);
+        return solveForCash(cashNeededUsd, rounding, face -> quoteForeign(type, face, duration, rounding));
     }
 
     /** Books the dollar paper quoteForeignForCash() quotes, on exactly its terms - the land office's dollar offers. */
@@ -8974,21 +8927,28 @@ public class Game {
            quoteMediumBondForCash(), quoteLongBondForCash(),
            quoteForeignForCash(), at the build screen's granules,
            BUILD_NOTE_GRANULE for a note and BUILD_BOND_GRANULE for a bond.
-           Paper sells under its face - a note by its discount, a term loan
-           by its redemption premium, any of them by the underwriting spread
-           and the fixed fee - so the face that raises the cash is more than
-           the face falling due: rolling for cash capitalises the interest of
-           the paper it replaces into the new principal, at every roll.
+           Paper sells under its face - a bill by its discount, a bond by its
+           coupon rounded down to an eighth, any of them by the tail over fair
+           and the fixed fee (CD2: the underwriter's spread went with the
+           auction) - so the face that raises the cash is more than the face
+           falling due: rolling for cash capitalises the interest of the paper
+           it replaces into the new principal, at every roll. And a sale that
+           comes up short at its cap raises less than the cash asked
+           (rollMaturities() names it): the maturity is a promise and is paid
+           in full, from the cash and past it the central bank's advances.
            Rollover's javadoc has what that did on a Lean city. The holders
            buy it as they buy any issue;
          - SAME_STRUCTURE: its own instrument, term and currency. A dollar
            piece rolls abroad in dollars, and with the window shut into local
            paper of the same term, which the log says. A serial's instalment
-           rolls into a new serial of its ORIGINAL term: Jerus's "same
-           structure" is the same instrument and term, and a term bond of the
-           remaining life would be neither - term loans are issued only at
-           LongTermBond.MATURITIES besides. A term loan whose own term is no
-           longer one of those (an older save's) rolls into the nearest one;
+           rolls into a new amortizing bond of the nearest of its lineup's
+           years (MediumTermBond.YEARS, 5 to 30 in fives; CD2) - Jerus's "same
+           structure" is the same instrument and term, and a bond of the
+           remaining life would be neither. A bill rolls into the nearest of
+           its terms (ShortTermTBill.TERMS) and a bond into the nearest of
+           LongTermBond.MATURITIES - which sells into that term's benchmark
+           line, reopening it, while the line has nine tenths of its term
+           left (DebtManager.benchmarkLine());
          - TWELVE_MONTH_BILL: a local note of Rollover.BILL_MONTHS;
          - pieces rolling into the same paper are one issue, and an issue
            under minimumIssueSize() - the smallest deal worth arranging, which
@@ -9013,8 +8973,47 @@ public class Game {
 
     private final Rollover rollover = new Rollover();
 
+    /** What the month's rollover sold short and did not raise (CD2), in words, for the inbox; the record of a month that has finished, not saved. */
+    private final java.util.List<String> rolloverShortNotes = new java.util.ArrayList<>();
+
+    /** The rollover's sales that came up short this month, one sentence each; empty when none did. */
+    public java.util.List<String> getRolloverShortNotes() { return java.util.List.copyOf(rolloverShortNotes); }
+
+    /** What the month's rollover paid a tail past the default cap for (D29, Filled or capped higher), in words, for the inbox; not saved. */
+    private final java.util.List<String> rolloverTailNotes = new java.util.ArrayList<>();
+
+    /** The rollover's sales that cleared past the default cap this month, one sentence each; empty when none did. */
+    public java.util.List<String> getRolloverTailNotes() { return java.util.List.copyOf(rolloverTailNotes); }
+
+    /**
+     * Every automatic sale this month - the rollover's issues and automatic
+     * building's bonds - for the time skip's report (CD2, slice 6): a record of
+     * a month that has finished, cleared at the top of the next, not saved.
+     */
+    private final java.util.List<TimeSkipReport.AutoSale> autoSalesThisMonth = new java.util.ArrayList<>();
+
+    /** The month's automatic sales, in the order they were made. */
+    public java.util.List<TimeSkipReport.AutoSale> getAutoSalesThisMonth() { return java.util.List.copyOf(autoSalesThisMonth); }
+
+    /** Automatic building enters its bond sales here as it makes them. */
+    void noteAutoSale(TimeSkipReport.AutoSale sale) {
+        if (sale != null) autoSalesThisMonth.add(sale);
+    }
+
     /** The treasury's rollover: its setting, the ledger of what it netted, and its record. */
     public Rollover getRollover() { return rollover; }
+
+    /** The cap its auctions take (CD2, D28), as the rollover card's chips read it. */
+    public Auction.Cap getRolloverCap() { return rollover.getCap(); }
+
+    /** ...and as they set it, applied at the next press; the change is a decision. */
+    public void setRolloverCap(Auction.Cap cap) {
+        Auction.Cap was = rollover.getCap();
+        rollover.setCap(cap);
+        if (!CapSetting.same(was, rollover.getCap())) {
+            decisions.record(DecisionLog.BORROWING, "Rollover cap: " + CapSetting.words(rollover.getCap()));
+        }
+    }
 
     /** The setting, as the Finances tab's chips read it. */
     public Rollover.Mode getRolloverMode() { return rollover.getMode(); }
@@ -9026,7 +9025,7 @@ public class Game {
         if (was != rollover.getMode()) {
             decisions.record(DecisionLog.BORROWING, switch (rollover.getMode()) {
                 case MANUAL            -> "Rollover off: what falls due is paid from cash";
-                case TWELVE_MONTH_BILL -> "Rollover on: everything into " + Rollover.BILL_MONTHS + "-month notes";
+                case TWELVE_MONTH_BILL -> "Rollover on: everything into " + Rollover.BILL_MONTHS + "-month bills";
                 default                -> "Rollover on: each piece into its own kind";
             });
         }
@@ -9056,11 +9055,19 @@ public class Game {
         }
         boolean abroad = paper.isForeign() && windowOpen;
         boolean atHome = paper.isForeign() && !windowOpen;
+        // A bill into a bill of the nearest of its terms (CD2: 1, 3, 6, 12).
         if (paper instanceof ShortTermTBill) {
-            return new RollsInto("Note", Math.max(1, paper.getDuration()), abroad, atHome);
+            return new RollsInto("Note", ShortTermTBill.nearestTerm(Math.max(1, paper.getDuration())), abroad, atHome);
         }
         int years = Math.max(1, (int) Math.round(paper.getDuration() / 12.0));
-        if (paper instanceof MediumTermBond) return new RollsInto("Serial", years, abroad, atHome);
+        // An amortizing piece into a new amortizing line of the nearest of its
+        // years (5 to 30 in fives). There is no dollar serial since CD2: a
+        // dollar piece of the kind an older fixture holds rolls at home.
+        if (paper instanceof MediumTermBond) {
+            return new RollsInto("Serial", MediumTermBond.nearestYears(years), false, paper.isForeign());
+        }
+        // A bond into the nearest of the six terms - and so into that term's
+        // benchmark line, which the sale reopens (quoteLongBondForCash()).
         return new RollsInto("Term", nearestTermMaturity(years), abroad, atHome);
     }
 
@@ -9151,6 +9158,8 @@ public class Game {
 
     /** The rollover, at the press: rolloverPlan() booked, issue by issue, through the existing quotes, and printed to the log. */
     private void rollMaturities() {
+        rolloverShortNotes.clear();
+        rolloverTailNotes.clear();
         // What the central bank rolls of its own at issue this month (0.7.15,
         // round 2), struck on the book the plan reads, before the rollover
         // books anything: the plan's figure, which S has already paid down;
@@ -9176,6 +9185,8 @@ public class Game {
                         here, plan.centralBankRunsOff()) : ""));
         double raised = 0, faced = 0;
         int issued = 0, atHome = 0;
+        // Each issue sold at auction, for the notes below (D29) and the skip's report.
+        java.util.List<RolloverSale> sales = new java.util.ArrayList<>();
         for (Rollover.Issue issue : plan.issues()) {
             // Quoted again at the press, each issue after the one before it is
             // on the books: the plan quoted every issue on the books as they
@@ -9184,6 +9195,9 @@ public class Game {
             double before = cash;
             String booked = issueForRollover(issue, quote);
             double brought = cash - before;
+            if (quote != null && quote.auction() != null && !quote.auction().isEmpty()) {
+                sales.add(new RolloverSale(issue, quote, brought));
+            }
             double face = brought > 0 ? localFace(issue.foreign(), quote) : 0;
             if (brought > 0) {
                 raised += brought;
@@ -9199,6 +9213,7 @@ public class Game {
             GameLog.note(String.format("  nothing issued: %s%,.0fk is under the smallest deal worth arranging"
                     + " (%s%,.0fk), and is paid out of cash.", here, plan.toRoll(), here, minimumIssueSize()));
         }
+        noteRolloverSales(sales, plan);
         rollover.record(month, plan.due(), plan.netted(), faced, raised, issued, atHome);
         // None of the city's term paper sold between the presses for the
         // central bank's par to be added on to: its par alone (0.7.15, round 2).
@@ -9216,11 +9231,80 @@ public class Game {
     private DebtQuote rolloverQuote(String type, int term, boolean abroad, double cash) {
         double granule = "Note".equals(type) ? BUILD_NOTE_GRANULE : BUILD_BOND_GRANULE;
         if (abroad) return quoteForeignForCash(type, cash / foreign.getRate(), term, granule);
+        // At the rollover's own cap (CD2, D28); dollar paper is not sold at auction and has none.
+        Auction.Cap cap = rollover.getCap();
         return switch (type) {
-            case "Note"   -> quoteTBill(cash, term, granule);
-            case "Serial" -> quoteMediumBondForCash(cash, term, granule);
-            default       -> quoteLongBondForCash(cash, term, granule);
+            case "Note"   -> quoteTBill(cash, term, granule, cap);
+            case "Serial" -> quoteMediumBondForCash(cash, term, granule, cap);
+            default       -> quoteLongBondForCash(cash, term, granule, cap);
         };
+    }
+
+    /** One of the rollover's issues sold at auction, with the cash it brought. */
+    private record RolloverSale(Rollover.Issue issue, DebtQuote quote, double brought) { }
+
+    /** An issue in the words of a sale: "10-year bond", "6-month bill", "10-year amortizing bond". */
+    private static String saleName(Rollover.Issue issue) {
+        return switch (issue.type()) {
+            case "Note"   -> issue.term() + "-month bill";
+            case "Serial" -> issue.term() + "-year amortizing bond";
+            default       -> issue.term() + "-year bond";
+        };
+    }
+
+    /**
+     * WHAT THE ROLLOVER'S SALES DID, said (CD2, D29). A sale that came up short
+     * at its cap raised less than the cash it needed; the maturity is a promise
+     * and is paid in full all the same, because nothing in the rollover holds
+     * the money back: the treasury's cash pays it in the month it falls due
+     * (TreasuryLine.PRINCIPAL), and past the cash the central bank's advances
+     * do, past their ceiling if they must, as they pay every promise
+     * (settleTreasury()). So the inbox says how much of the part the sale did
+     * not raise the cash covers - what is left of it once the surplus the
+     * rollover netted is paid - and how much the advances: "The rollover's
+     * 10-year sale covered D$X at its cap of Y%; D$Z of January's maturity was
+     * paid by the central bank's advances" (only the advances' part when the
+     * cash did not cover it). Filled, the sale pays a tail instead, and the
+     * inbox names it when it passes the point the default cap would have
+     * stopped at (Auction.MAX_TAIL). Every sale is also entered for the time
+     * skip's report (TimeSkipReport.AutoSale).
+     */
+    private void noteRolloverSales(java.util.List<RolloverSale> sales, Rollover.Plan plan) {
+        if (sales.isEmpty()) return;
+        String here = getCurrency().qualifiedSymbol();
+        String maturity = CityCalendar.monthName(month + 1) + "'s maturity";
+        // What the maturity is paid from, past the sales: the cash the treasury held when the rollover was struck, less the
+        // surplus it nets of the same maturity (the proceeds pay the rest, so what they did not raise is the cash's to pay,
+        // and past the cash the advances').
+        double cashLeft = Math.max(0, plan.cash() - plan.netted());
+        for (RolloverSale s : sales) {
+            Auction.Result r = s.quote().auction();
+            String name = saleName(s.issue());
+            double fromCash = 0, fromAdvances = 0;
+            if (r.shortSale()) {
+                double shortfall = Math.max(0, s.issue().cash() - s.brought());
+                fromCash = Math.min(shortfall, cashLeft);
+                cashLeft -= fromCash;
+                fromAdvances = shortfall - fromCash;
+                String where = fromAdvances > 0
+                        ? String.format("%s%,.0fk of %s was paid by the central bank's advances", here, fromAdvances, maturity)
+                        : String.format("%s%,.0fk of %s was paid from the treasury's cash", here, shortfall, maturity);
+                String note = String.format("The rollover's %s sale covered %s%,.0fk of the %s%,.0fk it needed, at its cap"
+                        + " of %.2f%%; %s.", name, here, s.brought(), here, s.issue().cash(), r.ceiling() * 100, where);
+                rolloverShortNotes.add(note);
+                GameLog.note("  " + note);
+            } else if (r.tail() > Auction.MAX_TAIL + 1e-9) {
+                String note = String.format("The rollover's %s sale cleared at %.2f%%, a tail of %.0f basis points over fair"
+                        + " (%s%,.0fk of face), with its cap set to %s: past the %.0f basis points the default cap takes.",
+                        name, r.stop() * 100, r.tail() * 10_000, here, r.sold(), CapSetting.words(rollover.getCap()),
+                        Auction.MAX_TAIL * 10_000);
+                rolloverTailNotes.add(note);
+                GameLog.note("  " + note);
+            }
+            // A tiny sale is no sale (isTinySale()): its quote is empty, and what the bids would have bought was not sold.
+            autoSalesThisMonth.add(new TimeSkipReport.AutoSale("The rollover", month, name, r.ask().face(), s.quote().isEmpty() ? 0 : r.sold(),
+                    s.brought(), r.stop(), r.tail(), r.cover(), r.shortSale(), r.ceiling(), fromCash, fromAdvances, 0));
+        }
     }
 
     /** A rollover quote's face in local money: a dollar quote's at the day's rate. */
@@ -9246,7 +9330,7 @@ public class Game {
             }
             return switch (issue.type()) {
                 case "Note"   -> issueNote(quote);
-                case "Serial" -> handleMediumBondLogic(quote.requested(), issue.term(), granule);
+                case "Serial" -> issueMediumBond(quote);
                 default       -> issueLongBond(quote);
             };
         } finally {
@@ -9293,6 +9377,7 @@ public class Game {
          * month strikes its constants, rolls what falls due or turns the
          * calendar. Off, it does nothing at all.
          */
+        autoSalesThisMonth.clear();
         if (autoBuildProbeForTest != null) autoBuildProbeForTest.accept(false);
         autoBuilder.pass(this);
         if (autoBuildProbeForTest != null) autoBuildProbeForTest.accept(true);
@@ -9401,6 +9486,9 @@ public class Game {
         // The holders' month (0.7.1): what the households were paid on their
         // paper and paid for it. See THE HOLDERS ARE PAID.
         couponsToHouseholds = principalToHouseholds = householdsBoughtPaper = 0;
+        couponsToFirms = principalToFirms = firmsBoughtPaper = 0;
+        couponsToWorld = principalToWorld = worldBoughtPaper = paperBoughtFromWorld = 0;
+        outward.startMonth();
         foreignDebtRaisedThisMonth = 0;
         foreignPrincipalRepaidThisMonth = 0;
         foreignInterestPaidThisMonth = 0;
@@ -9550,9 +9638,10 @@ public class Game {
          * disagree about a month.
          */
         BusinessDebtManager lender = economyManager.getBusinessDebtManager();
-        // The residual buyer (0.7.1): what the households did not pay for.
-        cityPaperSettled = cityDebtRaisedForBank - householdsBoughtPaper;
-        bank.lend(lender.getLentThisMonth() + cityDebtRaisedForBank - householdsBoughtPaper);
+        // The residual buyer (0.7.1): what the households, the businesses and the world did not pay for.
+        cityPaperSettled = cityDebtRaisedForBank - householdsBoughtPaper - firmsBoughtPaper - worldBoughtPaper;
+        bank.lend(lender.getLentThisMonth() + cityDebtRaisedForBank - householdsBoughtPaper - firmsBoughtPaper
+                - worldBoughtPaper);
         // ...and the fee on what it lent the businesses, which they were
         // handed their loans net of (0.7.7): pool to pool, so it cancels.
         bank.takeLoanFees(lender.getFeesThisMonth());
@@ -9816,6 +9905,10 @@ public class Game {
         bondMarket.takeMonth(month, exchange.cityMarketValue(equity));
         strikeBankBonds();
 
+        // The businesses' paper at today's curve, struck here as the households' book yield is a few
+        // lines below, so paper bought at this month's settle is read at its own yield and not at the
+        // short rate it was struck at while they held none (CD2, slice 4).
+        outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());
         outward.takeMonth(bank.depositRate(), DebtManager.WORLD_BASE_RATE,
                 foreign.getRate(), economyManager);
         // ...and the households, by the same rule, with what the owners were
@@ -9906,6 +9999,8 @@ public class Game {
         if (hotMoved > 0)      bank.receiveHotMoney(hotMoved);
         else if (hotMoved < 0) bank.returnHotMoney(-hotMoved);
         bank.setForeignDeposits(hotMoney.getStock());
+        // ...and the city's paper the world holds leaves with it (CD2, slice 5): sold to the bank's desk, inside the window.
+        worldPaperLeavesWithTheMoney(hotBefore);
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
         // Declared (0.7.14): the valuation a resolution wiped off the world's
@@ -10483,16 +10578,10 @@ public class Game {
         return FIXED_ISSUE_COST * expectations.getExpectedLevel() / (unit > 0 ? unit : 1);
     }
 
-    /** Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003) - the businesses' bonds pay it too since 0.7.12 (BondMarket, WHAT AN ISSUE COSTS). */
-    public static final double UNDERWRITING_SPREAD = .0075;
-
     /**
-     * The least a dollar of face can ever bank, net of the discount and the
-     * spread. ShortTermTBill caps the discount at 95%, so this is
-     * 1 - 0.95 - 0.0075. Used to size the top-up in quoteTBill() rather than
-     * discovering it a granule at a time; see the note there.
+     * Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). THE BUSINESSES' BONDS' (BondMarket, WHAT AN ISSUE COSTS, since 0.7.12), not the city's: an auction has no underwriter, so the city's paper pays the fixed cost alone since CD2 (D21) - its cost of selling is the tail, which it can see and cap.
      */
-    private static final double MIN_PROCEEDS_PER_FACE = 1 - .95 - UNDERWRITING_SPREAD;
+    public static final double UNDERWRITING_SPREAD = .0075;
 
     /**
      * Taken off the proceeds at issue, never added to what is owed.
@@ -10502,46 +10591,15 @@ public class Game {
      * getMarketValue(), which prices the FACE - if fees were rolled into the
      * face, a bond would be worth more than it raised the instant it was signed
      * and the buyback would be an arbitrage again.
+     *
+     * THE FIXED COST ALONE since CD2 (spec-city-debt.md section 4.4, D21): the
+     * 0.75% of face an underwriter took off the city's paper goes - an auction
+     * has none - and the fixed cost stays, so a tiny issue is still absurd. The
+     * minimum issue stays (minimumIssueSize()).
      */
     public double costOfIssuance(double faceValue) {
         if (faceValue <= 0) return 0;
-        return issuanceFee() + faceValue * UNDERWRITING_SPREAD;
-    }
-
-    /**
-     * What the city actually banks for a note of this face.
-     *
-     * The discount and the fees in one place, because the quote used to compute
-     * them inline and the sizing had no way to ask what a face was worth
-     * without restating the same three lines.
-     */
-    private double netProceeds(double faceValue, double annualRate, int months) {
-        double gross = faceValue * (1 - ShortTermTBill.discountFraction(annualRate, months));
-        return Math.round((gross - costOfIssuance(faceValue)) * 100) / 100.0;
-    }
-
-    /**
-     * Face value whose NET proceeds cover cashNeeded - fees included.
-     *
-     * ShortTermTBill.faceFor() answers a subtly different question: face such
-     * that the DISCOUNTED gross is cashNeeded, before anyone is paid. That is
-     * the right question for the instrument, which knows nothing about this
-     * city's underwriter, and the wrong one for a caller who needs a specific
-     * sum in the bank. So the gross-up lives here, where the fee does.
-     *
-     *     face x (1 - discount) - FIXED - face x SPREAD  >=  cashNeeded
-     *
-     * solved for face. The denominator is (1 - discount) - SPREAD, and since
-     * the discount is capped at 95% it is never below about 4.25%, so it cannot
-     * go to zero or turn negative.
-     */
-    private double faceForNetProceeds(double cashNeeded, double annualRate, int months) {
-        double perDollarOfFace =
-                (1 - ShortTermTBill.discountFraction(annualRate, months)) - UNDERWRITING_SPREAD;
-        if (perDollarOfFace <= 0) {
-            return ShortTermTBill.faceFor(cashNeeded, annualRate, months);
-        }
-        return (cashNeeded + issuanceFee()) / perDollarOfFace;
+        return issuanceFee();
     }
 
     /**
@@ -12186,9 +12244,10 @@ public class Game {
         return getHeldAbroadPrivately() + foreign.getReserves();
     }
 
-    /** What the world holds here: the city's shares at their price, the businesses' bonds at face, the foreign money parked in the bank and the city's dollar paper at today's rate. */
+    /** What the world holds here: the city's shares at their price, the businesses' bonds at face, the foreign money parked in the bank, the city's own paper it bought at the auction (CD2, slice 5; at face) and the city's dollar paper at today's rate. */
     public double getHeldHereByTheWorld() {
-        return getSharesHeldAbroad() + bondMarket.faceHeldByWorld() + hotMoney.getStock() + foreign.getForeignDebt();
+        return getSharesHeldAbroad() + bondMarket.faceHeldByWorld() + hotMoney.getStock() + hotMoney.getPaper()
+                + foreign.getForeignDebt();
     }
 
     /**
@@ -12618,6 +12677,7 @@ public class Game {
         // Its shares ride the register, its bonds the bonds.
         dataSave.setFund(fund.toState());
         dataSave.setDebtMarket(debtManager.marketToSave());
+        dataSave.setAuctionTally(debtManager.getAuctionTally().toSave());
         dataSave.setHousingOccupancy(new double[]{
                 getSectors().realEstate().getOccupiedHomes() });
         dataSave.setForeignAccounts(foreign.toSaveArray());
@@ -12641,6 +12701,7 @@ public class Game {
         dataSave.setRolloverMode(rollover.getMode().name());
         dataSave.setRolloverLedger(rollover.ledgerToSave());
         dataSave.setRolloverRecord(rollover.recordToSave());
+        dataSave.setRolloverCap(rollover.getCap());
         // ...and how the land office pays (0.7.6), the player's toggle.
         dataSave.setLandPaidFromVault(landPaidFromVault);
         // ...and how the city was founded (0.7.10): its name, its money, the
@@ -13109,7 +13170,17 @@ public class Game {
            coupon is, the principal with their paper down by the same - and
            declared to the audit, because households are outside its pools;
          - the CENTRAL BANK's share is paid now too, and destroyed: its income,
-           remitted back to the treasury the month after - "debt to itself".
+           remitted back to the treasury the month after - "debt to itself";
+         - the BUSINESSES' share (CD2, slice 4) is paid now into the sector
+           tills, pro rata to the paper each holds, the principal with its
+           paper down by the same - and declared to nobody, because a till is
+           inside the pools and the treasury it comes from is too.
+         - the WORLD's share (CD2, slice 5) is paid now and LEAVES: the coupon is
+           income paid abroad (a current-account debit), the principal a financial
+           outflow with its paper down by the same (CapitalFlows, THE CITY'S PAPER
+           THE WORLD HOLDS) - both declared to the audit, because the world is
+           outside its pools, as the households are, and unlike them it is also
+           outside the city, so the currency sees them.
 
        THE TREASURY'S BILL IS THE WHOLE BILL. The government's books are
        struck on cityInterestPaid, which carries every holder's coupon, the
@@ -13120,52 +13191,92 @@ public class Game {
     /** Coupons and principal paid to the households on their paper, and what they paid for it at issue - this month's, for MoneyAudit. */
     private double couponsToHouseholds, principalToHouseholds, householdsBoughtPaper;
 
+    /**
+     * ...and the businesses' (CD2, slice 4): the same three figures, for the
+     * playtest and the harness. They are NOT declared to MoneyAudit - the
+     * tills are inside its pools, so what the treasury pays them and what they
+     * pay the bank is a pool paying a pool and cancels (OutwardInvestment, THE
+     * CITY'S PAPER) - which is why the audit's closing is the proof of them.
+     */
+    private double couponsToFirms, principalToFirms, firmsBoughtPaper;
+
+    /**
+     * ...and the world's (CD2, slice 5), which are declared: its coupon (an income
+     * debit) and its principal (a financial outflow) leave the pools for abroad,
+     * what it paid at the settle (worldBoughtPaper) is a financial inflow, and
+     * what the desk paid it for the paper it sold with the hot money
+     * (paperBoughtFromWorld) is a financial outflow. Not saved: a month's, as the
+     * households' are.
+     */
+    private double couponsToWorld, principalToWorld, worldBoughtPaper, paperBoughtFromWorld;
+
     public double getCouponsToHouseholds()   { return couponsToHouseholds; }
     public double getPrincipalToHouseholds() { return principalToHouseholds; }
     public double getHouseholdsBoughtPaper() { return householdsBoughtPaper; }
+    public double getCouponsToFirms()        { return couponsToFirms; }
+    public double getPrincipalToFirms()      { return principalToFirms; }
+    public double getFirmsBoughtPaper()      { return firmsBoughtPaper; }
+    public double getCouponsToWorld()        { return couponsToWorld; }
+    public double getPrincipalToWorld()      { return principalToWorld; }
+    public double getWorldBoughtPaper()      { return worldBoughtPaper; }
+    public double getPaperBoughtFromWorld()  { return paperBoughtFromWorld; }
 
     /**
-     * Of a payment on this paper, the households' and the central bank's
-     * shares, struck before it: each holder's principal over what is
-     * outstanding, times the payment. One line since 0.7.3 - there were two
-     * branches, for a payment at or past the principal and one under it, and
-     * they were the same product (a floating-point multiply commutes, so
-     * hh x owed and owed x hh are the same double) under a test that chose
-     * between them.
+     * Of a payment on this paper, the households', the central bank's and
+     * (CD2, slice 4) the businesses' and (slice 5) the world's shares, struck before it: each holder's
+     * principal over what is outstanding, times the payment. One line since
+     * 0.7.3 - there were two branches, for a payment at or past the principal
+     * and one under it, and they were the same product (a floating-point
+     * multiply commutes, so hh x owed and owed x hh are the same double) under
+     * a test that chose between them.
      */
     private double[] holderShares(Debt paper, double owed) {
         double out = paper.getOustandingPrincipal();
-        double hh = paper.householdPrincipal(), cb = paper.centralBankPrincipal();
-        if (!(out > 0) || !(owed > 0) || hh + cb <= 0) return new double[] { 0, 0 };
-        return new double[] { owed * hh / out, owed * cb / out };
+        double hh = paper.householdPrincipal(), cb = paper.centralBankPrincipal(), fm = paper.firmPrincipal(),
+                wd = paper.worldPrincipal();
+        if (!(out > 0) || !(owed > 0) || hh + cb + fm + wd <= 0) return new double[] { 0, 0, 0, 0 };
+        return new double[] { owed * hh / out, owed * cb / out, owed * fm / out, owed * wd / out };
     }
 
     /** A coupon on the city's own paper, split by holder. See THE HOLDERS ARE PAID. */
     public void payDomesticCoupon(Debt paper, double owed) {
         double[] s = holderShares(paper, owed);
-        InterestExpense(owed - s[0] - s[1]);
-        double outside = s[0] + s[1];
+        InterestExpense(owed - s[0] - s[1] - s[2] - s[3]);
+        double outside = s[0] + s[1] + s[2] + s[3];
         if (!(outside > 0)) return;
         double paid = treasuryPays(TreasuryLine.INTEREST, outside);
         cityInterestPaid += paid;
         householdBalance.creditPaperCoupon(s[0]);
         couponsToHouseholds += s[0];
         centralBank.takeCoupon(s[1]);
+        // ...and the businesses' into their tills, pro rata to the paper each holds.
+        outward.creditPaperCoupon(s[2], economyManager);
+        couponsToFirms += s[2];
+        // ...and the world's leaves the city: income paid abroad, declared to the audit (MoneyAudit, '- city CouponsToWorld').
+        couponsToWorld += s[3];
     }
 
     /** Principal on the city's own paper, split by holder: the bank's through subtractCash(), the rest paid now and taken off their holdings. */
     public void payDomesticPrincipal(Debt paper, double owed) {
         double[] s = holderShares(paper, owed);
-        subtractCash(owed - s[0] - s[1]);
-        double outside = s[0] + s[1];
+        subtractCash(owed - s[0] - s[1] - s[2] - s[3]);
+        double outside = s[0] + s[1] + s[2] + s[3];
         if (!(outside > 0)) return;
         treasuryPays(TreasuryLine.PRINCIPAL, outside);
         cityPrincipalRepaidThisMonth += outside;
         paper.moveToHouseholds(-s[0]);
         paper.moveToCentralBank(-s[1]);
+        paper.moveToFirms(-s[2]);
+        paper.moveToWorld(-s[3]);
         householdBalance.creditPaperPrincipal(s[0]);
         principalToHouseholds += s[0];
         centralBank.takePrincipal(s[1]);
+        // ...and the businesses' into their tills with their paper down by the same.
+        outward.creditPaperPrincipal(s[2], economyManager);
+        principalToFirms += s[2];
+        // ...and the world's goes home, with its paper down by the same: a financial outflow, declared ('- city PrincipalToWorld').
+        hotMoney.paperRepaid(s[3]);
+        principalToWorld += s[3];
     }
 
     /* ----------------------- the desk, for the households ----------------------- */
@@ -13194,19 +13305,92 @@ public class Game {
         bank.buyPaperFromHouseholds(cash, take, unearned);
     }
 
+    /**
+     * THE BANK BUYS THE BUSINESSES' PAPER (CD2, slice 4), for the spread gone,
+     * a sector that borrows, or one that wants the money: this much face for
+     * this much cash, off every piece's businesses' share pro rata, onto the
+     * bank's book with the unearned discount riding on it - the households'
+     * desk with the businesses' share in their place. The cash moves from the
+     * bank's pool to a sector's till, so MoneyAudit declares nothing.
+     */
+    private void desksBuysFirmPaper(double face, double cash) {
+        double held = debtManager.firmPrincipal();
+        if (!(face > 0) || held <= 0) return;
+        double take = Math.min(face, held);
+        double unearned = 0;
+        for (Debt d : debtManager.getDebt()) {
+            double mine = d.firmPrincipal();
+            if (mine <= 0) continue;
+            double off = mine >= held ? take : take * mine / held;
+            off = Math.min(off, mine);
+            unearned += d.unaccretedOn(off);
+            d.moveToFirms(-off);
+        }
+        bank.buyPaperFromFirms(cash, take, unearned);
+    }
+
+    /**
+     * THE BANK BUYS THE WORLD'S PAPER (CD2, slice 5), when the hot money
+     * leaves and takes it with it (worldPaperLeavesWithTheMoney()): this much
+     * face, off every piece's world share pro rata, onto the bank's book with
+     * the unearned discount riding on it, for each piece's market value - the
+     * price the households' paper fetches at the desk (and the bank buys it
+     * whatever its room, as it buys theirs: the world is leaving and somebody
+     * has to be on the other side, which is what the desk is for). The cash
+     * leaves the bank's pool for abroad, a financial outflow, declared as
+     * '- desk PaperBoughtFromWorld'.
+     *
+     * @return the cash the desk paid
+     */
+    private double desksBuysWorldPaper(double face) {
+        double held = debtManager.worldPrincipal();
+        if (!(face > 0) || held <= 0) return 0;
+        double take = Math.min(face, held);
+        double unearned = 0, price = 0;
+        for (Debt d : debtManager.getDebt()) {
+            double mine = d.worldPrincipal();
+            if (mine <= 0) continue;
+            double off = mine >= held ? take : take * mine / held;
+            off = Math.min(off, mine);
+            unearned += d.unaccretedOn(off);
+            price += debtManager.marketValue(d) * off / d.getOustandingPrincipal();
+            d.moveToWorld(-off);
+        }
+        bank.buyPaperFromWorld(price, take, unearned);
+        hotMoney.sellPaper(take, price);
+        paperBoughtFromWorld += price;
+        return price;
+    }
+
+    /**
+     * ...AND THE PAPER LEAVES WITH THE MONEY (CD2, slice 5, D7). Asked each
+     * month straight after the hot money has moved (nextMonth(), beside
+     * hotMoney.takeMonth()): the face CapitalFlows.paperLeaving() says goes
+     * home with the departing deposits - PANIC_EXIT of it in a run, the
+     * stock's departure over the world's whole position otherwise - is sold
+     * to the bank's desk at market value.
+     */
+    private void worldPaperLeavesWithTheMoney(double stockBefore) {
+        double face = hotMoney.paperLeaving(stockBefore, debtManager.worldBookRatio());
+        if (face > 0) desksBuysWorldPaper(face);
+    }
+
     /* -------------------- THE HOUSEHOLDS TAKE THEIR SHARE (0.7.1) --------------------
 
        At the settle of an issue - the month after the treasury sold it -
        before the bank pays and before the month's coupon, so the first coupon
        and the first month of the discount are split by the holders the paper
        settled to. Each piece of paper still owed for (Debt.getSettleDue())
-       is offered at its issue yield; the households want the share of it
-       HouseholdBalance.paperShareAt() gives against the deposit rate, and
-       take what their savings past the cushion can pay, pro rata across the
-       pieces and the cells. Their cash is what the bank does not have to pay:
-       the treasury was paid at issue, so it is the bank's settle that shrinks.
-       Their paper is the face they bought at the issue's price - face times
-       cash over received, so the discount is theirs to earn at maturity.
+       carries its ALLOTMENT (CD2): what the auction gave the households, in
+       face and in the cash they pay for it (Debt.allotHouseholdsFace(), at
+       the clearing yield, D32). They pay what they were allotted, at most what
+       their savings past the cushion can pay now, pro rata across the pieces
+       and the cells if they are short - they have spent some since the sale -
+       and the bank takes what they cannot as it always did. Their cash is
+       what the bank does not have to pay: the treasury was paid at issue, so
+       it is the bank's settle that shrinks. Their paper is the face they were
+       allotted, for the cash they paid, so the discount is theirs to earn at
+       maturity. The allotment is cleared with the settle.
        --------------------------------------------------------------------------- */
     /** A harness's look at the households either side of their share of the settle (HoldersCheck): false before, true after. Null in play. */
     java.util.function.Consumer<Boolean> settleProbeForTest;
@@ -13214,40 +13398,113 @@ public class Game {
     private double householdsTakeTheirShare() {
         java.util.List<Debt> settling = new java.util.ArrayList<>();
         double wanted = 0;
-        double depositRate = bank.depositRate();
         for (Debt d : debtManager.getDebt()) {
             if (d.isForeign() || d.getSettleDue() <= 0) continue;
             settling.add(d);
-            wanted += HouseholdBalance.paperShareAt(d.getIssueYield(), depositRate) * d.getSettleDue();
+            wanted += d.allotHouseholdsCash();
         }
         double paid = 0;
         if (wanted > 0) {
             double spare = householdBalance.spareForPaper();
             double take = Math.min(wanted, spare);
             if (take > 0) {
-                // The face per dollar is the mix they buy: every settling
-                // piece in proportion to what they want of it - of the face
-                // the market bought, the central bank's add-on at issue being
-                // its own and paid for (0.7.15, round 2; the whole face on a
-                // piece it took none of).
+                // The face per dollar is the mix they were allotted: every
+                // settling piece's allotment in proportion, of the face the
+                // market bought - the central bank's add-on at issue being its
+                // own and paid for (0.7.15, round 2).
                 double face = 0;
-                for (Debt d : settling) {
-                    double cash = take * HouseholdBalance.paperShareAt(d.getIssueYield(), depositRate)
-                            * d.getSettleDue() / wanted;
-                    face += (d.getOustandingPrincipal() - d.centralBankPrincipal()) * cash / d.getSettleDue();
-                }
+                for (Debt d : settling) face += d.allotHouseholdsFace() * take / wanted;
                 paid = householdBalance.buyAtIssue(take, face / take);
                 double scale = take > 0 ? paid / take : 0;
-                for (Debt d : settling) {
-                    double cash = take * HouseholdBalance.paperShareAt(d.getIssueYield(), depositRate)
-                            * d.getSettleDue() / wanted;
-                    d.moveToHouseholds((d.getOustandingPrincipal() - d.centralBankPrincipal()) * cash
-                            / d.getSettleDue() * scale);
-                }
+                for (Debt d : settling) d.moveToHouseholds(d.allotHouseholdsFace() * take / wanted * scale);
             }
         }
+        // ...and the businesses, from their tills, before the allotment is cleared.
+        firmsTakeTheirShare(settling);
+        // ...and the world, from abroad (CD2, slice 5).
+        worldTakesItsShare(settling);
         for (Debt d : settling) d.settled();
         householdsBoughtPaper += paid;
+        return paid;
+    }
+
+    /**
+     * THE BUSINESSES TAKE THEIR SHARE (CD2, slice 4, D33), at the same settle
+     * and from the same allotment (Debt.allotFirmsCash(), the auction's fill
+     * for them at the clearing yield). Each piece's allotment is shared among
+     * the sectors by their own bids at that piece's issue yield
+     * (OutwardInvestment.allotmentWeights(), the firms' rule at the stop);
+     * each sector pays out of its till, never past it - what it cannot pay is
+     * cut pro rata across its pieces, and the bank takes the rest as it takes
+     * the households' shortfall. The face each sector holds is the face it was
+     * allotted for the cash it paid, so the discount is its to earn at
+     * maturity. The tills are inside the audit's pools, as the bank is, so
+     * the money moving from one to the other declares nothing; the bank's
+     * settle shrinks by it (cityPaperSettled).
+     *
+     * @return the cash the businesses paid
+     */
+    private double firmsTakeTheirShare(java.util.List<Debt> settling) {
+        double wanted = 0;
+        for (Debt d : settling) wanted += d.allotFirmsCash();
+        if (!(wanted > 0)) return 0;
+        String[] keys = Sectors.KEYS;
+        double[][] weights = new double[settling.size()][];
+        double[] asked = new double[keys.length];
+        for (int i = 0; i < settling.size(); i++) {
+            Debt d = settling.get(i);
+            weights[i] = d.allotFirmsCash() > 0
+                    ? outward.allotmentWeights(d.getIssueYield(), bank.depositRate(), DebtManager.WORLD_BASE_RATE, economyManager)
+                    : new double[keys.length];
+            for (int k = 0; k < keys.length; k++) asked[k] += d.allotFirmsCash() * weights[i][k];
+        }
+        double[] cut = new double[keys.length];
+        for (int k = 0; k < keys.length; k++) {
+            double till = Math.max(0, economyManager.getSectorCash(keys[k]));
+            cut[k] = asked[k] > 0 ? Math.min(1, till / asked[k]) : 0;
+        }
+        double paid = 0;
+        for (int i = 0; i < settling.size(); i++) {
+            Debt d = settling.get(i);
+            for (int k = 0; k < keys.length; k++) {
+                double w = weights[i][k] * cut[k];
+                if (!(w > 0)) continue;
+                double cash = d.allotFirmsCash() * w, face = d.allotFirmsFace() * w;
+                outward.takeAllotment(keys[k], cash, face, economyManager);
+                d.moveToFirms(face);
+                paid += cash;
+            }
+        }
+        firmsBoughtPaper += paid;
+        return paid;
+    }
+
+    /**
+     * THE WORLD TAKES ITS SHARE (CD2, slice 5, D7; star 2), at the same settle
+     * and from the same allotment (Debt.allotWorldCash(), the auction's fill for
+     * the world at the clearing yield - CapitalFlows' rule, the stock it would
+     * hold at the excess return the stop pays, less what it has). It pays what
+     * it was allotted, whole: there is no till to be short of, and a run that
+     * began between the sale and the settle does not unwind a purchase made
+     * (it sells the paper to the desk the month it begins,
+     * worldPaperLeavesWithTheMoney()). The face joins CapitalFlows' paper book, outside the bank's
+     * room, and the cash is FOREIGN: it arrives from abroad into the pools by
+     * the bank not having to pay the treasury for it (the settle shrinks by
+     * it, cityPaperSettled), a financial inflow the audit declares ('+ world
+     * PaperBoughtByWorld') and the currency sees, as it sees hot money arrive.
+     *
+     * @return the cash the world paid
+     */
+    private double worldTakesItsShare(java.util.List<Debt> settling) {
+        double paid = 0;
+        for (Debt d : settling) {
+            double cash = d.allotWorldCash(), face = d.allotWorldFace();
+            if (!(cash > 0) || !(face > 0)) continue;
+            d.moveToWorld(face);
+            hotMoney.takePaper(cash, face);
+            paid += cash;
+        }
+        worldBoughtPaper += paid;
         return paid;
     }
 
@@ -13304,6 +13561,24 @@ public class Game {
        it, as for the bank's: MoneyAudit sees it made (+ centralbank
        BoughtPaper) and paid out to the households (- centralbank
        BoughtFromHouseholds). SELLING stays as it was: to the bank only.
+
+       ...AND FROM THE BUSINESSES, LAST (CD2, slice 4). The businesses hold
+       city paper too, and a dial at the whole of it is not reached while they
+       hold some. What the step still wants once the bank's term paper and the
+       households' are gone it buys from the businesses', pro rata across the
+       pieces, at the same market value, and their sectors give up the paper
+       and take the price into their tills pro rata. The money is made for it
+       (+ centralbank BoughtPaper) and arrives in the tills, which are pools:
+       nothing else to declare.
+
+       ...AND FROM THE WORLD, LAST OF ALL (CD2, slice 5). The world holds the
+       city's paper too, outside the bank's room, and a dial at the whole of it
+       is not reached while some is held abroad. What the step still wants after
+       the businesses it buys from the world's, pro rata across the pieces, at
+       the same market value; the money is made for it (+ centralbank
+       BoughtPaper) and goes abroad (- centralbank BoughtFromWorld, a financial
+       outflow the currency sees), and the world's paper book is down by the
+       face.
        ====================================================================== */
     private void openMarketOperation() {
         // Nothing to aim at and nothing held: no move, as it always read.
@@ -13359,7 +13634,18 @@ public class Game {
                 bank.buyPaperFromCentralBank(price, face, unearned);
             }
         }
-        if (move > 0 && face < move) buyPaperFromHouseholds(move - Math.max(0, face));
+        if (move > 0 && face < move) {
+            double want = move - Math.max(0, face);
+            // ...and the businesses' after the households' (CD2, slice 4): the
+            // dial is the whole of the paper (CentralBank.MAX_QE_SHARE), and
+            // the businesses are a holder by choice, so they are the last it
+            // reaches but one - and the households are not asked for more than the step.
+            want -= buyPaperFromHouseholds(want);
+            if (want > 0) want -= buyPaperFromFirms(want);
+            // ...and the world's last of all (CD2, slice 5): a central bank buys from whoever holds it,
+            // and the dial is not reached while some is held abroad.
+            if (want > 0) buyPaperFromWorld(want);
+        }
     }
 
     /**
@@ -13368,8 +13654,10 @@ public class Game {
      * pro rata across the pieces they hold that are settled and pay no
      * principal this month (round 2), at the curve's market value, off their
      * cells pro rata into their savings.
+     *
+     * @return the face it bought, which is less than wanted when they hold less
      */
-    private void buyPaperFromHouseholds(double wanted) {
+    private double buyPaperFromHouseholds(double wanted) {
         java.util.List<Debt> pieces = new java.util.ArrayList<>();
         double pool = 0;
         for (Debt d : debtManager.getDebt()) {
@@ -13380,7 +13668,7 @@ public class Game {
             pool += available;
         }
         double face = Math.min(wanted, pool);
-        if (!(face > 0)) return;
+        if (!(face > 0)) return 0;
         double price = 0;
         double[] faceOf = new double[pieces.size()];
         for (int i = 0; i < pieces.size(); i++) {
@@ -13396,6 +13684,92 @@ public class Game {
         }
         centralBank.buyPaperFromHouseholds(price, face);
         householdBalance.creditPaperBuyback(face, price);
+        return face;
+    }
+
+    /**
+     * The rest of a purchase the bank and the households could not fill, from
+     * the businesses' term paper (CD2, slice 4): the households' path with the
+     * businesses' share in its place - pro rata across the pieces they hold
+     * that are settled and pay no principal this month, at the curve's market
+     * value, off their sectors pro rata into their tills. The money is made
+     * for it, as for the others (MoneyAudit's "+ centralbank BoughtPaper"),
+     * and arrives in the tills, which are pools, so nothing more is declared.
+     * WHY AT ALL: the dial reaches the whole of the paper (Jerus, 0.7.15), and
+     * a business that holds some would otherwise stand between it and its
+     * target for good.
+     */
+    private double buyPaperFromFirms(double wanted) {
+        java.util.List<Debt> pieces = new java.util.ArrayList<>();
+        double pool = 0;
+        for (Debt d : debtManager.getDebt()) {
+            if (!DebtManager.isTermPaper(d) || d.getSettleDue() > 0 || d.principalDueNextMonth() > 0) continue;
+            double available = d.firmPrincipal();
+            if (available <= 0) continue;
+            pieces.add(d);
+            pool += available;
+        }
+        double face = Math.min(wanted, pool);
+        if (!(face > 0)) return 0;
+        double price = 0;
+        double[] faceOf = new double[pieces.size()];
+        for (int i = 0; i < pieces.size(); i++) {
+            Debt d = pieces.get(i);
+            double available = d.firmPrincipal();
+            double f = face >= pool ? available : face * available / pool;
+            faceOf[i] = f;
+            price += debtManager.marketValue(d) * f / d.getOustandingPrincipal();
+        }
+        for (int i = 0; i < pieces.size(); i++) {
+            pieces.get(i).moveToFirms(-faceOf[i]);
+            pieces.get(i).moveToCentralBank(faceOf[i]);
+        }
+        centralBank.buyPaper(price, face);
+        outward.creditPaperBuyback(face, price, economyManager);
+        return face;
+    }
+
+    /**
+     * The rest of a purchase the others could not fill, from the world (CD2,
+     * slice 5): the businesses' path with the world's share in its place - pro
+     * rata across the pieces it holds that are settled and pay no principal
+     * this month, at the curve's market value. The money is made for it
+     * (MoneyAudit's "+ centralbank BoughtPaper") and goes abroad to the world,
+     * a financial outflow ("- centralbank BoughtFromWorld"), the world's paper
+     * down by the face. WHY AT ALL: the dial is the whole of the paper (Jerus,
+     * 0.7.15), and a world that holds some would otherwise stand between the
+     * central bank and its target for good.
+     *
+     * @return the face it bought
+     */
+    private double buyPaperFromWorld(double wanted) {
+        java.util.List<Debt> pieces = new java.util.ArrayList<>();
+        double pool = 0;
+        for (Debt d : debtManager.getDebt()) {
+            if (!DebtManager.isTermPaper(d) || d.getSettleDue() > 0 || d.principalDueNextMonth() > 0) continue;
+            double available = d.worldPrincipal();
+            if (available <= 0) continue;
+            pieces.add(d);
+            pool += available;
+        }
+        double face = Math.min(wanted, pool);
+        if (!(face > 0)) return 0;
+        double price = 0;
+        double[] faceOf = new double[pieces.size()];
+        for (int i = 0; i < pieces.size(); i++) {
+            Debt d = pieces.get(i);
+            double available = d.worldPrincipal();
+            double f = face >= pool ? available : face * available / pool;
+            faceOf[i] = f;
+            price += debtManager.marketValue(d) * f / d.getOustandingPrincipal();
+        }
+        for (int i = 0; i < pieces.size(); i++) {
+            pieces.get(i).moveToWorld(-faceOf[i]);
+            pieces.get(i).moveToCentralBank(faceOf[i]);
+        }
+        centralBank.buyPaperFromWorld(price, face);
+        hotMoney.sellPaper(face, price);
+        return face;
     }
 
     /* ------------- THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) -------------
@@ -13593,12 +13967,22 @@ public class Game {
             for (ParAlone a : alone) {
                 DebtQuote q = a.quote();
                 double price = a.par() * q.cashReceived() / q.faceValue();
-                Debt paper = "Serial".equals(a.into().type())
-                        ? debtManager.addMediumTermBond(a.par(), a.into().term() * 12, month - 1, q.marketRate())
-                        : debtManager.addLongTermBond(a.par(), q.duration() * 12, month - 1, q.couponRate());
-                paper.markIssued(price, q.marketRate());
-                paper.settled();
-                paper.moveToCentralBank(a.par());
+                // A bond that reopens the benchmark line (CD2) goes into that
+                // line, its par the central bank's own and paid for at once;
+                // anything else is a piece of its own.
+                Auction.Result r = q.auction();
+                Debt line = r != null && !r.ask().isNewLine() && "Term".equals(a.into().type())
+                        ? debtManager.benchmarkLine(q.duration()) : null;
+                if (line instanceof LongTermBond bond && Math.abs(bond.couponRate() - r.ask().lineCoupon()) < 1e-12) {
+                    line.reopenForCentralBank(a.par(), price, q.marketRate());
+                } else {
+                    Debt paper = "Serial".equals(a.into().type())
+                            ? debtManager.addMediumTermBond(a.par(), a.into().term() * 12, month - 1, q.couponRate())
+                            : debtManager.addLongTermBond(a.par(), q.duration() * 12, month - 1, q.couponRate());
+                    paper.markIssued(price, q.marketRate());
+                    paper.settled();
+                    paper.moveToCentralBank(a.par());
+                }
                 paid += centralBank.buyAtIssue(price, a.par());
                 took += a.par();
             }
@@ -13607,13 +13991,15 @@ public class Game {
             double faces = 0;
             for (Debt d : debtManager.getDebt()) {
                 if (!DebtManager.isTermPaper(d) || !(d.getSettleDue() > 0)) continue;
-                double face = d.getOustandingPrincipal() - d.centralBankPrincipal();
+                // The face the market bought and has yet to pay for: the whole
+                // of a new piece, the reopening's own of a line reopened (CD2).
+                double face = d.unsettledFace();
                 if (!(face > 0)) continue;
                 sold.add(d);
                 faces += face;
             }
             for (Debt d : sold) {
-                double face = d.getOustandingPrincipal() - d.centralBankPrincipal();
+                double face = d.unsettledFace();
                 double addOn = sold.size() == 1 ? par : par * face / faces;
                 double price = addOn * d.getSettleDue() / face;
                 d.addOnForCentralBank(addOn);
@@ -14290,6 +14676,7 @@ public class Game {
         double principal = debt.getOustandingPrincipal();
         // Who holds it, struck before it comes off the list (0.7.1).
         double hhFace = debt.householdPrincipal(), cbFace = debt.centralBankPrincipal();
+        double firmFace = debt.firmPrincipal(), worldFace = debt.worldPrincipal();
         double bankFace = debt.bankPrincipal();
         double bankUnearned = debt.unaccretedOn(bankFace);
         if (!debtManager.retire(debt)) {
@@ -14314,12 +14701,19 @@ public class Game {
          *     difference is its gain or loss (Bank.sellPaperBack());
          *   - the HOUSEHOLDS' share goes to their savings with their paper
          *     down by their face;
+         *   - the BUSINESSES' share goes to their tills with their paper
+         *     down by their face (CD2, slice 4), at once: the tills are
+         *     inside the pools, so nothing waits to be declared;
+         *   - the WORLD's share leaves the country (CD2, slice 5), its paper down
+         *     by its face: carried with the dollar bond's price to the next
+         *     month's window as '- city BuybackAbroad', a financial outflow;
          *   - the CENTRAL BANK's share comes off its book at face, and the
          *     price - money destroyed, the treasury having paid the boundary -
          *     settles at the top of next month with its gain against face;
-         *   - and a DOLLAR bond's whole price leaves the country.
+         *   - and a DOLLAR bond's whole price leaves the country (as the world's
+         *     share of the city's own does).
          *
-         * The last three are paid out of the pools between two presses, so the
+         * The last four are paid out of the pools between two presses, so the
          * treasury's pool carries what it paid them (getBuybackUnsettled())
          * until the next month declares it leaving - households, abroad, the
          * central bank's money destroyed - which is where the audit sees it,
@@ -14334,12 +14728,22 @@ public class Game {
         } else {
             double hhPrice = principal > 0 ? price * hhFace / principal : 0;
             double cbPrice = principal > 0 ? price * cbFace / principal : 0;
-            bank.sellPaperBack(price - hhPrice - cbPrice, bankFace, bankUnearned);
+            double firmPrice = principal > 0 ? price * firmFace / principal : 0;
+            double worldPrice = principal > 0 ? price * worldFace / principal : 0;
+            bank.sellPaperBack(price - hhPrice - cbPrice - firmPrice - worldPrice, bankFace, bankUnearned);
             if (hhFace > 0) {
                 householdBalance.creditPaperBuyback(hhFace, hhPrice);
                 buybackToHouseholdsUnsettled += hhPrice;
             }
             if (cbFace > 0) centralBank.paperBoughtBack(cbPrice, cbFace);
+            // The businesses' share goes straight into their tills: a pool paid by a pool,
+            // so nothing is carried to the next month's window.
+            if (firmFace > 0) outward.creditPaperBuyback(firmFace, firmPrice, economyManager);
+            // The world's share leaves the country, its paper down by its face (CD2, slice 5).
+            if (worldFace > 0) {
+                hotMoney.paperRepaid(worldFace);
+                buybackAbroadUnsettled += worldPrice;
+            }
         }
 
         // Both sides moved - one bond fewer, and less cash - so the market has
@@ -15249,6 +15653,7 @@ public class Game {
             rollover.setMode(loaded.getRolloverMode());
             rollover.restoreLedger(loaded.getRolloverLedger());
             rollover.restoreRecord(loaded.getRolloverRecord());
+            rollover.setCap(loaded.getRolloverCap());
             // ...and what the rule aims at (0.7.4): an older save has no key
             // and reads the default - 2%, the constant it was.
             debtManager.setInflationTarget(loaded.getInflationTarget() != null
@@ -16305,6 +16710,8 @@ public class Game {
          * the live city's, exactly. An older save keeps the re-strike.
          */
         if (restoredFlows != null) debtManager.restoreMarket(restoredFlows.getDebtMarket());
+        // ...and the auctions counted so far (CD2, D33); a save from before the tally loads an empty one.
+        debtManager.getAuctionTally().restore(restoredFlows != null ? restoredFlows.getAuctionTally() : null);
         // ...the month's trade in units for a save from before them (0.7.63): every price is back now.
         // See Sector.deriveCarriedTrade().
         for (Sector s : getSectors().all()) s.deriveCarriedTrade();
@@ -16489,6 +16896,13 @@ public class Game {
         couponsToHouseholds *= scale;
         principalToHouseholds *= scale;
         householdsBoughtPaper *= scale;
+        couponsToFirms *= scale;
+        principalToFirms *= scale;
+        firmsBoughtPaper *= scale;
+        couponsToWorld *= scale;
+        principalToWorld *= scale;
+        worldBoughtPaper *= scale;
+        paperBoughtFromWorld *= scale;
         bankPrincipalRepaidThisMonth *= scale;
         treasuryRaisedSoFar *= scale;
         treasuryJournal.redenominate(scale);
@@ -16530,6 +16944,8 @@ public class Game {
         debtManager.redenominate(scale);
         // ...and what the treasury's rollover netted and raised (0.7.13).
         rollover.redenominate(scale);
+        // ...and what automatic building's open asks have raised and still have to (CD2, D30).
+        autoBuilder.redenominate(scale);
         buildingManager.redenominate(scale);
         healthcare.redenominate(scale);
         education.redenominate(scale);

@@ -1,7 +1,9 @@
 package ham.citybuildersim;
 
 /**
- * A serial bond: the workhorse of municipal finance.
+ * The amortizing bond: the workhorse of municipal finance - at 5 to 30 years in
+ * fives, one coupon, each sale its own line (CD2). It was the serial bond; the
+ * class keeps its name (spec-city-debt.md, star 3).
  *
  * A single issue is really a stack of maturities. A city raising $10M over ten
  * years does not sell one bond due in 2036; it sells a slice due each year, and
@@ -26,6 +28,12 @@ package ham.citybuildersim;
  * ANNUAL SLICES, MONTHLY COUPON, which is how these are actually structured -
  * principal on an anniversary, interest every period on whatever is still out.
  *
+ * ONE COUPON, THE STOP (CD2). The coupon used to be the curve's rate for the
+ * final maturity, charged on every slice - 7 to 24 basis points too dear on a
+ * rising curve. The auction sets it now: the clearing yield itself, which
+ * prices the whole schedule at 100 (Auction.amortizingPer100()). An amortizing
+ * line is never reopened, because its slices have already started to fall.
+ *
  * NOT A MORTGAGE. Level debt service - equal total payments, like a house - is
  * the other common municipal structure and deliberately not this one: it hides
  * how much principal is left behind a flat number, and Jerus asked for the
@@ -33,7 +41,22 @@ package ham.citybuildersim;
  */
 public class MediumTermBond extends Debt {
 
+    /** The terms an amortizing bond is sold at, in years (D3): Auction.AMORTIZING_YEARS. A bond already on the books may have any other. */
+    public static final int[] YEARS = Auction.AMORTIZING_YEARS;
+
+    /** The one of YEARS nearest this many years; the shorter on a tie. */
+    public static int nearestYears(int years) {
+        int best = YEARS[0];
+        for (int y : YEARS) if (Math.abs(y - years) < Math.abs(best - years)) best = y;
+        return best;
+    }
+
     private double monthlyCouponRate;
+
+    /** The one coupon, a year, that the auction set at issue (the stop itself): the screen's name for the bond, "20-year amortizing bond at 4.21%". */
+    public double couponRate() {
+        return monthlyCouponRate * 12;
+    }
 
     /** Principal repaid on each anniversary. Not final: see repairAfterLoad(). */
     private double principalPerSlice;

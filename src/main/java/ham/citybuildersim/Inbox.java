@@ -89,6 +89,21 @@ public class Inbox {
                 "The bank asks the city to buy its preferred shares",
                 preferredBody(game));
 
+        // The rollover's sale that came up short at its cap (CD2): the maturity is
+        // paid in full all the same, from the cash and the central bank's advances.
+        List<String> rolloverShort = game.getRolloverShortNotes();
+        take(game, month, "rolloverShort",
+                !rolloverShort.isEmpty(),
+                "The rollover could not sell all it needed",
+                rolloverShort);
+
+        // ...and a sale it filled, whose tail passed the point the default cap takes (D29).
+        List<String> rolloverTail = game.getRolloverTailNotes();
+        take(game, month, "rolloverTail",
+                !rolloverTail.isEmpty(),
+                "The rollover paid a tail to sell",
+                rolloverTail);
+
         List<String> defaults = defaultsBody(game);
         take(game, month, "defaults",
                 !defaults.isEmpty(),
@@ -148,6 +163,18 @@ public class Inbox {
                 game.getAutoBuilder().isOn() && !autoLand.isEmpty(),
                 "Automatic building bought land",
                 autoLand);
+
+        // ...and its asks (CD2, D30): one opened, placed or withdrawn this month, a paragraph each - what was
+        // raised stays in the treasury when one is withdrawn, because the paper is sold and cannot be unsold.
+        List<String> autoAsks = new ArrayList<>();
+        for (String line : game.getAutoBuilder().asked()) {
+            if (!autoAsks.isEmpty()) autoAsks.add("");
+            autoAsks.addAll(wrapped(line, BODY_COLUMNS));
+        }
+        take(game, month, "autobuild-ask",
+                game.getAutoBuilder().isOn() && !autoAsks.isEmpty(),
+                "Automatic building is raising money for an order",
+                autoAsks);
 
         cull(month);
     }

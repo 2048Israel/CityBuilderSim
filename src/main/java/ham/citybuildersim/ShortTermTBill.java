@@ -1,7 +1,8 @@
 package ham.citybuildersim;
 
 /**
- * A short-term anticipation note: borrow now, repay one lump, no coupon.
+ * A bill: borrow now, repay one lump, no coupon - at 1, 3, 6 or 12 months,
+ * each sale its own line (CD2).
  *
  * The municipal instrument this models is a tax or bond anticipation note - cash
  * to bridge a gap until the taxes arrive or the long-term financing is arranged.
@@ -16,25 +17,15 @@ package ham.citybuildersim;
  * much in words, because a bare zero under a heading called INTEREST reads
  * as free money.
  *
- * THE DISCOUNT NOW KNOWS HOW LONG THE NOTE RUNS
- *
- * It did not. The face was `request / (1 - rate)` with the FULL annual rate
- * applied whatever the term, so a three-month note and a two-year note were
- * discounted identically. A city borrowing for one quarter was charged a year of
- * interest, and a city borrowing for two years was charged one.
- *
- * Priced on the term now, on the bank-discount convention real bills use:
- *
- *     face = request / (1 - rate x months/12)
- *
- * That is a SIMPLE discount, while getMarketValue() compounds monthly, so the
- * two differ slightly - which is authentic rather than sloppy: a bill's quoted
- * discount rate and its true yield genuinely are different numbers, and that
- * gap is why bond desks quote bond-equivalent yield separately. Worth being
- * precise about the direction, because it is load-bearing: the compound price
- * comes out slightly ABOVE the simple-discount proceeds, so buying a note
- * straight back costs a little more than it raised. A small loss, never a gain,
- * which is the only safe direction for a round trip to fail in.
+ * WHY THE PRICE IS NOT HERE ANY MORE. The discount used to be a simple one,
+ * face = request / (1 - rate x months/12), struck by this class and by Game,
+ * while getMarketValue() compounds monthly - so the issue and the buyback
+ * priced the same paper two ways, and the gap between them was a small loss
+ * on a round trip by luck of the direction. A bill is sold at auction now
+ * (Auction): one clearing yield, the price the face discounted at that yield
+ * monthly, the same sum DebtManager.marketValue() reads back, so the round
+ * trip is a loss of the fee and the tail by construction. The quote carries
+ * the price (Game.quoteTBill()); this class holds the lump.
  */
 public class ShortTermTBill extends Debt {
 
@@ -53,23 +44,20 @@ public class ShortTermTBill extends Debt {
         this.type = "NOTE";
     }
 
-    /**
-     * The discount for a note of this term, as a fraction of face.
-     *
-     * Static so the pricing screen and the booking share one definition, and
-     * clamped below 1 because a long enough note at a high enough rate would
-     * otherwise discount to zero or negative - at which point the face required
-     * to raise a dollar is infinite. The market does not lend on those terms;
-     * capping the discount means it charges a great deal instead.
-     */
-    public static double discountFraction(double annualRate, int months) {
-        double raw = annualRate * (months / 12.0);
-        return Math.max(0, Math.min(raw, .95));
+    /** The terms a bill is sold at, in months (D3): Auction.BILL_MONTHS. A bill already on the books may have any other. */
+    public static final int[] TERMS = Auction.BILL_MONTHS;
+
+    /** True for one of the terms a bill is sold at. */
+    public static boolean isIssuable(int months) {
+        for (int m : TERMS) if (m == months) return true;
+        return false;
     }
 
-    /** Face value needed to raise a given sum for a given term. */
-    public static double faceFor(double cashWanted, double annualRate, int months) {
-        return cashWanted / (1 - discountFraction(annualRate, months));
+    /** The one of TERMS nearest this many months; the shorter on a tie. */
+    public static int nearestTerm(int months) {
+        int best = TERMS[0];
+        for (int m : TERMS) if (Math.abs(m - months) < Math.abs(best - months)) best = m;
+        return best;
     }
 
     @Override

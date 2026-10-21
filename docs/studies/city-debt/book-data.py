@@ -245,8 +245,11 @@ def build():
         if y < auc["fair"]:
             d = {k: 0.0 for k in d}
         grid.append(dict(y=float(y), **{k: float(min(v, 3e8 * 1.2)) for k, v in d.items()}))
+    # with the bank's room nearly gone: the same D$300M (the households, the firms and the world cover it, D32
+    # and D33), and twice it, D$600M, which is short at the cap and filled at a higher yield - the red card
     tight = dm.auction(replace(NOW, bank_room=2e7), "bullet", 10, 3e8, line_coupon=.06, months=114)
-    filled = dm.auction(replace(NOW, bank_room=2e7), "bullet", 10, 3e8, max_tail=None, line_coupon=.06, months=114)
+    short = dm.auction(replace(NOW, bank_room=2e7), "bullet", 10, 6e8, line_coupon=.06, months=114)
+    filled = dm.auction(replace(NOW, bank_room=2e7), "bullet", 10, 6e8, max_tail=None, line_coupon=.06, months=114)
     # the terms' columns on Borrow: today's fair yield at each
     terms = {n: float(curve.par_yield(m)) for n, m in [("2y", 24), ("5y", 60), ("10y", 120), ("20y", 240), ("30y", 360), ("50y", 600)]}
     bills = {n: float(curve.zero[m]) for n, m in [("1m", 1), ("3m", 3), ("6m", 6), ("12m", 12)]}
@@ -273,7 +276,7 @@ def build():
                  coupon_saved=ra["retired"] * line["coupon"], replace_cost=ra["paid"] * y10, y10=y10)
 
     return dict(rows=rows, hist=hist, curves=curves, real=real, infl=infl, world=world, parts=parts,
-                policy=NOW.policy, auction=auc, auction_grid=grid, tight=tight, filled=filled, close=close,
+                policy=NOW.policy, auction=auc, auction_grid=grid, tight=tight, short=short, filled=filled, close=close,
                 terms=terms, bills=bills, amort=amort, frn=frn, ilb=ilb, call=call,
                 today="Jan 2203", rule_now=NOW.rule(NOW.inflation_path(0)),
                 dial_1y=NOW.dial_path(12), dial_5y=NOW.dial_path(60), neutral=dm.NEUTRAL_RATE,
@@ -296,6 +299,7 @@ if __name__ == "__main__":
     a = data["auction"]
     print("auction", {k: (round(v, 4) if isinstance(v, float) else v) for k, v in a.items() if k != "fills"}, a["fills"])
     print("tight", data["tight"]["stop"], data["tight"]["cover"], data["tight"]["sold"])
+    print("short", data["short"]["stop"], data["short"]["cover"], data["short"]["sold"])
     f = data["filled"]
     print("filled", f["stop"], f["tail"], f["sold"], f["price"], f["proceeds"], f["eir"], f["fills"])
     c = data["close"]

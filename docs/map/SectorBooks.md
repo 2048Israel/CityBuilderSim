@@ -1,4 +1,4 @@
-# SectorBooks.java - 798 lines · 42 methods · 1 constants · model
+# SectorBooks.java - 801 lines · 42 methods · 1 constants · model
 
 `ham/citybuildersim/SectorBooks.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -26,7 +26,7 @@
 
 **Uses:** [Debt](Debt.md) (12), [Equity](Equity.md) (8), [BusinessDebtManager](BusinessDebtManager.md) (7), [Good](Good.md) (5), [Sector](Sector.md) (5), [Game](Game.md) (4), [EconomyManager](EconomyManager.md) (2), [Exchange](Exchange.md) (1), [Statement](Statement.md) (1), [BalanceSheet](BalanceSheet.md) (1)
 
-**Used by (21):** [BankCheck](BankCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [DataSave](DataSave.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MortgageCheck](MortgageCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ScaleCheck](ScaleCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SectorStatements](SectorStatements.md), [SupplierCreditCheck](SupplierCreditCheck.md)
+**Used by (22):** [BankCheck](BankCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [DataSave](DataSave.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [HoldersCheck](HoldersCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MortgageCheck](MortgageCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ScaleCheck](ScaleCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SectorStatements](SectorStatements.md), [SupplierCreditCheck](SupplierCreditCheck.md)
 
 ## Sections
 
@@ -34,8 +34,8 @@
 |---:|---|
 | 472 | THE TWO MONTHS |
 | 518 | THE MONTH |
-| 706 | SAVE AND RESTORE |
-| 753 | A REFORM |
+| 709 | SAVE AND RESTORE |
+| 756 | A REFORM |
 
 ## Constants
 
@@ -58,7 +58,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 768 | **type** `public final class SectorBooks` | A month of books for every business in the city, and last month's too. |
+| 31 | 771 | **type** `public final class SectorBooks` | A month of books for every business in the city, and last month's too. |
 | 40 | 354 | **type** `public record SectorMonth(String sector, int month, double revenue, double inputs, double payroll, double e...` | One sector's month. |
 | 293 | 3 | `public double equity()` _(in SectorBooks.SectorMonth)_ | What the sheet says the owners have. |
 | 298 | 3 | `public double totalLiabilities()` _(in SectorBooks.SectorMonth)_ | What it owes: its loans and bonds, and since 0.7.44 its suppliers. |
@@ -98,7 +98,7 @@
 | 509 | 4 | `public boolean hasComparatives()` |  |
 | 514 | 3 | `public boolean isEmpty()` |  |
 
-### THE MONTH (lines 518-705)
+### THE MONTH (lines 518-708)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -106,22 +106,22 @@
 | 553 | 15 | `private static Debt readDebt(Game game, String key)` | R1 and R2 as the month's books read them (0.7.74): EconomyManager's splits, copied - null when it kept neither. |
 | 569 | 5 | `private static double[][] copy(double[][] a)` |  |
 | 576 | 8 | `private static Shares readShares(Game game, String key)` | A company's share as the month closes (0.7.74): null for one that is not listed or has no shares. |
-| 595 | 85 | `private SectorMonth read(Game game, Sector sector)` | One sector's figures, off the statement it struck this month and the flows the city recorded against its name. |
-| 690 | 15 | `public void derivePaidIn(Equity register)` | A SAVE FROM BEFORE 0.7.75 KEPT NO SHARE CAPITAL (R3): its two months read nothing there. |
+| 595 | 88 | `private SectorMonth read(Game game, Sector sector)` | One sector's figures, off the statement it struck this month and the flows the city recorded against its name. |
+| 693 | 15 | `public void derivePaidIn(Equity register)` | A SAVE FROM BEFORE 0.7.75 KEPT NO SHARE CAPITAL (R3): its two months read nothing there. |
 
-### SAVE AND RESTORE (lines 706-752)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 719 | 1 | `public java.util.List<SectorMonth> thisMonth()` |  |
-| 720 | 1 | `public java.util.List<SectorMonth> lastMonth()` |  |
-| 722 | 3 | `private static java.util.List<SectorMonth> list(Map<String, SectorMonth> from)` |  |
-| 726 | 26 | `public void restoreFrom(java.util.List<SectorMonth> saved, java.util.List<SectorMonth> savedBefore)` |  |
-
-### A REFORM (lines 753-798)
+### SAVE AND RESTORE (lines 709-755)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 764 | 10 | `public void redenominate(double scale)` |  |
-| 775 | 23 | `private static SectorMonth scaled(SectorMonth m, double s)` |  |
+| 722 | 1 | `public java.util.List<SectorMonth> thisMonth()` |  |
+| 723 | 1 | `public java.util.List<SectorMonth> lastMonth()` |  |
+| 725 | 3 | `private static java.util.List<SectorMonth> list(Map<String, SectorMonth> from)` |  |
+| 729 | 26 | `public void restoreFrom(java.util.List<SectorMonth> saved, java.util.List<SectorMonth> savedBefore)` |  |
+
+### A REFORM (lines 756-801)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 767 | 10 | `public void redenominate(double scale)` |  |
+| 778 | 23 | `private static SectorMonth scaled(SectorMonth m, double s)` |  |
 

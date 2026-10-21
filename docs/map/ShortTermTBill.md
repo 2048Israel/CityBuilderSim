@@ -1,8 +1,9 @@
-# ShortTermTBill.java - 127 lines · 13 methods · 0 constants · model
+# ShortTermTBill.java - 115 lines · 13 methods · 1 constants · model
 
 `ham/citybuildersim/ShortTermTBill.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
-> A short-term anticipation note: borrow now, repay one lump, no coupon.
+> A bill: borrow now, repay one lump, no coupon - at 1, 3, 6 or 12 months,
+> each sale its own line (CD2).
 > 
 > The municipal instrument this models is a tax or bond anticipation note - cash
 > to bridge a gap until the taxes arrive or the long-term financing is arranged.
@@ -17,46 +18,42 @@
 > much in words, because a bare zero under a heading called INTEREST reads
 > as free money.
 > 
-> THE DISCOUNT NOW KNOWS HOW LONG THE NOTE RUNS
-> 
-> It did not. The face was `request / (1 - rate)` with the FULL annual rate
-> applied whatever the term, so a three-month note and a two-year note were
-> discounted identically. A city borrowing for one quarter was charged a year of
-> interest, and a city borrowing for two years was charged one.
-> 
-> Priced on the term now, on the bank-discount convention real bills use:
-> 
->     face = request / (1 - rate x months/12)
-> 
-> That is a SIMPLE discount, while getMarketValue() compounds monthly, so the
-> two differ slightly - which is authentic rather than sloppy: a bill's quoted
-> discount rate and its true yield genuinely are different numbers, and that
-> gap is why bond desks quote bond-equivalent yield separately. Worth being
-> precise about the direction, because it is load-bearing: the compound price
-> comes out slightly ABOVE the simple-discount proceeds, so buying a note
-> straight back costs a little more than it raised. A small loss, never a gain,
-> which is the only safe direction for a round trip to fail in.
+> WHY THE PRICE IS NOT HERE ANY MORE. The discount used to be a simple one,
+> face = request / (1 - rate x months/12), struck by this class and by Game,
+> while getMarketValue() compounds monthly - so the issue and the buyback
+> priced the same paper two ways, and the gap between them was a small loss
+> on a round trip by luck of the direction. A bill is sold at auction now
+> (Auction): one clearing yield, the price the face discounted at that yield
+> monthly, the same sum DebtManager.marketValue() reads back, so the round
+> trip is a loss of the fee and the tail by construction. The quote carries
+> the price (Game.quoteTBill()); this class holds the lump.
 
-**Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
+**Uses:** [Debt](Debt.md) (1), [Auction](Auction.md) (1), [Game](Game.md) (1)
 
-**Used by (7):** [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (9):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
+
+## Constants
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 48 | `ShortTermTBill.TERMS` | `Auction.BILL_MONTHS` | The terms a bill is sold at, in months (D3): Auction.BILL_MONTHS. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 89 | **type** `public class ShortTermTBill extends Debt` | A short-term anticipation note: borrow now, repay one lump, no coupon. |
-| 41 | 3 | `public ShortTermTBill(double faceValue, int months, int monthStarted)` |  |
-| 46 | 9 | `public ShortTermTBill(double faceValue, int months, int monthStarted, boolean foreign)` |  |
-| 65 | 4 | `public static double discountFraction(double annualRate, int months)` | The discount for a note of this term, as a fraction of face. |
-| 71 | 3 | `public static double faceFor(double cashWanted, double annualRate, int months)` | Face value needed to raise a given sum for a given term. |
-| 76 | 6 | `public void processMonth(Game game)` |  |
-| 84 | 3 | `public double getIssuePrice()` |  |
-| 89 | 3 | `public int getMonths()` | getters |
-| 94 | 3 | `protected double principalOwed()` |  |
-| 99 | 3 | `public int getMaturityMonth()` |  |
-| 103 | 3 | `public boolean isMatured()` |  |
-| 108 | 3 | `public String getType()` |  |
-| 113 | 3 | `protected double couponOwed()` |  |
-| 119 | 8 | `protected double[] scheduleOwed()` | Nothing until maturity, then the whole face. |
+| 30 | 86 | **type** `public class ShortTermTBill extends Debt` | A bill: borrow now, repay one lump, no coupon - at 1, 3, 6 or 12 months, each sale its own line (CD2). |
+| 32 | 3 | `public ShortTermTBill(double faceValue, int months, int monthStarted)` |  |
+| 37 | 9 | `public ShortTermTBill(double faceValue, int months, int monthStarted, boolean foreign)` |  |
+| 51 | 4 | `public static boolean isIssuable(int months)` | True for one of the terms a bill is sold at. |
+| 57 | 5 | `public static int nearestTerm(int months)` | The one of TERMS nearest this many months; the shorter on a tie. |
+| 64 | 6 | `public void processMonth(Game game)` |  |
+| 72 | 3 | `public double getIssuePrice()` |  |
+| 77 | 3 | `public int getMonths()` | getters |
+| 82 | 3 | `protected double principalOwed()` |  |
+| 87 | 3 | `public int getMaturityMonth()` |  |
+| 91 | 3 | `public boolean isMatured()` |  |
+| 96 | 3 | `public String getType()` |  |
+| 101 | 3 | `protected double couponOwed()` |  |
+| 107 | 8 | `protected double[] scheduleOwed()` | Nothing until maturity, then the whole face. |
 

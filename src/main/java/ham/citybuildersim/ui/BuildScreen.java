@@ -50,7 +50,30 @@ final class BuildScreen {
     /** The window this screen draws into: its game, its root, its clearMenu(). */
     private final UserInterface ui;
 
-    BuildScreen(UserInterface ui) { this.ui = ui; }
+    BuildScreen(UserInterface ui) {
+        this.ui = ui;
+        this.autoChips = new CapChips(() -> ui.game.getAutoBuilder().getCap(),
+                cap -> ui.game.getAutoBuilder().setCap(cap, ui.game.getDecisions()), this::showOverview, ui::redrawSoon);
+        this.fundChips = new CapChips(this::fundingCap, cap -> fundCap = cap,
+                () -> { if (fundingAgain != null) fundingAgain.run(); }, ui::redrawSoon);
+    }
+
+    /** Automatic building's cap chips (CD2, D28): its own cap, AutoBuilder.getCap(). */
+    private final CapChips autoChips;
+
+    /** The funding page's cap chips (CD2, D30): the cap its previews are quoted at, which starts as the builder's. */
+    private final CapChips fundChips;
+
+    /** The cap the funding page's previews were last set to by its chips; null until the player moves them, and then the builder's cap is the one used. */
+    private Auction.Cap fundCap;
+
+    /** Draws the funding page again as it stands, for its chips; set as the page is drawn. */
+    private Runnable fundingAgain;
+
+    /** The cap the funding page quotes at: the player's if they moved the chips on this page, otherwise automatic building's. */
+    Auction.Cap fundingCap() {
+        return fundCap != null ? fundCap : ui.game.getAutoBuilder().getCap();
+    }
 
     /* =====================================================================
        BUILD: THE CATEGORY SCREEN IS GONE TOO.
@@ -2091,6 +2114,7 @@ final class BuildScreen {
 
     /** The Build tab's front page. */
     void showOverview() {
+        autoChips.noteFocus();
         ui.clearMenu("handleAllBuildingMenus", this::showOverview);
         buildCategory = BuildAdvice.OVERVIEW;
         // The keyboard's page: nothing on it to build or clear.
@@ -2111,7 +2135,10 @@ final class BuildScreen {
                 sectionHead("WHAT WOULD HELP MOST", adviceTotal(advice)),
                 adviceRow(advice),
                 sectionHead("AUTOMATIC BUILDING", AUTO_INFO, hint(autoHint(ui.game.getAutoBuilder()))),
-                autoRow(),
+                autoRow());
+        // THE OPEN ASKS (CD2, D30): only while some order waits for its money - with none, nothing, not an empty card.
+        page.getChildren().addAll(autoAsks());
+        page.getChildren().addAll(
                 sectionHead("THE MARKET BUILDS THESE", hint("investors decide; you can add")),
                 marketRow());
         ui.rootMenu.getChildren().add(page);
@@ -2719,6 +2746,13 @@ final class BuildScreen {
        choice Jerus asked for beside it: "with an optional button of if cash
        available build regardless" - over the limit, build nothing, or build
        from cash anyway.
+
+       Since CD2 (slice 9, D28 and D30) the debt card also carries the highest
+       yield its bond sells at - the same three chips as Borrow (CapChips), on
+       AutoBuilder.getCap() - and, under the row, THE OPEN ASKS: a row for each
+       order whose bond sold short and which waits for its money (the order,
+       what it costs, raised so far, still to raise, the months open) and a
+       Withdraw button, AutoBuilder.withdraw(); with none, no section.
        ----------------------------------------------------------------------- */
 
     /** Build's heading chip on every page but the Overview while it is on: the way back to its cards. */
@@ -2877,7 +2911,116 @@ final class BuildScreen {
         HBox row = new HBox(8, lead, chips);
         row.setAlignment(Pos.CENTER_LEFT);
         card.getChildren().add(row);
+        // ...and the highest yield its bond sells at (CD2, D28), the same three chips as Borrow, on the builder's own cap.
+        card.getChildren().addAll(autoChips.controls(AUTO_CAP_TITLE, AUTO_CAP_INFO, autoFair(), false));
+        Label capLine = new Label(AUTO_CAP_LINE);
+        capLine.setWrapText(true);
+        capLine.setStyle(wordsAt(10.5, Palette.TEXT_MUTED));
+        card.getChildren().add(capLine);
         return card;
+    }
+
+    /** What the builder's "at …" chip starts from: the fair yield today of the bond it sells. */
+    double autoFair() {
+        return ui.game.getDebtManager().fairYield(Auction.Kind.BOND, Game.BUILD_BOND_YEARS * 12, 0);
+    }
+
+    /** The cap block's caption and (i) on automatic building's debt card (CD2, D28 and D30). */
+    static final String AUTO_CAP_TITLE = "THE HIGHEST YIELD ITS BOND WILL TAKE";
+    static final String AUTO_CAP_INFO = "The most automatic building will pay to sell the " + Game.BUILD_BOND_YEARS
+            + "-year bond that funds an order: fair plus a point (the default), a yield you name, or Fill it, which "
+            + "names none. The sale clears at one yield, the lowest at which the bids cover it, so the limit only costs "
+            + "anything if the bids need it.\n\n"
+            + "If they do not cover the sale at your limit it sells what was bid and keeps the rest of the ask open: "
+            + "each month it offers it again at this cap, and places the order once what it has raised plus the cash "
+            + "over its reserve covers the cost. Fill it lets the yield rise until the bidders' own rules cover the "
+            + "sale. It is automatic building's own setting; the rollover and the Borrow page have theirs.";
+
+    /** The line under the chips: what a short sale does here (D30). */
+    static final String AUTO_CAP_LINE = "A sale that falls short at the cap keeps its ask open, offered again every month; "
+            + "the order is placed once what it has raised plus the spare cash pays for it.";
+
+    /** THE OPEN ASKS' heading (i). */
+    static final String ASKS_INFO = "An order whose bond sold short at the cap waits here for its money, and the rest "
+            + "of its ask stays open. Every month the ask is offered again at the builder's cap; the order is placed "
+            + "once what it has raised plus the cash over the reserve covers it, and the money raised is held for it "
+            + "alone. It is withdrawn, and the inbox says so, if the advice no longer ranks the order or the debt limit "
+            + "closes. Withdraw it yourself and what it raised stays in the treasury: the paper is sold and cannot be "
+            + "unsold.";
+
+    /**
+     * One open ask in words, apart from the nodes (a probe reads them):
+     * {the order, the measure it keeps ahead, what the order costs, raised so
+     * far, still to raise, the months open}. The model's figures through
+     * AutoBuilder.OpenAsk's getters, none recomputed.
+     */
+    static String[] askWords(AutoBuilder.OpenAsk a, int now) {
+        int open = a.monthsOpen(now);
+        return new String[] {
+            formatter.format(Math.max(1, a.count())) + " × " + a.building(),
+            a.measure(),
+            money(a.cost()),
+            money(a.raised()),
+            money(a.toRaise()),
+            open == 0 ? "opened this month" : "open " + open + (open == 1 ? " month" : " months") };
+    }
+
+    /**
+     * THE OPEN ASKS (CD2, D30): a row for each order automatic building is
+     * waiting on - the order and what it keeps ahead, what it costs, what is
+     * raised so far, what is still to raise, the months open - with Withdraw.
+     * Nothing, not an empty card, when there are none.
+     */
+    List<javafx.scene.Node> autoAsks() {
+        AutoBuilder ab = ui.game.getAutoBuilder();
+        List<javafx.scene.Node> out = new ArrayList<>();
+        List<AutoBuilder.OpenAsk> asks = ab.asks();
+        if (asks.isEmpty()) return out;
+        out.add(sectionHead("OPEN ASKS", ASKS_INFO,
+                hint(asks.size() + (asks.size() == 1 ? " order waits" : " orders wait") + " for money · "
+                        + money(ab.askedRaised()) + " raised for them, held in the treasury")));
+        VBox rows = new VBox(8);
+        for (int i = 0; i < asks.size(); i++) {
+            final int index = i;
+            String[] w = askWords(asks.get(i), ui.game.getMonth());
+            Label order = new Label(w[0]);
+            order.setStyle(Palette.strong(Palette.SIZE_HEADING, Palette.TEXT_HEAD));
+            Label keeps = new Label(w[1]);
+            keeps.setWrapText(true);
+            keeps.setStyle(wordsAt(10.5, Palette.TEXT_MUTED));
+            VBox name = new VBox(2, order, keeps);
+            name.setMinWidth(180);
+            HBox.setHgrow(name, Priority.ALWAYS);
+            HBox figures = new HBox(18, askFigure("Order", w[2], Palette.TEXT_BODY),
+                    askFigure("Raised so far", w[3], Palette.GOOD),
+                    askFigure("Still to raise", w[4], Palette.WARN),
+                    askFigure("Open", w[5], Palette.TEXT_BODY));
+            figures.setAlignment(Pos.CENTER_LEFT);
+            Button withdraw = new Button("Withdraw");
+            Tooltip tip = new Tooltip("Stop asking for this one. What it raised stays in the treasury: the paper is "
+                    + "sold and cannot be unsold.");
+            tip.setShowDelay(Duration.millis(300));
+            withdraw.setTooltip(tip);
+            withdraw.setOnAction(e -> { ab.withdraw(index, ui.game.getDecisions()); showOverview(); });
+            HBox row = new HBox(16, name, figures, withdraw);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
+                    + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
+            rows.getChildren().add(row);
+        }
+        out.add(rows);
+        return out;
+    }
+
+    /** One figure of an open ask's row: its small label over its value. */
+    private VBox askFigure(String label, String value, String tone) {
+        Label what = new Label(label);
+        what.setStyle(wordsAt(10, Palette.TEXT_MUTED));
+        what.setMinWidth(Region.USE_PREF_SIZE);
+        Label figure = new Label(value);
+        figure.setStyle(Palette.figure(Palette.SIZE_BODY, tone));
+        figure.setMinWidth(Region.USE_PREF_SIZE);
+        return new VBox(2, what, figure);
     }
 
     VBox autoStatusCard(AutoBuilder ab) {
@@ -4877,6 +5020,18 @@ final class BuildScreen {
        impossible - a card in the same frame says what was built and what
        was not, and never offers a second loan (showBuildFellShort()). An
        order not placed stays on its card.
+
+       SINCE CD2 THE OFFERS ARE AUCTIONS (slice 9, spec-city-debt.md 4.5,
+       D30): each card is the auction's preview for the cash the run is short
+       of, at the cap automatic building holds (AutoBuilder.getCap()) until
+       the player moves the chips on this page - the page's own, which change
+       nothing else. A preview whose bids do not reach the gap says so on its
+       card (Pieces.coverCash(), its button off: a run is placed on money that
+       is there) and under the offers (shortAnswers()): raise the cap or Fill
+       it, and both offers are quoted again; or borrow nothing. Automatic
+       building's third answer, keeping the ask open, is its own - AutoBuilder
+       opens an ask only for the orders it places - so a run the player
+       places is paid for now or not placed, and the page says so.
        ===================================================================== */
 
     /** Where a run came from: the page to come back to, and whether its orders are that page's cards - each taken off its card once placed, the rest left on theirs. */
@@ -4920,6 +5075,8 @@ final class BuildScreen {
         Game g = ui.game;
         int ahead = g.buildRunAhead(run);
         if (ahead > 0 && g.buildFundingGap(firstOf(run, ahead)) > 0) {
+            // A new press starts the page at the builder's cap; the chips on the page move it from there.
+            fundCap = null;
             showBuildFunding(run, from);
             return false;
         }
@@ -5037,20 +5194,23 @@ final class BuildScreen {
      * The two offers, the old page's on the run's gap: the bond first -
      * what the page recommends, since a building outlives either loan and
      * the matching principle pays for a long-lived asset with long-lived
-     * debt - then the note, for a gap the next months' revenue will cover.
-     * Each button books exactly its quote (the call quotes it again,
+     * debt - then the bill, for a gap the next months' revenue will cover.
+     * Each is the auction's preview at fundingCap(), and each button books
+     * exactly its quote (the call quotes it again, at the same cap,
      * identically), then places the whole run.
      */
     List<RunOffer> runOffers(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from) {
         Game g = ui.game;
         RunWords w = runWords(run);
         double gap = w.gap();
-        DebtQuote bond = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
-        DebtQuote note = g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
-        String bondName = Game.BUILD_BOND_YEARS + "-year bond", noteName = Game.BUILD_NOTE_MONTHS + "-month note";
-        // Each quotes its paper again, identically, and books it.
-        Runnable bookBond = () -> ui.game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
-        Runnable bookNote = () -> ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+        // Each offer is the auction's preview at the cap the page is set to (CD2, D30): automatic building's, until the chips on this page move it.
+        Auction.Cap cap = fundingCap();
+        DebtQuote bond = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
+        DebtQuote note = g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE, cap);
+        String bondName = Game.BUILD_BOND_YEARS + "-year bond", noteName = Game.BUILD_NOTE_MONTHS + "-month bill";
+        // Each quotes its paper again, identically, at the same cap, and books it.
+        Runnable bookBond = () -> ui.game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
+        Runnable bookNote = () -> ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE, cap);
         List<RunOffer> out = new ArrayList<>();
         out.add(new RunOffer(bondName, bond,
                 pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
@@ -5075,6 +5235,95 @@ final class BuildScreen {
                     goAhead(run, from, noteName);
                 }));
         return out;
+    }
+
+    /** The cap block's (i) on the funding page (CD2, D30). */
+    static final String FUND_CAP_INFO = "The previews above are the auction for the cash this run is short of, at the "
+            + "highest yield you will take: automatic building's cap until you move it here, and moving it here changes "
+            + "nothing else. Fair plus a point is the default, a yield you name, or Fill it, which names none. The sale "
+            + "clears at one yield, the lowest at which the bids cover it, so the limit only costs anything if the bids "
+            + "need it. If they do not cover the cash at your limit the offer sells only what was bid, and a run is "
+            + "placed on money that is there: that offer cannot be booked. Raise the cap or choose Fill it, and both "
+            + "offers are quoted again; or borrow nothing.";
+
+    /**
+     * What the funding page says under a preview that does not cover, apart
+     * from the nodes (a probe reads it): {the heading, one sentence for each
+     * offer that is short, then what can be done}. Empty where every preview
+     * covers. The figures are the quote's own: what the bids reach
+     * (cashReceived), what the run needs (requested), the highest yield
+     * the sale was held to (auction().ceiling()) and whether Fill it was on.
+     */
+    static List<String> shortWords(List<RunOffer> loans) {
+        List<String> w = new ArrayList<>();
+        boolean allFilled = true;
+        for (RunOffer o : loans) {
+            DebtQuote q = o.quote();
+            if (!q.isShort()) continue;
+            Auction.Result r = q.auction();
+            allFilled &= r.cap().fill();
+            String atCap = r.cap().mode() == Auction.Mode.YIELD ? CapSetting.words(r.cap())
+                    : CapSetting.words(r.cap()) + ", " + String.format("%.3f%%", r.ceiling() * 100) + " at most";
+            w.add(String.format(r.cap().fill()
+                    ? "The %1$s: even with Fill it the bids reach only %2$s of the %3$s the run is short of - no bidder's rule takes more at any yield."
+                    : "The %1$s: the bids reach only %2$s of the %3$s the run is short of, at the highest yield you will take (%4$s).",
+                    o.name(), Money.money(q.cashReceived()), Money.money(q.requested()), atCap));
+        }
+        if (w.isEmpty()) return w;
+        w.add(0, "THIS SALE WOULD NOT COVER THE RUN");
+        w.add(allFilled
+                ? "Fill it is on and still short, so the money is not there at any yield: build less, or borrow nothing "
+                        + "and press Cancel."
+                : "Raise the highest yield or choose Fill it below and both offers are quoted again at it; or borrow "
+                        + "nothing and press Cancel. A short offer cannot be booked, because the run is placed on money "
+                        + "that is there. Automatic building, with nobody at the button, keeps a short ask open and "
+                        + "offers it again each month; a run you place yourself is paid for now or not placed.");
+        return w;
+    }
+
+    /**
+     * The funding card's answers to a short preview (CD2, D30, §4.5): the red
+     * words (shortWords()) and the cap chips, which quote both offers again at
+     * the cap they name. "Keep the ask open" is automatic building's own
+     * (AutoBuilder opens an ask only for its orders; it has no entry for a
+     * player's run), so it is said, not offered. Once the player has moved the
+     * chips the block stays, so they can move them back. Null where every
+     * preview covers and the chips are untouched.
+     */
+    javafx.scene.Node shortAnswers(List<RunOffer> loans) {
+        List<String> w = shortWords(loans);
+        if (w.isEmpty() && fundCap == null) return null;
+        VBox box = new VBox(8);
+        boolean red = !w.isEmpty();
+        if (red) {
+            Label head = new Label(w.get(0));
+            head.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.BAD_TEXT));
+            box.getChildren().add(head);
+            for (int i = 1; i < w.size(); i++) {
+                Label line = new Label(w.get(i));
+                line.setWrapText(true);
+                line.setMinWidth(0);
+                line.setStyle(Palette.words(i == w.size() - 1 ? Palette.SIZE_LABEL : Palette.SIZE_BODY,
+                        i == w.size() - 1 ? Palette.BAD_SOFT : Palette.BAD_TEXT));
+                box.getChildren().add(line);
+            }
+        } else {
+            Label line = new Label("Quoted at the highest yield you set here, not automatic building's ("
+                    + CapSetting.words(ui.game.getAutoBuilder().getCap()) + ").");
+            line.setWrapText(true);
+            line.setMinWidth(0);
+            line.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            box.getChildren().add(line);
+        }
+        double fair = autoFair();
+        for (RunOffer o : loans) {
+            Auction.Result r = o.quote().auction();
+            if (o.name().startsWith(Game.BUILD_BOND_YEARS + "-year") && r != null && !r.isEmpty()) fair = r.ask().fair();
+        }
+        box.getChildren().addAll(fundChips.controls("THE HIGHEST YIELD YOU WILL TAKE", FUND_CAP_INFO, fair, false));
+        box.setMaxWidth(Double.MAX_VALUE);
+        box.setStyle(FinancesScreen.cardStyle(red ? Palette.BAD : Palette.EDGE));
+        return box;
     }
 
     /** The run's pages' head: "Build › Funding", the title a way back to the page the run came from, and "‹ <that page>" at the right - the land office's head() on Build. */
@@ -5111,7 +5360,9 @@ final class BuildScreen {
             handleAllBuildingMenus(from.title(), from.categories());
             return;
         }
-        ui.clearMenu("showBuildFunding", () -> showBuildFunding(run, from));
+        fundChips.noteFocus();
+        fundingAgain = () -> showBuildFunding(run, from);
+        ui.clearMenu("showBuildFunding", fundingAgain);
 
         VBox page = widePage();
         page.getChildren().add(runHead("Funding", from));
@@ -5156,10 +5407,14 @@ final class BuildScreen {
         List<RunOffer> loans = runOffers(run, from);
         for (int i = 0; i < loans.size(); i++) {
             RunOffer o = loans.get(i);
-            offers.add(offerCard(o.name(), null, o.quote(), o.rate(), o.tone(), o.ending(), o.action(),
-                    Icons.BUILD, Palette.BUILDING, o.issue(), Money::money), i, 0);
+            offers.add(coverCash(offerCard(o.name(), null, o.quote(), o.rate(), o.tone(), o.ending(), o.action(),
+                    Icons.BUILD, Palette.BUILDING, o.issue(), Money::money), o.quote()), i, 0);
         }
         page.getChildren().add(offers);
+
+        // A preview that does not cover the gap says so and offers its answers (CD2, D30); the chips stay once moved, so the player can move them back.
+        javafx.scene.Node answers = shortAnswers(loans);
+        if (answers != null) page.getChildren().add(answers);
 
         Button cancel = new Button("Cancel");
         cancel.setOnAction(e -> handleAllBuildingMenus(from.title(), from.categories()));
