@@ -964,7 +964,12 @@ public class AuctionCheck {
         DebtQuote tiny = null;
         boolean everyBookedSaleRaised = true, everyBookedSaleWorthIt = true;
         int rounds = 0;
-        for (; rounds < 12 && tiny == null; rounds++) {
+        // The households' savings and the bank's room go in the first sales (the allotment costs the households less than the
+        // savings the bid was made against, so they leave a discount's worth, drained by the next); the firms bid OUT_SPEED of
+        // their gap a month, and each sale they take paper in leaves the gap 1 - OUT_SPEED of what it was, so they come down
+        // more slowly (CD2 slice 4) - one sale more than twelve here, but not the same in every city. The loop therefore
+        // runs until the leftover is a sliver, not for a count of sales it was once found to take.
+        for (; rounds < 600 && tiny == null; rounds++) {
             DebtQuote q = city.quoteTBill(huge, 6, 100);
             if (q.isEmpty()) { tiny = q; break; }
             everyBookedSaleRaised &= q.cashReceived() > 0;
@@ -1085,9 +1090,12 @@ public class AuctionCheck {
        a share of the issue. The households bid a fifth of the issue a point
        over the deposit rate (D32), so the deposit rate is the other lever: at
        3% they have a slope between a point over fair and Fill it's ceiling
-       (section 9's), and a hair under fair (4%) they bid two per cent of an
-       issue at a cap of fair (section 10's). Each fixture asserts that it
-       caused what it is for.
+       (section 9's). Section 10's lowers it until a sale at a cap of fair
+       sells a share of the issue that is over the smallest deal worth
+       arranging (Game.isTinySale(): a short sale under it is no sale) and
+       well under the issue; the firms bid beside the households now, so the
+       rate is found, not guessed (tuneDeposit()). Each fixture asserts that
+       it caused what it is for.
        ===================================================================== */
 
     /** The stream ChildcareCheck's town and the cities here are built behind. */
@@ -1320,15 +1328,37 @@ public class AuctionCheck {
         return BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
     }
 
-    /** The deposit rate of section 10's fixture: a hair under fair (4.1%), so at a cap of fair the households bid about two per cent of an issue. */
-    static final double HAIR_UNDER_FAIR = .04;
+    /** The deposit rate of section 10's fixture, found by tuneDeposit(): low enough that at a cap of fair the buyers bid a real share of an issue. */
+    static double deposit = .03;
 
     /**
-     * The room used up and the deposit rate a hair under fair, so that at a cap of fair the households bid two per cent of an
-     * issue and the bank bids D$100k of face: a bond for an order sells almost nothing, and short.
+     * The deposit rate at which a bond for `gap` sold at the builder's cap of fair sells short, but a share of the issue that is
+     * over the smallest deal worth arranging (Game.isTinySale(): under it a short sale is no sale), at least three times it, and
+     * well under the issue - at most six tenths - with the bank's room used up (D$100k of face). The households bid a fifth of the
+     * issue a point over the deposit rate and the firms a share of their idle money (D32, D33), so the rate that does is found by
+     * stepping it down from 4% by a quarter of a point; the last, 0%, if none does (and the fixture's assertion says so).
+     */
+    static double tuneDeposit(Game g, double gap, Cap cap) {
+        double min = g.minimumIssueSize();
+        double d = .04;
+        for (; d > 1e-9; d -= .0025) {
+            g.getBank().setDepositRate(d);
+            roomTo(g, 100);
+            DebtQuote q = AutoBuilder.bondQuote(g, gap, cap);
+            if (q == null || q.isEmpty() || !q.isShort()) continue;
+            double sold = q.auction().sold(), asked = q.auction().ask().face();
+            if (sold >= 3 * min && sold <= .6 * asked) return d;
+        }
+        return 0;
+    }
+
+    /**
+     * The room used up and the deposit rate tuneDeposit() found, so that at a cap of fair the buyers bid a real share of an issue
+     * and the bank bids D$100k of face: a bond for an order sells short, over the smallest deal worth arranging, and well under
+     * what it asks.
      */
     static void useUpTheRoom(Game g) {
-        g.getBank().setDepositRate(HAIR_UNDER_FAIR);
+        g.getBank().setDepositRate(deposit);
         roomTo(g, 100);
     }
 
@@ -1338,10 +1368,17 @@ public class AuctionCheck {
      * next pass (they may draw on it in a real city: AutoBuilder.held() reads what is left).
      */
     static String month(Game g, boolean ample) {
-        g.getBank().setDepositRate(HAIR_UNDER_FAIR);
+        g.getBank().setDepositRate(deposit);
         if (ample) roomTo(g, 1e9); else roomTo(g, 100);
         g.setCashForTest(AutoBuilder.reserve(g) + g.getAutoBuilder().askedRaised());
         return printed(() -> g.simulateMonths(1));
+    }
+
+    /** What the builder's orders placed in a month cost, ground with them: the cash they took out of the treasury. */
+    static double placedIn(AutoBuilder ab, int month) {
+        double sum = 0;
+        for (AutoBuilder.Entry e : ab.log()) if (e.month() == month) sum += e.cost() + e.landCost();
+        return sum;
     }
 
     static void section10(Path root) throws Exception {
@@ -1356,18 +1393,22 @@ public class AuctionCheck {
 
         /* THE FIXTURE: the cash at the reserve, so every order needs its bond; the room used up. */
         BuildAdvice.Measure streets = streets();
-        useUpTheRoom(a);
         a.setCashForTest(AutoBuilder.reserve(a));
         List<CityNeeds.Need> all = CityNeeds.measure(a, CityNeeds.PLAIN);
         BuildAdvice.Suggestion card = BuildAdvice.suggestFor(a, AutoBuilder.rowFor(all, streets), streets, a.getCash(),
                 a.getLandManager().getAvailableSqFt(), ab.getSlack());
         double one = card == null ? Double.NaN : card.paving() ? a.quotePave(1).total : a.quoteBuild(card.template(), 1).total;
         double gap = AutoBuilder.gapFor(a, one);
+        deposit = card == null ? deposit : tuneDeposit(a, gap, ab.getCap());
+        useUpTheRoom(a);
         DebtQuote probe = card == null ? null : AutoBuilder.bondQuote(a, gap, ab.getCap());
+        double minimum = a.minimumIssueSize();
         assertTrue("fixture: the town is short of streets and its cash at the reserve; the bank's room used up and the deposit rate"
-                        + " a hair under fair, the bond for one Paved Road sells short at a cap of fair",
-                card != null && probe != null && probe.isShort() && probe.cashReceived() < gap && gap > 0
-                        && card.template().getName().equals("Paved Road") && probe.auction().ask().fair() > HAIR_UNDER_FAIR + 1e-4);
+                        + " tuned (" + String.format("%.2f%%", deposit * 100) + "), the bond for one Paved Road sells short at a cap of fair,"
+                        + " over three times the smallest deal worth arranging and well under what it asks",
+                card != null && probe != null && probe.isShort() && !probe.isEmpty() && probe.cashReceived() < gap && gap > 0
+                        && card.template().getName().equals("Paved Road") && probe.auction().sold() >= 3 * minimum
+                        && probe.auction().sold() <= .6 * probe.auction().ask().face() && probe.auction().ask().fair() > deposit);
 
         /* PASS 1: the ask opens. */
         double[] snap = new double[6];
@@ -1488,7 +1529,7 @@ public class AuctionCheck {
         Game p = load(saved);
         AutoBuilder pb = p.getAutoBuilder();
         int openP = pb.asks().size(), sitesP = siteCount(p);
-        p.getBank().setDepositRate(HAIR_UNDER_FAIR);
+        p.getBank().setDepositRate(deposit);
         roomTo(p, 1e9);
         p.setCashForTest(AutoBuilder.reserve(p));
         printed(() -> p.simulateMonths(1));
@@ -1537,8 +1578,12 @@ public class AuctionCheck {
         BuildingsTemplate centre = c.getBuildingManager().getTemplateByName("Community Health Centre");
         c.setCashForTest(Founding.WEALTHY_CASH);
         quietly(() -> c.buildStack(centre, 20, true));
-        double[] snapC = new double[4];
-        c.autoBuildProbeForTest = after -> { snapC[after ? 1 : 0] = c.getCash(); snapC[2 + (after ? 1 : 0)] = c.getDebtManager().getAllPrincipal(); };
+        double[] snapC = new double[5];
+        c.autoBuildProbeForTest = after -> {
+            snapC[after ? 1 : 0] = c.getCash();
+            snapC[2 + (after ? 1 : 0)] = c.getDebtManager().getAllPrincipal();
+            if (!after) snapC[4] = c.getMonth();
+        };
         String logC = month(c, false);
         c.autoBuildProbeForTest = null;
         String withdrew = String.join(" ", cb.asked());
@@ -1554,21 +1599,25 @@ public class AuctionCheck {
                         && logC.contains("withdrew its ask for Community Health Centre (General care)")
                         && c.getInbox().live("autobuild-ask") != null
                         && String.join(" ", c.getInbox().live("autobuild-ask").getBody()).contains("cannot be unsold"));
-        assertTrue("...the others stay open, and nothing was given back: the cash did not fall in the pass, and the city still owes every bond it sold",
-                cb.askFor(streets) != null && snapC[1] >= snapC[0] - 1e-6 && snapC[3] >= snapC[2] - 1e-6);
+        assertTrue("...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed"
+                        + " (the withdrawn ask's money is the treasury's to spend now), and the city still owes every bond it sold",
+                cb.askFor(streets) != null && snapC[1] >= snapC[0] - placedIn(cb, (int) snapC[4]) - 1e-6 && snapC[3] >= snapC[2] - 1e-6);
 
         /* WITHDRAWN: the debt limit closes. */
         Game d = load(saved);
         AutoBuilder db = d.getAutoBuilder();
         int openD = db.asks().size();
         db.setDebtLimit(.1, null);
-        double[] snapD = new double[2];
-        d.autoBuildProbeForTest = after -> snapD[after ? 1 : 0] = d.getCash();
+        double[] snapD = new double[3];
+        d.autoBuildProbeForTest = after -> { snapD[after ? 1 : 0] = d.getCash(); if (!after) snapD[2] = d.getMonth(); };
         String logD = month(d, false);
         d.autoBuildProbeForTest = null;
         assertTrue("fixture: the debt limit is under what the city owes", !db.within(d));
-        assertTrue("an ask whose next sale would cross the debt limit is withdrawn, every one, and the log says the limit closed on it",
-                openD >= 1 && db.asks().isEmpty() && logD.contains("the debt limit closed on it") && snapD[1] >= snapD[0] - 1e-6);
+        assertTrue("an ask whose next sale would cross the debt limit is withdrawn, and the log says the limit closed on it: none is left"
+                        + " open, nothing was sold for them, and what they raised was not taken back (the cash fell by no more than the"
+                        + " orders the raised money paid for)",
+                openD >= 1 && db.asks().isEmpty() && logD.contains("the debt limit closed on it")
+                        && salesBy(d, "Automatic building") == 0 && snapD[1] >= snapD[0] - placedIn(db, (int) snapD[2]) - 1e-6);
 
         /* THE PLAYER WITHDRAWS ONE. */
         Game w = load(saved);

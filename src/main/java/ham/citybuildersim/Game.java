@@ -9290,7 +9290,8 @@ public class Game {
                 rolloverTailNotes.add(note);
                 GameLog.note("  " + note);
             }
-            autoSalesThisMonth.add(new TimeSkipReport.AutoSale("The rollover", month, name, r.ask().face(), r.sold(),
+            // A tiny sale is no sale (isTinySale()): its quote is empty, and what the bids would have bought was not sold.
+            autoSalesThisMonth.add(new TimeSkipReport.AutoSale("The rollover", month, name, r.ask().face(), s.quote().isEmpty() ? 0 : r.sold(),
                     s.brought(), r.stop(), r.tail(), r.cover(), r.shortSale(), r.ceiling(), fromCash, fromAdvances, 0));
         }
     }

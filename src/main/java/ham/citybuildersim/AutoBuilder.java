@@ -1769,8 +1769,9 @@ public final class AutoBuilder {
     private void noteSale(Game game, DebtQuote q, double raisedCash, double heldOpen) {
         if (q == null || q.auction() == null || q.auction().isEmpty()) return;
         Auction.Result r = q.auction();
+        // A tiny sale is no sale (Game.isTinySale()): its quote is empty, and what the bids would have bought was not sold.
         game.noteAutoSale(new TimeSkipReport.AutoSale("Automatic building", game.getMonth(),
-                Game.BUILD_BOND_YEARS + "-year bond", r.ask().face(), r.sold(), raisedCash, r.stop(), r.tail(), r.cover(),
+                Game.BUILD_BOND_YEARS + "-year bond", r.ask().face(), q.isEmpty() ? 0 : r.sold(), raisedCash, r.stop(), r.tail(), r.cover(),
                 r.shortSale(), r.ceiling(), 0, 0, heldOpen));
     }
 
