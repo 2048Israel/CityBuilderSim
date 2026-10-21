@@ -289,6 +289,7 @@ Each of the ~145 moneys, against the US$:
 - **The comparison rate:** D$ per 2015 US$ = D$ per US$ x (the US's price level now / its level in 2015). A real 2015 US$ buys what a dollar bought in 2015.
 - **Real GDP in 2015 US$**, the World Bank's way [R35]: the city's GDP at founding's prices, divided by founding's rate, carried back to 2015 dollars by the US's price path: real GDP_D$ / rate_founding x (P_US,2015 / P_US,founding).
 - **The real effective rate:** 100 x exp(sum of w_j x ln(the D$'s price in money j x P_city / P_j)), with w_j the city's trade by partner (WN3), 100 at founding, the BIS's way [R5]. Above 100, the D$ is dearer in real terms than it was. Before WN3 it is the D$ against the US$ alone.
+- **The bridge** (the leaderboard's D1, Jerus 2026-10-21: "2015 so that its calibrated to the other"): a founding game dollar counts as one real 2015 dollar. So "its level in 2015" above is the US's level at founding, and P_US,2015 / P_US,founding is 1, whatever year the calendar starts; the game's prices stay 2025's (`spec-leaderboards.md` §2).
 - Nothing in the model reads any of the three. They answer "is my money dear?", which today's gauge answers against a parity made of rent.
 
 ### 3.10 What it costs, measured
