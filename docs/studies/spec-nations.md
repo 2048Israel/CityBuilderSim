@@ -72,7 +72,7 @@
 
 ### 1.6 What the leaderboard study planned
 
-`spec-leaderboards.md` (2026-10-08, not built) chose the peer list this study takes (every UN member, plus Taiwan, Hong Kong and Macau) and planned three data files: `world-2025.json` (196 nations and about 60 city regions, 70 measures), `world-path.json` (people and GDP a head, 2000 to 2100) and `world-sources.json`, made by an offline builder. Its D1 recommended that **a founding game dollar is a 2025 dollar**: the game's prices were struck from 2025-26 figures though the calendar starts in January 2000. This study keeps that anchor (§7.1) and shares the paths (§3.3, D24).
+`spec-leaderboards.md` (2026-10-08, not built) chose the peer list this study takes (every UN member, plus Taiwan, Hong Kong and Macau) and planned three data files: `world-2025.json` (196 nations and about 60 city regions, 70 measures), `world-path.json` (people and GDP a head, 2000 to 2100) and `world-sources.json`, made by an offline builder. Its D1 recommended that **a founding game dollar is a 2025 dollar**: the game's prices were struck from 2025-26 figures though the calendar starts in January 2000. This study keeps that anchor (§7.1) and shares the paths (§3.3, D24). *(2026-10-21, the leaderboard's refresh: Jerus changed its D1 to "2015 so that its calibrated to the other": a founding game dollar counts as one real 2015 dollar, D29's base, while the game's prices stay as struck from 2025's; `spec-leaderboards.md` §0, §10.)*
 
 ---
 
@@ -135,7 +135,7 @@ Each figure carries a mark of where it came from: ● published, ◐ a published
   - **Sea distances between nations:** CERDI-seadistance (CC BY 4.0), port to port for 227 countries and territories [R20]. South Sudan is missing, and takes its road to its neighbours' ports, as the table does for every landlocked nation. Land neighbours are measured on the great circle times a detour.
 - **Size (est.):** about 6 MB of borders and 4 MB of tables, against earth-1's 53 MB.
 
-**The leaderboard reads the same file** (D24): its people and output are these, and its 70 measures stay in its own `world-2025.json`.
+**The leaderboard reads the same file** (D24): its people and output are these, and its 70 measures stay in its own `world-2025.json`. Its refresh (2026-10-21) asks the file's real output per nation in constant 2015 US$, the WDI's own series, for its constant-rate rankings (`spec-leaderboards.md` §8, its D14); its Your world board ranks the ten measures the path carries (its D15).
 
 ---
 
