@@ -72,6 +72,14 @@ stuff".
 | FR9 | One truck, one whole trip: in on the highway, off at a ramp, along the streets and down the access road to its works' gate, a district's trips by its tonnes (Jerus, 2026-10-20: "Queue it") | [FR9](docs/queue/FR9.md) |
 | TM2 | The ship gate's timing waits for a quiet minute, not one empty look, so it never starts in the gap between another runner's JVMs (Jerus, 2026-10-20: "Queue a small fix"), and DeepSeek's `agent.py` timing soft beside other runs ("Add it to TM2") | [TM2](docs/queue/TM2.md) |
 | FW11 | No street piece walled in by buildings: over a dense iron cluster `DistrictPlan.join()` never walks over a building, so an enclosed piece stays cut off (was W1-P; Jerus, 2026-10-20: "Queue the fix") | [FW11](docs/queue/FW11.md) |
+| WN0 | Nations: the world file - 196 nations, their borders, trade by pair and good, paths 2000-2100, sea distances; `tools/world/`, `WorldData`, its check (Jerus, 2026-10-20: "do rec") | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN1 | Nations: each nation's year from the path (Historical or Random) and the seed, the founding screen's World step, saved; nothing reads them yet | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN2 | Nations on the map: borders, dots and labels with output and people, the nation's card, the Nations / Trade routes / Borders chips, the head's POPULATION and GDP tiles, the legend that folds | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN3 | Nations: the world market - the January solve on the partner rule, the city's month by the slopes, the band from the world, trade by partner; every trace moves | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN4 | Nations: each nation's money and rate, the vault in eight moneys and its reserve mix, revaluation | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN5 | Nations: land bought from the nation it lies in, at its land price, in its money; offers split at a border | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN6 | Nations: the screens - Trade > Partners, the reserves in eight, the nation's page; the manual | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN7 | Nations: ships and trains to their partners, each on its partner's bearing | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 
 ## Pending
 
