@@ -23,7 +23,8 @@ stuff".
 |---|---|---|
 | FR4 | The freight screens, and Build's Infrastructure and Freight tabs | [spec-freight §7](docs/studies/spec-freight-and-infrastructure.md#7-batches) |
 | EG1 | Deposits where the geology says: oil by known petroleum, iron on shields and recorded deposits, fewer and bigger fields, the Sydney coalfield and the Scotian Shelf by hand rows (Jerus, 2026-10-20: "Queue it next after FR4", ahead of the industrial review it waited on) | [spec-earth2-terrain §8.5](docs/studies/spec-earth2-terrain.md#85-the-recommendation-eg1-deposits-where-the-geology-says-d20-your-call) |
-| CL1 | Study: the city's layout - streets not a grid, buildings that stay where they were put, uses that do not ring; its batches queued next when it finishes (Jerus, 2026-10-20: "study, and then add teh batch") | [CL1](docs/queue/CL1.md) |
+| CL2 | Streets not a grid inside the blocks: homes and squared cells take the comb, dropped crossings or brick by a hash of their place (CL1, Jerus 2026-10-20: "study, and then add teh batch") | [CL2](docs/queue/CL2.md) |
+| CL3 | Buildings that stay where they were put, and quarters that keep their use: each district's log of arrivals, its plan in that order, a district full at what its plan can draw, a spill that keeps its time | [CL3](docs/queue/CL3.md) |
 | CD1 | The city's debt: the curve from the dial the market expects, every payment priced on its month | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
@@ -70,6 +71,7 @@ stuff".
 | TM2 | The ship gate's timing waits for a quiet minute, not one empty look, so it never starts in the gap between another runner's JVMs (Jerus, 2026-10-20: "Queue a small fix"), and DeepSeek's `agent.py` timing soft beside other runs ("Add it to TM2") | [TM2](docs/queue/TM2.md) |
 | FW11 | No street piece walled in by buildings: over a dense iron cluster `DistrictPlan.join()` never walks over a building, so an enclosed piece stays cut off (was W1-P; Jerus, 2026-10-20: "Queue the fix") | [FW11](docs/queue/FW11.md) |
 | FX5 | The map's rail and roads finished: curved rail corners and trains on them, real-length trains with yards and depots that hold them, trains only onto clear sidings, one roundabout a wide crossing, mostly signals, tidy diagonal ends, the legend's "Railway" (Jerus, 2026-10-20, on FX3's renders) | [FX5](docs/queue/FX5.md) |
+| CL4 | Slanted avenues from the founding site, the coast's streets as curves, crescents in the outer suburbs; on FX5's curves, so after it (the CL1 study's ★3 asks whether both move up) | [CL4](docs/queue/CL4.md) |
 
 ## Pending
 
