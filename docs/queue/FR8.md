@@ -36,8 +36,10 @@ the trade's shares are struck at the haul and saved (★9).
   had; and the converse, a town whose fleet has room, everyone whole. Count,
   in the default playtest, the months a sector other than the newest runs
   short, against main's.
-- **The ensemble**, as FR2 ran it (FR2-notes §5): AUTO2's median against
-  main's, and no new red.
+- **The ensemble**, if the trace moves (EN1's rule, CLAUDE.md step 4):
+  `tools/ensemble/ensemble.sh` once on the final model, against the newest
+  `docs/ensemble/<version>.md` rather than main rerun: AUTO2's median
+  against the baseline's, and no new red.
 
 ## Not this batch's
 

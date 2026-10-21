@@ -699,7 +699,7 @@ public final class EarthData implements AutoCloseable {
     /** One of Natural Earth's places, for search: its name, its ASCII name (the name when they are the same), country, position and population (Natural Earth's pop_max). */
     public record Place(String name, String ascii, String country, double lat, double lon, long population) { }
 
-    /** The province at a point: its row in provinces(), 0 for none. */
+    /** The province at a point in the raw grid: its row in provinces(), 0 for none. Not the model's province since EG1 (0.8.12): Geology.provinceAt() holds the patches over this grid (the Sydney coalfield), and every model reader asks that. */
     public int provinceAt(double lat, double lon) {
         Layer l = layer("geology");
         int cpd = l.cellsPerDegree;

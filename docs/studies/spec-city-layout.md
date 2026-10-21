@@ -21,13 +21,15 @@
 
 **The cost** (§5.5): plans as fast or faster (no ladder rebuilt), nothing added to the month a player waits on but the log's records (6-9 a month on his 1.7M city), the sidecar tens of kilobytes bigger on his cities (an estimated 1-2 MB at 10B), the screen unchanged until CL4's diagonal bands (the highways' path). A bit more, as asked, not much.
 
-**Jerus's calls** (§7): ★1 how much of the old pattern stays, ★2 which slants and curves, ★3 whether FX5 and CL4 move up, ★4 which kinds stay at the edge.
+**Jerus's calls** (§7, all answered): ★1 how much of the old pattern stays, ★2 which slants and curves, ★3 whether FX5 and CL4 move up, ★4 which kinds stay at the edge, ★5 the highways that stop at the water.
+
+**Highways on one island** (§5.6, Jerus's added question): an arm never crosses the sea, and a new corridor starts only where its line, a district away, crosses highway already laid - so in his Bergen the sea stopped the spine short and 92% of the city's highways were never drawn, on its own island too. ET5 and ET6 do not fix that; CL5 does.
 
 ---
 
 ## 1. Today, measured
 
-On the PC, alone (no other batch's JVM; Jerus's game was open when the run started and closed before it ended), timing hard. His two newest cities, copied to a scratch folder: slot 1 (20 October, 1.73M people, month 3,002, 115 districts) and slot 2 (19 October, 6.41M people, month 10,572, 2,806 districts). `city-layout/LayoutProbe.java` loads a copy, plans every district, writes and reads the sidecar and plays three months on the copy; MapCheck gives the screen and the 10B figures.
+On the PC, alone (no other batch's JVM; Jerus's game was open when the run started and closed before it ended), timing hard. His two newest cities, copied to a scratch folder: slot 1, Bergen (20 October, 1.73M people, month 3,002, 115 districts) and slot 2, Danzik (19 October, 6.41M people, month 10,572, 2,806 districts). `city-layout/LayoutProbe.java` loads a copy, plans every district, writes and reads the sidecar and plays three months on the copy; MapCheck gives the screen and the 10B figures.
 
 | | his 1.7M city | his 6.4M city |
 |---|---|---|
@@ -165,6 +167,40 @@ The playtest's city runs out of ground from about month 2,000 (today 448 of its 
 
 All three keep within the budget Jerus set: no design adds work to the month that a player waits on, the plans stay where they are made (the map's worker) and no slower, and the one thing that grows is the sidecar, by the log - tens of kilobytes on his cities.
 
+### 5.6 Highways on one island only
+
+Jerus, 2026-10-20, added to the study: "why do highways end up only in one island, for example if in one city its an island, no highways are built outside it, like if there are three islands, only the starter isalnd has highways."
+
+**Why: two rules in `CityRuns`, and the second is worse than islands.**
+
+1. **An arm never crosses the sea.** A highway arm bridges fresh water up to 14 plots (420 m) and nothing else (`CityRuns.clear()`); at the sea it turns 45 degrees and runs along the shore, or ends. No arm reaches ground across salt water, so another island is never reached from the founding site's.
+2. **A new corridor starts only on the net.** After the spine (the founding site's row and column), each corridor is a line one district (256 plots, 7.68 km) from the last, and it opens only where that line crosses highway already laid on the city's ground (`newCorridor()`: an interchange). A net whose spine arms the sea stops before they are 7.68 km long has no plot any new line crosses, so **no corridor ever opens - on the founding site's own ground either** - and the model's highway plots it cannot lay are only counted (the legend's undrawn road). On another island no line can ever start, since no plot of the net is there.
+
+The railway grows by the same two rules from its own hub (the mine nearest the founding site).
+
+**Measured on his cities** (the ground in pieces the water parts, at 32-plot tiles, the home piece the founding site's):
+
+| | Bergen, 1.7M | Danzik, 6.4M |
+|---|---|---|
+| pieces of owned ground the water parts | 17 | 91 |
+| built districts on the founding site's piece / on others | 34 / 1 (109 buildings) | 52 / 1 (17 buildings) |
+| ...with a highway plot | 3 of 34 / none | 25 of 52 / none |
+| highway plots laid / the model's that the net could not lay | 603 / **6,999** | 16,366 / 0 |
+| corridors | 2 (the spine alone) | 19 |
+
+So in his 1.7M city - Bergen, among its fjords and islands - 92% of the city's highways are never drawn, and the island Jerus noticed is the smaller half of it: the net is stuck on its own ground. In the 6.4M city the net grew (its spine had room) but stops at the water.
+
+**What ET5 and ET6 already cover** ([spec-earth2-terrain §6.2-§6.6 and §10](spec-earth2-terrain.md#10-batches)):
+- ET6 widens the short crossing to 1,020 m over shallow sea as well as fresh water, so ground within a kilometre across a strait is one landmass and its arms cross (Halifax's Narrows bridges, §6.2); and a **long bridge** Jerus orders is laid as a run that "joins the highway network at both landings" (§6.6).
+- ET5 makes landmasses known to the model: ground on an unlinked landmass holds only a port; a landmass is linked by two ports or a bridge; buildings go home first, then to the linked landmass with the most free ground (spec-roads-and-ports §3.3).
+
+**What they leave out:**
+- **The stuck net** (rule 2). Neither touches how a corridor opens, so a coast city like his 1.7M one keeps 92% of its highways undrawn whatever ET5 and ET6 do. The fix is the map's: when no corridor line crosses the net, the next corridor opens from the net's plot nearest its line, joined to it by a link arm (straight, then 45 degrees, by the arms' own cost), so a net never stops while the model has plots to lay and the city has ground.
+- **A net on another landmass.** ET6's bridge joins the far landing to the network, but nothing grows corridors on the far landmass from it; and a landmass linked by ports alone (ET5) has no way for a highway to reach it. Each piece of the city's ground the water parts that holds buildings needs its own net: its hub its plot nearest the founding site (its port's gate once ET5 has ports, a long bridge's landing once ET6 has bridges), grown by the same rules, the model's highway and track plots dealt between the pieces by their built ground. With the link-arm fix above, a bridge's landing is simply where the far piece's net starts.
+- **Until ET5 ships**, the map places buildings on any owned ground whatever its island (the one built district on another piece in each of his cities), so those towns stand without a highway; after ET5 an unlinked island holds only ports and needs none.
+
+Both missing pieces are the map's alone (`CityRuns` and the deal of the model's plots in `CityMap`), nothing in the model reads them, and they cost a link arm's search when a net stops and a flood of the city's ground at 32-plot tiles when it buys land (his 6.4M city's box: 122,630 home tiles, a fraction of a second, once a purchase). Jerus queued them as one batch, CL5 (★5).
+
 ## 6. Decisions
 
 1. **The lattice stays** (the 960 m arterials, the cells, the corridors' lines): it carries the seams, the ramps, the access roads' ends and the surface ladder. Recommended.
@@ -178,7 +214,8 @@ All three keep within the budget Jerus set: no design adds work to the month tha
 9. **The ladder decides once**: squares and boulevards when a cell opens, from the road at that point of the log; a cell's streets never change once laid. Recommended.
 10. **The outer kinds open their cells from the far side** of a district's growth order (as the map already sends them to the farthest district): farms, power and water works, rail yards, car plants and truck depots; mines where their deposits are, and homes kept away from them (★4, Jerus).
 11. **An old save's log** starts with its counts as one batch in today's order, so its first load draws today's plan; no conversion code. Recommended.
-12. **The model is not touched.** Zoning stays a quantity the map tints; every rule here is the map's. Recommended.
+12. **A highway net never stops, and every island the city builds on grows its own** (§5.6): a corridor opens from the net's nearest plot by a link arm when no line crosses it; each piece of ground the water parts that holds buildings has its own hub and net (CL5). Recommended; Jerus queued it (★5).
+13. **The model is not touched.** Zoning stays a quantity the map tints; every rule here is the map's. Recommended.
 
 ## 7. ★ Jerus's calls
 
@@ -192,6 +229,8 @@ Asked and answered on 2026-10-20, after the study shipped; each answer is in its
 
 ★4 **Which kinds stay at the city's edge.** Today farms, power and water works, mines, the railway's yards, car plants and truck depots all go to the edge. Recommended: keep them there (the measured room is best that way, and a city keeps its fields at its rim). Or only farms and mines at the edge, the rest placed among the city as industry is. **Jerus:** "except mines, more like homes dont like being placed near mines, and mines arent on edge... they are where deposits are. other than that your 7" - farms, power and water works, rail yards, car plants and truck depots open from the far side; a mine stands where its deposit is (as the map already puts every sited works on its sites), outside the far-side rule; and **homes keep away from mines**: a homes cell does not open in a cell that holds a mine or a mine's site, or touches one, while another cell can open (CL3's item 3).
 
+★5 **Highways on one island only** (§5.6, asked after the study shipped). Recommended: queue the two missing pieces as one map-only batch, CL5, after CL4. **Jerus: "Queue it as CL5".**
+
 ## 8. Batches
 
 Queued right after FR4 and EG1, as Jerus asked (FR4 shipped the same day); FX5 and CL4 moved up after CL3 by his ★3.
@@ -201,6 +240,7 @@ Queued right after FR4 and EG1, as Jerus asked (FR4 shipped the same day); FX5 a
 | CL2 | Streets not a grid inside the blocks: the homes and squared cells' layouts by hash | [`docs/queue/CL2.md`](../queue/CL2.md) |
 | CL3 | Buildings that stay where they were put, and quarters that keep their use: the log, the order of arrival, `PLAN_FILL`, the spill by month | [`docs/queue/CL3.md`](../queue/CL3.md) |
 | CL4 | Slanted avenues and curved streets, on FX5's curves | [`docs/queue/CL4.md`](../queue/CL4.md) |
+| CL5 | Highways and railway that reach the whole city: a stuck net opens its next corridor by a link arm, every island the city builds on grows its own | [`docs/queue/CL5.md`](../queue/CL5.md) |
 
 CL2 and CL3 both change `DistrictPlan`: one after the other, CL2 first (its prototype applies to main as it stands). FW11 (no street piece walled in) comes after them and works on CL3's planner.
 
@@ -210,6 +250,7 @@ CL2 and CL3 both change `DistrictPlan`: one after the other, CL2 first (its prot
 - `RenderCL1.java` - a window of a copied city painted by the game's own painter; `Pair.java` sets renders side by side.
 - `CL1Hook.java` - called at the end of each month's `reconcile()` by the prototype's `CityMap`, so the playtest replays its whole city with either plan.
 - `PackProbe.java` - a district's packing in several orders of arrival, every PlanCheck rule checked.
+- `IslandProbe.java` - a copied city's owned ground in pieces the water parts, its built districts and highways by piece (§5.6).
 - `arrivals-DistrictPlan.diff`, `arrivals-CityMap.diff` - CL3's prototype against main (`-Dcl1.arrivals`, `cl1.fill`, `cl1.outer=far`, `cl1.estate`).
 - `streets-DistrictPlan.diff` - CL2's prototype against main (`-Dcl1.streets`, the shares as `-D` dials).
 - `ring-m2000.png`, `ring-m3990.png` - the playtest's city at months 2,000 and 3,990, today beside the log.
