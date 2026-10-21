@@ -2,7 +2,7 @@
 
 Generated 2026-10-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**124 harness files, 11,478 labelled assertions.** AllChecks runs 124 of them.
+**124 harness files, 11,490 labelled assertions.** AllChecks runs 124 of them.
 
 ## Which harnesses read which class
 
@@ -11115,7 +11115,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L690 fixture: somebody finished that month
   - L692 a temporary directory for the save:
 
-## PlanCheck.java - 36 labelled assertions
+## PlanCheck.java - 48 labelled assertions
 
 > The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway, and the model's road drawn exactly as the streets' surface - on the prototype's test district, MapCheck's fixture of Jerus's city, a city played as the playtest plays it, and any save named - with the prototype's own figures where they apply, how full a district it can draw, and what a plan costs.
 > 
@@ -11131,49 +11131,62 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   1. the port: on the prototype's own test district (proto2.py's ground,
 > ...
 
-- **L599 1. the port: the prototype's test district, its own hashes and rules - proto2.py's plan, box for box**
-  - L618 every figure of the spec's 2.5 table, for each of its three budgets, is the prototype's
-  - L619 ...every building's box in the order placed, and every street plot, width and kind, the prototype's
-  - L620 ...and every check holds on each
-- **L628 2. the test district with the game's rules and hashes: the water rule, streets along a cut**
-  - L638 the checks hold for each budget
-  - L639 ...and every building has a place, as in the prototype
-  - L658 a building wider than an estate's strip both ways takes a whole estate cell, its spine closed (2.3)
-- **L666 3. the city's highways: none, and a straight row across the district (H5: no building beside one)**
-  - L683 with none, the checks hold
-  - L684 with a straight row, the checks hold: one network, beneath it, and no building beside it
-  - L685 ...no building plot touches a highway plot, corners included
-  - L686 ...the streets cross beneath it
-- **L721 4. how full a district the plan can draw (spec 2.10): flat ground, every plot owned**
-  - L754 the checks hold at every fill, his city and paved
-  - L755 at 75% his city's buildings all have a place, as 2.10's table
-  - L756 ...and at 92% the paved city's do not: the plan draws at most about 80% of a district (2.10, star M)
-- **L904 5. MapCheck's fixture of Jerus's city: his city x 1 on the design's square city, every district; the dense screen**
-  - L910 his city x 1
-  - L911 every district of his city x 1 keeps every check
-  - L912 ...in one network, each
-  - L932 the dense screen's districts (x
-  - L937 every district the dense screen shows keeps every check
-  - L938 a district's plan, the dense screen's slowest, in no more than
-  - L993 month
-  - L994 at every
-- **L1040 7. estate cells laid to fit what they hold (0.7.90, ESTATE LINES): each estate-band type alone on flat ground, against the prototype's spine**
-  - L1072 each estate-band type alone holds as many in no more cells than on the prototype's spine, or more
-  - L1073 ...a 4 x 4 works in fewer: strips 8 deep, two rows of them to each, where the spine's 15 leave rows out of reach
-  - L1074 ...a 9 x 9 plant in fewer: three rows a cell where the spine holds two
-  - L1075 ...an 11 x 11 works in as many: no street layout of a 31-plot cell holds more than 4 (31 = 2 x 11 + 9)
-  - L1076 ...and every check holds on each, T junctions only in its estate cells
-  - L1086 the same inputs give the same plan, the full cells' layouts worked out afresh or known (each budget of the test district)
-- **L1128 8. industry and the outer kinds share estate cells (0.7.92, SHARED ESTATES): Jerus's mix on a flat district, the bands sharing and apart**
-  - L1140 with cells to spare the plan is the bands-apart plan, box for box and street for street (his roads, and none)
-  - L1141 ...and no outer kind stands in an industry cell
-  - L1162 with no cell left the outer kinds take industry's leftover ground: fewer of them without a place than with the bands apart
-  - L1164 ...every homes and industry building where it stood with the bands apart, in the same order (
-  - L1172 ...his roads too: fewer without a place than with the bands apart
-  - L1173 ...and every check holds on each, T junctions only in its estate cells
-  - L1205 month
-  - L1251 every district of the save keeps every check (one network where the ground does not part it)
-  - L1252 ...each planned in no more than
+- **L612 1. the port: the prototype's test district, its own hashes and rules - proto2.py's plan, box for box**
+  - L631 every figure of the spec's 2.5 table, for each of its three budgets, is the prototype's
+  - L632 ...every building's box in the order placed, and every street plot, width and kind, the prototype's
+  - L633 ...and every check holds on each
+- **L641 2. the test district with the game's rules and hashes: the water rule, streets along a cut**
+  - L651 the checks hold for each budget
+  - L652 ...and every building has a place, as in the prototype
+  - L671 a building wider than an estate's strip both ways takes a whole estate cell, its spine closed (2.3)
+- **L679 3. the city's highways: none, and a straight row across the district (H5: no building beside one)**
+  - L696 with none, the checks hold
+  - L697 with a straight row, the checks hold: one network, beneath it, and no building beside it
+  - L698 ...no building plot touches a highway plot, corners included
+  - L699 ...the streets cross beneath it
+- **L734 4. how full a district the plan can draw (spec 2.10): flat ground, every plot owned**
+  - L767 the checks hold at every fill, his city and paved
+  - L768 at 75% his city's buildings all have a place, as 2.10's table
+  - L769 ...and at 92% the paved city's do not: the plan draws at most about 80% of a district (2.10, star M)
+- **L936 5. MapCheck's fixture of Jerus's city: his city x 1 on the design's square city, every district; the dense screen**
+  - L942 his city x 1
+  - L943 every district of his city x 1 keeps every check
+  - L944 ...in one network, each
+  - L964 the dense screen's districts (x
+  - L969 every district the dense screen shows keeps every check
+  - L970 a district's plan, the dense screen's slowest, in no more than
+  - L1025 month
+  - L1026 at every
+  - L1029 ...the layouts fired: of
+- **L1081 7. estate cells laid to fit what they hold (0.7.90, ESTATE LINES): each estate-band type alone on flat ground, against the prototype's spine**
+  - L1113 each estate-band type alone holds as many in no more cells than on the prototype's spine, or more
+  - L1114 ...a 4 x 4 works in fewer: strips 8 deep, two rows of them to each, where the spine's 15 leave rows out of reach
+  - L1115 ...a 9 x 9 plant in fewer: three rows a cell where the spine holds two
+  - L1116 ...an 11 x 11 works in as many: no street layout of a 31-plot cell holds more than 4 (31 = 2 x 11 + 9)
+  - L1117 ...and every check holds on each, T junctions only in its estate cells
+  - L1127 the same inputs give the same plan, the full cells' layouts worked out afresh or known (each budget of the test district)
+- **L1169 8. industry and the outer kinds share estate cells (0.7.92, SHARED ESTATES): Jerus's mix on a flat district, the bands sharing and apart**
+  - L1181 with cells to spare the plan is the bands-apart plan, box for box and street for street (his roads, and none)
+  - L1182 ...and no outer kind stands in an industry cell
+  - L1203 with no cell left the outer kinds take industry's leftover ground: fewer of them without a place than with the bands apart
+  - L1205 ...every homes and industry building where it stood with the bands apart, in the same order (
+  - L1213 ...his roads too: fewer without a place than with the bands apart
+  - L1214 ...and every check holds on each, T junctions only in its estate cells
+- **L1367 10. homes cells' streets by a hash of their place (CL2): the comb, dropped crossings, brick**
+  - L1424 with combOnly each fixture's plan is 0.8.11's, box for box and street for street, every cell LAYOUT_TODAY
+  - L1425 with the variety on every check holds, each of the five fixtures
+  - L1458 in every fixture each open homes cell's layout is layoutOf of the seed and its place in the world (
+  - L1459 ...and the same Input planned twice gives the same buildings, streets and layouts
+  - L1479 ...LONG with a tenth more
+  - L1489 ...and another seed gives another layout to
+  - L1516 two neighbouring districts disagree along their seam on no more plots than with the comb (
+  - L1523 each fixture has no more dead ends than with the comb (
+  - L1524 ...and in LONG, SQUARED and BOULEVARD, where the ground cuts nothing, no cell of a varied layout has a dead end inside it (
+  - L1548 ...the counter sees a stub: one hung off a varied cell's street takes its dead ends from
+  - L1569 ...a homes cell the highway crosses keeps the comb, the others their place's layout, every check holding
+  - L1601 month
+  - L1663 every district of the save keeps every check (one network where the ground does not part it)
+  - L1664 ...each planned in no more than
 
 ## PolicyCheck.java - 81 labelled assertions
 
