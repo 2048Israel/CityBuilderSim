@@ -59,6 +59,21 @@ frame: every part is drawing; keep MapCheck's screen budgets and MapCheck
    (`LandMap.worldLabelAt()`, ui/MapView). Two lines leaving close
    together get labels that do not overlap, or one label naming both.
 
+10. **A railway that is a station alone draws its main line** (Jerus,
+    2026-10-20, his new Halifax city at month 477, 16,198 people: "there is
+    a railwawy depot but no rails"; "Into FX5"). The Rail Depot (141) and
+    the Rail Terminal (64) are `BuildingVisual.RAIL_TERMINALS`, drawn as
+    yards, not track, so `CityMap.layRuns()` counts no track plots for
+    them; but their `railCapacity` (50,000 and 500,000 t) is in
+    `Freight.trackTonnes()`, so the model rails freight through a depot
+    alone. Until the first Rail Spur or Freight Line the map shows the
+    yard with no main line, no world line and no trains (the Earth
+    playtest: m756 to m858). Whenever a station stands, lay the main line
+    from the gateway to it (FX2's main arm, `CityRuns.mainArm()`), the
+    world line beyond, and the trains on them. A fixture first: a city
+    with one Rail Depot and no track, red on main (RailDepotCheck or
+    MainLineCheck).
+
 ## Harnesses
 
 RailDrawCheck and JunctionCheck sections whose fixtures cause each case on
