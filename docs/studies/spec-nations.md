@@ -421,6 +421,7 @@ Four boards in `nations/`, drawn in the game's palette (`ui/Palette`):
 **Against the rest of the queue:**
 - FR4 (the freight screens) touches Trade's band, which WN3 redefines. FR4 goes first, as queued.
 - CD1-CD6 keep dollar paper.
+- **The exchange-rate study** (2026-10-21, [spec-exchange-rates.md](spec-exchange-rates.md)): WN4 builds its moneys' rates on that study's rule (§3.7: each money's PPP path, the dollar cycle, risk-offs, terms of trade from the January solve, its own swing, pegs held and broken; XR3 folded in), and WN0's world file carries the real monthly rates 2000-2025 for every money (Jerus, its ★10 and ★11). XR1 and XR2 (the D$ and its regimes) come before WN3; XR4 (interest abroad) right after WN4.
 - R0 (the calendar from 1900) would carry Historical back with Maddison's output [R33] when it comes.
 
 ---
