@@ -217,6 +217,21 @@ public final class YieldCurve {
         return total;
     }
 
+    /**
+     * The present value of flows paid at months 1, 2, ... with a spread added
+     * to every month's zero rate: each flow times (1 + (zero(m) + spread)/12)^(-m).
+     * At a spread of nothing it is pv(flows) to the bit - the same factor of
+     * the same zero rate, summed in the same order. What an auction prices a
+     * sale at (Auction.Pricer): the curve's own value of the paper, the tail
+     * over fair a spread on it.
+     */
+    public double pvAtSpread(double[] flows, double spread) {
+        if (flows == null) return 0;
+        double total = 0;
+        for (int i = 0; i < flows.length; i++) total += flows[i] * discount(zero(i + 1) + spread, i + 1);
+        return total;
+    }
+
     /** The spread the forward actually carries this month: the two credit spreads, or the room under the ceiling if less. The floor of rates is not a spread. */
     public double effectiveSpread() {
         return effectiveSpread;

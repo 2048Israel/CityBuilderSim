@@ -2772,7 +2772,7 @@ final class FinancesScreen {
     /** WHO BUYS IT: the households, then the bank, its room used as a bar with this issue as a ghost; the bank's three alarms make the card red. */
     VBox whoBuysCard(DebtQuote quote) {
         Bank bank = ui.game.getBank();
-        double room = bank.capacity();
+        double room = bank.isInsolvent() ? 0 : bank.capitalLimit();   // D20: its room is its capital (CD2)
         String info = String.format(BUYERS_INFO, pc(Bank.RISK_CITY));
         VBox card = card(caption("WHO BUYS IT", info));
         if (bank.isInsolvent()) {

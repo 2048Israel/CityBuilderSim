@@ -119,6 +119,25 @@ public final class Auction {
     }
 
     /**
+     * What a schedule is worth at the sale, per 100 of face, given the tail the
+     * sale cleared at - the stop over fair, in yield. The game hands one that
+     * prices on the city's curve (YieldCurve.pvAtSpread()), so a sale with no
+     * tail is worth exactly what the buyback will value it at and the tail is
+     * a spread over the curve; without one the sale prices at the one flat
+     * yield of the stop.
+     *
+     * WHY (CD2, slice 3's finding): priced at one flat yield, the schedule of a
+     * bond whose coupon was rounded down to an eighth was worth more at the
+     * sale than DebtManager.marketValue() values it on an upward curve, and a
+     * round trip netted the city money on a big enough issue - the fee is
+     * fixed and the gain is not. Priced on the curve, the round trip loses
+     * the fee and the tail, as it should.
+     */
+    public interface Pricer {
+        double per100(double[] flowsPer100, double tail);
+    }
+
+    /**
      * What is for sale.
      *
      * @param kind       bill, bond or amortizing
@@ -127,8 +146,14 @@ public final class Auction {
      * @param fair       the curve's fair yield for this paper with the issue on the books, the caller's
      * @param lineCoupon NaN for a new line; the line's own coupon for a reopening
      * @param fee        the fixed cost of a sale, money
+     * @param pricer     how the schedule is priced at the sale; null prices it at the stop, one flat yield (a pure fixture's)
      */
-    public record Ask(Kind kind, int months, double face, double fair, double lineCoupon, double fee) {
+    public record Ask(Kind kind, int months, double face, double fair, double lineCoupon, double fee, Pricer pricer) {
+
+        /** An ask priced at one flat yield, the stop: the fixture's. */
+        public Ask(Kind kind, int months, double face, double fair, double lineCoupon, double fee) {
+            this(kind, months, face, fair, lineCoupon, fee, null);
+        }
 
         /** True when this opens a line rather than reopens one. */
         public boolean isNewLine() {
@@ -162,7 +187,7 @@ public final class Auction {
      * @param sold        the face sold: the whole issue, or what was bid at the ceiling when that fell short
      * @param shortSale   true when the bids did not reach the issue at the ceiling
      * @param coupon      the coupon the paper carries: 0 for a bill
-     * @param pricePer100 the paper's value per 100 of face at the stop, one flat yield
+     * @param pricePer100 the paper's value per 100 of face at the stop: one flat yield, or on the curve with the tail as a spread when the ask carries a pricer
      * @param proceeds    price over 100 times the face sold, less the fee; nothing when nothing sold
      * @param fills       who took the face sold
      */
@@ -318,7 +343,7 @@ public final class Auction {
         double coupon = couponFor(a, stop);
         double[] flows = a.kind() == Kind.AMORTIZING
                 ? amortizingPer100(coupon, a.years()) : bulletPer100(coupon, a.months());
-        double price = Debt.presentValue(flows, stop);
+        double price = a.pricer() != null ? a.pricer().per100(flows, stop - fair) : Debt.presentValue(flows, stop);
         double proceeds = sold > 0 ? price / 100 * sold - a.fee() : 0;
 
         return new Result(a, cap, ceiling, stop, stop - fair, cover, sold, shortSale,

@@ -8003,9 +8003,11 @@ public class Game {
      *    (panicking) - until the businesses' paper book and the world's are
      *    built they have nowhere to hold city paper (CD2 slices 4 and 5);
      *  - a month of output, as CapitalFlows reads it;
-     *  - the bank's room as a face: its capacity less its weighted book, over
-     *    Bank.RISK_CITY (city paper weighs a fifth), less the face the sales
-     *    since the last settle have left for it;
+     *  - the bank's room as a face: its CAPITAL's room (capitalLimit(), D20:
+     *    "its room is its capital") less its weighted book, over Bank.RISK_CITY
+     *    (city paper weighs a fifth), less the face the sales since the last
+     *    settle have left for it. Nothing for a bank in resolution or with no
+     *    equity;
      *  - and what the bank needs over fair: its funding past the floor the
      *    curve already carries, fading as the dial's gap does
      *    (YieldCurve.DRIFT_MONTHS) - the mean of the fade over the paper's
@@ -8020,7 +8022,13 @@ public class Game {
                     - d.allotFirmsFace() - d.allotWorldFace());
         }
         double spare = Math.max(0, householdBalance.spareForPaper() - pendingHouseholds);
-        double room = Math.max(0, bank.capacity() - bank.getWeightedBook()) / Bank.RISK_CITY;
+        // D20: the bank's room for the city's paper is its CAPITAL, not capacity() - city paper is the
+        // window's collateral, so what its deposits do not fund it borrows at the central bank's window
+        // (Bank.lend() takes the cash below nothing, which the settle advances), as the residual buyer
+        // always did. A young bank with equity and no deposits yet has room; one in resolution or
+        // insolvent has none.
+        double room = bank.isInsolvent() ? 0
+                : Math.max(0, bank.capitalLimit() - bank.getWeightedBook()) / Bank.RISK_CITY;
         double bankRoom = Math.max(0, room - pendingBank);
         double extra = Math.max(0, debtManager.bankFloorRate() - debtManager.floorRate());
         if (extra > 0 && months > 1) {
@@ -8034,8 +8042,18 @@ public class Game {
 
     /** The auction for this paper, now: fair with the issue on the books, the bidders as they stand, the cap given (the default if none). */
     private Auction.Result runAuction(Auction.Kind kind, int months, double face, double lineCoupon, Auction.Cap cap) {
+        /*
+         * PRICED ON THE CURVE THE ISSUE STANDS ON (CD2, slice 3's finding): the
+         * same curve fair is read off, with the issue priced in, and the tail
+         * over fair a spread on every month's zero rate (YieldCurve
+         * .pvAtSpread()). A sale with no tail is worth exactly what the buyback
+         * will value the paper at (DebtManager.marketValue()), so the round trip
+         * loses the fee and the tail and nothing else; at one flat yield it
+         * gained on an upward curve, by the coupon's rounding down.
+         */
+        YieldCurve curve = debtManager.quoteCurve(Math.max(0, face));
         Auction.Ask ask = new Auction.Ask(kind, months, face,
-                debtManager.fairYield(kind, months, face), lineCoupon, issuanceFee());
+                DebtManager.fairYieldOn(curve, kind, months), lineCoupon, issuanceFee(), curve::pvAtSpread);
         return Auction.run(ask, auctionBidders(months), cap == null ? Auction.Cap.DEFAULT : cap);
     }
 

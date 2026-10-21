@@ -43,7 +43,14 @@ import java.io.PrintStream;
  *      is checked by summing the schedule here, and proceeds are the price on
  *      what sold, less the fee.
  *
- *   6-11 are slice 7's (the bidders as the game builds them, the long
+ *   6. PRICED ON THE CURVE (slice 3's finding). An ask that carries a pricer is
+ *      priced by it: with no tail the schedule is worth exactly the curve's value
+ *      of it, to the bit, and with a tail the curve's value at that spread over
+ *      every month's zero rate - lower. An ask with none prices at the stop, one
+ *      flat yield, as sections 1-5 do. On a curve that is not flat the two
+ *      prices differ, which is what a round trip would have netted.
+ *
+ *   7-11 are slice 7's (the bidders as the game builds them, the long
  *      playtest's count of tails over a point) and arrive with it.
  *
  * Every fixture CAUSES its condition, and from both sides: the bank's room is
@@ -165,6 +172,7 @@ public class AuctionCheck {
         section3();
         section4();
         section5();
+        section6();
 
         out.println();
         if (fails == 0) {
@@ -567,5 +575,88 @@ public class AuctionCheck {
         assertTrue("amortizing bonds at 5 to 30 years in fives", java.util.Arrays.equals(Auction.AMORTIZING_YEARS, new int[]{5, 10, 15, 20, 25, 30}));
         close("a hundredth of a basis point is 1e-6, and the stop is found to a tenth of that", Auction.STOP_TOLERANCE * 10, 1e-6, 1e-12);
         close("the coupon step is an eighth of a point", Auction.COUPON_STEP * 8, .01, 1e-12);
+    }
+
+    /* =====================================================================
+       6. PRICED ON THE CURVE
+
+       A curve that rises: the dial at 3% and a term premium of 8 basis
+       points a year past the first, to 4 points. Flat or not, the rule is
+       the same; on a rising one a flat price at the stop and the curve's
+       value of a schedule are different numbers, and the pricer is what makes
+       the sale's price the one the buyback reads.
+       ===================================================================== */
+
+    static void section6() {
+        out.println("--- 6. priced on the curve ---");
+        YieldCurve curve = YieldCurve.of(YieldCurve.flatPath(.03), 0, 1.0,
+                m -> m <= 12 ? 0 : Math.min(.04, .0008 * (m - 12) / 12.0));
+        assertTrue("(the fixture's curve rises: the ten-year zero over the one-year)", curve.zero(120) > curve.zero(12) + .005);
+        Auction.Pricer pricer = curve::pvAtSpread;
+        int months = 120;
+        double fair = curve.parYield(months);
+
+        /* The curve's own pricing. */
+        double[] flows = Auction.bulletPer100(.05, months);
+        assertTrue("a spread of nothing prices a schedule at the curve's value of it, to the bit", curve.pvAtSpread(flows, 0) == curve.pv(flows));
+        assertTrue("...a spread lowers it", curve.pvAtSpread(flows, .001) < curve.pvAtSpread(flows, 0)
+                && curve.pvAtSpread(flows, .01) < curve.pvAtSpread(flows, .001));
+        double manual = 0;
+        for (int t = 1; t <= months; t++) manual += flows[t - 1] / Math.pow(1 + (curve.zero(t) + .0025) / 12, t);
+        close("...and a spread is added to every month's zero rate, as summed here", curve.pvAtSpread(flows, .0025), manual, 1e-12);
+
+        /* A sale with no tail is worth the curve's value of the schedule. */
+        Ask ask = new Ask(Kind.BOND, months, FACE, fair, Double.NaN, FEE, pricer);
+        Result none = Auction.run(ask, calm().b(), Cap.DEFAULT);
+        assertTrue("(an ample bank: the sale clears at fair, with no tail)", none.stop() == fair && none.tail() == 0 && !none.shortSale());
+        double[] sold = Auction.bulletPer100(none.coupon(), months);
+        assertTrue("with no tail the price is the curve's own value of the schedule it sells, to the bit", none.pricePer100() == curve.pv(sold));
+        close("...and the proceeds are that price on the face, less the fee", none.proceeds(), none.pricePer100() / 100 * FACE - FEE, 1e-9);
+
+        /* A tail is a spread over the curve. */
+        Result tail = Auction.run(ask, calm().tight().b(), Cap.DEFAULT);
+        assertTrue("(a tight bank: the sale clears over fair, sold in full)", tail.tail() > 0 && !tail.shortSale() && tail.stop() > fair);
+        double[] soldTail = Auction.bulletPer100(tail.coupon(), months);
+        assertTrue("a tail prices the schedule on the curve at that spread, to the bit",
+                tail.pricePer100() == curve.pvAtSpread(soldTail, tail.stop() - fair));
+        double sum = 0;
+        for (int t = 1; t <= months; t++) sum += soldTail[t - 1] / Math.pow(1 + (curve.zero(t) + tail.tail()) / 12, t);
+        close("...as summed here, every month's zero rate and the tail", tail.pricePer100(), sum, 1e-12);
+        assertTrue("...and it is lower than the same schedule's value on the curve with no tail",
+                tail.pricePer100() < curve.pv(soldTail));
+
+        /* On a curve that rises, this is not the flat price. */
+        Ask line = new Ask(Kind.BOND, months, FACE, fair, fair - .01, FEE, pricer);
+        Result reopened = Auction.run(line, calm().b(), Cap.DEFAULT);
+        double[] lineFlows = Auction.bulletPer100(reopened.coupon(), months);
+        assertTrue("a line reopened a point under fair is worth the curve's value of its schedule",
+                reopened.pricePer100() == curve.pv(lineFlows));
+        assertTrue("...which on a rising curve is not what one flat yield at the stop prices it at",
+                Math.abs(reopened.pricePer100() - Debt.presentValue(lineFlows, reopened.stop())) > 1e-4);
+        Ask unpriced = new Ask(Kind.BOND, months, FACE, fair, fair - .01, FEE);
+        Result flat = Auction.run(unpriced, calm().b(), Cap.DEFAULT);
+        assertTrue("an ask with no pricer prices at the stop, one flat yield, as before",
+                flat.pricePer100() == Debt.presentValue(lineFlows, flat.stop()));
+        assertTrue("(an ask built without a pricer carries none)", unpriced.pricer() == null && line.pricer() != null);
+
+        /* The other two kinds. */
+        double parAmortizing = DebtManager.amortizingParYield(curve, 10);
+        Ask am = new Ask(Kind.AMORTIZING, months, FACE, parAmortizing, Double.NaN, FEE, pricer);
+        Result amNone = Auction.run(am, calm().b(), Cap.DEFAULT);
+        near("an amortizing bond with no tail is worth 100 on the curve it was struck on", amNone.pricePer100(), 100, 1e-9);
+        Result amTail = Auction.run(am, calm().tight().b(), Cap.DEFAULT);
+        assertTrue("...and with a tail it still sells near 100: the coupon is the stop, so it rises with the spread that discounts it",
+                amTail.tail() > 0 && Math.abs(amTail.pricePer100() - 100) < .05);
+
+        for (int m : Auction.BILL_MONTHS) {
+            Ask bill = new Ask(Kind.BILL, m, FACE, curve.zero(m), Double.NaN, FEE, pricer);
+            Result b0 = Auction.run(bill, calm().b(), Cap.DEFAULT);
+            near(m + "-month bill with no tail: 100 times the curve's discount factor", b0.pricePer100(), 100 * curve.factor(m), 1e-12);
+        }
+        Fx tightBill = calm().tight();
+        Ask bill6 = new Ask(Kind.BILL, 6, FACE, curve.zero(6), Double.NaN, FEE, pricer);
+        Result b6 = Auction.run(bill6, tightBill.b(), Cap.FILL);
+        close("a bill with a tail: 100 over (1 + (zero + tail)/12) to the months", b6.pricePer100(),
+                100 / Math.pow(1 + (curve.zero(6) + b6.tail()) / 12, 6), 1e-12);
     }
 }

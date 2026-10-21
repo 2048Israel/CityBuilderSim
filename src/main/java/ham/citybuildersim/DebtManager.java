@@ -2256,7 +2256,11 @@ public class DebtManager {
      * @param months a bill's or a bond's months; an amortizing bond's years times twelve
      */
     public double fairYield(Auction.Kind kind, int months, double extraFace) {
-        YieldCurve curve = quoteCurve(Math.max(0, extraFace));
+        return fairYieldOn(quoteCurve(Math.max(0, extraFace)), kind, months);
+    }
+
+    /** ...read off a curve already in hand: the one the sale is priced on (Game.runAuction() asks quoteCurve() once and reads both from it). */
+    public static double fairYieldOn(YieldCurve curve, Auction.Kind kind, int months) {
         return switch (kind) {
             case BILL -> curve.zero(months);
             case BOND -> curve.parYield(months);
