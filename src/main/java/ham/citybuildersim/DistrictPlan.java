@@ -41,6 +41,11 @@ import java.util.List;
  *           them and 16 along) for the first band, an ESTATE cell (one spine)
  *           for the others; in a homes cell two or four blocks MERGED for a
  *           building wider than a block;
+ *   LAYOUT  (batch CL2) a homes cell's streets are one of three layouts, by
+ *           a hash of the world's seed and the cell's place: the comb (a
+ *           squared cell: the whole square) as before, DROPPED crossings, or
+ *           BRICK (see a homes cell's layout, in the builder); a merge in one
+ *           of the last two takes up the dead ends it leaves, or is undone;
  *   JOIN    the street pieces joined to the largest along the lattice, and
  *           (0.7.88, ACROSS DISTRICTS) to the streets of the districts
  *           before it in the map's order where they meet its frame's edge;
@@ -216,6 +221,41 @@ public final class DistrictPlan {
 
     /** ...and a homes cell's cross street and an estate cell's spine: the middle line, 15 - long blocks 15 plots long either side of it. */
     static final int MIDDLE = 2 * LATTICE - 1;
+
+    /* ----- a homes cell's layout (CL2) ----- */
+
+    /** A homes cell's street layout, chosen by layoutOf(): TODAY the comb (a squared cell: the whole square) as ever, DROPPED some of its crossings left out, BRICK its cross street's pieces at alternating lines (a squared cell: in bands). */
+    public static final byte LAYOUT_TODAY = 0, LAYOUT_DROPPED = 1, LAYOUT_BRICK = 2;
+
+    /** The share of homes cells, long-block and squared alike, that keep today's layout: a third (Jerus, 2026-10-20: "A third stays"). */
+    public static final double TODAY_SHARE = 1.0 / 3;
+
+    /** ...and the share that drop crossings (the rest are brick), likewise: a third. */
+    public static final double DROPPED_SHARE = 1.0 / 3;
+
+    /** The chance a dropped long-block cell also loses half of a long street (its block beside it 15 deep): 0.25. */
+    static final double HALF_DROP = 0.25;
+
+    /** The most plots of a long-block cell a lost half of a long street may leave beyond REACH of every street (a green hole in the block): 49, one 7 x 7. A dropped squared cell leaves none beyond REACH, as the whole square leaves none. */
+    static final int HOLE_MOST = 49;
+
+    /** The chance a dropped squared cell loses each of its 24 street pieces: 0.22. */
+    static final double PIECE_DROP = 0.22;
+
+    /** The lines a brick long-block cell's cross street may alternate between, in plots into the interior: a pair for the cell's hash to pick from, 8 or more apart so no two junctions on a long street are nearer than the + floor. */
+    static final int[][] BRICK_LINES = { { 11, 19 }, { 9, 21 }, { 7, 23 }, { 7, 19 }, { 11, 23 } };
+
+    /** ...and the two lines a brick squared cell's cross streets take in the bands between those at 7, 15 and 23: 11 and 19. */
+    static final int[] BRICK_BAND_LINES = { 11, 19 };
+
+    /** The draws a dropped long-block cell makes to keep its holes within HOLE_MOST: 2, the second without the half of a long street. */
+    static final int DROPPED_TRIES = 2;
+
+    /** ...and a dropped squared cell makes to leave nothing beyond REACH: 3, then the whole square. */
+    static final int PIECES_TRIES = 3;
+
+    /** The ends of a line's four pieces between its crossings (the ring, the lines at 7, 15, 23, the ring), in plots into the interior: from 0, 8, 16, 24 to 6, 14, 22, 30. */
+    static final int[] SEG_FROM = { 0, 8, 16, 24 }, SEG_TO = { 6, 14, 22, 30 };
 
     /** An estate cell's streets lie on interior lines from this one (0.7.90, ESTATE LINES): 7, LATTICE - 1 - so where one meets a neighbour's street across an arterial, the + it makes is LATTICE or more from the ring's corner (the + floor, spec 2.4). */
     static final int LINE_FIRST = LATTICE - 1;
@@ -423,6 +463,8 @@ public final class DistrictPlan {
         public boolean asPrototype;
         /** The estate bands kept apart, as 0.7.87 to 0.7.91 drew them - no outer kind in industry's cells (SHARED ESTATES): PlanCheck's comparison. */
         public boolean bandsApart;
+        /** Every homes cell laid as 0.8.11 laid them all, the comb or the whole square (CL2, a homes cell's layout): PlanCheck's comparison. */
+        public boolean combOnly;
         /** The hashes, or null for the world's. */
         public Hashes hashes;
     }
@@ -440,6 +482,17 @@ public final class DistrictPlan {
     /** A hash as a number in [0, 1). */
     static double unit(long h) {
         return (h >>> 11) * 0x1.0p-53;
+    }
+
+    /** A hash in [0, 1) of the world's seed, a homes cell's place in the world (its north-west plot, cellX and cellY) and a salt: a pure function of the plan's inputs (CL2, a homes cell's layout). */
+    static double layoutHash(long seed, long cellX, long cellY, int salt) {
+        return unit(World.mix(seed ^ World.mix(cellX * 0x9E3779B97F4A7C15L ^ cellY * 0xC2B2AE3D27D4EB4FL ^ (0x434C3100L + salt * 0x632BE59BD9B4E019L))));
+    }
+
+    /** A homes cell's street layout (LAYOUT_TODAY, LAYOUT_DROPPED or LAYOUT_BRICK) from the world's seed and the cell's north-west plot in the world, by the shares TODAY_SHARE and DROPPED_SHARE: the same layout for the same place whatever the district holds or the order it opened in. The shares are one for a long-block and a squared cell (a boulevard's interior included), so `square` does not change the answer; it is asked so a share of its own for squared cells would need no caller changed. */
+    static byte layoutOf(long seed, long cellX, long cellY, boolean square) {
+        double r = layoutHash(seed, cellX, cellY, 0);
+        return r < TODAY_SHARE ? LAYOUT_TODAY : r < TODAY_SHARE + DROPPED_SHARE ? LAYOUT_DROPPED : LAYOUT_BRICK;
     }
 
     /**
@@ -474,6 +527,8 @@ public final class DistrictPlan {
     public final int[] cellRank = new int[CELLS];
     /** ...whether the ladder squared it (a homes cell's + grid at 8). */
     public final boolean[] cellSquare = new boolean[CELLS];
+    /** ...a homes cell's street layout (CL2: LAYOUT_TODAY, LAYOUT_DROPPED or LAYOUT_BRICK); LAYOUT_TODAY for every other cell. */
+    public final byte[] cellLayout = new byte[CELLS];
     /** ...whether its arterials are a boulevard. */
     public final boolean[] cellBoulevard = new boolean[CELLS];
     /** ...whether blocks were merged in it for a building wider than one (homes), or its spine closed for one wider than a strip (an estate). */
@@ -532,6 +587,9 @@ public final class DistrictPlan {
 
     /** Pieces the join joined; dead ends joined along a cut; street plots taken up as strays; merges refused for splitting the network; buildings placed on a field. */
     public int joins, shoreJoins, strays, mergesRefused, onFields;
+
+    /** Merges in a homes cell of a varied layout made and then undone (CL2): the stubs they left could not all be taken up, or a building near them would have lost its street within REACH. */
+    public int mergesUndone;
 
     /** One-sided seams this district surfaced from its road left over (0.7.88, ONE-SIDED SEAMS). */
     public int seamsSurfaced;
@@ -690,12 +748,12 @@ public final class DistrictPlan {
         int[] mine, px, py, pw, ph, pt, fails, failsF, mergeFails, cellRank;
         byte[] occ;
         boolean[] str, art, under, blvd, reachStale, cellCut, holdsNone, cellAcross, cellSquare, cellBoulevard, cellMerged;
-        byte[] role, cellKind;
+        byte[] role, cellKind, cellLayout;
         int[] cellStreets;
         long[] rowBits;
         int[][] free, freeF, near, touch, failW, failH, failFW, failFH, mergeFailW, mergeFailH;
         final List<int[]> unplacedAt = new ArrayList<>();
-        int shoreJoins, strays, mergesRefused, onFields;
+        int shoreJoins, strays, mergesRefused, mergesUndone, onFields;
     }
 
     /** src's first n into dst, a new array where dst is null or shorter (KEPT): dst, or the array made. */
@@ -1434,12 +1492,14 @@ public final class DistrictPlan {
             t.cellAcross = copyInto(out.cellAcross, t.cellAcross);
             t.cellRank = copyInto(out.cellRank, CELLS, t.cellRank);
             t.cellSquare = copyInto(out.cellSquare, t.cellSquare);
+            t.cellLayout = copyInto(out.cellLayout, t.cellLayout);
             t.cellBoulevard = copyInto(out.cellBoulevard, t.cellBoulevard);
             t.cellMerged = copyInto(out.cellMerged, t.cellMerged);
             t.cellStreets = copyInto(out.cellStreets, CELLS, t.cellStreets);
             t.shoreJoins = out.shoreJoins;
             t.strays = out.strays;
             t.mergesRefused = out.mergesRefused;
+            t.mergesUndone = out.mergesUndone;
             t.onFields = out.onFields;
             return t;
         }
@@ -1482,12 +1542,14 @@ public final class DistrictPlan {
             System.arraycopy(t.cellAcross, 0, out.cellAcross, 0, CELLS);
             System.arraycopy(t.cellRank, 0, out.cellRank, 0, CELLS);
             System.arraycopy(t.cellSquare, 0, out.cellSquare, 0, CELLS);
+            System.arraycopy(t.cellLayout, 0, out.cellLayout, 0, CELLS);
             System.arraycopy(t.cellBoulevard, 0, out.cellBoulevard, 0, CELLS);
             System.arraycopy(t.cellMerged, 0, out.cellMerged, 0, CELLS);
             System.arraycopy(t.cellStreets, 0, out.cellStreets, 0, CELLS);
             out.shoreJoins = t.shoreJoins;
             out.strays = t.strays;
             out.mergesRefused = t.mergesRefused;
+            out.mergesUndone = t.mergesUndone;
             out.onFields = t.onFields;
         }
 
@@ -1540,7 +1602,7 @@ public final class DistrictPlan {
 
         /* ------------------------------------------------ opening a cell (spec 2.3) */
 
-        /** Cell c opened as `kind` at its rank, squared or a boulevard as the ladder's step asks: its ring and its streets laid - an estate cell's sized to the w x h building it opens for (ESTATE LINES). */
+        /** Cell c opened as `kind` at its rank, squared or a boulevard as the ladder's step asks: its ring and its streets laid - a homes cell's by the layout its place hashes to (a homes cell's layout, CL2), an estate cell's sized to the w x h building it opens for (ESTATE LINES). */
         void openCell(DistrictPlan out, int c, byte kind, int rank, boolean square, boolean bl, int w, int h) {
             int ci = c % CELLS_A_SIDE, cj = c / CELLS_A_SIDE;
             int x0 = CELL * ci + 1, y0 = CELL * cj + 1, x1 = x0 + INTERIOR, y1 = y0 + INTERIOR;
@@ -1564,9 +1626,15 @@ public final class DistrictPlan {
                     lay(x1 - ring, y, false, true, ringRole);
                 }
             }
-            // Its streets.
+            // Its streets. A homes cell takes the layout its place hashes to (CL2); LAYOUT_TODAY is the comb, or the whole square.
             byte st = (byte) ROLE_STREET;
-            if (square) {
+            long cellX = in.x0 + (long) CELL * ci, cellY = in.y0 + (long) CELL * cj;
+            byte layout = kind == HOMES && !proto && !in.combOnly ? layoutOf(in.seed, cellX, cellY, square) : LAYOUT_TODAY;
+            out.cellLayout[c] = layout;
+            if (layout != LAYOUT_TODAY) {
+                if (square) squareLayout(x0, y0, across, layout, cellX, cellY, st);
+                else homesLayout(x0, y0, across, layout, cellX, cellY, st);
+            } else if (square) {
                 for (int v : STREETS_AT) {
                     for (int u = 0; u < INTERIOR; u++) {
                         lay(x0 + u, y0 + v, true, false, st);
@@ -1603,7 +1671,10 @@ public final class DistrictPlan {
             // shorter than a block, touching no other street, not laid (no stray roads).
             if (!proto && refused) {
                 // Laid whole, a cell has no dead end and no piece apart: only a cut one is looked at.
-                int joined = shore(x0 - 1, y0 - 1, x1, y1), taken = prune();
+                shoreFixed = layout != LAYOUT_TODAY;
+                int joined = shore(x0 - 1, y0 - 1, x1, y1);
+                shoreFixed = false;
+                int taken = prune();
                 out.shoreJoins += joined;
                 out.strays += taken;
                 cellCut[c] = true;
@@ -1611,6 +1682,234 @@ public final class DistrictPlan {
             for (int k = 0; k < nChanged; k++) occ[changed[k]] = -1;
             freshCell(c);
             staleAround(c);
+        }
+
+        /* ----- a homes cell's layout (CL2, 2026-10-20) -----
+         *
+         * A homes cell takes one of three layouts when it opens, by a hash of the world's seed and the cell's place in
+         * the world (layoutOf): the comb (a squared cell: the whole square) as before, DROPPED (some of its crossings
+         * left out, none leaving a dead end or a plot beyond REACH), or BRICK (its cross street's pieces at
+         * alternating lines, T junctions only). WHY: every homes cell was laid with the same comb, so the city read
+         * as a grid at the near view (Jerus, 2026-10-20: "its all a grid? ... removing random interections"). The hash
+         * is of the place, never of counts, ranks or order, so a plan stays a pure function of its inputs, two
+         * districts agree along their seam, and a cell keeps its layout as its district grows. Estate cells, the
+         * arterials and the seams are as they were: the planner builds only inside a cell's interior, so there are no
+         * superblocks (spec-city-layout 5.1). Where a highway, railway or yard refuses the plot a piece would end
+         * on, shore() joins the piece along its verge (shoreFixed), as it joins a dead end along a shore; a merge of
+         * blocks in a varied cell takes up the stubs it leaves, or is not made (mergeFor, stubsFree, mergeVaried).
+         */
+
+        /** A hash for the homes cell whose north-west plot in the world is (cellX, cellY): layoutHash on this plan's seed. */
+        double cellHash(long cellX, long cellY, int salt) {
+            return layoutHash(in.seed, cellX, cellY, salt);
+        }
+
+        /** Street plots from..to of the cell's line `line`, along its long streets (alongLong) or across them, in the cell's own axes, laid in the map's. */
+        void layStretch(int x0, int y0, boolean across, boolean alongLong, int line, int from, int to, byte st) {
+            for (int k = from; k <= to; k++) {
+                int u = alongLong ? k : line, v = alongLong ? line : k;
+                if (across) lay(x0 + u, y0 + v, alongLong, false, st);
+                else lay(x0 + v, y0 + u, !alongLong, false, st);
+            }
+        }
+
+        /** The same plots marked in g, a bit row a line of the cell and its ring (bit u + 1 of row v + 1). */
+        static void mark(long[] g, boolean alongLong, int line, int from, int to) {
+            for (int k = from; k <= to; k++) {
+                int u = alongLong ? k : line, v = alongLong ? line : k;
+                g[v + 1] |= 1L << (u + 1);
+            }
+        }
+
+        /** A cell's marks with its ring on every side. */
+        static long[] ringMarks() {
+            int n = INTERIOR + 2;
+            long[] g = new long[n];
+            long all = (1L << n) - 1;
+            g[0] = all;
+            g[n - 1] = all;
+            for (int r = 1; r < n - 1; r++) g[r] = 1L | (1L << (n - 1));
+            return g;
+        }
+
+        /** How many plots of the cell's interior lie more than REACH from every marked plot, across corners. */
+        static int uncovered(long[] g) {
+            int n = INTERIOR + 2;
+            long all = (1L << n) - 1;
+            long[] a = new long[n];
+            for (int r = 0; r < n; r++) {
+                long s = g[r], m = s;
+                for (int d = 1; d <= REACH; d++) m |= (s << d) | (s >>> d);
+                a[r] = m & all;
+            }
+            int none = 0;
+            for (int r = 1; r < n - 1; r++) {
+                long m = 0;
+                for (int d = -REACH; d <= REACH; d++) if (r + d >= 0 && r + d < n) m |= a[r + d];
+                none += Long.bitCount(~m & all & ~1L & ~(1L << (n - 1)));
+            }
+            return none;
+        }
+
+        /**
+         * The streets of a long-block homes cell of the layout LAYOUT_DROPPED or LAYOUT_BRICK, in place of the comb.
+         * DROPPED: the comb with one or two of the cross street's four pieces left out and perhaps half of a long
+         * street (a junction left with one street is taken out too, so every piece reaches the ring and no street
+         * dead-ends in the cell; the half is drawn again without when its loss leaves more than HOLE_MOST plots
+         * beyond REACH). BRICK: the long streets whole and the cross street's four pieces alternately at two lines (T
+         * junctions only inside the cell). cellX and cellY are the cell's place in the world.
+         */
+        void homesLayout(int x0, int y0, boolean across, byte layout, long cellX, long cellY, byte st) {
+            if (layout == LAYOUT_DROPPED) {
+                int c = 15, l = 63, deg[] = new int[3];
+                for (int attempt = 0; attempt < DROPPED_TRIES; attempt++) {
+                    c = 15;
+                    l = 63;
+                    double h1 = cellHash(cellX, cellY, 11);
+                    int nC = h1 < 0.45 ? 1 : h1 < 0.80 ? 2 : 0;
+                    boolean lDrop = attempt == 0 && (nC == 0 || cellHash(cellX, cellY, 12) < HALF_DROP);
+                    if (nC == 0 && !lDrop) nC = 1;
+                    if (nC > 0) {
+                        int i = (int) (cellHash(cellX, cellY, 13) * 4);
+                        c &= ~(1 << i);
+                        if (nC == 2) c &= ~(1 << ((i + 1 + (int) (cellHash(cellX, cellY, 14) * 3)) % 4));
+                    }
+                    if (lDrop) l &= ~(1 << ((int) (cellHash(cellX, cellY, 15) * 3) * 2 + (cellHash(cellX, cellY, 16) < 0.5 ? 0 : 1)));
+                    // A junction left with one street: that street goes too, until none is.
+                    for (boolean again = true; again; ) {
+                        again = false;
+                        for (int k = 0; k < 3; k++) {
+                            int[] edge = { 2 * k, 2 * k + 1, 6 + k, 6 + k + 1 };   // bits: halves in l, segments above and below in c (offset 6)
+                            int d = 0, only = -1;
+                            for (int e : edge) if (e < 6 ? (l >> e & 1) != 0 : (c >> (e - 6) & 1) != 0) { d++; only = e; }
+                            deg[k] = d;
+                            if (d == 1) {
+                                if (only < 6) l &= ~(1 << only); else c &= ~(1 << (only - 6));
+                                again = true;
+                            }
+                        }
+                    }
+                    long[] g = ringMarks();
+                    for (int k = 0; k < 3; k++) {
+                        int v = STREETS_AT[k];
+                        if ((l >> (2 * k) & 1) != 0) mark(g, true, v, 0, MIDDLE - 1);
+                        if ((l >> (2 * k + 1) & 1) != 0) mark(g, true, v, MIDDLE + 1, INTERIOR - 1);
+                        if (deg[k] >= 2) mark(g, true, v, MIDDLE, MIDDLE);
+                    }
+                    for (int i = 0; i < 4; i++) if ((c >> i & 1) != 0) mark(g, false, MIDDLE, SEG_FROM[i], SEG_TO[i]);
+                    if (uncovered(g) <= HOLE_MOST) break;
+                }
+                for (int k = 0; k < 3; k++) {
+                    int v = STREETS_AT[k];
+                    if ((l >> (2 * k) & 1) != 0) layStretch(x0, y0, across, true, v, 0, MIDDLE - 1, st);
+                    if ((l >> (2 * k + 1) & 1) != 0) layStretch(x0, y0, across, true, v, MIDDLE + 1, INTERIOR - 1, st);
+                    if (deg[k] >= 2) layStretch(x0, y0, across, true, v, MIDDLE, MIDDLE, st);
+                }
+                for (int i = 0; i < 4; i++) if ((c >> i & 1) != 0) layStretch(x0, y0, across, false, MIDDLE, SEG_FROM[i], SEG_TO[i], st);
+            } else {
+                int[] pr = BRICK_LINES[(int) (cellHash(cellX, cellY, 21) * BRICK_LINES.length)];
+                boolean swap = cellHash(cellX, cellY, 22) < 0.5;
+                int a = swap ? pr[1] : pr[0], b = swap ? pr[0] : pr[1];
+                for (int v : STREETS_AT) layStretch(x0, y0, across, true, v, 0, INTERIOR - 1, st);
+                for (int i = 0; i < 4; i++) layStretch(x0, y0, across, false, i % 2 == 0 ? a : b, SEG_FROM[i], SEG_TO[i], st);
+            }
+        }
+
+        /**
+         * The 24 pieces of a squared cell's three long streets and three cross streets (bit 4j + k the kth of the
+         * jth long street, bit 12 + 4i + k of the ith cross street) left once every junction with one street is
+         * taken out, and every piece not joined to the ring, until none is.
+         */
+        static long settle(long e) {
+            for (boolean again = true; again; ) {
+                again = false;
+                for (int j = 0; j < 3; j++) {
+                    for (int i = 0; i < 3; i++) {
+                        long m = e & ((1L << (j * 4 + i)) | (1L << (j * 4 + i + 1)) | (1L << (12 + i * 4 + j)) | (1L << (12 + i * 4 + j + 1)));
+                        if (Long.bitCount(m) == 1) { e &= ~m; again = true; }
+                    }
+                }
+                // The junctions joined to the ring: those a street from the ring ends at, and from them along the streets between junctions.
+                int reached = 0;
+                for (int j = 0; j < 3; j++) {
+                    for (int i = 0; i < 3; i++) {
+                        boolean r = (i == 0 && (e >> (j * 4) & 1) != 0) || (i == 2 && (e >> (j * 4 + 3) & 1) != 0)
+                                || (j == 0 && (e >> (12 + i * 4) & 1) != 0) || (j == 2 && (e >> (12 + i * 4 + 3) & 1) != 0);
+                        if (r) reached |= 1 << (j * 3 + i);
+                    }
+                }
+                for (boolean grow = true; grow; ) {
+                    grow = false;
+                    for (int j = 0; j < 3; j++) {
+                        for (int i = 0; i < 2; i++) {          // the street between junctions (i, j) and (i + 1, j)
+                            if ((e >> (j * 4 + i + 1) & 1) == 0) continue;
+                            int p = 1 << (j * 3 + i), q = 1 << (j * 3 + i + 1);
+                            if (((reached & p) != 0) != ((reached & q) != 0)) { reached |= p | q; grow = true; }
+                        }
+                    }
+                    for (int i = 0; i < 3; i++) {
+                        for (int j = 0; j < 2; j++) {          // ...and between (i, j) and (i, j + 1)
+                            if ((e >> (12 + i * 4 + j + 1) & 1) == 0) continue;
+                            int p = 1 << (j * 3 + i), q = 1 << ((j + 1) * 3 + i);
+                            if (((reached & p) != 0) != ((reached & q) != 0)) { reached |= p | q; grow = true; }
+                        }
+                    }
+                }
+                for (int j = 0; j < 3; j++) {
+                    for (int i = 0; i < 3; i++) {
+                        if ((reached >> (j * 3 + i) & 1) != 0) continue;
+                        long m = e & ((1L << (j * 4 + i)) | (1L << (j * 4 + i + 1)) | (1L << (12 + i * 4 + j)) | (1L << (12 + i * 4 + j + 1)));
+                        if (m != 0) { e &= ~m; again = true; }
+                    }
+                }
+            }
+            return e;
+        }
+
+        /** The streets that meet junction (i, j) of a squared cell, of the pieces e. */
+        static int node(long e, int i, int j) {
+            return Long.bitCount(e & ((1L << (j * 4 + i)) | (1L << (j * 4 + i + 1)) | (1L << (12 + i * 4 + j)) | (1L << (12 + i * 4 + j + 1))));
+        }
+
+        /**
+         * The streets of a squared cell (a boulevard's interior too) of the layout LAYOUT_DROPPED or LAYOUT_BRICK, in
+         * place of the whole square. DROPPED: the square with each of its 24 pieces left out at the chance
+         * PIECE_DROP, then settled (see settle()), drawn up to PIECES_TRIES times until every plot of the cell lies
+         * within REACH of a street, as the whole square's do (none is left beyond it, so there is no hole dial),
+         * else the whole square. BRICK: the long streets whole and the cross streets by bands, the lines at 7, 15
+         * and 23 in one band and BRICK_BAND_LINES in the next.
+         */
+        void squareLayout(int x0, int y0, boolean across, byte layout, long cellX, long cellY, byte st) {
+            if (layout == LAYOUT_BRICK) {
+                int par = cellHash(cellX, cellY, 31) < 0.5 ? 0 : 1;
+                for (int v : STREETS_AT) layStretch(x0, y0, across, true, v, 0, INTERIOR - 1, st);
+                for (int b = 0; b < 4; b++) {
+                    if ((b & 1) == par) for (int u : STREETS_AT) layStretch(x0, y0, across, false, u, SEG_FROM[b], SEG_TO[b], st);
+                    else for (int u : BRICK_BAND_LINES) layStretch(x0, y0, across, false, u, SEG_FROM[b], SEG_TO[b], st);
+                }
+                return;
+            }
+            long e = (1L << 24) - 1;
+            for (int attempt = 0; attempt < PIECES_TRIES; attempt++) {
+                long t = (1L << 24) - 1;
+                for (int k = 0; k < 24; k++) if (cellHash(cellX, cellY, 40 + attempt * 24 + k) < PIECE_DROP) t &= ~(1L << k);
+                t = settle(t);
+                long[] g = ringMarks();
+                for (int j = 0; j < 3; j++) for (int k = 0; k < 4; k++) if ((t >> (j * 4 + k) & 1) != 0) mark(g, true, STREETS_AT[j], SEG_FROM[k], SEG_TO[k]);
+                for (int i = 0; i < 3; i++) for (int k = 0; k < 4; k++) if ((t >> (12 + i * 4 + k) & 1) != 0) mark(g, false, STREETS_AT[i], SEG_FROM[k], SEG_TO[k]);
+                for (int j = 0; j < 3; j++) for (int i = 0; i < 3; i++) if (node(t, i, j) >= 2) mark(g, true, STREETS_AT[j], STREETS_AT[i], STREETS_AT[i]);
+                if (uncovered(g) == 0) { e = t; break; }
+            }
+            for (int j = 0; j < 3; j++) for (int k = 0; k < 4; k++) if ((e >> (j * 4 + k) & 1) != 0) layStretch(x0, y0, across, true, STREETS_AT[j], SEG_FROM[k], SEG_TO[k], st);
+            for (int i = 0; i < 3; i++) for (int k = 0; k < 4; k++) if ((e >> (12 + i * 4 + k) & 1) != 0) layStretch(x0, y0, across, false, STREETS_AT[i], SEG_FROM[k], SEG_TO[k], st);
+            for (int j = 0; j < 3; j++) {
+                for (int i = 0; i < 3; i++) {
+                    if (node(e, i, j) < 2) continue;
+                    // The junction's plot, along each street that meets it.
+                    if ((e >> (j * 4 + i) & 1) != 0 || (e >> (j * 4 + i + 1) & 1) != 0) layStretch(x0, y0, across, true, STREETS_AT[j], STREETS_AT[i], STREETS_AT[i], st);
+                    if ((e >> (12 + i * 4 + j) & 1) != 0 || (e >> (12 + i * 4 + j + 1) & 1) != 0) layStretch(x0, y0, across, false, STREETS_AT[i], STREETS_AT[j], STREETS_AT[j], st);
+                }
+            }
         }
 
         /* ------------------------------------------------ an estate cell's streets (0.7.90, ESTATE LINES) */
@@ -1938,7 +2237,10 @@ public final class DistrictPlan {
          * along the cut to the nearest street that is not its own stub: the
          * shortest way over dry ground in the ring's box, every plot beside
          * the cut, touching no street but the one it ends on, which it meets
-         * in a T. The dead ends taken row by row. The joins laid.
+         * in a T. The dead ends taken row by row. The joins laid. In a homes
+         * cell of a varied layout (shoreFixed, CL2) a highway, railway, yard or
+         * reserve is a cut too: a piece the layout left ending against one is
+         * joined along its verge, where no building may stand.
          */
         int shore(int bx0, int by0, int bx1, int by1) {
             int joined = 0;
@@ -1995,7 +2297,12 @@ public final class DistrictPlan {
                             if (!dry[a] || in.fixed[a] != 0 || in.site[a] == SITE_MINED || occ[a] > 0) continue;
                             // Beside the cut, across corners.
                             boolean beside = false;
-                            for (int dy = -1; dy <= 1 && !beside; dy++) for (int dx = -1; dx <= 1 && !beside; dx++) if (cutAt(ax + dx, ay + dy)) beside = true;
+                            for (int dy = -1; dy <= 1 && !beside; dy++) {
+                                for (int dx = -1; dx <= 1 && !beside; dx++) {
+                                    if (cutAt(ax + dx, ay + dy)) beside = true;
+                                    else if (shoreFixed && ax + dx >= 0 && ay + dy >= 0 && ax + dx < FRAME && ay + dy < FRAME && in.fixed[(ay + dy) * FRAME + ax + dx] != 0) beside = true;
+                                }
+                            }
                             if (!beside) continue;
                             // Touching no street but where it comes from - or the one it ends on.
                             int hit = -1;
@@ -2029,6 +2336,9 @@ public final class DistrictPlan {
             nStub = 0;
             return joined;
         }
+
+        /** Whether shore() also runs along the plots beside a highway, railway, yard or reserve, as along a cut (a homes cell of a varied layout, CL2): the layouts' pieces end against a refused junction plot there, where the comb's cross street passes. */
+        boolean shoreFixed;
 
         /** shore()'s stub, its plots (stubAt, nStub), and its walk's stamp a plot (shoreSeen against shoreStamp). */
         int[] stubAt = new int[64], shoreSeen;
@@ -2485,7 +2795,12 @@ public final class DistrictPlan {
          * In a homes cell: the street segments inside the first group of long
          * blocks (MERGE_GROUPS, in order) that holds the building, has no
          * building in it and is more than MERGE_DRY dry ground or street,
-         * returned to ground - the prototype's merge_for.
+         * returned to ground - the prototype's merge_for. In a cell of a
+         * varied layout (CL2) the merge's own dead ends are taken up with it
+         * (stubsFree), or it is not made and the next group tried: when a
+         * stub cannot be taken up, or the merge made tentatively would leave
+         * a building near it without a street within REACH (mergeVaried,
+         * mergesUndone); a comb or whole square merges as ever.
          */
         boolean mergeFor(DistrictPlan out, int c, int w, int h) {
             if (out.cellKind[c] != HOMES) return false;
@@ -2495,6 +2810,7 @@ public final class DistrictPlan {
             }
             int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1;
             boolean across = out.cellAcross[c];
+            boolean varied = out.cellLayout[c] != LAYOUT_TODAY;
             for (int[] g : MERGE_GROUPS) {
                 int gu = g[0], gv = g[1];
                 for (int turn = 0; turn < 2; turn++) {
@@ -2517,16 +2833,12 @@ public final class DistrictPlan {
                             }
                             if (building || dryOrStreet <= MERGE_DRY * gw * gh) continue;
                             // The network stays one piece: no street outside the group that reached another through it is cut off (game rules).
-                            if (!proto && cellCut[c] && splits(gx, gy, gw, gh)) { out.mergesRefused++; continue; }
-                            for (int yy = gy; yy < gy + gh; yy++) {
-                                for (int xx = gx; xx < gx + gw; xx++) {
-                                    int p = yy * FRAME + xx;
-                                    if (str[p]) setStr(p, false);
-                                    under[p] = false;
-                                    art[p] = false;
-                                    role[p] = 0;
-                                    if (occ[p] == -1 && !blocked[p]) occ[p] = 0;
-                                }
+                            if (varied && !stubsFree(c, gx, gy, gw, gh)) { out.mergesUndone++; continue; }
+                            if (!proto && (cellCut[c] || varied) && splits(gx, gy, gw, gh)) { out.mergesRefused++; continue; }
+                            if (varied) {
+                                if (!mergeVaried(c, gx, gy, gw, gh)) { out.mergesUndone++; continue; }
+                            } else {
+                                for (int yy = gy; yy < gy + gh; yy++) for (int xx = gx; xx < gx + gw; xx++) takeUp(yy * FRAME + xx);
                             }
                             out.cellMerged[c] = true;
                             refreeCell(c);
@@ -2543,6 +2855,171 @@ public final class DistrictPlan {
             mergeFailH[c][mergeFails[c]] = h;
             mergeFails[c]++;
             return false;
+        }
+
+        /** Plot p taken up as a merge takes up a street: no street, no arterial, no role, free ground unless blocked. */
+        void takeUp(int p) {
+            if (str[p]) setStr(p, false);
+            under[p] = false;
+            art[p] = false;
+            role[p] = 0;
+            if (occ[p] == -1 && !blocked[p]) occ[p] = 0;
+        }
+
+        /** The plots a tentative merge has taken up, in the order taken (the group's streets, row by row, then its stubs'), and each as it was (stateOf()), to be put back. */
+        int[] undoAt = new int[1024], undoWas = new int[1024];
+        int nUndo;
+
+        /** Plot p's state as takeUp() changes it: its role (bits 0 to 2), art (8), blvd (16), under (32), str (64) and occ + 1 (bits 7 and 8). */
+        int stateOf(int p) {
+            return (role[p] & 7) | (art[p] ? 8 : 0) | (blvd[p] ? 16 : 0) | (under[p] ? 32 : 0) | (str[p] ? 64 : 0) | ((occ[p] + 1) << 7);
+        }
+
+        /** Plot p taken up, its state kept for putBack(). */
+        void takeUpKept(int p) {
+            if (nUndo == undoAt.length) {
+                undoAt = Arrays.copyOf(undoAt, nUndo * 2);
+                undoWas = Arrays.copyOf(undoWas, nUndo * 2);
+            }
+            undoAt[nUndo] = p;
+            undoWas[nUndo++] = stateOf(p);
+            takeUp(p);
+        }
+
+        /** Every plot takeUpKept() took up put back as it was, the last first. */
+        void putBack() {
+            for (int k = nUndo - 1; k >= 0; k--) {
+                int p = undoAt[k], s = undoWas[k];
+                setStr(p, (s & 64) != 0);
+                under[p] = (s & 32) != 0;
+                art[p] = (s & 8) != 0;
+                blvd[p] = (s & 16) != 0;
+                role[p] = (byte) (s & 7);
+                occ[p] = (byte) ((s >> 7) - 1);
+            }
+            nUndo = 0;
+        }
+
+        /** Whether some street lies within REACH of the box (x, y, w, h), across corners - the reach PlanCheck holds every building to (a street beneath a highway is not one) - read from the street bits a row at a time. */
+        boolean reaches(int x, int y, int w, int h) {
+            for (int yy = y - REACH; yy <= y + h - 1 + REACH; yy++) if (window(yy, x - REACH, w + 2 * REACH) != 0) return true;
+            return false;
+        }
+
+        /** Each cell's placed buildings as a list - cellBuilding[c] the newest, nextBuilding[b] the one placed before b in its cell, -1 for the end - built on as buildings are placed and read like campusStands()' cells: from the last look while nothing placed was undone (campusGen). */
+        int[] cellBuilding = new int[CELLS], nextBuilding = new int[0];
+        int buildingsSeen, buildingsGen = -1;
+
+        /** cellBuilding and nextBuilding brought up to the buildings placed so far. */
+        void indexBuildings() {
+            if (bPlaced < buildingsSeen || campusGen != buildingsGen) {
+                Arrays.fill(cellBuilding, -1);
+                buildingsSeen = 0;
+                buildingsGen = campusGen;
+            }
+            if (nextBuilding.length < placedX.length) nextBuilding = new int[placedX.length];
+            for (int k = buildingsSeen; k < bPlaced; k++) {
+                int cell = (placedY[k] / CELL) * CELLS_A_SIDE + placedX[k] / CELL;
+                nextBuilding[k] = cellBuilding[cell];
+                cellBuilding[cell] = k;
+            }
+            buildingsSeen = bPlaced;
+        }
+
+        /** Whether the box (bx, by, bw, bh) lies within REACH + 1 of the plots x0..x1 by y0..y1: a street taken up there may have been the box's. */
+        static boolean nearBox(int bx, int by, int bw, int bh, int x0, int y0, int x1, int y1) {
+            return bx <= x1 + REACH + 1 && bx + bw - 1 >= x0 - REACH - 1 && by <= y1 + REACH + 1 && by + bh - 1 >= y0 - REACH - 1;
+        }
+
+        /** The dead ends a merge would leave (stubsFree()) and take up, by plot, in the order taken: the first nMergeStub. */
+        int[] mergeStub = new int[256];
+        int nMergeStub;
+
+        /**
+         * The dead ends a merge of the blocks in box (gx, gy, gw, gh) of cell c, a homes cell of a varied layout
+         * (CL2), would leave, found before anything is taken up: each street plot beside the box that would lose a
+         * street to it and be left with one street beside it or none is a stub, followed along - each plot taken
+         * up (mergeStub), then its one neighbour looked at - until a plot with two or more. False if a stub would
+         * have to take an arterial, a boulevard, a street beneath a highway or a plot outside cell c's interior (so
+         * the frame's edge too): the merge cannot be made.
+         */
+        boolean stubsFree(int c, int gx, int gy, int gw, int gh) {
+            nMergeStub = 0;
+            int gone = ++stamp;
+            int ix0 = CELL * (c % CELLS_A_SIDE) + 1, iy0 = CELL * (c / CELLS_A_SIDE) + 1;
+            for (int side = 0; side < 4; side++) {
+                int n = side < 2 ? gw : gh;
+                for (int k = 0; k < n; k++) {
+                    // The plot beside the box, and the box's plot it touches.
+                    int x = side < 2 ? gx + k : side == 2 ? gx - 1 : gx + gw;
+                    int y = side >= 2 ? gy + k : side == 0 ? gy - 1 : gy + gh;
+                    int ix = side < 2 ? x : side == 2 ? gx : gx + gw - 1;
+                    int iy = side >= 2 ? y : side == 0 ? gy : gy + gh - 1;
+                    if (x < 0 || y < 0 || x >= FRAME || y >= FRAME) continue;
+                    // Only a plot the merge would leave short of a neighbour: the box's plot beside it is a street now.
+                    int inner = iy * FRAME + ix;
+                    if (!(str[inner] || under[inner])) continue;
+                    for (int cur = y * FRAME + x; cur >= 0; ) {
+                        if (markB[cur] == gone || !(str[cur] || under[cur])) break;
+                        int cx = cur % FRAME, cy = cur / FRAME, live = 0, next = -1;
+                        for (int d = 0; d < 4; d++) {
+                            int ax = cx + TilePainter.DX[d], ay = cy + TilePainter.DY[d];
+                            if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
+                            if (ax >= gx && ax < gx + gw && ay >= gy && ay < gy + gh) continue;
+                            int a = ay * FRAME + ax;
+                            if ((str[a] || under[a]) && markB[a] != gone) { live++; next = a; }
+                        }
+                        if (live > 1) break;
+                        if (art[cur] || blvd[cur] || under[cur] || cx < ix0 || cy < iy0 || cx >= ix0 + INTERIOR || cy >= iy0 + INTERIOR) return false;
+                        markB[cur] = gone;
+                        if (nMergeStub == mergeStub.length) mergeStub = Arrays.copyOf(mergeStub, nMergeStub * 2);
+                        mergeStub[nMergeStub++] = cur;
+                        cur = next;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /**
+         * A merge of the blocks in box (gx, gy, gw, gh) of cell c, a homes cell of a varied layout (CL2), whose
+         * stubs stubsFree() has found: the box's streets taken up as mergeFor() takes them up, then the stubs,
+         * tentatively - put back whole, and false returned, if a building within REACH + 1 of the box or of a plot
+         * taken up is left with no street within REACH. The streets about it stay one piece without any stub (a
+         * dead end's plots part nothing); splits() has been asked of the box.
+         */
+        boolean mergeVaried(int c, int gx, int gy, int gw, int gh) {
+            nUndo = 0;
+            // The box's streets (taking up a plot that is none changes nothing), then the stubs.
+            for (int yy = gy; yy < gy + gh; yy++) {
+                for (int xx = gx; xx < gx + gw; xx++) {
+                    int p = yy * FRAME + xx;
+                    if (str[p] || under[p]) takeUpKept(p);
+                }
+            }
+            int boxPlots = nUndo;
+            for (int k = 0; k < nMergeStub; k++) takeUpKept(mergeStub[k]);
+            // Every building the merge may have touched keeps a street within REACH: those of cell c and its neighbours (a taken-up plot lies in c's interior, and a building further off has the ring's street in reach).
+            indexBuildings();
+            int ci = c % CELLS_A_SIDE, cj = c / CELLS_A_SIDE;
+            for (int nj = Math.max(0, cj - 1); nj <= Math.min(CELLS_A_SIDE - 1, cj + 1); nj++) {
+                for (int ni = Math.max(0, ci - 1); ni <= Math.min(CELLS_A_SIDE - 1, ci + 1); ni++) {
+                    for (int b = cellBuilding[ni + nj * CELLS_A_SIDE]; b >= 0; b = nextBuilding[b]) {
+                        int bx = placedX[b], by = placedY[b], bw = placedW[b], bh = placedH[b];
+                        boolean near = nearBox(bx, by, bw, bh, gx, gy, gx + gw - 1, gy + gh - 1);
+                        for (int k = boxPlots; k < nUndo && !near; k++) {
+                            int px = undoAt[k] % FRAME, py = undoAt[k] / FRAME;
+                            near = nearBox(bx, by, bw, bh, px, py, px, py);
+                        }
+                        if (near && !reaches(bx, by, bw, bh)) {
+                            putBack();
+                            return false;
+                        }
+                    }
+                }
+            }
+            nUndo = 0;
+            return true;
         }
 
         /**
