@@ -2,7 +2,7 @@
 
 Generated 2026-10-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**122 harness files, 11,401 labelled assertions.** AllChecks runs 122 of them.
+**123 harness files, 11,438 labelled assertions.** AllChecks runs 123 of them.
 
 ## Which harnesses read which class
 
@@ -92,7 +92,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GameFiles](map/GameFiles.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
-| [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthTerrainCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
+| [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthTerrainCheck, EnsembleCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
 | [Gateways](map/Gateways.md) | GatewayCheck |
 | [Geology](map/Geology.md) | CoalMiningCheck, EarthTerrainCheck |
 | [GlobeFrame](map/GlobeFrame.md) | GlobeCheck, MapCheck |
@@ -4548,6 +4548,65 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1417 the nine came back parted
   - L1420 ...and the load path told the schools the nine, not the one
   - L1425 ...and the month by kind came back with the save, not zero
+
+## EnsembleCheck.java - 37 labelled assertions
+
+> The inflation ensemble is in the tree and still runs: its driver compiles
+> against this tree, its two halves name the same policies, and the stored
+> baseline reads.
+> 
+> WHY (EN1, 2026-10-20). The ensemble - sixteen seeds under five monetary
+> policies - lived in a workbench zip, compiled at run time against a snapshot
+> of target/classes. Its driver calls LongPlaytest's code, so a refactor of the
+> model could break it and nobody would know until the next batch whose trace
+> moved came to run it (the ensemble runs only then, since EN1), on the day the
+> answer was wanted. It now lives in tools/ensemble, outside src/ (it is never
+> part of the build), and this harness is the only thing in the suite that
+> touches it.
+> ...
+
+- **L104 no source tree**
+- **L122 the runner is in the tree**
+  - L126 tools/ensemble/
+- **L134 the driver compiles against this tree**
+  - L150 a source calling a method no class has does not compile
+  - L151 ...and the compiler names the method it could not find
+  - L158 a source calling a real class of the tree compiles
+  - L164 the driver compiles against the classes this harness runs on
+  - L167 ...and leaves its class behind
+- **L273 the driver and the scorer name the same policies**
+  - L278 the driver's constants are read from an enum
+  - L280 the scorer's strings are read from its list
+  - L282 the same names in a different order are the same policies
+  - L284 a policy the scorer lacks is a problem and is named
+  - L286 a policy the driver lacks is a problem and is named
+  - L288 a driver with no enum is a problem
+  - L289 a scorer with no list is a problem
+  - L296 the driver names at least one policy
+  - L297 the scorer names at least one policy
+  - L299 the driver's policies are the scorer's
+- **L418 the baseline is there and reads**
+  - L422 a sound canned page is accepted
+  - L425 a page missing one policy is rejected, and the policy is named
+  - L427 a page with no json block is rejected
+  - L429 a page with no verdict line is rejected
+  - L431 a page whose json does not parse is rejected
+  - L433 a page with no seeds is rejected
+  - L435 a page with 0 seeds is rejected
+  - L437 a page with a fractional seed count is rejected
+  - L439 a page with no take-offs is rejected
+  - L441 a page whose median population is 0 is rejected
+  - L443 a page whose median population is text is rejected
+  - L445 a page with no findings count is rejected
+  - L447 a page with no audit count is rejected
+  - L449 a page held to no policies is rejected, not passed
+  - L452 0.8.9 is older than 0.8.11, though 9 sorts after 1
+  - L453 0.10.0 is newer than 0.9.9
+  - L454 the newest of several pages is the highest number
+  - L456 a folder with no page named x.y.z.md has no newest
+  - L467 docs/ensemble holds at least one page named x.y.z.md
+  - L471 the newest baseline is not newer than the game
+  - L473 the newest baseline reads, with every policy in it
 
 ## EquityCheck.java - 65 labelled assertions
 
