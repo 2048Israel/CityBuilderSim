@@ -181,6 +181,10 @@ import java.util.Map;
  *      train pure in (call, t), a frame finding every train on screen; at
  *      10B a frame's trains in no more than TRAIN_FRAME_MS; and the played
  *      city's station no container yard, its railway having moved no boxes.
+ *      Since FX5 (0.8.15) the trains on the curves (trainsOnTheCurves()): no
+ *      two neighbouring vehicles of a train differ in heading by more than
+ *      MOST_TURN_DEG, and every vehicle shown whole is on the rail the tiles
+ *      draw at 8 px a plot.
  *  10. the map on Earth (0.7.119, batch E5; the project's spec-earth.md 3's
  *      "Far views" and 8's E5 row), on EarthCheck's fixture: a generated
  *      world's far node is its region at every stride, as before; an Earth
@@ -3909,6 +3913,9 @@ public class MapCheck {
         check("...nothing of it on the line at either end of its visit, so none appears or vanishes", gone);
         check("...an import in full and out empty, an export the other way, boxes loaded both ways", loaded);
 
+        // ---- THE CURVES (FX5): no train swings on the spot, and every vehicle is on the rail it is drawn on.
+        trainsOnTheCurves(m, routes, mix);
+
         // ---- A FRAME: every train with a vehicle on screen, looking at only those whose visit spans t.
         long sx = station[0] + station[2] / 2, sy = station[1] + station[3] / 2;
         long l0w = Math.round(SCREEN_W_PX / MapFrame.L0_FROM), l0h = Math.round(SCREEN_H_PX / MapFrame.L0_FROM);
@@ -3976,6 +3983,139 @@ public class MapCheck {
                 railed, boxes, city.getCityMap().railPicture().goodsByRail());
         check("...and the played city's railway moved no boxes, so its freight station is no container yard (TrainSchedule.boxesByRail())",
                 boxes == 0 && !city.getCityMap().railPicture().goodsByRail() && !city.mapRail().goodsByRail());
+    }
+
+    /** The most two neighbouring vehicles of a train may differ in heading, in degrees: 30 (FX5; on 0.8.14 a corner turned them 90 and a ladder 60). */
+    static final double MOST_TURN_DEG = 30;
+
+    /** The last plots of a route that are a yard's ladder and siding, for what trainsOnTheCurves() prints: 12 (the ladder's S is 3 to 6 plots long, the siding's last leg a few). A report's cut, not an assertion's. */
+    static final double LADDER_PLOTS = 12;
+
+    /**
+     * Section 9's trains on the curves (FX5, 0.8.15; Jerus, 2026-10-20: "do
+     * trains make 90 degree turns?"): on the yard city's routes, at every
+     * sampled moment of the month's trains and at fronts all along every
+     * route, (a) no two neighbouring vehicles of a train differ in heading
+     * by more than MOST_TURN_DEG, and (b) every vehicle shown whole, from
+     * the first plot of the railway in, has its middle on track as the tiles
+     * draw it at 8 px a plot: the pixel under it, or one of its eight
+     * neighbours, is BALLAST, a SLEEPER or STEEL (dimmed toward the void
+     * where the ground is not the city's). The vehicles before the first
+     * plot of the railway run the world line's gap, where no track is drawn.
+     */
+    static void trainsOnTheCurves(CityMap m, List<TrainSchedule.Route> routes, TrainSchedule mix) {
+        out.println("      the trains on the curves (FX5):");
+        CityRuns runs = m.runs();
+        double leg = TrainSchedule.LEG_SECONDS / TrainSchedule.MONTH_SECONDS, dwell = TrainSchedule.DWELL_SECONDS / TrainSchedule.MONTH_SECONDS;
+        double worst = 0, awayFromEnd = 0;
+        long pairs = 0;
+        int where = -1;
+        // The month's trains at their moments, and a hopper train (the longest) at fronts all along every route.
+        for (TrainSchedule.Call c : mix.calls()) {
+            TrainSchedule.Route rt = routes.get(c.route());
+            for (int k = 0; k <= 48; k++) {
+                double t = c.arrives() - leg + (2 * leg + dwell) * k / 48.0;
+                TrainSchedule.Train tr = TrainSchedule.position(c, rt, t);
+                if (tr == null) continue;
+                List<TrainSchedule.Car> cars = TrainSchedule.cars(tr, rt);
+                double d = tr.front();
+                for (int i = 1; i < cars.size(); i++) {
+                    double apart = headingApart(cars.get(i - 1).heading(), cars.get(i).heading());
+                    double at = rt.length() - (d - (cars.get(i - 1).loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS) / 2);
+                    d -= cars.get(i - 1).loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS;
+                    pairs++;
+                    if (apart > worst) { worst = apart; where = c.route(); }
+                    if (at > LADDER_PLOTS && apart > awayFromEnd) awayFromEnd = apart;
+                }
+            }
+        }
+        TrainSchedule.Call hopper = new TrainSchedule.Call(TrainSchedule.Kind.HOPPER, true, 0, 0.5);
+        for (int r = 0; r < routes.size(); r++) {
+            TrainSchedule.Route rt = routes.get(r);
+            for (double front = 0.3; front <= rt.length() + 1; front += 0.37) {
+                TrainSchedule.Train tr = new TrainSchedule.Train(hopper, front, true, false);
+                List<TrainSchedule.Car> cars = TrainSchedule.cars(tr, rt);
+                double d = tr.front();
+                for (int i = 1; i < cars.size(); i++) {
+                    double apart = headingApart(cars.get(i - 1).heading(), cars.get(i).heading());
+                    double at = rt.length() - (d - (cars.get(i - 1).loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS) / 2);
+                    d -= cars.get(i - 1).loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS;
+                    pairs++;
+                    if (apart > worst) { worst = apart; where = r; }
+                    if (at > LADDER_PLOTS && apart > awayFromEnd) awayFromEnd = apart;
+                }
+            }
+        }
+        out.printf("      %,d neighbouring pairs of vehicles on %d routes: the sharpest turn between two is %.1f degrees (route %d), %.1f degrees more than %.0f plots from a route's end (its ladder's)%n",
+                pairs, routes.size(), worst, where, awayFromEnd, LADDER_PLOTS);
+        check("(a) no two neighbouring vehicles of a train differ in heading by more than " + (int) MOST_TURN_DEG + " degrees, at any sampled moment and along every route",
+                pairs > 0 && worst <= MOST_TURN_DEG);
+
+        // (b) on the rail as drawn: the tiles at 8 px a plot, kept as they are first wanted.
+        java.util.Map<Long, int[]> tiles = new java.util.HashMap<>();
+        int px = 8, w = World.TILE * px;
+        long checked = 0, off = 0;
+        List<String> examples = new ArrayList<>();
+        for (int r = 0; r < routes.size(); r++) {
+            TrainSchedule.Route rt = routes.get(r);
+            // The first point of the route on the railway's own plots: before it the route runs the world line's gap.
+            double from = rt.length() + 1;
+            for (int i = 1; i < rt.xs().length && from > rt.length(); i++) {
+                byte f = runs.at((long) Math.floor(rt.xs()[i]), (long) Math.floor(rt.ys()[i]));
+                if (f == CityRuns.F_RAIL || f == CityRuns.F_RAIL_OVER || f == CityRuns.F_YARD) from = rt.along()[i];
+            }
+            for (double front = from; front <= rt.length() + TrainSchedule.LOCO_PLOTS; front += 3.1) {
+                TrainSchedule.Train tr = new TrainSchedule.Train(hopper, Math.min(front, rt.length()), true, false);
+                List<TrainSchedule.Car> cars = TrainSchedule.cars(tr, rt);
+                double d = tr.front();
+                for (int k = 0; k < cars.size(); k++) {
+                    TrainSchedule.Car car = cars.get(k);
+                    double len = car.loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS, mid = d - len / 2;
+                    d -= len;
+                    if (car.alpha() < 1 || mid < from) continue;
+                    checked++;
+                    if (!onDrawnTrack(m, tiles, car.x(), car.y(), px, w)) {
+                        off++;
+                        if (examples.size() < 4) examples.add(String.format("route %d at (%.2f, %.2f), %.1f plots in", r, car.x(), car.y(), mid));
+                    }
+                }
+            }
+        }
+        out.printf("      %,d vehicles shown whole on the railway, %,d of them off the drawn rail%s%n", checked, off, examples.isEmpty() ? "" : ": " + examples);
+        check("(b) every vehicle shown whole has its middle on the track the tiles draw: its pixel or one of its eight neighbours is BALLAST, a SLEEPER or STEEL",
+                checked > 0 && off == 0);
+    }
+
+    /** How far apart two headings are, in degrees, 0 to 180. */
+    static double headingApart(double a, double b) {
+        return Math.toDegrees(Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b))));
+    }
+
+    /** Whether the pixel under plot point (x, y), or one of its eight neighbours, is the railway's as the tile at 8 px a plot draws it (its tile rastered once into `tiles`). */
+    static boolean onDrawnTrack(CityMap m, java.util.Map<Long, int[]> tiles, double x, double y, int px, int w) {
+        long tx = Math.floorDiv((long) Math.floor(x), World.TILE), ty = Math.floorDiv((long) Math.floor(y), World.TILE);
+        int[] img = tiles.computeIfAbsent(tx * 1_000_003L + ty, k -> {
+            TilePainter.Input in = new TilePainter.Input();
+            m.tileInput(tx, ty, in);
+            TilePainter.Painted p = new TilePainter.Painted();
+            TilePainter.paint(in, p);
+            int[] pixels = new int[w * w];
+            TileRaster.raster(in, p, px, pixels);
+            return pixels;
+        });
+        int cx = (int) Math.floor((x - tx * World.TILE) * px), cy = (int) Math.floor((y - ty * World.TILE) * px);
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                int X = cx + dx, Y = cy + dy;
+                if (X < 0 || Y < 0 || X >= w || Y >= w) continue;
+                int c = img[Y * w + X];
+                if (c == TileRaster.BALLAST || c == TileRaster.SLEEPER || c == TileRaster.STEEL) return true;
+                if (c == TileRaster.blend(TileRaster.BALLAST, TileRaster.VOID, TileRaster.UNOWNED_DIM)
+                        || c == TileRaster.blend(TileRaster.SLEEPER, TileRaster.VOID, TileRaster.UNOWNED_DIM)
+                        || c == TileRaster.blend(TileRaster.STEEL, TileRaster.VOID, TileRaster.UNOWNED_DIM)) return true;
+            }
+        }
+        return false;
     }
 
     /**

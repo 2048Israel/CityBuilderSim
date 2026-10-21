@@ -76,6 +76,21 @@ import java.util.List;
  *  24. (batch FR7 slice 3) a siding's loading shed: a plot marked M_SHED beside
  *      a works is drawn with a block in TRANSPORT's fill over the track's end;
  *      an unmarked track plot is not.
+ *  25. (batch FX5, 0.8.15; red before the curves) track turning a corner is
+ *      drawn as a curve: an L of single track, its bend built by
+ *      TrackCurves.bends() as the map builds it, has BALLAST, a sleeper or
+ *      STEEL on the arc's middle, ground where the old L drew its corner, no
+ *      ballast farther than the bed's half-width from the arc and the
+ *      straights, the straights beside it as before and no step in the rails
+ *      where the arc meets them; the polyline the trains run on (TrackCurves
+ *      round() of the L's points) is on the drawn rail all the way, and
+ *      TrackCurves' own rules hold (the radius, the cut to half a leg, the
+ *      arcs, the ladder's S); double track draws the wider bed; a 45-degree
+ *      turn draws its arc too and leaves no gap in it; the blocks' views draw
+ *      the arc in RAIL_DARK and not the corner's cell; the tile's stamp moves
+ *      with its bends.
+ *  26. (batch FX5) a yard's ladders are S curves: tangent to the line at the
+ *      apex and to the siding at its start, two rails from RAILS_FROM px.
  *
  * Numbering is the running order.
  *
@@ -311,6 +326,8 @@ public class RailDrawCheck {
         gravelGrey();
         railDepotYard();
         sidingShed();
+        curvedCorner();
+        yardLadders();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -1005,5 +1022,309 @@ public class RailDrawCheck {
         int[] imgo = raster(only, po, px);
         check("control: with only the north-south column the south apex STEEL is within 1 px of x = " + lineMid,
                 nearInRow(imgo, w, apexY, lineMid, 1, TileRaster.STEEL));
+    }
+
+    /* ================= 25. (FX5) a corner is drawn as a curve ================= */
+
+    /** Whether a pixel is the railway's: ballast, a sleeper or steel. */
+    static boolean isTrack(int c) {
+        return c == TileRaster.BALLAST || c == TileRaster.SLEEPER || c == TileRaster.STEEL;
+    }
+
+    /** An L of single track on owned ground, as the runs lay it: east along row `rowY` from column `x0` to column `colX`, then south down that column to row `y1`, each plot with `marks`. */
+    static TilePainter.Input lOfTrack(int x0, int rowY, int colX, int y1, int marks) {
+        TilePainter.Input in = owned();
+        for (int x = x0; x <= colX; x++) in.fixed[rowY * T + x] = TilePainter.RAIL;
+        for (int y = rowY; y <= y1; y++) in.fixed[y * T + colX] = TilePainter.RAIL;
+        if (marks != 0) for (int i = 0; i < TilePainter.PLOTS; i++) if (in.fixed[i] == TilePainter.RAIL) in.marks[i] = (byte) marks;
+        return in;
+    }
+
+    /** The bends of the polyline through the points, put into the input as CityMap puts a route's in, and the plots they replace marked. */
+    static List<TrackCurves.Bend> bendInto(TilePainter.Input in, double[] xs, double[] ys, boolean doubled) {
+        List<TrackCurves.Bend> bends = TrackCurves.bends(xs, ys, TrackCurves.RADIUS);
+        for (TrackCurves.Bend b : bends) in.addBend(b.net(), b.x(), b.y(), b.ux(), b.uy(), b.vx(), b.vy(), b.r(), b.t(), doubled);
+        in.markCurved();
+        return bends;
+    }
+
+    /** The distance, in pixels, from the middle of pixel (x, y) to the nearest of the path's points (in plots, scaled by px). */
+    static double pathDistance(double[][] path, int px, int x, int y) {
+        double best = Double.MAX_VALUE;
+        for (double[] q : path) best = Math.min(best, Math.hypot(q[0] * px - (x + 0.5), q[1] * px - (y + 0.5)));
+        return best;
+    }
+
+    /** An L's centreline bent by `b`, sampled every 1/50 plot: from plot edge (xa, ya) to the arc's start, the arc, and from its end on to plot edge (xb, yb). */
+    static double[][] bentPath(TrackCurves.Bend b, double xa, double ya, double xb, double yb) {
+        List<double[]> out = new java.util.ArrayList<>();
+        double d = Math.hypot(b.startX() - xa, b.startY() - ya);
+        for (int k = 0; k <= d * 50; k++) out.add(new double[] { xa + (b.startX() - xa) * k / (d * 50), ya + (b.startY() - ya) * k / (d * 50) });
+        for (int k = 0; k <= b.length() * 50; k++) {
+            double[] q = b.at(k / 50.0);
+            out.add(new double[] { q[0], q[1] });
+        }
+        double e = Math.hypot(xb - b.endX(), yb - b.endY());
+        for (int k = 0; k <= e * 50; k++) out.add(new double[] { b.endX() + (xb - b.endX()) * k / (e * 50), b.endY() + (yb - b.endY()) * k / (e * 50) });
+        return out.toArray(new double[0][]);
+    }
+
+    static void curvedCorner() {
+        System.out.println("--- 25. (FX5) track turning a corner is drawn as a curve: an arc of bed, rails and sleepers, ground where the L's corner was ---");
+        trackCurvesRules();
+        int px = 8, w = T * px, rowY = 10, colX = 14, x0 = 3, y1 = 22;
+        TilePainter.Input in = lOfTrack(x0, rowY, colX, y1, 0);
+        double[] xs = { x0 + .5, colX + .5, colX + .5 }, ys = { rowY + .5, rowY + .5, y1 + .5 };
+        List<TrackCurves.Bend> bends = bendInto(in, xs, ys, false);
+        check("fixture: the L's one bend has the radius TrackCurves.RADIUS and replaces the corner's plot and the next two on each leg, no more",
+                bends.size() == 1 && Math.abs(bends.get(0).r() - TrackCurves.RADIUS) < 1e-9 && in.curved[rowY * T + colX]
+                        && in.curved[rowY * T + colX - 1] && in.curved[rowY * T + colX - 2] && !in.curved[rowY * T + colX - 3]
+                        && in.curved[(rowY + 1) * T + colX] && in.curved[(rowY + 2) * T + colX] && !in.curved[(rowY + 3) * T + colX]);
+        TrackCurves.Bend b = bends.get(0);
+        TilePainter.Painted p = paint(in);
+        int[] img = raster(in, p, px);
+
+        double[] mid = b.at(b.length() / 2);
+        int mx = (int) Math.floor(mid[0] * px), my = (int) Math.floor(mid[1] * px);
+        check("the arc's middle (the centre plus the radius along the bisector) is BALLAST, a sleeper or STEEL", isTrack(img[my * w + mx]));
+        check("the L's corner, the middle of the corner plot, is ground and not the bed the L drew there",
+                !isTrack(img[(rowY * px + px / 2) * w + colX * px + px / 2]));
+        check("...and so is the pixel at the foot of the corner plot, where the L drew its arm to the south",
+                !isTrack(img[(rowY * px + px / 2 + 3) * w + colX * px + px / 2]));
+
+        double[][] path = bentPath(b, x0, rowY + .5, colX + .5, y1 + 1);
+        int bed = bedWidth(px, false), far = 0, steel = 0, sleepers = 0;
+        double worst = 0;
+        for (int y = 0; y < w; y++) {
+            for (int x = 0; x < w; x++) {
+                int c = img[y * w + x];
+                if (c == TileRaster.STEEL) steel++;
+                if (c == TileRaster.SLEEPER) sleepers++;
+                if (c != TileRaster.BALLAST) continue;
+                double d = pathDistance(path, px, x, y);
+                worst = Math.max(worst, d);
+                if (d > bed / 2.0 + 0.5) far++;
+            }
+        }
+        check("no BALLAST pixel lies farther than the bed's half-width (and half a pixel) from the arc and the straights: the worst is "
+                + String.format("%.2f", worst) + " px against " + (bed / 2.0 + 0.5), far == 0);
+        check("...and the arc has its rails and sleepers: STEEL and SLEEPER pixels over the tile", steel > 40 && sleepers > 10);
+
+        // The rails are there all the way round: along the arc, at the gauge to either side, a STEEL pixel within a pixel.
+        int off = Math.max(1, (int) Math.round(TileRaster.GAUGE / 2.0 * px)), gaps = 0;
+        for (int k = 0; k <= 20; k++) {
+            double[] q = b.at(b.length() * k / 20.0);
+            double nx = -Math.sin(q[2]), ny = Math.cos(q[2]);
+            for (int side = -1; side <= 1; side += 2) {
+                double cx = q[0] * px + nx * side * off + 0.5, cy = q[1] * px + ny * side * off + 0.5;
+                boolean found = false;
+                for (int yy = (int) Math.floor(cy) - 1; yy <= (int) Math.floor(cy) + 1; yy++)
+                    for (int xx = (int) Math.floor(cx) - 1; xx <= (int) Math.floor(cx) + 1; xx++) found |= img[yy * w + xx] == TileRaster.STEEL;
+                if (!found) gaps++;
+            }
+        }
+        check("...two rails the gauge apart all the way round it, no gap in either (21 places on the arc): " + gaps + " missing", gaps == 0);
+
+        // The trains' way round it is the same geometry: every point of the rounded polyline (TrackCurves.round(), as the routes are rounded)
+        // lies on the rail the tile draws - the pixel under it or one of its eight neighbours is the railway's.
+        double[][] way = TrackCurves.round(xs, ys, TrackCurves.RADIUS);
+        int offRail = 0, sampled = 0;
+        for (int k = 0; k + 1 < way[0].length; k++) {
+            double len = Math.hypot(way[0][k + 1] - way[0][k], way[1][k + 1] - way[1][k]);
+            for (double f = 0; f < len; f += 0.1) {
+                double wx = way[0][k] + (way[0][k + 1] - way[0][k]) * f / len, wy = way[1][k] + (way[1][k + 1] - way[1][k]) * f / len;
+                int cx = (int) Math.floor(wx * px), cy = (int) Math.floor(wy * px);
+                boolean on = false;
+                for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) on |= isTrack(img[(cy + dy) * w + cx + dx]);
+                sampled++;
+                if (!on) offRail++;
+            }
+        }
+        check("the rounded polyline the trains run (TrackCurves.round() of the L's points) is on the drawn rail all the way: " + offRail + " of " + sampled
+                + " points off it", sampled > 100 && offRail == 0);
+
+        // The straights beside the bend are as they were.
+        TilePainter.Input plain = owned();
+        railRow(plain, rowY, 0);
+        int[] pimg = raster(plain, paint(plain), px);
+        boolean same = true;
+        for (int plotX = x0 + 1; plotX < colX - 4; plotX++) {
+            for (int dy = 0; dy < px; dy++) for (int dx = 0; dx < px; dx++) same &= pixel(img, w, plotX, rowY, dx, dy, px) == pixel(pimg, w, plotX, rowY, dx, dy, px);
+        }
+        check("control: the straight plots away from the bend are drawn exactly as a straight track's (section 1's look)", same);
+        TilePainter.Input none = owned();
+        railRow(none, rowY, 0);
+        none.markCurved();
+        check("...and a track with no bend at all is drawn as before: markCurved() marks no plot and the image is the same",
+                !anyCurved(none) && java.util.Arrays.equals(raster(none, paint(none), px), pimg));
+
+        // No step where the arc meets the straight: each rail pixel of the last straight plot's last column has a rail within a pixel in the next column.
+        int seamX = (colX - 2) * px, steps = 0, rails = 0;
+        for (int y = (rowY - 1) * px; y < (rowY + 2) * px; y++) {
+            if (img[y * w + seamX - 1] != TileRaster.STEEL) continue;
+            rails++;
+            boolean next = false;
+            for (int dy = -1; dy <= 1; dy++) next |= img[(y + dy) * w + seamX] == TileRaster.STEEL;
+            if (!next) steps++;
+        }
+        check("the rails run on across the seam from the last straight plot into the arc, within a pixel: " + rails + " rails meet it, " + steps + " with a step",
+                rails == 2 && steps == 0);
+
+        // Double track: the L's plots marked M_MAIN | M_DOUBLE, its bend on double track.
+        TilePainter.Input two = lOfTrack(x0, rowY, colX, y1, TilePainter.M_MAIN | TilePainter.M_DOUBLE);
+        TrackCurves.Bend bd = bendInto(two, xs, ys, true).get(0);
+        int[] dimg = raster(two, paint(two), px);
+        double[][] dpath = bentPath(bd, x0, rowY + .5, colX + .5, y1 + 1);
+        int dbed = bedWidth(px, true), dfar = 0, wide = 0;
+        for (int y = 0; y < w; y++) {
+            for (int x = 0; x < w; x++) {
+                if (dimg[y * w + x] != TileRaster.BALLAST) continue;
+                double d = pathDistance(dpath, px, x, y);
+                if (d > dbed / 2.0 + 0.5) dfar++;
+                if (d > bed / 2.0 + 0.5) wide++;
+            }
+        }
+        double[] dmid = bd.at(bd.length() / 2);
+        check("double track: the arc has BED_DOUBLE's bed (some BALLAST beyond the single bed's width, none beyond the double's) and is track at its middle",
+                dfar == 0 && wide > 0 && isTrack(dimg[(int) Math.floor(dmid[1] * px) * w + (int) Math.floor(dmid[0] * px)]));
+
+        // A 45-degree turn: straight east, then a stretch south-east; the arc joins them and leaves no gap on its centreline.
+        TilePainter.Input diag = owned();
+        for (int x = 2; x <= 13; x++) diag.fixed[10 * T + x] = TilePainter.RAIL;
+        int code = CityRuns.diagCode(1);
+        for (int k = 1; k <= 5; k++) {
+            diag.fixed[(10 + k) * T + 12 + k] = TilePainter.RAIL;
+            diag.marks[(10 + k) * T + 12 + k] = (byte) (CityRuns.M_DIAG | (code << CityRuns.M_DIAG_SHIFT));
+            diag.fixed[(10 + k - 1) * T + 12 + k] = TilePainter.RAIL;
+            diag.marks[(10 + k - 1) * T + 12 + k] = (byte) (CityRuns.M_DIAG | (code << CityRuns.M_DIAG_SHIFT) | CityRuns.M_CORNER);
+        }
+        List<TrackCurves.Bend> turn = bendInto(diag, new double[] { 2.5, 12.5, 17.5 }, new double[] { 10.5, 10.5, 15.5 }, false);
+        int[] gimg = raster(diag, paint(diag), px);
+        TrackCurves.Bend t45 = turn.get(0);
+        int holes = 0;
+        for (int k = 0; k <= 20; k++) {
+            double[] q = t45.at(t45.length() * k / 20.0);
+            if (!isTrack(gimg[(int) Math.floor(q[1] * px) * w + (int) Math.floor(q[0] * px)])) holes++;
+        }
+        check("a 45-degree turn (straight into an M_DIAG stretch) is one bend of 45 degrees, its arc track all along its centreline: " + holes + " holes in 21",
+                turn.size() == 1 && Math.abs(Math.abs(t45.sweep()) - Math.PI / 4) < 1e-9 && holes == 0);
+        // ...and none of the old joint's ground inside its bed: every pixel within a pixel of the arc's centreline is track.
+        int ground = 0;
+        for (int k = 0; k <= 20; k++) {
+            double[] q = t45.at(t45.length() * k / 20.0);
+            for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) {
+                if (!isTrack(gimg[((int) Math.floor(q[1] * px) + dy) * w + (int) Math.floor(q[0] * px) + dx])) ground++;
+            }
+        }
+        check("...no ground pixel inside the bed at the joint: the 3 x 3 pixels about each of 21 places on the arc are all track: " + ground + " are ground", ground == 0);
+
+        // The blocks' views: L1 draws the arc in RAIL_DARK at the width it draws track, and not the corner's cell.
+        int bpx = MapFrame.MIDDLE_TILE_PX, bw = T * bpx;
+        int[] bl = blocks(in, p, bpx, TileRaster.BLOCK_MIDDLE);
+        check("L1 blocks: the arc's middle is RAIL_DARK", bl[(int) Math.floor(mid[1] * bpx) * bw + (int) Math.floor(mid[0] * bpx)] == TileRaster.RAIL_DARK);
+        check("...the corner's own cell is not (the corner is cut), and a straight plot of the leg still is",
+                bl[(rowY * bpx) * bw + colX * bpx] != TileRaster.RAIL_DARK && bl[(rowY * bpx) * bw + (x0 + 2) * bpx] == TileRaster.RAIL_DARK);
+        int fpx = MapFrame.FAR_TILE_PX, fw = T * fpx;
+        int[] far1 = blocks(in, p, fpx, TileRaster.BLOCK_FAR);
+        check("L2 blocks: the arc's middle is RAIL_DARK, the corner's cell is not",
+                far1[(int) Math.floor(mid[1] * fpx) * fw + (int) Math.floor(mid[0] * fpx)] == TileRaster.RAIL_DARK
+                        && far1[rowY * fpx * fw + colX * fpx] != TileRaster.RAIL_DARK);
+
+        // The stamp: a tile repaints when its bends change.
+        TilePainter.Input again = lOfTrack(x0, rowY, colX, y1, 0);
+        bendInto(again, xs, ys, false);
+        TilePainter.Input bare = lOfTrack(x0, rowY, colX, y1, 0);
+        check("the stamp is the same for the same bends, and changes with a bend's doubling or with none at all",
+                MapTiles.stamp(again) == MapTiles.stamp(in) && MapTiles.stamp(two) != MapTiles.stamp(in) && MapTiles.stamp(bare) != MapTiles.stamp(in));
+    }
+
+    /** TrackCurves' own rules, the geometry the drawing and the routes share: the radius, the shrinking, the arcs' tangency and the ladder's S. */
+    static void trackCurvesRules() {
+        // A turn of 90 degrees between two long legs takes the full radius; between short ones it is cut to half of each leg, the radius shrunk with it.
+        List<TrackCurves.Bend> longLegs = TrackCurves.bends(new double[] { 0, 20, 20 }, new double[] { 0, 0, 20 }, TrackCurves.RADIUS);
+        List<TrackCurves.Bend> shortLegs = TrackCurves.bends(new double[] { 0, 2, 2 }, new double[] { 0, 0, 3 }, TrackCurves.RADIUS);
+        check("a 90-degree turn between long legs has TrackCurves.RADIUS and a tangent length of as much; between legs of 2 and 3 plots it is cut to half the shorter",
+                longLegs.size() == 1 && Math.abs(longLegs.get(0).r() - TrackCurves.RADIUS) < 1e-9 && Math.abs(longLegs.get(0).t() - TrackCurves.RADIUS) < 1e-9
+                        && shortLegs.size() == 1 && Math.abs(shortLegs.get(0).t() - 1) < 1e-9 && Math.abs(shortLegs.get(0).r() - 1) < 1e-9);
+        // Collinear points and a doubling back are no bends; a leg of no length is passed over.
+        check("collinear points, a leg of no length and a doubling back make no bend",
+                TrackCurves.bends(new double[] { 0, 5, 9 }, new double[] { 0, 0, 0 }, 3).isEmpty()
+                        && TrackCurves.bends(new double[] { 0, 5, 5, 9 }, new double[] { 0, 0, 0, 0 }, 3).isEmpty()
+                        && TrackCurves.bends(new double[] { 0, 5, 0 }, new double[] { 0, 0, 0 }, 3).isEmpty());
+        // Two bends on one leg never meet: the legs' halves.
+        double[] sx = { 0, 4, 4, 0 }, sy = { 0, 0, 3, 3 };
+        List<TrackCurves.Bend> two = TrackCurves.bends(sx, sy, 3);
+        check("two turns on one leg (a jog of 3 plots) take at most half of it each: their tangent lengths on the middle leg sum to no more than its length",
+                two.size() == 2 && two.get(0).t() + two.get(1).t() <= 3 + 1e-9);
+        // round(): the ends kept, every point of an arc at the radius from its centre, the legs' tangent points on the legs.
+        double[][] r = TrackCurves.round(new double[] { 0, 20, 20 }, new double[] { 0, 0, 20 }, TrackCurves.RADIUS);
+        TrackCurves.Bend b = longLegs.get(0);
+        boolean onArc = true;
+        for (int i = 0; i < r[0].length; i++) {
+            if (r[0][i] > b.startX() + 1e-9 && r[1][i] < b.endY() - 1e-9) onArc &= Math.abs(Math.hypot(r[0][i] - b.cx(), r[1][i] - b.cy()) - b.r()) < 1e-9;
+        }
+        check("round() keeps the polyline's ends, and the points between the tangent points lie on the arc, a radius from its centre",
+                r[0][0] == 0 && r[1][0] == 0 && r[0][r[0].length - 1] == 20 && r[1][r[1].length - 1] == 20 && onArc
+                        && r[0].length > 8 && Math.abs(b.startX() - 17) < 1e-9 && Math.abs(b.endY() - 3) < 1e-9);
+        // The ladder: an S from the apex, level at both ends, over `along` and `off`.
+        double[][] lad = TrackCurves.ladder(10, 20, 1, 0, 0, 1, 3, 2.5);
+        int n = lad[0].length;
+        boolean monotone = true;
+        for (int i = 1; i < n; i++) monotone &= lad[0][i] > lad[0][i - 1] && lad[1][i] >= lad[1][i - 1] - 1e-12;
+        double slope0 = (lad[1][1] - lad[1][0]) / (lad[0][1] - lad[0][0]), slopeN = (lad[1][n - 1] - lad[1][n - 2]) / (lad[0][n - 1] - lad[0][n - 2]);
+        check("a ladder runs from the apex to the siding's start (along 3, off 2.5) as an S that is level at both ends: first slope " + String.format("%.2f", slope0)
+                        + ", last " + String.format("%.2f", slopeN) + ", halfway " + String.format("%.2f", TrackCurves.smoothstep(0.5)),
+                lad[0][0] == 10 && lad[1][0] == 20 && Math.abs(lad[0][n - 1] - 13) < 1e-9 && Math.abs(lad[1][n - 1] - 22.5) < 1e-9
+                        && monotone && slope0 < 0.5 && slopeN < 0.5 && Math.abs(TrackCurves.smoothstep(0.5) - 0.5) < 1e-12);
+    }
+
+    /** Whether any plot of the input is marked curved. */
+    static boolean anyCurved(TilePainter.Input in) {
+        for (boolean c : in.curved) if (c) return true;
+        return false;
+    }
+
+    /* ================= 26. (FX5) a yard's ladders are S curves ================= */
+
+    static void yardLadders() {
+        System.out.println("--- 26. (FX5) a yard's ladders are S curves: tangent to the line at the apex, to the siding at its start, two rails from RAILS_FROM ---");
+        int px = 8, boxX = 4, boxY = 4, boxW = 24, boxH = 24, railY = 16, w = T * px;
+        TilePainter.Input in = yardAt(terminal(), boxX, boxY, boxW, boxH);
+        railRow(in, railY, 0);
+        TilePainter.Painted p = paint(in);
+        int[] img = raster(in, p, px);
+        // The fan: eight sidings YARD_TRACK_APART apart about the line; the outermost two lie 5.25 plots off it, over a ladder of YARD_LADDER plots.
+        int line = (int) Math.round((railY + 0.5) * px), start = boxX * px + 1, ladder = (int) Math.round(TileRaster.YARD_LADDER * px);
+        int fanA = start + ladder, outer = (int) Math.round(line + (TileRaster.YARD_TRACKS - 1) / 2.0 * TileRaster.YARD_TRACK_APART * px);
+        // Two pixels along from the apex the straight ladder was 3.5 px off the line (4 rows with the pixel line's rounding); an S that leaves it level is 2 or under.
+        int apexCol = start + 2, south = -1, north = Integer.MAX_VALUE;
+        for (int y = 0; y < w; y++) {
+            if (img[y * w + apexCol] != TileRaster.STEEL) continue;
+            south = Math.max(south, y);
+            north = Math.min(north, y);
+        }
+        check("two pixels along from the apex the outermost ladders are still at the line (an S leaves it tangent): STEEL rows " + north + ".." + south
+                + " about " + line + " are within 2 px of it", south - line <= 2 && line - north <= 2);
+        // ...and the other end, two pixels short of the siding's start: the ladder is at the siding's row.
+        int fanCol = fanA - 2;
+        boolean reaches = false;
+        for (int y = 0; y < w; y++) reaches |= Math.abs(y - outer) <= 1 && img[y * w + fanCol] == TileRaster.STEEL;
+        check("...and meets the outermost siding tangent at the other end: STEEL within 1 px of its row (" + outer + ") two pixels before the fan", reaches);
+        // From RAILS_FROM px a plot a ladder is two rails: halfway along, a pair of STEEL pixels a gauge apart, not a one-pixel line.
+        int half = start + 12, pairs = 0;
+        for (int y = 1; y < w - 2; y++) {
+            if (img[y * w + half] == TileRaster.STEEL && img[(y + 1) * w + half] != TileRaster.STEEL && img[(y + 2) * w + half] == TileRaster.STEEL) pairs++;
+        }
+        check("at 8 px a ladder is two rails: a pair of STEEL pixels a gauge apart in its column halfway along, not a one-pixel line: " + pairs + " pairs", pairs >= 1);
+
+        // The middle siding of an odd fan lies on the line itself: its ladders are straight, two rails all the way from the apex to the siding.
+        TilePainter.Input odd = yardAt(depot(), 4, 4, 12, 12);
+        railRow(odd, 10, 0);
+        int[] oimg = raster(odd, paint(odd), px);
+        int oline = (int) Math.round((10 + 0.5) * px), ostart = 4 * px + 1, ofanA = ostart + (int) Math.round(TileRaster.YARD_LADDER * px), bare = 0;
+        for (int x = ostart + 4; x < ofanA - 4; x++) {
+            if (oimg[(oline - 1) * w + x] != TileRaster.STEEL || oimg[(oline + 1) * w + x] != TileRaster.STEEL) bare++;
+        }
+        check("the middle siding of a depot's three, on the line, has its two rails the whole length of its ladder: " + bare + " columns without", bare == 0);
     }
 }

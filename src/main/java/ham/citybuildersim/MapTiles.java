@@ -117,7 +117,8 @@ public final class MapTiles {
      * its buildings' boxes (0.7.88; the counts and road plots dealt to it, its
      * neighbours' roads and the deal's plan before), its sites with their
      * states and mines, and (0.8.1) the freight station's place, whether the
-     * railway carries goods and on how many of a yard's tracks wagons stand.
+     * railway carries goods and on how many of a yard's tracks wagons stand,
+     * and (FX5) the railway's bends that reach it with the plots they replace.
      * Two tiles with one stamp paint the same pixels.
      */
     public static long stamp(TilePainter.Input in) {
@@ -139,6 +140,10 @@ public final class MapTiles {
         }
         // The interchanges' reserves that reach it (batch FR7) - nothing with none.
         for (int r = 0; r < in.reserves * TilePainter.RESERVE_INTS; r++) h = World.mix(h ^ in.reserve[r] * 0x9E3779B97F4A7C15L ^ r);
+        // The railway's bends that reach it and the plots they replace (FX5, TrackCurves) - nothing with none: a tile repaints when its bends change.
+        for (int k = 0; k < in.bends * TilePainter.Input.BEND_DOUBLES; k++) h = World.mix(h ^ Double.doubleToLongBits(in.bend[k]) * 31 ^ k);
+        long curved = packed(in.curved);
+        if (in.bends > 0 || curved != 0) h = World.mix(h ^ curved ^ in.bends);
         // The sidings its district's plan laid over it (batch FR7 slice 5) - nothing with none.
         long sidings = packed(in.siding);
         if (sidings != 0) h = World.mix(h ^ sidings);
@@ -227,6 +232,8 @@ public final class MapTiles {
         for (int s = 0; s < a.sites; s++) {
             b.addSite(a.siteX0[s], a.siteY0[s], a.siteX1[s], a.siteY1[s], a.siteKind[s], a.siteState[s], a.siteMine[s], a.siteKey[s]);
         }
+        // The railway's bends and the plots they replace (FX5).
+        b.copyBends(a);
         // The works at sea (0.7.97).
         b.clearSea();
         System.arraycopy(a.sea, 0, b.sea, 0, TilePainter.PLOTS);

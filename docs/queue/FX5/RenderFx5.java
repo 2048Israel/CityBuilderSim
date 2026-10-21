@@ -39,6 +39,8 @@ public class RenderFx5 {
         Game g = new Game(files);
         g.run();
         g.loadGame(slot);
+        // -Drender.months=N: play N months after the load, so the map is laid again by this build's runs (a loaded map is the build's that saved it).
+        for (int k = 0; k < Integer.getInteger("render.months", 0); k++) g.toggleNextMonth();
         CityMap m = g.getCityMap();
         List<TrainSchedule.Route> routes = m.trainRoutes();
         TrainSchedule s = TrainSchedule.of(3, g.getSectors().freight(), routes);
@@ -133,7 +135,18 @@ public class RenderFx5 {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setClip(0, 0, W, H);
         Font labelFont = new Font(Font.MONOSPACED, Font.PLAIN, 13);
-        for (CityMap.WorldLine line : m.worldLines()) {
+        java.awt.FontMetrics fm = g.getFontMetrics(labelFont);
+        List<CityMap.WorldLine> wls = m.worldLines();
+        double[][] parts = new double[wls.size()][];
+        for (int k = 0; k < wls.size(); k++) {
+            CityMap.WorldLine line = wls.get(k);
+            double r = Math.toRadians(line.way());
+            double lx = (line.x() - x0) * px, ly = (line.y() - y0) * px;
+            parts[k] = clip(lx, ly, lx + Math.cos(r) * line.reach() * px, ly + Math.sin(r) * line.reach() * px, W, H);
+        }
+        // The labels as MapView places them since FX5: apart, or one naming both (LandMap.worldLabels()).
+        LandMap.WorldLabel[] labels = LandMap.worldLabels(parts, fm.stringWidth(LandMap.WORLD_WORDS), fm.stringWidth(LandMap.WORLD_BOTH_WORDS), fm.getAscent(), W, H);
+        for (CityMap.WorldLine line : wls) {
             boolean highway = line.net() == CityRuns.HIGHWAYS;
             double r = Math.toRadians(line.way());
             double lx = (line.x() - x0) * px, ly = (line.y() - y0) * px;
@@ -142,16 +155,10 @@ public class RenderFx5 {
             float wd = (float) (highway ? Math.max(2, 0.86 * px) : Math.max(1.5, 0.52 * px));
             g.setStroke(highway ? new BasicStroke(wd) : new BasicStroke(wd, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, new float[] { 6, 5 }, 0));
             g.draw(new java.awt.geom.Line2D.Double(lx, ly, ex, ey));
-            // The label as MapView places it: on the part in view, slid back until it lies inside.
-            double[] cut = clip(lx, ly, ex, ey, W, H);
-            if (cut == null) continue;
-            java.awt.FontMetrics fm = g.getFontMetrics(labelFont);
-            double[] at = LandMap.worldLabelAt(cut[0], cut[1], cut[2], cut[3], fm.stringWidth(LandMap.WORLD_WORDS), fm.getAscent(), W, H);
-            if (at == null) continue;
-            g.setFont(labelFont);
-            g.setColor(new Color(255, 255, 255, (int) Math.round(255 * LandMap.WORLD_ALPHA)));
-            g.drawString(LandMap.WORLD_WORDS, (float) at[0], (float) at[1]);
         }
+        g.setFont(labelFont);
+        g.setColor(new Color(255, 255, 255, (int) Math.round(255 * LandMap.WORLD_ALPHA)));
+        for (LandMap.WorldLabel lab : labels) if (lab != null) g.drawString(lab.words(), (float) lab.x(), (float) lab.y());
         List<TrainSchedule.Route> routes = s.routes();
         for (TrainSchedule.Train tr : s.frame(x0, y0, x0 + w, y0 + h, t)) {
             List<TrainSchedule.Car> cars = TrainSchedule.cars(tr, routes.get(tr.call().route()));

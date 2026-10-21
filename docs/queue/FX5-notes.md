@@ -34,6 +34,35 @@ harness sections, run red on main's classes, as FX3 did. The briefs are
 written ahead, in the session's scratchpad (`briefs/brief-*.md`), and copied
 to `target/sonnet/` at the GO.
 
+## WHERE IT STOPPED (2026-10-21 07:45, work in progress)
+
+Built: **A** (af79858f: a station alone lays its main line; the world
+lines' labels apart; "Unmade street"; MainLineCheck 14, GatewayCheck 20; the
+default playtest's trace byte-identical to main's but for its run time) and
+**C** (this commit, uncorrected: `TrackCurves`, the routes rounded, the bends
+drawn, S ladders; RailDrawCheck 25-26, MapCheck 9's `trainsOnTheCurves()`).
+C's Sonnet slice took 4.5 hours, so no review fixes went in. **Red on the
+branch, to fix next** (each a premise the rounding moves, or my bound):
+- MapCheck ~3840 `starts`: `xs[1] == line.x()` and `fadeTo == 64` (the
+  world line's 35-degree join is now rounded: fadeTo 63.05) - assert within
+  `TrackCurves.RADIUS` of both instead;
+- MapCheck ~3842, the on-track loop from point 2: arc samples cut corner
+  plots - assert on a rail plot or within the bed of a drawn bend;
+- GatewayCheck 664-665 (second point the line's, third the arm's end): as
+  the first;
+- MainLineCheck ~783 ("the point before its last two" is the apex): the
+  ladder is sampled now - find the apex as the last point on the fan's line;
+- MapCheck 9 (a), 30 degrees between neighbouring vehicles: 39.9 on a
+  depot's 3-plot ladder (13.1 off the ladders). Split it: off the ladders 30
+  (red on main at the world line's 35-degree kink), on the ladders a looser
+  guard until Y lengthens the yards and their ladders.
+Not built: B, D, Y1, Y2, T (briefs ready in `target/sonnet/`, copies in the
+session's scratchpad). His saves cannot load on this build (0.8.12 moved the
+Earth's fields), so the renders are the Earth playtest's city: `before-depot`
+(m825, no line) and `after-depot` (m826 on A: the line, the world line, 11
+trains). Timings (soft, C's): a tile 0.101 to 0.089 ms at 4 px; trains at 10
+billion 0.003 ms, unchanged.
+
 ## 1. The faults, read in the code, and the fixes
 
 ### 1.1 A railway that is a station alone draws no main line (item 10; certain)

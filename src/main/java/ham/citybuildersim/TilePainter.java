@@ -266,6 +266,80 @@ public final class TilePainter {
             reserves++;
         }
 
+        /** The ints Input.bend holds a bend in (FX5): its net, corner x and y, incoming and outgoing headings (4), radius, tangent length, and 1 on double track. */
+        public static final int BEND_DOUBLES = 10;
+
+        /** The bends of the routes that reach the tile (FX5, TrackCurves): how many, and each as BEND_DOUBLES numbers in the tile's plots (the corner may lie off the tile). The raster draws each as an arc between its tangent points. */
+        public int bends;
+        public double[] bend = new double[4 * BEND_DOUBLES];
+
+        /** The plots of the tile the bends replace (FX5): the plot's middle on a bend's path strictly inside its tangent points, the corner's included, with the bend's two legs its only track. The raster draws such a plot as the arc, not as its cell. */
+        public final boolean[] curved = new boolean[PLOTS];
+
+        /** Clears the bends and the plots they replace; the arrays are reused. */
+        public void clearBends() {
+            bends = 0;
+            Arrays.fill(curved, false);
+        }
+
+        /** Adds a bend: its net (TrackCurves.RAILWAY), its corner, the unit headings in and out of it, its radius and tangent length, all in the tile's plots, and whether it lies on double track. */
+        public void addBend(int net, double x, double y, double ux, double uy, double vx, double vy, double r, double t, boolean doubled) {
+            if ((bends + 1) * BEND_DOUBLES > bend.length) bend = Arrays.copyOf(bend, bend.length * 2);
+            int o = bends * BEND_DOUBLES;
+            bend[o] = net; bend[o + 1] = x; bend[o + 2] = y; bend[o + 3] = ux; bend[o + 4] = uy;
+            bend[o + 5] = vx; bend[o + 6] = vy; bend[o + 7] = r; bend[o + 8] = t; bend[o + 9] = doubled ? 1 : 0;
+            bends++;
+        }
+
+        /** Bend k as TrackCurves works it (its circle worked out). */
+        public TrackCurves.Bend bendAt(int k) {
+            int o = k * BEND_DOUBLES;
+            return TrackCurves.Bend.of((int) bend[o], bend[o + 1], bend[o + 2], bend[o + 3], bend[o + 4], bend[o + 5], bend[o + 6], bend[o + 7], bend[o + 8]);
+        }
+
+        /** Whether bend k lies on double track. */
+        public boolean bendDoubled(int k) { return bend[k * BEND_DOUBLES + 9] != 0; }
+
+        /** Copies the bends and the curved plots of `from`, the arrays reused. */
+        public void copyBends(Input from) {
+            bends = from.bends;
+            if (bend.length < from.bend.length) bend = new double[from.bend.length];
+            System.arraycopy(from.bend, 0, bend, 0, from.bends * BEND_DOUBLES);
+            System.arraycopy(from.curved, 0, curved, 0, PLOTS);
+        }
+
+        /**
+         * Marks the plots the bends replace (curved), from the track the
+         * input holds (fixed, fixedBeyond, and the plan's sidings): TrackCurves
+         * names the plots of each bend (TrackCurves.replaced()), and those
+         * of the tile are kept, so a plot with a third arm - a T, a crossing -
+         * keeps its straights, and the arc is drawn over it. Call it once the
+         * bends and the track are in.
+         */
+        public void markCurved() {
+            Arrays.fill(curved, false);
+            TrackCurves.Rail rail = (x, y) -> {
+                if (x >= 0 && y >= 0 && x < TILE && y < TILE) {
+                    int i = y * TILE + x;
+                    return fixed[i] == RAIL || fixed[i] == RAIL_OVER || siding[i] != 0;
+                }
+                byte f;
+                if (y == -1 && x >= 0 && x < TILE) f = fixedBeyond[x];
+                else if (x == TILE && y >= 0 && y < TILE) f = fixedBeyond[TILE + y];
+                else if (y == TILE && x >= 0 && x < TILE) f = fixedBeyond[2 * TILE + x];
+                else if (x == -1 && y >= 0 && y < TILE) f = fixedBeyond[3 * TILE + y];
+                else return false;
+                return f == RAIL || f == RAIL_OVER;
+            };
+            for (int k = 0; k < bends; k++) {
+                for (int[] at : TrackCurves.replaced(bendAt(k), rail)) {
+                    if (at[0] < 0 || at[1] < 0 || at[0] >= TILE || at[1] >= TILE) continue;
+                    int i = at[1] * TILE + at[0];
+                    if (fixed[i] == RAIL) curved[i] = true;
+                }
+            }
+        }
+
         /** Clears the works at sea; the arrays are reused. */
         public void clearSea() {
             Arrays.fill(sea, (byte) 0);
