@@ -11876,6 +11876,9 @@ public class Game {
     private final TreasuryFund fund = new TreasuryFund();
     public TreasuryFund getFund() { return fund; }
 
+    /** The readings the bond market is attached to, for a harness (CurveCheck, CD1). */
+    BondMarket.Readings bondReadings() { return bondReadings; }
+
     /** What the bond market reads of the city, read live. */
     private final BondMarket.Readings bondReadings = new BondMarket.Readings() {
         @Override public int month()                { return month; }
