@@ -1,6 +1,6 @@
 # CoalMiningCheck.java - 624 lines · 15 methods · 17 constants · harnesses
 
-`ham/citybuildersim/CoalMiningCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CoalMiningCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1,
 > 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.md -

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and river, and the fields of the seven resources - every one of them a pure function of one seed, or since 0.7.115 of a key naming the real Earth round a spot (EarthTerrain).
@@ -63,7 +64,12 @@ import java.util.Map;
  * today's densities times each province's weight and Z (Geology; oil's
  * petroleum, and its offshore sea), each field's type leaning on the
  * class under it (Deposit.type()). Since 0.7.121 (batch E4) the founding
- * screen founds a city on it (EarthSite, Founding.onEarth()).
+ * screen founds a city on it (EarthSite, Founding.onEarth()). Since 0.8.12
+ * (batch EG1; spec-earth2-terrain 8.5) its oil follows the known petroleum,
+ * its iron the shields and recorded districts, its fields are a third as
+ * many and three times wider than a generated world's, and a cluster stands
+ * in its province's own cells (EARTH_FIELD_SCALE, drawPool()): a generated
+ * world draws to the bit what it drew.
  */
 public final class World {
 
@@ -462,8 +468,39 @@ public final class World {
     /** How many of the old world's fields one field stands for: 10 (Jerus, 2026-10-08: "a tenth as many fields, each ten times bigger", the world's totals as they were). */
     public static final int FIELD_SCALE = 10;
 
-    /** The most sites one field holds: FIELD_SCALE of the old world's largest, 5,120. */
-    public static final int MAX_SITES = FIELD_SCALE * LEGACY_MAX_SITES;
+    /* =====================================================================
+       FEWER, BIGGER AND IN THEIR OWN PROVINCE, ON EARTH (0.8.12, batch EG1;
+       docs/studies/spec-earth2-terrain.md 8.5; Jerus, 2026-10-08, "huge and
+       rare", and 2026-10-12, "all rec")
+
+       Only on Earth (earth != null); a generated world's draws are the lines
+       they were, to the bit (WorldCheck, the default world's trace).
+
+       FIELDS A THIRD AS MANY, EACH THREE TIMES WIDER. On Earth a field stands
+       for FIELD_SCALE x EARTH_FIELD_SCALE of the old world's fields (fieldScale()):
+       a pool of N old fields holds N / 30 of them, each of 30 draws of
+       sites() added. The pool's total is shared among them as before, so the
+       world's tonnes do not move. The site table (Deposit) holds the
+       MAX_SITES places of the widest.
+
+       A CLUSTER STANDS IN ITS PROVINCE'S OWN CELLS. A cluster's centre cell is
+       drawn as before, by its share of the pool's old fields; the centre is
+       then drawn among that cell's CELL_SAMPLES x CELL_SAMPLES points by the
+       weights the cells pass summed (EarthTerrain.pointFieldWeights()), then
+       uniformly inside that point's square (CELL / CELL_SAMPLES plots a side),
+       so it falls where the province holds the resource. A centre and a field
+       are drawn again, up to SEA_REDRAWS times, while they lie on ground that
+       holds none of it (EarthTerrain.fieldGround()): where the province's
+       multiplier is nought, or in the sea - but oil's, in a province whose sea
+       holds oil. Oil is drawn again too, so it no longer lands in a fold
+       belt's or a shield's water.
+       ===================================================================== */
+
+    /** On Earth a field stands for FIELD_SCALE x this of the old world's fields: three, so the Earth's fields are a third as many, each three times wider (EG1; Jerus, 2026-10-08, "huge and rare"; est.). */
+    public static final int EARTH_FIELD_SCALE = 3;
+
+    /** The most sites one field holds, on Earth: FIELD_SCALE x EARTH_FIELD_SCALE of the old world's largest, 15,360 (a generated world's, 5,120, are its first places). */
+    public static final int MAX_SITES = FIELD_SCALE * EARTH_FIELD_SCALE * LEGACY_MAX_SITES;
 
     /** The fields a cluster holds on the mean: 10 (★W1-2, est.: Jerus's "very big clusters" - ten fields a cluster, as a field is ten of the old). */
     public static final int CLUSTER_FIELDS = 10;
@@ -1642,6 +1679,26 @@ public final class World {
         }
     };
 
+    /* ----- EG1's counters: how often the Earth rules fire (they feed no draw) ----- */
+
+    private final AtomicLong centresByWeight = new AtomicLong(), centreRedraws = new AtomicLong(), centresOnNone = new AtomicLong();
+    private final AtomicLong fieldRedraws = new AtomicLong(), fieldsOnNone = new AtomicLong();
+
+    /** Clusters whose centre was drawn among its cell's points by their weights, on Earth, since this world began drawing pools (EG1). */
+    long clustersByWeight() { return centresByWeight.get(); }
+
+    /** Times a cluster's centre was drawn again inside its point's square for lying on ground that holds none of the resource (EG1). */
+    long centreRedraws() { return centreRedraws.get(); }
+
+    /** Clusters whose centre still lay on ground that holds none after SEA_REDRAWS draws again (EG1). */
+    long centresOnNone() { return centresOnNone.get(); }
+
+    /** Times a field was drawn again in its cluster's disc for lying on ground that holds none of the resource (EG1). */
+    long fieldRedraws() { return fieldRedraws.get(); }
+
+    /** Fields that still lay on ground that holds none after SEA_REDRAWS draws again (EG1). */
+    long fieldsOnNone() { return fieldsOnNone.get(); }
+
     /** A pool, drawn once and kept: its place in pools (px east, py south, each 0 to poolsOnSide() - 1). */
     private Pool pool(Resource r, int px, int py) {
         long key = (((long) py * CELLS + px) << 8) | r.ordinal();
@@ -1661,6 +1718,9 @@ public final class World {
         return mix(seed ^ mix((((long) py * CELLS + px) << 8) | r.ordinal()) ^ POOL_SALT);
     }
 
+    /** How many of the old world's fields one field stands for in this world: FIELD_SCALE on a generated world, FIELD_SCALE x EARTH_FIELD_SCALE on Earth (EG1). */
+    private int fieldScale() { return earth != null ? FIELD_SCALE * EARTH_FIELD_SCALE : FIELD_SCALE; }
+
     /** `count` over `per`, its fraction a draw (u under it adds one), at least one when `count` is not nought: how many fields N old ones make, and how many clusters those fields lie in. */
     static int atLeastOne(long count, int per, double u) {
         if (count <= 0) return 0;
@@ -1670,14 +1730,18 @@ public final class World {
 
     /**
      * Draws a pool (0.7.99): its cells' old counts and totals, row by row;
-     * its fields, N / FIELD_SCALE of the old count's N; its clusters, one for
+     * its fields, N / fieldScale() of the old count's N; its clusters, one for
      * every CLUSTER_FIELDS fields, each centred in a cell drawn as its share
      * of the old fields (off the sea, but oil's, as the old fields were) with
      * that cell's richness; each field in a cluster drawn as evenly as the
      * cluster's disc allows (drawn again off the sea up to SEA_REDRAWS times,
-     * but oil's), its sites FIELD_SCALE of the old draws added; and the
+     * but oil's), its sites fieldScale() of the old draws added; and the
      * pool's total shared by sites x richness, whole tonnes, the last taking
      * the remainder - so the pool's fields sum to its cells' totals exactly.
+     * On Earth (0.8.12, batch EG1; the banner above FIELD_SCALE's) a field is
+     * FIELD_SCALE x EARTH_FIELD_SCALE of the old, a cluster's centre is drawn
+     * among its cell's points by their weights, and a centre and a field are
+     * drawn again while they lie on ground that holds none of the resource.
      */
     private Pool drawPool(Resource r, int px, int py) {
         int b = poolCells(r);
@@ -1702,12 +1766,14 @@ public final class World {
         if (old == 0) return NO_POOL;
         long h = poolHash(r, px, py);
         h = mix(h);
-        int n = atLeastOne(old, FIELD_SCALE, unit(h));
+        int scale = fieldScale();
+        int n = atLeastOne(old, scale, unit(h));
         h = mix(h);
         int clusters = atLeastOne(n, CLUSTER_FIELDS, unit(h));
         // The clusters: each centred in a cell drawn as its share of the old fields, with that cell's richness.
         long[] ccx = new long[clusters], ccy = new long[clusters];
         double[] rich = new double[clusters];
+        Map<Integer, double[]> pointWeights = earth != null ? new HashMap<>() : null;
         for (int c = 0; c < clusters; c++) {
             h = mix(h);
             long pick = Math.min(old - 1, (long) (unit(h) * old));
@@ -1718,17 +1784,50 @@ public final class World {
             }
             int cell = cellAt[lo];
             long ox = (long) (cell % CELLS) * CELL, oy = (long) (cell / CELLS) * CELL;
-            h = mix(h); ccx[c] = ox + (long) (unit(h) * CELL);
-            h = mix(h); ccy[c] = oy + (long) (unit(h) * CELL);
-            if (r != Resource.OIL) {
-                for (int again = 0; again < SEA_REDRAWS && seaAt(ccx[c] + 0.5, ccy[c] + 0.5); again++) {
-                    h = mix(h); ccx[c] = ox + (long) (unit(h) * CELL);
-                    h = mix(h); ccy[c] = oy + (long) (unit(h) * CELL);
+            if (earth != null) {
+                // On Earth the centre is drawn among the cell's points by their weights, then inside the point's square, and again while it holds none.
+                double[] pw = pointWeights.computeIfAbsent(cell, cl -> earth.pointFieldWeights(cl, r));
+                double sum = 0;
+                for (double v : pw) sum += v;
+                int side = EarthTerrain.CELL_SAMPLES;
+                long sx = ox, sy = oy, sw = CELL;
+                if (sum > 0) {
+                    h = mix(h);
+                    double want = unit(h) * sum, cum = 0;
+                    int at = pw.length - 1;
+                    for (int q = 0; q < pw.length; q++) {
+                        cum += pw[q];
+                        if (want < cum) { at = q; break; }
+                    }
+                    sw = CELL / side;
+                    sx = ox + (at % side) * sw;
+                    sy = oy + (at / side) * sw;
+                    centresByWeight.incrementAndGet();
+                }
+                h = mix(h); ccx[c] = sx + (long) (unit(h) * sw);
+                h = mix(h); ccy[c] = sy + (long) (unit(h) * sw);
+                for (int again = 0; !earth.fieldGround(r, ccx[c] + 0.5, ccy[c] + 0.5); again++) {
+                    if (again >= SEA_REDRAWS) {
+                        centresOnNone.incrementAndGet();
+                        break;
+                    }
+                    centreRedraws.incrementAndGet();
+                    h = mix(h); ccx[c] = sx + (long) (unit(h) * sw);
+                    h = mix(h); ccy[c] = sy + (long) (unit(h) * sw);
+                }
+            } else {
+                h = mix(h); ccx[c] = ox + (long) (unit(h) * CELL);
+                h = mix(h); ccy[c] = oy + (long) (unit(h) * CELL);
+                if (r != Resource.OIL) {
+                    for (int again = 0; again < SEA_REDRAWS && seaAt(ccx[c] + 0.5, ccy[c] + 0.5); again++) {
+                        h = mix(h); ccx[c] = ox + (long) (unit(h) * CELL);
+                        h = mix(h); ccy[c] = oy + (long) (unit(h) * CELL);
+                    }
                 }
             }
             rich[c] = richnessOf(cell, r);
         }
-        // The fields: each anywhere in its cluster's disc, its sites FIELD_SCALE of the old draws.
+        // The fields: each anywhere in its cluster's disc, its sites `scale` of the old draws.
         double radius = clusterKm(r) * 1000 / PLOT_M;
         long[] xs = new long[n], ys = new long[n];
         int[] s = new int[n];
@@ -1744,10 +1843,20 @@ public final class World {
                 double a = 2 * Math.PI * unit(h);
                 xs[i] = Math.max(0, Math.min(SIDE - 1, ccx[c] + Math.round(rr * StrictMath.cos(a))));
                 ys[i] = Math.max(0, Math.min(SIDE - 1, ccy[c] + Math.round(rr * StrictMath.sin(a))));
+                if (earth != null) {
+                    // On Earth a field is drawn again, oil's too, while it lies on ground that holds none of the resource.
+                    if (earth.fieldGround(r, xs[i] + 0.5, ys[i] + 0.5)) break;
+                    if (tries >= SEA_REDRAWS) {
+                        fieldsOnNone.incrementAndGet();
+                        break;
+                    }
+                    fieldRedraws.incrementAndGet();
+                    continue;
+                }
                 if (r == Resource.OIL || tries >= SEA_REDRAWS || !seaAt(xs[i] + 0.5, ys[i] + 0.5)) break;
             }
             int sum = 0;
-            for (int j = 0; j < FIELD_SCALE; j++) {
+            for (int j = 0; j < scale; j++) {
                 h = mix(h);
                 sum += sites(unit(h));
             }
@@ -1795,7 +1904,7 @@ public final class World {
         if (b == 0) return 0;
         long old = poolLegacyCount(r, px, py);
         long h = mix(poolHash(r, px, py));
-        return atLeastOne(old, FIELD_SCALE, unit(h));
+        return atLeastOne(old, fieldScale(), unit(h));
     }
 
     /** ...and how many of the old world's fields its cells held: their old counts added. */

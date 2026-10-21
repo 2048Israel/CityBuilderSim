@@ -174,6 +174,7 @@ These are Jerus's, and they do not move.
         tools/                  the index generators, Where, SaveDump, Stale, ManualToMarkdown
     src/main/resources/buildings.json   the balance file (ids permanent); consumption.json the basket
     tools/earth/                        the pipeline that bakes earth-1.bin (not in the repository)
+    tools/ensemble/                     the 80-run ensemble: driver, runner, scorer; docs/ensemble/ its baselines
 
 `docs/tree.md` has every file's entry and history; `docs/map/README.md`
 every file's size and first sentence. The shortest shapes to copy:
@@ -216,9 +217,16 @@ under the shared lock (`batch-check.sh` takes it).
    maps regenerated. Commit the sources, `buildings.json` and `docs/`
    together; bump `GameVersion.VERSION` when the batch is player-visible.
    Delete the batch's row from `QUEUE.md`, and put what it left undone under
-   Pending.
+   Pending. **The ensemble only when the trace moves** (EN1, Jerus
+   2026-10-20): a batch whose default playtest's trace is byte-identical to
+   main's but for its run-time line skips the 80-run ensemble and its notes
+   say so; one whose trace moved runs `tools/ensemble/ensemble.sh <label>`
+   once, on its final model, against the newest `docs/ensemble/<version>.md`
+   (main is never rerun for a baseline), and commits the run's `baseline.md`
+   as `docs/ensemble/<version>.md` (`tools/ensemble/README.md`).
 5. The orchestrator gates it (the batch did what its brief asked; the
-   playtest's trace) and ships it with `./ship.sh batch/<id>`.
+   playtest's trace; the ensemble's score against the last baseline, when
+   the trace moved) and ships it with `./ship.sh batch/<id>`.
 6. The write-up, in the project, if it changes how the game plays or leaves
    calls for Jerus; otherwise the changelog's paragraph is the record.
 7. **The docs pass, by a fresh agent, at most once a day** (2026-10-12), over
@@ -270,8 +278,9 @@ a Claude session drives it (`docs/deepseek.md`).
 Opus, whatever the job's size. The orchestrating session keeps the gate.
 
 **Before saying a change works:** the suite is green but what was already red
-(say which), the maps are regenerated, the write-up exists, the docs pass has
-run, and the batch's row is out of `QUEUE.md`.
+(say which), the maps are regenerated, the ensemble scored if the trace
+moved, the write-up exists, the docs pass has run, and the batch's row is out
+of `QUEUE.md`.
 
 ## Adding things - where the shape already is
 

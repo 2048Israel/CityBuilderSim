@@ -1,6 +1,6 @@
-# EarthFoundingCheck.java - 559 lines · 14 methods · 5 constants · harnesses
+# EarthFoundingCheck.java - 574 lines · 14 methods · 5 constants · harnesses
 
-`ham/citybuildersim/EarthFoundingCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthFoundingCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > Founding a city on the real Earth (0.7.121, batch E4; the project's spec-earth.md 2, 6 and 8): the founding card's figures against the plots they are counted on, the place search and Random spot, the sea's depth on Earth, and an Earth city founded, played and drilling at sea.
 > 
@@ -34,9 +34,11 @@
 >   2. THE CARD IS THE PLOTS': on each window, the card's site is the world's
 >      founding site, the snap's; its disc of CARD_PLOTS counted again plot
 >      by plot adds up and agrees, and so do the nearest fresh water and sea;
->      its province and multipliers are World's and Geology's; the nearest
->      iron is the nearest of every field in the cells round it; printed
->      against the study's figures (spec-earth 2).
+>      its province and multipliers are World's and Geology's (since 0.8.12,
+>      batch EG1, the multiplier at the site's point, Geology.multiplierAt():
+>      a recorded iron district shows); the nearest iron is the nearest of
+>      every field in the cells round it; printed against the study's
+>      figures (spec-earth 2).
 >   3. A SPOT IN THE SEA IS REFUSED: the card says NO_SITE_WORDS, the
 >      founding's problem() the same, and the game will not found it; on the
 >      full file, Greenland's sheet is refused ICE_WORDS and the Sahara warned
@@ -56,7 +58,11 @@
 >      ground to an oil field in the sea, the field's sites the sea's, its
 >      depth World's and a platform's to stand on; a platform and its wells
 >      are built, the city plays two months, the investors plan at sea, and
->      the oil's page reads its depth - nothing throws.
+>      the oil's page reads its depth - nothing throws. Since 0.8.12 (batch
+>      EG1) the nearest oil field a platform can stand in is 55 km out (it was
+>      10), so the fixture buys toward it until it lies in the city's ground,
+>      bounded by its distance in plots, not by a constant (Jerus, 2026-10-20:
+> ... (3 more lines in the source)
 
 **Uses:** [EarthSite](EarthSite.md) (73), [World](World.md) (50), [EarthData](EarthData.md) (41), [EarthTerrain](EarthTerrain.md) (16), [Resource](Resource.md) (12), [Founding](Founding.md) (8), [Game](Game.md) (8), [EarthCheck](EarthCheck.md) (5), [Deposit](Deposit.md) (4), [EarthProj](EarthProj.md) (4), [OilView](OilView.md) (4), [GameFiles](GameFiles.md) (3), [Oil](Oil.md) (3), [LandManager](LandManager.md) (3), [CityLand](CityLand.md) (2), [BuildingManager](BuildingManager.md) (1), [LandParcel](LandParcel.md) (1), [MiningCheck](MiningCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LongPlaytest](LongPlaytest.md) (1)
 
@@ -64,77 +70,77 @@
 
 | line | section |
 |---:|---|
-| 127 | 1. THE DATA, OR WHY NOT |
-| 178 | 2. THE CARD IS THE PLOTS' |
-| 251 | 3. A SPOT IN THE SEA IS REFUSED (and on the full file: ice, a desert) |
-| 297 | 4. SEARCH AND RANDOM SPOT |
-| 347 | 5. THE SEA'S DEPTH |
-| 447 | 6. AN EARTH CITY, FOUNDED, PLAYED AND AT SEA |
+| 135 | 1. THE DATA, OR WHY NOT |
+| 186 | 2. THE CARD IS THE PLOTS' |
+| 259 | 3. A SPOT IN THE SEA IS REFUSED (and on the full file: ice, a desert) |
+| 305 | 4. SEARCH AND RANDOM SPOT |
+| 355 | 5. THE SEA'S DEPTH |
+| 455 | 6. AN EARTH CITY, FOUNDED, PLAYED AND AT SEA |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 73 | `EarthFoundingCheck.out` | `System.out` | Where the harness prints: the console. |
-| 75 | `EarthFoundingCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | Where the game's own narration goes while a city is founded or played here (quietly()): nowhere. |
-| 91 | `EarthFoundingCheck.SEED` | `Founding.DEFAULT_WORLD_SEED` | The seed every world here is drawn with: the default world's. |
-| 94 | `EarthFoundingCheck.STUDY` | `Map.of("Rotterdam", new double[] { 88, 9.2, Double.NaN, 0.6, 3.0 }, "Perth", ...` | The study's card for each window (spec-earth 2): dry %, river and lake %, sea %, fresh water km, sea km - NaN where it gave none. |
-| 407 | `EarthFoundingCheck.BRUTE_MARGIN_DEG` | `2` | How far past the search's answer the brute force reads, degrees: 2, so a cell the search missed nearer than its answer lies well inside what is read. |
+| 81 | `EarthFoundingCheck.out` | `System.out` | Where the harness prints: the console. |
+| 83 | `EarthFoundingCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | Where the game's own narration goes while a city is founded or played here (quietly()): nowhere. |
+| 99 | `EarthFoundingCheck.SEED` | `Founding.DEFAULT_WORLD_SEED` | The seed every world here is drawn with: the default world's. |
+| 102 | `EarthFoundingCheck.STUDY` | `Map.of("Rotterdam", new double[] { 88, 9.2, Double.NaN, 0.6, 3.0 }, "Perth", ...` | The study's card for each window (spec-earth 2): dry %, river and lake %, sea %, fresh water km, sea km - NaN where it gave none. |
+| 415 | `EarthFoundingCheck.BRUTE_MARGIN_DEG` | `2` | How far past the search's answer the brute force reads, degrees: 2, so a cell the search missed nearer than its answer lies well inside what is read. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 71 | `static int fails` |  |
+| 79 | `static int fails` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 491 | **type** `public class EarthFoundingCheck` | Founding a city on the real Earth (0.7.121, batch E4; the project's spec-earth.md 2, 6 and 8): the founding card's figures against the plots they are counted on, the place search and Random spot, the sea's depth on Ea... |
-| 77 | 4 | `static void check(String label, boolean ok)` |  |
-| 82 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 88 | 1 | **type** `record Spot(String name, double lat, double lon)` | The fixture's windows: name, latitude, longitude. |
-| 99 | 27 | `public static void main(String[] args) throws Exception` |  |
+| 77 | 498 | **type** `public class EarthFoundingCheck` | Founding a city on the real Earth (0.7.121, batch E4; the project's spec-earth.md 2, 6 and 8): the founding card's figures against the plots they are counted on, the place search and Random spot, the sea's depth on Ea... |
+| 85 | 4 | `static void check(String label, boolean ok)` |  |
+| 90 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 96 | 1 | **type** `record Spot(String name, double lat, double lon)` | The fixture's windows: name, latitude, longitude. |
+| 107 | 27 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. THE DATA, OR WHY NOT (lines 127-177)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 130 | 47 | `static EarthData theData(String id) throws Exception` |  |
-
-### 2. THE CARD IS THE PLOTS' (lines 178-250)
+### 1. THE DATA, OR WHY NOT (lines 135-185)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 181 | 49 | `static void theCard(String id, Map<String, Spot> spots)` |  |
-| 231 | 1 | `static String figure(double v)` |  |
-| 233 | 1 | `static String km(double v)` |  |
-| 236 | 14 | `static double[] bruteIron(World w, long x, long y, double cardKm)` | The nearest iron field's centre to a plot by brute force: every field in every cell within the card's distance and two cells more, {plots away}; null for none. |
+| 138 | 47 | `static EarthData theData(String id) throws Exception` |  |
 
-### 3. A SPOT IN THE SEA IS REFUSED (and on the full file: ice, a desert) (lines 251-296)
+### 2. THE CARD IS THE PLOTS' (lines 186-258)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 254 | 42 | `static void refused(String id, Map<String, Spot> spots, EarthData file)` |  |
+| 189 | 49 | `static void theCard(String id, Map<String, Spot> spots)` |  |
+| 239 | 1 | `static String figure(double v)` |  |
+| 241 | 1 | `static String km(double v)` |  |
+| 244 | 14 | `static double[] bruteIron(World w, long x, long y, double cardKm)` | The nearest iron field's centre to a plot by brute force: every field in every cell within the card's distance and two cells more, {plots away}; null for none. |
 
-### 4. SEARCH AND RANDOM SPOT (lines 297-346)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 300 | 46 | `static void search(EarthData data, String id)` |  |
-
-### 5. THE SEA'S DEPTH (lines 347-446)
+### 3. A SPOT IN THE SEA IS REFUSED (and on the full file: ice, a desert) (lines 259-304)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 350 | 55 | `static void depth(String id, Spot r, EarthData file)` |  |
-| 416 | 30 | `static double bruteCoast(EarthData d, double lat, double lon)` | The great-circle distance to the centre of the nearest 15" cell whose sea share is under the coast's level, by brute force: every cell of every 1-degree tile whose centre lies within the search's answer and BRUTE_MARG... |
+| 262 | 42 | `static void refused(String id, Map<String, Spot> spots, EarthData file)` |  |
 
-### 6. AN EARTH CITY, FOUNDED, PLAYED AND AT SEA (lines 447-559)
+### 4. SEARCH AND RANDOM SPOT (lines 305-354)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 450 | 103 | `static void aCity(String id, Spot r)` |  |
-| 554 | 5 | `static void quietly(Runnable r)` |  |
+| 308 | 46 | `static void search(EarthData data, String id)` |  |
+
+### 5. THE SEA'S DEPTH (lines 355-454)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 358 | 55 | `static void depth(String id, Spot r, EarthData file)` |  |
+| 424 | 30 | `static double bruteCoast(EarthData d, double lat, double lon)` | The great-circle distance to the centre of the nearest 15" cell whose sea share is under the coast's level, by brute force: every cell of every 1-degree tile whose centre lies within the search's answer and BRUTE_MARG... |
+
+### 6. AN EARTH CITY, FOUNDED, PLAYED AND AT SEA (lines 455-574)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 458 | 110 | `static void aCity(String id, Spot r)` |  |
+| 569 | 5 | `static void quietly(Runnable r)` |  |
 

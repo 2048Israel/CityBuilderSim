@@ -1,0 +1,94 @@
+1. THE DIAL TODAY, AND IN STEPS, ON HALIFAX'S OWN INFLATION (slot 3, months 15-477)
+   the saved dial equals the rule on last month's year-on-year inflation in 380 of 463 months (the rest are months with the dial in the player's hand)
+   rule                                                               changes   values  big move mean |rule|     >1pt  max gap unsch.
+   today: the dial as saved (monthly, any value)                          277      248    12.32pt       38bp       59    3.00pt      0
+   the rule itself, every month (what autopilot would set)                279      277    12.32pt        0bp        0    0.00pt      0
+   every month, a quarter point at most                                   307       45     0.25pt      251bp      196   17.44pt      0
+   every 2 months, half a point at most                                   157       37     0.50pt      253bp      193   17.44pt      0
+   every 3 months, half a point at most                                   109       29     0.50pt      282bp      217   18.94pt      0
+   every 3 months, three quarters at most                                 109       37     0.75pt      257bp      199   17.44pt      0
+   every 3 months, a point at most                                        107       39     1.00pt      234bp      187   16.00pt      0
+   every 3 months, 3/4 at most, unscheduled past 3 points                 159       64     1.00pt      146bp      196    9.24pt     51
+   every 2 months, 3/4 at most, unscheduled past 3 points (PROPOSED)      173       58     1.00pt      124bp      151    9.19pt     35
+   (open loop: inflation is the city's as it happened, so it does not answer to the stepped dial; 'mean |rule|' is how far the rate sat from what the rule wanted)
+   the copy of slot 3 played 120 months on, in 0.8.11: the dial ran 0.00% to 8.29%, moved a quarter point or more in 44 of 119 months, biggest move 2.18 points, 102 different values
+
+1b. THE SAME CITY PLAYED 240 MONTHS ON IN THE GAME (copies of slot 3, 0.8.11, probe/CbSteps.java.txt; one run each)
+   rule                                                     moves  vals  biggest    dial range   infl.     sd   |-2%| >3pt off  unemp  GDP/month   people uns.
+   today: the autopilot as it is                              230   227    3.26pt  0.00-10.48%   2.48%  1.41   1.09pt      19   8.5%     493977    81746    0
+   every 3 months, 3/4 at most, unscheduled past 3 points      70    26    1.00pt  0.15- 8.40%   2.64%  1.52   1.26pt      29  12.0%     542938    96792    6
+   every 3 months, a point at most, never unscheduled          68    28    1.00pt  0.15- 8.15%   2.58%  1.63   1.32pt      29  11.8%     514514    91103    0
+   every 2 months, 3/4 at most, unscheduled past 3 points      99    30    1.00pt  0.15- 8.40%   2.68%  1.39   1.27pt      18  12.1%     549335    97195    3
+   (the stepped runs set the dial to the range's IORB, ten points under the top, and hand it to nothing else; the game is deterministic, so each line is one path, not a distribution)
+
+2. THE RANGE AND THE OVERNIGHT RATE (PROPOSED)
+   range            RRP    IORB  window         | overnight: flush  half  at the window | today at the same dial: reserves  window
+    0.00- 0.25%   0.00%   0.15%   0.25%         |         0.15%   0.20%   0.25%      |                  0.12%    0.38%
+    2.75- 3.00%   2.75%   2.90%   3.00%         |         2.90%   2.95%   3.00%      |                  2.88%    3.12%
+    3.50- 3.75%   3.50%   3.65%   3.75%         |         3.65%   3.70%   3.75%      |                  3.63%    3.88%
+    5.25- 5.50%   5.25%   5.40%   5.50%         |         5.40%   5.45%   5.50%      |                  5.38%    5.62%
+    8.00- 8.25%   8.00%   8.15%   8.25%         |         8.15%   8.20%   8.25%      |                  8.12%    8.38%
+   (the Fed, 17 Sept 2026: range 3.75-4.00%, reverse repo 3.75%, reserves 3.90%, window 4.00%)
+
+3. THE REMITTANCE PUZZLE AND THE PROPOSED STATEMENT
+   cash, no overdraft, no paper: remittance = last month's window loans x (dial + 0.25%) / 12 within 5% in 25 of 33 months; the most it reached: 14% of revenue
+   treasury overdrawn: remittance = last month's advances x dial / 12 within 5% in 58 of 85 months; the most it reached: 44% of revenue
+   the copy played 120 months on (cash throughout, no overdraft, no paper): remitted D$418 in all, of which the window D$418, on D$8941708 of revenue
+   Bergen (slot 1) played 3 months on: interest on reserves D$23.3M a month on income of nothing; loss carried D$35.25B and growing; reserves D$35.25B, all of it money made to pay that interest
+   Halifax, month 441: the bank at the window
+      today                                                    profit D$         3,667 a month
+         window interest, at the dial + 0.25                                         3,667
+      proposed (CB3)                                           profit D$         3,523 a month
+         window interest, at the top of the range                                    3,586
+         operating costs                                                               -62
+      reserves as a real central bank's (decision 12, not a CB batch) profit D$         3,523 a month
+         window interest, at the top of the range                                    3,586
+         interest on reserves (none: the bank is overdrawn)                              0
+         operating costs                                                               -62
+      remitted in the game: D$3645; revenue that month D$25291
+   Halifax, month 269: the treasury overdrawn
+      today                                                    profit D$           721 a month
+         the treasury's interest on its advances, at the dial                          721
+      proposed (CB3)                                           profit D$           723 a month
+         the treasury's interest on its advances, at the top of the range              728
+         operating costs                                                                -5
+      reserves as a real central bank's (decision 12, not a CB batch) profit D$             0 a month
+         the treasury's interest on its advances, at the top of the range              728
+         interest on the reserves the advance became, at IORB                         -723
+         operating costs                                                                -5
+      remitted in the game: D$701, 41% of revenue, all of it the treasury's own interest coming back
+   Slot 6, month 267: the city's paper held
+      today                                                    profit D$         8,180 a month
+         coupons on its paper                                                        8,180
+         interest on reserves (none: the bank's cash is negative)                        0
+      proposed (CB3)                                           profit D$         7,858 a month
+         coupons on its paper (effective interest; no gain on the day it buys)          8,180
+         interest on reserves (none: the bank's cash is negative)                        0
+         operating costs                                                              -322
+      reserves as a real central bank's (decision 12, not a CB batch) profit D$        -5,519 a month  -> carried, nothing remitted
+         coupons on its paper                                                        8,180
+         interest on the reserves its purchases made, at IORB                      -13,377
+         operating costs                                                              -322
+      paper D$3.87M at face, dial 4.17%, the bank's cash -D$1.75M; remitted D$8,180 a month, 19-20% of revenue
+   Bergen, month 3003: the bank flush with money from outside
+      today                                                    profit D$   -23,283,501 a month  -> carried, nothing remitted
+         interest on reserves, at the dial, on the bank's spare cash           -23,283,501
+      proposed (CB3)                                           profit D$   -22,320,039 a month  -> carried, nothing remitted
+         interest on reserves, at IORB, on the bank's spare cash               -22,320,039
+      reserves as a real central bank's (decision 12, not a CB batch) profit D$   -22,320,039 a month  -> carried, nothing remitted
+         interest on reserves, at IORB, on the bank's spare cash and its unlent deposits (more; not in the history)    -22,320,039
+      no assets earning; loss carried D$35.2B, all of it interest paid; the Fed's deferred asset was $243.5B at the end of 2025
+
+4. CD1's EXPECTED DIAL: THE SMOOTH DRIFT AGAINST DECISIONS IN STEPS (next decision in 1 month, then every 2)
+   the average expected short rate over the term, before credit spread and term premium (identical in both)
+   city                                                      1m      3m      6m     12m     24m     60m    120m
+   calm: 2%, the dial at 3%, smooth                       3.00%   3.00%   3.00%   3.00%   3.00%   3.00%   3.00%
+      in steps                                            3.00%   3.00%   3.00%   3.00%   3.00%   3.00%   3.00%
+      difference                                            0bp     0bp     0bp     0bp     0bp     0bp     0bp
+   hiking: 6%, the dial at 7%, credibility 65%, smooth    7.00%   6.99%   6.93%   6.73%   6.32%   5.69%   5.40%
+      in steps                                            7.00%   7.00%   6.94%   6.76%   6.35%   5.71%   5.41%
+      difference                                            0bp     1bp     1bp     3bp     3bp     2bp     1bp
+   behind: 5%, the dial at 1% by hand, credibility 60%, smooth   1.00%   1.74%   2.55%   3.53%   4.28%   4.65%   4.73%
+      in steps                                            1.00%   1.50%   2.12%   3.17%   4.10%   4.58%   4.69%
+      difference                                            0bp   -24bp   -43bp   -35bp   -18bp    -7bp    -4bp
+

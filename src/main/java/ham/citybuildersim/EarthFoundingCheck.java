@@ -42,9 +42,11 @@ import java.util.Map;
  *   2. THE CARD IS THE PLOTS': on each window, the card's site is the world's
  *      founding site, the snap's; its disc of CARD_PLOTS counted again plot
  *      by plot adds up and agrees, and so do the nearest fresh water and sea;
- *      its province and multipliers are World's and Geology's; the nearest
- *      iron is the nearest of every field in the cells round it; printed
- *      against the study's figures (spec-earth 2).
+ *      its province and multipliers are World's and Geology's (since 0.8.12,
+ *      batch EG1, the multiplier at the site's point, Geology.multiplierAt():
+ *      a recorded iron district shows); the nearest iron is the nearest of
+ *      every field in the cells round it; printed against the study's
+ *      figures (spec-earth 2).
  *   3. A SPOT IN THE SEA IS REFUSED: the card says NO_SITE_WORDS, the
  *      founding's problem() the same, and the game will not found it; on the
  *      full file, Greenland's sheet is refused ICE_WORDS and the Sahara warned
@@ -64,7 +66,13 @@ import java.util.Map;
  *      ground to an oil field in the sea, the field's sites the sea's, its
  *      depth World's and a platform's to stand on; a platform and its wells
  *      are built, the city plays two months, the investors plan at sea, and
- *      the oil's page reads its depth - nothing throws.
+ *      the oil's page reads its depth - nothing throws. Since 0.8.12 (batch
+ *      EG1) the nearest oil field a platform can stand in is 55 km out (it was
+ *      10), so the fixture buys toward it until it lies in the city's ground,
+ *      bounded by its distance in plots, not by a constant (Jerus, 2026-10-20:
+ *      a harness that asserted the old deposits' outcome has its fixture
+ *      remade to cause its condition on the new ones); every assertion of the
+ *      section is as it was.
  */
 public class EarthFoundingCheck {
 
@@ -211,7 +219,7 @@ public class EarthFoundingCheck {
             int row = w.provinceAt(c.siteX(), c.siteY());
             boolean mult = row == c.provinceRow() && w.geology().kindOf(row) == c.kind();
             for (Resource res : Resource.values()) {
-                mult &= res.inFields() ? c.multiplier(res) == w.geology().multiplier(res, row) : Double.isNaN(c.multiplier(res));
+                mult &= res.inFields() ? c.multiplier(res) == w.geology().multiplierAt(res, row, c.siteLat(), c.siteLon()) : Double.isNaN(c.multiplier(res));
             }
             check(name + ": its province and every multiplier are World's and Geology's, forest none", mult);
             double[] iron = bruteIron(w, c.siteX(), c.siteY(), c.ironKm());
@@ -498,9 +506,16 @@ public class EarthFoundingCheck {
         if (sea == null) return;
         LandManager lm = g.getLandManager();
         int[] bought = new int[1];
+        // Since 0.8.12 (batch EG1, Jerus 2026-10-20: a harness that asserted the old deposits' outcome has its fixture remade to cause its
+        // condition on the new ones) the nearest oil field a platform can stand in is 55 km out, not 10 (EG1 draws the Earth's fields a third as
+        // many and three times wider, and oil by the known petroleum), and the 200 purchases the loop was bounded by no longer reach it. It
+        // buys toward the field until the field is in the city's ground, bounded by the field's distance from the site in plots - the
+        // edge moves toward it by far more than a plot a purchase (242 purchases, blocks of 4 plots to 512, carry it 55 km) - so a
+        // field the loop cannot reach is still a FAIL and never a hang.
+        long reach = Math.max(Math.abs(sea.x() - sx), Math.abs(sea.y() - sy));
         quietly(() -> {
             try {
-                while (!g.getCityLand().ownsPlot(sea.x(), sea.y()) && bought[0] < 200) {
+                while (!g.getCityLand().ownsPlot(sea.x(), sea.y()) && bought[0] < reach) {
                     LandParcel p = MiningCheck.nearestOffer(lm.getMarket(), sea.x(), sea.y());
                     if (p == null) break;
                     g.setCashForTest(g.getCash() + p.localPrice(g.getForeignAccounts().getRate()));
@@ -521,8 +536,8 @@ public class EarthFoundingCheck {
         report("the city buys the ground to it: its sites the sea's, the field on the sea's list at World's depth",
                 threw[0] == null && g.getCityLand().ownsPlot(sea.x(), sea.y()) && lm.getSites(Resource.OIL, false) == seaSites
                         && seaSites >= sea.sites() && onList,
-                threw[0] != null ? threw[0] : bought[0] + " purchase(s), " + lm.getSites(Resource.OIL, false) + " sea sites, "
-                        + lm.getSites(Resource.OIL, true) + " dry");
+                threw[0] != null ? threw[0] : bought[0] + " purchase(s) of at most " + reach + " (the field's distance in plots), "
+                        + lm.getSites(Resource.OIL, false) + " sea sites, " + lm.getSites(Resource.OIL, true) + " dry");
         if (threw[0] != null) return;
         BuildingsTemplate jacket = g.getBuildingManager().getTemplateByName("Offshore Platform"),
                 well = g.getBuildingManager().getTemplateByName("Platform Well");

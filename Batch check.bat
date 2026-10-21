@@ -13,6 +13,9 @@ rem      Batch check.bat --maps          the maps regenerated as well
 rem      Batch check.bat --timing        compile and the timing harnesses alone, hard:
 rem                                      the ship gate's (TM1)
 rem
+rem  Not here: the 80-run ensemble, tools/ensemble/ensemble.sh in Git Bash, run
+rem  only for a batch whose playtest trace moves (EN1, 2026-10-20).
+rem
 rem  Timing (TM1, 2026-10-18): batches check side by side. When another
 rem  batch's JVM or Jerus's game is running as the suite starts
 rem  (tools\jvms.ps1), the suite times soft (-Dcbs.timing=soft): a timing
