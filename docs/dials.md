@@ -2,9 +2,9 @@
 
 Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**3,624 constants in 373 files.**
+**3,637 constants in 375 files.**
 
-## model (1864 constants)
+## model (1866 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -601,7 +601,7 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 256 | `DebtManager.LOOSEST_WEIGHT` | `1.25` | The very loose bank's weight on the gap past its band: TAYLOR_WEIGHT's margin over one, halved - still over one (the Taylor principle). |
 | 522 | `DebtManager.MAX_SPREAD_PER_MEASURE` | `0.05` | The most either measure alone can add to the rate. |
 | 557 | `DebtManager.FULL_STRESS_MULTIPLE` | `150` | Debt, as a multiple of a year of the thing, at which a measure maxes out. |
-| 560 | `DebtManager.MIN_RATE` | `0.005` | The cheapest money the market will ever offer, whatever the books say. |
+| 560 | `DebtManager.MIN_RATE` | `0.005` | The cheapest money the market will ever offer, whatever the books say (public since CD1: YieldCurve clamps every forward at it). |
 | 563 | `DebtManager.QUOTE_ITERATIONS` | `6` | How many times to walk the face-value/rate fixed point. |
 | 700 | `DebtManager.WORLD_BASE_RATE` | `.02` | The world's price of money. |
 | 703 | `DebtManager.MAX_COUNTRY_PREMIUM` | `.16` | What the world adds on top of that, at the city's very worst. |
@@ -612,15 +612,15 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 722 | `DebtManager.WINDOW_SHUT_SERVICE_SHARE` | `.45` | ...and above this share of exports going out in service, likewise. |
 | 725 | `DebtManager.DEFAULT_SCAR` | `.10` | What a default abroad adds to the premium the day it happens. |
 | 728 | `DebtManager.SCAR_DECAY` | `.9885` | ...and how much of the scar is left after each month. |
-| 1255 | `DebtManager.LADDER_YEARS` | `12` | How many calendar years the ladder draws before it totals the rest as "later". |
-| 1258 | `DebtManager.LADDER_KINDS` | `{ "NOTE", "SERIAL", "TERM" }` | The ladder's instruments, in its order: what Debt.getType() calls each, short to long. |
-| 1513 | `DebtManager.TERM_PREMIUM_10Y` | `.0050` | The premium on ten-year money, in points of annual rate: Jerus's numbers to settle, roughly half a point at ten years. |
-| 1516 | `DebtManager.TERM_PREMIUM_20Y` | `.0090` | ...on twenty-year money. |
-| 1519 | `DebtManager.TERM_PREMIUM_30Y` | `.0115` | ...on thirty-year money. |
-| 1522 | `DebtManager.TERM_PREMIUM_40Y` | `.0135` | ...on forty-year money. |
-| 1525 | `DebtManager.TERM_PREMIUM_50Y` | `.0150` | ...on fifty-year money, and on anything longer: the long end, a point and a half over the dial. |
-| 1528 | `DebtManager.TERM_PREMIUM` | `{ TERM_PREMIUM_10Y, TERM_PREMIUM_20Y, TERM_PREMIUM_30Y, TERM_PREMIUM_40Y, TERM_PREMIUM_...` | The table, at 10, 20, 30, 40 and 50 years - LongTermBond.MATURITIES. |
-| 2013 | `DebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 1270 | `DebtManager.LADDER_YEARS` | `12` | How many calendar years the ladder draws before it totals the rest as "later". |
+| 1273 | `DebtManager.LADDER_KINDS` | `{ "NOTE", "SERIAL", "TERM" }` | The ladder's instruments, in its order: what Debt.getType() calls each, short to long. |
+| 1529 | `DebtManager.TERM_PREMIUM_10Y` | `.0050` | The premium on ten-year money, in points of annual rate: Jerus's numbers to settle, roughly half a point at ten years. |
+| 1532 | `DebtManager.TERM_PREMIUM_20Y` | `.0090` | ...on twenty-year money. |
+| 1535 | `DebtManager.TERM_PREMIUM_30Y` | `.0115` | ...on thirty-year money. |
+| 1538 | `DebtManager.TERM_PREMIUM_40Y` | `.0135` | ...on forty-year money. |
+| 1541 | `DebtManager.TERM_PREMIUM_50Y` | `.0150` | ...on fifty-year money, and on anything longer: the long end, a point and a half over the dial. |
+| 1544 | `DebtManager.TERM_PREMIUM` | `{ TERM_PREMIUM_10Y, TERM_PREMIUM_20Y, TERM_PREMIUM_30Y, TERM_PREMIUM_40Y, TERM_PREMIUM_...` | The table, at 10, 20, 30, 40 and 50 years - LongTermBond.MATURITIES. |
+| 2251 | `DebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### DebtQuote.java ([map](map/DebtQuote.md))
 
@@ -1100,16 +1100,16 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 4838 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
 | 6304 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
 | 7331 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 8497 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 8670 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 8792 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
-| 10354 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 10366 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 10369 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
-| 10384 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
-| 10393 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003) - the businesses' bonds pay it too since 0.7.12 (BondMarket, W... |
-| 10401 | `Game.MIN_PROCEEDS_PER_FACE` | `1 -.95 - UNDERWRITING_SPREAD` | The least a dollar of face can ever bank, net of the discount and the spread. |
-| 12369 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 8547 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 8753 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 8875 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
+| 10445 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 10457 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 10460 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
+| 10475 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
+| 10484 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003) - the businesses' bonds pay it too since 0.7.12 (BondMarket, W... |
+| 10492 | `Game.MIN_PROCEEDS_PER_FACE` | `1 -.95 - UNDERWRITING_SPREAD` | The least a dollar of face can ever bank, net of the discount and the spread. |
+| 12479 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1146,10 +1146,10 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 6944 | `GameVersion.VERSION` | `"0.8.12"` | Bump on release. |
-| 7649 | `GameVersion.SAVE_FORMAT` | `41` | The save shape. |
-| 7682 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `40` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
-| 7684 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 6967 | `GameVersion.VERSION` | `"0.8.13"` | Bump on release. |
+| 7672 | `GameVersion.SAVE_FORMAT` | `41` | The save shape. |
+| 7705 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `40` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 7707 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ### Gateways.java ([map](map/Gateways.md))
 
@@ -2527,6 +2527,13 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1156 | `YearBook.SLUMP_UNEMPLOYMENT` | `.20` | More of the labour force out of work than this is a slump. |
 | 1333 | `YearBook.CHRONIC_MONTHS` | `120` | An episode still running after this many months is chronic: City History lists it after the others that are running, and leads with it only when it runs alone (0.7.37). |
 
+### YieldCurve.java ([map](map/YieldCurve.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 39 | `YieldCurve.DRIFT_MONTHS` | `6` | The time constant of the dial's expected return to the rule, in months (D15, Jerus's to move): the gap between where the dial stands and where the rule would put it closes by a factor of e in this ... |
+| 42 | `YieldCurve.HORIZON` | `600` | The months the curve is built to: fifty years, the longest term loan; the curve holds its last zero rate past it. |
+
 ### Zoning.java ([map](map/Zoning.md))
 
 | line | constant | value | says |
@@ -2953,28 +2960,28 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1797 | `FinancesScreen.HOLDERS_INFO` | `"Domestic paper is bought at home, so its coupon is income at home and none of " + "it ...` | WHO HOLDS IT's (i): the spec's T19 and T29. |
 | 1845 | `FinancesScreen.DOLLAR_INFO` | `"Owed in dollars, which do not move; worth in the city's money whatever the " + "exchan...` | THE DOLLAR DEBT's (i): the spec's T20, both ways. |
 | 1867 | `FinancesScreen.BEHIND_INFO` | `"Reserves are the city's dollars.Import cover is how many months of imports " + "they w...` | WHAT IS BEHIND IT's (i): the spec's T21 and T22, as the model reads cover (ForeignAccounts.COMFORTABLE_COVER). |
-| 1985 | `FinancesScreen.CURVE_MONTHS` | `{ 3, 6, 12, 24, 60, 120, 240, 360, 480, 600 }` | The curve's maturities, in months. |
-| 1987 | `FinancesScreen.CURVE_NAMES` | `{ "3m", "6m", "1y", "2y", "5y", "10y", "20y", "30y", "40y", "50y" }` | ...and how they are written under it. |
-| 1990 | `FinancesScreen.CURVE_INFO` | `"The note is the floor - the dial, or what the bank's money costs it, whichever " + "is...` | THE CURVE's (i): the spec's T24, and the world's curve. |
-| 2025 | `FinancesScreen.CurveChart.W` | `720, H = 190, LEFT = 44, RIGHT = 16, TOP = 26, FOOT = 22` | Its size and its margins, in pixels: a card's picture, at a fixed size. |
-| 2157 | `FinancesScreen.NOTE_INFO` | `"No coupon at all - the lender's return was the discount, taken out of the proceeds " +...` | A note's (i): the spec's T28. |
-| 2161 | `FinancesScreen.PREMIUM_INFO` | `"Buying a piece back pays its holders what it is worth today.Under its face, " + "the c...` | A price against face, in words (the spec's T33, D16). |
-| 2321 | `FinancesScreen.TERMS_INFO` | `"Each column is the rate this paper would cost at that term today - for the " + "amount...` | The terms' (i): the spec's T55. |
-| 2328 | `FinancesScreen.LOTS_INFO` | `"Issues round to a lot, and the market will not arrange anything under the " + "smalles...` | The ask's (i): the spec's T56. |
-| 2332 | `FinancesScreen.NO_ASK` | `"Ask for something and the quote appears here, with the ladder it would build.Nothing "...` | The quote's empty state: the spec's T57. |
-| 2336 | `FinancesScreen.PROCEEDS_INFO` | `"Paper is sold in lots and the face is grossed up for the discount, so the " + "proceed...` | Why the proceeds are not the ask: the spec's T58. |
-| 2341 | `FinancesScreen.BUYERS_INFO` | `"The households first, when it pays them more than the bank does: up to %s of " + "an i...` | Who buys it: the spec's T61, its first half. |
-| 2348 | `FinancesScreen.DOLLARS_INFO` | `"Spending it leaves a dollar debt with nothing behind it, and the next " + "devaluation...` | Where the dollars go: the spec's T62. |
-| 2453 | `FinancesScreen.ASK_TYPED_INFO` | `"Type an amount in dollars: digits, with or without commas, a decimal " + "point if you...` | HOW MUCH's (i): what the box takes - the case rules - and what the buttons do. |
-| 2461 | `FinancesScreen.ASK_WORDS` | `java.util.regex.Pattern.compile("(?:[A-Za-z]{0,3}\\$)?\\s*((?:\\d{1,3}(?:,\\d{3})+\|\\d+...` | A typed amount: an optional mark, digits (grouped by commas or not), an optional fraction, an optional unit. |
-| 2793 | `FinancesScreen.DEFAULT_INFO` | `"Walking away from every dollar the city owes abroad.The gain is immediate and " + "eno...` | The default page's (i). |
-| 2934 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's - plus " ...` | M2's (i): the spec's T69. |
-| 3024 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no more " + "...` | No bond outstanding: the spec's T70. |
-| 3029 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has not " + "t...` | The prices' (i): the spec's T71. |
-| 3034 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when it " + "me...` | The order books' (i): the spec's T74. |
-| 3042 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
-| 3044 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY_DARK }` | ...and their colours on it. |
-| 3201 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since " + "whate...` | A bond's book's (i): the spec's T75, T77 and T78. |
+| 1991 | `FinancesScreen.CURVE_MONTHS` | `{ 3, 6, 12, 24, 60, 120, 240, 360, 480, 600 }` | The curve's maturities, in months. |
+| 1993 | `FinancesScreen.CURVE_NAMES` | `{ "3m", "6m", "1y", "2y", "5y", "10y", "20y", "30y", "40y", "50y" }` | ...and how they are written under it. |
+| 1996 | `FinancesScreen.CURVE_INFO` | `"The short end is the floor - the dial, or what the bank's money costs it, " + "whichev...` | THE CURVE's (i): the spec's T24, and the world's curve - CD1 priced it on the dial the market expects. |
+| 2038 | `FinancesScreen.CurveChart.W` | `720, H = 190, LEFT = 44, RIGHT = 16, TOP = 26, FOOT = 22` | Its size and its margins, in pixels: a card's picture, at a fixed size. |
+| 2170 | `FinancesScreen.NOTE_INFO` | `"No coupon at all - the lender's return was the discount, taken out of the proceeds " +...` | A note's (i): the spec's T28. |
+| 2174 | `FinancesScreen.PREMIUM_INFO` | `"Buying a piece back pays its holders what it is worth today.Under its face, " + "the c...` | A price against face, in words (the spec's T33, D16). |
+| 2333 | `FinancesScreen.TERMS_INFO` | `"Each column is the rate this paper would cost at that term today - for the " + "amount...` | The terms' (i): the spec's T55. |
+| 2340 | `FinancesScreen.LOTS_INFO` | `"Issues round to a lot, and the market will not arrange anything under the " + "smalles...` | The ask's (i): the spec's T56. |
+| 2344 | `FinancesScreen.NO_ASK` | `"Ask for something and the quote appears here, with the ladder it would build.Nothing "...` | The quote's empty state: the spec's T57. |
+| 2348 | `FinancesScreen.PROCEEDS_INFO` | `"Paper is sold in lots and the face is grossed up for the discount, so the " + "proceed...` | Why the proceeds are not the ask: the spec's T58. |
+| 2353 | `FinancesScreen.BUYERS_INFO` | `"The households first, when it pays them more than the bank does: up to %s of " + "an i...` | Who buys it: the spec's T61, its first half. |
+| 2360 | `FinancesScreen.DOLLARS_INFO` | `"Spending it leaves a dollar debt with nothing behind it, and the next " + "devaluation...` | Where the dollars go: the spec's T62. |
+| 2465 | `FinancesScreen.ASK_TYPED_INFO` | `"Type an amount in dollars: digits, with or without commas, a decimal " + "point if you...` | HOW MUCH's (i): what the box takes - the case rules - and what the buttons do. |
+| 2473 | `FinancesScreen.ASK_WORDS` | `java.util.regex.Pattern.compile("(?:[A-Za-z]{0,3}\\$)?\\s*((?:\\d{1,3}(?:,\\d{3})+\|\\d+...` | A typed amount: an optional mark, digits (grouped by commas or not), an optional fraction, an optional unit. |
+| 2805 | `FinancesScreen.DEFAULT_INFO` | `"Walking away from every dollar the city owes abroad.The gain is immediate and " + "eno...` | The default page's (i). |
+| 2946 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's - plus " ...` | M2's (i): the spec's T69. |
+| 3036 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no more " + "...` | No bond outstanding: the spec's T70. |
+| 3041 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has not " + "t...` | The prices' (i): the spec's T71. |
+| 3046 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when it " + "me...` | The order books' (i): the spec's T74. |
+| 3054 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
+| 3056 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY_DARK }` | ...and their colours on it. |
+| 3213 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since " + "whate...` | A bond's book's (i): the spec's T75, T77 and T78. |
 
 ### FoundingScreen.java ([map](map/FoundingScreen.md))
 
@@ -3834,7 +3841,7 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 724 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 980 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (698 constants)
+## harnesses (709 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -3923,11 +3930,11 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 207 | `CentralBankCheck.KINDS` | `{ "interest on reserves", "lent at the window", "repaid at the window", "the window's i...` |  |
 | 210 | `CentralBankCheck.seen` | `new boolean [ KINDS.length ]` |  |
-| 1169 | `CentralBankCheck.ROLL_SLOT` | `10` | The scratch slot this section's saves go to - the assistant's slot, in a scratch folder. |
-| 1573 | `CentralBankCheck.STRICT_BRANCH` | `600` | The month the probe city leaves Standard at: a mature city, the inflation ensemble's month for its policies. |
-| 1576 | `CentralBankCheck.STRICT_HORIZON` | `240` | How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. |
-| 1586 | `CentralBankCheck.STRICT_WORLD_FALL` | `.20` | How far the world's prices fall, in the first month of the fourth game's twenty years (worldPricesFall): the cause of the very loose twin's months under its target, which the probe city's own path ... |
-| 1589 | `CentralBankCheck.STRICT_FALL_WINDOW` | `24` | The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. |
+| 1179 | `CentralBankCheck.ROLL_SLOT` | `10` | The scratch slot this section's saves go to - the assistant's slot, in a scratch folder. |
+| 1583 | `CentralBankCheck.STRICT_BRANCH` | `600` | The month the probe city leaves Standard at: a mature city, the inflation ensemble's month for its policies. |
+| 1586 | `CentralBankCheck.STRICT_HORIZON` | `240` | How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. |
+| 1596 | `CentralBankCheck.STRICT_WORLD_FALL` | `.20` | How far the world's prices fall, in the first month of the fourth game's twenty years (worldPricesFall): the cause of the very loose twin's months under its target, which the probe city's own path ... |
+| 1599 | `CentralBankCheck.STRICT_FALL_WINDOW` | `24` | The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. |
 
 ### ChildcareCheck.java ([map](map/ChildcareCheck.md))
 
@@ -4040,6 +4047,22 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 103 | `CurrencyCheck.OLD_MAX_RATE` | `100` | The currency's guard above until 0.7.3, a hundred local dollars to one of theirs - for the assertions that a rate goes past it. |
 | 106 | `CurrencyCheck.OLD_MIN_RATE` | `.01` | ...and below, a hundredth. |
 | 550 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
+
+### CurveCheck.java ([map](map/CurveCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 148 | `CurveCheck.TARGET` | `.02` | The target the study's cities aim at: the game's default, the figure the rule's neutral rate is struck on. |
+| 151 | `CurveCheck.GDP_YEAR` | `5.4e9, TAX_YEAR = 1.1e9, DEBT = 3.4e9` | The study's economy and debt (spec section 3.3, debt-model.py): a year's output and a year's tax, in local money, and the term paper outstanding. |
+| 154 | `CurveCheck.MONTHS` | `{ 3, 12, 24, 60, 120, 240, 360, 600 }` | The maturities section 1 asserts at, in months. |
+| 157 | `CurveCheck.ROW` | `{ 1, 12, 24, 60, 120, 240, 360, 600 }` | Section 3.3's columns: 1 month, 1, 2, 5, 10, 20, 30 and 50 years. |
+| 162 | `CurveCheck.CALM` | `new Study("calm",.03,.02,.80, 0, new double[] { 3.12, 3.12, 3.18, 3.35, 3.62, 4.02, 4.2...` |  |
+| 164 | `CurveCheck.HIKING` | `new Study("hiking",.07,.06,.65, 0, new double[] { 7.12, 6.85, 6.50, 6.04, 6.02, 6.27, 6...` |  |
+| 166 | `CurveCheck.BEHIND` | `new Study("behind",.01,.05,.60, 0, new double[] { 1.12, 3.65, 4.46, 5.00, 5.35, 5.79, 6...` |  |
+| 168 | `CurveCheck.QE` | `new Study("QE",.03,.02,.80,.25, new double[] { 3.12, 3.12, 3.15, 3.24, 3.37, 3.57, 3.70...` |  |
+| 170 | `CurveCheck.CITIES` | `{ CALM, HIKING, BEHIND, QE }` |  |
+| 478 | `CurveCheck.ASK` | `20_000` | What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). |
+| 547 | `CurveCheck.USD_ASK` | `1_000` | What the dollar legs borrow, in dollars. |
 
 ### DeathCareFirstCheck.java ([map](map/DeathCareFirstCheck.md))
 
@@ -4442,13 +4465,13 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 3667 | `LongPlaytest.GROUND_AHEAD_CASH_SHARE` | `.10` | The share of the treasury's cash one look spends keeping ground ahead (0.7.58, J1d): a tenth, the share the war chest tops the reserves up from and the every-13th-stop purchase is held under. |
 | 4242 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
 | 4274 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
-| 4812 | `LongPlaytest.ADDED_BACK_TERMS` | `{ "food", "materials", "luxuries", "held goods" }` | The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. |
-| 4814 | `LongPlaytest.addedBackMonths` | `new int [ ADDED_BACK_TERMS.length ], addedBackFirst = { - 1, - 1, - 1, - 1 }, addedBack...` | Months each term added a write-off back, the first, and the largest with its month. |
-| 4816 | `LongPlaytest.addedBackWorst` | `new double [ ADDED_BACK_TERMS.length ]` |  |
-| 4818 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
-| 4871 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
-| 4879 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
-| 6685 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
+| 4833 | `LongPlaytest.ADDED_BACK_TERMS` | `{ "food", "materials", "luxuries", "held goods" }` | The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. |
+| 4835 | `LongPlaytest.addedBackMonths` | `new int [ ADDED_BACK_TERMS.length ], addedBackFirst = { - 1, - 1, - 1, - 1 }, addedBack...` | Months each term added a write-off back, the first, and the largest with its month. |
+| 4837 | `LongPlaytest.addedBackWorst` | `new double [ ADDED_BACK_TERMS.length ]` |  |
+| 4839 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
+| 4892 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
+| 4900 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
+| 6709 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
 
 ### MainLineCheck.java ([map](map/MainLineCheck.md))
 

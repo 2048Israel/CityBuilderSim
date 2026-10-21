@@ -16,6 +16,8 @@
 
 **Uses:** [Game](Game.md) (14), [ShortTermTBill](ShortTermTBill.md) (12), [LongTermBond](LongTermBond.md) (10), [Debt](Debt.md) (6), [GameFiles](GameFiles.md) (6), [MediumTermBond](MediumTermBond.md) (3), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [BuildingManager](BuildingManager.md) (1)
 
+**Used by (1):** [CurveCheck](CurveCheck.md)
+
 ## Sections
 
 | line | section |

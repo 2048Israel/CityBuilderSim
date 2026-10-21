@@ -1,183 +1,180 @@
 # CD1 - notes
 
-*DRAFT, the plan, 2026-10-20, written before the build while EG1 ships. The
-spec is `docs/studies/spec-city-debt.md` §3 (the curve; Jerus on §3.2,
-2026-10-18: "if it is realistic then yes"), §8's CD1 row, §8.1 (the
-current-code handoff) and §9 (D9, D15). Read at main 7089ce5. Nothing is
-built yet; the sections below become the record when it is.*
+*0.8.13, 2026-10-20 and 21, overnight (Jerus's chain: CL2, then CD1 after EG1,
+then CL3, CD2, FX5). The spec is `docs/studies/spec-city-debt.md` §3 (the
+curve; Jerus on §3.2, 2026-10-18: "if it is realistic then yes"), §8's CD1
+row, §8.1 (the current-code handoff) and §9 (D9, D15, D31). Planned while EG1
+shipped, built from main 0f6e1b6 (0.8.12).*
 
-## What CD1 does
+**STATE** - see the last section.
+
+## 1. What it does
 
 The curve stops sitting on the dial in parallel. The market expects the dial
-to drift to what the rule would set at the inflation it expects (§3.1, D9),
-every month's forward is that expected dial plus the city's credit spread,
-the zero rate compounds them and carries the term premium less QE (§3.2),
-and every payment of every piece is discounted at its own month's factor.
-A piece's yield is solved from that price, so it is a result, not the rate
-it was handed (§1.2).
+to drift to what the rule would set at the inflation it expects (§3.1, D9);
+each month's forward is that expected dial plus the city's credit spreads;
+the zero rate compounds the forwards and carries the term premium less QE's
+compression (§3.2); and every payment of every piece is discounted at its own
+month's factor, so a piece's yield is solved from its price and is a result,
+not the rate it was handed (§1.2).
 
-The short end does not move: `getRate()` is the forward at month 0, which is
-today's quote to the cent (the floor plus the two spreads, clamped as
-today). The policy dial and the central bank's facilities keep it (§8.1).
+    pi(t) = pi_inf + (pi_now - pi_inf) e^(-t / Expectations.ADAPT_MONTHS)    pi_inf = Expectations' expected
+    R(t)  = advisedPolicyRate(pi(t))                                        the city's rule, inside the dial
+    p(t)  = R(t) + (floorRate() - R(0)) e^(-t / YieldCurve.DRIFT_MONTHS)    the dial the market expects
+    f(t)  = p(t) + the two spreads, clamped as the short rate is             the forward; f(0) is today's quote
+    z(m)  = the compounded forwards + termPremium(m) - compression(m)       the zero rate, curveRate(m)
+    d(m)  = (1 + z(m)/12)^(-m)                                               a payment m months away
 
-**No screen of its own** (D31): Borrow as an auction is CD2's, Close it now
-CD4's. CD1's screen piece is §8's "the rate taken apart in its new parts", on
-Your rate's curve card, and The book's yield, now solved from the price.
+- **`YieldCurve`** (new, pure): the path, the forwards, the zeros and the
+  factors to 600 months; `DRIFT_MONTHS` = 6 (D15) is its dial. A flat path
+  prices the old parallel curve to the bit.
+- **`DebtManager`**: `curveRate(m)` is the zero rate; `marketValue()` each
+  remaining payment at its month's factor (dollar paper on the world's
+  curve, `worldCurveAt()`, whose dial does not move); `yieldOf()` and
+  `priceOfPar()` solved from that price; the rate taken apart
+  (`expectedDialOver`, `creditSpread`, `expectedDialIn`), which add to
+  `curveRate(m)` with the premium and the compression. The curve is cached
+  on its inputs. The short end, `getRate()`, does not move.
+- **The month's strike**: `Game.strikeTheCurve()`, straight after the
+  autopilot sets the dial (month-order step 46), hands the debt market the
+  year's inflation and Expectations' expected inflation; the pair is held for
+  the month and saved (`marketToSave()`, slots 5 and 6). A manager never
+  struck (a fixture's bare one) prices the flat path, today's curve.
+- **The issue on the curve** (`quoteCurve()`, the quote's fixed point on the
+  whole curve): the serial's one coupon that prices its schedule at par on the
+  curve; the term loan's face solved on the curve's factors, its coupon off
+  the zero rate at its term, its quote's rate the yield solved from its gross
+  price; the dollar serial and term loan the same on the world's curve; the
+  note at its term's zero rate by the bank-discount convention. The rollover,
+  automatic building and the build screen take the same quotes.
+- **The screen** (D31 gives CD1 none of its own; §8 gives it "the rate taken
+  apart in its new parts"): Your rate's curve card takes the thirty-year point
+  apart as the dial expected, the credit spread, the term premium and the
+  central bank's compression, and says where the market expects the dial in a
+  year and in five; The book's "of par" and "yields" are solved from the price.
+- **No save-format bump**: the struck pair rides in an array the save already
+  carries; an older save loads unstruck (the flat curve) until its next
+  month's top - incomplete, not wrong (§8.1 agrees).
 
-## The arithmetic (the spec's, with the game's names)
+## 2. The checks
 
-Month t ahead, t = 0 this month, to `YieldCurve.HORIZON` = 600 (fifty years,
-`LongTermBond.MATURITIES`' longest):
+**CurveCheck** (new, 12 sections): 219 assertions, all green, 5.5 s. The
+study's four cities match §3.3 to the hundredth (calm 3.12 / 3.12 / 3.18 /
+3.35 / 3.62 / 4.02 / 4.27 / 4.62); the path closes by e in `DRIFT_MONTHS`
+and the inflation expected by e in `ADAPT_MONTHS`; the autopilot's gap is
+nothing at Standard and Strict; every payment at its month's factor; the
+issue on the curve (the serial exactly at par, the term loan at its gross to
+the half-cent its proceeds round to); round trips net the city minus the
+fees, home and abroad; BondMarket's benchmark; the strike through a month and
+a save to the bit; the parts add up. Its own count over 120 months of the
+founding: the dial held at 3% left the rule by over a quarter point in 104
+months; with the rule on the dial the gap was nothing and the curve inverted
+in 104. Mutation test: flat pricing gives 7 FAILs, a 12-month drift 19.
 
-    π∞    = Expectations.getExpectedInflation()           (cred x target + (1 - cred) x smoothed, floored)
-    π(t)  = π∞ + (π now - π∞) x e^(-t / Expectations.ADAPT_MONTHS)
-    R(t)  = DebtManager.advisedPolicyRate(π(t))            (the city's rule, inside the dial's bounds)
-    p(t)  = R(t) + (floorRate() - R(0)) x e^(-t / DRIFT_MONTHS)
-    f(t)  = max(MIN_RATE, min(p(t) + spreads, p(t) + ceilingRate() - floorRate()))
-    z(m)  = ((prod over t < m of (1 + f(t)/12))^(1/m) - 1) x 12 + termPremium(m) - compression(m)
-    d(m)  = (1 + z(m)/12)^(-m)
+The suite (`Batch check.bat --maps`, beside CL2's batch, timing soft): 125
+harnesses run in 745 s, **125 passed**; the maps regenerated; Stale 0 firm
+findings. Main's one red, ScaleCheck's "...and it builds" (SC1), passes here:
+the moved trajectory builds more homes by its end, which is not SC1's fix -
+SC1 stays queued. The timing harnesses, hard and alone: TIMING_LINE
 
-- `DRIFT_MONTHS` = 6 (D15), a new dial on the curve's class.
-- `curveRate(m)` becomes z(m). On target with the dial at the rule the path is
-  flat, z(m) is exactly today's `priceAt(debt, m)`, and every reader that
-  takes a number off the curve (BondMarket's benchmark, PortDivision, the
-  Policy tab's thirty-year line) reads what it reads today.
-- `marketValue(piece)` becomes the sum of `remainingCashFlows()` times d(m):
-  the city's curve for its own paper, the world's for a dollar piece (★5).
-  This moves even a calm city: on a rising curve the early coupons are
-  discounted at lower rates than the flat rate at maturity did.
+Existing harnesses restated, each premise kept (the design D9 replaced only
+how they measured):
+- **CentralBankCheck** `shape20`: the term premium less the compression was
+  read as the 20-year over the 6-month note, which was the same figure while
+  the curve was parallel; it is now the 20-year less the dial expected over
+  20 years and the credit spread (the curve's own parts). Its "short end"
+  line reads `curveRate(0)`.
+- **CentralBankCheck** §11 and **HoldersCheck**: the price the central bank
+  pays "at the market value the operation will see at the top of the month"
+  is read after `strikeTheCurve()`, because the top now strikes the month's
+  expectations before the operation.
+- **ForeignDebtCheck**: the dollar 20-year "valued on the world's curve" is
+  the hand sum of its payments, each at its month's rate; "issued at the rate
+  it is valued at" compares the quote's yield with the booked piece's solved
+  yield.
+- **CreditCheck** §11's "the whole curve in parallel" stays green and
+  unchanged: its bare manager is never struck (★7 not needed).
 
-## The slices (each a Sonnet brief; Opus reviews and commits)
+## 3. What moved in the trace, and why
 
-1. **The curve, pure.** A new class `YieldCurve` (model, no Game): built from
-   the floor, the rule as a function, π now, π∞, the spreads, the ceiling's
-   gap, the compression by month; holds p, f, z and d to 600 months; `pv()`,
-   `zero(m)`, `factor(m)`, `parYield(m)`, and the parts of a zero rate
-   (`expectedDial(m)`, the compounded path less the spread). `DRIFT_MONTHS`
-   and `HORIZON` live here.
-2. **DebtManager on it.** `strikeExpectations(πnow, π∞)`, called at the
-   month's top straight after the autopilot (month-order step 46) and held
-   for the month (★3); unstruck (a fixture's bare DebtManager), the path is
-   flat at the floor, which is today's curve. The curve cached on its inputs
-   (floor, the struck pair, target, strictness, spreads, the central bank's
-   share), rebuilt only when one moves. `curveRate`, `curveRateAtShare`,
-   `foreignCurveRate` as zeros; `marketValue` flow by flow; `yieldOf(piece)`
-   and `priceOfPar(piece)` solved from that price; `valuationRate()` and
-   `householdBookYield()` read the solved yield. The rate taken apart:
-   `expectedDialOver(m)`, `creditSpread()`, `termPremium(m)`,
-   `compression(m)`, which add to `curveRate(m)`.
-3. **The issue on the curve** (Game's quotes, home and abroad, so the
-   rollover, automatic building and the build screen follow): the quote's
-   fixed point iterates the curve with the new face in its credit; the note
-   discounted at z(m) by the bank-discount convention it has (★8); the
-   serial's one coupon solved so its schedule prices at par on the curve
-   (closed form: PV is linear in the coupon, ★4); the term loan's coupon off
-   z(n) by `longBondCouponYield()` and its face solved on the curve's factors
-   (★6). Every quote's rate is the yield solved from its price, and that is
-   what `markIssued()` records.
-4. **The save.** The struck pair joins `marketToSave()` (slots 5 and 6;
-   `restoreMarket()` reads them when the array has them). Everything else
-   the path reads is saved already (Expectations, the dial, target,
-   strictness, the central bank's book). No `SAVE_FORMAT` bump: an older save
-   loads unstruck, priced flat on the floor until its next month's top, which
-   is incomplete, not wrong (§8.1 agrees).
-5. **The screen.** Your rate › THE CURVE: the thirty-year point taken apart in
-   the new parts (the dial the market expects over thirty years, the credit
-   spread, the term premium, less the central bank) on the chart's note and
-   the card's line; `CURVE_INFO` rewritten. The book's piece card: "Y of par
-   · yields Z" from `priceOfPar()` and `yieldOf()`.
-6. **The count in a real run.** The trace gets one line: the months the
-   curve was inverted (10-year under 1-year), steep (10-year over 1-year by
-   more than two points), and the widest gap the market expected to close.
+Both playtests move from before their first checkpoint (month 266 on the
+default run, 262 on Rotterdam), as soon as the city's inflation is off where
+it is expected to settle: the corporate benchmark (`BondMarket` reads
+`curveRate`), the households' paper ratio and the central bank's purchases
+(piece prices payment by payment), the serial's coupon and the term loan's
+face. Every month passed the audit and every reload matched, on both.
 
-## The harness: `CurveCheck` (sections numbered as §8's list)
+| | main 0.8.12 | CD1 |
+|---|---|---|
+| default: final population | 677,355 | 619,699 |
+| default: the dial, median (max) | 3.71% (12.34%) | 2.81% (13.77%) |
+| default: the city's paper at most | $1.05T (m3537) | $1.22T (m3537) |
+| default: the rollover | 5 issues, $11.9B raised | 5 issues, $5.6B raised |
+| Rotterdam: final population | 711,024 | 834,678 |
+| Rotterdam: the city's paper at most | $88.9B (m2387) | $2.23T (m3533), none at home |
 
-1. **Calm prices as today**: on target, autopilot, the dial at neutral; p(t)
-   is the floor at every month; z(m) at every curve maturity equals the
-   floor + spreads + `termPremium(m)` - `compression(m)`, rebuilt from
-   DebtManager's constants; the short end is `getRate()`.
-2. **Hiking inverts**: 6% inflation, the dial held at 7%, credibility 65%
-   (§3.3's row): p(DRIFT_MONTHS) closes the gap to e^-1 of itself, π(ADAPT_MONTHS)
-   to e^-1 of its own; p(600) is R(π∞) within 1e-6; the 10-year under the 1-year.
-3. **Behind is steep**: 5%, the dial at 1% by hand, credibility 60%: the
-   1-year over the 1-month by more than two points; the 10-year near §3.3's
-   5.35% (the fixture's spreads stated).
-4. **QE bends the long end**: half of `FULL_COMPRESSION_SHARE` held: z(m) is
-   the calm z(m) less half the premium x `QE_COMPRESSION`; nothing at a year.
-5. **The autopilot's gap is nothing** (★1, ★2): a Game city on autopilot,
-   one month run; the struck pair is the index's inflation and Expectations'
-   expected; at Standard and at Strict, R(0) is the dial.
-6. **Every payment on its month**: a term loan, a serial, a note and a dollar
-   term loan: `marketValue` is the hand sum of flows x d(m); the solved yield
-   reprices the flows flat to the price within a cent; two bonds of one
-   maturity with different coupons yield differently on a sloped curve.
-7. **The issue at the curve**: each quote's schedule on the curve's factors at
-   booking is worth what it raised plus the fees (the serial at par, the term
-   loan at its gross; the note at or above its proceeds).
-8. **No money pump**: issue and buy straight back each kind, home and abroad,
-   in all four cities: the city ends no richer (neutral or worse), the
-   MoneyAudit closes. RestructureCheck §5 is kept as it is.
-9. **BondMarket reads it**: `Readings.curve(m)` is `curveRate(m)` in the
-   hiking city, inverted under the corporate yields.
-10. **The strike holds**: a city with a manual dial, expectations, QE
-    holdings and pieces, saved and loaded: the curve at every maturity and
-    every piece's price identical; `Expectations.takeMonth()` at the month's
-    end moves nothing until the next top.
-11. **The parts add up**: expected dial + spread + premium - compression is
-    `curveRate(m)` at 10 and 30 years in all four cities.
+The new count (LongPlaytest's line): the default run's curve was inverted
+(10-year under 1-year) in 1,658 months and steep (over it by two points) in
+441, the widest move the market expected the dial to make 12.14 points;
+Rotterdam 1,360, 384 and 17.72. The inversion is the common case on the
+autopilot: inflation running over where credibility says it settles makes
+the rule expected to fall, by more than the half-point term premium at ten
+years. A curve that never changed shape would be a curve nobody tested.
 
-## The numbers to meet (§3.3, the model's)
+**The ensemble** (label cd1, against `docs/ensemble/0.8.12.md`): 80 of 80 runs, 11 minutes, **22/26**
+(one vacuous) against 0.8.12's 25/27; stored as `docs/ensemble/0.8.13.md`.
+S1 and R3 stay red, both nearer their lines (S1's longest spell 12 months
+against 21; R3 4 seeds over a point against 5). **H1 is red by the design**:
+a dial held at 0% by hand no longer buys cheap long money, because the market
+expects it back at the rule, so the first decade's inflation over the
+autopilot twin is 0.27 points against 2.37 (the second 3.02 against 3.63) -
+§3.3's "behind" city in the ensemble's words, and Jerus's call (★9). H2 goes
+vacuous with it (no first-decade burst to stop). **A2** is red on one seed's
+12-month spell over 10% against "under 12" (median 7 months against 8):
+read as the chaos of a moved trace at the threshold, not a mechanism.
 
-| city | 1m | 1y | 2y | 5y | 10y | 20y | 30y | 50y |
-|---|---|---|---|---|---|---|---|---|
-| calm | 3.12 | 3.12 | 3.18 | 3.35 | 3.62 | 4.02 | 4.27 | 4.62 |
-| hiking | 7.12 | 6.85 | 6.50 | 6.04 | 6.02 | 6.27 | 6.47 | 6.78 |
-| behind | 1.12 | 3.65 | 4.46 | 5.00 | 5.35 | 5.79 | 6.05 | 6.41 |
-| calm, QE a quarter | 3.12 | 3.12 | 3.15 | 3.24 | 3.37 | 3.57 | 3.70 | 3.87 |
+## 4. Who wrote what, and what review changed
 
-The check asserts the shapes against the constants, and these to the
-hundredth only where its fixture is the model's city.
+| slice | drafted by | review changed |
+|---|---|---|
+| A, the curve in the model | Sonnet 5.5 | the strike as one Game method (`strikeTheCurve()`) the harnesses call too; the three harnesses restated (§2) |
+| B, the issue on the curve | Sonnet 5.5 | ForeignDebtCheck's issue line restated; the struck pair's getters |
+| C, the screen and the count | Sonnet 5.5 | nothing |
+| D, CurveCheck | Sonnet 5.5 | its reflection on two private fields replaced with package-private read-outs (`Game.bondReadings()`, `BondMarket.readings()`) |
 
-## What the existing checks will say (to confirm at the baseline)
+## 5. ★ Calls (Claude's, for Jerus)
 
-- **CreditCheck §11**, "a hike of two points moves every row by two: the
-  whole curve in parallel": the premise D9 replaces, if its city is struck.
-  If it goes red it is rewritten to the decided mechanism (the short end by
-  two, the long end by less, by `DRIFT_MONTHS`), and said so (★7).
-- **ForeignDebtCheck** L679, "a dollar twenty-year is valued on the world's
-  curve": true still, flow by flow; its arithmetic follows if it restates
-  the flat price.
-- **RestructureCheck**, **HoldersCheck**, **CentralBankCheck** §13-14,
-  **MoneyCheck**: expected green; `Debt.getMarketValue(rate)` stays the flat
-  arithmetic its sections test.
-
-## The trace and the ensemble
-
-Every trace that borrows moves (§8): the pieces' prices (the households'
-paper ratio, the central bank's purchases), the serial's coupon (lower on a
-rising curve, §1.1's 7-24 bp), the term loan's face, and every long rate in
-a month off the rule. LongPlaytest (default and `--earth rotterdam`) is
-re-baselined against main's; the ensemble runs once, against the newest
-`docs/ensemble/` baseline on main (EN1's runner, `tools/ensemble/`).
-
-## ★ Calls (Claude's, for Jerus)
-
-1. ★1 The market expects the city's own rule, at its strictness
+1. ★1 The market expects the city's own rule at its strictness
    (`advisedPolicyRate`), not Standard's: then the autopilot's gap is nothing
    at every strictness, as §3.1 says it is. At Standard it is the spec's.
 2. ★2 "Inflation now" is the year's, the figure the rule reads
-   (`PriceIndex.inflation()`), not Expectations' smoothed: same reason.
-3. ★3 The path is struck at the month's top after the autopilot and held
-   for the month (and saved): a player borrowing between the presses is
-   priced on the path the month was.
-4. ★4 The serial's coupon is solved at par on the curve now, not in CD2:
-   at the old final-maturity coupon an inverted curve prices a new serial
-   under par, which is the wrong direction for a round trip.
-5. ★5 Dollar paper is priced flow by flow on the world's curve too; the
-   world's dial does not move, so its path is flat (D26 keeps its pricing).
-6. ★6 The term loan's coupon formula reads the zero rate at its term (today's
-   figure in a calm city); its face is solved on the curve; its quote shows
-   the yield solved from its price.
-7. ★7 CreditCheck's parallel-curve assertion, if red, rewritten to D9.
-8. ★8 The note keeps the bank-discount convention at its term's zero rate:
-   buying it straight back costs a little more than it raised, never less.
+   (`PriceIndex.inflation()`), not Expectations' smoothed one.
+3. ★3 The pair is struck at the month's top after the autopilot and held for
+   the month (and saved): a player borrowing between the presses is priced on
+   the path the month was.
+4. ★4 The serial's coupon is solved at par on the curve now, not in CD2: at the
+   old final-maturity coupon an inverted curve sells a new serial under par.
+5. ★5 Dollar paper is priced and sold payment by payment on the world's curve;
+   the world's dial does not move, so its path is flat (D26 keeps its pricing).
+6. ★6 The term loan's coupon reads the zero rate at its term (today's figure in
+   a calm city); its quote shows the yield solved from its price.
+7. ★8 The note keeps the bank-discount convention at its term's zero rate:
+   bought straight back it costs a little more than it raised, never less.
+8. ★9 **The ensemble's H1** (the ensemble line above): a dial held off the rule
+   for years is still expected back within about six months, so holding it at
+   0% stimulates less than it did. Keep D9 as it is (recommended: it is the
+   decision, and the realistic reading of a market that does not believe a
+   hand on the dial), or let the expected drift slow the longer a gap has stood
+   (a market that learns the hand stays) - a new dial, a batch of its own.
+
+## 6. What Jerus checks by eye (CD1-C)
+
+Finances › Your rate in a city off its rule (a dial held by hand two points
+from the advice): the curve inverted or steep on the chart; the thirty-year
+point's four parts; "the market expects the dial at ... in a year and ... in
+five". The book: a piece's "of par" and "yields", which now differ from the
+curve's rate at its months.
+
+## 7. State
+
+STATE_LINE
