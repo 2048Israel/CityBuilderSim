@@ -336,8 +336,8 @@ The staircase matters only far from the rule, where the step limit slows the exp
 
 **CD2's bills** price on the expected overnight to their maturity, which is the staircase's first months. **CD5's floating-rate notes** reset each month on that month's overnight plus the spread their auction cleared at, as notes on SOFR or CORRA do, instead of "the policy rate" (D1, D25). **CD3's effective interest** is what CB3 uses to carry the central bank's paper at amortized cost.
 
-**Where the batches go** (they are proposals; `QUEUE.md` is unchanged). Today's queue puts EG1, EN1, CL2, CL3, FX5 and CL4 first, then CD1 to CD6.
-- **CB1 and CB2 between CL4 and CD1.** CD1 then prices on decisions in steps and on the overnight from its first line, instead of building the smooth drift and having it replaced. CB1 and CB2 touch `DebtManager`'s dial and `Bank`'s funding prices, which CD1 reads and does not change.
+**Where the batches go** (they are proposals; `QUEUE.md` is unchanged). On main this evening (EN1 shipped, CL5 queued) the queue puts EG1, CL2, CL3, FX5, CL4 and CL5 first, then CD1 to CD6.
+- **CB1 and CB2 between CL5 and CD1.** CD1 then prices on decisions in steps and on the overnight from its first line, instead of building the smooth drift and having it replaced. CB1 and CB2 touch `DebtManager`'s dial and `Bank`'s funding prices, which CD1 reads and does not change.
 - **CB3 between CD3 and CD4.** It needs CD3's effective interest, and it is independent of CD4's buybacks except that a buyback's gain is struck against amortized cost.
 
 ---
@@ -387,7 +387,7 @@ Each with a recommendation; none is taken.
 11. **Operating costs.** (a) A tenth of a percent of its assets a year, about the Fed's. (b) None, as today. **Recommended: (a)**: small, and it makes a central bank with nothing to do cost nothing.
 12. **Reserves as a real central bank's** (§4.5): the reserve rate on what the central bank made, the bank's unlent deposits counted as its reserves, money from abroad brought in through the central bank. (a) The bank's books' own study, later. (b) A CB4 batch after CB3. **Recommended: (a)**: it flips slot 6's remittance into a loss and moves every figure of the bank, which needs its own measurement.
 13. **Bergen's loss, which can never be earned back.** (a) Carried and shown as the deferred asset, with "never, at this rate". (b) Written off against the treasury, as a government recapitalises its central bank. (c) No reserve rate on spare cash the central bank did not make (the bank's floor goes in flush cities). **Recommended: (a)** until decision 12 is studied.
-14. **Where the batches go.** (a) CB1 and CB2 between CL4 and CD1, CB3 between CD3 and CD4. (b) All three after CD6. **Recommended: (a)**: CD1 builds on the staircase instead of a path that is then replaced.
+14. **Where the batches go.** (a) CB1 and CB2 between CL5 and CD1, CB3 between CD3 and CD4. (b) All three after CD6. **Recommended: (a)**: CD1 builds on the staircase instead of a path that is then replaced.
 15. **The window as the bank's routine lender.** (a) Keep it, as a refinancing central bank, and show it: its interest on the statement, the bank's window loans on the Bank tab. (b) Make the bank fund past its deposits elsewhere (by selling its paper to savers). **Recommended: (a)**: the remittance it makes is real income for a central bank that lends to its banks; what was wrong was not seeing it.
 
 ---
