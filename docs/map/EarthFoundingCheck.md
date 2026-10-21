@@ -64,7 +64,7 @@
 >      bounded by its distance in plots, not by a constant (Jerus, 2026-10-20:
 > ... (3 more lines in the source)
 
-**Uses:** [EarthSite](EarthSite.md) (73), [World](World.md) (50), [EarthData](EarthData.md) (41), [EarthTerrain](EarthTerrain.md) (16), [Resource](Resource.md) (12), [Founding](Founding.md) (8), [Game](Game.md) (8), [EarthCheck](EarthCheck.md) (5), [Deposit](Deposit.md) (4), [EarthProj](EarthProj.md) (4), [OilView](OilView.md) (4), [GameFiles](GameFiles.md) (3), [Oil](Oil.md) (3), [LandManager](LandManager.md) (3), [CityLand](CityLand.md) (2), [BuildingManager](BuildingManager.md) (1), [LandParcel](LandParcel.md) (1), [MiningCheck](MiningCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LongPlaytest](LongPlaytest.md) (1)
+**Uses:** [EarthSite](EarthSite.md) (73), [World](World.md) (50), [EarthData](EarthData.md) (41), [EarthTerrain](EarthTerrain.md) (16), [Resource](Resource.md) (12), [Founding](Founding.md) (8), [Game](Game.md) (8), [EarthCheck](EarthCheck.md) (5), [Deposit](Deposit.md) (4), [EarthProj](EarthProj.md) (4), [OilView](OilView.md) (4), [GameFiles](GameFiles.md) (3), [Oil](Oil.md) (3), [LandManager](LandManager.md) (3), [CityLand](CityLand.md) (2), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1), [LandParcel](LandParcel.md) (1), [MiningCheck](MiningCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LongPlaytest](LongPlaytest.md) (1)
 
 ## Sections
 

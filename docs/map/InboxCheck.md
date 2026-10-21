@@ -33,7 +33,7 @@
 > healthcare has nowhere to bury anybody and no doctors, which is the notice a
 > new city raises on its own), and the rest is checked structurally.
 
-**Uses:** [Notice](Notice.md) (18), [Inbox](Inbox.md) (9), [Game](Game.md) (8), [GameFiles](GameFiles.md) (2)
+**Uses:** [Notice](Notice.md) (18), [Inbox](Inbox.md) (9), [Game](Game.md) (8), [GameFiles](GameFiles.md) (2), [TempDirs](TempDirs.md) (1)
 
 ## Sections
 

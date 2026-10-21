@@ -29,7 +29,7 @@
 > every reader has to read a folded year as a year - a fold that summed a
 > level, or a chart that drew a year's flow as one month's, looks fine too.
 
-**Uses:** [HistorySave](HistorySave.md) (31), [YearBook](YearBook.md) (24), [Game](Game.md) (13), [Equity](Equity.md) (6), [MoneyAudit](MoneyAudit.md) (5), [GameFiles](GameFiles.md) (4), [Bank](Bank.md) (4), [EducationCheck](EducationCheck.md) (4), [Exchange](Exchange.md) (4), [Household](Household.md) (2), [OrderBook](OrderBook.md) (2), [ChartModel](ChartModel.md) (2), [Currency](Currency.md) (2), [SectorBooks](SectorBooks.md) (1), [Sector](Sector.md) (1), [NationalAccounts](NationalAccounts.md) (1)
+**Uses:** [HistorySave](HistorySave.md) (31), [YearBook](YearBook.md) (24), [Game](Game.md) (13), [Equity](Equity.md) (6), [MoneyAudit](MoneyAudit.md) (5), [GameFiles](GameFiles.md) (4), [Bank](Bank.md) (4), [EducationCheck](EducationCheck.md) (4), [Exchange](Exchange.md) (4), [Household](Household.md) (2), [OrderBook](OrderBook.md) (2), [ChartModel](ChartModel.md) (2), [Currency](Currency.md) (2), [TempDirs](TempDirs.md) (1), [SectorBooks](SectorBooks.md) (1), [Sector](Sector.md) (1), [NationalAccounts](NationalAccounts.md) (1)
 
 ## Sections
 

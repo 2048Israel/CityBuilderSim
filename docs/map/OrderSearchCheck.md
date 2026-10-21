@@ -41,7 +41,7 @@
 >   4. Mortgage.decide() against its count on a grid of tills, incomes,
 >      rates and costs, the yard running out part-way included.
 
-**Uses:** [LongPlaytest](LongPlaytest.md) (32), [Game](Game.md) (30), [Mortgage](Mortgage.md) (20), [GameFiles](GameFiles.md) (6), [BusinessInvestment](BusinessInvestment.md) (6), [ScaleCheck](ScaleCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [SpreadPlanner](SpreadPlanner.md) (1)
+**Uses:** [LongPlaytest](LongPlaytest.md) (32), [Game](Game.md) (30), [Mortgage](Mortgage.md) (20), [GameFiles](GameFiles.md) (6), [BusinessInvestment](BusinessInvestment.md) (6), [ScaleCheck](ScaleCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [TempDirs](TempDirs.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
 
 **Used by (1):** [ScaleCheck](ScaleCheck.md)
 

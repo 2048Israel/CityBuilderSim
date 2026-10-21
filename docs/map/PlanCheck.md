@@ -64,7 +64,7 @@
 >  11. the order of arrival (batch CL3; DistrictPlan's THE ORDER OF ARRIVAL):
 > ... (36 more lines in the source)
 
-**Uses:** [DistrictPlan](DistrictPlan.md) (510), [BuildingVisual](BuildingVisual.md) (65), [CityMap](CityMap.md) (41), [World](World.md) (30), [MapCheck](MapCheck.md) (27), [BuildingType](BuildingType.md) (17), [LongPlaytest](LongPlaytest.md) (16), [Founding](Founding.md) (10), [TilePainter](TilePainter.md) (8), [GameFiles](GameFiles.md) (5), [Timing](Timing.md) (4), [Game](Game.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [Mining](Mining.md) (3), [MiningCheck](MiningCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Resource](Resource.md) (1)
+**Uses:** [DistrictPlan](DistrictPlan.md) (510), [BuildingVisual](BuildingVisual.md) (65), [CityMap](CityMap.md) (41), [World](World.md) (30), [MapCheck](MapCheck.md) (27), [BuildingType](BuildingType.md) (17), [LongPlaytest](LongPlaytest.md) (16), [Founding](Founding.md) (10), [TilePainter](TilePainter.md) (8), [GameFiles](GameFiles.md) (5), [Timing](Timing.md) (4), [Game](Game.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [Mining](Mining.md) (3), [TempDirs](TempDirs.md) (2), [MiningCheck](MiningCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Resource](Resource.md) (1)
 
 **Used by (2):** [EarthTerrainCheck](EarthTerrainCheck.md), [JunctionCheck](JunctionCheck.md)
 

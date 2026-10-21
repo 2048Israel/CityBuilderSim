@@ -1,4 +1,4 @@
-# AutoBuildCheck.java - 1,469 lines · 32 methods · 5 constants · harnesses
+# AutoBuildCheck.java - 1,468 lines · 32 methods · 5 constants · harnesses
 
 `ham/citybuildersim/AutoBuildCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -64,105 +64,105 @@
 >      and its central bank's advances counted - and a young city's year
 > ... (22 more lines in the source)
 
-**Uses:** [AutoBuilder](AutoBuilder.md) (279), [Game](Game.md) (78), [BuildAdvice](BuildAdvice.md) (53), [LongPlaytest](LongPlaytest.md) (25), [DecisionLog](DecisionLog.md) (24), [ChildcareCheck](ChildcareCheck.md) (20), [CityNeeds](CityNeeds.md) (18), [BuildingsTemplate](BuildingsTemplate.md) (18), [LandManager](LandManager.md) (10), [LandParcel](LandParcel.md) (9), [GameFiles](GameFiles.md) (8), [DebtQuote](DebtQuote.md) (6), [Notice](Notice.md) (5), [LandMarket](LandMarket.md) (4), [NationalAccounts](NationalAccounts.md) (3), [EducationType](EducationType.md) (2), [CityLand](CityLand.md) (2), [Resource](Resource.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [TreasuryFund](TreasuryFund.md) (1), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [ConstructionControl](ConstructionControl.md) (1), [Sector](Sector.md) (1), [CareType](CareType.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [AutoBuilder](AutoBuilder.md) (279), [Game](Game.md) (78), [BuildAdvice](BuildAdvice.md) (53), [LongPlaytest](LongPlaytest.md) (25), [DecisionLog](DecisionLog.md) (24), [ChildcareCheck](ChildcareCheck.md) (20), [CityNeeds](CityNeeds.md) (18), [BuildingsTemplate](BuildingsTemplate.md) (18), [LandManager](LandManager.md) (10), [LandParcel](LandParcel.md) (9), [GameFiles](GameFiles.md) (8), [DebtQuote](DebtQuote.md) (6), [Notice](Notice.md) (5), [LandMarket](LandMarket.md) (4), [NationalAccounts](NationalAccounts.md) (3), [EducationType](EducationType.md) (2), [CityLand](CityLand.md) (2), [Resource](Resource.md) (2), [TempDirs](TempDirs.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [TreasuryFund](TreasuryFund.md) (1), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [ConstructionControl](ConstructionControl.md) (1), [Sector](Sector.md) (1), [CareType](CareType.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 141 | · 1 |
-| 215 | · 2 |
-| 265 | · 3 |
-| 655 | · 4 |
-| 793 | · 5 |
+| 140 | · 1 |
+| 214 | · 2 |
+| 264 | · 3 |
+| 654 | · 4 |
+| 792 | · 5 |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 278 | `AutoBuildCheck.heldBy` | `new LinkedHashMap<>()` | The passes that held a kept service short of its target with nothing on site, by the cut that held it. |
-| 280 | `AutoBuildCheck.builtBy` | `new LinkedHashMap<>()` | The buildings it ordered over the run, by measure. |
-| 952 | `AutoBuildCheck.ROOM` | `50_000` | A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). |
-| 1054 | `AutoBuildCheck.OVER_SQ_FT` | `1_000_000` | The over-full fixture's deficit, in square feet: a million, a sixth of Jerus's 5.66M at month 416 (runs/fixN5-notes.md) - any deficit makes the point. |
-| 1095 | `AutoBuildCheck.ORE_TONNES` | `1` | A tonne of iron under each offer of the ore fixture: any ore makes an offer not bare ground (LandMarket.bareGround()). |
+| 277 | `AutoBuildCheck.heldBy` | `new LinkedHashMap<>()` | The passes that held a kept service short of its target with nothing on site, by the cut that held it. |
+| 279 | `AutoBuildCheck.builtBy` | `new LinkedHashMap<>()` | The buildings it ordered over the run, by measure. |
+| 951 | `AutoBuildCheck.ROOM` | `50_000` | A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). |
+| 1053 | `AutoBuildCheck.OVER_SQ_FT` | `1_000_000` | The over-full fixture's deficit, in square feet: a million, a sixth of Jerus's 5.66M at month 416 (runs/fixN5-notes.md) - any deficit makes the point. |
+| 1094 | `AutoBuildCheck.ORE_TONNES` | `1` | A tonne of iron under each offer of the ore fixture: any ore makes an offer not bare ground (LandMarket.bareGround()). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 99 | `static int fails` |  |
-| 100 | `static PrintStream out` |  |
-| 101 | `static PrintStream quiet` |  |
-| 268 | `static int passes, kept, atTarget, works, held, nothing, unexplained, borrowingPasses, ordered` | What a pass found, measure by measure, over the run. |
-| 269 | `static int outsideRemit, underReserve, overLimit, falseHolds` |  |
-| 271 | `static int paybackOrders, unpaid` | Orders of a building the payback holds (0.7.104), and those not paid back at their count as the pass weighed it. |
-| 273 | `static int walked` | Orders placed past the advice's first card, which the money or the ground could not pay for one of, or (0.7.104) which would not pay back - the budget would not run until then (0.7.101). |
-| 275 | `static int landPasses, landMismatch, landOrders, landNotItsOwn, oreBought, landBorrowPasses` | The ground it bought (0.7.77): passes the city's ground grew in, those not by exactly what its orders bought, orders that bought ground, those not its own short orders, offers holding ore, passes that borrowed with gr... |
-| 276 | `static double landSqFt, landCost` |  |
-| 282 | `static double worstShare` | The city's debt over a year of GDP after the passes that borrowed, the worst (0.7.81); passes that began over the limit, and the orders and bonds placed in them. |
-| 283 | `static int overPasses, overOrders, overBonds` |  |
-| 284 | `static double mostOver` |  |
+| 98 | `static int fails` |  |
+| 99 | `static PrintStream out` |  |
+| 100 | `static PrintStream quiet` |  |
+| 267 | `static int passes, kept, atTarget, works, held, nothing, unexplained, borrowingPasses, ordered` | What a pass found, measure by measure, over the run. |
+| 268 | `static int outsideRemit, underReserve, overLimit, falseHolds` |  |
+| 270 | `static int paybackOrders, unpaid` | Orders of a building the payback holds (0.7.104), and those not paid back at their count as the pass weighed it. |
+| 272 | `static int walked` | Orders placed past the advice's first card, which the money or the ground could not pay for one of, or (0.7.104) which would not pay back - the budget would not run until then (0.7.101). |
+| 274 | `static int landPasses, landMismatch, landOrders, landNotItsOwn, oreBought, landBorrowPasses` | The ground it bought (0.7.77): passes the city's ground grew in, those not by exactly what its orders bought, orders that bought ground, those not its own short orders, offers holding ore, passes that borrowed with gr... |
+| 275 | `static double landSqFt, landCost` |  |
+| 281 | `static double worstShare` | The city's debt over a year of GDP after the passes that borrowed, the worst (0.7.81); passes that began over the limit, and the orders and bonds placed in them. |
+| 282 | `static int overPasses, overOrders, overBonds` |  |
+| 283 | `static double mostOver` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 97 | 1373 | **type** `public class AutoBuildCheck` | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of the things that hold it back. |
-| 103 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 109 | 5 | `static void cents(String label, double actual, double expected)` | Two money figures, in thousands, equal to the cent. |
-| 115 | 5 | `static void quietly(Runnable r)` |  |
-| 121 | 19 | `public static void main(String[] args) throws Exception` |  |
+| 96 | 1373 | **type** `public class AutoBuildCheck` | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of the things that hold it back. |
+| 102 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 108 | 5 | `static void cents(String label, double actual, double expected)` | Two money figures, in thousands, equal to the cent. |
+| 114 | 5 | `static void quietly(Runnable r)` |  |
+| 120 | 19 | `public static void main(String[] args) throws Exception` |  |
 
-### 1 (lines 141-214)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 143 | 71 | `static void theSettings(Path root)` |  |
-
-### 2 (lines 215-264)
+### 1 (lines 140-213)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 217 | 47 | `static void theAdvicesCard(Path root)` |  |
+| 142 | 71 | `static void theSettings(Path root)` |  |
 
-### 3 (lines 265-654)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 286 | 132 | `static Game decades(Path root)` |  |
-| 420 | 18 | `static java.util.function.Consumer<Boolean> passReader(Game g)` | The decades' reading of a pass, before and after it, by look() (0.7.102: a function, so the copy that borrows is read the same). |
-| 440 | 9 | `static int[] standingAndOnSite(Game g)` | Every template's standing and on-site count, by id. |
-| 451 | 84 | `static void look(Game g, AutoBuilder ab, int[] before, double[] snap)` | One pass, read: what rose, what it did measure by measure, the debt, the cash and (0.7.104) the payback. |
-| 547 | 9 | `static boolean holdIsTrue(Game g, AutoBuilder ab, AutoBuilder.Step s)` | A hold, checked after the pass against the city as the pass left it. |
-| 558 | 13 | `static boolean noneOtherPays(Game g, AutoBuilder ab, BuildAdvice.Measure m)` | The advice's ranking for a measure walked as the pass walks it (0.7.101), on the city as the pass left it: none of its buildings pays back (0.7.104; is run by the budget until then) and is paid for one of, its ground ... |
-| 573 | 13 | `static boolean paysForOne(Game g, AutoBuilder ab, BuildAdvice.Measure m, BuildAdvice.Suggestion c, boolean fromCash)` | Whether one of a card pays back where the payback holds it (0.7.104; is run by the budget until then) and is paid for, its ground and all: at or under the limit by the cash over the reserve and past it a bond that kee... |
-| 588 | 12 | `static BuildAdvice.Suggestion cardFor(Game g, AutoBuilder ab, BuildAdvice.Measure m, BuildingsTemplate t)` | The advice's card for a measure whose building is t, walking its ranking as the pass does (0.7.104): null where t is not in it. |
-| 602 | 52 | `static boolean heldBuildingIsTrue(Game g, AutoBuilder ab, AutoBuilder.Step s)` | The held building's own reason, true after the pass. |
-
-### 4 (lines 655-792)
+### 2 (lines 214-263)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 657 | 81 | `static void savedAndLoaded(Path root, Game g)` |  |
-| 747 | 45 | `static void groundSavedAndLoaded(Path root)` | A city buying its ground, saved and loaded (0.7.77): the town with no ground free, it on, saved before its first pass; both run on with it on - the cash, the debt, the ground owned and what it bought, every building a... |
+| 216 | 47 | `static void theAdvicesCard(Path root)` |  |
 
-### 5 (lines 793-1469)
+### 3 (lines 264-653)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 795 | 155 | `static void whatHoldsIt(Path root)` |  |
-| 968 | 8 | `static void withRoom(Game g)` | The town fixture with room (0.7.101): its healthcare and education bills - four medical schools and a university, three times its revenue - cleared, ROOM more property tax, and its accounts refreshed; the pass reads t... |
-| 986 | 66 | `static void theWalk(Path root)` | THE RANKING, WALKED (0.7.101): with the cash for one of a building the advice ranks after its first card but not for one of the first, and no bond within the limit (the town brought just under it, nearTheLimit(); a li... |
-| 1057 | 4 | `static double oneCosts(Game g, BuildAdvice.Suggestion c)` | One of a card, its ground and all (AutoBuilder.groundFor()): what the pass weighs for one; +∞ with no ground to be had. |
-| 1069 | 24 | `static void overFull(Path root)` | ONLY THE ORDER'S OWN GROUND (0.7.101, Jerus's decision A5): in a town whose buildings stand on more ground than it owns, an order on ground of its own could not be placed (Game.buildStack()'s NO_LAND) - so it buys non... |
-| 1098 | 6 | `static Game noGround(Path root, String name)` | The town with no ground free: its ground cut to what its buildings use (Game's land office relists for the smaller city). |
-| 1106 | 4 | `static AutoBuilder.Step firstLand(AutoBuilder ab)` | The first step of the last pass that bought ground, or null. |
-| 1112 | 159 | `static void theGround(Path root)` | THE GROUND IT BUYS (0.7.77): none free, at a limit of nothing and of the most, only ore on offer. |
-| 1273 | 5 | `static double annualised(Game g)` | A year of GDP as SummaryScreen's Debt/GDP reads it (Pieces.annualGdp()): the history's last twelve, scaled up from fewer. |
-| 1280 | 3 | `static double justOver(Game g)` | The debt limit's next step over a city's debt now (0.7.81): a limit it is within. |
-| 1293 | 12 | `static double nearTheLimit(Game g)` | A town brought just under the debt limit's next step over its debt (0.7.101): a twenty-year bond on the funding page as large as keeps the city's debt within that step - found by halving, to the bond's granule - so th... |
-| 1310 | 6 | `static Game overTheLimit(Game g)` | A town over the debt limit (0.7.81): a twenty-year bond on the funding page for twice a year of its GDP, so the city's debt is past DEFAULT_DEBT_LIMIT whatever the bond's price, and its cash back where it was - the ca... |
-| 1322 | 136 | `static void theLimit(Path root, BuildAdvice.Measure roads)` | THE LIMIT, A SHARE OF GDP (0.7.81): a bond's face is what it adds to the debt; under the limit a bond that would cross it is not taken; over it nothing is built and nothing borrowed, with the cash to pay; and with Bui... |
-| 1459 | 4 | `static AutoBuilder.Step stepFor(AutoBuilder ab, BuildAdvice.Measure m)` |  |
-| 1464 | 5 | `static int siteCount(Game g)` |  |
+| 285 | 132 | `static Game decades(Path root)` |  |
+| 419 | 18 | `static java.util.function.Consumer<Boolean> passReader(Game g)` | The decades' reading of a pass, before and after it, by look() (0.7.102: a function, so the copy that borrows is read the same). |
+| 439 | 9 | `static int[] standingAndOnSite(Game g)` | Every template's standing and on-site count, by id. |
+| 450 | 84 | `static void look(Game g, AutoBuilder ab, int[] before, double[] snap)` | One pass, read: what rose, what it did measure by measure, the debt, the cash and (0.7.104) the payback. |
+| 546 | 9 | `static boolean holdIsTrue(Game g, AutoBuilder ab, AutoBuilder.Step s)` | A hold, checked after the pass against the city as the pass left it. |
+| 557 | 13 | `static boolean noneOtherPays(Game g, AutoBuilder ab, BuildAdvice.Measure m)` | The advice's ranking for a measure walked as the pass walks it (0.7.101), on the city as the pass left it: none of its buildings pays back (0.7.104; is run by the budget until then) and is paid for one of, its ground ... |
+| 572 | 13 | `static boolean paysForOne(Game g, AutoBuilder ab, BuildAdvice.Measure m, BuildAdvice.Suggestion c, boolean fromCash)` | Whether one of a card pays back where the payback holds it (0.7.104; is run by the budget until then) and is paid for, its ground and all: at or under the limit by the cash over the reserve and past it a bond that kee... |
+| 587 | 12 | `static BuildAdvice.Suggestion cardFor(Game g, AutoBuilder ab, BuildAdvice.Measure m, BuildingsTemplate t)` | The advice's card for a measure whose building is t, walking its ranking as the pass does (0.7.104): null where t is not in it. |
+| 601 | 52 | `static boolean heldBuildingIsTrue(Game g, AutoBuilder ab, AutoBuilder.Step s)` | The held building's own reason, true after the pass. |
+
+### 4 (lines 654-791)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 656 | 81 | `static void savedAndLoaded(Path root, Game g)` |  |
+| 746 | 45 | `static void groundSavedAndLoaded(Path root)` | A city buying its ground, saved and loaded (0.7.77): the town with no ground free, it on, saved before its first pass; both run on with it on - the cash, the debt, the ground owned and what it bought, every building a... |
+
+### 5 (lines 792-1468)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 794 | 155 | `static void whatHoldsIt(Path root)` |  |
+| 967 | 8 | `static void withRoom(Game g)` | The town fixture with room (0.7.101): its healthcare and education bills - four medical schools and a university, three times its revenue - cleared, ROOM more property tax, and its accounts refreshed; the pass reads t... |
+| 985 | 66 | `static void theWalk(Path root)` | THE RANKING, WALKED (0.7.101): with the cash for one of a building the advice ranks after its first card but not for one of the first, and no bond within the limit (the town brought just under it, nearTheLimit(); a li... |
+| 1056 | 4 | `static double oneCosts(Game g, BuildAdvice.Suggestion c)` | One of a card, its ground and all (AutoBuilder.groundFor()): what the pass weighs for one; +∞ with no ground to be had. |
+| 1068 | 24 | `static void overFull(Path root)` | ONLY THE ORDER'S OWN GROUND (0.7.101, Jerus's decision A5): in a town whose buildings stand on more ground than it owns, an order on ground of its own could not be placed (Game.buildStack()'s NO_LAND) - so it buys non... |
+| 1097 | 6 | `static Game noGround(Path root, String name)` | The town with no ground free: its ground cut to what its buildings use (Game's land office relists for the smaller city). |
+| 1105 | 4 | `static AutoBuilder.Step firstLand(AutoBuilder ab)` | The first step of the last pass that bought ground, or null. |
+| 1111 | 159 | `static void theGround(Path root)` | THE GROUND IT BUYS (0.7.77): none free, at a limit of nothing and of the most, only ore on offer. |
+| 1272 | 5 | `static double annualised(Game g)` | A year of GDP as SummaryScreen's Debt/GDP reads it (Pieces.annualGdp()): the history's last twelve, scaled up from fewer. |
+| 1279 | 3 | `static double justOver(Game g)` | The debt limit's next step over a city's debt now (0.7.81): a limit it is within. |
+| 1292 | 12 | `static double nearTheLimit(Game g)` | A town brought just under the debt limit's next step over its debt (0.7.101): a twenty-year bond on the funding page as large as keeps the city's debt within that step - found by halving, to the bond's granule - so th... |
+| 1309 | 6 | `static Game overTheLimit(Game g)` | A town over the debt limit (0.7.81): a twenty-year bond on the funding page for twice a year of its GDP, so the city's debt is past DEFAULT_DEBT_LIMIT whatever the bond's price, and its cash back where it was - the ca... |
+| 1321 | 136 | `static void theLimit(Path root, BuildAdvice.Measure roads)` | THE LIMIT, A SHARE OF GDP (0.7.81): a bond's face is what it adds to the debt; under the limit a bond that would cross it is not taken; over it nothing is built and nothing borrowed, with the cash to pay; and with Bui... |
+| 1458 | 4 | `static AutoBuilder.Step stepFor(AutoBuilder ab, BuildAdvice.Measure m)` |  |
+| 1463 | 5 | `static int siteCount(Game g)` |  |
 

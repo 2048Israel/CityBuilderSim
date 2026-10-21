@@ -57,7 +57,7 @@
 >      1-year and the months the dial is off the rule by more than a quarter
 >      point, over 120 months of the playtest's founding.
 
-**Uses:** [DebtManager](DebtManager.md) (32), [Game](Game.md) (26), [Debt](Debt.md) (19), [YieldCurve](YieldCurve.md) (8), [Expectations](Expectations.md) (7), [MonetaryCheck](MonetaryCheck.md) (2), [CentralBank](CentralBank.md) (2), [DebtQuote](DebtQuote.md) (2), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [BondMarket](BondMarket.md) (1), [GameFiles](GameFiles.md) (1)
+**Uses:** [DebtManager](DebtManager.md) (32), [Game](Game.md) (26), [Debt](Debt.md) (19), [YieldCurve](YieldCurve.md) (8), [Expectations](Expectations.md) (7), [MonetaryCheck](MonetaryCheck.md) (2), [CentralBank](CentralBank.md) (2), [DebtQuote](DebtQuote.md) (2), [TempDirs](TempDirs.md) (1), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [BondMarket](BondMarket.md) (1), [GameFiles](GameFiles.md) (1)
 
 ## Sections
 

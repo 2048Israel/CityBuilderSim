@@ -60,7 +60,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [ChartModel](ChartModel.md) (77), [DecisionLog](DecisionLog.md) (58), [YearBook](YearBook.md) (42), [Game](Game.md) (24), [GameFiles](GameFiles.md) (5), [ConstructionControl](ConstructionControl.md) (5), [HistorySave](HistorySave.md) (5), [Sectors](Sectors.md) (4), [CityCalendar](CityCalendar.md) (4), [GameVersion](GameVersion.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Rollover](Rollover.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Founding](Founding.md) (1), [Sector](Sector.md) (1), [Debt](Debt.md) (1), [TreasuryFund](TreasuryFund.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [Health](Health.md) (1)
+**Uses:** [ChartModel](ChartModel.md) (77), [DecisionLog](DecisionLog.md) (58), [YearBook](YearBook.md) (42), [Game](Game.md) (24), [GameFiles](GameFiles.md) (5), [ConstructionControl](ConstructionControl.md) (5), [HistorySave](HistorySave.md) (5), [Sectors](Sectors.md) (4), [CityCalendar](CityCalendar.md) (4), [GameVersion](GameVersion.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Rollover](Rollover.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Founding](Founding.md) (1), [Sector](Sector.md) (1), [TempDirs](TempDirs.md) (1), [Debt](Debt.md) (1), [TreasuryFund](TreasuryFund.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [Health](Health.md) (1)
 
 ## Sections
 

@@ -10,7 +10,7 @@
 > save and on the graphs. Every claim sets its own cause. See
 > claude/the-households-remember.md.
 
-**Uses:** [FamilyStructure](FamilyStructure.md) (36), [FamilyModel](FamilyModel.md) (32), [PayTier](PayTier.md) (14), [AgeBand](AgeBand.md) (10), [PopulationCohorts](PopulationCohorts.md) (8), [Game](Game.md) (4), [GameFiles](GameFiles.md) (2), [HistorySave](HistorySave.md) (2), [BuildingManager](BuildingManager.md) (1)
+**Uses:** [FamilyStructure](FamilyStructure.md) (36), [FamilyModel](FamilyModel.md) (32), [PayTier](PayTier.md) (14), [AgeBand](AgeBand.md) (10), [PopulationCohorts](PopulationCohorts.md) (8), [Game](Game.md) (4), [GameFiles](GameFiles.md) (2), [HistorySave](HistorySave.md) (2), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1)
 
 ## Sections
 
