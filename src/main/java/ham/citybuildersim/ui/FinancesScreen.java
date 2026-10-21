@@ -156,67 +156,77 @@ final class FinancesScreen {
     /**
      * One kind of paper the city can sell.
      *
-     * The four numbers were scattered across six button handlers - three
-     * domestic and three foreign, each passing the same min, max and rounding
-     * as literals. They are one table now, so a change to what a term loan is
+     * The numbers were scattered across six button handlers - three domestic
+     * and three foreign, each passing the same terms and rounding as
+     * literals. They are one table now, so a change to what a kind is
      * happens once.
      *
-     * AND THE STEP BETWEEN TERMS (0.7.1): Jerus, "i think we should only be
-     * able to issue 10y 20y 30y 40y and 50y ... serial and tbills are fine
-     * tho." A term loan's terms step by ten (LongTermBond.MATURITIES) -
-     * columns at home since 0.7.32, chips abroad; the note's and the
-     * serial's by one, as they always did.
+     * THE TERMS ARE A LIST (CD2): a bill is sold at 1, 3, 6 or 12 months, a
+     * bond at 2, 5, 10, 20, 30 or 50 years, an amortizing bond at 5 to 30 in
+     * fives. They were a min, a max and a step until the lineup stopped being
+     * evenly spaced (Jerus, 0.7.1: "i think we should only be able to issue
+     * 10y 20y 30y 40y and 50y"); the lists are the model's own
+     * (Auction.BILL_MONTHS, LongTermBond.MATURITIES,
+     * Auction.AMORTIZING_YEARS). The KEYS stay - "Note", "Serial", "Term" are
+     * Debt.getType()'s and the menus' names - while the words say what each
+     * is now: bills, amortizing bonds, bonds.
      *
      * ...AND ITS TILE (0.7.32): the range it is issued over and one line, the
      * blurb behind the tile's (i).
      */
     record Instrument(String key, String name, String short_,
-                              int min, int max, int step, double rounding,
+                              int[] terms, double rounding,
                               String unit, String blurb, String colour, String range, String line) { }
 
-    /** The three kinds of paper, short to long, in the ladder's order: the note, the serial bond and the term loan. */
-    static final Instrument[] INSTRUMENTS = {
-        new Instrument("Note", "Notes", "NOTE", 1, 12, 1, 1000, "months",
-                "No coupon at all. The lender pays less than the face and collects the "
-                + "whole face at the end, so it costs nothing monthly and everything at "
-                + "once. Sold at auction at 1, 3, 6 or 12 months.", Palette.LADDER[0], "1–12 months", "No coupon: the discount is the price."),
-        new Instrument("Serial", "Serial bonds", "SERIAL", 5, 30, 5, 10000, "years",
-                "A coupon every month on what is still out, and a slice of principal "
-                + "every year. It pays itself off: both the debt and the coupon shrink "
-                + "without you doing anything. Sold at auction at 5 to 30 years in fives, "
-                + "one coupon that prices it at par.", Palette.LADDER[1], "5–30 years", "Pays itself off, a slice a year."),
-        new Instrument("Term", "Term loans", "TERM", 2, 50, 1, 100000, "years",
-                "A coupon every month on the whole face, and the entire face at the end. "
-                + "The coupon is the auction's yield rounded down to an eighth of a point, "
-                + "and a sale at a term reopens the line while it has nine tenths of it left. "
-                + "Issued at 2, 5, 10, 20, 30 or 50 years.", Palette.LADDER[2], "2–50 years",
-                "The smallest monthly cost; the whole face at the end."),
-    };
-
     /**
-     * The terms an instrument is sold at, in the unit it counts in (CD2): the
-     * bill's four, the amortizing bond's six lots of five years, the bond's
-     * six maturities. The Borrow page's columns and chips are these; its
-     * rebuilt version (slice 8) reads the model's own tables the same way.
+     * The three kinds of paper CD2 sells, in the board's tile order: bills,
+     * bonds, the amortizing bond (floating and linked bonds are CD5's, so no
+     * tile). The ladder's order is KIND_NAMES' and Palette.LADDER's.
      */
-    static int[] terms(Instrument kit) {
-        return switch (kit.key()) {
-            case "Note"   -> ShortTermTBill.TERMS;
-            case "Serial" -> MediumTermBond.YEARS;
-            default       -> LongTermBond.MATURITIES;
-        };
-    }
+    static final Instrument[] INSTRUMENTS = {
+        new Instrument("Note", "Bills", "BILL", ShortTermTBill.TERMS, 1000, "months",
+                "Sold at a discount to the face and repaid at the face: the buyer's return is the difference, so a "
+                + "bill pays no coupon, costs nothing monthly and everything at once. Sold at auction at 1, 3, 6 or "
+                + "12 months, each sale its own line, never reopened.",
+                Palette.LADDER[0], "1–12 months", "At a discount: no coupon."),
+        new Instrument("Term", "Bonds", "BOND", LongTermBond.MATURITIES, 100000, "years",
+                "A coupon every month on the whole face and the whole face at the end. A new line's coupon is the "
+                + "auction's yield rounded down to an eighth of a point, so it sells just under 100; a sale at a term "
+                + "whose line still has " + pc(Auction.BENCHMARK_LIFE) + " of its life left reopens that line, at its "
+                + "coupon and its date, at today's price. Sold at 2, 5, 10, 20, 30 or 50 years.",
+                Palette.LADDER[2], "2–50 years", "The market's coupon, near par; lines reopen."),
+        new Instrument("Serial", "Amortizing", "AMORTIZING", MediumTermBond.YEARS, 10000, "years",
+                "The face is repaid in equal yearly slices and one coupon, the auction's yield itself, is paid "
+                + "monthly on what is left, so the debt and the coupon shrink together and nothing falls due in a "
+                + "lump. Sold at 5 to 30 years in fives, each sale its own line, never reopened.",
+                Palette.LADDER[1], "5–30 years", "Repaid in yearly slices, on one coupon."),
+    };
 
     /** The one of an instrument's terms nearest this. */
     static int nearestTerm(Instrument kit, int term) {
-        int best = terms(kit)[0];
-        for (int t : terms(kit)) if (Math.abs(t - term) < Math.abs(best - term)) best = t;
+        int best = kit.terms()[0];
+        for (int t : kit.terms()) if (Math.abs(t - term) < Math.abs(best - term)) best = t;
         return best;
     }
 
+    /** An instrument by its key; the bond for a key it does not know. */
     static Instrument instrument(String key) {
         for (Instrument i : INSTRUMENTS) if (i.key().equals(key)) return i;
-        return INSTRUMENTS[2];
+        return INSTRUMENTS[1];
+    }
+
+    /** The auction's name for an instrument's kind of paper. */
+    static Auction.Kind auctionKind(Instrument kit) {
+        return switch (kit.key()) {
+            case "Note"   -> Auction.Kind.BILL;
+            case "Serial" -> Auction.Kind.AMORTIZING;
+            default       -> Auction.Kind.BOND;
+        };
+    }
+
+    /** An instrument's term as the months the auction counts it in: a bill's months, a bond's years times twelve. */
+    static int termMonths(Instrument kit, int term) {
+        return "Note".equals(kit.key()) ? term : term * 12;
     }
 
     /** A kind's colour on the ladder, by Debt.getType(): DebtManager.LADDER_KINDS in Palette.LADDER's three. */
@@ -224,14 +234,36 @@ final class FinancesScreen {
         return Palette.LADDER[DebtManager.ladderKind(type)];
     }
 
-    /** The ladder's three kinds, as the key and a tooltip say them. */
-    static final String[] KIND_NAMES = {"Notes", "Serial bonds", "Term loans"};
+    /** The ladder's three kinds, in DebtManager.LADDER_KINDS' order, as the key and a tooltip say them. */
+    static final String[] KIND_NAMES = {"Bills", "Amortizing bonds", "Bonds"};
+
+    /** A piece's kind as its tag says it, by Debt.getType(): the keys are the model's, the words are the board's. */
+    static String kindTag(String type) {
+        return switch (type) {
+            case "NOTE"   -> "BILL";
+            case "SERIAL" -> "AMORTIZING";
+            default       -> "BOND";
+        };
+    }
 
     /* what the borrow page is currently asking for */
     String borrowType = "Term";
     int borrowTerm = 10;
     double borrowAsk = 0;
     boolean borrowHold = false;
+    /**
+     * The highest yield the sale will take (CD2, spec-city-debt.md 4.1): fair plus a point
+     * by default, a yield the player names, or Fill it. Kept through the clock's
+     * redraw like borrowAsk; the quote runs at it and the button books at it.
+     */
+    Auction.Cap borrowCap = Auction.Cap.DEFAULT;
+    /** What is typed in the yield box, in per cent, and not yet set; null while the box shows the cap as it stands. */
+    private String capTyped;
+    /** What the last yield that could not be read says, under the chips until the cap is next set; null for none. */
+    private String capRefused;
+    /** The yield box, and whether it had the focus when the page was last redrawn - a month landing rebuilds it under the typing, as askField. */
+    private javafx.scene.control.TextField capField;
+    private boolean capTyping;
     /** What is typed in the ask's box and not yet set (0.7.40), kept through a month's redraw; null while the box is empty. */
     private String askTyped;
     /** ...the ask it was typed over: a step, a preset or an issue that moves the ask drops it. */
@@ -290,6 +322,7 @@ final class FinancesScreen {
         fundScreen.here = ui.isShowing("showFinanceMenu");
         // ...and whether the player was typing an ask, so the new box takes the focus back (0.7.40).
         askTyping = askField != null && askField.isFocused();
+        capTyping = capField != null && capField.isFocused();
         ui.clearMenu("showFinanceMenu", () -> showFinanceMenu());
 
         boolean known = financeArea == null;
@@ -412,8 +445,8 @@ final class FinancesScreen {
         "What the city holds, what it owes, and why the rate is the rate: the balance and the credit band, what "
                 + "the paper costs against the take, who holds it, and the rate taken apart.",
         "Every piece of paper, and what each would cost to retire - Buy back is on each piece's card.",
-        "Notes, serial bonds and term loans - here and abroad - with the quote struck on every click and the "
-                + "ladder it would build.",
+        "Bills, bonds and amortizing bonds sold at auction at home, bills and bonds in dollars abroad - the "
+                + "auction run on the city as it stands on every click, and the ladder it would build.",
         "The central bank's books, and how much money the city has.",
         "The businesses' bonds: every issue, who holds it, and its order book. Not the city's paper.",
         "Its shares and bonds, the bank's rescue, the dial, and the share of its worth it pays the treasury "
@@ -731,6 +764,12 @@ final class FinancesScreen {
     /** Points of a rate, signed: "+0.02 pts". */
     static String pts(double rate) { return String.format("%+.2f pts", rate * 100).replace('-', '−'); }
 
+    /** A yield to three places, as an auction stops: "3.602%". */
+    static String pct3(double rate) { return String.format("%.3f%%", rate * 100).replace('-', '−'); }
+
+    /** A tail in basis points: "28 bp". */
+    static String bp(double rate) { return String.format("%.0f bp", rate * 10_000).replace('-', '−'); }
+
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, double size, String tone) {
         Label l = new Label(text);
@@ -1035,7 +1074,7 @@ final class FinancesScreen {
         return parts;
     }
 
-    /** A column's tooltip: "2210 · D$579.0M: term loans D$579.0M, D$563.3M of it in dollars · 30% of a year's take" (the spec's section 3). */
+    /** A column's tooltip: "2210 · D$579.0M: bonds D$579.0M, D$563.3M of it in dollars · 30% of a year's take" (the spec's section 3). */
     String rungTip(DebtManager.Rung r, double revenueYear, String extraName) {
         StringBuilder s = new StringBuilder(r.fromYear() == r.toYear() ? String.valueOf(r.fromYear())
                 : r.fromYear() + "–" + r.toYear());
@@ -1126,7 +1165,7 @@ final class FinancesScreen {
     HBox nextDueRow(Debt debt, int month) {
         int due = debt.getMaturityMonth();
         Label amount = figure(d(debt.getOustandingPrincipal()), 13, urgency(due - month));
-        Label kind = tag((debt.isForeign() ? "US$ " : "") + debt.getType(), instrumentColour(debt.getType()));
+        Label kind = tag((debt.isForeign() ? "US$ " : "") + kindTag(debt.getType()), instrumentColour(debt.getType()));
         Label when = words(CityCalendar.formatShort(due) + " · " + CityCalendar.until(month, due),
                 Palette.SIZE_CAPTION + 1, Palette.TEXT_LABEL);
         HBox under = new HBox(6, kind, when);
@@ -1417,7 +1456,7 @@ final class FinancesScreen {
                         Palette.TEXT_LABEL, null),
                 new AreaCard("The book", pieces == 0 ? "nothing" : pieces + (pieces == 1 ? " piece" : " pieces"),
                         coupon >= .5 ? d(coupon) + " coupon a month"
-                                : pieces > 0 ? "no coupon: notes pay at maturity" : "nothing outstanding",
+                                : pieces > 0 ? "no coupon: bills pay at maturity" : "nothing outstanding",
                         Palette.TEXT_LABEL, null),
                 new AreaCard("Borrow", pct2(g.getInterestRate()),
                         ledger.foreignWindowOpen() ? pct2(ledger.foreignRate()) + " abroad, the window open"
@@ -2179,7 +2218,7 @@ final class FinancesScreen {
     String bookInfo() {
         DebtManager ledger = ui.game.getDebtManager();
         return String.format("Every piece is priced at what it is worth today: the present value of everything it still "
-                        + "owes, discounted at the curve's rate for the months it has left - %s for a note, %s for "
+                        + "owes, discounted at the curve's rate for the months it has left - %s for a bill, %s for "
                         + "thirty-year money - and a dollar piece at the world's curve. Above par means getting out costs "
                         + "a premium. Below par means your own paper has become cheap to retire - which happens when your "
                         + "credit has got worse, so it is not the bargain it looks like.\n\n%s of face for %s of cash. "
@@ -2189,7 +2228,7 @@ final class FinancesScreen {
                 d(ledger.getTotalMarketValue()));
     }
 
-    /** A note's (i): the spec's T28. */
+    /** A bill's (i): the spec's T28. */
     static final String NOTE_INFO = "No coupon at all - the lender's return was the discount, taken out of the proceeds "
             + "at issue. It costs nothing monthly and the whole face falls due at once.";
 
@@ -2225,13 +2264,39 @@ final class FinancesScreen {
         page.getChildren().add(fold("book:grid", "every piece, as a table", () -> bookGrid(paper)));
     }
 
-    /** A piece's name in words: "6-month note", "5-year serial bond", "20-year term loan", "... in dollars". */
+    /**
+     * A coupon in eighths of a point, the way a bond is quoted: 0.035 is
+     * "3½%", 0.04125 "4⅛%", 0.00125 "⅛%". A coupon that is not a whole eighth
+     * (a dollar bond's, the world's) in hundredths, "4.21%". Pure.
+     */
+    static String couponWords(double coupon) {
+        double eighths = coupon * 100 * 8;
+        if (!(eighths >= 0) || Math.abs(eighths - Math.rint(eighths)) > 1e-6) return pct2(coupon);
+        long e = Math.round(eighths);
+        long whole = e / 8;
+        int part = (int) (e % 8);
+        String fraction = part == 0 ? "" : String.valueOf("⅛¼⅜½⅝¾⅞".charAt(part - 1));
+        return (whole == 0 && part != 0 ? "" : String.valueOf(whole)) + fraction + "%";
+    }
+
+    /**
+     * A piece's name in words (CD2): a bond at home is its line, "3½% Jan
+     * 2211" - its coupon in eighths and the month and year it falls due, as
+     * a treasury names a line -; a bill "6-month bill"; an amortizing bond
+     * "20-year amortizing bond at 4.21%"; dollar paper "10-year bond in
+     * dollars".
+     */
     static String pieceName(Debt debt) {
         int months = debt.getDuration();
+        int years = Math.max(1, Math.round(months / 12f));
+        if (!debt.isForeign() && debt instanceof LongTermBond line) {
+            return couponWords(line.couponRate()) + " " + CityCalendar.formatShort(debt.getMaturityMonth());
+        }
         String what = switch (debt.getType()) {
-            case "NOTE"   -> months + "-month note";
-            case "SERIAL" -> Math.max(1, Math.round(months / 12f)) + "-year serial bond";
-            default       -> Math.max(1, Math.round(months / 12f)) + "-year term loan";
+            case "NOTE"   -> months + "-month bill";
+            case "SERIAL" -> years + "-year amortizing bond"
+                    + (!debt.isForeign() && debt instanceof MediumTermBond slices ? " at " + pct2(slices.couponRate()) : "");
+            default       -> years + "-year bond";
         };
         return what + (debt.isForeign() ? " in dollars" : "");
     }
@@ -2248,7 +2313,7 @@ final class FinancesScreen {
         HBox.setHgrow(gap, Priority.ALWAYS);
         Label name = words(pieceName(debt), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD);
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        HBox head = new HBox(Palette.GAP, tag((debt.isForeign() ? "US$ " : "") + debt.getType(), colour), name, gap,
+        HBox head = new HBox(Palette.GAP, tag((debt.isForeign() ? "US$ " : "") + kindTag(debt.getType()), colour), name, gap,
                 figure(CityCalendar.formatShort(due) + " · " + CityCalendar.until(month, due), Palette.SIZE_LABEL + 1, when));
         head.setAlignment(Pos.CENTER_LEFT);
 
@@ -2315,7 +2380,7 @@ final class FinancesScreen {
         int month = ui.game.getMonth();
         int line = 1;
         for (Debt debt : paper) {
-            Label kind = new Label((debt.isForeign() ? Currency.FOREIGN_CODE + " " : "") + debt.getType());
+            Label kind = new Label((debt.isForeign() ? Currency.FOREIGN_CODE + " " : "") + kindTag(debt.getType()));
             kind.setStyle(Palette.words(Palette.SIZE_CAPTION, instrumentColour(debt.getType())));
             t.add(kind, 0, line);
             t.add(gridCell(d(debt.getOustandingPrincipal()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
@@ -2350,35 +2415,68 @@ final class FinancesScreen {
        re-strikes the quote, because the rate is a FUNCTION of the size of
        the ask: ask for twice as much and you are charged more than twice as
        much. That was true and invisible.
+
+       AND AN AUCTION SINCE CD2 (board 4 of docs/studies/city-debt/, the
+       spec's section 7): the city's paper is sold at auction, so the page
+       is the auction's. THE ASK has three kinds as tiles (bills, bonds, the
+       amortizing bond; floating and linked bonds are CD5's), the terms as
+       columns of today's FAIR yield (a bond term whose line is still open
+       says which it would reopen), the face, and THE HIGHEST YIELD the city
+       will take as three chips - fair + a point, a yield, Fill it. THE QUOTE
+       is the auction run on the city as it stands at that cap (Game's
+       quoteDebt(..., cap)), and its button books that same quote at that
+       same cap, so THE AUCTION under them is exactly what pressing it does:
+       the four bids against yield with the issue and the highest yield
+       drawn, then the result line by line. A sale the bids would not cover
+       says so in red before the button. Abroad is as it was, less the
+       dollar serial: dollar paper is the world's, not an auction.
+
+       Every figure is the model's: Auction.Result for the sale, Auction.
+       bidsAt() on a grid of yields for the chart (the arithmetic that
+       clears, not a copy of it), DebtManager.fairYield() for the columns.
        ===================================================================== */
 
-    /** The terms' (i): the spec's T55. */
-    static final String TERMS_INFO = "Each column is the rate this paper would cost at that term today - for the "
-            + "amount asked, once there is one, priced with it on the books. The note is the floor - the dial, or "
-            + "what the bank's money costs it, whichever is higher - plus what the city's own debt adds; longer money "
+    /** The terms' (i): the spec's T55, on the auction's fair yield (CD2). */
+    static final String TERMS_INFO = "Each column is today's fair yield for this paper at that term: what the curve "
+            + "says it is worth, for the amount asked once there is one, priced with it on the books. Nobody bids "
+            + "under it, and the sale clears at it or a little over. The short end is the floor - the dial, or what "
+            + "the bank's money costs it, whichever is higher - plus what the city's own debt adds; longer money "
             + "carries a term premium on top, less whatever the central bank's holdings of term paper take off it. "
-            + "Abroad, the world lends on its own curve.";
+            + "A bond term whose line is still open says which one it would reopen. Abroad, the world lends on its "
+            + "own curve.";
+
+    /** THE HIGHEST YIELD's (i): the spec's 4.1 and 4.3 in two sentences. */
+    static final String CAP_INFO = "The most the city will pay to sell this: fair plus a point, a yield you name, or "
+            + "Fill it, which names none. The sale clears at one yield, the lowest at which the bids cover the issue, "
+            + "and everyone is filled at it, so the limit only costs anything if the bids need it. If they do not "
+            + "cover the issue at your limit it sells only what was bid, and the card says so before the button; "
+            + "Fill it lets the yield rise until the bidders' own rules cover the issue - their savings, their cash, "
+            + "the world's appetite, not the bank's room - and says what that costs.";
 
     /** The ask's (i): the spec's T56. */
     static final String LOTS_INFO = "Issues round to a lot, and the market will not arrange anything under the "
             + "smallest issue for a city this size - the legal and rating work costs the same however little you raise.";
 
     /** The quote's empty state: the spec's T57. */
-    static final String NO_ASK = "Ask for something and the quote appears here, with the ladder it would build. Nothing "
-            + "is committed until you press the button.";
+    static final String NO_ASK = "Ask for something and the quote appears here - at home the auction itself, run on "
+            + "the bidders as they stand - with the ladder it would build. Nothing is committed until you press the "
+            + "button.";
 
-    /** Why the proceeds are not the ask: the spec's T58. */
-    static final String PROCEEDS_INFO = "Paper is sold in lots and the face is grossed up for the discount, so the "
-            + "proceeds land on whichever side of the request the rounding puts them - and the smallest issue worth "
-            + "arranging can be more than a lot.";
+    /** Why a bill's proceeds are not the ask: the spec's T58 (a bill's ask is the cash; a bond's is the face). */
+    static final String PROCEEDS_INFO = "A bill's ask is the cash it should raise, and its face is the lot that brings "
+            + "it, so the proceeds land on whichever side of the request the rounding puts them - and the smallest "
+            + "issue worth arranging can be more than a lot. A bond's ask is its face; what it raises is the face at "
+            + "the auction's price, less the fixed cost.";
 
-    /** Who buys it: the spec's T61, its first half. */
-    static final String BUYERS_INFO = "The households first, by their own rule at the yield that clears the sale: a "
-            + "fifth of the issue for each point over the deposit rate (never more than the issue), out of what they "
-            + "have saved past a cushion, at the settle next month. Then your own bank, up to its room, which is what "
+    /** Who bids: the spec's T61 and 4.2 (CD2). */
+    static final String BUYERS_INFO = "Each bidder bids by the rule it follows elsewhere in the game. The households "
+            + "first: a fifth of the issue for each point the auction's yield pays over the deposit rate, out of "
+            + "what they have saved past a cushion, filled in full. The firms with idle cash, as they send it "
+            + "abroad. The world, as hot money, by the excess return. Your own bank, up to its room, which is what "
             + "is left of its capital: treasury paper is risk-weighted at %s, so it ties up far less of it than a "
-            + "business loan of the same size. What they do not take at the highest yield the city allows is not sold. "
-            + "Borrow enough and that changes - for every borrower in the city, not only for the treasury.";
+            + "business loan of the same size. Nobody bids under fair, because the paper trades at fair next month. "
+            + "The central bank never bids, except to roll its own. Borrow enough and the room changes - for every "
+            + "borrower in the city, not only for the treasury.";
 
     /** Where the dollars go: the spec's T62. */
     static final String DOLLARS_INFO = "Spending it leaves a dollar debt with nothing behind it, and the next "
@@ -2409,11 +2507,21 @@ final class FinancesScreen {
         // ...onto one of the terms it is sold at: a bond at 2, 5, 10, 20, 30 or 50.
         borrowTerm = nearestTerm(kit, borrowTerm);
 
+        // At home the quote is the auction at the player's highest yield; abroad it is the world's price.
         DebtQuote quote = borrowAsk > 0
                 ? (foreign ? g.quoteForeign(kit.key(), borrowAsk, borrowTerm, kit.rounding())
-                           : g.quoteDebt(kit.key(), borrowAsk, borrowTerm, kit.rounding()))
+                           : g.quoteDebt(kit.key(), borrowAsk, borrowTerm, kit.rounding(), borrowCap))
                 : null;
-        page.getChildren().add(pair(askCard(kit, foreign), quoteCard(kit, quote, foreign)));
+        Auction.Result sale = foreign || quote == null ? null : quote.auction();
+        // Fair for this paper, with the ask on the books: what the cap's chips are read against.
+        double fair = sale != null ? sale.ask().fair()
+                : ledger.fairYield(auctionKind(kit), termMonths(kit, borrowTerm), Math.max(0, borrowAsk));
+        page.getChildren().add(pair(askCard(kit, foreign, quote, fair), quoteCard(kit, quote, foreign)));
+        if (!foreign) {
+            page.getChildren().add(auctionCard(kit, sale));
+            Node red = shortCard(sale);
+            if (red != null) page.getChildren().add(red);
+        }
         if (quote != null && !quote.isEmpty()) {
             double toLocal = foreign ? ledger.getExchangeRate() : 1;
             DebtManager.Ladder ladder = ledger.ladder(g.getMonth(), quote.schedule(toLocal));
@@ -2421,30 +2529,38 @@ final class FinancesScreen {
                             hint("the ghosts are this issue")),
                     ladderChart(ladder, kit.colour(), "this issue", 200), ladderKey(ladder, kit.colour(), "this issue")));
         }
-        page.getChildren().add(pair(foreign ? dollarsCard() : whoBuysCard(quote), null));
+        if (foreign) page.getChildren().add(pair(dollarsCard(), null));
         if (foreign && ledger.hasForeignDebt()) page.getChildren().add(foreignDoor());
     }
 
-    /** THE ASK: the three instruments, the terms as columns of their rate (chips abroad), and how much. */
-    VBox askCard(Instrument kit, boolean foreign) {
+    /**
+     * THE ASK: the kinds as tiles, the terms as columns of today's fair yield
+     * (chips abroad), how much, and at home the highest yield the city will
+     * take. `quote` is the one the page struck on all of it (null: nothing
+     * asked), `fair` the paper's fair yield with the ask on the books.
+     */
+    VBox askCard(Instrument kit, boolean foreign, DebtQuote quote, double fair) {
         Game g = ui.game;
         VBox card = card(caption(foreign ? "THE ASK, ABROAD, IN " + Currency.FOREIGN_CODE : "THE ASK, AT HOME", null));
-        GridPane tiles = equalColumns(INSTRUMENTS.length, TILE_GAP);
+        GridPane tiles = equalColumns(foreign ? INSTRUMENTS.length - 1 : INSTRUMENTS.length, TILE_GAP);
         int column = 0;
         for (int i = 0; i < INSTRUMENTS.length; i++) {
             // No dollar serial since CD2: abroad the amortizing bond is not on offer (spec-city-debt.md 2.7).
             if (foreign && "Serial".equals(INSTRUMENTS[i].key())) continue;
-            VBox t = instrumentTile(INSTRUMENTS[i], INSTRUMENTS[i] == kit);
+            VBox t = instrumentTile(INSTRUMENTS[i], INSTRUMENTS[i] == kit, foreign);
             GridPane.setFillHeight(t, true);
             tiles.add(t, column++, 0);
         }
         card.getChildren().add(tiles);
 
-        card.getChildren().add(caption("FOR HOW LONG, IN " + kit.unit().toUpperCase(), TERMS_INFO));
-        card.getChildren().add(foreign ? termChips(kit) : termColumns(kit));
+        card.getChildren().add(caption(foreign ? "FOR HOW LONG, IN " + kit.unit().toUpperCase()
+                : "FOR HOW LONG, IN " + kit.unit().toUpperCase() + " · TODAY'S FAIR YIELD", TERMS_INFO));
+        card.getChildren().add(foreign ? termChips(kit) : termColumns(kit, quote));
+        if (!foreign) card.getChildren().add(muted(lineNote(kit)));
 
         double minimum = g.minimumIssueSize();
-        card.getChildren().add(caption(foreign ? "HOW MANY " + Currency.FOREIGN_CODE : "HOW MUCH", ASK_TYPED_INFO));
+        card.getChildren().add(caption(foreign ? "HOW MANY " + Currency.FOREIGN_CODE
+                : "Note".equals(kit.key()) ? "HOW MUCH CASH" : "HOW MUCH FACE", ASK_TYPED_INFO));
         /*
          * TYPED, AND BUTTONS THAT SCALE WITH IT (0.7.40). Jerus: "there should
          * be an option to raise trillions or tens of trillions right now max
@@ -2487,7 +2603,160 @@ final class FinancesScreen {
         card.getChildren().add(noteLine("lots of " + w.apply(kit.rounding()) + " · nothing under "
                 + w.apply(foreign ? g.minimumIssueSizeUsd() : minimum),
                 LOTS_INFO, 560));
+        if (!foreign) card.getChildren().addAll(capControls(fair));
         return card;
+    }
+
+    /**
+     * What the term's line is, in a sentence, under the columns (the board's
+     * bw-line): a bond sold into the line it reopens, or opening a new one; a
+     * bill or an amortizing bond is always its own. Every figure the model's
+     * (DebtManager.benchmarkLine(), Auction.BENCHMARK_LIFE).
+     */
+    String lineNote(Instrument kit) {
+        switch (kit.key()) {
+            case "Note":
+                return "A bill is sold at a discount and is its own line: its yield is the whole return, "
+                        + "and nothing is reopened.";
+            case "Serial":
+                return "Each amortizing sale is its own line: one coupon, the auction's yield itself, prices the "
+                        + "whole schedule at 100 and the face is repaid in yearly slices.";
+            default:
+                Debt line = ui.game.getDebtManager().benchmarkLine(borrowTerm);
+                if (line == null) {
+                    return String.format("This opens a new %d-year line: its coupon is the stop, rounded down to an "
+                            + "eighth of a point, so it sells just under 100.", borrowTerm);
+                }
+                return String.format("This reopens the %s, the %d-year line: same coupon, same date, sold at today's "
+                        + "price. It is the line until it has under %s of its %d years left.",
+                        pieceName(line), borrowTerm, pc(Auction.BENCHMARK_LIFE), borrowTerm);
+        }
+    }
+
+    /* ----------------------------- the highest yield (CD2) ----------------------------- */
+
+    /** The chips' names, in order: the default tail, a named yield, Fill it. The second says the yield once it is set. */
+    String[] capNames() {
+        double points = Auction.MAX_TAIL * 100;
+        return new String[] {
+            "fair + " + (points == Math.rint(points) ? String.valueOf((int) Math.rint(points)) : String.format("%.1f", points)) + " pt",
+            borrowCap.mode() == Auction.Mode.YIELD ? "at " + pct3(borrowCap.value()) : "at …",
+            "Fill it" };
+    }
+
+    /**
+     * THE HIGHEST YIELD: fair + a point (the default), a yield the player
+     * types in per cent, or Fill it. The box beside "at …" is the house's
+     * search box, kept through a month's redraw as the ask's is; a yield it
+     * cannot read is said under the chips and the cap stays as it was.
+     * `fair` is what the paper is worth now: "at …" starts a point over it
+     * when picked, and a yield under it is said to read as fair.
+     */
+    List<Node> capControls(double fair) {
+        final double seed = fair + Auction.MAX_TAIL;
+        String[] names = capNames();
+        String current = switch (borrowCap.mode()) {
+            case TAIL  -> names[0];
+            case YIELD -> names[1];
+            case FILL  -> names[2];
+        };
+        javafx.scene.layout.FlowPane chips = chipStrip(names, current, Palette.SIZE_LABEL, pick -> {
+            capTyped = null;
+            capRefused = null;
+            capField = null;
+            if (pick.equals(names[0])) borrowCap = Auction.Cap.DEFAULT;
+            else if (pick.equals(names[2])) borrowCap = Auction.Cap.FILL;
+            else if (borrowCap.mode() != Auction.Mode.YIELD) borrowCap = Auction.Cap.at(seed);
+            showFinanceMenu();
+        });
+        chips.setAlignment(Pos.CENTER_LEFT);
+
+        String shown = capTyped != null ? capTyped
+                : borrowCap.mode() == Auction.Mode.YIELD ? capYieldText(borrowCap) : "";
+        javafx.scene.control.TextField box = searchBox(shown, "type a yield, 4.5", 150, typed -> capTyped = typed, null);
+        box.setOnAction(e -> commitCap(box, true));
+        box.focusedProperty().addListener((o, was, now) -> {
+            if (now) return;
+            javafx.application.Platform.runLater(() -> {
+                if (box.getScene() != null && !box.isFocused()) commitCap(box, false);
+            });
+        });
+        boolean again = capTyping;
+        capTyping = false;
+        capField = box;
+        if (again) {
+            javafx.application.Platform.runLater(() -> {
+                box.requestFocus();
+                box.positionCaret(box.getText().length());
+            });
+        }
+        HBox entry = new HBox(Palette.GAP, box, words("% a year · Enter sets it", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        entry.setAlignment(Pos.CENTER_LEFT);
+
+        List<Node> out = new ArrayList<>();
+        out.add(caption("THE HIGHEST YIELD YOU WILL TAKE", CAP_INFO));
+        out.add(chips);
+        out.add(entry);
+        if (capRefused != null) out.add(words(capRefused, Palette.SIZE_LABEL, Palette.BAD));
+        if (borrowCap.mode() == Auction.Mode.YIELD && borrowCap.value() < fair - 1e-9) {
+            out.add(muted("Nobody bids under fair (" + pct3(fair) + "), so this reads as fair."));
+        }
+        return out;
+    }
+
+    /** A named yield as the box shows it, in per cent to three places: 0.04602 is "4.602". */
+    static String capYieldText(Auction.Cap cap) {
+        return String.format("%.3f", cap.value() * 100);
+    }
+
+    /** A typed yield, in per cent ("4.5" or "4.5%"), as the yield it names; NaN when it is not one between nothing and a hundred per cent. Pure. */
+    static double capFromWords(String typed) {
+        if (typed == null) return Double.NaN;
+        String t = typed.trim();
+        if (t.endsWith("%")) t = t.substring(0, t.length() - 1).trim();
+        try {
+            double percent = Double.parseDouble(t.replace(',', '.'));
+            return percent > 0 && percent < 100 ? percent / 100 : Double.NaN;
+        } catch (NumberFormatException e) {
+            return Double.NaN;
+        }
+    }
+
+    /** What the box says under the chips when an entry cannot be read. Pure. */
+    static String capRefusal(String typed) {
+        return "“" + typed.trim() + "” is not a yield: a number of per cent, 4.5 or 4.5%. The highest yield stays as it was.";
+    }
+
+    /**
+     * What is in the yield box, set as the cap - or, when it cannot be read,
+     * said under the chips with the cap left as it was; an empty box, or the
+     * cap's own figure left in it, changes nothing. Enter draws the page at
+     * once; leaving the box asks for a redraw (UserInterface.redrawSoon()),
+     * as commitAsk() does.
+     */
+    private void commitCap(javafx.scene.control.TextField box, boolean enter) {
+        String typed = box.getText() == null ? "" : box.getText().trim();
+        boolean changed = false;
+        if (typed.isEmpty() || (borrowCap.mode() == Auction.Mode.YIELD && typed.equals(capYieldText(borrowCap)))) {
+            changed = capRefused != null;
+            capTyped = null;
+            capRefused = null;
+        } else {
+            double y = capFromWords(typed);
+            if (Double.isNaN(y)) {
+                changed = !capRefusal(typed).equals(capRefused);
+                capRefused = capRefusal(typed);
+                capTyped = typed;
+            } else {
+                changed = true;
+                borrowCap = Auction.Cap.at(y);
+                capTyped = null;
+                capRefused = null;
+            }
+        }
+        capField = null;
+        if (enter) showFinanceMenu();
+        else if (changed) ui.redrawSoon();
     }
 
     /* ----------------------------- the ask, typed (0.7.40) ----------------------------- */
@@ -2657,15 +2926,31 @@ final class FinancesScreen {
         else if (changed) ui.redrawSoon();
     }
 
+    /** A kind's tile line abroad: dollar paper is the world's, at its price, not an auction's (spec-city-debt.md 2.7). */
+    static String abroadLine(Instrument kit) {
+        return "Note".equals(kit.key()) ? "At a discount: no coupon." : "The world's price; the whole face at the end.";
+    }
+
+    /** ...and its (i): what dollar paper is. */
+    static String abroadBlurb(Instrument kit) {
+        return "Note".equals(kit.key())
+                ? "Dollars borrowed at a discount to the face, repaid at the face: no coupon, nothing monthly and "
+                        + "everything at once. Sold to the world at its price for the term, not at auction."
+                : "A coupon every month on the whole face, in dollars, and the whole face at the end. Sold to the "
+                        + "world at its price for the term, not at auction, and never reopened.";
+    }
+
     /** One instrument as a tile: its swatch-tinted icon, its name and (i), the range it is issued over, its line; picked, its ground and edge lit. */
-    VBox instrumentTile(Instrument kit, boolean on) {
+    VBox instrumentTile(Instrument kit, boolean on, boolean foreign) {
         Label name = new Label(kit.name());
         name.setStyle(Palette.strong(Palette.SIZE_BODY + 1, Palette.TEXT_HEAD));
         name.setMinWidth(0);
         name.setWrapText(true);
-        HBox top = new HBox(6, iconSquare(Icons.PAPER, kit.colour(), 24, 13), name, infoButton(kit.blurb(), true));
+        HBox top = new HBox(6, iconSquare(Icons.PAPER, kit.colour(), 24, 13), name,
+                infoButton(foreign ? abroadBlurb(kit) : kit.blurb(), true));
         top.setAlignment(Pos.CENTER_LEFT);
-        VBox t = new VBox(4, top, muted(kit.range()), words(kit.line(), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        VBox t = new VBox(4, top, muted(kit.range()),
+                words(foreign ? abroadLine(kit) : kit.line(), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         t.setMaxWidth(Double.MAX_VALUE);
         t.setMaxHeight(Double.MAX_VALUE);
         String rest = "-fx-padding: 8 10 8 10; -fx-background-radius: 6; -fx-border-radius: 6; -fx-cursor: hand;";
@@ -2675,38 +2960,58 @@ final class FinancesScreen {
         t.setOnMouseClicked(e -> {
             if (borrowType.equals(kit.key())) return;
             borrowType = kit.key();
-            borrowTerm = terms(kit)[0];
+            borrowTerm = nearestTerm(kit, "Note".equals(kit.key()) ? 6 : 10);
             borrowAsk = 0;
             showFinanceMenu();
         });
         return t;
     }
 
-    /** The terms at home as columns of their rate: the chosen in the money blue, the rest grey; a click picks one. */
-    Node termColumns(Instrument kit) {
-        Game g = ui.game;
-        DebtManager ledger = g.getDebtManager();
+    /**
+     * The terms at home as columns of today's fair yield (DebtManager.
+     * fairYield() of the kind at the term's months, with the ask on the
+     * books): the chosen in the money blue, the rest grey; a click picks one.
+     * The chosen term's is the quote's own fair, so the column and the
+     * auction under it agree to the digit. A bond term whose line is still
+     * open says under itself which it would reopen, and is struck on the
+     * months that line has left, as the quote is.
+     */
+    Node termColumns(Instrument kit, DebtQuote quote) {
+        DebtManager ledger = ui.game.getDebtManager();
+        Auction.Kind kind = auctionKind(kit);
+        Auction.Result sale = quote == null ? null : quote.auction();
         List<Column> cols = new ArrayList<>();
-        for (int t : terms(kit)) {
+        boolean reopening = false;
+        for (int t : kit.terms()) {
             final int chosen = t;
-            int months = "Note".equals(kit.key()) ? t : t * 12;
-            double rate = borrowAsk > 0 ? g.quoteDebt(kit.key(), borrowAsk, t, kit.rounding()).marketRate()
-                                        : ledger.curveRate(months);
+            Debt line = "Term".equals(kit.key()) ? ledger.benchmarkLine(t) : null;
+            int months = line != null ? line.getRemainingMonths() : termMonths(kit, t);
+            double fair = t == borrowTerm && sale != null && !sale.isEmpty() ? sale.ask().fair()
+                    : ledger.fairYield(kind, months, Math.max(0, borrowAsk));
             double comp = ledger.compression(months);
-            cols.add(new Column(t + ("Note".equals(kit.key()) ? " mo" : " y"), null, pct2(rate),
-                    List.of(Segment.of(rate, t == borrowTerm ? Palette.MONEY : Palette.TEXT_SPENT)), false, null, null,
-                    t + " " + kit.unit() + ": " + pct2(rate) + (borrowAsk > 0 ? " for this amount" : " today")
+            String sub = line == null ? null : "reopens\n" + pieceName(line);
+            reopening |= line != null;
+            cols.add(new Column(t + ("Note".equals(kit.key()) ? " mo" : " y"), sub, pct2(fair),
+                    List.of(Segment.of(fair, t == borrowTerm ? Palette.MONEY : Palette.TEXT_SPENT)), false, null, null,
+                    t + " " + kit.unit() + ": fair " + pct3(fair) + (borrowAsk > 0 ? " for this amount" : " today")
+                            + (line != null ? ", reopening the " + pieceName(line) : "")
                             + (comp > 1e-6 ? String.format(", %.2f points off for the central bank", comp * 100) : ""),
                     () -> { borrowTerm = chosen; showFinanceMenu(); }));
         }
-        return columns(cols, 0, 0, 120);
+        Node picture = columns(cols, 0, 0, 120);
+        if (!reopening) return picture;
+        // The line's name takes a second line under the label, which the columns' foot has no room for.
+        Region room = new Region();
+        room.setMinHeight(14);
+        room.setPrefHeight(14);
+        return new VBox(0, picture, room);
     }
 
     /** The terms abroad as chips, each with the world's rate for it in its tooltip. */
     Node termChips(Instrument kit) {
         DebtManager ledger = ui.game.getDebtManager();
         List<String> names = new ArrayList<>();
-        for (int t : terms(kit)) names.add(String.valueOf(t));
+        for (int t : kit.terms()) names.add(String.valueOf(t));
         String[] all = names.toArray(new String[0]);
         javafx.scene.layout.FlowPane chips = chipStrip(all, String.valueOf(borrowTerm), Palette.SIZE_LABEL, pick -> {
             borrowTerm = Integer.parseInt(pick);
@@ -2725,38 +3030,52 @@ final class FinancesScreen {
         return chips;
     }
 
-    /** What the quoted paper is called on its card: "20-year term loan", "6-month note in dollars". */
+    /** What the quoted paper is called on its card: "10-year bond", "6-month bill", "20-year amortizing bond", "... in dollars". */
     String quoteName(Instrument kit, boolean foreign) {
         String what = switch (kit.key()) {
-            case "Note"   -> borrowTerm + "-month note";
-            case "Serial" -> borrowTerm + "-year serial bond";
-            default       -> borrowTerm + "-year term loan";
+            case "Note"   -> borrowTerm + "-month bill";
+            case "Serial" -> borrowTerm + "-year amortizing bond";
+            default       -> borrowTerm + "-year bond";
         };
         return what + (foreign ? " in dollars" : "");
     }
 
-    /** THE QUOTE: the land office's offer card on exactly the terms the button books, and why the proceeds are not the ask. */
+    /**
+     * THE QUOTE: the offer card on exactly the terms the button books. At
+     * home that is the auction at the player's highest yield (auctionQuote());
+     * abroad the land office's card, and why the proceeds are not the ask.
+     */
     VBox quoteCard(Instrument kit, DebtQuote quote, boolean foreign) {
         Game g = ui.game;
         DebtManager ledger = g.getDebtManager();
+        Auction.Result sale = foreign || quote == null ? null : quote.auction();
         if (quote == null || quote.isEmpty()) {
+            if (sale != null && !sale.isEmpty()) {
+                // Asked, and not a dollar sold: the bids do not reach any of it at the highest yield taken.
+                VBox none = card(caption("THE QUOTE", null), words(sale.cap().fill()
+                        ? "No bidder's rule takes any of this at any yield: nothing would be sold."
+                        : String.format("No bidder bids anything at or under %s, the highest yield you will take: "
+                                + "nothing would be sold. Raise it, or choose Fill it.", pct3(sale.ceiling())),
+                        Palette.SIZE_BODY + 1, Palette.BAD_TEXT));
+                none.setStyle(cardStyle(Palette.BAD));
+                return none;
+            }
             return card(caption("THE QUOTE", null), words(NO_ASK, Palette.SIZE_BODY + 1, Palette.TEXT_MUTED));
         }
+        if (sale != null) return auctionQuote(kit, quote, sale);
         int month = g.getMonth();
         int months = "Note".equals(kit.key()) ? borrowTerm : borrowTerm * 12;
-        String ending = switch (kit.key()) {
-            case "Serial" -> "a slice of the face falls due every year, the last in " + CityCalendar.formatShort(month + months);
-            default       -> "the whole face falls due in " + CityCalendar.formatShort(month + months);
-        };
+        String ending = "the whole face falls due in " + CityCalendar.formatShort(month + months);
         java.util.function.DoubleFunction<String> w = foreign ? Money::usd : this::d;
         DebtQuote booked = quote;
         int term = borrowTerm;
         double ask = borrowAsk;
         boolean hold = borrowHold;
-        VBox offer = offerCard(quoteName(kit, foreign), kit.blurb(), quote, pct2(quote.marketRate()) + " a year",
+        Auction.Cap cap = borrowCap;
+        VBox offer = offerCard(quoteName(kit, foreign), foreign ? abroadBlurb(kit) : kit.blurb(), quote, pct2(quote.marketRate()) + " a year",
                 rateColour(quote, ledger), ending, "Issue for " + w.apply(quote.cashReceived()), () -> {
                     String summary = foreign ? g.handleForeignLogic(kit.key(), ask, term, kit.rounding(), hold)
-                                             : executeDebtLogic(kit.key(), ask, term, kit.rounding());
+                                             : executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap);
                     borrowAsk = 0;
                     showDebtResultMenu(booked, foreign, summary);
                 }, w);
@@ -2769,44 +3088,435 @@ final class FinancesScreen {
         return offer;
     }
 
-    /** WHO BUYS IT: the households, then the bank, its room used as a bar with this issue as a ghost; the bank's three alarms make the card red. */
-    VBox whoBuysCard(DebtQuote quote) {
-        Bank bank = ui.game.getBank();
-        double room = bank.isInsolvent() ? 0 : bank.equity() / Bank.CAPITAL_RATIO;   // D20: its room is its capital (CD2)
+    /**
+     * THE QUOTE at home (CD2): the offer card of a sale at auction, in the
+     * land office's shape - the paper's name and (i), what the sale settles
+     * at, the face, the cash, the monthly cost and the cost all in, when it
+     * falls due, how the auction went - and the button, which books THIS
+     * quote at THIS cap (executeDebtLogic() hands the cap to the same
+     * handler). A sale the bids would not cover says what it sells instead
+     * of what was asked, and the button says so.
+     */
+    VBox auctionQuote(Instrument kit, DebtQuote quote, Auction.Result sale) {
+        Game g = ui.game;
+        DebtManager ledger = g.getDebtManager();
+        java.util.function.DoubleFunction<String> w = this::d;
+        Label title = new Label(quoteName(kit, false));
+        title.setWrapText(true);
+        title.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        HBox head = new HBox(Palette.GAP_TIGHT, title, infoButton(kit.blurb(), false));
+        head.setAlignment(Pos.CENTER_LEFT);
+
+        Label settles = new Label(settlesAt(kit, sale));
+        settles.setWrapText(true);
+        settles.setStyle(Palette.figure(Palette.SIZE_BODY, rateColour(quote, ledger)));
+
+        VBox figures = new VBox(3,
+                offerLine("Face - what the city owes", w.apply(quote.faceValue()), Palette.TEXT_BODY),
+                offerLine("Cash it brings", w.apply(quote.cashReceived()), Palette.GOOD),
+                offerLine("Monthly cost", quote.monthlyInterest() > 0 ? w.apply(quote.monthlyInterest()) + " a month"
+                        : "none - it pays no coupon", Palette.TEXT_BODY),
+                offerLine("Cost of the credit, all in", w.apply(quote.totalCost()), Palette.TEXT_BODY));
+
+        int due = g.getMonth() + sale.ask().months();
+        Label end = new Label("Serial".equals(kit.key())
+                ? "a slice of the face falls due every year, the last in " + CityCalendar.formatShort(due)
+                : "the whole face falls due in " + CityCalendar.formatShort(due));
+        end.setWrapText(true);
+        end.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        Label how = new Label(String.format("Stops at %s, %s over fair, covered %.2f×", pct3(sale.stop()), bp(sale.tail()), sale.cover()));
+        how.setWrapText(true);
+        how.setStyle(Palette.words(Palette.SIZE_LABEL, tailTone(sale)) + " -fx-font-weight: bold;");
+
+        VBox card = new VBox(6, head, settles, figures, end, how);
+        if (sale.shortSale()) {
+            // A bill's ask is the cash, and its face the lot that would bring it: a short bill says it in cash.
+            Label sells = new Label("Note".equals(kit.key())
+                    ? String.format("Raises %s of the %s asked: the bids do not reach the face that needs, at %s.",
+                            w.apply(quote.cashReceived()), w.apply(borrowAsk), pct3(sale.ceiling()))
+                    : String.format("Sells %s of the %s asked: the bids do not reach more at %s.",
+                            w.apply(sale.sold()), w.apply(sale.ask().face()), pct3(sale.ceiling())));
+            sells.setWrapText(true);
+            sells.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.BAD_TEXT) + " -fx-font-weight: bold;");
+            card.getChildren().add(sells);
+        } else if ("Note".equals(kit.key()) && Math.abs(quote.cashReceived() - borrowAsk) > borrowAsk * .005) {
+            card.getChildren().add(noteLine(String.format("That is %s %s than you asked for.",
+                    w.apply(Math.abs(quote.cashReceived() - borrowAsk)),
+                    quote.cashReceived() > borrowAsk ? "more" : "less"), PROCEEDS_INFO, 560));
+        }
+        Region push = new Region();
+        VBox.setVgrow(push, Priority.ALWAYS);
+        card.getChildren().add(push);
+
+        DebtQuote booked = quote;
+        int term = borrowTerm;
+        double ask = borrowAsk;
+        Auction.Cap cap = borrowCap;
+        Button go = new Button((sale.shortSale() ? "Sell what the bids cover · raise " : "Hold the auction · raise ")
+                + w.apply(quote.cashReceived()));
+        go.setWrapText(true);
+        go.setMaxWidth(Double.MAX_VALUE);
+        go.setStyle(Palette.words(Palette.SIZE_LABEL, "white") + " -fx-background-color: " + Palette.CONFIRM + ";");
+        go.setOnAction(e -> {
+            String summary = executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap);
+            borrowAsk = 0;
+            showDebtResultMenu(booked, false, summary);
+        });
+        // A sale that does not cover its own fixed cost raises nothing: the button does not offer it.
+        if (!(quote.cashReceived() > 0)) {
+            go.setText("Nothing is raised after the fixed cost of " + w.apply(sale.ask().fee()));
+            go.setDisable(true);
+        }
+        card.getChildren().add(go);
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setMaxHeight(Double.MAX_VALUE);
+        card.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
+        return card;
+    }
+
+    /** What a sale settles at, in a line: a bill's yield and its price for 100; a bond's coupon, line and yield; the amortizing bond's one coupon. */
+    String settlesAt(Instrument kit, Auction.Result r) {
+        return switch (r.ask().kind()) {
+            case BILL -> String.format("yields %s · %.3f for 100 of face", pct3(r.stop()), r.pricePer100());
+            case BOND -> couponWords(r.coupon()) + " coupon, " + (r.ask().isNewLine() ? "a new line" : "the line's own")
+                    + " · yields " + pct3(r.stop());
+            case AMORTIZING -> pct3(r.coupon()) + " coupon, one for the whole schedule · repaid in yearly slices";
+        };
+    }
+
+    /** The tail's colour: none is good, some is amber, the highest yield reached is red. */
+    static String tailTone(Auction.Result r) {
+        if (r.shortSale() || r.tail() >= Auction.MAX_TAIL - 1e-9) return Palette.BAD;
+        return r.tail() > 1e-9 ? Palette.WARN : Palette.GOOD;
+    }
+
+    /* ----------------------------- the auction, shown (CD2) ----------------------------- */
+
+    /** STOPS AT's (i): the stop and the tail (the spec's 4.3). */
+    static final String STOP_INFO = "The one yield at which the bids first cover the issue - never under fair, never "
+            + "over your highest yield. Everyone is filled at it, the households first and in full, the rest pro "
+            + "rata. The tail is the stop over fair: what selling cost the city, in yield, and the figure to watch.";
+
+    /** BIDS' (i): the cover. */
+    static final String COVER_INFO = "What was bid up to your highest yield, each bidder counted at most the issue, "
+            + "over the issue. Over 1× the issue is covered with room to spare; under it, the sale is short.";
+
+    /**
+     * THE AUCTION: the four bids against yield with the issue, fair and the
+     * highest yield drawn (AuctionChart), then the result line by line, and
+     * the bank's room. Run on the city as it stands; with nothing asked, the
+     * bank's room alone. `r` is the quote's own result.
+     */
+    VBox auctionCard(Instrument kit, Auction.Result r) {
+        Game g = ui.game;
         String info = String.format(BUYERS_INFO, pc(Bank.RISK_CITY));
-        VBox card = card(caption("WHO BUYS IT", info));
-        if (bank.isInsolvent()) {
-            card.setStyle(cardStyle(Palette.BAD));
-            card.getChildren().add(words("The bank has failed and cannot buy this. Anything issued now is funded at the "
-                    + "central bank's window. Resolve it first - the hub's card, or the Bank tab.", Palette.SIZE_BODY + 1,
-                    Palette.BAD_TEXT));
+        VBox card = card(caption("THE AUCTION", info, hint("run on the city as it stands")));
+        if (r == null || r.isEmpty()) {
+            card.getChildren().add(words("Ask for something and the auction runs here: the four bids against yield, "
+                    + "where it stops, and who takes how much.", Palette.SIZE_BODY + 1, Palette.TEXT_MUTED));
+            card.getChildren().addAll(bankRoomRows(null));
             return card;
+        }
+        Auction.Bidders bidders = g.auctionBidders(r.ask().months());
+        boolean fill = r.cap().fill();
+        card.getChildren().add(new AuctionChart(r, bidders, this::d));
+        card.getChildren().add(keyRow(
+                keySwatch(AuctionChart.WHO_COLOURS[0], "households"), keySwatch(AuctionChart.WHO_COLOURS[1], "the firms"),
+                keySwatch(AuctionChart.WHO_COLOURS[2], "the world"), keySwatch(AuctionChart.WHO_COLOURS[3], "the bank"),
+                keySwatch(Palette.TEXT_HEAD, "the issue"), keySwatch(Palette.TEXT_MUTED, "fair, dashed"),
+                fill && !r.shortSale() ? null : keySwatch(Palette.BAD, fill ? "the most any rule bids, dashed" : "your highest yield, dashed")));
+
+        Auction.Fill f = r.fills();
+        String coupon, couponLabel = "Coupon · price";
+        switch (r.ask().kind()) {
+            case BILL -> {
+                couponLabel = "Price · discount rate · yield";
+                coupon = String.format("%.3f · %s · %s", r.pricePer100(), pct3(r.discountRate()), pct3(r.stop()));
+            }
+            case BOND -> coupon = (r.ask().isNewLine() ? couponWords(r.coupon()) : "the line's " + couponWords(r.coupon()))
+                    + String.format(" · %.3f", r.pricePer100());
+            default -> coupon = pct3(r.coupon()) + String.format(" · %.3f", r.pricePer100());
+        }
+        // The result line by line at the left, and what the bank has to bid with at the right.
+        VBox result = new VBox(8);
+        result.getChildren().addAll(
+                cardLine("Stops at · tail over fair", pct3(r.stop()) + " · " + bp(r.tail()), tailTone(r), STOP_INFO),
+                cardLine(fill ? "Bids, up to the most any rule bids (" + pct3(r.ceiling()) + ")"
+                                : "Bids, up to your highest yield (" + pct3(r.ceiling()) + ")",
+                        String.format("%.2f× the issue", r.cover()), r.cover() >= 1 ? null : Palette.BAD_SOFT, COVER_INFO),
+                cardLine(couponLabel, coupon, null),
+                fillLine("Households, first", f.households(), r.sold()),
+                fillLine("The firms", f.firms(), r.sold()),
+                fillLine("The world", f.world(), r.sold()),
+                fillLine("The bank", f.bank(), r.sold()),
+                cardLine("The central bank", "none · it bids only to roll its own", Palette.TEXT_MUTED),
+                cardLine("You raise", d(r.proceeds()), Palette.GOOD, "The price per 100 times the face sold, less the "
+                        + "fixed cost of " + d(r.ask().fee()) + " a sale."));
+        if (!r.shortSale() && r.tail() > Auction.MAX_TAIL + 1e-9) {
+            result.getChildren().add(muted(String.format("The tail costs the city %s a year: %s sold, %s over fair.",
+                    d(r.sold() * r.tail()), d(r.sold()), bp(r.tail()))));
+        }
+        VBox bank = new VBox(8);
+        bank.getChildren().addAll(bankRoomRows(r));
+        card.getChildren().add(pair(result, bank));
+        return card;
+    }
+
+    /** One bidder's fill: its face, and its share of what was sold. */
+    HBox fillLine(String who, double face, double sold) {
+        return cardLine(who, d(face) + (sold > 0 ? " · " + pc(face / sold) : ""), face > 0 ? null : Palette.TEXT_MUTED);
+    }
+
+    /**
+     * THE RED CARD (the spec's section 7, board 4): a sale the bids would not
+     * cover. Capped, it says what the bids reach, what that sells at and how
+     * much of the face is not sold; with Fill it and still short, that no
+     * bidder's rule takes more at any yield. Null when the sale covers.
+     */
+    Node shortCard(Auction.Result r) {
+        if (r == null || r.isEmpty() || !r.shortSale()) return null;
+        String what = r.cap().fill()
+                ? String.format("Fill it, and still short: no bidder's rule takes more at any yield. The most they "
+                        + "bid, up to %s, is %s - %.2f× the issue. It sells that at %s, a tail of %s, and %s of face "
+                        + "is not sold.",
+                        pct3(r.ceiling()), d(r.sold()), r.cover(), pct3(r.stop()), bp(r.tail()), d(r.shortBy()))
+                : String.format("Capped at %s: the bids reach only %s, %.2f× the issue. It sells that at %s, a tail "
+                        + "of %s, and %s of face is not sold.",
+                        pct3(r.ceiling()), d(r.sold()), r.cover(), pct3(r.stop()), bp(r.tail()), d(r.shortBy()));
+        Label head = new Label("THIS SALE WOULD NOT COVER");
+        head.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.BAD_TEXT));
+        VBox red = new VBox(6, head,
+                words(what, Palette.SIZE_BODY + 1, Palette.BAD_TEXT),
+                words(r.cap().fill()
+                        ? "Make the sale smaller, or sell it in more than one piece."
+                        : "Raise the highest yield, choose Fill it, or make the sale smaller. What is not sold is not "
+                                + "raised: the treasury's bills are paid from its cash, and past that from the central "
+                                + "bank's advances, as ever.",
+                        Palette.SIZE_LABEL, Palette.BAD_SOFT));
+        red.setMaxWidth(Double.MAX_VALUE);
+        red.setStyle(cardStyle(Palette.BAD));
+        return red;
+    }
+
+    /**
+     * THE BANK'S ROOM, under the auction (what WHO BUYS IT's bar was, before
+     * CD2): its book, risk-weighted, against its room, with what the bank
+     * takes of this sale as a ghost; or why it bids nothing - failed, or no
+     * room. `r` is the sale (null: nothing asked).
+     */
+    List<Node> bankRoomRows(Auction.Result r) {
+        Bank bank = ui.game.getBank();
+        double room = bank.isInsolvent() ? 0 : bank.equity() / Bank.CAPITAL_RATIO;   // D20: its room is its capital (CD2, star 6)
+        List<Node> out = new ArrayList<>();
+        out.add(caption("THE BANK'S ROOM", null));
+        if (bank.isInsolvent()) {
+            out.add(words("The bank has failed and bids nothing: the auction sells what the others bid, at your highest "
+                    + "yield. Resolve it first - the hub's card, or the Bank tab.", Palette.SIZE_BODY + 1, Palette.BAD_SOFT));
+            return out;
         }
         if (room <= 0) {
-            card.setStyle(cardStyle(Palette.BAD));
-            card.getChildren().add(words("The bank has no capital room to buy this. The households bid for what pays them "
-                    + "better than a deposit would, and the auction sells what they bid at the highest yield the city "
-                    + "allows; the rest is not sold - unless the bank has no capital at all yet, in its first months, "
-                    + "when it stands behind the sale at fair, funded at the central bank's window.",
-                    Palette.SIZE_BODY + 1, Palette.BAD_TEXT));
-            return card;
+            out.add(words("The bank has no capital room, so it bids nothing: the auction sells what the households, "
+                    + "the firms and the world bid, at your highest yield. In its first months, before it has any "
+                    + "capital, the bank stands behind the sale at fair, funded at the central bank's window.",
+                    Palette.SIZE_BODY + 1, Palette.BAD_SOFT));
+            return out;
         }
-        card.getChildren().add(line("The households first, by their own rule at the yield that clears the sale; then"
-                + " your own bank, for the rest, up to its room."));
         double weighted = bank.getWeightedBook();
-        double issue = quote == null || quote.isEmpty() ? 0 : quote.faceValue() * Bank.RISK_CITY;
-        card.getChildren().add(segmentBar(List.of(seg(weighted, Palette.MONEY, "the bank's book, risk-weighted " + d(weighted)),
-                        ghost(issue, Palette.MONEY, null, "this issue, if the bank took all of it, at treasury paper's weight")),
+        double issue = r == null || r.isEmpty() ? 0 : r.fills().bank() * Bank.RISK_CITY;
+        out.add(segmentBar(List.of(seg(weighted, Palette.MONEY, "the bank's book, risk-weighted " + d(weighted)),
+                        ghost(issue, Palette.MONEY, null, "what the bank takes of this sale, at treasury paper's weight")),
                 Math.max(room, weighted + issue), List.of(new Tick(room, Palette.TEXT_HEAD, 2, "its room " + d(room), null)), 0, 10));
-        card.getChildren().add(line(pc(weighted / room) + " of its room used · treasury paper weighs " + pc(Bank.RISK_CITY)));
+        out.add(line(pc(weighted / room) + " of its room used · treasury paper weighs " + pc(Bank.RISK_CITY)));
         if (bank.strain() > Bank.EASY_STRAIN) {
-            card.setStyle(cardStyle(Palette.BAD));
-            card.getChildren().add(words(String.format("The bank is past comfortable already: %s lent out. Treasury paper "
-                            + "ties up less room than a business loan of the same size - but it is still room the shops "
-                            + "and the mills were going to use.", pc(weighted / room)), Palette.SIZE_BODY + 1,
-                    Palette.BAD_TEXT));
+            out.add(words(String.format("The bank is past comfortable already: %s lent out. Treasury paper ties up less "
+                    + "room than a business loan of the same size - but it is still room the shops and the mills were "
+                    + "going to use.", pc(weighted / room)), Palette.SIZE_BODY + 1, Palette.BAD_SOFT));
         }
-        return card;
+        return out;
+    }
+
+    /**
+     * The four bids against yield, drawn (board 4): the households, the firms,
+     * the world and the bank stacked from the foot, so the top edge is the
+     * four summed, over a yield axis from fair less a fifth of a point to the
+     * highest yield plus half a point (Fill it: to the stop plus half a
+     * point); the face on the vertical axis, the issue a horizontal line at
+     * the face, a dashed vertical at fair and one at the highest yield (the
+     * most any rule bids, for Fill it, when the sale is short), and a dot at
+     * the stop. Every point is Auction.bidsAt() - the arithmetic that clears,
+     * not a copy of it - on a grid of yields, with the bank's step at fair
+     * plus what its funding needs drawn square. A fixed height and the card's
+     * width: it is drawn again when it is given another.
+     */
+    static final class AuctionChart extends javafx.scene.layout.Pane {
+        /** The bidders' colours in Auction.Fill's order, as the holders' bar has them. */
+        static final String[] WHO_COLOURS = { Palette.PEOPLE, Palette.BUSINESS, Palette.ORE, Palette.MONEY };
+        static final String[] WHO = { "households", "the firms", "the world", "the bank" };
+        /** Its height and its margins, in pixels; the width it is first drawn at, and the least it is drawn at. */
+        static final double H = 240, LEFT = 62, RIGHT = 16, TOP = 16, FOOT = 26, FIRST_W = 720, LEAST_W = 420;
+        /** How many yields the bids are read at across the axis. */
+        static final int SAMPLES = 60;
+
+        private final Auction.Result r;
+        private final Auction.Bidders bidders;
+        private final java.util.function.DoubleFunction<String> money;
+        /** The width it is drawn at now; 0 before the first. */
+        private double drawnAt;
+
+        AuctionChart(Auction.Result r, Auction.Bidders bidders, java.util.function.DoubleFunction<String> money) {
+            this.r = r;
+            this.bidders = bidders;
+            this.money = money;
+            setMinSize(LEAST_W, H);
+            setPrefSize(FIRST_W, H);
+            setMaxSize(Double.MAX_VALUE, H);
+            draw(FIRST_W);
+        }
+
+        @Override protected void layoutChildren() {
+            double w = Math.max(LEAST_W, getWidth());
+            if (Math.abs(w - drawnAt) > .5) draw(w);
+            super.layoutChildren();
+        }
+
+        /** The chart at a width: everything in it, drawn again from the sale. */
+        private void draw(double w) {
+            drawnAt = w;
+            getChildren().clear();
+            Auction.Ask ask = r.ask();
+            double face = ask.face(), fair = ask.fair();
+            boolean fill = r.cap().fill();
+            double lo = fair - .002;
+            double hi = (fill ? r.stop() : r.ceiling()) + .005;
+            if (hi - lo < .01) hi = lo + .01;
+            final double from = lo, to = hi;
+            final double top = face * 1.4;
+            final double plotW = w - LEFT - RIGHT, plotH = H - TOP - FOOT;
+            java.util.function.DoubleUnaryOperator x = v -> LEFT + plotW * (v - from) / (to - from);
+            java.util.function.DoubleUnaryOperator y = v -> TOP + plotH * (1 - Math.min(Math.max(v, 0), top) / top);
+
+            // The grid: the foot, half the face and the face, labelled in money.
+            for (double v : new double[] { 0, face / 2, face }) {
+                javafx.scene.shape.Line grid = new javafx.scene.shape.Line(LEFT, y.applyAsDouble(v), w - RIGHT, y.applyAsDouble(v));
+                grid.setStroke(javafx.scene.paint.Color.web(Palette.EDGE));
+                getChildren().add(grid);
+                label(money.apply(v), LEFT - 6, y.applyAsDouble(v) - 7, javafx.geometry.Pos.CENTER_RIGHT, LEFT - 8, Palette.TEXT_MUTED);
+            }
+            // ...and the yield axis, at a step that leaves a handful of ticks.
+            double[] steps = { .0005, .001, .0025, .005, .01, .02, .05 };
+            double step = steps[steps.length - 1];
+            for (double s : steps) if ((to - from) / s <= 8) { step = s; break; }
+            for (double v = Math.ceil(from / step) * step; v <= to + 1e-12; v += step) {
+                label(String.format(step < .0025 ? "%.3f%%" : "%.2f%%", v * 100), x.applyAsDouble(v), H - FOOT + 5,
+                        javafx.geometry.Pos.CENTER, 70, Palette.TEXT_MUTED);
+            }
+
+            // The yields the bids are read at: an even grid, and the points where something changes.
+            java.util.TreeSet<Double> ys = new java.util.TreeSet<>();
+            for (int i = 0; i <= SAMPLES; i++) ys.add(from + (to - from) * i / SAMPLES);
+            double bankStep = fair + bidders.bankExtra();
+            for (double special : new double[] { fair, bankStep, r.stop(), r.ceiling() }) {
+                if (special > from && special < to) ys.add(special);
+            }
+            if (bankStep > from && bankStep < to) ys.add(bankStep - 1e-9);
+            int n = ys.size();
+            double[] at = new double[n];
+            double[][] cum = new double[4][n];
+            int i = 0;
+            for (double yv : ys) {
+                Auction.Fill bids = Auction.bidsAt(yv, bidders, ask);
+                at[i] = yv;
+                cum[0][i] = bids.households();
+                cum[1][i] = cum[0][i] + bids.firms();
+                cum[2][i] = cum[1][i] + bids.world();
+                cum[3][i] = cum[2][i] + bids.bank();
+                i++;
+            }
+            // Stacked areas, foot first; each between its running total and the one under it.
+            for (int k = 0; k < 4; k++) {
+                javafx.scene.shape.Polygon area = new javafx.scene.shape.Polygon();
+                for (int j = 0; j < n; j++) area.getPoints().addAll(x.applyAsDouble(at[j]), y.applyAsDouble(cum[k][j]));
+                for (int j = n - 1; j >= 0; j--) area.getPoints().addAll(x.applyAsDouble(at[j]), y.applyAsDouble(k == 0 ? 0 : cum[k - 1][j]));
+                area.setFill(javafx.scene.paint.Color.web(WHO_COLOURS[k], .6));
+                area.setStroke(null);
+                getChildren().add(area);
+            }
+            // ...and the four summed, the line the stop is read off.
+            javafx.scene.shape.Polyline sum = new javafx.scene.shape.Polyline();
+            for (int j = 0; j < n; j++) sum.getPoints().addAll(x.applyAsDouble(at[j]), y.applyAsDouble(cum[3][j]));
+            sum.setStroke(javafx.scene.paint.Color.web(Palette.ACCENT));
+            sum.setStrokeWidth(2.2);
+            getChildren().add(sum);
+
+            // The issue: a line at the face across the whole plot.
+            javafx.scene.shape.Line issue = new javafx.scene.shape.Line(LEFT, y.applyAsDouble(face), w - RIGHT, y.applyAsDouble(face));
+            issue.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_HEAD));
+            issue.setStrokeWidth(1.4);
+            getChildren().add(issue);
+            label("the issue " + money.apply(face), w - RIGHT - 4, y.applyAsDouble(face) - 15, javafx.geometry.Pos.CENTER_RIGHT, 220, Palette.TEXT_HEAD);
+
+            // Fair, dashed, named over its top at its right.
+            double fairX = x.applyAsDouble(fair);
+            vertical(fairX, Palette.TEXT_MUTED, TOP, H - FOOT);
+            label("fair " + pct3(fair), fairX + 4, TOP + 2, javafx.geometry.Pos.CENTER_LEFT, 120, Palette.TEXT_LABEL);
+
+            // The highest yield, dashed: shown when there is one, or when Fill it ran out of rules at it. Named at
+            // its left over its top - or at its right when fair's name is in the way.
+            double ceiling = r.ceiling();
+            if ((!fill || r.shortSale()) && ceiling > from && ceiling < to) {
+                double ceilX = x.applyAsDouble(ceiling);
+                vertical(ceilX, Palette.BAD, TOP, H - FOOT);
+                String named = (fill ? "the most any rule bids " : "your highest yield ") + pct3(ceiling);
+                if (ceilX - fairX > 340) label(named, ceilX - 5, TOP + 2, javafx.geometry.Pos.CENTER_RIGHT, 220, Palette.BAD_SOFT);
+                else label(named, ceilX + 5, TOP + 14, javafx.geometry.Pos.CENTER_LEFT, 220, Palette.BAD_SOFT);
+            }
+
+            // The stop: a dot where the sale clears, on the issue when it covers and on the bids when it does not.
+            double sx = x.applyAsDouble(r.stop()), sy = y.applyAsDouble(r.sold());
+            javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(sx, sy, 5, javafx.scene.paint.Color.web(Palette.WARN));
+            dot.setStroke(javafx.scene.paint.Color.web(Palette.STAGE));
+            Tooltip tip = new Tooltip(String.format("Stops at %s, %s over fair: %s sold, %.2f× the issue bid up to %s.",
+                    pct3(r.stop()), bp(r.tail()), money.apply(r.sold()), r.cover(), pct3(ceiling)));
+            tip.setShowDelay(Duration.millis(150));
+            tip.setWrapText(true);
+            tip.setMaxWidth(320);
+            Tooltip.install(dot, tip);
+            getChildren().add(dot);
+            String stopWords = (r.shortSale() ? "short: sells " + money.apply(r.sold()) + " at " : "stops at ") + pct3(r.stop())
+                    + " · tail " + bp(r.tail());
+            // Under the dot, or over it when it sits too near the axis for the words.
+            double wordsY = sy + 18 > H - FOOT ? sy - 20 : sy + 6;
+            if (sx > w - 300) label(stopWords, sx - 9, wordsY, javafx.geometry.Pos.CENTER_RIGHT, 280, Palette.TEXT_HEAD);
+            else label(stopWords, sx + 9, wordsY, javafx.geometry.Pos.CENTER_LEFT, 280, Palette.TEXT_HEAD);
+        }
+
+        /** A dashed vertical line at x, in a colour, between two heights. */
+        private void vertical(double x, String colour, double from, double to) {
+            javafx.scene.shape.Line line = new javafx.scene.shape.Line(x, from, x, to);
+            line.setStroke(javafx.scene.paint.Color.web(colour));
+            line.setStrokeWidth(1.2);
+            line.getStrokeDashArray().addAll(4.0, 3.0);
+            getChildren().add(line);
+        }
+
+        /**
+         * A label of the chart's: `x` is where the text starts, ends or centres
+         * by `align`, in a box `wide` pixels across (a Pane gives its children
+         * their preferred size, so the box is the alignment's room).
+         */
+        private void label(String text, double x, double y, javafx.geometry.Pos align, double wide, String colour) {
+            Label l = new Label(text);
+            l.setStyle(Palette.figure(Palette.SIZE_CAPTION, colour));
+            l.setAlignment(align);
+            l.setMinWidth(wide);
+            l.setPrefWidth(wide);
+            l.setMaxWidth(wide);
+            double left = align == javafx.geometry.Pos.CENTER_RIGHT ? x - wide : align == javafx.geometry.Pos.CENTER ? x - wide / 2 : x;
+            l.relocate(left, y);
+            l.setMouseTransparent(true);
+            getChildren().add(l);
+        }
     }
 
     /** AND THE DOLLARS: convert and spend, or hold as reserves (the spec's W8). */
@@ -3403,11 +4113,12 @@ final class FinancesScreen {
        return value and the log's, unchanged.
        ===================================================================== */
 
-    String executeDebtLogic(String type, double amount, int duration, double rounding) {
+    /** Books the sale the page quoted, at the highest yield it was quoted at (CD2): the handler struck on the same city at the same cap. */
+    String executeDebtLogic(String type, double amount, int duration, double rounding, Auction.Cap cap) {
         return switch (type) {
-            case "Note" -> ui.game.handleTBillLogic(amount, duration, rounding);
-            case "Serial" -> ui.game.handleMediumBondLogic(amount, duration, rounding);
-            case "Term" -> ui.game.handleLongBondLogic(amount, duration, rounding);
+            case "Note" -> ui.game.handleTBillLogic(amount, duration, rounding, cap);
+            case "Serial" -> ui.game.handleMediumBondLogic(amount, duration, rounding, cap);
+            case "Term" -> ui.game.handleLongBondLogic(amount, duration, rounding, cap);
             default -> "Unknown instrument.";
         };
     }
@@ -3426,15 +4137,23 @@ final class FinancesScreen {
         } else {
             java.util.function.DoubleFunction<String> w = foreign ? Money::usd : this::d;
             int month = g.getMonth();
-            int months = "Note".equals(quote.instrument()) ? quote.duration() : quote.duration() * 12;
+            Auction.Result sale = quote.auction();
+            // A reopened line falls due on the line's date: the auction's months are the line's left.
+            int months = sale != null && !sale.isEmpty() ? sale.ask().months()
+                    : "Note".equals(quote.instrument()) ? quote.duration() : quote.duration() * 12;
             String first = summary.substring(0, Math.max(0, summary.indexOf('\n'))).trim();
             VBox receipt = card(caption(first.isEmpty() ? "ISSUED" : first.toUpperCase(), null),
+                    sale != null && !sale.isEmpty() ? cardLine("Sold at auction", String.format("stopped at %s, %s over fair, "
+                            + "covered %.2f×", pct3(sale.stop()), bp(sale.tail()), sale.cover()), null) : null,
+                    sale != null && sale.shortSale() ? cardLine("Asked for, and not sold", w.apply(sale.shortBy()) + " of "
+                            + w.apply(sale.ask().face()), Palette.BAD_SOFT) : null,
                     cardLine("Face - what the city owes", w.apply(quote.faceValue()), null),
                     cardLine("Cash received", w.apply(quote.cashReceived()), null),
                     cardLine("Issued at", String.format("%.2f of par", quote.pricePerPar()), null),
                     cardLine("Coupon", quote.monthlyInterest() > 0
                             ? w.apply(quote.monthlyInterest()) + " a month"
-                                    + ("Term".equals(quote.instrument()) ? String.format(", %.2f%% on the face", quote.couponRate() * 100) : "")
+                                    + ("Term".equals(quote.instrument()) ? ", " + couponWords(quote.couponRate()) + " on the face"
+                                            : "Serial".equals(quote.instrument()) ? ", " + pct3(quote.couponRate()) + " on what is left" : "")
                             : "none - the discount is the lender's return", null),
                     "Serial".equals(quote.instrument())
                             ? cardLine("Principal", "repaid in " + Math.max(1, quote.duration()) + " annual slices", null)
