@@ -6940,8 +6940,20 @@ public final class GameVersion {
      *     (EarthSite.DEPOSITS_FORMAT); a generated save of 40 still loads.
      *   - Harness: EarthDepositsCheck (new); EarthTerrainCheck 11-13 and 15
      *     and EarthFoundingCheck 2 and 6 moved onto it (6's fixture remade).
+     *
+     * 0.8.13 (2026-10-20) - CL2, STREETS NOT A GRID INSIDE THE BLOCKS
+     * (docs/queue/CL2-notes.md; docs/studies/spec-city-layout.md 5.1). The
+     * map's alone; the trace is byte-identical to 0.8.12's.
+     *   - DistrictPlan: each homes cell, long blocks or squared (a
+     *     boulevard's interior too), takes the comb, dropped crossings or
+     *     brick by a hash of the world's seed and its place (layoutOf), a
+     *     third each (Jerus, the study's star 1: "A third stays"); a cell a
+     *     highway, railway, yard or reserve crosses keeps the comb. A merge
+     *     in a varied cell takes up the stubs it leaves or is not made.
+     *     Input.combOnly draws 0.8.12's plan, box for box.
+     *   - Harness: PlanCheck 10 (new section). Save format unchanged.
      */
-    public static final String VERSION = "0.8.12";
+    public static final String VERSION = "0.8.13";
 
     /**
      * The save shape.
