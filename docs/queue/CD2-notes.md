@@ -1,13 +1,13 @@
 # CD2 - the lineup and the auction: notes
 
-*0.8.16, 2026-10-21, overnight (Jerus's chain: CL2, CD1, CL3, CD2, FX5). The
+*0.8.17, 2026-10-21, overnight (Jerus's chain: CL2, CD1, CL3, CD2, FX5). The
 batch is `docs/studies/spec-city-debt.md` §8's CD2 row: §2.1-2.3 and 2.7
 (bills, bonds in reopened lines, the amortizing bond, dollar paper), §4 (the
 auction and the sales nobody presses), its screen, Borrow as an auction (§7
 board 4, D31), the households at the auction's yield (D32), and first the
 study's model run again with the firms (D33). Planned while CD1 was built;
 built on CD1's branch (unshipped, waiting for Jerus on H1 and A2) merged with
-main at 9f1b328 (CL2, 0.8.13); merged with main at 9ff6489 after CD1 shipped as 0.8.15 (CL3 took 0.8.14), so it is 0.8.16.*
+main at 9f1b328 (CL2, 0.8.13); merged with main at 9ff6489 after CD1 shipped as 0.8.15 (CL3 took 0.8.14), so it was 0.8.16; FX6 shipped first as 0.8.16, so it is 0.8.17.*
 
 **Ready.** Merged with main after CD1 shipped (9ff6489, then e6c8e74); the checks, the playtests and the ensemble rerun on the merged tree; `--timing` 7 of 8, its one red MapCheck's wall clock, which main fails alone too (§3).
 
@@ -157,7 +157,7 @@ the measure.
 **The ensemble** (label cd2b, on the tree merged with main after CD1
 shipped, 4 runners at once, 80 of 80 runs in 19.4 minutes, against CD1's
 `docs/ensemble/0.8.15.md`): **23/25** (one vacuous, H1 retired by Jerus)
-against CD1's 22/25; stored as `docs/ensemble/0.8.16.md`. The night's run
+against CD1's 22/25; stored as `docs/ensemble/0.8.17.md`. The night's run
 on the unmerged tree (cd2) gave the same figures. **A2 passes** (the longest
 spell over 10% from m240 a median 7 months [1 to 10], against CD1's 7 [3 to
 12]). **S1** stays red, its median nearer the line (1.85% over the twin

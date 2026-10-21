@@ -6992,7 +6992,20 @@ public final class GameVersion {
      *   - Harness: CurveCheck (new); CentralBankCheck, HoldersCheck and
      *     ForeignDebtCheck restated on the new pricing, premises kept.
      *
-     * 0.8.16 (2026-10-21) - CD2, THE LINEUP AND THE AUCTION
+     * 0.8.16 (2026-10-21) - FX6, A DISTRICT THAT BUYS LAND INSIDE ITSELF
+     * KEEPS ITS BUILDINGS WHERE THEY STAND (docs/queue/FX6-notes.md). The
+     * map's alone; the trace is byte-identical to 0.8.15's.
+     *   - CityMap: a plan's input dates its ground, each plot the month the
+     *     city bought it (DistrictPlan.Input.boughtAt, from the land grid's
+     *     holdings: LandGrid.tileHoldings()).
+     *   - DistrictPlan: the plan starts on the ground its first batch stands
+     *     on and adds the land bought before each arrival's month (THE GROUND
+     *     BOUGHT): the open cells take the new plots as room, the cells not
+     *     taken are ranked again; what stands never moves.
+     *   - Harness: PlanCheck 12 and MapCheck 2c (new sections). Save format
+     *     unchanged.
+     *
+     * 0.8.17 (2026-10-21) - CD2, THE LINEUP AND THE AUCTION
      * (docs/queue/CD2-notes.md; docs/studies/spec-city-debt.md 2 and 4).
      * Every trace that borrows moves.
      *   - Lineup: bills 1-12 months, bonds 2-50 years with the stop's coupon
@@ -7013,7 +7026,7 @@ public final class GameVersion {
      *   - Harness: AuctionCheck (new); NewGameCheck 11 and HoldersCheck
      *     restated to the auction, premises kept.
      */
-    public static final String VERSION = "0.8.16";
+    public static final String VERSION = "0.8.17";
 
     /**
      * The save shape.

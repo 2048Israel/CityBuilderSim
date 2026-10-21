@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exchange rates: the world's moneys</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;--edge:#24354a;--control-edge:#33475f;--text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;--good:#3fb950;--warn:#e3b341;--bad:#f85149;--accent:#5aa9ff;--accent-light:#8cc4ff;--people:#2ec4b6;--money:#5aa9ff;--business:#a78bfa;--building:#f17cb0;--ore:#c9b68f;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--stage);color:var(--text);font-family:var(--sans);font-size:12.5px;line-height:1.45}
+.board{max-width:1240px;margin:0 auto;padding:22px 16px 40px}
+.bd-kicker{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.bd-title{font-size:23px;font-weight:600;margin:2px 0 4px}
+.bd-lead{font-size:14.5px;color:var(--text2);max-width:920px;margin:0 0 6px}
+.bd-est{font-size:11px;color:var(--text3);max-width:920px;margin:0 0 14px}
+.scroll{overflow-x:auto}
+.frame{display:flex;width:1200px;background:var(--panel);border:1px solid var(--edge);border-radius:6px;overflow:hidden}
+.rail{width:44px;background:var(--stage);display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:14px;color:var(--text3);font-size:14px}
+.rail i{font-style:normal;width:30px;height:30px;display:grid;place-items:center;border-radius:6px}
+.rail i.on{background:var(--pinned);color:var(--business);box-shadow:inset 3px 0 0 var(--building)}
+.page{flex:1;padding:16px 20px 22px}
+.head{display:flex;align-items:center;gap:10px}
+.swatch{width:12px;height:12px;border-radius:3px;background:var(--business)}
+.name{font-size:22px;font-weight:600}
+.info{width:16px;height:16px;border-radius:50%;border:1px solid var(--control-edge);color:var(--text3);font-size:10px;display:grid;place-items:center}
+.pages{display:flex;gap:6px;margin:12px 0}
+.pg{padding:5px 11px;border-radius:6px;background:var(--raised);border:1px solid var(--edge);color:var(--text2);font-size:11px}
+.pg.on{background:var(--pinned);border-color:var(--business);color:var(--text)}
+.row{display:grid;gap:12px;margin-bottom:12px}
+.r1{grid-template-columns:600px 1fr}.r2{grid-template-columns:1fr 1fr}
+.card{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:12px 14px}
+.ch{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ch .ic{width:22px;height:22px;border-radius:5px;background:rgba(201,182,143,.16);color:var(--ore);display:grid;place-items:center;font-size:12px}
+.ch h4{margin:0;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+.ch .sub{font-size:10.5px;color:var(--text3);margin-left:4px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{font-weight:500;color:var(--text3);text-align:right;padding:3px 6px;border-bottom:1px solid var(--edge);font-size:10px}
+th:first-child,td:first-child{text-align:left}
+td{padding:4px 6px;text-align:right;border-bottom:1px solid #1c2a3b;font-family:var(--mono);white-space:nowrap}
+td:first-child{font-family:var(--sans);color:var(--text2)}
+td .b{display:inline-block;height:7px;border-radius:2px;vertical-align:0;background:var(--ore)}
+.dn{color:var(--bad)}.up{color:var(--good)}
+.tot td{border-bottom:0;color:var(--text);font-weight:600}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 8px}
+.chip{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:4px 10px;font-size:10.5px;color:var(--text2)}
+.chip.lit{background:var(--pinned);border-color:var(--money);color:var(--text)}
+.para{font-size:11px;color:var(--text2);margin:6px 0 0}.para b{color:var(--text)}
+.cmp{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;font-size:10.5px;align-items:center;margin-top:6px}
+.cmp .t{display:flex;height:12px;border-radius:3px;overflow:hidden}
+.cmp .t i{display:block;height:100%}
+.leg{display:flex;gap:10px;flex-wrap:wrap;font-size:9.5px;color:var(--text3);margin-top:6px}
+.leg span{display:flex;align-items:center;gap:4px}.leg i{width:9px;height:9px;border-radius:2px;display:block}
+.fx{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}
+.fx div{background:var(--panel);border:1px solid var(--edge);border-radius:6px;padding:5px 8px;font-family:var(--mono);font-size:11px}
+.fx div span{display:block;font-family:var(--sans);font-size:9.5px;color:var(--text3)}
+.ex{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;color:var(--text2)}
+.ex input{font-family:var(--mono);background:var(--stage);border:1px solid var(--control-edge);border-radius:4px;color:var(--text);padding:4px 8px;width:110px}
+.btn{background:var(--panel);border:1px solid var(--control-edge);border-radius:4px;padding:4px 12px;font-size:11px;color:var(--text)}
+.btn.go{background:var(--accent-fill,#2f6fa8);border-color:var(--accent)}
+.offer{display:grid;grid-template-columns:330px 1fr;gap:14px}
+.mini{position:relative;height:220px;border-radius:6px;overflow:hidden;background:#2f5d88}
+.note2{font-size:10px;color:var(--text3);margin-top:4px}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;max-width:1200px}
+.note{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:10px 13px;font-size:11.5px;color:var(--text2)}
+.note b{color:var(--text)}
+/* exchange-rate study: what the boards add to the look */
+.big{font-family:var(--mono);font-size:34px;font-weight:600;line-height:1.1;letter-spacing:-.01em}
+.big span{font-family:var(--sans);font-size:12px;font-weight:400;color:var(--text3);letter-spacing:0;margin-left:6px}
+.mv{font-family:var(--mono);font-size:12px;color:var(--text2);margin:6px 0 2px}
+.mv b{color:var(--text);font-weight:600}
+.mut{font-size:10.5px;color:var(--text3);margin:3px 0 0}
+.para.mut{color:var(--text3)}
+td.l,th.l{text-align:left}td.l{font-family:var(--sans);color:var(--text2)}
+.sv{display:block;width:100%;height:auto}
+.sv text{fill:var(--text3);font-family:var(--sans);font-size:10px}
+.sv .gl{stroke:var(--edge);stroke-width:1}
+.sv .ax{stroke:var(--control-edge);stroke-width:1}
+.sv .band{fill:var(--money);fill-opacity:.16;stroke:none}
+.sv .ln{fill:none;stroke-linejoin:round;stroke-linecap:round}
+.sv .c-money{stroke:var(--money)}.sv .c-ore{stroke:var(--ore)}.sv .c-al{stroke:var(--accent-light)}.sv .c-t3{stroke:var(--text3)}.sv .c-spent{stroke:var(--spent)}.sv .c-warn{stroke:var(--warn)}.sv .c-people{stroke:var(--people)}.sv .c-biz{stroke:var(--business)}
+.sv .f-money{fill:var(--money)}.sv .f-ore{fill:var(--ore)}.sv .f-al{fill:var(--accent-light)}.sv .f-t2{fill:var(--text2)}.sv .f-spent{fill:var(--spent)}.sv .f-warn{fill:var(--warn)}.sv .f-people{fill:var(--people)}.sv .f-biz{fill:var(--business)}.sv .f-t3{fill:var(--text3)}
+.leg i.lnk{width:16px;height:0;background:none;border-radius:0}
+.leg{margin-top:8px}
+.card.notice{border-left:3px solid var(--warn)}
+.fx div b{display:block;font-weight:600;color:var(--text)}
+.fx div em{display:block;font-family:var(--sans);font-style:normal;font-size:9.5px;color:var(--text3);margin-top:2px}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.cap{font-size:10.5px;color:var(--text2);margin:0 0 4px}.cap b{color:var(--text);font-weight:500}
+
+.r3{grid-template-columns:7fr 5fr}
+tr.me td{background:var(--pinned)}
+tr.me td:first-child{box-shadow:inset 3px 0 0 var(--money);font-weight:600;color:var(--text)}
+.pb{display:inline-block;position:relative;width:76px;height:7px;vertical-align:middle;margin-left:8px}
+.pb:before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--control-edge)}
+.pb i{position:absolute;top:0;height:7px;border-radius:2px}
+.pb i.d{right:50%;background:var(--accent-light)}
+.pb i.c{left:50%;background:var(--money)}
+</style></head>
+<body><div class="board">
+<div class="bd-kicker">Exchange-rate study · board 3 of 3 · Trade &amp; the world &rsaquo; Partners, and a nation's card</div>
+<div class="bd-title">The world's moneys move too</div>
+<p class="bd-lead">Each nation's money follows its prices against the US's, the world's dollar cycle, its risk in a panic and its own swing. A risk-off reaches the D$ through its vault and its hot money.</p>
+<p class="bd-est">One Random world drawn by RatesModel (seed 2026), 2000-2040; the risk-off is its month 178. The rates' levels, the policy rates and Canada's card are invented around it. The figures in the risk-off notice are illustrative, not read off the chart.</p>
+<div class="scroll"><div class="frame">
+ <div class="rail"><i>&#9776;</i><i>&#9881;</i><i class="on">&#8644;</i><i>&#9733;</i><i>&#9638;</i></div>
+ <div class="page">
+  <div class="head"><span class="swatch"></span><span class="name">Trade &amp; the world</span><span class="info">i</span></div>
+  <div class="pages"><span class="pg">Overview</span><span class="pg">The month</span><span class="pg">What we trade</span><span class="pg on">Partners</span><span class="pg">The currency</span><span class="pg">The reserves</span></div>
+
+  <div class="row">
+   <div class="card">
+    <div class="ch"><span class="ic" style="background:rgba(90,169,255,.16);color:var(--money)">&#8644;</span><h4>The world's moneys this month</h4><span class="sub">a rising rate is a weaker money</span><span class="info" style="margin-left:auto">i</span></div>
+    <table>
+     <tr><th class="l">money</th><th>per US$</th><th>this month</th><th>this year</th><th>against parity</th><th class="l">how it is set</th><th>policy rate</th></tr>
+      <tr><td>US dollar <span style="color:var(--money)" title="one of the eight the vault can hold">&#9670;</span></td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td>&ndash;</td><td class="l">floats</td><td>4.50%</td></tr>
+      <tr><td>Euro <span style="color:var(--money)" title="one of the eight the vault can hold">&#9670;</span></td><td>0.912</td><td>+0.4%</td><td>−3.1%</td><td>6% dear<span class="pb"><i class="d" style="width:10.0%"></i></span></td><td class="l">floats</td><td>2.25%</td></tr>
+      <tr><td>Yen <span style="color:var(--money)" title="one of the eight the vault can hold">&#9670;</span></td><td>148.2</td><td>−1.2%</td><td>+4.0%</td><td>28% cheap<span class="pb"><i class="c" style="width:46.7%"></i></span></td><td class="l">floats</td><td>0.75%</td></tr>
+      <tr><td>Pound <span style="color:var(--money)" title="one of the eight the vault can hold">&#9670;</span></td><td>0.781</td><td>+0.2%</td><td>−1.5%</td><td>3% dear<span class="pb"><i class="d" style="width:5.0%"></i></span></td><td class="l">floats</td><td>4.00%</td></tr>
+      <tr><td>Yuan <span style="color:var(--money)" title="one of the eight the vault can hold">&#9670;</span></td><td>7.18</td><td>0.0%</td><td>+0.6%</td><td>18% cheap<span class="pb"><i class="c" style="width:30.0%"></i></span></td><td class="l">a band</td><td>3.10%</td></tr>
+      <tr><td>Canadian dollar <span style="color:var(--money)" title="one of the eight the vault can hold">&#9670;</span></td><td>1.371</td><td>−0.6%</td><td>+2.2%</td><td>9% cheap<span class="pb"><i class="c" style="width:15.0%"></i></span></td><td class="l">floats</td><td>2.75%</td></tr>
+      <tr><td>Australian dollar <span style="color:var(--money)" title="one of the eight the vault can hold">&#9670;</span></td><td>1.522</td><td>−0.9%</td><td>+5.1%</td><td>7% cheap<span class="pb"><i class="c" style="width:11.7%"></i></span></td><td class="l">floats</td><td>3.60%</td></tr>
+      <tr><td>Swiss franc <span style="color:var(--money)" title="one of the eight the vault can hold">&#9670;</span></td><td>0.884</td><td>+0.3%</td><td>−2.0%</td><td>14% dear<span class="pb"><i class="d" style="width:23.3%"></i></span></td><td class="l">floats</td><td>0.25%</td></tr>
+      <tr><td>Hong Kong dollar</td><td>7.80</td><td>0.0%</td><td>0.0%</td><td>&ndash;</td><td class="l">pegged to the US$</td><td>4.75%</td></tr>
+      <tr class="me"><td>The D$</td><td>1.553</td><td>+2.3%</td><td>+5.8%</td><td>18% cheap<span class="pb"><i class="c" style="width:30.0%"></i></span></td><td class="l">leans against falls</td><td>4.75%</td></tr>
+    </table>
+    <p class="para mut"><span style="color:var(--money)">&#9670;</span> marks the eight the vault can hold. This month and this year are the change in the rate per US$: a plus is a weaker money. Against parity is how far the rate sits from what the two countries' prices say it should be.</p>
+   </div>
+  </div>
+
+  <div class="row r3">
+   <div class="card">
+    <div class="ch"><span class="ic" style="background:rgba(90,169,255,.16);color:var(--money)">&#8767;</span><h4>The dollar, 2000-2040</h4><span class="sub">one Random world &middot; 492 months</span></div>
+    <div class="cap">Each line rises when the US$ gets stronger: the broad dollar index, and the yen and the Australian dollar per US$. 2000 = 100.</div>
+    <svg id="c3a" class="sv" viewBox="0 0 612 316" role="img" aria-label="The broad dollar index over 492 months with the yen and the Australian dollar per US$ faint beside it, a risk-off marked at month 178, and the strength of each risk-off along the bottom"></svg>
+    <div class="leg">
+     <span><i class="lnk" style="border-top:2px solid var(--money)"></i>the dollar (broad index)</span>
+     <span><i class="lnk" style="border-top:1.5px solid var(--people)"></i>yen per US$</span>
+     <span><i class="lnk" style="border-top:1.5px solid var(--business)"></i>Australian dollar per US$</span>
+     <span><i style="background:var(--warn)"></i>a risk-off, and how strong</span>
+    </div>
+    <p class="para">A broad dollar's swings of a third to a half over six to eleven years, as 2002-2011 and 2011-2022. At month 178 the yen and the Australian dollar part: the haven rises, the high yielder falls.</p>
+   </div>
+   <div class="col">
+    <div class="card notice">
+     <div class="ch"><span class="ic" style="background:rgba(227,179,65,.16);color:var(--warn)">!</span><h4>A risk-off abroad</h4><span class="sub">as it reads in the month one hits</span></div>
+     <p class="para" style="margin-top:0">Money ran to safety this month. The yen rose 9%, the Swiss franc 6% and the US$ 5% against the rest; the Australian dollar fell 12% and the emerging floats 16%. The D$ fell 4.3%: the vault covers 2.1 months of imports and D$310M of hot money was here. A city with deep cover and a surplus rises in a risk-off, as the franc does.</p>
+     <div class="fx" style="grid-template-columns:repeat(3,1fr);margin-top:10px"><div><span>the D$ this month</span><b>&minus;4.3%</b></div><div><span>hot money out</span><b>D$96M</b></div><div><span>the vault sold</span><b>US$3.8M</b></div></div>
+    </div>
+    <div class="card" style="flex:1">
+     <div class="ch"><span class="ic" style="background:rgba(241,124,176,.16);color:var(--building)">C$</span><h4>Canada</h4><span class="sub">a nation's card, as on the map</span></div>
+     <div class="big" style="font-size:26px">C$1.371<span>a US$</span></div>
+     <div class="mv">this year <b>+2.2%</b></div>
+     <svg id="c3b" class="sv" viewBox="0 0 400 96" role="img" aria-label="Canada's money, C$ per US$, over the last 120 months"></svg>
+     <p class="para">Floats &middot; policy 2.75% &middot; 9% cheap against parity.</p>
+     <p class="para mut">A commodity money: it moves with oil and lumber's prices, about half as much.</p>
+    </div>
+   </div>
+  </div>
+ </div>
+</div></div>
+<div class="notes">
+ <div class="note"><b>Each nation's money.</b> Its prices against the US's (the trend); the dollar cycle (half-life five years); a risk-off about once in eight years (havens up, high yielders down); its terms of trade from the January solve; its own swing (3.5-year half-life). Pegs are held, and broken by the vault and a chance that rises with the gap. A Historical game takes the real monthly rates, 2000-2025.</div>
+ <div class="note"><b>What the prototype measured.</b> Over 1,000 seeded 26-year paths: euro 8.9% a year, yen 9.9%, pound 8.6%, franc 9.1%, Canadian dollar 8.1%, Australian dollar 12.3%, an emerging float 16.6% (1999-2025's real ones: 9.3%, 9.4%, 8.5%, 9.6%, 8.4%, 11.8%, 11-18%). Half-lives, measured as an economist would, 3.5-4.9 years. The dollar's widest swing in 26 years: 38% (median). The carry trade, long A$ short yen: 4.0% a year, Sharpe 0.27, monthly skew &minus;1.34, worst month &minus;34%. A month of all 196 moneys and the D$ costs about 10 microseconds.</div>
+</div>
+</div>
+<script>
+var D={"dollar":[100.57,103.48,102.86,102.77,101.89,103.02,102.32,100.0,99.8,97.48,95.38,97.5,95.83,95.26,95.53,94.66,96.95,95.25,93.89,96.15,97.29,96.63,97.01,97.46,98.87,98.57,97.12,96.56,95.58,94.15,93.31,93.37,89.7,90.27,89.65,89.19,87.35,88.41,87.98,86.61,85.36,83.69,85.17,84.86,84.47,84.1,84.67,85.06,85.71,83.16,83.58,81.37,81.4,80.37,82.12,83.08,82.31,83.16,83.15,83.5,81.16,82.27,81.56,81.21,83.38,83.36,83.1,85.85,83.21,81.85,81.32,81.54,79.31,81.01,80.82,81.95,83.32,80.53,79.07,81.12,81.61,82.74,83.95,83.86,81.6,82.11,81.67,81.94,83.62,81.7,81.81,81.97,81.29,84.41,83.35,84.68,83.56,85.34,85.23,86.65,87.43,86.79,86.65,86.63,86.35,86.99,88.32,87.01,85.99,84.64,86.96,86.97,87.52,86.14,88.02,87.79,89.82,87.56,86.34,85.18,86.12,86.31,86.4,87.53,88.52,88.34,88.24,87.68,88.6,87.04,87.24,87.06,89.12,90.04,92.85,93.86,91.57,90.94,91.2,90.29,88.48,89.26,89.13,88.3,89.7,90.05,90.75,92.52,91.06,90.05,92.24,90.98,88.67,93.05,94.21,93.17,93.92,92.17,93.12,94.34,92.46,93.52,94.93,93.58,93.75,94.9,98.0,97.26,99.18,98.86,99.51,98.88,102.64,103.87,104.07,107.07,108.88,110.1,108.04,105.61,103.73,105.14,103.67,106.03,105.66,107.01,109.06,108.81,108.3,107.04,108.27,109.74,111.09,109.81,113.54,110.39,108.97,109.83,108.01,108.6,108.81,109.47,107.53,109.58,110.17,109.55,109.13,114.24,109.99,108.43,108.69,108.79,108.57,108.43,103.63,102.58,102.37,105.22,105.8,105.68,104.91,107.45,107.69,107.38,105.48,106.05,109.86,109.48,111.26,111.02,112.01,113.16,112.36,110.3,111.09,108.04,106.99,104.23,101.99,100.75,103.42,101.71,101.38,101.18,104.45,107.13,108.87,106.43,105.81,105.09,103.4,99.91,100.19,98.6,98.62,99.66,99.66,101.99,99.87,99.64,99.49,98.98,99.25,102.86,102.14,101.38,101.5,99.88,98.69,98.42,97.91,98.25,97.73,98.56,99.32,99.39,99.74,98.76,94.28,97.27,97.32,98.76,99.31,99.08,98.03,99.55,102.07,102.86,102.29,100.57,99.76,102.6,100.46,100.17,102.09,102.01,101.63,100.75,101.42,102.61,102.1,104.42,106.55,107.11,104.12,101.57,101.35,100.44,103.16,102.63,103.7,105.15,104.8,105.2,103.04,105.34,105.29,104.79,101.26,99.47,99.82,100.94,103.05,100.44,102.2,103.86,103.72,102.84,103.22,104.11,103.72,105.16,106.0,107.56,106.23,105.6,109.47,108.0,108.97,109.76,108.99,108.9,108.62,108.15,104.24,108.08,109.84,108.72,107.6,107.17,106.54,105.04,106.31,105.96,107.82,104.44,100.92,101.87,101.75,101.62,101.67,100.76,103.21,103.79,103.1,103.83,103.8,101.75,106.01,106.58,106.21,105.22,108.92,109.53,109.2,107.92,106.64,109.09,107.35,105.95,105.31,106.51,106.28,105.23,104.63,103.22,105.61,102.36,100.5,104.47,106.69,107.19,106.94,107.37,106.71,108.96,107.6,108.51,110.93,107.81,108.7,110.1,112.58,113.0,111.17,113.17,113.85,114.22,114.94,115.15,116.01,112.46,111.99,112.5,116.77,117.16,117.17,116.11,116.66,116.54,116.44,114.82,117.37,117.06,115.8,116.73,116.78,115.41,113.03,111.95,111.32,112.0,107.43,109.6,109.39,109.47,105.64,105.48,106.32,109.59,111.09,111.69,109.82,109.65,109.83,108.84,109.15,109.08,109.31,110.58,111.26,109.17,114.66,114.49,112.94,110.97,109.95,112.04,114.49,116.12,115.08,113.92,113.75,115.35,112.19,110.22,107.4,109.76,105.64,107.19,108.79,112.04,110.2,112.51,113.37,112.47,112.46,116.05,119.4,122.59,124.11,124.33,127.67,128.46,128.65,130.78,128.86,130.28,127.98,131.18,127.97,128.83],"yen":[100.8,101.92,100.56,101.31,100.99,100.68,99.44,97.58,98.72,95.27,97.59,100.82,100.41,101.11,98.74,98.61,104.75,103.73,104.26,104.9,109.26,108.52,106.89,107.54,110.77,110.04,103.99,103.05,107.1,105.43,104.61,104.84,99.38,98.06,95.17,97.72,96.22,95.89,94.51,95.69,93.06,96.51,97.15,96.32,95.86,95.4,94.45,94.94,95.63,93.68,90.86,88.34,89.39,91.52,91.69,92.67,95.69,97.29,96.87,97.14,94.17,92.87,90.95,91.44,91.66,90.42,88.31,90.03,85.09,81.49,77.17,76.6,72.04,72.89,70.27,70.7,71.04,68.55,68.28,67.75,69.28,72.09,71.45,72.48,70.11,69.4,69.43,69.29,68.36,68.26,67.89,68.72,65.33,68.22,67.1,67.8,66.94,68.31,67.33,68.65,72.13,72.15,72.84,74.28,75.45,74.78,76.08,75.45,75.97,73.84,76.24,73.83,71.43,70.12,72.3,73.19,73.87,71.67,69.06,66.39,65.97,65.86,66.26,63.51,67.03,66.44,65.97,66.12,66.18,64.92,63.9,61.78,63.73,65.94,68.01,68.77,65.37,63.51,65.39,67.8,65.12,67.05,66.65,66.77,68.85,68.54,72.25,71.55,70.19,68.53,69.22,65.25,65.59,69.41,71.04,69.64,70.81,69.8,72.03,73.18,69.15,72.73,75.65,74.74,76.25,77.73,77.86,74.52,73.38,73.61,74.88,74.91,77.69,79.1,77.19,79.43,80.33,81.83,72.5,72.77,72.56,68.85,73.02,74.56,76.01,79.38,81.02,84.7,85.75,86.42,90.99,93.2,92.61,95.14,98.07,96.07,97.27,98.15,96.46,99.65,98.83,99.09,97.13,97.05,94.06,91.97,90.9,99.17,96.62,98.83,96.82,101.64,102.38,101.39,97.23,93.14,92.37,90.17,92.06,91.18,89.89,89.94,92.47,93.82,95.47,95.06,102.38,102.56,103.61,100.98,102.3,104.99,101.3,100.53,101.01,101.68,101.38,100.7,98.89,94.43,92.5,91.41,91.97,92.42,95.44,96.42,101.06,96.91,94.65,92.44,90.96,89.99,88.56,81.99,80.81,83.43,85.79,89.98,84.38,85.96,85.38,81.23,83.78,82.95,82.4,77.89,76.29,76.21,75.06,74.35,73.57,73.39,73.19,74.42,73.39,74.64,76.93,77.85,72.06,76.82,75.49,77.17,79.73,81.39,80.72,81.65,83.67,84.27,83.81,83.7,83.64,86.5,85.57,87.42,86.59,85.8,86.85,87.79,89.28,89.97,87.38,88.44,86.38,91.39,87.29,83.49,84.26,82.09,83.89,85.56,85.05,87.46,89.58,87.8,86.61,92.67,92.42,93.55,89.25,85.8,85.25,85.88,86.82,83.9,84.67,85.47,83.3,80.96,80.05,80.75,79.25,80.22,79.73,80.98,80.57,72.33,77.38,78.37,77.98,77.64,75.58,75.2,73.82,73.66,71.36,74.74,77.15,74.34,73.37,72.71,73.18,72.43,74.38,72.39,74.24,71.92,69.24,67.75,69.63,70.12,71.92,73.35,76.82,76.79,74.33,72.74,72.19,70.1,73.11,73.03,72.19,75.47,80.59,80.13,81.31,80.56,77.83,79.49,81.4,82.0,82.17,85.2,85.45,82.59,82.31,81.98,83.52,81.6,84.04,90.96,92.99,94.69,92.79,94.37,92.38,94.87,92.13,94.94,94.95,91.22,91.99,96.34,99.6,99.93,103.09,106.41,104.35,105.42,101.79,98.92,102.31,101.69,102.85,106.62,107.55,106.72,112.52,109.77,110.17,109.45,109.51,109.03,106.5,104.48,106.18,109.86,108.59,107.38,109.66,105.77,109.3,112.43,106.65,105.67,105.95,107.43,105.64,102.54,102.75,107.45,107.53,108.55,108.68,107.87,107.87,106.58,105.04,103.26,99.57,98.86,101.41,101.24,106.85,106.61,105.51,108.94,108.83,112.38,112.32,114.11,109.52,106.11,105.25,104.57,101.71,100.1,93.66,93.12,84.11,84.13,84.93,87.17,86.91,85.82,86.41,85.26,83.98,84.3,85.59,83.87,84.83,87.67,92.03,94.88,92.91,92.28,89.2,89.9,89.7,88.74,89.63,88.17],"aud":[101.42,110.21,112.0,106.72,106.73,110.15,107.25,104.23,101.28,101.46,98.61,100.06,96.37,98.22,98.96,96.01,97.55,93.77,96.08,99.44,95.75,97.19,98.52,101.62,101.33,96.84,97.54,97.44,93.44,90.95,90.84,91.8,90.45,88.54,84.48,81.44,81.8,84.28,85.23,85.56,78.42,73.61,75.47,74.19,74.14,74.89,76.12,78.56,79.25,75.33,77.81,74.49,75.74,75.57,77.83,79.29,74.46,72.54,71.93,74.26,71.49,71.33,72.31,72.7,70.4,68.94,67.75,71.57,69.2,67.95,69.21,67.93,66.63,66.84,68.95,67.55,70.65,65.66,63.74,64.29,66.55,69.66,70.73,71.64,71.16,72.76,70.08,72.84,71.22,71.23,74.21,77.17,80.2,84.79,85.52,86.39,87.09,87.1,84.36,87.12,85.06,83.34,77.72,79.17,75.23,77.5,81.31,83.16,83.08,86.9,92.16,87.88,86.52,84.88,87.77,87.18,86.07,83.37,82.97,80.65,81.51,82.5,81.16,77.79,82.44,86.03,86.13,89.83,91.08,89.26,86.34,86.34,87.35,85.13,92.31,93.4,89.91,89.05,91.11,88.91,88.59,92.51,94.22,96.14,102.49,102.41,104.12,108.21,109.0,108.79,110.6,112.73,105.7,107.96,115.37,108.56,105.88,103.58,109.63,109.2,108.9,105.57,109.17,106.71,103.86,104.53,110.79,110.86,114.15,116.28,119.96,121.61,122.18,125.59,126.33,123.19,120.91,119.53,131.62,129.76,122.56,140.44,128.47,137.34,132.43,136.07,130.23,122.7,120.63,122.15,123.43,128.65,132.84,126.81,135.66,124.61,122.22,124.12,119.04,119.58,120.36,126.9,126.14,119.15,124.52,122.5,122.34,129.07,122.65,121.01,115.21,116.96,119.28,120.97,120.75,119.17,120.34,116.43,122.05,119.9,123.08,124.14,126.36,126.13,124.05,120.35,124.12,116.76,119.35,120.61,124.34,132.08,135.3,127.53,129.74,126.33,131.43,128.08,127.63,124.21,127.73,126.8,125.45,119.5,121.72,121.41,121.11,118.29,115.89,113.34,111.75,113.03,110.74,108.05,113.45,113.72,113.92,118.17,117.55,116.6,122.22,125.04,126.36,129.03,126.74,127.81,123.19,120.08,116.04,115.21,108.71,102.18,101.4,100.87,101.21,105.53,109.27,101.31,95.45,93.04,91.0,93.55,96.69,99.6,101.06,105.95,108.75,111.54,109.05,101.44,100.56,99.35,97.29,93.77,99.28,103.53,108.74,104.65,99.18,105.18,104.48,105.62,105.34,105.76,102.78,104.57,104.53,96.95,99.91,102.93,105.76,108.72,105.5,108.21,105.33,108.61,107.1,109.13,108.27,110.66,106.71,108.23,112.3,109.78,113.76,115.61,116.88,113.01,114.77,117.83,112.08,111.91,109.32,119.08,122.27,128.09,131.89,125.7,123.24,118.45,114.47,118.11,115.95,115.01,111.75,111.79,114.19,113.68,117.78,119.01,120.99,129.36,136.6,142.61,140.76,132.51,126.6,135.49,137.35,138.96,148.1,150.46,152.22,153.43,151.41,150.31,147.44,144.8,148.69,146.1,148.65,152.97,163.29,160.66,160.63,155.33,148.5,152.99,149.84,154.0,152.45,156.95,154.1,155.45,155.12,149.71,152.39,149.75,145.64,152.48,152.65,147.43,143.47,147.32,149.04,147.99,152.95,146.48,149.85,146.47,148.46,152.98,148.24,149.31,138.84,142.97,135.44,136.38,141.15,146.13,154.35,152.17,152.89,149.74,157.42,166.09,169.21,166.5,166.38,173.59,170.18,166.06,169.87,171.69,167.58,167.17,169.42,162.08,162.05,153.15,161.26,174.32,165.27,168.65,168.28,163.23,156.61,152.39,153.87,154.88,157.7,151.88,146.48,140.57,138.74,137.97,135.57,136.17,131.25,136.21,141.1,139.25,143.59,140.08,137.63,134.74,128.14,124.33,124.48,129.57,131.77,130.69,127.88,126.84,119.64,116.94,116.23,118.66,109.5,115.88,117.57,119.31,117.19,118.02,119.13,118.33,117.41,121.6,124.82,128.99,128.79,128.51,131.01,128.65,128.67,131.08,123.96,128.93,125.93,130.32,128.73,127.95],"risk":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.794,0.63,1.5,1.191,0.945,0.75,0.595,0.472,0.375,0.298,0.236,0.188,0.149,0.118,0.094,0.074,0.059,0.047,0.037,0.03,0.023,0.019,0.015,0.012,0.009,0.007,0.006,0.005,0.004,0.003,0.002,0.002,0.001,0.001,0.001,0.001,0.001,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.794,0.63,0.5,0.397,0.315,0.25,0.198,0.157,0.125,0.099,0.079,0.063,0.05,0.039,0.031,0.025,0.02,0.016,0.012,0.01,0.008,0.006,0.005,0.004,0.003,0.002,0.002,0.002,0.001,0.001,0.001,0.001,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"cad":[1.2373,1.2638,1.2238,1.2363,1.2334,1.258,1.2507,1.2294,1.2753,1.2891,1.2781,1.3261,1.3038,1.3314,1.3037,1.3058,1.2954,1.3153,1.3338,1.3728,1.3423,1.3853,1.3421,1.3197,1.2965,1.3417,1.3616,1.2888,1.2872,1.3233,1.308,1.3152,1.3069,1.3085,1.3125,1.3142,1.256,1.2284,1.2722,1.2772,1.2765,1.3277,1.3843,1.4014,1.4109,1.4005,1.3927,1.3989,1.412,1.4335,1.483,1.466,1.4399,1.4727,1.5122,1.4594,1.4574,1.479,1.4471,1.4285,1.3873,1.3823,1.4499,1.4597,1.4511,1.4289,1.4357,1.4813,1.4393,1.3858,1.364,1.3583,1.3734,1.367,1.3192,1.281,1.3189,1.3284,1.3226,1.2648,1.2907,1.2882,1.264,1.2786,1.2321,1.2727,1.2543,1.2088,1.2002,1.1998,1.1696,1.238,1.2265,1.2103,1.2405,1.2646,1.2224,1.2345,1.2373,1.262,1.2623,1.2656,1.2475,1.2356,1.2286,1.2886,1.2813,1.3243,1.3181,1.3265,1.3681,1.3514,1.3625,1.3824,1.354,1.3399,1.3946,1.4365,1.3935,1.371]};
+
+var NS='http://www.w3.org/2000/svg';
+function E(p,n,a,t){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;p.appendChild(e);return e}
+function path(a,X,Y,o){o=o||0;var s='';for(var i=0;i<a.length;i++)s+=(i?'L':'M')+X(i+o).toFixed(1)+' '+Y(a[i]).toFixed(1);return s}
+function dodge(items,gap){items.sort(function(a,b){return a.y-b.y});for(var i=1;i<items.length;i++)if(items[i].y<items[i-1].y+gap)items[i].y=items[i-1].y+gap;return items}
+
+(function(){
+var sh=22,s=document.getElementById("c3a"),W=612,H=316,mL=38,mR=92,mT=24,mB=50,pw=W-mL-mR,ph=H-mT-sh-8-30,N=D.dollar.length,lo=60,hi=180,i;
+var sy=mT+ph+8;   // the strip of risk-off strength sits under the plot
+function X(i){return mL+i/(N-1)*pw}
+function Y(v){return mT+(hi-v)/(hi-lo)*ph}
+for(var v=60;v<=180;v+=20){E(s,'line',{x1:mL,x2:mL+pw,y1:Y(v).toFixed(1),y2:Y(v).toFixed(1),class:v==100?'ax':'gl'});E(s,'text',{x:mL-6,y:(Y(v)+3).toFixed(1),'text-anchor':'end'},v)}
+E(s,'text',{x:mL-34,y:12,class:'f-t2'},'index, 2000 = 100');
+// the strip: how strong each risk-off was
+E(s,'line',{x1:mL,x2:mL+pw,y1:sy+sh,y2:sy+sh,class:'ax'});
+for(i=0;i<N;i++){if(D.risk[i]>0){var h=D.risk[i]/1.5*sh;E(s,'rect',{x:(X(i)-0.6).toFixed(1),y:(sy+sh-h).toFixed(1),width:1.2,height:h.toFixed(1),class:'f-warn',opacity:.85})}}
+E(s,'text',{x:mL+pw+8,y:sy+9,class:'f-warn'},'risk-off');E(s,'text',{x:mL+pw+8,y:sy+20,class:'f-t3'},'strength');
+[2000,2010,2020,2030,2040].forEach(function(y){var x=X((y-2000)*12);E(s,'line',{x1:x.toFixed(1),x2:x.toFixed(1),y1:sy+sh,y2:sy+sh+4,class:'ax'});E(s,'text',{x:x.toFixed(1),y:sy+sh+16,'text-anchor':'middle'},y)});
+// the risk-off at month 178 (and another at 181)
+[178,181].forEach(function(m,j){var x=X(m);E(s,'line',{x1:x.toFixed(1),x2:x.toFixed(1),y1:mT-6,y2:sy+sh,class:'ln c-warn','stroke-width':j?0.8:1.2,'stroke-dasharray':'3 3',opacity:j?.7:1})});
+E(s,'text',{x:(X(178)+7).toFixed(1),y:mT+4,class:'f-warn'},'a risk-off (month 178, and again at 181)');
+E(s,'path',{d:path(D.yen,X,Y),class:'ln c-people','stroke-width':1.3,opacity:.6});
+E(s,'path',{d:path(D.aud,X,Y),class:'ln c-biz','stroke-width':1.3,opacity:.6});
+E(s,'path',{d:path(D.dollar,X,Y),class:'ln c-money','stroke-width':2});
+var L=[{v:D.dollar[N-1],t:'the dollar',c:'f-money'},{v:D.aud[N-1],t:'A$',c:'f-biz'},{v:D.yen[N-1],t:'yen',c:'f-people'}];
+L.forEach(function(o){o.y=Y(o.v);o.y0=o.y});dodge(L,12);
+L.forEach(function(o){var x0=X(N-1)+2;E(s,'path',{d:'M'+x0+' '+o.y0.toFixed(1)+'L'+(x0+8)+' '+o.y.toFixed(1),class:'ln c-t3','stroke-width':.8,opacity:.7});E(s,'text',{x:x0+11,y:(o.y+3).toFixed(1),class:o.c},o.t+' '+Math.round(o.v))});
+})();
+(function(){
+var s=document.getElementById('c3b'),W=400,H=96,mL=34,mR=10,mT=8,mB=18,pw=W-mL-mR,ph=H-mT-mB,a=D.cad,n=a.length,lo=Math.floor(Math.min.apply(null,a)*10)/10,hi=Math.ceil(Math.max.apply(null,a)*10)/10;
+function X(i){return mL+i/(n-1)*pw}
+function Y(v){return mT+(hi-v)/(hi-lo)*ph}
+for(var v=lo;v<=hi+0.001;v+=0.1){E(s,'line',{x1:mL,x2:mL+pw,y1:Y(v).toFixed(1),y2:Y(v).toFixed(1),class:'gl'});E(s,'text',{x:mL-5,y:(Y(v)+3).toFixed(1),'text-anchor':'end'},v.toFixed(1))}
+E(s,'text',{x:mL,y:H-3},'10 years ago');E(s,'text',{x:mL+pw,y:H-3,'text-anchor':'end'},'now');
+E(s,'path',{d:path(a,X,Y),class:'ln c-money','stroke-width':1.6});
+E(s,'circle',{cx:X(n-1).toFixed(1),cy:Y(a[n-1]).toFixed(1),r:3,class:'f-money'});
+})();
+</script>
+</body></html>
