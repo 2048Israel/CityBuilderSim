@@ -6,6 +6,7 @@ the D$'s log move over the run +0.265 (1.000 to 1.303 D$ a US$), made of:
    the anchored drift +0.435 | the pull toward parity +0.305 | the push (balance and real rate) -0.475
 parity moved +0.526: the city's prices against the world's
 from m264 parity grows 2.60% a year: a pull of 0.004 a month settles at rate/parity = 0.65; measured mean 0.76
+(the basket is based at m58: parity on traded goods is chained from there)
 rent is 41% to 80% of the basket parity is struck from (from m60); from m192 to m240 parity rose 50%: rent +75%, groceries +14%
 parity on groceries alone (the traded part) at the end: 1.315, against the whole basket's 1.691 and the rate's 1.303
 vs traded  volatility 1.2% a year | longest run one way 78 months (median 13) | mean distance from parity 12.3%, worst 33.8% | months over 25% from parity 78 of 475
@@ -97,4 +98,7 @@ inflation  5.0 points over the US: the peg lasts 4.5 years (median; 10%-90%: 2.0
 inflation 10.0 points over the US: the peg lasts 2.9 years (median; 10%-90%: 1.5-4.4); 21% end with the vault spent; the break 47% (median, 90th 73%)
 
 === 6. What a month costs: 196 moneys and the city's D$ ===
-one month, all 196 and the city: 10.9 microseconds (best of 20 runs of 1,000 years; checksum 663.9)
+one month, all 196 and the city: 10.3 microseconds (best of 20 runs of 1,000 years; checksum 663.9)
+(board 1's single path is seed 1105, the median of 200 by its distance from the fair level)
+
+(the boards' data written: board-1-path.csv, board-3-world.csv)

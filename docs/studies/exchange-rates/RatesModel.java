@@ -45,6 +45,7 @@ public class RatesModel {
         world();
         pegs();
         timing();
+        boardData(s);
         String text = out.toString();
         System.out.print(text);
         Files.writeString(Path.of("rates-model-output.txt"), text);
@@ -54,15 +55,24 @@ public class RatesModel {
     static final int RATE = 1, PARITY = 2, INDEX = 3, POLICY = 4, EXPECTED = 5, CRED = 6,
             CA = 7, EXPORTS = 8, IMPORTS = 9, VAULT = 10, GDP = 11, GROCERIES = 12, RENT = 13, RENT_WEIGHT = 14;
 
-    /** Parity on traded goods: the groceries' index against the world's level, at founding's rate. */
+    /**
+     * Parity on traded goods: today's parity until the basket has weights (the index is based), then
+     * chained on the groceries' index against the world's level from there.
+     */
     static double[] tradedParity(double[][] s) {
         double[] x = new double[s.length];
+        int based = 0;
+        while (based < s.length - 1 && s[based][RENT_WEIGHT] <= 0) based++;
+        double worldAt = s[based][INDEX] / Math.max(1e-9, s[based][PARITY]);
         for (int t = 0; t < s.length; t++) {
+            if (t <= based) { x[t] = s[t][PARITY]; continue; }
             double world = s[t][INDEX] / Math.max(1e-9, s[t][PARITY]);
-            x[t] = s[t][GROCERIES] / world;
+            x[t] = s[based][PARITY] * (s[t][GROCERIES] / s[based][GROCERIES]) / (world / worldAt);
         }
+        if (!basedSaid) { basedSaid = true; p("(the basket is based at m%d: parity on traded goods is chained from there)", based); }
         return x;
     }
+    static boolean basedSaid;
 
     static double[][] load(Path path) throws Exception {
         List<String> lines = Files.readAllLines(path);
@@ -380,6 +390,62 @@ public class RatesModel {
                     100 * infl, life[seeds / 2], life[seeds / 10], life[seeds * 9 / 10], 100 * byVault / seeds,
                     100 * (Math.exp(jump[seeds / 2]) - 1), 100 * (Math.exp(jump[seeds * 9 / 10]) - 1));
         }
+    }
+
+    /* ======================= THE BOARDS' DATA ======================= */
+
+    /** board-1-path.csv: his slot 3 under today's rule and the proposal (seed 1004); board-3-world.csv: one world, 2000-2040. */
+    static void boardData(double[][] s) throws Exception {
+        int n = s.length;
+        double[] basket = col(s, PARITY), traded = tradedParity(s), r = col(s, RATE);
+        double[] gap = new double[n], cover = new double[n]; double imports = 0;
+        for (int t = 0; t < n; t++) {
+            double world = s[t][INDEX] / Math.max(1e-9, basket[t]);
+            double worldPrev = t >= 12 ? s[t - 12][INDEX] / Math.max(1e-9, basket[t - 12]) : world / 1.02;
+            gap[t] = (s[t][POLICY] - s[t][EXPECTED]) - (WORLD_BASE_RATE - (world / worldPrev - 1));
+            imports = t == 0 ? s[t][IMPORTS] : (imports * 11 + s[t][IMPORTS]) / 12;
+            cover[t] = imports > 1e-9 ? s[t][VAULT] * r[t] / imports : 99;
+        }
+        Float calmF = new Float(0); double[] calm = new double[n];
+        for (int t = 0; t < n; t++) calm[t] = Math.exp(calmF.step(traded[t], gap[t], cover[t], false));
+        int seeds = 200; double[][] paths = new double[seeds][n]; double[] dist = new double[seeds];
+        for (int k = 0; k < seeds; k++) {
+            Float f = new Float(1000 + k);
+            for (int t = 0; t < n; t++) { paths[k][t] = Math.exp(f.step(traded[t], gap[t], cover[t], true)); dist[k] += Math.abs(Math.log(paths[k][t] / calm[t])); }
+        }
+        double[] sorted = dist.clone(); Arrays.sort(sorted);
+        int typical = 0; for (int k = 0; k < seeds; k++) if (dist[k] == sorted[seeds / 2]) typical = k;
+        StringBuilder b = new StringBuilder("month,basketParity,tradedParity,today,fair,p10,p90,typicalSeed\n");
+        for (int t = 0; t < n; t++) {
+            double[] at = new double[seeds]; for (int k = 0; k < seeds; k++) at[k] = paths[k][t]; Arrays.sort(at);
+            b.append(String.format(Locale.ROOT, "%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f%n", t, basket[t], traded[t], r[t],
+                    calm[t], at[seeds / 10], at[seeds * 9 / 10], paths[typical][t]));
+        }
+        Files.writeString(Path.of("board-1-path.csv"), b);
+        p("(board 1's single path is seed %d, the median of 200 by its distance from the fair level)", 1000 + typical);
+
+        // One world: the dollar cycle and the eight's rates (index, 2000 = 100), Random from 2000, 41 years.
+        Random rnd = new Random(2026);
+        double rhoD = Math.pow(.5, 1 / DOLLAR_HALF_LIFE), rhoM = Math.pow(.5, 1 / MARKET_HALF_LIFE), rhoR = Math.pow(.5, 1 / RISK_OFF_HALF_LIFE);
+        double dollar = 0, risk = 0; double[] own = new double[MONEYS.length];
+        StringBuilder w = new StringBuilder("month,dollar,riskOff");
+        for (Money m : MONEYS) w.append(',').append(m.name().replace(' ', '_'));
+        w.append('\n');
+        for (int t = 0; t < 492; t++) {
+            dollar = rhoD * dollar + DOLLAR_SIGMA * rnd.nextGaussian();
+            risk *= rhoR;
+            if (rnd.nextDouble() < RISK_OFF_A_YEAR / 12) risk += 1;
+            w.append(t).append(String.format(Locale.ROOT, ",%.2f,%.3f", 100 * Math.exp(dollar), risk));
+            for (int i = 0; i < MONEYS.length; i++) {
+                Money m = MONEYS[i];
+                own[i] = rhoM * own[i] + m.sigma() * rnd.nextGaussian();
+                w.append(String.format(Locale.ROOT, ",%.2f", 100 * Math.exp(m.inflationGap() * t / 12.0 + m.dollar() * dollar + m.riskOff() * risk + own[i])));
+            }
+            w.append('\n');
+        }
+        Files.writeString(Path.of("board-3-world.csv"), w);
+        p("");
+        p("(the boards' data written: board-1-path.csv, board-3-world.csv)");
     }
 
     /* ======================= 6. TIMING ======================= */
