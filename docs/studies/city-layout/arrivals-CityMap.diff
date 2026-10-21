@@ -1,0 +1,89 @@
+diff --git a/src/main/java/ham/citybuildersim/CityMap.java b/prototype/ham/citybuildersim/CityMap.java
+index be604d6..f65bf7f 100644
+--- a/src/main/java/ham/citybuildersim/CityMap.java
++++ b/prototype/ham/citybuildersim/CityMap.java
+@@ -233,6 +233,10 @@ public final class CityMap {
+         long version;
+         /** Its place in the map's order, nearest first. */
+         int index;
++        /** CL1 prototype: its buildings in the order they came (a type id each, ~t for one of type t gone), and its counts as last logged. */
++        int[] arr = new int[16];
++        int nArr;
++        int[] logged;
+ 
+         District(int dx, int dy, int types, double order) {
+             this.dx = dx;
+@@ -255,7 +259,7 @@ public final class CityMap {
+             return n;
+         }
+         /** Its room in whole plots, never below nothing (0.7.64; in ground, half square feet, before). */
+-        long freeCells()         { return Math.max(0, owned - usedCells); }
++        long freeCells()         { return Math.max(0, (long) Math.floor(owned * CL1_FILL) - usedCells); }
+         /** ...and for roads: its whole room, no more than its plots inside the edge rings less its road. */
+         long freeRoad()          { return Math.min(freeCells(), Math.max(0, inner - usedRoad)); }
+     }
+@@ -747,9 +751,56 @@ public final class CityMap {
+             lastStates = states;
+             changes++;
+         }
++        cl1Month++;
++        if (CL1_ARRIVALS) for (District d : districts) logDistrict(d);
++        if (System.getProperty("cl1.hook") != null) CL1Hook.month(this, cl1Month);
+         return true;
+     }
+ 
++    /* ----- CL1 prototype: the arrival log ----- */
++
++    /** Whether the plans place each district's buildings in the order they came (-Dcl1.arrivals=true). */
++    static final boolean CL1_ARRIVALS = Boolean.getBoolean("cl1.arrivals");
++
++    /** CL1 variant (-Dcl1.fill=0.68): the share of a district's free plots its counts may take, so a district holds what its plan can draw (a full plan's boxes cover about 68% of its ground). */
++    static final double CL1_FILL = Double.parseDouble(System.getProperty("cl1.fill", "1.0"));
++
++    /** Months reconciled since the map was made: the log's deal is hashed on it. */
++    int cl1Month;
++
++    /** District d's change since it was last logged, appended to its log: those gone first (the newest of their type), then those come, one of each type in turn from a hashed start, so a month's batch mixes. */
++    void logDistrict(District d) {
++        if (d.logged == null) d.logged = new int[d.counts.length];
++        int T = d.counts.length;
++        int[] delta = new int[T];
++        boolean any = false;
++        for (int t = 0; t < T; t++) { delta[t] = d.counts[t] - d.logged[t]; if (delta[t] != 0) any = true; }
++        if (!any) return;
++        for (int t = 0; t < T; t++) for (int k = 0; k < -delta[t]; k++) push(d, ~t);
++        long h = (seed * 0x9E3779B97F4A7C15L) ^ (d.key * 0xC2B2AE3D27D4EB4FL) ^ (cl1Month * 0x165667B19E3779F9L);
++        int start = (int) Math.floorMod(h ^ (h >>> 29), (long) T);
++        boolean left = true;
++        while (left) {
++            left = false;
++            for (int j = 0; j < T; j++) {
++                int t = (start + j) % T;
++                if (delta[t] > 0) { push(d, t); delta[t]--; if (delta[t] > 0) left = true; }
++            }
++        }
++        System.arraycopy(d.counts, 0, d.logged, 0, T);
++    }
++
++    /** CL1 probe: what was carried to district d's plan (R7), by type id; null for none or not planned. */
++    int[] cl1CarryIn(District d) {
++        Link l = links.get(d);
++        return l == null ? null : l.in;
++    }
++
++    private static void push(District d, int e) {
++        if (d.nArr == d.arr.length) d.arr = Arrays.copyOf(d.arr, 2 * d.arr.length);
++        d.arr[d.nArr++] = e;
++    }
++
+     /** How many changes the map has taken since it was drawn - a district's count, a purchase measured, a site's state: what the view stamps its tiles again on (MapTiles). Only grows. */
+     private long changes;
+ 
+@@ -5010,6 +5061,7 @@ public final class CityMap {
+         in.hubX = siteX - x0;
+         in.hubY = siteY - y0;
+         in.types = types;
++        if (CL1_ARRIVALS) { logDistrict(d); in.arrivals = Arrays.copyOf(d.arr, d.nArr); }
+         // What the city owns, tile by tile over the frame (its ground is readGround()'s).
+         boolean[] own = new boolean[TilePainter.PLOTS];
+         int tiles = (f + World.TILE - 1) / World.TILE;

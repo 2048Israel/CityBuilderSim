@@ -1,0 +1,472 @@
+diff --git a/DistrictPlan.java b/DistrictPlan.java
+index e27c304..22ba073 100644
+--- a/DistrictPlan.java
++++ b/DistrictPlan.java
+@@ -217,6 +217,28 @@ public final class DistrictPlan {
+     /** ...and a homes cell's cross street and an estate cell's spine: the middle line, 15 - long blocks 15 plots long either side of it. */
+     static final int MIDDLE = 2 * LATTICE - 1;
+ 
++    /** CL1 study (not shipped): homes cells take one of several layouts, from a hash of the world's seed and the cell's place; read once, off by default - with it off the plan is today's, box for box. */
++    static final boolean CL1_STREETS = Boolean.getBoolean("cl1.streets");
++
++    /** CL1: the share of homes cells that keep today's comb (V0), and (below it) the share that drop crossings (V1); the rest are staggered (V2). */
++    static final double CL1_V0 = Double.parseDouble(System.getProperty("cl1.v0", "0.33"));
++    static final double CL1_V1 = Double.parseDouble(System.getProperty("cl1.v1", "0.67"));
++    /** CL1: the chance a V1 cell also loses a long street's half (its block next to it 15 deep, a core beyond REACH). */
++    static final double CL1_LDROP = Double.parseDouble(System.getProperty("cl1.ldrop", "0.25"));
++    /** CL1: the most plots of a long-block cell left beyond REACH by a long street's lost half (a green hole in the block): 49, one 7 x 7. */
++    static final int CL1_HOLE = Integer.getInteger("cl1.hole", 49);
++    /** CL1: squared cells: the share left whole (S0), and below it the share with segments dropped (3); the rest are brick (4). */
++    static final double CL1_S0 = Double.parseDouble(System.getProperty("cl1.s0", "0.2"));
++    static final double CL1_S1 = Double.parseDouble(System.getProperty("cl1.s1", "0.6"));
++    /** CL1: a squared cell's chance of losing each of its 24 segments, and the plots beyond REACH it may be left with (none). */
++    static final double CL1_SDROP = Double.parseDouble(System.getProperty("cl1.sdrop", "0.22"));
++    static final int CL1_SHOLE = Integer.getInteger("cl1.shole", 0);
++    /** CL1 V3: gaps in the arterial between two homes cells, off unless -Dcl1.v3=true; the chance a pair's side asks, and of each of its four segments. */
++    static final boolean CL1_V3 = Boolean.getBoolean("cl1.v3");
++    static final double CL1_GAP = Double.parseDouble(System.getProperty("cl1.gap", "0.35"));
++    static final double CL1_GAPSEG = Double.parseDouble(System.getProperty("cl1.gapseg", "0.5"));
++    static int cl1GapsMade, cl1GapsTried;
++
+     /** An estate cell's streets lie on interior lines from this one (0.7.90, ESTATE LINES): 7, LATTICE - 1 - so where one meets a neighbour's street across an arterial, the + it makes is LATTICE or more from the ring's corner (the + floor, spec 2.4). */
+     static final int LINE_FIRST = LATTICE - 1;
+ 
+@@ -1566,7 +1588,10 @@ public final class DistrictPlan {
+             }
+             // Its streets.
+             byte st = (byte) ROLE_STREET;
+-            if (square) {
++            if (kind == HOMES && CL1_STREETS && !proto && cl1Variant(ci, cj, square) != 0) {
++                if (square) cl1Square(x0, y0, across, cl1Variant(ci, cj, true), ci, cj, st);
++                else cl1Homes(x0, y0, across, cl1Variant(ci, cj, false), ci, cj, st);
++            } else if (square) {
+                 for (int v : STREETS_AT) {
+                     for (int u = 0; u < INTERIOR; u++) {
+                         lay(x0 + u, y0 + v, true, false, st);
+@@ -1608,11 +1633,401 @@ public final class DistrictPlan {
+                 out.strays += taken;
+                 cellCut[c] = true;
+             }
++            if (CL1_STREETS && CL1_V3 && !proto && !refused && kind == HOMES) cl1Gaps(out, c, ci, cj, bl);
+             for (int k = 0; k < nChanged; k++) occ[changed[k]] = -1;
+             freshCell(c);
+             staleAround(c);
+         }
+ 
++        /* ------------------------------------------------ CL1 (study): homes cells' street variety */
++
++        /** CL1: a hash in [0, 1) of the world's seed, the cell's place in the world (its north-west plot) and a salt - a pure function of the plan's inputs. */
++        double cl1Hash(int ci, int cj, int salt) {
++            long ax = in.x0 + (long) CELL * ci, ay = in.y0 + (long) CELL * cj;
++            return unit(World.mix(in.seed ^ World.mix(ax * 0x9E3779B97F4A7C15L ^ ay * 0xC2B2AE3D27D4EB4FL ^ (0x434C3100L + salt * 0x632BE59BD9B4E019L))));
++        }
++
++        /** CL1: a homes cell's layout. Long-block cells: 0 the comb, 1 dropped crossings, 2 brick. Squared cells: 0 whole, 3 dropped edges, 4 brick. */
++        int cl1Variant(int ci, int cj, boolean square) {
++            double r = cl1Hash(ci, cj, 0);
++            if (square) return r < CL1_S0 ? 0 : r < CL1_S1 ? 3 : 4;
++            return r < CL1_V0 ? 0 : r < CL1_V1 ? 1 : 2;
++        }
++
++        /** CL1: whether opened homes cell c is one of the variant layouts. */
++        boolean cl1Cell(DistrictPlan out, int c) {
++            return CL1_STREETS && !proto && out.cellKind[c] == HOMES
++                    && cl1Variant(c % CELLS_A_SIDE, c / CELLS_A_SIDE, out.cellSquare[c]) != 0;
++        }
++
++        /** The ends of a line's four segments between its crossings (the ring, the lines at 7, 15, 23, the ring), in plots into the interior. */
++        static final int[] SEG_FROM = { 0, 8, 16, 24 }, SEG_TO = { 6, 14, 22, 30 };
++
++        /** CL1: street plots from..to of the cell's line `line`, along its long streets (alongLong) or across them, in the cell's own axes, laid in the map's. */
++        void cl1Run(int x0, int y0, boolean across, boolean alongLong, int line, int from, int to, byte st) {
++            for (int k = from; k <= to; k++) {
++                int u = alongLong ? k : line, v = alongLong ? line : k;
++                if (across) lay(x0 + u, y0 + v, alongLong, false, st);
++                else lay(x0 + v, y0 + u, !alongLong, false, st);
++            }
++        }
++
++        /** CL1: the same plots marked in g, a bit row a line of the cell and its ring (bit u + 1 of row v + 1). */
++        static void cl1Mark(long[] g, boolean alongLong, int line, int from, int to) {
++            for (int k = from; k <= to; k++) {
++                int u = alongLong ? k : line, v = alongLong ? line : k;
++                g[v + 1] |= 1L << (u + 1);
++            }
++        }
++
++        /** CL1: a cell's marks with its ring on every side. */
++        static long[] cl1Ring() {
++            int n = INTERIOR + 2;
++            long[] g = new long[n];
++            long all = (1L << n) - 1;
++            g[0] = all;
++            g[n - 1] = all;
++            for (int r = 1; r < n - 1; r++) g[r] = 1L | (1L << (n - 1));
++            return g;
++        }
++
++        /** CL1: how many plots of the cell's interior lie more than REACH from every marked plot, across corners. */
++        static int cl1Uncovered(long[] g) {
++            int n = INTERIOR + 2;
++            long all = (1L << n) - 1;
++            long[] a = new long[n];
++            for (int r = 0; r < n; r++) {
++                long s = g[r], m = s;
++                for (int d = 1; d <= REACH; d++) m |= (s << d) | (s >>> d);
++                a[r] = m & all;
++            }
++            int none = 0;
++            for (int r = 1; r < n - 1; r++) {
++                long m = 0;
++                for (int d = -REACH; d <= REACH; d++) if (r + d >= 0 && r + d < n) m |= a[r + d];
++                none += Long.bitCount(~m & all & ~1L & ~(1L << (n - 1)));
++            }
++            return none;
++        }
++
++        /**
++         * CL1: the streets of a long-block homes cell of variant var, in place of the comb: 1, the comb with
++         * one or two of the cross street's four segments left out and perhaps half of a long street (a
++         * junction left with one street is taken out too: every piece reaches the ring and no street
++         * dead-ends in the cell; a half whose loss leaves more than CL1_HOLE plots beyond reach is kept);
++         * 2, the long streets whole and the cross street's four segments alternately at two columns
++         * (a brick pattern: T junctions only inside the cell).
++         */
++        void cl1Homes(int x0, int y0, boolean across, int var, int ci, int cj, byte st) {
++            if (var == 1) {
++                int c = 15, l = 63, deg[] = new int[3];
++                for (int attempt = 0; attempt < 2; attempt++) {
++                    c = 15;
++                    l = 63;
++                    double h1 = cl1Hash(ci, cj, 11);
++                    int nC = h1 < 0.45 ? 1 : h1 < 0.80 ? 2 : 0;
++                    boolean lDrop = attempt == 0 && (nC == 0 || cl1Hash(ci, cj, 12) < CL1_LDROP);
++                    if (nC == 0 && !lDrop) nC = 1;
++                    if (nC > 0) {
++                        int i = (int) (cl1Hash(ci, cj, 13) * 4);
++                        c &= ~(1 << i);
++                        if (nC == 2) c &= ~(1 << ((i + 1 + (int) (cl1Hash(ci, cj, 14) * 3)) % 4));
++                    }
++                    if (lDrop) l &= ~(1 << ((int) (cl1Hash(ci, cj, 15) * 3) * 2 + (cl1Hash(ci, cj, 16) < 0.5 ? 0 : 1)));
++                    // A junction left with one street: that street goes too, until none is.
++                    for (boolean again = true; again; ) {
++                        again = false;
++                        for (int k = 0; k < 3; k++) {
++                            int[] edge = { 2 * k, 2 * k + 1, 6 + k, 6 + k + 1 };   // bits: halves in l, segments above and below in c (offset 6)
++                            int d = 0, only = -1;
++                            for (int e : edge) if (e < 6 ? (l >> e & 1) != 0 : (c >> (e - 6) & 1) != 0) { d++; only = e; }
++                            deg[k] = d;
++                            if (d == 1) {
++                                if (only < 6) l &= ~(1 << only); else c &= ~(1 << (only - 6));
++                                again = true;
++                            }
++                        }
++                    }
++                    long[] g = cl1Ring();
++                    for (int k = 0; k < 3; k++) {
++                        int v = STREETS_AT[k];
++                        if ((l >> (2 * k) & 1) != 0) cl1Mark(g, true, v, 0, MIDDLE - 1);
++                        if ((l >> (2 * k + 1) & 1) != 0) cl1Mark(g, true, v, MIDDLE + 1, INTERIOR - 1);
++                        if (deg[k] >= 2) cl1Mark(g, true, v, MIDDLE, MIDDLE);
++                    }
++                    for (int i = 0; i < 4; i++) if ((c >> i & 1) != 0) cl1Mark(g, false, MIDDLE, SEG_FROM[i], SEG_TO[i]);
++                    if (cl1Uncovered(g) <= CL1_HOLE) break;
++                }
++                for (int k = 0; k < 3; k++) {
++                    int v = STREETS_AT[k];
++                    if ((l >> (2 * k) & 1) != 0) cl1Run(x0, y0, across, true, v, 0, MIDDLE - 1, st);
++                    if ((l >> (2 * k + 1) & 1) != 0) cl1Run(x0, y0, across, true, v, MIDDLE + 1, INTERIOR - 1, st);
++                    if (deg[k] >= 2) cl1Run(x0, y0, across, true, v, MIDDLE, MIDDLE, st);
++                }
++                for (int i = 0; i < 4; i++) if ((c >> i & 1) != 0) cl1Run(x0, y0, across, false, MIDDLE, SEG_FROM[i], SEG_TO[i], st);
++            } else {
++                // Staggered: the cross street's segments alternate between two columns; the long streets are whole.
++                int[][] pairs = { { 11, 19 }, { 9, 21 }, { 7, 23 }, { 7, 19 }, { 11, 23 } };
++                int[] pr = pairs[(int) (cl1Hash(ci, cj, 21) * pairs.length)];
++                boolean swap = cl1Hash(ci, cj, 22) < 0.5;
++                int a = swap ? pr[1] : pr[0], b = swap ? pr[0] : pr[1];
++                for (int v : STREETS_AT) cl1Run(x0, y0, across, true, v, 0, INTERIOR - 1, st);
++                for (int i = 0; i < 4; i++) cl1Run(x0, y0, across, false, i % 2 == 0 ? a : b, SEG_FROM[i], SEG_TO[i], st);
++            }
++        }
++
++        /**
++         * CL1: the 24 segments of a squared cell's three long streets and three cross streets (bit 4j + k the
++         * kth of the jth long street, bit 12 + 4i + k of the ith cross street) left once every junction with one
++         * street is taken out, and every piece not joined to the ring, until none is.
++         */
++        static long cl1Settle(long e) {
++            for (boolean again = true; again; ) {
++                again = false;
++                for (int j = 0; j < 3; j++) {
++                    for (int i = 0; i < 3; i++) {
++                        long m = e & ((1L << (j * 4 + i)) | (1L << (j * 4 + i + 1)) | (1L << (12 + i * 4 + j)) | (1L << (12 + i * 4 + j + 1)));
++                        if (Long.bitCount(m) == 1) { e &= ~m; again = true; }
++                    }
++                }
++                // The junctions joined to the ring: those a street from the ring ends at, and from them along the streets between junctions.
++                int reached = 0;
++                for (int j = 0; j < 3; j++) {
++                    for (int i = 0; i < 3; i++) {
++                        boolean r = (i == 0 && (e >> (j * 4) & 1) != 0) || (i == 2 && (e >> (j * 4 + 3) & 1) != 0)
++                                || (j == 0 && (e >> (12 + i * 4) & 1) != 0) || (j == 2 && (e >> (12 + i * 4 + 3) & 1) != 0);
++                        if (r) reached |= 1 << (j * 3 + i);
++                    }
++                }
++                for (boolean grow = true; grow; ) {
++                    grow = false;
++                    for (int j = 0; j < 3; j++) {
++                        for (int i = 0; i < 2; i++) {          // the street between junctions (i, j) and (i + 1, j)
++                            if ((e >> (j * 4 + i + 1) & 1) == 0) continue;
++                            int p = 1 << (j * 3 + i), q = 1 << (j * 3 + i + 1);
++                            if (((reached & p) != 0) != ((reached & q) != 0)) { reached |= p | q; grow = true; }
++                        }
++                    }
++                    for (int i = 0; i < 3; i++) {
++                        for (int j = 0; j < 2; j++) {          // ...and between (i, j) and (i, j + 1)
++                            if ((e >> (12 + i * 4 + j + 1) & 1) == 0) continue;
++                            int p = 1 << (j * 3 + i), q = 1 << ((j + 1) * 3 + i);
++                            if (((reached & p) != 0) != ((reached & q) != 0)) { reached |= p | q; grow = true; }
++                        }
++                    }
++                }
++                for (int j = 0; j < 3; j++) {
++                    for (int i = 0; i < 3; i++) {
++                        if ((reached >> (j * 3 + i) & 1) != 0) continue;
++                        long m = e & ((1L << (j * 4 + i)) | (1L << (j * 4 + i + 1)) | (1L << (12 + i * 4 + j)) | (1L << (12 + i * 4 + j + 1)));
++                        if (m != 0) { e &= ~m; again = true; }
++                    }
++                }
++            }
++            return e;
++        }
++
++        /** CL1: the streets of a squared cell of variant var: 3, the square with some of its 24 segments left out (see cl1Settle; every plot of the cell stays within REACH, as the whole square's are); 4, the long streets whole and the cross streets by bands, the lines at 7, 15 and 23 in one band and those at 11 and 19 in the next. */
++        void cl1Square(int x0, int y0, boolean across, int var, int ci, int cj, byte st) {
++            if (var == 4) {
++                int par = cl1Hash(ci, cj, 31) < 0.5 ? 0 : 1;
++                for (int v : STREETS_AT) cl1Run(x0, y0, across, true, v, 0, INTERIOR - 1, st);
++                for (int b = 0; b < 4; b++) {
++                    if ((b & 1) == par) for (int u : STREETS_AT) cl1Run(x0, y0, across, false, u, SEG_FROM[b], SEG_TO[b], st);
++                    else { cl1Run(x0, y0, across, false, 11, SEG_FROM[b], SEG_TO[b], st); cl1Run(x0, y0, across, false, 19, SEG_FROM[b], SEG_TO[b], st); }
++                }
++                return;
++            }
++            long e = (1L << 24) - 1;
++            for (int attempt = 0; attempt < 3; attempt++) {
++                long t = (1L << 24) - 1;
++                for (int k = 0; k < 24; k++) if (cl1Hash(ci, cj, 40 + attempt * 24 + k) < CL1_SDROP) t &= ~(1L << k);
++                t = cl1Settle(t);
++                long[] g = cl1Ring();
++                for (int j = 0; j < 3; j++) for (int k = 0; k < 4; k++) if ((t >> (j * 4 + k) & 1) != 0) cl1Mark(g, true, STREETS_AT[j], SEG_FROM[k], SEG_TO[k]);
++                for (int i = 0; i < 3; i++) for (int k = 0; k < 4; k++) if ((t >> (12 + i * 4 + k) & 1) != 0) cl1Mark(g, false, STREETS_AT[i], SEG_FROM[k], SEG_TO[k]);
++                for (int j = 0; j < 3; j++) for (int i = 0; i < 3; i++) if (cl1Node(t, i, j) >= 2) cl1Mark(g, true, STREETS_AT[j], STREETS_AT[i], STREETS_AT[i]);
++                if (cl1Uncovered(g) <= CL1_SHOLE) { e = t; break; }
++            }
++            for (int j = 0; j < 3; j++) for (int k = 0; k < 4; k++) if ((e >> (j * 4 + k) & 1) != 0) cl1Run(x0, y0, across, true, STREETS_AT[j], SEG_FROM[k], SEG_TO[k], st);
++            for (int i = 0; i < 3; i++) for (int k = 0; k < 4; k++) if ((e >> (12 + i * 4 + k) & 1) != 0) cl1Run(x0, y0, across, false, STREETS_AT[i], SEG_FROM[k], SEG_TO[k], st);
++            for (int j = 0; j < 3; j++) {
++                for (int i = 0; i < 3; i++) {
++                    if (cl1Node(e, i, j) < 2) continue;
++                    // The junction's plot, along each street that meets it.
++                    if ((e >> (j * 4 + i) & 1) != 0 || (e >> (j * 4 + i + 1) & 1) != 0) cl1Run(x0, y0, across, true, STREETS_AT[j], STREETS_AT[i], STREETS_AT[i], st);
++                    if ((e >> (12 + i * 4 + j) & 1) != 0 || (e >> (12 + i * 4 + j + 1) & 1) != 0) cl1Run(x0, y0, across, false, STREETS_AT[i], STREETS_AT[j], STREETS_AT[j], st);
++                }
++            }
++        }
++
++        /** CL1: the streets that meet junction (i, j) of a squared cell, of the edges e. */
++        static int cl1Node(long e, int i, int j) {
++            return Long.bitCount(e & ((1L << (j * 4 + i)) | (1L << (j * 4 + i + 1)) | (1L << (12 + i * 4 + j)) | (1L << (12 + i * 4 + j + 1))));
++        }
++
++        /** CL1: the plots cl1Trim() took up, and their roles, to be put back. */
++        int[] trimGone = new int[4096], trimRole = new int[4096];
++
++        /**
++         * CL1: after a merge in cell c, the dead ends in the cell and the cells about it taken up, until none is - a
++         * merge in a variant cell can leave a street's stub where a line was not, and in the cell beside a gap in
++         * the arterial (V3) it can leave the street the gap ended on with nothing across. Cells the ground cuts are
++         * left as they are, and the frame's edge lines (the neighbour district's too). Put back, all of it, if a
++         * building near it would be left with no street within REACH.
++         */
++        void cl1Trim(int c) {
++            int ci = c % CELLS_A_SIDE, cj = c / CELLS_A_SIDE;
++            int xa = Math.max(1, CELL * (ci - 1)), xb = Math.min(SIDE - 1, CELL * (ci + 2)), ya = Math.max(1, CELL * (cj - 1)), yb = Math.min(SIDE - 1, CELL * (cj + 2));
++            int n = 0;
++            for (boolean again = true; again; ) {
++                again = false;
++                for (int y = ya; y <= yb; y++) {
++                    for (int x = xa; x <= xb; x++) {
++                        int p = y * FRAME + x;
++                        if (!str[p] || under[p] || streetNeighbours(p) > 1) continue;
++                        if (cellCut[Math.min(x / CELL, CELLS_A_SIDE - 1) + Math.min(y / CELL, CELLS_A_SIDE - 1) * CELLS_A_SIDE]) continue;
++                        if (n == trimGone.length) { trimGone = Arrays.copyOf(trimGone, n * 2); trimRole = Arrays.copyOf(trimRole, n * 2); }
++                        trimGone[n] = p;
++                        trimRole[n++] = role[p] | (art[p] ? 8 : 0) | (blvd[p] ? 16 : 0) | (occ[p] == -1 ? 32 : 0);
++                        setStr(p, false);
++                        art[p] = false;
++                        blvd[p] = false;
++                        role[p] = 0;
++                        if (occ[p] == -1 && !blocked[p]) occ[p] = 0;
++                        again = true;
++                    }
++                }
++            }
++            if (n == 0) return;
++            boolean ok = true;
++            for (int b = 0; b < bPlaced && ok; b++) {
++                int bx = placedX[b], by = placedY[b];
++                if (bx > xb + REACH + 1 || by > yb + REACH + 1 || bx + placedW[b] < xa - REACH - 1 || by + placedH[b] < ya - REACH - 1) continue;
++                if (!cl1Reaches(bx, by, placedW[b], placedH[b])) ok = false;
++            }
++            if (ok) return;
++            for (int k = 0; k < n; k++) {
++                int p = trimGone[k], sv = trimRole[k];
++                setStr(p, true);
++                role[p] = (byte) (sv & 7);
++                art[p] = (sv & 8) != 0;
++                blvd[p] = (sv & 16) != 0;
++                if ((sv & 32) != 0) occ[p] = -1;
++            }
++        }
++
++        /* ------------------------------------------------ CL1 V3 (study): a gap in the arterial between two homes cells */
++
++        /** CL1: whether any street plot lies within REACH of the box (x, y, w, h), across corners: a building there is still within reach of a street. */
++        boolean cl1Reaches(int x, int y, int w, int h) {
++            for (int yy = Math.max(0, y - REACH); yy <= Math.min(FRAME - 1, y + h - 1 + REACH); yy++) {
++                for (int xx = Math.max(0, x - REACH); xx <= Math.min(FRAME - 1, x + w - 1 + REACH); xx++) {
++                    int p = yy * FRAME + xx;
++                    if (str[p] || under[p]) return true;
++                }
++            }
++            return false;
++        }
++
++
++        /**
++         * CL1 V3: cell c has just opened as homes; on each side where its neighbour is an open homes cell and the
++         * pair's hash asks, segments of the arterial between them - between the crossings of the cells' long
++         * streets, never the crossings or the corners - are taken up again, each only if no highway, railway,
++         * yard or reserve (in.fixed) is within two plots of it, no street beneath a highway is in it, every plot
++         * beside it that is still a street has two streets beside it (no dead end), every building near it keeps
++         * a street within REACH, and the streets about it stay one piece (splits()). Neither cell a boulevard.
++         * A building cannot stand on the plots: a cell's buildings stand in its interior only.
++         */
++        void cl1Gaps(DistrictPlan out, int c, int ci, int cj, boolean bl) {
++            if (bl) return;
++            for (int side = 0; side < 4; side++) {
++                int ni = ci + (side == 0 ? -1 : side == 2 ? 1 : 0), nj = cj + (side == 1 ? -1 : side == 3 ? 1 : 0);
++                if (ni < 0 || nj < 0 || ni >= CELLS_A_SIDE || nj >= CELLS_A_SIDE) continue;   // never the frame's edge lines
++                int n = ni + nj * CELLS_A_SIDE;
++                if (out.cellKind[n] != HOMES || out.cellBoulevard[n]) continue;
++                int pi = Math.min(ci, ni), pj = Math.min(cj, nj);
++                boolean vertical = side == 0 || side == 2;                                    // the shared line runs north-south
++                if (cl1Hash(pi, pj, 100 + (vertical ? 0 : 1)) >= CL1_GAP) continue;
++                // The shared line: x (or y) = CELL x the east (south) cell's index, its interior plots 1..31 of the other axis.
++                int line = CELL * (vertical ? Math.max(ci, ni) : Math.max(cj, nj));
++                int from = CELL * (vertical ? pj : pi) + 1;
++                cl1GapsTried++;
++                for (int k = 0; k < 4; k++) {
++                    if (cl1Hash(pi, pj, 110 + (vertical ? 0 : 8) + k) >= CL1_GAPSEG) continue;
++                    int lo = from + SEG_FROM[k], hi = from + SEG_TO[k];
++                    int[] saved = new int[hi - lo + 1];
++                    boolean ok = true;
++                    for (int t = lo; t <= hi && ok; t++) {
++                        int p = vertical ? t * FRAME + line : line * FRAME + t;
++                        if (!str[p] || under[p]) ok = false;
++                        // No highway, railway, yard or reserve within two plots.
++                        for (int dy = -2; dy <= 2 && ok; dy++) {
++                            for (int dx = -2; dx <= 2 && ok; dx++) {
++                                int ax = (vertical ? line : t) + dx, ay = (vertical ? t : line) + dy;
++                                if (ax >= 0 && ay >= 0 && ax < FRAME && ay < FRAME && in.fixed[ay * FRAME + ax] != 0) ok = false;
++                            }
++                        }
++                    }
++                    if (!ok) continue;
++                    // Taken up, tentatively.
++                    for (int t = lo; t <= hi; t++) {
++                        int p = vertical ? t * FRAME + line : line * FRAME + t;
++                        saved[t - lo] = role[p] | (art[p] ? 8 : 0) | (blvd[p] ? 16 : 0) | (occ[p] == -1 ? 32 : 0);
++                        setStr(p, false);
++                        art[p] = false;
++                        blvd[p] = false;
++                        role[p] = 0;
++                        if (occ[p] == -1 && !blocked[p]) occ[p] = 0;
++                    }
++                    // No dead end where it ended; the network one piece; every building near it within reach still.
++                    boolean keep = true;
++                    for (int t = lo - 1; t <= hi + 1 && keep; t++) {
++                        for (int s = -1; s <= 1 && keep; s += 2) {
++                            int ax = vertical ? line + s : t, ay = vertical ? t : line + s;
++                            if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
++                            int a = ay * FRAME + ax;
++                            if ((str[a] || under[a]) && streetNeighbours(a) < 2) keep = false;
++                        }
++                        int ex = vertical ? line : t, ey = vertical ? t : line;
++                        int e = ey * FRAME + ex;
++                        if ((t < lo || t > hi) && (str[e] || under[e]) && streetNeighbours(e) < 2) keep = false;
++                    }
++                    if (keep) {
++                        int gx = vertical ? line : lo, gy = vertical ? lo : line, gw = vertical ? 1 : hi - lo + 1, gh = vertical ? hi - lo + 1 : 1;
++                        if (splits(gx, gy, gw, gh)) keep = false;
++                    }
++                    for (int b = 0; b < bPlaced && keep; b++) {
++                        int bx = placedX[b], by = placedY[b], bw = placedW[b], bh = placedH[b];
++                        boolean near = vertical ? (bx <= line + REACH + 1 && bx + bw > line - REACH - 1 && by <= hi + REACH + 1 && by + bh > lo - REACH - 1)
++                                : (by <= line + REACH + 1 && by + bh > line - REACH - 1 && bx <= hi + REACH + 1 && bx + bw > lo - REACH - 1);
++                        if (near && !cl1Reaches(bx, by, bw, bh)) keep = false;
++                    }
++                    if (!keep) {
++                        for (int t = lo; t <= hi; t++) {
++                            int p = vertical ? t * FRAME + line : line * FRAME + t;
++                            int sv = saved[t - lo];
++                            setStr(p, true);
++                            role[p] = (byte) (sv & 7);
++                            art[p] = (sv & 8) != 0;
++                            blvd[p] = (sv & 16) != 0;
++                            if ((sv & 32) != 0) occ[p] = -1;
++                        }
++                        continue;
++                    }
++                    cl1GapsMade++;
++                    for (int t = lo; t <= hi; t++) {
++                        int p = vertical ? t * FRAME + line : line * FRAME + t;
++                        // This opening's own list of plots laid keeps only what is still laid.
++                        for (int q = 0; q < nChanged; q++) if (changed[q] == p) { changed[q] = changed[--nChanged]; break; }
++                    }
++                    staleAround(n);
++                    staleAround(c);
++                }
++            }
++        }
++
+         /* ------------------------------------------------ an estate cell's streets (0.7.90, ESTATE LINES) */
+ 
+         /** estateLines()'s flag: the cell's streets run the other way from its own direction (a cell the ground cuts). */
+@@ -2495,6 +2910,7 @@ public final class DistrictPlan {
+             }
+             int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1;
+             boolean across = out.cellAcross[c];
++            boolean cl1 = cl1Cell(out, c);
+             for (int[] g : MERGE_GROUPS) {
+                 int gu = g[0], gv = g[1];
+                 for (int turn = 0; turn < 2; turn++) {
+@@ -2517,7 +2933,7 @@ public final class DistrictPlan {
+                             }
+                             if (building || dryOrStreet <= MERGE_DRY * gw * gh) continue;
+                             // The network stays one piece: no street outside the group that reached another through it is cut off (game rules).
+-                            if (!proto && cellCut[c] && splits(gx, gy, gw, gh)) { out.mergesRefused++; continue; }
++                            if (!proto && (cellCut[c] || cl1) && splits(gx, gy, gw, gh)) { out.mergesRefused++; continue; }
+                             for (int yy = gy; yy < gy + gh; yy++) {
+                                 for (int xx = gx; xx < gx + gw; xx++) {
+                                     int p = yy * FRAME + xx;
+@@ -2528,6 +2944,7 @@ public final class DistrictPlan {
+                                     if (occ[p] == -1 && !blocked[p]) occ[p] = 0;
+                                 }
+                             }
++                            if ((cl1 || CL1_V3) && CL1_STREETS && !proto && !cellCut[c]) cl1Trim(c);
+                             out.cellMerged[c] = true;
+                             refreeCell(c);
+                             forgetFails(c);
