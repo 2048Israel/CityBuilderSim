@@ -1,0 +1,97 @@
+NationsModel: 196 nations, 50 goods, theta 8.0% of the price, elasticities demand 0.5 supply 0.4; nearest partners: the 10 nearest producers; omega 1.0
+pairs a good: Jerus's rule 5,855, the full table 15,703 (producer x buyer, home pairs included)
+cold solve: 250 sweeps a good on average; the rule's prices against the full table's: mean 0.807%, worst 4.11%
+a January to 1e-03 (all 50 goods, warm): median 24.4 ms on the rule, 45.2 ms on the full table; 31 sweeps a good; worst price off the full table 3.92%
+a January to 1e-04 (all 50 goods, warm): median 48.5 ms on the rule, 89.1 ms on the full table; 61 sweeps a good; worst price off the full table 3.91%
+a January to 1e-07 (all 50 goods, warm): median 120.6 ms on the rule, 221.6 ms on the full table; 154 sweeps a good; worst price off the full table 3.91%
+
+Good 0, drawn like sawn wood: 30% of its price is freight at 10,000 km; world use 10,102,723 t a year
+the city's best buyers before it sells (price there less the freight from Halifax):
+  Antigua and Barbuda        price  95.92  freight 13.50  nets  82.42  uses        51 t
+  Saint Kitts and Nevis      price  95.80  freight 13.41  nets  82.39  uses        51 t
+  Dominica                   price  96.29  freight 14.26  nets  82.03  uses        51 t
+  Iceland                    price  96.36  freight 14.59  nets  81.77  uses     5,034 t
+  Saint Lucia                price  96.54  freight 14.81  nets  81.72  uses        51 t
+  Dominican Republic         price  94.80  freight 13.14  nets  81.66  uses    16,829 t
+  Barbados                   price  96.89  freight 15.23  nets  81.66  uses       111 t
+  The Bahamas                price  92.92  freight 11.39  nets  81.52  uses       146 t
+the city sells X a year: the month's step by the slopes (water-filling), then a full re-solve with the city's tonnes in:
+  X =  0.1% of world use: nets  81.32 this month (11 buyers: US 89%  Dominican Republic 7%  Iceland 3%  Antigua and Barbuda 0%) ->  81.21 with the world's slope; re-solved  81.25 (off -0.0%)
+  X =  1.0% of world use: nets  81.03 this month (11 buyers: US 98%  Dominican Republic 1%  Iceland 0%  Haiti 0%) ->  79.93 with the world's slope; re-solved  79.97 (off -0.1%)
+  X =  5.0% of world use: nets  79.75 this month (20 buyers: US 98%  Dominican Republic 1%  Canada 0%  Iceland 0%) ->  74.23 with the world's slope; re-solved  74.65 (off -0.6%)
+  X = 10.0% of world use: nets  78.32 this month (34 buyers: US 93%  Canada 5%  Dominican Republic 1%  Portugal 1%) ->  67.28 with the world's slope; re-solved  68.46 (off -1.7%)
+the export curve (share of world use, the netback this month, with the world's slope):
+  0.0000:82.42:82.42 0.0075:81.11:80.28 0.0150:80.87:79.21 0.0225:80.63:78.14 0.0300:80.39:77.07 0.0375:80.15:76.01 0.0450:79.90:74.94 0.0525:79.68:73.88 0.0600:79.46:72.84 0.0675:79.25:71.79 0.0750:79.03:70.75 0.0825:78.82:69.71 0.0900:78.61:68.67 0.0975:78.39:67.63 0.1050:78.19:66.59 0.1125:77.99:65.57 0.1200:77.80:64.55 0.1275:77.61:63.53 0.1350:77.41:62.51 0.1425:77.22:61.49 0.1500:77.03:60.47
+where each buyer joins (the city's sales a year at which the fill reaches it, as a share of world use; its slope, t a $):
+  Antigua and Barbuda        joins at 0.0000%  nets  82.42  slope 7
+  Saint Kitts and Nevis      joins at 0.0000%  nets  82.39  slope 7
+  Dominica                   joins at 0.0000%  nets  82.03  slope 7
+  Iceland                    joins at 0.0001%  nets  81.77  slope 655
+  Saint Lucia                joins at 0.0004%  nets  81.72  slope 7
+  Dominican Republic         joins at 0.0009%  nets  81.66  slope 2,192
+  Barbados                   joins at 0.0010%  nets  81.66  slope 14
+  The Bahamas                joins at 0.0048%  nets  81.52  slope 19
+  Saint Vincent and the Grenadines joins at 0.0056%  nets  81.49  slope 7
+  Haiti                      joins at 0.0095%  nets  81.36  slope 161
+  United States of America   joins at 0.0099%  nets  81.35  slope 310,945
+  Grenada                    joins at 1.2694%  nets  80.94  slope 7
+  Cape Verde                 joins at 1.3081%  nets  80.93  slope 14
+  Cuba                       joins at 2.0509%  nets  80.69  slope 324
+  Trinidad and Tobago        joins at 2.2759%  nets  80.62  slope 32
+  Jamaica                    joins at 2.4538%  nets  80.56  slope 114
+  Mauritania                 joins at 2.7822%  nets  80.46  slope 91
+  Senegal                    joins at 4.0214%  nets  80.06  slope 208
+  Venezuela                  joins at 4.5005%  nets  79.90  slope 839
+  Canada                     joins at 4.8072%  nets  79.81  slope 30,927
+  The Gambia                 joins at 5.4002%  nets  79.63  slope 20
+  Belize                     joins at 5.5229%  nets  79.60  slope 11
+  Portugal                   joins at 5.6146%  nets  79.57  slope 4,867
+  Morocco                    joins at 6.5792%  nets  79.29  slope 2,515
+  Guyana                     joins at 6.8717%  nets  79.21  slope 27
+  Honduras                   joins at 6.9189%  nets  79.20  slope 129
+  Guinea Bissau              joins at 7.0440%  nets  79.16  slope 32
+  El Salvador                joins at 7.7512%  nets  78.96  slope 145
+  Guatemala                  joins at 7.8472%  nets  78.93  slope 1,934
+  Suriname                   joins at 7.8522%  nets  78.93  slope 24
+  Nicaragua                  joins at 8.8765%  nets  78.64  slope 122
+  Panama                     joins at 9.5809%  nets  78.44  slope 1,535
+  Guinea                     joins at 9.9243%  nets  78.34  slope 160
+  Costa Rica                 joins at 9.9483%  nets  78.34  slope 1,695
+  Mexico                     joins at 10.3262%  nets  78.23  slope 24,560
+  Mali                       joins at 10.7525%  nets  78.12  slope 156
+  Ireland                    joins at 10.7532%  nets  78.12  slope 8,677
+  Sierra Leone               joins at 11.0808%  nets  78.03  slope 79
+  Liberia                    joins at 14.5114%  nets  77.15  slope 78
+  Colombia                   joins at 14.5587%  nets  77.14  slope 6,471
+  Spain                      joins at 15.6475%  nets  76.87  slope 23,051
+  Burkina Faso               joins at 17.3456%  nets  76.46  slope 133
+  Niger                      joins at 19.4523%  nets  75.96  slope 115
+  Andorra                    joins at 19.7711%  nets  75.88  slope 7
+  Algeria                    joins at 20.1113%  nets  75.80  slope 4,151
+  Ivory Coast                joins at 20.8325%  nets  75.63  slope 335
+  United Kingdom             joins at 21.6813%  nets  75.43  slope 45,578
+  Ghana                      joins at 23.2961%  nets  75.08  slope 293
+  Togo                       joins at 24.0304%  nets  74.93  slope 108
+  Benin                      joins at 24.8871%  nets  74.74  slope 109
+  Ecuador                    joins at 25.6816%  nets  74.58  slope 2,087
+  France                     joins at 25.8736%  nets  74.53  slope 40,114
+  Belgium                    joins at 26.2822%  nets  74.45  slope 9,791
+  Nigeria                    joins at 26.9297%  nets  74.33  slope 3,869
+  Netherlands                joins at 28.8455%  nets  73.96  slope 17,211
+  Luxembourg                 joins at 29.1940%  nets  73.90  slope 1,629
+  Monaco                     joins at 29.3256%  nets  73.88  slope 7
+  Tunisia                    joins at 30.6623%  nets  73.63  slope 267
+  Norway                     joins at 31.8754%  nets  73.41  slope 7,382
+  Switzerland                joins at 32.4689%  nets  73.30  slope 13,457
+the curve to 2% of world use: 0.000:82.42:82.42 0.001:81.32:81.21 0.002:81.29:81.07 0.003:81.25:80.92 0.004:81.22:80.78 0.005:81.19:80.64 0.006:81.16:80.50 0.007:81.13:80.35 0.008:81.09:80.21 0.009:81.06:80.07 0.010:81.03:79.93 0.011:81.00:79.78 0.012:80.97:79.64 0.013:80.93:79.50 0.014:80.90:79.36 0.015:80.87:79.21 0.016:80.84:79.07 0.017:80.80:78.93 0.018:80.77:78.78 0.019:80.74:78.64 0.020:80.71:78.50
+the buyers at 5% of world use (tonnes, price before, freight, nets after the month's step):
+  United States of America     496,782 t  price  86.93  freight  5.58  nets  74.23  (1,192 km)
+  Dominican Republic             4,187 t  price  94.80  freight 13.14  nets  74.23  (3,712 km)
+  Canada                         1,738 t  price  86.56  freight  6.75  nets  74.23  (1,583 km)
+  Iceland                        1,327 t  price  96.36  freight 14.59  nets  74.23  (4,197 km)
+  Cuba                             305 t  price  93.72  freight 13.02  nets  74.23  (3,675 km)
+  Haiti                            260 t  price  94.67  freight 13.31  nets  74.23  (3,769 km)
+  Venezuela                        129 t  price  96.19  freight 16.29  nets  74.23  (4,763 km)
+  Jamaica                           93 t  price  94.60  freight 14.04  nets  74.23  (4,013 km)
+
+the city's month for all 50 goods (sorted once a January): 5.4 microseconds (ok)

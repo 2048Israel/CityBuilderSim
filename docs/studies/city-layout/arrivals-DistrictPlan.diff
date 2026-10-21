@@ -1,0 +1,292 @@
+diff --git a/src/main/java/ham/citybuildersim/DistrictPlan.java b/prototype/ham/citybuildersim/DistrictPlan.java
+index e27c304..9b47a03 100644
+--- a/src/main/java/ham/citybuildersim/DistrictPlan.java
++++ b/prototype/ham/citybuildersim/DistrictPlan.java
+@@ -381,6 +381,8 @@ public final class DistrictPlan {
+     public static final class Input {
+         /** The world's seed. */
+         public long seed;
++        /** CL1 prototype: the district's buildings in the order they came, a type id each, ~t for one of type t gone (its newest); null for today's plan, packed from the counts. */
++        public int[] arrivals;
+         /** The frame's first plot in the world: the district's north-west plot. */
+         public long x0, y0;
+         /** The hub, in the frame's plots: the founding site (spec 2.4; on another landmass, later, its first port). */
+@@ -617,6 +619,11 @@ public final class DistrictPlan {
+ 
+     /** The ladder (make()) on builder b, started on its input. */
+     private static DistrictPlan ladder(Builder b) {
++        if (b.arrival) {
++            DistrictPlan pa = b.buildArrivals();
++            pa.builds = 1;
++            return pa;
++        }
+         DistrictPlan p = b.build(0, 0, Integer.MAX_VALUE, null, null, false, null);
+         int builds = 1;
+         double s = p.surplus;
+@@ -1021,6 +1028,220 @@ public final class DistrictPlan {
+             return Integer.compare(ga, gb);
+         }
+ 
++        /* ------------------------------------------------ CL1 prototype: the buildings in the order they came */
++
++        /** Whether this plan places its buildings in the order they came (Input.arrivals) rather than by bands, largest first. */
++        boolean arrival;
++        /** The events in order: band, index in its band, and whether it is the building leaving (else coming). */
++        int[] evG, evI;
++        boolean[] evGone;
++        int nEv;
++        /** Each band's buildings' index into the placed arrays, -1 while unplaced. */
++        int[][] placedAt;
++        /** Whether each placed box was placed on a field, and whether it has gone. */
++        boolean[] placedOnField, placedGone;
++        /** Whether the last placeOne() put its building on a field. */
++        boolean fieldPlace;
++        /** CL1 variant (-Dcl1.estate=largest): an estate cell's streets sized to the largest estate-band building come so far, not its opener. */
++        static final boolean ESTATE_LARGEST = "largest".equals(System.getProperty("cl1.estate"));
++        /** CL1 variant (-Dcl1.outer=far): the outer kinds open cells from the far end of the growth order, the rest from the near end. */
++        static final boolean OUTER_FAR = "far".equals(System.getProperty("cl1.outer"));
++        int bFar;
++        int estW, estH;
++
++        /** The bands in the order the buildings came: the log, then what the counts say beyond it (a carry from the district before, a deal) at its end. */
++        @SuppressWarnings("unchecked")
++        void bandsArrival(int[] fw, int[] fh) {
++            BuildingVisual.Type[] types = in.types;
++            int T = types.length;
++            List<Integer>[] lists = new List[3];
++            for (int g = 0; g < 3; g++) lists[g] = new ArrayList<>();
++            java.util.ArrayDeque<Integer>[] live = new java.util.ArrayDeque[T];
++            int[] want = new int[T];
++            long extra = 0;
++            for (int t = 0; t < T && t < in.counts.length; t++) {
++                if (in.counts[t] <= 0 || types[t] == null || !types[t].drawn()) continue;
++                want[t] = in.counts[t];
++                extra += want[t];
++            }
++            int cap = (int) Math.min(Integer.MAX_VALUE - 8, in.arrivals.length + 2 * extra + 64);
++            int[] eg = new int[cap], ei = new int[cap];
++            boolean[] eo = new boolean[cap];
++            int n = 0;
++            for (int e : in.arrivals) {
++                int t = e >= 0 ? e : ~e;
++                if (t >= T || types[t] == null || !types[t].drawn()) continue;
++                if (fw[t] == 0) { int[] f = BuildingVisual.footprint(types[t]); fw[t] = f[0]; fh[t] = f[1]; }
++                int g = bandOf(types[t]);
++                if (live[t] == null) live[t] = new java.util.ArrayDeque<>();
++                if (e >= 0) {
++                    int i = lists[g].size();
++                    lists[g].add(t);
++                    live[t].push(i);
++                    eg[n] = g; ei[n] = i; eo[n] = false; n++;
++                } else if (!live[t].isEmpty()) {
++                    eg[n] = g; ei[n] = live[t].pop(); eo[n] = true; n++;
++                }
++            }
++            for (int t = 0; t < T; t++) {
++                int have = live[t] == null ? 0 : live[t].size();
++                if (have == want[t] || types[t] == null) continue;
++                if (fw[t] == 0) { int[] f = BuildingVisual.footprint(types[t]); fw[t] = f[0]; fh[t] = f[1]; }
++                int g = bandOf(types[t]);
++                if (live[t] == null) live[t] = new java.util.ArrayDeque<>();
++                for (; have < want[t]; have++) {
++                    int i = lists[g].size();
++                    lists[g].add(t);
++                    live[t].push(i);
++                    eg[n] = g; ei[n] = i; eo[n] = false; n++;
++                }
++                for (; have > want[t]; have--) {
++                    eg[n] = g; ei[n] = live[t].pop(); eo[n] = true; n++;
++                }
++            }
++            evG = eg; evI = ei; evGone = eo; nEv = n;
++            placedAt = new int[3][];
++            for (int g = 0; g < 3; g++) {
++                int m = lists[g].size();
++                bandType[g] = new int[m];
++                bandW[g] = new int[m];
++                bandH[g] = new int[m];
++                placedAt[g] = new int[m];
++                for (int i = 0; i < m; i++) { int t = lists[g].get(i); bandType[g][i] = t; bandW[g][i] = fw[t]; bandH[g][i] = fh[t]; }
++            }
++        }
++
++        /** CL1 prototype: the plan with every building at the first place it fits in the order it came, never moved; one that left frees its lot. No ladder: no squares, no boulevards. */
++        DistrictPlan buildArrivals() {
++            DistrictPlan out = new DistrictPlan();
++            int total = 0;
++            for (int g = 0; g < 3; g++) total += bandType[g].length;
++            placedX = new int[total]; placedY = new int[total]; placedW = new int[total]; placedH = new int[total]; placedT = new int[total];
++            placedOnField = new boolean[total];
++            placedGone = new boolean[total];
++            bOut = out;
++            bSquares = 0;
++            bBoulevards = 0;
++            bLimit = Integer.MAX_VALUE;
++            bTurnAt = null;
++            bTurns = null;
++            bByHomes = false;
++            Arrays.fill(out.cellRank, -1);
++            System.arraycopy(occStart, 0, occ, 0, AREA);
++            Arrays.fill(str, false);
++            Arrays.fill(rowBits, 0L);
++            Arrays.fill(cellCut, false);
++            Arrays.fill(art, false);
++            Arrays.fill(under, false);
++            Arrays.fill(blvd, false);
++            Arrays.fill(role, (byte) 0);
++            Arrays.fill(reachStale, true);
++            Arrays.fill(fails, 0);
++            Arrays.fill(failsF, 0);
++            Arrays.fill(holdsNone, false);
++            Arrays.fill(mergeFails, 0);
++            for (int c = 0; c < CELLS; c++) {
++                Arrays.fill(near[c], 0);
++                Arrays.fill(touch[c], 0);
++                anyEpoch[c]++;
++                rescan(c);
++            }
++            for (int g = 0; g < 3; g++) Arrays.fill(placedAt[g], -1);
++            bPlaced = 0;
++            campusGen++;
++            bUnplaced = new ArrayList<>();
++            bNext = 0;
++            bOpened = 0;
++            bHomes = 0;
++            bExhausted = false;
++            bShare = !proto && !in.bandsApart;
++            estW = 0;
++            estH = 0;
++            bFar = order.length - 1;
++            int[][] mineB = { new int[CELLS], new int[CELLS], new int[CELLS] };
++            int[] nB = new int[3];
++            int[] combined = new int[2 * CELLS];
++            for (int k = 0; k < nEv; k++) {
++                int g = evG[k], i = evI[k];
++                if (evGone[k]) {
++                    int at = placedAt[g][i];
++                    if (at >= 0) vacate(at);
++                    else for (int u = 0; u < bUnplaced.size(); u++) if (bUnplaced.get(u)[0] == g && bUnplaced.get(u)[1] == i) { bUnplaced.remove(u); break; }
++                    placedAt[g][i] = -2;
++                    continue;
++                }
++                // The band's cells as placeOne() reads them: the outer kinds' with industry's first (SHARED ESTATES).
++                int n1 = 0;
++                if (g == 2 && bShare) {
++                    n1 = nB[1];
++                    System.arraycopy(mineB[1], 0, combined, 0, n1);
++                    System.arraycopy(mineB[2], 0, combined, n1, nB[2]);
++                    bMine = combined;
++                    bNShared = n1;
++                    bNMine = n1 + nB[2];
++                } else {
++                    bMine = mineB[g];
++                    bNShared = 0;
++                    bNMine = nB[g];
++                }
++                Arrays.fill(skipFrom, 0);
++                if (g > 0 && bandW[g][i] * bandH[g][i] > estW * estH) { estW = bandW[g][i]; estH = bandH[g][i]; }
++                int before = bPlaced;
++                fieldPlace = false;
++                placeOne(g, i, false);
++                if (g == 2 && bShare) {
++                    for (int m = n1 + nB[2]; m < bNMine; m++) mineB[2][nB[2]++] = combined[m];
++                } else {
++                    nB[g] = bNMine;
++                }
++                if (bPlaced > before) { placedAt[g][i] = before; placedOnField[before] = fieldPlace; }
++            }
++            int[] over = new int[in.types.length];
++            for (int[] u : bUnplaced) over[bandType[u[0]][u[1]]]++;
++            out.joins = join();
++            partedOutCount = 0;
++            out.joinsOut = joinOut();
++            out.partedOut = partedOutCount;
++            out.cellsOpen = bOpened;
++            out.homesCells = bHomes;
++            int placed = 0;
++            for (int k = 0; k < bPlaced; k++) {
++                if (placedGone[k]) continue;
++                placedX[placed] = placedX[k]; placedY[placed] = placedY[k]; placedW[placed] = placedW[k]; placedH[placed] = placedH[k]; placedT[placed] = placedT[k];
++                placed++;
++            }
++            out.buildings = placed;
++            out.bx = Arrays.copyOf(placedX, placed);
++            out.by = Arrays.copyOf(placedY, placed);
++            out.bw = Arrays.copyOf(placedW, placed);
++            out.bh = Arrays.copyOf(placedH, placed);
++            out.btype = Arrays.copyOf(placedT, placed);
++            out.overflow = over;
++            access(out, placed);
++            sidings(out, placed);
++            surface(out);
++            markParted(out);
++            return let(out);
++        }
++
++        /** Placed box k taken away: its plots free again, what its cell was known not to hold forgotten. */
++        void vacate(int k) {
++            int x = placedX[k], y = placedY[k], w = placedW[k], h = placedH[k];
++            int c = (y - 1) / CELL * CELLS_A_SIDE + (x - 1) / CELL;
++            int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1;
++            int bits = ((1 << w) - 1) << (x - x0);
++            for (int yy = y; yy < y + h; yy++) {
++                for (int xx = x; xx < x + w; xx++) occ[yy * FRAME + xx] = 0;
++                free[c][yy - y0] |= bits & openRows[c][yy - y0];
++                freeF[c][yy - y0] |= bits & (openRows[c][yy - y0] | fieldRows[c][yy - y0]);
++            }
++            placedGone[k] = true;
++            forgetFails(c);
++            rescan(c);
++            campusGen++;
++        }
++
++
+         void bands() {
+             BuildingVisual.Type[] types = in.types;
+             mixedSlots = 0;
+@@ -1034,7 +1255,9 @@ public final class DistrictPlan {
+                 fh[t] = f[1];
+                 lists[bandOf(types[t])].add(new int[] { t, in.counts[t] });
+             }
+-            for (int g = 0; g < 3; g++) {
++            arrival = in.arrivals != null && !proto;
++            if (arrival) bandsArrival(fw, fh);
++            for (int g = 0; g < 3 && !arrival; g++) {
+                 // Largest first, then by id: one entry a building - in industry the refinery's units first of all (THE CAMPUS,
+                 // 0.7.97), so they stand together in the first estate cells it opens; a district with none sorts as before.
+                 List<int[]> l = lists[g];
+@@ -1281,7 +1504,8 @@ public final class DistrictPlan {
+                 if (best >= 0) cellAt = c;
+             }
+             // ...and opens the first cell in the order that touches the campus's cells, while one does.
+-            while (best < 0 && bNext < order.length) {
++            boolean far = arrival && OUTER_FAR && g == 2;
++            while (best < 0 && (far ? bFar >= 0 && bFar >= bNext : bNext < order.length)) {
+                 int pick = campus ? campusNext(out, group) : -1;
+                 // A later step's turn: the cell about to open is the one it opens otherwise.
+                 if (bTurnAt != null && out.cellKind[pick >= 0 ? order[pick] : order[bNext]] == CLOSED) {
+@@ -1290,12 +1514,13 @@ public final class DistrictPlan {
+                         if (bTurnAt[j] == at && bTurns[j] == null) bTurns[j] = turn(out, g, i, bNext, bOpened, bHomes, bPlaced, bExhausted, mine, bNMine, bNShared, bUnplaced);
+                     }
+                 }
+-                int c = pick >= 0 ? order[pick] : order[bNext++];
++                int c = pick >= 0 ? order[pick] : far ? order[bFar--] : order[bNext++];
+                 if (out.cellKind[c] != CLOSED) continue;
+                 byte kind = g == 0 ? HOMES : ESTATE;
+                 boolean square = kind == HOMES && bHomes < bSquares;
+                 boolean bl = bOpened < bBoulevards;
+-                openCell(out, c, kind, bOpened, square, bl, w, h);
++                if (arrival && ESTATE_LARGEST && kind == ESTATE && estW * estH > w * h) openCell(out, c, kind, bOpened, square, bl, estW, estH);
++                else openCell(out, c, kind, bOpened, square, bl, w, h);
+                 bOpened++;
+                 if (kind == HOMES) bHomes++;
+                 mine[bNMine++] = c;
+@@ -1319,7 +1544,7 @@ public final class DistrictPlan {
+                 int c = mine[m < nMine - nShared ? nShared + m : m - (nMine - nShared)];
+                 if (!cellField[c]) continue;
+                 best = tryPlace(c, w, h, true);
+-                if (best >= 0) { cellAt = c; out.onFields++; }
++                if (best >= 0) { cellAt = c; out.onFields++; fieldPlace = true; }
+             }
+             if (best < 0) {
+                 bUnplaced.add(new int[] { g, i });

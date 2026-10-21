@@ -29,7 +29,7 @@
 - **Closing early (§6).** A reverse auction: holders offer, each at the price where its own buying rule stops wanting the bond, never under fair; the city takes the cheapest and pays each its own price. A callable line can be called at 100 from its first call date; the card says when calling is worth it.
 - **The screens (§7).** The book as a desk, a line's own page, the buyback and the call, Borrow as an auction, and Your rate as the curve the central bank sets.
 
-**Six batches (§8), CD1 to CD6,** in the queue before research (Jerus): the curve, the lineup and the auction, the books, closing early, the floating and linked notes, the screens.
+**Six batches (§8), CD1 to CD6,** in the queue before research (Jerus): the curve, the lineup and the auction, the books, closing early, the floating and linked notes, the rest of the screens (each batch ships its own screen: D31, 2026-10-20).
 
 ---
 
@@ -191,10 +191,10 @@ Borrow › At home: the kind of paper, the term (each column showing today's fai
 
 ### 4.2 The bidders, each by its own rule in the game
 
-- **Households, non-competitive and first.** What `HouseholdBalance`'s rule takes at fair (½ of the issue at most, 20 × its spread over the deposit rate, out of savings past the cushion), filled in full at the clearing yield before anyone else. A real treasury fills retail's non-competitive bids first [R1]; it is "the households first" the game has now. (D13.)
+- **Households, non-competitive and first.** What `HouseholdBalance`'s rule takes at fair (½ of the issue at most, 20 × its spread over the deposit rate, out of savings past the cushion), filled in full at the clearing yield before anyone else. A real treasury fills retail's non-competitive bids first [R1]; it is "the households first" the game has now. (D13.) **Changed by D32 (2026-10-20):** they bid by this rule at the auction's yield, not at fair, and their cap is their savings past the cushion, not half the issue; §4.3's table predates it.
 - **The bank, competitive, at fair while it has room.** It bids its room (`Bank.capacity()` less its weighted book, over `RISK_CITY`) at fair, plus whatever its funding costs past the floor the curve already carries (its cost of funds plus `MIN_MARGIN` over the dial, fading as the dial's gap does). That extra is nothing in the usual case.
 - **The world, as hot money** (**Jerus's call**). `CapitalFlows`' rule: its target stock at the auction's yield over the world's rate, less what is already here, at `ARRIVAL_SPEED`.
-- **Firms with idle cash**, by `OutwardInvestment`'s rule, the city's paper beside the deposit and abroad (left out of the study's figures; CD2 adds it beside the others).
+- **Firms with idle cash**, by `OutwardInvestment`'s rule, the city's paper beside the deposit and abroad (left out of the study's figures; CD2 adds it beside the others). CD2 runs the model again with them before it builds (D33).
 - **The central bank: never**, except its non-competitive add-on rolling its own maturing paper, as today (**Jerus's call**: arm's length). The Bank of Canada buys at Government of Canada auctions the same way and for the same reason [R6].
 
 **Nobody bids under fair**, because the paper trades at fair the next month and any bidder could buy it there.
@@ -291,7 +291,7 @@ Hold it to its date; buy it back in a **reverse auction** (any line, **Jerus's c
 The city names how much face of a line it wants back and, if it likes, the most it will pay per 100. Every holder offers what it holds in slices, **each slice at the price where its own buying rule would stop wanting it, and never under fair**:
 - **Households:** they hold the line because it out-yields a deposit by the spread their rule asked for. A slice's price is the line's payments discounted at the deposit rate plus the spread their remaining share of the line would still ask (share ÷ `HOUSEHOLD_PAPER_APPETITE`). The more they sell, the dearer the next slice.
 - **The world:** likewise from `CapitalFlows`' rule, at the world's rate plus the excess its remaining stock still asks.
-- **The bank:** it bought at fair; it offers at **fair plus half the desk's spread** (`Exchange.SPREAD` ÷ 2, 1%), as it quotes a share (D17).
+- **The bank:** it bought at fair; it offers at **fair plus half the desk's spread** (`Exchange.SPREAD` ÷ 2, 1%), as it quotes a share (D17). **Changed by D34 (2026-10-20): the bank offers at fair**, as it bids at fair; the half spread was the share desk's. The table below predates it.
 - **The central bank does not offer** (D18): its holdings follow its own dial, and a buyback is not its decision.
 
 The city takes the cheapest offers up to the face asked and **pays each its own price** (multiple price, as treasury buybacks are run [R8][R9]; D19). The stop is the dearest offer taken.
@@ -344,13 +344,13 @@ The boards in `city-debt/city-debt-study.html`, one city in January 2203, eighte
 | Batch | What | Traces |
 |---|---|---|
 | **CD1 ★** | **The curve** (§3): the expected path from `Expectations` and the rule, discount factors month by month, every piece priced on its own schedule and its yield solved from the price; `BondMarket`'s benchmark reads it; the rate taken apart in its new parts. A `CurveCheck`: a fixture that causes each shape (calm equal to today's curve, hiking inverted, behind steep, QE), asserted against `DRIFT_MONTHS`, `ADAPT_MONTHS` and the rule's own constants; `RestructureCheck` neutral or worse | every trace that borrows moves; re-baseline, the ensemble |
-| **CD2 ★** | **The lineup and the auction** (§2.1–2.3, 2.7, §4): bills, bonds at the six terms in lines that reopen, the amortizing bond on one solved coupon; the auction with the game's own bidders, non-competitive households, single price, cover, tail, the highest yield or Fill it, a capped sale that falls short; the fees; `DebtQuote` as the auction's preview; the rollover, automatic building, the build screen and the time skip on the new paper, each with its own cap or Fill it, the rollover's shortfall to the advances and automatic building's open ask (§4.5); the term loan and the old serial removed; `SAVE_FORMAT` and its floor raised. An `AuctionCheck` | moves |
+| **CD2 ★** | **The lineup and the auction** (§2.1–2.3, 2.7, §4): bills, bonds at the six terms in lines that reopen, the amortizing bond on one solved coupon; the auction with the game's own bidders, non-competitive households, single price, cover, tail, the highest yield or Fill it, a capped sale that falls short; the fees; `DebtQuote` as the auction's preview; the rollover, automatic building, the build screen and the time skip on the new paper, each with its own cap or Fill it, the rollover's shortfall to the advances and automatic building's open ask (§4.5); the term loan and the old serial removed; `SAVE_FORMAT` and its floor raised; **its screen, Borrow as an auction** (§7, board 4; D31); households bidding by their rule at the auction's yield (D32); **first, the study's model run again with firms and D32, and a long playtest counting tails over a point** (D33). An `AuctionCheck` | moves |
 | **CD3** | **The books** (§5): effective interest a line, blended at a reopening; carrying value; the budget's interest line, the gain or loss on retirement, the balance at carrying value and the fair-value note; dollar paper amortised too. `TreasuryCheck` and `MoneyCheck` extended | moves (the interest line) |
-| **CD4** | **Closing early** (§6, §2.6): the reverse auction (offers by each holder's own rule, multiple price, the most to pay, the central bank out), callable lines on a Ho–Lee tree at the measured volatility, the call, "worth calling"; `repurchaseDebt()` replaced. `RestructureCheck`'s round trip on the new mechanism, its premise unchanged | identical unless a playtest buys back |
-| **CD5** | **Floating and linked** (§2.4, 2.5, 5.3): the floating-rate note on the dial, the linked bond on the price index with its deflation floor and its uplift line | identical (nothing sells them unasked) |
-| **CD6** | **The screens** (§7): the book as a desk, a line's page, Close it now, Borrow as an auction, Your rate; the manual | identical to CD5 |
+| **CD4** | **Closing early** (§6, §2.6): the reverse auction (offers by each holder's own rule, the bank at fair (D34), multiple price, the most to pay, the central bank out), callable lines on a Ho–Lee tree at the measured volatility, the call, "worth calling"; `repurchaseDebt()` replaced; **its screen, Close it now and the call card** (§7, board 3; D31). `RestructureCheck`'s round trip on the new mechanism, its premise unchanged | identical unless a playtest buys back |
+| **CD5** | **Floating and linked** (§2.4, 2.5, 5.3): the floating-rate note on the dial, the linked bond on the price index with its deflation floor and its uplift line; **their choices on Borrow** (D31) | identical (nothing sells them unasked) |
+| **CD6** | **The rest of the screens** (§7, boards 1, 2 and 5): the book as a desk, a line's page, Your rate; the manual (D31) | identical to CD5 |
 
-In `QUEUE.md` before R0, the research batches (Jerus, 2026-10-12: "add it before research"). CD1 can go alone and changes how every price of money in the city reads the dial. CD2 is the heart and depends on CD1. CD3 and CD4 follow CD2 in either order; CD5 after CD3. CD6 last, or each screen with its batch if the implementer prefers.
+In `QUEUE.md` before R0, the research batches (Jerus, 2026-10-12: "add it before research"). CD1 can go alone and changes how every price of money in the city reads the dial. CD2 is the heart and depends on CD1. CD3 and CD4 follow CD2 in either order; CD5 after CD3. **Each batch ships with its own screen** (D31, 2026-10-20): Borrow as an auction with CD2, Close it now and the call with CD4, the floating and linked choices with CD5, so no batch leaves a screen offering paper that is gone or a mechanism with no button. CD6 last, with what is left.
 
 ---
 
@@ -389,11 +389,11 @@ In `QUEUE.md` before R0, the research batches (Jerus, 2026-10-12: "add it before
 12. **D12. The buyback is a reverse auction.** **Jerus's call.**
 
 **Taken, 2026-10-12** (Jerus: "the rest is good"; D20 his own)
-13. **D13. Households bid non-competitively,** filled first at the clearing yield. **Taken:** it is how retail bids and keeps "the households first".
+13. **D13. Households bid non-competitively,** filled first at the clearing yield. **Taken:** it is how retail bids and keeps "the households first". **Changed by D32.**
 14. **D14. A line is the benchmark while it has nine tenths of its term left.** **Taken.**
 15. **D15. `DRIFT_MONTHS` = 6,** the time constant of the dial's expected return to the rule. **Taken at that value; still his to move.**
 16. **D16. One carrying value and one blended effective rate a line.** **Taken** (§5.2).
-17. **D17. In a buyback, holders offer where their own rule stops wanting the bond, never under fair; the bank at fair plus half `Exchange.SPREAD`.** **Taken.** The alternative is a fixed premium per holder, which is a coefficient laid on top.
+17. **D17. In a buyback, holders offer where their own rule stops wanting the bond, never under fair; the bank at fair plus half `Exchange.SPREAD`.** **Taken.** The alternative is a fixed premium per holder, which is a coefficient laid on top. **The bank's half spread changed by D34: it offers at fair.**
 18. **D18. The central bank does not offer in a buyback.** **Taken.**
 19. **D19. Multiple price in a buyback** (each offer paid its own price). **Taken**, as the US Treasury and the Bank of Canada run them.
 20. **D20. The player caps the auction's yield or fills it.** **Jerus's call:** "increased yield if you allow for it to get fully filled". Capped, a short auction sells what was bid; filled, the yield rises until the bidders' own rules cover it (§4.3). Not the bank taking the rest at any yield: its room is its capital.
@@ -409,6 +409,12 @@ In `QUEUE.md` before R0, the research batches (Jerus, 2026-10-12: "add it before
 28. **D28. The rollover and automatic building each have their own cap or Fill it.** **Jerus's call:** "each its own" (not one setting shared). Default fair + 1 point.
 29. **D29. A capped rollover that falls short pays the rest of the maturity from cash, then the central bank's advances.** **Jerus's call.** The maturity is a promise; the inbox names what was printed for it.
 30. **D30. A capped automatic-building sale that falls short keeps its ask open** until what was raised plus the spare cash covers the order, offered again each month. **Jerus's call:** "stays open the ask until money raised, and what already raised plus cash can be used". The build screen offers the same choice when the player is there.
+
+**Answered, 2026-10-20** (a question-and-answer session on the CD batches)
+31. **D31. Each CD batch ships with its own screen.** **Jerus's call:** "Yes: each CD batch ships with its own screen (Borrow as an auction with CD2, Close it now and the call with CD4, the floating and linked choices with CD5). CD6 keeps the book as a desk, a line's page, Your rate and the manual." Why it came up: CD2 removes the term loan and the serial bond, and with the screens all in CD6 the old Borrow would have offered paper that no longer exists, and CD4's and CD5's mechanisms would have had no button, for three batches.
+32. **D32. Households bid by their own rule at the auction's yield,** a fifth of the issue for each point it pays over deposits (`HOUSEHOLD_PAPER_APPETITE`), limited by their savings past the cushion instead of half the issue. **Jerus's call:** "yes take all three as you listed". Why: §4.3's calm city with the bank's room nearly gone, filled, clears its 10-year at 8.63%, a 5-point tail, because the households' amount was taken at fair and capped at half. Bid at the auction's yield and capped only by savings, about 4.5% and a tail under a point (Claude's interpolation of §4.3's table, not the model's output; D33 settles it). The households stand for every home saver, the pension funds and insurers that buy most of a real auction among them.
+33. **D33. CD2 first runs the study's model again** with the firms' bids (`OutwardInvestment`'s rule) and D32, so §4.3's figures and the boards match what ships, and its harness counts how often a tail over one point happens in a long playtest. **Jerus's call** (the same words). If it still fires often, the bank's room is the next question (city paper weighs 20% against its capital, `Bank.RISK_CITY`; a real bank holds its own government's paper at 0%); not decided.
+34. **D34. In a buyback the bank offers at fair,** as it bids at fair at the auction; D17's fair plus half `Exchange.SPREAD` was the share desk's number, a point per 100 whatever the term. **Jerus's call** (the same words). No money pump still: the city never sells over fair. §6.2's calm example falls from 101.055 to about 100.054.
 
 ---
 

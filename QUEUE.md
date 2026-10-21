@@ -22,13 +22,18 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | EG1 | Deposits where the geology says: oil by known petroleum, iron on shields and recorded deposits, fewer and bigger fields, the Sydney coalfield and the Scotian Shelf by hand rows (Jerus, 2026-10-20: "Queue it next after FR4", ahead of the industrial review it waited on) | [spec-earth2-terrain §8.5](docs/studies/spec-earth2-terrain.md#85-the-recommendation-eg1-deposits-where-the-geology-says-d20-your-call) |
-| CL1 | Study: the city's layout - streets not a grid, buildings that stay where they were put, uses that do not ring; its batches queued next when it finishes (Jerus, 2026-10-20: "study, and then add teh batch") | [CL1](docs/queue/CL1.md) |
+| EN1 | The ensemble only when the trace moves, its runner in tools/ensemble/, a stored baseline (docs/ensemble/<version>.md) instead of rerunning main, and the 4 premises that fail on main fixed, rewritten or put to Jerus (his word, 2026-10-20: "yes, do that") | [EN1](docs/queue/EN1.md) |
+| CL2 | Streets not a grid inside the blocks: homes and squared cells take the comb, dropped crossings or brick by a hash of their place (CL1, Jerus 2026-10-20: "study, and then add teh batch") | [CL2](docs/queue/CL2.md) |
+| CL3 | Buildings that stay where they were put, and quarters that keep their use: each district's log of arrivals, its plan in that order, a district full at what its plan can draw, a spill that keeps its time | [CL3](docs/queue/CL3.md) |
+| FX5 | The map's rail and roads finished: curved rail corners and trains on them, real-length trains with yards and depots that hold them, trains only onto clear sidings, one roundabout a wide crossing, mostly signals, tidy diagonal ends, the legend's "Railway", the world lines' labels apart, a railway that is a depot alone drawn with its main line (Jerus, 2026-10-20, on FX3's and FR7's renders and his new city) | [FX5](docs/queue/FX5.md) |
+| CL4 | Slanted avenues from the founding site, the coast's streets as curves, crescents in the outer suburbs; on FX5's curves, so after it (Jerus, 2026-10-20, the CL1 study's ★3: FX5 and CL4 "Move both up") | [CL4](docs/queue/CL4.md) |
+| CL5 | Highways and railway that reach the whole city: a stuck net opens its next corridor by a link arm, every island the city builds on grows its own (CL1 §5.6; Jerus, 2026-10-20: "Queue it as CL5") | [CL5](docs/queue/CL5.md) |
 | CD1 | The city's debt: the curve from the dial the market expects, every payment priced on its month | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
-| CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction, with its screen, Borrow as an auction (Jerus, 2026-10-20: "each CD batch ships with its own screen"); households bid at the auction's yield, the model rerun with firms first (D32, D33) | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
-| CD4 | The city's debt: the buyback as a reverse auction, callable lines and the call | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
-| CD5 | The city's debt: floating-rate notes and inflation-linked bonds | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
-| CD6 | The city's debt: the screens - the book as a desk, a line's page, Close it now, Borrow as an auction, Your rate | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD4 | The city's debt: the buyback as a reverse auction, callable lines and the call, with its screen, Close it now and the call; the bank offers at fair (D34) | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD5 | The city's debt: floating-rate notes and inflation-linked bonds, with their choices on Borrow | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD6 | The city's debt: the rest of the screens - the book as a desk, a line's page, Your rate - and the manual | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | R0 | Research: the 1900 economy and the calendar from 1900 | [research-1900](docs/studies/research-1900.md), [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R0b | Research: causes of death in Health - typhoid, summer diarrhoea, outbreaks, TB, home births, pneumonia, the 1918 influenza | [research-1900 §2.7](docs/studies/research-1900.md#27-health) |
 | R0c | Research: the 1900 mechanics - horses on farms and road freight, lamp oil and heat as goods, steam recipes | [research-1900 §4](docs/studies/research-1900.md#4-new-mechanics-a-1900-city-needs) |
@@ -68,7 +73,14 @@ stuff".
 | FR9 | One truck, one whole trip: in on the highway, off at a ramp, along the streets and down the access road to its works' gate, a district's trips by its tonnes (Jerus, 2026-10-20: "Queue it") | [FR9](docs/queue/FR9.md) |
 | TM2 | The ship gate's timing waits for a quiet minute, not one empty look, so it never starts in the gap between another runner's JVMs (Jerus, 2026-10-20: "Queue a small fix"), and DeepSeek's `agent.py` timing soft beside other runs ("Add it to TM2") | [TM2](docs/queue/TM2.md) |
 | FW11 | No street piece walled in by buildings: over a dense iron cluster `DistrictPlan.join()` never walks over a building, so an enclosed piece stays cut off (was W1-P; Jerus, 2026-10-20: "Queue the fix") | [FW11](docs/queue/FW11.md) |
-| FX5 | The map's rail and roads finished: curved rail corners and trains on them, real-length trains with yards and depots that hold them, trains only onto clear sidings, one roundabout a wide crossing, mostly signals, tidy diagonal ends, the legend's "Railway", the world lines' labels apart, a railway that is a depot alone drawn with its main line (Jerus, 2026-10-20, on FX3's and FR7's renders and his new city) | [FX5](docs/queue/FX5.md) |
+| WN0 | Nations: the world file - 196 nations, their borders, trade by pair and good, paths 2000-2100, sea distances; `tools/world/`, `WorldData`, its check (Jerus, 2026-10-20: "do rec") | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN1 | Nations: each nation's year from the path (Historical or Random) and the seed, the founding screen's World step, saved; nothing reads them yet | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN2 | Nations on the map: borders, dots and labels with output and people, the nation's card, the Nations / Trade routes / Borders chips, the head's POPULATION and GDP tiles, the legend that folds | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN3 | Nations: the world market - the January solve on the partner rule, the city's month by the slopes, the band from the world, trade by partner; every trace moves | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN4 | Nations: each nation's money and rate, the vault in eight moneys and its reserve mix, revaluation | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN5 | Nations: land bought from the nation it lies in, at its land price, in its money; offers split at a border | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN6 | Nations: the screens - Trade > Partners, the reserves in eight, the nation's page; the manual | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN7 | Nations: ships and trains to their partners, each on its partner's bearing | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 
 ## Pending
 

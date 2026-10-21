@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nations: found the world</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;--edge:#24354a;--control-edge:#33475f;--text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;--good:#3fb950;--warn:#e3b341;--bad:#f85149;--accent:#5aa9ff;--accent-light:#8cc4ff;--people:#2ec4b6;--money:#5aa9ff;--business:#a78bfa;--building:#f17cb0;--ore:#c9b68f;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--stage);color:var(--text);font-family:var(--sans);font-size:12.5px;line-height:1.45}
+.board{max-width:1240px;margin:0 auto;padding:22px 16px 40px}
+.bd-kicker{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.bd-title{font-size:23px;font-weight:600;margin:2px 0 4px}
+.bd-lead{font-size:14.5px;color:var(--text2);max-width:920px;margin:0 0 6px}
+.bd-est{font-size:11px;color:var(--text3);max-width:920px;margin:0 0 14px}
+.scroll{overflow-x:auto}
+.win{width:1200px;background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:18px 22px 20px}
+.steps{display:flex;gap:6px;margin-bottom:14px;font-size:11px;color:var(--text3)}
+.steps span{padding:3px 10px;border-radius:12px;border:1px solid var(--edge)}
+.steps .on{color:var(--text);border-color:var(--accent);background:var(--pinned)}
+.steps .done{color:var(--text2)}
+h2{font-size:20px;font-weight:600;margin:0 0 2px}
+.lead{color:var(--text2);font-size:12px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:520px 1fr;gap:16px}
+.card{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:12px 14px;margin-bottom:12px}
+.cap{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:1px solid var(--edge);border-radius:8px;padding:10px 12px;background:var(--panel);cursor:pointer}
+.opt.on{border-color:var(--accent);background:var(--pinned);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt h3{margin:0 0 3px;font-size:14px;display:flex;align-items:center;gap:8px}
+.opt h3 .r{width:12px;height:12px;border-radius:50%;border:2px solid var(--control-edge)}
+.opt.on h3 .r{border-color:var(--accent);background:radial-gradient(var(--accent) 45%,transparent 50%)}
+.opt p{margin:0;font-size:11px;color:var(--text2)}
+.seed{display:flex;align-items:center;gap:8px;margin-top:10px}
+.seed input{font-family:var(--mono);font-size:13px;background:var(--stage);border:1px solid var(--control-edge);border-radius:4px;color:var(--text);padding:4px 8px;width:110px}
+.btn{background:var(--panel);border:1px solid var(--control-edge);border-radius:4px;padding:4px 10px;font-size:11px;color:var(--text2)}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:4px 10px;font-size:11px;color:var(--text2);font-family:var(--mono)}
+.chip.lit{background:var(--pinned);border-color:var(--money);color:var(--text)}
+.small{font-size:10.5px;color:var(--text3);margin-top:6px}
+.small b{color:var(--text2);font-weight:500}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{font-weight:500;color:var(--text3);text-align:right;padding:3px 6px;border-bottom:1px solid var(--edge);font-size:10px}
+th:first-child,td:first-child{text-align:left}
+td{padding:3px 6px;text-align:right;border-bottom:1px solid #1c2a3b;font-family:var(--mono)}
+td:first-child{font-family:var(--sans);color:var(--text2)}
+.lo{color:var(--warn)}.hi{color:var(--good)}
+.chart text{font-family:var(--mono);font-size:9.5px;fill:var(--text3)}
+.chart .lt{font-family:var(--sans);font-size:10px;fill:var(--text2)}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;max-width:1200px}
+.note{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:10px 13px;font-size:11.5px;color:var(--text2)}
+.note b{color:var(--text)}
+.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.go{background:var(--good);color:#0b1118;border:0;border-radius:6px;padding:7px 18px;font-weight:600;font-size:12px}
+</style></head>
+<body><div class="board">
+<div class="bd-kicker">Nations study · board 4 of 4 · the founding screen, its world step</div>
+<div class="bd-title">Found the world: Historical or Random</div>
+<p class="bd-lead">Jerus: "perhaps a seed for the path? one being historical and the other being random". Today the founding screen asks for the world's inflation and a seed for the ground, and the world beyond the city never moves. Now the world has a path, and the founder picks which: the real one from 2000, or one drawn from a seed. Click the two cards: the chart redraws.</p>
+<p class="bd-est">Crude and the table are the World Bank's Pink Sheet (annual averages of the monthly file, over the US CPI-U, as ratios to 2025). The world's output is the IMF's growth figures as remembered (est.); WN0 reads the files. After 2025 the Historical line is the projection rule with seed 48213's shocks; the Random line is this page's own draw from seed 48213, by the rule in spec-nations 7.2.</p>
+<div class="scroll"><div class="win">
+ <div class="steps"><span class="done">1 · Name and money</span><span class="done">2 · The founders' purse</span><span class="done">3 · Where on the Earth</span><span class="on">4 · The world</span><span>5 · Found it</span></div>
+ <h2>The world beyond your city</h2>
+ <p class="lead">196 nations trade with each other and with you. They grow, slump and recover; their prices are where they are and what they make. Pick the path they follow.</p>
+ <div class="grid">
+  <div>
+   <div class="card">
+    <div class="cap">Its path</div>
+    <div class="choice">
+     <div class="opt on" id="oH"><h3><span class="r"></span>Historical</h3><p>The real world from January 2000: each nation's growth, its people, its money and the price of what it makes, year by year to 2025. Then the UN's projected people and the game's own rule for output, with small shocks from the seed.</p></div>
+     <div class="opt" id="oR"><h3><span class="r"></span>Random</h3><p>The same world in January 2000, then a path of its own, drawn from the seed: booms, slumps, a crisis now and then, at the sizes the real world has had them.</p></div>
+    </div>
+    <div class="seed"><span class="small" style="margin:0">Seed</span><input value="48213"><span class="btn">&#9856; Roll</span><span class="small" style="margin:0" id="seedNote">used from 2026 on</span></div>
+    <div class="small">The same seed gives the same world: two cities founded on it see the same nations do the same things, until your own trade moves their prices.</div>
+   </div>
+   <div class="card">
+    <div class="cap">The dollar's own inflation</div>
+    <div class="chips"><span class="chip">0%</span><span class="chip lit">1%</span><span class="chip">2%</span><span class="chip">3.33%</span><span class="chip">5%</span></div>
+    <div class="small">What the US dollar's prices average a year, as today's five chips. A Historical world replays what really moved &ndash; volumes, people, the prices of goods against each other, the moneys against the dollar &ndash; but never the dollar's own price level, so this choice holds in both.</div>
+   </div>
+   <div class="card">
+    <div class="cap">On a generated world</div>
+    <div class="small" style="margin:0">A generated world has no Earth to stand on, so for the market the city stands at a real place on the coast drawn from its ground's seed &ndash; <b>Bergen, Norway</b> for seed 7,341 &ndash; and the nations are as far as they are from there. The map draws no borders; each partner is an arrow at the map's edge on its bearing.</div>
+   </div>
+  </div>
+  <div>
+   <div class="card">
+    <div class="cap" id="chartCap">Historical: the world's output and the price of crude, against 2025</div>
+    <svg class="chart" id="ch" width="610" height="250"></svg>
+   </div>
+   <div class="card">
+    <div class="cap">In January 2000, in a Historical world, against the game's prices today</div>
+    <table>
+     <tr><th>good</th><th>Jan 2000</th><th>its high</th><th>its low</th><th>what it means at founding</th></tr>
+     <tr><td>Crude oil</td><td class="lo">0.77</td><td>2.30 &middot; 2011</td><td>0.64 &middot; 2001</td><td style="font-family:var(--sans);color:var(--text3)">fuel a quarter cheaper</td></tr>
+     <tr><td>Iron ore</td><td class="lo">0.54</td><td>2.40 &middot; 2011</td><td>0.52 &middot; 2002</td><td style="font-family:var(--sans);color:var(--text3)">a mine earns half</td></tr>
+     <tr><td>Copper</td><td class="lo">0.34</td><td>1.27 &middot; 2011</td><td>0.28 &middot; 2002</td><td style="font-family:var(--sans);color:var(--text3)">a copper city waits for 2005</td></tr>
+     <tr><td>Thermal coal</td><td class="lo">0.45</td><td>3.50 &middot; 2022</td><td>0.42 &middot; 2002</td><td style="font-family:var(--sans);color:var(--text3)">power cheap, coal mines poor</td></tr>
+     <tr><td>Wheat</td><td class="lo">0.88</td><td>2.00 &middot; 2008</td><td>0.88 &middot; 2000</td><td style="font-family:var(--sans);color:var(--text3)">bread about as today</td></tr>
+    </table>
+    <div class="small">A ratio is the good's real price that year over its 2025 price, the year the game's prices were struck from (Pink Sheet over the US CPI-U). The founding balance moves for every city: WN3's ensemble measures by how much.</div>
+   </div>
+   <div class="foot"><span class="btn">&lsaquo; Back</span><span class="go">Next: found it &rsaquo;</span></div>
+  </div>
+ </div>
+</div></div>
+<div class="notes">
+ <div class="note"><b>What is saved.</b> The path (Historical or Random) and its seed, nothing else: every nation's year is a pure function of those two and the year (spec-nations 7), so a save carries two fields and the world file. The January solve's answer is saved too, since your trade is in it (WN3).</div>
+ <div class="note"><b>What the harnesses do.</b> A harness city founds a Random world on a fixed seed, as today's draws are fixed by the month; two runs of one city still come out identical (ForeignCheck), and a check of the market can found two seeds and assert they differ. LongPlaytest takes the path and the seed as properties.</div>
+</div>
+</div>
+<script>
+const brent=[28.5,24.4,25.0,28.8,38.3,54.4,65.1,72.4,97.0,61.7,79.6,111.3,111.7,108.6,98.9,52.4,43.7,54.2,71.3,64.2,41.8,70.9,99.0,82.5,80.5,69.0];
+const cpi=[172.2,177.1,179.9,184.0,188.9,195.3,201.6,207.3,215.3,214.5,218.1,224.9,229.6,233.0,236.7,237.0,240.0,245.1,251.1,255.7,258.8,271.0,292.7,304.7,313.7,322.0];
+const gro=[4.8,2.5,3.0,4.3,5.4,4.9,5.5,5.6,3.0,-0.1,5.4,4.3,3.5,3.4,3.6,3.5,3.3,3.8,3.6,2.8,-2.7,6.6,3.6,3.3,3.2,3.0];
+const realOil=brent.map((b,i)=>b*322/cpi[i]/69);
+let g=[1];for(let i=1;i<26;i++)g.push(g[i-1]*(1+gro[i]/100));const g25=g[25];const histG=g.map(v=>v/g25);
+function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+function gauss(r){let u=0,v=0;while(u===0)u=r();v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function path(seed,fromYear){
+ const r=rng(seed);const G=[...histG.slice(0,fromYear-1999)],O=[...realOil.slice(0,fromYear-1999)];
+ let e=0,lo=Math.log(O[O.length-1]);
+ for(let y=fromYear+1;y<=2060;y++){
+  const trend=0.031-0.0002*(y-2000);e=0.3*e+0.014*gauss(r);let c=r()<0.04?-(0.03+0.05*r()):0;
+  G.push(G[G.length-1]*(1+trend+e+c));
+  lo=0.7*lo+0.3*Math.log(1.0)+0.24*gauss(r);O.push(Math.exp(lo));
+ }
+ return [G,O];
+}
+const svg=document.getElementById('ch'),NS='http://www.w3.org/2000/svg';
+function el(t,a,txt){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;svg.appendChild(e);return e}
+function draw(kind){
+ svg.innerHTML='';
+ const [G,O]=kind==='H'?path(48213,2025):path(48213,2000);
+ const L=40,R=600,T=14,B=212,Y0=0,Y1=3.2,Yr=y=>L+(y-2000)/60*(R-L),V=v=>B-(v-Y0)/(Y1-Y0)*(B-T);
+ for(const v of [0.5,1,1.5,2,2.5,3]){el('line',{x1:L,x2:R,y1:V(v),y2:V(v),stroke:v===1?'#33475f':'#1c2a3b'});el('text',{x:L-5,y:V(v)+3,'text-anchor':'end'},v.toFixed(1))}
+ for(const y of [2000,2010,2020,2025,2030,2040,2050,2060]){el('text',{x:Yr(y),y:B+14,'text-anchor':'middle'},y)}
+ el('rect',{x:Yr(2000),y:T,width:Yr(2025)-Yr(2000),height:B-T,fill:kind==='H'?'#5aa9ff':'#5f7189','fill-opacity':.06});
+ el('text',{x:Yr(2012.5),y:T+12,'text-anchor':'middle',class:'lt'},kind==='H'?'real history':'drawn from the seed');
+ el('text',{x:Yr(2043),y:T+12,'text-anchor':'middle',class:'lt'},kind==='H'?'projections + the seed’s shocks':'drawn from the seed');
+ const pts=a=>a.map((v,i)=>Yr(2000+i)+','+V(Math.min(Y1,v))).join(' ');
+ el('polyline',{points:pts(G),fill:'none',stroke:'#a78bfa','stroke-width':2});
+ el('polyline',{points:pts(O),fill:'none',stroke:'#c9b68f','stroke-width':1.6});
+ el('line',{x1:Yr(2025),x2:Yr(2025),y1:T,y2:B,stroke:'#8496ab','stroke-dasharray':'3 3'});
+ el('text',{x:R-4,y:V(Math.min(Y1,G[60]))-6,'text-anchor':'end',class:'lt'},'the world’s output');
+ el('text',{x:Yr(2011),y:V(Math.min(Y1,O[11]))-6,'text-anchor':'middle',class:'lt'},'crude, real');
+ document.getElementById('chartCap').textContent=(kind==='H'?'Historical':'Random, seed 48213')+': the world’s output and the price of crude, against 2025';
+ document.getElementById('seedNote').textContent=kind==='H'?'used from 2026 on':'used from the founding';
+}
+draw('H');
+document.getElementById('oH').onclick=()=>{oH.classList.add('on');oR.classList.remove('on');draw('H')};
+document.getElementById('oR').onclick=()=>{oR.classList.add('on');oH.classList.remove('on');draw('R')};
+</script>
+</body></html>
