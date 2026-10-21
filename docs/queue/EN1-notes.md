@@ -21,7 +21,7 @@ worth it: "yes, do that".
   `target/ensemble/<label>/`, compiles the driver against the snapshot, and
   runs the 80 runs `JOBS` at a time (5 by default, 1 under the cloud's JVM
   lock). It resumes, scores, and writes `baseline.md`, the file a
-  trace-moving batch commits. It runs in Git Bash on the PC and in the cloud
+  trace-moving batch commits. `--stop <label>` ends that run alone. It runs in Git Bash on the PC and in the cloud
   alike: ';' or ':' by `uname`, Windows paths by `pwd -W`, gson from Maven's
   classpath file as the suite takes it, and Python as `python -I`, with
   pandas read from `ENSEMBLE_PYLIB` (default `~/.cache/cbs-ensemble/py`,
@@ -121,11 +121,37 @@ named reason that waits on a call.
 
 ## 4. The checks
 
-(filled at the end)
+**The runner, end to end, once.** `tools/ensemble/ensemble.sh en1main` on
+this branch at ded3da7 (main's model) ran the 80 runs five at a time in 16.5
+minutes on the PC, beside the suite and EG1's ensemble. All 80 CSVs are
+byte-identical to fr6s1's. The score is 25/27, the same table as
+`docs/ensemble/0.8.9.md` to the digit, but for T2's baseline column (0.8.9
+itself, where the stored page compares with fr3b). That is the one run of
+main this batch makes. It proves the runner and the snapshot; it is not a
+baseline, and no batch after this one reruns main.
+
+**The trace** is not moved: no game code changed. So EN1 runs no ensemble
+of its own under its own rule; the run above checks the tool.
+
+**The suite**, `Batch check.bat --maps` on this branch: 123 harnesses run,
+122 passed. The one red is ScaleCheck's "...and it builds", as on main
+before the batch (SC1's, queued); main's own run here at 06d1a43 was 121 of
+122 with that same line. EnsembleCheck is green. Two timing figures went
+SOFT beside the ensemble's JVMs (EarthTerrainCheck, MapCheck), and are not
+counted. Stale: 0 firm findings. The maps are regenerated.
 
 ## 5. Who wrote what
 
-(filled at the end)
+| slice | by | what review changed |
+|---|---|---|
+| the four premises: the analysis, A2's and H2's restatement, A3's count, the baseline file, RN1's brief | Claude (Opus) | - |
+| `ensemble.sh`, its README, `stop.ps1` (its own idea: `--stop <label>` kills only that run's processes, found by its folder, not the suite's JVMs), the scorer's plumbing | Sonnet 5.5 at xhigh | nothing. It found that `python3` on the PC is the Store stub, that the scorer needs the AUTO2 twins (it says so when they are missing), and that an edit to a running bash script breaks the run (the header says not to). |
+| `EnsembleCheck` and its line in AllChecks | Sonnet 5.5 at xhigh | its WHY gave the ensemble's cost as an hour and a half (about eighty machine-minutes; twenty at five at a time). It found README's harness count and a `docs/tree.md` line naming the driver's file, which Stale reads as a missing source. |
+
+Both slices were tested without touching `target/classes` while main's
+baseline suite ran on it. EnsembleCheck's mutations (a bad call in the
+driver, a policy dropped or renamed, a baseline newer than the game, none at
+all) were each caught.
 
 ## 6. For Jerus (EN1-C)
 

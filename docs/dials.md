@@ -2,7 +2,7 @@
 
 Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**3,579 constants in 371 files.**
+**3,589 constants in 372 files.**
 
 ## model (1847 constants)
 
@@ -3817,7 +3817,7 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 724 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 980 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (670 constants)
+## harnesses (680 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -4100,6 +4100,21 @@ Generated 2026-10-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 63 | `EducationCheck.OUT` | `System.out` |  |
 | 64 | `EducationCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
+
+### EnsembleCheck.java ([map](map/EnsembleCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 213 | `EnsembleCheck.POLICY_ENUM` | `Pattern.compile("\\benum\\s+Policy\\s*\\{([^}]*)\\}")` |  |
+| 214 | `EnsembleCheck.POLICIES_LIST` | `Pattern.compile("(?m)^POLICIES\\s*=\\s*\\[([^\\]]*)\\]")` |  |
+| 215 | `EnsembleCheck.QUOTED` | `Pattern.compile("\"([^\"]*)\"\|'([^']*)'")` |  |
+| 305 | `EnsembleCheck.BASELINE_NAME` | `Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)\\.md")` |  |
+| 306 | `EnsembleCheck.CRITERIA` | `Pattern.compile("(?m)^criteria passed:\\s*(\\d+)\\s*/\\s*(\\d+)\\b")` |  |
+| 307 | `EnsembleCheck.JSON_BLOCK` | `Pattern.compile("(?s)'''json\\s*\\R(.*?)\\R\\s*'''")` |  |
+| 393 | `EnsembleCheck.VERDICT` | `"criteria passed: 5/6(vacuous, not counted: 0); missing runs: none; short runs: none"` |  |
+| 394 | `EnsembleCheck.JSON` | `""" { "seeds": 4, "policies": { "ALPHA": {"final_pop_median": 1000.5, "runs_with_findin...` |  |
+| 481 | `EnsembleCheck.BROKEN` | `""" package ham.citybuildersim; final class EnsembleCheckBroken { static void call() { ...` | Calls a method that no class has: the change the guard exists for, made by hand. |
+| 490 | `EnsembleCheck.SOUND` | `""" package ham.citybuildersim; final class EnsembleCheckSound { static Class<?> call()...` | Calls a class that is there. |
 
 ### ExchangeCheck.java ([map](map/ExchangeCheck.md))
 
