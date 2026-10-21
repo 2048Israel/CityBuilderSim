@@ -21,7 +21,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| CL3 | Buildings that stay where they were put, and quarters that keep their use: each district's log of arrivals, its plan in that order, a district full at what its plan can draw, a spill that keeps its time | [CL3](docs/queue/CL3.md) |
 | FX5 | The map's rail and roads finished: curved rail corners and trains on them, real-length trains with yards and depots that hold them, trains only onto clear sidings, one roundabout a wide crossing, mostly signals, tidy diagonal ends, the legend's "Railway", the world lines' labels apart, a railway that is a depot alone drawn with its main line (Jerus, 2026-10-20, on FX3's and FR7's renders and his new city) | [FX5](docs/queue/FX5.md) |
 | CL4 | Slanted avenues from the founding site, the coast's streets as curves, crescents in the outer suburbs; on FX5's curves, so after it (Jerus, 2026-10-20, the CL1 study's ★3: FX5 and CL4 "Move both up") | [CL4](docs/queue/CL4.md) |
 | CL5 | Highways and railway that reach the whole city: a stuck net opens its next corridor by a link arm, every island the city builds on grows its own (CL1 §5.6; Jerus, 2026-10-20: "Queue it as CL5") | [CL5](docs/queue/CL5.md) |
