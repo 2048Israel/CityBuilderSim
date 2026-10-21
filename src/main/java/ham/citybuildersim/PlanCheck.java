@@ -70,7 +70,21 @@ import java.util.List;
  *      seed and its place and not of what its district holds, two districts
  *      agree along their seam no worse than with the comb, no cell of a
  *      varied layout has a dead end and no plan has more than the comb's -
- *      and a city played as the playtest plays it shows the variety firing.
+ *      and a city played as the playtest plays it shows the variety firing;
+ *  11. the order of arrival (batch CL3; DistrictPlan's THE ORDER OF ARRIVAL):
+ *      a log that is one batch draws today's plan box for box; a later
+ *      month's arrivals move none placed before and a departure frees only
+ *      its own box (where today's plan, packed again from the counts, moves
+ *      many); a cell takes the use of what opens it, so the first works to
+ *      come stands in the nearest cell; the outer kinds that stand on no site
+ *      open their cells from the far end of the growth order and a mine off
+ *      its site from the near end; a homes cell keeps off a mine's site, a
+ *      mine's box and a mine the plan placed while another cell can open;
+ *      the ladder is decided when a cell opens and its streets never change
+ *      after; the dense screen's districts, their counts dealt in forty
+ *      batches, cover at least 95% of the ground today's plans cover, every
+ *      check holding; and a plan is a pure function of its input, a carry
+ *      merged by month and a leftover given back with its month.
  *
  * THE CHECKS, after every plan (spec 2.4; the prototype's, and H5):
  *   - one network: its streets one piece, four-connected (a street beneath a
@@ -259,6 +273,7 @@ public class PlanCheck {
         estateLines(types);
         sharedEstates(types);
         streetLayouts(types);
+        arrivals(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -932,6 +947,28 @@ public class PlanCheck {
         return m;
     }
 
+    /** The dense copy of his city (MapCheck.DENSE) and the districts its screen shows, made once and kept: section 5 times their plans and section 11 deals their counts as a log. */
+    static CityMap denseCity;
+    static List<CityMap.District> denseShown;
+
+    /** denseCity and denseShown made, if they are not. */
+    static void denseScreen(BuildingVisual.Type[] types) {
+        if (denseCity != null) return;
+        long seed = Founding.DEFAULT_WORLD_SEED;
+        long[] place = MapCheck.dryPlace(World.of(seed));
+        CityMap dense = squareCity(types, seed, place, MapCheck.TIMES[MapCheck.DENSE]);
+        long tx0 = Math.floorDiv(place[0], World.TILE) - MapCheck.SCREEN_ACROSS / 2, ty0 = Math.floorDiv(place[1], World.TILE) - MapCheck.SCREEN_DOWN / 2;
+        List<CityMap.District> shown = new ArrayList<>();
+        for (int j = 0; j < MapCheck.SCREEN_DOWN; j++) {
+            for (int i = 0; i < MapCheck.SCREEN_ACROSS; i++) {
+                CityMap.District d = dense.districtOfTile(tx0 + i, ty0 + j);
+                if (d != null && !shown.contains(d)) shown.add(d);
+            }
+        }
+        denseCity = dense;
+        denseShown = shown;
+    }
+
     static void fixture(BuildingVisual.Type[] types) {
         out.println("\n--- 5. MapCheck's fixture of Jerus's city: his city x 1 on the design's square city, every district; the dense screen ---");
         long seed = Founding.DEFAULT_WORLD_SEED;
@@ -943,15 +980,9 @@ public class PlanCheck {
         check("every district of his city x 1 keeps every check", t.allHold());
         check("...in one network, each", t.network == t.districts);
         // The dense copy's screen (MapCheck 3 and 5): 18 x 11 tiles at its site, and the districts they show.
-        CityMap dense = squareCity(types, seed, place, MapCheck.TIMES[MapCheck.DENSE]);
-        long tx0 = Math.floorDiv(place[0], World.TILE) - MapCheck.SCREEN_ACROSS / 2, ty0 = Math.floorDiv(place[1], World.TILE) - MapCheck.SCREEN_DOWN / 2;
-        List<CityMap.District> shown = new ArrayList<>();
-        for (int j = 0; j < MapCheck.SCREEN_DOWN; j++) {
-            for (int i = 0; i < MapCheck.SCREEN_ACROSS; i++) {
-                CityMap.District d = dense.districtOfTile(tx0 + i, ty0 + j);
-                if (d != null && !shown.contains(d)) shown.add(d);
-            }
-        }
+        denseScreen(types);
+        CityMap dense = denseCity;
+        List<CityMap.District> shown = denseShown;
         // Each planned cold once (its inputs read from the world, as a screen first asks), then timed warm.
         double cold = 0;
         for (CityMap.District d : shown) {
@@ -1567,6 +1598,556 @@ public class PlanCheck {
         out.printf("      the test district with section 3's highway row: %d homes cells crossed by it, %d not (%d of them of another layout than the comb), %d dead ends%n",
                 crossed, free, freeVaried, deadEnds(ph, false));
         check("...a homes cell the highway crosses keeps the comb, the others their place's layout, every check holding", crossed > 0 && ruled && figures(ph, hw).holds(ph, hw));
+    }
+
+    /* =====================================================================
+       11. THE ORDER OF ARRIVAL (batch CL3)
+       ===================================================================== */
+
+    /**
+     * A log built by hand (CL3): records {month, type, change} in order, how many of the first are one batch, and a carry
+     * of {month, type} pairs - what CityMap.District's log is to a plan, written down in a fixture.
+     */
+    static final class Log {
+        final List<int[]> rec = new ArrayList<>();
+        int firstBatch;
+        int[] carry;
+
+        Log add(int month, int type, int change) {
+            rec.add(new int[] { month, type, change });
+            return this;
+        }
+
+        /** The records so far are the first batch. */
+        Log batch() {
+            firstBatch = rec.size();
+            return this;
+        }
+
+        /** The log as it stood at the end of month m: its records of that month or before (the first batch kept), the same carry. */
+        Log until(int m) {
+            Log l = new Log();
+            for (int[] r : rec) if (r[0] <= m) l.rec.add(r);
+            l.firstBatch = Math.min(firstBatch, l.rec.size());
+            l.carry = carry;
+            return l;
+        }
+
+        /** A copy that goes on from here. */
+        Log copy() {
+            Log l = until(Integer.MAX_VALUE);
+            l.firstBatch = firstBatch;
+            return l;
+        }
+
+        /** Input `in` given this log, as its arrays and as the counts and road they come to (the drawn types' sums; the road types' plots by kind). */
+        DistrictPlan.Input into(DistrictPlan.Input in) {
+            attach(in);
+            in.counts = new int[in.types.length];
+            in.gravel = in.paved = in.highway = 0;
+            for (int[] r : rec) {
+                BuildingVisual.Type t = in.types[r[1]];
+                if (t.road() == BuildingVisual.GRAVEL) in.gravel += r[2] * BuildingVisual.cells(t);
+                else if (t.road() == BuildingVisual.PAVED) in.paved += r[2] * BuildingVisual.cells(t);
+                else if (t.drawn()) in.counts[r[1]] += r[2];
+            }
+            return in;
+        }
+
+        /** Input `in` given this log's arrays alone: its counts and road are what it has. */
+        DistrictPlan.Input attach(DistrictPlan.Input in) {
+            int n = rec.size();
+            in.logMonth = new int[n];
+            in.logType = new int[n];
+            in.logChange = new int[n];
+            for (int k = 0; k < n; k++) {
+                in.logMonth[k] = rec.get(k)[0];
+                in.logType[k] = rec.get(k)[1];
+                in.logChange[k] = rec.get(k)[2];
+            }
+            in.firstBatch = firstBatch;
+            in.carry = carry;
+            return in;
+        }
+    }
+
+    /** A flat district, every plot owned, the hub at its middle: the order of arrival's fixture. */
+    static DistrictPlan.Input flat(BuildingVisual.Type[] types) {
+        DistrictPlan.Input in = new DistrictPlan.Input();
+        Arrays.fill(in.owned, true);
+        in.types = types;
+        in.seed = Founding.DEFAULT_WORLD_SEED;
+        in.hubX = in.hubY = DistrictPlan.FRAME / 2;
+        in.counts = new int[types.length];
+        return in;
+    }
+
+    /** The flat district with a log, or (`withLog` false) with the counts and road it comes to and no log - today's plan from them, the carry joined. */
+    static DistrictPlan.Input input(BuildingVisual.Type[] types, Log log, boolean withLog) {
+        DistrictPlan.Input in = log.into(flat(types));
+        if (!withLog) {
+            in.logMonth = in.logType = in.logChange = null;
+            in.firstBatch = 0;
+        }
+        return in;
+    }
+
+    /** The first type, by id, of the smallest footprint no smaller than `least` plots that `ok` holds of; -1 for none. */
+    static int pick(BuildingVisual.Type[] types, int least, java.util.function.Predicate<BuildingVisual.Type> ok) {
+        int best = -1, area = Integer.MAX_VALUE;
+        for (int t = 0; t < types.length; t++) {
+            if (types[t] == null || !types[t].drawn() || !ok.test(types[t])) continue;
+            int[] f = BuildingVisual.footprint(types[t]);
+            if (f[0] * f[1] >= least && f[0] * f[1] < area) { area = f[0] * f[1]; best = t; }
+        }
+        return best;
+    }
+
+    /** The first type, by id, of the largest footprint that `ok` holds of. */
+    static int pickLargest(BuildingVisual.Type[] types, java.util.function.Predicate<BuildingVisual.Type> ok) {
+        int best = -1, area = 0;
+        for (int t = 0; t < types.length; t++) {
+            if (types[t] == null || !types[t].drawn() || !ok.test(types[t])) continue;
+            int[] f = BuildingVisual.footprint(types[t]);
+            if (f[0] * f[1] > area) { area = f[0] * f[1]; best = t; }
+        }
+        return best;
+    }
+
+    /** The paved road type: the first whose road is paved. */
+    static int pavedRoad(BuildingVisual.Type[] types) {
+        for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].road() == BuildingVisual.PAVED) return t;
+        return -1;
+    }
+
+    /** A plan's boxes, each packed from its place, size and type. */
+    static java.util.Set<Long> boxes(DistrictPlan p) {
+        java.util.Set<Long> s = new java.util.HashSet<>();
+        for (int i = 0; i < p.buildings; i++) s.add(boxKey(p, i));
+        return s;
+    }
+
+    static long boxKey(DistrictPlan p, int i) {
+        return ((((long) p.bx[i] * 512 + p.by[i]) * 64 + p.bw[i]) * 64 + p.bh[i]) * 256 + p.btype[i];
+    }
+
+    /** How many of a's boxes b does not have: those that moved or went. */
+    static int missing(DistrictPlan a, DistrictPlan b) {
+        java.util.Set<Long> in = boxes(b);
+        int n = 0;
+        for (int i = 0; i < a.buildings; i++) if (!in.contains(boxKey(a, i))) n++;
+        return n;
+    }
+
+    /** A plan's box total: its buildings' plots. */
+    static long boxPlots(DistrictPlan p) {
+        long n = 0;
+        for (int i = 0; i < p.buildings; i++) n += (long) p.bw[i] * p.bh[i];
+        return n;
+    }
+
+    /** The cell with rank r among those a plan opened, or -1. */
+    static int cellOfRank(DistrictPlan p, int r) {
+        for (int c = 0; c < DistrictPlan.CELLS; c++) if (p.cellRank[c] == r && p.cellKind[c] != DistrictPlan.CLOSED) return c;
+        return -1;
+    }
+
+    /** The cells a plan opened (CLOSED aside). */
+    static int cellsOpened(DistrictPlan p) {
+        int n = 0;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) if (p.cellKind[c] != DistrictPlan.CLOSED) n++;
+        return n;
+    }
+
+    /** The cell a box of a plan stands in. */
+    static int cellOfBox(DistrictPlan p, int i) {
+        return (p.by[i] - 1) / DistrictPlan.CELL * DistrictPlan.CELLS_A_SIDE + (p.bx[i] - 1) / DistrictPlan.CELL;
+    }
+
+    /** How many cells apart two cells are, the larger of their columns' and rows' (the eight about a cell are 1). */
+    static int cellApart(int a, int b) {
+        return Math.max(Math.abs(a % DistrictPlan.CELLS_A_SIDE - b % DistrictPlan.CELLS_A_SIDE), Math.abs(a / DistrictPlan.CELLS_A_SIDE - b / DistrictPlan.CELLS_A_SIDE));
+    }
+
+    /** Whether cell c is at the corner of the district's grid of cells. */
+    static boolean cornerCell(int c) {
+        int last = DistrictPlan.CELLS_A_SIDE - 1;
+        return (c % DistrictPlan.CELLS_A_SIDE == 0 || c % DistrictPlan.CELLS_A_SIDE == last) && (c / DistrictPlan.CELLS_A_SIDE == 0 || c / DistrictPlan.CELLS_A_SIDE == last);
+    }
+
+    /** Whether every plan this section has made keeps every check (figures().holds()): each plan goes through plan(). */
+    static boolean arrivalRules = true;
+    static int arrivalPlans;
+
+    /** The plan of an input, its checks held to account. */
+    static DistrictPlan plan(DistrictPlan.Input in) {
+        DistrictPlan p = DistrictPlan.make(in);
+        arrivalPlans++;
+        arrivalRules &= figures(p, in).holds(p, in);
+        return p;
+    }
+
+    /** A site plot in the middle of cell c's interior (a resource's field, SITE_FIELD). */
+    static void siteIn(DistrictPlan.Input in, int c) {
+        int x = DistrictPlan.CELL * (c % DistrictPlan.CELLS_A_SIDE) + 1 + DistrictPlan.INTERIOR / 2, y = DistrictPlan.CELL * (c / DistrictPlan.CELLS_A_SIDE) + 1 + DistrictPlan.INTERIOR / 2;
+        in.site[y * DistrictPlan.FRAME + x] = DistrictPlan.SITE_FIELD;
+    }
+
+    /** The batches the dense screen's counts are dealt in (h): forty months. */
+    static final int BATCHES = 40;
+
+    /** What the order of arrival must cover of the ground today's plans cover on the dense screen: 95%. */
+    static final double COVER_LEAST = 0.95;
+
+    /** The slowest of a list of times. */
+    static double slowest(List<Double> ms) {
+        return Tally.max(ms);
+    }
+
+    static void arrivals(BuildingVisual.Type[] types) {
+        out.println("\n--- 11. the order of arrival (batch CL3) ---");
+        arrivalRules = true;
+        arrivalPlans = 0;
+        final int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        final int shop = pick(types, 1, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+        final int works = pick(types, 9, t -> t.cls() == BuildingVisual.INDUSTRY && !t.outer() && t.site() == null && t.campusGroup() == BuildingVisual.NO_GROUP);
+        final int farm = pick(types, 1, t -> t.category() == BuildingType.AGRICULTURE && t.outer() && t.site() == null);
+        final int bigFarm = pickLargest(types, t -> t.category() == BuildingType.AGRICULTURE && t.outer() && t.site() == null);
+        final int mine = Mining.IRON_MINE;
+        final int paved = pavedRoad(types);
+        check("the fixture's types are in the table: a house, a shop, a works, a farm, a mine and a paved road", house >= 0 && shop >= 0 && works >= 0 && farm >= 0
+                && bigFarm >= 0 && paved >= 0 && types[mine] != null && types[mine].site() != null && types[mine].outer());
+
+        // ---- (a) one batch is today's plan
+        boolean same = true, carried = true, logOk = true;
+        DistrictPlan.Input[] fixtures = { flatMix(types, FILLS[3], true, false), testDistrict(types, 0, false), testDistrict(types, 1, false) };
+        String[] names = { "his city on flat ground at 92%", "the test district, his roads", "the test district, the same trips paved" };
+        for (int k = 0; k < fixtures.length; k++) {
+            DistrictPlan.Input in = fixtures[k];
+            Log one = new Log();
+            for (int t = 0; t < types.length; t++) if (in.counts[t] > 0) one.add(5, t, in.counts[t]);
+            one.batch();
+            DistrictPlan today = plan(in);
+            DistrictPlan.Input withLog = one.attach(k == 0 ? flatMix(types, FILLS[3], true, false) : testDistrict(types, k - 1, false));
+            DistrictPlan arrived = plan(withLog);
+            boolean eq = placedDigest(today) == placedDigest(arrived) && streetDigest(today) == streetDigest(arrived) && Arrays.equals(today.overflow, arrived.overflow)
+                    && Arrays.equals(today.cellKind, arrived.cellKind) && Arrays.equals(today.cellSquare, arrived.cellSquare) && today.builds == arrived.builds;
+            out.printf("      %s: %,d placed, %d without a place, %d builds - with its counts as a log of one batch: %s%n", names[k], today.buildings, today.overflowCount(), today.builds,
+                    eq ? "the same" : "DIFFERENT");
+            same &= eq;
+            // ...its leftovers given back with the batch's month.
+            int[] lg = arrived.overflowLog;
+            boolean months = (lg == null ? 0 : lg.length / 2) == arrived.overflowCount();
+            for (int j = 0; lg != null && j + 1 < lg.length; j += 2) months &= lg[j] == 5;
+            logOk &= months;
+            // ...and a carry of the batch's month joins its counts, as it did before the log.
+            if (k == 0) {
+                int[] pairs = { 5, house, 5, shop, 3, house };
+                DistrictPlan.Input a = flatMix(types, FILLS[3], true, false);
+                a.counts[house] += 2;
+                a.counts[shop]++;
+                DistrictPlan.Input b = one.attach(flatMix(types, FILLS[3], true, false));
+                b.carry = pairs;
+                carried &= placedDigest(plan(a)) == placedDigest(plan(b));
+            }
+        }
+        check("a log that is one batch gives today's plan box for box, street for street and step for step (the dense flat mix, the test district at two budgets)", same);
+        check("...its leftovers go on as {month, type} pairs, one for each without a place, with the batch's month", logOk);
+        check("...and a carry of the batch's months joins its counts, the plan today's with the carry added to them", carried);
+
+        // ---- (b) a later month's arrivals move none placed before
+        final int months = 10;
+        Log growth = new Log();
+        growth.add(0, house, 300).add(0, shop, 40).add(0, works, 4).add(0, paved, 3).batch();
+        for (int m = 1; m <= months + 3; m++) {
+            growth.add(m, house, 120).add(m, shop, 15).add(m, works, 2 + m % 2).add(m, paved, 2);
+            if (m % 4 == 0) growth.add(m, farm, 2);
+        }
+        DistrictPlan[] arrived = new DistrictPlan[months + 1], today = new DistrictPlan[months + 1];
+        for (int m = 0; m <= months; m++) {
+            arrived[m] = plan(input(types, growth.until(m), true));
+            today[m] = plan(input(types, growth.until(m), false));
+        }
+        int movedArrived = 0, movedToday = 0, opened = 0;
+        for (int m = 0; m < months; m++) {
+            movedArrived += missing(arrived[m], arrived[m + 1]);
+            movedToday += missing(today[m], today[m + 1]);
+            if (cellsOpened(arrived[m + 1]) > cellsOpened(arrived[m])) opened++;
+        }
+        out.printf("      a district growing %d months (%,d buildings at the end, %d cells): %d buildings moved in all by the order of arrival, %d by packing again from the counts;"
+                + " a cell opened in %d of the months%n", months, arrived[months].buildings, cellsOpened(arrived[months]), movedArrived, movedToday, opened);
+        check("a later month's arrivals move none placed before: every box of each month's plan stands in the next", movedArrived == 0 && arrived[months].buildings > arrived[0].buildings);
+        check("...in a district that grew into new cells, where packing again from the counts moves buildings", opened >= 2 && movedToday > 0);
+
+        // ---- (c) a departure frees its own box and moves nothing else
+        DistrictPlan whole = arrived[months];
+        Log gone = growth.until(months);
+        Log goneHouse = gone.copy().add(months + 1, house, -1), goneWorks = gone.copy().add(months + 1, works, -1);
+        DistrictPlan noHouse = plan(input(types, goneHouse, true)), noWorks = plan(input(types, goneWorks, true));
+        int lastHouse = -1, lastWorks = -1;
+        for (int i = 0; i < whole.buildings; i++) {
+            if (whole.btype[i] == house) lastHouse = i;
+            if (whole.btype[i] == works) lastWorks = i;
+        }
+        boolean freed = missing(noHouse, whole) == 0 && whole.buildings - noHouse.buildings == 1 && !boxes(noHouse).contains(boxKey(whole, lastHouse))
+                && missing(noWorks, whole) == 0 && whole.buildings - noWorks.buildings == 1 && !boxes(noWorks).contains(boxKey(whole, lastWorks));
+        check("a departure frees its own box and moves nothing else: the newest house, then the newest works, gone - the plan has that box less and every other where it was", freed);
+        DistrictPlan again = plan(input(types, goneHouse.copy().add(months + 2, house, 1), true));
+        check("...and the arrival after it moves none: every box standing before it stands still", missing(noHouse, again) == 0 && again.buildings == noHouse.buildings + 1);
+        // ...one of the first batch too, when the departures outnumber the arrivals after it: the newest of the type, wherever it stands.
+        Log deep = new Log().add(1, house, 60).add(1, works, 3).batch().add(2, house, 10);
+        DistrictPlan deepBefore = plan(input(types, deep, true)), deepAfter = plan(input(types, deep.copy().add(3, house, -15), true));
+        int housesBefore = 0, housesAfter = 0;
+        for (int i = 0; i < deepBefore.buildings; i++) if (deepBefore.btype[i] == house) housesBefore++;
+        for (int i = 0; i < deepAfter.buildings; i++) if (deepAfter.btype[i] == house) housesAfter++;
+        check("...a first-batch building leaves like any other, the newest of its type: fifteen houses gone, ten of them the later arrivals and five the batch's, each box freed and every other where it was",
+                missing(deepAfter, deepBefore) == 0 && housesBefore - housesAfter == 15 && deepBefore.buildings - deepAfter.buildings == 15);
+        // One without a place leaves the list of those without: the district full of the largest farm.
+        Log farms = new Log().add(1, bigFarm, 2 * DistrictPlan.CELLS);
+        DistrictPlan full = plan(input(types, farms, true)), lessOne = plan(input(types, farms.copy().add(2, bigFarm, -1), true));
+        check("...one that had no place leaves the list of those without one: the district full of the largest farm, one gone, has one less without a place and every box where it was",
+                full.overflowCount() > 0 && lessOne.overflowCount() == full.overflowCount() - 1 && missing(full, lessOne) == 0 && full.buildings == lessOne.buildings);
+
+        // ---- (d) a cell takes the use of what opens it
+        Log works1 = new Log().add(1, works, 1).add(2, house, 1);
+        DistrictPlan first = plan(input(types, works1, true)), packed = plan(input(types, works1, false));
+        int c0 = cellOfRank(first, 0), p0 = cellOfRank(packed, 0);
+        out.printf("      a works, then a house: the nearest cell opened is %s (packed from the counts it is %s, in the same place: %b)%n", c0 < 0 ? "none" : first.cellKind[c0] == DistrictPlan.ESTATE ? "an estate" : "homes",
+                p0 < 0 ? "none" : packed.cellKind[p0] == DistrictPlan.ESTATE ? "an estate" : "homes", c0 == p0);
+        check("the first arrival a works: the nearest cell opened is an estate, the house after it opens the next as homes; packed from the counts the nearest is homes",
+                c0 >= 0 && c0 == p0 && first.cellKind[c0] == DistrictPlan.ESTATE && cellOfRank(first, 1) >= 0 && first.cellKind[cellOfRank(first, 1)] == DistrictPlan.HOMES
+                        && packed.cellKind[p0] == DistrictPlan.HOMES);
+
+        // ---- (e) the edge kinds from the far side, a mine off its site from the near
+        String[] kinds = { "farm", "power plant", "water works", "car plant", "truck depot", "rail yard" };
+        BuildingType[] cats = { BuildingType.AGRICULTURE, BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.AUTOMOTIVE, BuildingType.HAULAGE, BuildingType.RAIL };
+        boolean far = true, notFar = true;
+        StringBuilder sb = new StringBuilder();
+        for (int k = 0; k < cats.length; k++) {
+            final BuildingType cat = cats[k];
+            int edge = pick(types, 1, t -> t.category() == cat && t.outer() && t.site() == null);
+            if (edge < 0) { far = false; continue; }
+            Log l = new Log().add(1, house, 1).add(2, edge, 1);
+            DistrictPlan ev = plan(input(types, l, true)), base = plan(input(types, l, false));
+            int at = -1, near = -1;
+            for (int i = 0; i < ev.buildings; i++) if (ev.btype[i] == edge) at = cellOfBox(ev, i);
+            for (int i = 0; i < base.buildings; i++) if (base.btype[i] == edge) near = cellOfBox(base, i);
+            far &= at >= 0 && cornerCell(at) && ev.cellKind[at] == DistrictPlan.ESTATE;
+            notFar &= near >= 0 && !cornerCell(near);
+            sb.append(String.format(" %s in cell %d (packed from the counts: %d);", kinds[k], at, near));
+        }
+        out.printf("      after a house, the edge kinds open:%s%n", sb);
+        check("the farm, power plant, water works, car plant, truck depot and rail yard each open their cell from the far end of the growth order: a corner of the district's cells, an estate", far);
+        check("...where packed from the counts they open beside the homes, none at a corner", notFar);
+        Log nearMine = new Log().add(1, house, 1).add(2, mine, 1);
+        DistrictPlan withMine = plan(input(types, nearMine, true));
+        int homeCell = cellOfRank(withMine, 0), mineCell = -1;
+        for (int i = 0; i < withMine.buildings; i++) if (withMine.btype[i] == mine) mineCell = cellOfBox(withMine, i);
+        check("a mine off its site opens its cell from the near end as any works: the cell after the homes', beside it (not at a corner)", homeCell >= 0 && mineCell >= 0
+                && cellApart(homeCell, mineCell) == 1 && !cornerCell(mineCell) && withMine.cellKind[mineCell] == DistrictPlan.ESTATE);
+
+        // ---- (f) homes keep off mines
+        Log houseOnly = new Log().add(1, house, 1);
+        DistrictPlan plain = plan(input(types, houseOnly, true));
+        int nearest = cellOfRank(plain, 0);
+        DistrictPlan.Input sited = input(types, houseOnly, true);
+        siteIn(sited, nearest);
+        DistrictPlan avoided = plan(sited);
+        int away = cellOfRank(avoided, 0);
+        DistrictPlan.Input everywhere = input(types, houseOnly, true);
+        for (int c = 0; c < DistrictPlan.CELLS; c++) siteIn(everywhere, c);
+        DistrictPlan none = plan(everywhere);
+        DistrictPlan.Input boxed = input(types, houseOnly, true);
+        {
+            int x = DistrictPlan.CELL * (nearest % DistrictPlan.CELLS_A_SIDE) + 1 + 10, y = DistrictPlan.CELL * (nearest / DistrictPlan.CELLS_A_SIDE) + 1 + 10;
+            boxed.mines.add(new int[] { x, y, x + 5, y + 6 });
+            for (int yy = y; yy <= y + 6; yy++) for (int xx = x; xx <= x + 5; xx++) boxed.site[yy * DistrictPlan.FRAME + xx] = DistrictPlan.SITE_MINED;
+        }
+        DistrictPlan beside = plan(boxed);
+        int awayBox = cellOfRank(beside, 0);
+        Log mineFirst = new Log().add(1, mine, 1).add(2, house, 1);
+        DistrictPlan placedMine = plan(input(types, mineFirst, true)), packedMine = plan(input(types, mineFirst, false));
+        int mineAt = -1, homesAfter = -1, homesPacked = -1;
+        for (int i = 0; i < placedMine.buildings; i++) {
+            if (placedMine.btype[i] == mine) mineAt = cellOfBox(placedMine, i);
+            if (placedMine.btype[i] == house) homesAfter = cellOfBox(placedMine, i);
+        }
+        for (int i = 0; i < packedMine.buildings; i++) if (packedMine.btype[i] == house) homesPacked = cellOfBox(packedMine, i);
+        out.printf("      homes: nearest cell %d; with a site in it the first homes cell is %d (%d cells off), with a mine's box in it %d, with a site in every cell %d;"
+                + " after a mine placed in cell %d the house stands in %d (packed from the counts: %d)%n", nearest, away, away < 0 ? -1 : cellApart(nearest, away), awayBox,
+                cellOfRank(none, 0), mineAt, homesAfter, homesPacked);
+        check("a district with a mine's site in the cell nearest the hub: the first homes cell opened is not beside it (two cells or more off)", nearest >= 0 && away >= 0 && cellApart(nearest, away) >= 2
+                && avoided.cellKind[away] == DistrictPlan.HOMES);
+        check("...nor beside a mine standing on its site (a box of Input.mines)", awayBox >= 0 && cellApart(nearest, awayBox) >= 2);
+        check("...nor beside a mine the plan placed itself", mineAt >= 0 && homesAfter >= 0 && cellApart(mineAt, homesAfter) >= 2 && homesPacked >= 0 && cellApart(mineAt, homesPacked) <= 1);
+        check("...but with a site in every cell homes still open, in the cell nearest the hub as before", none.buildings == 1 && cellOfRank(none, 0) == nearest && none.cellKind[nearest] == DistrictPlan.HOMES);
+
+        // ---- (g) the ladder decided once
+        final int cellsPaved = BuildingVisual.cells(types[paved]);
+        int thin = (int) ((DistrictPlan.LONG_BLOCK_STREETS + DistrictPlan.SQUARE_PLOTS - 1) / cellsPaved);
+        final int home2 = pickLargest(types, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        int[] hf = BuildingVisual.footprint(types[home2]);
+        int perCell = 3 * DistrictPlan.INTERIOR * DistrictPlan.INTERIOR / 4 / (hf[0] * hf[1]);
+        Log road = new Log().add(1, home2, 2 * perCell).add(1, paved, thin).add(2, home2, 3 * perCell).add(2, paved, 400);
+        DistrictPlan before = plan(input(types, road.until(1), true)), afterRoad = plan(input(types, road, true)), packedRoad = plan(input(types, road, false));
+        boolean kept = true;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            if (before.cellKind[c] == DistrictPlan.CLOSED) continue;
+            kept &= afterRoad.cellKind[c] == before.cellKind[c] && afterRoad.cellSquare[c] == before.cellSquare[c] && afterRoad.cellBoulevard[c] == before.cellBoulevard[c]
+                    && afterRoad.cellLayout[c] == before.cellLayout[c];
+            int x0 = DistrictPlan.CELL * (c % DistrictPlan.CELLS_A_SIDE) + 1, y0 = DistrictPlan.CELL * (c / DistrictPlan.CELLS_A_SIDE) + 1;
+            for (int y = y0; y < y0 + DistrictPlan.INTERIOR; y++) for (int x = x0; x < x0 + DistrictPlan.INTERIOR; x++) kept &= before.isStreet(y * DistrictPlan.FRAME + x) == afterRoad.isStreet(y * DistrictPlan.FRAME + x);
+        }
+        int rich = cellOfRank(packedRoad, 0);
+        out.printf("      road %d plots in month 1 (%d cells opened, %d squared), %,d more in month 2 (%d cells, %d squared, %d boulevards); packed again from the counts the first cell is %s%n",
+                thin * cellsPaved, cellsOpened(before), before.squares, 400 * cellsPaved, cellsOpened(afterRoad), afterRoad.squares, afterRoad.boulevards,
+                rich < 0 ? "none" : packedRoad.cellSquare[rich] ? "squared" : "long blocks");
+        check("the ladder is decided once: cells opened while the road was thin keep their layout and every street when the road grows (none squared, none a boulevard, the same streets)",
+                cellsOpened(before) >= 2 && before.squares == 0 && before.boulevards == 0 && kept && missing(before, afterRoad) == 0);
+        check("...and cells opened after the road grew take it: some squared, some boulevards, where packed from the counts the first cell is squared", cellsOpened(afterRoad) > cellsOpened(before)
+                && afterRoad.squares > 0 && afterRoad.boulevards > 0 && rich >= 0 && packedRoad.cellSquare[rich]);
+        // Road alone after the first batch changes none of its streets or buildings.
+        Log batchThenRoad = new Log().add(1, home2, 2 * perCell).add(1, paved, thin).batch().add(2, paved, 400);
+        DistrictPlan roadLater = plan(input(types, batchThenRoad, true)), roadThen = plan(input(types, batchThenRoad.until(1), true));
+        boolean calm = missing(roadThen, roadLater) == 0 && roadThen.buildings == roadLater.buildings;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) calm &= roadThen.cellSquare[c] == roadLater.cellSquare[c] && roadThen.cellBoulevard[c] == roadLater.cellBoulevard[c];
+        check("...road that comes after the first batch squares none of its cells and moves none of its buildings", calm && roadThen.squares == 0);
+
+        // ---- (h) the packing: the dense screen's districts, their counts dealt in forty batches
+        packing(types);
+
+        // ---- (i) a pure function
+        Log pure = growth.until(months);
+        pure.carry = new int[] { 4, house, 7, shop, months + 5, works };
+        DistrictPlan.Input one = input(types, pure, true);
+        int[] countsWas = one.counts.clone();
+        DistrictPlan p1 = plan(one), p2 = plan(one), p3 = plan(input(types, pure, true));
+        check("a plan is a pure function of its input: the same input twice, the same plan, box for box, street for street and leftover for leftover, the input as it was",
+                placedDigest(p1) == placedDigest(p2) && streetDigest(p1) == streetDigest(p2) && Arrays.equals(p1.overflowLog, p2.overflowLog) && Arrays.equals(one.counts, countsWas)
+                        && placedDigest(p1) == placedDigest(p3) && streetDigest(p1) == streetDigest(p3) && Arrays.equals(p1.overflow, p3.overflow));
+
+        // ---- (j) a carry merged by month, a leftover given back with its month
+        Log base = growth.until(6);
+        DistrictPlan noCarry = plan(input(types, base, true));
+        Log withLate = base.copy();
+        withLate.carry = new int[] { 6, works, 6, house };
+        DistrictPlan late = plan(input(types, withLate, true));
+        Log withMore = base.copy();
+        withMore.carry = new int[] { 6, works, 6, house, 9, works };
+        DistrictPlan later = plan(input(types, withMore, true));
+        Log withMid = base.copy();
+        withMid.carry = new int[] { 3, shop, 6, works, 6, house };
+        DistrictPlan mid = plan(input(types, withMid, true));
+        // ...an early pair is among those of its month: the buildings placed by the end of month 2 still stand
+        DistrictPlan upToTwo = plan(input(types, base.until(2), true));
+        out.printf("      a carry of pairs at months 6 and later: %,d buildings against %,d with none; at month 3 as well: %,d%n", late.buildings, noCarry.buildings, mid.buildings);
+        check("a carried pair arrives after its own month's buildings and moves none placed before: the plan with it has every box of the plan without, and a later pair moves none of those",
+                late.buildings == noCarry.buildings + 2 && missing(noCarry, late) == 0 && missing(late, later) == 0 && later.buildings == late.buildings + 1);
+        check("...a pair of an earlier month is merged into that month and moves none of the months before it", mid.buildings == noCarry.buildings + 3 && missing(upToTwo, mid) == 0);
+        Log crowded = new Log().add(1, bigFarm, 2 * DistrictPlan.CELLS).add(3, bigFarm, 2);
+        crowded.carry = new int[] { 1, bigFarm, 5, bigFarm };
+        DistrictPlan over = plan(input(types, crowded, true));
+        int[] lg = over.overflowLog;
+        boolean ascending = lg != null && lg.length / 2 == over.overflowCount(), has1 = false, has3 = false, has5 = false;
+        for (int j = 0; lg != null && j + 3 < lg.length; j += 2) ascending &= lg[j] <= lg[j + 2];
+        for (int j = 0; lg != null && j + 1 < lg.length; j += 2) {
+            ascending &= lg[j + 1] == bigFarm;
+            has1 |= lg[j] == 1;
+            has3 |= lg[j] == 3;
+            has5 |= lg[j] == 5;
+        }
+        out.printf("      a district full of the largest farm: %d without a place, their months %s%n", over.overflowCount(), lg == null ? "none" : monthsOf(lg));
+        check("what a plan cannot place goes on as {month, type} pairs by month, each with the month it came in (an own building's record's, a carried one's pair's)", ascending && has5 && has3);
+
+        // ---- (k) the log squared with the plan's own counts (the map takes out its mines on sites, the yards the runs draw and the shore's works)
+        Log old = new Log().add(5, house, 30).add(5, shop, 5).add(5, works, 2).batch();
+        DistrictPlan.Input fewer = old.into(flat(types)), fewerToday = input(types, old, false);
+        fewer.counts[house] = 27;
+        fewerToday.counts[house] = 27;
+        DistrictPlan lessLog = plan(fewer), lessToday = plan(fewerToday);
+        check("the log is squared with the plan's counts: of a type the log holds more of, the counts' are placed - a log that is one batch gives today's plan from the counts, box for box",
+                placedDigest(lessLog) == placedDigest(lessToday) && lessLog.buildings == lessToday.buildings && lessLog.builds == lessToday.builds);
+        Log grown = old.copy().add(6, house, 10);
+        DistrictPlan.Input trimmed = grown.into(flat(types));
+        trimmed.counts[house] -= 4;
+        DistrictPlan trimmedPlan = plan(trimmed), smaller = plan(input(types, old.copy().add(6, house, 6), true));
+        check("...the newest beyond the counts are not the plan's, none placed: four fewer than the log's gives the plan of the log with four fewer arrivals, box for box",
+                placedDigest(trimmedPlan) == placedDigest(smaller) && trimmedPlan.buildings == smaller.buildings);
+        DistrictPlan.Input wanted = grown.into(flat(types));
+        wanted.counts[house] += 5;
+        DistrictPlan wantedPlan = plan(wanted), exact = plan(input(types, grown, true));
+        check("...of a type the log holds fewer of, the missing arrive last: five more than the log's, and every box of the plan without them stands", wantedPlan.buildings == exact.buildings + 5
+                && missing(exact, wantedPlan) == 0);
+        check("...every plan of this section, " + arrivalPlans + " of them, keeps every check", arrivalRules);
+    }
+
+    /** The months of an overflow log, as counts: "month x count, ...". */
+    static String monthsOf(int[] log) {
+        java.util.TreeMap<Integer, Integer> m = new java.util.TreeMap<>();
+        for (int j = 0; j + 1 < log.length; j += 2) m.merge(log[j], 1, Integer::sum);
+        StringBuilder sb = new StringBuilder();
+        for (java.util.Map.Entry<Integer, Integer> e : m.entrySet()) sb.append(sb.length() > 0 ? ", " : "").append("month ").append(e.getKey()).append(" x ").append(e.getValue());
+        return sb.toString();
+    }
+
+    /** Each dense-screen district's counts and road dealt over BATCHES months: batch k a share of each type, the first batch the first (CL3). */
+    static Log dealt(DistrictPlan.Input in, CityMap.District d, int batches) {
+        Log l = new Log();
+        for (int k = 0; k < batches; k++) {
+            for (int t = 0; t < in.types.length; t++) {
+                if (in.types[t] == null) continue;
+                long total = in.types[t].road() != BuildingVisual.NOT_A_ROAD ? d.count(t) : in.counts[t];
+                long share = total * (k + 1) / batches - total * k / batches;
+                if (share > 0) l.add(k + 1, t, (int) share);
+            }
+            if (k == 0) l.batch();
+        }
+        return l;
+    }
+
+    static void packing(BuildingVisual.Type[] types) {
+        denseScreen(types);
+        Tally todays = new Tally(), arrival = new Tally();
+        long plotsToday = 0, plotsArrival = 0, placedToday = 0, placedArrival = 0, missedToday = 0, missedArrival = 0;
+        List<Double> msToday = new ArrayList<>(), msArrival = new ArrayList<>();
+        int built = 0, builds = 0;
+        for (CityMap.District d : denseShown) {
+            DistrictPlan.Input in0 = denseCity.planInput(d);
+            DistrictPlan p0 = DistrictPlan.make(in0);
+            DistrictPlan.Input in1 = denseCity.planInput(d);
+            dealt(in1, d, BATCHES).attach(in1);
+            DistrictPlan p1 = DistrictPlan.make(in1);
+            todays.add(p0, in0, "district (" + d.dx + ", " + d.dy + ")");
+            arrival.add(p1, in1, "district (" + d.dx + ", " + d.dy + ")");
+            plotsToday += boxPlots(p0);
+            plotsArrival += boxPlots(p1);
+            placedToday += p0.buildings;
+            placedArrival += p1.buildings;
+            missedToday += p0.overflowCount();
+            missedArrival += p1.overflowCount();
+            builds += p1.builds;
+            built++;
+            double[] a = new double[TIMED], b = new double[TIMED];
+            for (int r = 0; r < TIMED; r++) {
+                long t0 = System.nanoTime();
+                DistrictPlan.make(in0);
+                a[r] = (System.nanoTime() - t0) / 1e6;
+                long t1 = System.nanoTime();
+                DistrictPlan.make(in1);
+                b[r] = (System.nanoTime() - t1) / 1e6;
+            }
+            Arrays.sort(a);
+            Arrays.sort(b);
+            msToday.add(a[TIMED / 2]);
+            msArrival.add(b[TIMED / 2]);
+        }
+        out.printf("      the dense screen's %d districts, their counts dealt in %d batches: %,d plots of boxes against %,d today (%.2f%%); %,d buildings placed against %,d (%,d without a place against %,d);"
+                        + " %.1f builds a district%n", built, BATCHES, plotsArrival, plotsToday, 100.0 * plotsArrival / plotsToday, placedArrival, placedToday, missedArrival, missedToday, builds / (double) built);
+        out.printf("      ...the slowest district's plan %.2f ms against %.2f ms today (the median of %d after one untimed)%n", slowest(msArrival), slowest(msToday), TIMED);
+        check("the order of arrival covers no less than " + (int) (100 * COVER_LEAST) + "% of the ground today's plans cover on the dense screen's districts dealt in " + BATCHES + " batches",
+                plotsArrival >= COVER_LEAST * plotsToday);
+        check("...every check holding on each of its plans", arrival.allHold());
+        check("...each planned in no more than " + (int) PLAN_MS + " ms", Timing.within(slowest(msArrival), PLAN_MS));
     }
 
     /* =====================================================================

@@ -98,6 +98,34 @@ import java.util.List;
  *   SHARED  (0.7.92, batch RD6) the outer kinds take industry's leftover
  *           ground when no cell is left to open: see SHARED ESTATES.
  *
+ * THE ORDER OF ARRIVAL (batch CL3; Jerus, 2026-10-20: "the cities buildings
+ * move around alot ... buildings stay in place ... most cities end up with
+ * residential in middle then industrial in the outer rim, always, and with it
+ * expanding"). Until CL3 a plan was packed again from its counts whenever they
+ * changed - the bands, each largest first, then the ladder - so one more
+ * building moved every building after it in its band, and the bands' order
+ * made the ring. Now a district that has a log (Input.logMonth: its count
+ * changes month by month) is planned in the order its buildings came: its
+ * first batch (Input.firstBatch: a canonical deal, or an old save's counts) in
+ * today's order, the ladder climbed on the first batch's road; then each
+ * month's departures (the newest of their type; the box is freed and the cell
+ * forgets what it was known not to hold) and arrivals (dealt one of each type in
+ * turn from a hashed start, so a month's houses and shops mix), each at the
+ * first place it fits in its band's cells, a cell opened in the growth order
+ * when none holds it - for the use of what opens it (homes or estate): the
+ * bands no longer go in turn, and what is placed never moves. In the events
+ * the outer kinds that are not site-bound open their cells from the far end
+ * of the growth order (a city keeps its fields at its rim), a homes cell does
+ * not open beside a mine or a site while another can (Jerus: "homes dont like
+ * being placed near mines"), and a cell's squares and boulevard are decided
+ * once, when it opens, from the road at that month of the log, never after.
+ * What the district before it could not place arrives with its month
+ * (Input.carry) and is merged in by month. With no log the plan is today's,
+ * from its counts; a log that is one batch draws today's plan box for box.
+ * One build more than before for a district whose log goes on past its first
+ * batch: the ladder's step is built again without its finish, the events are
+ * placed on it, and the finish runs once on the whole.
+ *
  * ESTATE LINES (0.7.90, batch RD5). The prototype's estate cell has one
  * spine across its middle and two strips 15 plots deep. Rows 4 to 10 and
  * 20 to 26 of it are more than REACH from any street, so only a building
@@ -283,7 +311,10 @@ public final class DistrictPlan {
     /** The first band's buildings are dealt round one slot for every this many plots of their footprints: 640, the prototype's - about a homes cell's room after its streets, so the slots are about its cells and a cell holds homes, shops, a school and a clinic rather than one kind (spec 2.4, R6). */
     public static final double MIXED_SLOT = 640;
 
-    /** The surface the ladder's square blocks take a homes cell: 56 plots, the prototype's - a square cell's streets (3 rows and 3 columns, 177 plots) less a long-block cell's (121). */
+    /** A long-block cell's street plots inside its ring: 121 - a square cell's 177 (3 rows and 3 columns) less SQUARE_PLOTS. A cell opened in the order of arrival (CL3, THE ORDER OF ARRIVAL) has road left for its square or its boulevard only past these. */
+    public static final int LONG_BLOCK_STREETS = 121;
+
+    /** The surface the ladder's square blocks take a homes cell: 56 plots, the prototype's - a square cell's streets (3 rows and 3 columns, 177 plots) less a long-block cell's (121, LONG_BLOCK_STREETS). */
     public static final double SQUARE_PLOTS = 56;
 
     /** ...and a boulevard a cell: 100 plots, the prototype's - its arterials' second row, less what neighbouring boulevards share. */
@@ -447,7 +478,7 @@ public final class DistrictPlan {
         public int sidingPlots = DEFAULT_SIDING_PLOTS;
         /** The types, by id (BuildingVisual.table()). */
         public BuildingVisual.Type[] types = new BuildingVisual.Type[0];
-        /** The buildings to place, by type id: every drawn type the district holds but its mines and wells on sites. */
+        /** The buildings to place, by type id: every drawn type the district holds but its mines and wells on sites (and, with a log, the plan's own: the log is squared with them, THE ORDER OF ARRIVAL). The carry is not added to them; the plan joins it. */
         public int[] counts = new int[0];
         /** The road plots its streets are made of, by kind: the model's Gravel and Paved Roads, and Elevated Highway plots to lay as a street's surface (none from the map since 0.7.89: the city's runs lay them, and count what they cannot). */
         public double gravel, paved, highway;
@@ -558,7 +589,11 @@ public final class DistrictPlan {
     /** What the plan could not place, by type id (R7: the map carries it to the next district with room since 0.7.88, and packs what none holds at the city's edge). */
     public int[] overflow = new int[0];
 
-    /** ...and the same buildings as {month, type} pairs in the order they came (batch CL3): what the map carries on to the next district (Input.carry); null for none. */
+    /**
+     * ...and the same buildings as {month, type} pairs (batch CL3), by month and then in the order they were left out - each
+     * with the month it came in (a building of the first batch its record's, a carried one its pair's; 0 for a plan with no
+     * log): what the map carries on to the next district (Input.carry); null for none.
+     */
     public int[] overflowLog;
 
     /**
@@ -597,7 +632,7 @@ public final class DistrictPlan {
     /** The road its streets are made of: the input's, by kind, and in all. */
     public double budget;
 
-    /** How many cells the ladder squared and made boulevards of, as it asked (the prototype's figures); the cells opened, its homes cells. */
+    /** How many cells the ladder squared and made boulevards of, as it asked (the prototype's figures; in a plan that goes on past its first batch, the first batch's as it asked and every cell opened after it by the road of its month, THE ORDER OF ARRIVAL); the cells opened, its homes cells. */
     public int squares, boulevards, cellsOpen, homesCells;
 
     /** Pieces the join joined; dead ends joined along a cut; street plots taken up as strays; merges refused for splitting the network; buildings placed on a field. */
@@ -656,6 +691,12 @@ public final class DistrictPlan {
      * surface it leaves over squares the homes cells nearest the hub and then
      * makes boulevards of the arterials nearest it - the prototype's
      * plan_ladder, a step halved while it would leave a building out.
+     * (CL3) A pure function of its input, which is never changed: with no log
+     * (Input.logMonth null) the plan is that of its counts, the carry joined to
+     * them; with one, the first batch's plan in the same order and the events
+     * after it placed in the order they came (THE ORDER OF ARRIVAL, in the
+     * builder), overflowLog the buildings it could not place with their
+     * months.
      */
     public static DistrictPlan make(Input in) {
         java.lang.ref.SoftReference<Builder> kept = BUILDERS.get();
@@ -665,18 +706,9 @@ public final class DistrictPlan {
             if (b == null || !b.busy) BUILDERS.set(new java.lang.ref.SoftReference<>(fresh));
             b = fresh;
         }
-        // CL3 SHIM (replaced by slice B): the carry joins the counts, as R7 did, and what is left over goes on as {month, type} pairs.
-        if (in.carry != null) for (int k = 0; k + 1 < in.carry.length; k += 2) if (in.carry[k + 1] < in.counts.length) in.counts[in.carry[k + 1]]++;
         b.start(in);
         try {
-            DistrictPlan p = ladder(b);
-            int n = p.overflowCount(), last = in.logMonth == null || in.logMonth.length == 0 ? 0 : in.logMonth[in.logMonth.length - 1];
-            if (n > 0) {
-                p.overflowLog = new int[2 * n];
-                int k = 0;
-                for (int t = 0; t < p.overflow.length; t++) for (int j = 0; j < p.overflow[t]; j++) { p.overflowLog[k++] = last; p.overflowLog[k++] = t; }
-            }
-            return p;
+            return ladder(b);
         } finally {
             b.finish();
         }
@@ -697,8 +729,29 @@ public final class DistrictPlan {
      */
     private static final ThreadLocal<java.lang.ref.SoftReference<Builder>> BUILDERS = new ThreadLocal<>();
 
-    /** The ladder (make()) on builder b, started on its input. */
+    /**
+     * The ladder (make()) on builder b, started on its input. (CL3) For a plan that goes on past its first batch (a log
+     * with events after it, or road that came after it) the ladder climbs on the first batch alone, spending its road,
+     * and its step is then built once more, without its finish, for the events to be placed on it
+     * (Builder.buildArrivals()); with the first batch empty there is no ladder to climb.
+     */
     private static DistrictPlan ladder(Builder b) {
+        DistrictPlan p = null;
+        int builds = 0;
+        if (!b.goesOn || b.batchBuildings > 0) {
+            p = ladderOn(b);
+            builds = p.builds;
+        }
+        if (b.goesOn) {
+            b.spendInput();
+            p = b.buildArrivals(p == null ? 0 : p.squares, p == null ? 0 : p.boulevards);
+            p.builds = builds + 1;
+        }
+        return p;
+    }
+
+    /** The ladder proper: the plan at the first step, then the steps its surplus pays for. */
+    private static DistrictPlan ladderOn(Builder b) {
         DistrictPlan p = b.build(0, 0, Integer.MAX_VALUE, null, null, false, null);
         int builds = 1;
         double s = p.surplus;
@@ -997,7 +1050,12 @@ public final class DistrictPlan {
             for (int y = 0; y < FRAME; y++) fieldRow(y);
             for (int c = 0; c < CELLS; c++) cellRows(c);
             order = growthOrder();
+            ev = false;
+            placedGone = null;
+            batchAt = null;
+            readLog();
             bands();
+            mapBatch();
         }
 
         /** The plan made: what it held of its input let go (KEPT). */
@@ -1006,6 +1064,521 @@ public final class DistrictPlan {
             in = null;
             hash = null;
             cutLines.clear();
+            iType = iMonth = iG = iI = iAt = evInst = null;
+            iCarried = iBatch = iGone = iExcl = evGone = null;
+            evRoad = null;
+            bcount = null;
+            evType = null;
+            bandInst = null;
+            batchAt = null;
+            placedGone = null;
+            live = null;
+        }
+
+        /* ------------------------------------------------ the order of arrival (batch CL3) */
+
+        /*
+         * THE ORDER OF ARRIVAL (batch CL3; the header says why). The log (Input.logMonth, logType, logChange) is read
+         * once, by readLog(), into INSTANCES - a building each, its type, the month it came in, whether the district
+         * before it carried it here (a carried one never leaves) - and EVENTS, the arrivals and departures after the
+         * first batch in the order they happen:
+         *   - a record of change + n is n instances of its type at its month, one of change - n takes the n newest
+         *     live ones of the type (a stack for each type); a road type is no building but road, by kind;
+         *   - the first batch (the first Input.firstBatch records, and the carry of its months) is the buildings
+         *     standing when the log begins: placed in today's order, its ladder climbed on its own road;
+         *   - then month by month: the month's departures in record order, its arrivals dealt one of each type in turn
+         *     from a hashed start, then the carry of that month in the order it came;
+         *   - at the end the log is squared with the plan's own counts (Input.counts: the district's less the mines on
+         *     their sites, the yards the runs draw and the shore's works): of a type the log holds more of, the newest
+         *     survivors are not the plan's (never placed, so nothing placed before them moves), of one it holds fewer
+         *     of, the missing arrive last, dealt as a month's are.
+         * buildArrivals() then places the events on the state the first batch leaves.
+         */
+
+        /** Whether the plan reads a log, and whether it goes on past its first batch: events to place, or road come after it. */
+        boolean logged, goesOn;
+        /** Whether the events are being placed (the far side, the homes' rule and the ladder decided once apply). */
+        boolean ev;
+        /** The buildings of the first batch. */
+        int batchBuildings;
+        /** The first batch's counts by type, the carry that joins it included: what bands() sorts - the input's own counts for a plan with neither a log nor a carry. */
+        int[] bcount;
+        /** The types the events place (for SCAN's shapes, which bands() makes). */
+        boolean[] evType;
+        /** The road the surface spends, by kind: the input's, or the first batch's while the ladder climbs on it. */
+        double rG, rP, rH;
+        /** Each type's footprint, bands()'. */
+        int[] fpW, fpH;
+        /** The instances, by id in the order made: type, month, band and index in it, and where the placed box is in the placed arrays (-1 unplaced, -2 gone). */
+        int nInst;
+        int[] iType, iMonth, iG, iI, iAt;
+        /** ...whether carried here, in the first batch, gone within it, or the plan's newest beyond its counts (never placed). */
+        boolean[] iCarried, iBatch, iGone, iExcl;
+        /** The events: the instance, whether it leaves (else it comes), and the road at its month, in all. */
+        int nEv;
+        int[] evInst;
+        boolean[] evGone;
+        double[] evRoad;
+        /** Each type's live instances of its own, the newest last; and readLog()'s tally of a month's arrivals by type and the types it has. */
+        int[][] live;
+        int[] nLive, want, dealTypes;
+        /** Each band's index to its instance. */
+        int[][] bandInst;
+        /** Where each first-batch building went in the placed arrays, while place() makes it for the events (-1 for none). */
+        int[][] batchAt;
+        /** Each band's cells as place() left them (bMine, bNMine, bNShared after its last building). */
+        final int[][] keepMine = new int[3][];
+        final int[] keepN = new int[3], keepShared = new int[3];
+        /** The order's last cell the far pointer has not taken: the near pointer (bNext) stops where they meet. */
+        int bFar;
+        /** The road at the event being placed, all kinds. */
+        double evRoadNow;
+        /** Each cell that holds a mine or a site, or a site-bound building the plan placed (homesCell()). */
+        final boolean[] mineAt = new boolean[CELLS];
+        /** Which placed boxes have left (the events); null when none can. */
+        boolean[] placedGone;
+
+        /** The road spent is the input's. */
+        void spendInput() {
+            rG = in.gravel;
+            rP = in.paved;
+            rH = in.highway;
+        }
+
+        /** A hash in [0, 1) of the world's seed, the district's place and the month, for the start of a month's deal (the same for the same inputs on any machine). */
+        static double dealHash(long seed, long x0, long y0, int month) {
+            return unit(World.mix(seed ^ World.mix(x0 * 0x9E3779B97F4A7C15L ^ y0 * 0xC2B2AE3D27D4EB4FL ^ (0x41525256L + month * 0x632BE59BD9B4E019L))));
+        }
+
+        /** A new instance (the first batch's when `batch`); its id. */
+        int newInst(int t, int month, boolean carried, boolean batch) {
+            if (nInst == iType.length) {
+                int n = Math.max(64, 2 * nInst);
+                iType = Arrays.copyOf(iType, n); iMonth = Arrays.copyOf(iMonth, n); iG = Arrays.copyOf(iG, n); iI = Arrays.copyOf(iI, n); iAt = Arrays.copyOf(iAt, n);
+                iCarried = Arrays.copyOf(iCarried, n); iBatch = Arrays.copyOf(iBatch, n); iGone = Arrays.copyOf(iGone, n); iExcl = Arrays.copyOf(iExcl, n);
+            }
+            int id = nInst++;
+            iType[id] = t;
+            iMonth[id] = month;
+            iCarried[id] = carried;
+            iBatch[id] = batch;
+            iGone[id] = false;
+            iExcl[id] = false;
+            iG[id] = -1;
+            iI[id] = -1;
+            iAt[id] = -1;
+            return id;
+        }
+
+        /** Instance id of an own building of type t standing now, on the type's stack. */
+        void push(int t, int id) {
+            if (live[t] == null) live[t] = new int[8];
+            else if (nLive[t] == live[t].length) live[t] = Arrays.copyOf(live[t], 2 * nLive[t]);
+            live[t][nLive[t]++] = id;
+        }
+
+        /** The newest live instance of type t, taken off its stack; -1 for none. */
+        int pop(int t) {
+            return nLive[t] == 0 ? -1 : live[t][--nLive[t]];
+        }
+
+        /** An event: instance id coming or (gone) leaving, at a month whose road is `road`. */
+        void addEvent(int id, boolean gone, double road) {
+            if (nEv == evInst.length) {
+                int n = Math.max(64, 2 * nEv);
+                evInst = Arrays.copyOf(evInst, n);
+                evGone = Arrays.copyOf(evGone, n);
+                evRoad = Arrays.copyOf(evRoad, n);
+            }
+            evInst[nEv] = id;
+            evGone[nEv] = gone;
+            evRoad[nEv] = road;
+            nEv++;
+        }
+
+        /** The road of a month, all kinds: the log's gravel and paved, and its highway to the input's own. */
+        double roadTotal(long[] road) {
+            return Math.max(0, road[BuildingVisual.GRAVEL]) + Math.max(0, road[BuildingVisual.PAVED])
+                    + Math.min(in.highway, Math.max(0, road[BuildingVisual.HIGHWAY]));
+        }
+
+        /** Whether type t is one the plan places: a drawn type of the table (not a road, a railway line or a building at sea). */
+        boolean placeable(int t) {
+            return t >= 0 && t < in.types.length && in.types[t] != null && in.types[t].drawn();
+        }
+
+        /**
+         * The month's arrivals dealt (the tally in want[] of the types in dealTypes[0 .. k)): one of each type in turn, the
+         * types in id order from a start hashed on the world's seed, the district's place and the month, round and round
+         * until each type's are dealt - so a month's houses and shops mix.
+         */
+        void deal(int month, int k, double road) {
+            Arrays.sort(dealTypes, 0, k);
+            int total = 0;
+            for (int j = 0; j < k; j++) total += want[dealTypes[j]];
+            int j = (int) (dealHash(in.seed, in.x0, in.y0, month) * k);
+            while (total > 0) {
+                int t = dealTypes[j % k];
+                if (want[t] > 0) {
+                    int id = newInst(t, month, false, false);
+                    push(t, id);
+                    addEvent(id, false, road);
+                    want[t]--;
+                    total--;
+                }
+                j++;
+            }
+        }
+
+        /**
+         * The log read (batch CL3; see the section's note): the instances and events, the first batch's counts (bcount)
+         * and road, whether the plan goes on past the first batch (goesOn). A plan with no log is its counts, the carry
+         * joined to them; nothing of the input is changed.
+         */
+        void readLog() {
+            BuildingVisual.Type[] types = in.types;
+            int T = types.length;
+            logged = in.logMonth != null && in.logType != null && in.logChange != null;
+            goesOn = false;
+            evType = null;
+            nInst = 0;
+            nEv = 0;
+            bandInst = null;
+            bcount = in.counts;
+            spendInput();
+            if (!logged) {
+                if (in.carry != null && in.carry.length > 1) {
+                    bcount = in.counts.clone();
+                    for (int k = 0; k + 1 < in.carry.length; k += 2) if (in.carry[k + 1] >= 0 && in.carry[k + 1] < bcount.length) bcount[in.carry[k + 1]]++;
+                }
+                return;
+            }
+            int n = Math.min(in.logMonth.length, Math.min(in.logType.length, in.logChange.length));
+            int fb = Math.max(0, Math.min(in.firstBatch, n));
+            int[] carry = in.carry == null ? new int[0] : in.carry;
+            int nc = carry.length / 2;
+            long guess = 64L + nc;
+            for (int r = 0; r < n; r++) if (in.logChange[r] > 0) guess += in.logChange[r];
+            int cap = (int) Math.min(guess, 1 << 20);
+            iType = new int[cap]; iMonth = new int[cap]; iG = new int[cap]; iI = new int[cap]; iAt = new int[cap];
+            iCarried = new boolean[cap]; iBatch = new boolean[cap]; iGone = new boolean[cap]; iExcl = new boolean[cap];
+            evInst = new int[cap]; evGone = new boolean[cap]; evRoad = new double[cap];
+            live = new int[T][];
+            nLive = new int[T];
+            want = new int[T];
+            dealTypes = new int[T];
+            long[] road = new long[4];
+            // The first batch: its records, then the carry of its months. A building gone within it was never standing.
+            for (int r = 0; r < fb; r++) {
+                int t = in.logType[r], ch = in.logChange[r];
+                if (t < 0 || t >= T || types[t] == null) continue;
+                if (types[t].road() != BuildingVisual.NOT_A_ROAD) { road[types[t].road()] += (long) ch * BuildingVisual.cells(types[t]); continue; }
+                if (!types[t].drawn()) continue;
+                if (ch > 0) for (int j = 0; j < ch; j++) push(t, newInst(t, in.logMonth[r], false, true));
+                else for (int j = 0; j < -ch; j++) { int id = pop(t); if (id >= 0) iGone[id] = true; }
+            }
+            int batchLast = fb > 0 ? in.logMonth[fb - 1] : Integer.MIN_VALUE;
+            int c = 0;
+            for (; c < nc && carry[2 * c] <= batchLast; c++) if (placeable(carry[2 * c + 1])) newInst(carry[2 * c + 1], carry[2 * c], true, true);
+            // The first batch's road: its records', or the input's where the log is the batch and no more.
+            double bg = fb == n ? in.gravel : Math.max(0, road[BuildingVisual.GRAVEL]);
+            double bp = fb == n ? in.paved : Math.max(0, road[BuildingVisual.PAVED]);
+            double bh = fb == n ? in.highway : Math.min(in.highway, Math.max(0, road[BuildingVisual.HIGHWAY]));
+            // The events, month by month: departures, arrivals dealt, then the carry of the month.
+            int month = batchLast;
+            int r = fb;
+            while (r < n || c < nc) {
+                int m = Integer.MAX_VALUE;
+                if (r < n) m = in.logMonth[r];
+                if (c < nc) m = Math.min(m, carry[2 * c]);
+                month = Math.max(m, month);
+                int r2 = r;
+                while (r2 < n && in.logMonth[r2] <= month) r2++;
+                for (int q = r; q < r2; q++) {
+                    int t = in.logType[q];
+                    if (t >= 0 && t < T && types[t] != null && types[t].road() != BuildingVisual.NOT_A_ROAD) road[types[t].road()] += (long) in.logChange[q] * BuildingVisual.cells(types[t]);
+                }
+                double now = roadTotal(road);
+                for (int q = r; q < r2; q++) {
+                    int t = in.logType[q], ch = in.logChange[q];
+                    if (!placeable(t) || ch >= 0) continue;
+                    for (int j = 0; j < -ch; j++) { int id = pop(t); if (id >= 0) addEvent(id, true, now); }
+                }
+                int k = 0;
+                for (int q = r; q < r2; q++) {
+                    int t = in.logType[q], ch = in.logChange[q];
+                    if (!placeable(t) || ch <= 0) continue;
+                    if (want[t] == 0) dealTypes[k++] = t;
+                    want[t] += ch;
+                }
+                if (k > 0) deal(month, k, now);
+                for (; c < nc && carry[2 * c] <= month; c++) {
+                    if (!placeable(carry[2 * c + 1])) continue;
+                    addEvent(newInst(carry[2 * c + 1], carry[2 * c], true, false), false, now);
+                }
+                r = r2;
+            }
+            // Squared with the plan's own counts: the newest survivors beyond them are not the plan's, the missing arrive last.
+            int k = 0;
+            for (int t = 0; t < T; t++) {
+                if (!placeable(t)) continue;
+                int have = nLive[t], plan = t < in.counts.length ? Math.max(0, in.counts[t]) : 0;
+                for (int j = plan; j < have; j++) iExcl[live[t][j]] = true;
+                if (have < plan) { want[t] = plan - have; dealTypes[k++] = t; }
+            }
+            if (k > 0) deal(month == Integer.MIN_VALUE ? 0 : month, k, roadTotal(road));
+            // The first batch's counts, and what the events place.
+            bcount = new int[T];
+            for (int id = 0; id < nInst; id++) if (iBatch[id] && !iGone[id] && !iExcl[id]) bcount[iType[id]]++;
+            evType = new boolean[T];
+            int active = 0;
+            for (int e = 0; e < nEv; e++) {
+                if (!evGone[e] && iExcl[evInst[e]]) continue;
+                active++;
+                evType[iType[evInst[e]]] = true;
+            }
+            batchG = bg;
+            batchP = bp;
+            batchH = bh;
+            goesOn = active > 0 || Math.abs(bg - in.gravel) > 1e-9 || Math.abs(bp - in.paved) > 1e-9 || Math.abs(bh - in.highway) > 1e-9;
+            if (goesOn) {
+                rG = bg;
+                rP = bp;
+                rH = bh;
+            }
+        }
+
+        /** The first batch's road, when the plan goes on past it. */
+        double batchG, batchP, batchH;
+
+        /** Each band's index to the instance it is, for the first batch: the type's first-batch instances in the order made, taken in turn by the band's buildings of the type (bands() makes them in an order of its own). */
+        void mapBatch() {
+            batchBuildings = 0;
+            for (int g = 0; g < 3; g++) batchBuildings += bandType[g].length;
+            if (!logged) return;
+            int T = in.types.length;
+            int[] at = new int[T + 1];
+            for (int id = 0; id < nInst; id++) if (iBatch[id] && !iGone[id] && !iExcl[id]) at[iType[id] + 1]++;
+            for (int t = 0; t < T; t++) at[t + 1] += at[t];
+            int[] ids = new int[at[T]], fill = Arrays.copyOf(at, T);
+            for (int id = 0; id < nInst; id++) if (iBatch[id] && !iGone[id] && !iExcl[id]) ids[fill[iType[id]]++] = id;
+            int[] cur = Arrays.copyOf(at, T);
+            bandInst = new int[3][];
+            for (int g = 0; g < 3; g++) {
+                bandInst[g] = new int[bandType[g].length];
+                for (int i = 0; i < bandInst[g].length; i++) bandInst[g][i] = ids[cur[bandType[g][i]]++];
+            }
+        }
+
+        /** The buildings left out as {month, type} pairs, by month and then in the order they were left out: each its instance's month (the first batch's record's, a carried one's pair's), 0 for a plan with no log; null for none. */
+        int[] overflowLog() {
+            int n = bUnplaced.size();
+            if (n == 0) return null;
+            long[] key = new long[n];
+            for (int u = 0; u < n; u++) {
+                int[] e = bUnplaced.get(u);
+                key[u] = ((long) (bandInst == null ? 0 : iMonth[bandInst[e[0]][e[1]]]) << 32) | u;
+            }
+            Arrays.sort(key);
+            int[] log = new int[2 * n];
+            for (int k = 0; k < n; k++) {
+                int[] e = bUnplaced.get((int) (key[k] & 0xffffffffL));
+                log[2 * k] = (int) (key[k] >> 32);
+                log[2 * k + 1] = bandType[e[0]][e[1]];
+            }
+            return log;
+        }
+
+        /** The street plots laid so far that this district surfaces (the seams it does not are the other district's). */
+        int streetPlotsLaid() {
+            int n = 0;
+            for (long w : rowBits) n += Long.bitCount(w);
+            if (!proto) {
+                for (int k = 0; k < FRAME; k++) {
+                    if (str[k] && !surfaces(k, 0)) n--;
+                    if (str[SIDE * FRAME + k] && !surfaces(k, SIDE)) n--;
+                }
+                for (int k = 1; k < SIDE; k++) {
+                    if (str[k * FRAME] && !surfaces(0, k)) n--;
+                    if (str[k * FRAME + SIDE] && !surfaces(SIDE, k)) n--;
+                }
+            }
+            return n;
+        }
+
+        /** Whether cell c, or any of the eight about it, holds a mine, a site or a site-bound building the plan placed. */
+        boolean nearMine(int c) {
+            int ci = c % CELLS_A_SIDE, cj = c / CELLS_A_SIDE;
+            for (int b = Math.max(0, cj - 1); b <= Math.min(CELLS_A_SIDE - 1, cj + 1); b++) {
+                for (int a = Math.max(0, ci - 1); a <= Math.min(CELLS_A_SIDE - 1, ci + 1); a++) if (mineAt[a + b * CELLS_A_SIDE]) return true;
+            }
+            return false;
+        }
+
+        /** The cell a homes cell opens in (HOMES KEEP OFF MINES): the first closed cell from bNext in the order that is not near a mine, and with none, the first closed one - taken off the order; -1 when no closed cell is left. */
+        int homesCell(DistrictPlan out) {
+            while (bNext <= bFar && out.cellKind[order[bNext]] != CLOSED) bNext++;
+            if (bNext > bFar) return -1;
+            for (int k = bNext; k <= bFar; k++) {
+                int c = order[k];
+                if (out.cellKind[c] == CLOSED && !nearMine(c)) return c;
+            }
+            return order[bNext++];
+        }
+
+        /** Cell of plot (x, y) of the frame, or -1 off the cells' interiors and rings (the column and row 0). */
+        static int cellOfPlot(int x, int y) {
+            return x < 1 || y < 1 || x > SIDE || y > SIDE ? -1 : (y - 1) / CELL * CELLS_A_SIDE + (x - 1) / CELL;
+        }
+
+        /** The cells that hold a mine or a site, from the input and the first batch's site-bound buildings (mineAt). */
+        void markMines() {
+            Arrays.fill(mineAt, false);
+            for (int p = 0; p < AREA; p++) {
+                if (in.site[p] == 0) continue;
+                int c = cellOfPlot(p % FRAME, p / FRAME);
+                if (c >= 0) mineAt[c] = true;
+            }
+            for (int[] m : in.mines) {
+                for (int cj = Math.max(0, (m[1] - 1) / CELL); cj <= Math.min(CELLS_A_SIDE - 1, (m[3] - 1) / CELL); cj++) {
+                    for (int ci = Math.max(0, (m[0] - 1) / CELL); ci <= Math.min(CELLS_A_SIDE - 1, (m[2] - 1) / CELL); ci++) mineAt[ci + cj * CELLS_A_SIDE] = true;
+                }
+            }
+            for (int k = 0; k < bPlaced; k++) if (in.types[placedT[k]].site() != null) mineAt[cellOfPlot(placedX[k], placedY[k])] = true;
+        }
+
+        /** Placed box k taken away: its plots free again, its cell's free rows given back and what it was known not to hold forgotten. */
+        void vacate(int k) {
+            int x = placedX[k], y = placedY[k], w = placedW[k], h = placedH[k];
+            for (int yy = y; yy < y + h; yy++) for (int xx = x; xx < x + w; xx++) occ[yy * FRAME + xx] = occStart[yy * FRAME + xx];
+            int c = cellOfPlot(x, y);
+            placedGone[k] = true;
+            refreeCell(c);
+            forgetFails(c);
+            mergeFails[c] = 0;
+            campusGen++;
+        }
+
+        /** Instance id leaving: its box freed, or it taken off the list of those without a place. */
+        void leave(int id) {
+            if (iAt[id] >= 0) {
+                vacate(iAt[id]);
+            } else {
+                for (int u = 0; u < bUnplaced.size(); u++) {
+                    int[] e = bUnplaced.get(u);
+                    if (e[0] == iG[id] && e[1] == iI[id]) { bUnplaced.remove(u); break; }
+                }
+            }
+            iAt[id] = -2;
+        }
+
+        /**
+         * The plan with its events placed (batch CL3): the first batch at the ladder's step (nSquare, nBlvd), built
+         * again but not finished, then each event in its order - a building at the first place it fits in its band's
+         * cells, a cell opened in the growth order when none holds it; a departure freeing its box - and the finish
+         * run once on the whole, with the input's own road.
+         */
+        DistrictPlan buildArrivals(int nSquare, int nBlvd) {
+            BuildingVisual.Type[] types = in.types;
+            batchAt = new int[3][];
+            DistrictPlan out = place(nSquare, nBlvd, Integer.MAX_VALUE, null, null, false, null);
+            for (int g = 0; g < 3; g++) {
+                for (int i = 0; i < bandType[g].length; i++) {
+                    int id = bandInst[g][i];
+                    iG[id] = g;
+                    iI[id] = i;
+                    iAt[id] = batchAt[g][i];
+                }
+            }
+            batchAt = null;
+            // Room for the events in the bands and the placed arrays.
+            int[] base = new int[3], extra = new int[3];
+            int total = 0;
+            for (int g = 0; g < 3; g++) base[g] = bandType[g].length;
+            for (int e = 0; e < nEv; e++) if (!evGone[e] && !iExcl[evInst[e]]) extra[bandOf(types[iType[evInst[e]]])]++;
+            for (int g = 0; g < 3; g++) {
+                bandType[g] = Arrays.copyOf(bandType[g], base[g] + extra[g]);
+                bandW[g] = Arrays.copyOf(bandW[g], base[g] + extra[g]);
+                bandH[g] = Arrays.copyOf(bandH[g], base[g] + extra[g]);
+                bandInst[g] = Arrays.copyOf(bandInst[g], base[g] + extra[g]);
+                total += base[g] + extra[g];
+            }
+            if (placedX.length < total) {
+                placedX = Arrays.copyOf(placedX, total); placedY = Arrays.copyOf(placedY, total); placedW = Arrays.copyOf(placedW, total);
+                placedH = Arrays.copyOf(placedH, total); placedT = Arrays.copyOf(placedT, total);
+            }
+            placedGone = new boolean[placedX.length];
+            // Each band's cells apart, as the first batch left them; the outer kinds' with industry's before them (SHARED ESTATES).
+            int[][] mineB = { new int[CELLS], new int[CELLS], new int[CELLS] };
+            int[] nB = new int[3];
+            System.arraycopy(keepMine[0], 0, mineB[0], 0, keepN[0]);
+            nB[0] = keepN[0];
+            System.arraycopy(keepMine[1], 0, mineB[1], 0, keepN[1]);
+            nB[1] = keepN[1];
+            int own0 = bShare ? keepShared[2] : 0;
+            System.arraycopy(keepMine[2], own0, mineB[2], 0, keepN[2] - own0);
+            nB[2] = keepN[2] - own0;
+            int[] combined = new int[2 * CELLS];
+            markMines();
+            ev = true;
+            bFar = order.length - 1;
+            int[] bandN = base.clone();
+            for (int e = 0; e < nEv; e++) {
+                int id = evInst[e];
+                if (evGone[e]) { leave(id); continue; }
+                if (iExcl[id]) continue;
+                int t = iType[id], g = bandOf(types[t]), i = bandN[g]++;
+                bandType[g][i] = t;
+                bandW[g][i] = fpW[t];
+                bandH[g][i] = fpH[t];
+                bandInst[g][i] = id;
+                iG[id] = g;
+                iI[id] = i;
+                evRoadNow = evRoad[e];
+                int n1 = 0;
+                if (g == 2 && bShare) {
+                    n1 = nB[1];
+                    System.arraycopy(mineB[1], 0, combined, 0, n1);
+                    System.arraycopy(mineB[2], 0, combined, n1, nB[2]);
+                    bMine = combined;
+                    bNShared = n1;
+                    bNMine = n1 + nB[2];
+                } else {
+                    bMine = mineB[g];
+                    bNShared = 0;
+                    bNMine = nB[g];
+                }
+                Arrays.fill(skipFrom, 0);
+                int before = bPlaced;
+                placeOne(g, i, false);
+                if (g == 2 && bShare) {
+                    for (int m = n1 + nB[2]; m < bNMine; m++) mineB[2][nB[2]++] = combined[m];
+                } else {
+                    nB[g] = bNMine;
+                }
+                if (bPlaced > before) {
+                    iAt[id] = before;
+                    if (types[t].site() != null) mineAt[cellOfPlot(placedX[before], placedY[before])] = true;
+                }
+            }
+            ev = false;
+            // The boxes that remain, in the order placed.
+            int placed = 0;
+            for (int k = 0; k < bPlaced; k++) {
+                if (placedGone[k]) continue;
+                if (placed != k) { placedX[placed] = placedX[k]; placedY[placed] = placedY[k]; placedW[placed] = placedW[k]; placedH[placed] = placedH[k]; placedT[placed] = placedT[k]; }
+                placed++;
+            }
+            bPlaced = placed;
+            placedGone = null;
+            campusGen++;
+            int squares = 0, boulevards = 0;
+            for (int c = 0; c < CELLS; c++) {
+                if (out.cellKind[c] == CLOSED) continue;
+                if (out.cellKind[c] == HOMES && out.cellSquare[c]) squares++;
+                if (out.cellBoulevard[c]) boulevards++;
+            }
+            return complete(out, squares, boulevards);
         }
 
         /* ------------------------------------------------ the growth order (spec 2.4) */
@@ -1109,13 +1682,25 @@ public final class DistrictPlan {
             int[] fw = new int[types.length], fh = new int[types.length];
             List<int[]>[] lists = new List[3];
             for (int g = 0; g < 3; g++) lists[g] = new ArrayList<>();
-            for (int t = 0; t < in.counts.length && t < types.length; t++) {
-                if (in.counts[t] <= 0 || types[t] == null || !types[t].drawn()) continue;
+            // The first batch's counts (CL3): the input's own where it has no log and no carry.
+            for (int t = 0; t < bcount.length && t < types.length; t++) {
+                if (bcount[t] <= 0 || types[t] == null || !types[t].drawn()) continue;
                 int[] f = BuildingVisual.footprint(types[t]);
                 fw[t] = f[0];
                 fh[t] = f[1];
-                lists[bandOf(types[t])].add(new int[] { t, in.counts[t] });
+                lists[bandOf(types[t])].add(new int[] { t, bcount[t] });
             }
+            // ...and the footprint of each type the events place, for SCAN's shapes below (CL3).
+            if (evType != null) {
+                for (int t = 0; t < types.length; t++) {
+                    if (!evType[t] || fw[t] != 0) continue;
+                    int[] f = BuildingVisual.footprint(types[t]);
+                    fw[t] = f[0];
+                    fh[t] = f[1];
+                }
+            }
+            fpW = fw;
+            fpH = fh;
             for (int g = 0; g < 3; g++) {
                 // Largest first, then by id: one entry a building - in industry the refinery's units first of all (THE CAMPUS,
                 // 0.7.97), so they stand together in the first estate cells it opens; a district with none sorts as before.
@@ -1186,6 +1771,16 @@ public final class DistrictPlan {
          * when byHomes, else in cells opened).
          */
         DistrictPlan build(int nSquare, int nBlvd, int limit, Turn from, int[] turnAt, boolean byHomes, Turn[] turns) {
+            DistrictPlan out = place(nSquare, nBlvd, limit, from, turnAt, byHomes, turns);
+            return out == null ? null : complete(out, nSquare, nBlvd);
+        }
+
+        /**
+         * build()'s placing (CL3: split from its finish, complete(), so the order of arrival can place its events on the
+         * state it leaves): the plan so far with every building of the first batch placed, or null as soon as more than
+         * `limit` have no place.
+         */
+        DistrictPlan place(int nSquare, int nBlvd, int limit, Turn from, int[] turnAt, boolean byHomes, Turn[] turns) {
             DistrictPlan out = new DistrictPlan();
             int total = 0;
             for (int g = 0; g < 3; g++) total += bandType[g].length;
@@ -1200,6 +1795,7 @@ public final class DistrictPlan {
             bTurnAt = turnAt;
             bTurns = turns;
             bByHomes = byHomes;
+            bFar = order.length - 1;
             if (from == null) {
                 Arrays.fill(out.cellRank, -1);
                 // A field is blocked with the rest (blocked[] holds every site): a building takes one only with no other place.
@@ -1241,7 +1837,6 @@ public final class DistrictPlan {
                 g0 = from.g;
                 i0 = from.i;
             }
-            int[] over = new int[in.types.length];
             // Each band's cells in the order opened (bMine): for the outer kinds, industry's first - its first bNShared - and
             // then their own (SHARED ESTATES).
             bMine = null;
@@ -1264,11 +1859,31 @@ public final class DistrictPlan {
                 // A band's list of cells is its own: SKIP's places in it start again.
                 Arrays.fill(skipFrom, 0);
                 int n = bandType[g].length;
+                if (batchAt != null) { batchAt[g] = new int[n]; Arrays.fill(batchAt[g], -1); }
                 // Gone on with from a turn: the first building's look over its band's cells was made before it.
-                for (int i = resumed ? i0 : 0; i < n; i++) if (placeOne(g, i, resumed && i == i0)) return let(null);
+                for (int i = resumed ? i0 : 0; i < n; i++) {
+                    int before = bPlaced;
+                    if (placeOne(g, i, resumed && i == i0)) return let(null);
+                    if (batchAt != null && bPlaced > before) batchAt[g][i] = before;
+                }
+                // The band's cells as it left them: the order of arrival goes on from here (buildArrivals()).
+                keepMine[g] = bMine;
+                keepN[g] = bNMine;
+                keepShared[g] = bNShared;
             }
+            return out;
+        }
+
+        /**
+         * build()'s finish (CL3: split from its placing, place()): the plan returned with the buildings placed (the first
+         * bPlaced of the placed arrays), those left out counted by type and as {month, type} pairs, the streets joined,
+         * the access roads and sidings laid and the surface drawn - the steps of the ladder (nSquare, nBlvd) as it asked.
+         */
+        DistrictPlan complete(DistrictPlan out, int nSquare, int nBlvd) {
             int placed = bPlaced;
+            int[] over = new int[in.types.length];
             for (int[] u : bUnplaced) over[bandType[u[0]][u[1]]]++;
+            out.overflowLog = overflowLog();
             // ONE NETWORK: the pieces joined along the lattice, and to the districts before it (spec 2.4, "Across districts").
             out.joins = join();
             partedOutCount = 0;
@@ -1301,6 +1916,7 @@ public final class DistrictPlan {
             bTurns = null;
             bTurnAt = null;
             bUnplaced = null;
+            ev = false;
             return p;
         }
 
@@ -1362,8 +1978,11 @@ public final class DistrictPlan {
                 if (best < 0 && whole && closeSpine(out, c)) best = tryPlace(c, w, h, false);
                 if (best >= 0) cellAt = c;
             }
-            // ...and opens the first cell in the order that touches the campus's cells, while one does.
-            while (best < 0 && bNext < order.length) {
+            // ...and opens the first cell in the order that touches the campus's cells, while one does. (CL3: in the events
+            // an outer kind that stands on no site opens from the far end of the order, a homes cell keeps off the mines,
+            // and the pointers stop where they meet: bFar is the order's last cell outside them.)
+            boolean far = ev && g == 2 && in.types[bandType[g][i]].site() == null;
+            while (best < 0 && bNext <= bFar) {
                 int pick = campus ? campusNext(out, group) : -1;
                 // A later step's turn: the cell about to open is the one it opens otherwise.
                 if (bTurnAt != null && out.cellKind[pick >= 0 ? order[pick] : order[bNext]] == CLOSED) {
@@ -1372,11 +1991,25 @@ public final class DistrictPlan {
                         if (bTurnAt[j] == at && bTurns[j] == null) bTurns[j] = turn(out, g, i, bNext, bOpened, bHomes, bPlaced, bExhausted, mine, bNMine, bNShared, bUnplaced);
                     }
                 }
-                int c = pick >= 0 ? order[pick] : order[bNext++];
+                int c;
+                if (pick >= 0) c = order[pick];
+                else if (ev && g == 0) { c = homesCell(out); if (c < 0) break; }
+                else if (far) c = order[bFar--];
+                else c = order[bNext++];
                 if (out.cellKind[c] != CLOSED) continue;
                 byte kind = g == 0 ? HOMES : ESTATE;
-                boolean square = kind == HOMES && bHomes < bSquares;
-                boolean bl = bOpened < bBoulevards;
+                boolean square, bl;
+                if (ev) {
+                    // THE LADDER DECIDED ONCE: the road of the event's month less the surface the streets laid so far take;
+                    // squared when that holds a long-block cell's streets and the square's more, a boulevard when it holds a
+                    // boulevard's more beyond - and never changed after.
+                    double avail = evRoadNow - FULL * streetPlotsLaid();
+                    square = kind == HOMES && avail >= LONG_BLOCK_STREETS + SQUARE_PLOTS;
+                    bl = avail >= LONG_BLOCK_STREETS + (square ? SQUARE_PLOTS : 0) + BOULEVARD_PLOTS;
+                } else {
+                    square = kind == HOMES && bHomes < bSquares;
+                    bl = bOpened < bBoulevards;
+                }
                 openCell(out, c, kind, bOpened, square, bl, w, h);
                 bOpened++;
                 if (kind == HOMES) bHomes++;
@@ -1441,6 +2074,7 @@ public final class DistrictPlan {
                 campusGenSeen = campusGen;
             }
             for (int k = campusSeen; k < bPlaced; k++) {
+                if (placedGone != null && placedGone[k]) continue;
                 BuildingVisual.Type t = in.types[placedT[k]];
                 if (t == null || t.campusGroup() != group) continue;
                 campusCells[(placedY[k] / CELL) * CELLS_A_SIDE + placedX[k] / CELL] = true;
@@ -2938,6 +3572,7 @@ public final class DistrictPlan {
             }
             if (nextBuilding.length < placedX.length) nextBuilding = new int[placedX.length];
             for (int k = buildingsSeen; k < bPlaced; k++) {
+                if (placedGone != null && placedGone[k]) continue;
                 int cell = (placedY[k] / CELL) * CELLS_A_SIDE + placedX[k] / CELL;
                 nextBuilding[k] = cellBuilding[cell];
                 cellBuilding[cell] = k;
@@ -4027,7 +4662,7 @@ public final class DistrictPlan {
             for (int i = 0; i < n; i++) keys[start[surfB[i]]++] = surfP[i];
             int k0 = n;
             for (int i = 0; i < open; i++) keys[k0++] = openAt[i];
-            double b = in.paved + in.gravel + in.highway, left = b;
+            double b = rP + rG + rH, left = b;
             byte[] w = new byte[n + open];
             for (int i = 0; i < n; i++) {
                 if (left >= HALF) { w[i] = 1; left -= HALF; }
@@ -4046,7 +4681,7 @@ public final class DistrictPlan {
             for (int i = n - open; i < n; i++) if (w[i] > 0) out.seamsSurfaced++;
             out.surplus = left;
             out.budget = b;
-            double pv = in.paved, gv = in.gravel, hv = in.highway;
+            double pv = rP, gv = rG, hv = rH;
             out.street = new short[AREA];
             for (int i = 0; i < n; i++) {
                 int p = (int) keys[i];
