@@ -14,6 +14,30 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.16 — FX6, a district that buys land inside itself keeps its buildings where they stand — 2026-10-21, ready, see docs/queue/FX6-notes.md
+
+Land bought inside a district no longer deals its buildings out again. A district's plan read its owned ground as
+of today, so a purchase replayed every arrival on the larger ground; on the playtest's city at month 3,998, 2,069
+of district (-2,-2)'s 2,946 buildings moved. The plan's ground is now dated, each plot the month the city bought
+it, from the land's own records (`Input.boughtAt`). The plan starts on the ground its first batch stands on and
+adds the land bought before each arrival's month: what stands never moves, and new arrivals take the new ground.
+LongPlaytest is green again (its layout watch: 0 moves in 48 month pairs). The map's alone: the trace is
+byte-identical to 0.8.15's, so no ensemble; no save change. ★1 for Jerus: ground bought inside a cell already
+open gets no new streets, so less of it is built on (FX6-C). Harness: MapCheck 2c, PlanCheck 12.
+
+### 0.8.15 — CD1, the curve from the dial the market expects — 2026-10-21, shipped, see docs/queue/CD1-notes.md
+
+The city's curve no longer sits on the dial in parallel (spec-city-debt §3, D9). The market expects the dial to drift
+back to what the city's rule would set at the inflation it expects, over six months (DRIFT_MONTHS, D15); each month's
+forward is that plus the credit spreads, the zero rate compounds them and carries the term premium less QE. A hiking
+city's curve inverts, a dial held low by hand no longer buys cheap long money, and a calm city prices as before: the
+study's four cities to the hundredth. Every payment of every piece is discounted at its own month's factor, so a
+piece's yield is solved from its price; every issue is priced the same way (the serial's coupon at par on the curve,
+the term loan's face on its factors), at home and abroad, and no round trip makes money. The short end is unchanged.
+Your rate shows the thirty-year rate in its new parts and where the market expects the dial. No save-format bump.
+The traces move (default 619,699 people against 677,355; Rotterdam 834,678 against 711,024); the ensemble scores
+22/25, H1 retired and A2 shipped as noise at its threshold, by Jerus's word (2026-10-21). Harness: CurveCheck.
+
 ### 0.8.14 — CL3, buildings that stay where they were put — 2026-10-21, shipped, see docs/queue/CL3-notes.md
 
 The map's alone; the playtest's trace is byte-identical. Each district keeps a log of its count changes month by
@@ -38,6 +62,7 @@ joined along a 45-degree highway drew a staircase. A merge in a varied cell take
 made. On his 1.7M city: dead ends 155 and buildings placed 17,987, both as before; a squared cell's streets 27.5%
 of its ground against 30.6%. At the city's scale it still reads as a grid (CL4 changes that). PlanCheck 10 is
 new; the trace is byte-identical to 0.8.12's, so no ensemble (EN1).
+
 
 ### 0.8.12 — EG1, deposits where the geology says — 2026-10-20, shipped, see docs/queue/EG1-notes.md
 

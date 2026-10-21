@@ -175,6 +175,10 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     }
 
     private Readings readings;
+
+    /** What it was attached to read, for a harness (CurveCheck, CD1). */
+    Readings readings() { return readings; }
+
     private HouseholdBalance households;
     private Bank bank;
     private EconomyManager economy;

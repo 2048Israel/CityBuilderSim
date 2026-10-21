@@ -405,6 +405,7 @@ public class MapCheck {
         Game city = playedCity(root);
         nothingMoves(city);
         districtsHoldAndSpill(city);
+        districtBuysLandInside(city);
         Squares sq = new Squares();
         painterRules(sq.maps[DENSE]);
         drawnAsItIs(sq.maps[DENSE]);
@@ -977,6 +978,268 @@ public class MapCheck {
         in.firstBatch = firstBatch;
         in.carry = carry == null ? null : carry.clone();
         return in;
+    }
+
+    /* =====================================================================
+       2c. A DISTRICT THAT BUYS LAND INSIDE ITSELF KEEPS ITS BUILDINGS WHERE THEY STAND (batch FX6)
+       ===================================================================== */
+
+    /*
+     * CL3 made a building stay where it was put: a district keeps a log of its arrivals by month and its plan replays the log on the district's
+     * ground. But the plan read the ground as the district owns it today, so land the city bought INSIDE a district that already had buildings
+     * made the plan replay every arrival on the larger ground: the cells' growth order changed and most of the district's buildings moved (on the
+     * playtest's city at month 3,998, district (-2,-2) bought 8 whole cells and 2,069 of its 2,946 buildings moved). What is right is the
+     * other way: land bought inside a district, full or not, adds room and never re-places what already stands; only the arrivals after it go
+     * on the new ground. 2c is that, on the real map and the real land: the played city's ground (a copy of it, its own purchases dated before the
+     * fixture's months), a block bought in the next district so that a full one has somewhere to send its houses, the district that holds the
+     * founding site given houses month by month, and a block of whole land blocks bought inside its frame as near the site as one can be - first
+     * while it has room to spare, then when it is full and takes no more - the plan drawn before each purchase and after the month that follows
+     * it, every box of the one against the other. The fixture's checks hold on any code; the finding's
+     * hold once the plan grows its ground month by month from the dated purchases (CityLand.purchases()), the arrivals of each month on the ground as that
+     * month had it.
+     */
+
+    /** The side of a bought block, at least: 64 plots (rounded up to whole blocks of the land's level), a few cells of a district's 8 across. */
+    static final int BOUGHT_PLOTS = 64;
+
+    /** One building of a plan: its type and its box in the frame's plots. */
+    record PlanBox(int type, int x, int y, int w, int h) { }
+
+    /** A rectangle of plots bought inside a district, [x0, x1) x [y0, y1) in the world, and how many of its plots are dry. */
+    record Bought(long x0, long y0, long x1, long y1, int dry) {
+        /** How far its nearest plot is from plot (sx, sy), in plots. */
+        double nearest(long sx, long sy) {
+            return Math.hypot(Math.max(Math.max(x0 - sx, 0), sx - (x1 - 1)), Math.max(Math.max(y0 - sy, 0), sy - (y1 - 1)));
+        }
+
+        /** Whether the box lies wholly on this block, a box in the frame whose first plot is (fx, fy) in the world. */
+        boolean holds(PlanBox b, long fx, long fy) {
+            return fx + b.x() >= x0 && fy + b.y() >= y0 && fx + b.x() + b.w() <= x1 && fy + b.y() + b.h() <= y1;
+        }
+    }
+
+    /** A harness city's months: houses added to the model a month at a time and the map reconciled to them, each in its month. */
+    static final class Months {
+        final CityMap map;
+        final long[] model;
+        final int house;
+        /** The month the next one is run in. */
+        int month;
+        boolean reconciled = true;
+
+        Months(CityMap map, long[] model, int house, int month) {
+            this.map = map;
+            this.model = model;
+            this.house = house;
+            this.month = month;
+        }
+
+        /** The month that last ran: what a purchase made between months is dated. */
+        int last() { return month - 1; }
+
+        /** One month of `houses` more houses. */
+        void run(int houses) {
+            model[house] += houses;
+            reconciled &= map.reconcile(model, month++);
+        }
+    }
+
+    /**
+     * Whether a district that buys land inside itself keeps its buildings where they stand (batch FX6): on the played city's ground, a block is bought in
+     * the next district, and the district holding the founding site is given houses month by month; with a third of its room used a block is bought inside
+     * its frame (the plan's boxes before it and after the month that follows), then more houses until it is full and takes no more, a second block inside
+     * the frame (the plan's boxes before it, and after six months of houses). The district's plan is not kept: it is drawn from the map at each of the four moments.
+     */
+    static void districtBuysLandInside(Game g) {
+        out.println("\n--- 2c. a district that buys land inside itself keeps its buildings where they stand (FX6) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = g.getBuildingManager().getTemplateByName("House").getId();
+        int each = BuildingVisual.cells(types[house]);
+        // The played city's ground, a copy, drawn canonically with nothing built; the fixture's months follow the played city's own, so every purchase it made is before them.
+        CityLand land = g.getCityLand().copy();
+        long[] model = new long[types.length];
+        CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
+        Months h = new Months(m, model, house, g.getMonth() + 1);
+        int firstMonth = h.month;
+        // The district whose frame holds the founding site, and its ground (a plan's input reads it from the world).
+        CityMap.District d = null;
+        DistrictPlan.Input frame = null;
+        for (CityMap.District e : m.districts()) {
+            DistrictPlan.Input in = m.planInput(e);
+            if (land.siteX() >= in.x0 && land.siteX() < in.x0 + DistrictPlan.SIDE && land.siteY() >= in.y0 && land.siteY() < in.y0 + DistrictPlan.SIDE) {
+                d = e;
+                frame = in;
+            }
+        }
+        // A district beside it with room to spare, so that when it is full the next houses have somewhere to go (a city whose every district is full gives them to the first):
+        // a block bought in the nearest other district that has one, between the played city's months and the fixture's first.
+        CityMap.District other = null;
+        DistrictPlan.Input otherFrame = null;
+        Bought spill = null;
+        for (CityMap.District e : m.districts()) {
+            if (e == d || spill != null) continue;
+            otherFrame = m.planInput(e);
+            spill = nearestFreeBlock(land, otherFrame);
+            other = spill == null ? null : e;
+        }
+        boolean soundSpill = spill != null && soundBlock(land, otherFrame, spill);
+        int otherOwned0 = other == null ? 0 : other.owned();
+        if (spill != null) land.extend(new LandParcel(-5, 1, 0, land.level(), spill.x0(), spill.y0(), spill.x1(), spill.y1(), null, null, null, 0, 0), h.last(), 0);
+        long blocks = 1L << land.level();
+        int step = Math.max(2, (int) (d.room() / each / 24));
+        int ownedAtFirst = d.owned();
+        long roomAtFirst = d.room();
+        int guard = 400;
+
+        // ----- S1: a third of the room used, room left -----
+        while (d.usedCells() * 3 < d.room() && guard-- > 0) h.run(step);
+        int month1 = h.last(), count1 = d.count(house);
+        boolean spillRoom = other != null && other.owned() - otherOwned0 == spill.dry() && other.freeCells() > 0;
+        long free1 = d.freeCells();
+        DistrictPlan p1 = m.plan(d);
+        java.util.Set<PlanBox> s1 = boxesOf(p1);
+
+        // ----- the first block, bought between months, and the month after -----
+        Bought b1 = nearestFreeBlock(land, frame);
+        boolean sound1 = b1 != null && soundBlock(land, frame, b1);
+        int ownedBefore1 = d.owned();
+        int boughtMonth1 = h.last();
+        if (b1 != null) land.extend(new LandParcel(-5, 1, 0, land.level(), b1.x0(), b1.y0(), b1.x1(), b1.y1(), null, null, null, 0, 0), boughtMonth1, 0);
+        boolean dated1 = land.purchases().get(land.purchases().size() - 1).month() == boughtMonth1 && boughtMonth1 > g.getMonth();
+        h.run(step);
+        int ownedAfter1 = d.owned(), count2 = d.count(house);
+        DistrictPlan p2 = m.plan(d);
+        java.util.Set<PlanBox> s2 = boxesOf(p2);
+        int moved12 = movedOf(s1, s2);
+
+        // ----- until it is full, and a month in which it takes none -----
+        while (d.freeCells() >= each && guard-- > 0) h.run(step);
+        int heldFull = d.count(house), elsewhere = housesElsewhere(m, d, house);
+        h.run(step);
+        int month3 = h.last(), count3 = d.count(house);
+        boolean fullTakesNone = count3 == heldFull && housesElsewhere(m, d, house) > elsewhere;
+        long free3 = d.freeCells();
+        DistrictPlan p3 = m.plan(d);
+        java.util.Set<PlanBox> s3 = boxesOf(p3);
+
+        // ----- the second block, and six months of houses -----
+        Bought b2 = nearestFreeBlock(land, frame);
+        boolean sound2 = b2 != null && soundBlock(land, frame, b2);
+        int ownedBefore2 = d.owned();
+        int boughtMonth2 = h.last();
+        if (b2 != null) land.extend(new LandParcel(-5, 1, 0, land.level(), b2.x0(), b2.y0(), b2.x1(), b2.y1(), null, null, null, 0, 0), boughtMonth2, 0);
+        boolean dated2 = land.purchases().get(land.purchases().size() - 1).month() == boughtMonth2 && boughtMonth2 > boughtMonth1;
+        for (int k = 0; k < 6; k++) h.run(step);
+        int ownedAfter2 = d.owned(), count4 = d.count(house);
+        DistrictPlan p4 = m.plan(d);
+        java.util.Set<PlanBox> s4 = boxesOf(p4);
+        int moved34 = movedOf(s3, s4);
+        int onNew = 0;
+        if (b2 != null) {
+            for (PlanBox b : s4) if (!s3.contains(b) && b2.holds(b, frame.x0, frame.y0)) onNew++;
+        }
+
+        out.printf("      the founding site's district (%d,%d): %,d owned plots, a room of %,d cells (a house takes %d), %d houses a month from month %d; the land's blocks are %d plots,"
+                + " a bought block %d across; the block beside, in district (%d,%d), %,d dry plots, %.0f plots from the site; the first block %.0f, the second %.0f%n", d.dx, d.dy, ownedAtFirst, roomAtFirst, each,
+                step, firstMonth, blocks, b1 == null ? 0 : b1.x1() - b1.x0(), other == null ? 0 : other.dx, other == null ? 0 : other.dy, spill == null ? 0 : spill.dry(),
+                spill == null ? -1 : spill.nearest(land.siteX(), land.siteY()), b1 == null ? -1 : b1.nearest(land.siteX(), land.siteY()),
+                b2 == null ? -1 : b2.nearest(land.siteX(), land.siteY()));
+        out.printf("      S1 (month %d): %,d houses, %,d cells free, the plan places %,d; first block %s bought in month %d, %,d dry plots (owned %,d -> %,d);"
+                + " S2: %,d houses, the plan places %,d, %,d of S1's moved%n", month1, count1, free1, p1.buildings, b1 == null ? "none" : "[" + b1.x0() + "," + b1.x1() + ") x ["
+                + b1.y0() + "," + b1.y1() + ")", boughtMonth1, b1 == null ? 0 : b1.dry(), ownedBefore1, ownedAfter1, count2, p2.buildings, moved12);
+        out.printf("      S3 (month %d, full): %,d houses, %,d cells free, the plan places %,d; second block %s bought in month %d, %,d dry plots (owned %,d -> %,d);"
+                + " S4 (month %d): %,d houses, the plan places %,d, %,d of S3's %,d moved, %,d new ones on the second block%n", month3, count3, free3, p3.buildings,
+                b2 == null ? "none" : "[" + b2.x0() + "," + b2.x1() + ") x [" + b2.y0() + "," + b2.y1() + ")", boughtMonth2, b2 == null ? 0 : b2.dry(), ownedBefore2,
+                ownedAfter2, h.last(), count4, p4.buildings, moved34, s3.size(), onNew);
+
+        check("fixture: the founding site's district found, and the land's blocks smaller than a district, so a bought block fits in one",
+                d != null && frame != null && blocks < World.DISTRICT && h.reconciled);
+        check("fixture: another district has a block bought in it, of whole blocks, wholly unowned, at least half dry, and room for the houses a full district cannot take", soundSpill && spillRoom);
+        check("fixture: the district holds some houses and has room to spare, and its plan places every one of them",
+                count1 > 0 && free1 >= each && s1.size() == count1 && p1.overflowCount() == 0);
+        check("fixture: the first block is of whole blocks of the land's level, inside the frame, wholly unowned, at least half dry", sound1);
+        check("fixture: the first block, bought between months (dated the month that ran), adds its dry plots to the district's owned ground and the month after it takes houses",
+                b1 != null && dated1 && ownedAfter1 - ownedBefore1 == b1.dry() && count2 > count1 && s2.size() > s1.size());
+        check("a district that is not full and buys land inside itself keeps what stands where it stands: every box of the plan before stands in the plan after (" + s1.size() + " of them, "
+                + moved12 + " moved)", moved12 == 0 && s1.size() > 0);
+        check("fixture: the district is full - it takes no house in the month that follows, another district takes them all", free3 < each && fullTakesNone && s3.size() > s2.size());
+        check("fixture: the second block is of whole blocks of the land's level, inside the frame, wholly unowned, at least half dry", sound2);
+        check("fixture: the second block, bought between months, adds its dry plots to the district's owned ground, and the full district takes houses again (the room the land added)",
+                b2 != null && dated2 && ownedAfter2 - ownedBefore2 == b2.dry() && count4 > count3 && ownedAfter2 > ownedBefore2);
+        check("a district that is full and buys land inside itself keeps what stands where it stands: every box of the plan before stands in the plan after (" + s3.size() + " of them, "
+                + moved34 + " moved)", moved34 == 0 && s3.size() > 0);
+        check("...and holds more after it: the houses that came after the purchase are placed (" + s4.size() + " boxes, " + s3.size() + " before)", s4.size() > s3.size());
+        check("...the arrivals after the purchase go on the new ground: " + onNew + " of the new boxes lie wholly on the second block", onNew > 0);
+        check("...every district's log still sums to its counts, the blocks' records one to a district and month", logsAddUp(m));
+    }
+
+    /** The plan's buildings as boxes, a set: a building stands where it did when its box is in the plan again. */
+    static java.util.Set<PlanBox> boxesOf(DistrictPlan p) {
+        java.util.Set<PlanBox> set = new java.util.HashSet<>();
+        for (int i = 0; i < p.buildings; i++) set.add(new PlanBox(p.btype[i], p.bx[i], p.by[i], p.bw[i], p.bh[i]));
+        return set;
+    }
+
+    /** How many of the boxes before are not among the boxes after: the buildings that moved. */
+    static int movedOf(java.util.Set<PlanBox> before, java.util.Set<PlanBox> after) {
+        int n = 0;
+        for (PlanBox b : before) if (!after.contains(b)) n++;
+        return n;
+    }
+
+    /** The houses the map holds in the districts but d. */
+    static int housesElsewhere(CityMap m, CityMap.District d, int house) {
+        int n = 0;
+        for (CityMap.District e : m.districts()) if (e != d) n += e.count(house);
+        return n;
+    }
+
+    /**
+     * The block of whole land blocks (BOUGHT_PLOTS a side at the least, rounded up to the level's blocks) the city could buy inside a district's frame
+     * (not on its last row or column) that lies wholly unowned, is at least half dry, and is nearest the founding site - its nearest plot, then its middle
+     * - so it lands early in the plan's growth order. Null when there is none.
+     */
+    static Bought nearestFreeBlock(CityLand land, DistrictPlan.Input frame) {
+        long b = 1L << land.level(), side = (BOUGHT_PLOTS + b - 1) / b * b;
+        long sx = land.siteX(), sy = land.siteY();
+        Bought best = null;
+        double bestNear = 0, bestMid = 0;
+        for (long y0 = Math.floorDiv(frame.y0 + b - 1, b) * b; y0 + side <= frame.y0 + DistrictPlan.SIDE; y0 += b) {
+            for (long x0 = Math.floorDiv(frame.x0 + b - 1, b) * b; x0 + side <= frame.x0 + DistrictPlan.SIDE; x0 += b) {
+                long x1 = x0 + side, y1 = y0 + side;
+                if (land.grid().owned(x0, y0, x1, y1) != 0) continue;
+                int dry = dryPlots(frame, x0, y0, x1, y1);
+                if (2L * dry < side * side) continue;
+                Bought c = new Bought(x0, y0, x1, y1, dry);
+                double near = c.nearest(sx, sy), mid = Math.hypot((x0 + x1) / 2.0 - sx, (y0 + y1) / 2.0 - sy);
+                if (best == null || near < bestNear || near == bestNear && mid < bestMid) {
+                    best = c;
+                    bestNear = near;
+                    bestMid = mid;
+                }
+            }
+        }
+        return best;
+    }
+
+    /** The dry plots of [x0, x1) x [y0, y1) in the world, read from a plan input's ground (the world's, over the frame). */
+    static int dryPlots(DistrictPlan.Input frame, long x0, long y0, long x1, long y1) {
+        int n = 0;
+        for (long y = y0; y < y1; y++) {
+            for (long x = x0; x < x1; x++) if (World.dry(frame.terrain[(int) ((y - frame.y0) * DistrictPlan.FRAME + (x - frame.x0))])) n++;
+        }
+        return n;
+    }
+
+    /** Whether a block about to be bought is what 2c says it is, checked on the land as it stands: whole blocks of its level, inside the frame, wholly unowned, at least half dry. */
+    static boolean soundBlock(CityLand land, DistrictPlan.Input frame, Bought b) {
+        long blocks = 1L << land.level();
+        boolean whole = b.x0() % blocks == 0 && b.y0() % blocks == 0 && b.x1() % blocks == 0 && b.y1() % blocks == 0
+                && (b.x1() - b.x0()) >= BOUGHT_PLOTS && (b.y1() - b.y0()) >= BOUGHT_PLOTS;
+        boolean inside = b.x0() >= frame.x0 && b.y0() >= frame.y0 && b.x1() <= frame.x0 + DistrictPlan.SIDE && b.y1() <= frame.y0 + DistrictPlan.SIDE;
+        boolean free = land.grid().owned(b.x0(), b.y0(), b.x1(), b.y1()) == 0;
+        boolean dry = b.dry() == dryPlots(frame, b.x0(), b.y0(), b.x1(), b.y1()) && 2L * b.dry() >= (b.x1() - b.x0()) * (b.y1() - b.y0());
+        return whole && inside && free && dry;
     }
 
     /* =====================================================================

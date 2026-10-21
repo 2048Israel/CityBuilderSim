@@ -5320,6 +5320,10 @@ public final class CityMap {
         in.types = types;
         // What the city owns, tile by tile over the frame (its ground is readGround()'s).
         boolean[] own = new boolean[TilePainter.PLOTS];
+        // ...and the month the city bought each plot (FX6, THE GROUND BOUGHT in DistrictPlan): from the grid's holdings, the
+        // purchases dated; left null when the frame holds none of a purchase's ground.
+        List<CityLand.Purchase> buys = land.purchases();
+        int[] held = buys.isEmpty() ? null : new int[TilePainter.PLOTS];
         int tiles = (f + World.TILE - 1) / World.TILE;
         for (int j = 0; j < tiles; j++) {
             for (int i = 0; i < tiles; i++) {
@@ -5327,6 +5331,16 @@ public final class CityMap {
                 tileOwnership(tx, ty, own);
                 for (int y = 0; y < World.TILE && j * World.TILE + y < f; y++) {
                     System.arraycopy(own, y * World.TILE, in.owned, (j * World.TILE + y) * f + i * World.TILE, Math.min(World.TILE, f - i * World.TILE));
+                }
+                if (held == null || land.grid().cover(5, tx, ty) == LandGrid.NONE) continue;
+                land.grid().tileHoldings(tx, ty, held);
+                for (int y = 0; y < World.TILE && j * World.TILE + y < f; y++) {
+                    for (int x = 0; x < World.TILE && i * World.TILE + x < f; x++) {
+                        int h = held[y * World.TILE + x];
+                        if (h < 1 || h > buys.size()) continue;
+                        if (in.boughtAt == null) in.boughtAt = new int[f * f];
+                        in.boughtAt[(j * World.TILE + y) * f + i * World.TILE + x] = buys.get(h - 1).month();
+                    }
                 }
             }
         }

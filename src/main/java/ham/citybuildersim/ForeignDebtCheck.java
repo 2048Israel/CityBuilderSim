@@ -676,12 +676,21 @@ public class ForeignDebtCheck {
         close("...one shape for both currencies, fifty years over ten as on the city's curve",
                 market.foreignCurveRate(600) - market.foreignCurveRate(120),
                 DebtManager.TERM_PREMIUM_50Y - DebtManager.TERM_PREMIUM_10Y, 1e-15);
-        close("a dollar twenty-year is valued on the world's curve",
-                market.marketValue(twenty), twenty.getMarketValue(worldCurve), 1e-9);
+        // ...each payment at its own month's rate on it (CD1), by hand.
+        double onTheWorldsCurve = 0;
+        double[] flows = twenty.remainingCashFlows();
+        for (int i = 0; i < flows.length; i++) {
+            double z = market.foreignRate() + DebtManager.termPremium(i + 1);
+            onTheWorldsCurve += flows[i] * Math.pow(1 + z / 12, -(i + 1));
+        }
+        close("a dollar twenty-year is valued on the world's curve, each payment at its own month's rate",
+                market.marketValue(twenty), onTheWorldsCurve, 1e-9);
         assertTrue("...not at the city's own rate, which is a different figure",
                 Math.abs(market.marketValue(twenty) - twenty.getMarketValue(market.getRate())) > 1);
+        // Since CD1 a quote's rate is the yield solved from its price on the world's curve, and a
+        // piece's yield is solved from its price on the same curve (yieldOf()): the two are one.
         close("...and it was issued at the rate it is valued at: the round trip is neutral by construction",
-                quote.marketRate(), market.foreignCurveRate(240), 1e-12);
+                quote.marketRate(), market.yieldOf(twenty), 1e-9);
 
         double value = market.marketValue(twenty);
         double dial = market.getPolicyRate();

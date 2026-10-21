@@ -276,6 +276,29 @@ public final class LandGrid {
         for (int q = 0; q < 4; q++) flagsRec(k + q, level - 1, bx + (q & 1) * half, by + (q >> 1) * half, x0, y0, out);
     }
 
+    /** Fills a tile's World.TILE x World.TILE holding per plot, row by row, -1 where none owns it: tileFlags()'s twin, a FULL leaf filling its square with its holding. */
+    public void tileHoldings(long tx, long ty, int[] out) {
+        Arrays.fill(out, 0, World.TILE * World.TILE, -1);
+        holdingsRec(0, TOP, 0, 0, tx * World.TILE, ty * World.TILE, out);
+    }
+
+    private void holdingsRec(int node, int level, long bx, long by, long x0, long y0, int[] out) {
+        long size = 1L << level;
+        int t = World.TILE;
+        if (bx >= x0 + t || by >= y0 + t || bx + size <= x0 || by + size <= y0) return;
+        byte s = state[node];
+        if (s == EMPTY) return;
+        if (s == FULL) {
+            int i0 = (int) Math.max(0, bx - x0), j0 = (int) Math.max(0, by - y0);
+            int i1 = (int) Math.min(t, bx + size - x0), j1 = (int) Math.min(t, by + size - y0);
+            for (int j = j0; j < j1; j++) Arrays.fill(out, j * t + i0, j * t + i1, holding[node]);
+            return;
+        }
+        int k = kids[4 * node];
+        long half = size >> 1;
+        for (int q = 0; q < 4; q++) holdingsRec(k + q, level - 1, bx + (q & 1) * half, by + (q >> 1) * half, x0, y0, out);
+    }
+
     /** Called back for every FULL leaf: its level, its first plot and its holding. */
     public interface Leaf { void at(int level, long x, long y, int holding); }
 
