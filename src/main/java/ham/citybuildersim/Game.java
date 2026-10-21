@@ -447,6 +447,7 @@ public class Game {
         buybackToHouseholds = buybackAbroad = 0;
         couponsToHouseholds = principalToHouseholds = householdsBoughtPaper = 0;
         couponsToFirms = principalToFirms = firmsBoughtPaper = 0;
+        couponsToWorld = principalToWorld = worldBoughtPaper = paperBoughtFromWorld = 0;
         bankPrincipalRepaidThisMonth = 0;
         bank.reset();
         foreign.reset();
@@ -8011,8 +8012,11 @@ public class Game {
      *    less what the sales since the last settle have been allotted to them,
      *    and what they hold, with what is allotted and not yet settled
      *    (CD2, slice 4);
-     *  - the world: nothing, and its bid off (panicking) - until its paper
-     *    book is built it has nowhere to hold city paper (CD2, slice 5);
+     *  - the world (CD2, slice 5, D7): the hot money in the city beside the
+     *    city's paper it already holds, at the curve's market value - allotted
+     *    at a sale and not yet settled included - because the target the auction
+     *    counts is the whole of what the world holds here; and it bids nothing
+     *    while it is in a run (CapitalFlows.isStopped());
      *  - a month of output, as CapitalFlows reads it;
      *  - the bank's room as a face (docs/queue/CD2-notes.md, star 6): its RISK
      *    capital, equity over Bank.CAPITAL_RATIO, less its weighted book, over
@@ -8038,18 +8042,22 @@ public class Game {
      * bids - passes none, and such a bank reads as having no room.
      */
     public Auction.Bidders auctionBidders(int months, double face) {
-        double pendingHouseholds = 0, pendingBank = 0, pendingFirmsCash = 0, pendingFirmsFace = 0;
+        double pendingHouseholds = 0, pendingBank = 0, pendingFirmsCash = 0, pendingFirmsFace = 0, pendingWorldFace = 0;
         for (Debt d : debtManager.getDebt()) {
             if (d.isForeign() || !(d.getSettleDue() > 0)) continue;
             pendingHouseholds += d.allotHouseholdsCash();
             pendingFirmsCash += d.allotFirmsCash();
             pendingFirmsFace += d.allotFirmsFace();
+            pendingWorldFace += d.allotWorldFace();
             pendingBank += Math.max(0, d.unsettledFace() - d.allotHouseholdsFace()
                     - d.allotFirmsFace() - d.allotWorldFace());
         }
         double spare = Math.max(0, householdBalance.spareForPaper() - pendingHouseholds);
         double firmsIdle = Math.max(0, outward.idleWealth(economyManager) - pendingFirmsCash);
         double firmsHeld = outward.totalPaper() + pendingFirmsFace;
+        // The world's position as the auction counts it: its deposits and its paper at market, with what it has
+        // been allotted and has not yet paid for (CD2, slice 5).
+        double worldHeld = hotMoney.getStock() + (hotMoney.getPaper() + pendingWorldFace) * debtManager.worldBookRatio();
         // D20, "its room is its capital" (docs/queue/CD2-notes.md, star 6): the bank's bid for the city's
         // paper is limited by its RISK-weighted capital, equity over CAPITAL_RATIO - not by capacity(),
         // which its deposits can hold down, since city paper is the window's collateral: what the deposits do
@@ -8071,7 +8079,7 @@ public class Game {
             extra *= (1 - Math.pow(r, months)) / (months * (1 - r));
         }
         return new Auction.Bidders(bank.depositRate(), DebtManager.WORLD_BASE_RATE,
-                debtManager.countryPremium(), spare, firmsIdle, firmsHeld, hotMoney.getStock(), true,
+                debtManager.countryPremium(), spare, firmsIdle, firmsHeld, worldHeld, hotMoney.isStopped(),
                 economyManager.getMonthGdp(), bankRoom, extra);
     }
 
@@ -9476,6 +9484,7 @@ public class Game {
         // paper and paid for it. See THE HOLDERS ARE PAID.
         couponsToHouseholds = principalToHouseholds = householdsBoughtPaper = 0;
         couponsToFirms = principalToFirms = firmsBoughtPaper = 0;
+        couponsToWorld = principalToWorld = worldBoughtPaper = paperBoughtFromWorld = 0;
         outward.startMonth();
         foreignDebtRaisedThisMonth = 0;
         foreignPrincipalRepaidThisMonth = 0;
@@ -9626,9 +9635,10 @@ public class Game {
          * disagree about a month.
          */
         BusinessDebtManager lender = economyManager.getBusinessDebtManager();
-        // The residual buyer (0.7.1): what the households and the businesses did not pay for.
-        cityPaperSettled = cityDebtRaisedForBank - householdsBoughtPaper - firmsBoughtPaper;
-        bank.lend(lender.getLentThisMonth() + cityDebtRaisedForBank - householdsBoughtPaper - firmsBoughtPaper);
+        // The residual buyer (0.7.1): what the households, the businesses and the world did not pay for.
+        cityPaperSettled = cityDebtRaisedForBank - householdsBoughtPaper - firmsBoughtPaper - worldBoughtPaper;
+        bank.lend(lender.getLentThisMonth() + cityDebtRaisedForBank - householdsBoughtPaper - firmsBoughtPaper
+                - worldBoughtPaper);
         // ...and the fee on what it lent the businesses, which they were
         // handed their loans net of (0.7.7): pool to pool, so it cancels.
         bank.takeLoanFees(lender.getFeesThisMonth());
@@ -9986,6 +9996,8 @@ public class Game {
         if (hotMoved > 0)      bank.receiveHotMoney(hotMoved);
         else if (hotMoved < 0) bank.returnHotMoney(-hotMoved);
         bank.setForeignDeposits(hotMoney.getStock());
+        // ...and the city's paper the world holds leaves with it (CD2, slice 5): sold to the bank's desk, inside the window.
+        worldPaperLeavesWithTheMoney(hotBefore);
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
         // Declared (0.7.14): the valuation a resolution wiped off the world's
@@ -12229,9 +12241,10 @@ public class Game {
         return getHeldAbroadPrivately() + foreign.getReserves();
     }
 
-    /** What the world holds here: the city's shares at their price, the businesses' bonds at face, the foreign money parked in the bank and the city's dollar paper at today's rate. */
+    /** What the world holds here: the city's shares at their price, the businesses' bonds at face, the foreign money parked in the bank, the city's own paper it bought at the auction (CD2, slice 5; at face) and the city's dollar paper at today's rate. */
     public double getHeldHereByTheWorld() {
-        return getSharesHeldAbroad() + bondMarket.faceHeldByWorld() + hotMoney.getStock() + foreign.getForeignDebt();
+        return getSharesHeldAbroad() + bondMarket.faceHeldByWorld() + hotMoney.getStock() + hotMoney.getPaper()
+                + foreign.getForeignDebt();
     }
 
     /**
@@ -13159,6 +13172,12 @@ public class Game {
            tills, pro rata to the paper each holds, the principal with its
            paper down by the same - and declared to nobody, because a till is
            inside the pools and the treasury it comes from is too.
+         - the WORLD's share (CD2, slice 5) is paid now and LEAVES: the coupon is
+           income paid abroad (a current-account debit), the principal a financial
+           outflow with its paper down by the same (CapitalFlows, THE CITY'S PAPER
+           THE WORLD HOLDS) - both declared to the audit, because the world is
+           outside its pools, as the households are, and unlike them it is also
+           outside the city, so the currency sees them.
 
        THE TREASURY'S BILL IS THE WHOLE BILL. The government's books are
        struck on cityInterestPaid, which carries every holder's coupon, the
@@ -13178,16 +13197,30 @@ public class Game {
      */
     private double couponsToFirms, principalToFirms, firmsBoughtPaper;
 
+    /**
+     * ...and the world's (CD2, slice 5), which are declared: its coupon (an income
+     * debit) and its principal (a financial outflow) leave the pools for abroad,
+     * what it paid at the settle (worldBoughtPaper) is a financial inflow, and
+     * what the desk paid it for the paper it sold with the hot money
+     * (paperBoughtFromWorld) is a financial outflow. Not saved: a month's, as the
+     * households' are.
+     */
+    private double couponsToWorld, principalToWorld, worldBoughtPaper, paperBoughtFromWorld;
+
     public double getCouponsToHouseholds()   { return couponsToHouseholds; }
     public double getPrincipalToHouseholds() { return principalToHouseholds; }
     public double getHouseholdsBoughtPaper() { return householdsBoughtPaper; }
     public double getCouponsToFirms()        { return couponsToFirms; }
     public double getPrincipalToFirms()      { return principalToFirms; }
     public double getFirmsBoughtPaper()      { return firmsBoughtPaper; }
+    public double getCouponsToWorld()        { return couponsToWorld; }
+    public double getPrincipalToWorld()      { return principalToWorld; }
+    public double getWorldBoughtPaper()      { return worldBoughtPaper; }
+    public double getPaperBoughtFromWorld()  { return paperBoughtFromWorld; }
 
     /**
      * Of a payment on this paper, the households', the central bank's and
-     * (CD2, slice 4) the businesses' shares, struck before it: each holder's
+     * (CD2, slice 4) the businesses' and (slice 5) the world's shares, struck before it: each holder's
      * principal over what is outstanding, times the payment. One line since
      * 0.7.3 - there were two branches, for a payment at or past the principal
      * and one under it, and they were the same product (a floating-point
@@ -13196,16 +13229,17 @@ public class Game {
      */
     private double[] holderShares(Debt paper, double owed) {
         double out = paper.getOustandingPrincipal();
-        double hh = paper.householdPrincipal(), cb = paper.centralBankPrincipal(), fm = paper.firmPrincipal();
-        if (!(out > 0) || !(owed > 0) || hh + cb + fm <= 0) return new double[] { 0, 0, 0 };
-        return new double[] { owed * hh / out, owed * cb / out, owed * fm / out };
+        double hh = paper.householdPrincipal(), cb = paper.centralBankPrincipal(), fm = paper.firmPrincipal(),
+                wd = paper.worldPrincipal();
+        if (!(out > 0) || !(owed > 0) || hh + cb + fm + wd <= 0) return new double[] { 0, 0, 0, 0 };
+        return new double[] { owed * hh / out, owed * cb / out, owed * fm / out, owed * wd / out };
     }
 
     /** A coupon on the city's own paper, split by holder. See THE HOLDERS ARE PAID. */
     public void payDomesticCoupon(Debt paper, double owed) {
         double[] s = holderShares(paper, owed);
-        InterestExpense(owed - s[0] - s[1] - s[2]);
-        double outside = s[0] + s[1] + s[2];
+        InterestExpense(owed - s[0] - s[1] - s[2] - s[3]);
+        double outside = s[0] + s[1] + s[2] + s[3];
         if (!(outside > 0)) return;
         double paid = treasuryPays(TreasuryLine.INTEREST, outside);
         cityInterestPaid += paid;
@@ -13215,25 +13249,31 @@ public class Game {
         // ...and the businesses' into their tills, pro rata to the paper each holds.
         outward.creditPaperCoupon(s[2], economyManager);
         couponsToFirms += s[2];
+        // ...and the world's leaves the city: income paid abroad, declared to the audit (MoneyAudit, '- city CouponsToWorld').
+        couponsToWorld += s[3];
     }
 
     /** Principal on the city's own paper, split by holder: the bank's through subtractCash(), the rest paid now and taken off their holdings. */
     public void payDomesticPrincipal(Debt paper, double owed) {
         double[] s = holderShares(paper, owed);
-        subtractCash(owed - s[0] - s[1] - s[2]);
-        double outside = s[0] + s[1] + s[2];
+        subtractCash(owed - s[0] - s[1] - s[2] - s[3]);
+        double outside = s[0] + s[1] + s[2] + s[3];
         if (!(outside > 0)) return;
         treasuryPays(TreasuryLine.PRINCIPAL, outside);
         cityPrincipalRepaidThisMonth += outside;
         paper.moveToHouseholds(-s[0]);
         paper.moveToCentralBank(-s[1]);
         paper.moveToFirms(-s[2]);
+        paper.moveToWorld(-s[3]);
         householdBalance.creditPaperPrincipal(s[0]);
         principalToHouseholds += s[0];
         centralBank.takePrincipal(s[1]);
         // ...and the businesses' into their tills with their paper down by the same.
         outward.creditPaperPrincipal(s[2], economyManager);
         principalToFirms += s[2];
+        // ...and the world's goes home, with its paper down by the same: a financial outflow, declared ('- city PrincipalToWorld').
+        hotMoney.paperRepaid(s[3]);
+        principalToWorld += s[3];
     }
 
     /* ----------------------- the desk, for the households ----------------------- */
@@ -13286,6 +13326,52 @@ public class Game {
         bank.buyPaperFromFirms(cash, take, unearned);
     }
 
+    /**
+     * THE BANK BUYS THE WORLD'S PAPER (CD2, slice 5), when the hot money
+     * leaves and takes it with it (worldPaperLeavesWithTheMoney()): this much
+     * face, off every piece's world share pro rata, onto the bank's book with
+     * the unearned discount riding on it, for each piece's market value - the
+     * price the households' paper fetches at the desk (and the bank buys it
+     * whatever its room, as it buys theirs: the world is leaving and somebody
+     * has to be on the other side, which is what the desk is for). The cash
+     * leaves the bank's pool for abroad, a financial outflow, declared as
+     * '- desk PaperBoughtFromWorld'.
+     *
+     * @return the cash the desk paid
+     */
+    private double desksBuysWorldPaper(double face) {
+        double held = debtManager.worldPrincipal();
+        if (!(face > 0) || held <= 0) return 0;
+        double take = Math.min(face, held);
+        double unearned = 0, price = 0;
+        for (Debt d : debtManager.getDebt()) {
+            double mine = d.worldPrincipal();
+            if (mine <= 0) continue;
+            double off = mine >= held ? take : take * mine / held;
+            off = Math.min(off, mine);
+            unearned += d.unaccretedOn(off);
+            price += debtManager.marketValue(d) * off / d.getOustandingPrincipal();
+            d.moveToWorld(-off);
+        }
+        bank.buyPaperFromWorld(price, take, unearned);
+        hotMoney.sellPaper(take, price);
+        paperBoughtFromWorld += price;
+        return price;
+    }
+
+    /**
+     * ...AND THE PAPER LEAVES WITH THE MONEY (CD2, slice 5, D7). Asked each
+     * month straight after the hot money has moved (nextMonth(), beside
+     * hotMoney.takeMonth()): the face CapitalFlows.paperLeaving() says goes
+     * home with the departing deposits - PANIC_EXIT of it in a run, the
+     * stock's departure over the world's whole position otherwise - is sold
+     * to the bank's desk at market value.
+     */
+    private void worldPaperLeavesWithTheMoney(double stockBefore) {
+        double face = hotMoney.paperLeaving(stockBefore, debtManager.worldBookRatio());
+        if (face > 0) desksBuysWorldPaper(face);
+    }
+
     /* -------------------- THE HOUSEHOLDS TAKE THEIR SHARE (0.7.1) --------------------
 
        At the settle of an issue - the month after the treasury sold it -
@@ -13332,6 +13418,8 @@ public class Game {
         }
         // ...and the businesses, from their tills, before the allotment is cleared.
         firmsTakeTheirShare(settling);
+        // ...and the world, from abroad (CD2, slice 5).
+        worldTakesItsShare(settling);
         for (Debt d : settling) d.settled();
         householdsBoughtPaper += paid;
         return paid;
@@ -13385,6 +13473,35 @@ public class Game {
             }
         }
         firmsBoughtPaper += paid;
+        return paid;
+    }
+
+    /**
+     * THE WORLD TAKES ITS SHARE (CD2, slice 5, D7; star 2), at the same settle
+     * and from the same allotment (Debt.allotWorldCash(), the auction's fill for
+     * the world at the clearing yield - CapitalFlows' rule, the stock it would
+     * hold at the excess return the stop pays, less what it has). It pays what
+     * it was allotted, whole: there is no till to be short of, and a run that
+     * began between the sale and the settle does not unwind a purchase made
+     * (it sells the paper to the desk the month it begins,
+     * worldPaperLeavesWithTheMoney()). The face joins CapitalFlows' paper book, outside the bank's
+     * room, and the cash is FOREIGN: it arrives from abroad into the pools by
+     * the bank not having to pay the treasury for it (the settle shrinks by
+     * it, cityPaperSettled), a financial inflow the audit declares ('+ world
+     * PaperBoughtByWorld') and the currency sees, as it sees hot money arrive.
+     *
+     * @return the cash the world paid
+     */
+    private double worldTakesItsShare(java.util.List<Debt> settling) {
+        double paid = 0;
+        for (Debt d : settling) {
+            double cash = d.allotWorldCash(), face = d.allotWorldFace();
+            if (!(cash > 0) || !(face > 0)) continue;
+            d.moveToWorld(face);
+            hotMoney.takePaper(cash, face);
+            paid += cash;
+        }
+        worldBoughtPaper += paid;
         return paid;
     }
 
@@ -13450,6 +13567,15 @@ public class Game {
        and take the price into their tills pro rata. The money is made for it
        (+ centralbank BoughtPaper) and arrives in the tills, which are pools:
        nothing else to declare.
+
+       ...AND FROM THE WORLD, LAST OF ALL (CD2, slice 5). The world holds the
+       city's paper too, outside the bank's room, and a dial at the whole of it
+       is not reached while some is held abroad. What the step still wants after
+       the businesses it buys from the world's, pro rata across the pieces, at
+       the same market value; the money is made for it (+ centralbank
+       BoughtPaper) and goes abroad (- centralbank BoughtFromWorld, a financial
+       outflow the currency sees), and the world's paper book is down by the
+       face.
        ====================================================================== */
     private void openMarketOperation() {
         // Nothing to aim at and nothing held: no move, as it always read.
@@ -13510,9 +13636,12 @@ public class Game {
             // ...and the businesses' after the households' (CD2, slice 4): the
             // dial is the whole of the paper (CentralBank.MAX_QE_SHARE), and
             // the businesses are a holder by choice, so they are the last it
-            // reaches - and the households are not asked for more than the step.
+            // reaches but one - and the households are not asked for more than the step.
             want -= buyPaperFromHouseholds(want);
-            if (want > 0) buyPaperFromFirms(want);
+            if (want > 0) want -= buyPaperFromFirms(want);
+            // ...and the world's last of all (CD2, slice 5): a central bank buys from whoever holds it,
+            // and the dial is not reached while some is held abroad.
+            if (want > 0) buyPaperFromWorld(want);
         }
     }
 
@@ -13567,7 +13696,7 @@ public class Game {
      * a business that holds some would otherwise stand between it and its
      * target for good.
      */
-    private void buyPaperFromFirms(double wanted) {
+    private double buyPaperFromFirms(double wanted) {
         java.util.List<Debt> pieces = new java.util.ArrayList<>();
         double pool = 0;
         for (Debt d : debtManager.getDebt()) {
@@ -13578,7 +13707,7 @@ public class Game {
             pool += available;
         }
         double face = Math.min(wanted, pool);
-        if (!(face > 0)) return;
+        if (!(face > 0)) return 0;
         double price = 0;
         double[] faceOf = new double[pieces.size()];
         for (int i = 0; i < pieces.size(); i++) {
@@ -13594,6 +13723,50 @@ public class Game {
         }
         centralBank.buyPaper(price, face);
         outward.creditPaperBuyback(face, price, economyManager);
+        return face;
+    }
+
+    /**
+     * The rest of a purchase the others could not fill, from the world (CD2,
+     * slice 5): the businesses' path with the world's share in its place - pro
+     * rata across the pieces it holds that are settled and pay no principal
+     * this month, at the curve's market value. The money is made for it
+     * (MoneyAudit's "+ centralbank BoughtPaper") and goes abroad to the world,
+     * a financial outflow ("- centralbank BoughtFromWorld"), the world's paper
+     * down by the face. WHY AT ALL: the dial is the whole of the paper (Jerus,
+     * 0.7.15), and a world that holds some would otherwise stand between the
+     * central bank and its target for good.
+     *
+     * @return the face it bought
+     */
+    private double buyPaperFromWorld(double wanted) {
+        java.util.List<Debt> pieces = new java.util.ArrayList<>();
+        double pool = 0;
+        for (Debt d : debtManager.getDebt()) {
+            if (!DebtManager.isTermPaper(d) || d.getSettleDue() > 0 || d.principalDueNextMonth() > 0) continue;
+            double available = d.worldPrincipal();
+            if (available <= 0) continue;
+            pieces.add(d);
+            pool += available;
+        }
+        double face = Math.min(wanted, pool);
+        if (!(face > 0)) return 0;
+        double price = 0;
+        double[] faceOf = new double[pieces.size()];
+        for (int i = 0; i < pieces.size(); i++) {
+            Debt d = pieces.get(i);
+            double available = d.worldPrincipal();
+            double f = face >= pool ? available : face * available / pool;
+            faceOf[i] = f;
+            price += debtManager.marketValue(d) * f / d.getOustandingPrincipal();
+        }
+        for (int i = 0; i < pieces.size(); i++) {
+            pieces.get(i).moveToWorld(-faceOf[i]);
+            pieces.get(i).moveToCentralBank(faceOf[i]);
+        }
+        centralBank.buyPaperFromWorld(price, face);
+        hotMoney.sellPaper(face, price);
+        return face;
     }
 
     /* ------------- THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) -------------
@@ -14500,7 +14673,7 @@ public class Game {
         double principal = debt.getOustandingPrincipal();
         // Who holds it, struck before it comes off the list (0.7.1).
         double hhFace = debt.householdPrincipal(), cbFace = debt.centralBankPrincipal();
-        double firmFace = debt.firmPrincipal();
+        double firmFace = debt.firmPrincipal(), worldFace = debt.worldPrincipal();
         double bankFace = debt.bankPrincipal();
         double bankUnearned = debt.unaccretedOn(bankFace);
         if (!debtManager.retire(debt)) {
@@ -14528,12 +14701,16 @@ public class Game {
          *   - the BUSINESSES' share goes to their tills with their paper
          *     down by their face (CD2, slice 4), at once: the tills are
          *     inside the pools, so nothing waits to be declared;
+         *   - the WORLD's share leaves the country (CD2, slice 5), its paper down
+         *     by its face: carried with the dollar bond's price to the next
+         *     month's window as '- city BuybackAbroad', a financial outflow;
          *   - the CENTRAL BANK's share comes off its book at face, and the
          *     price - money destroyed, the treasury having paid the boundary -
          *     settles at the top of next month with its gain against face;
-         *   - and a DOLLAR bond's whole price leaves the country.
+         *   - and a DOLLAR bond's whole price leaves the country (as the world's
+         *     share of the city's own does).
          *
-         * The last three are paid out of the pools between two presses, so the
+         * The last four are paid out of the pools between two presses, so the
          * treasury's pool carries what it paid them (getBuybackUnsettled())
          * until the next month declares it leaving - households, abroad, the
          * central bank's money destroyed - which is where the audit sees it,
@@ -14549,7 +14726,8 @@ public class Game {
             double hhPrice = principal > 0 ? price * hhFace / principal : 0;
             double cbPrice = principal > 0 ? price * cbFace / principal : 0;
             double firmPrice = principal > 0 ? price * firmFace / principal : 0;
-            bank.sellPaperBack(price - hhPrice - cbPrice - firmPrice, bankFace, bankUnearned);
+            double worldPrice = principal > 0 ? price * worldFace / principal : 0;
+            bank.sellPaperBack(price - hhPrice - cbPrice - firmPrice - worldPrice, bankFace, bankUnearned);
             if (hhFace > 0) {
                 householdBalance.creditPaperBuyback(hhFace, hhPrice);
                 buybackToHouseholdsUnsettled += hhPrice;
@@ -14558,6 +14736,11 @@ public class Game {
             // The businesses' share goes straight into their tills: a pool paid by a pool,
             // so nothing is carried to the next month's window.
             if (firmFace > 0) outward.creditPaperBuyback(firmFace, firmPrice, economyManager);
+            // The world's share leaves the country, its paper down by its face (CD2, slice 5).
+            if (worldFace > 0) {
+                hotMoney.paperRepaid(worldFace);
+                buybackAbroadUnsettled += worldPrice;
+            }
         }
 
         // Both sides moved - one bond fewer, and less cash - so the market has
@@ -16713,6 +16896,10 @@ public class Game {
         couponsToFirms *= scale;
         principalToFirms *= scale;
         firmsBoughtPaper *= scale;
+        couponsToWorld *= scale;
+        principalToWorld *= scale;
+        worldBoughtPaper *= scale;
+        paperBoughtFromWorld *= scale;
         bankPrincipalRepaidThisMonth *= scale;
         treasuryRaisedSoFar *= scale;
         treasuryJournal.redenominate(scale);

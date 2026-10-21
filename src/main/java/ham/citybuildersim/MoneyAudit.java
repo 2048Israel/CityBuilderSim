@@ -613,6 +613,14 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ households BoughtCityPaper", g.getHouseholdsBoughtPaper(), Scope.DOMESTIC);
         /*
+         * ...AND SO DOES THE WORLD (CD2, slice 5, D7): what it paid for its
+         * allotment at the same settle arrives from abroad the same way - the
+         * bank did not have to pay the treasury for it - so it is a financial
+         * inflow, declared and seen by the currency as hot money arriving is.
+         * Its coupon, principal and sales are the debits below.
+         */
+        in += credit.apply("+ world PaperBoughtByWorld", g.getWorldBoughtPaper(), Scope.FINANCIAL);
+        /*
          * THE BUSINESSES' BONDS (0.7.12). An issuer, the bank and a company
          * that holds a bond are all pools; the households and the world are
          * not. So a bond changing hands between two pools, a coupon or the
@@ -962,6 +970,23 @@ public final class MoneyAudit {
          * getPrincipalToFirms() are the month's figures for the harness and
          * the playtest; HoldersCheck asserts the audit closes on each.
          */
+        /*
+         * THE WORLD HOLDS THE CITY'S PAPER TOO (CD2, slice 5, D7), and unlike a
+         * till it is outside the pools AND outside the city, so every crossing
+         * is declared, and the currency sees them as it sees the businesses'
+         * bonds held abroad: the coupon is income paid abroad, the principal
+         * (and a bond bought back) goes home as a financial outflow, and what
+         * the desk pays it for the paper it sells with the hot money is one
+         * too. What it pays at the settle is the inflow (credited above:
+         * '+ world PaperBoughtByWorld'). The discount it earns is inside the
+         * principal, a simplification: paying a bond back at face for a price
+         * under it lands whole on the financial account, not part on income.
+         */
+        out += debit.apply("- city CouponsToWorld", g.getCouponsToWorld(), Scope.INCOME);
+        out += debit.apply("- city PrincipalToWorld", g.getPrincipalToWorld(), Scope.FINANCIAL);
+        out += debit.apply("- desk PaperBoughtFromWorld", g.getPaperBoughtFromWorld(), Scope.FINANCIAL);
+        // ...and the central bank buying from it, in money made for it (+ centralbank BoughtPaper, MONEY) that goes abroad.
+        out += debit.apply("- centralbank BoughtFromWorld", g.getCentralBank().getBoughtFromWorld(), Scope.FINANCIAL);
         /*
          * ...AND OUT FOR THE BONDS (0.7.12): the pools paying the households
          * for bonds they sold the bank and the companies, and their coupons

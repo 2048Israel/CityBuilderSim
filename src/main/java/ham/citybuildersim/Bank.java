@@ -2912,6 +2912,19 @@ public class Bank {
         return takePaperOntoTheBook(price, face, unearned);
     }
 
+    /**
+     * The world sells this face to the desk for this price (CD2, slice 5): the
+     * households' trade, whatever the bank's room (as it buys theirs), and the
+     * same book entry. Unlike a till's, the cash leaves the pools for abroad,
+     * so Game declares it to the audit as a financial outflow (Game.getPaperBoughtFromWorld()
+     * - "- desk PaperBoughtFromWorld"); the gain against what the book carried is
+     * the month's, as theirs.
+     */
+    public double buyPaperFromWorld(double price, double face, double unearned) {
+        if (!(price > 0) || !(face > 0)) return 0;
+        return takePaperOntoTheBook(price, face, unearned);
+    }
+
     /** The desk pays this price and the face joins its book with the unearned discount riding on it: the month's gain or loss is the difference. */
     private double takePaperOntoTheBook(double price, double face, double unearned) {
         cash -= price;

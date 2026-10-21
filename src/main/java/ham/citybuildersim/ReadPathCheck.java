@@ -968,6 +968,16 @@ public class ReadPathCheck {
         g.getFirmsBoughtPaper();
         g.getCouponsToFirms();
         g.getPrincipalToFirms();
+        // ...and the world's (CD2, slice 5): the piece's share, the book at the curve, CapitalFlows' side of it, the month's flows
+        debt.worldPrincipal();
+        debt.worldBookRatio();
+        g.getCapitalFlows().getPaper();
+        g.getCapitalFlows().getLifetimePaperBought();
+        g.getCapitalFlows().getLifetimePaperSold();
+        g.getWorldBoughtPaper();
+        g.getCouponsToWorld();
+        g.getPrincipalToWorld();
+        g.getPaperBoughtFromWorld();
         debt.bankUnearnedDiscount();
         debt.termPrincipal();
         debt.centralBankShareOfTerm();
