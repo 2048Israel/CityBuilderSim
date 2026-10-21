@@ -9358,6 +9358,10 @@ public class Game {
             debtManager.setPolicyRate(debtManager.advisedPolicyRate(priceIndex.inflation()));
         }
 
+        // THE CURVE'S EXPECTATIONS, struck once a month after the dial is set
+        // (autopilot or not): see strikeTheCurve().
+        strikeTheCurve();
+
         // The central bank settles with the treasury: last month's profit
         // remitted, the advances' interest charged, repaid from cash above
         // zero or advanced the shortfall. Inside the audit's window, so every
@@ -10548,6 +10552,22 @@ public class Game {
         debtManager.setCashPosition(cash);
         // ...and what it owes its central bank (0.7.0) - see DebtManager.setAdvances().
         debtManager.setAdvances(centralBank.getAdvancesToTreasury());
+    }
+
+    /**
+     * THE CURVE'S EXPECTATIONS (CD1, spec-city-debt section 3.1): the
+     * inflation the rule reads - the year's, or the target before there is
+     * one - and the inflation the city expects to settle at, handed to the
+     * debt market, which builds the dial it expects from them
+     * (DebtManager.strikeExpectations()). nextMonth() calls it once, at the
+     * top, straight after the autopilot sets the dial, so the pair and the
+     * dial are struck together and held for the month; a harness calls it to
+     * read the curve the month's top will price on.
+     */
+    void strikeTheCurve() {
+        debtManager.strikeExpectations(
+                priceIndex.hasRate() ? priceIndex.inflation() : debtManager.getInflationTarget(),
+                expectations.getExpectedInflation());
     }
 
     /**
