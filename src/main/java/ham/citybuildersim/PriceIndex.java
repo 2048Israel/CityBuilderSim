@@ -401,9 +401,9 @@ public class PriceIndex {
          * basing there are no weights yet, and on a link pending the old
          * basket is the two-component one: both open at the index's level.
          */
-        double cappedWeights = 0;
-        for (double w : weight) cappedWeights += w;
-        parityLink = based && !linkPending && cappedWeights > 0 ? cappedLevelOnThisBasket() : level;
+        double oldWeights = 0;
+        for (double w : weight) oldWeights += w;
+        parityLink = based && !linkPending && oldWeights > 0 ? cappedLevelOnThisBasket() : level;
         /*
          * EACH COMPONENT'S OWN LEVEL RUNS ON (0.7.45): its level on the old
          * basket this month - its link times its price over its old base -
