@@ -1,6 +1,6 @@
 # GameFiles.java - 425 lines · 37 methods · 7 constants · model
 
-`ham/citybuildersim/GameFiles.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GameFiles.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > Where the game keeps its files, and how it writes them.
 > 

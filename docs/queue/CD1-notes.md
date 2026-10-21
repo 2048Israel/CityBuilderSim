@@ -6,7 +6,7 @@ curve; Jerus on §3.2, 2026-10-18: "if it is realistic then yes"), §8's CD1
 row, §8.1 (the current-code handoff) and §9 (D9, D15, D31). Planned while EG1
 shipped, built from main 0f6e1b6 (0.8.12) and merged with CL2's 0.8.13 (9f1b328).*
 
-**Ready.** See the last section.
+**Ready but for Jerus's word on H1 and A2** (the top of §3).
 
 ## 1. What it does
 
@@ -72,10 +72,10 @@ months; with the rule on the dial the gap was nothing and the curve inverted
 in 104. Mutation test: flat pricing gives 7 FAILs, a 12-month drift 19.
 
 The suite (`Batch check.bat --maps`, beside CL2's batch, timing soft): 125
-harnesses run in 745 s, **125 passed**; the maps regenerated; Stale 0 firm
+harnesses run in 745 s, **125 passed**; on the tree merged with CL2's 0.8.13, 125 in 968 s, **125 passed**; the maps regenerated; Stale 0 firm
 findings. Main's one red, ScaleCheck's "...and it builds" (SC1), passes here:
 the moved trajectory builds more homes by its end, which is not SC1's fix -
-SC1 stays queued. The timing harnesses, hard and alone (`--timing`): 8 run in 133 s, all green.
+SC1 stays queued. The timing harnesses, hard and alone (`--timing`): 8 run in 133 s, all green; on the merged tree 8 in 140 s, all green.
 
 Existing harnesses restated, each premise kept (the design D9 replaced only
 how they measured):
@@ -205,4 +205,9 @@ curve's rate at its months.
 
 ## 7. State
 
-STATE_LINE
+**Ready but for Jerus's word** at the tip of `batch/CD1`: built to the plan,
+every slice reviewed and committed, merged with CL2's 0.8.13, version 0.8.14;
+on the merged tree the suite 125/125 and `--timing` 8/8 hard, the maps
+regenerated; the ensemble stored as `docs/ensemble/0.8.14.md`; the row out of
+`QUEUE.md` and CD1-C under Pending. It waits on the two calls at the top of
+§3 (H1 and A2): a premise is retired, and a new red shipped, only on his word.

@@ -1,6 +1,6 @@
 # FundView.java - 863 lines · 38 methods · 8 constants · model
 
-`ham/citybuildersim/FundView.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FundView.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, its return over a chart's window, the market to search, a hand order's quote on today's book, and its record - pure, and the screens' only door to the fund's cost basis.
 > 
