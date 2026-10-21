@@ -149,14 +149,14 @@ Each piece is a level, not a speed, so nothing lags a moving target, and each ca
 
 Where the city's own figures put the money, as a log gap from parity's trend, reached half in a month (MARKET_SPEED):
 
-- **The real rate.** -GAP_CAP x tanh(PERSISTENCE x gap / GAP_CAP). The gap is today's: the dial less expected inflation, against the world's real rate (XR4: the US's). PERSISTENCE is how many years the market expects the gap to last: 2.5, so a sustained point holds the D$ about 2.5% dearer. GAP_CAP, 35%, keeps a 17-point gap like slot 3's month 221 to 25% instead of 68%. **A rise appreciates the money at once, then it depreciates as the gap is expected to close**: Dornbusch's overshooting [R#], the textbook answer to "why did my currency jump when I raised rates".
+- **The real rate** (★8). -GAP_CAP x tanh(PERSISTENCE x gap / GAP_CAP). The gap is today's: the dial less expected inflation, against the world's real rate (XR4: the US's). PERSISTENCE is how many years the market expects the gap to last: 2.5, so a sustained point holds the D$ about 2.5% dearer. GAP_CAP, 35%, keeps a 17-point gap like slot 3's month 221 to 25% instead of 68%. **A rise appreciates the money at once, then it depreciates as the gap is expected to close**: Dornbusch's overshooting [R#], the textbook answer to "why did my currency jump when I raised rates".
 - **The balance.** The overall balance, current plus financial account over twelve months, against a year's GDP, times BALANCE_WEIGHT (0.5, capped at 20%): a city that runs a deficit year after year owes more abroad and its money cheapens. Today's trade term made into a level.
 - **The vault's cover.** RISK_PREMIUM (10%) times how far the cover falls short of SAFE_COVER (3 months of imports, the usual rule [R#]): an empty vault costs the money a tenth; a vault of three months or more, nothing.
 - **Debt abroad and hot money** (XR3): add to the risk-off's bite, not to the level (§3.5).
 
 ### 3.4 The market
 
-- The money's own swing: AR(1), MARKET_SIGMA = 2.2% a month, MARKET_HALF_LIFE = 42 months. Its spread around the fair level is about 13% either way (one standard deviation). Most of a real float's month is this: no model beats a random walk at a month's horizon [R#].
+- The money's own swing (★1): AR(1), MARKET_SIGMA = 2.2% a month, MARKET_HALF_LIFE = 42 months. Its spread around the fair level is about 13% either way (one standard deviation). Most of a real float's month is this: no model beats a random walk at a month's horizon [R#].
 - **Seeded** from the city's seed (WN1's, once it exists; until then a seed drawn at founding and saved), so one seed is one path, as the nations study's D9 asks.
 - **Gated by trade.** Below MIN_TRADE a month (today's floor) the rate is not a real price and holds; the market's swing is scaled by the city's openness until it trades a tenth of its GDP.
 
@@ -199,7 +199,7 @@ Each of the ~145 moneys, against the US$:
 - **Its terms of trade:** from each January's solve (WN3), its export prices over its import prices, passed at t_i = half its commodity share of exports, spread over the next three months. Chen and Rogoff's commodity currencies move with their export prices [R#].
 - **Its own swing:** AR(1), half-life 3.5 years, 1.4-3.2% a month by kind.
 - **Pegs:** held where the IMF classes the money as a peg (the euro's users are the euro; the CFA francs on the euro; the Gulf and Hong Kong on the US$) [R#]. A soft peg breaks by §3.6's rule on its own shadow rate (Random), or on its real date (Historical). A board (Hong Kong) breaks only if its vault falls under its money.
-- **Historical** replays the real monthly rates of 2000-2025 (★8) and starts the swings from each money's real gap from PPP in December 2025. **Random** draws all of it from the seed.
+- **Historical** replays the real monthly rates of 2000-2025 (★11) and starts the swings from each money's real gap from PPP in December 2025. **Random** draws all of it from the seed.
 - **In the yearly solve and between:** the January solve prices in US$ (the nations study's unit of account); it hands each nation its terms of trade, which reach the rate over the next three months. Between solves, each month steps the cycle, the risk-off and the swings. Cross rates go through the dollar. The rates move no nation's quantities (D8: the world answers the city in prices only).
 - **Measured** over 1,000 seeded 26-year paths: volatility a year, the euro 7.4%, the yen 9.0%, the pound 7.6%, the franc 8.1%, the Canadian dollar 6.0%, the Australian dollar 10.5%, an emerging float 13.8%; the half-life an economist would measure on 26 years of it, 2.9-4.0 years (the model's own, 3.5); the worst month of the median path, 7-26% by kind.
 
@@ -210,7 +210,7 @@ Each of the ~145 moneys, against the US$:
 - **The vault earns** each money's rate, as Canada's Exchange Fund Account earns for its government [R#] (the CB study's "the vault earns nothing").
 - **The carry:** the bank's foreign book (CarryTrade) borrows in the cheapest of the eight, and the hot money (CapitalFlows) compares the dial with the US's. Both unwind in a risk-off, by their stock: a city that drew hot money with a high dial falls harder when money runs home. Measured on the prototype's A$ against the yen: the carry earns 4.0% a year with a Sharpe ratio of 0.29, a monthly skew of -1.60, and a worst month of -33%: the "picking up nickels in front of a steamroller" of the literature [R#].
 
-### 3.9 D29's real US$ and the real effective rate (WN6)
+### 3.9 D29's real US$ and the real effective rate (WN6, ★12)
 
 - **The comparison rate:** D$ per 2015 US$ = D$ per US$ x (the US's price level now / its level in 2015). A real 2015 US$ buys what a dollar bought in 2015.
 - **Real GDP in 2015 US$**, the World Bank's way [R#]: the city's GDP at founding's prices, divided by founding's rate, carried back to 2015 dollars by the US's price path: real GDP_D$ / rate_founding x (P_US,2015 / P_US,founding).
@@ -263,7 +263,20 @@ Fresh ids: XR appears nowhere in `QUEUE.md`, `docs/` or the git log (only inside
 
 ## 6. ★ Decisions
 
-*(open: asked of Jerus at the end of this session; the batches wait under Pending)*
+*Open: asked of Jerus at the end of this session. Until he answers, XR1-XR4 wait under Pending in `QUEUE.md` with these calls.*
+
+1. **★1 The market's own swing.** (a) Like a real float: 2.2% a month, fading by half in 3.5 years, about 8-9% a year in all; his city replayed moves 9.5% a year and never more than about 14 months one way. (b) Half that, about 4% a year: a calmer game. (c) None: only the fundamentals move it (his city replayed: 5.7% a year, all of it from the dial's own swings). **Recommended: (a).** A currency the player can watch move, for reasons the screen gives.
+2. **★2 Parity on traded goods.** (a) The goods part of the basket (groceries and the luxury goods) against the US's goods. (b) The whole basket, as today: in slot 3, 41-80% rent. (c) The whole basket with rent held to a real share, about a third. **Recommended: (a).** Rents do not cross borders; on groceries alone his D$ ends 1% from parity, on the basket 23%.
+3. **★3 The regimes and the default.** (a) Float, Lean against falls, Band and Peg, with Lean the default, today's behaviour. (b) Float, Lean and Peg, no Band. (c) Float and Lean only. **Recommended: (a).** Lean keeps "a reserve defends a currency; it does not hold one down"; the Band is Singapore's way, the regime of the one real city-state that runs its own money by its rate.
+4. **★4 How a peg breaks.** (a) When the vault falls under a month of imports, or sooner by a chance that rises past a 10% gap (measured: 2.9-7.4 years at 2-10 points of inflation over the US, breaks of 31-47%). (b) Only when the vault runs out. (c) Never by itself: the player devalues or floats. **Recommended: (a).** Both real ways pegs end: the vault runs out, and doubt finishes it early.
+5. **★5 The dial under a peg.** (a) It stays the player's, and a gap from the US's rate shows in the vault's monthly bill. (b) It is tied to the US's rate. **Recommended: (a).** The impossible trinity is learned, not imposed.
+6. **★6 Who pays at the strong edge.** (a) The central bank buys the dollars with new money (M0 rises), as the SNB did. (b) The treasury buys them out of its cash. **Recommended: (a).** It is the central bank's job, and its inflation is the cost the player sees.
+7. **★7 Interventions move the rate.** (a) 2% per 1% of a year's GDP, half gone in 6 months (the IMF's panel estimate). (b) Smaller and shorter: 1%, 3 months. (c) Not at all, as today. **Recommended: (a).** It fixes buying dollars making the D$ dearer.
+8. **★8 The real gap's effect.** (a) 2.5% a point, the market expecting a gap to last 2.5 years, at most 35% either way. (b) Today's: 6.9% a point, no cap (slot 3's 16.9-point gap would hold the D$ 68% dear). **Recommended: (a).**
+9. **★9 The world's real rate.** (a) The US's real policy rate (XR4). (b) The city's partners', weighted by trade. (c) Today's constant 2% less the world's inflation. **Recommended: (a)**, the D$ being quoted against the US$; (b) after WN3 if he wants the partners'.
+10. **★10 Where the batches go.** (a) XR1 after FX6 and FX5, before CL4; XR2 right after; XR3 folded into WN4 (its monthly rates table into WN0's file); XR4 after WN4, before WN6. (b) XR1 and XR2 after the CD batches. (c) All four after WN7. **Recommended: (a).** The currency is what he calls weird now, and XR1 must be measured alone before WN3 moves every trace.
+11. **★11 Historical's rates.** (a) The real monthly rates of 2000-2025 (BIS) in the world file. (b) The yearly rates, with the months drawn from the seed. **Recommended: (a).**
+12. **★12 D29's display.** (a) D$ per 2015 US$ and the real effective rate (100 at founding), in WN6. (b) D$ per 2015 US$ only. **Recommended: (a).** The real effective rate answers "is my money dear?" against all the city trades with.
 
 ---
 
