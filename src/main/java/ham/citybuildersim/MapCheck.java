@@ -1594,6 +1594,15 @@ public class MapCheck {
      * kind, every building drawn - `what` names the city.
      */
     static void networkOn(CityMap m, long[] model, String what) {
+        networkOn(m, model, what, true);
+    }
+
+    /**
+     * ...and whether the city must have + junctions for the + rule to bite (`crosses`): not the played city since CL3, whose
+     * few cells each opened while its road was short - a cell's squares are decided as it opens, never after (DistrictPlan,
+     * THE ORDER OF ARRIVAL) - so its junctions are T's; the + rule's fixture is Jerus's city's, x 1.
+     */
+    static void networkOn(CityMap m, long[] model, String what, boolean crosses) {
         Raster r = Raster.of(m);
         int[] net = r.network();
         long roadPlots = r.count(r::isRoad), alone = r.alone();
@@ -1629,7 +1638,8 @@ public class MapCheck {
         out.printf("      ...%,d buildings, %,d within %d plots of a street, %d farther; %d mines on their sites, %d packed at the city's edge (%d drawn"
                 + " smaller, %d with no ground); surface: %s; %,d buildings drawn of the model's %,d%n", near + far, near, TilePainter.REACH, far, mines,
                 packed, pk[1], pk[2], sf, drawnN, modelN);
-        check(what + ": fixture: the city has streets and + junctions", roadPlots > 0 && cr[0] > 0);
+        if (!crosses) out.printf("      (%s: %,d + junctions - its cells opened while its road was short, so its junctions are T's: the + rule bites on Jerus's city x 1)%n", what, cr[0]);
+        check(what + ": fixture: the city has streets" + (crosses ? " and + junctions" : ""), roadPlots > 0 && (cr[0] > 0 || !crosses));
         check("...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an"
                 + " arterial's bridge, ground it does not own)", net[2] == 0);
         check("...no plot of road alone, no stray road", alone == 0);
@@ -1645,7 +1655,7 @@ public class MapCheck {
                 + " one for one; highways, rail, the river ---");
         CityMap m = sq.maps[0];
         networkOn(m, m.totals(), "Jerus's city x 1");
-        networkOn(city.getCityMap(), city.getMapCounts(), "the played city");
+        networkOn(city.getCityMap(), city.getMapCounts(), "the played city", false);
         for (String dir : saves) {
             Game g = loadCopy(Path.of(dir));
             if (g == null) {
@@ -3515,25 +3525,30 @@ public class MapCheck {
         check("...one more unit, a month on, goes to the district holding the refinery's ground", campus.count(cracker) == had + 1
                 && m.campusCells(campus) > 0 && Arrays.equals(m.totals(), more));
         DistrictPlan p = m.plan(campus);
-        boolean firstOfIndustry = true, seenOther = false;
+        // CL3: the plan places in the order of arrival - the deal's units first of its industry, as THE CAMPUS sorts a first
+        // batch, and the unit a month on when it came, after the works standing, among the campus's cells (never ahead of them,
+        // which would move every works placed before it).
+        int unitsFirst = 0;
+        boolean seenOther = false;
         java.util.Set<Integer> cells = new java.util.HashSet<>();
         int placedUnits = 0;
         for (int b = 0; b < p.buildings; b++) {
             BuildingVisual.Type t = types[p.btype[b]];
             if (t == null || t.outer() || t.cls() != BuildingVisual.INDUSTRY) continue;
             if (t.campus()) {
-                firstOfIndustry &= !seenOther;
+                if (!seenOther) unitsFirst++;
                 cells.add((p.by[b] / DistrictPlan.CELL) * DistrictPlan.CELLS_A_SIDE + p.bx[b] / DistrictPlan.CELL);
                 placedUnits++;
             } else seenOther = true;
         }
         int wantUnits = 0;
         for (BuildingVisual.Type t : types) if (t != null && t.campus()) wantUnits += campus.count(t.id());
+        boolean firstOfIndustry = unitsFirst >= wantUnits - 1;
         int overUnits = 0;
         for (BuildingVisual.Type t : types) if (t != null && t.campus() && t.id() < p.overflow.length) overUnits += p.overflow[t.id()];
         out.printf("      its plan, district (%d, %d): %d units placed of %d (%d left out), in %d cell(s) %s%n", campus.dx, campus.dy, placedUnits,
                 wantUnits, overUnits, cells.size(), cells);
-        check("...its plan places them first of its industry, every one, in cells that touch one another: one campus",
+        check("...its plan places the deal's units first of its industry (the unit a month on as it came, CL3), every one, in cells that touch one another: one campus",
                 firstOfIndustry && placedUnits == wantUnits && connected(cells));
         // An older sidecar's units, spread by hand into another district, gathered once as it is read; a FORMAT 6 one read as it is.
         CityMap.District away = null;

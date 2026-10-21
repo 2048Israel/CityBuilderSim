@@ -16,7 +16,13 @@ import java.util.List;
  * was given (what PLAN_FILL is measured on). It reads the copy and never
  * writes it.
  *
- *   java -cp "<scratch>;<classes>;<gson.jar>" ham.citybuildersim.CL3Probe <copy root> 10 [months to play]
+ *   java -cp "<scratch>;<classes>;<gson.jar>" ham.citybuildersim.CL3Probe <copy root> 10 [months to play] [months to count moves over]
+ *
+ * With a fourth argument it then plays that many months more, one at a time,
+ * planning every district after each, and counts the buildings that moved: a
+ * box on a street, of a type its district held no fewer of, that is not where
+ * it stood the month before (what Jerus saw: "the cities buildings move
+ * around alot").
  */
 public class CL3Probe {
     public static void main(String[] args) throws Exception {
@@ -110,11 +116,70 @@ public class CL3Probe {
         System.out.printf("ring, mean km from the founding site: homes %.2f (%d), industry %.2f (%d), outer kinds %.2f (%d); packed at the edge %d%n",
                 n[0] > 0 ? dist[0] / n[0] : 0, n[0], n[1] > 0 ? dist[1] / n[1] : 0, n[1], n[2] > 0 ? dist[2] / n[2] : 0, n[2], packed);
         System.out.printf("homes-band buildings in or beside a mine's cell: %d of %d%n", homesByMine, homes);
+        int[] pk = m.packedCounts();
+        System.out.printf("packed at the city's edge without a street: %,d (%,d drawn smaller, %,d with no ground)%n", pk[0], pk[1], pk[2]);
         System.out.printf("plans that could not place all they were given: %d; their boxes over their owned plots:", fills.size());
         for (int i = 0; i < Math.min(12, fills.size()); i++) System.out.printf(" %.3f (cells %.3f, given %.3f)", fills.get(i)[0], fills.get(i)[1], fills.get(i)[2]);
         if (!fills.isEmpty()) {
             double[] f = fills.stream().mapToDouble(a -> a[0]).sorted().toArray();
             System.out.printf("; median %.3f%n", f[f.length / 2]);
         } else System.out.println();
+        int count = args.length > 3 ? Integer.parseInt(args[3]) : 0;
+        if (count > 0) {
+            java.util.Map<Long, long[]> before = snapshot(m);
+            long moved = 0, compared = 0, worst = 0;
+            for (int k = 0; k < count; k++) {
+                System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+                try { g.toggleNextMonth(); } finally { System.setOut(real); }
+                m = g.getCityMap();
+                for (CityMap.District d : m.districts()) {
+                    if (m.planned(d)) continue;
+                    for (CityMap.Job j : m.planJobs(d)) { j.run(); m.adopt(j); }
+                }
+                m.packed();
+                java.util.Map<Long, long[]> after = snapshot(m);
+                long mv = 0;
+                for (java.util.Map.Entry<Long, long[]> e : before.entrySet()) {
+                    long[] a = e.getValue(), b = after.getOrDefault(e.getKey(), new long[0]);
+                    compared += a.length;
+                    java.util.Map<Long, Integer> gone = new java.util.HashMap<>(), was = new java.util.HashMap<>(), now = new java.util.HashMap<>();
+                    for (long x : a) was.merge(x >>> 48, 1, Integer::sum);
+                    for (long x : b) now.merge(x >>> 48, 1, Integer::sum);
+                    for (long x : a) if (java.util.Arrays.binarySearch(b, x) < 0) gone.merge(x >>> 48, 1, Integer::sum);
+                    for (java.util.Map.Entry<Long, Integer> t : gone.entrySet()) {
+                        int fell = Math.max(0, was.getOrDefault(t.getKey(), 0) - now.getOrDefault(t.getKey(), 0));
+                        mv += Math.max(0, t.getValue() - fell);
+                    }
+                }
+                moved += mv;
+                worst = Math.max(worst, mv);
+                before = after;
+            }
+            System.out.printf("over %d months to month %d: %,d buildings moved of %,d compared (%.2f%% a month), the worst month %,d%n",
+                    count, g.getMonth(), moved, compared, compared > 0 ? 100.0 * moved / compared : 0, worst);
+        }
+    }
+
+    /** Every district's boxes on a street as sorted {type, absolute x, absolute y} keys. */
+    static java.util.Map<Long, long[]> snapshot(CityMap m) {
+        java.util.Map<Long, long[]> out = new java.util.HashMap<>();
+        for (CityMap.District d : m.districts()) {
+            CityMap.Drawn dr = m.drawnOf(d);
+            if (dr == null) continue;
+            DistrictPlan.Input in = m.planInputHere(d);
+            List<Long> keys = new ArrayList<>();
+            for (int k = 0; k < CityMap.TILES; k++) {
+                int[] bx = dr.boxes[k];
+                if (bx == null) continue;
+                long tx = in.x0 + (long) (k % CityMap.TILES_A_SIDE) * World.TILE, ty = in.y0 + (long) (k / CityMap.TILES_A_SIDE) * World.TILE;
+                for (int b : bx) {
+                    if ((b & CityMap.PACKED_BIT) != 0) continue;
+                    long type = b >>> CityMap.BOX_TYPE_SHIFT;
+                    keys.add((type << 48) | (((tx + (b & 31)) & 0xFFFFFL) << 24) | ((ty + ((b >> 5) & 31)) & 0xFFFFFFL));
+                }
+            }
+            out.put(((long) d.dx << 32) ^ (d.dy & 0xFFFFFFFFL), keys.stream().mapToLong(Long::longValue).sorted().toArray());
+        }
+        return out;
     }
 }
