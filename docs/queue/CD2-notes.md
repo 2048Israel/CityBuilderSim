@@ -7,9 +7,12 @@ auction and the sales nobody presses), its screen, Borrow as an auction (§7
 board 4, D31), the households at the auction's yield (D32), and first the
 study's model run again with the firms (D33). Planned while CD1 was built;
 built on CD1's branch (unshipped, waiting for Jerus on H1 and A2) merged with
-main at 9f1b328 (CL2, 0.8.13), so it is the version after CD1's 0.8.14.*
+main at 9f1b328 (CL2, 0.8.13), so it is the version after CD1's 0.8.14.
+CL3 shipped to main as 0.8.14 while CD2 was built: when CD1 rebases it
+becomes 0.8.15 and CD2 0.8.16, renumbered at that merge (GameVersion, the
+changelog's heading, `docs/ensemble/`, CD2-C's row).*
 
-**{{STATE}}**
+**Work in progress, not ready to ship**: it carries CD1's unshipped commits, and `--timing` was not run (07:45 came first). Built, checked and recorded otherwise: see §3.
 
 ## 1. What it does
 
@@ -123,7 +126,7 @@ at every step.
 AuctionCheck, fixed. Main's red, ScaleCheck's "...and it builds" (SC1),
 passes here as it did on CD1. On the final model (9e828b81's model, before
 the words and the maps): **126 harnesses run in 792 s, all passed**, Stale 0
-firm findings. {{FINALSUITE}}
+firm findings. The final check with the maps (`Batch check.bat --maps`, at 89610f6c): **126 harnesses, all passed**, the maps regenerated, Stale 0 firm findings - in 14,046 s, the PC loaded past its memory beside CL3 and the night's other work. **`--timing` not run**: it is the first thing left.
 
 **D33's count.** No tail over a point anywhere it was counted: AuctionCheck
 11's 1,200 months of the automatic builder's city booked 82 sales, D$40.0B
