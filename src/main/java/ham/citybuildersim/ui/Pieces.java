@@ -1459,8 +1459,9 @@ public final class Pieces {
      * sell the paper that raises the cash this card is for at the highest
      * yield the city takes. The card says so in red above its button and the
      * button is disabled - an order the money does not cover is not placed,
-     * and the debt would be issued with nothing built. The raise-the-cap and
-     * keep-the-ask-open answers are D30's (slice 9). Returns the card.
+     * and the debt would be issued with nothing built. The answers (raise the
+     * cap, Fill it, or borrow nothing) are the build screen's, under its
+     * offers (BuildScreen.shortAnswers(), D30). Returns the card.
      */
     public static VBox coverCash(VBox card, DebtQuote quote) {
         if (quote == null || !quote.isShort() || card.getChildren().size() < 2) return card;

@@ -63,6 +63,9 @@ final class FinancesScreen {
     FinancesScreen(UserInterface ui) {
         this.ui = ui;
         this.fundScreen = new FundScreen(ui, this);
+        this.borrowChips = new CapChips(() -> borrowCap, cap -> borrowCap = cap, this::showFinanceMenu, ui::redrawSoon);
+        this.rolloverChips = new CapChips(() -> ui.game.getRolloverCap(), cap -> ui.game.setRolloverCap(cap),
+                this::showFinanceMenu, ui::redrawSoon);
     }
 
     /** The city's fund's pages and a security's (0.7.39): the area is drawn by its own class. */
@@ -257,13 +260,9 @@ final class FinancesScreen {
      * redraw like borrowAsk; the quote runs at it and the button books at it.
      */
     Auction.Cap borrowCap = Auction.Cap.DEFAULT;
-    /** What is typed in the yield box, in per cent, and not yet set; null while the box shows the cap as it stands. */
-    private String capTyped;
-    /** What the last yield that could not be read says, under the chips until the cap is next set; null for none. */
-    private String capRefused;
-    /** The yield box, and whether it had the focus when the page was last redrawn - a month landing rebuilds it under the typing, as askField. */
-    private javafx.scene.control.TextField capField;
-    private boolean capTyping;
+    /** The Borrow page's cap chips and their yield box (CapChips), and the rollover card's own: each keeps its typing through a month's redraw. */
+    private final CapChips borrowChips;
+    private final CapChips rolloverChips;
     /** What is typed in the ask's box and not yet set (0.7.40), kept through a month's redraw; null while the box is empty. */
     private String askTyped;
     /** ...the ask it was typed over: a step, a preset or an issue that moves the ask drops it. */
@@ -322,7 +321,8 @@ final class FinancesScreen {
         fundScreen.here = ui.isShowing("showFinanceMenu");
         // ...and whether the player was typing an ask, so the new box takes the focus back (0.7.40).
         askTyping = askField != null && askField.isFocused();
-        capTyping = capField != null && capField.isFocused();
+        borrowChips.noteFocus();
+        rolloverChips.noteFocus();
         ui.clearMenu("showFinanceMenu", () -> showFinanceMenu());
 
         boolean known = financeArea == null;
@@ -1208,16 +1208,20 @@ final class FinancesScreen {
      * one bar, the part last year's surplus nets, the central bank's own
      * roll, each issue as a ghost with its paper, and what the cash pays -
      * Game.rolloverPlan(), the function the press books, so the bar here is
-     * the issue there.
+     * the issue there. Since CD2 (slice 9, D28 and D29) the card carries the
+     * rollover's own cap under its chips - the same three chips as Borrow
+     * (CapChips), on Game.getRolloverCap() - and a line on what a sale that
+     * falls short at the cap does: the rest of the maturity is paid from the
+     * cash, then the central bank's advances.
      */
     /** The rollover's three settings as chips, in Rollover.Mode's order. */
-    static final String[] ROLLOVER_CHIPS = { "By hand", "Same structure", Rollover.BILL_MONTHS + "-month notes" };
+    static final String[] ROLLOVER_CHIPS = { "By hand", "Same structure", Rollover.BILL_MONTHS + "-month bills" };
 
     /** Each setting's one line (the spec's T35). */
     static final String[] ROLLOVER_LINES = {
         "Nothing automatic: what falls due is paid from the cash, and what it can't cover the central bank advances.",
         "A month ahead, what falls due is sold again as the same paper, once last year's surplus has paid its part.",
-        "A month ahead, what falls due is sold again as " + Rollover.BILL_MONTHS + "-month notes at home, once last "
+        "A month ahead, what falls due is sold again as " + Rollover.BILL_MONTHS + "-month bills at home, once last "
                 + "year's surplus has paid its part.",
     };
 
@@ -1229,7 +1233,7 @@ final class FinancesScreen {
                 + "rest a month ahead as the same paper - the same instrument, term and currency, dollars abroad in "
                 + "dollars - at home instead while the window abroad is shut.",
         "Each month the treasury looks at what falls due the next, nets last year's surplus from it, and issues the "
-                + "rest a month ahead as " + Rollover.BILL_MONTHS + "-month notes at home.",
+                + "rest a month ahead as " + Rollover.BILL_MONTHS + "-month bills at home.",
     };
 
     /** The rollover's (i): the three settings, the central bank's own roll (T36) and the new paper's size (T39). */
@@ -1237,7 +1241,7 @@ final class FinancesScreen {
             + "cash, and what the cash cannot cover the central bank advances. The two automatic settings look at what "
             + "falls due next month, net last year's surplus from it, and issue the rest a month ahead - as the same "
             + "paper (instrument, term and currency, dollars abroad in dollars, at home while the window abroad is "
-            + "shut), or as " + Rollover.BILL_MONTHS + "-month notes at home.\n\n"
+            + "shut), or as " + Rollover.BILL_MONTHS + "-month bills at home.\n\n"
             + "The central bank replaces what it holds of the paper falling due with the same par of the new paper, "
             + "at the price the market pays, on top of what is sold - so the issue is sized for the rest, and with "
             + "nothing to sell the market its par is issued it alone. What it pays under par comes back as its "
@@ -1245,11 +1249,37 @@ final class FinancesScreen {
             + "the size of what falls due pays it all. While it holds more than its dial, what it holds past the dial "
             + "is repaid it instead, and raised with the rest. By hand, it rolls what it holds at issue, beside what "
             + "you sell; sell none and its holding is repaid it out of the treasury's cash.\n\n"
-            + "The new paper is sized so its cash covers what falls due. It sells under its face - by its discount, a "
-            + "term loan's redemption premium, its costs - so its face is more than the part of the maturity it "
-            + "refinances: rolling for cash borrows the old paper's interest into the new principal, at every roll. "
+            + "The new paper is sized so its cash covers what falls due. It sells under its face - a bill by its "
+            + "discount, a bond a little under 100, either by the issue's costs - so its face is more than the part of "
+            + "the maturity it refinances: rolling for cash borrows the old paper's interest into the new principal, "
+            + "at every roll. "
             + "The proceeds wait a month for the maturity - what pre-funding a redemption costs. A treasury short of "
             + "cash for its spending is still the central bank's to advance.";
+
+    /** The rollover's cap block: its caption, and its (i), which says what the cap is and what a short sale does (D28, D29). */
+    static final String ROLLOVER_CAP_TITLE = "THE HIGHEST YIELD IT WILL TAKE";
+    static final String ROLLOVER_CAP_INFO = "The most the rollover will pay to sell what it refinances: fair plus a "
+            + "point (the default, each piece's own fair), a yield you name (one yield for every piece, a short bill "
+            + "and a long bond alike), or Fill it, which names none. Each piece sells at one yield, the lowest at which "
+            + "the bids cover it, and everyone is filled at it, so the limit only costs anything if the bids need it.\n\n"
+            + "A maturity is a promise and is paid in full. If the bids do not cover a sale at your limit it sells only "
+            + "what was bid, and the rest of what falls due is paid from the treasury's cash and, past the cash, from "
+            + "the central bank's advances: that is printing, and the inbox says how much. Fill it lets the yield rise "
+            + "until the bidders' own rules cover the sale; the inbox names the tail when it passes fair plus a point.";
+
+    /** The line under the rollover's chips: what the cap is for, and what a short sale does (D29); by hand, that nothing is sold for you. Pure. */
+    static String rolloverCapWords(Rollover.Mode mode) {
+        String short_ = "A sale that falls short at the cap pays the rest of what falls due from the cash, then the "
+                + "central bank's advances.";
+        return mode == Rollover.Mode.MANUAL
+                ? "By hand nothing is sold for you; this is the cap the automatic settings sell at. " + short_
+                : "Every piece the rollover sells is held to this. " + short_;
+    }
+
+    /** What the rollover's "at …" chip starts from: the 10-year bond's fair yield today, since the rollover sells many papers and has no one fair. */
+    double rolloverFair() {
+        return ui.game.getDebtManager().fairYield(Auction.Kind.BOND, 120, 0);
+    }
 
     VBox rolloverCard() {
         Game g = ui.game;
@@ -1262,6 +1292,9 @@ final class FinancesScreen {
                     }
                     showFinanceMenu();
                 }));
+        // THE CAP (CD2, D28): the same three chips as Borrow, on the rollover's own cap, and what a short sale does (D29).
+        card.getChildren().addAll(rolloverChips.controls(ROLLOVER_CAP_TITLE, ROLLOVER_CAP_INFO, rolloverFair(), false));
+        card.getChildren().add(muted(rolloverCapWords(mode)));
         if (!(plan.due() > 0)) {
             card.getChildren().add(line("Next month: nothing falls due."));
         } else {
@@ -1414,7 +1447,7 @@ final class FinancesScreen {
         String roll = switch (g.getRolloverMode()) {
             case MANUAL -> "What falls due is paid by hand";
             case SAME_STRUCTURE -> "What falls due rolls as the same structure";
-            case TWELVE_MONTH_BILL -> "What falls due rolls into " + Rollover.BILL_MONTHS + "-month notes";
+            case TWELVE_MONTH_BILL -> "What falls due rolls into " + Rollover.BILL_MONTHS + "-month bills";
         };
         String rescue = g.getRescueMode() == TreasuryFund.RescueMode.AUTOMATIC
                 ? "a failed bank is resolved automatically" : "a failed bank waits for your button";
@@ -2643,128 +2676,13 @@ final class FinancesScreen {
 
     /* ----------------------------- the highest yield (CD2) ----------------------------- */
 
-    /** The chips' names, in order: the default tail, a named yield, Fill it. The second says the yield once it is set. */
-    String[] capNames() {
-        double points = Auction.MAX_TAIL * 100;
-        return new String[] {
-            "fair + " + (points == Math.rint(points) ? String.valueOf((int) Math.rint(points)) : String.format("%.1f", points)) + " pt",
-            borrowCap.mode() == Auction.Mode.YIELD ? "at " + pct3(borrowCap.value()) : "at …",
-            "Fill it" };
-    }
-
     /**
      * THE HIGHEST YIELD: fair + a point (the default), a yield the player
-     * types in per cent, or Fill it. The box beside "at …" is the house's
-     * search box, kept through a month's redraw as the ask's is; a yield it
-     * cannot read is said under the chips and the cap stays as it was.
-     * `fair` is what the paper is worth now: "at …" starts a point over it
-     * when picked, and a yield under it is said to read as fair.
+     * types in per cent, or Fill it - the cap chips (CapChips), bound to the
+     * Borrow page's own cap. `fair` is what the paper is worth now.
      */
     List<Node> capControls(double fair) {
-        final double seed = fair + Auction.MAX_TAIL;
-        String[] names = capNames();
-        String current = switch (borrowCap.mode()) {
-            case TAIL  -> names[0];
-            case YIELD -> names[1];
-            case FILL  -> names[2];
-        };
-        javafx.scene.layout.FlowPane chips = chipStrip(names, current, Palette.SIZE_LABEL, pick -> {
-            capTyped = null;
-            capRefused = null;
-            capField = null;
-            if (pick.equals(names[0])) borrowCap = Auction.Cap.DEFAULT;
-            else if (pick.equals(names[2])) borrowCap = Auction.Cap.FILL;
-            else if (borrowCap.mode() != Auction.Mode.YIELD) borrowCap = Auction.Cap.at(seed);
-            showFinanceMenu();
-        });
-        chips.setAlignment(Pos.CENTER_LEFT);
-
-        String shown = capTyped != null ? capTyped
-                : borrowCap.mode() == Auction.Mode.YIELD ? capYieldText(borrowCap) : "";
-        javafx.scene.control.TextField box = searchBox(shown, "type a yield, 4.5", 150, typed -> capTyped = typed, null);
-        box.setOnAction(e -> commitCap(box, true));
-        box.focusedProperty().addListener((o, was, now) -> {
-            if (now) return;
-            javafx.application.Platform.runLater(() -> {
-                if (box.getScene() != null && !box.isFocused()) commitCap(box, false);
-            });
-        });
-        boolean again = capTyping;
-        capTyping = false;
-        capField = box;
-        if (again) {
-            javafx.application.Platform.runLater(() -> {
-                box.requestFocus();
-                box.positionCaret(box.getText().length());
-            });
-        }
-        HBox entry = new HBox(Palette.GAP, box, words("% a year · Enter sets it", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        entry.setAlignment(Pos.CENTER_LEFT);
-
-        List<Node> out = new ArrayList<>();
-        out.add(caption("THE HIGHEST YIELD YOU WILL TAKE", CAP_INFO));
-        out.add(chips);
-        out.add(entry);
-        if (capRefused != null) out.add(words(capRefused, Palette.SIZE_LABEL, Palette.BAD));
-        if (borrowCap.mode() == Auction.Mode.YIELD && borrowCap.value() < fair - 1e-9) {
-            out.add(muted("Nobody bids under fair (" + pct3(fair) + "), so this reads as fair."));
-        }
-        return out;
-    }
-
-    /** A named yield as the box shows it, in per cent to three places: 0.04602 is "4.602". */
-    static String capYieldText(Auction.Cap cap) {
-        return String.format("%.3f", cap.value() * 100);
-    }
-
-    /** A typed yield, in per cent ("4.5" or "4.5%"), as the yield it names; NaN when it is not one between nothing and a hundred per cent. Pure. */
-    static double capFromWords(String typed) {
-        if (typed == null) return Double.NaN;
-        String t = typed.trim();
-        if (t.endsWith("%")) t = t.substring(0, t.length() - 1).trim();
-        try {
-            double percent = Double.parseDouble(t.replace(',', '.'));
-            return percent > 0 && percent < 100 ? percent / 100 : Double.NaN;
-        } catch (NumberFormatException e) {
-            return Double.NaN;
-        }
-    }
-
-    /** What the box says under the chips when an entry cannot be read. Pure. */
-    static String capRefusal(String typed) {
-        return "“" + typed.trim() + "” is not a yield: a number of per cent, 4.5 or 4.5%. The highest yield stays as it was.";
-    }
-
-    /**
-     * What is in the yield box, set as the cap - or, when it cannot be read,
-     * said under the chips with the cap left as it was; an empty box, or the
-     * cap's own figure left in it, changes nothing. Enter draws the page at
-     * once; leaving the box asks for a redraw (UserInterface.redrawSoon()),
-     * as commitAsk() does.
-     */
-    private void commitCap(javafx.scene.control.TextField box, boolean enter) {
-        String typed = box.getText() == null ? "" : box.getText().trim();
-        boolean changed = false;
-        if (typed.isEmpty() || (borrowCap.mode() == Auction.Mode.YIELD && typed.equals(capYieldText(borrowCap)))) {
-            changed = capRefused != null;
-            capTyped = null;
-            capRefused = null;
-        } else {
-            double y = capFromWords(typed);
-            if (Double.isNaN(y)) {
-                changed = !capRefusal(typed).equals(capRefused);
-                capRefused = capRefusal(typed);
-                capTyped = typed;
-            } else {
-                changed = true;
-                borrowCap = Auction.Cap.at(y);
-                capTyped = null;
-                capRefused = null;
-            }
-        }
-        capField = null;
-        if (enter) showFinanceMenu();
-        else if (changed) ui.redrawSoon();
+        return borrowChips.controls("THE HIGHEST YIELD YOU WILL TAKE", CAP_INFO, fair, true);
     }
 
     /* ----------------------------- the ask, typed (0.7.40) ----------------------------- */
