@@ -16,7 +16,7 @@ The map's alone: nothing in the model reads it, the playtest's trace stays byte-
    of the cross street's four pieces left out, or one and half a long street, a piece left with one
    street taken up too, so there is no dead end and every piece reaches the ring); BRICK (the cross
    street's pieces at alternating lines, T junctions only). The shares are the study's ★1: a third
-   each until Jerus answers.
+   each (Jerus, 2026-10-20: "A third stays").
 2. **Squared cells** (the ladder's + grid at 8, most of his core) likewise: whole, with each of
    their 24 pieces dropped at a dial's chance (no dead end, every plot within reach), or in brick
    bands. A boulevard cell's interior the same, its ring untouched.

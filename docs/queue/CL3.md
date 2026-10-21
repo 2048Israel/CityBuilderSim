@@ -27,10 +27,17 @@ Comes after CL2 (both change `DistrictPlan`); FW11 follows it and works on its p
    each band's list of cells kept apart (the prototype's `buildArrivals()`); a departure frees its
    box's plots and forgets what its cell was known not to hold (`vacate()`). A cell takes the use
    of what opens it; the bands no longer go in turn. Every PlanCheck rule holds.
-3. **The outer kinds from the far side.** A building of the outer band opens its cell from the far
-   end of the growth order (★4 of the study says which kinds; until Jerus answers, the outer band
-   as it stands). Measured: 1,331 buildings drawn without a street at the playtest's month 4,000
-   against 2,100 from the near side.
+3. **The edge kinds from the far side, mines on their deposits, homes away from mines** (the
+   study's ★4; Jerus, 2026-10-20: "except mines, more like homes dont like being placed near
+   mines, and mines arent on edge... they are where deposits are. other than that your 7").
+   Farms, power and water works, rail yards, car plants and truck depots open their cells from
+   the far end of the growth order (measured: 1,331 buildings drawn without a street at the
+   playtest's month 4,000 against 2,100 from the near side). A mine stands where its deposit is,
+   as the map already puts every sited works on its sites, and is outside the far-side rule (one
+   on no site opens from the near side, as any works). A homes cell does not open in a cell that
+   holds a mine or a mine's site, or touches one side or corner, while another cell can open - a
+   look at nine cells a homes cell's opening; a harness counts houses beside mines on the
+   playtest's city and his saves before and after.
 4. **A district holds what its plan can draw.** `District.freeCells()` counts a district full at
    `PLAN_FILL` of its owned plots - a dial, 0.68, measured as a full plan's boxes over its ground
    on his densest districts; the batch measures it again on MapCheck's dense screen and his saves
