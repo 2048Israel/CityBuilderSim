@@ -1,6 +1,6 @@
 # EarthData.java - 753 lines · 65 methods · 26 constants · model
 
-`ham/citybuildersim/EarthData.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthData.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > The reader of earth-1.bin, the real Earth's ground as data: its layers'
 > 1-degree tiles inflated into an LRU, the sea, lake, land-cover and far-view

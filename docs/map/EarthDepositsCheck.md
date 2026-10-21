@@ -1,6 +1,6 @@
 # EarthDepositsCheck.java - 789 lines · 36 methods · 16 constants · harnesses
 
-`ham/citybuildersim/EarthDepositsCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthDepositsCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > Deposits where the geology says (0.8.12, batch EG1; docs/studies/spec-earth2-terrain.md 8.5): oil by a province's known petroleum, iron on shields and in recorded districts, the Sydney coalfield in its own basin, fields a third as many and three times wider, and every cluster on its own province's ground - and, counted in a real run, how often each rule fires.
 > 
