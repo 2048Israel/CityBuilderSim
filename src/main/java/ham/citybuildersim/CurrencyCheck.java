@@ -607,10 +607,12 @@ public class CurrencyCheck {
         double capacity = ForeignAccounts.MAX_ABSORPTION * Math.max(0, Math.min(1,
                 vaultBefore * rateBefore / fx.monthlyImports() / ForeignAccounts.COMFORTABLE_COVER));
         close("fixture: the treasury neither bought nor sold", fx.getBoughtThisMonth() + fx.getSoldThisMonth(), 0, 0);
-        // The premise is the old one, the sale is what the vault's capacity times the month's own deficit
-        // allows, at most the vault - and, new in XR1 (the lean smooths), no more than what takes back that
-        // capacity of the month's fall: so the sale is the least of the three.
-        close("the sale is the vault's capacity times the month's own deficit, at most the vault",
+        // Main's label was "the sale is the vault's capacity times the month's own deficit, at most the
+        // vault". In this real city's first defended month the lean's need (XR1: what takes back the
+        // vault's capacity of the month's fall) is under that cap, so the old amount cannot hold here: the
+        // sizing is XR1's, a call for Jerus in XR1-C (docs/queue/XR1-notes.md), and the label says what is
+        // measured. The cap's premise, word for word, is asserted on CurrencyCheck 3's fixture, which binds it.
+        close("the sale is the least of the lean's need, the vault's capacity times the month's own deficit, and the vault",
                 sold, expectedSale(capacity, fx.getLastWouldBeMove(), fx.getGdpTrailing(), rateBefore, deficitUsd, vaultBefore),
                 1e-9 * Math.max(1, sold));
         close("...the vault fell by exactly it", vaultBefore - fx.getReservesUsd(), sold, 1e-9 * Math.max(1, sold));

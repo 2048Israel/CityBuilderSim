@@ -48,9 +48,56 @@ The D$ is now a level, struck every month:
 |---|---|---|---|
 | 1 the model | Sonnet 5.5 xhigh | PriceIndex's capped parity, the float, Game's wiring and seed, every caller restated | (to fill) |
 
-## 3. Found on the way
+## 3. Found on the way: the float spirals
 
-(to fill)
+**XR1 as designed makes the default playtest's prices run away**, the 0.7.2
+ring the study's §3.2 warned about, and no dial inside XR1 stops it. The
+default playtest, 4,000 months, each variant built from 58f7d2b with one
+dial changed (prices at the checkpoints near m600 / m1060 / the end, against
+founding; people at the end):
+
+| run | what | prices | people |
+|---|---|---|---|
+| main d2869a5 | today's rule | 4.7 / 15 / 1,036 | 573,349 |
+| XR1 as built | Holt trend, level 1/6, slope 1/24 | 14 / 12,225 / 1.7e9 (the D$ at its 1e9 guard from m2160) | 10,877 |
+| A | level 1/6, no slope | 8.6 / 1,502 / 2.3e9 | 167,882 |
+| B | level 1/24, no slope | 63 / 346 / 2.0e6 | 325,960 |
+| C | level 1/60, no slope | 7.1 / 33 / 26,790 | 494,579 |
+| D | as built, the market quiet | 199 / 1,357 / 2.9e9 | 67,692 |
+| E | as built, the real-rate gap off | 108 / 47,017 / 1.5e9 | 12,988 |
+| F | as built, the balance off | 62 / 86,520 / 3.4e9 | 37,245 |
+| G | the slope the credible target (the retired anchored drift), the level pulled to parity at a 42-month half-life | 12 / 72 / 1.6e6 | 225,194 |
+| H | the same, a 120-month half-life | 7.3 / 23 / 13,638 | 101,633 |
+| K | today's own anchor (a pull of 0.004 and the anchored drift) under XR1's other parts | 7.8 / 32 / 11,905 | 4,795 (stalls from m1052) |
+| L | as built, rent uncapped | 13 / 6,401 / 2.7e9 | 283,547 |
+
+No single new force drives it (D, E, F): following realised parity one for
+one does. A price rise moves parity, the rate follows it, imports get dearer
+and prices rise again. The shelf is cost-plus and ratchets
+(`Retail.repriceShelf()`: under its floor a price catches up at
+FLOOR_CATCH_UP, over it it moves at CLEAR_SPEED and grows at expected
+inflation), so every swing in the rate leaves prices higher. Today's rule
+never followed parity (0.70 of it in the playtest), and that lag was the
+price level's anchor. The study's replay of slot 3 was offline ("the rate
+does not feed back into the city's prices or trade here"), so it could not
+see this; §3.2 asked XR1 to measure it.
+
+**Asked of Jerus, 2026-10-21 (XR1-C ★1):** (a) hold XR1 and restudy the
+anchor - the study's §3.4 pass-through dial on import prices, or a shelf
+that falls as readily as it rises - with main on today's rule meanwhile
+(recommended); (b) ship XR1 on today's pull and drift (K: the city stalls);
+(c) ship only the intervention fix on today's rule.
+
+**The defence's first cut** (sized "as today", absorption() x the month's
+deficit) held the D$ 26% over its fair level in MonetaryCheck's town by
+month 26 and emptied the founders' vault by month 42; the fall after it fed
+a held 3% dial 45% a year. Leaning against its own fading support as well,
+25% over by month 36 and the vault at 1.3 months by 60. The lean as built
+takes back absorption() of each month's new fall and lets the support fade.
+
+**The player's own purchases never reached the rate** in slice 1: they are
+made between months, and the next month's startMonth() cleared them before
+the reprice. They are now kept since the last reprice (slot 70).
 
 ## 4. The defence, redesigned in review
 
