@@ -140,6 +140,10 @@ before the batch (SC1's, queued); main's own run here at 06d1a43 was 121 of
 SOFT beside the ensemble's JVMs (EarthTerrainCheck, MapCheck), and are not
 counted. Stale: 0 firm findings. The maps are regenerated.
 
+**`--timing`, last, alone and hard** (it waited for two other batches'
+JVMs): 8 harnesses, 7 passed. The one red is ScaleCheck's "...and it builds"
+again, not a timing figure, as on main.
+
 ## 5. Who wrote what
 
 | slice | by | what review changed |
