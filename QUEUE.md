@@ -31,15 +31,7 @@ stuff".
 | CD4 | The city's debt: the buyback as a reverse auction, callable lines and the call, with its screen, Close it now and the call; the bank offers at fair (D34) | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD5 | The city's debt: floating-rate notes and inflation-linked bonds, with their choices on Borrow | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD6 | The city's debt: the rest of the screens - the book as a desk, a line's page, Your rate - and the manual | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
-| R0 | Research: the 1900 economy and the calendar from 1900 | [research-1900](docs/studies/research-1900.md), [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
-| R0b | Research: causes of death in Health - typhoid, summer diarrhoea, outbreaks, TB, home births, pneumonia, the 1918 influenza | [research-1900 §2.7](docs/studies/research-1900.md#27-health) |
-| R0c | Research: the 1900 mechanics - horses on farms and road freight, lamp oil and heat as goods, steam recipes | [research-1900 §4](docs/studies/research-1900.md#4-new-mechanics-a-1900-city-needs) |
 | HY1 | Hydro Station, a template that needs a river and a drop on the Earth's map; not research, it goes with the electricity run | [research-1900 §4](docs/studies/research-1900.md#4-new-mechanics-a-1900-city-needs) |
-| R1 | Research: recipes and equipment as data | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
-| R2 | Research: the catalogue and the world | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
-| R3 | Research: posts and discoveries | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
-| R4 | Research: prizes and the Research Lab | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
-| R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | PT1 | Eleven small fixes to screens, words and the log, from a played city | [PT1](docs/queue/PT1.md#pt1) |
 | PT1-M2 | The "nowhere to build" notice again each year the businesses wait on ground (Jerus, 2026-10-12: "a notice repeated") | [M2](docs/queue/PT1.md#m2) |
 | PT1-M3 | The advice card carries automatic building's payback verdict in its own words (Jerus, 2026-10-12: "yes do rec") | [M3](docs/queue/PT1.md#m3) |
@@ -79,6 +71,14 @@ stuff".
 | WN5 | Nations: land bought from the nation it lies in, at its land price, in its money; offers split at a border | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 | WN6 | Nations: the screens - Trade > Partners, the reserves in eight, the nation's page; the manual; real GDP and a comparison rate in real 2015 US$ (D29) | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 | WN7 | Nations: ships and trains to their partners, each on its partner's bearing | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| R0 | Research: the 1900 economy and the calendar from 1900 | [research-1900](docs/studies/research-1900.md), [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| R0b | Research: causes of death in Health - typhoid, summer diarrhoea, outbreaks, TB, home births, pneumonia, the 1918 influenza | [research-1900 §2.7](docs/studies/research-1900.md#27-health) |
+| R0c | Research: the 1900 mechanics - horses on farms and road freight, lamp oil and heat as goods, steam recipes | [research-1900 §4](docs/studies/research-1900.md#4-new-mechanics-a-1900-city-needs) |
+| R1 | Research: recipes and equipment as data | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| R2 | Research: the catalogue and the world | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| R3 | Research: posts and discoveries | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| R4 | Research: prizes and the Research Lab | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 
 ## Pending
 
