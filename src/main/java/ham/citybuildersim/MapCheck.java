@@ -296,6 +296,14 @@ import java.util.Map;
  *      and one fewer would not, none twice, its first holding its sector's
  *      buildings; and a screen over the industry paints and rasters within
  *      SCREEN_MS of the thread's CPU, every tile within it.
+ *  16. (batch CL4) THE AVENUES DRAWN: the four 45-degree avenues the district plans lay are drawn as smooth bands - on the dense city
+ *      along every arm's line between two open cells, across the tile edges and the district seams, every sample the street's colour
+ *      and the band's two sides as far out as the street is wide (no gap, no step); a tile rastered twice, from the view's kept copy
+ *      (MapTiles.copy, its stamp moving with the marks) and from a twin map built alike, the same pixels; no building under a staircase
+ *      or an outer plot, no building's colour on the line; on hand-built tiles a staircase alone no junction, an avenue across an
+ *      arterial a signal (the avenue's two directions among the roads), through a cell's corner and at the origin with a street along
+ *      each axis one ring, the origin's four arms alone a signal; and the dense screen at the founding site, the arms across it,
+ *      within SCREEN_MS.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -422,6 +430,7 @@ public class MapCheck {
         globeOnScreen(sq);
         buyingFromTheMap(city);
         materials(sq.seed);
+        avenuesDrawn(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -7091,5 +7100,362 @@ public class MapCheck {
             }
         }
         return got;
+    }
+
+    /* =====================================================================
+       16. THE AVENUES DRAWN (batch CL4; the study spec-city-layout 5.2)
+       ===================================================================== */
+
+    /*
+     * The district plans lay four avenues at 45 degrees from the lattice node nearest the founding site (DistrictPlan, AVENUES:
+     * street plots of the role ARTERIAL in a staircase, their marks in DistrictPlan.avenue) and the painter draws each as one
+     * smooth band along its arm's line through the steps' middles, not as the staircase's bars (TileRaster, THE AVENUES). On the
+     * dense city, whose arms cross district seams and tile edges (its plans open every cell), what this proves is what the
+     * eye sees: along each arm's line, between two open cells, every pixel is the street's - no gap where the staircase was
+     * jagged, no step where the band crosses a tile's edge or a district's seam, its two sides as far from the line as the
+     * street is wide; the same pixels from the same inputs, a tile rastered twice, from the kept copy the view paints from
+     * (MapTiles.copy) and from a map built alike; no building on the band or on an outer plot, the ground the band crosses; and
+     * a crossing by its roads, on hand-built tiles that cause each case - a staircase alone is none, an avenue across an
+     * arterial a signal (the avenue's two directions among the roads that leave it), across a cell's corner or at the origin
+     * where the four arms meet with a street along each axis one ring (ROUNDABOUT_ROADS) - and the screen over the city's own
+     * origin, the four arms across it, within SCREEN_MS.
+     */
+
+    /** How many samples a step of an avenue's line is sampled at: four, a quarter step apart. */
+    static final int AV_SAMPLES = 4;
+
+    /** The farthest an arm is followed from the origin, in steps: 400, past a district and a half. */
+    static final int AV_STEPS = 400;
+
+    /**
+     * The city the avenues are drawn on: Jerus's city x 9 on a square of 6 districts a side (his density, as the copies', every district
+     * full) whose founding site is the dry place's moved AV_SHIFT_X plots east and AV_SHIFT_Y south - so the origin stands inside a
+     * district, not on the corner of four (the copies' dry place is on one: the arms' district seams are then where the plans leave
+     * their last cells closed), and the arms cross the district seams and the tiles' edges in open cells.
+     */
+    static final int AV_TIMES = 9, AV_SIDE = 6, AV_SHIFT_X = 104, AV_SHIFT_Y = 56;
+
+    /** The avenues' city, built from the copies' constants (Squares): twice alike gives a twin. */
+    static CityMap avenueCity(Squares sq) {
+        long[] c = new long[sq.types.length];
+        for (int t = 0; t < JERUS_COUNTS.length && t < c.length; t++) c[t] = Math.round(JERUS_COUNTS[t] * AV_TIMES);
+        for (BuildingVisual.Type t : sq.types) if (t != null && t.id() == Mining.IRON_MINE) c[t.id()] = 0;
+        int capacity = (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
+        return CityMap.square(sq.seed, sq.x + AV_SHIFT_X, sq.y + AV_SHIFT_Y, sq.types, AV_SIDE, capacity, c);
+    }
+
+    /** One map's tiles, kept as the section samples them: the rastered image at PX and what the painter was given and made of each plot. */
+    static final class AvTiles {
+        final CityMap m;
+        final TilePainter.Input in = new TilePainter.Input();
+        final TilePainter.Painted p = new TilePainter.Painted();
+        final java.util.Map<Long, int[]> img = new java.util.HashMap<>();
+        final java.util.Map<Long, byte[]> street = new java.util.HashMap<>(), mark = new java.util.HashMap<>(), use = new java.util.HashMap<>(),
+                terrain = new java.util.HashMap<>(), flags = new java.util.HashMap<>();
+        /** Flag bits of a plot: it is owned, a street passes beneath a highway on it, it is a bridge's. */
+        static final int OWNED = 1, BENEATH = 2, BRIDGE = 4;
+
+        AvTiles(CityMap m) { this.m = m; }
+
+        private static long key(long tx, long ty) { return tx * 1_000_003L + ty; }
+
+        /** The tile (tx, ty) as the painter makes it, loaded on first use. */
+        private void load(long tx, long ty) {
+            long k = key(tx, ty);
+            if (img.containsKey(k)) return;
+            m.tileInput(tx, ty, in);
+            TilePainter.paint(in, p);
+            int[] pixels = new int[(World.TILE * PX) * (World.TILE * PX)];
+            TileRaster.raster(in, p, PX, pixels);
+            byte[] f = new byte[TilePainter.PLOTS];
+            for (int i = 0; i < f.length; i++) f[i] = (byte) ((in.owned[i] ? OWNED : 0) | (p.beneath[i] ? BENEATH : 0) | (p.bridge[i] ? BRIDGE : 0));
+            img.put(k, pixels);
+            street.put(k, in.street.clone());
+            mark.put(k, in.avenue.clone());
+            use.put(k, p.use.clone());
+            terrain.put(k, in.terrain.clone());
+            flags.put(k, f);
+        }
+
+        private int at(java.util.Map<Long, byte[]> what, long x, long y) {
+            long tx = Math.floorDiv(x, World.TILE), ty = Math.floorDiv(y, World.TILE);
+            load(tx, ty);
+            return what.get(key(tx, ty))[(int) (Math.floorMod(y, World.TILE) * World.TILE + Math.floorMod(x, World.TILE))] & 0xff;
+        }
+
+        /** The plan's street code, the avenue's mark, the painter's use, the ground and the flags of world plot (x, y). */
+        int code(long x, long y) { return at(street, x, y); }
+        int mark(long x, long y) { return at(mark, x, y); }
+        int use(long x, long y) { return at(use, x, y); }
+        int ground(long x, long y) { return at(terrain, x, y); }
+        int flag(long x, long y) { return at(flags, x, y); }
+
+        /** The pixel of the near view's raster at world pixel (X, Y). */
+        int pixel(long X, long Y) {
+            long tx = Math.floorDiv(X, World.TILE * PX), ty = Math.floorDiv(Y, World.TILE * PX);
+            load(tx, ty);
+            return img.get(key(tx, ty))[(int) (Math.floorMod(Y, World.TILE * PX) * (World.TILE * PX) + Math.floorMod(X, World.TILE * PX))];
+        }
+    }
+
+    /** The lattice node the avenues run out from, nearest the founding site (DistrictPlan's avSetup), in world plots: {x, y}. */
+    static long[] avenueOrigin(CityMap m) {
+        return new long[] { Math.floorDiv(m.land().siteX() + DistrictPlan.LATTICE / 2, (long) DistrictPlan.LATTICE) * DistrictPlan.LATTICE,
+                Math.floorDiv(m.land().siteY() + DistrictPlan.LATTICE / 2, (long) DistrictPlan.LATTICE) * DistrictPlan.LATTICE };
+    }
+
+    /** Whether the avenue is open at step k of arm a, as the near view draws it: the staircase's plots S_k, C_(k+1) and S_(k+1) laid as a surfaced street on the ground, and the outer plot O_(k+1) between them owned dry ground no building stands on - open, or a street the avenue crosses. */
+    static boolean avenueOpen(AvTiles t, long ox, long oy, int a, int k) {
+        int dx = DistrictPlan.AVENUE_DX[a], dy = DistrictPlan.AVENUE_DY[a];
+        long[][] laid = { { ox + (long) dx * k, oy + (long) dy * k }, { ox + (long) dx * (k + 1), oy + (long) dy * k }, { ox + (long) dx * (k + 1), oy + (long) dy * (k + 1) } };
+        for (long[] q : laid) {
+            int kind = TilePainter.kindOf(t.code(q[0], q[1]));
+            if (t.mark(q[0], q[1]) == 0 || (kind != BuildingVisual.GRAVEL && kind != BuildingVisual.PAVED) || t.use(q[0], q[1]) != TilePainter.ROAD
+                    || t.flag(q[0], q[1]) != AvTiles.OWNED) return false;
+        }
+        long x = ox + (long) dx * k, y = oy + (long) dy * (k + 1);
+        int ground = t.ground(x, y);
+        int kind = TilePainter.kindOf(t.code(x, y)), use = t.use(x, y);
+        boolean street = use == TilePainter.ROAD && (kind == BuildingVisual.GRAVEL || kind == BuildingVisual.PAVED) && (t.flag(x, y) & (AvTiles.BENEATH | AvTiles.BRIDGE)) == 0;
+        return (use == TilePainter.EMPTY || street) && ground != World.FRESH && ground != World.SALT && t.mark(x, y) == 0 && (t.flag(x, y) & AvTiles.OWNED) != 0;
+    }
+
+    /** Whether a pixel is a surfaced street's: the paved colour, the gravel's, or its grain. */
+    static boolean streetColour(int c) {
+        return c == TileRaster.ROAD[BuildingVisual.PAVED] || c == TileRaster.ROAD[BuildingVisual.GRAVEL] || c == TileRaster.GRAVEL_GRAIN;
+    }
+
+    /** Where a hand-built tile's avenues stand: the avenue plots of the arms `arms` (bit a) from origin (ox, oy) for `len` steps - a plot two arms share the first arm's mark, as DistrictPlan lays it - and 0 for none. */
+    static int handMark(int ox, int oy, int arms, int len, int x, int y) {
+        for (int a = 0; a < 4; a++) {
+            if ((arms & 1 << a) == 0) continue;
+            int dx = DistrictPlan.AVENUE_DX[a], dy = DistrictPlan.AVENUE_DY[a];
+            int step = CityRuns.M_DIAG | (a << CityRuns.M_DIAG_SHIFT);
+            for (int k = 0; k <= len; k++) {
+                if (x == ox + dx * k && y == oy + dy * k) return step;
+                if (k >= 1 && x == ox + dx * k && y == oy + dy * (k - 1)) return step | CityRuns.M_CORNER;
+            }
+        }
+        return 0;
+    }
+
+    /** A hand-built tile of owned bare ground at 8 px a plot, JunctionCheck's: the avenue plots of the arms `arms` from the origin laid as arterial streets with their marks, and the streets `extra` besides; the origin given when `withOrigin`. */
+    static int[] handAvenue(int ox, int oy, int arms, int len, JunctionCheck.Streets extra, boolean withOrigin) {
+        JunctionCheck.Streets f = (x, y) -> handMark(ox, oy, arms, len, x, y) != 0 ? JunctionCheck.ARTERIAL : extra == null ? 0 : extra.at(x, y);
+        TilePainter.Input in = JunctionCheck.inputFor(0, 0, f);
+        int r = TilePainter.REACH;
+        for (int y = -r; y < World.TILE + r; y++) for (int x = -r; x < World.TILE + r; x++) in.setAvenue(x, y, handMark(ox, oy, arms, len, x, y));
+        if (withOrigin) { in.avenueOx = ox; in.avenueOy = oy; }
+        return JunctionCheck.raster(in, JunctionCheck.paint(in), 8);
+    }
+
+    static void avenuesDrawn(Squares sq) {
+        out.println("\n--- 16. the avenues drawn (CL4): four diagonal avenues as smooth bands - one line across the district seams and tile edges,"
+                + " the same pixels from the same inputs, no building on the band, a crossing by its roads - and the screen within 80 ms ---");
+        CityMap m = avenueCity(sq);
+        out.printf("      the avenues' city: x %d on %d districts a side, its founding site (%d, %d), %,d buildings%n", AV_TIMES, AV_SIDE, m.land().siteX(), m.land().siteY(),
+                Arrays.stream(m.totals()).sum());
+        AvTiles t = new AvTiles(m);
+        long[] o = avenueOrigin(m);
+        long ox = o[0], oy = o[1];
+        int tile = World.TILE;
+
+        // ---- THE LINE: along each arm, every step open, every sample the street's colour, its sides as far out as the street is wide
+        int samples = 0, bad = 0, sidesBad = 0, runs = 0, longest = 0, seams = 0, edges = 0, seamSamples = 0, edgeSamples = 0, steps = 0;
+        int[] perArm = new int[4];
+        java.util.Set<Integer> fills = new java.util.HashSet<>();
+        for (BuildingVisual.Type ty : sq.types) if (ty != null) { fills.add(ty.fill()); fills.add(ty.edge()); }
+        int onBuilding = 0;
+        for (int a = 0; a < 4; a++) {
+            int dx = DistrictPlan.AVENUE_DX[a], dy = DistrictPlan.AVENUE_DY[a];
+            int run = 0;
+            for (int k = 1; k <= AV_STEPS + 1; k++) {
+                boolean open = k <= AV_STEPS && avenueOpen(t, ox, oy, a, k);
+                if (!open) {
+                    if (run > 0) { runs++; longest = Math.max(longest, run); }
+                    run = 0;
+                    continue;
+                }
+                run++;
+                steps++;
+                perArm[a]++;
+                long sx = ox + (long) dx * k, sy = oy + (long) dy * k;
+                int code = t.code(sx, sy), half2 = Math.max(1, (int) Math.round(TileRaster.SURFACE[Math.max(1, Math.min(2, (code >> TilePainter.S_WIDTH_SHIFT) & 3))] * PX));
+                // The seam of two districts and the edge of two tiles, crossed between this step and the next.
+                boolean seam = Math.floorDiv(sx, CityMap.DISTRICT) != Math.floorDiv(sx + dx, CityMap.DISTRICT) || Math.floorDiv(sy, CityMap.DISTRICT) != Math.floorDiv(sy + dy, CityMap.DISTRICT);
+                boolean edge = Math.floorDiv(sx, tile) != Math.floorDiv(sx + dx, tile) || Math.floorDiv(sy, tile) != Math.floorDiv(sy + dy, tile);
+                if (seam) seams++;
+                if (edge) edges++;
+                for (int s = 0; s < AV_SAMPLES; s++) {
+                    double f = s / (double) AV_SAMPLES, wx = sx + 0.5 + dx * f, wy = sy + 0.5 + dy * f;
+                    int c = t.pixel((long) Math.floor(wx * PX), (long) Math.floor(wy * PX));
+                    samples++;
+                    if (seam || edge) { if (seam) seamSamples++; if (edge) edgeSamples++; }
+                    if (!streetColour(c)) bad++;
+                    if (fills.contains(c)) onBuilding++;
+                    // Its two sides, as far out as the band is wide (less a pixel): the street's colour too - no step, no narrowing.
+                    double inner = Math.max(0, half2 / 2.0 - 1.0) / PX / Math.sqrt(2);
+                    for (int side = -1; side <= 1; side += 2) {
+                        double qx = wx + side * -dy * inner, qy = wy + side * dx * inner;
+                        if (!streetColour(t.pixel((long) Math.floor(qx * PX), (long) Math.floor(qy * PX)))) sidesBad++;
+                    }
+                }
+            }
+        }
+        out.printf("      the avenues from the origin (%d, %d) on the dense city: %,d open steps in %d runs (the longest %d), arms %s; %,d samples, %d of them across a district's seam and %d across a tile's edge%n",
+                ox, oy, steps, runs, longest, Arrays.toString(perArm), samples, seamSamples, edgeSamples);
+        check("fixture: the avenues run open for steps across a district's seam and a tile's edge, on every arm", steps > 0 && seams > 0 && edges > 0 && Arrays.stream(perArm).allMatch(n -> n > 0));
+        check("THE LINE: along every arm's line between two open cells, every sample is the street's colour - across the tile edges and the seams, no gap and no staircase", samples > 0 && bad == 0);
+        check("...and the line's two sides, as far out as the street is wide less a pixel, are the street's too: no step where the band crosses an edge or a seam, no narrowing", sidesBad == 0);
+
+        // ---- THE SAME PIXELS: a tile twice, from the kept copy the view paints from, and from a map built alike
+        TilePainter.Input in = new TilePainter.Input(), kept = new TilePainter.Input();
+        TilePainter.Painted p = new TilePainter.Painted(), pk = new TilePainter.Painted();
+        int[] img = new int[(tile * PX) * (tile * PX)], again = img.clone(), copy = img.clone();
+        long tx0 = Math.floorDiv(ox, tile), ty0 = Math.floorDiv(oy, tile);
+        int tilesWithAvenue = 0, twice = 0, copies = 0, stamps = 0, moved = 0;
+        for (int j = -2; j <= 2; j++) {
+            for (int i = -2; i <= 2; i++) {
+                m.tileInput(tx0 + i, ty0 + j, in);
+                if (in.avenueMarks == 0) continue;
+                tilesWithAvenue++;
+                TilePainter.paint(in, p);
+                TileRaster.raster(in, p, PX, img);
+                TileRaster.raster(in, p, PX, again);
+                if (Arrays.equals(img, again)) twice++;
+                MapTiles.copy(in, kept);
+                // (MapTiles.copy leaves the interchanges' reserves out, as it always has: handed over here, so the stamp and the pixels are the avenues' alone.)
+                kept.reserves = in.reserves;
+                kept.reserve = in.reserve.clone();
+                TilePainter.paint(kept, pk);
+                TileRaster.raster(kept, pk, PX, copy);
+                if (Arrays.equals(img, copy)) copies++;
+                if (MapTiles.stamp(in) == MapTiles.stamp(kept)) stamps++;
+                // ...and a tile whose avenue plot beside it moves repaints: its stamp moves with the marks.
+                kept.setAvenue(-1, 0, kept.avenueAt(-1, 0) == 0 ? CityRuns.M_DIAG : 0);
+                if (MapTiles.stamp(in) != MapTiles.stamp(kept)) moved++;
+            }
+        }
+        check("fixture: the tiles about the origin have avenues about them", tilesWithAvenue >= 9);
+        check("THE SAME PIXELS: each such tile rastered twice paints the same; its kept copy (MapTiles.copy) the same, with the same stamp", twice == tilesWithAvenue && copies == tilesWithAvenue && stamps == tilesWithAvenue);
+        check("...and a copy whose mark beside the tile moved has another stamp: a tile repaints when an avenue plot beside it is laid", moved == tilesWithAvenue);
+        CityMap twin = avenueCity(sq);
+        TilePainter.Input in2 = new TilePainter.Input();
+        TilePainter.Painted p2 = new TilePainter.Painted();
+        int[] other = img.clone();
+        int alike = 0, compared = 0;
+        for (int j = -2; j <= 2; j++) {
+            for (int i = -2; i <= 2; i++) {
+                long tx = tx0 + i, ty = ty0 + j;
+                m.tileInput(tx, ty, in);
+                if (in.avenueMarks == 0) continue;
+                TilePainter.paint(in, p);
+                TileRaster.raster(in, p, PX, img);
+                twin.tileInput(tx, ty, in2);
+                TilePainter.paint(in2, p2);
+                TileRaster.raster(in2, p2, PX, other);
+                compared++;
+                if (Arrays.equals(img, other)) alike++;
+            }
+        }
+        out.printf("      the avenues' city and its twin built the same way: %d tiles with an avenue about them compared%n", compared);
+        check("...and a tile of an avenue from a twin map built alike paints the same pixels", compared >= 9 && alike == compared);
+
+        // ---- NO BUILDING ON THE BAND: not on a staircase plot, not on an outer plot, and no building's colour on the line
+        int staircase = 0, outerPlots = 0, builtOn = 0, builtOuter = 0;
+        for (int a = 0; a < 4; a++) {
+            int dx = DistrictPlan.AVENUE_DX[a], dy = DistrictPlan.AVENUE_DY[a];
+            for (int k = 1; k <= AV_STEPS; k++) {
+                long sx = ox + (long) dx * k, sy = oy + (long) dy * k;
+                long[][] plots = { { sx, sy }, { sx, sy - dy } };
+                for (int q = 0; q < 2; q++) {
+                    if (t.mark(plots[q][0], plots[q][1]) == 0) continue;
+                    staircase++;
+                    if (t.use(plots[q][0], plots[q][1]) == TilePainter.BUILDING) builtOn++;
+                }
+                // The outer plot O_k = S_(k-1) + (0, dy), between the steps S_(k-1) and S_k when both are laid.
+                long ux = sx - dx, uy = sy;
+                if (t.mark(ux, uy) == 0 && t.mark(sx, sy) != 0 && t.mark(sx - dx, sy - dy) != 0) {
+                    outerPlots++;
+                    if (t.use(ux, uy) == TilePainter.BUILDING) builtOuter++;
+                }
+            }
+        }
+        out.printf("      the band's plots on the dense city: %,d staircase plots and %,d outer plots, %d of them under a building; %d samples of the line in a building's colour%n",
+                staircase, outerPlots, builtOn + builtOuter, onBuilding);
+        check("NO BUILDING ON THE BAND: not one staircase plot and not one outer plot (the ground the band crosses) is under a building, and no sample of the line is a building's fill or edge",
+                staircase > 0 && outerPlots > 0 && builtOn == 0 && builtOuter == 0 && onBuilding == 0);
+
+        // ---- THE CROSSINGS: hand-built tiles at 8 px a plot, each causing its case
+        int px = 8, w = World.TILE * px, paved = TileRaster.ROAD[BuildingVisual.PAVED];
+        JunctionCheck.Streets col16 = (x, y) -> x == 16 ? JunctionCheck.ARTERIAL : 0;
+        JunctionCheck.Streets cross16 = (x, y) -> x == 16 || y == 16 ? JunctionCheck.ARTERIAL : 0;
+        JunctionCheck.Streets axes16 = (x, y) -> x == 16 || y == 16 ? JunctionCheck.STREET : 0;
+        // A staircase alone: the avenue's arm out from (4, 4), no street across it.
+        int[] alone = handAvenue(4, 4, 1, 24, null, true);
+        boolean none = JunctionCheck.noneOf(alone, TileRaster.ISLAND, TileRaster.ZEBRA, TileRaster.JUNCTION_BOX);
+        check("CROSSINGS: a staircase's plots alone are no junction - an avenue's arm with no street across it draws no box, no zebra, no ring (and is drawn: its paved band is there)",
+                none && JunctionCheck.hasColour(alone, w, 10, 10, px, paved));
+        // An avenue across an arterial: a signal - one box over the avenue's plots in the arterial's column, a zebra on the arterial's two arms.
+        int[] signal = handAvenue(4, 4, 1, 24, col16, true);
+        boolean boxOnlyThere = true;
+        for (int y = 0; y < World.TILE; y++) for (int x = 0; x < World.TILE; x++)
+            if ((x < 15 || x > 17 || y < 14 || y > 17) && JunctionCheck.hasColour(signal, w, x, y, px, TileRaster.JUNCTION_BOX)) boxOnlyThere = false;
+        check("...an avenue across an arterial is a signal: the box on the avenue's two plots in the arterial's column, a zebra on each of the arterial's arms, no ring (four roads leave it, the avenue's two directions two of them)",
+                JunctionCheck.hasColour(signal, w, 16, 15, px, TileRaster.JUNCTION_BOX) && JunctionCheck.hasColour(signal, w, 16, 16, px, TileRaster.JUNCTION_BOX)
+                        && JunctionCheck.hasColour(signal, w, 16, 14, px, TileRaster.ZEBRA) && JunctionCheck.hasColour(signal, w, 16, 17, px, TileRaster.ZEBRA)
+                        && JunctionCheck.noneOf(signal, TileRaster.ISLAND) && boxOnlyThere);
+        // The control: two arterials crossing alone are a signal; the avenue through their corner, the cell's, makes it a ring.
+        int[] corner = handAvenue(4, 4, 0, 0, cross16, false);
+        check("...two arterials crossing with no avenue: a signal, the box at the corner, no ring",
+                JunctionCheck.hasColour(corner, w, 16, 16, px, TileRaster.JUNCTION_BOX) && JunctionCheck.noneOf(corner, TileRaster.ISLAND));
+        int[] ring = handAvenue(4, 4, 1, 24, cross16, true);
+        double inner = TileRaster.ROUNDABOUT_ISLAND + (2 - 1) / 2.0;
+        check("...the avenue through that corner (" + TileRaster.ROUNDABOUT_ROADS + " or more roads: its two directions with the arterials' four): one ring about the crossing's middle, ISLAND exactly within ROUNDABOUT_ISLAND + half a plot of it, no box, no zebra",
+                JunctionCheck.islandIsRound(ring, w, px, 17.0, 16.0, inner) && JunctionCheck.hasColour(ring, w, 16, 16, px, TileRaster.ISLAND) && JunctionCheck.noneOf(ring, TileRaster.JUNCTION_BOX, TileRaster.ZEBRA));
+        // The origin: four arms laid; with a street along each axis eight roads, one ring about the origin's plot; with none, four, a signal.
+        int[] eight = handAvenue(16, 16, 15, 12, axes16, true);
+        double innerO = TileRaster.ROUNDABOUT_ISLAND + (3 - 1) / 2.0;
+        check("...the origin where the four arms meet and a street runs along each axis (eight roads): one ring about the origin's plot, ISLAND exactly within ROUNDABOUT_ISLAND + one plot of its middle, no box",
+                JunctionCheck.islandIsRound(eight, w, px, 16.5, 16.5, innerO) && JunctionCheck.hasColour(eight, w, 16, 16, px, TileRaster.ISLAND) && JunctionCheck.noneOf(eight, TileRaster.JUNCTION_BOX));
+        int[] four = handAvenue(16, 16, 15, 12, null, true);
+        check("...and the four arms alone (four roads): a signal, the box on the origin's plot, no ring",
+                JunctionCheck.hasColour(four, w, 16, 16, px, TileRaster.JUNCTION_BOX) && JunctionCheck.noneOf(four, TileRaster.ISLAND));
+        // The second line through the origin comes from the geometry: a plot two arms share carries the first arm's mark only, so the outer plots
+        // beside the origin, which no step flanks with its arm's mark, are crossed by the arms' other diagonal from the origin given.
+        check("...and the arms' second diagonal is drawn across the origin's plots from the origin's place (the plots a step of the other arm flanks: (16, 15) and (16, 17), the box on both)",
+                JunctionCheck.hasColour(four, w, 16, 15, px, TileRaster.JUNCTION_BOX) && JunctionCheck.hasColour(four, w, 16, 17, px, TileRaster.JUNCTION_BOX));
+
+        // ---- THE SCREEN: the founding site's, the four arms across it, within SCREEN_MS
+        TilePainter.Input sin = new TilePainter.Input();
+        TilePainter.Painted sp = new TilePainter.Painted();
+        int[] simg = new int[(tile * PX) * (tile * PX)];
+        long stx0 = Math.floorDiv(sq.x, tile) - SCREEN_ACROSS / 2, sty0 = Math.floorDiv(sq.y, tile) - SCREEN_DOWN / 2;
+        int avenueTiles = 0;
+        double bestWith = Double.MAX_VALUE, bestWithout = Double.MAX_VALUE;
+        System.gc();
+        for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
+            for (int variant = 0; variant < 2; variant++) {
+                int n = 0;
+                long t0 = System.nanoTime();
+                for (int j = 0; j < SCREEN_DOWN; j++) {
+                    for (int c = 0; c < SCREEN_ACROSS; c++) {
+                        m.tileInput(stx0 + c, sty0 + j, sin);
+                        if (sin.avenueMarks != 0) n++;
+                        // The second variant is the same screen with its avenues' marks cleared, as it was drawn before CL4: the avenues' share of the time.
+                        if (variant == 1) sin.clearAvenues();
+                        TilePainter.paint(sin, sp);
+                        TileRaster.raster(sin, sp, PX, simg);
+                    }
+                }
+                double ms = (System.nanoTime() - t0) / 1e6;
+                if (variant == 0) avenueTiles = n;
+                if (round >= WARM_ROUNDS) { if (variant == 0) bestWith = Math.min(bestWith, ms); else bestWithout = Math.min(bestWithout, ms); }
+            }
+        }
+        out.printf("      x %,.0f: the screen's %d tiles at the founding site, %d with an avenue about them - terrain, the plans' tiles, paint and raster at %d px - in %.1f ms (%.3f ms a tile); the same screen without the avenues' marks %.1f ms%n",
+                TIMES[DENSE], SCREEN_TILES, avenueTiles, PX, bestWith, bestWith / SCREEN_TILES, bestWithout);
+        check("THE SCREEN: the dense screen at the founding site, the four avenues across it (tiles with avenues about them: " + avenueTiles + "), paints and rasters in no more than " + (int) SCREEN_MS + " ms",
+                avenueTiles > 0 && Timing.within(bestWith, SCREEN_MS));
     }
 }

@@ -2071,6 +2071,9 @@ public final class CityMap {
     /** A siding plot of a Drawn (Drawn.siding) whose bit this is: the siding's first, beside the works' box, where its loading shed stands (batch FR7 slice 5). The plot is below it: a frame has 66,049 of them. */
     static final int SIDING_END_BIT = 1 << 24;
 
+    /** Where a Drawn avenue plot's mark starts (Drawn.avenue): above the frame's plot, which is under 2^17 (a frame has 66,049 of them). */
+    static final int AVENUE_MARK_SHIFT = 17;
+
     /** Where a Drawn box's type id starts: above the box's 20 bits and PACKED_BIT, eleven bits for ids under 2,048 (buildings.json's ids are under 128). */
     public static final int BOX_TYPE_SHIFT = 21;
 
@@ -2086,6 +2089,8 @@ public final class CityMap {
         final int[][] boxes = new int[TILES][];
         /** The plots its plan's sidings run over (batch FR7 slice 5, D14), each a plot of its frame (y x FRAME + x) with SIDING_END_BIT set on the first of a siding, the loading shed's; null for none. */
         int[] siding;
+        /** The plots its plan's avenues run over (batch CL4, DistrictPlan.avenue), each a plot of its frame (y x FRAME + x) with the avenue's mark - CityRuns' M_DIAG, the arm's heading and M_CORNER - above it at AVENUE_MARK_SHIFT, in the order of the plots; null for none. A plot is under 2^17, a mark a byte. */
+        int[] avenue;
         /** Its plan's access roads (batch FR7, D17) as the trucks drive them (FR5, slice B): each a way of plots of its frame (y x FRAME + x), the road's end first and its gate last, 4-connected over the plots the roads run over (DistrictPlan.accessAt); null for none. A road the plan laid but that cannot be traced, or that already stood on one (ACCESS_HAD), has none. */
         int[][] access;
         /** Buildings its plan placed, and what it could not hold (carried on, R7). */
@@ -2109,6 +2114,7 @@ public final class CityMap {
             for (byte[] t : tiles) if (t != null) b += 16 + t.length;
             for (int[] x : boxes) if (x != null) b += 16 + 4L * x.length;
             if (siding != null) b += 16 + 4L * siding.length;
+            if (avenue != null) b += 16 + 4L * avenue.length;
             if (access != null) {
                 b += 16;
                 for (int[] a : access) b += 16 + 4L * a.length;
@@ -2230,6 +2236,16 @@ public final class CityMap {
             out.siding = new int[count];
             count = 0;
             for (int q = 0; q < p.siding.length; q++) if (p.siding[q] != 0) out.siding[count++] = q | (p.siding[q] == DistrictPlan.SIDING_END ? SIDING_END_BIT : 0);
+        }
+        // The avenues it laid (batch CL4): each plot with its mark above it, in the order of the plots.
+        if (p.avenue != null) {
+            int count = 0;
+            for (byte a : p.avenue) if (a != 0) count++;
+            if (count > 0) {
+                out.avenue = new int[count];
+                count = 0;
+                for (int q = 0; q < p.avenue.length; q++) if (p.avenue[q] != 0) out.avenue[count++] = q | (p.avenue[q] & 0xff) << AVENUE_MARK_SHIFT;
+            }
         }
         out.access = accessWays(p);
         out.placed = p.buildings;
@@ -5163,6 +5179,57 @@ public final class CityMap {
         return best;
     }
 
+    /**
+     * The avenues' marks on the tile at world plot (px0, py0) and the REACH plots about it (batch CL4), into in.avenue and in.avenueRing,
+     * and their origin when it lies near: each plan of the districts the ring reaches (seen, the plans looked up as streetAt() looks
+     * them) lists the plots of its avenues (Drawn.avenue) and a plot is marked from any of them - both districts that share a plot
+     * (a frame's east column and south row are the next district's first) lay it alike, so either's mark is the mark. A plan with
+     * no avenue adds nothing, and a tile with none about it clears two arrays it did not fill.
+     */
+    private void fillAvenues(long px0, long py0, TilePainter.Input in, Map<Long, Drawn> seen) {
+        in.clearAvenues();
+        int reach = TilePainter.REACH, tile = World.TILE, f = DistrictPlan.FRAME;
+        long dxLo = Math.floorDiv(px0 - reach, DISTRICT), dxHi = Math.floorDiv(px0 + tile + reach - 1, DISTRICT);
+        long dyLo = Math.floorDiv(py0 - reach, DISTRICT), dyHi = Math.floorDiv(py0 + tile + reach - 1, DISTRICT);
+        for (long dyl = dyLo; dyl <= dyHi; dyl++) {
+            for (long dxl = dxLo; dxl <= dxHi; dxl++) {
+                long dk = key((int) (dxl - baseDX), (int) (dyl - baseDY));
+                Drawn dr;
+                if (seen.containsKey(dk)) dr = seen.get(dk);
+                else {
+                    District d = byKey.get(dk);
+                    dr = d == null ? null : drawnOf(d);
+                    seen.put(dk, dr);
+                }
+                if (dr == null || dr.avenue == null) continue;
+                long ox = dxl * DISTRICT - px0, oy = dyl * DISTRICT - py0;
+                // The plots are listed in the frame's order, row by row: the rows the ring reaches are found by halving, the rest left unread.
+                int rowLo = (int) Math.max(0, -reach - oy), rowHi = (int) Math.min(f - 1, tile + reach - 1 - oy);
+                if (rowLo > rowHi) continue;
+                int lo = 0, hi = dr.avenue.length, first = rowLo * f;
+                while (lo < hi) {
+                    int mid = (lo + hi) >>> 1;
+                    if ((dr.avenue[mid] & ((1 << AVENUE_MARK_SHIFT) - 1)) < first) lo = mid + 1; else hi = mid;
+                }
+                for (int k = lo; k < dr.avenue.length; k++) {
+                    int e = dr.avenue[k], q = e & ((1 << AVENUE_MARK_SHIFT) - 1);
+                    if (q >= (rowHi + 1) * f) break;
+                    long x = ox + q % f, y = oy + q / f;
+                    if (x < -reach || x >= tile + reach) continue;
+                    in.setAvenue((int) x, (int) y, e >>> AVENUE_MARK_SHIFT);
+                }
+            }
+        }
+        if (in.avenueMarks == 0) return;
+        // ...and the origin the four arms run out from, the lattice node nearest the founding site (DistrictPlan's avSetup): given when it is about the tile.
+        long gx = Math.floorDiv(siteX + DistrictPlan.LATTICE / 2, (long) DistrictPlan.LATTICE) * DistrictPlan.LATTICE - px0;
+        long gy = Math.floorDiv(siteY + DistrictPlan.LATTICE / 2, (long) DistrictPlan.LATTICE) * DistrictPlan.LATTICE - py0;
+        if (gx >= -reach - 1 && gy >= -reach - 1 && gx <= tile + reach && gy <= tile + reach) {
+            in.avenueOx = (int) gx;
+            in.avenueOy = (int) gy;
+        }
+    }
+
     /** Everything tileInput() fills but the ground, which is in `in` already. */
     private void fillInput(long tx, long ty, TilePainter.Input in) {
         in.seed = seed;
@@ -5215,6 +5282,8 @@ public final class CityMap {
                 in.ring[TilePainter.ringIndex(x, y)] = code;
             }
         }
+        // The avenues about it (batch CL4): the marks of the four 45-degree avenues the plans lay, on the tile and the ring about it.
+        fillAvenues(px0, py0, in, seen);
         // The city's highways and track through it and the ring about it (0.7.89: the city's runs; THE NETWORK's plan's until
         // 0.7.88), their ramps and 45-degree stretches; its yards drawn over their track.
         int rw = World.TILE + 2;

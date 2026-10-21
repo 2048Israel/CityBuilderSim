@@ -228,6 +228,14 @@ public final class TilePainter {
         public final byte[] marksBeyond = new byte[4 * TILE];
         /** Each plot's siding from its district's plan (batch FR7 slice 5, D14): SIDING_PLOT where a siding the plan laid runs, SIDING_END at its first plot, beside the works' box, which carries the loading shed; 0 for none. The plan's own track over the ground the runs left: drawn as track (RAIL) but counted apart from the runs' (Painted.sidingLaid); the siding just outside the tile is in fixedBeyond. */
         public final byte[] siding = new byte[PLOTS];
+        /** Each plot's avenue mark from the district plans (batch CL4, DistrictPlan.avenue): CityRuns.M_DIAG, its arm's heading at M_DIAG_SHIFT and M_CORNER on a corner of the staircase, 0 for none - the plots of the four 45-degree avenues, which TileRaster draws as one smooth band along each arm's line, not as the staircase's bars. A plot two arms share carries the first arm's mark; the origin's neighbourhood is drawn from avenueOx/avenueOy as well. */
+        public final byte[] avenue = new byte[PLOTS];
+        /** ...and the mark on every plot within REACH of the tile, corners too (CL4): RING * RING bytes row by row from plot (-REACH, -REACH), the tile's own plots among them (as ring is for the streets) - what a step across the tile's edge, a crossing on its corner and the band beside the last plot are read from (avenueAt()). Both districts that lay a plot lay it alike, so either's mark is the mark. */
+        public final byte[] avenueRing = new byte[RING * RING];
+        /** How many plots of avenueRing hold a mark: 0 when no avenue lies about the tile (the raster's fast path). */
+        public int avenueMarks;
+        /** The avenues' origin, the lattice node nearest the founding site, in the tile's plots (it may lie off the tile); Integer.MIN_VALUE for none - a harness's input without one draws the avenues from the marks alone. */
+        public int avenueOx = Integer.MIN_VALUE, avenueOy = Integer.MIN_VALUE;
         /** The freight station's yard, its box's first plot in the world: the yard nearest the rail gateway, spec 4.2; MIN_VALUE for none. */
         public long stationX = Long.MIN_VALUE, stationY = Long.MIN_VALUE;
         /** The railway carries goods, so the freight station is a container yard, spec 4.3. */
@@ -266,6 +274,32 @@ public final class TilePainter {
         /** The interchanges' reserves whose box reaches the tile (batch FR7, InterchangeGround.Site, the ones that got their ground): how many, and each as RESERVE_INTS ints - its kind, its stub's side, its junction plot (x, y) and its box (x0, y0, w, h), all in the tile's plots (they may lie off the tile). The raster draws the loops within them. */
         public int reserves;
         public int[] reserve = new int[4 * RESERVE_INTS];
+
+        /** The avenue mark on plot (x, y) of the tile or within REACH of it: 0 for none or for a plot farther out. */
+        public int avenueAt(int x, int y) {
+            if (avenueMarks == 0 || x < -REACH || y < -REACH || x >= TILE + REACH || y >= TILE + REACH) return 0;
+            return avenueRing[ringIndex(x, y)] & 0xff;
+        }
+
+        /** Clears the avenues (the marks, their count and the origin); the arrays are reused. */
+        public void clearAvenues() {
+            if (avenueMarks != 0) {
+                Arrays.fill(avenue, (byte) 0);
+                Arrays.fill(avenueRing, (byte) 0);
+            }
+            avenueMarks = 0;
+            avenueOx = avenueOy = Integer.MIN_VALUE;
+        }
+
+        /** Sets the mark on plot (x, y) within REACH of the tile (a harness's hand-built avenue, or CityMap's fill); the tile's own plots go to avenue too. */
+        public void setAvenue(int x, int y, int mark) {
+            if (x < -REACH || y < -REACH || x >= TILE + REACH || y >= TILE + REACH) return;
+            int r = ringIndex(x, y);
+            if (avenueRing[r] == 0 && mark != 0) avenueMarks++;
+            else if (avenueRing[r] != 0 && mark == 0) avenueMarks--;
+            avenueRing[r] = (byte) mark;
+            if (x >= 0 && y >= 0 && x < TILE && y < TILE) avenue[y * TILE + x] = (byte) mark;
+        }
 
         /** Clears the reserves; the array is reused. */
         public void clearReserves() { reserves = 0; }

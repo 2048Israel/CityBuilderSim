@@ -154,6 +154,11 @@ public final class MapTiles {
         // The sidings its district's plan laid over it (batch FR7 slice 5) - nothing with none.
         long sidings = packed(in.siding);
         if (sidings != 0) h = World.mix(h ^ sidings);
+        // The avenues about it and the origin they run out from (batch CL4) - nothing with none: a tile repaints when an avenue plot beside it is laid.
+        if (in.avenueMarks != 0) {
+            h = World.mix(h ^ packed(in.avenueRing) ^ in.avenueMarks);
+            h = World.mix(h ^ ((long) in.avenueOx << 32) ^ (in.avenueOy & 0xffffffffL));
+        }
         // The works at sea (0.7.97): the quays', jackets' and wells' plots, the rings and the pipes - nothing with none.
         long sea = packed(in.sea);
         if (sea != 0) h = World.mix(h ^ sea);
@@ -228,6 +233,15 @@ public final class MapTiles {
         System.arraycopy(a.marks, 0, b.marks, 0, TilePainter.PLOTS);
         System.arraycopy(a.siding, 0, b.siding, 0, TilePainter.PLOTS);
         System.arraycopy(a.marksBeyond, 0, b.marksBeyond, 0, a.marksBeyond.length);
+        // The avenues about it (batch CL4): the marks and the origin, as the kept copy the raster reads must have them.
+        b.clearAvenues();
+        if (a.avenueMarks != 0) {
+            System.arraycopy(a.avenue, 0, b.avenue, 0, TilePainter.PLOTS);
+            System.arraycopy(a.avenueRing, 0, b.avenueRing, 0, a.avenueRing.length);
+            b.avenueMarks = a.avenueMarks;
+            b.avenueOx = a.avenueOx;
+            b.avenueOy = a.avenueOy;
+        }
         b.stationX = a.stationX;
         b.stationY = a.stationY;
         b.goodsByRail = a.goodsByRail;
@@ -295,10 +309,11 @@ public final class MapTiles {
         }
     }
 
-    /** A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh - since 0.7.88 its plan's streets and runs and its buildings' boxes in, its plots' use, kind, width, role, flags, building and site out; since 0.7.97 each plot's work at sea both ways, and the rings' and pipes' ends in. */
+    /** A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh - since 0.7.88 its plan's streets and runs and its buildings' boxes in, its plots' use, kind, width, role, flags, building and site out; since 0.7.97 each plot's work at sea both ways, and the rings' and pipes' ends in; since CL4 the avenues' marks, on the tile and its ring. */
     public static long paintedBytes(TilePainter.Input in, TilePainter.Painted p) {
         long input = 4L * TilePainter.PLOTS + 2L * in.beyond.length + in.ring.length + 4L * (in.counts.length + in.boxes.length + in.yard.length) + 16 + 4
-                + 36L * in.siteX0.length + in.sea.length + 8L * (in.ringX.length + in.ringY.length) + 32L * in.pipeAX.length;
+                + 36L * in.siteX0.length + in.sea.length + 8L * (in.ringX.length + in.ringY.length) + 32L * in.pipeAX.length
+                + in.avenue.length + in.avenueRing.length;
         long picture = 6L * TilePainter.PLOTS + 2L * 2 * TilePainter.PLOTS + 29L * p.bx.length + p.sea.length;
         return input + picture;
     }

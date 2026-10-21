@@ -92,6 +92,18 @@ import java.util.Arrays;
  * with its dashed centre line. Ground under a building is drawn cleared
  * (forest as grass; spec 2.6, the zoning study's Z7), and a building packed
  * at the city's edge without a street (R7) a shade darker.
+ *
+ * THE AVENUES (batch CL4; Jerus, 2026-10-20: "having some slanted roads and
+ * curves"). The four 45-degree avenues the district plans lay out from the
+ * founding site (DistrictPlan, AVENUES) are staircases of arterial street
+ * plots, which this drew as a chain of crosses; from LINES_FROM px a plot each
+ * arm is one smooth band along its line through the steps' middles, in its
+ * street's colour and width, as a highway's 45-degree stretch is - the
+ * staircase's plots and the outer plots between its steps verge outside the
+ * band, a street that crosses it drawn through, its ends squared across the
+ * heading, its bridge a deck along the band, and where it meets another street
+ * a crossing counted by its roads, the avenue's two directions among them
+ * (Crossings; avenuePlot(), avenueNotch(), avenueEnds(), avenueOrigin()).
  */
 public final class TileRaster {
 
@@ -1224,9 +1236,19 @@ public final class TileRaster {
     /** Whether the plot a step from plot i - across the tile's edge too, as the plans have it (Input.beyond) - is a way of the street at i: a street, or a highway's plot a street passes beneath. */
     private static boolean streetAt(TilePainter.Input in, TilePainter.Painted p, int i, int dir) {
         int tile = TilePainter.TILE, x = i % tile + TilePainter.DX[dir], y = i / tile + TilePainter.DY[dir];
-        if (x >= 0 && y >= 0 && x < tile && y < tile) return isStreet(p, y * tile + x);
-        int along = dir == 0 || dir == 2 ? i % tile : i / tile;
-        return (in.beyond[dir * tile + along] & TilePainter.S_KIND) != DistrictPlan.NONE;
+        boolean street;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) street = isStreet(p, y * tile + x);
+        else {
+            int along = dir == 0 || dir == 2 ? i % tile : i / tile;
+            street = (in.beyond[dir * tile + along] & TilePainter.S_KIND) != DistrictPlan.NONE;
+        }
+        if (!street || in.avenueMarks == 0) return street;
+        // An avenue's plots (CL4): the staircase's own plots are streets beside each other all along, and the band joins them, so no
+        // way runs from one to the next; a street beside the avenue joins it only where it crosses (axisArm()), from either side.
+        boolean here = in.avenue[i] != 0, there = in.avenueAt(x, y) != 0;
+        if (!here && !there) return true;
+        if (here && there) return false;
+        return here ? axisArm(in, p, i % tile, i / tile, dir) : axisArm(in, p, x, y, (dir + 2) & 3);
     }
 
     /** ...and a highway's own plot, a step from plot i. */
@@ -1420,6 +1442,387 @@ public final class TileRaster {
     }
 
     /* =====================================================================
+       THE AVENUES (batch CL4; the study spec-city-layout 5.2)
+       ===================================================================== */
+
+    /*
+     * WHY. The district plans lay four avenues at 45 degrees out from the founding site as staircases of arterial street
+     * plots (DistrictPlan, AVENUES), and drawn as the plan has them - each plot a bar across it toward the street plots
+     * beside it - a staircase is a jagged chain of crosses. From LINES_FROM px a plot they are drawn as the highways'
+     * 45-degree stretches are: one smooth band along each arm's line through the steps' middles (diagLine(), avLine()),
+     * `half` the street's surface wide (SURFACE by its width, as a straight street's bar), in its kind's colour. The
+     * staircase's plots are verge outside the band, and so are the outer plots, the fourth plot of each 2 x 2 block the
+     * line clips (O_k = S_(k-1) + (0, dy), where no building stands): open ground the band crosses, filled in as the
+     * highway's notch is (diagOpen()). The marks are TilePainter.Input.avenue (and avenueRing, for a step across the tile's
+     * edge): CityRuns' M_DIAG, the arm's heading from M_DIAG_SHIFT, M_CORNER on a corner. A street that crosses an avenue
+     * keeps its bars through it (an AXIS ARM: a street plot beside the avenue's, no avenue's own, with a street plot
+     * beyond it), so it reads as one straight line across the band; none of the staircase's own plots draws a bar. Below
+     * LINES_FROM nothing changes: a plot is its colour, and the staircase reads as a diagonal of pixels.
+     */
+
+    /** The heading of an avenue's arm, by CityRuns.diagCode(): east-south, west-south, west-north, east-north (as DistrictPlan.AVENUE_DX and AVENUE_DY): +1 or -1 along x... */
+    private static int armDx(int code) { return code == 0 || code == 3 ? 1 : -1; }
+
+    /** ...and along y. */
+    private static int armDy(int code) { return code == 0 || code == 1 ? 1 : -1; }
+
+    /** The street code on plot (x, y) of the tile or within REACH of it (Input.street, Input.ring): 0 for none or a plot farther out. */
+    private static int codeAt(TilePainter.Input in, int x, int y) {
+        int tile = TilePainter.TILE, r = TilePainter.REACH;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) return in.street[y * tile + x] & 0xff;
+        if (x < -r || y < -r || x >= tile + r || y >= tile + r) return 0;
+        return in.ring[TilePainter.ringIndex(x, y)] & 0xff;
+    }
+
+    /** Whether plot (x, y), in the tile or within REACH of it, is a street (as streetAt() reads it: a track, and a highway's plot a street passes beneath, among them). */
+    private static boolean ringStreet(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int tile = TilePainter.TILE;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) return isStreet(p, y * tile + x);
+        return (codeAt(in, x, y) & TilePainter.S_KIND) != DistrictPlan.NONE;
+    }
+
+    /**
+     * Whether avenue plot (x, y) of the tile has an AXIS ARM in direction d (north, east, south, west): a street running into it
+     * that is none of the avenue's - the plot beside it a street plot and no avenue's, and the plot beyond that another (a
+     * street that goes on out, not a stub beside the staircase). It is how a street the avenue crosses is told from the
+     * staircase's own plots, which are streets beside each other all along.
+     */
+    private static boolean axisArm(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d) {
+        int nx = x + TilePainter.DX[d], ny = y + TilePainter.DY[d];
+        if (in.avenueAt(nx, ny) != 0 || !ringStreet(in, p, nx, ny)) return false;
+        int bx = nx + TilePainter.DX[d], by = ny + TilePainter.DY[d];
+        return in.avenueAt(bx, by) == 0 && ringStreet(in, p, bx, by);
+    }
+
+    /** The mark of the avenue's step (a plot of the line, no corner) at (x, y) of the tile or its ring, or -1. */
+    private static int stepAt(TilePainter.Input in, int x, int y) {
+        int m = in.avenueAt(x, y);
+        return m != 0 && (m & CityRuns.M_CORNER) == 0 ? m : -1;
+    }
+
+    /** Whether plot (x, y) of the tile or its ring bridges fresh water: its street's bridge, or the deck the painter laid. */
+    private static boolean bridgeAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int tile = TilePainter.TILE;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) return p.bridge[y * tile + x];
+        return (codeAt(in, x, y) & TilePainter.S_BRIDGE) != 0;
+    }
+
+    /** What marks an outer plot in avenueNotches(): bit 24, over the arm's code (low two bits) and the codes of the two steps either side of it (bits 8 to 15 and 16 to 23). */
+    private static final int NOTCH = 1 << 24;
+
+    /**
+     * The OUTER PLOTS of the tile's avenues (O_k, the fourth plot of the 2 x 2 block S_(k-1), C_k, S_k, O_k): by plot, 0 for none,
+     * else NOTCH, the arm's code, and the street codes of the two steps either side of it, S_(k-1) in its column and S_k in
+     * its row - one plot of open ground, a street's, or water a bridge crosses, the band passes through and a building never
+     * stands on. null when the tile has none.
+     */
+    private static int[] avenueNotches(TilePainter.Input in, TilePainter.Painted p) {
+        int tile = TilePainter.TILE;
+        int[] out = null;
+        for (int y = 0; y < tile; y++) {
+            for (int x = 0; x < tile; x++) {
+                int i = y * tile + x;
+                if (in.avenue[i] != 0 || p.use[i] == TilePainter.BUILDING || p.use[i] == TilePainter.RAIL || in.terrain[i] == World.SALT) continue;
+                if (p.use[i] == TilePainter.ROAD && !isStreet(p, i)) continue; // a highway's own plot
+                // A step beside it on each axis, or none of its four combinations holds.
+                if (in.avenueAt(x - 1, y) == 0 && in.avenueAt(x + 1, y) == 0 || in.avenueAt(x, y - 1) == 0 && in.avenueAt(x, y + 1) == 0) continue;
+                for (int sy = -1; sy <= 1; sy += 2) {
+                    for (int sx = -1; sx <= 1; sx += 2) {
+                        int a = stepAt(in, x + sx, y), b = stepAt(in, x, y - sy);
+                        if (a < 0 || b < 0) continue;
+                        int code = sx > 0 ? (sy > 0 ? 0 : 3) : (sy > 0 ? 1 : 2);
+                        if (((a >> CityRuns.M_DIAG_SHIFT) & 3) != code || ((b >> CityRuns.M_DIAG_SHIFT) & 3) != code) continue;
+                        if (out == null) out = new int[TilePainter.PLOTS];
+                        out[i] = NOTCH | code | codeAt(in, x + sx, y) << 8 | codeAt(in, x, y - sy) << 16;
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    /** Whether outer plot i (avenueNotches() says it is) is open ground that takes a verge: nothing on it, dry. */
+    private static boolean notchVerge(TilePainter.Input in, TilePainter.Painted p, int i) {
+        return p.use[i] == TilePainter.EMPTY && in.terrain[i] != World.FRESH && in.terrain[i] != World.SALT;
+    }
+
+    /**
+     * The pixels of plot i within `half` pixels of the line at the heading `code` through the point (pxl, pyl) of the plot's
+     * pixels, no farther along the heading than sMax pixels from that point and no farther behind it than sMin (negative), in
+     * colour c - and, with `grain` set, GRAVEL_GRAIN_SHARE of them by the hash a gravel street's grain is, so the same street
+     * speckles the same at every paint. With dashEvery > 0 only the first dashLen pixels of every dashEvery along the line,
+     * counted from the world's pixel origin, so a track's dashes run on across the plots and the tiles. diagLine() with
+     * what the avenues need: both ends, the grain and the dashes.
+     */
+    private static void avLine(TilePainter.Input in, int[] img, int w, int i, int px, int code, double pxl, double pyl, double half,
+                               double sMin, double sMax, int c, int grain, int dashEvery, int dashLen) {
+        int tile = TilePainter.TILE, x0 = (i % tile) * px, y0 = (i / tile) * px;
+        int dx = armDx(code), dy = armDy(code);
+        double root2 = Math.sqrt(2);
+        for (int v = 0; v < px; v++) {
+            for (int u = 0; u < px; u++) {
+                double qx = u + 0.5 - pxl, qy = v + 0.5 - pyl;
+                if (Math.abs(qx * dy - qy * dx) / root2 > half) continue;
+                double s = (qx * dx + qy * dy) / root2;
+                if (s < sMin || s > sMax) continue;
+                if (dashEvery > 0) {
+                    long gx = (in.tx * tile + i % tile) * px + u, gy = (in.ty * tile + i / tile) * px + v;
+                    double along = ((gx + 0.5) * dx + (gy + 0.5) * dy) / root2;
+                    if (Math.floorMod((long) Math.floor(along), (long) dashEvery) >= dashLen) continue;
+                }
+                int col = c;
+                if (grain != 0) {
+                    int X = x0 + u, Y = y0 + v;
+                    double h = World.unit(World.mix((in.tx * 8191L + X) * 0x9E3779B97F4A7C15L
+                            ^ (in.ty * 8191L + Y) * 0xC2B2AE3D27D4EB4FL ^ in.seed ^ 0x47524156L));
+                    if (h < GRAVEL_GRAIN_SHARE) col = grain;
+                }
+                img[(y0 + v) * w + x0 + u] = col;
+            }
+        }
+    }
+
+    /** A street's surface across its plot, in pixels at px a plot, as a straight street's bar is (SURFACE by its width code, 1 or 2). */
+    private static int surfaceOf(int width, int px) {
+        return Math.max(1, (int) Math.round(SURFACE[Math.max(1, Math.min(2, width))] * px));
+    }
+
+    /**
+     * Avenue plot i drawn (from LINES_FROM px a plot): the bar across it for each street that crosses the avenue through it
+     * (axisArm()), in that street's own kind and width - so the street reads as one line across the band - over the plot's
+     * verge, and the band along the avenue's line, `half` its surface wide, in the avenue's kind's colour, with gravel's grain,
+     * or a track's dashes. With `box`, the same in JUNCTION_BOX: the plot's part of a signalled crossing's one box. Over the
+     * main line (D18) the band has a deck a pixel wider either side, as a bridge has. A plot beneath a highway is drawn by the
+     * highway.
+     */
+    private static void avenuePlot(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, boolean box) {
+        int tile = TilePainter.TILE, x = i % tile, y = i / tile;
+        int kind = p.road[i];
+        if (p.beneath[i] || kind < BuildingVisual.GRAVEL || kind > TilePainter.TRACK) return;
+        int mark = in.avenue[i] & 0xff, code = (mark >> CityRuns.M_DIAG_SHIFT) & 3, dx = armDx(code);
+        double pxl = (mark & CityRuns.M_CORNER) != 0 ? (0.5 - dx) * px : 0.5 * px, pyl = 0.5 * px;
+        boolean owned = in.owned[i];
+        int w = tile * px;
+        // The streets that cross it: the code of the first of each axis's arms, 0 for none.
+        int vCode = avenueArm(in, p, x, y, 0, 2), hCode = avenueArm(in, p, x, y, 1, 3);
+        if (kind == TilePainter.TRACK) {
+            // A track: dashes on the verge, along the line and down each street that crosses it.
+            if (box) return;
+            int dashT = Math.max(2, px / 5), dashStep = Math.max(2, px / 2), dashLen = Math.max(2, px / 3);
+            int c = owned ? TRACK_DASH : blend(TRACK_DASH, VOID, UNOWNED_DIM);
+            if (hCode != 0) axisBar(in, i, px, img, true, hCode, false);
+            if (vCode != 0) axisBar(in, i, px, img, false, vCode, false);
+            avLine(in, img, w, i, px, code, pxl, pyl, dashT / 2.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, c, 0, dashStep, dashLen);
+            return;
+        }
+        int t = surfaceOf(p.width[i], px);
+        int c = box ? JUNCTION_BOX : ROAD[kind];
+        if (!owned) c = blend(c, VOID, UNOWNED_DIM);
+        int grain = !box && kind == BuildingVisual.GRAVEL ? (owned ? GRAVEL_GRAIN : blend(GRAVEL_GRAIN, VOID, UNOWNED_DIM)) : 0;
+        boolean main = (in.marks[i] & TilePainter.M_MAIN) != 0;
+        if (!box && p.use[i] == TilePainter.RAIL && main) {
+            int deck = owned ? DECK : blend(DECK, VOID, UNOWNED_DIM);
+            avLine(in, img, w, i, px, code, pxl, pyl, t / 2.0 + 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, deck, 0, 0, 0);
+        }
+        if (hCode != 0) axisBar(in, i, px, img, true, box ? in.street[i] & 0xff : hCode, box);
+        if (vCode != 0) axisBar(in, i, px, img, false, box ? in.street[i] & 0xff : vCode, box);
+        avLine(in, img, w, i, px, code, pxl, pyl, t / 2.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, c, grain, 0, 0);
+    }
+
+    /** The street code of the first of the two arms (directions d0 and d1, the axis's two ways) of avenue plot (x, y) that is an axis arm: the code of the plot beside it; 0 for none. */
+    private static int avenueArm(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d0, int d1) {
+        int d = axisArm(in, p, x, y, d0) ? d0 : axisArm(in, p, x, y, d1) ? d1 : -1;
+        return d < 0 ? 0 : codeAt(in, x + TilePainter.DX[d], y + TilePainter.DY[d]);
+    }
+
+    /**
+     * The bar of a street that crosses an avenue, across avenue plot i along one axis (horizontal or not), edge to edge, in the
+     * kind and width of its code `arm` - gravel's grain, a track's dashes, a highway's none - or, boxed, in JUNCTION_BOX
+     * at the width of `arm`, then the code of the plot's own street.
+     */
+    private static void axisBar(TilePainter.Input in, int i, int px, int[] img, boolean horizontal, int arm, boolean box) {
+        int tile = TilePainter.TILE, w = tile * px, x0 = (i % tile) * px, y0 = (i / tile) * px;
+        boolean owned = in.owned[i];
+        int kind = box ? BuildingVisual.PAVED : TilePainter.kindOf(arm);
+        if (kind < BuildingVisual.GRAVEL || kind > TilePainter.TRACK) return;
+        if (kind == TilePainter.TRACK) {
+            int dashT = Math.max(2, px / 5), dashStep = Math.max(2, px / 2), dashLen = Math.max(2, px / 3), mid = (px - dashT) / 2;
+            int c = owned ? TRACK_DASH : blend(TRACK_DASH, VOID, UNOWNED_DIM);
+            for (int s = 0; s < px; s += dashStep) {
+                int e = Math.min(px, s + dashLen);
+                if (horizontal) fillRect(img, w, x0 + s, y0 + mid, x0 + e, y0 + mid + dashT, c);
+                else fillRect(img, w, x0 + mid, y0 + s, x0 + mid + dashT, y0 + e, c);
+            }
+            return;
+        }
+        int t = surfaceOf((arm >> TilePainter.S_WIDTH_SHIFT) & 3, px), o = (px - t) / 2;
+        int c = box ? JUNCTION_BOX : ROAD[kind];
+        if (!owned) c = blend(c, VOID, UNOWNED_DIM);
+        int grain = !box && kind == BuildingVisual.GRAVEL ? (owned ? GRAVEL_GRAIN : blend(GRAVEL_GRAIN, VOID, UNOWNED_DIM)) : 0;
+        int bx0 = horizontal ? x0 : x0 + o, by0 = horizontal ? y0 + o : y0, bx1 = horizontal ? x0 + px : x0 + o + t, by1 = horizontal ? y0 + o + t : y0 + px;
+        fillRect(img, w, bx0, by0, bx1, by1, c);
+        if (grain != 0) grain(in, img, w, bx0, by0, bx1, by1, grain);
+    }
+
+    /** The kind, in BuildingVisual's numbering or TilePainter.TRACK, an outer plot between two steps is drawn as: the lesser of theirs, a track if either is one; 0 where a step has none (beneath a highway). */
+    private static int notchKind(int codeA, int codeB) {
+        int a = TilePainter.kindOf(codeA), b = TilePainter.kindOf(codeB);
+        if (a == 0 || b == 0) return 0;
+        if (a == TilePainter.TRACK || b == TilePainter.TRACK) return TilePainter.TRACK;
+        return Math.min(Math.min(a, b), BuildingVisual.PAVED);
+    }
+
+    /**
+     * Outer plot i (avenueNotches() entry `info`) drawn: the band of its arm's line through the middle of the step beside it
+     * across its pixels - the notch the staircase's plots would leave in the band - in the kind and width of the two steps
+     * either side, the narrower and the lesser. Where both steps bridge fresh water the plot is a bridge's too: a deck first
+     * (deck = true, drawn with the decks), then the surface. `box` as avenuePlot().
+     */
+    private static void avenueNotch(TilePainter.Input in, TilePainter.Painted p, int i, int info, int px, int[] img, boolean deck, boolean box) {
+        int codeA = (info >> 8) & 0xff, codeB = (info >> 16) & 0xff, code = info & 3;
+        int kind = notchKind(codeA, codeB);
+        int tile = TilePainter.TILE, w = tile * px, x = i % tile, y = i / tile;
+        if (kind == 0 || (box && kind == TilePainter.TRACK)) return;
+        boolean wet = in.terrain[i] == World.FRESH;
+        int dx = armDx(code), dy = armDy(code);
+        boolean bridged = bridgeAt(in, p, x + dx, y) && bridgeAt(in, p, x, y - dy);
+        if (wet && !bridged) return;
+        if (deck && !bridged) return;
+        int width = Math.min(Math.max(1, (codeA >> TilePainter.S_WIDTH_SHIFT) & 3), Math.max(1, (codeB >> TilePainter.S_WIDTH_SHIFT) & 3));
+        // The line through the step beside it in its row (S_k, at (dx, 0) from this plot's middle).
+        double pxl = (0.5 + dx) * px, pyl = 0.5 * px;
+        boolean owned = in.owned[i];
+        if (kind == TilePainter.TRACK) {
+            if (deck) return;
+            int dashT = Math.max(2, px / 5), dashStep = Math.max(2, px / 2), dashLen = Math.max(2, px / 3);
+            int c = owned ? TRACK_DASH : blend(TRACK_DASH, VOID, UNOWNED_DIM);
+            avLine(in, img, w, i, px, code, pxl, pyl, dashT / 2.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, c, 0, dashStep, dashLen);
+            return;
+        }
+        double half = surfaceOf(width, px) / 2.0;
+        if (deck) {
+            int c = owned ? DECK : blend(DECK, VOID, UNOWNED_DIM);
+            avLine(in, img, w, i, px, code, pxl, pyl, half + 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, c, 0, 0, 0);
+            return;
+        }
+        int c = box ? JUNCTION_BOX : ROAD[kind];
+        if (!owned) c = blend(c, VOID, UNOWNED_DIM);
+        int grain = !box && kind == BuildingVisual.GRAVEL ? (owned ? GRAVEL_GRAIN : blend(GRAVEL_GRAIN, VOID, UNOWNED_DIM)) : 0;
+        avLine(in, img, w, i, px, code, pxl, pyl, half, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, c, grain, 0, 0);
+    }
+
+    /**
+     * A piece of avenue's end: where a step's successor corner is not laid (its head: the avenue ends there, at a yard, at water too
+     * wide, at the edge of the city's ground) or its predecessor's is not (its tail), the band ends squared across its
+     * heading at the step's far edge (the highway arm's end, diagEndOpen()): the open ground beside the step on that side -
+     * (x + dx, y) and (x, y + dy) at a head, (x - dx, y) and (x, y - dy) at a tail - gets the line's band through the step's
+     * middle, no farther along than 0.5 sqrt 2 plots from it. A street beside the step is no open ground: the bar of the
+     * street the avenue meets takes it, so the avenue meets the street without a stub or a notch.
+     */
+    private static void avenueEnds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int tile = TilePainter.TILE, w = tile * px;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (in.avenue[i] != 0 || (p.use[i] != TilePainter.EMPTY && p.use[i] != TilePainter.FIELD) || in.terrain[i] == World.FRESH || in.terrain[i] == World.SALT) continue;
+            int x = i % tile, y = i / tile;
+            if (in.avenueAt(x - 1, y) == 0 && in.avenueAt(x + 1, y) == 0 && in.avenueAt(x, y - 1) == 0 && in.avenueAt(x, y + 1) == 0) continue;
+            for (int d = 0; d < 4; d++) {
+                int sx = x + TilePainter.DX[d], sy = y + TilePainter.DY[d];
+                int m = stepAt(in, sx, sy);
+                if (m < 0) continue;
+                int code = (m >> CityRuns.M_DIAG_SHIFT) & 3, dx = armDx(code), dy = armDy(code);
+                int sc = codeAt(in, sx, sy), kind = TilePainter.kindOf(sc);
+                if (kind < BuildingVisual.GRAVEL || kind > TilePainter.TRACK) continue;
+                boolean head = in.avenueAt(sx + dx, sy) == 0 && ((x == sx + dx && y == sy) || (x == sx && y == sy + dy));
+                boolean tail = in.avenueAt(sx, sy - dy) == 0 && ((x == sx - dx && y == sy) || (x == sx && y == sy - dy));
+                if (!head && !tail) continue;
+                double pxl = (0.5 + sx - x) * px, pyl = (0.5 + sy - y) * px, far = 0.5 * Math.sqrt(2) * px;
+                boolean owned = in.owned[i];
+                if (kind == TilePainter.TRACK) {
+                    int dashT = Math.max(2, px / 5), dashStep = Math.max(2, px / 2), dashLen = Math.max(2, px / 3);
+                    int c = owned ? TRACK_DASH : blend(TRACK_DASH, VOID, UNOWNED_DIM);
+                    avLine(in, img, w, i, px, code, pxl, pyl, dashT / 2.0, head ? Double.NEGATIVE_INFINITY : -far, head ? far : Double.POSITIVE_INFINITY, c, 0, dashStep, dashLen);
+                    continue;
+                }
+                double half = surfaceOf((sc >> TilePainter.S_WIDTH_SHIFT) & 3, px) / 2.0;
+                int c = owned ? ROAD[kind] : blend(ROAD[kind], VOID, UNOWNED_DIM);
+                int grain = kind == BuildingVisual.GRAVEL ? (owned ? GRAVEL_GRAIN : blend(GRAVEL_GRAIN, VOID, UNOWNED_DIM)) : 0;
+                // A head ends at its far edge, a tail at the near: one end's pass at a time (a one-step piece has both).
+                if (head) avLine(in, img, w, i, px, code, pxl, pyl, half, Double.NEGATIVE_INFINITY, far, c, grain, 0, 0);
+                if (tail) avLine(in, img, w, i, px, code, pxl, pyl, half, -far, Double.POSITIVE_INFINITY, c, grain, 0, 0);
+            }
+        }
+    }
+
+    /**
+     * The origin's neighbourhood (the 3 x 3 plots about Input.avenueOx/avenueOy, the lattice node the four arms run out from):
+     * a plot two arms share carries the first arm's mark only (DistrictPlan.avenue), so the marks draw one line through the
+     * origin and the second line - the arms' other diagonal - comes from the geometry: each arm laid (its first step marked)
+     * gets its ray from the origin's middle outward, over the nine plots, a half-width behind the origin so the four meet in
+     * one crossing and a missing arm leaves a squared end. In the kind and width of the origin's own street. With a
+     * Crossings given, in JUNCTION_BOX on the plots of a signalled crossing alone.
+     */
+    private static void avenueOrigin(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr) {
+        int ox = in.avenueOx, oy = in.avenueOy, tile = TilePainter.TILE, w = tile * px;
+        if (ox == Integer.MIN_VALUE || in.avenueAt(ox, oy) == 0) return;
+        int arms = 0;
+        for (int a = 0; a < 4; a++) if (in.avenueAt(ox + armDx(a), oy + armDy(a)) != 0) arms |= 1 << a;
+        if (arms == 0) return;
+        int sc = codeAt(in, ox, oy), kind = TilePainter.kindOf(sc);
+        if (kind < BuildingVisual.GRAVEL || kind > TilePainter.TRACK) return;
+        boolean box = cr != null;
+        if (box && kind == TilePainter.TRACK) return;
+        int sw = surfaceOf((sc >> TilePainter.S_WIDTH_SHIFT) & 3, px);
+        double half = (kind == TilePainter.TRACK ? Math.max(2, px / 5) : sw) / 2.0;
+        for (int y = Math.max(0, oy - 1); y <= Math.min(tile - 1, oy + 1); y++) {
+            for (int x = Math.max(0, ox - 1); x <= Math.min(tile - 1, ox + 1); x++) {
+                int i = y * tile + x;
+                if (p.beneath[i] || p.use[i] == TilePainter.BUILDING || p.use[i] == TilePainter.RAIL) continue;
+                if (p.use[i] == TilePainter.ROAD && !isStreet(p, i)) continue;
+                if (in.terrain[i] == World.SALT || (in.terrain[i] == World.FRESH && p.use[i] != TilePainter.ROAD)) continue;
+                if (box && !cr.signalAt(x, y)) continue;
+                boolean owned = in.owned[i];
+                int c = box ? JUNCTION_BOX : kind == TilePainter.TRACK ? TRACK_DASH : ROAD[kind];
+                if (!owned) c = blend(c, VOID, UNOWNED_DIM);
+                int grain = !box && kind == BuildingVisual.GRAVEL ? (owned ? GRAVEL_GRAIN : blend(GRAVEL_GRAIN, VOID, UNOWNED_DIM)) : 0;
+                int dashStep = Math.max(2, px / 2), dashLen = Math.max(2, px / 3);
+                for (int a = 0; a < 4; a++) {
+                    if ((arms & 1 << a) == 0) continue;
+                    avLine(in, img, w, i, px, a, (0.5 + ox - x) * px, (0.5 + oy - y) * px, half, -half, Double.POSITIVE_INFINITY, c, grain,
+                            kind == TilePainter.TRACK ? dashStep : 0, dashLen);
+                }
+            }
+        }
+    }
+
+    /** Avenue plot i over fresh water (the decks' pass of ways()): its deck - the band a pixel wider either side - and a bar of deck for each street that crosses it; the surface comes with avenuePlot(). */
+    private static void avenueDeck(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img) {
+        int tile = TilePainter.TILE, w = tile * px, x = i % tile, y = i / tile, x0 = x * px, y0 = y * px;
+        int mark = in.avenue[i] & 0xff, code = (mark >> CityRuns.M_DIAG_SHIFT) & 3, dx = armDx(code);
+        double pxl = (mark & CityRuns.M_CORNER) != 0 ? (0.5 - dx) * px : 0.5 * px, pyl = 0.5 * px;
+        int t = surfaceOf(p.width[i], px);
+        int deck = in.owned[i] ? DECK : blend(DECK, VOID, UNOWNED_DIM);
+        avLine(in, img, w, i, px, code, pxl, pyl, t / 2.0 + 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, deck, 0, 0, 0);
+        int bw = Math.min(px, t + 2), o = (px - bw) / 2;
+        if (axisArm(in, p, x, y, 0) || axisArm(in, p, x, y, 2)) fillRect(img, w, x0 + o, y0, x0 + o + bw, y0 + px, deck);
+        if (axisArm(in, p, x, y, 1) || axisArm(in, p, x, y, 3)) fillRect(img, w, x0, y0 + o, x0 + px, y0 + o + bw, deck);
+    }
+
+    /** The avenues' part of every signalled crossing's one box (CL4): the avenue plots, the outer plots and the origin's rays that lie in a junction of a signal, redrawn in JUNCTION_BOX. */
+    private static void avenueBoxes(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr) {
+        int tile = TilePainter.TILE;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (in.avenue[i] != 0 && cr.signalAt(i % tile, i / tile)) avenuePlot(in, p, i, px, img, true);
+        }
+        int[] notches = avenueNotches(in, p);
+        if (notches != null) {
+            for (int i = 0; i < TilePainter.PLOTS; i++) {
+                if (notches[i] != 0 && cr.signalAt(i % tile, i / tile)) avenueNotch(in, p, i, notches[i], px, img, false, true);
+            }
+        }
+        avenueOrigin(in, p, px, img, cr);
+    }
+
+    /* =====================================================================
        THE WAYS AS LINES (0.7.88, batch RD2; from LINES_FROM px a plot)
        ===================================================================== */
 
@@ -1450,22 +1853,41 @@ public final class TileRaster {
      * on the other. A bridge's plot is never replaced (its deck is straight),
      * and a stretch that ends on its diagonal (an arm's last step) ends
      * squared across its heading at the step's far edge (diagEndOpen() fills
-     * the open plots beside it), with no ramp's narrowing across the stair.
+     * the open plots beside it), with no ramp's narrowing across the stair. The
+     * avenues of the district plans (CL4, THE AVENUES above) are drawn in the
+     * same passes: their plots' verges with the streets', their outer plots'
+     * beside, their decks with the bridges', the bars of the streets that cross
+     * them and their bands with the streets' surfaces, their boxes with the signals'.
      */
     private static void ways(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
+        // The avenues about the tile (CL4): their outer plots, found once; none, and every pass below is as it was.
+        boolean avenues = in.avenueMarks != 0;
+        int[] notches = avenues ? avenueNotches(in, p) : null;
         // The verges.
         for (int i = 0; i < TilePainter.PLOTS; i++) {
             if (!isStreet(p, i) || p.bridge[i]) continue;
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             fillRect(img, w, x0, y0, x0 + px, y0 + px, in.owned[i] ? VERGE : blend(VERGE, VOID, UNOWNED_DIM));
         }
+        // ...and an avenue's outer plot, the open ground the band crosses, outside the band.
+        if (notches != null) {
+            for (int i = 0; i < TilePainter.PLOTS; i++) {
+                if (notches[i] == 0 || !notchVerge(in, p, i)) continue;
+                int x0 = (i % tile) * px, y0 = (i / tile) * px;
+                fillRect(img, w, x0, y0, x0 + px, y0 + px, in.owned[i] ? VERGE : blend(VERGE, VOID, UNOWNED_DIM));
+            }
+        }
         // Bridge decks: a pixel wider than the surface (or the track, or a highway) either side, along it.
         for (int i = 0; i < TilePainter.PLOTS; i++) {
             if (!p.bridge[i] || (p.use[i] != TilePainter.ROAD && p.use[i] != TilePainter.RAIL)) continue;
             int across;
             boolean ns, ew;
-            if (isHighway(p, i)) {
+            if (avenues && in.avenue[i] != 0 && isStreet(p, i)) {
+                // An avenue's plot: its deck is the band's (a diagonal deck, not the staircase's bars), and a bar of deck for each street that crosses it.
+                avenueDeck(in, p, i, px, img);
+                continue;
+            } else if (isHighway(p, i)) {
                 across = crossSection(BuildingVisual.HIGHWAY, px)[0];
                 ns = highwayAt(in, p, i, 0) || highwayAt(in, p, i, 2);
                 ew = !ns;
@@ -1484,6 +1906,10 @@ public final class TileRaster {
             if (ns) fillRect(img, w, x0 + o, y0, x0 + o + width, y0 + px, deck);
             if (ew) fillRect(img, w, x0, y0 + o, x0 + px, y0 + o + width, deck);
         }
+        // ...and an avenue's outer plot over water between two bridging steps.
+        if (notches != null) {
+            for (int i = 0; i < TilePainter.PLOTS; i++) if (notches[i] != 0) avenueNotch(in, p, i, notches[i], px, img, true, false);
+        }
         track(in, p, px, img);
         sidingSheds(in, p, px, img);
         // The bends of the railway (FX5): the arcs where the plots they replace are not drawn as cells.
@@ -1492,6 +1918,11 @@ public final class TileRaster {
         int dashT = Math.max(2, px / 5), dashStep = Math.max(2, px / 2), dashLen = Math.max(2, px / 3);
         for (int i = 0; i < TilePainter.PLOTS; i++) {
             if (!isStreet(p, i) || p.beneath[i]) continue;
+            // An avenue's plot: the bars of the streets that cross it and the band along its line (CL4).
+            if (avenues && in.avenue[i] != 0) {
+                avenuePlot(in, p, i, px, img, false);
+                continue;
+            }
             int kind = p.road[i];
             boolean h = streetAt(in, p, i, 1) || streetAt(in, p, i, 3), v = streetAt(in, p, i, 0) || streetAt(in, p, i, 2);
             if (!h && !v) h = true;
@@ -1517,6 +1948,14 @@ public final class TileRaster {
                 if (h) grain(in, img, w, x0, y0 + o, x0 + px, y0 + o + t, grain);
                 if (v) grain(in, img, w, x0 + o, y0, x0 + o + t, y0 + px, grain);
             }
+        }
+        // The avenues' outer plots, the origin's other line and the squared ends of the pieces (CL4), then the railway's crossings.
+        if (avenues) {
+            if (notches != null) {
+                for (int i = 0; i < TilePainter.PLOTS; i++) if (notches[i] != 0) avenueNotch(in, p, i, notches[i], px, img, false, false);
+            }
+            avenueOrigin(in, p, px, img, null);
+            avenueEnds(in, p, px, img);
         }
         // The railway's crossings: rails through a level crossing with its marks, an arterial or boulevard over the main line as a bridge.
         railCrossings(in, p, px, img);
@@ -1749,6 +2188,8 @@ public final class TileRaster {
         final byte[] role;
         /** The crossing each plot belongs to, or -1; null with none. */
         final int[] group;
+        /** The avenue's mark on each plot of the ring, by ringIndex() (CL4); null with no avenue about the tile. */
+        byte[] av;
         /** The crossings: each one's rectangle (first and last column and row, in the tile's plots, which may lie off the tile), the roads that leave it, and whether it is a roundabout. */
         int groups;
         int[] x0 = new int[8], y0 = new int[8], x1 = new int[8], y1 = new int[8], roads = new int[8];
@@ -1768,37 +2209,47 @@ public final class TileRaster {
         /** The crossings of the tile in/p draw. */
         static Crossings of(TilePainter.Input in, TilePainter.Painted p) {
             byte[] role = new byte[N * N];
+            byte[] avm = in.avenueMarks != 0 ? new byte[N * N] : null;
             boolean any = false;
             for (int y = -R; y < TilePainter.TILE + R; y++) {
                 for (int x = -R; x < TilePainter.TILE + R; x++) {
                     byte r = streetRoleAt(in, p, x, y);
                     role[(y + R) * N + x + R] = r;
+                    if (avm != null) avm[(y + R) * N + x + R] = (byte) in.avenueAt(x, y);
                     any |= junctionRole(r);
                 }
             }
             if (!any) return NONE;
-            // The runs of junction streets along each row and column, each plot with its run's length.
+            // The runs of junction streets along each row and column, each plot with its run's length. An avenue's plots are no part of
+            // a run (CL4): its staircase beside an arterial would lengthen the arterial's run into a crossing along its whole length; the
+            // avenue's own junctions are found apart (avenueJunctions()).
             int[] hrun = new int[N * N], vrun = new int[N * N];
             for (int y = 0; y < N; y++) {
                 for (int x = 0; x < N; ) {
-                    if (!junctionRole(role[y * N + x])) { x++; continue; }
+                    if (!runRole(role, avm, y * N + x)) { x++; continue; }
                     int s = x;
-                    while (x < N && junctionRole(role[y * N + x])) x++;
+                    while (x < N && runRole(role, avm, y * N + x)) x++;
                     for (int k = s; k < x; k++) hrun[y * N + k] = x - s;
                 }
             }
             for (int x = 0; x < N; x++) {
                 for (int y = 0; y < N; ) {
-                    if (!junctionRole(role[y * N + x])) { y++; continue; }
+                    if (!runRole(role, avm, y * N + x)) { y++; continue; }
                     int s = y;
-                    while (y < N && junctionRole(role[y * N + x])) y++;
+                    while (y < N && runRole(role, avm, y * N + x)) y++;
                     for (int k = s; k < y; k++) vrun[k * N + x] = y - s;
                 }
             }
+            // The junction plots: a plot of a junction role with a run of JUNCTION_RUN or more on each axis - and (CL4) an avenue's plot
+            // a street of a junction role crosses, and the origin's 3 x 3 where the arms meet (avenueJunctions()).
+            boolean[] jp = new boolean[N * N];
+            for (int i = 0; i < N * N; i++) jp[i] = hrun[i] >= JUNCTION_RUN && vrun[i] >= JUNCTION_RUN;
+            if (avm != null) avenueJunctions(in, role, avm, jp);
             Crossings c = new Crossings(role);
+            c.av = avm;
             int[] stack = new int[N * N];
             for (int i = 0; i < N * N; i++) {
-                if (c.group[i] >= 0 || hrun[i] < JUNCTION_RUN || vrun[i] < JUNCTION_RUN) continue;
+                if (c.group[i] >= 0 || !jp[i]) continue;
                 int g = c.open(i % N - R, i / N - R);
                 int top = 0;
                 stack[top++] = i;
@@ -1810,7 +2261,7 @@ public final class TileRaster {
                         int nx = jx + TilePainter.DX[d], ny = jy + TilePainter.DY[d];
                         if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue;
                         int k = ny * N + nx;
-                        if (c.group[k] >= 0 || hrun[k] < JUNCTION_RUN || vrun[k] < JUNCTION_RUN) continue;
+                        if (c.group[k] >= 0 || !jp[k]) continue;
                         c.group[k] = g;
                         stack[top++] = k;
                     }
@@ -1821,6 +2272,80 @@ public final class TileRaster {
                 c.round[g] = c.roads[g] >= ROUNDABOUT_ROADS;
             }
             return c;
+        }
+
+        /**
+         * The junction plots the avenues make (CL4), into jp: an avenue's plot of a junction role (they are arterials) that a street of a
+         * junction role crosses - one of its sides a plot of such a street that is no avenue's with a street plot beyond it (an axis
+         * arm, axisArm()) - so the arterial and the avenue are one crossing, and a staircase plot alone is none; and the 3 x 3 plots
+         * about the origin (Input.avenueOx), where three or more arms meet.
+         */
+        private static void avenueJunctions(TilePainter.Input in, byte[] role, byte[] avm, boolean[] jp) {
+            for (int y = 0; y < N; y++) {
+                for (int x = 0; x < N; x++) {
+                    int k = y * N + x;
+                    if (avm[k] == 0 || jp[k] || !junctionRole(role[k])) continue;
+                    for (int d = 0; d < 4; d++) {
+                        int nx = x + TilePainter.DX[d], ny = y + TilePainter.DY[d], bx = nx + TilePainter.DX[d], by = ny + TilePainter.DY[d];
+                        if (bx < 0 || by < 0 || bx >= N || by >= N) continue;
+                        int n = ny * N + nx, b = by * N + bx;
+                        if (avm[n] == 0 && junctionRole(role[n]) && avm[b] == 0 && role[b] != 0) { jp[k] = true; break; }
+                    }
+                }
+            }
+            if (in.avenueOx == Integer.MIN_VALUE) return;
+            int ox = in.avenueOx + R, oy = in.avenueOy + R;
+            if (ox < 1 || oy < 1 || ox >= N - 1 || oy >= N - 1 || avm[oy * N + ox] == 0) return;
+            int arms = 0;
+            for (int a = 0; a < 4; a++) if (avm[(oy + armDy(a)) * N + ox + armDx(a)] != 0) arms++;
+            if (arms < 3) return;
+            for (int y = oy - 1; y <= oy + 1; y++) for (int x = ox - 1; x <= ox + 1; x++) jp[y * N + x] = true;
+        }
+
+        /** The avenue's mark on plot (x, y) of the ring; 0 for none or a plot off it. */
+        int avAt(int x, int y) {
+            if (av == null || x < -R || y < -R || x >= TilePainter.TILE + R || y >= TilePainter.TILE + R) return 0;
+            return av[(y + R) * N + x + R] & 0xff;
+        }
+
+        /**
+         * Whether plot (x, y), just outside a crossing's rectangle, is a road leaving it (CL4): a street plot that is no avenue's, or an
+         * avenue's plot that is also a street the avenue crosses - one that goes on out, in direction d away from the rectangle, over a
+         * street plot with another beyond it. The avenue's own branches are counted apart (branches()); the staircase beside a side road
+         * is not that road.
+         */
+        private boolean streetOut(int x, int y, int d) {
+            if (roleAt(x, y) == 0) return false;
+            if (avAt(x, y) == 0) return true;
+            int nx = x + TilePainter.DX[d], ny = y + TilePainter.DY[d], bx = nx + TilePainter.DX[d], by = ny + TilePainter.DY[d];
+            return avAt(nx, ny) == 0 && roleAt(nx, ny) != 0 && avAt(bx, by) == 0 && roleAt(bx, by) != 0;
+        }
+
+        /**
+         * The avenues' branches that leave crossing g (CL4): of the avenue's plots in its rectangle each plot the staircase runs on to
+         * (a step's are the corner before it, at (x, y - dy), and after it, at (x + dx, y); a corner's the step before, at (x - dx, y),
+         * and after, at (x, y + dy)) that lies outside it and is an avenue's too is one branch - so an arm that runs along a side
+         * road is still its own road, and an avenue through a crossing is two roads.
+         */
+        private int branches(int g) {
+            int n = 0;
+            for (int y = y0[g]; y <= y1[g]; y++) {
+                for (int x = x0[g]; x <= x1[g]; x++) {
+                    int m = avAt(x, y);
+                    if (m == 0) continue;
+                    int code = (m >> CityRuns.M_DIAG_SHIFT) & 3, dx = armDx(code), dy = armDy(code);
+                    boolean corner = (m & CityRuns.M_CORNER) != 0;
+                    int ax = corner ? x - dx : x, ay = corner ? y : y - dy, bx = corner ? x : x + dx, by = corner ? y + dy : y;
+                    if (!inRect(g, ax, ay) && avAt(ax, ay) != 0) n++;
+                    if (!inRect(g, bx, by) && avAt(bx, by) != 0) n++;
+                }
+            }
+            return n;
+        }
+
+        /** Whether plot k of the ring is a plot of a run of junction streets: a junction role, and no avenue's plot (avm null with no avenue about the tile). */
+        private static boolean runRole(byte[] role, byte[] avm, int k) {
+            return junctionRole(role[k]) && (avm == null || avm[k] == 0);
         }
 
         /** Starts a crossing at plot (x, y); its number. */
@@ -1878,9 +2403,10 @@ public final class TileRaster {
                 boolean row = side < 2; // North and south are rows of plots along x, west and east columns along y.
                 int from = row ? x0[g] : y0[g], to = row ? x1[g] : y1[g];
                 int fixed = side == 0 ? y0[g] - 1 : side == 1 ? y1[g] + 1 : side == 2 ? x0[g] - 1 : x1[g] + 1;
+                int away = side == 0 ? 0 : side == 1 ? 2 : side == 2 ? 3 : 1; // The direction out of the rectangle: north, south, west, east.
                 boolean inRun = false;
                 for (int k = from; k <= to; k++) {
-                    boolean street = (row ? roleAt(k, fixed) : roleAt(fixed, k)) != 0;
+                    boolean street = row ? streetOut(k, fixed, away) : streetOut(fixed, k, away);
                     if (street && !inRun) n++;
                     inRun = street;
                 }
@@ -1888,10 +2414,11 @@ public final class TileRaster {
             for (int sy = -1; sy <= 1; sy += 2) {
                 for (int sx = -1; sx <= 1; sx += 2) {
                     int cx = sx < 0 ? x0[g] - 1 : x1[g] + 1, cy = sy < 0 ? y0[g] - 1 : y1[g] + 1;
-                    if (roleAt(cx, cy) != 0 && roleAt(cx + sx, cy + sy) != 0) n++;
+                    if (roleAt(cx, cy) != 0 && roleAt(cx + sx, cy + sy) != 0 && avAt(cx, cy) == 0 && avAt(cx + sx, cy + sy) == 0) n++;
                 }
             }
-            return n;
+            // ...and the avenues' own branches (CL4), which the runs along the sides leave out: an avenue is two roads through a crossing.
+            return av == null ? n : n + branches(g);
         }
     }
 
@@ -1906,8 +2433,10 @@ public final class TileRaster {
     private static void signals(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr) {
         int tile = TilePainter.TILE;
         // Each junction plot's surface is the dark box; a wide crossing's are one box.
+        boolean avenues = in.avenueMarks != 0;
         for (int i = 0; i < TilePainter.PLOTS; i++) {
             if (!cr.signalAt(i % tile, i / tile)) continue;
+            if (avenues && in.avenue[i] != 0) continue; // An avenue's plot: its part of the box is the band's, below.
             int[] s = surfaceAt(p, i, px);
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             int c = in.owned[i] ? JUNCTION_BOX : blend(JUNCTION_BOX, VOID, UNOWNED_DIM);
@@ -1916,10 +2445,13 @@ public final class TileRaster {
             if (h) fillRect(img, tile * px, x0, y0 + s[1], x0 + px, y0 + s[1] + s[0], c);
             if (v) fillRect(img, tile * px, x0 + s[1], y0, x0 + s[1] + s[0], y0 + px, c);
         }
+        // The avenues' part of the box (CL4): the band of every avenue plot, outer plot and ray of the origin that lies in a signalled crossing.
+        if (avenues) avenueBoxes(in, p, px, img, cr);
         // Each arm, drawn by the plot it is on (so the tiles draw their parts of a junction across an edge): only the street plots just outside
         // a crossing's rectangle, facing it - none inside the crossing.
         for (int i = 0; i < TilePainter.PLOTS; i++) {
             if (!isStreet(p, i) || p.beneath[i] || p.road[i] == TilePainter.TRACK) continue;
+            if (avenues && in.avenue[i] != 0) continue; // An avenue's arm has no zebra: its edge is slanted.
             int x = i % tile, y = i / tile;
             if (cr.at(x, y) >= 0) continue;
             for (int dir = 0; dir < 4; dir++) {
@@ -2306,6 +2838,7 @@ public final class TileRaster {
         int tile = TilePainter.TILE;
         for (int i = 0; i < TilePainter.PLOTS; i++) {
             if (!isStreet(p, i) || p.beneath[i] || p.bridge[i] || p.use[i] != TilePainter.ROAD) continue;
+            if (in.avenueMarks != 0 && in.avenue[i] != 0) continue; // An avenue's plot is a band, no corner of two bars (CL4).
             int kind = p.road[i];
             if (kind != BuildingVisual.GRAVEL && kind != BuildingVisual.PAVED) continue;
             int x = i % tile, y = i / tile;
@@ -2892,6 +3425,8 @@ public final class TileRaster {
             boolean main = (in.marks[i] & TilePainter.M_MAIN) != 0;
             boolean arterial = p.role[i] == TilePainter.ARTERIAL || p.role[i] == TilePainter.BOULEVARD || p.role[i] == TilePainter.ACCESS;
             if (main && arterial) {
+                // An avenue's plot has its deck along the band (avenuePlot()): no deck lines at the staircase's bars.
+                if (in.avenueMarks != 0 && in.avenue[i] != 0) continue;
                 // An arterial or boulevard over the main line: a road bridge, never a level crossing (D18).
                 int deck = in.owned[i] ? DECK : blend(DECK, VOID, UNOWNED_DIM);
                 if (h) {
