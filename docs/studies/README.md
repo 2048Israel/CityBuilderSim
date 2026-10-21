@@ -13,6 +13,7 @@ where it has been built.
 
 | study | date | what | batches |
 |---|---|---|---|
+| [spec-nations.md](spec-nations.md) | 2026-10-20 | The world as 196 nations: what each makes and uses, its money, its borders and its path (Historical from 2000, or Random from a seed); each good's price in each nation from one spatial price equilibrium, solved each January on Jerus's partner rule (measured: about 50 ms), the city's month by the slopes (Canada, the US or Portugal by netback), the band from the world, the vault in eight moneys, land bought from its nation; the prototype, the render and four boards in `nations/` | WN0 to WN7 (queued) |
 | [spec-city-layout.md](spec-city-layout.md) | 2026-10-20 | The city's layout (CL1): why the map is a grid, why buildings move (each district packed again from its counts) and why the uses ring and the ring moves out (the bands' order and the spill of what a district cannot draw); streets varied inside the blocks, slanted avenues and curves, and a log of arrivals so buildings stay and quarters keep their use; costs measured on Jerus's cities; prototypes and renders in `city-layout/` | CL2 to CL4 (planned) |
 | [spec-earth2-terrain.md](spec-earth2-terrain.md) | 2026-10-12 | Earth 2: slope measured from NASADEM over 90 m in four classes (three greys, and snow as earth-1's ice), foothill site preparation as builders' work and a land price for each class, highways and rail by slope, a shallow-sea class, short crossings and long bridge orders (all or nothing) that link landmasses, real depth in place of E4's guess, and why Samuel's Nova Scotia cities had oil and iron all round them; `earth-2.bin` baked (136 MB; the release is Samuel's), its pipeline in `tools/earth/`, prototypes, figures and the mockups in `earth2/` | ET1 to ET6 (queued); EG1 (his call) |
 | [spec-city-debt.md](spec-city-debt.md) | 2026-10-12 | The city's debt priced and sold as a treasury does: a curve from the dial the market expects, bills, bonds in reopened lines, an amortizing bond, floating and linked notes, callables, the auction, effective interest, the buyback as a reverse auction; the model and five boards in `city-debt/` | CD1 to CD6 (queued) |
@@ -36,7 +37,7 @@ where it has been built.
 
 ## The ones that moved here
 
-Everything above but `spec-earth2-terrain.md` and `spec-city-debt.md` (written here, 2026-10-12), `spec-globe.md`, `spec-materials.md` and `spec-oil.md`
+Everything above but `spec-nations.md` and `spec-city-layout.md` (written here, 2026-10-20), `spec-earth2-terrain.md` and `spec-city-debt.md` (written here, 2026-10-12), `spec-globe.md`, `spec-materials.md` and `spec-oil.md`
 was written in the claude.ai project "Civic Ledger: Java Game" and moved here
 on 2026-10-11, byte for byte, with the same names and folders it had under the
 project's `claude/`. The two build specs were written in the cloud session's

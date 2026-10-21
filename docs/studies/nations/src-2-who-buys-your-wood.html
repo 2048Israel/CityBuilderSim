@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nations: who buys your wood</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;--edge:#24354a;--control-edge:#33475f;--text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;--good:#3fb950;--warn:#e3b341;--bad:#f85149;--accent:#5aa9ff;--people:#2ec4b6;--money:#5aa9ff;--business:#a78bfa;--building:#f17cb0;--ore:#c9b68f;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--stage);color:var(--text);font-family:var(--sans);font-size:12.5px;line-height:1.45}
+.board{max-width:1240px;margin:0 auto;padding:22px 16px 40px}
+.bd-kicker{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.bd-title{font-size:23px;font-weight:600;margin:2px 0 4px}
+.bd-lead{font-size:14.5px;color:var(--text2);max-width:920px;margin:0 0 6px}
+.bd-est{font-size:11px;color:var(--text3);max-width:920px;margin:0 0 14px}
+.scroll{overflow-x:auto}
+.frame{display:flex;width:1200px;background:var(--panel);border:1px solid var(--edge);border-radius:6px;overflow:hidden}
+.rail{width:44px;background:var(--stage);display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:14px;color:var(--text3);font-size:14px}
+.rail i{font-style:normal;width:30px;height:30px;display:grid;place-items:center;border-radius:6px}
+.rail i.on{background:var(--pinned);color:var(--business);box-shadow:inset 3px 0 0 var(--building)}
+.page{flex:1;padding:16px 20px 22px}
+.head{display:flex;align-items:center;gap:10px}
+.swatch{width:12px;height:12px;border-radius:3px;background:var(--business)}
+.name{font-size:22px;font-weight:600}
+.info{width:16px;height:16px;border-radius:50%;border:1px solid var(--control-edge);color:var(--text3);font-size:10px;display:grid;place-items:center}
+.pill{margin-left:auto;border:1px solid var(--building);color:var(--building);border-radius:12px;padding:2px 10px;font-size:10.5px}
+.pages{display:flex;gap:6px;margin:12px 0}
+.pg{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:6px;background:var(--raised);border:1px solid var(--edge);color:var(--text2);font-size:11px}
+.pg.on{background:var(--pinned);border-color:var(--business);color:var(--text)}
+.pg .new{font-size:9px;color:var(--business);border:1px solid var(--business);border-radius:3px;padding:0 4px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+.kpi{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:7px 11px}
+.kpi .c{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+.kpi .v{font-family:var(--mono);font-size:18px}.kpi .s{font-size:10px;color:var(--text3)}
+.row{display:grid;gap:12px;margin-bottom:12px}
+.r1{grid-template-columns:440px 1fr}.r2{grid-template-columns:1fr 1fr 1fr}
+.card{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:12px 14px}
+.ch{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ch .ic{width:22px;height:22px;border-radius:5px;background:rgba(167,139,250,.16);color:var(--business);display:grid;place-items:center;font-size:12px}
+.ch h4{margin:0;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+.ch .sub{font-size:10.5px;color:var(--text3);margin-left:4px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{font-weight:500;color:var(--text3);text-align:right;padding:3px 6px;border-bottom:1px solid var(--edge);font-size:10px}
+th:nth-child(2),td:nth-child(2){text-align:left}
+td{padding:4px 6px;text-align:right;border-bottom:1px solid #1c2a3b}
+td.m{font-family:var(--mono);white-space:nowrap}td.n{color:var(--text3);width:18px}
+td .b{display:inline-block;height:6px;border-radius:2px;vertical-align:1px;margin-right:4px}
+.more{color:var(--accent);font-size:10.5px;margin-top:6px}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.chip{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:3px 9px;font-size:10px;color:var(--text2)}
+.chip.lit{background:var(--pinned);border-color:var(--business);color:var(--text)}
+.chart text{font-family:var(--mono);font-size:9.5px;fill:var(--text3)}
+.chart .lt{font-family:var(--sans);font-size:10px;fill:var(--text2)}
+.stack{display:flex;height:16px;border-radius:3px;overflow:hidden;margin:6px 0 8px}
+.stack i{display:block;height:100%}
+.kv{display:grid;grid-template-columns:1fr auto;gap:3px 10px;font-size:11px}
+.kv .k{color:var(--text2)}.kv .v{font-family:var(--mono);text-align:right}
+.band{position:relative;height:30px;margin:10px 4px 4px}
+.band .tr{position:absolute;left:0;right:0;top:12px;height:6px;background:var(--panel);border-radius:3px}
+.band .fill{position:absolute;top:12px;height:6px;background:linear-gradient(90deg,#8669e8,#c9b68f);border-radius:3px}
+.band .mk{position:absolute;top:6px;width:2px;height:18px;background:var(--text)}
+.band .lb{position:absolute;top:-6px;font-family:var(--mono);font-size:10px;color:var(--text2);transform:translateX(-50%);white-space:nowrap}
+.para{font-size:11px;color:var(--text2);margin:6px 0 0}
+.para b{color:var(--text)}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;max-width:1200px}
+.note{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:10px 13px;font-size:11.5px;color:var(--text2)}
+.note b{color:var(--text)}
+</style></head>
+<body><div class="board">
+<div class="bd-kicker">Nations study · board 2 of 4 · Trade &amp; the world &rsaquo; Partners (new page)</div>
+<div class="bd-title">Who buys your wood, and what the next cubic metre nets</div>
+<p class="bd-lead">Jerus: "if canda only needs 10 tons of wood, more wood would have to be sold esle where say portugal, thus transportation costs are higher". The page answers it for each good. For a Halifax city's lumber the first buyer is not Canada, which has wood to spare, but the United States, an hour's drive of freight away; it takes everything an ordinary city can saw. Canada and Portugal only start buying once the city sells about one cubic metre in twenty of the world's.</p>
+<p class="bd-est">The curve is NationsModel.java's (beside this board): 196 nations, lumber's producers drawn like FAO's sawnwood table, its price scaled so that the city's floor with nothing sold is today's export price (US$250 a m&sup3;) at D$1.18 a US$. The world's use is FAO's 445 Mm&sup3; of sawnwood (2023). The partners and their figures are invented for the board.</p>
+<div class="scroll"><div class="frame">
+ <div class="rail"><i>&#9776;</i><i>&#9881;</i><i class="on">&#8644;</i><i>&#9733;</i><i>&#9638;</i></div>
+ <div class="page">
+  <div class="head"><span class="swatch"></span><span class="name">Trade &amp; the world</span><span class="info">i</span><span class="pill">Over the years</span></div>
+  <div class="pages">
+   <span class="pg">Overview</span><span class="pg">The month</span><span class="pg">What we trade</span>
+   <span class="pg on">Partners <span class="new">new</span></span><span class="pg">The currency</span><span class="pg">The reserves</span>
+  </div>
+  <div class="kpis">
+   <div class="kpi"><div class="c">Sold abroad</div><div class="v">D$13.2M</div><div class="s">a month, to 38 nations</div></div>
+   <div class="kpi"><div class="c">Bought abroad</div><div class="v">D$12.6M</div><div class="s">a month, from 24 nations</div></div>
+   <div class="kpi"><div class="c">The month</div><div class="v">+D$0.6M</div><div class="s">current account</div></div>
+   <div class="kpi"><div class="c">The currency</div><div class="v">D$1.18</div><div class="s">a US$ &middot; C$1 = D$0.86</div></div>
+   <div class="kpi"><div class="c">In the vault</div><div class="v">US$412M</div><div class="s">in eight moneys</div></div>
+  </div>
+  <div class="row r1">
+   <div class="card">
+    <div class="ch"><span class="ic">&#9873;</span><h4>Who we trade with</h4><span class="sub">this month</span><span class="info" style="margin-left:auto">i</span></div>
+    <table>
+     <tr><th></th><th>nation</th><th>we sold it</th><th>we bought</th><th>its money</th><th>the haul</th></tr>
+     <tr><td class="n">1</td><td>United States</td><td class="m"><span class="b" style="width:52px;background:#a78bfa"></span>6.8M</td><td class="m"><span class="b" style="width:40px;background:#c9b68f"></span>5.2M</td><td>US$</td><td class="m">1,192 km road</td></tr>
+     <tr><td class="n">2</td><td>Canada</td><td class="m"><span class="b" style="width:16px;background:#a78bfa"></span>2.1M</td><td class="m"><span class="b" style="width:26px;background:#c9b68f"></span>3.4M</td><td>C$</td><td class="m">1,583 km road</td></tr>
+     <tr><td class="n">3</td><td>Germany</td><td class="m">&ndash;</td><td class="m"><span class="b" style="width:8px;background:#c9b68f"></span>1.1M</td><td>&euro;</td><td class="m">5,880 km sea</td></tr>
+     <tr><td class="n">4</td><td>United Kingdom</td><td class="m"><span class="b" style="width:7px;background:#a78bfa"></span>0.9M</td><td class="m"><span class="b" style="width:3px;background:#c9b68f"></span>0.4M</td><td>&pound;</td><td class="m">4,990 km sea</td></tr>
+     <tr><td class="n">5</td><td>Mexico</td><td class="m">&ndash;</td><td class="m"><span class="b" style="width:6px;background:#c9b68f"></span>0.8M</td><td>MX$</td><td class="m">4,410 km sea</td></tr>
+     <tr><td class="n">6</td><td>Norway</td><td class="m">&ndash;</td><td class="m"><span class="b" style="width:5px;background:#c9b68f"></span>0.7M</td><td>kr</td><td class="m">5,140 km sea</td></tr>
+     <tr><td class="n">7</td><td>Portugal</td><td class="m"><span class="b" style="width:5px;background:#a78bfa"></span>0.6M</td><td class="m">&ndash;</td><td>&euro;</td><td class="m">5,250 km sea</td></tr>
+     <tr><td class="n">8</td><td>France</td><td class="m"><span class="b" style="width:4px;background:#a78bfa"></span>0.5M</td><td class="m">&ndash;</td><td>&euro;</td><td class="m">5,420 km sea</td></tr>
+    </table>
+    <div class="more">+ 34 more nations &rsaquo; &nbsp; &middot; &nbsp; each on the map &rsaquo;</div>
+   </div>
+   <div class="card">
+    <div class="ch"><span class="ic">&#8599;</span><h4>Lumber: where the next m&sup3; goes</h4><span class="sub">what it nets here, by how much we sell</span><span class="info" style="margin-left:auto">i</span></div>
+    <div class="chips"><span class="chip lit">Lumber</span><span class="chip">Fish</span><span class="chip">Wood pellets</span><span class="chip">Sawlogs</span><span class="chip">Crude (we buy)</span><span class="chip">every good &rsaquo;</span></div>
+    <svg class="chart" id="curve" width="620" height="252"></svg>
+   </div>
+  </div>
+  <div class="row r2">
+   <div class="card">
+    <div class="ch"><span class="ic">&#9636;</span><h4>At what we sell now</h4><span class="sub">37,000 m&sup3; a month</span></div>
+    <div class="stack"><i style="width:89%;background:#a78bfa"></i><i style="width:7%;background:#8669e8"></i><i style="width:3%;background:#d3c5fd"></i><i style="width:1%;background:#5f7189"></i></div>
+    <div class="kv">
+     <span class="k">United States &middot; 89%</span><span class="v">nets D$294.9</span>
+     <span class="k">Dominican Republic &middot; 7%</span><span class="v">nets D$294.9</span>
+     <span class="k">Iceland &middot; 3%</span><span class="v">nets D$294.9</span>
+     <span class="k">8 small buyers &middot; 1%</span><span class="v">nets D$294.9</span>
+    </div>
+    <p class="para">Every buyer nets the same: we sell to each until the next m&sup3; would net more somewhere else. <b>Next to buy:</b> Cuba at 2.1% of the world's lumber, Canada at 4.8%, Portugal at 5.6%.</p>
+   </div>
+   <div class="card">
+    <div class="ch"><span class="ic">&#8596;</span><h4>Lumber's band this month</h4></div>
+    <div class="band"><div class="tr"></div><div class="fill" style="left:4%;width:92%"></div>
+     <div class="mk" style="left:4%"></div><div class="lb" style="left:4%">294.9</div>
+     <div class="mk" style="left:34%;background:var(--business)"></div><div class="lb" style="left:34%">331</div>
+     <div class="mk" style="left:96%"></div><div class="lb" style="left:96%">401</div></div>
+    <div class="kv">
+     <span class="k">The floor: the next m&sup3; sold abroad nets</span><span class="v">D$294.9</span>
+     <span class="k">Here this month</span><span class="v">D$331</span>
+     <span class="k">The ceiling: the next m&sup3; landed from Canada</span><span class="v">D$401</span>
+    </div>
+    <p class="para">Today both ends are fixed prices the whole world pays, wherever the city stands. Now the floor is the best buyer's price less the freight to it, and the ceiling the cheapest seller's price plus the freight from it: both are <b>where you founded</b>, and both move as you trade.</p>
+   </div>
+   <div class="card">
+    <div class="ch"><span class="ic">&#9203;</span><h4>What moves it</h4></div>
+    <div class="kv">
+     <span class="k">Our own selling, this month</span><span class="v">&minus;D$0.1</span>
+     <span class="k">The world's answer, by January</span><span class="v">&minus;D$0.4</span>
+     <span class="k">The US building less (its year)</span><span class="v">&minus;D$6.2</span>
+     <span class="k">The freight to the US</span><span class="v">D$24.0 a m&sup3;</span>
+    </div>
+    <p class="para">Each month our sales lower the price where they land, by that market's slope. Each January the world solves again with our year in it, and every nation's year: <b>the city becomes the market</b> only when it sells a real share of the world's lumber, as the curve shows.</p>
+   </div>
+  </div>
+ </div>
+</div></div>
+<div class="notes">
+ <div class="note"><b>The curve.</b> Across, what the city sells a year as a share of the world's use, on a log scale; up, what the next m&sup3; nets here. The violet line is the month (each buyer's own slope); the dashed one adds the world's answer that January's solve gives (spec-nations 4.4). The ticks are where each buyer starts to take any: the US at once, Cuba at 2.1%, Canada at 4.8%, Portugal at 5.6%. A city selling a twentieth of the world's lumber gets about 8% less a m&sup3; than a small one, re-solved.</div>
+ <div class="note"><b>Where it comes from.</b> The table is the city's trade by partner, kept from WN3 (today nothing records a partner: the trade is a sum by good). The haul is the freight table's: road and rail to the US and Canada through FR0's gateways, sea from the berth otherwise. Each partner's money is its own (WN4); the trade is settled in it, and the figures here are in D$ at this month's cross rate.</div>
+</div>
+</div>
+<script>
+const P=[[0.01,295.0,295.0],[0.1,294.9,294.5],[0.2,294.8,294.0],[0.3,294.6,293.4],[0.4,294.5,292.9],[0.5,294.4,292.4],[0.6,294.3,291.9],[0.7,294.2,291.4],[0.8,294.1,290.9],[0.9,293.9,290.4],[1.0,293.8,289.9],[1.2,293.6,288.8],[1.4,293.4,287.8],[1.6,293.2,286.7],[1.8,292.9,285.7],[2.0,292.7,284.7],[2.25,292.4,283.4],[3.0,291.5,279.5],[3.75,290.6,275.6],[4.5,289.7,271.8],[5.25,288.9,267.9],[6.0,288.1,264.1],[6.75,287.4,260.3],[7.5,286.6,256.6],[8.25,285.8,252.8],[9.0,285.1,249.0],[9.75,284.3,245.2],[10.5,283.5,241.5],[11.25,282.8,237.8],[12.0,282.1,234.1],[12.75,281.4,230.4],[13.5,280.7,226.7],[14.25,280.0,223.0],[15.0,279.3,219.3]];
+const J=[["US",0.0099],["Cuba",2.05],["Canada",4.81],["Portugal",5.61],["Mexico",10.3],["Ireland",10.75]];
+const svg=document.getElementById('curve'),NS='http://www.w3.org/2000/svg';
+const L=52,R=604,T=22,B=212,x0=Math.log10(0.01),x1=Math.log10(15),y0=215,y1=300;
+const X=s=>L+(Math.log10(s)-x0)/(x1-x0)*(R-L), Y=v=>B-(v-y0)/(y1-y0)*(B-T);
+function el(t,a,txt){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;svg.appendChild(e);return e}
+for(const v of [220,240,260,280,300]){el('line',{x1:L,x2:R,y1:Y(v),y2:Y(v),stroke:'#24354a'});el('text',{x:L-6,y:Y(v)+3,'text-anchor':'end'},'D$'+v)}
+for(const s of [0.01,0.1,1,10]){el('line',{x1:X(s),x2:X(s),y1:T,y2:B,stroke:'#1c2a3b'});el('text',{x:X(s),y:B+14,'text-anchor':'middle'},s+'%')}
+el('text',{x:(L+R)/2,y:B+30,'text-anchor':'middle',class:'lt'},'what we sell a year, as a share of the world’s lumber');
+const OFF={Cuba:[0,1],Canada:[0,1],Portugal:[12,1],Mexico:[24,0],Ireland:[36,0]};
+for(const [n,s] of J){if(s<0.01)continue;el('line',{x1:X(s),x2:X(s),y1:T+2,y2:B,stroke:'#c9b68f','stroke-dasharray':'2 3','stroke-opacity':.7});const [dy,st]=OFF[n];el('text',{x:X(s)+(st?3:-3),y:T+10+dy,class:'lt','text-anchor':st?'start':'end'},n+' joins')}
+el('polyline',{points:P.map(p=>X(p[0])+','+Y(p[2])).join(' '),fill:'none',stroke:'#d3c5fd','stroke-width':1.6,'stroke-dasharray':'5 4'});
+el('polyline',{points:P.map(p=>X(p[0])+','+Y(p[1])).join(' '),fill:'none',stroke:'#a78bfa','stroke-width':2.2});
+el('line',{x1:X(0.1),x2:X(0.1),y1:T,y2:B,stroke:'#e6edf3','stroke-width':1.2});
+el('circle',{cx:X(0.1),cy:Y(294.9),r:4,fill:'#e6edf3'});
+el('text',{x:X(0.1)+6,y:Y(294.9)+16,class:'lt'},'we sell 0.1%: nets D$294.9');
+el('text',{x:X(1.2),y:Y(293.6)-7,'text-anchor':'middle',class:'lt'},'this month');
+el('text',{x:R-4,y:Y(219.3)-6,'text-anchor':'end',class:'lt'},'after the world answers');
+</script>
+</body></html>

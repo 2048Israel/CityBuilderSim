@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nations: the world map</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;--edge:#24354a;--control-edge:#33475f;--text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;--good:#3fb950;--warn:#e3b341;--bad:#f85149;--accent:#5aa9ff;--accent-light:#8cc4ff;--people:#2ec4b6;--money:#5aa9ff;--business:#a78bfa;--building:#f17cb0;--ore:#c9b68f;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--stage);color:var(--text);font-family:var(--sans);font-size:12.5px;line-height:1.45}
+.board{max-width:1180px;margin:0 auto;padding:22px 16px 40px}
+.bd-kicker{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.bd-title{font-size:23px;font-weight:600;margin:2px 0 4px}
+.bd-lead{font-size:14.5px;color:var(--text2);max-width:900px;margin:0 0 6px}
+.bd-est{font-size:11px;color:var(--text3);max-width:900px;margin:0 0 14px}
+.scroll{overflow-x:auto}
+.over{width:1164px;background:var(--stage);border:1px solid var(--edge);border-radius:8px;padding:14px 22px 12px}
+.head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:nowrap}
+.ico{width:26px;height:26px;border-radius:6px;background:rgba(241,124,176,.16);display:grid;place-items:center;color:var(--building);font-size:14px}
+.ttl{font-size:15px;font-weight:600;white-space:nowrap}.ttl span{color:var(--text3);font-weight:400}
+.clock{font-size:10.5px;color:var(--text3);white-space:nowrap}
+.tile{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:5px 10px;min-width:150px;position:relative}
+.tile .l{font-size:10.5px;font-weight:600;letter-spacing:.04em}.tile .v{font-family:var(--mono);font-size:15px}.tile .c{font-size:10px;color:var(--text3)}
+.tile svg{position:absolute;right:8px;top:7px}
+.tile.p .l{color:var(--people)}.tile.g .l{color:var(--business)}
+.sp{flex:1}
+.chip{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:4px 10px;font-size:10px;color:var(--text2);cursor:pointer;user-select:none;white-space:nowrap}
+.chip:hover{border-color:var(--control-edge);color:var(--text)}
+.chip.lit{background:var(--pinned);border-color:var(--accent);color:var(--text)}
+.chip .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:var(--spent);vertical-align:1px}
+.chip.lit .dot{background:var(--accent)}
+.grp{display:flex;gap:4px;padding:0 8px;border-left:1px solid var(--edge);border-right:1px solid var(--edge)}
+.scene{position:relative;width:1120px;height:720px;border-radius:6px;overflow:hidden;background:#0b1118}
+.scene img{position:absolute;left:0;top:0;width:1120px;height:720px}
+.scene svg.ov{position:absolute;left:0;top:0}
+.off{display:none}
+.lbl{font-family:var(--sans);fill:#e6edf3;font-size:11px;font-weight:600;paint-order:stroke;stroke:#0b1118;stroke-width:3px;stroke-opacity:.75}
+.lbl2{font-family:var(--mono);fill:#a9b8c9;font-size:9.5px;paint-order:stroke;stroke:#0b1118;stroke-width:3px;stroke-opacity:.75}
+.scale{position:absolute;left:12px;bottom:12px;font-family:var(--mono);font-size:10px;color:#fff;text-shadow:0 0 3px #000}
+.scale i{display:block;width:107px;height:2px;background:#fff;box-shadow:0 0 3px #000;margin-top:2px}
+.legend{position:absolute;right:8px;bottom:8px;background:#0b1118d9;border-radius:6px;padding:7px 10px 8px;font-size:9px;color:var(--text3)}
+.legend .lh{display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text2);font-size:10px;font-weight:600;user-select:none}
+.legend .lh b{font-weight:400;color:var(--text3)}
+.legend .rows{display:grid;grid-template-columns:repeat(2,auto);gap:4px 14px;margin-top:7px}
+.legend.shut .rows{display:none}
+.li{display:flex;align-items:center;gap:5px}
+.sw{width:10px;height:10px;border-radius:2px;flex:none}
+.hover{position:absolute;background:#0b1118e6;border:1px solid var(--edge);border-radius:6px;padding:6px 9px;font-size:10px;color:var(--text2);pointer-events:none;display:none;max-width:250px}
+.hover b{display:block;color:var(--text);font-size:11px}.hover .go{color:var(--accent-light);font-weight:600;margin-top:2px}
+.card{position:absolute;left:468px;top:438px;width:330px;background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:11px 13px 10px;box-shadow:0 6px 22px #0008}
+.card h4{margin:0;font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card .x{margin-left:auto;color:var(--text3);cursor:pointer;font-weight:400}
+.tag{font-size:9.5px;font-weight:500;color:var(--text2);background:var(--pinned);border:1px solid var(--edge);border-radius:4px;padding:1px 6px}
+.kv{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;margin:8px 0 6px;font-size:10.5px}
+.kv .k{color:var(--text3)}.kv .v{font-family:var(--mono);color:var(--text)}.kv .r{font-family:var(--mono);color:var(--text3);text-align:right}
+.cap{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-top:6px}
+.bars{display:grid;grid-template-columns:58px 1fr;gap:3px 8px;margin:4px 0 2px;font-size:10px;align-items:center}
+.bars .bt{height:9px;border-radius:2px;display:flex;overflow:hidden;background:var(--panel)}
+.bars .bt i{display:block;height:100%}
+.bars .bl{color:var(--text2)}
+.sub{font-size:9.5px;color:var(--text3)}
+.door{color:var(--accent);font-size:10.5px;margin-top:6px;display:flex;gap:16px}
+.notes{max-width:1164px;margin:16px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.note{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:10px 13px;font-size:11.5px;color:var(--text2)}
+.note b{color:var(--text)}
+</style></head>
+<body><div class="board">
+<div class="bd-kicker">Nations study · board 1 of 4 · the expanded map, far out</div>
+<div class="bd-title">The world map: nations, their borders, and this month's trade</div>
+<p class="bd-lead">Jerus: "dot and routes, but also a toggle on the map ui, the map ui should show your population and gdp on the top ... legend should be collapsable, and there should be a map button to for exmaple toggle borders, enable to show each nation stats on their land ... clicking would show more stats". The chips at the top are live: click Nations, Trade routes, Borders or the legend's head; hover a dot; the card is Canada's.</p>
+<p class="bd-est">The ground is the game's: earth-1.bin's far layers in TileRaster's colours, in EarthProj's projection on Halifax, dimmed as the far view dims the world off the city's land (RenderWorld.java). The borders are Natural Earth's at 1:10m, the edges two countries share, projected the same way (natural-earth-borders.py); earth-1.bin has none, and WN0 bakes them. Nations' figures are rounded 2024 values (IMF WEO, UN WPP); the city's trade is invented for the board.</p>
+<div class="scroll"><div class="over">
+ <div class="head">
+  <div class="ico">&#9638;</div>
+  <div><div class="ttl">Land office <span>&rsaquo;</span> Map</div><div class="clock">28 September 2031 &middot; month 381</div></div>
+  <div class="tile p"><div class="l">POPULATION</div><div class="v">184,220</div><div class="c">&#9650; 312 this month</div>
+   <svg width="72" height="16"><polyline fill="none" stroke="#2ec4b6" stroke-width="1.4" points="0,14 10,13 20,12 30,11 40,9 50,8 60,5 72,3"/></svg></div>
+  <div class="tile g"><div class="l">GDP</div><div class="v">D$9.81B / yr</div><div class="c">+2.4% real</div>
+   <svg width="72" height="16"><polyline fill="none" stroke="#a78bfa" stroke-width="1.4" points="0,13 10,12 20,12 30,10 40,10 50,7 60,6 72,4"/></svg></div>
+  <div class="sp"></div>
+  <div class="grp">
+   <span class="chip lit" data-layer="nations"><span class="dot"></span>Nations</span>
+   <span class="chip lit" data-layer="routes"><span class="dot"></span>Trade routes</span>
+   <span class="chip lit" data-layer="borders"><span class="dot"></span>Borders</span>
+  </div>
+  <span class="chip">Fit</span>
+  <span class="chip">Back to the land office &middot; Esc</span>
+ </div>
+ <div class="scene" id="scene">
+  <img src="{{BASE}}" alt="the North Atlantic round Halifax, as the far view draws it">
+  <svg class="ov L-borders" width="1120" height="720"><g fill="none" stroke="#ffffff" stroke-opacity=".8" stroke-width="1.3" stroke-dasharray="4 3">{{BORDERS_SVG}}</g></svg>
+  <svg class="ov" width="1120" height="720" id="ov"></svg>
+  <div class="scale">1,000 km<i></i></div>
+  <div class="legend" id="legend">
+   <div class="lh" id="lh"><span id="chev">&#9662;</span> Legend <b>&middot; click to fold</b></div>
+   <div class="rows">
+    <div class="li"><span class="sw" style="background:#a8c47e"></span>Grass</div>
+    <div class="li"><svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#e6edf3" stroke="#0b1118"/></svg>A nation, by its economy</div>
+    <div class="li"><span class="sw" style="background:#527c45"></span>Forest</div>
+    <div class="li"><svg width="16" height="10"><line x1="0" y1="5" x2="16" y2="5" stroke="#fff" stroke-dasharray="3 3" stroke-width="1.5"/></svg>A border</div>
+    <div class="li"><span class="sw" style="background:#d2b48c"></span>Desert</div>
+    <div class="li"><svg width="16" height="10"><line x1="0" y1="5" x2="16" y2="5" stroke="#a78bfa" stroke-width="3"/></svg>What we sell it, a month</div>
+    <div class="li"><span class="sw" style="background:#dfe7ee"></span>Ice</div>
+    <div class="li"><svg width="16" height="10"><line x1="0" y1="5" x2="16" y2="5" stroke="#c9b68f" stroke-width="3"/></svg>What we buy from it</div>
+    <div class="li"><span class="sw" style="background:#2f5d88"></span>Sea</div>
+    <div class="li"><svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="none" stroke="#8cc4ff" stroke-width="2"/></svg>The city</div>
+   </div>
+  </div>
+  <div class="hover" id="hover"></div>
+  <div class="card" id="card">
+   <h4>Canada <span class="tag">neighbour &middot; 1,583 km by road and rail</span><span class="x" id="cx">&times;</span></h4>
+   <div class="kv">
+    <span class="k">GDP</span><span class="v">US$2.24T &middot; D$2.64T</span><span class="r">9th of 196</span>
+    <span class="k">People</span><span class="v">41.5M</span><span class="r">39th</span>
+    <span class="k">GDP a head</span><span class="v">US$54,000</span><span class="r">18th</span>
+    <span class="k">This year</span><span class="v">+1.6% real &middot; 2.1% prices</span><span class="r"></span>
+    <span class="k">Its money</span><span class="v">C$1 = D$0.86</span><span class="r">C$1.37 a US$</span>
+    <span class="k">Its land</span><span class="v">C$103,000 a hectare to us</span><span class="r">factor 1.00</span>
+   </div>
+   <div class="cap">With us this year</div>
+   <div class="bars">
+    <span class="bl">buys D$25M</span><span class="bt"><i style="width:41%;background:#a78bfa"></i><i style="width:22%;background:#8669e8"></i><i style="width:14%;background:#d3c5fd"></i></span>
+    <span class="bl">sells D$41M</span><span class="bt"><i style="width:30%;background:#c9b68f"></i><i style="width:18%;background:#a8966f"></i><i style="width:12%;background:#e2d6b8"></i></span>
+   </div>
+   <div class="sub">buys our lumber 41%, fish 22%, wood pellets 14% &middot; sells us diesel 30%, machinery 18%, cars 12%</div>
+   <div class="door"><span>Its trade with us &rsaquo;</span><span>All its measures in Rankings &rsaquo;</span></div>
+  </div>
+ </div>
+</div></div>
+<div class="notes">
+ <div class="note"><b>What each chip does.</b> <b>Nations</b>: a dot at each nation's largest place, its area by GDP, and its name with GDP and people written on its land where its ground in view is big enough to hold them (a small one keeps only its dot; hover it). <b>Trade routes</b>: this month's money each way between the city and each partner, violet what we sell, sand what we buy, the width by money; under D$0.3M a month none is drawn. <b>Borders</b>: Natural Earth's lines, dashed white; on at the far view and the globe, and at the near view only where a border crosses the city's ground. The three are remembered with the map's other settings.</div>
+ <div class="note"><b>The head and the legend.</b> The two tiles are the window header's POPULATION and GDP, the same figures and sparklines, so the map, laid over the whole window, still says how big the city is. The legend folds to its head and stays folded until it is opened; it is no longer mouse-transparent, but only its head takes the click. <b>The card</b> opens on a click on a dot or a nation's land: its figures are the world file's for the city's year (WN1), its trade with us the city's own record (WN3), the ranks the 196 by the same figure; "All its measures" waits for the Rankings tab (spec-leaderboards).</div>
+</div>
+</div>
+<script>
+const N=[
+ {n:"Canada",node:[260,414],c:[213,196],gdp:2.24,pop:"41.5M",lab:1,sell:2.1,buy:3.4,from:"lumber, fish, wood pellets",to:"diesel, machinery, cars",km:"1,583 km by road and rail"},
+ {n:"United States",node:[301,456],c:[124,415],gdp:29.2,pop:"340M",lab:1,sell:6.8,buy:5.2,from:"lumber, fish, pellets",to:"machinery, cars, jet fuel",km:"1,192 km by road and rail"},
+ {n:"Mexico",node:[6,634],c:[60,640],gdp:1.85,pop:"131M",lab:1,sell:0,buy:0.8,from:"-",to:"cars, vans",km:"4,410 km by sea"},
+ {n:"Greenland (Denmark)",node:[456,180],c:[473,86],gdp:0.0033,pop:"57k",lab:1,sell:0,buy:0,km:"2,890 km by sea"},
+ {n:"Iceland",node:[599,127],c:[604,108],gdp:0.033,pop:"0.39M",lab:1,sell:0.2,buy:0,from:"lumber",to:"-",km:"4,197 km by sea"},
+ {n:"Ireland",node:[755,169],c:[747,184],gdp:0.58,pop:"5.3M",lab:1,sell:0.4,buy:0,from:"lumber, panels",to:"-",km:"4,520 km by sea"},
+ {n:"United Kingdom",node:[799,153],c:[768,140],gdp:3.64,pop:"69.2M",lab:1,sell:0.9,buy:0.4,from:"lumber, fish",to:"machinery",km:"4,990 km by sea"},
+ {n:"France",node:[835,162],c:[862,192],gdp:3.16,pop:"68.6M",lab:1,sell:0.5,buy:0,from:"fish, pellets",to:"-",km:"5,420 km by sea"},
+ {n:"Spain",node:[876,275],c:[884,266],gdp:1.73,pop:"48.8M",lab:1,sell:0,buy:0,km:"5,790 km by sea"},
+ {n:"Portugal",node:[854,325],c:[846,310],gdp:0.31,pop:"10.4M",lab:1,sell:0.6,buy:0,from:"lumber",to:"-",km:"5,250 km by sea"},
+ {n:"Morocco",node:[900,368],c:[914,420],gdp:0.15,pop:"37.5M",lab:1,sell:0,buy:0,km:"5,600 km by sea"},
+ {n:"Algeria",node:[945,264],c:[1010,350],gdp:0.26,pop:"46.8M",lab:1,sell:0,buy:0.5,from:"-",to:"crude",km:"6,560 km by sea"},
+ {n:"Germany",node:[837,66],c:[842,93],gdp:4.66,pop:"83.5M",lab:1,sell:0,buy:1.1,from:"-",to:"machinery, cars",km:"5,880 km by sea"},
+ {n:"Norway",node:[750,33],c:[734,40],gdp:0.48,pop:"5.6M",lab:0,sell:0,buy:0.7,from:"-",to:"crude",km:"5,140 km by sea"},
+ {n:"Netherlands",node:[812,124],c:[814,114],gdp:1.23,pop:"18.0M",lab:0,sell:0,buy:0,km:"5,450 km by sea"},
+ {n:"Italy",node:[944,151],c:[934,145],gdp:2.38,pop:"59.0M",lab:0,sell:0,buy:0,km:"6,710 km by sea"},
+ {n:"Cuba",node:[188,648],c:[222,671],gdp:0.11,pop:"11.0M",lab:0,sell:0.1,buy:0,from:"lumber",to:"-",km:"3,675 km by sea"},
+ {n:"Mauritania",node:[916,587],c:[953,521],gdp:0.011,pop:"5.2M",lab:0,sell:0,buy:0,km:"6,350 km by sea"},
+ {n:"Mali",node:[1017,595],c:[1029,502],gdp:0.021,pop:"24.5M",lab:0,sell:0,buy:0,km:"7,300 km"},
+ {n:"Senegal",node:[915,633],c:[945,616],gdp:0.031,pop:"18.5M",lab:0,sell:0,buy:0,km:"6,200 km by sea"}
+];
+const C=[395,416], ov=document.getElementById('ov'), NS='http://www.w3.org/2000/svg';
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);(p||ov).appendChild(e);return e}
+const gR=el('g',{class:'L-routes'}), gN=el('g',{class:'L-nations'});
+for(const x of N){
+ for(const [m,col,side] of [[x.sell,'#a78bfa',-1],[x.buy,'#c9b68f',1]]){
+  if(!m||m<0.3)continue;
+  const [x1,y1]=x.node, dx=x1-C[0], dy=y1-C[1], L=Math.hypot(dx,dy), bow=0.06*L+5;
+  const mx=(C[0]+x1)/2 - dy/L*bow*side, my=(C[1]+y1)/2 + dx/L*bow*side;
+  el('path',{d:`M${C[0]},${C[1]} Q${mx},${my} ${x1},${y1}`,fill:'none',stroke:col,'stroke-width':(1.2+2.2*Math.sqrt(m)).toFixed(1),'stroke-opacity':.78,'stroke-linecap':'round'},gR);
+ }
+}
+for(const x of N){
+ const r=Math.max(2.5,1.6+1.9*Math.sqrt(x.gdp));
+ const d=el('circle',{cx:x.node[0],cy:x.node[1],r:Math.min(r,11),fill:'#e6edf3','fill-opacity':.85,stroke:'#0b1118','stroke-width':1.2},gN);
+ d.style.cursor='pointer';
+ d.addEventListener('mousemove',ev=>show(ev,x));d.addEventListener('mouseleave',()=>hover.style.display='none');
+ if(x.lab){
+  const t=el('text',{x:x.c[0],y:x.c[1],'text-anchor':'middle',class:'lbl'},gN);t.textContent=x.n;
+  const g=x.gdp>=1?`US$${x.gdp.toFixed(2)}T`:x.gdp>=0.01?`US$${Math.round(x.gdp*1000)}B`:`US$${(x.gdp*1000).toFixed(1)}B`;
+  const s=el('text',{x:x.c[0],y:x.c[1]+12,'text-anchor':'middle',class:'lbl2'},gN);s.textContent=`${g} · ${x.pop}`;
+ }
+}
+el('circle',{cx:C[0],cy:C[1],r:6,fill:'none',stroke:'#8cc4ff','stroke-width':2.4});
+const ct=el('text',{x:C[0]+10,y:C[1]+4,class:'lbl'});ct.textContent='Arden';
+const hover=document.getElementById('hover'), scene=document.getElementById('scene');
+function show(ev,x){
+ const b=scene.getBoundingClientRect();
+ hover.innerHTML=`<b>${x.n}</b>GDP ${x.gdp>=1?'US$'+x.gdp.toFixed(2)+'T':'US$'+Math.round(x.gdp*1000)+'B'} · ${x.pop} people<br>`+
+  (x.sell?`buys from us D$${x.sell.toFixed(1)}M a month: ${x.from}<br>`:'')+(x.buy?`sells us D$${x.buy.toFixed(1)}M a month: ${x.to}<br>`:'')+
+  (!x.sell&&!x.buy?'no trade with us this month<br>':'')+`${x.km} from us<div class="go">Click for its card</div>`;
+ hover.style.left=(ev.clientX-b.left+14)+'px';hover.style.top=(ev.clientY-b.top+10)+'px';hover.style.display='block';
+}
+document.querySelectorAll('[data-layer]').forEach(c=>c.addEventListener('click',()=>{
+ c.classList.toggle('lit');document.querySelectorAll('.L-'+c.dataset.layer).forEach(e=>e.classList.toggle('off',!c.classList.contains('lit')));
+}));
+document.getElementById('lh').addEventListener('click',()=>{const l=document.getElementById('legend');l.classList.toggle('shut');document.getElementById('chev').innerHTML=l.classList.contains('shut')?'&#9656;':'&#9662;'});
+document.getElementById('cx').addEventListener('click',()=>document.getElementById('card').style.display='none');
+</script>
+</body></html>
