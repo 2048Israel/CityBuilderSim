@@ -3890,6 +3890,16 @@ public class LongPlaytest {
     static int layoutRingMonth;
     /** The old works at the last window's last month: how many there were, how many stand where they stood, and the same for the types whose count held. */
     static long layoutOldN, layoutOldStand, layoutOldHeldN, layoutOldHeldStand;
+    /** The districts a spill reached when the oldest works were kept (a carry in), and the old works in a district a spill reached then or at the end, counted apart: a district joining the map's order ahead of them hands the chain's carry on afresh, and what was carried in comes before them by month. */
+    static final java.util.Set<Long> layoutOldSpill = new java.util.HashSet<>();
+    static long layoutOldSpillN, layoutOldSpillStand;
+
+    /** Whether a carry in, counted by type, holds anything. */
+    static boolean layoutCarries(int[] carryIn) {
+        if (carryIn == null) return false;
+        for (int c : carryIn) if (c > 0) return true;
+        return false;
+    }
 
     /** Which window a month falls in (its index in LAYOUT_STARTS), -1 for none. */
     static int layoutWindowOf(int month) {
@@ -4103,6 +4113,7 @@ public class LongPlaytest {
         if (total == 0) return;
         layoutOldMonth = month;
         layoutOldBoxes.putAll(boxes);
+        for (Map.Entry<Long, LayoutSnap> e : now.entrySet()) if (layoutCarries(e.getValue().carryIn)) layoutOldSpill.add(e.getKey());
         for (Map.Entry<Long, LayoutSnap> e : now.entrySet()) layoutOldCounts.put(e.getKey(), e.getValue().byType);
         for (CityMap.District d : m.districts()) {
             int[] counted = new int[types.length];
@@ -4155,6 +4166,12 @@ public class LongPlaytest {
                 long key = e.getKey();
                 int[][] model = layoutOldModel.get(key);
                 int kept = model == null ? had[t] : Math.min(had[t], Math.min(model[0][t], model[1][t]));
+                if (layoutOldSpill.contains(key) || (s != null && layoutCarries(s.carryIn))) {
+                    // A district a spill reached: counted apart, not flagged (see layoutOldSpill).
+                    layoutOldSpillN += kept;
+                    layoutOldSpillStand += Math.min(stand[t], kept);
+                    continue;
+                }
                 if (stand[t] < kept) {
                     flag(month, "an old works moved", String.format("district (%d,%d), %s: %d of the %d standing at m%d are not where they stood at m%d,"
                             + " and the district holds %d of the type now against %d then (the model's count of it %d then, as low as %d in between)",
@@ -4187,8 +4204,9 @@ public class LongPlaytest {
                 layoutRing[2] > layoutRing[0] ? "FARTHER than the homes'" : "no farther than the homes'")
                 + " (boxes at the windows' first months, homes' band / industry / outer: " + String.join(", ", layoutBandsAt) + ")";
         String old = layoutOldMonth == 0 || layoutRing == null ? "not measured (no industry on the map at a window's first month before the last window)"
-                : String.format("%,d of %,d industry box(es) of m%d stand where they stood at m%d (%,d of %,d in the types whose district count held)",
-                layoutOldStand, layoutOldN, layoutOldMonth, layoutRingMonth, layoutOldHeldStand, layoutOldHeldN);
+                : String.format("%,d of %,d industry box(es) of m%d stand where they stood at m%d (%,d of %,d in the types whose district count held;"
+                + " of the oldest its own count kept, %,d of %,d stand in the districts a spill reached, counted apart)",
+                layoutOldStand, layoutOldN, layoutOldMonth, layoutRingMonth, layoutOldHeldStand, layoutOldHeldN, layoutOldSpillStand, layoutOldSpillN);
         out.add("  ...the ring at " + ring + "; the oldest works: " + old);
         return out;
     }
