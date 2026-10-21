@@ -49,7 +49,7 @@ public class SaveSlotCheck {
 
     public static void main(String[] args) throws Exception {
 
-        Path root = Files.createTempDirectory("slotcheck");
+        Path root = TempDirs.create("slotcheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         /* ==================== 1. eleven distinct files ==================== */
@@ -197,7 +197,7 @@ public class SaveSlotCheck {
         /* ==================== 7. the autosave ==================== */
         System.out.println("\n--- the autosave ---");
 
-        Path autoRoot = Files.createTempDirectory("autocheck");
+        Path autoRoot = TempDirs.create("autocheck");
         GameFiles autoFiles = new GameFiles(autoRoot.resolve("data"),
                 autoRoot.resolve("no-legacy"));
 

@@ -50,7 +50,7 @@
 >      credibility KSEED, the year's inflation smoothed, the level 1, its
 >      constants at founding, its step nothing.
 
-**Uses:** [Expectations](Expectations.md) (46), [Game](Game.md) (18), [PriceIndex](PriceIndex.md) (14), [LabourMarket](LabourMarket.md) (7), [ForeignAccounts](ForeignAccounts.md) (5), [CurrencyCheck](CurrencyCheck.md) (5), [Retail](Retail.md) (4), [DebtManager](DebtManager.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Bank](Bank.md) (4), [CareType](CareType.md) (3), [EducationType](EducationType.md) (3), [Healthcare](Healthcare.md) (2), [GameFiles](GameFiles.md) (2), [TaxPolicy](TaxPolicy.md) (2), [MonetaryCheck](MonetaryCheck.md) (1), [Education](Education.md) (1), [PayTier](PayTier.md) (1), [Equity](Equity.md) (1), [BuildingManager](BuildingManager.md) (1)
+**Uses:** [Expectations](Expectations.md) (46), [Game](Game.md) (18), [PriceIndex](PriceIndex.md) (14), [LabourMarket](LabourMarket.md) (7), [ForeignAccounts](ForeignAccounts.md) (5), [CurrencyCheck](CurrencyCheck.md) (5), [Retail](Retail.md) (4), [DebtManager](DebtManager.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Bank](Bank.md) (4), [CareType](CareType.md) (3), [EducationType](EducationType.md) (3), [Healthcare](Healthcare.md) (2), [GameFiles](GameFiles.md) (2), [TaxPolicy](TaxPolicy.md) (2), [TempDirs](TempDirs.md) (1), [MonetaryCheck](MonetaryCheck.md) (1), [Education](Education.md) (1), [PayTier](PayTier.md) (1), [Equity](Equity.md) (1), [BuildingManager](BuildingManager.md) (1)
 
 ## Sections
 

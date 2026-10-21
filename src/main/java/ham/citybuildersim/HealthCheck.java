@@ -58,7 +58,7 @@ public class HealthCheck {
 
         java.io.PrintStream out = System.out;
         java.io.PrintStream quiet = new java.io.PrintStream(java.io.OutputStream.nullOutputStream());
-        Path root = Files.createTempDirectory("healthcheck");
+        Path root = TempDirs.create("healthcheck");
 
         /* ================= 1. the buildings know what they treat ================= */
         System.out.println("--- care types ---");

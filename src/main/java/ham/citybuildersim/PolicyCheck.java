@@ -237,7 +237,7 @@ public class PolicyCheck {
          */
         System.out.println("\n--- a protected sector never reaches six losses ---");
 
-        Path root = Files.createTempDirectory("policycheck");
+        Path root = TempDirs.create("policycheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         Game city = new Game(files);

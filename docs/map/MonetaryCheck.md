@@ -37,7 +37,7 @@
 >      assertion since 0.7.3, with the households' saving answering the real
 >      deposit rate - and the columns that say which channel carried it.
 
-**Uses:** [PriceIndex](PriceIndex.md) (58), [DebtManager](DebtManager.md) (24), [Game](Game.md) (18), [Retail](Retail.md) (13), [ForeignAccounts](ForeignAccounts.md) (11), [LongPlaytest](LongPlaytest.md) (11), [WorldEconomy](WorldEconomy.md) (6), [GameFiles](GameFiles.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (1), [Bank](Bank.md) (1)
+**Uses:** [PriceIndex](PriceIndex.md) (58), [DebtManager](DebtManager.md) (24), [Game](Game.md) (18), [Retail](Retail.md) (13), [ForeignAccounts](ForeignAccounts.md) (11), [LongPlaytest](LongPlaytest.md) (11), [WorldEconomy](WorldEconomy.md) (6), [GameFiles](GameFiles.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [Bank](Bank.md) (1)
 
 **Used by (3):** [CurveCheck](CurveCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [HouseholdCheck](HouseholdCheck.md)
 

@@ -5,7 +5,6 @@ import ham.citybuildersim.sectors.Mining;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -172,7 +171,7 @@ public class DenominationCheck {
 
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("denomcheck");
+        Path root = TempDirs.create("denomcheck");
 
         /* ============ 1. THE UNIT ============ */
         out.println("--- what a reform does to the unit ---");

@@ -1,4 +1,4 @@
-# ForeignDebtCheck.java - 880 lines · 8 methods · 0 constants · harnesses
+# ForeignDebtCheck.java - 879 lines · 8 methods · 0 constants · harnesses
 
 `ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -45,7 +45,7 @@
 >      rollover's parts add to what falls due, and the borrowing flags
 >      carry nothing else?
 
-**Uses:** [DebtManager](DebtManager.md) (32), [Game](Game.md) (14), [Debt](Debt.md) (9), [CityCalendar](CityCalendar.md) (6), [GameFiles](GameFiles.md) (3), [DebtQuote](DebtQuote.md) (3), [Rollover](Rollover.md) (3), [ChartModel](ChartModel.md) (3), [DecisionLog](DecisionLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Ladder](Ladder.md) (2), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [DebtManager](DebtManager.md) (32), [Game](Game.md) (14), [Debt](Debt.md) (9), [CityCalendar](CityCalendar.md) (6), [GameFiles](GameFiles.md) (3), [DebtQuote](DebtQuote.md) (3), [Rollover](Rollover.md) (3), [ChartModel](ChartModel.md) (3), [DecisionLog](DecisionLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [TempDirs](TempDirs.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Ladder](Ladder.md) (2), [MoneyAudit](MoneyAudit.md) (1)
 
 **Used by (2):** [CurveCheck](CurveCheck.md), [RestructureCheck](RestructureCheck.md)
 
@@ -53,46 +53,46 @@
 
 | line | section |
 |---:|---|
-| 124 | · 1. the instrument speaks two currencies |
-| 172 | · 2. and the world is cheaper, to begin with |
-| 254 | · 3. the books balance with dollars on them |
-| 317 | · 4. original sin |
-| 381 | · 4b. and where the dollars actually went |
-| 455 | · 5. the window shuts |
-| 479 | · 6. and the price of walking away |
-| 530 | · 7. across a reload |
-| 643 | 8. the world's paper on the world's curve (0.7.2) |
-| 715 | 9. the ladder, by the calendar year it is paid in (0.7.32) |
+| 123 | · 1. the instrument speaks two currencies |
+| 171 | · 2. and the world is cheaper, to begin with |
+| 253 | · 3. the books balance with dollars on them |
+| 316 | · 4. original sin |
+| 380 | · 4b. and where the dollars actually went |
+| 454 | · 5. the window shuts |
+| 478 | · 6. and the price of walking away |
+| 529 | · 7. across a reload |
+| 642 | 8. the world's paper on the world's curve (0.7.2) |
+| 714 | 9. the ladder, by the calendar year it is paid in (0.7.32) |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 54 | `static int fails` |  |
-| 55 | `static PrintStream out` |  |
-| 56 | `static PrintStream quiet` |  |
+| 53 | `static int fails` |  |
+| 54 | `static PrintStream out` |  |
+| 55 | `static PrintStream quiet` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 829 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
-| 58 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 63 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 73 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 95 | 6 | `static void tradingPlant(Game g)` | THE PLANT THE TRADING CITY EARNS WITH, STANDING (0.7.17): the builders' depots, the power, the water and the two bakeries whose bread is what it sells abroad. |
-| 103 | 15 | `static Game tradingCity(Path dir) throws Exception` | A small city that has been going long enough to have a credit record. |
-| 119 | 523 | `public static void main(String[] args) throws Exception` |  |
+| 51 | 829 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
+| 57 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 62 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 72 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 94 | 6 | `static void tradingPlant(Game g)` | THE PLANT THE TRADING CITY EARNS WITH, STANDING (0.7.17): the builders' depots, the power, the water and the two bakeries whose bread is what it sells abroad. |
+| 102 | 15 | `static Game tradingCity(Path dir) throws Exception` | A small city that has been going long enough to have a credit record. |
+| 118 | 523 | `public static void main(String[] args) throws Exception` |  |
 
-### 8. the world's paper on the world's curve (0.7.2) (lines 643-714)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 644 | 70 | `static void theWorldsCurve(Path dir) throws Exception` |  |
-
-### 9. the ladder, by the calendar year it is paid in (0.7.32) (lines 715-880)
+### 8. the world's paper on the world's curve (0.7.2) (lines 642-713)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 729 | 151 | `static void theLadder(Path dir) throws Exception` | WHAT THE FINANCES TAB DRAWS THE DEBT FROM. |
+| 643 | 70 | `static void theWorldsCurve(Path dir) throws Exception` |  |
+
+### 9. the ladder, by the calendar year it is paid in (0.7.32) (lines 714-879)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 728 | 151 | `static void theLadder(Path dir) throws Exception` | WHAT THE FINANCES TAB DRAWS THE DEBT FROM. |
 

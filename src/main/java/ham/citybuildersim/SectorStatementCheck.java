@@ -148,7 +148,7 @@ public class SectorStatementCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("sectorstatementcheck");
+        Path root = TempDirs.create("sectorstatementcheck");
 
         Game player = playersCity(root);
         Game plain = plainCity(root);

@@ -263,7 +263,7 @@ public class ScaleCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("scalecheck");
+        Path root = TempDirs.create("scalecheck");
         try {
             run(root);
         } finally {

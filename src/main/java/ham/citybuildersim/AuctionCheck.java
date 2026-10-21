@@ -9,7 +9,6 @@ import ham.citybuildersim.Auction.Mode;
 import ham.citybuildersim.Auction.Result;
 
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
@@ -212,7 +211,7 @@ public class AuctionCheck {
         // ChildcareCheck's town is the fixture for sections 9 and 10: its quiet stream too.
         ChildcareCheck.out = quiet;
         ChildcareCheck.quiet = quiet;
-        Path root = Files.createTempDirectory("auctioncheck");
+        Path root = TempDirs.create("auctioncheck");
 
         section1();
         section2();

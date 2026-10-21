@@ -52,7 +52,7 @@
 > 
 >     java -cp target/classes ham.citybuildersim.tools.Stale
 
-**Uses:** [Stale](Stale.md) (30), [Names](Names.md) (7), [SourceTree](SourceTree.md) (6)
+**Uses:** [Stale](Stale.md) (30), [Names](Names.md) (7), [SourceTree](SourceTree.md) (6), [TempDirs](TempDirs.md) (2)
 
 ## Sections
 

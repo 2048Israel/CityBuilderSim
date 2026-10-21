@@ -4,7 +4,6 @@ import ham.citybuildersim.sectors.BusinessServices;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -100,7 +99,7 @@ public class BusinessServicesCheck {
         /* ================= 2. the templates are the design's arithmetic ================= */
         out.println("\n--- the three buildings ---");
 
-        Path root = Files.createTempDirectory("bscheck");
+        Path root = TempDirs.create("bscheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game plain = new Game(files);
         quietly(plain::run);

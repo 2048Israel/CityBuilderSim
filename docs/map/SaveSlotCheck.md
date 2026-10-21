@@ -18,7 +18,7 @@
 > quit - is loaded here and played on: its month is its history's last, and
 > the history has no gap and no month twice.
 
-**Uses:** [GameFiles](GameFiles.md) (23), [Game](Game.md) (20), [GameVersion](GameVersion.md) (8), [SaveHeader](SaveHeader.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2)
+**Uses:** [GameFiles](GameFiles.md) (23), [Game](Game.md) (20), [GameVersion](GameVersion.md) (8), [SaveHeader](SaveHeader.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [TempDirs](TempDirs.md) (2)
 
 ## Sections
 

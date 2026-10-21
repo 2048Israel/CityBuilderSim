@@ -115,7 +115,7 @@ public class ConservationCheck {
     public static void main(String[] args) throws Exception {
 
         out = System.out;
-        Path root = Files.createTempDirectory("conservation");
+        Path root = TempDirs.create("conservation");
 
         Game g = city(root, "main", 120);
         EconomyManager em = g.getEconomyManager();

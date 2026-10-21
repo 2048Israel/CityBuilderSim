@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -295,7 +294,7 @@ public class EquityCheck {
         /* ================= 9. a live city ================= */
         out.println("\n--- and a city whose companies have owners still adds up ---");
 
-        Path root = Files.createTempDirectory("equitycheck");
+        Path root = TempDirs.create("equitycheck");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
         System.setOut(quiet);
         double worstResidual = 0;

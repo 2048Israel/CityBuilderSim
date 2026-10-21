@@ -1,4 +1,4 @@
-# FoodProcessingCheck.java - 443 lines · 7 methods · 3 constants · harnesses
+# FoodProcessingCheck.java - 442 lines · 7 methods · 3 constants · harnesses
 
 `ham/citybuildersim/FoodProcessingCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -33,45 +33,45 @@
 > 
 > Every fixture CAUSES its condition: the meat price is set, not waited for.
 
-**Uses:** [Good](Good.md) (23), [BuildingsTemplate](BuildingsTemplate.md) (12), [LongPlaytest](LongPlaytest.md) (11), [Formats](Formats.md) (7), [JobType](JobType.md) (6), [Game](Game.md) (4), [BusinessInvestment](BusinessInvestment.md) (3), [Equity](Equity.md) (3), [GameFiles](GameFiles.md) (2), [FoodProcessing](FoodProcessing.md) (2), [PayTier](PayTier.md) (1), [BuildingManager](BuildingManager.md) (1), [Markets](Markets.md) (1), [TaxPolicy](TaxPolicy.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (23), [BuildingsTemplate](BuildingsTemplate.md) (12), [LongPlaytest](LongPlaytest.md) (11), [Formats](Formats.md) (7), [JobType](JobType.md) (6), [Game](Game.md) (4), [BusinessInvestment](BusinessInvestment.md) (3), [Equity](Equity.md) (3), [GameFiles](GameFiles.md) (2), [FoodProcessing](FoodProcessing.md) (2), [PayTier](PayTier.md) (1), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1), [Markets](Markets.md) (1), [TaxPolicy](TaxPolicy.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 96 | · 1. the five goods it exists for |
-| 132 | · 2. three plants, and all three reachable |
-| 160 | · 3. what a plant earns per person who runs it |
-| 210 | · 4. the estimate: the price it leaves behind, and the tax |
-| 338 | · 5. the meat price is the bet, and it is real |
-| 410 | · 6. it survives a save, by name |
+| 95 | · 1. the five goods it exists for |
+| 131 | · 2. three plants, and all three reachable |
+| 159 | · 3. what a plant earns per person who runs it |
+| 209 | · 4. the estimate: the price it leaves behind, and the tax |
+| 337 | · 5. the meat price is the bet, and it is real |
+| 409 | · 6. it survives a save, by name |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 64 | `FoodProcessingCheck.MEAT_WORKS` | `"Meat Works"` |  |
-| 65 | `FoodProcessingCheck.SNACKS` | `"Snack & Oils Plant"` |  |
-| 66 | `FoodProcessingCheck.BOTTLING` | `"Bottling Plant"` |  |
+| 63 | `FoodProcessingCheck.MEAT_WORKS` | `"Meat Works"` |  |
+| 64 | `FoodProcessingCheck.SNACKS` | `"Snack & Oils Plant"` |  |
+| 65 | `FoodProcessingCheck.BOTTLING` | `"Bottling Plant"` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 44 | `static int fails` |  |
-| 45 | `static PrintStream out` |  |
-| 46 | `static PrintStream quiet` |  |
+| 43 | `static int fails` |  |
+| 44 | `static PrintStream out` |  |
+| 45 | `static PrintStream quiet` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 402 | **type** `public class FoodProcessingCheck` | The third of the shelf that arrives already made. |
-| 48 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 53 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 58 | 5 | `static void quietly(Runnable r)` |  |
-| 68 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
-| 74 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
-| 81 | 9 | `static double midBandRevenue(BuildingsTemplate t)` | A template's nameplate valued at the middle of each good's world band, in thousands. |
-| 91 | 352 | `public static void main(String[] args) throws Exception` |  |
+| 41 | 402 | **type** `public class FoodProcessingCheck` | The third of the shelf that arrives already made. |
+| 47 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 52 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 57 | 5 | `static void quietly(Runnable r)` |  |
+| 67 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
+| 73 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
+| 80 | 9 | `static double midBandRevenue(BuildingsTemplate t)` | A template's nameplate valued at the middle of each good's world band, in thousands. |
+| 90 | 352 | `public static void main(String[] args) throws Exception` |  |
 

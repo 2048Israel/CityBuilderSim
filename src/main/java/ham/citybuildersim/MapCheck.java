@@ -401,7 +401,7 @@ public class MapCheck {
                 return this;
             }
         };
-        Path root = Files.createTempDirectory("mapcheck");
+        Path root = TempDirs.create("mapcheck");
         Game city = playedCity(root);
         nothingMoves(city);
         districtsHoldAndSpill(city);
@@ -2208,7 +2208,7 @@ public class MapCheck {
 
     /** A save's autosave copied into a temporary folder and loaded (its map drawn from its sidecar or canonically): saves named on the command line, never written. */
     static Game loadCopy(Path src) throws Exception {
-        Path work = Files.createTempDirectory("mapcheck-save");
+        Path work = TempDirs.create("mapcheck-save");
         GameFiles files = new GameFiles(work.resolve("data"), work.resolve("no-legacy"));
         Files.createDirectories(files.savesDirectory());
         boolean any = false;

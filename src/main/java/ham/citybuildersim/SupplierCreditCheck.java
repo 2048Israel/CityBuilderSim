@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
@@ -71,7 +70,7 @@ public class SupplierCreditCheck {
     public static void main(String[] args) throws Exception {
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("suppliercredit");
+        Path root = TempDirs.create("suppliercredit");
 
         theRule();
         inACity(root);

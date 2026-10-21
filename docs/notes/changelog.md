@@ -14,6 +14,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### TD1, the checks' temp folders deleted when they finish — 2026-10-21, shipped, no tag
+
+Every harness, `GameFiles.scratch` and `LongPlaytest` made its temp folders
+with `Files.createTempDirectory` straight into %TEMP% and never removed one:
+about 95 a suite run, 37 GB on the PC in a week, the disk nearly full. All 93
+calls now go through the new `TempDirs.create(prefix)`, the same call into
+`%TEMP%\citybuildersim-tmp\<pid>`, which a shutdown hook deletes when the JVM
+exits; the next JVM's first call deletes any folder there whose process is gone
+(a run killed hard). Deleting never follows a link or leaves that folder. The
+model is untouched: no ensemble, no version. CLAUDE.md now forbids
+`Files.createTempDirectory` in a harness, and has a session delete its
+`%TEMP%\cbs-<id>*` folders once its batch ships (24 left behind held 5 GB).
+
 ### 0.8.18 — FX5, the map's rail and roads finished — 2026-10-21, ready, see docs/queue/FX5-notes.md
 
 Rail curves at its corners and the trains follow them: a new `TrackCurves` rounds every route's turn (3 plots) and

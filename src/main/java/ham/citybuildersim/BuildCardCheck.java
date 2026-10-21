@@ -215,7 +215,7 @@ public class BuildCardCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("buildcardcheck");
+        Path root = TempDirs.create("buildcardcheck");
 
         Game g = town(root, "town");
         printTown(g);

@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
@@ -114,7 +113,7 @@ public class ZoningViewCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("zoningviewcheck");
+        Path root = TempDirs.create("zoningviewcheck");
 
         Game g = city(root, "city", 12);
         LandManager land = g.getLandManager();

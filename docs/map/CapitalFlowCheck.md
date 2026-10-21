@@ -1,4 +1,4 @@
-# CapitalFlowCheck.java - 487 lines · 6 methods · 0 constants · harnesses
+# CapitalFlowCheck.java - 486 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CapitalFlowCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -23,38 +23,38 @@
 >   4. Does it reach the bank, and does the bank's capacity go with it? Money
 >      that arrives and changes nothing is a number on a screen.
 
-**Uses:** [CapitalFlows](CapitalFlows.md) (29), [DebtManager](DebtManager.md) (12), [Game](Game.md) (7), [Bank](Bank.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [GameFiles](GameFiles.md) (3), [OutwardInvestment](OutwardInvestment.md) (2), [Sectors](Sectors.md) (2), [MoneyAudit](MoneyAudit.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [CapitalFlows](CapitalFlows.md) (29), [DebtManager](DebtManager.md) (12), [Game](Game.md) (7), [Bank](Bank.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [GameFiles](GameFiles.md) (3), [TempDirs](TempDirs.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [Sectors](Sectors.md) (2), [MoneyAudit](MoneyAudit.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 63 | · 1. it comes for the spread |
-| 96 | · 2. and it leaves when it closes |
-| 105 | · 3. fragility is not a crisis |
-| 136 | · 4. reserves are the defence |
-| 182 | · 5. painful, never fatal |
-| 209 | · 6. it reaches the bank |
-| 270 | · 7. in a real city, and across a reload |
-| 378 | · 8. and the city's own money goes the other way |
+| 62 | · 1. it comes for the spread |
+| 95 | · 2. and it leaves when it closes |
+| 104 | · 3. fragility is not a crisis |
+| 135 | · 4. reserves are the defence |
+| 181 | · 5. painful, never fatal |
+| 208 | · 6. it reaches the bank |
+| 269 | · 7. in a real city, and across a reload |
+| 377 | · 8. and the city's own money goes the other way |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 32 | `static int fails` |  |
-| 33 | `static PrintStream out` |  |
-| 34 | `static PrintStream quiet` |  |
+| 31 | `static int fails` |  |
+| 32 | `static PrintStream out` |  |
+| 33 | `static PrintStream quiet` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 458 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
-| 36 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 41 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 52 | 5 | `static void calm(CapitalFlows f, double cityRate, double reserves, int month)` | A quiet month with no shock in it. |
-| 58 | 413 | `public static void main(String[] args) throws Exception` |  |
-| 473 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
-| 481 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 29 | 458 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
+| 35 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 40 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 51 | 5 | `static void calm(CapitalFlows f, double cityRate, double reserves, int month)` | A quiet month with no shock in it. |
+| 57 | 413 | `public static void main(String[] args) throws Exception` |  |
+| 472 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
+| 480 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

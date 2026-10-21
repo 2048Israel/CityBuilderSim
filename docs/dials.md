@@ -2,9 +2,9 @@
 
 Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**3,733 constants in 381 files.**
+**3,734 constants in 382 files.**
 
-## model (1915 constants)
+## model (1916 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -2174,6 +2174,12 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1468 | `TaxPolicy.STATE_BEFORE_PORT_DUES` | `STATE_BEFORE_FUEL_DUTY + 1` | ...and one from before the port dues dial (FR3): the fuel duty on top (0.7.103). |
 | 1471 | `TaxPolicy.STATE_SLOTS` | `STATE_BEFORE_PORT_DUES + 1` | This build's array: the port dues dial on top (FR3). |
 
+### TempDirs.java ([map](map/TempDirs.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 42 | `TempDirs.BASE_NAME` | `"citybuildersim-tmp"` | The folder, under the system temp folder, that holds one folder per JVM. |
+
 ### TilePainter.java ([map](map/TilePainter.md))
 
 | line | constant | value | says |
@@ -3940,9 +3946,9 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 57 | `AgricultureCheck.MIXED` | `"Mixed Farm"` |  |
-| 58 | `AgricultureCheck.GRAIN` | `"Grain Farm"` |  |
-| 59 | `AgricultureCheck.GLASS` | `"Greenhouse Complex"` |  |
+| 56 | `AgricultureCheck.MIXED` | `"Mixed Farm"` |  |
+| 57 | `AgricultureCheck.GRAIN` | `"Grain Farm"` |  |
+| 58 | `AgricultureCheck.GLASS` | `"Greenhouse Complex"` |  |
 
 ### AllChecks.java ([map](map/AllChecks.md))
 
@@ -3959,20 +3965,20 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 139 | `AuctionCheck.FEE` | `12_000` | The fixed cost of a sale: the study's AUCTION_FEE, the one Game charges. |
-| 142 | `AuctionCheck.FAIR` | `.03602` | The 10-year's fair yield in the calm city (spec-city-debt.md, section 4.3's table: 3.602%). |
-| 145 | `AuctionCheck.FACE` | `3e8` | D$300M of face, the table's issue. |
-| 725 | `AuctionCheck.QUIET` | `new PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 138 | `AuctionCheck.FEE` | `12_000` | The fixed cost of a sale: the study's AUCTION_FEE, the one Game charges. |
+| 141 | `AuctionCheck.FAIR` | `.03602` | The 10-year's fair yield in the calm city (spec-city-debt.md, section 4.3's table: 3.602%). |
+| 144 | `AuctionCheck.FACE` | `3e8` | D$300M of face, the table's issue. |
+| 724 | `AuctionCheck.QUIET` | `new PrintStream(java.io.OutputStream.nullOutputStream())` |  |
 
 ### AutoBuildCheck.java ([map](map/AutoBuildCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 278 | `AutoBuildCheck.heldBy` | `new LinkedHashMap<>()` | The passes that held a kept service short of its target with nothing on site, by the cut that held it. |
-| 280 | `AutoBuildCheck.builtBy` | `new LinkedHashMap<>()` | The buildings it ordered over the run, by measure. |
-| 952 | `AutoBuildCheck.ROOM` | `50_000` | A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). |
-| 1054 | `AutoBuildCheck.OVER_SQ_FT` | `1_000_000` | The over-full fixture's deficit, in square feet: a million, a sixth of Jerus's 5.66M at month 416 (runs/fixN5-notes.md) - any deficit makes the point. |
-| 1095 | `AutoBuildCheck.ORE_TONNES` | `1` | A tonne of iron under each offer of the ore fixture: any ore makes an offer not bare ground (LandMarket.bareGround()). |
+| 277 | `AutoBuildCheck.heldBy` | `new LinkedHashMap<>()` | The passes that held a kept service short of its target with nothing on site, by the cut that held it. |
+| 279 | `AutoBuildCheck.builtBy` | `new LinkedHashMap<>()` | The buildings it ordered over the run, by measure. |
+| 951 | `AutoBuildCheck.ROOM` | `50_000` | A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). |
+| 1053 | `AutoBuildCheck.OVER_SQ_FT` | `1_000_000` | The over-full fixture's deficit, in square feet: a million, a sixth of Jerus's 5.66M at month 416 (runs/fixN5-notes.md) - any deficit makes the point. |
+| 1094 | `AutoBuildCheck.ORE_TONNES` | `1` | A tonne of iron under each offer of the ore fixture: any ore makes an offer not bare ground (LandMarket.bareGround()). |
 
 ### BondCheck.java ([map](map/BondCheck.md))
 
@@ -3990,18 +3996,18 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 113 | `BuildersFirstCheck.BUILDERS` | `Sectors.CONSTRUCTION` | The builders' sector's key: whose depots the rule serves first, and whose plan the fixture asks. |
-| 116 | `BuildersFirstCheck.DEPOT` | `"Construction Depot"` | The builders' depot: the one template that adds to their capacity. |
-| 119 | `BuildersFirstCheck.RUN_MONTHS` | `24` | The months the fixture's run is played: two years, a span the trace's city held through ten times over. |
-| 426 | `BuildersFirstCheck.NEW_TOWN_MONTHS` | `6` | The months the new town is played: long enough for its first depot to open, crewed first, and its homes to come or not. |
+| 112 | `BuildersFirstCheck.BUILDERS` | `Sectors.CONSTRUCTION` | The builders' sector's key: whose depots the rule serves first, and whose plan the fixture asks. |
+| 115 | `BuildersFirstCheck.DEPOT` | `"Construction Depot"` | The builders' depot: the one template that adds to their capacity. |
+| 118 | `BuildersFirstCheck.RUN_MONTHS` | `24` | The months the fixture's run is played: two years, a span the trace's city held through ten times over. |
+| 425 | `BuildersFirstCheck.NEW_TOWN_MONTHS` | `6` | The months the new town is played: long enough for its first depot to open, crewed first, and its homes to come or not. |
 
 ### BusinessServicesCheck.java ([map](map/BusinessServicesCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 58 | `BusinessServicesCheck.CONTACT` | `"Contact Centre"` | The three rungs, and the band each is meant to employ. |
-| 59 | `BusinessServicesCheck.SHARED` | `"Shared Services Centre"` |  |
-| 60 | `BusinessServicesCheck.OFFICE` | `"Engineering Services Office"` |  |
+| 57 | `BusinessServicesCheck.CONTACT` | `"Contact Centre"` | The three rungs, and the band each is meant to employ. |
+| 58 | `BusinessServicesCheck.SHARED` | `"Shared Services Centre"` |  |
+| 59 | `BusinessServicesCheck.OFFICE` | `"Engineering Services Office"` |  |
 
 ### CarCheck.java ([map](map/CarCheck.md))
 
@@ -4144,11 +4150,11 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 97 | `CurrencyCheck.OLD_DIAL_STOP` | `.25` | The dial's stop until 0.7.2, for the assertion that it is gone. |
-| 100 | `CurrencyCheck.OLD_SPREAD_STOP` | `.06` | The hot money's old stop, likewise: six points. |
-| 103 | `CurrencyCheck.OLD_MAX_RATE` | `100` | The currency's guard above until 0.7.3, a hundred local dollars to one of theirs - for the assertions that a rate goes past it. |
-| 106 | `CurrencyCheck.OLD_MIN_RATE` | `.01` | ...and below, a hundredth. |
-| 550 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
+| 96 | `CurrencyCheck.OLD_DIAL_STOP` | `.25` | The dial's stop until 0.7.2, for the assertion that it is gone. |
+| 99 | `CurrencyCheck.OLD_SPREAD_STOP` | `.06` | The hot money's old stop, likewise: six points. |
+| 102 | `CurrencyCheck.OLD_MAX_RATE` | `100` | The currency's guard above until 0.7.3, a hundred local dollars to one of theirs - for the assertions that a rate goes past it. |
+| 105 | `CurrencyCheck.OLD_MIN_RATE` | `.01` | ...and below, a hundredth. |
+| 549 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
 
 ### CurveCheck.java ([map](map/CurveCheck.md))
 
@@ -4170,10 +4176,10 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 99 | `DeathCareFirstCheck.RE` | `Sectors.REAL_ESTATE` | Real Estate's key: the landlords, whose Houses the fixture's town is given. |
-| 102 | `DeathCareFirstCheck.CEMETERY` | `"Memorial Cemetery"` | The death care the fixture puts on site: the smaller cemetery, which serves the dead by its care type. |
-| 105 | `DeathCareFirstCheck.ROAD` | `"Paved Road"` | The road whose repairs fill the builders' month: it has its own repairs share (0.7.103), and carries traffic, nothing else. |
-| 113 | `DeathCareFirstCheck.TRAP_MONTHS` | `12` | The months the cemetery's points take at the trap's city share, in the fixture: the trace's measure A opened Jerus's in about twelve (why-the-builders-stall.md), so the repairs leave the builders' ... |
+| 98 | `DeathCareFirstCheck.RE` | `Sectors.REAL_ESTATE` | Real Estate's key: the landlords, whose Houses the fixture's town is given. |
+| 101 | `DeathCareFirstCheck.CEMETERY` | `"Memorial Cemetery"` | The death care the fixture puts on site: the smaller cemetery, which serves the dead by its care type. |
+| 104 | `DeathCareFirstCheck.ROAD` | `"Paved Road"` | The road whose repairs fill the builders' month: it has its own repairs share (0.7.103), and carries traffic, nothing else. |
+| 112 | `DeathCareFirstCheck.TRAP_MONTHS` | `12` | The months the cemetery's points take at the trap's city share, in the fixture: the trace's measure A opened Jerus's in about twelve (why-the-builders-stall.md), so the repairs leave the builders' ... |
 
 ### EarthCheck.java ([map](map/EarthCheck.md))
 
@@ -4285,9 +4291,9 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 87 | `ExchangeCheck.W` | `DebtManager.WORLD_BASE_RATE` |  |
-| 88 | `ExchangeCheck.N` | `Equity.COMPANIES.length` |  |
-| 89 | `ExchangeCheck.HURDLE` | `W + Equity.FOREIGN_PREMIUM` |  |
+| 86 | `ExchangeCheck.W` | `DebtManager.WORLD_BASE_RATE` |  |
+| 87 | `ExchangeCheck.N` | `Equity.COMPANIES.length` |  |
+| 88 | `ExchangeCheck.HURDLE` | `W + Equity.FOREIGN_PREMIUM` |  |
 
 ### ExpectationsCheck.java ([map](map/ExpectationsCheck.md))
 
@@ -4299,9 +4305,9 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 64 | `FoodProcessingCheck.MEAT_WORKS` | `"Meat Works"` |  |
-| 65 | `FoodProcessingCheck.SNACKS` | `"Snack & Oils Plant"` |  |
-| 66 | `FoodProcessingCheck.BOTTLING` | `"Bottling Plant"` |  |
+| 63 | `FoodProcessingCheck.MEAT_WORKS` | `"Meat Works"` |  |
+| 64 | `FoodProcessingCheck.SNACKS` | `"Snack & Oils Plant"` |  |
+| 65 | `FoodProcessingCheck.BOTTLING` | `"Bottling Plant"` |  |
 
 ### ForestryCheck.java ([map](map/ForestryCheck.md))
 
@@ -4600,11 +4606,11 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 69 | `ManufacturingCheck.SHOP` | `"Fabrication Shop"` |  |
-| 70 | `ManufacturingCheck.WORKS` | `"Fabrication Works"` |  |
-| 71 | `ManufacturingCheck.MACH` | `"Machine Works"` |  |
-| 80 | `ManufacturingCheck.STEEL_WAS` | `1.284, FABRICATED_WAS = 2.21, MACHINERY_WAS = 9.0` | The prices the three plants were costed on, written down (2026-09-13 to 0.7.119): steel landed at the US band, and the two goods made of it. |
-| 83 | `ManufacturingCheck.STEEL_FALL` | `STEEL_WAS -.650` | Steel's fall a tonne at the import price on 0.7.120, the figure Q6b moved each good by: 1.284 to .650. |
+| 68 | `ManufacturingCheck.SHOP` | `"Fabrication Shop"` |  |
+| 69 | `ManufacturingCheck.WORKS` | `"Fabrication Works"` |  |
+| 70 | `ManufacturingCheck.MACH` | `"Machine Works"` |  |
+| 79 | `ManufacturingCheck.STEEL_WAS` | `1.284, FABRICATED_WAS = 2.21, MACHINERY_WAS = 9.0` | The prices the three plants were costed on, written down (2026-09-13 to 0.7.119): steel landed at the US band, and the two goods made of it. |
+| 82 | `ManufacturingCheck.STEEL_FALL` | `STEEL_WAS -.650` | Steel's fall a tonne at the import price on 0.7.120, the figure Q6b moved each good by: 1.284 to .650. |
 
 ### MapCheck.java ([map](map/MapCheck.md))
 
@@ -4826,8 +4832,8 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 88 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 141 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "700" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders. |
+| 87 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
+| 140 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "700" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders. |
 
 ### PopulationCheck.java ([map](map/PopulationCheck.md))
 
@@ -4921,8 +4927,8 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 71 | `RestaurantsCheck.DINER` | `"Diner"` |  |
-| 72 | `RestaurantsCheck.RESTAURANT` | `"Restaurant"` |  |
+| 70 | `RestaurantsCheck.DINER` | `"Diner"` |  |
+| 71 | `RestaurantsCheck.RESTAURANT` | `"Restaurant"` |  |
 
 ### RestructureCheck.java ([map](map/RestructureCheck.md))
 
@@ -4971,9 +4977,9 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 59 | `SectorFlowCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 101 | `SectorFlowCheck.ORDERS` | `{ { "House", "400" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders, and whether each went on site. |
-| 107 | `SectorFlowCheck.built` | `new java.util.LinkedHashMap<>()` | ...whether each went on site, as city() found it. |
+| 58 | `SectorFlowCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
+| 100 | `SectorFlowCheck.ORDERS` | `{ { "House", "400" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders, and whether each went on site. |
+| 106 | `SectorFlowCheck.built` | `new java.util.LinkedHashMap<>()` | ...whether each went on site, as city() found it. |
 
 ### SectorStatementCheck.java ([map](map/SectorStatementCheck.md))
 
@@ -5000,7 +5006,7 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 86 | `SupplierCreditCheck.FARM` | `Sectors.AGRICULTURE, LORRIES = Sectors.AUTOMOTIVE` | The two local suppliers the rule's fixtures name: the farms, which fill the shelf's meat, and the car makers, which fill the fleet's vans. |
+| 85 | `SupplierCreditCheck.FARM` | `Sectors.AGRICULTURE, LORRIES = Sectors.AUTOMOTIVE` | The two local suppliers the rule's fixtures name: the farms, which fill the shelf's meat, and the car makers, which fill the fleet's vans. |
 
 ### TimingCheck.java ([map](map/TimingCheck.md))
 
@@ -5116,17 +5122,17 @@ Generated 2026-10-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 72 | `ZoningCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 86 | `ZoningCheck.FARM_HANDS` | `100` | Spare unskilled hands section 8 hands the city past what its posts are short of, so the fields' planner gets past the staff to the zone (0.7.113): more than any farm's posts. |
-| 89 | `ZoningCheck.ORDERS` | `{ { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders: homes, shops, a diner, builders, a bakery buying crops, power, water and roads. |
+| 71 | `ZoningCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
+| 85 | `ZoningCheck.FARM_HANDS` | `100` | Spare unskilled hands section 8 hands the city past what its posts are short of, so the fields' planner gets past the staff to the zone (0.7.113): more than any farm's posts. |
+| 88 | `ZoningCheck.ORDERS` | `{ { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders: homes, shops, a diner, builders, a bakery buying crops, power, water and roads. |
 
 ### ZoningViewCheck.java ([map](map/ZoningViewCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 71 | `ZoningViewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 87 | `ZoningViewCheck.ORDERS` | `{ { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | ZoningCheck's orders: a small city with homes, shops, diners and works. |
-| 93 | `ZoningViewCheck.CITY_KM2` | `80` | The ground the city is drawn to round the default world's founding site: ZoningCheck's land office's 80 km², forest and bare ground both. |
+| 70 | `ZoningViewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
+| 86 | `ZoningViewCheck.ORDERS` | `{ { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | ZoningCheck's orders: a small city with homes, shops, diners and works. |
+| 92 | `ZoningViewCheck.CITY_KM2` | `80` | The ground the city is drawn to round the default world's founding site: ZoningCheck's land office's 80 km², forest and bare ground both. |
 
 ## tools (47 constants)
 

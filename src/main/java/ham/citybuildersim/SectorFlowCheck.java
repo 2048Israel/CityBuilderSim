@@ -4,7 +4,6 @@ import ham.citybuildersim.sectors.HeavyIndustry;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
@@ -110,7 +109,7 @@ public class SectorFlowCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("sectorflowcheck");
+        Path root = TempDirs.create("sectorflowcheck");
 
         Game g = city(root);
         printCity(g);

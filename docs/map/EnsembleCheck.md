@@ -49,7 +49,7 @@
 > 
 >     java -cp target/classes;gson.jar ham.citybuildersim.EnsembleCheck
 
-**Uses:** [GameVersion](GameVersion.md) (2)
+**Uses:** [GameVersion](GameVersion.md) (2), [TempDirs](TempDirs.md) (1)
 
 ## Sections
 

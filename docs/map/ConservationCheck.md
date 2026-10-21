@@ -40,7 +40,7 @@
 > 
 > ==============================================================
 
-**Uses:** [Game](Game.md) (13), [GameFiles](GameFiles.md) (7), [Good](Good.md) (5), [Sector](Sector.md) (4), [BuildingManager](BuildingManager.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sectors](Sectors.md) (1), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [Mining](Mining.md) (1)
+**Uses:** [Game](Game.md) (13), [GameFiles](GameFiles.md) (7), [Good](Good.md) (5), [Sector](Sector.md) (4), [BuildingManager](BuildingManager.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sectors](Sectors.md) (1), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [EconomyManager](EconomyManager.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [Mining](Mining.md) (1)
 
 ## Sections
 

@@ -119,7 +119,7 @@ public class CurveCheck {
     public static void main(String[] args) throws Exception {
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("curve");
+        Path root = TempDirs.create("curve");
         long started = System.currentTimeMillis();
 
         calm();

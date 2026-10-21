@@ -112,7 +112,7 @@ public class SaveFileCheck {
         /* ==================== 2. writing safely ==================== */
         System.out.println("\n--- writing ---");
 
-        Path root = Files.createTempDirectory("savecheck");
+        Path root = TempDirs.create("savecheck");
         Path dir = root.resolve("data");
         Path legacy = root.resolve("YourGame");
 

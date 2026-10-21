@@ -5,7 +5,6 @@ import ham.citybuildersim.sectors.HeavyIndustry;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -87,7 +86,7 @@ public class AgricultureCheck {
                 Good.CROPS.worldImportPrice() > Good.CROPS.worldExportPrice());
         assertTrue("crops are sold by the tonne", "tonne".equals(Good.CROPS.unit()));
 
-        Path root = Files.createTempDirectory("agcheck");
+        Path root = TempDirs.create("agcheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game plain = new Game(files);
         quietly(plain::run);

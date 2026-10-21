@@ -483,7 +483,7 @@ public class MonetaryCheck {
         /* ================= 5. in a city, and across a reload ================= */
         out.println("\n--- and all of it survives a city and a reload ---");
 
-        Path root = Files.createTempDirectory("monetary");
+        Path root = TempDirs.create("monetary");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
 
         System.setOut(quiet);

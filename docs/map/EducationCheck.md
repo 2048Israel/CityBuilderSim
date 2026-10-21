@@ -53,7 +53,7 @@
 >    until 0.7.4. And the Schools page's row per kind has to add up to the
 >    totals it sits under.
 
-**Uses:** [TaxPolicy](TaxPolicy.md) (73), [EducationType](EducationType.md) (68), [Game](Game.md) (36), [WageBand](WageBand.md) (32), [Education](Education.md) (23), [GameFiles](GameFiles.md) (13), [JobType](JobType.md) (11), [Migration](Migration.md) (7), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (5), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [PopulationManager](PopulationManager.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [NationalAccounts](NationalAccounts.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
+**Uses:** [TaxPolicy](TaxPolicy.md) (73), [EducationType](EducationType.md) (68), [Game](Game.md) (36), [WageBand](WageBand.md) (32), [Education](Education.md) (23), [GameFiles](GameFiles.md) (13), [JobType](JobType.md) (11), [Migration](Migration.md) (7), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (5), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [PopulationManager](PopulationManager.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [TempDirs](TempDirs.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
 
 **Used by (1):** [HistoryCheck](HistoryCheck.md)
 

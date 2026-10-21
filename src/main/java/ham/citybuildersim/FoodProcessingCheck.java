@@ -4,7 +4,6 @@ import ham.citybuildersim.sectors.FoodProcessing;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -103,7 +102,7 @@ public class FoodProcessingCheck {
                             && g.worldImportPrice() > g.worldExportPrice());
         }
 
-        Path root = Files.createTempDirectory("fpcheck");
+        Path root = TempDirs.create("fpcheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game game = new Game(files);
         quietly(game::run);
