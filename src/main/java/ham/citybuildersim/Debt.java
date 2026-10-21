@@ -126,6 +126,9 @@ public abstract class Debt {
     /** ...and the businesses, at face (CD2, slice 4): the sum of every sector's paper on OutwardInvestment. Zero on an old save. */
     protected double firmPrincipal;
 
+    /** ...and the world, at face (CD2, slice 5): what it bought at the auction and holds on CapitalFlows' paper book, outside the bank's room. Zero on an old save. */
+    protected double worldPrincipal;
+
     /**
      * What the buyers still owe for this paper: the cash the treasury received
      * at issue, which the households and the bank hand over at the next settle
@@ -154,11 +157,13 @@ public abstract class Debt {
     public double householdPrincipal()   { return foreign ? 0 : householdPrincipal; }
     public double centralBankPrincipal() { return foreign ? 0 : centralBankPrincipal; }
     public double firmPrincipal()        { return foreign ? 0 : firmPrincipal; }
+    public double worldPrincipal()       { return foreign ? 0 : worldPrincipal; }
 
-    /** What the commercial bank holds: the rest of the principal after the households, the central bank and the businesses. Zero on a dollar bond, which is held abroad. */
+    /** What the commercial bank holds: the rest of the principal after the households, the central bank, the businesses and the world. Zero on a dollar bond, which is held abroad. */
     public double bankPrincipal() {
         return foreign ? 0
-                : Math.max(0, getOustandingPrincipal() - householdPrincipal - centralBankPrincipal - firmPrincipal);
+                : Math.max(0, getOustandingPrincipal() - householdPrincipal - centralBankPrincipal - firmPrincipal
+                        - worldPrincipal);
     }
 
     public double getSettleDue()      { return settleDue; }
@@ -240,8 +245,8 @@ public abstract class Debt {
        fields, so Gson saves them with the piece and a city saved between the
        sale and the settle settles the same. The firms' and the world's pairs
        are written by the sale from the auction's fills: the firms' are read
-       by the settle since slice 4 (Game.firmsTakeTheirShare()); the world's
-       stay at nothing until slice 5 makes it a holder.
+       by the settle since slice 4 (Game.firmsTakeTheirShare()), the world's
+       since slice 5 (Game.worldTakesItsShare()).
        ----------------------------------------------------------------------- */
 
     /** The face the sale still to be settled gave the households, and the cash they pay for it at the settle. */
@@ -250,7 +255,7 @@ public abstract class Debt {
     /** ...the businesses' (CD2, slice 4: they pay it from their tills at the settle, Game.firmsTakeTheirShare()). */
     protected double allotFirmsFace, allotFirmsCash;
 
-    /** ...and the world's (nothing until it holds city paper). */
+    /** ...and the world's (CD2, slice 5: it pays it from abroad at the settle, Game.worldTakesItsShare()). */
     protected double allotWorldFace, allotWorldCash;
 
     /**
@@ -316,10 +321,11 @@ public abstract class Debt {
         return settledDiscount * Math.min(1, paid / settledOut);
     }
 
-    /** Moves face between the holders: positive to the households, the central bank or the businesses from the bank, negative back to it. */
+    /** Moves face between the holders: positive to the households, the central bank, the businesses or the world from the bank, negative back to it. */
     void moveToHouseholds(double face)  { householdPrincipal = Math.max(0, householdPrincipal + face); }
     void moveToCentralBank(double face) { centralBankPrincipal = Math.max(0, centralBankPrincipal + face); }
     void moveToFirms(double face)       { firmPrincipal = Math.max(0, firmPrincipal + face); }
+    void moveToWorld(double face)       { worldPrincipal = Math.max(0, worldPrincipal + face); }
 
     /**
      * THE CENTRAL BANK'S ADD-ON (0.7.15, round 2): this much more face of the
@@ -650,6 +656,7 @@ public abstract class Debt {
             householdPrincipal *= scale;
             centralBankPrincipal *= scale;
             firmPrincipal *= scale;
+            worldPrincipal *= scale;
             settleDue *= scale;
             unsettledFace *= scale;
             allotHouseholdsFace *= scale;

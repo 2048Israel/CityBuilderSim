@@ -1863,7 +1863,9 @@ final class FinancesScreen {
             + "paper with money it makes, then the households' once the bank has none left, then the businesses' - "
             + "the holdings dial on the Policy tab. Businesses with idle money buy a share of an issue out of their "
             + "tills when it pays them more than the deposit and the world, are paid its coupons, and sell to the bank's "
-            + "desk when the spread has gone, when they borrow or when they need the money. The central bank sells "
+            + "desk when the spread has gone, when they borrow or when they need the money. The world buys a share of an "
+            + "issue, from abroad and outside the bank's room, while its appetite for the city's yield is not met; "
+            + "its coupon and principal leave the city, and it sells to the bank's desk when its money leaves. The central bank sells "
             + "to the bank only. It replaces what it holds of a maturing piece with the same par "
             + "of the new paper, at issue, less what it holds past its dial and what last year's surplus pays off. The "
             + "bank holds the rest. Dollar paper is held abroad.";
@@ -1892,9 +1894,10 @@ final class FinancesScreen {
     VBox holdersCard(double all) {
         DebtManager ledger = ui.game.getDebtManager();
         double[] held = {ledger.householdPrincipal(), ledger.bankPrincipal(), ledger.centralBankPrincipal(),
-                         ledger.firmPrincipal(), ledger.getForeignPrincipal()};
-        String[] who = {"households", "the bank", "the central bank", "businesses", "abroad"};
-        String[] colour = {Palette.PEOPLE, Palette.MONEY, Palette.MONEY_DARK, Palette.BUSINESS_DARK, Palette.BUSINESS};
+                         ledger.firmPrincipal(), ledger.worldPrincipal(), ledger.getForeignPrincipal()};
+        String[] who = {"households", "the bank", "the central bank", "businesses", "the world", "abroad"};
+        String[] colour = {Palette.PEOPLE, Palette.MONEY, Palette.MONEY_DARK, Palette.BUSINESS_DARK, Palette.BUILDING_DARK,
+                           Palette.BUSINESS};
         List<Segment> parts = new ArrayList<>();
         javafx.scene.layout.FlowPane key = keyRow();
         for (int i = 0; i < held.length; i++) {
@@ -2348,7 +2351,8 @@ final class FinancesScreen {
                     seg(debt.householdPrincipal(), Palette.PEOPLE, "households " + d(debt.householdPrincipal())),
                     seg(debt.bankPrincipal(), Palette.MONEY, "the bank " + d(debt.bankPrincipal())),
                     seg(debt.centralBankPrincipal(), Palette.MONEY_DARK, "the central bank " + d(debt.centralBankPrincipal())),
-                    seg(debt.firmPrincipal(), Palette.BUSINESS_DARK, "the businesses " + d(debt.firmPrincipal()))),
+                    seg(debt.firmPrincipal(), Palette.BUSINESS_DARK, "the businesses " + d(debt.firmPrincipal())),
+                    seg(debt.worldPrincipal(), Palette.BUILDING_DARK, "the world " + d(debt.worldPrincipal()))),
                     p > 0 ? p : 1, null, 0, 6);
         }
 

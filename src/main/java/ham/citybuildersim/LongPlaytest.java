@@ -1204,6 +1204,13 @@ public class LongPlaytest {
             flag(month, "the businesses' paper and the paper disagree",
                     String.format("sectors $%,.4f, paper $%,.4f", sectorsHold, firmSays));
         }
+        // ...and the world's (CD2, slice 5): CapitalFlows' paper book and the paper's world share.
+        double worldHolds = g.getCapitalFlows().getPaper();
+        double worldSays = g.getDebtManager().worldPrincipal();
+        if (Math.abs(worldHolds - worldSays) > 1e-6 * Math.max(1, worldSays)) {
+            flag(month, "the world's paper and the paper disagree",
+                    String.format("capital flows $%,.4f, paper $%,.4f", worldHolds, worldSays));
+        }
 
         /* -------------------------------------------------------------------
            AND NOTHING MOVED AFTER THE AUDIT STRUCK.
@@ -4348,6 +4355,9 @@ public class LongPlaytest {
     // ...and the businesses' (CD2, slice 4).
     static int monthsFirmsBought;
     static double couponsToFirmsRun;
+    // ...and the world's (CD2, slice 5): the months it bought, the months its paper went home through the desk, and what it was paid.
+    static int monthsWorldBought, monthsWorldSold;
+    static double couponsToWorldRun, principalToWorldRun, peakWorldPaper;
 
     /*
      * The most the central bank's holdings took off the long end, and when:
@@ -4369,6 +4379,11 @@ public class LongPlaytest {
         couponsToHouseholdsRun += g.getCouponsToHouseholds();
         if (g.getFirmsBoughtPaper() > 0) monthsFirmsBought++;
         couponsToFirmsRun += g.getCouponsToFirms();
+        if (g.getWorldBoughtPaper() > 0) monthsWorldBought++;
+        if (g.getPaperBoughtFromWorld() > 0) monthsWorldSold++;
+        couponsToWorldRun += g.getCouponsToWorld();
+        principalToWorldRun += g.getPrincipalToWorld();
+        peakWorldPaper = Math.max(peakWorldPaper, g.getCapitalFlows().getPaper());
         DebtManager dm = g.getDebtManager();
         double off = dm.compression(600);
         if (off > peakCompression) {
@@ -6386,6 +6401,12 @@ public class LongPlaytest {
                 + " $%,.0fk back to the desk and were paid $%,.0fk of coupons%n",
                 dm.firmPrincipal(), g.getOutwardInvestment().getLifetimePaperBought(), monthsFirmsBought,
                 g.getOutwardInvestment().getLifetimePaperSold(), couponsToFirmsRun);
+        // ...and the world (CD2, slice 5): face held at the end and at its most, what it paid over the run, what the
+        // desk paid it for the paper that left with its money, and what the city paid it.
+        out.printf("  the world holds $%,.0fk of it (face; at most $%,.0fk); it paid $%,.0fk at %d settle(s), sold"
+                + " $%,.0fk back to the desk in %d month(s) and was paid $%,.0fk of coupons and $%,.0fk of principal%n",
+                dm.worldPrincipal(), peakWorldPaper, g.getCapitalFlows().getLifetimePaperBought(), monthsWorldBought,
+                g.getCapitalFlows().getLifetimePaperSold(), monthsWorldSold, couponsToWorldRun, principalToWorldRun);
         out.printf("  the curve at the end: note %.2f%%, 10-year %.2f%%, 50-year %.2f%%;"
                 + " the central bank's holdings take %.3f points off the 50-year (dial %.0f%%,"
                 + " holding %.1f%% of the term paper)%n",

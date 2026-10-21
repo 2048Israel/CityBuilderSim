@@ -203,6 +203,8 @@ public final class CentralBank {
     private double boughtPaper, soldPaper, paperCoupons, paperRedeemed, boughtBack, paperGains;
     /** ...and of what it paid for paper, what it paid the households for theirs (0.7.15): money made and paid straight into their savings. */
     private double boughtFromHouseholds;
+    /** ...and what it paid the world for the city's paper it holds (CD2, slice 5): money made and paid abroad. A month's, not saved. */
+    private double boughtFromWorld;
     /** ...and what it paid the treasury at issue, and the par it took, rolling its own maturing paper (0.7.15, round 2): money made into the treasury's cash. */
     private double boughtAtIssue, parAtIssue;
     /** The defence's month (0.7.2): the local price of the vault's dollars sold at this month's reprice - equity spent, not money destroyed. */
@@ -243,7 +245,7 @@ public final class CentralBank {
         interestOnReserves = windowInterest = advancesInterest = 0;
         remitted = 0;
         boughtPaper = soldPaper = paperCoupons = paperRedeemed = boughtBack = paperGains = 0;
-        boughtFromHouseholds = 0;
+        boughtFromHouseholds = boughtFromWorld = 0;
         boughtAtIssue = parAtIssue = 0;
         defendedThisMonth = 0;
     }
@@ -466,6 +468,20 @@ public final class CentralBank {
         double paid = buyPaper(price, face);
         boughtFromHouseholds += paid;
         boughtFromHouseholdsLifetime += paid;
+        return paid;
+    }
+
+    /**
+     * Buys this much face from the world for this price (CD2, slice 5), in
+     * money made for it, the last the dial reaches: the same purchase as
+     * buyPaper(), counted apart because the money made leaves the city for
+     * the world - MoneyAudit declares it made (MONEY, with the rest of
+     * boughtPaper) and leaving the pools abroad (FINANCIAL), a financial
+     * outflow the currency sees.
+     */
+    public double buyPaperFromWorld(double price, double face) {
+        double paid = buyPaper(price, face);
+        boughtFromWorld += paid;
         return paid;
     }
 
@@ -740,6 +756,8 @@ public final class CentralBank {
     public double getSoldPaperLifetime()   { return soldPaperLifetime; }
     /** Of what it paid for paper this month, what it paid the households (0.7.15); the treasury at issue, getBoughtAtIssue() (round 2); the rest it paid the bank. */
     public double getBoughtFromHouseholds()         { return boughtFromHouseholds; }
+    /** ...and the world (CD2, slice 5). */
+    public double getBoughtFromWorld()              { return boughtFromWorld; }
     /** ...and since founding. */
     public double getBoughtFromHouseholdsLifetime() { return boughtFromHouseholdsLifetime; }
     /** What it paid the treasury this month for its add-ons at issue, rolling its own maturing paper (0.7.15, round 2). */
@@ -873,6 +891,7 @@ public final class CentralBank {
         boughtPaperLifetime *= scale;  soldPaperLifetime *= scale;
         boughtPaper *= scale;  soldPaper *= scale;  paperCoupons *= scale;
         boughtFromHouseholds *= scale;  boughtFromHouseholdsLifetime *= scale;
+        boughtFromWorld *= scale;
         boughtAtIssue *= scale;  parAtIssue *= scale;
         boughtAtIssueLifetime *= scale;  parAtIssueLifetime *= scale;
         paperRedeemed *= scale;  boughtBack *= scale;  paperGains *= scale;

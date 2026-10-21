@@ -1891,7 +1891,14 @@ public class DebtManager {
         return total;
     }
 
-    /** ...and the commercial bank: the domestic principal less the other three. What its book carries. */
+    /** ...the world, at face (CD2, slice 5). CapitalFlows.getPaper() is the same figure from the other side; HoldersCheck asserts it. */
+    public double worldPrincipal() {
+        double total = 0;
+        for (Debt d : debts) total += d.worldPrincipal();
+        return total;
+    }
+
+    /** ...and the commercial bank: the domestic principal less the other four. What its book carries. */
     public double bankPrincipal() {
         double total = 0;
         for (Debt d : debts) total += d.bankPrincipal();
@@ -1911,9 +1918,9 @@ public class DebtManager {
         return total;
     }
 
-    /** Each holder's book at the curve: 0 the households, 1 the central bank, 2 the bank, 3 the businesses. */
+    /** Each holder's book at the curve: 0 the households, 1 the central bank, 2 the bank, 3 the businesses, 4 the world. */
     public double[] bookValues() {
-        double[] out = new double[4];
+        double[] out = new double[5];
         for (Debt d : debts) {
             if (d.isForeign()) continue;
             double face = d.getOustandingPrincipal();
@@ -1923,6 +1930,7 @@ public class DebtManager {
             out[1] += d.centralBankPrincipal() * perFace;
             out[2] += d.bankPrincipal() * perFace;
             out[3] += d.firmPrincipal() * perFace;
+            out[4] += d.worldPrincipal() * perFace;
         }
         return out;
     }
@@ -1958,6 +1966,17 @@ public class DebtManager {
             weighted += held * yieldOf(d);
         }
         return face > 0 ? weighted / face : getRate();
+    }
+
+    /**
+     * The world's book at market over its face (CD2, slice 5): the households'
+     * twin, one ratio a month - what a dollar of face of the paper it holds is
+     * worth at the curve, which is what the auction counts of it beside its hot
+     * money (Game.auctionBidders()). At face - 1 - when it holds none.
+     */
+    public double worldBookRatio() {
+        double face = worldPrincipal();
+        return face > 0 ? bookValues()[4] / face : 1;
     }
 
     /** What the households' paper yields at today's curve (each piece's yieldOf(), its yield to maturity on the price a buyback pays), weighted by what they hold of each piece; the short rate when they hold none. */
