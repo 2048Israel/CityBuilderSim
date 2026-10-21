@@ -9,7 +9,7 @@ study's model run again with the firms (D33). Planned while CD1 was built;
 built on CD1's branch (unshipped, waiting for Jerus on H1 and A2) merged with
 main at 9f1b328 (CL2, 0.8.13); merged with main at 9ff6489 after CD1 shipped as 0.8.15 (CL3 took 0.8.14), so it was 0.8.16; FX6 shipped first as 0.8.16, so it is 0.8.17.*
 
-**Ready.** Merged with main after CD1 shipped (9ff6489, then e6c8e74); the checks, the playtests and the ensemble rerun on the merged tree; `--timing` 7 of 8, its one red MapCheck's wall clock, which main fails alone too (§3).
+**Ready.** Merged with main after CD1 (0.8.15) and FX6 (0.8.16) shipped (b42a905): `Batch check.bat --maps` 125 of 126, its one red MapCheck's wall clock; `--timing` alone and hard 8 of 8, MapCheck included (§3).
 
 ## 1. What it does
 
@@ -123,7 +123,7 @@ at every step.
 AuctionCheck, fixed. Main's red, ScaleCheck's "...and it builds" (SC1),
 passes here as it did on CD1. On the final model (9e828b81's model, before
 the words and the maps): **126 harnesses run in 792 s, all passed**, Stale 0
-firm findings. On the tree merged with main after CD1 shipped (7bbe4cd4, `Batch check.bat --maps`, beside the ensemble and the Rotterdam playtest): **126 harnesses, 124 passed**, the maps regenerated, Stale 0 firm findings; the two reds wall-clock lines only (MapCheck's sidecar and a month's change at 10 billion, EarthTerrainCheck's cell pass), timed hard under the run's own load. **`--timing`, alone and hard:** 8 run in 262 s, **7 passed**; EarthTerrainCheck green; **MapCheck red on two wall-clock lines** (the sidecar at 10 billion in 500 ms, a month's change at 10 billion in 5 ms). **Main fails it too**: MapCheck alone on origin/main (e6c8e74) fails "a month's change ... in 5 ms" at 5 and 10 billion. CL3's sidecar and its month's change are the map's; CD2 touches neither. The default playtest on the merged tree: 573,349 people, nothing found; Rotterdam 761,080, its one finding CL3's layout watch, the red main ships with (FX6).
+firm findings. On the tree merged with main after CD1 shipped (7bbe4cd4, `Batch check.bat --maps`, beside the ensemble and the Rotterdam playtest): **126 harnesses, 124 passed**, the maps regenerated, Stale 0 firm findings; the two reds wall-clock lines only (MapCheck's sidecar and a month's change at 10 billion, EarthTerrainCheck's cell pass), timed hard under the run's own load. **`--timing`, alone and hard:** 8 run in 262 s, **7 passed**; EarthTerrainCheck green; **MapCheck red on two wall-clock lines** (the sidecar at 10 billion in 500 ms, a month's change at 10 billion in 5 ms). **Main fails it too**: MapCheck alone on origin/main (e6c8e74) fails "a month's change ... in 5 ms" at 5 and 10 billion. CL3's sidecar and its month's change are the map's; CD2 touches neither. The default playtest on the merged tree: 573,349 people, nothing found; Rotterdam 761,080, its one finding CL3's layout watch, the red main ships with (FX6). **On the tree merged with FX6 as well** (315d0a08, 0.8.17; FX6 is the map's alone, so the trace and the ensemble above stand): `Batch check.bat --maps` **126 run, 125 passed**, the maps regenerated, Stale 0 firm findings, the one red MapCheck's "a month's change at 5 billion in 5 ms" of the wall clock; **`--timing`, alone and hard: 8 run in 150 s, all passed**, MapCheck included - the suite's red was load.
 
 **D33's count.** No tail over a point anywhere it was counted: AuctionCheck
 11's 1,200 months of the automatic builder's city booked 82 sales, D$40.0B
