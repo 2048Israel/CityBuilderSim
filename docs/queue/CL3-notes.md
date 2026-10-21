@@ -133,11 +133,38 @@ and read on load (`Game.readTheMap()`), stamped (`mapStamp`), and MapCheck 4 is 
   header agree; a harness's `reconcile(model)` counts on from the last.
 - Departures in a month before its arrivals, as the prototype did.
 
-## 5. Not decided yet (looked at after the GO)
+## 5. Found in the source since, and how the plan meets it
+
+- **The plan's counts are not the district's.** `planInputHere()` takes from a district's
+  counts its mines on sites, the yards the runs draw and the shore's works. The log records the
+  district's counts, so the plan squares the two at the end of its events, as the prototype
+  did: a type the log holds more of than the plan places loses its newest (freed last, so
+  nothing placed before moves), one it holds fewer of gains them last, at the log's last
+  month. A fixture built by hand (no log) is all "gained", one first batch: today's plan.
+- **The first batch's ladder reads its own month's road.** Today's ladder spends the surplus
+  `surface()` leaves of the input's road; for a first batch it must be the road of the batch's
+  month (from the log's road records), or a later month's road would re-lay its cells. The
+  builder's surface reads a road it is given, the first batch's for the ladder's builds, the
+  whole log's for the finish.
+- **One build more** for a district whose log goes on past its first batch: the ladder picks
+  its step on the first batch, then that step is built again without its finish (join, access
+  roads, sidings, surface), the events placed on it, and the finish run once. A district whose
+  log is one batch (an old save's first load, a canonical map) is today's `make()` as it is.
+  Measured against `PLAN_MS` and his cities' slowest districts.
+- **The ladder at a cell's opening:** the road at that point of the log less a full width for
+  each street plot the district surfaces so far (`surface()` makes every street FULL while the
+  road lasts, so its surplus is the road less that); square a homes cell when that leaves
+  `SQUARE_PLOTS` past its own long-block streets, then a boulevard when it leaves
+  `BOULEVARD_PLOTS` more.
+- **LongPlaytest reloads and compares the map** (`same()`, "the city map across a save" is
+  flagged into its trace): with the logs in `same()`, a log that does not round-trip moves the
+  trace - a guard for free.
+
+## 6. Not decided yet (looked at after the GO)
 
 - Whether `build()`'s placing and finish split cleanly with CL2's layouts in (CL2 changes
   `openCell()`); FW11 follows and works on the result.
 - How the playtest's trace is compared on the PC (FR7 and FX4 compared LongPlaytest's runs
   against main's): the commands, from LongPlaytest's header.
-- Whether LongPlaytest reconciles the map each month by itself (CL1Hook was called from the
-  prototype's `reconcile()`), or the replay harness must.
+- LongPlaytest keeps the map up every month itself (its "THE CITY MAP, WATCHED"); whether a
+  replay harness can borrow that run for its windows, or must play its own.
