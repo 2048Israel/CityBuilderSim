@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.19 — XR1, the D$ as a float that follows its parity — 2026-10-21, ready, see docs/queue/XR1-notes.md
+
+**The default city now hyperinflates unless the player stops it** (Jerus: "ship it as is, im going to test it to see
+if player led behaviour can prevent hyperinflation"). The D$ is a level now: parity's trend, on the basket with rent
+held to a third, followed one for one; where the real rate (60% of a change at once, at most 35%), the year's balance
+and the vault's cover hold it; and a seeded market of its own, about 8% a year. Buying dollars now cheapens the D$, at
+2% per 1% of a year's GDP, and the central bank's defence leans against a month's new fall the same way. Trade › The
+currency is the study's board 1. With the rate following prices and prices following the rate, the default playtest
+ends at 2.9 billion times founding's prices with the D$ at its guard, 10,877 people (main: 1,036 times, 573,349);
+Rotterdam 284,646 (main 761,080). Under the autopilot the ensemble's cities live (214,000 at the median) at 4.4% a
+year: 18/25 against 0.8.17's 23/25. Save format 43; older saves are refused. ★ for Jerus: XR1-C, the anchor's leads.
+
 ### 0.8.18 — FX5, the map's rail and roads finished — 2026-10-21, ready, see docs/queue/FX5-notes.md
 
 Rail curves at its corners and the trains follow them: a new `TrackCurves` rounds every route's turn (3 plots) and

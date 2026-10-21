@@ -22,7 +22,7 @@ import java.io.PrintStream;
  * What replaced the rule is ForeignAccounts, THE FLOAT: every piece a level,
  * nothing a speed, each a line of its own. CurrencyCheck restates the
  * old defence and real-rate premises on it; this is the float itself, from the
- * design's own figures (the study's section 3, and RatesModel.java beside it).
+ * design's own figures (the study's section 3, and its prototype beside it, in docs/studies/exchange-rates/).
  *
  * What it has to prove, a section each, every one a fixture that causes the
  * condition rather than waiting for it:

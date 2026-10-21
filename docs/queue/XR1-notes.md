@@ -41,6 +41,23 @@ The D$ is now a level, struck every month:
 - **The save**: `SAVE_FORMAT` 43, the floor raised to 43 (an older save's
   currency would load wrongly: its trend would open at the founding's
   parity). `HistorySave` gains `fxFair` and `fxMarket`.
+- **The screen**: Trade › The currency is board 1: the rate card's two
+  gauges (against parity with rent held to a third, in the parity rule's
+  bands; against the fair level, with no verdict), the fair level on the
+  chart, "What moved it this month" in six forces that add to the month's
+  move, "Where the fundamentals hold it" step by step. Policy's drift card
+  is "THE CURRENCY'S LEVEL". Left out as the brief said: the WN6 figures
+  (D$ per 2015 US$, the real effective rate) and today's rule's path.
+- **The harness**: `ExchangeRateCheck`, ten sections: parity's basket; the
+  trend with no lag (1.0000 at years 10 and 50); the market (7.6% a year,
+  a half-life of 38.9 months pooled over five seeds, autocorrelation
+  -0.03); the gap's level (63% in its month, slot 3's 16.9 points 25.4%
+  dearer); the balance and cover; interventions (a buyer's D$ 7.3% CHEAPER
+  than its twin's two years on: §1.4's finding reversed); one seed one path;
+  a save mid-swing to the bit; a real city's counts (8.3% a year, the
+  longest run 16 months, the defence in 70 of 360 months); and the game
+  surviving its guard (every figure finite, the audit closing, a save and a
+  load at it).
 
 ## 2. The slices and their review
 
@@ -128,9 +145,54 @@ So the lean as built smooths a fall and lets the fundamentals have the last
 word; it never buys. It is XR1-C ★1 for Jerus, because it moves "as today"'s
 amount (CurrencyCheck 4 is red on it, §6).
 
-## 5. The checks
+## 5. The checks, the trace and the ensemble
 
-(to fill)
+**The suite** (`Batch check.bat --maps`, on 15790302): SUITE_LINE
+
+**The trace.** XR1 moves every trace (§3). Both playtests on the final
+model (classes of 07a843a6; slice 3 is the screen and a fixture), run alone
+on the PC, against main's 0.8.17/0.8.18 trace (CD2-notes §3, FX5-notes §3):
+
+| playtest | main | XR1 |
+|---|---|---|
+| default, people at m4002 | 573,349 | 10,877 |
+| default, prices against founding | 1,036x | 2.9e9x; the D$ at its 1e9 guard 1,765 months |
+| default, findings | none | three, all the spiral's: the businesses' paper and the paper disagree 1,790 times from m2213 (both read $0.0000: sums past 1e20 lose their cents), MATERIALS outside its band 5 times (m1908-2483), industry farther out than the homes once at m4000 |
+| --earth rotterdam, people at m4003 | 761,080 | 284,646 |
+| --earth rotterdam, prices | (not quoted) | 1.9e9x; the guard 555 months |
+| --earth rotterdam, findings | CL3's layout watch (fixed by FX6) | none: every month passed the audit and every reload matched |
+
+The default playtest's own D$ line: volatility 9.1% a year from month 60
+(the study's slot-3 replay: 9.2%), the longest run one way 89 months (in the
+spiral), 3,573 months more than 25% from parity, the defence sold in 495
+months (US$190,131k), the treasury dealt in 52, the market moved it over 2%
+in 919. Rotterdam: 11.8% a year, 51 months, the defence in 468 months.
+
+**What moved and why.** Every figure that a price touches, from about month
+400: the D$ follows the city's own prices one for one, and they follow it
+(§3). Under the playtest's player, who looks at the dial every few decades,
+nothing stops it; under the ensemble's autopilot (AUTO2), which moves the
+dial every month, the cities live at 4.4% a year.
+
+**The ensemble** (`tools/ensemble/ensemble.sh xr1`, 80 of 80 runs, 21.8
+minutes, against `docs/ensemble/0.8.17.md`): **18/25 against 23/25**,
+committed as `docs/ensemble/0.8.19.md`.
+
+| criterion | 0.8.17 | 0.8.19 | why |
+|---|---|---|---|
+| A1 inflation m240-end, AUTO2 | 2.27%, PASS | 4.41%, 0/16 in band, FAIL | the spiral, held back by the autopilot |
+| A2 spells over 10% | 7 months [1-10], PASS | 30 months [9-70], FAIL | the spiral |
+| A3 deflation spells; final/peak | 0 months, PASS | 12 months; one seed at 21.7% of its peak, FAIL | the D$'s swings, both ways |
+| S1 a held 0% over the twin | +1.85% a year (longest spell 17 months), FAIL | +47.4% a year, the D$ 2,660 times the twin's at m2040, FAIL | the spiral at a held dial: the count the study's §3.2 asked for |
+| K2 a world shock's inflation | 2.88%; +0.68% over the twin, PASS | 6.46%; +0.21% over the twin, FAIL (the level, not the excess) | a world price step passes through the rate and parity |
+| R3 a held 15%, m660-720 | -2.34%, 3 above +1 point, FAIL | +2.23%, 9 above +1 point, FAIL | as before, and the swings |
+| F1 ZERO_SLACK findings | 0, PASS | 1 (MATERIALS outside its band), FAIL | the spiral |
+| T1, T2, M1, the other F1s, K1, R1, R2, the pairing | PASS | PASS | AUTO2's people 213,841 against 217,480; no audit month failed |
+
+**The premises that fail ship on Jerus's word** (2026-10-21, "ship it as is"):
+A1, A2, A3, K2, F1 (ZERO_SLACK) are red because of the spiral; S1 and R3
+were red before and are worse. None was moved. EN1-C's ★1 (S1 restated or
+retired) and ★2 (R3) stand, with these numbers beside them.
 
 ## 6. Every harness assertion restated, against main (d2869a5)
 
