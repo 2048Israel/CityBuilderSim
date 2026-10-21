@@ -1056,8 +1056,9 @@ public class SaveFileCheck {
 
            The fixture CAUSES a revaluation rather than finding one: the city
            borrows dollars on its first morning, and is played until a month in
-           which the rate actually moved them - which it cannot do before
-           ForeignAccounts.SETTLING_MONTHS of trade, so that many months first.
+           which the rate actually moved them - which it cannot do until the
+           city has traded a while (the currency's settling months until XR1),
+           so that many months first.
            ================================================================= */
         System.out.println("\n--- and a city with dollars owed abroad ---");
 
@@ -1070,7 +1071,10 @@ public class SaveFileCheck {
             abroad.buildStack(template(abroad, "House"), 80, false);
             abroad.buildStack(template(abroad, "Convenience Store"), 3, false);
             abroad.handleForeignLogic("Term", 5_000, 30, 100, false);   // one of the five (0.7.1)
-            abroad.simulateMonths(ForeignAccounts.SETTLING_MONTHS + 2);
+            // The months the fixture trades before its test month: 24, the currency's
+            // settling months until XR1, kept so the fixture's city is the city it always was.
+            final int tradingMonths = 24;
+            abroad.simulateMonths(tradingMonths + 2);
             for (int extra = 0; extra < 120
                     && Math.abs(abroad.getForeignAccounts().getLastRevaluation()) < 1e-6; extra++) {
                 abroad.simulateMonths(1);

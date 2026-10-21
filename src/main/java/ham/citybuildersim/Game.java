@@ -239,6 +239,18 @@ public class Game {
         return founding;
     }
 
+    /** Salt for the D$'s market seed, so the market's path is not the world's own seed spelled again ("MARKETXR"). */
+    private static final long MARKET_SEED_SALT = 0x4D41524B45545852L;
+
+    /**
+     * The seed of the D$'s market swing for a world seed (XR1; ForeignAccounts, THE
+     * FLOAT): a splitmix64 of the world seed XOR a salt. One world seed, one path;
+     * WN1's city seed replaces the world seed here when it exists.
+     */
+    static long marketSeedFor(long worldSeed) {
+        return World.mix(worldSeed ^ MARKET_SEED_SALT);
+    }
+
     /**
      * Builds the entire simulation from nothing.
      *
@@ -451,6 +463,9 @@ public class Game {
         bankPrincipalRepaidThisMonth = 0;
         bank.reset();
         foreign.reset();
+        // The D$'s market swing is a path of the city's own: one world seed, one path
+        // (XR1; the nations study's D9). A load puts the save's seed back over this.
+        foreign.setMarketSeed(marketSeedFor(founding.getWorldSeed()));
         // The land office converts cash until the player says otherwise (0.7.6).
         landPaidFromVault = false;
         lastLandReceipt = "";
@@ -969,9 +984,10 @@ public class Game {
        treasury chose to buy and has not yet sold". It is in the vault
        rather than the treasury for the reason a reserve exists at all:
        import cover damps the pressure to fall from the first month the rate
-       is allowed to move (ForeignAccounts.SETTLING_MONTHS; absorption() - on
-       the way down only, see A RESERVE DEFENDS A CURRENCY, without which this
-       founding reserve reproduced the year book in three seeds of eight), it
+       moves (absorption() - on the way down only, see A RESERVE DEFENDS A
+       CURRENCY, without which this founding reserve reproduced the year book
+       in three seeds of eight; since XR1 the vault's sale lifts the rate at its
+       real size rather than damping a push), it
        backs the hot money a young city attracts, and - since the vault is
        kept in dollars - it is the one thing the city owns that gains when
        its currency falls.
@@ -10023,11 +10039,13 @@ public class Game {
          * and before the next month reads it at the top of startOfMonthUpdate().
          */
         /*
-         * WHERE THE CURRENCY OUGHT TO BE, before it is asked to move.
+         * WHERE THE CURRENCY IS FOLLOWING TO, before it is asked to move.
          *
          * Relative PPP: the city's basket against the world's. Set before
          * repriceCurrency() reads it, and after both levels have been struck
-         * for the month.
+         * for the month. The rate follows its trend (Holt's level and slope) and
+         * not the month's level, one for one, and the real rate, the balance and
+         * the vault's cover put it above or below that trend (THE FLOAT).
          */
         /*
          * THE SAME INSTRUMENT FOR BOTH HALVES. Parity is struck from the two
@@ -10038,7 +10056,14 @@ public class Game {
          * WorldEconomy.realisedInflation() for what handing it the headline
          * did to the exchange rate, and through it to every exporter.
          */
-        foreign.setParity(priceIndex.getIndex(), world.getPriceLevel(),
+        /*
+         * THE CAPPED LEVEL, not the index (XR1, star 2: "Basket, rent capped").
+         * Parity is struck from the basket with rent held to a third
+         * (PriceIndex.getParityLevel()), the traded part of what a household buys;
+         * the index keeps the basket as the households spend it, and the
+         * inflations beside it are the index's, as they always were.
+         */
+        foreign.setParity(priceIndex.getParityLevel(), world.getPriceLevel(),
                 priceIndex.inflation(), world.realisedInflation());
         /*
          * ...AND WHAT THE CITY IS PAYING TO BORROW, AGAINST THE WORLD - IN
@@ -10054,12 +10079,12 @@ public class Game {
          * in the city paying more. Asia 1997, as a lever. It was the NOMINAL
          * differential until 0.7.2, and a city inflating at 40% with its dial
          * at 25% read as paying 23 points over the world when it was paying
-         * 15 under it (ForeignAccounts, THE REAL RATE, NOT THE NOMINAL).
+         * 15 under it (ForeignAccounts, WHAT XR1 RETIRED; gapLevelFor() is
+         * what it is worth to the currency now).
          */
         foreign.setRealRateDifferential(realRateDifferential());
-        // ...and the anchored drift, the credible part of expected inflation
-        // against the world's (0.7.42; ForeignAccounts, THE ANCHORED DRIFT).
-        foreign.setExpectedDrift(anchoredDrift());
+        // The rate follows parity's trend, the real gap's level, the balance, the cover,
+        // the market and the interventions felt (ForeignAccounts, THE FLOAT).
         foreign.repriceCurrency();
         /*
          * ...and what the vault's dollars fetched, if the reprice defended the
@@ -11975,9 +12000,9 @@ public class Game {
        (LabourMarket.updateCostOfLiving()), the real rates
        (realRateDifferential(), realDepositRate()), the investors' hurdle and,
        since 0.7.44, the landlords' lender's test (BusinessInvestment
-       .servicesItsOwnDebt() and realTestRate()), the currency's drift
-       (anchoredDrift()), the drift every sticky price carries since 0.7.43
-       (handOnExpectations()) and every money constant that prices something
+       .servicesItsOwnDebt() and realTestRate()), the drift every sticky price
+       carries since 0.7.43 (handOnExpectations(); the currency's own drift was
+       retired by XR1) and every money constant that prices something
        (restrikeMoneyConstants()). The project's spec-inflation.md, sections
        2.1-2.5 and 3, is the design and its measurements.
        ===================================================================== */
@@ -11991,18 +12016,6 @@ public class Game {
 
     /** How far the city believes the central bank, Expectations.KMIN to KMAX. See Expectations.getCredibility(). */
     public double getCredibility() { return expectations.getCredibility(); }
-
-    /**
-     * The currency's anchored drift, a fraction a year (ForeignAccounts, THE
-     * ANCHORED DRIFT): the credible part of expected inflation - credibility
-     * times the target - against the world's realised inflation, and nothing
-     * before the basket is based.
-     */
-    public double anchoredDrift() {
-        if (!priceIndex.isBased()) return 0;
-        return (1 + expectations.getCredibility() * debtManager.getInflationTarget())
-                / (1 + world.realisedInflation()) - 1;
-    }
 
     /* ----- what the price index is handed (0.7.43; PriceIndex, WHAT IS IN THE BASKET) ----- */
 
@@ -12127,10 +12140,9 @@ public class Game {
         bank.seedConstants(struck);
     }
 
-    /** ...and what the month hands on from the anchor that is not a constant: the investors' expected inflation (0 before the basket is based), the currency's drift, and - since 0.7.43 - the drift every sticky seller's price carries (Retail.stickyPrice(): the shelf and the two rents) at expected inflation a month. Each month after the anchor, and on a load. */
+    /** ...and what the month hands on from the anchor that is not a constant: the investors' expected inflation (0 before the basket is based) and - since 0.7.43 - the drift every sticky seller's price carries (Retail.stickyPrice(): the shelf and the two rents) at expected inflation a month. (The currency took a drift too, from 0.7.42 until XR1.) Each month after the anchor, and on a load. */
     private void handOnExpectations() {
         businessInvestment.setExpectedInflation(priceIndex.isBased() ? expectations.getExpectedInflation() : 0);
-        foreign.setExpectedDrift(anchoredDrift());
         getSectors().retail().setExpected(expectations.getExpectedLevel(), expectations.monthlyExpected());
         getSectors().realEstate().setExpectedMonthly(expectations.monthlyExpected());
     }

@@ -1,7 +1,6 @@
 package ham.citybuildersim.ui;
 
 import ham.citybuildersim.*;
-import ham.citybuildersim.ui.Pieces.Force;
 import ham.citybuildersim.ui.Pieces.Mirror;
 import ham.citybuildersim.ui.Pieces.Segment;
 import ham.citybuildersim.ui.Pieces.Step;
@@ -233,12 +232,6 @@ final class TradeScreen {
         double shown = Math.abs(move) * 100;
         if (shown < .0005) return "no move";
         return String.format("%.3f%%", shown) + (move > 0 ? " weaker" : " stronger");
-    }
-
-    /** A pressure as a share of the currency, with its direction: "15.5% weaker", "none". */
-    static String pushWords(double pressure) {
-        if (Math.abs(pressure) < 1e-9) return "none";
-        return share1(Math.abs(pressure)) + (pressure > 0 ? " weaker" : " stronger");
     }
 
     /* ------------------------------ the frame ------------------------------ */
@@ -2215,6 +2208,11 @@ final class TradeScreen {
        pressure in its two terms, and what the month's push and the
        basket's pull come to. Then what the rate is doing to the dollar debt
        and to the vault.
+
+       SINCE XR1 the forces are what moved it this month, six plain lines
+       (parity's trend, the real rate, the balance, the vault's cover,
+       interventions, the market) and their sum; the next slice rewrites
+       the page around them.
        ===================================================================== */
 
     void currencyPage(VBox page) {
@@ -2272,11 +2270,11 @@ final class TradeScreen {
         if (moved != null) c.getChildren().add(muted(moved));
         c.getChildren().add(cardLine("parity " + sym() + fxRate(fx.getParity()) + " · where a basket costs the same", "",
                 null, parityLineInfo(fx)));
-        // ...where the real rate alone would hold it, and the drift the anchor hands it (0.7.45; the UI spec's D18).
+        // ...where the real rate holds it against parity's trend (0.7.45, the UI spec's D18; XR1).
         if (!fx.isPinned()) {
-            PolicyScreen.DriftWords drift = ui.policyScreen.driftWords();
-            c.getChildren().add(muted("the real rate alone would hold it " + PolicyScreen.parityWords(fx.uipLevel() - 1)));
-            c.getChildren().add(muted(("no drift".equals(drift.figure()) ? "no drift" : "drifts " + drift.figure()) + ": " + drift.line()));
+            PolicyScreen.GapWords gap = ui.policyScreen.gapWords();
+            c.getChildren().add(muted("no gap".equals(gap.figure()) ? "the real rate leaves it at parity's trend"
+                    : "the real rate " + gap.figure() + " than parity's trend"));
         }
         if (fx.isPinned()) {
             c.getChildren().add(chips(chip("held fixed", Palette.TEXT_LABEL)));
@@ -2317,202 +2315,42 @@ final class TradeScreen {
                 + "whatever else is happening to it.";
     }
 
-    /* ------------------------------ what is moving it ------------------------------ */
+    /* ------------------------------ what moved it ------------------------------ */
 
     /**
-     * THE PRESSURE (pure): the trade term - both accounts' trailing
-     * imbalance over everything that crossed (ForeignAccounts.pressure()) -
-     * and the real rate's term (ratePressure()), and the two together, the
-     * model's previewRawPressure(). Positive is weaker, drawn right. Each
-     * row's (i) its old sentence whole.
-     */
-    List<Force> pressureForces() {
-        ForeignAccounts fx = ui.game.getForeignAccounts();
-        double account = fx.monthlyCurrentAccount(), capital = fx.monthlyFinancialAccount();
-        double real = fx.getRealRateDifferential();
-        return List.of(
-                new Force("the trade term", fx.pressure(), false, false, tradeTermInfo(fx),
-                        "current account " + d(account) + " a month · financial " + d(capital) + ", a 12-month average"),
-                new Force("the real rate", fx.ratePressure(), false, false, realRateInfo(fx),
-                        points(real).replace(" points", " pts") + " over the world's, worth " + pushWords(fx.ratePressure())),
-                new Force("pressure", fx.previewRawPressure(), true, false,
-                        "The two together: what the month would push the currency by before the vault and the openness "
-                                + "have had their say.", null));
-    }
-
-    /**
-     * WHICH COMES TO (pure): the month's push - the pressure less what the
-     * vault meets, times the openness, at DRIFT_SPEED - the anchored drift
-     * (0.7.45; the UI spec's B6, D18: the month applies it, and the preview
-     * left it out), and the basket's pull back to parity, and the next
-     * month's move, all the model's previews (ForeignAccounts.previewPush(),
-     * previewDrift(), previewPull(), previewMove()). A pinned rate moves by
-     * none of it.
-     */
-    List<Force> comesToForces() {
-        ForeignAccounts fx = ui.game.getForeignAccounts();
-        double move = fx.previewMove();
-        return List.of(
-                new Force("the month's push", fx.previewPush(), false, fx.isPinned(),
-                        "What the month is doing to the currency: the pressure, less what the vault's sale meets of it, "
-                                + "times how open the city is, at the rate a month's pressure moves the currency.", null),
-                new Force("the anchored drift", fx.previewDrift(), false, fx.isPinned(),
-                        "The credible part of the inflation people expect, against the world's: trust in the bank times "
-                                + "the target, against the world's own inflation - a twelfth of the year's slide a month. "
-                                + "Policy › Money's THE CURRENCY'S DRIFT.", null),
-                new Force("the basket's pull", fx.previewPull(), false, fx.isPinned(),
-                        "The basket dragging it back to what the same goods cost abroad - the force that never lets go.",
-                        null),
-                new Force("next month", move, true, fx.isPinned(), null,
-                        fx.isPinned() ? "held fixed: it does not move" : "about " + moveWords(move)));
-    }
-
-    /** The trade term's sentences (the spec's F2: the current account's, the financial account's and the trade term's, verbatim). */
-    String tradeTermInfo(ForeignAccounts fx) {
-        double account = fx.monthlyCurrentAccount(), capital = fx.monthlyFinancialAccount();
-        String a = Math.abs(account) < .5
-                ? "Nothing has crossed the city's edge in either direction, so there is no imbalance for the rate to answer "
-                  + "and the basket is the only thing left holding it where it is."
-                : account > 0
-                ? "A surplus is the world handing the city more of its money than the city hands back. That has to be held "
-                  + "somewhere, and the somewhere pushes the rate stronger."
-                : "A deficit has to be paid for in somebody else's money. The city either earns it, borrows it, or spends "
-                  + "the vault - and whichever it is, it pushes the rate weaker.";
-        String b = Math.abs(capital) < .5
-                ? "No money is crossing the edge except for goods, so the trade balance above is the whole of the imbalance."
-                : capital < 0
-                ? "Money leaving to be invested or lent abroad - the families' savings going out for the world's rate, and "
-                  + "foreigners borrowing here to hold dollars. Every dollar of it is local currency sold, which offsets a "
-                  + "surplus one for one. A city can run a permanent surplus and a flat rate at the same time, and this is how."
-                : "Money coming in to be lent or invested here. It has to be bought with somebody's dollars first, so it "
-                  + "pushes the same way a surplus does.";
-        return "The current account, 12 months: " + a + "\n\nThe financial account, 12 months: " + b
-                + "\n\nBoth imbalances together, as a share of everything that crosses in either direction. A big number on a "
-                + "small trade is a small push - and a surplus financed by money going back out is no push at all.";
-    }
-
-    /**
-     * The real rate's sentence (F2), with the dial, the inflation people
-     * expect and the world's rate - ex ante since 0.7.42, as the model strikes
-     * it (Game.realRateDifferential()); it printed the year's inflation as the
-     * subtrahend until 0.7.45 (the UI spec's B9).
-     */
-    String realRateInfo(ForeignAccounts fx) {
-        return String.format("The dial less the inflation people expect (%s less %s), against the world's rate less the "
-                + "world's inflation (%s less %s). Money goes where it is paid better in real terms: a dial under what "
-                + "people expect is a rate the world is paid to leave, and the currency falls on the outflow; a dial over "
-                + "it holds the currency however fast prices are rising.",
-                ratePct(ui.game.getDebtManager().getPolicyRate()), ratePct(ui.game.getExpectedInflation()),
-                ratePct(DebtManager.WORLD_BASE_RATE), ratePct(fx.getWorldInflation()));
-    }
-
-    /**
-     * WHAT IS MOVING IT, NEXT MONTH: a banner when the rate is pinned; two
-     * halves - THE PRESSURE on its own scale, the vault's defence and the
-     * openness under it; WHICH COMES TO on its own - and the old page's
-     * readings under "details".
+     * WHAT MOVED IT THIS MONTH (XR1): the month's move by force as the model
+     * struck it - parity's trend, the real rate, the balance, the vault's cover,
+     * interventions and the market (ForeignAccounts.getMoveTrend() and the
+     * rest) - and the month's move, which is their sum. A banner when the rate
+     * is pinned. The page is rewritten by the next slice; this tells the truth
+     * until then.
      */
     VBox forcesCard() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
-        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "WHAT IS MOVING IT, NEXT MONTH", FORCES_INFO, null));
+        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "WHAT MOVED IT THIS MONTH", FORCES_INFO, null));
         if (fx.isPinned()) {
             c.getChildren().add(line("The rate is pinned: none of this is moving it.", "None of this is moving it, because "
-                    + "the treasury has promised it will not move. What the forces below would have done is what the "
-                    + "reserves are now absorbing instead."));
+                    + "the treasury has promised it will not move."));
         }
-        List<Force> pressure = pressureForces();
-        double ps = .20;
-        for (Force f : pressure) ps = Math.max(ps, Math.abs(f.value()));
-        VBox left = new VBox(8, words("THE PRESSURE", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
-                divergingBars(pressure, ps, 190, 110, Palette.MONEY_LIGHT, Palette.MONEY, "‹ stronger", "weaker ›",
-                        TradeScreen::pushWords));
-        left.getChildren().add(noteLine(vaultWords(fx), vaultInfo(fx), 560));
-        left.getChildren().add(chips(chipInfo(opennessWords(fx), Palette.TEXT_LABEL, "Trade measured against output. A "
-                + "city that barely trades barely moves its own rate, whatever the pressure reads. The model holds it at "
-                + "100% at most: past that, trade is at least as big as output and the whole push reaches the rate.")));
-        List<Force> comes = comesToForces();
-        double cs = .003;
-        for (Force f : comes) cs = Math.max(cs, Math.abs(f.value()));
-        VBox right = new VBox(8, words("WHICH COMES TO", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
-                divergingBars(comes, cs, 170, 110, Palette.MONEY_LIGHT, Palette.MONEY, "‹ stronger", "weaker ›",
-                        TradeScreen::moveWords));
-        right.getChildren().add(noteLine("The push, the drift and the pull add to the move.", COMES_TO_INFO, 560));
-        GridPane halves = equalColumns(2, 24);
-        halves.add(left, 0, 0);
-        halves.add(right, 1, 0);
-        c.getChildren().add(halves);
-        c.getChildren().add(fold("currency:forces", "the forces, as the readings they were", this::forceReadings));
+        VBox column = column();
+        forceLine(column, "Parity's trend", signedPct3(fx.getMoveTrend()));
+        forceLine(column, "The real rate", signedPct3(fx.getMoveGap()));
+        forceLine(column, "The balance", signedPct3(fx.getMoveBalance()));
+        forceLine(column, "The vault's cover", signedPct3(fx.getMoveCover()));
+        forceLine(column, "Interventions", signedPct3(fx.getMoveIntervention()));
+        forceLine(column, "The market", signedPct3(fx.getMoveMarket()));
+        column.getChildren().add(statementTotal("The month's move", signedPct3(fx.getLastMove()), Palette.TEXT_HEAD));
+        column.getChildren().add(statementNote("Up is weaker: a rate that rises is more of ours for one of theirs."));
+        c.getChildren().add(column);
         return c;
     }
 
-    /** The forces card's (i) (the spec's F1). */
-    static final String FORCES_INFO = "One reading: what the next month does to the rate, on the accounts as they stand "
-            + "today. Five forces: the trade balance, the real rate, the vault's defence against a fall, the anchored "
-            + "drift - your target, weighted by how far people trust the bank, against the world's inflation - and the "
-            + "pull back to parity. The year's inflation is not one of them - it reaches the rate through the parity it "
-            + "raises, the trade a dear currency loses and the inflation people come to expect. Stronger is drawn to the "
-            + "left, weaker to the right.";
-
-    /** WHICH COMES TO's (i) (F3's two notes). */
-    static final String COMES_TO_INFO = "The push is what the month is doing to the currency; the drift is the slide "
-            + "the inflation people expect hands it, against the world's; the pull is the basket "
-            + "dragging it back to what the same goods cost abroad. They pull against each other when the signs differ, "
-            + "and the rate moves by whatever is left over. A city whose central bank sells dollars into a fall feels less "
-            + "of it - while the vault lasts - and none of a push to rise is ever met; the pull is the force that never lets go.";
-
-    /** The vault's defence in words: what it would sell, or nothing - or not counted yet (a city just founded, or loaded from a save before 0.7.46), when the month's deficit decides it (B1). */
-    String vaultWords(ForeignAccounts fx) {
-        if (!fx.isMonthCounted() && fx.previewRawPressure() > 0 && fx.absorption() > 0) {
-            return "the vault's defence: not counted yet";
-        }
-        double absorbed = fx.previewAbsorption();
-        return absorbed > 0
-                ? String.format("the vault sells %s, meeting %.0f%% of the month's deficit", usd(fx.previewDefenceUsd()), absorbed * 100)
-                : "the vault sells nothing";
-    }
-
-    /** ...and its sentence (F2). */
-    String vaultInfo(ForeignAccounts fx) {
-        return String.format("Against a push to fall, the central bank sells the vault's dollars: up to %.0f%% of what the "
-                + "month's own accounts are short of (the vault could do %.0f%% at %s of cover), and what the dollars meet is "
-                + "taken off the push, at the cost of the central bank's equity. A push to rise is never met, and a month "
-                + "that is not short of dollars sells none. At the last reprice it sold %s and met %.0f%% of that month's "
-                + "deficit.%s", ForeignAccounts.MAX_ABSORPTION * 100, fx.absorption() * 100,
-                fx.monthlyImports() > 0 ? coverMonths(fx.importCover()) : "endless", usdFull(fx.getDefenceUsd()),
-                fx.getLastAbsorption() * 100,
-                fx.isMonthCounted() ? "" : " The month's deficit is not kept in the save, so until a month turns the "
-                        + "vault's share of the push is not counted, and the push above is drawn without it.");
-    }
-
-    /** Openness, clamped at 100% by the model (B17, D20): "trade ≥ output (100%)" when it is. */
-    static String opennessWords(ForeignAccounts fx) {
-        double open = fx.getOpenness();
-        return open >= 1 ? "openness: trade ≥ output (100%)" : String.format("openness %.0f%%", open * 100);
-    }
-
-    /** The old page's readings, under "details": each reading and its sentence (the statement it was, B19's colours plain). */
-    Node forceReadings() {
-        ForeignAccounts fx = ui.game.getForeignAccounts();
-        VBox column = column();
-        double account = fx.monthlyCurrentAccount(), capital = fx.monthlyFinancialAccount();
-        column.getChildren().add(statementHead("The forces on the rate"));
-        forceLine(column, "The current account, 12 months", Math.abs(account) < .5 ? "nothing crossed" : signed(account, false));
-        forceLine(column, "The financial account, 12 months", Math.abs(capital) < .5 ? "nothing moved" : signed(capital, false));
-        forceLine(column, "The trade term", pushWords(fx.pressure()));
-        forceLine(column, "The real rate, over the world's", points(fx.getRealRateDifferential()).replace(" points", " pts")
-                + ", worth " + pushWords(fx.ratePressure()));
-        forceLine(column, "Pressure on the rate", pushWords(fx.previewRawPressure()));
-        forceLine(column, "The vault's defence", fx.previewAbsorption() > 0
-                ? String.format("sells %s, %.0f%%", usdFull(fx.previewDefenceUsd()), fx.previewAbsorption() * 100) : "sells nothing");
-        forceLine(column, "Openness of the economy", String.format("%.0f%%", fx.getOpenness() * 100));
-        column.getChildren().add(statementHead("Which comes to"));
-        column.getChildren().add(statementLine("This month's push", signedPct3(fx.previewPush()), Palette.TEXT_HEAD));
-        column.getChildren().add(statementLine("The anchored drift", signedPct3(fx.previewDrift()), Palette.TEXT_HEAD));
-        column.getChildren().add(statementLine("Pull back to parity", signedPct3(fx.previewPull()), Palette.TEXT_HEAD));
-        column.getChildren().add(statementTotal("Net movement", signedPct3(fx.previewMove()), Palette.TEXT_HEAD));
-        column.getChildren().add(statementNote("Up is weaker: a rate that rises is more of ours for one of theirs."));
-        return column;
-    }
+    /** The forces card's (i): the six parts and what each is. */
+    static final String FORCES_INFO = "Six parts add to the month's move. Parity's trend: the city's prices against the "
+            + "world's, followed one for one. The real rate: a rate over the world's holds the currency dearer, building "
+            + "over a year or two. The balance: a deficit a year after year cheapens it. The vault's cover: an empty "
+            + "vault costs it a premium. Interventions: dollars the treasury or the central bank buys or sells. The "
+            + "market: the currency's own swing, which most of a real float's month is. Weaker is up.";
 
     /** A reading on its statement line. */
     static void forceLine(VBox column, String label, String value) {

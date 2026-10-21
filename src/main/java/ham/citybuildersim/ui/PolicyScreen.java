@@ -2525,8 +2525,8 @@ final class PolicyScreen {
                 rateCell("REAL, THE DIAL", points(ui.game.realPolicyRate()),
                         "the dial less the " + pct2(ui.game.getExpectedInflation()) + " people expect", REAL_DIAL_INFO))));
 
-        // Will people believe it (0.7.45): the anchor, and the drift it hands the currency.
-        page.getChildren().add(split(anchorCard(), driftCard(), 2.0 / 3));
+        // Will people believe it (0.7.45): the anchor, and the level the real rate holds the currency at (XR1).
+        page.getChildren().add(split(anchorCard(), gapCard(), 2.0 / 3));
 
         VBox dial = theDialCard(market, px, rate, want);
         VBox rule = ruleCard(market, px);
@@ -2958,12 +2958,13 @@ final class PolicyScreen {
                 Effect.of("The ceiling", cb.ceiling(), cb.ceilingAt(v), PolicyScreen::amount).delta(PolicyScreen::moneyMove));
     }
 
-    /* ----------------------- THE ANCHOR AND THE DRIFT (0.7.45) -----------------------
+    /* ----------------------- THE ANCHOR AND THE CURRENCY'S LEVEL (0.7.45) -----------------------
        The UI spec's 2.2 item 2. Expectations, read: what people expect,
        how far they trust the bank and how that moved this month, whether the
        rate leans against a miss, and the level every money constant is
-       struck at; and the drift that trust hands the currency. Every figure a
-       getter; the words pure, for the probe. */
+       struck at; and (the drift of 0.7.45 until XR1) the level the real rate
+       holds the currency at. Every figure a getter; the words pure, for the
+       probe. */
 
     /** True when what trust is judged on - inflation smoothed over a year - is off the target by more than Expectations.TOLERANCE: the rate line's inflation tick and the rule's band go amber (the UI spec's D4). */
     static boolean offTarget(Expectations e, double target) { return Math.abs(e.missFrom(target)) > Expectations.TOLERANCE; }
@@ -2984,12 +2985,12 @@ final class PolicyScreen {
             + "the fare and the grants follow what people expect prices to be, not what they were. Each is its "
             + "founding figure times this level, struck at the top of every month.";
 
-    /** THE CURRENCY'S DRIFT's (i). */
-    static final String DRIFT_INFO = "The currency slides every month by the credible part of the "
-            + "inflation people expect, against the world's: your target, weighted by how far people trust the bank, "
-            + "against the world's own inflation - a twelfth of the year's slide a month. On top of it the month's "
-            + "trade pushes the rate and the basket pulls it back towards parity; a real rate held under the world's "
-            + "holds it weaker than parity for as long as it lasts. Trade › The currency shows all three.";
+    /** THE CURRENCY'S LEVEL's (i). */
+    static final String GAP_INFO = "A real rate over the world's brings money here and holds the currency dearer than "
+            + "parity's trend; a real rate under the world's holds it cheaper, as far as markets believe the gap "
+            + "will last - never past about a third either way. The level builds over a year or two and fades as the "
+            + "gap closes. The rate is that level, the balance, the vault's cover and the market's own swing "
+            + "together: Trade › The currency shows each month's part of it.";
 
     /** The anchor's words, worked out without drawing them (pure: the probe reads them). */
     record AnchorWords(String figure, double trust, String trustWords, String move, String moveTone, String lean,
@@ -3087,24 +3088,21 @@ final class PolicyScreen {
                 noteLine(w.struck(), w.struck() + ". " + STRUCK_INFO, 560));
     }
 
-    /** The drift's words, worked out without drawing them (pure: the probe reads them). */
-    record DriftWords(String figure, String line, String uip) { }
+    /** The currency's level words, worked out without drawing them (pure: the probe reads them). */
+    record GapWords(String figure, String line, String parity) { }
 
-    DriftWords driftWords() {
+    GapWords gapWords() {
         Game g = ui.game;
         ForeignAccounts fx = g.getForeignAccounts();
-        double uip = fx.uipLevel() - 1, dev = fx.deviationFromParity();
-        String uipLine = String.format("the real rate alone would hold it %s; it is %s",
-                parityWords(uip), parityWords(dev));
-        if (fx.isPinned()) return new DriftWords("Pinned: no drift", "the rate is held where it was pinned", uipLine);
-        double d = fx.getExpectedDrift();
-        String figure = Math.abs(d) < 5e-5 ? "no drift" : rate2(Math.abs(d)) + " a year " + (d > 0 ? "weaker" : "stronger");
-        String line = g.getPriceIndex().isBased()
-                ? String.format("trust × your target (%s × %s) against the world's %s", trust(g.getCredibility()),
-                        DebtManager.targetWords(g.getDebtManager().getInflationTarget()),
-                        rate2(g.getWorldEconomy().realisedInflation()))
-                : "none until the basket is fixed";
-        return new DriftWords(figure, line, uipLine);
+        double gap = fx.getRealRateDifferential();
+        String parityLine = String.format("it is %s", parityWords(fx.deviationFromParity()));
+        if (fx.isPinned()) return new GapWords("Pinned: no gap", "the rate is held where it was pinned", parityLine);
+        // gapLevelFor() is a log of the rate: below zero is a dearer D$, above a cheaper one.
+        double level = Math.expm1(ForeignAccounts.gapLevelFor(gap));
+        String figure = Math.abs(level) < 5e-4 ? "no gap"
+                : String.format("holds it %.1f%% %s", Math.abs(level) * 100, level < 0 ? "dearer" : "cheaper");
+        String line = String.format("the real rate is %s against the world's", points(gap));
+        return new GapWords(figure, line, parityLine);
     }
 
     /** Where the currency stands against parity, in words: "25.9% weaker than parity", "25.2% stronger", "at parity". */
@@ -3113,13 +3111,13 @@ final class PolicyScreen {
         return String.format("%.1f%% %s than parity", Math.abs(deviation) * 100, deviation > 0 ? "weaker" : "stronger");
     }
 
-    /** THE CURRENCY'S DRIFT (the UI spec's 2.2 item 2): the slide the anchor hands the currency, what it is struck from, and where the real rate alone would hold it. */
-    VBox driftCard() {
-        DriftWords w = driftWords();
-        return card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE CURRENCY'S DRIFT", DRIFT_INFO, null),
+    /** THE CURRENCY'S LEVEL (XR1; the UI spec's 2.2 item 2 as the drift): where the real rate holds the D$ against parity's trend, the gap that does it, and where the rate stands against parity. */
+    VBox gapCard() {
+        GapWords w = gapWords();
+        return card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE CURRENCY'S LEVEL", GAP_INFO, null),
                 figure(w.figure(), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
                 line(w.line(), null),
-                line(w.uip(), null),
+                line(w.parity(), null),
                 doorPill("The currency · Trade", Icons.EXCHANGE, Palette.MONEY, () -> ui.tradeScreen.open(TradeScreen.CURRENCY)));
     }
 

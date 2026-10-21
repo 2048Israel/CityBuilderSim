@@ -438,11 +438,14 @@ public class CapitalFlowCheck {
             unrecycled.takeMonth(bop(4_000, 2_000, 0), 6_000);
             recycled.takeMonth(bop(4_000, 2_000, 2_000), 6_000);
         }
-        out.printf("   pressure on a $2,000k surplus: %+.2f unrecycled, %+.2f recycled abroad%n",
-                unrecycled.pressure(), recycled.pressure());
+        // The rate reads the overall balance against a year's GDP since XR1 (the balance's
+        // level, ForeignAccounts.balanceTarget(), positive weaker): the premise is the old
+        // pressure's, only the instrument is new - the fixture already passes a GDP of 6,000.
+        out.printf("   balance level on a $2,000k surplus: %+.3f unrecycled, %+.3f recycled abroad%n",
+                unrecycled.balanceTarget(), recycled.balanceTarget());
         assertTrue("fixture: the surplus alone would strengthen the currency",
-                unrecycled.pressure() < 0);
-        close("a surplus sent abroad pushes the currency nowhere", recycled.pressure(), 0, 1e-9);
+                unrecycled.balanceTarget() < 0);
+        close("a surplus sent abroad pushes the currency nowhere", recycled.balanceTarget(), 0, 1e-9);
 
         /*
          * AND A LIVE CITY CONSERVES IT. The move is inside the audited window;

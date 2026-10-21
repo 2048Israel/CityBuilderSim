@@ -7761,8 +7761,26 @@ public final class GameVersion {
      *     THE FLOOR RISES TO 42 WITH IT (the rule): a save of format 41 or
      *     older is refused, naming the build that still opens it. Jerus,
      *     2026-10-18: "my saves never matter".
+     *
+     * 43 - THE FLOAT (batch XR1; docs/studies/spec-exchange-rates.md 3.1-3.4):
+     *     the D$ is parity's trend times the fundamentals' level times the
+     *     market, each a level the currency carries (ForeignAccounts, THE
+     *     FLOAT), and the save carries them: the trend's level and slope,
+     *     the real gap's level reached, the balance's and the cover's, the
+     *     market's swing with its seed and draws, the interventions still
+     *     felt, and the month's six moves (ForeignAccounts slots 45-69);
+     *     parity's basket with rent held to a third carries its own link
+     *     (PriceIndex, one slot after the chained levels). A save from
+     *     before has none of it, and would load WRONGLY, not merely
+     *     incompletely: its trend would open at the founding's parity, so
+     *     the first month would carry its D$ there, as much as a halving or
+     *     a doubling in an old city, with its market unseeded.
+     *
+     *     THE FLOOR RISES TO 43 WITH IT (the rule): a save of format 42 or
+     *     older is refused, naming the build that still opens it. Jerus,
+     *     2026-10-18: "my saves never matter".
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 42;
+    public static final int SAVE_FORMAT = 43;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -7772,7 +7790,8 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 42 since batch CD2 (THE LINEUP AND THE AUCTION above: a save's term
+     * 43 since batch XR1 (THE FLOAT above: a save's currency would load
+     * wrongly). 42 from batch CD2 (THE LINEUP AND THE AUCTION above: a save's term
      * loan would load wrongly), and 40 before it, from 0.8.5 (batch FR2,
      * THE FREIGHT SECTOR above: a format-39
      * save's railway is keyed "Rail" and would load into nobody), and still
@@ -7797,7 +7816,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 42;
+    public static final int OLDEST_LOADABLE_FORMAT = 43;
 
     public static final String NAME = "CityBuilderSim";
 

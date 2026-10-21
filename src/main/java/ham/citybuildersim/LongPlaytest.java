@@ -1443,8 +1443,8 @@ public class LongPlaytest {
             ForeignAccounts fa = g.getForeignAccounts(); OutwardInvestment oi = g.getOutwardInvestment();
             double tills = 0;
             for (String s : Sectors.KEYS) tills += Math.max(0, g.getEconomyManager().getSectorCash(s));
-            out.printf("FX m%-4d rate %.3f parity %.3f pressure %+.2f openness %.2f | current %,.0f financial %,.0f | tills %,.0f abroad US$%,.0f ($%,.0f) share %.0f%% | deposit %.2f%% world %.2f%% | pop %d GDP %,.0f%n",
-                g.getMonth(), fa.getRate(), fa.getParity(), fa.getLastPressure(), fa.getOpenness(),
+            out.printf("FX m%-4d rate %.3f parity %.3f move %+.2f%% fair %.3f openness %.2f | current %,.0f financial %,.0f | tills %,.0f abroad US$%,.0f ($%,.0f) share %.0f%% | deposit %.2f%% world %.2f%% | pop %d GDP %,.0f%n",
+                g.getMonth(), fa.getRate(), fa.getParity(), fa.getLastMove() * 100, fa.getFairLevel(), fa.getOpenness(),
                 fa.monthlyCurrentAccount(), fa.monthlyFinancialAccount(),
                 tills, oi.totalUsd(), oi.totalLocalValue(), oi.getTargetShare() * 100,
                 g.getBank().depositRate() * 100, DebtManager.WORLD_BASE_RATE * 100,
@@ -1937,7 +1937,7 @@ public class LongPlaytest {
 
        -Dplaytest.policyRate=<annual> holds the dial at that rate from the
        month the currency is allowed to move - the first month past
-       ForeignAccounts.SETTLING_MONTHS - to the end of the run, instead of the
+       HELD_AFTER - to the end of the run, instead of the
        advisor's quarter-steps toward the rule; the summary says it was held.
        The way the education flags hold theirs: set, and left. Unset, the
        advisor sets the dial as it always has and the run is the run it
@@ -1951,9 +1951,12 @@ public class LongPlaytest {
     static final Double POLICY_RATE = System.getProperty("playtest.policyRate") == null
             ? null : Double.valueOf(System.getProperty("playtest.policyRate"));
 
-    /** True once the dial is the flag's rather than the advisor's: the flag is set and the currency may move. */
+    /** The month the held runs start after: the currency's settling months until XR1, kept at 24 so the held runs and the ensemble start where they always did. */
+    public static final int HELD_AFTER = 24;
+
+    /** True once the dial is the flag's rather than the advisor's: the flag is set and the held months have begun. */
     static boolean holdsPolicyRate(Game g) {
-        return POLICY_RATE != null && g.getMonth() > ForeignAccounts.SETTLING_MONTHS;
+        return POLICY_RATE != null && g.getMonth() > HELD_AFTER;
     }
 
     /* =====================================================================
@@ -2516,7 +2519,7 @@ public class LongPlaytest {
        ... like QE and QT". -Dplaytest.qeShare=<share> sets the central bank's
        holdings dial - the share of the city's term paper it aims to hold,
        CentralBank.getTargetShare() - from the month the policy flag holds
-       its rate, the first past ForeignAccounts.SETTLING_MONTHS, to the end of
+       its rate, the first past HELD_AFTER, to the end of
        the run: set, and left. It only has paper to buy in a run that issues
        it at home (-Dplaytest.borrowAtHome). Unset, the dial stays at zero and
        the run is the run it always was.
@@ -4859,7 +4862,7 @@ public class LongPlaytest {
             // The two instruments, both off by default: the dial held for the
             // month about to run, and the index that month will hand the wages.
             if (holdsPolicyRate(g)) g.getDebtManager().takeTheDial(POLICY_RATE);
-            if (QE_SHARE != null && g.getMonth() > ForeignAccounts.SETTLING_MONTHS
+            if (QE_SHARE != null && g.getMonth() > HELD_AFTER
                     && g.getCentralBank().getTargetShare() != QE_SHARE) {
                 g.getCentralBank().setTargetShare(QE_SHARE);
             }
@@ -6081,18 +6084,18 @@ public class LongPlaytest {
         double ruleSays = g.getDebtManager().ruleRate(g.getPriceIndex().inflation());
         double dialStops = g.getDebtManager().advisedPolicyRate(g.getPriceIndex().inflation());
         out.printf("  monetary policy: rate %.2f%% (%s on %.1f%% inflation);"
-                + " the real rate differential is %+.2f points and pulls the currency %+.2f%n",
+                + " the real rate differential is %+.2f points and holds the D$ %+.1f%%%n",
                 g.getDebtManager().getPolicyRate() * 100,
                 Math.abs(ruleSays - dialStops) > 1e-9
                         ? String.format("the rule would set %.2f%%, the dial stops at %.2f%%",
                                 ruleSays * 100, dialStops * 100)
                         : String.format("the rule advises %.2f%%", dialStops * 100),
                 g.getPriceIndex().inflation() * 100,
-                fx.getRealRateDifferential() * 100, fx.ratePressure());
+                fx.getRealRateDifferential() * 100, ForeignAccounts.gapLevelFor(fx.getRealRateDifferential()) * 100);
         if (POLICY_RATE != null) {
             out.printf("  ...HELD at %.2f%% from month %d to the end by -Dplaytest.policyRate,"
                     + " not set by the advisor's rule (see THE RATE, HELD)%n",
-                    POLICY_RATE * 100, ForeignAccounts.SETTLING_MONTHS + 1);
+                    POLICY_RATE * 100, HELD_AFTER + 1);
         } else if (g.getDebtManager().isAutopilot()) {
             out.printf("  ...SET BY THE RULE every month by the game's own autopilot"
                     + " (-Dplaytest.autopilot), not by the advisor%n");
@@ -6206,9 +6209,9 @@ public class LongPlaytest {
                 fields.groundShare() * 100, fields.payrollShare() * 100,
                 g.getSectors().industry().cropShare() * 100,
                 g.getEconomyManager().getLandPricePerSqFt() * 1000);
-        out.printf("  the currency: %.3f local per USD (pressure %+.2f, openness %.2f,"
+        out.printf("  the currency: %.3f local per USD (move %+.2f%%, fair %.3f, openness %.2f,"
                 + " cover %s), wages lifted %.1f%%%n",
-                fx.getRate(), fx.getLastPressure(), fx.getOpenness(),
+                fx.getRate(), fx.getLastMove() * 100, fx.getFairLevel(), fx.getOpenness(),
                 fx.importCover() == Double.MAX_VALUE ? "inf"
                         : String.format("%.1f mo", fx.importCover()),
                 (g.getLabourMarket().getCostOfLiving() - 1) * 100);
