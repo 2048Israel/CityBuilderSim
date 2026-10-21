@@ -556,8 +556,8 @@ public class DebtManager {
      */
     private static final double FULL_STRESS_MULTIPLE = 150;
 
-    /** The cheapest money the market will ever offer, whatever the books say. */
-    private static final double MIN_RATE = 0.005;
+    /** The cheapest money the market will ever offer, whatever the books say (public since CD1: YieldCurve clamps every forward at it). */
+    public static final double MIN_RATE = 0.005;
 
     /** How many times to walk the face-value/rate fixed point. See quoteRate(). */
     private static final int QUOTE_ITERATIONS = 6;
@@ -1116,12 +1116,19 @@ public class DebtManager {
      * its own paper on a different overdraft than the live city it came
      * from: a basis point apart on a city in deficit, and every curve rate,
      * quote and mark read off it with it. Carried whole, it is the live one.
+     *
+     * Seven slots once the curve's expectations are struck (CD1): the
+     * inflation the rule read and the inflation the city expected, which the
+     * curve's path is built from and which cannot be re-derived from the
+     * state a month ended in. A manager nobody has struck saves five, so it
+     * never writes a number that is not one.
      */
     public double[] marketToSave() {
-        return new double[] { GDP, monthlyTaxRevenue, overdraft, advances, currentRate };
+        if (!isStruck()) return new double[] { GDP, monthlyTaxRevenue, overdraft, advances, currentRate };
+        return new double[] { GDP, monthlyTaxRevenue, overdraft, advances, currentRate, struckInflation, struckExpected };
     }
 
-    /** ...and back, over the load path's own strike; an older save has none and keeps that strike. */
+    /** ...and back, over the load path's own strike; an older save has none and keeps that strike. The two expectations come back only from a save that carries them (seven slots or more): an older one loads unstruck, and its curve is the flat one until the next month strikes it. */
     public void restoreMarket(double[] saved) {
         if (saved == null || saved.length < 5) return;
         GDP = saved[0];
@@ -1129,6 +1136,7 @@ public class DebtManager {
         overdraft = saved[2];
         advances = saved[3];
         currentRate = saved[4];
+        if (saved.length >= 7) strikeExpectations(saved[5], saved[6]);
     }
 
     public List<Debt> getDebt() {
@@ -1239,11 +1247,18 @@ public class DebtManager {
         return total;
     }
 
-    /** The rate a piece is valued at today: the city's curve for its own paper, the world's for a dollar piece, at the months it has left - marketValue()'s, so a screen quoting its yield or its price of par reads the price a buyback pays. */
+    /**
+     * The one flat rate at which a piece's payments price to marketValue(): its
+     * yield to maturity on the price a buyback pays (CD1; until then the curve
+     * read at the months it has left, which was the rate marketValue() had
+     * discounted it at). A screen that prices the piece flat at this rate
+     * reads the price a buyback pays; the curve discounts each payment at its
+     * own month's factor, so no single month's curve rate is this. The short
+     * rate for no paper.
+     */
     public double valuationRate(Debt paper) {
         if (paper == null) return getRate();
-        return paper.isForeign() ? foreignCurveRate(paper.getRemainingMonths())
-                                 : curveRate(paper.getRemainingMonths());
+        return yieldOf(paper);
     }
 
     /** What buying a piece back today would save against its face: its principal less marketValue() - below nothing when it costs a premium to retire (the Finances tab's book, which subtracted them itself). */
@@ -1387,7 +1402,7 @@ public class DebtManager {
         return debts.remove(debt);
     }
 
-    /** What every outstanding bond would cost to buy back today: each at the curve's rate for the months it has left (0.7.1). */
+    /** What every outstanding bond would cost to buy back today: marketValue() of each, every payment at its own month's factor on the curve. */
     public double getTotalMarketValue() {
         double total = 0;
         for (Debt debt : debts) {
@@ -1445,26 +1460,8 @@ public class DebtManager {
      *         here, for that reason.
      */
     private double priceAt(double debt) {
-        return priceAt(debt, 0);
-    }
-
-    /**
-     * ...at a maturity (0.7.1): the same credit judgement, clamped the same
-     * way, plus the term premium for that many months less what the central
-     * bank's holdings compress of it (and the bank's strain premium outside
-     * it all, until 0.7.7).
-     * The shape is added OUTSIDE the clamp, so a city at the ceiling still has
-     * a curve - the ceiling is what a hopeless borrower pays on its merits,
-     * and the premium is the price of time, which it pays on top. Zero months
-     * is the short end: no premium, no compression, and exactly the figure
-     * the city was quoted before there was a curve.
-     */
-    private double priceAt(double debt, int months) {
-        double rate = floorRate()
-                + spreadFor(debt, GDP * 12)
-                + spreadFor(debt, monthlyTaxRevenue * 12);
-        double credit = Math.max(MIN_RATE, Math.min(rate, ceilingRate()));
-        return credit + termShape(months);
+        return YieldCurve.shortRate(floorRate(), spreadFor(debt, GDP * 12),
+                spreadFor(debt, monthlyTaxRevenue * 12), ceilingRate());
     }
 
     /* =======================================================================
@@ -1484,6 +1481,10 @@ public class DebtManager {
            rate(months) = policy + termPremium(months) - compression(months)
                           + credit spread (+ the bank's premium, until 0.7.7)
 
+       (the first term, the dial, is the dial EXPECTED over those months since
+       CD1; at no months, or with the dial where the rule will have it, the
+       two are one)
+
        THE SHORT END IS THE DIAL. A note (3-12 months) carries no premium: it
        is the T-bill rate, Jerus's "the one you choose", and getRate() - the
        standing "city's rate" the screens read - stays
@@ -1492,14 +1493,29 @@ public class DebtManager {
        ten-year point (so a serial bond's final maturity prices on the same
        curve), and flat past fifty years.
 
-       THE CREDIT SPREAD IS THE SAME AT EVERY MATURITY, so a hike moves the
-       whole curve up in parallel and a city that over-borrows pays more at
-       every point of it. THE COMPRESSION is what the central bank's holdings
+       THE CREDIT SPREAD IS THE SAME AT EVERY MATURITY, so a city that
+       over-borrows pays more at every point of it. (Until CD1 so was the
+       dial: a hike moved the whole curve up in parallel. It is the dial the
+       market EXPECTS now - see CD1, below.) THE COMPRESSION is what the central bank's holdings
        buy (CentralBank, THE HOLDINGS DIAL): the premium times the share of
        the city's term paper it holds, over CentralBank.FULL_COMPRESSION_SHARE
        - half, the most it could hold until 0.7.15. It never touches the short
        end, which has no premium to compress, and at half the paper and past
        it the premium is gone.
+
+       CD1 (docs/studies/spec-city-debt.md, section 3): THE CURVE IS BUILT
+       FROM THE DIAL THE MARKET EXPECTS, not the dial as it stands. The dial is
+       expected to drift back to the rule over YieldCurve.DRIFT_MONTHS, the
+       rule run on the inflation the city expects to settle at
+       (Expectations); each month's forward is that expected dial plus the
+       credit spreads, the zero rate compounds the forwards, and the term
+       premium less the compression goes on the zero rate (YieldCurve, curve()).
+       A city whose dial is held where the rule would not put it prices its
+       long money where the rule will, and a hiking city's curve inverts. The
+       short end is the dial still. Every payment is discounted at its own
+       month's factor (marketValue()), and a piece's yield is a result
+       (yieldOf()). The month strikes the expectations once, at its top
+       (strikeExpectations()).
 
        EVERY PRICE OF CITY PAPER GOES THROUGH curveRate() or quoteRate() at a
        maturity: the three quotes hand their duration in, a buyback and the
@@ -1586,35 +1602,206 @@ public class DebtManager {
      * moved" to a holdings dial's target, on the Policy tab. Pure.
      */
     public double curveRateAtShare(int months, double share) {
-        return priceAt(getPricedDebt(), 0) + (months <= 12 ? 0 : termPremium(months) - compressionAt(share, months));
+        return curve().baseZero(months) + termShapeAt(share, months);
     }
 
-    /** The premium less the compression: the curve's shape over the short end. */
-    private double termShape(int months) {
+    /** The premium less the compression at a central-bank share of the term paper: the curve's shape over the short end. Nothing up to a year. */
+    private double termShapeAt(double share, int months) {
         if (months <= 12) return 0;
-        return termPremium(months) - compression(months);
+        return termPremium(months) - compressionAt(share, months);
+    }
+
+    /* ----- the expectations the curve is built from (CD1) ----- */
+
+    /** The inflation the rule read when the month's expectations were struck (strikeExpectations()); NaN until something strikes them. */
+    private double struckInflation = Double.NaN;
+
+    /** ...and the inflation the city expected then (Expectations.getExpectedInflation()); NaN until struck. */
+    private double struckExpected = Double.NaN;
+
+    /**
+     * Strikes the two figures the curve's expected dial is built from: the
+     * inflation the rule reads (this month's) and the inflation the city
+     * expects (where it settles). The month does it once, at its top, straight
+     * after the autopilot has set the dial (Game.nextMonth()); the pair is
+     * held for the month, whatever happens to the prices inside it, and saved
+     * (marketToSave()), because the expectation the month began with cannot be
+     * re-derived from the state it ended in. A manager nobody has struck - a
+     * fixture's bare one - prices a flat path at the floor: the parallel curve
+     * of the pricing before CD1. A figure that is not a number leaves it
+     * unstruck.
+     */
+    public void strikeExpectations(double inflationNow, double expectedInflation) {
+        struckInflation = inflationNow;
+        struckExpected = expectedInflation;
+    }
+
+    /** True once the curve's expectations have been struck and are numbers. */
+    public boolean isStruck() {
+        return !Double.isNaN(struckInflation) && !Double.isNaN(struckExpected);
+    }
+
+    /** The inflation the rule read when the month struck the curve's expectations, a fraction a year; NaN unstruck. */
+    public double getStruckInflation() { return struckInflation; }
+
+    /** ...and the inflation the city expected then; NaN unstruck. */
+    public double getStruckExpected() { return struckExpected; }
+
+    /**
+     * The expected dial's path and the curve built on it are CACHED, because
+     * marketValue() runs for every piece several times a month and quoteRate()
+     * walks a fixed point that builds a curve in each pass. Each cache is one
+     * immutable object behind one reference, so a screen reading while the
+     * month runs sees a path and a curve that belong together; a key that moves
+     * rebuilds. Keys are compared by their bits, so a NaN key (unstruck)
+     * matches itself.
+     */
+    private static final class PathEntry {
+        final double floor, inflation, expected, target;
+        final Strictness strictness;
+        final double[] path;
+        PathEntry(double floor, double inflation, double expected, double target, Strictness strictness, double[] path) {
+            this.floor = floor; this.inflation = inflation; this.expected = expected;
+            this.target = target; this.strictness = strictness; this.path = path;
+        }
+    }
+
+    private static final class CurveEntry {
+        final double[] path;
+        final double gdpSpread, revenueSpread, ceiling, share;
+        final YieldCurve curve;
+        CurveEntry(double[] path, double gdpSpread, double revenueSpread, double ceiling, double share, YieldCurve curve) {
+            this.path = path; this.gdpSpread = gdpSpread; this.revenueSpread = revenueSpread;
+            this.ceiling = ceiling; this.share = share; this.curve = curve;
+        }
+    }
+
+    private transient volatile PathEntry pathCache;
+    private transient volatile CurveEntry curveCache;
+
+    private static boolean same(double a, double b) {
+        return Double.doubleToLongBits(a) == Double.doubleToLongBits(b);
+    }
+
+    /** The dial the market expects from this floor: the rule's path from the struck expectations, or the floor held flat when nothing is struck. */
+    private double[] pathFor(double floor) {
+        double inflation = struckInflation, expected = struckExpected;
+        boolean struck = !Double.isNaN(inflation) && !Double.isNaN(expected);
+        if (!struck) inflation = expected = Double.NaN;
+        double target = inflationTarget;
+        Strictness strict = strictness;
+        PathEntry e = pathCache;
+        if (e != null && same(e.floor, floor) && same(e.inflation, inflation) && same(e.expected, expected)
+                && same(e.target, target) && e.strictness == strict) {
+            return e.path;
+        }
+        final double now = inflation, settle = expected;
+        double[] path = struck
+                ? YieldCurve.expectedPath(floor, x -> advisedPolicyRate(x), now, settle)
+                : YieldCurve.flatPath(floor);
+        pathCache = new PathEntry(floor, inflation, expected, target, strict, path);
+        return path;
+    }
+
+    /**
+     * The curve this debt would be priced on: the expected dial plus the
+     * credit judgement at this debt (spreadFor() on a year of output and a
+     * year of tax, clamped at the ceiling), the shape the term premium and the
+     * central bank's holdings give the long end, built once and kept while its
+     * inputs stand (CD1; YieldCurve says how).
+     */
+    private YieldCurve curveAt(double debt) {
+        double floor = floorRate();
+        double[] path = pathFor(floor);
+        double gdpSpread = spreadFor(debt, GDP * 12);
+        double revenueSpread = spreadFor(debt, monthlyTaxRevenue * 12);
+        double ceiling = ceilingRate();
+        final double share = centralBankShareOfTerm();
+        CurveEntry c = curveCache;
+        if (c != null && c.path == path && same(c.gdpSpread, gdpSpread) && same(c.revenueSpread, revenueSpread)
+                && same(c.ceiling, ceiling) && same(c.share, share)) {
+            return c.curve;
+        }
+        YieldCurve made = new YieldCurve(path, gdpSpread, revenueSpread, ceiling, m -> termShapeAt(share, m));
+        curveCache = new CurveEntry(path, gdpSpread, revenueSpread, ceiling, share, made);
+        return made;
+    }
+
+    /** THE CURVE (CD1): the city's own, on what it owes now - a discount factor for every month to fifty years. See YieldCurve. */
+    public YieldCurve curve() {
+        return curveAt(getPricedDebt());
     }
 
     /**
      * THE CURVE: what the city's paper of this many months is worth to a
-     * lender today - the standing rate at that maturity, on what the city owes
-     * now. At twelve months or less it is getRate().
+     * lender today - the zero rate at that maturity, on what the city owes
+     * now: the compounded forward rates of the dial the market expects, plus
+     * the shape. At no months it is getRate(), to the bit.
      */
     public double curveRate(int months) {
-        return priceAt(getPricedDebt(), months);
+        return curve().zero(months);
     }
 
     /**
      * What this paper would fetch today: the present value of what it still
-     * owes at the curve's rate for the months it has left - the city's curve
-     * for its own paper, the world's (foreignCurveRate()) for a dollar bond
-     * since 0.7.2, which was valued at the city's short rate until then, so
-     * the dial moved it.
+     * owes, EACH PAYMENT AT ITS OWN MONTH'S FACTOR (CD1) - the city's curve()
+     * for its own paper, the world's (worldCurveAt()) for a dollar bond since
+     * 0.7.2, which was valued at the city's short rate until then, so the dial
+     * moved it. Until CD1 the whole schedule was discounted at ONE rate, the
+     * curve read at the months the piece had left, so the yield it showed was
+     * the rate it had been handed; now the yield is a result (yieldOf()).
+     * Nothing left to pay (no months) costs what is owed, as Debt does.
      */
     public double marketValue(Debt paper) {
         if (paper == null) return 0;
-        if (paper.isForeign()) return paper.getMarketValue(foreignCurveRate(paper.getRemainingMonths()));
-        return paper.getMarketValue(curveRate(paper.getRemainingMonths()));
+        if (paper.getRemainingMonths() <= 0) return paper.getOustandingPrincipal();
+        double[] flows = paper.remainingCashFlows();
+        if (paper.isForeign()) return worldCurveAt(foreignRate()).pv(flows);
+        return curve().pv(flows);
+    }
+
+    private static final class WorldEntry {
+        final double rate;
+        final YieldCurve curve;
+        WorldEntry(double rate, YieldCurve curve) { this.rate = rate; this.curve = curve; }
+    }
+
+    private transient volatile WorldEntry worldCache;
+
+    /**
+     * THE WORLD'S CURVE as a YieldCurve (CD1): the world's short rate held
+     * flat, and the term premium table (termPremium()) on top - the one
+     * definition of what a dollar payment this many months away is
+     * discounted by, for the issue (Game.quoteForeign(), which walks the
+     * short rate to a fixed point) and for the buyback (marketValue(), at
+     * foreignRate()) alike. The world's dial does not move, so the path is
+     * flat; nobody abroad holds the city's paper, so nothing is compressed;
+     * the credit judgement is already in the short rate (countryPremium()),
+     * so no spread is added and no ceiling applies. Built once per rate and
+     * kept, one immutable object behind one reference, as curveAt()'s is.
+     */
+    public YieldCurve worldCurveAt(double shortRate) {
+        WorldEntry e = worldCache;
+        if (e != null && same(e.rate, shortRate)) return e.curve;
+        YieldCurve made = new YieldCurve(YieldCurve.flatPath(shortRate), 0, 0, Double.MAX_VALUE, m -> termPremium(m));
+        worldCache = new WorldEntry(shortRate, made);
+        return made;
+    }
+
+    /** What a dollar payment this many months away is discounted by: (1 + foreignCurveRate(months)/12)^(-months), on worldCurveAt(foreignRate()). */
+    public double foreignFactor(int months) {
+        return worldCurveAt(foreignRate()).factor(months);
+    }
+
+    /** The yield to maturity of a piece on the price a buyback pays: a RESULT of marketValue(), not the rate it was priced at (CD1). */
+    public double yieldOf(Debt paper) {
+        return paper.getYieldToMaturity(marketValue(paper));
+    }
+
+    /** Where a piece trades against par, as a percentage of what is still owed on it: marketValue() over its outstanding principal x 100; 0 when nothing is owed. */
+    public double priceOfPar(Debt paper) {
+        double owed = paper == null ? 0 : paper.getOustandingPrincipal();
+        return owed > 0 ? marketValue(paper) / owed * 100 : 0;
     }
 
     /** True for the city's own term paper - serial and term, not the notes: what the central bank's dial holds. */
@@ -1721,14 +1908,14 @@ public class DebtManager {
         return face > 0 ? bookValues()[0] / face : 1;
     }
 
-    /** What the households' paper yields at today's curve, weighted by what they hold of each piece; the short rate when they hold none. */
+    /** What the households' paper yields at today's curve (each piece's yieldOf(), its yield to maturity on the price a buyback pays), weighted by what they hold of each piece; the short rate when they hold none. */
     public double householdBookYield() {
         double face = 0, weighted = 0;
         for (Debt d : debts) {
             double held = d.householdPrincipal();
             if (held <= 0) continue;
             face += held;
-            weighted += held * curveRate(d.getRemainingMonths());
+            weighted += held * yieldOf(d);
         }
         return face > 0 ? weighted / face : getRate();
     }
@@ -1771,7 +1958,8 @@ public class DebtManager {
     /**
      * What the city would be quoted if the policy rate were this instead.
      *
-     * priceAt() with the base rate swapped and nothing else touched, so the
+     * The short end of the curve (priceAt(), YieldCurve.shortRate())
+     * with the base rate swapped and nothing else touched, so the
      * Policies screen can show a player what moving the dial does to their own
      * borrowing before they move it. It lives here rather than in the screen
      * for the obvious reason: the day the pricing changes, this changes with
@@ -1782,8 +1970,7 @@ public class DebtManager {
     public double rateAtPolicy(double policy) {
         double floor   = floorAt(policy);
         double ceiling = policy + 2 * MAX_SPREAD_PER_MEASURE;
-        double rate = floor + gdpSpread() + revenueSpread();
-        return Math.max(MIN_RATE, Math.min(rate, ceiling));
+        return YieldCurve.shortRate(floor, gdpSpread(), revenueSpread(), ceiling);
     }
 
     /**
@@ -1830,6 +2017,31 @@ public class DebtManager {
     /** True when the quoted rate is pinned at the top of the curve. */
     public boolean atCeiling() {
         return getRate() >= ceilingRate() - 1e-9;
+    }
+
+    /*
+     * THE CURVE TAKEN APART (CD1). A rate at a maturity is three parts, which
+     * add to curveRate(m):
+     *
+     *     curveRate(m) = expectedDialOver(m) + creditSpread()
+     *                    + (m <= 12 ? 0 : termPremium(m) - compression(m))
+     *
+     * (to rounding; the screen's sum is within 1e-12 of the curve's own).
+     */
+
+    /** The dial the market expects, averaged over this many months, and nothing else in the rate: the compounded forwards less the credit spread. curveRate(m) == expectedDialOver(m) + creditSpread() + (m <= 12 ? 0 : termPremium(m) - compression(m)), to rounding (CD1). */
+    public double expectedDialOver(int months) {
+        return curve().expectedDialOver(months);
+    }
+
+    /** What the credit judgement adds to the forward, as the curve carries it: the two spreads, or the room under the ceiling if less - the same in every month, the middle term of curveRate(m) == expectedDialOver(m) + creditSpread() + (m <= 12 ? 0 : termPremium(m) - compression(m)) (CD1). */
+    public double creditSpread() {
+        return curve().effectiveSpread();
+    }
+
+    /** The dial the market expects this many months ahead (0 this month: the floor). */
+    public double expectedDialIn(int monthsAhead) {
+        return curve().path(monthsAhead);
     }
 
     /**
@@ -1953,21 +2165,15 @@ public class DebtManager {
     }
 
     /**
-     * ...at a maturity (0.7.1): the same fixed point on the curve's rate for
-     * that many months. The three instruments hand their duration in, so the
-     * issue and the buyback price off the same curve - see THE CURVE.
+     * ...at a maturity (0.7.1): the same fixed point, read as the curve's zero
+     * rate for that many months (none: the short rate). The three instruments
+     * hand their duration in, so the issue and the buyback price off the same
+     * curve - see THE CURVE. Since CD1 this is quoteCurve()'s fixed point with
+     * one number read off it; Game's quotes that price a schedule payment by
+     * payment ask for the curve itself.
      */
     public double quoteRate(double requested, java.util.function.DoubleUnaryOperator faceOf, int months) {
-
-        double existing = debtAfterProceedsOf(requested);
-        double rate = priceAt(existing + Math.max(0, requested), months);
-
-        for (int i = 0; i < QUOTE_ITERATIONS; i++) {
-            double face = faceOf.applyAsDouble(rate);
-            if (!Double.isFinite(face) || face < 0) break;
-            rate = priceAt(existing + face, months);
-        }
-        return rate;
+        return quoteCurve(requested, curve -> faceOf.applyAsDouble(curve.zero(months))).zero(months);
     }
 
     /** Straight-line version for instruments whose face value IS the request. */
@@ -1977,7 +2183,39 @@ public class DebtManager {
 
     /** ...at a maturity. */
     public double quoteRate(double requested, int months) {
-        return priceAt(debtAfterProceedsOf(requested) + Math.max(0, requested), months);
+        return quoteCurve(requested).zero(months);
+    }
+
+    /**
+     * THE CURVE A NEW LOAN IS PRICED ON, with itself included (CD1): the
+     * fixed point quoteRate() walks, returned as the whole curve instead of
+     * one rate read off it. A schedule that is priced payment by payment (a
+     * serial's slices, a term loan's coupons) needs every month's factor of
+     * the curve the loan will stand on once it is booked, not the one zero
+     * rate of its last month - so the face the instrument grosses up to is
+     * asked of the curve (faceOf), the curve is rebuilt on the debt that face
+     * makes, and so on, QUOTE_ITERATIONS times. Month 0 of the curve it
+     * returns is the short rate quoteRate(requested, faceOf) would have given,
+     * and zero(m) the rate for m months, to the bit.
+     *
+     * @param requested what the city wants to receive
+     * @param faceOf    given the curve the loan would stand on, what the city would end up owing
+     */
+    public YieldCurve quoteCurve(double requested, java.util.function.ToDoubleFunction<YieldCurve> faceOf) {
+        double existing = debtAfterProceedsOf(requested);
+        YieldCurve curve = curveAt(existing + Math.max(0, requested));
+
+        for (int i = 0; i < QUOTE_ITERATIONS; i++) {
+            double face = faceOf.applyAsDouble(curve);
+            if (!Double.isFinite(face) || face < 0) break;
+            curve = curveAt(existing + face);
+        }
+        return curve;
+    }
+
+    /** ...for an instrument whose face value IS the request: one pass, the loan priced in. */
+    public YieldCurve quoteCurve(double faceIsRequest) {
+        return curveAt(debtAfterProceedsOf(faceIsRequest) + Math.max(0, faceIsRequest));
     }
 
     /**

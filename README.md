@@ -78,8 +78,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **121 harnesses plus the
-4,000-odd-month playtest**, which it counts as 120 run (119 where
+`AllChecks` runs the lot, one JVM each — **124 harnesses plus the
+4,000-odd-month playtest**, which it counts as 125 run (124 where
 JavaFX is not on the classpath, which skips `BuildMenuCheck`), in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
@@ -114,6 +114,15 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
 **Run `AllChecks` on the tree as it landed - after a pull or a merge - not
 before.** A batch has more than once landed in the Java and not in
 `buildings.json`, and `BuildingDataCheck` exists to catch exactly that.
+
+**The ensemble is not in the suite.** Sixteen seeds under five monetary
+policies, 80 runs of up to 2,400 months, scored against the inflation
+roadmap's criteria: `tools/ensemble/ensemble.sh <label>`, about twenty
+minutes five at a time (`tools/ensemble/README.md`). It runs only for a
+batch whose playtest trace moves (EN1, 2026-10-20), once, on the batch's
+final model, against the newest stored score in `docs/ensemble/`, and that
+batch commits its own score there. `EnsembleCheck` keeps the driver
+compiling against the tree and the stored score readable.
 
 Three rules the harnesses are written to, and worth keeping:
 

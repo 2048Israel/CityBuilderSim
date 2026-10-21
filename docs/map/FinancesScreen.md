@@ -1,4 +1,4 @@
-# FinancesScreen.java - 3,415 lines · 142 methods · 63 constants · interface
+# FinancesScreen.java - 3,427 lines · 142 methods · 63 constants · interface
 
 `ham/citybuildersim/ui/FinancesScreen.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
 
@@ -35,7 +35,7 @@
 > THE DEBT RESULT - what an issue booked, shown after it - came here from
 > the build cards on 2026-09-18, because it is this tab's.
 
-**Uses:** [Palette](Palette.md) (446), [DebtManager](DebtManager.md) (54), [CityCalendar](CityCalendar.md) (29), [Game](Game.md) (27), [CityNeeds](CityNeeds.md) (26), [Icons](Icons.md) (17), [Rollover](Rollover.md) (17), [Debt](Debt.md) (15), [CorporateBond](CorporateBond.md) (14), [OrderBook](OrderBook.md) (14), [HistoryScreen](HistoryScreen.md) (10), [BondMarket](BondMarket.md) (9), [Ladder](Ladder.md) (8), [Bank](Bank.md) (8), [TimeChart](TimeChart.md) (8), [FundScreen](FundScreen.md) (7), [CentralBank](CentralBank.md) (7), [TreasuryFund](TreasuryFund.md) (6), [Currency](Currency.md) (5), [ChartModel](ChartModel.md) (5), [ForeignAccounts](ForeignAccounts.md) (5), [DebtQuote](DebtQuote.md) (5), [HistorySave](HistorySave.md) (4), [NationalAccounts](NationalAccounts.md) (3), [BuildScreen](BuildScreen.md) (3), [Pieces](Pieces.md) (3), [Money](Money.md) (3), [UserInterface](UserInterface.md) (2), [TradeScreen](TradeScreen.md) (2), [HouseholdBalance](HouseholdBalance.md) (2)... and 7 more
+**Uses:** [Palette](Palette.md) (446), [DebtManager](DebtManager.md) (54), [CityCalendar](CityCalendar.md) (29), [Game](Game.md) (27), [CityNeeds](CityNeeds.md) (26), [Icons](Icons.md) (17), [Rollover](Rollover.md) (17), [Debt](Debt.md) (15), [CorporateBond](CorporateBond.md) (14), [OrderBook](OrderBook.md) (14), [HistoryScreen](HistoryScreen.md) (10), [BondMarket](BondMarket.md) (9), [Ladder](Ladder.md) (8), [Bank](Bank.md) (8), [TimeChart](TimeChart.md) (8), [FundScreen](FundScreen.md) (7), [CentralBank](CentralBank.md) (7), [TreasuryFund](TreasuryFund.md) (6), [Currency](Currency.md) (5), [ChartModel](ChartModel.md) (5), [ForeignAccounts](ForeignAccounts.md) (5), [DebtQuote](DebtQuote.md) (5), [HistorySave](HistorySave.md) (4), [NationalAccounts](NationalAccounts.md) (3), [BuildScreen](BuildScreen.md) (3), [Pieces](Pieces.md) (3), [Money](Money.md) (3), [UserInterface](UserInterface.md) (2), [TradeScreen](TradeScreen.md) (2), [HouseholdBalance](HouseholdBalance.md) (2)... and 8 more
 
 **Used by (5):** [BankScreen](BankScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
@@ -58,13 +58,13 @@
 | 1664 | DEBT SERVICE (0.7.32) |
 | 1787 | HOME AND ABROAD (0.7.32) |
 | 1890 | YOUR RATE, TAKEN APART (0.7.32) |
-| 2125 | THE BOOK (0.7.32) |
-| 2301 | BORROW (0.7.32) |
-| 2450 | · the ask, typed (0.7.40) |
-| 2834 | MONEY (0.7.0; redrawn 0.7.32) |
-| 3004 | THE BOND MARKET (0.7.12; redrawn 0.7.32) |
-| 3330 | THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) |
-| 3344 | THE DEBT RESULT |
+| 2138 | THE BOOK (0.7.32) |
+| 2313 | BORROW (0.7.32) |
+| 2462 | · the ask, typed (0.7.40) |
+| 2846 | MONEY (0.7.0; redrawn 0.7.32) |
+| 3016 | THE BOND MARKET (0.7.12; redrawn 0.7.32) |
+| 3342 | THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) |
+| 3356 | THE DEBT RESULT |
 
 ## Constants
 
@@ -111,28 +111,28 @@
 | 1797 | `FinancesScreen.HOLDERS_INFO` | `"Domestic paper is bought at home, so its coupon is income at home and none o...` | WHO HOLDS IT's (i): the spec's T19 and T29. |
 | 1845 | `FinancesScreen.DOLLAR_INFO` | `"Owed in dollars, which do not move; worth in the city's money whatever the "...` | THE DOLLAR DEBT's (i): the spec's T20, both ways. |
 | 1867 | `FinancesScreen.BEHIND_INFO` | `"Reserves are the city's dollars.Import cover is how many months of imports "...` | WHAT IS BEHIND IT's (i): the spec's T21 and T22, as the model reads cover (ForeignAccounts.COMFORTABLE_COVER). |
-| 1985 | `FinancesScreen.CURVE_MONTHS` | `{ 3, 6, 12, 24, 60, 120, 240, 360, 480, 600 }` | The curve's maturities, in months. |
-| 1987 | `FinancesScreen.CURVE_NAMES` | `{ "3m", "6m", "1y", "2y", "5y", "10y", "20y", "30y", "40y", "50y" }` | ...and how they are written under it. |
-| 1990 | `FinancesScreen.CURVE_INFO` | `"The note is the floor - the dial, or what the bank's money costs it, whichev...` | THE CURVE's (i): the spec's T24, and the world's curve. |
-| 2025 | `FinancesScreen.CurveChart.W` | `720, H = 190, LEFT = 44, RIGHT = 16, TOP = 26, FOOT = 22` | Its size and its margins, in pixels: a card's picture, at a fixed size. |
-| 2157 | `FinancesScreen.NOTE_INFO` | `"No coupon at all - the lender's return was the discount, taken out of the pr...` | A note's (i): the spec's T28. |
-| 2161 | `FinancesScreen.PREMIUM_INFO` | `"Buying a piece back pays its holders what it is worth today.Under its face, ...` | A price against face, in words (the spec's T33, D16). |
-| 2321 | `FinancesScreen.TERMS_INFO` | `"Each column is the rate this paper would cost at that term today - for the "...` | The terms' (i): the spec's T55. |
-| 2328 | `FinancesScreen.LOTS_INFO` | `"Issues round to a lot, and the market will not arrange anything under the " ...` | The ask's (i): the spec's T56. |
-| 2332 | `FinancesScreen.NO_ASK` | `"Ask for something and the quote appears here, with the ladder it would build...` | The quote's empty state: the spec's T57. |
-| 2336 | `FinancesScreen.PROCEEDS_INFO` | `"Paper is sold in lots and the face is grossed up for the discount, so the " ...` | Why the proceeds are not the ask: the spec's T58. |
-| 2341 | `FinancesScreen.BUYERS_INFO` | `"The households first, when it pays them more than the bank does: up to %s of...` | Who buys it: the spec's T61, its first half. |
-| 2348 | `FinancesScreen.DOLLARS_INFO` | `"Spending it leaves a dollar debt with nothing behind it, and the next " + "d...` | Where the dollars go: the spec's T62. |
-| 2453 | `FinancesScreen.ASK_TYPED_INFO` | `"Type an amount in dollars: digits, with or without commas, a decimal " + "po...` | HOW MUCH's (i): what the box takes - the case rules - and what the buttons do. |
-| 2461 | `FinancesScreen.ASK_WORDS` | `java.util.regex.Pattern.compile("(?:[A-Za-z]{0,3}\\$)?\\s*((?:\\d{1,3}(?:,\\d...` | A typed amount: an optional mark, digits (grouped by commas or not), an optional fraction, an optional unit. |
-| 2793 | `FinancesScreen.DEFAULT_INFO` | `"Walking away from every dollar the city owes abroad.The gain is immediate an...` | The default page's (i). |
-| 2934 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's...` | M2's (i): the spec's T69. |
-| 3024 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no ...` | No bond outstanding: the spec's T70. |
-| 3029 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has ...` | The prices' (i): the spec's T71. |
-| 3034 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when ...` | The order books' (i): the spec's T74. |
-| 3042 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
-| 3044 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY...` | ...and their colours on it. |
-| 3201 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since ...` | A bond's book's (i): the spec's T75, T77 and T78. |
+| 1991 | `FinancesScreen.CURVE_MONTHS` | `{ 3, 6, 12, 24, 60, 120, 240, 360, 480, 600 }` | The curve's maturities, in months. |
+| 1993 | `FinancesScreen.CURVE_NAMES` | `{ "3m", "6m", "1y", "2y", "5y", "10y", "20y", "30y", "40y", "50y" }` | ...and how they are written under it. |
+| 1996 | `FinancesScreen.CURVE_INFO` | `"The short end is the floor - the dial, or what the bank's money costs it, " ...` | THE CURVE's (i): the spec's T24, and the world's curve - CD1 priced it on the dial the market expects. |
+| 2038 | `FinancesScreen.CurveChart.W` | `720, H = 190, LEFT = 44, RIGHT = 16, TOP = 26, FOOT = 22` | Its size and its margins, in pixels: a card's picture, at a fixed size. |
+| 2170 | `FinancesScreen.NOTE_INFO` | `"No coupon at all - the lender's return was the discount, taken out of the pr...` | A note's (i): the spec's T28. |
+| 2174 | `FinancesScreen.PREMIUM_INFO` | `"Buying a piece back pays its holders what it is worth today.Under its face, ...` | A price against face, in words (the spec's T33, D16). |
+| 2333 | `FinancesScreen.TERMS_INFO` | `"Each column is the rate this paper would cost at that term today - for the "...` | The terms' (i): the spec's T55. |
+| 2340 | `FinancesScreen.LOTS_INFO` | `"Issues round to a lot, and the market will not arrange anything under the " ...` | The ask's (i): the spec's T56. |
+| 2344 | `FinancesScreen.NO_ASK` | `"Ask for something and the quote appears here, with the ladder it would build...` | The quote's empty state: the spec's T57. |
+| 2348 | `FinancesScreen.PROCEEDS_INFO` | `"Paper is sold in lots and the face is grossed up for the discount, so the " ...` | Why the proceeds are not the ask: the spec's T58. |
+| 2353 | `FinancesScreen.BUYERS_INFO` | `"The households first, when it pays them more than the bank does: up to %s of...` | Who buys it: the spec's T61, its first half. |
+| 2360 | `FinancesScreen.DOLLARS_INFO` | `"Spending it leaves a dollar debt with nothing behind it, and the next " + "d...` | Where the dollars go: the spec's T62. |
+| 2465 | `FinancesScreen.ASK_TYPED_INFO` | `"Type an amount in dollars: digits, with or without commas, a decimal " + "po...` | HOW MUCH's (i): what the box takes - the case rules - and what the buttons do. |
+| 2473 | `FinancesScreen.ASK_WORDS` | `java.util.regex.Pattern.compile("(?:[A-Za-z]{0,3}\\$)?\\s*((?:\\d{1,3}(?:,\\d...` | A typed amount: an optional mark, digits (grouped by commas or not), an optional fraction, an optional unit. |
+| 2805 | `FinancesScreen.DEFAULT_INFO` | `"Walking away from every dollar the city owes abroad.The gain is immediate an...` | The default page's (i). |
+| 2946 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's...` | M2's (i): the spec's T69. |
+| 3036 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no ...` | No bond outstanding: the spec's T70. |
+| 3041 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has ...` | The prices' (i): the spec's T71. |
+| 3046 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when ...` | The order books' (i): the spec's T74. |
+| 3054 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
+| 3056 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY...` | ...and their colours on it. |
+| 3213 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since ...` | A bond's book's (i): the spec's T75, T77 and T78. |
 
 ## Fields (state)
 
@@ -155,14 +155,14 @@
 | 230 | `private Object scrollTarget` | Where the page is to be scrolled to once it is drawn: LADDER or RESCUE on the hub, a piece of paper or a calendar year on The book; null for the top. |
 | 233 | `private final java.util.Map<Object, Node> targets` | The nodes a door on this tab can scroll to, by the same keys, as the page draws them. |
 | 236 | `private javafx.scene.control.ScrollPane body` | The page's scroller. |
-| 3198 | `int bookBondId` | The bond whose book is open, by its number; the largest one when it has gone. |
-| 3342 | `double fundAsk` | What the player's hand is asking to pay into the fund or draw out of it, on Rules & cash (FundScreen.moveCard()). |
+| 3210 | `int bookBondId` | The bond whose book is open, by its number; the largest one when it has gone. |
+| 3354 | `double fundAsk` | What the player's hand is asking to pay into the fund or draw out of it, on Rules & cash (FundScreen.moveCard()). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 3358 | **type** `final class FinancesScreen` | The Finances tab: what the city owes and when it falls due, what its paper costs and who holds it, why its money costs what it does, every piece and what it would cost to retire, borrowing at home and abroad, the mone... |
+| 58 | 3370 | **type** `final class FinancesScreen` | The Finances tab: what the city owes and when it falls due, what its paper costs and who holds it, why its money costs what it does, every piece and what it would cost to retire, borrowing at home and abroad, the mone... |
 | 63 | 4 | `FinancesScreen(UserInterface ui)` |  |
 
 ### FINANCES (lines 71-436)
@@ -321,97 +321,97 @@
 | 1851 | 14 | `VBox dollarDebtCard()` | THE DOLLAR DEBT: dollars times the rate is the local figure; what the currency did to it last month as a chip. |
 | 1874 | 15 | `VBox behindCard()` | WHAT IS BEHIND IT: the reserves, and the import cover on a year's bar with the model's comfortable line. |
 
-### YOUR RATE, TAKEN APART (0.7.32) (lines 1890-2124)
+### YOUR RATE, TAKEN APART (0.7.32) (lines 1890-2137)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1905 | 19 | `void yourRatePage(VBox page)` |  |
-| 1926 | 15 | `String floorInfo()` | The floor's (i): the spec's T23, rewritten (B13), and the central bank's share (0.7.15). |
-| 1943 | 29 | `VBox builtUpCard()` | THE RATE, BUILT UP: the floor and the two measures on the band from nothing to the ceiling, the dial and the city's rate marked, then each part with what moves it. |
-| 1974 | 9 | `static VBox rateCell(String name, String value, String moves, Node door, String colour)` | One part of the rate: its swatch and name, its figure, what moves it, and its door. |
-| 1997 | 19 | `VBox curveCard()` | THE CURVE: the city's rate by maturity at home and, while the window is open, abroad, with the dial dashed and the thirty-year point taken apart. |
-| 2023 | 64 | **type** `static final class CurveChart extends javafx.scene.layout.Pane` | The curve, drawn: a point a maturity at equal steps, the city's in the money blue, the world's in violet, the dial dashed across, and the point at `marked` annotated with `note` - a fixed size, as a card's picture is;... |
-| 2027 | 41 | `CurveChart(double[] home, double[] abroad, double dial, int marked, String note)` _(in FinancesScreen.CurveChart)_ |  |
-| 2069 | 17 | `private void draw(double[] values, java.util.function.IntToDoubleFunction x, java.util.function.DoubleUnaryOperator y, String c...` _(in FinancesScreen.CurveChart)_ |  |
-| 2089 | 6 | `static String measuresInfo()` | WHAT EACH MEASURE HAS USED's (i): the spec's T25. |
-| 2097 | 15 | `VBox measuresCard()` | WHAT EACH MEASURE HAS USED: how much of its worst case each of the two measures has used, and a default's scar abroad. |
-| 2114 | 10 | `static VBox stressRow(String label, double stress)` | One measure: its name, a bar of how much of its worst case it has used, and the share. |
+| 1911 | 19 | `void yourRatePage(VBox page)` |  |
+| 1932 | 15 | `String floorInfo()` | The floor's (i): the spec's T23, rewritten (B13), and the central bank's share (0.7.15). |
+| 1949 | 29 | `VBox builtUpCard()` | THE RATE, BUILT UP: the floor and the two measures on the band from nothing to the ceiling, the dial and the city's rate marked, then each part with what moves it. |
+| 1980 | 9 | `static VBox rateCell(String name, String value, String moves, Node door, String colour)` | One part of the rate: its swatch and name, its figure, what moves it, and its door. |
+| 2005 | 24 | `VBox curveCard()` | THE CURVE: the city's rate by maturity at home and, while the window is open, abroad, with the dial dashed and the thirty-year point taken apart. |
+| 2036 | 64 | **type** `static final class CurveChart extends javafx.scene.layout.Pane` | The curve, drawn: a point a maturity at equal steps, the city's in the money blue, the world's in violet, the dial dashed across, and the point at `marked` annotated with `note` - a fixed size, as a card's picture is;... |
+| 2040 | 41 | `CurveChart(double[] home, double[] abroad, double dial, int marked, String note)` _(in FinancesScreen.CurveChart)_ |  |
+| 2082 | 17 | `private void draw(double[] values, java.util.function.IntToDoubleFunction x, java.util.function.DoubleUnaryOperator y, String c...` _(in FinancesScreen.CurveChart)_ |  |
+| 2102 | 6 | `static String measuresInfo()` | WHAT EACH MEASURE HAS USED's (i): the spec's T25. |
+| 2110 | 15 | `VBox measuresCard()` | WHAT EACH MEASURE HAS USED: how much of its worst case each of the two measures has used, and a default's scar abroad. |
+| 2127 | 10 | `static VBox stressRow(String label, double stress)` | One measure: its name, a bar of how much of its worst case it has used, and the share. |
 
-### THE BOOK (0.7.32) (lines 2125-2300)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2143 | 12 | `String bookInfo()` | The book's (i): the spec's T32 and T34. |
-| 2165 | 26 | `void bookPage(VBox page)` |  |
-| 2193 | 9 | `static String pieceName(Debt debt)` | A piece's name in words: "6-month note", "5-year serial bond", "20-year term loan", "... |
-| 2204 | 71 | `VBox pieceCard(Debt debt)` | One piece as a card (the spec's section 3 C). |
-| 2277 | 23 | `Node bookGrid(List<Debt> paper)` | The book as the old page's table, in the fold: kind, owed, coupon a month, when it matures, how far off. |
-
-### BORROW (0.7.32) (lines 2301-2449)
+### THE BOOK (0.7.32) (lines 2138-2312)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2352 | 35 | `void borrowPage(VBox page, boolean foreign)` |  |
-| 2389 | 60 | `VBox askCard(Instrument kit, boolean foreign)` | THE ASK: the three instruments, the terms as columns of their rate (chips abroad), and how much. |
+| 2156 | 12 | `String bookInfo()` | The book's (i): the spec's T32 and T34. |
+| 2178 | 26 | `void bookPage(VBox page)` |  |
+| 2206 | 9 | `static String pieceName(Debt debt)` | A piece's name in words: "6-month note", "5-year serial bond", "20-year term loan", "... |
+| 2217 | 70 | `VBox pieceCard(Debt debt)` | One piece as a card (the spec's section 3 C). |
+| 2289 | 23 | `Node bookGrid(List<Debt> paper)` | The book as the old page's table, in the fold: kind, owed, coupon a month, when it matures, how far off. |
 
-### the ask, typed (0.7.40) (lines 2450-2833)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2465 | 14 | `static double askFromWords(String typed)` | The ask a typed amount sets, in the model's thousands (Money.toDollars()'s unit), by ASK_TYPED_INFO's rules; NaN when it is not an amount. |
-| 2481 | 4 | `static String askRefusal(String typed)` | What the box says under itself when an entry cannot be read. |
-| 2487 | 6 | `String[] askShown(double ask, boolean foreign)` | The ask written in full and short: {"D$2,500,000,000,000", "D$2.5T"} - the second null when it would say the same; nothing asked, {"nothing asked for yet", null}. |
-| 2495 | 6 | `static double[] askSteps(double ask, double lot)` | The ± steps for an ask: one unit of its leading digit and a tenth of that - D$1B and D$100M at D$3.4B - never under a lot; at nothing, one lot. |
-| 2503 | 4 | `double askBase()` | What a step or a scale starts from: what is typed and not yet set, when it reads as an amount, else the ask. |
-| 2509 | 7 | `void setAsk(double ask)` | The ask set by a step, a preset or clear: what was typed and the refusal go, and the page is drawn on it. |
-| 2518 | 1 | **type** `record AskPreset(String name, double ask)` | One preset of the ask: what it is called, and the model's figure it sets. |
-| 2532 | 16 | `List<AskPreset> askPresets(Instrument kit, boolean foreign)` | The ask's presets, every figure a model getter's, each offered only when it is something: at home, the minimum issue (at least a lot, as "the minimum" always set it), what falls due in the next twelve months (DebtMana... |
-| 2556 | 27 | `Node askBox(boolean foreign)` | The box the ask is typed in (0.7.40), the house's search box: what is typed and not yet set lives through a month's redraw, and the focus with it. |
-| 2591 | 25 | `private void commitAsk(javafx.scene.control.TextField box, boolean enter)` | What is in the box, set as the ask - or, when it cannot be read, said under the box with the ask left as it was. |
-| 2618 | 23 | `VBox instrumentTile(Instrument kit, boolean on)` | One instrument as a tile: its swatch-tinted icon, its name and (i), the range it is issued over, its line; picked, its ground and edge lit. |
-| 2643 | 18 | `Node termColumns(Instrument kit)` | The terms at home as columns of their rate: the chosen in the money blue, the rest grey; a click picks one. |
-| 2663 | 21 | `Node termChips(Instrument kit)` | The terms abroad as chips, each with the world's rate for it in its tooltip. |
-| 2686 | 8 | `String quoteName(Instrument kit, boolean foreign)` | What the quoted paper is called on its card: "20-year term loan", "6-month note in dollars". |
-| 2696 | 32 | `VBox quoteCard(Instrument kit, DebtQuote quote, boolean foreign)` | THE QUOTE: the land office's offer card on exactly the terms the button books, and why the proceeds are not the ask. |
-| 2730 | 37 | `VBox whoBuysCard(DebtQuote quote)` | WHO BUYS IT: the households, then the bank, its room used as a bar with this issue as a ghost; the bank's three alarms make the card red. |
-| 2769 | 10 | `VBox dollarsCard()` | AND THE DOLLARS: convert and spend, or hold as reserves (the spec's W8). |
-| 2781 | 10 | `HBox foreignDoor()` | The door marked do not open, outlined in red. |
-| 2803 | 30 | `void showForeignDefaultMenu()` | Asking twice, with the bill written out: "Finances › Default abroad" (0.7.32, the spec's D14), two equal cards in the same type, "Keep paying" first. |
-
-### MONEY (0.7.0; redrawn 0.7.32) (lines 2834-3003)
+### BORROW (0.7.32) (lines 2313-2461)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2849 | 16 | `String moneyInfo()` | The page's (i): the old page's two sentences, the spec's T64 to T66. |
-| 2866 | 15 | `void moneyPage(VBox page)` |  |
-| 2883 | 15 | `String centralBookInfo(CentralBank cb)` | The book's (i): the spec's T67 and T68. |
-| 2900 | 32 | `VBox centralBookCard(CentralBank cb)` | THE CENTRAL BANK'S BOOK: what it holds against what it owes, one scale; its equity on the owing side, or a shortfall red on the holding side. |
-| 2939 | 17 | `VBox publicCard(CentralBank cb)` | WHAT THE PUBLIC HOLDS: M2 as a bar of its parts, and M0 beside it. |
-| 2958 | 28 | `VBox thisMonthCard(CentralBank cb)` | THIS MONTH: the money made and the money destroyed, each a bar of its parts on one scale, and what M0 moved by. |
-| 2988 | 15 | `VBox smallChart(String title, HistorySave h, String[] keys, String[] names, String[] colours)` | History's money series as a small chart without the controls, on the last ten years (ChartModel.DEFAULT_RANGE) or the whole history while it is younger - TimeChart, as Government's Output draws it. |
+| 2364 | 35 | `void borrowPage(VBox page, boolean foreign)` |  |
+| 2401 | 60 | `VBox askCard(Instrument kit, boolean foreign)` | THE ASK: the three instruments, the terms as columns of their rate (chips abroad), and how much. |
 
-### THE BOND MARKET (0.7.12; redrawn 0.7.32) (lines 3004-3329)
+### the ask, typed (0.7.40) (lines 2462-2845)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3019 | 3 | `static String per100(double price)` | A bond's price, per 100 of face. |
-| 3047 | 14 | `Node holdersBar(double[] held, double band, boolean key)` | A holders bar over five amounts, each keyed when `key` is set. |
-| 3062 | 32 | `void bondMarketPage(VBox page)` |  |
-| 3096 | 24 | `VBox issuerCard(BondMarket.Issuer is)` | One issuer as a card: its sector's icon, its face, its bonds and their coupons, its nearest maturity, its holders; a click opens its largest bond's book. |
-| 3122 | 25 | `VBox bondMonthCard(BondMarket market)` | THIS MONTH on the bond market: sold, coupons, repaid, written off, and the last issue. |
-| 3149 | 14 | `VBox orderBooksCard(BondMarket market)` | THE ORDER BOOKS, last month: offered for sale, how much of it sold, and how many sellers waited. |
-| 3165 | 31 | `Node bondGrids(BondMarket market)` | The old page's two tables, in the fold: every bond with its price and yield, and who holds each. |
-| 3206 | 46 | `void bondBookPage(VBox page)` |  |
-| 3254 | 17 | `Node depthChart(OrderBook book, CorporateBond b, int month)` | The book's depth: a row a price level, the asks over the bids, best nearest the middle; bids drawn leftward, asks rightward, face as length. |
-| 3273 | 28 | `Node depthRow(OrderBook.Level l, boolean bid, double most, CorporateBond b, int month)` | One price level of the depth chart. |
-| 3303 | 26 | `Node levelGrids(OrderBook book, CorporateBond b, int month)` | The old page's bid and ask tables, in the fold. |
+| 2477 | 14 | `static double askFromWords(String typed)` | The ask a typed amount sets, in the model's thousands (Money.toDollars()'s unit), by ASK_TYPED_INFO's rules; NaN when it is not an amount. |
+| 2493 | 4 | `static String askRefusal(String typed)` | What the box says under itself when an entry cannot be read. |
+| 2499 | 6 | `String[] askShown(double ask, boolean foreign)` | The ask written in full and short: {"D$2,500,000,000,000", "D$2.5T"} - the second null when it would say the same; nothing asked, {"nothing asked for yet", null}. |
+| 2507 | 6 | `static double[] askSteps(double ask, double lot)` | The ± steps for an ask: one unit of its leading digit and a tenth of that - D$1B and D$100M at D$3.4B - never under a lot; at nothing, one lot. |
+| 2515 | 4 | `double askBase()` | What a step or a scale starts from: what is typed and not yet set, when it reads as an amount, else the ask. |
+| 2521 | 7 | `void setAsk(double ask)` | The ask set by a step, a preset or clear: what was typed and the refusal go, and the page is drawn on it. |
+| 2530 | 1 | **type** `record AskPreset(String name, double ask)` | One preset of the ask: what it is called, and the model's figure it sets. |
+| 2544 | 16 | `List<AskPreset> askPresets(Instrument kit, boolean foreign)` | The ask's presets, every figure a model getter's, each offered only when it is something: at home, the minimum issue (at least a lot, as "the minimum" always set it), what falls due in the next twelve months (DebtMana... |
+| 2568 | 27 | `Node askBox(boolean foreign)` | The box the ask is typed in (0.7.40), the house's search box: what is typed and not yet set lives through a month's redraw, and the focus with it. |
+| 2603 | 25 | `private void commitAsk(javafx.scene.control.TextField box, boolean enter)` | What is in the box, set as the ask - or, when it cannot be read, said under the box with the ask left as it was. |
+| 2630 | 23 | `VBox instrumentTile(Instrument kit, boolean on)` | One instrument as a tile: its swatch-tinted icon, its name and (i), the range it is issued over, its line; picked, its ground and edge lit. |
+| 2655 | 18 | `Node termColumns(Instrument kit)` | The terms at home as columns of their rate: the chosen in the money blue, the rest grey; a click picks one. |
+| 2675 | 21 | `Node termChips(Instrument kit)` | The terms abroad as chips, each with the world's rate for it in its tooltip. |
+| 2698 | 8 | `String quoteName(Instrument kit, boolean foreign)` | What the quoted paper is called on its card: "20-year term loan", "6-month note in dollars". |
+| 2708 | 32 | `VBox quoteCard(Instrument kit, DebtQuote quote, boolean foreign)` | THE QUOTE: the land office's offer card on exactly the terms the button books, and why the proceeds are not the ask. |
+| 2742 | 37 | `VBox whoBuysCard(DebtQuote quote)` | WHO BUYS IT: the households, then the bank, its room used as a bar with this issue as a ghost; the bank's three alarms make the card red. |
+| 2781 | 10 | `VBox dollarsCard()` | AND THE DOLLARS: convert and spend, or hold as reserves (the spec's W8). |
+| 2793 | 10 | `HBox foreignDoor()` | The door marked do not open, outlined in red. |
+| 2815 | 30 | `void showForeignDefaultMenu()` | Asking twice, with the bill written out: "Finances › Default abroad" (0.7.32, the spec's D14), two equal cards in the same type, "Keep paying" first. |
 
-### THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) (lines 3330-3343)
-
-### THE DEBT RESULT (lines 3344-3415)
+### MONEY (0.7.0; redrawn 0.7.32) (lines 2846-3015)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3362 | 8 | `String executeDebtLogic(String type, double amount, int duration, double rounding)` |  |
-| 3372 | 43 | `void showDebtResultMenu(DebtQuote quote, boolean foreign, String summary)` | Shows the terms the player just agreed to: the quote booked as a receipt, and the ladder with it on the books; or what the booking said when nothing was booked. |
+| 2861 | 16 | `String moneyInfo()` | The page's (i): the old page's two sentences, the spec's T64 to T66. |
+| 2878 | 15 | `void moneyPage(VBox page)` |  |
+| 2895 | 15 | `String centralBookInfo(CentralBank cb)` | The book's (i): the spec's T67 and T68. |
+| 2912 | 32 | `VBox centralBookCard(CentralBank cb)` | THE CENTRAL BANK'S BOOK: what it holds against what it owes, one scale; its equity on the owing side, or a shortfall red on the holding side. |
+| 2951 | 17 | `VBox publicCard(CentralBank cb)` | WHAT THE PUBLIC HOLDS: M2 as a bar of its parts, and M0 beside it. |
+| 2970 | 28 | `VBox thisMonthCard(CentralBank cb)` | THIS MONTH: the money made and the money destroyed, each a bar of its parts on one scale, and what M0 moved by. |
+| 3000 | 15 | `VBox smallChart(String title, HistorySave h, String[] keys, String[] names, String[] colours)` | History's money series as a small chart without the controls, on the last ten years (ChartModel.DEFAULT_RANGE) or the whole history while it is younger - TimeChart, as Government's Output draws it. |
+
+### THE BOND MARKET (0.7.12; redrawn 0.7.32) (lines 3016-3341)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3031 | 3 | `static String per100(double price)` | A bond's price, per 100 of face. |
+| 3059 | 14 | `Node holdersBar(double[] held, double band, boolean key)` | A holders bar over five amounts, each keyed when `key` is set. |
+| 3074 | 32 | `void bondMarketPage(VBox page)` |  |
+| 3108 | 24 | `VBox issuerCard(BondMarket.Issuer is)` | One issuer as a card: its sector's icon, its face, its bonds and their coupons, its nearest maturity, its holders; a click opens its largest bond's book. |
+| 3134 | 25 | `VBox bondMonthCard(BondMarket market)` | THIS MONTH on the bond market: sold, coupons, repaid, written off, and the last issue. |
+| 3161 | 14 | `VBox orderBooksCard(BondMarket market)` | THE ORDER BOOKS, last month: offered for sale, how much of it sold, and how many sellers waited. |
+| 3177 | 31 | `Node bondGrids(BondMarket market)` | The old page's two tables, in the fold: every bond with its price and yield, and who holds each. |
+| 3218 | 46 | `void bondBookPage(VBox page)` |  |
+| 3266 | 17 | `Node depthChart(OrderBook book, CorporateBond b, int month)` | The book's depth: a row a price level, the asks over the bids, best nearest the middle; bids drawn leftward, asks rightward, face as length. |
+| 3285 | 28 | `Node depthRow(OrderBook.Level l, boolean bid, double most, CorporateBond b, int month)` | One price level of the depth chart. |
+| 3315 | 26 | `Node levelGrids(OrderBook book, CorporateBond b, int month)` | The old page's bid and ask tables, in the fold. |
+
+### THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) (lines 3342-3355)
+
+### THE DEBT RESULT (lines 3356-3427)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3374 | 8 | `String executeDebtLogic(String type, double amount, int duration, double rounding)` |  |
+| 3384 | 43 | `void showDebtResultMenu(DebtQuote quote, boolean foreign, String summary)` | Shows the terms the player just agreed to: the quote booked as a receipt, and the ladder with it on the books; or what the booking said when nothing was booked. |
 

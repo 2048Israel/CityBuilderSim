@@ -795,8 +795,17 @@ public class CentralBankCheck {
        11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own.
        ===================================================================== */
 
-    /** The long end's shape over the note: the premium at twenty years less what the holdings compress. */
-    static double shape20(DebtManager m) { return m.curveRate(240) - m.curveRate(6); }
+    /**
+     * The long end's shape: the premium at twenty years less what the holdings
+     * compress - the twenty-year rate less the dial the market expects over
+     * those years and the credit spread (the curve taken apart, CD1). Until
+     * CD1 it was read as the twenty-year rate over the note's, which was the
+     * same figure while the curve sat on the dial in parallel; the dial the
+     * market expects now moves the two apart (spec-city-debt section 3).
+     */
+    static double shape20(DebtManager m) {
+        return m.curveRate(240) - m.expectedDialOver(240) - m.creditSpread();
+    }
 
     static void theHoldingsDial(GameFiles files) throws Exception {
         out.println("\n--- 11. the holdings dial buys the bank's term paper with money it makes ---");
@@ -842,6 +851,7 @@ public class CentralBankCheck {
         cb.setTargetShare(.30);
         double term = ledger.termPrincipal();
         double face = CentralBank.QE_SPEED * .30 * term;
+        city.strikeTheCurve();   // the expectations the top will strike first (CD1)
         double price = ledger.marketValue(bond) * face / bond.getOustandingPrincipal();
         double unearned = bond.unaccretedOn(face);
         double bookBefore = ledger.bankPrincipal();
@@ -871,7 +881,7 @@ public class CentralBankCheck {
                 shape20(ledger), DebtManager.TERM_PREMIUM_20Y - ledger.compression(240), 1e-12);
         close("...and the note carries none of it", ledger.compression(6), 0, 0);
         close("...so the short end is where it was: the dial and the spreads",
-                ledger.curveRate(6) - ledger.floorRate()
+                ledger.curveRate(0) - ledger.floorRate()
                         - ledger.gdpSpread() - ledger.revenueSpread(), 0, 1e-12);
 
         /* ---- 12. the coupon on its share ---- */

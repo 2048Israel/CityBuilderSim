@@ -14,6 +14,42 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.13 — CD1, the curve from the dial the market expects — 2026-10-21, shipped, see docs/queue/CD1-notes.md
+
+The city's curve no longer sits on the dial in parallel (spec-city-debt §3, D9). The market expects the dial to drift
+back to what the city's rule would set at the inflation it expects, over six months (DRIFT_MONTHS, D15); each month's
+forward is that plus the credit spreads, the zero rate compounds them and carries the term premium less QE. A hiking
+city's curve inverts, a dial held low by hand no longer buys cheap long money, and a calm city prices as before: the
+study's four cities to the hundredth. Every payment of every piece is discounted at its own month's factor, so a
+piece's yield is solved from its price; every issue is priced the same way (the serial's coupon at par on the curve,
+the term loan's face on its factors), at home and abroad, and no round trip makes money. The short end is unchanged.
+Your rate shows the thirty-year rate in its new parts and where the market expects the dial. No save-format bump.
+The traces move (default 619,699 people against 677,355; Rotterdam 834,678 against 711,024); the ensemble scores
+22/26, H1 red for the cheap long money gone (Jerus's call, CD1-C). Harness: CurveCheck.
+
+### 0.8.12 — EG1, deposits where the geology says — 2026-10-20, shipped, see docs/queue/EG1-notes.md
+
+On the real Earth the fields now lie where the geology puts them (spec-earth2-terrain §8.5), so Jerus's Nova Scotia
+cities no longer sit in a ring of oil and iron. Oil is drawn by each province's known petroleum a km2, with a tenth
+of its class's weight where none is known; 40 estimated hand rows fill the US provinces and the Scotian Shelf, which
+earth-1's USGS figures leave at nought. Iron keeps the shields' weight, a tenth elsewhere, and twenty in 96 recorded
+iron districts (the Pilbara to Wabana). The Sydney coalfield reads its basin. An Earth field is three times wider and
+a third as many, and a cluster stays on its own province's ground. Within 150 km of Halifax: iron 21 fields (417
+before), oil on land none (53). earth-1.bin is unchanged. A generated world is drawn to the bit as before: the default
+trace is byte-identical; Rotterdam's moves from month 1,464, when its city buys an iron field (711,024 people at the
+end against 588,872). Save format 41 refuses an Earth save only. Harness: EarthDepositsCheck.
+
+### EN1 — the ensemble only when the trace moves, in the tree, with a stored baseline — 2026-10-20, shipped untagged, see docs/queue/EN1-notes.md
+
+The 80-run ensemble (16 seeds x 5 monetary policies) now runs only for a batch whose playtest trace moves (Jerus: "yes, do
+that"), once, against the newest stored score, and main is never rerun. Its runner, until now only in the workbench zip
+and in sessions' scratchpads, is `tools/ensemble/`: the driver; `ensemble.sh`, which snapshots `target/classes` and runs
+five at a time on the PC (one under the cloud's lock); and the scorer, which reads pandas from `~/.cache/cbs-ensemble/py`.
+`docs/ensemble/0.8.9.md` holds the first stored score: FR6's final run, still main's model. The scorer had counted 26
+of its 27 criteria (A3's verdict was numpy's bool). Two premises out of date are restated: A2 from m240, past the
+founding's rent boom, and H2 against the twin, as H1 is. So 0.8.9 scores 25/27, and S1 and R3 wait on Jerus (EN1-C),
+with R3's fix proposed as RN1. A harness, EnsembleCheck, keeps the driver compiling against the tree. No game change.
+
 ### 0.8.11 — FR4, the freight screens — 2026-10-20, shipped, see docs/queue/FR4-notes.md
 
 The last freight batch draws what FR2-FR7 built. Build's "Roads & transit" is Infrastructure again and holds the

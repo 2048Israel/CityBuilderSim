@@ -38,17 +38,18 @@ import java.util.Map;
  * resource's fields is today's density x its land km2 x w_r(class) x Z_r,
  * the class read at each of the cells pass's 16 points
  * (EarthTerrain.cellsPass()), so a cell across two provinces takes each
- * its share. Oil's is also x (1 + log10(1 + known petroleum /
- * OIL_SCALE_MMBOE)), and its area takes in the sea of shelf, basin and
- * rift provinces: offshore oil, as the generated world's first place
- * allows.
+ * its share. Oil's area takes in the sea of shelf, basin and rift
+ * provinces: offshore oil, as the generated world's first place allows. (To
+ * 0.8.11 oil's was also x (1 + log10(1 + known petroleum /
+ * OIL_SCALE_MMBOE)); since EG1 oil's and iron's weights are the province's
+ * own, below, and iron's is read at the point, for a district.)
  *
  * Z (measure(), the constants Z_IRON to Z_STONE). Z_r = the land / the land
  * x w_r over the planet north of ANTARCTIC_LAT, every 4' cell of the far
- * layers at its area on the sphere and its class where its centre lies, so
- * the land's expected count of each resource's fields is today's (oil's
- * weights with its petroleum, its offshore sea on top, as the study's 0.701
- * has it). The study's figures were measured on the rules' classes before
+ * layers at its area on the sphere and its class where its centre lies (and,
+ * for iron, its district), so the land's expected count of each resource's
+ * fields is today's (oil's weights with its offshore sea on top, as the
+ * study's 0.701 has it). The study's figures were measured on the rules' classes before
  * the hand pass, and three of them do not follow from its own table (★E3-2).
  *
  * THE TYPES (docs/studies/spec-materials.md 2.4, "On Earth (E3)"). A field's
@@ -57,6 +58,27 @@ import java.util.Map;
  * in fold belts and x0.25 on shields, iron and copper flat; one constant a
  * resource (COKING_ODDS, LIMESTONE_ODDS) holds the Earth-wide share - over
  * the fields expected in each class - at the generated world's TYPE_SHARES.
+ *
+ * EG1, OIL AND IRON WHERE THE GEOLOGY SAYS (0.8.12, batch EG1;
+ * docs/studies/spec-earth2-terrain.md 8 and 8.5; Jerus, 2026-10-12, "all
+ * rec"). E3's weights only rescaled the generated world's densities within a
+ * narrow range: a fold belt's oil weight was 1, so the Appalachians counted
+ * like the Zagros; iron was nought only on a shelf; and known petroleum could
+ * raise a province's oil, never lower it - a province with none took its
+ * class's full weight. Jerus's Nova Scotia cities found oil and iron all
+ * round them (the study, 8.3). Now oil's weight is the province's known
+ * petroleum a km2 against the Earth's mean (KNOWN_MEAN) with an allowance a
+ * tenth of its class's where the file holds none (OIL_ALLOWANCE; the KNOWN
+ * hand table fills the provinces the USGS assessment of 2000 left at nought,
+ * the United States' and the Scotian Shelf), E3's petroleum factor gone from
+ * the multiplier. Iron's is a shield's four and a tenth of its class's
+ * elsewhere (IRON_ALLOWANCE), and twenty within a recorded iron district
+ * (DISTRICTS, IRON_DISTRICT_WEIGHT): a point's, so multiplierAt(). The
+ * Sydney coalfield, which the raster puts in the Appalachian Foldbelt, is
+ * a PATCHES row that moves it into the Sidney Basin; every model reader of a
+ * province asks provinceAt(), which holds the patch. Z and the odds are
+ * measured again (zOf(Resource, Geology)). A generated world reads none of
+ * it, as before.
  *
  * EarthTerrainCheck 10 to 14 hold it, on the fixture and on the full file.
  */
@@ -106,35 +128,59 @@ public final class Geology {
     static final double[] W_STONE = { 1, 2, 2, 1, 0, 1, 1 };
 
     /* =====================================================================
-       Z, measured on earth-1 with the hand table (measure(); EarthTerrainCheck
-       13 recomputes each to its rounding). The study's, on the rules' classes:
-       iron 0.888, oil 0.701, coal 0.959, copper 0.846, uranium 1.049, stone
-       0.751.
+       Z, measured on earth-1 with the hand tables (measure(), zOf(r, g);
+       EarthTerrainCheck 13 recomputes each to its rounding). Since EG1 (0.8.12)
+       iron's and oil's weights are the province's by its shield, its district
+       and its known petroleum, and the Sydney patch moves a little land, so
+       the six are measured again; E3's, on the hand table: iron 0.7219, oil
+       0.6033, coal 0.7884, copper 0.7322, uranium 0.7518, stone 0.6915. The
+       study's, on the rules' classes: iron 0.888, oil 0.701, coal 0.959,
+       copper 0.846, uranium 1.049, stone 0.751.
        ===================================================================== */
 
-    /** Iron's Z: the land over the land x W_IRON north of ANTARCTIC_LAT, 0.7219 on earth-1 with the hand table. */
-    public static final double Z_IRON = 0.7219;
+    /** Iron's Z: the land over the land x iron's weight (a shield's four, an allowance elsewhere, a district's twenty) north of ANTARCTIC_LAT, 0.9706 on earth-1 with the hand tables, EG1 (E3's 0.7219). */
+    public static final double Z_IRON = 0.9706;
 
-    /** Oil's Z: the land over the land x W_OIL x its petroleum factor north of ANTARCTIC_LAT, 0.6033 on earth-1 with the hand table (the offshore sea on top). */
-    public static final double Z_OIL = 0.6033;
+    /** Oil's Z: the land over the land x oil's weight (the allowance and the known petroleum a km2) north of ANTARCTIC_LAT, 0.3616 on earth-1 with the hand tables, EG1 (E3's 0.6033, with its petroleum factor); the offshore sea is on top. */
+    public static final double Z_OIL = 0.3616;
 
-    /** Coal's Z: the land over the land x W_COAL north of ANTARCTIC_LAT, 0.7884 on earth-1 with the hand table. */
+    /** Coal's Z: the land over the land x W_COAL north of ANTARCTIC_LAT, 0.7884 on earth-1 with the hand tables, EG1 (the Sydney patch moves a little land). */
     public static final double Z_COAL = 0.7884;
 
-    /** Copper's Z: the land over the land x W_COPPER north of ANTARCTIC_LAT, 0.7322 on earth-1 with the hand table. */
-    public static final double Z_COPPER = 0.7322;
+    /** Copper's Z: the land over the land x W_COPPER north of ANTARCTIC_LAT, 0.7323 on earth-1 with the hand tables, EG1 (E3's 0.7322). */
+    public static final double Z_COPPER = 0.7323;
 
-    /** Uranium's Z: the land over the land x W_URANIUM north of ANTARCTIC_LAT, 0.7518 on earth-1 with the hand table. */
+    /** Uranium's Z: the land over the land x W_URANIUM north of ANTARCTIC_LAT, 0.7518 on earth-1 with the hand tables, EG1. */
     public static final double Z_URANIUM = 0.7518;
 
-    /** Stone's Z: the land over the land x W_STONE north of ANTARCTIC_LAT, 0.6915 on earth-1 with the hand table. */
+    /** Stone's Z: the land over the land x W_STONE north of ANTARCTIC_LAT, 0.6915 on earth-1 with the hand tables, EG1. */
     public static final double Z_STONE = 0.6915;
 
     /** The latitude south of which Z's sums leave the ground out: 60 S, the study's "Antarctica excluded" (★E3-4: its ice holds what no city founded on the ice can reach, and E4 refuses ice). */
     public static final double ANTARCTIC_LAT = -60;
 
-    /** Oil's petroleum factor's scale, in million barrels of oil equivalent: 1,000 - oil is x (1 + log10(1 + known / 1,000)) (spec-earth 4): x2.13 under the Anglo-Dutch Basin's 12,640. */
+    /** E3's petroleum factor's scale, in million barrels of oil equivalent: 1,000 - oil was x (1 + log10(1 + known / 1,000)) (spec-earth 4): x2.13 under the Anglo-Dutch Basin's 12,640. Since EG1 only the study's replay reads it (EarthTerrainCheck 11 and 13); the model's oil follows KNOWN_MEAN. */
     public static final double OIL_SCALE_MMBOE = 1000;
+
+    /* =====================================================================
+       OIL, IRON AND THE DISTRICTS WHERE THE GEOLOGY SAYS (0.8.12, batch EG1;
+       docs/studies/spec-earth2-terrain.md 8.5)
+
+       A province's oil weight is OIL_ALLOWANCE x its class's W_OIL plus its
+       known petroleum a km2 over the Earth's (known(code) / area(code) /
+       knownMean()); its iron weight a shield's four, else IRON_ALLOWANCE x
+       its class's, and IRON_DISTRICT_WEIGHT at a point inside a recorded
+       iron district. The multiplier is that weight x Z, as before.
+       ===================================================================== */
+
+    /** A province's oil without known petroleum: a tenth of its class's weight (EG1; spec-earth2-terrain 8.5, est.). */
+    public static final double OIL_ALLOWANCE = 0.1;
+
+    /** Iron off a shield and outside a recorded district: a tenth of its class's weight (EG1, est.). */
+    public static final double IRON_ALLOWANCE = 0.1;
+
+    /** Iron's weight in a recorded iron district: twenty, five times a shield's (EG1, est.). */
+    public static final double IRON_DISTRICT_WEIGHT = 20;
 
     /* =====================================================================
        THE TYPES' ODDS (docs/studies/spec-materials.md 2.4, "On Earth (E3)"):
@@ -149,11 +195,11 @@ public final class Geology {
     /** Limestone's odds ratio by class: two in a basin or on a shelf, a half in a fold belt, a quarter on a shield (spec-materials 2.4). */
     static final double[] LIMESTONE_RATIO = { 1, 0.25, 0.5, 1, 2, 2, 1 };
 
-    /** Coking coal's odds where the ratio is one: 0.135295 on earth-1 with the hand table (six figures), so its Earth-wide share is THERMAL's complement, 15%. */
-    public static final double COKING_ODDS = 0.135295;
+    /** Coking coal's odds where the ratio is one: 0.135296 on earth-1 with the hand tables, EG1 (six figures), so its Earth-wide share is THERMAL's complement, 15%. */
+    public static final double COKING_ODDS = 0.135296;
 
-    /** Limestone's odds where the ratio is one: 4.10888 on earth-1 with the hand table (six figures), so its Earth-wide share is TYPE_SHARES' 70%: .892 in a basin, .507 on a shield. */
-    public static final double LIMESTONE_ODDS = 4.10888;
+    /** Limestone's odds where the ratio is one: 4.10885 on earth-1 with the hand tables, EG1 (six figures), so its Earth-wide share is TYPE_SHARES' 70%: .892 in a basin, .507 on a shield. */
+    public static final double LIMESTONE_ODDS = 4.10885;
 
     /* =====================================================================
        THE HAND-CHECKED TABLE (★E3-1). A row: the province's row in the data,
@@ -474,6 +520,244 @@ public final class Geology {
     }
 
     /* =====================================================================
+       THE KNOWN HAND TABLE (0.8.12, batch EG1; spec-earth2-terrain 8.2, 8.5)
+
+       The USGS World Petroleum Assessment 2000 behind earth-1's known
+       petroleum assessed no United States province, and the Scotian Shelf
+       reads nought despite Sable and Deep Panuke. A row: the province's USGS
+       code, its name, its known petroleum in MMBOE (cumulative production
+       and reserves, rounded - estimates) and why. The table fills only what
+       the file holds none of: the constructor refuses a row whose code the
+       data lacks, whose rows' names differ from the table's, or whose file
+       figure is not nought, so a re-baked file is checked again.
+       ===================================================================== */
+
+    /** The known petroleum the file holds none of, a province a row: code | name | known MMBOE | why. */
+    static final String KNOWN_HAND = """
+        5001 | Northern Alaska | 24000 | Prudhoe Bay, Kuparuk and the North Slope's gas (est.)
+        5003 | Southern Alaska | 2800 | Cook Inlet's oil and gas (est.)
+        5009 | Sacramento Basin | 1600 | its gas (est.)
+        5010 | San Joaquin Basin | 14000 | Kern River, Midway-Sunset, Elk Hills (est.)
+        5011 | Central Coastal | 600 | San Ardo (est.)
+        5012 | Santa Maria Basin | 1100 | its oil (est.)
+        5013 | Ventura Basin | 3400 | its oil and gas (est.)
+        5014 | Los Angeles Basin | 10000 | Wilmington, Long Beach, Huntington Beach (est.)
+        5020 | Uinta-Piceance Basins | 2300 | their gas and oil (est.)
+        5021 | Paradox Basin | 1000 | Aneth (est.)
+        5022 | San Juan Basin | 8000 | its gas, coal-bed methane in (est.)
+        5028 | North-Central Montana | 800 | its oil and gas (est.)
+        5031 | Williston Basin | 3000 | the US part, before the Bakken (est.)
+        5033 | Powder River Basin | 3000 | its oil (est.)
+        5034 | Big Horn Basin | 2500 | its oil (est.)
+        5035 | Wind River Basin | 1300 | its oil and gas (est.)
+        5036 | Wyoming Thrust Belt | 1800 | its gas (est.)
+        5037 | Southwestern Wyoming | 3500 | its gas (est.)
+        5039 | Denver Basin | 1700 | its oil and gas (est.)
+        5044 | Permian Basin | 47000 | the Permian's oil and gas (est.)
+        5045 | Bend Arch-Fort Worth Basin | 4500 | its oil and gas (est.)
+        5047 | Western Gulf | 55000 | the Texas Gulf Coast's oil and gas (est.)
+        5048 | East Texas Basin | 15000 | the East Texas field and its basin (est.)
+        5049 | Louisiana-Mississippi Salt Basins | 50000 | south Louisiana's and Mississippi's oil and gas (est.)
+        5053 | Cambridge Arch-Central Kansas Uplift | 4300 | Kansas's oil (est.)
+        5055 | Nemaha Uplift | 3000 | Oklahoma City and its trend (est.)
+        5058 | Andarko Basin | 22000 | the Anadarko's gas, Hugoton-Panhandle in (est.)
+        5059 | Sedgwick Basin | 2000 | its oil (est.)
+        5060 | Cherokee Platform | 4500 | its oil (est.)
+        5061 | Southern Oklahoma | 4500 | Healdton and the Ardmore basin (est.)
+        5062 | Arkoma Basin | 2600 | its gas (est.)
+        5063 | Michigan Basin | 2300 | its oil and gas (est.)
+        5064 | Illinois Basin | 4500 | its oil (est.)
+        5065 | Black Warrior Basin | 900 | its gas (est.)
+        5066 | Cincinnati Arch | 700 | the Lima-Indiana trend (est.)
+        5067 | Appalachian Basin | 11000 | its oil and gas, before the Marcellus (est.)
+        5093 | Santa Barbara-Ventura Basin OCS | 2000 | the Santa Barbara Channel (est.)
+        5097 | Gulf Cenozoic OCS | 42000 | the federal Gulf of Mexico (est.)
+        5098 | Gulf Mesozoic OCS | 1200 | Mobile Bay's Norphlet gas (est.)
+        5217 | Scotian Shelf | 600 | Sable's gas, Deep Panuke and Cohasset-Panuke (est.)
+        """;
+
+    /** A row of the known hand table. */
+    public record Known(String code, String name, double mmboe, String why) { }
+
+    /** The known hand table, parsed, in its rows' order. */
+    public static final List<Known> KNOWN = parseKnown();
+
+    private static List<Known> parseKnown() {
+        java.util.ArrayList<Known> out = new java.util.ArrayList<>();
+        for (String line : KNOWN_HAND.split("\n")) {
+            if (line.isBlank()) continue;
+            String[] f = line.split("\\|", -1);
+            if (f.length != 4) throw new IllegalStateException("Geology.KNOWN_HAND: " + line);
+            out.add(new Known(f[0].trim(), f[1].trim(), Double.parseDouble(f[2].trim()), f[3].trim()));
+        }
+        return Collections.unmodifiableList(out);
+    }
+
+    /* =====================================================================
+       THE RECORDED IRON DISTRICTS (0.8.12, batch EG1; spec-earth2-terrain 8.5)
+
+       Where the USGS Minerals Yearbook's iron ore chapters and the Mineral
+       Resources Data System name an iron district, iron's weight is
+       IRON_DISTRICT_WEIGHT whatever the province. A row: its name, its
+       centre's latitude and longitude, its radius in km (none under 20) and
+       what it holds. The centres and radii are rounded from the districts'
+       mines - estimates.
+       ===================================================================== */
+
+    /** The recorded iron districts, a row each: name | latitude | longitude | radius km | what. */
+    static final String DISTRICT_HAND = """
+        Hamersley Province (Pilbara) | -22.7 | 118.6 | 180 | Tom Price, Paraburdoo, Newman, Yandicoogina, Chichester Range
+        Weld Range | -26.95 | 117.65 | 30 | the Mid West's northern hematite
+        Karara and Koolanooka | -29.15 | 116.45 | 60 | the Mid West's magnetite and hematite
+        Koolyanobbing | -30.82 | 119.53 | 40 | the Yilgarn's banded iron
+        Middleback Ranges | -32.9 | 137.1 | 50 | Iron Knob, Iron Duke
+        Savage River | -41.55 | 145.2 | 20 | Tasmania's magnetite
+        Yampi Sound | -16.15 | 123.7 | 25 | Cockatoo and Koolan islands
+        Carajas | -6.15 | -50.3 | 90 | Serra Norte, Serra Sul (S11D)
+        Quadrilatero Ferrifero | -20.1 | -43.6 | 90 | Itabira, Mariana, Brumadinho
+        Urucum and Mutun | -19.2 | -57.7 | 50 | Corumba, and El Mutun in Bolivia
+        Imataca belt | 7.7 | -63.1 | 80 | Cerro Bolivar, San Isidro, El Pao
+        Chilean Iron Belt | -28.4 | -70.8 | 160 | El Romeral, Los Colorados, Cerro Negro Norte, El Algarrobo
+        Marcona | -15.2 | -75.1 | 35 | Peru's magnetite
+        Sierra Grande | -41.6 | -65.4 | 25 | Argentina's iron
+        Pena Colorada | 19.4 | -104.0 | 30 | Colima's magnetite
+        Las Truchas | 17.95 | -102.2 | 30 | Michoacan's iron
+        Mesabi Range | 47.5 | -92.5 | 80 | Hibbing, Virginia, Eveleth, Babbitt, the Vermilion beside it
+        Cuyuna Range | 46.48 | -93.97 | 25 | Crosby, Ironton
+        Gogebic Range | 46.45 | -90.0 | 40 | Ironwood, Hurley
+        Marquette Range | 46.48 | -87.7 | 40 | Ishpeming, Negaunee
+        Menominee Range | 45.95 | -88.0 | 40 | Iron Mountain, Iron River
+        Birmingham | 33.45 | -86.85 | 40 | Red Mountain's Clinton ironstone
+        Adirondack magnetite | 44.4 | -74.2 | 80 | Mineville, Lyon Mountain, Benson Mines
+        Cornwall | 40.27 | -76.41 | 20 | Pennsylvania's magnetite
+        Iron Springs | 37.7 | -113.4 | 30 | Utah's Iron County
+        Eagle Mountain | 33.86 | -115.5 | 20 | California's iron
+        Labrador Trough, south | 52.8 | -67.1 | 90 | Labrador City, Wabush, Mont-Wright, Fire Lake, Bloom Lake
+        Labrador Trough, Schefferville | 54.8 | -66.8 | 80 | the Knob Lake ranges
+        Labrador Trough, north | 56.5 | -68.8 | 100 | Lac Otelnuk, Hayot Lake, Sunny Lake
+        Mary River | 71.3 | -79.3 | 40 | Baffin Island's hematite
+        Steep Rock | 48.78 | -91.6 | 25 | Atikokan
+        Algoma | 48.0 | -84.8 | 25 | Wawa's Helen and MacLeod mines
+        Wabana | 47.63 | -52.97 | 20 | Bell Island's Ordovician ironstone
+        Kiruna | 67.8 | 20.4 | 45 | Kiirunavaara, Svappavaara
+        Malmberget | 67.18 | 20.68 | 25 | Gallivare
+        Bergslagen | 60.0 | 15.3 | 90 | Grangesberg, Striberg, Blotberget
+        Dannemora | 60.2 | 17.86 | 20 | Uppland's iron
+        Sydvaranger | 69.65 | 30.0 | 25 | Kirkenes
+        Dunderland | 66.45 | 14.9 | 20 | Mo i Rana's iron
+        Lorraine minette | 49.35 | 6.0 | 50 | Briey, Longwy, Thionville, Luxembourg's Minette
+        Cleveland ironstone | 54.5 | -1.0 | 25 | Eston, Skelton
+        Northamptonshire ironstone | 52.45 | -0.7 | 35 | Corby, Kettering
+        West Cumberland and Furness | 54.35 | -3.4 | 30 | Egremont, Millom haematite
+        Salzgitter-Peine | 52.15 | 10.35 | 30 | Lower Saxony's iron
+        Erzberg | 47.52 | 14.9 | 20 | Styria's siderite
+        Biscay | 43.25 | -3.0 | 30 | Bilbao's iron
+        Kryvbas | 47.9 | 33.4 | 50 | Kryvyi Rih
+        Kremenchuk | 49.05 | 33.6 | 25 | Horishni Plavni
+        Kerch | 45.35 | 36.3 | 25 | the Kerch ironstone
+        Kursk Magnetic Anomaly | 51.6 | 36.8 | 130 | Mikhailovsky, Lebedinsky, Stoilensky
+        Kostomuksha | 64.58 | 30.6 | 25 | Karelia's iron
+        Olenegorsk | 68.1 | 33.2 | 30 | the Kola's banded iron
+        Kovdor | 67.56 | 30.47 | 20 | the Kola's magnetite
+        Kachkanar | 58.7 | 59.5 | 30 | the Urals' titanomagnetite
+        Magnitogorsk | 53.4 | 59.05 | 20 | Magnitnaya
+        Nizhny Tagil | 57.9 | 59.95 | 25 | Vysokogorsky, Goroblagodatsky
+        Bakal | 54.95 | 58.8 | 20 | the Urals' siderite
+        Sokolov-Sarbai | 52.95 | 63.1 | 60 | Rudny, Lisakovsk, Kachar
+        Gornaya Shoriya | 52.8 | 87.9 | 40 | Tashtagol, Sheregesh
+        Angara-Ilim | 56.6 | 104.0 | 70 | Korshunovsky, Rudnogorsky
+        South Aldan | 57.0 | 124.5 | 60 | Taezhnoe, Desovskoe
+        Divrigi | 39.37 | 38.1 | 25 | Turkey's iron
+        Bafq | 31.8 | 55.4 | 70 | Chadormalu, Choghart, Sechahun
+        Gol-e-Gohar | 29.1 | 55.3 | 30 | Sirjan
+        Sangan | 34.4 | 60.3 | 25 | Khorasan's iron
+        Hajigak | 34.65 | 68.1 | 25 | Afghanistan's iron
+        Anshan-Benxi | 41.15 | 123.3 | 70 | Anshan, Gongchangling, Benxi
+        East Hebei | 40.0 | 118.7 | 60 | Qian'an, Luanzhou, Qianxi
+        Handan-Xingtai | 36.7 | 114.2 | 50 | Hebei's skarn iron
+        Panzhihua-Xichang | 26.9 | 101.9 | 80 | Panzhihua, Hongge, Baima
+        Bayan Obo | 41.8 | 109.97 | 25 | Inner Mongolia's iron and rare earths
+        Ningwu-Luzong | 31.7 | 118.5 | 50 | Ma'anshan, Gushan, Luzong
+        Daye | 30.1 | 114.95 | 30 | Hubei's skarn iron
+        Shilu | 19.25 | 109.05 | 20 | Hainan's hematite
+        Jingtieshan | 39.2 | 97.9 | 25 | Gansu's iron
+        Musan | 42.23 | 129.2 | 25 | North Korea's magnetite
+        Singhbhum-Keonjhar | 22.0 | 85.4 | 80 | Noamundi, Barbil, Joda, Kiriburu, Gua
+        Bailadila | 18.7 | 81.2 | 35 | Chhattisgarh's hematite
+        Dalli-Rajhara | 20.58 | 81.08 | 25 | Bhilai's ore
+        Bellary-Hospet | 15.1 | 76.5 | 60 | Sandur
+        Goa | 15.4 | 74.1 | 45 | Goa's iron
+        Kudremukh | 13.2 | 75.25 | 25 | Karnataka's magnetite
+        Thach Khe | 18.4 | 105.85 | 20 | Vietnam's iron
+        Sishen-Postmasburg | -28.0 | 23.0 | 70 | Sishen, Kolomela, Beeshoek, Khumani
+        Thabazimbi | -24.6 | 27.4 | 25 | Limpopo's hematite
+        Simandou | 8.6 | -8.95 | 60 | Guinea's hematite
+        Nimba | 7.55 | -8.45 | 35 | Guinea and Liberia
+        Bong | 6.82 | -10.3 | 25 | Liberia's iron
+        Marampa | 8.7 | -12.45 | 25 | Sierra Leone's hematite
+        Tonkolili | 9.0 | -11.55 | 30 | Sierra Leone's magnetite
+        Kediet ej Jill | 22.7 | -12.4 | 60 | Zouerat, Guelb el Rhein, M'Haoudat
+        Gara Djebilet | 26.75 | -7.45 | 35 | Algeria's oolitic iron
+        Ouenza and Boukhadra | 35.95 | 8.1 | 30 | Algeria's iron
+        Mbalam-Nabeba | 2.2 | 13.9 | 50 | Cameroon and the Congo
+        Belinga | 1.1 | 13.2 | 30 | Gabon's iron
+        Itakpe | 7.6 | 6.3 | 25 | Nigeria's iron
+        """;
+
+    /** A recorded iron district: its name, its centre, its radius in km and what it holds. */
+    public record District(String name, double lat, double lon, double radiusKm, String what) { }
+
+    /** The recorded iron districts, parsed, in their rows' order (districtAt() returns an index into it). */
+    public static final List<District> DISTRICTS = parseDistricts();
+
+    private static List<District> parseDistricts() {
+        java.util.ArrayList<District> out = new java.util.ArrayList<>();
+        for (String line : DISTRICT_HAND.split("\n")) {
+            if (line.isBlank()) continue;
+            String[] f = line.split("\\|", -1);
+            if (f.length != 5) throw new IllegalStateException("Geology.DISTRICT_HAND: " + line);
+            District d = new District(f[0].trim(), Double.parseDouble(f[1].trim()), Double.parseDouble(f[2].trim()), Double.parseDouble(f[3].trim()), f[4].trim());
+            if (d.radiusKm() < 20 || Math.abs(d.lat()) > 90 || Math.abs(d.lon()) > 180) throw new IllegalStateException("Geology.DISTRICT_HAND: " + line);
+            out.add(d);
+        }
+        return Collections.unmodifiableList(out);
+    }
+
+    /* =====================================================================
+       THE RASTER PATCHES (0.8.12, batch EG1; spec-earth2-terrain 8.2)
+
+       The USGS provinces are rasterised at 0.25 degree, and a coalfield can
+       fall in the wrong province's cells. A row: its name, the box (south and
+       north latitudes, west and east longitudes) in which the province under
+       a point is the code's instead, the code and why. provinceAt() holds the
+       patch, so every reader of a province sees it; EarthData.provinceAt()
+       stays the raw grid.
+       ===================================================================== */
+
+    /** The patches over the province grid, a row each: name | south | north | west | east | code | why. */
+    static final String PATCH_HAND = """
+        Sydney coalfield | 46.05 | 46.35 | -60.45 | -59.75 | 5220 | the onshore Sydney coalfield (Glace Bay, New Waterford, Sydney Mines, Donkin), rasterised into the Appalachian Foldbelt (5219); it belongs to the Sidney Basin, whose raster cells are all sea (spec-earth2-terrain 8.2)
+        """;
+
+    /** A patch: the box in which the province is the code's. */
+    public record Patch(String name, double lat0, double lat1, double lon0, double lon1, String code, String why) { }
+
+    /** The patches, parsed, in their rows' order. */
+    public static final List<Patch> PATCHES = parsePatches();
+
+    private static List<Patch> parsePatches() {
+        java.util.ArrayList<Patch> out = new java.util.ArrayList<>();
+        for (String line : PATCH_HAND.split("\n")) {
+            if (line.isBlank()) continue;
+            String[] f = line.split("\\|", -1);
+            if (f.length != 7) throw new IllegalStateException("Geology.PATCH_HAND: " + line);
+            out.add(new Patch(f[0].trim(), Double.parseDouble(f[1].trim()), Double.parseDouble(f[2].trim()), Double.parseDouble(f[3].trim()),
+                    Double.parseDouble(f[4].trim()), f[5].trim(), f[6].trim()));
+        }
+        return Collections.unmodifiableList(out);
+    }
+
+    /* =====================================================================
        THE WEIGHTS AND ODDS, read
        ===================================================================== */
 
@@ -503,7 +787,7 @@ public final class Geology {
         }
     }
 
-    /** Oil's petroleum factor for a province's known petroleum, MMBOE: 1 + log10(1 + known / OIL_SCALE_MMBOE). */
+    /** E3's oil petroleum factor for a province's known petroleum, MMBOE: 1 + log10(1 + known / OIL_SCALE_MMBOE). The study's replay (EarthTerrainCheck 11 and 13); the model's oil follows KNOWN_MEAN since EG1. */
     public static double petroleumFactor(double knownMmboe) {
         return 1 + StrictMath.log10(1 + Math.max(0, knownMmboe) / OIL_SCALE_MMBOE);
     }
@@ -537,6 +821,106 @@ public final class Geology {
     }
 
     /* =====================================================================
+       THE DISTRICTS, LOOKED UP (0.8.12, batch EG1)
+
+       A point is in a district when its angle from the district's centre,
+       on the unit sphere, is under radius / EarthProj.RADIUS_M: the dot
+       product of the two unit vectors over the cosine of that angle. The
+       districts are binned by 1-degree cells, every bin a district's disc
+       touches (its latitude band exactly, its longitude band by the
+       convergence of the meridians: asin(sin(angle) / cos(latitude)), all
+       the way round where the disc takes in a pole, a margin on both), so a
+       point tests only the districts in its own bin - most land none. All
+       StrictMath: the same answer on every machine.
+       ===================================================================== */
+
+    /** The margin a district's bins are widened by, in degrees: a hundredth, so a point on a disc's edge is never missed for rounding. */
+    private static final double DISTRICT_BIN_MARGIN = 0.01;
+
+    /** Each district's centre as a unit vector, and the cosine of its angular radius. */
+    private static final double[] DIST_X, DIST_Y, DIST_Z, DIST_COS;
+
+    /** The districts each 1-degree bin holds (row 90 + latitude's floor, column 180 + longitude's floor, row x 360 + column), null for a bin that holds none. */
+    private static final int[][] DISTRICT_BINS;
+
+    static {
+        int n = DISTRICTS.size();
+        DIST_X = new double[n];
+        DIST_Y = new double[n];
+        DIST_Z = new double[n];
+        DIST_COS = new double[n];
+        java.util.Map<Integer, java.util.List<Integer>> bins = new java.util.HashMap<>();
+        for (int i = 0; i < n; i++) {
+            District d = DISTRICTS.get(i);
+            double lat = StrictMath.toRadians(d.lat()), lon = StrictMath.toRadians(d.lon());
+            DIST_X[i] = StrictMath.cos(lat) * StrictMath.cos(lon);
+            DIST_Y[i] = StrictMath.cos(lat) * StrictMath.sin(lon);
+            DIST_Z[i] = StrictMath.sin(lat);
+            double angle = d.radiusKm() * 1000 / EarthProj.RADIUS_M;
+            DIST_COS[i] = StrictMath.cos(angle);
+            double reach = StrictMath.toDegrees(angle) + DISTRICT_BIN_MARGIN;
+            int b0 = (int) Math.max(0, StrictMath.floor(d.lat() - reach + 90)), b1 = (int) Math.min(179, StrictMath.floor(d.lat() + reach + 90));
+            boolean pole = Math.abs(d.lat()) + reach >= 90;
+            double span = pole ? 180 : StrictMath.toDegrees(StrictMath.asin(Math.min(1, StrictMath.sin(angle) / StrictMath.cos(lat)))) + DISTRICT_BIN_MARGIN;
+            int c0 = (int) StrictMath.floor(d.lon() - span + 180), c1 = (int) StrictMath.floor(d.lon() + span + 180);
+            int width = Math.min(360, c1 - c0 + 1);
+            for (int b = b0; b <= b1; b++) {
+                for (int k = 0; k < width; k++) {
+                    int c = Math.floorMod(c0 + k, 360);
+                    bins.computeIfAbsent(b * 360 + c, key -> new java.util.ArrayList<>()).add(i);
+                }
+            }
+        }
+        DISTRICT_BINS = new int[180 * 360][];
+        for (java.util.Map.Entry<Integer, java.util.List<Integer>> e : bins.entrySet()) {
+            DISTRICT_BINS[e.getKey()] = e.getValue().stream().mapToInt(Integer::intValue).toArray();
+        }
+    }
+
+    /** The first district the point is in, its index in DISTRICTS, or -1 for none (EG1): a bin read, and a test of the few districts the bin holds. */
+    public int districtAt(double lat, double lon) {
+        int b = (int) Math.min(179, Math.max(0, StrictMath.floor(lat + 90)));
+        double t = (lon + 180) % 360;
+        if (t < 0) t += 360;
+        int[] near = DISTRICT_BINS[b * 360 + (int) Math.min(359, StrictMath.floor(t))];
+        if (near == null) return -1;
+        double la = StrictMath.toRadians(lat), lo = StrictMath.toRadians(lon);
+        double cl = StrictMath.cos(la), x = cl * StrictMath.cos(lo), y = cl * StrictMath.sin(lo), z = StrictMath.sin(la);
+        for (int i : near) if (x * DIST_X[i] + y * DIST_Y[i] + z * DIST_Z[i] >= DIST_COS[i]) return i;
+        return -1;
+    }
+
+    /* =====================================================================
+       THE PATCHES, LOOKED UP (0.8.12, batch EG1)
+       ===================================================================== */
+
+    /** Each patch's box as {south, north, west, east}, in PATCHES' order. */
+    private static final double[][] PATCH_BOX = patchBoxes();
+
+    /** ...and the box that holds them all, {south, north, west, east}: the cheap test provinceAt() makes first. */
+    private static final double[] PATCH_ALL = patchAll();
+
+    private static double[][] patchBoxes() {
+        double[][] out = new double[PATCHES.size()][];
+        for (int i = 0; i < out.length; i++) {
+            Patch p = PATCHES.get(i);
+            out[i] = new double[] { p.lat0(), p.lat1(), p.lon0(), p.lon1() };
+        }
+        return out;
+    }
+
+    private static double[] patchAll() {
+        double[] all = { Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE };
+        for (double[] b : PATCH_BOX) {
+            all[0] = Math.min(all[0], b[0]);
+            all[1] = Math.max(all[1], b[1]);
+            all[2] = Math.min(all[2], b[2]);
+            all[3] = Math.max(all[3], b[3]);
+        }
+        return all;
+    }
+
+    /* =====================================================================
        ONE DATA FILE'S GEOLOGY: its provinces' classes and the grid
        ===================================================================== */
 
@@ -548,12 +932,22 @@ public final class Geology {
     private final int cpd;
     /** Each province's class (row 0, no province, other), and its class by the rules alone. */
     private final Kind[] kinds, rules;
-    /** Each province's petroleum factor. */
+    /** Each province's E3 petroleum factor, of the file's own known petroleum: the study's figure, kept for EarthTerrainCheck's replay - the model's oil no longer reads it (EG1). */
     private final double[] petroleum;
-    /** Each resource's multiplier for each province, w x Z (x the petroleum factor for oil), by Resource's ordinal. */
+    /** Each resource's weight for each province, before Z, by Resource's ordinal: the class's, except oil's and iron's by EG1's rules (weightOf()). */
+    private final double[][] weights;
+    /** Each resource's multiplier for each province, weight x Z, by Resource's ordinal. */
     private final double[][] multipliers;
+    /** The USGS codes of the data's provinces, in the order of their first rows; each row's code's index in them (-1 for row 0); each code's area on the sphere in km2 (the geology grid's cells, land and sea, all latitudes) and known petroleum in MMBOE (the file's, else the KNOWN table's). */
+    private final String[] codes;
+    private final int[] codeOf;
+    private final double[] codeArea, codeKnown;
+    /** The Earth's known petroleum a km2 of its provinces: every code's known added over every code's area added, north of ANTARCTIC_LAT (the cells whose centre is). */
+    private final double knownMean;
+    /** Each patch's province: the lowest row with its code. */
+    private final int[] patchRow;
 
-    /** The geology of a data file, made once a reader: its classes the rules' with the hand table over them. Refused where a hand row's province is not the data's. */
+    /** The geology of a data file, made once a reader: its classes the rules' with the hand table over them. Refused where a hand row's province is not the data's, a KNOWN row's province is missing, differently named or already holds a figure, or a patch's code is not the data's. */
     public static Geology of(EarthData d) {
         synchronized (OF) {
             return OF.computeIfAbsent(d, Geology::new);
@@ -586,11 +980,68 @@ public final class Geology {
                         + (p == null ? "missing" : p.code() + " " + p.name() + " (" + p.kind() + ")") + ": the table was checked against earth-1");
             kinds[h.row()] = h.kind();
         }
+        // The codes, each province's code, and the known petroleum a code: the file's figure (the rows of a code repeat it), else the KNOWN table's.
+        java.util.Map<String, Integer> index = new java.util.LinkedHashMap<>();
+        codeOf = new int[n];
+        java.util.Arrays.fill(codeOf, -1);
+        for (EarthData.Province p : ps) {
+            Integer at = index.get(p.code());
+            if (at == null) {
+                at = index.size();
+                index.put(p.code(), at);
+            }
+            codeOf[p.row()] = at;
+        }
+        codes = index.keySet().toArray(new String[0]);
+        codeKnown = new double[codes.length];
+        for (EarthData.Province p : ps) codeKnown[codeOf[p.row()]] = Math.max(codeKnown[codeOf[p.row()]], p.knownMmboe());
+        for (Known k : KNOWN) {
+            Integer at = index.get(k.code());
+            if (at == null) throw new IllegalStateException("Geology.KNOWN_HAND: " + k.code() + " " + k.name() + " is not a province of the data: the table was checked against earth-1");
+            for (EarthData.Province p : ps) {
+                if (p.code().equals(k.code()) && !p.name().trim().equals(k.name()))
+                    throw new IllegalStateException("Geology.KNOWN_HAND: " + k.code() + " is " + k.name() + " and the data's row " + p.row() + " is " + p.name().trim() + ": the table was checked against earth-1");
+            }
+            if (codeKnown[at] != 0)
+                throw new IllegalStateException("Geology.KNOWN_HAND: " + k.code() + " " + k.name() + " is " + codeKnown[at] + " MMBOE in the data: the table fills only what the file holds none of");
+            codeKnown[at] = k.mmboe();
+        }
+        // The patches: the lowest row of each one's code.
+        patchRow = new int[PATCHES.size()];
+        for (int i = 0; i < patchRow.length; i++) {
+            Patch patch = PATCHES.get(i);
+            for (EarthData.Province p : ps) {
+                if (p.code().equals(patch.code())) {
+                    patchRow[i] = p.row();
+                    break;
+                }
+            }
+            if (patchRow[i] == 0) throw new IllegalStateException("Geology.PATCH_HAND: " + patch.name() + " names " + patch.code() + ", which is not a province of the data");
+        }
+        // Each code's area on the sphere, the geology grid's cells under provinceAt() (the patches in), and the mean.
+        codeArea = new double[codes.length];
+        double r2 = EarthProj.RADIUS_M / 1000 * (EarthProj.RADIUS_M / 1000), dLon = StrictMath.toRadians(1.0 / cpd), north = 0;
+        for (int g = 0; g < 180 * cpd; g++) {
+            double lat1 = 90 - g / (double) cpd, lat0 = lat1 - 1.0 / cpd, lat = (lat0 + lat1) / 2;
+            double area = r2 * dLon * (StrictMath.sin(StrictMath.toRadians(lat1)) - StrictMath.sin(StrictMath.toRadians(lat0)));
+            boolean counted = lat >= ANTARCTIC_LAT;
+            for (int c = 0; c < 360 * cpd; c++) {
+                int row = provinceAt(lat, -180 + (c + 0.5) / cpd);
+                if (row <= 0 || row >= n || codeOf[row] < 0) continue;
+                codeArea[codeOf[row]] += area;
+                if (counted) north += area;
+            }
+        }
+        double known = 0;
+        for (double k : codeKnown) known += k;
+        knownMean = north > 0 ? known / north : 0;
         Resource[] all = Resource.values();
+        weights = new double[all.length][n];
         multipliers = new double[all.length][n];
         for (Resource r : all) {
             for (int row = 0; row < n; row++) {
-                multipliers[r.ordinal()][row] = weight(r, kinds[row]) * z(r) * (r == Resource.OIL ? petroleum[row] : 1);
+                weights[r.ordinal()][row] = r == Resource.OIL ? oilWeight(row) : r == Resource.IRON ? ironWeight(kinds[row]) : weight(r, kinds[row]);
+                multipliers[r.ordinal()][row] = weights[r.ordinal()][row] * z(r);
             }
         }
     }
@@ -601,8 +1052,19 @@ public final class Geology {
     /** The rows a province can have: one past the highest. */
     public int rows() { return kinds.length; }
 
-    /** The province at a point, its row in the data's table; 0 for none (EarthData.provinceAt()'s rule, on the grid in hand). */
+    /**
+     * The province at a point, its row in the data's table; 0 for none:
+     * EarthData.provinceAt()'s rule on the grid in hand, except inside a
+     * patch's box (PATCHES), where it is the patch's province (EG1). Every
+     * reader of a province in the model asks this one.
+     */
     public int provinceAt(double lat, double lon) {
+        if (lat >= PATCH_ALL[0] && lat < PATCH_ALL[1] && lon >= PATCH_ALL[2] && lon < PATCH_ALL[3]) {
+            for (int i = 0; i < PATCH_BOX.length; i++) {
+                double[] b = PATCH_BOX[i];
+                if (lat >= b[0] && lat < b[1] && lon >= b[2] && lon < b[3]) return patchRow[i];
+            }
+        }
         long g = Math.min(180L * cpd - 1, Math.max(0, (long) StrictMath.floor((90 - lat) * cpd)));
         double t = (lon + 180) % 360;
         if (t < 0) t += 360;
@@ -618,13 +1080,59 @@ public final class Geology {
     /** A province's class by geology.py's rules alone, as the data carries it. */
     public Kind rulesKindOf(int row) { return row > 0 && row < rules.length ? rules[row] : Kind.OTHER; }
 
-    /** A province's petroleum factor (petroleumFactor() of its known petroleum); 1 for none. */
+    /** A province's E3 petroleum factor (petroleumFactor() of the file's known petroleum); 1 for none. The study's figure; since EG1 the model's oil does not read it. */
     public double petroleumOf(int row) { return row > 0 && row < petroleum.length ? petroleum[row] : 1; }
 
-    /** What a province does to a resource's density: w x Z, and for oil x its petroleum factor - the spot's multiplier the founding card is to name (E4). One for forest. */
-    public double multiplier(Resource r, int row) {
-        return row >= 0 && row < kinds.length ? multipliers[r.ordinal()][row] : weight(r, Kind.OTHER) * z(r);
+    /* ----- EG1: the weights of a row ----- */
+
+    /** Iron's weight in a class (EG1): a shield's W_IRON, four, and IRON_ALLOWANCE of the class's elsewhere - so a fold belt's tenth, a basin's twentieth, a shelf's none. */
+    static double ironWeight(Kind k) {
+        return k == Kind.SHIELD ? W_IRON[Kind.SHIELD.ordinal()] : IRON_ALLOWANCE * W_IRON[k.ordinal()];
     }
+
+    /** A province's oil weight (EG1): OIL_ALLOWANCE x its class's W_OIL plus its known petroleum a km2 over the Earth's (KNOWN_MEAN), the density of its whole USGS code, land and sea. */
+    private double oilWeight(int row) {
+        int c = row > 0 && row < codeOf.length ? codeOf[row] : -1;
+        double density = c < 0 || codeArea[c] <= 0 || knownMean <= 0 ? 0 : codeKnown[c] / codeArea[c] / knownMean;
+        return OIL_ALLOWANCE * W_OIL[kindOf(row).ordinal()] + density;
+    }
+
+    /** A resource's weight for a province before Z (EG1): oil's by its known petroleum, iron's a shield's four or an allowance, the other fields' their class's (weight()); one for forest. A row the table lacks takes other's. */
+    public double weightOf(Resource r, int row) {
+        if (row >= 0 && row < kinds.length) return weights[r.ordinal()][row];
+        switch (r) {
+            case OIL:  return OIL_ALLOWANCE * W_OIL[Kind.OTHER.ordinal()];
+            case IRON: return ironWeight(Kind.OTHER);
+            default:   return weight(r, Kind.OTHER);
+        }
+    }
+
+    /** What a province does to a resource's density: its weight x Z (weightOf() x Z) - the multiplier the founding card names. One for forest. A district is not in it: multiplierAt() has the point. */
+    public double multiplier(Resource r, int row) {
+        return row >= 0 && row < kinds.length ? multipliers[r.ordinal()][row] : weightOf(r, row) * z(r);
+    }
+
+    /** What the ground at a point does to a resource's density (EG1): its province's multiplier, and for iron inside a recorded district (districtAt()) IRON_DISTRICT_WEIGHT x Z_IRON where that is the greater. */
+    public double multiplierAt(Resource r, int row, double lat, double lon) {
+        double m = multiplier(r, row);
+        if (r == Resource.IRON && districtAt(lat, lon) >= 0) m = Math.max(m, IRON_DISTRICT_WEIGHT * Z_IRON);
+        return m;
+    }
+
+    /** A USGS code's area on the sphere, km2: the geology grid's cells under provinceAt() (the patches in), land and sea, all latitudes, every row of the code added; 0 for a code the data lacks (EG1). */
+    public double area(String code) {
+        for (int i = 0; i < codes.length; i++) if (codes[i].equals(code)) return codeArea[i];
+        return 0;
+    }
+
+    /** A USGS code's known petroleum, MMBOE: the file's figure, or the KNOWN table's where the file holds none (the rows of a code repeat the file's figure, so it is taken once); 0 for a code the data lacks (EG1). */
+    public double known(String code) {
+        for (int i = 0; i < codes.length; i++) if (codes[i].equals(code)) return codeKnown[i];
+        return 0;
+    }
+
+    /** The Earth's known petroleum a km2 of its provinces, MMBOE: every code's known over every code's area, north of ANTARCTIC_LAT (EG1). A province's oil weight is its own density over this, plus its allowance. */
+    public double knownMean() { return knownMean; }
 
     /** Whether a province's sea holds oil (seaHoldsOil() of its class). */
     public boolean seaHoldsOil(int row) { return seaHoldsOil(kindOf(row)); }
@@ -636,11 +1144,12 @@ public final class Geology {
     /**
      * Every 4' cell of the far layers, its area on the sphere: the land
      * (dry and lake) and the sea in each province, km2, north of
-     * ANTARCTIC_LAT and in all; by row. What Z, the odds and the class
-     * shares are worked out from (zOf(), oddsFor()) - about half a second
-     * on the full file.
+     * ANTARCTIC_LAT and in all; by row, and (EG1) the land north of
+     * ANTARCTIC_LAT inside a recorded iron district (landIn). What Z, the
+     * odds and the class shares are worked out from (zOf(), oddsFor()) -
+     * about half a second on the full file.
      */
-    public record Measure(double[] land, double[] sea, double[] landAll) {
+    public record Measure(double[] land, double[] sea, double[] landAll, double[] landIn) {
 
         /** The land north of ANTARCTIC_LAT, km2. */
         public double totalLand() {
@@ -663,7 +1172,43 @@ public final class Geology {
             return out;
         }
 
-        /** A resource's Z with the classes `kinds` gives each row and the petroleum factors `petroleum` (oil's): the land over the land x w (x the factor), north of ANTARCTIC_LAT. */
+        /** The land north of ANTARCTIC_LAT inside a recorded iron district (EG1), km2. */
+        public double districtLand() {
+            double s = 0;
+            for (double v : landIn) s += v;
+            return s;
+        }
+
+        /**
+         * A resource's Z with the weights Geology g gives (EG1): the land over
+         * the land x its weight, each 4' cell by its centre's province (patches
+         * in) and, for iron, its district: IRON_DISTRICT_WEIGHT where that
+         * outweighs the province's, north of ANTARCTIC_LAT. Oil's weight is
+         * the land's alone; its offshore sea is on top (offshoreOil()).
+         */
+        public double zOf(Resource r, Geology g) {
+            double all = 0, weighted = 0;
+            for (int row = 0; row < land.length; row++) {
+                double w = g.weightOf(r, row);
+                all += land[row];
+                if (r == Resource.IRON) weighted += (land[row] - landIn[row]) * w + landIn[row] * Math.max(w, IRON_DISTRICT_WEIGHT);
+                else weighted += land[row] * w;
+            }
+            return all / weighted;
+        }
+
+        /** Oil's offshore area against its land's, both x its weight in Geology g (EG1): what the sea of shelves, basins and rifts adds to the land's count. */
+        public double offshoreOil(Geology g) {
+            double onLand = 0, atSea = 0;
+            for (int row = 0; row < land.length; row++) {
+                double w = g.weightOf(Resource.OIL, row);
+                onLand += land[row] * w;
+                if (g.seaHoldsOil(row)) atSea += sea[row] * w;
+            }
+            return atSea / onLand;
+        }
+
+        /** E3's Z with the classes `kinds` gives each row and the petroleum factors `petroleum` (oil's): the land over the land x w (x the factor), north of ANTARCTIC_LAT. The study's replay; the model's Z is zOf(r, g) since EG1. */
         public double zOf(Resource r, Kind[] kinds, double[] petroleum) {
             double all = 0, weighted = 0;
             for (int row = 0; row < land.length; row++) {
@@ -673,7 +1218,7 @@ public final class Geology {
             return all / weighted;
         }
 
-        /** Oil's offshore area against its land's, both x w x the petroleum factor: what the sea of shelves, basins and rifts adds to the land's count. */
+        /** E3's oil offshore area against its land's, both x w x the petroleum factor: what the sea of shelves, basins and rifts adds to the land's count. The study's replay; the model's is offshoreOil(g) since EG1. */
         public double offshoreOil(Kind[] kinds, double[] petroleum) {
             double onLand = 0, atSea = 0;
             for (int row = 0; row < land.length; row++) {
@@ -723,11 +1268,11 @@ public final class Geology {
     /** Its petroleum factors by row (a copy). */
     public double[] petroleum() { return petroleum.clone(); }
 
-    /** Measures the planet on its data (Measure): every 4' cell of far.land and far.lake, its centre's province, its area on the sphere at EarthProj.RADIUS_M. */
+    /** Measures the planet on its data (Measure): every 4' cell of far.land and far.lake, its centre's province (provinceAt(), the patches in) and, on land, its district, its area on the sphere at EarthProj.RADIUS_M. */
     public Measure measure() {
         EarthData.Layer farLand = data.layer("far.land");
         int fcpd = farLand.cellsPerDegree, cols = 360 * fcpd, n = kinds.length;
-        double[] land = new double[n], sea = new double[n], landAll = new double[n];
+        double[] land = new double[n], sea = new double[n], landAll = new double[n], landIn = new double[n];
         double r2 = EarthProj.RADIUS_M / 1000 * (EarthProj.RADIUS_M / 1000);
         for (int b = 0; b < 180; b++) {
             byte[] dry = data.grid("far.land", b), lake = data.grid("far.lake", b);
@@ -743,9 +1288,10 @@ public final class Geology {
                     if (!counted) continue;
                     land[row] += l;
                     sea[row] += s;
+                    if (l > 0 && districtAt(lat, -180 + (c + 0.5) / fcpd) >= 0) landIn[row] += l;
                 }
             }
         }
-        return new Measure(land, sea, landAll);
+        return new Measure(land, sea, landAll, landIn);
     }
 }

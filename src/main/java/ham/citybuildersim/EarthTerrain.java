@@ -94,6 +94,12 @@ import java.util.Map;
  * founding is the snap (spec-earth 2): from the spot, the projection's
  * centre, the nearest plot, ring by ring of one plot, that passes the
  * founding's test 1 (World.SITE_DRY_PLOTS); there is no founding river.
+ * Since 0.8.12 (batch EG1; spec-earth2-terrain 8.5) the pass reads the point
+ * through PointWeights, so iron's weight is the point's (a recorded iron
+ * district, Geology.multiplierAt()) and World can draw a cluster's centre among
+ * a cell's 16 points by the same weights (pointFieldWeights()) and keep a
+ * centre or a field only on ground that holds its resource (fieldGround()):
+ * a cluster stays in its province's own cells.
  *
  * WHICH DATA. A world's key names its data by identity (EarthData.identity(),
  * "earth-1:<hash>"); a harness registers its EarthData with use(), and the
@@ -1997,10 +2003,14 @@ public final class EarthTerrain {
      *
      * Since 0.7.117 (batch E3) each point also reads its province
      * (Geology): a resource's FIELD LAND is the points' land times the
-     * province's multiplier (Geology.multiplier(): w x Z, and oil's
-     * petroleum factor), oil's with the sea of a shelf, basin or rift
-     * province too - what World.countOf() draws an Earth cell's fields on,
-     * so a cell across two provinces takes each its share (spec-earth 4).
+     * province's multiplier (Geology.multiplier(): the weight x Z), oil's
+     * with the sea of a shelf, basin or rift province too - what
+     * World.countOf() draws an Earth cell's fields on, so a cell across two
+     * provinces takes each its share (spec-earth 4). Since 0.8.12 (batch EG1)
+     * iron's multiplier is the point's (Geology.multiplierAt(): a recorded
+     * iron district lifts it), and the per-point arithmetic is
+     * PointWeights.of(), which pointFieldWeights() reads too, so the two
+     * cannot disagree.
      */
     public void cellsPass() {
         long t0 = System.nanoTime();
@@ -2009,22 +2019,12 @@ public final class EarthTerrain {
         Geology geo = geology();
         Resource[] kinds = Resource.values();
         float[][] fields = new float[kinds.length][];
-        double[][] mult = new double[kinds.length][];
-        for (Resource r : kinds) {
-            if (!r.inFields()) continue;
-            fields[r.ordinal()] = new float[n];
-            mult[r.ordinal()] = new double[geo.rows()];
-            for (int row = 0; row < geo.rows(); row++) mult[r.ordinal()][row] = geo.multiplier(r, row);
-        }
-        boolean[] seaOil = new boolean[geo.rows()];
-        for (int row = 0; row < geo.rows(); row++) seaOil[row] = geo.seaHoldsOil(row);
+        for (Resource r : kinds) if (r.inFields()) fields[r.ordinal()] = new float[n];
+        PointWeights pw = pointWeights();
         double[] sum = new double[kinds.length];
-        int oil = Resource.OIL.ordinal();
-        EarthData.Layer farLand = data.layer("far.land"), farLake = data.layer("far.lake"), cover = data.layer("landcover");
-        int fcpd = farLand.cellsPerDegree, ccpd = cover.cellsPerDegree, fcols = 360 * fcpd;
-        byte[][] landBands = new byte[180][], lakeBands = new byte[180][];
-        int[] landUniform = new int[180], lakeUniform = new int[180];
-        boolean[] bandRead = new boolean[180];
+        EarthData.Layer cover = data.layer("landcover");
+        int ccpd = cover.cellsPerDegree;
+        FarReader far = new FarReader();
         byte[][] covers = new byte[EarthData.TILES][];
         boolean[] coverRead = new boolean[EarthData.TILES];
         double[] ll = new double[2];
@@ -2036,26 +2036,14 @@ public final class EarthTerrain {
             for (int j = 0; j < m; j++) {
                 for (int i = 0; i < m; i++) {
                     if (!b.latLon(x0 + (i + 0.5) * World.CELL / m, y0 + (j + 0.5) * World.CELL / m, ll)) continue;
-                    long r = Math.min(180L * fcpd - 1, Math.max(0, (long) Math.floor((90 - ll[0]) * fcpd)));
-                    long col = Math.floorMod((long) Math.floor((ll[1] + 180) * fcpd), (long) fcols);
-                    int band = (int) (179 - r / fcpd);
-                    if (!bandRead[band]) {
-                        bandRead[band] = true;
-                        int e = farLand.entries[band];
-                        if (e <= 0) landUniform[band] = -e; else landBands[band] = data.raw("far.land", band);
-                        e = farLake.entries[band];
-                        if (e <= 0) lakeUniform[band] = -e; else lakeBands[band] = data.raw("far.lake", band);
-                    }
-                    int at = (int) ((r % fcpd) * fcols + col);
-                    int dry = landBands[band] == null ? landUniform[band] : landBands[band][at] & 0xFF;
-                    int wet = lakeBands[band] == null ? lakeUniform[band] : lakeBands[band][at] & 0xFF;
+                    far.read(ll[0], ll[1]);
+                    int dry = far.dry, wet = far.wet;
                     double pl = (dry + wet) / (double) EarthData.FAR_LEVELS;
                     l += pl;
                     int row = geo.provinceAt(ll[0], ll[1]);
                     for (int k = 0; k < kinds.length; k++) {
-                        if (mult[k] == null) continue;
-                        double a = k == oil && seaOil[row] ? pl + Math.max(0, EarthData.FAR_LEVELS - dry - wet) / (double) EarthData.FAR_LEVELS : pl;
-                        sum[k] += a * mult[k][row];
+                        if (fields[k] == null) continue;
+                        sum[k] += pw.of(k, row, ll[0], ll[1], pl, dry + wet);
                     }
                     if (dry == 0) continue;
                     long cr = Math.min(180L * ccpd - 1, Math.max(0, (long) Math.floor((90 - ll[0]) * ccpd)));
@@ -2079,14 +2067,142 @@ public final class EarthTerrain {
         cellsMs = (System.nanoTime() - t0) / 1e6;
     }
 
+    /* =====================================================================
+       FIELD LAND AT A POINT (0.8.12, batch EG1; spec-earth2-terrain 8.5)
+
+       The cells pass sums, for each of a cell's 16 points, the point's land
+       (and for oil the sea of a shelf, basin or rift) times the resource's
+       multiplier there. EG1 draws a cluster's centre among those 16 points by
+       the same weights, and keeps a centre and a field only on ground that
+       holds the resource (fieldGround()), so the arithmetic of one point is
+       written once, PointWeights.of(), and the pass and pointFieldWeights()
+       both call it; the reading of the far layers is written once too,
+       FarReader.read().
+       ===================================================================== */
+
+    /** Reads the 4' far layers at a point, keeping the bands it has inflated (a band of a layer is a row of degrees all round the planet): the cells pass's reader, and pointFieldWeights()'s - dry and wet, 0 to FAR_LEVELS each. */
+    private final class FarReader {
+        final EarthData.Layer farLand = data.layer("far.land"), farLake = data.layer("far.lake");
+        final int fcpd = farLand.cellsPerDegree, fcols = 360 * fcpd;
+        final byte[][] landBands = new byte[180][], lakeBands = new byte[180][];
+        final int[] landUniform = new int[180], lakeUniform = new int[180];
+        final boolean[] bandRead = new boolean[180];
+        int dry, wet;
+
+        /** The point's dry land and its lakes, in the layers' levels, left in dry and wet. */
+        void read(double lat, double lon) {
+            long r = Math.min(180L * fcpd - 1, Math.max(0, (long) Math.floor((90 - lat) * fcpd)));
+            long col = Math.floorMod((long) Math.floor((lon + 180) * fcpd), (long) fcols);
+            int band = (int) (179 - r / fcpd);
+            if (!bandRead[band]) {
+                bandRead[band] = true;
+                int e = farLand.entries[band];
+                if (e <= 0) landUniform[band] = -e; else landBands[band] = data.raw("far.land", band);
+                e = farLake.entries[band];
+                if (e <= 0) lakeUniform[band] = -e; else lakeBands[band] = data.raw("far.lake", band);
+            }
+            int at = (int) ((r % fcpd) * fcols + col);
+            dry = landBands[band] == null ? landUniform[band] : landBands[band][at] & 0xFF;
+            wet = lakeBands[band] == null ? lakeUniform[band] : lakeBands[band][at] & 0xFF;
+        }
+    }
+
+    /** What a point contributes to each resource's field land: its land share (and oil's sea share on a province whose sea holds oil) times the multiplier there. Made once a world (pointWeights()). */
+    private static final class PointWeights {
+        private final Geology geo;
+        private final double[][] mult;
+        private final boolean[] seaOil;
+        private final int oil = Resource.OIL.ordinal(), iron = Resource.IRON.ordinal();
+
+        PointWeights(Geology geo) {
+            this.geo = geo;
+            Resource[] kinds = Resource.values();
+            mult = new double[kinds.length][];
+            for (Resource r : kinds) {
+                if (!r.inFields()) continue;
+                mult[r.ordinal()] = new double[geo.rows()];
+                for (int row = 0; row < geo.rows(); row++) mult[r.ordinal()][row] = geo.multiplier(r, row);
+            }
+            seaOil = new boolean[geo.rows()];
+            for (int row = 0; row < geo.rows(); row++) seaOil[row] = geo.seaHoldsOil(row);
+        }
+
+        /** Resource k's weight at a point in province `row`: `pl` the point's land share, `levels` its dry and lake levels added (FAR_LEVELS less them is the sea). */
+        double of(int k, int row, double lat, double lon, double pl, int levels) {
+            double a = k == oil && seaOil[row] ? pl + Math.max(0, EarthData.FAR_LEVELS - levels) / (double) EarthData.FAR_LEVELS : pl;
+            return a * (k == iron ? geo.multiplierAt(Resource.IRON, row, lat, lon) : mult[k][row]);
+        }
+    }
+
+    private volatile PointWeights pointWeights;
+
+    private PointWeights pointWeights() {
+        PointWeights p = pointWeights;
+        if (p == null) {
+            synchronized (this) {
+                if (pointWeights == null) pointWeights = new PointWeights(geology());
+                p = pointWeights;
+            }
+        }
+        return p;
+    }
+
+    /**
+     * The weights a cell's CELL_SAMPLES x CELL_SAMPLES points carry for a
+     * resource (EG1), in the cells pass's order - rows from the north, each
+     * from the west, j x CELL_SAMPLES + i - each the point's land (oil's with
+     * a sea that holds it) times the multiplier there, nought for a point off
+     * the planet: their mean is cellFieldLand(), to its float rounding. What
+     * World draws a cluster's centre by, so it stands where the cell's
+     * province holds the resource.
+     */
+    double[] pointFieldWeights(int cell, Resource r) {
+        int m = CELL_SAMPLES, cells = World.CELLS;
+        double[] out = new double[m * m];
+        if (!r.inFields() || cell < 0 || cell >= cells * cells) return out;
+        Geology geo = geology();
+        PointWeights pw = pointWeights();
+        FarReader far = new FarReader();
+        long x0 = (long) (cell % cells) * World.CELL, y0 = (long) (cell / cells) * World.CELL;
+        EarthProj.Blend b = proj.blend(x0, y0, World.CELL);
+        double[] ll = new double[2];
+        for (int j = 0; j < m; j++) {
+            for (int i = 0; i < m; i++) {
+                if (!b.latLon(x0 + (i + 0.5) * World.CELL / m, y0 + (j + 0.5) * World.CELL / m, ll)) continue;
+                far.read(ll[0], ll[1]);
+                out[j * m + i] = pw.of(r.ordinal(), geo.provinceAt(ll[0], ll[1]), ll[0], ll[1], (far.dry + far.wet) / (double) EarthData.FAR_LEVELS, far.dry + far.wet);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Whether a point (plot coordinates) is ground a resource's fields lie
+     * on (EG1): the province under it (Geology.provinceAt(), the patches in)
+     * gives the resource a multiplier above nought there (Geology.multiplierAt(),
+     * a district's for iron), and the point is land - or, for oil, the sea of
+     * a province whose sea holds oil. A point off the planet holds none. What
+     * World asks before it keeps a cluster's centre or a field's.
+     */
+    boolean fieldGround(Resource r, double x, double y) {
+        double[] ll = scratch().ll;
+        if (!proj.latLonOfPlot(x, y, ll)) return false;
+        Geology geo = geology();
+        double lat = ll[0], lon = ll[1];
+        int row = geo.provinceAt(lat, lon);
+        if (!(geo.multiplierAt(r, row, lat, lon) > 0)) return false;
+        return !seaAt(x, y) || (r == Resource.OIL && geo.seaHoldsOil(row));
+    }
+
     /** The geology of its data (Geology.of()): the provinces, their classes and multipliers. */
     public Geology geology() { return Geology.of(data); }
 
     /**
      * A cell's FIELD LAND for a resource, as a share of its area (0.7.117):
-     * its 16 points' land each times its province's Geology.multiplier(),
-     * oil's with a shelf's, basin's or rift's sea - what today's density is
-     * taken over (World.countOf()). Its land, cellLand(), for forest.
+     * its 16 points' land each times the multiplier there (Geology.multiplier(),
+     * and since EG1 iron's at the point, Geology.multiplierAt()), oil's with a
+     * shelf's, basin's or rift's sea - what today's density is taken over
+     * (World.countOf()). Its land, cellLand(), for forest.
      */
     double cellFieldLand(int cell, Resource r) {
         build();
@@ -2094,7 +2210,7 @@ public final class EarthTerrain {
         return f == null ? cellLand[cell] : f[cell];
     }
 
-    /** The province under a point in plot coordinates, its row in the data; 0 off the planet or in none. */
+    /** The province under a point in plot coordinates, its row in the data; 0 off the planet or in none. Geology.provinceAt()'s, so a patch (EG1) is in. */
     public int provinceAt(double x, double y) {
         double[] ll = new double[2];
         if (!proj.latLonOfPlot(x, y, ll)) return 0;

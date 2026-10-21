@@ -1,0 +1,565 @@
+<title>Central Bank Study</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: the study's boards down one column, each a caption outside and the game's own window inside, drawn in the game's palette (ui/Palette.java), as the City Debt Study's boards are: one dark look on purpose, because it is the game's. Chart series: --s1 the proposal, --s2 its counterpart, both validated against --panel; today's figures are a dashed grey reference line, always labelled. */
+:root{
+  color-scheme:dark;
+  --stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;
+  --edge:#24354a;--control-edge:#33475f;
+  --text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;
+  --good:#3fb950;--warn:#e3b341;--bad:#f85149;
+  --accent:#5aa9ff;--accent-fill:#2f6fa8;--confirm:#2f7d52;
+  --money:#5aa9ff;--money-dark:#2f80d9;--money-light:#a9d1ff;--people:#2ec4b6;--ore:#c9b68f;
+  --s1:#3f8ee6;--s2:#b98a2e;--band:rgba(63,142,230,.20);--ghost:#8496ab;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--stage);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.45}
+.study{max-width:1180px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:56px}
+h1,h2,h3,h4,p{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{display:grid;gap:14px}
+.eyebrow{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)}
+.top h1{font-size:26px;font-weight:600;letter-spacing:-.005em;text-wrap:balance;max-width:40ch}
+.top .lead{font-size:15px;color:var(--text2);max-width:76ch}
+.answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.answer{background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:12px 14px;display:grid;gap:4px;min-width:0}
+.answer .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:600}
+.answer p{font-size:13px;color:var(--text2)}
+.answer b{color:var(--text);font-weight:500}
+.toc{display:flex;flex-wrap:wrap;gap:8px}
+.toc a{font-size:12px;color:var(--accent);text-decoration:none;border:1px solid var(--control-edge);border-radius:6px;padding:5px 10px;background:var(--panel)}
+.toc a:hover{background:var(--hover)}
+
+.board{display:grid;gap:14px;scroll-margin-top:16px}
+.board>header{display:grid;gap:6px;max-width:86ch}
+.board h2{font-size:20px;font-weight:600;text-wrap:balance}
+.board .says{font-size:14px;color:var(--text2)}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 22px;margin-top:4px}
+.notes p{font-size:12.5px;color:var(--text2);padding-left:22px;position:relative}
+.notes p i{position:absolute;left:0;top:1px;font-style:normal;font-family:var(--mono);font-size:10.5px;width:16px;height:16px;border-radius:50%;background:var(--accent-fill);color:var(--text);display:grid;place-items:center}
+.notes b{color:var(--text);font-weight:500}
+
+.frame{background:var(--stage);border:1px solid var(--edge);border-radius:10px;padding:18px;display:grid;gap:14px;overflow:hidden}
+.crumb{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.crumb .sw{width:12px;height:12px;border-radius:3px;background:var(--money)}
+.crumb h3{font-size:20px;font-weight:600}
+.crumb h3 span{color:var(--accent)}
+.crumb .when{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--text3)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.kpi .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:600}
+.kpi .v{font-family:var(--mono);font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi .n{font-size:11px;color:var(--text3)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:inherit;font-size:11.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--control-edge);color:var(--text2);background:var(--panel);cursor:pointer}
+.chip.on{background:var(--accent-fill);border-color:var(--accent);color:var(--text)}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:14px;display:grid;gap:10px;min-width:0;align-content:start}
+.card.raised{background:var(--raised)}
+.cap{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:600;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.cap .hint{letter-spacing:0;text-transform:none;font-weight:400;font-size:11px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px}
+.grid2e{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.muted{color:var(--text3)}
+.big{font-family:var(--mono);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.btn{font:inherit;font-size:12.5px;border-radius:6px;padding:7px 14px;border:1px solid var(--control-edge);background:var(--pinned);color:var(--text);cursor:pointer}
+.btn.go{background:var(--confirm);border-color:var(--confirm);color:#fff}
+.btn.ghost{background:transparent;color:var(--text2)}
+.line{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;padding:4px 0;border-bottom:1px solid rgba(36,53,74,.6)}
+.line:last-child{border-bottom:0}
+.line .mono{white-space:nowrap}
+.line.sub{padding-left:14px;color:var(--text2)}
+.line.total{border-top:1px solid var(--control-edge);border-bottom:0;padding-top:7px;font-weight:600}
+.line.neg .mono{color:var(--text2)}
+.scroll{overflow-x:auto}
+.flag{font-size:12px;padding:8px 10px;border-radius:6px;background:var(--raised);border:1px solid var(--edge);color:var(--text2)}
+.flag b{color:var(--text);font-weight:500}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text3)}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.legend i.dash{height:0;border-top:2px dashed var(--ghost);border-radius:0;vertical-align:3px}
+
+/* the range picker */
+.picker{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.step{font:inherit;font-family:var(--mono);font-size:18px;width:40px;height:40px;border-radius:8px;border:1px solid var(--control-edge);background:var(--pinned);color:var(--text);cursor:pointer}
+.rangeval{font-family:var(--mono);font-size:22px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+.rangeval small{display:block;font-family:var(--sans);font-size:11px;font-weight:400;color:var(--text3)}
+.toggle{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--text2)}
+.sw2{width:30px;height:16px;border-radius:999px;background:var(--accent-fill);position:relative;border:1px solid var(--accent)}
+.sw2::after{content:"";position:absolute;right:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--text)}
+table.log{border-collapse:collapse;width:100%;font-size:12px}
+.log th{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-weight:600;text-align:right;padding:5px 8px;border-bottom:1px solid var(--control-edge);white-space:nowrap}
+.log th:first-child,.log td:first-child{text-align:left}
+.log td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--edge);font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.log td .k{font-family:var(--sans);font-size:10.5px;color:var(--text3)}
+.pill{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;border:1px solid var(--control-edge);color:var(--text2)}
+.pill.u{border-color:var(--warn);color:var(--warn)}
+
+/* the corridor */
+.corridor{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px}
+.ladder{position:relative;height:250px;margin:6px 0 4px 0}
+.ladder .rail{position:absolute;left:96px;right:12px;top:18px;bottom:18px;border-radius:6px;background:var(--band);border:1px solid var(--s1)}
+.ladder .mark{position:absolute;left:0;right:12px;display:flex;align-items:center;gap:8px;transform:translateY(-50%)}
+.ladder .mark .t{width:88px;text-align:right;font-family:var(--mono);font-size:12px;color:var(--text)}
+.ladder .mark .r{flex:1;border-top:1px solid var(--text3)}
+.ladder .mark .w{font-size:11.5px;color:var(--text2);background:var(--stage);padding:0 6px;white-space:nowrap}
+.ladder .mark.on .r{border-top:2px solid var(--money-light)}
+.ladder .mark.on .t{color:var(--money-light);font-weight:600}
+table.readers{border-collapse:collapse;width:100%;font-size:12px}
+.readers th{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-weight:600;text-align:left;padding:5px 8px;border-bottom:1px solid var(--control-edge)}
+.readers td{padding:6px 8px;border-bottom:1px solid var(--edge);vertical-align:top}
+.readers td.r{font-family:var(--mono);font-size:11.5px;color:var(--money-light);white-space:nowrap}
+.readers td.t{color:var(--text3);font-family:var(--mono);font-size:11.5px;white-space:nowrap}
+
+/* the bars inside the This month card */
+.parts{display:flex;height:16px;border-radius:4px;overflow:hidden;gap:2px;background:var(--stage)}
+.parts span{display:block;height:100%}
+
+/* charts */
+.chart{position:relative}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--mono);font-size:10px;fill:var(--text3)}
+svg .axis{stroke:var(--edge);stroke-width:1}
+svg .grid{stroke:rgba(36,53,74,.55);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--raised);border:1px solid var(--control-edge);border-radius:6px;padding:6px 8px;font-size:11.5px;color:var(--text);min-width:150px;display:grid;gap:2px;z-index:2}
+.tip .h{font-family:var(--mono);color:var(--text3);font-size:10.5px}
+.tip .row{display:flex;justify-content:space-between;gap:10px}
+.tip .row span:last-child{font-family:var(--mono)}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+table.data{border-collapse:collapse;width:100%;font-size:12px}
+.data th{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);font-weight:600;text-align:right;padding:5px 8px;border-bottom:1px solid var(--control-edge);white-space:nowrap;vertical-align:bottom}
+.data th:first-child,.data td:first-child{text-align:left;white-space:normal}
+.data td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--edge);font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.data td:first-child{font-family:var(--sans)}
+.data tr.pick td{background:var(--pinned)}
+details summary{cursor:pointer;color:var(--accent);font-size:12px}
+.foot{display:grid;gap:6px;font-size:12px;color:var(--text3);max-width:96ch}
+.foot a{color:var(--accent)}
+
+@media (max-width:900px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid2,.grid2e,.corridor{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<main class="study">
+  <section class="top">
+    <div class="eyebrow">CityBuilderSim · design study · 2026-10-20 · read-only</div>
+    <h1>The central bank, decided in steps and kept as the Fed keeps its books</h1>
+    <p class="lead">Five boards for <span class="mono">docs/studies/spec-central-bank.md</span>. Every figure is from Jerus's own cities, read from the saves without writing them, or from copies of them played on in a scratch folder in 0.8.11. The rate moves in quarter points at scheduled decisions, a range a quarter point wide with an overnight rate trading inside it, and a central bank whose remittance is its income statement.</p>
+    <div class="answers">
+      <div class="answer"><div class="l">The remittance puzzle</div><p>With no paper held and cash in the till, the remittance is <b>the window's interest</b>: the commercial bank borrowing past its deposits at the dial plus 0.25. In Halifax it reached <b>14% of revenue</b>. The 37 months over a quarter, up to <b>44%</b>, were the treasury's own overdraft interest coming back to it. Neither shows on any screen.</p></div>
+      <div class="answer"><div class="l">The dial today</div><p>The autopilot sets the dial every month to the rule on year-on-year inflation. In a copy of Halifax played 20 years on it moved <b>230 times</b> and took <b>227 different values</b>, up to 3.26 points in a month.</p></div>
+      <div class="answer"><div class="l">The proposal</div><p>A range like <b>3.50-3.75%</b>, decided every <b>two months</b> in quarter points (at most ¾ at a decision, up to a point unscheduled when the rule is 3 points away). The overnight rate trades between reserves' rate and the window. The remittance is the bank's own income statement.</p></div>
+    </div>
+    <nav class="toc" aria-label="Boards">
+      <a href="#decide">1 · Your rate, in steps</a>
+      <a href="#overnight">2 · The overnight rate</a>
+      <a href="#books">3 · The central bank's books</a>
+      <a href="#puzzle">4 · Why it was half the revenue</a>
+      <a href="#expect">5 · What the market expects</a>
+    </nav>
+  </section>
+
+  <!-- ================================================================ 1 -->
+  <section class="board" id="decide">
+    <header>
+      <div class="eyebrow">Board 1 · Policy › Central bank · CB1</div>
+      <h2>Your rate, decided in steps</h2>
+      <p class="says">The rate is a range, set at decisions on a calendar. Between decisions it holds, and the rule's advice says what the next decision will do. Halifax twenty years on, from a copy played in the game on the proposed rule.</p>
+    </header>
+    <div class="frame">
+      <div class="crumb"><span class="sw"></span><h3>Policy <span>›</span> Central bank</h3><span class="when" id="d-when"></span></div>
+      <div class="kpis">
+        <div class="kpi"><span class="l">Target range</span><span class="v" id="d-range"></span><span class="n">decided in quarter points</span></div>
+        <div class="kpi"><span class="l">Overnight rate</span><span class="v" id="d-on"></span><span class="n">what money costs tonight</span></div>
+        <div class="kpi"><span class="l">Next decision</span><span class="v" id="d-next"></span><span class="n">every two months</span></div>
+        <div class="kpi"><span class="l">The rule says</span><span class="v" id="d-rule"></span><span class="n" id="d-rule-n"></span></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="cap">The rate since <span id="d-since"></span> <span class="hint">· hover for a month</span></div>
+          <div class="legend"><span><i style="background:var(--band)"></i>the range</span><span><i style="background:var(--s1)"></i>the overnight, in steps</span><span><i class="dash"></i>today's autopilot, on its own copy of the city</span></div>
+          <div class="chart" id="c-dial"></div>
+          <details><summary>The 240 months as a table</summary><div class="scroll" id="t-runs"></div></details>
+        </div>
+        <div class="card raised">
+          <div class="cap">The next decision</div>
+          <div class="toggle"><span class="sw2" aria-hidden="true"></span>The rule decides (autopilot)</div>
+          <div class="picker">
+            <button class="step" id="p-down" aria-label="A quarter point lower">−</button>
+            <div class="rangeval" id="p-val"></div>
+            <button class="step" id="p-up" aria-label="A quarter point higher">+</button>
+          </div>
+          <div class="flag" id="p-say"></div>
+          <div class="chips" style="gap:8px"><button class="btn">Set for the next decision</button><button class="btn ghost">Decide now (unscheduled)</button></div>
+          <div class="cap">Decisions</div>
+          <div class="scroll"><table class="log" id="d-log"></table></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <p><i>1</i><b>A range, not a number.</b> Moved only in quarter points. The rule's advice is the rate it wants the overnight at, and the range chosen is the one that puts the overnight nearest it.</p>
+      <p><i>2</i><b>Decisions on a calendar.</b> Every two months by default; Jerus's every three is the other setting. At a decision the autopilot moves toward the rule by at most ¾ of a point, and holds if the rule is within an eighth.</p>
+      <p><i>3</i><b>Unscheduled, rarely.</b> If the rule runs 3 points from the overnight between decisions, the autopilot decides at once, by up to a point. In the copy: 3 times in 20 years. The player's "Decide now" is the same thing, by hand.</p>
+      <p><i>4</i><b>The player's hand waits.</b> A range set by hand takes effect at the next decision, unless they decide now. Either way the decision log records it.</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ 2 -->
+  <section class="board" id="overnight">
+    <header>
+      <div class="eyebrow">Board 2 · Policy › Central bank, the corridor · CB2</div>
+      <h2>The overnight rate inside the range</h2>
+      <p class="says">Three rates the central bank sets, and one the market makes between them: the reverse repo at the bottom, interest on reserves ten points under the top, the window at the top. The overnight sits at reserves' rate while the bank holds spare cash and climbs to the window as it borrows there.</p>
+    </header>
+    <div class="frame">
+      <div class="crumb"><span class="sw"></span><h3>Policy <span>›</span> Central bank <span>›</span> The corridor</h3><span class="when" id="o-when"></span></div>
+      <div class="corridor">
+        <div class="card">
+          <div class="cap">The range, <span id="o-range"></span></div>
+          <div class="chips" id="o-chips" role="group" aria-label="The bank's funding"></div>
+          <div class="ladder" id="o-ladder"></div>
+          <div class="flag" id="o-say"></div>
+        </div>
+        <div class="card">
+          <div class="cap">What reads which rate</div>
+          <div class="scroll"><table class="readers" id="o-readers"></table></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <p><i>1</i><b>The Fed's arrangement.</b> On 17 September 2026 its range was 3.75-4.00%: overnight reverse repo 3.75%, reserves 3.90%, the window 4.00%. The study copies the shape: the bottom, ten under the top, the top.</p>
+      <p><i>2</i><b>No new dial for where the overnight trades.</b> It reads the bank's own funding position, the share of its marginal money that came from the window (<span class="mono">Bank.windowShare()</span>, already saved).</p>
+      <p><i>3</i><b>The reverse repo has no taker</b> in a one-bank city: a bank earns more on reserves. It is the floor nothing trades under, and stays that until somebody with cash and no account at the central bank exists.</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ 3 -->
+  <section class="board" id="books">
+    <header>
+      <div class="eyebrow">Board 3 · Finances › Money › The central bank · CB3</div>
+      <h2>The central bank's books, as the Fed keeps them</h2>
+      <p class="says">Its income less its costs is the remittance, paid to the treasury the month after; a loss is carried and recovered first, as the Fed carries its deferred asset. Four months from Jerus's cities, on today's arithmetic and on the proposed one.</p>
+    </header>
+    <div class="frame">
+      <div class="crumb"><span class="sw"></span><h3>Finances <span>›</span> Money <span>›</span> The central bank</h3><span class="when">this month</span></div>
+      <div class="chips" id="b-cases" role="group" aria-label="Which month"></div>
+      <div class="chips" id="b-books" role="group" aria-label="Which arithmetic"></div>
+      <div class="grid2e">
+        <div class="card">
+          <div class="cap">Income statement <span class="hint" id="b-hint"></span></div>
+          <div id="b-statement"></div>
+          <div class="flag" id="b-note"></div>
+        </div>
+        <div class="card">
+          <div class="cap">The Fed, 2025 <span class="hint">· combined Reserve Banks, audited</span></div>
+          <div class="line"><span>Interest earned, on securities and loans</span><span class="mono">$155.3B</span></div>
+          <div class="line neg"><span>Interest paid, mostly on reserves</span><span class="mono">−$167.4B</span></div>
+          <div class="line neg"><span>Operating costs and the rest</span><span class="mono">−$6.6B</span></div>
+          <div class="line total"><span>Net, carried as the deferred asset</span><span class="mono">−$18.7B</span></div>
+          <div class="line"><span>Deferred asset at the year's end</span><span class="mono">$243.5B</span></div>
+          <div class="line"><span>...at 30 June 2026, remittances restarting</span><span class="mono">$235.5B</span></div>
+          <p class="muted" style="font-size:11.5px">A central bank whose reserves cost more than its assets earn makes a loss and remits nothing until it has earned the loss back. The game's <span class="mono">lossCarried</span> already works this way; the screen should call it by name.</p>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <p><i>1</i><b>Every line on the screen.</b> Today no screen shows the window's interest or the overdraft's as the central bank's income, so its remittance looks like money from nowhere.</p>
+      <p><i>2</i><b>Paper at amortized cost.</b> Today a bond bought under face is profit the day it is bought, at face, and remitted the next month; the Fed earns the discount month by month until maturity.</p>
+      <p><i>3</i><b>"Reserves as a real central bank's"</b> is decision 12, not a CB batch: it pays reserves' rate on the money it made that sits in the city, which turns the paper month into a loss and the overdraft month into nothing, as at the Fed.</p>
+    </div>
+  </section>
+
+  <!-- ================================================================ 4 -->
+  <section class="board" id="puzzle">
+    <header>
+      <div class="eyebrow">Board 4 · Finances › Money, This month · CB3</div>
+      <h2>Why the remittance was half the revenue</h2>
+      <p class="says">Halifax (slot 3), month by month: the remittance as a share of the treasury's revenue, by where it came from. Each bar is last month's interest on what the central bank had lent: to the treasury on its overdraft, or to the commercial bank at the window.</p>
+    </header>
+    <div class="frame">
+      <div class="crumb"><span class="sw"></span><h3>Halifax <span>›</span> the remittance</h3><span class="when">Feb 2019 - Sep 2039</span></div>
+      <div class="card">
+        <div class="legend"><span><i style="background:var(--s2)"></i>the treasury's overdraft (its own interest coming back)</span><span><i style="background:var(--s1)"></i>the bank at the window</span></div>
+        <div class="chart" id="c-share"></div>
+      </div>
+      <div class="grid2e">
+        <div class="card">
+          <div class="cap">This month <span class="hint">· today, Sep 2036, rebuilt from the saved history</span></div>
+          <div class="line"><span>Money destroyed</span><span class="mono" id="m-total"></span></div>
+          <div class="parts" id="m-today"></div>
+          <div class="legend"><span><i style="background:var(--ore)"></i>paper it sold</span><span><i style="background:var(--money-dark)"></i>coupons</span><span><i style="background:var(--money)"></i>principal</span><span><i style="background:var(--money-light)"></i>bought back</span></div>
+          <p class="muted" style="font-size:11.5px">All four segments are empty this month. The money destroyed was the window's interest and the bank's repayments, and the bar has no segment for either.</p>
+        </div>
+        <div class="card raised">
+          <div class="cap">This month <span class="hint">· proposed</span></div>
+          <div class="line"><span>Money destroyed</span><span class="mono" id="m-total2"></span></div>
+          <div class="parts" id="m-prop"></div>
+          <div class="legend"><span><i style="background:var(--s1)"></i>window interest</span><span><i style="background:var(--s2)"></i>the bank repaid the window</span></div>
+          <div class="line"><span>Remitted to the treasury, next month</span><span class="mono" id="m-rem"></span></div>
+          <div class="line sub"><span>of which the treasury's own interest</span><span class="mono">D$0</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ 5 -->
+  <section class="board" id="expect">
+    <header>
+      <div class="eyebrow">Board 5 · Finances › Your rate · CD1, amended</div>
+      <h2>What the market expects, in steps</h2>
+      <p class="says">CD1 prices the curve on the dial the market expects: a smooth drift to the rule. With decisions in steps, the expected path is flat until the next decision and moves at each, by at most ¾ of a point. The city behind the curve: 5% inflation, the dial held at 1% by hand, credibility 60%.</p>
+    </header>
+    <div class="frame">
+      <div class="crumb"><span class="sw"></span><h3>Finances <span>›</span> Your rate</h3><span class="when">the next five years</span></div>
+      <div class="grid2">
+        <div class="card">
+          <div class="legend"><span><i class="dash"></i>CD1 as specified: the smooth drift</span><span><i style="background:var(--s1)"></i>in steps, a decision every two months</span></div>
+          <div class="chart" id="c-cd1"></div>
+        </div>
+        <div class="card">
+          <div class="cap">The average expected short rate over the term</div>
+          <div class="scroll" id="t-cd1"></div>
+          <p class="muted" style="font-size:11.5px">Before the credit spread and term premium, which are the same in both. A calm city does not move; a hiking city moves under 3 points of a hundredth.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="eyebrow">Sources</div>
+    <p>Federal Reserve, implementation notes of 28 January to 16 September 2026 (<a href="https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a1.htm">16 Sept 2026</a>); the Reserve Banks' combined financial statements for 2025, as reported by Bloomberg Law; First Trust's commentary on the Fed's Q2 2026 financials (the deferred asset at $235.5B). The model is <span class="mono">docs/studies/central-bank/cb-model.py</span>; these boards are built by <span class="mono">build-boards.py</span>.</p>
+  </footer>
+</main>
+
+<script>
+const DATA = /*DATA*/null;
+const NS = "http://www.w3.org/2000/svg";
+const $ = id => document.getElementById(id);
+const pct = (x, d = 2) => (x == null ? "—" : x.toFixed(d) + "%");
+const money = x => (x < 0 ? "−" : "") + "D$" + Math.round(Math.abs(x)).toLocaleString("en-CA");
+const whenOf = m => DATA.whenOf[String(m)] || ("month " + m);
+const STEP = .25, WIDTH = .25, IORB_UNDER_TOP = .10;
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function rangeOfIorb(iorb) { const b = Math.round((iorb - (WIDTH - IORB_UNDER_TOP)) / STEP) * STEP; return Math.max(0, b); }
+function ruleRate(infl) { return Math.max(0, Math.min(100, 3 + 1.5 * (infl - 2))); }
+
+/* ---------- a line chart with a crosshair ---------- */
+function lineChart(host, o) {
+  const W = 640, H = o.h || 260, L = 40, R = 12, T = 10, B = 26;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": o.label }, null);
+  host.appendChild(svg);
+  const xs = o.x, n = xs.length;
+  const x = i => L + (W - L - R) * i / (n - 1);
+  const y = v => T + (H - T - B) * (1 - (v - o.y0) / (o.y1 - o.y0));
+  for (let v = o.y0; v <= o.y1 + 1e-9; v += o.yStep) {
+    el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid" }, svg);
+    el("text", { x: L - 6, y: y(v) + 3, "text-anchor": "end" }, svg).textContent = v + "%";
+  }
+  el("line", { x1: L, x2: W - R, y1: y(o.y0), y2: y(o.y0), class: "axis" }, svg);
+  o.ticks.forEach(i => { el("text", { x: x(i), y: H - 8, "text-anchor": "middle" }, svg).textContent = o.tickLabel(i); });
+  if (o.band) {
+    let d = "";
+    for (let i = 0; i < n; i++) d += (i ? "L" : "M") + x(i) + " " + y(o.band.hi[i]);
+    for (let i = n - 1; i >= 0; i--) d += "L" + x(i) + " " + y(o.band.lo[i]);
+    el("path", { d: d + "Z", fill: "var(--band)", stroke: "none" }, svg);
+  }
+  o.series.forEach(s => {
+    let d = "";
+    s.v.forEach((v, i) => {
+      if (v == null) return;
+      if (s.step && i > 0 && s.v[i - 1] != null) d += "L" + x(i) + " " + y(s.v[i - 1]) + "L" + x(i) + " " + y(v);
+      else d += (d ? "L" : "M") + x(i) + " " + y(v);
+    });
+    el("path", { d, fill: "none", stroke: s.color, "stroke-width": s.width || 2, "stroke-dasharray": s.dash || "", "stroke-linejoin": "round" }, svg);
+  });
+  const cross = el("line", { y1: T, y2: H - B, stroke: "var(--text3)", "stroke-width": 1, visibility: "hidden" }, svg);
+  const dots = o.series.map(s => el("circle", { r: 4, fill: s.color, stroke: "var(--panel)", "stroke-width": 2, visibility: "hidden" }, svg));
+  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; host.appendChild(tip);
+  const hit = el("rect", { x: L, y: T, width: W - L - R, height: H - T - B, fill: "transparent" }, svg);
+  function show(evt) {
+    const r = svg.getBoundingClientRect();
+    const px = (evt.clientX - r.left) * W / r.width;
+    const i = Math.max(0, Math.min(n - 1, Math.round((px - L) / (W - L - R) * (n - 1))));
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+    o.series.forEach((s, k) => { const v = s.v[i]; if (v == null) { dots[k].setAttribute("visibility", "hidden"); return; } dots[k].setAttribute("cx", x(i)); dots[k].setAttribute("cy", y(v)); dots[k].setAttribute("visibility", "visible"); });
+    tip.innerHTML = `<span class="h">${o.tipHead(i)}</span>` + o.series.map(s => `<div class="row"><span><i style="background:${s.color}"></i>${s.name}</span><span>${s.v[i] == null ? "—" : pct(s.v[i])}</span></div>`).join("") + (o.tipExtra ? o.tipExtra(i) : "");
+    tip.hidden = false;
+    const left = (x(i) / W) * r.width;
+    tip.style.left = Math.min(r.width - 170, Math.max(0, left + 12)) + "px";
+    tip.style.top = "8px";
+  }
+  hit.addEventListener("mousemove", show);
+  hit.addEventListener("mouseleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); dots.forEach(d => d.setAttribute("visibility", "hidden")); });
+}
+
+/* ---------- board 1 ---------- */
+(function () {
+  const runs = DATA.runs, today = runs[0], every2 = runs[3], now = DATA.now;
+  $("d-when").textContent = now.when;
+  const bottom = rangeOfIorb(now.dial * 100);
+  $("d-range").textContent = bottom.toFixed(2) + "-" + (bottom + WIDTH).toFixed(2) + "%";
+  $("d-on").textContent = pct(now.dial * 100);
+  $("d-next").textContent = now.next;
+  const rule = ruleRate(now.inflation * 100);
+  $("d-rule").textContent = pct(rule);
+  const gap = rule - now.dial * 100;
+  const move = Math.abs(gap) <= STEP / 2 ? 0 : Math.min(Math.round(Math.abs(gap) / STEP) * STEP, .75) * Math.sign(gap);
+  const words = m => m === 0 ? "hold" : (m > 0 ? "up " : "down ") + ({ .25: "¼", .5: "½", .75: "¾", 1: "a point" }[Math.abs(m)] || Math.abs(m).toFixed(2));
+  $("d-rule-n").textContent = "on " + pct(now.inflation * 100, 1) + " inflation: " + words(move) + " next";
+  $("d-since").textContent = whenOf(every2.month[0]);
+  let pick = bottom + move;
+  function say() {
+    $("p-val").innerHTML = pick.toFixed(2) + "-" + (pick + WIDTH).toFixed(2) + "%<small>overnight about " + (pick + WIDTH - IORB_UNDER_TOP).toFixed(2) + "% in a flush city</small>";
+    const d = pick - bottom;
+    $("p-say").innerHTML = d === move ? `<b>The rule's choice for ${now.next}:</b> ${words(move)}, on inflation of ${pct(now.inflation * 100, 1)} against the 2% target.` : `<b>${words(d)} by hand.</b> It takes effect at the decision in ${now.next}, and takes the rate back from the rule.`;
+  }
+  $("p-down").addEventListener("click", () => { pick = Math.max(0, pick - STEP); say(); });
+  $("p-up").addEventListener("click", () => { pick = pick + STEP; say(); });
+  say();
+  const log = $("d-log");
+  log.innerHTML = "<tr><th>Decision</th><th>Range</th><th>Move</th><th>Inflation</th></tr>" + now.decisions.slice().reverse().map(d => {
+    const b = rangeOfIorb(d.to * 100), mv = (d.to - d.from) * 100;
+    return `<tr><td>${d.when} <span class="pill ${d.kind === "unscheduled" ? "u" : ""}">${d.kind === "unscheduled" ? "unscheduled" : "scheduled"}</span></td><td>${b.toFixed(2)}-${(b + WIDTH).toFixed(2)}%</td><td>${mv > 0 ? "+" : "−"}${Math.abs(mv).toFixed(2)}</td><td>${pct(d.inflation * 100, 1)}</td></tr>`;
+  }).join("");
+  const n = every2.month.length;
+  const ticks = []; for (let i = 0; i < n; i += 48) ticks.push(i);
+  const lo = every2.dial.map(v => rangeOfIorb(v)), hi = lo.map(b => b + WIDTH);
+  lineChart($("c-dial"), {
+    label: "The overnight rate in steps against today's autopilot, Halifax, 240 months", x: every2.month, y0: 0, y1: 12, yStep: 2, h: 270,
+    ticks, tickLabel: i => whenOf(every2.month[i]).slice(4),
+    band: { lo, hi },
+    series: [
+      { name: "today's autopilot", v: today.dial, color: "var(--ghost)", dash: "4 3", width: 1.5 },
+      { name: "in steps", v: every2.dial, color: "var(--s1)", step: true, width: 2 }],
+    tipHead: i => whenOf(every2.month[i]),
+    tipExtra: i => `<div class="row"><span class="muted">inflation, in steps</span><span>${pct(every2.inflation[i], 1)}</span></div><div class="row"><span class="muted">inflation, today's</span><span>${pct(today.inflation[i], 1)}</span></div>`
+  });
+  const rows = runs.map(r => `<tr${r === every2 ? ' class="pick"' : ""}><td>${r.label}</td><td>${r.moves}</td><td>${r.values}</td><td>${r.biggest.toFixed(2)}</td><td>${r.miss.toFixed(2)}</td><td>${r.off3}</td><td>${r.unemp.toFixed(1)}%</td><td>${r.people.toLocaleString("en-CA")}</td><td>${r.unscheduled}</td></tr>`).join("");
+  $("t-runs").innerHTML = `<table class="data"><tr><th>rule</th><th>moves</th><th>values</th><th>biggest move, points</th><th>inflation off 2%, points</th><th>months 3+ points off</th><th>unemployment</th><th>people at the end</th><th>unscheduled</th></tr>${rows}</table><p class="muted" style="font-size:11.5px;margin-top:6px">One path each from the same save; the game is deterministic, so this is not a distribution. Unemployment ran higher in every stepped run; CB1's ensemble has to say whether that is the dial or the faster growth.</p>`;
+})();
+
+/* ---------- board 2 ---------- */
+(function () {
+  const now = DATA.now;
+  const bottom = rangeOfIorb(now.dial * 100), top = bottom + WIDTH, iorb = top - IORB_UNDER_TOP;
+  $("o-when").textContent = now.when;
+  $("o-range").textContent = bottom.toFixed(2) + "-" + top.toFixed(2) + "%";
+  const states = [
+    { k: "flush", label: "Holding spare cash", share: 0, say: "The bank has cash it has not lent, earning reserves' rate. Nobody lends overnight for less, so the overnight is reserves' rate." },
+    { k: "half", label: "Half at the window", share: .5, say: "Half of the bank's marginal money comes from the window. The overnight sits halfway between reserves' rate and the window's." },
+    { k: "short", label: "At the window", share: 1, say: "The bank funds its next loan at the window. The overnight is the window's rate, the top of the range." }];
+  let at = 0;
+  const lo = bottom - .05, hi = top + .05;
+  const pos = v => (1 - (v - lo) / (hi - lo)) * 100;
+  function draw() {
+    const s = states[at], on = iorb + (top - iorb) * s.share;
+    $("o-chips").innerHTML = states.map((x, i) => `<button class="chip${i === at ? " on" : ""}" data-i="${i}">${x.label}</button>`).join("");
+    $("o-chips").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { at = +b.dataset.i; draw(); }));
+    const marks = [
+      { v: top, w: "the window: what the bank pays to borrow", c: "" },
+      { v: iorb, w: "interest on reserves", c: "" },
+      { v: bottom, w: "overnight reverse repo: the floor", c: "" },
+      { v: on, w: "the overnight rate", c: "on" }];
+    $("o-ladder").innerHTML = `<div class="rail" style="top:${pos(top)}%;bottom:${100 - pos(bottom)}%"></div>` + marks.map(m => `<div class="mark ${m.c}" style="top:${pos(m.v)}%"><span class="t">${m.v.toFixed(2)}%</span><span class="r"></span><span class="w">${m.w}</span></div>`).join("");
+    $("o-say").innerHTML = `<b>Overnight ${on.toFixed(2)}%.</b> ${s.say}`;
+  }
+  draw();
+  const readers = [
+    ["The bank's spare cash", "interest on reserves", "the dial"],
+    ["The bank's borrowing past its deposits", "the window (top)", "dial + 0.25"],
+    ["The treasury's overdraft", "the window (top)", "the dial"],
+    ["Prime, mortgages, household loans, car loans", "overnight + today's spreads", "dial + spreads"],
+    ["What savers are paid", "overnight × the bank's share", "dial × share"],
+    ["The carry trade and hot money", "overnight", "the dial"],
+    ["The city's short rate and the curve's floor", "overnight", "the dial"],
+    ["The real rate (the exchange rate's)", "overnight − expected inflation", "dial − expected"],
+    ["CD5's floating-rate notes", "the month's overnight + spread", "the policy rate"],
+    ["The advisor's \"the dial is under the rule\"", "the rule against the overnight", "rule − dial"]];
+  $("o-readers").innerHTML = "<tr><th>What</th><th>Reads</th><th>Today</th></tr>" + readers.map(r => `<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="t">${r[2]}</td></tr>`).join("");
+})();
+
+/* ---------- board 3 ---------- */
+(function () {
+  const cases = DATA.cases;
+  const shortName = ["Halifax: the window", "Halifax: the overdraft", "Slot 6: paper held", "Bergen: flush"];
+  const books = [["today", "Today"], ["l1", "Proposed (CB3)"], ["l2", "Reserves as a real central bank's (decision 12)"]];
+  let c = 0, b = 1;
+  function draw() {
+    $("b-cases").innerHTML = cases.map((k, i) => `<button class="chip${i === c ? " on" : ""}" data-i="${i}">${shortName[i]}</button>`).join("");
+    $("b-books").innerHTML = books.map((k, i) => `<button class="chip${i === b ? " on" : ""}" data-i="${i}">${k[1]}</button>`).join("");
+    $("b-cases").querySelectorAll("button").forEach(x => x.addEventListener("click", () => { c = +x.dataset.i; draw(); }));
+    $("b-books").querySelectorAll("button").forEach(x => x.addEventListener("click", () => { b = +x.dataset.i; draw(); }));
+    const k = cases[c], lines = k[books[b][0]];
+    const total = lines.reduce((s, l) => s + l[1], 0);
+    $("b-hint").textContent = "· " + k.name;
+    $("b-statement").innerHTML = lines.map(l => `<div class="line ${l[1] < 0 ? "neg" : ""}"><span>${l[0]}</span><span class="mono">${money(l[1])}</span></div>`).join("") +
+      `<div class="line total"><span>${total >= 0 ? "Profit, remitted next month" : "Loss, carried: nothing remitted"}</span><span class="mono">${money(total)}</span></div>`;
+    $("b-note").innerHTML = k.note;
+  }
+  draw();
+})();
+
+/* ---------- board 4 ---------- */
+(function () {
+  const h = DATA.halifax_remittance, from = h.month.indexOf(230);
+  const months = h.month.slice(from), share = h.share.slice(from);
+  const adv = h.advances, m0 = h.m0;
+  const W = 640, H = 230, L = 40, R = 12, T = 10, B = 26, n = months.length;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Halifax's remittance as a share of revenue, by source" }, null);
+  $("c-share").appendChild(svg);
+  const bw = (W - L - R) / n, x = i => L + i * bw, y = v => T + (H - T - B) * (1 - v / 50);
+  for (let v = 0; v <= 50; v += 10) { el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid" }, svg); el("text", { x: L - 6, y: y(v) + 3, "text-anchor": "end" }, svg).textContent = v + "%"; }
+  for (let i = 0; i < n; i += 36) el("text", { x: x(i) + bw / 2, y: H - 8, "text-anchor": "middle" }, svg).textContent = whenOf(months[i]).slice(4);
+  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; $("c-share").appendChild(tip);
+  for (let i = 0; i < n; i++) {
+    const v = share[i]; if (!(v > 0)) continue;
+    const j = from + i - 1, overdraft = adv[j] > 0;
+    const r = el("rect", { x: x(i) + .3, y: y(v), width: Math.max(.6, bw - .6), height: y(0) - y(v), fill: overdraft ? "var(--s2)" : "var(--s1)" }, svg);
+    r.addEventListener("mousemove", evt => {
+      const rr = svg.getBoundingClientRect();
+      tip.innerHTML = `<span class="h">${whenOf(months[i])}</span><div class="row"><span>remittance</span><span>${v.toFixed(0)}% of revenue</span></div><div class="row"><span>${overdraft ? "overdraft last month" : "window loans last month"}</span><span>${money(overdraft ? adv[j] : m0[j])}</span></div>`;
+      tip.hidden = false; tip.style.left = Math.min(rr.width - 190, (evt.clientX - rr.left) + 12) + "px"; tip.style.top = "8px";
+    });
+    r.addEventListener("mouseleave", () => { tip.hidden = true; });
+  }
+  el("line", { x1: L, x2: W - R, y1: y(0), y2: y(0), class: "axis" }, svg);
+  // the This month card, Sep 2036 (month 441): m0 fell from 748,353 to 686,335 with the window's interest paid
+  const k = DATA.cases[0];
+  const interest = k.today[0][1], repaid = 748353 - 686335;
+  $("m-total").textContent = money(interest + repaid);
+  $("m-total2").textContent = money(interest + repaid);
+  $("m-today").innerHTML = `<span style="flex:1;background:var(--hover)"></span>`;
+  $("m-prop").innerHTML = `<span style="flex:${interest};background:var(--s1)"></span><span style="flex:${repaid};background:var(--s2)"></span>`;
+  $("m-rem").textContent = money(k.l1.reduce((s, l) => s + l[1], 0));
+})();
+
+/* ---------- board 5 ---------- */
+(function () {
+  const p = DATA.cd1["behind: 5%, the dial at 1% by hand, credibility 60%"];
+  const n = p.smooth.length, months = [...Array(n).keys()];
+  lineChart($("c-cd1"), {
+    label: "The expected short rate, smooth and in steps, for a city behind the curve", x: months, y0: 0, y1: 6, yStep: 1, h: 240,
+    ticks: [0, 12, 24, 36, 48, 60], tickLabel: i => i === 0 ? "now" : (i / 12) + "y",
+    series: [
+      { name: "CD1, smooth", v: p.smooth, color: "var(--ghost)", dash: "4 3", width: 1.5 },
+      { name: "in steps", v: p.stair, color: "var(--s1)", step: true }],
+    tipHead: i => i === 0 ? "now" : "in " + i + " month" + (i === 1 ? "" : "s")
+  });
+  const avg = (a, m) => a.slice(0, m).reduce((s, v) => s + v, 0) / m;
+  const terms = [3, 6, 12, 24, 60];
+  const rows = Object.keys(DATA.cd1).map(name => {
+    const q = DATA.cd1[name];
+    const cells = terms.map(m => { const t = q.stair.length >= m ? m : q.stair.length; return Math.round(100 * (avg(q.stair, t) - avg(q.smooth, t))); });
+    return `<tr><td>${name.split(":")[0]}</td>${cells.map(c => `<td>${c > 0 ? "+" : ""}${c} bp</td>`).join("")}</tr>`;
+  }).join("");
+  $("t-cd1").innerHTML = `<table class="data"><tr><th>city: in steps less smooth</th>${terms.map(m => `<th>${m < 12 ? m + " months" : (m / 12) + (m === 12 ? " year" : " years")}</th>`).join("")}</tr>${rows}</table>`;
+})();
+</script>
