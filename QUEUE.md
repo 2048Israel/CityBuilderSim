@@ -21,6 +21,7 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
+| FX6 | A full district that buys land inside itself keeps its buildings where they stand: CL3's plan never re-places what stands, only new arrivals take the new ground; LongPlaytest green again (Jerus, 2026-10-21: "queue a small fix") | [FX6](docs/queue/FX6.md) |
 | FX5 | The map's rail and roads finished: curved rail corners and trains on them, real-length trains with yards and depots that hold them, trains only onto clear sidings, one roundabout a wide crossing, mostly signals, tidy diagonal ends, the legend's "Railway", the world lines' labels apart, a railway that is a depot alone drawn with its main line (Jerus, 2026-10-20, on FX3's and FR7's renders and his new city) | [FX5](docs/queue/FX5.md) |
 | CL4 | Slanted avenues from the founding site, the coast's streets as curves, crescents in the outer suburbs; on FX5's curves, so after it (Jerus, 2026-10-20, the CL1 study's ★3: FX5 and CL4 "Move both up") | [CL4](docs/queue/CL4.md) |
 | CL5 | Highways and railway that reach the whole city: a stuck net opens its next corridor by a link arm, every island the city builds on grows its own (CL1 §5.6; Jerus, 2026-10-20: "Queue it as CL5") | [CL5](docs/queue/CL5.md) |
@@ -72,9 +73,9 @@ stuff".
 | WN1 | Nations: each nation's year from the path (Historical or Random) and the seed, the founding screen's World step, saved; nothing reads them yet | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 | WN2 | Nations on the map: borders, dots and labels with output and people, the nation's card, the Nations / Trade routes / Borders chips, the head's POPULATION and GDP tiles, the legend that folds | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 | WN3 | Nations: the world market - the January solve on the partner rule, the city's month by the slopes, the band from the world, trade by partner; every trace moves | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
-| WN4 | Nations: each nation's money and rate, the vault in eight moneys and its reserve mix, revaluation | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN4 | Nations: each nation's money and rate, the vault in eight moneys and its reserve mix, revaluation; and the real US$ at constant 2015 dollars, the foreign inflation slider gone (D29, Jerus 2026-10-21) | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 | WN5 | Nations: land bought from the nation it lies in, at its land price, in its money; offers split at a border | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
-| WN6 | Nations: the screens - Trade > Partners, the reserves in eight, the nation's page; the manual | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN6 | Nations: the screens - Trade > Partners, the reserves in eight, the nation's page; the manual; real GDP and a comparison rate in real 2015 US$ (D29) | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 | WN7 | Nations: ships and trains to their partners, each on its partner's bearing | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 
 ## Pending
