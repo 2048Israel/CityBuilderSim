@@ -135,6 +135,15 @@ import java.util.Set;
  * builders' tax and the reserve's crude sold left out - as the budget's
  * revenue was read, the city's whole, from 0.7.73 to 0.7.103.
  *
+ * ITS OWN CAP, AND AN ASK KEPT OPEN (CD2, slice 6; D28 and D30): its bonds are
+ * auctions (Auction) at a cap of its own, fair plus a point unless the player
+ * moved it (getCap()); and where the first card the money refused was refused
+ * because its bond sold short, with no other building in the ranking paid for,
+ * the ask stays open - the bond sold for what it would sell, the order not
+ * placed, the money kept for it - and is offered again every month before the
+ * pass ranks anything new, until what it raised and the cash cover the order
+ * or it is withdrawn. See THE CAP AND THE OPEN ASKS.
+ *
  * THE PLAYER'S SETTING AT WORK, NOT A DECISION: like the rollover's issues
  * (Game.issueForRollover()), what it orders and borrows is not in the
  * decision log; turning it on or off and moving a slider are.
@@ -215,7 +224,13 @@ public final class AutoBuilder {
     public void setOn(boolean on, DecisionLog decisions) {
         if (this.on == on) return;
         this.on = on;
-        if (!on) { held.clear(); bought.clear(); }
+        if (!on) {
+            // Off, it orders nothing: its open asks are withdrawn, and what they raised stays (D30).
+            for (OpenAsk a : new ArrayList<>(asks)) withdrawAsk(a, "automatic building was turned off", null);
+            held.clear();
+            bought.clear();
+            asked.clear();
+        }
         if (decisions != null) decisions.record(DecisionLog.CONSTRUCTION, on
                 ? "Automatic building on: " + DecisionLog.pct(slack) + " spare, debt to "
                         + DecisionLog.pct(debtLimit) + " of GDP" + (cashAnyway ? ", from cash over it" : "")
@@ -560,19 +575,30 @@ public final class AutoBuilder {
     }
 
     /**
-     * The funding page's bond for `gap` of cash: its quote, or null for none
-     * to be had. A bond sold at auction can come up short (CD2): the bids do
-     * not reach the issue at the highest yield the city takes, and it sells
-     * what was bid. That raises less than the order needs, and an order the
-     * money does not cover is not placed - the old bug of a debt issued and
-     * nothing built - so a short quote is none to be had. The open ask that
-     * keeps trying is D30's (slice 6).
+     * The funding page's bond for `gap` of cash at the builder's own cap
+     * (D28): its quote, or null for none to be had. A bond sold at auction can
+     * come up short (CD2): the bids do not reach the issue at the highest
+     * yield the builder takes, and it sells what was bid. That raises less
+     * than the order needs, and an order the money does not cover is not
+     * placed - the old bug of a debt issued and nothing built - so a short
+     * quote is none to be had here. What keeps trying with a short one is the
+     * open ask (D30, OpenAsk).
      */
     static DebtQuote bondFor(Game game, double gap) {
-        if (!(gap > 0)) return null;
-        DebtQuote q = game.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        return bondFor(game, gap, game.getAutoBuilder().getCap());
+    }
+
+    /** ...at a cap of the caller's. */
+    static DebtQuote bondFor(Game game, double gap, Auction.Cap cap) {
+        DebtQuote q = bondQuote(game, gap, cap);
         if (q == null || q.isEmpty()) return null;
         return q.cashReceived() + 1e-6 * Math.max(1, gap) < gap ? null : q;
+    }
+
+    /** The bond for `gap` as the auction would sell it, short or not: null where there is no gap or the paper cannot be issued. */
+    static DebtQuote bondQuote(Game game, double gap, Auction.Cap cap) {
+        if (!(gap > 0)) return null;
+        return game.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
     }
 
     /**
@@ -589,10 +615,36 @@ public final class AutoBuilder {
         return Math.max(0, CityNeeds.taxRaised(game));
     }
 
-    /** What an order may take of the cash: what is over the reserve; an overdraft counted in full, as Build's funding page counts it (Game.buildFundingGap()). */
+    /**
+     * What an order may take of the cash: what is over the reserve; an
+     * overdraft counted in full, as Build's funding page counts it
+     * (Game.buildFundingGap()); and since D30 less what open asks have raised
+     * (spendableFor()) - that money is each ask's order's and nothing else's.
+     */
     public static double spendable(Game game) {
+        return game.getAutoBuilder().spendableFor(game, null);
+    }
+
+    /** The cash over the reserve, or the overdraft in full: what spendable() was before D30's earmarks. */
+    private static double overReserve(Game game) {
         double cash = game.getCash();
         return cash < 0 ? cash : Math.max(0, cash - reserve(game));
+    }
+
+    /**
+     * What the cash over the reserve leaves for ONE ask's order (D30): the
+     * spendable cash less what every OTHER open ask has raised, as far as the
+     * cash goes - the treasury's other bills may still draw on it, and when
+     * they have the earmark is only what is left. `own` is the ask whose
+     * order it is, whose own raised money is in the cash and counts; null is
+     * an order of the builder's own, which leaves every ask's money alone.
+     */
+    double spendableFor(Game game, OpenAsk own) {
+        double free = overReserve(game);
+        if (!(free > 0) || asks.isEmpty()) return free;
+        double others = 0;
+        for (OpenAsk a : asks) if (a != own && a.raised > 0) others += a.raised;
+        return free - Math.min(others, free);
     }
 
     /** What a bond must bring for an order of `total`: the part the spendable cash does not cover. */
@@ -616,7 +668,7 @@ public final class AutoBuilder {
         if (!within(game)) return cashAnyway && !(gap > 0);
         if (!(gap > 0)) return true;
         if (!(debtLimit > 0)) return false;
-        DebtQuote q = bondFor(game, gap);
+        DebtQuote q = bondFor(game, gap, cap);
         return q != null && ratioAfter(game, q) <= debtLimit;
     }
 
@@ -963,6 +1015,7 @@ public final class AutoBuilder {
         if (!on) return;
         held.clear();
         bought.clear();
+        asked.clear();
         steps.clear();
         overSaid = false;
         lastPass = game.getMonth();
@@ -971,7 +1024,11 @@ public final class AutoBuilder {
         game.getDecisions().hold();
         try {
             List<CityNeeds.Need> all = CityNeeds.measure(game, CityNeeds.PLAIN);
-            for (BuildAdvice.Measure m : remit(game, all)) step(game, all, m);
+            List<BuildAdvice.Measure> kept = remit(game, all);
+            // Every open ask is offered again first, before the pass ranks anything new (D30); a measure that has
+            // one is not stepped: its order waits for its money.
+            for (OpenAsk a : new ArrayList<>(asks)) reoffer(game, all, kept, a);
+            for (BuildAdvice.Measure m : kept) if (askFor(m) == null) step(game, all, m);
         } finally {
             game.getDecisions().release();
         }
@@ -1007,11 +1064,15 @@ public final class AutoBuilder {
         Set<BuildingsTemplate> skip = new HashSet<>();
         boolean noPaving = false;
         Refused first = null;
+        // The first card the money refused because its bond came up short at the cap (D30): where no other building in the ranking is paid for, its ask is kept open.
+        Askable askable = null;
         while (true) {
             BuildAdvice.Suggestion s = BuildAdvice.suggestFor(game, rowFor(all, m), m, game.getCash(),
                     game.getLandManager().getAvailableSqFt(), slack, skip, noPaving);
             if (s == null || s.count() < 1 || !orderable(s.template())) {
                 if (first != null) {
+                    // Nothing in the ranking is paid for: a card whose bond came up short keeps its ask open (D30); any other hold is a hold.
+                    if (askable != null && openAsk(game, m, askable)) return;
                     hold(m, first.s(), first.cut(), first.wanted(), first.line(), first.payback());
                     return;
                 }
@@ -1099,6 +1160,10 @@ public final class AutoBuilder {
                                 + (one == null ? groundWords(game, t) : fromCash && within(game) ? firstWords(game, s, one)
                                 : debtWords(game, s, one)), null);
                     }
+                    // A bond that comes up short at the builder's cap for even one (D30): the first such card is the ask.
+                    if (askable == null && one != null && refused == Cut.DEBT && !fromCash && within(game) && debtLimit > 0) {
+                        askable = askableFor(game, s, name, one);
+                    }
                     // Over the limit, the toggle off, nothing is paid for: no other building in the ranking either.
                     if (refused == Cut.DEBT && !within(game)) {
                         hold(m, first.s(), first.cut(), first.wanted(), first.line(), first.payback());
@@ -1114,7 +1179,7 @@ public final class AutoBuilder {
                 if (weighed != null) weighed = payback(game, m, s, n);
             }
 
-            place(game, m, s, name, wanted, n, cut, ground, first, weighed);
+            place(game, m, s, name, wanted, n, cut, ground, first, weighed, null);
             return;
         }
     }
@@ -1134,29 +1199,40 @@ public final class AutoBuilder {
                 + " the land office.";
     }
 
-    /** Places n of a suggestion, its ground bought first (0.7.77), borrowing what the spendable cash does not cover, and writes it down. */
-    private void place(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, String name, int wanted, int n,
-                       Cut cut, Ground ground, Refused first, Payback weighed) {
+    /**
+     * Places n of a suggestion, its ground bought first (0.7.77), borrowing
+     * what the spendable cash does not cover, and writes it down; false where
+     * it could not (the order is then held, and an ask stays open).
+     *
+     * @param from the open ask whose order this is (D30): its raised money is
+     *             in the cash and counts, so there is nothing to borrow - the
+     *             same path, a bond of nothing - and the log says it waited.
+     */
+    private boolean place(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, String name, int wanted, int n,
+                          Cut cut, Ground ground, Refused first, Payback weighed, OpenAsk from) {
         String before = reading(game, m, new LinkedHashMap<>());
         double cost = total(game, s, n);
         double landShort = s.paving() ? 0 : Math.max(0, lacks(game, s.template(), n));
-        double gap = gapFor(game, cost + ground.cash());
+        double gap = cost + ground.cash() - spendableFor(game, from);
         // Overdrawn, the bond clears the overdraft too, as Build's funding page counts it (Game.buildFundingGap()).
         double overdraft = Math.max(0, -game.getCash());
         double raised = 0;
-        if (gap > 0) {
+        // An ask's order is covered by what it raised: a rounding hair is not a gap to borrow for.
+        if (gap > 0 && !(from != null && gap <= 1e-6 * Math.max(1, cost))) {
             // The bond as the pass will book it: one that would come up short
             // (CD2) is not sold, since the order it was for could not be paid.
-            if (bondFor(game, gap) == null) {
+            DebtQuote bond = bondFor(game, gap, cap);
+            if (bond == null) {
                 hold(m, s, Cut.NONE, wanted, m.label() + ": the bond for " + n + " " + name
-                        + " would not raise the cash at the highest yield the city takes.", weighed);
-                return;
+                        + " would not raise the cash at the highest yield the builder takes.", weighed);
+                return false;
             }
             double cashBefore = game.getCash();
-            game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+            game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
             raised = game.getCash() - cashBefore;
             bonds++;
             borrowed += raised;
+            noteSale(game, bond, raised, 0);
         }
         // The ground first, each offer as the land office's Buy buys it - paid the way its toggle says.
         double rate = game.getForeignAccounts().getRate(), landCost = 0, landSq = 0;
@@ -1175,14 +1251,14 @@ public final class AutoBuilder {
         if (got.size() < ground.offers().size()) {
             if (!got.isEmpty()) bought.add(boughtWords(m, name, n, got, landCost, landShort, ground) + " Its order could not be placed.");
             hold(m, s, Cut.NONE, wanted, m.label() + ": the ground for " + n + " " + name + " could not be bought.", weighed);
-            return;
+            return false;
         }
         boolean placed = s.paving() ? game.paveRoads(n)
                 : game.buildStack(s.template(), n, false) == Game.BuildResult.SUCCESS;
         if (!placed) {
             if (!got.isEmpty()) bought.add(boughtWords(m, name, n, got, landCost, landShort, ground) + " Its order could not be placed.");
             hold(m, s, Cut.NONE, wanted, m.label() + ": " + n + " " + name + " could not be placed.", weighed);
-            return;
+            return false;
         }
         String after = reading(game, m, BuildAdvice.onSite(game, m));
         String land = got.isEmpty() ? "" : "; " + LandManager.areaWords(landSq) + " of ground bought for it first ("
@@ -1193,8 +1269,13 @@ public final class AutoBuilder {
                 + (first == null ? "" : "; the advice ranks " + first.wanted() + " " + refusedName(first.s()) + " first, "
                 + (first.cut() == Cut.GROUND ? "for which no ground could be had"
                 : first.cut() == Cut.PAYBACK ? "which would not pay back" : "which the money would not pay for")
-                + ", so the next in its ranking");
-        Entry e = new Entry(game.getMonth(), m.label(), name, n, wanted, cost, raised, s.paving(), why);
+                + ", so the next in its ranking")
+                + (from == null ? "" : String.format("; it waited %d month%s for the money, %s of it raised on the %d-year bond at"
+                        + " the builder's cap (%s)", from.monthsOpen(game.getMonth()), from.monthsOpen(game.getMonth()) == 1 ? "" : "s",
+                        money(from.raised), Game.BUILD_BOND_YEARS, CapSetting.words(cap)));
+        // An ask's order was paid for by the bond sales it raised (D30): the log shows what they brought.
+        Entry e = new Entry(game.getMonth(), m.label(), name, n, wanted, cost, from == null ? raised : raised + from.raised,
+                s.paving(), why);
         if (!got.isEmpty()) {
             e.landSqFt = landSq;
             e.landCost = landCost;
@@ -1206,11 +1287,13 @@ public final class AutoBuilder {
         orders++;
         buildings += n;
         spent += cost;
-        steps.add(new Step(m, Outcome.ORDERED, name, wanted, n, cut, cost, raised, landShort, List.copyOf(got), landCost,
+        double bondMoney = from == null ? raised : raised + from.raised;
+        steps.add(new Step(m, Outcome.ORDERED, name, wanted, n, cut, cost, bondMoney, landShort, List.copyOf(got), landCost,
                 weighed));
         GameLog.note(String.format("Automatic building: %d %s for %s, $%,.0fk%s. %s", n, name,
-                m.label().toLowerCase(), cost, raised > 0 ? String.format(" ($%,.0fk of it on a %d-year bond)",
-                        raised, Game.BUILD_BOND_YEARS) : "", why));
+                m.label().toLowerCase(), cost, bondMoney > 0 ? String.format(" ($%,.0fk of it on a %d-year bond)",
+                        bondMoney, Game.BUILD_BOND_YEARS) : "", why));
+        return true;
     }
 
     /** A refused card's building as its words name it: its own name, or the gravel roads a paving paves. */
@@ -1400,7 +1483,7 @@ public final class AutoBuilder {
         if (!(debtLimit > 0)) return "the cash over a month's tax is short of " + one + " and your debt limit is 0%, so it"
                 + " borrows nothing.";
         double gap = gapFor(game, total(game, s, 1) + ground.cash());
-        DebtQuote q = bondFor(game, gap);
+        DebtQuote q = bondFor(game, gap, cap);
         if (q == null) return "the cash over a month's tax is short of " + one + " and no bond can be had.";
         double after = ratioAfter(game, q);
         if (!Double.isFinite(after)) return "the cash over a month's tax is short of " + one + " and the city has no GDP"
@@ -1474,6 +1557,376 @@ public final class AutoBuilder {
     }
 
     /* =====================================================================
+       THE CAP AND THE OPEN ASKS (CD2, slice 6; D28 and D30)
+
+       Jerus, 2026-10-12, asked what happens to the sales nobody presses; his
+       answers are D28 to D30 (spec-city-debt.md, 4.5).
+
+       THE CAP (D28, "each its own"): the highest yield the builder's bonds
+       take over fair - a point by default, another tail or a yield, or Fill
+       it. It is its own setting, saved with the builder (State.cap), and not
+       the rollover's. Every bond the builder sells, for an order or for an
+       ask, is an auction at it.
+
+       AN OPEN ASK (D30, "stays open the ask until money raised, and what
+       already raised plus cash can be used"). The pass walks the advice's
+       ranking for a measure past what the money cannot pay for. Where it
+       reaches the end with no building paid for, and the first card the money
+       refused was refused because its bond came up SHORT - the bids did not
+       reach the gap at the builder's cap, with the debt limit not the reason -
+       the ask is opened for that card, one building and its ground (the
+       smallest order, because it is what a count cut to the money came down
+       to): the bond is sold for what it will sell, the money raised is kept
+       in the treasury, and the order is NOT placed - nothing is ever ordered
+       on money not there. From then on, each month BEFORE the pass ranks
+       anything new (pass()), every open ask is offered again at the builder's
+       cap for what is still to raise (reoffer()); when what it has raised
+       plus the spendable cash covers the order, the order is placed on the
+       same path as any other (place(), nothing more borrowed).
+
+       WHAT IS RAISED IS THE ORDER'S: spendable() takes open asks' raised
+       money off what other orders may spend, so the builder spends it on
+       nothing else; the treasury's other bills may still draw on the cash, as
+       on any cash, and an ask's earmark is only what is left of it
+       (spendableFor(), held()). A measure with an open ask is not stepped: one
+       ask a measure, and its order waits for its money rather than ordering
+       again.
+
+       THE ORDER IS PLACED ON MONEY THAT IS THERE, AND THE PAPER IS NOT SOLD
+       TWICE: covered() is the treasury holding the order's cost for it - the
+       raised money still in the cash, plus any cash over the reserve beside
+       it. What is still to raise (stillToRaise()) is the cost less the
+       greater of that and everything the ask has raised in all, so once its
+       sales have raised the whole cost a month's bills that drew the money
+       leave the order waiting for the cash to be there, not borrowing it
+       again: a city in a deficit does not pile up bonds for one order.
+
+       WITHDRAWN when the advice no longer ranks the order (the measure is
+       ahead without it, or its building has dropped out of the ranking, or it
+       no longer pays back), when the next sale would take the city's debt past
+       the limit, or on the player's word (withdraw()): the log and the inbox
+       say that what was raised stays in the treasury, because the paper is
+       sold and cannot be unsold. Saved (State.asks), so a reloaded city goes
+       on with it.
+       ===================================================================== */
+
+    /** The highest yield the builder's bonds take (D28): fair plus a point by default. */
+    private Auction.Cap cap = Auction.Cap.DEFAULT;
+
+    /** The builder's own cap. */
+    public Auction.Cap getCap() { return cap; }
+
+    /** The cap, as the panel's chips set it; the change is a decision. */
+    public void setCap(Auction.Cap cap, DecisionLog decisions) {
+        Auction.Cap v = cap == null ? Auction.Cap.DEFAULT : cap;
+        if (CapSetting.same(this.cap, v)) return;
+        this.cap = v;
+        if (decisions != null) decisions.record(DecisionLog.CONSTRUCTION,
+                "Automatic building's cap to " + CapSetting.words(v));
+    }
+
+    /**
+     * One order whose bond sold short and which waits for its money (D30): the
+     * measure by its label, the building by its name and template id (-1 and
+     * paving for the gravel roads' paving), how many, what the order costs
+     * with its ground as last priced, what its bond sales have raised for it
+     * and the treasury holds, what is still to raise, and the month it opened.
+     * Plain public fields, because it is saved as it stands (State.asks).
+     */
+    public static final class OpenAsk {
+        public String measure;
+        public String building;
+        public int templateId = -1;
+        public boolean paving;
+        public int count;
+        public double cost;
+        public double raised;
+        public double toRaise;
+        public int month;
+
+        public OpenAsk() { }
+
+        public String measure()  { return measure == null ? "" : measure; }
+        public String building() { return building == null ? "" : building; }
+        public boolean paving()  { return paving; }
+        public int count()       { return count; }
+        /** What the order costs, its ground with it, as last priced. */
+        public double cost()     { return cost; }
+        /** What its bond sales have raised for it. */
+        public double raised()   { return raised; }
+        /** What is still to raise. */
+        public double toRaise()  { return toRaise; }
+        /** The month it opened in. */
+        public int monthOpened() { return month; }
+        /** How many months it has been open at `now`. */
+        public int monthsOpen(int now) { return Math.max(0, now - month); }
+    }
+
+    /** The open asks, oldest first; at most one a measure. */
+    private final List<OpenAsk> asks = new ArrayList<>();
+
+    /** What the asks did at the last pass, a line each time one opened, was placed or was withdrawn: for the inbox (not saved, as bought is). */
+    private final List<String> asked = new ArrayList<>();
+
+    /** The open asks, for the panel: the order, what is raised, what is to raise, the months open. */
+    public List<OpenAsk> asks() { return Collections.unmodifiableList(asks); }
+
+    /** What the last pass did with the asks, a line an event; empty when nothing happened. */
+    public List<String> asked() { return Collections.unmodifiableList(asked); }
+
+    /** The ask open for a measure, or null. */
+    OpenAsk askFor(BuildAdvice.Measure m) {
+        for (OpenAsk a : asks) if (a.measure().equals(m.label())) return a;
+        return null;
+    }
+
+    /** Whether an ask is open for the measure of this label. */
+    private boolean askOpenFor(String label) {
+        for (OpenAsk a : asks) if (a.measure().equals(label)) return true;
+        return false;
+    }
+
+    /**
+     * What the treasury holds for one ask's order right now: the cash over the
+     * reserve, less what every other ask has raised, and never under nothing
+     * (an overdraft is the treasury's, not a debt of the order's). Its own
+     * raised money is in it - unless the month's bills have drawn it, which
+     * they may, and then this is only what is left. The order is placed when
+     * this covers its cost.
+     */
+    double held(Game game, OpenAsk own) {
+        return Math.max(0, spendableFor(game, own));
+    }
+
+    /** Everything open asks have raised: the money the builder holds for their orders. */
+    public double askedRaised() {
+        double sum = 0;
+        for (OpenAsk a : asks) sum += Math.max(0, a.raised);
+        return sum;
+    }
+
+    /**
+     * The player withdraws an ask (the panel's button): what was raised stays
+     * in the treasury, and the log says so. False for an index that is not an
+     * open ask.
+     */
+    public boolean withdraw(int index, DecisionLog decisions) {
+        if (index < 0 || index >= asks.size()) return false;
+        withdrawAsk(asks.get(index), "you withdrew it", decisions);
+        return true;
+    }
+
+    /** ...with no decision recorded. */
+    public boolean withdraw(int index) {
+        return withdraw(index, null);
+    }
+
+    /** Takes an ask off the books and says why; what it raised is the treasury's. */
+    private void withdrawAsk(OpenAsk a, String why, DecisionLog decisions) {
+        asks.remove(a);
+        String line = String.format("Automatic building withdrew its ask for %s (%s): %s. %s", a.building(), a.measure(), why,
+                a.raised > 0 ? money(a.raised) + " it raised stays in the treasury: the paper is sold and cannot be unsold."
+                        : "Nothing had been raised, so nothing was borrowed for it.");
+        asked.add(line);
+        GameLog.note(line);
+        if (decisions != null) decisions.record(DecisionLog.CONSTRUCTION,
+                "Withdrew automatic building's ask for " + a.building() + " (" + a.measure() + ")");
+    }
+
+    /** A card the money refused because its bond came up short at the builder's cap: the card, its words, what one costs with its ground, the gap past the spendable cash, and the short quote. */
+    private record Askable(BuildAdvice.Suggestion s, String name, double cost, double gap, DebtQuote quote) { }
+
+    /** The ask for one of a card, if its bond for the gap comes up short at the cap and the sale itself would stay within the limit; null where something else refused it. */
+    private Askable askableFor(Game game, BuildAdvice.Suggestion s, String name, Ground one) {
+        double cost = total(game, s, 1) + one.cash();
+        double gap = cost - spendableFor(game, null);
+        if (!(gap > 0)) return null;
+        DebtQuote q = bondQuote(game, gap, cap);
+        if (q == null || !q.isShort()) return null;
+        if (ratioAfter(game, q) > debtLimit) return null;
+        return new Askable(s, name, cost, gap, q);
+    }
+
+    /** What an offer of the bond raised, and the quote it was. */
+    private record Sold(DebtQuote quote, double raised) { }
+
+    /** Offers `need` of cash on the bond at the builder's cap and books what sells, for an ask: the money raised is the ask's. */
+    private Sold sell(Game game, OpenAsk ask, double need) {
+        DebtQuote q = bondQuote(game, need, cap);
+        double got = 0;
+        if (q != null && !q.isEmpty()) {
+            double before = game.getCash();
+            game.handleLongBondForCash(need, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
+            got = game.getCash() - before;
+            bonds++;
+            borrowed += got;
+        }
+        ask.raised += got;
+        return new Sold(q, got);
+    }
+
+    /** A bond the builder sold, entered for the time skip's report (TimeSkipReport.AutoSale). */
+    private void noteSale(Game game, DebtQuote q, double raisedCash, double heldOpen) {
+        if (q == null || q.auction() == null || q.auction().isEmpty()) return;
+        Auction.Result r = q.auction();
+        game.noteAutoSale(new TimeSkipReport.AutoSale("Automatic building", game.getMonth(),
+                Game.BUILD_BOND_YEARS + "-year bond", r.ask().face(), r.sold(), raisedCash, r.stop(), r.tail(), r.cover(),
+                r.shortSale(), r.ceiling(), 0, 0, heldOpen));
+    }
+
+    /** Where an ask stands, for the inbox and the card: its bond, what is raised and what is to raise. */
+    private String askWords(OpenAsk a, DebtQuote q, double held) {
+        String cap_ = q != null && q.auction() != null
+                ? String.format(" at its cap of %.2f%% (%s)", q.auction().ceiling() * 100, CapSetting.words(cap))
+                : " at its cap (" + CapSetting.words(cap) + ")";
+        if (a.raised >= a.cost - 1e-6 * Math.max(1, a.cost)) {
+            // Raised in full, and the month's bills have drawn it: the paper is not sold twice.
+            return String.format("%s: the %d-year bond for %d %s raised %s of the %s the order costs, but the treasury holds only"
+                            + " %s for it now - the month's bills have drawn the rest. The order waits for the cash to be there;"
+                            + " nothing more is borrowed for it.", a.measure(), Game.BUILD_BOND_YEARS, a.count, a.building(),
+                    money(a.raised), money(a.cost), money(Math.max(0, held)));
+        }
+        return String.format("%s: the %d-year bond for %d %s sold short%s; %s raised of the %s the order costs, %s still to"
+                        + " raise. The order waits for the money and the ask is offered again every month.",
+                a.measure(), Game.BUILD_BOND_YEARS, a.count, a.building(), cap_, money(a.raised), money(a.cost), money(a.toRaise));
+    }
+
+    /**
+     * Opens the ask for a card (D30): sells the bond for what it will sell,
+     * keeps the money for the order, and holds the measure on it. False where
+     * the measure already has one.
+     */
+    private boolean openAsk(Game game, BuildAdvice.Measure m, Askable a) {
+        if (askFor(m) != null) return false;
+        OpenAsk ask = new OpenAsk();
+        ask.measure = m.label();
+        ask.building = a.name();
+        ask.paving = a.s().paving();
+        ask.templateId = a.s().paving() ? -1 : a.s().template().getId();
+        ask.count = 1;
+        ask.cost = a.cost();
+        ask.month = game.getMonth();
+        asks.add(ask);
+        Sold sold = sell(game, ask, a.gap());
+        ask.toRaise = stillToRaise(game, ask);
+        noteSale(game, sold.quote(), sold.raised(), ask.toRaise);
+        String line = askWords(ask, sold.quote(), held(game, ask));
+        GameLog.note("Automatic building: " + line);
+        asked.add("Automatic building opened an ask. " + line);
+        hold(m, a.s(), Cut.DEBT, a.s().count(), line, null);
+        return true;
+    }
+
+    /** The advice's card for an ask's building, walking the ranking as the pass walks it; null where the advice no longer ranks it. */
+    private BuildAdvice.Suggestion cardFor(Game game, List<CityNeeds.Need> all, BuildAdvice.Measure m, OpenAsk a) {
+        Set<BuildingsTemplate> skip = new HashSet<>();
+        boolean noPaving = false;
+        for (int guard = 0; guard < 64; guard++) {
+            BuildAdvice.Suggestion c = BuildAdvice.suggestFor(game, rowFor(all, m), m, game.getCash(),
+                    game.getLandManager().getAvailableSqFt(), slack, skip, noPaving);
+            if (c == null || c.count() < 1 || !orderable(c.template())) return null;
+            if (c.paving() ? a.paving : !a.paving && c.template().getId() == a.templateId) return c;
+            if (c.paving()) noPaving = true; else skip.add(c.template());
+        }
+        return null;
+    }
+
+    /**
+     * An open ask, each month before the pass ranks anything new (D30): still
+     * the advice's order? then its cost as priced now, what is raised and the
+     * spendable cash against it; covered, the order is placed (nothing more
+     * borrowed); not, the bond is offered again at the cap for what is still
+     * to raise, and the order is placed that month if that covers it. An ask
+     * the advice no longer ranks, or one whose next sale would cross the debt
+     * limit, is withdrawn, and what it raised stays.
+     */
+    private void reoffer(Game game, List<CityNeeds.Need> all, List<BuildAdvice.Measure> kept, OpenAsk a) {
+        BuildAdvice.Measure m = null;
+        for (BuildAdvice.Measure k : kept) if (k.label().equals(a.measure())) { m = k; break; }
+        if (m == null) {
+            withdrawAsk(a, "its measure is no longer one the builder keeps", null);
+            return;
+        }
+        if (BuildAdvice.ahead(game, m, BuildAdvice.onSite(game, m), BuildAdvice.opening(game, 0, slack))) {
+            withdrawAsk(a, "what stands and what is on site keep " + m.label() + " ahead of its margin without it", null);
+            return;
+        }
+        BuildAdvice.Suggestion c = cardFor(game, all, m, a);
+        if (c == null) {
+            withdrawAsk(a, "the advice no longer ranks it for " + m.label(), null);
+            return;
+        }
+        int n = Math.max(1, Math.min(a.count, c.count()));
+        BuildingsTemplate t = c.paving() ? null : c.template();
+        if (!c.paving() && paysBackFirst(m, t) && !payback(game, m, c, n).paysBack()) {
+            withdrawAsk(a, "it would no longer pay back", null);
+            return;
+        }
+        Ground ground = c.paving() ? Ground.NONE : groundFor(game, t, n);
+        if (ground == null) {
+            // No bare ground to be had for it today: it waits, as it would wait for the money.
+            String line = m.label() + ": the ask for " + n + " " + a.building() + " has " + money(a.raised) + " raised, and no"
+                    + " ground can be had for it today.";
+            hold(m, c, Cut.GROUND, n, line, null);
+            return;
+        }
+        a.count = n;
+        a.cost = total(game, c, n) + ground.cash();
+        DebtQuote q = null;
+        // Covered already: what it raised and the spendable cash are there to pay for the order.
+        if (!covered(game, a)) {
+            double need = stillToRaise(game, a);
+            if (need > 0) {
+                // Offered again at the cap for what is still to raise - unless the sale would cross the limit.
+                q = bondQuote(game, need, cap);
+                if (!within(game) || !(debtLimit > 0) || (q != null && ratioAfter(game, q) > debtLimit)) {
+                    withdrawAsk(a, "the debt limit closed on it: another sale would take the city's debt to "
+                            + (q == null ? gdpShare(ratio(game)) : gdpShare(ratioAfter(game, q))) + " of a year's GDP, past your limit of "
+                            + gdpShare(debtLimit), null);
+                    return;
+                }
+                Sold sold = sell(game, a, need);
+                q = sold.quote();
+                noteSale(game, q, sold.raised(), stillToRaise(game, a));
+            }
+        }
+        if (covered(game, a)) {
+            if (place(game, m, c, a.building(), n, n, Cut.NONE, ground, null, null, a)) {
+                asks.remove(a);
+                asked.add(String.format("Automatic building placed its order for %d %s (%s) after %d month%s: the %s its ask"
+                        + " raised and the spendable cash covered it.", n, a.building(), m.label(),
+                        a.monthsOpen(game.getMonth()), a.monthsOpen(game.getMonth()) == 1 ? "" : "s", money(a.raised)));
+            }
+            return;
+        }
+        a.toRaise = stillToRaise(game, a);
+        String line = askWords(a, q, held(game, a));
+        GameLog.note("Automatic building: " + line);
+        hold(m, c, Cut.DEBT, c.count(), line, null);
+    }
+
+    /**
+     * Whether what the treasury holds for an ask's order pays for it: the
+     * cash over the reserve, less every other ask's raised money (held()), at
+     * least the order's cost as priced now. This is the rule that places an
+     * order - never on money that is not there.
+     */
+    private boolean covered(Game game, OpenAsk a) {
+        return held(game, a) >= a.cost - 1e-6 * Math.max(1, a.cost);
+    }
+
+    /**
+     * What an ask has still to raise: the order's cost less the greater of
+     * what the treasury holds for it and what its sales have raised in all.
+     * The paper already sold is not sold again - when the month's bills have
+     * drawn the money it raised, the order waits for the cash to be there
+     * (covered()), and the city does not borrow the same order twice.
+     */
+    private double stillToRaise(Game game, OpenAsk a) {
+        return Math.max(0, a.cost - Math.max(held(game, a), a.raised));
+    }
+
+    /* =====================================================================
        THE SAVE
        ===================================================================== */
 
@@ -1499,6 +1952,10 @@ public final class AutoBuilder {
         public double landSqFt;
         public double landSpent;
         public int landOffers;
+        /** The cap its bonds take (CD2, D28), the mode by name and the tail or yield: a save without one reads the default, fair plus a point. */
+        public CapSetting.Saved cap;
+        /** The asks open when it was saved (CD2, D30): each its order, what it raised, what is to raise and the month it opened. */
+        public List<OpenAsk> asks;
     }
 
     public State toState() {
@@ -1519,7 +1976,33 @@ public final class AutoBuilder {
         s.landSqFt = landSqFt;
         s.landSpent = landSpent;
         s.landOffers = landOffers;
+        s.cap = CapSetting.save(cap);
+        s.asks = new ArrayList<>();
+        for (OpenAsk a : asks) s.asks.add(copyOf(a));
         return s;
+    }
+
+    private static OpenAsk copyOf(OpenAsk a) {
+        OpenAsk c = new OpenAsk();
+        c.measure = a.measure;
+        c.building = a.building;
+        c.templateId = a.templateId;
+        c.paving = a.paving;
+        c.count = a.count;
+        c.cost = a.cost;
+        c.raised = a.raised;
+        c.toRaise = a.toRaise;
+        c.month = a.month;
+        return c;
+    }
+
+    /** Every figure it keeps in money, in the new unit (Game, THE CURRENCY REFORM): the open asks'. */
+    public void redenominate(double scale) {
+        for (OpenAsk a : asks) {
+            a.cost *= scale;
+            a.raised *= scale;
+            a.toRaise *= scale;
+        }
     }
 
     /** Puts a saved state back; null - a save from before 0.7.73 - is off, at the defaults, with nothing done; one from 0.7.73 to 0.7.80 keeps its switch and margin and reads the default limit, "Build from cash anyway" off; one from 0.7.81 to 0.7.100 at the old default, 60%, reads the new one (0.7.101), and any other limit stands on the new steps. */
@@ -1527,6 +2010,8 @@ public final class AutoBuilder {
         log.clear();
         held.clear();
         bought.clear();
+        asked.clear();
+        asks.clear();
         steps.clear();
         paidMonths.clear();
         if (s == null) {
@@ -1534,6 +2019,7 @@ public final class AutoBuilder {
             slack = DEFAULT_SLACK;
             debtLimit = DEFAULT_DEBT_LIMIT;
             cashAnyway = false;
+            cap = Auction.Cap.DEFAULT;
             lastPass = orders = bonds = landOffers = 0;
             buildings = 0;
             spent = borrowed = landSqFt = landSpent = 0;
@@ -1545,6 +2031,15 @@ public final class AutoBuilder {
         debtLimit = s.debtToGdp == null || Math.abs(s.debtToGdp - OLD_DEFAULT_DEBT_LIMIT) < 1e-9 ? DEFAULT_DEBT_LIMIT
                 : onSteps(s.debtToGdp, DEBT_LIMIT_MOST, DEBT_STEP);
         cashAnyway = s.cashAnyway;
+        cap = CapSetting.restore(s.cap);
+        // The asks open when it was saved, one a measure; one with no order or with money that is not a number is dropped.
+        if (s.asks != null) {
+            for (OpenAsk a : s.asks) {
+                if (a == null || a.measure == null || a.building == null || a.count < 1 || askOpenFor(a.measure)) continue;
+                if (!Double.isFinite(a.cost) || !Double.isFinite(a.raised) || !Double.isFinite(a.toRaise)) continue;
+                asks.add(copyOf(a));
+            }
+        }
         if (s.log != null) for (Entry e : s.log) if (e != null) log.add(e);
         if (s.held != null) for (String h : s.held) if (h != null) held.add(h);
         lastPass = s.lastPass;

@@ -48,6 +48,14 @@ import java.util.List;
  *      TWELVE_MONTH_BILL rolls every piece into a local note of BILL_MONTHS.
  *      Pieces rolling into the same paper are one issue, and an issue under
  *      Game.minimumIssueSize() is not arranged: its share is paid out of cash.
+ *   4. THE CAP AND A SHORT SALE (CD2, D28 and D29): each issue is an auction
+ *      at the rollover's own cap (getCap()), fair plus a point unless the
+ *      player moved it. Capped and short, it sells what was bid; the maturity
+ *      is a promise and is paid in full all the same - the treasury's cash
+ *      pays it, and past the cash the central bank's advances, as every
+ *      promise is paid (TreasuryLine.PRINCIPAL) - and the inbox names what the
+ *      advances paid. Filled, it pays the tail instead, and the inbox names
+ *      the tail when it passes the default cap (Auction.MAX_TAIL).
  *
  * WHAT ROLLING FOR CASH DOES. Paper sells under its face - a note by its
  * discount, a term loan by its redemption premium (its coupon is a third of
@@ -212,6 +220,19 @@ public final class Rollover {
     public void setMode(Mode mode)  { this.mode = mode == null ? Mode.MANUAL : mode; }
 
     /**
+     * THE CAP THE ROLLOVER SELLS AT (CD2, D28; Jerus, 2026-10-12: "each its
+     * own"): the highest yield its auctions take, fair plus a point by default,
+     * another tail or a yield, or Fill it. Nobody is at the button when it
+     * sells, so the setting is the player's answer to how much he would pay
+     * not to be asked, and it is its own: automatic building keeps one too.
+     * Saved with the rollover (DataSave.rolloverCapMode and rolloverCapValue).
+     */
+    private Auction.Cap cap = Auction.Cap.DEFAULT;
+
+    public Auction.Cap getCap()             { return cap; }
+    public void setCap(Auction.Cap cap)     { this.cap = cap == null ? Auction.Cap.DEFAULT : cap; }
+
+    /**
      * S: the surplus over the last year less what is already used of it -
      * what earlier rollovers netted in it, and since 0.7.14 the city's fund's
      * part (Game.rolloverPlan()) - never below nothing, never more than the
@@ -332,6 +353,7 @@ public final class Rollover {
     /** A city founded from nothing: nothing automatic, nothing netted. Game.newGame() then turns it on. */
     public void reset() {
         mode = Mode.MANUAL;
+        cap = Auction.Cap.DEFAULT;
         ledger.clear();
         clearRecord();
     }

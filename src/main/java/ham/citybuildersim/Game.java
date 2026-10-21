@@ -5935,6 +5935,8 @@ public class Game {
                 skipReport.sampleTreasury(centralBank.getAdvancesToTreasury() > 0,
                         centralBank.ceilingBound(), centralBank.getAdvancedToTreasury(),
                         centralBank.getAdvancesToTreasury());
+                // ...and the sales nobody pressed (CD2, D28 to D30): the rollover's and automatic building's.
+                skipReport.sampleSales(autoSalesThisMonth);
             }
 
         } catch (RuntimeException e) {
@@ -8966,8 +8968,41 @@ public class Game {
     /** The rollover's sales that came up short this month, one sentence each; empty when none did. */
     public java.util.List<String> getRolloverShortNotes() { return java.util.List.copyOf(rolloverShortNotes); }
 
+    /** What the month's rollover paid a tail past the default cap for (D29, Filled or capped higher), in words, for the inbox; not saved. */
+    private final java.util.List<String> rolloverTailNotes = new java.util.ArrayList<>();
+
+    /** The rollover's sales that cleared past the default cap this month, one sentence each; empty when none did. */
+    public java.util.List<String> getRolloverTailNotes() { return java.util.List.copyOf(rolloverTailNotes); }
+
+    /**
+     * Every automatic sale this month - the rollover's issues and automatic
+     * building's bonds - for the time skip's report (CD2, slice 6): a record of
+     * a month that has finished, cleared at the top of the next, not saved.
+     */
+    private final java.util.List<TimeSkipReport.AutoSale> autoSalesThisMonth = new java.util.ArrayList<>();
+
+    /** The month's automatic sales, in the order they were made. */
+    public java.util.List<TimeSkipReport.AutoSale> getAutoSalesThisMonth() { return java.util.List.copyOf(autoSalesThisMonth); }
+
+    /** Automatic building enters its bond sales here as it makes them. */
+    void noteAutoSale(TimeSkipReport.AutoSale sale) {
+        if (sale != null) autoSalesThisMonth.add(sale);
+    }
+
     /** The treasury's rollover: its setting, the ledger of what it netted, and its record. */
     public Rollover getRollover() { return rollover; }
+
+    /** The cap its auctions take (CD2, D28), as the rollover card's chips read it. */
+    public Auction.Cap getRolloverCap() { return rollover.getCap(); }
+
+    /** ...and as they set it, applied at the next press; the change is a decision. */
+    public void setRolloverCap(Auction.Cap cap) {
+        Auction.Cap was = rollover.getCap();
+        rollover.setCap(cap);
+        if (!CapSetting.same(was, rollover.getCap())) {
+            decisions.record(DecisionLog.BORROWING, "Rollover cap: " + CapSetting.words(rollover.getCap()));
+        }
+    }
 
     /** The setting, as the Finances tab's chips read it. */
     public Rollover.Mode getRolloverMode() { return rollover.getMode(); }
@@ -9113,6 +9148,7 @@ public class Game {
     /** The rollover, at the press: rolloverPlan() booked, issue by issue, through the existing quotes, and printed to the log. */
     private void rollMaturities() {
         rolloverShortNotes.clear();
+        rolloverTailNotes.clear();
         // What the central bank rolls of its own at issue this month (0.7.15,
         // round 2), struck on the book the plan reads, before the rollover
         // books anything: the plan's figure, which S has already paid down;
@@ -9138,6 +9174,8 @@ public class Game {
                         here, plan.centralBankRunsOff()) : ""));
         double raised = 0, faced = 0;
         int issued = 0, atHome = 0;
+        // Each issue sold at auction, for the notes below (D29) and the skip's report.
+        java.util.List<RolloverSale> sales = new java.util.ArrayList<>();
         for (Rollover.Issue issue : plan.issues()) {
             // Quoted again at the press, each issue after the one before it is
             // on the books: the plan quoted every issue on the books as they
@@ -9146,19 +9184,8 @@ public class Game {
             double before = cash;
             String booked = issueForRollover(issue, quote);
             double brought = cash - before;
-            // A sale that came up short at its cap (CD2): the maturity is a
-            // promise and is paid in full - from the treasury's cash and, past
-            // it, the central bank's advances (TreasuryLine) - so the inbox
-            // names what the auction did not raise. The full text, with the
-            // advances, is D29's (slice 6).
-            if (quote != null && quote.isShort()) {
-                String short_ = String.format("The rollover's %s sale covered %s%,.0fk of the %s%,.0fk it needed,"
-                                + " at its cap of %.2f%%; %s%,.0fk of the maturity is paid from the treasury's cash"
-                                + " and, past it, the central bank's advances.",
-                        issue.paper(), here, brought, here, issue.cash(), quote.auction().ceiling() * 100,
-                        here, Math.max(0, issue.cash() - brought));
-                rolloverShortNotes.add(short_);
-                GameLog.note("  " + short_);
+            if (quote != null && quote.auction() != null && !quote.auction().isEmpty()) {
+                sales.add(new RolloverSale(issue, quote, brought));
             }
             double face = brought > 0 ? localFace(issue.foreign(), quote) : 0;
             if (brought > 0) {
@@ -9175,6 +9202,7 @@ public class Game {
             GameLog.note(String.format("  nothing issued: %s%,.0fk is under the smallest deal worth arranging"
                     + " (%s%,.0fk), and is paid out of cash.", here, plan.toRoll(), here, minimumIssueSize()));
         }
+        noteRolloverSales(sales, plan);
         rollover.record(month, plan.due(), plan.netted(), faced, raised, issued, atHome);
         // None of the city's term paper sold between the presses for the
         // central bank's par to be added on to: its par alone (0.7.15, round 2).
@@ -9192,11 +9220,79 @@ public class Game {
     private DebtQuote rolloverQuote(String type, int term, boolean abroad, double cash) {
         double granule = "Note".equals(type) ? BUILD_NOTE_GRANULE : BUILD_BOND_GRANULE;
         if (abroad) return quoteForeignForCash(type, cash / foreign.getRate(), term, granule);
+        // At the rollover's own cap (CD2, D28); dollar paper is not sold at auction and has none.
+        Auction.Cap cap = rollover.getCap();
         return switch (type) {
-            case "Note"   -> quoteTBill(cash, term, granule);
-            case "Serial" -> quoteMediumBondForCash(cash, term, granule);
-            default       -> quoteLongBondForCash(cash, term, granule);
+            case "Note"   -> quoteTBill(cash, term, granule, cap);
+            case "Serial" -> quoteMediumBondForCash(cash, term, granule, cap);
+            default       -> quoteLongBondForCash(cash, term, granule, cap);
         };
+    }
+
+    /** One of the rollover's issues sold at auction, with the cash it brought. */
+    private record RolloverSale(Rollover.Issue issue, DebtQuote quote, double brought) { }
+
+    /** An issue in the words of a sale: "10-year bond", "6-month bill", "10-year amortizing bond". */
+    private static String saleName(Rollover.Issue issue) {
+        return switch (issue.type()) {
+            case "Note"   -> issue.term() + "-month bill";
+            case "Serial" -> issue.term() + "-year amortizing bond";
+            default       -> issue.term() + "-year bond";
+        };
+    }
+
+    /**
+     * WHAT THE ROLLOVER'S SALES DID, said (CD2, D29). A sale that came up short
+     * at its cap raised less than the cash it needed; the maturity is a promise
+     * and is paid in full all the same, because nothing in the rollover holds
+     * the money back: the treasury's cash pays it in the month it falls due
+     * (TreasuryLine.PRINCIPAL), and past the cash the central bank's advances
+     * do, past their ceiling if they must, as they pay every promise
+     * (settleTreasury()). So the inbox says how much of the part the sale did
+     * not raise the cash covers - what is left of it once the surplus the
+     * rollover netted is paid - and how much the advances: "The rollover's
+     * 10-year sale covered D$X at its cap of Y%; D$Z of January's maturity was
+     * paid by the central bank's advances" (only the advances' part when the
+     * cash did not cover it). Filled, the sale pays a tail instead, and the
+     * inbox names it when it passes the point the default cap would have
+     * stopped at (Auction.MAX_TAIL). Every sale is also entered for the time
+     * skip's report (TimeSkipReport.AutoSale).
+     */
+    private void noteRolloverSales(java.util.List<RolloverSale> sales, Rollover.Plan plan) {
+        if (sales.isEmpty()) return;
+        String here = getCurrency().qualifiedSymbol();
+        String maturity = CityCalendar.monthName(month + 1) + "'s maturity";
+        // What the maturity is paid from, past the sales: the cash the treasury held when the rollover was struck, less the
+        // surplus it nets of the same maturity (the proceeds pay the rest, so what they did not raise is the cash's to pay,
+        // and past the cash the advances').
+        double cashLeft = Math.max(0, plan.cash() - plan.netted());
+        for (RolloverSale s : sales) {
+            Auction.Result r = s.quote().auction();
+            String name = saleName(s.issue());
+            double fromCash = 0, fromAdvances = 0;
+            if (r.shortSale()) {
+                double shortfall = Math.max(0, s.issue().cash() - s.brought());
+                fromCash = Math.min(shortfall, cashLeft);
+                cashLeft -= fromCash;
+                fromAdvances = shortfall - fromCash;
+                String where = fromAdvances > 0
+                        ? String.format("%s%,.0fk of %s was paid by the central bank's advances", here, fromAdvances, maturity)
+                        : String.format("%s%,.0fk of %s was paid from the treasury's cash", here, shortfall, maturity);
+                String note = String.format("The rollover's %s sale covered %s%,.0fk of the %s%,.0fk it needed, at its cap"
+                        + " of %.2f%%; %s.", name, here, s.brought(), here, s.issue().cash(), r.ceiling() * 100, where);
+                rolloverShortNotes.add(note);
+                GameLog.note("  " + note);
+            } else if (r.tail() > Auction.MAX_TAIL + 1e-9) {
+                String note = String.format("The rollover's %s sale cleared at %.2f%%, a tail of %.0f basis points over fair"
+                        + " (%s%,.0fk of face), with its cap set to %s: past the %.0f basis points the default cap takes.",
+                        name, r.stop() * 100, r.tail() * 10_000, here, r.sold(), CapSetting.words(rollover.getCap()),
+                        Auction.MAX_TAIL * 10_000);
+                rolloverTailNotes.add(note);
+                GameLog.note("  " + note);
+            }
+            autoSalesThisMonth.add(new TimeSkipReport.AutoSale("The rollover", month, name, r.ask().face(), r.sold(),
+                    s.brought(), r.stop(), r.tail(), r.cover(), r.shortSale(), r.ceiling(), fromCash, fromAdvances, 0));
+        }
     }
 
     /** A rollover quote's face in local money: a dollar quote's at the day's rate. */
@@ -9269,6 +9365,7 @@ public class Game {
          * month strikes its constants, rolls what falls due or turns the
          * calendar. Off, it does nothing at all.
          */
+        autoSalesThisMonth.clear();
         if (autoBuildProbeForTest != null) autoBuildProbeForTest.accept(false);
         autoBuilder.pass(this);
         if (autoBuildProbeForTest != null) autoBuildProbeForTest.accept(true);
@@ -12587,6 +12684,7 @@ public class Game {
         dataSave.setRolloverMode(rollover.getMode().name());
         dataSave.setRolloverLedger(rollover.ledgerToSave());
         dataSave.setRolloverRecord(rollover.recordToSave());
+        dataSave.setRolloverCap(rollover.getCap());
         // ...and how the land office pays (0.7.6), the player's toggle.
         dataSave.setLandPaidFromVault(landPaidFromVault);
         // ...and how the city was founded (0.7.10): its name, its money, the
@@ -15368,6 +15466,7 @@ public class Game {
             rollover.setMode(loaded.getRolloverMode());
             rollover.restoreLedger(loaded.getRolloverLedger());
             rollover.restoreRecord(loaded.getRolloverRecord());
+            rollover.setCap(loaded.getRolloverCap());
             // ...and what the rule aims at (0.7.4): an older save has no key
             // and reads the default - 2%, the constant it was.
             debtManager.setInflationTarget(loaded.getInflationTarget() != null
@@ -16654,6 +16753,8 @@ public class Game {
         debtManager.redenominate(scale);
         // ...and what the treasury's rollover netted and raised (0.7.13).
         rollover.redenominate(scale);
+        // ...and what automatic building's open asks have raised and still have to (CD2, D30).
+        autoBuilder.redenominate(scale);
         buildingManager.redenominate(scale);
         healthcare.redenominate(scale);
         education.redenominate(scale);
